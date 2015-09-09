@@ -10,6 +10,8 @@ import io.cattle.platform.servicediscovery.deployment.impl.DeploymentManagerImpl
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.lang3.StringUtils;
+
 public class ServiceDeploymentPlannerFactoryImpl implements ServiceDeploymentPlannerFactory {
 
     @Override
@@ -41,7 +43,16 @@ public class ServiceDeploymentPlannerFactoryImpl implements ServiceDeploymentPla
     }
 
     protected boolean isNoopStrategy(DeploymentServiceContext context, Service service) {
-        if (ServiceDiscoveryUtil.isNoopService(service, context.allocatorService)) {
+        if (ServiceDiscoveryUtil.isNoopService(service, context.allocatorService) || isExternallyProvidedService(service)) {
+            return true;
+        }
+        return false;
+    }
+
+    protected boolean isExternallyProvidedService(Service service) {
+        try {
+            ServiceDiscoveryConstants.KIND.valueOf(StringUtils.upperCase(service.getKind()));
+        } catch (IllegalArgumentException e) {
             return true;
         }
         return false;

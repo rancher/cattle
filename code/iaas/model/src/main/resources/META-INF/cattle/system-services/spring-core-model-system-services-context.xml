@@ -26,10 +26,12 @@
     <bean class="io.cattle.platform.core.dao.impl.LabelsDaoImpl" />
     <bean class="io.cattle.platform.core.dao.impl.HostDaoImpl" />
     <bean class="io.cattle.platform.core.dao.impl.VolumeDaoImpl" />
+    <bean class="io.cattle.platform.core.dao.impl.ServiceDaoImpl" />
 
     <tx:advice id="GenericResourceDaoImplAdvice" transaction-manager="CoreTransactionManager">
         <tx:attributes>
             <tx:method name="createAndSchedule" />
+            <tx:method name="updateAndSchedule" />
         </tx:attributes>
     </tx:advice>
 

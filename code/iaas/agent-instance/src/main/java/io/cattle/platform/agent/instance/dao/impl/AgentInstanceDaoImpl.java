@@ -2,9 +2,11 @@ package io.cattle.platform.agent.instance.dao.impl;
 
 import static io.cattle.platform.core.model.tables.AgentTable.*;
 import static io.cattle.platform.core.model.tables.CredentialTable.*;
+import static io.cattle.platform.core.model.tables.InstanceLabelMapTable.*;
 import static io.cattle.platform.core.model.tables.InstanceTable.*;
 import static io.cattle.platform.core.model.tables.IpAddressNicMapTable.*;
 import static io.cattle.platform.core.model.tables.IpAddressTable.*;
+import static io.cattle.platform.core.model.tables.LabelTable.*;
 import static io.cattle.platform.core.model.tables.NetworkServiceProviderInstanceMapTable.*;
 import static io.cattle.platform.core.model.tables.NetworkServiceProviderTable.*;
 import static io.cattle.platform.core.model.tables.NetworkServiceTable.*;
@@ -34,6 +36,7 @@ import io.cattle.platform.db.jooq.dao.impl.AbstractJooqDao;
 import io.cattle.platform.db.jooq.mapper.MultiRecordMapper;
 import io.cattle.platform.object.ObjectManager;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -206,6 +209,20 @@ public class AgentInstanceDaoImpl extends AbstractJooqDao implements AgentInstan
                     .and(ipAddress.REMOVED.isNull())
                     .and(IP_ADDRESS_NIC_MAP.REMOVED.isNull()))
             .fetch().map(mapper);
+    }
+
+    @Override
+    public List<Long> getAgentProvider(String providedServiceLabel, long accountId) {
+        return Arrays.asList(create().select(INSTANCE.AGENT_ID)
+                .from(INSTANCE)
+                .join(INSTANCE_LABEL_MAP)
+                    .on(INSTANCE_LABEL_MAP.INSTANCE_ID.eq(INSTANCE.ID))
+                .join(LABEL)
+                    .on(LABEL.ID.eq(INSTANCE_LABEL_MAP.LABEL_ID).and(LABEL.KEY.eq(providedServiceLabel)))
+                .where(INSTANCE.ACCOUNT_ID.eq(accountId)
+                    .and(INSTANCE.AGENT_ID.isNotNull())
+                    .and(INSTANCE.REMOVED.isNull()))
+                .fetch().intoArray(INSTANCE.AGENT_ID));
     }
 
     public GenericResourceDao getResourceDao() {

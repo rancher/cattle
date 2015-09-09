@@ -5,6 +5,7 @@ from cattle import ApiError
 SP_CREATE = "storagepool.create"
 VOLUME_CREATE = "volume.create"
 VOLUME_DELETE = "volume.delete"
+SERVICE_KIND = 'testservicekind'
 
 
 @pytest.fixture(scope='module')
@@ -241,6 +242,12 @@ def volume_wait(client, external_id):
         return volumes[0]
 
 
+def service_wait(client, external_id):
+    services = client.list_testservicekind(externalId=external_id)
+    if len(services) and services[0].state == 'active':
+        return services[0]
+
+
 def wait_host_count(storage_pool, count):
     new_hosts = storage_pool.hosts()
     if len(new_hosts) == count:
@@ -259,3 +266,100 @@ def event_wait(client, event):
     created = client.by_id('externalEvent', event.id)
     if created is not None and created.state == 'created':
         return created
+
+
+def test_external_service_event_create(client, context,
+                                       create_dynamic_service_type,
+                                       super_client):
+    agent_client = context.agent_client
+
+    env_external_id = random_str()
+    environment = {"name": "foo", "externalId": env_external_id}
+
+    svc_external_id = random_str()
+    svc_name = 'svc-name-%s' % svc_external_id
+    selector = 'foo=bar1'
+    template = {'foo': 'bar'}
+    svc_data = {
+        'selectorContainer': selector,
+        'kind': SERVICE_KIND,
+        'name': svc_name,
+        'externalId': svc_external_id,
+        'template': template,
+    }
+    event = agent_client.create_external_service_event(
+        eventType='service.create',
+        environment=environment,
+        externalId=svc_external_id,
+        service=svc_data,
+    )
+
+    event = wait_for(lambda: event_wait(client, event))
+    assert event is not None
+
+    svc = wait_for(lambda: service_wait(client, svc_external_id))
+
+    assert svc.externalId == svc_external_id
+    assert svc.name == svc_name
+    assert svc.kind == SERVICE_KIND
+    assert svc.selectorContainer == selector
+    assert svc.environmentId is not None
+    assert svc.template == template
+
+    envs = client.list_environment(externalId=env_external_id)
+    assert len(envs) == 1
+    assert envs[0].id == svc.environmentId
+
+    wait_for_condition(client, svc,
+                       lambda x: x.state == 'active',
+                       lambda x: 'State is: ' + x.state)
+
+    # Update
+    new_selector = 'newselector=foo'
+    svc_data = {
+        'selectorContainer': new_selector,
+        'kind': SERVICE_KIND,
+        'template': {'foo': 'bar'},
+    }
+    agent_client.create_external_service_event(
+        eventType='service.update',
+        environment=environment,
+        externalId=svc_external_id,
+        service=svc_data,
+    )
+
+    wait_for_condition(client, svc,
+                       lambda x: x.selectorContainer == new_selector,
+                       lambda x: 'Selector is: ' + x.selectorContainer)
+
+    # Delete
+    agent_client.create_external_service_event(
+        name=svc_name,
+        eventType='service.remove',
+        externalId=svc_external_id,
+        service={'kind': SERVICE_KIND},
+    )
+
+    wait_for_condition(client, svc,
+                       lambda x: x.state == 'removed',
+                       lambda x: 'State is: ' + x.state)
+
+
+@pytest.fixture
+def create_dynamic_service_type(client, context):
+    env = client.wait_success(client.create_environment(name='test'))
+    service = client.create_service(environmentId=env.id,
+                                    name='test',
+                                    launchConfig={
+                                        'imageUuid': context.image_uuid
+                                    },
+                                    serviceSchemas={SERVICE_KIND: {
+                                        'resourceFields': {
+                                            'template': {
+                                                'type': 'json',
+                                                'create': True,
+                                            }
+                                        }
+                                    }})
+    client.wait_success(service)
+    client.reload_schema()

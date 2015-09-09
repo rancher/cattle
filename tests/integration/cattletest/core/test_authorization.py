@@ -71,6 +71,7 @@ def test_user_types(user_client, adds=set(), removes=set()):
         'exoscaleConfig',
         'externalService',
         'externalEvent',
+        'externalServiceEvent',
         'externalStoragePoolEvent',
         'externalVolumeEvent',
         'externalDnsEvent',
@@ -201,8 +202,8 @@ def test_agent_types(agent_client):
         'error',
         'externalEvent',
         'externalVolumeEvent',
+        'externalServiceEvent',
         'externalStoragePoolEvent',
-        'externalDnsEvent',
         'externalDnsEvent',
         'hostApiProxyToken',
         'publish',
@@ -273,6 +274,7 @@ def test_admin_types(admin_user_client, adds=set(), removes=set()):
         'externalService',
         'externalEvent',
         'externalVolumeEvent',
+        'externalServiceEvent',
         'externalStoragePoolEvent',
         'externalDnsEvent',
         'fieldDocumentation',
@@ -1546,6 +1548,7 @@ def test_service_events(admin_user_client, user_client, agent_client,
 def test_svc_discovery_service(admin_user_client, user_client, project_client):
     auth_check(admin_user_client.schema, 'service', 'r', {
         'name': 'r',
+        'externalId': 'r',
         'environmentId': 'r',
         'scale': 'r',
         'launchConfig': 'r',
@@ -1564,6 +1567,7 @@ def test_svc_discovery_service(admin_user_client, user_client, project_client):
 
     auth_check(user_client.schema, 'service', 'r', {
         'name': 'r',
+        'externalId': 'r',
         'environmentId': 'r',
         'scale': 'r',
         'launchConfig': 'r',
@@ -1581,6 +1585,7 @@ def test_svc_discovery_service(admin_user_client, user_client, project_client):
 
     auth_check(project_client.schema, 'service', 'crud', {
         'name': 'cru',
+        'externalId': 'r',
         'environmentId': 'cr',
         'scale': 'cru',
         'launchConfig': 'cr',
@@ -1635,6 +1640,7 @@ def test_svc_discovery_lb_service(admin_user_client, user_client,
                                   project_client):
     auth_check(admin_user_client.schema, 'loadBalancerService', 'r', {
         'name': 'r',
+        'externalId': 'r',
         'environmentId': 'r',
         'scale': 'r',
         'launchConfig': 'r',
@@ -1652,6 +1658,7 @@ def test_svc_discovery_lb_service(admin_user_client, user_client,
 
     auth_check(user_client.schema, 'loadBalancerService', 'r', {
         'name': 'r',
+        'externalId': 'r',
         'environmentId': 'r',
         'scale': 'r',
         'launchConfig': 'r',
@@ -1668,6 +1675,7 @@ def test_svc_discovery_lb_service(admin_user_client, user_client,
 
     auth_check(project_client.schema, 'loadBalancerService', 'crud', {
         'name': 'cru',
+        'externalId': 'r',
         'environmentId': 'cr',
         'scale': 'cru',
         'launchConfig': 'cr',
@@ -1848,6 +1856,7 @@ def test_svc_discovery_external_service(admin_user_client, user_client,
                                         project_client):
     auth_check(admin_user_client.schema, 'externalService', 'r', {
         'name': 'r',
+        'externalId': 'r',
         'environmentId': 'r',
         'hostname': 'r',
         'externalIpAddresses': 'r',
@@ -1863,6 +1872,7 @@ def test_svc_discovery_external_service(admin_user_client, user_client,
 
     auth_check(user_client.schema, 'externalService', 'r', {
         'name': 'r',
+        'externalId': 'r',
         'environmentId': 'r',
         'hostname': 'r',
         'externalIpAddresses': 'r',
@@ -1877,6 +1887,7 @@ def test_svc_discovery_external_service(admin_user_client, user_client,
 
     auth_check(project_client.schema, 'externalService', 'crud', {
         'name': 'cru',
+        'externalId': 'r',
         'environmentId': 'cr',
         'hostname': 'cru',
         'externalIpAddresses': 'cru',
@@ -2107,4 +2118,44 @@ def test_external_dns_event(agent_client, admin_user_client, user_client,
         'stackName': 'cr',
         'serviceName': 'cr',
         'fqdn': 'cr'
+    })
+
+
+def test_external_service_event(agent_client, admin_user_client, user_client,
+                                project_client):
+    type = 'externalServiceEvent'
+
+    auth_check(admin_user_client.schema, type, 'r', {
+        'accountId': 'r',
+        'data': 'r',
+        'externalId': 'r',
+        'eventType': 'r',
+        'reportedAccountId': 'r',
+        'environment': 'r',
+        'service': 'r',
+    })
+
+    auth_check(user_client.schema, type, 'r', {
+        'accountId': 'r',
+        'externalId': 'r',
+        'eventType': 'r',
+        'reportedAccountId': 'r',
+        'environment': 'r',
+        'service': 'r',
+    })
+
+    auth_check(project_client.schema, type, 'r', {
+        'accountId': 'r',
+        'externalId': 'r',
+        'eventType': 'r',
+        'reportedAccountId': 'r',
+        'environment': 'r',
+        'service': 'r',
+    })
+
+    auth_check(agent_client.schema, type, 'cr', {
+        'externalId': 'cr',
+        'eventType': 'cr',
+        'environment': 'cr',
+        'service': 'cr',
     })

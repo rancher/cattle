@@ -190,6 +190,17 @@ public interface Service extends java.io.Serializable {
 	@javax.persistence.Column(name = "selector_container", length = 4096)
 	public java.lang.String getSelectorContainer();
 
+	/**
+	 * Setter for <code>cattle.service.external_id</code>.
+	 */
+	public void setExternalId(java.lang.String value);
+
+	/**
+	 * Getter for <code>cattle.service.external_id</code>.
+	 */
+	@javax.persistence.Column(name = "external_id", length = 255)
+	public java.lang.String getExternalId();
+
 	// -------------------------------------------------------------------------
 	// FROM and INTO
 	// -------------------------------------------------------------------------

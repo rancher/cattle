@@ -82,6 +82,7 @@
                 <value>pullTask,parent=genericObject</value>
                 <value>externalVolumeEvent,parent=externalEvent</value>
                 <value>externalStoragePoolEvent,parent=externalEvent</value>
+                <value>externalServiceEvent,parent=externalEvent</value>
                 <value>environmentUpgrade</value>
                 <value>externalDnsEvent,parent=externalEvent</value>
             </set>

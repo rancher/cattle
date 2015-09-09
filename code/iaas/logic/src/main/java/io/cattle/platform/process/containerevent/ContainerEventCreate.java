@@ -247,6 +247,11 @@ public class ContainerEventCreate extends AbstractDefaultProcessHandler {
         if (StringUtils.isEmpty(name))
             name = DataAccessor.fromMap(inspect).withKey(INSPECT_NAME).as(String.class);
 
+        String nameFromLabel = getLabel(LABEL_DISPLAY_NAME, inspect, data);
+        if (StringUtils.isNotBlank(nameFromLabel)) {
+            name = nameFromLabel;
+        }
+
         if (name != null)
             name = name.replaceFirst("/", "");
         instance.setName(name);

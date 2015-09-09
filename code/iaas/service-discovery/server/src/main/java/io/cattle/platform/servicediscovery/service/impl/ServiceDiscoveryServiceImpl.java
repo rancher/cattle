@@ -59,6 +59,8 @@ import java.util.concurrent.Callable;
 
 import javax.inject.Inject;
 
+import org.apache.commons.lang3.StringUtils;
+
 public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
 
     @Inject
@@ -572,7 +574,7 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
     @Override
     public boolean isSelectorLinkMatch(Service sourceService, Service targetService) {
         String selector = sourceService.getSelectorLink();
-        if (selector == null) {
+        if (StringUtils.isBlank(selector)) {
             return false;
         }
         Map<String, String> serviceLabels = ServiceDiscoveryUtil.getLaunchConfigLabels(targetService, ServiceDiscoveryConstants.PRIMARY_LAUNCH_CONFIG_NAME);
@@ -585,11 +587,8 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
 
     @Override
     public boolean isSelectorContainerMatch(Service sourceService, long instanceId) {
-        if (!sourceService.getKind().equalsIgnoreCase(ServiceDiscoveryConstants.KIND.SERVICE.name())) {
-            return false;
-        }
         String selector = sourceService.getSelectorContainer();
-        if (selector == null) {
+        if (StringUtils.isBlank(selector)) {
             return false;
         }
         List<? extends Label> labels = labelsDao.getLabelsForInstance(instanceId);

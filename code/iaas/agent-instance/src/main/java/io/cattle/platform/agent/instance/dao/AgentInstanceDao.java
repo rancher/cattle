@@ -30,4 +30,5 @@ public interface AgentInstanceDao {
 
     void populateNicAndIp(NetworkServiceInfo service);
 
+    List<Long> getAgentProvider(String providedServiceLabel, long accountId);
 }

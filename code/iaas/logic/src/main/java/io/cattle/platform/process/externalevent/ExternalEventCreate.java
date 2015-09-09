@@ -1,21 +1,9 @@
 package io.cattle.platform.process.externalevent;
 
-import static io.cattle.platform.core.model.tables.AgentTable.AGENT;
-import static io.cattle.platform.core.model.tables.EnvironmentTable.ENVIRONMENT;
-import static io.cattle.platform.core.model.tables.ServiceTable.SERVICE;
-import static io.cattle.platform.process.externalevent.ExternalEventConstants.EXERNAL_DNS_LOCK_NAME;
-import static io.cattle.platform.process.externalevent.ExternalEventConstants.FIELD_ALLOC_STATE;
-import static io.cattle.platform.process.externalevent.ExternalEventConstants.FIELD_ATTACHED_STATE;
-import static io.cattle.platform.process.externalevent.ExternalEventConstants.FIELD_DEV_NUM;
-import static io.cattle.platform.process.externalevent.ExternalEventConstants.FIELD_HOST_UUIDS;
-import static io.cattle.platform.process.externalevent.ExternalEventConstants.FIELD_SP_EXT_ID;
-import static io.cattle.platform.process.externalevent.ExternalEventConstants.FIELD_STORAGE_POOL;
-import static io.cattle.platform.process.externalevent.ExternalEventConstants.FIELD_VOLUME;
-import static io.cattle.platform.process.externalevent.ExternalEventConstants.FIELD_ZONE_ID;
-import static io.cattle.platform.process.externalevent.ExternalEventConstants.PROC_VOL_DEACTIVATE;
-import static io.cattle.platform.process.externalevent.ExternalEventConstants.PROC_VOL_REMOVE;
-import static io.cattle.platform.process.externalevent.ExternalEventConstants.STORAGE_POOL_LOCK_NAME;
-import static io.cattle.platform.process.externalevent.ExternalEventConstants.VOLUME_POOL_LOCK_NAME;
+import static io.cattle.platform.core.model.tables.AgentTable.*;
+import static io.cattle.platform.core.model.tables.EnvironmentTable.*;
+import static io.cattle.platform.core.model.tables.ServiceTable.*;
+import static io.cattle.platform.process.externalevent.ExternalEventConstants.*;
 import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.dao.AccountDao;
 import io.cattle.platform.core.dao.GenericResourceDao;
@@ -34,12 +22,10 @@ import io.cattle.platform.engine.handler.HandlerResult;
 import io.cattle.platform.engine.process.ProcessInstance;
 import io.cattle.platform.engine.process.ProcessState;
 import io.cattle.platform.engine.process.impl.ProcessCancelException;
-import io.cattle.platform.json.JsonMapper;
 import io.cattle.platform.lock.LockCallbackNoReturn;
 import io.cattle.platform.lock.LockManager;
 import io.cattle.platform.object.meta.ObjectMetaDataManager;
 import io.cattle.platform.object.process.StandardProcess;
-import io.cattle.platform.object.resource.ResourceMonitor;
 import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.object.util.DataUtils;
 import io.cattle.platform.process.base.AbstractDefaultProcessHandler;
@@ -70,8 +56,6 @@ public class ExternalEventCreate extends AbstractDefaultProcessHandler {
     @Inject
     LockManager lockManager;
     @Inject
-    ResourceMonitor resourceMonitor;
-    @Inject
     GenericResourceDao resourceDao;
     @Inject
     StoragePoolDao storagePoolDao;
@@ -79,8 +63,6 @@ public class ExternalEventCreate extends AbstractDefaultProcessHandler {
     VolumeDao volumeDao;
     @Inject
     HostDao hostDao;
-    @Inject
-    JsonMapper jsonMapper;
 
     @Override
     public HandlerResult handle(ProcessState state, ProcessInstance process) {
@@ -97,8 +79,6 @@ public class ExternalEventCreate extends AbstractDefaultProcessHandler {
             handleStoragePoolEvent(event, state, process);
         } else if (ExternalEventConstants.KIND_EXTERNAL_DNS_EVENT.equals(event.getKind())) {
             handleExternalDnsEvent(event, state, process);
-        } else {
-            new IllegalStateException("Unknown external event type: " + event.getKind());
         }
 
         return null;

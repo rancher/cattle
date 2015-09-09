@@ -21,7 +21,7 @@ public class ExternalEventFilter extends AbstractDefaultResourceManagerFilter {
 
     @Override
     public String[] getTypes() {
-        return new String[] { "externalEvent", "externalStoragePoolEvent", "externalVolumeEvent" };
+        return new String[] { "externalEvent", "externalStoragePoolEvent", "externalVolumeEvent", "externalServiceEvent" };
     }
 
     @Override
