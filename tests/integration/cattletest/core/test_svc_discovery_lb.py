@@ -952,6 +952,15 @@ def test_lb_service_update_certificate(client, context, image_uuid):
     assert lb.defaultCertificateId == cert3.id
     assert lb.certificateIds == [cert1.id]
 
+    # swap default and optional
+    service = client.update(service, certificateIds=[cert3.id],
+                            defaultCertificateId=cert1.id)
+    client.wait_success(service)
+
+    lb = client.wait_success(lb)
+    assert lb.defaultCertificateId == cert1.id
+    assert lb.certificateIds == [cert3.id]
+
     # update with none certificates
     service = client.update(service, certificateIds=None,
                             defaultCertificateId=None)

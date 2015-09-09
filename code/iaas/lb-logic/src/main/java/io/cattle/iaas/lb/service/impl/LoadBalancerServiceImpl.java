@@ -9,12 +9,12 @@ import io.cattle.platform.core.dao.GenericMapDao;
 import io.cattle.platform.core.dao.GenericResourceDao;
 import io.cattle.platform.core.dao.LoadBalancerDao;
 import io.cattle.platform.core.dao.LoadBalancerTargetDao;
-import io.cattle.platform.core.model.Certificate;
 import io.cattle.platform.core.model.LoadBalancer;
 import io.cattle.platform.core.model.LoadBalancerCertificateMap;
 import io.cattle.platform.core.model.LoadBalancerConfig;
 import io.cattle.platform.core.model.LoadBalancerHostMap;
 import io.cattle.platform.deferred.util.DeferredUtils;
+import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.process.ObjectProcessManager;
 import io.cattle.platform.object.process.StandardProcess;
 
@@ -42,6 +42,9 @@ public class LoadBalancerServiceImpl implements LoadBalancerService {
 
     @Inject
     ObjectProcessManager objectProcessMgr;
+
+    @Inject
+    ObjectManager objManager;
 
     @Override
     public void addListenerToConfig(final LoadBalancerConfig config, final long listenerId) {
@@ -87,9 +90,7 @@ public class LoadBalancerServiceImpl implements LoadBalancerService {
     }
 
     protected void addCertificateToLoadBalancer(final LoadBalancer lb, final LoadBalancerCertificate cert) {
-        LoadBalancerCertificateMap lbCertMap = mapDao.findNonRemoved(LoadBalancerCertificateMap.class,
-                LoadBalancer.class, lb.getId(),
-                Certificate.class, cert.getCertificateId());
+        LoadBalancerCertificateMap lbCertMap = getExistingCertMap(lb, cert);
 
         if (lbCertMap == null) {
             DeferredUtils.nest(new Runnable() {
@@ -106,9 +107,7 @@ public class LoadBalancerServiceImpl implements LoadBalancerService {
     }
 
     protected void removeCertificateFromLoadBalancer(final LoadBalancer lb, final LoadBalancerCertificate cert) {
-        final LoadBalancerCertificateMap lbCertMap = mapDao.findToRemove(LoadBalancerCertificateMap.class,
-                LoadBalancer.class, lb.getId(),
-                Certificate.class, cert.getCertificateId());
+        final LoadBalancerCertificateMap lbCertMap = getExistingCertMap(lb, cert);
 
         if (lbCertMap != null) {
             DeferredUtils.nest(new Runnable() {
@@ -118,6 +117,15 @@ public class LoadBalancerServiceImpl implements LoadBalancerService {
                 }
             });
         }
+    }
+
+    protected LoadBalancerCertificateMap getExistingCertMap(final LoadBalancer lb, final LoadBalancerCertificate cert) {
+        final LoadBalancerCertificateMap lbCertMap = objManager.findAny(LoadBalancerCertificateMap.class,
+                LOAD_BALANCER_CERTIFICATE_MAP.LOAD_BALANCER_ID, lb.getId(),
+                LOAD_BALANCER_CERTIFICATE_MAP.CERTIFICATE_ID, cert.getCertificateId(),
+                LOAD_BALANCER_CERTIFICATE_MAP.IS_DEFAULT, cert.isDefault(),
+                LOAD_BALANCER_CERTIFICATE_MAP.REMOVED, null);
+        return lbCertMap;
     }
 
     @Override
