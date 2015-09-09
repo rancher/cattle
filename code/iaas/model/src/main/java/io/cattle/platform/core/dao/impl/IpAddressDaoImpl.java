@@ -4,6 +4,7 @@ import static io.cattle.platform.core.model.tables.HostIpAddressMapTable.*;
 import static io.cattle.platform.core.model.tables.IpAddressNicMapTable.*;
 import static io.cattle.platform.core.model.tables.IpAddressTable.*;
 import static io.cattle.platform.core.model.tables.IpAssociationTable.*;
+
 import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.IpAddressConstants;
 import io.cattle.platform.core.constants.IpPoolConstants;
@@ -34,7 +35,10 @@ import javax.inject.Inject;
 
 public class IpAddressDaoImpl extends AbstractJooqDao implements IpAddressDao {
 
+    @Inject
     ObjectManager objectManager;
+
+    @Inject
     ObjectProcessManager processManager;
 
     @Override
@@ -127,6 +131,13 @@ public class IpAddressDaoImpl extends AbstractJooqDao implements IpAddressDao {
     }
 
     @Override
+    public IpAddress updateIpAddress(IpAddress ipAddress, String newIpAddress) {
+        objectManager.setFields(ipAddress, IP_ADDRESS.ADDRESS, newIpAddress);
+        processManager.scheduleStandardProcess(StandardProcess.UPDATE, ipAddress, null);
+        return ipAddress;
+    }
+
+    @Override
     public IpAddress createIpAddressFromPool(IpPool pool, Object key, Object... value) {
         Map<Object,Object> data = new HashMap<Object, Object>();
 
@@ -155,15 +166,6 @@ public class IpAddressDaoImpl extends AbstractJooqDao implements IpAddressDao {
         return objectManager.create(IpAddress.class, props);
     }
 
-    public ObjectManager getObjectManager() {
-        return objectManager;
-    }
-
-    @Inject
-    public void setObjectManager(ObjectManager objectManager) {
-        this.objectManager = objectManager;
-    }
-
     @Override
     public IpAssociation createOrFindAssociation(IpAddress address, IpAddress childIpAddress) {
         IpAssociation association = objectManager.findOne(IpAssociation.class,
@@ -181,13 +183,5 @@ public class IpAddressDaoImpl extends AbstractJooqDao implements IpAddressDao {
         return association;
     }
 
-    public ObjectProcessManager getProcessManager() {
-        return processManager;
-    }
-
-    @Inject
-    public void setProcessManager(ObjectProcessManager processManager) {
-        this.processManager = processManager;
-    }
 
 }

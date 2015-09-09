@@ -5,6 +5,7 @@ import io.cattle.platform.configitem.context.ConfigItemContextFactory;
 import io.cattle.platform.configitem.server.model.ConfigItem;
 import io.cattle.platform.configitem.server.model.ConfigItemFactory;
 import io.cattle.platform.configitem.server.model.util.ConfigItemResourceUtil;
+import io.cattle.platform.configitem.server.resource.AbstractCachingResourceRoot;
 import io.cattle.platform.configitem.server.resource.FileBasedResourceRoot;
 import io.cattle.platform.configitem.server.resource.URLBaseResourceRoot;
 import io.cattle.platform.configitem.server.template.TemplateFactory;
@@ -17,8 +18,11 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Callable;
+
 import javax.inject.Inject;
 
 import org.slf4j.Logger;
@@ -35,6 +39,7 @@ public class GenericConfigItemFactory implements ConfigItemFactory, Named {
     ConfigItemStatusManager versionManager;
     List<ConfigItem> items = new ArrayList<ConfigItem>();
     List<ConfigItemContextFactory> factories;
+    Map<String, Callable<byte[]>> additionalRevisionData = new HashMap<>();
     TemplateFactory templateFactory;
     String root;
     String devRelativePath;
@@ -80,10 +85,16 @@ public class GenericConfigItemFactory implements ConfigItemFactory, Named {
             String item = entry.getKey();
 
             URLBaseResourceRoot resourceRoot = new URLBaseResourceRoot(entry.getValue());
-            resourceRoot.scan();
+
             log.info("Adding item [{}] resources [{}]", item, entry.getValue().size());
-            items.add(new TemplatesBasedArchiveItem(item, versionManager, resourceRoot, templateFactory, getFactories(item)));
+            addTemplate(item, resourceRoot);
         }
+    }
+
+    protected void addTemplate(String item, AbstractCachingResourceRoot resourceRoot) throws IOException {
+        resourceRoot.setAdditionalRevisionData(additionalRevisionData.get(item));
+        resourceRoot.scan();
+        items.add(new TemplatesBasedArchiveItem(item, versionManager, resourceRoot, templateFactory, getFactories(item)));
     }
 
     protected List<ConfigItemContextFactory> getFactories(String item) {
@@ -100,8 +111,7 @@ public class GenericConfigItemFactory implements ConfigItemFactory, Named {
             File childFile = new File(root, child);
             if (!child.startsWith(".") && childFile.isDirectory()) {
                 FileBasedResourceRoot itemResource = new FileBasedResourceRoot(childFile);
-                itemResource.scan();
-                items.add(new TemplatesBasedArchiveItem(child, versionManager, itemResource, templateFactory, getFactories(child)));
+                addTemplate(child, itemResource);
             }
         }
     }
@@ -178,6 +188,14 @@ public class GenericConfigItemFactory implements ConfigItemFactory, Named {
     @Inject
     public void setFactories(List<ConfigItemContextFactory> factories) {
         this.factories = factories;
+    }
+
+    public Map<String, Callable<byte[]>> getAdditionalRevisionData() {
+        return additionalRevisionData;
+    }
+
+    public void setAdditionalRevisionData(Map<String, Callable<byte[]>> additionalRevisionData) {
+        this.additionalRevisionData = additionalRevisionData;
     }
 
 }

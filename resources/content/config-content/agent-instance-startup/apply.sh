@@ -21,6 +21,10 @@ for i in $(cat ${CATTLE_HOME}/services | grep -vE '^(services|agent-instance-sta
     get_config --force $i
 done
 
+chmod +x content/etc/init.d/agent-instance-startup
+
+stage_files
+
 if [ -e /dev/shm ]; then
     touch /dev/shm/agent-instance-started
 fi
