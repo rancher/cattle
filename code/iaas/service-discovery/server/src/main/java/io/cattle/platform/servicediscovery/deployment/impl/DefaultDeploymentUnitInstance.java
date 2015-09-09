@@ -88,10 +88,21 @@ public class DefaultDeploymentUnitInstance extends AbstractInstanceUnit {
             String overrideHostName = ((Map<String, String>) labels)
                     .get(ServiceDiscoveryConstants.LABEL_OVERRIDE_HOSTNAME);
             if (StringUtils.equalsIgnoreCase(overrideHostName, "container_name")) {
-                launchConfigData.put(InstanceConstants.FIELD_HOSTNAME, this.instanceName);
+                String overrideName = getOverrideHostName(this.instanceName);
+                launchConfigData.put(InstanceConstants.FIELD_HOSTNAME, overrideName);
             }
         }
         return launchConfigData;
+    }
+
+    private String getOverrideHostName(String instanceName) {
+        String overrideName = instanceName;
+        if (instanceName != null && instanceName.length() > 64) {
+            String serviceNumber = instanceName.substring(instanceName.lastIndexOf("_"));
+            int truncateIndex = 64 - serviceNumber.length();
+            overrideName = instanceName.substring(0, truncateIndex) + serviceNumber;
+        }
+        return overrideName;
     }
 
     @Override
