@@ -35,6 +35,13 @@
             </bean>
         </property>
         <property name="factories" value="#{extensionManager.list('config.item.context.factory')}" />
+        <property name="additionalRevisionData">
+            <map>
+                <entry key="agent-instance-startup">
+                    <bean class="io.cattle.platform.configitem.context.impl.ConfigUrlInfoFactory" />
+                </entry>
+            </map>
+        </property>
     </bean>
 
     <bean class="io.cattle.platform.configitem.server.template.impl.DefaultTemplateLoader" />

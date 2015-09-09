@@ -35,6 +35,7 @@
             <tx:method name="mapNewIpAddress" />
             <tx:method name="assignNewAddress" />
             <tx:method name="assignAndActivateNewAddress" />
+            <tx:method name="updateIpAddress" />
         </tx:attributes>
     </tx:advice>
 

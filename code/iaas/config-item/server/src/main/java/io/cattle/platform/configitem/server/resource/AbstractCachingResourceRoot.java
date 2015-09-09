@@ -10,6 +10,7 @@ import java.security.DigestOutputStream;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Collection;
+import java.util.concurrent.Callable;
 
 import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.io.IOUtils;
@@ -23,7 +24,7 @@ public abstract class AbstractCachingResourceRoot implements ResourceRoot {
 
     Collection<Resource> resources;
     String sourceRevision;
-    byte[] additionalRevisionData;
+    Callable<byte[]> additionalRevisionData;
 
     public static boolean shouldIgnore(File base, String path) {
         for (String prefix : IGNORE_PREFIX.get()) {
@@ -56,8 +57,13 @@ public abstract class AbstractCachingResourceRoot implements ResourceRoot {
         try {
             outputStream = new DigestOutputStream(new NullOutputStream(), MessageDigest.getInstance("SHA-256"));
 
-            if (additionalRevisionData != null)
-                outputStream.write(additionalRevisionData);
+            if (additionalRevisionData != null) {
+                try {
+                    outputStream.write(additionalRevisionData.call());
+                } catch (Exception e) {
+                    throw new IOException(e);
+                }
+            }
 
             for (Resource resource : resources) {
                 byte[] nameBytes = resource.getName().getBytes();
@@ -92,11 +98,11 @@ public abstract class AbstractCachingResourceRoot implements ResourceRoot {
         return sourceRevision;
     }
 
-    public byte[] getAdditionalRevisionData() {
+    public Callable<byte[]> getAdditionalRevisionData() {
         return additionalRevisionData;
     }
 
-    public void setAdditionalRevisionData(byte[] additionalRevisionData) {
+    public void setAdditionalRevisionData(Callable<byte[]> additionalRevisionData) {
         this.additionalRevisionData = additionalRevisionData;
     }
 

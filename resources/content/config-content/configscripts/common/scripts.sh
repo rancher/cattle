@@ -14,20 +14,6 @@ debug_on()
     CATTLE_SCRIPT_DEBUG=true check_debug
 }
 
-docker_env_vars()
-{
-    if [ -e /.dockerenv ]; then
-        cat /proc/1/environ 2>/dev/null | xargs -0 -I{} echo export '"{}"' | grep CATTLE_
-    fi
-}
-
-docker_env()
-{
-    if [ -e /.dockerenv ]; then
-        eval $(docker_env_vars)
-    fi
-}
-
 info()
 {
     echo "INFO:" "${@}"
@@ -195,7 +181,6 @@ reload_haproxy()
 }
 
 check_debug
-docker_env
 script_env
 
 export CATTLE_HOME=${CATTLE_HOME:-/var/lib/cattle}

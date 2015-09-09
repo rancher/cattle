@@ -18,6 +18,8 @@ public interface IpAddressDao {
 
     IpAddress assignAndActivateNewAddress(Host host, String ipAddress);
 
+    IpAddress updateIpAddress(IpAddress ipAddress, String newIpAddress);
+
     IpAssociation createOrFindAssociation(IpAddress ip, IpAddress childIp);
 
     IpAddress createIpAddressFromPool(IpPool pool, Object key, Object... values);

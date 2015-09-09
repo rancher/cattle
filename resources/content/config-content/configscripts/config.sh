@@ -238,10 +238,6 @@ while [ "$#" -gt 0 ]; do
     --force)
         FORCE=true
         ;;
-    --env)
-        docker_env_vars
-        exit 0
-        ;;
     --archive-url)
         shift 1
         ARCHIVE_URL=$1

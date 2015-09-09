@@ -171,8 +171,7 @@ public class AgentResourcesMonitorImpl implements AgentResourcesEventListener {
             } else {
                 IpAddress ip = ips.get(0);
                 if (!address.equalsIgnoreCase(ip.getAddress())) {
-                    ip.setAddress(address);
-                    objectManager.persist(ip);
+                    ipAddressDao.updateIpAddress(ip, address);
                 }
             }
         }
