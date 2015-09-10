@@ -175,11 +175,15 @@ public class AuthDaoImpl extends AbstractJooqDao implements AuthDao {
                         ACCOUNT.EXTERNAL_ID.eq(externalId)
                                 .and(ACCOUNT.EXTERNAL_ID_TYPE.eq(externalType))
                                 .and(ACCOUNT.STATE.ne("purged"))
-                ).orderBy(ACCOUNT.ID.asc()).limit(1).fetchOne();
+                ).orderBy(ACCOUNT.ID.asc()).fetchOne();
     }
 
     @Override
     public Account createAccount(String name, String kind, String externalId, String externalType) {
+        Account account = getAccountByExternalId(externalId, externalType);
+        if (account != null){
+            throw new ClientVisibleException(ResponseCodes.UNAUTHORIZED);
+        }
         Map<Object, Object> properties = new HashMap<>();
         if (StringUtils.isNotEmpty(name)) {
             properties.put(ACCOUNT.NAME, name);
