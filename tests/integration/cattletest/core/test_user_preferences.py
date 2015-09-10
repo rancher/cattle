@@ -53,13 +53,13 @@ def test_update_user_preference_pass_name(user_client):
     assert got_preference.value == new_value
 
 
-def test_unique_user_preference(user_client, admin_user_client):
+def test_unique_user_preference(user_client, new_context):
     rand_str = random_str()
     _user_preference(user_client, name=rand_str)
     with pytest.raises(ApiError) as e:
         _user_preference(user_client, name=rand_str)
     assert e.value.error.status == 422
-    _user_preference(admin_user_client, name=rand_str)
+    _user_preference(new_context.user_client, name=rand_str)
     with pytest.raises(ApiError) as e:
-        _user_preference(admin_user_client, name=rand_str)
+        _user_preference(new_context.user_client, name=rand_str)
     assert e.value.error.status == 422
