@@ -375,9 +375,12 @@ def test_scale(new_context):
     image_uuid = new_context.image_uuid
     launch_config = {"imageUuid": image_uuid,
                      "ports": [8081, '909:1001']}
+    cert1 = _create_cert(client)
+    cert2 = _create_cert(client)
     service = client.create_loadBalancerService(name=random_str(),
                                                 environmentId=env.id,
-                                                launchConfig=launch_config)
+                                                launchConfig=launch_config,
+                                                defaultCertificateId=cert1.id)
     service = client.wait_success(service)
     assert service.state == "inactive"
     # 1. verify that the service was activated
@@ -392,13 +395,23 @@ def test_scale(new_context):
 
     # validate that one host map was created
     _wait_until_active_map_count(lb, 1, client)
-
     # scale up
-    service = client.update(service, scale=2, name=service.name)
+    service = client.update(service, scale=2, name=service.name,
+                            defaultCertificateId=cert2.id)
     service = client.wait_success(service, 120)
     assert service.state == "active"
     assert service.scale == 2
     _wait_until_active_map_count(lb, 2, client)
+    instance_service_map = client \
+        .list_serviceExposeMap(serviceId=service.id)
+
+    assert len(instance_service_map) == 2
+    wait_for_condition(
+        client, instance_service_map[0], _resource_is_active,
+        lambda x: 'State is: ' + x.state)
+    wait_for_condition(
+        client, instance_service_map[1], _resource_is_active,
+        lambda x: 'State is: ' + x.state)
 
     # now scale down
     service = client.update(service, scale=0, name=service.name)
