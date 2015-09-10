@@ -39,13 +39,16 @@ public class LoadBalancerCreateUpdate extends AbstractObjectProcessHandler {
         List<? extends Long> newCerts = DataAccessor.fromMap(state.getData())
                 .withKey(LoadBalancerConstants.FIELD_LB_CERTIFICATE_IDS).withDefault(Collections.EMPTY_LIST)
                 .asList(jsonMapper, Long.class);
-        for (Long newCertId : newCerts) {
-            newCertsSet.add(new LoadBalancerCertificate(newCertId, false));
-        }
         Long defaultCert = DataAccessor.fromMap(state.getData())
                 .withKey(LoadBalancerConstants.FIELD_LB_DEFAULT_CERTIFICATE_ID).as(Long.class);
         if (defaultCert != null) {
+            // in case certs contain default cert
+            newCerts.remove(defaultCert);
             newCertsSet.add(new LoadBalancerCertificate(defaultCert, true));
+        }
+
+        for (Long newCertId : newCerts) {
+            newCertsSet.add(new LoadBalancerCertificate(newCertId, false));
         }
         
         lbService.updateLoadBalancerCertificates(lb, newCertsSet);
