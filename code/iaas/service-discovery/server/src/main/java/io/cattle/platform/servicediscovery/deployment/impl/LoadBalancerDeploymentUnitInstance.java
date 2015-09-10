@@ -79,8 +79,27 @@ public class LoadBalancerDeploymentUnitInstance extends AbstractInstanceUnit {
                 return obj != null && CommonStatesConstants.ACTIVE.equals(obj.getState());
             }
         });
-        this.instance = context.lbInstanceMgr.getLoadBalancerInstance(this.hostMap);
+        waitForLbInstanceToStart();
         return this;
+    }
+
+    protected void waitForLbInstanceToStart() {
+        if (this.instance == null) {
+            context.resourceMonitor.waitFor(this.hostMap, new ResourcePredicate<LoadBalancerHostMap>() {
+                @Override
+                public boolean evaluate(LoadBalancerHostMap obj) {
+                    return context.lbInstanceMgr.getLoadBalancerInstance(obj) != null;
+                }
+            });
+        }
+        this.instance = context.lbInstanceMgr.getLoadBalancerInstance(this.hostMap);
+        this.instance = context.resourceMonitor.waitFor(this.instance, new ResourcePredicate<Instance>() {
+            @Override
+            public boolean evaluate(Instance obj) {
+                return InstanceConstants.STATE_RUNNING.equals(obj.getState());
+            }
+        });
+
     }
     
     @Override

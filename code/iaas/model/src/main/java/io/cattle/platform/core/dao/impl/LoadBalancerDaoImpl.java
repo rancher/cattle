@@ -74,7 +74,7 @@ public class LoadBalancerDaoImpl extends AbstractJooqDao implements LoadBalancer
                         .and(LOAD_BALANCER.ID.eq(lbId))
                         .and(
                         LOAD_BALANCER.STATE.in(CommonStatesConstants.ACTIVATING,
-                                CommonStatesConstants.ACTIVE)))
+                                        CommonStatesConstants.ACTIVE, CommonStatesConstants.UPDATING_ACTIVE)))
                 .fetchInto(LoadBalancerRecord.class);
         if (lbs.isEmpty()) {
             return null;
