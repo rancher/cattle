@@ -24,6 +24,7 @@ public class ConfigUrlInfoFactory extends AbstractAgentBaseContextFactory implem
 
     @Override
     protected void populateContext(Agent agent, Instance instance, ConfigItem item, ArchiveContext context) {
+        context.getData().put("customApiHost", ServerContext.isCustomApiHost());
         context.getData().put("configUrl", ServerContext.getHostApiBaseUrl(BaseProtocol.HTTP));
     }
 
