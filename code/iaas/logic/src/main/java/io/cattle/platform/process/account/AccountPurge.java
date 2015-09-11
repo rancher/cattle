@@ -1,6 +1,7 @@
 package io.cattle.platform.process.account;
 
 import io.cattle.platform.core.constants.InstanceConstants;
+import io.cattle.platform.core.dao.AccountDao;
 import io.cattle.platform.core.dao.InstanceDao;
 import io.cattle.platform.core.model.Account;
 import io.cattle.platform.core.model.Agent;
@@ -27,6 +28,8 @@ public class AccountPurge extends AbstractDefaultProcessHandler {
 
     @Inject
     InstanceDao instanceDao;
+    @Inject
+    AccountDao accountDao;
 
     @Override
     public HandlerResult handle(ProcessState state, ProcessInstance process) {
@@ -81,6 +84,8 @@ public class AccountPurge extends AbstractDefaultProcessHandler {
                         CollectionUtils.asMap(InstanceConstants.REMOVE_OPTION, true));
             }
         }
+
+        accountDao.deleteProjectMemberEntries(account);
 
         return null;
     }

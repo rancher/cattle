@@ -110,7 +110,7 @@ public class AuthDaoImpl extends AbstractJooqDao implements AuthDao {
                 .where(
                         CREDENTIAL.STATE.eq(CommonStatesConstants.ACTIVE))
                 .and(CREDENTIAL.PUBLIC_VALUE.eq(publicValue)
-                .and(CREDENTIAL.KIND.equalIgnoreCase(CredentialConstants.KIND_PASSWORD)))
+                        .and(CREDENTIAL.KIND.equalIgnoreCase(CredentialConstants.KIND_PASSWORD)))
                 .fetchOne();
         if (credential == null) {
             return null;
@@ -119,14 +119,12 @@ public class AuthDaoImpl extends AbstractJooqDao implements AuthDao {
         if (secretIsCorrect) {
             return create()
                     .selectFrom(ACCOUNT).where(ACCOUNT.ID.eq(credential.getAccountId())
-                    .and(ACCOUNT.STATE.eq(CommonStatesConstants.ACTIVE)))
+                            .and(ACCOUNT.STATE.eq(CommonStatesConstants.ACTIVE)))
                     .fetchOneInto(AccountRecord.class);
-        }
-        else {
+        } else {
             return null;
         }
     }
-
 
     @Override
     public Account getAccountById(Long id) {
@@ -402,13 +400,13 @@ public class AuthDaoImpl extends AbstractJooqDao implements AuthDao {
         return lockManager.lock(new ProjectLock(project), new LockCallback<List<? extends ProjectMember>>() {
             public List<? extends ProjectMember> doWithLock() {
                 List<? extends ProjectMember> previousMembers = getActiveProjectMembers(project.getId());
-                Set<Member> otherPreviosMembers = new HashSet<>();
+                Set<Member> otherPreviousMembers = new HashSet<>();
                 for (ProjectMember member : previousMembers) {
                     String projectId = (String) ApiContext.getContext().getIdFormatter().formatId(objectManager.getType(Account.class), member.getProjectId());
-                    otherPreviosMembers.add(new Member(member, projectId));
+                    otherPreviousMembers.add(new Member(member, projectId));
                 }
-                Set<Member> create = new HashSet<Member>(members);
-                Set<Member> delete = new HashSet<Member>(otherPreviosMembers);
+                Set<Member> create = new HashSet<>(members);
+                Set<Member> delete = new HashSet<>(otherPreviousMembers);
                 for (Member member : members) {
                     if (delete.remove(member)) {
                         create.remove(member);
@@ -426,9 +424,8 @@ public class AuthDaoImpl extends AbstractJooqDao implements AuthDao {
                     objectProcessManager.executeStandardProcess(StandardProcess.DEACTIVATE, member, null);
                     objectProcessManager.executeStandardProcess(StandardProcess.REMOVE, member, null);
                 }
-                List<ProjectMember> newMembers = new ArrayList<>();
                 for (Member member : create) {
-                    newMembers.add(createProjectMember(project, member));
+                    createProjectMember(project, member);
                 }
                 return getActiveProjectMembers(project.getId());
             }
