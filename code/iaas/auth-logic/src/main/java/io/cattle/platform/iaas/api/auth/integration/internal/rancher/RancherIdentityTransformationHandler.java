@@ -35,7 +35,7 @@ public class RancherIdentityTransformationHandler implements IdentityTransformat
                         null, null, null);
                 } else {
                     throw new ClientVisibleException(ResponseCodes.BAD_REQUEST,
-                            "invalidIdentity", "Rancher Account" + identity.getExternalId() + "nonexistent", null);
+                            "invalidIdentity", "Rancher Account: " + identity.getExternalId() + " nonexistent", null);
                 }
             default:
                 throw new ClientVisibleException(ResponseCodes.BAD_REQUEST,
@@ -49,18 +49,22 @@ public class RancherIdentityTransformationHandler implements IdentityTransformat
 
             case ProjectConstants.RANCHER_ID:
                 Account account;
+                long id;
                 try {
-                    account = authDao.getAccountById(Long.valueOf(identity.getExternalId()));
+                    id = Long.valueOf(identity.getExternalId());
+                    account = authDao.getAccountById(id);
                 } catch (NumberFormatException e) {
                     return identity;
                 }
+                String accountId = (String) ApiContext.getContext().getIdFormatter().formatId(objectManager
+                        .getType(Account.class), id);
                 if (account != null) {
-                    String accountId = (String) ApiContext.getContext().getIdFormatter().formatId(objectManager
-                            .getType(Account.class), account.getId());
-                    return new Identity(ProjectConstants.RANCHER_ID, accountId, account.getName(), null, null, null);
+                    return new Identity(ProjectConstants.RANCHER_ID, accountId, account.getName(),
+                            identity.getProfileUrl(), identity.getProfilePicture(), identity.getLogin());
                 } else {
-                    throw new ClientVisibleException(ResponseCodes.BAD_REQUEST,
-                            "invalidIdentity", "Rancher Account" + identity.getExternalId() + "nonexistent", null);
+                    return new Identity(identity.getExternalIdType(), accountId, identity.getName(),
+                            null, null, '(' + identity.getExternalIdType().split("_")[1].toUpperCase()
+                            +  "  not found) " + identity.getName());
                 }
             default:
                 throw new ClientVisibleException(ResponseCodes.BAD_REQUEST,
