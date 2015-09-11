@@ -122,6 +122,8 @@ public class ProjectResourceManager extends AbstractObjectResourceManager {
         }
         if (isOwner) {
             DataAccessor.fields(project).withKey(ObjectMetaDataManager.CAPABILITIES_FIELD).set(Arrays.asList(ProjectConstants.OWNER));
+        } else {
+            DataAccessor.fields(project).withKey(ObjectMetaDataManager.CAPABILITIES_FIELD).set(Collections.EMPTY_LIST);
         }
         policy.grantObjectAccess(project);
         return project;
