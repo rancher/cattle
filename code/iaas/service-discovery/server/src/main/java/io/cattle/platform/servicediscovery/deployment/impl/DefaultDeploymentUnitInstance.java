@@ -5,6 +5,7 @@ import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.Service;
 import io.cattle.platform.core.model.ServiceExposeMap;
+import io.cattle.platform.docker.constants.DockerInstanceConstants;
 import io.cattle.platform.engine.process.impl.ProcessCancelException;
 import io.cattle.platform.object.process.StandardProcess;
 import io.cattle.platform.object.resource.ResourcePredicate;
@@ -88,18 +89,22 @@ public class DefaultDeploymentUnitInstance extends AbstractInstanceUnit {
             String overrideHostName = ((Map<String, String>) labels)
                     .get(ServiceDiscoveryConstants.LABEL_OVERRIDE_HOSTNAME);
             if (StringUtils.equalsIgnoreCase(overrideHostName, "container_name")) {
-                String overrideName = getOverrideHostName(this.instanceName);
+                String domainName = (String) launchConfigData.get(DockerInstanceConstants.FIELD_DOMAIN_NAME);
+                String overrideName = getOverrideHostName(domainName, this.instanceName);
                 launchConfigData.put(InstanceConstants.FIELD_HOSTNAME, overrideName);
             }
         }
         return launchConfigData;
     }
 
-    private String getOverrideHostName(String instanceName) {
+    private String getOverrideHostName(String domainName, String instanceName) {
         String overrideName = instanceName;
         if (instanceName != null && instanceName.length() > 64) {
             String serviceNumber = instanceName.substring(instanceName.lastIndexOf("_"));
             int truncateIndex = 64 - serviceNumber.length();
+            if (domainName != null) {
+                truncateIndex = truncateIndex - domainName.length() - 1;
+            }
             overrideName = instanceName.substring(0, truncateIndex) + serviceNumber;
         }
         return overrideName;
