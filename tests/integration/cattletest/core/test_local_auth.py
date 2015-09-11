@@ -1,4 +1,5 @@
 from common_fixtures import *  # NOQA
+from gdapi import ApiError
 from requests.auth import AuthBase
 import requests
 from cattle import from_env
@@ -261,3 +262,31 @@ def test_search_identity_name_like(admin_user_client, request):
                 found += 1
 
     assert found == 5
+
+
+@pytest.mark.nonparallel
+def test_cant_login_inactive_account(admin_user_client, request):
+    client, account, username, password =\
+        make_user_and_client(admin_user_client)
+    identities = client.list_identity()
+    projects = client.list_project()
+
+    assert len(projects) != 0
+    assert len(identities) == 1
+    assert identities[0].externalId == account.id
+
+    account = admin_user_client.by_id("account", account.id)
+    account.deactivate()
+    admin_user_client.wait_success(account)
+
+    with pytest.raises(ApiError) as e:
+        client.list_identity()
+    assert e.value.error.status == 401
+
+    token = requests.post(base_url() + 'token', {
+        'code': username + ':' + password
+    })
+    token = token.json()
+
+    assert token['type'] == 'error'
+    assert token['status'] == 401

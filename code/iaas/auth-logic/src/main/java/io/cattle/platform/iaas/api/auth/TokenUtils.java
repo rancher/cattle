@@ -2,6 +2,7 @@ package io.cattle.platform.iaas.api.auth;
 
 import io.cattle.platform.api.auth.Identity;
 import io.cattle.platform.core.constants.AccountConstants;
+import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.ProjectConstants;
 import io.cattle.platform.core.model.Account;
 import io.cattle.platform.core.model.AuthToken;
@@ -62,7 +63,11 @@ public abstract class TokenUtils  {
         if (null == accountId) {
             return null;
         }
-        return authDao.getAccountByExternalId(accountId, getAccountType());
+        Account account = authDao.getAccountByExternalId(accountId, getAccountType());
+        if (account != null && !StringUtils.equals(CommonStatesConstants.ACTIVE, account.getState())) {
+            throw new ClientVisibleException(ResponseCodes.UNAUTHORIZED);
+        }
+        return account;
     }
 
     protected abstract String getAccountType();
@@ -255,6 +260,9 @@ public abstract class TokenUtils  {
             isAllowed(identitiesToIdList(identities), identities);
             if (account == null) {
             account = authDao.getAccountByExternalId(gotIdentity.getExternalId(), gotIdentity.getExternalIdType());
+            if (account != null && !StringUtils.equals(CommonStatesConstants.ACTIVE, account.getState())) {
+                    throw new ClientVisibleException(ResponseCodes.UNAUTHORIZED);
+            }
             }
             if (account == null && createAccount) {
                 account = authDao.createAccount(gotIdentity.getName(), AccountConstants.USER_KIND, gotIdentity
