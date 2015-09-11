@@ -290,3 +290,37 @@ def test_cant_login_inactive_account(admin_user_client, request):
 
     assert token['type'] == 'error'
     assert token['status'] == 401
+
+
+def test_list_members_inactive_deleted_member(admin_user_client):
+    user1_client, account, username, password =\
+        make_user_and_client(admin_user_client)
+
+    user2_client, account2, username, password =\
+        make_user_and_client(admin_user_client)
+
+    members = get_plain_members(user1_client.list_identity())
+    members[0]['role'] = 'owner'
+    project = user1_client.create_project(members=members)
+
+    project = user1_client.wait_success(project)
+
+    members = [
+        get_plain_member(user1_client.list_identity()[0]),
+        get_plain_member(user2_client.list_identity()[0])
+    ]
+    members[0]['role'] = 'owner'
+    members[1]['role'] = 'member'
+    project.setmembers(members=members)
+
+    account2 = admin_user_client.by_id("account", account2.id)
+    account2.deactivate()
+    account2 = admin_user_client.wait_success(account2)
+    account2.remove()
+    account2 = admin_user_client.wait_success(account2)
+    account2.purge()
+
+    admin_user_client.wait_success(account2)
+
+    project = user1_client.by_id("project", project.id)
+    project.projectMembers()

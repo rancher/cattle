@@ -658,3 +658,18 @@ def base_url():
     elif (not base_url.endswith('/v1/')):
         base_url = base_url + '/v1/'
     return base_url
+
+
+def get_plain_member(member):
+    return {
+        'role': member.role,
+        'externalId': member.externalId,
+        'externalIdType': member.externalIdType
+    }
+
+
+def get_plain_members(members):
+    plain_members = []
+    for member in members.data:
+        plain_members.append(get_plain_member(member))
+    return plain_members

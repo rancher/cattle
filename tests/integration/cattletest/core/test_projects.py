@@ -63,17 +63,6 @@ def members(user_clients):
     return _create_members(user_clients, members)
 
 
-def get_plain_members(members):
-    plain_members = []
-    for member in members.data:
-        plain_members.append({
-            'role': member.role,
-            'externalId': member.externalId,
-            'externalIdType': member.externalIdType
-        })
-    return plain_members
-
-
 def get_ids(items):
     ids = []
     for item in items:
