@@ -1,5 +1,6 @@
 package io.cattle.platform.api.auth;
 
+import io.cattle.platform.archaius.util.ArchaiusUtil;
 import io.github.ibuildthecloud.gdapi.annotation.Field;
 import io.github.ibuildthecloud.gdapi.annotation.Type;
 
@@ -8,9 +9,12 @@ import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.springframework.util.DigestUtils;
 
+import com.netflix.config.DynamicStringProperty;
+
 @Type(name = "identity", pluralName = "identities")
 public class Identity {
 
+    private static final DynamicStringProperty PICTURE_PROVIDER = ArchaiusUtil.getString("api.identity.default.picture.provider");
     private String externalId = null;
     private String profilePicture= null;
     private String name = null;
@@ -81,8 +85,7 @@ public class Identity {
         this.profileUrl = profileUrl;
         this.login = login;
         if (profilePicture == null) {
-            this.profilePicture = "http://robohash.org/" + DigestUtils.md5DigestAsHex(getId().getBytes())
-                    + ".png?set=set2&bgset=bg2";
+            this.profilePicture = String.format(PICTURE_PROVIDER.get(), DigestUtils.md5DigestAsHex(getId().getBytes()));
         } else {
             this.profilePicture = profilePicture;
         }
