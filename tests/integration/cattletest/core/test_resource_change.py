@@ -1,4 +1,3 @@
-import base64
 from threading import Thread
 
 from websocket import create_connection
@@ -11,11 +10,6 @@ SUB_OPTIONS = '?include=hosts&include=instances&include=instanceLinks' \
 
 def stop_collection(collector):
     collector()
-
-
-def auth_header(client):
-    b = base64.encodestring(client._access_key + ':' + client._secret_key)
-    return ['Authorization: Basic {}'.format(b.replace('\n', ''))]
 
 
 def collect_events(client, array):
