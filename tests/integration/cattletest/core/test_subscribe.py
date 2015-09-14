@@ -23,7 +23,7 @@ def test_websocket_close(client, context):
     def on_open(ws):
         assertions['opened'] = True
 
-    # websocket.enableTrace(True)
+    websocket.enableTrace(True)
 
     subscribe_url = client.schema.types['subscribe'].links['collection']
     options = SUB_OPTIONS % context.project.id
