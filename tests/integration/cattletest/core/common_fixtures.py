@@ -1,3 +1,4 @@
+import base64
 import cattle
 import os
 import pytest
@@ -673,3 +674,8 @@ def get_plain_members(members):
     for member in members.data:
         plain_members.append(get_plain_member(member))
     return plain_members
+
+
+def auth_header(client):
+    b = base64.encodestring(client._access_key + ':' + client._secret_key)
+    return ['Authorization: Basic {}'.format(b.replace('\n', ''))]
