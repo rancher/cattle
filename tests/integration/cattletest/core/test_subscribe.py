@@ -34,7 +34,12 @@ def test_websocket_close(client, context):
                                 on_close=on_close,
                                 on_open=on_open)
     ws.run_forever()
-    time.sleep(.5)
-    assert assertions['closed']
-    assert assertions['opened']
-    assert assertions['messaged']
+
+    def test():
+        try:
+            return assertions['closed'] and assertions['opened'] and \
+                assertions['messaged']
+        except KeyError:
+            pass
+
+    wait_for(test)
