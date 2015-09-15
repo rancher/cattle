@@ -107,6 +107,7 @@ def test_user_types(user_client, adds=set(), removes=set()):
         'port',
         'project',
         'projectMember',
+        'pullTask',
         'rackspaceConfig',
         'register',
         'registrationToken',
@@ -300,6 +301,7 @@ def test_admin_types(admin_user_client, adds=set(), removes=set()):
         'project',
         'projectMember',
         'publish',
+        'pullTask',
         'rackspaceConfig',
         'register',
         'registrationToken',
@@ -1757,4 +1759,28 @@ def test_lb_listener(admin_user_client, user_client, project_client):
         'algorithm': 'cr',
         'serviceId': 'r',
         'accountId': 'r'
+    })
+
+
+def test_pull_task(admin_user_client, user_client, project_client):
+    auth_check(admin_user_client.schema, 'pullTask', 'r', {
+        'accountId': 'r',
+        'data': 'r',
+        'labels': 'r',
+        'mode': 'r',
+        'image': 'r',
+    })
+
+    auth_check(user_client.schema, 'pullTask', 'r', {
+        'accountId': 'r',
+        'labels': 'r',
+        'mode': 'r',
+        'image': 'r',
+    })
+
+    auth_check(project_client.schema, 'pullTask', 'cr', {
+        'accountId': 'r',
+        'labels': 'cr',
+        'mode': 'cr',
+        'image': 'cr',
     })

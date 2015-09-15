@@ -27,5 +27,10 @@
         	<artifactId>cattle-docker-common</artifactId>
         	<version>0.5.0-SNAPSHOT</version>
         </dependency>
+        <dependency>
+        	<groupId>io.cattle</groupId>
+        	<artifactId>cattle-iaas-allocator</artifactId>
+        	<version>0.5.0-SNAPSHOT</version>
+        </dependency>
     </dependencies>
 </project>
