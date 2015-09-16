@@ -193,6 +193,7 @@ public class Bootstrap implements Closeable {
             } else if (name.endsWith(".pack")) {
                 name = name.substring(0, name.length() - 5);
                 JarOutputStream os = new JarOutputStream(getOutputStream(name, false));
+                os.setLevel(0);
                 try {
                     unpacker.unpack(new NoCloseInputStream(is), os);
                 } finally {
