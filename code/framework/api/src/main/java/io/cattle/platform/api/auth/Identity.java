@@ -7,7 +7,7 @@ import io.github.ibuildthecloud.gdapi.annotation.Type;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
-import org.springframework.util.DigestUtils;
+import org.apache.commons.codec.digest.DigestUtils;
 
 import com.netflix.config.DynamicStringProperty;
 
@@ -85,7 +85,7 @@ public class Identity {
         this.profileUrl = profileUrl;
         this.login = login;
         if (profilePicture == null) {
-            this.profilePicture = String.format(PICTURE_PROVIDER.get(), DigestUtils.md5DigestAsHex(getId().getBytes()));
+            this.profilePicture = String.format(PICTURE_PROVIDER.get(), DigestUtils.sha512Hex(getId().getBytes()));
         } else {
             this.profilePicture = profilePicture;
         }
