@@ -17,6 +17,7 @@
     <bean class="io.cattle.platform.docker.storage.DockerImageCredentialLookup" />
     <bean class="io.cattle.platform.docker.storage.DockerStoragePoolDriver" />
     <bean class="io.cattle.platform.docker.storage.process.DockerStoragePoolCreate" />
+    <bean class="io.cattle.platform.docker.storage.process.PullTaskCreate" />
     <bean class="io.cattle.platform.docker.storage.dao.impl.DockerStorageDaoImpl" >
         <property name="imageCredentialLookups" value="#{extensionManager.list('image.credential.lookup')}" />
     </bean>

@@ -76,6 +76,7 @@
                 <value>addRemoveLoadBalancerServiceLinkInput</value>
                 <value>setLoadBalancerServiceLinksInput</value>
                 <value>loadBalancerServiceLink,parent=serviceLink</value>
+                <value>pullTask,parent=genericObject</value>
             </set>
         </property>
     </bean>

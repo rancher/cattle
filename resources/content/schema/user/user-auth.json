@@ -225,6 +225,11 @@
         "projectMember.profilePicture" : "r",
         "projectMember.projectId" : "r",
 
+        "pullTask": "r",
+        "pullTask.labels": "cr",
+        "pullTask.mode": "cr",
+        "pullTask.image": "cr",
+
         "register": "r",
         "register.accessKey" : "r",
         "register.key":"cr",

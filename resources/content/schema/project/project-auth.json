@@ -36,6 +36,7 @@
         "port" : "ru",
         "project" : "r",
         "projectMember" : "r",
+        "pullTask" : "cr",
         "register": "cr",
         "registrationToken" : "cr",
         "registryCredential": "crud",

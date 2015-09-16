@@ -1,0 +1,20 @@
+{
+    "resourceFields": {
+        "image":{
+            "type":"string",
+            "required": true
+        },
+        "labels":{
+            "type":"map[string]"
+        },
+        "mode":{
+            "type":"enum",
+            "options": [
+                "all",
+                "cached"
+            ],
+            "default": "all",
+            "required": true
+        }
+    }
+}
