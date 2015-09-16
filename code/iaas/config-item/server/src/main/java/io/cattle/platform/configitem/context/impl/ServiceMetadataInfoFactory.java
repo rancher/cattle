@@ -224,8 +224,10 @@ public class ServiceMetadataInfoFactory extends AbstractAgentBaseContextFactory 
             ServiceMetaData consumedServiceData = consumedService.get(
                     serviceMD.getLaunchConfigName());
             String linkAlias = ServiceDiscoveryUtil.getDnsName(service, consumedMap, null, false);
-            links.put(
-                    consumedServiceData.getStack_name() + "/" + consumedServiceData.getName(), linkAlias);
+            if (consumedServiceData != null) {
+                links.put(
+                        consumedServiceData.getStack_name() + "/" + consumedServiceData.getName(), linkAlias);
+            }
         }
         serviceMD.setLinks(links);
     }
