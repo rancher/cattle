@@ -12,17 +12,28 @@
         http://cattle.io/schemas/spring/extension http://cattle.io/schemas/spring/extension-1.0.xsd
         http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.0.xsd">
         
+    <bean class="io.cattle.platform.servicediscovery.process.ServiceAgentDelegateHandler" />
+
     <bean class="io.cattle.platform.servicediscovery.process.ServiceUpdateActivate" />
     <bean class="io.cattle.platform.servicediscovery.process.ServiceDeactivate" />
     <bean class="io.cattle.platform.servicediscovery.process.ServiceRemove" />
     <bean class="io.cattle.platform.servicediscovery.process.ServiceCreate" />
+    <bean class="io.cattle.platform.servicediscovery.process.ServiceCreatePostListener" >
+        <property name="jsonMapper">
+            <bean class="io.github.ibuildthecloud.gdapi.json.JacksonMapper" />
+        </property>
+        <property name="schemaFactory" ref="CoreSchemaFactory" />
+    </bean>
     <bean class="io.cattle.platform.servicediscovery.process.ServiceUpgrade" />
     <bean class="io.cattle.platform.servicediscovery.process.ServiceRollback" />
     <bean class="io.cattle.platform.servicediscovery.process.ServiceFinishUpgrade" />
     <bean class="io.cattle.platform.servicediscovery.process.NetworkFromInstanceStop" />
     <bean class="io.cattle.platform.servicediscovery.process.SelectorServiceCreatePostListener" />
+    <bean class="io.cattle.platform.servicediscovery.process.ServiceRemovePostListener" />
+
     <bean class="io.cattle.platform.servicediscovery.process.SelectorInstancePostListener" />
     <bean class="io.cattle.platform.servicediscovery.process.ServiceExposeMapCreate" />
+
 
     <bean class="io.cattle.platform.servicediscovery.process.EnvironmentRemove" />
 

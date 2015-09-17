@@ -2,24 +2,33 @@ package io.cattle.platform.agent.instance.factory.impl;
 
 import static io.cattle.platform.core.model.tables.AgentTable.*;
 import static io.cattle.platform.core.model.tables.InstanceTable.*;
+
 import io.cattle.platform.agent.AgentLocator;
 import io.cattle.platform.agent.RemoteAgent;
 import io.cattle.platform.agent.instance.dao.AgentInstanceDao;
 import io.cattle.platform.agent.instance.factory.AgentInstanceBuilder;
 import io.cattle.platform.agent.instance.factory.AgentInstanceFactory;
 import io.cattle.platform.agent.instance.factory.lock.AgentInstanceAgentCreateLock;
+import io.cattle.platform.core.constants.AgentConstants;
+import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.dao.AccountDao;
 import io.cattle.platform.core.dao.GenericResourceDao;
 import io.cattle.platform.core.model.Agent;
 import io.cattle.platform.core.model.Host;
 import io.cattle.platform.core.model.Instance;
+import io.cattle.platform.core.util.SystemLabels;
 import io.cattle.platform.deferred.util.DeferredUtils;
+import io.cattle.platform.engine.process.impl.ProcessCancelException;
 import io.cattle.platform.lock.LockCallback;
 import io.cattle.platform.lock.LockManager;
 import io.cattle.platform.object.ObjectManager;
+import io.cattle.platform.object.process.ObjectProcessManager;
+import io.cattle.platform.object.process.StandardProcess;
 import io.cattle.platform.object.resource.ResourceMonitor;
 import io.cattle.platform.object.resource.ResourcePredicate;
+import io.cattle.platform.object.util.DataAccessor;
+import io.cattle.platform.process.common.util.ProcessUtils;
 import io.cattle.platform.storage.service.StorageService;
 
 import java.util.ArrayList;
@@ -30,16 +39,29 @@ import java.util.concurrent.Callable;
 
 import javax.inject.Inject;
 
+import org.apache.commons.lang3.BooleanUtils;
+import org.apache.commons.lang3.ObjectUtils;
+
 public class AgentInstanceFactoryImpl implements AgentInstanceFactory {
 
+    @Inject
     AccountDao accountDao;
+    @Inject
     ObjectManager objectManager;
+    @Inject
     AgentInstanceDao factoryDao;
+    @Inject
     LockManager lockManager;
+    @Inject
     GenericResourceDao resourceDao;
+    @Inject
     StorageService storageService;
+    @Inject
     AgentLocator agentLocator;
+    @Inject
     ResourceMonitor resourceMonitor;
+    @Inject
+    ObjectProcessManager processManager;
 
     @Override
     public AgentInstanceBuilder newBuilder() {
@@ -104,6 +126,45 @@ public class AgentInstanceFactoryImpl implements AgentInstanceFactory {
         return vnetId == null ? null : new Long[] { builder.getVnetId() };
     }
 
+    @Override
+    public Agent createAgent(Instance instance) {
+        if (shouldCreateAgent(instance)) {
+            return getAgent(new AgentInstanceBuilderImpl(this, instance));
+        }
+        return null;
+    }
+
+    @Override
+    public void deleteAgent(Instance instance) {
+        if (!shouldCreateAgent(instance) || instance.getAgentId() == null) {
+            return;
+        }
+
+        Agent agent = objectManager.loadResource(Agent.class, instance.getAgentId());
+        if (agent == null) {
+            return;
+        }
+
+        if (CommonStatesConstants.DEACTIVATING.equals(agent.getState())) {
+            return;
+        }
+
+        try {
+            processManager.scheduleStandardProcess(StandardProcess.DEACTIVATE, agent,
+                    ProcessUtils.chainInData(new HashMap<String, Object>(), AgentConstants.PROCESS_DEACTIVATE, AgentConstants.PROCESS_REMOVE));
+        } catch (ProcessCancelException e) {
+            try {
+                processManager.scheduleStandardProcess(StandardProcess.REMOVE, agent, null);
+            } catch (ProcessCancelException e1) {
+            }
+        }
+    }
+
+    protected boolean shouldCreateAgent(Instance instance) {
+        Map<String, Object> labels = DataAccessor.fieldMap(instance, InstanceConstants.FIELD_LABELS);
+        return BooleanUtils.toBoolean(ObjectUtils.toString(labels.get(SystemLabels.AGENT_CREATE_LABEL), null));
+    }
+
     protected Agent getAgent(AgentInstanceBuilderImpl builder) {
         String uri = getUri(builder);
         Agent agent = factoryDao.getAgentByUri(uri);
@@ -147,13 +208,21 @@ public class AgentInstanceFactoryImpl implements AgentInstanceFactory {
             @Override
             public Agent doWithLock() {
                 Agent agent = factoryDao.getAgentByUri(uri);
+                final Map<String, Object> data = new HashMap<>();
+                if (builder.getResourceAccountId() != null) {
+                    data.put(AgentConstants.DATA_AGENT_RESOURCES_ACCOUNT_ID, builder.getResourceAccountId());
+                }
 
                 if (agent == null) {
                     agent = DeferredUtils.nest(new Callable<Agent>() {
                         @Override
                         public Agent call() throws Exception {
-                            return resourceDao.createAndSchedule(Agent.class, AGENT.URI, uri, AGENT.MANAGED_CONFIG, builder.isManagedConfig(),
-                                    AGENT.AGENT_GROUP_ID, builder.getAgentGroupId(), AGENT.ZONE_ID, builder.getZoneId());
+                            return resourceDao.createAndSchedule(Agent.class,
+                                    AGENT.DATA, data,
+                                    AGENT.URI, uri,
+                                    AGENT.MANAGED_CONFIG, builder.isManagedConfig(),
+                                    AGENT.AGENT_GROUP_ID, builder.getAgentGroupId(),
+                                    AGENT.ZONE_ID, builder.getZoneId());
                         }
                     });
                 }
@@ -179,78 +248,6 @@ public class AgentInstanceFactoryImpl implements AgentInstanceFactory {
         Long networkServiceProviderId = builder.getNetworkServiceProvider() == null ? null : builder.getNetworkServiceProvider().getId();
 
         return String.format("delegate:///?vnetId=%d&networkServiceProviderId=%d", builder.getVnetId(), networkServiceProviderId);
-    }
-
-    public AgentInstanceDao getFactoryDao() {
-        return factoryDao;
-    }
-
-    @Inject
-    public void setFactoryDao(AgentInstanceDao factoryDao) {
-        this.factoryDao = factoryDao;
-    }
-
-    public LockManager getLockManager() {
-        return lockManager;
-    }
-
-    @Inject
-    public void setLockManager(LockManager lockManager) {
-        this.lockManager = lockManager;
-    }
-
-    public GenericResourceDao getResourceDao() {
-        return resourceDao;
-    }
-
-    @Inject
-    public void setResourceDao(GenericResourceDao resourceDao) {
-        this.resourceDao = resourceDao;
-    }
-
-    public StorageService getStorageService() {
-        return storageService;
-    }
-
-    @Inject
-    public void setStorageService(StorageService storageService) {
-        this.storageService = storageService;
-    }
-
-    public ObjectManager getObjectManager() {
-        return objectManager;
-    }
-
-    @Inject
-    public void setObjectManager(ObjectManager objectManager) {
-        this.objectManager = objectManager;
-    }
-
-    public AgentLocator getAgentLocator() {
-        return agentLocator;
-    }
-
-    @Inject
-    public void setAgentLocator(AgentLocator agentLocator) {
-        this.agentLocator = agentLocator;
-    }
-
-    public AccountDao getAccountDao() {
-        return accountDao;
-    }
-
-    @Inject
-    public void setAccountDao(AccountDao accountDao) {
-        this.accountDao = accountDao;
-    }
-
-    public ResourceMonitor getResourceMonitor() {
-        return resourceMonitor;
-    }
-
-    @Inject
-    public void setResourceMonitor(ResourceMonitor resourceMonitor) {
-        this.resourceMonitor = resourceMonitor;
     }
 
     @SuppressWarnings("unchecked")

@@ -24,6 +24,7 @@ public class AgentInstanceBuilderImpl implements AgentInstanceBuilder {
     Long accountId;
     Long zoneId;
     Long agentGroupId;
+    Long resourceAccountId;
     NetworkServiceProvider networkServiceProvider;
     String imageUuid;
     String name = DEFAULT_NAME.get();
@@ -39,6 +40,14 @@ public class AgentInstanceBuilderImpl implements AgentInstanceBuilder {
     public AgentInstanceBuilderImpl(AgentInstanceFactoryImpl factory) {
         super();
         this.factory = factory;
+    }
+
+    public AgentInstanceBuilderImpl(AgentInstanceFactoryImpl factory, Instance instance) {
+        this(factory);
+        this.accountId = instance.getAccountId();
+        this.zoneId = instance.getZoneId();
+        this.uri = "event:///instanceId=" + instance.getId();
+        this.resourceAccountId = instance.getAccountId();
     }
 
     @Override
@@ -226,4 +235,13 @@ public class AgentInstanceBuilderImpl implements AgentInstanceBuilder {
     public SystemContainer getSystemContainerType() {
         return systemContainerType;
     }
+
+    public Long getResourceAccountId() {
+        return resourceAccountId;
+    }
+
+    public void setResourceAccountId(Long resourceAccountId) {
+        this.resourceAccountId = resourceAccountId;
+    }
+
 }

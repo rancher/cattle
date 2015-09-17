@@ -374,6 +374,7 @@ public class ApiRequest {
 
     public void setSchemaFactory(SchemaFactory schemaFactory) {
         this.schemaFactory = schemaFactory;
+        this.urlBuilder = null;
     }
 
     public Map<String, Object> getCreateDefaults() {

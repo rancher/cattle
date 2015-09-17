@@ -31,3 +31,25 @@ def test_agent_create(super_client):
     assert creds[0].state == "active"
     assert creds[0].publicValue is not None
     assert creds[0].secretValue is not None
+
+
+def test_agent_create_for_container(context, super_client):
+    client = context.client
+    c = context.create_container(labels={
+        'io.rancher.container.create_agent': 'true'
+    })
+
+    c = super_client.reload(c)
+    agent = c.agent()
+    account_id = get_plain_id(c.account())
+
+    assert agent.state == 'active'
+    assert agent.data.agentResourcesAccountId == int(account_id)
+
+    client.delete(c)
+    c = client.wait_success(c)
+
+    assert c.state == 'removed'
+
+    agent = super_client.wait_success(super_client.reload(agent))
+    assert agent.state == 'removed'

@@ -35,12 +35,13 @@ public class AgentInstanceAuthObjectPostProcessor implements ObjectTypeSerialize
             return;
         }
 
-        String auth = AgentUtils.getAgentAuth(agent, objectManager);
+        Map<String, Object> auth = AgentUtils.getAgentAuth(agent, objectManager);
         if (auth != null) {
-            DataAccessor.fromDataFieldOf(data).withKey("agentInstanceAuth").set(auth);
-
             Map<String, Object> fields = DataUtils.getWritableFields(data);
-            DataAccessor.fromMap(fields).withScopeKey(InstanceConstants.FIELD_ENVIRONMENT).withKey("CATTLE_AGENT_INSTANCE_AUTH").set(auth);
+            for (Map.Entry<String, Object> entry : auth.entrySet()) {
+                    DataAccessor.fromMap(fields)
+                        .withScopeKey(InstanceConstants.FIELD_ENVIRONMENT).withKey(entry.getKey()).set(entry.getValue());
+            }
         }
     }
 

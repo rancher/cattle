@@ -9,8 +9,10 @@ import io.cattle.platform.core.model.Agent;
 import io.cattle.platform.core.model.Credential;
 import io.cattle.platform.framework.event.Ping;
 import io.cattle.platform.object.ObjectManager;
+import io.cattle.platform.util.type.CollectionUtils;
 
 import java.io.UnsupportedEncodingException;
+import java.util.Map;
 
 import org.apache.commons.codec.binary.Base64;
 
@@ -35,7 +37,7 @@ public class AgentUtils {
         return ping;
     }
 
-    public static String getAgentAuth(Agent agent, ObjectManager objectManager) {
+    public static Map<String, Object> getAgentAuth(Agent agent, ObjectManager objectManager) {
         Account account = objectManager.loadResource(Account.class, agent.getAccountId());
         if (account == null) {
             return null;
@@ -44,7 +46,11 @@ public class AgentUtils {
         for (Credential cred : objectManager.children(account, Credential.class)) {
             if (CredentialConstants.KIND_AGENT_API_KEY.equals(cred.getKind()) && CommonStatesConstants.ACTIVE.equals(cred.getState())) {
                 try {
-                    return "Basic " + Base64.encodeBase64String((cred.getPublicValue() + ":" + cred.getSecretValue()).getBytes("UTF-8"));
+                    String auth = "Basic " + Base64.encodeBase64String((cred.getPublicValue() + ":" + cred.getSecretValue()).getBytes("UTF-8"));
+
+                    return CollectionUtils.asMap("CATTLE_AGENT_INSTANCE_AUTH", auth,
+                            "CATTLE_ACCESS_KEY", cred.getPublicValue(),
+                            "CATTLE_SECRET_KEY", cred.getSecretValue());
                 } catch (UnsupportedEncodingException e) {
                 }
             }

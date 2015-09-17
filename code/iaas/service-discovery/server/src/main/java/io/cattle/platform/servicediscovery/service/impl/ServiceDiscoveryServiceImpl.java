@@ -164,7 +164,7 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
     public void createLoadBalancerService(Service service, List<? extends Long> certIds, Long defaultCertId) {
         String lbName = getLoadBalancerName(service);
         // 1. create load balancer config
-        Map<String, Object> lbConfigData = (Map<String, Object>) DataAccessor.field(service,
+        Map<String, Object> lbConfigData = DataAccessor.field(service,
                 ServiceDiscoveryConstants.FIELD_LOAD_BALANCER_CONFIG,
                 jsonMapper,
                 Map.class);
