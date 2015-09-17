@@ -1,4 +1,4 @@
-cattle==0.5.1
+cattle==0.5.2
 websocket-client==0.23.0
 PyJWT==1.4.0
 

@@ -13,6 +13,10 @@ _USER_LIST = [
 PROJECTS = set([])
 
 
+class NotFound(Exception):
+    pass
+
+
 @pytest.fixture(autouse=True, scope="module")
 def clean_up_projects(super_client, request):
     # This randomly times out, don't know why, disabling it
@@ -125,18 +129,15 @@ def test_set_members(admin_user_client, user_clients, project):
                  'Attribute')
     _set_members(admin_user_client, user_clients['Member'], project.id,
                  members, 'Attribute')
-    with pytest.raises(ApiError) as e:
+    with pytest.raises(NotFound):
         _set_members(admin_user_client, user_clients['Stranger'],
                      project.id, None, 422)
-    assert e.value.error.status == 404
-    with pytest.raises(ApiError) as e:
+    with pytest.raises(NotFound):
         _set_members(admin_user_client, user_clients['Stranger'],
                      project.id, [], 422)
-    assert e.value.error.status == 404
-    with pytest.raises(ApiError) as e:
+    with pytest.raises(NotFound):
         _set_members(admin_user_client, user_clients['Stranger'],
                      project.id, members, 403)
-    assert e.value.error.status == 404
 
 
 def test_get_members(admin_user_client, user_clients, members):
@@ -146,9 +147,8 @@ def test_get_members(admin_user_client, user_clients, members):
     _get_members(user_clients['Owner'], project.id, members)
     _get_members(user_clients['Member'], project.id, members)
     _get_members(user_clients['admin'], project.id, members)
-    with pytest.raises(ApiError) as e:
+    with pytest.raises(NotFound):
         _get_members(user_clients['Stranger'], project.id, members)
-    assert e.value.error.status == 404
 
 
 def test_list_all_projects(admin_user_client):
@@ -211,9 +211,7 @@ def test_delete_members(admin_user_client, user_clients, members):
     project.setmembers(members=members)
     project = user_clients['Owner'].by_id('project', project.id)
     assert len(project.projectMembers()) == 1
-    with pytest.raises(ApiError) as e:
-        user_clients['Member'].by_id('project', project.id)
-    assert e.value.error.status == 404
+    assert user_clients['Member'].by_id('project', project.id) is None
 
 
 def test_change_roles(admin_user_client, user_clients, members):
@@ -251,9 +249,7 @@ def test_delete_other_owners(admin_user_client, user_clients, members):
             new_members.remove(member)
     project.setmembers(members=new_members)
     assert len(project.projectMembers()) == 1
-    with pytest.raises(ApiError) as e:
-        user_clients['Owner'].by_id('project', project.id)
-    assert e.value.error.status == 404
+    assert user_clients['Owner'].by_id('project', project.id) is None
     project = client_for_project(project, admin_user_client).list_project()[0]
     got_members = project.projectMembers()
     assert len(got_members) == 1
@@ -338,9 +334,7 @@ def test_list_projects_flag(admin_user_client, user_clients):
 
 
 def test_get_project_not_mine(user_clients, project):
-    with pytest.raises(ApiError) as e:
-        user_clients['Member'].by_id('project', project.id)
-    assert e.value.error.status == 404
+    assert user_clients['Member'].by_id('project', project.id) is None
 
 
 def test_project_deactivate(user_clients, project, members):
@@ -375,12 +369,8 @@ def test_project_member_invalid(project, admin_user_client, members):
             old_members.append(member)
     project.setmembers(members=new_members)
     diff_members(new_members, get_plain_members(project.projectMembers()))
-    with pytest.raises(ApiError) as e:
-        client.by_id('projectMember', 'garbageId')
-    assert e.value.error.status == 404
-    with pytest.raises(ApiError) as e:
-        client.by_id('projectMember', old_members[0]['externalId'])
-    assert e.value.error.status == 404
+    assert client.by_id('projectMember', 'garbageId') is None
+    assert client.by_id('projectMember', old_members[0]['externalId']) is None
 
 
 def test_make_project_with_identity(admin_user_client):
@@ -416,6 +406,8 @@ def _create_resources(client):
 
 def _set_members(admin_user_client, client, id, members, status):
     project = client.by_id('project', id)
+    if project is None:
+        raise NotFound()
     if status is None:
         project.setmembers(members=members)
         got_members = get_plain_members(project.projectMembers())
@@ -451,6 +443,8 @@ def _create_project(admin_user_client, user_clients, user):
 
 def _get_members(client, id, actual_members):
     project = client.by_id('project', id)
+    if project is None:
+        raise NotFound()
     assert len(project.projectMembers()) == len(actual_members)
 
 
