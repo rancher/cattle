@@ -32,8 +32,7 @@
     <management:executor-service 
         id="CoreExecutorService"
         keep-alive="120"
-        pool-size="0-100"
-        queue-capacity="0"
+        pool-size="25"
         />
 
     <bean class="io.cattle.platform.util.concurrent.NamedExecutorService" >
