@@ -374,13 +374,9 @@ def create_event(host, external_id, agent_cli, client, user_account_id, status,
         assert event.externalTimestamp == timestamp
 
         def event_wait():
-            try:
-                created = client.reload(event)
-                if created.state == 'created':
-                    return event
-            except ApiError as e:
-                if e.error.status != 404:
-                    raise e
+            created = client.reload(event)
+            if created is not None and created.state == 'created':
+                return event
 
         wait_for(event_wait)
         event = client.reload(event)
