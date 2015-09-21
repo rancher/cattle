@@ -899,10 +899,7 @@ def test_destroy_service_instance(client, context):
 
     service = client.update(service, scale=4, name=service.name)
     service = client.wait_success(service, 120)
-
-    instance_service_map = client. \
-        list_serviceExposeMap(serviceId=service.id, state='Active')
-    assert len(instance_service_map) == 4
+    _validate_service_instance_map_count(client, service, "active", 4)
 
     # purge the instance1 w/o changing the service
     # and validate instance1-service map is gone
@@ -1099,26 +1096,19 @@ def test_sidekick_destroy_instance(client, context):
     # activate service1
     service = client.wait_success(service.activate(), 120)
     assert service.state == "active"
+    _validate_service_instance_map_count(client, service, "active", 2)
 
     instance11 = _validate_compose_instance_start(client, service, env, "1")
     instance12 = _validate_compose_instance_start(client,
                                                   service,
                                                   env, "1", "secondary")
 
-    instance_service_map1 = client. \
-        list_serviceExposeMap(serviceId=service.id, state="active")
-    assert len(instance_service_map1) == 2
-
     # destroy primary instance and wait for the service to reconcile
     _instance_remove(instance11, client)
     service = client.wait_success(service)
-
+    _validate_service_instance_map_count(client, service, "active", 2)
     instance11 = _validate_compose_instance_start(client, service, env, "1")
-    _validate_compose_instance_start(client, service, env, "1", "secondary")
 
-    instance_service_map1 = client. \
-        list_serviceExposeMap(serviceId=service.id, state="active")
-    assert len(instance_service_map1) == 2
     # validate that the secondary instance is still up and running
     instance12 = client.reload(instance12)
     assert instance12.state == 'running'
@@ -1126,13 +1116,11 @@ def test_sidekick_destroy_instance(client, context):
     # destroy secondary instance and wait for the service to reconcile
     _instance_remove(instance12, client)
     service = client.wait_success(service)
+    _validate_service_instance_map_count(client, service, "active", 2)
 
     _validate_compose_instance_start(client, service, env, "1")
     _validate_compose_instance_start(client, service, env, "1", "secondary")
 
-    instance_service_map1 = client. \
-        list_serviceExposeMap(serviceId=service.id, state="active")
-    assert len(instance_service_map1) == 2
     # validate that the primary instance was recreated
     instance11 = client.reload(instance11)
     assert instance11.state == 'removed'
@@ -1230,6 +1218,19 @@ def _validate_service_ip_map(client, service, ip, state, timeout=30):
         instance_service_map = client. \
             list_serviceExposeMap(serviceId=service.id,
                                   ipAddress=ip, state=state)
+        if time.time() - start > timeout:
+            assert 'Timeout waiting for map to be in correct state'
+
+
+def _validate_service_instance_map_count(client, service,
+                                         state, count, timeout=30):
+    start = time.time()
+    instance_service_map = client. \
+        list_serviceExposeMap(serviceId=service.id, state=state)
+    while len(instance_service_map) < count:
+        time.sleep(.5)
+        instance_service_map = client. \
+            list_serviceExposeMap(serviceId=service.id, state=state)
         if time.time() - start > timeout:
             assert 'Timeout waiting for map to be in correct state'
 
@@ -2586,7 +2587,7 @@ def test_stop_network_from_container(client, context, super_client):
                                                      env, "1", "secondary")
     s11_container = super_client.reload(s11_container)
     init_start_count = s11_container.startCount
-    assert init_start_count == 0
+    assert init_start_count is not None
 
     assert s11_container.networkContainerId is not None
     assert s11_container.networkContainerId == s21_container.id
@@ -2595,9 +2596,10 @@ def test_stop_network_from_container(client, context, super_client):
     s21_container = s21_container.stop()
     client.wait_success(s21_container)
 
-    wait_for_condition(
-        super_client, s11_container, _start_count_is_one,
-        lambda x: 'Start count is: ' + x.startCount)
+    wait_for(
+        lambda:
+        super_client.reload(s11_container).startCount > init_start_count
+    )
 
 
 def test_sidekick_labels_merge(client, context):
@@ -2608,7 +2610,8 @@ def test_sidekick_labels_merge(client, context):
     launch_config = {"imageUuid": image_uuid, "labels": labels}
 
     secondary_labels = {'bar': "foo"}
-    secondary_lc = {"imageUuid": image_uuid, "name": "secondary", "labels": secondary_labels}
+    secondary_lc = {"imageUuid": image_uuid,
+                    "name": "secondary", "labels": secondary_labels}
 
     service = client.create_service(name=random_str(),
                                     environmentId=env.id,
@@ -2617,8 +2620,8 @@ def test_sidekick_labels_merge(client, context):
     service = client.wait_success(service)
     service = client.wait_success(service.activate(), 120)
     primary = _validate_compose_instance_start(client, service, env, "1")
-    secondary = _validate_compose_instance_start(client, service, env, "1",
-                                                  "secondary")
+    secondary = _validate_compose_instance_start(client, service,
+                                                 env, "1", "secondary")
 
     assert all(item in primary.labels for item in labels) is True
     assert all(item in secondary.labels for item in secondary_labels) is True
@@ -2626,8 +2629,8 @@ def test_sidekick_labels_merge(client, context):
     assert all(item in secondary.labels for item in labels) is False
 
 
-def _start_count_is_one(resource):
-    return resource.startCount == 1
+def _start_count_is_greater_than(resource, count):
+    return resource.startCount > count
 
 
 def _get_instance_for_service(super_client, serviceId):
