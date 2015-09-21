@@ -45,11 +45,13 @@ public class InstanceHealthcheckRegister extends AbstractObjectProcessLogic impl
                 InstanceConstants.FIELD_HEALTH_CHECK, jsonMapper, InstanceHealthCheck.class);
 
         // set healthcheck
+        Long startCount = instance.getStartCount() == null ? 0 : instance.getStartCount() + 1;
         if (healthCheck != null) {
-            Long startCount = instance.getStartCount() == null ? 0 : instance.getStartCount() + 1;
             objectManager.setFields(instance, INSTANCE.START_COUNT, startCount, INSTANCE.HEALTH_STATE,
                     HealthcheckConstants.HEALTH_STATE_INITIALIZING);
             healtcheckService.registerForHealtcheck(HealthcheckInstanceType.INSTANCE, instance.getId());
+        } else {
+            objectManager.setFields(instance, INSTANCE.START_COUNT, startCount);
         }
         return null;
     }

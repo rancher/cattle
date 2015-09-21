@@ -2559,7 +2559,7 @@ def test_validate_scaledown_updating(client, context):
     _wait_until_active_map_count(service, 1, client, timeout=30)
 
 
-def test_stop_network_from_container(client, context):
+def test_stop_network_from_container(client, context, super_client):
     env = _create_stack(client)
 
     image_uuid = context.image_uuid
@@ -2584,20 +2584,24 @@ def test_stop_network_from_container(client, context):
     s11_container = _validate_compose_instance_start(client, service, env, "1")
     s21_container = _validate_compose_instance_start(client, service,
                                                      env, "1", "secondary")
+    s11_container = super_client.reload(s11_container)
+    init_start_count = s11_container.startCount
+    assert init_start_count == 0
 
     assert s11_container.networkContainerId is not None
     assert s11_container.networkContainerId == s21_container.id
 
-    # stop s21 container, and validate s11 is stopped as well
-    s21_container.stop()
-    wait_for_condition(
-        client, s11_container, _resource_is_stopped,
-        lambda x: 'State is: ' + x.state)
+    # stop s21 container, and validate s11 was resrted as well
+    s21_container = s21_container.stop()
+    client.wait_success(s21_container)
 
-    service = client.wait_success(service)
-    assert service.state == 'active'
-    _validate_compose_instance_start(client, service, env, "1")
-    _validate_compose_instance_start(client, service, env, "1", "secondary")
+    wait_for_condition(
+        super_client, s11_container, _start_count_is_one,
+        lambda x: 'Start count is: ' + x.startCount)
+
+
+def _start_count_is_one(resource):
+    return resource.startCount == 1
 
 
 def _get_instance_for_service(super_client, serviceId):
