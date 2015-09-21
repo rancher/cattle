@@ -2600,6 +2600,32 @@ def test_stop_network_from_container(client, context, super_client):
         lambda x: 'Start count is: ' + x.startCount)
 
 
+def test_sidekick_labels_merge(client, context):
+    env = _create_stack(client)
+
+    image_uuid = context.image_uuid
+    labels = {'foo': "bar"}
+    launch_config = {"imageUuid": image_uuid, "labels": labels}
+
+    secondary_labels = {'bar': "foo"}
+    secondary_lc = {"imageUuid": image_uuid, "name": "secondary", "labels": secondary_labels}
+
+    service = client.create_service(name=random_str(),
+                                    environmentId=env.id,
+                                    launchConfig=launch_config,
+                                    secondaryLaunchConfigs=[secondary_lc])
+    service = client.wait_success(service)
+    service = client.wait_success(service.activate(), 120)
+    primary = _validate_compose_instance_start(client, service, env, "1")
+    secondary = _validate_compose_instance_start(client, service, env, "1",
+                                                  "secondary")
+
+    assert all(item in primary.labels for item in labels) is True
+    assert all(item in secondary.labels for item in secondary_labels) is True
+    assert all(item in primary.labels for item in secondary_labels) is False
+    assert all(item in secondary.labels for item in labels) is False
+
+
 def _start_count_is_one(resource):
     return resource.startCount == 1
 

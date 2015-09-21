@@ -72,7 +72,7 @@ public class ServiceDiscoveryUtil {
     }
 
     @SuppressWarnings("unchecked")
-    public static Map<String, String> getServiceLabels(Service service, AllocatorService allocatorService) {
+    public static Map<String, String> getServiceLabelsUnion(Service service, AllocatorService allocatorService) {
         List<String> launchConfigNames = getServiceLaunchConfigNames(service);
         Map<String, String> labelsStr = new HashMap<>();
         for (String launchConfigName : launchConfigNames) {
@@ -87,17 +87,43 @@ public class ServiceDiscoveryUtil {
         return labelsStr;
     }
 
+    @SuppressWarnings("unchecked")
     public static Map<String, Object> getLaunchConfigDataWLabelsUnion(Service service, String launchConfigName, AllocatorService allocatorService) {
         Map<String, Object> launchConfigData = new HashMap<>();
 
         // 1) get launch config data from the list of primary/secondary
         launchConfigData.putAll(getLaunchConfigDataAsMap(service, launchConfigName));
 
-        // 2. remove labels, and request the union
-        launchConfigData.remove(InstanceConstants.FIELD_LABELS);
-        launchConfigData.put(InstanceConstants.FIELD_LABELS, getServiceLabels(service, allocatorService));
+        // 2) Get labels with merged affinity labels
+        Object labelsObj = launchConfigData.get(ServiceDiscoveryConfigItem.LABELS.getCattleName());
+        if (labelsObj != null) {
+            Map<String, String> labels = (Map<String, String>) labelsObj;
+            labels.putAll(getServiceAffnityLabels(service, allocatorService));
+        }
 
         return launchConfigData;
+    }
+
+    @SuppressWarnings("unchecked")
+    protected static Map<String, String> getServiceAffnityLabels(Service service, AllocatorService allocatorService) {
+        List<String> launchConfigNames = getServiceLaunchConfigNames(service);
+        Map<String, String> allAffinityLabels = new HashMap<>();
+        for (String launchConfigName : launchConfigNames) {
+            Map<String, Object> data = getLaunchConfigDataAsMap(service, launchConfigName);
+            Object labels = data.get(ServiceDiscoveryConfigItem.LABELS.getCattleName());
+            if (labels != null) {
+                Map<String, String> launchConfigAffinityLabels = new HashMap<>();
+                for (String key : ((Map<String, String>) labels).keySet()) {
+                    if (key.startsWith("io.rancher.scheduler.affinity")) {
+                        launchConfigAffinityLabels.put(key, ((Map<String, String>) labels).get(key));
+                    }
+                }
+                allocatorService.mergeLabels(launchConfigAffinityLabels,
+                        allAffinityLabels);
+            }
+        }
+
+        return allAffinityLabels;
     }
 
     @SuppressWarnings("unchecked")
