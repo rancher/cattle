@@ -15,9 +15,7 @@ import io.cattle.platform.engine.process.ProcessState;
 import io.cattle.platform.eventing.exception.EventExecutionException;
 import io.cattle.platform.eventing.model.Event;
 import io.cattle.platform.eventing.model.EventVO;
-import io.cattle.platform.object.meta.ObjectMetaDataManager;
 import io.cattle.platform.object.util.DataAccessor;
-import io.cattle.platform.object.util.TransitioningUtils;
 import io.cattle.platform.process.common.handler.AbstractGenericObjectProcessLogic;
 import io.cattle.platform.process.progress.ProcessProgress;
 import io.cattle.platform.util.type.CollectionUtils;
@@ -29,8 +27,6 @@ import java.util.Map;
 
 import javax.inject.Inject;
 
-import org.apache.commons.lang3.ObjectUtils;
-
 import com.google.common.util.concurrent.ListenableFuture;
 
 public class PullTaskCreate extends AbstractGenericObjectProcessLogic implements ProcessHandler {
@@ -40,6 +36,7 @@ public class PullTaskCreate extends AbstractGenericObjectProcessLogic implements
     public static final String TAG = "tag";
     public static final String MODE = "mode";
     public static final String COMPLETE = "complete";
+    public static final String STATUS = "status";
 
     @Inject
     AllocatorService allocatorService;
@@ -63,6 +60,7 @@ public class PullTaskCreate extends AbstractGenericObjectProcessLogic implements
         String mode = DataAccessor.fieldString(pullTask, MODE);
         String image = DataAccessor.fieldString(pullTask, IMAGE);
         Map<String, String> labels = DataAccessor.field(pullTask, LABELS, Map.class);
+        Map<String, String> status = new HashMap<>();
 
         if (tag == null) {
             tag = "pull-" + process.getId().hashCode();
@@ -90,9 +88,15 @@ public class PullTaskCreate extends AbstractGenericObjectProcessLogic implements
                 weights.add(1);
                 weights.add(1);
             }
+
+            if (host.getName() != null) {
+                status.put(host.getName(), "Pulling");
+            }
         }
 
         progress.init(state, toArray(weights));
+        pullTask = objectManager.reload(pullTask);
+        objectManager.setFields(pullTask, STATUS, status);
 
         for (Map.Entry<Host, ListenableFuture<? extends Event>> entry : pullFutures.entrySet()) {
             Host host = entry.getKey();
@@ -102,9 +106,7 @@ public class PullTaskCreate extends AbstractGenericObjectProcessLogic implements
                 AsyncUtils.get(future);
                 cleanupFutures.put(host, pullImage(host, mode, image, tag, true));
             } catch (EventExecutionException e) {
-                Map<String, Object> data = TransitioningUtils.getTransitioningData(e);
-                progress.get().messsage(ObjectUtils.toString(data.get(ObjectMetaDataManager.TRANSITIONING_MESSAGE_FIELD),
-                        e.getTransitioningMessage()));
+                pullTask = setStatus(pullTask, status, host, e.getTransitioningInternalMessage());
             }
         }
 
@@ -113,9 +115,20 @@ public class PullTaskCreate extends AbstractGenericObjectProcessLogic implements
             ListenableFuture<? extends Event> future = entry.getValue();
             progress.checkPoint("Finishing pull " + image + " on " + host.getName());
             AsyncUtils.get(future);
+            pullTask = setStatus(pullTask, status, host, "Done");
         }
 
         return null;
+    }
+
+    protected GenericObject setStatus(GenericObject object, Map<String, String> status, Host host, String message) {
+        if (host.getName() == null) {
+            return object;
+        }
+
+        object = objectManager.reload(object);
+        status.put(host.getName(), message);
+        return objectManager.setFields(object, STATUS, status);
     }
 
     protected ListenableFuture<? extends Event> pullImage(Host host, String mode, String image, String tag, boolean complete) {

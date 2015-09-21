@@ -17,6 +17,7 @@ import io.cattle.platform.util.type.CollectionUtils;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 import javax.inject.Inject;
 
@@ -103,6 +104,7 @@ public class SimulatorPingProcessor implements AgentSimulatorEventProcessor {
             host.put(ObjectMetaDataManager.UUID_FIELD, hostUuid);
             host.put(ObjectMetaDataManager.KIND_FIELD, "sim");
             host.put(ObjectMetaDataManager.TYPE_FIELD, "host");
+            host.put(ObjectMetaDataManager.NAME_FIELD, "testhost-" + UUID.randomUUID());
 
             if (addPhysicalHost) {
                 host.put("physicalHostUuid", physicalHostUuid);
