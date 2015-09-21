@@ -1769,6 +1769,7 @@ def test_pull_task(admin_user_client, user_client, project_client):
         'labels': 'r',
         'mode': 'r',
         'image': 'r',
+        'status': 'r',
     })
 
     auth_check(user_client.schema, 'pullTask', 'r', {
@@ -1776,6 +1777,7 @@ def test_pull_task(admin_user_client, user_client, project_client):
         'labels': 'r',
         'mode': 'r',
         'image': 'r',
+        'status': 'r',
     })
 
     auth_check(project_client.schema, 'pullTask', 'cr', {
@@ -1783,4 +1785,5 @@ def test_pull_task(admin_user_client, user_client, project_client):
         'labels': 'cr',
         'mode': 'cr',
         'image': 'cr',
+        'status': 'r',
     })

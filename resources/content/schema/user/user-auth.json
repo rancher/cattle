@@ -229,6 +229,7 @@
         "pullTask.labels": "cr",
         "pullTask.mode": "cr",
         "pullTask.image": "cr",
+        "pullTask.status": "r",
 
         "register": "r",
         "register.accessKey" : "r",
