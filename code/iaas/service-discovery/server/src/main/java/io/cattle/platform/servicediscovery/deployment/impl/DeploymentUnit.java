@@ -162,16 +162,6 @@ public class DeploymentUnit {
         }
     }
 
-    public void cleanupPartiallyStoppedUnit() {
-        /*
-         * Delete all the units having missing dependencies
-         */
-        for (Long serviceId : svc.keySet()) {
-            DeploymentUnitService duService = svc.get(serviceId);
-            duService.stopInstancesWithStoppedDependencies();
-        }
-    }
-
     public void stop() {
         /*
          * stops all instances. This should be non-blocking (don't wait)
@@ -342,6 +332,7 @@ public class DeploymentUnit {
         if (networkContainerId != null) {
             deployParams.put(DockerInstanceConstants.FIELD_NETWORK_CONTAINER_ID, networkContainerId);
         }
+        deployParams.put(InstanceConstants.FIELD_DEPLOYMENT_UNIT_UUID, this.uuid);
         return deployParams;
     }
 

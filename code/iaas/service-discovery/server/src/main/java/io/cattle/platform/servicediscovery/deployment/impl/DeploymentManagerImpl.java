@@ -192,7 +192,7 @@ public class DeploymentManagerImpl implements DeploymentManager {
          * For instances having networkFrom deps, if A used network of B, and B is restarted, A has to be restarted as
          * well.
          */
-        cleanupPartiallyStoppedUnits(planner);
+        // cleanupPartiallyStoppedUnits(planner);
 
         /*
          * Activate all the units
@@ -233,14 +233,6 @@ public class DeploymentManagerImpl implements DeploymentManager {
 
         for (DeploymentUnit unit : units) {
             unit.waitForStart();
-        }
-    }
-
-    protected void cleanupPartiallyStoppedUnits(ServiceDeploymentPlanner planner) {
-        List<DeploymentUnit> units = planner.getHealthyUnits();
-
-        for (DeploymentUnit unit : units) {
-            unit.cleanupPartiallyStoppedUnit();
         }
     }
 

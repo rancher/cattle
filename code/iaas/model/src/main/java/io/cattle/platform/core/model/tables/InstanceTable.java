@@ -11,7 +11,7 @@ package io.cattle.platform.core.model.tables;
 @java.lang.SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class InstanceTable extends org.jooq.impl.TableImpl<io.cattle.platform.core.model.tables.records.InstanceRecord> {
 
-	private static final long serialVersionUID = 1555254989;
+	private static final long serialVersionUID = 1433297026;
 
 	/**
 	 * The singleton instance of <code>cattle.instance</code>
@@ -185,6 +185,11 @@ public class InstanceTable extends org.jooq.impl.TableImpl<io.cattle.platform.co
 	 * The column <code>cattle.instance.create_index</code>.
 	 */
 	public final org.jooq.TableField<io.cattle.platform.core.model.tables.records.InstanceRecord, java.lang.Long> CREATE_INDEX = createField("create_index", org.jooq.impl.SQLDataType.BIGINT, this, "");
+
+	/**
+	 * The column <code>cattle.instance.deployment_unit_uuid</code>.
+	 */
+	public final org.jooq.TableField<io.cattle.platform.core.model.tables.records.InstanceRecord, java.lang.String> DEPLOYMENT_UNIT_UUID = createField("deployment_unit_uuid", org.jooq.impl.SQLDataType.VARCHAR.length(128), this, "");
 
 	/**
 	 * Create a <code>cattle.instance</code> table reference

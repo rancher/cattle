@@ -366,6 +366,17 @@ public interface Instance extends java.io.Serializable {
 	@javax.persistence.Column(name = "create_index", precision = 19)
 	public java.lang.Long getCreateIndex();
 
+	/**
+	 * Setter for <code>cattle.instance.deployment_unit_uuid</code>.
+	 */
+	public void setDeploymentUnitUuid(java.lang.String value);
+
+	/**
+	 * Getter for <code>cattle.instance.deployment_unit_uuid</code>.
+	 */
+	@javax.persistence.Column(name = "deployment_unit_uuid", length = 128)
+	public java.lang.String getDeploymentUnitUuid();
+
 	// -------------------------------------------------------------------------
 	// FROM and INTO
 	// -------------------------------------------------------------------------

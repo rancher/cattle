@@ -18,6 +18,7 @@
     <bean class="io.cattle.platform.servicediscovery.process.ServiceCreate" />
     <bean class="io.cattle.platform.servicediscovery.process.ServiceUpgrade" />
     <bean class="io.cattle.platform.servicediscovery.process.ServiceCancelupgrade" />
+    <bean class="io.cattle.platform.servicediscovery.process.NetworkFromInstanceStop" />
 
     <bean class="io.cattle.platform.servicediscovery.process.EnvironmentRemove" />
 

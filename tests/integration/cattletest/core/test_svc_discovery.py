@@ -32,7 +32,7 @@ def create_env_and_svc(client, context):
     return service, env
 
 
-def test_activate_single_service(client, context):
+def test_activate_single_service(client, context, super_client):
     env = _create_stack(client)
 
     image_uuid = context.image_uuid
@@ -171,6 +171,8 @@ def test_activate_single_service(client, context):
     assert container.cpuSet == "2"
     assert container.requestedHostId == host.id
     assert container.healthState == 'initializing'
+
+    assert super_client.reload(container).deploymentUnitUuid is not None
 
 
 def test_activate_services(client, context):
@@ -2592,7 +2594,7 @@ def test_stop_network_from_container(client, context, super_client):
     assert s11_container.networkContainerId is not None
     assert s11_container.networkContainerId == s21_container.id
 
-    # stop s21 container, and validate s11 was resrted as well
+    # stop s21 container, and validate s11 was restarted as well
     s21_container = s21_container.stop()
     client.wait_success(s21_container)
 
@@ -2600,6 +2602,16 @@ def test_stop_network_from_container(client, context, super_client):
         lambda:
         super_client.reload(s11_container).startCount > init_start_count
     )
+
+    # restart s21 container, and validate s11 was restarted as well
+    init_start_count = super_client.reload(s11_container).startCount
+    s21_container = client.reload(s21_container).restart()
+    client.wait_success(s21_container)
+    wait_for(
+        lambda:
+        super_client.reload(s11_container).startCount > init_start_count
+    )
+    init_start_count = super_client.reload(s11_container).startCount
 
 
 def test_sidekick_labels_merge(client, context):
