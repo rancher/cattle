@@ -3,8 +3,11 @@ package io.cattle.platform.docker.storage.process;
 import io.cattle.platform.agent.AgentLocator;
 import io.cattle.platform.agent.RemoteAgent;
 import io.cattle.platform.allocator.service.AllocatorService;
+import io.cattle.platform.archaius.util.ArchaiusUtil;
 import io.cattle.platform.async.utils.AsyncUtils;
+import io.cattle.platform.core.constants.CredentialConstants;
 import io.cattle.platform.core.constants.GenericObjectConstants;
+import io.cattle.platform.core.model.Credential;
 import io.cattle.platform.core.model.GenericObject;
 import io.cattle.platform.core.model.Host;
 import io.cattle.platform.docker.client.DockerImage;
@@ -15,10 +18,14 @@ import io.cattle.platform.engine.process.ProcessState;
 import io.cattle.platform.eventing.exception.EventExecutionException;
 import io.cattle.platform.eventing.model.Event;
 import io.cattle.platform.eventing.model.EventVO;
+import io.cattle.platform.object.serialization.ObjectSerializer;
+import io.cattle.platform.object.serialization.ObjectSerializerFactory;
 import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.process.common.handler.AbstractGenericObjectProcessLogic;
 import io.cattle.platform.process.progress.ProcessProgress;
+import io.cattle.platform.storage.ImageCredentialLookup;
 import io.cattle.platform.util.type.CollectionUtils;
+import io.cattle.platform.util.type.InitializationTask;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -28,8 +35,11 @@ import java.util.Map;
 import javax.inject.Inject;
 
 import com.google.common.util.concurrent.ListenableFuture;
+import com.netflix.config.DynamicStringProperty;
 
-public class PullTaskCreate extends AbstractGenericObjectProcessLogic implements ProcessHandler {
+public class PullTaskCreate extends AbstractGenericObjectProcessLogic implements ProcessHandler, InitializationTask {
+
+    public static final DynamicStringProperty EXPR = ArchaiusUtil.getString("event.data.credential");
 
     public static final String LABELS = "labels";
     public static final String IMAGE = "image";
@@ -47,6 +57,13 @@ public class PullTaskCreate extends AbstractGenericObjectProcessLogic implements
     @Inject
     ProcessProgress progress;
 
+    List<ImageCredentialLookup> imageCredentialLookups;
+
+    @Inject
+    ObjectSerializerFactory serializerFactory;
+
+    ObjectSerializer serializer;
+
     @Override
     public String[] getProcessNames() {
         return new String[] { GenericObjectConstants.PROCESS_CREATE };
@@ -59,6 +76,7 @@ public class PullTaskCreate extends AbstractGenericObjectProcessLogic implements
         String tag = DataAccessor.fieldString(pullTask, TAG);
         String mode = DataAccessor.fieldString(pullTask, MODE);
         String image = DataAccessor.fieldString(pullTask, IMAGE);
+        Credential cred = getCredential(image, pullTask.getAccountId());
         Map<String, String> labels = DataAccessor.field(pullTask, LABELS, Map.class);
         Map<String, String> status = new HashMap<>();
 
@@ -82,7 +100,7 @@ public class PullTaskCreate extends AbstractGenericObjectProcessLogic implements
                 return null;
             }
 
-            ListenableFuture<? extends Event> future = pullImage(host, mode, image, tag, false);
+            ListenableFuture<? extends Event> future = pullImage(cred, host, mode, image, tag, false);
             if (future != null) {
                 pullFutures.put(host, future);
                 weights.add(1);
@@ -104,7 +122,7 @@ public class PullTaskCreate extends AbstractGenericObjectProcessLogic implements
             progress.checkPoint("Pulling " + image + " on " + host.getName());
             try {
                 AsyncUtils.get(future);
-                cleanupFutures.put(host, pullImage(host, mode, image, tag, true));
+                cleanupFutures.put(host, pullImage(cred, host, mode, image, tag, true));
             } catch (EventExecutionException e) {
                 pullTask = setStatus(pullTask, status, host, e.getTransitioningInternalMessage());
             }
@@ -121,6 +139,17 @@ public class PullTaskCreate extends AbstractGenericObjectProcessLogic implements
         return null;
     }
 
+    protected Credential getCredential(String uuid, long accountId) {
+        for (ImageCredentialLookup lookup : imageCredentialLookups) {
+            Credential cred = lookup.getDefaultCredential(uuid, accountId);
+            if (cred != null) {
+                return cred;
+            }
+        }
+
+        return null;
+    }
+
     protected GenericObject setStatus(GenericObject object, Map<String, String> status, Host host, String message) {
         if (host.getName() == null) {
             return object;
@@ -131,7 +160,7 @@ public class PullTaskCreate extends AbstractGenericObjectProcessLogic implements
         return objectManager.setFields(object, STATUS, status);
     }
 
-    protected ListenableFuture<? extends Event> pullImage(Host host, String mode, String image, String tag, boolean complete) {
+    protected ListenableFuture<? extends Event> pullImage(Credential cred, Host host, String mode, String image, String tag, boolean complete) {
         RemoteAgent agent = agentLocator.lookupAgent(host);
         if (agent == null) {
             return null;
@@ -148,6 +177,10 @@ public class PullTaskCreate extends AbstractGenericObjectProcessLogic implements
         pullInfo.put(COMPLETE, complete);
         pullInfo.put("kind", "docker");
         CollectionUtils.setNestedValue(pullInfo, dockerImage, "image", "data", "dockerImage");
+        if (cred != null) {
+            CollectionUtils.setNestedValue(pullInfo, serializer.serialize(cred).get(CredentialConstants.TYPE),
+                    "image", "registryCredential");
+        }
 
         Map<String, Object> data = CollectionUtils.asMap("instancePull", (Object) pullInfo);
         Event event = new EventVO<>("compute.instance.pull").withData(data).withResourceType("resourcePull");
@@ -172,6 +205,23 @@ public class PullTaskCreate extends AbstractGenericObjectProcessLogic implements
     @Override
     public String getKind() {
         return GenericObjectConstants.KIND_PULL_TASK;
+    }
+
+    @Override
+    public void start() {
+        serializer = serializerFactory.compile(CredentialConstants.TYPE, EXPR.get());
+    }
+
+    @Override
+    public void stop() {
+    }
+
+    public List<ImageCredentialLookup> getImageCredentialLookups() {
+        return imageCredentialLookups;
+    }
+
+    public void setImageCredentialLookups(List<ImageCredentialLookup> imageCredentialLookups) {
+        this.imageCredentialLookups = imageCredentialLookups;
     }
 
 }
