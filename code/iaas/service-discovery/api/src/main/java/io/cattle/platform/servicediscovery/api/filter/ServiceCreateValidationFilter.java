@@ -132,7 +132,7 @@ public class ServiceCreateValidationFilter extends AbstractDefaultResourceManage
     
     @Override
     public Object update(String type, String id, ApiRequest request, ResourceManager next) {
-        Service service = request.proxyRequestObject(Service.class);
+        Service service = objectManager.loadResource(Service.class, id);
 
         validateName(type, service);
         validateLaunchConfigs(service, request);
@@ -251,6 +251,9 @@ public class ServiceCreateValidationFilter extends AbstractDefaultResourceManage
         criteria.put(ObjectMetaDataManager.NAME_FIELD, service.getName());
         criteria.put(ObjectMetaDataManager.REMOVED_FIELD, new Condition(ConditionType.NULL));
         criteria.put(ServiceDiscoveryConstants.FIELD_ENVIRIONMENT_ID, service.getEnvironmentId());
+        if (service.getId() != null) {
+            criteria.put(ObjectMetaDataManager.ID_FIELD, new Condition(ConditionType.NE, service.getId()));
+        }
 
         List<?> existingSvcs = rm.list(type, criteria, null);
         if (!existingSvcs.isEmpty()) {

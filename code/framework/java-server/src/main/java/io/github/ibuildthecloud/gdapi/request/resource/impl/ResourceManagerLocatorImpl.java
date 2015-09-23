@@ -6,9 +6,11 @@ import io.github.ibuildthecloud.gdapi.request.resource.ResourceManagerFilter;
 import io.github.ibuildthecloud.gdapi.request.resource.ResourceManagerLocator;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.annotation.PostConstruct;
 import javax.inject.Inject;
@@ -41,13 +43,23 @@ public class ResourceManagerLocatorImpl extends AbstractResourceManagerLocatorIm
         }
 
         for (ResourceManagerFilter filter : resourceManagerFilters) {
+            Set<String> once = new HashSet<>();
             for (String type : filter.getTypes()) {
+                if (once.contains(type)) {
+                    continue;
+                }
+                once.add(type);
                 add(resourceManagerFiltersByType, type, filter);
             }
             for (Class<?> clz : filter.getTypeClasses()) {
                 String type = schemaFactory.getSchemaName(clz);
-                if (type != null)
+                if (type != null) {
+                    if (once.contains(type)) {
+                        continue;
+                    }
+                    once.add(type);
                     add(resourceManagerFiltersByType, type, filter);
+                }
             }
         }
     }

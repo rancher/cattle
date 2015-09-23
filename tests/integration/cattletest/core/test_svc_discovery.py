@@ -132,6 +132,7 @@ def test_activate_single_service(client, context, super_client):
     assert service.launchConfig.healthCheck.requestLine == "index.html"
     assert service.launchConfig.healthCheck.port == 200
     assert service.metadata == metadata
+    assert service.launchConfig.version == '0'
 
     # activate the service and validate that parameters were set for instance
     service = client.wait_success(service.activate(), 120)
@@ -175,6 +176,7 @@ def test_activate_single_service(client, context, super_client):
     assert container.requestedHostId == host.id
     assert container.healthState == 'initializing'
     assert container.deploymentUnitUuid is not None
+    assert container.version == '0'
 
 
 def test_activate_services(client, context):

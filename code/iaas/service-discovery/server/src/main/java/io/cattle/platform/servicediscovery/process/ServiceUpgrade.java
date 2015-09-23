@@ -1,6 +1,9 @@
 package io.cattle.platform.servicediscovery.process;
 
 import io.cattle.platform.async.utils.TimeoutException;
+import io.cattle.platform.core.constants.CommonStatesConstants;
+import io.cattle.platform.core.constants.InstanceConstants;
+import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.Service;
 import io.cattle.platform.engine.handler.HandlerResult;
 import io.cattle.platform.engine.process.ExitReason;
@@ -8,11 +11,22 @@ import io.cattle.platform.engine.process.ProcessInstance;
 import io.cattle.platform.engine.process.ProcessState;
 import io.cattle.platform.engine.process.impl.ProcessExecutionExitException;
 import io.cattle.platform.json.JsonMapper;
+import io.cattle.platform.object.resource.ResourceMonitor;
+import io.cattle.platform.object.resource.ResourcePredicate;
 import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.process.base.AbstractDefaultProcessHandler;
+import io.cattle.platform.process.common.util.ProcessUtils;
 import io.cattle.platform.servicediscovery.api.constants.ServiceDiscoveryConstants;
+import io.cattle.platform.servicediscovery.api.dao.ServiceExposeMapDao;
+import io.cattle.platform.servicediscovery.api.util.ServiceDiscoveryUtil;
 import io.cattle.platform.servicediscovery.deployment.DeploymentManager;
 import io.cattle.platform.servicediscovery.service.ServiceDiscoveryService;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 
 import javax.inject.Inject;
 
@@ -29,6 +43,12 @@ public class ServiceUpgrade extends AbstractDefaultProcessHandler {
     @Inject
     ServiceDiscoveryService serviceDiscoveryService;
 
+    @Inject
+    ServiceExposeMapDao exposeMapDao;
+
+    @Inject
+    ResourceMonitor resourceMonitor;
+
     @Override
     public HandlerResult handle(ProcessState state, ProcessInstance process) {
         io.cattle.platform.core.addon.ServiceUpgrade upgrade = jsonMapper.convertValue(state.getData(),
@@ -42,19 +62,34 @@ public class ServiceUpgrade extends AbstractDefaultProcessHandler {
         return new HandlerResult(ServiceDiscoveryConstants.FIELD_UPGRADE, new Object[]{null});
     }
 
+    private boolean isInServiceUpgrade(Service service, io.cattle.platform.core.addon.ServiceUpgrade upgrade) {
+        return upgrade.getToServiceId() == null;
+    }
+
     protected void upgrade(Service service, io.cattle.platform.core.addon.ServiceUpgrade upgrade) {
         /* TODO: move this and all downstream methods to a UpgradeManager with pluggable
          * strategies
          */
-        Service toService = objectManager.loadResource(Service.class, upgrade.getToServiceId());
-        if (toService == null || toService.getRemoved() != null) {
-            return;
+        boolean isInServiceUpgrade = isInServiceUpgrade(service, upgrade);
+        if (!isInServiceUpgrade) {
+            Service toService = objectManager.loadResource(Service.class, upgrade.getToServiceId());
+            if (toService == null || toService.getRemoved() != null) {
+                return;
+            }
+            updateLinks(service, upgrade);
         }
 
-        updateLinks(service, upgrade);
-
-        while (!doUpgrade(service, upgrade)) {
+        while (!doUpgrade(service, upgrade, isInServiceUpgrade)) {
             sleep(service, upgrade);
+        }
+    }
+
+    public boolean doUpgrade(Service service, io.cattle.platform.core.addon.ServiceUpgrade upgrade,
+            boolean isInServiceUpgrade) {
+        if (isInServiceUpgrade) {
+            return doInServiceUpgrade(service, upgrade);
+        } else {
+            return doToServiceUpgrade(service, upgrade);
         }
     }
 
@@ -98,12 +133,86 @@ public class ServiceUpgrade extends AbstractDefaultProcessHandler {
         return service;
     }
 
+    protected boolean doInServiceUpgrade(Service service, io.cattle.platform.core.addon.ServiceUpgrade upgrade) {
+        try {
+            deploymentManager.activate(service);
+
+            service = objectManager.reload(service);
+
+            long batchSize = upgrade.getBatchSize();
+
+            Map<String, List<Instance>> deploymentUnitInstancesToRemove = formDeploymentUnitsToRemove(service);
+
+            // remove deployment units
+            upgradeDeploymentUnits(batchSize, deploymentUnitInstancesToRemove, service);
+
+            if (deploymentUnitInstancesToRemove.isEmpty()) {
+                return true;
+            }
+            return false;
+
+        } catch (TimeoutException e) {
+            return false;
+        }
+    }
+
+    protected void upgradeDeploymentUnits(long batchSize, Map<String, List<Instance>> deploymentUnitInstancesToRemove, Service service) {
+        // Removal is done on per deployment unit basis
+        Iterator<Map.Entry<String, List<Instance>>> it = deploymentUnitInstancesToRemove.entrySet()
+                .iterator();
+        long i = 0;
+        while (it.hasNext() && i < batchSize) {
+            List<Instance> waitList = new ArrayList<Instance>();
+            Map.Entry<String, List<Instance>> instances = it.next();
+            for (Instance instance : instances.getValue()) {
+                objectProcessManager.scheduleProcessInstanceAsync(InstanceConstants.PROCESS_STOP,
+                        instance, ProcessUtils.chainInData(new HashMap<String, Object>(),
+                                InstanceConstants.PROCESS_STOP, InstanceConstants.PROCESS_REMOVE));
+                waitList.add(instance);
+            }
+            it.remove();
+            for (Instance instance : waitList) {
+                resourceMonitor.waitFor(instance,
+                        new ResourcePredicate<Instance>() {
+                            @Override
+                            public boolean evaluate(Instance obj) {
+                                return CommonStatesConstants.REMOVED.equals(obj.getState());
+                            }
+                        });
+            }
+            // wait for reconcile
+            deploymentManager.activate(service);
+        }
+    }
+
+    protected Map<String, List<Instance>> formDeploymentUnitsToRemove(Service service) {
+        List<String> launchConfigNames = ServiceDiscoveryUtil.getServiceLaunchConfigNames(service);
+        Map<String, List<Instance>> deploymentUnitInstancesToRemove = new HashMap<>();
+        for (String launchConfigName : launchConfigNames) {
+            List<? extends Instance> instances = exposeMapDao.listServiceManagedInstances(service, launchConfigName);
+            for (Instance instance : instances) {
+                if (!instance.getVersion().equals(
+                        ServiceDiscoveryUtil.getLaunchConfigObject(service,
+                                launchConfigName,
+                                ServiceDiscoveryConstants.FIELD_VERSION))) {
+                    List<Instance> toRemove = deploymentUnitInstancesToRemove.get(instance.getDeploymentUnitUuid());
+                    if (toRemove == null) {
+                        toRemove = new ArrayList<Instance>();
+                    }
+                    toRemove.add(instance);
+                    deploymentUnitInstancesToRemove.put(instance.getDeploymentUnitUuid(), toRemove);
+                }
+            }
+        }
+        return deploymentUnitInstancesToRemove;
+    }
+
     /**
      * @param fromService
      * @param upgrade
      * @return true if the upgrade is done
      */
-    protected boolean doUpgrade(Service fromService, io.cattle.platform.core.addon.ServiceUpgrade upgrade) {
+    protected boolean doToServiceUpgrade(Service fromService, io.cattle.platform.core.addon.ServiceUpgrade upgrade) {
         Service toService = objectManager.loadResource(Service.class, upgrade.getToServiceId());
         if (toService == null || toService.getRemoved() != null) {
             return true;
@@ -139,6 +248,7 @@ public class ServiceUpgrade extends AbstractDefaultProcessHandler {
 
             return getScale(fromService) == 0 && getScale(toService) == finalScale;
         } catch (TimeoutException e) {
+
             return false;
         }
     }

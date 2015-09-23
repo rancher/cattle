@@ -1,0 +1,11 @@
+{
+     "resourceFields": {
+        "launchConfig": {
+            "type": "launchConfig"
+        },
+        "secondaryLaunchConfigs": {
+            "type": "array[secondaryLaunchConfig]",
+            "required": false
+        }
+    }
+}
