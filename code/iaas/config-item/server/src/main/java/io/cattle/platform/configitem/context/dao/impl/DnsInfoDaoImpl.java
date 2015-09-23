@@ -594,6 +594,9 @@ public class DnsInfoDaoImpl extends AbstractJooqDao implements DnsInfoDao {
     protected List<HostInstanceIpData> getHostContainerIpData(long accountId) {
         Network hostNtwk = objManager.findAny(Network.class, NETWORK.ACCOUNT_ID, accountId, NETWORK.REMOVED, null,
                 NETWORK.KIND, "dockerHost");
+        if (hostNtwk == null) {
+            return new ArrayList<HostInstanceIpData>();
+        }
         MultiRecordMapper<HostInstanceIpData> mapper = new MultiRecordMapper<HostInstanceIpData>() {
             @Override
             protected HostInstanceIpData map(List<Object> input) {
