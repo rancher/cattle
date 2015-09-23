@@ -9,8 +9,9 @@ import io.github.ibuildthecloud.gdapi.util.ResponseCodes;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.net.URI;
+import java.net.MalformedURLException;
 import java.net.URISyntaxException;
+import java.net.URL;
 import java.net.URLDecoder;
 import java.util.Collections;
 import java.util.Enumeration;
@@ -44,14 +45,14 @@ public class GenericWhitelistedProxy extends AbstractResponseGenerator {
         if (request.getRequestVersion() == null || !ALLOW_PROXY.get())
             return;
 
-        if (!StringUtils.equals("proxy", request.getRequestVersion())) {
+        if (!"proxy".equals(request.getType())) {
             return;
         }
 
         HttpServletRequest servletRequest = request.getServletContext().getRequest();
 
         String redirect = servletRequest.getRequestURI();
-        redirect = redirect.substring("/proxy/".length());
+        redirect = StringUtils.substringAfter(redirect, "/proxy/");
         redirect = URLDecoder.decode(redirect, "UTF-8");
         URIBuilder uri;
         try {
@@ -71,8 +72,12 @@ public class GenericWhitelistedProxy extends AbstractResponseGenerator {
             redirect = "https://" + redirect;
         }
 
-        URI url = URI.create(redirect);
-        String host = url.getHost();
+        String host = null;
+        try {
+            host = new URL(redirect).getHost();
+        } catch (MalformedURLException e) {
+            throw new ClientVisibleException(ResponseCodes.BAD_REQUEST, "InvalidRedirect", "The redirect is invalid", null);
+        }
 
         if (!isWhitelisted(StringUtils.strip(host, "/"))) {
             throw new ClientVisibleException(ResponseCodes.FORBIDDEN);
