@@ -2614,37 +2614,6 @@ def test_stop_network_from_container(client, context, super_client):
     init_start_count = super_client.reload(s11_container).startCount
 
 
-def test_sidekick_labels_merge(client, context):
-    env = _create_stack(client)
-
-    image_uuid = context.image_uuid
-    labels = {'foo': "bar"}
-    launch_config = {"imageUuid": image_uuid, "labels": labels}
-
-    secondary_labels = {'bar': "foo"}
-    secondary_lc = {"imageUuid": image_uuid,
-                    "name": "secondary", "labels": secondary_labels}
-
-    service = client.create_service(name=random_str(),
-                                    environmentId=env.id,
-                                    launchConfig=launch_config,
-                                    secondaryLaunchConfigs=[secondary_lc])
-    service = client.wait_success(service)
-    service = client.wait_success(service.activate(), 120)
-    primary = _validate_compose_instance_start(client, service, env, "1")
-    secondary = _validate_compose_instance_start(client, service,
-                                                 env, "1", "secondary")
-
-    assert all(item in primary.labels for item in labels) is True
-    assert all(item in secondary.labels for item in secondary_labels) is True
-    assert all(item in primary.labels for item in secondary_labels) is False
-    assert all(item in secondary.labels for item in labels) is False
-
-
-def _start_count_is_greater_than(resource, count):
-    return resource.startCount > count
-
-
 def _get_instance_for_service(super_client, serviceId):
     instances = []
     instance_service_maps = super_client. \

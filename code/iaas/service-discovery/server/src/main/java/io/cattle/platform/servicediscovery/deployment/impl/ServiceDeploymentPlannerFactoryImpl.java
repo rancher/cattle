@@ -21,7 +21,7 @@ public class ServiceDeploymentPlannerFactoryImpl implements ServiceDeploymentPla
         }
 
         Service service = services.get(0);
-        Map<String, String> serviceLabels = ServiceDiscoveryUtil.getServiceLabelsUnion(service, context.allocatorService);
+        Map<String, String> serviceLabels = ServiceDiscoveryUtil.getServiceLabels(service, context.allocatorService);
         String globalService = serviceLabels.get(ServiceDiscoveryConstants.LABEL_SERVICE_GLOBAL);
 
         if (service.getKind().equalsIgnoreCase(ServiceDiscoveryConstants.KIND.EXTERNALSERVICE.name())
