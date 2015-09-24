@@ -86,13 +86,12 @@ public class PasswordDaoImpl extends AbstractJooqDao implements PasswordDao {
         properties.put(CREDENTIAL.SECRET_VALUE, transformationService.transform(password, EncryptionConstants.HASH));
         properties.put(CREDENTIAL.KIND, LocalAuthConstants.PASSWORD);
         properties.put(CREDENTIAL.ACCOUNT_ID, admin.getId());
+        properties.put(CREDENTIAL.STATE, CommonStatesConstants.ACTIVE);
 
         DataAccessor.fields(admin).withKey(SecurityConstants.HAS_LOGGED_IN).set(true);
         admin.setName(name);
         objectManager.persist(admin);
-
-        return resourceDao.createAndSchedule(Credential.class, objectManager.convertToPropertiesFor(Credential.class,
-                properties));
+        return objectManager.create(Credential.class, objectManager.convertToPropertiesFor(Credential.class, properties));
     }
 
     @Override
