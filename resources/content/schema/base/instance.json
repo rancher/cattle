@@ -80,6 +80,10 @@
             "type": "array[string]",
             "create": true,
             "nullable": true
+        },
+        "requestedIpAddress" : {
+            "type" : "string",
+            "nullable" : true
         }
     },
     "resourceActions" : {

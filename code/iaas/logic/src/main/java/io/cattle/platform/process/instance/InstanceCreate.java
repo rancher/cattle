@@ -1,9 +1,10 @@
 package io.cattle.platform.process.instance;
 
-import static io.cattle.platform.core.model.tables.CredentialInstanceMapTable.CREDENTIAL_INSTANCE_MAP;
-import static io.cattle.platform.core.model.tables.NetworkTable.NETWORK;
-import static io.cattle.platform.core.model.tables.NicTable.NIC;
-import static io.cattle.platform.core.model.tables.VolumeTable.VOLUME;
+import static io.cattle.platform.core.model.tables.CredentialInstanceMapTable.*;
+import static io.cattle.platform.core.model.tables.NetworkTable.*;
+import static io.cattle.platform.core.model.tables.NicTable.*;
+import static io.cattle.platform.core.model.tables.VolumeTable.*;
+
 import io.cattle.iaas.labels.service.LabelsService;
 import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.InstanceConstants;
@@ -17,6 +18,7 @@ import io.cattle.platform.core.model.Nic;
 import io.cattle.platform.core.model.Subnet;
 import io.cattle.platform.core.model.Vnet;
 import io.cattle.platform.core.model.Volume;
+import io.cattle.platform.core.util.SystemLabels;
 import io.cattle.platform.docker.constants.DockerNetworkConstants;
 import io.cattle.platform.engine.handler.HandlerResult;
 import io.cattle.platform.engine.process.ProcessInstance;
@@ -27,7 +29,6 @@ import io.cattle.platform.object.process.StandardProcess;
 import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.object.util.DataUtils;
 import io.cattle.platform.process.base.AbstractDefaultProcessHandler;
-import io.cattle.platform.process.util.SystemLabels;
 
 import java.util.ArrayList;
 import java.util.Collections;
