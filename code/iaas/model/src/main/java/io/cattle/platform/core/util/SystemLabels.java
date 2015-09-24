@@ -1,6 +1,7 @@
-package io.cattle.platform.process.util;
+package io.cattle.platform.core.util;
 
 public class SystemLabels {
+    public static final String AGENT_CREATE_LABEL = "io.rancher.container.create_agent";
     public static final String LABEL_USE_RANCHER_DNS = "io.rancher.container.dns";
     // TODO - move "rancher.io" labels from other parts of the code, here
 }
