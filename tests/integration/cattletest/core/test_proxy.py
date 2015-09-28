@@ -25,4 +25,4 @@ def test_proxy(client, admin_user_client):
                      headers=auth_header_map(client))
 
     assert r.status_code == 200
-    assert 'rancher' in r.text
+    assert 'Darren' in r.text
