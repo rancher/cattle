@@ -417,6 +417,7 @@
         "service.secondaryLaunchConfigs" : "cr",
         "service.vip" : "cr",
         "service.createIndex" : "r",
+        "service.metadata" : "cr",
 
         "addRemoveServiceLinkInput" : "r",
         "addRemoveServiceLinkInput.serviceLink" : "cr",

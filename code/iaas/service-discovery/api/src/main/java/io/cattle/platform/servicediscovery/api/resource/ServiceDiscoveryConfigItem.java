@@ -83,6 +83,9 @@ public class ServiceDiscoveryConfigItem {
     public static final ServiceDiscoveryConfigItem CERTIFICATES = new ServiceDiscoveryConfigItem(
             LoadBalancerConstants.FIELD_LB_CERTIFICATE_IDS,
             "certs", false, false);
+    public static final ServiceDiscoveryConfigItem METADATA = new ServiceDiscoveryConfigItem(
+            ServiceDiscoveryConstants.FIELD_METADATA,
+            ServiceDiscoveryConstants.FIELD_METADATA, false, false);
 
     /**
      * Name as it appears in docker-compose file

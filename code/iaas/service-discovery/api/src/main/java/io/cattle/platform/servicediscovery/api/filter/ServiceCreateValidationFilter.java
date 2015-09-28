@@ -63,7 +63,7 @@ public class ServiceCreateValidationFilter extends AbstractDefaultResourceManage
         Service service = request.proxyRequestObject(Service.class);
         
         validateEnvironment(service);
-        
+
         validateName(type, service);
 
         validateLaunchConfigs(service, request);

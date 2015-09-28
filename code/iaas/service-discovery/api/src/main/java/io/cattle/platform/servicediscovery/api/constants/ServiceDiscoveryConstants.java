@@ -27,6 +27,7 @@ public class ServiceDiscoveryConstants {
     public static final String FIELD_SERVICE_LINK = "serviceLink";
     public static final String FIELD_HOSTNAME = "hostname";
     public static final String FIELD_VIP = "vip";
+    public static final String FIELD_METADATA = "metadata";
 
     public static final String ACTION_SERVICE_ACTIVATE = "activate";
     public static final String ACTION_SERVICE_CREATE = "create";

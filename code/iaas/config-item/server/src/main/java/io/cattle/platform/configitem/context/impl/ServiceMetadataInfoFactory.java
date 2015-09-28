@@ -18,12 +18,14 @@ import io.cattle.platform.core.model.InstanceHostMap;
 import io.cattle.platform.core.model.Service;
 import io.cattle.platform.core.model.ServiceConsumeMap;
 import io.cattle.platform.json.JsonMapper;
+import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.servicediscovery.api.constants.ServiceDiscoveryConstants;
 import io.cattle.platform.servicediscovery.api.dao.ServiceConsumeMapDao;
 import io.cattle.platform.servicediscovery.api.util.ServiceDiscoveryUtil;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -186,6 +188,7 @@ public class ServiceMetadataInfoFactory extends AbstractAgentBaseContextFactory 
         }
     }
 
+    @SuppressWarnings("unchecked")
     protected void getLaunchConfigInfo(Account account, List<ContainerMetaData> lanchConfigContainersMD,
             Environment env, List<ServiceMetaData> stackServices, Map<Long, Service> idToService,
             Service service, List<String> launchConfigNames, String launchConfigName) {
@@ -198,8 +201,9 @@ public class ServiceMetadataInfoFactory extends AbstractAgentBaseContextFactory 
         if (isPrimaryConfig) {
             getSidekicksInfo(service, sidekicks, launchConfigNames);
         }
-
-        ServiceMetaData svcMetaData = new ServiceMetaData(service, serviceName, env, sidekicks);
+        Map<String, Object> metadata = DataAccessor.fields(service).withKey(ServiceDiscoveryConstants.FIELD_METADATA)
+                .withDefault(Collections.EMPTY_MAP).as(Map.class);
+        ServiceMetaData svcMetaData = new ServiceMetaData(service, serviceName, env, sidekicks, metadata);
         stackServices.add(svcMetaData);
     }
 

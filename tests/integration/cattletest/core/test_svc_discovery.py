@@ -91,10 +91,14 @@ def test_activate_single_service(client, context, super_client):
                      "requestedHostId": host.id,
                      "healthCheck": health_check}
 
+    metadata = {"bar": {"people": [{"id": 0}]}}
     service = client.create_service(name=random_str(),
                                     environmentId=env.id,
-                                    launchConfig=launch_config)
+                                    launchConfig=launch_config,
+                                    metadata=metadata)
     service = client.wait_success(service)
+
+    return
 
     # validate that parameters were set for service
     assert service.state == "inactive"
@@ -129,6 +133,7 @@ def test_activate_single_service(client, context, super_client):
     assert service.launchConfig.healthCheck.unhealthyThreshold == 6
     assert service.launchConfig.healthCheck.requestLine == "index.html"
     assert service.launchConfig.healthCheck.port == 200
+    assert service.metadata == metadata
 
     # activate the service and validate that parameters were set for instance
     service = client.wait_success(service.activate(), 120)
