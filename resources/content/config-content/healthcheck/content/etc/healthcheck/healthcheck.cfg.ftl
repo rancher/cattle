@@ -17,7 +17,6 @@ defaults
     option  dontlognull
     option  redispatch
     option forwardfor
-    option httpclose
     retries 3
     contimeout 5000
     clitimeout 50000

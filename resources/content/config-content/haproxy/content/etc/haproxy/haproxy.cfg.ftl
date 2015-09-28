@@ -18,7 +18,6 @@ defaults
         option  dontlognull
         option  redispatch
         option forwardfor
-        option httpclose
         retries 3
         timeout connect 5000
         timeout client 50000
