@@ -1,6 +1,6 @@
 package io.cattle.platform.process.instance;
 
-import static io.cattle.platform.core.model.tables.InstanceHostMapTable.INSTANCE_HOST_MAP;
+import static io.cattle.platform.core.model.tables.InstanceHostMapTable.*;
 import io.cattle.platform.core.constants.ClusterConstants;
 import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.InstanceConstants;
@@ -14,6 +14,7 @@ import io.cattle.platform.core.model.Nic;
 import io.cattle.platform.core.model.Subnet;
 import io.cattle.platform.core.model.Volume;
 import io.cattle.platform.core.model.VolumeStoragePoolMap;
+import io.cattle.platform.core.util.InstanceHelpers;
 import io.cattle.platform.engine.handler.HandlerResult;
 import io.cattle.platform.engine.process.ProcessInstance;
 import io.cattle.platform.engine.process.ProcessState;
@@ -109,12 +110,16 @@ public class InstanceAllocate extends EventBasedProcessHandler {
         }
 
         List<Volume> volumes = getObjectManager().children(instance, Volume.class);
+        List<Volume> dataMountVolumes = InstanceHelpers.extractVolumesFromMounts(instance, getObjectManager());
+        volumes.addAll(dataMountVolumes);
 
         for (Volume v : volumes) {
             allocate(v, state.getData());
         }
 
         volumes = getObjectManager().children(instance, Volume.class);
+        volumes.addAll(dataMountVolumes);
+        
         for (Volume v : volumes) {
             for (VolumeStoragePoolMap map : mapDao.findNonRemoved(VolumeStoragePoolMap.class, Volume.class, v.getId())) {
                 CollectionUtils.addToMap(allocationData, "volume:" + v.getId(), map.getVolumeId(), HashSet.class);

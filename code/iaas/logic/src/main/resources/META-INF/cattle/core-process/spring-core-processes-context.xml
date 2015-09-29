@@ -97,7 +97,8 @@
     <process:process name="instance.updateunhealthy" resourceType="instance" stateField="healthState" start="healthy,unhealthy" transitioning="updating-unhealthy" done="unhealthy" />
 
     <!-- Volume -->
-    <process:defaultProcesses resourceType="volume" />
+    <process:defaultProcesses resourceType="volume" exclude="volume.activate"/>
+    <process:process name="volume.activate" resourceType="agent" start="inactive,requested, registering" transitioning="activating" done="active" />
     <process:process name="volume.allocate" resourceType="volume" stateField="allocationState" start="inactive" transitioning="activating" done="active" />
     <process:process name="volume.deallocate" resourceType="volume" stateField="allocationState" start="activating,active" transitioning="deactivating" done="inactive" />
 

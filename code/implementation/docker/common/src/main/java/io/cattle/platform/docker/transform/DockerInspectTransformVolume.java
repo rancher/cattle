@@ -6,13 +6,15 @@ public class DockerInspectTransformVolume {
     String hostPath;
     String accessMode;
     boolean bindMount;
-    
-    public DockerInspectTransformVolume(String cp, String hp, String am, boolean bm) {
+    String driver;
+
+    public DockerInspectTransformVolume(String cp, String hp, String am, boolean bm, String dr) {
         super();
         containerPath = cp;
         hostPath = hp;
         accessMode = am;
         bindMount = bm;
+        driver = dr;
     }
     
     public String getContainerPath() {
@@ -39,4 +41,13 @@ public class DockerInspectTransformVolume {
     public void setBindMount(boolean bindMount) {
         this.bindMount = bindMount;
     }
+    
+    public String getDriver() {
+        return driver;
+    }
+
+    public void setDriver(String driver) {
+        this.driver = driver;
+    }
+
 }

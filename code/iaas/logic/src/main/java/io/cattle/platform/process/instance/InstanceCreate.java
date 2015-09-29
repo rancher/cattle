@@ -64,18 +64,42 @@ public class InstanceCreate extends AbstractDefaultProcessHandler {
         Instance instance = (Instance) state.getResource();
 
         List<Volume> volumes = objectManager.children(instance, Volume.class);
+        List<String> dataVolumes = processManagedVolumes(instance);
         List<Nic> nics = objectManager.children(instance, Nic.class);
 
         Set<Long> creds = createCreds(instance, state.getData());
         Set<Long> volumesIds = createVolumes(instance, volumes, state.getData());
         Set<Long> nicIds = createNics(instance, nics, state.getData());
 
-        HandlerResult result = new HandlerResult("_volumeIds", volumesIds, "_nicIds", nicIds, "_creds", creds);
+        HandlerResult result = new HandlerResult("_volumeIds", volumesIds, "_nicIds", nicIds, "_creds", creds, InstanceConstants.FIELD_DATA_VOLUMES,
+                dataVolumes);
         result.shouldDelegate(shouldStart(instance));
 
         createLabels(instance);
 
         return result;
+    }
+
+    private List<String> processManagedVolumes(Instance instance) {
+        List<String> dataVolumes = DataAccessor.fieldStringList(instance, InstanceConstants.FIELD_DATA_VOLUMES);
+        if (dataVolumes == null) {
+            dataVolumes = new ArrayList<String>();
+        }
+        Map<String, Object> dataVolumeMounts = DataAccessor.fieldMap(instance, InstanceConstants.FIELD_DATA_VOLUME_MOUNTS);
+        if (dataVolumeMounts == null) {
+            return dataVolumes;
+        }
+        for (Map.Entry<String, Object> mountedVols : dataVolumeMounts.entrySet()) {
+            Long volId = ((Number) mountedVols.getValue()).longValue();
+            Volume vol = objectManager.loadResource(Volume.class, volId);
+            if (vol != null) {
+                String volDescriptor = vol.getName() + ":" + mountedVols.getKey().trim();
+                if (!dataVolumes.contains(volDescriptor)) {
+                    dataVolumes.add(volDescriptor);
+                }
+            }
+        }
+        return dataVolumes;
     }
 
     protected boolean shouldStart(Instance instance) {
@@ -154,7 +178,7 @@ public class InstanceCreate extends AbstractDefaultProcessHandler {
         }
 
         for (Volume volume : volumes) {
-            if (volume.getDeviceNumber().intValue() == 0) {
+            if (volume.getDeviceNumber() != null && volume.getDeviceNumber().intValue() == 0) {
                 return volume;
             }
         }
