@@ -27,7 +27,33 @@ def test_create_cert_basic(client):
     assert cert1.keySize == 2048
     assert cert1.subjectAlternativeNames is not None
 
-    return cert1
+
+def test_dup_names(super_client, client):
+    cert_input = _read_cert("san_domain_com.crt")
+    key = _read_cert("san_domain_com.key")
+    name = random_str()
+    cert1 = super_client. \
+        create_certificate(name=name,
+                           cert=cert_input,
+                           key=key)
+    super_client.wait_success(cert1)
+    assert cert1.name == name
+
+    cert2 = client. \
+        create_certificate(name=name,
+                           cert=cert_input,
+                           key=key)
+    cert2 = super_client.wait_success(cert2)
+    assert cert2.name == name
+    assert cert2.accountId != cert1.accountId
+
+    with pytest.raises(ApiError) as e:
+        super_client. \
+            create_certificate(name=name,
+                               cert=cert_input,
+                               key=key)
+    assert e.value.error.status == 422
+    assert e.value.error.code == 'NotUnique'
 
 
 def test_create_cert_invalid_cert(client):
