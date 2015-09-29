@@ -38,6 +38,11 @@
             "type": "array[secondaryLaunchConfig]",
             "create": true,
             "required": false
+        },
+        "metadata": {
+            "type": "map[json]",
+            "create": true,
+            "required": false
         }
     },
     "resourceActions" : {

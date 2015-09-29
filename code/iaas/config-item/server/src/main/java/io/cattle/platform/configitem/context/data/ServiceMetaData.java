@@ -31,8 +31,10 @@ public class ServiceMetaData {
     Map<String, String> links;
     List<String> ports = new ArrayList<>();
     Map<String, String> labels;
+    Map<String, Object> metadata;
 
-    public ServiceMetaData(Service service, String serviceName, Environment env, List<String> sidekicks) {
+    public ServiceMetaData(Service service, String serviceName, Environment env, List<String> sidekicks,
+            Map<String, Object> metadata) {
         this.serviceId = service.getId();
         this.name = serviceName;
         this.stack_name = env.getName();
@@ -47,6 +49,7 @@ public class ServiceMetaData {
         populateExternalServiceInfo(service);
         populatePortsInfo(service, launchConfigName);
         this.create_index = service.getCreateIndex();
+        this.metadata = metadata;
     }
 
     @SuppressWarnings("unchecked")
@@ -139,5 +142,9 @@ public class ServiceMetaData {
     @JsonIgnore
     public String getLaunchConfigName() {
         return launchConfigName;
+    }
+
+    public Map<String, Object> getMetadata() {
+        return metadata;
     }
 }
