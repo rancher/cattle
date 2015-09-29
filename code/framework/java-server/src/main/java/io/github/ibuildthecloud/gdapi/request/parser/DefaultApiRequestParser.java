@@ -311,9 +311,6 @@ public class DefaultApiRequestParser implements ApiRequestParser {
 
         String[] parts = servletPath.substring(versionPrefix.length()).split("/");
 
-        if (parts.length > 4)
-            return;
-
         String typeName = indexValue(parts, 1);
         String id = indexValue(parts, 2);
         String link = indexValue(parts, 3);

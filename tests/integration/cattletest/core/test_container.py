@@ -747,3 +747,22 @@ def test_container_network_host_mode_w_dsn(context, super_client):
 
     assert c.nics()[0].network().kind == "dockerHost"
     assert c.nics()[1].network().kind == "hostOnlyNetwork"
+
+
+def test_container_request_ip_from_label(new_context):
+    client = new_context.client
+    labels = {
+        'io.rancher.container.requested_ip': '10.42.42.42'
+    }
+
+    c = new_context.create_container(labels=labels)
+    assert c.primaryIpAddress == '10.42.42.42'
+
+    c = client.wait_success(client.delete(c))
+    assert c.state == 'removed'
+
+    c = new_context.create_container(labels=labels)
+    assert c.primaryIpAddress == '10.42.42.42'
+
+    c = new_context.create_container(labels=labels)
+    assert c.primaryIpAddress != '10.42.42.42'

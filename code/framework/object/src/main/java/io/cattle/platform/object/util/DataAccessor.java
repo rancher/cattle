@@ -45,6 +45,11 @@ public class DataAccessor {
         return fields(obj).withKey(key).as(String.class);
     }
 
+    public static Map<String, Object> fieldMap(Object obj, String key) {
+        Object list = fields(obj).withKey(key).get();
+        return CollectionUtils.toMap(list);
+    }
+
     public static List<String> fieldStringList(Object obj, String key) {
         List<String> result = new ArrayList<String>();
         Object list = fields(obj).withKey(key).get();

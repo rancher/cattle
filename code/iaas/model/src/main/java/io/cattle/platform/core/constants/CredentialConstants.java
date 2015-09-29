@@ -7,6 +7,8 @@ import java.util.Set;
 
 public class CredentialConstants {
 
+    public static final String TYPE = "credential";
+
     public static final String KIND_API_KEY = "apiKey";
     public static final String KIND_PASSWORD = "password";
     public static final String KIND_AGENT_API_KEY = "agentApiKey";

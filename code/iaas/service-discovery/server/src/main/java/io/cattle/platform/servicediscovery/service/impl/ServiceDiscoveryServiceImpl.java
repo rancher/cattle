@@ -26,6 +26,7 @@ import io.cattle.platform.core.model.ServiceConsumeMap;
 import io.cattle.platform.core.model.ServiceExposeMap;
 import io.cattle.platform.core.model.Subnet;
 import io.cattle.platform.core.util.PortSpec;
+import io.cattle.platform.deferred.util.DeferredUtils;
 import io.cattle.platform.json.JsonMapper;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.process.ObjectProcessManager;
@@ -49,6 +50,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Callable;
 
 import javax.inject.Inject;
 
@@ -460,8 +462,14 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
         return null;
     }
 
-    protected Subnet getServiceVipSubnet(Service service) {
-        Subnet vipSubnet = ntwkDao.addVIPSubnet(service.getAccountId());
+    protected Subnet getServiceVipSubnet(final Service service) {
+        Subnet vipSubnet = DeferredUtils.nest(new Callable<Subnet>() {
+            @Override
+            public Subnet call() throws Exception {
+                return ntwkDao.addVIPSubnet(service.getAccountId());
+            }
+        });
+
         // wait for subnet to become active so the ip range is populated
         vipSubnet = resourceMonitor.waitFor(vipSubnet,
                 new ResourcePredicate<Subnet>() {

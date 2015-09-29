@@ -1510,7 +1510,8 @@ def test_svc_discovery_service(admin_user_client, user_client, project_client):
         'upgrade': 'r',
         'secondaryLaunchConfigs': 'r',
         'vip': 'r',
-        'createIndex': 'r'
+        'createIndex': 'r',
+        'metadata': 'r'
     })
 
     auth_check(user_client.schema, 'service', 'r', {
@@ -1522,7 +1523,8 @@ def test_svc_discovery_service(admin_user_client, user_client, project_client):
         'upgrade': 'r',
         'secondaryLaunchConfigs': 'r',
         'vip': 'r',
-        'createIndex': 'r'
+        'createIndex': 'r',
+        'metadata': 'r'
     })
 
     auth_check(project_client.schema, 'service', 'crud', {
@@ -1534,7 +1536,8 @@ def test_svc_discovery_service(admin_user_client, user_client, project_client):
         'upgrade': 'r',
         'secondaryLaunchConfigs': 'cr',
         'vip': 'cr',
-        'createIndex': 'r'
+        'createIndex': 'r',
+        'metadata': 'cr'
     })
 
 
@@ -1576,7 +1579,8 @@ def test_svc_discovery_lb_service(admin_user_client, user_client,
         'loadBalancerConfig': 'r',
         'vip': 'r',
         'defaultCertificateId': 'r',
-        'certificateIds': 'r'
+        'certificateIds': 'r',
+        'metadata': 'r'
     })
 
     auth_check(user_client.schema, 'loadBalancerService', 'r', {
@@ -1589,7 +1593,8 @@ def test_svc_discovery_lb_service(admin_user_client, user_client,
         'loadBalancerConfig': 'r',
         'vip': 'r',
         'defaultCertificateId': 'r',
-        'certificateIds': 'r'
+        'certificateIds': 'r',
+        'metadata': 'r'
     })
 
     auth_check(project_client.schema, 'loadBalancerService', 'crud', {
@@ -1602,7 +1607,8 @@ def test_svc_discovery_lb_service(admin_user_client, user_client,
         'loadBalancerConfig': 'cr',
         'vip': 'cr',
         'defaultCertificateId': 'cru',
-        'certificateIds': 'cru'
+        'certificateIds': 'cru',
+        'metadata': 'cr'
     })
 
 
@@ -1699,7 +1705,8 @@ def test_svc_discovery_external_service(admin_user_client, user_client,
         'accountId': 'r',
         'data': 'r',
         'upgrade': 'r',
-        'healthCheck': 'r'
+        'healthCheck': 'r',
+        'metadata': 'r'
     })
 
     auth_check(user_client.schema, 'externalService', 'r', {
@@ -1709,7 +1716,8 @@ def test_svc_discovery_external_service(admin_user_client, user_client,
         'externalIpAddresses': 'r',
         'accountId': 'r',
         'upgrade': 'r',
-        'healthCheck': 'r'
+        'healthCheck': 'r',
+        'metadata': 'r'
     })
 
     auth_check(project_client.schema, 'externalService', 'crud', {
@@ -1719,7 +1727,8 @@ def test_svc_discovery_external_service(admin_user_client, user_client,
         'externalIpAddresses': 'cru',
         'accountId': 'r',
         'upgrade': 'r',
-        'healthCheck': 'cr'
+        'healthCheck': 'cr',
+        'metadata': 'cr'
     })
 
 
@@ -1769,6 +1778,7 @@ def test_pull_task(admin_user_client, user_client, project_client):
         'labels': 'r',
         'mode': 'r',
         'image': 'r',
+        'status': 'r',
     })
 
     auth_check(user_client.schema, 'pullTask', 'r', {
@@ -1776,6 +1786,7 @@ def test_pull_task(admin_user_client, user_client, project_client):
         'labels': 'r',
         'mode': 'r',
         'image': 'r',
+        'status': 'r',
     })
 
     auth_check(project_client.schema, 'pullTask', 'cr', {
@@ -1783,4 +1794,5 @@ def test_pull_task(admin_user_client, user_client, project_client):
         'labels': 'cr',
         'mode': 'cr',
         'image': 'cr',
+        'status': 'r',
     })

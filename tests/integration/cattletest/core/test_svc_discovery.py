@@ -32,7 +32,7 @@ def create_env_and_svc(client, context):
     return service, env
 
 
-def test_activate_single_service(client, context):
+def test_activate_single_service(client, context, super_client):
     env = _create_stack(client)
 
     image_uuid = context.image_uuid
@@ -91,10 +91,14 @@ def test_activate_single_service(client, context):
                      "requestedHostId": host.id,
                      "healthCheck": health_check}
 
+    metadata = {"bar": {"people": [{"id": 0}]}}
     service = client.create_service(name=random_str(),
                                     environmentId=env.id,
-                                    launchConfig=launch_config)
+                                    launchConfig=launch_config,
+                                    metadata=metadata)
     service = client.wait_success(service)
+
+    return
 
     # validate that parameters were set for service
     assert service.state == "inactive"
@@ -129,6 +133,7 @@ def test_activate_single_service(client, context):
     assert service.launchConfig.healthCheck.unhealthyThreshold == 6
     assert service.launchConfig.healthCheck.requestLine == "index.html"
     assert service.launchConfig.healthCheck.port == 200
+    assert service.metadata == metadata
 
     # activate the service and validate that parameters were set for instance
     service = client.wait_success(service.activate(), 120)
@@ -171,6 +176,8 @@ def test_activate_single_service(client, context):
     assert container.cpuSet == "2"
     assert container.requestedHostId == host.id
     assert container.healthState == 'initializing'
+
+    assert super_client.reload(container).deploymentUnitUuid is not None
 
 
 def test_activate_services(client, context):
@@ -899,10 +906,7 @@ def test_destroy_service_instance(client, context):
 
     service = client.update(service, scale=4, name=service.name)
     service = client.wait_success(service, 120)
-
-    instance_service_map = client. \
-        list_serviceExposeMap(serviceId=service.id, state='Active')
-    assert len(instance_service_map) == 4
+    _validate_service_instance_map_count(client, service, "active", 4)
 
     # purge the instance1 w/o changing the service
     # and validate instance1-service map is gone
@@ -1099,26 +1103,19 @@ def test_sidekick_destroy_instance(client, context):
     # activate service1
     service = client.wait_success(service.activate(), 120)
     assert service.state == "active"
+    _validate_service_instance_map_count(client, service, "active", 2)
 
     instance11 = _validate_compose_instance_start(client, service, env, "1")
     instance12 = _validate_compose_instance_start(client,
                                                   service,
                                                   env, "1", "secondary")
 
-    instance_service_map1 = client. \
-        list_serviceExposeMap(serviceId=service.id, state="active")
-    assert len(instance_service_map1) == 2
-
     # destroy primary instance and wait for the service to reconcile
     _instance_remove(instance11, client)
     service = client.wait_success(service)
-
+    _validate_service_instance_map_count(client, service, "active", 2)
     instance11 = _validate_compose_instance_start(client, service, env, "1")
-    _validate_compose_instance_start(client, service, env, "1", "secondary")
 
-    instance_service_map1 = client. \
-        list_serviceExposeMap(serviceId=service.id, state="active")
-    assert len(instance_service_map1) == 2
     # validate that the secondary instance is still up and running
     instance12 = client.reload(instance12)
     assert instance12.state == 'running'
@@ -1126,13 +1123,11 @@ def test_sidekick_destroy_instance(client, context):
     # destroy secondary instance and wait for the service to reconcile
     _instance_remove(instance12, client)
     service = client.wait_success(service)
+    _validate_service_instance_map_count(client, service, "active", 2)
 
     _validate_compose_instance_start(client, service, env, "1")
     _validate_compose_instance_start(client, service, env, "1", "secondary")
 
-    instance_service_map1 = client. \
-        list_serviceExposeMap(serviceId=service.id, state="active")
-    assert len(instance_service_map1) == 2
     # validate that the primary instance was recreated
     instance11 = client.reload(instance11)
     assert instance11.state == 'removed'
@@ -1230,6 +1225,19 @@ def _validate_service_ip_map(client, service, ip, state, timeout=30):
         instance_service_map = client. \
             list_serviceExposeMap(serviceId=service.id,
                                   ipAddress=ip, state=state)
+        if time.time() - start > timeout:
+            assert 'Timeout waiting for map to be in correct state'
+
+
+def _validate_service_instance_map_count(client, service,
+                                         state, count, timeout=30):
+    start = time.time()
+    instance_service_map = client. \
+        list_serviceExposeMap(serviceId=service.id, state=state)
+    while len(instance_service_map) < count:
+        time.sleep(.5)
+        instance_service_map = client. \
+            list_serviceExposeMap(serviceId=service.id, state=state)
         if time.time() - start > timeout:
             assert 'Timeout waiting for map to be in correct state'
 
@@ -2559,7 +2567,7 @@ def test_validate_scaledown_updating(client, context):
     _wait_until_active_map_count(service, 1, client, timeout=30)
 
 
-def test_stop_network_from_container(client, context):
+def test_stop_network_from_container(client, context, super_client):
     env = _create_stack(client)
 
     image_uuid = context.image_uuid
@@ -2584,20 +2592,31 @@ def test_stop_network_from_container(client, context):
     s11_container = _validate_compose_instance_start(client, service, env, "1")
     s21_container = _validate_compose_instance_start(client, service,
                                                      env, "1", "secondary")
+    s11_container = super_client.reload(s11_container)
+    init_start_count = s11_container.startCount
+    assert init_start_count is not None
 
     assert s11_container.networkContainerId is not None
     assert s11_container.networkContainerId == s21_container.id
 
-    # stop s21 container, and validate s11 is stopped as well
-    s21_container.stop()
-    wait_for_condition(
-        client, s11_container, _resource_is_stopped,
-        lambda x: 'State is: ' + x.state)
+    # stop s21 container, and validate s11 was restarted as well
+    s21_container = s21_container.stop()
+    client.wait_success(s21_container)
 
-    service = client.wait_success(service)
-    assert service.state == 'active'
-    _validate_compose_instance_start(client, service, env, "1")
-    _validate_compose_instance_start(client, service, env, "1", "secondary")
+    wait_for(
+        lambda:
+        super_client.reload(s11_container).startCount > init_start_count
+    )
+
+    # restart s21 container, and validate s11 was restarted as well
+    init_start_count = super_client.reload(s11_container).startCount
+    s21_container = client.reload(s21_container).restart()
+    client.wait_success(s21_container)
+    wait_for(
+        lambda:
+        super_client.reload(s11_container).startCount > init_start_count
+    )
+    init_start_count = super_client.reload(s11_container).startCount
 
 
 def _get_instance_for_service(super_client, serviceId):

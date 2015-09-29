@@ -51,7 +51,6 @@
     <bean id="GithubAuth" class="io.cattle.platform.iaas.api.auth.integration.github.GithubOAuthImpl" />
     <bean class="io.cattle.platform.iaas.api.auth.integration.github.GithubIdentitySearchProvider"/>
 
-    <bean class="io.cattle.platform.iaas.api.request.handler.GithubProxy" />
     <bean class="io.cattle.platform.iaas.api.request.handler.GenericWhitelistedProxy" />
     <bean class="io.cattle.platform.iaas.api.auth.integration.internal.rancher.RancherIdentityTransformationHandler" />
     <bean class="io.cattle.platform.iaas.api.auth.integration.github.GithubIdentityTransformationHandler" />

@@ -229,6 +229,7 @@
         "pullTask.labels": "cr",
         "pullTask.mode": "cr",
         "pullTask.image": "cr",
+        "pullTask.status": "r",
 
         "register": "r",
         "register.accessKey" : "r",
@@ -416,6 +417,7 @@
         "service.secondaryLaunchConfigs" : "cr",
         "service.vip" : "cr",
         "service.createIndex" : "r",
+        "service.metadata" : "cr",
 
         "addRemoveServiceLinkInput" : "r",
         "addRemoveServiceLinkInput.serviceLink" : "cr",
