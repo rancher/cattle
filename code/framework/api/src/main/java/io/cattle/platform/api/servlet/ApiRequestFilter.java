@@ -129,6 +129,8 @@ public class ApiRequestFilter extends ModuleBasedFilter {
     }
 
     protected boolean isLocalUI(HttpServletRequest request, String path) {
+        path = path.replaceAll("//+", "/");
+
         if (!"local".equals(INDEX.get())) {
             return false;
         }
