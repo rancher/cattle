@@ -136,6 +136,7 @@ public class ServiceDiscoveryApiServiceImpl implements ServiceDiscoveryApiServic
                     addExtraComposeParameters(service, launchConfigName, composeServiceData);
                     populateSidekickLabels(service, composeServiceData, isPrimaryConfig);
                     populateLoadBalancerServiceLabels(service, launchConfigName, composeServiceData);
+                    formatScale(service, composeServiceData);
                 }
 
                 if (!composeServiceData.isEmpty()) {
@@ -146,6 +147,17 @@ public class ServiceDiscoveryApiServiceImpl implements ServiceDiscoveryApiServic
         return data;
     }
     
+    @SuppressWarnings("unchecked")
+    protected void formatScale(Service service, Map<String, Object> composeServiceData) {
+        if (composeServiceData.get(InstanceConstants.FIELD_LABELS) != null) {
+            Map<String, String> labels = ((HashMap<String, String>) composeServiceData.get(InstanceConstants.FIELD_LABELS));
+            if (labels.containsKey(ServiceDiscoveryConstants.LABEL_SERVICE_GLOBAL)
+                    && labels.get(ServiceDiscoveryConstants.LABEL_SERVICE_GLOBAL).equals(Boolean.TRUE)) {
+                composeServiceData.remove(ServiceDiscoveryConstants.FIELD_SCALE);
+            }
+        }
+    }
+
     @SuppressWarnings("unchecked")
     protected void populateLoadBalancerServiceLabels(Service service,
             String launchConfigName, Map<String, Object> composeServiceData) {
