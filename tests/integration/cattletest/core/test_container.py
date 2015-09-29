@@ -697,7 +697,8 @@ def test_container_request_ip(super_client, client, context):
         container = super_client.wait_success(container.purge())
 
         ip = container.nics()[0].ipAddresses()[0]
-        super_client.wait_success(ip.deactivate())
+        ip = super_client.wait_success(ip)
+        assert ip.state == 'inactive'
 
 
 def test_container_network_modes(context, super_client):
