@@ -46,11 +46,12 @@ public class RedisConnection extends ManagedContextRunnable implements Runnable 
     int port;
     volatile boolean shutdown = false;
 
-    public RedisConnection(RedisEventingService eventService, String host, int port) {
+    public RedisConnection(RedisEventingService eventService, String host, int port, Set<String> subscriptions) {
         super();
         this.host = host;
         this.port = port;
         this.eventService = eventService;
+        this.subscriptions.addAll(subscriptions);
 
         GenericObjectPoolConfig config = new GenericObjectPoolConfig();
         PoolConfig.setConfig(config, "redis", "redis.pool.", "global.pool.");
@@ -81,7 +82,13 @@ public class RedisConnection extends ManagedContextRunnable implements Runnable 
     }
 
     public boolean publish(String channel, String message) {
-        Jedis current = pool.getResource();
+        Jedis current = null;
+        try {
+            current = pool.getResource();
+        } catch (Throwable t) {
+            log.debug("Failed to get connection from the pool [{}]", host);
+            return false;
+        }
         try {
             current.publish(channel, message);
             return true;
