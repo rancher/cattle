@@ -42,7 +42,11 @@
         "metadata": {
             "type": "map[json]",
             "create": true,
-            "required": false
+            "required": false,
+            "nullable": true,
+             "attributes" : {
+                "scheduleUpdate" : true
+            }
         }
     },
     "resourceActions" : {

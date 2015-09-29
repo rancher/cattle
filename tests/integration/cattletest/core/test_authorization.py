@@ -1537,7 +1537,7 @@ def test_svc_discovery_service(admin_user_client, user_client, project_client):
         'secondaryLaunchConfigs': 'cr',
         'vip': 'cr',
         'createIndex': 'r',
-        'metadata': 'cr'
+        'metadata': 'cru'
     })
 
 
@@ -1608,7 +1608,7 @@ def test_svc_discovery_lb_service(admin_user_client, user_client,
         'vip': 'cr',
         'defaultCertificateId': 'cru',
         'certificateIds': 'cru',
-        'metadata': 'cr'
+        'metadata': 'cru'
     })
 
 
@@ -1728,7 +1728,7 @@ def test_svc_discovery_external_service(admin_user_client, user_client,
         'accountId': 'r',
         'upgrade': 'r',
         'healthCheck': 'cr',
-        'metadata': 'cr'
+        'metadata': 'cru'
     })
 
 
