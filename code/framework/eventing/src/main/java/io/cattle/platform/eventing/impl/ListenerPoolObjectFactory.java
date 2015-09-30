@@ -1,9 +1,11 @@
 package io.cattle.platform.eventing.impl;
 
+import io.cattle.platform.async.utils.AsyncUtils;
 import io.cattle.platform.eventing.model.Event;
 
 import java.util.Random;
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 
 import javax.inject.Inject;
 
@@ -27,10 +29,10 @@ public class ListenerPoolObjectFactory implements PooledObjectFactory<FutureEven
 
     @Override
     public PooledObject<FutureEventListener> makeObject() throws Exception {
-        String key = "reply." + Math.abs(random.nextLong());
+        String key = prefix + Math.abs(random.nextLong());
         FutureEventListener listener = new FutureEventListener(eventService, key);
         Future<?> future = eventService.subscribe(key, listener);
-        future.get();
+        AsyncUtils.get(future, 10, TimeUnit.SECONDS);
         return new DefaultPooledObject<FutureEventListener>(listener);
     }
 
