@@ -4,6 +4,7 @@ import io.cattle.platform.archaius.util.ArchaiusUtil;
 import io.cattle.platform.async.retry.Retry;
 import io.cattle.platform.async.retry.RetryTimeoutService;
 import io.cattle.platform.async.utils.AsyncUtils;
+import io.cattle.platform.async.utils.TimeoutException;
 import io.cattle.platform.eventing.EventCallOptions;
 import io.cattle.platform.eventing.EventListener;
 import io.cattle.platform.eventing.EventService;
@@ -27,7 +28,6 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 
 import javax.annotation.PostConstruct;
 import javax.inject.Inject;
@@ -339,6 +339,8 @@ public abstract class AbstractEventService implements EventService {
                     error(event);
                     if (t.getCause() instanceof TimeoutException) {
                         // Ignore don't treat as a bad listener
+                    } else if (t.getCause() instanceof EventExecutionException) {
+                        // Ignore event errors
                     } else {
                         listener.setFailed(true);
                     }

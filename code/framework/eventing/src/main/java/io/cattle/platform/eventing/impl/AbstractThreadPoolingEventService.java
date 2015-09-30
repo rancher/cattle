@@ -146,6 +146,15 @@ public abstract class AbstractThreadPoolingEventService extends AbstractEventSer
             executor = executorServices.get(((PoolSpecificListener) listener).getPoolKey());
         }
 
+        String eventName = event.getName();
+        if (executor == null && eventName != null) {
+            if (eventName.startsWith(Event.REPLY_PREFIX)) {
+                executor = executorServices.get("reply");
+            } else if (eventName.endsWith(Event.REPLY_SUFFIX)) {
+                executor = executorServices.get("reply");
+            }
+        }
+
         if (executor == null) {
             executor = getDefaultExecutor();
         }

@@ -15,7 +15,7 @@
     </task:scheduled-tasks>
 
     <bean id="RetryTimeoutService" class="io.cattle.platform.async.retry.impl.RetryTimeoutServiceImpl" >
-        <property name="executorService" ref="CoreExecutorService" />
+        <property name="executorService" ref="ReplyExecutorService" />
     </bean>
 
 </beans>
