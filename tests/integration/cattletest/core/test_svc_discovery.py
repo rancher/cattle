@@ -2133,9 +2133,13 @@ def test_service_link_emu_docker_link(super_client, client, context):
 def test_export_config(client, context):
     env = _create_stack(client)
 
-    # create service with cpuset
+    # test:
+    # cpuCet
+    # global vs scale
     image_uuid = context.image_uuid
-    launch_config = {"imageUuid": image_uuid, "cpuSet": "0,1"}
+    labels = {'io.rancher.scheduler.global': 'true'}
+    launch_config = {"imageUuid": image_uuid,
+                     "cpuSet": "0,1", "labels": labels}
     service = client. \
         create_service(name="web",
                        environmentId=env.id,
@@ -2145,8 +2149,12 @@ def test_export_config(client, context):
 
     compose_config = env.exportconfig()
     assert compose_config is not None
-    document = yaml.load(compose_config.dockerComposeConfig)
-    assert document[service.name]['cpuset'] == "0,1"
+    docker_yml = yaml.load(compose_config.dockerComposeConfig)
+    assert docker_yml[service.name]['cpuset'] == "0,1"
+    assert docker_yml[service.name]['labels'] == labels
+
+    rancher_yml = yaml.load(compose_config.dockerComposeConfig)
+    assert 'scale' not in rancher_yml[service.name]
 
 
 def test_validate_image(client, context):
