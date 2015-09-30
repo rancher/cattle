@@ -52,6 +52,7 @@ import java.util.Map;
 import javax.inject.Inject;
 
 import org.apache.commons.lang3.ObjectUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -167,7 +168,13 @@ public class DockerPostInstanceHostMapActivate extends AbstractObjectProcessLogi
         }
 
         for (DockerInspectTransformVolume dVol : dockerVolumes) {
-            String volumeUri = String.format(VolumeConstants.URI_FORMAT, dVol.getHostPath());
+            String volumeUri = null;
+            String driver = dVol.getDriver();
+            if (StringUtils.isEmpty(driver) || StringUtils.equals(driver, "local")) {
+                volumeUri = String.format(VolumeConstants.URI_FORMAT, dVol.getHostPath());
+            } else {
+                volumeUri = dVol.getHostPath();
+            }
             Volume volume = createVolumeInStoragePool(storagePool, instance, volumeUri, dVol.isBindMount());
             log.debug("Created volume and storage pool mapping. Volume id [{}], storage pool id [{}].", volume.getId(), storagePool.getId());
             createIgnoreCancel(volume, state.getData());

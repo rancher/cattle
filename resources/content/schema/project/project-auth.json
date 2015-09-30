@@ -57,7 +57,7 @@
         "subscribe" : "cr",
         "subscribe.eventNames" : "cr",
         "userPreference": "",
-        "volume" : "rd",
+        "volume" : "crd",
         "typeDocumentation" : "r",
         "typeDocumentation.resourceFields" : "r",
         "fieldDocumentation": "r",

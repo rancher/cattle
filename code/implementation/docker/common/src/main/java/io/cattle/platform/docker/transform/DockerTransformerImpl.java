@@ -4,6 +4,7 @@ import static io.cattle.platform.core.constants.InstanceConstants.*;
 import static io.cattle.platform.docker.constants.DockerInstanceConstants.*;
 import static io.cattle.platform.docker.constants.DockerNetworkConstants.*;
 import io.cattle.platform.core.addon.LogConfig;
+import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.json.JsonMapper;
 import io.cattle.platform.object.util.DataAccessor;
@@ -42,12 +43,24 @@ public class DockerTransformerImpl implements DockerTransformer {
     private static final String IMAGE_KIND_PATTERN = "^(sim|docker):.*";
     private static final String READ_WRITE = "rw";
     private static final String READ_ONLY = "ro";
+    private static final String MOUNTS = "Mounts";
+    private static final String ACCESS_MODE = "RW";
+    private static final String DRIVER = "Driver";
+    private static final String DEST = "Destination";
+    private static final String SRC = "Source";
+    private static final String LOCAL = "local";
+    private static final String NAME = "Name";
 
     @Inject
     JsonMapper jsonMapper;
 
+    @Override
     @SuppressWarnings("unchecked")
     public List<DockerInspectTransformVolume> transformVolumes(Map<String, Object> fromInspect) {
+        List<DockerInspectTransformVolume> volumes = transformMounts(fromInspect);
+        if (volumes.size() > 0) {
+            return volumes;
+        }
         InspectContainerResponse inspect = transformInspect(fromInspect);
         HostConfig hostConfig = inspect.getHostConfig();
         VolumeBind[] volumeBinds = null;
@@ -58,12 +71,33 @@ public class DockerTransformerImpl implements DockerTransformer {
             volumeBinds = new VolumeBind[0];
         }
         Set<String> binds = bindSet(hostConfig.getBinds());
-        Map<String, String> rw = rwMap((Map<String, Boolean>)fromInspect.get("VolumesRW"));
-        List<DockerInspectTransformVolume> volumes = new ArrayList<DockerInspectTransformVolume>();
+        Map<String, String> rw = rwMap((Map<String, Boolean>) fromInspect.get("VolumesRW"));
         for (VolumeBind vb : volumeBinds) {
             String am = rw.containsKey(vb.getContainerPath()) ? rw.get(vb.getContainerPath()) : READ_WRITE;
             boolean isBindMound = binds.contains(vb.getContainerPath());
-            volumes.add(new DockerInspectTransformVolume(vb.getContainerPath(), vb.getHostPath(), am, isBindMound));
+            volumes.add(new DockerInspectTransformVolume(vb.getContainerPath(), vb.getHostPath(), am, isBindMound, ""));
+        }
+        return volumes;
+    }
+
+    @SuppressWarnings("unchecked")
+    protected List<DockerInspectTransformVolume> transformMounts(Map<String, Object> fromInspect) {
+        List<DockerInspectTransformVolume> volumes = new ArrayList<DockerInspectTransformVolume>();
+        List<Object> mounts = (List<Object>) fromInspect.get(MOUNTS);
+        if (mounts != null) {
+            for (Object mount : mounts) {
+                Map<String, Object> mountObj = (Map<String, Object>) mount;
+                String am = ((boolean) mountObj.get(ACCESS_MODE)) ? "rw" : "ro";
+                String dr = (String) mountObj.get(DRIVER);
+                String containerPath = (String) mountObj.get(DEST);
+                String hostPath = (String) mountObj.get(SRC);
+                String name = (String) mountObj.get(NAME);
+                boolean isBindMount = (dr == null);
+                if (StringUtils.isNotEmpty(dr) && !StringUtils.equals(dr, LOCAL)) {
+                    hostPath = String.format("%s:///%s", dr, name);
+                }
+                volumes.add(new DockerInspectTransformVolume(containerPath, hostPath, am, isBindMount, dr));
+            }
         }
         return volumes;
     }
@@ -355,7 +389,7 @@ public class DockerTransformerImpl implements DockerTransformer {
             dataVolumes.addAll(Arrays.asList(binds));
         }
 
-        setField(instance, FIELD_DATA_VOLUMES, dataVolumes);
+        setField(instance, InstanceConstants.FIELD_DATA_VOLUMES, dataVolumes);
     }
 
     void setListField(Instance instance, String field, String[] value) {

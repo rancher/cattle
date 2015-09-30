@@ -47,6 +47,7 @@
         "container.cpuShares" : "cr",
         "container.dataVolumes" : "cr",
         "container.dataVolumesFrom" : "cr",
+        "container.dataVolumeMounts": "cr",
         "container.devices" : "cr",
         "container.dns" : "cr",
         "container.dnsSearch" : "cr",
@@ -296,10 +297,13 @@
         "userPreference.value" : "crud",
 
         "volume" : "r",
+        "volume.name": "cr",
         "volume.imageId" : "r",
         "volume.instanceId" : "r",
         "volume.isHostPath" : "r",
         "volume.uri" : "r",
+        "volume.driver": "cr",
+        "volume.driverOpts": "cr",
 
         "loadBalancerListener" : "r",
         "loadBalancerListener.sourcePort" : "cr",

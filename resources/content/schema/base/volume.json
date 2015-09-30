@@ -1,8 +1,20 @@
 {
     "resourceFields": {
+        "name": {
+            "unique": true,
+            "required": true
+        },
         "isHostPath": {
             "type": "boolean",
             "default": false
+        },
+        "driver": {
+            "type": "string",
+            "required": true
+        },
+        "driverOpts": {
+            "type": "map[string]",
+            "nullable": true
         }
     }
 }

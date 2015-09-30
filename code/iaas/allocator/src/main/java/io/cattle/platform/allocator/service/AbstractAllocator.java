@@ -15,6 +15,7 @@ import io.cattle.platform.core.model.Nic;
 import io.cattle.platform.core.model.StoragePool;
 import io.cattle.platform.core.model.Subnet;
 import io.cattle.platform.core.model.Volume;
+import io.cattle.platform.core.util.InstanceHelpers;
 import io.cattle.platform.lock.LockCallback;
 import io.cattle.platform.lock.LockCallbackNoReturn;
 import io.cattle.platform.lock.LockManager;
@@ -153,6 +154,7 @@ public abstract class AbstractAllocator implements Allocator {
 
         final Set<Host> hosts = new HashSet<Host>(allocatorDao.getHosts(instance));
         final Set<Volume> volumes = new HashSet<Volume>(objectManager.children(instance, Volume.class));
+        volumes.addAll(InstanceHelpers.extractVolumesFromMounts(instance, objectManager));
         final Map<Volume, Set<StoragePool>> pools = new HashMap<Volume, Set<StoragePool>>();
 
         for (Volume v : volumes) {
