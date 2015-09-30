@@ -91,14 +91,12 @@ def test_activate_single_service(client, context, super_client):
                      "requestedHostId": host.id,
                      "healthCheck": health_check}
 
-    metadata = {"bar": {"people": [{"id": 0}]}}
+    metadata = {"bar": {"foo": [{"id": 0}]}}
     service = client.create_service(name=random_str(),
                                     environmentId=env.id,
                                     launchConfig=launch_config,
                                     metadata=metadata)
     service = client.wait_success(service)
-
-    return
 
     # validate that parameters were set for service
     assert service.state == "inactive"
@@ -2625,6 +2623,24 @@ def test_stop_network_from_container(client, context, super_client):
         super_client.reload(s11_container).startCount > init_start_count
     )
     init_start_count = super_client.reload(s11_container).startCount
+
+
+def test_metadata(client, context, super_client):
+    env = _create_stack(client)
+
+    image_uuid = context.image_uuid
+    launch_config = {"imageUuid": image_uuid}
+    metadata = {"bar": {"people": [{"id": 0}]}}
+    service = client.create_service(name=random_str(),
+                                    environmentId=env.id,
+                                    launchConfig=launch_config,
+                                    metadata=metadata)
+    service = client.wait_success(service)
+    assert service.metadata == metadata
+
+    metadata = {"bar1": {"foo1": [{"id": 0}]}}
+    service = client.update(service, metadata=metadata)
+    assert service.metadata == metadata
 
 
 def _get_instance_for_service(super_client, serviceId):
