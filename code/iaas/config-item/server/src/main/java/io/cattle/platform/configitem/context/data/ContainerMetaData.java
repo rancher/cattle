@@ -28,6 +28,8 @@ public class ContainerMetaData {
     String stack_name;
     Map<String, String> labels = new HashMap<>();
     Long create_index;
+    String host_uuid;
+    String hostname;
 
     public ContainerMetaData() {
     }
@@ -76,6 +78,8 @@ public class ContainerMetaData {
                 .withKey(InstanceConstants.FIELD_PORTS).withDefault(Collections.EMPTY_LIST)
                 .as(List.class);
         if (hostMetaData != null) {
+            this.host_uuid = hostMetaData.getUuid();
+            this.hostname = hostMetaData.getName();
             String hostIp = hostMetaData.agent_ip;
             if (hostIp == null) {
                 ports.addAll(portsObj);
@@ -120,5 +124,13 @@ public class ContainerMetaData {
 
     public Long getCreate_index() {
         return create_index;
+    }
+
+    public String getHost_uuid() {
+        return host_uuid;
+    }
+
+    public String getHostname() {
+        return hostname;
     }
 }

@@ -29,7 +29,9 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
+import org.jooq.Condition;
 import org.jooq.JoinType;
+import org.jooq.impl.DSL;
 
 @SuppressWarnings("unchecked")
 public class MetaDataInfoDaoImpl extends AbstractJooqDao implements MetaDataInfoDao {
@@ -49,7 +51,7 @@ public class MetaDataInfoDaoImpl extends AbstractJooqDao implements MetaDataInfo
                                 .withKey(InstanceConstants.FIELD_LABELS)
                                 .withDefault(Collections.EMPTY_MAP).as(Map.class);
                         hostMetaData = new HostMetaData(hostIpAddress.getAddress(), host.getName(),
-                                hostLabels, host.getId());
+                                hostLabels, host.getId(), host.getUuid());
                     }
                 }
                 data.setInstanceAndHostMetadata((Instance) input.get(1), hostMetaData);
@@ -89,6 +91,47 @@ public class MetaDataInfoDaoImpl extends AbstractJooqDao implements MetaDataInfo
                 .and(instance.ACCOUNT_ID.eq(accountId))
                 .and(instanceIpAddress.ROLE.eq(IpAddressConstants.ROLE_PRIMARY))
                 .and(instance.REMOVED.isNull())
+                .fetch().map(mapper);
+    }
+
+    @Override
+    public List<? extends HostMetaData> getInstanceHostMetaData(long accountId, Instance instance) {
+        MultiRecordMapper<HostMetaData> mapper = new MultiRecordMapper<HostMetaData>() {
+            @Override
+            protected HostMetaData map(List<Object> input) {
+
+                Host host = (Host)input.get(0);
+                IpAddress hostIp = (IpAddress)input.get(1);
+                Map<String, String> labels = DataAccessor.fields(host)
+                        .withKey(InstanceConstants.FIELD_LABELS)
+                        .withDefault(Collections.EMPTY_MAP).as(Map.class);
+                HostMetaData data = new HostMetaData(hostIp.getAddress(), host.getName(),
+                        labels, host.getId(), host.getUuid());
+                return data;
+            }
+        };
+
+        HostTable host = mapper.add(HOST);
+        IpAddressTable hostIpAddress = mapper.add(IP_ADDRESS);
+
+        Condition condition = DSL.trueCondition();
+        if (instance != null) {
+            condition = INSTANCE_HOST_MAP.INSTANCE_ID.eq(instance.getId());
+        }
+            
+        return create()
+                .select(mapper.fields())
+                .from(hostIpAddress)
+                .join(HOST_IP_ADDRESS_MAP)
+                .on(HOST_IP_ADDRESS_MAP.IP_ADDRESS_ID.eq(hostIpAddress.ID))
+                .join(host)
+                .on(host.ID.eq(HOST_IP_ADDRESS_MAP.HOST_ID))
+                .leftOuterJoin(INSTANCE_HOST_MAP)
+                .on(host.ID.eq(INSTANCE_HOST_MAP.HOST_ID))
+                .where(host.REMOVED.isNull())
+                .and(condition)
+                .and(hostIpAddress.REMOVED.isNull())
+                .and(host.ACCOUNT_ID.eq(accountId)).groupBy(host.ID)
                 .fetch().map(mapper);
     }
 }
