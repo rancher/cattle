@@ -2,7 +2,6 @@ package io.cattle.platform.engine.process.impl;
 
 import static io.cattle.platform.engine.process.ExitReason.*;
 import static io.cattle.platform.util.time.TimeUtils.*;
-
 import io.cattle.platform.async.utils.TimeoutException;
 import io.cattle.platform.deferred.util.DeferredUtils;
 import io.cattle.platform.engine.context.EngineContext;
@@ -54,6 +53,7 @@ import java.util.Set;
 import java.util.Stack;
 import java.util.TreeSet;
 
+import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -208,7 +208,8 @@ public class DefaultProcessInstanceImpl implements ProcessInstance {
                 } else if (e.getExitReason().isError()) {
                     log.error("Exiting with code [{}] : {}", e.getExitReason(), e.getMessage(), e.getCause());
                 } else {
-                    log.debug("Exiting with code [{}] : {}", e.getExitReason(), e.getMessage(), e.getCause());
+                    log.debug("Exiting with code [{}] : {}", e.getExitReason(), e.getMessage(),
+                            e.getCause() != null ? e.getCause().getMessage() : StringUtils.EMPTY);
                 }
 
                 throw e;

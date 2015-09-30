@@ -11,7 +11,7 @@ public class ResourceChangeLock extends AbstractLockDefinition implements Blocki
 
     @Override
     public long getWait() {
-        return 1000;
+        return 3000;
     }
 
 }
