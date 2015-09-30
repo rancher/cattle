@@ -7,7 +7,9 @@ import io.cattle.platform.util.type.InitializationTask;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.ExecutionException;
 
 import redis.clients.jedis.Protocol;
@@ -22,9 +24,16 @@ public class RedisEventingService extends AbstractThreadPoolingEventService impl
     private static final DynamicStringProperty REDIS_HOST = ArchaiusUtil.getString("redis.hosts");
 
     volatile List<RedisConnection> connections = new ArrayList<RedisConnection>();
+    Set<String> subscriptions = new HashSet<>();
     int index = 0;
 
     public void reconnect() {
+        synchronized (getSubscriptionLock()) {
+            reconnectLocked();
+        }
+    }
+
+    public void reconnectLocked() {
         List<RedisConnection> newConnections = new ArrayList<RedisConnection>();
 
         for (String host : REDIS_HOST.get().trim().split("\\s*,\\s*")) {
@@ -34,6 +43,10 @@ public class RedisEventingService extends AbstractThreadPoolingEventService impl
             }
 
             String hostName = parts[0];
+            if (hostName.length() == 0) {
+                continue;
+            }
+
             int port = Protocol.DEFAULT_PORT;
 
             if (parts.length > 1) {
@@ -44,7 +57,7 @@ public class RedisEventingService extends AbstractThreadPoolingEventService impl
                 }
             }
 
-            newConnections.add(new RedisConnection(this, hostName, port));
+            newConnections.add(new RedisConnection(this, hostName, port, subscriptions));
         }
 
         List<RedisConnection> oldConnections = connections;
@@ -92,19 +105,22 @@ public class RedisEventingService extends AbstractThreadPoolingEventService impl
             return false;
         }
 
-        RedisConnection conn = null;
-        try {
-            conn = connections.get(index);
-        } catch (IndexOutOfBoundsException e) {
-            if (connections.size() > 0) {
-                conn = connections.get(0);
-            }
-        }
-
         index = (index + 1) % connections.size();
 
-        if (conn != null) {
-            return conn.publish(name, eventString);
+        int indexCopy = index;
+        for (int i = 0; i < connections.size() ; i++) {
+            RedisConnection conn = null;
+            try {
+                conn = connections.get((i + indexCopy) % connections.size());
+            } catch (IndexOutOfBoundsException e) {
+                if (connections.size() > 0) {
+                    conn = connections.get(0);
+                }
+            }
+
+            if (conn.publish(name, eventString)) {
+                return true;
+            }
         }
 
         return false;
@@ -112,6 +128,8 @@ public class RedisEventingService extends AbstractThreadPoolingEventService impl
 
     @Override
     protected void doSubscribe(String eventName, final SettableFuture<?> future) {
+        this.subscriptions.add(eventName);
+
         List<SettableFuture<?>> futures = new ArrayList<SettableFuture<?>>();
 
         for (RedisConnection conn : connections) {
@@ -139,6 +157,8 @@ public class RedisEventingService extends AbstractThreadPoolingEventService impl
 
     @Override
     protected void doUnsubscribe(String eventName) {
+        this.subscriptions.remove(eventName);
+
         for (RedisConnection conn : connections) {
             conn.unsubscribe(eventName);
         }

@@ -437,6 +437,10 @@ public abstract class AbstractEventService implements EventService {
         return jsonMapper;
     }
 
+    protected Object getSubscriptionLock() {
+        return SUBSCRIPTION_LOCK;
+    }
+
     @Inject
     public void setJsonMapper(JsonMapper jsonMapper) {
         this.jsonMapper = jsonMapper;
