@@ -2151,8 +2151,10 @@ def test_export_config(client, context):
     assert docker_yml[service.name]['cpuset'] == "0,1"
     assert docker_yml[service.name]['labels'] == labels
 
-    rancher_yml = yaml.load(compose_config.dockerComposeConfig)
-    assert 'scale' not in rancher_yml[service.name]
+    rancher_yml = yaml.load(compose_config.rancherComposeConfig)
+    # service name shouldn't be in rancher.yml
+    #  as there are no rancher params for it there
+    assert service.name not in rancher_yml
 
 
 def test_validate_image(client, context):
