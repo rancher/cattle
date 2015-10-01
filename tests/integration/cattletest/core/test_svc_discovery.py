@@ -2153,7 +2153,7 @@ def test_export_config(client, context):
 
     rancher_yml = yaml.load(compose_config.rancherComposeConfig)
     # service name shouldn't be in rancher.yml
-    #  as there are no rancher params for it there
+    # as there are no rancher params for it there
     assert service.name not in rancher_yml
 
 
@@ -2643,6 +2643,57 @@ def test_metadata(client, context, super_client):
     metadata = {"bar1": {"foo1": [{"id": 0}]}}
     service = client.update(service, metadata=metadata)
     assert service.metadata == metadata
+
+
+def test_healtcheck(client, context, super_client):
+    stack = _create_stack(client)
+    image_uuid = context.image_uuid
+    register_simulated_host(context)
+
+    # test that external service was set with healtcheck
+    health_check = {"name": "check1", "responseTimeout": 3,
+                    "interval": 4, "healthyThreshold": 5,
+                    "unhealthyThreshold": 6, "requestLine": "index.html",
+                    "port": 200}
+    launch_config = {"imageUuid": image_uuid, "healthCheck": health_check}
+    service = client.create_service(name=random_str(),
+                                    environmentId=stack.id,
+                                    launchConfig=launch_config)
+    service = client.wait_success(service)
+    service = client.wait_success(service.activate(), 120)
+    c = _wait_for_compose_instance_start(client, service, stack, "1")
+    c_host_id = super_client.reload(c).instanceHostMaps()[0].hostId
+
+    def validate_container_host(host_maps):
+        for host_map in host_maps:
+            assert host_map.hostId != c_host_id
+
+    host_maps = super_client.\
+        list_healthcheckInstanceHostMap(accountId=service.accountId)
+    assert len(host_maps) < 3
+    validate_container_host(host_maps)
+
+    # reactivate the service and verify that its still one healthchecker
+    service = client.wait_success(service.deactivate(), 120)
+    service = client.wait_success(service.activate(), 120)
+    host_maps = super_client.\
+        list_healthcheckInstanceHostMap(accountId=service.accountId)
+    assert len(host_maps) < 3
+    validate_container_host(host_maps)
+
+    # reactivate the service, add 3 more hosts and verify
+    # that healthcheckers number was completed to 3, excluding
+    # container's host
+    service = client.wait_success(service.deactivate(), 120)
+    register_simulated_host(context)
+    register_simulated_host(context)
+    register_simulated_host(context)
+    service = client.wait_success(service.activate(), 120)
+
+    host_maps = super_client. \
+        list_healthcheckInstanceHostMap(accountId=service.accountId)
+    assert len(host_maps) == 3
+    validate_container_host(host_maps)
 
 
 def _get_instance_for_service(super_client, serviceId):
