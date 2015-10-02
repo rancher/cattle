@@ -12,8 +12,6 @@
         http://cattle.io/schemas/spring/extension http://cattle.io/schemas/spring/extension-1.0.xsd
 		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.0.xsd">
 
-	<import resource="classpath:META-INF/cattle/auth-logic/spring-iaas-auth-logic-context.xml"/>
-
     <bean class="io.cattle.platform.iaas.api.manager.DataManager" />
     <bean class="io.cattle.platform.iaas.api.manager.InstanceManager" />
     <bean class="io.cattle.platform.iaas.api.manager.VolumeManager" />
