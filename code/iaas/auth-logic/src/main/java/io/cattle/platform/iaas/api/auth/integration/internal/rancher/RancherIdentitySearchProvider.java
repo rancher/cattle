@@ -73,6 +73,9 @@ public class RancherIdentitySearchProvider implements IdentitySearchProvider {
         if (!isConfigured()){
             notConfigured();
         }
+        if (!scopes().contains(scope)) {
+            return null;
+        }
         String accountId = ApiContext.getContext().getIdFormatter().parseId(id);
         return authDao.getIdentity(Long.valueOf(accountId == null ? id : accountId));
     }

@@ -87,6 +87,7 @@ public class LocalAuthTokenCreator extends LocalAuthConfigurable implements Toke
         String accountId = (String) ApiContext.getContext().getIdFormatter().formatId(objectManager.getType(Account.class), account.getId());
         Date expiry = new Date(System.currentTimeMillis() + SecurityConstants.TOKEN_EXPIRY_MILLIS.get());
         String jwt = tokenService.generateEncryptedToken(jsonData, expiry);
+        user = rancherIdentitySearchProvider.getIdentity(user.getExternalId(), user.getExternalIdType());
         user = rancherIdentityTransformationHandler.untransform(user);
 
         return new Token(jwt, SecurityConstants.AUTH_PROVIDER.get(), accountId, user,
