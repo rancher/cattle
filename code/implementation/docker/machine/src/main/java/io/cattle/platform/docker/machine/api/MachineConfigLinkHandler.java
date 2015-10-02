@@ -1,11 +1,14 @@
 package io.cattle.platform.docker.machine.api;
 
+import static io.cattle.platform.docker.machine.api.MachineLinkFilter.canAccessConfig;
 import static io.cattle.platform.docker.machine.constants.MachineConstants.*;
 
 import io.cattle.platform.api.link.LinkHandler;
 import io.cattle.platform.core.model.PhysicalHost;
 import io.cattle.platform.object.util.DataUtils;
+import io.github.ibuildthecloud.gdapi.exception.ClientVisibleException;
 import io.github.ibuildthecloud.gdapi.request.ApiRequest;
+import io.github.ibuildthecloud.gdapi.util.ResponseCodes;
 
 import java.io.IOException;
 
@@ -28,6 +31,9 @@ public class MachineConfigLinkHandler implements LinkHandler {
 
     @Override
     public Object link(String name, Object obj, ApiRequest request) throws IOException {
+        if (!canAccessConfig()){
+            throw new ClientVisibleException(ResponseCodes.UNAUTHORIZED);
+        }
         if (obj instanceof PhysicalHost) {
             PhysicalHost host = (PhysicalHost) obj;
             String extractedConfig = (String) DataUtils.getFields(host).get(EXTRACTED_CONFIG_FIELD);
