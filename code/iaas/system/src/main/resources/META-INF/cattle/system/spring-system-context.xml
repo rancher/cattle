@@ -38,9 +38,7 @@
     <management:executor-service
         id="ReplyExecutorService"
         keep-alive="120"
-        pool-size="4-20"
-        queue-capacity="0"
-        rejection-policy="DISCARD"
+        pool-size="10"
         />
 
     <bean class="io.cattle.platform.util.concurrent.NamedExecutorService" >
