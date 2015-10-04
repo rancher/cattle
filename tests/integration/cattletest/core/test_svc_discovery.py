@@ -174,8 +174,7 @@ def test_activate_single_service(client, context, super_client):
     assert container.cpuSet == "2"
     assert container.requestedHostId == host.id
     assert container.healthState == 'initializing'
-
-    assert super_client.reload(container).deploymentUnitUuid is not None
+    assert container.deploymentUnitUuid is not None
 
 
 def test_activate_services(client, context):

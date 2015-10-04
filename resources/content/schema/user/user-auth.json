@@ -90,6 +90,7 @@
         "container.workingDir" : "cr",
         "container.expose" : "cr",
         "container.createIndex" : "r",
+        "container.deploymentUnitUuid" : "r",
 
         "containerExec" : "r",
         "containerExec.attachStdin" : "cr",
