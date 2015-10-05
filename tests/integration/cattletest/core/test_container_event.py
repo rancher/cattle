@@ -317,12 +317,6 @@ def test_system_container(client, host, agent_cli, user_id):
 
     con_inspect = new_inspect(external_id)
 
-    create_event(host, external_id, agent_cli, client, user_id,
-                 'start', con_inspect, image='sim:rancher/agent:latset')
-    create_event(host, external_id, agent_cli, client, user_id,
-                 'start', con_inspect, image='rancher/agent:latset')
-    create_event(host, external_id, agent_cli, client, user_id,
-                 'start', con_inspect, image='rancher/agent')
     con_inspect['Config']['Labels'] = {
         'io.rancher.container.system': 'rancher-agent'}
     create_event(host, external_id, agent_cli, client, user_id,
