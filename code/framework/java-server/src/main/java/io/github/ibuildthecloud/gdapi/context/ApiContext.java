@@ -9,6 +9,11 @@ import io.github.ibuildthecloud.gdapi.url.NullUrlBuilder;
 import io.github.ibuildthecloud.gdapi.url.UrlBuilder;
 import io.github.ibuildthecloud.gdapi.util.TransformationService;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 public class ApiContext {
 
     private static final ThreadLocal<ApiContext> TL = new ThreadLocal<ApiContext>();
@@ -16,6 +21,7 @@ public class ApiContext {
     ApiRequest apiRequest;
     IdFormatter idFormatter = new IdentityFormatter();
     Object policy;
+    Map<Object, List<String>> dynamicCapabilities = new HashMap<>();
 
     TransformationService transformationService;
 
@@ -90,5 +96,20 @@ public class ApiContext {
 
     public void setTransformationService(TransformationService transformationService) {
         this.transformationService = transformationService;
+    }
+
+    public void addCapability(Object object, String capability) {
+        if (dynamicCapabilities.get(object) == null){
+            dynamicCapabilities.put(object, new ArrayList<String>());
+        }
+        dynamicCapabilities.get(object).add(capability);
+    }
+
+    public void setCapabilities(Object object, List<String> capabilities){
+        dynamicCapabilities.put(object, capabilities);
+    }
+
+    public List<String> getCapabilities(Object object){
+        return dynamicCapabilities.get(object);
     }
 }
