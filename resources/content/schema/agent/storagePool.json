@@ -1,0 +1,13 @@
+{
+    "collectionMethods": ["GET"],
+    "resourceMethods" : ["GET"],
+    "resourceFields": {
+        "id": {},
+        "externalId": {
+        	"create": true
+        },
+        "name": {
+        	"create": true
+        }
+    }
+}
