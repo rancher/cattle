@@ -69,6 +69,9 @@ def test_user_types(user_client, adds=set(), removes=set()):
         'environment',
         'exoscaleConfig',
         'externalService',
+        'externalEvent',
+        'externalStoragePoolEvent',
+        'externalVolumeEvent',
         'fieldDocumentation',
         'globalLoadBalancer',
         'globalLoadBalancerHealthCheck',
@@ -191,6 +194,9 @@ def test_agent_types(agent_client):
         'configContent',
         'containerEvent',
         'error',
+        'externalEvent',
+        'externalVolumeEvent',
+        'externalStoragePoolEvent',
         'hostApiProxyToken',
         'publish',
         'schema',
@@ -255,6 +261,9 @@ def test_admin_types(admin_user_client, adds=set(), removes=set()):
         'externalHandlerProcess',
         'externalHandlerProcessConfig',
         'externalService',
+        'externalEvent',
+        'externalVolumeEvent',
+        'externalStoragePoolEvent',
         'fieldDocumentation',
         'githubconfig',
         'globalLoadBalancer',
@@ -1807,4 +1816,105 @@ def test_pull_task(admin_user_client, user_client, project_client):
         'mode': 'cr',
         'image': 'cr',
         'status': 'r',
+    })
+
+
+def test_external_event(agent_client, admin_user_client, user_client,
+                        project_client):
+    auth_check(admin_user_client.schema, 'externalEvent', 'r', {
+        'accountId': 'r',
+        'data': 'r',
+        'externalId': 'r',
+        'eventType': 'r',
+    })
+
+    auth_check(user_client.schema, 'externalEvent', 'r', {
+        'accountId': 'r',
+        'externalId': 'r',
+        'eventType': 'r',
+    })
+
+    auth_check(project_client.schema, 'externalEvent', 'r', {
+        'accountId': 'r',
+        'externalId': 'r',
+        'eventType': 'r',
+    })
+
+    auth_check(agent_client.schema, 'externalEvent', 'r', {
+        'externalId': 'r',
+        'eventType': 'r',
+    })
+
+
+def test_external_sp_event(agent_client, admin_user_client, user_client,
+                           project_client):
+    type = 'externalStoragePoolEvent'
+
+    auth_check(admin_user_client.schema, type, 'r', {
+        'accountId': 'r',
+        'data': 'r',
+        'externalId': 'r',
+        'eventType': 'r',
+        'storagePool': 'r',
+        'hostUuids': 'r',
+    })
+
+    auth_check(user_client.schema, type, 'r', {
+        'accountId': 'r',
+        'externalId': 'r',
+        'eventType': 'r',
+        'storagePool': 'r',
+        'hostUuids': 'r',
+    })
+
+    auth_check(project_client.schema, type, 'r', {
+        'accountId': 'r',
+        'externalId': 'r',
+        'eventType': 'r',
+        'storagePool': 'r',
+        'hostUuids': 'r',
+    })
+
+    auth_check(agent_client.schema, type, 'cr', {
+        'externalId': 'cr',
+        'eventType': 'cr',
+        'storagePool': 'cr',
+        'hostUuids': 'cr',
+    })
+
+
+def test_external_volume_event(agent_client, admin_user_client, user_client,
+                           project_client):
+    type = 'externalVolumeEvent'
+
+    auth_check(admin_user_client.schema, type, 'r', {
+        'accountId': 'r',
+        'data': 'r',
+        'externalId': 'r',
+        'eventType': 'r',
+        'volume': 'r',
+        'storagePoolExternalId': 'r',
+    })
+
+    auth_check(user_client.schema, type, 'r', {
+        'accountId': 'r',
+        'externalId': 'r',
+        'eventType': 'r',
+        'volume': 'r',
+        'storagePoolExternalId': 'r',
+    })
+
+    auth_check(project_client.schema, type, 'r', {
+        'accountId': 'r',
+        'externalId': 'r',
+        'eventType': 'r',
+        'volume': 'r',
+        'storagePoolExternalId': 'r',
+    })
+
+    auth_check(agent_client.schema, type, 'cr', {
+        'externalId': 'cr',
+        'eventType': 'cr',
+        'volume': 'cr',
+        'storagePoolExternalId': 'cr',
     })
