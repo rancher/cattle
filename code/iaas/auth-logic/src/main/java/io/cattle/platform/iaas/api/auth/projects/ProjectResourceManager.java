@@ -13,11 +13,9 @@ import io.cattle.platform.engine.process.impl.ProcessCancelException;
 import io.cattle.platform.iaas.api.auth.dao.AuthDao;
 import io.cattle.platform.json.JsonMapper;
 import io.cattle.platform.object.ObjectManager;
-import io.cattle.platform.object.meta.ObjectMetaDataManager;
 import io.cattle.platform.object.meta.Relationship;
 import io.cattle.platform.object.process.ObjectProcessManager;
 import io.cattle.platform.object.process.StandardProcess;
-import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.process.common.util.ProcessUtils;
 import io.cattle.platform.util.type.CollectionUtils;
 import io.github.ibuildthecloud.gdapi.condition.Condition;
@@ -121,9 +119,9 @@ public class ProjectResourceManager extends AbstractObjectResourceManager {
             return null;
         }
         if (isOwner) {
-            DataAccessor.fields(project).withKey(ObjectMetaDataManager.CAPABILITIES_FIELD).set(Arrays.asList(ProjectConstants.OWNER));
+            ApiContext.getContext().addCapability(project, ProjectConstants.OWNER);
         } else {
-            DataAccessor.fields(project).withKey(ObjectMetaDataManager.CAPABILITIES_FIELD).set(Collections.EMPTY_LIST);
+            ApiContext.getContext().setCapabilities(project, new ArrayList<String>());
         }
         policy.grantObjectAccess(project);
         return project;
