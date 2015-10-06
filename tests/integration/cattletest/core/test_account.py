@@ -1,5 +1,4 @@
 from common_fixtures import *  # NOQA
-import re
 
 
 @pytest.mark.parametrize('kind', ['user', 'admin'])
@@ -20,15 +19,10 @@ def test_account_create(kind, admin_user_client, random_str):
 
     creds = account.credentials()
 
-    assert len(creds) == 2
+    assert len(creds) == 1
     creds = filter(lambda x: x.kind == 'apiKey', creds)
 
-    assert len(creds) == 1
-    assert creds[0].state == "active"
-    assert creds[0].kind == "apiKey"
-    assert re.match("[A-Z]*", creds[0].publicValue)
-    assert len(creds[0].publicValue) == 20
-    assert creds[0].secretValue is None
+    assert len(creds) == 0
 
 
 def test_account_external(admin_user_client):
@@ -46,7 +40,7 @@ def test_account_no_key(super_client):
     account = super_client.wait_success(account)
     creds = account.credentials()
 
-    assert len(creds) >= 2
+    assert len(creds) >= 1
 
     account = super_client.create_account(kind='unknown')
     account = super_client.wait_success(account)
