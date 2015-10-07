@@ -125,6 +125,7 @@ public class ServiceDiscoveryApiServiceImpl implements ServiceDiscoveryApiServic
                 Map<String, Object> cattleServiceData = ServiceDiscoveryUtil.getServiceDataAsMap(service,
                         launchConfigName, allocatorService);
                 Map<String, Object> composeServiceData = new HashMap<>();
+                formatScale(service, cattleServiceData);
                 for (String cattleService : cattleServiceData.keySet()) {
                     translateRancherToCompose(forDockerCompose, cattleServiceData, composeServiceData, cattleService, service);
                 }
@@ -136,9 +137,7 @@ public class ServiceDiscoveryApiServiceImpl implements ServiceDiscoveryApiServic
                     addExtraComposeParameters(service, launchConfigName, composeServiceData);
                     populateSidekickLabels(service, composeServiceData, isPrimaryConfig);
                     populateLoadBalancerServiceLabels(service, launchConfigName, composeServiceData);
-                    formatScale(service, composeServiceData);
                 }
-
                 if (!composeServiceData.isEmpty()) {
                     data.put(isPrimaryConfig ? service.getName() : launchConfigName, composeServiceData);
                 }
@@ -152,7 +151,7 @@ public class ServiceDiscoveryApiServiceImpl implements ServiceDiscoveryApiServic
         if (composeServiceData.get(InstanceConstants.FIELD_LABELS) != null) {
             Map<String, String> labels = ((HashMap<String, String>) composeServiceData.get(InstanceConstants.FIELD_LABELS));
             if (labels.containsKey(ServiceDiscoveryConstants.LABEL_SERVICE_GLOBAL)
-                    && labels.get(ServiceDiscoveryConstants.LABEL_SERVICE_GLOBAL).equals(Boolean.TRUE)) {
+                    && labels.get(ServiceDiscoveryConstants.LABEL_SERVICE_GLOBAL).equals(String.valueOf(Boolean.TRUE))) {
                 composeServiceData.remove(ServiceDiscoveryConstants.FIELD_SCALE);
             }
         }

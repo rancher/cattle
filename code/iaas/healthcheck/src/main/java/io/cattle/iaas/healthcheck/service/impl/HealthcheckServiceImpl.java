@@ -213,12 +213,13 @@ public class HealthcheckServiceImpl implements HealthcheckService {
 
         // 3) remove allocated hosts from the available hostIds and shuffle the list to randomize the choice
         availableHostIds.removeAll(allocatedHostIds);
+        requiredNumber = requiredNumber - allocatedHostIds.size();
         Collections.shuffle(availableHostIds);
 
         // 4) place inferiorHostId to the end of the list
         if (inferiorHostId != null) {
             availableHostIds.remove(inferiorHostId);
-            if (availableHostIds.isEmpty()) {
+            if (availableHostIds.isEmpty() && allocatedHostIds.isEmpty()) {
                 availableHostIds.add(inferiorHostId);
             }
         }
