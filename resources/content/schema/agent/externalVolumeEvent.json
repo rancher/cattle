@@ -1,0 +1,22 @@
+{
+    "collectionMethods": ["GET", "POST"],
+    "resourceMethods" : ["GET"],
+    "resourceFields": {
+        "id": {
+        },
+        "externalId": {
+            "create": true
+        },
+        "eventType": {
+            "create": true
+        },
+        "storagePoolExternalId": {
+            "type": "string",
+            "create": true
+        },
+        "volume": {
+            "type": "volume",
+            "create": true
+        }
+    }
+}

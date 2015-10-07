@@ -1,0 +1,12 @@
+{
+    "resourceFields": {
+        "hostUuids":{
+            "type":"array[string]",
+            "required": true
+        },
+        "storagePool":{
+            "type":"storagePool",
+            "required": true
+        }
+    }
+}

@@ -1,0 +1,12 @@
+{
+    "resourceFields": {
+        "storagePoolExternalId":{
+            "type":"string",
+            "required": true
+        },
+        "volume":{
+            "type":"volume",
+            "required": true
+        }
+    }
+}

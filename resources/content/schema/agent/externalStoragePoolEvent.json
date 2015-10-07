@@ -1,0 +1,22 @@
+{
+    "collectionMethods": ["GET", "POST"],
+    "resourceMethods" : ["GET"],
+    "resourceFields": {
+        "id": {
+        },
+        "externalId": {
+            "create": true
+        },
+        "eventType": {
+            "create": true
+        },
+        "storagePool": {
+            "type": "storagePool",
+            "create": true
+        },
+        "hostUuids": {
+            "type": "array[string]",
+            "create": true
+        }
+    }
+}

@@ -89,6 +89,11 @@ public class Tables {
 	public static final io.cattle.platform.core.model.tables.EnvironmentTable ENVIRONMENT = io.cattle.platform.core.model.tables.EnvironmentTable.ENVIRONMENT;
 
 	/**
+	 * The table cattle.external_event
+	 */
+	public static final io.cattle.platform.core.model.tables.ExternalEventTable EXTERNAL_EVENT = io.cattle.platform.core.model.tables.ExternalEventTable.EXTERNAL_EVENT;
+
+	/**
 	 * The table cattle.external_handler
 	 */
 	public static final io.cattle.platform.core.model.tables.ExternalHandlerTable EXTERNAL_HANDLER = io.cattle.platform.core.model.tables.ExternalHandlerTable.EXTERNAL_HANDLER;
