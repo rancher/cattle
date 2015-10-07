@@ -33,7 +33,7 @@ public class TransformerTest {
         transformer = new Sha256Hasher();
         transformer.init();
         encrypters.put(transformer.getName(), transformer);
-        transformer = new Aes128Encrypter();
+        transformer = new Aes256Encrypter();
         transformer.init();
         encrypters.put(transformer.getName(), transformer);
         transformationService.setTransformers(encrypters);

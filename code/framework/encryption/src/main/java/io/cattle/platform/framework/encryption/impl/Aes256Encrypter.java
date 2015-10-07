@@ -13,14 +13,14 @@ import javax.inject.Inject;
 
 import org.apache.commons.codec.binary.Hex;
 
-public class Aes128Encrypter extends Encrypter {
+public class Aes256Encrypter extends Encrypter {
 
     @Inject
     EncryptionUtils encryptionUtils;
 
     byte[] encryptionKeyBytes;
 
-    private static final String NAME = "AES128";
+    private static final String NAME = "AES256";
     private Key key;
     private SecureRandom rn;
 
@@ -31,7 +31,7 @@ public class Aes128Encrypter extends Encrypter {
 
             encryptionKeyBytes = EncryptionUtils.getKeyFromFile(NAME + "Key");
             if (encryptionKeyBytes == null) {
-                encryptionKeyBytes = new byte[16];
+                encryptionKeyBytes = new byte[32];
                 rn.nextBytes(encryptionKeyBytes);
                 EncryptionUtils.saveKeyToFile(NAME + "Key", encryptionKeyBytes);
             }

@@ -5,11 +5,11 @@ import java.security.SecureRandom;
 import org.apache.commons.codec.binary.Hex;
 import org.junit.Assert;
 
-public class Aes128EncrypterTest {
+public class Aes256EncrypterTest {
 
     @org.junit.Test
     public void testEncrypt() throws Exception {
-        Aes128Encrypter encrypter = new Aes128Encrypter();
+        Aes256Encrypter encrypter = new Aes256Encrypter();
         encrypter.init();
         String value;
         byte[] bytes = new byte[22];
