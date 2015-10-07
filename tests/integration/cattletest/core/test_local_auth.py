@@ -67,8 +67,10 @@ def make_client(admin_user_client, account, username, password):
 
     assert token['type'] != 'error'
 
-    token = token['jwt']
-    start_client._auth = LocalAuth(token)
+    jwt = token['jwt']
+    user = token['userIdentity']
+    assert user['login'] == username
+    start_client._auth = LocalAuth(jwt)
     start_client.valid()
     identities = start_client.list_identity()
 
