@@ -28,6 +28,7 @@ public class ServiceDiscoveryConstants {
     public static final String FIELD_HOSTNAME = "hostname";
     public static final String FIELD_VIP = "vip";
     public static final String FIELD_METADATA = "metadata";
+    public static final String FIELD_VERSION = "version";
 
     public static final String ACTION_SERVICE_ACTIVATE = "activate";
     public static final String ACTION_SERVICE_CREATE = "create";
@@ -35,6 +36,7 @@ public class ServiceDiscoveryConstants {
     public static final String ACTION_SERVICE_REMOVE_SERVICE_LINK = "removeservicelink";
     public static final String ACTION_ENV_ACTIVATE_SERVICES = "activateservices";
     public static final String ACTION_SERVICE_SET_SERVICE_LINKS = "setservicelinks";
+    public static final String ACTION_SERVICE_UPGRADE = "upgrade";
 
     public static final String PROCESS_SERVICE_ACTIVATE = "service." + ACTION_SERVICE_ACTIVATE;
     public static final String PROCESS_SERVICE_CREATE = "service." + ACTION_SERVICE_CREATE;
@@ -54,6 +56,7 @@ public class ServiceDiscoveryConstants {
     public static final String PROCESS_SERVICE_SET_SERVICE_LINKS = "service." + ACTION_SERVICE_SET_SERVICE_LINKS;
     public static final String PROCESS_SERVICE_EXPOSE_MAP_CREATE = "serviceexposemap.create";
     public static final String PROCESS_SERVICE_EXPOSE_MAP_REMOVE = "serviceexposemap.remove";
+    public static final String PROCESS_SERVICE_UPGRADE = "service." + ACTION_SERVICE_UPGRADE;
 
     public static final String LINK_DOCKER_COMPOSE_CONFIG = "dockerComposeConfig";
     public static final String LINK_RANCHER_COMPOSE_CONFIG = "rancherComposeConfig";

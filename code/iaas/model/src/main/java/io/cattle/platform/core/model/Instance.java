@@ -377,6 +377,17 @@ public interface Instance extends java.io.Serializable {
 	@javax.persistence.Column(name = "deployment_unit_uuid", length = 128)
 	public java.lang.String getDeploymentUnitUuid();
 
+    /**
+     * Setter for <code>cattle.instance.version</code>.
+     */
+	public void setVersion(java.lang.String value);
+
+	/**
+	 * Getter for <code>cattle.instance.version</code>.
+	 */
+	@javax.persistence.Column(name = "version", length = 255)
+	public java.lang.String getVersion();
+
 	// -------------------------------------------------------------------------
 	// FROM and INTO
 	// -------------------------------------------------------------------------

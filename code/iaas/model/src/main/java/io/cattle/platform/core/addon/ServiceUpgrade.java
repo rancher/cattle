@@ -3,6 +3,8 @@ package io.cattle.platform.core.addon;
 import io.github.ibuildthecloud.gdapi.annotation.Field;
 import io.github.ibuildthecloud.gdapi.annotation.Type;
 
+import java.util.List;
+
 @Type(list = false)
 public class ServiceUpgrade {
 
@@ -11,6 +13,8 @@ public class ServiceUpgrade {
     Long finalScale;
     Long intervalMillis;
     Long batchSize;
+    Object launchConfig;
+    List<Object> secondaryLaunchConfigs;
 
     public boolean isUpdateLinks() {
         return updateLinks;
@@ -20,7 +24,7 @@ public class ServiceUpgrade {
         this.updateLinks = updateLinks;
     }
 
-    @Field(typeString = "reference[service]", nullable = false, required = true)
+    @Field(typeString = "reference[service]")
     public String getToServiceId() {
         return toServiceId;
     }
@@ -29,7 +33,7 @@ public class ServiceUpgrade {
         this.toServiceId = toServiceId;
     }
 
-    @Field(nullable = false, required = true, min = 1)
+    @Field(min = 1)
     public Long getFinalScale() {
         return finalScale;
     }
@@ -54,5 +58,21 @@ public class ServiceUpgrade {
 
     public void setBatchSize(Long batchSize) {
         this.batchSize = batchSize;
+    }
+
+    public Object getLaunchConfig() {
+        return launchConfig;
+    }
+
+    public void setLaunchConfig(Object launchConfig) {
+        this.launchConfig = launchConfig;
+    }
+
+    public List<Object> getSecondaryLaunchConfigs() {
+        return secondaryLaunchConfigs;
+    }
+
+    public void setSecondaryLaunchConfigs(List<Object> secondaryLaunchConfigs) {
+        this.secondaryLaunchConfigs = secondaryLaunchConfigs;
     }
 }

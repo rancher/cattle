@@ -191,6 +191,10 @@ public class InstanceTable extends org.jooq.impl.TableImpl<io.cattle.platform.co
 	 */
 	public final org.jooq.TableField<io.cattle.platform.core.model.tables.records.InstanceRecord, java.lang.String> DEPLOYMENT_UNIT_UUID = createField("deployment_unit_uuid", org.jooq.impl.SQLDataType.VARCHAR.length(128), this, "");
 
+	/** The column <code>cattle.instance.version</code>.
+	 */
+	public final org.jooq.TableField<io.cattle.platform.core.model.tables.records.InstanceRecord, java.lang.String> VERSION = createField("version", org.jooq.impl.SQLDataType.VARCHAR.length(255).defaulted(true), this, "");
+
 	/**
 	 * Create a <code>cattle.instance</code> table reference
 	 */

@@ -91,6 +91,7 @@
         "container.expose" : "cr",
         "container.createIndex" : "r",
         "container.deploymentUnitUuid" : "r",
+        "container.version" : "r",
 
         "containerExec" : "r",
         "containerExec.attachStdin" : "cr",
@@ -510,11 +511,11 @@
         "activeSetting.name": "r",
         "activeSetting.value" : "r",
 
-        "launchConfig" : "cr",
+        "launchConfig" : "cru",
         "launchConfig.name" : "",
         "launchConfig.networkLaunchConfig" : "cr",
         "launchConfig.dataVolumesFromLaunchConfigs" : "cr",
-
+ 
         "secondaryLaunchConfig" : "cr",
         "secondaryLaunchConfig.name" : "cr",
 
@@ -538,6 +539,8 @@
         "serviceUpgrade.intervalMillis" : "cr",
         "serviceUpgrade.batchSize" : "cr",
         "serviceUpgrade.finalScale" : "cr",
+        "serviceUpgrade.launchConfig" : "cr",
+        "serviceUpgrade.secondaryLaunchConfigs" : "cr",
 
         "end" : ""
     }

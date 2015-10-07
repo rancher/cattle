@@ -226,6 +226,11 @@
         "dataVolumeMounts": {
             "type": "map[reference[volume]]",
             "nullable": true
+        },
+        "version" : {
+            "type" : "string",
+            "nullable": false,
+            "default" : "0"
         }
     },
     "resourceActions": {

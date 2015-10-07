@@ -53,4 +53,7 @@ public interface ServiceExposeMapDao {
     Service getIpAddressService(String ipAddress, long accountId);
 
     ServiceExposeMap getServiceInstanceMap(Service service, Instance instance);
+
+    List<? extends Instance> listServiceManagedInstances(Service service, String launchConfigName);
+
 }

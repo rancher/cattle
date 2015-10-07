@@ -698,7 +698,8 @@ def test_container_auth(admin_user_client, user_client, project_client):
         'readOnly': 'r',
         'expose': 'r',
         'createIndex': 'r',
-        'deploymentUnitUuid': 'r'
+        'deploymentUnitUuid': 'r',
+        'version': 'r'
     })
 
     auth_check(user_client.schema, 'container', 'r', {
@@ -758,7 +759,8 @@ def test_container_auth(admin_user_client, user_client, project_client):
         'readOnly': 'r',
         'expose': 'r',
         'createIndex': 'r',
-        'deploymentUnitUuid': 'r'
+        'deploymentUnitUuid': 'r',
+        'version': 'r'
     })
 
     auth_check(project_client.schema, 'container', 'crud', {
@@ -818,7 +820,8 @@ def test_container_auth(admin_user_client, user_client, project_client):
         'readOnly': 'cr',
         'expose': 'cr',
         'createIndex': 'r',
-        'deploymentUnitUuid': 'r'
+        'deploymentUnitUuid': 'r',
+        'version': 'r'
     })
 
     auth_check(project_client.schema, 'dockerBuild', 'cr', {
@@ -1672,6 +1675,8 @@ def test_auth_service_upgrade(admin_user_client, user_client,
         'batchSize': 'r',
         'intervalMillis': 'r',
         'finalScale': 'r',
+        'launchConfig': 'r',
+        'secondaryLaunchConfigs': 'r',
     })
 
     auth_check(user_client.schema, 'serviceUpgrade', 'r', {
@@ -1680,6 +1685,8 @@ def test_auth_service_upgrade(admin_user_client, user_client,
         'batchSize': 'r',
         'intervalMillis': 'r',
         'finalScale': 'r',
+        'launchConfig': 'r',
+        'secondaryLaunchConfigs': 'r',
     })
 
     auth_check(project_client.schema, 'serviceUpgrade', 'cr', {
@@ -1688,6 +1695,8 @@ def test_auth_service_upgrade(admin_user_client, user_client,
         'batchSize': 'cr',
         'intervalMillis': 'cr',
         'finalScale': 'cr',
+        'launchConfig': 'cr',
+        'secondaryLaunchConfigs': 'cr',
     })
 
 
