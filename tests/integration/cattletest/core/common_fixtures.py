@@ -6,6 +6,7 @@ import random
 import time
 import inspect
 from datetime import datetime, timedelta
+import requests
 
 NOT_NONE = object()
 DEFAULT_TIMEOUT = 90
@@ -460,8 +461,10 @@ def create_and_activate(client, type, **kw):
 
 
 def acc_id(client):
-    obj = client.list_api_key()[0]
-    return obj.account().id
+    base_url = client.schema.types['schema'].links['collection']
+    r = requests.get(base_url,
+                     headers=auth_header_map(client))
+    return r.headers['x-api-account-id']
 
 
 def delete_sim_instances(super_client):
