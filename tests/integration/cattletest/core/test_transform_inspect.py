@@ -157,9 +157,8 @@ def test_transform_inspect_full(transform_url, client, super_client):
     assert response.status_code == 200
     container = response.json()
     ports = container['data']['fields']['ports']
-    assert len(ports) == 2
+    assert len(ports) == 1
     assert '2222:1111/tcp' in ports
-    assert '3333/udp' in ports
 
 
 def test_transform_inspect_rountrip(transform_url, client):

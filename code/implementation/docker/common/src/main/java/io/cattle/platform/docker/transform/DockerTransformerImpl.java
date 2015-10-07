@@ -371,8 +371,6 @@ public class DockerTransformerImpl implements DockerTransformer {
                         ports.add(port);
                     }
                 }
-            } else {
-                ports.add(port);
             }
         }
 
