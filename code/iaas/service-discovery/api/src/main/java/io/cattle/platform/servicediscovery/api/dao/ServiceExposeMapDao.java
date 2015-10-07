@@ -22,13 +22,11 @@ public interface ServiceExposeMapDao {
      */
     Pair<Instance, ServiceExposeMap> createServiceInstance(Map<String, Object> properties, Service service);
 
-    List<? extends Instance> listServiceInstances(long serviceId);
-
-    List<? extends ServiceExposeMap> getNonRemovedServiceInstanceMap(long serviceId);
+    List<? extends Instance> listServiceManagedInstances(long serviceId);
 
     ServiceExposeMap findInstanceExposeMap(Instance instance);
 
-    ServiceExposeMap createServiceInstanceMap(Service service, Instance instance);
+    ServiceExposeMap createServiceInstanceMap(Service service, Instance instance, boolean managed);
 
     ServiceExposeMap createIpToServiceMap(Service service, String ipAddress);
 
@@ -37,6 +35,8 @@ public interface ServiceExposeMapDao {
     List<? extends Service> getActiveServices(long accountId);
 
     List<? extends ServiceExposeMap> getNonRemovedServiceIpMaps(long serviceId);
+
+    List<? extends ServiceExposeMap> getNonRemovedUnmanagedServiceInstanceMap(long serviceId);
 
     Host getHostForInstance(long instanceId);
 
@@ -51,4 +51,6 @@ public interface ServiceExposeMapDao {
     List<? extends ServiceExposeMap> getNonRemovedServiceHostnameMaps(long serviceId);
 
     Service getIpAddressService(String ipAddress, long accountId);
+
+    ServiceExposeMap getServiceInstanceMap(Service service, Instance instance);
 }

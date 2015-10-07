@@ -1523,7 +1523,9 @@ def test_svc_discovery_service(admin_user_client, user_client, project_client):
         'secondaryLaunchConfigs': 'r',
         'vip': 'r',
         'createIndex': 'r',
-        'metadata': 'r'
+        'metadata': 'r',
+        'selectorLink': 'r',
+        'selectorContainer': 'r'
     })
 
     auth_check(user_client.schema, 'service', 'r', {
@@ -1536,7 +1538,9 @@ def test_svc_discovery_service(admin_user_client, user_client, project_client):
         'secondaryLaunchConfigs': 'r',
         'vip': 'r',
         'createIndex': 'r',
-        'metadata': 'r'
+        'metadata': 'r',
+        'selectorLink': 'r',
+        'selectorContainer': 'r'
     })
 
     auth_check(project_client.schema, 'service', 'crud', {
@@ -1549,7 +1553,9 @@ def test_svc_discovery_service(admin_user_client, user_client, project_client):
         'secondaryLaunchConfigs': 'cr',
         'vip': 'cr',
         'createIndex': 'r',
-        'metadata': 'cru'
+        'metadata': 'cru',
+        'selectorLink': 'cr',
+        'selectorContainer': 'cr'
     })
 
 
@@ -1592,7 +1598,9 @@ def test_svc_discovery_lb_service(admin_user_client, user_client,
         'vip': 'r',
         'defaultCertificateId': 'r',
         'certificateIds': 'r',
-        'metadata': 'r'
+        'metadata': 'r',
+        'selectorLink': 'r',
+        'selectorContainer': 'r'
     })
 
     auth_check(user_client.schema, 'loadBalancerService', 'r', {
@@ -1606,7 +1614,9 @@ def test_svc_discovery_lb_service(admin_user_client, user_client,
         'vip': 'r',
         'defaultCertificateId': 'r',
         'certificateIds': 'r',
-        'metadata': 'r'
+        'metadata': 'r',
+        'selectorLink': 'r',
+        'selectorContainer': 'r'
     })
 
     auth_check(project_client.schema, 'loadBalancerService', 'crud', {
@@ -1620,7 +1630,9 @@ def test_svc_discovery_lb_service(admin_user_client, user_client,
         'vip': 'cr',
         'defaultCertificateId': 'cru',
         'certificateIds': 'cru',
-        'metadata': 'cru'
+        'metadata': 'cru',
+        'selectorLink': 'cr',
+        'selectorContainer': 'cr'
     })
 
 
@@ -1687,7 +1699,8 @@ def test_svc_discovery_expose_map(admin_user_client, user_client,
         'instanceId': 'r',
         'ipAddress': 'r',
         'data': 'r',
-        'accountId': 'r'
+        'accountId': 'r',
+        'managed': 'r'
     })
 
     auth_check(user_client.schema, 'serviceExposeMap', 'r', {
@@ -1695,7 +1708,8 @@ def test_svc_discovery_expose_map(admin_user_client, user_client,
         'serviceId': 'r',
         'instanceId': 'r',
         'ipAddress': 'r',
-        'accountId': 'r'
+        'accountId': 'r',
+        'managed': 'r'
     })
 
     auth_check(project_client.schema, 'serviceExposeMap', 'r', {
@@ -1703,7 +1717,8 @@ def test_svc_discovery_expose_map(admin_user_client, user_client,
         'serviceId': 'r',
         'instanceId': 'r',
         'ipAddress': 'r',
-        'accountId': 'r'
+        'accountId': 'r',
+        'managed': 'r'
     })
 
 
@@ -1718,7 +1733,10 @@ def test_svc_discovery_external_service(admin_user_client, user_client,
         'data': 'r',
         'upgrade': 'r',
         'healthCheck': 'r',
-        'metadata': 'r'
+        'metadata': 'r',
+        'selectorLink': 'r',
+        'selectorContainer': 'r',
+        'launchConfig': 'r'
     })
 
     auth_check(user_client.schema, 'externalService', 'r', {
@@ -1729,7 +1747,10 @@ def test_svc_discovery_external_service(admin_user_client, user_client,
         'accountId': 'r',
         'upgrade': 'r',
         'healthCheck': 'r',
-        'metadata': 'r'
+        'metadata': 'r',
+        'selectorLink': 'r',
+        'selectorContainer': 'r',
+        'launchConfig': 'r'
     })
 
     auth_check(project_client.schema, 'externalService', 'crud', {
@@ -1740,7 +1761,10 @@ def test_svc_discovery_external_service(admin_user_client, user_client,
         'accountId': 'r',
         'upgrade': 'r',
         'healthCheck': 'cr',
-        'metadata': 'cru'
+        'metadata': 'cru',
+        'selectorLink': 'cr',
+        'selectorContainer': 'cr',
+        'launchConfig': 'cr'
     })
 
 

@@ -61,14 +61,14 @@ public class ServiceExposeMapDaoImpl extends AbstractJooqDao implements ServiceE
         record.update();
         properties.put(InstanceConstants.FIELD_CREATE_INDEX, record.getCreateIndex());
         final Instance instance = objectManager.create(Instance.class, properties);
-        ServiceExposeMap exposeMap = createServiceInstanceMap(service, instance);
+        ServiceExposeMap exposeMap = createServiceInstanceMap(service, instance, true);
 
         return Pair.of(instance, exposeMap);
     }
 
     @Override
     @SuppressWarnings("unchecked")
-    public ServiceExposeMap createServiceInstanceMap(Service service, final Instance instance) {
+    public ServiceExposeMap createServiceInstanceMap(Service service, final Instance instance, boolean managed) {
         Map<String, String> instanceLabels = DataAccessor.fields(instance)
                 .withKey(InstanceConstants.FIELD_LABELS).withDefault(Collections.EMPTY_MAP).as(Map.class);
         String dnsPrefix = instanceLabels
@@ -76,42 +76,37 @@ public class ServiceExposeMapDaoImpl extends AbstractJooqDao implements ServiceE
         if (ServiceDiscoveryConstants.PRIMARY_LAUNCH_CONFIG_NAME.equalsIgnoreCase(dnsPrefix)) {
             dnsPrefix = null;
         }
-
-        return objectManager.create(ServiceExposeMap.class, SERVICE_EXPOSE_MAP.INSTANCE_ID, instance.getId(),
-                SERVICE_EXPOSE_MAP.SERVICE_ID, service.getId(), SERVICE_EXPOSE_MAP.ACCOUNT_ID,
-                service.getAccountId(), SERVICE_EXPOSE_MAP.DNS_PREFIX, dnsPrefix);
+        
+        ServiceExposeMap map = getServiceInstanceMap(service, instance);
+        if (map == null) {
+            map = objectManager.create(ServiceExposeMap.class, SERVICE_EXPOSE_MAP.INSTANCE_ID, instance.getId(),
+                    SERVICE_EXPOSE_MAP.SERVICE_ID, service.getId(), SERVICE_EXPOSE_MAP.ACCOUNT_ID,
+                    service.getAccountId(), SERVICE_EXPOSE_MAP.DNS_PREFIX, dnsPrefix, SERVICE_EXPOSE_MAP.MANAGED,
+                    managed);
+        }
+        return map;
     }
 
     @Override
-    public List<? extends Instance> listServiceInstances(long serviceId) {
+    public ServiceExposeMap getServiceInstanceMap(Service service, final Instance instance) {
+        return objectManager.findAny(ServiceExposeMap.class, SERVICE_EXPOSE_MAP.INSTANCE_ID, instance.getId(),
+                SERVICE_EXPOSE_MAP.SERVICE_ID, service.getId(), SERVICE_EXPOSE_MAP.REMOVED, null);
+    }
+
+    @Override
+    public List<? extends Instance> listServiceManagedInstances(long serviceId) {
         return create()
                 .select(INSTANCE.fields())
                 .from(INSTANCE)
                 .join(SERVICE_EXPOSE_MAP)
                 .on(SERVICE_EXPOSE_MAP.INSTANCE_ID.eq(INSTANCE.ID)
                         .and(SERVICE_EXPOSE_MAP.SERVICE_ID.eq(serviceId))
+                        .and(SERVICE_EXPOSE_MAP.MANAGED.eq(true))
                         .and(SERVICE_EXPOSE_MAP.STATE.in(CommonStatesConstants.ACTIVATING,
                                 CommonStatesConstants.ACTIVE, CommonStatesConstants.REQUESTED))
                         .and(INSTANCE.STATE.notIn(CommonStatesConstants.PURGING, CommonStatesConstants.PURGED,
                                 CommonStatesConstants.REMOVED, CommonStatesConstants.REMOVING)))
                 .fetchInto(InstanceRecord.class);
-    }
-
-    @Override
-    public List<? extends ServiceExposeMap> getNonRemovedServiceInstanceMap(long serviceId) {
-        return create()
-                .select(SERVICE_EXPOSE_MAP.fields())
-                .from(SERVICE_EXPOSE_MAP)
-                .join(INSTANCE)
-                .on(SERVICE_EXPOSE_MAP.INSTANCE_ID.eq(INSTANCE.ID)
-                        .and(SERVICE_EXPOSE_MAP.SERVICE_ID.eq(serviceId))
-                        .and(SERVICE_EXPOSE_MAP.REMOVED.isNull())
-                        .and(SERVICE_EXPOSE_MAP.STATE.notIn(CommonStatesConstants.REMOVED,
-                                CommonStatesConstants.REMOVING))
-                        .and(INSTANCE.STATE.notIn(CommonStatesConstants.PURGING,
-                                CommonStatesConstants.PURGED, CommonStatesConstants.REMOVED,
-                                CommonStatesConstants.REMOVING)))
-                .fetchInto(ServiceExposeMapRecord.class);
     }
 
     @Override
@@ -255,5 +250,20 @@ public class ServiceExposeMapDaoImpl extends AbstractJooqDao implements ServiceE
 
     public void setLockingConfiguration(Configuration lockingConfiguration) {
         this.lockingConfiguration = lockingConfiguration;
+    }
+
+    @Override
+    public List<? extends ServiceExposeMap> getNonRemovedUnmanagedServiceInstanceMap(long serviceId) {
+        return create()
+                .select(SERVICE_EXPOSE_MAP.fields())
+                .from(SERVICE_EXPOSE_MAP)
+                .join(INSTANCE)
+                .on(SERVICE_EXPOSE_MAP.INSTANCE_ID.eq(INSTANCE.ID)
+                        .and(SERVICE_EXPOSE_MAP.SERVICE_ID.eq(serviceId))
+                        .and(SERVICE_EXPOSE_MAP.REMOVED.isNull())
+                        .and(SERVICE_EXPOSE_MAP.MANAGED.eq(false))
+                        .and(SERVICE_EXPOSE_MAP.STATE.notIn(CommonStatesConstants.REMOVED,
+                                CommonStatesConstants.REMOVING)))
+                .fetchInto(ServiceExposeMapRecord.class);
     }
 }

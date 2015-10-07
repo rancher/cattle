@@ -9,6 +9,7 @@ import io.cattle.platform.configitem.request.ConfigUpdateRequest;
 import io.cattle.platform.configitem.version.ConfigItemStatusManager;
 import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.model.Service;
+import io.cattle.platform.core.model.ServiceExposeMap;
 import io.cattle.platform.engine.idempotent.IdempotentRetryException;
 import io.cattle.platform.eventing.EventService;
 import io.cattle.platform.eventing.model.EventVO;
@@ -259,12 +260,21 @@ public class DeploymentManagerImpl implements DeploymentManager {
             @Override
             public void doWithLockNoResult() {
                 // in remove, we don't care about the sidekicks, and remove only requested service
+                deleteServiceInstances(service);
+                List<? extends ServiceExposeMap> unmanagedMaps = expMapDao
+                        .getNonRemovedUnmanagedServiceInstanceMap(service.getId());
+                for (ServiceExposeMap unmanagedMap : unmanagedMaps) {
+                    objectProcessMgr.scheduleStandardProcessAsync(StandardProcess.REMOVE, unmanagedMap, null);
+                }
+                sdSvc.removeServiceMaps(service);
+            }
+
+            protected void deleteServiceInstances(final Service service) {
                 List<DeploymentUnit> units = unitInstanceFactory.collectDeploymentUnits(
                         Arrays.asList(service), new DeploymentServiceContext());
                 for (DeploymentUnit unit : units) {
                     unit.remove();
                 }
-                sdSvc.removeServiceMaps(service);
             }
         });
     }

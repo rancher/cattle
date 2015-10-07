@@ -67,7 +67,7 @@ public class ServiceDiscoveryInstanceStartPostListener extends AbstractObjectPro
 
                 if (instanceServiceMap == null) {
                     instanceServiceMap = exposeMapDao.createServiceInstanceMap(
-                            objectManager.loadResource(Service.class, serviceId), instance);
+                            objectManager.loadResource(Service.class, serviceId), instance, true);
                 }
 
                 if (instanceServiceMap.getState().equalsIgnoreCase(CommonStatesConstants.REQUESTED)) {

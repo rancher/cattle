@@ -423,6 +423,8 @@
         "service.vip" : "cr",
         "service.createIndex" : "r",
         "service.metadata" : "cru",
+        "service.selectorLink" : "cr",
+        "service.selectorContainer" : "cr",
 
         "addRemoveServiceLinkInput" : "r",
         "addRemoveServiceLinkInput.serviceLink" : "cr",
@@ -474,10 +476,10 @@
         "serviceExposeMap.serviceId" : "r",
         "serviceExposeMap.ipAddress" : "r",
         "serviceExposeMap.hostname" : "r",
+        "serviceExposeMap.managed" : "r",
 
         "externalService" : "r",
         "externalService.externalIpAddresses" : "cru",
-        "externalService.launchConfig" : "",
         "externalService.scale" : "",
         "externalService.secondaryLaunchConfigs" : "",
         "externalService.hostname" : "cru",
@@ -486,7 +488,6 @@
         "externalService.createIndex" : "",
 
         "dnsService" : "r",
-        "dnsService.launchConfig" : "",
         "dnsService.scale" : "",
         "dnsService.secondaryLaunchConfigs" : "",
         "dnsService.vip" : "",

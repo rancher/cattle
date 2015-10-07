@@ -11,7 +11,7 @@ package io.cattle.platform.core.model.tables;
 @java.lang.SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class ServiceTable extends org.jooq.impl.TableImpl<io.cattle.platform.core.model.tables.records.ServiceRecord> {
 
-	private static final long serialVersionUID = -1114100580;
+	private static final long serialVersionUID = 902897883;
 
 	/**
 	 * The singleton instance of <code>cattle.service</code>
@@ -95,6 +95,16 @@ public class ServiceTable extends org.jooq.impl.TableImpl<io.cattle.platform.cor
 	 * The column <code>cattle.service.create_index</code>.
 	 */
 	public final org.jooq.TableField<io.cattle.platform.core.model.tables.records.ServiceRecord, java.lang.Long> CREATE_INDEX = createField("create_index", org.jooq.impl.SQLDataType.BIGINT, this, "");
+
+	/**
+	 * The column <code>cattle.service.selector_link</code>.
+	 */
+	public final org.jooq.TableField<io.cattle.platform.core.model.tables.records.ServiceRecord, java.lang.String> SELECTOR_LINK = createField("selector_link", org.jooq.impl.SQLDataType.VARCHAR.length(4096), this, "");
+
+	/**
+	 * The column <code>cattle.service.selector_container</code>.
+	 */
+	public final org.jooq.TableField<io.cattle.platform.core.model.tables.records.ServiceRecord, java.lang.String> SELECTOR_CONTAINER = createField("selector_container", org.jooq.impl.SQLDataType.VARCHAR.length(4096), this, "");
 
 	/**
 	 * Create a <code>cattle.service</code> table reference

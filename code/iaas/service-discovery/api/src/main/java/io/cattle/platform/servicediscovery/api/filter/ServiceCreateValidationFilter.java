@@ -89,7 +89,7 @@ public class ServiceCreateValidationFilter extends AbstractDefaultResourceManage
         List<Map<String, Object>> launchConfigs = populateLaunchConfigs(service, request);
         for (Map<String, Object> launchConfig : launchConfigs) {
             Object imageUuid = launchConfig.get(InstanceConstants.FIELD_IMAGE_UUID);
-            if (imageUuid != null) {
+            if (imageUuid != null && !imageUuid.toString().equalsIgnoreCase(ServiceDiscoveryConstants.IMAGE_NONE)) {
                 if (!storageService.isValidUUID(imageUuid.toString())) {
                     throw new ValidationErrorException(ValidationErrorCodes.INVALID_REFERENCE,
                             InstanceConstants.FIELD_IMAGE_UUID);

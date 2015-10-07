@@ -6,9 +6,9 @@ import io.cattle.platform.servicediscovery.deployment.impl.DeploymentManagerImpl
 
 import java.util.List;
 
-public class ExternalServiceDeploymentPlanner extends ServiceDeploymentPlanner {
+public class NoOpServiceDeploymentPlanner extends ServiceDeploymentPlanner {
 
-    public ExternalServiceDeploymentPlanner(List<Service> services, List<DeploymentUnit> units,
+    public NoOpServiceDeploymentPlanner(List<Service> services, List<DeploymentUnit> units,
             DeploymentServiceContext context) {
         super(services, units, context);
     }
