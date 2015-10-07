@@ -10,7 +10,16 @@
  	</#if>
  	<#if containers??>
  	"containers":
- 		${containers}
+ 		${containers},
+ 	</#if>
+ 	<#if host??>
+ 	"self":{
+ 		"host":${host}
+ 	},
+ 	</#if>
+ 	<#if hosts??>
+ 	"hosts":
+ 		${hosts}
  	</#if>
   }
   

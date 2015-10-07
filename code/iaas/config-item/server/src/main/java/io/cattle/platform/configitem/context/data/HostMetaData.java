@@ -9,6 +9,7 @@ public class HostMetaData {
     String name;
     Map<String, String> labels;
     Long hostId;
+    String uuid;
 
     public String getAgent_ip() {
         return agent_ip;
@@ -22,16 +23,25 @@ public class HostMetaData {
         return labels;
     }
 
-    public HostMetaData(String agent_ip, String name, Map<String, String> labels, long hostId) {
+    public HostMetaData() {
+
+    }
+
+    public HostMetaData(String agent_ip, String name, Map<String, String> labels, long hostId, String uuid) {
         super();
         this.agent_ip = agent_ip;
         this.name = name;
         this.labels = labels;
         this.hostId = hostId;
+        this.uuid = uuid;
     }
 
     @JsonIgnore
     public Long getHostId() {
         return hostId;
+    }
+
+    public String getUuid() {
+        return uuid;
     }
 }

@@ -4,6 +4,7 @@ import static io.cattle.platform.core.model.tables.EnvironmentTable.ENVIRONMENT;
 import static io.cattle.platform.core.model.tables.ServiceTable.SERVICE;
 import io.cattle.platform.configitem.context.dao.MetaDataInfoDao;
 import io.cattle.platform.configitem.context.data.ContainerMetaData;
+import io.cattle.platform.configitem.context.data.HostMetaData;
 import io.cattle.platform.configitem.context.data.SelfMetaData;
 import io.cattle.platform.configitem.context.data.ServiceMetaData;
 import io.cattle.platform.configitem.context.data.StackMetaData;
@@ -106,7 +107,13 @@ public class ServiceMetadataInfoFactory extends AbstractAgentBaseContextFactory 
             context.getData().put("containers", jsonMapper.writeValueAsString(containersMetaData));
             context.getData().put("services", jsonMapper.writeValueAsString(servicesMD));
             context.getData().put("stacks", jsonMapper.writeValueAsString(stacksMD));
-
+            List<? extends HostMetaData> hosts = metaDataInfoDao.getInstanceHostMetaData(instance.getAccountId(), null);
+            List<? extends HostMetaData> selfHost = metaDataInfoDao.getInstanceHostMetaData(instance.getAccountId(),
+                    instance);
+            context.getData().put("hosts", jsonMapper.writeValueAsString(hosts));
+            if (!selfHost.isEmpty()) {
+                context.getData().put("host", jsonMapper.writeValueAsString(selfHost.get(0)));
+            }
         } catch (IOException e) {
             log.error("Failed to marshal service metadata", e);
         }
