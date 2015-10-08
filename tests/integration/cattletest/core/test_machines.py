@@ -270,3 +270,53 @@ def test_digitalocean_config_validation(admin_client):
         assert e.error.code == 'MissingRequired'
     else:
         assert False, 'Should have got MissingRequired for accessToken'
+
+
+def test_config_link_readonly(admin_user_client, super_client, request):
+    user1_client = new_context(admin_user_client, request).user_client
+    user2_client = new_context(admin_user_client, request).user_client
+
+    project = user1_client.create_project(members=[{
+        'role': 'owner',
+        'externalId': acc_id(user1_client),
+        'externalIdType': 'rancher_id'
+    }])
+    project = user1_client.wait_success(project)
+
+    members = get_plain_members(project.projectMembers())
+    members.append({
+        'role': 'readonly',
+        'externalId': acc_id(user2_client),
+        'externalIdType': 'rancher_id'
+    })
+    project.setmembers(members=members)
+
+    user1_client._headers['X-API-Project-Id'] = project.id
+    user2_client._headers['X-API-Project-Id'] = project.id
+    user1_client.reload_schema()
+    user2_client.reload_schema()
+
+    name = "test-%s" % random_str()
+    digoc_config = {
+        "image": "img1",
+        "region": "reg1",
+        "size": "40000",
+        "accessToken": "ac-1",
+        "ipv6": True,
+        "privateNetworking": True,
+        "backups": True
+    }
+
+    host = user1_client.create_machine(name=name,
+                                       digitaloceanConfig=digoc_config)
+    host = user1_client.wait_success(host)
+    host = super_client.by_id('physicalHost', host.id)
+
+    super_client.update(host, extractedConfig='hello')
+
+    host = super_client.reload(host)
+    assert 'config' in host.links
+    host = user1_client.reload(host)
+    assert 'config' in host.links
+    host = user2_client.reload(host)
+    assert 'config' in host.links
