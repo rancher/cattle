@@ -6,6 +6,7 @@ import io.cattle.platform.core.dao.NetworkDao;
 import io.cattle.platform.core.model.Environment;
 import io.cattle.platform.core.model.Service;
 import io.cattle.platform.iaas.api.filter.common.AbstractDefaultResourceManagerFilter;
+import io.cattle.platform.json.JsonMapper;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.meta.ObjectMetaDataManager;
 import io.cattle.platform.object.util.DataUtils;
@@ -22,6 +23,7 @@ import io.github.ibuildthecloud.gdapi.request.resource.ResourceManager;
 import io.github.ibuildthecloud.gdapi.request.resource.ResourceManagerLocator;
 import io.github.ibuildthecloud.gdapi.validation.ValidationErrorCodes;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -48,6 +50,10 @@ public class ServiceCreateValidationFilter extends AbstractDefaultResourceManage
     @Inject
     NetworkDao ntwkDao;
 
+    @Inject
+    JsonMapper jsonMapper;
+
+
     @Override
     public Class<?>[] getTypeClasses() {
         return new Class<?>[] { Service.class };
@@ -64,6 +70,8 @@ public class ServiceCreateValidationFilter extends AbstractDefaultResourceManage
         
         validateEnvironment(service);
 
+        validateMetadata(request);
+
         validateName(type, service);
 
         validateLaunchConfigs(service, request);
@@ -75,6 +83,24 @@ public class ServiceCreateValidationFilter extends AbstractDefaultResourceManage
         validateRequestedVip(request);
 
         return super.create(type, request, next);
+    }
+
+    protected void validateMetadata(ApiRequest request) {
+
+        Object metadata = DataUtils.getFieldFromRequest(request, ServiceDiscoveryConstants.FIELD_METADATA,
+                Object.class);
+        if (metadata != null) {
+            try {
+                String value = jsonMapper.writeValueAsString(metadata);
+                if (value.length() > 1048576) {
+                    throw new ValidationErrorException(ValidationErrorCodes.MAX_LIMIT_EXCEEDED,
+                            ServiceDiscoveryConstants.FIELD_METADATA + " limit is 1MB");
+                }
+            } catch (IOException e) {
+                throw new ValidationErrorException(ValidationErrorCodes.INVALID_OPTION,
+                        "Failed to serialize field " + ServiceDiscoveryConstants.FIELD_METADATA);
+            }
+        }
     }
 
     protected void validateEnvironment(Service service) {

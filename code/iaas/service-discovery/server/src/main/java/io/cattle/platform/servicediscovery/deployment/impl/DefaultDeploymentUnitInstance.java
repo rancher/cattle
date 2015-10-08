@@ -16,7 +16,9 @@ import io.cattle.platform.servicediscovery.deployment.AbstractInstanceUnit;
 import io.cattle.platform.servicediscovery.deployment.DeploymentUnitInstance;
 import io.cattle.platform.servicediscovery.deployment.impl.DeploymentManagerImpl.DeploymentServiceContext;
 
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.lang.StringUtils;
@@ -24,6 +26,7 @@ import org.apache.commons.lang3.tuple.Pair;
 
 public class DefaultDeploymentUnitInstance extends AbstractInstanceUnit {
     protected String instanceName;
+    protected boolean startOnce;
 
     public DefaultDeploymentUnitInstance(DeploymentServiceContext context, String uuid,
             Service service, String instanceName, Instance instance, Map<String, String> labels, String launchConfigName) {
@@ -32,6 +35,20 @@ public class DefaultDeploymentUnitInstance extends AbstractInstanceUnit {
         this.instance = instance;
         if (this.instance != null) {
             exposeMap = context.exposeMapDao.findInstanceExposeMap(this.instance);
+        }
+        setStartOnce(service, launchConfigName);
+    }
+
+    @SuppressWarnings("unchecked")
+    public void setStartOnce(Service service, String launghConfig) {
+        Object serviceLabels = ServiceDiscoveryUtil.getLaunchConfigObject(service, launchConfigName,
+                InstanceConstants.FIELD_LABELS);
+        if (serviceLabels != null) {
+            String startOnceLabel = ((Map<String, String>) serviceLabels)
+                    .get(ServiceDiscoveryConstants.LABEL_SERVICE_CONTAINER_CREATE_ONLY);
+            if (StringUtils.equalsIgnoreCase(startOnceLabel, "true")) {
+                startOnce = true;
+            }
         }
     }
 
@@ -129,6 +146,11 @@ public class DefaultDeploymentUnitInstance extends AbstractInstanceUnit {
 
     @Override
     protected boolean isStartedImpl() {
+        if (startOnce) {
+            List<String> validStates = Arrays.asList(InstanceConstants.STATE_STOPPED, InstanceConstants.STATE_STOPPING,
+                    InstanceConstants.STATE_RUNNING);
+            return validStates.contains(context.objectManager.reload(this.instance).getState());
+        }
         return context.objectManager.reload(this.instance).getState().equalsIgnoreCase(InstanceConstants.STATE_RUNNING);
     }
 

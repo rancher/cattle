@@ -509,7 +509,9 @@ def test_link_volumes(client, context):
     launch_config = {"imageUuid": image_uuid,
                      "dataVolumesFromLaunchConfigs": ['secondary']}
 
-    secondary_lc = {"imageUuid": image_uuid, "name": "secondary"}
+    labels = {"io.rancher.container.start_once": "true"}
+    secondary_lc = {"imageUuid": image_uuid,
+                    "name": "secondary", "labels": labels}
 
     service = client.create_service(name=random_str(),
                                     environmentId=env.id,
@@ -523,6 +525,10 @@ def test_link_volumes(client, context):
 
     assert len(container1.dataVolumesFrom) == 1
     assert set(container1.dataVolumesFrom) == set([container2.id])
+
+    container2 = client.wait_success(container2.stop())
+    client.wait_success(service)
+    assert container2.state == 'stopped'
 
 
 def test_volumes_service_links_scale_one(client, context):
@@ -1134,7 +1140,6 @@ def test_sidekick_destroy_instance(client, context):
 
 def test_sidekick_restart_instances(client, context):
     env = _create_stack(client)
-
     image_uuid = context.image_uuid
     launch_config = {"imageUuid": image_uuid}
     secondary_lc = {"imageUuid": image_uuid, "name": "secondary"}
@@ -1156,9 +1161,7 @@ def test_sidekick_restart_instances(client, context):
     instance22 = _validate_compose_instance_start(client, service,
                                                   env, "2", "secondary")
 
-    instance_service_map1 = client. \
-        list_serviceExposeMap(serviceId=service.id, state="active")
-    assert len(instance_service_map1) == 4
+    _wait_until_active_map_count(service, 4, client, timeout=30)
 
     # stop instance11, destroy instance12 and call update on a service1
     # scale should be restored
@@ -1173,9 +1176,7 @@ def test_sidekick_restart_instances(client, context):
     _validate_compose_instance_start(client, service, env, "1", "secondary")
     _validate_compose_instance_start(client, service, env, "2", "secondary")
 
-    instance_service_map1 = client. \
-        list_serviceExposeMap(serviceId=service.id, state="active")
-    assert len(instance_service_map1) == 4
+    _wait_until_active_map_count(service, 4, client, timeout=30)
 
 
 def test_sidekick_scaleup(client, context):
@@ -2665,12 +2666,16 @@ def test_healtcheck(client, context, super_client):
     service = client.wait_success(service.activate(), 120)
     c = _wait_for_compose_instance_start(client, service, stack, "1")
     c_host_id = super_client.reload(c).instanceHostMaps()[0].hostId
+    health_c = super_client.\
+        list_healthcheckInstance(accountId=service.accountId, instanceId=c.id)
+    assert len(health_c) > 0
+    health_id = health_c[0].id
 
     def validate_container_host(host_maps):
         for host_map in host_maps:
             assert host_map.hostId != c_host_id
 
-    host_maps = _wait_health_host_count(super_client, service, 3)
+    host_maps = _wait_health_host_count(super_client, health_id, 3)
     validate_container_host(host_maps)
 
     # reactivate the service and
@@ -2678,7 +2683,7 @@ def test_healtcheck(client, context, super_client):
     service = client.wait_success(service.deactivate(), 120)
     service = client.wait_success(service.activate(), 120)
 
-    host_maps = _wait_health_host_count(super_client, service, 3)
+    host_maps = _wait_health_host_count(super_client, health_id, 3)
     validate_container_host(host_maps)
 
     # reactivate the service, add 3 more hosts and verify
@@ -2690,14 +2695,14 @@ def test_healtcheck(client, context, super_client):
     register_simulated_host(context)
     client.wait_success(service.activate(), 120)
 
-    host_maps = _wait_health_host_count(super_client, service, 3)
+    host_maps = _wait_health_host_count(super_client, health_id, 3)
     validate_container_host(host_maps)
 
 
-def _wait_health_host_count(super_client, service, count):
+def _wait_health_host_count(super_client, health_id, count):
     def active_len():
         match = super_client.\
-            list_healthcheckInstanceHostMap(accountId=service.accountId,
+            list_healthcheckInstanceHostMap(healthcheckInstanceId=health_id,
                                             state='active')
         if len(match) <= count:
             return match
