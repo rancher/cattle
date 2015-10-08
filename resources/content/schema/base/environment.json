@@ -13,6 +13,9 @@
         },
         "rancherCompose":{
             "type": "string"
+        },
+        "environment":{
+            "type": "map[string]"
         }
     },
     "resourceActions" : {
