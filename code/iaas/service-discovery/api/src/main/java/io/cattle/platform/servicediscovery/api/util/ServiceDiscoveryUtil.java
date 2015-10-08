@@ -236,4 +236,11 @@ public class ServiceDiscoveryUtil {
         return dnsName;
     }
 
+    public static boolean isNoopService(Service service, AllocatorService allocatorService) {
+        Object imageUUID = ServiceDiscoveryUtil.getServiceDataAsMap(service,
+                ServiceDiscoveryConstants.PRIMARY_LAUNCH_CONFIG_NAME,
+                allocatorService).get(InstanceConstants.FIELD_IMAGE_UUID);
+        return imageUUID == null || imageUUID.toString().equalsIgnoreCase(ServiceDiscoveryConstants.IMAGE_NONE);
+    }
+
 }
