@@ -1570,6 +1570,7 @@ def test_svc_discovery_environment(admin_user_client, user_client,
         'data': 'r',
         'dockerCompose': 'r',
         'rancherCompose': 'r',
+        'environment': 'r',
     })
 
     auth_check(user_client.schema, 'environment', 'r', {
@@ -1577,6 +1578,7 @@ def test_svc_discovery_environment(admin_user_client, user_client,
         'accountId': 'r',
         'dockerCompose': 'r',
         'rancherCompose': 'r',
+        'environment': 'r',
     })
 
     auth_check(project_client.schema, 'environment', 'crud', {
@@ -1584,6 +1586,7 @@ def test_svc_discovery_environment(admin_user_client, user_client,
         'accountId': 'r',
         'dockerCompose': 'cr',
         'rancherCompose': 'cr',
+        'environment': 'cr',
     })
 
 
