@@ -507,7 +507,9 @@ def test_link_volumes(client, context):
     launch_config = {"imageUuid": image_uuid,
                      "dataVolumesFromLaunchConfigs": ['secondary']}
 
-    secondary_lc = {"imageUuid": image_uuid, "name": "secondary"}
+    labels = {"io.rancher.container.start_once": "true"}
+    secondary_lc = {"imageUuid": image_uuid,
+                    "name": "secondary", "labels": labels}
 
     service = client.create_service(name=random_str(),
                                     environmentId=env.id,
@@ -521,6 +523,10 @@ def test_link_volumes(client, context):
 
     assert len(container1.dataVolumesFrom) == 1
     assert set(container1.dataVolumesFrom) == set([container2.id])
+
+    container2 = client.wait_success(container2.stop())
+    client.wait_success(service)
+    assert container2.state == 'stopped'
 
 
 def test_volumes_service_links_scale_one(client, context):
