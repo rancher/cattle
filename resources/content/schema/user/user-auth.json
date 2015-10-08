@@ -448,6 +448,7 @@
         "loadBalancerService.certificateIds" : "cru",
         "loadBalancerService.defaultCertificateId" : "cru",
         "loadBalancerService.createIndex" : "",
+        "loadBalancerService.selectorContainer" : "",
 
         "snapshot" : "r",
         "snapshot.volumeId" : "cr",
@@ -488,12 +489,14 @@
         "externalService.vip" : "",
         "externalService.healthCheck" : "cr",
         "externalService.createIndex" : "",
+        "externalService.selectorContainer" : "",
 
         "dnsService" : "r",
         "dnsService.scale" : "",
         "dnsService.secondaryLaunchConfigs" : "",
         "dnsService.vip" : "",
         "dnsService.createIndex" : "",
+        "dnsService.selectorContainer" : "",
 
         "serviceEvent" : "r",
         "serviceEvent.instanceId" : "r",
