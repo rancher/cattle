@@ -66,7 +66,7 @@ public class LdapConfig implements Configurable {
         return port;
     }
 
-    @Field(required = true, nullable = false, minLength = 1)
+    @Field(required = false, nullable = true)
     public String getLoginDomain() {
         return loginDomain;
     }
@@ -126,7 +126,7 @@ public class LdapConfig implements Configurable {
         return userObjectClass;
     }
 
-    @Field(nullable = false, required = true, defaultValue = "userAccountControl")
+    @Field(nullable = false, required = false, defaultValue = "userAccountControl")
     public String getUserEnabledAttribute() {
         return userEnabledAttribute;
     }
@@ -136,7 +136,7 @@ public class LdapConfig implements Configurable {
         return userNameField;
     }
 
-    @Field(nullable = false, required = true, defaultValue = "2")
+    @Field(nullable = false, required = false, defaultValue = "2")
     public int getUserDisabledBitMask() {
         return userDisabledBitMask;
     }
