@@ -21,6 +21,7 @@
        <bean class="io.cattle.platform.servicediscovery.api.filter.ServiceOutputFilter" />
        <bean class="io.cattle.platform.servicediscovery.api.filter.LoadBalancerServiceCertificateRemoveFilter" />
        <bean class="io.cattle.platform.servicediscovery.api.filter.ServiceUpgradeValidationFilter" />
+       <bean class="io.cattle.platform.servicediscovery.api.filter.SelectorServiceCreateValidationFilter" />
        
        <bean class="io.cattle.platform.servicediscovery.api.service.impl.ServiceDiscoveryApiServiceImpl" />
        

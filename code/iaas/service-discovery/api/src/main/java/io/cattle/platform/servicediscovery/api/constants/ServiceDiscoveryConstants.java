@@ -29,6 +29,7 @@ public class ServiceDiscoveryConstants {
     public static final String FIELD_VIP = "vip";
     public static final String FIELD_METADATA = "metadata";
     public static final String FIELD_VERSION = "version";
+    public static final String FIELD_SELECTOR_CONTAINER = "selectorContainer";
 
     public static final String ACTION_SERVICE_ACTIVATE = "activate";
     public static final String ACTION_SERVICE_CREATE = "create";

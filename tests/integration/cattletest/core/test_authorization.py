@@ -1605,8 +1605,7 @@ def test_svc_discovery_lb_service(admin_user_client, user_client,
         'defaultCertificateId': 'r',
         'certificateIds': 'r',
         'metadata': 'r',
-        'selectorLink': 'r',
-        'selectorContainer': 'r'
+        'selectorLink': 'r'
     })
 
     auth_check(user_client.schema, 'loadBalancerService', 'r', {
@@ -1621,8 +1620,7 @@ def test_svc_discovery_lb_service(admin_user_client, user_client,
         'defaultCertificateId': 'r',
         'certificateIds': 'r',
         'metadata': 'r',
-        'selectorLink': 'r',
-        'selectorContainer': 'r'
+        'selectorLink': 'r'
     })
 
     auth_check(project_client.schema, 'loadBalancerService', 'crud', {
@@ -1637,8 +1635,7 @@ def test_svc_discovery_lb_service(admin_user_client, user_client,
         'defaultCertificateId': 'cru',
         'certificateIds': 'cru',
         'metadata': 'cru',
-        'selectorLink': 'cr',
-        'selectorContainer': 'cr'
+        'selectorLink': 'cr'
     })
 
 
@@ -1747,7 +1744,6 @@ def test_svc_discovery_external_service(admin_user_client, user_client,
         'healthCheck': 'r',
         'metadata': 'r',
         'selectorLink': 'r',
-        'selectorContainer': 'r',
         'launchConfig': 'r'
     })
 
@@ -1761,7 +1757,6 @@ def test_svc_discovery_external_service(admin_user_client, user_client,
         'healthCheck': 'r',
         'metadata': 'r',
         'selectorLink': 'r',
-        'selectorContainer': 'r',
         'launchConfig': 'r'
     })
 
@@ -1775,7 +1770,6 @@ def test_svc_discovery_external_service(admin_user_client, user_client,
         'healthCheck': 'cr',
         'metadata': 'cru',
         'selectorLink': 'cr',
-        'selectorContainer': 'cr',
         'launchConfig': 'cr'
     })
 

@@ -1,5 +1,6 @@
 from common_fixtures import *  # NOQA
 import yaml
+from cattle import ApiError
 
 
 def _create_service(client, env, image_uuid, service_kind):
@@ -33,9 +34,8 @@ def _create_service(client, env, image_uuid, service_kind):
 
 
 def _validate_service_link(client, context, service_kind):
-    env = client.create_environment(name=random_str())
-    env = client.wait_success(env)
-    assert env.state == "active"
+    env = _create_stack(client)
+
     image_uuid = context.image_uuid
     # use case #1 - service having selector's label,
     # is present when service with selector is created
@@ -73,9 +73,7 @@ def test_service_add_service_link_selector(client, context):
 
 
 def test_service_add_instance_selector(client, context):
-    env = client.create_environment(name=random_str())
-    env = client.wait_success(env)
-    assert env.state == "active"
+    env = _create_stack(client)
 
     image_uuid = context.image_uuid
 
@@ -125,10 +123,15 @@ def test_service_add_instance_selector(client, context):
     assert expose_map.managed == 0
 
 
-def test_service_mixed_selector_based_wo_image(client, context):
+def _create_stack(client):
     env = client.create_environment(name=random_str())
     env = client.wait_success(env)
     assert env.state == "active"
+    return env
+
+
+def test_service_mixed_selector_based_wo_image(client, context):
+    env = _create_stack(client)
     image_uuid = context.image_uuid
 
     labels = {'foo': "barbar"}
@@ -165,10 +168,65 @@ def test_service_mixed_selector_based_wo_image(client, context):
     )
 
 
+def test_service_no_image_no_selector(client, context):
+    env = _create_stack(client)
+
+    with pytest.raises(ApiError) as e:
+        launch_config = {"imageUuid": "rancher/none"}
+        client.create_service(name=random_str(),
+                              environmentId=env.id,
+                              launchConfig=launch_config)
+    assert e.value.error.status == 422
+    assert e.value.error.code == 'InvalidOption'
+
+
+def test_service_upgrade_no_image_selector(client):
+    env = _create_stack(client)
+    launch_config = {"imageUuid": "rancher/none"}
+    svc1 = client.create_service(name=random_str(),
+                                 environmentId=env.id,
+                                 launchConfig=launch_config,
+                                 selectorContainer="foo=barbar")
+    svc1 = client.wait_success(svc1)
+    svc1 = client.wait_success(svc1.activate())
+
+    with pytest.raises(ApiError) as e:
+        svc1.upgrade_action(launchConfig={'labels': {'foo': "bar"}})
+
+    assert e.value.error.status == 422
+    assert e.value.error.code == 'InvalidAction'
+
+
+def test_service_upgrade_mixed_selector(client, context):
+    env = _create_stack(client)
+    launch_config = {"imageUuid": "rancher/none"}
+    svc1 = client.create_service(name=random_str(),
+                                 environmentId=env.id,
+                                 launchConfig=launch_config,
+                                 selectorContainer="foo=barbar")
+    svc1 = client.wait_success(svc1)
+    svc1 = client.wait_success(svc1.activate())
+
+    with pytest.raises(ApiError) as e:
+        svc1.upgrade_action(launchConfig={'labels': {'foo': "bar"}})
+
+    assert e.value.error.status == 422
+    assert e.value.error.code == 'InvalidAction'
+
+    image_uuid = context.image_uuid
+    launch_config = {"imageUuid": image_uuid}
+    svc2 = client.create_service(name=random_str(),
+                                 environmentId=env.id,
+                                 launchConfig=launch_config,
+                                 selectorContainer="foo=barbar")
+    svc2 = client.wait_success(svc2)
+    svc2 = client.wait_success(svc2.activate())
+    svc2.upgrade_action(launchConfig={'labels': {'foo': "bar"}})
+
+
 def test_service_mixed_selector_based_w_image(client, context):
-    env = client.create_environment(name=random_str())
-    env = client.wait_success(env)
-    assert env.state == "active"
+    env = _create_stack(client)
+
     image_uuid = context.image_uuid
 
     labels = {'foo': "test"}
@@ -240,9 +298,7 @@ def test_service_mixed_selector_based_w_image(client, context):
 
 
 def test_lb_service_add_instance_selector(client, context):
-    env = client.create_environment(name=random_str())
-    env = client.wait_success(env)
-    assert env.state == "active"
+    env = _create_stack(client)
 
     image_uuid = context.image_uuid
 
