@@ -1,7 +1,8 @@
 {
      "resourceFields": {
         "launchConfig": {
-            "type": "launchConfig"
+            "type": "launchConfig",
+            "nullable": true
         },
         "secondaryLaunchConfigs": {
             "type": "array[secondaryLaunchConfig]",
