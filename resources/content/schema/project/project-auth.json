@@ -62,6 +62,9 @@
         "typeDocumentation" : "r",
         "typeDocumentation.resourceFields" : "r",
         "fieldDocumentation": "r",
+        "inServiceUpgradeStrategy" : "cr",
+        "toServiceUpgradeStrategy" : "cr",
+
         "end" : ""
     }
 }

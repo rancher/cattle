@@ -17,7 +17,8 @@
     <bean class="io.cattle.platform.servicediscovery.process.ServiceRemove" />
     <bean class="io.cattle.platform.servicediscovery.process.ServiceCreate" />
     <bean class="io.cattle.platform.servicediscovery.process.ServiceUpgrade" />
-    <bean class="io.cattle.platform.servicediscovery.process.ServiceCancelupgrade" />
+    <bean class="io.cattle.platform.servicediscovery.process.ServiceRollback" />
+    <bean class="io.cattle.platform.servicediscovery.process.ServiceFinishUpgrade" />
     <bean class="io.cattle.platform.servicediscovery.process.NetworkFromInstanceStop" />
     <bean class="io.cattle.platform.servicediscovery.process.SelectorServiceCreatePostListener" />
     <bean class="io.cattle.platform.servicediscovery.process.SelectorInstanceStartPostListener" />
@@ -57,6 +58,7 @@
     <bean class="io.cattle.platform.servicediscovery.deployment.impl.DeploymentManagerImpl" />
     <bean class="io.cattle.platform.servicediscovery.deployment.impl.DeploymentUnitInstanceFactoryImpl" />
     <bean class="io.cattle.platform.servicediscovery.deployment.impl.ServiceDeploymentPlannerFactoryImpl" />
+    <bean class="io.cattle.platform.servicediscovery.upgrade.impl.UpgradeManagerImpl" />
     
     <bean class="io.cattle.platform.allocator.service.AllocatorServiceImpl" />
       

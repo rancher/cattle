@@ -180,50 +180,6 @@ def test_service_no_image_no_selector(client, context):
     assert e.value.error.code == 'InvalidOption'
 
 
-def test_service_upgrade_no_image_selector(client):
-    env = _create_stack(client)
-    launch_config = {"imageUuid": "rancher/none"}
-    svc1 = client.create_service(name=random_str(),
-                                 environmentId=env.id,
-                                 launchConfig=launch_config,
-                                 selectorContainer="foo=barbar")
-    svc1 = client.wait_success(svc1)
-    svc1 = client.wait_success(svc1.activate())
-
-    with pytest.raises(ApiError) as e:
-        svc1.upgrade_action(launchConfig={'labels': {'foo': "bar"}})
-
-    assert e.value.error.status == 422
-    assert e.value.error.code == 'InvalidAction'
-
-
-def test_service_upgrade_mixed_selector(client, context):
-    env = _create_stack(client)
-    launch_config = {"imageUuid": "rancher/none"}
-    svc1 = client.create_service(name=random_str(),
-                                 environmentId=env.id,
-                                 launchConfig=launch_config,
-                                 selectorContainer="foo=barbar")
-    svc1 = client.wait_success(svc1)
-    svc1 = client.wait_success(svc1.activate())
-
-    with pytest.raises(ApiError) as e:
-        svc1.upgrade_action(launchConfig={'labels': {'foo': "bar"}})
-
-    assert e.value.error.status == 422
-    assert e.value.error.code == 'InvalidAction'
-
-    image_uuid = context.image_uuid
-    launch_config = {"imageUuid": image_uuid}
-    svc2 = client.create_service(name=random_str(),
-                                 environmentId=env.id,
-                                 launchConfig=launch_config,
-                                 selectorContainer="foo=barbar")
-    svc2 = client.wait_success(svc2)
-    svc2 = client.wait_success(svc2.activate())
-    svc2.upgrade_action(launchConfig={'labels': {'foo': "bar"}})
-
-
 def test_service_mixed_selector_based_w_image(client, context):
     env = _create_stack(client)
 

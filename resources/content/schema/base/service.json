@@ -47,6 +47,14 @@
              "attributes" : {
                 "scheduleUpdate" : true
             }
+        },
+        "previousLaunchConfig": {
+            "type": "launchConfig",
+            "nullable": true
+        },
+        "previousSecondaryLaunchConfigs": {
+            "type": "array[secondaryLaunchConfig]",
+            "required": false
         }
     },
     "resourceActions" : {

@@ -151,7 +151,7 @@ public class ServiceExposeMapDaoImpl extends AbstractJooqDao implements ServiceE
                 .from(SERVICE)
                 .where(SERVICE.ACCOUNT_ID.eq(accountId))
                 .and(SERVICE.REMOVED.isNull())
-                .and(SERVICE.STATE.in(CommonStatesConstants.ACTIVE, CommonStatesConstants.ACTIVATING, CommonStatesConstants.UPDATING_ACTIVE))
+                .and(SERVICE.STATE.in(sdService.getServiceActiveStates(true)))
                 .fetchInto(ServiceRecord.class);
     }
 
@@ -254,7 +254,7 @@ public class ServiceExposeMapDaoImpl extends AbstractJooqDao implements ServiceE
     }
 
     @Override
-    public List<? extends ServiceExposeMap> getNonRemovedUnmanagedServiceInstanceMap(long serviceId) {
+    public List<? extends ServiceExposeMap> getUnmanagedServiceInstanceMapsToRemove(long serviceId) {
         return create()
                 .select(SERVICE_EXPOSE_MAP.fields())
                 .from(SERVICE_EXPOSE_MAP)
@@ -263,13 +263,14 @@ public class ServiceExposeMapDaoImpl extends AbstractJooqDao implements ServiceE
                         .and(SERVICE_EXPOSE_MAP.SERVICE_ID.eq(serviceId))
                         .and(SERVICE_EXPOSE_MAP.REMOVED.isNull())
                         .and(SERVICE_EXPOSE_MAP.MANAGED.eq(false))
+                        .and(SERVICE_EXPOSE_MAP.UPGRADE.eq(false))
                         .and(SERVICE_EXPOSE_MAP.STATE.notIn(CommonStatesConstants.REMOVED,
                                 CommonStatesConstants.REMOVING)))
                 .fetchInto(ServiceExposeMapRecord.class);
     }
 
     @Override
-    public List<? extends Instance> listServiceManagedInstances(Service service, String launchConfigName) {
+    public List<? extends Instance> getInstancesToUpgrade(Service service, String launchConfigName, String toVersion) {
         Condition condition = null;
         if (launchConfigName == null || launchConfigName.equals(service.getName())
                 || launchConfigName.equals(ServiceDiscoveryConstants.PRIMARY_LAUNCH_CONFIG_NAME)) {
@@ -277,6 +278,8 @@ public class ServiceExposeMapDaoImpl extends AbstractJooqDao implements ServiceE
         } else {
             condition = SERVICE_EXPOSE_MAP.DNS_PREFIX.eq(launchConfigName);
         }
+
+        // add all managed
         return create()
                 .select(INSTANCE.fields())
                 .from(INSTANCE)
@@ -287,7 +290,80 @@ public class ServiceExposeMapDaoImpl extends AbstractJooqDao implements ServiceE
                         .and(SERVICE_EXPOSE_MAP.STATE.in(CommonStatesConstants.ACTIVATING,
                                 CommonStatesConstants.ACTIVE, CommonStatesConstants.REQUESTED))
                         .and(INSTANCE.STATE.notIn(CommonStatesConstants.PURGING, CommonStatesConstants.PURGED,
-                                CommonStatesConstants.REMOVED, CommonStatesConstants.REMOVING)).and(condition))
+                                CommonStatesConstants.REMOVED, CommonStatesConstants.REMOVING)).and(condition)
+                        .and(INSTANCE.VERSION.ne(toVersion)))
                 .fetchInto(InstanceRecord.class);
+    }
+
+    @Override
+    public List<? extends Instance> getUpgradedInstances(Service service, String launchConfigName,
+            String toVersion, boolean managed) {
+        Condition condition1 = null;
+        if (launchConfigName == null || launchConfigName.equals(service.getName())
+                || launchConfigName.equals(ServiceDiscoveryConstants.PRIMARY_LAUNCH_CONFIG_NAME)) {
+            condition1 = SERVICE_EXPOSE_MAP.DNS_PREFIX.isNull();
+        } else {
+            condition1 = SERVICE_EXPOSE_MAP.DNS_PREFIX.eq(launchConfigName);
+        }
+
+        Condition condition2 = null;
+        if (managed) {
+            condition2 = SERVICE_EXPOSE_MAP.MANAGED.eq(true);
+        } else {
+            condition2 = SERVICE_EXPOSE_MAP.MANAGED.eq(false).and(SERVICE_EXPOSE_MAP.UPGRADE.eq(true));
+        }
+
+        return create()
+                .select(INSTANCE.fields())
+                .from(INSTANCE)
+                .join(SERVICE_EXPOSE_MAP)
+                .on(SERVICE_EXPOSE_MAP.INSTANCE_ID.eq(INSTANCE.ID)
+                        .and(SERVICE_EXPOSE_MAP.SERVICE_ID.eq(service.getId()))
+                        .and(SERVICE_EXPOSE_MAP.STATE.in(CommonStatesConstants.ACTIVATING,
+                                CommonStatesConstants.ACTIVE, CommonStatesConstants.REQUESTED))
+                        .and(INSTANCE.STATE.notIn(CommonStatesConstants.PURGING, CommonStatesConstants.PURGED,
+                                CommonStatesConstants.REMOVED, CommonStatesConstants.REMOVING)).and(condition1)
+                        .and(condition2)
+                        .and(INSTANCE.VERSION.eq(toVersion)))
+                .fetchInto(InstanceRecord.class);
+    }
+
+    @Override
+    public List<? extends Instance> getInstancesToCleanup(Service service, String launchConfigName, String toVersion) {
+        Condition condition = null;
+        if (launchConfigName == null || launchConfigName.equals(service.getName())
+                || launchConfigName.equals(ServiceDiscoveryConstants.PRIMARY_LAUNCH_CONFIG_NAME)) {
+            condition = SERVICE_EXPOSE_MAP.DNS_PREFIX.isNull();
+        } else {
+            condition = SERVICE_EXPOSE_MAP.DNS_PREFIX.eq(launchConfigName);
+        }
+        // add unmanaged and marked for upgrade
+        return create()
+                .select(INSTANCE.fields())
+                .from(INSTANCE)
+                .join(SERVICE_EXPOSE_MAP)
+                .on(SERVICE_EXPOSE_MAP.INSTANCE_ID.eq(INSTANCE.ID)
+                        .and(SERVICE_EXPOSE_MAP.SERVICE_ID.eq(service.getId()))
+                        .and(SERVICE_EXPOSE_MAP.MANAGED.eq(false))
+                        .and(SERVICE_EXPOSE_MAP.UPGRADE.eq(true))
+                        .and(SERVICE_EXPOSE_MAP.STATE.in(CommonStatesConstants.ACTIVATING,
+                                CommonStatesConstants.ACTIVE, CommonStatesConstants.REQUESTED))
+                        .and(INSTANCE.STATE.notIn(CommonStatesConstants.PURGING, CommonStatesConstants.PURGED,
+                                CommonStatesConstants.REMOVED, CommonStatesConstants.REMOVING)).and(condition)
+                        .and(INSTANCE.VERSION.ne(toVersion)))
+                .fetchInto(InstanceRecord.class);
+    }
+
+    @Override
+    public List<? extends ServiceExposeMap> getInstancesSetForUpgrade(long serviceId) {
+        return create()
+        .select(SERVICE_EXPOSE_MAP.fields())
+        .from(SERVICE_EXPOSE_MAP)
+                .where(SERVICE_EXPOSE_MAP.SERVICE_ID.eq(serviceId))
+                .and(SERVICE_EXPOSE_MAP.MANAGED.eq(false))
+                .and(SERVICE_EXPOSE_MAP.UPGRADE.eq(true))
+                .and(SERVICE_EXPOSE_MAP.STATE.in(CommonStatesConstants.ACTIVATING,
+                        CommonStatesConstants.ACTIVE, CommonStatesConstants.REQUESTED))
+        .fetchInto(ServiceExposeMapRecord.class);
     }
 }

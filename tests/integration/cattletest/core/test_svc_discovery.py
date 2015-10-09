@@ -355,7 +355,7 @@ def test_upgrade_env(client):
     assert env.state == 'upgrading'
 
     env = client.wait_success(env)
-    assert env.state == 'active'
+    assert env.state == 'upgraded'
 
 
 def test_upgrade_rollback_env(client):
@@ -364,13 +364,13 @@ def test_upgrade_rollback_env(client):
 
     assert env.state == 'active'
     assert 'upgrade' in env
-    assert 'rollback' in env
 
     env = env.upgrade()
     assert env.state == 'upgrading'
 
     env = client.wait_success(env)
-    assert env.state == 'active'
+    assert env.state == 'upgraded'
+    assert 'rollback' in env
 
     env = env.rollback()
     assert env.state == 'rolling-back'
@@ -2316,9 +2316,7 @@ def test_sidekick_destroy_instance_indirect_ref(client, context):
                                                   service,
                                                   env, "1", "secondary1")
 
-    instance_service_map1 = client. \
-        list_serviceExposeMap(serviceId=service.id, state="active")
-    assert len(instance_service_map1) == 3
+    _wait_until_active_map_count(service, 3, client, timeout=30)
 
     # destroy secondary1 instance and wait for the service to reconcile
     _instance_remove(instance13, client)
@@ -2328,9 +2326,7 @@ def test_sidekick_destroy_instance_indirect_ref(client, context):
     _validate_compose_instance_start(client, service, env, "1", "secondary")
     _validate_compose_instance_start(client, service, env, "1", "secondary1")
 
-    instance_service_map1 = client. \
-        list_serviceExposeMap(serviceId=service.id, state="active")
-    assert len(instance_service_map1) == 3
+    _wait_until_active_map_count(service, 3, client, timeout=30)
     # validate that the primary and secondary instances got recreated
     instance11 = client.reload(instance11)
     assert instance11.state == 'removed'

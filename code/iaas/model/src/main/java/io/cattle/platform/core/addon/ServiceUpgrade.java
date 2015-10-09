@@ -3,76 +3,40 @@ package io.cattle.platform.core.addon;
 import io.github.ibuildthecloud.gdapi.annotation.Field;
 import io.github.ibuildthecloud.gdapi.annotation.Type;
 
-import java.util.List;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 @Type(list = false)
 public class ServiceUpgrade {
 
-    boolean updateLinks;
-    String toServiceId;
-    Long finalScale;
-    Long intervalMillis;
-    Long batchSize;
-    Object launchConfig;
-    List<Object> secondaryLaunchConfigs;
+    InServiceUpgradeStrategy inServiceStrategy;
 
-    public boolean isUpdateLinks() {
-        return updateLinks;
+    ToServiceUpgradeStrategy toServiceStrategy;
+
+    @Field(nullable = true)
+    public InServiceUpgradeStrategy getInServiceStrategy() {
+        return inServiceStrategy;
     }
 
-    public void setUpdateLinks(boolean updateLinks) {
-        this.updateLinks = updateLinks;
+    public void setInServiceStrategy(InServiceUpgradeStrategy inService) {
+        this.inServiceStrategy = inService;
     }
 
-    @Field(typeString = "reference[service]")
-    public String getToServiceId() {
-        return toServiceId;
+    @Field(nullable = true)
+    public ToServiceUpgradeStrategy getToServiceStrategy() {
+        return toServiceStrategy;
     }
 
-    public void setToServiceId(String toServiceId) {
-        this.toServiceId = toServiceId;
+    public void setToServiceStrategy(ToServiceUpgradeStrategy toService) {
+        this.toServiceStrategy = toService;
     }
 
-    @Field(min = 1)
-    public Long getFinalScale() {
-        return finalScale;
+    @JsonIgnore
+    public ServiceUpgradeStrategy getStrategy() {
+        if (inServiceStrategy != null) {
+            return inServiceStrategy;
+        } else {
+            return toServiceStrategy;
+        }
     }
 
-    public void setFinalScale(Long finalScale) {
-        this.finalScale = finalScale;
-    }
-
-    @Field(nullable = false, defaultValue = "2000", min = 100)
-    public Long getIntervalMillis() {
-        return intervalMillis;
-    }
-
-    public void setIntervalMillis(Long intervalMillis) {
-        this.intervalMillis = intervalMillis;
-    }
-
-    @Field(nullable = false, defaultValue = "1", min = 1)
-    public Long getBatchSize() {
-        return batchSize;
-    }
-
-    public void setBatchSize(Long batchSize) {
-        this.batchSize = batchSize;
-    }
-
-    public Object getLaunchConfig() {
-        return launchConfig;
-    }
-
-    public void setLaunchConfig(Object launchConfig) {
-        this.launchConfig = launchConfig;
-    }
-
-    public List<Object> getSecondaryLaunchConfigs() {
-        return secondaryLaunchConfigs;
-    }
-
-    public void setSecondaryLaunchConfigs(List<Object> secondaryLaunchConfigs) {
-        this.secondaryLaunchConfigs = secondaryLaunchConfigs;
-    }
 }

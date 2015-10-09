@@ -7,8 +7,10 @@ import io.cattle.platform.engine.process.ProcessState;
 import io.cattle.platform.process.common.handler.AbstractObjectProcessHandler;
 import io.cattle.platform.servicediscovery.api.constants.ServiceDiscoveryConstants;
 import io.cattle.platform.servicediscovery.api.constants.ServiceDiscoveryConstants.KIND;
+import io.cattle.platform.servicediscovery.api.dao.ServiceExposeMapDao;
 import io.cattle.platform.servicediscovery.deployment.DeploymentManager;
 import io.cattle.platform.servicediscovery.service.ServiceDiscoveryService;
+import io.cattle.platform.servicediscovery.upgrade.UpgradeManager;
 
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -21,6 +23,12 @@ public class ServiceRemove extends AbstractObjectProcessHandler {
 
     @Inject
     ServiceDiscoveryService sdService;
+    
+    @Inject
+    UpgradeManager upgradeMgr;
+
+    @Inject
+    ServiceExposeMapDao exposeMapDao;
 
     @Override
     public String[] getProcessNames() {
@@ -30,7 +38,8 @@ public class ServiceRemove extends AbstractObjectProcessHandler {
     @Override
     public HandlerResult handle(ProcessState state, ProcessInstance process) {
         Service service = (Service) state.getResource();
-
+        
+        upgradeMgr.finishUpgrade(service, false);
         deploymentMgr.remove(service);
 
         // have to remove the load balancer after all service instances are removed

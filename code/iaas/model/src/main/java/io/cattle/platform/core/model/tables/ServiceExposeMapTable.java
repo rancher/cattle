@@ -11,7 +11,7 @@ package io.cattle.platform.core.model.tables;
 @java.lang.SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class ServiceExposeMapTable extends org.jooq.impl.TableImpl<io.cattle.platform.core.model.tables.records.ServiceExposeMapRecord> {
 
-	private static final long serialVersionUID = -2120396440;
+	private static final long serialVersionUID = 62869738;
 
 	/**
 	 * The singleton instance of <code>cattle.service_expose_map</code>
@@ -110,6 +110,11 @@ public class ServiceExposeMapTable extends org.jooq.impl.TableImpl<io.cattle.pla
 	 * The column <code>cattle.service_expose_map.managed</code>.
 	 */
 	public final org.jooq.TableField<io.cattle.platform.core.model.tables.records.ServiceExposeMapRecord, java.lang.Boolean> MANAGED = createField("managed", org.jooq.impl.SQLDataType.BIT.nullable(false).defaulted(true), this, "");
+
+	/**
+	 * The column <code>cattle.service_expose_map.upgrade</code>.
+	 */
+	public final org.jooq.TableField<io.cattle.platform.core.model.tables.records.ServiceExposeMapRecord, java.lang.Boolean> UPGRADE = createField("upgrade", org.jooq.impl.SQLDataType.BIT.nullable(false).defaulted(true), this, "");
 
 	/**
 	 * Create a <code>cattle.service_expose_map</code> table reference

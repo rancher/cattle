@@ -50,7 +50,6 @@ public class SelectorInstanceStartPostListener extends AbstractObjectProcessLogi
                 continue;
             }
             if (sdService.isSelectorContainerMatch(service, instance.getId())) {
-
                 lockManager.lock(new ServiceInstanceLock(service, instance), new LockCallbackNoReturn() {
                     @Override
                     public void doWithLockNoResult() {
@@ -61,12 +60,6 @@ public class SelectorInstanceStartPostListener extends AbstractObjectProcessLogi
                         }
                     }
                 });
-
-                ServiceExposeMap exposeMap = exposeMapDao.createServiceInstanceMap(service, instance, false);
-                if (exposeMap.getState().equalsIgnoreCase(CommonStatesConstants.REQUESTED)) {
-                    objectProcessManager.scheduleStandardProcessAsync(StandardProcess.CREATE, exposeMap,
-                            null);
-                }
             }
         }
 

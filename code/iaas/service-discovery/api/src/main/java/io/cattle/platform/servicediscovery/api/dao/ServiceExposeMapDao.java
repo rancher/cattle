@@ -36,7 +36,7 @@ public interface ServiceExposeMapDao {
 
     List<? extends ServiceExposeMap> getNonRemovedServiceIpMaps(long serviceId);
 
-    List<? extends ServiceExposeMap> getNonRemovedUnmanagedServiceInstanceMap(long serviceId);
+    List<? extends ServiceExposeMap> getUnmanagedServiceInstanceMapsToRemove(long serviceId);
 
     Host getHostForInstance(long instanceId);
 
@@ -54,6 +54,12 @@ public interface ServiceExposeMapDao {
 
     ServiceExposeMap getServiceInstanceMap(Service service, Instance instance);
 
-    List<? extends Instance> listServiceManagedInstances(Service service, String launchConfigName);
+    List<? extends ServiceExposeMap> getInstancesSetForUpgrade(long serviceId);
+
+    List<? extends Instance> getInstancesToUpgrade(Service service, String launchConfigName, String toVersion);
+
+    List<? extends Instance> getInstancesToCleanup(Service service, String launchConfigName, String toVersion);
+
+    List<? extends Instance> getUpgradedInstances(Service service, String launchConfigName, String toVersion, boolean managed);
 
 }

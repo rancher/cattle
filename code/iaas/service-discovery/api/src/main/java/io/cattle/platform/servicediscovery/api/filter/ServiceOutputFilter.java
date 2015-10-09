@@ -1,6 +1,6 @@
 package io.cattle.platform.servicediscovery.api.filter;
 
-import io.cattle.platform.core.addon.ServiceUpgrade;
+import io.cattle.platform.core.addon.ToServiceUpgradeStrategy;
 import io.cattle.platform.core.model.Service;
 import io.cattle.platform.json.JsonMapper;
 import io.cattle.platform.object.util.DataAccessor;
@@ -21,15 +21,22 @@ public class ServiceOutputFilter implements ResourceOutputFilter {
     @Override
     public Resource filter(ApiRequest request, Object original, Resource converted) {
         String type = ApiContext.getSchemaFactory().getSchemaName(Service.class);
-        ServiceUpgrade upgrade = DataAccessor.field(original, ServiceDiscoveryConstants.FIELD_UPGRADE, jsonMapper,
-                ServiceUpgrade.class);
+        io.cattle.platform.core.addon.ServiceUpgrade upgrade = DataAccessor.field(original,
+                ServiceDiscoveryConstants.FIELD_UPGRADE, jsonMapper,
+                io.cattle.platform.core.addon.ServiceUpgrade.class);
 
-        if (upgrade == null || type == null || upgrade.getToServiceId() == null) {
+        if (upgrade == null || type == null || upgrade.getToServiceStrategy() == null) {
+            return converted;
+        }
+
+        ToServiceUpgradeStrategy toServiceStrategy = upgrade.getToServiceStrategy();
+        if (toServiceStrategy.getToServiceId() == null) {
             return converted;
         }
 
         IdFormatter formatter = ApiContext.getContext().getIdFormatter();
-        upgrade.setToServiceId(formatter.formatId(type, upgrade.getToServiceId()).toString());
+        toServiceStrategy.setToServiceId(formatter.formatId(type, toServiceStrategy.getToServiceId()).toString());
+        upgrade.setToServiceStrategy(toServiceStrategy);
         converted.getFields().put(ServiceDiscoveryConstants.FIELD_UPGRADE, upgrade);
 
         return converted;
