@@ -11,7 +11,7 @@ package io.cattle.platform.core.model.tables;
 @java.lang.SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class InstanceTable extends org.jooq.impl.TableImpl<io.cattle.platform.core.model.tables.records.InstanceRecord> {
 
-	private static final long serialVersionUID = 1433297026;
+	private static final long serialVersionUID = -934804675;
 
 	/**
 	 * The singleton instance of <code>cattle.instance</code>
@@ -191,7 +191,8 @@ public class InstanceTable extends org.jooq.impl.TableImpl<io.cattle.platform.co
 	 */
 	public final org.jooq.TableField<io.cattle.platform.core.model.tables.records.InstanceRecord, java.lang.String> DEPLOYMENT_UNIT_UUID = createField("deployment_unit_uuid", org.jooq.impl.SQLDataType.VARCHAR.length(128), this, "");
 
-	/** The column <code>cattle.instance.version</code>.
+	/**
+	 * The column <code>cattle.instance.version</code>.
 	 */
 	public final org.jooq.TableField<io.cattle.platform.core.model.tables.records.InstanceRecord, java.lang.String> VERSION = createField("version", org.jooq.impl.SQLDataType.VARCHAR.length(255).defaulted(true), this, "");
 
