@@ -370,16 +370,23 @@ public class LdapIdentitySearchProvider extends LdapConfigurable implements Iden
             }
             String externalIdType;
             String accountName;
-            String externalId;
+            String externalId = (String) search.get(LdapConstants.DN).get();
             String login;
             if (isType(search, LdapConstants.USER_OBJECT_CLASS.get())){
                 externalIdType = LdapConstants.USER_SCOPE;
-                accountName = (String) search.get(LdapConstants.USER_NAME_FIELD.get()).get();
-                externalId = (String) search.get(LdapConstants.DN).get();
+                if (search.get(LdapConstants.USER_NAME_FIELD.get()) != null) {
+                    accountName = (String) search.get(LdapConstants.USER_NAME_FIELD.get()).get();
+                } else {
+                    accountName = externalId;
+                }
+
             } else if (isType(search, LdapConstants.GROUP_OBJECT_CLASS.get())) {
                 externalIdType = LdapConstants.GROUP_SCOPE;
-                accountName = (String) search.get(LdapConstants.GROUP_NAME_FIELD.get()).get();
-                externalId = (String) search.get(LdapConstants.DN).get();
+                if (search.get(LdapConstants.GROUP_NAME_FIELD.get()) != null) {
+                    accountName = (String) search.get(LdapConstants.GROUP_NAME_FIELD.get()).get();
+                } else {
+                    accountName = externalId;
+                }
             } else {
                 return null;
             }
