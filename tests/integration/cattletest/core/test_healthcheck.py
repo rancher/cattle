@@ -149,6 +149,10 @@ def test_health_check_bad_external_timestamp(super_client, context, client):
 def test_health_check_bad_agent(super_client, context, client):
     # Create another host to get the agent from that host
     host2 = super_client.reload(register_simulated_host(context))
+    # register one more host to ensure
+    # there is at least one more host
+    #  to schedule healtcheck on
+    super_client.reload(register_simulated_host(context))
 
     env = client.create_environment(name='env-' + random_str())
     service = client.create_service(name='test', launchConfig={
