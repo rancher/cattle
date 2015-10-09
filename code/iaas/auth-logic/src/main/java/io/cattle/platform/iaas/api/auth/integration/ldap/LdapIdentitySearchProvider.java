@@ -31,6 +31,7 @@ import javax.naming.ldap.InitialLdapContext;
 import javax.naming.ldap.LdapContext;
 import javax.naming.ldap.LdapName;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -245,8 +246,10 @@ public class LdapIdentitySearchProvider extends LdapConfigurable implements Iden
         }
         if (username.contains("\\")) {
             return username;
-        } else {
+        } else if (StringUtils.isNotBlank(LdapConstants.LDAP_LOGIN_DOMAIN.get())) {
             return LdapConstants.LDAP_LOGIN_DOMAIN.get() + '\\' +username;
+        } else {
+            return username;
         }
     }
 
@@ -393,8 +396,12 @@ public class LdapIdentitySearchProvider extends LdapConfigurable implements Iden
             if (!isType(attributes, LdapConstants.USER_OBJECT_CLASS.get())){
                 return true;
             }
-            permission = Integer.parseInt(attributes.get(LdapConstants.USER_ENABLED_ATTRIBUTE.get()).get()
-                    .toString());
+            if (StringUtils.isNotBlank(LdapConstants.USER_ENABLED_ATTRIBUTE.get())) {
+                permission = Integer.parseInt(attributes.get(LdapConstants.USER_ENABLED_ATTRIBUTE.get()).get()
+                        .toString());
+            } else {
+                return true;
+            }
         } catch (NamingException e) {
             logger.error("Failed to get USER_ENABLED_ATTRIBUTE.", e);
             return false;
