@@ -13,7 +13,7 @@ package io.cattle.platform.core.model.tables.records;
 @javax.persistence.Table(name = "instance", schema = "cattle")
 public class InstanceRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.platform.core.model.tables.records.InstanceRecord> implements io.cattle.platform.db.jooq.utils.TableRecordJaxb, io.cattle.platform.core.model.Instance {
 
-	private static final long serialVersionUID = -79467212;
+	private static final long serialVersionUID = -809383447;
 
 	/**
 	 * Setter for <code>cattle.instance.id</code>.
@@ -565,15 +565,7 @@ public class InstanceRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.
 	 */
 	@Override
 	public void setDeploymentUnitUuid(java.lang.String value) {
-        setValue(32, value);
-    }
-
-    /**
-     * Setter for <code>cattle.instance.version</code>.
-     */
-	@Override
-	public void setVersion(java.lang.String value) {
-        setValue(33, value);
+		setValue(32, value);
 	}
 
 	/**
@@ -582,10 +574,18 @@ public class InstanceRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.
 	@javax.persistence.Column(name = "deployment_unit_uuid", length = 128)
 	@Override
 	public java.lang.String getDeploymentUnitUuid() {
-	       return (java.lang.String) getValue(32);
+		return (java.lang.String) getValue(32);
 	}
 
-    /**
+	/**
+	 * Setter for <code>cattle.instance.version</code>.
+	 */
+	@Override
+	public void setVersion(java.lang.String value) {
+		setValue(33, value);
+	}
+
+	/**
 	 * Getter for <code>cattle.instance.version</code>.
 	 */
 	@javax.persistence.Column(name = "version", length = 255)
