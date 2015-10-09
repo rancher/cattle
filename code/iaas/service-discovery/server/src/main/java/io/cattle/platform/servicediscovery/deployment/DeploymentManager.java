@@ -1,6 +1,7 @@
 package io.cattle.platform.servicediscovery.deployment;
 
 import io.cattle.platform.configitem.events.ConfigUpdate;
+import io.cattle.platform.core.addon.ServiceUpgrade;
 import io.cattle.platform.core.model.Service;
 import io.cattle.platform.eventing.annotation.AnnotatedEventListener;
 import io.cattle.platform.eventing.annotation.EventHandler;
@@ -21,5 +22,7 @@ public interface DeploymentManager extends AnnotatedEventListener {
     void reconcileServices(Collection<? extends Service> services);
 
     boolean isHealthy(Service service);
+
+    boolean doInServiceUpgrade(Service service, ServiceUpgrade upgrade);
 
 }
