@@ -3,6 +3,7 @@ package io.cattle.platform.servicediscovery.process;
 
 import static io.cattle.platform.core.model.tables.InstanceTable.INSTANCE;
 import static io.cattle.platform.core.model.tables.ServiceTable.SERVICE;
+import io.cattle.platform.core.addon.LoadBalancerServiceLink;
 import io.cattle.platform.core.addon.ServiceLink;
 import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.model.Instance;
@@ -22,6 +23,7 @@ import io.cattle.platform.servicediscovery.deployment.impl.ServiceInstanceLock;
 import io.cattle.platform.servicediscovery.service.ServiceDiscoveryService;
 import io.cattle.platform.util.type.Priority;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.inject.Inject;
@@ -61,12 +63,22 @@ public class SelectorServiceCreatePostListener extends AbstractObjectProcessLogi
                 continue;
             }
             if (sdService.isSelectorLinkMatch(service, targetService)) {
-                sdService.addServiceLink(service, new ServiceLink(targetService.getId(), null));
+                addServiceLink(service, targetService);
             }
             if (sdService.isSelectorLinkMatch(targetService, service)) {
-                sdService.addServiceLink(targetService, new ServiceLink(service.getId(), null));
+                addServiceLink(targetService, service);
             }
         }
+    }
+
+    protected void addServiceLink(Service service, Service targetService) {
+        ServiceLink link = null;
+        if (service.getKind().equalsIgnoreCase(ServiceDiscoveryConstants.KIND.LOADBALANCERSERVICE.name())) {
+            link = new LoadBalancerServiceLink(targetService.getId(), null, new ArrayList<String>());
+        } else {
+            link = new ServiceLink(targetService.getId(), null);
+        }
+        sdService.addServiceLink(service, link);
     }
 
     protected void registerInstances(final Service service) {
