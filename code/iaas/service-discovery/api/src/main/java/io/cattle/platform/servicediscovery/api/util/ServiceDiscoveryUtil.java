@@ -241,6 +241,7 @@ public class ServiceDiscoveryUtil {
                 ServiceDiscoveryConstants.PRIMARY_LAUNCH_CONFIG_NAME, allocatorService).get(
                 InstanceConstants.FIELD_IMAGE_UUID);
         return service.getSelectorContainer() != null
-                && (imageUUID == null || imageUUID.toString().equalsIgnoreCase(ServiceDiscoveryConstants.IMAGE_NONE));
+                && (imageUUID == null || imageUUID.toString().toLowerCase()
+                        .contains(ServiceDiscoveryConstants.IMAGE_NONE));
     }
 }
