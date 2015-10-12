@@ -2279,9 +2279,7 @@ def test_sidekick_destroy_instance_indirect_ref(client, context):
                                                   service,
                                                   env, "1", "secondary1")
 
-    instance_service_map1 = client. \
-        list_serviceExposeMap(serviceId=service.id, state="active")
-    assert len(instance_service_map1) == 3
+    _wait_until_active_map_count(service, 3, client, timeout=30)
 
     # destroy secondary1 instance and wait for the service to reconcile
     _instance_remove(instance13, client)
@@ -2291,9 +2289,7 @@ def test_sidekick_destroy_instance_indirect_ref(client, context):
     _validate_compose_instance_start(client, service, env, "1", "secondary")
     _validate_compose_instance_start(client, service, env, "1", "secondary1")
 
-    instance_service_map1 = client. \
-        list_serviceExposeMap(serviceId=service.id, state="active")
-    assert len(instance_service_map1) == 3
+    _wait_until_active_map_count(service, 3, client, timeout=30)
     # validate that the primary and secondary instances got recreated
     instance11 = client.reload(instance11)
     assert instance11.state == 'removed'

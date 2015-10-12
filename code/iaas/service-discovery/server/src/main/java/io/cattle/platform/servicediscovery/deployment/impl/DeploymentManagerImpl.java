@@ -2,12 +2,15 @@ package io.cattle.platform.servicediscovery.deployment.impl;
 
 import io.cattle.iaas.lb.service.LoadBalancerService;
 import io.cattle.platform.allocator.service.AllocatorService;
+import io.cattle.platform.async.utils.TimeoutException;
 import io.cattle.platform.configitem.events.ConfigUpdate;
 import io.cattle.platform.configitem.model.Client;
 import io.cattle.platform.configitem.model.ItemVersion;
 import io.cattle.platform.configitem.request.ConfigUpdateRequest;
 import io.cattle.platform.configitem.version.ConfigItemStatusManager;
 import io.cattle.platform.core.constants.CommonStatesConstants;
+import io.cattle.platform.core.constants.InstanceConstants;
+import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.Service;
 import io.cattle.platform.core.model.ServiceExposeMap;
 import io.cattle.platform.engine.idempotent.IdempotentRetryException;
@@ -23,6 +26,9 @@ import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.process.ObjectProcessManager;
 import io.cattle.platform.object.process.StandardProcess;
 import io.cattle.platform.object.resource.ResourceMonitor;
+import io.cattle.platform.object.resource.ResourcePredicate;
+import io.cattle.platform.process.common.util.ProcessUtils;
+import io.cattle.platform.servicediscovery.api.constants.ServiceDiscoveryConstants;
 import io.cattle.platform.servicediscovery.api.dao.ServiceExposeMapDao;
 import io.cattle.platform.servicediscovery.api.util.ServiceDiscoveryUtil;
 import io.cattle.platform.servicediscovery.deployment.DeploymentManager;
@@ -36,6 +42,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -326,5 +333,91 @@ public class DeploymentManagerImpl implements DeploymentManager {
         final public DeploymentUnitInstanceFactory deploymentUnitInstanceFactory = unitInstanceFactory;
         final public AllocatorService allocatorService = allocatorSvc;
         final public JsonMapper jsonMapper = mapper;
+    }
+
+    @Override
+    public boolean doInServiceUpgrade(Service service, io.cattle.platform.core.addon.ServiceUpgrade upgrade) {
+        try {
+            activate(service);
+
+            service = objectMgr.reload(service);
+
+            long batchSize = upgrade.getBatchSize();
+
+            Map<String, List<Instance>> deploymentUnitInstancesToRemove = formDeploymentUnitsToRemove(service);
+
+            // upgrade deployment units
+            upgradeDeploymentUnits(batchSize, deploymentUnitInstancesToRemove, service);
+
+            if (deploymentUnitInstancesToRemove.isEmpty()) {
+                return true;
+            }
+            return false;
+
+        } catch (TimeoutException e) {
+            return false;
+        }
+    }
+
+    protected void upgradeDeploymentUnits(final long batchSize,
+            final Map<String, List<Instance>> deploymentUnitInstancesToRemove,
+            final Service service) {
+        // hold the lock so service.reconcile triggered by config.update
+        // (in turn triggered by instance.remove) won't interfere
+        lockManager.lock(createLock(Arrays.asList(service)), new LockCallbackNoReturn() {
+            @Override
+            public void doWithLockNoResult() {
+                // Removal is done on per deployment unit basis
+                Iterator<Map.Entry<String, List<Instance>>> it = deploymentUnitInstancesToRemove.entrySet()
+                        .iterator();
+                long i = 0;
+                List<Instance> waitList = new ArrayList<Instance>();
+                while (it.hasNext() && i < batchSize) {
+                    Map.Entry<String, List<Instance>> instances = it.next();
+                    for (Instance instance : instances.getValue()) {
+                        objectProcessMgr.scheduleProcessInstanceAsync(InstanceConstants.PROCESS_STOP,
+                                instance, ProcessUtils.chainInData(new HashMap<String, Object>(),
+                                        InstanceConstants.PROCESS_STOP, InstanceConstants.PROCESS_REMOVE));
+                        waitList.add(instance);
+                    }
+                    it.remove();
+                    i++;
+                }
+                for (Instance instance : waitList) {
+                    resourceMntr.waitFor(instance,
+                            new ResourcePredicate<Instance>() {
+                                @Override
+                                public boolean evaluate(Instance obj) {
+                                    return CommonStatesConstants.REMOVED.equals(obj.getState());
+                                }
+                            });
+                }
+                // wait for reconcile
+                activate(service);
+            }
+        });
+
+    }
+
+    protected Map<String, List<Instance>> formDeploymentUnitsToRemove(Service service) {
+        List<String> launchConfigNames = ServiceDiscoveryUtil.getServiceLaunchConfigNames(service);
+        Map<String, List<Instance>> deploymentUnitInstancesToRemove = new HashMap<>();
+        for (String launchConfigName : launchConfigNames) {
+            List<? extends Instance> instances = expMapDao.listServiceManagedInstances(service, launchConfigName);
+            for (Instance instance : instances) {
+                if (!instance.getVersion().equals(
+                        ServiceDiscoveryUtil.getLaunchConfigObject(service,
+                                launchConfigName,
+                                ServiceDiscoveryConstants.FIELD_VERSION))) {
+                    List<Instance> toRemove = deploymentUnitInstancesToRemove.get(instance.getDeploymentUnitUuid());
+                    if (toRemove == null) {
+                        toRemove = new ArrayList<Instance>();
+                    }
+                    toRemove.add(instance);
+                    deploymentUnitInstancesToRemove.put(instance.getDeploymentUnitUuid(), toRemove);
+                }
+            }
+        }
+        return deploymentUnitInstancesToRemove;
     }
 }

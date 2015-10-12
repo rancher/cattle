@@ -125,12 +125,12 @@ public class ServiceUpgradeValidationFilter extends AbstractDefaultResourceManag
 
     protected void upgradeLaunchConfigFields(Service service, Map<String, Object> launchConfigToUpgrade,
             Map<String, Object> newLaunchConfig) {
-        for (String key : newLaunchConfig.keySet()) {
-            launchConfigToUpgrade.put(key, newLaunchConfig.get(key));
-        }
         Integer version = new Integer(Integer.valueOf(launchConfigToUpgrade.get(
                 ServiceDiscoveryConstants.FIELD_VERSION)
                 .toString()));
+        for (String key : newLaunchConfig.keySet()) {
+            launchConfigToUpgrade.put(key, newLaunchConfig.get(key));
+        }
         launchConfigToUpgrade.put(ServiceDiscoveryConstants.FIELD_VERSION, String.valueOf(version + 1));
     }
 

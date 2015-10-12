@@ -272,6 +272,28 @@ def test_upgrade_invalid_config(context, client, super_client):
     assert e.value.error.code == 'InvalidOption'
 
 
+def test_big_scale(context, client):
+    env = client.create_environment(name=random_str())
+    env = client.wait_success(env)
+    assert env.state == 'active'
+    image_uuid = context.image_uuid
+    launch_config = {'imageUuid': image_uuid,
+                     'networkMode': None}
+
+    svc = client.create_service(name=random_str(),
+                                environmentId=env.id,
+                                scale=15,
+                                launchConfig=launch_config)
+    svc = client.wait_success(svc)
+    svc = client.wait_success(svc.activate(), timeout=120)
+    svc = svc.upgrade_action(batchSize=1,
+                             launchConfig={'labels': {'foo': "bar"}})
+    svc = client.wait_success(svc, 120)
+    svc = svc.upgrade_action(batchSize=5,
+                             launchConfig={'labels': {'foo': "bar"}})
+    client.wait_success(svc, 120)
+
+
 def _inservice_upgrade(context, client, super_client, **kw):
     env, svc = _create_multi_lc_svc(super_client, client, context)
 
