@@ -95,6 +95,7 @@ public class LdapConstants {
         * */
     public static final DynamicStringProperty USER_NAME_FIELD = ArchaiusUtil.getString(USER_NAME_FIELD_SETTING);
     public static final DynamicStringProperty GROUP_NAME_FIELD = ArchaiusUtil.getString(GROUP_NAME_FIELD_SETTING);
+    public static final String DEFAULT_NAME_FIELD = "name";
     public static final String MEMBER_OF = "memberOf";
     public static final String OBJECT_CLASS = "objectClass";
     public static final DynamicStringProperty GROUP_OBJECT_CLASS = ArchaiusUtil.getString(GROUP_OBJECT_CLASS_SETTING);
