@@ -19,7 +19,7 @@ def _create_registry(client):
     return registry
 
 
-def _create_registry_credential(client):
+def _create_registry_and_credential(client):
     registry = _create_registry(client)
     reg_cred = client.create_registry_credential(
         registryId=registry.id,
@@ -34,12 +34,12 @@ def _create_registry_credential(client):
     assert reg_cred.publicValue == 'rancher'
     assert 'secretValue' not in reg_cred
 
-    return reg_cred
+    return reg_cred, registry
 
 
 @if_docker
 def test_create_container_with_registry_credential(client, context):
-    reg_cred = _create_registry_credential(client)
+    reg_cred, registry = _create_registry_and_credential(client)
     uuid = TEST_IMAGE_UUID
     container = client.create_container(name='test',
                                         imageUuid=uuid,
@@ -54,7 +54,7 @@ def test_create_container_with_registry_credential(client, context):
 @if_docker
 def _test_create_container_with_real_registry_credential(client,
                                                          docker_context):
-    reg_cred = _create_registry_credential(client)
+    reg_cred, registry = _create_registry_and_credential(client)
     uuid = 'docker:registry.rancher.io/rancher/loop'
     container = client.create_container(name='test',
                                         imageUuid=uuid,
@@ -82,7 +82,7 @@ def _crud_registry(client):
 
 
 def _crud_registry_credential(client):
-    registry_credential = _create_registry_credential(client)
+    registry_credential, registry = _create_registry_and_credential(client)
     registry_credential = client.wait_success(registry_credential)
     assert registry_credential.state == 'active'
     registry_credential = client.wait_success(registry_credential.deactivate())
@@ -100,7 +100,6 @@ def _crud_registry_credential(client):
     assert registry_credential.state == 'removed'
     registry_credential = client.wait_success(registry_credential.purge())
     assert registry_credential.state == 'purged'
-    pass
 
 
 def test_crud_registry(client):
@@ -109,6 +108,26 @@ def test_crud_registry(client):
 
 def test_crud_registry_credential(client):
     _crud_registry_credential(client)
+
+
+def test_deleting_registry_deletes_credentials(client):
+    reg_cred, registry = _create_registry_and_credential(client)
+    registry = client.wait_success(registry.deactivate())
+    registry = client.delete(registry)
+    registry = client.wait_success(registry)
+    assert registry.state == 'removed'
+    registry = client.wait_success(registry.purge())
+    assert registry.state == 'purged'
+
+    def is_state():
+        cred = client.reload(reg_cred)
+        if (cred.state == 'removed'):
+            return cred
+        print cred.state
+        return False
+
+    reg_cred = wait_for(is_state)
+    assert reg_cred.state == 'removed'
 
 
 def test_container_image_and_registry_credential(client,
