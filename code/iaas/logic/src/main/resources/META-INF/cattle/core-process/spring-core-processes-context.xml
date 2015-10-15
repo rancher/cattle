@@ -151,8 +151,12 @@
     <!-- Service Discovery Environment -->
     <process:process name="environment.create" resourceType="environment" start="requested" transitioning="activating" done="active" />
     <process:process name="environment.update" resourceType="environment" start="active" transitioning="updating-active" done="active" />
-    <process:process name="environment.remove" resourceType="environment" start="requested, active, activating, updating-active, error, erroring" transitioning="removing" done="removed" />
+    <process:process name="environment.remove" resourceType="environment" start="requested, active, activating, updating-active, error, erroring, upgrading, canceling-upgrade, canceling-rollback, rolling-back" transitioning="removing" done="removed" />
     <process:process name="environment.error" resourceType="environment" start="activating" transitioning="erroring" done="error" />
+    <process:process name="environment.upgrade" resourceType="environment" start="active" transitioning="upgrading" done="active" />
+    <process:process name="environment.cancelupgrade" resourceType="environment" start="upgrading" transitioning="canceling-upgrade" done="active" />
+    <process:process name="environment.rollback" resourceType="environment" start="active" transitioning="rolling-back" done="active" />
+    <process:process name="environment.cancelrollback" resourceType="environment" start="rolling-back" transitioning="canceling-rollback" done="active" />
     
     <!-- Service Discovery Service -->
     <process:process name="service.create" resourceType="service" start="requested" transitioning="registering" done="inactive" />
