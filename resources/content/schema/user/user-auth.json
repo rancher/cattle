@@ -436,6 +436,7 @@
         "environment.dockerCompose": "cr",
         "environment.rancherCompose": "cr",
         "environment.environment": "cr",
+        "environment.externalId": "cr",
 
         "service" : "r",
         "service.environmentId" : "cr",

@@ -2699,6 +2699,12 @@ def test_healtcheck(client, context, super_client):
     validate_container_host(host_maps)
 
 
+def test_env_external_id(client):
+    env = client.create_environment(name='env-' + random_str(),
+                                    externalId='something')
+    assert env.externalId == 'something'
+
+
 def test_add_svc_to_removed_stack(client, context):
     env = _create_stack(client)
 

@@ -135,6 +135,17 @@ public interface Environment extends java.io.Serializable {
 	@javax.persistence.Column(name = "data", length = 16777215)
 	public java.util.Map<String,Object> getData();
 
+	/**
+	 * Setter for <code>cattle.environment.external_id</code>.
+	 */
+	public void setExternalId(java.lang.String value);
+
+	/**
+	 * Getter for <code>cattle.environment.external_id</code>.
+	 */
+	@javax.persistence.Column(name = "external_id", length = 128)
+	public java.lang.String getExternalId();
+
 	// -------------------------------------------------------------------------
 	// FROM and INTO
 	// -------------------------------------------------------------------------
