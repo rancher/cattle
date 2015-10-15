@@ -567,6 +567,11 @@
         "serviceUpgrade.launchConfig" : "cr",
         "serviceUpgrade.secondaryLaunchConfigs" : "cr",
 
+        "environmentUpgrade" : "r",
+        "environmentUpgrade.dockerCompose" : "cr",
+        "environmentUpgrade.rancherCompose" : "cr",
+        "environmentUpgrade.environment" : "cr",
+
         "end" : ""
     }
 }

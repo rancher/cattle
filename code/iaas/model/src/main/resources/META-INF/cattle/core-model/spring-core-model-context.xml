@@ -79,6 +79,7 @@
                 <value>pullTask,parent=genericObject</value>
                 <value>externalVolumeEvent,parent=externalEvent</value>
                 <value>externalStoragePoolEvent,parent=externalEvent</value>
+                <value>environmentUpgrade</value>
             </set>
         </property>
     </bean>
