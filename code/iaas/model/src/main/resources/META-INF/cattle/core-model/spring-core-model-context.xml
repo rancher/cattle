@@ -77,6 +77,7 @@
                 <value>setLoadBalancerServiceLinksInput</value>
                 <value>loadBalancerServiceLink,parent=serviceLink</value>
                 <value>pullTask,parent=genericObject</value>
+                <value>environmentUpgrade</value>
             </set>
         </property>
     </bean>
