@@ -1571,6 +1571,7 @@ def test_svc_discovery_environment(admin_user_client, user_client,
         'dockerCompose': 'r',
         'rancherCompose': 'r',
         'environment': 'r',
+        'externalId': 'r',
     })
 
     auth_check(user_client.schema, 'environment', 'r', {
@@ -1579,6 +1580,7 @@ def test_svc_discovery_environment(admin_user_client, user_client,
         'dockerCompose': 'r',
         'rancherCompose': 'r',
         'environment': 'r',
+        'externalId': 'r',
     })
 
     auth_check(project_client.schema, 'environment', 'crud', {
@@ -1587,6 +1589,7 @@ def test_svc_discovery_environment(admin_user_client, user_client,
         'dockerCompose': 'cr',
         'rancherCompose': 'cr',
         'environment': 'cr',
+        'externalId': 'cr',
     })
 
 
