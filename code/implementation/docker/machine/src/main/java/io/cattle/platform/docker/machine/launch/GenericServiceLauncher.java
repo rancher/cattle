@@ -1,7 +1,8 @@
 package io.cattle.platform.docker.machine.launch;
 
-import static io.cattle.platform.core.model.tables.AccountTable.ACCOUNT;
-import static io.cattle.platform.core.model.tables.CredentialTable.CREDENTIAL;
+import static io.cattle.platform.core.model.tables.AccountTable.*;
+import static io.cattle.platform.core.model.tables.CredentialTable.*;
+
 import io.cattle.platform.core.constants.AccountConstants;
 import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.CredentialConstants;
@@ -30,6 +31,8 @@ import javax.inject.Inject;
 
 import org.apache.cloudstack.managed.context.NoExceptionRunnable;
 
+import com.netflix.config.DynamicStringProperty;
+
 public abstract class GenericServiceLauncher extends NoExceptionRunnable implements InitializationTask, Runnable {
 
     private static final String SERVICE_USER_UUID = "machineServiceAccount";
@@ -54,7 +57,7 @@ public abstract class GenericServiceLauncher extends NoExceptionRunnable impleme
     @Override
     public void start() {
         future = executor.scheduleWithFixedDelay(this, WAIT, WAIT, TimeUnit.MILLISECONDS);
-        ServerContext.HOST.addCallback(new Runnable() {
+        getReloadSetting().addCallback(new Runnable() {
             @Override
             public void run() {
                 processDestroy();
@@ -80,6 +83,10 @@ public abstract class GenericServiceLauncher extends NoExceptionRunnable impleme
 
     protected String getAccountUuid() {
         return SERVICE_USER_UUID;
+    }
+
+    protected DynamicStringProperty getReloadSetting() {
+        return ServerContext.HOST;
     }
 
     protected Credential getCredential() {
@@ -132,7 +139,9 @@ public abstract class GenericServiceLauncher extends NoExceptionRunnable impleme
             return;
         }
 
-        if (!lockDelegator.tryLock(getLock())) {
+        LockDefinition lock = getLock();
+
+        if (lock != null && !lockDelegator.tryLock(lock)) {
             return;
         }
 
@@ -159,6 +168,7 @@ public abstract class GenericServiceLauncher extends NoExceptionRunnable impleme
         Map<String, String> env = pb.environment();
 
         setEnvironment(env);
+        prepareProcess(pb);
 
         pb.redirectOutput(Redirect.INHERIT);
         pb.redirectError(Redirect.INHERIT);
@@ -170,4 +180,6 @@ public abstract class GenericServiceLauncher extends NoExceptionRunnable impleme
         }
     }
 
+    protected void prepareProcess(ProcessBuilder pb) {
+    }
 }
