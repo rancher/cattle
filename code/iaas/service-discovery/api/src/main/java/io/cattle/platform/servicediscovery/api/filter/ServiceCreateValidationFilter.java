@@ -25,13 +25,12 @@ import io.github.ibuildthecloud.gdapi.validation.ValidationErrorCodes;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import javax.inject.Inject;
-
-import org.apache.commons.lang3.StringUtils;
 
 public class ServiceCreateValidationFilter extends AbstractDefaultResourceManagerFilter {
 
@@ -105,7 +104,9 @@ public class ServiceCreateValidationFilter extends AbstractDefaultResourceManage
 
     protected void validateEnvironment(Service service) {
         Environment env = objectManager.loadResource(Environment.class, service.getEnvironmentId());
-        if (StringUtils.equals(env.getState(), CommonStatesConstants.ERROR)) {
+        List<String> invalidStates = Arrays.asList(CommonStatesConstants.ERROR, CommonStatesConstants.REMOVED,
+                CommonStatesConstants.REMOVING);
+        if (invalidStates.contains(env.getState())) {
             throw new ValidationErrorException(ValidationErrorCodes.INVALID_STATE, 
                     InstanceConstants.FIELD_ENVIRONMENT);
         }

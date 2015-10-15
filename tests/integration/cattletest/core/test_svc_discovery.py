@@ -2666,7 +2666,7 @@ def test_healtcheck(client, context, super_client):
     service = client.wait_success(service.activate(), 120)
     c = _wait_for_compose_instance_start(client, service, stack, "1")
     c_host_id = super_client.reload(c).instanceHostMaps()[0].hostId
-    health_c = super_client.\
+    health_c = super_client. \
         list_healthcheckInstance(accountId=service.accountId, instanceId=c.id)
     assert len(health_c) > 0
     health_id = health_c[0].id
@@ -2699,9 +2699,42 @@ def test_healtcheck(client, context, super_client):
     validate_container_host(host_maps)
 
 
+def test_add_svc_to_removed_stack(client, context):
+    env = _create_stack(client)
+
+    image_uuid = context.image_uuid
+    launch_config = {"imageUuid": image_uuid}
+
+    client.create_service(name=random_str(),
+                          environmentId=env.id,
+                          launchConfig=launch_config)
+
+    client.create_service(name=random_str(),
+                          environmentId=env.id,
+                          launchConfig=launch_config)
+
+    env.remove()
+
+    with pytest.raises(ApiError) as e:
+        client.create_service(name=random_str(),
+                              environmentId=env.id,
+                              launchConfig=launch_config)
+    assert e.value.error.status == 422
+    assert e.value.error.code == 'InvalidState'
+    assert e.value.error.fieldName == 'environment'
+
+    with pytest.raises(ApiError) as e:
+        client.create_service(name=random_str(),
+                              environmentId=env.id,
+                              launchConfig=launch_config)
+    assert e.value.error.status == 422
+    assert e.value.error.code == 'InvalidState'
+    assert e.value.error.fieldName == 'environment'
+
+
 def _wait_health_host_count(super_client, health_id, count):
     def active_len():
-        match = super_client.\
+        match = super_client. \
             list_healthcheckInstanceHostMap(healthcheckInstanceId=health_id,
                                             state='active')
         if len(match) <= count:
