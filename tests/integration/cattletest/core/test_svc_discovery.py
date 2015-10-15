@@ -2699,6 +2699,12 @@ def test_healtcheck(client, context, super_client):
     validate_container_host(host_maps)
 
 
+def test_env_external_id(client):
+    env = client.create_environment(name='env-' + random_str(),
+                                    externalId='something')
+    assert env.externalId == 'something'
+
+
 def _wait_health_host_count(super_client, health_id, count):
     def active_len():
         match = super_client.\
