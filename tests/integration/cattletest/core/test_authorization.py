@@ -1667,6 +1667,27 @@ def test_svc_discovery_consume_map(admin_user_client, user_client,
     })
 
 
+def test_auth_env_upgrade(admin_user_client, user_client,
+                          project_client):
+    auth_check(admin_user_client.schema, 'environmentUpgrade', 'r', {
+        'dockerCompose': 'r',
+        'rancherCompose': 'r',
+        'environment': 'r',
+    })
+
+    auth_check(user_client.schema, 'environmentUpgrade', 'r', {
+        'dockerCompose': 'r',
+        'rancherCompose': 'r',
+        'environment': 'r',
+    })
+
+    auth_check(project_client.schema, 'environmentUpgrade', 'cr', {
+        'dockerCompose': 'cr',
+        'rancherCompose': 'cr',
+        'environment': 'cr',
+    })
+
+
 def test_auth_service_upgrade(admin_user_client, user_client,
                               project_client):
     auth_check(admin_user_client.schema, 'serviceUpgrade', 'r', {
