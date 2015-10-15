@@ -124,6 +124,25 @@
         "dockerBuild.rm" : "cr",
         "dockerBuild.forcerm" : "cr",
 
+        "externalEvent" : "r",
+        "externalEvent.externalId" : "r",
+        "externalEvent.eventType" : "r",
+        "externalEvent.reportedAccountId": "r",
+
+        "externalStoragePoolEvent" : "r",
+        "externalStoragePoolEvent.externalId" : "r",
+        "externalStoragePoolEvent.eventType" : "r",
+        "externalStoragePoolEvent.hostUuids" : "r",
+        "externalStoragePoolEvent.reportedAccountId": "r",
+        "externalStoragePoolEvent.storagePool" : "r",
+
+        "externalVolumeEvent" : "r",
+        "externalVolumeEvent.externalId" : "r",
+        "externalVolumeEvent.eventType" : "r",
+        "externalVolumeEvent.reportedAccountId": "r",
+        "externalVolumeEvent.storagePoolExternalId" : "r",
+        "externalVolumeEvent.volume" : "r",
+
         "host" : "r",
         "host.agentState" : "r",
         "host.agentId" : "r",
@@ -271,6 +290,7 @@
         "statsAccess.url" : "r",
 
         "storagePool": "r",
+        "storagePool.externalId": "r",
 
         "subscribe" : "",
         "subscribe.eventNames" : "cr",
@@ -299,6 +319,7 @@
         "userPreference.value" : "crud",
 
         "volume" : "r",
+        "volume.externalId": "r",
         "volume.name": "cr",
         "volume.imageId" : "r",
         "volume.instanceId" : "r",

@@ -2,6 +2,7 @@ package io.cattle.platform.core.dao;
 
 import io.cattle.platform.core.model.Host;
 import io.cattle.platform.core.model.StoragePool;
+import io.cattle.platform.core.model.StoragePoolHostMap;
 
 import java.util.List;
 import java.util.Map;
@@ -12,4 +13,11 @@ public interface StoragePoolDao {
 
     StoragePool mapNewPool(Host host, Map<String, Object> properties);
 
+    StoragePool findStoragePoolByExternalId(Long accountId, String externalId);
+
+    List<? extends StoragePoolHostMap> findMapsToRemove(Long id);
+
+    StoragePoolHostMap findNonremovedMap(Long storagePoolId, Long hostId);
+
+    void createStoragePoolHostMap(StoragePoolHostMap m);
 }

@@ -23,6 +23,8 @@
     <bean class="io.cattle.platform.core.dao.impl.LoadBalancerTargetDaoImpl" />
     <bean class="io.cattle.platform.core.dao.impl.ClusterHostMapDaoImpl" />
     <bean class="io.cattle.platform.core.dao.impl.LabelsDaoImpl" />
+    <bean class="io.cattle.platform.core.dao.impl.HostDaoImpl" />
+    <bean class="io.cattle.platform.core.dao.impl.VolumeDaoImpl" />
 
     <tx:advice id="GenericResourceDaoImplAdvice" transaction-manager="CoreTransactionManager">
         <tx:attributes>
@@ -42,6 +44,13 @@
     <tx:advice id="StoragePoolDaoImplAdvice" transaction-manager="CoreTransactionManager">
         <tx:attributes>
             <tx:method name="mapNewPool" />
+            <tx:method name="createStoragePoolHostMap" />
+        </tx:attributes>
+    </tx:advice>
+
+    <tx:advice id="VolumeDaoImplAdvice" transaction-manager="CoreTransactionManager">
+        <tx:attributes>
+            <tx:method name="createVolumeInStoragePool" />
         </tx:attributes>
     </tx:advice>
 
@@ -52,6 +61,8 @@
             pointcut="execution(* io.cattle.platform.core.dao.IpAddressDao.*(..))" />
         <aop:advisor advice-ref="StoragePoolDaoImplAdvice"
             pointcut="execution(* io.cattle.platform.core.dao.StoragePoolDao.*(..))" />
+        <aop:advisor advice-ref="VolumeDaoImplAdvice"
+            pointcut="execution(* io.cattle.platform.core.dao.VolumeDao.*(..))" />
     </aop:config>
 
     <bean class="io.cattle.platform.core.cleanup.TableCleanUp"/>

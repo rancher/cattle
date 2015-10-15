@@ -53,7 +53,6 @@
     <process:defaultProcesses resourceType="port" />
     <process:defaultProcesses resourceType="projectMember" />
     <process:defaultProcesses resourceType="storagePool" />
-    <process:defaultProcesses resourceType="storagePoolHostMap" />
     <process:defaultProcesses resourceType="subnet" />
     <process:defaultProcesses resourceType="subnetVnetMap" />
     <process:defaultProcesses resourceType="vnet" />
@@ -184,6 +183,10 @@
     <process:process name="containerevent.create" resourceType="containerEvent" start="requested" transitioning="creating" done="created" />
     <process:process name="containerevent.remove" resourceType="containerEvent" start="created,creating" transitioning="removing" done="removed" />
 
+    <!-- External Event -->
+    <process:process name="externalevent.create" resourceType="externalEvent" start="requested" transitioning="creating" done="created" />
+    <process:process name="externalevent.remove" resourceType="externalEvent" start="created,creating" transitioning="removing" done="removed" />
+
     <!-- Snapshot -->
     <process:process name="snapshot.create" resourceType="snapshot" start="requested" transitioning="creating" done="created" />
     <process:process name="snapshot.backup" resourceType="snapshot" start="created" transitioning="backing-up" done="backed-up" />
@@ -220,4 +223,8 @@
 	<!-- Load Balancer Certificate Map -->
     <process:process name="loadbalancercertificatemap.create" resourceType="loadbalancerCertificateMap" start="requested" transitioning="activating" done="active" />
     <process:process name="loadbalancercertificatemap.remove" resourceType="loadbalancerCertificateMap" start="requested,active,activating" transitioning="removing" done="removed" />
+
+    <!-- Storage Pool Host Map -->
+    <process:process name="storagepoolhostmap.create" resourceType="storagePoolHostMap" start="requested" transitioning="activating" done="active" />
+    <process:process name="storagepoolhostmap.remove" resourceType="storagePoolHostMap" start="active,activating" transitioning="removing" done="removed" />
 </beans>

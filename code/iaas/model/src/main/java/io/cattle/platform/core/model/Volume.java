@@ -256,6 +256,17 @@ public interface Volume extends java.io.Serializable {
 	@javax.persistence.Column(name = "uri", length = 512)
 	public java.lang.String getUri();
 
+	/**
+	 * Setter for <code>cattle.volume.external_id</code>.
+	 */
+	public void setExternalId(java.lang.String value);
+
+	/**
+	 * Getter for <code>cattle.volume.external_id</code>.
+	 */
+	@javax.persistence.Column(name = "external_id", length = 128)
+	public java.lang.String getExternalId();
+
 	// -------------------------------------------------------------------------
 	// FROM and INTO
 	// -------------------------------------------------------------------------

@@ -11,7 +11,7 @@ package io.cattle.platform.core.model.tables;
 @java.lang.SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class VolumeTable extends org.jooq.impl.TableImpl<io.cattle.platform.core.model.tables.records.VolumeRecord> {
 
-	private static final long serialVersionUID = -970960522;
+	private static final long serialVersionUID = -1641743246;
 
 	/**
 	 * The singleton instance of <code>cattle.volume</code>
@@ -135,6 +135,11 @@ public class VolumeTable extends org.jooq.impl.TableImpl<io.cattle.platform.core
 	 * The column <code>cattle.volume.uri</code>.
 	 */
 	public final org.jooq.TableField<io.cattle.platform.core.model.tables.records.VolumeRecord, java.lang.String> URI = createField("uri", org.jooq.impl.SQLDataType.VARCHAR.length(512), this, "");
+
+	/**
+	 * The column <code>cattle.volume.external_id</code>.
+	 */
+	public final org.jooq.TableField<io.cattle.platform.core.model.tables.records.VolumeRecord, java.lang.String> EXTERNAL_ID = createField("external_id", org.jooq.impl.SQLDataType.VARCHAR.length(128), this, "");
 
 	/**
 	 * Create a <code>cattle.volume</code> table reference
