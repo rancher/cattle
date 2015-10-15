@@ -1,0 +1,13 @@
+{
+    "resourceFields": {
+        "dockerCompose":{
+            "type": "string"
+        },
+        "rancherCompose":{
+            "type": "string"
+        },
+        "environment":{
+            "type": "map[string]"
+        }
+    }
+}
