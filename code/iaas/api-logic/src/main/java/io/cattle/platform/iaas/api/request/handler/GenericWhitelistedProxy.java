@@ -53,8 +53,8 @@ public class GenericWhitelistedProxy extends AbstractResponseGenerator {
         }
 
         HttpServletRequest servletRequest = request.getServletContext().getRequest();
-        boolean allowHost = servletRequest.getAttribute(ALLOWED_HOST) != null;
-        boolean setCurrentHost = servletRequest.getAttribute(SET_HOST_CURRENT_HOST) != null;
+        boolean allowHost = Boolean.TRUE.equals(servletRequest.getAttribute(ALLOWED_HOST));
+        boolean setCurrentHost = Boolean.TRUE.equals(servletRequest.getAttribute(SET_HOST_CURRENT_HOST));
 
         String redirect = servletRequest.getRequestURI();
         redirect = StringUtils.substringAfter(redirect, "/proxy/");
