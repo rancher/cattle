@@ -1,4 +1,5 @@
 from common_fixtures import *  # NOQA
+from cattle import ApiError
 
 SP_CREATE = "storagepool.create"
 VOLUME_CREATE = "volume.create"
@@ -106,6 +107,30 @@ def test_external_storage_pool_event(super_client, new_context):
                     name, SP_CREATE, uuids)
     hosts = wait_for(lambda: wait_host_count(storage_pool, 1))
     assert host2.id in hosts[0].id
+
+    # Send empty host list
+    uuids = []
+    create_sp_event(client, agent_client, super_client, new_context,
+                    external_id,
+                    name, SP_CREATE, uuids)
+    hosts = wait_for(lambda: wait_host_count(storage_pool, 0))
+    assert len(hosts) == 0
+
+
+def test_bad_agent(super_client, host):
+    # Even though super_client will have permissions to create the container
+    # event, additional logic should assert that the creator is a valid agent.
+    with pytest.raises(ApiError) as e:
+        external_id = random_str()
+        super_client.create_external_storage_pool_event(
+            externalId=external_id,
+            eventType=SP_CREATE,
+            hostUuids=[],
+            storagePool={
+                'name': 'name-%s' % external_id,
+                'externalId': external_id,
+            })
+    assert e.value.error.code == 'MissingRequired'
 
 
 def create_volume_event(client, agent_client, super_client, context,

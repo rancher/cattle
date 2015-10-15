@@ -28,6 +28,7 @@
     <bean class="io.cattle.platform.iaas.api.filter.lb.LoadBalancerTargetValidationFilter" />
     <bean class="io.cattle.platform.iaas.api.filter.lb.LoadBalancerFilterUtils" />
     <bean class="io.cattle.platform.iaas.api.filter.containerevent.ContainerEventFilter" />
+    <bean class="io.cattle.platform.iaas.api.filter.externalevent.ExternalEventFilter" />
     <bean class="io.cattle.platform.iaas.api.filter.serviceevent.ServiceEventFilter" />
     <bean class="io.cattle.platform.iaas.api.filter.snapshot.SnapshotValidationFilter" />
     <bean class="io.cattle.platform.iaas.api.filter.lb.LoadBalancerSetTargetsValidationFilter" />
