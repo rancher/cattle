@@ -83,6 +83,7 @@
                 <value>externalVolumeEvent,parent=externalEvent</value>
                 <value>externalStoragePoolEvent,parent=externalEvent</value>
                 <value>environmentUpgrade</value>
+                <value>externalDnsEvent,parent=externalEvent</value>
             </set>
         </property>
     </bean>

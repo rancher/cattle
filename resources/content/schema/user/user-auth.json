@@ -130,18 +130,17 @@
         "externalEvent.reportedAccountId": "r",
 
         "externalStoragePoolEvent" : "r",
-        "externalStoragePoolEvent.externalId" : "r",
-        "externalStoragePoolEvent.eventType" : "r",
         "externalStoragePoolEvent.hostUuids" : "r",
-        "externalStoragePoolEvent.reportedAccountId": "r",
         "externalStoragePoolEvent.storagePool" : "r",
 
         "externalVolumeEvent" : "r",
-        "externalVolumeEvent.externalId" : "r",
-        "externalVolumeEvent.eventType" : "r",
-        "externalVolumeEvent.reportedAccountId": "r",
         "externalVolumeEvent.storagePoolExternalId" : "r",
         "externalVolumeEvent.volume" : "r",
+
+        "externalDnsEvent" : "r",
+        "externalDnsEvent.domainName" : "r",
+        "externalDnsEvent.serviceName" : "r",
+        "externalDnsEvent.stackName" : "r",
 
         "host" : "r",
         "host.agentState" : "r",
@@ -451,8 +450,7 @@
         "service.metadata" : "cru",
         "service.selectorLink" : "cr",
         "service.selectorContainer" : "cr",
-        "service.previousLaunchConfig" : "r",
-        "service.previousSecondaryLaunchConfigs" : "r",
+        "service.domainName" : "r",
 
         "addRemoveServiceLinkInput" : "r",
         "addRemoveServiceLinkInput.serviceLink" : "cr",

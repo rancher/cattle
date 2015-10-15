@@ -1,7 +1,21 @@
 package io.cattle.platform.process.externalevent;
 
-import static io.cattle.platform.process.externalevent.ExternalEventConstants.*;
-import static io.cattle.platform.core.model.tables.AgentTable.*;
+import static io.cattle.platform.core.model.tables.AgentTable.AGENT;
+import static io.cattle.platform.core.model.tables.EnvironmentTable.ENVIRONMENT;
+import static io.cattle.platform.core.model.tables.ServiceTable.SERVICE;
+import static io.cattle.platform.process.externalevent.ExternalEventConstants.EXERNAL_DNS_LOCK_NAME;
+import static io.cattle.platform.process.externalevent.ExternalEventConstants.FIELD_ALLOC_STATE;
+import static io.cattle.platform.process.externalevent.ExternalEventConstants.FIELD_ATTACHED_STATE;
+import static io.cattle.platform.process.externalevent.ExternalEventConstants.FIELD_DEV_NUM;
+import static io.cattle.platform.process.externalevent.ExternalEventConstants.FIELD_HOST_UUIDS;
+import static io.cattle.platform.process.externalevent.ExternalEventConstants.FIELD_SP_EXT_ID;
+import static io.cattle.platform.process.externalevent.ExternalEventConstants.FIELD_STORAGE_POOL;
+import static io.cattle.platform.process.externalevent.ExternalEventConstants.FIELD_VOLUME;
+import static io.cattle.platform.process.externalevent.ExternalEventConstants.FIELD_ZONE_ID;
+import static io.cattle.platform.process.externalevent.ExternalEventConstants.PROC_VOL_DEACTIVATE;
+import static io.cattle.platform.process.externalevent.ExternalEventConstants.PROC_VOL_REMOVE;
+import static io.cattle.platform.process.externalevent.ExternalEventConstants.STORAGE_POOL_LOCK_NAME;
+import static io.cattle.platform.process.externalevent.ExternalEventConstants.VOLUME_POOL_LOCK_NAME;
 import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.dao.AccountDao;
 import io.cattle.platform.core.dao.GenericResourceDao;
@@ -9,8 +23,10 @@ import io.cattle.platform.core.dao.HostDao;
 import io.cattle.platform.core.dao.StoragePoolDao;
 import io.cattle.platform.core.dao.VolumeDao;
 import io.cattle.platform.core.model.Agent;
+import io.cattle.platform.core.model.Environment;
 import io.cattle.platform.core.model.ExternalEvent;
 import io.cattle.platform.core.model.Host;
+import io.cattle.platform.core.model.Service;
 import io.cattle.platform.core.model.StoragePool;
 import io.cattle.platform.core.model.StoragePoolHostMap;
 import io.cattle.platform.core.model.Volume;
@@ -79,6 +95,8 @@ public class ExternalEventCreate extends AbstractDefaultProcessHandler {
             handleVolumeEvent(event, state, process);
         } else if (ExternalEventConstants.KIND_STORAGE_POOL_EVENT.equals(event.getKind())) {
             handleStoragePoolEvent(event, state, process);
+        } else if (ExternalEventConstants.KIND_EXTERNAL_DNS_EVENT.equals(event.getKind())) {
+            handleExternalDnsEvent(event, state, process);
         } else {
             new IllegalStateException("Unknown external event type: " + event.getKind());
         }
@@ -176,6 +194,42 @@ public class ExternalEventCreate extends AbstractDefaultProcessHandler {
                 }
             }
         });
+    }
+
+    protected void handleExternalDnsEvent(final ExternalEvent event, ProcessState state, ProcessInstance process) {
+        lockManager.lock(new ExternalEventLock(EXERNAL_DNS_LOCK_NAME, event.getAccountId(), event.getExternalId()),
+                new LockCallbackNoReturn() {
+                    @Override
+                    public void doWithLockNoResult() {
+                        String domainName = DataAccessor.fieldString(event, ExternalEventConstants.FIELD_DOMAIN_NAME);
+                        String serviceName = DataAccessor
+                                .fieldString(event, ExternalEventConstants.FIELD_SERVICE_NAME);
+                        String stackName = DataAccessor.fieldString(event, ExternalEventConstants.FIELD_STACK_NAME);
+                        if (domainName == null || serviceName == null || stackName == null) {
+                            log.info("External DNS [event: " + event.getId() + "] misses some fields");
+                            return;
+                        }
+
+                        Environment stack = objectManager.findAny(Environment.class, ENVIRONMENT.ACCOUNT_ID,
+                                event.getAccountId(), ENVIRONMENT.REMOVED, null, ENVIRONMENT.NAME, stackName);
+                        if (stack == null) {
+                            log.info("Stack not found for external DNS [event: " + event.getId() + "]");
+                            return;
+                        }
+                        Service service = objectManager.findAny(Service.class, SERVICE.ACCOUNT_ID,
+                                event.getAccountId(), SERVICE.REMOVED, null, SERVICE.ENVIRONMENT_ID, stack.getId(),
+                                SERVICE.NAME, serviceName);
+                        if (service == null) {
+                            log.info("Service not found for external DNS [event: " + event.getId() + "]");
+                            return;
+                        }
+                        Map<String, Object> data = new HashMap<>();
+                        data.put(ExternalEventConstants.FIELD_DOMAIN_NAME, domainName);
+                        DataUtils.getWritableFields(service).putAll(data);
+                        objectManager.persist(service);
+
+                    }
+                });
     }
 
     protected void createNewMaps(StoragePool storagePool, Map<Long, StoragePoolHostMap> maps) {

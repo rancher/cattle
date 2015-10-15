@@ -1,0 +1,26 @@
+{
+    "collectionMethods": ["GET", "POST"],
+    "resourceMethods" : ["GET"],
+    "resourceFields": {
+        "id": {
+        },
+        "externalId": {
+            "create": true
+        },
+        "eventType": {
+            "create": true
+        },
+        "serviceName":{
+            "type":"string",
+            "create": true
+        },
+        "stackName":{
+            "type":"string",
+            "create": true
+        },
+        "domainName":{
+            "type":"string",
+            "create": true
+        }
+    }
+}
