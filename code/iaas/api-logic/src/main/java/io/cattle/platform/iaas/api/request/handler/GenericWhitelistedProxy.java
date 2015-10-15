@@ -36,6 +36,9 @@ import com.netflix.config.DynamicStringListProperty;
 
 public class GenericWhitelistedProxy extends AbstractResponseGenerator {
 
+    public static final String ALLOWED_HOST = GenericWhitelistedProxy.class.getName() + "allowed.host";
+    public static final String SET_HOST_CURRENT_HOST = GenericWhitelistedProxy.class.getName() + "set_host_current_host";
+
     private static final DynamicBooleanProperty ALLOW_PROXY = ArchaiusUtil.getBoolean("api.proxy.allow");
     private static final DynamicStringListProperty PROXY_WHITELIST = ArchaiusUtil.getList("api.proxy.whitelist");
     private static final DynamicIntProperty MAX_CONTENT_LENGTH = ArchaiusUtil.getInt("api.proxy.max-content-length");
@@ -50,10 +53,18 @@ public class GenericWhitelistedProxy extends AbstractResponseGenerator {
         }
 
         HttpServletRequest servletRequest = request.getServletContext().getRequest();
+        boolean allowHost = servletRequest.getAttribute(ALLOWED_HOST) != null;
+        boolean setCurrentHost = servletRequest.getAttribute(SET_HOST_CURRENT_HOST) != null;
 
         String redirect = servletRequest.getRequestURI();
         redirect = StringUtils.substringAfter(redirect, "/proxy/");
         redirect = URLDecoder.decode(redirect, "UTF-8");
+        if (redirect.startsWith("http")) {
+            /* We don't allow // so http:// will be http:/ and same with https. So we fixup here */
+            redirect = redirect.replaceFirst("^http:/([^/])", "http://$1");
+            redirect = redirect.replaceFirst("^https:/([^/])", "https://$1");
+        }
+
         URIBuilder uri;
         try {
             uri = new URIBuilder(redirect);
@@ -68,12 +79,6 @@ public class GenericWhitelistedProxy extends AbstractResponseGenerator {
             throw new ClientVisibleException(ResponseCodes.BAD_REQUEST, "InvalidRedirect", "The redirect is invalid", null);
         }
 
-        /* When no protocol is provided, use HTTPS by default. Please
-         * note that due to the following issue, it is in fact not
-         * possible to specify a protocol when cattle is running
-         * behind the websocket-proxy:
-         *   https://github.com/rancher/rancher/issues/1485
-         */
         if (!StringUtils.startsWith(redirect, "http")) {
             redirect = "https://" + redirect;
         }
@@ -85,7 +90,7 @@ public class GenericWhitelistedProxy extends AbstractResponseGenerator {
             throw new ClientVisibleException(ResponseCodes.BAD_REQUEST, "InvalidRedirect", "The redirect is invalid", null);
         }
 
-        if (!isWhitelisted(StringUtils.strip(host, "/"))) {
+        if (!allowHost && !isWhitelisted(StringUtils.strip(host, "/"))) {
             throw new ClientVisibleException(ResponseCodes.FORBIDDEN);
         }
 
@@ -147,7 +152,12 @@ public class GenericWhitelistedProxy extends AbstractResponseGenerator {
                 temp.addHeader(headerKey, headerVal);
             }
         }
-        temp.addHeader("Host", host);
+
+        if (setCurrentHost) {
+            temp.addHeader("Host", request.getResponseUrlBase().replaceFirst("^https?://", ""));
+        } else {
+            temp.addHeader("Host", host);
+        }
 
         if ("POST".equals(method) || "PUT".equals(method)) {
             InputStream inputStream = request.getInputStream();
