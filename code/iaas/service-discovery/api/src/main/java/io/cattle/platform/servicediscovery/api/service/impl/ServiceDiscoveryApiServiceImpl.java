@@ -109,7 +109,8 @@ public class ServiceDiscoveryApiServiceImpl implements ServiceDiscoveryApiServic
         options.setDefaultFlowStyle(DumperOptions.FlowStyle.BLOCK);
         options.setLineBreak(LineBreak.WIN);
         Yaml yaml = new Yaml(options);
-        return yaml.dump(dockerComposeData);
+        String yamlStr = yaml.dump(dockerComposeData);
+        return yamlStr.replaceAll("[$]", "\\$\\$");
     }
 
     @SuppressWarnings("unchecked")

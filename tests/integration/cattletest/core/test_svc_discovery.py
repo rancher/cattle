@@ -2139,12 +2139,14 @@ def test_export_config(client, context):
     # global vs scale
     image_uuid = context.image_uuid
     labels = {'io.rancher.scheduler.global': 'true'}
+    metadata = {"$bar": {"metadata": [{"$id$$foo$bar$$": "${HOSTNAME}"}]}}
     launch_config = {"imageUuid": image_uuid,
                      "cpuSet": "0,1", "labels": labels}
     service = client. \
         create_service(name="web",
                        environmentId=env.id,
-                       launchConfig=launch_config)
+                       launchConfig=launch_config,
+                       metadata=metadata)
 
     service = client.wait_success(service)
 
@@ -2155,9 +2157,11 @@ def test_export_config(client, context):
     assert docker_yml[service.name]['labels'] == labels
 
     rancher_yml = yaml.load(compose_config.rancherComposeConfig)
-    # service name shouldn't be in rancher.yml
-    # as there are no rancher params for it there
-    assert service.name not in rancher_yml
+    assert 'scale' not in rancher_yml
+    updated = {"$$id$$$$foo$$bar$$$$": "$${HOSTNAME}"}
+    metadata = {"$$bar": {"metadata": [updated]}}
+    assert rancher_yml[service.name]['metadata'] is not None
+    assert rancher_yml[service.name]['metadata'] == metadata
 
 
 def test_validate_image(client, context):
