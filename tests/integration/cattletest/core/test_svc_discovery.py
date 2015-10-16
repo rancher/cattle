@@ -346,6 +346,39 @@ def test_remove_inactive_service(client, context):
     _validate_compose_instance_removed(client, service, env)
 
 
+def test_upgrade_env(client):
+    env = client.create_environment(name='env-' + random_str())
+    env = client.wait_success(env)
+    assert env.state == 'active'
+
+    env = env.upgrade()
+    assert env.state == 'upgrading'
+
+    env = client.wait_success(env)
+    assert env.state == 'active'
+
+
+def test_upgrade_rollback_env(client):
+    env = client.create_environment(name='env-' + random_str())
+    env = client.wait_success(env)
+
+    assert env.state == 'active'
+    assert 'upgrade' in env
+    assert 'rollback' in env
+
+    env = env.upgrade()
+    assert env.state == 'upgrading'
+
+    env = client.wait_success(env)
+    assert env.state == 'active'
+
+    env = env.rollback()
+    assert env.state == 'rolling-back'
+
+    env = client.wait_success(env)
+    assert env.state == 'active'
+
+
 def test_remove_environment(client, context):
     env = _create_stack(client)
 
