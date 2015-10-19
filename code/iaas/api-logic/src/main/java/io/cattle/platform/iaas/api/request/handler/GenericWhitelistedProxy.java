@@ -23,6 +23,7 @@ import org.apache.commons.fileupload.util.LimitedInputStream;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.Header;
+import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.ResponseHandler;
@@ -188,7 +189,10 @@ public class GenericWhitelistedProxy extends AbstractResponseGenerator {
                 for (int i = 0; i < headers.length; i++) {
                     request.getServletContext().getResponse().addHeader(headers[i].getName(), headers[i].getValue());
                 }
-                response.getEntity().writeTo(writer);
+                HttpEntity entity = response.getEntity();
+                if (entity != null) {
+                    entity.writeTo(writer);
+                }
                 return null;
             }
         });
