@@ -28,6 +28,11 @@ public abstract class DeploymentUnitInstance {
         removeUnitInstance();
         if (exposeMap != null) {
             context.objectProcessManager.scheduleStandardProcessAsync(StandardProcess.REMOVE, exposeMap, null);
+        }
+    }
+
+    public void waitForRemoval() {
+        if (exposeMap != null) {
             context.resourceMonitor.waitFor(exposeMap,
                     new ResourcePredicate<ServiceExposeMap>() {
                         @Override
