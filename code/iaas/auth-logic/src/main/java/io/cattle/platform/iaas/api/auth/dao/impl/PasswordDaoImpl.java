@@ -10,6 +10,7 @@ import io.cattle.platform.core.constants.CredentialConstants;
 import io.cattle.platform.core.dao.GenericResourceDao;
 import io.cattle.platform.core.model.Account;
 import io.cattle.platform.core.model.Credential;
+import io.cattle.platform.core.model.tables.records.CredentialRecord;
 import io.cattle.platform.db.jooq.dao.impl.AbstractJooqDao;
 import io.cattle.platform.framework.encryption.EncryptionConstants;
 import io.cattle.platform.iaas.api.auth.SecurityConstants;
@@ -28,6 +29,7 @@ import java.util.Map;
 import javax.inject.Inject;
 
 import org.apache.commons.lang3.StringUtils;
+import org.jooq.SelectConditionStep;
 
 public class PasswordDaoImpl extends AbstractJooqDao implements PasswordDao {
 
@@ -51,46 +53,38 @@ public class PasswordDaoImpl extends AbstractJooqDao implements PasswordDao {
     }
 
     @Override
-    public Credential updateAdminAndCredentials(String username, String password, String name) {
-        Account admin = create()
-                .selectFrom(ACCOUNT)
-                .where(ACCOUNT.STATE.eq(CommonStatesConstants.ACTIVE)
-                        .and(ACCOUNT.KIND.eq(AccountConstants.ADMIN_KIND)))
-                .orderBy(ACCOUNT.ID.asc()).limit(1).fetchOne();
-
-        if (admin == null){
-            throw new ClientVisibleException(ResponseCodes.INTERNAL_SERVER_ERROR, "UnableToFindAdmin");
-        }
-
-         if (create().selectFrom(CREDENTIAL)
-                .where(CREDENTIAL.PUBLIC_VALUE.eq(username)
-                        .and(CREDENTIAL.STATE.eq(CommonStatesConstants.ACTIVE)
-                                .and(CREDENTIAL.KIND.eq(CredentialConstants.KIND_PASSWORD)
-                                .and(CREDENTIAL.ACCOUNT_ID.ne(admin.getId())))))
-                .fetchAny() != null){
-             throw new ClientVisibleException(ResponseCodes.CONFLICT, "UsernameIsTaken", "Username: " + username +" is taken", null);
-         }
-
-        create().delete(CREDENTIAL)
-                .where(CREDENTIAL.ACCOUNT_ID.eq(admin.getId())
-                        .and(CREDENTIAL.KIND.eq(CredentialConstants.KIND_PASSWORD)))
-                .execute();
-
-        Map<Object, Object> properties = new HashMap<>();
-
+    public Credential createAdminAccountAndPassword(String username, String password, String name) {
         if (StringUtils.isBlank(username) || StringUtils.isBlank(password)) {
             throw new ClientVisibleException(ResponseCodes.BAD_REQUEST, "UserCredentialCreation", "Cannot have blank username or password.", null);
         }
+        Account account;
+
+        if (create().selectFrom(CREDENTIAL)
+                .where(CREDENTIAL.PUBLIC_VALUE.eq(username)
+                        .and(CREDENTIAL.STATE.eq(CommonStatesConstants.ACTIVE)
+                                .and(CREDENTIAL.KIND.eq(CredentialConstants.KIND_PASSWORD)))).fetchAny() != null){
+            throw new ClientVisibleException(ResponseCodes.CONFLICT, "UsernameIsTaken", "Username: " + username +" is taken", null);
+        }
+
+        Map<Object, Object> properties = new HashMap<>();
+
+        if (StringUtils.isNotEmpty(name)) {
+            properties.put(ACCOUNT.NAME, name);
+        }
+        properties.put(ACCOUNT.KIND, AccountConstants.ADMIN_KIND);
+        account = resourceDao.createAndSchedule(Account.class, objectManager.convertToPropertiesFor(Account.class,
+                properties));
+
+        properties = new HashMap<>();
 
         properties.put(CREDENTIAL.PUBLIC_VALUE, username);
         properties.put(CREDENTIAL.SECRET_VALUE, transformationService.transform(password, EncryptionConstants.HASH));
         properties.put(CREDENTIAL.KIND, LocalAuthConstants.PASSWORD);
-        properties.put(CREDENTIAL.ACCOUNT_ID, admin.getId());
+        properties.put(CREDENTIAL.ACCOUNT_ID, account.getId());
         properties.put(CREDENTIAL.STATE, CommonStatesConstants.ACTIVE);
 
-        DataAccessor.fields(admin).withKey(SecurityConstants.HAS_LOGGED_IN).set(true);
-        admin.setName(name);
-        objectManager.persist(admin);
+        DataAccessor.fields(account).withKey(SecurityConstants.HAS_LOGGED_IN).set(true);
+        objectManager.persist(account);
         return objectManager.create(Credential.class, objectManager.convertToPropertiesFor(Credential.class, properties));
     }
 
@@ -107,6 +101,24 @@ public class PasswordDaoImpl extends AbstractJooqDao implements PasswordDao {
                     return credentials.isEmpty();
         }
         return true;
+    }
+
+    @Override
+    public void verifyUsernamePassword(String username, String password, String name) {
+        Credential credential = create()
+                .selectFrom(CREDENTIAL)
+                .where(CREDENTIAL.STATE.eq(CommonStatesConstants.ACTIVE))
+                .and(CREDENTIAL.PUBLIC_VALUE.eq(username)
+                        .and(CREDENTIAL.KIND.equalIgnoreCase(CredentialConstants.KIND_PASSWORD)))
+                .fetchOne();
+        if (credential == null) {
+            createAdminAccountAndPassword(username, password, name);
+        } else {
+            if (!transformationService.compare(password, credential.getSecretValue())) {
+                throw new ClientVisibleException(ResponseCodes.UNAUTHORIZED, "IncorrectPassword", "Username: " + username +
+                        " is taken and provided password is incorrect.", null);
+            }
+        }
     }
 
 }

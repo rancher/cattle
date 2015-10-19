@@ -21,27 +21,30 @@ class LocalAuth(AuthBase):
 
 @pytest.fixture(scope='session', autouse=True)
 def turn_on_off_local_auth(request, admin_user_client):
-    username = os.environ.get('CATTLE_ACCESS_KEY', 'admin')
-    password = os.environ.get('CATTLE_SECRET_KEY', 'adminpass')
+    username = random_str()
+    password = random_str()
     admin_user_client.create_localAuthConfig(enabled=True,
                                              username=username,
                                              password=password)
 
     def fin():
-        admin_user_client.create_localAuthConfig(enabled=False,
+        admin_user_client.create_localAuthConfig(enabled=None,
                                                  username=username,
                                                  password=password)
 
     request.addfinalizer(fin)
 
 
-def make_user_and_client(admin_user_client, name_base='user '):
+def make_user_and_client(admin_user_client, name_base='user ',
+                         username=None, password=None):
+    if username is None:
+        username = name_base + random_str()
+    if password is None:
+        password = 'password ' + random_str()
     account = admin_user_client.create_account(name=name_base + random_str(),
                                                kind="user")
     admin_user_client.wait_success(account)
 
-    username = name_base + random_str()
-    password = 'password ' + random_str()
     login = admin_user_client.create_password(publicValue=username,
                                               secretValue=password,
                                               accountId=account.id)
@@ -70,29 +73,42 @@ def make_client(admin_user_client, account, username, password):
     jwt = token['jwt']
     user = token['userIdentity']
     assert user['login'] == username
+    assert token['user'] == username
     start_client._auth = LocalAuth(jwt)
+    start_client._access_key = None
+    start_client._secret_key = None
+    start_client.reload_schema()
     start_client.valid()
     identities = start_client.list_identity()
 
     assert len(identities) == 1
     assert identities[0].externalId == account.id
+    assert identities[0].login == username
+
+    projects = start_client.list_project()
+    assert len(projects) == 1
+    members = projects[0].projectMembers()
+    assert len(members) == 1
+    member = get_plain_member(members[0])
+    assert member['externalId'] == identities[0].externalId
+    assert member['externalIdType'] == identities[0].externalIdType
+    assert member['role'] == 'owner'
+
     return start_client
 
 
-@pytest.mark.nonparallel
 def test_local_login(admin_user_client, request):
     client, account, username, password =\
         make_user_and_client(admin_user_client)
     identities = client.list_identity()
     projects = client.list_project()
-    assert len(projects) != 0
+    assert len(projects) == 1
 
     assert len(identities) == 1
     assert identities[0].externalId == account.id
 
 
-@pytest.mark.nonparallel
-def test_local_login_only_create1_project(admin_user_client, request):
+def test_local_login_only_create1_project(admin_user_client):
     client, account, username, password =\
         make_user_and_client(admin_user_client)
     identities = client.list_identity()
@@ -113,8 +129,7 @@ def test_local_login_only_create1_project(admin_user_client, request):
     assert identities[0].externalId == account.id
 
 
-@pytest.mark.nonparallel
-def test_local_login_change_password(admin_user_client, request):
+def test_local_login_change_password(admin_user_client):
     client, account, username, password =\
         make_user_and_client(admin_user_client)
 
@@ -133,8 +148,7 @@ def test_local_login_change_password(admin_user_client, request):
     assert identities[0].externalId == account.id
 
 
-@pytest.mark.nonparallel
-def test_local_incorrect_login(admin_user_client, request):
+def test_local_incorrect_login(admin_user_client):
     token = requests.post(base_url() + 'token',
                           {
                               'code': random_str() + ':' + random_str()
@@ -148,8 +162,7 @@ def test_local_incorrect_login(admin_user_client, request):
     assert token['status'] == 401
 
 
-@pytest.mark.nonparallel
-def test_local_project_members(admin_user_client, request):
+def test_local_project_members(admin_user_client):
     user1_client, account, username, password =\
         make_user_and_client(admin_user_client)
 
@@ -173,8 +186,8 @@ def test_local_project_members(admin_user_client, request):
         idToMember(user2_identity, 'member')
     ])
     admin_user_client.wait_success(project)
-    user1_client.by_id('project', project.id)
-    user2_client.by_id('project', project.id)
+    assert user1_client.by_id('project', project.id) is not None
+    assert user2_client.by_id('project', project.id) is not None
 
 
 def idToMember(identity, role):
@@ -185,8 +198,7 @@ def idToMember(identity, role):
     }
 
 
-@pytest.mark.nonparallel
-def test_local_project_create(admin_user_client, request):
+def test_local_project_create(admin_user_client):
     user1_client, account, username, password =\
         make_user_and_client(admin_user_client)
 
@@ -205,7 +217,6 @@ def test_local_project_create(admin_user_client, request):
     user1_client.delete(project)
 
 
-@pytest.mark.nonparallel
 def test_get_correct_identity(admin_user_client):
     name = "Identity User"
     context = create_context(admin_user_client, name=name)
@@ -215,8 +226,7 @@ def test_get_correct_identity(admin_user_client):
     assert identities[0].name == name
 
 
-@pytest.mark.nonparallel
-def test_search_identity_name(admin_user_client, request):
+def test_search_identity_name(admin_user_client):
     usernames = []
 
     for x in range(0, 5):
@@ -240,7 +250,6 @@ def test_search_identity_name(admin_user_client, request):
         assert identity.externalIdType == ids[0].externalIdType
 
 
-@pytest.mark.nonparallel
 def test_search_identity_name_like(admin_user_client, request):
     name_base = random_str()
     usernames = []
@@ -266,8 +275,7 @@ def test_search_identity_name_like(admin_user_client, request):
     assert found == 5
 
 
-@pytest.mark.nonparallel
-def test_cant_login_inactive_account(admin_user_client, request):
+def test_inactive_active_login_account(admin_user_client, request):
     client, account, username, password =\
         make_user_and_client(admin_user_client)
     identities = client.list_identity()
@@ -292,6 +300,70 @@ def test_cant_login_inactive_account(admin_user_client, request):
 
     assert token['type'] == 'error'
     assert token['status'] == 401
+
+    account = admin_user_client.reload(account)
+    account.activate()
+    admin_user_client.wait_success(account)
+
+    client.reload_schema()
+    assert client.list_identity()[0]['login'] == username
+
+    token = requests.post(base_url() + 'token', {
+        'code': username + ':' + password
+    }).json()
+
+    assert token['user'] == username
+    assert token['userIdentity']['login'] == username
+
+
+def test_deleted_account_login(admin_user_client, request):
+    client, account, username, password =\
+        make_user_and_client(admin_user_client)
+    identities = client.list_identity()
+    projects = client.list_project()
+
+    assert len(projects) == 1
+    assert len(identities) == 1
+    assert identities[0].externalId == account.id
+
+    account = admin_user_client.by_id("account", account.id)
+    account.deactivate()
+    admin_user_client.wait_success(account)
+    admin_user_client.delete(account)
+
+    with pytest.raises(ApiError) as e:
+        client.list_identity()
+    assert e.value.error.status == 401
+
+    token = requests.post(base_url() + 'token', {
+        'code': username + ':' + password
+    })
+    token = token.json()
+
+    assert token['type'] == 'error'
+    assert token['status'] == 401
+
+    account = admin_user_client.wait_success(account)
+    account.purge()
+    admin_user_client.wait_success(account)
+
+    client, account, username, password =\
+        make_user_and_client(admin_user_client,
+                             username=username,
+                             password=password)
+
+    assert client.list_identity()[0]['login'] == username
+
+    token = requests.post(base_url() + 'token', {
+        'code': username + ':' + password
+    }).json()
+
+    assert token['user'] == username
+    assert token['userIdentity']['login'] == username
+
+    new_projects = client.list_project()
+    assert len(new_projects) == 1
+    assert new_projects[0].id != projects[0].id
 
 
 def test_list_members_inactive_deleted_member(admin_user_client):
@@ -325,4 +397,39 @@ def test_list_members_inactive_deleted_member(admin_user_client):
     admin_user_client.wait_success(account2)
 
     project = user1_client.by_id("project", project.id)
-    project.projectMembers()
+    assert len(project.projectMembers()) == 1
+
+
+def test_cant_create_multiple_users_same_login(admin_user_client):
+    user1_client, account, username, password =\
+        make_user_and_client(admin_user_client)
+
+    with pytest.raises(ApiError) as e:
+        make_user_and_client(admin_user_client,
+                             username=username, password=password)
+    assert e.value.error.status == 422
+    assert e.value.error.code == 'NotUnique'
+    assert e.value.error.fieldName == 'publicValue'
+
+
+def test_passwords_non_alpha_numeric_characters(admin_user_client):
+    chars = [':', ';', '@', '!', '#', '$', '%', '^', '&', '*', '(', ')',
+             '+', '/', '<', '>', '?']
+    name = random_str()
+    username = random_str()
+    account = admin_user_client.create_account(name=name,
+                                               kind="user")
+    admin_user_client.wait_success(account)
+    assert account.name == name
+
+    for char in chars:
+        password = 'the{}Ran{}pa22'.format(char, char)
+        key = admin_user_client.create_password(publicValue=username,
+                                                secretValue=password,
+                                                accountId=account.id)
+        key = admin_user_client.wait_success(key)
+        make_client(admin_user_client, account, username, password)
+        admin_user_client.wait_success(key.deactivate())
+        admin_user_client.delete(key)
+        key = admin_user_client.wait_success(key)
+        key.purge()

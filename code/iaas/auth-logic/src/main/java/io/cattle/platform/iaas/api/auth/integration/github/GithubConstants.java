@@ -45,7 +45,6 @@ public class GithubConstants {
     public static final String SCHEME_SETTING = "api.github.scheme";
     public static final String TEAM_SCOPE = NAME + "_team";
     public static final String USER_SCOPE = NAME + "_user";
-    public static final String USERNAME = "username";
 
     public static final DynamicBooleanProperty ALLOW_GITHUB_REDIRECT = ArchaiusUtil.getBoolean("api.allow.github.proxy");
     public static final DynamicStringProperty GITHUB_CLIENT_ID = ArchaiusUtil.getString(CLIENT_ID_SETTING);

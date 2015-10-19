@@ -283,7 +283,9 @@ def test_multiple_owners_add_members(admin_user_client, user_clients,
     assert len(project.projectMembers()) == len(current_members)
 
 
-def test_members_cant_delete(admin_user_client, user_clients, members):
+def test_members_cant_do_things(admin_user_client, user_clients, members):
+    # Tests that members can't alter members of a project, delete a project,
+    # deactivate a project.
     project = _create_project_with_members(admin_user_client,
                                            user_clients['Owner'], members)
     project = user_clients['Member'].by_id("project", project.id)
@@ -300,6 +302,9 @@ def test_members_cant_delete(admin_user_client, user_clients, members):
         'externalIdType': 'rancher_id',
         'role': 'owner'
     }], 'Attribute')
+    with pytest.raises(AttributeError) as e:
+        project.deactivate()
+    assert 'deactivate' in e.value.message
 
 
 def test_project_cant_create_project(user_clients, members, project,
@@ -353,6 +358,23 @@ def test_project_deactivate(user_clients, project, members):
     project.deactivate()
     project = user_clients['Owner'].wait_success(project)
     assert project.state == 'inactive'
+
+
+def test_project_deactivate_members_cant_access(user_clients,
+                                                project, members):
+    project.setmembers(members=members)
+    diff_members(members, get_plain_members(project.projectMembers()))
+    project = user_clients['Owner'].reload(project)
+    project.deactivate()
+    project = user_clients['Owner'].wait_success(project)
+    assert project.state == 'inactive'
+    assert user_clients['Member'].by_id('project', project.id) is None
+    project.activate()
+    project = user_clients['Owner'].wait_success(project)
+    prj_id = project.id
+    assert project.state == 'active'
+    project = user_clients['Member'].reload(project)
+    assert project.id == prj_id
 
 
 def test_project_member_invalid(project, admin_user_client, members):

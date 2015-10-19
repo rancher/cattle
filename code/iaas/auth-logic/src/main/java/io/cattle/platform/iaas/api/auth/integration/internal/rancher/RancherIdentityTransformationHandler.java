@@ -9,6 +9,7 @@ import io.cattle.platform.iaas.api.auth.dao.AuthDao;
 import io.cattle.platform.object.ObjectManager;
 import io.github.ibuildthecloud.gdapi.context.ApiContext;
 import io.github.ibuildthecloud.gdapi.exception.ClientVisibleException;
+import io.github.ibuildthecloud.gdapi.id.IdFormatter;
 import io.github.ibuildthecloud.gdapi.util.ResponseCodes;
 
 import java.util.Set;
@@ -25,14 +26,14 @@ public class RancherIdentityTransformationHandler implements IdentityTransformat
 
     @Override
     public Identity transform(Identity identity) {
+        IdFormatter idFormatter = ApiContext.getContext().getIdFormatter();
         switch (identity.getExternalIdType()) {
 
             case ProjectConstants.RANCHER_ID:
-                String accountId = ApiContext.getContext().getIdFormatter().parseId(identity.getExternalId());
-                Account account = authDao.getAccountById(Long.valueOf(accountId));
-                if (account != null) {
-                    return new Identity(ProjectConstants.RANCHER_ID, String.valueOf(account.getId()), account.getName(),
-                        null, null, null);
+                String accountId = idFormatter.parseId(identity.getExternalId());
+                Identity gotIdentity = authDao.getIdentity(Long.valueOf(accountId), null);
+                if (gotIdentity != null) {
+                    return gotIdentity;
                 } else {
                     throw new ClientVisibleException(ResponseCodes.BAD_REQUEST,
                             "invalidIdentity", "Rancher Account: " + identity.getExternalId() + " nonexistent", null);
@@ -45,23 +46,20 @@ public class RancherIdentityTransformationHandler implements IdentityTransformat
 
     @Override
     public Identity untransform(Identity identity) {
+        IdFormatter idFormatter = ApiContext.getContext().getIdFormatter();
         switch (identity.getExternalIdType()) {
-
             case ProjectConstants.RANCHER_ID:
-                Account account;
                 long id;
                 try {
                     id = Long.valueOf(identity.getExternalId());
-                    account = authDao.getAccountById(id);
                 } catch (NumberFormatException e) {
-                    return identity;
+                    id = Long.valueOf(idFormatter.parseId(identity.getExternalId()));
                 }
-                String accountId = (String) ApiContext.getContext().getIdFormatter().formatId(objectManager
-                        .getType(Account.class), id);
-                if (account != null) {
-                    return new Identity(ProjectConstants.RANCHER_ID, accountId, account.getName(),
-                            identity.getProfileUrl(), identity.getProfilePicture(), identity.getLogin());
+                Identity gotIdentity = authDao.getIdentity(id, idFormatter);
+                if (gotIdentity != null) {
+                    return new Identity(gotIdentity, identity.getRole(), identity.getProjectId());
                 } else {
+                    String accountId = (String) idFormatter.formatId(objectManager.getType(Account.class), id);
                     return new Identity(identity.getExternalIdType(), accountId, identity.getName(),
                             null, null, '(' + identity.getExternalIdType().split("_")[1].toUpperCase()
                             +  "  not found) " + identity.getName());

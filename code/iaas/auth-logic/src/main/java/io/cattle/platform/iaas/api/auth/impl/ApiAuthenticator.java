@@ -55,11 +55,15 @@ public class ApiAuthenticator extends AbstractApiRequestHandler {
         }
 
         Account authenticatedAsAccount = getAccount(request);
-        if (authenticatedAsAccount == null) {
-            throwUnauthorizated();
+        if (authenticatedAsAccount == null ||
+                !StringUtils.equals(CommonStatesConstants.ACTIVE, authenticatedAsAccount.getState())) {
+            throw new ClientVisibleException(ResponseCodes.UNAUTHORIZED);
         }
 
         Set<Identity> identities = getIdentities(authenticatedAsAccount);
+        if (identities == null || identities.size() == 0) {
+            throw new ClientVisibleException(ResponseCodes.UNAUTHORIZED);
+        }
 
         Account account = getAccountRequested(authenticatedAsAccount, identities, request);
         Policy policy = getPolicy(account, authenticatedAsAccount, identities, request);
@@ -150,7 +154,7 @@ public class ApiAuthenticator extends AbstractApiRequestHandler {
         for (IdentityTransformationHandler identityTransformationHandler : identityTransformationHandlers) {
             identities.addAll(identityTransformationHandler.getIdentities(account));
         }
-
+        identities.remove(null);
         return identities;
     }
 

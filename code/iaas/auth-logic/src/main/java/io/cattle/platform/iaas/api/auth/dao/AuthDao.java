@@ -4,6 +4,8 @@ import io.cattle.platform.api.auth.Identity;
 import io.cattle.platform.core.model.Account;
 import io.cattle.platform.core.model.ProjectMember;
 import io.cattle.platform.iaas.api.auth.projects.Member;
+import io.github.ibuildthecloud.gdapi.id.IdFormatter;
+import io.github.ibuildthecloud.gdapi.util.TransformationService;
 
 import java.util.List;
 import java.util.Set;
@@ -14,7 +16,7 @@ public interface AuthDao {
 
     Account getAccountById(Long id);
 
-    Account getAccountByKeys(String access, String secretKey);
+    Account getAccountByKeys(String access, String secretKey, TransformationService transformationService);
 
     Account getAccountByExternalId(String externalId, String externalType);
 
@@ -22,11 +24,11 @@ public interface AuthDao {
 
     Account createAccount(String name, String kind, String externalId, String externalType);
 
-    Identity getIdentity(Long id);
+    Identity getIdentity(Long id, IdFormatter idFormatter);
 
     Account createProject(String name, String description);
 
-    void updateAccount(Account account, String name, String kind, String externalId, String externalType);
+    Account updateAccount(Account account, String name, String kind, String externalId, String externalType);
 
     List<Account> getAccessibleProjects(Set<Identity> identitySet, boolean isAdmin, Long usingAccount);
 
@@ -44,7 +46,8 @@ public interface AuthDao {
 
     boolean hasAccessToAnyProject(Set<Identity> identities, boolean isAdmin, Long usingAccount);
 
-    List<? extends ProjectMember> setProjectMembers(final Account project, final Set<Member> membersTransformed);
+    List<? extends ProjectMember> setProjectMembers(final Account project, final Set<Member> membersTransformed,
+                                                    IdFormatter idFormatter);
 
     ProjectMember createProjectMember(Account project, Member member);
 
@@ -54,5 +57,5 @@ public interface AuthDao {
 
     Account getByUsername(String username);
 
-    Account getAccountByLogin(String publicValue, String secretValue);
+    Account getAccountByLogin(String publicValue, String secretValue, TransformationService transformationService);
 }

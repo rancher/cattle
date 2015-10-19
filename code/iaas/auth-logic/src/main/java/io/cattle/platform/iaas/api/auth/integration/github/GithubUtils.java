@@ -1,6 +1,10 @@
 package io.cattle.platform.iaas.api.auth.integration.github;
 
+import io.cattle.platform.core.model.Account;
 import io.cattle.platform.iaas.api.auth.TokenUtils;
+import io.cattle.platform.object.util.DataAccessor;
+import io.github.ibuildthecloud.gdapi.context.ApiContext;
+import io.github.ibuildthecloud.gdapi.request.ApiRequest;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -17,6 +21,25 @@ public class GithubUtils extends TokenUtils {
     @Override
     protected String accessToken() {
         return GithubConstants.GITHUB_ACCESS_TOKEN;
+    }
+
+    @Override
+    protected void postAuthModification(Account account) {
+        ApiRequest request = ApiContext.getContext().getApiRequest();
+        String accessToken = (String) request.getAttribute(GithubConstants.GITHUB_ACCESS_TOKEN);
+        DataAccessor.fields(account).withKey(GithubConstants.GITHUB_ACCESS_TOKEN)
+                .set(accessToken);
+        getObjectManager().persist(account);
+    }
+
+    @Override
+    public String userType() {
+        return GithubConstants.USER_SCOPE;
+    }
+
+    @Override
+    public boolean createAccount() {
+        return true;
     }
 
     @Override

@@ -255,6 +255,9 @@ public class GithubIdentitySearchProvider extends GithubConfigurable implements 
     public List<Identity> savedIdentities() {
         List<String> ids = githubUtils.fromCommaSeparatedString(GithubConstants.GITHUB_ALLOWED_IDENTITIES.get());
         List<Identity> identities = new ArrayList<>();
+        if (ids.isEmpty() || !isConfigured()) {
+            return identities;
+        }
         for(String id: ids){
             String[] split = id.split(":", 2);
             identities.add(getIdentity(split[1], split[0]));

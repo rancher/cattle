@@ -58,27 +58,31 @@ public class DefaultAuthorizationProvider implements AuthorizationProvider, Init
                 return schemaFactory;
             }
         }
-        List<? extends ProjectMember> projectMembers = null;
-        if (account != null && account.getKind().equalsIgnoreCase(ProjectConstants.TYPE)){
+        List<? extends ProjectMember> projectMembers;
+        if (account != null && account.getKind().equalsIgnoreCase(ProjectConstants.TYPE)) {
             projectMembers = authDao.getProjectMembersByIdentity(account.getId(), policy.getIdentities());
-        }
-        if (projectMembers == null || projectMembers.size() == 0){
-            return schemaFactories.get(account.getKind());
-        } else {
-            String role = null;
-            for (ProjectMember projectMember: projectMembers){
+            if (projectMembers == null || projectMembers.size() == 0) {
+                return schemaFactories.get(account.getKind());
+            } else {
+                String role = null;
+                for (ProjectMember projectMember : projectMembers) {
 
-                if (role == null){
-                    role = projectMember.getRole();
-                } else {
-                    String newRole = projectMember.getRole();
+                    if (role == null) {
+                        role = projectMember.getRole();
+                    } else {
+                        String newRole = projectMember.getRole();
 
-                    if (getRolePriority(newRole) < getRolePriority(role)){
-                        role = newRole;
+                        if (getRolePriority(newRole) < getRolePriority(role)) {
+                            role = newRole;
+                        }
                     }
                 }
+                return role != null ? schemaFactories.get(role) : null;
             }
-            return role != null ? schemaFactories.get(role) : null;
+        } else if (account != null){
+            return schemaFactories.get(account.getKind());
+        } else {
+            return null;
         }
     }
 

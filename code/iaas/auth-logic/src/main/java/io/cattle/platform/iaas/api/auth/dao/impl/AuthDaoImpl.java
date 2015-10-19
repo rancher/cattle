@@ -27,9 +27,10 @@ import io.cattle.platform.object.meta.ObjectMetaDataManager;
 import io.cattle.platform.object.process.ObjectProcessManager;
 import io.cattle.platform.object.process.StandardProcess;
 import io.cattle.platform.object.util.ObjectUtils;
-import io.github.ibuildthecloud.gdapi.context.ApiContext;
 import io.github.ibuildthecloud.gdapi.exception.ClientVisibleException;
+import io.github.ibuildthecloud.gdapi.id.IdFormatter;
 import io.github.ibuildthecloud.gdapi.util.ResponseCodes;
+import io.github.ibuildthecloud.gdapi.util.TransformationService;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -104,7 +105,7 @@ public class AuthDaoImpl extends AbstractJooqDao implements AuthDao {
     }
 
     @Override
-    public Account getAccountByLogin(String publicValue, String secretValue) {
+    public Account getAccountByLogin(String publicValue, String secretValue, TransformationService transformationService) {
         Credential credential = create()
                 .selectFrom(CREDENTIAL)
                 .where(
@@ -115,7 +116,7 @@ public class AuthDaoImpl extends AbstractJooqDao implements AuthDao {
         if (credential == null) {
             return null;
         }
-        boolean secretIsCorrect = ApiContext.getContext().getTransformationService().compare(secretValue, credential.getSecretValue());
+        boolean secretIsCorrect = transformationService.compare(secretValue, credential.getSecretValue());
         if (secretIsCorrect) {
             return create()
                     .selectFrom(ACCOUNT).where(ACCOUNT.ID.eq(credential.getAccountId())
@@ -138,7 +139,7 @@ public class AuthDaoImpl extends AbstractJooqDao implements AuthDao {
     }
 
     @Override
-    public Account getAccountByKeys(String access, String secretKey) {
+    public Account getAccountByKeys(String access, String secretKey, TransformationService transformationService) {
         try {
             Credential credential = create()
                     .selectFrom(CREDENTIAL)
@@ -150,8 +151,7 @@ public class AuthDaoImpl extends AbstractJooqDao implements AuthDao {
             if (credential == null) {
                 return null;
             }
-            boolean secretIsCorrect = ApiContext.getContext().getTransformationService().compare(secretKey, credential.getSecretValue());
-            if (secretIsCorrect) {
+            if (transformationService.compare(secretKey, credential.getSecretValue())) {
                 return create()
                         .selectFrom(ACCOUNT).where(ACCOUNT.ID.eq(credential.getAccountId())
                                 .and(ACCOUNT.STATE.eq(CommonStatesConstants.ACTIVE)))
@@ -200,7 +200,7 @@ public class AuthDaoImpl extends AbstractJooqDao implements AuthDao {
     }
 
     @Override
-    public Identity getIdentity(Long id) {
+    public Identity getIdentity(Long id, IdFormatter idFormatter) {
         Account account = getAccountById(id);
         if (account == null || account.getKind().equalsIgnoreCase(ProjectConstants.TYPE)) {
             return null;
@@ -209,8 +209,9 @@ public class AuthDaoImpl extends AbstractJooqDao implements AuthDao {
                 .selectFrom(CREDENTIAL)
                 .where(CREDENTIAL.KIND.equalIgnoreCase(CredentialConstants.KIND_PASSWORD)
                         .and(CREDENTIAL.ACCOUNT_ID.eq(id))
-                .and(CREDENTIAL.STATE.equalIgnoreCase(CommonStatesConstants.ACTIVE))).fetchAny();
-        String accountId = (String) ApiContext.getContext().getIdFormatter().formatId(objectManager.getType(Account.class), account.getId());
+                        .and(CREDENTIAL.STATE.equalIgnoreCase(CommonStatesConstants.ACTIVE))).fetchAny();
+        String accountId = idFormatter != null ? (String) idFormatter.formatId(objectManager.getType(Account.class),
+                account.getId()) : String.valueOf(id);
         return new Identity(ProjectConstants.RANCHER_ID, accountId, account.getName(),
                 null, null, credential == null ? null : credential.getPublicValue());
     }
@@ -239,7 +240,7 @@ public class AuthDaoImpl extends AbstractJooqDao implements AuthDao {
     }
 
     @Override
-    public void updateAccount(Account account, String name, String kind, String externalId, String externalType) {
+    public Account updateAccount(Account account, String name, String kind, String externalId, String externalType) {
         Map<TableField<AccountRecord, String>, String> properties = new HashMap<>();
         if (StringUtils.isNotEmpty(name)) {
             properties.put(ACCOUNT.NAME, name);
@@ -263,6 +264,7 @@ public class AuthDaoImpl extends AbstractJooqDao implements AuthDao {
         if (1 != updateCount) {
             throw new RuntimeException("UpdateAccount failed.");
         }
+        return objectManager.reload(account);
     }
 
     @Override
@@ -396,13 +398,14 @@ public class AuthDaoImpl extends AbstractJooqDao implements AuthDao {
     }
 
     @Override
-    public List<? extends ProjectMember> setProjectMembers(final Account project, final Set<Member> members) {
+    public List<? extends ProjectMember> setProjectMembers(final Account project, final Set<Member> members,
+                                                           final IdFormatter idFormatter) {
         return lockManager.lock(new ProjectLock(project), new LockCallback<List<? extends ProjectMember>>() {
             public List<? extends ProjectMember> doWithLock() {
                 List<? extends ProjectMember> previousMembers = getActiveProjectMembers(project.getId());
                 Set<Member> otherPreviousMembers = new HashSet<>();
                 for (ProjectMember member : previousMembers) {
-                    String projectId = (String) ApiContext.getContext().getIdFormatter().formatId(objectManager.getType(Account.class), member.getProjectId());
+                    String projectId = (String) idFormatter.formatId(objectManager.getType(Account.class), member.getProjectId());
                     otherPreviousMembers.add(new Member(member, projectId));
                 }
                 Set<Member> create = new HashSet<>(members);
@@ -422,7 +425,7 @@ public class AuthDaoImpl extends AbstractJooqDao implements AuthDao {
                 List<? extends ProjectMember> toDelete = create().selectFrom(PROJECT_MEMBER).where(allMembers).fetch();
                 for (ProjectMember member : toDelete) {
                     objectProcessManager.executeStandardProcess(StandardProcess.DEACTIVATE, member, null);
-                    objectProcessManager.executeStandardProcess(StandardProcess.REMOVE, member, null);
+                    objectProcessManager.scheduleStandardProcess(StandardProcess.REMOVE, member, null);
                 }
                 for (Member member : create) {
                     createProjectMember(project, member);
