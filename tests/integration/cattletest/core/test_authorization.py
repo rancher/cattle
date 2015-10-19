@@ -1620,7 +1620,7 @@ def test_svc_discovery_environment(admin_user_client, user_client,
         'dockerCompose': 'cr',
         'rancherCompose': 'cr',
         'environment': 'cr',
-        'externalId': 'cr',
+        'externalId': 'cru',
     })
 
 
@@ -1713,18 +1713,21 @@ def test_auth_env_upgrade(admin_user_client, user_client,
         'dockerCompose': 'r',
         'rancherCompose': 'r',
         'environment': 'r',
+        'externalId': 'r',
     })
 
     auth_check(user_client.schema, 'environmentUpgrade', 'r', {
         'dockerCompose': 'r',
         'rancherCompose': 'r',
         'environment': 'r',
+        'externalId': 'r',
     })
 
     auth_check(project_client.schema, 'environmentUpgrade', 'cr', {
         'dockerCompose': 'cr',
         'rancherCompose': 'cr',
         'environment': 'cr',
+        'externalId': 'cr',
     })
 
 
