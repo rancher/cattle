@@ -31,7 +31,7 @@ route_tables()
 
 ipsec_settings()
 {
-    echo 32768 > /proc/sys/net/ipv4/xfrm4_gc_thresh || true
+    echo 65536 > /proc/sys/net/ipv4/xfrm4_gc_thresh || true
 }
 
 chmod 600 content/etc/racoon/psk.txt
