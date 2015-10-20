@@ -1,6 +1,7 @@
 package io.cattle.platform.servicediscovery.selector;
 
 import static org.junit.Assert.assertEquals;
+import io.cattle.platform.servicediscovery.api.util.selector.SelectorUtils;
 
 import java.util.HashMap;
 import java.util.Map;

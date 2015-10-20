@@ -12,6 +12,7 @@ import io.cattle.platform.object.meta.ObjectMetaDataManager;
 import io.cattle.platform.object.util.DataUtils;
 import io.cattle.platform.servicediscovery.api.constants.ServiceDiscoveryConstants;
 import io.cattle.platform.servicediscovery.api.dao.ServiceExposeMapDao;
+import io.cattle.platform.servicediscovery.api.util.selector.SelectorUtils;
 import io.cattle.platform.storage.service.StorageService;
 import io.cattle.platform.util.net.NetUtils;
 import io.cattle.platform.util.type.CollectionUtils;
@@ -69,6 +70,8 @@ public class ServiceCreateValidationFilter extends AbstractDefaultResourceManage
         
         validateEnvironment(service);
 
+        validateSelector(request);
+
         validateMetadata(request);
 
         validateName(type, service);
@@ -82,6 +85,22 @@ public class ServiceCreateValidationFilter extends AbstractDefaultResourceManage
         validateRequestedVip(request);
 
         return super.create(type, request, next);
+    }
+
+    protected void validateSelector(ApiRequest request) {
+        String selectorContainer = DataUtils.getFieldFromRequest(request,
+                ServiceDiscoveryConstants.FIELD_SELECTOR_CONTAINER,
+                String.class);
+        if (selectorContainer != null) {
+            SelectorUtils.getSelectorConstraints(selectorContainer);
+        }
+
+        String selectorLink = DataUtils.getFieldFromRequest(request,
+                ServiceDiscoveryConstants.FIELD_SELECTOR_LINK,
+                String.class);
+        if (selectorLink != null) {
+            SelectorUtils.getSelectorConstraints(selectorLink);
+        }
     }
 
     protected void validateMetadata(ApiRequest request) {
@@ -163,6 +182,7 @@ public class ServiceCreateValidationFilter extends AbstractDefaultResourceManage
 
         validateName(type, service);
         validateLaunchConfigs(service, request);
+        validateSelector(request);
 
         return super.update(type, id, request, next);
     }

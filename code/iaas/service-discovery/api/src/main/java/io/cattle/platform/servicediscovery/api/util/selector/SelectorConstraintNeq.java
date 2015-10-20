@@ -1,6 +1,4 @@
-package io.cattle.platform.servicediscovery.selector.impl;
-
-import io.cattle.platform.servicediscovery.selector.SelectorConstraint;
+package io.cattle.platform.servicediscovery.api.util.selector;
 
 import java.util.Map;
 

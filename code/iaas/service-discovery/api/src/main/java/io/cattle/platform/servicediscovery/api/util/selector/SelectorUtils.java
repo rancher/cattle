@@ -1,11 +1,7 @@
-package io.cattle.platform.servicediscovery.selector;
+package io.cattle.platform.servicediscovery.api.util.selector;
 
-import io.cattle.platform.servicediscovery.selector.SelectorConstraint.Op;
-import io.cattle.platform.servicediscovery.selector.impl.SelectorConstraintEq;
-import io.cattle.platform.servicediscovery.selector.impl.SelectorConstraintIn;
-import io.cattle.platform.servicediscovery.selector.impl.SelectorConstraintNeq;
-import io.cattle.platform.servicediscovery.selector.impl.SelectorConstraintNoop;
-import io.cattle.platform.servicediscovery.selector.impl.SelectorConstraintNotIn;
+import io.cattle.platform.servicediscovery.api.util.selector.SelectorConstraint.Op;
+import io.github.ibuildthecloud.gdapi.validation.ValidationErrorCodes;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -42,7 +38,7 @@ public class SelectorUtils {
         return true;
     }
 
-    private static List<SelectorConstraint<?>> getSelectorConstraints(String selector) {
+    public static List<SelectorConstraint<?>> getSelectorConstraints(String selector) {
         List<SelectorConstraint<?>> cachedConstraints = cache.getIfPresent(selector);
         if (cachedConstraints != null) {
             return cachedConstraints;
@@ -84,7 +80,12 @@ public class SelectorUtils {
         }
 
         for (String constraint : selectorConstraints) {
-            constraints.add(getSelectorConstraint(constraint));
+            SelectorConstraint<?> newSelectorConstraint = getSelectorConstraint(constraint);
+            if (newSelectorConstraint.key.contains(" ")) {
+                ValidationErrorCodes.throwValidationError(ValidationErrorCodes.INVALID_FORMAT,
+                        "Invalid format selector : " + selector);
+            }
+            constraints.add(newSelectorConstraint);
         }
         cache.put(selector, constraints);
         return constraints;
