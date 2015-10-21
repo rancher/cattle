@@ -45,7 +45,7 @@ import io.cattle.platform.servicediscovery.api.constants.ServiceDiscoveryConstan
 import io.cattle.platform.servicediscovery.api.dao.ServiceConsumeMapDao;
 import io.cattle.platform.servicediscovery.api.dao.ServiceExposeMapDao;
 import io.cattle.platform.servicediscovery.api.util.ServiceDiscoveryUtil;
-import io.cattle.platform.servicediscovery.selector.SelectorUtils;
+import io.cattle.platform.servicediscovery.api.util.selector.SelectorUtils;
 import io.cattle.platform.servicediscovery.service.ServiceDiscoveryService;
 
 import java.util.ArrayList;

@@ -1,4 +1,4 @@
-package io.cattle.platform.servicediscovery.selector;
+package io.cattle.platform.servicediscovery.api.util.selector;
 
 import java.util.Map;
 

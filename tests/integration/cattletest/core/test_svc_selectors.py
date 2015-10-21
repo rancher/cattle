@@ -355,6 +355,28 @@ def test_lb_service_add_instance_selector(client, context):
     _wait_until_target_instance_map_created(client, container2)
 
 
+def test_svc_invalid_selector(client):
+    env = _create_stack(client)
+    launch_config = {"imageUuid": "rancher/none"}
+
+    with pytest.raises(ApiError) as e:
+        client.create_service(name=random_str(),
+                              environmentId=env.id,
+                              launchConfig=launch_config,
+                              selectorContainer="foo not in barbar")
+    assert e.value.error.status == 422
+    assert e.value.error.code == 'InvalidFormat'
+
+    with pytest.raises(ApiError) as e:
+        client.create_service(name=random_str(),
+                              environmentId=env.id,
+                              launchConfig=launch_config,
+                              selectorContainer="foo notin barbar",
+                              selectorLink="foo not in barbar")
+    assert e.value.error.status == 422
+    assert e.value.error.code == 'InvalidFormat'
+
+
 def _validate_add_service_link(service,
                                consumedService, client):
     service_maps = client. \
