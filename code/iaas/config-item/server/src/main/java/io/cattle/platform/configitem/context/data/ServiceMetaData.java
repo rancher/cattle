@@ -32,6 +32,7 @@ public class ServiceMetaData {
     List<String> ports = new ArrayList<>();
     Map<String, String> labels;
     Map<String, Object> metadata;
+    Integer scale;
 
     public ServiceMetaData(Service service, String serviceName, Environment env, List<String> sidekicks,
             Map<String, Object> metadata) {
@@ -50,6 +51,7 @@ public class ServiceMetaData {
         populatePortsInfo(service, launchConfigName);
         this.create_index = service.getCreateIndex();
         this.metadata = metadata;
+        this.scale = DataAccessor.fieldInteger(service, ServiceDiscoveryConstants.FIELD_SCALE);
     }
 
     @SuppressWarnings("unchecked")
@@ -146,5 +148,9 @@ public class ServiceMetaData {
 
     public Map<String, Object> getMetadata() {
         return metadata;
+    }
+
+    public Integer getScale() {
+        return scale;
     }
 }
