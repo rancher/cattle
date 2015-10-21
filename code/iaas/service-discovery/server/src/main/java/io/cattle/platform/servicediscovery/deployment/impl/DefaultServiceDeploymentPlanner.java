@@ -47,7 +47,7 @@ public class DefaultServiceDeploymentPlanner extends ServiceDeploymentPlanner {
         int i = this.healthyUnits.size() - 1;
         while (this.healthyUnits.size() > this.requestedScale) {
             DeploymentUnit toRemove = this.healthyUnits.get(i);
-            toRemove.remove();
+            toRemove.remove(true);
             this.healthyUnits.remove(i);
             i--;
         }

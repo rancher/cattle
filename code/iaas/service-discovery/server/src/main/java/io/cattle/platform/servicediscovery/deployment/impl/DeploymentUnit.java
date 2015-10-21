@@ -143,12 +143,18 @@ public class DeploymentUnit {
         return true;
     }
 
-    public void remove() {
+    public void remove(boolean waitForRemoval) {
         /*
          * Delete all instances. This should be non-blocking (don't wait)
          */
         for (DeploymentUnitInstance instance : getDeploymentUnitInstances()) {
             instance.remove();
+        }
+
+        if (waitForRemoval) {
+            for (DeploymentUnitInstance instance : getDeploymentUnitInstances()) {
+                instance.waitForRemoval();
+            }
         }
     }
 

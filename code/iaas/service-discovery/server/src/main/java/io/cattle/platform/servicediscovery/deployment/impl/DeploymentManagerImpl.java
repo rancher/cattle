@@ -273,7 +273,7 @@ public class DeploymentManagerImpl implements DeploymentManager {
                 List<DeploymentUnit> units = unitInstanceFactory.collectDeploymentUnits(
                         Arrays.asList(service), new DeploymentServiceContext());
                 for (DeploymentUnit unit : units) {
-                    unit.remove();
+                    unit.remove(false);
                 }
             }
         });

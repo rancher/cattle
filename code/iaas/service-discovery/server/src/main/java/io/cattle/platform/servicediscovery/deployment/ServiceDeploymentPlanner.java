@@ -86,7 +86,7 @@ public abstract class ServiceDeploymentPlanner {
         Iterator<DeploymentUnit> it = this.unhealthyUnits.iterator();
         while (it.hasNext()) {
             DeploymentUnit next = it.next();
-            next.remove();
+            next.remove(true);
             it.remove();
         }
     }
@@ -95,7 +95,7 @@ public abstract class ServiceDeploymentPlanner {
         Iterator<DeploymentUnit> it = this.badUnits.iterator();
         while (it.hasNext()) {
             DeploymentUnit next = it.next();
-            next.remove();
+            next.remove(true);
             it.remove();
         }
     }
