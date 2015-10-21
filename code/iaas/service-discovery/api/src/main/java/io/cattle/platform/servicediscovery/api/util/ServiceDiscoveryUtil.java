@@ -1,6 +1,7 @@
 package io.cattle.platform.servicediscovery.api.util;
 
 import io.cattle.platform.allocator.service.AllocatorService;
+import io.cattle.platform.core.addon.InServiceUpgradeStrategy;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.model.Environment;
 import io.cattle.platform.core.model.Instance;
@@ -11,6 +12,8 @@ import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.object.util.DataUtils;
 import io.cattle.platform.servicediscovery.api.constants.ServiceDiscoveryConstants;
 import io.cattle.platform.servicediscovery.api.resource.ServiceDiscoveryConfigItem;
+import io.cattle.platform.util.type.CollectionUtils;
+import io.github.ibuildthecloud.gdapi.validation.ValidationErrorCodes;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -69,6 +72,30 @@ public class ServiceDiscoveryUtil {
         }
 
         return launchConfigNames;
+    }
+
+    @SuppressWarnings("unchecked")
+    public static Map<String, Map<Object, Object>> getServiceLaunchConfigsWithNames(Service service) {
+        Map<String, Object> originalData = new HashMap<>();
+        originalData.putAll(DataUtils.getFields(service));
+        Map<String, Map<Object, Object>> launchConfigsWithNames = new HashMap<>();
+
+        // put the primary config in
+        launchConfigsWithNames.put(ServiceDiscoveryConstants.PRIMARY_LAUNCH_CONFIG_NAME,
+                CollectionUtils.toMap(originalData
+                        .get(ServiceDiscoveryConstants.FIELD_LAUNCH_CONFIG)));
+
+        // put the secondary configs in
+        Object secondaryLaunchConfigs = originalData
+                .get(ServiceDiscoveryConstants.FIELD_SECONDARY_LAUNCH_CONFIGS);
+        if (secondaryLaunchConfigs != null) {
+            for (Map<String, Object> secondaryLaunchConfig : (List<Map<String, Object>>) secondaryLaunchConfigs) {
+                launchConfigsWithNames.put(String.valueOf(secondaryLaunchConfig.get("name")),
+                        CollectionUtils.toMap(secondaryLaunchConfig));
+            }
+        }
+
+        return launchConfigsWithNames;
     }
 
     @SuppressWarnings("unchecked")
@@ -243,5 +270,72 @@ public class ServiceDiscoveryUtil {
         return service.getSelectorContainer() != null
                 && (imageUUID == null || imageUUID.toString().toLowerCase()
                         .contains(ServiceDiscoveryConstants.IMAGE_NONE));
+    }
+
+    public static void upgradeServiceConfigs(Service service, InServiceUpgradeStrategy strategy, boolean rollback) {
+        updatePrimaryLaunchConfig(strategy, service, rollback);
+
+        updateSecondaryLaunchConfigs(strategy, service, rollback);
+    }
+
+    @SuppressWarnings("unchecked")
+    protected static void updateSecondaryLaunchConfigs(InServiceUpgradeStrategy strategy, Service service,
+            boolean rollback) {
+        Object newLaunchConfigs = null;
+        if (rollback) {
+            newLaunchConfigs = strategy.getPreviousSecondaryLaunchConfigs();
+        } else {
+            newLaunchConfigs = strategy.getSecondaryLaunchConfigs();
+        }
+
+        Map<String, Map<String, Object>> newLaunchConfigNames = new HashMap<>();
+        if (newLaunchConfigs != null) {
+            for (Map<String, Object> newLaunchConfig : (List<Map<String, Object>>) newLaunchConfigs) {
+                newLaunchConfigNames.put(newLaunchConfig.get("name").toString(),
+                        newLaunchConfig);
+            }
+        }
+
+        List<String> oldlaunchConfigNames = ServiceDiscoveryUtil.getServiceLaunchConfigNames(service);
+        for (String newLaunchConfigName : newLaunchConfigNames.keySet()) {
+            if (!oldlaunchConfigNames.contains(newLaunchConfigName)) {
+                ValidationErrorCodes.throwValidationError(ValidationErrorCodes.INVALID_OPTION,
+                        "Invalid secondary launch config name " + newLaunchConfigName);
+            }
+        }
+
+        List<Map<String, Object>> oldLaunchConfigs = (List<Map<String, Object>>) DataAccessor
+                .fields(service)
+                .withKey(ServiceDiscoveryConstants.FIELD_SECONDARY_LAUNCH_CONFIGS)
+                .withDefault(Collections.EMPTY_LIST)
+                .as(List.class);
+        if (!newLaunchConfigNames.isEmpty()) {
+            if (!oldLaunchConfigs.isEmpty()) {
+                for (Map<String, Object> oldLaunchConfig : oldLaunchConfigs) {
+                    Map<String, Object> newLaunchConfig = newLaunchConfigNames
+                            .get(oldLaunchConfig.get("name"));
+                    if (newLaunchConfig == null) {
+                        // put old config here as we have to upgrade the entire secondary config list
+                        newLaunchConfigNames.put(oldLaunchConfig.get("name").toString(), oldLaunchConfig);
+                    }
+                }
+                DataAccessor.fields(service).withKey(ServiceDiscoveryConstants.FIELD_SECONDARY_LAUNCH_CONFIGS)
+                        .set(newLaunchConfigNames.values());
+            }
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    protected static void updatePrimaryLaunchConfig(InServiceUpgradeStrategy strategy, Service service, boolean rollback) {
+        if (strategy.getLaunchConfig() != null) {
+            Map<String, Object> newLaunchConfig = null;
+            if (rollback) {
+                newLaunchConfig = (Map<String, Object>) strategy.getPreviousLaunchConfig();
+            } else {
+                newLaunchConfig = (Map<String, Object>) strategy.getLaunchConfig();
+            }
+            DataAccessor.fields(service).withKey(ServiceDiscoveryConstants.FIELD_LAUNCH_CONFIG)
+                    .set(newLaunchConfig);
+        }
     }
 }

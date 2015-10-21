@@ -31,6 +31,8 @@ public class ServiceDiscoveryConstants {
     public static final String FIELD_VERSION = "version";
     public static final String FIELD_SELECTOR_CONTAINER = "selectorContainer";
     public static final String FIELD_SELECTOR_LINK = "selectorLink";
+    public static final String FIELD_IN_SERVICE_STRATEGY = "inServiceStrategy";
+    public static final String FIELD_TO_SERVICE_STRATEGY = "toServiceStrategy";
 
     public static final String ACTION_SERVICE_ACTIVATE = "activate";
     public static final String ACTION_SERVICE_CREATE = "create";
@@ -39,6 +41,7 @@ public class ServiceDiscoveryConstants {
     public static final String ACTION_ENV_ACTIVATE_SERVICES = "activateservices";
     public static final String ACTION_SERVICE_SET_SERVICE_LINKS = "setservicelinks";
     public static final String ACTION_SERVICE_UPGRADE = "upgrade";
+    public static final String ACTION_SERVICE_ROLLBACK = "rollback";
 
     public static final String PROCESS_SERVICE_ACTIVATE = "service." + ACTION_SERVICE_ACTIVATE;
     public static final String PROCESS_SERVICE_CREATE = "service." + ACTION_SERVICE_CREATE;
@@ -59,6 +62,8 @@ public class ServiceDiscoveryConstants {
     public static final String PROCESS_SERVICE_EXPOSE_MAP_CREATE = "serviceexposemap.create";
     public static final String PROCESS_SERVICE_EXPOSE_MAP_REMOVE = "serviceexposemap.remove";
     public static final String PROCESS_SERVICE_UPGRADE = "service." + ACTION_SERVICE_UPGRADE;
+    public static final String PROCESS_SERVICE_CANCEL_ROLLBACK = "service.cancelrollback";
+    public static final String PROCESS_SERVICE_FINISH_UPGRADE = "service.finishupgrade";
 
     public static final String LINK_DOCKER_COMPOSE_CONFIG = "dockerComposeConfig";
     public static final String LINK_RANCHER_COMPOSE_CONFIG = "rancherComposeConfig";
@@ -82,6 +87,13 @@ public class ServiceDiscoveryConstants {
     public static final String LABEL_OVERRIDE_HOSTNAME = "io.rancher.container.hostname_override";
     public static final String LABEL_LB_SSL_PORTS = "io.rancher.loadbalancer.ssl.ports";
     public static final String STATE_UPGRADING = "upgrading";
+    public static final String STATE_ROLLINGBACK = "rolling-back";
+    public static final String STATE_CANCELING_UPGRADE = "canceling-upgrade";
+    public static final String STATE_CANCELED_UPGRADE = "canceled-upgrade";
+    public static final String STATE_CANCELING_ROLLBACK = "canceling-rollback";
+    public static final String STATE_CANCELED_ROLLBACK = "canceled-rollback";
+    public static final String STATE_UPGRADED = "upgraded";
+    public static final String STATE_FINISHING_UPGRADE = "finishing-upgrade";
 
     public static final String LABEL_SELECTOR_CONTAINER = "io.rancher.service.selector.container";
     public static final String LABEL_SELECTOR_LINK = "io.rancher.service.selector.link";

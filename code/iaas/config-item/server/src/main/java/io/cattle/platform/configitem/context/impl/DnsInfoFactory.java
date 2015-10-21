@@ -95,6 +95,10 @@ public class DnsInfoFactory extends AbstractAgentBaseContextFactory {
                 INSTANCE_HOST_MAP.INSTANCE_ID,
                 instance.getId());
 
+        if (hostMaps.isEmpty()) {
+            return false;
+        }
+
         return networkDao.getServiceProviderInstanceOnHost(NetworkServiceConstants.KIND_VIP,
                 hostMaps.get(0).getHostId()) != null;
     }

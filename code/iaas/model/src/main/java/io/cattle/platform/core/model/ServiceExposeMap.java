@@ -201,6 +201,17 @@ public interface ServiceExposeMap extends java.io.Serializable {
 	@javax.persistence.Column(name = "managed", nullable = false, precision = 1)
 	public java.lang.Boolean getManaged();
 
+	/**
+	 * Setter for <code>cattle.service_expose_map.upgrade</code>.
+	 */
+	public void setUpgrade(java.lang.Boolean value);
+
+	/**
+	 * Getter for <code>cattle.service_expose_map.upgrade</code>.
+	 */
+	@javax.persistence.Column(name = "upgrade", nullable = false, precision = 1)
+	public java.lang.Boolean getUpgrade();
+
 	// -------------------------------------------------------------------------
 	// FROM and INTO
 	// -------------------------------------------------------------------------

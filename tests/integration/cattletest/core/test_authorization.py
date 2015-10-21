@@ -151,7 +151,10 @@ def test_user_types(user_client, adds=set(), removes=set()):
         'loadBalancerServiceLink',
         'addRemoveLoadBalancerServiceLinkInput',
         'setLoadBalancerServiceLinksInput',
-        'serviceUpgrade'
+        'serviceUpgrade',
+        'serviceUpgradeStrategy',
+        'toServiceUpgradeStrategy',
+        'inServiceUpgradeStrategy'
     }
     types.update(adds)
     types.difference_update(removes)
@@ -357,6 +360,9 @@ def test_admin_types(admin_user_client, adds=set(), removes=set()):
         'loadBalancerServiceLink',
         'addRemoveLoadBalancerServiceLinkInput',
         'setLoadBalancerServiceLinksInput',
+        'serviceUpgradeStrategy',
+        'toServiceUpgradeStrategy',
+        'inServiceUpgradeStrategy'
     }
     types.update(adds)
     types.difference_update(removes)
@@ -1547,7 +1553,9 @@ def test_svc_discovery_service(admin_user_client, user_client, project_client):
         'createIndex': 'r',
         'metadata': 'r',
         'selectorLink': 'r',
-        'selectorContainer': 'r'
+        'selectorContainer': 'r',
+        'previousLaunchConfig': 'r',
+        'previousSecondaryLaunchConfigs': 'r',
     })
 
     auth_check(user_client.schema, 'service', 'r', {
@@ -1562,7 +1570,9 @@ def test_svc_discovery_service(admin_user_client, user_client, project_client):
         'createIndex': 'r',
         'metadata': 'r',
         'selectorLink': 'r',
-        'selectorContainer': 'r'
+        'selectorContainer': 'r',
+        'previousLaunchConfig': 'r',
+        'previousSecondaryLaunchConfigs': 'r',
     })
 
     auth_check(project_client.schema, 'service', 'crud', {
@@ -1577,7 +1587,9 @@ def test_svc_discovery_service(admin_user_client, user_client, project_client):
         'createIndex': 'r',
         'metadata': 'cru',
         'selectorLink': 'cr',
-        'selectorContainer': 'cr'
+        'selectorContainer': 'cr',
+        'previousLaunchConfig': 'r',
+        'previousSecondaryLaunchConfigs': 'r',
     })
 
 
@@ -1627,7 +1639,9 @@ def test_svc_discovery_lb_service(admin_user_client, user_client,
         'defaultCertificateId': 'r',
         'certificateIds': 'r',
         'metadata': 'r',
-        'selectorLink': 'r'
+        'selectorLink': 'r',
+        'previousLaunchConfig': 'r',
+        'previousSecondaryLaunchConfigs': 'r',
     })
 
     auth_check(user_client.schema, 'loadBalancerService', 'r', {
@@ -1642,7 +1656,9 @@ def test_svc_discovery_lb_service(admin_user_client, user_client,
         'defaultCertificateId': 'r',
         'certificateIds': 'r',
         'metadata': 'r',
-        'selectorLink': 'r'
+        'selectorLink': 'r',
+        'previousLaunchConfig': 'r',
+        'previousSecondaryLaunchConfigs': 'r',
     })
 
     auth_check(project_client.schema, 'loadBalancerService', 'crud', {
@@ -1657,7 +1673,9 @@ def test_svc_discovery_lb_service(admin_user_client, user_client,
         'defaultCertificateId': 'cru',
         'certificateIds': 'cru',
         'metadata': 'cru',
-        'selectorLink': 'cr'
+        'selectorLink': 'cr',
+        'previousLaunchConfig': 'r',
+        'previousSecondaryLaunchConfigs': 'r',
     })
 
 
@@ -1713,33 +1731,78 @@ def test_auth_env_upgrade(admin_user_client, user_client,
 def test_auth_service_upgrade(admin_user_client, user_client,
                               project_client):
     auth_check(admin_user_client.schema, 'serviceUpgrade', 'r', {
-        'updateLinks': 'r',
-        'toServiceId': 'r',
-        'batchSize': 'r',
-        'intervalMillis': 'r',
-        'finalScale': 'r',
-        'launchConfig': 'r',
-        'secondaryLaunchConfigs': 'r',
+        'inServiceStrategy': 'r',
+        'toServiceStrategy': 'r'
     })
 
     auth_check(user_client.schema, 'serviceUpgrade', 'r', {
+        'inServiceStrategy': 'r',
+        'toServiceStrategy': 'r'
+    })
+
+    auth_check(project_client.schema, 'serviceUpgrade', 'cr', {
+        'inServiceStrategy': 'cr',
+        'toServiceStrategy': 'cr'
+    })
+
+
+def test_auth_in_service_upgrade_strategy(admin_user_client, user_client,
+                                          project_client):
+    auth_check(admin_user_client.schema, 'inServiceUpgradeStrategy', 'r', {
+        'batchSize': 'r',
+        'intervalMillis': 'r',
+        'launchConfig': 'r',
+        'secondaryLaunchConfigs': 'r',
+        'previousLaunchConfig': 'r',
+        'previousSecondaryLaunchConfigs': 'r',
+        'startFirst': 'r',
+    })
+
+    auth_check(user_client.schema, 'inServiceUpgradeStrategy', 'r', {
+        'batchSize': 'r',
+        'intervalMillis': 'r',
+        'launchConfig': 'r',
+        'secondaryLaunchConfigs': 'r',
+        'previousLaunchConfig': 'r',
+        'previousSecondaryLaunchConfigs': 'r',
+        'startFirst': 'r',
+    })
+
+    auth_check(project_client.schema, 'inServiceUpgradeStrategy', 'cr', {
+        'batchSize': 'cr',
+        'intervalMillis': 'cr',
+        'launchConfig': 'cr',
+        'secondaryLaunchConfigs': 'cr',
+        'previousLaunchConfig': 'r',
+        'previousSecondaryLaunchConfigs': 'r',
+        'startFirst': 'cr',
+    })
+
+
+def test_auth_to_service_upgrade_strategy(admin_user_client, user_client,
+                                          project_client):
+    auth_check(admin_user_client.schema, 'toServiceUpgradeStrategy', 'r', {
         'updateLinks': 'r',
         'toServiceId': 'r',
         'batchSize': 'r',
         'intervalMillis': 'r',
-        'finalScale': 'r',
-        'launchConfig': 'r',
-        'secondaryLaunchConfigs': 'r',
+        'finalScale': 'r'
     })
 
-    auth_check(project_client.schema, 'serviceUpgrade', 'cr', {
+    auth_check(user_client.schema, 'toServiceUpgradeStrategy', 'r', {
+        'updateLinks': 'r',
+        'toServiceId': 'r',
+        'batchSize': 'r',
+        'intervalMillis': 'r',
+        'finalScale': 'r'
+    })
+
+    auth_check(project_client.schema, 'toServiceUpgradeStrategy', 'cr', {
         'updateLinks': 'cr',
         'toServiceId': 'cr',
         'batchSize': 'cr',
         'intervalMillis': 'cr',
-        'finalScale': 'cr',
-        'launchConfig': 'cr',
-        'secondaryLaunchConfigs': 'cr',
+        'finalScale': 'cr'
     })
 
 
@@ -1787,7 +1850,9 @@ def test_svc_discovery_external_service(admin_user_client, user_client,
         'healthCheck': 'r',
         'metadata': 'r',
         'selectorLink': 'r',
-        'launchConfig': 'r'
+        'launchConfig': 'r',
+        'previousLaunchConfig': 'r',
+        'previousSecondaryLaunchConfigs': 'r',
     })
 
     auth_check(user_client.schema, 'externalService', 'r', {
@@ -1800,7 +1865,9 @@ def test_svc_discovery_external_service(admin_user_client, user_client,
         'healthCheck': 'r',
         'metadata': 'r',
         'selectorLink': 'r',
-        'launchConfig': 'r'
+        'launchConfig': 'r',
+        'previousLaunchConfig': 'r',
+        'previousSecondaryLaunchConfigs': 'r',
     })
 
     auth_check(project_client.schema, 'externalService', 'crud', {
@@ -1813,7 +1880,9 @@ def test_svc_discovery_external_service(admin_user_client, user_client,
         'healthCheck': 'cr',
         'metadata': 'cru',
         'selectorLink': 'cr',
-        'launchConfig': 'cr'
+        'launchConfig': 'cr',
+        'previousLaunchConfig': 'r',
+        'previousSecondaryLaunchConfigs': 'r',
     })
 
 

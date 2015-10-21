@@ -262,7 +262,7 @@ public class DeploymentManagerImpl implements DeploymentManager {
                 // in remove, we don't care about the sidekicks, and remove only requested service
                 deleteServiceInstances(service);
                 List<? extends ServiceExposeMap> unmanagedMaps = expMapDao
-                        .getNonRemovedUnmanagedServiceInstanceMap(service.getId());
+                        .getUnmanagedServiceInstanceMapsToRemove(service.getId());
                 for (ServiceExposeMap unmanagedMap : unmanagedMaps) {
                     objectProcessMgr.scheduleStandardProcessAsync(StandardProcess.REMOVE, unmanagedMap, null);
                 }
@@ -301,7 +301,7 @@ public class DeploymentManagerImpl implements DeploymentManager {
             @Override
             public void run() {
                 Service service = objectMgr.loadResource(Service.class, client.getResourceId());
-                if (service != null && sdSvc.isActiveService(service)) {
+                if (service != null && sdSvc.getServiceActiveStates(false).contains(service.getState())) {
                     activate(service);
                 }
             }

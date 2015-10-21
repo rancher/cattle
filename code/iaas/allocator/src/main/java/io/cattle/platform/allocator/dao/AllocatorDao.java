@@ -11,8 +11,6 @@ import io.cattle.platform.core.model.Volume;
 import java.util.List;
 import java.util.Map;
 
-import com.google.common.collect.Multimap;
-
 public interface AllocatorDao {
 
     List<? extends StoragePool> getAssociatedPools(Volume volume);
@@ -43,8 +41,6 @@ public interface AllocatorDao {
     Map<String, String[]> getLabelsForHost(long hostId);
 
     boolean hostHasContainerLabel(long hostId, String labelKey, String labelValue);
-
-    Multimap<String, String> getLabelsForContainersForHost(long hostId);
 
     List<? extends Host> getActiveHosts(long accountId);
 }

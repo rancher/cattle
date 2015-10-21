@@ -37,4 +37,6 @@ public interface ServiceDiscoveryService {
 
     boolean isServiceInstance(Service service, Instance instance);
 
+    List<String> getServiceActiveStates(boolean includeUpgrading);
+
 }

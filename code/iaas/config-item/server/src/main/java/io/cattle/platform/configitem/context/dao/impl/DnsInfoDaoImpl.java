@@ -40,6 +40,7 @@ import io.cattle.platform.db.jooq.dao.impl.AbstractJooqDao;
 import io.cattle.platform.db.jooq.mapper.MultiRecordMapper;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.servicediscovery.api.constants.ServiceDiscoveryConstants;
+import io.cattle.platform.servicediscovery.service.ServiceDiscoveryService;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -56,6 +57,9 @@ public class DnsInfoDaoImpl extends AbstractJooqDao implements DnsInfoDao {
 
     @Inject
     ObjectManager objManager;
+
+    @Inject
+    ServiceDiscoveryService sdService;
 
     @Override
     public List<DnsEntryData> getInstanceLinksHostDnsData(final Instance instance) {
@@ -536,8 +540,7 @@ public class DnsInfoDaoImpl extends AbstractJooqDao implements DnsInfoDao {
                         .and(targetInstance.STATE.in(InstanceConstants.STATE_RUNNING,
                                 InstanceConstants.STATE_STARTING))
                         .and(dnsService.KIND.eq(ServiceDiscoveryConstants.KIND.DNSSERVICE.name()))
-                        .and(dnsService.STATE.in(CommonStatesConstants.ACTIVATING,
-                                CommonStatesConstants.ACTIVE)))
+                        .and(dnsService.STATE.in(sdService.getServiceActiveStates(true))))
                 .fetch().map(mapper);
     }
 
