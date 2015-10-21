@@ -122,15 +122,13 @@ public class ServiceDiscoveryLoadBalancerTargetAddPostListener extends AbstractO
     protected void getLBServiceForExposeMap(ProcessState state,
             List<Pair<ServiceExposeMap, Service>> exposeMapToLBService) {
         ServiceExposeMap map = (ServiceExposeMap) state.getResource();
-        if (map.getIpAddress() != null) {
-            // find all services consuming the current one
-            List<? extends ServiceConsumeMap> consumingServicesMaps = consumeMapDao
-                    .findConsumingServices(map.getServiceId());
-            for (ServiceConsumeMap consumingServiceMap : consumingServicesMaps) {
-                Service lbService = objectManager.loadResource(Service.class, consumingServiceMap.getServiceId());
-                if (lbService.getKind().equalsIgnoreCase(KIND.LOADBALANCERSERVICE.name())) {
-                    exposeMapToLBService.add(Pair.of(map, lbService));
-                }
+        // find all services consuming the current one
+        List<? extends ServiceConsumeMap> consumingServicesMaps = consumeMapDao
+                .findConsumingServices(map.getServiceId());
+        for (ServiceConsumeMap consumingServiceMap : consumingServicesMaps) {
+            Service lbService = objectManager.loadResource(Service.class, consumingServiceMap.getServiceId());
+            if (lbService.getKind().equalsIgnoreCase(KIND.LOADBALANCERSERVICE.name())) {
+                exposeMapToLBService.add(Pair.of(map, lbService));
             }
         }
     }
