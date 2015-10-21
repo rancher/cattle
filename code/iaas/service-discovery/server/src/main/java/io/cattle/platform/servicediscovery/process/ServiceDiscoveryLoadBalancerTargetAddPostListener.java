@@ -76,10 +76,7 @@ public class ServiceDiscoveryLoadBalancerTargetAddPostListener extends AbstractO
                     lbService.getId(), LOAD_BALANCER.REMOVED, null);
             ServiceExposeMap map = instanceLBServicePair.getLeft();
             if (lb != null) {
-                // register only instances of primary service
-                if (map.getDnsPrefix() == null) {
-                    sdService.addToLoadBalancerService(lbService, map);
-                }
+                sdService.addToLoadBalancerService(lbService, map);
             }
         }
 

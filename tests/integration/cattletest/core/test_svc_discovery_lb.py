@@ -1072,17 +1072,76 @@ def test_cert_in_use(client, context, image_uuid):
     assert e.value.error.code == 'InvalidAction'
 
 
+def test_sidekicks(super_client, context, client, image_uuid):
+    host = context.host
+    env = _create_stack(client)
+    # create lb service
+    launch_config = {"imageUuid": image_uuid,
+                     "ports": ['1788:1788', '1789:1789']}
+
+    lb_svc = client. \
+        create_loadBalancerService(name=random_str(),
+                                   environmentId=env.id,
+                                   launchConfig=launch_config)
+    lb_svc = client.wait_success(lb_svc)
+    assert lb_svc.state == "inactive"
+
+    # create service
+    image_uuid = context.image_uuid
+    launch_config = {"imageUuid": image_uuid,
+                     "dataVolumesFromLaunchConfigs": ['secondary']}
+    secondary_lc = {"imageUuid": image_uuid, "name": "secondary",
+                    "dataVolumesFromLaunchConfigs": ['secondary1']}
+    secondary_lc1 = {"imageUuid": image_uuid, "name": "secondary1"}
+
+    svc = client.create_service(name=random_str(),
+                                environmentId=env.id,
+                                launchConfig=launch_config,
+                                secondaryLaunchConfigs=[secondary_lc,
+                                                        secondary_lc1])
+    svc = client.wait_success(svc)
+    svc = client.wait_success(svc.activate())
+
+    # add service link
+    service_link = {"serviceId": svc.id}
+    lb_svc.addservicelink(serviceLink=service_link)
+
+    # activate lb service
+    lb_svc = client.wait_success(lb_svc.activate(), 120)
+    lb, lb_svc = _validate_lb_service_activate(env, host,
+                                               lb_svc, client,
+                                               ['1788:1788', '1789:1789'])
+    _validate_lb_instance(host, lb, super_client, lb_svc)
+
+    # only instance of a primary service should be registered
+    _wait_until_target_count(lb, 1, super_client)
+
+
 def _wait_until_active_map_count(lb, count, super_client, timeout=30):
     start = time.time()
     host_maps = super_client. \
-        list_loadBalancerHostMap(loadBalancerId=lb.id,
-                                 state="active")
+        list_loadBalancerHostMap(loadBalancerId=lb.id)
     while len(host_maps) != count:
         time.sleep(.5)
         host_maps = super_client. \
             list_loadBalancerHostMap(loadBalancerId=lb.id, state="active")
+        print len(host_maps)
         if time.time() - start > timeout:
-            assert 'Timeout waiting for agent to be removed.'
+            assert 'Timeout waiting for host map count'
+
+    return
+
+
+def _wait_until_target_count(lb, count, super_client, timeout=5):
+    start = time.time()
+    targets = super_client. \
+        list_loadBalancerTarget(loadBalancerId=lb.id, state='active')
+    while len(targets) != count:
+        time.sleep(.5)
+        targets = super_client. \
+            list_loadBalancerTarget(loadBalancerId=lb.id, state='active')
+        if time.time() - start > timeout:
+            assert 'Timeout waiting for target count'
 
     return
 

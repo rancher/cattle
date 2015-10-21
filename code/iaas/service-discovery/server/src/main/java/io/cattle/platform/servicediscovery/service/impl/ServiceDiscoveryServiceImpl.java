@@ -407,6 +407,11 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
             return;
         }
 
+        // register only instances of primary service
+        if (instanceToRegister.getDnsPrefix() != null) {
+            return;
+        }
+
         if (!exposeMapDao.isActiveMap(instanceToRegister)) {
             return;
         }
