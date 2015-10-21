@@ -1,26 +1,24 @@
 package io.cattle.platform.iaas.api.request.handler;
 
 import io.cattle.platform.archaius.util.ArchaiusUtil;
+import io.cattle.platform.iaas.api.servlet.filter.ProxyPreFilter;
 import io.github.ibuildthecloud.gdapi.exception.ClientVisibleException;
 import io.github.ibuildthecloud.gdapi.request.ApiRequest;
 import io.github.ibuildthecloud.gdapi.request.handler.AbstractResponseGenerator;
 import io.github.ibuildthecloud.gdapi.util.ResponseCodes;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.OutputStream;
-import java.net.MalformedURLException;
 import java.net.URISyntaxException;
-import java.net.URL;
 import java.net.URLDecoder;
+import java.util.Arrays;
 import java.util.Collections;
-import java.util.Enumeration;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import javax.servlet.http.HttpServletRequest;
 
-import org.apache.commons.fileupload.util.LimitedInputStream;
-import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
@@ -30,9 +28,10 @@ import org.apache.http.client.ResponseHandler;
 import org.apache.http.client.fluent.Request;
 import org.apache.http.client.fluent.Response;
 import org.apache.http.client.utils.URIBuilder;
+import org.apache.http.entity.InputStreamEntity;
+import org.apache.http.protocol.HTTP;
 
 import com.netflix.config.DynamicBooleanProperty;
-import com.netflix.config.DynamicIntProperty;
 import com.netflix.config.DynamicStringListProperty;
 
 public class GenericWhitelistedProxy extends AbstractResponseGenerator {
@@ -42,8 +41,12 @@ public class GenericWhitelistedProxy extends AbstractResponseGenerator {
 
     private static final DynamicBooleanProperty ALLOW_PROXY = ArchaiusUtil.getBoolean("api.proxy.allow");
     private static final DynamicStringListProperty PROXY_WHITELIST = ArchaiusUtil.getList("api.proxy.whitelist");
-    private static final DynamicIntProperty MAX_CONTENT_LENGTH = ArchaiusUtil.getInt("api.proxy.max-content-length");
 
+    private static final String API_AUTH = "X-API-AUTH-HEADER";
+    private static final Set<String> BAD_HEADERS = new HashSet<>(Arrays.asList(HTTP.TARGET_HOST.toLowerCase(), "authorization",
+            HTTP.TRANSFER_ENCODING.toLowerCase(), HTTP.CONTENT_LEN.toLowerCase(), API_AUTH.toLowerCase()));
+
+    @SuppressWarnings("unchecked")
     @Override
     protected void generate(final ApiRequest request) throws IOException {
         if (request.getRequestVersion() == null || !ALLOW_PROXY.get())
@@ -66,6 +69,10 @@ public class GenericWhitelistedProxy extends AbstractResponseGenerator {
             redirect = redirect.replaceFirst("^https:/([^/])", "https://$1");
         }
 
+        if (!StringUtils.startsWith(redirect, "http")) {
+            redirect = "https://" + redirect;
+        }
+
         URIBuilder uri;
         try {
             uri = new URIBuilder(redirect);
@@ -80,23 +87,18 @@ public class GenericWhitelistedProxy extends AbstractResponseGenerator {
             throw new ClientVisibleException(ResponseCodes.BAD_REQUEST, "InvalidRedirect", "The redirect is invalid", null);
         }
 
-        if (!StringUtils.startsWith(redirect, "http")) {
-            redirect = "https://" + redirect;
-        }
+        String host = uri.getPort() > 0 ? String.format("%s:%s", uri.getHost(), uri.getPort()) : uri.getHost();
 
-        String host = null;
-        try {
-            host = new URL(redirect).getHost();
-        } catch (MalformedURLException e) {
-            throw new ClientVisibleException(ResponseCodes.BAD_REQUEST, "InvalidRedirect", "The redirect is invalid", null);
-        }
-
-        if (!allowHost && !isWhitelisted(StringUtils.strip(host, "/"))) {
+        if (!allowHost && !isWhitelisted(host)) {
             throw new ClientVisibleException(ResponseCodes.FORBIDDEN);
         }
 
         Request temp;
         String method = servletRequest.getMethod();
+        if (servletRequest instanceof ProxyPreFilter.Request) {
+            method = ((ProxyPreFilter.Request)servletRequest).getRealMethod();
+        }
+
         switch (method) {
         case "POST":
             temp = Request.Post(redirect);
@@ -117,41 +119,18 @@ public class GenericWhitelistedProxy extends AbstractResponseGenerator {
             throw new ClientVisibleException(ResponseCodes.BAD_REQUEST, "Invalid method", "The method " + method + " is not supported", null);
         }
 
-        @SuppressWarnings("unchecked")
-        List<String> restrictedHeaders = Collections.list(servletRequest.getHeaders("X-API-HEADERS-RESTRICT"));
-
-        if (restrictedHeaders.size() == 1 && StringUtils.contains(restrictedHeaders.get(0), ",")) {
-            String[] headers = StringUtils.split(restrictedHeaders.get(0), ",");
-            restrictedHeaders.remove(0);
-            for (String header : headers) {
-                restrictedHeaders.add(StringUtils.trim(header));
+        for (String headerName : (List<String>)Collections.list(servletRequest.getHeaderNames())) {
+            if (BAD_HEADERS.contains(headerName.toLowerCase())) {
+                continue;
+            }
+            for (String headerVal : (List<String>)Collections.list(servletRequest.getHeaders(headerName))) {
+                temp.addHeader(headerName, StringUtils.removeStart(headerVal, "rancher:"));
             }
         }
 
-        restrictedHeaders.add("Host");
-        restrictedHeaders.add("Authorization");
-
-        @SuppressWarnings("unchecked")
-        List<String> headerNames = Collections.list(servletRequest.getHeaderNames());
-
-        for (String headerName : headerNames) {
-            if (restrictedHeaders.contains(headerName)) {
-                continue;
-            }
-
-            @SuppressWarnings("unchecked")
-            Enumeration<String> headerVals = servletRequest.getHeaders(headerName);
-            String headerKey = headerName;
-            if (StringUtils.equalsIgnoreCase("X-API-AUTH-HEADER", headerName)) {
-                headerKey = "Authorization";
-            }
-            while (headerVals.hasMoreElements()) {
-                String headerVal = headerVals.nextElement();
-                if (StringUtils.startsWith(headerVal, "rancher:")) {
-                    headerVal = StringUtils.substringAfter(headerVal, "rancher:");
-                }
-                temp.addHeader(headerKey, headerVal);
-            }
+        String authHeader = servletRequest.getHeader(API_AUTH);
+        if (authHeader != null) {
+            temp.addHeader("Authorization", authHeader);
         }
 
         if (setCurrentHost) {
@@ -161,18 +140,9 @@ public class GenericWhitelistedProxy extends AbstractResponseGenerator {
         }
 
         if ("POST".equals(method) || "PUT".equals(method)) {
-            InputStream inputStream = request.getInputStream();
-            if (inputStream != null) {
-                final InputStream finalStream = inputStream;
-                LimitedInputStream istream = new LimitedInputStream(finalStream, MAX_CONTENT_LENGTH.get()) {
-                    @Override
-                    protected void raiseError(long pSizeMax, long pCount) throws IOException {
-                        finalStream.close();
-                        throw new IOException("content-length " + pCount + " exceeded max-length of " + pSizeMax);
-                    }
-                };
-                temp.bodyByteArray(IOUtils.toByteArray(istream));
-            }
+            int length = servletRequest.getContentLength();
+            InputStreamEntity entity = new InputStreamEntity(request.getInputStream(), length);
+            temp.body(entity);
         }
 
         Response res = temp.execute();
