@@ -246,14 +246,16 @@ def test_state_transitions(context, client):
 
     # 5. upgrading--upgrade-rollback
     # 5a startFirst=false
-    svc = _create_and_schedule_inservice_upgrade(client, context, startFirst=False)
+    svc = _create_and_schedule_inservice_upgrade(client, context,
+                                                 startFirst=False)
     svc = client.wait_success(svc)
     assert svc.state == 'upgraded'
     svc = svc.rollback()
     svc = client.wait_success(svc)
     assert svc.state == 'active'
     # 5b startFirst=true
-    svc = _create_and_schedule_inservice_upgrade(client, context, startFirst=True)
+    svc = _create_and_schedule_inservice_upgrade(client, context,
+                                                 startFirst=True)
     svc = client.wait_success(svc)
     assert svc.state == 'upgraded'
     svc = svc.rollback()
@@ -261,7 +263,8 @@ def test_state_transitions(context, client):
     assert svc.state == 'active'
 
     # upgraded->removed
-    svc = _create_and_schedule_inservice_upgrade(client, context, startFirst=False)
+    svc = _create_and_schedule_inservice_upgrade(client, context,
+                                                 startFirst=False)
     svc = client.wait_success(svc)
     assert svc.state == 'upgraded'
     client.wait_success(svc.remove())
