@@ -221,10 +221,13 @@ public class LoadBalancerTargetDaoImpl extends AbstractJooqDao implements LoadBa
         } else {
             List<? extends String> newPorts = toAdd.getPorts() != null ? toAdd.getPorts()
                     : new ArrayList<String>();
-            DataUtils.getWritableFields(target).put(LoadBalancerConstants.FIELD_LB_TARGET_PORTS, newPorts);
-            objectManager.persist(target);
-            objectProcessManager.scheduleStandardProcess(StandardProcess.UPDATE, target, null);
-
+            List<? extends String> existingPorts = DataAccessor.fields(target).withKey(LoadBalancerConstants.FIELD_LB_TARGET_PORTS).
+                    withDefault(Collections.EMPTY_LIST).asList(jsonMapper, String.class);
+            if (!newPorts.containsAll(existingPorts) || !existingPorts.contains(newPorts)) {
+                DataUtils.getWritableFields(target).put(LoadBalancerConstants.FIELD_LB_TARGET_PORTS, newPorts);
+                objectManager.persist(target);
+                objectProcessManager.scheduleStandardProcess(StandardProcess.UPDATE, target, null);
+            }
         }
     }
 

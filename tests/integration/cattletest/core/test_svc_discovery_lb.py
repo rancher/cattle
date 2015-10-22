@@ -1117,6 +1117,44 @@ def test_sidekicks(super_client, context, client, image_uuid):
     _wait_until_target_count(lb, 1, super_client)
 
 
+def test_concurrent_acitvate_setlinks(client, context):
+    env1 = _create_stack(client)
+    image_uuid = context.image_uuid
+    launch_config = {"imageUuid": image_uuid}
+    svc = _create_service(client, env1, launch_config, "web")
+
+    lb_launch_config = {"imageUuid": image_uuid,
+                        "ports": [8777, '8778:8778']}
+    lb_svc = client. \
+        create_loadBalancerService(name=random_str(),
+                                   environmentId=env1.id,
+                                   launchConfig=lb_launch_config)
+    lb_svc = client.wait_success(lb_svc)
+
+    svc.activate()
+    lb_svc.activate()
+    # map web services
+    service_link = {"serviceId": svc.id,
+                    "ports": ["a.com:90"], "name": "test"}
+    lb_svc.addservicelink(serviceLink=service_link)
+    lb_svc = client.wait_success(lb_svc)
+    svc = client.wait_success(svc)
+    lbs = client. \
+        list_loadBalancer(serviceId=lb_svc.id)
+    assert len(lbs) == 1
+    lb = client.wait_success(lbs[0])
+    assert lb.state == 'active'
+
+    # validate that one host map was created
+    _wait_until_active_map_count(lb, 1, client)
+
+    # update the link
+    service_link = {"serviceId": svc.id,
+                    "ports": ["a.com:100"], "name": "test"}
+    lb_svc.addservicelink(serviceLink=service_link)
+    _wait_until_active_map_count(lb, 1, client)
+
+
 def _wait_until_active_map_count(lb, count, super_client, timeout=30):
     start = time.time()
     host_maps = super_client. \
