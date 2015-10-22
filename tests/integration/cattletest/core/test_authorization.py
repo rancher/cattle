@@ -172,7 +172,7 @@ def test_readonly_types(admin_user_client):
     context = create_context(admin_user_client, kind='readonly')
     client = context.user_client
     test_user_types(client, adds={'subscribe'},
-                    removes={'userPreference'})
+                    removes={'userPreference', 'registrationToken'})
     for type in client.schema.types:
         type = client.schema.types[type]
         assert len(type['actions']) == 0
