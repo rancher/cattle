@@ -2,6 +2,7 @@
     "authorize": {
         ".*\\.resourceActions\\..*": "",
         ".*\\.uuid": "r",
+        "registrationToken": "",
 
         "end" : ""
     }
