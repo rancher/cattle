@@ -293,11 +293,11 @@ def test_role_option(admin_user_client, client, random_str, context):
     assert c.state == 'active'
 
     creds = admin_user_client.list_credential(name=random_str)
-    assert len(creds) == 0
+    assert len(creds) == 1
 
     creds = admin_user_client.list_credential(name=random_str,
-                                              _role='superadmin')
-    assert len(creds) == 1
+                                              _role='user')
+    assert len(creds) == 0
 
     creds = client.list_credential(name=random_str, _role='superadmin')
     assert len(creds) == 0
