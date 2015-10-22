@@ -197,10 +197,7 @@ def test_link_timeout(super_client, client, context):
 
     c = client.wait_transitioning(c)
 
-    msg = 'Timeout waiting for instance link t'
-    assert c.state == 'removed'
-    assert c.transitioning == 'error'
-    assert c.transitioningMessage == '{} : {}'.format(msg, msg)
+    assert c.state == 'running'
 
 
 def test_link_remove_instance_restart(client, super_client, context):

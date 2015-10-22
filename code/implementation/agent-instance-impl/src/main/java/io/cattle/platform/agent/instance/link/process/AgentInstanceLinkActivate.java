@@ -17,8 +17,6 @@ import io.cattle.platform.object.resource.ResourceMonitor;
 import io.cattle.platform.object.resource.ResourcePredicate;
 import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.process.common.handler.AbstractObjectProcessHandler;
-import io.cattle.platform.util.exception.ExecutionException;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -75,8 +73,9 @@ public class AgentInstanceLinkActivate extends AbstractObjectProcessHandler {
                 }
             });
         } catch (TimeoutException e) {
-            String message = String.format("Timeout waiting for instance link %s", link.getLinkName());
-            throw new ExecutionException(message, message, link);
+            /* We are going to ignore this now and just continue forward with no ports.  This is really only needed for the
+             * env vars which are not commonly used
+             */
         }
 
         List<Port> ports = children(targetInstance, Port.class);
