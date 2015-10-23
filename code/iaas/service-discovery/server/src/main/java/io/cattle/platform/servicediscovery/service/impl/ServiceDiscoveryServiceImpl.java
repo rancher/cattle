@@ -30,6 +30,8 @@ import io.cattle.platform.core.model.Subnet;
 import io.cattle.platform.core.util.PortSpec;
 import io.cattle.platform.deferred.util.DeferredUtils;
 import io.cattle.platform.json.JsonMapper;
+import io.cattle.platform.lock.LockCallbackNoReturn;
+import io.cattle.platform.lock.LockManager;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.process.ObjectProcessManager;
 import io.cattle.platform.object.process.StandardProcess;
@@ -88,6 +90,9 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
 
     @Inject
     LabelsDao labelsDao;
+
+    @Inject
+    LockManager lockManager;
 
     protected long getServiceNetworkId(Service service) {
         Network network = ntwkDao.getNetworkForObject(service, NetworkConstants.KIND_HOSTONLY);
@@ -412,7 +417,7 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
     }
 
     @Override
-    public void addToLoadBalancerService(Service lbSvc, ServiceExposeMap instanceToRegister) {
+    public void addToLoadBalancerService(final Service lbSvc, final ServiceExposeMap instanceToRegister) {
         if (!lbSvc.getKind().equalsIgnoreCase(ServiceDiscoveryConstants.KIND.LOADBALANCERSERVICE.name())) {
             return;
         }
@@ -430,22 +435,26 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
             return;
         }
 
-        LoadBalancer lb = objectManager.findOne(LoadBalancer.class, LOAD_BALANCER.SERVICE_ID,
+        final LoadBalancer lb = objectManager.findOne(LoadBalancer.class, LOAD_BALANCER.SERVICE_ID,
                 lbSvc.getId(), LOAD_BALANCER.REMOVED, null);
         if (lb == null) {
             return;
         }
 
-        ServiceConsumeMap map = consumeMapDao.findNonRemovedMap(lbSvc.getId(), instanceToRegister.getServiceId(),
+        final ServiceConsumeMap map = consumeMapDao.findNonRemovedMap(lbSvc.getId(), instanceToRegister.getServiceId(),
                 null);
         if (map == null) {
             return;
         }
 
-        LoadBalancerTargetInput target = new LoadBalancerTargetInput(instanceToRegister,
-                map, jsonMapper);
-        lbService.addTargetToLoadBalancer(lb, target);
-
+        lockManager.tryLock(new LoadBalancerServiceTargetLock(lbSvc, instanceToRegister), new LockCallbackNoReturn() {
+            @Override
+            public void doWithLockNoResult() {
+                LoadBalancerTargetInput target = new LoadBalancerTargetInput(instanceToRegister,
+                        map, jsonMapper);
+                lbService.addTargetToLoadBalancer(lb, target);
+            }
+        });
     }
 
     @Override
