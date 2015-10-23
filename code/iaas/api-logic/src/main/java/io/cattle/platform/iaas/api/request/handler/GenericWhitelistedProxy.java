@@ -80,7 +80,9 @@ public class GenericWhitelistedProxy extends AbstractResponseGenerator {
             throw new ClientVisibleException(ResponseCodes.BAD_REQUEST, "InvalidRedirect", "The redirect is invalid/empty", null);
         }
         String queryInfo = servletRequest.getQueryString();
-        uri.setCustomQuery(queryInfo);
+        if (queryInfo != null) {
+            uri.setCustomQuery(URLDecoder.decode(queryInfo, "UTF-8"));
+        }
         try {
             redirect = uri.build().toString();
         } catch (URISyntaxException e) {
