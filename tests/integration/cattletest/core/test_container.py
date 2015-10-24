@@ -767,3 +767,18 @@ def test_container_request_ip_from_label(new_context):
 
     c = new_context.create_container(labels=labels)
     assert c.primaryIpAddress != '10.42.42.42'
+
+
+def test_container_start_item_unique(client, super_client, context):
+    c = context.create_container()
+
+    pi = find_one(process_instances, super_client, c, type='instance')
+
+    updates = pi.data['io.cattle.platform.configitem.request.'
+                      'ConfigUpdateRequest']
+
+    for update in updates.values():
+        seen = set()
+        for item in update.items:
+            assert item.name not in seen
+            seen.add(item.name)
