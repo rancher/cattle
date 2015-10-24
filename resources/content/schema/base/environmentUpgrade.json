@@ -6,6 +6,9 @@
         "rancherCompose":{
             "type": "string"
         },
+        "externalId":{
+            "type": "string"
+        },
         "environment":{
             "type": "map[string]"
         }

@@ -436,7 +436,7 @@
         "environment.dockerCompose": "cr",
         "environment.rancherCompose": "cr",
         "environment.environment": "cr",
-        "environment.externalId": "cr",
+        "environment.externalId": "cru",
 
         "service" : "r",
         "service.environmentId" : "cr",
@@ -585,6 +585,7 @@
         "environmentUpgrade.dockerCompose" : "cr",
         "environmentUpgrade.rancherCompose" : "cr",
         "environmentUpgrade.environment" : "cr",
+        "environmentUpgrade.externalId" : "cr",
 
         "end" : ""
     }
