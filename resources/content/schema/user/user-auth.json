@@ -437,6 +437,7 @@
         "environment.rancherCompose": "cr",
         "environment.environment": "cr",
         "environment.externalId": "cru",
+        "environment.previousExternalId": "cru",
 
         "service" : "r",
         "service.environmentId" : "cr",

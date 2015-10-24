@@ -16,6 +16,9 @@
         },
         "environment":{
             "type": "map[string]"
+        },
+        "previousExternalId":{
+            "type": "string"
         }
     },
     "resourceActions" : {
