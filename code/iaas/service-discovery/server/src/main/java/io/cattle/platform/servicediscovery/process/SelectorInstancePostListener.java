@@ -23,7 +23,7 @@ import java.util.List;
 
 import javax.inject.Inject;
 
-public class SelectorInstanceStartPostListener extends AbstractObjectProcessLogic implements ProcessPostListener,
+public class SelectorInstancePostListener extends AbstractObjectProcessLogic implements ProcessPostListener,
         Priority {
     @Inject
     ServiceDiscoveryService sdService;
@@ -36,7 +36,7 @@ public class SelectorInstanceStartPostListener extends AbstractObjectProcessLogi
 
     @Override
     public String[] getProcessNames() {
-        return new String[] { InstanceConstants.PROCESS_START };
+        return new String[] { InstanceConstants.PROCESS_START, InstanceConstants.PROCESS_RESTORE };
     }
 
     @Override

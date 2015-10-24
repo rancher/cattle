@@ -95,9 +95,15 @@ public class DeploymentUnitService {
             if (usedByInstance == null) {
                 continue;
             }
-            usedByInstance.remove();
+            clenaupDeploymentInstance(usedByInstance);
             cleanupInstanceWithMissingDep(usedInLaunchConfig);
         }
+    }
+
+    protected void clenaupDeploymentInstance(DeploymentUnitInstance instance) {
+        instance.remove();
+        launchConfigToInstance.remove(instance.getLaunchConfigName());
+
     }
 
     public List<String> getLaunchConfigNames() {

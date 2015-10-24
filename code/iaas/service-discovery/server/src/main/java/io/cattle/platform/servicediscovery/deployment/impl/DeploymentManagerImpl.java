@@ -105,26 +105,25 @@ public class DeploymentManagerImpl implements DeploymentManager {
                     return false;
                 }
                 // get existing deployment units
-                List<DeploymentUnit> units = unitInstanceFactory.collectDeploymentUnits(services,
-                        new DeploymentServiceContext());
-                ServiceDeploymentPlanner planner = deploymentPlannerFactory.createServiceDeploymentPlanner(services,
-                        units, new DeploymentServiceContext());
+                ServiceDeploymentPlanner planner = getPlanner(services);
 
                 // don't process if there is no need to reconcile
-                boolean needToReconcile = needToReconcile(services, units, planner);
+                boolean needToReconcile = needToReconcile(services, planner);
 
                 if (!needToReconcile) {
                     return false;
                 }
 
                 if (checkState) {
-                    return !isHealthcheckInitiailizing(units);
+                    return !planner.isHealthcheckInitiailizing();
                 }
 
                 activateServices(service, services);
                 activateDeploymentUnits(planner);
 
-                if (needToReconcile(services, units, planner)) {
+                // reload planner as there can be new hosts added for Global services
+                planner = getPlanner(services);
+                if (needToReconcile(services, planner)) {
                     throw new IllegalStateException(
                             "Failed to do service reconcile for service [" + service.getId() + "]");
                 }
@@ -133,19 +132,15 @@ public class DeploymentManagerImpl implements DeploymentManager {
             }
         });
     }
-
-    private boolean isHealthcheckInitiailizing(List<DeploymentUnit> units) {
-        for (DeploymentUnit unit : units) {
-            if (unit.isHealthCheckInitializing()) {
-                return true;
-            }
-        }
-
-        return false;
+    
+    private ServiceDeploymentPlanner getPlanner(List<Service> services) {
+        List<DeploymentUnit> units = unitInstanceFactory.collectDeploymentUnits(services,
+                new DeploymentServiceContext());
+        return deploymentPlannerFactory.createServiceDeploymentPlanner(services,
+                units, new DeploymentServiceContext());
     }
 
-    private boolean needToReconcile(List<Service> services, final List<DeploymentUnit> units,
-            ServiceDeploymentPlanner planner) {
+    private boolean needToReconcile(List<Service> services, ServiceDeploymentPlanner planner) {
         for (Service service : services) {
             if (service.getState().equals(CommonStatesConstants.INACTIVE)) {
                 return true;
@@ -226,15 +221,7 @@ public class DeploymentManagerImpl implements DeploymentManager {
         /*
          * Ask the planner to deploy more units/ remove extra units
          */
-        List<DeploymentUnit> units = planner.deploy();
-
-        for (DeploymentUnit unit : units) {
-            unit.start(svcInstanceIdGenerator);
-        }
-
-        for (DeploymentUnit unit : units) {
-            unit.waitForStart();
-        }
+        planner.deploy(svcInstanceIdGenerator);
     }
 
     @Override
@@ -301,7 +288,7 @@ public class DeploymentManagerImpl implements DeploymentManager {
             @Override
             public void run() {
                 Service service = objectMgr.loadResource(Service.class, client.getResourceId());
-                if (service != null && sdSvc.getServiceActiveStates(false).contains(service.getState())) {
+                if (service != null && service.getState().equalsIgnoreCase(CommonStatesConstants.ACTIVE)) {
                     activate(service);
                 }
             }

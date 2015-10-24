@@ -7,6 +7,7 @@ import io.cattle.platform.servicediscovery.deployment.impl.DeploymentUnit;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 /**
  * This class creates new deploymentUnits based on the service requirements (scale/global)
@@ -23,6 +24,7 @@ public abstract class ServiceDeploymentPlanner {
     private List<DeploymentUnit> badUnits = new ArrayList<>();
     private List<DeploymentUnit> incompleteUnits = new ArrayList<>();
     protected DeploymentServiceContext context;
+    private List<DeploymentUnit> allUnits = new ArrayList<>();
 
     public ServiceDeploymentPlanner(List<Service> services, List<DeploymentUnit> units,
             DeploymentServiceContext context) {
@@ -44,11 +46,30 @@ public abstract class ServiceDeploymentPlanner {
                     }
                 }
             }
+            allUnits.addAll(units);
         }
     }
 
-    public List<DeploymentUnit> deploy() {
-        return this.deployHealthyUnits();
+    public boolean isHealthcheckInitiailizing() {
+        for (DeploymentUnit unit : allUnits) {
+            if (unit.isHealthCheckInitializing()) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    public List<DeploymentUnit> deploy(Map<Long, DeploymentUnitInstanceIdGenerator> svcInstanceIdGenerator) {
+        List<DeploymentUnit> units = this.deployHealthyUnits();
+        for (DeploymentUnit unit : units) {
+            unit.start(svcInstanceIdGenerator);
+        }
+
+        for (DeploymentUnit unit : units) {
+            unit.waitForStart();
+        }
+        return units;
     }
 
     protected abstract List<DeploymentUnit> deployHealthyUnits();
