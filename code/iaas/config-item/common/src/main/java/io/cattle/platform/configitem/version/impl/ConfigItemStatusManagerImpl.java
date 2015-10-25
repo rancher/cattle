@@ -78,7 +78,6 @@ public class ConfigItemStatusManagerImpl implements ConfigItemStatusManager {
         List<ConfigUpdateItem> toTrigger = new ArrayList<ConfigUpdateItem>();
 
         for (ConfigUpdateItem item : request.getItems()) {
-            boolean modified = false;
             String name = item.getName();
             ConfigItemStatus status = statuses.get(name);
             Long requestedVersion = item.getRequestedVersion();
@@ -86,13 +85,11 @@ public class ConfigItemStatusManagerImpl implements ConfigItemStatusManager {
             if (status == null) {
                 if (item.isApply()) {
                     requestedVersion = configItemStatusDao.incrementOrApply(client, name);
-                    modified = true;
                 }
             }
 
             if (requestedVersion == null && item.isIncrement()) {
                 requestedVersion = configItemStatusDao.incrementOrApply(client, name);
-                modified = true;
             }
 
             if (requestedVersion == null) {
@@ -100,10 +97,7 @@ public class ConfigItemStatusManagerImpl implements ConfigItemStatusManager {
             }
 
             item.setRequestedVersion(requestedVersion);
-
-            if (modified) {
-                toTrigger.add(item);
-            }
+            toTrigger.add(item);
         }
 
         triggerUpdate(request, toTrigger);

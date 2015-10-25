@@ -21,6 +21,7 @@ import io.cattle.platform.util.type.CollectionUtils;
 import io.cattle.platform.util.type.InitializationTask;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -353,13 +354,14 @@ public class ConfigUpdatePublisher extends NoExceptionRunnable implements Initia
         SettableFuture<Event> future;
         Throwable t;
         boolean exit;
+        Date time;
 
         public WorkItem(boolean exit) {
             this.exit = exit;
         }
 
         public WorkItem(Client client, ConfigUpdate request) {
-            /* Sync up time so that we can detect timeout */
+            this.time = new Date();
             this.client = client;
             this.request = request;
             this.key = String.format("%s:%s", request.getResourceType(), request.getResourceId());
@@ -367,8 +369,7 @@ public class ConfigUpdatePublisher extends NoExceptionRunnable implements Initia
         }
 
         public boolean isExpired() {
-            Long timeout = TIMEOUT.get() * RETRY.get();
-            return System.currentTimeMillis() > (request.getTime().getTime() + timeout);
+            return System.currentTimeMillis() > (time.getTime() + (TIMEOUT.get() * 2));
         }
 
     }
