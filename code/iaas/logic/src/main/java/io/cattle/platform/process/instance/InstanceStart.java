@@ -61,6 +61,7 @@ public class InstanceStart extends AbstractDefaultProcessHandler {
 
             progress.checkPoint("Networking");
             network(instance, state);
+            activatePorts(instance, state);
 
             progress.checkPoint("Storage");
             storage(instance, state);
@@ -82,7 +83,7 @@ public class InstanceStart extends AbstractDefaultProcessHandler {
 
         try {
             progress.checkPoint("Post-network");
-            postNetwork(instance, state);
+            activatePorts(instance, state);
         } catch (ExecutionException e) {
             log.error("Failed to {} for instance [{}]", progress.getCurrentCheckpoint(), instance.getId());
             return stopOrRemove(state, instance, e);
@@ -196,7 +197,7 @@ public class InstanceStart extends AbstractDefaultProcessHandler {
         }
     }
 
-    protected void postNetwork(Instance instance, ProcessState state) {
+    protected void activatePorts(Instance instance, ProcessState state) {
         for (Port port : getObjectManager().children(instance, Port.class)) {
             // ports can be removed while instance is still present (lb instance is an example)
             if (port.getRemoved() == null
