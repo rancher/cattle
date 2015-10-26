@@ -26,7 +26,7 @@ CMD="java
     -Dlogback.log.dir=$RUNTIME_DIR/logs/
     -Ddb.cattle.home=${RUNTIME_DIR}/db/
     -Dhost.api.proxy.mode=${CATTLE_HOST_API_PROXY_MODE:-embedded}
-    -Xmx512m -jar target/*.war"
+    -Xmx4096m -jar target/*.war"
 
 if [ "$1" = "--background" ]; then
     rm -rf ${RUNTIME_DIR}/{run-success,run-error}
