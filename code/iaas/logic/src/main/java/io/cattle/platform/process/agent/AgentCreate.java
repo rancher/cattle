@@ -4,6 +4,7 @@ import static io.cattle.platform.core.model.tables.AccountTable.*;
 import static io.cattle.platform.core.model.tables.AgentTable.*;
 import io.cattle.platform.archaius.util.ArchaiusUtil;
 import io.cattle.platform.core.constants.AccountConstants;
+import io.cattle.platform.core.constants.AgentConstants;
 import io.cattle.platform.core.constants.CredentialConstants;
 import io.cattle.platform.core.dao.AccountDao;
 import io.cattle.platform.core.model.Account;
@@ -13,6 +14,8 @@ import io.cattle.platform.engine.process.ProcessInstance;
 import io.cattle.platform.engine.process.ProcessState;
 import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.process.base.AbstractDefaultProcessHandler;
+
+import java.util.HashMap;
 
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -55,7 +58,14 @@ public class AgentCreate extends AbstractDefaultProcessHandler {
         Account account = accountDao.findByUuid(uuid);
 
         if (account == null) {
-            account = getObjectManager().create(Account.class, ACCOUNT.UUID, uuid, ACCOUNT.KIND, "agent");
+            Object obj = DataAccessor.fromDataFieldOf(agent).withKey(AgentConstants.DATA_ACCOUNT_DATA).get();
+            if (obj == null) {
+                obj = new HashMap<>();
+            }
+            account = getObjectManager().create(Account.class,
+                    ACCOUNT.UUID, uuid,
+                    ACCOUNT.DATA, obj,
+                    ACCOUNT.KIND, "agent");
         }
 
         return account;

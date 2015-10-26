@@ -162,7 +162,7 @@ public class AgentInstanceFactoryImpl implements AgentInstanceFactory {
 
     protected boolean shouldCreateAgent(Instance instance) {
         Map<String, Object> labels = DataAccessor.fieldMap(instance, InstanceConstants.FIELD_LABELS);
-        return BooleanUtils.toBoolean(ObjectUtils.toString(labels.get(SystemLabels.AGENT_CREATE_LABEL), null));
+        return BooleanUtils.toBoolean(ObjectUtils.toString(labels.get(SystemLabels.LABEL_AGENT_CREATE), null));
     }
 
     protected Agent getAgent(AgentInstanceBuilderImpl builder) {
@@ -211,6 +211,9 @@ public class AgentInstanceFactoryImpl implements AgentInstanceFactory {
                 final Map<String, Object> data = new HashMap<>();
                 if (builder.getResourceAccountId() != null) {
                     data.put(AgentConstants.DATA_AGENT_RESOURCES_ACCOUNT_ID, builder.getResourceAccountId());
+                }
+                if (builder.getAccountData() != null) {
+                    data.put(AgentConstants.DATA_ACCOUNT_DATA, builder.getAccountData());
                 }
 
                 if (agent == null) {

@@ -1,18 +1,28 @@
 package io.cattle.platform.iaas.api.auth.integration.internal.rancher;
 
+import static io.cattle.platform.core.model.tables.AccountTable.*;
+import static io.cattle.platform.core.model.tables.AgentTable.*;
+
 import io.cattle.platform.archaius.util.ArchaiusUtil;
+import io.cattle.platform.core.constants.AccountConstants;
+import io.cattle.platform.core.constants.AgentConstants;
+import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.ProjectConstants;
 import io.cattle.platform.core.model.Account;
+import io.cattle.platform.core.model.Agent;
 import io.cattle.platform.iaas.api.auth.SecurityConstants;
 import io.cattle.platform.iaas.api.auth.dao.AuthDao;
 import io.cattle.platform.iaas.api.auth.integration.github.GithubOAuthImpl;
 import io.cattle.platform.iaas.api.auth.integration.interfaces.AccountLookup;
 import io.cattle.platform.iaas.api.auth.integration.ldap.LdapAuthImpl;
+import io.cattle.platform.object.ObjectManager;
+import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.util.type.Priority;
 import io.github.ibuildthecloud.gdapi.exception.ClientVisibleException;
 import io.github.ibuildthecloud.gdapi.request.ApiRequest;
 
 import java.io.UnsupportedEncodingException;
+
 import javax.inject.Inject;
 import javax.servlet.http.HttpServletResponse;
 
@@ -38,6 +48,8 @@ public class BasicAuthImpl implements AccountLookup, Priority {
     LdapAuthImpl ldapAuth;
     @Inject
     AdminAuthLookUp adminAuthLookUp;
+    @Inject
+    ObjectManager objectManager;
 
     @Override
     public Account getAccount(ApiRequest request) {
@@ -47,7 +59,7 @@ public class BasicAuthImpl implements AccountLookup, Priority {
         }
         Account account = authDao.getAccountByKeys(auth[0], auth[1]);
         if (account != null) {
-            return account;
+            return switchAccount(account);
         } else if (auth[0].toLowerCase().startsWith(ProjectConstants.OAUTH_BASIC.toLowerCase()) && SecurityConstants.SECURITY.get()) {
             String[] splits = auth[0].split("=");
             String projectId = splits.length == 2 ? splits[1] : null;
@@ -63,6 +75,29 @@ public class BasicAuthImpl implements AccountLookup, Priority {
             request.setAttribute(ProjectConstants.PROJECT_HEADER, projectId);
             account = adminAuthLookUp.getAccount(request);
         }
+        return account;
+    }
+
+    protected Account switchAccount(Account account) {
+        boolean shouldSwitch = DataAccessor.fromDataFieldOf(account)
+            .withKey(AccountConstants.DATA_ACT_AS_RESOURCE_ACCOUNT)
+            .withDefault(false)
+            .as(Boolean.class);
+
+        if (shouldSwitch) {
+            Agent agent = objectManager.findAny(Agent.class, AGENT.ACCOUNT_ID, account.getId());
+            if (agent != null) {
+                Long resourceAccId = DataAccessor.fromDataFieldOf(agent)
+                        .withKey(AgentConstants.DATA_AGENT_RESOURCES_ACCOUNT_ID)
+                        .as(Long.class);
+                if (resourceAccId != null) {
+                    return objectManager.findAny(Account.class,
+                            ACCOUNT.ID, resourceAccId,
+                            ACCOUNT.STATE, CommonStatesConstants.ACTIVE);
+                }
+            }
+        }
+
         return account;
     }
 
