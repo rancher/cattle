@@ -15,12 +15,17 @@ import io.cattle.platform.lock.LockCallback;
 import io.cattle.platform.lock.LockDelegator;
 import io.cattle.platform.lock.LockManager;
 import io.cattle.platform.lock.definition.LockDefinition;
+import io.cattle.platform.object.process.ObjectProcessManager;
+import io.cattle.platform.object.process.StandardProcess;
 import io.cattle.platform.object.resource.ResourceMonitor;
+import io.cattle.platform.process.common.util.ProcessUtils;
 import io.cattle.platform.server.context.ServerContext;
 import io.cattle.platform.util.type.InitializationTask;
 
 import java.io.IOException;
 import java.lang.ProcessBuilder.Redirect;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ScheduledExecutorService;
@@ -50,6 +55,8 @@ public abstract class GenericServiceLauncher extends NoExceptionRunnable impleme
     GenericResourceDao resourceDao;
     @Inject
     ResourceMonitor resourceMonitor;
+    @Inject
+    ObjectProcessManager processManager;
 
     Process process;
     ScheduledFuture<?> future;
@@ -112,7 +119,14 @@ public abstract class GenericServiceLauncher extends NoExceptionRunnable impleme
 
         final Long accountId = account.getId();
         account = resourceMonitor.waitForState(account, CommonStatesConstants.ACTIVE);
-        Credential cred = accountDao.getApiKey(account, false);
+        List<? extends Credential> creds = accountDao.getApiKeys(account, CredentialConstants.KIND_AGENT_API_KEY, false);
+        Credential cred = creds.size() > 0 ? creds.get(0) : null;
+
+        /* This is to fix a bug in which we ended up with a lot of api keys created */
+        for (int i = 1; i < creds.size(); i++) {
+            processManager.scheduleStandardProcessAsync(StandardProcess.DEACTIVATE, creds.get(i), ProcessUtils.chainInData(new HashMap<String, Object>(),
+                    CredentialConstants.PROCESSS_DEACTIVATE, CredentialConstants.PROCESSS_REMOVE));
+        }
 
         if (cred == null) {
             cred = DeferredUtils.nest(new Callable<Credential>() {

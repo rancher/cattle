@@ -3,11 +3,13 @@ package io.cattle.platform.core.dao;
 import io.cattle.platform.core.model.Account;
 import io.cattle.platform.core.model.Credential;
 
+import java.util.List;
+
 public interface AccountDao {
 
     Account getSystemAccount();
 
-    Credential getApiKey(Account account, boolean requireActive);
+    List<? extends Credential> getApiKeys(Account account, String kind, boolean requireActive);
 
     Account findByUuid(String uuid);
 

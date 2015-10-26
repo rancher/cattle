@@ -19,6 +19,9 @@ public class CredentialConstants {
     public static final String KIND_REGISTRY_CREDENTIAL = "registryCredential";
     public static final String PUBLIC_VALUE = "publicValue";
 
+    public static final String PROCESSS_DEACTIVATE = "credential.deactivate";
+    public static final String PROCESSS_REMOVE = "credential.remove";
+
     public static final Set<String> CREDENTIAL_TYPES_TO_FILTER = Collections.unmodifiableSet(new HashSet<>(Arrays
             .asList(
                     KIND_API_KEY, KIND_PASSWORD
