@@ -49,7 +49,7 @@ public class AgentInstanceInstanceStart extends AbstractObjectProcessLogic imple
         Instance instance = (Instance) state.getResource();
         Agent agent = loadResource(Agent.class, instance.getAgentId());
 
-        if (agent == null) {
+        if (agent == null || instance.getSystemContainer() == null) {
             return null;
         }
 

@@ -27,6 +27,8 @@ import java.util.concurrent.Callable;
 
 import javax.inject.Inject;
 
+import org.apache.commons.lang3.StringUtils;
+
 public class AgentInstanceManagerImpl implements AgentInstanceManager {
 
     ObjectManager objectManager;
@@ -53,8 +55,7 @@ public class AgentInstanceManagerImpl implements AgentInstanceManager {
         }
 
         if (instance.getAgentId() != null) {
-            String type = instance.getSystemContainer();
-            if (type == null || type.equalsIgnoreCase(SystemContainer.NetworkAgent.name())) {
+            if (StringUtils.equalsIgnoreCase(instance.getSystemContainer(), SystemContainer.NetworkAgent.name())) {
                 return result;
             }
         }
