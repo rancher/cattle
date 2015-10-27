@@ -33,6 +33,7 @@ public class ServiceMetaData {
     Map<String, String> labels;
     Map<String, Object> metadata;
     Integer scale;
+    Boolean external_dns = true;
 
     public ServiceMetaData(Service service, String serviceName, Environment env, List<String> sidekicks,
             Map<String, Object> metadata) {
@@ -52,6 +53,8 @@ public class ServiceMetaData {
         this.create_index = service.getCreateIndex();
         this.metadata = metadata;
         this.scale = DataAccessor.fieldInteger(service, ServiceDiscoveryConstants.FIELD_SCALE);
+        this.external_dns = DataAccessor.fields(service)
+                .withKey(ServiceDiscoveryConstants.FIELD_EXTERNAL_DNS).as(Boolean.class);
     }
 
     @SuppressWarnings("unchecked")
@@ -152,5 +155,9 @@ public class ServiceMetaData {
 
     public Integer getScale() {
         return scale;
+    }
+
+    public Boolean getExternal_dns() {
+        return external_dns;
     }
 }

@@ -95,7 +95,8 @@ def test_activate_single_service(client, context, super_client):
     service = client.create_service(name=random_str(),
                                     environmentId=env.id,
                                     launchConfig=launch_config,
-                                    metadata=metadata)
+                                    metadata=metadata,
+                                    externalDns=False)
     service = client.wait_success(service)
 
     # validate that parameters were set for service
@@ -133,6 +134,7 @@ def test_activate_single_service(client, context, super_client):
     assert service.launchConfig.healthCheck.port == 200
     assert service.metadata == metadata
     assert service.launchConfig.version == '0'
+    assert service.externalDns is False
 
     # activate the service and validate that parameters were set for instance
     service = client.wait_success(service.activate(), 120)

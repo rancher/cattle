@@ -452,6 +452,7 @@
         "service.selectorContainer" : "cr",
         "service.previousLaunchConfig" : "r",
         "service.previousSecondaryLaunchConfigs" : "r",
+        "service.externalDns" : "cr",
 
         "addRemoveServiceLinkInput" : "r",
         "addRemoveServiceLinkInput.serviceLink" : "cr",
@@ -515,6 +516,7 @@
         "externalService.healthCheck" : "cr",
         "externalService.createIndex" : "",
         "externalService.selectorContainer" : "",
+        "externalService.externalDns" : "",
 
         "dnsService" : "r",
         "dnsService.scale" : "",
@@ -522,6 +524,7 @@
         "dnsService.vip" : "",
         "dnsService.createIndex" : "",
         "dnsService.selectorContainer" : "",
+        "dnsService.externalDns" : "",
 
         "serviceEvent" : "r",
         "serviceEvent.instanceId" : "r",
