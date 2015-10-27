@@ -5,6 +5,8 @@ import java.util.Map;
 
 import javax.xml.bind.annotation.XmlTransient;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+
 public interface Field {
 
     @XmlTransient
@@ -17,38 +19,50 @@ public interface Field {
     @io.github.ibuildthecloud.gdapi.annotation.Field(include = false)
     FieldType getTypeEnum();
 
+    @JsonInclude(JsonInclude.Include.NON_DEFAULT)
     Object getDefault();
 
     @XmlTransient
     @io.github.ibuildthecloud.gdapi.annotation.Field(include = false)
     boolean hasDefault();
 
+    @JsonInclude(JsonInclude.Include.NON_DEFAULT)
     boolean isUnique();
 
+    @JsonInclude(JsonInclude.Include.NON_DEFAULT)
     boolean isNullable();
 
     boolean isCreate();
 
     boolean isReadOnCreateOnly();
 
+    @JsonInclude(JsonInclude.Include.NON_DEFAULT)
     boolean isRequired();
 
     boolean isUpdate();
 
+    @JsonInclude(JsonInclude.Include.NON_DEFAULT)
     Long getMinLength();
 
+    @JsonInclude(JsonInclude.Include.NON_DEFAULT)
     Long getMaxLength();
 
+    @JsonInclude(JsonInclude.Include.NON_DEFAULT)
     Long getMin();
 
+    @JsonInclude(JsonInclude.Include.NON_DEFAULT)
     Long getMax();
 
+    @JsonInclude(JsonInclude.Include.NON_DEFAULT)
     List<String> getOptions();
 
+    @JsonInclude(JsonInclude.Include.NON_DEFAULT)
     String getValidChars();
 
+    @JsonInclude(JsonInclude.Include.NON_DEFAULT)
     String getInvalidChars();
 
+    @JsonInclude(JsonInclude.Include.NON_DEFAULT)
     String getTransform();
 
     @XmlTransient

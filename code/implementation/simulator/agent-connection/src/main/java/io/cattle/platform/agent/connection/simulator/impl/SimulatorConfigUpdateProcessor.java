@@ -23,6 +23,7 @@ import javax.inject.Inject;
 import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
 import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.ObjectUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -40,7 +41,8 @@ public class SimulatorConfigUpdateProcessor implements AgentSimulatorEventProces
         }
 
         ConfigUpdate update = jsonMapper.convertValue(event, ConfigUpdate.class);
-        String auth = AgentUtils.getAgentAuth(simulator.getAgent(), objectManager);
+        String auth = ObjectUtils.toString(
+                AgentUtils.getAgentAuth(simulator.getAgent(), objectManager).get("CATTLE_AGENT_INSTANCE_AUTH"), null);
 
         if (auth == null) {
             throw new IllegalStateException("Failed to get auth for agent [" + simulator.getAgentId() + "]");

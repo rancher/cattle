@@ -93,8 +93,12 @@
     <bean class="io.cattle.platform.api.handler.DeferredActionsHandler" />
     <!-- End Handlers -->
 
-    <bean id="DefaultAuthorizationProvider" class="io.cattle.platform.iaas.api.auth.impl.DefaultAuthorizationProvider" >
-        <property name="schemaFactoryList" value="#{extensionManager.list('schema.factory')}" />
+    <bean id="DefaultAuthorizationProvider" class="io.cattle.platform.iaas.api.auth.dynamic.DynamicSchemaAuthorizationProvider" >
+        <property name="authorizationProvider" >
+            <bean class="io.cattle.platform.iaas.api.auth.impl.DefaultAuthorizationProvider" >
+                <property name="schemaFactoryList" value="#{extensionManager.list('schema.factory')}" />
+            </bean>
+        </property>
     </bean>
     <bean class="io.cattle.platform.iaas.api.auth.impl.AgentQualifierAuthorizationProvider" />
     <bean class="io.cattle.platform.iaas.api.auth.AchaiusPolicyOptionsFactory" />

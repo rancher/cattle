@@ -46,7 +46,9 @@
         </property>
     </bean>
 
+    <bean class="io.cattle.platform.agent.instance.process.AgentInstanceInstanceCreate" />
     <bean class="io.cattle.platform.agent.instance.process.AgentInstanceInstanceStart" />
+    <bean class="io.cattle.platform.agent.instance.process.AgentInstanceInstanceRemove" />
     <bean class="io.cattle.platform.agent.instance.process.AgentInstanceNicActivate" />
     <bean class="io.cattle.platform.agent.instance.process.AgentInstancePostNicActivate" />
     <bean class="io.cattle.platform.agent.instance.process.AgentInstanceApplyItems" />

@@ -54,6 +54,7 @@ public class InstanceConstants {
     public static final String PROCESS_RESTART = "instance.restart";
     public static final String PROCESS_REMOVE = "instance.remove";
     public static final String PROCESS_RESTORE = "instance.restore";
+    public static final String PROCESS_PURGE = "instance.purge";
 
     public static final String KIND_CONTAINER = "container";
     public static final String KIND_VIRTUAL_MACHINE = "virtualMachine";

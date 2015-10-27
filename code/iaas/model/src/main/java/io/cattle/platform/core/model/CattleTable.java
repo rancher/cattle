@@ -11,7 +11,7 @@ package io.cattle.platform.core.model;
 @java.lang.SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class CattleTable extends org.jooq.impl.SchemaImpl {
 
-	private static final long serialVersionUID = 1329472632;
+	private static final long serialVersionUID = 232102809;
 
 	/**
 	 * The singleton instance of <code>cattle</code>
@@ -48,6 +48,7 @@ public class CattleTable extends org.jooq.impl.SchemaImpl {
 			io.cattle.platform.core.model.tables.DataTable.DATA,
 			io.cattle.platform.core.model.tables.DatabasechangelogTable.DATABASECHANGELOG,
 			io.cattle.platform.core.model.tables.DatabasechangeloglockTable.DATABASECHANGELOGLOCK,
+			io.cattle.platform.core.model.tables.DynamicSchemaTable.DYNAMIC_SCHEMA,
 			io.cattle.platform.core.model.tables.EnvironmentTable.ENVIRONMENT,
 			io.cattle.platform.core.model.tables.ExternalEventTable.EXTERNAL_EVENT,
 			io.cattle.platform.core.model.tables.ExternalHandlerTable.EXTERNAL_HANDLER,

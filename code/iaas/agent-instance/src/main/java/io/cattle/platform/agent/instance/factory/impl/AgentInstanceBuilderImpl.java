@@ -2,12 +2,15 @@ package io.cattle.platform.agent.instance.factory.impl;
 
 import io.cattle.platform.agent.instance.factory.AgentInstanceBuilder;
 import io.cattle.platform.archaius.util.ArchaiusUtil;
+import io.cattle.platform.core.constants.AccountConstants;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.constants.InstanceConstants.SystemContainer;
 import io.cattle.platform.core.constants.NetworkServiceProviderConstants;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.NetworkServiceProvider;
+import io.cattle.platform.core.util.SystemLabels;
 import io.cattle.platform.object.util.DataAccessor;
+import io.cattle.platform.util.type.CollectionUtils;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -24,6 +27,7 @@ public class AgentInstanceBuilderImpl implements AgentInstanceBuilder {
     Long accountId;
     Long zoneId;
     Long agentGroupId;
+    Long resourceAccountId;
     NetworkServiceProvider networkServiceProvider;
     String imageUuid;
     String name = DEFAULT_NAME.get();
@@ -31,6 +35,7 @@ public class AgentInstanceBuilderImpl implements AgentInstanceBuilder {
     boolean accountOwned = true;
     boolean managedConfig = false;
     boolean privileged = false;
+    Map<String, Object> accountData = null;
     AgentInstanceFactoryImpl factory;
     String uri;
     Map<String, Object> params = new HashMap<>();
@@ -39,6 +44,19 @@ public class AgentInstanceBuilderImpl implements AgentInstanceBuilder {
     public AgentInstanceBuilderImpl(AgentInstanceFactoryImpl factory) {
         super();
         this.factory = factory;
+    }
+
+    public AgentInstanceBuilderImpl(AgentInstanceFactoryImpl factory, Instance instance) {
+        this(factory);
+        this.accountId = instance.getAccountId();
+        this.zoneId = instance.getZoneId();
+        this.uri = "event:///instanceId=" + instance.getId();
+        this.resourceAccountId = instance.getAccountId();
+
+        Map<String, Object> labels = DataAccessor.fieldMap(instance, InstanceConstants.FIELD_LABELS);
+        if ("environment".equals(labels.get(SystemLabels.LABEL_AGENT_ROLE))) {
+            accountData = CollectionUtils.asMap(AccountConstants.DATA_ACT_AS_RESOURCE_ACCOUNT, true);
+        }
     }
 
     @Override
@@ -217,6 +235,10 @@ public class AgentInstanceBuilderImpl implements AgentInstanceBuilder {
         return params;
     }
 
+    public Map<String, Object> getAccountData() {
+        return accountData;
+    }
+
     @Override
     public AgentInstanceBuilder withSystemContainerType(SystemContainer systemContainerType) {
         this.systemContainerType = systemContainerType;
@@ -226,4 +248,13 @@ public class AgentInstanceBuilderImpl implements AgentInstanceBuilder {
     public SystemContainer getSystemContainerType() {
         return systemContainerType;
     }
+
+    public Long getResourceAccountId() {
+        return resourceAccountId;
+    }
+
+    public void setResourceAccountId(Long resourceAccountId) {
+        this.resourceAccountId = resourceAccountId;
+    }
+
 }

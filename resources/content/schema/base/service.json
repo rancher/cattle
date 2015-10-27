@@ -56,6 +56,11 @@
         "previousSecondaryLaunchConfigs": {
             "type": "array[secondaryLaunchConfig]",
             "required": false
+        },
+        "serviceSchemas": {
+            "type": "map[schema]",
+            "nullable": true,
+            "required": false
         }
     },
     "resourceActions" : {
