@@ -1,5 +1,7 @@
 package io.cattle.platform.process.agent;
 
+import static io.cattle.platform.core.model.tables.InstanceTable.*;
+
 import io.cattle.platform.agent.AgentLocator;
 import io.cattle.platform.agent.RemoteAgent;
 import io.cattle.platform.agent.util.AgentUtils;
@@ -8,6 +10,7 @@ import io.cattle.platform.async.utils.AsyncUtils;
 import io.cattle.platform.async.utils.TimeoutException;
 import io.cattle.platform.core.constants.AgentConstants;
 import io.cattle.platform.core.model.Agent;
+import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.engine.handler.HandlerResult;
 import io.cattle.platform.engine.process.ProcessInstance;
 import io.cattle.platform.engine.process.ProcessState;
@@ -37,6 +40,13 @@ public class AgentActivate extends AbstractDefaultProcessHandler {
     @Override
     public HandlerResult handle(ProcessState state, ProcessInstance process) {
         Agent agent = (Agent) state.getResource();
+        Instance instance = objectManager.findAny(Instance.class, INSTANCE.AGENT_ID, agent.getId());
+
+        /* Don't ping non-system container agent instances */
+        if (instance != null && instance.getSystemContainer() == null) {
+            return null;
+        }
+
         boolean waitFor = DataAccessor.fromDataFieldOf(agent)
                 .withScope(AgentActivate.class)
                 .withKey("waitForPing")
