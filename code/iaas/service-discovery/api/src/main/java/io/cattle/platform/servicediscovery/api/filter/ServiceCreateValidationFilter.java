@@ -1,5 +1,6 @@
 package io.cattle.platform.servicediscovery.api.filter;
 
+import static io.cattle.platform.core.model.tables.ServiceTable.SERVICE;
 import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.dao.NetworkDao;
@@ -8,7 +9,6 @@ import io.cattle.platform.core.model.Service;
 import io.cattle.platform.iaas.api.filter.common.AbstractDefaultResourceManagerFilter;
 import io.cattle.platform.json.JsonMapper;
 import io.cattle.platform.object.ObjectManager;
-import io.cattle.platform.object.meta.ObjectMetaDataManager;
 import io.cattle.platform.object.util.DataUtils;
 import io.cattle.platform.servicediscovery.api.constants.ServiceDiscoveryConstants;
 import io.cattle.platform.servicediscovery.api.dao.ServiceExposeMapDao;
@@ -16,12 +16,9 @@ import io.cattle.platform.servicediscovery.api.util.selector.SelectorUtils;
 import io.cattle.platform.storage.service.StorageService;
 import io.cattle.platform.util.net.NetUtils;
 import io.cattle.platform.util.type.CollectionUtils;
-import io.github.ibuildthecloud.gdapi.condition.Condition;
-import io.github.ibuildthecloud.gdapi.condition.ConditionType;
 import io.github.ibuildthecloud.gdapi.exception.ValidationErrorException;
 import io.github.ibuildthecloud.gdapi.request.ApiRequest;
 import io.github.ibuildthecloud.gdapi.request.resource.ResourceManager;
-import io.github.ibuildthecloud.gdapi.request.resource.ResourceManagerLocator;
 import io.github.ibuildthecloud.gdapi.validation.ValidationErrorCodes;
 
 import java.io.IOException;
@@ -34,9 +31,6 @@ import java.util.Map;
 import javax.inject.Inject;
 
 public class ServiceCreateValidationFilter extends AbstractDefaultResourceManagerFilter {
-
-    @Inject
-    ResourceManagerLocator locator;
 
     @Inject
     ServiceExposeMapDao exposeMapDao;
@@ -74,7 +68,7 @@ public class ServiceCreateValidationFilter extends AbstractDefaultResourceManage
 
         validateMetadata(request);
 
-        validateName(type, service);
+        validateName(service);
 
         validateLaunchConfigs(service, request);
 
@@ -180,7 +174,7 @@ public class ServiceCreateValidationFilter extends AbstractDefaultResourceManage
     public Object update(String type, String id, ApiRequest request, ResourceManager next) {
         Service service = objectManager.loadResource(Service.class, id);
 
-        validateName(type, service);
+        validateName(service);
         validateLaunchConfigs(service, request);
         validateSelector(request);
 
@@ -292,18 +286,13 @@ public class ServiceCreateValidationFilter extends AbstractDefaultResourceManage
     }
 
 
-    protected void validateName(String type, Service service) {
-        ResourceManager rm = locator.getResourceManagerByType(type);
-        Map<Object, Object> criteria = new HashMap<>();
-        criteria.put(ObjectMetaDataManager.NAME_FIELD, service.getName());
-        criteria.put(ObjectMetaDataManager.REMOVED_FIELD, new Condition(ConditionType.NULL));
-        criteria.put(ServiceDiscoveryConstants.FIELD_ENVIRIONMENT_ID, service.getEnvironmentId());
-        if (service.getId() != null) {
-            criteria.put(ObjectMetaDataManager.ID_FIELD, new Condition(ConditionType.NE, service.getId()));
-        }
-
-        List<?> existingSvcs = rm.list(type, criteria, null);
-        if (!existingSvcs.isEmpty()) {
+    protected void validateName(Service service) {
+        List<? extends Service> existingSvcs = objectManager.find(Service.class, SERVICE.NAME, service.getName(),
+                SERVICE.REMOVED, null, SERVICE.ENVIRONMENT_ID, service.getEnvironmentId());
+        for (Service existingSvc : existingSvcs) {
+            if (existingSvc.getId().equals(service.getId())) {
+                continue;
+            }
             ValidationErrorCodes.throwValidationError(ValidationErrorCodes.NOT_UNIQUE,
                     "name");
         }
