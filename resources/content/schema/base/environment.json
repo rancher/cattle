@@ -31,8 +31,10 @@
             "output" : "composeConfig"
         },
         "activateservices" : {
+            "output": "environment"
         },
         "deactivateservices" : {
+            "output": "environment"
         }
     }
 }
