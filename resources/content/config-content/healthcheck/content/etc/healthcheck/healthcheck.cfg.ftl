@@ -18,9 +18,9 @@ defaults
     option  redispatch
     option forwardfor
     retries 3
-    contimeout 5000
-    clitimeout 50000
-    srvtimeout 50000
+    timeout connect 5000
+    timeout client 50000
+    timeout server 50000
 
 
 <#list healthCheckEntries as healthCheckEntry>
