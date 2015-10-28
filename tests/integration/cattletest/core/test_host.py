@@ -216,3 +216,10 @@ def test_host_remove(super_client, new_context):
     for c in instances:
         c = super_client.wait_success(c)
         assert c.state == 'removed'
+
+
+def test_host_dockersocket(context, client):
+    host = client.reload(context.host)
+    dockersocket = host.dockersocket()
+    assert dockersocket.token.index('.') > 0
+    assert '/v1/dockersocket/' in dockersocket.url
