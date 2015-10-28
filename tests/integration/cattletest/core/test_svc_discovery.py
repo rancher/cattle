@@ -2780,6 +2780,43 @@ def test_add_svc_to_removed_stack(client, context):
     assert e.value.error.fieldName == 'environment'
 
 
+def test_sidekick_labels_merge(new_context):
+    client = new_context.client
+    host1 = register_simulated_host(new_context)
+    labels = {'group': 'web', 'subgroup': 'Foo'}
+    client.update(host1, labels=labels)
+
+    env = _create_stack(client)
+    image_uuid = new_context.image_uuid
+    labels = {'foo': "bar"}
+    affinity_labels = {'io.rancher.scheduler.affinity:host_label':
+                       'group=Web,subgroup=foo'}
+    labels.update(affinity_labels)
+    launch_config = {"imageUuid": image_uuid, "labels": labels}
+
+    secondary_labels = {'bar': "foo"}
+    secondary_labels.update(affinity_labels)
+    secondary_lc = {"imageUuid": image_uuid,
+                    "name": "secondary", "labels": secondary_labels}
+
+    service = client.create_service(name=random_str(),
+                                    environmentId=env.id,
+                                    launchConfig=launch_config,
+                                    secondaryLaunchConfigs=[secondary_lc])
+    service = client.wait_success(service)
+    service = client.wait_success(service.activate(), 120)
+    primary = _validate_compose_instance_start(client, service, env, "1")
+    secondary = _validate_compose_instance_start(client, service, env, "1",
+                                                 "secondary")
+
+    assert all(item in primary.labels for item in labels) is True
+    assert all(item in secondary.labels for item in secondary_labels) is True
+    assert all(item in primary.labels for item in secondary_labels) is False
+    assert all(item in secondary.labels for item in labels) is False
+    assert all(item in primary.labels for item in affinity_labels) is True
+    assert all(item in secondary.labels for item in affinity_labels) is True
+
+
 def _wait_health_host_count(super_client, health_id, count):
     def active_len():
         match = super_client. \
