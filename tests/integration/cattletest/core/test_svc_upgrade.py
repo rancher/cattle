@@ -65,7 +65,8 @@ def test_upgrade_relink(context, client):
 
     strategy = {"finalScale": 1,
                 "toServiceId": service2.id,
-                "updateLinks": True}
+                "updateLinks": True,
+                "intervalMillis": 100}
     service = service.upgrade_action(toServiceStrategy=strategy)
     service = client.wait_success(service, timeout=120)
     assert service.state == 'upgraded'
@@ -99,7 +100,7 @@ def test_in_service_upgrade_all(context, client, super_client):
                                       launchConfig={'labels': {'foo': "bar"}},
                                       secondaryLaunchConfigs=secondary,
                                       batchSize=3,
-                                      intervalMillis=200)
+                                      intervalMillis=100)
     _validate_upgrade(super_client, svc, up_svc,
                       primary='1', secondary1='1', secondary2='1')
 
@@ -149,7 +150,8 @@ def test_big_scale(context, client):
     svc = client.create_service(name=random_str(),
                                 environmentId=env.id,
                                 scale=15,
-                                launchConfig=launch_config)
+                                launchConfig=launch_config,
+                                intervalMillis=100)
     svc = client.wait_success(svc)
     svc = client.wait_success(svc.activate(), timeout=240)
     svc = run_insvc_upgrade(svc,
@@ -193,9 +195,10 @@ def _create_and_schedule_inservice_upgrade(client, context, startFirst=False):
                                 image=image_uuid)
     svc = client.wait_success(svc)
     svc = client.wait_success(svc.activate(), timeout=120)
-    svc = run_insvc_upgrade(svc, batchSize=1,
+    svc = run_insvc_upgrade(svc, batchSize=2,
                             launchConfig=launch_config,
-                            startFirst=startFirst)
+                            startFirst=startFirst,
+                            intervalMillis=100)
 
     def upgrade_not_null():
         return _validate_in_svc_upgrade(client, svc)
@@ -211,24 +214,30 @@ def test_rollback_inservice_upgrade(context, client, super_client):
     _rollback(client, super_client, svc, 1, 0, 0)
 
 
-def test_state_transitions(context, client):
-    # # 1. upgrading-cancelingupgrade-canceledupgrade-remove
+def test_cancelupgrade_remove(context, client):
+    # upgrading-cancelingupgrade-canceledupgrade-remove
     svc = _create_and_schedule_inservice_upgrade(client, context)
     svc = _cancel_upgrade(client, svc)
     svc.remove()
 
-    # 2. upgrading-cancelingupgrade-canceledupgrade-rollback-remove
+
+def test_cancelupgrade_rollback(context, client):
+    # upgrading-cancelingupgrade-canceledupgrade-rollback-remove
     svc = _create_and_schedule_inservice_upgrade(client, context)
     svc = _cancel_upgrade(client, svc)
     svc = client.wait_success(svc.rollback())
     svc.remove()
 
-    # 3. upgrading-cancelingupgrade-canceledupgrade-finishupgrade
+
+def test_cancelupgrade_finish(context, client):
+    # upgrading-cancelingupgrade-canceledupgrade-finishupgrade
     svc = _create_and_schedule_inservice_upgrade(client, context)
     svc = _cancel_upgrade(client, svc)
     svc.finishupgrade()
 
-    # 4. upgrading-cancelingupgrade-canceledupgrade-rollback
+
+def test_cancelupgrade_rollback_cancelrollback(context, client):
+    # upgrading-cancelingupgrade-canceledupgrade-rollback
     # -cancelingrolback-canceledrollback-remove
     svc = _create_and_schedule_inservice_upgrade(client, context)
     svc = _cancel_upgrade(client, svc)
@@ -236,7 +245,9 @@ def test_state_transitions(context, client):
     svc = client.wait_success(svc.cancelrollback())
     svc.remove()
 
-    # 4. upgrading-cancelingupgrade-canceledupgrade-rollback
+
+def test_cancelupgrade_rollback_cancelrollback_finish(context, client):
+    # upgrading-cancelingupgrade-canceledupgrade-rollback
     # -cancelingrolback-canceledrollback-finishupgrade
     svc = _create_and_schedule_inservice_upgrade(client, context)
     svc = _cancel_upgrade(client, svc)
@@ -244,8 +255,10 @@ def test_state_transitions(context, client):
     svc = client.wait_success(svc.cancelrollback())
     svc.finishupgrade()
 
-    # 5. upgrading--upgrade-rollback
-    # 5a startFirst=false
+
+def test_state_transition_start_first(context, client):
+    # upgrading--upgrade-rollback
+    # a) startFirst=false
     svc = _create_and_schedule_inservice_upgrade(client, context,
                                                  startFirst=False)
     svc = client.wait_success(svc)
@@ -253,7 +266,7 @@ def test_state_transitions(context, client):
     svc = svc.rollback()
     svc = client.wait_success(svc)
     assert svc.state == 'active'
-    # 5b startFirst=true
+    # b) startFirst=true
     svc = _create_and_schedule_inservice_upgrade(client, context,
                                                  startFirst=True)
     svc = client.wait_success(svc)
@@ -386,7 +399,8 @@ def test_service_upgrade_no_image_selector(client):
     svc1 = client.wait_success(svc1.activate())
 
     with pytest.raises(ApiError) as e:
-        svc1.upgrade_action(launchConfig=launch_config)
+        svc1.upgrade_action(launchConfig=launch_config,
+                            intervalMillis=100)
 
     assert e.value.error.status == 422
     assert e.value.error.code == 'InvalidAction'
@@ -420,6 +434,7 @@ def test_service_upgrade_mixed_selector(client, context):
 
 
 def run_insvc_upgrade(svc, **kw):
+    kw["intervalMillis"] = 100
     svc = svc.upgrade_action(inServiceStrategy=kw)
     assert svc.state == 'upgrading'
     return svc
