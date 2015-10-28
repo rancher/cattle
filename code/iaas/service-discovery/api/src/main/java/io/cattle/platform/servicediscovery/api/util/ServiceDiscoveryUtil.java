@@ -21,6 +21,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.lang.StringUtils;
+
 public class ServiceDiscoveryUtil {
 
     public static String getInstanceName(Instance instance) {
@@ -98,16 +100,31 @@ public class ServiceDiscoveryUtil {
         return launchConfigsWithNames;
     }
 
-    @SuppressWarnings("unchecked")
     public static Map<String, String> getServiceLabels(Service service, AllocatorService allocatorService) {
+        return getServiceLabels(null, service, allocatorService);
+    }
+
+    @SuppressWarnings("unchecked")
+    public static Map<String, String> getServiceLabels(String lcn, Service service, AllocatorService allocatorService) {
         List<String> launchConfigNames = getServiceLaunchConfigNames(service);
         Map<String, String> labelsStr = new HashMap<>();
-        for (String launchConfigName : launchConfigNames) {
-            Map<String, Object> data = getLaunchConfigDataAsMap(service, launchConfigName);
-            Object labels = data.get(ServiceDiscoveryConfigItem.LABELS.getCattleName());
-            if (labels != null) {
-                allocatorService.mergeLabels((HashMap<String, String>) labels,
-                        labelsStr);
+        for (String currentLaunchConfigName : launchConfigNames) {
+            Map<String, Object> data = getLaunchConfigDataAsMap(service, currentLaunchConfigName);
+            Object l = data.get(ServiceDiscoveryConfigItem.LABELS.getCattleName());
+            if (l != null) {
+                Map<String, String> labels = (HashMap<String, String>) l;
+                if (lcn == null || lcn.equals(currentLaunchConfigName)) {
+                    allocatorService.mergeLabels(labels, labelsStr);
+                } else {
+                    // Only merge scheduling labels
+                    Map<String, String> schedulingLabels = new HashMap<String, String>();
+                    for (Map.Entry<String, String> label : labels.entrySet()) {
+                        if (StringUtils.startsWith(label.getKey(), "io.rancher.scheduler")) {
+                            schedulingLabels.put(label.getKey(), label.getValue());
+                        }
+                    }
+                    allocatorService.mergeLabels(schedulingLabels, labelsStr);
+                }
             }
         }
 
@@ -122,7 +139,8 @@ public class ServiceDiscoveryUtil {
 
         // 2. remove labels, and request the union
         launchConfigData.remove(InstanceConstants.FIELD_LABELS);
-        launchConfigData.put(InstanceConstants.FIELD_LABELS, getServiceLabels(service, allocatorService));
+        launchConfigData.put(InstanceConstants.FIELD_LABELS,
+                getServiceLabels(launchConfigName, service, allocatorService));
 
         return launchConfigData;
     }
