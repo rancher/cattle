@@ -335,22 +335,18 @@ public abstract class AbstractObjectResourceManager extends AbstractBaseResource
 
     @Override
     protected Schema getSchemaForDisplay(SchemaFactory schemaFactory, Object obj) {
-        /* Use core schema because parent may not be authorized */
-        String schemaId = ApiUtils.getSchemaIdForDisplay(getObjectManager().getSchemaFactory(), obj);
-
-        /* Still get schema from request's schemaFactory */
+        String schemaId = ApiUtils.getSchemaIdForDisplay(schemaFactory, obj);
         Schema schema = schemaFactory.getSchema(schemaId);
 
         if (schema == null) {
-            /*
-             * If schema is null, the child may not be authorized, so try again
-             * with the user's schemaFactory
-             */
-            schemaId = ApiUtils.getSchemaIdForDisplay(schemaFactory, obj);
-            return schemaFactory.getSchema(schemaId);
-        } else {
-            return schema;
+            /* Check core schema because the parent might not be authorized */
+            schemaId = ApiUtils.getSchemaIdForDisplay(getObjectManager().getSchemaFactory(), obj);
+
+            /* Still get schema from request's schemaFactory */
+            schema = schemaFactory.getSchema(schemaId);
         }
+
+        return schema;
     }
 
     @Override
