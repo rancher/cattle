@@ -190,12 +190,10 @@ public class ApiUtils {
             return null;
         }
 
-        if (schema.getChildren().size() > 0) {
-            String kind = ObjectUtils.getKind(obj);
-            Schema kindSchema = factory.getSchema(kind);
-            if (kindSchema != null && schema.getChildren().contains(kindSchema.getId())) {
-                return kindSchema.getId();
-            }
+        String kind = ObjectUtils.getKind(obj);
+        Schema kindSchema = factory.getSchema(kind);
+        if (kindSchema != null && schema.getId().equals(kindSchema.getParent())) {
+            return kindSchema.getId();
         }
 
         return schema.getId();

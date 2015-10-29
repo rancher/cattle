@@ -74,6 +74,18 @@ def test_service_with_schema(new_context, super_client):
     assert dynamic_schema.name == 'lala'
     assert dynamic_schema.parent == 'service'
 
+    s = super_client.create_service(environmentId=env.id,
+                                    kind='lala',
+                                    name='test' + random_str(),
+                                    accountId=dynamic_schema.accountId,
+                                    launchConfig={
+                                        'imageUuid': new_context.image_uuid
+                                    })
+
+    s = client.reload(s)
+    assert s.kind == 'lala'
+    assert s.type == 'lala'
+
     client.delete(service)
     service = client.wait_success(service)
 
