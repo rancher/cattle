@@ -1,6 +1,7 @@
 package io.cattle.platform.core.dao;
 
 import io.cattle.platform.core.model.Host;
+import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.IpAddress;
 import io.cattle.platform.core.model.IpAssociation;
 import io.cattle.platform.core.model.IpPool;
@@ -23,5 +24,7 @@ public interface IpAddressDao {
     IpAssociation createOrFindAssociation(IpAddress ip, IpAddress childIp);
 
     IpAddress createIpAddressFromPool(IpPool pool, Object key, Object... values);
+
+    IpAddress getInstancePrimaryIp(Instance instance);
 
 }

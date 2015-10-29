@@ -169,6 +169,19 @@ public class ServiceExposeMapDaoImpl extends AbstractJooqDao implements ServiceE
     }
 
     @Override
+    public List<? extends ServiceExposeMap> getNonRemovedServiceInstanceMaps(long serviceId) {
+        return create()
+                .select(SERVICE_EXPOSE_MAP.fields())
+                .from(SERVICE_EXPOSE_MAP)
+                .where(SERVICE_EXPOSE_MAP.SERVICE_ID.eq(serviceId))
+                .and(SERVICE_EXPOSE_MAP.REMOVED.isNull()
+                        .and(SERVICE_EXPOSE_MAP.STATE.notIn(CommonStatesConstants.REMOVED,
+                                CommonStatesConstants.REMOVING))
+                        .and(SERVICE_EXPOSE_MAP.INSTANCE_ID.isNotNull()))
+                .fetchInto(ServiceExposeMapRecord.class);
+    }
+
+    @Override
     public Host getHostForInstance(long instanceId) {
         List<? extends Host> results = create()
                 .select(HOST.fields())
@@ -181,11 +194,6 @@ public class ServiceExposeMapDaoImpl extends AbstractJooqDao implements ServiceE
             return results.get(0);
         }
         return null;
-    }
-
-    @Override
-    public boolean isPrimaryServiceInstance(ServiceExposeMap map) {
-        return map.getDnsPrefix() == null;
     }
 
     @Override

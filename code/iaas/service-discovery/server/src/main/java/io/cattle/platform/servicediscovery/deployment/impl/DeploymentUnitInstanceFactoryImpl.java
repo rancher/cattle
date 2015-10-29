@@ -1,16 +1,12 @@
 package io.cattle.platform.servicediscovery.deployment.impl;
 
-import static io.cattle.platform.core.model.tables.LoadBalancerTable.LOAD_BALANCER;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.dao.GenericMapDao;
 import io.cattle.platform.core.model.Instance;
-import io.cattle.platform.core.model.LoadBalancer;
-import io.cattle.platform.core.model.LoadBalancerHostMap;
 import io.cattle.platform.core.model.Service;
 import io.cattle.platform.core.model.ServiceExposeMap;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.util.DataAccessor;
-import io.cattle.platform.object.util.DataUtils;
 import io.cattle.platform.servicediscovery.api.constants.ServiceDiscoveryConstants;
 import io.cattle.platform.servicediscovery.api.constants.ServiceDiscoveryConstants.KIND;
 import io.cattle.platform.servicediscovery.api.dao.ServiceExposeMapDao;
@@ -49,13 +45,13 @@ public class DeploymentUnitInstanceFactoryImpl implements DeploymentUnitInstance
             return new DefaultDeploymentUnitInstance(context, uuid, service,
                     instanceName, instance, labels, launchConfigName);
         } else if (service.getKind().equalsIgnoreCase(KIND.LOADBALANCERSERVICE.name())) {
-            LoadBalancerHostMap hostMap = null;
+            Instance instance = null;
             if (instanceObj != null) {
-                hostMap = (LoadBalancerHostMap) instanceObj;
+                instance = (Instance) instanceObj;
             }
-            return new LoadBalancerDeploymentUnitInstance(context, uuid,
-                    service, hostMap, labels, launchConfigName);
-        } else if (service.getKind().equalsIgnoreCase(KIND.EXTERNALSERVICE.name())) {
+            return new LoadBalancerDeploymentUnitInstance(context, uuid, service,
+                    instanceName, instance, labels, launchConfigName);
+        }else if (service.getKind().equalsIgnoreCase(KIND.EXTERNALSERVICE.name())) {
             Pair<String, String> ipHostName = null;
             if (instanceObj != null) {
                 ipHostName = (Pair<String, String>) instanceObj;
@@ -70,8 +66,8 @@ public class DeploymentUnitInstanceFactoryImpl implements DeploymentUnitInstance
     @Override
     public List<DeploymentUnit> collectDeploymentUnits(List<Service> services, DeploymentServiceContext context) {
         /*
-         * 1. find all containers related to the service through the serviceexposemaps for regular service, and
-         * loadBalancerHostMap for the lb service. Then group all the objects
+         * 1. find all containers related to the service through the serviceexposemaps
+         * Then group all the objects
          * by the label 'io.rancher.deployment.unit'. When containers are deployed through service discovery that
          * label will be placed on them.
          * 
@@ -83,10 +79,9 @@ public class DeploymentUnitInstanceFactoryImpl implements DeploymentUnitInstance
         List<DeploymentUnit> units = new ArrayList<>();
 
         for (Service service : services) {
-            if (service.getKind().equalsIgnoreCase(KIND.SERVICE.name())) {
+            if (service.getKind().equalsIgnoreCase(KIND.SERVICE.name())
+                    || service.getKind().equalsIgnoreCase(KIND.LOADBALANCERSERVICE.name())) {
                 collectDefaultServiceInstances(context, uuidToLabels, uuidToInstances, service);
-            } else if (service.getKind().equalsIgnoreCase(KIND.LOADBALANCERSERVICE.name())) {
-                collectLoadBalancerServiceInstances(context, uuidToLabels, uuidToInstances, service);
             } else if (service.getKind().equalsIgnoreCase(KIND.EXTERNALSERVICE.name())) {
                 collectExternalServiceInstances(context, uuidToLabels, uuidToInstances, service);
             }
@@ -163,38 +158,6 @@ public class DeploymentUnitInstanceFactoryImpl implements DeploymentUnitInstance
         addToDeploymentUnitList(uuidToLabels, uuidToInstances, new HashMap<String, String>(), uuid,
                 unitInstance);
     }
-
-
-    @SuppressWarnings("unchecked")
-    protected void collectLoadBalancerServiceInstances(DeploymentServiceContext context,
-            Map<String, Map<String, String>> uuidToLabels, Map<String, List<DeploymentUnitInstance>> uuidToInstances,
-            Service service) {
-        LoadBalancer lb = objectMgr.findOne(LoadBalancer.class, LOAD_BALANCER.SERVICE_ID, service.getId(),
-                LOAD_BALANCER.REMOVED, null);
-        if (lb == null) {
-            return;
-        }
-
-        List<? extends LoadBalancerHostMap> hostMaps = mapDao.findNonRemoved(LoadBalancerHostMap.class,
-                LoadBalancer.class, lb.getId());
-        for (LoadBalancerHostMap hostMap : hostMaps) {
-            Map<String, Object> data = DataUtils.getFields(hostMap);
-
-            Map<String, String> instanceLabels = data.get(InstanceConstants.FIELD_LABELS) == null ? new HashMap<String, String>()
-                    : (Map<String, String>) data.get(InstanceConstants.FIELD_LABELS);
-            String deploymentUnitUUID = instanceLabels
-                    .get(ServiceDiscoveryConstants.LABEL_SERVICE_DEPLOYMENT_UNIT);
-            String launchConfigName = instanceLabels
-                    .get(ServiceDiscoveryConstants.LABEL_SERVICE_LAUNCH_CONFIG);
-
-            DeploymentUnitInstance unitInstance = createDeploymentUnitInstance(context, deploymentUnitUUID, service, null, hostMap,
-                    instanceLabels, launchConfigName);
-
-            addToDeploymentUnitList(uuidToLabels, uuidToInstances, instanceLabels, deploymentUnitUUID,
-                    unitInstance);
-        }
-    }
-
 
     @SuppressWarnings("unchecked")
     protected void collectDefaultServiceInstances(DeploymentServiceContext context,

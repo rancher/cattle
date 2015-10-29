@@ -266,7 +266,7 @@ def test_service_mixed_selector_based_w_image(client, context):
     assert container2.state == "running"
 
 
-def test_lb_service_add_instance_selector(client, context):
+def test_lb_service_add_instance_selector(super_client, client, context):
     env = _create_stack(client)
 
     image_uuid = context.image_uuid
@@ -305,11 +305,18 @@ def test_lb_service_add_instance_selector(client, context):
     assert lb_service.state == "inactive"
     lb_service = client.wait_success(lb_service.activate(), 120)
     assert lb_service.state == "active"
+    maps = _validate_svc_instance_map_count(client, lb_service, "active", 1)
+    lb_instance = _wait_for_instance_start(super_client, maps[0].instanceId)
+    agent_id = lb_instance.agentId
+
+    item_before = _get_config_item(super_client, agent_id)
     service_link = {"serviceId": service.id}
     lb_service = lb_service.addservicelink(serviceLink=service_link)
+    _validate_config_item_update(super_client, item_before, agent_id)
 
     # use case #2 - instance having selector's label,
     # is added after service with selector creation
+    item_before = _get_config_item(super_client, agent_id)
     container2 = client.create_container(imageUuid=image_uuid,
                                          startOnCreate=True,
                                          labels=labels)
@@ -318,10 +325,7 @@ def test_lb_service_add_instance_selector(client, context):
     wait_for(
         lambda: len(client.list_serviceExposeMap(serviceId=service.id)) == 2
     )
-
-    # validate containers got registered to the LB
-    _wait_until_target_instance_map_created(client, container1)
-    _wait_until_target_instance_map_created(client, container2)
+    _validate_config_item_update(super_client, item_before, agent_id)
 
 
 def test_svc_invalid_selector(client):
@@ -364,15 +368,37 @@ def _resource_is_active(resource):
     return resource.state == 'active'
 
 
-def _wait_until_target_instance_map_created(client,
-                                            container, timeout=30):
+def _validate_config_item_update(super_client, bf, agent_id):
+    wait_for(
+        lambda: find_one(super_client.list_config_item_status,
+                         agentId=agent_id,
+                         name='haproxy').requestedVersion > bf.requestedVersion
+    )
+
+
+def _get_config_item(super_client, agent_id):
+    return find_one(super_client.list_config_item_status,
+                    agentId=agent_id,
+                    name='haproxy')
+
+
+def _validate_svc_instance_map_count(client, service,
+                                     state, count, timeout=30):
     start = time.time()
-    target_maps = client. \
-        list_loadBalancerTarget(instanceId=container.id)
-    while len(target_maps) == 0:
+    instance_service_map = client. \
+        list_serviceExposeMap(serviceId=service.id, state=state)
+    while len(instance_service_map) < count:
         time.sleep(.5)
-        target_maps = super_client. \
-            list_loadBalancerTarget(instanceId=container.id)
+        instance_service_map = client. \
+            list_serviceExposeMap(serviceId=service.id, state=state)
         if time.time() - start > timeout:
-            assert 'Timeout waiting for map creation'
-    return target_maps
+            assert 'Timeout waiting for map to be in correct state'
+
+    return instance_service_map
+
+
+def _wait_for_instance_start(super_client, id):
+    wait_for(
+        lambda: len(super_client.by_id('container', id)) > 0
+    )
+    return super_client.by_id('container', id)

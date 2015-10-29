@@ -43,6 +43,7 @@ public class InstanceConstants {
     public static final String FIELD_DATA_VOLUME_MOUNTS = "dataVolumeMounts";
     public static final String FIELD_DATA_VOLUMES = "dataVolumes"; 
     public static final String FIELD_VOLUME_DRIVER = "volumeDriver";
+    public static final String FIELD_SYSTEM_CONTAINER = "systemContainer";
 
     public static final String PROCESS_DATA_NO_OP = "containerNoOpEvent";
 

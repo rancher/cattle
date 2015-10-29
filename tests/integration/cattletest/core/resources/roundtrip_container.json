@@ -7,7 +7,6 @@
     "credentials": "http://localhost:8080/v1/containers/1i1/credentials",
     "hosts": "http://localhost:8080/v1/containers/1i1/hosts",
     "instanceLinks": "http://localhost:8080/v1/containers/1i1/instancelinks",
-    "loadBalancerTargets": "http://localhost:8080/v1/containers/1i1/loadbalancertargets",
     "mounts": "http://localhost:8080/v1/containers/1i1/mounts",
     "ports": "http://localhost:8080/v1/containers/1i1/ports",
     "services": "http://localhost:8080/v1/containers/1i1/services",

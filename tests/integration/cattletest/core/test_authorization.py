@@ -46,12 +46,8 @@ def service_client(admin_user_client):
 def test_user_types(user_client, adds=set(), removes=set()):
     types = {
         'account',
-        'addLoadBalancerInput',
         'addOutputsInput',
         'addRemoveClusterHostInput',
-        'addRemoveLoadBalancerHostInput',
-        'addRemoveLoadBalancerListenerInput',
-        'addRemoveLoadBalancerTargetInput',
         'addRemoveServiceLinkInput',
         'amazonec2Config',
         'apiKey',
@@ -78,9 +74,6 @@ def test_user_types(user_client, adds=set(), removes=set()):
         'externalDnsEvent',
         'externalHostEvent',
         'fieldDocumentation',
-        'globalLoadBalancer',
-        'globalLoadBalancerHealthCheck',
-        'globalLoadBalancerPolicy',
         'host',
         'hostAccess',
         'identity',
@@ -94,16 +87,10 @@ def test_user_types(user_client, adds=set(), removes=set()):
         'ipAddress',
         'ipAddressAssociateInput',
         'label',
-        'loadBalancer',
         'loadBalancerAppCookieStickinessPolicy',
         'loadBalancerConfig',
-        'loadBalancerConfigListenerMap',
         'loadBalancerCookieStickinessPolicy',
-        'loadBalancerHealthCheck',
-        'loadBalancerHostMap',
-        'loadBalancerListener',
         'loadBalancerService',
-        'loadBalancerTarget',
         'logConfig',
         'machine',
         'mount',
@@ -121,16 +108,12 @@ def test_user_types(user_client, adds=set(), removes=set()):
         'registrationToken',
         'registry',
         'registryCredential',
-        'removeLoadBalancerInput',
         'restartPolicy',
         'schema',
         'service',
         'serviceExposeMap',
         'setLabelsInput',
         'setLabelsInput',
-        'setLoadBalancerHostsInput',
-        'setLoadBalancerListenersInput',
-        'setLoadBalancerTargetsInput',
         'setProjectMembersInput',
         'setServiceLinksInput',
         'snapshot',
@@ -243,12 +226,8 @@ def test_admin_types(admin_user_client, adds=set(), removes=set()):
     types = {
         'account',
         'activeSetting',
-        'addLoadBalancerInput',
         'addOutputsInput',
         'addRemoveClusterHostInput',
-        'addRemoveLoadBalancerHostInput',
-        'addRemoveLoadBalancerListenerInput',
-        'addRemoveLoadBalancerTargetInput',
         'addRemoveServiceLinkInput',
         'agent',
         'amazonec2Config',
@@ -287,9 +266,6 @@ def test_admin_types(admin_user_client, adds=set(), removes=set()):
         'externalHostEvent',
         'fieldDocumentation',
         'githubconfig',
-        'globalLoadBalancer',
-        'globalLoadBalancerHealthCheck',
-        'globalLoadBalancerPolicy',
         'host',
         'hostAccess',
         'hostApiProxyToken',
@@ -305,16 +281,10 @@ def test_admin_types(admin_user_client, adds=set(), removes=set()):
         'ipAddressAssociateInput',
         'label',
         'ldapconfig',
-        'loadBalancer',
         'loadBalancerAppCookieStickinessPolicy',
         'loadBalancerConfig',
-        'loadBalancerConfigListenerMap',
         'loadBalancerCookieStickinessPolicy',
-        'loadBalancerHealthCheck',
-        'loadBalancerHostMap',
-        'loadBalancerListener',
         'loadBalancerService',
-        'loadBalancerTarget',
         'localAuthConfig',
         'logConfig',
         'machine',
@@ -337,7 +307,6 @@ def test_admin_types(admin_user_client, adds=set(), removes=set()):
         'registrationToken',
         'registry',
         'registryCredential',
-        'removeLoadBalancerInput',
         'resourceDefinition',
         'restartPolicy',
         'schema',
@@ -345,9 +314,6 @@ def test_admin_types(admin_user_client, adds=set(), removes=set()):
         'serviceExposeMap',
         'serviceUpgrade',
         'setLabelsInput',
-        'setLoadBalancerHostsInput',
-        'setLoadBalancerListenersInput',
-        'setLoadBalancerTargetsInput',
         'setProjectMembersInput',
         'setServiceLinksInput',
         'setting',
@@ -1471,50 +1437,6 @@ def test_registry(admin_user_client, user_client, project_client):
     })
 
 
-def test_lb_config_listener_map(admin_user_client, user_client,
-                                project_client):
-    auth_check(admin_user_client.schema, 'loadBalancerConfigListenerMap', 'r',
-               {
-                   'loadBalancerConfigId': 'r',
-                   'loadBalancerListenerId': 'r',
-                   'accountId': 'r',
-                   'data': 'r',
-               })
-
-    auth_check(user_client.schema, 'loadBalancerConfigListenerMap', 'r', {
-        'loadBalancerConfigId': 'r',
-        'loadBalancerListenerId': 'r',
-        'accountId': 'r',
-    })
-
-    auth_check(project_client.schema, 'loadBalancerConfigListenerMap', 'r', {
-        'loadBalancerConfigId': 'r',
-        'loadBalancerListenerId': 'r',
-        'accountId': 'r',
-    })
-
-
-def test_lb_host_map(admin_user_client, user_client, project_client):
-    auth_check(admin_user_client.schema, 'loadBalancerHostMap', 'r', {
-        'hostId': 'r',
-        'loadBalancerId': 'r',
-        'accountId': 'r',
-        'data': 'r',
-    })
-
-    auth_check(user_client.schema, 'loadBalancerHostMap', 'r', {
-        'hostId': 'r',
-        'loadBalancerId': 'r',
-        'accountId': 'r',
-    })
-
-    auth_check(project_client.schema, 'loadBalancerHostMap', 'r', {
-        'hostId': 'r',
-        'loadBalancerId': 'r',
-        'accountId': 'r',
-    })
-
-
 def test_container_events(admin_user_client, user_client, agent_client,
                           project_client):
     auth_check(admin_user_client.schema, 'containerEvent', 'r', {
@@ -1959,45 +1881,6 @@ def test_svc_discovery_external_service(admin_user_client, user_client,
         'selectorLink': 'cr',
         'launchConfig': 'cr',
         'fqdn': 'r'
-    })
-
-
-def test_lb_listener(admin_user_client, user_client, project_client):
-    auth_check(admin_user_client.schema, 'loadBalancerListener', 'r', {
-        'name': 'r',
-        'sourceProtocol': 'r',
-        'targetProtocol': 'r',
-        'sourcePort': 'r',
-        'targetPort': 'r',
-        'privatePort': 'r',
-        'algorithm': 'r',
-        'data': 'r',
-        'serviceId': 'r',
-        'accountId': 'r'
-    })
-
-    auth_check(user_client.schema, 'loadBalancerListener', 'r', {
-        'name': 'r',
-        'sourceProtocol': 'r',
-        'targetProtocol': 'r',
-        'sourcePort': 'r',
-        'targetPort': 'r',
-        'privatePort': 'r',
-        'algorithm': 'r',
-        'serviceId': 'r',
-        'accountId': 'r'
-    })
-
-    auth_check(project_client.schema, 'loadBalancerListener', 'crud', {
-        'name': 'cru',
-        'sourceProtocol': 'cr',
-        'targetProtocol': 'r',
-        'sourcePort': 'cr',
-        'targetPort': 'r',
-        'privatePort': 'cr',
-        'algorithm': 'cr',
-        'serviceId': 'r',
-        'accountId': 'r'
     })
 
 

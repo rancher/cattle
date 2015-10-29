@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog" xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.1.xsd http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+    <property name="mediumtext" value="TEXT" dbms="postgresql" />
+    <property name="mediumtext" value="MEDIUMTEXT" />
+    <changeSet author="alena (generated)" id="dump1">
+        <dropForeignKeyConstraint baseTableName="global_load_balancer" constraintName="fk_global_load_balancer__account_id"/>
+    </changeSet>
+    <changeSet author="alena (generated)" id="dump2">
+        <dropForeignKeyConstraint baseTableName="load_balancer" constraintName="fk_load_balancer__global_load_balancer_id"/>
+    </changeSet>
+    <changeSet author="alena (generated)" id="dump3">
+        <dropForeignKeyConstraint baseTableName="load_balancer_host_map" constraintName="fk_load_balancer_host_map__account_id"/>
+    </changeSet>
+    <changeSet author="alena (generated)" id="dump4">
+        <dropForeignKeyConstraint baseTableName="load_balancer_host_map" constraintName="fk_load_balancer_host_map__host_id"/>
+    </changeSet>
+    <changeSet author="alena (generated)" id="dump5">
+        <dropForeignKeyConstraint baseTableName="load_balancer_host_map" constraintName="fk_load_balancer_host_map__load_balancer_id"/>
+    </changeSet>
+    <changeSet author="alena (generated)" id="dump6">
+        <dropUniqueConstraint constraintName="idx_global_load_balancer_uuid" tableName="global_load_balancer"/>
+    </changeSet>
+    <changeSet author="alena (generated)" id="dump7">
+        <dropUniqueConstraint constraintName="idx_load_balancer_host_map_uuid" tableName="load_balancer_host_map"/>
+    </changeSet>
+    <changeSet author="alena (generated)" id="dump8">
+        <dropTable tableName="global_load_balancer"/>
+    </changeSet>
+    <changeSet author="alena (generated)" id="dump9">
+        <dropTable tableName="load_balancer_host_map"/>
+    </changeSet>
+    <changeSet author="alena (generated)" id="dump10">
+        <dropColumn columnName="global_load_balancer_id" tableName="load_balancer"/>
+    </changeSet>
+    <changeSet author="alena (generated)" id="dump11">
+        <dropForeignKeyConstraint baseTableName="load_balancer" constraintName="fk_load_balancer__account_id"/>
+    </changeSet>
+    <changeSet author="alena (generated)" id="dump12">
+        <dropForeignKeyConstraint baseTableName="load_balancer" constraintName="fk_load_balancer__load_balancer_config_id"/>
+    </changeSet>
+    <changeSet author="alena (generated)" id="dump13">
+        <dropForeignKeyConstraint baseTableName="load_balancer" constraintName="fk_load_balancer__service_id"/>
+    </changeSet>
+    <changeSet author="alena (generated)" id="dump14">
+        <dropForeignKeyConstraint baseTableName="load_balancer_certificate_map" constraintName="fk_load_balancer_certificate_map__account_id"/>
+    </changeSet>
+    <changeSet author="alena (generated)" id="dump15">
+        <dropForeignKeyConstraint baseTableName="load_balancer_certificate_map" constraintName="fk_load_balancer_certificate_map__certificate_id"/>
+    </changeSet>
+    <changeSet author="alena (generated)" id="dump16">
+        <dropForeignKeyConstraint baseTableName="load_balancer_certificate_map" constraintName="fk_load_balancer_certificate_map__load_balancer_id"/>
+    </changeSet>
+    <changeSet author="alena (generated)" id="dump17">
+        <dropForeignKeyConstraint baseTableName="load_balancer_config" constraintName="fk_load_balancer_config__account_id"/>
+    </changeSet>
+    <changeSet author="alena (generated)" id="dump18">
+        <dropForeignKeyConstraint baseTableName="load_balancer_config" constraintName="fk_load_balancer_config__service_id"/>
+    </changeSet>
+    <changeSet author="alena (generated)" id="dump19">
+        <dropForeignKeyConstraint baseTableName="load_balancer_config_listener_map" constraintName="fk_load_balancer_config_listener_map__account_id"/>
+    </changeSet>
+    <changeSet author="alena (generated)" id="dump20">
+        <dropForeignKeyConstraint baseTableName="load_balancer_config_listener_map" constraintName="fk_load_balancer_config_listener_map__load_balancer_config_id"/>
+    </changeSet>
+    <changeSet author="alena (generated)" id="dump21">
+        <dropForeignKeyConstraint baseTableName="load_balancer_config_listener_map" constraintName="fk_load_balancer_config_listener_map__load_balancer_listener_id"/>
+    </changeSet>
+    <changeSet author="alena (generated)" id="dump22">
+        <dropForeignKeyConstraint baseTableName="load_balancer_listener" constraintName="fk_load_balancer_listener__account_id"/>
+    </changeSet>
+    <changeSet author="alena (generated)" id="dump23">
+        <dropForeignKeyConstraint baseTableName="load_balancer_listener" constraintName="fk_load_balancer_listener__service_id"/>
+    </changeSet>
+    <changeSet author="alena (generated)" id="dump24">
+        <dropForeignKeyConstraint baseTableName="load_balancer_target" constraintName="fk_load_balancer_target__account_id"/>
+    </changeSet>
+    <changeSet author="alena (generated)" id="dump25">
+        <dropForeignKeyConstraint baseTableName="load_balancer_target" constraintName="fk_load_balancer_target__instance_id"/>
+    </changeSet>
+    <changeSet author="alena (generated)" id="dump26">
+        <dropForeignKeyConstraint baseTableName="load_balancer_target" constraintName="fk_load_balancer_target__load_balancer_id"/>
+    </changeSet>
+    <changeSet author="alena (generated)" id="dump27">
+        <dropUniqueConstraint constraintName="idx_load_balancer_certificate_map_uuid" tableName="load_balancer_certificate_map"/>
+    </changeSet>
+    <changeSet author="alena (generated)" id="dump28">
+        <dropUniqueConstraint constraintName="idx_load_balancer_config_listener_map_uuid" tableName="load_balancer_config_listener_map"/>
+    </changeSet>
+    <changeSet author="alena (generated)" id="dump29">
+        <dropUniqueConstraint constraintName="idx_load_balancer_config_uuid" tableName="load_balancer_config"/>
+    </changeSet>
+    <changeSet author="alena (generated)" id="dump30">
+        <dropUniqueConstraint constraintName="idx_load_balancer_listener_uuid" tableName="load_balancer_listener"/>
+    </changeSet>
+    <changeSet author="alena (generated)" id="dump31">
+        <dropUniqueConstraint constraintName="idx_load_balancer_target_uuid" tableName="load_balancer_target"/>
+    </changeSet>
+    <changeSet author="alena (generated)" id="dump32">
+        <dropUniqueConstraint constraintName="idx_load_balancer_uuid" tableName="load_balancer"/>
+    </changeSet>
+    <changeSet author="alena (generated)" id="dump33">
+        <dropTable tableName="load_balancer"/>
+    </changeSet>
+    <changeSet author="alena (generated)" id="dump34">
+        <dropTable tableName="load_balancer_certificate_map"/>
+    </changeSet>
+    <changeSet author="alena (generated)" id="dump35">
+        <dropTable tableName="load_balancer_config"/>
+    </changeSet>
+    <changeSet author="alena (generated)" id="dump36">
+        <dropTable tableName="load_balancer_config_listener_map"/>
+    </changeSet>
+    <changeSet author="alena (generated)" id="dump37">
+        <dropTable tableName="load_balancer_listener"/>
+    </changeSet>
+    <changeSet author="alena (generated)" id="dump38">
+        <dropTable tableName="load_balancer_target"/>
+    </changeSet>
+</databaseChangeLog>

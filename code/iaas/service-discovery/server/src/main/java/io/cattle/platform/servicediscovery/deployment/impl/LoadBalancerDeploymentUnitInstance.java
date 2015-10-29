@@ -1,120 +1,69 @@
 package io.cattle.platform.servicediscovery.deployment.impl;
 
-import static io.cattle.platform.core.model.tables.LoadBalancerTable.LOAD_BALANCER;
-import io.cattle.platform.core.constants.CommonStatesConstants;
+import io.cattle.platform.archaius.util.ArchaiusUtil;
 import io.cattle.platform.core.constants.InstanceConstants;
-import io.cattle.platform.core.constants.LoadBalancerConstants;
+import io.cattle.platform.core.constants.InstanceConstants.SystemContainer;
 import io.cattle.platform.core.model.Instance;
-import io.cattle.platform.core.model.LoadBalancer;
-import io.cattle.platform.core.model.LoadBalancerHostMap;
 import io.cattle.platform.core.model.Service;
-import io.cattle.platform.object.resource.ResourcePredicate;
-import io.cattle.platform.servicediscovery.api.util.ServiceDiscoveryUtil;
-import io.cattle.platform.servicediscovery.deployment.AbstractInstanceUnit;
-import io.cattle.platform.servicediscovery.deployment.DeploymentUnitInstance;
+import io.cattle.platform.core.util.PortSpec;
+import io.cattle.platform.core.util.SystemLabels;
 import io.cattle.platform.servicediscovery.deployment.impl.DeploymentManagerImpl.DeploymentServiceContext;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
-public class LoadBalancerDeploymentUnitInstance extends AbstractInstanceUnit {
-    LoadBalancerHostMap hostMap;
+import com.netflix.config.DynamicStringProperty;
+
+public class LoadBalancerDeploymentUnitInstance extends DefaultDeploymentUnitInstance {
+    private static final DynamicStringProperty DEFAULT_LB_IMAGE_UUID = ArchaiusUtil
+            .getString("agent.instance.image.uuid");
 
     public LoadBalancerDeploymentUnitInstance(DeploymentServiceContext context, String uuid,
-            Service service, LoadBalancerHostMap hostMap, Map<String, String> labels, String launchConfigName) {
-        super(context, uuid, service, launchConfigName);
-        this.hostMap = hostMap;
-        if (hostMap != null) {
-            Instance instance = context.lbInstanceMgr.getLoadBalancerInstance(this.hostMap);
-            if (instance != null) {
-                this.instance = instance;
-                this.exposeMap = context.exposeMapDao.findInstanceExposeMap(this.instance);
+            Service service, String instanceName, Instance instance, Map<String, String> labels, String launchConfigName) {
+        super(context, uuid, service, instanceName, instance, labels, launchConfigName);
+    }
+
+    protected Map<String, Object> populateLaunchConfigData(Map<String, Object> deployParams) {
+        Map<String, Object> launchConfigData = super.populateLaunchConfigData(deployParams);
+        setLabels(launchConfigData);
+        setSystemContainer(launchConfigData);
+        setPorts(launchConfigData);
+        return launchConfigData;
+    }
+
+    protected void setSystemContainer(Map<String, Object> launchConfigData) {
+        launchConfigData.put(InstanceConstants.FIELD_PRIVILEGED, "true");
+        launchConfigData.put(InstanceConstants.FIELD_SYSTEM_CONTAINER, SystemContainer.LoadBalancerAgent);
+    }
+
+    @SuppressWarnings("unchecked")
+    protected void setLabels(Map<String, Object> launchConfigData) {
+        Object labels = launchConfigData.get(InstanceConstants.FIELD_LABELS);
+        if (labels == null) {
+            labels = new HashMap<String, String>();
+        }
+        ((HashMap<String, String>) labels).put(SystemLabels.LABEL_AGENT_ROLE, SystemContainer.LoadBalancerAgent.name());
+        ((HashMap<String, String>) labels).put(SystemLabels.LABEL_AGENT_CREATE, "true");
+        launchConfigData.put(InstanceConstants.FIELD_LABELS, labels);
+        if (launchConfigData.get(InstanceConstants.FIELD_IMAGE_UUID) == null) {
+            launchConfigData.put(InstanceConstants.FIELD_IMAGE_UUID, DEFAULT_LB_IMAGE_UUID.get());
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    protected void setPorts(Map<String, Object> launchConfigData) {
+        List<String> ports = (List<String>) launchConfigData.get(InstanceConstants.FIELD_PORTS);
+        List<String> newPorts = new ArrayList<>();
+        for (String port : ports) {
+            PortSpec spec = new PortSpec(port);
+            if (spec.getPublicPort() == null) {
+                spec.setPublicPort(spec.getPrivatePort());
             }
+            String fullPort = spec.getPublicPort().toString() + ":" + spec.getPublicPort().toString();
+            newPorts.add(fullPort);
         }
-    }
-
-    @Override
-    public boolean isError() {
-        if (this.hostMap.getState().equals(CommonStatesConstants.ACTIVE)) {
-            if (this.instance == null || this.instance.getRemoved() != null
-                    || this.instance.getState().equalsIgnoreCase(CommonStatesConstants.REMOVING)) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    @Override
-    protected void removeUnitInstance() {
-        context.objectProcessManager.scheduleProcessInstanceAsync(
-                LoadBalancerConstants.PROCESS_LB_HOST_MAP_REMOVE,
-                context.objectManager.reload(hostMap), null);
-    }
-
-    @Override
-    public DeploymentUnitInstance create(Map<String, Object> deployParams) {
-        if (createNew()) {
-            LoadBalancer lb = context.objectManager.findAny(LoadBalancer.class, LOAD_BALANCER.SERVICE_ID,
-                    service.getId(),
-                    LOAD_BALANCER.REMOVED, null);
-
-            Map<String, Object> launchConfig = ServiceDiscoveryUtil.buildServiceInstanceLaunchData(service,
-                    deployParams, launchConfigName, context.allocatorService);
-            this.hostMap = context.lbService.addHostWLaunchConfigToLoadBalancer(lb, launchConfig);
-            this.instance = context.lbInstanceMgr.getLoadBalancerInstance(this.hostMap);
-            this.exposeMap = context.exposeMapDao.findInstanceExposeMap(this.instance);
-        }
-        return this;
-    }
-
-    @Override
-    public boolean createNew() {
-        return this.hostMap == null;
-    }
-
-    @Override
-    public DeploymentUnitInstance waitForStartImpl() {
-        this.hostMap = context.resourceMonitor.waitFor(this.hostMap, new ResourcePredicate<LoadBalancerHostMap>() {
-            @Override
-            public boolean evaluate(LoadBalancerHostMap obj) {
-                return obj != null && CommonStatesConstants.ACTIVE.equals(obj.getState());
-            }
-        });
-        waitForLbInstanceToStart();
-        return this;
-    }
-
-    protected void waitForLbInstanceToStart() {
-        if (this.instance == null) {
-            context.resourceMonitor.waitFor(this.hostMap, new ResourcePredicate<LoadBalancerHostMap>() {
-                @Override
-                public boolean evaluate(LoadBalancerHostMap obj) {
-                    return context.lbInstanceMgr.getLoadBalancerInstance(obj) != null;
-                }
-            });
-        }
-        this.instance = context.lbInstanceMgr.getLoadBalancerInstance(this.hostMap);
-        this.instance = context.resourceMonitor.waitFor(this.instance, new ResourcePredicate<Instance>() {
-            @Override
-            public boolean evaluate(Instance obj) {
-                return InstanceConstants.STATE_RUNNING.equals(obj.getState());
-            }
-        });
-
-    }
-    
-    @Override
-    protected boolean isStartedImpl() {
-        boolean mapActive = this.hostMap.getState().equalsIgnoreCase(CommonStatesConstants.ACTIVE);
-        boolean instanceRunning = this.instance != null
-                && this.instance.getState().equalsIgnoreCase(InstanceConstants.STATE_RUNNING);
-
-        return mapActive && instanceRunning;
-    }
-
-    @Override
-    public void waitForNotTransitioning() {
-        if (this.hostMap != null) {
-            this.hostMap = context.resourceMonitor.waitForNotTransitioning(this.hostMap);
-        }
+        launchConfigData.put(InstanceConstants.FIELD_PORTS, newPorts);
     }
 }

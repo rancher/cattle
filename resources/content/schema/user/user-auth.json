@@ -340,38 +340,10 @@
         "volume.driver": "cr",
         "volume.driverOpts": "cr",
 
-        "loadBalancerListener" : "r",
-        "loadBalancerListener.sourcePort" : "cr",
-        "loadBalancerListener.targetPort" : "r",
-        "loadBalancerListener.sourceProtocol" : "cr",
-        "loadBalancerListener.targetProtocol" : "r",
-        "loadBalancerListener.algorithm" : "cr",
-        "loadBalancerListener.serviceId" : "r",
-        "loadBalancerListener.privatePort" : "cr",
-
         "loadBalancerConfig" : "r",
-        "loadBalancerConfig.healthCheck" : "cru",
         "loadBalancerConfig.appCookieStickinessPolicy" : "cru",
         "loadBalancerConfig.lbCookieStickinessPolicy" : "cru",
         "loadBalancerConfig.serviceId" : "r",
-
-        "loadBalancerConfig.addListener" : "r",
-        "loadBalancerConfig.removeListener" : "r",
-        "loadBalancerConfig.setListeners" : "r",
-
-        "addRemoveLoadBalancerListenerInput" : "r",
-        "addRemoveLoadBalancerListenerInput.loadBalancerListenerId" : "cr",
-
-        "setLoadBalancerListenersInput" : "r",
-        "setLoadBalancerListenersInput.loadBalancerListenerIds" : "cr",
-
-        "loadBalancerHealthCheck" : "r",
-        "loadBalancerHealthCheck.responseTimeout" : "cru",
-        "loadBalancerHealthCheck.interval" : "cru",
-        "loadBalancerHealthCheck.healthyThreshold" : "cru",
-        "loadBalancerHealthCheck.unhealthyThreshold" : "cru",
-        "loadBalancerHealthCheck.requestLine" : "cru",
-        "loadBalancerHealthCheck.port" : "cru",
 
         "loadBalancerAppCookieStickinessPolicy" : "r",
         "loadBalancerAppCookieStickinessPolicy.cookie" : "cru",
@@ -388,55 +360,6 @@
         "loadBalancerCookieStickinessPolicy.nocache" : "cru",
         "loadBalancerCookieStickinessPolicy.postonly" : "cru",
         "loadBalancerCookieStickinessPolicy.mode" : "cru",
-
-        "globalLoadBalancer" : "r",
-        "globalLoadBalancer.globalLoadBalancerHealthCheck" : "cr",
-        "globalLoadBalancer.globalLoadBalancerPolicy" : "cr",
-        "globalLoadBalancer.addLoadBalancer" : "r",
-        "globalLoadBalancer.removeLoadBalancer" : "r",
-
-        "globalLoadBalancerHealthCheck" : "r",
-
-        "globalLoadBalancerPolicy" : "r",
-
-        "addLoadBalancerInput" : "r",
-        "addLoadBalancerInput.loadBalancerId" : "cr",
-        "addLoadBalancerInput.weight" : "cr",
-
-        "removeLoadBalancerInput" : "r",
-        "removeLoadBalancerInput.loadBalancerId" : "cr",
-
-        "loadBalancer" : "cru",
-        "loadBalancer.loadBalancerConfigId" : "cr",
-        "loadBalancer.globalLoadBalancerId" : "r",
-        "loadBalancer.weight" : "r",
-        "loadBalancer.serviceId" : "r",
-        "loadBalancer.addTarget" : "r",
-        "loadBalancer.removeTarget" : "r",
-        "loadBalancer.setTargets" : "r",
-        "loadBalancer.addHost" : "r",
-        "loadBalancer.removeHost" : "r",
-        "loadBalancer.setHosts" : "r",
-        "loadBalancer.certificateIds" : "cru",
-        "loadBalancer.defaultCertificateId" : "cru",
-
-        "addRemoveLoadBalancerTargetInput" : "r",
-        "addRemoveLoadBalancerTargetInput.loadBalancerTarget" : "cr",
-
-        "setLoadBalancerTargetsInput" : "r",
-        "setLoadBalancerTargetsInput.loadBalancerTargets" : "cr",
-
-        "addRemoveLoadBalancerHostInput" : "r",
-        "addRemoveLoadBalancerHostInput.hostId" : "cr",
-
-        "setLoadBalancerHostsInput" : "r",
-        "setLoadBalancerHostsInput.hostIds" : "cr",
-
-        "loadBalancerTarget" : "r",
-        "loadBalancerTarget.instanceId" : "cr",
-        "loadBalancerTarget.loadBalancerId" : "r",
-        "loadBalancerTarget.ipAddress" : "cr",
-        "loadBalancerTarget.ports" : "cr",
 
         "composeConfig" : "r",
         "composeConfig.dockerComposeConfig" : "r",
@@ -473,14 +396,6 @@
 
         "setServiceLinksInput" : "r",
         "setServiceLinksInput.serviceLinks" : "cr",
-
-        "loadBalancerConfigListenerMap" : "r",
-        "loadBalancerConfigListenerMap.loadBalancerConfigId" : "r",
-        "loadBalancerConfigListenerMap.loadBalancerListenerId" : "r",
-
-        "loadBalancerHostMap" : "r",
-        "loadBalancerHostMap.hostId" : "r",
-        "loadBalancerHostMap.loadBalancerId" : "r",
 
         "loadBalancerService" : "r",
         "loadBalancerService.loadBalancerConfig" : "cr",

@@ -17,7 +17,6 @@
        <bean class="io.cattle.platform.servicediscovery.api.filter.ServiceAddRemoveLinkServiceValidationFilter" />
        <bean class="io.cattle.platform.servicediscovery.api.filter.ServiceDiscoveryEnvironmentOutputFilter" />
        <bean class="io.cattle.platform.servicediscovery.api.filter.ServiceSetServiceLinksValidationFilter" />
-       <bean class="io.cattle.platform.servicediscovery.api.filter.ServiceLoadBalancerRemoveValidationFilter" />
        <bean class="io.cattle.platform.servicediscovery.api.filter.ServiceOutputFilter" />
        <bean class="io.cattle.platform.servicediscovery.api.filter.LoadBalancerServiceCertificateRemoveFilter" />
        <bean class="io.cattle.platform.servicediscovery.api.filter.ServiceUpgradeValidationFilter" />

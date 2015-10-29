@@ -6,7 +6,6 @@ import io.cattle.platform.engine.process.ProcessInstance;
 import io.cattle.platform.engine.process.ProcessState;
 import io.cattle.platform.process.common.handler.AbstractObjectProcessHandler;
 import io.cattle.platform.servicediscovery.api.constants.ServiceDiscoveryConstants;
-import io.cattle.platform.servicediscovery.api.constants.ServiceDiscoveryConstants.KIND;
 import io.cattle.platform.servicediscovery.api.dao.ServiceExposeMapDao;
 import io.cattle.platform.servicediscovery.deployment.DeploymentManager;
 import io.cattle.platform.servicediscovery.service.ServiceDiscoveryService;
@@ -41,11 +40,6 @@ public class ServiceRemove extends AbstractObjectProcessHandler {
         
         upgradeMgr.finishUpgrade(service, false);
         deploymentMgr.remove(service);
-
-        // have to remove the load balancer after all service instances are removed
-        if (service.getKind().equalsIgnoreCase(KIND.LOADBALANCERSERVICE.name())) {
-            sdService.cleanupLoadBalancerService(service);
-        }
 
         sdService.releaseVip(service);
 

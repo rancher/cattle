@@ -20,8 +20,6 @@
     <bean class="io.cattle.platform.core.dao.impl.NetworkDaoImpl" />
     <bean class="io.cattle.platform.core.dao.impl.StoragePoolDaoImpl" />
     <bean class="io.cattle.platform.core.dao.impl.VnetDaoImpl" />
-    <bean class="io.cattle.platform.core.dao.impl.LoadBalancerDaoImpl" />
-    <bean class="io.cattle.platform.core.dao.impl.LoadBalancerTargetDaoImpl" />
     <bean class="io.cattle.platform.core.dao.impl.ClusterHostMapDaoImpl" />
     <bean class="io.cattle.platform.core.dao.impl.LabelsDaoImpl" />
     <bean class="io.cattle.platform.core.dao.impl.HostDaoImpl" />
