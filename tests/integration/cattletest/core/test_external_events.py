@@ -1,6 +1,5 @@
 from common_fixtures import *  # NOQA
 from cattle import ApiError
-import logging
 
 
 SP_CREATE = "storagepool.create"
@@ -177,18 +176,10 @@ def create_sp_event(client, agent_client, super_client, context, external_id,
     assert event.externalId == external_id
     assert event.eventType == event_type
     assert event.hostUuids == host_uuids
-    agent_account_id = super_client.reload(event).accountId
 
     event = wait_for(lambda: event_wait(client, event))
     assert event.accountId == context.project.id
-    if event.reportedAccountId != agent_account_id:
-        logging.warn('create_sp_event debugging')
-        logging.warn('event: %s' % event)
-        logging.warn('expected agent_account_id: %s' % agent_account_id)
-        logging.warn('agent id from context: %s' % context.agent.id)
-        logging.warn('agent id from agent client: %s' % acc_id(agent_client))
-
-    assert event.reportedAccountId == agent_account_id
+    assert event.reportedAccountId == context.agent.id
 
     return event
 
