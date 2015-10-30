@@ -134,6 +134,53 @@ def test_bad_agent(super_client, host):
     assert e.value.error.code == 'MissingRequired'
 
 
+def test_external_dns_event(super_client, new_context):
+    client, agent_client, host = from_context(new_context)
+
+    stack = client.create_environment(name=random_str())
+    stack = client.wait_success(stack)
+    image_uuid = new_context.image_uuid
+    launch_config = {"imageUuid": image_uuid}
+
+    svc1 = client.create_service(name=random_str(),
+                                 environmentId=stack.id,
+                                 launchConfig=launch_config)
+    svc1 = client.wait_success(svc1)
+
+    domain_name1 = "foo.com"
+    create_dns_event(client, agent_client, super_client,
+                     new_context, svc1.name,
+                     stack.name, domain_name1)
+
+    # wait for dns name to be updated
+    svc1 = client.reload(svc1)
+    assert svc1.domainName == domain_name1
+
+
+def create_dns_event(client, agent_client, super_client,
+                     context, svc_name1,
+                     stack_name, domain_name):
+    external_id = random_str()
+    event_type = "externalDnsEvent"
+    dns_event = {
+        'externalId': external_id,
+        'eventType': event_type,
+        "stackName": stack_name,
+        "serviceName": svc_name1,
+        "domainName": domain_name
+    }
+
+    event = agent_client.create_external_dns_event(dns_event)
+    assert event.externalId == external_id
+    assert event.eventType == event_type
+    agent_account_id = super_client.reload(event).accountId
+    event = wait_for(lambda: event_wait(client, event))
+    assert event.accountId == context.project.id
+    assert event.reportedAccountId == agent_account_id
+
+    return event
+
+
 def create_volume_event(client, agent_client, super_client, context,
                         sp_ex_id, event_type, external_id, driver=None,
                         fmt=None, is_hp=False, uri=None):

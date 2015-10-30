@@ -4,12 +4,14 @@ public class ExternalEventConstants {
 
     public static final String KIND_VOLUME_EVENT = "externalVolumeEvent";
     public static final String KIND_STORAGE_POOL_EVENT = "externalStoragePoolEvent";
+    public static final String KIND_EXTERNAL_DNS_EVENT = "externalDnsEvent";
     public static final String FIELD_REPORTED_ACCOUNT_ID = "reportedAccountId";
     public static final String FIELD_HOST_UUIDS = "hostUuids";
     public static final String TYPE_VOLUME_CREATE = "volume.create";
     public static final String TYPE_VOLUME_DELETE = "volume.delete";
     public static final String VOLUME_POOL_LOCK_NAME = "VOLUME";
     public static final String STORAGE_POOL_LOCK_NAME = "STORAGEPOOL";
+    public static final String EXERNAL_DNS_LOCK_NAME = "EXTERNALDNS";
     public static final String FIELD_STORAGE_POOL = "storagePool";
     public static final String FIELD_VOLUME = "volume";
     public static final String FIELD_ZONE_ID = "zoneId";
@@ -23,4 +25,8 @@ public class ExternalEventConstants {
     public static final String PROC_VOL_MAP_ACTIVATE = "volumestoragepoolmap.activate";
     public static final String PROC_VOL_DEACTIVATE = "volume.deactivate";
     public static final String PROC_VOL_REMOVE = "volume.remove";
+    public static final String FIELD_DOMAIN_NAME = "domainName";
+    public static final String FIELD_SERVICE_NAME = "serviceName";
+    public static final String FIELD_STACK_NAME = "stackName";
+
 }

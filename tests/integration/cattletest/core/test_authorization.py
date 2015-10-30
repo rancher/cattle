@@ -73,6 +73,7 @@ def test_user_types(user_client, adds=set(), removes=set()):
         'externalEvent',
         'externalStoragePoolEvent',
         'externalVolumeEvent',
+        'externalDnsEvent',
         'fieldDocumentation',
         'globalLoadBalancer',
         'globalLoadBalancerHealthCheck',
@@ -201,6 +202,8 @@ def test_agent_types(agent_client):
         'externalEvent',
         'externalVolumeEvent',
         'externalStoragePoolEvent',
+        'externalDnsEvent',
+        'externalDnsEvent',
         'hostApiProxyToken',
         'publish',
         'schema',
@@ -271,6 +274,7 @@ def test_admin_types(admin_user_client, adds=set(), removes=set()):
         'externalEvent',
         'externalVolumeEvent',
         'externalStoragePoolEvent',
+        'externalDnsEvent',
         'fieldDocumentation',
         'githubconfig',
         'globalLoadBalancer',
@@ -1555,8 +1559,7 @@ def test_svc_discovery_service(admin_user_client, user_client, project_client):
         'metadata': 'r',
         'selectorLink': 'r',
         'selectorContainer': 'r',
-        'previousLaunchConfig': 'r',
-        'previousSecondaryLaunchConfigs': 'r',
+        'domainName': 'r'
     })
 
     auth_check(user_client.schema, 'service', 'r', {
@@ -1573,8 +1576,7 @@ def test_svc_discovery_service(admin_user_client, user_client, project_client):
         'metadata': 'r',
         'selectorLink': 'r',
         'selectorContainer': 'r',
-        'previousLaunchConfig': 'r',
-        'previousSecondaryLaunchConfigs': 'r',
+        'domainName': 'r'
     })
 
     auth_check(project_client.schema, 'service', 'crud', {
@@ -1591,8 +1593,7 @@ def test_svc_discovery_service(admin_user_client, user_client, project_client):
         'metadata': 'cru',
         'selectorLink': 'cr',
         'selectorContainer': 'cr',
-        'previousLaunchConfig': 'r',
-        'previousSecondaryLaunchConfigs': 'r',
+        'domainName': 'r'
     })
 
 
@@ -1646,8 +1647,7 @@ def test_svc_discovery_lb_service(admin_user_client, user_client,
         'certificateIds': 'r',
         'metadata': 'r',
         'selectorLink': 'r',
-        'previousLaunchConfig': 'r',
-        'previousSecondaryLaunchConfigs': 'r',
+        'domainName': 'r'
     })
 
     auth_check(user_client.schema, 'loadBalancerService', 'r', {
@@ -1663,8 +1663,7 @@ def test_svc_discovery_lb_service(admin_user_client, user_client,
         'certificateIds': 'r',
         'metadata': 'r',
         'selectorLink': 'r',
-        'previousLaunchConfig': 'r',
-        'previousSecondaryLaunchConfigs': 'r',
+        'domainName': 'r'
     })
 
     auth_check(project_client.schema, 'loadBalancerService', 'crud', {
@@ -1680,8 +1679,7 @@ def test_svc_discovery_lb_service(admin_user_client, user_client,
         'certificateIds': 'cru',
         'metadata': 'cru',
         'selectorLink': 'cr',
-        'previousLaunchConfig': 'r',
-        'previousSecondaryLaunchConfigs': 'r',
+        'domainName': 'r'
     })
 
 
@@ -1860,8 +1858,7 @@ def test_svc_discovery_external_service(admin_user_client, user_client,
         'metadata': 'r',
         'selectorLink': 'r',
         'launchConfig': 'r',
-        'previousLaunchConfig': 'r',
-        'previousSecondaryLaunchConfigs': 'r',
+        'domainName': 'r'
     })
 
     auth_check(user_client.schema, 'externalService', 'r', {
@@ -1875,8 +1872,7 @@ def test_svc_discovery_external_service(admin_user_client, user_client,
         'metadata': 'r',
         'selectorLink': 'r',
         'launchConfig': 'r',
-        'previousLaunchConfig': 'r',
-        'previousSecondaryLaunchConfigs': 'r',
+        'domainName': 'r'
     })
 
     auth_check(project_client.schema, 'externalService', 'crud', {
@@ -1890,8 +1886,7 @@ def test_svc_discovery_external_service(admin_user_client, user_client,
         'metadata': 'cru',
         'selectorLink': 'cr',
         'launchConfig': 'cr',
-        'previousLaunchConfig': 'r',
-        'previousSecondaryLaunchConfigs': 'r',
+        'domainName': 'r'
     })
 
 
@@ -2068,4 +2063,48 @@ def test_external_volume_event(agent_client, admin_user_client, user_client,
         'eventType': 'cr',
         'storagePoolExternalId': 'cr',
         'volume': 'cr',
+    })
+
+
+def test_external_dns_event(agent_client, admin_user_client, user_client,
+                            project_client):
+    type = 'externalDnsEvent'
+
+    auth_check(admin_user_client.schema, type, 'r', {
+        'accountId': 'r',
+        'data': 'r',
+        'externalId': 'r',
+        'eventType': 'r',
+        'reportedAccountId': 'r',
+        'stackName': 'r',
+        'serviceName': 'r',
+        'domainName': 'r'
+    })
+
+    auth_check(user_client.schema, type, 'r', {
+        'accountId': 'r',
+        'externalId': 'r',
+        'eventType': 'r',
+        'reportedAccountId': 'r',
+        'stackName': 'r',
+        'serviceName': 'r',
+        'domainName': 'r'
+    })
+
+    auth_check(project_client.schema, type, 'r', {
+        'accountId': 'r',
+        'externalId': 'r',
+        'eventType': 'r',
+        'reportedAccountId': 'r',
+        'stackName': 'r',
+        'serviceName': 'r',
+        'domainName': 'r'
+    })
+
+    auth_check(agent_client.schema, type, 'cr', {
+        'externalId': 'cr',
+        'eventType': 'cr',
+        'stackName': 'cr',
+        'serviceName': 'cr',
+        'domainName': 'cr'
     })

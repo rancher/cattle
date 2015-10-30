@@ -49,13 +49,10 @@
                 "scheduleUpdate" : true
             }
         },
-        "previousLaunchConfig": {
-            "type": "launchConfig",
+        "domainName":{
+            "type": "string",
+            "required": false,
             "nullable": true
-        },
-        "previousSecondaryLaunchConfigs": {
-            "type": "array[secondaryLaunchConfig]",
-            "required": false
         },
         "serviceSchemas": {
             "type": "map[schema]",
