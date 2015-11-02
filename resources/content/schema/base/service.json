@@ -49,7 +49,7 @@
                 "scheduleUpdate" : true
             }
         },
-        "domainName":{
+        "fqdn":{
             "type": "string",
             "required": false,
             "nullable": true
