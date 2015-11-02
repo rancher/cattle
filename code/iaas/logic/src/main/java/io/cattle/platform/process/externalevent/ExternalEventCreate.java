@@ -201,11 +201,11 @@ public class ExternalEventCreate extends AbstractDefaultProcessHandler {
                 new LockCallbackNoReturn() {
                     @Override
                     public void doWithLockNoResult() {
-                        String domainName = DataAccessor.fieldString(event, ExternalEventConstants.FIELD_DOMAIN_NAME);
+                        String fqdn = DataAccessor.fieldString(event, ExternalEventConstants.FIELD_FQDN);
                         String serviceName = DataAccessor
                                 .fieldString(event, ExternalEventConstants.FIELD_SERVICE_NAME);
                         String stackName = DataAccessor.fieldString(event, ExternalEventConstants.FIELD_STACK_NAME);
-                        if (domainName == null || serviceName == null || stackName == null) {
+                        if (fqdn == null || serviceName == null || stackName == null) {
                             log.info("External DNS [event: " + event.getId() + "] misses some fields");
                             return;
                         }
@@ -224,7 +224,7 @@ public class ExternalEventCreate extends AbstractDefaultProcessHandler {
                             return;
                         }
                         Map<String, Object> data = new HashMap<>();
-                        data.put(ExternalEventConstants.FIELD_DOMAIN_NAME, domainName);
+                        data.put(ExternalEventConstants.FIELD_FQDN, fqdn);
                         DataUtils.getWritableFields(service).putAll(data);
                         objectManager.persist(service);
 

@@ -34,7 +34,6 @@ public class ServiceDiscoveryConstants {
     public static final String FIELD_SELECTOR_LINK = "selectorLink";
     public static final String FIELD_IN_SERVICE_STRATEGY = "inServiceStrategy";
     public static final String FIELD_TO_SERVICE_STRATEGY = "toServiceStrategy";
-    public static final String FIELD_DOMAIN_NAME = "domainName";
 
     public static final String ACTION_SERVICE_ACTIVATE = "activate";
     public static final String ACTION_SERVICE_CREATE = "create";

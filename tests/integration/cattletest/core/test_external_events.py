@@ -154,7 +154,7 @@ def test_external_dns_event(super_client, new_context):
 
     # wait for dns name to be updated
     svc1 = client.reload(svc1)
-    assert svc1.domainName == domain_name1
+    assert svc1.fqdn == domain_name1
 
 
 def create_dns_event(client, agent_client, super_client,
@@ -167,7 +167,7 @@ def create_dns_event(client, agent_client, super_client,
         'eventType': event_type,
         "stackName": stack_name,
         "serviceName": svc_name1,
-        "domainName": domain_name
+        "fqdn": domain_name
     }
 
     event = agent_client.create_external_dns_event(dns_event)

@@ -1559,7 +1559,7 @@ def test_svc_discovery_service(admin_user_client, user_client, project_client):
         'metadata': 'r',
         'selectorLink': 'r',
         'selectorContainer': 'r',
-        'domainName': 'r'
+        'fqdn': 'r'
     })
 
     auth_check(user_client.schema, 'service', 'r', {
@@ -1576,7 +1576,7 @@ def test_svc_discovery_service(admin_user_client, user_client, project_client):
         'metadata': 'r',
         'selectorLink': 'r',
         'selectorContainer': 'r',
-        'domainName': 'r'
+        'fqdn': 'r'
     })
 
     auth_check(project_client.schema, 'service', 'crud', {
@@ -1593,7 +1593,7 @@ def test_svc_discovery_service(admin_user_client, user_client, project_client):
         'metadata': 'cru',
         'selectorLink': 'cr',
         'selectorContainer': 'cr',
-        'domainName': 'r'
+        'fqdn': 'r'
     })
 
 
@@ -1647,7 +1647,7 @@ def test_svc_discovery_lb_service(admin_user_client, user_client,
         'certificateIds': 'r',
         'metadata': 'r',
         'selectorLink': 'r',
-        'domainName': 'r'
+        'fqdn': 'r'
     })
 
     auth_check(user_client.schema, 'loadBalancerService', 'r', {
@@ -1663,7 +1663,7 @@ def test_svc_discovery_lb_service(admin_user_client, user_client,
         'certificateIds': 'r',
         'metadata': 'r',
         'selectorLink': 'r',
-        'domainName': 'r'
+        'fqdn': 'r'
     })
 
     auth_check(project_client.schema, 'loadBalancerService', 'crud', {
@@ -1679,7 +1679,7 @@ def test_svc_discovery_lb_service(admin_user_client, user_client,
         'certificateIds': 'cru',
         'metadata': 'cru',
         'selectorLink': 'cr',
-        'domainName': 'r'
+        'fqdn': 'r'
     })
 
 
@@ -1858,7 +1858,7 @@ def test_svc_discovery_external_service(admin_user_client, user_client,
         'metadata': 'r',
         'selectorLink': 'r',
         'launchConfig': 'r',
-        'domainName': 'r'
+        'fqdn': 'r'
     })
 
     auth_check(user_client.schema, 'externalService', 'r', {
@@ -1872,7 +1872,7 @@ def test_svc_discovery_external_service(admin_user_client, user_client,
         'metadata': 'r',
         'selectorLink': 'r',
         'launchConfig': 'r',
-        'domainName': 'r'
+        'fqdn': 'r'
     })
 
     auth_check(project_client.schema, 'externalService', 'crud', {
@@ -1886,7 +1886,7 @@ def test_svc_discovery_external_service(admin_user_client, user_client,
         'metadata': 'cru',
         'selectorLink': 'cr',
         'launchConfig': 'cr',
-        'domainName': 'r'
+        'fqdn': 'r'
     })
 
 
@@ -2078,7 +2078,7 @@ def test_external_dns_event(agent_client, admin_user_client, user_client,
         'reportedAccountId': 'r',
         'stackName': 'r',
         'serviceName': 'r',
-        'domainName': 'r'
+        'fqdn': 'r'
     })
 
     auth_check(user_client.schema, type, 'r', {
@@ -2088,7 +2088,7 @@ def test_external_dns_event(agent_client, admin_user_client, user_client,
         'reportedAccountId': 'r',
         'stackName': 'r',
         'serviceName': 'r',
-        'domainName': 'r'
+        'fqdn': 'r'
     })
 
     auth_check(project_client.schema, type, 'r', {
@@ -2098,7 +2098,7 @@ def test_external_dns_event(agent_client, admin_user_client, user_client,
         'reportedAccountId': 'r',
         'stackName': 'r',
         'serviceName': 'r',
-        'domainName': 'r'
+        'fqdn': 'r'
     })
 
     auth_check(agent_client.schema, type, 'cr', {
@@ -2106,5 +2106,5 @@ def test_external_dns_event(agent_client, admin_user_client, user_client,
         'eventType': 'cr',
         'stackName': 'cr',
         'serviceName': 'cr',
-        'domainName': 'cr'
+        'fqdn': 'cr'
     })

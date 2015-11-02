@@ -138,7 +138,7 @@
         "externalVolumeEvent.volume" : "r",
 
         "externalDnsEvent" : "r",
-        "externalDnsEvent.domainName" : "r",
+        "externalDnsEvent.fqdn" : "r",
         "externalDnsEvent.serviceName" : "r",
         "externalDnsEvent.stackName" : "r",
 
@@ -450,7 +450,7 @@
         "service.metadata" : "cru",
         "service.selectorLink" : "cr",
         "service.selectorContainer" : "cr",
-        "service.domainName" : "r",
+        "service.fqdn" : "r",
 
         "addRemoveServiceLinkInput" : "r",
         "addRemoveServiceLinkInput.serviceLink" : "cr",
