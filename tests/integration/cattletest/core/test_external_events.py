@@ -173,10 +173,9 @@ def create_dns_event(client, agent_client, super_client,
     event = agent_client.create_external_dns_event(dns_event)
     assert event.externalId == external_id
     assert event.eventType == event_type
-    agent_account_id = super_client.reload(event).accountId
     event = wait_for(lambda: event_wait(client, event))
     assert event.accountId == context.project.id
-    assert event.reportedAccountId == agent_account_id
+    assert event.reportedAccountId == context.agent.id
 
     return event
 
@@ -201,10 +200,9 @@ def create_volume_event(client, agent_client, super_client, context,
     event = agent_client.create_external_volume_event(vol_event)
     assert event.externalId == external_id
     assert event.eventType == event_type
-    agent_account_id = super_client.reload(event).accountId
     event = wait_for(lambda: event_wait(client, event))
     assert event.accountId == context.project.id
-    assert event.reportedAccountId == agent_account_id
+    assert event.reportedAccountId == context.agent.id
 
     return event
 
