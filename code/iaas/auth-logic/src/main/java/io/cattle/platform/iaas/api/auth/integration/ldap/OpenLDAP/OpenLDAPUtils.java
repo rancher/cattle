@@ -1,15 +1,15 @@
-package io.cattle.platform.iaas.api.auth.integration.ldap;
+package io.cattle.platform.iaas.api.auth.integration.ldap.OpenLDAP;
 
 import io.cattle.platform.core.model.Account;
 import io.cattle.platform.iaas.api.auth.AbstractTokenUtil;
 
 import java.util.List;
 
-public class LdapTokenUtils extends AbstractTokenUtil {
+public class OpenLDAPUtils extends AbstractTokenUtil {
 
     @Override
     public String tokenType() {
-        return LdapConstants.LDAP_JWT;
+        return OpenLDAPConstants.LDAP_JWT;
     }
 
     @Override
@@ -20,12 +20,12 @@ public class LdapTokenUtils extends AbstractTokenUtil {
 
     @Override
     protected String accessMode() {
-        return LdapConstants.ACCESS_MODE.get();
+        return OpenLDAPConstants.ACCESS_MODE.get();
     }
 
     @Override
     protected String accessToken() {
-        return LdapConstants.LDAP_ACCESS_TOKEN;
+        return OpenLDAPConstants.LDAP_ACCESS_TOKEN;
     }
 
     @Override
@@ -35,7 +35,7 @@ public class LdapTokenUtils extends AbstractTokenUtil {
 
     @Override
     public String userType() {
-        return LdapConstants.USER_SCOPE;
+        return OpenLDAPConstants.USER_SCOPE;
     }
 
     @Override
@@ -45,6 +45,6 @@ public class LdapTokenUtils extends AbstractTokenUtil {
 
     @Override
     public String getName() {
-        return LdapConstants.CONFIG;
+        return OpenLDAPConstants.CONFIG;
     }
 }

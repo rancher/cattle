@@ -20,7 +20,8 @@
                 <value>io.cattle.platform.iaas.api.auth.integration.github.resource.GithubConfig</value>
                 <value>io.cattle.platform.iaas.api.auth.projects.Member</value>
                 <value>io.cattle.platform.api.auth.Identity</value>
-                <value>io.cattle.platform.iaas.api.auth.integration.ldap.LdapConfig</value>
+                <value>io.cattle.platform.iaas.api.auth.integration.ldap.ad.ADConfig</value>
+                <value>io.cattle.platform.iaas.api.auth.integration.ldap.OpenLDAP.OpenLDAPConfig</value>
                 <value>io.cattle.platform.iaas.api.auth.integration.local.LocalAuthConfig</value>
             </list>
         </property>

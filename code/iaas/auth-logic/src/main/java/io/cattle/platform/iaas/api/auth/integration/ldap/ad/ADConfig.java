@@ -1,12 +1,12 @@
-package io.cattle.platform.iaas.api.auth.integration.ldap;
+package io.cattle.platform.iaas.api.auth.integration.ldap.ad;
 
 import io.cattle.platform.iaas.api.auth.integration.interfaces.Configurable;
 import io.cattle.platform.iaas.api.auth.integration.ldap.interfaces.LDAPConfig;
 import io.github.ibuildthecloud.gdapi.annotation.Field;
 import io.github.ibuildthecloud.gdapi.annotation.Type;
 
-@Type(name = LdapConstants.CONFIG)
-public class LdapConfig implements Configurable, LDAPConfig {
+@Type(name = ADConstants.CONFIG)
+public class ADConfig implements Configurable, LDAPConfig {
 
     private final boolean enabled;
     private final String server;
@@ -27,11 +27,11 @@ public class LdapConfig implements Configurable, LDAPConfig {
     private final String groupObjectClass;
     private final String groupNameField;
 
-    public LdapConfig(String server, int port, int userDisabledBitMask, String loginDomain, String domain,
-                      boolean enabled, String accessMode, String serviceAccountUsername,
-                      String serviceAccountPassword, boolean tls, String userSearchField, String userLoginField,
-                      String userObjectClass, String userNameField, String userEnabledAttribute, String groupSearchField,
-                      String groupObjectClass, String groupNameField) {
+    public ADConfig(String server, int port, int userDisabledBitMask, String loginDomain, String domain,
+                    boolean enabled, String accessMode, String serviceAccountUsername,
+                    String serviceAccountPassword, boolean tls, String userSearchField, String userLoginField,
+                    String userObjectClass, String userNameField, String userEnabledAttribute, String groupSearchField,
+                    String groupObjectClass, String groupNameField) {
         this.server = server;
         this.port = port;
         this.userDisabledBitMask = userDisabledBitMask;
@@ -89,7 +89,7 @@ public class LdapConfig implements Configurable, LDAPConfig {
 
     @Override
     public String getName() {
-        return LdapConstants.CONFIG;
+        return ADConstants.CONFIG;
     }
 
     @Field(nullable = false, required = true, minLength = 1)
