@@ -292,6 +292,7 @@ def test_admin_types(admin_user_client, adds=set(), removes=set()):
         'mount',
         'network',
         'openstackConfig',
+        'openldapconfig',
         'packetConfig',
         'password',
         'physicalHost',

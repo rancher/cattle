@@ -4,6 +4,7 @@ import io.cattle.platform.iaas.api.auth.integration.ldap.interfaces.LDAPConfig;
 import io.github.ibuildthecloud.gdapi.exception.ClientVisibleException;
 import io.github.ibuildthecloud.gdapi.util.ResponseCodes;
 
+import java.net.ConnectException;
 import java.util.Hashtable;
 import javax.naming.Context;
 import javax.naming.NamingException;
@@ -46,9 +47,14 @@ public class LDAPUtils {
                         "Unable to get provided Ldap Search base: " + ldapConfig.getDomain());
             }
         } catch (NamingException e) {
+            if (e.getRootCause() instanceof ConnectException){
+                throw new ClientVisibleException(ResponseCodes.BAD_REQUEST, INVALID_OPEN_LDAP_CONFIG,
+                        "Unable to talk to ldap.", "Provided server and port refused connection.");
+            }
             throw new ClientVisibleException(ResponseCodes.BAD_REQUEST, INVALID_OPEN_LDAP_CONFIG,
-                    "Unable to talk to ldap.", "Unable to create context with service account credentials.");
-        } finally {
+                    "Unable to authenticate service account.", "Unable to create context with service account credentials." +
+                    "Username(DN):" + ldapConfig.getServiceAccountUsername() + " Password:" + ldapConfig.getServiceAccountPassword());
+        }finally {
             if (userContext != null) {
                 try {
                     userContext.close();

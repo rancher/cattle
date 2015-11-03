@@ -1,4 +1,4 @@
-package io.cattle.platform.iaas.api.auth.integration.ldap;
+package io.cattle.platform.iaas.api.auth.integration.ldap.ad;
 
 import static javax.naming.directory.SearchControls.*;
 
@@ -10,6 +10,9 @@ import io.cattle.platform.iaas.api.auth.SecurityConstants;
 import io.cattle.platform.iaas.api.auth.dao.AuthTokenDao;
 import io.cattle.platform.iaas.api.auth.identity.Token;
 import io.cattle.platform.iaas.api.auth.integration.interfaces.IdentityProvider;
+import io.cattle.platform.iaas.api.auth.integration.ldap.ServiceContextCreationException;
+import io.cattle.platform.iaas.api.auth.integration.ldap.ServiceContextRetrievalException;
+import io.cattle.platform.iaas.api.auth.integration.ldap.UserLoginFailureException;
 import io.cattle.platform.pool.PoolConfig;
 import io.github.ibuildthecloud.gdapi.context.ApiContext;
 import io.github.ibuildthecloud.gdapi.exception.ClientVisibleException;
@@ -43,13 +46,13 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.commons.pool2.impl.GenericObjectPool;
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 
-public class LdapIdentityProvider extends LdapConfigurable implements IdentityProvider {
+public class ADIdentityProvider extends ADConfigurable implements IdentityProvider {
 
-    private static final Log logger = LogFactory.getLog(LdapIdentityProvider.class);
+    private static final Log logger = LogFactory.getLog(ADIdentityProvider.class);
     @Inject
-    LdapTokenUtils ldapTokenUtils;
+    ADTokenUtils ADTokenUtils;
     @Inject
-    LdapTokenCreator ldapTokenCreator;
+    ADTokenCreator adTokenCreator;
     @Inject
     AuthTokenDao authTokenDao;
     GenericObjectPool<LdapContext> contextPool;
@@ -78,9 +81,9 @@ public class LdapIdentityProvider extends LdapConfigurable implements IdentityPr
         }
         name = escapeLDAPSearchFilter(name);
         switch (scope) {
-            case LdapConstants.USER_SCOPE:
+            case ADConstants.USER_SCOPE:
                 return searchUser(name, exactMatch);
-            case LdapConstants.GROUP_SCOPE:
+            case ADConstants.GROUP_SCOPE:
                 return searchGroup(name, exactMatch);
             default:
                 throw new ClientVisibleException(ResponseCodes.BAD_REQUEST, "invalidScope", "Identity type is not valid for Ldap", null);
@@ -89,30 +92,30 @@ public class LdapIdentityProvider extends LdapConfigurable implements IdentityPr
 
     @Override
     public Set<Identity> getIdentities(Account account) {
-        if (!isConfigured() || !LdapConstants.USER_SCOPE.equalsIgnoreCase(account.getExternalIdType())) {
+        if (!isConfigured() || !ADConstants.USER_SCOPE.equalsIgnoreCase(account.getExternalIdType())) {
             return new HashSet<>();
         }
-        if(!ldapTokenUtils.findAndSetJWT() &&
+        if(!ADTokenUtils.findAndSetJWT() &&
                 SecurityConstants.SECURITY.get() &&
-                LdapConstants.CONFIG.equalsIgnoreCase(SecurityConstants.AUTH_PROVIDER.get())) {
+                ADConstants.CONFIG.equalsIgnoreCase(SecurityConstants.AUTH_PROVIDER.get())) {
             AuthToken authToken = authTokenDao.getTokenByAccountId(account.getId());
             if (authToken == null){
-                String query = "(" + LdapConstants.DN + '=' + account.getExternalId() + ")";
+                String query = "(" + ADConstants.DN + '=' + account.getExternalId() + ")";
                 SearchResult userRecord = userRecord(query);
-
                 if (userRecord == null){
                     return new HashSet<>();
                 }
                 Set<Identity> identities = getIdentities(userRecord);
-                Token token = ldapTokenUtils.createToken(identities, null);
-                authToken = authTokenDao.createToken(token.getJwt(), LdapConstants.CONFIG, account.getId());
+
+                Token token = ADTokenUtils.createToken(identities, null);
+                authToken = authTokenDao.createToken(token.getJwt(), ADConstants.CONFIG, account.getId());
             }
             if (authToken != null && authToken.getKey() != null) {
                 ApiRequest request = ApiContext.getContext().getApiRequest();
-                request.setAttribute(LdapConstants.LDAP_JWT, authToken.getKey());
+                request.setAttribute(ADConstants.LDAP_JWT, authToken.getKey());
             }
         }
-        return ldapTokenUtils.getIdentities();
+        return ADTokenUtils.getIdentities();
     }
 
     @Override
@@ -121,8 +124,8 @@ public class LdapIdentityProvider extends LdapConfigurable implements IdentityPr
             notConfigured();
         }
         switch (scope) {
-            case LdapConstants.USER_SCOPE:
-            case LdapConstants.GROUP_SCOPE:
+            case ADConstants.USER_SCOPE:
+            case ADConstants.GROUP_SCOPE:
                 try {
                     return getObject(distinguishedName, scope);
                 }
@@ -138,12 +141,12 @@ public class LdapIdentityProvider extends LdapConfigurable implements IdentityPr
 
     @Override
     public Set<String> scopes() {
-        return LdapConstants.SCOPES;
+        return ADConstants.SCOPES;
     }
 
     @Override
     public String getName() {
-        return LdapConstants.NAME;
+        return ADConstants.NAME;
     }
 
     LdapContext login(String username, String password) {
@@ -155,9 +158,9 @@ public class LdapIdentityProvider extends LdapConfigurable implements IdentityPr
         LdapContext userContext;
 
         try {
-            String url = "ldap://" + LdapConstants.LDAP_SERVER.get() + ':' + LdapConstants.LDAP_PORT.get() + '/';
+            String url = "ldap://" + ADConstants.LDAP_SERVER.get() + ':' + ADConstants.LDAP_PORT.get() + '/';
             props.put(Context.PROVIDER_URL, url);
-            if (LdapConstants.TLS_ENABLED.get()) {
+            if (ADConstants.TLS_ENABLED.get()) {
                 props.put(Context.SECURITY_PROTOCOL, "ssl");
             }
             userContext = new InitialLdapContext(props, null);
@@ -174,9 +177,9 @@ public class LdapIdentityProvider extends LdapConfigurable implements IdentityPr
             controls.setSearchScope(SUBTREE_SCOPE);
             NamingEnumeration<SearchResult> results;
             try {
-                results = context.search(LdapConstants.LDAP_DOMAIN.get(), query, controls);
+                results = context.search(ADConstants.LDAP_DOMAIN.get(), query, controls);
             } catch (NamingException e) {
-                logger.info("Failed to search: " + query + "with DN=" + LdapConstants.LDAP_DOMAIN.get() + " as the scope.", e);
+                logger.info("Failed to search: " + query + "with DN=" + ADConstants.LDAP_DOMAIN.get() + " as the scope.", e);
                 throw new ClientVisibleException(ResponseCodes.INTERNAL_SERVER_ERROR, "LdapConfig",
                         "Organizational Unit not found.", null);
             }
@@ -213,9 +216,9 @@ public class LdapIdentityProvider extends LdapConfigurable implements IdentityPr
 
     private Set<Identity> getIdentities(SearchResult result) {
         final Set<Identity> identities = new HashSet<>();
-        final Attribute memberOf = result.getAttributes().get(LdapConstants.MEMBER_OF);
+        final Attribute memberOf = result.getAttributes().get(ADConstants.MEMBER_OF);
         try {
-            if (!isType(result.getAttributes(), LdapConstants.USER_OBJECT_CLASS.get()))
+            if (!isType(result.getAttributes(), ADConstants.USER_OBJECT_CLASS.get()))
             {
                 return identities;
             }
@@ -231,7 +234,7 @@ public class LdapIdentityProvider extends LdapConfigurable implements IdentityPr
                             try {
                                 Identity identity;
                                 try {
-                                    identity = getObject(memberOf.get(finalI).toString(), LdapConstants.GROUP_SCOPE);
+                                    identity = getObject(memberOf.get(finalI).toString(), ADConstants.GROUP_SCOPE);
                                 }  catch (ServiceContextRetrievalException | ServiceContextCreationException e){
                                     logger.error("Ldap Failure during group retrieval: " + e.getMessage(), e);
                                     throw new ClientVisibleException(ResponseCodes.INTERNAL_SERVER_ERROR, "LdapDown",
@@ -278,7 +281,7 @@ public class LdapIdentityProvider extends LdapConfigurable implements IdentityPr
             throw new ClientVisibleException(ResponseCodes.UNAUTHORIZED);
         }
         String name = getSamName(username);
-        String query = "(" + LdapConstants.USER_LOGIN_FIELD.get() + '=' + name + ")";
+        String query = "(" + ADConstants.USER_LOGIN_FIELD.get() + '=' + name + ")";
         SearchResult userRecord = userRecord(query);
         if (userRecord == null){
             return new HashSet<>();
@@ -292,8 +295,8 @@ public class LdapIdentityProvider extends LdapConfigurable implements IdentityPr
         }
         if (username.contains("\\")) {
             return username;
-        } else if (StringUtils.isNotBlank(LdapConstants.LDAP_LOGIN_DOMAIN.get())) {
-            return LdapConstants.LDAP_LOGIN_DOMAIN.get() + '\\' +username;
+        } else if (StringUtils.isNotBlank(ADConstants.LDAP_LOGIN_DOMAIN.get())) {
+            return ADConstants.LDAP_LOGIN_DOMAIN.get() + '\\' +username;
         } else {
             return username;
         }
@@ -313,11 +316,11 @@ public class LdapIdentityProvider extends LdapConfigurable implements IdentityPr
     private List<Identity> searchGroup(String name, boolean exactMatch) {
         String query;
         if (exactMatch) {
-            query = "(&(" + LdapConstants.GROUP_SEARCH_FIELD.get() + '=' + name + ")(" + LdapConstants.OBJECT_CLASS + '='
-                    + LdapConstants.GROUP_OBJECT_CLASS.get() + "))";
+            query = "(&(" + ADConstants.GROUP_SEARCH_FIELD.get() + '=' + name + ")(" + ADConstants.OBJECT_CLASS + '='
+                    + ADConstants.GROUP_OBJECT_CLASS.get() + "))";
         } else {
-            query = "(&(" + LdapConstants.GROUP_SEARCH_FIELD.get() + "=*" + name + "*)(" + LdapConstants.OBJECT_CLASS + '='
-                    + LdapConstants.GROUP_OBJECT_CLASS.get() + "))";
+            query = "(&(" + ADConstants.GROUP_SEARCH_FIELD.get() + "=*" + name + "*)(" + ADConstants.OBJECT_CLASS + '='
+                    + ADConstants.GROUP_OBJECT_CLASS.get() + "))";
         }
         return resultsToIdentities(searchLdap(query));
     }
@@ -326,11 +329,11 @@ public class LdapIdentityProvider extends LdapConfigurable implements IdentityPr
         String query;
         if (exactMatch)
         {
-            query = "(&(" + LdapConstants.USER_SEARCH_FIELD.get() + '=' + name + ")(" + LdapConstants.OBJECT_CLASS + '='
-                    + LdapConstants.USER_OBJECT_CLASS.get() + "))";
+            query = "(&(" + ADConstants.USER_SEARCH_FIELD.get() + '=' + name + ")(" + ADConstants.OBJECT_CLASS + '='
+                    + ADConstants.USER_OBJECT_CLASS.get() + "))";
         } else {
-            query = "(&(" + LdapConstants.USER_SEARCH_FIELD.get() + "=*" + name + "*)(" + LdapConstants.OBJECT_CLASS + '='
-                    + LdapConstants.USER_OBJECT_CLASS.get() + "))";
+            query = "(&(" + ADConstants.USER_SEARCH_FIELD.get() + "=*" + name + "*)(" + ADConstants.OBJECT_CLASS + '='
+                    + ADConstants.USER_OBJECT_CLASS.get() + "))";
         }
         return resultsToIdentities(searchLdap(query));
     }
@@ -358,7 +361,7 @@ public class LdapIdentityProvider extends LdapConfigurable implements IdentityPr
     }
 
     private boolean isType(Attributes search, String type) throws NamingException {
-        NamingEnumeration<?> objectClass = search.get(LdapConstants.OBJECT_CLASS).getAll();
+        NamingEnumeration<?> objectClass = search.get(ADConstants.OBJECT_CLASS).getAll();
         boolean isType = false;
         while (objectClass.hasMoreElements()) {
             Object object = objectClass.next();
@@ -374,10 +377,10 @@ public class LdapIdentityProvider extends LdapConfigurable implements IdentityPr
         controls.setSearchScope(SUBTREE_SCOPE);
         NamingEnumeration<SearchResult> results;
         try {
-            results = getServiceContext().search(LdapConstants.LDAP_DOMAIN.get(), query, controls);
+            results = getServiceContext().search(ADConstants.LDAP_DOMAIN.get(), query, controls);
         } catch (NamingException e) {
-            logger.error("When searching ldap from /v1/identity Failed to search: " + query + " scope:" + LdapConstants.LDAP_DOMAIN.get(), e);
-            throw new ClientVisibleException(ResponseCodes.INTERNAL_SERVER_ERROR, LdapConstants.CONFIG,
+            logger.error("When searching ldap from /v1/identity Failed to search: " + query + " scope:" + ADConstants.LDAP_DOMAIN.get(), e);
+            throw new ClientVisibleException(ResponseCodes.INTERNAL_SERVER_ERROR, ADConstants.CONFIG,
                     "Organizational Unit not found.", null);
         }
         return results;
@@ -410,23 +413,23 @@ public class LdapIdentityProvider extends LdapConfigurable implements IdentityPr
             String externalIdType;
             String accountName;
             String login;
-            if (isType(search, LdapConstants.USER_OBJECT_CLASS.get())){
-                externalIdType = LdapConstants.USER_SCOPE;
-                if (search.get(LdapConstants.USER_NAME_FIELD.get()) != null) {
-                    accountName = (String) search.get(LdapConstants.USER_NAME_FIELD.get()).get();
+            if (isType(search, ADConstants.USER_OBJECT_CLASS.get())){
+                externalIdType = ADConstants.USER_SCOPE;
+                if (search.get(ADConstants.USER_NAME_FIELD.get()) != null) {
+                    accountName = (String) search.get(ADConstants.USER_NAME_FIELD.get()).get();
                 } else {
                     accountName = distinguishedName;
                 }
-                login = (String) search.get(LdapConstants.USER_LOGIN_FIELD.get()).get();
-            } else if (isType(search, LdapConstants.GROUP_OBJECT_CLASS.get())) {
-                externalIdType = LdapConstants.GROUP_SCOPE;
-                if (search.get(LdapConstants.GROUP_NAME_FIELD.get()) != null) {
-                    accountName = (String) search.get(LdapConstants.GROUP_NAME_FIELD.get()).get();
+                login = (String) search.get(ADConstants.USER_LOGIN_FIELD.get()).get();
+            } else if (isType(search, ADConstants.GROUP_OBJECT_CLASS.get())) {
+                externalIdType = ADConstants.GROUP_SCOPE;
+                if (search.get(ADConstants.GROUP_NAME_FIELD.get()) != null) {
+                    accountName = (String) search.get(ADConstants.GROUP_NAME_FIELD.get()).get();
                 } else {
                     accountName = distinguishedName;
                 }
-                if (search.get(LdapConstants.USER_LOGIN_FIELD.get()) != null) {
-                    login = (String) search.get(LdapConstants.USER_LOGIN_FIELD.get()).get();
+                if (search.get(ADConstants.USER_LOGIN_FIELD.get()) != null) {
+                    login = (String) search.get(ADConstants.USER_LOGIN_FIELD.get()).get();
                 } else {
                     login = accountName;
                 }
@@ -442,11 +445,11 @@ public class LdapIdentityProvider extends LdapConfigurable implements IdentityPr
     private boolean hasPermission(Attributes attributes){
         int permission;
         try {
-            if (!isType(attributes, LdapConstants.USER_OBJECT_CLASS.get())){
+            if (!isType(attributes, ADConstants.USER_OBJECT_CLASS.get())){
                 return true;
             }
-            if (StringUtils.isNotBlank(LdapConstants.USER_ENABLED_ATTRIBUTE.get())) {
-                permission = Integer.parseInt(attributes.get(LdapConstants.USER_ENABLED_ATTRIBUTE.get()).get()
+            if (StringUtils.isNotBlank(ADConstants.USER_ENABLED_ATTRIBUTE.get())) {
+                permission = Integer.parseInt(attributes.get(ADConstants.USER_ENABLED_ATTRIBUTE.get()).get()
                         .toString());
             } else {
                 return true;
@@ -455,11 +458,11 @@ public class LdapIdentityProvider extends LdapConfigurable implements IdentityPr
             logger.error("Failed to get USER_ENABLED_ATTRIBUTE.", e);
             return false;
         }
-        permission = permission & LdapConstants.USER_DISABLED_BIT_MASK.get();
-        return permission != LdapConstants.USER_DISABLED_BIT_MASK.get();
+        permission = permission & ADConstants.USER_DISABLED_BIT_MASK.get();
+        return permission != ADConstants.USER_DISABLED_BIT_MASK.get();
     }
 
-    private String escapeLDAPSearchFilter(String filter) {
+    public static String escapeLDAPSearchFilter(String filter) {
         StringBuilder sb = new StringBuilder();
         for (int i = 0; i < filter.length(); i++) {
             char curChar = filter.charAt(i);
@@ -489,8 +492,8 @@ public class LdapIdentityProvider extends LdapConfigurable implements IdentityPr
     @Override
     public Identity transform(Identity identity) {
         switch (identity.getExternalIdType()) {
-            case LdapConstants.USER_SCOPE:
-            case LdapConstants.GROUP_SCOPE:
+            case ADConstants.USER_SCOPE:
+            case ADConstants.GROUP_SCOPE:
                 return getIdentity(identity.getExternalId(), identity.getExternalIdType());
             default:
                 throw new ClientVisibleException(ResponseCodes.BAD_REQUEST,
@@ -501,9 +504,9 @@ public class LdapIdentityProvider extends LdapConfigurable implements IdentityPr
     @Override
     public Identity untransform(Identity identity) {
         switch (identity.getExternalIdType()) {
-            case LdapConstants.USER_SCOPE:
+            case ADConstants.USER_SCOPE:
                 break;
-            case LdapConstants.GROUP_SCOPE:
+            case ADConstants.GROUP_SCOPE:
                 break;
             default:
                 throw new ClientVisibleException(ResponseCodes.BAD_REQUEST,
@@ -517,7 +520,7 @@ public class LdapIdentityProvider extends LdapConfigurable implements IdentityPr
         if (contextPool == null) {
             GenericObjectPoolConfig config = new GenericObjectPoolConfig();
             PoolConfig.setConfig(config, "ldap.context.pool", "ldap.context.pool.", "global.pool.");
-            contextPool = new GenericObjectPool<>(new LdapServiceContextPoolFactory(), config);
+            contextPool = new GenericObjectPool<>(new ADServiceContextPoolFactory(), config);
         }
     }
 

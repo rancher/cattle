@@ -1,0 +1,170 @@
+package io.cattle.platform.iaas.api.auth.integration.ldap.OpenLDAP;
+
+import io.cattle.platform.iaas.api.auth.integration.interfaces.Configurable;
+import io.cattle.platform.iaas.api.auth.integration.ldap.interfaces.LDAPConfig;
+import io.github.ibuildthecloud.gdapi.annotation.Field;
+import io.github.ibuildthecloud.gdapi.annotation.Type;
+
+@Type(name = OpenLDAPConstants.CONFIG)
+public class OpenLDAPConfig implements Configurable, LDAPConfig {
+
+    private final boolean enabled;
+    private final String server;
+    private final int port;
+    private final int userDisabledBitMask;
+    private final String loginDomain;
+    private final String domain;
+    private final String accessMode;
+    private final String serviceAccountUsername;
+    private final String serviceAccountPassword;
+    private final boolean tls;
+    private final String userSearchField;
+    private final String userLoginField;
+    private final String userObjectClass;
+    private final String userNameField;
+    private final String userEnabledAttribute;
+    private final String groupSearchField;
+    private final String groupObjectClass;
+    private final String groupNameField;
+    private final String userMemberAttribute;
+    private final String groupMemberMappingAttribute;
+
+    public OpenLDAPConfig(String server, int port, int userDisabledBitMask, String loginDomain, String domain,
+                          boolean enabled, String accessMode, String serviceAccountUsername,
+                          String serviceAccountPassword, boolean tls, String userSearchField, String userLoginField,
+                          String userObjectClass, String userNameField, String userEnabledAttribute, String
+                                  groupSearchField,
+                          String groupObjectClass, String groupNameField, String userMemberAttribute, String
+                                  groupMemberMappingAttribute) {
+        this.server = server;
+        this.port = port;
+        this.userDisabledBitMask = userDisabledBitMask;
+        this.loginDomain = loginDomain;
+        this.domain = domain;
+        this.enabled = enabled;
+        this.accessMode = accessMode;
+        this.serviceAccountUsername = serviceAccountUsername;
+        this.serviceAccountPassword = serviceAccountPassword;
+        this.tls = tls;
+        this.userSearchField = userSearchField;
+        this.userLoginField = userLoginField;
+        this.userObjectClass = userObjectClass;
+        this.userNameField = userNameField;
+        this.userEnabledAttribute = userEnabledAttribute;
+        this.groupSearchField = groupSearchField;
+        this.groupObjectClass = groupObjectClass;
+        this.groupNameField = groupNameField;
+        this.userMemberAttribute = userMemberAttribute;
+        this.groupMemberMappingAttribute = groupMemberMappingAttribute;
+    }
+
+    @Field(required = true, nullable = false, minLength = 1)
+    public String getServer() {
+        return server;
+    }
+
+    @Field(nullable = true)
+    public boolean getEnabled() {
+        return enabled;
+    }
+
+    @Field(nullable = false, required = true, defaultValue = "389")
+    public int getPort() {
+        return port;
+    }
+
+    @Field(required = false, nullable = true)
+    public String getLoginDomain() {
+        return loginDomain;
+    }
+
+    @Field(required = true, nullable = false, minLength = 1)
+    public String getDomain() {
+        return domain;
+    }
+
+    @Field(required = true, nullable = false, defaultValue = "unrestricted")
+    public String getAccessMode() {
+        return accessMode;
+    }
+
+    @Override
+    public boolean isConfigured() {
+        return enabled;
+    }
+
+    @Override
+    public String getName() {
+        return OpenLDAPConstants.CONFIG;
+    }
+
+    @Field(nullable = false, required = true, minLength = 1)
+    public String getServiceAccountUsername() {
+        return serviceAccountUsername;
+    }
+
+    @Field(nullable = true, required = true, minLength = 1)
+    public String getServiceAccountPassword() {
+        return serviceAccountPassword;
+    }
+
+    @Field(nullable = false, required = true)
+    public boolean getTls() {
+        return tls;
+    }
+
+    @Field(nullable = false, required = true, defaultValue = "uid")
+    public String getUserSearchField() {
+        return userSearchField;
+    }
+
+    @Field(nullable = false, required = true, defaultValue = "cn")
+    public String getGroupSearchField() {
+        return groupSearchField;
+    }
+
+    @Field(nullable = false, required = true, defaultValue = "uid")
+    public String getUserLoginField() {
+        return userLoginField;
+    }
+
+    @Field(nullable = false, required = true, defaultValue = "inetOrgPerson")
+    public String getUserObjectClass() {
+        return userObjectClass;
+    }
+
+    @Field(nullable = true, required = false, defaultValue = "")
+    public String getUserEnabledAttribute() {
+        return userEnabledAttribute;
+    }
+
+    @Field(nullable = false, required = true, defaultValue = "givenName")
+    public String getUserNameField() {
+        return userNameField;
+    }
+
+    @Field(nullable = true, required = false, defaultValue = "")
+    public int getUserDisabledBitMask() {
+        return userDisabledBitMask;
+    }
+
+    @Field(nullable = false, required = true, defaultValue = "posixGroup")
+    public String getGroupObjectClass() {
+        return groupObjectClass;
+    }
+
+    @Field(nullable = false, required = true, defaultValue = "cn")
+    public String getGroupNameField() {
+        return groupNameField;
+    }
+
+    @Field(nullable = false, required = true, defaultValue = "gidNumber")
+    public String getUserMemberAttribute() {
+        return userMemberAttribute;
+    }
+
+    @Field(nullable = false, required = true, defaultValue = "memberUid")
+    public String getGroupMemberMappingAttribute() {
+        return groupMemberMappingAttribute;
+    }
+}

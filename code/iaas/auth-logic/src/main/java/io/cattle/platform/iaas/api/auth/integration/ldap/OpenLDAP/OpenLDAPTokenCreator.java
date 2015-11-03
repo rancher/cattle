@@ -1,8 +1,12 @@
-package io.cattle.platform.iaas.api.auth.integration.ldap;
+package io.cattle.platform.iaas.api.auth.integration.ldap.OpenLDAP;
 
 import io.cattle.platform.iaas.api.auth.SecurityConstants;
+import io.cattle.platform.iaas.api.auth.dao.AuthDao;
 import io.cattle.platform.iaas.api.auth.identity.Token;
 import io.cattle.platform.iaas.api.auth.integration.interfaces.TokenCreator;
+import io.cattle.platform.iaas.api.auth.projects.ProjectResourceManager;
+import io.cattle.platform.object.ObjectManager;
+import io.cattle.platform.token.TokenService;
 import io.cattle.platform.util.type.CollectionUtils;
 import io.github.ibuildthecloud.gdapi.exception.ClientVisibleException;
 import io.github.ibuildthecloud.gdapi.request.ApiRequest;
@@ -13,30 +17,34 @@ import javax.inject.Inject;
 
 import org.apache.commons.lang3.ObjectUtils;
 
-public class LdapTokenCreator extends LdapConfigurable implements TokenCreator {
+public class OpenLDAPTokenCreator extends OpenLDAPConfigurable implements TokenCreator {
 
     @Inject
-    LdapIdentityProvider ldapIdentitySearchProvider;
+    OpenLDAPIdentityProvider ADIdentitySearchProvider;
+    @Inject
+    AuthDao authDao;
+    @Inject
+    TokenService tokenService;
+    @Inject
+    ProjectResourceManager projectResourceManager;
+    @Inject
+    ObjectManager objectManager;
 
     @Inject
-    LdapTokenUtils ldapTokenUtils;
+    OpenLDAPUtils OpenLDAPUtils;
 
     private Token getLdapToken(String username, String password) {
         if (!isConfigured()) {
-            throw new ClientVisibleException(ResponseCodes.INTERNAL_SERVER_ERROR, LdapConstants.CONFIG, "Ldap Not Configured.", null);
+            throw new ClientVisibleException(ResponseCodes.INTERNAL_SERVER_ERROR, OpenLDAPConstants.CONFIG, "Ldap Not Configured.", null);
         }
-        try {
-            return ldapTokenUtils.createToken(ldapIdentitySearchProvider.getIdentities(username, password), null);
-        } catch (ServiceContextCreationException | ServiceContextRetrievalException e){
-            throw new ClientVisibleException(ResponseCodes.INTERNAL_SERVER_ERROR, "LdapDown", "Could not talk to ldap", null);
-        }
+        return OpenLDAPUtils.createToken(ADIdentitySearchProvider.getIdentities(username, password), null);
     }
 
     @Override
     public Token getToken(ApiRequest request) {
         Map<String, Object> requestBody = CollectionUtils.toMap(request.getRequestObject());
         if (!isConfigured()) {
-            throw new ClientVisibleException(ResponseCodes.SERVICE_UNAVAILABLE, "LdapConfig", "LdapConfig is not Configured.", null);
+            throw new ClientVisibleException(ResponseCodes.SERVICE_UNAVAILABLE, "OpenLDAPConfig", "OpenLDAPConfig is not Configured.", null);
         }
         String code = ObjectUtils.toString(requestBody.get(SecurityConstants.CODE));
         String[] split = code.split(":");
@@ -48,6 +56,6 @@ public class LdapTokenCreator extends LdapConfigurable implements TokenCreator {
 
     @Override
     public String getName() {
-        return LdapConstants.TOKEN_CREATOR;
+        return OpenLDAPConstants.TOKEN_CREATOR;
     }
 }

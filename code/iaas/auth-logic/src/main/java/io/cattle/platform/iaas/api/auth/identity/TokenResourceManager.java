@@ -47,7 +47,7 @@ public class TokenResourceManager extends AbstractNoOpResourceManager {
 
     private Token createToken(ApiRequest request) {
         Token token = null;
-        if (SecurityConstants.AUTH_PROVIDER.get().equals(SecurityConstants.NO_PROVIDER)) {
+        if (SecurityConstants.AUTH_PROVIDER.get() == null || SecurityConstants.NO_PROVIDER.equalsIgnoreCase(SecurityConstants.AUTH_PROVIDER.get())) {
             throw new ClientVisibleException(ResponseCodes.INTERNAL_SERVER_ERROR,
                     "NoAuthProvider", "No Auth provider is configured.", null);
         }
