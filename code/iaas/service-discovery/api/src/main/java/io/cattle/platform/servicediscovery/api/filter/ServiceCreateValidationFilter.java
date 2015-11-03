@@ -55,7 +55,7 @@ public class ServiceCreateValidationFilter extends AbstractDefaultResourceManage
 
     @Override
     public String[] getTypes() {
-        return new String[] { "service", "loadBalancerService", "externalService" };
+        return new String[] { "service", "loadBalancerService", "externalService", "dnsService" };
     }
 
     @Override
