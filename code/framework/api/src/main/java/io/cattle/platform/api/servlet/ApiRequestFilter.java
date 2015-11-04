@@ -17,27 +17,33 @@ import java.util.concurrent.TimeUnit;
 import javax.inject.Inject;
 import javax.servlet.FilterChain;
 import javax.servlet.FilterConfig;
-import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 import org.apache.cloudstack.managed.context.ManagedContextRunnable;
 import org.apache.cloudstack.spring.module.web.ModuleBasedFilter;
+
 import com.codahale.metrics.Timer;
 import com.netflix.config.DynamicStringListProperty;
-import com.netflix.config.DynamicStringProperty;
 
 public class ApiRequestFilter extends ModuleBasedFilter {
 
     private static final String DEFAULT_MODULE = "api-server";
     private static final DynamicStringListProperty IGNORE = ArchaiusUtil.getList("api.ignore.paths");
-    private static final DynamicStringProperty INDEX = ArchaiusUtil.getString("api.ui.index");
 
     ApiRequestFilterDelegate delegate;
     Versions versions;
     Map<String, Timer> timers = new ConcurrentHashMap<String, Timer>();
+    IndexFile indexFile = new IndexFile();
+
+    @Override
+    public void init(FilterConfig filterConfig) throws ServletException {
+        super.init(filterConfig);
+        indexFile.init();
+    }
 
     @Override
     public void doFilter(final ServletRequest request, final ServletResponse response, final FilterChain chain) throws IOException, ServletException {
@@ -57,13 +63,12 @@ public class ApiRequestFilter extends ModuleBasedFilter {
             return;
         }
 
-        if (isLocalUI(httpRequest, path)) {
-            if (path.contains(".")) {
+        if (isUIRequest(httpRequest, path)) {
+            if (path.contains(".") || !indexFile.canServeContent()) {
                 chain.doFilter(request, response);
                 return;
             } else {
-                RequestDispatcher rd = request.getRequestDispatcher("/index.html");
-                rd.forward(request, response);
+                indexFile.serveIndex((HttpServletResponse) response);
                 return;
             }
         }
@@ -128,12 +133,8 @@ public class ApiRequestFilter extends ModuleBasedFilter {
         return result == null ? DEFAULT_MODULE : result;
     }
 
-    protected boolean isLocalUI(HttpServletRequest request, String path) {
+    protected boolean isUIRequest(HttpServletRequest request, String path) {
         path = path.replaceAll("//+", "/");
-
-        if (!"local".equals(INDEX.get())) {
-            return false;
-        }
 
         if ("/".equals(path)) {
             return RequestUtils.isBrowser(request, false);
