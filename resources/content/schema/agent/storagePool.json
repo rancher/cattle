@@ -8,6 +8,9 @@
         },
         "name": {
         	"create": true
+        },
+        "driverName": {
+            "create": true
         }
     }
 }
