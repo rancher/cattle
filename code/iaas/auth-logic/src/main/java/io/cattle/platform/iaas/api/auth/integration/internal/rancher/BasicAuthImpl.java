@@ -169,6 +169,6 @@ public class BasicAuthImpl implements AccountLookup, Priority {
 
     @Override
     public String getName() {
-        return "BasicAuthAccountLookUp";
+        return "BasicAuth";
     }
 }

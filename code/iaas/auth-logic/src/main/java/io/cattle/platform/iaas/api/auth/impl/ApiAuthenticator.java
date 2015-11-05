@@ -2,6 +2,7 @@ package io.cattle.platform.iaas.api.auth.impl;
 
 import io.cattle.platform.api.auth.Identity;
 import io.cattle.platform.api.auth.Policy;
+import io.cattle.platform.core.constants.AccountConstants;
 import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.ProjectConstants;
 import io.cattle.platform.core.model.Account;
@@ -128,6 +129,7 @@ public class ApiAuthenticator extends AbstractApiRequestHandler {
             if (lookup.isConfigured()){
                 account = lookup.getAccount(request);
                 if (account != null) {
+                    request.setAttribute(AccountConstants.AUTH_TYPE, lookup.getName());
                     break;
                 }
             }

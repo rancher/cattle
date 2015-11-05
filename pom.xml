@@ -15,6 +15,7 @@
         <module>code/framework/api-pub-sub-jetty</module>
         <module>code/framework/archaius</module>
         <module>code/framework/async</module>
+        <module>code/framework/auditing</module>
         <module>code/framework/db-loader</module>
         <module>code/framework/deferred</module>
         <module>code/framework/encryption</module>

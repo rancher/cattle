@@ -29,6 +29,11 @@ public class Tables {
 	public static final io.cattle.platform.core.model.tables.AgentGroupTable AGENT_GROUP = io.cattle.platform.core.model.tables.AgentGroupTable.AGENT_GROUP;
 
 	/**
+	 * The table cattle.audit_log
+	 */
+	public static final io.cattle.platform.core.model.tables.AuditLogTable AUDIT_LOG = io.cattle.platform.core.model.tables.AuditLogTable.AUDIT_LOG;
+
+	/**
 	 * The table cattle.auth_token
 	 */
 	public static final io.cattle.platform.core.model.tables.AuthTokenTable AUTH_TOKEN = io.cattle.platform.core.model.tables.AuthTokenTable.AUTH_TOKEN;

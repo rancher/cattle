@@ -97,6 +97,6 @@ public class HeaderAuthLookup implements AccountLookup, Priority {
 
     @Override
     public String getName() {
-        return "HeaderAuthLookUp";
+        return "HeaderAuth";
     }
 }

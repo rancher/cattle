@@ -61,6 +61,6 @@ public class RegistrationTokenAccountLookup implements AccountLookup {
 
     @Override
     public String getName() {
-        return "RegistrationTokenAccountLookup";
+        return "RegistrationToken";
     }
 }
