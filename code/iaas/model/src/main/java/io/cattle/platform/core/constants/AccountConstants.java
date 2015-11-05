@@ -25,4 +25,5 @@ public class AccountConstants {
     public static final String ACCOUNT_DEACTIVATE = "account.deactivate";
     public static final String ACCOUNT_REMOVE = "account.remove";
 
+    public static final String AUTH_TYPE = "authType";
 }

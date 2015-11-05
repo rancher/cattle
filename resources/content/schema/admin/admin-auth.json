@@ -5,6 +5,8 @@
         ".*\\.removeTime" : "r",
         ".*\\.resourceActions\\..*" : "c",
 
+        "auditLog.data" : "",
+
         "account" : "crud",
         "account.externalId" : "cru",
         "account.externalIdType" : "cru",

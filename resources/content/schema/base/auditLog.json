@@ -1,0 +1,34 @@
+{
+    "resourceFields": {
+        "responseCode":{
+            "type":"string"
+        },
+        "requestObject":{
+            "type":"json"
+        },
+        "responseObject":{
+            "type":"json"
+        },
+        "resource":{
+            "type":"string"
+        },
+        "authenticatedAsIdentityId":{
+            "type":"reference[identity]"
+        },
+        "authenticatedAsAccountId":{
+            "type":"reference[account]"
+        },
+        "authType":{
+            "type":"enum",
+            "options": [
+                "AdminAuth",
+                "BasicAuth",
+                "HeaderAuth",
+                "RegistrationToken",
+                "TokenAccount",
+                "TokenAuth"
+            ],
+            "required": true
+        }
+    }
+}

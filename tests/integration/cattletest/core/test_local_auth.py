@@ -19,7 +19,7 @@ class LocalAuth(AuthBase):
         return r
 
 
-@pytest.fixture(scope='session', autouse=True)
+@pytest.fixture(scope='module', autouse=True)
 def turn_on_off_local_auth(request, admin_user_client):
     username = random_str()
     password = random_str()
