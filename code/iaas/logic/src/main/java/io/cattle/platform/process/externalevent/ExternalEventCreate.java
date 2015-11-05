@@ -227,7 +227,7 @@ public class ExternalEventCreate extends AbstractDefaultProcessHandler {
                         data.put(ExternalEventConstants.FIELD_FQDN, fqdn);
                         DataUtils.getWritableFields(service).putAll(data);
                         objectManager.persist(service);
-
+                        objectProcessManager.scheduleStandardProcessAsync(StandardProcess.UPDATE, service, data);
                     }
                 });
     }

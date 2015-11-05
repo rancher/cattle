@@ -33,6 +33,7 @@ public class ServiceMetaData {
     Map<String, String> labels;
     Map<String, Object> metadata;
     Integer scale;
+    String fqdn;
 
     public ServiceMetaData(Service service, String serviceName, Environment env, List<String> sidekicks,
             Map<String, Object> metadata) {
@@ -52,6 +53,7 @@ public class ServiceMetaData {
         this.create_index = service.getCreateIndex();
         this.metadata = metadata;
         this.scale = DataAccessor.fieldInteger(service, ServiceDiscoveryConstants.FIELD_SCALE);
+        this.fqdn = DataAccessor.fieldString(service, ServiceDiscoveryConstants.FIELD_FQDN);
     }
 
     @SuppressWarnings("unchecked")
@@ -152,5 +154,9 @@ public class ServiceMetaData {
 
     public Integer getScale() {
         return scale;
+    }
+
+    public String getFqdn() {
+        return fqdn;
     }
 }
