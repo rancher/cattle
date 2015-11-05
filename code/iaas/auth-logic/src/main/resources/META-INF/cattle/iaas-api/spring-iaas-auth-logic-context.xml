@@ -68,7 +68,6 @@
         <property name="identityTransformationHandlers" value="#{extensionManager.list('identity.transformation.handler')}" />
     </bean>
 
-    <bean class="io.cattle.platform.iaas.api.auth.identity.EnsureSettingForProvider"/>
     <bean class="io.cattle.platform.iaas.api.auth.dao.impl.AuthTokenDaoImpl" />
 
     <bean class="io.cattle.platform.iaas.api.auth.integration.local.LocalAuthConfigManager" />
