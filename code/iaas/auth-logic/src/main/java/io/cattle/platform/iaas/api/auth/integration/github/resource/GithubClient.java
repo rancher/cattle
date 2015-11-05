@@ -1,5 +1,6 @@
 package io.cattle.platform.iaas.api.auth.integration.github.resource;
 
+import io.cattle.platform.api.auth.Identity;
 import io.cattle.platform.iaas.api.auth.integration.github.GithubConfigurable;
 import io.cattle.platform.iaas.api.auth.integration.github.GithubConstants;
 import io.cattle.platform.iaas.api.auth.integration.github.GithubUtils;
@@ -12,8 +13,10 @@ import io.github.ibuildthecloud.gdapi.util.ResponseCodes;
 import java.io.IOException;
 import java.net.URLEncoder;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.inject.Inject;
 
@@ -175,6 +178,9 @@ public class GithubClient extends GithubConfigurable{
 
     public GithubAccountInfo getGithubUserByName(String username) {
         String githubAccessToken = (String) ApiContext.getContext().getApiRequest().getAttribute(GithubConstants.GITHUB_ACCESS_TOKEN);
+        if (StringUtils.isEmpty(githubAccessToken)) {
+            noAccessToken();
+        }
         try {
             if (StringUtils.isEmpty(username)) {
                 throw new ClientVisibleException(ResponseCodes.INTERNAL_SERVER_ERROR,
@@ -201,7 +207,10 @@ public class GithubClient extends GithubConfigurable{
     }
 
     public GithubAccountInfo getGithubOrgByName(String org) {
-        String gitHubAccessToken = (String) ApiContext.getContext().getApiRequest().getAttribute(GithubConstants.GITHUB_ACCESS_TOKEN);
+        String githubAccessToken = (String) ApiContext.getContext().getApiRequest().getAttribute(GithubConstants.GITHUB_ACCESS_TOKEN);
+        if (StringUtils.isEmpty(githubAccessToken)) {
+            noAccessToken();
+        }
         try {
             if (StringUtils.isEmpty(org)) {
                 throw new ClientVisibleException(ResponseCodes.INTERNAL_SERVER_ERROR,
@@ -210,7 +219,7 @@ public class GithubClient extends GithubConfigurable{
             org = URLEncoder.encode(org, "UTF-8");;
             HttpResponse response = Request.Get(getURL(GithubClientEndpoints.ORGS) + org)
                     .addHeader(GithubConstants.ACCEPT, GithubConstants.APPLICATION_JSON)
-                    .addHeader(GithubConstants.AUTHORIZATION, "token " + gitHubAccessToken).execute().returnResponse();
+                    .addHeader(GithubConstants.AUTHORIZATION, "token " + githubAccessToken).execute().returnResponse();
             int statusCode = response.getStatusLine().getStatusCode();
             if (statusCode != 200) {
                 if (statusCode == 404) {
@@ -280,6 +289,9 @@ public class GithubClient extends GithubConfigurable{
 
     public GithubAccountInfo getUserOrgById(String id) {
         String githubAccessToken = (String) ApiContext.getContext().getApiRequest().getAttribute(GithubConstants.GITHUB_ACCESS_TOKEN);
+        if (StringUtils.isEmpty(githubAccessToken)) {
+            noAccessToken();
+        }
         try {
             HttpResponse response = Request.Get(getURL(GithubClientEndpoints.USER_INFO) + '/' + id)
                     .addHeader(GithubConstants.ACCEPT, GithubConstants.APPLICATION_JSON).addHeader(
@@ -317,5 +329,28 @@ public class GithubClient extends GithubConfigurable{
     @Override
     public String getName() {
         return GithubConstants.GITHUB_CLIENT;
+    }
+
+    public Set<Identity> getIdentities(String accessToken) {
+        List<TeamAccountInfo> teamsAccountInfo = new ArrayList<>();
+        GithubAccountInfo userAccountInfo = getUserAccountInfo(accessToken);
+        List<GithubAccountInfo> orgAccountInfo = getOrgAccountInfo(accessToken);
+        Set<Identity> identities = new HashSet<>();
+
+        Identity user = userAccountInfo.toIdentity(GithubConstants.USER_SCOPE);
+        identities.add(user);
+
+        for (GithubAccountInfo info : orgAccountInfo) {
+            teamsAccountInfo.addAll(getOrgTeamInfo(accessToken, info.getAccountName()));
+            Identity org = info.toIdentity(GithubConstants.ORG_SCOPE);
+            identities.add(org);
+        }
+
+        for (TeamAccountInfo info : teamsAccountInfo) {
+            Identity team = new Identity(GithubConstants.TEAM_SCOPE, info.getId(), info.getOrg() + ":" + info.getName(),
+                    null, null, null);
+            identities.add(team);
+        }
+        return identities;
     }
 }

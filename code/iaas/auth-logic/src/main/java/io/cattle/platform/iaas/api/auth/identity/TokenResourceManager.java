@@ -1,9 +1,9 @@
 package io.cattle.platform.iaas.api.auth.identity;
 
+import io.cattle.platform.api.auth.Identity;
 import io.cattle.platform.api.auth.Policy;
 import io.cattle.platform.iaas.api.auth.SecurityConstants;
 import io.cattle.platform.iaas.api.auth.dao.AuthTokenDao;
-import io.cattle.platform.iaas.api.auth.integration.github.GithubConstants;
 import io.cattle.platform.iaas.api.auth.integration.interfaces.TokenCreator;
 import io.cattle.platform.iaas.api.auth.TokenUtils;
 import io.github.ibuildthecloud.gdapi.context.ApiContext;
@@ -14,6 +14,7 @@ import io.github.ibuildthecloud.gdapi.request.ApiRequest;
 import io.github.ibuildthecloud.gdapi.request.resource.impl.AbstractNoOpResourceManager;
 import io.github.ibuildthecloud.gdapi.util.ResponseCodes;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import javax.inject.Inject;
@@ -25,6 +26,9 @@ public class TokenResourceManager extends AbstractNoOpResourceManager {
 
     @Inject
     AuthTokenDao authTokenDao;
+
+    @Inject
+    IdentityManager identityManager;
 
     private List<TokenCreator> tokenCreators;
 
@@ -57,15 +61,21 @@ public class TokenResourceManager extends AbstractNoOpResourceManager {
             throw new ClientVisibleException(ResponseCodes.BAD_REQUEST,
                     "codeInvalid", "Code provided is invalid.", null);
         }
+
+        Identity[] identities = token.getIdentities();
+        List<Identity> transFormedIdentities = new ArrayList<>();
+        for (Identity identity : identities) {
+            transFormedIdentities.add(identityManager.untransform(identity, true));
+        }
+        token.setIdentities(transFormedIdentities);
+        token.setUserIdentity(identityManager.untransform(token.getUserIdentity(), true));
         token.setJwt(authTokenDao.createToken(token.getJwt(), token.getAuthProvider(), ((Policy) ApiContext.getContext().getPolicy()).getAccountId()).getKey());
         return token;
     }
 
     @Override
     protected Object listInternal(SchemaFactory schemaFactory, String type, Map<Object, Object> criteria, ListOptions options) {
-        //LEGACY: Used for old Implementation of projects/ Identities. Remove when vincent changes to new api.
-        return new Token(SecurityConstants.SECURITY.get(), GithubConstants.GITHUB_CLIENT_ID.get(),
-                GithubConstants.GITHUB_HOSTNAME.get(), SecurityConstants.AUTH_PROVIDER.get());
+        return new Token();
     }
 
     public List<TokenCreator> getTokenCreators() {

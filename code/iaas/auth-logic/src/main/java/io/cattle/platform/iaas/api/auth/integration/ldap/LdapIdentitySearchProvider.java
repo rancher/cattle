@@ -95,7 +95,7 @@ public class LdapIdentitySearchProvider extends LdapConfigurable implements Iden
                     return new HashSet<>();
                 }
                 Set<Identity> identities = getIdentities(userAttributes);
-                Token token = ldapTokenCreator.getTokenByIdentities(identities);
+                Token token = ldapUtils.createToken(identities, null);
                 authToken = authTokenDao.createToken(token.getJwt(), LdapConstants.CONFIG, account.getId());
                 try {
                     ldapContext.close();

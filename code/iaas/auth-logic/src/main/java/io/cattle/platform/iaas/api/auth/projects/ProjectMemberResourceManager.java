@@ -21,7 +21,7 @@ import io.github.ibuildthecloud.gdapi.util.RequestUtils;
 import io.github.ibuildthecloud.gdapi.util.ResponseCodes;
 
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -70,7 +70,7 @@ public class ProjectMemberResourceManager extends AbstractObjectResourceManager 
             }
             Identity identity = identityManager.projectMemberToIdentity(projectMember);
             policy.grantObjectAccess(identity);
-            return Arrays.asList(identity);
+            return Collections.singletonList(identity);
 
         }
         String projectId = RequestUtils.makeSingularStringIfCan(criteria.get("projectId"));
@@ -123,18 +123,22 @@ public class ProjectMemberResourceManager extends AbstractObjectResourceManager 
                 membersTransformed.add(owner);
             }
 
-        }
+        } else {
+            for (Map<String, String> newMember : members) {
+                if (newMember.get("externalId") == null || newMember.get("externalIdType") == null || newMember.get("role") == null) {
 
-        for (Map<String, String> newMember : members) {
-            if (newMember.get("externalId") == null || newMember.get("externalIdType") == null || newMember.get("role") == null) {
-                throw new ClientVisibleException(ResponseCodes.BAD_REQUEST, "InvalidFormat", "Member format invalid", null);
+                    throw new ClientVisibleException(ResponseCodes.BAD_REQUEST, "InvalidFormat", "Member format " +
+                            "invalid", null);
+                }
+            }
+
+            for (Map<String, String> newMember : members) {
+                Identity givenIdentity = new Identity(newMember.get("externalIdType"), newMember.get("externalId"));
+                givenIdentity = identityManager.projectMemberToIdentity(givenIdentity);
+                membersTransformed.add(new Member(givenIdentity, newMember.get("role")));
             }
         }
-        for (Map<String, String> newMember : members) {
-            Identity givenIdentity = new Identity(newMember.get("externalIdType"), newMember.get("externalId"));
-            givenIdentity = identityManager.projectMemberToIdentity(givenIdentity);
-            membersTransformed.add(new Member(givenIdentity, newMember.get("role")));
-        }
+
 
         boolean hasOwner = false;
         for (Member member : membersTransformed) {
@@ -147,7 +151,8 @@ public class ProjectMemberResourceManager extends AbstractObjectResourceManager 
             throw new ClientVisibleException(ResponseCodes.BAD_REQUEST, "InvalidFormat", "Members list does not have an owner.", null);
 
         }
-        membersCreated.addAll(authDao.setProjectMembers(project, membersTransformed));
+        membersCreated.addAll(authDao.setProjectMembers(project, membersTransformed, ApiContext.getContext()
+                .getIdFormatter()));
 
         for (ProjectMember member : membersCreated) {
             identityManager.untransform(identityManager.projectMemberToIdentity(member), true);

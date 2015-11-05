@@ -219,3 +219,16 @@ def test_account_purge(super_client, new_context):
 
     env = super_client.wait_success(env)
     assert env.state == 'removed'
+
+
+def test_user_account_cant_create_account(admin_user_client):
+    account = admin_user_client.create_account(name=random_str(),
+                                               kind='user')
+    account = admin_user_client.wait_success(account)
+    api_key = admin_user_client.create_api_key(accountId=account.id)
+    admin_user_client.wait_success(api_key)
+    client = api_client(api_key.publicValue, api_key.secretValue)
+
+    with pytest.raises(AttributeError) as e:
+        client.create_account()
+    assert 'create_account' in e.value.message

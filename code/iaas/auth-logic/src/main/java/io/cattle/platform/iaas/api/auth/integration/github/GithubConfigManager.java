@@ -1,16 +1,21 @@
 package io.cattle.platform.iaas.api.auth.integration.github;
 
 import io.cattle.platform.api.auth.Identity;
+import io.cattle.platform.api.auth.Policy;
 import io.cattle.platform.archaius.util.ArchaiusUtil;
 import io.cattle.platform.core.constants.IdentityConstants;
+import io.cattle.platform.core.model.Account;
 import io.cattle.platform.iaas.api.auth.SecurityConstants;
 import io.cattle.platform.iaas.api.auth.SettingsUtils;
 import io.cattle.platform.iaas.api.auth.TokenUtils;
+import io.cattle.platform.iaas.api.auth.dao.AuthDao;
 import io.cattle.platform.iaas.api.auth.integration.github.resource.GithubClient;
 import io.cattle.platform.iaas.api.auth.integration.github.resource.GithubConfig;
 import io.cattle.platform.json.JsonMapper;
 import io.cattle.platform.object.ObjectManager;
+import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.util.type.CollectionUtils;
+import io.github.ibuildthecloud.gdapi.context.ApiContext;
 import io.github.ibuildthecloud.gdapi.exception.ClientVisibleException;
 import io.github.ibuildthecloud.gdapi.factory.SchemaFactory;
 import io.github.ibuildthecloud.gdapi.model.ListOptions;
@@ -52,6 +57,9 @@ public class GithubConfigManager extends AbstractNoOpResourceManager {
     @Inject
     SettingsUtils settingsUtils;
 
+    @Inject
+    AuthDao authDao;
+
     @Override
     public Class<?>[] getTypeClasses() {
         return new Class<?>[]{GithubConfig.class};
@@ -91,6 +99,19 @@ public class GithubConfigManager extends AbstractNoOpResourceManager {
         }
         if (config.get(CLIENT_ID) != null) {
             clientId = (String) config.get(CLIENT_ID);
+        }
+        if (((Policy) ApiContext.getContext().getPolicy()).isOption(Policy.AUTHORIZED_FOR_ALL_ACCOUNTS)) {
+            if (StringUtils.isBlank(
+                    (String) ApiContext.getContext().getApiRequest().getAttribute(GithubConstants.GITHUB_ACCESS_TOKEN))) {
+                Identity gotIdentity = Identity.fromId(ArchaiusUtil.getString(SecurityConstants.AUTH_ENABLER).get());
+                if (gotIdentity != null) {
+                    Account account = authDao.getAccountByExternalId(gotIdentity.getExternalId(), gotIdentity.getExternalIdType());
+                    if (account != null) {
+                        ApiContext.getContext().getApiRequest().setAttribute(GithubConstants.GITHUB_ACCESS_TOKEN,
+                                DataAccessor.fields(account).withKey(GithubConstants.GITHUB_ACCESS_TOKEN).get());
+                    }
+                }
+            }
         }
         List<Identity> identities = githubIdentitySearchProvider.savedIdentities();
         if (config.get(ALLOWED_IDENTITIES) != null){
@@ -140,7 +161,7 @@ public class GithubConfigManager extends AbstractNoOpResourceManager {
     }
 
     private List<Identity> getIdentities(List<Map<String, String>> identitiesGiven) {
-        if (identitiesGiven.isEmpty()){
+        if (identitiesGiven == null || identitiesGiven.isEmpty()){
             return new ArrayList<>();
         }
         if (!client.isConfigured()) {

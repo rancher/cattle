@@ -56,7 +56,7 @@ public class LdapConfig implements Configurable {
         return server;
     }
 
-    @Field(nullable = false)
+    @Field(nullable = true)
     public boolean getEnabled() {
         return enabled;
     }

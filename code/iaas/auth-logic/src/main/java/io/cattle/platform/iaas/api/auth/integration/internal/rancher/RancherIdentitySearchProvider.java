@@ -38,7 +38,7 @@ public class RancherIdentitySearchProvider implements IdentitySearchProvider {
         }
         for(Account account: accounts){
             if (account != null) {
-                identities.add(authDao.getIdentity(account.getId()));
+                identities.add(authDao.getIdentity(account.getId(), ApiContext.getContext().getIdFormatter()));
             }
         }
         return identities;
@@ -77,7 +77,8 @@ public class RancherIdentitySearchProvider implements IdentitySearchProvider {
             return null;
         }
         String accountId = ApiContext.getContext().getIdFormatter().parseId(id);
-        return authDao.getIdentity(Long.valueOf(accountId == null ? id : accountId));
+        return authDao.getIdentity(Long.valueOf(accountId == null ? id : accountId),
+                ApiContext.getContext().getIdFormatter());
     }
 
     @Override

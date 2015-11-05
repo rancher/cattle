@@ -42,15 +42,16 @@ public class LocalAuthConfigManager extends AbstractNoOpResourceManager {
         Boolean enabled = (Boolean) config.get("enabled");
 
         if (enabled == null) {
-            settingsUtils.changeSetting(SecurityConstants.SECURITY_SETTING, enabled);
+            settingsUtils.changeSetting(SecurityConstants.SECURITY_SETTING, false);
             settingsUtils.changeSetting(SecurityConstants.AUTH_PROVIDER_SETTING, SecurityConstants.NO_PROVIDER);
             return new LocalAuthConfig("", "", "", accessMode, false);
+        } else {
+            if (enabled || StringUtils.isNotBlank(username)) {
+                settingsUtils.changeSetting(SecurityConstants.SECURITY_SETTING, enabled);
+                passwordDao.verifyUsernamePassword(username, password, name);
+            }
         }
 
-        if (enabled || StringUtils.isNotBlank(username)) {
-            passwordDao.updateAdminAndCredentials(username, password, name);
-        }
-        settingsUtils.changeSetting(SecurityConstants.SECURITY_SETTING, enabled);
         settingsUtils.changeSetting(SecurityConstants.AUTH_PROVIDER_SETTING, LocalAuthConstants.CONFIG);
         settingsUtils.changeSetting(LocalAuthConstants.ACCESS_MODE_SETTING, accessMode);
 

@@ -18,6 +18,7 @@ import io.cattle.platform.iaas.api.auth.integration.ldap.LdapAuthImpl;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.util.type.Priority;
+import io.github.ibuildthecloud.gdapi.context.ApiContext;
 import io.github.ibuildthecloud.gdapi.exception.ClientVisibleException;
 import io.github.ibuildthecloud.gdapi.request.ApiRequest;
 
@@ -57,7 +58,7 @@ public class BasicAuthImpl implements AccountLookup, Priority {
         if (auth == null) {
             return null;
         }
-        Account account = authDao.getAccountByKeys(auth[0], auth[1]);
+        Account account = authDao.getAccountByKeys(auth[0], auth[1], ApiContext.getContext().getTransformationService());
         if (account != null) {
             return switchAccount(account);
         } else if (auth[0].toLowerCase().startsWith(ProjectConstants.OAUTH_BASIC.toLowerCase()) && SecurityConstants.SECURITY.get()) {

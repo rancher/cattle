@@ -8,6 +8,7 @@ import io.cattle.platform.core.model.Account;
 import io.cattle.platform.core.model.AuthToken;
 import io.cattle.platform.iaas.api.auth.dao.AuthDao;
 import io.cattle.platform.iaas.api.auth.dao.AuthTokenDao;
+import io.cattle.platform.iaas.api.auth.identity.Token;
 import io.cattle.platform.iaas.api.auth.projects.ProjectResourceManager;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.util.DataAccessor;
@@ -20,6 +21,8 @@ import io.github.ibuildthecloud.gdapi.util.ResponseCodes;
 import io.github.ibuildthecloud.gdapi.validation.ValidationErrorCodes;
 
 import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -53,6 +56,9 @@ public abstract class TokenUtils  {
 
     @Inject
     ObjectManager objectManager;
+
+    @Inject
+    SettingsUtils settingsUtils;
 
     public Account getAccountFromJWT() {
         Map<String, Object> jsonData = getJsonData();
@@ -235,10 +241,7 @@ public abstract class TokenUtils  {
     public String getAccessToken() {
         if (findAndSetJWT()) {
             Account account = getAccountFromJWT();
-            if (account == null) {
-                return null;
-            }
-            return (String) DataAccessor.fields(account).withKey(accessToken()).get();
+            return account != null ? (String) DataAccessor.fields(account).withKey(accessToken()).get() : null;
         } else {
             return null;
         }
@@ -254,34 +257,97 @@ public abstract class TokenUtils  {
 
     protected abstract String accessToken();
 
-    public Account getOrCreateAccount(Identity gotIdentity, Set<Identity> identities, Account account, boolean createAccount) {
-        boolean hasAccessToAProject = authDao.hasAccessToAnyProject(identities, false, null);
+    public Account getOrCreateAccount(Identity user, Set<Identity> identities, Account account) {
         if (SecurityConstants.SECURITY.get()) {
             isAllowed(identitiesToIdList(identities), identities);
             if (account == null) {
-            account = authDao.getAccountByExternalId(gotIdentity.getExternalId(), gotIdentity.getExternalIdType());
+                account = authDao.getAccountByExternalId(user.getExternalId(), user.getExternalIdType());
+            }
             if (account != null && !StringUtils.equals(CommonStatesConstants.ACTIVE, account.getState())) {
-                    throw new ClientVisibleException(ResponseCodes.UNAUTHORIZED);
+                throw new ClientVisibleException(ResponseCodes.UNAUTHORIZED);
             }
-            }
-            if (account == null && createAccount) {
-                account = authDao.createAccount(gotIdentity.getName(), AccountConstants.USER_KIND, gotIdentity
+            if (account == null && createAccount()) {
+                account = authDao.createAccount(user.getName(), AccountConstants.USER_KIND, user
                                 .getExternalId(),
-                        gotIdentity.getExternalIdType());
+                        user.getExternalIdType());
             }
             Object hasLoggedIn = DataAccessor.fields(account).withKey(SecurityConstants.HAS_LOGGED_IN).get();
-            if (!hasAccessToAProject && (hasLoggedIn == null || !((Boolean) hasLoggedIn))) {
-                projectResourceManager.createProjectForUser(gotIdentity);
+            if ((hasLoggedIn == null || !((Boolean) hasLoggedIn)) &&
+                    !authDao.hasAccessToAnyProject(identities, false, null)) {
+                projectResourceManager.createProjectForUser(user);
             }
         } else {
-            account = authDao.getAdminAccount();
-            authDao.updateAccount(account, null, AccountConstants.ADMIN_KIND, gotIdentity.getExternalId(), gotIdentity.getExternalIdType());
-            authDao.ensureAllProjectsHaveNonRancherIdMembers(gotIdentity);
+            if (account == null) {
+                account = authDao.getAccountByExternalId(user.getExternalId(), user.getExternalIdType());
+            }
+            if (account != null){
+                account.setKind(AccountConstants.ADMIN_KIND);
+                objectManager.persist(account);
+            } else if (createAccount()){
+                account = authDao.createAccount(user.getName(), AccountConstants.ADMIN_KIND, user
+                                .getExternalId(), user.getExternalIdType());
+            } else {
+                throw new ClientVisibleException(ResponseCodes.INTERNAL_SERVER_ERROR, "MissingAccount",
+                        "Account for " + user.getLogin() + " not found.",
+                        "When creating token to login account for user was not found and cannot be created.");
+            }
+            authDao.ensureAllProjectsHaveNonRancherIdMembers(user);
+            settingsUtils.changeSetting(SecurityConstants.AUTH_ENABLER, user.getId());
         }
         if (account != null) {
             DataAccessor.fields(account).withKey(SecurityConstants.HAS_LOGGED_IN).set(true);
             objectManager.persist(account);
         }
         return account;
+    }
+
+
+    public Token createToken(Set<Identity> identities, Account account) {
+
+        Identity user = getUser(identities);
+
+        if (user == null) {
+            throw new ClientVisibleException(ResponseCodes.UNAUTHORIZED);
+        }
+
+        account = getOrCreateAccount(user, identities, account);
+
+        if (account == null){
+            throw new ClientVisibleException(ResponseCodes.INTERNAL_SERVER_ERROR, "FailedToGetAccount");
+        }
+
+        postAuthModification(account);
+
+        account = authDao.updateAccount(account, account.getName(), account.getKind(), user.getExternalId(), user
+                .getExternalIdType());
+
+        Map<String, Object> jsonData = new HashMap<>();
+        jsonData.put(TokenUtils.TOKEN, tokenType());
+        jsonData.put(TokenUtils.ACCOUNT_ID, user.getExternalId());
+        jsonData.put(TokenUtils.ID_LIST, identitiesToIdList(identities));
+        String accountId = (String) ApiContext.getContext().getIdFormatter().formatId(objectManager.getType(Account.class), account.getId());
+        Date expiry = new Date(System.currentTimeMillis() + SecurityConstants.TOKEN_EXPIRY_MILLIS.get());
+        String jwt = tokenService.generateEncryptedToken(jsonData, expiry);
+        return new Token(jwt, accountId, user, new ArrayList<>(identities), account.getKind());
+
+    }
+
+    protected abstract void postAuthModification(Account account);
+
+    public abstract String userType();
+
+    public abstract boolean createAccount();
+
+    public Identity getUser(Set<Identity> identities) {
+        for (Identity identity: identities){
+            if (identity.getExternalIdType().equalsIgnoreCase(userType())){
+                return identity;
+            }
+        }
+        return null;
+    }
+
+    public ObjectManager getObjectManager() {
+        return objectManager;
     }
 }

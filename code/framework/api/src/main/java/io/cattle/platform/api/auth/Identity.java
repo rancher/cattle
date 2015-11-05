@@ -3,6 +3,7 @@ package io.cattle.platform.api.auth;
 import io.github.ibuildthecloud.gdapi.annotation.Field;
 import io.github.ibuildthecloud.gdapi.annotation.Type;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
@@ -135,6 +136,9 @@ public class Identity {
     }
 
     public static Identity fromId(String id) {
+        if (StringUtils.isBlank(id)) {
+            return null;
+        }
         String[] split = id.split(":");
         if (split.length != 2){
             return null;
