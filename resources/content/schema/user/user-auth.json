@@ -142,6 +142,10 @@
         "externalDnsEvent.serviceName" : "r",
         "externalDnsEvent.stackName" : "r",
 
+        "externalServiceEvent" : "r",
+        "externalServiceEvent.service" : "r",
+        "externalServiceEvent.environment" : "r",
+
         "host" : "r",
         "host.agentState" : "r",
         "host.agentId" : "r",
@@ -439,6 +443,7 @@
         "environment.previousExternalId": "cru",
 
         "service" : "r",
+        "service.externalId" : "r",
         "service.environmentId" : "cr",
         "service.scale" : "cru",
         "service.launchConfig" : "cr",

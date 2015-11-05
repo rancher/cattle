@@ -1,8 +1,8 @@
 package io.cattle.platform.servicediscovery.process;
 
 
-import static io.cattle.platform.core.model.tables.InstanceTable.INSTANCE;
-import static io.cattle.platform.core.model.tables.ServiceTable.SERVICE;
+import static io.cattle.platform.core.model.tables.InstanceTable.*;
+import static io.cattle.platform.core.model.tables.ServiceTable.*;
 import io.cattle.platform.core.addon.LoadBalancerServiceLink;
 import io.cattle.platform.core.addon.ServiceLink;
 import io.cattle.platform.core.constants.CommonStatesConstants;
@@ -24,7 +24,9 @@ import io.cattle.platform.servicediscovery.service.ServiceDiscoveryService;
 import io.cattle.platform.util.type.Priority;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.inject.Inject;
 
@@ -42,7 +44,7 @@ public class SelectorServiceCreatePostListener extends AbstractObjectProcessLogi
 
     @Override
     public String[] getProcessNames() {
-        return new String[] { ServiceDiscoveryConstants.PROCESS_SERVICE_CREATE };
+        return new String[] { ServiceDiscoveryConstants.PROCESS_SERVICE_CREATE, ServiceDiscoveryConstants.PROCESS_SERVICE_UPDATE };
     }
 
     @Override
@@ -85,8 +87,15 @@ public class SelectorServiceCreatePostListener extends AbstractObjectProcessLogi
         List<Instance> instances = objectManager.find(Instance.class, INSTANCE.ACCOUNT_ID, service.getAccountId(),
                 INSTANCE.REMOVED, null);
 
+        List<? extends ServiceExposeMap> current = exposeMapDao.getUnmanagedServiceInstanceMapsToRemove(service.getId());
+        final Map<Long, ServiceExposeMap> currentMappedInstances = new HashMap<Long, ServiceExposeMap>();
+        for (ServiceExposeMap map : current) {
+            currentMappedInstances.put(map.getInstanceId(), map);
+        }
+
         for (final Instance instance : instances) {
-            if (sdService.isSelectorContainerMatch(service, instance.getId())) {
+            boolean matched = sdService.isSelectorContainerMatch(service, instance.getId());
+            if (matched && !currentMappedInstances.containsKey(instance.getId())) {
                 lockManager.lock(new ServiceInstanceLock(service, instance), new LockCallbackNoReturn() {
                     @Override
                     public void doWithLockNoResult() {
@@ -95,6 +104,14 @@ public class SelectorServiceCreatePostListener extends AbstractObjectProcessLogi
                             objectProcessManager.scheduleStandardProcessAsync(StandardProcess.CREATE, exposeMap,
                                     null);
                         }
+                    }
+                });
+            } else if (!matched && currentMappedInstances.containsKey(instance.getId())) {
+                lockManager.lock(new ServiceInstanceLock(service, instance), new LockCallbackNoReturn() {
+                    @Override
+                    public void doWithLockNoResult() {
+                        objectProcessManager.scheduleStandardProcessAsync(StandardProcess.REMOVE, currentMappedInstances.get(instance.getId()),
+                                null);
                     }
                 });
             }

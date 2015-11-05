@@ -110,6 +110,17 @@
         </property>
     </bean>
 
+    <bean class="io.cattle.platform.process.instance.LabelsProviderProcessHandler"
+        p:name="LabelsProviders"
+        p:commandName="compute.instance.providelabels"
+        p:dataTypeClass="io.cattle.platform.core.model.InstanceHostMap"
+        p:agentResourceRelationship="host"
+        p:processNames="instancehostmap.activate" >
+        <property name="priority">
+            <util:constant static-field="io.cattle.platform.util.type.Priority.DEFAULT"/>
+        </property>
+    </bean>
+
     <bean class="io.cattle.platform.process.instance.PostInstancePurge"
         p:commandName="compute.instance.remove" >
     </bean>

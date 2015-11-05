@@ -4,6 +4,7 @@ import static io.cattle.platform.core.constants.InstanceConstants.*;
 import static io.cattle.platform.docker.constants.DockerInstanceConstants.*;
 import static io.cattle.platform.docker.constants.DockerNetworkConstants.*;
 import io.cattle.platform.core.addon.LogConfig;
+import io.cattle.platform.core.constants.ContainerEventConstants;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.json.JsonMapper;
@@ -140,7 +141,7 @@ public class DockerTransformerImpl implements DockerTransformer {
 
         instance.setExternalId(inspect.getId());
         instance.setKind(KIND_CONTAINER);
-        setName(instance, inspect);
+        setName(instance, inspect, fromInspect);
 
         if (containerConfig != null) {
             instance.setHostname((String) fixEmptyValue(containerConfig.getHostName()));
@@ -279,8 +280,16 @@ public class DockerTransformerImpl implements DockerTransformer {
         setField(instance, FIELD_IMAGE_UUID, image);
     }
 
-    void setName(Instance instance, InspectContainerResponse inspect) {
+    void setName(Instance instance, InspectContainerResponse inspect, Map<String, Object> fromInspect) {
         String name = inspect.getName();
+        Object displayNameLabel = CollectionUtils.getNestedValue(fromInspect, "Config", "Labels", ContainerEventConstants.LABEL_DISPLAY_NAME);
+        if (displayNameLabel != null) {
+            String displayName = displayNameLabel.toString();
+            if (StringUtils.isNotBlank(displayName)) {
+                name = displayName;
+            }
+        }
+
         if (name != null) {
             name = name.replaceFirst("/", "");
             instance.setName(name);

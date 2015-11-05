@@ -11,9 +11,9 @@ package io.cattle.platform.core.model.tables.records;
 @java.lang.SuppressWarnings({ "all", "unchecked", "rawtypes" })
 @javax.persistence.Entity
 @javax.persistence.Table(name = "service", schema = "cattle")
-public class ServiceRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.platform.core.model.tables.records.ServiceRecord> implements io.cattle.platform.db.jooq.utils.TableRecordJaxb, org.jooq.Record16<java.lang.Long, java.lang.String, java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.util.Date, java.util.Date, java.util.Date, java.util.Map<String,Object>, java.lang.Long, java.lang.String, java.lang.Long, java.lang.String, java.lang.String>, io.cattle.platform.core.model.Service {
+public class ServiceRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.platform.core.model.tables.records.ServiceRecord> implements io.cattle.platform.db.jooq.utils.TableRecordJaxb, org.jooq.Record17<java.lang.Long, java.lang.String, java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.util.Date, java.util.Date, java.util.Date, java.util.Map<String,Object>, java.lang.Long, java.lang.String, java.lang.Long, java.lang.String, java.lang.String, java.lang.String>, io.cattle.platform.core.model.Service {
 
-	private static final long serialVersionUID = 893070192;
+	private static final long serialVersionUID = -473089313;
 
 	/**
 	 * Setter for <code>cattle.service.id</code>.
@@ -288,6 +288,23 @@ public class ServiceRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.p
 		return (java.lang.String) getValue(15);
 	}
 
+	/**
+	 * Setter for <code>cattle.service.external_id</code>.
+	 */
+	@Override
+	public void setExternalId(java.lang.String value) {
+		setValue(16, value);
+	}
+
+	/**
+	 * Getter for <code>cattle.service.external_id</code>.
+	 */
+	@javax.persistence.Column(name = "external_id", length = 255)
+	@Override
+	public java.lang.String getExternalId() {
+		return (java.lang.String) getValue(16);
+	}
+
 	// -------------------------------------------------------------------------
 	// Primary key information
 	// -------------------------------------------------------------------------
@@ -301,23 +318,23 @@ public class ServiceRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.p
 	}
 
 	// -------------------------------------------------------------------------
-	// Record16 type implementation
+	// Record17 type implementation
 	// -------------------------------------------------------------------------
 
 	/**
 	 * {@inheritDoc}
 	 */
 	@Override
-	public org.jooq.Row16<java.lang.Long, java.lang.String, java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.util.Date, java.util.Date, java.util.Date, java.util.Map<String,Object>, java.lang.Long, java.lang.String, java.lang.Long, java.lang.String, java.lang.String> fieldsRow() {
-		return (org.jooq.Row16) super.fieldsRow();
+	public org.jooq.Row17<java.lang.Long, java.lang.String, java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.util.Date, java.util.Date, java.util.Date, java.util.Map<String,Object>, java.lang.Long, java.lang.String, java.lang.Long, java.lang.String, java.lang.String, java.lang.String> fieldsRow() {
+		return (org.jooq.Row17) super.fieldsRow();
 	}
 
 	/**
 	 * {@inheritDoc}
 	 */
 	@Override
-	public org.jooq.Row16<java.lang.Long, java.lang.String, java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.util.Date, java.util.Date, java.util.Date, java.util.Map<String,Object>, java.lang.Long, java.lang.String, java.lang.Long, java.lang.String, java.lang.String> valuesRow() {
-		return (org.jooq.Row16) super.valuesRow();
+	public org.jooq.Row17<java.lang.Long, java.lang.String, java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.util.Date, java.util.Date, java.util.Date, java.util.Map<String,Object>, java.lang.Long, java.lang.String, java.lang.Long, java.lang.String, java.lang.String, java.lang.String> valuesRow() {
+		return (org.jooq.Row17) super.valuesRow();
 	}
 
 	/**
@@ -452,6 +469,14 @@ public class ServiceRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.p
 	 * {@inheritDoc}
 	 */
 	@Override
+	public org.jooq.Field<java.lang.String> field17() {
+		return io.cattle.platform.core.model.tables.ServiceTable.SERVICE.EXTERNAL_ID;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
 	public java.lang.Long value1() {
 		return getId();
 	}
@@ -574,6 +599,14 @@ public class ServiceRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.p
 	@Override
 	public java.lang.String value16() {
 		return getSelectorContainer();
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public java.lang.String value17() {
+		return getExternalId();
 	}
 
 	/**
@@ -724,7 +757,16 @@ public class ServiceRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.p
 	 * {@inheritDoc}
 	 */
 	@Override
-	public ServiceRecord values(java.lang.Long value1, java.lang.String value2, java.lang.Long value3, java.lang.String value4, java.lang.String value5, java.lang.String value6, java.lang.String value7, java.util.Date value8, java.util.Date value9, java.util.Date value10, java.util.Map<String,Object> value11, java.lang.Long value12, java.lang.String value13, java.lang.Long value14, java.lang.String value15, java.lang.String value16) {
+	public ServiceRecord value17(java.lang.String value) {
+		setExternalId(value);
+		return this;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public ServiceRecord values(java.lang.Long value1, java.lang.String value2, java.lang.Long value3, java.lang.String value4, java.lang.String value5, java.lang.String value6, java.lang.String value7, java.util.Date value8, java.util.Date value9, java.util.Date value10, java.util.Map<String,Object> value11, java.lang.Long value12, java.lang.String value13, java.lang.Long value14, java.lang.String value15, java.lang.String value16, java.lang.String value17) {
 		return this;
 	}
 
@@ -753,6 +795,7 @@ public class ServiceRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.p
 		setCreateIndex(from.getCreateIndex());
 		setSelectorLink(from.getSelectorLink());
 		setSelectorContainer(from.getSelectorContainer());
+		setExternalId(from.getExternalId());
 	}
 
 	/**
@@ -778,7 +821,7 @@ public class ServiceRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.p
 	/**
 	 * Create a detached, initialised ServiceRecord
 	 */
-	public ServiceRecord(java.lang.Long id, java.lang.String name, java.lang.Long accountId, java.lang.String kind, java.lang.String uuid, java.lang.String description, java.lang.String state, java.util.Date created, java.util.Date removed, java.util.Date removeTime, java.util.Map<String,Object> data, java.lang.Long environmentId, java.lang.String vip, java.lang.Long createIndex, java.lang.String selectorLink, java.lang.String selectorContainer) {
+	public ServiceRecord(java.lang.Long id, java.lang.String name, java.lang.Long accountId, java.lang.String kind, java.lang.String uuid, java.lang.String description, java.lang.String state, java.util.Date created, java.util.Date removed, java.util.Date removeTime, java.util.Map<String,Object> data, java.lang.Long environmentId, java.lang.String vip, java.lang.Long createIndex, java.lang.String selectorLink, java.lang.String selectorContainer, java.lang.String externalId) {
 		super(io.cattle.platform.core.model.tables.ServiceTable.SERVICE);
 
 		setValue(0, id);
@@ -797,5 +840,6 @@ public class ServiceRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.p
 		setValue(13, createIndex);
 		setValue(14, selectorLink);
 		setValue(15, selectorContainer);
+		setValue(16, externalId);
 	}
 }
