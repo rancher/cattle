@@ -446,6 +446,13 @@ def test_create_duplicated_services(client, context):
     assert e.value.error.code == 'NotUnique'
     assert e.value.error.fieldName == 'name'
 
+    with pytest.raises(ApiError) as e:
+        client.create_dnsService(name=service_name,
+                                 environmentId=env.id)
+    assert e.value.error.status == 422
+    assert e.value.error.code == 'NotUnique'
+    assert e.value.error.fieldName == 'name'
+
 
 def test_service_add_remove_service_link(client, context):
     env = _create_stack(client)
