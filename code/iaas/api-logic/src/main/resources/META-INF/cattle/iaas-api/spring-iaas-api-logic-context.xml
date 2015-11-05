@@ -39,7 +39,6 @@
     <bean class="io.cattle.platform.iaas.api.object.postinit.AccountFieldPostInitHandler" />
 
     <!-- Start Handlers -->
-    <bean class="io.cattle.platform.iaas.api.request.handler.UIRedirect" />
     <bean class="io.cattle.platform.iaas.api.request.handler.Scripts" >
         <property name="handlers" value="#{extensionManager.list('scripts.handler')}" />
     </bean>
