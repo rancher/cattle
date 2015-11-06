@@ -19,6 +19,7 @@ defaults
 	option	tcplog
         option  dontlognull
         option  redispatch
+        option http-server-close
         option forwardfor
         retries 3
         timeout connect 5000
