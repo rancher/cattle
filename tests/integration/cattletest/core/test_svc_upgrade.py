@@ -433,6 +433,46 @@ def test_service_upgrade_mixed_selector(client, context):
     run_insvc_upgrade(svc2, launchConfig=launch_config)
 
 
+def test_rollback_sidekicks(context, client, super_client):
+    env = client.create_environment(name=random_str())
+    env = client.wait_success(env)
+    image_uuid = context.image_uuid
+    launch_config = {"imageUuid": image_uuid}
+    secondary1 = {"imageUuid": image_uuid, "name": "secondary1"}
+    secondary2 = {"imageUuid": image_uuid, "name": "secondary2"}
+    svc = client.create_service(name=random_str(),
+                                environmentId=env.id,
+                                scale=3,
+                                launchConfig=launch_config,
+                                secondaryLaunchConfigs=[secondary1,
+                                                        secondary2])
+    svc = client.wait_success(svc)
+    svc = client.wait_success(svc.activate())
+    initial_maps = super_client. \
+        list_serviceExposeMap(serviceId=svc.id,
+                              state='active', upgrade=False)
+
+    u_svc = run_insvc_upgrade(svc,
+                              secondaryLaunchConfigs=[secondary1],
+                              batchSize=2)
+    u_svc = client.wait_success(u_svc, 120)
+    assert u_svc.state == 'upgraded'
+
+    u_svc = client.wait_success(u_svc.rollback(), 120)
+    assert u_svc.state == 'active'
+    final_maps = super_client. \
+        list_serviceExposeMap(serviceId=u_svc.id,
+                              state='active', upgrade=False)
+
+    for initial_map in initial_maps:
+        found = False
+        for final_map in final_maps:
+            if final_map.id == initial_map.id:
+                found = True
+                break
+        assert found is True
+
+
 def run_insvc_upgrade(svc, **kw):
     kw["intervalMillis"] = 100
     svc = svc.upgrade_action(inServiceStrategy=kw)

@@ -152,27 +152,20 @@ public class UpgradeManagerImpl implements UpgradeManager {
                     Map<String, List<Instance>> deploymentUnitInstancesUpgradedUnmanaged,
                     Map<String, List<Instance>> deploymentUnitInstancesToCleanup, final long batchSize) {
 
-                markForRollback(deploymentUnitInstancesUpgradedManaged, deploymentUnitInstancesUpgradedUnmanaged,
-                        batchSize);
-
                 markForCleanup(deploymentUnitInstancesToUpgrade, deploymentUnitInstancesUpgradedManaged,
                         deploymentUnitInstancesToCleanup, batchSize);
             }
 
             protected void markForRollback(Map<String, List<Instance>> deploymentUnitInstancesUpgradedManaged,
-                    Map<String, List<Instance>> deploymentUnitInstancesUpgradedUnmanaged, final long batchSize) {
-                Iterator<Map.Entry<String, List<Instance>>> it = deploymentUnitInstancesUpgradedUnmanaged.entrySet()
-                        .iterator();
-                long i = 0;
-                while (it.hasNext() && i < batchSize) {
-                    Map.Entry<String, List<Instance>> instances = it.next();
-                    for (Instance instance : instances.getValue()) {
+                    String deploymentUnitUUIDToRollback) {
+                List<Instance> instances = deploymentUnitInstancesUpgradedUnmanaged.get(deploymentUnitUUIDToRollback);
+                if (instances != null) {
+                    for (Instance instance : instances) {
                         ServiceExposeMap map = objectManager.findAny(ServiceExposeMap.class,
                                 SERVICE_EXPOSE_MAP.INSTANCE_ID, instance.getId());
                         setUpgrade(map, false);
                     }
-                    deploymentUnitInstancesUpgradedManaged.put(instances.getKey(), instances.getValue());
-                    i++;
+                    deploymentUnitInstancesUpgradedManaged.put(deploymentUnitUUIDToRollback, instances);
                 }
             }
 
@@ -180,17 +173,18 @@ public class UpgradeManagerImpl implements UpgradeManager {
                     Map<String, List<Instance>> deploymentUnitInstancesUpgradedManaged,
                     Map<String, List<Instance>> deploymentUnitInstancesToCleanup, final long batchSize) {
                 long i = 0;
-                 
                 Iterator<Map.Entry<String, List<Instance>>> it = deploymentUnitInstancesToUpgrade.entrySet()
                         .iterator();
                 while (it.hasNext() && i < batchSize) {
                     Map.Entry<String, List<Instance>> instances = it.next();
+                    String deploymentUnitUUID = instances.getKey();
+                    markForRollback(deploymentUnitInstancesUpgradedManaged, deploymentUnitUUID);
                     for (Instance instance : instances.getValue()) {
                         ServiceExposeMap map = objectManager.findAny(ServiceExposeMap.class,
                                 SERVICE_EXPOSE_MAP.INSTANCE_ID, instance.getId());
                         setUpgrade(map, true);
                     }
-                    deploymentUnitInstancesToCleanup.put(instances.getKey(), instances.getValue());
+                    deploymentUnitInstancesToCleanup.put(deploymentUnitUUID, instances.getValue());
                     it.remove();
                     i++;
                 }
