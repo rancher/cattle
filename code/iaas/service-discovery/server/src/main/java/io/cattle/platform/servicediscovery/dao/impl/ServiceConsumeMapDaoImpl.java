@@ -18,12 +18,15 @@ import io.cattle.platform.core.model.tables.records.InstanceRecord;
 import io.cattle.platform.core.model.tables.records.ServiceConsumeMapRecord;
 import io.cattle.platform.db.jooq.dao.impl.AbstractJooqDao;
 import io.cattle.platform.json.JsonMapper;
+import io.cattle.platform.lock.LockCallback;
+import io.cattle.platform.lock.LockManager;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.process.ObjectProcessManager;
 import io.cattle.platform.object.process.StandardProcess;
 import io.cattle.platform.object.util.DataUtils;
 import io.cattle.platform.servicediscovery.api.constants.ServiceDiscoveryConstants;
 import io.cattle.platform.servicediscovery.api.dao.ServiceConsumeMapDao;
+import io.cattle.platform.servicediscovery.deployment.impl.ServiceLinkLock;
 import io.cattle.platform.util.type.CollectionUtils;
 
 import java.util.ArrayList;
@@ -42,6 +45,9 @@ public class ServiceConsumeMapDaoImpl extends AbstractJooqDao implements Service
 
     @Inject
     JsonMapper jsonMapper;
+
+    @Inject
+    LockManager lockManager;
 
     @Override
     public ServiceConsumeMap findMapToRemove(long serviceId, long consumedServiceId) {
@@ -157,7 +163,17 @@ public class ServiceConsumeMapDaoImpl extends AbstractJooqDao implements Service
     }
 
     @Override
-    public ServiceConsumeMap createServiceLink(Service service, ServiceLink serviceLink) {
+    public ServiceConsumeMap createServiceLink(final Service service, final ServiceLink serviceLink) {
+        return lockManager.lock(new ServiceLinkLock(service.getId(), serviceLink.getServiceId()),
+                new LockCallback<ServiceConsumeMap>() {
+            @Override
+                    public ServiceConsumeMap doWithLock() {
+                return createServiceLinkImpl(service, serviceLink);
+            }
+        });
+    }
+
+    protected ServiceConsumeMap createServiceLinkImpl(Service service, ServiceLink serviceLink) {
         ServiceConsumeMap map = findNonRemovedMap(service.getId(), serviceLink.getServiceId(),
                 serviceLink.getName());
 
