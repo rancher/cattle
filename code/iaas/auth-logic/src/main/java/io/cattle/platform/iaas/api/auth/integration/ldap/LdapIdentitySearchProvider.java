@@ -368,27 +368,27 @@ public class LdapIdentitySearchProvider extends LdapConfigurable implements Iden
             if (!hasPermission(search)){
                 throw new ClientVisibleException(ResponseCodes.UNAUTHORIZED);
             }
+            Attribute nameField;
             String externalIdType;
-            String accountName;
             String externalId = (String) search.get(LdapConstants.DN).get();
+            String accountName = externalId;
             String login;
             if (isType(search, LdapConstants.USER_OBJECT_CLASS.get())){
                 externalIdType = LdapConstants.USER_SCOPE;
-                if (search.get(LdapConstants.USER_NAME_FIELD.get()) != null) {
-                    accountName = (String) search.get(LdapConstants.USER_NAME_FIELD.get()).get();
-                } else {
-                    accountName = externalId;
-                }
-
+                nameField = search.get(LdapConstants.USER_NAME_FIELD.get());
             } else if (isType(search, LdapConstants.GROUP_OBJECT_CLASS.get())) {
                 externalIdType = LdapConstants.GROUP_SCOPE;
-                if (search.get(LdapConstants.GROUP_NAME_FIELD.get()) != null) {
-                    accountName = (String) search.get(LdapConstants.GROUP_NAME_FIELD.get()).get();
-                } else {
-                    accountName = externalId;
-                }
+                nameField = search.get(LdapConstants.GROUP_NAME_FIELD.get());
             } else {
                 return null;
+            }
+            if (nameField != null) {
+                accountName = (String) nameField.get();
+            } else if (search.get(LdapConstants.DEFAULT_NAME_FIELD) != null) {
+                accountName = (String) search.get(LdapConstants.DEFAULT_NAME_FIELD).get();
+            }
+            if (StringUtils.isEmpty(accountName)) {
+                accountName = externalId;
             }
             login = (String) search.get(LdapConstants.USER_LOGIN_FIELD.get()).get();
             return new Identity(externalIdType, externalId, accountName, null, null, login);
