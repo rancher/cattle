@@ -10,7 +10,6 @@ import io.cattle.platform.core.constants.CredentialConstants;
 import io.cattle.platform.core.dao.GenericResourceDao;
 import io.cattle.platform.core.model.Account;
 import io.cattle.platform.core.model.Credential;
-import io.cattle.platform.core.model.tables.records.CredentialRecord;
 import io.cattle.platform.db.jooq.dao.impl.AbstractJooqDao;
 import io.cattle.platform.framework.encryption.EncryptionConstants;
 import io.cattle.platform.iaas.api.auth.SecurityConstants;
@@ -29,7 +28,6 @@ import java.util.Map;
 import javax.inject.Inject;
 
 import org.apache.commons.lang3.StringUtils;
-import org.jooq.SelectConditionStep;
 
 public class PasswordDaoImpl extends AbstractJooqDao implements PasswordDao {
 

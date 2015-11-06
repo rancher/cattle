@@ -1,7 +1,7 @@
 package io.cattle.platform.iaas.api.auth.integration.internal.rancher;
 
 import io.cattle.platform.core.model.Account;
-import io.cattle.platform.iaas.api.auth.TokenUtils;
+import io.cattle.platform.iaas.api.auth.AbstractTokenUtil;
 import io.cattle.platform.iaas.api.auth.dao.AuthDao;
 import io.cattle.platform.iaas.api.auth.integration.interfaces.AccountLookup;
 import io.cattle.platform.util.type.Priority;
@@ -19,7 +19,7 @@ public class TokenAccountLookup implements AccountLookup, Priority {
     @Override
     public Account getAccount(ApiRequest request) {
         Account account = null;
-        if (StringUtils.equals(TokenUtils.TOKEN, request.getType())) {
+        if (StringUtils.equals(AbstractTokenUtil.TOKEN, request.getType())) {
             account = authDao.getAccountByUuid("token");
         }
         return account;

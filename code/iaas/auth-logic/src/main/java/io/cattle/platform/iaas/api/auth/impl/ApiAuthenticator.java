@@ -5,7 +5,7 @@ import io.cattle.platform.api.auth.Policy;
 import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.ProjectConstants;
 import io.cattle.platform.core.model.Account;
-import io.cattle.platform.iaas.api.auth.integration.interfaces.IdentityTransformationHandler;
+import io.cattle.platform.iaas.api.auth.integration.interfaces.IdentityProvider;
 import io.cattle.platform.iaas.api.auth.SecurityConstants;
 import io.cattle.platform.iaas.api.auth.dao.AuthDao;
 import io.cattle.platform.iaas.api.auth.integration.interfaces.AccountLookup;
@@ -37,7 +37,7 @@ public class ApiAuthenticator extends AbstractApiRequestHandler {
 
     AuthDao authDao;
     List<AccountLookup> accountLookups;
-    List<IdentityTransformationHandler> identityTransformationHandlers;
+    List<IdentityProvider> identityProviders;
     List<AuthorizationProvider> authorizationProviders;
     @Inject
     ObjectManager objectManager;
@@ -69,20 +69,20 @@ public class ApiAuthenticator extends AbstractApiRequestHandler {
         Policy policy = getPolicy(account, authenticatedAsAccount, identities, request);
         if (policy == null) {
             log.error("Failed to find policy for [{}]", account.getId());
-            throwUnauthorizated();
+            throwUnauthorized();
         }
 
         SchemaFactory schemaFactory = getSchemaFactory(account, policy, request);
         if (schemaFactory == null) {
             log.error("Failed to find a schema for account type [{}]", account.getKind());
             if (SecurityConstants.SECURITY.get()) {
-                throwUnauthorizated();
+                throwUnauthorized();
             }
         }
         saveInContext(request, policy, schemaFactory);
     }
 
-    protected void throwUnauthorizated() {
+    protected void throwUnauthorized() {
         throw new ClientVisibleException(ResponseCodes.UNAUTHORIZED);
     }
 
@@ -145,14 +145,14 @@ public class ApiAuthenticator extends AbstractApiRequestHandler {
             }
         }
 
-        return account;
+        return null;
     }
 
     private Set<Identity> getIdentities(Account account) {
         Set<Identity> identities = new HashSet<>();
 
-        for (IdentityTransformationHandler identityTransformationHandler : identityTransformationHandlers) {
-            identities.addAll(identityTransformationHandler.getIdentities(account));
+        for (IdentityProvider identityProvider : identityProviders) {
+            identities.addAll(identityProvider.getIdentities(account));
         }
         identities.remove(null);
         return identities;
@@ -173,23 +173,23 @@ public class ApiAuthenticator extends AbstractApiRequestHandler {
             return authenticatedAsAccount;
         }
 
-        String unobfuscatedId;
+        String parsedProjectId;
 
         try {
-            unobfuscatedId = ApiContext.getContext().getIdFormatter().parseId(projectId);
+            parsedProjectId = ApiContext.getContext().getIdFormatter().parseId(projectId);
         } catch (NumberFormatException e) {
             throw new ClientVisibleException(ResponseCodes.BAD_REQUEST, "InvalidFormat", "projectId header format is incorrect " + projectId, null);
         }
 
-        if (StringUtils.isEmpty(unobfuscatedId)) {
-            return null;
+        if (StringUtils.isEmpty(parsedProjectId)) {
+            throw new ClientVisibleException(ResponseCodes.FORBIDDEN);
         }
         try {
-            project = authDao.getAccountById(new Long(unobfuscatedId));
+            project = authDao.getAccountById(new Long(parsedProjectId));
             if (project == null || !project.getState().equalsIgnoreCase(CommonStatesConstants.ACTIVE)){
                 throw new ClientVisibleException(ResponseCodes.FORBIDDEN);
             }
-            if (authenticatedAsAccount.getId() == project.getId()) {
+            if (authenticatedAsAccount.getId().equals(project.getId())) {
                 return authenticatedAsAccount;
             }
         } catch (NumberFormatException e) {
@@ -230,13 +230,13 @@ public class ApiAuthenticator extends AbstractApiRequestHandler {
         this.accountLookups = accountLookups;
     }
 
-    public List<IdentityTransformationHandler> getIdentityTransformationHandlers() {
-        return identityTransformationHandlers;
+    public List<IdentityProvider> getIdentityProviders() {
+        return identityProviders;
     }
 
     @Inject
-    public void setIdentityTransformationHandlers(List<IdentityTransformationHandler> identityTransformationHandlers) {
-        this.identityTransformationHandlers = identityTransformationHandlers;
+    public void setIdentityProviders(List<IdentityProvider> identityProviders) {
+        this.identityProviders = identityProviders;
     }
 
 }

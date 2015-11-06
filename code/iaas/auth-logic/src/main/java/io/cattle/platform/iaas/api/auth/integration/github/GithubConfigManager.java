@@ -7,7 +7,7 @@ import io.cattle.platform.core.constants.IdentityConstants;
 import io.cattle.platform.core.model.Account;
 import io.cattle.platform.iaas.api.auth.SecurityConstants;
 import io.cattle.platform.iaas.api.auth.SettingsUtils;
-import io.cattle.platform.iaas.api.auth.TokenUtils;
+import io.cattle.platform.iaas.api.auth.AbstractTokenUtil;
 import io.cattle.platform.iaas.api.auth.dao.AuthDao;
 import io.cattle.platform.iaas.api.auth.integration.github.resource.GithubClient;
 import io.cattle.platform.iaas.api.auth.integration.github.resource.GithubConfig;
@@ -52,7 +52,7 @@ public class GithubConfigManager extends AbstractNoOpResourceManager {
     GithubClient client;
 
     @Inject
-    GithubIdentitySearchProvider githubIdentitySearchProvider;
+    GithubIdentityProvider githubIdentitySearchProvider;
 
     @Inject
     SettingsUtils settingsUtils;
@@ -88,8 +88,8 @@ public class GithubConfigManager extends AbstractNoOpResourceManager {
         if (config.get(SecurityConstants.ENABLED) != null) {
             enabled = (Boolean) config.get(SecurityConstants.ENABLED);
         }
-        if (config.get(TokenUtils.ACCESSMODE) != null) {
-            accessMode = (String) config.get(TokenUtils.ACCESSMODE);
+        if (config.get(AbstractTokenUtil.ACCESSMODE) != null) {
+            accessMode = (String) config.get(AbstractTokenUtil.ACCESSMODE);
         }
         if (config.get(GithubConstants.HOSTNAME) != null) {
             hostname = (String) config.get(GithubConstants.HOSTNAME);
@@ -136,7 +136,7 @@ public class GithubConfigManager extends AbstractNoOpResourceManager {
         }
         String ids = validateIdentities((List<Map<String, String>>) config.get(ALLOWED_IDENTITIES));
         settingsUtils.changeSetting(GithubConstants.ALLOWED_IDENTITIES_SETTING, ids);
-        settingsUtils.changeSetting(GithubConstants.ACCESSMODE_SETTING, config.get(TokenUtils.ACCESSMODE));
+        settingsUtils.changeSetting(GithubConstants.ACCESSMODE_SETTING, config.get(AbstractTokenUtil.ACCESSMODE));
         if (config.get(SecurityConstants.ENABLED) != null){
             settingsUtils.changeSetting(SecurityConstants.AUTH_PROVIDER_SETTING, GithubConstants.CONFIG);
         } else {

@@ -9,6 +9,7 @@ import io.cattle.platform.core.model.AuthToken;
 import io.cattle.platform.iaas.api.auth.dao.AuthDao;
 import io.cattle.platform.iaas.api.auth.dao.AuthTokenDao;
 import io.cattle.platform.iaas.api.auth.identity.Token;
+import io.cattle.platform.iaas.api.auth.integration.interfaces.TokenUtil;
 import io.cattle.platform.iaas.api.auth.projects.ProjectResourceManager;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.util.DataAccessor;
@@ -33,7 +34,7 @@ import javax.servlet.http.Cookie;
 import org.apache.commons.lang.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 
-public abstract class TokenUtils  {
+public abstract class AbstractTokenUtil implements TokenUtil {
 
     public static final String ACCESSMODE = "accessMode";
     public static final String TOKEN = "token";
@@ -60,6 +61,7 @@ public abstract class TokenUtils  {
     @Inject
     SettingsUtils settingsUtils;
 
+    @Override
     public Account getAccountFromJWT() {
         Map<String, Object> jsonData = getJsonData();
         if (jsonData == null) {
@@ -69,20 +71,16 @@ public abstract class TokenUtils  {
         if (null == accountId) {
             return null;
         }
-        Account account = authDao.getAccountByExternalId(accountId, getAccountType());
+        Account account = authDao.getAccountByExternalId(accountId, userType());
         if (account != null && !StringUtils.equals(CommonStatesConstants.ACTIVE, account.getState())) {
             throw new ClientVisibleException(ResponseCodes.UNAUTHORIZED);
         }
         return account;
     }
 
-    protected abstract String getAccountType();
-
     protected Map<String, Object> getJsonData() {
         return getJsonData(getJWT(), tokenType());
     }
-
-    protected abstract String tokenType();
 
     private Map<String, Object> getJsonData(String jwtKey, String tokenType) {
         if (StringUtils.isEmpty(jwtKey)){
@@ -149,6 +147,7 @@ public abstract class TokenUtils  {
         return authToken.getValue();
     }
 
+    @Override
     public String getJWT() {
         ApiRequest request = ApiContext.getContext().getApiRequest();
         String jwt = (String) request.getAttribute(tokenType());
@@ -179,6 +178,7 @@ public abstract class TokenUtils  {
         return identities;
     }
 
+    @Override
     public Set<Identity> getIdentities() {
         Map<String, Object> jsonData = getJsonData();
         if (jsonData == null) {
@@ -187,6 +187,7 @@ public abstract class TokenUtils  {
         return identities(jsonData);
     }
 
+    @Override
     public boolean findAndSetJWT() {
         ApiRequest request = ApiContext.getContext().getApiRequest();
         String jwt = (String) request.getAttribute(tokenType());
@@ -218,6 +219,7 @@ public abstract class TokenUtils  {
         return false;
     }
 
+    @Override
     public boolean isAllowed(List<String> idList, Set<Identity> identities) {
         boolean hasAccessToAProject = authDao.hasAccessToAnyProject(identities, false, null);
         switch (accessMode()) {
@@ -238,6 +240,7 @@ public abstract class TokenUtils  {
 
     protected abstract String accessMode();
 
+    @Override
     public String getAccessToken() {
         if (findAndSetJWT()) {
             Account account = getAccountFromJWT();
@@ -247,6 +250,7 @@ public abstract class TokenUtils  {
         }
     }
 
+    @Override
     public List<String> identitiesToIdList(Set<Identity> identities){
         List<String> idList = new ArrayList<>();
         for (Identity identity: identities){
@@ -257,6 +261,7 @@ public abstract class TokenUtils  {
 
     protected abstract String accessToken();
 
+    @Override
     public Account getOrCreateAccount(Identity user, Set<Identity> identities, Account account) {
         if (SecurityConstants.SECURITY.get()) {
             isAllowed(identitiesToIdList(identities), identities);
@@ -302,6 +307,7 @@ public abstract class TokenUtils  {
     }
 
 
+    @Override
     public Token createToken(Set<Identity> identities, Account account) {
 
         Identity user = getUser(identities);
@@ -322,9 +328,9 @@ public abstract class TokenUtils  {
                 .getExternalIdType());
 
         Map<String, Object> jsonData = new HashMap<>();
-        jsonData.put(TokenUtils.TOKEN, tokenType());
-        jsonData.put(TokenUtils.ACCOUNT_ID, user.getExternalId());
-        jsonData.put(TokenUtils.ID_LIST, identitiesToIdList(identities));
+        jsonData.put(AbstractTokenUtil.TOKEN, tokenType());
+        jsonData.put(AbstractTokenUtil.ACCOUNT_ID, user.getExternalId());
+        jsonData.put(AbstractTokenUtil.ID_LIST, identitiesToIdList(identities));
         String accountId = (String) ApiContext.getContext().getIdFormatter().formatId(objectManager.getType(Account.class), account.getId());
         Date expiry = new Date(System.currentTimeMillis() + SecurityConstants.TOKEN_EXPIRY_MILLIS.get());
         String jwt = tokenService.generateEncryptedToken(jsonData, expiry);
@@ -334,10 +340,7 @@ public abstract class TokenUtils  {
 
     protected abstract void postAuthModification(Account account);
 
-    public abstract String userType();
-
-    public abstract boolean createAccount();
-
+    @Override
     public Identity getUser(Set<Identity> identities) {
         for (Identity identity: identities){
             if (identity.getExternalIdType().equalsIgnoreCase(userType())){
@@ -347,7 +350,14 @@ public abstract class TokenUtils  {
         return null;
     }
 
+    @Override
     public ObjectManager getObjectManager() {
         return objectManager;
+    }
+
+    @Override
+    public boolean isConfigured() {
+        return StringUtils.isNotBlank(SecurityConstants.AUTH_PROVIDER.get())
+                && getName().equalsIgnoreCase(SecurityConstants.AUTH_PROVIDER.get());
     }
 }

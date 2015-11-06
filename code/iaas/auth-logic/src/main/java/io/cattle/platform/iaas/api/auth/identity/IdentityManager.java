@@ -4,8 +4,7 @@ import io.cattle.platform.api.auth.Identity;
 import io.cattle.platform.api.auth.Policy;
 import io.cattle.platform.core.constants.IdentityConstants;
 import io.cattle.platform.core.model.ProjectMember;
-import io.cattle.platform.iaas.api.auth.integration.interfaces.IdentitySearchProvider;
-import io.cattle.platform.iaas.api.auth.integration.interfaces.IdentityTransformationHandler;
+import io.cattle.platform.iaas.api.auth.integration.interfaces.IdentityProvider;
 import io.github.ibuildthecloud.gdapi.condition.Condition;
 import io.github.ibuildthecloud.gdapi.context.ApiContext;
 import io.github.ibuildthecloud.gdapi.exception.ClientVisibleException;
@@ -24,14 +23,12 @@ import javax.inject.Inject;
 
 public class IdentityManager extends AbstractNoOpResourceManager {
 
-    private Map<String, IdentitySearchProvider> identitySearchProviders;
+    private Map<String, IdentityProvider> identityProviders;
 
     @Override
     public Class<?>[] getTypeClasses() {
         return new Class<?>[]{Identity.class};
     }
-
-    private List<IdentityTransformationHandler> identityTransformationHandlers;
 
     @SuppressWarnings("unchecked")
     @Override
@@ -78,9 +75,9 @@ public class IdentityManager extends AbstractNoOpResourceManager {
             return null;
         }
         Identity identity = null;
-        for (IdentitySearchProvider identitySearchProvider : identitySearchProviders.values()) {
-            if (identitySearchProvider.scopes().contains(split[0]) && identitySearchProvider.isConfigured()) {
-                identity = identitySearchProvider.getIdentity(split[1], split[0]);
+        for (IdentityProvider identityProvider : identityProviders.values()) {
+            if (identityProvider.scopes().contains(split[0]) && identityProvider.isConfigured()) {
+                identity = identityProvider.getIdentity(split[1], split[0]);
                 break;
             }
         }
@@ -89,9 +86,9 @@ public class IdentityManager extends AbstractNoOpResourceManager {
 
     private List<Identity> searchIdentites(String name, boolean exactMatch) {
         Set<Identity> identities = new HashSet<>();
-        for (IdentitySearchProvider identitySearchProvider : identitySearchProviders.values()) {
-            if (identitySearchProvider.isConfigured()) {
-                identities.addAll(identitySearchProvider.searchIdentities(name, exactMatch));
+        for (IdentityProvider identityProvider : identityProviders.values()) {
+            if (identityProvider.isConfigured()) {
+                identities.addAll(identityProvider.searchIdentities(name, exactMatch));
             }
         }
         return new ArrayList<>(identities);
@@ -113,9 +110,9 @@ public class IdentityManager extends AbstractNoOpResourceManager {
 
     public Identity untransform(Identity identity, boolean error) {
         Identity newIdentity = null;
-        for (IdentityTransformationHandler identityTransformationHandler : identityTransformationHandlers) {
-            if (identityTransformationHandler.scopes().contains(identity.getExternalIdType()) && identityTransformationHandler.isConfigured()) {
-                newIdentity = identityTransformationHandler.untransform(identity);
+        for (IdentityProvider identityProvider : identityProviders.values()) {
+            if (identityProvider.scopes().contains(identity.getExternalIdType()) && identityProvider.isConfigured()) {
+                newIdentity = identityProvider.untransform(identity);
                 break;
             }
         }
@@ -129,25 +126,15 @@ public class IdentityManager extends AbstractNoOpResourceManager {
     }
 
     @Inject
-    public void setIdentitySearchProviders(Map<String, IdentitySearchProvider> identitySearchProviders) {
-        this.identitySearchProviders = identitySearchProviders;
-    }
-
-
-    public List<IdentityTransformationHandler> getIdentityTransformationHandlers() {
-        return identityTransformationHandlers;
-    }
-
-    @Inject
-    public void setIdentityTransformationHandlers(List<IdentityTransformationHandler> identityTransformationHandlers) {
-        this.identityTransformationHandlers = identityTransformationHandlers;
+    public void setIdentityProviders(Map<String, IdentityProvider> identityProviders) {
+        this.identityProviders = identityProviders;
     }
 
     public Identity projectMemberToIdentity(Identity identity) {
         Identity newIdentity = null;
-        for (IdentityTransformationHandler identityTransformationHandler : identityTransformationHandlers) {
-            if (identityTransformationHandler.scopes().contains(identity.getExternalIdType()) && identityTransformationHandler.isConfigured()) {
-                newIdentity = identityTransformationHandler.transform(identity);
+        for (IdentityProvider identityProvider : identityProviders.values()) {
+            if (identityProvider.scopes().contains(identity.getExternalIdType()) && identityProvider.isConfigured()) {
+                newIdentity = identityProvider.transform(identity);
                 break;
             }
         }

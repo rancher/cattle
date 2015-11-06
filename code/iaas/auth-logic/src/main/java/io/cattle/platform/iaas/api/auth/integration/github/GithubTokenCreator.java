@@ -19,7 +19,7 @@ import org.apache.commons.lang3.StringUtils;
 public class GithubTokenCreator extends GithubConfigurable implements TokenCreator {
 
     @Inject
-    GithubUtils githubUtils;
+    GithubTokenUtil githubTokenUtils;
     @Inject
     GithubClient githubClient;
 
@@ -27,7 +27,7 @@ public class GithubTokenCreator extends GithubConfigurable implements TokenCreat
         if (!isConfigured()) {
             throw new ClientVisibleException(ResponseCodes.SERVICE_UNAVAILABLE, GithubConstants.CONFIG, "No Github Client id and secret found.", null);
         }
-        return githubUtils.createToken(githubClient.getIdentities(accessToken), null);
+        return githubTokenUtils.createToken(githubClient.getIdentities(accessToken), null);
     }
 
     @Override
@@ -41,11 +41,6 @@ public class GithubTokenCreator extends GithubConfigurable implements TokenCreat
         }
         request.setAttribute(GithubConstants.GITHUB_ACCESS_TOKEN, accessToken);
         return getGithubToken(accessToken);
-    }
-
-    @Override
-    public String providerType() {
-        return GithubConstants.CONFIG;
     }
 
     @Override

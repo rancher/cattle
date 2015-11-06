@@ -2,10 +2,11 @@ package io.cattle.platform.iaas.api.auth.integration.ldap;
 
 import io.cattle.platform.iaas.api.auth.SecurityConstants;
 import io.cattle.platform.iaas.api.auth.integration.interfaces.Configurable;
+import io.cattle.platform.iaas.api.auth.integration.interfaces.Provider;
 
 import org.apache.commons.lang3.StringUtils;
 
-public abstract class LdapConfigurable implements Configurable {
+public abstract class LdapConfigurable implements Configurable, Provider {
 
     @Override
     public boolean isConfigured() {
@@ -24,5 +25,10 @@ public abstract class LdapConfigurable implements Configurable {
                 StringUtils.isNotBlank(LdapConstants.LDAP_DOMAIN.get());
         return StringUtils.equalsIgnoreCase(SecurityConstants.AUTH_PROVIDER.get(), LdapConstants.CONFIG) &&
                 allProps;
+    }
+
+    @Override
+    public String providerType() {
+        return LdapConstants.CONFIG;
     }
 }

@@ -10,7 +10,7 @@ import io.cattle.platform.iaas.api.auth.dao.AuthTokenDao;
 import io.cattle.platform.iaas.api.auth.integration.github.resource.GithubAccountInfo;
 import io.cattle.platform.iaas.api.auth.integration.github.resource.GithubClient;
 import io.cattle.platform.iaas.api.auth.integration.github.resource.GithubClientEndpoints;
-import io.cattle.platform.iaas.api.auth.integration.interfaces.IdentitySearchProvider;
+import io.cattle.platform.iaas.api.auth.integration.interfaces.IdentityProvider;
 import io.cattle.platform.json.JsonMapper;
 import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.util.type.CollectionUtils;
@@ -37,7 +37,7 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.fluent.Request;
 
-public class GithubIdentitySearchProvider extends GithubConfigurable implements IdentitySearchProvider {
+public class GithubIdentityProvider extends GithubConfigurable implements IdentityProvider {
 
     @Inject
     GithubClient githubClient;
@@ -45,13 +45,13 @@ public class GithubIdentitySearchProvider extends GithubConfigurable implements 
     @Inject
     private JsonMapper jsonMapper;
     @Inject
-    private GithubUtils githubUtils;
+    private GithubTokenUtil githubTokenUtils;
     @Inject
     private AuthTokenDao authTokenDao;
     @Inject
     GithubTokenCreator githubTokenCreator;
 
-    private static final Log logger = LogFactory.getLog(GithubIdentitySearchProvider.class);
+    private static final Log logger = LogFactory.getLog(GithubIdentityProvider.class);
 
 
     public List<Identity> searchIdentities(String name, boolean exactMatch) {
@@ -88,10 +88,10 @@ public class GithubIdentitySearchProvider extends GithubConfigurable implements 
             return new HashSet<>();
         }
         String accessToken = (String) DataAccessor.fields(account).withKey(GithubConstants.GITHUB_ACCESS_TOKEN).get();
-        if (githubUtils.findAndSetJWT()){
+        if (githubTokenUtils.findAndSetJWT()){
             ApiRequest request = ApiContext.getContext().getApiRequest();
             request.setAttribute(GithubConstants.GITHUB_ACCESS_TOKEN, accessToken);
-            return githubUtils.getIdentities();
+            return githubTokenUtils.getIdentities();
         }
         String jwt = null;
         if (!StringUtils.isBlank(accessToken) && SecurityConstants.SECURITY.get()) {
@@ -119,7 +119,7 @@ public class GithubIdentitySearchProvider extends GithubConfigurable implements 
         ApiRequest request = ApiContext.getContext().getApiRequest();
         request.setAttribute(GithubConstants.GITHUB_JWT, jwt);
         request.setAttribute(GithubConstants.GITHUB_ACCESS_TOKEN, accessToken);
-        return githubUtils.getIdentities();
+        return githubTokenUtils.getIdentities();
     }
 
     private List<Identity> searchGroups(String groupName, boolean exactMatch) {
@@ -253,7 +253,7 @@ public class GithubIdentitySearchProvider extends GithubConfigurable implements 
     }
 
     public List<Identity> savedIdentities() {
-        List<String> ids = githubUtils.fromCommaSeparatedString(GithubConstants.GITHUB_ALLOWED_IDENTITIES.get());
+        List<String> ids = githubTokenUtils.fromCommaSeparatedString(GithubConstants.GITHUB_ALLOWED_IDENTITIES.get());
         List<Identity> identities = new ArrayList<>();
         if (ids.isEmpty() || !isConfigured()) {
             return identities;
@@ -263,5 +263,23 @@ public class GithubIdentitySearchProvider extends GithubConfigurable implements 
             identities.add(getIdentity(split[1], split[0]));
         }
         return identities;
+    }
+
+    @Override
+    public Identity transform(Identity identity) {
+        if (scopes().contains(identity.getExternalIdType())) {
+            return getIdentity(identity.getExternalId(), identity.getExternalIdType());
+        }
+        throw new ClientVisibleException(ResponseCodes.BAD_REQUEST, IdentityConstants.INVALID_TYPE,
+            "Github does not provide: " + identity.getExternalIdType(), null );
+    }
+
+    @Override
+    public Identity untransform(Identity identity) {
+        if (scopes().contains(identity.getExternalIdType())) {
+            return identity;
+        }
+        throw new ClientVisibleException(ResponseCodes.BAD_REQUEST, IdentityConstants.INVALID_TYPE,
+            "Github does not provide: " + identity.getExternalIdType(), null );
     }
 }

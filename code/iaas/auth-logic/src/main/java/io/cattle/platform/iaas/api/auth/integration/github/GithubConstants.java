@@ -7,7 +7,6 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
-import com.netflix.config.DynamicBooleanProperty;
 import com.netflix.config.DynamicStringProperty;
 
 public class GithubConstants {
@@ -46,7 +45,6 @@ public class GithubConstants {
     public static final String TEAM_SCOPE = NAME + "_team";
     public static final String USER_SCOPE = NAME + "_user";
 
-    public static final DynamicBooleanProperty ALLOW_GITHUB_REDIRECT = ArchaiusUtil.getBoolean("api.allow.github.proxy");
     public static final DynamicStringProperty GITHUB_CLIENT_ID = ArchaiusUtil.getString(CLIENT_ID_SETTING);
     public static final DynamicStringProperty GITHUB_CLIENT_SECRET = ArchaiusUtil.getString(CLIENT_SECRET_SETTING);
     public static final DynamicStringProperty GITHUB_HOSTNAME = ArchaiusUtil.getString(HOSTNAME_SETTING);
