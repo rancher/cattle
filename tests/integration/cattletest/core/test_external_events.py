@@ -29,7 +29,7 @@ def test_external_volume_event(super_client, new_context):
 
     # Create a storage pool for the volume
     create_sp_event(client, agent_client, super_client, new_context,
-                    sp_ex_id, sp_name, SP_CREATE, [host.uuid])
+                    sp_ex_id, sp_name, SP_CREATE, [host.uuid], None)
     storage_pool = wait_for(lambda: sp_wait(client, sp_ex_id))
 
     driver = 'convoy'
@@ -74,29 +74,31 @@ def test_external_storage_pool_event(super_client, new_context):
 
     external_id = random_str()
     name = 'name-%s' % external_id
+    driver_name = 'rancher-bob'
 
     # Create a new storage pool with a single host
     uuids = [host.uuid]
     create_sp_event(client, agent_client, super_client, new_context,
-                    external_id, name, SP_CREATE, uuids)
+                    external_id, name, SP_CREATE, uuids, driver_name)
     storage_pool = wait_for(lambda: sp_wait(client, external_id))
     assert storage_pool.state == 'active'
     assert storage_pool.externalId == external_id
     assert storage_pool.name == name
+    assert storage_pool.driverName == driver_name
     hosts = wait_for(lambda: wait_host_count(storage_pool, 1))
     assert len(hosts) == 1
     assert hosts[0].uuid == host.uuid
 
     # Send event again to ensure a second storage pool is not created
     create_sp_event(client, agent_client, super_client, new_context,
-                    external_id, name, SP_CREATE, uuids)
+                    external_id, name, SP_CREATE, uuids, None)
 
     # Add a second host
     host2 = register_simulated_host(new_context)
     uuids.append(host2.uuid)
     create_sp_event(client, agent_client, super_client, new_context,
                     external_id,
-                    name, SP_CREATE, uuids)
+                    name, SP_CREATE, uuids, None)
     hosts = wait_for(lambda: wait_host_count(storage_pool, 2))
     host_ids = [h.id for h in hosts]
     assert host.id in host_ids
@@ -106,7 +108,7 @@ def test_external_storage_pool_event(super_client, new_context):
     uuids.pop(0)
     create_sp_event(client, agent_client, super_client, new_context,
                     external_id,
-                    name, SP_CREATE, uuids)
+                    name, SP_CREATE, uuids, None)
     hosts = wait_for(lambda: wait_host_count(storage_pool, 1))
     assert host2.id in hosts[0].id
 
@@ -114,7 +116,7 @@ def test_external_storage_pool_event(super_client, new_context):
     uuids = []
     create_sp_event(client, agent_client, super_client, new_context,
                     external_id,
-                    name, SP_CREATE, uuids)
+                    name, SP_CREATE, uuids, None)
     hosts = wait_for(lambda: wait_host_count(storage_pool, 0))
     assert len(hosts) == 0
 
@@ -209,7 +211,7 @@ def create_volume_event(client, agent_client, super_client, context,
 
 
 def create_sp_event(client, agent_client, super_client, context, external_id,
-                    name, event_type, host_uuids):
+                    name, event_type, host_uuids, driver_name):
     event = agent_client.create_external_storage_pool_event(
         externalId=external_id,
         eventType=event_type,
@@ -217,6 +219,7 @@ def create_sp_event(client, agent_client, super_client, context, external_id,
         storagePool={
             'name': name,
             'externalId': external_id,
+            'driverName': driver_name,
         })
 
     assert event.externalId == external_id

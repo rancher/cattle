@@ -294,6 +294,7 @@
 
         "storagePool": "r",
         "storagePool.externalId": "r",
+        "storagePool.driverName": "r",
 
         "subscribe" : "",
         "subscribe.eventNames" : "cr",

@@ -201,6 +201,17 @@ public interface StoragePool extends java.io.Serializable {
 	@javax.persistence.Column(name = "external_id", length = 128)
 	public java.lang.String getExternalId();
 
+	/**
+	 * Setter for <code>cattle.storage_pool.driver_name</code>.
+	 */
+	public void setDriverName(java.lang.String value);
+
+	/**
+	 * Getter for <code>cattle.storage_pool.driver_name</code>.
+	 */
+	@javax.persistence.Column(name = "driver_name", length = 255)
+	public java.lang.String getDriverName();
+
 	// -------------------------------------------------------------------------
 	// FROM and INTO
 	// -------------------------------------------------------------------------

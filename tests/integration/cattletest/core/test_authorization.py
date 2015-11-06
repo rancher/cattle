@@ -591,6 +591,30 @@ def test_task_instance_auth(admin_user_client, user_client, project_client):
     })
 
 
+def test_storagepool_auth(admin_user_client, user_client, project_client):
+    auth_check(admin_user_client.schema, 'storagePool', 'r', {
+        'accountId': 'r',
+        'data': 'r',
+        'externalId': 'r',
+        'name': 'r',
+        'driverName': 'r',
+    })
+
+    auth_check(user_client.schema, 'storagePool', 'r', {
+        'accountId': 'r',
+        'externalId': 'r',
+        'name': 'r',
+        'driverName': 'r',
+    })
+
+    auth_check(project_client.schema, 'storagePool', 'r', {
+        'accountId': 'r',
+        'externalId': 'r',
+        'name': 'r',
+        'driverName': 'r',
+    })
+
+
 def test_volume_auth(admin_user_client, user_client, project_client):
     auth_check(admin_user_client.schema, 'volume', 'r', {
         'accountId': 'r',
@@ -1397,6 +1421,7 @@ def test_registry(admin_user_client, user_client, project_client):
     auth_check(admin_user_client.schema, 'registry', 'r', {
         'accountId': 'r',
         'data': 'r',
+        'driverName': 'r',
         'externalId': 'r',
         'serverAddress': 'r',
     })
@@ -1404,11 +1429,13 @@ def test_registry(admin_user_client, user_client, project_client):
     auth_check(user_client.schema, 'registry', 'r', {
         'accountId': 'r',
         'externalId': 'r',
+        'driverName': 'r',
         'serverAddress': 'r',
     })
 
     auth_check(project_client.schema, 'registry', 'crud', {
         'accountId': 'r',
+        'driverName': 'r',
         'externalId': 'r',
         'serverAddress': 'cr',
     })
