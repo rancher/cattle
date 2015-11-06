@@ -11,6 +11,7 @@ import io.cattle.platform.object.process.StandardProcess;
 import io.cattle.platform.object.resource.ResourcePredicate;
 import io.cattle.platform.process.common.util.ProcessUtils;
 import io.cattle.platform.servicediscovery.api.constants.ServiceDiscoveryConstants;
+import io.cattle.platform.servicediscovery.api.resource.ServiceDiscoveryConfigItem;
 import io.cattle.platform.servicediscovery.api.util.ServiceDiscoveryUtil;
 import io.cattle.platform.servicediscovery.deployment.AbstractInstanceUnit;
 import io.cattle.platform.servicediscovery.deployment.DeploymentUnitInstance;
@@ -101,6 +102,7 @@ public class DefaultDeploymentUnitInstance extends AbstractInstanceUnit {
         Map<String, Object> launchConfigData = ServiceDiscoveryUtil.buildServiceInstanceLaunchData(service,
                 deployParams, launchConfigName, context.allocatorService);
         launchConfigData.put("name", this.instanceName);
+        launchConfigData.remove(ServiceDiscoveryConfigItem.RESTART.getCattleName());
         Object labels = launchConfigData.get(InstanceConstants.FIELD_LABELS);
         if (labels != null) {
             String overrideHostName = ((Map<String, String>) labels)
