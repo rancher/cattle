@@ -9,7 +9,6 @@ import io.github.ibuildthecloud.gdapi.annotation.Type;
 
 import java.util.List;
 
-
 @Type(name = TokenUtils.TOKEN)
 public class Token {
 
@@ -59,7 +58,7 @@ public class Token {
 
     @Field(nullable = true)
     public String getClientId() {
-        return SecurityConstants.AUTH_PROVIDER.get().equalsIgnoreCase(GithubConstants.CONFIG)
+        return GithubConstants.CONFIG.equalsIgnoreCase(SecurityConstants.AUTH_PROVIDER.get())
                 ? GithubConstants.GITHUB_CLIENT_ID.get() : null;
     }
 
@@ -75,7 +74,7 @@ public class Token {
 
     @Field(nullable = true)
     public String getHostname() {
-        return SecurityConstants.AUTH_PROVIDER.get().equalsIgnoreCase(GithubConstants.CONFIG)
+        return GithubConstants.CONFIG.equalsIgnoreCase(SecurityConstants.AUTH_PROVIDER.get())
                 ? GithubConstants.GITHUB_HOSTNAME.get() : null;
     }
 
