@@ -25,7 +25,11 @@ public class LdapTokenCreator extends LdapConfigurable implements TokenCreator {
         if (!isConfigured()) {
             throw new ClientVisibleException(ResponseCodes.INTERNAL_SERVER_ERROR, LdapConstants.CONFIG, "Ldap Not Configured.", null);
         }
-        return ldapTokenUtils.createToken(ldapIdentitySearchProvider.getIdentities(username, password), null);
+        try {
+            return ldapTokenUtils.createToken(ldapIdentitySearchProvider.getIdentities(username, password), null);
+        } catch (ServiceContextCreationException | ServiceContextRetrievalException e){
+            throw new ClientVisibleException(ResponseCodes.INTERNAL_SERVER_ERROR, "LdapDown", "Could not talk to ldap", null);
+        }
     }
 
     @Override

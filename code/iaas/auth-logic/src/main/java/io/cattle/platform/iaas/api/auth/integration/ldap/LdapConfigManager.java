@@ -15,7 +15,6 @@ import org.apache.commons.lang3.StringUtils;
 
 public class LdapConfigManager extends AbstractNoOpResourceManager {
 
-
     @Inject
     SettingsUtils settingsUtils;
 
@@ -35,6 +34,7 @@ public class LdapConfigManager extends AbstractNoOpResourceManager {
             return null;
         }
         Map<String, Object> config = jsonMapper.convertValue(request.getRequestObject(), Map.class);
+        LDAPUtils.validateConfig(currentLdapConfig(config));
         return updateCurrentConfig(config);
     }
 
@@ -42,7 +42,7 @@ public class LdapConfigManager extends AbstractNoOpResourceManager {
         LdapConfig currentConfig = (LdapConfig) listInternal(null, null, null, null);
         String domain = currentConfig.getDomain();
         if (config.get(LdapConstants.DOMAIN) != null) {
-            domain = (String) config.get(domain);
+            domain = (String) config.get(LdapConstants.DOMAIN);
         }
         String server = currentConfig.getServer();
         if (config.get(LdapConstants.SERVER) != null) {
