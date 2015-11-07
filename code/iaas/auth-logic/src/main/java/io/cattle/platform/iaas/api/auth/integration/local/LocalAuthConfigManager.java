@@ -46,8 +46,8 @@ public class LocalAuthConfigManager extends AbstractNoOpResourceManager {
             settingsUtils.changeSetting(SecurityConstants.AUTH_PROVIDER_SETTING, SecurityConstants.NO_PROVIDER);
             return new LocalAuthConfig("", "", "", accessMode, false);
         } else {
-            if (enabled || StringUtils.isNotBlank(username)) {
-                settingsUtils.changeSetting(SecurityConstants.SECURITY_SETTING, enabled);
+            settingsUtils.changeSetting(SecurityConstants.SECURITY_SETTING, enabled);
+            if (StringUtils.isNotBlank(username)) {
                 passwordDao.verifyUsernamePassword(username, password, name);
             }
         }
