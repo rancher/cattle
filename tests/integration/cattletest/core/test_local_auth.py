@@ -31,6 +31,7 @@ def turn_on_off_local_auth(request, admin_user_client):
         admin_user_client.create_localAuthConfig(enabled=None,
                                                  username=username,
                                                  password=password)
+        assert from_env().valid()
 
     request.addfinalizer(fin)
 
