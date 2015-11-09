@@ -98,6 +98,7 @@ public class DefaultAuthorizationProvider implements AuthorizationProvider, Init
         String kind = getRole(policy, request);
         if (kind != null) {
             options = new PolicyOptionsWrapper(optionsFactory.getOptions(kind));
+            options.setOption(Policy.ASSIGNED_ROLE, kind);
             policy = new AccountPolicy(account, authenticatedAsAccount, identities, options);
         }
 
@@ -110,6 +111,10 @@ public class DefaultAuthorizationProvider implements AuthorizationProvider, Init
     }
 
     protected String getRole(Policy policy, ApiRequest request) {
+        String assignedRole = policy.getOption(Policy.ASSIGNED_ROLE);
+        if (assignedRole != null) {
+            return assignedRole;
+        }
         if (policy.isOption(Policy.ROLE_OPTION)) {
             Object role = request.getOptions().get("_role");
             if (role != null && schemaFactories.containsKey(role)) {

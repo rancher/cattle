@@ -302,6 +302,10 @@ def test_role_option(admin_user_client, client, random_str, context):
     creds = client.list_credential(name=random_str, _role='superadmin')
     assert len(creds) == 0
 
+    schemas = [x for x in admin_user_client.list_schema(_role='project')
+               if x.id == 'externalHandler']
+    assert len(schemas) == 0
+
 
 def test_query_length(admin_user_client):
     big = 'a' * 8192
