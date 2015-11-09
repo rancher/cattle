@@ -92,6 +92,7 @@
         "container.createIndex" : "r",
         "container.deploymentUnitUuid" : "r",
         "container.version" : "r",
+        "container.startCount" : "r",
 
         "containerExec" : "r",
         "containerExec.attachStdin" : "cr",

@@ -231,6 +231,10 @@
             "type" : "string",
             "nullable": false,
             "default" : "0"
+        },
+         "startCount" : {
+            "type" : "int",
+            "nullable" : true
         }
     },
     "resourceActions": {
