@@ -51,6 +51,7 @@
     <bean class="io.cattle.platform.agent.instance.process.AgentInstanceInstanceRemove" />
     <bean class="io.cattle.platform.agent.instance.process.AgentInstanceNicActivate" />
     <bean class="io.cattle.platform.agent.instance.process.AgentInstancePostNicActivate" />
+    <bean class="io.cattle.platform.agent.instance.process.AgentInstancePreInstanceHostMapActivate" />
     <bean class="io.cattle.platform.agent.instance.process.AgentInstanceApplyItems" />
     <bean class="io.cattle.platform.agent.instance.process.AgentInstanceHostServicesApplyItems" />
 
