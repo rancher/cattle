@@ -137,6 +137,116 @@ def test_bad_agent(super_client, host):
     assert e.value.error.code == 'MissingRequired'
 
 
+def test_external_host_event_miss(new_context):
+    new_context.create_container()
+
+    client = new_context.client
+    host = new_context.host
+    event = client.create_external_host_event(hostLabel='foo=bar',
+                                              eventType='host.evacuate',
+                                              deleteHost=True)
+    event = client.wait_success(event)
+    host = client.reload(host)
+
+    assert event.state == 'created'
+    assert host.state == 'active'
+
+
+def test_external_host_event_wrong_event(new_context):
+    c = new_context.create_container()
+
+    client = new_context.client
+    host = client.update(new_context.host, labels={
+        'foo': 'bar'
+    })
+    host = client.wait_success(host)
+    assert host.labels == {'foo': 'bar'}
+
+    event = client.create_external_host_event(hostLabel='foo=bar',
+                                              eventType='host.notevacuate',
+                                              deleteHost=True)
+    assert event.state == 'creating'
+
+    event = client.wait_success(event)
+    host = client.reload(host)
+    c = client.wait_success(c)
+
+    assert event.state == 'created'
+    assert host.state == 'active'
+    assert c.state == 'running'
+
+
+def test_external_host_event_hit(new_context):
+    c = new_context.create_container()
+
+    client = new_context.client
+    host = client.update(new_context.host, labels={
+        'foo': 'bar'
+    }, deleteHost=True)
+    host = client.wait_success(host)
+    assert host.labels == {'foo': 'bar'}
+
+    event = client.create_external_host_event(hostLabel='foo=bar',
+                                              eventType='host.evacuate',
+                                              deleteHost=True)
+    assert event.state == 'creating'
+
+    event = client.wait_success(event)
+    host = client.reload(host)
+    c = client.wait_success(c)
+
+    assert event.state == 'created'
+    assert host.state == 'purged'
+    assert c.state == 'removed'
+
+
+def test_external_host_event_no_delete(new_context):
+    c = new_context.create_container()
+
+    client = new_context.client
+    host = client.update(new_context.host, labels={
+        'foo': 'bar'
+    })
+    host = client.wait_success(host)
+    assert host.labels == {'foo': 'bar'}
+
+    event = client.create_external_host_event(hostLabel='foo=bar',
+                                              eventType='host.evacuate')
+    assert event.state == 'creating'
+
+    event = client.wait_success(event)
+    host = client.reload(host)
+    c = client.wait_success(c)
+
+    assert event.state == 'created'
+    assert host.state == 'inactive'
+
+
+def test_external_host_event_by_id(new_context):
+    c = new_context.create_container()
+    new_host = register_simulated_host(new_context)
+
+    client = new_context.client
+    host = client.update(new_context.host, labels={
+        'foo': 'bar'
+    })
+    host = client.wait_success(host)
+    assert host.labels == {'foo': 'bar'}
+
+    event = client.create_external_host_event(hostId=host.id,
+                                              eventType='host.evacuate')
+    assert event.state == 'creating'
+
+    event = client.wait_success(event)
+    new_host = client.reload(new_host)
+    c = client.wait_success(c)
+    host = client.reload(host)
+
+    assert event.state == 'created'
+    assert host.state == 'inactive'
+    assert new_host.state == 'active'
+
+
 def test_external_dns_event(super_client, new_context):
     client, agent_client, host = from_context(new_context)
 

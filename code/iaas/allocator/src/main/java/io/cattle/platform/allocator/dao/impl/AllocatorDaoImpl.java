@@ -375,6 +375,15 @@ public class AllocatorDaoImpl extends AbstractJooqDao implements AllocatorDao {
         return labelKeyValueStatusMap;
     }
 
+    @Override
+    public List<? extends Host> getNonPurgedHosts(long accountId) {
+        return create()
+                .select(HOST.fields())
+                .from(HOST)
+                .where(HOST.ACCOUNT_ID.eq(accountId)
+                .and(HOST.STATE.notEqual(CommonStatesConstants.PURGED)))
+                .fetchInto(Host.class);
+    }
 
     @Override
     public List<? extends Host> getActiveHosts(long accountId) {

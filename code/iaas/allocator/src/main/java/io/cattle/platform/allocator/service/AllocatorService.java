@@ -30,4 +30,6 @@ public interface AllocatorService {
     @SuppressWarnings("rawtypes")
     List<Constraint> extractConstraintsFromLabels(Map labels, Instance instance);
 
+    List<Long> getAllHostsSatisfyingHostAffinity(Long accountId, Map<String, String> labelConstraints);
+
 }

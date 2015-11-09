@@ -55,8 +55,17 @@ public class AllocatorServiceImpl implements AllocatorService {
     ObjectManager objectManager;
 
     @Override
+    public List<Long> getAllHostsSatisfyingHostAffinity(Long accountId, Map<String, String> labelConstraints) {
+        return getHostsSatisfyingHostAffinityInternal(true, accountId, labelConstraints);
+    }
+
+    @Override
     public List<Long> getHostsSatisfyingHostAffinity(Long accountId, Map<String, String> labelConstraints) {
-        List<? extends Host> hosts = allocatorDao.getActiveHosts(accountId);
+        return getHostsSatisfyingHostAffinityInternal(false, accountId, labelConstraints);
+    }
+
+    protected List<Long> getHostsSatisfyingHostAffinityInternal(boolean includeRemoved, Long accountId, Map<String, String> labelConstraints) {
+        List<? extends Host> hosts = includeRemoved ? allocatorDao.getNonPurgedHosts(accountId) : allocatorDao.getActiveHosts(accountId);
 
         List<Constraint> hostAffinityConstraints = getHostAffinityConstraintsFromLabels(labelConstraints);
 
@@ -218,6 +227,7 @@ public class AllocatorServiceImpl implements AllocatorService {
         return constraints;
     }
 
+    @Override
     @SuppressWarnings({ "unchecked", "rawtypes" })
     public List<Constraint> extractConstraintsFromLabels(Map labels, Instance instance) {
         List<Constraint> constraints = new ArrayList<Constraint>();

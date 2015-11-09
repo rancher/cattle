@@ -18,6 +18,7 @@
         "environment" : "crud",
         "environmentUpgrade" : "cr",
         "externalService" : "crud",
+        "externalHostEvent" : "cr",
         "globalLoadBalancer" : "crud",
         "globalLoadBalancerHealthCheck" : "cr",
         "globalLoadBalancerPolicy" : "cr",

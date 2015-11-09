@@ -146,6 +146,12 @@
         "externalServiceEvent.service" : "r",
         "externalServiceEvent.environment" : "r",
 
+        "externalHostEvent" : "r",
+        "externalHostEvent.deleteHost" : "cr",
+        "externalHostEvent.hostId" : "cr",
+        "externalHostEvent.hostLabel" : "cr",
+        "externalHostEvent.eventType" : "cr",
+
         "host" : "r",
         "host.agentState" : "r",
         "host.agentId" : "r",

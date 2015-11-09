@@ -6,6 +6,7 @@ public class ExternalEventConstants {
     public static final String KIND_STORAGE_POOL_EVENT = "externalStoragePoolEvent";
     public static final String KIND_EXTERNAL_DNS_EVENT = "externalDnsEvent";
     public static final String KIND_SERVICE_EVENT = "externalServiceEvent";
+    public static final String KIND_EXTERNAL_HOST_EVENT = "externalHostEvent";
     public static final String KIND_EXTERNAL_EVENT = "externalEvent";
     public static final String FIELD_REPORTED_ACCOUNT_ID = "reportedAccountId";
     public static final String FIELD_HOST_UUIDS = "hostUuids";
@@ -14,6 +15,7 @@ public class ExternalEventConstants {
     public static final String TYPE_SERVICE_CREATE = "service.create";
     public static final String TYPE_SERVICE_UPDATE = "service.update";
     public static final String TYPE_SERVICE_DELETE = "service.remove";
+    public static final String TYPE_HOST_EVACUATE = "host.evacuate";
     public static final String VOLUME_POOL_LOCK_NAME = "VOLUME";
     public static final String STORAGE_POOL_LOCK_NAME = "STORAGEPOOL";
     public static final String EXERNAL_DNS_LOCK_NAME = "EXTERNALDNS";
@@ -38,5 +40,8 @@ public class ExternalEventConstants {
     public static final String FIELD_SERVICE_NAME = "serviceName";
     public static final String FIELD_STACK_NAME = "stackName";
     public static final String FIELD_FQDN = "fqdn";
+    public static final String FIELD_HOST_LABEL = "hostLabel";
+    public static final String FIELD_HOST_ID = "hostId";
+    public static final String FIELD_DELETE_HOST = "deleteHost";
 
 }
