@@ -110,6 +110,7 @@ def _assert_running(container):
     assert_fields(container, {
         "allocationState": "active",
         "state": "running",
+        "startCount": NOT_NONE,
         "firstRunning": NOT_NONE
     })
 
