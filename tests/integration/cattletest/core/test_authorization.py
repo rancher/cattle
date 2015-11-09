@@ -178,7 +178,10 @@ def test_readonly_types(admin_user_client):
     for type in client.schema.types:
         type = client.schema.types[type]
         assert len(type['actions']) == 0
-        assert len(type['resourceActions']) == 0
+        if type.id == 'container':
+            assert type['resourceActions'].keys() == ['logs']
+        else:
+            assert len(type['resourceActions']) == 0
         assert len(type['collectionActions']) == 0
         if type.resourceFields is not None:
             for k, field in type.resourceFields.items():

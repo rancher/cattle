@@ -4,6 +4,8 @@
         ".*\\.uuid": "r",
         "registrationToken": "",
 
+        "container.resourceActions.logs": "c",
+
         "end" : ""
     }
 }
