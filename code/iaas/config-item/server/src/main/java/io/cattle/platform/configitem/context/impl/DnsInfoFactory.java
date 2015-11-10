@@ -14,15 +14,11 @@ import io.cattle.platform.core.model.Nic;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import javax.inject.Inject;
 import javax.inject.Named;
-
-import com.google.common.collect.Lists;
 
 @Named
 public class DnsInfoFactory extends AbstractAgentBaseContextFactory {
@@ -37,16 +33,19 @@ public class DnsInfoFactory extends AbstractAgentBaseContextFactory {
         List<DnsEntryData> dnsEntries = new ArrayList<DnsEntryData>();
         // 1. retrieve all instance links for the hosts
         dnsEntries.addAll(dnsInfoDao.getInstanceLinksHostDnsData(instance));
-        // 2. retrieve all service links for the host
-        dnsEntries.addAll(dnsInfoDao.getServiceHostDnsData(instance, isVIPProviderConfigured));
+        // 2. retrieve regular service dns records
+        dnsEntries.addAll(dnsInfoDao.getServiceDnsData(instance, isVIPProviderConfigured, true));
+        dnsEntries.addAll(dnsInfoDao.getServiceDnsData(instance, isVIPProviderConfigured, false));
         // 3. retrieve self service links
-        dnsEntries.addAll(dnsInfoDao.getSelfServiceLinks(instance, isVIPProviderConfigured));
-        // 4. retrieve external service links
-        dnsEntries.addAll(dnsInfoDao.getExternalServiceDnsData(instance));
-        // 5. get dns service links
-        dnsEntries.addAll(dnsInfoDao.getDnsServiceLinks(instance, isVIPProviderConfigured));
+        dnsEntries.addAll(dnsInfoDao.getSelfServiceData(instance, isVIPProviderConfigured));
+        // 4. retrieve external service dns records
+        dnsEntries.addAll(dnsInfoDao.getExternalServiceDnsData(instance, true));
+        dnsEntries.addAll(dnsInfoDao.getExternalServiceDnsData(instance, false));
+        // 5. get dns service dns records
+        dnsEntries.addAll(dnsInfoDao.getDnsServiceLinksData(instance, isVIPProviderConfigured, true));
+        dnsEntries.addAll(dnsInfoDao.getDnsServiceLinksData(instance, isVIPProviderConfigured, false));
 
-        // 6. aggregate the links based on the source ip address
+        // aggregate the links based on the source ip address
         Map<String, DnsEntryData> processedDnsEntries = new HashMap<>();
         for (DnsEntryData dnsEntry : dnsEntries) {
             DnsEntryData newData = null;
@@ -64,15 +63,15 @@ public class DnsInfoFactory extends AbstractAgentBaseContextFactory {
     }
 
     protected void populateARecords(DnsEntryData dnsEntry, DnsEntryData newData) {
-        Map<String, List<String>> resolve = newData.getResolve();
-        for (String dnsName : dnsEntry.getResolve().keySet()) {
-            Set<String> ips = new HashSet<>();
+        Map<String, Map<String, String>> resolve = newData.getResolveServicesAndContainers();
+        for (String dnsName : dnsEntry.getResolveServicesAndContainers().keySet()) {
+            Map<String, String> ips = new HashMap<>();
             if (resolve.containsKey(dnsName)) {
-                ips.addAll(resolve.get(dnsName));
+                ips.putAll(resolve.get(dnsName));
             }
-            ips.addAll(dnsEntry.getResolve().get(dnsName));
-            resolve.put(dnsName, Lists.newArrayList(ips));
-            newData.setResolve(resolve);
+            ips.putAll(dnsEntry.getResolveServicesAndContainers().get(dnsName));
+            resolve.put(dnsName, ips);
+            newData.setResolveServicesAndContainers(resolve);
         }
     }
 

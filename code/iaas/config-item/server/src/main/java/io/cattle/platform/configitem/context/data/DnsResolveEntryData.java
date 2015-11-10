@@ -5,6 +5,7 @@ public class DnsResolveEntryData {
     String dnsName;
     String ipAddress;
     Long serviceId;
+    String targetInstanceName;
 
     public Long getServiceId() {
         return serviceId;
@@ -28,5 +29,13 @@ public class DnsResolveEntryData {
 
     public void setIpAddress(String ipAddress) {
         this.ipAddress = ipAddress;
+    }
+
+    public String getTargetInstanceName() {
+        return targetInstanceName;
+    }
+
+    public void setTargetInstanceName(String targetInstanceName) {
+        this.targetInstanceName = targetInstanceName;
     }
 }
