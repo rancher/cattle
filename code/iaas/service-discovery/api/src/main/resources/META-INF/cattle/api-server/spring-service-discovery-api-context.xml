@@ -35,7 +35,6 @@
        <bean class="io.cattle.platform.servicediscovery.api.action.EnvironmentComposeLinkHandler" />
        
        <bean class="io.cattle.platform.servicediscovery.api.service.impl.RancherImageToComposeFormatter" />
-       <bean class="io.cattle.platform.servicediscovery.api.service.impl.RancherRestartToComposeFormatter" />
        <bean class="io.cattle.platform.servicediscovery.api.service.impl.RancherGenericMapToComposeFormatter" />
        <bean class="io.cattle.platform.servicediscovery.api.service.impl.RancherCertificatesToComposeFormatter" />
        

@@ -23,3 +23,4 @@ public interface Resource extends ApiStandardType {
     Map<String, Object> getFields();
 
 }
+     

@@ -553,6 +553,7 @@
         "launchConfig.name" : "",
         "launchConfig.networkLaunchConfig" : "cr",
         "launchConfig.dataVolumesFromLaunchConfigs" : "cr",
+        "launchConfig.restartPolicy" : "",
  
         "secondaryLaunchConfig" : "cr",
         "secondaryLaunchConfig.name" : "cr",
