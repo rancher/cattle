@@ -17,7 +17,7 @@
     </bean>
 
     <bean class="io.cattle.platform.iaas.api.auth.impl.ApiAuthenticator" >
-        <property name="identityTransformationHandlers" value="#{extensionManager.list('identity.transformation.handler')}" />
+        <property name="identityProviders" value="#{extensionManager.list('identity.provider')}" />
         <property name="accountLookups" value="#{extensionManager.list('account.lookup')}" />
         <property name="authorizationProviders" value="#{extensionManager.list('authorization.provider')}" />
     </bean>
@@ -29,7 +29,7 @@
 
     <bean id="BasicAuth" class="io.cattle.platform.iaas.api.auth.integration.internal.rancher.BasicAuthImpl" />
     <bean id="AdminAuth" class="io.cattle.platform.iaas.api.auth.integration.internal.rancher.AdminAuthLookUp" />
-    <bean class="io.cattle.platform.iaas.api.auth.integration.internal.rancher.RancherIdentitySearchProvider" />
+    <bean class="io.cattle.platform.iaas.api.auth.integration.internal.rancher.RancherIdentityProvider" />
 
     <bean class="io.cattle.platform.iaas.api.auth.integration.internal.rancher.HeaderAuthLookup" >
         <property name="adminLookup" ref="BasicAuth" />
@@ -41,43 +41,40 @@
     <bean class="io.cattle.platform.iaas.api.auth.projects.SetProjectMembersActionHandler"/>
     <bean class="io.cattle.platform.iaas.api.auth.projects.ProjectDeactivate"/>
 
+    <bean class="io.cattle.platform.iaas.api.auth.integration.internal.rancher.TokenAuthLookup">
+        <property name="tokenUtilsMap" value="#{extensionManager.map('token.util')}" />
+    </bean>
 
-    <bean class="io.cattle.platform.iaas.api.auth.integration.github.GithubUtils"/>
+
+    <bean class="io.cattle.platform.iaas.api.auth.integration.github.GithubTokenUtil"/>
     <bean class="io.cattle.platform.iaas.api.auth.integration.github.resource.GithubClient"/>
     <bean class="io.cattle.platform.iaas.api.auth.integration.github.GithubConfigManager" />
 
 	
     <bean id="TokenAccountLookup" class="io.cattle.platform.iaas.api.auth.integration.internal.rancher.TokenAccountLookup" />
-    <bean id="GithubAuth" class="io.cattle.platform.iaas.api.auth.integration.github.GithubOAuthImpl" />
-    <bean class="io.cattle.platform.iaas.api.auth.integration.github.GithubIdentitySearchProvider"/>
+    <bean class="io.cattle.platform.iaas.api.auth.integration.github.GithubIdentityProvider"/>
 
     <bean class="io.cattle.platform.iaas.api.request.handler.GenericWhitelistedProxy" />
-    <bean class="io.cattle.platform.iaas.api.auth.integration.internal.rancher.RancherIdentityTransformationHandler" />
-    <bean class="io.cattle.platform.iaas.api.auth.integration.github.GithubIdentityTransformationHandler" />
 
-    <bean class="io.cattle.platform.iaas.api.auth.integration.ldap.LdapAuthImpl" />
-    <bean class="io.cattle.platform.iaas.api.auth.integration.ldap.LdapIdentityTransformationHandler" />
-    <bean class="io.cattle.platform.iaas.api.auth.integration.ldap.LdapIdentitySearchProvider" />
+    <bean class="io.cattle.platform.iaas.api.auth.integration.ldap.LdapIdentityProvider" />
     <bean class="io.cattle.platform.iaas.api.auth.integration.ldap.LdapTokenCreator" />
-    <bean class="io.cattle.platform.iaas.api.auth.integration.ldap.LdapUtils" />
+    <bean class="io.cattle.platform.iaas.api.auth.integration.ldap.LdapTokenUtils" />
     <bean class="io.cattle.platform.iaas.api.auth.integration.ldap.LdapConfigManager" />
 
     <bean class="io.cattle.platform.iaas.api.auth.SettingsUtils" />
     <bean class="io.cattle.platform.iaas.api.auth.identity.IdentityManager" >
-        <property name="identitySearchProviders" value="#{extensionManager.map('identity.search.provider')}" />
-        <property name="identityTransformationHandlers" value="#{extensionManager.list('identity.transformation.handler')}" />
+        <property name="identityProviders" value="#{extensionManager.map('identity.provider')}" />
     </bean>
 
     <bean class="io.cattle.platform.iaas.api.auth.dao.impl.AuthTokenDaoImpl" />
 
     <bean class="io.cattle.platform.iaas.api.auth.integration.local.LocalAuthConfigManager" />
     <bean class="io.cattle.platform.iaas.api.auth.integration.local.LocalAuthTokenCreator" />
-    <bean class="io.cattle.platform.iaas.api.auth.integration.local.LocalAuthUtils" />
-    <bean class="io.cattle.platform.iaas.api.auth.integration.local.LocalAuthImpl" />
+    <bean class="io.cattle.platform.iaas.api.auth.integration.local.LocalAuthTokenUtils" />
 
     <extension:discover class="io.cattle.platform.iaas.api.auth.AuthorizationProvider"/>
     <extension:discover class="io.cattle.platform.iaas.api.auth.integration.interfaces.AccountLookup"/>
     <extension:discover class="io.cattle.platform.iaas.api.auth.integration.interfaces.TokenCreator"/>
-    <extension:discover class="io.cattle.platform.iaas.api.auth.integration.interfaces.IdentityTransformationHandler"/>
-    <extension:discover class="io.cattle.platform.iaas.api.auth.integration.interfaces.IdentitySearchProvider"/>
+    <extension:discover class="io.cattle.platform.iaas.api.auth.integration.interfaces.IdentityProvider"/>
+    <extension:discover class="io.cattle.platform.iaas.api.auth.integration.interfaces.TokenUtil"/>
 </beans>

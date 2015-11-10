@@ -1,12 +1,8 @@
 package io.cattle.platform.iaas.api.auth.integration.ldap;
 
 import io.cattle.platform.iaas.api.auth.SecurityConstants;
-import io.cattle.platform.iaas.api.auth.dao.AuthDao;
 import io.cattle.platform.iaas.api.auth.identity.Token;
 import io.cattle.platform.iaas.api.auth.integration.interfaces.TokenCreator;
-import io.cattle.platform.iaas.api.auth.projects.ProjectResourceManager;
-import io.cattle.platform.object.ObjectManager;
-import io.cattle.platform.token.TokenService;
 import io.cattle.platform.util.type.CollectionUtils;
 import io.github.ibuildthecloud.gdapi.exception.ClientVisibleException;
 import io.github.ibuildthecloud.gdapi.request.ApiRequest;
@@ -20,24 +16,16 @@ import org.apache.commons.lang3.ObjectUtils;
 public class LdapTokenCreator extends LdapConfigurable implements TokenCreator {
 
     @Inject
-    LdapIdentitySearchProvider ldapIdentitySearchProvider;
-    @Inject
-    AuthDao authDao;
-    @Inject
-    TokenService tokenService;
-    @Inject
-    ProjectResourceManager projectResourceManager;
-    @Inject
-    ObjectManager objectManager;
+    LdapIdentityProvider ldapIdentitySearchProvider;
 
     @Inject
-    LdapUtils ldapUtils;
+    LdapTokenUtils ldapTokenUtils;
 
     private Token getLdapToken(String username, String password) {
         if (!isConfigured()) {
             throw new ClientVisibleException(ResponseCodes.INTERNAL_SERVER_ERROR, LdapConstants.CONFIG, "Ldap Not Configured.", null);
         }
-        return ldapUtils.createToken(ldapIdentitySearchProvider.getIdentities(username, password), null);
+        return ldapTokenUtils.createToken(ldapIdentitySearchProvider.getIdentities(username, password), null);
     }
 
     @Override
@@ -52,11 +40,6 @@ public class LdapTokenCreator extends LdapConfigurable implements TokenCreator {
             throw new ClientVisibleException(ResponseCodes.FORBIDDEN);
         }
         return getLdapToken(split[0], split[1]);
-    }
-
-    @Override
-    public String providerType() {
-        return LdapConstants.CONFIG;
     }
 
     @Override

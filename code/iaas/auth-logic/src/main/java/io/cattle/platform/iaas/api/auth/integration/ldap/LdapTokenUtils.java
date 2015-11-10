@@ -1,19 +1,14 @@
 package io.cattle.platform.iaas.api.auth.integration.ldap;
 
 import io.cattle.platform.core.model.Account;
-import io.cattle.platform.iaas.api.auth.TokenUtils;
+import io.cattle.platform.iaas.api.auth.AbstractTokenUtil;
 
 import java.util.List;
 
-public class LdapUtils extends TokenUtils {
+public class LdapTokenUtils extends AbstractTokenUtil {
 
     @Override
-    protected String getAccountType() {
-        return LdapConstants.USER_SCOPE;
-    }
-
-    @Override
-    protected String tokenType() {
+    public String tokenType() {
         return LdapConstants.LDAP_JWT;
     }
 
@@ -46,5 +41,10 @@ public class LdapUtils extends TokenUtils {
     @Override
     public boolean createAccount() {
         return true;
+    }
+
+    @Override
+    public String getName() {
+        return LdapConstants.CONFIG;
     }
 }

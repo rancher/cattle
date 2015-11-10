@@ -2,24 +2,14 @@ package io.cattle.platform.iaas.api.auth.integration.local;
 
 import io.cattle.platform.core.constants.ProjectConstants;
 import io.cattle.platform.core.model.Account;
-import io.cattle.platform.iaas.api.auth.TokenUtils;
-import io.cattle.platform.iaas.api.auth.integration.internal.rancher.RancherIdentityTransformationHandler;
+import io.cattle.platform.iaas.api.auth.AbstractTokenUtil;
 
 import java.util.List;
-import javax.inject.Inject;
 
-public class LocalAuthUtils extends TokenUtils {
-
-    @Inject
-    RancherIdentityTransformationHandler rancherIdentityTransformationHandler;
+public class LocalAuthTokenUtils extends AbstractTokenUtil {
 
     @Override
-    protected String getAccountType() {
-        return ProjectConstants.RANCHER_ID;
-    }
-
-    @Override
-    protected String tokenType() {
+    public String tokenType() {
         return LocalAuthConstants.JWT;
     }
 
@@ -50,5 +40,10 @@ public class LocalAuthUtils extends TokenUtils {
     @Override
     public boolean createAccount() {
         return false;
+    }
+
+    @Override
+    public String getName() {
+        return LocalAuthConstants.CONFIG;
     }
 }

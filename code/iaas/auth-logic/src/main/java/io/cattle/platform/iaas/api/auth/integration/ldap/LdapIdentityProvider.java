@@ -3,12 +3,13 @@ package io.cattle.platform.iaas.api.auth.integration.ldap;
 import static javax.naming.directory.SearchControls.*;
 
 import io.cattle.platform.api.auth.Identity;
+import io.cattle.platform.core.constants.IdentityConstants;
 import io.cattle.platform.core.model.Account;
 import io.cattle.platform.core.model.AuthToken;
 import io.cattle.platform.iaas.api.auth.SecurityConstants;
 import io.cattle.platform.iaas.api.auth.dao.AuthTokenDao;
 import io.cattle.platform.iaas.api.auth.identity.Token;
-import io.cattle.platform.iaas.api.auth.integration.interfaces.IdentitySearchProvider;
+import io.cattle.platform.iaas.api.auth.integration.interfaces.IdentityProvider;
 import io.github.ibuildthecloud.gdapi.context.ApiContext;
 import io.github.ibuildthecloud.gdapi.exception.ClientVisibleException;
 import io.github.ibuildthecloud.gdapi.request.ApiRequest;
@@ -35,11 +36,11 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-public class LdapIdentitySearchProvider extends LdapConfigurable implements IdentitySearchProvider {
+public class LdapIdentityProvider extends LdapConfigurable implements IdentityProvider {
 
-    private static final Log logger = LogFactory.getLog(LdapIdentitySearchProvider.class);
+    private static final Log logger = LogFactory.getLog(LdapIdentityProvider.class);
     @Inject
-    LdapUtils ldapUtils;
+    LdapTokenUtils ldapTokenUtils;
     @Inject
     LdapTokenCreator ldapTokenCreator;
     @Inject
@@ -82,7 +83,7 @@ public class LdapIdentitySearchProvider extends LdapConfigurable implements Iden
         if (!isConfigured() || !LdapConstants.USER_SCOPE.equalsIgnoreCase(account.getExternalIdType())) {
             return new HashSet<>();
         }
-        if(!ldapUtils.findAndSetJWT() &&
+        if(!ldapTokenUtils.findAndSetJWT() &&
                 SecurityConstants.SECURITY.get() &&
                 LdapConstants.CONFIG.equalsIgnoreCase(SecurityConstants.AUTH_PROVIDER.get())) {
             AuthToken authToken = authTokenDao.getTokenByAccountId(account.getId());
@@ -95,7 +96,7 @@ public class LdapIdentitySearchProvider extends LdapConfigurable implements Iden
                     return new HashSet<>();
                 }
                 Set<Identity> identities = getIdentities(userAttributes);
-                Token token = ldapUtils.createToken(identities, null);
+                Token token = ldapTokenUtils.createToken(identities, null);
                 authToken = authTokenDao.createToken(token.getJwt(), LdapConstants.CONFIG, account.getId());
                 try {
                     ldapContext.close();
@@ -108,7 +109,7 @@ public class LdapIdentitySearchProvider extends LdapConfigurable implements Iden
                 request.setAttribute(LdapConstants.LDAP_JWT, authToken.getKey());
             }
         }
-        return ldapUtils.getIdentities();
+        return ldapTokenUtils.getIdentities();
     }
 
     @Override
@@ -443,4 +444,32 @@ public class LdapIdentitySearchProvider extends LdapConfigurable implements Iden
         }
         return sb.toString();
     }
+
+    @Override
+    public Identity transform(Identity identity) {
+        switch (identity.getExternalIdType()) {
+            case LdapConstants.USER_SCOPE:
+            case LdapConstants.GROUP_SCOPE:
+                return getIdentity(identity.getExternalId(), identity.getExternalIdType());
+            default:
+                throw new ClientVisibleException(ResponseCodes.BAD_REQUEST,
+                        IdentityConstants.INVALID_TYPE, "Ldap does not provide: " + identity.getExternalIdType(), null);
+        }
+    }
+
+    @Override
+    public Identity untransform(Identity identity) {
+        switch (identity.getExternalIdType()) {
+            case LdapConstants.USER_SCOPE:
+                break;
+            case LdapConstants.GROUP_SCOPE:
+                break;
+            default:
+                throw new ClientVisibleException(ResponseCodes.BAD_REQUEST,
+                        IdentityConstants.INVALID_TYPE, "Ldap does not provide: " + identity.getExternalIdType(), null);
+        }
+        return identity;
+    }
+
+
 }

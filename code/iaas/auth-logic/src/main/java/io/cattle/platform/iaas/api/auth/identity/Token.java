@@ -2,14 +2,14 @@ package io.cattle.platform.iaas.api.auth.identity;
 
 import io.cattle.platform.api.auth.Identity;
 import io.cattle.platform.iaas.api.auth.SecurityConstants;
-import io.cattle.platform.iaas.api.auth.TokenUtils;
+import io.cattle.platform.iaas.api.auth.AbstractTokenUtil;
 import io.cattle.platform.iaas.api.auth.integration.github.GithubConstants;
 import io.github.ibuildthecloud.gdapi.annotation.Field;
 import io.github.ibuildthecloud.gdapi.annotation.Type;
 
 import java.util.List;
 
-@Type(name = TokenUtils.TOKEN)
+@Type(name = AbstractTokenUtil.TOKEN)
 public class Token {
 
     private  String jwt;

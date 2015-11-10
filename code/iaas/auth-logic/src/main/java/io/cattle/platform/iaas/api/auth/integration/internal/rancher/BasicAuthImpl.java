@@ -12,14 +12,11 @@ import io.cattle.platform.core.model.Account;
 import io.cattle.platform.core.model.Agent;
 import io.cattle.platform.iaas.api.auth.SecurityConstants;
 import io.cattle.platform.iaas.api.auth.dao.AuthDao;
-import io.cattle.platform.iaas.api.auth.integration.github.GithubOAuthImpl;
 import io.cattle.platform.iaas.api.auth.integration.interfaces.AccountLookup;
-import io.cattle.platform.iaas.api.auth.integration.ldap.LdapAuthImpl;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.util.type.Priority;
 import io.github.ibuildthecloud.gdapi.context.ApiContext;
-import io.github.ibuildthecloud.gdapi.exception.ClientVisibleException;
 import io.github.ibuildthecloud.gdapi.request.ApiRequest;
 
 import java.io.UnsupportedEncodingException;
@@ -45,13 +42,11 @@ public class BasicAuthImpl implements AccountLookup, Priority {
 
     AuthDao authDao;
     @Inject
-    GithubOAuthImpl githubOAuth;
-    @Inject
-    LdapAuthImpl ldapAuth;
-    @Inject
     AdminAuthLookUp adminAuthLookUp;
     @Inject
     ObjectManager objectManager;
+    @Inject
+    TokenAuthLookup tokenAuthLookUp;
 
     @Override
     public Account getAccount(ApiRequest request) {
@@ -66,11 +61,7 @@ public class BasicAuthImpl implements AccountLookup, Priority {
             String[] splits = auth[0].split("=");
             String projectId = splits.length == 2 ? splits[1] : null;
             request.setAttribute(ProjectConstants.PROJECT_HEADER, projectId);
-            try {
-                account = githubOAuth.getAccountAccess(ProjectConstants.AUTH_TYPE + auth[1], request);
-            } catch (ClientVisibleException e){
-                account = ldapAuth.getAccountAccess(ProjectConstants.AUTH_TYPE + auth[1], request);
-            }
+            account = tokenAuthLookUp.getAccountAccess(ProjectConstants.AUTH_TYPE + auth[1], request);
         } else if (auth[0].toLowerCase().startsWith(ProjectConstants.OAUTH_BASIC.toLowerCase()) && !SecurityConstants.SECURITY.get()) {
             String[] splits = auth[0].split("=");
             String projectId = splits.length == 2 ? splits[1] : null;

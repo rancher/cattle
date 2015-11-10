@@ -1,7 +1,7 @@
 package io.cattle.platform.iaas.api.auth.integration.github;
 
 import io.cattle.platform.core.model.Account;
-import io.cattle.platform.iaas.api.auth.TokenUtils;
+import io.cattle.platform.iaas.api.auth.AbstractTokenUtil;
 import io.cattle.platform.object.util.DataAccessor;
 import io.github.ibuildthecloud.gdapi.context.ApiContext;
 import io.github.ibuildthecloud.gdapi.request.ApiRequest;
@@ -11,7 +11,7 @@ import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
 
-public class GithubUtils extends TokenUtils {
+public class GithubTokenUtil extends AbstractTokenUtil {
 
     @Override
     protected String accessMode() {
@@ -73,12 +73,12 @@ public class GithubUtils extends TokenUtils {
     }
 
     @Override
-    protected String getAccountType() {
-        return GithubConstants.USER_SCOPE;
+    public String tokenType() {
+        return GithubConstants.GITHUB_JWT;
     }
 
     @Override
-    protected String tokenType() {
-        return GithubConstants.GITHUB_JWT;
+    public String getName() {
+        return GithubConstants.CONFIG;
     }
 }

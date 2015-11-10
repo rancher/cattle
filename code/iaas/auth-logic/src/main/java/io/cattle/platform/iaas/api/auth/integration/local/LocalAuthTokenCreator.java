@@ -7,8 +7,7 @@ import io.cattle.platform.iaas.api.auth.SecurityConstants;
 import io.cattle.platform.iaas.api.auth.dao.AuthDao;
 import io.cattle.platform.iaas.api.auth.identity.Token;
 import io.cattle.platform.iaas.api.auth.integration.interfaces.TokenCreator;
-import io.cattle.platform.iaas.api.auth.integration.internal.rancher.RancherIdentitySearchProvider;
-import io.cattle.platform.iaas.api.auth.integration.internal.rancher.RancherIdentityTransformationHandler;
+import io.cattle.platform.iaas.api.auth.integration.internal.rancher.RancherIdentityProvider;
 import io.cattle.platform.util.type.CollectionUtils;
 import io.github.ibuildthecloud.gdapi.context.ApiContext;
 import io.github.ibuildthecloud.gdapi.exception.ClientVisibleException;
@@ -28,11 +27,9 @@ public class LocalAuthTokenCreator extends LocalAuthConfigurable implements Toke
     @Inject
     AuthDao authDao;
     @Inject
-    LocalAuthUtils localAuthUtils;
+    LocalAuthTokenUtils localAuthTokenUtils;
     @Inject
-    RancherIdentitySearchProvider rancherIdentitySearchProvider;
-    @Inject
-    RancherIdentityTransformationHandler rancherIdentityTransformationHandler;
+    RancherIdentityProvider rancherIdentityProvider;
 
     @Override
     public Token getToken(ApiRequest request) {
@@ -55,20 +52,15 @@ public class LocalAuthTokenCreator extends LocalAuthConfigurable implements Toke
             throw new ClientVisibleException(ResponseCodes.UNAUTHORIZED);
         }
 
-        Identity user = rancherIdentitySearchProvider.getIdentity(String.valueOf(account.getId()), ProjectConstants.RANCHER_ID);
-        user = rancherIdentityTransformationHandler.transform(user);
+        Identity user = rancherIdentityProvider.getIdentity(String.valueOf(account.getId()), ProjectConstants.RANCHER_ID);
+        user = rancherIdentityProvider.transform(user);
         Set<Identity> identities = new HashSet<>();
         identities.add(user);
-        return localAuthUtils.createToken(identities, account);
+        return localAuthTokenUtils.createToken(identities, account);
     }
 
     @Override
     public String getName() {
         return LocalAuthConstants.TOKEN_CREATOR;
-    }
-
-    @Override
-    public String providerType() {
-        return LocalAuthConstants.CONFIG;
     }
 }

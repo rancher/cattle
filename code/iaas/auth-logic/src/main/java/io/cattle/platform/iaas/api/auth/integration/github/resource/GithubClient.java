@@ -3,7 +3,7 @@ package io.cattle.platform.iaas.api.auth.integration.github.resource;
 import io.cattle.platform.api.auth.Identity;
 import io.cattle.platform.iaas.api.auth.integration.github.GithubConfigurable;
 import io.cattle.platform.iaas.api.auth.integration.github.GithubConstants;
-import io.cattle.platform.iaas.api.auth.integration.github.GithubUtils;
+import io.cattle.platform.iaas.api.auth.integration.github.GithubTokenUtil;
 import io.cattle.platform.json.JsonMapper;
 import io.cattle.platform.util.type.CollectionUtils;
 import io.github.ibuildthecloud.gdapi.context.ApiContext;
@@ -31,7 +31,7 @@ import org.apache.http.message.BasicNameValuePair;
 public class GithubClient extends GithubConfigurable{
 
     @Inject
-    private GithubUtils githubUtils;
+    private GithubTokenUtil githubTokenUtils;
 
     @Inject
     private JsonMapper jsonMapper;
@@ -311,7 +311,7 @@ public class GithubClient extends GithubConfigurable{
     public List<Map<String, Object>> searchGithub(String url) {
         try {
             HttpResponse res = Request.Get(url)
-                    .addHeader("Authorization", "token " + githubUtils.getAccessToken()).addHeader
+                    .addHeader("Authorization", "token " + githubTokenUtils.getAccessToken()).addHeader
                             ("Accept", "application/json").execute().returnResponse();
             int statusCode = res.getStatusLine().getStatusCode();
             if (statusCode != 200) {

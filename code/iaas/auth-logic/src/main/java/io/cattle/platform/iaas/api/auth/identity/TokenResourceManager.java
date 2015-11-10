@@ -5,7 +5,7 @@ import io.cattle.platform.api.auth.Policy;
 import io.cattle.platform.iaas.api.auth.SecurityConstants;
 import io.cattle.platform.iaas.api.auth.dao.AuthTokenDao;
 import io.cattle.platform.iaas.api.auth.integration.interfaces.TokenCreator;
-import io.cattle.platform.iaas.api.auth.TokenUtils;
+import io.cattle.platform.iaas.api.auth.AbstractTokenUtil;
 import io.github.ibuildthecloud.gdapi.context.ApiContext;
 import io.github.ibuildthecloud.gdapi.exception.ClientVisibleException;
 import io.github.ibuildthecloud.gdapi.factory.SchemaFactory;
@@ -39,7 +39,7 @@ public class TokenResourceManager extends AbstractNoOpResourceManager {
 
     @Override
     protected Object createInternal(String type, ApiRequest request) {
-        if (!StringUtils.equals(TokenUtils.TOKEN, request.getType())) {
+        if (!StringUtils.equals(AbstractTokenUtil.TOKEN, request.getType())) {
             return null;
         }
         return createToken(request);
