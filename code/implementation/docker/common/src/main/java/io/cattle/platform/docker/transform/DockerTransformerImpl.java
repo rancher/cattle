@@ -6,6 +6,7 @@ import static io.cattle.platform.docker.constants.DockerNetworkConstants.*;
 import io.cattle.platform.core.addon.LogConfig;
 import io.cattle.platform.core.constants.ContainerEventConstants;
 import io.cattle.platform.core.constants.InstanceConstants;
+import io.cattle.platform.core.constants.VolumeConstants;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.json.JsonMapper;
 import io.cattle.platform.object.util.DataAccessor;
@@ -44,7 +45,6 @@ public class DockerTransformerImpl implements DockerTransformer {
     private static final String IMAGE_KIND_PATTERN = "^(sim|docker):.*";
     private static final String READ_WRITE = "rw";
     private static final String READ_ONLY = "ro";
-    private static final String MOUNTS = "Mounts";
     private static final String ACCESS_MODE = "RW";
     private static final String DRIVER = "Driver";
     private static final String DEST = "Destination";
@@ -57,11 +57,13 @@ public class DockerTransformerImpl implements DockerTransformer {
 
     @Override
     @SuppressWarnings("unchecked")
-    public List<DockerInspectTransformVolume> transformVolumes(Map<String, Object> fromInspect) {
-        List<DockerInspectTransformVolume> volumes = transformMounts(fromInspect);
-        if (volumes.size() > 0) {
+    public List<DockerInspectTransformVolume> transformVolumes(Map<String, Object> fromInspect, List<Object> mounts) {
+        List<DockerInspectTransformVolume> volumes = transformMounts(mounts);
+        if (volumes != null) {
             return volumes;
         }
+
+        volumes = new ArrayList<DockerInspectTransformVolume>();
         InspectContainerResponse inspect = transformInspect(fromInspect);
         HostConfig hostConfig = inspect.getHostConfig();
         VolumeBind[] volumeBinds = null;
@@ -76,29 +78,37 @@ public class DockerTransformerImpl implements DockerTransformer {
         for (VolumeBind vb : volumeBinds) {
             String am = rw.containsKey(vb.getContainerPath()) ? rw.get(vb.getContainerPath()) : READ_WRITE;
             boolean isBindMound = binds.contains(vb.getContainerPath());
-            volumes.add(new DockerInspectTransformVolume(vb.getContainerPath(), vb.getHostPath(), am, isBindMound, ""));
+            String uri = String.format(VolumeConstants.URI_FORMAT, VolumeConstants.FILE_PREFIX, vb.getHostPath());
+            volumes.add(new DockerInspectTransformVolume(vb.getContainerPath(), uri, am, isBindMound, null, vb.getContainerPath(), null));
         }
         return volumes;
     }
 
     @SuppressWarnings("unchecked")
-    protected List<DockerInspectTransformVolume> transformMounts(Map<String, Object> fromInspect) {
+    protected List<DockerInspectTransformVolume> transformMounts(List<Object> mounts) {
+        if (mounts == null) {
+            return null;
+        }
         List<DockerInspectTransformVolume> volumes = new ArrayList<DockerInspectTransformVolume>();
-        List<Object> mounts = (List<Object>) fromInspect.get(MOUNTS);
-        if (mounts != null) {
-            for (Object mount : mounts) {
-                Map<String, Object> mountObj = (Map<String, Object>) mount;
-                String am = ((boolean) mountObj.get(ACCESS_MODE)) ? "rw" : "ro";
-                String dr = (String) mountObj.get(DRIVER);
-                String containerPath = (String) mountObj.get(DEST);
-                String hostPath = (String) mountObj.get(SRC);
-                String name = (String) mountObj.get(NAME);
-                boolean isBindMount = (dr == null);
-                if (StringUtils.isNotEmpty(dr) && !StringUtils.equals(dr, LOCAL)) {
-                    hostPath = String.format("%s:///%s", dr, name);
-                }
-                volumes.add(new DockerInspectTransformVolume(containerPath, hostPath, am, isBindMount, dr));
+        for (Object mount : mounts) {
+            Map<String, Object> mountObj = (Map<String, Object>)mount;
+            String am = ((boolean)mountObj.get(ACCESS_MODE)) ? "rw" : "ro";
+            String dr = (String)mountObj.get(DRIVER);
+            String containerPath = (String)mountObj.get(DEST);
+            String hostPath = (String)mountObj.get(SRC);
+            String name = (String)mountObj.get(NAME);
+            String externalId = null;
+            if (StringUtils.isEmpty(name)) {
+                name = hostPath;
+            } else {
+                externalId = name;
             }
+            boolean isBindMount = (dr == null);
+            // TODO When we implement proper volume deletion in py-agent, we can change this so that if the driver is explicitly, local, we don't
+            // use 'file://'
+            String uriPrefix = StringUtils.isEmpty(dr) || StringUtils.equals(dr, LOCAL) ? VolumeConstants.FILE_PREFIX : dr;
+            String uri = String.format(VolumeConstants.URI_FORMAT, uriPrefix, hostPath);
+            volumes.add(new DockerInspectTransformVolume(containerPath, uri, am, isBindMount, dr, name, externalId));
         }
         return volumes;
     }

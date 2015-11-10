@@ -9,7 +9,8 @@ public interface DockerComputeDao {
 
     IpAddress getDockerIp(String ipAddress, Instance instance);
 
-    Volume getDockerVolumeInPool(String volumeUri, StoragePool storagePool);
+    Volume getDockerVolumeInPool(String volumeUri, String externalId, StoragePool storagePool);
 
-    Volume createDockerVolumeInPool(Long accountId, String volumeUri, StoragePool storagePool, boolean isHostPath);
+    Volume createDockerVolumeInPool(Long accountId, String name, String volumeUri, String externalId, String driver, StoragePool storagePool,
+            boolean isHostPath);
 }

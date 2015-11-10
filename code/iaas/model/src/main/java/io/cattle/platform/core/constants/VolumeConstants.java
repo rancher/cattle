@@ -4,7 +4,9 @@ public class VolumeConstants {
 
     public static final String REMOVE_OPTION = "remove";
 
-    public static final String URI_FORMAT = "file://%s";
+    public static final String FILE_PREFIX = "file";
+
+    public static final String URI_FORMAT = "%s://%s";
     
     public static final String FIELD_VOLUME_DRIVER = "driver";
     

@@ -8,7 +8,6 @@ import io.cattle.iaas.labels.service.LabelsService;
 import io.cattle.platform.archaius.util.ArchaiusUtil;
 import io.cattle.platform.core.constants.NetworkServiceConstants;
 import io.cattle.platform.core.constants.PortConstants;
-import io.cattle.platform.core.constants.VolumeConstants;
 import io.cattle.platform.core.dao.ClusterHostMapDao;
 import io.cattle.platform.core.dao.GenericMapDao;
 import io.cattle.platform.core.dao.IpAddressDao;
@@ -145,7 +144,8 @@ public class DockerPostInstanceHostMapActivate extends AbstractObjectProcessLogi
         if (inspect == null) {
             return;
         }
-        List<DockerInspectTransformVolume> dockerVolumes = transformer.transformVolumes(inspect);
+        List<Object> mounts = (List<Object>) instance.getData().get(FIELD_DOCKER_MOUNTS);
+        List<DockerInspectTransformVolume> dockerVolumes = transformer.transformVolumes(inspect, mounts);
 
         if (dockerVolumes.size() == 0) {
             /* If there are no volumes avoid looking for a pool because one may not exists
@@ -154,33 +154,38 @@ public class DockerPostInstanceHostMapActivate extends AbstractObjectProcessLogi
             return;
         }
 
-        StoragePool storagePool = null;
+        StoragePool dockerLocalStoragePool = null;
+        Map<String, StoragePool> pools = new HashMap<String, StoragePool>();
         for (StoragePool pool : objectManager.mappedChildren(host, StoragePool.class)) {
-            if (DockerStoragePoolDriver.isDockerPool(pool)) {
-                storagePool = pool;
-                break;
+            if (DockerStoragePoolDriver.isDockerPool(pool) && 
+                    (DOCKER_LOCAL_DRIVER.equals(pool.getDriverName()) || StringUtils.isEmpty(pool.getDriverName()))) {
+                dockerLocalStoragePool = pool;
             }
-        }
-
-        if (storagePool == null) {
-            log.warn("Could not find docker storage pool for host [{}]. Volumes will not be created.", host.getId());
-            return;
+            if (StringUtils.isNotEmpty(pool.getDriverName())) {
+                pools.put(pool.getDriverName(), pool);
+            }
         }
 
         for (DockerInspectTransformVolume dVol : dockerVolumes) {
-            String volumeUri = null;
             String driver = dVol.getDriver();
-            if (StringUtils.isEmpty(driver) || StringUtils.equals(driver, "local")) {
-                volumeUri = String.format(VolumeConstants.URI_FORMAT, dVol.getHostPath());
+            StoragePool pool = null;
+            if (StringUtils.isEmpty(driver) || DOCKER_LOCAL_DRIVER.equals(driver)) {
+                pool = dockerLocalStoragePool;
             } else {
-                volumeUri = dVol.getHostPath();
+                pool = pools.get(dVol.getDriver());
             }
-            Volume volume = createVolumeInStoragePool(storagePool, instance, volumeUri, dVol.isBindMount());
-            log.debug("Created volume and storage pool mapping. Volume id [{}], storage pool id [{}].", volume.getId(), storagePool.getId());
+
+            if (pool == null) {
+                log.warn("Could not find storage pool for volume [{}]. This volume will not be created.", dVol);
+                continue;
+            }
+
+            Volume volume = createVolumeInStoragePool(pool, instance, dVol); //volumeUri, driver, dVol.isBindMount());
+            log.debug("Created volume and storage pool mapping. Volume id [{}], storage pool id [{}].", volume.getId(), pool.getId());
             createIgnoreCancel(volume, state.getData());
 
             for (VolumeStoragePoolMap map : mapDao.findNonRemoved(VolumeStoragePoolMap.class, Volume.class, volume.getId())) {
-                if (map.getStoragePoolId().equals(storagePool.getId()))
+                if (map.getStoragePoolId().equals(pool.getId()))
                     createThenActivate(map, state.getData());
             }
 
@@ -192,19 +197,20 @@ public class DockerPostInstanceHostMapActivate extends AbstractObjectProcessLogi
         }
     }
 
-    protected Volume createVolumeInStoragePool(final StoragePool storagePool, final Instance instance, final String volumeUri, final boolean isHostBindMount) {
-        Volume volume = dockerDao.getDockerVolumeInPool(volumeUri, storagePool);
+    protected Volume createVolumeInStoragePool(final StoragePool storagePool, final Instance instance, final DockerInspectTransformVolume dVol) {
+        Volume volume = dockerDao.getDockerVolumeInPool(dVol.getUri(), dVol.getExternalId(), storagePool);
         if (volume != null)
             return volume;
 
-        return lockManager.lock(new DockerStoragePoolVolumeCreateLock(storagePool, volumeUri), new LockCallback<Volume>() {
+        return lockManager.lock(new DockerStoragePoolVolumeCreateLock(storagePool, dVol.getUri()), new LockCallback<Volume>() {
             @Override
             public Volume doWithLock() {
-                Volume volume = dockerDao.getDockerVolumeInPool(volumeUri, storagePool);
+                Volume volume = dockerDao.getDockerVolumeInPool(dVol.getUri(), dVol.getExternalId(), storagePool);
                 if (volume != null)
                     return volume;
 
-                volume = dockerDao.createDockerVolumeInPool(instance.getAccountId(), volumeUri, storagePool, isHostBindMount);
+                volume = dockerDao.createDockerVolumeInPool(instance.getAccountId(), dVol.getName(), dVol.getUri(), dVol.getExternalId(),
+                        dVol.getDriver(), storagePool, dVol.isBindMount());
 
                 return volume;
             }

@@ -7,6 +7,7 @@ public class DockerInstanceConstants {
     public static final String FIELD_DOCKER_HOST_IP = "dockerHostIp";
     public static final String FIELD_DOCKER_IP = "dockerIp";
     public static final String FIELD_DOCKER_INSPECT = "dockerInspect";
+    public static final String FIELD_DOCKER_MOUNTS = "dockerMounts";
     public static final String FIELD_VOLUMES_FROM = "dataVolumesFrom";
     public static final String FIELD_DOMAIN_NAME = "domainName";
     public static final String FIELD_USER = "user";
@@ -44,5 +45,6 @@ public class DockerInstanceConstants {
     public static final String DOCKER_TTY = "Tty";
     public static final String DOCKER_CMD = "Cmd";
     public static final String DOCKER_CONTAINER = "Container";
+    public static final String DOCKER_LOCAL_DRIVER = "local";
 
 }

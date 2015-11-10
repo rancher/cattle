@@ -66,8 +66,8 @@ def test_data_volume_mounts(new_context):
     sp_name = storage_pool.name
     external_id = random_str()
     uri = '/foo/bar'
-    create_volume_event(client, agent_client, new_context, sp_name,
-                        VOLUME_CREATE, external_id, driver=sp_name, uri=uri)
+    create_volume_event(client, agent_client, new_context, VOLUME_CREATE,
+                        external_id, driver=sp_name, uri=uri)
     volume = wait_for(lambda: volume_wait(client, external_id))
     volume = wait_for(lambda: volume_in_sp(client, volume, storage_pool))
 
@@ -87,8 +87,8 @@ def test_external_volume_event(super_client, new_context):
     external_id = random_str()
     uri = '/foo/bar'
 
-    create_volume_event(client, agent_client, new_context, sp_name,
-                        VOLUME_CREATE, external_id, driver=sp_name, uri=uri)
+    create_volume_event(client, agent_client, new_context, VOLUME_CREATE,
+                        external_id, driver=sp_name, uri=uri)
 
     volume = wait_for(lambda: volume_wait(client, external_id))
     volume = wait_for(lambda: volume_in_sp(client, volume, storage_pool))
@@ -103,14 +103,14 @@ def test_external_volume_event(super_client, new_context):
     assert super_volume.format == 'docker'
 
     # Send event again to ensure two volumes are not created
-    create_volume_event(client, agent_client, new_context, sp_name,
+    create_volume_event(client, agent_client, new_context,
                         VOLUME_CREATE, external_id, driver=sp_name, uri=uri)
     volumes = client.list_volume(externalId=external_id)
     assert len(volumes) == 1
 
     # Delete volume event
-    create_volume_event(client, agent_client, new_context, sp_name,
-                        VOLUME_DELETE, external_id, driver=sp_name, uri=uri)
+    create_volume_event(client, agent_client, new_context, VOLUME_DELETE,
+                        external_id, driver=sp_name, uri=uri)
 
     volume = client.wait_success(volume)
     assert volume.state == 'removed'
@@ -165,12 +165,11 @@ def test_external_storage_pool_event(new_context):
     assert len(hosts) == 0
 
 
-def create_volume_event(client, agent_client, context, sp_ex_id, event_type,
+def create_volume_event(client, agent_client, context, event_type,
                         external_id, driver=None, uri=None):
     vol_event = {
         'externalId': external_id,
         'eventType': event_type,
-        'storagePoolExternalId': sp_ex_id,
         'volume': {
             'externalId': external_id,
             'name': external_id,

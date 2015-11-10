@@ -49,11 +49,11 @@ public class StoragePoolDaoImpl extends AbstractJooqDao implements StoragePoolDa
     }
 
     @Override
-    public StoragePool findStoragePoolByExternalId(Long accountId, String externalId) {
+    public StoragePool findStoragePoolByDriverName(Long accountId, String driverName) {
         return create().selectFrom(STORAGE_POOL)
             .where(STORAGE_POOL.ACCOUNT_ID.eq(accountId))
             .and((STORAGE_POOL.REMOVED.isNull().or(STORAGE_POOL.STATE.eq(CommonStatesConstants.REMOVING))))
-            .and(STORAGE_POOL.EXTERNAL_ID.eq(externalId))
+            .and(STORAGE_POOL.DRIVER_NAME.eq(driverName))
             .fetchAny();
     }
 
