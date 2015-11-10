@@ -32,6 +32,10 @@
             "type": "softlayerConfig",
             "nullable": true
         },
+        "ubiquityConfig": {
+            "type": "ubiquityConfig",
+            "nullable": true
+        },
         "virtualboxConfig": {
             "type": "virtualboxConfig",
             "nullable": true

@@ -156,7 +156,8 @@ def test_user_types(user_client, adds=set(), removes=set()):
         'serviceUpgrade',
         'serviceUpgradeStrategy',
         'toServiceUpgradeStrategy',
-        'inServiceUpgradeStrategy'
+        'inServiceUpgradeStrategy',
+        'ubiquityConfig'
     }
     types.update(adds)
     types.difference_update(removes)
@@ -368,7 +369,8 @@ def test_admin_types(admin_user_client, adds=set(), removes=set()):
         'setLoadBalancerServiceLinksInput',
         'serviceUpgradeStrategy',
         'toServiceUpgradeStrategy',
-        'inServiceUpgradeStrategy'
+        'inServiceUpgradeStrategy',
+        'ubiquityConfig'
     }
     types.update(adds)
     types.difference_update(removes)
@@ -1312,6 +1314,7 @@ def test_machine(admin_user_client, user_client, service_client,
         'vmwarevcloudairConfig': 'r',
         'openstackConfig': 'r',
         'azureConfig': 'r',
+        'ubiquityConfig': 'r',
     })
 
     auth_check(user_client.schema, 'machine', 'r', {
@@ -1332,6 +1335,7 @@ def test_machine(admin_user_client, user_client, service_client,
         'vmwarevcloudairConfig': 'r',
         'openstackConfig': 'r',
         'azureConfig': 'r',
+        'ubiquityConfig': 'r',
     })
 
     auth_check(project_client.schema, 'machine', 'crd', {
@@ -1352,6 +1356,7 @@ def test_machine(admin_user_client, user_client, service_client,
         'vmwarevcloudairConfig': 'cr',
         'openstackConfig': 'cr',
         'azureConfig': 'cr',
+        'ubiquityConfig': 'cr',
     })
 
     auth_check(service_client.schema, 'machine', 'crud', {
@@ -1374,6 +1379,7 @@ def test_machine(admin_user_client, user_client, service_client,
         'vmwarevcloudairConfig': 'cr',
         'openstackConfig': 'cr',
         'azureConfig': 'cr',
+        'ubiquityConfig': 'cr',
     })
 
 
