@@ -69,7 +69,7 @@ public class ExternalEventCreate extends AbstractDefaultProcessHandler {
         ExternalEvent event = (ExternalEvent)state.getResource();
 
         if (StringUtils.isEmpty(event.getExternalId())) {
-            log.warn("External event doesn't have an external id: {}", event);
+            log.debug("External event doesn't have an external id: {}", event.getId());
             return null;
         }
 

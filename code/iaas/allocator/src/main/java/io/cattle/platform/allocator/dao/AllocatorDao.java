@@ -43,4 +43,6 @@ public interface AllocatorDao {
     boolean hostHasContainerLabel(long hostId, String labelKey, String labelValue);
 
     List<? extends Host> getActiveHosts(long accountId);
+
+    List<? extends Host> getNonPurgedHosts(long accountId);
 }

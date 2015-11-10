@@ -85,6 +85,7 @@
                 <value>externalServiceEvent,parent=externalEvent</value>
                 <value>environmentUpgrade</value>
                 <value>externalDnsEvent,parent=externalEvent</value>
+                <value>externalHostEvent,parent=externalEvent</value>
             </set>
         </property>
     </bean>
