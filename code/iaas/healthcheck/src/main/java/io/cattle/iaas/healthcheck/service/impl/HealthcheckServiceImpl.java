@@ -4,8 +4,8 @@ import static io.cattle.platform.core.constants.HealthcheckConstants.HEALTH_STAT
 import static io.cattle.platform.core.constants.HealthcheckConstants.HEALTH_STATE_UNHEALTHY;
 import static io.cattle.platform.core.model.tables.HealthcheckInstanceHostMapTable.HEALTHCHECK_INSTANCE_HOST_MAP;
 import static io.cattle.platform.core.model.tables.HealthcheckInstanceTable.HEALTHCHECK_INSTANCE;
-import static io.cattle.platform.core.model.tables.HostTable.HOST;
 import io.cattle.iaas.healthcheck.service.HealthcheckService;
+import io.cattle.platform.allocator.dao.AllocatorDao;
 import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.HealthcheckConstants;
 import io.cattle.platform.core.dao.GenericMapDao;
@@ -46,6 +46,9 @@ public class HealthcheckServiceImpl implements HealthcheckService {
 
     @Inject
     LockManager lockManager;
+
+    @Inject
+    AllocatorDao allocatorDao;
 
     @Override
     public void updateHealthcheck(String healthcheckInstanceHostMapUuid, final long externalTimestamp, final boolean healthy) {
@@ -204,8 +207,7 @@ public class HealthcheckServiceImpl implements HealthcheckService {
         }
 
         // 2) Figure out what hosts to allocate
-        List<Host> availableHosts = objectManager.find(Host.class, HOST.ACCOUNT_ID, healthInstance.getAccountId(),
-                HOST.STATE, CommonStatesConstants.ACTIVE, HOST.REMOVED, null);
+        List<? extends Host> availableHosts = allocatorDao.getActiveHosts(healthInstance.getAccountId());
         List<Long> availableHostIds = (List<Long>) CollectionUtils.collect(availableHosts,
                 TransformerUtils.invokerTransformer("getId"));
         List<Long> allocatedHostIds = (List<Long>) CollectionUtils.collect(existingHostMaps,
