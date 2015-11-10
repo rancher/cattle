@@ -167,7 +167,6 @@ def test_activate_single_service(client, context, super_client):
     assert container.tty is True
     assert container.entryPoint == ["/bin/sh", "-c"]
     assert container.cpuShares == 400
-    assert container.restartPolicy == restart_policy
     assert container.workingDir == "/"
     assert container.hostname == "test"
     assert container.user == "test"
@@ -2189,8 +2188,10 @@ def test_export_config(client, context):
     image_uuid = context.image_uuid
     labels = {'io.rancher.scheduler.global': 'true'}
     metadata = {"$bar": {"metadata": [{"$id$$foo$bar$$": "${HOSTNAME}"}]}}
+    restart_policy = {"maximumRetryCount": 2, "name": "on-failure"}
     launch_config = {"imageUuid": image_uuid,
-                     "cpuSet": "0,1", "labels": labels}
+                     "cpuSet": "0,1", "labels": labels,
+                     "restartPolicy": restart_policy}
     service = client. \
         create_service(name="web",
                        environmentId=env.id,
@@ -2204,9 +2205,10 @@ def test_export_config(client, context):
     docker_yml = yaml.load(compose_config.dockerComposeConfig)
     assert docker_yml[service.name]['cpuset'] == "0,1"
     assert docker_yml[service.name]['labels'] == labels
+    assert "restart" not in docker_yml[service.name]
 
     rancher_yml = yaml.load(compose_config.rancherComposeConfig)
-    assert 'scale' not in rancher_yml
+    assert 'scale' not in rancher_yml[service.name]
     updated = {"$$id$$$$foo$$bar$$$$": "$${HOSTNAME}"}
     metadata = {"$$bar": {"metadata": [updated]}}
     assert rancher_yml[service.name]['metadata'] is not None

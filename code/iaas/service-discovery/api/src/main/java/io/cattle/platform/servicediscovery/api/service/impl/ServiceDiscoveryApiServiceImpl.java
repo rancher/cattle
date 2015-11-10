@@ -348,7 +348,9 @@ public class ServiceDiscoveryApiServiceImpl implements ServiceDiscoveryApiServic
                     }
                 }
                 if (formattedValue != null) {
-                    composeServiceData.put(item.getDockerName().toLowerCase(), formattedValue);
+                    if (formattedValue != RancherConfigToComposeFormatter.Option.REMOVE) {
+                        composeServiceData.put(item.getDockerName().toLowerCase(), formattedValue);
+                    }
                 } else {
                     composeServiceData.put(item.getDockerName().toLowerCase(), value);
                 }
