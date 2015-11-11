@@ -207,8 +207,8 @@ public class HealthcheckServiceImpl implements HealthcheckService {
         }
 
         // 2) Figure out what hosts to allocate
-        List<? extends Host> availableHosts = allocatorDao.getActiveHosts(healthInstance.getAccountId());
-        List<Long> availableHostIds = (List<Long>) CollectionUtils.collect(availableHosts,
+        List<? extends Host> availableActiveHosts = allocatorDao.getActiveHosts(healthInstance.getAccountId());
+        List<Long> availableHostIds = (List<Long>) CollectionUtils.collect(availableActiveHosts,
                 TransformerUtils.invokerTransformer("getId"));
         List<Long> allocatedHostIds = (List<Long>) CollectionUtils.collect(existingHostMaps,
                 TransformerUtils.invokerTransformer("getHostId"));
@@ -220,9 +220,11 @@ public class HealthcheckServiceImpl implements HealthcheckService {
 
         // 4) place inferiorHostId to the end of the list
         if (inferiorHostId != null) {
-            availableHostIds.remove(inferiorHostId);
-            if (availableHostIds.isEmpty() && allocatedHostIds.isEmpty()) {
-                availableHostIds.add(inferiorHostId);
+            if (availableHostIds.contains(inferiorHostId)) {
+                availableHostIds.remove(inferiorHostId);
+                if (availableHostIds.isEmpty() && allocatedHostIds.isEmpty()) {
+                    availableHostIds.add(inferiorHostId);
+                }
             }
         }
 
