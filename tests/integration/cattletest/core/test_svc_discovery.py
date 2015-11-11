@@ -47,8 +47,6 @@ def test_activate_single_service(client, context, super_client):
 
     caps = ["SYS_MODULE"]
 
-    restart_policy = {"maximumRetryCount": 2, "name": "on-failure"}
-
     dns = ['8.8.8.8', '1.2.3.4']
 
     health_check = {"name": "check1", "responseTimeout": 3,
@@ -81,7 +79,6 @@ def test_activate_single_service(client, context, super_client):
                      "entryPoint": ["/bin/sh", "-c"],
                      "cpuShares": 400,
                      "cpuSet": "2",
-                     "restartPolicy": restart_policy,
                      "workingDir": "/",
                      "hostname": "test",
                      "user": "test",
@@ -117,7 +114,6 @@ def test_activate_single_service(client, context, super_client):
     assert service.launchConfig.tty is True
     assert service.launchConfig.entryPoint == ["/bin/sh", "-c"]
     assert service.launchConfig.cpuShares == 400
-    assert service.launchConfig.restartPolicy == restart_policy
     assert service.launchConfig.workingDir == "/"
     assert service.launchConfig.hostname == "test"
     assert service.launchConfig.user == "test"
