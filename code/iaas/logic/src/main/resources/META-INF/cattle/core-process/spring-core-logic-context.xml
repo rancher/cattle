@@ -56,7 +56,7 @@
         </property>
     </bean>
 
-    <bean class="io.cattle.platform.process.common.handler.AgentBasedProcessHandler"
+    <bean class="io.cattle.platform.process.instance.IgnoreReconnectionAgentHandler"
         p:name="VolumeStoragePoolMapDeactivate"
         p:commandName="storage.volume.deactivate"
         p:agentResourceRelationship="storagePool"
@@ -80,7 +80,7 @@
         </property>
     </bean>
 
-    <bean class="io.cattle.platform.process.instance.InstanceHostMapAgentProcessHandler"
+    <bean class="io.cattle.platform.process.common.handler.AgentBasedProcessHandler"
         p:name="InstanceHostMapActivate"
         p:commandName="compute.instance.activate"
         p:agentResourceRelationship="host"
@@ -92,7 +92,7 @@
         </property>
     </bean>
 
-    <bean class="io.cattle.platform.process.instance.InstanceHostMapAgentProcessHandler"
+    <bean class="io.cattle.platform.process.instance.IgnoreReconnectionAgentHandler"
         p:name="InstanceHostMapDeactivate"
         p:commandName="compute.instance.deactivate"
         p:agentResourceRelationship="host"
