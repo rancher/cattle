@@ -1,11 +1,16 @@
 package io.cattle.platform.process.instance;
 
 import io.cattle.platform.archaius.util.ArchaiusUtil;
+import io.cattle.platform.async.utils.TimeoutException;
+import io.cattle.platform.core.addon.InstanceHealthCheck;
+import io.cattle.platform.core.constants.AgentConstants;
 import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.constants.InstanceLinkConstants;
 import io.cattle.platform.core.dao.GenericMapDao;
 import io.cattle.platform.core.dao.IpAddressDao;
+import io.cattle.platform.core.model.Agent;
+import io.cattle.platform.core.model.Host;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.InstanceHostMap;
 import io.cattle.platform.core.model.InstanceLink;
@@ -17,6 +22,7 @@ import io.cattle.platform.core.util.InstanceHelpers;
 import io.cattle.platform.engine.handler.HandlerResult;
 import io.cattle.platform.engine.process.ProcessInstance;
 import io.cattle.platform.engine.process.ProcessState;
+import io.cattle.platform.json.JsonMapper;
 import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.process.base.AbstractDefaultProcessHandler;
 import io.cattle.platform.process.containerevent.ContainerEventCreate;
@@ -42,6 +48,9 @@ public class InstanceStart extends AbstractDefaultProcessHandler {
     private static final DynamicIntProperty COMPUTE_TRIES = ArchaiusUtil.getInt("instance.compute.tries");
     private static final Logger log = LoggerFactory.getLogger(InstanceStart.class);
 
+    @Inject
+    JsonMapper jsonMapper;
+
     GenericMapDao mapDao;
     IpAddressDao ipAddressDao;
     ProcessProgress progress;
@@ -56,28 +65,33 @@ public class InstanceStart extends AbstractDefaultProcessHandler {
         progress.init(state, 5, 5, 80, 5, 5);
 
         try {
-            progress.checkPoint("Scheduling");
-            allocate(instance);
+            try {
+                progress.checkPoint("Scheduling");
+                allocate(instance);
 
-            progress.checkPoint("Networking");
-            network(instance, state);
-            activatePorts(instance, state);
+                progress.checkPoint("Networking");
+                network(instance, state);
+                activatePorts(instance, state);
 
-            progress.checkPoint("Storage");
-            storage(instance, state);
-        } catch (ExecutionException e) {
-            log.error("Failed to {} for instance [{}]", progress.getCurrentCheckpoint(), instance.getId());
-            return stopOrRemove(state, instance, e);
-        }
-
-        try {
-            progress.checkPoint("Starting");
-            compute(instance, state);
-        } catch (ExecutionException e) {
-            log.error("Failed to {} for instance [{}]", progress.getCurrentCheckpoint(), instance.getId());
-            if (incrementComputeTry(state) >= getMaxComputeTries(instance)) {
+                progress.checkPoint("Storage");
+                storage(instance, state);
+            } catch (ExecutionException e) {
+                log.error("Failed to {} for instance [{}]", progress.getCurrentCheckpoint(), instance.getId());
                 return stopOrRemove(state, instance, e);
             }
+
+            try {
+                progress.checkPoint("Starting");
+                compute(instance, state);
+            } catch (ExecutionException e) {
+                log.error("Failed to {} for instance [{}]", progress.getCurrentCheckpoint(), instance.getId());
+                if (incrementComputeTry(state) >= getMaxComputeTries(instance)) {
+                    return stopOrRemove(state, instance, e);
+                }
+                throw e;
+            }
+        } catch (TimeoutException e) {
+            handleReconnecting(state, instance);
             throw e;
         }
 
@@ -92,6 +106,28 @@ public class InstanceStart extends AbstractDefaultProcessHandler {
         assignPrimaryIpAddress(instance, resultData);
 
         return result;
+    }
+
+    protected void handleReconnecting(ProcessState state, Instance instance) {
+        boolean reconnecting = false;
+        InstanceHealthCheck healthCheck = DataAccessor.field(instance,
+                InstanceConstants.FIELD_HEALTH_CHECK, jsonMapper, InstanceHealthCheck.class);
+
+        for (InstanceHostMap map : mapDao.findNonRemoved(InstanceHostMap.class, Instance.class, instance.getId())) {
+            Host host = objectManager.loadResource(Host.class, map.getHostId());
+            Agent agent = host == null ? null : objectManager.loadResource(Agent.class, host.getAgentId());
+            if (agent != null && AgentConstants.STATE_RECONNECTING.equals(agent.getState())) {
+                reconnecting = true;
+            } else {
+                reconnecting = false;
+                break;
+            }
+        }
+
+        if (reconnecting && (healthCheck != null || instance.getFirstRunning() == null)) {
+            getObjectProcessManager().scheduleProcessInstance(InstanceConstants.PROCESS_STOP, instance,
+                    CollectionUtils.asMap(InstanceConstants.REMOVE_OPTION, true));
+        }
     }
 
     protected void assignPrimaryIpAddress(Instance instance, Map<String, Object> resultData) {

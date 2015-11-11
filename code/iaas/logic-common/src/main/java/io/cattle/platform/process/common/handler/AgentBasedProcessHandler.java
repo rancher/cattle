@@ -153,7 +153,7 @@ public class AgentBasedProcessHandler extends AbstractObjectProcessHandler imple
 
         Event reply;
         try {
-            reply = agent.callSync(event, options);
+            reply = callSync(agent, event, options);
         } catch (AgentRemovedException e) {
             if (shortCircuitIfAgentRemoved) {
                 return null;
@@ -164,6 +164,10 @@ public class AgentBasedProcessHandler extends AbstractObjectProcessHandler imple
 
         postProcessEvent(event, reply, state, process, eventResource, dataResource, agentResource);
         return reply;
+    }
+
+    protected Event callSync(RemoteAgent agent, Event event, EventCallOptions options) {
+        return agent.callSync(event, options);
     }
 
     protected Map<Object, Object> getResourceDataMap(String type, Object data) {
