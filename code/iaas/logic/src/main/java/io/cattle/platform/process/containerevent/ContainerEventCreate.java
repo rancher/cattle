@@ -22,7 +22,6 @@ import io.cattle.platform.engine.handler.HandlerResult;
 import io.cattle.platform.engine.process.ProcessInstance;
 import io.cattle.platform.engine.process.ProcessState;
 import io.cattle.platform.engine.process.impl.ProcessCancelException;
-import io.cattle.platform.eventing.EventCallOptions;
 import io.cattle.platform.eventing.exception.EventExecutionException;
 import io.cattle.platform.eventing.model.Event;
 import io.cattle.platform.eventing.model.EventVO;
@@ -205,7 +204,7 @@ public class ContainerEventCreate extends AbstractDefaultProcessHandler {
         if (agentId != null) {
             RemoteAgent agent = agentLocator.lookupAgent(agentId);
             try {
-                Event result = agent.callSync(inspectEvent, new EventCallOptions(0, 3000L));
+                Event result = agent.callSync(inspectEvent);
                 inspect = CollectionUtils.getNestedValue(result.getData(), INSTANCE_INSPECT_DATA_NAME);
             } catch (EventExecutionException e) {
                 log.warn("Unable to retrieve inspect for event [" + inspectEvent + "]", e);
