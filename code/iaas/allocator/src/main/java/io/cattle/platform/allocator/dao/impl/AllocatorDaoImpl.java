@@ -1,5 +1,6 @@
 package io.cattle.platform.allocator.dao.impl;
 
+import static io.cattle.platform.core.model.tables.AgentTable.AGENT;
 import static io.cattle.platform.core.model.tables.HostLabelMapTable.HOST_LABEL_MAP;
 import static io.cattle.platform.core.model.tables.HostTable.HOST;
 import static io.cattle.platform.core.model.tables.HostVnetMapTable.HOST_VNET_MAP;
@@ -11,12 +12,12 @@ import static io.cattle.platform.core.model.tables.InstanceTable.INSTANCE;
 import static io.cattle.platform.core.model.tables.LabelTable.LABEL;
 import static io.cattle.platform.core.model.tables.NicTable.NIC;
 import static io.cattle.platform.core.model.tables.PortTable.PORT;
+import static io.cattle.platform.core.model.tables.ServiceExposeMapTable.SERVICE_EXPOSE_MAP;
 import static io.cattle.platform.core.model.tables.StoragePoolHostMapTable.STORAGE_POOL_HOST_MAP;
 import static io.cattle.platform.core.model.tables.StoragePoolTable.STORAGE_POOL;
 import static io.cattle.platform.core.model.tables.SubnetVnetMapTable.SUBNET_VNET_MAP;
 import static io.cattle.platform.core.model.tables.VnetTable.VNET;
 import static io.cattle.platform.core.model.tables.VolumeStoragePoolMapTable.VOLUME_STORAGE_POOL_MAP;
-import static io.cattle.platform.core.model.tables.ServiceExposeMapTable.*;
 import io.cattle.platform.allocator.dao.AllocatorDao;
 import io.cattle.platform.allocator.service.AllocationAttempt;
 import io.cattle.platform.allocator.service.AllocationCandidate;
@@ -390,9 +391,13 @@ public class AllocatorDaoImpl extends AbstractJooqDao implements AllocatorDao {
         return create()
                 .select(HOST.fields())
                 .from(HOST)
-                .where(HOST.REMOVED.isNull())
+                .leftOuterJoin(AGENT)
+                    .on(AGENT.ID.eq(HOST.AGENT_ID))
+                .where(
+                    AGENT.ID.isNull().or(AGENT.STATE.eq(CommonStatesConstants.ACTIVE))
+                .and(HOST.REMOVED.isNull())
                 .and(HOST.ACCOUNT_ID.eq(accountId))
-                .and(HOST.STATE.in(CommonStatesConstants.ACTIVE, CommonStatesConstants.UPDATING_ACTIVE))
+                .and(HOST.STATE.in(CommonStatesConstants.ACTIVE, CommonStatesConstants.UPDATING_ACTIVE)))
                 .fetchInto(Host.class);
     }
 
