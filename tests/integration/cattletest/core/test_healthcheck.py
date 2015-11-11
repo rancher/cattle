@@ -208,7 +208,8 @@ def test_health_check_host_remove(super_client, context, client):
     expose_map = find_one(service.serviceExposeMaps)
     container = super_client.reload(expose_map.instance())
     hci = find_one(container.healthcheckInstances)
-    assert len(hci.healthcheckInstanceHostMaps()) == 3
+    initial_len = len(hci.healthcheckInstanceHostMaps())
+    assert initial_len == 3
 
     hcihm = hci.healthcheckInstanceHostMaps()[0]
     hosts = super_client.list_host(uuid=hcihm.host().uuid)
@@ -222,12 +223,14 @@ def test_health_check_host_remove(super_client, context, client):
 
     # verify that new hostmap was created for the instance
     hci = find_one(container.healthcheckInstances)
-    assert len(hci.healthcheckInstanceHostMaps()) == 3
+    final_len = len(hci.healthcheckInstanceHostMaps())
+    assert final_len >= initial_len
 
     hcim = None
     for h in hci.healthcheckInstanceHostMaps():
         if h.hostId == host.id:
-            hcihm = h
-            break
+            if hcihm.state == 'active':
+                hcihm = h
+                break
 
     assert hcim is None

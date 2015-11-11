@@ -2,14 +2,12 @@ package io.cattle.iaas.healthcheck.process;
 
 import static io.cattle.platform.core.model.tables.HostTable.HOST;
 import io.cattle.iaas.healthcheck.service.HealthcheckService;
-import io.cattle.iaas.healthcheck.service.HealthcheckService.HealthcheckInstanceType;
 import io.cattle.platform.core.constants.AgentConstants;
 import io.cattle.platform.core.constants.HostConstants;
 import io.cattle.platform.core.dao.GenericMapDao;
 import io.cattle.platform.core.model.Agent;
 import io.cattle.platform.core.model.HealthcheckInstanceHostMap;
 import io.cattle.platform.core.model.Host;
-import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.engine.handler.HandlerResult;
 import io.cattle.platform.engine.handler.ProcessPreListener;
 import io.cattle.platform.engine.process.ProcessInstance;
@@ -54,19 +52,10 @@ public class HostRemovePreHandler extends AbstractObjectProcessLogic implements 
         if (host == null) {
             return null;
         }
-        List<? extends Instance> instances = serviceDao.getInstancesWithHealtcheckScheduledOnHost(host.getId());
 
         removeHealthCheckHostMaps(host);
 
-        reregisterInstancesForHealtchecks(instances);
-
         return null;
-    }
-
-    protected void reregisterInstancesForHealtchecks(List<? extends Instance> instances) {
-        for (Instance instance : instances) {
-            healthcheckService.registerForHealtcheck(HealthcheckInstanceType.INSTANCE, instance.getId());
-        }
     }
 
     protected void removeHealthCheckHostMaps(Host host) {

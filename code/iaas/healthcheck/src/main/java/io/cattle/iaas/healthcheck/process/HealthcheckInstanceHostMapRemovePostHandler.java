@@ -5,7 +5,7 @@ import io.cattle.platform.core.model.HealthcheckInstance;
 import io.cattle.platform.core.model.HealthcheckInstanceHostMap;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.engine.handler.HandlerResult;
-import io.cattle.platform.engine.handler.ProcessPreListener;
+import io.cattle.platform.engine.handler.ProcessPostListener;
 import io.cattle.platform.engine.process.ProcessInstance;
 import io.cattle.platform.engine.process.ProcessState;
 import io.cattle.platform.process.common.handler.AbstractObjectProcessLogic;
@@ -16,7 +16,7 @@ import javax.inject.Named;
 
 @Named
 public class HealthcheckInstanceHostMapRemovePostHandler extends AbstractObjectProcessLogic implements
-        ProcessPreListener, Priority {
+        ProcessPostListener, Priority {
 
     @Inject
     HealthcheckService hcSvc;

@@ -49,18 +49,15 @@ public class ServiceDaoImpl extends AbstractJooqDao implements ServiceDao {
     }
 
     @Override
-    public List<? extends Instance> getInstancesWithHealtcheckRunningOnHost(long hostId) {
+    public List<? extends Instance> getInstancesWithHealtcheckEnabled(long accountId) {
         return create().select(INSTANCE.fields())
                 .from(INSTANCE)
                 .join(HEALTHCHECK_INSTANCE)
                 .on(HEALTHCHECK_INSTANCE.INSTANCE_ID.eq(INSTANCE.ID))
-                .join(INSTANCE_HOST_MAP)
-                .on(INSTANCE_HOST_MAP.INSTANCE_ID.eq(INSTANCE.ID))
-                .where(INSTANCE_HOST_MAP.HOST_ID.eq(hostId))
-                .and(INSTANCE_HOST_MAP.REMOVED.isNull())
                 .and(HEALTHCHECK_INSTANCE.REMOVED.isNull())
                 .and(INSTANCE.REMOVED.isNull())
-                .and(INSTANCE.STATE.in(InstanceConstants.STATE_STARTING, InstanceConstants.STATE_RUNNING))
+                .and(INSTANCE.STATE.in(InstanceConstants.STATE_STARTING, InstanceConstants.STATE_RUNNING)
+                        .and(INSTANCE.ACCOUNT_ID.eq(accountId)))
                 .fetchInto(InstanceRecord.class);
     }
 }
