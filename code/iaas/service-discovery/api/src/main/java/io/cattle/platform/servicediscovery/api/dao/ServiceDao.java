@@ -15,5 +15,5 @@ public interface ServiceDao {
 
     List<? extends Instance> getInstancesWithHealtcheckScheduledOnHost(long hostId);
 
-    List<? extends Instance> getInstancesWithHealtcheckRunningOnHost(long hostId);
+    List<? extends Instance> getInstancesWithHealtcheckEnabled(long accountId);
 }

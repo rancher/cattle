@@ -23,6 +23,7 @@ import io.cattle.platform.object.process.ObjectProcessManager;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 
 import javax.inject.Inject;
@@ -197,41 +198,48 @@ public class HealthcheckServiceImpl implements HealthcheckService {
     private List<Long> getHealthCheckHostIds(HealthcheckInstance healthInstance, Long inferiorHostId) {
         int requiredNumber = 3;
 
-        // 1) check if have to allocate more hosts
         List<? extends HealthcheckInstanceHostMap> existingHostMaps = mapDao.findNonRemoved(
                 HealthcheckInstanceHostMap.class,
                 HealthcheckInstance.class, healthInstance.getId());
+        List<? extends Host> availableActiveHosts = allocatorDao.getActiveHosts(healthInstance.getAccountId());
+        List<Long> availableActiveHostIds = (List<Long>) CollectionUtils.collect(availableActiveHosts,
+                TransformerUtils.invokerTransformer("getId"));
+        List<Long> allocatedActiveHostIds = (List<Long>) CollectionUtils.collect(existingHostMaps,
+                TransformerUtils.invokerTransformer("getHostId"));
 
-        if (existingHostMaps.size() >= requiredNumber) {
+        // skip the host that if not active (being removed, reconnecting, etc)
+        Iterator<Long> it = allocatedActiveHostIds.iterator();
+        while (it.hasNext()) {
+            Long allocatedHostId = it.next();
+            if (!availableActiveHostIds.contains(allocatedHostId)) {
+                it.remove();
+            }
+        }
+
+        // return if allocated active hosts is >= required number of hosts for healtcheck
+        if (allocatedActiveHostIds.size() >= requiredNumber) {
             return new ArrayList<>();
         }
 
-        // 2) Figure out what hosts to allocate
-        List<? extends Host> availableActiveHosts = allocatorDao.getActiveHosts(healthInstance.getAccountId());
-        List<Long> availableHostIds = (List<Long>) CollectionUtils.collect(availableActiveHosts,
-                TransformerUtils.invokerTransformer("getId"));
-        List<Long> allocatedHostIds = (List<Long>) CollectionUtils.collect(existingHostMaps,
-                TransformerUtils.invokerTransformer("getHostId"));
+        // remove allocated hosts from the available hostIds and shuffle the list to randomize the choice
+        availableActiveHostIds.removeAll(allocatedActiveHostIds);
+        requiredNumber = requiredNumber - allocatedActiveHostIds.size();
+        Collections.shuffle(availableActiveHostIds);
 
-        // 3) remove allocated hosts from the available hostIds and shuffle the list to randomize the choice
-        availableHostIds.removeAll(allocatedHostIds);
-        requiredNumber = requiredNumber - allocatedHostIds.size();
-        Collections.shuffle(availableHostIds);
-
-        // 4) place inferiorHostId to the end of the list
+        // place inferiorHostId to the end of the list
         if (inferiorHostId != null) {
-            if (availableHostIds.contains(inferiorHostId)) {
-                availableHostIds.remove(inferiorHostId);
-                if (availableHostIds.isEmpty() && allocatedHostIds.isEmpty()) {
-                    availableHostIds.add(inferiorHostId);
+            if (availableActiveHostIds.contains(inferiorHostId)) {
+                availableActiveHostIds.remove(inferiorHostId);
+                if (availableActiveHostIds.isEmpty() && allocatedActiveHostIds.isEmpty()) {
+                    availableActiveHostIds.add(inferiorHostId);
                 }
             }
         }
 
-        // 5) Figure out the final number of hosts
-        int returnedNumber = requiredNumber > availableHostIds.size() ? availableHostIds.size() : requiredNumber;
+        // Figure out the final number of hosts
+        int returnedNumber = requiredNumber > availableActiveHostIds.size() ? availableActiveHostIds.size() : requiredNumber;
 
-        return availableHostIds.subList(0, returnedNumber);
+        return availableActiveHostIds.subList(0, returnedNumber);
     }
 
     private Long getInstanceHostId(HealthcheckInstanceType type, long instanceId) {

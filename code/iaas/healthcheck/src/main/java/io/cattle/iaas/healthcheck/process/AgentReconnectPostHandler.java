@@ -42,7 +42,7 @@ public class AgentReconnectPostHandler extends AbstractObjectProcessLogic implem
         if (host == null) {
             return null;
         }
-        List<? extends Instance> instances = serviceDao.getInstancesWithHealtcheckRunningOnHost(host.getId());
+        List<? extends Instance> instances = serviceDao.getInstancesWithHealtcheckEnabled(host.getAccountId());
 
         reregisterInstancesForHealtchecks(instances);
 
