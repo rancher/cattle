@@ -28,6 +28,10 @@ public class ServiceEventCreate extends AbstractObjectProcessHandler implements 
             return null;
         }
 
+        if ("INIT".equals(event.getReportedHealth())) {
+            return null;
+        }
+
         healthcheckService.updateHealthcheck(event.getHealthcheckUuid().split("_")[0], event.getExternalTimestamp(),
                 "UP".equals(event.getReportedHealth()));
 

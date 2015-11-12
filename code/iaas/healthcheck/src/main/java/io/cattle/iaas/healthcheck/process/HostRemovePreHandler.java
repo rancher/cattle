@@ -63,7 +63,7 @@ public class HostRemovePreHandler extends AbstractObjectProcessLogic implements 
                 HealthcheckInstanceHostMap.class,
                 Host.class, host.getId());
         for (HealthcheckInstanceHostMap healthHostMap : healthHostMaps) {
-            objectProcessManager.executeStandardProcess(StandardProcess.REMOVE, healthHostMap, null);
+            objectProcessManager.scheduleStandardProcess(StandardProcess.REMOVE, healthHostMap, null);
         }
     }
 

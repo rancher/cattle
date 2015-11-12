@@ -100,6 +100,39 @@ def test_health_check_create_service(super_client, context, client):
     ts = int(time.time())
     client = _get_agent_client(agent)
     se = client.create_service_event(externalTimestamp=ts,
+                                     reportedHealth='INIT',
+                                     healthcheckUuid=hcihm.uuid)
+    super_client.wait_success(se)
+    hcihm = super_client.wait_success(super_client.reload(hcihm))
+    assert hcihm.healthState == 'healthy'
+    check = lambda: super_client.reload(container).healthState == 'healthy'
+    wait_for(check, timeout=5)
+
+    ts = int(time.time())
+    client = _get_agent_client(agent)
+    se = client.create_service_event(externalTimestamp=ts,
+                                     reportedHealth='UP',
+                                     healthcheckUuid=hcihm.uuid)
+    super_client.wait_success(se)
+    hcihm = super_client.wait_success(super_client.reload(hcihm))
+    assert hcihm.healthState == 'healthy'
+    check = lambda: super_client.reload(container).healthState == 'healthy'
+    wait_for(check, timeout=5)
+
+    ts = int(time.time())
+    client = _get_agent_client(agent)
+    se = client.create_service_event(externalTimestamp=ts,
+                                     reportedHealth='INIT',
+                                     healthcheckUuid=hcihm.uuid)
+    super_client.wait_success(se)
+    hcihm = super_client.wait_success(super_client.reload(hcihm))
+    assert hcihm.healthState == 'healthy'
+    check = lambda: super_client.reload(container).healthState == 'healthy'
+    wait_for(check, timeout=5)
+
+    ts = int(time.time())
+    client = _get_agent_client(agent)
+    se = client.create_service_event(externalTimestamp=ts,
                                      reportedHealth='Something Bad',
                                      healthcheckUuid=hcihm.uuid)
 
