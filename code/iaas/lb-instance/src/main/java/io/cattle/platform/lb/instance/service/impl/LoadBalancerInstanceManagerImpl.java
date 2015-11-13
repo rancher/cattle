@@ -120,6 +120,12 @@ public class LoadBalancerInstanceManagerImpl implements LoadBalancerInstanceMana
                     params.put(DockerInstanceConstants.FIELD_NETWORK_CONTAINER_ID,
                             data.get(DockerInstanceConstants.FIELD_NETWORK_CONTAINER_ID));
                 }
+                
+
+                if (data.get(InstanceConstants.FIELD_HEALTH_CHECK) != null) {
+                    params.put(InstanceConstants.FIELD_HEALTH_CHECK,
+                            data.get(InstanceConstants.FIELD_HEALTH_CHECK));
+                }
 
                 List<Long> networkIds = new ArrayList<>();
                 networkIds.add(network.getId());
