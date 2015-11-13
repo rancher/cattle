@@ -4,13 +4,16 @@ import io.cattle.platform.allocator.dao.AllocatorDao;
 import io.cattle.platform.allocator.service.AllocationAttempt;
 import io.cattle.platform.allocator.service.AllocationLog;
 import io.cattle.platform.core.constants.InstanceConstants;
+import io.cattle.platform.core.dao.GenericMapDao;
 import io.cattle.platform.core.model.Host;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.Nic;
 import io.cattle.platform.core.model.StoragePool;
+import io.cattle.platform.core.model.StoragePoolHostMap;
 import io.cattle.platform.core.model.Subnet;
 import io.cattle.platform.core.model.Vnet;
 import io.cattle.platform.core.model.Volume;
+import io.cattle.platform.core.model.VolumeStoragePoolMap;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.object.util.DataUtils;
@@ -24,8 +27,12 @@ import javax.inject.Inject;
 
 public class BaseConstraintsProvider implements AllocationConstraintsProvider, Priority {
 
+    @Inject
     AllocatorDao allocatorDao;
+    @Inject
     ObjectManager objectManager;
+    @Inject
+    GenericMapDao mapDao;
 
     @Override
     public void appendConstraints(AllocationAttempt attempt, AllocationLog log, List<Constraint> constraints) {
@@ -99,48 +106,47 @@ public class BaseConstraintsProvider implements AllocationConstraintsProvider, P
     protected void addStorageConstraints(AllocationAttempt attempt, List<Constraint> constraints) {
         for (Map.Entry<Volume, Set<StoragePool>> entry : attempt.getPools().entrySet()) {
             Volume volume = entry.getKey();
-            VolumeValidStoragePoolConstraint volumeToPoolConstraint = new VolumeValidStoragePoolConstraint(volume);
-
-            for (StoragePool pool : entry.getValue()) {
-                volumeToPoolConstraint.getStoragePools().add(pool.getId());
-                ValidHostsConstraint hostSet = new ValidHostsConstraint();
-                for (Host host : allocatorDao.getHosts(pool)) {
-                    hostSet.addHost(host.getId());
+            List<? extends VolumeStoragePoolMap> vspms = mapDao.findNonRemoved(VolumeStoragePoolMap.class, Volume.class, volume.getId());
+            boolean alreadyMappedToPool = vspms.size() > 0;
+            VolumeValidStoragePoolConstraint volumeToPoolConstraint = new VolumeValidStoragePoolConstraint(volume, alreadyMappedToPool);
+            if (alreadyMappedToPool) {
+                for (VolumeStoragePoolMap vspm : vspms) {
+                    volumeToPoolConstraint.getStoragePools().add(vspm.getStoragePoolId());
+                    ValidHostsConstraint hostSet = new ValidHostsConstraint();
+                    for (StoragePoolHostMap sphm : mapDao.findNonRemoved(StoragePoolHostMap.class, StoragePool.class, vspm.getStoragePoolId())) {
+                        hostSet.addHost(sphm.getHostId());
+                    }
+                    constraints.add(hostSet);
                 }
-                constraints.add(hostSet);
-            }
+                constraints.add(volumeToPoolConstraint);
+            } else {
+                for (StoragePool pool : entry.getValue()) {
+                    volumeToPoolConstraint.getStoragePools().add(pool.getId());
+                    ValidHostsConstraint hostSet = new ValidHostsConstraint();
+                    for (Host host : allocatorDao.getHosts(pool)) {
+                        hostSet.addHost(host.getId());
+                    }
+                    constraints.add(hostSet);
+                }
 
-            Instance instance = objectManager.loadResource(Instance.class, volume.getInstanceId());
-            if (instance != null) {
-                for (Host host : allocatorDao.getHosts(instance)) {
-                    for (StoragePool pool : allocatorDao.getAssociatedPools(host)) {
-                        volumeToPoolConstraint.getStoragePools().add(pool.getId());
+                Instance instance = objectManager.loadResource(Instance.class, volume.getInstanceId());
+                if (instance != null) {
+                    for (Host host : allocatorDao.getHosts(instance)) {
+                        for (StoragePool pool : allocatorDao.getAssociatedPools(host)) {
+                            volumeToPoolConstraint.getStoragePools().add(pool.getId());
+                        }
                     }
                 }
+
+                if (volumeToPoolConstraint.getStoragePools().size() > 0) {
+                    constraints.add(volumeToPoolConstraint);
+                }
             }
 
-            if (volumeToPoolConstraint.getStoragePools().size() > 0) {
-                constraints.add(volumeToPoolConstraint);
+            if (volume.getImageId() != null) {
+                constraints.add(new ImageVolumeStoragePoolKindConstraint(volume));
             }
         }
-    }
-
-    public ObjectManager getObjectManager() {
-        return objectManager;
-    }
-
-    @Inject
-    public void setObjectManager(ObjectManager objectManager) {
-        this.objectManager = objectManager;
-    }
-
-    public AllocatorDao getAllocatorDao() {
-        return allocatorDao;
-    }
-
-    @Inject
-    public void setAllocatorDao(AllocatorDao allocatorDao) {
-        this.allocatorDao = allocatorDao;
     }
 
     @Override
