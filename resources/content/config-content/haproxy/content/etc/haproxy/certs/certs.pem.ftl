@@ -2,6 +2,6 @@
 <#list certs as cert >
 ${cert.key}
 ${cert.cert}
-<#if cert.certChain??> ${cert.certChain}</#if>
+<#if cert.certChain??>${cert.certChain}</#if>
 </#list>
 </#if>
