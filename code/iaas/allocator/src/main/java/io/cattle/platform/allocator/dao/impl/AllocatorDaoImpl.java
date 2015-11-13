@@ -183,36 +183,26 @@ public class AllocatorDaoImpl extends AbstractJooqDao implements AllocatorDao {
             }
         }
 
-        Map<Long,Set<Long>> existingPools = attempt.getPoolIds();
-        Map<Long,Set<Long>> newPools = candidate.getPools();
+        Map<Long, Set<Long>> existingPools = attempt.getPoolIds();
+        Map<Long, Set<Long>> newPools = candidate.getPools();
 
-        if ( isEmtpy(existingPools) ) {
-            for ( Map.Entry<Long, Set<Long>> entry : newPools.entrySet() ) {
-                long volumeId = entry.getKey();
-                for ( long poolId : entry.getValue() ) {
-                    boolean inRightState = true;
-//                    for ( Volume v : attempt.getVolumes() ) {
-//                        if ( v.getId().longValue() == volumeId ) {
-//                            Boolean stateCheck = AllocatorUtils.checkAllocateState(v.getId(), v.getAllocationState(), "Volume");
-//                            if ( stateCheck != null && ! stateCheck.booleanValue() ) {
-//                                log.error("Not assigning volume [{}] to pool [{}] because it is in state [{}]",
-//                                        v.getId(), poolId, v.getAllocationState());
-//                                inRightState = false;
-//                            }
-//                        }
-//                    }
-                    if ( inRightState ) {
-                        log.info("Associating volume [{}] to storage pool [{}]", volumeId, poolId);
-                        objectManager.create(VolumeStoragePoolMap.class,
-                                VOLUME_STORAGE_POOL_MAP.VOLUME_ID, volumeId,
-                                VOLUME_STORAGE_POOL_MAP.STORAGE_POOL_ID, poolId);
-                    }
+        if (!existingPools.keySet().equals(newPools.keySet())) {
+            throw new IllegalStateException(String.format("Volumes don't match. currently %s, new %s", existingPools.keySet(), newPools.keySet()));
+        }
+
+        for (Map.Entry<Long, Set<Long>> entry : newPools.entrySet()) {
+            long volumeId = entry.getKey();
+            Set<Long> existingPoolsForVol = existingPools.get(entry.getKey());
+            Set<Long> newPoolsForVol = entry.getValue();
+            if (existingPoolsForVol == null || existingPoolsForVol.size() == 0) {
+                for (long poolId : newPoolsForVol) {
+                    log.info("Associating volume [{}] to storage pool [{}]", volumeId, poolId);
+                    objectManager.create(VolumeStoragePoolMap.class,
+                            VOLUME_STORAGE_POOL_MAP.VOLUME_ID, volumeId, 
+                            VOLUME_STORAGE_POOL_MAP.STORAGE_POOL_ID, poolId);
                 }
-            }
-        } else {
-            if ( ! existingPools.equals(newPools) ) {
-                log.error("Can not move volumes, currently {} new {}", existingPools, newPools);
-                throw new IllegalStateException("Can not move volumes, currently " + existingPools + " new " + newPools);
+            } else if (!existingPoolsForVol.equals(newPoolsForVol)) {
+                throw new IllegalStateException(String.format("Can not move volume %s, currently: %s, new: %s", volumeId, existingPools, newPools));
             }
         }
 
