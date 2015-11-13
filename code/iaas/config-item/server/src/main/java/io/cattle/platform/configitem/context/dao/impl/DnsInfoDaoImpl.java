@@ -50,6 +50,8 @@ import java.util.Set;
 
 import javax.inject.Inject;
 
+import org.jooq.Condition;
+
 public class DnsInfoDaoImpl extends AbstractJooqDao implements DnsInfoDao {
 
     @Inject
@@ -67,13 +69,14 @@ public class DnsInfoDaoImpl extends AbstractJooqDao implements DnsInfoDao {
             @Override
             protected DnsEntryData map(List<Object> input) {
                 DnsEntryData data = new DnsEntryData();
-                Map<String, List<String>> resolve = new HashMap<>();
-                List<String> ips = new ArrayList<>();
-                ips.add(((IpAddress) input.get(1)).getAddress());
+                Map<String, Map<String, String>> resolve = new HashMap<>();
+                Map<String, String> ips = new HashMap<>();
+                String targetInstanceName = input.get(4) == null ? null : ((Instance) input.get(4)).getName();
+                ips.put(((IpAddress) input.get(1)).getAddress(), targetInstanceName);
                 // add all instance links
                 resolve.put(((InstanceLink) input.get(0)).getLinkName(), ips);
                 data.setSourceIpAddress((IpAddress) input.get(2));
-                data.setResolve(resolve);
+                data.setResolveServicesAndContainers(resolve);
                 data.setInstance((Instance)input.get(3));
                 return data;
             }
@@ -83,11 +86,11 @@ public class DnsInfoDaoImpl extends AbstractJooqDao implements DnsInfoDao {
         IpAddressTable targetIpAddress = mapper.add(IP_ADDRESS);
         IpAddressTable clientIpAddress = mapper.add(IP_ADDRESS);
         InstanceTable clientInstance = mapper.add(INSTANCE);
+        InstanceTable targetInstance = mapper.add(INSTANCE);
         NicTable clientNic = NIC.as("client_nic");
         NicTable targetNic = NIC.as("target_nic");
         IpAddressNicMapTable clientNicIpTable = IP_ADDRESS_NIC_MAP.as("client_nic_ip");
         IpAddressNicMapTable targetNicIpTable = IP_ADDRESS_NIC_MAP.as("target_nic_ip");
-        InstanceTable targetInstance = INSTANCE.as("instance");
 
         return create()
                 .select(mapper.fields())
@@ -127,36 +130,29 @@ public class DnsInfoDaoImpl extends AbstractJooqDao implements DnsInfoDao {
                 .fetch().map(mapper);
     }
 
-    private String getDnsName(Object serviceConsumeMap, Object service) {
-        String consumeMapName = ((ServiceConsumeMap) serviceConsumeMap).getName();
-        if (consumeMapName != null && !consumeMapName.isEmpty()) {
-            return consumeMapName;
-        }
-        return ((Service) service).getName();
-    }
-
     @Override
-    public List<DnsEntryData> getServiceHostDnsData(final Instance instance, final boolean isVIPProvider) {
+    public List<DnsEntryData> getServiceDnsData(final Instance instance, final boolean isVIPProvider, boolean links) {
         final Map<Long, IpAddress> instanceIdToHostIpMap = getInstanceWithHostNetworkingToIpMap(instance.getAccountId());
         MultiRecordMapper<DnsEntryData> mapper = new MultiRecordMapper<DnsEntryData>() {
             @Override
             protected DnsEntryData map(List<Object> input) {
                 DnsEntryData data = new DnsEntryData();
                 Service service = (Service) input.get(0);
-                Map<String, List<String>> resolve = new HashMap<>();
-                List<String> ips = new ArrayList<>();
+                Map<String, Map<String, String>> resolve = new HashMap<>();
+                Map<String, String> ips = new HashMap<>();
                 IpAddress sourceIp = getIpAddress((IpAddress) input.get(2), (Nic) input.get(7), true, instanceIdToHostIpMap);
+                String targetInstanceName = input.get(8) == null ? null : ((Instance) input.get(8)).getName();
                 if (isVIPProvider) {
-                    ips.add(service.getVip());
+                    ips.put(service.getVip(), targetInstanceName);
                 } else {
                     IpAddress targetIp = getIpAddress((IpAddress) input.get(1), (Nic) input.get(6), false,
                             instanceIdToHostIpMap);
-                    ips.add(targetIp.getAddress());
+                    ips.put(targetIp.getAddress(), targetInstanceName);
                 }
                 String dnsName = getDnsName(service, input.get(4), input.get(5), false);
                 data.setSourceIpAddress(sourceIp);
                 resolve.put(dnsName, ips);
-                data.setResolve(resolve);
+                data.setResolveServicesAndContainers(resolve);
                 data.setInstance((Instance) input.get(3));
                 return data;
             }
@@ -170,10 +166,21 @@ public class DnsInfoDaoImpl extends AbstractJooqDao implements DnsInfoDao {
         ServiceExposeMapTable targetServiceExposeMap = mapper.add(SERVICE_EXPOSE_MAP);
         NicTable targetNic = mapper.add(NIC);
         NicTable clientNic = mapper.add(NIC);
-        InstanceTable targetInstance = INSTANCE.as("instance");
+        InstanceTable targetInstance = mapper.add(INSTANCE);
         IpAddressNicMapTable clientNicIpTable = IP_ADDRESS_NIC_MAP.as("client_nic_ip");
         IpAddressNicMapTable targetNicIpTable = IP_ADDRESS_NIC_MAP.as("target_nic_ip");
         ServiceExposeMapTable clientServiceExposeMap = SERVICE_EXPOSE_MAP.as("service_expose_map_client");
+        ServiceTable clientService = SERVICE.as("client_service");
+
+        Condition condition = null;
+        if (links) {
+            condition = serviceConsumeMap.ID.isNotNull().and(serviceConsumeMap.REMOVED.isNull())
+                    .and(serviceConsumeMap.STATE.in(CommonStatesConstants.ACTIVATING,
+                            CommonStatesConstants.ACTIVE));
+        } else {
+            condition = targetService.ENVIRONMENT_ID.eq(clientService.ENVIRONMENT_ID).and(serviceConsumeMap.ID.isNull())
+                    .and(clientService.ID.ne(targetService.ID));
+        }
 
         return create()
                 .select(mapper.fields())
@@ -182,12 +189,12 @@ public class DnsInfoDaoImpl extends AbstractJooqDao implements DnsInfoDao {
                 .on(NIC.VNET_ID.eq(clientNic.VNET_ID))
                 .join(clientServiceExposeMap)
                 .on(clientServiceExposeMap.INSTANCE_ID.eq(clientNic.INSTANCE_ID))
-                .join(serviceConsumeMap)
-                .on(serviceConsumeMap.SERVICE_ID.eq(clientServiceExposeMap.SERVICE_ID))
-                .join(targetServiceExposeMap)
-                .on(targetServiceExposeMap.SERVICE_ID.eq(serviceConsumeMap.CONSUMED_SERVICE_ID))
+                .join(clientService)
+                .on(clientService.ID.eq(clientServiceExposeMap.SERVICE_ID))
                 .join(targetService)
-                .on(serviceConsumeMap.CONSUMED_SERVICE_ID.eq(targetService.ID))
+                .on(targetService.ACCOUNT_ID.eq(clientServiceExposeMap.ACCOUNT_ID))
+                .join(targetServiceExposeMap)
+                .on(targetServiceExposeMap.SERVICE_ID.eq(targetService.ID))
                 .join(targetNic)
                 .on(targetNic.INSTANCE_ID.eq(targetServiceExposeMap.INSTANCE_ID))
                 .join(targetInstance)
@@ -202,6 +209,10 @@ public class DnsInfoDaoImpl extends AbstractJooqDao implements DnsInfoDao {
                 .on(clientNicIpTable.IP_ADDRESS_ID.eq(clientIpAddress.ID))
                 .join(clientInstance)
                 .on(clientNic.INSTANCE_ID.eq(clientInstance.ID))
+                .leftOuterJoin(serviceConsumeMap)
+                .on(serviceConsumeMap.SERVICE_ID.eq(clientService.ID).and(
+                        serviceConsumeMap.CONSUMED_SERVICE_ID.eq(targetService.ID))
+                        .and(serviceConsumeMap.REMOVED.isNull()))
                 .where(NIC.INSTANCE_ID.eq(instance.getId())
                         .and(NIC.VNET_ID.isNotNull())
                         .and(NIC.REMOVED.isNull())
@@ -212,19 +223,18 @@ public class DnsInfoDaoImpl extends AbstractJooqDao implements DnsInfoDao {
                         .and(targetNicIpTable.REMOVED.isNull())
                         .and(clientNic.REMOVED.isNull())
                         .and(targetNic.REMOVED.isNull())
-                        .and(serviceConsumeMap.REMOVED.isNull())
-                        .and(serviceConsumeMap.STATE.in(CommonStatesConstants.ACTIVATING,
-                                CommonStatesConstants.ACTIVE))
                         .and(clientServiceExposeMap.REMOVED.isNull())
                         .and(targetServiceExposeMap.REMOVED.isNull())
                         .and(targetService.REMOVED.isNull())
+                        .and(clientService.REMOVED.isNull())
                         .and(targetInstance.STATE.in(InstanceConstants.STATE_RUNNING,
-                                InstanceConstants.STATE_STARTING)))
+                                InstanceConstants.STATE_STARTING))
+                        .and(condition))
                 .fetch().map(mapper);
     }
 
     @Override
-    public List<DnsEntryData> getSelfServiceLinks(Instance instance, final boolean isVIPProvider) {
+    public List<DnsEntryData> getSelfServiceData(Instance instance, final boolean isVIPProvider) {
         final Map<Long, IpAddress> instanceIdToHostIpMap = getInstanceWithHostNetworkingToIpMap(instance.getAccountId());
         // each dnsEntry data represents a client ip + resolve
         // fetching only client data here
@@ -247,14 +257,14 @@ public class DnsInfoDaoImpl extends AbstractJooqDao implements DnsInfoDao {
             DnsResolveEntryData resolve) {
         List<DnsEntryData> dnsRecords = serviceIdToDnsRecordsData.get(resolve.getServiceId());
         for (DnsEntryData dnsRecord : dnsRecords) {
-            Map<String, List<String>> recordResolve = dnsRecord.getResolve();
-            List<String> ips = recordResolve.get(resolve.getDnsName());
+            Map<String, Map<String, String>> recordResolve = dnsRecord.getResolveServicesAndContainers();
+            Map<String, String> ips = recordResolve.get(resolve.getDnsName());
             if (ips == null) {
-                ips = new ArrayList<>();
+                ips = new HashMap<>();
             }
-            ips.add(resolve.getIpAddress());
+            ips.put(resolve.getIpAddress(), resolve.getTargetInstanceName());
             recordResolve.put(resolve.getDnsName(), ips);
-            dnsRecord.setResolve(recordResolve);
+            dnsRecord.setResolveServicesAndContainers(recordResolve);
         }
     }
 
@@ -278,18 +288,19 @@ public class DnsInfoDaoImpl extends AbstractJooqDao implements DnsInfoDao {
             protected DnsResolveEntryData map(List<Object> input) {
                 DnsResolveEntryData resolveData = new DnsResolveEntryData();
                 // target info
-                Service service = (Service) input.get(0); // fixed
+                Service service = (Service) input.get(0);
                 String dnsName = getDnsName(service, null, input.get(2), true);
                 String targetIp = null;
                 if (isVIPProvider) {
                     targetIp = service.getVip();
                 } else {
                     targetIp = getIpAddress((IpAddress) input.get(1), (Nic) input.get(3), false,
-                            instanceIdToHostIpMap).getAddress(); // fixed
+                            instanceIdToHostIpMap).getAddress();
                 }
                 resolveData.setDnsName(dnsName);
                 resolveData.setIpAddress(targetIp);
                 resolveData.setServiceId(service.getId());
+                resolveData.setTargetInstanceName(((Instance) input.get(4)).getName());
                 return resolveData;
             }
         };
@@ -298,7 +309,7 @@ public class DnsInfoDaoImpl extends AbstractJooqDao implements DnsInfoDao {
         IpAddressTable targetIpAddress = resolveMapper.add(IP_ADDRESS);
         ServiceExposeMapTable targetServiceExposeMap = resolveMapper.add(SERVICE_EXPOSE_MAP);
         NicTable targetNic = resolveMapper.add(NIC);
-        InstanceTable targetInstance = INSTANCE.as("instance");
+        InstanceTable targetInstance = resolveMapper.add(INSTANCE);
         IpAddressNicMapTable targetNicIpTable = IP_ADDRESS_NIC_MAP.as("target_nic_ip");
 
         List<DnsResolveEntryData> resolveData = create()
@@ -376,21 +387,22 @@ public class DnsInfoDaoImpl extends AbstractJooqDao implements DnsInfoDao {
 
 
     @Override
-    public List<DnsEntryData> getExternalServiceDnsData(final Instance instance) {
+    public List<DnsEntryData> getExternalServiceDnsData(final Instance instance, boolean links) {
         MultiRecordMapper<DnsEntryData> mapper = new MultiRecordMapper<DnsEntryData>() {
             @Override
             protected DnsEntryData map(List<Object> input) {
                 DnsEntryData data = new DnsEntryData();
-                if (((ServiceExposeMap) input.get(1)).getIpAddress() != null) {
-                    Map<String, List<String>> resolve = new HashMap<>();
-                    List<String> ips = new ArrayList<>();
-                    ips.add(((ServiceExposeMap) input.get(1)).getIpAddress());
-                    resolve.put(getDnsName(input.get(4), input.get(0)), ips);
-                    data.setResolve(resolve);
-                } else if (((ServiceExposeMap) input.get(1)).getHostName() != null) {
+                ServiceExposeMap exposeMap = (ServiceExposeMap) input.get(1);
+                if (exposeMap.getIpAddress() != null) {
+                    Map<String, Map<String, String>> resolve = new HashMap<>();
+                    Map<String, String> ips = new HashMap<>();
+                    ips.put(exposeMap.getIpAddress(), null);
+                    resolve.put(getDnsName(input.get(0), input.get(4), exposeMap, false), ips);
+                    data.setResolveServicesAndContainers(resolve);
+                } else if (exposeMap.getHostName() != null) {
                     Map<String, String> resolveHostName = new HashMap<>();
-                    resolveHostName.put(getDnsName(input.get(4), input.get(0)),
-                            ((ServiceExposeMap) input.get(1)).getHostName());
+                    resolveHostName.put(getDnsName(input.get(0), input.get(4), exposeMap, false),
+                            exposeMap.getHostName());
                     data.setResolveCname(resolveHostName);
                 }
 
@@ -408,66 +420,80 @@ public class DnsInfoDaoImpl extends AbstractJooqDao implements DnsInfoDao {
         NicTable clientNic = NIC.as("client_nic");
         IpAddressNicMapTable clientNicIpTable = IP_ADDRESS_NIC_MAP.as("client_nic_ip");
         ServiceExposeMapTable clientServiceExposeMap = SERVICE_EXPOSE_MAP.as("service_expose_map_client");
+        ServiceTable clientService = SERVICE.as("client_service");
+
+        Condition condition = null;
+        if (links) {
+            condition = serviceConsumeMap.ID.isNotNull().and(serviceConsumeMap.REMOVED.isNull())
+                    .and(serviceConsumeMap.STATE.in(CommonStatesConstants.ACTIVATING,
+                            CommonStatesConstants.ACTIVE));
+        } else {
+            condition = targetService.ENVIRONMENT_ID.eq(clientService.ENVIRONMENT_ID)
+                    .and(serviceConsumeMap.ID.isNull())
+                    .and(clientService.ID.ne(targetService.ID));
+        }
 
         return create()
                 .select(mapper.fields())
                 .from(NIC)
                 .join(clientNic)
                 .on(NIC.VNET_ID.eq(clientNic.VNET_ID))
-                .join(clientServiceExposeMap)
-                .on(clientServiceExposeMap.INSTANCE_ID.eq(clientNic.INSTANCE_ID))
-                .join(serviceConsumeMap)
-                .on(serviceConsumeMap.SERVICE_ID.eq(clientServiceExposeMap.SERVICE_ID))
-                .join(targetServiceExposeMap)
-                .on(targetServiceExposeMap.SERVICE_ID.eq(serviceConsumeMap.CONSUMED_SERVICE_ID))
-                .join(targetService)
-                .on(serviceConsumeMap.CONSUMED_SERVICE_ID.eq(targetService.ID))
                 .join(clientNicIpTable)
                 .on(clientNicIpTable.NIC_ID.eq(clientNic.ID))
                 .join(clientIpAddress)
                 .on(clientNicIpTable.IP_ADDRESS_ID.eq(clientIpAddress.ID))
                 .join(clientInstance)
                 .on(clientNic.INSTANCE_ID.eq(clientInstance.ID))
+                .join(clientServiceExposeMap)
+                .on(clientServiceExposeMap.INSTANCE_ID.eq(clientInstance.ID))
+                .join(clientService)
+                .on(clientService.ID.eq(clientServiceExposeMap.SERVICE_ID))
+                .join(targetService)
+                .on(targetService.ACCOUNT_ID.eq(clientService.ACCOUNT_ID))
+                .join(targetServiceExposeMap)
+                .on(targetServiceExposeMap.SERVICE_ID.eq(targetService.ID))
+                .leftOuterJoin(serviceConsumeMap)
+                .on(serviceConsumeMap.SERVICE_ID.eq(clientService.ID).and(
+                        serviceConsumeMap.CONSUMED_SERVICE_ID.eq(targetService.ID))
+                        .and(serviceConsumeMap.REMOVED.isNull()))
                 .where(NIC.INSTANCE_ID.eq(instance.getId())
                         .and(NIC.VNET_ID.isNotNull())
                         .and(NIC.REMOVED.isNull())
                         .and(clientIpAddress.ROLE.eq(IpAddressConstants.ROLE_PRIMARY))
                         .and(clientIpAddress.REMOVED.isNull())
                         .and(clientNic.REMOVED.isNull())
-                        .and(serviceConsumeMap.REMOVED.isNull())
-                        .and(serviceConsumeMap.STATE.in(CommonStatesConstants.ACTIVATING,
-                                CommonStatesConstants.ACTIVE))
                         .and(clientServiceExposeMap.REMOVED.isNull())
                         .and(targetServiceExposeMap.REMOVED.isNull())
                         .and(targetService.REMOVED.isNull())
                         .and(targetServiceExposeMap.IP_ADDRESS.isNotNull().or(
-                                targetServiceExposeMap.HOST_NAME.isNotNull())))
+                                targetServiceExposeMap.HOST_NAME.isNotNull()))
+                        .and(condition))
                 .fetch().map(mapper);
     }
 
 
     @Override
-    public List<DnsEntryData> getDnsServiceLinks(Instance instance, final boolean isVIPProvider) {
+    public List<DnsEntryData> getDnsServiceLinksData(Instance instance, final boolean isVIPProvider, boolean links) {
         final Map<Long, IpAddress> instanceIdToHostIpMap = getInstanceWithHostNetworkingToIpMap(instance.getAccountId());
         MultiRecordMapper<DnsEntryData> mapper = new MultiRecordMapper<DnsEntryData>() {
             @Override
             protected DnsEntryData map(List<Object> input) {
                 DnsEntryData data = new DnsEntryData();
-                Map<String, List<String>> resolve = new HashMap<>();
+                Map<String, Map<String, String>> resolve = new HashMap<>();
                 IpAddress sourceIp = getIpAddress((IpAddress) input.get(2), (Nic) input.get(7), true,
                         instanceIdToHostIpMap);
-                List<String> ips = new ArrayList<>();
+                Map<String, String> ips = new HashMap<>();
                 if (isVIPProvider) {
                     Service targetService = (Service) input.get(6);
-                    ips.add(targetService.getVip());
+                    ips.put(targetService.getVip(), null);
                 } else {
                     IpAddress targetIp = getIpAddress((IpAddress) input.get(1), (Nic) input.get(8), false,
                             instanceIdToHostIpMap);
-                    ips.add(targetIp.getAddress());
+                    ips.put(targetIp.getAddress(), null);
                 }
                 resolve.put(getDnsName(input.get(0), input.get(4), input.get(5), false), ips);
                 data.setSourceIpAddress(sourceIp);
-                data.setResolve(resolve);
+                data.setResolveServicesAndContainers(resolve);
                 data.setInstance((Instance) input.get(3));
                 return data;
             }
@@ -487,20 +513,44 @@ public class DnsInfoDaoImpl extends AbstractJooqDao implements DnsInfoDao {
         IpAddressNicMapTable targetNicIpTable = IP_ADDRESS_NIC_MAP.as("target_nic_ip");
         ServiceExposeMapTable clientServiceExposeMap = SERVICE_EXPOSE_MAP.as("service_expose_map_client");
         ServiceConsumeMapTable serviceConsumeMap = SERVICE_CONSUME_MAP.as("service_consume_map");
+        ServiceTable clientService = SERVICE.as("client_service");
+
+        Condition condition = null;
+        if (links) {
+            condition = dnsConsumeMap.ID.isNotNull().and(dnsConsumeMap.REMOVED.isNull())
+                    .and(dnsConsumeMap.STATE.in(CommonStatesConstants.ACTIVATING,
+                            CommonStatesConstants.ACTIVE));
+        } else {
+            condition = dnsService.ENVIRONMENT_ID.eq(clientService.ENVIRONMENT_ID)
+                    .and(dnsConsumeMap.ID.isNull())
+                    .and(clientService.ID.ne(dnsService.ID));
+        }
 
         return create()
                 .select(mapper.fields())
                 .from(NIC)
                 .join(clientNic)
                 .on(NIC.VNET_ID.eq(clientNic.VNET_ID))
+                .join(clientNicIpTable)
+                .on(clientNicIpTable.NIC_ID.eq(clientNic.ID))
+                .join(clientIpAddress)
+                .on(clientNicIpTable.IP_ADDRESS_ID.eq(clientIpAddress.ID))
+                .join(clientInstance)
+                .on(clientNic.INSTANCE_ID.eq(clientInstance.ID))
                 .join(clientServiceExposeMap)
-                .on(clientServiceExposeMap.INSTANCE_ID.eq(clientNic.INSTANCE_ID))
-                .join(dnsConsumeMap)
-                .on(dnsConsumeMap.SERVICE_ID.eq(clientServiceExposeMap.SERVICE_ID))
+                .on(clientServiceExposeMap.INSTANCE_ID.eq(clientInstance.ID))
+                .join(clientService)
+                .on(clientService.ID.eq(clientServiceExposeMap.SERVICE_ID))
                 .join(dnsService)
-                .on(dnsConsumeMap.CONSUMED_SERVICE_ID.eq(dnsService.ID))
+                .on(dnsService.ACCOUNT_ID.eq(clientService.ACCOUNT_ID))
+                .leftOuterJoin(dnsConsumeMap)
+                .on(dnsConsumeMap.SERVICE_ID.eq(clientService.ID).and(
+                        dnsConsumeMap.CONSUMED_SERVICE_ID.eq(dnsService.ID))
+                        .and(dnsConsumeMap.REMOVED.isNull()))
                 .join(serviceConsumeMap)
                 .on(serviceConsumeMap.SERVICE_ID.eq(dnsService.ID))
+                .join(consumedService)
+                .on(consumedService.ID.eq(serviceConsumeMap.CONSUMED_SERVICE_ID))
                 .join(targetServiceExposeMap)
                 .on(targetServiceExposeMap.SERVICE_ID.eq(serviceConsumeMap.CONSUMED_SERVICE_ID))
                 .join(targetNic)
@@ -511,17 +561,10 @@ public class DnsInfoDaoImpl extends AbstractJooqDao implements DnsInfoDao {
                 .on(targetNicIpTable.NIC_ID.eq(targetNic.ID))
                 .join(targetIpAddress)
                 .on(targetNicIpTable.IP_ADDRESS_ID.eq(targetIpAddress.ID))
-                .join(clientNicIpTable)
-                .on(clientNicIpTable.NIC_ID.eq(clientNic.ID))
-                .join(clientIpAddress)
-                .on(clientNicIpTable.IP_ADDRESS_ID.eq(clientIpAddress.ID))
-                .join(clientInstance)
-                .on(clientNic.INSTANCE_ID.eq(clientInstance.ID))
-                .join(consumedService)
-                .on(consumedService.ID.eq(serviceConsumeMap.CONSUMED_SERVICE_ID))
                 .where(NIC.INSTANCE_ID.eq(instance.getId())
                         .and(NIC.VNET_ID.isNotNull())
                         .and(NIC.REMOVED.isNull())
+                        .and(dnsService.KIND.eq(ServiceDiscoveryConstants.KIND.DNSSERVICE.name()))
                         .and(targetIpAddress.ROLE.eq(IpAddressConstants.ROLE_PRIMARY))
                         .and(targetIpAddress.REMOVED.isNull())
                         .and(clientIpAddress.ROLE.eq(IpAddressConstants.ROLE_PRIMARY))
@@ -532,15 +575,12 @@ public class DnsInfoDaoImpl extends AbstractJooqDao implements DnsInfoDao {
                         .and(serviceConsumeMap.REMOVED.isNull())
                         .and(serviceConsumeMap.STATE.in(CommonStatesConstants.ACTIVATING,
                                 CommonStatesConstants.ACTIVE))
-                        .and(dnsConsumeMap.REMOVED.isNull())
-                        .and(dnsConsumeMap.STATE.in(CommonStatesConstants.ACTIVATING,
-                                CommonStatesConstants.ACTIVE))
                         .and(clientServiceExposeMap.REMOVED.isNull())
                         .and(targetServiceExposeMap.REMOVED.isNull())
                         .and(targetInstance.STATE.in(InstanceConstants.STATE_RUNNING,
                                 InstanceConstants.STATE_STARTING))
-                        .and(dnsService.KIND.eq(ServiceDiscoveryConstants.KIND.DNSSERVICE.name()))
-                        .and(dnsService.STATE.in(sdService.getServiceActiveStates(true))))
+                        .and(dnsService.STATE.in(sdService.getServiceActiveStates(true)))
+                        .and(condition))
                 .fetch().map(mapper);
     }
 
