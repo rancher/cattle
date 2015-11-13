@@ -51,7 +51,7 @@ public class AgentInstanceApplyItems extends AbstractApplyItems implements Proce
             for (Map.Entry<NetworkServiceProvider, Instance> entry : agentInstances.entrySet()) {
                 Agent agent = objectManager.loadResource(Agent.class, entry.getValue().getAgentId());
 
-                assignItems(entry.getKey(), agent, state, process);
+                assignItems(entry.getKey(), agent, nic, state, process);
             }
         }
 
