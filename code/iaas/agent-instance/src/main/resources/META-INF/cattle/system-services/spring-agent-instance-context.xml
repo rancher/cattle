@@ -32,6 +32,7 @@
     <bean class="io.cattle.platform.agent.instance.service.impl.HostCreateRemoveNicLookup" />
     <bean class="io.cattle.platform.agent.instance.service.impl.HealthcheckInstanceHostMapNicLookup" />
     <bean class="io.cattle.platform.agent.instance.service.impl.NicPerVnetNicLookup" />
+    <bean class="io.cattle.platform.agent.instance.service.impl.ContainerNicLookup" />
 
     <bean id="AgentInstanceTypes" class="io.cattle.platform.object.meta.TypeSet" >
         <property name="typeNames">

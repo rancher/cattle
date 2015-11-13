@@ -15,6 +15,7 @@ import io.cattle.platform.configitem.context.dao.DnsInfoDao;
 import io.cattle.platform.configitem.context.data.DnsEntryData;
 import io.cattle.platform.configitem.context.data.DnsResolveEntryData;
 import io.cattle.platform.core.constants.CommonStatesConstants;
+import io.cattle.platform.core.constants.HealthcheckConstants;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.constants.IpAddressConstants;
 import io.cattle.platform.core.dao.NetworkDao;
@@ -126,7 +127,9 @@ public class DnsInfoDaoImpl extends AbstractJooqDao implements DnsInfoDao {
                         .and(instanceLink.REMOVED.isNull())
                         .and(instanceLink.SERVICE_CONSUME_MAP_ID.isNull())
                         .and(targetInstance.STATE.in(InstanceConstants.STATE_RUNNING,
-                                InstanceConstants.STATE_STARTING)))
+                                InstanceConstants.STATE_STARTING))
+                        .and(targetInstance.HEALTH_STATE.isNull().or(
+                                targetInstance.HEALTH_STATE.eq(HealthcheckConstants.HEALTH_STATE_HEALTHY))))
                 .fetch().map(mapper);
     }
 
@@ -229,6 +232,8 @@ public class DnsInfoDaoImpl extends AbstractJooqDao implements DnsInfoDao {
                         .and(clientService.REMOVED.isNull())
                         .and(targetInstance.STATE.in(InstanceConstants.STATE_RUNNING,
                                 InstanceConstants.STATE_STARTING))
+                        .and(targetInstance.HEALTH_STATE.isNull().or(
+                                targetInstance.HEALTH_STATE.eq(HealthcheckConstants.HEALTH_STATE_HEALTHY)))
                         .and(condition))
                 .fetch().map(mapper);
     }
@@ -333,6 +338,8 @@ public class DnsInfoDaoImpl extends AbstractJooqDao implements DnsInfoDao {
                 .and(targetInstance.STATE.in(InstanceConstants.STATE_RUNNING,
                         InstanceConstants.STATE_STARTING))
                 .and(targetService.ID.in(serviceIds))
+                .and(targetInstance.HEALTH_STATE.isNull().or(
+                        targetInstance.HEALTH_STATE.eq(HealthcheckConstants.HEALTH_STATE_HEALTHY)))
                 .fetch().map(resolveMapper);
 
         return resolveData;
@@ -580,6 +587,8 @@ public class DnsInfoDaoImpl extends AbstractJooqDao implements DnsInfoDao {
                         .and(targetInstance.STATE.in(InstanceConstants.STATE_RUNNING,
                                 InstanceConstants.STATE_STARTING))
                         .and(dnsService.STATE.in(sdService.getServiceActiveStates(true)))
+                        .and(targetInstance.HEALTH_STATE.isNull().or(
+                                targetInstance.HEALTH_STATE.eq(HealthcheckConstants.HEALTH_STATE_HEALTHY)))
                         .and(condition))
                 .fetch().map(mapper);
     }
