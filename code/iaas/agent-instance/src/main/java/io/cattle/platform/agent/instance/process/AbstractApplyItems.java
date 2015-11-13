@@ -30,12 +30,12 @@ public abstract class AbstractApplyItems extends AbstractObjectProcessLogic impl
     ConfigItemStatusManager statusManager;
     boolean assignBase = true;
 
-    protected void assignItems(NetworkServiceProvider provider, Agent agent, ProcessState state, ProcessInstance processInstance) {
+    protected void assignItems(NetworkServiceProvider provider, Agent agent, Object owner, ProcessState state, ProcessInstance processInstance) {
         if (agent == null) {
             return;
         }
 
-        String contextId = getContext(processInstance, state.getResource());
+        String contextId = getContext(processInstance, owner, state.getResource());
 
         ConfigUpdateRequest request = ConfigUpdateRequestUtils.getRequest(jsonMapper, state, contextId);
         if (request == null) {
@@ -73,7 +73,7 @@ public abstract class AbstractApplyItems extends AbstractObjectProcessLogic impl
                 continue;
             }
 
-            String context = getContext(processInstance, state.getResource());
+            String context = getContext(processInstance, otherAgent, state.getResource());
             ConfigUpdateRequest otherRequest = ConfigUpdateRequestUtils.getRequest(jsonMapper, state, context);
             if (otherRequest == null) {
                 otherRequest = ConfigUpdateRequest.forResource(Agent.class, otherAgent.getId());
@@ -98,8 +98,10 @@ public abstract class AbstractApplyItems extends AbstractObjectProcessLogic impl
         }
     }
 
-    public String getContext(ProcessInstance instance, Object obj) {
-        return String.format("%s:%s:%s", instance.getName(), objectManager.getType(obj), ObjectUtils.getId(obj));
+    public String getContext(ProcessInstance instance, Object obj, Object resource) {
+        return String.format("%s:%s:%s:%s:%s", instance.getName(),
+                objectManager.getType(obj), ObjectUtils.getId(obj),
+                objectManager.getType(resource), ObjectUtils.getId(resource));
     }
 
     protected void assignBaseItems(NetworkServiceProvider provider, ConfigUpdateRequest request, Agent agent, ProcessInstance processInstance) {

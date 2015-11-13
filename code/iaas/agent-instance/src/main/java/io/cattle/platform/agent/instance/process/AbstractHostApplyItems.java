@@ -37,7 +37,7 @@ public abstract class AbstractHostApplyItems extends AbstractApplyItems implemen
             }
 
             for (NetworkServiceProvider provider : entry.getValue()) {
-                assignItems(provider, agent, state, process);
+                assignItems(provider, agent, host, state, process);
             }
         }
 
