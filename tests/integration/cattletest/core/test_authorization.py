@@ -1652,6 +1652,7 @@ def test_svc_discovery_environment(admin_user_client, user_client,
         'environment': 'r',
         'externalId': 'r',
         'previousExternalId': 'r',
+        'outputs': 'r',
     })
 
     auth_check(user_client.schema, 'environment', 'r', {
@@ -1662,6 +1663,7 @@ def test_svc_discovery_environment(admin_user_client, user_client,
         'environment': 'r',
         'externalId': 'r',
         'previousExternalId': 'r',
+        'outputs': 'r',
     })
 
     auth_check(project_client.schema, 'environment', 'crud', {
@@ -1672,6 +1674,7 @@ def test_svc_discovery_environment(admin_user_client, user_client,
         'environment': 'cr',
         'externalId': 'cru',
         'previousExternalId': 'cru',
+        'outputs': 'cru',
     })
 
 
