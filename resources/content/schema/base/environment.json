@@ -20,6 +20,10 @@
         "previousExternalId":{
             "type": "string",
             "nullable": true
+        },
+        "outputs":{
+            "type": "map[string]",
+            "nullable": true
         }
     },
     "resourceActions" : {

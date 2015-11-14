@@ -448,6 +448,7 @@
         "environment.environment": "cr",
         "environment.externalId": "cru",
         "environment.previousExternalId": "cru",
+        "environment.outputs": "cru",
 
         "service" : "r",
         "service.externalId" : "r",
