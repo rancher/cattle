@@ -31,6 +31,7 @@ def test_create_env_and_svc(client, image_uuid):
                                    launchConfig=launch_config)
     service = client.wait_success(service)
     assert service.state == "inactive"
+    assert service.launchConfig.healthCheck is not None
 
     # verify that the load balancer was created for the service
     lb = client. \

@@ -83,6 +83,7 @@ backend ${listener.uuid}_${backend.uuid}_backend
         
 </#list>
 </#list>
-<#else>
-listen web 0.0.0.0:9
 </#if>
+
+listen default 0.0.0.0:42
+

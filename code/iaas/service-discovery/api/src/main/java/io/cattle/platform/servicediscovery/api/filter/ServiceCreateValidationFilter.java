@@ -1,6 +1,7 @@
 package io.cattle.platform.servicediscovery.api.filter;
 
 import static io.cattle.platform.core.model.tables.ServiceTable.SERVICE;
+import io.cattle.platform.core.addon.InstanceHealthCheck;
 import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.dao.NetworkDao;
@@ -78,7 +79,31 @@ public class ServiceCreateValidationFilter extends AbstractDefaultResourceManage
 
         validateRequestedVip(request);
 
+        request = setHealthCheck(type, request);
+
         return super.create(type, request, next);
+    }
+
+    @SuppressWarnings("unchecked")
+    public ApiRequest setHealthCheck(String type, ApiRequest request) {
+        if (!type.equalsIgnoreCase(ServiceDiscoveryConstants.KIND.LOADBALANCERSERVICE.name())) {
+            return request;
+        }
+        Map<String, Object> data = CollectionUtils.toMap(request.getRequestObject());
+        
+        if (data.get(ServiceDiscoveryConstants.FIELD_LAUNCH_CONFIG) != null) {
+            Map<String, Object> launchConfig = (Map<String, Object>)data.get(ServiceDiscoveryConstants.FIELD_LAUNCH_CONFIG);
+            InstanceHealthCheck healthCheck = new InstanceHealthCheck();
+            healthCheck.setPort(42);
+            healthCheck.setInterval(2000);
+            healthCheck.setHealthyThreshold(2);
+            healthCheck.setUnhealthyThreshold(3);
+            healthCheck.setResponseTimeout(2000);
+            launchConfig.put(InstanceConstants.FIELD_HEALTH_CHECK, healthCheck);
+            data.put(ServiceDiscoveryConstants.FIELD_LAUNCH_CONFIG, launchConfig);
+            request.setRequestObject(data);
+        }
+        return request;
     }
 
     protected void validateSelector(ApiRequest request) {
