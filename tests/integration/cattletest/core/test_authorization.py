@@ -2086,7 +2086,6 @@ def test_external_volume_event(agent_client, admin_user_client, user_client,
         'externalId': 'r',
         'eventType': 'r',
         'reportedAccountId': 'r',
-        'storagePoolExternalId': 'r',
         'volume': 'r',
     })
 
@@ -2095,7 +2094,6 @@ def test_external_volume_event(agent_client, admin_user_client, user_client,
         'externalId': 'r',
         'eventType': 'r',
         'reportedAccountId': 'r',
-        'storagePoolExternalId': 'r',
         'volume': 'r',
     })
 
@@ -2104,14 +2102,12 @@ def test_external_volume_event(agent_client, admin_user_client, user_client,
         'externalId': 'r',
         'eventType': 'r',
         'reportedAccountId': 'r',
-        'storagePoolExternalId': 'r',
         'volume': 'r',
     })
 
     auth_check(agent_client.schema, type, 'cr', {
         'externalId': 'cr',
         'eventType': 'cr',
-        'storagePoolExternalId': 'cr',
         'volume': 'cr',
     })
 

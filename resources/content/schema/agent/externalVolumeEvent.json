@@ -10,10 +10,6 @@
         "eventType": {
             "create": true
         },
-        "storagePoolExternalId": {
-            "type": "string",
-            "create": true
-        },
         "volume": {
             "type": "volume",
             "create": true

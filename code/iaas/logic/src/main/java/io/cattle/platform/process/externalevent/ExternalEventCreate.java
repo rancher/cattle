@@ -1,6 +1,5 @@
 package io.cattle.platform.process.externalevent;
 
-import static io.cattle.platform.core.model.tables.AgentTable.*;
 import static io.cattle.platform.core.model.tables.EnvironmentTable.*;
 import static io.cattle.platform.core.model.tables.ServiceTable.*;
 import static io.cattle.platform.process.externalevent.ExternalEventConstants.*;
@@ -10,7 +9,6 @@ import io.cattle.platform.core.dao.GenericResourceDao;
 import io.cattle.platform.core.dao.HostDao;
 import io.cattle.platform.core.dao.StoragePoolDao;
 import io.cattle.platform.core.dao.VolumeDao;
-import io.cattle.platform.core.model.Agent;
 import io.cattle.platform.core.model.Environment;
 import io.cattle.platform.core.model.ExternalEvent;
 import io.cattle.platform.core.model.Host;
@@ -88,10 +86,15 @@ public class ExternalEventCreate extends AbstractDefaultProcessHandler {
         lockManager.lock(new ExternalEventLock(VOLUME_POOL_LOCK_NAME, event.getAccountId(), event.getExternalId()), new LockCallbackNoReturn() {
             @Override
             public void doWithLockNoResult() {
-                String spExtId = DataAccessor.fieldString(event, FIELD_SP_EXT_ID);
-                StoragePool storagePool = storagePoolDao.findStoragePoolByExternalId(event.getAccountId(), spExtId);
+                Object driver = CollectionUtils.getNestedValue(DataUtils.getFields(event), FIELD_VOLUME, FIELD_DRIVER);
+                if (driver == null) {
+                    log.warn("Driver not specified. Returning. Event: {}", event);
+                    return;
+                }
+                String driverName = driver.toString();
+                StoragePool storagePool = storagePoolDao.findStoragePoolByDriverName(event.getAccountId(), driverName);
                 if (storagePool == null) {
-                    log.warn("Unknown storage pool. Returning. External id: {}", spExtId);
+                    log.warn("Unknown storage pool. Returning. Driver name: {}", driverName);
                     return;
                 }
                 Volume volume = volumeDao.findVolumeByExternalId(storagePool.getId(), event.getExternalId());
@@ -139,7 +142,13 @@ public class ExternalEventCreate extends AbstractDefaultProcessHandler {
         lockManager.lock(new ExternalEventLock(STORAGE_POOL_LOCK_NAME, event.getAccountId(), event.getExternalId()), new LockCallbackNoReturn() {
             @Override
             public void doWithLockNoResult() {
-                StoragePool storagePool = storagePoolDao.findStoragePoolByExternalId(event.getAccountId(), event.getExternalId());
+                Object driver = CollectionUtils.getNestedValue(DataUtils.getFields(event), FIELD_STORAGE_POOL, FIELD_DRIVER_NAME);
+                if (driver == null) {
+                    log.warn("Driver not specified. Returning. Event: {}", event);
+                    return;
+                }
+                String driverName = driver.toString();
+                StoragePool storagePool = storagePoolDao.findStoragePoolByDriverName(event.getAccountId(), driverName);
                 if (storagePool == null) {
                     Map<String, Object> spData = CollectionUtils.toMap(DataUtils.getFields(event).get(FIELD_STORAGE_POOL));
                     if (spData.isEmpty()) {
@@ -147,8 +156,6 @@ public class ExternalEventCreate extends AbstractDefaultProcessHandler {
                         return;
                     }
 
-                    Agent agent = objectManager.findOne(Agent.class, AGENT.ACCOUNT_ID, event.getReportedAccountId(), AGENT.STATE, CommonStatesConstants.ACTIVE);
-                    spData.put(FIELD_AGENT_ID, agent.getId());
                     spData.put(ObjectMetaDataManager.ACCOUNT_FIELD, event.getAccountId());
                     spData.put(FIELD_ZONE_ID, 1L);
 

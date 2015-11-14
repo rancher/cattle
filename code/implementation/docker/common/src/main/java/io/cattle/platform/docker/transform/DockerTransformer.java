@@ -9,5 +9,5 @@ public interface DockerTransformer {
 
     void transform(Map<String, Object> fromInspect, Instance toInstance);
     
-    List<DockerInspectTransformVolume> transformVolumes(Map<String, Object> fromInspect);
+    List<DockerInspectTransformVolume> transformVolumes(Map<String, Object> fromInspect, List<Object> mounts);
 }

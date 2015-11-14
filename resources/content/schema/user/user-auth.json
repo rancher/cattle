@@ -135,7 +135,6 @@
         "externalStoragePoolEvent.storagePool" : "r",
 
         "externalVolumeEvent" : "r",
-        "externalVolumeEvent.storagePoolExternalId" : "r",
         "externalVolumeEvent.volume" : "r",
 
         "externalDnsEvent" : "r",

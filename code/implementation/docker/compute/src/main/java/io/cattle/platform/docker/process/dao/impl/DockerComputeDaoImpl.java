@@ -7,6 +7,7 @@ import static io.cattle.platform.core.model.tables.VolumeStoragePoolMapTable.*;
 import static io.cattle.platform.core.model.tables.VolumeTable.*;
 import static io.cattle.platform.docker.constants.DockerVolumeConstants.*;
 import io.cattle.platform.core.constants.CommonStatesConstants;
+import io.cattle.platform.core.constants.VolumeConstants;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.IpAddress;
 import io.cattle.platform.core.model.StoragePool;
@@ -26,6 +27,7 @@ import java.util.List;
 import javax.inject.Inject;
 
 import org.apache.commons.lang3.StringUtils;
+import org.jooq.Condition;
 
 public class DockerComputeDaoImpl extends AbstractJooqDao implements DockerComputeDao {
 
@@ -68,9 +70,14 @@ public class DockerComputeDaoImpl extends AbstractJooqDao implements DockerCompu
     }
 
     @Override
-    public Volume getDockerVolumeInPool(String volumeUri, StoragePool storagePool) {
+    public Volume getDockerVolumeInPool(String volumeUri, String externalId, StoragePool storagePool) {
         if ( StringUtils.isEmpty(volumeUri) || storagePool == null )
             throw new IllegalArgumentException("Volume URI and storage pool must have values.");
+
+        Condition condition = VOLUME.URI.eq(volumeUri);
+        if (externalId != null) {
+            condition.or(VOLUME.EXTERNAL_ID.eq(externalId));
+        }
 
         List<VolumeRecord> volumes = create()
                 .select(VolumeTable.VOLUME.fields())
@@ -78,7 +85,7 @@ public class DockerComputeDaoImpl extends AbstractJooqDao implements DockerCompu
                         .join(VOLUME)
                             .on(VOLUME_STORAGE_POOL_MAP.VOLUME_ID.eq(VOLUME.ID))
                     .where(VOLUME_STORAGE_POOL_MAP.STORAGE_POOL_ID.eq(storagePool.getId()))
-                        .and(VOLUME.URI.eq(volumeUri))
+                        .and(condition)
                         .and(VOLUME_STORAGE_POOL_MAP.REMOVED.isNull())
                         .and(VOLUME.REMOVED.isNull())
                 .fetchInto(VolumeRecord.class);
@@ -94,17 +101,22 @@ public class DockerComputeDaoImpl extends AbstractJooqDao implements DockerCompu
     }
 
     @Override
-    public Volume createDockerVolumeInPool(Long accountId, String volumeUri, StoragePool storagePool, boolean isHostPath) {
+    public Volume createDockerVolumeInPool(Long accountId, String name, String volumeUri, String externalId, String driver, StoragePool storagePool,
+            boolean isHostPath) {
         Volume volume = objectManager.create(Volume.class,
                 VOLUME.ACCOUNT_ID, accountId,
+                VOLUME.NAME, name,
                 VOLUME.ATTACHED_STATE, CommonStatesConstants.INACTIVE,
                 VOLUME.DEVICE_NUMBER, -1,
                 VOLUME.ALLOCATION_STATE, CommonStatesConstants.ACTIVE,
-                VOLUME.URI, volumeUri);
+                VOLUME.URI, volumeUri,
+                VOLUME.EXTERNAL_ID, externalId);
 
         DataAccessor.fields(volume).withKey(FIELD_DOCKER_IS_HOST_PATH).set(isHostPath);
+        DataAccessor.fields(volume).withKey(VolumeConstants.FIELD_VOLUME_DRIVER).set(driver);
+
         objectManager.persist(volume);
-        
+
         objectManager.create(VolumeStoragePoolMap.class,
                 VOLUME_STORAGE_POOL_MAP.VOLUME_ID, volume.getId(),
                 VOLUME_STORAGE_POOL_MAP.STORAGE_POOL_ID, storagePool.getId());

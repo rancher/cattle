@@ -1,8 +1,7 @@
 package io.cattle.platform.iaas.api.auth.dao.impl;
 
-import static io.cattle.platform.core.model.tables.AccountTable.ACCOUNT;
-import static io.cattle.platform.core.model.tables.CredentialTable.CREDENTIAL;
-
+import static io.cattle.platform.core.model.tables.AccountTable.*;
+import static io.cattle.platform.core.model.tables.CredentialTable.*;
 import io.cattle.platform.api.auth.Policy;
 import io.cattle.platform.core.constants.AccountConstants;
 import io.cattle.platform.core.constants.CommonStatesConstants;
@@ -25,6 +24,7 @@ import io.github.ibuildthecloud.gdapi.util.TransformationService;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
 import javax.inject.Inject;
 
 import org.apache.commons.lang3.StringUtils;
