@@ -18,7 +18,8 @@
             "type": "map[string]"
         },
         "previousExternalId":{
-            "type": "string"
+            "type": "string",
+            "nullable": true
         }
     },
     "resourceActions" : {
