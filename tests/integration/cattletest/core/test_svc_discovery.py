@@ -32,6 +32,19 @@ def create_env_and_svc(client, context):
     return service, env
 
 
+def test_update_env_service(client, context):
+    service, env = create_env_and_svc(client, context)
+    new_env_name = env.name + '1'
+    new_name = service.name + '1'
+    service.name = new_name
+    service = client.update(service, service)
+    assert service.name == new_name
+
+    env.name = new_env_name
+    env = client.update(env, env)
+    assert env.name == new_env_name
+
+
 def test_activate_single_service(client, context, super_client):
     env = _create_stack(client)
 
