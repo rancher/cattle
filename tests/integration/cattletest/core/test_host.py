@@ -223,3 +223,10 @@ def test_host_dockersocket(context, client):
     dockersocket = host.dockersocket()
     assert dockersocket.token.index('.') > 0
     assert '/v1/dockersocket/' in dockersocket.url
+
+
+def test_host_dockersocket_inactive(context, client):
+    host = client.wait_success(context.host.deactivate())
+    dockersocket = host.dockersocket()
+    assert dockersocket.token.index('.') > 0
+    assert '/v1/dockersocket/' in dockersocket.url
