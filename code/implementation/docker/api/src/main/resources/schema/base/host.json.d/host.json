@@ -4,7 +4,7 @@
             "input": null,
             "output": "hostAccess",
             "attributes" : {
-                "state" : "active"
+                "states" : ["active", "inactive", "activating", "deactivating"]
             }
         }
     }
