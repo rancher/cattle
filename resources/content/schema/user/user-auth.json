@@ -574,6 +574,9 @@
         "addRemoveLoadBalancerServiceLinkInput" : "r",
         "addRemoveLoadBalancerServiceLinkInput.serviceLink" : "cr",
 
+        "addOutputsInput" : "r",
+        "addOutputsInput.outputs" : "cr",
+
         "setLoadBalancerServiceLinksInput" : "r",
         "setLoadBalancerServiceLinksInput.serviceLinks" : "cr",
 

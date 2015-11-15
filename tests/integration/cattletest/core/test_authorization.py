@@ -47,6 +47,7 @@ def test_user_types(user_client, adds=set(), removes=set()):
     types = {
         'account',
         'addLoadBalancerInput',
+        'addOutputsInput',
         'addRemoveClusterHostInput',
         'addRemoveLoadBalancerHostInput',
         'addRemoveLoadBalancerListenerInput',
@@ -243,6 +244,7 @@ def test_admin_types(admin_user_client, adds=set(), removes=set()):
         'account',
         'activeSetting',
         'addLoadBalancerInput',
+        'addOutputsInput',
         'addRemoveClusterHostInput',
         'addRemoveLoadBalancerHostInput',
         'addRemoveLoadBalancerListenerInput',

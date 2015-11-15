@@ -1,4 +1,4 @@
-from common_fixtures import *  #NOQA
+from common_fixtures import *  # NOQA
 
 
 def test_project_update(new_context):

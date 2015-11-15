@@ -45,6 +45,26 @@ def test_update_env_service(client, context):
     assert env.name == new_env_name
 
 
+def test_env_set_outputs(client, context):
+    service, env = create_env_and_svc(client, context)
+    assert env.outputs is None
+
+    env = env.addoutputs(outputs={
+        'foo': 'bar',
+        'foo2': 'bar2',
+    })
+
+    assert env.outputs == {'foo': 'bar', 'foo2': 'bar2'}
+    env = client.reload(env)
+    assert env.outputs == {'foo': 'bar', 'foo2': 'bar2'}
+    assert env.state == 'active'
+
+    env = env.addoutputs(outputs={
+        'foo3': 'bar3',
+    })
+    assert env.outputs == {'foo': 'bar', 'foo2': 'bar2', 'foo3': 'bar3'}
+
+
 def test_activate_single_service(client, context, super_client):
     env = _create_stack(client)
 

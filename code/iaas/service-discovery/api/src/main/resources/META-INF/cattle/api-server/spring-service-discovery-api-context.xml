@@ -26,6 +26,7 @@
        
        <bean class="io.cattle.platform.servicediscovery.api.service.impl.ServiceDiscoveryApiServiceImpl" />
        
+       <bean class="io.cattle.platform.servicediscovery.api.action.AddOutputsActionHandler" />
        <bean class="io.cattle.platform.servicediscovery.api.action.AddServiceLinkActionHandler" />
        <bean class="io.cattle.platform.servicediscovery.api.action.EnvironmentExportConfigActionHandler" />
        <bean class="io.cattle.platform.servicediscovery.api.action.RemoveServiceLinkActionHandler" />
