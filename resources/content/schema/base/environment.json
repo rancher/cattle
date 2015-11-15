@@ -17,14 +17,6 @@
         "environment":{
             "type": "map[string]"
         },
-        "kubernetes":{
-            "type": "bool",
-            "nullable": true
-        },
-        "swarm":{
-            "type": "bool",
-            "nullable": true
-        },
         "previousExternalId":{
             "type": "string",
             "nullable": true

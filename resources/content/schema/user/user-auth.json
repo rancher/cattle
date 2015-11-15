@@ -449,8 +449,6 @@
         "environment.externalId": "cru",
         "environment.previousExternalId": "cru",
         "environment.outputs": "cru",
-        "environment.swarm": "cru",
-        "environment.kubernetes": "cru",
 
         "service" : "r",
         "service.externalId" : "r",
