@@ -1,0 +1,3 @@
+api-server:
+  # This is just a placeholder right now
+  image: nginx

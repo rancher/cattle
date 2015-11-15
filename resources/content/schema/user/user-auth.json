@@ -244,6 +244,8 @@
         "project.description" : "cru",
         "project.kind" : "r",
         "project.members" : "cr",
+        "project.swarm" : "cru",
+        "project.kubernetes" : "cru",
 
         "projectMember" : "cr",
         "projectMember.accountId" : "",
@@ -449,6 +451,7 @@
         "environment.externalId": "cru",
         "environment.previousExternalId": "cru",
         "environment.outputs": "cru",
+        "environment.startOnCreate": "cr",
 
         "service" : "r",
         "service.externalId" : "r",

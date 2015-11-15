@@ -21,6 +21,10 @@
             "type": "string",
             "nullable": true
         },
+        "startOnCreate": {
+            "type": "boolean",
+            "nullable": true
+        },
         "outputs":{
             "type": "map[string]",
             "nullable": true
@@ -29,6 +33,10 @@
     "resourceActions" : {
         "upgrade" : {
             "input" : "environmentUpgrade",
+            "output" : "environment"
+        },
+        "addoutputs" : {
+            "input" : "addOutputsInput",
             "output" : "environment"
         },
         "exportconfig" : {

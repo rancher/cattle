@@ -1,5 +1,6 @@
 package io.cattle.platform.configitem.version.dao.impl;
 
+import static io.cattle.platform.core.model.tables.AccountTable.*;
 import static io.cattle.platform.core.model.tables.AgentTable.*;
 import static io.cattle.platform.core.model.tables.ConfigItemStatusTable.*;
 import static io.cattle.platform.core.model.tables.ConfigItemTable.*;
@@ -261,6 +262,11 @@ public class ConfigItemStatusDaoImpl extends AbstractJooqDao implements ConfigIt
             CollectionUtils.addToMap(result, client, status.getName(), ArrayList.class);
         }
 
+        for ( ConfigItemStatus status : (migration ? accountMigrationItems() : accountOutOfSyncItems()) ) {
+            Client client = new Client(status);
+            CollectionUtils.addToMap(result, client, status.getName(), ArrayList.class);
+        }
+
         return result;
     }
 
@@ -306,6 +312,33 @@ public class ConfigItemStatusDaoImpl extends AbstractJooqDao implements ConfigIt
                 .where(CONFIG_ITEM_STATUS.SOURCE_VERSION.isNotNull()
                         .and(CONFIG_ITEM_STATUS.SOURCE_VERSION.ne(CONFIG_ITEM.SOURCE_VERSION))
                         .and(SERVICE.REMOVED.isNull()))
+                .limit(BATCH_SIZE.get())
+                .fetchInto(ConfigItemStatusRecord.class);
+    }
+
+    protected List<? extends ConfigItemStatus> accountOutOfSyncItems() {
+        return create()
+                .select(CONFIG_ITEM_STATUS.fields())
+                .from(CONFIG_ITEM_STATUS)
+                .join(ACCOUNT)
+                .on(ACCOUNT.ID.eq(CONFIG_ITEM_STATUS.ACCOUNT_ID))
+                .where(CONFIG_ITEM_STATUS.REQUESTED_VERSION.ne(CONFIG_ITEM_STATUS.APPLIED_VERSION)
+                        .and(ACCOUNT.REMOVED.isNull()))
+                .limit(BATCH_SIZE.get())
+                .fetchInto(ConfigItemStatusRecord.class);
+    }
+
+    protected List<? extends ConfigItemStatus> accountMigrationItems() {
+        return create()
+                .select(CONFIG_ITEM_STATUS.fields())
+                .from(CONFIG_ITEM_STATUS)
+                .join(ACCOUNT)
+                .on(ACCOUNT.ID.eq(CONFIG_ITEM_STATUS.ACCOUNT_ID))
+                .join(CONFIG_ITEM)
+                .on(CONFIG_ITEM.NAME.eq(CONFIG_ITEM_STATUS.NAME))
+                .where(CONFIG_ITEM_STATUS.SOURCE_VERSION.isNotNull()
+                        .and(CONFIG_ITEM_STATUS.SOURCE_VERSION.ne(CONFIG_ITEM.SOURCE_VERSION))
+                        .and(ACCOUNT.REMOVED.isNull()))
                 .limit(BATCH_SIZE.get())
                 .fetchInto(ConfigItemStatusRecord.class);
     }

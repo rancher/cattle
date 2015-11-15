@@ -35,6 +35,9 @@ public class ServiceDiscoveryConstants {
     public static final String FIELD_IN_SERVICE_STRATEGY = "inServiceStrategy";
     public static final String FIELD_TO_SERVICE_STRATEGY = "toServiceStrategy";
     public static final String FIELD_FQDN = "fqdn";
+    public static final String STACK_FIELD_DOCKER_COMPOSE = "dockerCompose";
+    public static final String STACK_FIELD_RANCHER_COMPOSE = "rancherCompose";
+    public static final String STACK_FIELD_START_ON_CREATE = "startOnCreate";
 
     public static final String ACTION_SERVICE_ACTIVATE = "activate";
     public static final String ACTION_SERVICE_CREATE = "create";
