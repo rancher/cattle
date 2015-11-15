@@ -18,4 +18,13 @@ public class HostDaoImpl extends AbstractJooqDao implements HostDao {
             .and(HOST.STATE.notIn(CommonStatesConstants.REMOVED, CommonStatesConstants.REMOVING))
             .and(HOST.UUID.in(uuids))).fetch();
     }
+
+    @Override
+    public List<? extends Host> getActiveHosts(Long accountId) {
+        return create()
+            .selectFrom(HOST)
+            .where(HOST.ACCOUNT_ID.eq(accountId)
+            .and(HOST.STATE.in(CommonStatesConstants.ACTIVATING, CommonStatesConstants.ACTIVE)))
+            .fetch();
+    }
 }

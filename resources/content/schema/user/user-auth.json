@@ -244,6 +244,8 @@
         "project.description" : "cru",
         "project.kind" : "r",
         "project.members" : "cr",
+        "project.swarm" : "cru",
+        "project.kubernetes" : "cru",
 
         "projectMember" : "cr",
         "projectMember.accountId" : "",
@@ -449,8 +451,7 @@
         "environment.externalId": "cru",
         "environment.previousExternalId": "cru",
         "environment.outputs": "cru",
-        "environment.swarm": "cru",
-        "environment.kubernetes": "cru",
+        "environment.startOnCreate": "cr",
 
         "service" : "r",
         "service.externalId" : "r",
@@ -572,6 +573,9 @@
 
         "addRemoveLoadBalancerServiceLinkInput" : "r",
         "addRemoveLoadBalancerServiceLinkInput.serviceLink" : "cr",
+
+        "addOutputsInput" : "r",
+        "addOutputsInput.outputs" : "cr",
 
         "setLoadBalancerServiceLinksInput" : "r",
         "setLoadBalancerServiceLinksInput.serviceLinks" : "cr",

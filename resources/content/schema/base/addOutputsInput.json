@@ -1,0 +1,8 @@
+{
+    "resourceFields": {
+        "outputs":{
+            "type": "map[string]",
+            "required": true
+        }
+    }
+}

@@ -123,6 +123,7 @@
                 <module>code/implementation/settings-api</module>
                 <module>code/implementation/simulator/agent-connection</module>
                 <module>code/implementation/simulator/storage</module>
+                <module>code/implementation/system-stack</module>
                 <module>code/implementation/zookeeper</module>
                 <module>code/packaging/app</module>
                 <module>code/packaging/app-parent</module>

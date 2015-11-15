@@ -47,6 +47,7 @@ def test_user_types(user_client, adds=set(), removes=set()):
     types = {
         'account',
         'addLoadBalancerInput',
+        'addOutputsInput',
         'addRemoveClusterHostInput',
         'addRemoveLoadBalancerHostInput',
         'addRemoveLoadBalancerListenerInput',
@@ -243,6 +244,7 @@ def test_admin_types(admin_user_client, adds=set(), removes=set()):
         'account',
         'activeSetting',
         'addLoadBalancerInput',
+        'addOutputsInput',
         'addRemoveClusterHostInput',
         'addRemoveLoadBalancerHostInput',
         'addRemoveLoadBalancerListenerInput',
@@ -485,7 +487,9 @@ def test_project_auth(admin_user_client, user_client, project_client):
         'name': 'cru',
         'uuid': 'cr',
         'data': 'r',
-        'members': 'cr'
+        'members': 'cr',
+        'swarm': 'cru',
+        'kubernetes': 'cru',
     })
 
     auth_check(user_client.schema, 'project', 'crud', {
@@ -493,7 +497,9 @@ def test_project_auth(admin_user_client, user_client, project_client):
         'kind': 'r',
         'name': 'cru',
         'uuid': 'r',
-        'members': 'cr'
+        'members': 'cr',
+        'swarm': 'cru',
+        'kubernetes': 'cru',
     })
 
     auth_check(project_client.schema, 'project', 'r', {
@@ -501,7 +507,9 @@ def test_project_auth(admin_user_client, user_client, project_client):
         'kind': 'r',
         'name': 'r',
         'uuid': 'r',
-        'members': 'r'
+        'members': 'r',
+        'swarm': 'r',
+        'kubernetes': 'r',
     })
 
 
@@ -1653,8 +1661,7 @@ def test_svc_discovery_environment(admin_user_client, user_client,
         'externalId': 'r',
         'previousExternalId': 'r',
         'outputs': 'r',
-        'swarm': 'r',
-        'kubernetes': 'r',
+        'startOnCreate': 'r',
     })
 
     auth_check(user_client.schema, 'environment', 'r', {
@@ -1666,8 +1673,7 @@ def test_svc_discovery_environment(admin_user_client, user_client,
         'externalId': 'r',
         'previousExternalId': 'r',
         'outputs': 'r',
-        'swarm': 'r',
-        'kubernetes': 'r',
+        'startOnCreate': 'r',
     })
 
     auth_check(project_client.schema, 'environment', 'crud', {
@@ -1679,8 +1685,7 @@ def test_svc_discovery_environment(admin_user_client, user_client,
         'externalId': 'cru',
         'previousExternalId': 'cru',
         'outputs': 'cru',
-        'swarm': 'cru',
-        'kubernetes': 'cru',
+        'startOnCreate': 'cr',
     })
 
 

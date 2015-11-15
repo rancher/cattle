@@ -17,16 +17,12 @@
         "environment":{
             "type": "map[string]"
         },
-        "kubernetes":{
-            "type": "bool",
-            "nullable": true
-        },
-        "swarm":{
-            "type": "bool",
-            "nullable": true
-        },
         "previousExternalId":{
             "type": "string",
+            "nullable": true
+        },
+        "startOnCreate": {
+            "type": "boolean",
             "nullable": true
         },
         "outputs":{
@@ -37,6 +33,10 @@
     "resourceActions" : {
         "upgrade" : {
             "input" : "environmentUpgrade",
+            "output" : "environment"
+        },
+        "addoutputs" : {
+            "input" : "addOutputsInput",
             "output" : "environment"
         },
         "exportconfig" : {

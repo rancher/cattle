@@ -9,6 +9,8 @@ public class ServiceDiscoveryConstants {
         DNSSERVICE
     }
 
+    public static final String TYPE_ENVIRONMENT = "environment";
+
     public static final String FIELD_SCALE = "scale";
     public static final String FIELD_NETWORK_ID = "networkId";
     public static final String FIELD_SERVICE_ID = "serviceId";
@@ -35,6 +37,11 @@ public class ServiceDiscoveryConstants {
     public static final String FIELD_IN_SERVICE_STRATEGY = "inServiceStrategy";
     public static final String FIELD_TO_SERVICE_STRATEGY = "toServiceStrategy";
     public static final String FIELD_FQDN = "fqdn";
+    public static final String FIELD_OUTPUTS = "outputs";
+
+    public static final String STACK_FIELD_DOCKER_COMPOSE = "dockerCompose";
+    public static final String STACK_FIELD_RANCHER_COMPOSE = "rancherCompose";
+    public static final String STACK_FIELD_START_ON_CREATE = "startOnCreate";
 
     public static final String ACTION_SERVICE_ACTIVATE = "activate";
     public static final String ACTION_SERVICE_CREATE = "create";
@@ -44,6 +51,7 @@ public class ServiceDiscoveryConstants {
     public static final String ACTION_SERVICE_SET_SERVICE_LINKS = "setservicelinks";
     public static final String ACTION_SERVICE_UPGRADE = "upgrade";
     public static final String ACTION_SERVICE_ROLLBACK = "rollback";
+    public static final String ACTION_ADD_OUTPUTS = "addoutputs";
 
     public static final String PROCESS_SERVICE_ACTIVATE = "service." + ACTION_SERVICE_ACTIVATE;
     public static final String PROCESS_SERVICE_CREATE = "service." + ACTION_SERVICE_CREATE;

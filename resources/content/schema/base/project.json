@@ -47,6 +47,20 @@
     "members": {
       "type": "array[projectMember]",
       "nullable": "true"
+    },
+    "swarm": {
+      "type": "boolean",
+      "nullable": "true",
+      "attributes" : {
+        "scheduleUpdate" : true
+      }
+    },
+    "kubernetes": {
+      "type": "boolean",
+      "nullable": "true",
+      "attributes" : {
+        "scheduleUpdate" : true
+      }
     }
   }
 }

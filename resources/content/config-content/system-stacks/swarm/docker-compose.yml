@@ -1,0 +1,3 @@
+swarm-master:
+  # This is just a placeholder right now
+  image: nginx

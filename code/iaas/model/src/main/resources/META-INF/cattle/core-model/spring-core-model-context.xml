@@ -42,6 +42,7 @@
         <property name="typeNames">
             <set>
                 <value>addLoadBalancerInput</value>
+                <value>addOutputsInput</value>
                 <value>addRemoveClusterHostInput</value>
                 <value>addRemoveLoadBalancerHostInput</value>
                 <value>addRemoveLoadBalancerListenerInput</value>
