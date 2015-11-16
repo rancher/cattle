@@ -160,6 +160,7 @@
         "host.physicalHostId" : "r",
         "host.zoneId" : "ru",
         "host.labels" : "ru",
+        "host.publicEndpoints" : "r",
 
         "addLabelInput" : "cr",
         "addLabelInput.key" : "cr",
@@ -390,6 +391,7 @@
         "service.selectorLink" : "cr",
         "service.selectorContainer" : "cr",
         "service.fqdn" : "r",
+        "service.publicEndpoints" : "r",
 
         "addRemoveServiceLinkInput" : "r",
         "addRemoveServiceLinkInput.serviceLink" : "cr",
@@ -447,6 +449,7 @@
         "externalService.healthCheck" : "cr",
         "externalService.createIndex" : "",
         "externalService.selectorContainer" : "",
+        "externalService.publicEndpoints" : "",
 
         "dnsService" : "r",
         "dnsService.scale" : "",
@@ -455,6 +458,7 @@
         "dnsService.vip" : "",
         "dnsService.createIndex" : "",
         "dnsService.selectorContainer" : "",
+        "dnsService.publicEndpoints" : "",
 
         "serviceEvent" : "r",
         "serviceEvent.instanceId" : "r",
@@ -524,6 +528,10 @@
         "environmentUpgrade.rancherCompose" : "cr",
         "environmentUpgrade.environment" : "cr",
         "environmentUpgrade.externalId" : "cr",
+
+        "publicEndpoint" : "r",
+        "publicEndpoint.ipAddress" : "r",
+        "publicEndpoint.port" : "r",
 
         "end" : ""
     }

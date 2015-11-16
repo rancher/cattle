@@ -142,7 +142,8 @@ def test_user_types(user_client, adds=set(), removes=set()):
         'serviceUpgradeStrategy',
         'toServiceUpgradeStrategy',
         'inServiceUpgradeStrategy',
-        'ubiquityConfig'
+        'ubiquityConfig',
+        'publicEndpoint'
     }
     types.update(adds)
     types.difference_update(removes)
@@ -343,7 +344,8 @@ def test_admin_types(admin_user_client, adds=set(), removes=set()):
         'serviceUpgradeStrategy',
         'toServiceUpgradeStrategy',
         'inServiceUpgradeStrategy',
-        'ubiquityConfig'
+        'ubiquityConfig',
+        'publicEndpoint'
     }
     types.update(adds)
     types.difference_update(removes)
@@ -516,7 +518,8 @@ def test_host_auth(admin_user_client, user_client, project_client):
         'data': 'r',
         'physicalHostId': 'r',
         'info': 'r',
-        'labels': 'r'
+        'labels': 'r',
+        'publicEndpoints': 'r'
     })
 
     auth_check(user_client.schema, 'host', 'r', {
@@ -525,7 +528,8 @@ def test_host_auth(admin_user_client, user_client, project_client):
         'computeTotal': 'r',
         'physicalHostId': 'r',
         'info': 'r',
-        'labels': 'r'
+        'labels': 'r',
+        'publicEndpoints': 'r'
     })
 
     auth_check(project_client.schema, 'host', 'rud', {
@@ -534,7 +538,8 @@ def test_host_auth(admin_user_client, user_client, project_client):
         'computeTotal': 'r',
         'physicalHostId': 'r',
         'info': 'r',
-        'labels': 'ru'
+        'labels': 'ru',
+        'publicEndpoints': 'r'
     })
 
 
@@ -1539,7 +1544,8 @@ def test_svc_discovery_service(admin_user_client, user_client, project_client):
         'metadata': 'r',
         'selectorLink': 'r',
         'selectorContainer': 'r',
-        'fqdn': 'r'
+        'fqdn': 'r',
+        'publicEndpoints': 'r'
     })
 
     auth_check(user_client.schema, 'service', 'r', {
@@ -1557,7 +1563,8 @@ def test_svc_discovery_service(admin_user_client, user_client, project_client):
         'metadata': 'r',
         'selectorLink': 'r',
         'selectorContainer': 'r',
-        'fqdn': 'r'
+        'fqdn': 'r',
+        'publicEndpoints': 'r'
     })
 
     auth_check(project_client.schema, 'service', 'crud', {
@@ -1575,7 +1582,8 @@ def test_svc_discovery_service(admin_user_client, user_client, project_client):
         'metadata': 'cru',
         'selectorLink': 'cr',
         'selectorContainer': 'cr',
-        'fqdn': 'r'
+        'fqdn': 'r',
+        'publicEndpoints': 'r'
     })
 
 
@@ -1636,7 +1644,8 @@ def test_svc_discovery_lb_service(admin_user_client, user_client,
         'certificateIds': 'r',
         'metadata': 'r',
         'selectorLink': 'r',
-        'fqdn': 'r'
+        'fqdn': 'r',
+        'publicEndpoints': 'r'
     })
 
     auth_check(user_client.schema, 'loadBalancerService', 'r', {
@@ -1653,7 +1662,8 @@ def test_svc_discovery_lb_service(admin_user_client, user_client,
         'certificateIds': 'r',
         'metadata': 'r',
         'selectorLink': 'r',
-        'fqdn': 'r'
+        'fqdn': 'r',
+        'publicEndpoints': 'r'
     })
 
     auth_check(project_client.schema, 'loadBalancerService', 'crud', {
@@ -1670,7 +1680,8 @@ def test_svc_discovery_lb_service(admin_user_client, user_client,
         'certificateIds': 'cru',
         'metadata': 'cru',
         'selectorLink': 'cr',
-        'fqdn': 'r'
+        'fqdn': 'r',
+        'publicEndpoints': 'r'
     })
 
 

@@ -41,7 +41,8 @@ public class EventUtils {
     }
 
     public static EventCallOptions chainOptions(Event event) {
-        return new EventCallOptions().withProgressIsKeepAlive(true).withRetry(0).withTimeoutMillis(event.getTimeoutMillis());
+        return new EventCallOptions().withProgressIsKeepAlive(true).withRetry(0)
+                .withTimeoutMillis(event.getTimeoutMillis());
     }
 
     public static boolean isTransitioningEvent(Event event) {

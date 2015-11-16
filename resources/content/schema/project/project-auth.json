@@ -51,7 +51,7 @@
         "fieldDocumentation": "r",
         "inServiceUpgradeStrategy" : "cr",
         "toServiceUpgradeStrategy" : "cr",
-
+        "publicEndpoint" : "r",
         "end" : ""
     }
 }
