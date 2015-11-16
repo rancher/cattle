@@ -4,6 +4,7 @@ import io.cattle.platform.agent.instance.dao.AgentInstanceDao;
 import io.cattle.platform.agent.instance.factory.AgentInstanceFactory;
 import io.cattle.platform.archaius.util.ArchaiusUtil;
 import io.cattle.platform.core.constants.CommonStatesConstants;
+import io.cattle.platform.core.constants.HealthcheckConstants;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.constants.InstanceConstants.SystemContainer;
 import io.cattle.platform.core.constants.LoadBalancerConstants;
@@ -31,6 +32,7 @@ import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.object.util.DataUtils;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -93,9 +95,7 @@ public class LoadBalancerInstanceManagerImpl implements LoadBalancerInstanceMana
             }
 
             Instance lbInstance = getLoadBalancerInstance(hostMap);
-
             if (lbInstance == null) {
-
                 String imageUUID = DataAccessor.fields(loadBalancer).
                         withKey(LoadBalancerConstants.FIELD_LB_INSTANCE_IMAGE_UUID).as(String.class);
 
@@ -146,16 +146,23 @@ public class LoadBalancerInstanceManagerImpl implements LoadBalancerInstanceMana
                         .withZoneId(1L).withPrivileged(true)
                         .withUri(getUri(loadBalancer, hostMap)).withName(LB_INSTANCE_NAME.get()).withImageUuid(imageUUID).withParameters(params)
                         .withSystemContainerType(SystemContainer.LoadBalancerAgent).build();
-            } else {
+            } else if (isHealthyInstance(lbInstance)) {
                 start(lbInstance);
             }
 
-            if (lbInstance != null) {
+            if (lbInstance != null && isHealthyInstance(lbInstance)) {
+
                 result.add(lbInstance);
             }
         }
 
         return result;
+    }
+
+    protected boolean isHealthyInstance(Instance lbInstance) {
+        List<String> healthyStates = Arrays.asList(HealthcheckConstants.HEALTH_STATE_HEALTHY,
+                HealthcheckConstants.HEALTH_STATE_UPDATING_HEALTHY, HealthcheckConstants.HEALTH_STATE_INITIALIZING);
+        return lbInstance.getHealthState() == null || healthyStates.contains(lbInstance.getHealthState());
     }
 
     @Override
