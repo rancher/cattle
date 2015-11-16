@@ -140,12 +140,6 @@ public class LoadBalancerUpdateConfig extends AbstractObjectProcessLogic impleme
             request = before(request, agent);
             ConfigUpdateRequestUtils.setRequest(request, state, getContext(agent));
         }
-
-        for (Agent agent : agents) {
-            ConfigUpdateRequest request = ConfigUpdateRequestUtils.getRequest(jsonMapper, state, getContext(agent));
-            after(request);
-            ConfigUpdateRequestUtils.setRequest(request, state, getContext(agent));
-        }
     }
 
     @Override
@@ -164,14 +158,6 @@ public class LoadBalancerUpdateConfig extends AbstractObjectProcessLogic impleme
         statusManager.updateConfig(request);
 
         return request;
-    }
-
-    protected void after(ConfigUpdateRequest request) {
-        if (request == null) {
-            return;
-        }
-
-        statusManager.waitFor(request);
     }
 
     public String getContext(Agent agent) {
