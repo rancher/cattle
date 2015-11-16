@@ -1,4 +1,5 @@
 from common_fixtures import *  # NOQA
+from cattle import ClientApiError
 
 SP_CREATE = "storagepool.create"
 VOLUME_CREATE = "volume.create"
@@ -23,9 +24,6 @@ def add_storage_pool(context):
                     sp_name, sp_name, SP_CREATE, uuids, sp_name)
     storage_pool = wait_for(lambda: sp_wait(client, sp_name))
     assert storage_pool.state == 'active'
-    host = client.reload(host)
-    storage_pools = host.storagePools()
-    assert len(storage_pools) == 2
     return storage_pool
 
 
@@ -58,6 +56,66 @@ def test_multiple_sp_volume_schedule(new_context):
     vol_pools = vols[0].storagePools()
     assert len(vol_pools) == 1
     assert vol_pools[0].kind == 'sim'
+
+
+def test_finding_shared_volumes(new_context):
+    # Tests that when a named is specified in dataVolumes and a volume in of
+    # that name already exists in a shared storage pool, the pre-existing
+    # volume is used
+    client, agent_client, host = from_context(new_context)
+    storage_pool = add_storage_pool(new_context)
+    sp_name = storage_pool.name
+    name = random_str()
+    uri = '/foo/bar'
+    create_volume_event(client, agent_client, new_context, VOLUME_CREATE,
+                        name, driver=sp_name, uri=uri)
+    volume = wait_for(lambda: volume_wait(client, name))
+    volume = wait_for(lambda: volume_in_sp(client, volume, storage_pool))
+
+    path = '/container/path'
+
+    # Previously created volume should show up in dataVolumeMounts
+    data_volumes = ['%s:%s' % (name, path)]
+    c = client.create_container(imageUuid=new_context.image_uuid,
+                                dataVolumes=data_volumes)
+    c = client.wait_success(c)
+    assert c.state == 'running'
+    assert c.dataVolumeMounts[path] == volume.id
+
+    # If volumeDriver == local, should not use the shared volume
+    c = client.create_container(imageUuid=new_context.image_uuid,
+                                volumeDriver='local',
+                                dataVolumes=data_volumes)
+    c = client.wait_success(c)
+    assert c.state == 'running'
+    assert not c.dataVolumeMounts
+
+    # Create another storage pool and add a volume of the same name to it
+    storage_pool = add_storage_pool(new_context)
+    sp_name2 = storage_pool.name
+    uri = '/foo/bar'
+    create_volume_event(client, agent_client, new_context, VOLUME_CREATE,
+                        name, driver=sp_name2, uri=uri)
+    volume2 = wait_for(lambda: volume_in_sp_by_name_wait(name, storage_pool))
+    assert volume2.id != volume.id
+
+    # Container should not create successfully because name is ambiguous
+    c = client.create_container(imageUuid=new_context.image_uuid,
+                                dataVolumes=data_volumes)
+    with pytest.raises(ClientApiError):
+        client.wait_success(c)
+
+    # Container should work if the volume driver is specified
+    # Also, throw in testing that an extra non-named volume sticks around
+    data_volumes.append('/tmp:/tmp')
+    c = client.create_container(imageUuid=new_context.image_uuid,
+                                volumeDriver=sp_name2,
+                                dataVolumes=data_volumes)
+    c = client.wait_success(c)
+    assert c.state == 'running'
+    assert len(c.dataVolumeMounts) == 1
+    assert len(c.dataVolumes) == 2
+    assert c.dataVolumeMounts[path] == volume2.id
 
 
 def test_data_volume_mounts(new_context):
@@ -217,6 +275,12 @@ def sp_wait(client, external_id):
     storage_pools = client.list_storage_pool(externalId=external_id)
     if len(storage_pools) and storage_pools[0].state == 'active':
         return storage_pools[0]
+
+
+def volume_in_sp_by_name_wait(name, storage_pool):
+    volumes = storage_pool.volumes(name=name)
+    if len(volumes) and volumes[0].state == 'inactive':
+        return volumes[0]
 
 
 def volume_wait(client, external_id):
