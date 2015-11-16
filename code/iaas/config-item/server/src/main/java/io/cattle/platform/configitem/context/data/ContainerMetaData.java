@@ -20,6 +20,7 @@ public class ContainerMetaData {
     private String dnsPrefix;
 
     String name;
+    String uuid;
     String primary_ip;
     List<String> ips = new ArrayList<>();
     // host:public:private
@@ -71,6 +72,7 @@ public class ContainerMetaData {
     public void setInstanceAndHostMetadata(Instance instance, HostMetaData hostMetaData) {
         this.hostMetaData = hostMetaData;
         this.name = instance.getName();
+        this.uuid = instance.getUuid();
         Map<String, String> labels = DataAccessor.fields(instance).withKey(InstanceConstants.FIELD_LABELS)
                 .withDefault(Collections.EMPTY_MAP).as(Map.class);
         this.labels = labels;
@@ -132,5 +134,9 @@ public class ContainerMetaData {
 
     public String getHostname() {
         return hostname;
+    }
+
+    public String getUuid() {
+        return uuid;
     }
 }

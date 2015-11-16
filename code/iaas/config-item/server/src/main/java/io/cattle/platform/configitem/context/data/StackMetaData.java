@@ -9,10 +9,12 @@ import java.util.List;
 public class StackMetaData {
     private String environment_name;
     String name;
+    String uuid;
     List<String> services = new ArrayList<>();
 
     public StackMetaData(Environment stack, Account account, List<String> services) {
         this.name = stack.getName();
+        this.uuid = stack.getUuid();
         this.environment_name = account.getName();
         this.services = services;
     }
@@ -27,6 +29,10 @@ public class StackMetaData {
 
     public List<String> getServices() {
         return services;
+    }
+
+    public String getUuid() {
+        return uuid;
     }
 
 }

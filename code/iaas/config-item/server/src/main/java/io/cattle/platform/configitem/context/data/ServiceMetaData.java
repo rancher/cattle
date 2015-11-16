@@ -20,6 +20,7 @@ public class ServiceMetaData {
     String launchConfigName;
     
     String name;
+    String uuid;
     String stack_name;
     String kind;
     String hostname;
@@ -39,6 +40,7 @@ public class ServiceMetaData {
             Map<String, Object> metadata) {
         this.serviceId = service.getId();
         this.name = serviceName;
+        this.uuid = service.getUuid();
         this.stack_name = env.getName();
         this.kind = service.getKind();
         this.sidekicks = sidekicks;
@@ -158,5 +160,9 @@ public class ServiceMetaData {
 
     public String getFqdn() {
         return fqdn;
+    }
+
+    public String getUuid() {
+        return uuid;
     }
 }
