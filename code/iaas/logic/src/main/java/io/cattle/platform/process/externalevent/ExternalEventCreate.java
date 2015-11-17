@@ -87,8 +87,9 @@ public class ExternalEventCreate extends AbstractDefaultProcessHandler {
             @Override
             public void doWithLockNoResult() {
                 Object driver = CollectionUtils.getNestedValue(DataUtils.getFields(event), FIELD_VOLUME, FIELD_DRIVER);
-                if (driver == null) {
-                    log.warn("Driver not specified. Returning. Event: {}", event);
+                Object name = CollectionUtils.getNestedValue(DataUtils.getFields(event), FIELD_VOLUME, FIELD_NAME);
+                if (driver == null || name == null) {
+                    log.warn("Driver or volume name not specified. Returning. Event: {}", event);
                     return;
                 }
                 String driverName = driver.toString();
@@ -114,7 +115,7 @@ public class ExternalEventCreate extends AbstractDefaultProcessHandler {
                         volumeData.put(FIELD_DEV_NUM, -1);
 
                         try {
-                            volumeDao.createVolumeInStoragePool(volumeData, storagePool);
+                            volumeDao.createVolumeInStoragePool(volumeData, name.toString(), storagePool);
                         } catch (ProcessCancelException e) {
                             log.info("Create process cancelled for volumeData {}. ProcessCancelException message: {}", volumeData, e.getMessage());
                         }

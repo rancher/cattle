@@ -53,8 +53,12 @@ public class VolumeDaoImpl extends AbstractJooqDao implements VolumeDao {
     }
 
     @Override
-    public void createVolumeInStoragePool(Map<String, Object> volumeData, StoragePool storagePool) {
-        Volume volume = resourceDao.createAndSchedule(Volume.class, volumeData);
+    public void createVolumeInStoragePool(Map<String, Object> volumeData, String volumeName, StoragePool storagePool) {
+        Volume volume = findSharedVolume(storagePool.getAccountId(), storagePool.getId(), volumeName);
+        if (volume != null) {
+            return;
+        }
+        volume = resourceDao.createAndSchedule(Volume.class, volumeData);
         Map<String, Object> vspm = new HashMap<String, Object>();
         vspm.put("volumeId", volume.getId());
         vspm.put("storagePoolId", storagePool.getId());
