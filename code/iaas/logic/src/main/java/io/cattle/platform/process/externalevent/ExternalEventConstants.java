@@ -25,6 +25,7 @@ public class ExternalEventConstants {
     public static final String FIELD_SERVICE = "service";
     public static final String FIELD_ZONE_ID = "zoneId";
     public static final String FIELD_DRIVER = "driver";
+    public static final String FIELD_NAME = "name";
     public static final String FIELD_DRIVER_NAME = "driverName";
     public static final String FIELD_ATTACHED_STATE = "attachedState";
     public static final String FIELD_ALLOC_STATE = "allocationState";

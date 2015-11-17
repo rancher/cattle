@@ -8,7 +8,7 @@ import java.util.Map;
 public interface VolumeDao {
     Volume findVolumeByExternalId(Long storagePoolId, String externalId);
     
-    void createVolumeInStoragePool(Map<String, Object> volumeData, StoragePool storagePool);
+    void createVolumeInStoragePool(Map<String, Object> volumeData, String volumeName, StoragePool storagePool);
 
     /**
      * Does what the name says, but if storagePoolId is null, will look across all non-local storage pools

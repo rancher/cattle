@@ -103,7 +103,12 @@ public class DockerComputeDaoImpl extends AbstractJooqDao implements DockerCompu
     @Override
     public Volume createDockerVolumeInPool(Long accountId, String name, String volumeUri, String externalId, String driver, StoragePool storagePool,
             boolean isHostPath) {
-        Volume volume = objectManager.create(Volume.class,
+        Volume volume = getDockerVolumeInPool(volumeUri, externalId, storagePool);
+        if (volume != null) {
+            return volume;
+        }
+
+        volume = objectManager.create(Volume.class,
                 VOLUME.ACCOUNT_ID, accountId,
                 VOLUME.NAME, name,
                 VOLUME.ATTACHED_STATE, CommonStatesConstants.INACTIVE,
