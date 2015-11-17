@@ -16,12 +16,14 @@ def from_context(context):
     return context.client, context.agent_client, context.host
 
 
-def add_storage_pool(context):
+def add_storage_pool(context, host_uuids=None):
     client, agent_client, host = from_context(context)
     sp_name = 'convoy-%s' % random_str()
-    uuids = [host.uuid]
+    if not host_uuids:
+        host_uuids = [host.uuid]
+
     create_sp_event(client, agent_client, context,
-                    sp_name, sp_name, SP_CREATE, uuids, sp_name)
+                    sp_name, sp_name, SP_CREATE, host_uuids, sp_name)
     storage_pool = wait_for(lambda: sp_wait(client, sp_name))
     assert storage_pool.state == 'active'
     return storage_pool
@@ -136,6 +138,77 @@ def test_data_volume_mounts(new_context):
     c = client.wait_success(c, timeout=240)
     assert c.state == 'running'
     assert c.dataVolumes[0] == '%s:/somedir' % external_id
+
+
+def test_volume_create(new_context):
+    client, agent_client, host = from_context(new_context)
+    storage_pool = add_storage_pool(new_context)
+    sp_name = storage_pool.name
+    add_storage_pool(new_context)
+
+    # Create a volume with a driver that points to a storage pool
+    v1 = client.create_volume(name=random_str(), driver=sp_name)
+    v1 = client.wait_success(v1)
+    assert v1.state == 'requested'
+
+    # Create a volume with a driver that cattle doesn't know about
+    v2 = client.create_volume(name=random_str(), driver='driver-%s' %
+                                                        random_str())
+    v2 = client.wait_success(v2)
+    assert v2.state == 'requested'
+
+    data_volume_mounts = {'/con/path': v1.id,
+                          '/con/path2': v2.id}
+    c = client.create_container(imageUuid=new_context.image_uuid,
+                                dataVolumeMounts=data_volume_mounts)
+    c = client.wait_success(c)
+    assert c.state == 'running'
+
+    v1 = client.wait_success(v1)
+    assert v1.state == 'active'
+    sps = v1.storagePools()
+    assert len(sps) == 1
+    assert sps[0].id == storage_pool.id
+
+    v2 = client.wait_success(v2)
+    assert v2.state == 'active'
+    sps = v2.storagePools()
+    assert len(sps) == 1
+    assert sps[0].kind == 'sim'
+
+
+def test_volume_create_failed_allocation(new_context):
+    client, agent_client, host = from_context(new_context)
+    storage_pool = add_storage_pool(new_context)
+    sp_name = storage_pool.name
+    add_storage_pool(new_context)
+
+    v1 = client.wait_success(client.create_volume(name=random_str(),
+                                                  driver=sp_name))
+    assert v1.state == 'requested'
+
+    # Will fail because new_host is not in the storage_pool that v1 belongs to
+    new_host = register_simulated_host(new_context)
+    data_volume_mounts = {'/con/path': v1.id}
+    with pytest.raises(ClientApiError) as e:
+        c = client.create_container(imageUuid=new_context.image_uuid,
+                                    requestedHostId=new_host.id,
+                                    dataVolumeMounts=data_volume_mounts)
+        client.wait_success(c)
+    assert e.value.message == 'Failed to find a placement'
+
+    # Put two volumes from mutually exclusive storage pools onto a container
+    # and it should fail to find placement
+    sp2 = add_storage_pool(new_context, [new_host.uuid])
+    v2 = client.create_volume(name=random_str(), driver=sp2.name)
+    v2 = client.wait_success(v2)
+    assert v1.state == 'requested'
+    data_volume_mounts['/con/path2'] = v2.id
+    with pytest.raises(ClientApiError) as e:
+        c = client.create_container(imageUuid=new_context.image_uuid,
+                                    dataVolumeMounts=data_volume_mounts)
+        client.wait_success(c)
+    assert e.value.message == 'Failed to find a placement'
 
 
 def test_external_volume_event(super_client, new_context):

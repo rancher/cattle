@@ -44,6 +44,5 @@ public class DockerInstanceConstants {
     public static final String DOCKER_TTY = "Tty";
     public static final String DOCKER_CMD = "Cmd";
     public static final String DOCKER_CONTAINER = "Container";
-    public static final String DOCKER_LOCAL_DRIVER = "local";
 
 }

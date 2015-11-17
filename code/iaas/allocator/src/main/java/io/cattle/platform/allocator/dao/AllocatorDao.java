@@ -15,7 +15,7 @@ public interface AllocatorDao {
 
     List<? extends StoragePool> getAssociatedPools(Volume volume);
 
-    List<? extends StoragePool> getAssociatedPools(Host host);
+    List<? extends StoragePool> getAssociatedUnmanagedPools(Host host);
 
     List<? extends Host> getHosts(Instance instance);
 

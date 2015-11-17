@@ -8,6 +8,7 @@ import io.cattle.iaas.labels.service.LabelsService;
 import io.cattle.platform.archaius.util.ArchaiusUtil;
 import io.cattle.platform.core.constants.NetworkServiceConstants;
 import io.cattle.platform.core.constants.PortConstants;
+import io.cattle.platform.core.constants.VolumeConstants;
 import io.cattle.platform.core.dao.ClusterHostMapDao;
 import io.cattle.platform.core.dao.GenericMapDao;
 import io.cattle.platform.core.dao.IpAddressDao;
@@ -158,7 +159,7 @@ public class DockerPostInstanceHostMapActivate extends AbstractObjectProcessLogi
         Map<String, StoragePool> pools = new HashMap<String, StoragePool>();
         for (StoragePool pool : objectManager.mappedChildren(host, StoragePool.class)) {
             if (DockerStoragePoolDriver.isDockerPool(pool) && 
-                    (DOCKER_LOCAL_DRIVER.equals(pool.getDriverName()) || StringUtils.isEmpty(pool.getDriverName()))) {
+                    (VolumeConstants.LOCAL_DRIVER.equals(pool.getDriverName()) || StringUtils.isEmpty(pool.getDriverName()))) {
                 dockerLocalStoragePool = pool;
             }
             if (StringUtils.isNotEmpty(pool.getDriverName())) {
@@ -169,7 +170,7 @@ public class DockerPostInstanceHostMapActivate extends AbstractObjectProcessLogi
         for (DockerInspectTransformVolume dVol : dockerVolumes) {
             String driver = dVol.getDriver();
             StoragePool pool = null;
-            if (StringUtils.isEmpty(driver) || DOCKER_LOCAL_DRIVER.equals(driver)) {
+            if (StringUtils.isEmpty(driver) || VolumeConstants.LOCAL_DRIVER.equals(driver)) {
                 pool = dockerLocalStoragePool;
             } else {
                 pool = pools.get(dVol.getDriver());

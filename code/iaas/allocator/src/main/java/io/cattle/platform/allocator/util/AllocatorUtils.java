@@ -4,12 +4,18 @@ import io.cattle.platform.archaius.util.ArchaiusUtil;
 import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.model.Instance;
 
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.netflix.config.DynamicLongProperty;
 
 public class AllocatorUtils {
+
+    public static final Set<String> UNMANGED_STORAGE_POOLS = new HashSet<String>(Arrays.asList(new String[]{"docker", "sim"}));
 
     public static final DynamicLongProperty DEFAULT_COMPUTE = ArchaiusUtil.getLong("instance.compute.default");
 
