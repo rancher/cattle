@@ -68,7 +68,7 @@ public class ApiRequestFilter extends ModuleBasedFilter {
                 chain.doFilter(request, response);
                 return;
             } else {
-                indexFile.serveIndex((HttpServletResponse) response);
+                indexFile.serveIndex((HttpServletRequest)request, (HttpServletResponse) response);
                 return;
             }
         }

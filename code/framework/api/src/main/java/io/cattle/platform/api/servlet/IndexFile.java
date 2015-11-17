@@ -8,6 +8,9 @@ import java.io.OutputStream;
 import java.net.URL;
 
 import javax.annotation.PostConstruct;
+import javax.servlet.RequestDispatcher;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.io.IOUtils;
@@ -81,12 +84,18 @@ public class IndexFile {
     }
 
     public boolean canServeContent() {
-        return indexCached != null;
+        return indexCached != null || LOCAL.equals(STATIC_INDEX_HTML.get());
     }
 
-    public void serveIndex(HttpServletResponse response) throws IOException {
+    public void serveIndex(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
         if (shouldReload()) {
             reloadIndex();
+        }
+
+        if (LOCAL.equalsIgnoreCase(STATIC_INDEX_HTML.get())) {
+            RequestDispatcher rd = request.getRequestDispatcher("/index.html");
+            rd.forward(request, response);
+            return;
         }
 
         if (indexCached == null) {
