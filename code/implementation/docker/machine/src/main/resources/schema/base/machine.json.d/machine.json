@@ -25,6 +25,14 @@
         "labels": {
             "type": "map[string]",
             "nullable": true
+        },
+        "dockerVersion": {
+            "type": "string",
+            "nullable": true
+        },
+        "engineOpts": {
+            "type": "array[string]",
+            "nullable": true
         }
     }
 }

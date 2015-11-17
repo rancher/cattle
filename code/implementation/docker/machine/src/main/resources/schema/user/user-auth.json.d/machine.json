@@ -7,6 +7,8 @@
         "machine.authKey" : "r",
         "machine.labels": "r",
         "machine.extractedConfig" : "",
+        "machine.dockerVersion": "r",
+        "machine.engineOpts": "r",
         
         "end" : ""
     }
