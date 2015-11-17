@@ -1,5 +1,6 @@
 package io.cattle.platform.servicediscovery.process;
 
+import io.cattle.platform.core.constants.AgentConstants;
 import io.cattle.platform.core.constants.HostConstants;
 import io.cattle.platform.core.constants.LabelConstants;
 import io.cattle.platform.core.model.Service;
@@ -32,7 +33,8 @@ public class ServicesReconcilePostTrigger extends AbstractObjectProcessLogic imp
                 HostConstants.PROCESS_REMOVE,
                 HostConstants.PROCESS_ACTIVATE,
                 LabelConstants.PROCESS_HOSTLABELMAP_CREATE,
-                LabelConstants.PROCESS_HOSTLABELMAP_REMOVE
+                LabelConstants.PROCESS_HOSTLABELMAP_REMOVE,
+                AgentConstants.PROCESS_RECONNECT
         };
     }
 

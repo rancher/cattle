@@ -6,6 +6,7 @@ import static io.cattle.platform.core.model.tables.LoadBalancerListenerTable.LOA
 import static io.cattle.platform.core.model.tables.LoadBalancerTable.LOAD_BALANCER;
 import static io.cattle.platform.core.model.tables.SubnetTable.SUBNET;
 import io.cattle.iaas.lb.service.LoadBalancerService;
+import io.cattle.platform.allocator.service.AllocatorService;
 import io.cattle.platform.core.addon.LoadBalancerServiceLink;
 import io.cattle.platform.core.addon.LoadBalancerTargetInput;
 import io.cattle.platform.core.addon.ServiceLink;
@@ -95,6 +96,9 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
 
     @Inject
     LockManager lockManager;
+
+    @Inject
+    AllocatorService allocatorService;
 
     protected long getServiceNetworkId(Service service) {
         Network network = ntwkDao.getNetworkForObject(service, NetworkConstants.KIND_HOSTONLY);
@@ -606,5 +610,15 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
     @Override
     public boolean isServiceInstance(Service service, Instance instance) {
         return exposeMapDao.getServiceInstanceMap(service, instance) != null;
+    }
+
+    @Override
+    public boolean isGlobalService(Service service) {
+        Map<String, String> serviceLabels = ServiceDiscoveryUtil.getServiceLabels(service, allocatorService);
+        String globalService = serviceLabels.get(ServiceDiscoveryConstants.LABEL_SERVICE_GLOBAL);
+        if (globalService != null && Boolean.valueOf(globalService).equals(true)) {
+            return true;
+        }
+        return false;
     }
 }

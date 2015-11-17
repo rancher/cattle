@@ -39,4 +39,5 @@ public interface ServiceDiscoveryService {
 
     List<String> getServiceActiveStates(boolean includeUpgrading);
 
+    boolean isGlobalService(Service service);
 }
