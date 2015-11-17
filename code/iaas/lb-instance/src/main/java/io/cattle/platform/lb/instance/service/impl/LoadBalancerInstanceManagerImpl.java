@@ -76,7 +76,7 @@ public class LoadBalancerInstanceManagerImpl implements LoadBalancerInstanceMana
     LoadBalancerDao lbDao;
 
     @Override
-    public List<? extends Instance> createLoadBalancerInstances(LoadBalancer loadBalancer) {
+    public List<? extends Instance> createLoadBalancerInstances(LoadBalancer loadBalancer, boolean create) {
         List<Instance> result = new ArrayList<Instance>();
         Network network = ntwkDao.getNetworkForObject(loadBalancer, NetworkConstants.KIND_HOSTONLY);
         if (network == null) {
@@ -95,63 +95,64 @@ public class LoadBalancerInstanceManagerImpl implements LoadBalancerInstanceMana
             }
 
             Instance lbInstance = getLoadBalancerInstance(hostMap);
-            if (lbInstance == null) {
-                String imageUUID = DataAccessor.fields(loadBalancer).
-                        withKey(LoadBalancerConstants.FIELD_LB_INSTANCE_IMAGE_UUID).as(String.class);
+            if (create) {
+                if (lbInstance == null) {
+                    String imageUUID = DataAccessor.fields(loadBalancer).
+                            withKey(LoadBalancerConstants.FIELD_LB_INSTANCE_IMAGE_UUID).as(String.class);
 
-                Map<String, Object> params = new HashMap<>();
-                Map<String, Object> data = DataUtils.getFields(hostMap);
-                // currently we respect only labels/volumesFrom/requestedHostId parameters from the launch config
-                if (data.get(InstanceConstants.FIELD_LABELS) != null) {
-                    params.put(InstanceConstants.FIELD_LABELS, data.get(InstanceConstants.FIELD_LABELS));
-                }
+                    Map<String, Object> params = new HashMap<>();
+                    Map<String, Object> data = DataUtils.getFields(hostMap);
+                    // currently we respect only labels/volumesFrom/requestedHostId parameters from the launch config
+                    if (data.get(InstanceConstants.FIELD_LABELS) != null) {
+                        params.put(InstanceConstants.FIELD_LABELS, data.get(InstanceConstants.FIELD_LABELS));
+                    }
 
-                if (data.get(DockerInstanceConstants.FIELD_VOLUMES_FROM) != null) {
+                    if (data.get(DockerInstanceConstants.FIELD_VOLUMES_FROM) != null) {
                         params.put(DockerInstanceConstants.FIELD_VOLUMES_FROM,
-                            data.get(DockerInstanceConstants.FIELD_VOLUMES_FROM));
-                }
+                                data.get(DockerInstanceConstants.FIELD_VOLUMES_FROM));
+                    }
 
-                if (data.get(InstanceConstants.FIELD_REQUESTED_HOST_ID) != null) {
-                    params.put(InstanceConstants.FIELD_REQUESTED_HOST_ID,
-                            data.get(InstanceConstants.FIELD_REQUESTED_HOST_ID));
-                }
+                    if (data.get(InstanceConstants.FIELD_REQUESTED_HOST_ID) != null) {
+                        params.put(InstanceConstants.FIELD_REQUESTED_HOST_ID,
+                                data.get(InstanceConstants.FIELD_REQUESTED_HOST_ID));
+                    }
 
-                if (data.get(DockerInstanceConstants.FIELD_NETWORK_CONTAINER_ID) != null) {
-                    params.put(DockerInstanceConstants.FIELD_NETWORK_CONTAINER_ID,
-                            data.get(DockerInstanceConstants.FIELD_NETWORK_CONTAINER_ID));
-                }
-                
+                    if (data.get(DockerInstanceConstants.FIELD_NETWORK_CONTAINER_ID) != null) {
+                        params.put(DockerInstanceConstants.FIELD_NETWORK_CONTAINER_ID,
+                                data.get(DockerInstanceConstants.FIELD_NETWORK_CONTAINER_ID));
+                    }
 
-                if (data.get(InstanceConstants.FIELD_HEALTH_CHECK) != null) {
-                    params.put(InstanceConstants.FIELD_HEALTH_CHECK,
-                            data.get(InstanceConstants.FIELD_HEALTH_CHECK));
-                }
+                    if (data.get(InstanceConstants.FIELD_HEALTH_CHECK) != null) {
+                        params.put(InstanceConstants.FIELD_HEALTH_CHECK,
+                                data.get(InstanceConstants.FIELD_HEALTH_CHECK));
+                    }
 
-                List<Long> networkIds = new ArrayList<>();
-                networkIds.add(network.getId());
-                params.put(InstanceConstants.FIELD_NETWORK_IDS, networkIds);
-                if (hostMap.getHostId() != null) {
-                    params.put(InstanceConstants.FIELD_REQUESTED_HOST_ID, hostMap.getHostId());
-                }
+                    List<Long> networkIds = new ArrayList<>();
+                    networkIds.add(network.getId());
+                    params.put(InstanceConstants.FIELD_NETWORK_IDS, networkIds);
+                    if (hostMap.getHostId() != null) {
+                        params.put(InstanceConstants.FIELD_REQUESTED_HOST_ID, hostMap.getHostId());
+                    }
 
-                // set initial set of lb ports
-                List<String> ports = getLbInstancePorts(lbInstance, loadBalancer);
-                if (!ports.isEmpty()) {
-                    params.put(InstanceConstants.FIELD_PORTS, ports);
-                }
+                    // set initial set of lb ports
+                    List<String> ports = getLbInstancePorts(lbInstance, loadBalancer);
+                    if (!ports.isEmpty()) {
+                        params.put(InstanceConstants.FIELD_PORTS, ports);
+                    }
 
-                // create lb agent (instance will be created along)
-                // following logic from SpecialFieldsPostInstantiationHandler when default zoneId to 1L
-                lbInstance = agentInstanceFactory.newBuilder().withAccountId(loadBalancer.getAccountId())
-                        .withZoneId(1L).withPrivileged(true)
-                        .withUri(getUri(loadBalancer, hostMap)).withName(LB_INSTANCE_NAME.get()).withImageUuid(imageUUID).withParameters(params)
-                        .withSystemContainerType(SystemContainer.LoadBalancerAgent).build();
-            } else if (isHealthyInstance(lbInstance)) {
-                start(lbInstance);
+                    // create lb agent (instance will be created along)
+                    // following logic from SpecialFieldsPostInstantiationHandler when default zoneId to 1L
+                    lbInstance = agentInstanceFactory.newBuilder().withAccountId(loadBalancer.getAccountId())
+                            .withZoneId(1L).withPrivileged(true)
+                            .withUri(getUri(loadBalancer, hostMap)).withName(LB_INSTANCE_NAME.get())
+                            .withImageUuid(imageUUID).withParameters(params)
+                            .withSystemContainerType(SystemContainer.LoadBalancerAgent).build();
+                } else if (isHealthyInstance(lbInstance)) {
+                    start(lbInstance);
+                }
             }
 
             if (lbInstance != null && isHealthyInstance(lbInstance)) {
-
                 result.add(lbInstance);
             }
         }

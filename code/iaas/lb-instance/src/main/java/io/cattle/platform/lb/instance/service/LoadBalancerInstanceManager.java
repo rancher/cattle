@@ -10,7 +10,7 @@ import java.util.List;
 
 public interface LoadBalancerInstanceManager {
 
-    List<? extends Instance> createLoadBalancerInstances(LoadBalancer loadBalancer);
+    List<? extends Instance> createLoadBalancerInstances(LoadBalancer loadBalancer, boolean create);
 
     boolean isLbInstance(Instance instance);
 

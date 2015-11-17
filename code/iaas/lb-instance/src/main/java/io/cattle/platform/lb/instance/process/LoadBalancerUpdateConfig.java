@@ -7,6 +7,7 @@ import io.cattle.platform.configitem.request.util.ConfigUpdateRequestUtils;
 import io.cattle.platform.configitem.version.ConfigItemStatusManager;
 import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.InstanceConstants;
+import io.cattle.platform.core.constants.LoadBalancerConstants;
 import io.cattle.platform.core.constants.PortConstants;
 import io.cattle.platform.core.dao.GenericResourceDao;
 import io.cattle.platform.core.dao.IpAddressDao;
@@ -172,7 +173,13 @@ public class LoadBalancerUpdateConfig extends AbstractObjectProcessLogic impleme
         for (Long lbId : lbIds) {
             List<? extends Instance> lbInstances = new ArrayList<>();
             LoadBalancer lb = loadResource(LoadBalancer.class, lbId);
-            lbInstances = lbInstanceManager.createLoadBalancerInstances(lb);
+
+            boolean create = false;
+            if (process.getName().equalsIgnoreCase(LoadBalancerConstants.PROCESS_LB_HOST_MAP_CREATE)) {
+                create = true;
+            }
+
+            lbInstances = lbInstanceManager.createLoadBalancerInstances(lb, create);
             allLbInstances.addAll(lbInstances);
             lbInstancesMap.put(lbId, lbInstances);
         }
