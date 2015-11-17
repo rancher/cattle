@@ -11,6 +11,7 @@ import static io.cattle.platform.core.model.tables.ServiceExposeMapTable.SERVICE
 import io.cattle.platform.configitem.context.dao.MetaDataInfoDao;
 import io.cattle.platform.configitem.context.data.ContainerMetaData;
 import io.cattle.platform.configitem.context.data.HostMetaData;
+import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.constants.IpAddressConstants;
 import io.cattle.platform.core.model.Host;
@@ -91,6 +92,9 @@ public class MetaDataInfoDaoImpl extends AbstractJooqDao implements MetaDataInfo
                 .and(instance.ACCOUNT_ID.eq(accountId))
                 .and(instanceIpAddress.ROLE.eq(IpAddressConstants.ROLE_PRIMARY))
                 .and(instance.REMOVED.isNull())
+                .and(instance.STATE.notIn(CommonStatesConstants.REMOVING, CommonStatesConstants.REMOVED))
+                .and(exposeMap.REMOVED.isNull())
+                .and(exposeMap.STATE.notIn(CommonStatesConstants.REMOVING, CommonStatesConstants.REMOVED))
                 .fetch().map(mapper);
     }
 
@@ -129,6 +133,7 @@ public class MetaDataInfoDaoImpl extends AbstractJooqDao implements MetaDataInfo
                 .leftOuterJoin(INSTANCE_HOST_MAP)
                 .on(host.ID.eq(INSTANCE_HOST_MAP.HOST_ID))
                 .where(host.REMOVED.isNull())
+                .and(host.STATE.notIn(CommonStatesConstants.REMOVING, CommonStatesConstants.REMOVED))
                 .and(condition)
                 .and(hostIpAddress.REMOVED.isNull())
                 .and(host.ACCOUNT_ID.eq(accountId)).groupBy(host.ID)

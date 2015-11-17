@@ -152,7 +152,7 @@ public class LoadBalancerUpdateConfig extends AbstractObjectProcessLogic impleme
         if (request == null) {
             request = ConfigUpdateRequest.forResource(Agent.class, agent.getId());
             for (String item : ITEMS.get()) {
-                request.addItem(item).withIncrement(true).setCheckInSyncOnly(true);
+                request.addItem(item).withApply(true).withIncrement(true).setCheckInSyncOnly(true);
             }
         }
 
