@@ -174,10 +174,9 @@ public class AllocatorServiceImpl implements AllocatorService {
                 key = key.toLowerCase();
             }
             String value = entry.getValue();
-            if (key.toLowerCase().startsWith("io.rancher.scheduler.affinity")) {
+            if (key.startsWith("io.rancher.scheduler.affinity")) {
                 // merge labels
                 String destValue = destMap.get(key);
-
                 if (StringUtils.isEmpty(destValue)) {
                     destMap.put(key, value);
                 } else if (StringUtils.isEmpty(value)) {
