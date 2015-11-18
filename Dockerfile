@@ -1,4 +1,4 @@
-FROM rancher/dind:v1.9.0-rancher1
+FROM rancher/build-cattle:v0.9.0
 COPY ./scripts/bootstrap /scripts/bootstrap
 RUN /scripts/bootstrap
 WORKDIR /source
