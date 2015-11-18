@@ -16,4 +16,6 @@ public class VolumeConstants {
     
     public static final String FIELD_DEVICE_NUM = "deviceNumber";
 
+    public static final String LOCAL_DRIVER = "local";
+
 }

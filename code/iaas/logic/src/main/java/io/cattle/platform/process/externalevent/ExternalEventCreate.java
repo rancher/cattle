@@ -4,6 +4,7 @@ import static io.cattle.platform.core.model.tables.EnvironmentTable.*;
 import static io.cattle.platform.core.model.tables.ServiceTable.*;
 import static io.cattle.platform.process.externalevent.ExternalEventConstants.*;
 import io.cattle.platform.core.constants.CommonStatesConstants;
+import io.cattle.platform.core.constants.VolumeConstants;
 import io.cattle.platform.core.dao.AccountDao;
 import io.cattle.platform.core.dao.GenericResourceDao;
 import io.cattle.platform.core.dao.HostDao;
@@ -86,7 +87,7 @@ public class ExternalEventCreate extends AbstractDefaultProcessHandler {
         lockManager.lock(new ExternalEventLock(VOLUME_POOL_LOCK_NAME, event.getAccountId(), event.getExternalId()), new LockCallbackNoReturn() {
             @Override
             public void doWithLockNoResult() {
-                Object driver = CollectionUtils.getNestedValue(DataUtils.getFields(event), FIELD_VOLUME, FIELD_DRIVER);
+                Object driver = CollectionUtils.getNestedValue(DataUtils.getFields(event), FIELD_VOLUME, VolumeConstants.FIELD_VOLUME_DRIVER);
                 Object name = CollectionUtils.getNestedValue(DataUtils.getFields(event), FIELD_VOLUME, FIELD_NAME);
                 if (driver == null || name == null) {
                     log.warn("Driver or volume name not specified. Returning. Event: {}", event);

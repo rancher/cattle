@@ -1,23 +1,23 @@
 package io.cattle.platform.allocator.dao.impl;
 
-import static io.cattle.platform.core.model.tables.AgentTable.AGENT;
-import static io.cattle.platform.core.model.tables.HostLabelMapTable.HOST_LABEL_MAP;
-import static io.cattle.platform.core.model.tables.HostTable.HOST;
-import static io.cattle.platform.core.model.tables.HostVnetMapTable.HOST_VNET_MAP;
-import static io.cattle.platform.core.model.tables.ImageStoragePoolMapTable.IMAGE_STORAGE_POOL_MAP;
-import static io.cattle.platform.core.model.tables.ImageTable.IMAGE;
-import static io.cattle.platform.core.model.tables.InstanceHostMapTable.INSTANCE_HOST_MAP;
-import static io.cattle.platform.core.model.tables.InstanceLabelMapTable.INSTANCE_LABEL_MAP;
-import static io.cattle.platform.core.model.tables.InstanceTable.INSTANCE;
-import static io.cattle.platform.core.model.tables.LabelTable.LABEL;
-import static io.cattle.platform.core.model.tables.NicTable.NIC;
-import static io.cattle.platform.core.model.tables.PortTable.PORT;
-import static io.cattle.platform.core.model.tables.ServiceExposeMapTable.SERVICE_EXPOSE_MAP;
-import static io.cattle.platform.core.model.tables.StoragePoolHostMapTable.STORAGE_POOL_HOST_MAP;
-import static io.cattle.platform.core.model.tables.StoragePoolTable.STORAGE_POOL;
-import static io.cattle.platform.core.model.tables.SubnetVnetMapTable.SUBNET_VNET_MAP;
-import static io.cattle.platform.core.model.tables.VnetTable.VNET;
-import static io.cattle.platform.core.model.tables.VolumeStoragePoolMapTable.VOLUME_STORAGE_POOL_MAP;
+import static io.cattle.platform.core.model.tables.AgentTable.*;
+import static io.cattle.platform.core.model.tables.HostLabelMapTable.*;
+import static io.cattle.platform.core.model.tables.HostTable.*;
+import static io.cattle.platform.core.model.tables.HostVnetMapTable.*;
+import static io.cattle.platform.core.model.tables.ImageStoragePoolMapTable.*;
+import static io.cattle.platform.core.model.tables.ImageTable.*;
+import static io.cattle.platform.core.model.tables.InstanceHostMapTable.*;
+import static io.cattle.platform.core.model.tables.InstanceLabelMapTable.*;
+import static io.cattle.platform.core.model.tables.InstanceTable.*;
+import static io.cattle.platform.core.model.tables.LabelTable.*;
+import static io.cattle.platform.core.model.tables.NicTable.*;
+import static io.cattle.platform.core.model.tables.PortTable.*;
+import static io.cattle.platform.core.model.tables.ServiceExposeMapTable.*;
+import static io.cattle.platform.core.model.tables.StoragePoolHostMapTable.*;
+import static io.cattle.platform.core.model.tables.StoragePoolTable.*;
+import static io.cattle.platform.core.model.tables.SubnetVnetMapTable.*;
+import static io.cattle.platform.core.model.tables.VnetTable.*;
+import static io.cattle.platform.core.model.tables.VolumeStoragePoolMapTable.*;
 import io.cattle.platform.allocator.dao.AllocatorDao;
 import io.cattle.platform.allocator.service.AllocationAttempt;
 import io.cattle.platform.allocator.service.AllocationCandidate;
@@ -100,7 +100,7 @@ public class AllocatorDaoImpl extends AbstractJooqDao implements AllocatorDao {
     }
 
     @Override
-    public List<? extends StoragePool> getAssociatedPools(Host host) {
+    public List<? extends StoragePool> getAssociatedUnmanagedPools(Host host) {
         return create()
                 .select(STORAGE_POOL.fields())
                 .from(STORAGE_POOL)
@@ -108,7 +108,8 @@ public class AllocatorDaoImpl extends AbstractJooqDao implements AllocatorDao {
                     .on(STORAGE_POOL_HOST_MAP.STORAGE_POOL_ID.eq(STORAGE_POOL.ID))
                 .where(
                     STORAGE_POOL_HOST_MAP.REMOVED.isNull()
-                    .and(STORAGE_POOL_HOST_MAP.HOST_ID.eq(host.getId())))
+                    .and(STORAGE_POOL_HOST_MAP.HOST_ID.eq(host.getId())
+                    .and(STORAGE_POOL.KIND.in(AllocatorUtils.UNMANGED_STORAGE_POOLS))))
                 .fetchInto(StoragePoolRecord.class);
     }
 

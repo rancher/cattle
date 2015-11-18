@@ -1,6 +1,7 @@
 package io.cattle.platform.process.instance;
 
 import io.cattle.platform.core.constants.InstanceConstants;
+import io.cattle.platform.core.constants.VolumeConstants;
 import io.cattle.platform.core.dao.StoragePoolDao;
 import io.cattle.platform.core.dao.VolumeDao;
 import io.cattle.platform.core.model.Instance;
@@ -32,7 +33,6 @@ import org.slf4j.LoggerFactory;
 public class InstanceVolumeLookupPreCreate extends AbstractObjectProcessLogic implements ProcessPreListener {
 
     private static final Logger log = LoggerFactory.getLogger(InstanceVolumeLookupPreCreate.class);
-    private static final String LOCAL = "local";
 
     @Inject
     ObjectManager objectManager;
@@ -65,7 +65,7 @@ public class InstanceVolumeLookupPreCreate extends AbstractObjectProcessLogic im
         }
 
         String vd = DataAccessor.fieldString(instance, InstanceConstants.FIELD_VOLUME_DRIVER);
-        if (LOCAL.equals(vd)) {
+        if (VolumeConstants.LOCAL_DRIVER.equals(vd)) {
             return null;
         }
 
