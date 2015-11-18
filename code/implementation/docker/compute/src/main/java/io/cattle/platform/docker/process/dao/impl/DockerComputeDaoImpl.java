@@ -76,7 +76,7 @@ public class DockerComputeDaoImpl extends AbstractJooqDao implements DockerCompu
 
         Condition condition = VOLUME.URI.eq(volumeUri);
         if (externalId != null) {
-            condition.or(VOLUME.EXTERNAL_ID.eq(externalId));
+            condition = condition.or(VOLUME.EXTERNAL_ID.eq(externalId).or(VOLUME.NAME.eq(externalId)));
         }
 
         List<VolumeRecord> volumes = create()
@@ -96,8 +96,8 @@ public class DockerComputeDaoImpl extends AbstractJooqDao implements DockerCompu
             return volumes.get(0);
         else
             throw new IllegalStateException(String.format(
-                    "More than one volume exists for volume URI [%s] and storage pool [%s].", volumeUri,
-                    storagePool.getId()));
+                    "More than one volume exists for volume URI [%s] or nam/externalId [%s] and storage pool [%s].", volumeUri,
+                    externalId, storagePool.getId()));
     }
 
     @Override
