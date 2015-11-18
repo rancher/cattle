@@ -170,27 +170,28 @@ public class LoadBalancerUpdateConfig extends AbstractObjectProcessLogic impleme
         Map<Long, List<? extends Instance>> lbInstancesMap = new HashMap<>();
         List<Instance> allLbInstances = new ArrayList<>();
         // create lb instances and open the ports for them
+        boolean create = false;
+        if (process.getName().equalsIgnoreCase(LoadBalancerConstants.PROCESS_LB_HOST_MAP_CREATE)) {
+            create = true;
+        }
         for (Long lbId : lbIds) {
             List<? extends Instance> lbInstances = new ArrayList<>();
             LoadBalancer lb = loadResource(LoadBalancer.class, lbId);
-
-            boolean create = false;
-            if (process.getName().equalsIgnoreCase(LoadBalancerConstants.PROCESS_LB_HOST_MAP_CREATE)) {
-                create = true;
-            }
-
             lbInstances = lbInstanceManager.createLoadBalancerInstances(lb, create);
             allLbInstances.addAll(lbInstances);
             lbInstancesMap.put(lbId, lbInstances);
         }
-        for (Instance lbInstance : allLbInstances) {
-            lbInstance = resourceMonitor.waitFor(lbInstance, new ResourcePredicate<Instance>() {
-                @Override
-                public boolean evaluate(Instance obj) {
-                    return InstanceConstants.STATE_RUNNING.equals(obj.getState());
-                }
-            });
+        if (create) {
+            for (Instance lbInstance : allLbInstances) {
+                lbInstance = resourceMonitor.waitFor(lbInstance, new ResourcePredicate<Instance>() {
+                    @Override
+                    public boolean evaluate(Instance obj) {
+                        return InstanceConstants.STATE_RUNNING.equals(obj.getState());
+                    }
+                });
+            }
         }
+
         return lbInstancesMap;
     }
 

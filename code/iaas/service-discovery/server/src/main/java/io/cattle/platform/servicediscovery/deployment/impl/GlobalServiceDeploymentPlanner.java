@@ -8,6 +8,7 @@ import io.cattle.platform.servicediscovery.deployment.impl.DeploymentManagerImpl
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -34,6 +35,7 @@ public class GlobalServiceDeploymentPlanner extends ServiceDeploymentPlanner {
 
     @Override
     public List<DeploymentUnit> deployHealthyUnits() {
+        removeExtraUnits();
         if (this.healthyUnits.size() < hostIds.size()) {
             addMissingUnits();
         }
@@ -55,5 +57,19 @@ public class GlobalServiceDeploymentPlanner extends ServiceDeploymentPlanner {
     @Override
     public boolean needToReconcileDeploymentImpl() {
         return (healthyUnits.size() != hostIds.size());
+    }
+
+    private void removeExtraUnits() {
+        Iterator<DeploymentUnit> it = this.healthyUnits.iterator();
+        while (it.hasNext()) {
+            DeploymentUnit unit = it.next();
+            Map<String, String> unitLabels = unit.getLabels();
+            Long hostId = Long.valueOf(unitLabels.get(ServiceDiscoveryConstants.LABEL_SERVICE_REQUESTED_HOST_ID));
+            if (!hostIds.contains(hostId)) {
+                unit.remove(true);
+                it.remove();
+                hostToUnits.remove(hostIds);
+            }
+        }
     }
 }
