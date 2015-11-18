@@ -169,13 +169,14 @@ public class AllocatorServiceImpl implements AllocatorService {
             return;
         }
         for (Map.Entry<String, String> entry : srcMap.entrySet()) {
-            String key = entry.getKey().toLowerCase();
+            String key = entry.getKey();
+            if (key.toLowerCase().startsWith("io.rancher")) {
+                key = key.toLowerCase();
+            }
             String value = entry.getValue();
-
             if (key.startsWith("io.rancher.scheduler.affinity")) {
                 // merge labels
                 String destValue = destMap.get(key);
-
                 if (StringUtils.isEmpty(destValue)) {
                     destMap.put(key, value);
                 } else if (StringUtils.isEmpty(value)) {

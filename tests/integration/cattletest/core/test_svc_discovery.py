@@ -32,6 +32,30 @@ def create_env_and_svc(client, context):
     return service, env
 
 
+def test_mix_cased_labels(client, context):
+    env = _create_stack(client)
+
+    image_uuid = context.image_uuid
+    launch_config = {
+        "imageUuid": image_uuid,
+        'labels': {
+            'aAa': 'AaA',
+        }}
+
+    service = client.create_service(name=random_str(),
+                                    environmentId=env.id,
+                                    launchConfig=launch_config)
+    assert launch_config['labels'] == service.launchConfig.labels
+    service = client.wait_success(service)
+    assert service.state == "inactive"
+    service = client.wait_success(service.activate())
+    assert launch_config['labels'] == service.launchConfig.labels
+
+    instance = find_one(_get_instance_for_service, client, service.id)
+    for k, v in service.launchConfig.labels.items():
+        assert instance.labels[k] == v
+
+
 def test_update_env_service(client, context):
     service, env = create_env_and_svc(client, context)
     new_env_name = env.name + '1'
