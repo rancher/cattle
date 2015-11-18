@@ -56,7 +56,9 @@
 
     <bean class="io.cattle.platform.iaas.api.request.handler.GenericWhitelistedProxy" />
 
-    <bean class="io.cattle.platform.iaas.api.auth.integration.ldap.LdapIdentityProvider" />
+    <bean class="io.cattle.platform.iaas.api.auth.integration.ldap.LdapIdentityProvider" >
+        <property name="executorService" ref="CoreExecutorService" />
+    </bean>
     <bean class="io.cattle.platform.iaas.api.auth.integration.ldap.LdapTokenCreator" />
     <bean class="io.cattle.platform.iaas.api.auth.integration.ldap.LdapTokenUtils" />
     <bean class="io.cattle.platform.iaas.api.auth.integration.ldap.LdapConfigManager" />
@@ -64,6 +66,7 @@
     <bean class="io.cattle.platform.iaas.api.auth.SettingsUtils" />
     <bean class="io.cattle.platform.iaas.api.auth.identity.IdentityManager" >
         <property name="identityProviders" value="#{extensionManager.map('identity.provider')}" />
+        <property name="executorService" ref="CoreExecutorService" />
     </bean>
 
     <bean class="io.cattle.platform.iaas.api.auth.dao.impl.AuthTokenDaoImpl" />

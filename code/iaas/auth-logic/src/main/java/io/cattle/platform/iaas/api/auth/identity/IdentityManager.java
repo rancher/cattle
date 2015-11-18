@@ -14,16 +14,29 @@ import io.github.ibuildthecloud.gdapi.request.resource.impl.AbstractNoOpResource
 import io.github.ibuildthecloud.gdapi.util.ResponseCodes;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Future;
 import javax.inject.Inject;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.apache.mina.core.RuntimeIoException;
 
 public class IdentityManager extends AbstractNoOpResourceManager {
 
+    private static final Log logger = LogFactory.getLog(IdentityManager.class);
+
     private Map<String, IdentityProvider> identityProviders;
+
+    ExecutorService executorService;
 
     @Override
     public Class<?>[] getTypeClasses() {
@@ -59,12 +72,30 @@ public class IdentityManager extends AbstractNoOpResourceManager {
      * sources and update to the newest information. This request is expensive as it will
      * make N requests one for each Passed in identity.
      */
-    private List<Identity> refreshIdentities(Set<Identity> identities) {
-        List<Identity> identitiesToReturn = new ArrayList<>();
-        for (Identity identity : identities) {
-            Identity newIdentity = projectMemberToIdentity(identity.getId());
-            authorize(newIdentity);
-            identitiesToReturn.add(newIdentity);
+    private List<Identity> refreshIdentities(final Set<Identity> identities) {
+        Collection<Callable<Identity>> identitiesToGet = new ArrayList<>();
+        final List<Identity> identitiesToReturn = new ArrayList<>();
+        for (final Identity identity : identities) {
+            identitiesToGet.add(new Callable<Identity>() {
+                @Override
+                public Identity call() throws Exception {
+                    return projectMemberToIdentity(identity.getId());
+                }
+            });
+
+        }
+        try {
+            for (Future<Identity> future:executorService.invokeAll(identitiesToGet)){
+                Identity newIdentity = future.get();
+                authorize(newIdentity);
+                identitiesToReturn.add(newIdentity);
+            }
+        } catch (InterruptedException e) {
+            logger.error("Interrupted when getting and Identities.", e);
+            throw new RuntimeException(e);
+        } catch (ExecutionException e) {
+            logger.error("Error when executing search for Identity.", e);
+            throw new RuntimeIoException(e);
         }
         return identitiesToReturn;
     }
@@ -128,6 +159,11 @@ public class IdentityManager extends AbstractNoOpResourceManager {
     @Inject
     public void setIdentityProviders(Map<String, IdentityProvider> identityProviders) {
         this.identityProviders = identityProviders;
+    }
+
+    @Inject
+    public void setExecutorService(ExecutorService executorService) {
+        this.executorService = executorService;
     }
 
     public Identity projectMemberToIdentity(Identity identity) {

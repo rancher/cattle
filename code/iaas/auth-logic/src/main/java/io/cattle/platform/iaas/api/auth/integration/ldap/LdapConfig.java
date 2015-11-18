@@ -1,11 +1,12 @@
 package io.cattle.platform.iaas.api.auth.integration.ldap;
 
 import io.cattle.platform.iaas.api.auth.integration.interfaces.Configurable;
+import io.cattle.platform.iaas.api.auth.integration.ldap.interfaces.LDAPConfig;
 import io.github.ibuildthecloud.gdapi.annotation.Field;
 import io.github.ibuildthecloud.gdapi.annotation.Type;
 
 @Type(name = LdapConstants.CONFIG)
-public class LdapConfig implements Configurable {
+public class LdapConfig implements Configurable, LDAPConfig {
 
     private final boolean enabled;
     private final String server;

@@ -19,12 +19,20 @@ import java.util.Set;
 
 import javax.inject.Inject;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 public class RancherIdentityProvider implements IdentityProvider {
+
+    private static final Log logger = LogFactory.getLog(RancherIdentityProvider.class);
 
     @Inject
     AuthDao authDao;
     @Inject
     ObjectManager objectManager;
+
+    @Inject
+    IdFormatter idFormatter;
 
     @Override
     public List<Identity> searchIdentities(String name, String scope, boolean exactMatch) {
@@ -81,9 +89,9 @@ public class RancherIdentityProvider implements IdentityProvider {
         if (!scopes().contains(scope)) {
             return null;
         }
-        String accountId = ApiContext.getContext().getIdFormatter().parseId(id);
+        String accountId = idFormatter.parseId(id);
         return authDao.getIdentity(Long.valueOf(accountId == null ? id : accountId),
-                ApiContext.getContext().getIdFormatter());
+                idFormatter);
     }
 
     @Override
