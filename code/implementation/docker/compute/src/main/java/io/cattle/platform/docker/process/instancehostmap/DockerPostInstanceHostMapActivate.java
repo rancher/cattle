@@ -170,18 +170,15 @@ public class DockerPostInstanceHostMapActivate extends AbstractObjectProcessLogi
         for (DockerInspectTransformVolume dVol : dockerVolumes) {
             String driver = dVol.getDriver();
             StoragePool pool = null;
-            if (StringUtils.isEmpty(driver) || VolumeConstants.LOCAL_DRIVER.equals(driver)) {
-                pool = dockerLocalStoragePool;
-            } else {
-                pool = pools.get(dVol.getDriver());
+            if (driver != null) {
+                pool = pools.get(driver);
             }
 
             if (pool == null) {
-                log.warn("Could not find storage pool for volume [{}]. This volume will not be created.", dVol);
-                continue;
+                pool = dockerLocalStoragePool;
             }
 
-            Volume volume = createVolumeInStoragePool(pool, instance, dVol); //volumeUri, driver, dVol.isBindMount());
+            Volume volume = createVolumeInStoragePool(pool, instance, dVol);
             log.debug("Created volume and storage pool mapping. Volume id [{}], storage pool id [{}].", volume.getId(), pool.getId());
             createIgnoreCancel(volume, state.getData());
 
