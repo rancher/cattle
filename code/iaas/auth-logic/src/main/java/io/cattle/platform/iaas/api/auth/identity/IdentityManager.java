@@ -4,6 +4,7 @@ import io.cattle.platform.api.auth.Identity;
 import io.cattle.platform.api.auth.Policy;
 import io.cattle.platform.core.constants.IdentityConstants;
 import io.cattle.platform.core.model.ProjectMember;
+import io.cattle.platform.iaas.api.auth.integration.IdentityNotFoundException;
 import io.cattle.platform.iaas.api.auth.integration.interfaces.IdentityProvider;
 import io.github.ibuildthecloud.gdapi.condition.Condition;
 import io.github.ibuildthecloud.gdapi.context.ApiContext;
@@ -135,8 +136,7 @@ public class IdentityManager extends AbstractNoOpResourceManager {
             gotIdentity = new Identity(member.getExternalIdType(), member.getExternalId(), member.getName(),
                     null, null, '(' + member.getExternalIdType().split("_")[1].toUpperCase() +  "  not found) " + member.getName());
         }
-        return untransform(new Identity(gotIdentity,
-                member.getRole(), String.valueOf(member.getProjectId())), false);
+        return untransform(new Identity(gotIdentity, member.getRole(), String.valueOf(member.getProjectId())), false);
     }
 
     public Identity untransform(Identity identity, boolean error) {
@@ -171,6 +171,9 @@ public class IdentityManager extends AbstractNoOpResourceManager {
         for (IdentityProvider identityProvider : identityProviders.values()) {
             if (identityProvider.scopes().contains(identity.getExternalIdType()) && identityProvider.isConfigured()) {
                 newIdentity = identityProvider.transform(identity);
+                if (newIdentity == null) {
+                    throw new IdentityNotFoundException(identity);
+                }
                 break;
             }
         }
