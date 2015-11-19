@@ -15,8 +15,6 @@ import io.cattle.platform.util.type.CollectionUtils;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.apache.commons.lang3.StringUtils;
-
 import com.netflix.config.DynamicStringProperty;
 
 public class AgentInstanceBuilderImpl implements AgentInstanceBuilder {
@@ -53,13 +51,14 @@ public class AgentInstanceBuilderImpl implements AgentInstanceBuilder {
         this.accountId = instance.getAccountId();
         this.zoneId = instance.getZoneId();
         String uriPrefix = "event";
-        if (StringUtils.equals(SystemContainer.LoadBalancerAgent.name(), instance.getSystemContainer())) {
-            uriPrefix = "delegate";
+        Map<String, Object> labels = DataAccessor.fieldMap(instance, InstanceConstants.FIELD_LABELS);
+        Object prefix = labels.get(SystemLabels.LABEL_AGENT_URI_PREFIX);
+        if (prefix != null) {
+            uriPrefix = prefix.toString();
         }
         this.uri = uriPrefix + ":///instanceId=" + instance.getId();
         this.resourceAccountId = instance.getAccountId();
 
-        Map<String, Object> labels = DataAccessor.fieldMap(instance, InstanceConstants.FIELD_LABELS);
         if ("environment".equals(labels.get(SystemLabels.LABEL_AGENT_ROLE))) {
             accountData = CollectionUtils.asMap(AccountConstants.DATA_ACT_AS_RESOURCE_ACCOUNT, true);
         }

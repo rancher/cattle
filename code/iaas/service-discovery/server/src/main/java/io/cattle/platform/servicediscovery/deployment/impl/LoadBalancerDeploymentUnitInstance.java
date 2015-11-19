@@ -46,6 +46,7 @@ public class LoadBalancerDeploymentUnitInstance extends DefaultDeploymentUnitIns
         }
         ((HashMap<String, String>) labels).put(SystemLabels.LABEL_AGENT_ROLE, SystemContainer.LoadBalancerAgent.name());
         ((HashMap<String, String>) labels).put(SystemLabels.LABEL_AGENT_CREATE, "true");
+        ((HashMap<String, String>) labels).put(SystemLabels.LABEL_AGENT_URI_PREFIX, "delegate");
         launchConfigData.put(InstanceConstants.FIELD_LABELS, labels);
         if (launchConfigData.get(InstanceConstants.FIELD_IMAGE_UUID) == null) {
             launchConfigData.put(InstanceConstants.FIELD_IMAGE_UUID, DEFAULT_LB_IMAGE_UUID.get());
