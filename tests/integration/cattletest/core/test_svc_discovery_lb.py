@@ -12,13 +12,6 @@ def image_uuid(context):
     return context.image_uuid
 
 
-def _create_stack(client):
-    env = client.create_environment(name=random_str())
-    env = client.wait_success(env)
-    assert env.state == "active"
-    return env
-
-
 def test_create_env_and_svc(client, image_uuid):
     env = _create_stack(client)
 
@@ -33,123 +26,77 @@ def test_create_env_and_svc(client, image_uuid):
     assert service.state == "inactive"
     assert service.launchConfig.healthCheck is not None
 
-    # verify that the load balancer was created for the service
-    lb = client. \
-        list_loadBalancer(serviceId=service.id)
-    assert len(lb) == 1
-    assert lb[0].state == 'active'
-
 
 def test_activate_lb_svc(super_client, context, client, image_uuid):
-    host = context.host
+    context.host
     env = _create_stack(client)
 
     launch_config = {"imageUuid": image_uuid,
                      "ports": [8082, '910:1001']}
 
-    service = client. \
+    svc = client. \
         create_loadBalancerService(name=random_str(),
                                    environmentId=env.id,
                                    launchConfig=launch_config)
-    service = client.wait_success(service)
-    assert service.state == "inactive"
-    service = client.wait_success(service.activate(), 120)
+    svc = client.wait_success(svc)
+    assert svc.state == "inactive"
+    svc = client.wait_success(svc.activate(), 120)
     # perform validation
-    lb, service = _validate_lb_service_activate(env, host,
-                                                service, client,
-                                                ['8082:8082', '910:1001'])
-    _validate_lb_instance(host, lb, super_client, service)
+    svc = _validate_lb_svc_activate(env, svc, client,
+                                    ['8082:8082', '910:1001'])
+    _validate_svc_instance_map_count(client, svc, "active", 1)
 
 
 def test_deactivate_then_activate_lb_svc(super_client, new_context):
     client = new_context.client
-    host1, host2, lb, service, env = _activate_svc_w_scale_two(new_context,
-                                                               random_str())
+    host1, host2, service, env = _activate_svc_w_scale_two(new_context,
+                                                           random_str())
 
     # 1. verify that all hosts mappings are created
-    validate_add_host(host1, lb, client)
-    validate_add_host(host2, lb, client)
+    _validate_svc_instance_map_count(client, service, "active", 2)
 
     # 2. deactivate service and validate that
-    # the hosts mappings are still around,
-    # and lb still present
+    # the instance mappings are still around
     service = client.wait_success(service.deactivate())
-    validate_add_host(host1, lb, client)
-    validate_add_host(host2, lb, client)
-
-    lb = super_client.wait_success(lb)
-    assert lb.state == "inactive"
+    _validate_svc_instance_map_count(client, service, "active", 2)
 
     # 3. activate service again
     service = client.wait_success(service.activate())
     assert service.state == 'active'
-    lb = super_client.wait_success(lb)
-    assert lb.state == "active"
-    _validate_lb_instance(host1, lb, super_client, service)
-    _validate_lb_instance(host2, lb, super_client, service)
+    _validate_svc_instance_map_count(client, service, "active", 2)
 
 
 def test_deactivate_then_remove_lb_svc(new_context):
     client = new_context.client
-    host1, host2, lb, service, env = _activate_svc_w_scale_two(new_context,
-                                                               random_str())
-    # 1. verify that all hosts mappings are created
-    validate_add_host(host1, lb, client)
-    validate_add_host(host2, lb, client)
+    host1, host2, service, env = _activate_svc_w_scale_two(new_context,
+                                                           random_str())
+    # 1. verify that all instances are created
+    _validate_svc_instance_map_count(client, service, "active", 2)
 
     # 2. deactivate service and validate that
-    # the hosts mappings are still around,
+    # instances mappings are still around
     # and lb still present
     service = client.wait_success(service.deactivate())
-    validate_add_host(host1, lb, client)
-    validate_add_host(host2, lb, client)
-
-    lb = client.reload(lb)
-    assert lb.state == "inactive"
-
-    # try to remove lb - should fail
-    with pytest.raises(ApiError) as e:
-        lb = client.wait_success(client.delete(lb))
-    assert e.value.error.status == 422
-    assert e.value.error.code == 'InvalidAction'
-    assert e.value.error.fieldName == 'serviceId'
+    _validate_svc_instance_map_count(client, service, "active", 2)
 
     # remove service and verify that the lb is gone
     client.wait_success(service.remove())
-    wait_for_condition(client, lb, _resource_is_removed,
-                       lambda x: 'State is: ' + x.state)
 
 
 def test_remove_active_lb_svc(new_context):
     client = new_context.client
-    host1, host2, lb, service, env = _activate_svc_w_scale_two(new_context,
-                                                               random_str())
+    host1, host2, service, env = _activate_svc_w_scale_two(new_context,
+                                                           random_str())
 
-    # 1. verify that all hosts mappings are created/updated
-    validate_add_host(host1, lb, client)
-    validate_add_host(host2, lb, client)
+    # 1. verify that instances got created
+    _validate_svc_instance_map_count(client, service, "active", 2)
 
-    # 2. delete service and validate that the hosts mappings are gone,
-    # and lb is gone as well as lb config/listeners
+    # 2. delete service and validate that the instance mappings are gone
     client.wait_success(service.remove())
-    validate_remove_host(host1, lb, client)
-    validate_remove_host(host2, lb, client)
-
-    wait_for_condition(
-        client, lb, _resource_is_removed,
-        lambda x: 'State is: ' + x.state)
-
-    lb_configs = client. \
-        list_loadBalancerConfig(name=env.name + "_" + service.name)
-
-    assert len(lb_configs) == 1
-    lb_config = lb_configs[0]
-    lb_config = client.wait_success(lb_config)
-    assert lb_config.state == "removed"
+    _validate_svc_instance_map_count(client, service, "active", 0)
 
 
-def test_targets(client, context):
-    host = context.host
+def test_targets(super_client, client, context):
     env = _create_stack(client)
 
     # create web, db lb services
@@ -171,58 +118,65 @@ def test_targets(client, context):
 
     lb_launch_config = {"imageUuid": image_uuid,
                         "ports": [8081, '909:1001']}
-    lb_service = client. \
+    lb_svc = client. \
         create_loadBalancerService(name=random_str(),
                                    environmentId=env.id,
                                    launchConfig=lb_launch_config)
-    lb_service = client.wait_success(lb_service)
-    assert lb_service.state == "inactive"
+    lb_svc = client.wait_success(lb_svc)
+    assert lb_svc.state == "inactive"
+    lb_svc = client.wait_success(lb_svc.activate(), 120)
+    _validate_lb_svc_activate(env,
+                              lb_svc, client, ['8081:8081', '909:1001'])
 
     # map web service to lb service - early binding,
-    # before services are activated
+    # before web service is activated
     service_link = {"serviceId": web_service.id, "ports": ["a.com:90"]}
-    lb_service = lb_service.addservicelink(serviceLink=service_link)
+    lb_svc = lb_svc.addservicelink(serviceLink=service_link)
+    maps = _validate_svc_instance_map_count(client, lb_svc, "active", 1)
+    lb_instance = _wait_for_instance_start(super_client, maps[0].instanceId)
+    agent_id = lb_instance.agentId
+    item_before = _get_config_item(super_client, agent_id)
 
-    # activate web and lb services
-    lb_service = client.wait_success(lb_service.activate(), 120)
-    _validate_lb_service_activate(env, host, lb_service, client,
-                                  ['8081:8081', '909:1001'])
+    # activate web service
     web_service = client.wait_success(web_service.activate(), 120)
     assert web_service.state == "active"
     db_service = client.wait_success(db_service.activate(), 120)
     assert db_service.state == "active"
+    _validate_config_item_update(super_client, item_before, agent_id)
 
     # bind db and lb services after service is activated
+    item_before = _get_config_item(super_client, agent_id)
     service_link = {"serviceId": db_service.id, "ports": ["a.com:90"]}
-    lb_service.addservicelink(serviceLink=service_link)
+    lb_svc.addservicelink(serviceLink=service_link)
+    _validate_config_item_update(super_client, item_before, agent_id)
 
-    # verify that instances of db and web services were added to lb
-    web_instances = client. \
-        list_container(name=env.name + "_" + web_service.name + "_" + "1")
-    assert len(web_instances) == 1
-    _validate_add_target_instance(web_instances[0], client, ports=["a.com:90"])
-
-    db_instances = client. \
-        list_container(name=env.name + "_" + db_service.name + "_" + "1")
-    assert len(db_instances) == 1
-    _validate_add_target_instance(db_instances[0], client, ports=["a.com:90"])
-
-    _validate_add_service_link(client, lb_service, db_service,
+    _validate_add_service_link(client, lb_svc, db_service,
                                ports=["a.com:90"])
-    _validate_add_service_link(client, lb_service, web_service,
+    _validate_add_service_link(client, lb_svc, web_service,
                                ports=["a.com:90"])
 
     # remove link and make sure that the target map is gone
+    item_before = _get_config_item(super_client, agent_id)
     service_link = {"serviceId": db_service.id, "ports": ["a.com:90"]}
-    lb_service.removeservicelink(serviceLink=service_link)
-    # validate that the instance is still running
-    db_instance = client.reload(db_instances[0])
-    assert db_instance.state == 'running'
-
-    _validate_remove_target_instance(db_instance, client)
+    lb_svc.removeservicelink(serviceLink=service_link)
+    _validate_config_item_update(super_client, item_before, agent_id)
 
 
-def test_target_ips(client, context):
+def _validate_config_item_update(super_client, bf, agent_id):
+    wait_for(
+        lambda: find_one(super_client.list_config_item_status,
+                         agentId=agent_id,
+                         name='haproxy').requestedVersion > bf.requestedVersion
+    )
+
+
+def _get_config_item(super_client, agent_id):
+    return find_one(super_client.list_config_item_status,
+                    agentId=agent_id,
+                    name='haproxy')
+
+
+def test_target_ips(super_client, client, context):
     host = context.host
     user_account_id = host.accountId
     env = _create_stack(client)
@@ -250,49 +204,48 @@ def test_target_ips(client, context):
 
     lb_launch_config = {"imageUuid": image_uuid,
                         "ports": [1010, '111:111']}
-    lb_service = client. \
+    lb_svc = client. \
         create_loadBalancerService(name=random_str(),
                                    environmentId=env.id,
                                    launchConfig=lb_launch_config,
-                                   accountId=user_account_id,
-                                   loadBalancerInstanceUriPredicate='sim://')
-    lb_service = client.wait_success(lb_service)
-    assert lb_service.state == "inactive"
+                                   accountId=user_account_id)
+    lb_svc = client.wait_success(lb_svc)
+    assert lb_svc.state == "inactive"
 
     # map web service to lb service - early binding,
     # before services are activated
     service_link = {"serviceId": web_service.id, "ports": ["a.com:90"]}
-    lb_service = lb_service.addservicelink(serviceLink=service_link)
+    lb_svc = lb_svc.addservicelink(serviceLink=service_link)
 
     # activate web and lb services
-    lb_service = client.wait_success(lb_service.activate(), 120)
-    _validate_lb_service_activate(env, host, lb_service, client,
-                                  ['1010:1010', '111:111'])
+    lb_svc = client.wait_success(lb_svc.activate(), 120)
+    _validate_lb_svc_activate(env,
+                              lb_svc, client, ['1010:1010', '111:111'])
     web_service = client.wait_success(web_service.activate(), 120)
     assert web_service.state == "active"
     db_service = client.wait_success(db_service.activate(), 120)
     assert db_service.state == "active"
 
+    maps = _validate_svc_instance_map_count(client, lb_svc, "active", 1)
+    lb_instance = _wait_for_instance_start(super_client, maps[0].instanceId)
+    agent_id = lb_instance.agentId
+    item_before = _get_config_item(super_client, agent_id)
+
     # bind db and lb services after service is activated
     service_link = {"serviceId": db_service.id, "ports": ["a.com:90"]}
-    lb_service.addservicelink(serviceLink=service_link)
-
-    # verify that ips of db and web services were added to lb
-    _validate_add_target_ip("72.22.16.5", client, ports=["a.com:90"])
-    _validate_add_target_ip("72.22.16.6", client, ports=["a.com:90"])
-    _validate_add_target_ip("192.168.0.9", client, ports=["a.com:90"])
-    _validate_add_target_ip("192.168.0.10", client, ports=["a.com:90"])
+    lb_svc.addservicelink(serviceLink=service_link)
+    _validate_config_item_update(super_client, item_before, agent_id)
 
     # remove link and make sure that the db targets are gone
+    item_before = _get_config_item(super_client, agent_id)
     service_link = {"serviceId": db_service.id, "ports": ["a.com:90"]}
-    lb_service.removeservicelink(serviceLink=service_link)
-    _validate_remove_target_ip("192.168.0.9", client)
-    _validate_remove_target_ip("192.168.0.10", client)
+    lb_svc.removeservicelink(serviceLink=service_link)
+    _validate_config_item_update(super_client, item_before, agent_id)
 
     # remove web service and validate that the web targets are gone
+    item_before = _get_config_item(super_client, agent_id)
     client.wait_success(web_service.remove())
-    _validate_remove_target_ip("72.22.16.5", client)
-    _validate_remove_target_ip("72.22.16.6", client)
+    _validate_config_item_update(super_client, item_before, agent_id)
 
 
 def test_create_svc_with_lb_config(context, client):
@@ -301,10 +254,6 @@ def test_create_svc_with_lb_config(context, client):
 
     image_uuid = context.image_uuid
     launch_config = {"imageUuid": image_uuid}
-
-    health_check = {"responseTimeout": 3,
-                    "interval": 4, "healthyThreshold": 5,
-                    "unhealthyThreshold": 6, "requestLine": "index.html"}
 
     app_policy = {"name": "policy1", "cookie": "cookie1",
                   "maxLength": 4, "prefix": "true",
@@ -316,7 +265,7 @@ def test_create_svc_with_lb_config(context, client):
                  "nocache": "true", "postonly": "true",
                  "mode": "insert"}
 
-    lb_config = {"name": name, "healthCheck": health_check,
+    lb_config = {"name": name,
                  "appCookieStickinessPolicy": app_policy,
                  "lbCookieStickinessPolicy": lb_policy}
 
@@ -330,24 +279,8 @@ def test_create_svc_with_lb_config(context, client):
     assert service.state == "inactive"
     assert service.loadBalancerConfig is not None
 
-    # verify that the load balancer was created for the service
-    lb = client. \
-        list_loadBalancer(serviceId=service.id)
-    assert len(lb) == 1
-    assert lb[0].state == 'active'
-
     # verify the load balancer config info
-    configs = client. \
-        list_loadBalancerConfig(name=name)
-
-    assert len(configs) == 1
-    config = configs[0]
-    assert config.healthCheck is not None
-    assert config.healthCheck.responseTimeout == 3
-    assert config.healthCheck.interval == 4
-    assert config.healthCheck.healthyThreshold == 5
-    assert config.healthCheck.unhealthyThreshold == 6
-    assert config.healthCheck.requestLine == "index.html"
+    config = service.loadBalancerConfig
 
     assert config.appCookieStickinessPolicy is not None
     assert config.appCookieStickinessPolicy.name == "policy1"
@@ -370,8 +303,7 @@ def test_create_svc_with_lb_config(context, client):
 
 def test_scale(new_context):
     client = new_context.client
-    host1 = new_context.host
-    host2 = register_simulated_host(new_context)
+    register_simulated_host(new_context)
     env = _create_stack(client)
     image_uuid = new_context.image_uuid
     launch_config = {"imageUuid": image_uuid,
@@ -387,22 +319,16 @@ def test_scale(new_context):
     # 1. verify that the service was activated
     service = client.wait_success(service.activate(), 120)
     assert service.state == "active"
-    # 2. verify that lb got created
-    lbs = client. \
-        list_loadBalancer(serviceId=service.id)
-    assert len(lbs) == 1
-    lb = client.wait_success(lbs[0])
-    assert lb.state == 'active'
 
-    # validate that one host map was created
-    _wait_until_active_map_count(lb, 1, client)
+    # validate that one instance map was created
+    _validate_svc_instance_map_count(client, service, "active", 1)
     # scale up
     service = client.update(service, scale=2, name=service.name,
                             defaultCertificateId=cert2.id)
     service = client.wait_success(service, 120)
     assert service.state == "active"
     assert service.scale == 2
-    _wait_until_active_map_count(lb, 2, client)
+    _validate_svc_instance_map_count(client, service, "active", 2)
     instance_service_map = client \
         .list_serviceExposeMap(serviceId=service.id)
 
@@ -419,34 +345,31 @@ def test_scale(new_context):
     service = client.wait_success(service, 120)
     assert service.state == "active"
     assert service.scale == 0
-    _wait_until_active_map_count(lb, 0, client)
-    validate_remove_host(host1, lb, client)
-    validate_remove_host(host2, lb, client)
+    _validate_svc_instance_map_count(client, service, "active", 0)
 
 
 def test_labels(super_client, client, context):
-    host = context.host
     env = _create_stack(client)
 
-    # create service with labels, and validate all of them
-    # plus service label were set
+    # create lb_svc with labels, and validate all of them
+    # plus lb_svc label were set
     service_name = random_str()
     initial_labels = {'affinity': "container==B", '!affinity': "container==C"}
     image_uuid = context.image_uuid
     launch_config = {"imageUuid": image_uuid,
                      "ports": [8010, '913:913'], "labels": initial_labels}
 
-    service = client. \
+    lb_svc = client. \
         create_loadBalancerService(name=service_name,
                                    environmentId=env.id,
                                    launchConfig=launch_config)
-    service = client.wait_success(service)
-    assert service.state == "inactive"
-    service = client.wait_success(service.activate(), 120)
-    lb, service = _validate_lb_service_activate(env, host,
-                                                service, client,
-                                                ['8010:8010', '913:913'])
-    lb_instance = _validate_lb_instance(host, lb, super_client, service)
+    lb_svc = client.wait_success(lb_svc)
+    assert lb_svc.state == "inactive"
+    lb_svc = client.wait_success(lb_svc.activate(), 120)
+    lb_svc = _validate_lb_svc_activate(env, lb_svc,
+                                       client, ['8010:8010', '913:913'])
+    maps = _validate_svc_instance_map_count(client, lb_svc, "active", 1)
+    lb_instance = _wait_for_instance_start(super_client, maps[0].instanceId)
     result_labels = {'affinity': "container==B", '!affinity': "container==C",
                      'io.rancher.stack_service.name':
                          env.name + "/" + service_name}
@@ -454,30 +377,30 @@ def test_labels(super_client, client, context):
     assert all(item in lb_instance.labels.items()
                for item in result_labels.items()) is True
 
-    # create service w/o labels, and validate that
-    # only one service label was set
+    # create lb_svc w/o labels, and validate that
+    # only one lb_svc label was set
     service_name = random_str()
     launch_config = {"imageUuid": image_uuid,
                      "ports": [8089, '914:914']}
 
-    service = client. \
+    lb_svc = client. \
         create_loadBalancerService(name=service_name,
                                    environmentId=env.id,
                                    launchConfig=launch_config)
-    service = client.wait_success(service)
-    assert service.state == "inactive"
-    service = client.wait_success(service.activate(), 120)
-    lb, service = _validate_lb_service_activate(env, host,
-                                                service, client,
-                                                ['8089:8089', '914:914'])
-    lb_instance = _validate_lb_instance(host, lb, super_client, service)
+    lb_svc = client.wait_success(lb_svc)
+    assert lb_svc.state == "inactive"
+    lb_svc = client.wait_success(lb_svc.activate(), 120)
+    lb_svc = _validate_lb_svc_activate(env, lb_svc,
+                                       client, ['8089:8089', '914:914'])
+    maps = _validate_svc_instance_map_count(client, lb_svc, "active", 1)
+    lb_instance = _wait_for_instance_start(super_client, maps[0].instanceId)
     name = env.name + '/' + service_name
     result_labels = {'io.rancher.stack_service.name': name}
     assert all(item in lb_instance.labels.items()
                for item in result_labels.items()) is True
 
 
-def test_inactive_lb(client, context):
+def test_inactive_lb(super_client, client, context):
     env = _create_stack(client)
 
     # create and activate web service
@@ -504,25 +427,18 @@ def test_inactive_lb(client, context):
                                    launchConfig=lb_launch_config)
     lb_service = client.wait_success(lb_service)
     assert lb_service.state == "inactive"
-    lbs = client. \
-        list_loadBalancer(serviceId=lb_service.id)
-    assert len(lbs) == 1
-    lb = lbs[0]
 
     # map web service to lb service; validate no lb targets were created
     service_link = {"serviceId": web_service.id, "ports": ["a.com:90"]}
     lb_service = lb_service.addservicelink(serviceLink=service_link)
-    target_maps = client. \
-        list_loadBalancerTarget(loadBalancerId=lb.id)
-    assert len(target_maps) == 0
 
-    # activate lb service and validate web instance was added as lb target
+    # activate lb service
     lb_service = client.wait_success(lb_service.activate(), 120)
     assert lb_service.state == "active"
-    target_maps = client. \
-        list_loadBalancerTarget(loadBalancerId=lb.id)
-    assert len(target_maps) == 1
-    _validate_add_target_instance(web_instances[0], client, ports=["a.com:90"])
+    maps = _validate_svc_instance_map_count(client, lb_service, "active", 1)
+    lb_instance = _wait_for_instance_start(super_client, maps[0].instanceId)
+    agent_id = lb_instance.agentId
+    item_before = _get_config_item(super_client, agent_id)
 
     # deactivate lb service, and remove service link
     lb_service = client.wait_success(lb_service.deactivate(), 120)
@@ -531,11 +447,10 @@ def test_inactive_lb(client, context):
     lb_service = lb_service.removeservicelink(serviceLink=service_link)
     lb_service = client.wait_success(lb_service.activate(), 120)
     assert lb_service.state == "active"
-    _validate_remove_target_instance(web_instances[0], client)
+    _validate_config_item_update(super_client, item_before, agent_id)
 
 
 def test_destroy_svc_instance(super_client, context, client, image_uuid):
-    host = context.host
     env = _create_stack(client)
 
     launch_config = {"imageUuid": image_uuid,
@@ -549,16 +464,16 @@ def test_destroy_svc_instance(super_client, context, client, image_uuid):
     assert service.state == "inactive"
     service = client.wait_success(service.activate(), 120)
     # perform validation
-    lb, service = _validate_lb_service_activate(env, host,
-                                                service, client,
-                                                ['94:94', '95:95'])
-    instance = _validate_lb_instance(host, lb, super_client, service)
+    service = _validate_lb_svc_activate(env, service,
+                                        client, ['94:94', '95:95'])
+    maps = _validate_svc_instance_map_count(client, service, "active", 1)
+
+    instance = _wait_for_instance_start(super_client, maps[0].instanceId)
     client.wait_success(client.delete(instance))
-    _wait_until_active_map_count(lb, 0, client)
+    _validate_svc_instance_map_count(client, service, "active", 0)
 
     client.wait_success(service)
-    _wait_until_active_map_count(lb, 1, client)
-    _validate_lb_instance(host, lb, super_client, service)
+    _validate_svc_instance_map_count(client, service, "active", 1)
 
 
 def test_set_service_links(client, context):
@@ -767,59 +682,6 @@ def test_create_links(client, context):
     assert e.value.error.code == 'InvalidPort'
 
 
-def test_private_lb(client, context):
-    env = _create_stack(client)
-    image_uuid = context.image_uuid
-    launch_config = {"imageUuid": image_uuid,
-                     "ports": [567, '568:569'],
-                     "expose": [9999, '9998:9997']}
-    service = client.create_loadBalancerService(name=random_str(),
-                                                environmentId=env.id,
-                                                launchConfig=launch_config)
-    service = client.wait_success(service)
-    assert service.state == "inactive"
-    # 1. verify that the service was activated
-    service = client.wait_success(service.activate(), 120)
-    assert service.state == "active"
-    # 2. verify that lb got created
-    lbs = client. \
-        list_loadBalancer(serviceId=service.id)
-    assert len(lbs) == 1
-    lb = client.wait_success(lbs[0])
-    assert lb.state == 'active'
-    listeners = client. \
-        list_loadBalancerListener(serviceId=service.id, privatePort=567)
-    assert len(listeners) == 1
-    assert listeners[0].sourcePort == 567
-    assert listeners[0].sourceProtocol == 'http'
-    assert listeners[0].privatePort == 567
-    assert listeners[0].targetPort == 567
-
-    listeners = client. \
-        list_loadBalancerListener(serviceId=service.id, privatePort=568)
-    assert len(listeners) == 1
-    assert listeners[0].sourcePort == 568
-    assert listeners[0].sourceProtocol == 'http'
-    assert listeners[0].privatePort == 568
-    assert listeners[0].targetPort == 569
-
-    listeners = client. \
-        list_loadBalancerListener(serviceId=service.id, privatePort=9999)
-    assert len(listeners) == 1
-    assert listeners[0].sourcePort is None
-    assert listeners[0].sourceProtocol == 'http'
-    assert listeners[0].privatePort == 9999
-    assert listeners[0].targetPort == 9999
-
-    listeners = client. \
-        list_loadBalancerListener(serviceId=service.id, privatePort=9998)
-    assert len(listeners) == 1
-    assert listeners[0].sourcePort is None
-    assert listeners[0].sourceProtocol == 'http'
-    assert listeners[0].privatePort == 9998
-    assert listeners[0].targetPort == 9997
-
-
 def test_export_config(client, context):
     env1 = _create_stack(client)
 
@@ -871,36 +733,29 @@ def test_lb_service_w_certificate(client, context, image_uuid):
     env = _create_stack(client)
     cert1 = _create_cert(client)
     cert2 = _create_cert(client)
-    host = context.host
     labels = {'io.rancher.loadbalancer.ssl.ports': "1765,1767"}
     launch_config = {"imageUuid": image_uuid,
                      "ports": ['1765:1766', '1767:1768'],
                      "labels": labels}
 
-    service = client. \
+    lb_svc = client. \
         create_loadBalancerService(name=random_str(),
                                    environmentId=env.id,
                                    launchConfig=launch_config,
                                    certificateIds=[cert1.id, cert2.id],
                                    defaultCertificateId=cert1.id)
-    service = client.wait_success(service)
-    assert service.state == "inactive"
-    service = client.wait_success(service.activate(), 120)
+    lb_svc = client.wait_success(lb_svc)
+    assert lb_svc.state == "inactive"
+    lb_svc = client.wait_success(lb_svc.activate(), 120)
     # perform validation
-    lb, service = _validate_lb_service_activate(env, host,
-                                                service, client,
-                                                ['1765:1766', '1767:1768'],
-                                                "https")
-    assert lb.defaultCertificateId == cert1.id
-    assert lb.certificateIds == [cert1.id, cert2.id]
+    lb_svc = _validate_lb_svc_activate(env, lb_svc, client,
+                                       ['1765:1766', '1767:1768'], "https")
+    assert lb_svc.defaultCertificateId == cert1.id
+    assert lb_svc.certificateIds == [cert1.id, cert2.id]
 
-    # remove the service
-    service = client.wait_success(service.remove())
-    assert service.state == 'removed'
-
-    wait_for_condition(
-        client, lb, _resource_is_removed,
-        lambda x: 'State is: ' + x.state)
+    # remove the lb_svc
+    lb_svc = client.wait_success(lb_svc.remove())
+    assert lb_svc.state == 'removed'
 
     # remove the cert
     cert1 = client.wait_success(cert1.remove())
@@ -912,7 +767,6 @@ def test_lb_service_w_certificate(client, context, image_uuid):
 def test_lb_service_update_certificate(client, context, image_uuid):
     cert1 = _create_cert(client)
     cert2 = _create_cert(client)
-    host = context.host
     labels = {'io.rancher.loadbalancer.ssl.ports': "1769,1771"}
 
     env = _create_stack(client)
@@ -921,68 +775,63 @@ def test_lb_service_update_certificate(client, context, image_uuid):
                      "ports": ['1769:1770', '1771:1772'],
                      "labels": labels}
 
-    service = client. \
+    lb_svc = client. \
         create_loadBalancerService(name=random_str(),
                                    environmentId=env.id,
                                    launchConfig=launch_config,
                                    certificateIds=[cert1.id, cert2.id],
                                    defaultCertificateId=cert1.id)
-    service = client.wait_success(service)
-    assert service.state == "inactive"
-    service = client.wait_success(service.activate(), 120)
+    lb_svc = client.wait_success(lb_svc)
+    assert lb_svc.state == "inactive"
+    lb_svc = client.wait_success(lb_svc.activate(), 120)
     # perform validation
-    lb, service = _validate_lb_service_activate(env, host,
-                                                service, client,
-                                                ['1769:1770', '1771:1772'],
-                                                "https")
-    assert lb.defaultCertificateId == cert1.id
-    assert lb.certificateIds == [cert1.id, cert2.id]
+    lb_svc = _validate_lb_svc_activate(env, lb_svc,
+                                       client, ['1769:1770', '1771:1772'],
+                                       "https")
+    assert lb_svc.defaultCertificateId == cert1.id
+    assert lb_svc.certificateIds == [cert1.id, cert2.id]
 
     cert3 = _create_cert(client)
 
-    # update service with new certificate set
-    service = client.update(service, certificateIds=[cert1.id],
-                            defaultCertificateId=cert3.id)
-    client.wait_success(service, 120)
+    # update lb_svc with new certificate set
+    lb_svc = client.update(lb_svc, certificateIds=[cert1.id],
+                           defaultCertificateId=cert3.id)
+    lb_svc = client.wait_success(lb_svc, 120)
 
-    lb = client.reload(lb)
-    assert lb.defaultCertificateId == cert3.id
-    assert lb.certificateIds == [cert1.id]
+    assert lb_svc.defaultCertificateId == cert3.id
+    assert lb_svc.certificateIds == [cert1.id]
 
     compose_config = env.exportconfig()
     assert compose_config is not None
     docker_compose = yaml.load(compose_config.dockerComposeConfig)
     rancher_compose = yaml.load(compose_config.rancherComposeConfig)
 
-    assert docker_compose[service.name]['labels'] == labels
-    assert rancher_compose[service.name]['default_cert'] == cert3.name
-    assert rancher_compose[service.name]['certs'][0] == cert1.name
+    assert docker_compose[lb_svc.name]['labels'] == labels
+    assert rancher_compose[lb_svc.name]['default_cert'] == cert3.name
+    assert rancher_compose[lb_svc.name]['certs'][0] == cert1.name
 
     # don't pass certificate ids and validate that they are still set
-    service = client.update(service, name='newName')
-    client.wait_success(service, 120)
+    lb_svc = client.update(lb_svc, name='newName')
+    lb_svc = client.wait_success(lb_svc, 120)
 
-    lb = client.reload(lb)
-    assert lb.defaultCertificateId == cert3.id
-    assert lb.certificateIds == [cert1.id]
+    assert lb_svc.defaultCertificateId == cert3.id
+    assert lb_svc.certificateIds == [cert1.id]
 
     # swap default and optional
-    service = client.update(service, certificateIds=[cert3.id],
-                            defaultCertificateId=cert1.id)
-    client.wait_success(service)
+    lb_svc = client.update(lb_svc, certificateIds=[cert3.id],
+                           defaultCertificateId=cert1.id)
+    lb_svc = client.wait_success(lb_svc)
 
-    lb = client.wait_success(lb)
-    assert lb.defaultCertificateId == cert1.id
-    assert lb.certificateIds == [cert3.id]
+    assert lb_svc.defaultCertificateId == cert1.id
+    assert lb_svc.certificateIds == [cert3.id]
 
     # update with none certificates
-    service = client.update(service, certificateIds=None,
-                            defaultCertificateId=None)
-    client.wait_success(service, 120)
+    lb_svc = client.update(lb_svc, certificateIds=None,
+                           defaultCertificateId=None)
+    lb_svc = client.wait_success(lb_svc, 120)
 
-    lb = client.reload(lb)
-    assert lb.defaultCertificateId is None
-    assert lb.certificateIds is None
+    assert lb_svc.defaultCertificateId is None
+    assert lb_svc.certificateIds is None
 
 
 def test_lb_with_certs_service_update(new_context, image_uuid):
@@ -1013,22 +862,16 @@ def test_lb_with_certs_service_update(new_context, image_uuid):
     # 1. verify that the service was activated
     service = client.wait_success(service.activate(), 120)
     assert service.state == "active"
-    # 2. verify that lb got created
-    lbs = client.list_loadBalancer(serviceId=service.id)
-    assert len(lbs) == 1
-    lb = client.wait_success(lbs[0])
-    assert lb.state == 'active'
-    assert lb.defaultCertificateId == cert1.id
-    assert lb.certificateIds == [cert1.id, cert2.id]
+    assert service.defaultCertificateId == cert1.id
+    assert service.certificateIds == [cert1.id, cert2.id]
 
     # scale down service and validate the certificates are still the same
     service = client.update(service, scale=1)
     service = client.wait_success(service)
     assert service.state == 'active'
 
-    lb = client.reload(lb)
-    assert lb.defaultCertificateId == cert1.id
-    assert lb.certificateIds == [cert1.id, cert2.id]
+    assert service.defaultCertificateId == cert1.id
+    assert service.certificateIds == [cert1.id, cert2.id]
 
 
 def test_cert_in_use(client, context, image_uuid):
@@ -1037,28 +880,26 @@ def test_cert_in_use(client, context, image_uuid):
     assert env.state == "active"
     cert1 = _create_cert(client)
     cert2 = _create_cert(client)
-    host = context.host
     labels = {'io.rancher.loadbalancer.ssl.ports': "1765,1767"}
     launch_config = {"imageUuid": image_uuid,
                      "ports": ['1765:1766', '1767:1768'],
                      "labels": labels}
 
-    service = client. \
+    lb_svc = client. \
         create_loadBalancerService(name=random_str(),
                                    environmentId=env.id,
                                    launchConfig=launch_config,
                                    certificateIds=[cert1.id, cert2.id],
                                    defaultCertificateId=cert1.id)
-    service = client.wait_success(service)
-    assert service.state == "inactive"
-    service = client.wait_success(service.activate(), 120)
+    lb_svc = client.wait_success(lb_svc)
+    assert lb_svc.state == "inactive"
+    lb_svc = client.wait_success(lb_svc.activate(), 120)
     # perform validation
-    lb, service = _validate_lb_service_activate(env, host,
-                                                service, client,
-                                                ['1765:1766', '1767:1768'],
-                                                "https")
-    assert lb.defaultCertificateId == cert1.id
-    assert lb.certificateIds == [cert1.id, cert2.id]
+    lb_svc = _validate_lb_svc_activate(env, lb_svc,
+                                       client, ['1765:1766', '1767:1768'],
+                                       "https")
+    assert lb_svc.defaultCertificateId == cert1.id
+    assert lb_svc.certificateIds == [cert1.id, cert2.id]
 
     # try to remove the cert - delete action (used by UI)
     with pytest.raises(ApiError) as e:
@@ -1071,51 +912,6 @@ def test_cert_in_use(client, context, image_uuid):
         cert1.remove()
     assert e.value.error.status == 405
     assert e.value.error.code == 'InvalidAction'
-
-
-def test_sidekicks(super_client, context, client, image_uuid):
-    host = context.host
-    env = _create_stack(client)
-    # create lb service
-    launch_config = {"imageUuid": image_uuid,
-                     "ports": ['1788:1788', '1789:1789']}
-
-    lb_svc = client. \
-        create_loadBalancerService(name=random_str(),
-                                   environmentId=env.id,
-                                   launchConfig=launch_config)
-    lb_svc = client.wait_success(lb_svc)
-    assert lb_svc.state == "inactive"
-
-    # create service
-    image_uuid = context.image_uuid
-    launch_config = {"imageUuid": image_uuid,
-                     "dataVolumesFromLaunchConfigs": ['secondary']}
-    secondary_lc = {"imageUuid": image_uuid, "name": "secondary",
-                    "dataVolumesFromLaunchConfigs": ['secondary1']}
-    secondary_lc1 = {"imageUuid": image_uuid, "name": "secondary1"}
-
-    svc = client.create_service(name=random_str(),
-                                environmentId=env.id,
-                                launchConfig=launch_config,
-                                secondaryLaunchConfigs=[secondary_lc,
-                                                        secondary_lc1])
-    svc = client.wait_success(svc)
-    svc = client.wait_success(svc.activate())
-
-    # add service link
-    service_link = {"serviceId": svc.id}
-    lb_svc.addservicelink(serviceLink=service_link)
-
-    # activate lb service
-    lb_svc = client.wait_success(lb_svc.activate(), 120)
-    lb, lb_svc = _validate_lb_service_activate(env, host,
-                                               lb_svc, client,
-                                               ['1788:1788', '1789:1789'])
-    _validate_lb_instance(host, lb, super_client, lb_svc)
-
-    # only instance of a primary service should be registered
-    _wait_until_target_count(lb, 1, super_client)
 
 
 def test_concurrent_acitvate_setlinks(client, context):
@@ -1140,49 +936,15 @@ def test_concurrent_acitvate_setlinks(client, context):
     lb_svc.addservicelink(serviceLink=service_link)
     lb_svc = client.wait_success(lb_svc)
     svc = client.wait_success(svc)
-    lbs = client. \
-        list_loadBalancer(serviceId=lb_svc.id)
-    assert len(lbs) == 1
-    lb = client.wait_success(lbs[0])
-    assert lb.state == 'active'
 
-    # validate that one host map was created
-    _wait_until_active_map_count(lb, 1, client)
+    # validate that the instance was created
+    _validate_svc_instance_map_count(client, lb_svc, "active", 1)
 
     # update the link
     service_link = {"serviceId": svc.id,
                     "ports": ["a.com:100"], "name": "test"}
     lb_svc.addservicelink(serviceLink=service_link)
-    _wait_until_active_map_count(lb, 1, client)
-
-
-def _wait_until_active_map_count(lb, count, super_client, timeout=30):
-    start = time.time()
-    host_maps = super_client. \
-        list_loadBalancerHostMap(loadBalancerId=lb.id)
-    while len(host_maps) != count:
-        time.sleep(.5)
-        host_maps = super_client. \
-            list_loadBalancerHostMap(loadBalancerId=lb.id, state="active")
-        print len(host_maps)
-        if time.time() - start > timeout:
-            assert 'Timeout waiting for host map count'
-
-    return
-
-
-def _wait_until_target_count(lb, count, super_client, timeout=5):
-    start = time.time()
-    targets = super_client. \
-        list_loadBalancerTarget(loadBalancerId=lb.id, state='active')
-    while len(targets) != count:
-        time.sleep(.5)
-        targets = super_client. \
-            list_loadBalancerTarget(loadBalancerId=lb.id, state='active')
-        if time.time() - start > timeout:
-            assert 'Timeout waiting for target count'
-
-    return
+    _validate_svc_instance_map_count(client, lb_svc, "active", 1)
 
 
 def _resource_is_active(resource):
@@ -1193,190 +955,13 @@ def _resource_is_removed(resource):
     return resource.state == 'removed'
 
 
-def validate_add_host(host, lb, client):
-    host_maps = client. \
-        list_loadBalancerHostMap(loadBalancerId=lb.id,
-                                 hostId=host.id)
-    assert len(host_maps) == 1
-    host_map = host_maps[0]
-    wait_for_condition(
-        client, host_map, _resource_is_active,
-        lambda x: 'State is: ' + x.state)
-    assert host_map.hostId == host.id
-
-
-def validate_remove_host(host, lb, super_client):
-    host_maps = super_client. \
-        list_loadBalancerHostMap(loadBalancerId=lb.id,
-                                 hostId=host.id)
-    assert len(host_maps) in (0, 1)
-    if len(host_maps) == 1:
-        host_map = host_maps[0]
-        wait_for_condition(
-            super_client, host_map, _resource_is_removed,
-            lambda x: 'State is: ' + x.state)
-
-
-def _validate_lb_instance(host, lb, super_client, service):
-    host_maps = super_client. \
-        list_loadBalancerHostMap(loadBalancerId=lb.id,
-                                 hostId=host.id, state='active')
-    assert len(host_maps) == 1
-    # verify that the agent got created
-    uri = 'delegate:///?lbId={}&hostMapId={}'. \
-        format(get_plain_id(super_client, lb),
-               get_plain_id(super_client, host_maps[0]))
-    agents = super_client.list_agent(uri=uri)
-    assert len(agents) == 1
-    # verify that the agent instance got created
-    agent_instances = super_client.list_instance(agentId=agents[0].id)
-    assert len(agent_instances) == 1
-
-    # verify that the instance was registered within the service
-    instance_service_map = super_client. \
-        list_serviceExposeMap(serviceId=service.id,
-                              instanceId=agent_instances[0].id)
-    assert len(instance_service_map) == 1
-    return agent_instances[0]
-
-
-def _validate_create_listener(env, service, source_port,
-                              client, target_port, protocol=None):
-    l_name = env.name + "_" + service.name + "_" + source_port
-    listeners = client. \
-        list_loadBalancerListener(sourcePort=source_port,
-                                  name=l_name)
-    assert len(listeners) >= 1
-    listener = listeners[0]
-    assert listener.sourcePort == int(source_port)
-    assert listener.privatePort == int(source_port)
-    assert listener.targetPort == int(target_port)
-    if protocol:
-        assert listener.sourceProtocol == protocol
-    return listener
-
-
-def _validate_lb_service_activate(env, host, service,
-                                  client, ports, protocol=None):
+def _validate_lb_svc_activate(env, service, client, ports, protocol=None):
     # 1. verify that the service was activated
     assert service.state == "active"
-    # 2. verify that lb got created
-    lbs = client. \
-        list_loadBalancer(serviceId=service.id)
-    assert len(lbs) == 1
-    lb = client.wait_success(lbs[0])
-    assert lb.state == 'active'
-    # 3. verify host mapping got created
-    validate_add_host(host, lb, client)
-    # 4. verify that listeners are created and mapped to the config
-    config_id = lb.loadBalancerConfigId
-    source_port = ports[0].split(':')[0]
-    target_port = ports[0].split(':')[1]
-    listener = _validate_create_listener(env, service, source_port,
-                                         client, target_port, protocol)
-    _validate_add_listener(config_id, listener, client)
-
-    source_port = ports[1].split(':')[0]
-    target_port = ports[1].split(':')[1]
-    listener = _validate_create_listener(env, service, source_port,
-                                         client, target_port, protocol)
-    _validate_add_listener(config_id, listener, client)
-    return lb, service
-
-
-def _validate_add_listener(config_id, listener, client):
-    lb_config_maps = _wait_until_map_created(config_id, listener, client)
-    config_map = lb_config_maps[0]
-    wait_for_condition(
-        client, config_map, _resource_is_active,
-        lambda x: 'State is: ' + x.state)
-
-
-def _wait_until_map_created(config_id, listener, client, timeout=30):
-    start = time.time()
-    l_id = listener.id
-    lb_config_maps = client. \
-        list_loadBalancerConfigListenerMap(loadBalancerListenerId=l_id,
-                                           loadBalancerConfigId=config_id)
-    while len(lb_config_maps) == 0:
-        time.sleep(.5)
-        lb_config_maps = client. \
-            list_loadBalancerConfigListenerMap(loadBalancerListenerId=l_id,
-                                               loadBalancerConfigId=config_id)
-        if time.time() - start > timeout:
-            assert 'Timeout waiting for map creation'
-    return lb_config_maps
-
-
-def _wait_until_target_instance_map_created(super_client,
-                                            container, timeout=30):
-    start = time.time()
-    target_maps = super_client. \
-        list_loadBalancerTarget(instanceId=container.id)
-    while len(target_maps) == 0:
-        time.sleep(.5)
-        target_maps = super_client. \
-            list_loadBalancerTarget(instanceId=container.id)
-        if time.time() - start > timeout:
-            assert 'Timeout waiting for map creation'
-    return target_maps
-
-
-def _validate_add_target_ip(ip, super_client, ports=None):
-    target_maps = _wait_until_target_ip_map_created(super_client, ip)
-    assert len(target_maps) == 1
-    target_map = target_maps[0]
-    wait_for_condition(
-        super_client, target_map, _resource_is_active,
-        lambda x: 'State is: ' + x.state)
-    if ports:
-        assert target_map.ports == ports
-
-
-def _validate_remove_target_instance(container, super_client):
-    target_maps = super_client. \
-        list_loadBalancerTarget(instanceId=container.id)
-    assert len(target_maps) == 1
-    target_map = target_maps[0]
-    wait_for_condition(
-        super_client, target_map, _resource_is_removed,
-        lambda x: 'State is: ' + x.state)
-
-
-def _validate_remove_target_ip(ip, super_client):
-    target_maps = super_client. \
-        list_loadBalancerTarget(ipAddress=ip)
-    assert len(target_maps) == 1
-    target_map = target_maps[0]
-    wait_for_condition(
-        super_client, target_map, _resource_is_removed,
-        lambda x: 'State is: ' + x.state)
-
-
-def _validate_add_target_instance(container, super_client, ports=None):
-    target_maps = _wait_until_target_instance_map_created(super_client,
-                                                          container)
-    assert len(target_maps) == 1
-    target_map = target_maps[0]
-    wait_for_condition(
-        super_client, target_map, _resource_is_active,
-        lambda x: 'State is: ' + x.state)
-
-    if ports:
-        assert target_map.ports == ports
-
-
-def _wait_until_target_ip_map_created(super_client, ip, timeout=30):
-    start = time.time()
-    target_maps = super_client. \
-        list_loadBalancerTarget(ipAddress=ip)
-    while len(target_maps) == 0:
-        time.sleep(.5)
-        target_maps = super_client. \
-            list_loadBalancerTarget(ipAddress=ip)
-        if time.time() - start > timeout:
-            assert 'Timeout waiting for map creation'
-    return target_maps
+    # 2. verify instance got created
+    _validate_svc_instance_map_count(client,
+                                     service, "active", service.scale)
+    return service
 
 
 def _activate_svc_w_scale_two(new_context, random_str):
@@ -1396,13 +981,8 @@ def _activate_svc_w_scale_two(new_context, random_str):
     # 1. verify that the service was activated
     service = client.wait_success(service.activate(), 120)
     assert service.state == "active"
-    # 2. verify that lb got created
-    lbs = client.list_loadBalancer(serviceId=service.id)
-    assert len(lbs) == 1
-    lb = client.wait_success(lbs[0])
-    assert lb.state == 'active'
 
-    return host1, host2, lb, service, env
+    return host1, host2, service, env
 
 
 def _validate_add_service_link(client, service, consumedService, ports=None):
@@ -1454,3 +1034,32 @@ def _create_cert(client):
 def _read_cert(name):
     with open(os.path.join(RESOURCE_DIR, name)) as f:
         return f.read()
+
+
+def _validate_svc_instance_map_count(client, service,
+                                     state, count, timeout=30):
+    start = time.time()
+    instance_service_map = client. \
+        list_serviceExposeMap(serviceId=service.id, state=state)
+    while len(instance_service_map) < count:
+        time.sleep(.5)
+        instance_service_map = client. \
+            list_serviceExposeMap(serviceId=service.id, state=state)
+        if time.time() - start > timeout:
+            assert 'Timeout waiting for map to be in correct state'
+
+    return instance_service_map
+
+
+def _wait_for_instance_start(super_client, id):
+    wait_for(
+        lambda: len(super_client.by_id('container', id)) > 0
+    )
+    return super_client.by_id('container', id)
+
+
+def _create_stack(client):
+    env = client.create_environment(name=random_str())
+    env = client.wait_success(env)
+    assert env.state == "active"
+    return env

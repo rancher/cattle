@@ -1,6 +1,5 @@
 package io.cattle.platform.servicediscovery.deployment.impl;
 
-import io.cattle.iaas.lb.service.LoadBalancerService;
 import io.cattle.platform.allocator.service.AllocatorService;
 import io.cattle.platform.configitem.events.ConfigUpdate;
 import io.cattle.platform.configitem.model.Client;
@@ -14,7 +13,6 @@ import io.cattle.platform.engine.idempotent.IdempotentRetryException;
 import io.cattle.platform.eventing.EventService;
 import io.cattle.platform.eventing.model.EventVO;
 import io.cattle.platform.json.JsonMapper;
-import io.cattle.platform.lb.instance.service.LoadBalancerInstanceManager;
 import io.cattle.platform.lock.LockCallback;
 import io.cattle.platform.lock.LockCallbackNoReturn;
 import io.cattle.platform.lock.LockManager;
@@ -53,10 +51,6 @@ public class DeploymentManagerImpl implements DeploymentManager {
     ObjectProcessManager objectProcessMgr;
     @Inject
     ServiceDiscoveryService sdSvc;
-    @Inject
-    LoadBalancerService lbSvc;
-    @Inject
-    LoadBalancerInstanceManager lbMgr;
     @Inject
     ObjectManager objectMgr;
     @Inject
@@ -308,8 +302,6 @@ public class DeploymentManagerImpl implements DeploymentManager {
         final public ObjectProcessManager objectProcessManager = objectProcessMgr;
         final public ServiceDiscoveryService sdService = sdSvc;
         final public ServiceExposeMapDao exposeMapDao = expMapDao;
-        final public LoadBalancerInstanceManager lbInstanceMgr = lbMgr;
-        final public LoadBalancerService lbService = lbSvc;
         final public DeploymentUnitInstanceFactory deploymentUnitInstanceFactory = unitInstanceFactory;
         final public AllocatorService allocatorService = allocatorSvc;
         final public JsonMapper jsonMapper = mapper;

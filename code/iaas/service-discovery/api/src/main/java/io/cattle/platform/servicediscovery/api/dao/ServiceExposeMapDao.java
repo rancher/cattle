@@ -36,19 +36,19 @@ public interface ServiceExposeMapDao {
 
     List<? extends ServiceExposeMap> getNonRemovedServiceIpMaps(long serviceId);
 
+    List<? extends ServiceExposeMap> getNonRemovedServiceInstanceMaps(long serviceId);
+
+    List<? extends ServiceExposeMap> getNonRemovedServiceHostnameMaps(long serviceId);
+
     List<? extends ServiceExposeMap> getUnmanagedServiceInstanceMapsToRemove(long serviceId);
 
     Host getHostForInstance(long instanceId);
-
-    boolean isPrimaryServiceInstance(ServiceExposeMap map);
 
     boolean isActiveMap(ServiceExposeMap serviceExposeMap);
 
     ServiceExposeMap getServiceHostnameExposeMap(Service service, String hostName);
 
     ServiceExposeMap createHostnameToServiceMap(Service service, String hostName);
-
-    List<? extends ServiceExposeMap> getNonRemovedServiceHostnameMaps(long serviceId);
 
     Service getIpAddressService(String ipAddress, long accountId);
 

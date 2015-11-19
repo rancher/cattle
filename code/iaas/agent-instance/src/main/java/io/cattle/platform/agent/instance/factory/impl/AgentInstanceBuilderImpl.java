@@ -50,10 +50,15 @@ public class AgentInstanceBuilderImpl implements AgentInstanceBuilder {
         this(factory);
         this.accountId = instance.getAccountId();
         this.zoneId = instance.getZoneId();
-        this.uri = "event:///instanceId=" + instance.getId();
+        String uriPrefix = "event";
+        Map<String, Object> labels = DataAccessor.fieldMap(instance, InstanceConstants.FIELD_LABELS);
+        Object prefix = labels.get(SystemLabels.LABEL_AGENT_URI_PREFIX);
+        if (prefix != null) {
+            uriPrefix = prefix.toString();
+        }
+        this.uri = uriPrefix + ":///instanceId=" + instance.getId();
         this.resourceAccountId = instance.getAccountId();
 
-        Map<String, Object> labels = DataAccessor.fieldMap(instance, InstanceConstants.FIELD_LABELS);
         if ("environment".equals(labels.get(SystemLabels.LABEL_AGENT_ROLE))) {
             accountData = CollectionUtils.asMap(AccountConstants.DATA_ACT_AS_RESOURCE_ACCOUNT, true);
         }

@@ -32,29 +32,16 @@
     <bean class="io.cattle.platform.servicediscovery.process.NetworkFromInstanceStop" />
     <bean class="io.cattle.platform.servicediscovery.process.SelectorServiceCreatePostListener" />
     <bean class="io.cattle.platform.servicediscovery.process.ServiceRemovePostListener" />
-
     <bean class="io.cattle.platform.servicediscovery.process.SelectorInstancePostListener" />
     <bean class="io.cattle.platform.servicediscovery.process.ServiceExposeMapCreate" />
-
-
     <bean class="io.cattle.platform.servicediscovery.process.EnvironmentRemove" />
-
     <bean class="io.cattle.platform.servicediscovery.process.ServiceDiscoveryInstanceRemovePreListener" />
-    <bean class="io.cattle.platform.servicediscovery.process.ServiceDiscoveryInstanceStartPostListener" />
-
-    <bean class="io.cattle.platform.servicediscovery.process.ServiceDiscoveryLoadBalancerRemovePostListener" />
-    <bean class="io.cattle.platform.servicediscovery.process.ServiceDiscoveryLoadBalancerTargetAddPostListener" />
-    <bean class="io.cattle.platform.servicediscovery.process.ServiceDiscoveryLoadBalancerTargetRemovePostListener" />
-    <bean class="io.cattle.platform.servicediscovery.process.LoadBalancerServiceActivatePostListener" />
-    <bean class="io.cattle.platform.servicediscovery.process.LoadBalancerServiceActivatePreListener" />
-    <bean class="io.cattle.platform.servicediscovery.process.LoadBalancerServiceDeactivatePreListener" />
-    <bean class="io.cattle.platform.servicediscovery.process.LoadBalancerServiceUpdate" />
-
     <bean class="io.cattle.platform.servicediscovery.process.ServicesReconcilePostTrigger" />
     <bean class="io.cattle.platform.servicediscovery.process.ServicesReconcileTrigger" />
-
     <bean class="io.cattle.platform.servicediscovery.process.ServiceLinkActivateHandler" />
     <bean class="io.cattle.platform.servicediscovery.process.ServiceLinkPreInstanceStateHandler" />
+    <bean class="io.cattle.platform.servicediscovery.process.LoadBalancerServiceUpdateConfig" />
+    <bean class="io.cattle.platform.servicediscovery.process.LoadBalancerInstanceStart" />
 
     <bean class="io.cattle.platform.servicediscovery.dao.impl.ServiceConsumeMapDaoImpl" />
     <bean class="io.cattle.platform.servicediscovery.dao.impl.ServiceExposeMapDaoImpl">
@@ -68,6 +55,11 @@
     <bean class="io.cattle.platform.servicediscovery.service.impl.HostServiceLookup" />
     <bean class="io.cattle.platform.servicediscovery.service.impl.InstanceServiceLookup" />
     <bean class="io.cattle.platform.servicediscovery.service.impl.AgentServiceLookup" />
+    
+    <bean class="io.cattle.platform.servicediscovery.service.lbservice.impl.InstanceChangeLoadBalancerServiceLookup" />
+    <bean class="io.cattle.platform.servicediscovery.service.lbservice.impl.LinkChangeLoadBalancerServiceLookup" />
+    <bean class="io.cattle.platform.servicediscovery.service.lbservice.impl.ServiceChangeLoadBalancerServiceLookup" />
+    <bean class="io.cattle.platform.servicediscovery.service.lbservice.impl.ServiceExposeMapChangeLoadBalancerServiceLookup" />
     
     <bean class="io.cattle.platform.servicediscovery.deployment.impl.DeploymentManagerImpl" />
     <bean class="io.cattle.platform.servicediscovery.deployment.impl.DeploymentUnitInstanceFactoryImpl" />

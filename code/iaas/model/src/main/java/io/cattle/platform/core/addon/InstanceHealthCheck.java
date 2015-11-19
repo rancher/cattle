@@ -2,13 +2,6 @@ package io.cattle.platform.core.addon;
 
 import io.github.ibuildthecloud.gdapi.annotation.Type;
 
-/**
- * Class duplicating load balancer healthcheck. The reason for that is that we can define the same field as required
- * when used from one context, and optional if used from another
- *
- *
- */
-
 @Type(list = false)
 public class InstanceHealthCheck {
     String name;

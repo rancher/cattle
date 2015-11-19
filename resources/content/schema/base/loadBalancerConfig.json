@@ -1,12 +1,5 @@
 {
     "resourceFields": {
-        "healthCheck": {
-            "type": "loadBalancerHealthCheck",
-            "nullable": true,
-            "attributes" : {
-                "scheduleUpdate" : true
-            }
-        },
         "appCookieStickinessPolicy":{
             "type": "loadBalancerAppCookieStickinessPolicy",
             "nullable": true,
@@ -20,20 +13,6 @@
             "attributes" : {
                 "scheduleUpdate" : true
             }
-        }
-    },
-    "resourceActions": {
-        "addlistener": {
-            "input": "addRemoveLoadBalancerListenerInput",
-            "output": "loadBalancerConfig"
-        },
-        "removelistener": {
-            "input": "addRemoveLoadBalancerListenerInput",
-            "output": "loadBalancerConfig"
-        },
-        "setlisteners": {
-            "input": "setLoadBalancerListenersInput",
-            "output": "loadBalancerConfig"
         }
     }
 }

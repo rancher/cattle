@@ -35,6 +35,8 @@
                 match before includes -->
             <!--  <excludes>.*proc</excludes> -->
 
+            <excludes>.*load_balancer.*</excludes>
+
             <unsignedTypes>false</unsignedTypes>
 
             <customTypes>

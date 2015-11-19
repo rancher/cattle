@@ -4,13 +4,13 @@ import static io.cattle.platform.core.model.tables.HostIpAddressMapTable.*;
 import static io.cattle.platform.core.model.tables.IpAddressNicMapTable.*;
 import static io.cattle.platform.core.model.tables.IpAddressTable.*;
 import static io.cattle.platform.core.model.tables.IpAssociationTable.*;
-
 import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.IpAddressConstants;
 import io.cattle.platform.core.constants.IpPoolConstants;
 import io.cattle.platform.core.dao.IpAddressDao;
 import io.cattle.platform.core.model.Host;
 import io.cattle.platform.core.model.HostIpAddressMap;
+import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.IpAddress;
 import io.cattle.platform.core.model.IpAddressNicMap;
 import io.cattle.platform.core.model.IpAssociation;
@@ -183,5 +183,15 @@ public class IpAddressDaoImpl extends AbstractJooqDao implements IpAddressDao {
         return association;
     }
 
-
+    @Override
+    public IpAddress getInstancePrimaryIp(Instance instance) {
+        IpAddress ip = null;
+        for (Nic nic : objectManager.children(instance, Nic.class)) {
+            ip = getPrimaryIpAddress(nic);
+            if (ip != null) {
+                break;
+            }
+        }
+        return ip;
+    }
 }

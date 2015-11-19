@@ -127,4 +127,20 @@ public class InstanceDaoImpl extends AbstractJooqDao implements InstanceDao {
         allInstances.removeAll(serviceInstances);
         return allInstances;
     }
+
+    @Override
+    public List<? extends Instance> findInstancesFor(Service service) {
+        return create()
+                .select(INSTANCE.fields())
+                .from(INSTANCE)
+                .join(SERVICE_EXPOSE_MAP)
+                .on(SERVICE_EXPOSE_MAP.INSTANCE_ID.eq(INSTANCE.ID)
+                        .and(SERVICE_EXPOSE_MAP.SERVICE_ID.eq(service.getId()))
+                        .and(SERVICE_EXPOSE_MAP.STATE.in(CommonStatesConstants.ACTIVATING,
+                                CommonStatesConstants.ACTIVE, CommonStatesConstants.REQUESTED))
+                        .and(INSTANCE.STATE.notIn(CommonStatesConstants.PURGING, CommonStatesConstants.PURGED,
+                                CommonStatesConstants.REMOVED, CommonStatesConstants.REMOVING)))
+                .fetchInto(InstanceRecord.class);
+    }
+
 }

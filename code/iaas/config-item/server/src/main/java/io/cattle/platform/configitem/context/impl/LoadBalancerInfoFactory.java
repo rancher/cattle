@@ -1,5 +1,7 @@
 package io.cattle.platform.configitem.context.impl;
 
+import io.cattle.platform.configitem.context.dao.LoadBalancerInfoDao;
+import io.cattle.platform.configitem.context.data.LoadBalancerListenerInfo;
 import io.cattle.platform.configitem.context.data.LoadBalancerTargetInfo;
 import io.cattle.platform.configitem.context.data.LoadBalancerTargetsInfo;
 import io.cattle.platform.configitem.server.model.ConfigItem;
@@ -7,27 +9,24 @@ import io.cattle.platform.configitem.server.model.impl.ArchiveContext;
 import io.cattle.platform.core.addon.InstanceHealthCheck;
 import io.cattle.platform.core.addon.LoadBalancerAppCookieStickinessPolicy;
 import io.cattle.platform.core.addon.LoadBalancerCookieStickinessPolicy;
-import io.cattle.platform.core.constants.CommonStatesConstants;
+import io.cattle.platform.core.addon.LoadBalancerTargetInput;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.constants.LoadBalancerConstants;
+import io.cattle.platform.core.dao.InstanceDao;
 import io.cattle.platform.core.dao.IpAddressDao;
-import io.cattle.platform.core.dao.LoadBalancerDao;
-import io.cattle.platform.core.dao.LoadBalancerTargetDao;
 import io.cattle.platform.core.model.Agent;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.IpAddress;
-import io.cattle.platform.core.model.LoadBalancer;
-import io.cattle.platform.core.model.LoadBalancerConfig;
-import io.cattle.platform.core.model.LoadBalancerListener;
-import io.cattle.platform.core.model.LoadBalancerTarget;
 import io.cattle.platform.core.model.Nic;
 import io.cattle.platform.core.model.Service;
 import io.cattle.platform.core.util.LoadBalancerTargetPortSpec;
 import io.cattle.platform.json.JsonMapper;
-import io.cattle.platform.lb.instance.service.LoadBalancerInstanceManager;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.util.DataAccessor;
+import io.cattle.platform.servicediscovery.api.constants.ServiceDiscoveryConstants;
+import io.cattle.platform.servicediscovery.api.dao.ServiceDao;
 import io.cattle.platform.servicediscovery.api.dao.ServiceExposeMapDao;
+import io.cattle.platform.util.type.CollectionUtils;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -43,83 +42,81 @@ import javax.inject.Named;
 public class LoadBalancerInfoFactory extends AbstractAgentBaseContextFactory {
 
     @Inject
-    LoadBalancerInstanceManager lbMgr;
-
-    @Inject
     ObjectManager objectManager;
 
     @Inject
     IpAddressDao ipAddressDao;
 
     @Inject
-    LoadBalancerDao lbDao;
+    ServiceDao svcDao;
 
     @Inject
     JsonMapper jsonMapper;
 
     @Inject
-    LoadBalancerTargetDao lbTargetDao;
+    ServiceExposeMapDao exposeMapDao;
 
     @Inject
-    ServiceExposeMapDao exposeMapDao;
+    InstanceDao instanceDao;
+
+    @Inject
+    LoadBalancerInfoDao lbInfoDao;
 
     @Override
     protected void populateContext(Agent agent, Instance instance, ConfigItem item, ArchiveContext context) {
-        List<? extends LoadBalancerListener> listeners = new ArrayList<>();
-        LoadBalancer lb = lbMgr.getLoadBalancerForInstance(instance);
-        List<LoadBalancerTargetsInfo> targetsInfo = new ArrayList<>();
-        InstanceHealthCheck lbHealthCheck = null;
-        LoadBalancerAppCookieStickinessPolicy appPolicy = null;
-        LoadBalancerCookieStickinessPolicy lbPolicy = null;
+        List<? extends Service> services = instanceDao.findServicesFor(instance);
+        if (services.isEmpty()) {
+            return;
+        }
+        Service lbService = services.get(0);
         boolean sslProto = false;
-        if (lb != null) {
-            // populate targets and listeners
-            listeners = lbDao.listActiveListenersForConfig(lb.getLoadBalancerConfigId());
-            if (listeners.isEmpty()) {
-                return;
-            }
-            for (LoadBalancerListener listener : listeners) {
-                if (listener.getSourceProtocol().equals("https")
-                        || listener.getSourceProtocol().equalsIgnoreCase("ssl")) {
-                    sslProto = true;
-                    break;
-                }
-            }
-
-            LoadBalancerConfig config = objectManager.loadResource(LoadBalancerConfig.class, lb.getLoadBalancerConfigId());
-
-            appPolicy = DataAccessor.field(config, LoadBalancerConstants.FIELD_LB_APP_COOKIE_POLICY, jsonMapper, LoadBalancerAppCookieStickinessPolicy.class);
-
-            // LEGACY: to support the case when healtcheck is defined on LB
-            lbHealthCheck = DataAccessor.field(config, LoadBalancerConstants.FIELD_LB_HEALTH_CHECK, jsonMapper,
-                    InstanceHealthCheck.class);
-
-            lbPolicy = DataAccessor.field(config, LoadBalancerConstants.FIELD_LB_COOKIE_POLICY, jsonMapper, LoadBalancerCookieStickinessPolicy.class);
-
-            targetsInfo = populateTargetsInfo(lb, lbHealthCheck, config);
-            if (targetsInfo.isEmpty()) {
-                return;
+        List<? extends LoadBalancerListenerInfo> listeners = lbInfoDao.getListeners(lbService);
+        if (listeners.isEmpty()) {
+            return;
+        }
+        for (LoadBalancerListenerInfo listener : listeners) {
+            if (listener.getSourceProtocol().equals("https")
+                    || listener.getSourceProtocol().equalsIgnoreCase("ssl")) {
+                sslProto = true;
+                break;
             }
         }
+        
+        LoadBalancerAppCookieStickinessPolicy appPolicy = null;
+        LoadBalancerCookieStickinessPolicy lbPolicy = null;
+        
+        Object config = DataAccessor.field(lbService, ServiceDiscoveryConstants.FIELD_LOAD_BALANCER_CONFIG,
+                Object.class);
+        Map<String, Object> data = CollectionUtils.toMap(config);
+        if (config != null) {
+            appPolicy = jsonMapper.convertValue(data.get(LoadBalancerConstants.FIELD_LB_APP_COOKIE_POLICY),
+                    LoadBalancerAppCookieStickinessPolicy.class);
+            lbPolicy = jsonMapper.convertValue(data.get(LoadBalancerConstants.FIELD_LB_COOKIE_POLICY),
+                    LoadBalancerCookieStickinessPolicy.class);
+        }
+
+        List<LoadBalancerTargetsInfo> targetsInfo = populateTargetsInfo(lbService, listeners);
+        if (targetsInfo.isEmpty()) {
+            return;
+        }
+
         Map<String, List<LoadBalancerTargetsInfo>> listenerToTargetMap = assignTargetsToListeners(listeners,
-                targetsInfo, lbHealthCheck);
+                targetsInfo);
         context.getData().put("listeners", listeners);
-        context.getData().put("publicIp", lbMgr.getLoadBalancerInstanceIp(instance).getAddress());
+        context.getData().put("publicIp", ipAddressDao.getInstancePrimaryIp(instance).getAddress());
         context.getData().put("backends", listenerToTargetMap);
         context.getData().put("appPolicy", appPolicy);
         context.getData().put("lbPolicy", lbPolicy);
         context.getData().put("sslProto", sslProto);
-
-        context.getData().put("certs", lbDao.getLoadBalancerCertificates(lb));
-        context.getData().put("defaultCert", lbDao.getLoadBalancerDefaultCertificate(lb));
+        context.getData().put("certs", svcDao.getLoadBalancerServiceCertificates(lbService));
+        context.getData().put("defaultCert", svcDao.getLoadBalancerServiceDefaultCertificate(lbService));
     }
 
 
     protected Map<String, List<LoadBalancerTargetsInfo>> assignTargetsToListeners(
-            List<? extends LoadBalancerListener> listeners, List<LoadBalancerTargetsInfo> targetsInfo,
-            InstanceHealthCheck lbHealthCheck) {
+            List<? extends LoadBalancerListenerInfo> listeners, List<LoadBalancerTargetsInfo> targetsInfo) {
         Map<String, List<LoadBalancerTargetsInfo>> listenerToTargetMap = new HashMap<>();
-        for (LoadBalancerListener listener : listeners) {
+        for (LoadBalancerListenerInfo listener : listeners) {
             List<LoadBalancerTargetsInfo> listenerTargets = new ArrayList<>();
             for (LoadBalancerTargetsInfo info : targetsInfo) {
                 Integer listnerPort = listener.getPrivatePort() == null ? listener.getSourcePort() : listener
@@ -137,8 +134,7 @@ public class LoadBalancerInfoFactory extends AbstractAgentBaseContextFactory {
                             LoadBalancerTargetPortSpec portSpec = info.getPortSpec();
                             portSpec.setDomain(LoadBalancerTargetPortSpec.DEFAULT);
                             portSpec.setPath(LoadBalancerTargetPortSpec.DEFAULT);
-                            tcpTargetsInfo = new LoadBalancerTargetsInfo(info.getTargets(), lbHealthCheck,
-                                    info.getPortSpec());
+                            tcpTargetsInfo = new LoadBalancerTargetsInfo(info.getTargets(), info.getPortSpec());
                         } else {
                             tcpTargetsInfo = listenerTargets.get(0);
                             tcpTargetsInfo.addTargets(info.getTargets());
@@ -199,16 +195,11 @@ public class LoadBalancerInfoFactory extends AbstractAgentBaseContextFactory {
     }
 
 
-    private List<LoadBalancerTargetsInfo> populateTargetsInfo(LoadBalancer lb, InstanceHealthCheck lbHealthCheck, LoadBalancerConfig config) {
-        List<? extends LoadBalancerTarget> targets = objectManager.mappedChildren(objectManager.loadResource(LoadBalancer.class, lb.getId()),
-                LoadBalancerTarget.class);
+    private List<LoadBalancerTargetsInfo> populateTargetsInfo(Service lbService, List<? extends LoadBalancerListenerInfo> listeners) {
+        List<? extends LoadBalancerTargetInput> targets = lbInfoDao.getLoadBalancerTargets(lbService);
+
         Map<String, List<LoadBalancerTargetInfo>> uuidToTargetInfos = new HashMap<>();
-        for (LoadBalancerTarget target : targets) {
-            if (!(target.getState().equalsIgnoreCase(CommonStatesConstants.ACTIVATING)
-                    || target.getState().equalsIgnoreCase(CommonStatesConstants.ACTIVE) || target.getState()
-                    .equalsIgnoreCase(CommonStatesConstants.UPDATING_ACTIVE))) {
-                continue;
-            }
+        for (LoadBalancerTargetInput target : targets) {
             String ipAddress = target.getIpAddress();
             InstanceHealthCheck healthCheck = null;
             if (ipAddress == null) {
@@ -228,7 +219,7 @@ public class LoadBalancerInfoFactory extends AbstractAgentBaseContextFactory {
                     }
                 }
             } else {
-                Service service = exposeMapDao.getIpAddressService(ipAddress, target.getAccountId());
+                Service service = exposeMapDao.getIpAddressService(ipAddress, lbService.getAccountId());
                 if (service != null) {
                     healthCheck = DataAccessor.field(service,
                             InstanceConstants.FIELD_HEALTH_CHECK, jsonMapper, InstanceHealthCheck.class);
@@ -236,11 +227,11 @@ public class LoadBalancerInfoFactory extends AbstractAgentBaseContextFactory {
             }
 
             if (ipAddress != null) {
-                String targetName = (target.getName() == null ? target.getUuid() : target.getName());
-                List<LoadBalancerTargetPortSpec> portSpecs = lbTargetDao.getLoadBalancerTargetPorts(target, config);
+                String targetName = target.getName();
+                List<LoadBalancerTargetPortSpec> portSpecs = lbInfoDao.getLoadBalancerTargetPorts(target, listeners);
                 for (LoadBalancerTargetPortSpec portSpec : portSpecs) {
                     LoadBalancerTargetInfo targetInfo = new LoadBalancerTargetInfo(ipAddress, targetName,
-                            target.getUuid(), portSpec, healthCheck);
+                            target.getName(), portSpec, healthCheck);
                     List<LoadBalancerTargetInfo> targetInfos = uuidToTargetInfos.get(targetInfo.getUuid());
                     if (targetInfos == null) {
                         targetInfos = new ArrayList<>();
@@ -255,8 +246,7 @@ public class LoadBalancerInfoFactory extends AbstractAgentBaseContextFactory {
         List<LoadBalancerTargetsInfo> targetsInfo = new ArrayList<>();
         int count = 0;
         for (String uuid : uuidToTargetInfos.keySet()) {
-            LoadBalancerTargetsInfo target = new LoadBalancerTargetsInfo(uuidToTargetInfos.get(uuid), lbHealthCheck,
-                    count);
+            LoadBalancerTargetsInfo target = new LoadBalancerTargetsInfo(uuidToTargetInfos.get(uuid), count);
             targetsInfo.add(target);
             count++;
         }
