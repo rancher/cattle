@@ -1,4 +1,5 @@
 from common_fixtures import *  # NOQA
+from test_shared_volumes import add_storage_pool
 
 
 def test_compute_free(super_client, new_context):
@@ -80,6 +81,43 @@ def test_spread(super_client, new_context):
     for i, h in enumerate(hosts):
         h = super_client.reload(h)
         assert counts[i] - count == h.computeFree
+
+
+def test_allocation_with_shared_storage_pool(super_client, new_context):
+    count = 3
+
+    client = new_context.client
+    host2 = register_simulated_host(client)
+    register_simulated_host(client)
+
+    hosts = [new_context.host, host2]
+    hosts = wait_all_success(super_client, hosts)
+    sp = add_storage_pool(new_context, [new_context.host.uuid, host2.uuid])
+    sp_name = sp.name
+    for h in hosts:
+        assert h.state == 'active'
+        assert h.agent().state == 'active'
+        assert len(h.storagePools()) == 2
+        assert h.storagePools()[0].state == 'active'
+        assert h.storagePools()[1].state == 'active'
+
+    # Create a volume with a driver that points to a storage pool
+    v1 = client.create_volume(name=random_str(), driver=sp_name)
+    v1 = client.wait_success(v1)
+    assert v1.state == 'requested'
+
+    data_volume_mounts = {'/con/path': v1.id}
+
+    containers = []
+    for _ in range(len(hosts) * count):
+        c = client.create_container(imageUuid=new_context.image_uuid,
+                                    dataVolumeMounts=data_volume_mounts)
+        containers.append(c)
+        time.sleep(1)  # Sleep makes the test faster as it reduces contention
+
+    wait_all_success(super_client, containers, timeout=60)
+    for c in containers:
+        new_context.wait_for_state(c, 'running')
 
 
 def _set_one(super_client, new_context):
