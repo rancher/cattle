@@ -79,18 +79,25 @@ public class ServiceCreateValidationFilter extends AbstractDefaultResourceManage
 
         validateRequestedVip(request);
 
-        request = setHealthCheck(type, request);
+        request = updateLbServiceDefaults(type, request);
 
         return super.create(type, request, next);
     }
 
-    @SuppressWarnings("unchecked")
-    public ApiRequest setHealthCheck(String type, ApiRequest request) {
+    public ApiRequest updateLbServiceDefaults(String type, ApiRequest request) {
         if (!type.equalsIgnoreCase(ServiceDiscoveryConstants.KIND.LOADBALANCERSERVICE.name())) {
             return request;
         }
         Map<String, Object> data = CollectionUtils.toMap(request.getRequestObject());
         
+        setLbServiceHealthcheck(data);
+
+        request.setRequestObject(data);
+        return request;
+    }
+
+    @SuppressWarnings("unchecked")
+    protected void setLbServiceHealthcheck(Map<String, Object> data) {
         if (data.get(ServiceDiscoveryConstants.FIELD_LAUNCH_CONFIG) != null) {
             Map<String, Object> launchConfig = (Map<String, Object>)data.get(ServiceDiscoveryConstants.FIELD_LAUNCH_CONFIG);
             InstanceHealthCheck healthCheck = new InstanceHealthCheck();
@@ -101,9 +108,7 @@ public class ServiceCreateValidationFilter extends AbstractDefaultResourceManage
             healthCheck.setResponseTimeout(2000);
             launchConfig.put(InstanceConstants.FIELD_HEALTH_CHECK, healthCheck);
             data.put(ServiceDiscoveryConstants.FIELD_LAUNCH_CONFIG, launchConfig);
-            request.setRequestObject(data);
         }
-        return request;
     }
 
     protected void validateSelector(ApiRequest request) {

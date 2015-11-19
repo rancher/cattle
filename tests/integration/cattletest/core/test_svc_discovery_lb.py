@@ -327,9 +327,12 @@ def test_create_svc_with_lb_config(context, client):
                  "nocache": "true", "postonly": "true",
                  "mode": "insert"}
 
+    defaults = ["balance leastconn"]
+
     lb_config = {"name": name,
                  "appCookieStickinessPolicy": app_policy,
-                 "lbCookieStickinessPolicy": lb_policy}
+                 "lbCookieStickinessPolicy": lb_policy,
+                 "defaults": defaults}
 
     # create service
     service = client. \
@@ -361,6 +364,19 @@ def test_create_svc_with_lb_config(context, client):
     assert config.lbCookieStickinessPolicy.nocache is True
     assert config.lbCookieStickinessPolicy.postonly is True
     assert config.lbCookieStickinessPolicy.mode == "insert"
+
+    assert "defaults" in config
+    assert defaults == config.defaults
+
+    compose_config = env.exportconfig()
+    assert compose_config is not None
+
+    name = service.name
+    config = 'load_balancer_config'
+    rancher_yml = yaml.load(compose_config.rancherComposeConfig)
+    assert config in rancher_yml[service.name]
+    assert rancher_yml[name][config] is not None
+    assert defaults == rancher_yml[name][config]['defaults']
 
 
 def test_scale(new_context):

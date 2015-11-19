@@ -9,7 +9,6 @@ public class LoadBalancerListenerInfo {
     String sourceProtocol;
     String targetProtocol;
     String uuid;
-    String algorithm = "roundrobin";
 
     public LoadBalancerListenerInfo(Integer privatePort, Integer sourcePort, String protocol, Integer targetPort) {
         super();
@@ -43,9 +42,5 @@ public class LoadBalancerListenerInfo {
 
     public String getUuid() {
         return uuid;
-    }
-
-    public String getAlgorithm() {
-        return algorithm;
     }
 }

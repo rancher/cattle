@@ -14,24 +14,9 @@ global
 	daemon
 
 defaults
-	log	global
-	mode	tcp
-	option	tcplog
-        option  dontlognull
-        option  redispatch
-        option http-server-close
-        option forwardfor
-        retries 3
-        timeout connect 5000
-        timeout client 50000
-        timeout server 50000
-	errorfile 400 /etc/haproxy/errors/400.http
-	errorfile 403 /etc/haproxy/errors/403.http
-	errorfile 408 /etc/haproxy/errors/408.http
-	errorfile 500 /etc/haproxy/errors/500.http
-	errorfile 502 /etc/haproxy/errors/502.http
-	errorfile 503 /etc/haproxy/errors/503.http
-	errorfile 504 /etc/haproxy/errors/504.http
+	<#list defaults as default>
+	${default}
+	</#list>
 
 <#if listeners?has_content && backends?has_content>
 <#list listeners as listener >
@@ -61,7 +46,6 @@ frontend ${listener.uuid}_frontend
 <#list backends[listener.uuid]  as backend >
 backend ${listener.uuid}_${backend.uuid}_backend
         mode ${protocol}
-        balance ${listener.algorithm}
         <#if backend.healthCheck??>
         <#if backend.healthCheck.responseTimeout??>timeout check ${backend.healthCheck.responseTimeout}</#if>
         <#if backend.healthCheck.requestLine?? && backend.healthCheck.requestLine?has_content>option httpchk ${backend.healthCheck.requestLine}</#if>

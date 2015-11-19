@@ -63,6 +63,7 @@ public class LoadBalancerInfoFactory extends AbstractAgentBaseContextFactory {
     LoadBalancerInfoDao lbInfoDao;
 
     @Override
+    @SuppressWarnings("unchecked")
     protected void populateContext(Agent agent, Instance instance, ConfigItem item, ArchiveContext context) {
         List<? extends Service> services = instanceDao.findServicesFor(instance);
         if (services.isEmpty()) {
@@ -84,6 +85,8 @@ public class LoadBalancerInfoFactory extends AbstractAgentBaseContextFactory {
         
         LoadBalancerAppCookieStickinessPolicy appPolicy = null;
         LoadBalancerCookieStickinessPolicy lbPolicy = null;
+        List<String> defaults = LoadBalancerConstants.DEFATULTS;
+        List<String> customDefaults = new ArrayList<>();
         
         Object config = DataAccessor.field(lbService, ServiceDiscoveryConstants.FIELD_LOAD_BALANCER_CONFIG,
                 Object.class);
@@ -93,6 +96,15 @@ public class LoadBalancerInfoFactory extends AbstractAgentBaseContextFactory {
                     LoadBalancerAppCookieStickinessPolicy.class);
             lbPolicy = jsonMapper.convertValue(data.get(LoadBalancerConstants.FIELD_LB_COOKIE_POLICY),
                     LoadBalancerCookieStickinessPolicy.class);
+            customDefaults = jsonMapper.convertValue(data.get(LoadBalancerConstants.FIELD_LB_DEFAULTS),
+                    List.class);
+            if (customDefaults != null) {
+                for (String customDefault : customDefaults) {
+                    if (customDefault != null) {
+                        defaults.add(customDefault);
+                    }
+                }
+            }
         }
 
         List<LoadBalancerTargetsInfo> targetsInfo = populateTargetsInfo(lbService, listeners);
@@ -110,6 +122,8 @@ public class LoadBalancerInfoFactory extends AbstractAgentBaseContextFactory {
         context.getData().put("sslProto", sslProto);
         context.getData().put("certs", svcDao.getLoadBalancerServiceCertificates(lbService));
         context.getData().put("defaultCert", svcDao.getLoadBalancerServiceDefaultCertificate(lbService));
+        context.getData().put("defaults", defaults);
+
     }
 
 
