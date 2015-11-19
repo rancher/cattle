@@ -176,6 +176,42 @@ def test_volume_create(new_context):
     assert len(sps) == 1
     assert sps[0].kind == 'sim'
 
+    # Create a new volume, assign to container via dataVolumes
+    # Should be translated to a dataVolumeMount entry.
+    v3 = client.create_volume(name=random_str(), driver=sp_name)
+    v3 = client.wait_success(v3)
+    assert v3.state == 'requested'
+
+    c = client.create_container(imageUuid=new_context.image_uuid,
+                                dataVolumes=['%s:/foo' % v3.name])
+    c = client.wait_success(c)
+    assert c.state == 'running'
+    assert c.dataVolumeMounts['/foo'] == v3.id
+    v3 = client.wait_success(v3)
+    assert v3.state == 'active'
+    sps = v3.storagePools()
+    assert len(sps) == 1
+    assert sps[0].id == storage_pool.id
+
+
+def test_volume_lookup_not_local(new_context):
+    # When looking up named volumes for scheduling purposes, local volumes
+    # should be ignored.
+    client = new_context.client
+    name = random_str()
+    v1 = client.create_volume(name=name, driver='local')
+    v1 = client.wait_success(v1)
+    c = client.create_container(imageUuid=new_context.image_uuid,
+                                dataVolumes=['%s:/foo' % v1.name])
+    c = client.wait_success(c)
+    assert c.state == 'running'
+
+    c2 = client.create_container(imageUuid=new_context.image_uuid,
+                                 dataVolumes=['%s:/foo' % v1.name])
+    c2 = client.wait_success(c2)
+    assert c2.state == 'running'
+    assert not c2.dataVolumeMounts
+
 
 def test_volume_create_failed_allocation(new_context):
     client, agent_client, host = from_context(new_context)
