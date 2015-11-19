@@ -14,7 +14,6 @@ import io.cattle.platform.engine.process.ProcessInstance;
 import io.cattle.platform.engine.process.ProcessState;
 import io.cattle.platform.json.JsonMapper;
 import io.cattle.platform.object.resource.ResourceMonitor;
-import io.cattle.platform.object.resource.ResourcePredicate;
 import io.cattle.platform.process.common.handler.AbstractObjectProcessLogic;
 import io.cattle.platform.servicediscovery.api.constants.ServiceDiscoveryConstants;
 import io.cattle.platform.servicediscovery.service.ServiceDiscoveryService;
@@ -138,14 +137,6 @@ public class LoadBalancerServiceUpdateConfig extends AbstractObjectProcessLogic 
         List<Instance> lbInstances = new ArrayList<>();
         for (Service lbService : activeLbServices) {
             lbInstances.addAll(instanceDao.findInstancesFor(lbService));
-        }
-        for (Instance lbInstance : lbInstances) {
-            lbInstance = resourceMonitor.waitFor(lbInstance, new ResourcePredicate<Instance>() {
-                @Override
-                public boolean evaluate(Instance obj) {
-                    return InstanceConstants.STATE_RUNNING.equals(obj.getState());
-                }
-            });
         }
         return lbInstances;
     }

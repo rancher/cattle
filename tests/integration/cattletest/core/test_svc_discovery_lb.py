@@ -162,6 +162,68 @@ def test_targets(super_client, client, context):
     _validate_config_item_update(super_client, item_before, agent_id)
 
 
+def test_restart_stack(client, context):
+    env = _create_stack(client)
+
+    # create lb and web services
+    image_uuid = context.image_uuid
+    launch_config = {"imageUuid": image_uuid}
+    web_service = client. \
+        create_service(name=random_str() + "web",
+                       environmentId=env.id,
+                       launchConfig=launch_config)
+
+    web_service = client.wait_success(web_service)
+
+    lb_launch_config = {"imageUuid": image_uuid,
+                        "ports": [8051, '808:1001']}
+    lb_svc = client. \
+        create_loadBalancerService(name=random_str(),
+                                   environmentId=env.id,
+                                   launchConfig=lb_launch_config)
+    lb_svc = client.wait_success(lb_svc)
+    assert lb_svc.state == "inactive"
+
+    # map web service to lb service
+    service_link = {"serviceId": web_service.id, "ports": ["a.com:90"]}
+    lb_svc = lb_svc.addservicelink(serviceLink=service_link)
+
+    env = client.wait_success(env.activateservices())
+    lb_svc = client.wait_success(lb_svc)
+    assert lb_svc.state == 'active'
+    web_svc = client.wait_success(lb_svc)
+    assert web_svc.state == 'active'
+
+    env = client.wait_success(env.deactivateservices())
+    lb_svc = client.wait_success(lb_svc)
+    assert lb_svc.state == 'inactive'
+    web_svc = client.wait_success(web_svc)
+    assert web_svc.state == 'inactive'
+
+    env = client.wait_success(env.activateservices())
+    lb_svc = client.wait_success(lb_svc)
+    assert lb_svc.state == 'active'
+    web_svc = client.wait_success(lb_svc)
+    assert web_svc.state == 'active'
+
+
+def test_internal_lb(client, context):
+    env = _create_stack(client)
+
+    image_uuid = context.image_uuid
+
+    lb_launch_config = {"imageUuid": image_uuid,
+                        "expose": [8051]}
+    lb_svc = client. \
+        create_loadBalancerService(name=random_str(),
+                                   environmentId=env.id,
+                                   launchConfig=lb_launch_config)
+    lb_svc = client.wait_success(lb_svc)
+    assert lb_svc.state == "inactive"
+    lb_svc = client.wait_success(lb_svc.activate())
+    assert lb_svc.state == 'active'
+
+
 def _validate_config_item_update(super_client, bf, agent_id):
     wait_for(
         lambda: find_one(super_client.list_config_item_status,
