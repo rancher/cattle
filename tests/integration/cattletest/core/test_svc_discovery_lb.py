@@ -183,7 +183,6 @@ def test_restart_stack(client, context):
                                    launchConfig=lb_launch_config)
     lb_svc = client.wait_success(lb_svc)
     assert lb_svc.state == "inactive"
-    lb_svc = client.wait_success(lb_svc.activate(), 120)
 
     # map web service to lb service
     service_link = {"serviceId": web_service.id, "ports": ["a.com:90"]}
@@ -206,6 +205,23 @@ def test_restart_stack(client, context):
     assert lb_svc.state == 'active'
     web_svc = client.wait_success(lb_svc)
     assert web_svc.state == 'active'
+
+
+def test_internal_lb(client, context):
+    env = _create_stack(client)
+
+    image_uuid = context.image_uuid
+
+    lb_launch_config = {"imageUuid": image_uuid,
+                        "expose": [8051]}
+    lb_svc = client. \
+        create_loadBalancerService(name=random_str(),
+                                   environmentId=env.id,
+                                   launchConfig=lb_launch_config)
+    lb_svc = client.wait_success(lb_svc)
+    assert lb_svc.state == "inactive"
+    lb_svc = client.wait_success(lb_svc.activate())
+    assert lb_svc.state == 'active'
 
 
 def _validate_config_item_update(super_client, bf, agent_id):

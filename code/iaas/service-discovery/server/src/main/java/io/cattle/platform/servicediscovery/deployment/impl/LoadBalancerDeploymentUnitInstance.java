@@ -57,14 +57,16 @@ public class LoadBalancerDeploymentUnitInstance extends DefaultDeploymentUnitIns
     protected void setPorts(Map<String, Object> launchConfigData) {
         List<String> ports = (List<String>) launchConfigData.get(InstanceConstants.FIELD_PORTS);
         List<String> newPorts = new ArrayList<>();
-        for (String port : ports) {
-            PortSpec spec = new PortSpec(port);
-            if (spec.getPublicPort() == null) {
-                spec.setPublicPort(spec.getPrivatePort());
+        if (ports != null) {
+            for (String port : ports) {
+                PortSpec spec = new PortSpec(port);
+                if (spec.getPublicPort() == null) {
+                    spec.setPublicPort(spec.getPrivatePort());
+                }
+                String fullPort = spec.getPublicPort().toString() + ":" + spec.getPublicPort().toString();
+                newPorts.add(fullPort);
             }
-            String fullPort = spec.getPublicPort().toString() + ":" + spec.getPublicPort().toString();
-            newPorts.add(fullPort);
+            launchConfigData.put(InstanceConstants.FIELD_PORTS, newPorts);
         }
-        launchConfigData.put(InstanceConstants.FIELD_PORTS, newPorts);
     }
 }
