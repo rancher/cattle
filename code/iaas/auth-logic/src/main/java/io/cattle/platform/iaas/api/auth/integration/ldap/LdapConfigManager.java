@@ -54,15 +54,15 @@ public class LdapConfigManager extends AbstractNoOpResourceManager {
         }
         String accessMode = currentConfig.getAccessMode();
         if (config.get(LdapConstants.ACCESSMODE) != null) {
-            loginDomain = (String) config.get(LdapConstants.ACCESSMODE);
+            accessMode = (String) config.get(LdapConstants.ACCESSMODE);
         }
         String serviceAccountUsername = currentConfig.getServiceAccountUsername();
         if (config.get(LdapConstants.SERVICE_ACCOUNT_USERNAME_FIELD) != null) {
-            loginDomain = (String) config.get(LdapConstants.SERVICE_ACCOUNT_USERNAME_FIELD);
+            serviceAccountUsername = (String) config.get(LdapConstants.SERVICE_ACCOUNT_USERNAME_FIELD);
         }
         String serviceAccountPassword = currentConfig.getServiceAccountPassword();
         if (config.get(LdapConstants.SERVICE_ACCOUNT_PASSWORD_FIELD) != null) {
-            loginDomain = (String) config.get(LdapConstants.SERVICE_ACCOUNT_PASSWORD_FIELD);
+            serviceAccountPassword = (String) config.get(LdapConstants.SERVICE_ACCOUNT_PASSWORD_FIELD);
         }
         boolean tls = currentConfig.getTls();
         if (config.get(LdapConstants.TLS) != null) {
@@ -86,7 +86,7 @@ public class LdapConfigManager extends AbstractNoOpResourceManager {
         }
         String userLoginField = currentConfig.getUserLoginField();
         if (config.get(LdapConstants.USER_LOGIN_FIELD_FIELD) != null){
-            groupSearchField = (String) config.get(LdapConstants.USER_LOGIN_FIELD_FIELD);
+            userLoginField = (String) config.get(LdapConstants.USER_LOGIN_FIELD_FIELD);
         }
         int userEnabledMaskBit = currentConfig.getUserDisabledBitMask();
         if (config.get(LdapConstants.USER_DISABLED_MASK_BIT) !=null){
