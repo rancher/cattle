@@ -120,6 +120,30 @@ def test_allocation_with_shared_storage_pool(super_client, new_context):
         new_context.wait_for_state(c, 'running')
 
 
+def test_allocate_to_host_with_pool(new_context, super_client):
+    # If a volumeDriver is specified that maps to an existing pool, restrict
+    # allocation to hosts in that pool
+    client = new_context.client
+    host = new_context.host
+    host2 = register_simulated_host(client)
+
+    sp = add_storage_pool(new_context)
+    sp_name = sp.name
+    assert len(host.storagePools()) == 2
+    assert len(host2.storagePools()) == 1
+
+    # Fail to schedule because requested host is not in pool
+    c = new_context.create_container_no_success(
+        imageUuid=new_context.image_uuid,
+        volumeDriver=sp_name,
+        requestedHostId=host2.id,
+        dataVolume=['vol1:/con/path'])
+    c = super_client.reload(c)
+    assert c.state == 'removed'
+    assert c.transitioning == 'error'
+    assert c.transitioningMessage == 'Failed to find a placement'
+
+
 def _set_one(super_client, new_context):
     return super_client.update(new_context.host, computeFree=1)
 
