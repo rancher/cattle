@@ -38,6 +38,7 @@ public class ServiceDiscoveryConstants {
     public static final String FIELD_TO_SERVICE_STRATEGY = "toServiceStrategy";
     public static final String FIELD_FQDN = "fqdn";
     public static final String FIELD_OUTPUTS = "outputs";
+    public static final String FIELD_PUBLIC_ENDPOINTS = "publicEndpoints";
 
     public static final String STACK_FIELD_DOCKER_COMPOSE = "dockerCompose";
     public static final String STACK_FIELD_RANCHER_COMPOSE = "rancherCompose";

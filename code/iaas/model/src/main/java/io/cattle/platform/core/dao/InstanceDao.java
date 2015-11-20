@@ -24,4 +24,8 @@ public interface InstanceDao {
 
     List<? extends Instance> findInstancesFor(Service service);
 
+    Long getInstanceHostId(long instanceId);
+
+    Service getServiceManaging(long instanceId);
+
 }

@@ -16,6 +16,11 @@
             "attributes" : {
                 "scheduleUpdate" : true
             }
+        },
+        "publicEndpoints":{
+            "type": "array[publicEndpoint]",
+            "required": false,
+            "nullable": true
         }
     }
 }

@@ -4,6 +4,7 @@ import static io.cattle.platform.core.model.tables.EnvironmentTable.ENVIRONMENT;
 import static io.cattle.platform.core.model.tables.SubnetTable.SUBNET;
 import io.cattle.platform.allocator.service.AllocatorService;
 import io.cattle.platform.core.addon.LoadBalancerServiceLink;
+import io.cattle.platform.core.addon.PublicEndpoint;
 import io.cattle.platform.core.addon.ServiceLink;
 import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.LoadBalancerConstants;
@@ -12,6 +13,7 @@ import io.cattle.platform.core.constants.SubnetConstants;
 import io.cattle.platform.core.dao.LabelsDao;
 import io.cattle.platform.core.dao.NetworkDao;
 import io.cattle.platform.core.model.Environment;
+import io.cattle.platform.core.model.Host;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.Label;
 import io.cattle.platform.core.model.Network;
@@ -19,13 +21,18 @@ import io.cattle.platform.core.model.Service;
 import io.cattle.platform.core.model.ServiceConsumeMap;
 import io.cattle.platform.core.model.Subnet;
 import io.cattle.platform.deferred.util.DeferredUtils;
+import io.cattle.platform.eventing.EventService;
+import io.cattle.platform.framework.event.util.EventUtils;
 import io.cattle.platform.json.JsonMapper;
+import io.cattle.platform.lock.LockCallbackNoReturn;
 import io.cattle.platform.lock.LockManager;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.process.ObjectProcessManager;
 import io.cattle.platform.object.resource.ResourceMonitor;
 import io.cattle.platform.object.resource.ResourcePredicate;
 import io.cattle.platform.object.util.DataAccessor;
+import io.cattle.platform.object.util.DataUtils;
+import io.cattle.platform.process.lock.HostEndpointsUpdateLock;
 import io.cattle.platform.resource.pool.PooledResource;
 import io.cattle.platform.resource.pool.PooledResourceOptions;
 import io.cattle.platform.resource.pool.ResourcePoolManager;
@@ -35,10 +42,12 @@ import io.cattle.platform.servicediscovery.api.dao.ServiceConsumeMapDao;
 import io.cattle.platform.servicediscovery.api.dao.ServiceExposeMapDao;
 import io.cattle.platform.servicediscovery.api.util.ServiceDiscoveryUtil;
 import io.cattle.platform.servicediscovery.api.util.selector.SelectorUtils;
+import io.cattle.platform.servicediscovery.deployment.impl.ServiceEndpointsUpdateLock;
 import io.cattle.platform.servicediscovery.service.ServiceDiscoveryService;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -82,6 +91,9 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
 
     @Inject
     AllocatorService allocatorService;
+
+    @Inject
+    EventService eventService;
 
     protected long getServiceNetworkId(Service service) {
         Network network = ntwkDao.getNetworkForObject(service, NetworkConstants.KIND_HOSTONLY);
@@ -297,5 +309,58 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
             return true;
         }
         return false;
+    }
+
+   @Override
+   public void updateServicePublicEndpoints(final Service service, final PublicEndpoint publicEndpoint, final boolean add) {
+        lockManager.lock(new ServiceEndpointsUpdateLock(service), new LockCallbackNoReturn() {
+            @Override
+            public void doWithLockNoResult() {
+                updateObjectEndPoint(service, service.getKind(), service.getId(), publicEndpoint, add);
+            }
+        });
+    }
+
+    @Override
+    public void updateHostPublicEndpoints(final Host host, final PublicEndpoint publicEndpoint, final boolean add) {
+        lockManager.lock(new HostEndpointsUpdateLock(host), new LockCallbackNoReturn() {
+            @Override
+            public void doWithLockNoResult() {
+                updateObjectEndPoint(host, host.getKind(), host.getId(), publicEndpoint, add);
+            }
+        });
+    }
+
+    protected void updateObjectEndPoint(final Object object, final String resourceType, final Long resourceId,
+            final PublicEndpoint publicEndpoint, final boolean add) {
+        // have to reload the object to get the latest update for publicEndpoint
+        // if don't reload, its possible that n concurrent updates would lack information.
+        // update would be performed on the original object
+        Object reloaded = objectManager.reload(object);
+        List<PublicEndpoint> publicEndpoints = new ArrayList<>();
+        publicEndpoints.addAll(DataAccessor.fields(reloaded)
+                .withKey(ServiceDiscoveryConstants.FIELD_PUBLIC_ENDPOINTS)
+                .withDefault(Collections.EMPTY_LIST)
+                .asList(jsonMapper, PublicEndpoint.class));
+
+        if (publicEndpoints.contains(publicEndpoint) != add) {
+            if (add) {
+                publicEndpoints.add(publicEndpoint);
+            } else {
+                publicEndpoints.remove(publicEndpoint);
+            }
+            DataUtils.getWritableFields(object).put(ServiceDiscoveryConstants.FIELD_PUBLIC_ENDPOINTS,
+                    publicEndpoints);
+            objectManager.persist(object);
+            final Map<String, Object> data = new HashMap<>();
+            data.put(ServiceDiscoveryConstants.FIELD_PUBLIC_ENDPOINTS, publicEndpoints);
+
+            DeferredUtils.nest(new Runnable() {
+                @Override
+                public void run() {
+                    EventUtils.TriggerStateChanged(eventService, resourceId.toString(), resourceType, data);
+                }
+            });
+        }
     }
 }

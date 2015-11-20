@@ -58,6 +58,11 @@
             "type": "map[schema]",
             "nullable": true,
             "required": false
+        },
+        "publicEndpoints":{
+            "type": "array[publicEndpoint]",
+            "required": false,
+            "nullable": true
         }
     },
     "resourceActions" : {

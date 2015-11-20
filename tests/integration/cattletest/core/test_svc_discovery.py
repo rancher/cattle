@@ -2879,6 +2879,85 @@ def test_sidekick_labels_merge(new_context):
     assert all(item in secondary.labels for item in affinity_labels) is True
 
 
+def _validate_endpoint(endpoints, host_ip, public_port):
+    found = False
+    for endpoint in endpoints:
+        if host_ip == endpoint.ipAddress:
+            if endpoint.port == public_port:
+                found = True
+                break
+    assert found is True, "Cant find endpoint for " \
+                          + host_ip + ":" + str(public_port)
+
+
+def test_public_endpoints(new_context):
+    client = new_context.client
+    host1 = new_context.host
+    host2 = register_simulated_host(new_context)
+    env = _create_stack(client)
+    host_ips = []
+    host1_ip = host1.ipAddresses()[0].address
+    host2_ip = host2.ipAddresses()[0].address
+    host_ips.append(host1_ip)
+    host_ips.append(host2_ip)
+
+    port1 = 5555
+    port2 = 6666
+
+    image_uuid = new_context.image_uuid
+    launch_config = {"imageUuid": image_uuid, "ports": [str(port1) + ':6666']}
+    service1 = client.create_service(name=random_str(),
+                                     environmentId=env.id,
+                                     launchConfig=launch_config,
+                                     scale=2)
+    service1 = client.wait_success(service1)
+    assert service1.state == "inactive"
+    service1 = client.wait_success(service1.activate(), 120)
+    assert service1.state == "active"
+    launch_config = {"imageUuid": image_uuid, "ports": [str(port2) + ':6666']}
+    service2 = client.create_service(name=random_str(),
+                                     environmentId=env.id,
+                                     launchConfig=launch_config,
+                                     scale=2)
+    service2 = client.wait_success(service2)
+    assert service2.state == "inactive"
+    service2 = client.wait_success(service2.activate(), 120)
+    assert service2.state == "active"
+
+    wait_for(lambda: client.reload(service1).publicEndpoints is not None
+             and len(client.reload(service1).publicEndpoints) == 2)
+    endpoints = client.reload(service1).publicEndpoints
+    for host_ip in host_ips:
+        _validate_endpoint(endpoints, host_ip, port1)
+
+    wait_for(lambda: client.reload(service2).publicEndpoints is not None
+             and len(client.reload(service2).publicEndpoints) == 2)
+    endpoints = client.reload(service2).publicEndpoints
+    for host_ip in host_ips:
+        _validate_endpoint(endpoints, host_ip, port2)
+
+    wait_for(lambda: client.reload(host1).publicEndpoints is not None
+             and len(client.reload(host1).publicEndpoints) == 2)
+    endpoints = client.reload(host1).publicEndpoints
+    _validate_endpoint(endpoints, host1_ip, port1)
+    _validate_endpoint(endpoints, host1_ip, port2)
+
+    wait_for(lambda: client.reload(host2).publicEndpoints is not None
+             and len(client.reload(host2).publicEndpoints) == 2)
+    endpoints = client.reload(host2).publicEndpoints
+    _validate_endpoint(endpoints, host2_ip, port1)
+    _validate_endpoint(endpoints, host2_ip, port2)
+
+    # deactivate service1
+    service1 = client.wait_success(service1.deactivate())
+    assert service1.state == "inactive"
+
+    wait_for(lambda: len(client.reload(service1).publicEndpoints) == 0)
+    wait_for(lambda: len(client.reload(service2).publicEndpoints) == 2)
+    wait_for(lambda: len(client.reload(host1).publicEndpoints) == 1)
+    wait_for(lambda: len(client.reload(host2).publicEndpoints) == 1)
+
+
 def _wait_health_host_count(super_client, health_id, count):
     def active_len():
         match = super_client. \

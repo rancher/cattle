@@ -9,9 +9,11 @@ import static io.cattle.platform.core.model.tables.StoragePoolTable.STORAGE_POOL
 import static io.cattle.platform.core.model.tables.VolumeStoragePoolMapTable.VOLUME_STORAGE_POOL_MAP;
 import static io.cattle.platform.core.model.tables.VolumeTable.VOLUME;
 import io.cattle.platform.core.constants.CommonStatesConstants;
+import io.cattle.platform.core.dao.GenericMapDao;
 import io.cattle.platform.core.dao.InstanceDao;
 import io.cattle.platform.core.model.Account;
 import io.cattle.platform.core.model.Instance;
+import io.cattle.platform.core.model.InstanceHostMap;
 import io.cattle.platform.core.model.Service;
 import io.cattle.platform.core.model.tables.records.InstanceRecord;
 import io.cattle.platform.core.model.tables.records.ServiceRecord;
@@ -19,10 +21,14 @@ import io.cattle.platform.db.jooq.dao.impl.AbstractJooqDao;
 
 import java.util.List;
 
+import javax.inject.Inject;
+
 import org.apache.commons.lang3.StringUtils;
 import org.jooq.Condition;
 
 public class InstanceDaoImpl extends AbstractJooqDao implements InstanceDao {
+    @Inject
+    GenericMapDao mapDao;
 
     @Override
     public boolean isOnSharedStorage(Instance instance) {
@@ -141,6 +147,31 @@ public class InstanceDaoImpl extends AbstractJooqDao implements InstanceDao {
                         .and(INSTANCE.STATE.notIn(CommonStatesConstants.PURGING, CommonStatesConstants.PURGED,
                                 CommonStatesConstants.REMOVED, CommonStatesConstants.REMOVING)))
                 .fetchInto(InstanceRecord.class);
+    }
+
+    @Override
+    public Long getInstanceHostId(long instanceId) {
+        List<? extends InstanceHostMap> maps = mapDao.findNonRemoved(InstanceHostMap.class, Instance.class,
+                instanceId);
+        if (maps.isEmpty()) {
+            return null;
+        }
+        return maps.get(0).getHostId();
+    }
+
+    @Override
+    public Service getServiceManaging(long instanceId) {
+        List<? extends Service> services = create().select(SERVICE.fields())
+                .from(SERVICE)
+                .join(SERVICE_EXPOSE_MAP)
+                .on(SERVICE_EXPOSE_MAP.SERVICE_ID.eq(SERVICE.ID))
+                .where(SERVICE_EXPOSE_MAP.INSTANCE_ID.eq(instanceId)
+                        .and(SERVICE_EXPOSE_MAP.MANAGED.eq(true)))
+                .fetchInto(ServiceRecord.class);
+        if (services.size() == 0) {
+            return null;
+        }
+        return services.get(0);
     }
 
 }
