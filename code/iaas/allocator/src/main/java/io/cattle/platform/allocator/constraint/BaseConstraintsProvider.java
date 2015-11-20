@@ -156,7 +156,7 @@ public class BaseConstraintsProvider implements AllocationConstraintsProvider, P
 
         if (attempt.getInstance() != null) {
             String driver = DataAccessor.fieldString(attempt.getInstance(), InstanceConstants.FIELD_VOLUME_DRIVER);
-            if (StringUtils.isNotEmpty(driver)) {
+            if (StringUtils.isNotEmpty(driver) && !VolumeConstants.LOCAL_DRIVER.equals(driver)) {
                 StoragePool pool = storagePoolDao.findStoragePoolByDriverName(attempt.getInstance().getAccountId(), driver);
                 if (pool != null) {
                     storagePoolToHostConstraint(constraints, pool);
