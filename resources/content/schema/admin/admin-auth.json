@@ -118,6 +118,8 @@
         "ldapconfig.userNameField" : "cr",
         "ldapconfig.userObjectClass" : "cr",
         "ldapconfig.userSearchField" : "cr",
+        "ldapconfig.userMemberAttribute" : "cr",
+        "ldapconfig.groupMemberMappingAttribute" : "cr",
 
         "localAuthConfig" : "cr",
         "localAuthConfig.accessMode" : "cr",

@@ -62,11 +62,15 @@
     <bean class="io.cattle.platform.iaas.api.auth.integration.ldap.ad.ADTokenCreator" />
     <bean class="io.cattle.platform.iaas.api.auth.integration.ldap.ad.ADTokenUtils" />
     <bean class="io.cattle.platform.iaas.api.auth.integration.ldap.ad.ADConfigManager" />
+    <bean class="io.cattle.platform.iaas.api.auth.integration.ldap.ad.ADConstantsConfig" />
 
-    <bean class="io.cattle.platform.iaas.api.auth.integration.ldap.OpenLDAP.OpenLDAPIdentityProvider" />
+    <bean class="io.cattle.platform.iaas.api.auth.integration.ldap.OpenLDAP.OpenLDAPIdentityProvider" >
+        <property name="executorService" ref="CoreExecutorService" />
+    </bean>
     <bean class="io.cattle.platform.iaas.api.auth.integration.ldap.OpenLDAP.OpenLDAPTokenCreator" />
     <bean class="io.cattle.platform.iaas.api.auth.integration.ldap.OpenLDAP.OpenLDAPUtils" />
     <bean class="io.cattle.platform.iaas.api.auth.integration.ldap.OpenLDAP.OpenLDAPConfigManager" />
+    <bean class="io.cattle.platform.iaas.api.auth.integration.ldap.OpenLDAP.OpenLDAPConstantsConfig" />
 
     <bean class="io.cattle.platform.iaas.api.auth.SettingsUtils" />
     <bean class="io.cattle.platform.iaas.api.auth.identity.IdentityManager" >

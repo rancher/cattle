@@ -31,4 +31,8 @@ public abstract class ADConfigurable implements Configurable, Provider {
     public String providerType() {
         return ADConstants.CONFIG;
     }
+
+    public boolean getEnabled(){
+        return isConfigured();
+    }
 }

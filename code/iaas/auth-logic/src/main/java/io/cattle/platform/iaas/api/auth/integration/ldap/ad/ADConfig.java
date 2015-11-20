@@ -67,6 +67,7 @@ public class ADConfig implements Configurable, LDAPConfig {
         return port;
     }
 
+    @Override
     @Field(required = false, nullable = true)
     public String getLoginDomain() {
         return loginDomain;
@@ -77,6 +78,7 @@ public class ADConfig implements Configurable, LDAPConfig {
         return domain;
     }
 
+    @Override
     @Field(required = true, nullable = false, defaultValue = "unrestricted")
     public String getAccessMode() {
         return accessMode;
@@ -107,48 +109,69 @@ public class ADConfig implements Configurable, LDAPConfig {
         return tls;
     }
 
+    @Override
     @Field(nullable = false, required = true, defaultValue = "sAMAccountName")
     public String getUserSearchField() {
         return userSearchField;
     }
 
+    @Override
     @Field(nullable = false, required = true, defaultValue = "sAMAccountName")
     public String getGroupSearchField() {
         return groupSearchField;
     }
 
+    @Override
     @Field(nullable = false, required = true, defaultValue = "sAMAccountName")
     public String getUserLoginField() {
         return userLoginField;
     }
 
+    @Override
     @Field(nullable = false, required = true, defaultValue = "person")
     public String getUserObjectClass() {
         return userObjectClass;
     }
 
+    @Override
     @Field(nullable = false, required = false, defaultValue = "userAccountControl")
     public String getUserEnabledAttribute() {
         return userEnabledAttribute;
     }
 
+    @Override
     @Field(nullable = false, required = true, defaultValue = "name")
     public String getUserNameField() {
         return userNameField;
     }
 
+    @Override
     @Field(nullable = false, required = false, defaultValue = "2")
     public int getUserDisabledBitMask() {
         return userDisabledBitMask;
     }
 
+    @Override
     @Field(nullable = false, required = true, defaultValue = "group")
     public String getGroupObjectClass() {
         return groupObjectClass;
     }
 
+    @Override
     @Field(nullable = false, required = true, defaultValue = "name")
     public String getGroupNameField() {
         return groupNameField;
+    }
+
+    @Override
+    @Field(nullable = true, required = false, defaultValue = "memberOf")
+    public String getUserMemberAttribute() {
+        return ADConstants.MEMBER_OF;
+    }
+
+    @Override
+    @Field(nullable = true, required = false, defaultValue = "memberOf")
+    public String getGroupMemberMappingAttribute() {
+        return ADConstants.MEMBER_OF;
     }
 }
