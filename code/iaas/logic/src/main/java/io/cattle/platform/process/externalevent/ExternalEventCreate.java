@@ -28,7 +28,6 @@ import io.cattle.platform.object.process.StandardProcess;
 import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.object.util.DataUtils;
 import io.cattle.platform.process.base.AbstractDefaultProcessHandler;
-import io.cattle.platform.process.common.util.ProcessUtils;
 import io.cattle.platform.util.type.CollectionUtils;
 
 import java.util.ArrayList;
@@ -123,14 +122,15 @@ public class ExternalEventCreate extends AbstractDefaultProcessHandler {
                     }
                     break;
                 case ExternalEventConstants.TYPE_VOLUME_DELETE:
-                    if (volume != null) {
-                        try {
-                            objectProcessManager.scheduleStandardProcess(StandardProcess.DEACTIVATE, volume,
-                                    ProcessUtils.chainInData(new HashMap<String, Object>(), PROC_VOL_DEACTIVATE, PROC_VOL_REMOVE));
-                        } catch (ProcessCancelException e) {
-                            log.info("Deactivate and remove process cancelled for volume {}. ProcessCancelException message: {}", volume, e.getMessage());
-                        }
-                    }
+                    // TODO Re-enable delete when we figure out how to properly delete volumes
+                    // if (volume != null) {
+                    // try {
+                    // objectProcessManager.scheduleStandardProcess(StandardProcess.DEACTIVATE, volume,
+                    // ProcessUtils.chainInData(new HashMap<String, Object>(), PROC_VOL_DEACTIVATE, PROC_VOL_REMOVE));
+                    // } catch (ProcessCancelException e) {
+                    // log.info("Deactivate and remove process cancelled for volume {}. ProcessCancelException message: {}", volume, e.getMessage());
+                    // }
+                    // }
                     break;
                 default:
                     log.error("Unknown event type: {} for event {}", event.getEventType(), event);

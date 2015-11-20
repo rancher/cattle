@@ -3,7 +3,6 @@ from cattle import ClientApiError
 
 SP_CREATE = "storagepool.create"
 VOLUME_CREATE = "volume.create"
-VOLUME_DELETE = "volume.delete"
 
 
 def more_hosts(context):
@@ -293,13 +292,6 @@ def test_external_volume_event(super_client, new_context):
                         VOLUME_CREATE, external_id, driver=sp_name, uri=uri)
     volumes = client.list_volume(externalId=external_id)
     assert len(volumes) == 1
-
-    # Delete volume event
-    create_volume_event(client, agent_client, new_context, VOLUME_DELETE,
-                        external_id, driver=sp_name, uri=uri)
-
-    volume = client.wait_success(volume)
-    assert volume.state == 'removed'
 
 
 def test_external_storage_pool_event(new_context):
