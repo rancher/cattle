@@ -1,4 +1,5 @@
 from common_fixtures import *  # NOQA
+from copy import deepcopy
 from gdapi import ApiError
 
 
@@ -403,6 +404,44 @@ def test_make_project_with_identity(admin_user_client):
     identity['role'] = 'owner'
     members = [identity]
     _create_project_with_members(admin_user_client, client, members)
+
+
+def test_restricted_members(admin_user_client):
+    context_1 = create_context(admin_user_client, create_project=True,
+                               add_host=True)
+    context_2 = create_context(admin_user_client)
+
+    user2_client = context_2.user_client
+    members = get_plain_members(context_1.project.projectMembers())
+    members.append({
+        'role': 'restricted',
+        'externalId': acc_id(user2_client),
+        'externalIdType': 'rancher_id'
+    })
+    project = context_1.user_client.reload(context_1.project)
+    project.setmembers(members=members)
+
+    user2_client = context_2.user_client
+
+    new_headers = deepcopy(user2_client._headers)
+    new_headers['X-API-Project-Id'] = project.id
+
+    user2_client._headers = new_headers
+
+    user2_client.reload_schema()
+
+    hosts = user2_client.list_host()
+    assert len(hosts) == 1
+    assert hosts[0].actions == {}
+    with pytest.raises(ApiError) as e:
+        user2_client.delete(hosts[0])
+    assert e.value.error.status == 405
+    with pytest.raises(AttributeError) as e:
+        client.list_registration_token()
+    assert 'list_registration_token' in e.value.message
+    with pytest.raises(AttributeError) as e:
+        client.create_registration_token()
+    assert 'create_registration_token' in e.value.message
 
 
 def _create_resources(client):
