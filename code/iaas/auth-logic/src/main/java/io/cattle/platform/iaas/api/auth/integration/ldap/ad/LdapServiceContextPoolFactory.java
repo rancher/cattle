@@ -1,6 +1,7 @@
 package io.cattle.platform.iaas.api.auth.integration.ldap.ad;
 
 import io.cattle.platform.iaas.api.auth.integration.ldap.ServiceContextCreationException;
+import io.cattle.platform.iaas.api.auth.integration.ldap.interfaces.LDAPConfig;
 
 import java.util.Hashtable;
 import javax.naming.Context;
@@ -16,27 +17,33 @@ import org.apache.commons.pool2.PooledObject;
 import org.apache.commons.pool2.PooledObjectFactory;
 import org.apache.commons.pool2.impl.DefaultPooledObject;
 
-public class ADServiceContextPoolFactory implements PooledObjectFactory<LdapContext> {
 
-    private static final Log logger = LogFactory.getLog(ADServiceContextPoolFactory.class);
+public class LdapServiceContextPoolFactory implements PooledObjectFactory<LdapContext> {
+
+    private static final Log logger = LogFactory.getLog(LdapServiceContextPoolFactory.class);
+    LDAPConfig config;
+
+    public LdapServiceContextPoolFactory(LDAPConfig config) {
+        this.config = config;
+    }
 
     @Override
     public PooledObject<LdapContext> makeObject() throws Exception {
-        String username = ADConstants.SERVICE_ACCOUNT_USER.get();
-        if (StringUtils.isNotBlank(ADConstants.LDAP_LOGIN_DOMAIN.get())) {
-            username = ADConstants.LDAP_LOGIN_DOMAIN.get() + '\\' +username;
+        String username = config.getServiceAccountUsername();
+        if (StringUtils.isNotBlank(config.getLoginDomain())) {
+            username = config.getLoginDomain() + '\\' +username;
         }
         Hashtable<String, String> props = new Hashtable<>();
         props.put(Context.SECURITY_AUTHENTICATION, "simple");
         props.put(Context.SECURITY_PRINCIPAL, username);
-        props.put(Context.SECURITY_CREDENTIALS, ADConstants.SERVICE_ACCOUNT_PASSWORD.get());
+        props.put(Context.SECURITY_CREDENTIALS, config.getServiceAccountPassword());
         props.put(Context.INITIAL_CONTEXT_FACTORY, "com.sun.jndi.ldap.LdapCtxFactory");
         LdapContext userContext;
 
         try {
-            String url = "ldap://" + ADConstants.LDAP_SERVER.get() + ':' + ADConstants.LDAP_PORT.get() + '/';
+            String url = "ldap://" + config.getDomain() + ':' + config.getPort() + '/';
             props.put(Context.PROVIDER_URL, url);
-            if (ADConstants.TLS_ENABLED.get()) {
+            if (config.getTls()) {
                 props.put(Context.SECURITY_PROTOCOL, "ssl");
             }
             userContext = new InitialLdapContext(props, null);
@@ -55,7 +62,7 @@ public class ADServiceContextPoolFactory implements PooledObjectFactory<LdapCont
     @Override
     public boolean validateObject(PooledObject<LdapContext> p) {
         try {
-            p.getObject().getAttributes(new LdapName(ADConstants.LDAP_DOMAIN.get()));
+            p.getObject().getAttributes(new LdapName(config.getDomain()));
             return true;
         } catch (NamingException e) {
             logger.info("Failed to validate an existing ldap service context.", e);

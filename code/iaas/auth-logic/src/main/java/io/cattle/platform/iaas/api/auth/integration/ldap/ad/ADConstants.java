@@ -96,6 +96,5 @@ public class ADConstants {
     public static final String MEMBER_OF = "memberOf";
     public static final String OBJECT_CLASS = "objectClass";
     public static final DynamicStringProperty GROUP_OBJECT_CLASS = ArchaiusUtil.getString(GROUP_OBJECT_CLASS_SETTING);
-    public static final String DN = "distinguishedname";
 
 }

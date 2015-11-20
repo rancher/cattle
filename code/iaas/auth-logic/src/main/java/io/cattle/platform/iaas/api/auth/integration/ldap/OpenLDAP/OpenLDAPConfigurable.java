@@ -32,4 +32,8 @@ public abstract class OpenLDAPConfigurable implements Configurable, Provider {
     public String providerType() {
         return OpenLDAPConstants.CONFIG;
     }
+
+    public boolean getEnabled(){
+        return isConfigured();
+    }
 }
