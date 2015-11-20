@@ -1,5 +1,6 @@
 package io.cattle.platform.servicediscovery.process;
 
+import static io.cattle.platform.core.model.tables.AgentTable.AGENT;
 import io.cattle.platform.configitem.request.ConfigUpdateRequest;
 import io.cattle.platform.configitem.request.util.ConfigUpdateRequestUtils;
 import io.cattle.platform.configitem.version.ConfigItemStatusManager;
@@ -101,8 +102,8 @@ public class LoadBalancerServiceUpdateConfig extends AbstractObjectProcessLogic 
     private void updateLoadBalancerConfigs(ProcessState state, List<? extends Instance> lbInstances) {
         Map<Long, Agent> agents = new HashMap<>();
         for (Instance lbInstance : lbInstances) {
-            Agent agent = objectManager.loadResource(Agent.class, lbInstance.getAgentId());
-            if (agent.getRemoved() == null) {
+            Agent agent = objectManager.findAny(Agent.class, AGENT.ID, lbInstance.getAgentId(), AGENT.REMOVED, null);
+            if (agent != null) {
                 agents.put(agent.getId(), agent);
             }
         }
