@@ -153,6 +153,16 @@ public class BaseConstraintsProvider implements AllocationConstraintsProvider, P
                 constraints.add(new UnmanagedStoragePoolKindConstraint(volume));
             }
         }
+
+        if (attempt.getInstance() != null) {
+            String driver = DataAccessor.fieldString(attempt.getInstance(), InstanceConstants.FIELD_VOLUME_DRIVER);
+            if (StringUtils.isNotEmpty(driver)) {
+                StoragePool pool = storagePoolDao.findStoragePoolByDriverName(attempt.getInstance().getAccountId(), driver);
+                if (pool != null) {
+                    storagePoolToHostConstraint(constraints, pool);
+                }
+            }
+        }
     }
 
     void storagePoolToHostConstraint(List<Constraint> constraints, StoragePool pool) {
