@@ -202,7 +202,8 @@ public class AuthDaoImpl extends AbstractJooqDao implements AuthDao {
     @Override
     public Identity getIdentity(Long id, IdFormatter idFormatter) {
         Account account = getAccountById(id);
-        if (account == null || account.getKind().equalsIgnoreCase(ProjectConstants.TYPE)) {
+        if (account == null || account.getKind().equalsIgnoreCase(ProjectConstants.TYPE) ||
+                !CommonStatesConstants.ACTIVE.equalsIgnoreCase(account.getState())) {
             return null;
         }
         Credential credential = create()
