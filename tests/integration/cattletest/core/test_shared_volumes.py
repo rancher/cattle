@@ -61,7 +61,7 @@ def test_multiple_sp_volume_schedule(new_context):
 
 
 def test_finding_shared_volumes(new_context):
-    # Tests that when a named is specified in dataVolumes and a volume in of
+    # Tests that when a named is specified in dataVolumes and a volume of
     # that name already exists in a shared storage pool, the pre-existing
     # volume is used
     client, agent_client, host = from_context(new_context)
@@ -190,6 +190,25 @@ def test_volume_create(new_context):
     v3 = client.wait_success(v3)
     assert v3.state == 'active'
     sps = v3.storagePools()
+    assert len(sps) == 1
+    assert sps[0].id == storage_pool.id
+
+    # Create a new volume, assign to container via dataVolumes, also set
+    # volumeDriver in container. Should be translated to a dataVolumeMount
+    # entry.
+    v4 = client.create_volume(name=random_str(), driver=sp_name)
+    v4 = client.wait_success(v4)
+    assert v4.state == 'requested'
+
+    c = client.create_container(imageUuid=new_context.image_uuid,
+                                volumeDriver=sp_name,
+                                dataVolumes=['%s:/foo' % v4.name])
+    c = client.wait_success(c)
+    assert c.state == 'running'
+    assert c.dataVolumeMounts['/foo'] == v4.id
+    v4 = client.wait_success(v4)
+    assert v4.state == 'active'
+    sps = v4.storagePools()
     assert len(sps) == 1
     assert sps[0].id == storage_pool.id
 

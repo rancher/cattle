@@ -14,5 +14,5 @@ public interface VolumeDao {
      * Does what the name says, but if storagePoolId is null, will look across all non-local storage pools
      * if storagePoolId is not null, will restrict the lookup to that storage pool.
      */
-    Volume findSharedVolume(long accountId, Long storagePoolId, String volumeName);
+    Volume findSharedVolume(long accountId, String driverName, String volumeName);
 }

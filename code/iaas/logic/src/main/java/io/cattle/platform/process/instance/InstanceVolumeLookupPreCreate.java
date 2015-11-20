@@ -5,7 +5,6 @@ import io.cattle.platform.core.constants.VolumeConstants;
 import io.cattle.platform.core.dao.StoragePoolDao;
 import io.cattle.platform.core.dao.VolumeDao;
 import io.cattle.platform.core.model.Instance;
-import io.cattle.platform.core.model.StoragePool;
 import io.cattle.platform.core.model.Volume;
 import io.cattle.platform.engine.handler.HandlerResult;
 import io.cattle.platform.engine.handler.ProcessPreListener;
@@ -25,7 +24,6 @@ import java.util.Map;
 import javax.inject.Inject;
 import javax.inject.Named;
 
-import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -64,18 +62,9 @@ public class InstanceVolumeLookupPreCreate extends AbstractObjectProcessLogic im
             return null;
         }
 
-        String vd = DataAccessor.fieldString(instance, InstanceConstants.FIELD_VOLUME_DRIVER);
-        if (VolumeConstants.LOCAL_DRIVER.equals(vd)) {
+        String driver = DataAccessor.fieldString(instance, InstanceConstants.FIELD_VOLUME_DRIVER);
+        if (VolumeConstants.LOCAL_DRIVER.equals(driver)) {
             return null;
-        }
-
-        Long storagePoolId = null;
-        long accountId = instance.getAccountId();
-        if (StringUtils.isNotEmpty(vd)) {
-            StoragePool sp = storagePoolDao.findStoragePoolByDriverName(accountId, vd);
-            if (sp != null) {
-                storagePoolId = sp.getId();
-            }
         }
 
         Map<Object, Object> data = new HashMap<>();
@@ -89,7 +78,7 @@ public class InstanceVolumeLookupPreCreate extends AbstractObjectProcessLogic im
                 String[] parts = v.split(":", 2);
                 if (parts.length > 1) {
                     try {
-                        Volume vol = volumeDao.findSharedVolume(accountId, storagePoolId, parts[0]);
+                        Volume vol = volumeDao.findSharedVolume(instance.getAccountId(), driver, parts[0]);
                         if (vol != null) {
                             dataVolumeMounts.put(parts[1], vol.getId());
                             continue;
