@@ -98,16 +98,16 @@ public class VolumeDaoImpl extends AbstractJooqDao implements VolumeDao {
                 .and(STORAGE_POOL.KIND.notIn(LOCAL_POOL_KINDS).or(STORAGE_POOL.KIND.isNull()))
             .fetchInto(VolumeRecord.class);
 
-        List<VolumeRecord> volumes = null;
-        if (StringUtils.isNotBlank(driverName)) {
-            volumes = new ArrayList<VolumeRecord>();
-            for (VolumeRecord v : result) {
-                if (StringUtils.equals(driverName, DataAccessor.fieldString(v, VolumeConstants.FIELD_VOLUME_DRIVER))){
-                    volumes.add(v);
-                }
+        List<VolumeRecord> volumes = new ArrayList<VolumeRecord>();
+        for (VolumeRecord v : result) {
+            String volDriver = DataAccessor.fieldString(v, VolumeConstants.FIELD_VOLUME_DRIVER);
+            if (VolumeConstants.LOCAL_DRIVER.equals(volDriver)) {
+                continue;
             }
-        } else {
-            volumes = result;
+            if ((StringUtils.isNotBlank(driverName) && StringUtils.equals(driverName, volDriver)) || 
+                    StringUtils.isBlank(driverName)) {
+                volumes.add(v);
+            }
         }
 
         if (volumes.size() <= 0) {

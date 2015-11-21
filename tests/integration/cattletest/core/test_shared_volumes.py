@@ -223,12 +223,49 @@ def test_volume_lookup_not_local(new_context):
                                 dataVolumes=['%s:/foo' % v1.name])
     c = client.wait_success(c)
     assert c.state == 'running'
+    assert not c.dataVolumeMounts
 
     c2 = client.create_container(imageUuid=new_context.image_uuid,
+                                 volumeDriver='local',
                                  dataVolumes=['%s:/foo' % v1.name])
     c2 = client.wait_success(c2)
     assert c2.state == 'running'
     assert not c2.dataVolumeMounts
+
+
+def test_volume_affinity(new_context):
+    # When looking up named volumes for scheduling purposes, local volumes
+    # should not be ignored if the volume affinity label is present
+    client = new_context.client
+    name = random_str()
+    v1 = client.create_volume(name=name, driver='local')
+    v1 = client.wait_success(v1)
+    name2 = random_str()
+    v2 = client.create_volume(name=name2, driver='local')
+    client.wait_success(v2)
+    c = client.create_container(imageUuid=new_context.image_uuid,
+                                volumeDriver='local',
+                                labels={'io.rancher.scheduler.'
+                                        'affinity:volumes': name},
+                                dataVolumes=['%s:/foo' % v1.name,
+                                             '%s:/bar' % v2.name])
+    c = client.wait_success(c)
+    assert c.state == 'running'
+    # Only the volume with affinity should have been added to dataVolMounts
+    assert len(c.dataVolumeMounts) == 1
+    assert c.dataVolumeMounts['/foo'] == v1.id
+
+    # Should fail to schedule because volume affinity conflicts with host
+    new_host = register_simulated_host(new_context)
+    with pytest.raises(ClientApiError) as e:
+        c = client.create_container(imageUuid=new_context.image_uuid,
+                                    volumeDriver='local',
+                                    requestedHostId=new_host.id,
+                                    labels={'io.rancher.scheduler.'
+                                            'affinity:volumes': name},
+                                    dataVolumes=['%s:/foo' % v1.name])
+        client.wait_success(c)
+    assert e.value.message == 'Failed to find a placement'
 
 
 def test_volume_create_failed_allocation(new_context):
