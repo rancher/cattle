@@ -3,7 +3,6 @@ from cattle import ClientApiError
 
 SP_CREATE = "storagepool.create"
 VOLUME_CREATE = "volume.create"
-VOLUME_DELETE = "volume.delete"
 
 
 def more_hosts(context):
@@ -61,7 +60,7 @@ def test_multiple_sp_volume_schedule(new_context):
 
 
 def test_finding_shared_volumes(new_context):
-    # Tests that when a named is specified in dataVolumes and a volume in of
+    # Tests that when a named is specified in dataVolumes and a volume of
     # that name already exists in a shared storage pool, the pre-existing
     # volume is used
     client, agent_client, host = from_context(new_context)
@@ -193,6 +192,25 @@ def test_volume_create(new_context):
     assert len(sps) == 1
     assert sps[0].id == storage_pool.id
 
+    # Create a new volume, assign to container via dataVolumes, also set
+    # volumeDriver in container. Should be translated to a dataVolumeMount
+    # entry.
+    v4 = client.create_volume(name=random_str(), driver=sp_name)
+    v4 = client.wait_success(v4)
+    assert v4.state == 'requested'
+
+    c = client.create_container(imageUuid=new_context.image_uuid,
+                                volumeDriver=sp_name,
+                                dataVolumes=['%s:/foo' % v4.name])
+    c = client.wait_success(c)
+    assert c.state == 'running'
+    assert c.dataVolumeMounts['/foo'] == v4.id
+    v4 = client.wait_success(v4)
+    assert v4.state == 'active'
+    sps = v4.storagePools()
+    assert len(sps) == 1
+    assert sps[0].id == storage_pool.id
+
 
 def test_volume_lookup_not_local(new_context):
     # When looking up named volumes for scheduling purposes, local volumes
@@ -274,13 +292,6 @@ def test_external_volume_event(super_client, new_context):
                         VOLUME_CREATE, external_id, driver=sp_name, uri=uri)
     volumes = client.list_volume(externalId=external_id)
     assert len(volumes) == 1
-
-    # Delete volume event
-    create_volume_event(client, agent_client, new_context, VOLUME_DELETE,
-                        external_id, driver=sp_name, uri=uri)
-
-    volume = client.wait_success(volume)
-    assert volume.state == 'removed'
 
 
 def test_external_storage_pool_event(new_context):
