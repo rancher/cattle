@@ -8,16 +8,16 @@ import io.github.ibuildthecloud.gdapi.annotation.Type;
 @Type(name = OpenLDAPConstants.CONFIG)
 public class OpenLDAPConfig implements Configurable, LDAPConfig {
 
-    private final boolean enabled;
+    private final Boolean enabled;
     private final String server;
-    private final int port;
-    private final int userDisabledBitMask;
+    private final Integer port;
+    private final Integer userDisabledBitMask;
     private final String loginDomain;
     private final String domain;
     private final String accessMode;
     private final String serviceAccountUsername;
     private final String serviceAccountPassword;
-    private final boolean tls;
+    private final Boolean tls;
     private final String userSearchField;
     private final String userLoginField;
     private final String userObjectClass;
@@ -29,9 +29,9 @@ public class OpenLDAPConfig implements Configurable, LDAPConfig {
     private final String userMemberAttribute;
     private final String groupMemberMappingAttribute;
 
-    public OpenLDAPConfig(String server, int port, int userDisabledBitMask, String loginDomain, String domain,
-                          boolean enabled, String accessMode, String serviceAccountUsername,
-                          String serviceAccountPassword, boolean tls, String userSearchField, String userLoginField,
+    public OpenLDAPConfig(String server, Integer port, Integer userDisabledBitMask, String loginDomain, String domain,
+                          Boolean enabled, String accessMode, String serviceAccountUsername,
+                          String serviceAccountPassword, Boolean tls, String userSearchField, String userLoginField,
                           String userObjectClass, String userNameField, String userEnabledAttribute, String
                                   groupSearchField,
                           String groupObjectClass, String groupNameField, String userMemberAttribute, String
@@ -64,12 +64,12 @@ public class OpenLDAPConfig implements Configurable, LDAPConfig {
     }
 
     @Field(nullable = true)
-    public boolean getEnabled() {
+    public Boolean getEnabled() {
         return enabled;
     }
 
     @Field(nullable = false, required = true, defaultValue = "389")
-    public int getPort() {
+    public Integer getPort() {
         return port;
     }
 
@@ -109,7 +109,7 @@ public class OpenLDAPConfig implements Configurable, LDAPConfig {
     }
 
     @Field(nullable = false, required = true)
-    public boolean getTls() {
+    public Boolean getTls() {
         return tls;
     }
 
@@ -144,7 +144,7 @@ public class OpenLDAPConfig implements Configurable, LDAPConfig {
     }
 
     @Field(nullable = true, required = false, defaultValue = "")
-    public int getUserDisabledBitMask() {
+    public Integer getUserDisabledBitMask() {
         return userDisabledBitMask;
     }
 

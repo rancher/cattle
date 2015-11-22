@@ -3,6 +3,7 @@ package io.cattle.platform.iaas.api.auth.integration.ldap.ad;
 import io.cattle.platform.iaas.api.auth.SecurityConstants;
 import io.cattle.platform.iaas.api.auth.SettingsUtils;
 import io.cattle.platform.iaas.api.auth.integration.ldap.LDAPUtils;
+import io.cattle.platform.iaas.api.auth.integration.ldap.interfaces.LDAPConstants;
 import io.cattle.platform.json.JsonMapper;
 import io.github.ibuildthecloud.gdapi.factory.SchemaFactory;
 import io.github.ibuildthecloud.gdapi.model.ListOptions;
@@ -37,85 +38,88 @@ public class ADConfigManager extends AbstractNoOpResourceManager {
         if (!StringUtils.equals(ADConstants.CONFIG, request.getType())) {
             return null;
         }
-        Map<String, Object> config = jsonMapper.convertValue(request.getRequestObject(), Map.class);
-        LDAPUtils.validateConfig(currentLdapConfig(config));
+
+        LDAPConstants config = request.proxyRequestObject(LDAPConstants.class);
+        if (config.getEnabled() == null) {
+            LDAPUtils.validateConfig(config);
+        }
         return updateCurrentConfig(config);
     }
 
-    private ADConfig currentLdapConfig(Map<String, Object> config) {
+    private ADConfig currentLdapConfig(LDAPConstants config) {
         ADConfig currentConfig = (ADConfig) listInternal(null, null, null, null);
         String domain = currentConfig.getDomain();
-        if (config.get(ADConstants.DOMAIN) != null) {
-            domain = (String) config.get(ADConstants.DOMAIN);
+        if (config.getDomain() != null) {
+            domain = config.getDomain();
         }
         String server = currentConfig.getServer();
-        if (config.get(ADConstants.SERVER) != null) {
-            server = (String) config.get(ADConstants.SERVER);
+        if (config.getServer() != null) {
+            server = config.getServer();
         }
         String loginDomain = currentConfig.getLoginDomain();
-        if (config.get(ADConstants.LOGIN_DOMAIN) != null) {
-            loginDomain = (String) config.get(ADConstants.LOGIN_DOMAIN);
+        if (config.getLoginDomain() != null) {
+            loginDomain = config.getLoginDomain();
         }
         String accessMode = currentConfig.getAccessMode();
-        if (config.get(ADConstants.ACCESSMODE) != null) {
-            accessMode = (String) config.get(ADConstants.ACCESSMODE);
+        if (config.getAccessMode() != null) {
+            accessMode = config.getAccessMode();
         }
         String serviceAccountUsername = currentConfig.getServiceAccountUsername();
-        if (config.get(ADConstants.SERVICE_ACCOUNT_USERNAME_FIELD) != null) {
-            serviceAccountUsername = (String) config.get(ADConstants.SERVICE_ACCOUNT_USERNAME_FIELD);
+        if (config.getServiceAccountUsername() != null) {
+            serviceAccountUsername = config.getServiceAccountUsername();
         }
         String serviceAccountPassword = currentConfig.getServiceAccountPassword();
-        if (config.get(ADConstants.SERVICE_ACCOUNT_PASSWORD_FIELD) != null) {
-            serviceAccountPassword = (String) config.get(ADConstants.SERVICE_ACCOUNT_PASSWORD_FIELD);
+        if (config.getServiceAccountPassword() != null) {
+            serviceAccountPassword = config.getServiceAccountPassword();
         }
         boolean tls = currentConfig.getTls();
-        if (config.get(ADConstants.TLS) != null) {
-            tls = (Boolean) config.get(ADConstants.TLS);
+        if (config.getTls() != null) {
+            tls = config.getTls();
         }
         int port = currentConfig.getPort();
-        if (config.get(ADConstants.PORT) != null) {
-            port = (int) (long) config.get(ADConstants.PORT);
+        if (config.getPort() != null) {
+            port = config.getPort();
         }
         boolean enabled = currentConfig.getEnabled();
-        if (config.get(SecurityConstants.ENABLED) != null) {
-            enabled = (Boolean) config.get(SecurityConstants.ENABLED);
+        if (config.getEnabled() != null) {
+            enabled = config.getEnabled();
         }
         String userSearchField = currentConfig.getUserSearchField();
-        if (config.get(ADConstants.USER_SEARCH_FIELD_FIELD) != null){
-            userSearchField = (String) config.get(ADConstants.USER_SEARCH_FIELD_FIELD);
+        if (config.getUserSearchField() != null){
+            userSearchField = config.getUserSearchField();
         }
         String groupSearchField = currentConfig.getGroupSearchField();
-        if (config.get(ADConstants.GROUP_SEARCH_FIELD_FIELD) != null){
-            groupSearchField = (String) config.get(ADConstants.GROUP_SEARCH_FIELD_FIELD);
+        if (config.getGroupSearchField() != null){
+            groupSearchField = config.getGroupSearchField();
         }
         String userLoginField = currentConfig.getUserLoginField();
-        if (config.get(ADConstants.USER_LOGIN_FIELD_FIELD) != null){
-            userLoginField = (String) config.get(ADConstants.USER_LOGIN_FIELD_FIELD);
+        if (config.getUserLoginField() != null){
+            userLoginField = config.getUserLoginField();
         }
         int userEnabledMaskBit = currentConfig.getUserDisabledBitMask();
-        if (config.get(ADConstants.USER_DISABLED_MASK_BIT) !=null){
-            userEnabledMaskBit = (int) (long) config.get(ADConstants.USER_DISABLED_MASK_BIT);
+        if (config.getUserDisabledBitMask() !=null){
+            userEnabledMaskBit = config.getUserDisabledBitMask();
         }
 
         String userObjectClass = currentConfig.getUserObjectClass();
-        if (config.get(ADConstants.USER_OBJECT_CLASS_FIELD) != null) {
-            userObjectClass = (String) config.get(ADConstants.USER_OBJECT_CLASS_FIELD);
+        if (config.getUserObjectClass() != null) {
+            userObjectClass = config.getUserObjectClass();
         }
         String userNameField = currentConfig.getUserNameField();
-        if (config.get(ADConstants.USER_NAME_FIELD_FIELD) != null){
-            userNameField = (String) config.get(ADConstants.USER_NAME_FIELD_FIELD);
+        if (config.getUserNameField() != null){
+            userNameField = config.getUserNameField();
         }
         String userEnabledAttribute = currentConfig.getUserEnabledAttribute();
-        if (config.get(ADConstants.USER_ENABLED_ATTRIBUTE_FIELD) != null){
-            userEnabledAttribute = (String) config.get(ADConstants.USER_ENABLED_ATTRIBUTE_FIELD);
+        if (config.getUserEnabledAttribute() != null){
+            userEnabledAttribute = config.getUserEnabledAttribute();
         }
         String groupObjectClass  = currentConfig.getGroupObjectClass();
-        if (config.get(ADConstants.GROUP_OBJECT_CLASS_FIELD) != null){
-            groupObjectClass = (String) config.get(ADConstants.GROUP_OBJECT_CLASS_FIELD);
+        if (config.getGroupObjectClass()!= null){
+            groupObjectClass = config.getGroupObjectClass();
         }
         String groupNameField = currentConfig.getGroupNameField();
-        if (config.get(ADConstants.GROUP_NAME_FIELD_FIELD) != null){
-            groupNameField = (String) config.get(ADConstants.GROUP_NAME_FIELD_FIELD);
+        if (config.getGroupNameField() != null){
+            groupNameField = config.getGroupNameField();
         }
         return new ADConfig(server, port, userEnabledMaskBit, loginDomain, domain, enabled, accessMode,
                 serviceAccountUsername, serviceAccountPassword, tls, userSearchField, userLoginField,
@@ -148,26 +152,26 @@ public class ADConfigManager extends AbstractNoOpResourceManager {
                 userNameField, userEnabledAttribute, groupSearchField, groupObjectClass, groupNameField);
     }
 
-    public ADConfig updateCurrentConfig(Map<String, Object> config) {
-        settingsUtils.changeSetting(ADConstants.DOMAIN_SETTING, config.get(ADConstants.DOMAIN));
-        settingsUtils.changeSetting(ADConstants.ACCESS_MODE_SETTING, config.get(ADConstants.ACCESSMODE));
-        settingsUtils.changeSetting(ADConstants.SERVER_SETTING, config.get(ADConstants.SERVER));
-        settingsUtils.changeSetting(ADConstants.LOGIN_DOMAIN_SETTING, config.get(ADConstants.LOGIN_DOMAIN));
-        settingsUtils.changeSetting(ADConstants.USER_SEARCH_FIELD_SETTING, config.get(ADConstants.USER_SEARCH_FIELD_FIELD));
-        settingsUtils.changeSetting(ADConstants.GROUP_SEARCH_FIELD_SETTING, config.get(ADConstants.GROUP_SEARCH_FIELD_FIELD));
-        settingsUtils.changeSetting(ADConstants.USER_LOGIN_FIELD_SETTING, config.get(ADConstants.USER_LOGIN_FIELD_FIELD));
-        settingsUtils.changeSetting(ADConstants.PORT_SETTING, config.get(ADConstants.PORT));
-        settingsUtils.changeSetting(ADConstants.USER_DISABLED_BIT_MASK_SETTING, config.get(ADConstants.USER_DISABLED_MASK_BIT));
-        settingsUtils.changeSetting(ADConstants.USER_OBJECT_CLASS_SETTING, config.get(ADConstants.USER_OBJECT_CLASS_FIELD));
-        settingsUtils.changeSetting(ADConstants.USER_NAME_FIELD_SETTING, config.get(ADConstants.USER_NAME_FIELD_FIELD));
-        settingsUtils.changeSetting(ADConstants.GROUP_OBJECT_CLASS_SETTING, config.get(ADConstants.GROUP_OBJECT_CLASS_FIELD));
-        settingsUtils.changeSetting(ADConstants.USER_ENABLED_ATTRIBUTE_SETTING, config.get(ADConstants.USER_ENABLED_ATTRIBUTE_FIELD));
-        settingsUtils.changeSetting(ADConstants.GROUP_NAME_FIELD_SETTING, config.get(ADConstants.GROUP_NAME_FIELD_FIELD));
-        settingsUtils.changeSetting(ADConstants.SERVICE_ACCOUNT_USERNAME_SETTING, config.get(ADConstants.SERVICE_ACCOUNT_USERNAME_FIELD));
-        settingsUtils.changeSetting(ADConstants.SERVICE_ACCOUNT_PASSWORD_SETTING, config.get(ADConstants.SERVICE_ACCOUNT_PASSWORD_FIELD));
-        settingsUtils.changeSetting(ADConstants.TLS_SETTING, config.get(ADConstants.TLS));
-        settingsUtils.changeSetting(SecurityConstants.SECURITY_SETTING, config.get(SecurityConstants.ENABLED));
-        if (config.get(SecurityConstants.ENABLED) != null){
+    public ADConfig updateCurrentConfig(LDAPConstants config) {
+        settingsUtils.changeSetting(ADConstants.ACCESS_MODE_SETTING, config.getAccessMode());
+        settingsUtils.changeSetting(ADConstants.DOMAIN_SETTING, config.getDomain());
+        settingsUtils.changeSetting(ADConstants.GROUP_NAME_FIELD_SETTING, config.getGroupNameField());
+        settingsUtils.changeSetting(ADConstants.GROUP_OBJECT_CLASS_SETTING, config.getGroupObjectClass());
+        settingsUtils.changeSetting(ADConstants.GROUP_SEARCH_FIELD_SETTING, config.getGroupSearchField());
+        settingsUtils.changeSetting(ADConstants.LOGIN_DOMAIN_SETTING, config.getLoginDomain());
+        settingsUtils.changeSetting(ADConstants.PORT_SETTING, config.getPort());
+        settingsUtils.changeSetting(ADConstants.SERVER_SETTING, config.getServer());
+        settingsUtils.changeSetting(ADConstants.SERVICE_ACCOUNT_PASSWORD_SETTING, config.getServiceAccountPassword());
+        settingsUtils.changeSetting(ADConstants.SERVICE_ACCOUNT_USERNAME_SETTING, config.getServiceAccountUsername());
+        settingsUtils.changeSetting(ADConstants.TLS_SETTING, config.getTls());
+        settingsUtils.changeSetting(ADConstants.USER_DISABLED_BIT_MASK_SETTING, config.getUserDisabledBitMask());
+        settingsUtils.changeSetting(ADConstants.USER_ENABLED_ATTRIBUTE_SETTING, config.getUserEnabledAttribute());
+        settingsUtils.changeSetting(ADConstants.USER_LOGIN_FIELD_SETTING, config.getUserLoginField());
+        settingsUtils.changeSetting(ADConstants.USER_NAME_FIELD_SETTING, config.getUserNameField());
+        settingsUtils.changeSetting(ADConstants.USER_OBJECT_CLASS_SETTING, config.getUserObjectClass());
+        settingsUtils.changeSetting(ADConstants.USER_SEARCH_FIELD_SETTING, config.getUserSearchField());
+        settingsUtils.changeSetting(SecurityConstants.SECURITY_SETTING, config.getEnabled());
+        if (config.getEnabled() != null){
             settingsUtils.changeSetting(SecurityConstants.AUTH_PROVIDER_SETTING, ADConstants.CONFIG);
         } else {
             settingsUtils.changeSetting(SecurityConstants.AUTH_PROVIDER_SETTING, SecurityConstants.NO_PROVIDER);

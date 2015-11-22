@@ -34,7 +34,7 @@ public class LDAPUtils {
             props.put(Context.SECURITY_PRINCIPAL, ldapConfig.getServiceAccountUsername());
             props.put(Context.SECURITY_CREDENTIALS, ldapConfig.getServiceAccountPassword());
             props.put(Context.INITIAL_CONTEXT_FACTORY, "com.sun.jndi.ldap.LdapCtxFactory");
-            String url = "ldap://" + ldapConfig.getServer() + ':' + ldapConfig.getPort() + '/';
+            String url = "ldap://" + ldapConfig.getServer() + ':' + String.valueOf(ldapConfig.getPort()) + '/';
             props.put(Context.PROVIDER_URL, url);
             if (ldapConfig.getTls()) {
                 props.put(Context.SECURITY_PROTOCOL, "ssl");

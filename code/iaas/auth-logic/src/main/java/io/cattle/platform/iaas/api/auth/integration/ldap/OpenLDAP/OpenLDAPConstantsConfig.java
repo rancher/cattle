@@ -31,12 +31,12 @@ public class OpenLDAPConstantsConfig extends OpenLDAPConfigurable implements LDA
     }
 
     @Override
-    public int getPort() {
+    public Integer getPort() {
         return OpenLDAPConstants.LDAP_PORT.get();
     }
 
     @Override
-    public boolean getTls() {
+    public Boolean getTls() {
         return OpenLDAPConstants.TLS_ENABLED.get();
     }
 
@@ -81,7 +81,7 @@ public class OpenLDAPConstantsConfig extends OpenLDAPConfigurable implements LDA
     }
 
     @Override
-    public int getUserDisabledBitMask() {
+    public Integer getUserDisabledBitMask() {
         return OpenLDAPConstants.USER_DISABLED_BIT_MASK.get();
     }
 

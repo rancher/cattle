@@ -6,7 +6,7 @@ import io.cattle.platform.iaas.api.auth.integration.interfaces.Scoped;
 
 public interface LDAPConstants extends LDAPConfig, Configurable, Scoped, Provider{
 
-    boolean getEnabled();
+    Boolean getEnabled();
 
     String objectClass();
 

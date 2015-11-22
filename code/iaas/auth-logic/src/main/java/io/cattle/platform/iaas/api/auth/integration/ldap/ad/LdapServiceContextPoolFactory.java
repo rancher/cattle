@@ -41,7 +41,7 @@ public class LdapServiceContextPoolFactory implements PooledObjectFactory<LdapCo
         LdapContext userContext;
 
         try {
-            String url = "ldap://" + config.getDomain() + ':' + config.getPort() + '/';
+            String url = "ldap://" + config.getServer() + ':' + config.getPort() + '/';
             props.put(Context.PROVIDER_URL, url);
             if (config.getTls()) {
                 props.put(Context.SECURITY_PROTOCOL, "ssl");

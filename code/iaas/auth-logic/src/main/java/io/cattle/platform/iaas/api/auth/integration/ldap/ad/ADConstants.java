@@ -17,18 +17,9 @@ public class ADConstants {
     public static final String USER_SCOPE = NAME + "_user";
     public static final String GROUP_SCOPE = NAME + "_group";
 
-    public static final String ACCESSMODE = "accessMode";
     public static final String CONFIG = NAME + "config";
-    public static final String DOMAIN = "domain";
     public static final String LDAP_ACCESS_TOKEN = NAME + "AccessToken";
     public static final String LDAP_JWT = NAME + "Jwt";
-    public static final String LOGIN_DOMAIN = "loginDomain";
-    public static final String PORT = "port";
-    public static final String SERVER = "server";
-    public static final String SERVICE_ACCOUNT_PASSWORD_FIELD = "serviceAccountPassword";
-    public static final String SERVICE_ACCOUNT_USERNAME_FIELD = "serviceAccountUsername";
-    public static final String TLS = "tls";
-    public static final String TOKEN = "token";
 
 
     //Names for Settings in cattle.
@@ -73,15 +64,6 @@ public class ADConstants {
     public static final DynamicStringProperty USER_OBJECT_CLASS = ArchaiusUtil.getString(USER_OBJECT_CLASS_SETTING);
     public static final DynamicIntProperty USER_DISABLED_BIT_MASK = ArchaiusUtil.getInt(USER_DISABLED_BIT_MASK_SETTING);
     public static final DynamicStringProperty USER_ENABLED_ATTRIBUTE = ArchaiusUtil.getString(USER_ENABLED_ATTRIBUTE_SETTING);
-    public static final String USER_SEARCH_FIELD_FIELD = "userSearchField";
-    public static final String USER_LOGIN_FIELD_FIELD = "userLoginField";
-    public static final String USER_OBJECT_CLASS_FIELD = "userObjectClass";
-    public static final String USER_DISABLED_MASK_BIT = "userDisabledBitMask";
-    public static final String USER_NAME_FIELD_FIELD = "userNameField";
-    public static final String USER_ENABLED_ATTRIBUTE_FIELD = "userEnabledAttribute";
-    public static final String GROUP_SEARCH_FIELD_FIELD = "groupSearchField";
-    public static final String GROUP_OBJECT_CLASS_FIELD = "groupObjectClass";
-    public static final String GROUP_NAME_FIELD_FIELD = "groupNameField";
     public static final String MANAGER = NAME + "Manager";
 
 
@@ -92,7 +74,6 @@ public class ADConstants {
         * */
     public static final DynamicStringProperty USER_NAME_FIELD = ArchaiusUtil.getString(USER_NAME_FIELD_SETTING);
     public static final DynamicStringProperty GROUP_NAME_FIELD = ArchaiusUtil.getString(GROUP_NAME_FIELD_SETTING);
-    public static final String DEFAULT_NAME_FIELD = "name";
     public static final String MEMBER_OF = "memberOf";
     public static final String OBJECT_CLASS = "objectClass";
     public static final DynamicStringProperty GROUP_OBJECT_CLASS = ArchaiusUtil.getString(GROUP_OBJECT_CLASS_SETTING);
