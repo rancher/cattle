@@ -12,9 +12,9 @@ public interface LDAPConfig {
 
     String getServer();
 
-    int getPort();
+    Integer getPort();
 
-    boolean getTls();
+    Boolean getTls();
 
     String getLoginDomain();
 
@@ -32,7 +32,7 @@ public interface LDAPConfig {
 
     String getUserNameField();
 
-    int getUserDisabledBitMask();
+    Integer getUserDisabledBitMask();
 
     String getGroupObjectClass();
 

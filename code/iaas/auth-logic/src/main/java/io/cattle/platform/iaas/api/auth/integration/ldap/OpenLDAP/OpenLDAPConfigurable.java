@@ -33,7 +33,7 @@ public abstract class OpenLDAPConfigurable implements Configurable, Provider {
         return OpenLDAPConstants.CONFIG;
     }
 
-    public boolean getEnabled(){
+    public Boolean getEnabled(){
         return isConfigured();
     }
 }

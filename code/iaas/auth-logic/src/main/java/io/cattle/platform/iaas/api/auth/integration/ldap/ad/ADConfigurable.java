@@ -32,7 +32,7 @@ public abstract class ADConfigurable implements Configurable, Provider {
         return ADConstants.CONFIG;
     }
 
-    public boolean getEnabled(){
+    public Boolean getEnabled(){
         return isConfigured();
     }
 }
