@@ -4,7 +4,6 @@ import static io.cattle.platform.core.model.tables.StoragePoolTable.*;
 import static io.cattle.platform.core.model.tables.VolumeStoragePoolMapTable.*;
 import static io.cattle.platform.core.model.tables.VolumeTable.*;
 import io.cattle.platform.core.constants.CommonStatesConstants;
-import io.cattle.platform.core.constants.VolumeConstants;
 import io.cattle.platform.core.dao.GenericResourceDao;
 import io.cattle.platform.core.dao.VolumeDao;
 import io.cattle.platform.core.model.StoragePool;
@@ -14,9 +13,7 @@ import io.cattle.platform.core.model.tables.records.VolumeRecord;
 import io.cattle.platform.db.jooq.dao.impl.AbstractJooqDao;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.process.ObjectProcessManager;
-import io.cattle.platform.object.util.DataAccessor;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -26,7 +23,6 @@ import java.util.Set;
 
 import javax.inject.Inject;
 
-import org.apache.commons.lang3.StringUtils;
 import org.jooq.Record;
 
 public class VolumeDaoImpl extends AbstractJooqDao implements VolumeDao {
@@ -83,8 +79,8 @@ public class VolumeDaoImpl extends AbstractJooqDao implements VolumeDao {
     }
 
     @Override
-    public Volume findSharedVolume(long accountId, String driverName, String volumeName) {
-        List<VolumeRecord> result =  create()
+    public List<? extends Volume> findSharedOrUnmappedVolumes(long accountId, String volumeName) {
+        List<VolumeRecord> volumes = create()
             .selectDistinct(VOLUME.fields())
             .from(VOLUME)
             .leftOuterJoin(VOLUME_STORAGE_POOL_MAP)
@@ -98,25 +94,6 @@ public class VolumeDaoImpl extends AbstractJooqDao implements VolumeDao {
                 .and(STORAGE_POOL.KIND.notIn(LOCAL_POOL_KINDS).or(STORAGE_POOL.KIND.isNull()))
             .fetchInto(VolumeRecord.class);
 
-        List<VolumeRecord> volumes = new ArrayList<VolumeRecord>();
-        for (VolumeRecord v : result) {
-            String volDriver = DataAccessor.fieldString(v, VolumeConstants.FIELD_VOLUME_DRIVER);
-            if (VolumeConstants.LOCAL_DRIVER.equals(volDriver)) {
-                continue;
-            }
-            if ((StringUtils.isNotBlank(driverName) && StringUtils.equals(driverName, volDriver)) || 
-                    StringUtils.isBlank(driverName)) {
-                volumes.add(v);
-            }
-        }
-
-        if (volumes.size() <= 0) {
-            return null;
-        } else if (volumes.size() == 1) {
-            return volumes.get(0);
-        } else {
-            throw new IllegalStateException(String.format("Found %s volumes matching: account id %s, driver name: %s, volume name: %s.",
-                    volumes.size(), accountId, driverName, volumeName));
-        }
+        return volumes;
     }
 }

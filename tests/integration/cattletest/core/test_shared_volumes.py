@@ -83,13 +83,13 @@ def test_finding_shared_volumes(new_context):
     assert c.state == 'running'
     assert c.dataVolumeMounts[path] == volume.id
 
-    # If volumeDriver == local, should not use the shared volume
+    # Same behavior if volumeDriver == local
     c = client.create_container(imageUuid=new_context.image_uuid,
                                 volumeDriver='local',
                                 dataVolumes=data_volumes)
     c = client.wait_success(c)
     assert c.state == 'running'
-    assert not c.dataVolumeMounts
+    assert c.dataVolumeMounts[path] == volume.id
 
     # Create another storage pool and add a volume of the same name to it
     storage_pool = add_storage_pool(new_context)
@@ -106,17 +106,12 @@ def test_finding_shared_volumes(new_context):
     with pytest.raises(ClientApiError):
         client.wait_success(c)
 
-    # Container should work if the volume driver is specified
-    # Also, throw in testing that an extra non-named volume sticks around
-    data_volumes.append('/tmp:/tmp')
+    # Even if the volume driver is specified, should fail
     c = client.create_container(imageUuid=new_context.image_uuid,
                                 volumeDriver=sp_name2,
                                 dataVolumes=data_volumes)
-    c = client.wait_success(c)
-    assert c.state == 'running'
-    assert len(c.dataVolumeMounts) == 1
-    assert len(c.dataVolumes) == 2
-    assert c.dataVolumeMounts[path] == volume2.id
+    with pytest.raises(ClientApiError):
+        client.wait_success(c)
 
 
 def test_data_volume_mounts(new_context):
@@ -175,7 +170,7 @@ def test_volume_create(new_context):
     assert len(sps) == 1
     assert sps[0].kind == 'sim'
 
-    # Create a new volume, assign to container via dataVolumes
+    # Create a new, unmapped volume, assign to container via dataVolumes
     # Should be translated to a dataVolumeMount entry.
     v3 = client.create_volume(name=random_str(), driver=sp_name)
     v3 = client.wait_success(v3)
@@ -192,68 +187,47 @@ def test_volume_create(new_context):
     assert len(sps) == 1
     assert sps[0].id == storage_pool.id
 
-    # Create a new volume, assign to container via dataVolumes, also set
-    # volumeDriver in container. Should be translated to a dataVolumeMount
-    # entry.
-    v4 = client.create_volume(name=random_str(), driver=sp_name)
-    v4 = client.wait_success(v4)
-    assert v4.state == 'requested'
 
-    c = client.create_container(imageUuid=new_context.image_uuid,
-                                volumeDriver=sp_name,
-                                dataVolumes=['%s:/foo' % v4.name])
-    c = client.wait_success(c)
-    assert c.state == 'running'
-    assert c.dataVolumeMounts['/foo'] == v4.id
-    v4 = client.wait_success(v4)
-    assert v4.state == 'active'
-    sps = v4.storagePools()
-    assert len(sps) == 1
-    assert sps[0].id == storage_pool.id
-
-
-def test_volume_lookup_not_local(new_context):
-    # When looking up named volumes for scheduling purposes, local volumes
-    # should be ignored.
-    client = new_context.client
+def create_and_map_volume(client, context):
     name = random_str()
-    v1 = client.create_volume(name=name, driver='local')
-    v1 = client.wait_success(v1)
-    c = client.create_container(imageUuid=new_context.image_uuid,
-                                dataVolumes=['%s:/foo' % v1.name])
-    c = client.wait_success(c)
+    v = client.create_volume(name=name, driver='local')
+    v = client.wait_success(v)
+    c = client.wait_success(client.create_container(
+        imageUuid=context.image_uuid,
+        dataVolumeMounts={'/foo': v.id}))
     assert c.state == 'running'
-    assert not c.dataVolumeMounts
-
-    c2 = client.create_container(imageUuid=new_context.image_uuid,
-                                 volumeDriver='local',
-                                 dataVolumes=['%s:/foo' % v1.name])
-    c2 = client.wait_success(c2)
-    assert c2.state == 'running'
-    assert not c2.dataVolumeMounts
+    assert c.dataVolumeMounts['/foo'] == v.id
+    return name, v
 
 
 def test_volume_affinity(new_context):
     # When looking up named volumes for scheduling purposes, local volumes
     # should not be ignored if the volume affinity label is present
     client = new_context.client
-    name = random_str()
-    v1 = client.create_volume(name=name, driver='local')
-    v1 = client.wait_success(v1)
-    name2 = random_str()
-    v2 = client.create_volume(name=name2, driver='local')
-    client.wait_success(v2)
+    n1, v1 = create_and_map_volume(client, new_context)
+    n2, v2 = create_and_map_volume(client, new_context)
+    n3, v3 = create_and_map_volume(client, new_context)
+    n4 = random_str()
+    v4 = client.create_volume(name=n4, driver='local')
+
     c = client.create_container(imageUuid=new_context.image_uuid,
-                                volumeDriver='local',
-                                labels={'io.rancher.scheduler.'
-                                        'affinity:volumes': name},
-                                dataVolumes=['%s:/foo' % v1.name,
-                                             '%s:/bar' % v2.name])
+                                labels={'io.rancher.scheduler.affinity:'
+                                        'volumes': ','.join([n1, n3])},
+                                dataVolumes=['%s:/p/n1' % n1,
+                                             '%s:/p/n2' % n2,
+                                             '%s:/p/n3' % n3,
+                                             '%s:/p/n4' % n4])
     c = client.wait_success(c)
     assert c.state == 'running'
-    # Only the volume with affinity should have been added to dataVolMounts
-    assert len(c.dataVolumeMounts) == 1
-    assert c.dataVolumeMounts['/foo'] == v1.id
+
+    # v1 is mapped, local driver, has affinity, should be found
+    # v2 is mapped, local driver, no affinity, should not be found
+    # v3 is mapped, random driver, has affinity, should be found
+    # v4 is unmapped, no affinity, should be found
+    assert len(c.dataVolumeMounts) == 3
+    assert c.dataVolumeMounts['/p/n1'] == v1.id
+    assert c.dataVolumeMounts['/p/n3'] == v3.id
+    assert c.dataVolumeMounts['/p/n4'] == v4.id
 
     # Should fail to schedule because volume affinity conflicts with host
     new_host = register_simulated_host(new_context)
@@ -262,8 +236,8 @@ def test_volume_affinity(new_context):
                                     volumeDriver='local',
                                     requestedHostId=new_host.id,
                                     labels={'io.rancher.scheduler.'
-                                            'affinity:volumes': name},
-                                    dataVolumes=['%s:/foo' % v1.name])
+                                            'affinity:volumes': n1},
+                                    dataVolumes=['%s:/foo' % n1])
         client.wait_success(c)
     assert e.value.message == 'Failed to find a placement'
 
