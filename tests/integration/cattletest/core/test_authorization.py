@@ -432,7 +432,38 @@ def test_ldap_auth(admin_user_client, user_client, project_client):
         'userLoginField': 'cr',
         'userNameField': 'cr',
         'userObjectClass': 'cr',
-        'userSearchField': 'cr'
+        'userSearchField': 'cr',
+        'groupMemberMappingAttribute': 'cr',
+        'userMemberAttribute': 'cr'
+    })
+
+
+def test_openldap_auth(admin_user_client, user_client, project_client):
+    assert 'openldapconfig' not in user_client.schema.types
+    assert 'openldapconfig' not in project_client.schema.types
+
+    auth_check(admin_user_client.schema, 'openldapconfig', 'cru', {
+        'accessMode': 'cr',
+        'domain': 'cr',
+        'enabled': 'cr',
+        'groupNameField': 'cr',
+        'groupObjectClass': 'cr',
+        'groupSearchField': 'cr',
+        'loginDomain': 'cr',
+        'name': 'r',
+        'port': 'cr',
+        'server': 'cr',
+        'serviceAccountPassword': 'cro',
+        'serviceAccountUsername': 'cr',
+        'tls': 'cr',
+        'userDisabledBitMask': 'cr',
+        'userEnabledAttribute': 'cr',
+        'userLoginField': 'cr',
+        'userNameField': 'cr',
+        'userObjectClass': 'cr',
+        'userSearchField': 'cr',
+        'groupMemberMappingAttribute': 'cr',
+        'userMemberAttribute': 'cr'
     })
 
 
