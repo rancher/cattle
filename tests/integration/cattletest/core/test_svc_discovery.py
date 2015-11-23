@@ -2515,7 +2515,7 @@ def test_validate_long_hostname_with_domainname_override(client, context):
         }
     }
     first_service_name = "MyServiceNameLongerThanDNSPrefixLength" \
-                         "AllowedMyServiceNameLonger"
+                         "AllowedMyServiceNameLonge"
     service1 = client.create_service(name=first_service_name,
                                      environmentId=env.id,
                                      launchConfig=launch_config1)

@@ -4,6 +4,7 @@
             "required": true,
             "validChars": "a-zA-Z0-9-",
             "minLength": 1,
+            "maxLength": 63,
              "attributes" : {
                 "scheduleUpdate" : true
             }
