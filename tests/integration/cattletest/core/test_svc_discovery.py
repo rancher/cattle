@@ -2958,6 +2958,62 @@ def test_public_endpoints(new_context):
     wait_for(lambda: len(client.reload(host2).publicEndpoints) == 1)
 
 
+def test_update_port_endpoint(new_context):
+    client = new_context.client
+    host1 = new_context.host
+    env = _create_stack(client)
+    host_ips = []
+    host1_ip = host1.ipAddresses()[0].address
+    host_ips.append(host1_ip)
+
+    port1 = 5557
+    port2 = 5558
+
+    image_uuid = new_context.image_uuid
+    launch_config = {"imageUuid": image_uuid, "ports": [str(port1) + ':6666']}
+    svc = client.create_service(name=random_str(),
+                                environmentId=env.id,
+                                launchConfig=launch_config)
+    svc = client.wait_success(svc)
+    assert svc.state == "inactive"
+    svc = client.wait_success(svc.activate(), 120)
+    assert svc.state == "active"
+
+    wait_for(lambda: client.reload(svc).publicEndpoints is not None
+             and len(client.reload(svc).publicEndpoints) == 1)
+    endpoints = client.reload(svc).publicEndpoints
+    for host_ip in host_ips:
+        _validate_endpoint(endpoints, host_ip, port1)
+
+    wait_for(lambda: client.reload(host1).publicEndpoints is not None
+             and len(client.reload(host1).publicEndpoints) == 1)
+    endpoints = client.reload(host1).publicEndpoints
+    _validate_endpoint(endpoints, host1_ip, port1)
+
+    # update port
+    c = _wait_for_compose_instance_start(client, svc, env, "1")
+    port = c.ports_link()[0]
+    assert port.publicPort == port1
+
+    port = client.update(port, publicPort=port2)
+    assert port.state == 'updating-active'
+    assert port.publicPort == port2
+    port = client.wait_success(port)
+    assert port.state == 'active'
+
+    # validate endpoints
+    wait_for(lambda: client.reload(svc).publicEndpoints is not None
+             and len(client.reload(svc).publicEndpoints) == 1)
+    endpoints = client.reload(svc).publicEndpoints
+    for host_ip in host_ips:
+        _validate_endpoint(endpoints, host_ip, port2)
+
+    wait_for(lambda: client.reload(host1).publicEndpoints is not None
+             and len(client.reload(host1).publicEndpoints) == 1)
+    endpoints = client.reload(host1).publicEndpoints
+    _validate_endpoint(endpoints, host1_ip, port2)
+
+
 def _wait_health_host_count(super_client, health_id, count):
     def active_len():
         match = super_client. \
