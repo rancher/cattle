@@ -41,10 +41,6 @@ public class PortUpdatePostListener extends AbstractObjectProcessLogic implement
     public HandlerResult handle(ProcessState state, ProcessInstance process) {
         Port port = (Port) state.getResource();
 
-        if (port.getPublicIpAddressId() == null || port.getPublicPort() == null) {
-            return null;
-        }
-
         IpAddress ip = objectManager.findOne(IpAddress.class, IP_ADDRESS.ID, port.getPublicIpAddressId(),
                 IP_ADDRESS.REMOVED, null);
         if (ip == null) {
@@ -60,15 +56,11 @@ public class PortUpdatePostListener extends AbstractObjectProcessLogic implement
                 oldPublicPort = (Integer) old.get(PortConstants.FIELD_PUBLIC_POST);
             }
         }
-        
-        if (oldPublicPort == null) {
-            return null;
-        }
 
         PublicEndpoint newEndPoint = new PublicEndpoint(ip.getAddress(), port.getPublicPort());
 
         PublicEndpoint oldEndPoint = new PublicEndpoint(ip.getAddress(), oldPublicPort);
-
+        
         updateServiceEndpoints(port, newEndPoint, oldEndPoint);
 
         updateHostEndPoints(ip, newEndPoint, oldEndPoint);

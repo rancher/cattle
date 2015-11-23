@@ -336,6 +336,10 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
         // have to reload the object to get the latest update for publicEndpoint
         // if don't reload, its possible that n concurrent updates would lack information.
         // update would be performed on the original object
+
+        if (publicEndpoint.getPort() == null || publicEndpoint.getIpAddress() == null) {
+            return;
+        }
         Object reloaded = objectManager.reload(object);
         List<PublicEndpoint> publicEndpoints = new ArrayList<>();
         publicEndpoints.addAll(DataAccessor.fields(reloaded)
