@@ -39,6 +39,11 @@ public class PortActivateDeactivatePostListener extends AbstractObjectProcessLog
     @Override
     public HandlerResult handle(ProcessState state, ProcessInstance process) {
         Port port = (Port) state.getResource();
+
+        if (port.getPublicIpAddressId() == null || port.getPublicPort() == null) {
+            return null;
+        }
+
         IpAddress ip = objectManager.findOne(IpAddress.class, IP_ADDRESS.ID, port.getPublicIpAddressId(),
                 IP_ADDRESS.REMOVED, null);
         if (ip == null) {
