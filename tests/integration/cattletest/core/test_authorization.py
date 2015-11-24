@@ -1194,7 +1194,7 @@ def test_api_key_auth(admin_user_client, user_client, project_client):
         'accountId': 'cr',
     })
 
-    auth_check(user_client.schema, 'apiKey', 'r', {
+    auth_check(user_client.schema, 'apiKey', 'crud', {
         'publicValue': 'r',
         'accountId': 'r',
         'secretValue': 'ro',
