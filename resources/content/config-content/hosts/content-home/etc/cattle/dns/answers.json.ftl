@@ -1,17 +1,10 @@
 {
-    "default": {
-        "recurse": [
-            PARENT_DNS
-        ],
-        "a": {
-        	"rancher-metadata.": {"answer": ["169.254.169.250"]},
-		"rancher-metadata.rancher.internal.": {"answer": ["169.254.169.250"]}
-		}
-    },
+<#assign setDefault = true/>
 <#if dnsEntries?? >
     <#list dnsEntries as dnsEntry>
         <#if dnsEntry.resolve?has_content && dnsEntry.sourceIpAddress.address??>
     "${dnsEntry.sourceIpAddress.address}": {
+    <#if dnsEntry.sourceIpAddress.address == "default"> <#assign setDefault = false/> </#if>
             <#if (dnsEntry.instance.data.fields.dns)?? && dnsEntry.instance.data.fields.dns?has_content >
         "recurse": [
                 <#list dnsEntry.instance.data.fields.dns as recurse >
@@ -52,5 +45,18 @@
         </#if>
     </#list>
     "": {}
+</#if>
+
+<#if setDefault == true>
+,
+"default": {
+        "recurse": [
+            PARENT_DNS
+        ],
+        "a": {
+        	"rancher-metadata.": {"answer": ["169.254.169.250"]},
+		"rancher-metadata.rancher.internal.": {"answer": ["169.254.169.250"]}
+		}
+    }
 </#if>
 }
