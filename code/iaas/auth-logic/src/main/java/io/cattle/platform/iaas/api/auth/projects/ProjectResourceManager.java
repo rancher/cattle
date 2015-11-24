@@ -25,6 +25,7 @@ import io.github.ibuildthecloud.gdapi.factory.SchemaFactory;
 import io.github.ibuildthecloud.gdapi.model.ListOptions;
 import io.github.ibuildthecloud.gdapi.model.Resource;
 import io.github.ibuildthecloud.gdapi.model.Schema;
+import io.github.ibuildthecloud.gdapi.model.impl.CollectionImpl;
 import io.github.ibuildthecloud.gdapi.request.ApiRequest;
 import io.github.ibuildthecloud.gdapi.url.UrlBuilder;
 import io.github.ibuildthecloud.gdapi.util.ResponseCodes;
@@ -238,5 +239,13 @@ public class ProjectResourceManager extends AbstractObjectResourceManager {
         }
 
         resource.getLinks().putAll(links);
+    }
+
+    @Override
+    protected void addFilters(CollectionImpl collection, ApiRequest request) {
+    }
+
+    @Override
+    protected void addSort(CollectionImpl collection, ApiRequest request) {
     }
 }
