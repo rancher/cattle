@@ -311,26 +311,6 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
         return false;
     }
 
-   @Override
-   public void updateServicePublicEndpoints(final Service service, final PublicEndpoint publicEndpoint, final boolean add) {
-        lockManager.lock(new ServiceEndpointsUpdateLock(service), new LockCallbackNoReturn() {
-            @Override
-            public void doWithLockNoResult() {
-                updateObjectEndPoint(service, service.getKind(), service.getId(), publicEndpoint, add);
-            }
-        });
-    }
-
-    @Override
-    public void updateHostPublicEndpoints(final Host host, final PublicEndpoint publicEndpoint, final boolean add) {
-        lockManager.lock(new HostEndpointsUpdateLock(host), new LockCallbackNoReturn() {
-            @Override
-            public void doWithLockNoResult() {
-                updateObjectEndPoint(host, host.getKind(), host.getId(), publicEndpoint, add);
-            }
-        });
-    }
-
     protected void updateObjectEndPoint(final Object object, final String resourceType, final Long resourceId,
             final PublicEndpoint publicEndpoint, final boolean add) {
         // have to reload the object to get the latest update for publicEndpoint
@@ -366,5 +346,26 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
                 }
             });
         }
+    }
+
+    @Override
+    public void propagatePublicEndpoint(final PublicEndpoint publicEndpoint, final boolean add) {
+        final Host host = publicEndpoint.getHost();
+        lockManager.lock(new HostEndpointsUpdateLock(host),
+                new LockCallbackNoReturn() {
+                    @Override
+                    public void doWithLockNoResult() {
+                        updateObjectEndPoint(host, host.getKind(), Long.valueOf(publicEndpoint.getHostId()),
+                                publicEndpoint, add);
+                    }
+                });
+
+        final Service service = publicEndpoint.getService();
+        lockManager.lock(new ServiceEndpointsUpdateLock(service), new LockCallbackNoReturn() {
+            @Override
+            public void doWithLockNoResult() {
+                updateObjectEndPoint(service, service.getKind(), service.getId(), publicEndpoint, add);
+            }
+        });
     }
 }

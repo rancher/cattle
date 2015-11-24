@@ -35,7 +35,6 @@
     <bean class="io.cattle.platform.servicediscovery.process.SelectorInstancePostListener" />
     <bean class="io.cattle.platform.servicediscovery.process.ServiceExposeMapCreate" />
     <bean class="io.cattle.platform.servicediscovery.process.PortActivateDeactivatePostListener" />
-    <bean class="io.cattle.platform.servicediscovery.process.PortUpdatePostListener" />
 
     <bean class="io.cattle.platform.servicediscovery.process.EnvironmentRemove" />
     <bean class="io.cattle.platform.servicediscovery.process.ServiceDiscoveryInstanceRemovePreListener" />

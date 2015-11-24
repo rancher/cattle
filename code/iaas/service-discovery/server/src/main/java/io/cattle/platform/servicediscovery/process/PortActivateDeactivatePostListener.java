@@ -16,9 +16,11 @@ import io.cattle.platform.engine.process.ProcessInstance;
 import io.cattle.platform.engine.process.ProcessState;
 import io.cattle.platform.process.common.handler.AbstractObjectProcessLogic;
 import io.cattle.platform.servicediscovery.service.ServiceDiscoveryService;
+import io.cattle.platform.util.type.CollectionUtils;
 import io.cattle.platform.util.type.Priority;
 
 import java.util.List;
+import java.util.Map;
 
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -36,7 +38,8 @@ public class PortActivateDeactivatePostListener extends AbstractObjectProcessLog
 
     @Override
     public String[] getProcessNames() {
-        return new String[] { PortConstants.PROCESS_PORT_ACTIVATE, PortConstants.PROCESS_PORT_DEACTIVATE };
+        return new String[] { PortConstants.PROCESS_PORT_ACTIVATE, PortConstants.PROCESS_PORT_UPDATE,
+                PortConstants.PROCESS_PORT_DEACTIVATE };
     }
 
     @Override
@@ -48,32 +51,34 @@ public class PortActivateDeactivatePostListener extends AbstractObjectProcessLog
         if (ip == null) {
             return null;
         }
+        boolean add = process.getName().equalsIgnoreCase(PortConstants.PROCESS_PORT_ACTIVATE)
+                || process.getName().equalsIgnoreCase(PortConstants.PROCESS_PORT_UPDATE);
 
-        boolean add = process.getName().equalsIgnoreCase(PortConstants.PROCESS_PORT_ACTIVATE);
+        Map<String, Object> data = state.getData();
+        Integer oldPublicPort = null;
+        if (data.get("old") != null) {
+            Map<String, Object> old = CollectionUtils.toMap(data.get("old"));
+            if (old.containsKey(PortConstants.FIELD_PUBLIC_POST)) {
+                oldPublicPort = (Integer) old.get(PortConstants.FIELD_PUBLIC_POST);
+            }
+        }
 
-        PublicEndpoint endPoint = new PublicEndpoint(ip.getAddress(), port.getPublicPort());
-
-        updateServiceEndpoints(port, add, endPoint);
-
-        updateHostEndPoints(ip, add, endPoint);
+        Host host = hostDao.getHostForIpAddress(ip.getId());
+        Instance instance = objectManager.loadResource(Instance.class, port.getInstanceId());
+        List<? extends Service> services = instanceDao.findServicesFor(objectManager.loadResource(Instance.class,
+                port.getInstanceId()));
+        for (Service service : services) {
+            PublicEndpoint newEndPoint = new PublicEndpoint(ip.getAddress(), port.getPublicPort(), host, instance, service);
+            sdService.propagatePublicEndpoint(newEndPoint, add);
+            if (add) {
+                PublicEndpoint oldEndPoint = new PublicEndpoint(ip.getAddress(), oldPublicPort, host, instance, service);
+                sdService.propagatePublicEndpoint(oldEndPoint, false);
+            }
+        }
 
         return null;
     }
 
-    protected void updateHostEndPoints(IpAddress ip, boolean add, PublicEndpoint endPoint) {
-        Host host = hostDao.getHostForIpAddress(ip.getId());
-        if (host != null) {
-            sdService.updateHostPublicEndpoints(host, endPoint, add);
-        }
-    }
-
-    protected void updateServiceEndpoints(Port port, boolean add, PublicEndpoint endPoint) {
-        List<? extends Service> services = instanceDao.findServicesFor(objectManager.loadResource(Instance.class,
-                port.getInstanceId()));
-        for (Service service : services) {
-            sdService.updateServicePublicEndpoints(service, endPoint, add);
-        }
-    }
 
     @Override
     public int getPriority() {
