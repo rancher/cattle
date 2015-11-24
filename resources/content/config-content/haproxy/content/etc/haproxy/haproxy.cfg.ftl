@@ -46,8 +46,13 @@ frontend ${listener.uuid}_frontend
         <#list backends[listener.uuid] as backend >
         <#if (listener.sourceProtocol == "http" || listener.sourceProtocol == "https") && (backend.portSpec.domain != "default" || backend.portSpec.path != "default")>
         <#if backend.portSpec.domain != "default">
-        acl ${backend.uuid}_host hdr(host) -i ${backend.portSpec.domain}
-        acl ${backend.uuid}_host hdr(host) -i ${backend.portSpec.domain}:${sourcePort}
+	<#if backend.portSpec.domain[0..1] == "*.">
+	acl ${backend.uuid}_host hdr_end(host) -i ${backend.portSpec.domain[2..]}
+	acl ${backend.uuid}_host hdr_end(host) -i ${backend.portSpec.domain[2..]}:${sourcePort}
+	<#else>
+	acl ${backend.uuid}_host hdr(host) -i ${backend.portSpec.domain}
+	acl ${backend.uuid}_host hdr(host) -i ${backend.portSpec.domain}:${sourcePort}
+	</#if>
     	</#if>
     	<#if backend.portSpec.path != "default">
         acl ${backend.uuid}_path path_beg -i ${backend.portSpec.path}
