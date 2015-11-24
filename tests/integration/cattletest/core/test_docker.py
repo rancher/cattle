@@ -547,23 +547,27 @@ def test_docker_volumes(docker_client, super_client):
         elif mount.path == '/baz':
             assert mount.volumeId == baz_vol.id
 
-    c.stop(remove=True, timeout=0)
-    c2.stop(remove=True, timeout=0)
+    c = docker_client.wait_success(c.stop(remove=True, timeout=0))
+    c2 = docker_client.wait_success(c2.stop(remove=True, timeout=0))
 
     _check_path(foo_vol, True, docker_client, super_client)
+    _check_path(bar_vol, True, docker_client, super_client)
+    _check_path(baz_vol, True, docker_client, super_client)
+
+    docker_client.wait_success(c.purge())
+    docker_client.wait_success(c2.purge())
+
     foo_vol = super_client.wait_success(foo_vol.deactivate())
     foo_vol = super_client.wait_success(foo_vol.remove())
     foo_vol = super_client.wait_success(foo_vol.purge())
     _check_path(foo_vol, False, docker_client, super_client)
 
-    _check_path(bar_vol, True, docker_client, super_client)
     bar_vol = super_client.wait_success(bar_vol.deactivate())
     bar_vol = super_client.wait_success(bar_vol.remove())
     bar_vol = super_client.wait_success(bar_vol.purge())
     # Host bind mount. Wont actually delete the dir on the host.
     _check_path(bar_vol, True, docker_client, super_client)
 
-    _check_path(baz_vol, True, docker_client, super_client)
     baz_vol = super_client.wait_success(baz_vol.deactivate())
     baz_vol = super_client.wait_success(baz_vol.remove())
     baz_vol = super_client.wait_success(baz_vol.purge())
