@@ -6,6 +6,7 @@ import io.cattle.platform.core.constants.PortConstants;
 import io.cattle.platform.core.dao.HostDao;
 import io.cattle.platform.core.dao.InstanceDao;
 import io.cattle.platform.core.model.Host;
+import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.IpAddress;
 import io.cattle.platform.core.model.Port;
 import io.cattle.platform.core.model.Service;
@@ -18,6 +19,7 @@ import io.cattle.platform.servicediscovery.service.ServiceDiscoveryService;
 import io.cattle.platform.util.type.CollectionUtils;
 import io.cattle.platform.util.type.Priority;
 
+import java.util.List;
 import java.util.Map;
 
 import javax.inject.Inject;
@@ -77,8 +79,9 @@ public class PortUpdatePostListener extends AbstractObjectProcessLogic implement
     }
 
     protected void updateServiceEndpoints(Port port, PublicEndpoint newEndPoint, PublicEndpoint oldEndPoint) {
-        Service service = instanceDao.getServiceManaging(port.getInstanceId());
-        if (service != null) {
+        List<? extends Service> services = instanceDao.findServicesFor(objectManager.loadResource(Instance.class,
+                port.getInstanceId()));
+        for (Service service : services) {
             sdService.updateServicePublicEndpoints(service, newEndPoint, true);
             sdService.updateServicePublicEndpoints(service, oldEndPoint, false);
         }

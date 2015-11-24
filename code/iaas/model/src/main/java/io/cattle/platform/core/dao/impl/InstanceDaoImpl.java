@@ -159,19 +159,4 @@ public class InstanceDaoImpl extends AbstractJooqDao implements InstanceDao {
         return maps.get(0).getHostId();
     }
 
-    @Override
-    public Service getServiceManaging(long instanceId) {
-        List<? extends Service> services = create().select(SERVICE.fields())
-                .from(SERVICE)
-                .join(SERVICE_EXPOSE_MAP)
-                .on(SERVICE_EXPOSE_MAP.SERVICE_ID.eq(SERVICE.ID))
-                .where(SERVICE_EXPOSE_MAP.INSTANCE_ID.eq(instanceId)
-                        .and(SERVICE_EXPOSE_MAP.MANAGED.eq(true)))
-                .fetchInto(ServiceRecord.class);
-        if (services.size() == 0) {
-            return null;
-        }
-        return services.get(0);
-    }
-
 }
