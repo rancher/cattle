@@ -53,9 +53,9 @@ public class ADTokenCreator extends ADConfigurable implements TokenCreator {
             throw new ClientVisibleException(ResponseCodes.SERVICE_UNAVAILABLE, "ADConfig", "ADConfig is not Configured.", null);
         }
         String code = ObjectUtils.toString(requestBody.get(SecurityConstants.CODE));
-        String[] split = code.split(":");
+        String[] split = code.split(":", 2);
         if (split.length != 2) {
-            throw new ClientVisibleException(ResponseCodes.FORBIDDEN);
+            throw new ClientVisibleException(ResponseCodes.BAD_REQUEST, "MalformedCode");
         }
         return getLdapToken(split[0], split[1]);
     }
