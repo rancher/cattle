@@ -2879,11 +2879,15 @@ def test_sidekick_labels_merge(new_context):
     assert all(item in secondary.labels for item in affinity_labels) is True
 
 
-def _validate_endpoint(endpoints, host_ip, public_port):
+def _validate_endpoint(endpoints, public_port, host, service):
+    host_ip = host.ipAddresses()[0].address
     found = False
     for endpoint in endpoints:
         if host_ip == endpoint.ipAddress:
-            if endpoint.port == public_port:
+            if endpoint.port == public_port \
+                    and endpoint.hostId == host.id\
+                    and endpoint.serviceId == service.id\
+                    and endpoint.instanceId is not None:
                 found = True
                 break
     assert found is True, "Cant find endpoint for " \
@@ -2895,11 +2899,7 @@ def test_public_endpoints(new_context):
     host1 = new_context.host
     host2 = register_simulated_host(new_context)
     env = _create_stack(client)
-    host_ips = []
-    host1_ip = host1.ipAddresses()[0].address
-    host2_ip = host2.ipAddresses()[0].address
-    host_ips.append(host1_ip)
-    host_ips.append(host2_ip)
+    hosts = [host1, host2]
 
     port1 = 5555
     port2 = 6666
@@ -2927,26 +2927,26 @@ def test_public_endpoints(new_context):
     wait_for(lambda: client.reload(service1).publicEndpoints is not None
              and len(client.reload(service1).publicEndpoints) == 2)
     endpoints = client.reload(service1).publicEndpoints
-    for host_ip in host_ips:
-        _validate_endpoint(endpoints, host_ip, port1)
+    for host in hosts:
+        _validate_endpoint(endpoints, port1, host, service1)
 
     wait_for(lambda: client.reload(service2).publicEndpoints is not None
              and len(client.reload(service2).publicEndpoints) == 2)
     endpoints = client.reload(service2).publicEndpoints
-    for host_ip in host_ips:
-        _validate_endpoint(endpoints, host_ip, port2)
+    for host in hosts:
+        _validate_endpoint(endpoints, port2, host, service2)
 
     wait_for(lambda: client.reload(host1).publicEndpoints is not None
              and len(client.reload(host1).publicEndpoints) == 2)
     endpoints = client.reload(host1).publicEndpoints
-    _validate_endpoint(endpoints, host1_ip, port1)
-    _validate_endpoint(endpoints, host1_ip, port2)
+    _validate_endpoint(endpoints, port1, host1, service1)
+    _validate_endpoint(endpoints, port2, host1, service2)
 
     wait_for(lambda: client.reload(host2).publicEndpoints is not None
              and len(client.reload(host2).publicEndpoints) == 2)
     endpoints = client.reload(host2).publicEndpoints
-    _validate_endpoint(endpoints, host2_ip, port1)
-    _validate_endpoint(endpoints, host2_ip, port2)
+    _validate_endpoint(endpoints, port1, host2, service1)
+    _validate_endpoint(endpoints, port2, host2, service2)
 
     # deactivate service1
     service1 = client.wait_success(service1.deactivate())
@@ -2962,9 +2962,7 @@ def test_update_port_endpoint(new_context):
     client = new_context.client
     host1 = new_context.host
     env = _create_stack(client)
-    host_ips = []
-    host1_ip = host1.ipAddresses()[0].address
-    host_ips.append(host1_ip)
+    hosts = [host1]
 
     port1 = 5557
     port2 = 5558
@@ -2982,13 +2980,13 @@ def test_update_port_endpoint(new_context):
     wait_for(lambda: client.reload(svc).publicEndpoints is not None
              and len(client.reload(svc).publicEndpoints) == 1)
     endpoints = client.reload(svc).publicEndpoints
-    for host_ip in host_ips:
-        _validate_endpoint(endpoints, host_ip, port1)
+    for host in hosts:
+        _validate_endpoint(endpoints, port1, host, svc)
 
     wait_for(lambda: client.reload(host1).publicEndpoints is not None
              and len(client.reload(host1).publicEndpoints) == 1)
     endpoints = client.reload(host1).publicEndpoints
-    _validate_endpoint(endpoints, host1_ip, port1)
+    _validate_endpoint(endpoints, port1, hosts[0], svc)
 
     # update port
     c = _wait_for_compose_instance_start(client, svc, env, "1")
@@ -3005,13 +3003,13 @@ def test_update_port_endpoint(new_context):
     wait_for(lambda: client.reload(svc).publicEndpoints is not None
              and len(client.reload(svc).publicEndpoints) == 1)
     endpoints = client.reload(svc).publicEndpoints
-    for host_ip in host_ips:
-        _validate_endpoint(endpoints, host_ip, port2)
+    for host in hosts:
+        _validate_endpoint(endpoints, port2, host, svc)
 
     wait_for(lambda: client.reload(host1).publicEndpoints is not None
              and len(client.reload(host1).publicEndpoints) == 1)
     endpoints = client.reload(host1).publicEndpoints
-    _validate_endpoint(endpoints, host1_ip, port2)
+    _validate_endpoint(endpoints, port2, hosts[0], svc)
 
 
 def _wait_health_host_count(super_client, health_id, count):
