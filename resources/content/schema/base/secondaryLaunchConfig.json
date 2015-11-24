@@ -4,7 +4,9 @@
         "name":{
             "type": "string",
             "required": true,
-            "nullable": false
+            "nullable": false,
+            "minLength": 1,
+            "maxLength": 63
         }
     }
 }
