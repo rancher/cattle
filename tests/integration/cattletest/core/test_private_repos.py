@@ -1,5 +1,5 @@
 from common_fixtures import *  # NOQA
-
+from gdapi import ApiError
 
 TEST_IMAGE = 'ibuildthecloud/helloworld'
 TEST_IMAGE_LATEST = TEST_IMAGE + ':latest'
@@ -10,11 +10,12 @@ if_docker = pytest.mark.skipif("os.environ.get('DOCKER_TEST') == 'false'",
 
 
 def _create_registry(client):
-    registry = client.create_registry(serverAddress='quay.io',
-                                      name='Quay')
+    server = 'server{0}.io'.format(random_num())
+    registry = client.create_registry(serverAddress=server,
+                                      name='Server')
     registry = client.wait_success(registry)
-    assert registry.serverAddress == 'quay.io'
-    assert registry.name == 'Quay'
+    assert registry.serverAddress == server
+    assert registry.name == 'Server'
 
     return registry
 
@@ -152,3 +153,25 @@ def test_container_image_and_registry_credential(client,
     image = container.image()
     assert image.name == name
     assert image.registryCredentialId == registry_credential.id
+
+
+def test_duplicate_server_addresses(client):
+    server = 'server{0}.io'.format(random_num())
+    registry = client.create_registry(serverAddress=server,
+                                      name=random_str())
+    client.wait_success(registry)
+    with pytest.raises(ApiError) as e:
+        client.create_registry(serverAddress=server, name=random_str())
+    assert e.value.error.status == 400
+    assert e.value.error.code == 'ServerAddressUsed'
+
+
+def test_create_same_registry_different_projects(admin_user_client):
+    server = 'server{0}.io'.format(random_num())
+    context_1 = create_context(admin_user_client, create_project=True)
+    context_2 = create_context(admin_user_client, create_project=True)
+
+    context_1.client.wait_success(context_1.client.create_registry(
+        serverAddress=server, name=random_str()))
+    context_2.client.wait_success(context_2.client.create_registry(
+        serverAddress=server, name=random_str()))

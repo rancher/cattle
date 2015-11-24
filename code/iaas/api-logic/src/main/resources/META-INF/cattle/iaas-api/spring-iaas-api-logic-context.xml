@@ -24,6 +24,7 @@
     <bean class="io.cattle.platform.iaas.api.credential.SshKeyOutputFilter" />
     <bean class="io.cattle.platform.iaas.api.filter.containerevent.ContainerEventFilter" />
     <bean class="io.cattle.platform.iaas.api.filter.externalevent.ExternalEventFilter" />
+    <bean class="io.cattle.platform.iaas.api.filter.registry.RegistryServerAddressFilter" />
     <bean class="io.cattle.platform.iaas.api.filter.serviceevent.ServiceEventFilter" />
     <bean class="io.cattle.platform.iaas.api.filter.snapshot.SnapshotValidationFilter" />
     <bean class="io.cattle.platform.iaas.api.filter.ssl.CertificateCreateValidationFilter" />

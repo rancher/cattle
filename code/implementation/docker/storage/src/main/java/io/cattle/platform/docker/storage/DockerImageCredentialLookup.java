@@ -29,7 +29,7 @@ public class DockerImageCredentialLookup extends AbstractJooqDao implements Imag
                         .and(STORAGE_POOL.ACCOUNT_ID.eq(currentAccount)
                         .and(STORAGE_POOL.KIND.eq(StoragePoolConstants.KIND_REGISTRY)))).fetchInto(StoragePool.class);
         for(StoragePool registry: storagePools){
-            if (serverAddress.equalsIgnoreCase((String) CollectionUtils.getNestedValue(registry.getData(), "fields", "serverAddress"))) {
+            if (serverAddress.equalsIgnoreCase((String) CollectionUtils.getNestedValue(registry.getData(), "fields", StoragePoolConstants.SERVER_ADDRESS))) {
                 registryId = registry.getId();
                 break;
             }
