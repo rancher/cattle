@@ -92,6 +92,16 @@ def test_in_service_upgrade_primary(context, client, super_client):
                       secondary1='0', secondary2='0')
 
 
+def test_in_service_upgrade_inactive(context, client, super_client):
+    env, svc, up_svc = _insvc_upgrade(context,
+                                      client, super_client, True,
+                                      activate=False,
+                                      launchConfig={'labels': {'foo': "bar"}},
+                                      startFirst=True)
+    _validate_upgrade(super_client, svc, up_svc, primary='1',
+                      secondary1='0', secondary2='0')
+
+
 def test_in_service_upgrade_all(context, client, super_client):
     secondary = [{'name': "secondary1", 'labels': {'foo': "bar"}},
                  {'name': "secondary2", 'labels': {'foo': "bar"}}]
@@ -480,8 +490,9 @@ def run_insvc_upgrade(svc, **kw):
     return svc
 
 
-def _insvc_upgrade(context, client, super_client, finish_upgrade, **kw):
-    env, svc = _create_multi_lc_svc(super_client, client, context)
+def _insvc_upgrade(context, client, super_client, finish_upgrade,
+                   activate=True, **kw):
+    env, svc = _create_multi_lc_svc(super_client, client, context, activate)
 
     run_insvc_upgrade(svc, **kw)
 
@@ -639,7 +650,7 @@ def _run_upgrade(context, client, from_scale, to_scale, **kw):
     assert service.state == 'active'
 
 
-def _create_multi_lc_svc(super_client, client, context):
+def _create_multi_lc_svc(super_client, client, context, activate=True):
     env = client.create_environment(name=random_str())
     env = client.wait_success(env)
     assert env.state == 'active'
@@ -656,19 +667,21 @@ def _create_multi_lc_svc(super_client, client, context):
                                 launchConfig=launch_config,
                                 secondaryLaunchConfigs=secondary)
     svc = client.wait_success(svc)
-    svc = client.wait_success(svc.activate(), timeout=120)
-    assert svc.state == 'active'
-    c11, c11_sec1, c11_sec2, c12, c12_sec1, c12_sec2 \
-        = _get_containers(super_client, svc)
-    assert svc.launchConfig.version is not None
-    assert svc.secondaryLaunchConfigs[0].version is not None
-    assert svc.secondaryLaunchConfigs[1].version is not None
-    assert c11.version == svc.launchConfig.version
-    assert c12.version == svc.launchConfig.version
-    assert c11_sec1.version == svc.secondaryLaunchConfigs[0].version
-    assert c12_sec1.version == svc.secondaryLaunchConfigs[0].version
-    assert c11_sec2.version == svc.secondaryLaunchConfigs[1].version
-    assert c12_sec2.version == svc.secondaryLaunchConfigs[1].version
+
+    if activate:
+        svc = client.wait_success(svc.activate(), timeout=120)
+        assert svc.state == 'active'
+        c11, c11_sec1, c11_sec2, c12, c12_sec1, c12_sec2 \
+            = _get_containers(super_client, svc)
+        assert svc.launchConfig.version is not None
+        assert svc.secondaryLaunchConfigs[0].version is not None
+        assert svc.secondaryLaunchConfigs[1].version is not None
+        assert c11.version == svc.launchConfig.version
+        assert c12.version == svc.launchConfig.version
+        assert c11_sec1.version == svc.secondaryLaunchConfigs[0].version
+        assert c12_sec1.version == svc.secondaryLaunchConfigs[0].version
+        assert c11_sec2.version == svc.secondaryLaunchConfigs[1].version
+        assert c12_sec2.version == svc.secondaryLaunchConfigs[1].version
 
     return env, svc
 
