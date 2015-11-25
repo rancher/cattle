@@ -450,6 +450,11 @@
         "externalService.createIndex" : "",
         "externalService.selectorContainer" : "",
         "externalService.publicEndpoints" : "",
+        "externalService.selectorLink" : "",
+        "externalService.resourceActions.addservicelink" : "",
+        "externalService.resourceActions.removeservicelink" : "",
+        "externalService.resourceActions.setservicelinks" : "",
+
 
         "dnsService" : "r",
         "dnsService.scale" : "",
@@ -459,6 +464,7 @@
         "dnsService.createIndex" : "",
         "dnsService.selectorContainer" : "",
         "dnsService.publicEndpoints" : "",
+
 
         "serviceEvent" : "r",
         "serviceEvent.instanceId" : "r",
