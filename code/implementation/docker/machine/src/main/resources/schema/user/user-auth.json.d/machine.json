@@ -9,7 +9,11 @@
         "machine.extractedConfig" : "",
         "machine.dockerVersion": "r",
         "machine.engineOpts": "r",
-        
+        "machine.engineInsecureRegistry": "r",
+        "machine.engineRegistryMirror": "r",
+        "machine.engineLabel": "r",
+        "machine.engineStorageDriver": "r",
+        "machine.engineEnv": "r",       
         "end" : ""
     }
 }
