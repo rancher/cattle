@@ -1911,7 +1911,6 @@ def test_svc_discovery_external_service(admin_user_client, user_client,
         'upgrade': 'r',
         'healthCheck': 'r',
         'metadata': 'r',
-        'selectorLink': 'r',
         'launchConfig': 'r',
         'fqdn': 'r'
     })
@@ -1926,7 +1925,6 @@ def test_svc_discovery_external_service(admin_user_client, user_client,
         'upgrade': 'r',
         'healthCheck': 'r',
         'metadata': 'r',
-        'selectorLink': 'r',
         'launchConfig': 'r',
         'fqdn': 'r'
     })
@@ -1941,7 +1939,6 @@ def test_svc_discovery_external_service(admin_user_client, user_client,
         'upgrade': 'r',
         'healthCheck': 'cr',
         'metadata': 'cru',
-        'selectorLink': 'cr',
         'launchConfig': 'cr',
         'fqdn': 'r'
     })
