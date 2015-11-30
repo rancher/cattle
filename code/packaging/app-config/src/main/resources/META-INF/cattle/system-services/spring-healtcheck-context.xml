@@ -14,11 +14,19 @@
 
     <bean class="io.cattle.iaas.healthcheck.service.impl.HealthcheckServiceImpl" />
     <bean class="io.cattle.iaas.healthcheck.process.InstanceHealthcheckRegister" />
+    <bean class="io.cattle.iaas.healthcheck.process.InstanceRemovePostHandler" />
     <bean class="io.cattle.iaas.healthcheck.process.ServiceEventPreCreate" />
     <bean class="io.cattle.iaas.healthcheck.process.ServiceEventCreate" />
-    <bean class="io.cattle.iaas.healthcheck.process.HostRemovePreHandler" />
-    <bean class="io.cattle.iaas.healthcheck.process.AgentReconnectPostHandler" />
-    <bean class="io.cattle.iaas.healthcheck.process.HealthcheckInstanceHostMapRemovePostHandler" />
-    <bean class="io.cattle.iaas.healthcheck.process.InstanceRemovePostHandler" />
+    <bean class="io.cattle.iaas.healthcheck.process.HealthCheckReconcileTrigger" />
+    <bean class="io.cattle.iaas.healthcheck.process.HealthCheckReconcilePostTrigger" />
+
+
+	<bean class="io.cattle.iaas.healthcheck.service.impl.AgentHealthcheckHostLookup" />
+	<bean class="io.cattle.iaas.healthcheck.service.impl.HostHealthcheckHostLookup" />
+	<bean class="io.cattle.iaas.healthcheck.service.impl.ProviderInstanceMapHealthcheckHostLookup" />
+
+	<bean class="io.cattle.iaas.healthcheck.service.impl.AgentHealthcheckInstancesLookup" />
+	<bean class="io.cattle.iaas.healthcheck.service.impl.HostMapHealthcheckInstancesLookup" />
+	<bean class="io.cattle.iaas.healthcheck.service.impl.ProviderInstanceMapHealthcheckInstancesLookup" />
 
 </beans>

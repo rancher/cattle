@@ -1,11 +1,11 @@
 package io.cattle.iaas.healthcheck.process;
 
-import static io.cattle.platform.core.model.tables.HostTable.HOST;
+import io.cattle.iaas.healthcheck.service.HealthcheckInstancesLookup;
 import io.cattle.iaas.healthcheck.service.HealthcheckService;
 import io.cattle.iaas.healthcheck.service.HealthcheckService.HealthcheckInstanceType;
 import io.cattle.platform.core.constants.AgentConstants;
-import io.cattle.platform.core.model.Agent;
-import io.cattle.platform.core.model.Host;
+import io.cattle.platform.core.dao.HostDao;
+import io.cattle.platform.core.dao.NetworkDao;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.engine.handler.HandlerResult;
 import io.cattle.platform.engine.handler.ProcessPostListener;
@@ -15,34 +15,44 @@ import io.cattle.platform.process.common.handler.AbstractObjectProcessLogic;
 import io.cattle.platform.servicediscovery.api.dao.ServiceDao;
 import io.cattle.platform.util.type.Priority;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.inject.Inject;
 import javax.inject.Named;
 
 @Named
-public class AgentReconnectPostHandler extends AbstractObjectProcessLogic implements ProcessPostListener, Priority {
+public class HealthCheckReconcilePostTrigger extends AbstractObjectProcessLogic implements ProcessPostListener, Priority {
     @Inject
     ServiceDao serviceDao;
+
     @Inject
     HealthcheckService healthcheckService;
 
+    @Inject
+    HostDao hostDao;
+
+    @Inject
+    NetworkDao ntwkDao;
+
+    @Inject
+    List<HealthcheckInstancesLookup> instancesLookups;
+
     @Override
     public String[] getProcessNames() {
-        return new String[] { AgentConstants.PROCESS_RECONNECT };
+        return new String[] { AgentConstants.PROCESS_RECONNECT, "networkserviceproviderinstancemap.create",
+                "healthcheckinstancehostmap.remove" };
     }
 
     @Override
     public HandlerResult handle(ProcessState state, ProcessInstance process) {
-        Host host = null;
-
-        Agent agent = (Agent) state.getResource();
-        host = objectManager.findAny(Host.class, HOST.AGENT_ID, agent.getId(), HOST.REMOVED, null);
-
-        if (host == null) {
-            return null;
+        List<Instance> instances = new ArrayList<>();
+        for (HealthcheckInstancesLookup lookup : instancesLookups) {
+            List<? extends Instance> i = lookup.getInstances(state.getResource());
+            if (i != null) {
+                instances.addAll(i);
+            }
         }
-        List<? extends Instance> instances = serviceDao.getInstancesWithHealtcheckEnabled(host.getAccountId());
 
         reregisterInstancesForHealtchecks(instances);
 

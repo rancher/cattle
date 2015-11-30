@@ -8,13 +8,18 @@ import io.cattle.iaas.healthcheck.service.HealthcheckService;
 import io.cattle.platform.allocator.dao.AllocatorDao;
 import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.HealthcheckConstants;
+import io.cattle.platform.core.constants.NetworkConstants;
+import io.cattle.platform.core.constants.NetworkServiceConstants;
 import io.cattle.platform.core.dao.GenericMapDao;
 import io.cattle.platform.core.dao.GenericResourceDao;
+import io.cattle.platform.core.dao.HostDao;
+import io.cattle.platform.core.dao.NetworkDao;
 import io.cattle.platform.core.model.HealthcheckInstance;
 import io.cattle.platform.core.model.HealthcheckInstanceHostMap;
 import io.cattle.platform.core.model.Host;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.InstanceHostMap;
+import io.cattle.platform.core.model.Network;
 import io.cattle.platform.lock.LockCallbackNoReturn;
 import io.cattle.platform.lock.LockManager;
 import io.cattle.platform.object.ObjectManager;
@@ -50,6 +55,12 @@ public class HealthcheckServiceImpl implements HealthcheckService {
 
     @Inject
     AllocatorDao allocatorDao;
+
+    @Inject
+    HostDao hostDao;
+
+    @Inject
+    NetworkDao ntwkDao;
 
     @Override
     public void updateHealthcheck(String healthcheckInstanceHostMapUuid, final long externalTimestamp, final boolean healthy) {
@@ -148,17 +159,22 @@ public class HealthcheckServiceImpl implements HealthcheckService {
     }
 
     @Override
-    public void registerForHealtcheck(HealthcheckInstanceType instanceType, long id) {
-        Long accountId = getAccountId(instanceType, id);
+    public void registerForHealtcheck(final HealthcheckInstanceType instanceType, final long id) {
+        final Long accountId = getAccountId(instanceType, id);
         if (accountId == null) {
             return;
         }
         
-        // 1. create healthcheckInstance mapping
-        HealthcheckInstance healthInstance = createHealtcheckInstance(id, accountId);
-        
-        // 2. create healtcheckInstance to hosts mappings
-        createHealthCheckHostMaps(instanceType, id, accountId, healthInstance);
+        lockManager.lock(new HealthcheckRegisterLock(id, instanceType), new LockCallbackNoReturn() {
+            @Override
+            public void doWithLockNoResult() {
+                // 1. create healthcheckInstance mapping
+                HealthcheckInstance healthInstance = createHealtcheckInstance(id, accountId);
+
+                // 2. create healtcheckInstance to hosts mappings
+                createHealthCheckHostMaps(instanceType, id, accountId, healthInstance);
+            }
+        });
     }
 
     protected HealthcheckInstance createHealtcheckInstance(long id, Long accountId) {
@@ -183,12 +199,14 @@ public class HealthcheckServiceImpl implements HealthcheckService {
             HealthcheckInstanceHostMap healthHostMap = mapDao.findNonRemoved(HealthcheckInstanceHostMap.class,
                     Host.class, healthCheckHostId, HealthcheckInstance.class,
                     healthInstance.getId());
+            Long instanceId = (instanceType == HealthcheckInstanceType.INSTANCE ? id : null);
             if (healthHostMap == null) {
                 resourceDao.createAndSchedule(HealthcheckInstanceHostMap.class, HEALTHCHECK_INSTANCE_HOST_MAP.HOST_ID,
                         healthCheckHostId,
                         HEALTHCHECK_INSTANCE_HOST_MAP.HEALTHCHECK_INSTANCE_ID, healthInstance.getId(),
                         HEALTHCHECK_INSTANCE_HOST_MAP.ACCOUNT_ID,
-                        accountId);
+                        accountId,
+                        HEALTHCHECK_INSTANCE_HOST_MAP.INSTANCE_ID, instanceId);
             }
         }
     }
@@ -201,7 +219,8 @@ public class HealthcheckServiceImpl implements HealthcheckService {
         List<? extends HealthcheckInstanceHostMap> existingHostMaps = mapDao.findNonRemoved(
                 HealthcheckInstanceHostMap.class,
                 HealthcheckInstance.class, healthInstance.getId());
-        List<? extends Host> availableActiveHosts = allocatorDao.getActiveHosts(healthInstance.getAccountId());
+        List<? extends Host> availableActiveHosts = getActiveHostsProvidingHealthChecks(healthInstance);
+        
         List<Long> availableActiveHostIds = (List<Long>) CollectionUtils.collect(availableActiveHosts,
                 TransformerUtils.invokerTransformer("getId"));
         List<Long> allocatedActiveHostIds = (List<Long>) CollectionUtils.collect(existingHostMaps,
@@ -240,6 +259,21 @@ public class HealthcheckServiceImpl implements HealthcheckService {
         int returnedNumber = requiredNumber > availableActiveHostIds.size() ? availableActiveHostIds.size() : requiredNumber;
 
         return availableActiveHostIds.subList(0, returnedNumber);
+    }
+
+    protected List<? extends Host> getActiveHostsProvidingHealthChecks(HealthcheckInstance healthInstance) {
+        List<? extends Host> availableActiveHosts = allocatorDao.getActiveHosts(healthInstance.getAccountId());
+        
+        Iterator<? extends Host> it = availableActiveHosts.iterator();
+        while (it.hasNext()) {
+            Host host = it.next();
+            Network ntwk = ntwkDao.getNetworkForObject(host, NetworkConstants.KIND_HOSTONLY);
+            if (hostDao.isServiceSupportedOnHost(host.getId(), ntwk.getId(), NetworkServiceConstants.KIND_HEALTH_CHECK)) {
+                continue;
+            }
+            it.remove();
+        }
+        return availableActiveHosts;
     }
 
     private Long getInstanceHostId(HealthcheckInstanceType type, long instanceId) {
