@@ -6,6 +6,7 @@ import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.HostConstants;
 import io.cattle.platform.core.constants.ProjectConstants;
 import io.cattle.platform.core.model.Account;
+import io.cattle.platform.core.model.Agent;
 import io.cattle.platform.core.model.Host;
 import io.cattle.platform.host.model.HostApiAccess;
 import io.cattle.platform.host.service.HostApiService;
@@ -66,7 +67,8 @@ public class HostStatsLinkHandler implements LinkHandler {
         StatsAccess meta = new StatsAccess();
         List<StatsAccess> serviceStatsQuery = new ArrayList<>();
         for (Host host : hosts) {
-            if (!CommonStatesConstants.ACTIVE.equals(host.getState())) {
+            Agent agent = objectManager.loadResource(Agent.class, host.getAgentId());
+            if (agent == null || !CommonStatesConstants.ACTIVE.equals(agent.getState())) {
                 continue;
             }
             Map<String, Object> payload = new HashMap<>();
