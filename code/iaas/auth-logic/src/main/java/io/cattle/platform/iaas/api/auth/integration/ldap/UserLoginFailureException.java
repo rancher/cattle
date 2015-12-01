@@ -3,6 +3,7 @@ package io.cattle.platform.iaas.api.auth.integration.ldap;
 import javax.naming.NamingException;
 
 public class UserLoginFailureException extends RuntimeException {
+    private static final long serialVersionUID = 8982603952499071773L;
     private String username = null;
     public UserLoginFailureException() {
     }

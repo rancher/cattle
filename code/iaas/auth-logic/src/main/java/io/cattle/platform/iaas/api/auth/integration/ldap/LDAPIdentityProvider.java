@@ -279,7 +279,7 @@ public abstract class LDAPIdentityProvider implements IdentityProvider{
             userContext = new InitialLdapContext(props, null);
             return userContext;
         } catch (NamingException e) {
-            throw new UserLoginFailureException("Failed to login ldap User.", e, username);
+            throw new UserLoginFailureException("Failed to login ldap User: " +  LDAPUtils.errorCodeToDescription(e), e, username);
         }
     }
 
