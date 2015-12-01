@@ -46,11 +46,19 @@ frontend ${listener.uuid}_frontend
         <#list backends[listener.uuid] as backend >
         <#if (listener.sourceProtocol == "http" || listener.sourceProtocol == "https") && (backend.portSpec.domain != "default" || backend.portSpec.path != "default")>
         <#if backend.portSpec.domain != "default">
-        acl ${backend.uuid}_host hdr(host) -i ${backend.portSpec.domain}
-        acl ${backend.uuid}_host hdr(host) -i ${backend.portSpec.domain}:${sourcePort}
+        <#assign hostCondition="">
+        <#if backend.portSpec.hostCondition??>
+        	<#assign hostCondition="_" + backend.portSpec.hostCondition>
+        </#if>
+        acl ${backend.uuid}_host hdr${hostCondition}(host) -i ${backend.portSpec.domain}
+        acl ${backend.uuid}_host hdr${hostCondition}(host) -i ${backend.portSpec.domain}:${sourcePort}
     	</#if>
     	<#if backend.portSpec.path != "default">
-        acl ${backend.uuid}_path path_beg -i ${backend.portSpec.path}
+    	<#assign pathCondition="beg">
+        <#if backend.portSpec.pathCondition??>
+        	<#assign pathCondition="_" + backend.portSpec.pathCondition>
+        </#if>
+        acl ${backend.uuid}_path path${pathCondition} -i ${backend.portSpec.path}
     	</#if>
     	use_backend ${listener.uuid}_${backend.uuid}_backend if <#if backend.portSpec.domain != "default">${backend.uuid}_host</#if> <#if backend.portSpec.path != "default">${backend.uuid}_path</#if>
         <#elseif backend.portSpec.domain == "default" && backend.portSpec.path == "default">

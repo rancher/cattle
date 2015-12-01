@@ -7,6 +7,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.tuple.Pair;
 
 /**
  * This class is to parse the port specs defined for the load balancer, in format
@@ -27,6 +28,11 @@ import org.apache.commons.lang.StringUtils;
  * /path
  * /path=81
  * 81
+ * 
+ * 
+ * path and domain can be appended with condition. Condition format {condition}. Example:
+ * example.com{end}/path{sub}=81
+ * 
  */
 public class LoadBalancerTargetPortSpec {
     private static final Pattern PATTERN = Pattern.compile("([0-9]+)(:(.*)?)?");
@@ -37,6 +43,17 @@ public class LoadBalancerTargetPortSpec {
     String domain = DEFAULT;
     String path = DEFAULT;
     Integer sourcePort;
+    Condition hostCondition;
+    Condition pathCondition;
+
+    public enum Condition {
+        beg,
+        dir,
+        dom,
+        end,
+        reg,
+        sub
+    }
 
     public LoadBalancerTargetPortSpec() {
     }
@@ -46,6 +63,8 @@ public class LoadBalancerTargetPortSpec {
         this.domain = that.domain;
         this.path = that.path;
         this.sourcePort = that.sourcePort;
+        this.hostCondition = that.hostCondition;
+        this.pathCondition = that.pathCondition;
     }
 
     public LoadBalancerTargetPortSpec(String input) {
@@ -132,11 +151,11 @@ public class LoadBalancerTargetPortSpec {
 
         } finally {
             if (!StringUtils.isEmpty(domain)) {
-                this.domain = domain;
+                this.setDomain(domain);
             }
 
             if (!StringUtils.isEmpty(path)) {
-                this.path = path;
+                this.setPath(path);
             }
 
             if (!StringUtils.isEmpty(targetPort)) {
@@ -153,12 +172,12 @@ public class LoadBalancerTargetPortSpec {
         if (domainPath.length() > 0) {
             int slashIndex = domainPath.indexOf("/");
             if (slashIndex == -1) {
-                this.domain = domainPath;
+                this.setDomain(domainPath);
             } else if (slashIndex == 0) {
-                this.path = domainPath;
+                this.setPath(domainPath);
             } else {
                 this.domain = domainPath.substring(0, slashIndex);
-                this.path = domainPath.substring(slashIndex, domainPath.length());
+                this.setPath(domainPath.substring(slashIndex, domainPath.length()));
             }
         }
     }
@@ -203,7 +222,50 @@ public class LoadBalancerTargetPortSpec {
     }
 
     public void setDomain(String domain) {
-        this.domain = domain;
+        Pair<String, Condition> valueAndCondition = parseCondition(domain);
+
+        this.domain = valueAndCondition.getLeft();
+        this.hostCondition = valueAndCondition.getRight();
+
+    }
+
+    protected Pair<String, Condition> parseCondition(String value) {
+        int indexOpen = value.indexOf("{");
+        int indexClose = value.indexOf("}");
+        
+        if (indexOpen == -1 && indexOpen == indexClose) {
+            return Pair.of(value, null);
+        }
+        
+        if (indexClose < indexOpen || indexOpen == 0 || indexClose != value.length() - 1) {
+            throw new ClientVisibleException(ResponseCodes.UNPROCESSABLE_ENTITY, WRONG_FORMAT);
+        }
+        
+        StringBuilder host = new StringBuilder();
+        StringBuilder conditionStr = new StringBuilder();
+        boolean open = false;
+        for (char c : value.toCharArray()) {
+            if (c == '{') {
+                open = true;
+                continue;
+            } else if (c == '}') {
+                break;
+            }
+            if (open) {
+                conditionStr.append(c);
+            } else {
+                host.append(c);
+            }
+        }
+
+        Condition condition = null;
+        if (!conditionStr.toString().isEmpty()) {
+            condition = Condition.valueOf(conditionStr.toString());
+            if (condition == null) {
+                throw new ClientVisibleException(ResponseCodes.UNPROCESSABLE_ENTITY, WRONG_FORMAT);
+            }
+        }
+        return Pair.of(host.toString(), condition);
     }
 
     public String getPath() {
@@ -211,7 +273,9 @@ public class LoadBalancerTargetPortSpec {
     }
 
     public void setPath(String path) {
-        this.path = path;
+        Pair<String, Condition> valueAndCondition = parseCondition(path);
+        this.path = valueAndCondition.getLeft();
+        this.pathCondition = valueAndCondition.getRight();
     }
 
     public Integer getSourcePort() {
@@ -221,4 +285,25 @@ public class LoadBalancerTargetPortSpec {
     public void setSourcePort(int sourcePort) {
         this.sourcePort = sourcePort;
     }
+
+    public void setSourcePort(Integer sourcePort) {
+        this.sourcePort = sourcePort;
+    }
+
+    public Condition getHostCondition() {
+        return hostCondition;
+    }
+
+    public void setHostCondition(Condition hostCondition) {
+        this.hostCondition = hostCondition;
+    }
+
+    public Condition getPathCondition() {
+        return pathCondition;
+    }
+
+    public void setPathCondition(Condition pathCondition) {
+        this.pathCondition = pathCondition;
+    }
+
 }
