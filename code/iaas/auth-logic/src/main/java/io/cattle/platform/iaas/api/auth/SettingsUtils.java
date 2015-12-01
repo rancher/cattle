@@ -16,7 +16,13 @@ public class SettingsUtils {
         if (name == null) {
             return;
         }
+
+        if (value == null) {
+            value = "";
+        }
+
         Setting setting = objectManager.findOne(Setting.class, "name", name);
+
         if (setting == null) {
             objectManager.create(Setting.class, "name", name, "value", value);
         } else {
