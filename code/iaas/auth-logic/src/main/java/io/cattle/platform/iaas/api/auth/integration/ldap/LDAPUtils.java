@@ -6,6 +6,8 @@ import io.github.ibuildthecloud.gdapi.util.ResponseCodes;
 
 import java.net.ConnectException;
 import java.util.Hashtable;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import javax.naming.Context;
 import javax.naming.NamingException;
 import javax.naming.ldap.InitialLdapContext;
@@ -20,6 +22,8 @@ public class LDAPUtils {
     private static final Log logger = LogFactory.getLog(LDAPUtils.class);
 
     private static final String INVALID_OPEN_LDAP_CONFIG = "InvalidLDAPConfig";
+    private static final Pattern LDAP_ERROR_CODE = Pattern.compile("data +[57][2307][01235e]");
+
 
 
     /**
@@ -62,6 +66,36 @@ public class LDAPUtils {
                     logger.info("Failed to close Test service context.", e);
                 }
             }
+        }
+    }
+
+    public static String errorCodeToDescription(NamingException code){
+        String errorCode = code.getExplanation();
+        Matcher m = LDAP_ERROR_CODE.matcher(errorCode);
+        if (m.find()) {
+            errorCode = m.group(0).substring(m.group(0).length()-3);
+        }
+        switch (errorCode) {
+            case "525":
+                return "User not found";
+            case "52e":
+                return "Invalid credentials";
+            case "530":
+                return "Not permitted to logon at this time";
+            case "531":
+                return "Not permitted to logon at this workstation";
+            case "532":
+                return "Password expired (remember to check the user set in osuser.xml also)";
+            case "533":
+                return "Account disabled";
+            case "701":
+                return "Account expired";
+            case "773":
+                return "User must reset password";
+            case "775":
+                return "User account locked";
+            default:
+                return errorCode;
         }
     }
 }
