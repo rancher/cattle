@@ -111,6 +111,12 @@ def test_update_project(user_clients, project):
     assert e.value.error.status == 404
 
 
+def test_project_no_filters_and_sort(user_clients):
+    projects = user_clients['Owner'].list_project()
+    assert len(projects.sortLinks) == 0
+    assert len(projects.filters) == 0
+
+
 def test_set_members(admin_user_client, user_clients, project):
     members = get_plain_members(project.projectMembers())
     members.append({
