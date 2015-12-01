@@ -17,19 +17,12 @@ public class SettingsUtils {
             return;
         }
         Setting setting = objectManager.findOne(Setting.class, "name", name);
-        if (value == null) {
-            if (setting != null) {
-                objectManager.delete(setting);
-            } else {
-                return;
-            }
+        if (setting == null) {
+            objectManager.create(Setting.class, "name", name, "value", value);
         } else {
-            if (setting == null) {
-                objectManager.create(Setting.class, "name", name, "value", value);
-            } else {
-                objectManager.setFields(setting, "value", value);
-            }
+            objectManager.setFields(setting, "value", value);
         }
+
         DeferredUtils.defer(new Runnable() {
 
             @Override
