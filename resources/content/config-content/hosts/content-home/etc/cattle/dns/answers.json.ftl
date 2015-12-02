@@ -2,9 +2,9 @@
 <#assign setDefault = true/>
 <#if dnsEntries?? >
     <#list dnsEntries as dnsEntry>
-        <#if dnsEntry.resolve?has_content && dnsEntry.sourceIpAddress.address??>
-    "${dnsEntry.sourceIpAddress.address}": {
-    <#if dnsEntry.sourceIpAddress.address == "default"> <#assign setDefault = false/> </#if>
+        <#if dnsEntry.resolve?has_content && dnsEntry.sourceIpAddress??>
+    "${dnsEntry.sourceIpAddress}": {
+    <#if dnsEntry.sourceIpAddress == "default"> <#assign setDefault = false/> </#if>
             <#if (dnsEntry.instance.data.fields.dns)?? && dnsEntry.instance.data.fields.dns?has_content >
         "recurse": [
                 <#list dnsEntry.instance.data.fields.dns as recurse >
