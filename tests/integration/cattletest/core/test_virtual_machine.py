@@ -350,6 +350,7 @@ def test_virtual_machine_console(super_client, context):
     console = vm.console()
 
     assert console is not None
+    assert console.url.endswith('/v1/console/')
 
 
 def test_virtual_machine_console_visibility(super_client, context):
