@@ -344,7 +344,6 @@
         "loadBalancerConfig" : "r",
         "loadBalancerConfig.appCookieStickinessPolicy" : "cru",
         "loadBalancerConfig.lbCookieStickinessPolicy" : "cru",
-        "loadBalancerConfig.defaults" : "cru",
 
         "loadBalancerAppCookieStickinessPolicy" : "r",
         "loadBalancerAppCookieStickinessPolicy.cookie" : "cru",
@@ -407,6 +406,7 @@
         "loadBalancerService.defaultCertificateId" : "cru",
         "loadBalancerService.createIndex" : "",
         "loadBalancerService.selectorContainer" : "",
+        "loadBalancerService.haproxyConfig" : "cru",
 
         "snapshot" : "r",
         "snapshot.volumeId" : "cr",

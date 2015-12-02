@@ -1,6 +1,6 @@
 package io.cattle.platform.configitem.context.data;
 
-import java.util.UUID;
+import io.cattle.platform.core.model.Service;
 
 public class LoadBalancerListenerInfo {
     Integer privatePort;
@@ -9,15 +9,17 @@ public class LoadBalancerListenerInfo {
     String sourceProtocol;
     String targetProtocol;
     String uuid;
+    Service lbSvc;
 
-    public LoadBalancerListenerInfo(Integer privatePort, Integer sourcePort, String protocol, Integer targetPort) {
+    public LoadBalancerListenerInfo(Service lbSvc, Integer privatePort, Integer sourcePort, String protocol, Integer targetPort) {
         super();
         this.privatePort = privatePort;
         this.sourcePort = sourcePort;
         this.sourceProtocol = protocol;
         this.targetProtocol = protocol;
         this.targetPort = targetPort;
-        this.uuid = UUID.randomUUID().toString();
+        this.lbSvc = lbSvc;
+        setUuid();
     }
 
     public Integer getPrivatePort() {
@@ -42,5 +44,10 @@ public class LoadBalancerListenerInfo {
 
     public String getUuid() {
         return uuid;
+    }
+
+    public void setUuid() {
+        Integer listenerPort = privatePort != null ? privatePort : sourcePort;
+        this.uuid = lbSvc.getUuid() + "_" + listenerPort.toString();
     }
 }

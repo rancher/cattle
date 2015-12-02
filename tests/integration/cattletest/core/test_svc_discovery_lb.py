@@ -3,8 +3,11 @@ from cattle import ApiError
 import yaml
 
 
-RESOURCE_DIR = os.path.join(os.path.dirname(os.path.realpath(__file__)),
-                            'resources/certs')
+CERT_RESOURCE_DIR = os.path.join(os.path.dirname(os.path.realpath(__file__)),
+                                 'resources/certs')
+
+CONF_RESOURCE_DIR = os.path.join(os.path.dirname(os.path.realpath(__file__)),
+                                 'resources/haproxycfg')
 
 
 @pytest.fixture(scope='module')
@@ -327,19 +330,19 @@ def test_create_svc_with_lb_config(context, client):
                  "nocache": "true", "postonly": "true",
                  "mode": "insert"}
 
-    defaults = ["balance leastconn"]
+    haproxyconfig = _read_config("haproxy.cfg")
 
     lb_config = {"name": name,
                  "appCookieStickinessPolicy": app_policy,
-                 "lbCookieStickinessPolicy": lb_policy,
-                 "defaults": defaults}
+                 "lbCookieStickinessPolicy": lb_policy}
 
     # create service
     service = client. \
         create_loadBalancerService(name=name,
                                    environmentId=env.id,
                                    launchConfig=launch_config,
-                                   loadBalancerConfig=lb_config)
+                                   loadBalancerConfig=lb_config,
+                                   haproxyConfig=haproxyconfig)
     service = client.wait_success(service)
     assert service.state == "inactive"
     assert service.loadBalancerConfig is not None
@@ -365,18 +368,14 @@ def test_create_svc_with_lb_config(context, client):
     assert config.lbCookieStickinessPolicy.postonly is True
     assert config.lbCookieStickinessPolicy.mode == "insert"
 
-    assert "defaults" in config
-    assert defaults == config.defaults
+    assert "haproxyConfig" in service
+    assert haproxyconfig == service.haproxyConfig
 
     compose_config = env.exportconfig()
     assert compose_config is not None
 
-    name = service.name
-    config = 'load_balancer_config'
     rancher_yml = yaml.load(compose_config.rancherComposeConfig)
-    assert config in rancher_yml[service.name]
-    assert rancher_yml[name][config] is not None
-    assert defaults == rancher_yml[name][config]['defaults']
+    assert 'haproxy_config' in rancher_yml[service.name]
 
 
 def test_scale(new_context):
@@ -1110,7 +1109,7 @@ def _create_cert(client):
 
 
 def _read_cert(name):
-    with open(os.path.join(RESOURCE_DIR, name)) as f:
+    with open(os.path.join(CERT_RESOURCE_DIR, name)) as f:
         return f.read()
 
 
@@ -1141,3 +1140,8 @@ def _create_stack(client):
     env = client.wait_success(env)
     assert env.state == "active"
     return env
+
+
+def _read_config(name):
+    with open(os.path.join(CONF_RESOURCE_DIR, name)) as f:
+        return f.read()

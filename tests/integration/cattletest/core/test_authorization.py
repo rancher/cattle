@@ -1701,7 +1701,8 @@ def test_svc_discovery_lb_service(admin_user_client, user_client,
         'metadata': 'r',
         'selectorLink': 'r',
         'fqdn': 'r',
-        'publicEndpoints': 'r'
+        'publicEndpoints': 'r',
+        'haproxyConfig': 'r'
     })
 
     auth_check(user_client.schema, 'loadBalancerService', 'r', {
@@ -1719,7 +1720,8 @@ def test_svc_discovery_lb_service(admin_user_client, user_client,
         'metadata': 'r',
         'selectorLink': 'r',
         'fqdn': 'r',
-        'publicEndpoints': 'r'
+        'publicEndpoints': 'r',
+        'haproxyConfig': 'r'
     })
 
     auth_check(project_client.schema, 'loadBalancerService', 'crud', {
@@ -1737,7 +1739,8 @@ def test_svc_discovery_lb_service(admin_user_client, user_client,
         'metadata': 'cru',
         'selectorLink': 'cr',
         'fqdn': 'r',
-        'publicEndpoints': 'r'
+        'publicEndpoints': 'r',
+        'haproxyConfig': 'cru'
     })
 
 

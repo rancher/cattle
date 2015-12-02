@@ -87,6 +87,10 @@ public class ServiceDiscoveryConfigItem {
             ServiceDiscoveryConstants.FIELD_METADATA,
             ServiceDiscoveryConstants.FIELD_METADATA, false, false);
 
+    public static final ServiceDiscoveryConfigItem HAPROXYCONFIG = new ServiceDiscoveryConfigItem(
+            LoadBalancerConstants.FIELD_LB_HAPROXY_CONFIG,
+            "haproxy_config", false, false);
+
     /**
      * Name as it appears in docker-compose file
      */

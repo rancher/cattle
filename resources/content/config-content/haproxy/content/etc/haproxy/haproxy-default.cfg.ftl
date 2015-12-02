@@ -14,9 +14,24 @@ global
 	daemon
 
 defaults
-	<#list defaults as default>
-	${default}
-	</#list>
+	log	global
+	mode	tcp
+	option	tcplog
+        option  dontlognull
+        option  redispatch
+        option http-server-close
+        option forwardfor
+        retries 3
+        timeout connect 5000
+        timeout client 50000
+        timeout server 50000
+	errorfile 400 /etc/haproxy/errors/400.http
+	errorfile 403 /etc/haproxy/errors/403.http
+	errorfile 408 /etc/haproxy/errors/408.http
+	errorfile 500 /etc/haproxy/errors/500.http
+	errorfile 502 /etc/haproxy/errors/502.http
+	errorfile 503 /etc/haproxy/errors/503.http
+	errorfile 504 /etc/haproxy/errors/504.http
 
 <#if listeners?has_content && backends?has_content>
 <#list listeners as listener >

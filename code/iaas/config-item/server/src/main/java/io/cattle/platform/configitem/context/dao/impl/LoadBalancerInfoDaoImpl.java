@@ -105,8 +105,8 @@ public class LoadBalancerInfoDaoImpl implements LoadBalancerInfoDao {
                     sourceProtocol = "https";
                 }
             }
-            listenersToReturn.add(new LoadBalancerListenerInfo(privatePort, sourcePort,
-                    sourceProtocol, targetPort));
+            listenersToReturn.add(new LoadBalancerListenerInfo(lbService, privatePort,
+                    sourcePort, sourceProtocol, targetPort));
         }
         return listenersToReturn;
     }

@@ -1,0 +1,3 @@
+<#if haproxyConfig??>
+${haproxyConfig}
+</#if>

@@ -13,13 +13,6 @@
             "attributes" : {
                 "scheduleUpdate" : true
             }
-        },
-        "defaults":{
-            "type": "array[string]",
-            "nullable": true,
-            "attributes" : {
-                "scheduleUpdate" : true
-            }
         }
     }
 }
