@@ -22,7 +22,7 @@ import com.netflix.config.DynamicStringProperty;
 
 public class ExecActionHandler implements ActionHandler {
 
-    private static final DynamicStringProperty CONSOLE_AGENT_PATH = ArchaiusUtil.getString("console.agent.path");
+    private static final DynamicStringProperty EXEC_AGENT_PATH = ArchaiusUtil.getString("exec.agent.path");
 
     HostApiService apiService;
     ObjectManager objectManager;
@@ -54,7 +54,7 @@ public class ExecActionHandler implements ActionHandler {
                 DockerInstanceConstants.DOCKER_ATTACH_STDOUT, exec.getAttachStdout(), DockerInstanceConstants.DOCKER_TTY, exec.getTty(),
                 DockerInstanceConstants.DOCKER_CMD, exec.getCommand(), DockerInstanceConstants.DOCKER_CONTAINER, dockerId);
 
-        HostApiAccess apiAccess = apiService.getAccess(request, host.getId(), CollectionUtils.asMap("exec", data), CONSOLE_AGENT_PATH.get());
+        HostApiAccess apiAccess = apiService.getAccess(request, host.getId(), CollectionUtils.asMap("exec", data), EXEC_AGENT_PATH.get());
 
         if (apiAccess == null) {
             return null;
