@@ -31,6 +31,7 @@ public class ContainerMetaData {
     Long create_index;
     String host_uuid;
     String hostname;
+    String health_state;
 
     public ContainerMetaData() {
     }
@@ -92,6 +93,7 @@ public class ContainerMetaData {
             }
         }
         this.create_index = instance.getCreateIndex();
+        this.health_state = instance.getHealthState();
     }
 
     public void setService_name(String service_name) {
@@ -138,5 +140,9 @@ public class ContainerMetaData {
 
     public String getUuid() {
         return uuid;
+    }
+
+    public String getHealth_state() {
+        return health_state;
     }
 }
