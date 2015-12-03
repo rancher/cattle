@@ -4,6 +4,7 @@ import io.cattle.platform.api.link.LinkHandler;
 import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.HostConstants;
 import io.cattle.platform.core.constants.InstanceConstants;
+import io.cattle.platform.core.model.Agent;
 import io.cattle.platform.core.model.Host;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.docker.util.DockerUtils;
@@ -12,7 +13,9 @@ import io.cattle.platform.host.service.HostApiService;
 import io.cattle.platform.host.stats.utils.StatsConstants;
 import io.cattle.platform.object.ObjectManager;
 import io.github.ibuildthecloud.gdapi.context.ApiContext;
+import io.github.ibuildthecloud.gdapi.exception.ClientVisibleException;
 import io.github.ibuildthecloud.gdapi.request.ApiRequest;
+import io.github.ibuildthecloud.gdapi.util.ResponseCodes;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -57,8 +60,9 @@ public class ContainerStatsLinkHandler implements LinkHandler {
             throw new IllegalStateException();
         }
 
-        if (!CommonStatesConstants.ACTIVE.equals(host.getState())) {
-            return new StatsAccess();
+        Agent agent = objectManager.loadResource(Agent.class, host.getAgentId());
+        if (agent == null || !CommonStatesConstants.ACTIVE.equals(agent.getState())) {
+            throw new ClientVisibleException(ResponseCodes.SERVICE_UNAVAILABLE);
         }
 
         Map<String, Object> payload = new HashMap<String, Object>();
