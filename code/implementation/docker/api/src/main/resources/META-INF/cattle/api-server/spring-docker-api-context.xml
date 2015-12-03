@@ -17,6 +17,6 @@
     <bean class="io.cattle.platform.docker.api.ExecActionHandler" />
     <bean class="io.cattle.platform.docker.api.ContainerLogsActionHandler" />
     <bean class="io.cattle.platform.docker.api.DockerSocketProxyActionHandler" />
-
+    <bean class="io.cattle.platform.docker.api.InstanceConsoleActionHandler" />
 
 </beans>
