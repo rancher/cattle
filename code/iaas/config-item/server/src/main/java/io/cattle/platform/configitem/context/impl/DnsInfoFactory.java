@@ -32,32 +32,24 @@ public class DnsInfoFactory extends AbstractAgentBaseContextFactory {
         boolean isVIPProviderConfigured = isVIPProviderConfigured(instance);
         List<DnsEntryData> dnsEntries = new ArrayList<DnsEntryData>();
         // 1. retrieve all instance links for the hosts
-        dnsEntries.addAll(dnsInfoDao.getInstanceLinksHostDnsData(instance));
-        // 2. retrieve regular service dns records
+        dnsEntries.addAll(dnsInfoDao.getInstanceLinksDnsData(instance));
+        // 2. retrieve service dns records
         dnsEntries.addAll(dnsInfoDao.getServiceDnsData(instance, isVIPProviderConfigured, true));
         dnsEntries.addAll(dnsInfoDao.getServiceDnsData(instance, isVIPProviderConfigured, false));
-        // 3. retrieve self service links
-        dnsEntries.addAll(dnsInfoDao.getSelfServiceData(instance, isVIPProviderConfigured));
-        // 4. retrieve external service dns records
-        dnsEntries.addAll(dnsInfoDao.getExternalServiceDnsData(instance, true));
-        dnsEntries.addAll(dnsInfoDao.getExternalServiceDnsData(instance, false));
-        // 5. get dns service dns records
-        dnsEntries.addAll(dnsInfoDao.getDnsServiceLinksData(instance, isVIPProviderConfigured, true));
-        dnsEntries.addAll(dnsInfoDao.getDnsServiceLinksData(instance, isVIPProviderConfigured, false));
 
         // aggregate the links based on the source ip address
         Map<String, DnsEntryData> processedDnsEntries = new HashMap<>();
         for (DnsEntryData dnsEntry : dnsEntries) {
             DnsEntryData newData = null;
-            if (processedDnsEntries.containsKey(dnsEntry.getSourceIpAddress().getAddress())) {
-                newData = processedDnsEntries.get(dnsEntry.getSourceIpAddress().getAddress());
+            if (processedDnsEntries.containsKey(dnsEntry.getSourceIpAddress())) {
+                newData = processedDnsEntries.get(dnsEntry.getSourceIpAddress());
                 populateARecords(dnsEntry, newData);
                 populateCnameRecords(dnsEntry, newData);
             } else {
                 newData = dnsEntry;
             }
 
-            processedDnsEntries.put(dnsEntry.getSourceIpAddress().getAddress(), newData);
+            processedDnsEntries.put(dnsEntry.getSourceIpAddress(), newData);
         }
         context.getData().put("dnsEntries", processedDnsEntries.values());
     }
