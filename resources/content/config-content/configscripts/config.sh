@@ -125,7 +125,7 @@ download()
     else
         tar xzf $DOWNLOAD_TEMP/download -C $DOWNLOAD_TEMP || {
             echo "Failed to extract $DOWNLOAD_TEMP/download"
-            if !grep -q '\0' $DOWNLOAD_TEMP/download; then
+            if ! grep -q '\0' $DOWNLOAD_TEMP/download; then
                 echo " contents:"
                 cat $DOWNLOAD_TEMP/download
             fi
