@@ -450,6 +450,122 @@ def test_no_port_override(docker_client, super_client):
 
 
 @if_docker
+def test_docker_managed_volumes(docker_client, super_client):
+    def reload(x):
+        return super_client.reload(x)
+
+    _ = reload
+
+    uuid = TEST_IMAGE_UUID
+    bind_mount_uuid = py_uuid.uuid4().hex
+    bar_host_path = '/tmp/bar%s' % bind_mount_uuid
+    bar_bind_mount = '%s:/bar' % bar_host_path
+    baz_host_path = '/tmp/baz%s' % bind_mount_uuid
+    baz_bind_mount = '%s:/baz:ro' % baz_host_path
+
+    volName1 = 'test-%s' % random_str()
+    volName2 = 'test-%s' % random_str()
+    mv1 = docker_client.create_volume(name=volName1,
+                                      driver='local')
+    mv1 = docker_client.wait_success(mv1)
+    
+    mv2 = docker_client.create_volume(name=volName2,
+                                      driver='local')
+    mv2 = docker_client.wait_success(mv2)
+
+    managed_mnt_pt1 = '/tmp/managedbad1%s' % bind_mount_uuid
+    managed_mnt_pt2 = '/tmp/managedbad2%s' % bind_mount_uuid
+    dvms = {managed_mnt_pt1: mv1.id,
+            managed_mnt_pt2: mv2.id}
+
+    c = docker_client.create_container(name="volumes_test",
+                                       imageUuid=uuid,
+                                       startOnCreate=False,
+                                       dataVolumes=['/foo',
+                                                    bar_bind_mount,
+                                                    baz_bind_mount],
+                                       dataVolumeMounts=dvms)
+
+    c = docker_client.wait_success(c)
+    assert len(c.dataVolumes) == 5
+    assert set(c.dataVolumes) == set(['/foo',
+                                      bar_bind_mount,
+                                      baz_bind_mount,
+                                      volName1+":"+managed_mnt_pt1,
+                                      volName2+":"+managed_mnt_pt2])
+
+    c = super_client.wait_success(c.start(), timeout=240)
+
+    volumes = c.volumes()
+    assert len(volumes) == 1
+
+    mounts = c.mounts()
+    assert len(mounts) == 5
+    foo_mount, bar_mount, baz_mount = None, None, None
+    foo_vol, bar_vol, baz_vol = None, None, None
+    managed_mnt1, managed_vol1 = None, None
+    managed_mnt2, managed_vol2 = None, None
+
+    for mount in mounts:
+        assert mount.instance().id == c.id
+        if mount.path == '/foo':
+            foo_mount = mount
+            foo_vol = mount.volume()
+        elif mount.path == '/bar':
+            bar_mount = mount
+            bar_vol = mount.volume()
+        elif mount.path == '/baz':
+            baz_mount = mount
+            baz_vol = mount.volume()
+        elif mount.path == managed_mnt_pt1:
+            managed_mnt1 = mount
+            managed_vol1 = mount.volume()
+        elif mount.path == managed_mnt_pt2:
+            managed_mnt2 = mount
+            managed_vol2 = mount.volume()
+
+    assert managed_mnt1 is not None
+    assert managed_mnt1.permissions == 'rw'
+    assert managed_vol1 is not None
+    assert managed_vol1.state == 'active'
+    assert _(managed_vol1).attachedState == 'inactive'
+    
+    assert managed_mnt2 is not None
+    assert managed_mnt2.permissions == 'rw'
+    assert managed_vol2 is not None
+    assert managed_vol2.state == 'active'
+    assert _(managed_vol2).attachedState == 'inactive'
+
+    assert foo_mount is not None
+    assert foo_mount.permissions == 'rw'
+    assert foo_vol is not None
+    assert foo_vol.state == 'active'
+    assert _(foo_vol).attachedState == 'inactive'
+
+    assert bar_mount is not None
+    assert bar_mount.permissions == 'rw'
+    assert bar_vol is not None
+    assert bar_vol.state == 'active'
+    assert _(bar_vol).attachedState == 'inactive'
+
+    assert baz_mount is not None
+    assert baz_mount.permissions == 'ro'
+    assert baz_vol is not None
+    assert baz_vol.state == 'active'
+    assert _(baz_vol).attachedState == 'inactive'
+
+    assert not foo_vol.isHostPath
+
+    assert bar_vol.isHostPath
+    # We use 'in' instead of '==' because Docker uses the fully qualified
+    # non-linked path and it might look something like: /mnt/sda1/<path>
+    assert bar_host_path in bar_vol.uri
+
+    assert baz_vol.isHostPath
+    assert baz_host_path in baz_vol.uri
+
+
+@if_docker
 def test_docker_volumes(docker_client, super_client):
 
     def reload(x):
