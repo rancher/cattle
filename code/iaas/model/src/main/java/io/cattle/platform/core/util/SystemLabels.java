@@ -12,5 +12,11 @@ public class SystemLabels {
      */
     public static final String LABEL_AGENT_SERVICE_LABELS_PROVIDER = "io.rancher.container.agent_service.labels_provider";
 
+    public static final String LABEL_VM = "io.rancher.vm";
+    public static final String LABEL_VM_USERDATA = "io.rancher.vm.userdata";
+    public static final String LABEL_VM_METADATA = "io.rancher.vm.metadata";
+    public static final String LABEL_VM_MEMORY = "io.rancher.vm.memory";
+    public static final String LABEL_VM_VCPU = "io.rancher.vm.vcpu";
+
     // TODO - move "rancher.io" labels from other parts of the code, here
 }

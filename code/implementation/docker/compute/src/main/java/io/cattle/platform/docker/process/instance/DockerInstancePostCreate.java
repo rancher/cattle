@@ -30,7 +30,7 @@ public class DockerInstancePostCreate extends AbstractObjectProcessLogic impleme
     @Override
     public HandlerResult handle(ProcessState state, ProcessInstance process) {
         Instance instance = (Instance)state.getResource();
-        if (!InstanceConstants.KIND_CONTAINER.equals(instance.getKind())) {
+        if (!InstanceConstants.CONTAINER_LIKE.contains(instance.getKind())) {
             return null;
         }
 

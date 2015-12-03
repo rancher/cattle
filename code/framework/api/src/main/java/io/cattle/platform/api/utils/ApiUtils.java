@@ -192,7 +192,7 @@ public class ApiUtils {
 
         String kind = ObjectUtils.getKind(obj);
         Schema kindSchema = factory.getSchema(kind);
-        if (kindSchema != null && schema.getId().equals(kindSchema.getParent())) {
+        if (kindSchema != null && schema.getId().equals(factory.getBaseType(kindSchema.getParent()))) {
             return kindSchema.getId();
         }
 
