@@ -538,6 +538,9 @@
         "publicEndpoint" : "r",
         "publicEndpoint.ipAddress" : "r",
         "publicEndpoint.port" : "r",
+        "publicEndpoint.serviceId" : "r",
+        "publicEndpoint.instanceId" : "r",
+        "publicEndpoint.hostId" : "r",
 
         "end" : ""
     }

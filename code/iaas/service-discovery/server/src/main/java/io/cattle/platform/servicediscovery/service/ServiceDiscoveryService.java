@@ -2,7 +2,6 @@ package io.cattle.platform.servicediscovery.service;
 
 import io.cattle.platform.core.addon.PublicEndpoint;
 import io.cattle.platform.core.addon.ServiceLink;
-import io.cattle.platform.core.model.Host;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.Service;
 
@@ -34,7 +33,5 @@ public interface ServiceDiscoveryService {
 
     boolean isGlobalService(Service service);
 
-    void updateServicePublicEndpoints(Service service, PublicEndpoint publicEndpoint, boolean add);
-
-    void updateHostPublicEndpoints(Host host, PublicEndpoint publicEndpoint, boolean add);
+    void propagatePublicEndpoint(PublicEndpoint publicEndpoint, boolean add);
 }
