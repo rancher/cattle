@@ -7,6 +7,8 @@ import io.github.ibuildthecloud.gdapi.util.ResponseCodes;
 
 public class IdentityNotFoundException extends ClientVisibleException {
 
+    private static final long serialVersionUID = 4816163081210850808L;
+
     public IdentityNotFoundException(ApiError apiError) {
         super(apiError);
     }

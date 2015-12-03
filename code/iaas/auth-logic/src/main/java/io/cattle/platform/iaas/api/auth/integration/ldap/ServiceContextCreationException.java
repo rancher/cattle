@@ -1,6 +1,9 @@
 package io.cattle.platform.iaas.api.auth.integration.ldap;
 
 public class ServiceContextCreationException extends RuntimeException{
+
+    private static final long serialVersionUID = 563403741374310236L;
+
     public ServiceContextCreationException() {
     }
 
