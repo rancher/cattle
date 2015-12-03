@@ -28,8 +28,6 @@ public class OpenLDAPConfigManager extends AbstractNoOpResourceManager {
         return new Class<?>[]{OpenLDAPConfig.class};
     }
 
-
-    @SuppressWarnings("unchecked")
     @Override
     protected Object createInternal(String type, ApiRequest request) {
         if (!StringUtils.equals(OpenLDAPConstants.CONFIG, request.getType())) {

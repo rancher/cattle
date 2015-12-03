@@ -16,14 +16,10 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+
 import javax.inject.Inject;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-
 public class RancherIdentityProvider implements IdentityProvider {
-
-    private static final Log logger = LogFactory.getLog(RancherIdentityProvider.class);
 
     @Inject
     AuthDao authDao;
