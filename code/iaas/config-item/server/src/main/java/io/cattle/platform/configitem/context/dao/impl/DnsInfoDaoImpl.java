@@ -394,7 +394,8 @@ public class DnsInfoDaoImpl extends AbstractJooqDao implements DnsInfoDao {
             condition = ipAddress.ROLE.eq(IpAddressConstants.ROLE_PRIMARY).and(nic.VNET_ID.eq(vnetId));
         } else {
             condition = (ipAddress.ROLE.isNull().and(ipAddress.ADDRESS.isNull())).or(ipAddress.ROLE
-                    .eq(IpAddressConstants.ROLE_PRIMARY));
+                    .eq(IpAddressConstants.ROLE_PRIMARY)).and(instance.HEALTH_STATE.isNull().or(
+                    instance.HEALTH_STATE.eq(HealthcheckConstants.HEALTH_STATE_HEALTHY)));
         }
 
         return create()
@@ -418,8 +419,6 @@ public class DnsInfoDaoImpl extends AbstractJooqDao implements DnsInfoDao {
                 .and(instance.REMOVED.isNull())
                 .and(instance.STATE.isNull().or(instance.STATE.in(InstanceConstants.STATE_RUNNING,
                         InstanceConstants.STATE_STARTING)))
-                .and(instance.HEALTH_STATE.isNull().or(
-                        instance.HEALTH_STATE.eq(HealthcheckConstants.HEALTH_STATE_HEALTHY)))
                 .and(condition)
                 .fetch().map(mapper);
     }
