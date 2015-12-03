@@ -28,7 +28,7 @@ public class StatsOutputFilter implements ResourceOutputFilter {
             add = true;
             hostStats = true;
             containerStats = true;
-        } else if (original instanceof Instance && InstanceConstants.KIND_CONTAINER.equals(((Instance) original).getKind())) {
+        } else if (original instanceof Instance && InstanceConstants.CONTAINER_LIKE.contains(((Instance) original).getKind())) {
             containerStats = true;
             add = true;
         } else if (original instanceof Account && AccountConstants.PROJECT_KIND.equals(((Account) original).getKind())) {

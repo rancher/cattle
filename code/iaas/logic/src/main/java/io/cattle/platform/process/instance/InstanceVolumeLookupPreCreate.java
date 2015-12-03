@@ -54,7 +54,7 @@ public class InstanceVolumeLookupPreCreate extends AbstractObjectProcessLogic im
     @Override
     public HandlerResult handle(ProcessState state, ProcessInstance process) {
         Instance instance = (Instance)state.getResource();
-        if (!InstanceConstants.KIND_CONTAINER.equals(instance.getKind())) {
+        if (!InstanceConstants.CONTAINER_LIKE.contains(instance.getKind())) {
             return null;
         }
 

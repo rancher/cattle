@@ -8,6 +8,23 @@
         "networkLaunchConfig": {
             "type" : "string",
             "nullable" : true
+        },
+        "vcpu" : {
+            "type" : "int",
+            "nullable" : true,
+            "create" : true,
+            "default": 1
+        },
+        "userdata" : {
+            "type" : "string",
+            "nullable" : true,
+            "create" : true
+        },
+        "kind" : {
+            "type" : "enum",
+            "options" : ["container", "virtualMachine"],
+            "create" : true,
+            "default": "container"
         }
     }
 }

@@ -482,7 +482,11 @@
         "launchConfig.networkLaunchConfig" : "cr",
         "launchConfig.dataVolumesFromLaunchConfigs" : "cr",
         "launchConfig.restartPolicy" : "",
- 
+        "launchConfig.kind" : "cr",
+        "launchConfig.vcpu" : "cr",
+        "launchConfig.userdata" : "cr",
+        "launchConfig.memoryMb" : "cr",
+
         "secondaryLaunchConfig" : "cr",
         "secondaryLaunchConfig.name" : "cr",
 
@@ -532,6 +536,15 @@
         "publicEndpoint" : "r",
         "publicEndpoint.ipAddress" : "r",
         "publicEndpoint.port" : "r",
+
+        "virtualMachine" : "r",
+        "virtualMachine.imageUuid" : "cr",
+        "virtualMachine.memoryMb" : "cr",
+        "virtualMachine.networkIds" : "cr",
+        "virtualMachine.primaryIpAddress" : "r",
+        "virtualMachine.startOnCreate" : "cr",
+        "virtualMachine.userdata" : "cr",
+        "virtualMachine.vcpu" : "cr",
 
         "end" : ""
     }
