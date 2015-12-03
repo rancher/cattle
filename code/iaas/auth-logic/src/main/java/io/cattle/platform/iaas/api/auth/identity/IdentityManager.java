@@ -6,6 +6,7 @@ import io.cattle.platform.core.constants.IdentityConstants;
 import io.cattle.platform.core.model.ProjectMember;
 import io.cattle.platform.iaas.api.auth.integration.IdentityNotFoundException;
 import io.cattle.platform.iaas.api.auth.integration.interfaces.IdentityProvider;
+import io.cattle.platform.util.exception.ExceptionUtils;
 import io.github.ibuildthecloud.gdapi.condition.Condition;
 import io.github.ibuildthecloud.gdapi.context.ApiContext;
 import io.github.ibuildthecloud.gdapi.exception.ClientVisibleException;
@@ -27,6 +28,8 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 import javax.inject.Inject;
 
+import org.apache.cloudstack.managed.context.ManagedContext;
+import org.apache.cloudstack.managed.context.impl.DefaultManagedContext;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.mina.core.RuntimeIoException;
@@ -74,13 +77,26 @@ public class IdentityManager extends AbstractNoOpResourceManager {
      * make N requests one for each Passed in identity.
      */
     private List<Identity> refreshIdentities(final Set<Identity> identities) {
-        Collection<Callable<Identity>> identitiesToGet = new ArrayList<>();
+        final Collection<Callable<Identity>> identitiesToGet = new ArrayList<>();
         final List<Identity> identitiesToReturn = new ArrayList<>();
+        final ApiContext context = ApiContext.getContext();
+        final ManagedContext managedContext = new DefaultManagedContext();
         for (final Identity identity : identities) {
             identitiesToGet.add(new Callable<Identity>() {
                 @Override
                 public Identity call() throws Exception {
-                    return projectMemberToIdentity(identity.getId());
+                    try {
+                        return managedContext.callWithContext(new Callable<Identity>() {
+                            @Override
+                            public Identity call() throws Exception {
+                                ApiContext.setContext(context);
+                                return projectMemberToIdentity(identity.getId());
+                            }
+                        });
+                    } catch (Exception e) {
+                        ExceptionUtils.throwRuntime("Error occurred while getting Identity: " + identity.getId(), e);
+                        return null;
+                    }
                 }
             });
 

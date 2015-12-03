@@ -33,6 +33,10 @@ public class ApiContext {
         return TL.get();
     }
 
+    public static void setContext(ApiContext context) {
+        TL.set(context);
+    }
+
     public static SchemaFactory getSchemaFactory() {
         return getContext().getApiRequest().getSchemaFactory();
     }
