@@ -31,8 +31,6 @@ public class ADConfigManager extends AbstractNoOpResourceManager {
         return new Class<?>[]{ADConfig.class};
     }
 
-
-    @SuppressWarnings("unchecked")
     @Override
     protected Object createInternal(String type, ApiRequest request) {
         if (!StringUtils.equals(ADConstants.CONFIG, request.getType())) {
