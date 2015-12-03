@@ -33,6 +33,26 @@
         "engineOpts": {
             "type": "array[string]",
             "nullable": true
+        },
+        "engineInsecureRegistry": {
+            "type": "array[string]",
+            "nullable": true
+        },
+        "engineRegistryMirror": {
+            "type": "array[string]",
+            "nullable": true
+        },
+        "engineLabel": {
+            "type": "array[string]",
+            "nullable": true
+        },
+        "engineStorageDriver": {
+            "type": "string",
+            "nullable": true
+        },
+        "engineEnv": {
+            "type": "array[string]",
+            "nullable": true
         }
     }
 }

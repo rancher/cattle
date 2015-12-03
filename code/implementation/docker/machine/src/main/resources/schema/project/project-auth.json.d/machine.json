@@ -9,6 +9,11 @@
         "machine.labels": "cr",
         "machine.dockerVersion": "cr",
         "machine.engineOpts": "cr",
+        "machine.engineInsecureRegistry": "cr",
+        "machine.engineRegistryMirror": "cr",
+        "machine.engineLabel": "cr",
+        "machine.engineStorageDriver": "cr",
+        "machine.engineEnv": "cr",
         "end" : ""
     }
 }
