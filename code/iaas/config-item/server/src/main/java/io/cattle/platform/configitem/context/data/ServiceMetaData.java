@@ -35,6 +35,7 @@ public class ServiceMetaData {
     Map<String, Object> metadata;
     Integer scale;
     String fqdn;
+    List<String> expose = new ArrayList<>();
 
     public ServiceMetaData(Service service, String serviceName, Environment env, List<String> sidekicks,
             Map<String, Object> metadata) {
@@ -64,6 +65,11 @@ public class ServiceMetaData {
                 InstanceConstants.FIELD_PORTS);
         if (portsObj != null) {
             this.ports.addAll((List<String>) portsObj);
+        }
+        Object exposeObj = ServiceDiscoveryUtil.getLaunchConfigObject(service, serviceName,
+                InstanceConstants.FIELD_EXPOSE);
+        if (exposeObj != null) {
+            this.expose.addAll((List<String>) exposeObj);
         }
     }
 
@@ -164,5 +170,9 @@ public class ServiceMetaData {
 
     public String getUuid() {
         return uuid;
+    }
+
+    public List<String> getExpose() {
+        return expose;
     }
 }
