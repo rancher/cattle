@@ -46,6 +46,7 @@
         "subscribe.eventNames" : "cr",
         "userPreference": "",
         "volume" : "crd",
+        "virtualMachine" : "crud",
         "typeDocumentation" : "r",
         "typeDocumentation.resourceFields" : "r",
         "fieldDocumentation": "r",

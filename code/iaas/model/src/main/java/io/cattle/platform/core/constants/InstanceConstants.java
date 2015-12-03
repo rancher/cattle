@@ -1,5 +1,9 @@
 package io.cattle.platform.core.constants;
 
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
+
 public class InstanceConstants {
 
     public enum SystemContainer {
@@ -74,4 +78,6 @@ public class InstanceConstants {
     public static final String ON_STOP_REMOVE = "remove";
 
     public static final String EVENT_INSTANCE_FORCE_STOP = "compute.instance.force.stop";
+
+    public static final Set<String> CONTAINER_LIKE = new HashSet<>(Arrays.asList(KIND_CONTAINER, KIND_VIRTUAL_MACHINE));
 }

@@ -8,6 +8,7 @@ import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.Service;
 import io.cattle.platform.core.model.ServiceConsumeMap;
 import io.cattle.platform.core.model.ServiceExposeMap;
+import io.cattle.platform.object.meta.ObjectMetaDataManager;
 import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.object.util.DataUtils;
 import io.cattle.platform.servicediscovery.api.constants.ServiceDiscoveryConstants;
@@ -165,7 +166,7 @@ public class ServiceDiscoveryUtil {
         }
         Map<String, Object> launchConfigData = new HashMap<>();
         if (launchConfigName.equalsIgnoreCase(ServiceDiscoveryConstants.PRIMARY_LAUNCH_CONFIG_NAME)) {
-            launchConfigData = (Map<String, Object>) DataAccessor.fields(service)
+            launchConfigData = DataAccessor.fields(service)
                     .withKey(ServiceDiscoveryConstants.FIELD_LAUNCH_CONFIG).withDefault(Collections.EMPTY_MAP)
                     .as(Map.class);
         } else {
@@ -251,7 +252,9 @@ public class ServiceDiscoveryUtil {
 
         // 3. add extra parameters
         launchConfigItems.put("accountId", service.getAccountId());
-        launchConfigItems.put("kind", InstanceConstants.KIND_CONTAINER);
+        if (!launchConfigItems.containsKey(ObjectMetaDataManager.KIND_FIELD)) {
+            launchConfigItems.put(ObjectMetaDataManager.KIND_FIELD, InstanceConstants.KIND_CONTAINER);
+        }
 
         return launchConfigItems;
     }
@@ -322,7 +325,7 @@ public class ServiceDiscoveryUtil {
             }
         }
 
-        List<Map<String, Object>> oldLaunchConfigs = (List<Map<String, Object>>) DataAccessor
+        List<Map<String, Object>> oldLaunchConfigs = DataAccessor
                 .fields(service)
                 .withKey(ServiceDiscoveryConstants.FIELD_SECONDARY_LAUNCH_CONFIGS)
                 .withDefault(Collections.EMPTY_LIST)

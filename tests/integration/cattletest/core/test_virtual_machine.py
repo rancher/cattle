@@ -23,11 +23,32 @@ def subnet(network):
     return network.subnets()[0]
 
 
-def test_virtual_machine_create_cpu_memory(super_client, context):
-    vm = _create_virtual_machine(super_client, context,
+def test_virtual_machine_default_fields(super_client, client, context):
+    vm = _create_virtual_machine(client, context,
+                                 userdata='hi',
+                                 vcpu=2, memoryMb=42)
+    vm = client.wait_success(vm)
+    assert vm.state == 'running'
+    assert vm.vcpu == 2
+    assert vm.memoryMb == 42
+
+    c = super_client.reload(vm)
+
+    assert c.labels['io.rancher.vm'] == 'true'
+    assert c.labels['io.rancher.vm.memory'] == '42'
+    assert c.labels['io.rancher.vm.vcpu'] == '2'
+    assert c.labels['io.rancher.vm.userdata'] == 'hi'
+    assert c.dataVolumes == ['/var/lib/rancher/vm:/vm']
+    assert c.devices == ['/dev/kvm:/dev/kvm', '/dev/net/tun:/dev/net/tun']
+    assert c.capAdd == ['NET_ADMIN']
+    assert c.capabilities == ['console']
+
+
+def test_virtual_machine_create_cpu_memory(client, context):
+    vm = _create_virtual_machine(client, context,
                                  vcpu=2, memoryMb=42)
 
-    vm = super_client.wait_success(vm)
+    vm = client.wait_success(vm)
     assert vm.state == 'running'
 
     assert vm.vcpu == 2
@@ -40,8 +61,8 @@ def test_virtual_machine_create(super_client, context):
     vm = super_client.wait_success(vm)
     assert vm.state == 'running'
 
-    assert vm.vcpu is None
-    assert vm.memoryMb is None
+    assert vm.vcpu == 1
+    assert vm.memoryMb == 512
 
 
 def test_virtual_machine_create_null_network_id(super_client, context):
@@ -323,37 +344,17 @@ def test_virtual_machine_console(super_client, context):
     vm = _create_virtual_machine(super_client, context)
     vm = super_client.wait_success(vm)
 
-    assert vm.state == 'running'
-    assert 'console' not in vm
-
-    vm = super_client.update(vm, data={
-        'fields': {
-            'capabilities': ['console']
-        }
-    })
-
     assert 'console' in vm
     assert 'console' in vm and callable(vm.console)
 
     console = vm.console()
 
     assert console is not None
-    assert console.kind == 'fake'
-    assert console.url == 'http://localhost/console'
 
 
 def test_virtual_machine_console_visibility(super_client, context):
     vm = _create_virtual_machine(super_client, context)
     vm = super_client.wait_success(vm)
-
-    assert vm.state == 'running'
-    assert 'console' not in vm
-
-    vm = super_client.update(vm, data={
-        'fields': {
-            'capabilities': ['console']
-        }
-    })
 
     assert 'console' in vm
     assert 'console' in vm and callable(vm.console)

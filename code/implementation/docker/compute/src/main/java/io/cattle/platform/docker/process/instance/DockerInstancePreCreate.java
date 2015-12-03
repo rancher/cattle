@@ -43,7 +43,7 @@ public class DockerInstancePreCreate extends AbstractObjectProcessLogic implemen
     @Override
     public HandlerResult handle(ProcessState state, ProcessInstance process) {
         Instance instance = (Instance)state.getResource();
-        if (!InstanceConstants.KIND_CONTAINER.equals(instance.getKind())) {
+        if (!InstanceConstants.CONTAINER_LIKE.contains(instance.getKind())) {
             return null;
         }
 
@@ -54,7 +54,7 @@ public class DockerInstancePreCreate extends AbstractObjectProcessLogic implemen
         String mode = DataAccessor.fieldString(instance, DockerInstanceConstants.FIELD_NETWORK_MODE);
         String kind = DockerNetworkConstants.MODE_TO_KIND.get(mode);
 
-        if (mode == null || kind == null) {
+        if (mode == null || kind == null || DataAccessor.fieldLongList(instance, InstanceConstants.FIELD_SUBNET_IDS).size() != 0) {
             return null;
         }
 

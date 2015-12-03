@@ -61,7 +61,7 @@
                 <value>setServiceLinksInput</value>
                 <value>sshKey,parent=credential</value>
                 <value>subnetIpPool,parent=ipPool</value>
-                <value>virtualMachine,parent=instance</value>
+                <value>virtualMachine,parent=container</value>
                 <value>loadBalancerService,parent=service</value>
                 <value>externalService,parent=service</value>
                 <value>dnsService,parent=service</value>
