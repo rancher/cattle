@@ -1,5 +1,6 @@
 package io.cattle.platform.core.addon;
 
+import io.github.ibuildthecloud.gdapi.annotation.Field;
 import io.github.ibuildthecloud.gdapi.annotation.Type;
 
 @Type(list = false)
@@ -12,6 +13,7 @@ public class InstanceHealthCheck {
     String requestLine;
     Integer port;
 
+    @Field(nullable = true)
     public String getName() {
         return name;
     }
@@ -52,6 +54,7 @@ public class InstanceHealthCheck {
         this.unhealthyThreshold = unhealthyThreshold;
     }
 
+    @Field(nullable = true)
     public String getRequestLine() {
         return requestLine;
     }
