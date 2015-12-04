@@ -129,7 +129,7 @@ public class DnsInfoDaoImpl extends AbstractJooqDao implements DnsInfoDao {
     }
 
     @Override
-    public List<DnsEntryData> getServiceDnsData(final Instance instance, final boolean isVIPProvider, boolean links) {
+    public List<DnsEntryData> getServiceDnsData(final Instance instance, final boolean isVIPProvider) {
         MultiRecordMapper<ServiceDnsEntryData> mapper = new MultiRecordMapper<ServiceDnsEntryData>() {
             @Override
             protected ServiceDnsEntryData map(List<Object> input) {
@@ -145,18 +145,16 @@ public class DnsInfoDaoImpl extends AbstractJooqDao implements DnsInfoDao {
         ServiceTable targetService = mapper.add(SERVICE);
         ServiceConsumeMapTable serviceConsumeMap = mapper.add(SERVICE_CONSUME_MAP);
 
-        Condition condition = null;
-        Condition commonCondition = serviceConsumeMap.ID.isNotNull().and(serviceConsumeMap.REMOVED.isNull())
-                .and(serviceConsumeMap.STATE.in(CommonStatesConstants.ACTIVATING,
-                        CommonStatesConstants.ACTIVE));
-        if (links) {
-            condition = commonCondition.and(clientService.KIND.ne(ServiceDiscoveryConstants.KIND.DNSSERVICE.name()));
-        } else {
-            condition = (clientService.KIND.ne(ServiceDiscoveryConstants.KIND.DNSSERVICE.name())
+        // there are 2 conditions below linked with OR clause
+        // first condition - means to return all non-dns clientService + target service map within the same stack
+        // that are not linked
+        // second condition - return only clientService + targetService with explicit links
+        Condition condition = (clientService.KIND.ne(ServiceDiscoveryConstants.KIND.DNSSERVICE.name())
                     .and(targetService.ENVIRONMENT_ID.eq(clientService.ENVIRONMENT_ID))
-                    .and(serviceConsumeMap.ID.isNull())).or(clientService.KIND.eq(
-                    ServiceDiscoveryConstants.KIND.DNSSERVICE.name()).and(commonCondition));
-        }
+                .and(serviceConsumeMap.ID.isNull())).or(serviceConsumeMap.ID.isNotNull()
+                .and(serviceConsumeMap.REMOVED.isNull())
+                        .and(serviceConsumeMap.STATE.in(CommonStatesConstants.ACTIVATING,
+                                CommonStatesConstants.ACTIVE)));
 
         List<ServiceDnsEntryData> serviceDnsEntries = create()
                 .select(mapper.fields())

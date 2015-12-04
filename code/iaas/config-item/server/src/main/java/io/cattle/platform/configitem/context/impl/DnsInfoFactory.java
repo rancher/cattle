@@ -34,8 +34,7 @@ public class DnsInfoFactory extends AbstractAgentBaseContextFactory {
         // 1. retrieve all instance links for the hosts
         dnsEntries.addAll(dnsInfoDao.getInstanceLinksDnsData(instance));
         // 2. retrieve service dns records
-        dnsEntries.addAll(dnsInfoDao.getServiceDnsData(instance, isVIPProviderConfigured, true));
-        dnsEntries.addAll(dnsInfoDao.getServiceDnsData(instance, isVIPProviderConfigured, false));
+        dnsEntries.addAll(dnsInfoDao.getServiceDnsData(instance, isVIPProviderConfigured));
 
         // aggregate the links based on the source ip address
         Map<String, DnsEntryData> processedDnsEntries = new HashMap<>();
