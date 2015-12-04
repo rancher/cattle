@@ -10,6 +10,7 @@ public class VirtualMachineDisk {
 
     String name;
     String size;
+    String driver;
     Map<String, String> opts;
 
     public Map<String, String> getOpts() {
@@ -35,6 +36,14 @@ public class VirtualMachineDisk {
     @Field(defaultValue="10g")
     public void setSize(String size) {
         this.size = size;
+    }
+
+    public String getDriver() {
+        return driver;
+    }
+
+    public void setDriver(String driver) {
+        this.driver = driver;
     }
 
 }

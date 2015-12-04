@@ -2354,16 +2354,19 @@ def test_virtual_machine_disk(admin_user_client, user_client, project_client):
         'name': 'r',
         'size': 'r',
         'opts': 'r',
+        'driver': 'r',
     })
 
     auth_check(user_client.schema, 'virtualMachineDisk', 'r', {
         'name': 'r',
         'size': 'r',
         'opts': 'r',
+        'driver': 'r',
     })
 
     auth_check(project_client.schema, 'virtualMachineDisk', 'cr', {
         'name': 'cr',
         'size': 'cr',
         'opts': 'cr',
+        'driver': 'cr',
     })
