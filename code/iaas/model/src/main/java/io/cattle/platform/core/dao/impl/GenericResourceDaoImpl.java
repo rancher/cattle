@@ -44,6 +44,14 @@ public class GenericResourceDaoImpl implements GenericResourceDao {
     }
 
     @Override
+    public <T> T updateAndSchedule(T o, Map<String, Object> fields) {
+        o = objectManager.reload(o);
+        T obj = objectManager.setFields(o, fields);
+        processManager.scheduleStandardProcess(StandardProcess.UPDATE, obj, null);
+        return objectManager.reload(o);
+    }
+
+    @Override
     public <T> T create(Class<T> clz, Map<String, Object> properties) {
         T obj = objectManager.create(clz, properties);
         processManager.executeStandardProcess(StandardProcess.CREATE, obj, properties);
