@@ -196,7 +196,6 @@ public class DnsInfoDaoImpl extends AbstractJooqDao implements DnsInfoDao {
         List<DnsEntryData> returnData = new ArrayList<>();
 
         for (ServiceDnsEntryData serviceData : serviceDnsData) {
-            DnsEntryData data = new DnsEntryData();
             Service clientService = serviceData.getClientService();
             Map<String, Map<String, String>> resolve = new HashMap<>();
             Map<String, String> resolveCname = new HashMap<>();
@@ -211,6 +210,7 @@ public class DnsInfoDaoImpl extends AbstractJooqDao implements DnsInfoDao {
 
             if (servicesClientInstances.containsKey(clientService.getId())) {
                 for (ServiceInstanceData clientInstance : servicesClientInstances.get(clientService.getId())) {
+                    DnsEntryData data = new DnsEntryData();
                     String clientIp = getIpAddress(clientInstance, true, instanceIdToHostIpMap);
                     data.setSourceIpAddress(clientIp);
                     data.setResolveServicesAndContainers(resolve);
@@ -255,8 +255,9 @@ public class DnsInfoDaoImpl extends AbstractJooqDao implements DnsInfoDao {
         String targetInstanceName = targetInstance.getInstance() == null ? null : targetInstance
                 .getInstance().getName();
 
+        boolean self = clientService.getId().equals(targetService.getId());
         String dnsName = getDnsName(targetService, serviceData.getConsumeMap(),
-                targetInstance.getExposeMap(), false);
+                targetInstance.getExposeMap(), self);
 
 
         String targetIp = isVIPProvider ? clientService.getVip() : getIpAddress(
