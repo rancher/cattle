@@ -41,7 +41,7 @@ public class ServiceUpgradeValidationFilter extends AbstractDefaultResourceManag
 
     @Override
     public String[] getTypes() {
-        return new String[] { "service", "dnsService", "externalService" };
+        return new String[] { "service", "dnsService", "externalService", "loadBalancerService" };
     }
 
     @Override
