@@ -1,7 +1,6 @@
 package io.cattle.platform.object.util;
 
 import io.cattle.platform.object.meta.ObjectMetaDataManager;
-
 import java.beans.PropertyDescriptor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Date;
@@ -124,6 +123,14 @@ public class ObjectUtils {
 
     public static ObjectToStringWrapper toStringWrapper(Object obj) {
         return new ObjectToStringWrapper(obj);
+    }
+
+    public static Object getValue(Object obj, String name) {
+        Object val = getPropertyIgnoreErrors(obj, name);
+        if (val == null) {
+            val = DataAccessor.field(obj, name, Object.class);
+        }
+        return val;
     }
 
     private static final class ObjectToStringWrapper {

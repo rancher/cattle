@@ -13,4 +13,6 @@ public interface GenericResourceDao {
     <T> T createAndSchedule(T o);
 
     <T> T updateAndSchedule(T o);
+
+    <T> T updateAndSchedule(T o, Map<String, Object> fields);
 }

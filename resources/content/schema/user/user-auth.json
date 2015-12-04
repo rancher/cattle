@@ -580,6 +580,7 @@
         "virtualMachineDisk.name" : "cr",
         "virtualMachineDisk.size" : "cr",
         "virtualMachineDisk.opts" : "cr",
+        "virtualMachineDisk.driver" : "cr",
 
         "end" : ""
     }

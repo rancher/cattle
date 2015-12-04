@@ -34,6 +34,7 @@ def test_virtual_machine_default_fields(super_client, client, context):
         },
         {
             'name': disk_name,
+            'driver': 'foo',
         }
     ]
 
@@ -68,7 +69,7 @@ def test_virtual_machine_default_fields(super_client, client, context):
 
     volume2 = find_one(client.list_volume, name=disk_name)
     assert volume2.name == disk_name
-    assert volume2.driver == 'foo-bar'
+    assert volume2.driver == 'foo'
     assert volume2.driverOpts == {'vm': 'true', 'size': '10g'}
 
     assert c.dataVolumeMounts == {

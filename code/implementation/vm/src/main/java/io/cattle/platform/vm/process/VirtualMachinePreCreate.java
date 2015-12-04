@@ -3,6 +3,7 @@ package io.cattle.platform.vm.process;
 import static io.cattle.platform.core.model.tables.VolumeTable.*;
 
 import io.cattle.platform.core.addon.VirtualMachineDisk;
+import io.cattle.platform.core.constants.ContainerEventConstants;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.constants.VolumeConstants;
 import io.cattle.platform.core.dao.VolumeDao;
@@ -54,6 +55,8 @@ public class VirtualMachinePreCreate extends AbstractObjectProcessLogic implemen
         Map<Object, Object> fields = new HashMap<>();
         Map<String, Object> labels = DataAccessor.fieldMap(instance, InstanceConstants.FIELD_LABELS);
 
+        labels.put("io.rancher.scheduler.affinity:host_label_soft", "kvm=true");
+        labels.put(ContainerEventConstants.RANCHER_NETWORK, "true");
         labels.put(SystemLabels.LABEL_VM, "true");
         if (instance.getMemoryMb() == null) {
             labels.put(SystemLabels.LABEL_VM_MEMORY, "512");
@@ -66,10 +69,8 @@ public class VirtualMachinePreCreate extends AbstractObjectProcessLogic implemen
         fields.put(InstanceConstants.FIELD_LABELS, labels);
         fields.put(ObjectMetaDataManager.CAPABILITIES_FIELD, Arrays.asList("console"));
 
-        // TODO: remove this
         Map<String, Object> env = DataAccessor.fieldMap(instance, InstanceConstants.FIELD_ENVIRONMENT);
-        env.put("IP_PREFIX", "10.42");
-        fields.put(InstanceConstants.FIELD_ENVIRONMENT, env);
+        env.put("RANCHER_NETWORK", "true");
 
         List<String> dataVolumes = DataAccessor.fieldStringList(instance, InstanceConstants.FIELD_DATA_VOLUMES);
         List<String> devices = DataAccessor.fieldStringList(instance, DockerInstanceConstants.FIELD_DEVICES);
@@ -109,10 +110,14 @@ public class VirtualMachinePreCreate extends AbstractObjectProcessLogic implemen
                         opts.put("size", disk.getSize());
                     }
 
+                    String localDriver = disk.getDriver();
+                    if (localDriver == null) {
+                        localDriver = volumeDriver;
+                    }
                     objectManager.create(Volume.class,
                             VOLUME.NAME, name,
                             VOLUME.ACCOUNT_ID, instance.getAccountId(),
-                            VolumeConstants.FIELD_VOLUME_DRIVER, volumeDriver,
+                            VolumeConstants.FIELD_VOLUME_DRIVER, localDriver,
                             VolumeConstants.FIELD_VOLUME_DRIVER_OPTS, opts);
                 }
 
@@ -120,6 +125,7 @@ public class VirtualMachinePreCreate extends AbstractObjectProcessLogic implemen
             }
         }
 
+        fields.put(InstanceConstants.FIELD_ENVIRONMENT, env);
         fields.put(InstanceConstants.FIELD_DATA_VOLUMES, dataVolumes);
         fields.put(DockerInstanceConstants.FIELD_DEVICES, devices);
         fields.put(DockerInstanceConstants.FIELD_CAP_ADD, caps);

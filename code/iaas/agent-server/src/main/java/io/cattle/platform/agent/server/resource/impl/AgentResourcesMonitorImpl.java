@@ -28,9 +28,12 @@ import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.meta.ObjectMetaDataManager;
 import io.cattle.platform.object.util.DataAccessor;
 
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 import javax.inject.Inject;
@@ -48,7 +51,8 @@ public class AgentResourcesMonitorImpl implements AgentResourcesEventListener {
     private static final Logger log = LoggerFactory.getLogger(AgentResourcesMonitorImpl.class);
     private static final DynamicLongProperty CACHE_RESOURCE = ArchaiusUtil.getLong("agent.resource.monitor.cache.resource.seconds");
 
-    private static final String[] UPDATABLE_HOST_FIELDS = new String[] { HostConstants.FIELD_API_PROXY, HostConstants.FIELD_INFO };
+    private static final String[] UPDATABLE_HOST_FIELDS = new String[] { HostConstants.FIELD_API_PROXY, HostConstants.FIELD_INFO, HostConstants.FIELD_LABELS };
+    private static final Set<String> ORCHESTRATE_FIELDS = new HashSet<>(Arrays.asList(HostConstants.FIELD_LABELS));
 
     @Inject
     PingDao pingDao;
@@ -185,6 +189,7 @@ public class AgentResourcesMonitorImpl implements AgentResourcesEventListener {
             Map<String, Object> data = hostData.getValue();
             String physicalHostUuid = ObjectUtils.toString(data.get(HostConstants.FIELD_PHYSICAL_HOST_UUID), null);
             Long physicalHostId = getPhysicalHost(agent, physicalHostUuid, new HashMap<String, Object>());
+            boolean orchestrate = false;
 
             if (hosts.containsKey(uuid)) {
                 Map<Object, Object> updates = new HashMap<>();
@@ -195,14 +200,22 @@ public class AgentResourcesMonitorImpl implements AgentResourcesEventListener {
 
                 for (String key : UPDATABLE_HOST_FIELDS) {
                     Object value = data.get(key);
-                    if (value != null) {
+                    Object existingValue = io.cattle.platform.object.util.ObjectUtils.getValue(host, key);
+                    if (ObjectUtils.notEqual(value, existingValue)) {
+                        if (ORCHESTRATE_FIELDS.contains(key)) {
+                            orchestrate = true;
+                        }
                         updates.put(key, value);
                     }
                 }
 
                 if (updates.size() > 0) {
                     Map<String, Object> updateFields = objectManager.convertToPropertiesFor(host, updates);
-                    objectManager.setFields(host, updateFields);
+                    if (orchestrate) {
+                        resourceDao.updateAndSchedule(host, updateFields);
+                    } else {
+                        objectManager.setFields(host, updateFields);
+                    }
                 }
             } else {
                 data = createData(agent, uuid, data);
