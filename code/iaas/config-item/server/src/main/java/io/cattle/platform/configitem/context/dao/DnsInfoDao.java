@@ -8,5 +8,5 @@ import java.util.List;
 public interface DnsInfoDao {
     List<DnsEntryData> getInstanceLinksDnsData(Instance instance);
 
-    List<DnsEntryData> getServiceDnsData(Instance instance, boolean isVIPProvider, boolean links);
+    List<DnsEntryData> getServiceDnsData(Instance instance, boolean isVIPProvider);
 }
