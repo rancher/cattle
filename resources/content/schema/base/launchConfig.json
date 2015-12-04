@@ -20,6 +20,11 @@
             "nullable" : true,
             "create" : true
         },
+        "disks" : {
+            "type" : "array[virtualMachineDisk]",
+            "create" : true,
+            "nullable": true
+        },
         "kind" : {
             "type" : "enum",
             "options" : ["container", "virtualMachine"],
