@@ -24,5 +24,10 @@
             <version>${project.version}</version>
             <optional>true</optional>
         </dependency>
+        <dependency>
+            <groupId>io.cattle</groupId>
+            <artifactId>cattle-host-api</artifactId>
+            <version>${project.version}</version>
+        </dependency>
     </dependencies>
 </project>

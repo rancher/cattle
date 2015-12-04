@@ -59,8 +59,8 @@ def test_settings_update(admin_user_client, random_str):
     assert s.value is None
 
 
-def test_console_update_existing(admin_user_client):
-    id = 'console.agent.path'
+def test_exec_update_existing(admin_user_client):
+    id = 'exec.agent.path'
 
     s = admin_user_client.by_id_setting(id)
 
