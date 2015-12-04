@@ -24,9 +24,23 @@ def subnet(network):
 
 
 def test_virtual_machine_default_fields(super_client, client, context):
+    disk_name = 'disk' + random_str()
+    disks = [
+        {
+            'size': '2g',
+            'opts': {
+                'foo': 'bar'
+            }
+        },
+        {
+            'name': disk_name,
+        }
+    ]
+
     vm = _create_virtual_machine(client, context,
-                                 userdata='hi',
-                                 vcpu=2, memoryMb=42)
+                                 volumeDriver='foo-bar',
+                                 userdata='hi', vcpu=2, memoryMb=42,
+                                 disks=disks)
     vm = client.wait_success(vm)
     assert vm.state == 'running'
     assert vm.vcpu == 2
@@ -38,10 +52,29 @@ def test_virtual_machine_default_fields(super_client, client, context):
     assert c.labels['io.rancher.vm.memory'] == '42'
     assert c.labels['io.rancher.vm.vcpu'] == '2'
     assert c.labels['io.rancher.vm.userdata'] == 'hi'
-    assert c.dataVolumes == ['/var/lib/rancher/vm:/vm']
+    assert c.dataVolumes == ['/var/lib/rancher/vm:/vm',
+                             '{}-00:/volumes/disk00'.format(c.uuid),
+                             '{}:/volumes/disk01'.format(disk_name)]
+    assert c.dataVolumes == ['/var/lib/rancher/vm:/vm',
+                             '{}-00:/volumes/disk00'.format(c.uuid),
+                             '{}:/volumes/disk01'.format(disk_name)]
     assert c.devices == ['/dev/kvm:/dev/kvm', '/dev/net/tun:/dev/net/tun']
     assert c.capAdd == ['NET_ADMIN']
     assert c.capabilities == ['console']
+
+    volume1 = find_one(client.list_volume, name=c.uuid + '-00')
+    assert volume1.driver == 'foo-bar'
+    assert volume1.driverOpts == {'vm': 'true', 'size': '2g', 'foo': 'bar'}
+
+    volume2 = find_one(client.list_volume, name=disk_name)
+    assert volume2.name == disk_name
+    assert volume2.driver == 'foo-bar'
+    assert volume2.driverOpts == {'vm': 'true', 'size': '10g'}
+
+    assert c.dataVolumeMounts == {
+        '/volumes/disk00': volume1.id,
+        '/volumes/disk01': volume2.id,
+    }
 
 
 def test_virtual_machine_create_cpu_memory(client, context):

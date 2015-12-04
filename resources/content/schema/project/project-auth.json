@@ -47,6 +47,7 @@
         "userPreference": "",
         "volume" : "crd",
         "virtualMachine" : "crud",
+        "virtualMachineDisk" : "cr",
         "typeDocumentation" : "r",
         "typeDocumentation.resourceFields" : "r",
         "fieldDocumentation": "r",

@@ -492,6 +492,7 @@
         "launchConfig.vcpu" : "cr",
         "launchConfig.userdata" : "cr",
         "launchConfig.memoryMb" : "cr",
+        "launchConfig.disks" : "cr",
 
         "secondaryLaunchConfig" : "cr",
         "secondaryLaunchConfig.name" : "cr",
@@ -554,6 +555,12 @@
         "virtualMachine.startOnCreate" : "cr",
         "virtualMachine.userdata" : "cr",
         "virtualMachine.vcpu" : "cr",
+        "virtualMachine.disks" : "cr",
+
+        "virtualMachineDisk" : "r",
+        "virtualMachineDisk.name" : "cr",
+        "virtualMachineDisk.size" : "cr",
+        "virtualMachineDisk.opts" : "cr",
 
         "end" : ""
     }
