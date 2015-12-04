@@ -30,6 +30,7 @@
                 <value>io.cattle.platform.core.addon.InServiceUpgradeStrategy</value>
                 <value>io.cattle.platform.core.addon.ToServiceUpgradeStrategy</value>
                 <value>io.cattle.platform.core.addon.PublicEndpoint</value>
+                <value>io.cattle.platform.core.addon.VirtualMachineDisk</value>
             </set>
         </property>
     </bean>

@@ -20,6 +20,11 @@
             "create" : true,
             "default": 512
         },
+        "disks" : {
+            "type" : "array[virtualMachineDisk]",
+            "create" : true,
+            "nullable": true
+        },
         "publicIpAddressPoolId" : {
             "type" : "reference[ipPool]",
             "nullable" : true
