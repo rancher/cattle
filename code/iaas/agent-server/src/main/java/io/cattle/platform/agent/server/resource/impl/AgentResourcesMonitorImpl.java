@@ -201,6 +201,11 @@ public class AgentResourcesMonitorImpl implements AgentResourcesEventListener {
                 for (String key : UPDATABLE_HOST_FIELDS) {
                     Object value = data.get(key);
                     Object existingValue = io.cattle.platform.object.util.ObjectUtils.getValue(host, key);
+                    if (value instanceof Map && existingValue instanceof Map) {
+                        Map<Object, Object> newValueMap = new HashMap<>((Map<?, ?>)existingValue);
+                        newValueMap.putAll((Map<?, ?>)value);
+                        value = newValueMap;
+                    }
                     if (ObjectUtils.notEqual(value, existingValue)) {
                         if (ORCHESTRATE_FIELDS.contains(key)) {
                             orchestrate = true;
