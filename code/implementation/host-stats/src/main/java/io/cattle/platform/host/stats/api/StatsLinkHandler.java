@@ -14,7 +14,9 @@ import io.cattle.platform.object.ObjectManager;
 import io.github.ibuildthecloud.gdapi.request.ApiRequest;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 
 import javax.inject.Inject;
 
@@ -30,7 +32,9 @@ public class StatsLinkHandler implements LinkHandler {
 
     @Override
     public String[] getTypes() {
-        return new String[] { InstanceConstants.TYPE_CONTAINER, HostConstants.TYPE };
+        List<String> types = new ArrayList<>(InstanceConstants.CONTAINER_LIKE);
+        types.add(HostConstants.TYPE);
+        return types.toArray(new String[types.size()]);
     }
 
     @Override
