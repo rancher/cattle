@@ -36,7 +36,9 @@ public class ContainerStatsLinkHandler implements LinkHandler {
 
     @Override
     public String[] getTypes() {
-        return new String[] { InstanceConstants.TYPE_CONTAINER, HostConstants.TYPE };
+        List<String> types = new ArrayList<>(InstanceConstants.CONTAINER_LIKE);
+        types.add(HostConstants.TYPE);
+        return types.toArray(new String[types.size()]);
     }
 
     @Override

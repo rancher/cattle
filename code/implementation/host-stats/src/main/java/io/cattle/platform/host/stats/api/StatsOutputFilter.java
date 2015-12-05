@@ -15,6 +15,9 @@ import io.github.ibuildthecloud.gdapi.model.Resource;
 import io.github.ibuildthecloud.gdapi.request.ApiRequest;
 import io.github.ibuildthecloud.gdapi.response.ResourceOutputFilter;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class StatsOutputFilter implements ResourceOutputFilter {
 
     @Override
@@ -56,7 +59,11 @@ public class StatsOutputFilter implements ResourceOutputFilter {
 
     @Override
     public String[] getTypes() {
-        return new String[] { InstanceConstants.TYPE_CONTAINER, HostConstants.TYPE, ProjectConstants.TYPE, "service" };
+        List<String> types = new ArrayList<>(InstanceConstants.CONTAINER_LIKE);
+        types.add(HostConstants.TYPE);
+        types.add(ProjectConstants.TYPE);
+        types.add("service");
+        return types.toArray(new String[types.size()]);
     }
 
     @Override
