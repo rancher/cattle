@@ -351,14 +351,16 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
     @Override
     public void propagatePublicEndpoint(final PublicEndpoint publicEndpoint, final boolean add) {
         final Host host = publicEndpoint.getHost();
-        lockManager.lock(new HostEndpointsUpdateLock(host),
-                new LockCallbackNoReturn() {
-                    @Override
-                    public void doWithLockNoResult() {
-                        updateObjectEndPoint(host, host.getKind(), Long.valueOf(publicEndpoint.getHostId()),
-                                publicEndpoint, add);
-                    }
-                });
+        if (host.getRemoved() == null) {
+            lockManager.lock(new HostEndpointsUpdateLock(host),
+                    new LockCallbackNoReturn() {
+                        @Override
+                        public void doWithLockNoResult() {
+                            updateObjectEndPoint(host, host.getKind(), Long.valueOf(publicEndpoint.getHostId()),
+                                    publicEndpoint, add);
+                        }
+                    });
+        }
 
         final Service service = publicEndpoint.getService();
         lockManager.lock(new ServiceEndpointsUpdateLock(service), new LockCallbackNoReturn() {

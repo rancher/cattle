@@ -60,7 +60,6 @@ public class HostDaoImpl extends AbstractJooqDao implements HostDao {
                 .join(HOST_IP_ADDRESS_MAP)
                 .on(HOST_IP_ADDRESS_MAP.HOST_ID.eq(HOST.ID))
                 .where(HOST_IP_ADDRESS_MAP.IP_ADDRESS_ID.eq(ipAddressId)
-                        .and(HOST.REMOVED.isNull())
                         .and(HOST_IP_ADDRESS_MAP.REMOVED.isNull()))
                 .fetchInto(HostRecord.class);
 
