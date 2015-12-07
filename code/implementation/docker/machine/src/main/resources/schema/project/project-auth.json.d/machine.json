@@ -7,6 +7,7 @@
         "machine.authKey" : "cr",
         "machine.extractedConfig" : "",
         "machine.labels": "cr",
+        "machine.engineInstallUrl": "cr",
         "machine.dockerVersion": "cr",
         "machine.engineOpts": "cr",
         "machine.engineInsecureRegistry": "cr",
