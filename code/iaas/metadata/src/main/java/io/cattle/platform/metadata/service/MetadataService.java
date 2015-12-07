@@ -18,4 +18,6 @@ public interface MetadataService {
 
     boolean isAttachMetadata(Instance instance);
 
+    Map<String, Object> getOsMetadata(Instance instance, Map<String, Object> metadata);
+
 }
