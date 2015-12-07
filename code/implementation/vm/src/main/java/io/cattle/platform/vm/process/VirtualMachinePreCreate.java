@@ -1,5 +1,6 @@
 package io.cattle.platform.vm.process;
 
+import static io.cattle.platform.core.model.tables.InstanceTable.*;
 import static io.cattle.platform.core.model.tables.VolumeTable.*;
 
 import io.cattle.platform.core.addon.VirtualMachineDisk;
@@ -21,6 +22,7 @@ import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.process.common.handler.AbstractObjectProcessLogic;
 import io.cattle.platform.util.type.Priority;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -58,9 +60,11 @@ public class VirtualMachinePreCreate extends AbstractObjectProcessLogic implemen
         labels.put("io.rancher.scheduler.affinity:host_label_soft", "kvm=true");
         labels.put(ContainerEventConstants.RANCHER_NETWORK, "true");
         labels.put(SystemLabels.LABEL_VM, "true");
+        long mem = 512L;
         if (instance.getMemoryMb() == null) {
             labels.put(SystemLabels.LABEL_VM_MEMORY, "512");
         } else {
+            mem = instance.getMemoryMb();
             labels.put(SystemLabels.LABEL_VM_MEMORY, instance.getMemoryMb().toString());
         }
         labels.put(SystemLabels.LABEL_VM_USERDATA, instance.getUserdata());
@@ -125,10 +129,20 @@ public class VirtualMachinePreCreate extends AbstractObjectProcessLogic implemen
             }
         }
 
+        // TODO: I'd really like to remove this
+        List<Object> command = new ArrayList<>();
+        command.add("-m");
+        command.add(labels.get(SystemLabels.LABEL_VM_MEMORY));
+        command.add("-smp");
+        command.add("cpus=" + labels.get(SystemLabels.LABEL_VM_VCPU));
+        command.addAll(DataAccessor.fieldStringList(instance, DockerInstanceConstants.FIELD_COMMAND));
+
+        fields.put(DockerInstanceConstants.FIELD_COMMAND, command);
         fields.put(InstanceConstants.FIELD_ENVIRONMENT, env);
         fields.put(InstanceConstants.FIELD_DATA_VOLUMES, dataVolumes);
         fields.put(DockerInstanceConstants.FIELD_DEVICES, devices);
         fields.put(DockerInstanceConstants.FIELD_CAP_ADD, caps);
+        fields.put(INSTANCE.MEMORY_MB, mem);
 
         return new HandlerResult(true, fields);
     }

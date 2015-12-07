@@ -30,11 +30,14 @@ import io.cattle.platform.util.type.CollectionUtils;
 import io.github.ibuildthecloud.gdapi.id.IdFormatter;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import javax.inject.Inject;
+
+import org.apache.commons.lang3.StringUtils;
 
 public class MetadataServiceImpl implements MetadataService {
 
@@ -61,6 +64,33 @@ public class MetadataServiceImpl implements MetadataService {
         return getMetaData(idFormatter, metadataDao.getMetadata(agentInstance));
     }
 
+    @Override
+    public Map<String, Object> getOsMetadata(Instance instance, Map<String, Object> metadata) {
+        Map<String, Object> data = new HashMap<>();
+        data.put("availability_zone", "nova");
+        data.put("files", Collections.EMPTY_LIST);
+        data.put("public_keys", new HashMap<>());
+        data.put("meta", new HashMap<>());
+        data.put("uuid", instance.getUuid());
+        String hostname = org.apache.commons.lang3.ObjectUtils.toString(metadata.get("hostname"), null);
+        if (hostname != null) {
+            data.put("hostname", hostname);
+            data.put("name", hostname.split("[.]")[0]);
+        }
+
+        Map<String, Object> keys = CollectionUtils.toMap(metadata.get("public-keys"));
+        for (Map.Entry<String, Object> entry : keys.entrySet()) {
+            Map<String, Object> value = CollectionUtils.toMap(entry.getValue());
+            String name = entry.getKey();
+            if (name.contains("=")) {
+                name = name.split("=", 2)[1];
+                keys.put(name, value.get("openssh-key"));
+            }
+        }
+
+        return data;
+    }
+
     @SuppressWarnings("unchecked")
     @Override
     public Map<String, Object> getMetadataForInstance(Instance instance, IdFormatter idFormatter) {
@@ -77,7 +107,7 @@ public class MetadataServiceImpl implements MetadataService {
 
         Object value = data.values().iterator().next();
         if (value instanceof Map<?, ?>) {
-            return (Map<String, Object>) value;
+            return CollectionUtils.toMap(((Map<String, Object>) value).get("meta-data"));
         }
 
         return null;
@@ -168,9 +198,7 @@ public class MetadataServiceImpl implements MetadataService {
         if (firstNic && primaryIp) {
             instanceMetadata.put("hostname", localHostname);
             String existingKey = primaryIps.get(instance.getId());
-            if (existingKey == null || existingKey.contains(":")) { // It's a
-                                                                    // MAC
-                                                                    // address
+            if (existingKey == null || existingKey.contains(":")) { // It's a MAC address
                 primaryIps.put(instance.getId(), addressKey);
             }
         }
@@ -191,6 +219,9 @@ public class MetadataServiceImpl implements MetadataService {
         if (firstNic) {
             setIfTrueOrNull(primaryIp, instanceMetadata, "local-hostname", localHostname);
             setIfTrueOrNull(primaryIp, instanceMetadata, "local-ipv4", localIpAddress);
+            if (localIp != null && localIp.getSubnetId() != null && subnet != null && StringUtils.isNotBlank(subnet.getGateway())) {
+                setIfTrueOrNull(primaryIp, instanceMetadata, "local-ipv4-gateway", subnet.getGateway());
+            }
         }
 
         if (publicIp != null) {
@@ -287,8 +318,8 @@ public class MetadataServiceImpl implements MetadataService {
         // TODO don't really know what values are valid here
         data.put("profile", "default-paravirtual");
 
-        // TODO don't have a concept of reservations or launch index yet
-        data.put("ami-launch-index", "0");
+        data.put("ami-launch-index", instance.getCreateIndex());
+        // TODO don't have a concept of reservations
         data.put("reservation-id", formatId(idFormatter, instance));
 
         return data;
