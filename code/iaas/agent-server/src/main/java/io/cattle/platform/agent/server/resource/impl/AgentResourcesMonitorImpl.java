@@ -39,6 +39,7 @@ import java.util.concurrent.TimeUnit;
 import javax.inject.Inject;
 
 import org.apache.commons.lang3.ObjectUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -200,6 +201,9 @@ public class AgentResourcesMonitorImpl implements AgentResourcesEventListener {
 
                 for (String key : UPDATABLE_HOST_FIELDS) {
                     Object value = data.get(key);
+                    if (value == null || StringUtils.isBlank(value.toString())) {
+                        continue;
+                    }
                     Object existingValue = io.cattle.platform.object.util.ObjectUtils.getValue(host, key);
                     if (value instanceof Map && existingValue instanceof Map) {
                         Map<Object, Object> newValueMap = new HashMap<>((Map<?, ?>)existingValue);
