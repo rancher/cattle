@@ -26,6 +26,10 @@
             "type": "map[string]",
             "nullable": true
         },
+        "engineInstallUrl": {
+            "type": "string",
+            "nullable": true
+        },
         "dockerVersion": {
             "type": "string",
             "nullable": true
