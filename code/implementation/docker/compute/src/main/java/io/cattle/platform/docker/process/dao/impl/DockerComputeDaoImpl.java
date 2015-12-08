@@ -96,7 +96,7 @@ public class DockerComputeDaoImpl extends AbstractJooqDao implements DockerCompu
             return volumes.get(0);
         else
             throw new IllegalStateException(String.format(
-                    "More than one volume exists for volume URI [%s] or nam/externalId [%s] and storage pool [%s].", volumeUri,
+                    "More than one volume exists for volume URI [%s] or name/externalId [%s] and storage pool [%s].", volumeUri,
                     externalId, storagePool.getId()));
     }
 
