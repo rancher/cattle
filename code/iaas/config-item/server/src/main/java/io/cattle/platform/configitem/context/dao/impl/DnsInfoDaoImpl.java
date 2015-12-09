@@ -337,7 +337,8 @@ public class DnsInfoDaoImpl extends AbstractJooqDao implements DnsInfoDao {
         return null;
     }
 
-    protected Map<Long, IpAddress> getInstanceWithHostNetworkingToIpMap(long accountId) {
+    @Override
+    public Map<Long, IpAddress> getInstanceWithHostNetworkingToIpMap(long accountId) {
         List<HostInstanceIpData> data = getHostContainerIpData(accountId);
         Map<Long, IpAddress> instanceIdToHostIpMap = new HashMap<>();
         for (HostInstanceIpData entry : data) {

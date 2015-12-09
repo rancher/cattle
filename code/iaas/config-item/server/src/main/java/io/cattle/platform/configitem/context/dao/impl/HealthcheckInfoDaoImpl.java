@@ -6,6 +6,7 @@ import static io.cattle.platform.core.model.tables.InstanceTable.INSTANCE;
 import static io.cattle.platform.core.model.tables.IpAddressNicMapTable.IP_ADDRESS_NIC_MAP;
 import static io.cattle.platform.core.model.tables.IpAddressTable.IP_ADDRESS;
 import static io.cattle.platform.core.model.tables.NicTable.NIC;
+import io.cattle.platform.configitem.context.dao.DnsInfoDao;
 import io.cattle.platform.configitem.context.dao.HealthcheckInfoDao;
 import io.cattle.platform.configitem.context.data.HealthcheckData;
 import io.cattle.platform.core.addon.InstanceHealthCheck;
@@ -16,6 +17,7 @@ import io.cattle.platform.core.model.HealthcheckInstanceHostMap;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.InstanceHostMap;
 import io.cattle.platform.core.model.IpAddress;
+import io.cattle.platform.core.model.Nic;
 import io.cattle.platform.core.model.tables.HealthcheckInstanceHostMapTable;
 import io.cattle.platform.core.model.tables.InstanceTable;
 import io.cattle.platform.core.model.tables.IpAddressTable;
@@ -28,6 +30,7 @@ import io.cattle.platform.object.util.DataAccessor;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import javax.inject.Inject;
 
@@ -42,30 +45,50 @@ public class HealthcheckInfoDaoImpl extends AbstractJooqDao implements Healthche
     @Inject
     GenericMapDao mapDao;
 
+    @Inject
+    DnsInfoDao dnsInfoDao;
+
     @Override
     public List<HealthcheckData> getInstanceHealthcheckEntries(Instance instance) {
         MultiRecordMapper<HealthcheckData> mapper = new MultiRecordMapper<HealthcheckData>() {
             @Override
             protected HealthcheckData map(List<Object> input) {
                 HealthcheckData data = new HealthcheckData();
+                IpAddress targetIp = (IpAddress) input.get(0);
                 Instance targetInstance = (Instance) input.get(1);
+                HealthcheckInstanceHostMap map = (HealthcheckInstanceHostMap) input.get(2);
+                Nic targetNic = (Nic) input.get(3);
                 InstanceHealthCheck healthCheck = DataAccessor.field(targetInstance,
                         InstanceConstants.FIELD_HEALTH_CHECK, jsonMapper, InstanceHealthCheck.class);
                 if (healthCheck != null) {
                     data.setHealthCheck(healthCheck);
                     data.setStartCount(targetInstance.getStartCount());
                 }
-                data.setTargetIpAddress((IpAddress) input.get(0));
-                data.setHealthCheckUuid(((HealthcheckInstanceHostMap) input.get(2)).getUuid());
+
+                final Map<Long, IpAddress> instanceIdToHostIpMap = dnsInfoDao
+                        .getInstanceWithHostNetworkingToIpMap(targetIp.getAccountId());
+                IpAddress ip = getTargetIp(targetNic, targetIp, instanceIdToHostIpMap);
+                data.setTargetIpAddress(ip);
+                data.setHealthCheckUuid(map.getUuid());
 
                 return data;
+            }
+
+            protected IpAddress getTargetIp(Nic targetNic, IpAddress targetIp,
+                    Map<Long, IpAddress> instanceIdToHostIpMap) {
+                if (targetNic == null || targetNic.getDeviceNumber().equals(0)) {
+                    return targetIp;
+                } else {
+                    IpAddress hostIp = instanceIdToHostIpMap.get(targetNic.getInstanceId());
+                    return hostIp;
+                }
             }
         };
 
         IpAddressTable ipAddress = mapper.add(IP_ADDRESS);
         InstanceTable targetInstance = mapper.add(INSTANCE);
         HealthcheckInstanceHostMapTable healthcheckInstanceHostMap = mapper.add(HEALTHCHECK_INSTANCE_HOST_MAP);
-        NicTable targetNic = NIC.as("target_nic");
+        NicTable targetNic = mapper.add(NIC);
         
         List<? extends InstanceHostMap> maps = mapDao.findNonRemoved(InstanceHostMap.class, Instance.class,
                 instance.getId());
