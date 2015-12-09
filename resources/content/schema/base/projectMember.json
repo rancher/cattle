@@ -24,7 +24,9 @@
         "github_team",
         "rancher_id",
         "ldap_user",
-        "ldap_group"
+        "ldap_group",
+        "openldap_user",
+        "openldap_group"
       ]
     }
   }
