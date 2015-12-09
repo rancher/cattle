@@ -188,8 +188,8 @@ def test_restart_stack(client, context):
     service_link = {"serviceId": web_service.id, "ports": ["a.com:90"]}
     lb_svc = lb_svc.addservicelink(serviceLink=service_link)
 
-    env = client.wait_success(env.activateservices(), 120)
-    lb_svc = client.wait_success(lb_svc)
+    env = client.wait_success(env.activateservices())
+    lb_svc = client.wait_success(lb_svc, 120)
     assert lb_svc.state == 'active'
     web_svc = client.wait_success(lb_svc)
     assert web_svc.state == 'active'
@@ -200,8 +200,8 @@ def test_restart_stack(client, context):
     web_svc = client.wait_success(web_svc)
     assert web_svc.state == 'inactive'
 
-    env = client.wait_success(env.activateservices(), 120)
-    lb_svc = client.wait_success(lb_svc)
+    env = client.wait_success(env.activateservices())
+    lb_svc = client.wait_success(lb_svc, 120)
     assert lb_svc.state == 'active'
     web_svc = client.wait_success(lb_svc)
     assert web_svc.state == 'active'
@@ -590,8 +590,7 @@ def test_set_service_links(client, context):
         lb_service = lb_service. \
             setservicelinks(serviceLinks=[service_link, service_link])
     assert e.value.error.status == 422
-    assert e.value.error.code == 'InvalidOption'
-    assert e.value.error.fieldName == 'serviceId'
+    assert e.value.error.code == 'NotUnique'
 
     # set empty service link set
     lb_service = lb_service.setservicelinks(serviceLinks=[])

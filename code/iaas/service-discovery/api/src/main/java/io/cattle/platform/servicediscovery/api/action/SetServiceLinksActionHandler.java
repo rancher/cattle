@@ -23,8 +23,6 @@ import java.util.Map;
 
 import javax.inject.Inject;
 
-import org.apache.commons.lang.StringUtils;
-
 public class SetServiceLinksActionHandler implements ActionHandler {
     
     @Inject
@@ -53,7 +51,7 @@ public class SetServiceLinksActionHandler implements ActionHandler {
         final Service service = (Service) obj;
         final boolean forLb = service.getKind()
                 .equalsIgnoreCase(ServiceDiscoveryConstants.KIND.LOADBALANCERSERVICE.name());
-        final Map<Long, ServiceLink> newServiceLinks = populateNewServiceLinks(request, forLb);
+        final Map<String, ServiceLink> newServiceLinks = populateNewServiceLinks(request, forLb);
         if (newServiceLinks != null) {
             lockManager.lock(new ServiceDiscoveryServiceSetLinksLock(service), new LockCallbackNoReturn() {
                 @Override
@@ -70,8 +68,8 @@ public class SetServiceLinksActionHandler implements ActionHandler {
         return service;
     }
 
-    protected Map<Long, ServiceLink> populateNewServiceLinks(ApiRequest request, boolean forLb) {
-        Map<Long, ServiceLink> newServiceLinks = new HashMap<>();
+    protected Map<String, ServiceLink> populateNewServiceLinks(ApiRequest request, boolean forLb) {
+        Map<String, ServiceLink> newServiceLinks = new HashMap<>();
         List<ServiceLink> serviceLinks = new ArrayList<>();
         if (forLb) {
             serviceLinks.addAll(DataAccessor.fromMap(request.getRequestObject()).withKey(
@@ -85,14 +83,14 @@ public class SetServiceLinksActionHandler implements ActionHandler {
 
         if (serviceLinks != null) {
             for (ServiceLink serviceLink : serviceLinks) {
-                newServiceLinks.put(serviceLink.getServiceId(), serviceLink);
+                newServiceLinks.put(serviceLink.getUuid(), serviceLink);
             }
         }
 
         return newServiceLinks;
     }
 
-    private void createNewServiceMaps(Service service, Map<Long, ServiceLink> newServiceLinks) {
+    private void createNewServiceMaps(Service service, Map<String, ServiceLink> newServiceLinks) {
         for (ServiceLink newServiceLink : newServiceLinks.values()) {
             if (newServiceLink instanceof LoadBalancerServiceLink) {
                 sdService.addLoadBalancerServiceLink(service, (LoadBalancerServiceLink) newServiceLink);
@@ -102,22 +100,14 @@ public class SetServiceLinksActionHandler implements ActionHandler {
         }
     }
 
-    private void removeOldServiceMaps(Service service, Map<Long, ServiceLink> newServiceLinks, boolean forLb) {
+    private void removeOldServiceMaps(Service service, Map<String, ServiceLink> newServiceLinks, boolean forLb) {
         List<? extends ServiceConsumeMap> existingMaps = consumeMapDao.findConsumedMapsToRemove(service.getId());
         List<ServiceLink> linksToRemove = new ArrayList<>();
 
         for (ServiceConsumeMap existingMap : existingMaps) {
             ServiceLink existingLink = new ServiceLink(existingMap.getConsumedServiceId(), existingMap.getName());
-            if (!newServiceLinks.containsKey(existingMap.getConsumedServiceId())) {
+            if (!newServiceLinks.containsKey(existingLink.getUuid())) {
                 linksToRemove.add(existingLink);
-            } else {
-                ServiceLink newServiceLink = newServiceLinks.get(existingMap.getConsumedServiceId());
-                
-                boolean namesAreEqual = StringUtils.equalsIgnoreCase(newServiceLink.getName(), existingMap.getName());
-
-                if (!namesAreEqual) {
-                    linksToRemove.add(existingLink);
-                }
             }
         }
 

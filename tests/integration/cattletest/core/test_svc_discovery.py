@@ -61,6 +61,7 @@ def test_update_env_service(client, context):
     new_env_name = env.name + '1'
     new_name = service.name + '1'
     service.name = new_name
+    service.scale = None
     service = client.update(service, service)
     assert service.name == new_name
 
@@ -2885,8 +2886,8 @@ def _validate_endpoint(endpoints, public_port, host, service):
     for endpoint in endpoints:
         if host_ip == endpoint.ipAddress:
             if endpoint.port == public_port \
-                    and endpoint.hostId == host.id\
-                    and endpoint.serviceId == service.id\
+                    and endpoint.hostId == host.id \
+                    and endpoint.serviceId == service.id \
                     and endpoint.instanceId is not None:
                 found = True
                 break
@@ -3010,6 +3011,63 @@ def test_update_port_endpoint(new_context):
              and len(client.reload(host1).publicEndpoints) == 1)
     endpoints = client.reload(host1).publicEndpoints
     _validate_endpoint(endpoints, port2, hosts[0], svc)
+
+
+def test_set_service_links_duplicated_service(client, context):
+    env1 = _create_stack(client)
+
+    image_uuid = context.image_uuid
+    launch_config = {"imageUuid": image_uuid}
+
+    service1 = client.create_service(name=random_str(),
+                                     environmentId=env1.id,
+                                     launchConfig=launch_config)
+    service1 = client.wait_success(service1)
+
+    service2 = client.create_service(name=random_str(),
+                                     environmentId=env1.id,
+                                     launchConfig=launch_config)
+    service2 = client.wait_success(service2)
+
+    # set service links having same service id, diff name
+    service_link1 = {"serviceId": service2.id, "name": "link1"}
+    service_link2 = {"serviceId": service2.id, "name": "link2"}
+
+    service1 = service1. \
+        setservicelinks(serviceLinks=[service_link1, service_link2])
+    _validate_add_service_link(service1, service2, client, "link1")
+    _validate_add_service_link(service1, service2, client, "link2")
+
+    with pytest.raises(ApiError) as e:
+        service1. \
+            setservicelinks(serviceLinks=[service_link1, service_link1])
+    assert e.value.error.status == 422
+    assert e.value.error.code == 'NotUnique'
+
+
+def test_validate_launch_config_name(client, context):
+    env = _create_stack(client)
+    image_uuid = context.image_uuid
+    launch_config = {"imageUuid": image_uuid}
+    svc_name = random_str()
+    service = client.create_service(name=svc_name,
+                                    environmentId=env.id,
+                                    launchConfig=launch_config)
+
+    client.wait_success(service)
+
+    launch_config = {"imageUuid": image_uuid}
+
+    secondary_lc = {"imageUuid": image_uuid,
+                    "name": svc_name}
+
+    with pytest.raises(ApiError) as e:
+        client.create_service(name=random_str(),
+                              environmentId=env.id,
+                              launchConfig=launch_config,
+                              secondaryLaunchConfigs=[secondary_lc])
+    assert e.value.error.status == 422
+    assert e.value.error.code == 'NotUnique'
 
 
 def _wait_health_host_count(super_client, health_id, count):
