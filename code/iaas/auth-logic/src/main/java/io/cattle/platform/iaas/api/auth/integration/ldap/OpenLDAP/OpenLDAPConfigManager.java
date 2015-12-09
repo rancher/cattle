@@ -3,6 +3,7 @@ package io.cattle.platform.iaas.api.auth.integration.ldap.OpenLDAP;
 import io.cattle.platform.iaas.api.auth.SecurityConstants;
 import io.cattle.platform.iaas.api.auth.SettingsUtils;
 import io.cattle.platform.iaas.api.auth.integration.ldap.LDAPUtils;
+import io.cattle.platform.iaas.api.auth.integration.ldap.interfaces.LDAPConstants;
 import io.cattle.platform.json.JsonMapper;
 import io.github.ibuildthecloud.gdapi.factory.SchemaFactory;
 import io.github.ibuildthecloud.gdapi.model.ListOptions;
@@ -33,14 +34,14 @@ public class OpenLDAPConfigManager extends AbstractNoOpResourceManager {
         if (!StringUtils.equals(OpenLDAPConstants.CONFIG, request.getType())) {
             return null;
         }
-        OpenLDAPConfig config = request.proxyRequestObject(OpenLDAPConfig.class);
+        LDAPConstants config = request.proxyRequestObject(LDAPConstants.class);
         if (config.getEnabled() != null) {
             LDAPUtils.validateConfig(config);
         }
         return updateCurrentConfig(config);
     }
 
-    private OpenLDAPConfig currentLdapConfig(OpenLDAPConfig config) {
+    private OpenLDAPConfig currentLdapConfig(LDAPConstants config) {
         OpenLDAPConfig currentConfig = (OpenLDAPConfig) listInternal(null, null, null, null);
         String domain = currentConfig.getDomain();
         if (config.getDomain() != null) {
@@ -155,7 +156,7 @@ public class OpenLDAPConfigManager extends AbstractNoOpResourceManager {
                 userNameField, userEnabledAttribute, groupSearchField, groupObjectClass, groupNameField, userMemberAttribute, groupMemberMappingAttribute);
     }
 
-    public OpenLDAPConfig updateCurrentConfig(OpenLDAPConfig config) {
+    public OpenLDAPConfig updateCurrentConfig(LDAPConstants config) {
         settingsUtils.changeSetting(OpenLDAPConstants.ACCESS_MODE_SETTING, config.getAccessMode());
         settingsUtils.changeSetting(OpenLDAPConstants.DOMAIN_SETTING, config.getDomain());
         settingsUtils.changeSetting(OpenLDAPConstants.GROUP_NAME_FIELD_SETTING, config.getGroupNameField());
