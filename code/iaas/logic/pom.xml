@@ -10,6 +10,11 @@
     <dependencies>
         <dependency>
             <groupId>io.cattle</groupId>
+            <artifactId>cattle-iaas-agent-instance</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.cattle</groupId>
             <artifactId>cattle-framework-encryption</artifactId>
             <version>${project.version}</version>
         </dependency>
@@ -57,12 +62,6 @@
             <groupId>io.cattle</groupId>
             <artifactId>cattle-framework-jooq</artifactId>
             <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>io.cattle</groupId>
-            <artifactId>cattle-iaas-cluster-logic</artifactId>
-            <version>${project.version}</version>
-            <optional>true</optional>
         </dependency>
         <dependency>
             <groupId>io.cattle</groupId>

@@ -83,7 +83,6 @@
                 <module>code/iaas/storage-service</module>
                 <module>code/iaas/system</module>
                 <module>code/iaas/task-jooq</module>
-                <module>code/iaas/cluster-logic</module>
                 <module>code/iaas/service-discovery/server</module>
                 <module>code/iaas/service-discovery/api</module>
                 <module>code/iaas/labels</module>
@@ -101,7 +100,6 @@
                 <module>code/agent</module>
                 <module>code/implementation/agent-connection-delegate</module>
                 <module>code/implementation/agent-connection-event</module>
-                <module>code/implementation/agent-connection-ssh</module>
                 <module>code/implementation/agent-instance-impl</module>
                 <module>code/implementation/docker/api</module>
                 <module>code/implementation/docker/common</module>
