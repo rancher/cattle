@@ -9,7 +9,7 @@
         "machine.labels": "cr",
         "machine.engineInstallUrl": "cr",
         "machine.dockerVersion": "cr",
-        "machine.engineOpts": "cr",
+        "machine.engineOpt": "cr",
         "machine.engineInsecureRegistry": "cr",
         "machine.engineRegistryMirror": "cr",
         "machine.engineLabel": "cr",

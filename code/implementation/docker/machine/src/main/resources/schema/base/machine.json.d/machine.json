@@ -34,7 +34,7 @@
             "type": "string",
             "nullable": true
         },
-        "engineOpts": {
+        "engineOpt": {
             "type": "map[string]",
             "nullable": true
         },
