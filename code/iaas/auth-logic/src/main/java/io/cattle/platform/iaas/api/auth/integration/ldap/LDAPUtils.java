@@ -1,6 +1,6 @@
 package io.cattle.platform.iaas.api.auth.integration.ldap;
 
-import io.cattle.platform.iaas.api.auth.integration.ldap.interfaces.LDAPConfig;
+import io.cattle.platform.iaas.api.auth.integration.ldap.interfaces.LDAPConstants;
 import io.github.ibuildthecloud.gdapi.exception.ClientVisibleException;
 import io.github.ibuildthecloud.gdapi.util.ResponseCodes;
 
@@ -14,6 +14,7 @@ import javax.naming.ldap.InitialLdapContext;
 import javax.naming.ldap.LdapContext;
 import javax.naming.ldap.LdapName;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -30,7 +31,14 @@ public class LDAPUtils {
      * @throws ClientVisibleException In the event that the provided configuration is invalid. This allows the user to fix the config
      * and resubmit it, without locking them out of cattle.
      */
-    public static void validateConfig(LDAPConfig ldapConfig) {
+    public static void validateConfig(LDAPConstants ldapConfig) {
+        if (ldapConfig.getEnabled() == null || !ldapConfig.getEnabled()) {
+            return;
+        }
+        if (StringUtils.isBlank(ldapConfig.getServiceAccountUsername()) || StringUtils.isBlank(ldapConfig.getServiceAccountPassword())) {
+            throw new ClientVisibleException(ResponseCodes.BAD_REQUEST, "InvalidLDAPConfig", "Must define service account.",
+                    "Cannot have a config with blank service account user name or password.");
+        }
         LdapContext userContext = null;
         try {
             Hashtable<String, String> props = new Hashtable<>();
