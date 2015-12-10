@@ -22,6 +22,14 @@
              "attributes" : {
                 "scheduleUpdate" : true
             }
+        },
+        "haproxyConfig":{
+            "type": "string",
+            "required": false,
+            "nullable": true,
+             "attributes" : {
+                "scheduleUpdate" : true
+            }
         }
     },
     "resourceActions" : {

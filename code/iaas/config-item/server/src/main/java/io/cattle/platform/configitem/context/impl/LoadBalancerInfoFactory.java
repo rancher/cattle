@@ -1,3 +1,4 @@
+
 package io.cattle.platform.configitem.context.impl;
 
 import io.cattle.platform.configitem.context.dao.LoadBalancerInfoDao;
@@ -100,6 +101,9 @@ public class LoadBalancerInfoFactory extends AbstractAgentBaseContextFactory {
             return;
         }
 
+        String haproxyConfig = DataAccessor.field(lbService, LoadBalancerConstants.FIELD_LB_HAPROXY_CONFIG,
+                String.class);
+
         Map<String, List<LoadBalancerTargetsInfo>> listenerToTargetMap = assignTargetsToListeners(listeners,
                 targetsInfo);
         context.getData().put("listeners", listeners);
@@ -110,6 +114,8 @@ public class LoadBalancerInfoFactory extends AbstractAgentBaseContextFactory {
         context.getData().put("sslProto", sslProto);
         context.getData().put("certs", svcDao.getLoadBalancerServiceCertificates(lbService));
         context.getData().put("defaultCert", svcDao.getLoadBalancerServiceDefaultCertificate(lbService));
+        context.getData().put("haproxyConfig", haproxyConfig);
+
     }
 
 
