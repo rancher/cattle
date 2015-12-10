@@ -1,8 +1,7 @@
 package io.cattle.platform.networking.host.process;
 
 import static io.cattle.platform.core.model.tables.NicTable.*;
-import io.cattle.iaas.cluster.service.ClusterManager;
-import io.cattle.platform.core.constants.ClusterConstants;
+
 import io.cattle.platform.core.dao.GenericMapDao;
 import io.cattle.platform.core.model.Host;
 import io.cattle.platform.core.model.HostVnetMap;
@@ -29,9 +28,6 @@ import javax.inject.Inject;
 
 public class HostOnlyNicActivate extends AbstractObjectProcessLogic implements ProcessPreListener {
 
-    @Inject
-    ClusterManager clusterManager;
-
     HostOnlyDao hostOnlyDao;
     LockManager lockManager;
     GenericMapDao mapDao;
@@ -56,9 +52,6 @@ public class HostOnlyNicActivate extends AbstractObjectProcessLogic implements P
 
         for (Host host : mappedChildren(instance, Host.class)) {
             Host actualHost = host;
-            if (objectManager.isKind(host, ClusterConstants.KIND)) {
-                actualHost = clusterManager.getManagingHost(host);
-            }
             vnet = hostOnlyDao.getVnetForHost(network, actualHost);
 
             if (vnet == null) {

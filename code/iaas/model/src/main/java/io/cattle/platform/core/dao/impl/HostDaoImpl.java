@@ -17,7 +17,7 @@ import java.util.List;
 import javax.inject.Inject;
 
 public class HostDaoImpl extends AbstractJooqDao implements HostDao {
-    
+
     @Inject
     ObjectManager objectManager;
 
@@ -50,6 +50,19 @@ public class HostDaoImpl extends AbstractJooqDao implements HostDao {
                 .and(IP_ADDRESS.REMOVED.isNull())
                 .and(HOST_IP_ADDRESS_MAP.REMOVED.isNull()))
                 .fetchInto(IpAddressRecord.class);
+    }
+
+    @Override
+    public IpAddress getIpAddressForHost(Long hostId) {
+        return create()
+            .select(IP_ADDRESS.fields())
+                .from(IP_ADDRESS)
+                .join(HOST_IP_ADDRESS_MAP)
+                    .on(IP_ADDRESS.ID.eq(HOST_IP_ADDRESS_MAP.IP_ADDRESS_ID))
+                .where(HOST_IP_ADDRESS_MAP.HOST_ID.eq(hostId)
+                    .and(HOST_IP_ADDRESS_MAP.REMOVED.isNull())
+                    .and(IP_ADDRESS.REMOVED.isNull()))
+            .fetchOneInto(IpAddressRecord.class);
     }
 
     @Override

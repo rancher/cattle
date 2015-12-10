@@ -28,8 +28,6 @@
     <bean class="io.cattle.platform.iaas.api.filter.snapshot.SnapshotValidationFilter" />
     <bean class="io.cattle.platform.iaas.api.filter.ssl.CertificateCreateValidationFilter" />
 
-    <bean class="io.cattle.platform.iaas.api.cluster.HostClusterLinkFilter" />
-
     <bean class="io.cattle.platform.iaas.api.object.postinit.AccountFieldPostInitHandler" />
 
     <!-- Start Handlers -->

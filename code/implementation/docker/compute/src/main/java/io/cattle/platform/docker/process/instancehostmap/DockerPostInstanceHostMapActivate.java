@@ -9,8 +9,8 @@ import io.cattle.platform.archaius.util.ArchaiusUtil;
 import io.cattle.platform.core.constants.NetworkServiceConstants;
 import io.cattle.platform.core.constants.PortConstants;
 import io.cattle.platform.core.constants.VolumeConstants;
-import io.cattle.platform.core.dao.ClusterHostMapDao;
 import io.cattle.platform.core.dao.GenericMapDao;
+import io.cattle.platform.core.dao.HostDao;
 import io.cattle.platform.core.dao.IpAddressDao;
 import io.cattle.platform.core.dao.NetworkDao;
 import io.cattle.platform.core.dao.NicDao;
@@ -79,7 +79,7 @@ public class DockerPostInstanceHostMapActivate extends AbstractObjectProcessLogi
     @Inject
     LockManager lockManager;
     @Inject
-    ClusterHostMapDao clusterHostMapDao;
+    HostDao hostDao;
     @Inject
     DockerTransformer transformer;
     @Inject
@@ -100,7 +100,7 @@ public class DockerPostInstanceHostMapActivate extends AbstractObjectProcessLogi
         String dockerIp = DockerProcessUtils.getDockerIp(instance);
         Nic nic = nicDao.getPrimaryNic(instance);
 
-        IpAddress ipAddress = clusterHostMapDao.getIpAddressForHost(host.getId());
+        IpAddress ipAddress = hostDao.getIpAddressForHost(host.getId());
         Map ports = DataAccessor.fields(instance).withKey(DockerInstanceConstants.FIELD_DOCKER_PORTS).as(jsonMapper, Map.class);
 
         if (dockerIp != null) {
@@ -158,7 +158,7 @@ public class DockerPostInstanceHostMapActivate extends AbstractObjectProcessLogi
         StoragePool dockerLocalStoragePool = null;
         Map<String, StoragePool> pools = new HashMap<String, StoragePool>();
         for (StoragePool pool : objectManager.mappedChildren(host, StoragePool.class)) {
-            if (DockerStoragePoolDriver.isDockerPool(pool) && 
+            if (DockerStoragePoolDriver.isDockerPool(pool) &&
                     (VolumeConstants.LOCAL_DRIVER.equals(pool.getDriverName()) || StringUtils.isEmpty(pool.getDriverName()))) {
                 dockerLocalStoragePool = pool;
             }
