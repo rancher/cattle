@@ -35,7 +35,7 @@
             "nullable": true
         },
         "engineOpts": {
-            "type": "array[string]",
+            "type": "map[string]",
             "nullable": true
         },
         "engineInsecureRegistry": {
@@ -47,7 +47,7 @@
             "nullable": true
         },
         "engineLabel": {
-            "type": "array[string]",
+            "type": "map[string]",
             "nullable": true
         },
         "engineStorageDriver": {
@@ -55,7 +55,7 @@
             "nullable": true
         },
         "engineEnv": {
-            "type": "array[string]",
+            "type": "map[string]",
             "nullable": true
         }
     }
