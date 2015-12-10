@@ -6,6 +6,7 @@ import io.cattle.platform.configitem.context.data.LoadBalancerTargetInfo;
 import io.cattle.platform.configitem.context.data.LoadBalancerTargetsInfo;
 import io.cattle.platform.configitem.server.model.ConfigItem;
 import io.cattle.platform.configitem.server.model.impl.ArchiveContext;
+import io.cattle.platform.core.addon.HaproxyConfig;
 import io.cattle.platform.core.addon.InstanceHealthCheck;
 import io.cattle.platform.core.addon.LoadBalancerAppCookieStickinessPolicy;
 import io.cattle.platform.core.addon.LoadBalancerCookieStickinessPolicy;
@@ -84,6 +85,7 @@ public class LoadBalancerInfoFactory extends AbstractAgentBaseContextFactory {
         
         LoadBalancerAppCookieStickinessPolicy appPolicy = null;
         LoadBalancerCookieStickinessPolicy lbPolicy = null;
+        HaproxyConfig customConfig = null;
         
         Object config = DataAccessor.field(lbService, ServiceDiscoveryConstants.FIELD_LOAD_BALANCER_CONFIG,
                 Object.class);
@@ -93,6 +95,8 @@ public class LoadBalancerInfoFactory extends AbstractAgentBaseContextFactory {
                     LoadBalancerAppCookieStickinessPolicy.class);
             lbPolicy = jsonMapper.convertValue(data.get(LoadBalancerConstants.FIELD_LB_COOKIE_POLICY),
                     LoadBalancerCookieStickinessPolicy.class);
+            customConfig = jsonMapper.convertValue(data.get(LoadBalancerConstants.FIELD_HAPROXY_CONFIG),
+                    HaproxyConfig.class);
         }
 
         List<LoadBalancerTargetsInfo> targetsInfo = populateTargetsInfo(lbService, listeners);
@@ -110,6 +114,7 @@ public class LoadBalancerInfoFactory extends AbstractAgentBaseContextFactory {
         context.getData().put("sslProto", sslProto);
         context.getData().put("certs", svcDao.getLoadBalancerServiceCertificates(lbService));
         context.getData().put("defaultCert", svcDao.getLoadBalancerServiceDefaultCertificate(lbService));
+        context.getData().put(LoadBalancerConstants.FIELD_HAPROXY_CONFIG, customConfig);
     }
 
 

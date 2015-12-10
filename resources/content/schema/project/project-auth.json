@@ -54,6 +54,7 @@
         "inServiceUpgradeStrategy" : "cr",
         "toServiceUpgradeStrategy" : "cr",
         "publicEndpoint" : "r",
+        "haproxyConfig" : "cru",
         "end" : ""
     }
 }

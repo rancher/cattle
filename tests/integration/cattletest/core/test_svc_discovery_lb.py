@@ -326,10 +326,11 @@ def test_create_svc_with_lb_config(context, client):
                  "domain": ".test.com", "indirect": "true",
                  "nocache": "true", "postonly": "true",
                  "mode": "insert"}
-
+    haproxy_cfg = {"defaults": "balance first", "global": "group haproxy"}
     lb_config = {"name": name,
                  "appCookieStickinessPolicy": app_policy,
-                 "lbCookieStickinessPolicy": lb_policy}
+                 "lbCookieStickinessPolicy": lb_policy,
+                 "haproxyConfig": haproxy_cfg}
 
     # create service
     service = client. \
@@ -361,6 +362,16 @@ def test_create_svc_with_lb_config(context, client):
     assert config.lbCookieStickinessPolicy.nocache is True
     assert config.lbCookieStickinessPolicy.postonly is True
     assert config.lbCookieStickinessPolicy.mode == "insert"
+
+    assert config.haproxyConfig == haproxy_cfg
+
+    compose_config = env.exportconfig()
+    assert compose_config is not None
+    rancher_yml = yaml.load(compose_config.rancherComposeConfig)
+    cfg = 'load_balancer_config'
+    assert cfg in rancher_yml[service.name]
+    assert 'haproxy_config' in rancher_yml[service.name][cfg]
+    assert rancher_yml[service.name][cfg]["haproxy_config"] == haproxy_cfg
 
 
 def test_scale(new_context):
