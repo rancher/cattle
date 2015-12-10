@@ -11,6 +11,11 @@
     <dependencies>
         <dependency>
             <groupId>io.cattle</groupId>
+            <artifactId>cattle-app-config</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.cattle</groupId>
             <artifactId>cattle-vm</artifactId>
             <version>${project.version}</version>
         </dependency>
