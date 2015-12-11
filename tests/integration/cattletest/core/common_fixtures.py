@@ -493,7 +493,7 @@ def one(method, *args, **kw):
 
 def process_instances(admin_client, obj, id=None, type=None):
     if id is None:
-        id = get_plain_id(admin_client, obj)
+        id = obj.id
 
     if type is None:
         type = obj.type
