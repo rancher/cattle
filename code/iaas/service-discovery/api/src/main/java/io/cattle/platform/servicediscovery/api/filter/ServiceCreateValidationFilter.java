@@ -13,6 +13,7 @@ import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.util.DataUtils;
 import io.cattle.platform.servicediscovery.api.constants.ServiceDiscoveryConstants;
 import io.cattle.platform.servicediscovery.api.dao.ServiceExposeMapDao;
+import io.cattle.platform.servicediscovery.api.util.ServiceDiscoveryUtil;
 import io.cattle.platform.servicediscovery.api.util.selector.SelectorUtils;
 import io.cattle.platform.storage.service.StorageService;
 import io.cattle.platform.util.net.NetUtils;
@@ -68,8 +69,6 @@ public class ServiceCreateValidationFilter extends AbstractDefaultResourceManage
         validateSelector(request);
 
         validateMetadata(request);
-
-        validateName(service);
 
         validateLaunchConfigs(service, request);
 
@@ -199,7 +198,6 @@ public class ServiceCreateValidationFilter extends AbstractDefaultResourceManage
     public Object update(String type, String id, ApiRequest request, ResourceManager next) {
         Service service = objectManager.loadResource(Service.class, id);
 
-        validateName(service);
         validateLaunchConfigs(service, request);
         validateSelector(request);
 
@@ -208,7 +206,7 @@ public class ServiceCreateValidationFilter extends AbstractDefaultResourceManage
 
     protected void validateLaunchConfigs(Service service, ApiRequest request) {
         List<Map<String, Object>> launchConfigs = populateLaunchConfigs(service, request);
-        validateLaunchConfigNameUnique(service, launchConfigs);
+        validateLaunchConfigNames(service, launchConfigs);
         validateLaunchConfigsCircularRefs(service, launchConfigs);
     }
 
@@ -295,34 +293,41 @@ public class ServiceCreateValidationFilter extends AbstractDefaultResourceManage
     }
 
 
-    protected void validateLaunchConfigNameUnique(Service service, List<Map<String, Object>> launchConfigs) {
+    protected void validateLaunchConfigNames(Service service, List<Map<String, Object>> launchConfigs) {
         List<String> usedNames = new ArrayList<>();
-        usedNames.add(service.getName());
-        for (Map<String, Object> launchConfig : launchConfigs) {
-            Object secondaryName = launchConfig.get("name");
-            if (secondaryName != null) {
-                if (usedNames.contains(secondaryName)) {
-                    ValidationErrorCodes.throwValidationError(ValidationErrorCodes.NOT_UNIQUE,
-                            "name");
-                }
-                usedNames.add(secondaryName.toString());
-            }
-        }
-    }
-
-
-    protected void validateName(Service service) {
-        List<? extends Service> existingSvcs = objectManager.find(Service.class, SERVICE.NAME, service.getName(),
-                SERVICE.REMOVED, null, SERVICE.ENVIRONMENT_ID, service.getEnvironmentId());
+        List<? extends Service> existingSvcs = objectManager.find(Service.class, SERVICE.ENVIRONMENT_ID,
+                service.getEnvironmentId());
         for (Service existingSvc : existingSvcs) {
             if (existingSvc.getId().equals(service.getId())) {
                 continue;
             }
-            ValidationErrorCodes.throwValidationError(ValidationErrorCodes.NOT_UNIQUE,
-                    "name");
+            usedNames.add(existingSvc.getName());
+            usedNames.addAll(ServiceDiscoveryUtil.getServiceLaunchConfigNames(existingSvc));
         }
 
-        if (service.getName() != null && (service.getName().startsWith("-") || service.getName().endsWith("-"))) {
+        List<String> namesToValidate = new ArrayList<>();
+        namesToValidate.add(service.getName());
+        for (Map<String, Object> launchConfig : launchConfigs) {
+            Object name = launchConfig.get("name");
+            if (name != null) {
+                namesToValidate.add(name.toString());
+            }
+        }
+
+        for (String name : namesToValidate) {
+            validateName(name.toString());
+            if (usedNames.contains(name)) {
+                ValidationErrorCodes.throwValidationError(ValidationErrorCodes.NOT_UNIQUE,
+                        "name");
+            }
+            usedNames.add(name.toString());
+        }
+    }
+
+
+
+    protected void validateName(String name) {
+        if (name != null && (name.startsWith("-") || name.endsWith("-"))) {
             ValidationErrorCodes.throwValidationError(ValidationErrorCodes.INVALID_CHARACTERS,
                     "name");
         }

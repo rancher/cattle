@@ -601,8 +601,7 @@ def test_set_service_links(client, context):
         lb_service = lb_service. \
             setservicelinks(serviceLinks=[service_link, service_link])
     assert e.value.error.status == 422
-    assert e.value.error.code == 'InvalidOption'
-    assert e.value.error.fieldName == 'serviceId'
+    assert e.value.error.code == 'NotUnique'
 
     # set empty service link set
     lb_service = lb_service.setservicelinks(serviceLinks=[])

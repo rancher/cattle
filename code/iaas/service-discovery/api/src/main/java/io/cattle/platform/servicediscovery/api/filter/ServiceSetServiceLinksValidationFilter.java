@@ -66,16 +66,16 @@ public class ServiceSetServiceLinksValidationFilter extends AbstractDefaultResou
     private void validateServices(long serviceId, ApiRequest request) {
         List<? extends ServiceLink> serviceLinks = DataAccessor.fromMap(request.getRequestObject()).withKey(
                 ServiceDiscoveryConstants.FIELD_SERVICE_LINKS).asList(jsonMapper, ServiceLink.class);
-        List<Long> serviceIds = new ArrayList<>();
+        List<String> serviceIdAndLinkName = new ArrayList<>();
 
         if (serviceLinks != null) {
             Service service = objectManager.loadResource(Service.class, serviceId);
             for (ServiceLink serviceLink : serviceLinks) {
-                if (serviceIds.contains(serviceLink.getServiceId())) {
-                    ValidationErrorCodes.throwValidationError(ValidationErrorCodes.INVALID_OPTION,
-                            ServiceDiscoveryConstants.FIELD_SERVICE_ID);
+                if (serviceIdAndLinkName.contains(serviceLink.getUuid())) {
+                    ValidationErrorCodes.throwValidationError(ValidationErrorCodes.NOT_UNIQUE,
+                            ServiceDiscoveryConstants.FIELD_SERVICE_ID + " and link name combination");
                 }
-                serviceIds.add(serviceLink.getServiceId());
+                serviceIdAndLinkName.add(serviceLink.getUuid());
                 Service consumedService = objectManager.loadResource(Service.class, serviceLink.getServiceId());
                 if (service == null || consumedService == null) {
                     ValidationErrorCodes.throwValidationError(ValidationErrorCodes.INVALID_REFERENCE,
