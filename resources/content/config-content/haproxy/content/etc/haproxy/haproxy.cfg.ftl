@@ -67,7 +67,6 @@ frontend ${listener.uuid}_frontend
 <#list backends[listener.uuid]  as backend >
 backend ${listener.uuid}_${backend.uuid}_backend
         mode ${protocol}
-        balance ${listener.algorithm}
         <#if backend.healthCheck??>
         <#if backend.healthCheck.responseTimeout??>timeout check ${backend.healthCheck.responseTimeout}</#if>
         <#if backend.healthCheck.requestLine?? && backend.healthCheck.requestLine?has_content>option httpchk ${backend.healthCheck.requestLine}</#if>
