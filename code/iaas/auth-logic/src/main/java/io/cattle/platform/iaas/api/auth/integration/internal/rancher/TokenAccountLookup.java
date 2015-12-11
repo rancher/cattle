@@ -42,6 +42,6 @@ public class TokenAccountLookup implements AccountLookup, Priority {
 
     @Override
     public String getName() {
-        return "TokenAccountLookUp";
+        return "TokenAccount";
     }
 }

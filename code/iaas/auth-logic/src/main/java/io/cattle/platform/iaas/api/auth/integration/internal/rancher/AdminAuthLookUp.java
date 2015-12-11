@@ -47,6 +47,6 @@ public class AdminAuthLookUp implements AccountLookup, Priority {
 
     @Override
     public String getName() {
-        return "AdminAuthLookUp";
+        return "AdminAuth";
     }
 }

@@ -56,7 +56,7 @@ public class ApiRequestFilterDelegate {
         HttpServletResponse httpResponse = (HttpServletResponse)response;
 
         ApiRequest apiRequest = new ApiRequest(version, new ApiServletContext(httpRequest, httpResponse, chain), schemaFactory);
-
+        apiRequest.setAttribute("requestStartTime", System.currentTimeMillis());
         ApiContext context = null;
 
         try {

@@ -60,7 +60,7 @@ public class TokenAuthLookup implements AccountLookup, Priority {
 
     @Override
     public String getName() {
-        return "TokenAuthLookUp";
+        return "TokenAuth";
     }
 
     @Override

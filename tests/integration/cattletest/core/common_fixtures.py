@@ -9,8 +9,8 @@ from datetime import datetime, timedelta
 import requests
 
 NOT_NONE = object()
-DEFAULT_TIMEOUT = 90
-cattle.DEFAULT_TIMEOUT = 90
+DEFAULT_TIMEOUT = 300
+cattle.DEFAULT_TIMEOUT = 300
 _SUPER_CLIENT = None
 
 

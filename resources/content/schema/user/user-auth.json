@@ -25,6 +25,22 @@
         "addRemoveClusterHostInput" : "cr",
         "addRemoveClusterHostInput.hostId" : "cr",
 
+        "auditLog" : "r",
+        "auditLog.accountId" : "r",
+        "auditLog.authenticatedAsAccountId" : "r",
+        "auditLog.authenticatedAsIdentityId" : "r",
+        "auditLog.authType" : "r",
+        "auditLog.created" : "r",
+        "auditLog.description" : "r",
+        "auditLog.eventType" : "r",
+        "auditLog.requestObject" : "r",
+        "auditLog.resourceId" : "r",
+        "auditLog.resourceType" : "r",
+        "auditLog.responseCode" : "r",
+        "auditLog.responseObject" : "r",
+
+        "auditLog.resourceActions\\..*" : "",
+
         "changeSecretInput" : "cr",
         "changeSecretInput.oldSecret" : "cr",
         "changeSecretInput.newSecret" : "cr",
@@ -99,7 +115,6 @@
         "containerExec.attachStdout" : "cr",
         "containerExec.command" : "cr",
         "containerExec.tty" : "cr",
-        
         "containerEvent" : "r",
         "containerEvent.externalId" : "r",
         "containerEvent.externalStatus" : "r",
