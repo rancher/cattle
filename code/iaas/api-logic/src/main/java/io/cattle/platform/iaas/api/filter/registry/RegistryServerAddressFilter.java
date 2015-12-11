@@ -1,6 +1,7 @@
 package io.cattle.platform.iaas.api.filter.registry;
 
 import io.cattle.platform.api.auth.Policy;
+import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.StoragePoolConstants;
 import io.cattle.platform.core.model.StoragePool;
 import io.cattle.platform.iaas.api.filter.common.AbstractDefaultResourceManagerFilter;
@@ -31,8 +32,11 @@ public class RegistryServerAddressFilter extends AbstractDefaultResourceManagerF
                 ObjectMetaDataManager.KIND_FIELD, StoragePoolConstants.KIND_REGISTRY,
                 ObjectMetaDataManager.ACCOUNT_FIELD, accountId);
         for (StoragePool registry: registries){
-            if (serverAddress.equalsIgnoreCase((String) CollectionUtils.getNestedValue(registry.getData(), "fields", StoragePoolConstants.SERVER_ADDRESS))){
-                throw new ClientVisibleException(ResponseCodes.BAD_REQUEST, "ServerAddressUsed");
+            if (!CommonStatesConstants.PURGED.equalsIgnoreCase(registry.getState())) {
+                if (serverAddress.equalsIgnoreCase(
+                        (String) CollectionUtils.getNestedValue(registry.getData(), "fields", StoragePoolConstants.SERVER_ADDRESS))) {
+                    throw new ClientVisibleException(ResponseCodes.BAD_REQUEST, "ServerAddressUsed");
+                }
             }
         }
         return super.create(type, request, next);

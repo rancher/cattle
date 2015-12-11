@@ -98,7 +98,7 @@ public class OpenLDAPConfig implements Configurable, LDAPConfig {
         return OpenLDAPConstants.CONFIG;
     }
 
-    @Field(nullable = false, required = true, minLength = 1)
+    @Field(nullable = true, required = true, minLength = 1)
     public String getServiceAccountUsername() {
         return serviceAccountUsername;
     }
