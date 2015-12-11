@@ -3,6 +3,7 @@ package io.cattle.platform.core.cleanup;
 import static io.cattle.platform.core.model.tables.ContainerEventTable.CONTAINER_EVENT;
 import static io.cattle.platform.core.model.tables.ProcessInstanceTable.PROCESS_INSTANCE;
 import static io.cattle.platform.core.model.tables.ServiceEventTable.SERVICE_EVENT;
+import static io.cattle.platform.core.model.tables.AuditLogTable.AUDIT_LOG;
 
 import io.cattle.platform.archaius.util.ArchaiusUtil;
 import io.cattle.platform.core.constants.CommonStatesConstants;
@@ -21,6 +22,7 @@ public class TableCleanUp extends AbstractJooqDao {
     private static final Log logger = LogFactory.getLog(TableCleanUp.class);
     private static final DynamicLongProperty PROCESS_INSTANCE_TIME = ArchaiusUtil.getLong("process_instance.purge.after.seconds");
     private static final DynamicLongProperty EVENT_TIME = ArchaiusUtil.getLong("events.purge.after.seconds");
+    private static final DynamicLongProperty AUDIT_LOG_TIME = ArchaiusUtil.getLong("audit_log.purge.after.seconds");
 
 
     public void cleanUp(){
@@ -50,16 +52,24 @@ public class TableCleanUp extends AbstractJooqDao {
                 .where(CONTAINER_EVENT.CREATED.lt(expiredEvents)
                 .and(CONTAINER_EVENT.STATE.eq(CommonStatesConstants.CREATED)))
                 .execute();
-
         long endContainerEvent = System.currentTimeMillis();
+
+        long startAuditLog = System.currentTimeMillis();
+        int deletedAuditLogRecords = create()
+                .delete(AUDIT_LOG)
+                .where(AUDIT_LOG.CREATED.lt(new Date(System.currentTimeMillis() - (AUDIT_LOG_TIME.get() * 1000))))
+                .execute();
+        long endAuditLog = System.currentTimeMillis();
+
         if ((deletedContainerEventRecords + deletedProcessInstanceRecords + deletedServiceEventRecords) > 0) {
             logger.info("Deleted " + deletedProcessInstanceRecords + " from PROCESS_INSTANCE in " +
                     (endProcessInstance - startProcessInstance) + "ms, " +
                     deletedServiceEventRecords + " from SERVICE_EVENT in " + (endServiceEvent - startServiceEvent) +
                     "ms, and " +
-                    deletedContainerEventRecords + " from CONTAINER_EVENT in " + (endContainerEvent - startContainerEvent) + "ms.");
+                    deletedContainerEventRecords + " from CONTAINER_EVENT in " + (endContainerEvent - startContainerEvent) + "ms." +
+                    deletedAuditLogRecords + " from CONTAINER_EVENT in " + (endAuditLog - startAuditLog) + "ms.");
         }
-        logger.debug("Clean up for PROCESS_INSTANCE table, SERVICE_EVENT table, and CONTAINER_EVENT table finished.");
+        logger.debug("Clean up for PROCESS_INSTANCE, SERVICE_EVENT, CONTAINER_EVENT and AUDIT_LOG tables finished.");
 
     }
 }
