@@ -43,6 +43,8 @@ public class ServiceRemove extends AbstractObjectProcessHandler {
 
         sdService.releaseVip(service);
 
+        sdService.releasePorts(service);
+
         return null;
     }
 }

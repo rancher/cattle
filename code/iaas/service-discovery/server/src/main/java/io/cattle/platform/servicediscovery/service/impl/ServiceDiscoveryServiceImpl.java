@@ -7,11 +7,13 @@ import io.cattle.platform.core.addon.LoadBalancerServiceLink;
 import io.cattle.platform.core.addon.PublicEndpoint;
 import io.cattle.platform.core.addon.ServiceLink;
 import io.cattle.platform.core.constants.CommonStatesConstants;
+import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.constants.LoadBalancerConstants;
 import io.cattle.platform.core.constants.NetworkConstants;
 import io.cattle.platform.core.constants.SubnetConstants;
 import io.cattle.platform.core.dao.LabelsDao;
 import io.cattle.platform.core.dao.NetworkDao;
+import io.cattle.platform.core.model.Account;
 import io.cattle.platform.core.model.Environment;
 import io.cattle.platform.core.model.Host;
 import io.cattle.platform.core.model.Instance;
@@ -20,6 +22,7 @@ import io.cattle.platform.core.model.Network;
 import io.cattle.platform.core.model.Service;
 import io.cattle.platform.core.model.ServiceConsumeMap;
 import io.cattle.platform.core.model.Subnet;
+import io.cattle.platform.core.util.PortSpec;
 import io.cattle.platform.deferred.util.DeferredUtils;
 import io.cattle.platform.eventing.EventService;
 import io.cattle.platform.framework.event.util.EventUtils;
@@ -36,6 +39,7 @@ import io.cattle.platform.process.lock.HostEndpointsUpdateLock;
 import io.cattle.platform.resource.pool.PooledResource;
 import io.cattle.platform.resource.pool.PooledResourceOptions;
 import io.cattle.platform.resource.pool.ResourcePoolManager;
+import io.cattle.platform.resource.pool.util.ResourcePoolConstants;
 import io.cattle.platform.servicediscovery.api.constants.ServiceDiscoveryConstants;
 import io.cattle.platform.servicediscovery.api.constants.ServiceDiscoveryConstants.KIND;
 import io.cattle.platform.servicediscovery.api.dao.ServiceConsumeMapDao;
@@ -237,6 +241,71 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
             service.setVip(vip);
             objectManager.persist(service);
         }
+    }
+
+    @SuppressWarnings("unchecked")
+    private List<PortSpec> getServicePorts(Service service) {
+        Map<String, Object> launchConfigData = DataAccessor.fields(service)
+                .withKey(ServiceDiscoveryConstants.FIELD_LAUNCH_CONFIG).withDefault(Collections.EMPTY_MAP)
+                .as(Map.class);
+        if (launchConfigData.get(InstanceConstants.FIELD_PORTS) == null) {
+            return new ArrayList<>();
+        }
+        List<String> specs = (List<String>) launchConfigData.get(InstanceConstants.FIELD_PORTS);
+        List<PortSpec> ports = new ArrayList<>();
+        for (String spec : specs) {
+            ports.add(new PortSpec(spec));
+        }
+        return ports;
+    }
+
+    @Override
+    @SuppressWarnings("unchecked")
+    public void setPorts(Service service) {
+        List<PortSpec> ports = getServicePorts(service);
+        Map<String, Object> launchConfigData = DataAccessor.fields(service)
+                .withKey(ServiceDiscoveryConstants.FIELD_LAUNCH_CONFIG).withDefault(Collections.EMPTY_MAP)
+                .as(Map.class);
+        Account env = objectManager.loadResource(Account.class, service.getAccountId());
+        List<String> newPorts = new ArrayList<>();
+
+        List<PortSpec> toAllocate = new ArrayList<>();
+        for (PortSpec port : ports) {
+            if (port.getPublicPort() == null) {
+                toAllocate.add(port);
+            }
+        }
+
+        List<PooledResource> resource = poolManager.allocateResource(env, service,
+                new PooledResourceOptions().withCount(toAllocate.size()).withQualifier(
+                        ResourcePoolConstants.ENVIRONMENT_PORT));
+        
+        int i = 0;
+        for (PortSpec port : toAllocate) {
+            if (resource.size() <= i) {
+                break;
+            }
+            port.setPublicPort(new Integer(resource.get(i).getName()));
+            newPorts.add(port.toSpec());
+            i++;
+        }
+
+        if (!newPorts.isEmpty()) {
+            launchConfigData.put(InstanceConstants.FIELD_PORTS, newPorts);
+            DataAccessor.fields(service).withKey(ServiceDiscoveryConstants.FIELD_LAUNCH_CONFIG).set(launchConfigData);
+            objectManager.persist(service);
+        }
+    }
+
+    @Override
+    public void releasePorts(Service service) {
+        List<PortSpec> ports = getServicePorts(service);
+        if (ports.isEmpty()) {
+            return;
+        }
+        Account account = objectManager.loadResource(Account.class, service.getAccountId());
+        poolManager.releaseResource(account, service, new PooledResourceOptions().withQualifier(
+                ResourcePoolConstants.ENVIRONMENT_PORT));
     }
 
     @Override

@@ -59,7 +59,8 @@ public class DockerAccountCreate extends AbstractObjectProcessLogic implements P
         createNetwork(DockerNetworkConstants.KIND_DOCKER_BRIDGE, account, networksByKind, "Docker Bridge Network Mode", null);
 
         Network managedNetwork = createManagedNetwork(account, networksByKind);
-        return new HandlerResult(AccountConstants.FIELD_DEFAULT_NETWORK_ID, managedNetwork.getId()).withShouldContinue(true);
+        return new HandlerResult(AccountConstants.FIELD_DEFAULT_NETWORK_ID, managedNetwork.getId(),
+                AccountConstants.FIELD_PORT_RANGE, "49153-65535").withShouldContinue(true);
     }
 
     protected Network createManagedNetwork(Account account, Map<String, Network> networksByKind) {

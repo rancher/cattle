@@ -98,4 +98,9 @@ public class PortSpec {
         this.protocol = protocol;
     }
 
+    public String toSpec() {
+        String privatePortProto = this.privatePort + (this.protocol != null ? "/" + this.protocol : "");
+        String publicPort = this.publicPort != null ? this.publicPort.toString() + ":" : "";
+        return publicPort + privatePortProto;
+    }
 }

@@ -34,4 +34,8 @@ public interface ServiceDiscoveryService {
     boolean isGlobalService(Service service);
 
     void propagatePublicEndpoint(PublicEndpoint publicEndpoint, boolean add);
+
+    void setPorts(Service service);
+
+    void releasePorts(Service service);
 }

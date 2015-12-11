@@ -23,5 +23,6 @@
     <bean class="io.cattle.platform.resource.pool.mac.MacAddressPrefixGeneratorFactory" />
     <bean class="io.cattle.platform.resource.pool.mac.MacAddressGeneratorFactory" />
     <bean class="io.cattle.platform.resource.pool.port.HostPortGeneratorFactory" />
+    <bean class="io.cattle.platform.resource.pool.port.EnvironmentPortGeneratorFactory" />
 
 </beans>
