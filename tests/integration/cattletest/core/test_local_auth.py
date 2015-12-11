@@ -98,6 +98,7 @@ def make_client(admin_user_client, account, username, password):
     return start_client
 
 
+@pytest.mark.nonparallel
 def test_local_login(admin_user_client, request):
     client, account, username, password =\
         make_user_and_client(admin_user_client)
@@ -109,6 +110,7 @@ def test_local_login(admin_user_client, request):
     assert identities[0].externalId == account.id
 
 
+@pytest.mark.nonparallel
 def test_local_login_only_create1_project(admin_user_client):
     client, account, username, password =\
         make_user_and_client(admin_user_client)
@@ -130,6 +132,7 @@ def test_local_login_only_create1_project(admin_user_client):
     assert identities[0].externalId == account.id
 
 
+@pytest.mark.nonparallel
 def test_local_login_change_password(admin_user_client):
     client, account, username, password =\
         make_user_and_client(admin_user_client)
@@ -149,6 +152,7 @@ def test_local_login_change_password(admin_user_client):
     assert identities[0].externalId == account.id
 
 
+@pytest.mark.nonparallel
 def test_local_incorrect_login(admin_user_client):
     token = requests.post(base_url() + 'token',
                           {
@@ -163,6 +167,7 @@ def test_local_incorrect_login(admin_user_client):
     assert token['status'] == 401
 
 
+@pytest.mark.nonparallel
 def test_local_project_members(admin_user_client):
     user1_client, account, username, password =\
         make_user_and_client(admin_user_client)
@@ -199,6 +204,7 @@ def idToMember(identity, role):
     }
 
 
+@pytest.mark.nonparallel
 def test_local_project_create(admin_user_client):
     user1_client, account, username, password =\
         make_user_and_client(admin_user_client)
@@ -218,6 +224,7 @@ def test_local_project_create(admin_user_client):
     user1_client.delete(project)
 
 
+@pytest.mark.nonparallel
 def test_get_correct_identity(admin_user_client):
     name = "Identity User"
     context = create_context(admin_user_client, name=name)
@@ -227,6 +234,7 @@ def test_get_correct_identity(admin_user_client):
     assert identities[0].name == name
 
 
+@pytest.mark.nonparallel
 def test_search_identity_name(admin_user_client):
     usernames = []
 
@@ -251,6 +259,7 @@ def test_search_identity_name(admin_user_client):
         assert identity.externalIdType == ids[0].externalIdType
 
 
+@pytest.mark.nonparallel
 def test_search_identity_name_like(admin_user_client, request):
     name_base = random_str()
     usernames = []
@@ -276,6 +285,7 @@ def test_search_identity_name_like(admin_user_client, request):
     assert found == 5
 
 
+@pytest.mark.nonparallel
 def test_inactive_active_login_account(admin_user_client, request):
     client, account, username, password =\
         make_user_and_client(admin_user_client)
@@ -317,6 +327,7 @@ def test_inactive_active_login_account(admin_user_client, request):
     assert token['userIdentity']['login'] == username
 
 
+@pytest.mark.nonparallel
 def test_deleted_account_login(admin_user_client, request):
     client, account, username, password =\
         make_user_and_client(admin_user_client)
@@ -367,6 +378,7 @@ def test_deleted_account_login(admin_user_client, request):
     assert new_projects[0].id != projects[0].id
 
 
+@pytest.mark.nonparallel
 def test_list_members_inactive_deleted_member(admin_user_client):
     user1_client, account, username, password =\
         make_user_and_client(admin_user_client)
@@ -401,6 +413,7 @@ def test_list_members_inactive_deleted_member(admin_user_client):
     assert len(project.projectMembers()) == 1
 
 
+@pytest.mark.nonparallel
 def test_cant_create_multiple_users_same_login(admin_user_client):
     user1_client, account, username, password =\
         make_user_and_client(admin_user_client)
@@ -413,6 +426,7 @@ def test_cant_create_multiple_users_same_login(admin_user_client):
     assert e.value.error.fieldName == 'publicValue'
 
 
+@pytest.mark.nonparallel
 def test_passwords_non_alpha_numeric_characters(admin_user_client):
     chars = [':', ';', '@', '!', '#', '$', '%', '^', '&', '*', '(', ')',
              '+', '/', '<', '>', '?']
