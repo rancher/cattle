@@ -35,9 +35,7 @@ public class OpenLDAPConfigManager extends AbstractNoOpResourceManager {
             return null;
         }
         LDAPConstants config = request.proxyRequestObject(LDAPConstants.class);
-        if (config.getEnabled() != null) {
-            LDAPUtils.validateConfig(config);
-        }
+        LDAPUtils.validateConfig(config);
         return updateCurrentConfig(config);
     }
 
