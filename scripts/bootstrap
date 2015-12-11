@@ -8,6 +8,8 @@ apt-get install -y --no-install-recommends openjdk-7-jdk maven python-pip
 
 DEBIAN_FRONTEND=noninteractive apt-get -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confold" install -y mysql-server
 
+# Hack to work around overlay issue
+pip uninstall -y py >/dev/null >/dev/null 2>&1 || true
 pip install --upgrade pip==6.0.3 tox==1.8.1 virtualenv==12.0.4
 
 install_build_tools()
