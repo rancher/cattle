@@ -31,6 +31,7 @@
                 <value>io.cattle.platform.core.addon.ToServiceUpgradeStrategy</value>
                 <value>io.cattle.platform.core.addon.PublicEndpoint</value>
                 <value>io.cattle.platform.core.addon.VirtualMachineDisk</value>
+                <value>io.cattle.platform.core.addon.HaproxyConfig</value>
             </set>
         </property>
     </bean>

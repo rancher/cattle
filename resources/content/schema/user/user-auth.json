@@ -345,6 +345,11 @@
         "loadBalancerConfig.appCookieStickinessPolicy" : "cru",
         "loadBalancerConfig.lbCookieStickinessPolicy" : "cru",
         "loadBalancerConfig.serviceId" : "r",
+        "loadBalancerConfig.haproxyConfig" : "cru",
+
+        "haproxyConfig" : "r",
+        "haproxyConfig.global" : "cru",
+        "haproxyConfig.defaults" : "cru",
 
         "loadBalancerAppCookieStickinessPolicy" : "r",
         "loadBalancerAppCookieStickinessPolicy.cookie" : "cru",
@@ -400,7 +405,7 @@
         "setServiceLinksInput.serviceLinks" : "cr",
 
         "loadBalancerService" : "r",
-        "loadBalancerService.loadBalancerConfig" : "cr",
+        "loadBalancerService.loadBalancerConfig" : "cru",
         "loadBalancerService.secondaryLaunchConfigs" : "",
         "loadBalancerService.serviceSchemas" : "",
         "loadBalancerService.certificateIds" : "cru",

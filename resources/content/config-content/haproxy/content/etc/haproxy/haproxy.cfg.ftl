@@ -12,6 +12,9 @@ global
 	user haproxy
 	group haproxy
 	daemon
+	<#if haproxyConfig?? && haproxyConfig.global??>
+	${haproxyConfig.global}
+	</#if>
 
 defaults
 	log	global
@@ -32,6 +35,9 @@ defaults
 	errorfile 502 /etc/haproxy/errors/502.http
 	errorfile 503 /etc/haproxy/errors/503.http
 	errorfile 504 /etc/haproxy/errors/504.http
+	<#if haproxyConfig?? && haproxyConfig.defaults??>
+	${haproxyConfig.defaults}
+	</#if>
 
 <#if listeners?has_content && backends?has_content>
 <#list listeners as listener >

@@ -145,7 +145,8 @@ def test_user_types(user_client, adds=set(), removes=set()):
         'ubiquityConfig',
         'virtualMachine',
         'virtualMachineDisk',
-        'publicEndpoint'
+        'publicEndpoint',
+        'haproxyConfig'
     }
     types.update(adds)
     types.difference_update(removes)
@@ -350,7 +351,8 @@ def test_admin_types(admin_user_client, adds=set(), removes=set()):
         'toServiceUpgradeStrategy',
         'inServiceUpgradeStrategy',
         'ubiquityConfig',
-        'publicEndpoint'
+        'publicEndpoint',
+        'haproxyConfig'
     }
     types.update(adds)
     types.difference_update(removes)
@@ -1734,7 +1736,7 @@ def test_svc_discovery_lb_service(admin_user_client, user_client,
         'launchConfig': 'cr',
         'accountId': 'r',
         'upgrade': 'r',
-        'loadBalancerConfig': 'cr',
+        'loadBalancerConfig': 'cru',
         'vip': 'cr',
         'defaultCertificateId': 'cru',
         'certificateIds': 'cru',
