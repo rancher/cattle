@@ -14,11 +14,21 @@ fi
 
 apply_config iptables-restore -n etc/cattle/host-iptables
 
-for i in PRE POST; do
-    if ! iptables -t nat -n -L ${i}ROUTING | grep -q CATTLE_${i}ROUTING; then
-        iptables -t nat -I ${i}ROUTING -j CATTLE_${i}ROUTING
-    fi
-done
+if ! iptables -t nat -L | grep Chain | grep -q CATTLE_HOOK_PREROUTING
+    iptables -t nat -N CATTLE_HOOK_PREROUTING
+fi
+
+if ! iptables -t nat -n -L CATTLE_HOOK_PREROUTING | grep -q CATTLE_PREROUTING; then
+    iptables -t nat -A CATTLE_HOOK_PREROUTING -j CATTLE_PREROUTING
+fi
+
+if ! iptables -t nat -n -L PREROUTING | grep -q CATTLE_HOOK_PREROUTING; then
+    iptables -t nat -I PREROUTING -j CATTLE_HOOK_PREROUTING
+fi
+
+if ! iptables -t nat -n -L POSTROUTING | grep -q CATTLE_POSTROUTING; then
+    iptables -t nat -I POSTROUTING -j CATTLE_POSTROUTING
+fi
 
 add_route_table 300
 
