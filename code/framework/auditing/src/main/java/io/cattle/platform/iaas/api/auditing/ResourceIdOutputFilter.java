@@ -20,7 +20,7 @@ public class ResourceIdOutputFilter implements ResourceOutputFilter {
     @Override
     public Resource filter(ApiRequest request, Object original, Resource converted) {
         if (original instanceof UpdatableRecordImpl){
-            UpdatableRecordImpl record = (UpdatableRecordImpl) original;
+            UpdatableRecordImpl<?> record = (UpdatableRecordImpl<?>) original;
             for (Field<?> field: record.fields()){
                 if (RESOURCE_ID_FIELD.equalsIgnoreCase(field.getName())
                         && StringUtils.isNotBlank(String.valueOf(record.getValue(RESOURCE_ID_FIELD)))){

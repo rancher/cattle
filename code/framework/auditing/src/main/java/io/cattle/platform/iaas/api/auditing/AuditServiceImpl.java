@@ -40,8 +40,10 @@ public class AuditServiceImpl implements AuditService{
             new HashSet<>(Arrays.asList(
                     "publish",
                     "configContent".toLowerCase(),
+                    "token",
                     ContainerEventConstants.CONTAINER_EVENT_KIND.toLowerCase(),
                     "serviceEvent".toLowerCase(),
+                    "userPreference".toLowerCase(),
                     ExternalEventConstants.KIND_EXTERNAL_EVENT.toLowerCase()
             )));
 
