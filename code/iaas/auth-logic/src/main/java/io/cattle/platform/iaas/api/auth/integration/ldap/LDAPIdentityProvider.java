@@ -159,7 +159,7 @@ public abstract class LDAPIdentityProvider implements IdentityProvider{
             return attributesToIdentity(object);
         }
         catch (NamingException e) {
-            getLogger().info("Failed to get object: " + distinguishedName, e);
+            getLogger().info("Failed to get object: {} : {}", distinguishedName, e.getExplanation());
             return null;
         }
         finally {
