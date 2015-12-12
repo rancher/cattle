@@ -14,21 +14,23 @@ import org.jooq.impl.DSL;
 public class NicPerVnetNicLookup extends AbstractJooqDao {
 
     public List<? extends Nic> getNicPerVnetForAccount(long accountId) {
+        List<Long> nicIds = create()
+                .select(DSL.max(NIC.ID))
+                .from(NIC)
+                .join(VNET)
+                .on(VNET.ID.eq(NIC.VNET_ID))
+                .join(INSTANCE)
+                .on(INSTANCE.ID.eq(NIC.INSTANCE_ID))
+                .where(NIC.ACCOUNT_ID.eq(accountId))
+                .and(NIC.REMOVED.isNull())
+                .and(INSTANCE.REMOVED.isNull())
+                .and(INSTANCE.SYSTEM_CONTAINER.isNull())
+                        .groupBy(VNET.ID)
+                        .fetchInto(Long.class);
+                
         return create().select(NIC.fields())
                 .from(NIC)
-                .where(NIC.ID.in(
-                        create()
-                        .select(DSL.max(NIC.ID))
-                        .from(NIC)
-                        .join(VNET)
-                        .on(VNET.ID.eq(NIC.VNET_ID))
-                        .join(INSTANCE)
-                        .on(INSTANCE.ID.eq(NIC.INSTANCE_ID))
-                        .where(NIC.ACCOUNT_ID.eq(accountId))
-                        .and(NIC.REMOVED.isNull())
-                        .and(INSTANCE.REMOVED.isNull())
-                        .and(INSTANCE.SYSTEM_CONTAINER.isNull())
-                        .groupBy(NIC.VNET_ID)))
+                .where(NIC.ID.in(nicIds))
                 .fetchInto(NicRecord.class);
     }
 }
