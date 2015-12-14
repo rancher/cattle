@@ -63,12 +63,12 @@ public class DefaultDeploymentUnitInstance extends AbstractInstanceUnit {
         if (!(instance.getState().equals(CommonStatesConstants.REMOVED) || instance.getState().equals(
                 CommonStatesConstants.REMOVING))) {
             try {
-                context.objectProcessManager.scheduleStandardProcessAsync(StandardProcess.REMOVE, instance,
-                        null);
-            } catch (ProcessCancelException e) {
                 context.objectProcessManager.scheduleProcessInstanceAsync(InstanceConstants.PROCESS_STOP,
                         instance, ProcessUtils.chainInData(new HashMap<String, Object>(),
                                 InstanceConstants.PROCESS_STOP, InstanceConstants.PROCESS_REMOVE));
+            } catch (ProcessCancelException e) {
+                context.objectProcessManager.scheduleStandardProcessAsync(StandardProcess.REMOVE, instance,
+                        null);
             }
         }
     }
