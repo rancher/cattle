@@ -27,6 +27,9 @@ def test_compute_free(super_client, new_context):
         c.stop(deallocateFromHost=True)
 
     wait_all_success(admin_client, containers)
+    for c in containers:
+        c = super_client.reload(c)
+        assert c.allocationState == 'inactive'
 
     host = super_client.reload(host)
     assert host.computeFree == start_free
