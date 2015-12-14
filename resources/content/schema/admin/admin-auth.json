@@ -122,6 +122,7 @@
         "ldapconfig.userSearchField" : "cr",
         "ldapconfig.userMemberAttribute" : "cr",
         "ldapconfig.groupMemberMappingAttribute" : "cr",
+        "ldapconfig.connectionTimeout" : "cr",
 
         "localAuthConfig" : "cr",
         "localAuthConfig.accessMode" : "cr",
@@ -153,6 +154,7 @@
         "openldapconfig.userSearchField" : "cr",
         "openldapconfig.userMemberAttribute" : "cr",
         "openldapconfig.groupMemberMappingAttribute" : "cr",
+        "openldapconfig.connectionTimeout" : "cr",
 
         "password.accountId" : "cr",
 

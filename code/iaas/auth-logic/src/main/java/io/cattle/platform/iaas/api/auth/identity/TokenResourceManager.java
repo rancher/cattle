@@ -53,6 +53,9 @@ public class TokenResourceManager extends AbstractNoOpResourceManager {
         }
         for (TokenCreator tokenCreator : tokenCreators) {
             if (tokenCreator.isConfigured() && tokenCreator.providerType().equalsIgnoreCase(SecurityConstants.AUTH_PROVIDER.get())) {
+                if (!SecurityConstants.SECURITY.get()) {
+                    tokenCreator.reset();
+                }
                 token = tokenCreator.getToken(request);
                 break;
             }

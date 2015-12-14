@@ -60,6 +60,11 @@ public class ADTokenCreator extends ADConfigurable implements TokenCreator {
         return getLdapToken(split[0], split[1]);
     }
 
+    @Override
+    public void reset() {
+        adIdentityProvider.reset();
+    }
+
     public String getName() {
         return ADConstants.TOKEN_CREATOR;
     }

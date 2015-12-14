@@ -124,7 +124,8 @@ public class OpenLDAPConfigManager extends AbstractNoOpResourceManager {
         }
         return new OpenLDAPConfig(server, port, userEnabledMaskBit, loginDomain, domain, enabled, accessMode,
                 serviceAccountUsername, serviceAccountPassword, tls, userSearchField, userLoginField, userObjectClass,
-                userNameField, userEnabledAttribute, groupSearchField, groupObjectClass, groupNameField, userMemberAttribute, groupMemberMappingAttribute);
+                userNameField, userEnabledAttribute, groupSearchField, groupObjectClass, groupNameField, userMemberAttribute,
+                groupMemberMappingAttribute, config.getConnectionTimeout());
     }
 
     @Override
@@ -149,9 +150,11 @@ public class OpenLDAPConfigManager extends AbstractNoOpResourceManager {
         String userNameField = OpenLDAPConstants.USER_NAME_FIELD.get();
         String userObjectClass = OpenLDAPConstants.USER_OBJECT_CLASS.get();
         String userSearchField = OpenLDAPConstants.USER_SEARCH_FIELD.get();
+        long connectionTimeout = OpenLDAPConstants.CONNECTION_TIMEOUT.get();
         return new OpenLDAPConfig(server, port, userEnabledMaskBit, loginDomain, domain, enabled, accessMode,
                 serviceAccountUsername, serviceAccountPassword, tls, userSearchField, userLoginField, userObjectClass,
-                userNameField, userEnabledAttribute, groupSearchField, groupObjectClass, groupNameField, userMemberAttribute, groupMemberMappingAttribute);
+                userNameField, userEnabledAttribute, groupSearchField, groupObjectClass, groupNameField, userMemberAttribute,
+                groupMemberMappingAttribute, connectionTimeout);
     }
 
     public OpenLDAPConfig updateCurrentConfig(LDAPConstants config) {
@@ -174,6 +177,7 @@ public class OpenLDAPConfigManager extends AbstractNoOpResourceManager {
         settingsUtils.changeSetting(OpenLDAPConstants.USER_NAME_FIELD_SETTING, config.getUserNameField());
         settingsUtils.changeSetting(OpenLDAPConstants.USER_OBJECT_CLASS_SETTING, config.getUserObjectClass());
         settingsUtils.changeSetting(OpenLDAPConstants.USER_SEARCH_FIELD_SETTING, config.getUserSearchField());
+        settingsUtils.changeSetting(OpenLDAPConstants.TIMEOUT_SETTING, config.getConnectionTimeout());
         settingsUtils.changeSetting(SecurityConstants.SECURITY_SETTING, config.getEnabled());
         if (config.getEnabled() != null){
             settingsUtils.changeSetting(SecurityConstants.AUTH_PROVIDER_SETTING, OpenLDAPConstants.CONFIG);

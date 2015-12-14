@@ -119,7 +119,8 @@ public class ADConfigManager extends AbstractNoOpResourceManager {
         }
         return new ADConfig(server, port, userEnabledMaskBit, loginDomain, domain, enabled, accessMode,
                 serviceAccountUsername, serviceAccountPassword, tls, userSearchField, userLoginField,
-                userObjectClass, userNameField, userEnabledAttribute, groupSearchField, groupObjectClass, groupNameField);
+                userObjectClass, userNameField, userEnabledAttribute, groupSearchField, groupObjectClass, groupNameField,
+                config.getConnectionTimeout());
     }
 
     @Override
@@ -143,9 +144,11 @@ public class ADConfigManager extends AbstractNoOpResourceManager {
         String groupObjectClass = ADConstants.GROUP_OBJECT_CLASS.get();
         String userEnabledAttribute = ADConstants.USER_ENABLED_ATTRIBUTE.get();
         String groupNameField = ADConstants.GROUP_NAME_FIELD.get();
+        long connectionTimeout = ADConstants.CONNECTION_TIMEOUT.get();
         return new ADConfig(server, port, userEnabledMaskBit, loginDomain, domain, enabled, accessMode,
                 serviceAccountUsername, serviceAccountPassword, tls, userSearchField, userLoginField, userObjectClass,
-                userNameField, userEnabledAttribute, groupSearchField, groupObjectClass, groupNameField);
+                userNameField, userEnabledAttribute, groupSearchField, groupObjectClass, groupNameField,
+                connectionTimeout);
     }
 
     public ADConfig updateCurrentConfig(LDAPConstants config) {
@@ -166,6 +169,7 @@ public class ADConfigManager extends AbstractNoOpResourceManager {
         settingsUtils.changeSetting(ADConstants.USER_NAME_FIELD_SETTING, config.getUserNameField());
         settingsUtils.changeSetting(ADConstants.USER_OBJECT_CLASS_SETTING, config.getUserObjectClass());
         settingsUtils.changeSetting(ADConstants.USER_SEARCH_FIELD_SETTING, config.getUserSearchField());
+        settingsUtils.changeSetting(ADConstants.TIMEOUT_SETTING, config.getConnectionTimeout());
         settingsUtils.changeSetting(SecurityConstants.SECURITY_SETTING, config.getEnabled());
         if (config.getEnabled() != null){
             settingsUtils.changeSetting(SecurityConstants.AUTH_PROVIDER_SETTING, ADConstants.CONFIG);

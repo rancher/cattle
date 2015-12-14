@@ -9,6 +9,7 @@ import java.util.Set;
 
 import com.netflix.config.DynamicBooleanProperty;
 import com.netflix.config.DynamicIntProperty;
+import com.netflix.config.DynamicLongProperty;
 import com.netflix.config.DynamicStringProperty;
 
 public class OpenLDAPConstants {
@@ -43,6 +44,8 @@ public class OpenLDAPConstants {
     public static final String USER_MEMBER_ATTRIBUTE_SETTING = SETTING_BASE + "user.member.attribute";
     public static final String GROUP_USER_MAPPING_ATTRIBUTE_SETTING = SETTING_BASE + "group.member.mapping.attribute";
     public static final String TLS_SETTING = SETTING_BASE + "tls";
+    public static final String TIMEOUT_SETTING = SETTING_BASE + "connection.timeout";
+
 
     public static final Set<String> SCOPES = Collections.unmodifiableSet(
             new HashSet<>(Arrays.asList(
@@ -81,4 +84,5 @@ public class OpenLDAPConstants {
     public static final DynamicStringProperty GROUP_OBJECT_CLASS = ArchaiusUtil.getString(GROUP_OBJECT_CLASS_SETTING);
 
     public static final DynamicStringProperty USER_MEMBER_ATTRIBUTE = ArchaiusUtil.getString(USER_MEMBER_ATTRIBUTE_SETTING);
+    public static final DynamicLongProperty CONNECTION_TIMEOUT = ArchaiusUtil.getLong(TIMEOUT_SETTING);
 }

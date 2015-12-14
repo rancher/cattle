@@ -19,5 +19,4 @@ public interface LDAPConstants extends LDAPConfig, Configurable, Scoped, Provide
     String getJWTType();
 
     String getProviderName();
-
 }

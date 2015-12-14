@@ -28,6 +28,7 @@ public class OpenLDAPConfig implements Configurable, LDAPConfig {
     private final String groupNameField;
     private final String userMemberAttribute;
     private final String groupMemberMappingAttribute;
+    private final long connectionTimeout;
 
     public OpenLDAPConfig(String server, Integer port, Integer userDisabledBitMask, String loginDomain, String domain,
                           Boolean enabled, String accessMode, String serviceAccountUsername,
@@ -35,7 +36,7 @@ public class OpenLDAPConfig implements Configurable, LDAPConfig {
                           String userObjectClass, String userNameField, String userEnabledAttribute, String
                                   groupSearchField,
                           String groupObjectClass, String groupNameField, String userMemberAttribute, String
-                                  groupMemberMappingAttribute) {
+                                  groupMemberMappingAttribute, long connectionTimeout) {
         this.server = server;
         this.port = port;
         this.userDisabledBitMask = userDisabledBitMask;
@@ -56,6 +57,7 @@ public class OpenLDAPConfig implements Configurable, LDAPConfig {
         this.groupNameField = groupNameField;
         this.userMemberAttribute = userMemberAttribute;
         this.groupMemberMappingAttribute = groupMemberMappingAttribute;
+        this.connectionTimeout = connectionTimeout;
     }
 
     @Field(required = true, nullable = false, minLength = 1)
@@ -166,5 +168,10 @@ public class OpenLDAPConfig implements Configurable, LDAPConfig {
     @Field(nullable = false, required = true, defaultValue = "memberUid")
     public String getGroupMemberMappingAttribute() {
         return groupMemberMappingAttribute;
+    }
+
+    @Field(nullable = false, required = true, defaultValue = "1000")
+    public long getConnectionTimeout() {
+        return connectionTimeout;
     }
 }

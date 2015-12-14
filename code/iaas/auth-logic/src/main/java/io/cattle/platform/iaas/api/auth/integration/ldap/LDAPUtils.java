@@ -46,6 +46,7 @@ public class LDAPUtils {
             props.put(Context.SECURITY_PRINCIPAL, ldapConfig.getServiceAccountUsername());
             props.put(Context.SECURITY_CREDENTIALS, ldapConfig.getServiceAccountPassword());
             props.put(Context.INITIAL_CONTEXT_FACTORY, "com.sun.jndi.ldap.LdapCtxFactory");
+            props.put("com.sun.jndi.ldap.connect.timeout", String.valueOf(ldapConfig.getConnectionTimeout()));
             String url = "ldap://" + ldapConfig.getServer() + ':' + String.valueOf(ldapConfig.getPort()) + '/';
             props.put(Context.PROVIDER_URL, url);
             if (ldapConfig.getTls()) {

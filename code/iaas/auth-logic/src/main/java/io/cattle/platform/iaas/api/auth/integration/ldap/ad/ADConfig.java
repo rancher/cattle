@@ -26,12 +26,13 @@ public class ADConfig implements Configurable, LDAPConfig {
     private final String groupSearchField;
     private final String groupObjectClass;
     private final String groupNameField;
+    private final long connectionTimeout;
 
     public ADConfig(String server, Integer port, Integer userDisabledBitMask, String loginDomain, String domain,
                     Boolean enabled, String accessMode, String serviceAccountUsername,
                     String serviceAccountPassword, Boolean tls, String userSearchField, String userLoginField,
                     String userObjectClass, String userNameField, String userEnabledAttribute, String groupSearchField,
-                    String groupObjectClass, String groupNameField) {
+                    String groupObjectClass, String groupNameField, long connectionTimeout) {
         this.server = server;
         this.port = port;
         this.userDisabledBitMask = userDisabledBitMask;
@@ -50,6 +51,7 @@ public class ADConfig implements Configurable, LDAPConfig {
         this.groupSearchField = groupSearchField;
         this.groupObjectClass = groupObjectClass;
         this.groupNameField = groupNameField;
+        this.connectionTimeout = connectionTimeout;
     }
 
     @Field(required = true, nullable = false, minLength = 1)
@@ -173,5 +175,11 @@ public class ADConfig implements Configurable, LDAPConfig {
     @Field(nullable = true, required = false, defaultValue = "memberOf")
     public String getGroupMemberMappingAttribute() {
         return ADConstants.MEMBER_OF;
+    }
+
+    @Override
+    @Field(nullable = false, required = true, defaultValue = "1000")
+    public long getConnectionTimeout() {
+        return connectionTimeout;
     }
 }

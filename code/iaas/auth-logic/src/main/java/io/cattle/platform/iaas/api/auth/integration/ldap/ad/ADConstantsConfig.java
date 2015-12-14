@@ -121,6 +121,11 @@ public class ADConstantsConfig extends ADConfigurable implements LDAPConstants{
     }
 
     @Override
+    public long getConnectionTimeout() {
+        return ADConstants.CONNECTION_TIMEOUT.get();
+    }
+
+    @Override
     public String getUserMemberAttribute() {
         return ADConstants.MEMBER_OF;
     }

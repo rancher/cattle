@@ -41,4 +41,7 @@ public interface LDAPConfig {
     String getUserMemberAttribute();
 
     String getGroupMemberMappingAttribute();
+
+    long getConnectionTimeout();
+
 }

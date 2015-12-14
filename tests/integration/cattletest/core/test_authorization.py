@@ -450,7 +450,8 @@ def test_ldap_auth(admin_user_client, user_client, project_client):
         'userObjectClass': 'cr',
         'userSearchField': 'cr',
         'groupMemberMappingAttribute': 'cr',
-        'userMemberAttribute': 'cr'
+        'userMemberAttribute': 'cr',
+        'connectionTimeout': 'cr'
     })
 
 
@@ -479,7 +480,8 @@ def test_openldap_auth(admin_user_client, user_client, project_client):
         'userObjectClass': 'cr',
         'userSearchField': 'cr',
         'groupMemberMappingAttribute': 'cr',
-        'userMemberAttribute': 'cr'
+        'userMemberAttribute': 'cr',
+        'connectionTimeout': 'cr'
     })
 
 

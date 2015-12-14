@@ -44,6 +44,11 @@ public class GithubTokenCreator extends GithubConfigurable implements TokenCreat
     }
 
     @Override
+    public void reset() {
+
+    }
+
+    @Override
     public String getName() {
         return GithubConstants.TOKEN_CREATOR;
     }

@@ -346,6 +346,13 @@ public abstract class LDAPIdentityProvider implements IdentityProvider{
         }
     }
 
+    public void reset() {
+        if (getContextPool() != null) {
+            getContextPool().close();
+            setContextPool(null);
+        }
+        init();
+    }
     protected abstract void setContextPool(GenericObjectPool<LdapContext> ldapContextGenericObjectPool);
 
     protected abstract AbstractTokenUtil getTokenUtils();
