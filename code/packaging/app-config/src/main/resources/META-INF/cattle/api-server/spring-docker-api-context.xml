@@ -12,10 +12,19 @@
         http://cattle.io/schemas/spring/extension http://cattle.io/schemas/spring/extension-1.0.xsd
 		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.0.xsd">
 
-    <!-- This really shouldn't be here, it's because LinkHandler and ActionHandler are
-         not properly managed and rely on Spring auto wiring and not the ExtensionManager -->
     <bean class="io.cattle.platform.docker.api.ExecActionHandler" />
     <bean class="io.cattle.platform.docker.api.ContainerLogsActionHandler" />
     <bean class="io.cattle.platform.docker.api.DockerSocketProxyActionHandler" />
+
+    <bean id="DockerApiTypes" class="io.cattle.platform.object.meta.TypeSet" >
+        <property name="typeClasses">
+            <list>
+                <value>io.cattle.platform.docker.api.model.ContainerExec</value>
+                <value>io.cattle.platform.docker.api.model.ContainerLogs</value>
+                <value>io.cattle.platform.docker.api.model.HostAccess</value>
+                <value>io.cattle.platform.docker.api.model.DockerBuild</value>
+            </list>
+        </property>
+    </bean>
 
 </beans>
