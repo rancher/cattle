@@ -52,12 +52,13 @@ frontend ${listener.uuid}_frontend
         <#list backends[listener.uuid] as backend >
         <#if (listener.sourceProtocol == "http" || listener.sourceProtocol == "https") && (backend.portSpec.domain != "default" || backend.portSpec.path != "default")>
         <#if backend.portSpec.domain != "default">
-            <#if backend.portSpec.domain[0..1] == "*."> 
+        <#assign length=backend.portSpec.domain?length>
+            <#if (length > 2) && backend.portSpec.domain[0..1] == "*.">
                 acl ${backend.uuid}_host hdr_end(host) -i ${backend.portSpec.domain[1..]}
                 acl ${backend.uuid}_host hdr_end(host) -i ${backend.portSpec.domain[1..]}:${sourcePort}
-            <#elseif backend.portSpec.domain[-2..-1] == ".*">
-                acl ${backend.uuid}_host hdr_beg(host) -i ${backend.portSpec.domain[0..-1]}
-                acl ${backend.uuid}_host hdr_beg(host) -i ${backend.portSpec.domain[0..-1]}:${sourcePort}
+            <#elseif (length > 2) && backend.portSpec.domain[length-2..length-1] == ".*">
+                acl ${backend.uuid}_host hdr_beg(host) -i ${backend.portSpec.domain[0..length-2]}
+                acl ${backend.uuid}_host hdr_beg(host) -i ${backend.portSpec.domain[0..length-2]}:${sourcePort}
             <#else>
                 acl ${backend.uuid}_host hdr(host) -i ${backend.portSpec.domain}
                 acl ${backend.uuid}_host hdr(host) -i ${backend.portSpec.domain}:${sourcePort}
