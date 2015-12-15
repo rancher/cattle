@@ -32,6 +32,8 @@
                 <value>io.cattle.platform.core.addon.PublicEndpoint</value>
                 <value>io.cattle.platform.core.addon.VirtualMachineDisk</value>
                 <value>io.cattle.platform.core.addon.HaproxyConfig</value>
+                <value>io.cattle.platform.core.addon.RollingRestartStrategy</value>
+                <value>io.cattle.platform.core.addon.ServiceRestart</value>
             </set>
         </property>
     </bean>

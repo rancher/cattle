@@ -147,7 +147,9 @@ def test_user_types(user_client, adds=set(), removes=set()):
         'virtualMachine',
         'virtualMachineDisk',
         'publicEndpoint',
-        'haproxyConfig'
+        'haproxyConfig',
+        'serviceRestart',
+        'rollingRestartStrategy',
     }
     types.update(adds)
     types.difference_update(removes)
@@ -354,7 +356,9 @@ def test_admin_types(admin_user_client, adds=set(), removes=set()):
         'inServiceUpgradeStrategy',
         'ubiquityConfig',
         'publicEndpoint',
-        'haproxyConfig'
+        'haproxyConfig',
+        'serviceRestart',
+        'rollingRestartStrategy',
     }
     types.update(adds)
     types.difference_update(removes)

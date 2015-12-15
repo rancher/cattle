@@ -2880,6 +2880,39 @@ def test_sidekick_labels_merge(new_context):
     assert all(item in secondary.labels for item in affinity_labels) is True
 
 
+def test_service_restart(client, context):
+    env = _create_stack(client)
+
+    image_uuid = context.image_uuid
+    launch_config = {"imageUuid": image_uuid}
+    secondary_lc = {"imageUuid": image_uuid, "name": "secondary"}
+    service = client.create_service(name=random_str(),
+                                    environmentId=env.id,
+                                    launchConfig=launch_config,
+                                    scale=2,
+                                    secondaryLaunchConfigs=[secondary_lc])
+    service = client.wait_success(service)
+
+    service = client.wait_success(service.activate(), 120)
+
+    assert service.state == "active"
+
+    # get initial start count for all the instances
+    instances = []
+    for exposeMap in service.serviceExposeMaps():
+        instances.append(client.reload(exposeMap.instance()))
+
+    # restart service
+    service = client.\
+        wait_success(service.restart(rollingRestartStrategy={}), 120)
+    assert service.state == 'active'
+
+    for instance in instances:
+        old = instance.startCount
+        new = client.reload(instance).startCount
+        assert new > old
+
+
 def _validate_endpoint(endpoints, public_port, host, service):
     host_ip = host.ipAddresses()[0].address
     found = False

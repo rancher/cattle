@@ -152,25 +152,21 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
 
     @Override
     public boolean isActiveService(Service service) {
-        return (getServiceActiveStates(true).contains(service.getState()));
+        return (getServiceActiveStates().contains(service.getState()));
     }
 
     @Override
-    public List<String> getServiceActiveStates(boolean includeUpgrading) {
-        if (includeUpgrading) {
-            return Arrays.asList(CommonStatesConstants.ACTIVATING,
-                    CommonStatesConstants.ACTIVE, CommonStatesConstants.UPDATING_ACTIVE,
-                    ServiceDiscoveryConstants.STATE_UPGRADING, ServiceDiscoveryConstants.STATE_ROLLINGBACK,
-                    ServiceDiscoveryConstants.STATE_CANCELING_UPGRADE,
-                    ServiceDiscoveryConstants.STATE_CANCELED_UPGRADE,
-                    ServiceDiscoveryConstants.STATE_CANCELING_ROLLBACK,
-                    ServiceDiscoveryConstants.STATE_CANCELED_ROLLBACK,
-                    ServiceDiscoveryConstants.STATE_FINISHING_UPGRADE,
-                    ServiceDiscoveryConstants.STATE_UPGRADED);
-        } else {
-            return Arrays.asList(CommonStatesConstants.ACTIVATING,
-                    CommonStatesConstants.ACTIVE, CommonStatesConstants.UPDATING_ACTIVE);
-        }
+    public List<String> getServiceActiveStates() {
+        return Arrays.asList(CommonStatesConstants.ACTIVATING,
+                CommonStatesConstants.ACTIVE, CommonStatesConstants.UPDATING_ACTIVE,
+                ServiceDiscoveryConstants.STATE_UPGRADING, ServiceDiscoveryConstants.STATE_ROLLINGBACK,
+                ServiceDiscoveryConstants.STATE_CANCELING_UPGRADE,
+                ServiceDiscoveryConstants.STATE_CANCELED_UPGRADE,
+                ServiceDiscoveryConstants.STATE_CANCELING_ROLLBACK,
+                ServiceDiscoveryConstants.STATE_CANCELED_ROLLBACK,
+                ServiceDiscoveryConstants.STATE_FINISHING_UPGRADE,
+                ServiceDiscoveryConstants.STATE_UPGRADED,
+                ServiceDiscoveryConstants.STATE_RESTARTING);
     }
 
     @Override

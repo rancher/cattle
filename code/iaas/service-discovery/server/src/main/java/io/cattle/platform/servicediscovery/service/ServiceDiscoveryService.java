@@ -29,7 +29,7 @@ public interface ServiceDiscoveryService {
 
     boolean isServiceInstance(Service service, Instance instance);
 
-    List<String> getServiceActiveStates(boolean includeUpgrading);
+    List<String> getServiceActiveStates();
 
     boolean isGlobalService(Service service);
 

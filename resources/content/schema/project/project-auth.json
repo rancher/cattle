@@ -35,6 +35,7 @@
         "registry": "crud",
         "restartPolicy" : "cr",
         "serviceUpgrade" : "cr",
+        "serviceRestart" : "cr",
         "secondaryLaunchConfig" : "cru",
         "service" : "crud",
         "serviceConsumeMap" : "r",
@@ -55,6 +56,7 @@
         "toServiceUpgradeStrategy" : "cr",
         "publicEndpoint" : "r",
         "haproxyConfig" : "cru",
+        "rollingRestartStrategy" : "cr",
         "end" : ""
     }
 }
