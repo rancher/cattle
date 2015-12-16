@@ -296,7 +296,7 @@ public class ServiceCreateValidationFilter extends AbstractDefaultResourceManage
     protected void validateLaunchConfigNames(Service service, List<Map<String, Object>> launchConfigs) {
         List<String> usedNames = new ArrayList<>();
         List<? extends Service> existingSvcs = objectManager.find(Service.class, SERVICE.ENVIRONMENT_ID,
-                service.getEnvironmentId());
+                service.getEnvironmentId(), SERVICE.REMOVED, null);
         for (Service existingSvc : existingSvcs) {
             if (existingSvc.getId().equals(service.getId())) {
                 continue;
