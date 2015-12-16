@@ -23,7 +23,6 @@
             "options": [
                 "AdminAuth",
                 "BasicAuth",
-                "HeaderAuth",
                 "RegistrationToken",
                 "TokenAccount",
                 "TokenAuth"
