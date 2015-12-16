@@ -506,6 +506,12 @@ def test_create_duplicated_services(client, context):
     assert e.value.error.code == 'NotUnique'
     assert e.value.error.fieldName == 'name'
 
+    # remove the service and try to re-use its name
+    client.wait_success(service1.remove())
+    client.create_service(name=service_name,
+                          environmentId=env.id,
+                          launchConfig=launch_config)
+
 
 def test_service_add_remove_service_link(client, context):
     env = _create_stack(client)
