@@ -1,4 +1,4 @@
-package io.cattle.platform.configitem.context.data;
+package io.cattle.platform.configitem.context.data.metadata.common;
 
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.model.Environment;
@@ -12,30 +12,51 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-
 public class ServiceMetaData {
     private Long serviceId;
     private boolean isPrimaryConfig;
-    String launchConfigName;
+    private String launchConfigName;
     
-    String name;
-    String uuid;
-    String stack_name;
-    String kind;
-    String hostname;
-    String vip;
-    Long create_index;
-    List<String> external_ips = new ArrayList<>();
-    List<String> sidekicks;
-    List<String> containers = new ArrayList<>();
-    Map<String, String> links;
-    List<String> ports = new ArrayList<>();
-    Map<String, String> labels;
-    Map<String, Object> metadata;
-    Integer scale;
-    String fqdn;
-    List<String> expose = new ArrayList<>();
+    protected String name;
+    protected String uuid;
+    protected String stack_name;
+    protected String kind;
+    protected String hostname;
+    protected String vip;
+    protected Long create_index;
+    protected List<String> external_ips = new ArrayList<>();
+    protected List<String> sidekicks;
+    protected List<ContainerMetaData> containers = new ArrayList<>();
+    protected Map<String, String> links;
+    protected List<String> ports = new ArrayList<>();
+    protected Map<String, String> labels;
+    protected Map<String, Object> metadata;
+    protected Integer scale;
+    protected String fqdn;
+    protected List<String> expose = new ArrayList<>();
+
+    public ServiceMetaData(ServiceMetaData that) {
+        this.name = that.name;
+        this.uuid = that.uuid;
+        this.stack_name = that.stack_name;
+        this.kind = that.kind;
+        this.hostname = that.hostname;
+        this.vip = that.vip;
+        this.create_index = that.create_index;
+        this.external_ips = that.external_ips;
+        this.sidekicks = that.sidekicks;
+        this.containers = that.containers;
+        this.links = that.links;
+        this.ports = that.ports;
+        this.labels = that.labels;
+        this.metadata = that.metadata;
+        this.scale = that.scale;
+        this.fqdn = that.fqdn;
+        this.expose = that.expose;
+        this.serviceId = that.serviceId;
+        this.isPrimaryConfig = that.isPrimaryConfig;
+        this.launchConfigName = that.launchConfigName;
+    }
 
     public ServiceMetaData(Service service, String serviceName, Environment env, List<String> sidekicks,
             Map<String, Object> metadata) {
@@ -112,10 +133,6 @@ public class ServiceMetaData {
         return sidekicks;
     }
 
-    public List<String> getContainers() {
-        return containers;
-    }
-
     public Map<String, String> getLinks() {
         return links;
     }
@@ -128,21 +145,14 @@ public class ServiceMetaData {
         return labels;
     }
 
-    public void addToContainer(String containerName) {
-        this.containers.add(containerName);
-    }
-
-    @JsonIgnore
     public Long getServiceId() {
         return serviceId;
     }
 
-    @JsonIgnore
     public boolean isPrimaryConfig() {
         return isPrimaryConfig;
     }
 
-    @JsonIgnore
     public Long getCreate_index() {
         return create_index;
     }
@@ -151,7 +161,6 @@ public class ServiceMetaData {
         this.links = links;
     }
 
-    @JsonIgnore
     public String getLaunchConfigName() {
         return launchConfigName;
     }
@@ -175,4 +184,69 @@ public class ServiceMetaData {
     public List<String> getExpose() {
         return expose;
     }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public void setUuid(String uuid) {
+        this.uuid = uuid;
+    }
+
+    public void setStack_name(String stack_name) {
+        this.stack_name = stack_name;
+    }
+
+    public void setKind(String kind) {
+        this.kind = kind;
+    }
+
+    public void setHostname(String hostname) {
+        this.hostname = hostname;
+    }
+
+    public void setVip(String vip) {
+        this.vip = vip;
+    }
+
+    public void setExternal_ips(List<String> external_ips) {
+        this.external_ips = external_ips;
+    }
+
+    public void setSidekicks(List<String> sidekicks) {
+        this.sidekicks = sidekicks;
+    }
+
+    public void setPorts(List<String> ports) {
+        this.ports = ports;
+    }
+
+    public void setLabels(Map<String, String> labels) {
+        this.labels = labels;
+    }
+
+    public void setMetadata(Map<String, Object> metadata) {
+        this.metadata = metadata;
+    }
+
+    public void setScale(Integer scale) {
+        this.scale = scale;
+    }
+
+    public void setFqdn(String fqdn) {
+        this.fqdn = fqdn;
+    }
+
+    public void setExpose(List<String> expose) {
+        this.expose = expose;
+    }
+
+    public void setCreate_index(Long create_index) {
+        this.create_index = create_index;
+    }
+
+    public void setContainersObj(List<ContainerMetaData> containers) {
+        this.containers = containers;
+    }
+
 }

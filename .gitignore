@@ -5,6 +5,8 @@
 /.idea
 /.m2
 
+code/packaging/app/keys.properties
+
 .classpath
 .project
 .settings

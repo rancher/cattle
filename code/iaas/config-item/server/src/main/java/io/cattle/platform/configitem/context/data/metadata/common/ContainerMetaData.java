@@ -1,4 +1,4 @@
-package io.cattle.platform.configitem.context.data;
+package io.cattle.platform.configitem.context.data.metadata.common;
 
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.model.Instance;
@@ -11,8 +11,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import com.fasterxml.jackson.annotation.JsonIgnore;
 
 public class ContainerMetaData {
     private Long serviceId;
@@ -113,17 +111,14 @@ public class ContainerMetaData {
         }
     }
 
-    @JsonIgnore
     public HostMetaData getHostMetaData() {
         return hostMetaData;
     }
 
-    @JsonIgnore
     public Long getServiceId() {
         return serviceId;
     }
 
-    @JsonIgnore
     public String getDnsPrefix() {
         return dnsPrefix;
     }
@@ -151,4 +146,49 @@ public class ContainerMetaData {
     public Long getStart_count() {
         return start_count;
     }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public void setUuid(String uuid) {
+        this.uuid = uuid;
+    }
+
+    public void setPrimary_ip(String primary_ip) {
+        this.primary_ip = primary_ip;
+    }
+
+    public void setIps(List<String> ips) {
+        this.ips = ips;
+    }
+
+    public void setPorts(List<String> ports) {
+        this.ports = ports;
+    }
+
+    public void setLabels(Map<String, String> labels) {
+        this.labels = labels;
+    }
+
+    public void setCreate_index(Long create_index) {
+        this.create_index = create_index;
+    }
+
+    public void setHost_uuid(String host_uuid) {
+        this.host_uuid = host_uuid;
+    }
+
+    public void setHostname(String hostname) {
+        this.hostname = hostname;
+    }
+
+    public void setHealth_state(String health_state) {
+        this.health_state = health_state;
+    }
+
+    public void setStart_count(Long start_count) {
+        this.start_count = start_count;
+    }
+
 }
