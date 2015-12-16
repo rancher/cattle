@@ -164,8 +164,11 @@ public class LoadBalancerInfoFactory extends AbstractAgentBaseContextFactory {
                 return s1.getPortSpec().getPath().length() >= s2.getPortSpec().getPath().length() ? -1 : 1;
             }
         });
+
         List<LoadBalancerTargetsInfo> notNullDomainAndPath = new ArrayList<>();
         List<LoadBalancerTargetsInfo> notNullDomain = new ArrayList<>();
+        List<LoadBalancerTargetsInfo> notNullDomainAndPathWildcard = new ArrayList<>();
+        List<LoadBalancerTargetsInfo> notNullDomainWildcard = new ArrayList<>();
         List<LoadBalancerTargetsInfo> notNullPath = new ArrayList<>();
         List<LoadBalancerTargetsInfo> defaultDomainAndPath = new ArrayList<>();
         /*
@@ -181,22 +184,49 @@ public class LoadBalancerInfoFactory extends AbstractAgentBaseContextFactory {
             boolean domainNotNull = !targetInfo.getPortSpec().getDomain()
                     .equalsIgnoreCase(LoadBalancerTargetPortSpec.DEFAULT);
             
+            String prefix = "*.";
+            String suffix = ".*";
+            boolean wildCard = targetInfo.getPortSpec().getDomain().startsWith(prefix)
+                    || targetInfo.getPortSpec().getDomain().endsWith(suffix);
+
             if (pathNotNull && domainNotNull) {
-                notNullDomainAndPath.add(targetInfo);
+                if (wildCard) {
+                    notNullDomainAndPathWildcard.add(targetInfo);
+                } else {
+                    notNullDomainAndPath.add(targetInfo);
+                }
             } else if (domainNotNull) {
-                notNullDomain.add(targetInfo);
+                if (wildCard) {
+                    notNullDomainWildcard.add(targetInfo);
+                } else {
+                    notNullDomain.add(targetInfo);
+                }
             } else if (pathNotNull) {
                 notNullPath.add(targetInfo);
             } else {
                 defaultDomainAndPath.add(targetInfo);
             }
         }
+
+        // put wildcards to the end and sort them
         toReturn.addAll(notNullDomainAndPath);
         toReturn.addAll(notNullDomain);
+        toReturn.addAll(sortByDomainName(notNullDomainAndPathWildcard));
+        toReturn.addAll(sortByDomainName(notNullDomainWildcard));
         toReturn.addAll(notNullPath);
         toReturn.addAll(defaultDomainAndPath);
 
         return toReturn;
+    }
+
+    protected List<LoadBalancerTargetsInfo> sortByDomainName(List<LoadBalancerTargetsInfo> targets) {
+        Collections.sort(targets, new Comparator<LoadBalancerTargetsInfo>() {
+            @Override
+            public int compare(LoadBalancerTargetsInfo s1, LoadBalancerTargetsInfo s2) {
+                return s1.getPortSpec().getPath().length() >= s2.getPortSpec().getPath().length() ? -1 : 1;
+            }
+        });
+        return targets;
     }
 
 

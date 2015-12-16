@@ -65,7 +65,7 @@ frontend ${listener.uuid}_frontend
             </#if>
     	</#if>
     	<#if backend.portSpec.path != "default">
-        acl ${backend.uuid}_path path_beg -i ${backend.portSpec.path}
+        	acl ${backend.uuid}_path path_beg -i ${backend.portSpec.path}
     	</#if>
     	use_backend ${listener.uuid}_${backend.uuid}_backend if <#if backend.portSpec.domain != "default">${backend.uuid}_host</#if> <#if backend.portSpec.path != "default">${backend.uuid}_path</#if>
         <#elseif backend.portSpec.domain == "default" && backend.portSpec.path == "default">
