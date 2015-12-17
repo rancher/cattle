@@ -205,9 +205,12 @@ public class ServiceCreateValidationFilter extends AbstractDefaultResourceManage
     }
 
     protected void validateLaunchConfigs(Service service, ApiRequest request) {
+        Map<String, Object> data = CollectionUtils.toMap(request.getRequestObject());
+        Object newName = data.get("name");
+        String serviceName = newName != null ? newName.toString() : service.getName();
         List<Map<String, Object>> launchConfigs = populateLaunchConfigs(service, request);
-        validateLaunchConfigNames(service, launchConfigs);
-        validateLaunchConfigsCircularRefs(service, launchConfigs);
+        validateLaunchConfigNames(service, serviceName, launchConfigs);
+        validateLaunchConfigsCircularRefs(service, serviceName, launchConfigs);
     }
 
 
@@ -237,8 +240,9 @@ public class ServiceCreateValidationFilter extends AbstractDefaultResourceManage
     }
 
 
-    protected void validateLaunchConfigsCircularRefs(Service service, List<Map<String, Object>> launchConfigs) {
-        Map<String, List<String>> launchConfigRefs = populateLaunchConfigRefs(service, launchConfigs);
+    protected void validateLaunchConfigsCircularRefs(Service service, String serviceName,
+            List<Map<String, Object>> launchConfigs) {
+        Map<String, List<String>> launchConfigRefs = populateLaunchConfigRefs(service, serviceName, launchConfigs);
         for (String launchConfigName : launchConfigRefs.keySet()) {
             validateLaunchConfigCircularRef(launchConfigName, launchConfigRefs, new ArrayList<String>());
         }
@@ -267,13 +271,13 @@ public class ServiceCreateValidationFilter extends AbstractDefaultResourceManage
     }
 
     @SuppressWarnings("unchecked")
-    protected Map<String, List<String>> populateLaunchConfigRefs(Service service,
+    protected Map<String, List<String>> populateLaunchConfigRefs(Service service, String serviceName,
             List<Map<String, Object>> launchConfigs) {
         Map<String, List<String>> launchConfigRefs = new HashMap<>();
         for (Map<String, Object> launchConfig : launchConfigs) {
             Object launchConfigName = launchConfig.get("name");
             if (launchConfigName == null) {
-                launchConfigName = service.getName();
+                launchConfigName = serviceName;
             }
             List<String> refs = new ArrayList<>();
             Object networkFromLaunchConfig = launchConfig
@@ -293,7 +297,8 @@ public class ServiceCreateValidationFilter extends AbstractDefaultResourceManage
     }
 
 
-    protected void validateLaunchConfigNames(Service service, List<Map<String, Object>> launchConfigs) {
+    protected void validateLaunchConfigNames(Service service, String serviceName,
+            List<Map<String, Object>> launchConfigs) {
         List<String> usedNames = new ArrayList<>();
         List<? extends Service> existingSvcs = objectManager.find(Service.class, SERVICE.ENVIRONMENT_ID,
                 service.getEnvironmentId(), SERVICE.REMOVED, null);
@@ -306,7 +311,7 @@ public class ServiceCreateValidationFilter extends AbstractDefaultResourceManage
         }
 
         List<String> namesToValidate = new ArrayList<>();
-        namesToValidate.add(service.getName());
+        namesToValidate.add(serviceName);
         for (Map<String, Object> launchConfig : launchConfigs) {
             Object name = launchConfig.get("name");
             if (name != null) {

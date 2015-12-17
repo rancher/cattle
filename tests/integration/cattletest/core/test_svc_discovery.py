@@ -506,6 +506,17 @@ def test_create_duplicated_services(client, context):
     assert e.value.error.code == 'NotUnique'
     assert e.value.error.fieldName == 'name'
 
+    # try to update the service with duplicated service name
+    service = client.create_service(name=random_str(),
+                                    environmentId=env.id,
+                                    launchConfig=launch_config)
+    service = client.wait_success(service)
+    with pytest.raises(ApiError) as e:
+        client.update(service, name=service_name)
+    assert e.value.error.status == 422
+    assert e.value.error.code == 'NotUnique'
+    assert e.value.error.fieldName == 'name'
+
     # remove the service and try to re-use its name
     client.wait_success(service1.remove())
     client.create_service(name=service_name,
