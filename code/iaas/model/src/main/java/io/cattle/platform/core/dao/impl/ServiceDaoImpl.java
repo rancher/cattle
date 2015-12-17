@@ -1,11 +1,19 @@
 package io.cattle.platform.core.dao.impl;
 
-import static io.cattle.platform.core.model.tables.ServiceTable.*;
+import static io.cattle.platform.core.model.tables.ServiceIndexTable.SERVICE_INDEX;
+import static io.cattle.platform.core.model.tables.ServiceTable.SERVICE;
 import io.cattle.platform.core.dao.ServiceDao;
 import io.cattle.platform.core.model.Service;
+import io.cattle.platform.core.model.ServiceIndex;
 import io.cattle.platform.db.jooq.dao.impl.AbstractJooqDao;
+import io.cattle.platform.object.ObjectManager;
+
+import javax.inject.Inject;
 
 public class ServiceDaoImpl extends AbstractJooqDao implements ServiceDao {
+
+    @Inject
+    ObjectManager objectManager;
 
     @Override
     public Service getServiceByExternalId(Long accountId, String externalId) {
@@ -14,5 +22,20 @@ public class ServiceDaoImpl extends AbstractJooqDao implements ServiceDao {
                 .and(SERVICE.REMOVED.isNull())
                 .and(SERVICE.EXTERNAL_ID.eq(externalId))
                 .fetchAny();
+    }
+
+    @Override
+    public ServiceIndex createServiceIndex(Service service, String launchConfigName, String serviceIndex) {
+        ServiceIndex serviceIndexObj = objectManager.findAny(ServiceIndex.class, SERVICE_INDEX.SERVICE_ID,
+                service.getId(),
+                SERVICE_INDEX.LAUNCH_CONFIG_NAME, launchConfigName, SERVICE_INDEX.SERVICE_INDEX_, serviceIndex,
+                SERVICE_INDEX.REMOVED, null);
+        if (serviceIndexObj == null) {
+            serviceIndexObj = objectManager.create(ServiceIndex.class, SERVICE_INDEX.SERVICE_ID,
+                    service.getId(),
+                    SERVICE_INDEX.LAUNCH_CONFIG_NAME, launchConfigName, SERVICE_INDEX.SERVICE_INDEX_, serviceIndex,
+                    SERVICE_INDEX.ACCOUNT_ID, service.getAccountId());
+        }
+        return serviceIndexObj;
     }
 }

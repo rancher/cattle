@@ -197,6 +197,66 @@ def test_health_check_create_service(super_client, context, client):
     wait_for(lambda: len(service.serviceExposeMaps()) > 1)
 
 
+def test_health_check_ip_retain(super_client, context, client):
+    env = client.create_environment(name='env-' + random_str())
+    service = client.create_service(name='test', launchConfig={
+        'imageUuid': context.image_uuid,
+        'healthCheck': {
+            'port': 80,
+        }
+    }, environmentId=env.id, scale=1, retainIp=True)
+
+    service = client.wait_success(client.wait_success(service).activate())
+    assert service.state == 'active'
+
+    expose_map = find_one(service.serviceExposeMaps)
+    c1 = super_client.reload(expose_map.instance())
+    ip1 = c1.primaryIpAddress
+    hci = find_one(c1.healthcheckInstances)
+    hcihm = find_one(hci.healthcheckInstanceHostMaps)
+    agent = _get_agent_for_container(c1)
+
+    assert hcihm.healthState == 'initializing'
+    assert c1.healthState == 'initializing'
+
+    ts = int(time.time())
+    client = _get_agent_client(agent)
+    se = client.create_service_event(externalTimestamp=ts,
+                                     reportedHealth='UP',
+                                     healthcheckUuid=hcihm.uuid)
+    super_client.wait_success(se)
+    hcihm = super_client.wait_success(super_client.reload(hcihm))
+    assert hcihm.healthState == 'healthy'
+    wait_for(lambda: super_client.reload(c1).healthState == 'healthy')
+
+    ts = int(time.time())
+    client = _get_agent_client(agent)
+    se = client.create_service_event(externalTimestamp=ts,
+                                     reportedHealth='Something Bad',
+                                     healthcheckUuid=hcihm.uuid)
+
+    se = super_client.wait_success(se)
+    assert se.state == 'created'
+    assert se.accountId == c1.accountId
+    assert se.instanceId == c1.id
+    assert se.healthcheckInstanceId == hci.id
+
+    hcihm = super_client.wait_success(super_client.reload(hcihm))
+    assert hcihm.healthState == 'unhealthy'
+    assert hcihm.externalTimestamp == ts
+
+    wait_for(lambda: super_client.reload(c1).healthState == 'unhealthy')
+    wait_for(lambda: len(service.serviceExposeMaps()) > 1)
+    super_client.wait_success(c1)
+    for e_map in service.serviceExposeMaps():
+        if e_map.instance().id == c1.id:
+            continue
+        c2 = super_client.wait_success(e_map.instance())
+        assert c2.name == c1.name
+        assert c2.primaryIpAddress == ip1
+        break
+
+
 def test_health_check_init_timeout(super_client, context, client):
     env = client.create_environment(name='env-' + random_str())
     service = client.create_service(name='test', launchConfig={

@@ -1,12 +1,14 @@
 package io.cattle.platform.servicediscovery.service.impl;
 
 import static io.cattle.platform.core.model.tables.EnvironmentTable.ENVIRONMENT;
+import static io.cattle.platform.core.model.tables.ServiceIndexTable.SERVICE_INDEX;
 import static io.cattle.platform.core.model.tables.SubnetTable.SUBNET;
 import io.cattle.platform.allocator.service.AllocatorService;
 import io.cattle.platform.core.addon.LoadBalancerServiceLink;
 import io.cattle.platform.core.addon.PublicEndpoint;
 import io.cattle.platform.core.addon.ServiceLink;
 import io.cattle.platform.core.constants.CommonStatesConstants;
+import io.cattle.platform.core.constants.HealthcheckConstants;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.constants.LoadBalancerConstants;
 import io.cattle.platform.core.constants.NetworkConstants;
@@ -21,6 +23,7 @@ import io.cattle.platform.core.model.Label;
 import io.cattle.platform.core.model.Network;
 import io.cattle.platform.core.model.Service;
 import io.cattle.platform.core.model.ServiceConsumeMap;
+import io.cattle.platform.core.model.ServiceIndex;
 import io.cattle.platform.core.model.Subnet;
 import io.cattle.platform.core.util.PortSpec;
 import io.cattle.platform.deferred.util.DeferredUtils;
@@ -32,6 +35,7 @@ import io.cattle.platform.lock.LockCallbackNoReturn;
 import io.cattle.platform.lock.LockManager;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.process.ObjectProcessManager;
+import io.cattle.platform.object.process.StandardProcess;
 import io.cattle.platform.object.resource.ResourceMonitor;
 import io.cattle.platform.object.resource.ResourcePredicate;
 import io.cattle.platform.object.util.DataAccessor;
@@ -112,27 +116,36 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
 
 
     @Override
-    public List<Integer> getServiceInstanceUsedOrderIds(Service service, String launchConfigName) {
+
+    public List<Integer> getServiceInstanceUsedSuffixes(Service service, String launchConfigName) {
         Environment env = objectManager.findOne(Environment.class, ENVIRONMENT.ID, service.getEnvironmentId());
         // get all existing instances to check if the name is in use by the instance of the same service
-        List<Integer> usedIds = new ArrayList<>();
-        // list all the instances
-        List<? extends Instance> serviceInstances = exposeMapDao.listServiceManagedInstances(service.getId());
-        
+        List<Integer> usedSuffixes = new ArrayList<>();
+        List<? extends Instance> serviceInstances = exposeMapDao.listServiceManagedInstances(service, launchConfigName);
         for (Instance instance : serviceInstances) {
-            if (ServiceDiscoveryUtil.isServiceGeneratedName(env, service, instance)) {
-                
+            // exclude unhealthy instances as they are going to be replaced
+            if (StringUtils.equals(instance.getHealthState(), HealthcheckConstants.HEALTH_STATE_UNHEALTHY)
+                    || StringUtils.equals(instance.getHealthState(),
+                            HealthcheckConstants.HEALTH_STATE_UPDATING_UNHEALTHY)) {
+                continue;
+            }
+            String serviceSuffix = DataAccessor.fieldString(instance,
+                    ServiceDiscoveryConstants.FIELD_SERVICE_INSTANCE_SERVICE_INDEX);
+            if (serviceSuffix != null) {
+                usedSuffixes.add(Integer.valueOf(serviceSuffix));
+            } else if (ServiceDiscoveryUtil.isServiceGeneratedName(env, service, instance.getName())) {
+                // legacy code - to support old data where service suffix wasn't set
                 String configName = launchConfigName == null
                         || launchConfigName.equals(ServiceDiscoveryConstants.PRIMARY_LAUNCH_CONFIG_NAME) ? ""
                         : launchConfigName + "_";
                 
                 String id = instance.getName().replace(String.format("%s_%s_%s", env.getName(), service.getName(), configName), "");
                 if (id.matches("\\d+")) {
-                    usedIds.add(Integer.valueOf(id));
+                    usedSuffixes.add(Integer.valueOf(id));
                 }
             }
         }
-        return usedIds;
+        return usedSuffixes;
     }
 
     protected String getLoadBalancerName(Service service) {
@@ -194,19 +207,26 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
         consumeMapDao.createServiceLinks(linksToCreate);
     }
 
-    protected String getServiceVIP(Service service, String requestedVip) {
+    protected String allocateVip(Service service) {
         if (service.getKind().equalsIgnoreCase(KIND.LOADBALANCERSERVICE.name())
                 || service.getKind().equalsIgnoreCase(KIND.SERVICE.name())
                 || service.getKind().equalsIgnoreCase(KIND.DNSSERVICE.name())) {
             Subnet vipSubnet = getServiceVipSubnet(service);
-            PooledResourceOptions options = new PooledResourceOptions();
-            if (requestedVip != null) {
-                options.setRequestedItem(requestedVip);
-            }
-            PooledResource resource = poolManager.allocateOneResource(vipSubnet, service, options);
-            if (resource != null) {
-                return resource.getName();
-            }
+            String requestedVip = service.getVip();
+            return allocateIpForService(service, vipSubnet, requestedVip);
+        }
+        return null;
+    }
+
+    @Override
+    public String allocateIpForService(Object owner, Subnet subnet, String requestedIp) {
+        PooledResourceOptions options = new PooledResourceOptions();
+        if (requestedIp != null) {
+            options.setRequestedItem(requestedIp);
+        }
+        PooledResource resource = poolManager.allocateOneResource(subnet, owner, options);
+        if (resource != null) {
+            return resource.getName();
         }
         return null;
     }
@@ -232,9 +252,8 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
 
     @Override
     public void setVIP(Service service) {
-        String requestedVip = service.getVip();
-        String vip = getServiceVIP(service, requestedVip);
-        if (vip != null || requestedVip != null) {
+        String vip = allocateVip(service);
+        if (vip != null) {
             service.setVip(vip);
             objectManager.persist(service);
         }
@@ -477,5 +496,37 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
         String token = ApiKeyFilter.generateKeys()[1];
         DataAccessor.fields(service).withKey(ServiceDiscoveryConstants.FIELD_TOKEN).set(token);
         objectManager.persist(service);
+    }
+
+    @Override
+    public void removeServiceIndexes(Service service) {
+        for (ServiceIndex serviceIndex : objectManager.find(ServiceIndex.class, SERVICE_INDEX.SERVICE_ID, service.getId(),
+                SERVICE_INDEX.REMOVED, null)) {
+            objectProcessManager.scheduleStandardProcessAsync(StandardProcess.REMOVE, serviceIndex, null);
+        }
+    }
+
+    @Override
+    public void allocateIpToServiceIndex(ServiceIndex serviceIndex) {
+        if (StringUtils.isEmpty(serviceIndex.getAddress())) {
+            Network ntwk = ntwkDao.getNetworkForObject(serviceIndex, NetworkConstants.KIND_HOSTONLY);
+            if (ntwk != null) {
+                Subnet subnet = ntwkDao.addManagedNetworkSubnet(ntwk);
+                String ipAddress = allocateIpForService(serviceIndex, subnet, null);
+                serviceIndex.setAddress(ipAddress);
+                objectManager.persist(serviceIndex);
+            }
+        }
+    }
+
+    @Override
+    public void releaseIpFromServiceIndex(ServiceIndex serviceIndex) {
+        if (!StringUtils.isEmpty(serviceIndex.getAddress())) {
+            Network ntwk = ntwkDao.getNetworkForObject(serviceIndex, NetworkConstants.KIND_HOSTONLY);
+            if (ntwk != null) {
+                Subnet subnet = ntwkDao.addManagedNetworkSubnet(ntwk);
+                poolManager.releaseResource(subnet, serviceIndex);
+            }
+        }
     }
 }

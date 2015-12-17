@@ -25,7 +25,6 @@ import io.cattle.platform.servicediscovery.api.constants.ServiceDiscoveryConstan
 import io.cattle.platform.servicediscovery.api.dao.ServiceExposeMapDao;
 import io.cattle.platform.servicediscovery.service.ServiceDiscoveryService;
 
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -107,6 +106,30 @@ public class ServiceExposeMapDaoImpl extends AbstractJooqDao implements ServiceE
                                 CommonStatesConstants.ACTIVE, CommonStatesConstants.REQUESTED))
                         .and(INSTANCE.STATE.notIn(CommonStatesConstants.PURGING, CommonStatesConstants.PURGED,
                                 CommonStatesConstants.REMOVED, CommonStatesConstants.REMOVING)))
+                .fetchInto(InstanceRecord.class);
+    }
+
+    @Override
+    public List<? extends Instance> listServiceManagedInstances(Service service, String launchConfigName) {
+        Condition condition = null;
+        if (launchConfigName == null || launchConfigName.equals(service.getName())
+                || launchConfigName.equals(ServiceDiscoveryConstants.PRIMARY_LAUNCH_CONFIG_NAME)) {
+            condition = SERVICE_EXPOSE_MAP.DNS_PREFIX.isNull();
+        } else {
+            condition = SERVICE_EXPOSE_MAP.DNS_PREFIX.eq(launchConfigName);
+        }
+        return create()
+                .select(INSTANCE.fields())
+                .from(INSTANCE)
+                .join(SERVICE_EXPOSE_MAP)
+                .on(SERVICE_EXPOSE_MAP.INSTANCE_ID.eq(INSTANCE.ID)
+                        .and(SERVICE_EXPOSE_MAP.SERVICE_ID.eq(service.getId()))
+                        .and(SERVICE_EXPOSE_MAP.MANAGED.eq(true))
+                        .and(SERVICE_EXPOSE_MAP.STATE.in(CommonStatesConstants.ACTIVATING,
+                                CommonStatesConstants.ACTIVE, CommonStatesConstants.REQUESTED))
+                        .and(INSTANCE.STATE.notIn(CommonStatesConstants.PURGING, CommonStatesConstants.PURGED,
+                                CommonStatesConstants.REMOVED, CommonStatesConstants.REMOVING))
+                        .and(condition))
                 .fetchInto(InstanceRecord.class);
     }
 
@@ -194,14 +217,6 @@ public class ServiceExposeMapDaoImpl extends AbstractJooqDao implements ServiceE
             return results.get(0);
         }
         return null;
-    }
-
-    @Override
-    public boolean isActiveMap(ServiceExposeMap serviceExposeMap) {
-        List<String> validStates = Arrays.asList(CommonStatesConstants.ACTIVATING,
-                CommonStatesConstants.ACTIVE, CommonStatesConstants.UPDATING_ACTIVE, CommonStatesConstants.REQUESTED);
-        return (validStates.contains(serviceExposeMap.getState()));
-
     }
 
     @Override

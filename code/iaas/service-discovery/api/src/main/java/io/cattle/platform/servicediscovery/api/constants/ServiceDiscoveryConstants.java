@@ -10,7 +10,6 @@ public class ServiceDiscoveryConstants {
     }
 
     public static final String TYPE_ENVIRONMENT = "environment";
-
     public static final String FIELD_SCALE = "scale";
     public static final String FIELD_NETWORK_ID = "networkId";
     public static final String FIELD_SERVICE_ID = "serviceId";
@@ -41,6 +40,9 @@ public class ServiceDiscoveryConstants {
     public static final String FIELD_PUBLIC_ENDPOINTS = "publicEndpoints";
     public static final String FIELD_RESTART = "restart";
     public static final String FIELD_TOKEN = "token";
+    public static final String FIELD_SERVICE_INSTANCE_SERVICE_INDEX_ID = "serviceIndexId";
+    public static final String FIELD_SERVICE_RETAIN_IP = "retainIp";
+    public static final String FIELD_SERVICE_INSTANCE_SERVICE_INDEX = "serviceIndex";
 
     public static final String STACK_FIELD_DOCKER_COMPOSE = "dockerCompose";
     public static final String STACK_FIELD_RANCHER_COMPOSE = "rancherCompose";
@@ -79,6 +81,7 @@ public class ServiceDiscoveryConstants {
     public static final String PROCESS_SERVICE_CANCEL_ROLLBACK = "service.cancelrollback";
     public static final String PROCESS_SERVICE_FINISH_UPGRADE = "service.finishupgrade";
     public static final String PROCESS_SERVICE_RESTART = "service." + ACTION_SERVICE_RESTART;
+    public static final String PROCESS_SERVICE_INDEX_REMOVE = "serviceindex.remove";
 
     public static final String LINK_DOCKER_COMPOSE_CONFIG = "dockerComposeConfig";
     public static final String LINK_RANCHER_COMPOSE_CONFIG = "rancherComposeConfig";

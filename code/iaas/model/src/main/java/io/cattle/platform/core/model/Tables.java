@@ -294,6 +294,11 @@ public class Tables {
 	public static final io.cattle.platform.core.model.tables.ServiceExposeMapTable SERVICE_EXPOSE_MAP = io.cattle.platform.core.model.tables.ServiceExposeMapTable.SERVICE_EXPOSE_MAP;
 
 	/**
+	 * The table cattle.service_index
+	 */
+	public static final io.cattle.platform.core.model.tables.ServiceIndexTable SERVICE_INDEX = io.cattle.platform.core.model.tables.ServiceIndexTable.SERVICE_INDEX;
+
+	/**
 	 * The table cattle.setting
 	 */
 	public static final io.cattle.platform.core.model.tables.SettingTable SETTING = io.cattle.platform.core.model.tables.SettingTable.SETTING;

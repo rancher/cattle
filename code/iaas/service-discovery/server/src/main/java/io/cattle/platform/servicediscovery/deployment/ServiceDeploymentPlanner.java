@@ -1,10 +1,13 @@
 package io.cattle.platform.servicediscovery.deployment;
 
+import static io.cattle.platform.core.model.tables.ServiceIndexTable.SERVICE_INDEX;
 import io.cattle.platform.core.addon.InstanceHealthCheck;
 import io.cattle.platform.core.addon.InstanceHealthCheck.Strategy;
 import io.cattle.platform.core.addon.RecreateOnQuorumStrategyConfig;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.model.Service;
+import io.cattle.platform.core.model.ServiceIndex;
+import io.cattle.platform.object.process.StandardProcess;
 import io.cattle.platform.servicediscovery.api.constants.ServiceDiscoveryConstants;
 import io.cattle.platform.servicediscovery.api.util.ServiceDiscoveryUtil;
 import io.cattle.platform.servicediscovery.deployment.impl.DeploymentManagerImpl.DeploymentServiceContext;
@@ -15,6 +18,7 @@ import io.cattle.platform.servicediscovery.deployment.impl.healthaction.Recreate
 import io.cattle.platform.servicediscovery.deployment.impl.unit.DeploymentUnit;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -60,6 +64,7 @@ public abstract class ServiceDeploymentPlanner {
             healthActionHandler.populateHealthyUnhealthyUnits(this.healthyUnits, this.unhealthyUnits,
                     healthyUnhealthyUnits);
         }
+        getUsedServiceIndexes(true);
     }
 
     protected void setHealthCheckAction(List<Service> services, DeploymentServiceContext context) {
@@ -88,6 +93,36 @@ public abstract class ServiceDeploymentPlanner {
                 }
             }
         }
+    }
+
+    protected Map<String, List<Long>> getUsedServiceIndexes(boolean cleanupDuplicates) {
+        // revamp healthy/bad units by excluding units with duplicated indexes
+        Map<String, List<Long>> launchConfigToServiceIndexes = new HashMap<>();
+        Iterator<DeploymentUnit> it = healthyUnits.iterator();
+        while (it.hasNext()) {
+            DeploymentUnit healthyUnit = it.next();
+            for (DeploymentUnitInstance instance : healthyUnit.getDeploymentUnitInstances()) {
+                Long serviceIndex = instance.getServiceIndex();
+                if (serviceIndex == null) {
+                    continue;
+                }
+                String launchConfigName = instance.getLaunchConfigName();
+                List<Long> usedServiceIndexes = launchConfigToServiceIndexes.get(launchConfigName);
+                if (usedServiceIndexes == null) {
+                    usedServiceIndexes = new ArrayList<>();
+                }
+                if (cleanupDuplicates) {
+                    if (usedServiceIndexes.contains(serviceIndex)) {
+                        badUnits.add(healthyUnit);
+                        it.remove();
+                    }
+                }
+
+                usedServiceIndexes.add(serviceIndex);
+                launchConfigToServiceIndexes.put(launchConfigName, usedServiceIndexes);
+            }
+        }
+        return launchConfigToServiceIndexes;
     }
 
     public boolean isHealthcheckInitiailizing() {
@@ -178,5 +213,25 @@ public abstract class ServiceDeploymentPlanner {
         allUnits.addAll(this.unhealthyUnits);
         allUnits.addAll(this.badUnits);
         return allUnits;
+    }
+
+    public void cleanupUnusedServiceIndexes() {
+        Map<String, List<Long>> launchConfigToServiceIndexes = getUsedServiceIndexes(false);
+
+        for (ServiceIndex serviceIndex : context.objectManager.find(ServiceIndex.class, SERVICE_INDEX.SERVICE_ID, services
+                .get(0).getId(), SERVICE_INDEX.REMOVED, null)) {
+            boolean remove = false;
+            List<Long> usedServiceIndexes = launchConfigToServiceIndexes.get(serviceIndex.getLaunchConfigName());
+            if (usedServiceIndexes == null) {
+                remove = true;
+            } else {
+                if (!usedServiceIndexes.contains(serviceIndex.getId())) {
+                    remove = true;
+                }
+            }
+            if (remove) {
+                context.objectProcessManager.scheduleStandardProcess(StandardProcess.REMOVE, serviceIndex, null);
+            }
+        }
     }
 }

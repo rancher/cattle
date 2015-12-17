@@ -516,7 +516,7 @@ def test_volumes_service_links_scale_two(client, context):
                                     secondaryLaunchConfigs=[secondary_lc])
     service = client.wait_success(service)
 
-    service = client.wait_success(service.activate(), 120)
+    service = client.wait_success(service.activate(), 160)
 
     assert service.state == "active"
 
@@ -563,20 +563,15 @@ def test_remove_active_service(client, context):
     _validate_compose_instance_removed(client, service, env)
 
 
-def _wait_until_active_map_count(service, count, client, timeout=30):
-    # need this function because agent state changes
-    # active->deactivating->removed
-    start = time.time()
-    instance_service_map = client. \
-        list_serviceExposeMap(serviceId=service.id, state="active")
-    while len(instance_service_map) != count:
-        time.sleep(.5)
-        instance_service_map = client. \
-            list_serviceExposeMap(serviceId=service.id, state="active")
-        if time.time() - start > timeout:
-            assert 'Timeout waiting for map to be removed.'
+def _wait_until_active_map_count(service, count, client):
+    def wait_for_map_count(service):
+        m = client. \
+            list_serviceExposeMap(serviceId=service.id, state='active')
+        return len(m) == count
 
-    return
+    wait_for_condition(client, service, wait_for_map_count)
+    return client. \
+        list_serviceExposeMap(serviceId=service.id, state='active')
 
 
 def test_remove_environment_w_active_svcs(client, context):
@@ -669,7 +664,7 @@ def test_validate_service_scaleup_scaledown(client, context):
     instance32 = client.update(instance31, name='newName')
 
     # scale up the service
-    # instance 2 should get started; env_service_3 name should be utilized
+    # instance 2 should get started
     service = client.update(service, scale=4, name=service.name)
     service = client.wait_success(service, 120)
     assert service.state == "active"
@@ -678,7 +673,7 @@ def test_validate_service_scaleup_scaledown(client, context):
     instance12 = _validate_compose_instance_start(client, service, env, "1")
     instance22 = _validate_compose_instance_start(client, service, env, "2")
     instance32 = _validate_instance_start(service, client, instance32.name)
-    instance41 = _validate_compose_instance_start(client, service, env, "3")
+    instance41 = _validate_compose_instance_start(client, service, env, "4")
 
     assert instance41.createIndex > instance32.createIndex
     assert instance32.createIndex > instance22.createIndex
@@ -688,13 +683,13 @@ def test_validate_service_scaleup_scaledown(client, context):
     service = client.update(service, scale=0, name=service.name)
     service = client.wait_success(service, 120)
     assert service.state == "active"
-    # validate that only 2 service instance mappings exist
+    # validate 0 service instance mappings
     instance_service_map = client. \
         list_serviceExposeMap(serviceId=service.id, state="active")
     assert len(instance_service_map) == 0
 
     # scale up service again, and validate
-    # that the new instance got unique index
+    # that the new instance got unique create index
     service = client.update(service, scale=4, name=service.name)
     service = client.wait_success(service, 120)
     instance42 = _validate_compose_instance_start(client, service, env, "4")
@@ -803,7 +798,7 @@ def test_service_rename(client, context):
     assert service2.name == new_name
     _validate_compose_instance_start(client, service1, env, "1")
     _validate_compose_instance_start(client, service1, env, "2")
-    _validate_compose_instance_start(client, service2, env, "1")
+    _validate_compose_instance_start(client, service2, env, "3")
 
 
 def test_env_rename(client, context):
@@ -1009,7 +1004,7 @@ def test_sidekick_restart_instances(client, context):
     instance22 = _validate_compose_instance_start(client, service,
                                                   env, "2", "secondary")
 
-    _wait_until_active_map_count(service, 4, client, timeout=30)
+    _wait_until_active_map_count(service, 4, client)
 
     # stop instance11, destroy instance12 and call update on a service1
     # scale should be restored
@@ -1024,7 +1019,7 @@ def test_sidekick_restart_instances(client, context):
     _validate_compose_instance_start(client, service, env, "1", "secondary")
     _validate_compose_instance_start(client, service, env, "2", "secondary")
 
-    _wait_until_active_map_count(service, 4, client, timeout=30)
+    _wait_until_active_map_count(service, 4, client)
 
 
 def test_sidekick_scaleup(client, context):
@@ -1052,8 +1047,8 @@ def test_sidekick_scaleup(client, context):
     service = client.update(service, scale=2, name=service.name)
     _wait_compose_instance_start(client, service, env, "1")
     _wait_compose_instance_start(client, service, env, "2")
-    _wait_compose_instance_start(client, service, env, "1", "secondary")
-    _wait_compose_instance_start(client, service, env, "2", "secondary")
+    _wait_compose_instance_start(client, service, env, "1")
+    _wait_compose_instance_start(client, service, env, "2")
 
     service = client.wait_success(service, 120)
     assert service.state == "active"
@@ -1064,45 +1059,37 @@ def test_sidekick_scaleup(client, context):
     assert len(instance_service_map1) == 4
 
 
-def _validate_service_ip_map(client, service, ip, state, timeout=30):
-    start = time.time()
-    instance_service_map = client. \
-        list_serviceExposeMap(serviceId=service.id, ipAddress=ip, state=state)
-    while len(instance_service_map) < 1:
-        time.sleep(.5)
-        instance_service_map = client. \
-            list_serviceExposeMap(serviceId=service.id,
-                                  ipAddress=ip, state=state)
-        if time.time() - start > timeout:
-            assert 'Timeout waiting for map to be in correct state'
+def _validate_service_ip_map(client, service, ip, state):
+    def wait_for_map_count(service):
+        m = client. \
+            list_serviceExposeMap(serviceId=service.id, ipAddress=ip,
+                                  state=state)
+        return len(m) >= 1
 
-
-def _validate_service_instance_map_count(client, service,
-                                         state, count, timeout=30):
-    start = time.time()
-    instance_service_map = client. \
+    wait_for_condition(client, service, wait_for_map_count)
+    return client. \
         list_serviceExposeMap(serviceId=service.id, state=state)
-    while len(instance_service_map) < count:
-        time.sleep(.5)
-        instance_service_map = client. \
+
+
+def _validate_service_instance_map_count(client, service, state, count):
+    def wait_for_map_count(service):
+        m = client. \
             list_serviceExposeMap(serviceId=service.id, state=state)
-        if time.time() - start > timeout:
-            assert 'Timeout waiting for map to be in correct state'
+        return len(m) >= count
+
+    wait_for_condition(client, service, wait_for_map_count)
+    return client. \
+        list_serviceExposeMap(serviceId=service.id, state=state)
 
 
-def _validate_service_hostname_map(client, service,
-                                   host_name, state, timeout=30):
-    start = time.time()
-    instance_service_map = client. \
-        list_serviceExposeMap(serviceId=service.id,
-                              hostname=host_name, state=state)
-    while len(instance_service_map) < 1:
-        time.sleep(.5)
-        instance_service_map = client. \
+def _validate_service_hostname_map(client, service, host_name, state):
+    def wait_for_map_count(service):
+        m = client. \
             list_serviceExposeMap(serviceId=service.id,
                                   hostname=host_name, state=state)
-        if time.time() - start > timeout:
-            assert 'Timeout waiting for map to be in correct state'
+        return len(m) >= 1
+
+    wait_for_condition(client, service, wait_for_map_count)
 
 
 def test_external_service_w_ips(client, context):
@@ -1490,18 +1477,14 @@ def test_network_from_service(client, context):
     assert s22_container.networkMode == 'managed'
 
 
-def _wait_compose_instance_start(client, service, env, number, timeout=30):
-    start = time.time()
-    instances = client. \
-        list_container(name=env.name + "_" + service.name + "_" + number,
-                       state="running")
-    while len(instances) != 1:
-        time.sleep(.5)
+def _wait_compose_instance_start(client, service, env, number):
+    def wait_instance_state(service):
         instances = client. \
             list_container(name=env.name + "_" + service.name + "_" + number,
                            state="running")
-        if time.time() - start > timeout:
-            assert 'Timeout waiting for instance to become running.'
+        return len(instances) >= 1
+
+    wait_for_condition(client, service, wait_instance_state)
 
 
 def test_service_affinity_rules(super_client, new_context):
@@ -1844,7 +1827,7 @@ def test_validate_create_only_containers(client, context):
     _instance_remove(instance3, client)
 
     # wait for reconcile
-    _wait_until_active_map_count(service, 3, client, timeout=30)
+    _wait_until_active_map_count(service, 3, client)
     service = client.wait_success(service)
     assert service.state == "active"
 
@@ -1866,13 +1849,13 @@ def test_validate_create_only_containers(client, context):
 
     # destroy instance from stopped state, and validate it was recreated
     _instance_remove(instance1, client)
-    _wait_until_active_map_count(service, 3, client, timeout=30)
+    _wait_until_active_map_count(service, 3, client)
     service = client.wait_success(service)
     assert service.state == "active"
     _wait_for_compose_instance_start(client, service, env, "1")
 
 
-def test_sidekick_destroy_instance_indirect_ref(client, context):
+def test_indirect_ref_sidekick_destroy_instance(client, context):
     env = _create_stack(client)
 
     image_uuid = context.image_uuid
@@ -1902,7 +1885,7 @@ def test_sidekick_destroy_instance_indirect_ref(client, context):
                                                   service,
                                                   env, "1", "secondary1")
 
-    _wait_until_active_map_count(service, 3, client, timeout=30)
+    _wait_until_active_map_count(service, 3, client)
 
     # destroy secondary1 instance and wait for the service to reconcile
     _instance_remove(instance13, client)
@@ -1912,7 +1895,7 @@ def test_sidekick_destroy_instance_indirect_ref(client, context):
     _validate_compose_instance_start(client, service, env, "1", "secondary")
     _validate_compose_instance_start(client, service, env, "1", "secondary1")
 
-    _wait_until_active_map_count(service, 3, client, timeout=30)
+    _wait_until_active_map_count(service, 3, client)
     # validate that the primary and secondary instances got recreated
     instance11 = client.reload(instance11)
     assert instance11.state == 'removed'
@@ -2156,7 +2139,7 @@ def test_validate_scaledown_updating(client, context):
     service = client.wait_success(service, 120)
     assert service.state == "active"
     assert service.scale == 1
-    _wait_until_active_map_count(service, 1, client, timeout=30)
+    _wait_until_active_map_count(service, 1, client)
 
 
 def test_stop_network_from_container(client, context, super_client):
@@ -2250,7 +2233,7 @@ def test_remove_network_from_container(client, context, super_client):
         lambda x: 'State is: ' + x.state)
 
     service = client.wait_success(service)
-    _wait_until_active_map_count(service, 2, client, timeout=30)
+    _wait_until_active_map_count(service, 2, client)
 
 
 def test_metadata(client, context, super_client):
@@ -2608,6 +2591,54 @@ def test_update_port_endpoint(new_context):
         client.reload(host1).publicEndpoints) == 1)
     endpoints = client.reload(host1).publicEndpoints
     _validate_endpoint(endpoints, port2, hosts[0], svc)
+
+
+def test_ip_retain(client, context, super_client):
+    env = _create_stack(client)
+
+    image_uuid = context.image_uuid
+    launch_config = {"imageUuid": image_uuid}
+
+    svc = client.create_service(name=random_str(),
+                                environmentId=env.id,
+                                launchConfig=launch_config,
+                                scale=1,
+                                retainIp=True)
+    svc = client.wait_success(svc)
+    assert svc.state == "inactive"
+
+    env.activateservices()
+    svc = client.wait_success(svc, 120)
+    assert svc.state == "active"
+
+    c1 = _wait_for_compose_instance_start(client, svc, env, "1")
+    c1 = super_client.reload(c1)
+    ip1 = c1.primaryIpAddress
+
+    # remove instance and
+    # check that c1 and c2 got the same ip
+    _instance_remove(c1, client)
+    _wait_until_active_map_count(svc, 1, client)
+    svc = client.wait_success(svc)
+    assert svc.state == "active"
+
+    c2 = _wait_for_compose_instance_start(client, svc, env, "1")
+
+    c2 = super_client.reload(c2)
+    ip2 = c2.primaryIpAddress
+    assert c1.id != c2.id
+    assert ip1 == ip2
+
+    # upgrade the service and
+    # check that c3 and c2 got the same ip
+    strategy = {"launchConfig": launch_config,
+                "intervalMillis": 100}
+    svc.upgrade_action(inServiceStrategy=strategy)
+    client.wait_success(svc)
+    c3 = _wait_for_compose_instance_start(client, svc, env, "1")
+    ip3 = c3.primaryIpAddress
+    assert c2.id != c3.id
+    assert ip2 == ip3
 
 
 def _get_instance_for_service(super_client, serviceId):

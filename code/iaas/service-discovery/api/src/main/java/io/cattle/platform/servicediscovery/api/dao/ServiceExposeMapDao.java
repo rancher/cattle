@@ -24,6 +24,8 @@ public interface ServiceExposeMapDao {
 
     List<? extends Instance> listServiceManagedInstances(long serviceId);
 
+    List<? extends Instance> listServiceManagedInstances(Service service, String launchConfigName);
+
     ServiceExposeMap findInstanceExposeMap(Instance instance);
 
     ServiceExposeMap createServiceInstanceMap(Service service, Instance instance, boolean managed);
@@ -43,8 +45,6 @@ public interface ServiceExposeMapDao {
     List<? extends ServiceExposeMap> getUnmanagedServiceInstanceMapsToRemove(long serviceId);
 
     Host getHostForInstance(long instanceId);
-
-    boolean isActiveMap(ServiceExposeMap serviceExposeMap);
 
     ServiceExposeMap getServiceHostnameExposeMap(Service service, String hostName);
 

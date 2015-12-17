@@ -199,7 +199,6 @@ public class InstanceTable extends org.jooq.impl.TableImpl<io.cattle.platform.co
 	/**
 	 * The column <code>cattle.instance.health_updated</code>.
 	 */
-
 	public final org.jooq.TableField<io.cattle.platform.core.model.tables.records.InstanceRecord, java.util.Date> HEALTH_UPDATED = createField("health_updated", org.jooq.impl.SQLDataType.TIMESTAMP.asConvertedDataType(new io.cattle.platform.db.jooq.converter.DateConverter()), this, "");
 
 	/**

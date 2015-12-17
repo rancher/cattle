@@ -4,14 +4,17 @@ import static io.cattle.platform.core.model.tables.InstanceHostMapTable.INSTANCE
 import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.HealthcheckConstants;
 import io.cattle.platform.core.constants.InstanceConstants;
+import io.cattle.platform.core.model.Environment;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.InstanceHostMap;
 import io.cattle.platform.core.model.Service;
 import io.cattle.platform.core.model.ServiceExposeMap;
+import io.cattle.platform.core.model.ServiceIndex;
 import io.cattle.platform.docker.constants.DockerInstanceConstants;
 import io.cattle.platform.engine.process.impl.ProcessCancelException;
 import io.cattle.platform.object.process.StandardProcess;
 import io.cattle.platform.object.resource.ResourcePredicate;
+import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.process.common.util.ProcessUtils;
 import io.cattle.platform.servicediscovery.api.constants.ServiceDiscoveryConstants;
 import io.cattle.platform.servicediscovery.api.resource.ServiceDiscoveryConfigItem;
@@ -32,6 +35,7 @@ public class DefaultDeploymentUnitInstance extends DeploymentUnitInstance implem
     protected String instanceName;
     protected boolean startOnce;
     protected Instance instance;
+    protected long serviceIndexId;
 
     public DefaultDeploymentUnitInstance(DeploymentServiceContext context, String uuid,
             Service service, String instanceName, Instance instance, Map<String, String> labels, String launchConfigName) {
@@ -42,6 +46,7 @@ public class DefaultDeploymentUnitInstance extends DeploymentUnitInstance implem
             exposeMap = context.exposeMapDao.findInstanceExposeMap(this.instance);
         }
         setStartOnce(service, launchConfigName);
+        setServiceIndexId();
     }
 
     @SuppressWarnings("unchecked")
@@ -117,6 +122,12 @@ public class DefaultDeploymentUnitInstance extends DeploymentUnitInstance implem
                 launchConfigData.put(InstanceConstants.FIELD_HOSTNAME, overrideName);
             }
         }
+
+        ServiceIndex serviceIndexObj = context.objectManager.loadResource(ServiceIndex.class, this.serviceIndexId);
+
+        launchConfigData.put(ServiceDiscoveryConstants.FIELD_SERVICE_INSTANCE_SERVICE_INDEX_ID, serviceIndexObj.getId());
+        launchConfigData.put(ServiceDiscoveryConstants.FIELD_SERVICE_INSTANCE_SERVICE_INDEX, serviceIndexObj.getServiceIndex());
+        launchConfigData.put(InstanceConstants.FIELD_ALLOCATED_IP_ADDRESS, serviceIndexObj.getAddress());
         return launchConfigData;
     }
 
@@ -220,6 +231,37 @@ public class DefaultDeploymentUnitInstance extends DeploymentUnitInstance implem
                     InstanceConstants.PROCESS_START, instance, null);
         }
         return this;
+    }
+
+    public Long getServiceIndex() {
+        return this.serviceIndexId;
+    }
+
+    protected void setServiceIndexId() {
+        if (this.instance == null) {
+            ServiceIndex serviceIndex = createServiceIndex();
+            if (serviceIndex != null) {
+                this.serviceIndexId = serviceIndex.getId();
+            }
+        } else {
+            this.serviceIndexId = DataAccessor
+                    .fieldLong(this.instance, ServiceDiscoveryConstants.FIELD_SERVICE_INSTANCE_SERVICE_INDEX_ID);
+        }
+    }
+
+    protected ServiceIndex createServiceIndex() {
+        // create index
+        Environment stack = context.objectManager.loadResource(Environment.class, service.getEnvironmentId());
+        String serviceIndex = ServiceDiscoveryUtil.getGeneratedServiceIndex(stack, service, launchConfigName,
+                instanceName);
+        ServiceIndex serviceIndexObj = context.serviceDao.createServiceIndex(service, launchConfigName, serviceIndex);
+        
+        // allocate ip address if not set
+        if (DataAccessor.fieldBool(service, ServiceDiscoveryConstants.FIELD_SERVICE_RETAIN_IP)) {
+            context.sdService.allocateIpToServiceIndex(serviceIndexObj);
+        }
+        
+        return serviceIndexObj;
     }
 }
 
