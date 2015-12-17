@@ -1,12 +1,15 @@
 package io.cattle.platform.process.volume;
 
 import io.cattle.platform.core.dao.GenericMapDao;
+import io.cattle.platform.core.model.Mount;
 import io.cattle.platform.core.model.Volume;
 import io.cattle.platform.core.model.VolumeStoragePoolMap;
 import io.cattle.platform.engine.handler.HandlerResult;
 import io.cattle.platform.engine.process.ProcessInstance;
 import io.cattle.platform.engine.process.ProcessState;
+import io.cattle.platform.object.process.StandardProcess;
 import io.cattle.platform.process.base.AbstractDefaultProcessHandler;
+import io.cattle.platform.process.common.util.ProcessUtils;
 
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -23,7 +26,13 @@ public class VolumePurge extends AbstractDefaultProcessHandler {
         deallocate(volume, state.getData());
 
         for (VolumeStoragePoolMap map : mapDao.findToRemove(VolumeStoragePoolMap.class, Volume.class, volume.getId())) {
-            remove(map, state.getData());
+            objectProcessManager.scheduleStandardProcess(StandardProcess.DEACTIVATE, map,
+                    ProcessUtils.chainInData(state.getData(), "volumestoragepoolmap.deactivate", "volumestoragepoolmap.remove"));
+        }
+
+        for (Mount mount: mapDao.findToRemove(Mount.class, Volume.class, volume.getId())) {
+            objectProcessManager.scheduleStandardProcess(StandardProcess.DEACTIVATE, mount,
+                    ProcessUtils.chainInData(state.getData(), "mount.deactivate", "mount.remove"));
         }
 
         return new HandlerResult();

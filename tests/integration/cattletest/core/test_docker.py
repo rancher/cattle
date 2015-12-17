@@ -1,6 +1,7 @@
 import re
 import uuid as py_uuid
 from common_fixtures import *  # NOQA
+from test_volume import VOLUME_CLEANUP_LABEL
 
 TEST_IMAGE = 'ibuildthecloud/helloworld'
 TEST_IMAGE_LATEST = TEST_IMAGE + ':latest'
@@ -318,7 +319,6 @@ def test_docker_ports_from_container_no_publish(docker_client):
 
 @if_docker
 def test_docker_ports_from_container(docker_client, super_client):
-
     def reload(x):
         return super_client.reload(x)
 
@@ -451,7 +451,6 @@ def test_no_port_override(docker_client, super_client):
 
 @if_docker
 def test_docker_volumes(docker_client, super_client):
-
     def reload(x):
         return super_client.reload(x)
 
@@ -557,20 +556,20 @@ def test_docker_volumes(docker_client, super_client):
     docker_client.wait_success(c.purge())
     docker_client.wait_success(c2.purge())
 
-    foo_vol = super_client.wait_success(foo_vol.deactivate())
-    foo_vol = super_client.wait_success(foo_vol.remove())
-    foo_vol = super_client.wait_success(foo_vol.purge())
+    foo_vol = wait_for_condition(
+        docker_client, foo_vol, lambda x: x.state == 'removed')
+    foo_vol = docker_client.wait_success(foo_vol.purge())
     _check_path(foo_vol, False, docker_client, super_client)
 
-    bar_vol = super_client.wait_success(bar_vol.deactivate())
-    bar_vol = super_client.wait_success(bar_vol.remove())
-    bar_vol = super_client.wait_success(bar_vol.purge())
+    bar_vol = wait_for_condition(
+        docker_client, bar_vol, lambda x: x.state == 'removed')
+    bar_vol = docker_client.wait_success(bar_vol.purge())
     # Host bind mount. Wont actually delete the dir on the host.
     _check_path(bar_vol, True, docker_client, super_client)
 
-    baz_vol = super_client.wait_success(baz_vol.deactivate())
-    baz_vol = super_client.wait_success(baz_vol.remove())
-    baz_vol = super_client.wait_success(baz_vol.purge())
+    baz_vol = wait_for_condition(
+        docker_client, baz_vol, lambda x: x.state == 'removed')
+    baz_vol = docker_client.wait_success(baz_vol.purge())
     # Host bind mount. Wont actually delete the dir on the host.
     _check_path(baz_vol, True, docker_client, super_client)
 
@@ -658,9 +657,70 @@ def test_container_fields(docker_client, super_client):
     assert actual_devices[0]['PathInContainer'] == "/dev/xnull"
 
 
+def check_mounts(resource, count):
+    mounts = [x for x in resource.mounts() if x.state != 'inactive']
+    assert len(mounts) == count
+    return mounts
+
+
+def volume_cleanup_setup(docker_client, uuid, strategy=None):
+    labels = {}
+    if strategy:
+        labels[VOLUME_CLEANUP_LABEL] = strategy
+
+    vol_name = random_str()
+    c = docker_client.create_container(name="volume_cleanup_test",
+                                       imageUuid=uuid,
+                                       startOnCreate=False,
+                                       dataVolumes=['%s:/foo' % vol_name],
+                                       labels=labels)
+    c = docker_client.wait_success(c)
+    c = docker_client.wait_success(c.start())
+    if strategy:
+        assert c.labels[VOLUME_CLEANUP_LABEL] == strategy
+
+    mounts = check_mounts(c, 2)
+    v1 = mounts[0].volume()
+    v2 = mounts[1].volume()
+    named_vol = v1 if v1.name == vol_name else v2
+    unnamed_vol = v1 if v1.name != vol_name else v2
+    assert named_vol.state == 'active'
+    assert unnamed_vol.state == 'active'
+    c = docker_client.wait_success(c.stop(remove=True, timeout=0))
+    c = docker_client.wait_success(c.purge())
+    check_mounts(c, 0)
+    return c, named_vol, unnamed_vol
+
+
+@if_docker
+def test_cleanup_volume_strategy(docker_client):
+    # Using nginx because it has a baked in volume, which is a good test case
+    uuid = 'docker:nginx:latest'
+
+    c, named_vol, unnamed_vol = volume_cleanup_setup(docker_client, uuid)
+    assert docker_client.wait_success(named_vol).state == 'inactive'
+    assert docker_client.wait_success(unnamed_vol).state == 'removed'
+
+    c, named_vol, unnamed_vol = volume_cleanup_setup(docker_client, uuid,
+                                                     strategy='unnamed')
+    assert docker_client.wait_success(named_vol).state == 'inactive'
+    assert docker_client.wait_success(unnamed_vol).state == 'removed'
+
+    c, named_vol, unnamed_vol = volume_cleanup_setup(docker_client, uuid,
+                                                     strategy='none')
+    assert docker_client.wait_success(named_vol).state == 'inactive'
+    assert docker_client.wait_success(unnamed_vol).state == 'inactive'
+
+    c, named_vol, unnamed_vol = volume_cleanup_setup(docker_client, uuid,
+                                                     strategy='all')
+    assert docker_client.wait_success(named_vol).state == 'removed'
+    assert docker_client.wait_success(unnamed_vol).state == 'removed'
+
+
 @if_docker
 def test_docker_mount_life_cycle(docker_client):
-    uuid = TEST_IMAGE_UUID
+    # Using nginx because it has a baked in volume, which is a good test case
+    uuid = 'docker:nginx:latest'
     bind_mount_uuid = py_uuid.uuid4().hex
     bar_host_path = '/tmp/bar%s' % bind_mount_uuid
     bar_bind_mount = '%s:/bar' % bar_host_path
@@ -668,37 +728,40 @@ def test_docker_mount_life_cycle(docker_client):
     c = docker_client.create_container(name="volumes_test",
                                        imageUuid=uuid,
                                        startOnCreate=False,
-                                       dataVolumes=['/foo',
+                                       dataVolumes=['foo:/foo',
                                                     bar_bind_mount])
 
     c = docker_client.wait_success(c)
     c = docker_client.wait_success(c.start())
-
-    def check_mounts(container, expected_state=None, length=0):
-        mounts = container.mounts()
-        assert len(mounts) == length
-        if expected_state:
-            for mount in mounts:
-                assert mount.state == expected_state
-        return mounts
-
-    check_mounts(c, 'active', 2)
+    mounts = check_mounts(c, 3)
+    v1 = mounts[0].volume()
+    v2 = mounts[1].volume()
+    v3 = mounts[2].volume()
+    assert v1.state == 'active'
+    assert v2.state == 'active'
+    assert v3.state == 'active'
 
     c = docker_client.wait_success(c.stop(remove=True, timeout=0))
-    check_mounts(c, 'inactive', 2)
 
     c = docker_client.wait_success(c.restore())
     assert c.state == 'stopped'
-    check_mounts(c, 'inactive', 2)
+    check_mounts(c, 0)
+    assert docker_client.wait_success(v1).state == 'inactive'
+    assert docker_client.wait_success(v2).state == 'inactive'
+    assert docker_client.wait_success(v3).state == 'inactive'
 
     c = docker_client.wait_success(c.start())
     assert c.state == 'running'
-    check_mounts(c, 'active', 2)
+    check_mounts(c, 3)
+    assert docker_client.wait_success(v1).state == 'active'
+    assert docker_client.wait_success(v2).state == 'active'
+    assert docker_client.wait_success(v3).state == 'active'
 
     c = docker_client.wait_success(c.stop(remove=True, timeout=0))
-    c = docker_client.wait_success(c.purge())
-    assert c.state == 'purged'
-    check_mounts(c, 'removed', 2)
+    check_mounts(c, 0)
+    assert docker_client.wait_success(v1).state == 'inactive'
+    assert docker_client.wait_success(v2).state == 'inactive'
+    assert docker_client.wait_success(v3).state == 'inactive'
 
 
 @if_docker

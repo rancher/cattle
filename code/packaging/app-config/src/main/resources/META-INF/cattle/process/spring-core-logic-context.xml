@@ -80,6 +80,18 @@
         </property>
     </bean>
 
+    <bean class="io.cattle.platform.process.mount.MountRemove"
+        p:name="MountRemove"
+        p:commandName="storage.volume.remove"
+        p:dataTypeClass="io.cattle.platform.core.model.VolumeStoragePoolMap"
+        p:dataResourceRelationship="none"
+        p:processNames="mount.remove"
+        p:shortCircuitIfAgentRemoved="true" >
+        <property name="priority">
+            <util:constant static-field="io.cattle.platform.util.type.Priority.DEFAULT"/>
+        </property>
+    </bean>
+
     <bean class="io.cattle.platform.process.common.handler.AgentBasedProcessHandler"
         p:name="InstanceHostMapActivate"
         p:commandName="compute.instance.activate"

@@ -1,5 +1,6 @@
 package io.cattle.platform.process.externalevent;
 
+import static io.cattle.platform.core.model.tables.AgentTable.*;
 import static io.cattle.platform.core.model.tables.EnvironmentTable.*;
 import static io.cattle.platform.core.model.tables.ServiceTable.*;
 import static io.cattle.platform.process.externalevent.ExternalEventConstants.*;
@@ -10,6 +11,7 @@ import io.cattle.platform.core.dao.GenericResourceDao;
 import io.cattle.platform.core.dao.HostDao;
 import io.cattle.platform.core.dao.StoragePoolDao;
 import io.cattle.platform.core.dao.VolumeDao;
+import io.cattle.platform.core.model.Agent;
 import io.cattle.platform.core.model.Environment;
 import io.cattle.platform.core.model.ExternalEvent;
 import io.cattle.platform.core.model.Host;
@@ -151,18 +153,33 @@ public class ExternalEventCreate extends AbstractDefaultProcessHandler {
                 }
                 String driverName = driver.toString();
                 StoragePool storagePool = storagePoolDao.findStoragePoolByDriverName(event.getAccountId(), driverName);
-                if (storagePool == null) {
-                    Map<String, Object> spData = CollectionUtils.toMap(DataUtils.getFields(event).get(FIELD_STORAGE_POOL));
-                    if (spData.isEmpty()) {
-                        log.warn("Null or empty storagePool for externalStoragePoolEvent: {}. StoragePool: {}", event, spData);
-                        return;
-                    }
+                Map<String, Object> spData = CollectionUtils.toMap(DataUtils.getFields(event).get(FIELD_STORAGE_POOL));
+                if (spData.isEmpty()) {
+                    log.warn("Null or empty storagePool for externalStoragePoolEvent: {}. StoragePool: {}", event, spData);
+                    return;
+                }
 
+                if (storagePool == null) {
                     spData.put(ObjectMetaDataManager.ACCOUNT_FIELD, event.getAccountId());
                     spData.put(FIELD_ZONE_ID, 1L);
 
+                    Agent agent = objectManager.findOne(Agent.class, AGENT.ACCOUNT_ID, event.getReportedAccountId(),
+                            AGENT.STATE, CommonStatesConstants.ACTIVE);
+                    spData.put(FIELD_AGENT_ID, agent.getId());
+
                     try {
                         storagePool = resourceDao.createAndSchedule(StoragePool.class, spData);
+                    } catch (ProcessCancelException e) {
+                        log.info("Create process cancelled for storagePool {}. ProcessCancelException message: {}", storagePool, e.getMessage());
+                    }
+                } else {
+                    Agent agent = objectManager.findOne(Agent.class, AGENT.ACCOUNT_ID, event.getReportedAccountId(),
+                            AGENT.STATE, CommonStatesConstants.ACTIVE);
+                    spData.put(FIELD_AGENT_ID, agent.getId());
+
+                    storagePool.setAgentId(agent.getId());
+                    try {
+                        storagePool = resourceDao.updateAndSchedule(storagePool);
                     } catch (ProcessCancelException e) {
                         log.info("Create process cancelled for storagePool {}. ProcessCancelException message: {}", storagePool, e.getMessage());
                     }

@@ -28,6 +28,42 @@ def add_storage_pool(context, host_uuids=None):
     return storage_pool
 
 
+def create_new_agent(super_client, project):
+    scope = 'io.cattle.platform.agent.connection.simulator' \
+            '.AgentConnectionSimulator'
+    uri = 'sim://{}'.format(random_str())
+    data = {scope: {}}
+    account_id = get_plain_id(super_client, project)
+    data[scope]['agentResourcesAccountId'] = account_id
+    data['agentResourcesAccountId'] = account_id
+    agent = super_client.create_agent(uri=uri, data=data)
+    agent = super_client.wait_success(agent)
+
+    assert agent.state == "active"
+    account = agent.account()
+    creds = filter(lambda x: x.kind == 'agentApiKey', account.credentials())
+    agent_client = api_client(creds[0].publicValue, creds[0].secretValue)
+    return agent, account, agent_client
+
+
+def test_storage_pool_update(new_context, super_client):
+    client = new_context.client
+    sp = add_storage_pool(new_context)
+
+    original_agent = super_client.list_agent(accountId=new_context.agent.id)[0]
+    assert super_client.reload(sp).agentId == original_agent.id
+
+    new_agent, new_agent_account, new_client = \
+        create_new_agent(super_client, new_context.project)
+
+    uuids = [new_context.host.uuid]
+    create_sp_event(client, new_client, new_context, sp.name, sp.name,
+                    SP_CREATE, uuids, sp.name, new_agent_account)
+    assert super_client.wait_success(sp).agentId == new_agent.id
+    sp = client.wait_success(sp)
+    assert sp.state == 'active'
+
+
 def test_multiple_sp_volume_schedule(new_context):
     # Tests that when a host has more than one storage pool (one local, one
     # shared), and a container is scheduled to it, the root volume can be
@@ -143,13 +179,11 @@ def test_volume_create(new_context):
     # Create a volume with a driver that points to a storage pool
     v1 = client.create_volume(name=random_str(), driver=sp_name)
     v1 = client.wait_success(v1)
-    assert v1.state == 'requested'
 
     # Create a volume with a driver that cattle doesn't know about
     v2 = client.create_volume(name=random_str(), driver='driver-%s' %
                                                         random_str())
     v2 = client.wait_success(v2)
-    assert v2.state == 'requested'
 
     data_volume_mounts = {'/con/path': v1.id,
                           '/con/path2': v2.id}
@@ -159,13 +193,11 @@ def test_volume_create(new_context):
     assert c.state == 'running'
 
     v1 = client.wait_success(v1)
-    assert v1.state == 'active'
     sps = v1.storagePools()
     assert len(sps) == 1
     assert sps[0].id == storage_pool.id
 
     v2 = client.wait_success(v2)
-    assert v2.state == 'active'
     sps = v2.storagePools()
     assert len(sps) == 1
     assert sps[0].kind == 'sim'
@@ -174,7 +206,6 @@ def test_volume_create(new_context):
     # Should be translated to a dataVolumeMount entry.
     v3 = client.create_volume(name=random_str(), driver=sp_name)
     v3 = client.wait_success(v3)
-    assert v3.state == 'requested'
 
     c = client.create_container(imageUuid=new_context.image_uuid,
                                 dataVolumes=['%s:/foo' % v3.name])
@@ -182,7 +213,6 @@ def test_volume_create(new_context):
     assert c.state == 'running'
     assert c.dataVolumeMounts['/foo'] == v3.id
     v3 = client.wait_success(v3)
-    assert v3.state == 'active'
     sps = v3.storagePools()
     assert len(sps) == 1
     assert sps[0].id == storage_pool.id
@@ -380,7 +410,7 @@ def create_volume_event(client, agent_client, context, event_type,
 
 
 def create_sp_event(client, agent_client, context, external_id, name,
-                    event_type, host_uuids, driver_name):
+                    event_type, host_uuids, driver_name, agent_account=None):
     event = agent_client.create_external_storage_pool_event(
         externalId=external_id,
         eventType=event_type,
@@ -397,7 +427,10 @@ def create_sp_event(client, agent_client, context, external_id, name,
 
     event = wait_for(lambda: event_wait(client, event))
     assert event.accountId == context.project.id
-    assert event.reportedAccountId == context.agent.id
+    if agent_account:
+        assert event.reportedAccountId == agent_account.id
+    else:
+        assert event.reportedAccountId == context.agent.id
 
     return event
 

@@ -10,6 +10,7 @@ import static io.cattle.platform.docker.constants.DockerNetworkConstants.*;
 import io.cattle.platform.agent.AgentLocator;
 import io.cattle.platform.agent.RemoteAgent;
 import io.cattle.platform.archaius.util.ArchaiusUtil;
+import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.dao.AccountDao;
 import io.cattle.platform.core.dao.InstanceDao;
 import io.cattle.platform.core.dao.NetworkDao;
@@ -18,6 +19,7 @@ import io.cattle.platform.core.model.Host;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.Network;
 import io.cattle.platform.core.model.Subnet;
+import io.cattle.platform.core.util.SystemLabels;
 import io.cattle.platform.engine.handler.HandlerResult;
 import io.cattle.platform.engine.process.ProcessInstance;
 import io.cattle.platform.engine.process.ProcessState;
@@ -185,8 +187,20 @@ public class ContainerEventCreate extends AbstractDefaultProcessHandler {
         setNetwork(inspect, data, instance);
         setImage(event, instance);
         setHost(event, instance);
+        setVolumeCleanupStrategy(inspect, data, instance);
+
         instance = objectManager.create(instance);
         objectProcessManager.scheduleProcessInstance(PROCESS_CREATE, instance, makeData());
+    }
+
+
+    private void setVolumeCleanupStrategy(Map<String, Object> inspect, Map<String, Object> data, Instance instance) {
+        String existingLabel = getLabel(SystemLabels.LABEL_VOLUME_CLEANUP_STRATEGY, null, inspect, data);
+        if (existingLabel == null) {
+            Map<String, Object> labels = DataAccessor.fieldMap(instance, InstanceConstants.FIELD_LABELS);
+            labels.put(SystemLabels.LABEL_VOLUME_CLEANUP_STRATEGY, VOLUME_CLEANUP_STRATEGY_NONE);
+            DataAccessor.fields(instance).withKey(FIELD_LABELS).set(labels);
+        }
     }
 
     private Map<String, Object> getInspect(ContainerEvent event, Map<String, Object> data) {

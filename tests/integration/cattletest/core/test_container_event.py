@@ -1,6 +1,7 @@
 from common_fixtures import *  # NOQA
 import time
 from cattle import ApiError
+from test_volume import VOLUME_CLEANUP_LABEL
 
 
 @pytest.fixture(scope='module', autouse=True)
@@ -49,6 +50,21 @@ def test_container_event_create(client, host, agent_cli, user_id):
                                         agent_cli, user_id)
     assert container.nativeContainer is True
     assert container.state == 'running'
+
+
+def test_volume_cleanup_strategy_label(client, host, agent_cli, user_id):
+    external_id = random_str()
+    container = create_native_container(client, host, external_id,
+                                        agent_cli, user_id)
+    assert container.labels[VOLUME_CLEANUP_LABEL] == 'none'
+
+    # Assert that label isn't prepopulated if it is in the inspect
+    external_id = random_str()
+    inspect = {'Config': {'Labels': {VOLUME_CLEANUP_LABEL: 'all'}}}
+    container = \
+        create_native_container(client, host, external_id, agent_cli, user_id,
+                                inspect=inspect)
+    assert not container.labels
 
 
 def test_container_event_start_stop(client, host, agent_cli, user_id):
@@ -209,6 +225,7 @@ def test_container_event_null_inspect(client, host, agent_cli, user_id):
         containers = client.list_container(externalId=external_id)
         if len(containers) and containers[0].state != 'requested':
             return containers[0]
+
     container = wait_for(container_wait)
     assert container is not None
 
@@ -341,6 +358,7 @@ def create_native_container(client, host, external_id, user_agent_cli,
         containers = client.list_container(externalId=external_id)
         if len(containers) and containers[0].state != 'requested':
             return containers[0]
+
     container = wait_for(container_wait)
     container = client.wait_success(container)
     return container

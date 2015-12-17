@@ -362,6 +362,7 @@
         "volume.uri" : "r",
         "volume.driver": "cr",
         "volume.driverOpts": "cr",
+        "volume.resourceActions.deactivate" : "",
 
         "loadBalancerConfig" : "r",
         "loadBalancerConfig.appCookieStickinessPolicy" : "cru",
