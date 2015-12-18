@@ -39,6 +39,7 @@ public class ServiceDiscoveryConstants {
     public static final String FIELD_FQDN = "fqdn";
     public static final String FIELD_OUTPUTS = "outputs";
     public static final String FIELD_PUBLIC_ENDPOINTS = "publicEndpoints";
+    public static final String FIELD_RESTART = "restart";
 
     public static final String STACK_FIELD_DOCKER_COMPOSE = "dockerCompose";
     public static final String STACK_FIELD_RANCHER_COMPOSE = "rancherCompose";
@@ -53,6 +54,7 @@ public class ServiceDiscoveryConstants {
     public static final String ACTION_SERVICE_UPGRADE = "upgrade";
     public static final String ACTION_SERVICE_ROLLBACK = "rollback";
     public static final String ACTION_ADD_OUTPUTS = "addoutputs";
+    public static final String ACTION_SERVICE_RESTART = "restart";
 
     public static final String PROCESS_SERVICE_ACTIVATE = "service." + ACTION_SERVICE_ACTIVATE;
     public static final String PROCESS_SERVICE_CREATE = "service." + ACTION_SERVICE_CREATE;
@@ -75,6 +77,7 @@ public class ServiceDiscoveryConstants {
     public static final String PROCESS_SERVICE_UPGRADE = "service." + ACTION_SERVICE_UPGRADE;
     public static final String PROCESS_SERVICE_CANCEL_ROLLBACK = "service.cancelrollback";
     public static final String PROCESS_SERVICE_FINISH_UPGRADE = "service.finishupgrade";
+    public static final String PROCESS_SERVICE_RESTART = "service." + ACTION_SERVICE_RESTART;
 
     public static final String LINK_DOCKER_COMPOSE_CONFIG = "dockerComposeConfig";
     public static final String LINK_RANCHER_COMPOSE_CONFIG = "rancherComposeConfig";
@@ -105,6 +108,7 @@ public class ServiceDiscoveryConstants {
     public static final String STATE_CANCELED_ROLLBACK = "canceled-rollback";
     public static final String STATE_UPGRADED = "upgraded";
     public static final String STATE_FINISHING_UPGRADE = "finishing-upgrade";
+    public static final String STATE_RESTARTING = "restarting";
 
     public static final String LABEL_SELECTOR_CONTAINER = "io.rancher.service.selector.container";
     public static final String LABEL_SELECTOR_LINK = "io.rancher.service.selector.link";

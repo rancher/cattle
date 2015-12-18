@@ -151,7 +151,7 @@ public class ServiceExposeMapDaoImpl extends AbstractJooqDao implements ServiceE
                 .from(SERVICE)
                 .where(SERVICE.ACCOUNT_ID.eq(accountId))
                 .and(SERVICE.REMOVED.isNull())
-                .and(SERVICE.STATE.in(sdService.getServiceActiveStates(true)))
+                .and(SERVICE.STATE.in(sdService.getServiceActiveStates()))
                 .fetchInto(ServiceRecord.class);
     }
 

@@ -3,6 +3,8 @@ package io.cattle.platform.servicediscovery.upgrade.impl;
 import static io.cattle.platform.core.model.tables.ServiceExposeMapTable.SERVICE_EXPOSE_MAP;
 import io.cattle.platform.async.utils.TimeoutException;
 import io.cattle.platform.core.addon.InServiceUpgradeStrategy;
+import io.cattle.platform.core.addon.RollingRestartStrategy;
+import io.cattle.platform.core.addon.ServiceRestart;
 import io.cattle.platform.core.addon.ServiceUpgradeStrategy;
 import io.cattle.platform.core.addon.ToServiceUpgradeStrategy;
 import io.cattle.platform.core.constants.CommonStatesConstants;
@@ -44,7 +46,8 @@ public class UpgradeManagerImpl implements UpgradeManager {
         ToUpgrade,
         ToCleanup,
         UpgradedManaged,
-        UpgradedUnmanaged
+        UpgradedUnmanaged,
+        ToRestart
     }
 
     @Inject
@@ -142,11 +145,6 @@ public class UpgradeManagerImpl implements UpgradeManager {
                 }
             }
 
-            protected void reconcile(Service service) {
-                // 2. wait for reconcile (new instances will be started along)
-                deploymentMgr.activate(service);
-            }
-
             protected void markForUpgrade(final Map<String, List<Instance>> deploymentUnitInstancesToUpgrade,
                     Map<String, List<Instance>> deploymentUnitInstancesUpgradedManaged,
                     Map<String, List<Instance>> deploymentUnitInstancesUpgradedUnmanaged,
@@ -189,28 +187,6 @@ public class UpgradeManagerImpl implements UpgradeManager {
                     i++;
                 }
             }
-
-            protected void stopInstances(Map<String, List<Instance>> deploymentUnitInstancesToCleanup) {
-                List<Instance> toCleanup = new ArrayList<>();
-                for (String key : deploymentUnitInstancesToCleanup.keySet()) {
-                    toCleanup.addAll(deploymentUnitInstancesToCleanup.get(key));
-                }
-                for (Instance instance : toCleanup) {
-                    if (!instance.getState().equalsIgnoreCase(InstanceConstants.STATE_STOPPED)) {
-                            objectProcessMgr.scheduleProcessInstanceAsync(InstanceConstants.PROCESS_STOP,
-                                    instance, null);
-                    }
-                }
-                for (Instance instance : toCleanup) {
-                    resourceMntr.waitFor(instance,
-                            new ResourcePredicate<Instance>() {
-                                @Override
-                                public boolean evaluate(Instance obj) {
-                                    return InstanceConstants.STATE_STOPPED.equals(obj.getState());
-                                }
-                            });
-                }
-            }
         });
 
     }
@@ -233,6 +209,8 @@ public class UpgradeManagerImpl implements UpgradeManager {
             } else if (type == Type.UpgradedUnmanaged) {
                 instances.addAll(exposeMapDao.getUpgradedInstances(service,
                         launchConfigName, toVersion, false));
+            } else if (type == Type.ToRestart) {
+                instances.addAll(getServiceInstancesToRestart(service));
             }
             for (Instance instance : instances) {
                 addInstanceToDeploymentUnits(deploymentUnitInstances, instance);
@@ -240,6 +218,26 @@ public class UpgradeManagerImpl implements UpgradeManager {
         }
         
         return deploymentUnitInstances;
+    }
+
+    protected List<? extends Instance> getServiceInstancesToRestart(Service service) {
+        // get all instances of the service
+        List<? extends Instance> instances = exposeMapDao.listServiceManagedInstances(service.getId());
+        List<Instance> toRestart = new ArrayList<>();
+        ServiceRestart svcRestart = DataAccessor.field(service, ServiceDiscoveryConstants.FIELD_RESTART,
+                ServiceRestart.class);
+        RollingRestartStrategy strategy = svcRestart.getRollingRestartStrategy();
+        Map<Long, Long> instanceToStartCount = strategy.getInstanceToStartCount();
+        // compare its start_count with one set on the service restart field
+        for (Instance instance : instances) {
+            if (instanceToStartCount.containsKey(instance.getId())) {
+                Long previousStartCount = instanceToStartCount.get(instance.getId());
+                if (previousStartCount == instance.getStartCount()) {
+                    toRestart.add(instance);
+                }
+            }
+        }
+        return toRestart;
     }
 
     protected void addInstanceToDeploymentUnits(Map<String, List<Instance>> deploymentUnitInstancesToUpgrade,
@@ -325,7 +323,8 @@ public class UpgradeManagerImpl implements UpgradeManager {
     protected Service reload(Service service) {
         service = objectManager.reload(service);
         
-        List<String> states = Arrays.asList(ServiceDiscoveryConstants.STATE_UPGRADING, ServiceDiscoveryConstants.STATE_ROLLINGBACK);
+        List<String> states = Arrays.asList(ServiceDiscoveryConstants.STATE_UPGRADING,
+                ServiceDiscoveryConstants.STATE_ROLLINGBACK, ServiceDiscoveryConstants.STATE_RESTARTING);
         if (!states.contains(service.getState())) {
             throw new ProcessExecutionExitException(ExitReason.STATE_CHANGED);
         }
@@ -435,5 +434,85 @@ public class UpgradeManagerImpl implements UpgradeManager {
                         }
                     });
         }
+    }
+
+    @Override
+    public void restart(Service service, RollingRestartStrategy strategy) {
+        Map<String, List<Instance>> toRestart = formDeploymentUnits(service, Type.ToRestart);
+        while (!doRestart(service, strategy, toRestart)) {
+            sleep(service, strategy);
+        }
+    }
+
+    public boolean doRestart(Service service, RollingRestartStrategy strategy,
+            Map<String, List<Instance>> toRestart) {
+        try {
+            long batchSize = strategy.getBatchSize();
+            final Map<String, List<Instance>> restartBatch = new HashMap<>();
+            long i = 0;
+            Iterator<Map.Entry<String, List<Instance>>> it = toRestart.entrySet()
+                    .iterator();
+            while (it.hasNext() && i < batchSize) {
+                Map.Entry<String, List<Instance>> instances = it.next();
+                String deploymentUnitUUID = instances.getKey();
+                restartBatch.put(deploymentUnitUUID, instances.getValue());
+                it.remove();
+                i++;
+            }
+
+            restartDeploymentUnits(service, restartBatch);
+
+            if (toRestart.isEmpty()) {
+                return true;
+            }
+            return false;
+
+        } catch (TimeoutException e) {
+            return false;
+        }
+    }
+
+    protected void restartDeploymentUnits(final Service service,
+            final Map<String, List<Instance>> deploymentUnitsToStop) {
+
+        // hold the lock so service.reconcile triggered by config.update
+        // (in turn triggered by instance.remove) won't interfere
+
+        lockManager.lock(new ServicesSidekickLock(Arrays.asList(service)), new LockCallbackNoReturn() {
+            @Override
+            public void doWithLockNoResult() {
+                // 1. stop instances
+                stopInstances(deploymentUnitsToStop);
+                // 2. wait for reconcile (instances will be restarted along)
+                reconcile(service);
+            }
+        });
+    }
+
+    protected void stopInstances(Map<String, List<Instance>> deploymentUnitInstancesToStop) {
+        List<Instance> toStop = new ArrayList<>();
+        for (String key : deploymentUnitInstancesToStop.keySet()) {
+            toStop.addAll(deploymentUnitInstancesToStop.get(key));
+        }
+        for (Instance instance : toStop) {
+            if (!instance.getState().equalsIgnoreCase(InstanceConstants.STATE_STOPPED)) {
+                objectProcessMgr.scheduleProcessInstanceAsync(InstanceConstants.PROCESS_STOP,
+                        instance, null);
+            }
+        }
+        for (Instance instance : toStop) {
+            resourceMntr.waitFor(instance,
+                    new ResourcePredicate<Instance>() {
+                        @Override
+                        public boolean evaluate(Instance obj) {
+                            return InstanceConstants.STATE_STOPPED.equals(obj.getState());
+                        }
+                    });
+        }
+    }
+
+    protected void reconcile(Service service) {
+        // 2. wait for reconcile (new instances will be started along)
+        deploymentMgr.activate(service);
     }
 }
