@@ -93,6 +93,7 @@ public class IndexFile {
         }
 
         if (LOCAL.equalsIgnoreCase(STATIC_INDEX_HTML.get())) {
+            response.addHeader("Cache-Control", "max-age=0, no-cache");
             RequestDispatcher rd = request.getRequestDispatcher("/index.html");
             rd.forward(request, response);
             return;
@@ -104,6 +105,7 @@ public class IndexFile {
 
         OutputStream os = response.getOutputStream();
 
+        response.addHeader("Cache-Control", "max-age=0, no-cache");
         response.setContentLength(indexCached.length);
         response.setContentType("text/html");
 
