@@ -111,6 +111,21 @@ def test_update_project(user_clients, project):
     assert e.value.error.status == 404
 
 
+def test_update_project_kubernetes_swarm(user_clients, project):
+    project = user_clients['Owner'].update(
+        project, name='Project Name', description='Some description',
+        kubernetes=True, swarm=True)
+    assert project.kubernetes is True
+    assert project.swarm is True
+    client = user_clients['Owner']
+    members = _create_members(user_clients, ['Owner'])
+    project = client.create_project(members=members,
+                                    kubernetes=True, swarm=True)
+    project = client.wait_success(project)
+    assert project.kubernetes is True
+    assert project.swarm is True
+
+
 def test_project_no_filters_and_sort(user_clients):
     projects = user_clients['Owner'].list_project()
     assert len(projects.sortLinks) == 0
