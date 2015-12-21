@@ -34,6 +34,7 @@
                 <value>io.cattle.platform.core.addon.HaproxyConfig</value>
                 <value>io.cattle.platform.core.addon.RollingRestartStrategy</value>
                 <value>io.cattle.platform.core.addon.ServiceRestart</value>
+                <value>io.cattle.platform.core.addon.ServicesPortRange</value>
             </set>
         </property>
     </bean>

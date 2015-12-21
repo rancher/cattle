@@ -1,9 +1,20 @@
 package io.cattle.platform.core.constants;
 
+import io.cattle.platform.archaius.util.ArchaiusUtil;
+import io.cattle.platform.core.addon.ServicesPortRange;
 import io.cattle.platform.core.model.Account;
 import io.cattle.platform.core.util.ConstantsUtils;
+import io.cattle.platform.core.util.PortRangeSpec;
+
+import com.netflix.config.DynamicStringProperty;
 
 public class AccountConstants {
+
+    /*
+     * Read from config file to support upgrade scenario when default port range is not set on account
+     */
+    private static final DynamicStringProperty ENV_PORT_RANGE = ArchaiusUtil
+            .getString("environment.services.port.range");
 
     public static final String REGISTERED_AGENT_KIND = "registeredAgent";
     public static final String AGENT_KIND = "agent";
@@ -27,4 +38,9 @@ public class AccountConstants {
     public static final String ACCOUNT_REMOVE = "account.remove";
 
     public static final String AUTH_TYPE = "authType";
+
+    public static ServicesPortRange getDefaultServicesPortRange() {
+        PortRangeSpec spec = new PortRangeSpec(ENV_PORT_RANGE.get());
+        return new ServicesPortRange(spec.getStartPort(), spec.getEndPort());
+    }
 }

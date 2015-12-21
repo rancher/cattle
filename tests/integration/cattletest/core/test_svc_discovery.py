@@ -2386,7 +2386,6 @@ def test_public_endpoints(new_context):
 
 def test_random_ports(new_context):
     client = new_context.client
-    user_client = new_context.user_client
     new_context.host
     register_simulated_host(new_context)
     env = _create_stack(client)
@@ -2418,11 +2417,76 @@ def test_random_ports(new_context):
     assert 49153 <= port21.publicPort <= 65535
     assert 49153 <= port22.publicPort <= 65535
 
-    new_range = "65533-65535"
+
+def test_random_ports_sidekicks(new_context):
+    client = new_context.client
+    new_context.host
+    register_simulated_host(new_context)
+    env = _create_stack(client)
+
+    image_uuid = new_context.image_uuid
+    launch_config = {"imageUuid": image_uuid, "ports": ['6666', '7775']}
+    secondary_lc = {"imageUuid": image_uuid,
+                    "name": "secondary", "ports": ['6666']}
+
+    svc = client.create_service(name=random_str(),
+                                environmentId=env.id,
+                                launchConfig=launch_config,
+                                secondaryLaunchConfigs=[secondary_lc])
+    svc = client.wait_success(svc)
+    assert svc.state == "inactive"
+    svc = client.wait_success(svc.activate())
+    assert svc.state == "active"
+    c1 = _wait_for_compose_instance_start(client, svc, env, "1")
+    c2 = _validate_compose_instance_start(client, svc,
+                                          env, "1", "secondary")
+
+    port1 = c1.ports_link()[0]
+    port2 = c2.ports_link()[0]
+
+    assert 49153 <= port1.publicPort <= 65535
+    assert 49153 <= port2.publicPort <= 65535
+
+
+def test_random_ports_static_port(new_context):
+    client = new_context.client
+    new_context.host
+    register_simulated_host(new_context)
+    env = _create_stack(client)
+
+    image_uuid = new_context.image_uuid
+    launch_config = {"imageUuid": image_uuid, "ports": ['6666:7775']}
+    svc = client.create_service(name=random_str(),
+                                environmentId=env.id,
+                                launchConfig=launch_config)
+    svc = client.wait_success(svc)
+    assert svc.state == "inactive"
+    svc = client.wait_success(svc.activate())
+    assert svc.state == "active"
+    c1 = _wait_for_compose_instance_start(client, svc, env, "1")
+
+    port11 = c1.ports_link()[0]
+    assert port11.publicPort == 6666
+    assert port11.privatePort == 7775
+
+
+def test_project_random_port_update_create(new_context):
+    client = new_context.client
+    user_client = new_context.user_client
+    new_context.host
+    register_simulated_host(new_context)
+    env = _create_stack(client)
+    image_uuid = new_context.image_uuid
+
+    ports = ['6666', '7775', '776']
+    launch_config = {"imageUuid": image_uuid, "ports": ports}
+    # update the port
+    new_range = {"startPort": 65533, "endPort": 65535}
     p = user_client.update(new_context.project,
-                           servicesPortRange="65533-65535")
+                           servicesPortRange=new_range)
     p = user_client.wait_success(p)
     assert p.servicesPortRange == new_range
+
     svc = client.create_service(name=random_str(),
                                 environmentId=env.id,
                                 launchConfig=launch_config)
@@ -2432,6 +2496,20 @@ def test_random_ports(new_context):
     port = c.ports_link()[0]
     assert port.publicPort is not None
     assert 65533 <= port.publicPort <= 65535
+
+    # try to create service with more ports
+    # requested than random range can provide - should be allowed
+    svc = client.create_service(name=random_str(),
+                                environmentId=env.id,
+                                launchConfig=launch_config)
+    svc = client.wait_success(svc)
+    assert svc.state == 'inactive'
+
+    # create the port
+    new_range = {"startPort": 65533, "endPort": 65535}
+    project = user_client.create_project(servicesPortRange=new_range)
+    project = user_client.wait_success(project)
+    assert project.servicesPortRange == new_range
 
 
 def test_update_port_endpoint(new_context):
