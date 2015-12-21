@@ -39,6 +39,7 @@
         "auditLog.resourceType" : "r",
         "auditLog.responseCode" : "r",
         "auditLog.responseObject" : "r",
+        "auditLog.clientIp" : "r",
 
         "auditLog.resourceActions\\..*" : "",
 

@@ -4,10 +4,10 @@
             "type":"string"
         },
         "requestObject":{
-            "type":"json"
+            "type":"string"
         },
         "responseObject":{
-            "type":"json"
+            "type":"string"
         },
         "resource":{
             "type":"string"
