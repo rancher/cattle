@@ -9,8 +9,6 @@ import io.github.ibuildthecloud.gdapi.model.Resource;
 import io.github.ibuildthecloud.gdapi.request.ApiRequest;
 import io.github.ibuildthecloud.gdapi.response.ResourceOutputFilter;
 
-import java.io.IOException;
-import java.util.Map;
 import javax.inject.Inject;
 
 import org.apache.commons.lang3.StringUtils;
@@ -35,23 +33,8 @@ public class AuditLogOutPutFilter implements ResourceOutputFilter {
                         ApiContext.getUrlBuilder().resourceReferenceLink(
                                 Identity.class, String.valueOf(auditLogRecord.getAuthenticatedAsIdentityId())));
             }
-            Map<String, Object> data = (Map<String, Object>) ((AuditLogRecord) original).getData().get("fields");
-            makeMap(data, "requestObject", converted);
-            makeMap(data, "responseObject", converted);
         }
         return converted;
-    }
-
-    private void makeMap(Map<String, Object> data, String field, Resource converted) {
-        try {
-            String objectJson = (String) data.get(field);
-            if (StringUtils.isNotBlank(objectJson)) {
-                Map<String, Object> objectMap = jsonMapper.readValue(objectJson);
-                converted.getFields().put(field, objectMap);
-            }
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
     }
 
     @Override
