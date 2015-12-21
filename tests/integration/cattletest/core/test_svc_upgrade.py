@@ -164,14 +164,14 @@ def test_big_scale(context, client):
                                 intervalMillis=100)
     svc = client.wait_success(svc)
     svc = client.wait_success(svc.activate(), timeout=240)
-    svc = run_insvc_upgrade(svc,
-                            batchSize=1,
-                            launchConfig=launch_config)
+    svc = _run_insvc_upgrade(svc,
+                             batchSize=1,
+                             launchConfig=launch_config)
     svc = client.wait_success(svc, 120)
     svc = client.wait_success(svc.finishupgrade())
-    svc = run_insvc_upgrade(svc,
-                            batchSize=5,
-                            launchConfig=launch_config)
+    svc = _run_insvc_upgrade(svc,
+                             batchSize=5,
+                             launchConfig=launch_config)
     svc = client.wait_success(svc, 120)
     client.wait_success(svc.finishupgrade())
 
@@ -205,10 +205,10 @@ def _create_and_schedule_inservice_upgrade(client, context, startFirst=False):
                                 image=image_uuid)
     svc = client.wait_success(svc)
     svc = client.wait_success(svc.activate(), timeout=120)
-    svc = run_insvc_upgrade(svc, batchSize=2,
-                            launchConfig=launch_config,
-                            startFirst=startFirst,
-                            intervalMillis=100)
+    svc = _run_insvc_upgrade(svc, batchSize=2,
+                             launchConfig=launch_config,
+                             startFirst=startFirst,
+                             intervalMillis=100)
 
     def upgrade_not_null():
         return _validate_in_svc_upgrade(client, svc)
@@ -310,9 +310,9 @@ def test_in_service_upgrade_networks_from(context, client, super_client):
     svc = client.wait_success(svc)
     svc = client.wait_success(svc.activate())
 
-    u_svc = run_insvc_upgrade(svc,
-                              secondaryLaunchConfigs=[secondary1],
-                              batchSize=1)
+    u_svc = _run_insvc_upgrade(svc,
+                               secondaryLaunchConfigs=[secondary1],
+                               batchSize=1)
     u_svc = client.wait_success(u_svc)
     assert u_svc.state == 'upgraded'
     u_svc = client.wait_success(u_svc.finishupgrade())
@@ -337,10 +337,10 @@ def test_in_service_upgrade_volumes_from(context, client, super_client):
     svc = client.wait_success(svc)
     svc = client.wait_success(svc.activate())
 
-    u_svc = run_insvc_upgrade(svc,
-                              launchConfig=launch_config,
-                              secondaryLaunchConfigs=[secondary2],
-                              batchSize=1)
+    u_svc = _run_insvc_upgrade(svc,
+                               launchConfig=launch_config,
+                               secondaryLaunchConfigs=[secondary2],
+                               batchSize=1)
     u_svc = client.wait_success(u_svc)
     assert u_svc.state == 'upgraded'
     u_svc = client.wait_success(u_svc.finishupgrade())
@@ -368,8 +368,8 @@ def test_dns_service_upgrade(client):
 
     labels = {"bar": "foo"}
     launch_config = {"labels": labels}
-    dns = run_insvc_upgrade(dns, batchSize=1,
-                            launchConfig=launch_config)
+    dns = _run_insvc_upgrade(dns, batchSize=1,
+                             launchConfig=launch_config)
     dns = client.wait_success(dns)
     assert dns.launchConfig is not None
     assert dns.launchConfig.labels == labels
@@ -391,8 +391,8 @@ def test_external_service_upgrade(client):
 
     labels = {"bar": "foo"}
     launch_config = {"labels": labels}
-    svc = run_insvc_upgrade(svc, batchSize=1,
-                            launchConfig=launch_config)
+    svc = _run_insvc_upgrade(svc, batchSize=1,
+                             launchConfig=launch_config)
     svc = client.wait_success(svc)
     assert svc.launchConfig is not None
     assert svc.launchConfig.labels == labels
@@ -427,7 +427,7 @@ def test_service_upgrade_mixed_selector(client, context):
     svc1 = client.wait_success(svc1.activate())
 
     with pytest.raises(ApiError) as e:
-        run_insvc_upgrade(svc1, launchConfig={'labels': {'foo': "bar"}})
+        _run_insvc_upgrade(svc1, launchConfig={'labels': {'foo': "bar"}})
 
     assert e.value.error.status == 422
     assert e.value.error.code == 'InvalidAction'
@@ -440,7 +440,7 @@ def test_service_upgrade_mixed_selector(client, context):
                                  selectorContainer="foo=barbar")
     svc2 = client.wait_success(svc2)
     svc2 = client.wait_success(svc2.activate())
-    run_insvc_upgrade(svc2, launchConfig=launch_config)
+    _run_insvc_upgrade(svc2, launchConfig=launch_config)
 
 
 def test_rollback_sidekicks(context, client, super_client):
@@ -462,9 +462,9 @@ def test_rollback_sidekicks(context, client, super_client):
         list_serviceExposeMap(serviceId=svc.id,
                               state='active', upgrade=False)
 
-    u_svc = run_insvc_upgrade(svc,
-                              secondaryLaunchConfigs=[secondary1],
-                              batchSize=2)
+    u_svc = _run_insvc_upgrade(svc,
+                               secondaryLaunchConfigs=[secondary1],
+                               batchSize=2)
     u_svc = client.wait_success(u_svc, 120)
     assert u_svc.state == 'upgraded'
 
@@ -483,7 +483,40 @@ def test_rollback_sidekicks(context, client, super_client):
         assert found is True
 
 
-def run_insvc_upgrade(svc, **kw):
+def test_upgrade_env(client):
+    env = client.create_environment(name='env-' + random_str())
+    env = client.wait_success(env)
+    assert env.state == 'active'
+
+    env = env.upgrade()
+    assert env.state == 'upgrading'
+
+    env = client.wait_success(env)
+    assert env.state == 'upgraded'
+
+
+def test_upgrade_rollback_env(client):
+    env = client.create_environment(name='env-' + random_str())
+    env = client.wait_success(env)
+
+    assert env.state == 'active'
+    assert 'upgrade' in env
+
+    env = env.upgrade()
+    assert env.state == 'upgrading'
+
+    env = client.wait_success(env)
+    assert env.state == 'upgraded'
+    assert 'rollback' in env
+
+    env = env.rollback()
+    assert env.state == 'rolling-back'
+
+    env = client.wait_success(env)
+    assert env.state == 'active'
+
+
+def _run_insvc_upgrade(svc, **kw):
     kw["intervalMillis"] = 100
     svc = svc.upgrade_action(inServiceStrategy=kw)
     assert svc.state == 'upgrading'
@@ -494,7 +527,7 @@ def _insvc_upgrade(context, client, super_client, finish_upgrade,
                    activate=True, **kw):
     env, svc = _create_multi_lc_svc(super_client, client, context, activate)
 
-    run_insvc_upgrade(svc, **kw)
+    _run_insvc_upgrade(svc, **kw)
 
     def upgrade_not_null():
         return _validate_in_svc_upgrade(client, svc)

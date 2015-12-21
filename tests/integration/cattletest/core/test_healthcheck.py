@@ -1,5 +1,6 @@
 from common_fixtures import *  # NOQA
 from cattle import ApiError
+import yaml
 
 
 def _get_agent_for_container(container):
@@ -267,3 +268,95 @@ def test_health_check_host_remove(super_client, context, client):
                 break
 
     assert hcim is None
+
+
+def test_healtcheck(client, context, super_client):
+    stack = client.create_environment(name='env-' + random_str())
+    image_uuid = context.image_uuid
+    register_simulated_host(context)
+
+    # test that external service was set with healtcheck
+    health_check = {"name": "check1", "responseTimeout": 3,
+                    "interval": 4, "healthyThreshold": 5,
+                    "unhealthyThreshold": 6, "requestLine": "index.html",
+                    "port": 200}
+    launch_config = {"imageUuid": image_uuid, "healthCheck": health_check}
+    service = client.create_service(name=random_str(),
+                                    environmentId=stack.id,
+                                    launchConfig=launch_config)
+    service = client.wait_success(service)
+    service = client.wait_success(service.activate(), 120)
+    expose_map = find_one(service.serviceExposeMaps)
+    c = super_client.reload(expose_map.instance())
+    c_host_id = super_client.reload(c).instanceHostMaps()[0].hostId
+    health_c = super_client. \
+        list_healthcheckInstance(accountId=service.accountId, instanceId=c.id)
+    assert len(health_c) > 0
+    health_id = health_c[0].id
+
+    def validate_container_host(host_maps):
+        for host_map in host_maps:
+            assert host_map.hostId != c_host_id
+
+    host_maps = _wait_health_host_count(super_client, health_id, 3)
+    validate_container_host(host_maps)
+
+    # reactivate the service and
+    # verify that its still has less than 3 healthchecks
+    service = client.wait_success(service.deactivate(), 120)
+    service = client.wait_success(service.activate(), 120)
+
+    host_maps = _wait_health_host_count(super_client, health_id, 3)
+    validate_container_host(host_maps)
+
+    # reactivate the service, add 3 more hosts and verify
+    # that healthcheckers number was completed to 3, excluding
+    # container's host
+    service = client.wait_success(service.deactivate(), 120)
+    register_simulated_host(context)
+    register_simulated_host(context)
+    register_simulated_host(context)
+    client.wait_success(service.activate(), 120)
+
+    host_maps = _wait_health_host_count(super_client, health_id, 3)
+    validate_container_host(host_maps)
+
+
+def _wait_health_host_count(super_client, health_id, count):
+    def active_len():
+        match = super_client. \
+            list_healthcheckInstanceHostMap(healthcheckInstanceId=health_id,
+                                            state='active')
+        if len(match) <= count:
+            return match
+
+    return wait_for(active_len)
+
+
+def test_external_svc_healthcheck(client, context):
+    env = client.create_environment(name='env-' + random_str())
+
+    # test that external service was set with healtcheck
+    health_check = {"name": "check1", "responseTimeout": 3,
+                    "interval": 4, "healthyThreshold": 5,
+                    "unhealthyThreshold": 6, "requestLine": "index.html",
+                    "port": 200}
+    ips = ["72.22.16.5", '192.168.0.10']
+    service = client.create_externalService(name=random_str(),
+                                            environmentId=env.id,
+                                            externalIpAddresses=ips,
+                                            healthCheck=health_check)
+    service = client.wait_success(service)
+    assert service.healthCheck.name == "check1"
+    assert service.healthCheck.responseTimeout == 3
+    assert service.healthCheck.interval == 4
+    assert service.healthCheck.healthyThreshold == 5
+    assert service.healthCheck.unhealthyThreshold == 6
+    assert service.healthCheck.requestLine == "index.html"
+    assert service.healthCheck.port == 200
+
+    # test rancher-compose export
+    compose_config = env.exportconfig()
+    assert compose_config is not None
+    document = yaml.load(compose_config.rancherComposeConfig)
+    assert document[service.name]['health_check'] is not None

@@ -33,6 +33,7 @@ public class ServiceCreate extends AbstractObjectProcessHandler {
     public HandlerResult handle(ProcessState state, ProcessInstance process) {
         Service service = (Service) state.getResource();
         sdService.setVIP(service);
+        sdService.setPorts(service);
         return null;
     }
 }

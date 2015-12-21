@@ -17,6 +17,7 @@
         ".*\\.uuid" : "r",
 
         "account": "r",
+        "portRange": "cru",
 
         "apiKey" : "crud",
         "apiKey.publicValue" : "r",
@@ -262,6 +263,7 @@
         "project.members" : "cr",
         "project.swarm" : "cru",
         "project.kubernetes" : "cru",
+        "project.servicesPortRange": "cru",
 
         "projectMember" : "cr",
         "projectMember.accountId" : "",
