@@ -479,6 +479,27 @@ def test_openldap_auth(admin_user_client, user_client, project_client):
     })
 
 
+def test_audit_logs(admin_user_client, user_client, project_client):
+    assert 'auditLog' in user_client.schema.types
+    assert 'auditLog' in project_client.schema.types
+
+    auth_check(user_client.schema, 'auditLog', 'r', {
+        'accountId': 'r',
+        'authenticatedAsAccountId': 'r',
+        'authenticatedAsIdentityId': 'r',
+        'authType': 'r',
+        'created': 'r',
+        'description': 'r',
+        'eventType': 'r',
+        'requestObject': 'r',
+        'resourceId': 'r',
+        'resourceType': 'r',
+        'responseCode': 'r',
+        'responseObject': 'r',
+        'clientIp': 'r'
+    })
+
+
 def test_local_auth(admin_user_client, user_client, project_client):
     assert 'localauthconfig' not in user_client.schema.types
     assert 'localauthconfig' not in project_client.schema.types
