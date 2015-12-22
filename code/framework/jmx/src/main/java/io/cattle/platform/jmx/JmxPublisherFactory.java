@@ -57,7 +57,7 @@ public class JmxPublisherFactory {
             config.put(AbstractOutputWriter.SETTING_PORT, GRAPHITE_PORT.get());
 
             for (Map.Entry<String, String> entry : GRAPHITE_OPTIONS.getMap().entrySet()) {
-                config.put(entry.getValue(), entry.getValue());
+                config.put(entry.getKey(), entry.getValue());
             }
 
             if (!config.containsKey(AbstractOutputWriter.SETTING_NAME_PREFIX) && !StringUtils.isBlank(ServerContext.SERVER_ID.get())) {
