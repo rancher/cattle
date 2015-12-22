@@ -240,14 +240,18 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
     }
 
     @SuppressWarnings("unchecked")
-    private List<PortSpec> getServicePorts(Map<String, Object> launchConfigData) {
+    private List<PortSpec> getServicePorts(Service service, Map<String, Object> launchConfigData) {
         if (launchConfigData.get(InstanceConstants.FIELD_PORTS) == null) {
             return new ArrayList<>();
         }
         List<String> specs = (List<String>) launchConfigData.get(InstanceConstants.FIELD_PORTS);
         List<PortSpec> ports = new ArrayList<>();
         for (String spec : specs) {
-            ports.add(new PortSpec(spec));
+            boolean defaultProtocol = true;
+            if (service.getKind().equalsIgnoreCase(ServiceDiscoveryConstants.KIND.LOADBALANCERSERVICE.name())) {
+                defaultProtocol = false;
+            }
+            ports.add(new PortSpec(spec, defaultProtocol));
         }
         return ports;
     }
@@ -304,7 +308,7 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
 
     protected void setRandomPublicPorts(Account env, Service service,
             Map<String, Object> launchConfigData, List<PooledResource> allocatedPorts) {
-        List<PortSpec> ports = getServicePorts(launchConfigData);
+        List<PortSpec> ports = getServicePorts(service, launchConfigData);
         List<String> newPorts = new ArrayList<>();
         List<PortSpec> toAllocate = new ArrayList<>();
         for (PortSpec port : ports) {

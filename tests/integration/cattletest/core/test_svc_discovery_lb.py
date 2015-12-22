@@ -30,9 +30,9 @@ def test_create_env_and_svc(client, image_uuid):
 def test_activate_lb_svc(super_client, context, client, image_uuid):
     context.host
     env = _create_stack(client)
-
+    ports = ['8189:8189', '910:1001']
     launch_config = {"imageUuid": image_uuid,
-                     "ports": [8082, '910:1001']}
+                     "ports": ports}
 
     svc = client. \
         create_loadBalancerService(name=random_str(),
@@ -40,6 +40,8 @@ def test_activate_lb_svc(super_client, context, client, image_uuid):
                                    launchConfig=launch_config)
     svc = client.wait_success(svc)
     assert svc.state == "inactive"
+    assert svc.launchConfig.ports == ports
+
     svc = client.wait_success(svc.activate(), 120)
     # perform validation
     svc = _validate_lb_svc_activate(env, svc, client,
