@@ -31,6 +31,7 @@ import java.util.Map;
 import java.util.Set;
 import javax.inject.Inject;
 
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -86,8 +87,8 @@ public class AuditServiceImpl implements AuditService{
         String authType = (String) request.getAttribute(AccountConstants.AUTH_TYPE);
         String resourceId =request.getResponseObject() instanceof Resource ? ((Resource) request.getResponseObject()).getId(): null;
         String resourceType = convertResourceType(request.getType());
-        String eventType = "api." + resourceType + "." + (requestObject.get("action") != null ? (String) requestObject.get
-                ("action") :convertToAction(request.getMethod()));
+        String eventType = "api." + resourceType + "." + (StringUtils.isNotBlank(request.getAction()) ?
+                request.getAction() :convertToAction(request.getMethod()));
         publishEvent(auditLogDao.create(resourceType, parseId(resourceId), data, user,
                 policy.getAccountId(), policy.getAuthenticatedAsAccountId(), eventType, authType, runtime, null, request.getClientIp()));
     }
