@@ -135,22 +135,28 @@ public class ProjectResourceManager extends AbstractObjectResourceManager {
         if (!ProjectConstants.TYPE.equals(type)) {
             return null;
         }
-        return createProject(request);
+        return createProject(type, request);
     }
 
     @SuppressWarnings("unchecked")
-    private Account createProject(ApiRequest apiRequest) {
+    private Account createProject(String type, ApiRequest apiRequest) {
         Policy policy = (Policy) ApiContext.getContext().getPolicy();
         Map<String, Object> project = CollectionUtils.toMap(apiRequest.getRequestObject());
         if (authDao.getAccountById(policy.getAccountId()).getKind().equalsIgnoreCase(ProjectConstants.TYPE)) {
             throw new ClientVisibleException(ResponseCodes.FORBIDDEN);
         }
-        Account newProject = authDao.createProject((String) project.get("name"), (String) project.get("description"));
-        List<Map<String, String>> members = (ArrayList<Map<String, String>>) project.get("members");
-        projectMemberResourceManager.setMembers(newProject, members);
-        policy.grantObjectAccess(newProject);
-
-        return newProject;
+        Object object = super.createInternal(type, apiRequest);
+        if (object instanceof Account) {
+            Account newProject = (Account) object;
+            newProject.setKind(AccountConstants.PROJECT_KIND);
+            objectManager.persist(newProject);
+            List<Map<String, String>> members = (ArrayList<Map<String, String>>) project.get("members");
+            projectMemberResourceManager.setMembers(newProject, members);
+            policy.grantObjectAccess(newProject);
+            return objectManager.reload(newProject);
+        } else {
+            throw new ClientVisibleException(ResponseCodes.INTERNAL_SERVER_ERROR);
+        }
     }
 
     public Account createProjectForUser(Identity identity) {
