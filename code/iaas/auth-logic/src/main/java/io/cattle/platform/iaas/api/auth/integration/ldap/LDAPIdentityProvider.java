@@ -27,6 +27,7 @@ import javax.naming.ldap.LdapContext;
 import javax.naming.ldap.LdapName;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.pool2.impl.AbandonedConfig;
 import org.apache.commons.pool2.impl.GenericObjectPool;
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 import org.slf4j.Logger;
@@ -170,8 +171,9 @@ public abstract class LDAPIdentityProvider implements IdentityProvider{
     }
 
     protected Identity attributesToIdentity(LdapName dn){
+        LdapContext context = getServiceContext();
         try {
-            Attributes search = getServiceContext().getAttributes(dn);
+            Attributes search = context.getAttributes(dn);
             String externalIdType;
             String accountName;
             String externalId = dn.toString();
@@ -202,6 +204,10 @@ public abstract class LDAPIdentityProvider implements IdentityProvider{
             return new Identity(externalIdType, externalId, accountName, null, null, login);
         } catch (NamingException e) {
             return null;
+        } finally {
+            if (context != null) {
+                getContextPool().returnObject(context);
+            }
         }
     }
 
@@ -327,9 +333,16 @@ public abstract class LDAPIdentityProvider implements IdentityProvider{
     public void init() {
         if (getContextPool() == null) {
             GenericObjectPoolConfig config = new GenericObjectPoolConfig();
+            config.setTestOnBorrow(true);
             PoolConfig.setConfig(config, "ldap.context.pool", "ldap.context.pool.", "global.pool.");
             LdapServiceContextPoolFactory serviceContextPoolFactory = new LdapServiceContextPoolFactory(getConstantsConfig());
             setContextPool(new GenericObjectPool<>(serviceContextPoolFactory, config));
+            AbandonedConfig abandonedConfig = new AbandonedConfig();
+            abandonedConfig.setUseUsageTracking(true);
+            abandonedConfig.setRemoveAbandonedOnMaintenance(true);
+            abandonedConfig.setRemoveAbandonedOnBorrow(true);
+            abandonedConfig.setRemoveAbandonedTimeout(60);
+            getContextPool().setAbandonedConfig(abandonedConfig);
         }
     }
 

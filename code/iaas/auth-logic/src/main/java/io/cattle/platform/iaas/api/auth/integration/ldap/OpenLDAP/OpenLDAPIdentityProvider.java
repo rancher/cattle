@@ -78,13 +78,18 @@ public class OpenLDAPIdentityProvider extends LDAPIdentityProvider implements Id
     private Set<Identity> getIdentities(LdapName dn) {
         Set<Identity> identities = new HashSet<>();
         Attributes userAttributes;
+        LdapContext context = getServiceContext();
         try {
-            userAttributes = getServiceContext().getAttributes(dn);
+            userAttributes = context.getAttributes(dn);
             if (!hasPermission(userAttributes)){
                 throw new ClientVisibleException(ResponseCodes.UNAUTHORIZED);
             }
         } catch (NamingException e) {
             throw new ClientVisibleException(ResponseCodes.UNAUTHORIZED);
+        } finally {
+            if (context != null) {
+                getContextPool().returnObject(context);
+            }
         }
         Attribute memberOf = userAttributes.get(getConstantsConfig().getUserMemberAttribute());
         try {

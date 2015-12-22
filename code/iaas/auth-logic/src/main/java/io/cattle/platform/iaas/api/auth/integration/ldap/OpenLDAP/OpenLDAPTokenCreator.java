@@ -4,6 +4,8 @@ import io.cattle.platform.iaas.api.auth.SecurityConstants;
 import io.cattle.platform.iaas.api.auth.dao.AuthDao;
 import io.cattle.platform.iaas.api.auth.identity.Token;
 import io.cattle.platform.iaas.api.auth.integration.interfaces.TokenCreator;
+import io.cattle.platform.iaas.api.auth.integration.ldap.ServiceContextCreationException;
+import io.cattle.platform.iaas.api.auth.integration.ldap.ServiceContextRetrievalException;
 import io.cattle.platform.iaas.api.auth.projects.ProjectResourceManager;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.token.TokenService;
@@ -37,7 +39,11 @@ public class OpenLDAPTokenCreator extends OpenLDAPConfigurable implements TokenC
         if (!isConfigured()) {
             throw new ClientVisibleException(ResponseCodes.INTERNAL_SERVER_ERROR, OpenLDAPConstants.CONFIG, "Ldap Not Configured.", null);
         }
-        return OpenLDAPUtils.createToken(ADIdentitySearchProvider.getIdentities(username, password), null);
+        try{
+            return OpenLDAPUtils.createToken(ADIdentitySearchProvider.getIdentities(username, password), null);
+        } catch (ServiceContextCreationException | ServiceContextRetrievalException e){
+            throw new ClientVisibleException(ResponseCodes.INTERNAL_SERVER_ERROR, "LdapDown", "Could not talk to ldap", null);
+        }
     }
 
     @Override
