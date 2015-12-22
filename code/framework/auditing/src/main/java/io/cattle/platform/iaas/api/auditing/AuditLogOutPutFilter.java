@@ -18,7 +18,6 @@ public class AuditLogOutPutFilter implements ResourceOutputFilter {
     @Inject
     JsonMapper jsonMapper;
 
-    @SuppressWarnings("unchecked")
     @Override
     public Resource filter(ApiRequest request, Object original, Resource converted) {
         if (original instanceof AuditLogRecord) {

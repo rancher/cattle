@@ -14,7 +14,6 @@ import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.meta.ObjectMetaDataManager;
 import io.cattle.platform.object.util.ObjectUtils;
 import io.cattle.platform.process.externalevent.ExternalEventConstants;
-import io.cattle.platform.util.type.CollectionUtils;
 import io.github.ibuildthecloud.gdapi.context.ApiContext;
 import io.github.ibuildthecloud.gdapi.json.JsonMapper;
 import io.github.ibuildthecloud.gdapi.model.Resource;
@@ -29,6 +28,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+
 import javax.inject.Inject;
 
 import org.apache.commons.lang3.StringUtils;
@@ -41,11 +41,18 @@ public class AuditServiceImpl implements AuditService{
             new HashSet<>(Arrays.asList(
                     "publish",
                     "configContent".toLowerCase(),
+                    "externalHandler".toLowerCase(),
+                    "externalService".toLowerCase(),
+                    "hostApiProxyToken".toLowerCase(),
                     "token",
-                    ContainerEventConstants.CONTAINER_EVENT_KIND.toLowerCase(),
+                    "scripts",
                     "serviceEvent".toLowerCase(),
                     "userPreference".toLowerCase(),
-                    ExternalEventConstants.KIND_EXTERNAL_EVENT.toLowerCase()
+                    ContainerEventConstants.CONTAINER_EVENT_KIND.toLowerCase(),
+                    ExternalEventConstants.KIND_EXTERNAL_EVENT.toLowerCase(),
+                    ExternalEventConstants.KIND_SERVICE_EVENT.toLowerCase(),
+                    ExternalEventConstants.KIND_VOLUME_EVENT.toLowerCase(),
+                    ExternalEventConstants.KIND_STORAGE_POOL_EVENT.toLowerCase()
             )));
 
     @Inject
@@ -69,7 +76,6 @@ public class AuditServiceImpl implements AuditService{
             return;
         }
         Map<String, Object> data = new HashMap<>();
-        Map<?, ?> requestObject = CollectionUtils.toMap(request.getRequestObject());
         putInAsString(data, "requestObject", "Failed to convert request object to json.", request.getRequestObject());
         putInAsString(data, "responseObject", "Failed to convert response object to json.", request.getResponseObject());
         data.put("responseCode", request.getResponseCode());
