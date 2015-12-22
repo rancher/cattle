@@ -25,30 +25,35 @@ public class LabelsProviderProcessHandler extends AgentBasedProcessHandler imple
 
     @Inject
     AgentInstanceDao agentInstanceDao;
-    
+
     @Inject
     AgentInstanceFactory agentInstanceFactory;
-    
+
     @Inject
     LabelsService labelsService;
-    
+
+    @Override
     protected Object getAgentResource(ProcessState state, ProcessInstance process, Object dataResource) {
         Object instance = getObjectByRelationship("instance", state.getResource());
         Long accountId = (Long)ObjectUtils.getAccountId(instance);
         List<Long> agentIds = agentInstanceDao.getAgentProvider(SystemLabels.LABEL_AGENT_SERVICE_LABELS_PROVIDER, accountId);
         Collections.sort(agentIds);
-        return agentIds.size() == 0 ? null : agentIds.get(0);
+        Long agentId = agentIds.size() == 0 ? null : agentIds.get(0);
+        if ((instance instanceof Instance) && agentIds.contains(((Instance) instance).getAgentId())) {
+            return null;
+        }
+        return agentId;
     }
-    
+
     @Override
     protected void postProcessEvent(EventVO<?> event, Event reply, ProcessState state, ProcessInstance process,
             Object eventResource, Object dataResource, Object agentResource) {
-        Map<String, String> labels = CollectionUtils.toMap(CollectionUtils.getNestedValue(reply.getData(), 
+        Map<String, String> labels = CollectionUtils.toMap(CollectionUtils.getNestedValue(reply.getData(),
                 "instanceHostMap", "instance", "+data", "+fields", "+labels"));
-        
+
         InstanceHostMap map = (InstanceHostMap)state.getResource();
         Instance instance = getObjectManager().loadResource(Instance.class, map.getInstanceId());
-        
+
         for (Map.Entry<String, String>label : labels.entrySet()) {
             labelsService.createContainerLabel(instance.getAccountId(), instance.getId(), label.getKey(), label.getValue());
         }
