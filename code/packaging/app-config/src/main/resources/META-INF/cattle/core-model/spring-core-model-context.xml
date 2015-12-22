@@ -35,6 +35,7 @@
                 <value>io.cattle.platform.core.addon.RollingRestartStrategy</value>
                 <value>io.cattle.platform.core.addon.ServiceRestart</value>
                 <value>io.cattle.platform.core.addon.ServicesPortRange</value>
+                <value>io.cattle.platform.core.addon.RecreateOnQuorumStrategyConfig</value>
             </set>
         </property>
     </bean>

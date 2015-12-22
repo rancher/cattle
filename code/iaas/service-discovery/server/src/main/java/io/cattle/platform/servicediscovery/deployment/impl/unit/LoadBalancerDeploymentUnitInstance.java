@@ -1,4 +1,4 @@
-package io.cattle.platform.servicediscovery.deployment.impl;
+package io.cattle.platform.servicediscovery.deployment.impl.unit;
 
 import io.cattle.platform.archaius.util.ArchaiusUtil;
 import io.cattle.platform.core.constants.InstanceConstants;

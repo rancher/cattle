@@ -26,7 +26,7 @@ import io.cattle.platform.object.process.StandardProcess;
 import io.cattle.platform.object.util.DataUtils;
 import io.cattle.platform.servicediscovery.api.constants.ServiceDiscoveryConstants;
 import io.cattle.platform.servicediscovery.api.dao.ServiceConsumeMapDao;
-import io.cattle.platform.servicediscovery.deployment.impl.ServiceLinkLock;
+import io.cattle.platform.servicediscovery.deployment.impl.lock.ServiceLinkLock;
 import io.cattle.platform.util.type.CollectionUtils;
 
 import java.util.ArrayList;

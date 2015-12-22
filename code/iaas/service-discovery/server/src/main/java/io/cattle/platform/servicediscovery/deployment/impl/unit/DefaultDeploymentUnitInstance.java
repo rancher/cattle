@@ -1,4 +1,4 @@
-package io.cattle.platform.servicediscovery.deployment.impl;
+package io.cattle.platform.servicediscovery.deployment.impl.unit;
 
 import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.InstanceConstants;

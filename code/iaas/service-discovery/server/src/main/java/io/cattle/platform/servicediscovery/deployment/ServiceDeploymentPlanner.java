@@ -1,8 +1,18 @@
 package io.cattle.platform.servicediscovery.deployment;
 
+import io.cattle.platform.core.addon.InstanceHealthCheck;
+import io.cattle.platform.core.addon.InstanceHealthCheck.Strategy;
+import io.cattle.platform.core.addon.RecreateOnQuorumStrategyConfig;
+import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.model.Service;
+import io.cattle.platform.servicediscovery.api.constants.ServiceDiscoveryConstants;
+import io.cattle.platform.servicediscovery.api.util.ServiceDiscoveryUtil;
 import io.cattle.platform.servicediscovery.deployment.impl.DeploymentManagerImpl.DeploymentServiceContext;
-import io.cattle.platform.servicediscovery.deployment.impl.DeploymentUnit;
+import io.cattle.platform.servicediscovery.deployment.impl.healthaction.HealthCheckActionHandler;
+import io.cattle.platform.servicediscovery.deployment.impl.healthaction.NoopHealthCheckActionHandler;
+import io.cattle.platform.servicediscovery.deployment.impl.healthaction.RecreateHealthCheckActionHandler;
+import io.cattle.platform.servicediscovery.deployment.impl.healthaction.RecreateOnQuorumHealthCheckActionHandler;
+import io.cattle.platform.servicediscovery.deployment.impl.unit.DeploymentUnit;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -25,28 +35,58 @@ public abstract class ServiceDeploymentPlanner {
     private List<DeploymentUnit> incompleteUnits = new ArrayList<>();
     protected DeploymentServiceContext context;
     private List<DeploymentUnit> allUnits = new ArrayList<>();
+    protected HealthCheckActionHandler healthActionHandler = new RecreateHealthCheckActionHandler();
 
     public ServiceDeploymentPlanner(List<Service> services, List<DeploymentUnit> units,
             DeploymentServiceContext context) {
         this.services = services;
         this.context = context;
+        setHealthCheckAction(services, context);
 
+        List<DeploymentUnit> healthyUnhealthyUnits = new ArrayList<>();
         if (units != null) {
             for (DeploymentUnit unit : units) {
                 if (unit.isError()) {
                     badUnits.add(unit);
                 } else {
-                    if (unit.isUnhealthy()) {
-                        unhealthyUnits.add(unit);
-                    } else {
-                        healthyUnits.add(unit);
-                    }
+                    healthyUnhealthyUnits.add(unit);
                     if (!unit.isComplete()) {
                         incompleteUnits.add(unit);
                     }
                 }
             }
+            healthActionHandler.populateHealthyUnhealthyUnits(this.healthyUnits, this.unhealthyUnits,
+                    healthyUnhealthyUnits);
             allUnits.addAll(units);
+        }
+        
+    }
+
+    protected void setHealthCheckAction(List<Service> services, DeploymentServiceContext context) {
+        boolean set = false;
+        for (Service service : services) {
+            if (set) {
+                break;
+            }
+            // get the strategy from the first service
+            Object healthCheckObj = ServiceDiscoveryUtil.getLaunchConfigObject(service,
+                    ServiceDiscoveryConstants.PRIMARY_LAUNCH_CONFIG_NAME, InstanceConstants.FIELD_HEALTH_CHECK);
+            if (healthCheckObj != null) {
+                InstanceHealthCheck healthCheck = context.jsonMapper.convertValue(healthCheckObj,
+                        InstanceHealthCheck.class);
+                if (healthCheck.getStrategy() == Strategy.none) {
+                    healthActionHandler = new NoopHealthCheckActionHandler();
+                    set = true;
+                } else if (healthCheck.getStrategy() == Strategy.recreateOnQuorum) {
+                    if (healthCheck
+                            .getRecreateOnQuorumStrategyConfig() == null) {
+                        healthCheck.setRecreateOnQuorumStrategyConfig(new RecreateOnQuorumStrategyConfig(1));
+                    }
+                    healthActionHandler = new RecreateOnQuorumHealthCheckActionHandler(healthCheck
+                            .getRecreateOnQuorumStrategyConfig().getQuorum());
+                    set = true;
+                }
+            }
         }
     }
 
@@ -103,15 +143,6 @@ public abstract class ServiceDeploymentPlanner {
         return healthyUnits;
     }
 
-    public void cleanupUnhealthyUnits() {
-        Iterator<DeploymentUnit> it = this.unhealthyUnits.iterator();
-        while (it.hasNext()) {
-            DeploymentUnit next = it.next();
-            next.remove(true);
-            it.remove();
-        }
-    }
-
     public void cleanupBadUnits() {
         Iterator<DeploymentUnit> it = this.badUnits.iterator();
         while (it.hasNext()) {
@@ -128,5 +159,18 @@ public abstract class ServiceDeploymentPlanner {
             next.cleanupUnit();
             it.remove();
         }
+    }
+
+    public void cleanupUnhealthyUnits() {
+        Iterator<DeploymentUnit> it = this.unhealthyUnits.iterator();
+        while (it.hasNext()) {
+            DeploymentUnit next = it.next();
+            next.remove(true);
+            it.remove();
+        }
+    }
+
+    public List<DeploymentUnit> getUnhealthyUnits() {
+        return this.unhealthyUnits;
     }
 }

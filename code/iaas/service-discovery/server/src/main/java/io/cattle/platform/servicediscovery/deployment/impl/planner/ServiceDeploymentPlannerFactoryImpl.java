@@ -1,4 +1,4 @@
-package io.cattle.platform.servicediscovery.deployment.impl;
+package io.cattle.platform.servicediscovery.deployment.impl.planner;
 
 import io.cattle.platform.core.model.Service;
 import io.cattle.platform.servicediscovery.api.constants.ServiceDiscoveryConstants;
@@ -6,6 +6,7 @@ import io.cattle.platform.servicediscovery.api.util.ServiceDiscoveryUtil;
 import io.cattle.platform.servicediscovery.deployment.ServiceDeploymentPlanner;
 import io.cattle.platform.servicediscovery.deployment.ServiceDeploymentPlannerFactory;
 import io.cattle.platform.servicediscovery.deployment.impl.DeploymentManagerImpl.DeploymentServiceContext;
+import io.cattle.platform.servicediscovery.deployment.impl.unit.DeploymentUnit;
 
 import java.util.List;
 import java.util.Map;

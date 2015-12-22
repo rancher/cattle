@@ -27,7 +27,7 @@ import io.cattle.platform.servicediscovery.api.constants.ServiceDiscoveryConstan
 import io.cattle.platform.servicediscovery.api.dao.ServiceExposeMapDao;
 import io.cattle.platform.servicediscovery.api.util.ServiceDiscoveryUtil;
 import io.cattle.platform.servicediscovery.deployment.DeploymentManager;
-import io.cattle.platform.servicediscovery.deployment.impl.ServicesSidekickLock;
+import io.cattle.platform.servicediscovery.deployment.impl.lock.ServicesSidekickLock;
 import io.cattle.platform.servicediscovery.service.ServiceDiscoveryService;
 import io.cattle.platform.servicediscovery.upgrade.UpgradeManager;
 

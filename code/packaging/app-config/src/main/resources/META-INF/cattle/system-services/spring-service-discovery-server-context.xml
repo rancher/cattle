@@ -65,8 +65,8 @@
     <bean class="io.cattle.platform.servicediscovery.service.lbservice.impl.ServiceExposeMapChangeLoadBalancerServiceLookup" />
     
     <bean class="io.cattle.platform.servicediscovery.deployment.impl.DeploymentManagerImpl" />
-    <bean class="io.cattle.platform.servicediscovery.deployment.impl.DeploymentUnitInstanceFactoryImpl" />
-    <bean class="io.cattle.platform.servicediscovery.deployment.impl.ServiceDeploymentPlannerFactoryImpl" />
+    <bean class="io.cattle.platform.servicediscovery.deployment.impl.unit.DeploymentUnitInstanceFactoryImpl" />
+    <bean class="io.cattle.platform.servicediscovery.deployment.impl.planner.ServiceDeploymentPlannerFactoryImpl" />
     <bean class="io.cattle.platform.servicediscovery.upgrade.impl.UpgradeManagerImpl" />
     
     <bean class="io.cattle.platform.allocator.service.AllocatorServiceImpl" />
@@ -86,4 +86,5 @@
         <aop:advisor advice-ref="ServiceMapDaoImplAdvice" pointcut="execution(* io.cattle.platform.servicediscovery.api.dao.ServiceExposeMapDao.*(..))" />
         <aop:advisor advice-ref="ServiceMapDaoImplAdvice" pointcut="execution(* io.cattle.platform.servicediscovery.api.dao.ServiceConsumeMapDao.*(..))" />
     </aop:config>
+    
 </beans>

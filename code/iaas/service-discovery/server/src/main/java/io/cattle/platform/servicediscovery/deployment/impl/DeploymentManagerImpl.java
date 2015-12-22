@@ -28,6 +28,9 @@ import io.cattle.platform.servicediscovery.deployment.DeploymentUnitInstanceFact
 import io.cattle.platform.servicediscovery.deployment.DeploymentUnitInstanceIdGenerator;
 import io.cattle.platform.servicediscovery.deployment.ServiceDeploymentPlanner;
 import io.cattle.platform.servicediscovery.deployment.ServiceDeploymentPlannerFactory;
+import io.cattle.platform.servicediscovery.deployment.impl.lock.ServicesSidekickLock;
+import io.cattle.platform.servicediscovery.deployment.impl.unit.DeploymentUnit;
+import io.cattle.platform.servicediscovery.deployment.impl.unit.DeploymentUnitInstanceIdGeneratorImpl;
 import io.cattle.platform.servicediscovery.service.ServiceDiscoveryService;
 
 import java.util.ArrayList;
@@ -67,6 +70,7 @@ public class DeploymentManagerImpl implements DeploymentManager {
     EventService eventService;
     @Inject
     JsonMapper mapper;
+
 
     @Override
     public boolean isHealthy(Service service) {

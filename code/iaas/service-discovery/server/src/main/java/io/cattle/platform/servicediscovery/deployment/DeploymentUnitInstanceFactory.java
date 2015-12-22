@@ -2,7 +2,7 @@ package io.cattle.platform.servicediscovery.deployment;
 
 import io.cattle.platform.core.model.Service;
 import io.cattle.platform.servicediscovery.deployment.impl.DeploymentManagerImpl.DeploymentServiceContext;
-import io.cattle.platform.servicediscovery.deployment.impl.DeploymentUnit;
+import io.cattle.platform.servicediscovery.deployment.impl.unit.DeploymentUnit;
 
 import java.util.List;
 import java.util.Map;
