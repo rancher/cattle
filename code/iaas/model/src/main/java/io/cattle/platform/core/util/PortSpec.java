@@ -34,7 +34,7 @@ public class PortSpec {
         this.protocol = port.getProtocol();
     }
 
-    public PortSpec(String spec) {
+    public PortSpec(String spec, boolean defaultProtocol) {
         Matcher m = PATTERN.matcher(spec);
 
         if ( ! m.matches() ) {
@@ -53,17 +53,23 @@ public class PortSpec {
             throw new ClientVisibleException(ResponseCodes.UNPROCESSABLE_ENTITY, INVALID_PUBLIC_PORT);
         }
 
-        if ( protocol == null ) {
-            protocol = "tcp";
-        }
-
-        if ( ! PROTOCOLS.contains(protocol) ) {
-            throw new ClientVisibleException(ResponseCodes.UNPROCESSABLE_ENTITY, INVALID_PROTOCOL);
+        if (defaultProtocol) {
+            if (protocol == null) {
+                protocol = "tcp";
+            } else {
+                if (!PROTOCOLS.contains(protocol)) {
+                    throw new ClientVisibleException(ResponseCodes.UNPROCESSABLE_ENTITY, INVALID_PROTOCOL);
+                }
+            }
         }
 
         this.publicPort = publicPort;
         this.privatePort = privatePort;
         this.protocol = protocol;
+    }
+
+    public PortSpec(String spec) {
+        this(spec, true);
     }
 
     public Integer getPublicPort() {
