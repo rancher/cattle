@@ -30,7 +30,7 @@ public class LdapServiceContextPoolFactory implements PooledObjectFactory<LdapCo
     @Override
     public PooledObject<LdapContext> makeObject() throws Exception {
         String username = config.getServiceAccountUsername();
-        if (StringUtils.isNotBlank(config.getLoginDomain())) {
+        if (StringUtils.isNotBlank(config.getLoginDomain()) && !username.contains("\\")) {
             username = config.getLoginDomain() + '\\' +username;
         }
         Hashtable<String, String> props = new Hashtable<>();
