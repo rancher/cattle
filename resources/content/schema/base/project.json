@@ -68,6 +68,10 @@
         "attributes" : {
         "scheduleUpdate" : true
       }
+    },
+    "uuid": {
+      "type": "string",
+      "nullable": "false"
     }
   }
 }
