@@ -57,6 +57,7 @@
         "publicEndpoint" : "r",
         "haproxyConfig" : "cru",
         "rollingRestartStrategy" : "cr",
+        "servicesPortRange" : "cru",
         "end" : ""
     }
 }

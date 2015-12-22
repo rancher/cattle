@@ -277,6 +277,10 @@
         "projectMember.profilePicture" : "r",
         "projectMember.projectId" : "r",
 
+        "servicesPortRange": "cru",
+        "servicesPortRange.startPort": "cru",
+        "servicesPortRange.endPort": "cru",
+
         "pullTask": "r",
         "pullTask.labels": "cr",
         "pullTask.mode": "cr",

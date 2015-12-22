@@ -83,6 +83,7 @@ public class ServiceCreateValidationFilter extends AbstractDefaultResourceManage
         return super.create(type, request, next);
     }
 
+
     @SuppressWarnings("unchecked")
     public ApiRequest setHealthCheck(String type, ApiRequest request) {
         if (!type.equalsIgnoreCase(ServiceDiscoveryConstants.KIND.LOADBALANCERSERVICE.name())) {

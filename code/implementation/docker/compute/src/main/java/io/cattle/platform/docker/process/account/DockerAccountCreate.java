@@ -1,6 +1,7 @@
 package io.cattle.platform.docker.process.account;
 
 import io.cattle.platform.archaius.util.ArchaiusUtil;
+import io.cattle.platform.core.addon.ServicesPortRange;
 import io.cattle.platform.core.constants.AccountConstants;
 import io.cattle.platform.core.constants.NetworkConstants;
 import io.cattle.platform.core.constants.NetworkServiceConstants;
@@ -14,7 +15,9 @@ import io.cattle.platform.engine.handler.HandlerResult;
 import io.cattle.platform.engine.handler.ProcessPostListener;
 import io.cattle.platform.engine.process.ProcessInstance;
 import io.cattle.platform.engine.process.ProcessState;
+import io.cattle.platform.json.JsonMapper;
 import io.cattle.platform.object.meta.ObjectMetaDataManager;
+import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.process.common.handler.AbstractObjectProcessLogic;
 import io.cattle.platform.util.type.CollectionUtils;
 
@@ -39,6 +42,9 @@ public class DockerAccountCreate extends AbstractObjectProcessLogic implements P
     @Inject
     GenericResourceDao resourceDao;
 
+    @Inject
+    JsonMapper jsonMapper;
+
     @Override
     public String[] getProcessNames() {
         return new String[]{"account.create"};
@@ -58,9 +64,15 @@ public class DockerAccountCreate extends AbstractObjectProcessLogic implements P
         createNetwork(DockerNetworkConstants.KIND_DOCKER_CONTAINER, account, networksByKind, "Docker Container Network Mode", null);
         createNetwork(DockerNetworkConstants.KIND_DOCKER_BRIDGE, account, networksByKind, "Docker Bridge Network Mode", null);
 
+        ServicesPortRange portRange = DataAccessor.field(account, AccountConstants.FIELD_PORT_RANGE, jsonMapper,
+                ServicesPortRange.class);
+        if (portRange == null) {
+            portRange = AccountConstants.getDefaultServicesPortRange();
+        }
+
         Network managedNetwork = createManagedNetwork(account, networksByKind);
         return new HandlerResult(AccountConstants.FIELD_DEFAULT_NETWORK_ID, managedNetwork.getId(),
-                AccountConstants.FIELD_PORT_RANGE, "49153-65535").withShouldContinue(true);
+                AccountConstants.FIELD_PORT_RANGE, portRange).withShouldContinue(true);
     }
 
     protected Network createManagedNetwork(Account account, Map<String, Network> networksByKind) {

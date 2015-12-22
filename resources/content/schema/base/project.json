@@ -63,8 +63,7 @@
       }
     },
     "servicesPortRange": {
-        "type" : "string",
-        "default" : "49153-65535",
+        "type" : "servicesPortRange",
         "nullable" : true,
         "attributes" : {
         "scheduleUpdate" : true

@@ -240,10 +240,7 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
     }
 
     @SuppressWarnings("unchecked")
-    private List<PortSpec> getServicePorts(Service service) {
-        Map<String, Object> launchConfigData = DataAccessor.fields(service)
-                .withKey(ServiceDiscoveryConstants.FIELD_LAUNCH_CONFIG).withDefault(Collections.EMPTY_MAP)
-                .as(Map.class);
+    private List<PortSpec> getServicePorts(Map<String, Object> launchConfigData) {
         if (launchConfigData.get(InstanceConstants.FIELD_PORTS) == null) {
             return new ArrayList<>();
         }
@@ -258,47 +255,81 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
     @Override
     @SuppressWarnings("unchecked")
     public void setPorts(Service service) {
-        List<PortSpec> ports = getServicePorts(service);
-        Map<String, Object> launchConfigData = DataAccessor.fields(service)
+        Account env = objectManager.loadResource(Account.class, service.getAccountId());
+        List<PooledResource> allocatedPorts = allocatePorts(env, service);
+        // update primary launchConfig
+        Map<String, Object> launchConfig = DataAccessor.fields(service)
                 .withKey(ServiceDiscoveryConstants.FIELD_LAUNCH_CONFIG).withDefault(Collections.EMPTY_MAP)
                 .as(Map.class);
-        Account env = objectManager.loadResource(Account.class, service.getAccountId());
-        List<String> newPorts = new ArrayList<>();
 
+        setRandomPublicPorts(env, service, launchConfig, allocatedPorts);
+
+        // update secondary launch configs
+        List<Object> secondaryLaunchConfigs = DataAccessor.fields(service)
+                .withKey(ServiceDiscoveryConstants.FIELD_SECONDARY_LAUNCH_CONFIGS)
+                .withDefault(Collections.EMPTY_LIST).as(
+                        List.class);
+        for (Object secondaryLaunchConfig : secondaryLaunchConfigs) {
+            setRandomPublicPorts(env, service, (Map<String, Object>) secondaryLaunchConfig, allocatedPorts);
+        }
+
+        DataAccessor.fields(service).withKey(ServiceDiscoveryConstants.FIELD_LAUNCH_CONFIG).set(launchConfig);
+        DataAccessor.fields(service).withKey(ServiceDiscoveryConstants.FIELD_SECONDARY_LAUNCH_CONFIGS)
+                .set(secondaryLaunchConfigs);
+        objectManager.persist(service);
+    }
+
+    @SuppressWarnings("unchecked")
+    protected List<PooledResource> allocatePorts(Account env, Service service) {
+        int toAllocate = 0;
+        for (String launchConfigName : ServiceDiscoveryUtil.getServiceLaunchConfigNames(service)) {
+            Object ports = ServiceDiscoveryUtil.getLaunchConfigObject(service, launchConfigName,
+                    InstanceConstants.FIELD_PORTS);
+            if (ports != null) {
+                for (String port : (List<String>) ports) {
+                    if (new PortSpec(port).getPublicPort() == null) {
+                        toAllocate++;
+                    }
+                }
+            }
+        }
+        List<PooledResource> resource = poolManager.allocateResource(env, service,
+                new PooledResourceOptions().withCount(toAllocate).withQualifier(
+                        ResourcePoolConstants.ENVIRONMENT_PORT));
+        if (resource == null) {
+            resource = new ArrayList<>();
+        }
+        return resource;
+    }
+
+    protected void setRandomPublicPorts(Account env, Service service,
+            Map<String, Object> launchConfigData, List<PooledResource> allocatedPorts) {
+        List<PortSpec> ports = getServicePorts(launchConfigData);
+        List<String> newPorts = new ArrayList<>();
         List<PortSpec> toAllocate = new ArrayList<>();
         for (PortSpec port : ports) {
             if (port.getPublicPort() == null) {
                 toAllocate.add(port);
+            } else {
+                newPorts.add(port.toSpec());
             }
         }
-
-        List<PooledResource> resource = poolManager.allocateResource(env, service,
-                new PooledResourceOptions().withCount(toAllocate.size()).withQualifier(
-                        ResourcePoolConstants.ENVIRONMENT_PORT));
         
-        int i = 0;
         for (PortSpec port : toAllocate) {
-            if (resource.size() <= i) {
-                break;
+            if (!allocatedPorts.isEmpty()) {
+                port.setPublicPort(new Integer(allocatedPorts.get(0).getName()));
+                allocatedPorts.remove(0);
             }
-            port.setPublicPort(new Integer(resource.get(i).getName()));
             newPorts.add(port.toSpec());
-            i++;
         }
 
         if (!newPorts.isEmpty()) {
             launchConfigData.put(InstanceConstants.FIELD_PORTS, newPorts);
-            DataAccessor.fields(service).withKey(ServiceDiscoveryConstants.FIELD_LAUNCH_CONFIG).set(launchConfigData);
-            objectManager.persist(service);
         }
     }
 
     @Override
     public void releasePorts(Service service) {
-        List<PortSpec> ports = getServicePorts(service);
-        if (ports.isEmpty()) {
-            return;
-        }
         Account account = objectManager.loadResource(Account.class, service.getAccountId());
         poolManager.releaseResource(account, service, new PooledResourceOptions().withQualifier(
                 ResourcePoolConstants.ENVIRONMENT_PORT));
