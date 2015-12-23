@@ -10,7 +10,6 @@ import io.cattle.platform.core.constants.GenericObjectConstants;
 import io.cattle.platform.core.model.Credential;
 import io.cattle.platform.core.model.GenericObject;
 import io.cattle.platform.core.model.Host;
-import io.cattle.platform.docker.client.DockerImage;
 import io.cattle.platform.engine.handler.HandlerResult;
 import io.cattle.platform.engine.handler.ProcessHandler;
 import io.cattle.platform.engine.process.ProcessInstance;
@@ -166,17 +165,12 @@ public class PullTaskCreate extends AbstractGenericObjectProcessLogic implements
             return null;
         }
 
-        DockerImage dockerImage = DockerImage.parse(image);
-        if (dockerImage == null) {
-            return null;
-        }
-
         Map<String, Object> pullInfo = new HashMap<>();
         pullInfo.put(TAG, tag);
         pullInfo.put(MODE, mode);
         pullInfo.put(COMPLETE, complete);
         pullInfo.put("kind", "docker");
-        CollectionUtils.setNestedValue(pullInfo, dockerImage, "image", "data", "dockerImage");
+        CollectionUtils.setNestedValue(pullInfo, image, "image", "data", "dockerImage");
         if (cred != null) {
             CollectionUtils.setNestedValue(pullInfo, serializer.serialize(cred).get(CredentialConstants.TYPE),
                     "image", "registryCredential");
