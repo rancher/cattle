@@ -11,7 +11,7 @@
         "account.externalId" : "cru",
         "account.externalIdType" : "cru",
         "account.kind" : "cru",
-        "account.uuid" : "r",
+        "account.uuid" : "cr",
         "account.projectId" : "r",
 
         "activeSetting" : "rud",

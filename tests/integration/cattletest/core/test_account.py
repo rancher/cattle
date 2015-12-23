@@ -25,6 +25,15 @@ def test_account_create(kind, admin_user_client, random_str):
     assert len(creds) == 0
 
 
+def test_account_uuid(admin_user_client):
+    a = admin_user_client.create_account(uuid=None)
+    assert a.uuid is not None
+
+    uuid = random_str()
+    a = admin_user_client.create_account(uuid=uuid)
+    assert a.uuid == uuid
+
+
 def test_account_external(admin_user_client):
     account = admin_user_client.create_account(externalId='extid',
                                                externalIdType='extType')

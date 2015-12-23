@@ -520,7 +520,7 @@ def test_project_auth(admin_user_client, user_client, project_client):
         'description': 'cru',
         'kind': 'r',
         'name': 'cru',
-        'uuid': 'r',
+        'uuid': 'cr',
         'data': 'r',
         'members': 'cr',
         'swarm': 'cru',
@@ -1189,7 +1189,7 @@ def test_account_auth(admin_user_client, user_client, project_client):
         'removeTime': 'r',
         'data': 'r',
         'kind': 'cru',
-        'uuid': 'r'
+        'uuid': 'cr'
     })
 
     auth_check(user_client.schema, 'account', 'r', {

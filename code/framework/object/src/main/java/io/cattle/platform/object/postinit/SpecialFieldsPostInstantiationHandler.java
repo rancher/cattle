@@ -14,7 +14,6 @@ import org.apache.commons.beanutils.BeanUtils;
 
 public class SpecialFieldsPostInstantiationHandler implements ObjectPostInstantiationHandler, Priority {
 
-    public static final String UUID = "uuid";
     public static final String ZONE_ID = "zoneId";
     public static final String CREATED = "created";
     public static final String STATE = "state";
@@ -24,7 +23,6 @@ public class SpecialFieldsPostInstantiationHandler implements ObjectPostInstanti
 
     @Override
     public <T> T postProcess(T obj, Class<T> clz, Map<String, Object> properties) {
-        set(obj, UUID, java.util.UUID.randomUUID().toString());
         set(obj, CREATED, new Date());
         set(obj, STATE, "requested");
 

@@ -35,6 +35,7 @@
     </bean>
     <bean class="io.cattle.platform.object.postinit.ObjectDataPostInstantiationHandler" />
     <bean class="io.cattle.platform.object.postinit.SetPropertiesPostInstantiationHandler" />
+    <bean class="io.cattle.platform.object.postinit.UUIDPostInstantiationHandler" />
 
     <bean class="io.cattle.platform.object.serialization.impl.DefaultObjectSerializerFactoryImpl" >
         <property name="postProcessors" value="#{extensionManager.list('object.type.serializer.post.processor')}" />
