@@ -6,26 +6,21 @@ ARPDEV=arpproxy
 NETDEV=eth0
 TABLE=200
 
-create_dummy()
+delete_dummy()
 {
-    if ! ip link show dev $ARPDEV >/dev/null 2>&1; then
-        ip link add dev $ARPDEV type dummy
-    fi
-
-    ip link set dev $ARPDEV up
+    ip link set dev $ARPDEV down || true
+    ip link delete dev $ARPDEV || true
 }
 
-proxyarp()
+disable_proxyarp()
 {
-    for i in $ARPDEV $NETDEV; do
-        echo 1 > /proc/sys/net/ipv4/conf/$i/proxy_arp
-    done
+    echo 0 > /proc/sys/net/ipv4/conf/$NETDEV/proxy_arp
 }
 
 route_tables()
 {
     if ! ip rule list | cut -f1 -d: | grep -q 200; then
-        ip rule add iif $NETDEV table $TABLE pref 200
+        ip rule del iif $NETDEV table $TABLE pref 200 || true
     fi
 }
 
@@ -34,13 +29,14 @@ ipsec_settings()
     echo 65536 > /proc/sys/net/ipv4/xfrm4_gc_thresh || true
 }
 
-chmod 600 content/etc/racoon/psk.txt
-
-create_dummy
-proxyarp
+delete_dummy
+disable_proxyarp
 route_tables
 ipsec_settings
 
 stage_files
 
-/etc/init.d/racoon restart
+rm -f /etc/monit/conf.d/racoon
+
+reload_monit
+/etc/init.d/racoon stop || true
