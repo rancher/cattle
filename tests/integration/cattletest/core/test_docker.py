@@ -432,7 +432,7 @@ def test_docker_ports_from_container(docker_client, super_client):
 @if_docker
 def test_no_port_override(docker_client, super_client):
     c = docker_client.create_container(imageUuid=TEST_IMAGE_UUID,
-                                       ports=['8081:8080'])
+                                       ports=['8083:8080'])
 
     try:
         c = super_client.wait_success(c, timeout=240)
@@ -442,7 +442,7 @@ def test_no_port_override(docker_client, super_client):
 
         assert len(ports) == 1
         assert ports[0].kind == 'userPort'
-        assert ports[0].publicPort == 8081
+        assert ports[0].publicPort == 8083
         assert ports[0].privatePort == 8080
     finally:
         if c is not None:
