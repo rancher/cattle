@@ -30,7 +30,8 @@ check_debug
 # End copy
 
 CONF=(/etc/cattle/agent/bootstrap.conf
-      ${CATTLE_HOME}/etc/cattle/agent/bootstrap.conf)
+      ${CATTLE_HOME}/etc/cattle/agent/bootstrap.conf
+      /var/lib/rancher/etc/agent.conf)
 CONTENT_URL=/configcontent/configscripts
 INSTALL_ITEMS="configscripts pyagent"
 REQUIRED_IMAGE=
