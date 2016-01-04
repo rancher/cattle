@@ -10,7 +10,7 @@
 %DOT%
     </script>
 
-    <script src="//releases.rancher.com/viz.js"></script>
+    <script src="//releases.rancher.com/viz/viz.js"></script>
     <script>
       document.body.innerHTML += Viz(document.getElementById("dot").innerHTML, "svg");
     </script>
