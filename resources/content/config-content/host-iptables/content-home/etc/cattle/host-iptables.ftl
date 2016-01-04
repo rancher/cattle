@@ -16,8 +16,10 @@
 <#if ports?? >
     <#list ports as mapping>
         <#if (mapping.publicIpAddress.address)?? && (mapping.privateIpAddress.address)?? && (mapping.port.publicPort)?? && (mapping.port.privatePort)?? >
-# TODO Support multiple host IP's so add -d ${mapping.publicIpAddress.address} but make it work for EC2 also.  EC2 is more difficult because the destination IP is not really known to Cattle
+            <#-- This is a hack because IPsec traffic must go to the Docker IP and not the Cattle IP -->
+            <#if mapping.port.publicPort != 500 && mapping.port.publicPort != 4500 >
 -A CATTLE_PREROUTING -p ${mapping.port.protocol} -m addrtype --dst-type LOCAL --dport ${mapping.port.publicPort} -j DNAT --to ${mapping.privateIpAddress.address}:${mapping.port.privatePort}
+            </#if>
         </#if>
     </#list>
 </#if>
