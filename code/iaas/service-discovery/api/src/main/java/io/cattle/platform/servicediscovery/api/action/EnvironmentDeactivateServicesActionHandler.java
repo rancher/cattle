@@ -1,7 +1,6 @@
 package io.cattle.platform.servicediscovery.api.action;
 
 import io.cattle.platform.api.action.ActionHandler;
-import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.model.Environment;
 import io.cattle.platform.core.model.Service;
 import io.cattle.platform.object.ObjectManager;
@@ -42,10 +41,8 @@ public class EnvironmentDeactivateServicesActionHandler implements ActionHandler
 
     private void deactivateServices(List<? extends Service> services) {
         for (Service service : services) {
-            if (service.getState().equalsIgnoreCase(CommonStatesConstants.ACTIVE)) {
-                    objectProcessManager.scheduleProcessInstance(ServiceDiscoveryConstants.PROCESS_SERVICE_DEACTIVATE,
+            objectProcessManager.scheduleProcessInstance(ServiceDiscoveryConstants.PROCESS_SERVICE_DEACTIVATE,
                             service, null);
-            }
         }
     }
 }
