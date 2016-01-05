@@ -48,7 +48,8 @@ public class LdapServiceContextPoolFactory implements PooledObjectFactory<LdapCo
             }
             userContext = new InitialLdapContext(props, null);
         } catch (NamingException e) {
-            logger.info("Failed to create a service context.", e);
+            logger.info("Failed to create a service context.");
+            logger.info(e.getMessage());
             throw new ServiceContextCreationException("Unable to login to ldap using configured Service account.", e);
         }
         return new DefaultPooledObject<>(userContext);
@@ -65,7 +66,8 @@ public class LdapServiceContextPoolFactory implements PooledObjectFactory<LdapCo
             p.getObject().getAttributes(new LdapName(config.getDomain()));
             return true;
         } catch (NamingException e) {
-            logger.info("Failed to validate an existing ldap service context.", e);
+            logger.info("Failed to validate an existing ldap service context.");
+            logger.info(e.getMessage());
             return false;
         }
     }
