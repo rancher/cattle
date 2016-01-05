@@ -16,4 +16,6 @@ public interface HostDao {
     Host getHostForIpAddress(long ipAddressId);
 
     IpAddress getIpAddressForHost(Long hostId);
+
+    boolean isServiceSupportedOnHost(long hostId, long networkId, String serviceKind);
 }

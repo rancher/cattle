@@ -614,6 +614,11 @@
         "virtualMachineDisk.opts" : "cr",
         "virtualMachineDisk.driver" : "cr",
 
+        "healthcheckInstanceHostMap" : "r",
+        "healthcheckInstanceHostMap.instanceId" : "r",
+        "healthcheckInstanceHostMap.hostId" : "r",
+        "healthcheckInstanceHostMap.healthState" : "r",
+
         "end" : ""
     }
 }

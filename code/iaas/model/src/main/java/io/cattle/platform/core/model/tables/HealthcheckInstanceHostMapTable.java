@@ -11,7 +11,7 @@ package io.cattle.platform.core.model.tables;
 @java.lang.SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class HealthcheckInstanceHostMapTable extends org.jooq.impl.TableImpl<io.cattle.platform.core.model.tables.records.HealthcheckInstanceHostMapRecord> {
 
-	private static final long serialVersionUID = -253074241;
+	private static final long serialVersionUID = 1804707021;
 
 	/**
 	 * The singleton instance of <code>cattle.healthcheck_instance_host_map</code>
@@ -102,6 +102,11 @@ public class HealthcheckInstanceHostMapTable extends org.jooq.impl.TableImpl<io.
 	public final org.jooq.TableField<io.cattle.platform.core.model.tables.records.HealthcheckInstanceHostMapRecord, java.lang.String> HEALTH_STATE = createField("health_state", org.jooq.impl.SQLDataType.VARCHAR.length(128), this, "");
 
 	/**
+	 * The column <code>cattle.healthcheck_instance_host_map.instance_id</code>.
+	 */
+	public final org.jooq.TableField<io.cattle.platform.core.model.tables.records.HealthcheckInstanceHostMapRecord, java.lang.Long> INSTANCE_ID = createField("instance_id", org.jooq.impl.SQLDataType.BIGINT, this, "");
+
+	/**
 	 * Create a <code>cattle.healthcheck_instance_host_map</code> table reference
 	 */
 	public HealthcheckInstanceHostMapTable() {
@@ -152,7 +157,7 @@ public class HealthcheckInstanceHostMapTable extends org.jooq.impl.TableImpl<io.
 	 */
 	@Override
 	public java.util.List<org.jooq.ForeignKey<io.cattle.platform.core.model.tables.records.HealthcheckInstanceHostMapRecord, ?>> getReferences() {
-		return java.util.Arrays.<org.jooq.ForeignKey<io.cattle.platform.core.model.tables.records.HealthcheckInstanceHostMapRecord, ?>>asList(io.cattle.platform.core.model.Keys.FK_HEALTHCHECK_INSTANCE_HOST_MAP__ACCOUNT_ID, io.cattle.platform.core.model.Keys.FK_HEALTHCHECK_INSTANCE_HOST_MAP__HEALTHCHECK_INSTANCE_ID, io.cattle.platform.core.model.Keys.FK_HEALTHCHECK_INSTANCE_HOST_MAP__HOST_ID);
+		return java.util.Arrays.<org.jooq.ForeignKey<io.cattle.platform.core.model.tables.records.HealthcheckInstanceHostMapRecord, ?>>asList(io.cattle.platform.core.model.Keys.FK_HEALTHCHECK_INSTANCE_HOST_MAP__ACCOUNT_ID, io.cattle.platform.core.model.Keys.FK_HEALTHCHECK_INSTANCE_HOST_MAP__HEALTHCHECK_INSTANCE_ID, io.cattle.platform.core.model.Keys.FK_HEALTHCHECK_INSTANCE_HOST_MAP__HOST_ID, io.cattle.platform.core.model.Keys.FK_HEALTHCHECK_INSTANCE_HOST_MAP_INSTANCE_ID);
 	}
 
 	/**

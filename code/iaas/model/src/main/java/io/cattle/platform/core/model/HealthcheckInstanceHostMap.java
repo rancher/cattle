@@ -179,6 +179,17 @@ public interface HealthcheckInstanceHostMap extends java.io.Serializable {
 	@javax.persistence.Column(name = "health_state", length = 128)
 	public java.lang.String getHealthState();
 
+	/**
+	 * Setter for <code>cattle.healthcheck_instance_host_map.instance_id</code>.
+	 */
+	public void setInstanceId(java.lang.Long value);
+
+	/**
+	 * Getter for <code>cattle.healthcheck_instance_host_map.instance_id</code>.
+	 */
+	@javax.persistence.Column(name = "instance_id", precision = 19)
+	public java.lang.Long getInstanceId();
+
 	// -------------------------------------------------------------------------
 	// FROM and INTO
 	// -------------------------------------------------------------------------

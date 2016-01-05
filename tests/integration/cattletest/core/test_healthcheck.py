@@ -34,7 +34,7 @@ def test_health_check_create_instance(super_client, context):
     hcihm = find_one(hci.healthcheckInstanceHostMaps)
     agent = _get_agent_for_container(container)
 
-    assert hcihm.healthState == 'healthy'
+    assert hcihm.healthState == 'initializing'
 
     ts = int(time.time())
     client = _get_agent_client(agent)
@@ -74,7 +74,7 @@ def test_health_check_create_service(super_client, context, client):
     hcihm = find_one(hci.healthcheckInstanceHostMaps)
     agent = _get_agent_for_container(container)
 
-    assert hcihm.healthState == 'healthy'
+    assert hcihm.healthState == 'initializing'
     assert container.healthState == 'initializing'
 
     ts = int(time.time())
@@ -84,7 +84,7 @@ def test_health_check_create_service(super_client, context, client):
                                      healthcheckUuid=hcihm.uuid)
     super_client.wait_success(se)
     hcihm = super_client.wait_success(super_client.reload(hcihm))
-    assert hcihm.healthState == 'healthy'
+    assert hcihm.healthState == 'initializing'
     assert container.healthState == 'initializing'
 
     ts = int(time.time())
@@ -171,7 +171,7 @@ def test_health_check_bad_external_timestamp(super_client, context, client):
     agent = _get_agent_for_container(container)
     agent_client = _get_agent_client(agent)
 
-    assert hcihm.healthState == 'healthy'
+    assert hcihm.healthState == 'initializing'
 
     with pytest.raises(ApiError) as e:
         agent_client.create_service_event(reportedHealth='Something Bad',
@@ -211,7 +211,7 @@ def test_health_check_bad_agent(super_client, context, client):
     assert hcihm.hostId != host2.id
     agent_client = _get_agent_client(host2.agent())
 
-    assert hcihm.healthState == 'healthy'
+    assert hcihm.healthState == 'initializing'
 
     ts = int(time.time())
     with pytest.raises(ApiError) as e:
@@ -239,13 +239,22 @@ def test_health_check_host_remove(super_client, context, client):
     service = client.wait_success(client.wait_success(service).activate())
     assert service.state == 'active'
 
+    multiport = client.create_service(name='manyports', launchConfig={
+        'imageUuid': context.image_uuid,
+        'ports': "5454"
+    }, environmentId=env.id, scale=3)
+    multiport = client.wait_success(client.wait_success(multiport).activate())
+    assert multiport.state == 'active'
+
     expose_map = find_one(service.serviceExposeMaps)
-    container = super_client.reload(expose_map.instance())
-    hci = find_one(container.healthcheckInstances)
-    initial_len = len(hci.healthcheckInstanceHostMaps())
+    c = super_client.reload(expose_map.instance())
+    initial_len = len(c.healthcheckInstanceHostMaps())
     assert initial_len == 3
 
-    hcihm = hci.healthcheckInstanceHostMaps()[0]
+    for h in c.healthcheckInstanceHostMaps():
+        assert h.healthState == c.healthState
+
+    hcihm = c.healthcheckInstanceHostMaps()[0]
     hosts = super_client.list_host(uuid=hcihm.host().uuid)
     assert len(hosts) == 1
     host = hosts[0]
@@ -256,12 +265,11 @@ def test_health_check_host_remove(super_client, context, client):
     assert host.state == 'removed'
 
     # verify that new hostmap was created for the instance
-    hci = find_one(container.healthcheckInstances)
-    final_len = len(hci.healthcheckInstanceHostMaps())
+    final_len = len(c.healthcheckInstanceHostMaps())
     assert final_len >= initial_len
 
     hcim = None
-    for h in hci.healthcheckInstanceHostMaps():
+    for h in c.healthcheckInstanceHostMaps():
         if h.hostId == host.id:
             if hcihm.state == 'active':
                 hcihm = h

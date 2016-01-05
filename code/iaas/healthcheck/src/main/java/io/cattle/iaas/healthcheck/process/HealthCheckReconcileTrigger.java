@@ -1,11 +1,10 @@
 package io.cattle.iaas.healthcheck.process;
 
-import static io.cattle.platform.core.model.tables.HostTable.HOST;
+import io.cattle.iaas.healthcheck.service.HealthcheckHostLookup;
 import io.cattle.iaas.healthcheck.service.HealthcheckService;
 import io.cattle.platform.core.constants.AgentConstants;
 import io.cattle.platform.core.constants.HostConstants;
 import io.cattle.platform.core.dao.GenericMapDao;
-import io.cattle.platform.core.model.Agent;
 import io.cattle.platform.core.model.HealthcheckInstanceHostMap;
 import io.cattle.platform.core.model.Host;
 import io.cattle.platform.engine.handler.HandlerResult;
@@ -23,7 +22,7 @@ import javax.inject.Inject;
 import javax.inject.Named;
 
 @Named
-public class HostRemovePreHandler extends AbstractObjectProcessLogic implements ProcessPreListener, Priority {
+public class HealthCheckReconcileTrigger extends AbstractObjectProcessLogic implements ProcessPreListener, Priority {
 
     @Inject
     GenericMapDao mapDao;
@@ -34,19 +33,23 @@ public class HostRemovePreHandler extends AbstractObjectProcessLogic implements 
     @Inject
     ServiceDao serviceDao;
 
+    @Inject
+    List<HealthcheckHostLookup> hostLookups;
+
     @Override
     public String[] getProcessNames() {
-        return new String[] { HostConstants.PROCESS_REMOVE, AgentConstants.PROCESS_RECONNECT };
+        return new String[] { HostConstants.PROCESS_REMOVE, AgentConstants.PROCESS_RECONNECT,
+                "networkserviceproviderinstancemap.remove" };
     }
 
     @Override
     public HandlerResult handle(ProcessState state, ProcessInstance process) {
         Host host = null;
-        if (process.getName().equals(HostConstants.PROCESS_REMOVE)) {
-            host = (Host) state.getResource();
-        } else {
-            Agent agent = (Agent) state.getResource();
-            host = objectManager.findAny(Host.class, HOST.AGENT_ID, agent.getId(), HOST.REMOVED, null);
+        for (HealthcheckHostLookup lookup : hostLookups) {
+            host = lookup.getHost(state.getResource());
+            if (host != null) {
+                break;
+            }
         }
 
         if (host == null) {
