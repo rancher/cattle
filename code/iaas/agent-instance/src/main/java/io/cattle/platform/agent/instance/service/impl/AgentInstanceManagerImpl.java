@@ -41,6 +41,11 @@ public class AgentInstanceManagerImpl implements AgentInstanceManager {
 
     @Override
     public Map<NetworkServiceProvider, Instance> getAgentInstances(Nic nic) {
+        return getAgentInstances(nic, false);
+    }
+
+    @Override
+    public Map<NetworkServiceProvider, Instance> getAgentInstances(Nic nic, boolean includeNetworkAgent) {
         Map<NetworkServiceProvider, Instance> result = new HashMap<NetworkServiceProvider, Instance>();
         Vnet vnet = objectManager.loadResource(Vnet.class, nic.getVnetId());
 
@@ -54,13 +59,17 @@ public class AgentInstanceManagerImpl implements AgentInstanceManager {
             return result;
         }
 
-        if (instance.getAgentId() != null) {
+        if (!includeNetworkAgent && instance.getAgentId() != null) {
             if (StringUtils.equalsIgnoreCase(instance.getSystemContainer(), SystemContainer.NetworkAgent.name())) {
                 return result;
             }
         }
 
         for (NetworkServiceProvider provider : agentInstanceDao.getProviders(nic.getNetworkId())) {
+            if (result.containsKey(provider)) {
+                continue;
+            }
+
             Instance agentInstance = agentInstanceDao.getAgentInstance(provider, nic);
 
             if (agentInstance == null) {
