@@ -8,8 +8,8 @@ TABLE=200
 
 delete_dummy()
 {
-    ip link set dev $ARPDEV down || true
-    ip link delete dev $ARPDEV || true
+    ip link set dev $ARPDEV down 2>/dev/null || true
+    ip link delete dev $ARPDEV 2>/dev/null || true
 }
 
 disable_proxyarp()
@@ -39,4 +39,4 @@ stage_files
 rm -f /etc/monit/conf.d/racoon
 
 reload_monit
-/etc/init.d/racoon stop || true
+/etc/init.d/racoon stop 2>/dev/null || true

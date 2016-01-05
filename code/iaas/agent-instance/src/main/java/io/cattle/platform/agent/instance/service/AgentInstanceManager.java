@@ -14,6 +14,8 @@ public interface AgentInstanceManager {
 
     Map<NetworkServiceProvider, Instance> getAgentInstances(Nic clientNic);
 
+    Map<NetworkServiceProvider, Instance> getAgentInstances(Nic nic, boolean includeNetworkAgent);
+
     NetworkServiceInfo getNetworkService(Instance instance, String kind, boolean waitForStart);
 
     List<? extends Nic> getNicsFromResource(Object resource);

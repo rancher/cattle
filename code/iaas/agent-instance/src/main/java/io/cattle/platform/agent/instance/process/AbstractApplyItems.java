@@ -30,7 +30,8 @@ public abstract class AbstractApplyItems extends AbstractObjectProcessLogic impl
     ConfigItemStatusManager statusManager;
     boolean assignBase = true;
 
-    protected void assignItems(NetworkServiceProvider provider, Agent agent, Object owner, ProcessState state, ProcessInstance processInstance) {
+    protected void assignItems(NetworkServiceProvider provider, Agent agent, Object owner, ProcessState state, ProcessInstance processInstance,
+                               boolean waitFor) {
         if (agent == null) {
             return;
         }
@@ -40,7 +41,9 @@ public abstract class AbstractApplyItems extends AbstractObjectProcessLogic impl
         ConfigUpdateRequest request = ConfigUpdateRequestUtils.getRequest(jsonMapper, state, contextId);
         if (request == null) {
             request = ConfigUpdateRequest.forResource(Agent.class, agent.getId());
-            ConfigUpdateRequestUtils.setWaitFor(request);
+            if (waitFor) {
+                ConfigUpdateRequestUtils.setWaitFor(request);
+            }
             if (assignBase) {
                 assignBaseItems(provider, request, agent, processInstance);
             }
