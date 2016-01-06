@@ -135,4 +135,9 @@ public class ExternalDeploymentUnitInstance extends DeploymentUnitInstance {
     @Override
     public void waitForScheduleStop() {
     }
+
+    @Override
+    public boolean isIgnore() {
+        return false;
+    }
 }

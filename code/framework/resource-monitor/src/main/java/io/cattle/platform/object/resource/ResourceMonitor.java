@@ -1,6 +1,7 @@
 package io.cattle.platform.object.resource;
 
 public interface ResourceMonitor {
+    public static final String ERROR_MSG = "failed to satisfy predicate";
 
     <T> T waitFor(T obj, long timeout, ResourcePredicate<T> predicate);
 

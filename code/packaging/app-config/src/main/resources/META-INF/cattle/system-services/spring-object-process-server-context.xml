@@ -12,5 +12,6 @@
 
 
     <bean id="PurgeMonitorImpl" class="io.cattle.platform.object.purge.impl.PurgeMonitorImpl" />
+    <bean id="RemoveMonitorImpl" class="io.cattle.platform.object.purge.impl.RemoveMonitorImpl" />
 
 </beans>

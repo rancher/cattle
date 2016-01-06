@@ -115,6 +115,18 @@ public class DeploymentUnit {
         return false;
     }
 
+    public boolean isIgnore() {
+        /*
+         * This should check for instances with an error transitioning state
+         */
+        for (DeploymentUnitInstance instance : getDeploymentUnitInstances()) {
+            if (instance.isIgnore()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     private boolean isHostActive() {
         for (DeploymentUnitInstance deployUnitInstance : getDeploymentUnitInstances()) {
             if (!(deployUnitInstance instanceof InstanceUnit)) {

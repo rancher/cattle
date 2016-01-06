@@ -1,23 +1,28 @@
 package io.cattle.platform.servicediscovery.process;
 
+import io.cattle.platform.async.utils.TimeoutException;
 import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.model.Service;
 import io.cattle.platform.engine.handler.HandlerResult;
 import io.cattle.platform.engine.process.ProcessInstance;
 import io.cattle.platform.engine.process.ProcessState;
+import io.cattle.platform.object.meta.ObjectMetaDataManager;
 import io.cattle.platform.object.resource.ResourceMonitor;
 import io.cattle.platform.object.resource.ResourcePredicate;
 import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.process.common.handler.AbstractObjectProcessHandler;
+import io.cattle.platform.process.progress.ProcessProgress;
 import io.cattle.platform.servicediscovery.api.constants.ServiceDiscoveryConstants;
-import io.cattle.platform.servicediscovery.api.dao.ServiceConsumeMapDao;
 import io.cattle.platform.servicediscovery.deployment.DeploymentManager;
+import io.github.ibuildthecloud.gdapi.id.IdFormatter;
 
 import java.util.Collections;
 import java.util.List;
 
 import javax.inject.Inject;
 import javax.inject.Named;
+
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * This handler is responsible for activating the service as well as restoring the active service to its scale
@@ -34,7 +39,10 @@ public class ServiceUpdateActivate extends AbstractObjectProcessHandler {
     ResourceMonitor resourceMonitor;
 
     @Inject
-    ServiceConsumeMapDao consumeMapDao;
+    ProcessProgress progress;
+
+    @Inject
+    IdFormatter idFormatter;
 
     @Override
     public String[] getProcessNames() {
@@ -52,11 +60,47 @@ public class ServiceUpdateActivate extends AbstractObjectProcessHandler {
             return null;
         }
 
-        waitForConsumedServicesActivate(state);
+        progress.init(state, 50, 50);
 
-        deploymentMgr.activate(service);
+        String error = "";
+        try {
+            progress.checkPoint("Activating consumed services");
+            waitForConsumedServicesActivate(state);
+            progress.checkPoint("Reconciling");
+            deploymentMgr.activate(service);
+        } catch (TimeoutException ex) {
+            if (ex.getMessage().contains(ResourceMonitor.ERROR_MSG)) {
+                error = obfuscateId(ex);
+            } else {
+                error = ex.getMessage();
+            }
+            throw ex;
+        } catch (Exception ex) {
+            error = ex.getMessage();
+            throw ex;
+        } finally {
+            if (!StringUtils.isEmpty(error)) {
+                objectManager.setFields(objectManager.reload(service),
+                        ObjectMetaDataManager.TRANSITIONING_MESSAGE_FIELD,
+                        error);
+            }
+        }
 
         return null;
+    }
+
+    protected String obfuscateId(TimeoutException ex) {
+        String error;
+        error = ex.getMessage();
+        // obfuscate id
+        String[] msg = ex.getMessage().split("\\]");
+        String[] splittedForId = msg[0].split(":");
+        String[] splittedForResourceType = splittedForId[0].split("\\[");
+        String resourceId = splittedForId[1];
+        String resourceType = splittedForResourceType[1];
+        Object id = idFormatter.formatId(resourceType, resourceId);
+        error = error.replace(resourceId + "]", id + "]");
+        return error;
     }
 
     @SuppressWarnings("unchecked")
