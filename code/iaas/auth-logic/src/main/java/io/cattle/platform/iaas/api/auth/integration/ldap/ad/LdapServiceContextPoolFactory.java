@@ -1,7 +1,7 @@
 package io.cattle.platform.iaas.api.auth.integration.ldap.ad;
 
 import io.cattle.platform.iaas.api.auth.integration.ldap.ServiceContextCreationException;
-import io.cattle.platform.iaas.api.auth.integration.ldap.interfaces.LDAPConfig;
+import io.cattle.platform.iaas.api.auth.integration.ldap.interfaces.LDAPConstants;
 
 import java.util.Hashtable;
 import javax.naming.Context;
@@ -21,9 +21,9 @@ import org.apache.commons.pool2.impl.DefaultPooledObject;
 public class LdapServiceContextPoolFactory implements PooledObjectFactory<LdapContext> {
 
     private static final Log logger = LogFactory.getLog(LdapServiceContextPoolFactory.class);
-    LDAPConfig config;
+    LDAPConstants config;
 
-    public LdapServiceContextPoolFactory(LDAPConfig config) {
+    public LdapServiceContextPoolFactory(LDAPConstants config) {
         this.config = config;
     }
 
@@ -38,6 +38,7 @@ public class LdapServiceContextPoolFactory implements PooledObjectFactory<LdapCo
         props.put(Context.SECURITY_PRINCIPAL, username);
         props.put(Context.SECURITY_CREDENTIALS, config.getServiceAccountPassword());
         props.put(Context.INITIAL_CONTEXT_FACTORY, "com.sun.jndi.ldap.LdapCtxFactory");
+        props.put("com.sun.jndi.ldap.connect.timeout", String.valueOf(config.getConnectionTimeout()));
         LdapContext userContext;
 
         try {

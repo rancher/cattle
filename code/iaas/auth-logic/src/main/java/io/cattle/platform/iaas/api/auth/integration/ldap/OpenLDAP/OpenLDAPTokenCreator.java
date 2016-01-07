@@ -22,7 +22,7 @@ import org.apache.commons.lang3.ObjectUtils;
 public class OpenLDAPTokenCreator extends OpenLDAPConfigurable implements TokenCreator {
 
     @Inject
-    OpenLDAPIdentityProvider ADIdentitySearchProvider;
+    OpenLDAPIdentityProvider openLDAPIdentityProvider;
     @Inject
     AuthDao authDao;
     @Inject
@@ -40,7 +40,7 @@ public class OpenLDAPTokenCreator extends OpenLDAPConfigurable implements TokenC
             throw new ClientVisibleException(ResponseCodes.INTERNAL_SERVER_ERROR, OpenLDAPConstants.CONFIG, "Ldap Not Configured.", null);
         }
         try{
-            return OpenLDAPUtils.createToken(ADIdentitySearchProvider.getIdentities(username, password), null);
+            return OpenLDAPUtils.createToken(openLDAPIdentityProvider.getIdentities(username, password), null);
         } catch (ServiceContextCreationException | ServiceContextRetrievalException e){
             throw new ClientVisibleException(ResponseCodes.INTERNAL_SERVER_ERROR, "LdapDown", "Could not talk to ldap", null);
         }
@@ -58,6 +58,11 @@ public class OpenLDAPTokenCreator extends OpenLDAPConfigurable implements TokenC
             throw new ClientVisibleException(ResponseCodes.FORBIDDEN);
         }
         return getLdapToken(split[0], split[1]);
+    }
+
+    @Override
+    public void reset() {
+        openLDAPIdentityProvider.reset();
     }
 
     @Override

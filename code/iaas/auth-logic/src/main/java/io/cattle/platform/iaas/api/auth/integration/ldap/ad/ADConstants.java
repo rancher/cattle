@@ -9,6 +9,7 @@ import java.util.Set;
 
 import com.netflix.config.DynamicBooleanProperty;
 import com.netflix.config.DynamicIntProperty;
+import com.netflix.config.DynamicLongProperty;
 import com.netflix.config.DynamicStringProperty;
 
 public class ADConstants {
@@ -41,6 +42,7 @@ public class ADConstants {
     public static final String USER_ENABLED_ATTRIBUTE_SETTING = SETTING_BASE + "user.enabled.attribute";
     public static final String GROUP_NAME_FIELD_SETTING = SETTING_BASE + "group.name.field";
     public static final String TLS_SETTING = SETTING_BASE + "tls";
+    public static final String TIMEOUT_SETTING = SETTING_BASE + "connection.timeout";
 
     public static final Set<String> SCOPES = Collections.unmodifiableSet(
             new HashSet<>(Arrays.asList(
@@ -78,4 +80,5 @@ public class ADConstants {
     public static final String OBJECT_CLASS = "objectClass";
     public static final DynamicStringProperty GROUP_OBJECT_CLASS = ArchaiusUtil.getString(GROUP_OBJECT_CLASS_SETTING);
 
+    public static final DynamicLongProperty CONNECTION_TIMEOUT = ArchaiusUtil.getLong(TIMEOUT_SETTING);
 }

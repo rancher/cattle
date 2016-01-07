@@ -121,6 +121,11 @@ public class OpenLDAPConstantsConfig extends OpenLDAPConfigurable implements LDA
     }
 
     @Override
+    public long getConnectionTimeout() {
+        return OpenLDAPConstants.CONNECTION_TIMEOUT.get();
+    }
+
+    @Override
     public String getUserMemberAttribute() {
         return OpenLDAPConstants.USER_MEMBER_ATTRIBUTE.get();
     }

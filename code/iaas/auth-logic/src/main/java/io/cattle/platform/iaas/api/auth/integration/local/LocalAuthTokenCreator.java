@@ -60,6 +60,11 @@ public class LocalAuthTokenCreator extends LocalAuthConfigurable implements Toke
     }
 
     @Override
+    public void reset() {
+
+    }
+
+    @Override
     public String getName() {
         return LocalAuthConstants.TOKEN_CREATOR;
     }
