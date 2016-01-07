@@ -7,6 +7,7 @@ import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.dao.NetworkDao;
 import io.cattle.platform.core.model.Environment;
 import io.cattle.platform.core.model.Service;
+import io.cattle.platform.core.util.PortSpec;
 import io.cattle.platform.iaas.api.filter.common.AbstractDefaultResourceManagerFilter;
 import io.cattle.platform.json.JsonMapper;
 import io.cattle.platform.object.ObjectManager;
@@ -48,6 +49,8 @@ public class ServiceCreateValidationFilter extends AbstractDefaultResourceManage
 
     @Inject
     JsonMapper jsonMapper;
+    
+    private static final int LB_HEALTH_CHECK_PORT = 42;
 
 
     @Override
@@ -78,9 +81,28 @@ public class ServiceCreateValidationFilter extends AbstractDefaultResourceManage
 
         validateRequestedVip(request);
 
+        validatePorts(service, type, request);
+
         request = setHealthCheck(type, request);
 
         return super.create(type, request, next);
+    }
+    
+    public void validatePorts(Service service, String type, ApiRequest request) {
+        List<Map<String, Object>> launchConfigs = populateLaunchConfigs(service, request);
+        for (Map<String, Object> launchConfig : launchConfigs) {
+            if (launchConfig.get(InstanceConstants.FIELD_PORTS) != null) {
+                List<?> ports = (List<?>) launchConfig.get(InstanceConstants.FIELD_PORTS);
+                for (Object port : ports) {
+                    /* This will parse the PortSpec and throw an error */
+                    PortSpec portSpec = new PortSpec(port.toString(), false);
+                    if (type.equals("loadBalancerService") && portSpec.getPrivatePort() == LB_HEALTH_CHECK_PORT) {
+                        throw new ValidationErrorException(ValidationErrorCodes.INVALID_OPTION,
+                                "Port " + LB_HEALTH_CHECK_PORT + " is reserved for loadBalancerService health check");
+                    }
+                }
+            }
+        }
     }
 
 
@@ -94,7 +116,7 @@ public class ServiceCreateValidationFilter extends AbstractDefaultResourceManage
         if (data.get(ServiceDiscoveryConstants.FIELD_LAUNCH_CONFIG) != null) {
             Map<String, Object> launchConfig = (Map<String, Object>)data.get(ServiceDiscoveryConstants.FIELD_LAUNCH_CONFIG);
             InstanceHealthCheck healthCheck = new InstanceHealthCheck();
-            healthCheck.setPort(42);
+            healthCheck.setPort(LB_HEALTH_CHECK_PORT);
             healthCheck.setInterval(2000);
             healthCheck.setHealthyThreshold(2);
             healthCheck.setUnhealthyThreshold(3);
