@@ -1,4 +1,4 @@
-package io.cattle.platform.servicediscovery.deployment.impl;
+package io.cattle.platform.servicediscovery.deployment.impl.unit;
 
 import static io.cattle.platform.core.model.tables.EnvironmentTable.ENVIRONMENT;
 import io.cattle.platform.core.model.Environment;

@@ -1,4 +1,4 @@
-package io.cattle.platform.servicediscovery.deployment.impl;
+package io.cattle.platform.servicediscovery.deployment.impl.lock;
 
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.Service;

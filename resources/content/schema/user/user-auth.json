@@ -451,7 +451,11 @@
         "instanceHealthCheck.unhealthyThreshold" : "cr",
         "instanceHealthCheck.requestLine" : "cr",
         "instanceHealthCheck.port" : "cr",
+        "instanceHealthCheck.recreateOnQuorumStrategyConfig" : "cr",
+        "instanceHealthCheck.strategy" : "cr",
 
+        "recreateOnQuorumStrategyConfig" : "r",
+        "recreateOnQuorumStrategyConfig.quorum" : "cr",
 
         "serviceConsumeMap" : "r",
         "serviceConsumeMap.name" : "r",

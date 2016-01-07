@@ -5,6 +5,11 @@ import io.github.ibuildthecloud.gdapi.annotation.Type;
 
 @Type(list = false)
 public class InstanceHealthCheck {
+    public enum Strategy {
+        none,
+        recreate,
+        recreateOnQuorum
+    }
     String name;
     Integer responseTimeout;
     Integer interval;
@@ -12,6 +17,8 @@ public class InstanceHealthCheck {
     Integer unhealthyThreshold;
     String requestLine;
     Integer port;
+    Strategy strategy;
+    RecreateOnQuorumStrategyConfig recreateOnQuorumStrategyConfig;
 
     @Field(nullable = true)
     public String getName() {
@@ -63,6 +70,7 @@ public class InstanceHealthCheck {
         this.requestLine = requestLine;
     }
 
+    @Field(required = true, min = 1, max = 65535)
     public Integer getPort() {
         return port;
     }
@@ -70,4 +78,23 @@ public class InstanceHealthCheck {
     public void setPort(Integer port) {
         this.port = port;
     }
+
+    @Field(nullable = true, required = false)
+    public RecreateOnQuorumStrategyConfig getRecreateOnQuorumStrategyConfig() {
+        return recreateOnQuorumStrategyConfig;
+    }
+
+    public void setRecreateOnQuorumStrategyConfig(RecreateOnQuorumStrategyConfig recreateOnQuorumStrategyConfig) {
+        this.recreateOnQuorumStrategyConfig = recreateOnQuorumStrategyConfig;
+    }
+
+    @Field(required = false, nullable = true, defaultValue = "recreate")
+    public Strategy getStrategy() {
+        return strategy;
+    }
+
+    public void setStrategy(Strategy strategy) {
+        this.strategy = strategy;
+    }
 }
+

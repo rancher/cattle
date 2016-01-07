@@ -58,6 +58,7 @@
         "haproxyConfig" : "cru",
         "rollingRestartStrategy" : "cr",
         "servicesPortRange" : "cru",
+        "recreateOnQuorumStrategyConfig" : "cr",
         "end" : ""
     }
 }
