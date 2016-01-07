@@ -1,4 +1,4 @@
-package io.cattle.platform.configitem.context.data;
+package io.cattle.platform.configitem.context.data.metadata.common;
 
 import java.util.Map;
 
@@ -43,5 +43,25 @@ public class HostMetaData {
 
     public String getUuid() {
         return uuid;
+    }
+
+    public void setAgent_ip(String agent_ip) {
+        this.agent_ip = agent_ip;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public void setLabels(Map<String, String> labels) {
+        this.labels = labels;
+    }
+
+    public void setHostId(Long hostId) {
+        this.hostId = hostId;
+    }
+
+    public void setUuid(String uuid) {
+        this.uuid = uuid;
     }
 }
