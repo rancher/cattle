@@ -44,7 +44,11 @@ public class TransitioningUtils {
         String finalMessage = message == null ? "" : message;
 
         if (SHOW_INTERNAL_MESSAGES.get() && !StringUtils.isBlank(internalMessage)) {
-            finalMessage = finalMessage + " : " + internalMessage;
+            if (StringUtils.isBlank(finalMessage)) {
+                finalMessage = internalMessage;
+            } else {
+                finalMessage = finalMessage + " : " + internalMessage;
+            }
         }
 
         if (StringUtils.isBlank(finalMessage)) {
