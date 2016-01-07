@@ -171,7 +171,17 @@ public class GenericWhitelistedProxy extends AbstractResponseGenerator {
     }
 
     private boolean isWhitelisted(String host) {
-        return PROXY_WHITELIST.get().contains(host);
+        for (String valid : PROXY_WHITELIST.get()) {
+            if (valid.equals(host)) {
+                return true;
+            }
+
+            if (valid.startsWith("*") && host.endsWith(valid.substring(1))) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
 }

@@ -26,3 +26,14 @@ def test_proxy(client, admin_user_client):
 
     assert r.status_code == 200
     assert 'Darren' in r.text
+
+
+def test_aws_proxy(client):
+    base_url = client.schema.types['schema'].links['collection']
+    base_url = base_url.replace('/schemas', '')
+
+    host = 'ec2.us-west-2.amazonaws.com'
+    r = requests.post(base_url + '/proxy/{}'.format(host),
+                      headers=auth_header_map(client))
+
+    assert r.status_code == 400
