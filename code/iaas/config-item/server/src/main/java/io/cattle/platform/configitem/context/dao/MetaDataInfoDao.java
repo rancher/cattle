@@ -10,9 +10,9 @@ import java.util.List;
 
 public interface MetaDataInfoDao {
     public enum Version {
-        version1("2015-12-19", "2015-12-19"),
-        version2("2015-07-25", "2015-07-25"),
-        latestVersion("latest", "2015-07-25");
+        version1("2015-07-25", "2015-07-25"),
+        version2("2015-12-19", "2015-12-19"),
+        latestVersion("latest", "2015-12-19");
 
         String tag;
         String value;

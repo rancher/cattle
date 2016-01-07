@@ -98,10 +98,69 @@ public class ServiceMetadataInfoFactory extends AbstractAgentBaseContextFactory 
 
     protected Map<String, Object> getFullMetaData(Instance instance, ArchiveContext context,
             List<ContainerMetaData> containersMD, Map<String, StackMetaData> stackNameToStack,
-            Map<Long, Map<String, ServiceMetaData>> serviceIdToService, Version version) {
+            Map<Long, Map<String, ServiceMetaData>> serviceIdToServiceLaunchConfigs, Version version) {
 
+        // 1. generate stack metadata based on version
+        stackNameToStack = applyVersionToStack(stackNameToStack, version);
+
+        // 2. generate service metadata based on version
+        serviceIdToServiceLaunchConfigs = applyVersionToService(serviceIdToServiceLaunchConfigs, version);
+
+        // 3. get containers metadata
         Map<String, SelfMetaData> selfMD = new HashMap<>();
-        Map<Long, List<ContainerMetaData>> serviceIdToContainer = new HashMap<>();
+        Map<Long, Map<String, List<ContainerMetaData>>> serviceIdToLaunchConfigToContainer = new HashMap<>();
+        containersMD = populateContainersData(instance, containersMD, stackNameToStack,
+                serviceIdToServiceLaunchConfigs,
+                selfMD, serviceIdToLaunchConfigToContainer);
+
+        // 4. add containers metadata to service
+        List<ServiceMetaData> servicesMD = setContainersOnService(serviceIdToServiceLaunchConfigs,
+                serviceIdToLaunchConfigToContainer);
+
+        // 6. populate self section
+        populateSelfSection(instance, containersMD, stackNameToStack, serviceIdToServiceLaunchConfigs, selfMD);
+
+        // 7. get host meta data
+        List<HostMetaData> hostsMD = metaDataInfoDao.getInstanceHostMetaData(instance.getAccountId(), null);
+        List<HostMetaData> selfHostMD = metaDataInfoDao.getInstanceHostMetaData(instance.getAccountId(),
+                instance);
+
+        // 8. full data combined of (n) self sections and default one
+        List<StackMetaData> stacksMD = new ArrayList<>();
+        for (StackMetaData stack : stackNameToStack.values()) {
+            stacksMD.add(metaDataInfoDao.getStackMetaData(stack, version));
+        }
+        Map<String, Object> fullData = new HashMap<>();
+        fullData.putAll(selfMD);
+        fullData.put("default", new DefaultMetaData(context.getVersion(), containersMD, servicesMD,
+                stacksMD, hostsMD, !selfHostMD.isEmpty() ? selfHostMD.get(0) : null));
+
+        return fullData;
+    }
+
+    protected List<ServiceMetaData> setContainersOnService(
+            Map<Long, Map<String, ServiceMetaData>> serviceIdToServiceLaunchConfigs,
+            Map<Long, Map<String, List<ContainerMetaData>>> serviceIdToLaunchConfigToContainer) {
+        List<ServiceMetaData> servicesMD = new ArrayList<>();
+        for (Long serviceId : serviceIdToServiceLaunchConfigs.keySet()) {
+            Map<String, ServiceMetaData> launchConfigToService = serviceIdToServiceLaunchConfigs.get(serviceId);
+            if (launchConfigToService != null) {
+                for (String launchConfigName : launchConfigToService.keySet()) {
+                    ServiceMetaData svcData = launchConfigToService.get(launchConfigName);
+                    if (svcData != null && serviceIdToLaunchConfigToContainer.get(serviceId) != null) {
+                        svcData.setContainersObj(serviceIdToLaunchConfigToContainer.get(serviceId)
+                                .get(launchConfigName));
+                        servicesMD.add(svcData);
+                    }
+                }
+            }
+        }
+        return servicesMD;
+    }
+
+    protected void populateSelfSection(Instance instance, List<ContainerMetaData> containersMD,
+            Map<String, StackMetaData> stackNameToStack,
+            Map<Long, Map<String, ServiceMetaData>> serviceIdToServiceLaunchConfigs, Map<String, SelfMetaData> selfMD) {
         for (ContainerMetaData containerMD : containersMD) {
             ServiceMetaData svcData = null;
             StackMetaData stackData = null;
@@ -110,50 +169,79 @@ public class ServiceMetadataInfoFactory extends AbstractAgentBaseContextFactory 
                 if (configName == null) {
                     configName = ServiceDiscoveryConstants.PRIMARY_LAUNCH_CONFIG_NAME;
                 }
-                Map<String, ServiceMetaData> svcsData = serviceIdToService.get(containerMD.getServiceId());
+                Map<String, ServiceMetaData> svcsData = serviceIdToServiceLaunchConfigs.get(containerMD.getServiceId());
                 if (svcsData != null) {
                     svcData = svcsData.get(configName);
-                    containerMD.setStack_name(svcData.getStack_name());
-                    containerMD.setService_name(svcData.getName());
-                    List<ContainerMetaData> serviceContainers = serviceIdToContainer.get(containerMD.getServiceId());
-                    if (serviceContainers == null) {
-                        serviceContainers = new ArrayList<>();
-                    }
-                    serviceContainers.add(containerMD);
-                    serviceIdToContainer.put(containerMD.getServiceId(), serviceContainers);
                     stackData = stackNameToStack.get(svcData.getStack_name());
                 }
             }
             addToSelf(selfMD, containerMD, svcData, stackData, getInstanceHostId(instance));
         }
+    }
 
-        List<ServiceMetaData> servicesMD = new ArrayList<>();
-        for (Long serviceId : serviceIdToService.keySet()) {
-            for (ServiceMetaData svcData : serviceIdToService.get(serviceId).values()) {
-                setLinksInfo(serviceIdToService, svcData);
-                if (serviceIdToContainer.get(serviceId) != null) {
-                    svcData.setContainersObj(serviceIdToContainer.get(serviceId));
-                }
-                ServiceMetaData serviceMD = metaDataInfoDao.getServiceMetaData(svcData, version);
-                servicesMD.add(serviceMD);
+    protected Map<Long, Map<String, ServiceMetaData>> applyVersionToService(Map<Long, Map<String, ServiceMetaData>> serviceIdToServiceLaunchConfigs,
+            Version version) {
+        Map<Long, Map<String, ServiceMetaData>> newData = new HashMap<>();
+        for (Long serviceId : serviceIdToServiceLaunchConfigs.keySet()) {
+            Map<String, ServiceMetaData> launchConfigToService = serviceIdToServiceLaunchConfigs.get(serviceId);
+            Map<String, ServiceMetaData> launchConfigToServiceModified = new HashMap<>();
+            for (String launchConfigName : launchConfigToService.keySet()) {
+                ServiceMetaData svcMDOriginal = launchConfigToService.get(launchConfigName);
+                setLinksInfo(serviceIdToServiceLaunchConfigs, svcMDOriginal);
+                ServiceMetaData serviceMDModified = metaDataInfoDao.getServiceMetaData(svcMDOriginal, version);
+                launchConfigToServiceModified.put(launchConfigName, serviceMDModified);
             }
+            newData.put(serviceId, launchConfigToServiceModified);
         }
+        return newData;
+    }
 
-        List<StackMetaData> stacksMD = new ArrayList<>();
-        for (StackMetaData stack : stackNameToStack.values()) {
-            stacksMD.add(metaDataInfoDao.getStackMetaData(stack, version));
+    protected Map<String, StackMetaData> applyVersionToStack(Map<String, StackMetaData> stackNameToStack,
+            Version version) {
+        // modify stack data
+        Map<String, StackMetaData> newData = new HashMap<>();
+        for (String stackName : stackNameToStack.keySet()) {
+            StackMetaData stackMDModified = metaDataInfoDao.getStackMetaData(stackNameToStack.get(stackName), version);
+            newData.put(stackMDModified.getName(), stackMDModified);
         }
+        return newData;
+    }
 
-        List<HostMetaData> hostsMD = metaDataInfoDao.getInstanceHostMetaData(instance.getAccountId(), null);
-        List<HostMetaData> selfHostMD = metaDataInfoDao.getInstanceHostMetaData(instance.getAccountId(),
-                instance);
+    protected List<ContainerMetaData> populateContainersData(Instance instance, List<ContainerMetaData> containersMD,
+            Map<String, StackMetaData> stackNameToStack,
+            Map<Long, Map<String, ServiceMetaData>> serviceIdToServiceLaunchConfigs, Map<String, SelfMetaData> selfMD,
+            Map<Long, Map<String, List<ContainerMetaData>>> serviceIdToLaunchConfigToContainer) {
+        List<ContainerMetaData> newData = new ArrayList<>();
+        for (ContainerMetaData containerMD : containersMD) {
+            if (containerMD.getServiceId() != null) {
+                String configName = containerMD.getDnsPrefix();
+                if (configName == null) {
+                    configName = ServiceDiscoveryConstants.PRIMARY_LAUNCH_CONFIG_NAME;
+                }
+                Map<String, ServiceMetaData> svcsData = serviceIdToServiceLaunchConfigs.get(containerMD.getServiceId());
+                if (svcsData != null) {
+                    ServiceMetaData svcData = svcsData.get(configName);
+                    containerMD.setStack_name(svcData.getStack_name());
+                    containerMD.setService_name(svcData.getName());
 
-        Map<String, Object> fullData = new HashMap<>();
-        fullData.putAll(selfMD);
-        fullData.put("default", new DefaultMetaData(context.getVersion(), containersMD, servicesMD,
-                stacksMD, hostsMD, selfHostMD.isEmpty() ? selfHostMD.get(0) : null));
+                    Map<String, List<ContainerMetaData>> launchConfigToContainer = serviceIdToLaunchConfigToContainer
+                            .get(containerMD.getServiceId());
+                    if (launchConfigToContainer == null) {
+                        launchConfigToContainer = new HashMap<>();
+                    }
 
-        return fullData;
+                    List<ContainerMetaData> serviceContainers = launchConfigToContainer.get(configName);
+                    if (serviceContainers == null) {
+                        serviceContainers = new ArrayList<>();
+                    }
+                    serviceContainers.add(containerMD);
+                    launchConfigToContainer.put(configName, serviceContainers);
+                    serviceIdToLaunchConfigToContainer.put(containerMD.getServiceId(), launchConfigToContainer);
+                }
+            }
+            newData.add(containerMD);
+        }
+        return newData;
     }
 
     protected void populateStacksServicesInfo(Account account, Map<String, StackMetaData> stacksMD,

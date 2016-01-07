@@ -10,7 +10,8 @@ public class DefaultMetaData {
     List<HostMetaData> hosts;
     HostMetaData host;
 
-    public DefaultMetaData(String version, List<ContainerMetaData> containers, List<ServiceMetaData> services,
+    public DefaultMetaData(String version, List<ContainerMetaData> containers,
+            List<ServiceMetaData> services,
             List<StackMetaData> stacks, List<HostMetaData> hosts, HostMetaData host) {
         super();
         this.version = version;
