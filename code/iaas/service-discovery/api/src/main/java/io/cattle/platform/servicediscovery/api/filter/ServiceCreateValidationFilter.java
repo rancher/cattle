@@ -95,8 +95,9 @@ public class ServiceCreateValidationFilter extends AbstractDefaultResourceManage
                 List<?> ports = (List<?>) launchConfig.get(InstanceConstants.FIELD_PORTS);
                 for (Object port : ports) {
                     /* This will parse the PortSpec and throw an error */
-                    PortSpec portSpec = new PortSpec(port.toString(), false);
-                    if (type.equals("loadBalancerService") && portSpec.getPrivatePort() == LB_HEALTH_CHECK_PORT) {
+                    PortSpec portSpec = new PortSpec(port.toString());
+                    if (type.equals("loadBalancerService") && portSpec.getPublicPort() != null
+                            && portSpec.getPublicPort().equals(LB_HEALTH_CHECK_PORT)) {
                         throw new ValidationErrorException(ValidationErrorCodes.INVALID_OPTION,
                                 "Port " + LB_HEALTH_CHECK_PORT + " is reserved for loadBalancerService health check");
                     }

@@ -163,8 +163,16 @@ def test_validate_port(client, context):
     assert e.value.error.status == 422
     assert e.value.error.code == 'PortWrongFormat'
 
+    launch_config = {"imageUuid": image_uuid, "ports": ["4565/invalidtcp"]}
+    with pytest.raises(ApiError) as e:
+        client.create_service(name=random_str(),
+                              environmentId=env.id,
+                              launchConfig=launch_config)
+    assert e.value.error.status == 422
+    assert e.value.error.code == 'PortInvalidProtocol'
+
     # test reserved port
-    launch_config = {"imageUuid": image_uuid, "ports": ["42:42"]}
+    launch_config = {"imageUuid": image_uuid, "ports": ["42:43"]}
     with pytest.raises(ApiError) as e:
         client.create_loadBalancerService(name=random_str(),
                                           environmentId=env.id,
