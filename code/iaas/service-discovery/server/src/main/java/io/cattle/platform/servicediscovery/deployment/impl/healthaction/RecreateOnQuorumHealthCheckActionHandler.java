@@ -23,10 +23,17 @@ public class RecreateOnQuorumHealthCheckActionHandler implements HealthCheckActi
             }
         }
 
-        if (healthyUnits.size() >= quorum) {
-            unhealthyUnits.addAll(unhealthy);
-        } else {
-            healthyUnits.addAll(unhealthy);
+        int healthyQuorum = healthyUnits.size();
+
+        for (DeploymentUnit unhealthyUnit : unhealthy) {
+            if (healthyQuorum < quorum) {
+                // unhealthyUnits = units-to-recreate
+                // therefore adding up one of them means increasing healthy quorum
+                unhealthyUnits.add(unhealthyUnit);
+                healthyQuorum++;
+            } else {
+                healthyUnits.add(unhealthyUnit);
+            }
         }
     }
 }
