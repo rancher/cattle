@@ -3,12 +3,29 @@ package io.cattle.platform.configitem.context.data.metadata.common;
 import java.util.List;
 
 public class DefaultMetaData {
+    public static class Self {
+        HostMetaData host;
+
+        public Self(HostMetaData host) {
+            super();
+            this.host = host;
+        }
+
+        public HostMetaData getHost() {
+            return host;
+        }
+
+        public void setHost(HostMetaData host) {
+            this.host = host;
+        }
+
+    }
     String version;
     List<ContainerMetaData> containers;
     List<ServiceMetaData> services;
     List<StackMetaData> stacks;
     List<HostMetaData> hosts;
-    HostMetaData host;
+    Self self;
 
     public DefaultMetaData(String version, List<ContainerMetaData> containers,
             List<ServiceMetaData> services,
@@ -19,7 +36,7 @@ public class DefaultMetaData {
         this.services = services;
         this.stacks = stacks;
         this.hosts = hosts;
-        this.host = host;
+        this.self = new Self(host);
     }
 
     public List<ContainerMetaData> getContainers() {
@@ -54,12 +71,12 @@ public class DefaultMetaData {
         this.hosts = hosts;
     }
 
-    public HostMetaData getHost() {
-        return host;
+    public Self getSelf() {
+        return self;
     }
 
-    public void setHost(HostMetaData host) {
-        this.host = host;
+    public void setSelf(Self self) {
+        this.self = self;
     }
 
     public String getVersion() {
