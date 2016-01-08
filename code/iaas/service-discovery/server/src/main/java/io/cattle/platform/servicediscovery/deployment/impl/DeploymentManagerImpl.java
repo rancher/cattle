@@ -183,12 +183,6 @@ public class DeploymentManagerImpl implements DeploymentManager {
         planner.cleanupIncompleteUnits();
 
         /*
-         * For instances having networkFrom deps, if A used network of B, and B is restarted, A has to be restarted as
-         * well.
-         */
-        // cleanupPartiallyStoppedUnits(planner);
-
-        /*
          * Activate all the units
          */
         startUnits(planner);

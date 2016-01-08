@@ -1,6 +1,7 @@
 package io.cattle.iaas.healthcheck.process;
 
 import io.cattle.iaas.healthcheck.service.HealthcheckService;
+import io.cattle.platform.core.constants.HealthcheckConstants;
 import io.cattle.platform.core.model.ServiceEvent;
 import io.cattle.platform.engine.handler.HandlerResult;
 import io.cattle.platform.engine.handler.ProcessHandler;
@@ -28,14 +29,22 @@ public class ServiceEventCreate extends AbstractObjectProcessHandler implements 
             return null;
         }
 
-        if ("INIT".equals(event.getReportedHealth())) {
-            return null;
-        }
-
         healthcheckService.updateHealthcheck(event.getHealthcheckUuid().split("_")[0], event.getExternalTimestamp(),
-                "UP".equals(event.getReportedHealth()));
+                getHealthState(event.getReportedHealth()));
 
         return null;
+    }
+
+    protected String getHealthState(String reportedHealth) {
+        String healthState = "";
+        if (reportedHealth.equals("UP")) {
+            healthState = HealthcheckConstants.HEALTH_STATE_HEALTHY;
+        } else if (reportedHealth.equals("INIT")) {
+            healthState = HealthcheckConstants.HEALTH_STATE_INITIALIZING;
+        } else {
+            healthState = HealthcheckConstants.HEALTH_STATE_UNHEALTHY;
+        }
+        return healthState;
     }
 
     @Override

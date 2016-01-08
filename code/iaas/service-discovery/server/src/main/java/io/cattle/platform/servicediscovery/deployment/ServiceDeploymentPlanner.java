@@ -34,7 +34,6 @@ public abstract class ServiceDeploymentPlanner {
     private List<DeploymentUnit> badUnits = new ArrayList<>();
     private List<DeploymentUnit> incompleteUnits = new ArrayList<>();
     protected DeploymentServiceContext context;
-    private List<DeploymentUnit> allUnits = new ArrayList<>();
     protected HealthCheckActionHandler healthActionHandler = new RecreateHealthCheckActionHandler();
 
     public ServiceDeploymentPlanner(List<Service> services, List<DeploymentUnit> units,
@@ -42,7 +41,10 @@ public abstract class ServiceDeploymentPlanner {
         this.services = services;
         this.context = context;
         setHealthCheckAction(services, context);
+        populateDeploymentUnits(units);
+    }
 
+    protected void populateDeploymentUnits(List<DeploymentUnit> units) {
         List<DeploymentUnit> healthyUnhealthyUnits = new ArrayList<>();
         if (units != null) {
             for (DeploymentUnit unit : units) {
@@ -57,9 +59,7 @@ public abstract class ServiceDeploymentPlanner {
             }
             healthActionHandler.populateHealthyUnhealthyUnits(this.healthyUnits, this.unhealthyUnits,
                     healthyUnhealthyUnits);
-            allUnits.addAll(units);
         }
-        
     }
 
     protected void setHealthCheckAction(List<Service> services, DeploymentServiceContext context) {
@@ -91,7 +91,7 @@ public abstract class ServiceDeploymentPlanner {
     }
 
     public boolean isHealthcheckInitiailizing() {
-        for (DeploymentUnit unit : allUnits) {
+        for (DeploymentUnit unit : this.getAllUnits()) {
             if (unit.isHealthCheckInitializing()) {
                 return true;
             }
@@ -131,16 +131,8 @@ public abstract class ServiceDeploymentPlanner {
 
     protected abstract boolean needToReconcileDeploymentImpl();
 
-    public void addUnits(List<DeploymentUnit> units) {
-        this.healthyUnits.addAll(units);
-    }
-
     public List<Service> getServices() {
         return services;
-    }
-
-    public List<DeploymentUnit> getHealthyUnits() {
-        return healthyUnits;
     }
 
     public void cleanupBadUnits() {
@@ -170,7 +162,11 @@ public abstract class ServiceDeploymentPlanner {
         }
     }
 
-    public List<DeploymentUnit> getUnhealthyUnits() {
-        return this.unhealthyUnits;
+    private List<DeploymentUnit> getAllUnits() {
+        List<DeploymentUnit> allUnits = new ArrayList<>();
+        allUnits.addAll(this.healthyUnits);
+        allUnits.addAll(this.unhealthyUnits);
+        allUnits.addAll(this.badUnits);
+        return allUnits;
     }
 }

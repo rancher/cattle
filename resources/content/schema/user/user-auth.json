@@ -453,6 +453,9 @@
         "instanceHealthCheck.port" : "cr",
         "instanceHealthCheck.recreateOnQuorumStrategyConfig" : "cr",
         "instanceHealthCheck.strategy" : "cr",
+        "instanceHealthCheck.initializingTimeout" : "cr",
+        "instanceHealthCheck.reinitializingTimeout" : "cr",
+
 
         "recreateOnQuorumStrategyConfig" : "r",
         "recreateOnQuorumStrategyConfig.quorum" : "cr",

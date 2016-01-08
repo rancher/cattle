@@ -63,40 +63,50 @@ public class HealthcheckServiceImpl implements HealthcheckService {
     NetworkDao ntwkDao;
 
     @Override
-    public void updateHealthcheck(String healthcheckInstanceHostMapUuid, final long externalTimestamp, final boolean healthy) {
+    public void updateHealthcheck(String healthcheckInstanceHostMapUuid, final long externalTimestamp,
+            final String healthState) {
         HealthcheckInstanceHostMap hcihm = objectManager.findOne(HealthcheckInstanceHostMap.class,
                 ObjectMetaDataManager.UUID_FIELD, healthcheckInstanceHostMapUuid);
 
-        if (!shouldUpdate(hcihm, externalTimestamp, healthy)) {
+        if (!shouldUpdate(hcihm, externalTimestamp, healthState)) {
             return;
         }
 
+        String hcihmNewState = healthState;
+        if (healthState.equalsIgnoreCase(HealthcheckConstants.HEALTH_STATE_INITIALIZING)) {
+            if (!hcihm.getState().equalsIgnoreCase(healthState)) {
+                hcihmNewState = HealthcheckConstants.HEALTH_STATE_REINITIALIZING;
+            }
+        }
+        
         final HealthcheckInstanceHostMap updatedHcihm = objectManager.setFields(hcihm,
                 HEALTHCHECK_INSTANCE_HOST_MAP.EXTERNAL_TIMESTAMP, externalTimestamp,
-                HEALTHCHECK_INSTANCE_HOST_MAP.HEALTH_STATE, healthy ? HEALTH_STATE_HEALTHY : HEALTH_STATE_UNHEALTHY);
+                HEALTHCHECK_INSTANCE_HOST_MAP.HEALTH_STATE, hcihmNewState);
 
         lockManager.lock(new HealthcheckInstanceLock(hcihm.getHealthcheckInstanceId()), new LockCallbackNoReturn() {
             @Override
             public void doWithLockNoResult() {
-                processHealthcheckInstance(updatedHcihm, externalTimestamp, healthy);
+                processHealthcheckInstance(updatedHcihm, externalTimestamp, healthState);
             }
         });
     }
 
-    protected void processHealthcheckInstance(HealthcheckInstanceHostMap hcihm, long externalTimestamp, boolean healthy) {
+    protected void processHealthcheckInstance(HealthcheckInstanceHostMap hcihm, long externalTimestamp,
+            String healthState) {
         HealthcheckInstance hcInstance = objectManager.loadResource(HealthcheckInstance.class, hcihm.getHealthcheckInstanceId());
-        Boolean updateHealthy = determineNewHealthState(hcInstance, hcihm, externalTimestamp, healthy);
-        if (updateHealthy == null) {
+        String updateWithState = determineNewHealthState(hcInstance, hcihm, externalTimestamp, healthState);
+        if (updateWithState == null) {
             return;
         }
 
-        updateHealthcheckInstance(hcInstance, updateHealthy);
+        updateHealthcheckInstance(hcInstance, updateWithState);
     }
 
-    protected boolean shouldUpdate(HealthcheckInstanceHostMap hcihm, long externalTimestamp, boolean healthy) {
+    protected boolean shouldUpdate(HealthcheckInstanceHostMap hcihm, long externalTimestamp, String healthState) {
         HealthcheckInstance hcInstance = objectManager.loadResource(HealthcheckInstance.class,
                 hcihm.getHealthcheckInstanceId());
-        if (!healthy && getHealthState(hcInstance).equalsIgnoreCase(HealthcheckConstants.HEALTH_STATE_INITIALIZING)) {
+        if (healthState.equalsIgnoreCase(HEALTH_STATE_UNHEALTHY)
+                && HealthcheckConstants.isInit(getHealthState(hcInstance))) {
             return false;
         }
 
@@ -111,15 +121,18 @@ public class HealthcheckServiceImpl implements HealthcheckService {
         return true;
     }
 
-    protected Boolean determineNewHealthState(HealthcheckInstance hcInstance, HealthcheckInstanceHostMap hcihm, long externalTimestamp, boolean healthy) {
+    protected String determineNewHealthState(HealthcheckInstance hcInstance, HealthcheckInstanceHostMap hcihm,
+            long externalTimestamp, String healthState) {
         List<HealthcheckInstanceHostMap> others = objectManager.find(HealthcheckInstanceHostMap.class,
                 HEALTHCHECK_INSTANCE_HOST_MAP.HEALTHCHECK_INSTANCE_ID, hcInstance.getId(),
                 HEALTHCHECK_INSTANCE_HOST_MAP.STATE, CommonStatesConstants.ACTIVE);
 
         boolean currentlyHealthy = HEALTH_STATE_HEALTHY.equals(getHealthState(hcInstance));
 
-        if (healthy) {
-            return currentlyHealthy ? null : true;
+        if (healthState.equalsIgnoreCase(HealthcheckConstants.HEALTH_STATE_HEALTHY)) {
+            return currentlyHealthy ? null : healthState;
+        } else if (healthState.equalsIgnoreCase(HealthcheckConstants.HEALTH_STATE_INITIALIZING)) {
+            return currentlyHealthy ? HealthcheckConstants.HEALTH_STATE_REINITIALIZING : null;
         } else {
             if (!currentlyHealthy) {
                 return null;
@@ -137,7 +150,7 @@ public class HealthcheckServiceImpl implements HealthcheckService {
                 }
             }
 
-            return allUnHealthy ? false : null;
+            return allUnHealthy ? healthState : null;
         }
     }
 
@@ -147,13 +160,18 @@ public class HealthcheckServiceImpl implements HealthcheckService {
         return instance == null ? null : instance.getHealthState();
     }
 
-    protected void updateHealthcheckInstance(HealthcheckInstance hcInstance, boolean healthy) {
+    protected void updateHealthcheckInstance(HealthcheckInstance hcInstance, String updateWithState) {
         Instance instance = objectManager.loadResource(Instance.class, hcInstance.getInstanceId());
         if (instance != null) {
-            if (healthy) {
-                objectProcessManager.scheduleProcessInstance("instance.updatehealthy", instance, null);
+            if (updateWithState.equalsIgnoreCase(HealthcheckConstants.HEALTH_STATE_HEALTHY)) {
+                objectProcessManager.scheduleProcessInstance(HealthcheckConstants.PROCESS_UPDATE_HEALTHY, instance,
+                        null);
+            } else if (updateWithState.equalsIgnoreCase(HealthcheckConstants.HEALTH_STATE_REINITIALIZING)) {
+                objectProcessManager.scheduleProcessInstance(HealthcheckConstants.PROCESS_UPDATE_REINITIALIZING,
+                        instance, null);
             } else {
-                objectProcessManager.scheduleProcessInstance("instance.updateunhealthy", instance, null);
+                objectProcessManager.scheduleProcessInstance(HealthcheckConstants.PROCESS_UPDATE_UNHEALTHY, instance,
+                        null);
             }
         }
     }

@@ -1,8 +1,11 @@
 package io.cattle.platform.servicediscovery.deployment.impl.unit;
 
+import static io.cattle.platform.core.model.tables.InstanceHostMapTable.INSTANCE_HOST_MAP;
 import io.cattle.platform.core.constants.CommonStatesConstants;
+import io.cattle.platform.core.constants.HealthcheckConstants;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.model.Instance;
+import io.cattle.platform.core.model.InstanceHostMap;
 import io.cattle.platform.core.model.Service;
 import io.cattle.platform.core.model.ServiceExposeMap;
 import io.cattle.platform.docker.constants.DockerInstanceConstants;
@@ -13,8 +16,8 @@ import io.cattle.platform.process.common.util.ProcessUtils;
 import io.cattle.platform.servicediscovery.api.constants.ServiceDiscoveryConstants;
 import io.cattle.platform.servicediscovery.api.resource.ServiceDiscoveryConfigItem;
 import io.cattle.platform.servicediscovery.api.util.ServiceDiscoveryUtil;
-import io.cattle.platform.servicediscovery.deployment.AbstractInstanceUnit;
 import io.cattle.platform.servicediscovery.deployment.DeploymentUnitInstance;
+import io.cattle.platform.servicediscovery.deployment.InstanceUnit;
 import io.cattle.platform.servicediscovery.deployment.impl.DeploymentManagerImpl.DeploymentServiceContext;
 
 import java.util.Arrays;
@@ -25,9 +28,10 @@ import java.util.Map;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 
-public class DefaultDeploymentUnitInstance extends AbstractInstanceUnit {
+public class DefaultDeploymentUnitInstance extends DeploymentUnitInstance implements InstanceUnit {
     protected String instanceName;
     protected boolean startOnce;
+    protected Instance instance;
 
     public DefaultDeploymentUnitInstance(DeploymentServiceContext context, String uuid,
             Service service, String instanceName, Instance instance, Map<String, String> labels, String launchConfigName) {
@@ -161,6 +165,61 @@ public class DefaultDeploymentUnitInstance extends AbstractInstanceUnit {
         if (this.instance != null) {
             this.instance = context.resourceMonitor.waitForNotTransitioning(this.instance);
         }
+    }
+
+    @Override
+    public Instance getInstance() {
+        return instance;
+    }
+
+    @Override
+    public boolean isUnhealthy() {
+        if (instance != null) {
+            if (instance.getHealthState() == null) {
+                return false;
+            }
+            boolean unhealthyState = instance.getHealthState().equalsIgnoreCase(
+                    HealthcheckConstants.HEALTH_STATE_UNHEALTHY) || instance.getHealthState().equalsIgnoreCase(
+                    HealthcheckConstants.HEALTH_STATE_UPDATING_UNHEALTHY);
+            return unhealthyState;
+        }
+        return false;
+    }
+
+    @Override
+    public void stop() {
+        if (instance != null && instance.getState().equals(InstanceConstants.STATE_RUNNING)) {
+            context.objectProcessManager.scheduleProcessInstanceAsync(InstanceConstants.PROCESS_STOP, instance,
+                    null);
+        }
+    }
+
+    @Override
+    public boolean isHealthCheckInitializing() {
+        return instance != null && instance.getHealthState() != null
+                && HealthcheckConstants.isInit(instance.getHealthState());
+    }
+
+    @Override
+    public void waitForAllocate() {
+        if (this.instance != null) {
+            instance = context.resourceMonitor.waitFor(instance, new ResourcePredicate<Instance>() {
+                @Override
+                public boolean evaluate(Instance obj) {
+                    return context.objectManager.find(InstanceHostMap.class, INSTANCE_HOST_MAP.INSTANCE_ID,
+                            instance.getId()).size() > 0;
+                }
+            });
+        }
+    }
+
+    @Override
+    public DeploymentUnitInstance startImpl() {
+        if (instance != null && InstanceConstants.STATE_STOPPED.equals(instance.getState())) {
+            context.objectProcessManager.scheduleProcessInstanceAsync(
+                    InstanceConstants.PROCESS_START, instance, null);
+        }
+        return this;
     }
 }
 

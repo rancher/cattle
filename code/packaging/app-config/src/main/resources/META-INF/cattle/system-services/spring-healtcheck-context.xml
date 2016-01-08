@@ -19,7 +19,7 @@
     <bean class="io.cattle.iaas.healthcheck.process.ServiceEventCreate" />
     <bean class="io.cattle.iaas.healthcheck.process.HealthCheckReconcileTrigger" />
     <bean class="io.cattle.iaas.healthcheck.process.HealthCheckReconcilePostTrigger" />
-
+    <bean class="io.cattle.iaas.healthcheck.process.InstanceHealthCheckUpdate" />
 
 	<bean class="io.cattle.iaas.healthcheck.service.impl.AgentHealthcheckHostLookup" />
 	<bean class="io.cattle.iaas.healthcheck.service.impl.HostHealthcheckHostLookup" />
@@ -28,5 +28,7 @@
 	<bean class="io.cattle.iaas.healthcheck.service.impl.AgentHealthcheckInstancesLookup" />
 	<bean class="io.cattle.iaas.healthcheck.service.impl.HostMapHealthcheckInstancesLookup" />
 	<bean class="io.cattle.iaas.healthcheck.service.impl.ProviderInstanceMapHealthcheckInstancesLookup" />
+	
+	<bean class="io.cattle.iaas.healthcheck.service.impl.HealthcheckCleanupMonitorImpl" />
 
 </beans>

@@ -13,7 +13,7 @@ package io.cattle.platform.core.model.tables.records;
 @javax.persistence.Table(name = "instance", schema = "cattle")
 public class InstanceRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.platform.core.model.tables.records.InstanceRecord> implements io.cattle.platform.db.jooq.utils.TableRecordJaxb, io.cattle.platform.core.model.Instance {
 
-	private static final long serialVersionUID = -809383447;
+	private static final long serialVersionUID = -1352264574;
 
 	/**
 	 * Setter for <code>cattle.instance.id</code>.
@@ -594,6 +594,23 @@ public class InstanceRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.
 		return (java.lang.String) getValue(33);
 	}
 
+	/**
+	 * Setter for <code>cattle.instance.health_updated</code>.
+	 */
+	@Override
+	public void setHealthUpdated(java.util.Date value) {
+		setValue(34, value);
+	}
+
+	/**
+	 * Getter for <code>cattle.instance.health_updated</code>.
+	 */
+	@javax.persistence.Column(name = "health_updated")
+	@Override
+	public java.util.Date getHealthUpdated() {
+		return (java.util.Date) getValue(34);
+	}
+
 	// -------------------------------------------------------------------------
 	// Primary key information
 	// -------------------------------------------------------------------------
@@ -649,6 +666,7 @@ public class InstanceRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.
 		setCreateIndex(from.getCreateIndex());
 		setDeploymentUnitUuid(from.getDeploymentUnitUuid());
 		setVersion(from.getVersion());
+		setHealthUpdated(from.getHealthUpdated());
 	}
 
 	/**
@@ -674,7 +692,7 @@ public class InstanceRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.
 	/**
 	 * Create a detached, initialised InstanceRecord
 	 */
-	public InstanceRecord(java.lang.Long id, java.lang.String name, java.lang.Long accountId, java.lang.String kind, java.lang.String uuid, java.lang.String description, java.lang.String state, java.util.Date created, java.util.Date removed, java.util.Date removeTime, java.util.Map<String,Object> data, java.lang.String allocationState, java.lang.Long compute, java.lang.Long memoryMb, java.lang.Long imageId, java.lang.Long offeringId, java.lang.String hostname, java.lang.Long zoneId, java.lang.String instanceTriggeredStop, java.lang.Long agentId, java.lang.String domain, java.util.Date firstRunning, java.lang.String token, java.lang.String userdata, java.lang.String systemContainer, java.lang.Long registryCredentialId, java.lang.String externalId, java.lang.Boolean nativeContainer, java.lang.Long networkContainerId, java.lang.String healthState, java.lang.Long startCount, java.lang.Long createIndex, java.lang.String deploymentUnitUuid, java.lang.String version) {
+	public InstanceRecord(java.lang.Long id, java.lang.String name, java.lang.Long accountId, java.lang.String kind, java.lang.String uuid, java.lang.String description, java.lang.String state, java.util.Date created, java.util.Date removed, java.util.Date removeTime, java.util.Map<String,Object> data, java.lang.String allocationState, java.lang.Long compute, java.lang.Long memoryMb, java.lang.Long imageId, java.lang.Long offeringId, java.lang.String hostname, java.lang.Long zoneId, java.lang.String instanceTriggeredStop, java.lang.Long agentId, java.lang.String domain, java.util.Date firstRunning, java.lang.String token, java.lang.String userdata, java.lang.String systemContainer, java.lang.Long registryCredentialId, java.lang.String externalId, java.lang.Boolean nativeContainer, java.lang.Long networkContainerId, java.lang.String healthState, java.lang.Long startCount, java.lang.Long createIndex, java.lang.String deploymentUnitUuid, java.lang.String version, java.util.Date healthUpdated) {
 		super(io.cattle.platform.core.model.tables.InstanceTable.INSTANCE);
 
 		setValue(0, id);
@@ -711,5 +729,6 @@ public class InstanceRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.
 		setValue(31, createIndex);
 		setValue(32, deploymentUnitUuid);
 		setValue(33, version);
+		setValue(34, healthUpdated);
 	}
 }
