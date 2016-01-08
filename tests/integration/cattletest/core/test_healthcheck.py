@@ -223,7 +223,7 @@ def test_health_check_quorum(super_client, context, client):
         'imageUuid': context.image_uuid,
         'healthCheck': {
             'port': 80,
-            'recreateOnQuorumStrategyConfig': {"quorum": 2},
+            'recreateOnQuorumStrategyConfig': {"quorum": 1},
             'strategy': "recreateOnQuorum"
         }
     }, environmentId=env.id, scale=2)
@@ -232,7 +232,7 @@ def test_health_check_quorum(super_client, context, client):
     action = svc.launchConfig.healthCheck.strategy
     config = svc.launchConfig.healthCheck.recreateOnQuorumStrategyConfig
     assert action == 'recreateOnQuorum'
-    assert config.quorum == 2
+    assert config.quorum == 1
 
     expose_maps = svc.serviceExposeMaps()
     c1 = super_client.reload(expose_maps[0].instance())
@@ -246,25 +246,35 @@ def test_health_check_quorum(super_client, context, client):
     hcihm = _update_healthy(agent, hcihm, c1, super_client)
 
     # update unheatlhy, check container is not removed
-    # as quorum is not reached yet
+    # as healthy_count == quorum
     _update_unhealthy(agent, hcihm, c1, super_client)
     svc = super_client.wait_success(svc)
     assert svc.state == "active"
-    assert len(svc.serviceExposeMaps()) == 2
     c1 = super_client.wait_success(c1)
     assert c1.state == 'running'
 
-    hcihm = _update_healthy(agent, hcihm, c1, super_client)
-    svc = super_client.wait_success(svc)
-    # increase the scale
+    # test with scale1
     # update unheatlhy, check container removed
-    # as quorum is reached
-    svc = super_client.update(svc, scale=3)
-    svc = super_client.wait_success(svc)
+    # as healthy_count < quorum
+    svc = client.create_service(name='test1', launchConfig={
+        'imageUuid': context.image_uuid,
+        'healthCheck': {
+            'port': 80,
+            'recreateOnQuorumStrategyConfig': {"quorum": 1},
+            'strategy': "recreateOnQuorum"
+        }
+    }, environmentId=env.id, scale=1)
+    svc = client.wait_success(client.wait_success(svc).activate())
+    assert svc.state == 'active'
+    expose_maps = svc.serviceExposeMaps()
+    c1 = super_client.reload(expose_maps[0].instance())
+    hci = find_one(c1.healthcheckInstances)
+    hcihm = find_one(hci.healthcheckInstanceHostMaps)
+    agent = _get_agent_for_container(c1)
+    hcihm = _update_healthy(agent, hcihm, c1, super_client)
     _update_unhealthy(agent, hcihm, c1, super_client)
     svc = super_client.wait_success(svc)
     assert svc.state == "active"
-    assert len(svc.serviceExposeMaps()) >= 3
     wait_for_condition(client, c1,
                        lambda x: x.state == 'removed')
 
