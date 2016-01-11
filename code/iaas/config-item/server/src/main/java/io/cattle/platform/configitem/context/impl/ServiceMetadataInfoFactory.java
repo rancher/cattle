@@ -297,8 +297,8 @@ public class ServiceMetadataInfoFactory extends AbstractAgentBaseContextFactory 
 
 
     protected List<ServiceMetaData> getServicesInfo(Environment env, Account account) {
-        List<? extends Service> services = objectManager.find(Service.class, SERVICE.ACCOUNT_ID,
-                account.getId(), SERVICE.REMOVED, null);
+        List<? extends Service> services = objectManager.find(Service.class, SERVICE.ENVIRONMENT_ID,
+                env.getId(), SERVICE.REMOVED, null);
         List<ServiceMetaData> stackServicesMD = new ArrayList<>();
         Map<Long, Service> idToService = new HashMap<>();
         for (Service service : services) {
