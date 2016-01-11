@@ -7,17 +7,18 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class StackMetaData {
+    private long id;
 
     protected String environment_name;
     protected String name;
     protected String uuid;
     protected List<ServiceMetaData> services = new ArrayList<>();
 
-    public StackMetaData(Environment stack, Account account, List<ServiceMetaData> services) {
+    public StackMetaData(Environment stack, Account account) {
         this.name = stack.getName();
         this.uuid = stack.getUuid();
         this.environment_name = account.getName();
-        this.services = services;
+        this.id = stack.getId();
     }
 
     public StackMetaData(StackMetaData that) {
@@ -25,6 +26,7 @@ public class StackMetaData {
         this.name = that.name;
         this.uuid = that.uuid;
         this.services = that.services;
+        this.id = that.id;
     }
 
     public String getEnvironment_name() {
@@ -49,5 +51,13 @@ public class StackMetaData {
 
     public void setUuid(String uuid) {
         this.uuid = uuid;
+    }
+
+    public long getId() {
+        return id;
+    }
+
+    public void setServicesObj(List<ServiceMetaData> services) {
+        this.services = services;
     }
 }

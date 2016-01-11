@@ -16,6 +16,7 @@ public class ServiceMetaData {
     private Long serviceId;
     private boolean isPrimaryConfig;
     private String launchConfigName;
+    private Long stackId;
     
     protected String name;
     protected String uuid;
@@ -56,6 +57,7 @@ public class ServiceMetaData {
         this.serviceId = that.serviceId;
         this.isPrimaryConfig = that.isPrimaryConfig;
         this.launchConfigName = that.launchConfigName;
+        this.stackId = that.stackId;
     }
 
     public ServiceMetaData(Service service, String serviceName, Environment env, List<String> sidekicks,
@@ -64,6 +66,7 @@ public class ServiceMetaData {
         this.name = serviceName;
         this.uuid = service.getUuid();
         this.stack_name = env.getName();
+        this.stackId = env.getId();
         this.kind = service.getKind();
         this.sidekicks = sidekicks;
         this.vip = service.getVip();
@@ -78,6 +81,7 @@ public class ServiceMetaData {
         this.metadata = metadata;
         this.scale = DataAccessor.fieldInteger(service, ServiceDiscoveryConstants.FIELD_SCALE);
         this.fqdn = DataAccessor.fieldString(service, ServiceDiscoveryConstants.FIELD_FQDN);
+        this.stackId = env.getId();
     }
 
     @SuppressWarnings("unchecked")
@@ -249,4 +253,7 @@ public class ServiceMetaData {
         this.containers = containers;
     }
 
+    public Long getStackId() {
+        return stackId;
+    }
 }
