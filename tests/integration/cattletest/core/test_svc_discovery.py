@@ -2350,26 +2350,28 @@ def test_public_endpoints(new_context):
     service2 = client.wait_success(service2.activate(), 120)
     assert service2.state == "active"
 
-    wait_for(lambda: client.reload(service1).publicEndpoints is not None
-             and len(client.reload(service1).publicEndpoints) == 2)
+    wait_for(
+        lambda: client.reload(service1).publicEndpoints is not None and len(
+            client.reload(service1).publicEndpoints) == 2)
     endpoints = client.reload(service1).publicEndpoints
     for host in hosts:
         _validate_endpoint(endpoints, port1, host, service1)
 
-    wait_for(lambda: client.reload(service2).publicEndpoints is not None
-             and len(client.reload(service2).publicEndpoints) == 2)
+    wait_for(
+        lambda: client.reload(service2).publicEndpoints is not None and len(
+            client.reload(service2).publicEndpoints) == 2)
     endpoints = client.reload(service2).publicEndpoints
     for host in hosts:
         _validate_endpoint(endpoints, port2, host, service2)
 
-    wait_for(lambda: client.reload(host1).publicEndpoints is not None
-             and len(client.reload(host1).publicEndpoints) == 2)
+    wait_for(lambda: client.reload(host1).publicEndpoints is not None and len(
+        client.reload(host1).publicEndpoints) == 2)
     endpoints = client.reload(host1).publicEndpoints
     _validate_endpoint(endpoints, port1, host1, service1)
     _validate_endpoint(endpoints, port2, host1, service2)
 
-    wait_for(lambda: client.reload(host2).publicEndpoints is not None
-             and len(client.reload(host2).publicEndpoints) == 2)
+    wait_for(lambda: client.reload(host2).publicEndpoints is not None and len(
+        client.reload(host2).publicEndpoints) == 2)
     endpoints = client.reload(host2).publicEndpoints
     _validate_endpoint(endpoints, port1, host2, service1)
     _validate_endpoint(endpoints, port2, host2, service2)
@@ -2531,14 +2533,14 @@ def test_update_port_endpoint(new_context):
     svc = client.wait_success(svc.activate(), 120)
     assert svc.state == "active"
 
-    wait_for(lambda: client.reload(svc).publicEndpoints is not None
-             and len(client.reload(svc).publicEndpoints) == 1)
+    wait_for(lambda: client.reload(svc).publicEndpoints is not None and len(
+        client.reload(svc).publicEndpoints) == 1)
     endpoints = client.reload(svc).publicEndpoints
     for host in hosts:
         _validate_endpoint(endpoints, port1, host, svc)
 
-    wait_for(lambda: client.reload(host1).publicEndpoints is not None
-             and len(client.reload(host1).publicEndpoints) == 1)
+    wait_for(lambda: client.reload(host1).publicEndpoints is not None and len(
+        client.reload(host1).publicEndpoints) == 1)
     endpoints = client.reload(host1).publicEndpoints
     _validate_endpoint(endpoints, port1, hosts[0], svc)
 
@@ -2554,14 +2556,14 @@ def test_update_port_endpoint(new_context):
     assert port.state == 'active'
 
     # validate endpoints
-    wait_for(lambda: client.reload(svc).publicEndpoints is not None
-             and len(client.reload(svc).publicEndpoints) == 1)
+    wait_for(lambda: client.reload(svc).publicEndpoints is not None and len(
+        client.reload(svc).publicEndpoints) == 1)
     endpoints = client.reload(svc).publicEndpoints
     for host in hosts:
         _validate_endpoint(endpoints, port2, host, svc)
 
-    wait_for(lambda: client.reload(host1).publicEndpoints is not None
-             and len(client.reload(host1).publicEndpoints) == 1)
+    wait_for(lambda: client.reload(host1).publicEndpoints is not None and len(
+        client.reload(host1).publicEndpoints) == 1)
     endpoints = client.reload(host1).publicEndpoints
     _validate_endpoint(endpoints, port2, hosts[0], svc)
 
