@@ -52,8 +52,8 @@ def test_health_check_create_instance(super_client, context):
     assert hcihm.healthState == 'healthy'
     assert hcihm.externalTimestamp == ts
 
-    check = lambda: super_client.reload(container).healthState == 'healthy'
-    wait_for(check, timeout=5)
+    wait_for(lambda: super_client.reload(container).healthState == 'healthy',
+             timeout=5)
 
 
 def _create_svc_w_healthcheck(client, context):
@@ -99,8 +99,8 @@ def test_health_check_create_service(super_client, context, client):
     super_client.wait_success(se)
     hcihm = super_client.wait_success(super_client.reload(hcihm))
     assert hcihm.healthState == 'healthy'
-    check = lambda: super_client.reload(container).healthState == 'healthy'
-    wait_for(check, timeout=5)
+    wait_for(lambda: super_client.reload(container).healthState == 'healthy',
+             timeout=5)
 
     ts = int(time.time())
     client = _get_agent_client(agent)
@@ -110,8 +110,8 @@ def test_health_check_create_service(super_client, context, client):
     super_client.wait_success(se)
     hcihm = super_client.wait_success(super_client.reload(hcihm))
     assert hcihm.healthState == 'healthy'
-    check = lambda: super_client.reload(container).healthState == 'healthy'
-    wait_for(check, timeout=5)
+    wait_for(lambda: super_client.reload(container).healthState == 'healthy',
+             timeout=5)
 
     ts = int(time.time())
     client = _get_agent_client(agent)
@@ -121,8 +121,8 @@ def test_health_check_create_service(super_client, context, client):
     super_client.wait_success(se)
     hcihm = super_client.wait_success(super_client.reload(hcihm))
     assert hcihm.healthState == 'healthy'
-    check = lambda: super_client.reload(container).healthState == 'healthy'
-    wait_for(check, timeout=5)
+    wait_for(lambda: super_client.reload(container).healthState == 'healthy',
+             timeout=5)
 
     ts = int(time.time())
     client = _get_agent_client(agent)
@@ -132,8 +132,8 @@ def test_health_check_create_service(super_client, context, client):
     super_client.wait_success(se)
     hcihm = super_client.wait_success(super_client.reload(hcihm))
     assert hcihm.healthState == 'healthy'
-    check = lambda: super_client.reload(container).healthState == 'healthy'
-    wait_for(check, timeout=5)
+    wait_for(lambda: super_client.reload(container).healthState == 'healthy',
+             timeout=5)
 
     ts = int(time.time())
     client = _get_agent_client(agent)
@@ -151,8 +151,8 @@ def test_health_check_create_service(super_client, context, client):
     assert hcihm.healthState == 'unhealthy'
     assert hcihm.externalTimestamp == ts
 
-    check = lambda: super_client.reload(container).healthState == 'unhealthy'
-    wait_for(check, timeout=5)
+    wait_for(lambda: super_client.reload(container).healthState == 'unhealthy',
+             timeout=5)
     wait_for(lambda: len(service.serviceExposeMaps()) > 1)
 
 
@@ -500,8 +500,8 @@ def _update_healthy(agent, hcihm, c, super_client):
     super_client.wait_success(se)
     hcihm = super_client.wait_success(super_client.reload(hcihm))
     assert hcihm.healthState == 'healthy'
-    check = lambda: super_client.reload(c).healthState == 'healthy'
-    wait_for(check, timeout=5)
+    wait_for(lambda: super_client.reload(c).healthState == 'healthy',
+             timeout=5)
     return hcihm
 
 
@@ -514,5 +514,5 @@ def _update_unhealthy(agent, hcihm, c, super_client):
     super_client.wait_success(se)
     hcihm = super_client.wait_success(super_client.reload(hcihm))
     assert hcihm.healthState == 'unhealthy'
-    check = lambda: super_client.reload(c).healthState == 'unhealthy'
-    wait_for(check, timeout=5)
+    wait_for(lambda: super_client.reload(c).healthState == 'unhealthy',
+             timeout=5)

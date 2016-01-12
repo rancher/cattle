@@ -80,11 +80,13 @@ def diff_members(members, got_members):
     members_a = set([])
     members_b = set([])
     for member in members:
-        members_a.add(member['externalId'] + '  ' + member['externalIdType']
-                      + '  ' + member['role'])
+        members_a.add(
+            member['externalId'] + '  ' + member['externalIdType'] + '  ' +
+            member['role'])
     for member in got_members:
-        members_b.add(member['externalId'] + '  ' + member['externalIdType']
-                      + '  ' + member['role'])
+        members_b.add(
+            member['externalId'] + '  ' + member['externalIdType'] + '  ' +
+            member['role'])
     assert members_a == members_b
 
 
