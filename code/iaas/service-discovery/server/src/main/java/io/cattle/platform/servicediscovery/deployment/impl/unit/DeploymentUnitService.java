@@ -3,6 +3,7 @@ package io.cattle.platform.servicediscovery.deployment.impl.unit;
 import static io.cattle.platform.core.model.tables.EnvironmentTable.ENVIRONMENT;
 import io.cattle.platform.core.model.Environment;
 import io.cattle.platform.core.model.Service;
+import io.cattle.platform.servicediscovery.api.constants.ServiceDiscoveryConstants;
 import io.cattle.platform.servicediscovery.api.util.ServiceDiscoveryUtil;
 import io.cattle.platform.servicediscovery.deployment.DeploymentUnitInstance;
 import io.cattle.platform.servicediscovery.deployment.DeploymentUnitInstanceIdGenerator;
@@ -27,7 +28,7 @@ public class DeploymentUnitService {
         this.launchConfigNames = launchConfigNames;
         this.context = context;
         for (String launchConfigName : launchConfigNames) {
-            for (String sidekick : getSidekickRefs(launchConfigName)) {
+            for (String sidekick : getSidekickRefs(service, launchConfigName)) {
                 List<String> usedBy = sidekickUsedByMap.get(sidekick);
                 if (usedBy == null) {
                     usedBy = new ArrayList<>();
@@ -115,19 +116,29 @@ public class DeploymentUnitService {
     }
 
     @SuppressWarnings("unchecked")
-    public List<String> getSidekickRefs(String launchConfigName) {
-        List<String> sidekicksLaunchConfigIds = new ArrayList<>();
+    public List<String> getSidekickRefs(Service service, String launchConfigName) {
+        List<String> configNames = new ArrayList<>();
         for (DeploymentUnit.SidekickType sidekickType : DeploymentUnit.SidekickType.supportedTypes) {
             Object sidekicksLaunchConfigObj = ServiceDiscoveryUtil.getLaunchConfigObject(service, launchConfigName,
                     sidekickType.launchConfigType);
             if (sidekicksLaunchConfigObj != null) {
                 if (sidekickType.isList) {
-                    sidekicksLaunchConfigIds.addAll((List<String>) sidekicksLaunchConfigObj);
+                    configNames.addAll((List<String>) sidekicksLaunchConfigObj);
                 } else {
-                    sidekicksLaunchConfigIds.add(sidekicksLaunchConfigObj.toString());
+                    configNames.add(sidekicksLaunchConfigObj.toString());
                 }
             }
         }
-        return sidekicksLaunchConfigIds;
+
+        List<String> toReturn = new ArrayList<>();
+        for (String name : configNames) {
+            if (name.equalsIgnoreCase(service.getName())) {
+                toReturn.add(ServiceDiscoveryConstants.PRIMARY_LAUNCH_CONFIG_NAME);
+            } else {
+                toReturn.add(name);
+            }
+        }
+
+        return toReturn;
     }
 }

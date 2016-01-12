@@ -2211,6 +2211,48 @@ def test_stop_network_from_container(client, context, super_client):
     init_start_count = super_client.reload(s11_container).startCount
 
 
+def test_remove_network_from_container(client, context, super_client):
+    env = _create_stack(client)
+    svc_name = random_str()
+    image_uuid = context.image_uuid
+    launch_config = {"imageUuid": image_uuid, "networkMode": 'container'}
+    secondary_lc = {"imageUuid": image_uuid, "name": "secondary",
+                    "networkLaunchConfig": svc_name}
+
+    service = client.create_service(name=svc_name,
+                                    environmentId=env.id,
+                                    launchConfig=launch_config,
+                                    scale=1,
+                                    secondaryLaunchConfigs=[secondary_lc])
+    service = client.wait_success(service)
+    assert len(service.secondaryLaunchConfigs) == 1
+    assert service.launchConfig.networkMode == 'container'
+    assert service.secondaryLaunchConfigs[0].networkMode == 'managed'
+
+    service = client.wait_success(service.activate(), 120)
+
+    assert service.state == "active"
+
+    s11_container = _validate_compose_instance_start(client, service, env, "1")
+    s21_container = _validate_compose_instance_start(client, service,
+                                                     env, "1", "secondary")
+    s11_container = super_client.reload(s11_container)
+    init_start_count = s11_container.startCount
+    assert init_start_count is not None
+
+    assert s21_container.networkContainerId is not None
+    assert s21_container.networkContainerId == s11_container.id
+
+    # remove s11 container, and validate s21 was removed as well
+    _instance_remove(s11_container, client)
+    wait_for_condition(
+        client, s21_container, _resource_is_removed,
+        lambda x: 'State is: ' + x.state)
+
+    service = client.wait_success(service)
+    _wait_until_active_map_count(service, 2, client, timeout=30)
+
+
 def test_metadata(client, context, super_client):
     env = _create_stack(client)
 
