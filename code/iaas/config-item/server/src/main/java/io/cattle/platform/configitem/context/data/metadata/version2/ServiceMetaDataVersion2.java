@@ -19,4 +19,11 @@ public class ServiceMetaDataVersion2 extends ServiceMetaData {
         return containers;
     }
 
+    public Long getCreate_index() {
+        return create_index;
+    }
+
+    public void setCreate_index(Long create_index) {
+        this.create_index = create_index;
+    }
 }
