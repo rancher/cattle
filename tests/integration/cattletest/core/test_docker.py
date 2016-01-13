@@ -731,6 +731,7 @@ def test_docker_labels(docker_client):
         # 'io.rancher.testlabel.space': 'value 1',
         'io.rancher.testlabel.fromapi': 'yes',
         'io.rancher.container.uuid': c.uuid,
+        'io.rancher.container.name': c.name,
         'io.rancher.container.ip': c.primaryIpAddress + '/16',
     }
     assert actual_labels == expected_labels
