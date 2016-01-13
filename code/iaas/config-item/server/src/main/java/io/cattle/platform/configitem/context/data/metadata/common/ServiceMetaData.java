@@ -157,10 +157,6 @@ public class ServiceMetaData {
         return isPrimaryConfig;
     }
 
-    public Long getCreate_index() {
-        return create_index;
-    }
-
     public void setLinks(Map<String, String> links) {
         this.links = links;
     }
@@ -243,10 +239,6 @@ public class ServiceMetaData {
 
     public void setExpose(List<String> expose) {
         this.expose = expose;
-    }
-
-    public void setCreate_index(Long create_index) {
-        this.create_index = create_index;
     }
 
     public void setContainersObj(List<ContainerMetaData> containers) {
