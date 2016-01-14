@@ -8,7 +8,7 @@
 
 <#if agentInstanceIp?? >
     <#list ipsecClients as client>
-        <#if (client.ipAddress.address)?? >
+        <#if (client.ipAddress.address)?? && (client.hostIpAddress.address)?? >
 {
             <#if client.instance.id == client.agentInstance.id >
     "peer": true,
