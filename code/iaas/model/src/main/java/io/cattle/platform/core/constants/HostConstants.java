@@ -5,6 +5,9 @@ public class HostConstants {
     public static final String TYPE = "host";
     public static final String FIELD_PHYSICAL_HOST_ID = "physicalHostId";
 
+    /* This is not a real field in the API but passed as a field on agent ping */
+    public static final String FIELD_CREATE_LABELS = "createLabels";
+
     public static final String FIELD_REPORTED_UUID = "reportedUuid";
     public static final String FIELD_PHYSICAL_HOST_UUID = "physicalHostUuid";
     public static final String FIELD_HOST_UUID = "hostUuid";

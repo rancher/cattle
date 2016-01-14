@@ -27,6 +27,7 @@ import io.cattle.platform.lock.definition.LockDefinition;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.meta.ObjectMetaDataManager;
 import io.cattle.platform.object.util.DataAccessor;
+import io.cattle.platform.util.type.CollectionUtils;
 
 import java.util.Arrays;
 import java.util.HashMap;
@@ -229,6 +230,11 @@ public class AgentResourcesMonitorImpl implements AgentResourcesEventListener {
             } else {
                 data = createData(agent, uuid, data);
                 data.put(HostConstants.FIELD_PHYSICAL_HOST_ID, physicalHostId);
+
+                /* Copy createLabels to labels */
+                Map<String, Object> labels = CollectionUtils.toMap(data.get(HostConstants.FIELD_LABELS));
+                labels.putAll(CollectionUtils.<String, Object>toMap(data.get(HostConstants.FIELD_CREATE_LABELS)));
+                data.put(HostConstants.FIELD_LABELS, labels);
 
                 hosts.put(uuid, resourceDao.createAndSchedule(Host.class, data));
             }
