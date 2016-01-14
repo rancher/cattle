@@ -365,7 +365,34 @@ public class DnsInfoDaoImpl extends AbstractJooqDao implements DnsInfoDao {
             existingData.add(data);
             returnData.put(data.getService().getId(), existingData);
         }
-        return returnData;
+
+        // parse the health check
+        Map<Long, List<ServiceInstanceData>> returnDataFiltered = new HashMap<>();
+        if (client) {
+            returnDataFiltered.putAll(returnData);
+        } else {
+            for (Long serviceId : returnData.keySet()) {
+                List<ServiceInstanceData> originalInstances = returnData.get(serviceId);
+                List<ServiceInstanceData> filteredInstances = new ArrayList<>();
+                for (int i = 0; i < originalInstances.size(); i++) {
+                    ServiceInstanceData instance = originalInstances.get(i);
+                    if (instance.getInstance() != null) {
+                        if (instance.getInstance().getHealthState() == null
+                                || instance.getInstance().getHealthState()
+                                        .equalsIgnoreCase(HealthcheckConstants.HEALTH_STATE_HEALTHY)) {
+                            filteredInstances.add(instance);
+                        } else if (i == originalInstances.size() - 1 && filteredInstances.size() == 0) {
+                            filteredInstances.add(instance);
+                        }
+                    } else {
+                        filteredInstances.add(instance);
+                    }
+                }
+                returnDataFiltered.put(serviceId, filteredInstances);
+            }
+        }
+
+        return returnDataFiltered;
     }
 
     protected List<ServiceInstanceData> getServiceInstanceInstancesData(long accountId, boolean client, long vnetId) {
@@ -394,8 +421,7 @@ public class DnsInfoDaoImpl extends AbstractJooqDao implements DnsInfoDao {
             condition = ipAddress.ROLE.eq(IpAddressConstants.ROLE_PRIMARY).and(nic.VNET_ID.eq(vnetId));
         } else {
             condition = (ipAddress.ROLE.isNull().and(ipAddress.ADDRESS.isNull())).or(ipAddress.ROLE
-                    .eq(IpAddressConstants.ROLE_PRIMARY)).and(instance.HEALTH_STATE.isNull().or(
-                    instance.HEALTH_STATE.eq(HealthcheckConstants.HEALTH_STATE_HEALTHY)));
+                    .eq(IpAddressConstants.ROLE_PRIMARY));
         }
 
         return create()
