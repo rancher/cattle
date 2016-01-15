@@ -94,6 +94,7 @@ public class ServiceDiscoveryConstants {
     public static final String LABEL_SERVICE_REQUESTED_HOST_ID = "io.rancher.service.requested.host.id";
     public static final String LABEL_SERVICE_LAUNCH_CONFIG = "io.rancher.service.launch.config";
     public static final String LABEL_SERVICE_CONTAINER_CREATE_ONLY = "io.rancher.container.start_once";
+    public static final String LABEL_SERVICE_ALLOACATE_SKIP_SERIALIZE = "io.rancher.service.allocate.skip.serialize";
 
     public static final String PRIMARY_LAUNCH_CONFIG_NAME = "io.rancher.service.primary.launch.config";
     public static final String LABEL_SIDEKICK = "io.rancher.sidekicks";
