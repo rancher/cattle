@@ -19,6 +19,8 @@ public class InstanceHealthCheck {
     Integer port;
     Strategy strategy;
     RecreateOnQuorumStrategyConfig recreateOnQuorumStrategyConfig;
+    Integer initializingTimeout;
+    Integer reinitializingTimeout;
 
     @Field(nullable = true)
     public String getName() {
@@ -95,6 +97,22 @@ public class InstanceHealthCheck {
 
     public void setStrategy(Strategy strategy) {
         this.strategy = strategy;
+    }
+
+    public Integer getInitializingTimeout() {
+        return initializingTimeout;
+    }
+
+    public void setInitializingTimeout(Integer initializingTimeout) {
+        this.initializingTimeout = initializingTimeout;
+    }
+
+    public Integer getReinitializingTimeout() {
+        return reinitializingTimeout;
+    }
+
+    public void setReinitializingTimeout(Integer reinitializingTimeout) {
+        this.reinitializingTimeout = reinitializingTimeout;
     }
 }
 

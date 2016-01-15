@@ -9,6 +9,7 @@ def _get_agent_for_container(container):
         c = map.instance()
         if c.agentId is not None:
             agent = c.agent()
+            break
 
     assert agent is not None
     return agent
@@ -23,16 +24,16 @@ def _get_agent_client(agent):
 
 
 def test_health_check_create_instance(super_client, context):
-    container = context.create_container(healthCheck={
+    c = context.create_container(healthCheck={
         'port': 80,
     })
 
-    assert container.healthCheck.port == 80
+    assert c.healthCheck.port == 80
 
-    container = super_client.reload(container)
-    hci = find_one(container.healthcheckInstances)
+    c = super_client.reload(c)
+    hci = find_one(c.healthcheckInstances)
     hcihm = find_one(hci.healthcheckInstanceHostMaps)
-    agent = _get_agent_for_container(container)
+    agent = _get_agent_for_container(c)
 
     assert hcihm.healthState == 'initializing'
 
@@ -44,15 +45,15 @@ def test_health_check_create_instance(super_client, context):
 
     se = super_client.wait_success(se)
     assert se.state == 'created'
-    assert se.accountId == container.accountId
-    assert se.instanceId == container.id
+    assert se.accountId == c.accountId
+    assert se.instanceId == c.id
     assert se.healthcheckInstanceId == hci.id
 
     hcihm = super_client.wait_success(super_client.reload(hcihm))
     assert hcihm.healthState == 'healthy'
     assert hcihm.externalTimestamp == ts
 
-    wait_for(lambda: super_client.reload(container).healthState == 'healthy',
+    wait_for(lambda: super_client.reload(c).healthState == 'healthy',
              timeout=5)
 
 
@@ -63,7 +64,7 @@ def _create_svc_w_healthcheck(client, context):
         'healthCheck': {
             'port': 80,
         }
-    }, environmentId=env.id, scale=1)
+    }, environmentId=env.id)
     service = client.wait_success(client.wait_success(service).activate())
     assert service.state == 'active'
     return service
@@ -73,13 +74,13 @@ def test_health_check_create_service(super_client, context, client):
     service = _create_svc_w_healthcheck(client, context)
 
     expose_map = find_one(service.serviceExposeMaps)
-    container = super_client.reload(expose_map.instance())
-    hci = find_one(container.healthcheckInstances)
+    c = super_client.reload(expose_map.instance())
+    hci = find_one(c.healthcheckInstances)
     hcihm = find_one(hci.healthcheckInstanceHostMaps)
-    agent = _get_agent_for_container(container)
+    agent = _get_agent_for_container(c)
 
     assert hcihm.healthState == 'initializing'
-    assert container.healthState == 'initializing'
+    assert c.healthState == 'initializing'
 
     ts = int(time.time())
     client = _get_agent_client(agent)
@@ -89,7 +90,7 @@ def test_health_check_create_service(super_client, context, client):
     super_client.wait_success(se)
     hcihm = super_client.wait_success(super_client.reload(hcihm))
     assert hcihm.healthState == 'initializing'
-    assert container.healthState == 'initializing'
+    assert c.healthState == 'initializing'
 
     ts = int(time.time())
     client = _get_agent_client(agent)
@@ -99,18 +100,7 @@ def test_health_check_create_service(super_client, context, client):
     super_client.wait_success(se)
     hcihm = super_client.wait_success(super_client.reload(hcihm))
     assert hcihm.healthState == 'healthy'
-    wait_for(lambda: super_client.reload(container).healthState == 'healthy',
-             timeout=5)
-
-    ts = int(time.time())
-    client = _get_agent_client(agent)
-    se = client.create_service_event(externalTimestamp=ts,
-                                     reportedHealth='INIT',
-                                     healthcheckUuid=hcihm.uuid)
-    super_client.wait_success(se)
-    hcihm = super_client.wait_success(super_client.reload(hcihm))
-    assert hcihm.healthState == 'healthy'
-    wait_for(lambda: super_client.reload(container).healthState == 'healthy',
+    wait_for(lambda: super_client.reload(c).healthState == 'healthy',
              timeout=5)
 
     ts = int(time.time())
@@ -121,7 +111,7 @@ def test_health_check_create_service(super_client, context, client):
     super_client.wait_success(se)
     hcihm = super_client.wait_success(super_client.reload(hcihm))
     assert hcihm.healthState == 'healthy'
-    wait_for(lambda: super_client.reload(container).healthState == 'healthy',
+    wait_for(lambda: super_client.reload(c).healthState == 'healthy',
              timeout=5)
 
     ts = int(time.time())
@@ -131,8 +121,52 @@ def test_health_check_create_service(super_client, context, client):
                                      healthcheckUuid=hcihm.uuid)
     super_client.wait_success(se)
     hcihm = super_client.wait_success(super_client.reload(hcihm))
+    assert hcihm.healthState == 'reinitializing'
+    wait_for(lambda: super_client.reload(c).healthState == 'reinitializing',
+             timeout=5)
+
+    ts = int(time.time())
+    client = _get_agent_client(agent)
+    se = client.create_service_event(externalTimestamp=ts,
+                                     reportedHealth='Something bad',
+                                     healthcheckUuid=hcihm.uuid)
+    super_client.wait_success(se)
+    hcihm = super_client.wait_success(super_client.reload(hcihm))
+    assert hcihm.healthState == 'reinitializing'
+    wait_for(lambda: super_client.reload(c).healthState == 'reinitializing',
+             timeout=5)
+
+    ts = int(time.time())
+    client = _get_agent_client(agent)
+    se = client.create_service_event(externalTimestamp=ts,
+                                     reportedHealth='UP',
+                                     healthcheckUuid=hcihm.uuid)
+    super_client.wait_success(se)
+    hcihm = super_client.wait_success(super_client.reload(hcihm))
     assert hcihm.healthState == 'healthy'
-    wait_for(lambda: super_client.reload(container).healthState == 'healthy',
+    wait_for(lambda: super_client.reload(c).healthState == 'healthy',
+             timeout=5)
+
+    ts = int(time.time())
+    client = _get_agent_client(agent)
+    se = client.create_service_event(externalTimestamp=ts,
+                                     reportedHealth='INIT',
+                                     healthcheckUuid=hcihm.uuid)
+    super_client.wait_success(se)
+    hcihm = super_client.wait_success(super_client.reload(hcihm))
+    assert hcihm.healthState == 'reinitializing'
+    wait_for(lambda: super_client.reload(c).healthState == 'reinitializing',
+             timeout=5)
+
+    ts = int(time.time())
+    client = _get_agent_client(agent)
+    se = client.create_service_event(externalTimestamp=ts,
+                                     reportedHealth='UP',
+                                     healthcheckUuid=hcihm.uuid)
+    super_client.wait_success(se)
+    hcihm = super_client.wait_success(super_client.reload(hcihm))
+    assert hcihm.healthState == 'healthy'
+    wait_for(lambda: super_client.reload(c).healthState == 'healthy',
              timeout=5)
 
     ts = int(time.time())
@@ -143,17 +177,94 @@ def test_health_check_create_service(super_client, context, client):
 
     se = super_client.wait_success(se)
     assert se.state == 'created'
-    assert se.accountId == container.accountId
-    assert se.instanceId == container.id
+    assert se.accountId == c.accountId
+    assert se.instanceId == c.id
     assert se.healthcheckInstanceId == hci.id
 
     hcihm = super_client.wait_success(super_client.reload(hcihm))
     assert hcihm.healthState == 'unhealthy'
     assert hcihm.externalTimestamp == ts
 
-    wait_for(lambda: super_client.reload(container).healthState == 'unhealthy',
+    wait_for(lambda: super_client.reload(c).healthState == 'unhealthy',
              timeout=5)
     wait_for(lambda: len(service.serviceExposeMaps()) > 1)
+
+
+def test_health_check_init_timeout(super_client, context, client):
+    env = client.create_environment(name='env-' + random_str())
+    service = client.create_service(name='test', launchConfig={
+        'imageUuid': context.image_uuid,
+        'healthCheck': {
+            'port': 80,
+            'initializingTimeout': 1,
+        }
+    }, environmentId=env.id)
+    service = client.wait_success(client.wait_success(service).activate())
+    assert service.state == 'active'
+    h_c = service.launchConfig.healthCheck
+    assert h_c.initializingTimeout == 1
+
+    expose_map = find_one(service.serviceExposeMaps)
+    c = super_client.reload(expose_map.instance())
+    hci = find_one(c.healthcheckInstances)
+    hcihm = find_one(hci.healthcheckInstanceHostMaps)
+
+    assert hcihm.healthState == 'initializing'
+    assert c.healthState == 'initializing'
+
+    # wait for the instance to be removed
+    wait_for_condition(client, c,
+                       lambda x: x.state == 'removed')
+
+
+def test_health_check_reinit_timeout(super_client, context, client):
+    env = client.create_environment(name='env-' + random_str())
+    service = client.create_service(name='test', launchConfig={
+        'imageUuid': context.image_uuid,
+        'healthCheck': {
+            'port': 80,
+            'reinitializingTimeout': 1,
+        }
+    }, environmentId=env.id)
+    service = client.wait_success(client.wait_success(service).activate())
+    assert service.state == 'active'
+    h_c = service.launchConfig.healthCheck
+    assert h_c.reinitializingTimeout == 1
+
+    expose_map = find_one(service.serviceExposeMaps)
+    c = super_client.reload(expose_map.instance())
+    hci = find_one(c.healthcheckInstances)
+    hcihm = find_one(hci.healthcheckInstanceHostMaps)
+    agent = _get_agent_for_container(c)
+
+    assert hcihm.healthState == 'initializing'
+    assert c.healthState == 'initializing'
+
+    ts = int(time.time())
+    client = _get_agent_client(agent)
+    se = client.create_service_event(externalTimestamp=ts,
+                                     reportedHealth='UP',
+                                     healthcheckUuid=hcihm.uuid)
+    super_client.wait_success(se)
+    hcihm = super_client.wait_success(super_client.reload(hcihm))
+    assert hcihm.healthState == 'healthy'
+    wait_for(lambda: super_client.reload(c).healthState == 'healthy',
+             timeout=5)
+
+    ts = int(time.time())
+    client = _get_agent_client(agent)
+    se = client.create_service_event(externalTimestamp=ts,
+                                     reportedHealth='INIT',
+                                     healthcheckUuid=hcihm.uuid)
+    super_client.wait_success(se)
+    hcihm = super_client.wait_success(super_client.reload(hcihm))
+    assert hcihm.healthState == 'reinitializing'
+    wait_for(lambda: super_client.reload(c).healthState == 'reinitializing',
+             timeout=5)
+
+    # wait for the instance to be removed
+    wait_for_condition(super_client, c,
+                       lambda x: x.state == 'removed')
 
 
 def test_health_check_bad_external_timestamp(super_client, context, client):
@@ -163,7 +274,7 @@ def test_health_check_bad_external_timestamp(super_client, context, client):
         'healthCheck': {
             'port': 80,
         }
-    }, environmentId=env.id, scale=1)
+    }, environmentId=env.id)
 
     service = client.wait_success(client.wait_success(service).activate())
     assert service.state == 'active'
@@ -192,7 +303,7 @@ def test_health_check_noop(super_client, context, client):
             'port': 80,
             'strategy': 'none'
         }
-    }, environmentId=env.id, scale=1)
+    }, environmentId=env.id)
     svc = client.wait_success(client.wait_success(svc).activate())
     assert svc.state == 'active'
     assert svc.launchConfig.healthCheck.strategy == 'none'
@@ -236,32 +347,47 @@ def test_health_check_quorum(super_client, context, client):
 
     expose_maps = svc.serviceExposeMaps()
     c1 = super_client.reload(expose_maps[0].instance())
-    hci = find_one(c1.healthcheckInstances)
-    hcihm = find_one(hci.healthcheckInstanceHostMaps)
-    agent = _get_agent_for_container(c1)
-
-    assert hcihm.healthState == 'initializing'
+    hci1 = find_one(c1.healthcheckInstances)
+    hcihm1 = find_one(hci1.healthcheckInstanceHostMaps)
+    agent1 = _get_agent_for_container(c1)
+    assert hcihm1.healthState == 'initializing'
     assert c1.healthState == 'initializing'
+    hcihm1 = _update_healthy(agent1, hcihm1, c1, super_client)
 
-    hcihm = _update_healthy(agent, hcihm, c1, super_client)
+    c2 = super_client.reload(expose_maps[1].instance())
+    hci2 = find_one(c2.healthcheckInstances)
+    hcihm2 = find_one(hci2.healthcheckInstanceHostMaps)
+    agent2 = _get_agent_for_container(c2)
+    assert hcihm2.healthState == 'initializing'
+    assert c2.healthState == 'initializing'
+    hcihm2 = _update_healthy(agent2, hcihm2, c2, super_client)
 
     # update unheatlhy, check container is not removed
     # as quorum is not reached yet
-    _update_unhealthy(agent, hcihm, c1, super_client)
+    _update_unhealthy(agent1, hcihm1, c1, super_client)
     svc = super_client.wait_success(svc)
     assert svc.state == "active"
     assert len(svc.serviceExposeMaps()) == 2
     c1 = super_client.wait_success(c1)
     assert c1.state == 'running'
 
-    hcihm = _update_healthy(agent, hcihm, c1, super_client)
+    hcihm1 = _update_healthy(agent1, hcihm1, c1, super_client)
     svc = super_client.wait_success(svc)
     # increase the scale
     # update unheatlhy, check container removed
     # as quorum is reached
     svc = super_client.update(svc, scale=3)
     svc = super_client.wait_success(svc)
-    _update_unhealthy(agent, hcihm, c1, super_client)
+    expose_maps = svc.serviceExposeMaps()
+    c3 = super_client.reload(expose_maps[2].instance())
+    hci3 = find_one(c3.healthcheckInstances)
+    hcihm3 = find_one(hci3.healthcheckInstanceHostMaps)
+    agent3 = _get_agent_for_container(c3)
+    assert hcihm3.healthState == 'initializing'
+    assert c3.healthState == 'initializing'
+    hcihm3 = _update_healthy(agent3, hcihm3, c3, super_client)
+
+    _update_unhealthy(agent1, hcihm1, c1, super_client)
     svc = super_client.wait_success(svc)
     assert svc.state == "active"
     assert len(svc.serviceExposeMaps()) >= 3
@@ -276,7 +402,7 @@ def test_health_check_default(super_client, context, client):
         'healthCheck': {
             'port': 80
         }
-    }, environmentId=env.id, scale=2)
+    }, environmentId=env.id)
     svc = client.wait_success(client.wait_success(svc).activate())
     assert svc.state == 'active'
 
@@ -295,7 +421,7 @@ def test_health_check_default(super_client, context, client):
     _update_unhealthy(agent, hcihm, c1, super_client)
     svc = super_client.wait_success(svc)
     assert svc.state == "active"
-    assert len(svc.serviceExposeMaps()) >= 2
+    assert len(svc.serviceExposeMaps()) >= 1
     c1 = super_client.wait_success(c1)
     wait_for_condition(client, c1,
                        lambda x: x.state == 'removed')
@@ -315,7 +441,7 @@ def test_health_check_bad_agent(super_client, context, client):
         'healthCheck': {
             'port': 80,
         }
-    }, environmentId=env.id, scale=1)
+    }, environmentId=env.id)
 
     service = client.wait_success(client.wait_success(service).activate())
     assert service.state == 'active'
@@ -355,7 +481,7 @@ def test_health_check_host_remove(super_client, context, client):
         'healthCheck': {
             'port': 80,
         }
-    }, environmentId=env.id, scale=1)
+    }, environmentId=env.id)
 
     service = client.wait_success(client.wait_success(service).activate())
     assert service.state == 'active'

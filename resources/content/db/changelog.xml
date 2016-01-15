@@ -77,5 +77,6 @@
     <include file="db/core-070.xml"/>
     <include file="db/core-071.xml"/>
     <include file="db/core-072.xml"/>
+    <include file="db/core-073.xml"/>
     
 </databaseChangeLog>

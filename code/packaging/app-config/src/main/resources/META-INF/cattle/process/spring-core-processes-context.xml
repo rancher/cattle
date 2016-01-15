@@ -92,8 +92,9 @@
     <process:process name="instance.allocate" resourceType="instance" stateField="allocationState" start="inactive" transitioning="activating" done="active" />
     <process:process name="instance.deallocate" resourceType="instance" stateField="allocationState" start="activating,active" transitioning="deactivating" done="inactive" />
     <process:process name="instance.restart" resourceType="instance" start="running" transitioning="restarting" done="running" />
-    <process:process name="instance.updatehealthy" resourceType="instance" stateField="healthState" start="healthy,unhealthy,initializing" transitioning="updating-healthy" done="healthy" />
+    <process:process name="instance.updatehealthy" resourceType="instance" stateField="healthState" start="healthy,unhealthy,initializing,reinitializing" transitioning="updating-healthy" done="healthy" />
     <process:process name="instance.updateunhealthy" resourceType="instance" stateField="healthState" start="healthy,unhealthy" transitioning="updating-unhealthy" done="unhealthy" />
+    <process:process name="instance.updatereinitializing" resourceType="instance" stateField="healthState" start="healthy" transitioning="updating-reinitializing" done="reinitializing" />
 
     <!-- Volume -->
     <process:defaultProcesses resourceType="volume" exclude="volume.activate"/>

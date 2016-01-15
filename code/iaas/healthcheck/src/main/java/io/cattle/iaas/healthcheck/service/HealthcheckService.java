@@ -9,7 +9,7 @@ public interface HealthcheckService {
         INSTANCE
     }
     
-    void updateHealthcheck(String healthcheckInstanceHostMapUuid, final long externalTimestamp, final boolean healthy);
+    void updateHealthcheck(String healthcheckInstanceHostMapUuid, final long externalTimestamp, final String health);
 
     void registerForHealtcheck(HealthcheckInstanceType instanceType, long id);
 }

@@ -11,7 +11,7 @@ package io.cattle.platform.core.model.tables;
 @java.lang.SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class InstanceTable extends org.jooq.impl.TableImpl<io.cattle.platform.core.model.tables.records.InstanceRecord> {
 
-	private static final long serialVersionUID = -934804675;
+	private static final long serialVersionUID = 1690742757;
 
 	/**
 	 * The singleton instance of <code>cattle.instance</code>
@@ -195,6 +195,12 @@ public class InstanceTable extends org.jooq.impl.TableImpl<io.cattle.platform.co
 	 * The column <code>cattle.instance.version</code>.
 	 */
 	public final org.jooq.TableField<io.cattle.platform.core.model.tables.records.InstanceRecord, java.lang.String> VERSION = createField("version", org.jooq.impl.SQLDataType.VARCHAR.length(255).defaulted(true), this, "");
+
+	/**
+	 * The column <code>cattle.instance.health_updated</code>.
+	 */
+
+	public final org.jooq.TableField<io.cattle.platform.core.model.tables.records.InstanceRecord, java.util.Date> HEALTH_UPDATED = createField("health_updated", org.jooq.impl.SQLDataType.TIMESTAMP.asConvertedDataType(new io.cattle.platform.db.jooq.converter.DateConverter()), this, "");
 
 	/**
 	 * Create a <code>cattle.instance</code> table reference

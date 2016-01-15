@@ -18,6 +18,8 @@ import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.process.common.handler.AbstractObjectProcessLogic;
 import io.cattle.platform.util.type.Priority;
 
+import java.util.Date;
+
 import javax.inject.Inject;
 import javax.inject.Named;
 
@@ -46,12 +48,13 @@ public class InstanceHealthcheckRegister extends AbstractObjectProcessLogic impl
 
         // set healthcheck
         Long startCount = instance.getStartCount() == null ? 1 : instance.getStartCount() + 1;
+        objectManager.setFields(instance, INSTANCE.START_COUNT, startCount);
         if (healthCheck != null) {
-            objectManager.setFields(instance, INSTANCE.START_COUNT, startCount, INSTANCE.HEALTH_STATE,
-                    HealthcheckConstants.HEALTH_STATE_INITIALIZING);
+            if (instance.getHealthState() == null) {
+                objectManager.setFields(instance, INSTANCE.HEALTH_STATE,
+                        HealthcheckConstants.HEALTH_STATE_INITIALIZING, INSTANCE.HEALTH_UPDATED, new Date());
+            }
             healtcheckService.registerForHealtcheck(HealthcheckInstanceType.INSTANCE, instance.getId());
-        } else {
-            objectManager.setFields(instance, INSTANCE.START_COUNT, startCount);
         }
         return null;
     }

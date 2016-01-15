@@ -388,6 +388,17 @@ public interface Instance extends java.io.Serializable {
 	@javax.persistence.Column(name = "version", length = 255)
 	public java.lang.String getVersion();
 
+	/**
+	 * Setter for <code>cattle.instance.health_updated</code>.
+	 */
+	public void setHealthUpdated(java.util.Date value);
+
+	/**
+	 * Getter for <code>cattle.instance.health_updated</code>.
+	 */
+	@javax.persistence.Column(name = "health_updated")
+	public java.util.Date getHealthUpdated();
+
 	// -------------------------------------------------------------------------
 	// FROM and INTO
 	// -------------------------------------------------------------------------
