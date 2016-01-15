@@ -900,6 +900,8 @@ def test_delete_network_agent(super_client, docker_client):
     networkAgent = agentNsp.instances()[0]
 
     assert networkAgent.state == 'running'
+    assert networkAgent.dataVolumes == \
+        ['/var/lib/rancher/etc:/var/lib/rancher/etc:ro']
     docker_client.delete(networkAgent)
 
     networkAgent = docker_client.wait_success(networkAgent)

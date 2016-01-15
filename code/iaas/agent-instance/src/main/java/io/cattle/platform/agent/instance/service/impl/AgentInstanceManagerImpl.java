@@ -18,6 +18,7 @@ import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.process.ObjectProcessManager;
 import io.cattle.platform.object.resource.ResourceMonitor;
 import io.cattle.platform.object.resource.ResourcePredicate;
+import io.cattle.platform.util.type.CollectionUtils;
 
 import java.util.Arrays;
 import java.util.HashMap;
@@ -79,6 +80,8 @@ public class AgentInstanceManagerImpl implements AgentInstanceManager {
                         .withAccountId(instance.getAccountId())
                         .withPrivileged(true).forVnetId(nic.getVnetId())
                         .withSystemContainerType(SystemContainer.NetworkAgent)
+                        .withParameters(CollectionUtils.asMap(InstanceConstants.FIELD_DATA_VOLUMES,
+                                Arrays.asList("/var/lib/rancher/etc:/var/lib/rancher/etc:ro")))
                         .build();
             } else {
                 start(agentInstance);
