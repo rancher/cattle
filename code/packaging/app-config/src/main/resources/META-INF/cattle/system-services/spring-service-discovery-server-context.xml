@@ -74,6 +74,10 @@
       
     <bean class="io.cattle.platform.process.progress.ProcessProgressImpl" />
     <bean class="io.cattle.platform.allocator.dao.impl.AllocatorDaoImpl" />
+    
+    <bean class="io.cattle.platform.iaas.api.auditing.AuditServiceImpl" />
+    <bean class="io.cattle.platform.iaas.api.auditing.dao.impl.AuditLogDaoImpl" />
+    <bean class="io.github.ibuildthecloud.gdapi.json.JacksonMapper" />
 
     <tx:advice id="ServiceMapDaoImplAdvice" transaction-manager="CoreTransactionManager">
         <tx:attributes>

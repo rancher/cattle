@@ -9,6 +9,7 @@ import io.cattle.platform.core.model.Host;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.Service;
 import io.cattle.platform.docker.constants.DockerInstanceConstants;
+import io.cattle.platform.iaas.api.auditing.AuditEventType;
 import io.cattle.platform.servicediscovery.api.constants.ServiceDiscoveryConstants;
 import io.cattle.platform.servicediscovery.api.util.ServiceDiscoveryUtil;
 import io.cattle.platform.servicediscovery.deployment.DeploymentUnitInstance;
@@ -155,11 +156,14 @@ public class DeploymentUnit {
         return true;
     }
 
-    public void remove(boolean waitForRemoval) {
+    public void remove(boolean waitForRemoval, String reason) {
         /*
          * Delete all instances. This should be non-blocking (don't wait)
          */
         for (DeploymentUnitInstance instance : getDeploymentUnitInstances()) {
+            if (instance instanceof DefaultDeploymentUnitInstance) {
+                auditLogOperation(instance, AuditEventType.delete, reason);
+            }
             instance.remove();
         }
 
@@ -171,6 +175,17 @@ public class DeploymentUnit {
     public void waitForRemoval() {
         for (DeploymentUnitInstance instance : getDeploymentUnitInstances()) {
             instance.waitForRemoval();
+        }
+    }
+
+    protected void auditLogOperation(DeploymentUnitInstance instance, AuditEventType eventType, String description) {
+        DefaultDeploymentUnitInstance defaultInstance = (DefaultDeploymentUnitInstance) instance;
+        if (defaultInstance.getInstance() != null) {
+            Map<String, Object> data = new HashMap<>();
+            data.put("serviceId", instance.getService().getId());
+            context.auditSvc.logResourceModification(defaultInstance.getInstance(), data, eventType, description,
+                    defaultInstance.getInstance().getAccountId(),
+                    null);
         }
     }
 
@@ -264,7 +279,10 @@ public class DeploymentUnit {
                                 volumesFromInstanceIds,
                                 networkContainerId));
 
-        return getDeploymentUnitInstance(service, launchConfigName);
+        DeploymentUnitInstance toReturn = getDeploymentUnitInstance(service, launchConfigName);
+        auditLogOperation(toReturn, AuditEventType.create,
+                ServiceDiscoveryConstants.AUDIT_LOG_CREATE_EXTRA);
+        return toReturn;
     }
 
     @SuppressWarnings("unchecked")

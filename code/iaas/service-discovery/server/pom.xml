@@ -52,5 +52,10 @@
             <artifactId>cattle-iaas-allocator</artifactId>
             <version>${project.version}</version>
         </dependency>
+        <dependency>
+            <groupId>io.cattle</groupId>
+            <artifactId>cattle-framework-auditing</artifactId>
+            <version>${project.version}</version>
+        </dependency>
     </dependencies>
 </project>
