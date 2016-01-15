@@ -55,7 +55,6 @@ public class AccountCreate extends AbstractDefaultProcessHandler {
                 }
             }
         }
-
         return new HandlerResult(result);
     }
 
