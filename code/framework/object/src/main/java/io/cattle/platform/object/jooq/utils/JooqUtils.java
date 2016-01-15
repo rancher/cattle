@@ -188,6 +188,13 @@ public class JooqUtils {
             } else {
                 return field.in(condition.getValues());
             }
+        case NOTIN:
+            List<Object> vals = condition.getValues();
+            if (vals.size() == 1) {
+                return field.ne(vals.get(0));
+            } else {
+                return field.notIn(condition.getValues());
+            }
         case LIKE:
             return field.like(condition.getValue().toString());
         case LT:

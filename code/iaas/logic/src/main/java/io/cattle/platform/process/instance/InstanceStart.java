@@ -18,7 +18,6 @@ import io.cattle.platform.core.model.IpAddress;
 import io.cattle.platform.core.model.Nic;
 import io.cattle.platform.core.model.Port;
 import io.cattle.platform.core.model.Volume;
-import io.cattle.platform.core.util.InstanceHelpers;
 import io.cattle.platform.engine.handler.HandlerResult;
 import io.cattle.platform.engine.process.ProcessInstance;
 import io.cattle.platform.engine.process.ProcessState;
@@ -207,9 +206,6 @@ public class InstanceStart extends AbstractDefaultProcessHandler {
 
     protected void storage(Instance instance, ProcessState state) {
         List<Volume> volumes = getObjectManager().children(instance, Volume.class);
-
-        volumes.addAll(InstanceHelpers.extractVolumesFromMounts(instance, objectManager));
-
         for (Volume volume : volumes) {
             activate(volume, state.getData());
         }

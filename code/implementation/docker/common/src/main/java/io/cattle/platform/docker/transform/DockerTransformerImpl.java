@@ -266,7 +266,7 @@ public class DockerTransformerImpl implements DockerTransformer {
     void setLabels(Instance instance, Map<String, Object> fromInspect) {
         // Labels not yet implemented in docker-java. Need to use the raw map
         Object l = CollectionUtils.getNestedValue(fromInspect, "Config", "Labels");
-        Map<String, String> cleanedLabels = new HashMap<String, String>();
+        Map<String, Object> cleanedLabels = new HashMap<String, Object>();
         if (l instanceof Map) {
             Map labels = (Map)l;
             for (Object key : labels.keySet()) {
@@ -278,7 +278,9 @@ public class DockerTransformerImpl implements DockerTransformer {
                 cleanedLabels.put(key.toString(), value.toString());
             }
         }
-        setField(instance, FIELD_LABELS, cleanedLabels);
+        Map<String, Object> labels = DataAccessor.fieldMap(instance, FIELD_LABELS);
+        labels.putAll(cleanedLabels);
+        setField(instance, FIELD_LABELS, labels);
     }
 
     void setImage(Instance instance, String image) {

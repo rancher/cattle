@@ -82,4 +82,10 @@ public class InstanceConstants {
     public static final String EVENT_INSTANCE_FORCE_STOP = "compute.instance.force.stop";
 
     public static final Set<String> CONTAINER_LIKE = new HashSet<>(Arrays.asList(KIND_CONTAINER, KIND_VIRTUAL_MACHINE));
+
+    public static final String VOLUME_CLEANUP_STRATEGY_NONE = "none";
+    public static final String VOLUME_CLEANUP_STRATEGY_UNNAMED = "unnamed";
+    public static final String VOLUME_CLEANUP_STRATEGY_ALL = "all";
+    public static final Set<String> VOLUME_REMOVE_STRATEGIES = new HashSet<>(Arrays.asList(VOLUME_CLEANUP_STRATEGY_NONE, VOLUME_CLEANUP_STRATEGY_UNNAMED,
+            VOLUME_CLEANUP_STRATEGY_ALL));
 }

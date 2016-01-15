@@ -44,7 +44,6 @@
     <process:defaultProcesses resourceType="ipAddressNicMap" />
     <process:defaultProcesses resourceType="ipAssociation" />
     <process:defaultProcesses resourceType="ipPool" />
-    <process:defaultProcesses resourceType="mount" />
     <process:defaultProcesses resourceType="network" />
     <process:defaultProcesses resourceType="networkService" />
     <process:defaultProcesses resourceType="networkServiceProvider" />
@@ -98,9 +97,14 @@
 
     <!-- Volume -->
     <process:defaultProcesses resourceType="volume" exclude="volume.activate"/>
-    <process:process name="volume.activate" resourceType="agent" start="inactive,requested, registering" transitioning="activating" done="active" />
+    <process:process name="volume.activate" resourceType="volume" start="inactive,requested,registering" transitioning="activating" done="active" />
     <process:process name="volume.allocate" resourceType="volume" stateField="allocationState" start="inactive" transitioning="activating" done="active" />
     <process:process name="volume.deallocate" resourceType="volume" stateField="allocationState" start="activating,active" transitioning="deactivating" done="inactive" />
+
+    <!-- Mount -->
+    <process:process name="mount.create" resourceType="mount" start="requested" transitioning="activating" done="active" />
+    <process:process name="mount.deactivate" resourceType="mount" start="active,activating" transitioning="deactivating" done="inactive" />
+    <process:process name="mount.remove" resourceType="mount" start="inactive,deactivating" transitioning="removing" done="removed" />
 
     <!-- Physical Host -->  
     <process:process name="physicalhost.create" resourceType="physicalHost" start="requested" transitioning="creating" done="created" delegate="physicalhost.bootstrap" />

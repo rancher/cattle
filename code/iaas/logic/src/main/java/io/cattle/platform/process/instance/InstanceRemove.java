@@ -8,6 +8,7 @@ import io.cattle.platform.core.model.Volume;
 import io.cattle.platform.engine.handler.HandlerResult;
 import io.cattle.platform.engine.process.ProcessInstance;
 import io.cattle.platform.engine.process.ProcessState;
+import io.cattle.platform.object.process.StandardProcess;
 import io.cattle.platform.process.base.AbstractDefaultProcessHandler;
 
 import java.util.HashMap;
@@ -49,7 +50,7 @@ public class InstanceRemove extends AbstractDefaultProcessHandler {
 
         List<Mount> mounts = getObjectManager().children(instance, Mount.class);
         for (Mount mount : mounts) {
-            execute("mount.deactivate", mount, data);
+            objectProcessManager.scheduleStandardProcess(StandardProcess.DEACTIVATE, mount, data);
         }
     }
 

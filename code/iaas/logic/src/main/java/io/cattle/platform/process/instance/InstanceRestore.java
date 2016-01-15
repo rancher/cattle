@@ -1,7 +1,6 @@
 package io.cattle.platform.process.instance;
 
 import io.cattle.platform.core.model.Instance;
-import io.cattle.platform.core.model.Mount;
 import io.cattle.platform.core.model.Nic;
 import io.cattle.platform.core.model.Volume;
 import io.cattle.platform.engine.handler.HandlerResult;
@@ -36,11 +35,6 @@ public class InstanceRestore extends AbstractDefaultProcessHandler {
 
         for (Volume volume : volumes) {
             restore(volume, data);
-        }
-
-        List<Mount> mounts = getObjectManager().children(instance, Mount.class);
-        for (Mount mount : mounts) {
-            restore(mount, data);
         }
     }
 

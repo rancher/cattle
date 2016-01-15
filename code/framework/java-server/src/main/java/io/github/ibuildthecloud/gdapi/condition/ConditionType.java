@@ -1,7 +1,7 @@
 package io.github.ibuildthecloud.gdapi.condition;
 
 public enum ConditionType {
-    EQ, NE, LT, LTE, GT, GTE, PREFIX, LIKE, NOTLIKE, NULL, NOTNULL, IN(true), OR(true);
+    EQ, NE, LT, LTE, GT, GTE, PREFIX, LIKE, NOTLIKE, NULL, NOTNULL, IN(true), NOTIN(true), OR(true);
 
     public static final ConditionType[] NUMBER_MODS = new ConditionType[] { ConditionType.EQ, ConditionType.NE, ConditionType.LT, ConditionType.LTE,
             ConditionType.GT, ConditionType.GTE, ConditionType.NULL, ConditionType.NOTNULL };

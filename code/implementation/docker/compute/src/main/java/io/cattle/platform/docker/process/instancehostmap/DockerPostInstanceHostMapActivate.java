@@ -6,6 +6,7 @@ import static io.cattle.platform.core.model.tables.PortTable.*;
 import static io.cattle.platform.docker.constants.DockerInstanceConstants.*;
 import io.cattle.iaas.labels.service.LabelsService;
 import io.cattle.platform.archaius.util.ArchaiusUtil;
+import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.NetworkServiceConstants;
 import io.cattle.platform.core.constants.PortConstants;
 import io.cattle.platform.core.constants.VolumeConstants;
@@ -24,7 +25,6 @@ import io.cattle.platform.core.model.Nic;
 import io.cattle.platform.core.model.Port;
 import io.cattle.platform.core.model.StoragePool;
 import io.cattle.platform.core.model.Volume;
-import io.cattle.platform.core.model.VolumeStoragePoolMap;
 import io.cattle.platform.core.util.PortSpec;
 import io.cattle.platform.docker.constants.DockerInstanceConstants;
 import io.cattle.platform.docker.constants.DockerIpAddressConstants;
@@ -43,7 +43,10 @@ import io.cattle.platform.lock.LockCallback;
 import io.cattle.platform.lock.LockManager;
 import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.process.common.handler.AbstractObjectProcessLogic;
+import io.cattle.platform.process.common.lock.MountVolumeLock;
 import io.cattle.platform.util.type.CollectionUtils;
+import io.github.ibuildthecloud.gdapi.condition.Condition;
+import io.github.ibuildthecloud.gdapi.condition.ConditionType;
 
 import java.util.HashMap;
 import java.util.List;
@@ -179,19 +182,19 @@ public class DockerPostInstanceHostMapActivate extends AbstractObjectProcessLogi
             }
 
             Volume volume = createVolumeInStoragePool(pool, instance, dVol);
-            log.debug("Created volume and storage pool mapping. Volume id [{}], storage pool id [{}].", volume.getId(), pool.getId());
-            createIgnoreCancel(volume, state.getData());
-
-            for (VolumeStoragePoolMap map : mapDao.findNonRemoved(VolumeStoragePoolMap.class, Volume.class, volume.getId())) {
-                if (map.getStoragePoolId().equals(pool.getId()))
-                    createThenActivate(map, state.getData());
+            String action;
+            if (CommonStatesConstants.REMOVED.equals(volume.getState())) {
+                restore(volume, state.getData());
+                action = "Restored";
+            } else {
+                action = "Created";
+                createIgnoreCancel(volume, state.getData());
             }
-
-            activate(volume, state.getData());
+            log.debug("{} volume [{}] in storage pool [{}].", action, volume.getId(), pool.getId());
 
             Mount mount = mountVolume(volume, instance, dVol.getContainerPath(), dVol.getAccessMode());
             log.info("Volme mount created. Volume id [{}], instance id [{}], mount id [{}]", volume.getId(), instance.getId(), mount.getId());
-            createThenActivate(mount, null);
+            create(mount, null);
         }
     }
 
@@ -211,16 +214,27 @@ public class DockerPostInstanceHostMapActivate extends AbstractObjectProcessLogi
     }
 
     protected Mount mountVolume(final Volume volume, final Instance instance, final String path, final String permissions) {
-        Mount mount = objectManager.findOne(Mount.class, MOUNT.VOLUME_ID, volume.getId(), MOUNT.INSTANCE_ID, instance.getId(), MOUNT.PATH, path);
+        return lockManager.lock(new MountVolumeLock(volume.getId()), new LockCallback<Mount>() {
+            @Override
+            public Mount doWithLock() {
+                Map<Object, Object> criteria = new HashMap<Object, Object>();
+                criteria.put(MOUNT.VOLUME_ID, volume.getId());
+                criteria.put(MOUNT.INSTANCE_ID, instance.getId());
+                criteria.put(MOUNT.PATH, path);
+                criteria.put(MOUNT.REMOVED, null);
+                criteria.put(MOUNT.STATE, new Condition(ConditionType.NE, CommonStatesConstants.INACTIVE));
+                Mount mount = objectManager.findAny(Mount.class, criteria);
 
-        if (mount != null) {
-            if (!mount.getPath().equalsIgnoreCase(permissions))
-                objectManager.setFields(mount, MOUNT.PERMISSIONS, permissions);
-            return mount;
-        }
+                if (mount != null) {
+                    if (!mount.getPath().equalsIgnoreCase(permissions))
+                        objectManager.setFields(mount, MOUNT.PERMISSIONS, permissions);
+                    return mount;
+                }
 
-        return objectManager.create(Mount.class, MOUNT.ACCOUNT_ID, instance.getAccountId(), MOUNT.INSTANCE_ID, instance.getId(), MOUNT.VOLUME_ID,
-                volume.getId(), MOUNT.PATH, path, MOUNT.PERMISSIONS, permissions);
+                return objectManager.create(Mount.class, MOUNT.ACCOUNT_ID, instance.getAccountId(), MOUNT.INSTANCE_ID, instance.getId(), MOUNT.VOLUME_ID,
+                        volume.getId(), MOUNT.PATH, path, MOUNT.PERMISSIONS, permissions);
+            }
+        });
     }
 
     protected void processDockerIp(Instance instance, Nic nic, String dockerIp) {

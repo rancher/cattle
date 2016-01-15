@@ -1,5 +1,6 @@
 package io.cattle.platform.core.dao.impl;
 
+import static io.cattle.platform.core.model.tables.MountTable.*;
 import static io.cattle.platform.core.model.tables.StoragePoolTable.*;
 import static io.cattle.platform.core.model.tables.VolumeStoragePoolMapTable.*;
 import static io.cattle.platform.core.model.tables.VolumeTable.*;
@@ -94,6 +95,39 @@ public class VolumeDaoImpl extends AbstractJooqDao implements VolumeDao {
                 .and(STORAGE_POOL.KIND.notIn(LOCAL_POOL_KINDS).or(STORAGE_POOL.KIND.isNull()))
             .fetchInto(VolumeRecord.class);
 
+        return volumes;
+    }
+
+    public static final List<String> INELLIGIBLE_STATES = Arrays.asList(CommonStatesConstants.ACTIVE, CommonStatesConstants.ACTIVATING,
+            CommonStatesConstants.REQUESTED);
+
+    @Override
+    public Set<? extends Volume> findNonremovedVolumesWithNoOtherMounts(long instanceId) {
+        List<Long> instanceVolumeIds = create()
+                .select(MOUNT.VOLUME_ID)
+                .from(MOUNT)
+                .where(MOUNT.INSTANCE_ID.eq(instanceId))
+                .fetchInto(Long.class);
+
+        List<Long> inelligibleVolumeIds = create()
+                .select(MOUNT.VOLUME_ID)
+                .from(MOUNT)
+                .where(MOUNT.VOLUME_ID.in(instanceVolumeIds)
+                .and(MOUNT.INSTANCE_ID.ne(instanceId))
+                .and(MOUNT.STATE.in(INELLIGIBLE_STATES)))
+                .fetchInto(Long.class);
+
+        Set<Long> volumeIds = new HashSet<Long>(instanceVolumeIds);
+        volumeIds.removeAll(inelligibleVolumeIds);
+
+        List<VolumeRecord> vols = create()
+                .select(VOLUME.fields())
+                .from(VOLUME)
+                .where(VOLUME.ID.in(volumeIds))
+                .and(VOLUME.REMOVED.isNull())
+                .fetchInto(VolumeRecord.class);
+
+        Set<? extends Volume> volumes = new HashSet<Volume>(vols);
         return volumes;
     }
 }
