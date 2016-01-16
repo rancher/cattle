@@ -621,6 +621,7 @@
         "virtualMachineDisk.size" : "cr",
         "virtualMachineDisk.opts" : "cr",
         "virtualMachineDisk.driver" : "cr",
+        "virtualMachineDisk.root" : "cr",
 
         "healthcheckInstanceHostMap" : "r",
         "healthcheckInstanceHostMap.instanceId" : "r",

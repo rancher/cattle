@@ -27,14 +27,18 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Pattern;
 
 import javax.inject.Inject;
+
+import org.apache.commons.lang3.StringUtils;
 
 public class VirtualMachinePreCreate extends AbstractObjectProcessLogic implements ProcessPreListener, Priority {
 
     private static final String[] CAPS = new String[] { "NET_ADMIN" };
     private static final String[] VOLUMES = new String[] { "/var/lib/rancher/vm:/vm" };
     private static final String[] DEVICES = new String[] { "/dev/kvm:/dev/kvm", "/dev/net/tun:/dev/net/tun" };
+    private static final Pattern NAME_PATTERN = Pattern.compile("[a-zA-Z0-9][a-zA-Z0-9_.-]+");
 
     @Inject
     VolumeDao volumeDao;
@@ -93,15 +97,35 @@ public class VirtualMachinePreCreate extends AbstractObjectProcessLogic implemen
         String volumeDriver = DataAccessor.fieldString(instance, InstanceConstants.FIELD_VOLUME_DRIVER);
         Object objectDisks = DataAccessor.field(instance, InstanceConstants.FIELD_DISKS, Object.class);
         if (objectDisks instanceof List<?>) {
+            String namePrefix = instance.getName();
+            if (StringUtils.isBlank(namePrefix) || !NAME_PATTERN.matcher(namePrefix).matches()) {
+                namePrefix = instance.getUuid().substring(0, 7);
+            } else {
+                namePrefix += "-" + instance.getUuid().substring(0, 7);
+            }
+
+            boolean rootFound = false;
+            int index = 0;
             List<VirtualMachineDisk> disks = jsonMapper.convertCollectionValue(objectDisks, List.class, VirtualMachineDisk.class);
             for (int i = 0 ; i < disks.size(); i++) {
                 VirtualMachineDisk disk = disks.get(i);
+                if (disk.isRoot() && rootFound) {
+                    continue;
+                }
+
                 String name = disk.getName();
-                if (name == null) {
-                    name = String.format("%s-%02d", instance.getUuid(), i);
+                boolean assignedName = false;
+                if (StringUtils.isBlank(name)) {
+                    assignedName = true;
+                    name = String.format("%s-%02d", namePrefix, index);
                 }
 
                 List<? extends Volume> volumes = volumeDao.findSharedOrUnmappedVolumes(instance.getAccountId(), name);
+                if (volumes.size() == 0 && !assignedName) {
+                    name = String.format("%s-%s", namePrefix, name);
+                    volumes = volumeDao.findSharedOrUnmappedVolumes(instance.getAccountId(), name);
+                }
+
                 if (volumes.size() == 0) {
                     Map<String, String> opts = disk.getOpts();
                     if (opts == null) {
@@ -123,9 +147,20 @@ public class VirtualMachinePreCreate extends AbstractObjectProcessLogic implemen
                             VOLUME.ACCOUNT_ID, instance.getAccountId(),
                             VolumeConstants.FIELD_VOLUME_DRIVER, localDriver,
                             VolumeConstants.FIELD_VOLUME_DRIVER_OPTS, opts);
+                } else {
+                    /* Use name from DB because of case sensitivity */
+                    name = volumes.get(0).getName();
                 }
 
-                addToList(dataVolumes, String.format("%s:/volumes/disk%02d", name, i));
+                String dataVolumeString = String.format("%s:/volumes/disk%02d", name, index);
+                if (disk.isRoot()) {
+                    rootFound = true;
+                    dataVolumeString = String.format("%s:/image", name);
+                } else {
+                    index++;
+                }
+
+                addToList(dataVolumes, dataVolumeString);
             }
         }
 

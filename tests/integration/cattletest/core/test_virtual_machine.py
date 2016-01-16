@@ -23,6 +23,67 @@ def subnet(network):
     return network.subnets()[0]
 
 
+def test_virtual_machine_case_sensitivity(super_client, client, context):
+    name = random_str()
+    volume = client.create_volume(name='R' + name, driver='local')
+
+    assert volume.name == 'R' + name
+    assert volume.state == 'requested'
+
+    disks = [
+        {
+            'name': 'r' + name,
+            'size': '2g',
+        },
+    ]
+
+    vm = _create_virtual_machine(client, context, name=random_str(),
+                                 volumeDriver='foo-bar',
+                                 userdata='hi', vcpu=2, memoryMb=42,
+                                 disks=disks)
+    vm = client.wait_success(vm)
+    assert vm.state == 'running'
+
+    c = super_client.reload(vm)
+    assert c.dataVolumes == ['/var/lib/rancher/vm:/vm',
+                             'R{}:/volumes/disk00'.format(name)]
+
+
+def test_virtual_machine_root_disk(super_client, client, context):
+    disks = [
+        {
+            'size': '2g',
+        },
+        {
+            'name': 'foo',
+            'size': '2g',
+            'root': True,
+        },
+        {
+            'name': 'nope',
+            'size': '2g',
+            'root': True,
+        },
+        {
+            'size': '2g',
+        },
+    ]
+
+    vm = _create_virtual_machine(client, context, name=random_str(),
+                                 volumeDriver='foo-bar',
+                                 userdata='hi', vcpu=2, memoryMb=42,
+                                 disks=disks)
+    vm = client.wait_success(vm)
+    assert vm.state == 'running'
+
+    c = super_client.reload(vm)
+    prefix = c.name + '-' + c.uuid[0:7]
+    assert c.dataVolumes == ['/var/lib/rancher/vm:/vm',
+                             '{}-00:/volumes/disk00'.format(prefix),
+                             '{}-foo:/image'.format(prefix),
+                             '{}-01:/volumes/disk01'.format(prefix)]
+
+
 def test_virtual_machine_default_fields(super_client, client, context):
     disk_name = 'disk' + random_str()
     disks = [
@@ -54,23 +115,21 @@ def test_virtual_machine_default_fields(super_client, client, context):
     assert c.labels['io.rancher.vm.vcpu'] == '2'
     assert c.labels['io.rancher.vm.userdata'] == 'hi'
     assert c.dataVolumes == ['/var/lib/rancher/vm:/vm',
-                             '{}-00:/volumes/disk00'.format(c.uuid),
-                             '{}:/volumes/disk01'.format(disk_name)]
-    assert c.dataVolumes == ['/var/lib/rancher/vm:/vm',
-                             '{}-00:/volumes/disk00'.format(c.uuid),
-                             '{}:/volumes/disk01'.format(disk_name)]
+                             '{}-00:/volumes/disk00'.format(c.uuid[0:7]),
+                             '{}-{}:/volumes/disk01'.format(c.uuid[0:7], disk_name)]
     assert c.devices == ['/dev/kvm:/dev/kvm', '/dev/net/tun:/dev/net/tun']
     assert c.capAdd == ['NET_ADMIN']
     assert c.capabilities == ['console']
 
-    volume1 = find_one(client.list_volume, name=c.uuid + '-00')
+    volume1 = find_one(client.list_volume, name=c.uuid[0:7] + '-00')
     assert volume1.driver == 'foo-bar'
     assert volume1.driverOpts == {'vm': 'true', 'size': '2g', 'foo': 'bar'}
 
-    volume2 = find_one(client.list_volume, name=disk_name)
-    assert volume2.name == disk_name
+    x = c.uuid[0:7] + '-' + disk_name
+    volume2 = find_one(client.list_volume, name=x)
+    assert volume2.name == x
     assert volume2.driver == 'foo'
-    assert volume2.driverOpts == {'vm': 'true', 'size': '10g'}
+    assert volume2.driverOpts == {'vm': 'true', 'size': '40g'}
 
     assert c.dataVolumeMounts == {
         '/volumes/disk00': volume1.id,
