@@ -191,6 +191,7 @@ public class DeploymentUnit {
         createMissingUnitInstances(svcInstanceIdGenerator);
 
         boolean hasSidekicks = false;
+        boolean skipSerialize = false;
         for (Long serviceId : svc.keySet()) {
             DeploymentUnitService duService = svc.get(serviceId);
             List<String> launchConfigNames = duService.getLaunchConfigNames();
@@ -200,10 +201,20 @@ public class DeploymentUnit {
             for (String launchConfigName : launchConfigNames) {
                 createInstance(launchConfigName, duService.getService());
             }
+            Map<String, String> labels = ServiceDiscoveryUtil.getServiceLabels(
+                    svc.get(serviceId).getService(),
+                    context.allocatorService);
+            if (labels
+                    .containsKey(ServiceDiscoveryConstants.LABEL_SERVICE_ALLOACATE_SKIP_SERIALIZE)
+                    && Boolean.valueOf(labels
+                            .get(ServiceDiscoveryConstants.LABEL_SERVICE_ALLOACATE_SKIP_SERIALIZE)) == true) {
+                skipSerialize = true;
+            }
         }
 
         // don't wait for instance allocate unless sidekicks are present
-        if (hasSidekicks) {
+
+        if (hasSidekicks && !skipSerialize) {
             this.waitForAllocate();
         }
     }
