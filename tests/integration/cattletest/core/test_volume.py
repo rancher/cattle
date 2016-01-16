@@ -8,7 +8,7 @@ from gdapi import ClientApiError
 VOLUME_CLEANUP_LABEL = 'io.rancher.container.volume_cleanup_strategy'
 
 
-def test_volume_delete_active(client, context):
+def test_volume_cant_delete_active(client, context):
     c = client.create_container(imageUuid=context.image_uuid)
     c = client.wait_success(c)
     assert c.state == 'running'
@@ -16,8 +16,10 @@ def test_volume_delete_active(client, context):
     volume = c.volumes()[0]
     assert volume.state == 'active'
 
-    volume = client.wait_success(client.delete(volume))
-    assert volume.state == 'removed'
+    # Assert an active volume cannot be deleted
+    with pytest.raises(ApiError) as e:
+        client.delete(volume)
+    assert e.value.error.status == 405
 
 
 def test_volume_create_state(client, context):
@@ -98,6 +100,11 @@ def test_create_container_with_volume(new_context, super_client):
     v2 = client.wait_success(v2)
     assert v1.state == 'active'
     assert v2.state == 'active'
+
+    # Assert an active volume cannot be deleted
+    with pytest.raises(ApiError) as e:
+        client.delete(v1)
+    assert e.value.error.status == 405
 
     assert len(c.volumes()) == 1
     assert c.volumes()[0].id not in [v1.id, v2.id]

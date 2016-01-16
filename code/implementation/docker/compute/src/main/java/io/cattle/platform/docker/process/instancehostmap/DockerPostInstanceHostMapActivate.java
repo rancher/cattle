@@ -41,6 +41,7 @@ import io.cattle.platform.engine.process.ProcessState;
 import io.cattle.platform.json.JsonMapper;
 import io.cattle.platform.lock.LockCallback;
 import io.cattle.platform.lock.LockManager;
+import io.cattle.platform.object.process.StandardProcess;
 import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.process.common.handler.AbstractObjectProcessLogic;
 import io.cattle.platform.process.common.lock.MountVolumeLock;
@@ -194,7 +195,7 @@ public class DockerPostInstanceHostMapActivate extends AbstractObjectProcessLogi
 
             Mount mount = mountVolume(volume, instance, dVol.getContainerPath(), dVol.getAccessMode());
             log.info("Volme mount created. Volume id [{}], instance id [{}], mount id [{}]", volume.getId(), instance.getId(), mount.getId());
-            create(mount, null);
+            objectProcessManager.scheduleStandardProcess(StandardProcess.CREATE, mount, null);
         }
     }
 
