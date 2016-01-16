@@ -497,18 +497,21 @@ def test_docker_volumes(docker_client, super_client):
             baz_mount = mount
             baz_vol = mount.volume()
 
+    foo_vol = docker_client.wait_success(foo_vol)
     assert foo_mount is not None
     assert foo_mount.permissions == 'rw'
     assert foo_vol is not None
     assert foo_vol.state == 'active'
     assert _(foo_vol).attachedState == 'inactive'
 
+    bar_vol = docker_client.wait_success(bar_vol)
     assert bar_mount is not None
     assert bar_mount.permissions == 'rw'
     assert bar_vol is not None
     assert bar_vol.state == 'active'
     assert _(bar_vol).attachedState == 'inactive'
 
+    baz_vol = docker_client.wait_success(baz_vol)
     assert baz_mount is not None
     assert baz_mount.permissions == 'ro'
     assert baz_vol is not None
@@ -682,10 +685,12 @@ def volume_cleanup_setup(docker_client, uuid, strategy=None):
     mounts = check_mounts(c, 2)
     v1 = mounts[0].volume()
     v2 = mounts[1].volume()
+    wait_for_condition(docker_client, v1, lambda x: x.state == 'active',
+                       lambda x: 'state is %s' % x)
+    wait_for_condition(docker_client, v2, lambda x: x.state == 'active',
+                       lambda x: 'state is %s' % x)
     named_vol = v1 if v1.name == vol_name else v2
     unnamed_vol = v1 if v1.name != vol_name else v2
-    assert named_vol.state == 'active'
-    assert unnamed_vol.state == 'active'
     c = docker_client.wait_success(c.stop(remove=True, timeout=0))
     c = docker_client.wait_success(c.purge())
     check_mounts(c, 0)
@@ -728,7 +733,7 @@ def test_docker_mount_life_cycle(docker_client):
     c = docker_client.create_container(name="volumes_test",
                                        imageUuid=uuid,
                                        startOnCreate=False,
-                                       dataVolumes=['foo:/foo',
+                                       dataVolumes=['%s:/foo' % random_str(),
                                                     bar_bind_mount])
 
     c = docker_client.wait_success(c)
@@ -737,31 +742,46 @@ def test_docker_mount_life_cycle(docker_client):
     v1 = mounts[0].volume()
     v2 = mounts[1].volume()
     v3 = mounts[2].volume()
-    assert v1.state == 'active'
-    assert v2.state == 'active'
-    assert v3.state == 'active'
+    wait_for_condition(docker_client, v1, lambda x: x.state == 'active',
+                       lambda x: 'state is %s' % x)
+    wait_for_condition(docker_client, v2, lambda x: x.state == 'active',
+                       lambda x: 'state is %s' % x)
+    wait_for_condition(docker_client, v3, lambda x: x.state == 'active',
+                       lambda x: 'state is %s' % x)
 
     c = docker_client.wait_success(c.stop(remove=True, timeout=0))
 
     c = docker_client.wait_success(c.restore())
     assert c.state == 'stopped'
     check_mounts(c, 0)
-    assert docker_client.wait_success(v1).state == 'inactive'
-    assert docker_client.wait_success(v2).state == 'inactive'
-    assert docker_client.wait_success(v3).state == 'inactive'
+    wait_for_condition(docker_client, v1, lambda x: x.state == 'inactive',
+                       lambda x: 'state is %s' % x)
+    wait_for_condition(docker_client, v2, lambda x: x.state == 'inactive',
+                       lambda x: 'state is %s' % x)
+    wait_for_condition(docker_client, v3, lambda x: x.state == 'inactive',
+                       lambda x: 'state is %s' % x)
 
     c = docker_client.wait_success(c.start())
     assert c.state == 'running'
     check_mounts(c, 3)
-    assert docker_client.wait_success(v1).state == 'active'
-    assert docker_client.wait_success(v2).state == 'active'
-    assert docker_client.wait_success(v3).state == 'active'
+    wait_for_condition(docker_client, v1, lambda x: x.state == 'active',
+                       lambda x: 'state is %s' % x)
+    wait_for_condition(docker_client, v2, lambda x: x.state == 'active',
+                       lambda x: 'state is %s' % x)
+    wait_for_condition(docker_client, v3, lambda x: x.state == 'active',
+                       lambda x: 'state is %s' % x)
 
     c = docker_client.wait_success(c.stop(remove=True, timeout=0))
     check_mounts(c, 0)
     assert docker_client.wait_success(v1).state == 'inactive'
     assert docker_client.wait_success(v2).state == 'inactive'
     assert docker_client.wait_success(v3).state == 'inactive'
+    wait_for_condition(docker_client, v1, lambda x: x.state == 'inactive',
+                       lambda x: 'state is %s' % x)
+    wait_for_condition(docker_client, v2, lambda x: x.state == 'inactive',
+                       lambda x: 'state is %s' % x)
+    wait_for_condition(docker_client, v3, lambda x: x.state == 'inactive',
+                       lambda x: 'state is %s' % x)
 
 
 @if_docker
