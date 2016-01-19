@@ -35,6 +35,7 @@ public class ServiceMetaData {
     protected Integer scale;
     protected String fqdn;
     protected List<String> expose = new ArrayList<>();
+    protected String token;
 
     public ServiceMetaData(ServiceMetaData that) {
         this.name = that.name;
@@ -58,6 +59,7 @@ public class ServiceMetaData {
         this.isPrimaryConfig = that.isPrimaryConfig;
         this.launchConfigName = that.launchConfigName;
         this.stackId = that.stackId;
+        this.token = that.token;
     }
 
     public ServiceMetaData(Service service, String serviceName, Environment env, List<String> sidekicks,
@@ -82,6 +84,7 @@ public class ServiceMetaData {
         this.scale = DataAccessor.fieldInteger(service, ServiceDiscoveryConstants.FIELD_SCALE);
         this.fqdn = DataAccessor.fieldString(service, ServiceDiscoveryConstants.FIELD_FQDN);
         this.stackId = env.getId();
+        this.token = DataAccessor.fieldString(service, ServiceDiscoveryConstants.FIELD_TOKEN);
     }
 
     @SuppressWarnings("unchecked")
@@ -247,5 +250,13 @@ public class ServiceMetaData {
 
     public Long getStackId() {
         return stackId;
+    }
+
+    public void setToken(String token) {
+        this.token = token;
+    }
+
+    public String getToken() {
+        return token;
     }
 }

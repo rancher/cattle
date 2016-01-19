@@ -26,6 +26,7 @@ import io.cattle.platform.core.util.PortSpec;
 import io.cattle.platform.deferred.util.DeferredUtils;
 import io.cattle.platform.eventing.EventService;
 import io.cattle.platform.framework.event.util.EventUtils;
+import io.cattle.platform.iaas.api.filter.apikey.ApiKeyFilter;
 import io.cattle.platform.json.JsonMapper;
 import io.cattle.platform.lock.LockCallbackNoReturn;
 import io.cattle.platform.lock.LockManager;
@@ -469,5 +470,12 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
                 updateObjectEndPoint(service, service.getKind(), service.getId(), publicEndpoint, add);
             }
         });
+    }
+
+    @Override
+    public void setToken(Service service) {
+        String token = ApiKeyFilter.generateKeys()[1];
+        DataAccessor.fields(service).withKey(ServiceDiscoveryConstants.FIELD_TOKEN).set(token);
+        objectManager.persist(service);
     }
 }

@@ -252,3 +252,34 @@ def test_validate_launch_config_name(client, context):
                               secondaryLaunchConfigs=[secondary_lc])
     assert e.value.error.status == 422
     assert e.value.error.code == 'NotUnique'
+
+
+def test_validate_service_token(client, context, super_client):
+    env = _create_stack(client)
+    image_uuid = context.image_uuid
+    launch_config = {"imageUuid": image_uuid}
+    svc_name = random_str()
+    service = client.create_service(name=svc_name,
+                                    environmentId=env.id,
+                                    launchConfig=launch_config)
+
+    client.wait_success(service)
+
+    service = super_client.reload(service)
+
+    assert service.state == "inactive"
+    assert service.data.fields.token is not None
+
+    token = service.data.fields.token
+
+    svc_name = random_str()
+
+    client.update(service, name=svc_name)
+
+    client.wait_success(service)
+
+    service = super_client.reload(service)
+
+    assert service.name == svc_name
+    assert service.data.fields.token is not None
+    assert service.data.fields.token == token
