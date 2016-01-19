@@ -15,6 +15,7 @@ import io.cattle.platform.object.meta.ObjectMetaDataManager;
 import io.cattle.platform.object.util.ObjectUtils;
 import io.cattle.platform.process.externalevent.ExternalEventConstants;
 import io.github.ibuildthecloud.gdapi.context.ApiContext;
+import io.github.ibuildthecloud.gdapi.id.IdFormatter;
 import io.github.ibuildthecloud.gdapi.json.JsonMapper;
 import io.github.ibuildthecloud.gdapi.model.Resource;
 import io.github.ibuildthecloud.gdapi.model.Schema;
@@ -28,7 +29,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-
 import javax.inject.Inject;
 
 import org.apache.commons.lang3.StringUtils;
@@ -66,6 +66,9 @@ public class AuditServiceImpl implements AuditService{
 
     @Inject
     ObjectManager objectManager;
+
+    @Inject
+    IdFormatter idFormatter;
 
     private static final Logger log = LoggerFactory.getLogger(AuditLogsRequestHandler.class);
 
@@ -114,10 +117,16 @@ public class AuditServiceImpl implements AuditService{
         Long parsedResourceId;
         if (resourceId == null){
             parsedResourceId = null;
-        } else {
-            try {
+        } else try {
+            if (ApiContext.getContext() != null && ApiContext.getContext().getIdFormatter() != null) {
                 parsedResourceId = Long.valueOf(ApiContext.getContext().getIdFormatter().parseId(resourceId));
-            } catch (NumberFormatException e){
+            } else {
+                parsedResourceId = Long.valueOf(idFormatter.parseId(resourceId));
+            }
+        } catch (NumberFormatException e) {
+            try {
+                parsedResourceId = Long.valueOf(resourceId);
+            } catch (NumberFormatException e1) {
                 parsedResourceId = null;
             }
         }
@@ -140,9 +149,12 @@ public class AuditServiceImpl implements AuditService{
     @Override
     public void logResourceModification(Object resource, Map<String, Object> data, AuditEventType eventType,
                                         String description, Long accountId, String clientIp) {
-        putInAsString(data, "resource", "Failed to convert resource to json.", resource);
-        publishEvent(auditLogDao.create(objectManager.getType(resource), parseId((String) ObjectUtils.getId(resource)),
-                data, null, accountId, null, eventType.toString(), null, null, description, clientIp));
+        if (data != null) {
+            putInAsString(data, "resource", "Failed to convert resource to json.", resource);
+        }
+        String event =  objectManager.getType(resource) + "." + eventType.toString();
+        publishEvent(auditLogDao.create(objectManager.getType(resource), parseId(String.valueOf(ObjectUtils.getId(resource))),
+                data, null, accountId, null, event, null, null, description, clientIp));
     }
 
     protected void publishEvent(AuditLog auditLog) {
