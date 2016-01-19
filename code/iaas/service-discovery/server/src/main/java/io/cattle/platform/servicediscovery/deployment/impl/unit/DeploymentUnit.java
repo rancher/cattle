@@ -152,9 +152,13 @@ public class DeploymentUnit {
         }
 
         if (waitForRemoval) {
-            for (DeploymentUnitInstance instance : getDeploymentUnitInstances()) {
-                instance.waitForRemoval();
-            }
+            waitForRemoval();
+        }
+    }
+
+    public void waitForRemoval() {
+        for (DeploymentUnitInstance instance : getDeploymentUnitInstances()) {
+            instance.waitForRemoval();
         }
     }
 

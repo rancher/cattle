@@ -136,11 +136,16 @@ public abstract class ServiceDeploymentPlanner {
     }
 
     public void cleanupBadUnits() {
+        List<DeploymentUnit> watchList = new ArrayList<>();
         Iterator<DeploymentUnit> it = this.badUnits.iterator();
         while (it.hasNext()) {
             DeploymentUnit next = it.next();
-            next.remove(true);
+            watchList.add(next);
+            next.remove(false);
             it.remove();
+        }
+        for (DeploymentUnit toWatch : watchList) {
+            toWatch.waitForRemoval();
         }
     }
 
@@ -154,11 +159,16 @@ public abstract class ServiceDeploymentPlanner {
     }
 
     public void cleanupUnhealthyUnits() {
+        List<DeploymentUnit> watchList = new ArrayList<>();
         Iterator<DeploymentUnit> it = this.unhealthyUnits.iterator();
         while (it.hasNext()) {
             DeploymentUnit next = it.next();
-            next.remove(true);
+            watchList.add(next);
+            next.remove(false);
             it.remove();
+        }
+        for (DeploymentUnit toWatch : watchList) {
+            toWatch.waitForRemoval();
         }
     }
 
