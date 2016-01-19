@@ -179,6 +179,9 @@ def test_volume_create(new_context):
     # Create a volume with a driver that points to a storage pool
     v1 = client.create_volume(name=random_str(), driver=sp_name)
     v1 = client.wait_success(v1)
+    sps = v1.storagePools()
+    assert len(sps) == 1
+    assert sps[0].id == storage_pool.id
 
     # Create a volume with a driver that cattle doesn't know about
     v2 = client.create_volume(name=random_str(), driver='driver-%s' %
