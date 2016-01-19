@@ -48,7 +48,7 @@ public class RemoveMonitorImpl implements RemoveMonitor, Task {
 
     private static final String ERROR_STATE = "error";
     private static final Logger log = LoggerFactory.getLogger(RemoveMonitorImpl.class);
-    private static final DynamicLongProperty REMOVE_DELAY = ArchaiusUtil.getLong("task.remove.resources.schedule");
+    private static final DynamicLongProperty REMOVE_DELAY = ArchaiusUtil.getLong("remove.resources.after");
 
 
     @Override
@@ -62,7 +62,7 @@ public class RemoveMonitorImpl implements RemoveMonitor, Task {
             List<?> objects = objectManager.find(schemaClass, ObjectMetaDataManager.STATE_FIELD, ERROR_STATE,
                     ObjectMetaDataManager.CREATED_FIELD,
                     new Condition(ConditionType.NOTNULL), ObjectMetaDataManager.CREATED_FIELD, new Condition(
-                            ConditionType.LT, new Date(System.currentTimeMillis() - REMOVE_DELAY.get())));
+                            ConditionType.LT, new Date(System.currentTimeMillis() - REMOVE_DELAY.get() * 1000)));
 
             for (Object obj : objects) {
                 try {
