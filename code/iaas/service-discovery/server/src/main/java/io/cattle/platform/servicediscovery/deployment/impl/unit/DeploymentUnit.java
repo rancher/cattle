@@ -161,9 +161,7 @@ public class DeploymentUnit {
          * Delete all instances. This should be non-blocking (don't wait)
          */
         for (DeploymentUnitInstance instance : getDeploymentUnitInstances()) {
-            if (instance instanceof DefaultDeploymentUnitInstance) {
-                auditLogOperation(instance, AuditEventType.delete, reason);
-            }
+            auditLogOperation(instance, AuditEventType.delete, reason);
             instance.remove();
         }
 
@@ -179,13 +177,20 @@ public class DeploymentUnit {
     }
 
     protected void auditLogOperation(DeploymentUnitInstance instance, AuditEventType eventType, String description) {
-        DefaultDeploymentUnitInstance defaultInstance = (DefaultDeploymentUnitInstance) instance;
-        if (defaultInstance.getInstance() != null) {
-            Map<String, Object> data = new HashMap<>();
-            data.put("serviceId", instance.getService().getId());
-            context.auditSvc.logResourceModification(defaultInstance.getInstance(), data, eventType, description,
-                    defaultInstance.getInstance().getAccountId(),
-                    null);
+        if (instance instanceof DefaultDeploymentUnitInstance) {
+            DefaultDeploymentUnitInstance defaultInstance = (DefaultDeploymentUnitInstance) instance;
+            if (defaultInstance.getInstance() != null) {
+                Object serviceIdObf = context.idFormatter.formatId(
+                        context.objectManager.getType(instance.getService()),
+                        instance.getService().getId());
+                Map<String, Object> data = new HashMap<>();
+                data.put("serviceId", serviceIdObf);
+                data.put("description", description);
+                context.auditSvc.logResourceModification(defaultInstance.getInstance(), data, eventType, description
+                        + ". Service id: " + serviceIdObf,
+                        defaultInstance.getInstance().getAccountId(),
+                        null);
+            }
         }
     }
 

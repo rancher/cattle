@@ -36,6 +36,7 @@ import io.cattle.platform.servicediscovery.deployment.impl.lock.ServicesSidekick
 import io.cattle.platform.servicediscovery.deployment.impl.unit.DeploymentUnit;
 import io.cattle.platform.servicediscovery.deployment.impl.unit.DeploymentUnitInstanceIdGeneratorImpl;
 import io.cattle.platform.servicediscovery.service.ServiceDiscoveryService;
+import io.github.ibuildthecloud.gdapi.id.IdFormatter;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -78,6 +79,8 @@ public class DeploymentManagerImpl implements DeploymentManager {
     ServiceDao svcDao;
     @Inject
     AuditService auditService;
+    @Inject
+    IdFormatter idFrmt;
 
     @Override
     public boolean isHealthy(Service service) {
@@ -324,5 +327,6 @@ public class DeploymentManagerImpl implements DeploymentManager {
         final public JsonMapper jsonMapper = mapper;
         final public ServiceDao serviceDao = svcDao;
         final public AuditService auditSvc = auditService;
+        final public IdFormatter idFormatter = idFrmt;
     }
 }

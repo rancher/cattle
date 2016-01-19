@@ -98,8 +98,12 @@ public class ServiceUpdateActivate extends AbstractObjectProcessHandler {
         String[] splittedForResourceType = splittedForId[0].split("\\[");
         String resourceId = splittedForId[1];
         String resourceType = splittedForResourceType[1];
-        Object id = idFormatter.formatId(resourceType, resourceId);
-        error = error.replace(resourceId + "]", id + "]");
+        Object obfuscatedId = idFormatter.formatId(resourceType, resourceId);
+        error = error.replace(resourceId + "]", obfuscatedId + "]");
+        String transitioningMsg = DataAccessor.fieldString(objectManager.getType(resourceType), "transitioningMessage");
+        if (!StringUtils.isEmpty(transitioningMsg)) {
+            error = error + ". " + resourceType + " status: " + transitioningMsg;
+        }
         return error;
     }
 
