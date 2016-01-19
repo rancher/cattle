@@ -116,7 +116,8 @@ def test_virtual_machine_default_fields(super_client, client, context):
     assert c.labels['io.rancher.vm.userdata'] == 'hi'
     assert c.dataVolumes == ['/var/lib/rancher/vm:/vm',
                              '{}-00:/volumes/disk00'.format(c.uuid[0:7]),
-                             '{}-{}:/volumes/disk01'.format(c.uuid[0:7], disk_name)]
+                             '{}-{}:/volumes/disk01'.format(c.uuid[0:7],
+                                                            disk_name)]
     assert c.devices == ['/dev/kvm:/dev/kvm', '/dev/net/tun:/dev/net/tun']
     assert c.capAdd == ['NET_ADMIN']
     assert c.capabilities == ['console']
