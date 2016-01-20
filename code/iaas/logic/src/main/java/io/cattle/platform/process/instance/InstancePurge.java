@@ -1,7 +1,10 @@
 package io.cattle.platform.process.instance;
 
 import static io.cattle.platform.core.constants.InstanceConstants.*;
+
+import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.InstanceLinkConstants;
+import io.cattle.platform.core.constants.VolumeConstants;
 import io.cattle.platform.core.dao.VolumeDao;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.InstanceLink;
@@ -14,6 +17,7 @@ import io.cattle.platform.engine.process.ProcessState;
 import io.cattle.platform.object.process.StandardProcess;
 import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.process.base.AbstractDefaultProcessHandler;
+import io.cattle.platform.process.common.util.ProcessUtils;
 
 import java.util.Set;
 
@@ -62,7 +66,12 @@ public class InstancePurge extends AbstractDefaultProcessHandler {
                     ((StringUtils.length(v.getName()) != 64 || !StringUtils.isAlphanumeric(v.getName()))) && !StringUtils.startsWith(v.getName(), "/")) {
                 continue;
             }
-            objectProcessManager.scheduleStandardProcess(StandardProcess.REMOVE, v, state.getData());
+            if (CommonStatesConstants.ACTIVE.equals(v.getState())) {
+                objectProcessManager.scheduleStandardProcess(StandardProcess.DEACTIVATE, v,
+                        ProcessUtils.chainInData(state.getData(), VolumeConstants.PROCESS_DEACTIVATE, VolumeConstants.PROCESS_REMOVE));
+            } else {
+                objectProcessManager.scheduleStandardProcess(StandardProcess.REMOVE, v, state.getData());
+            }
         }
     }
 }

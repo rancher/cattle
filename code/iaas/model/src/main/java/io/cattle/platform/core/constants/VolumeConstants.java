@@ -18,4 +18,7 @@ public class VolumeConstants {
 
     public static final String LOCAL_DRIVER = "local";
 
+    public static final String PROCESS_DEACTIVATE = "volume.deactivate";
+
+    public static final String PROCESS_REMOVE = "volume.remove";
 }
