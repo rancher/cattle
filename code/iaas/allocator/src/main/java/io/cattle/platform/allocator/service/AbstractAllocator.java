@@ -3,6 +3,7 @@ package io.cattle.platform.allocator.service;
 import io.cattle.platform.allocator.constraint.AllocationConstraintsProvider;
 import io.cattle.platform.allocator.constraint.Constraint;
 import io.cattle.platform.allocator.dao.AllocatorDao;
+import io.cattle.platform.allocator.exception.FailedToAllocate;
 import io.cattle.platform.allocator.exception.UnsupportedAllocation;
 import io.cattle.platform.allocator.lock.AllocateResourceLock;
 import io.cattle.platform.allocator.lock.AllocateVolumesResourceLock;
@@ -37,6 +38,7 @@ import java.util.Set;
 
 import javax.inject.Inject;
 
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -225,6 +227,7 @@ public abstract class AbstractAllocator implements Allocator {
     }
 
     protected boolean acquireLockAndAllocate(final AllocationRequest request, final AllocationAttempt attempt, Object deallocate) {
+        final List<Constraint> finalFailedConstraints = new ArrayList<>();
         lockManager.lock(getAllocationLock(request, attempt), new LockCallbackNoReturn() {
             @Override
             public void doWithLockNoResult() {
@@ -245,6 +248,7 @@ public abstract class AbstractAllocator implements Allocator {
                                 removed = true;
                             }
                             if (!removed) {
+                                finalFailedConstraints.addAll(failedConstraints);
                                 break;
                             }
                         }
@@ -256,10 +260,22 @@ public abstract class AbstractAllocator implements Allocator {
         });
 
         if (attempt.getMatchedCandidate() == null) {
+            if (finalFailedConstraints.size() > 0) {
+                throw new FailedToAllocate(toErrorMessage(finalFailedConstraints));
+            }
             return false;
         }
 
         return true;
+    }
+
+    protected String toErrorMessage(List<Constraint> constraints) {
+        List<String> result = new ArrayList<>();
+        for (Constraint c : constraints) {
+            result.add(c.toString());
+        }
+
+        return StringUtils.join(result, ", ");
     }
 
     protected Set<Constraint> runAllocation(AllocationRequest request, AllocationAttempt attempt) {
@@ -268,7 +284,9 @@ public abstract class AbstractAllocator implements Allocator {
         List<Set<Constraint>> candidateFailedConstraintSets = new ArrayList<Set<Constraint>>();
         Iterator<AllocationCandidate> iter = getCandidates(attempt);
         try {
+            boolean foundOne = false;
             while (iter.hasNext()) {
+                foundOne = true;
                 AllocationCandidate candidate = iter.next();
                 Set<Constraint> failedConstraints = new HashSet<Constraint>();
                 attempt.getCandidates().add(candidate);
@@ -300,6 +318,9 @@ public abstract class AbstractAllocator implements Allocator {
                     }
                 }
                 candidateFailedConstraintSets.add(failedConstraints);
+            }
+            if (!foundOne) {
+                throw new FailedToAllocate("No candidates available");
             }
             return getWeakestConstraintSet(candidateFailedConstraintSets);
         } finally {
