@@ -3,6 +3,7 @@
 . ${CATTLE_HOME:-/var/lib/cattle}/common/scripts.sh
 
 chmod 600 content/etc/monit/monitrc
+chmod 600 content/etc/monit/conf.d/logrotate
 
 stage_files
 
