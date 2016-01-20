@@ -1355,7 +1355,8 @@ def test_account_resource_auth(admin_user_client):
         'restore',
         'remove',
         'purge',
-        'create'
+        'create',
+        'error'
     ])
 
 
