@@ -21,7 +21,6 @@ public class ResourceStatesDefinition {
 
     String stateField = DEFAULT_STATE_FIELD;
     Set<String> startStates = new HashSet<String>();
-    Set<String> requiredFields = new HashSet<String>();
     Map<String, String> transitioningStatesMap = new HashMap<String, String>();
     Map<String, String> doneStatesMap = new HashMap<String, String>();
 
@@ -136,14 +135,6 @@ public class ResourceStatesDefinition {
 
     public void setStateField(String stateField) {
         this.stateField = stateField;
-    }
-
-    public Set<String> getRequiredFields() {
-        return requiredFields;
-    }
-
-    public void setRequiredFields(Set<String> requiredFields) {
-        this.requiredFields = requiredFields;
     }
 
 }

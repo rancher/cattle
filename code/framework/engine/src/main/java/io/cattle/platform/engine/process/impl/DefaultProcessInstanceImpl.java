@@ -42,17 +42,13 @@ import io.cattle.platform.lock.definition.DefaultMultiLockDefinition;
 import io.cattle.platform.lock.definition.LockDefinition;
 import io.cattle.platform.lock.definition.Namespace;
 import io.cattle.platform.lock.exception.FailedToAcquireLockException;
-import io.cattle.platform.lock.util.LockUtils;
 import io.cattle.platform.util.exception.ExceptionUtils;
 import io.cattle.platform.util.exception.ExecutionException;
 
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.Stack;
-import java.util.TreeSet;
-
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -151,7 +147,6 @@ public class DefaultProcessInstanceImpl implements ProcessInstance {
     }
 
     protected void closeLog(EngineContext engineContext) {
-        execution.close();
         engineContext.popLog();
     }
 
@@ -261,8 +256,6 @@ public class DefaultProcessInstanceImpl implements ProcessInstance {
             });
         } catch (FailedToAcquireLockException e) {
             lockFailed(e.getLockDefition(), e);
-        } finally {
-            lockAcquireEnd();
         }
     }
 
@@ -288,8 +281,6 @@ public class DefaultProcessInstanceImpl implements ProcessInstance {
         String previousState = null;
         boolean success = false;
         try {
-            lockAcquired();
-
             ProcessState state = instanceContext.getState();
 
             state.reload();
@@ -424,11 +415,6 @@ public class DefaultProcessInstanceImpl implements ProcessInstance {
 
         if (ran) {
             assertState(previousState);
-        } else {
-            if (phase == ProcessPhase.HANDLER_DONE && processDefinition.getHandlerRequiredResultData().size() > 0) {
-                log.error("No handlers ran, but there are required fields to be set");
-                throw new ProcessExecutionExitException(MISSING_HANDLER_RESULT_FIELDS);
-            }
         }
 
         return shouldDelegate;
@@ -450,8 +436,6 @@ public class DefaultProcessInstanceImpl implements ProcessInstance {
         final ProcessLogicExecutionLog processExecution = execution.newProcessLogicExecution(handler);
         context.pushLog(processExecution);
         try {
-            processExecution.setResourceValueBefore(state.convertData(state.getResource()));
-
             log.debug("Running {}[{}]", logicTypeString(handler), handler.getName());
             HandlerResult handlerResult = handler.handle(state, DefaultProcessInstanceImpl.this);
             log.debug("Finished {}[{}]", logicTypeString(handler), handler.getName());
@@ -466,28 +450,11 @@ public class DefaultProcessInstanceImpl implements ProcessInstance {
 
             processExecution.setShouldDelegate(handlerResult.shouldDelegate());
             processExecution.setShouldContinue(shouldContinue);
-            processExecution.setResultData(resultData);
             processExecution.setChainProcessName(handlerResult.getChainProcessName());
-
-            Set<String> missingFields = new TreeSet<String>();
-            processExecution.setMissingRequiredFields(missingFields);
-
-            for (String requiredField : processDefinition.getHandlerRequiredResultData()) {
-                if (resultData.get(requiredField) == null) {
-                    missingFields.add(requiredField);
-                }
-            }
-
-            if (!shouldContinue && missingFields.size() > 0) {
-                log.error("Missing field [{}] for handler [{}]", missingFields, handler == null ? null : handler.getName());
-                throw new ProcessExecutionExitException(MISSING_HANDLER_RESULT_FIELDS);
-            }
 
             if (resultData.size() > 0) {
                 state.applyData(resultData);
             }
-
-            processExecution.setResourceValueAfter(state.convertData(state.getResource()));
 
             return handlerResult;
         } catch (ExecutionException e) {
@@ -635,22 +602,9 @@ public class DefaultProcessInstanceImpl implements ProcessInstance {
         }
 
         instanceContext.setProcessLock(lockDef);
-        execution.setLockAcquireStart(now());
-        execution.setProcessLock(LockUtils.serializeLock(instanceContext.getProcessLock()));
-    }
-
-    protected void lockAcquired() {
-        execution.setLockAcquired(now());
-    }
-
-    protected void lockAcquireEnd() {
-        if (execution.getLockAcquired() != null)
-            execution.setLockAcquireEnd(now());
     }
 
     protected void lockFailed(LockDefinition lockDef, FailedToAcquireLockException e) {
-        execution.setFailedToAcquireLock(LockUtils.serializeLock(lockDef));
-        execution.setLockAcquireFailed(now());
         throw new ProcessExecutionExitException(RESOURCE_BUSY, e);
     }
 

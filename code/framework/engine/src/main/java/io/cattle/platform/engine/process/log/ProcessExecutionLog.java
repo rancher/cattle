@@ -15,13 +15,6 @@ public class ProcessExecutionLog extends AbstractParentLog implements ParentLog 
     long startTime;
     String processName;
     Long stopTime;
-    String processLock;
-    Long lockAcquireStart;
-    Long lockAcquired;
-    Long lockAcquireEnd;
-    Long lockAcquireFailed;
-    String failedToAcquireLock;
-    Long lockHoldTime;
     String processingServerId;
     String resourceType;
     String resourceId;
@@ -41,12 +34,6 @@ public class ProcessExecutionLog extends AbstractParentLog implements ParentLog 
         this.stopTime = System.currentTimeMillis();
         this.exitReason = reason;
         return reason;
-    }
-
-    public void close() {
-        if (processLock != null && lockAcquired != null && lockAcquireEnd != null) {
-            lockHoldTime = lockAcquireEnd - lockAcquired;
-        }
     }
 
     public ProcessLogicExecutionLog newProcessLogicExecution(Named handler) {
@@ -81,38 +68,6 @@ public class ProcessExecutionLog extends AbstractParentLog implements ParentLog 
         this.stopTime = stopTime;
     }
 
-    public String getProcessLock() {
-        return processLock;
-    }
-
-    public void setProcessLock(String processLock) {
-        this.processLock = processLock;
-    }
-
-    public Long getLockAcquireStart() {
-        return lockAcquireStart;
-    }
-
-    public void setLockAcquireStart(Long lockAcquireStart) {
-        this.lockAcquireStart = lockAcquireStart;
-    }
-
-    public Long getLockAcquired() {
-        return lockAcquired;
-    }
-
-    public void setLockAcquired(Long lockAcquired) {
-        this.lockAcquired = lockAcquired;
-    }
-
-    public Long getLockAcquireEnd() {
-        return lockAcquireEnd;
-    }
-
-    public void setLockAcquireEnd(Long lockAcquireEnd) {
-        this.lockAcquireEnd = lockAcquireEnd;
-    }
-
     public String getProcessingServerId() {
         return processingServerId;
     }
@@ -121,28 +76,12 @@ public class ProcessExecutionLog extends AbstractParentLog implements ParentLog 
         this.processingServerId = processingServerId;
     }
 
-    public Long getLockHoldTime() {
-        return lockHoldTime;
-    }
-
-    public void setLockHoldTime(Long lockHoldTime) {
-        this.lockHoldTime = lockHoldTime;
-    }
-
     public List<ProcessStateTransition> getTransitions() {
         return transitions;
     }
 
     public void setTransitions(List<ProcessStateTransition> transitions) {
         this.transitions = transitions;
-    }
-
-    public Long getLockAcquireFailed() {
-        return lockAcquireFailed;
-    }
-
-    public void setLockAcquireFailed(Long lockAcquireFailed) {
-        this.lockAcquireFailed = lockAcquireFailed;
     }
 
     public List<ProcessLogicExecutionLog> getProcessHandlerExecutions() {
@@ -159,14 +98,6 @@ public class ProcessExecutionLog extends AbstractParentLog implements ParentLog 
 
     public void setException(ExceptionLog exception) {
         this.exception = exception;
-    }
-
-    public String getFailedToAcquireLock() {
-        return failedToAcquireLock;
-    }
-
-    public void setFailedToAcquireLock(String failedToAcquireLock) {
-        this.failedToAcquireLock = failedToAcquireLock;
     }
 
     public void setStartTime(long startTime) {
