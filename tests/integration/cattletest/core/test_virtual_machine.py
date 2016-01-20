@@ -45,8 +45,10 @@ def test_virtual_machine_case_sensitivity(super_client, client, context):
     assert vm.state == 'running'
 
     c = super_client.reload(vm)
-    assert c.dataVolumes == ['/var/lib/rancher/vm:/vm',
-                             'R{}:/volumes/disk00'.format(name)]
+    assert len(c.dataVolumes) == 2
+    assert c.dataVolumes[0] == '/var/lib/rancher/vm:/vm'
+    assert c.dataVolumes[1] in {'R{}:/volumes/disk00'.format(name),
+                                'r{}:/volumes/disk00'.format(name)}
 
 
 def test_virtual_machine_root_disk(super_client, client, context):
