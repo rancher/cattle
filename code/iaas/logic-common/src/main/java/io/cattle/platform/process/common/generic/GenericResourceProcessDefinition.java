@@ -9,7 +9,6 @@ import io.cattle.platform.json.JsonMapper;
 import io.cattle.platform.object.ObjectManager;
 
 import java.util.List;
-import java.util.Set;
 
 import javax.inject.Inject;
 
@@ -23,11 +22,6 @@ public class GenericResourceProcessDefinition extends AbstractProcessDefinition 
     @Override
     public ProcessState constructProcessState(LaunchConfiguration config) {
         return new GenericResourceProcessState(jsonMapper, statesDefinition, config, objectManager);
-    }
-
-    @Override
-    public Set<String> getHandlerRequiredResultData() {
-        return this.statesDefinition.getRequiredFields();
     }
 
     public ObjectManager getObjectManager() {

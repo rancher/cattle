@@ -1,8 +1,5 @@
 package io.cattle.platform.engine.process.log;
 
-import java.util.Map;
-import java.util.Set;
-
 public class ProcessLogicExecutionLog extends AbstractParentLog implements ParentLog {
 
     String name;
@@ -12,10 +9,6 @@ public class ProcessLogicExecutionLog extends AbstractParentLog implements Paren
     boolean shouldContinue;
     boolean shouldDelegate;
     String chainProcessName;
-    Map<String, Object> resultData;
-    Map<String, Object> resourceValueBefore;
-    Map<String, Object> resourceValueAfter;
-    Set<String> missingRequiredFields;
 
     public long getStartTime() {
         return startTime;
@@ -56,38 +49,6 @@ public class ProcessLogicExecutionLog extends AbstractParentLog implements Paren
 
     public void setShouldContinue(boolean shouldContinue) {
         this.shouldContinue = shouldContinue;
-    }
-
-    public Map<String, Object> getResultData() {
-        return resultData;
-    }
-
-    public void setResultData(Map<String, Object> resultData) {
-        this.resultData = resultData;
-    }
-
-    public Set<String> getMissingRequiredFields() {
-        return missingRequiredFields;
-    }
-
-    public void setMissingRequiredFields(Set<String> missingRequiredFields) {
-        this.missingRequiredFields = missingRequiredFields;
-    }
-
-    public Map<String, Object> getResourceValueAfter() {
-        return resourceValueAfter;
-    }
-
-    public void setResourceValueAfter(Map<String, Object> resourceValueAfter) {
-        this.resourceValueAfter = resourceValueAfter;
-    }
-
-    public Map<String, Object> getResourceValueBefore() {
-        return resourceValueBefore;
-    }
-
-    public void setResourceValueBefore(Map<String, Object> resourceValueBefore) {
-        this.resourceValueBefore = resourceValueBefore;
     }
 
     public boolean isShouldDelegate() {

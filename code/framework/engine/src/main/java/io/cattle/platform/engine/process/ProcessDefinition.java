@@ -6,7 +6,6 @@ import io.cattle.platform.engine.handler.ProcessPreListener;
 import io.cattle.platform.util.type.Named;
 
 import java.util.List;
-import java.util.Set;
 
 public interface ProcessDefinition extends Named {
 
@@ -21,8 +20,6 @@ public interface ProcessDefinition extends Named {
     List<ProcessPostListener> getPostProcessListeners();
 
     ProcessState constructProcessState(LaunchConfiguration config);
-
-    Set<String> getHandlerRequiredResultData();
 
     List<StateTransition> getStateTransitions();
 

@@ -14,7 +14,7 @@ public enum ExitReason {
     RETRY_EXCEPTION(true),
     UNKNOWN_EXCEPTION(true),
     TIMEOUT(true),
-    MISSING_HANDLER_RESULT_FIELDS, CHAIN(SUCCESS);
+    CHAIN(SUCCESS);
 
     boolean terminating;
     boolean rethrow;
