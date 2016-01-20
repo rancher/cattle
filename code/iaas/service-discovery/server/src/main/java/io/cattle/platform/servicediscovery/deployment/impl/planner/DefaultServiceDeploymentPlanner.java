@@ -7,6 +7,7 @@ import io.cattle.platform.servicediscovery.deployment.ServiceDeploymentPlanner;
 import io.cattle.platform.servicediscovery.deployment.impl.DeploymentManagerImpl.DeploymentServiceContext;
 import io.cattle.platform.servicediscovery.deployment.impl.unit.DeploymentUnit;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class DefaultServiceDeploymentPlanner extends ServiceDeploymentPlanner {
@@ -46,11 +47,17 @@ public class DefaultServiceDeploymentPlanner extends ServiceDeploymentPlanner {
     private void removeExtraUnits() {
         // delete units
         int i = this.healthyUnits.size() - 1;
+        List<DeploymentUnit> watchList = new ArrayList<>();
         while (this.healthyUnits.size() > this.requestedScale) {
             DeploymentUnit toRemove = this.healthyUnits.get(i);
-            toRemove.remove(true);
+            watchList.add(toRemove);
+            toRemove.remove(false);
             this.healthyUnits.remove(i);
             i--;
+        }
+
+        for (DeploymentUnit toWatch : watchList) {
+            toWatch.waitForRemoval();
         }
     }
 
