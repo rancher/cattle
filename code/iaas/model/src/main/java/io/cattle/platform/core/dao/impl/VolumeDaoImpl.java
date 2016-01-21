@@ -87,12 +87,12 @@ public class VolumeDaoImpl extends AbstractJooqDao implements VolumeDao {
             .leftOuterJoin(VOLUME_STORAGE_POOL_MAP)
                 .on(VOLUME_STORAGE_POOL_MAP.VOLUME_ID.eq(VOLUME.ID))
             .leftOuterJoin(STORAGE_POOL)
-                .on(VOLUME_STORAGE_POOL_MAP.STORAGE_POOL_ID.eq(STORAGE_POOL.ID)
-                .and(STORAGE_POOL.REMOVED.isNull()))
+                .on(VOLUME_STORAGE_POOL_MAP.STORAGE_POOL_ID.eq(STORAGE_POOL.ID))
             .where(VOLUME.NAME.eq(volumeName)
                 .and((VOLUME.REMOVED.isNull())))
                 .and(VOLUME.ACCOUNT_ID.eq(accountId))
                 .and(STORAGE_POOL.KIND.notIn(LOCAL_POOL_KINDS).or(STORAGE_POOL.KIND.isNull()))
+                .and(STORAGE_POOL.REMOVED.isNull())
             .fetchInto(VolumeRecord.class);
 
         return volumes;
