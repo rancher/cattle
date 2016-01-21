@@ -98,8 +98,8 @@ public class HealthcheckServiceImpl implements HealthcheckService {
         if (updateWithState == null) {
             return;
         }
-
-        updateHealthcheckInstance(hcInstance, updateWithState);
+        Instance instance = objectManager.loadResource(Instance.class, hcInstance.getInstanceId());
+        updateInstanceHealthState(instance, updateWithState);
     }
 
     protected boolean shouldUpdate(HealthcheckInstanceHostMap hcihm, long externalTimestamp, String healthState) {
@@ -160,8 +160,8 @@ public class HealthcheckServiceImpl implements HealthcheckService {
         return instance == null ? null : instance.getHealthState();
     }
 
-    protected void updateHealthcheckInstance(HealthcheckInstance hcInstance, String updateWithState) {
-        Instance instance = objectManager.loadResource(Instance.class, hcInstance.getInstanceId());
+    @Override
+    public void updateInstanceHealthState(Instance instance, String updateWithState) {
         if (instance != null) {
             if (updateWithState.equalsIgnoreCase(HealthcheckConstants.HEALTH_STATE_HEALTHY)) {
                 objectProcessManager.scheduleProcessInstance(HealthcheckConstants.PROCESS_UPDATE_HEALTHY, instance,

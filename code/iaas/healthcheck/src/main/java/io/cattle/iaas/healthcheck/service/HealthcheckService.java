@@ -1,5 +1,6 @@
 package io.cattle.iaas.healthcheck.service;
 
+import io.cattle.platform.core.model.Instance;
 
 public interface HealthcheckService {
 
@@ -12,4 +13,6 @@ public interface HealthcheckService {
     void updateHealthcheck(String healthcheckInstanceHostMapUuid, final long externalTimestamp, final String health);
 
     void registerForHealtcheck(HealthcheckInstanceType instanceType, long id);
+
+    void updateInstanceHealthState(Instance instance, String updateWithState);
 }
