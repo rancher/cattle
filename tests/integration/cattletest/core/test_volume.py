@@ -356,6 +356,39 @@ def test_volume_mounting_and_delete(new_context, super_client):
     assert v1.state == 'removed'
 
 
+def test_volume_storage_pool_purge(new_context, super_client):
+    client = new_context.client
+
+    vol_name = random_str()
+    v1 = client.create_volume(name=vol_name, driver='local')
+    data_volume_mounts = {'/con/path': v1.id}
+    c = client.create_container(imageUuid=new_context.image_uuid,
+                                dataVolumeMounts=data_volume_mounts)
+    c = client.wait_success(c)
+    assert c.state == 'running'
+
+    c, m = create_mount(v1, c, client, super_client)
+    check_mount_count(client, c, 1)
+    assert m.state == 'active'
+    v1 = wait_for_condition(client, v1, lambda x: x.state == 'active')
+    sp = v1.storagePools()[0]
+
+    host = c.hosts()[0]
+    host = client.wait_success(host.deactivate())
+    host = client.wait_success(host.remove())
+    client.wait_success(host.purge())
+
+    wait_for_condition(client, sp, lambda x: x.state == 'removed')
+    wait_for_condition(client, v1, lambda x: x.state == 'inactive')
+
+    register_simulated_host(new_context)
+
+    c = client.create_container(imageUuid=new_context.image_uuid,
+                                dataVolumes=['%s:/foo' % vol_name])
+    c = client.wait_success(c)
+    assert c.state == 'running'
+
+
 def create_mount(volume, container, client, super_client):
     mount = super_client.create_mount(volumeId=volume.id,
                                       instanceId=container.id,
