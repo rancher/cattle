@@ -116,15 +116,17 @@ public class ServiceCreateValidationFilter extends AbstractDefaultResourceManage
         
         if (data.get(ServiceDiscoveryConstants.FIELD_LAUNCH_CONFIG) != null) {
             Map<String, Object> launchConfig = (Map<String, Object>)data.get(ServiceDiscoveryConstants.FIELD_LAUNCH_CONFIG);
-            InstanceHealthCheck healthCheck = new InstanceHealthCheck();
-            healthCheck.setPort(LB_HEALTH_CHECK_PORT);
-            healthCheck.setInterval(2000);
-            healthCheck.setHealthyThreshold(2);
-            healthCheck.setUnhealthyThreshold(3);
-            healthCheck.setResponseTimeout(2000);
-            launchConfig.put(InstanceConstants.FIELD_HEALTH_CHECK, healthCheck);
-            data.put(ServiceDiscoveryConstants.FIELD_LAUNCH_CONFIG, launchConfig);
-            request.setRequestObject(data);
+            if (launchConfig.get(InstanceConstants.FIELD_HEALTH_CHECK) == null) {
+                InstanceHealthCheck healthCheck = new InstanceHealthCheck();
+                healthCheck.setPort(LB_HEALTH_CHECK_PORT);
+                healthCheck.setInterval(2000);
+                healthCheck.setHealthyThreshold(2);
+                healthCheck.setUnhealthyThreshold(3);
+                healthCheck.setResponseTimeout(2000);
+                launchConfig.put(InstanceConstants.FIELD_HEALTH_CHECK, healthCheck);
+                data.put(ServiceDiscoveryConstants.FIELD_LAUNCH_CONFIG, launchConfig);
+                request.setRequestObject(data);
+            }
         }
         return request;
     }
