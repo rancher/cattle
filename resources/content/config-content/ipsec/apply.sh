@@ -40,3 +40,4 @@ rm -f /etc/monit/conf.d/racoon
 
 reload_monit
 /etc/init.d/racoon stop 2>/dev/null || true
+killall -9 racoon 2>/dev/null || true
