@@ -23,3 +23,15 @@ done
 add_route_table 300
 
 stage_files
+
+# LEGACY: remove.  This was need just for the racoon to charon upgrade.  Also remove iptables
+MIGRATE=${CATTLE_HOME}/etc/cattle/host-iptables.migrate
+if grep -q 'migrate ipsec' ${CATTLE_HOME}/etc/cattle/host-iptables; then
+    if [ ! -e ${MIGRATE} ]; then
+        conntrack -D -p udp || true
+
+        touch ${MIGRATE}
+    fi
+elif [ -e ${MIGRATE} ]; then
+    rm $MIGRATE
+fi
