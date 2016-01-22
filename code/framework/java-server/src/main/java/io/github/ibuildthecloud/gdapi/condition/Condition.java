@@ -6,6 +6,8 @@ import java.util.List;
 
 import javax.xml.bind.annotation.XmlTransient;
 
+import org.apache.commons.lang3.builder.ToStringBuilder;
+
 public class Condition {
 
     List<Object> values;
@@ -62,4 +64,13 @@ public class Condition {
         return right;
     }
 
+    @Override
+    public String toString() {
+        return new ToStringBuilder(this)
+                .append("values", values)
+                .append("conditionType", conditionType)
+                .append("left", left)
+                .append("right", right)
+                .toString();
+    }
 }
