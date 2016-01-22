@@ -24,6 +24,9 @@
     </#list>
 </#if>
 
+# This comment is important and referenced by host-iptables
+# migrate ipsec
+
 <#assign previous = "" >
 <#list routes as route>
     <#if route.hostNatGatewayService?? && (route.subnet.gateway)?? && previous != route.subnet.networkAddress >
