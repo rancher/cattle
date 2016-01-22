@@ -29,6 +29,15 @@ public class ServiceEventCreate extends AbstractObjectProcessHandler implements 
             return null;
         }
 
+        // don't process init event as its being set by cattle on instance restart
+        // that is done to avoid the scenario when init state is reported on healthcheck process restart inside the
+        // agent happening around the time when instance becomes unheatlhy
+        // this can lead to instance being set with reinitializing state instead of unheatlhy, and it postpones (or even
+        // cancels, if reinitializing timeout is not set) instance recreation
+        if ("INIT".equals(event.getReportedHealth())) {
+            return null;
+        }
+
         healthcheckService.updateHealthcheck(event.getHealthcheckUuid().split("_")[0], event.getExternalTimestamp(),
                 getHealthState(event.getReportedHealth()));
 
@@ -37,10 +46,10 @@ public class ServiceEventCreate extends AbstractObjectProcessHandler implements 
 
     protected String getHealthState(String reportedHealth) {
         String healthState = "";
+
+
         if (reportedHealth.equals("UP")) {
             healthState = HealthcheckConstants.HEALTH_STATE_HEALTHY;
-        } else if (reportedHealth.equals("INIT")) {
-            healthState = HealthcheckConstants.HEALTH_STATE_INITIALIZING;
         } else {
             healthState = HealthcheckConstants.HEALTH_STATE_UNHEALTHY;
         }

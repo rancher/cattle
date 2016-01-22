@@ -53,6 +53,8 @@ public class InstanceHealthcheckRegister extends AbstractObjectProcessLogic impl
             if (instance.getHealthState() == null) {
                 objectManager.setFields(instance, INSTANCE.HEALTH_STATE,
                         HealthcheckConstants.HEALTH_STATE_INITIALIZING, INSTANCE.HEALTH_UPDATED, new Date());
+            } else if (instance.getHealthState().equalsIgnoreCase(HealthcheckConstants.HEALTH_STATE_HEALTHY)) {
+                healtcheckService.updateInstanceHealthState(instance, HealthcheckConstants.HEALTH_STATE_REINITIALIZING);
             }
             healtcheckService.registerForHealtcheck(HealthcheckInstanceType.INSTANCE, instance.getId());
         }
