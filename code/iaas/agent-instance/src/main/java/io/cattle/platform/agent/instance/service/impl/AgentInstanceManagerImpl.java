@@ -5,6 +5,7 @@ import io.cattle.platform.agent.instance.factory.AgentInstanceFactory;
 import io.cattle.platform.agent.instance.service.AgentInstanceManager;
 import io.cattle.platform.agent.instance.service.InstanceNicLookup;
 import io.cattle.platform.agent.instance.service.NetworkServiceInfo;
+import io.cattle.platform.core.constants.AgentConstants;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.constants.InstanceConstants.SystemContainer;
 import io.cattle.platform.core.dao.GenericResourceDao;
@@ -81,7 +82,7 @@ public class AgentInstanceManagerImpl implements AgentInstanceManager {
                         .withPrivileged(true).forVnetId(nic.getVnetId())
                         .withSystemContainerType(SystemContainer.NetworkAgent)
                         .withParameters(CollectionUtils.asMap(InstanceConstants.FIELD_DATA_VOLUMES,
-                                Arrays.asList("/var/lib/rancher/etc:/var/lib/rancher/etc:ro")))
+                                Arrays.asList(AgentConstants.AGENT_INSTANCE_BIND_MOUNT)))
                         .build();
             } else {
                 start(agentInstance);
