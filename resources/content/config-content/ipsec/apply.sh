@@ -29,6 +29,19 @@ ipsec_settings()
     echo 65536 > /proc/sys/net/ipv4/xfrm4_gc_thresh || true
 }
 
+unload_racoon()
+{
+    monit stop racoon || true
+    monit unmonitor racoon || true
+    rm -f /etc/monit/conf.d/racoon
+    monit reload || true
+
+    while [ "$(pidof racoon)" != "" ]; do
+        kill -9 "$(pidof racoon)" || true
+        sleep 2
+    done
+}
+
 delete_dummy
 disable_proxyarp
 route_tables
@@ -36,8 +49,4 @@ ipsec_settings
 
 stage_files
 
-rm -f /etc/monit/conf.d/racoon
-
-reload_monit
-/etc/init.d/racoon stop 2>/dev/null || true
-killall -9 racoon 2>/dev/null || true
+unload_racoon
