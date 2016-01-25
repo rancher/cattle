@@ -1,5 +1,6 @@
 package io.cattle.platform.process.instance;
 
+import static io.cattle.platform.core.model.tables.MountTable.*;
 import io.cattle.platform.core.dao.GenericMapDao;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.Mount;
@@ -10,6 +11,9 @@ import io.cattle.platform.engine.process.ProcessInstance;
 import io.cattle.platform.engine.process.ProcessState;
 import io.cattle.platform.object.process.StandardProcess;
 import io.cattle.platform.process.base.AbstractDefaultProcessHandler;
+import io.cattle.platform.process.mount.MountDeactivate;
+import io.github.ibuildthecloud.gdapi.condition.Condition;
+import io.github.ibuildthecloud.gdapi.condition.ConditionType;
 
 import java.util.HashMap;
 import java.util.List;
@@ -26,7 +30,7 @@ public class InstanceRemove extends AbstractDefaultProcessHandler {
 
     @Override
     public HandlerResult handle(ProcessState state, ProcessInstance process) {
-        final Instance instance = (Instance) state.getResource();
+        final Instance instance = (Instance)state.getResource();
 
         Map<String, Object> result = new HashMap<String, Object>();
 
@@ -48,7 +52,11 @@ public class InstanceRemove extends AbstractDefaultProcessHandler {
             }
         }
 
-        List<Mount> mounts = getObjectManager().children(instance, Mount.class);
+        Map<Object, Object> criteria = new HashMap<Object, Object>();
+        criteria.put(MOUNT.REMOVED, new Condition(ConditionType.NULL));
+        criteria.put(MOUNT.STATE, new Condition(ConditionType.NOTIN, MountDeactivate.MOUNT_STATES));
+        criteria.put(MOUNT.INSTANCE_ID, instance.getId());
+        List<Mount> mounts = getObjectManager().find(Mount.class, criteria);
         for (Mount mount : mounts) {
             objectProcessManager.scheduleStandardProcess(StandardProcess.DEACTIVATE, mount, data);
         }

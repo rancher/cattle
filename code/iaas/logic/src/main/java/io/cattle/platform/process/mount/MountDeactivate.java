@@ -26,8 +26,8 @@ import javax.inject.Named;
 @Named
 public class MountDeactivate extends AbstractDefaultProcessHandler {
 
-    private static final List<Object> STATES = Arrays.asList(new Object[]{CommonStatesConstants.INACTIVE,
-                CommonStatesConstants.DEACTIVATING, CommonStatesConstants.REMOVED, CommonStatesConstants.REMOVING});
+    public static final List<Object> MOUNT_STATES = Arrays.asList(new Object[] { CommonStatesConstants.INACTIVE, CommonStatesConstants.DEACTIVATING,
+            CommonStatesConstants.REMOVED, CommonStatesConstants.REMOVING });
     @Inject
     LockManager lockManager;
 
@@ -39,7 +39,7 @@ public class MountDeactivate extends AbstractDefaultProcessHandler {
             public void doWithLockNoResult() {
                 Map<Object, Object> criteria = new HashMap<Object, Object>();
                 criteria.put(MOUNT.ID, new Condition(ConditionType.NE, mount.getId()));
-                criteria.put(MOUNT.STATE, new Condition(ConditionType.NOTIN, STATES));
+                criteria.put(MOUNT.STATE, new Condition(ConditionType.NOTIN, MOUNT_STATES));
                 criteria.put(MOUNT.VOLUME_ID, mount.getVolumeId());
                 Mount mount2 = objectManager.findAny(Mount.class, criteria);
                 if (mount2 == null) {
