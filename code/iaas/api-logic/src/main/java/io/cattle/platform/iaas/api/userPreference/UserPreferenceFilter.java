@@ -36,13 +36,16 @@ public class UserPreferenceFilter extends AbstractDefaultResourceManagerFilter {
 
     @Override
     public Object list(String type, ApiRequest request, ResourceManager next) {
-        if (!request.getConditions().containsKey(UserPreferenceFilter.ALL)) {
+        if (!request.getConditions().containsKey(ALL)) {
             addAccountIdCondition(request);
         } else {
-            if (!request.getConditions().get(UserPreferenceFilter.ALL).isEmpty()) {
-                for (Condition condition:request.getConditions().get(UserPreferenceFilter.ALL)) {
-                    if (condition.getConditionType().equals(ConditionType.EQ) && !condition.getValue().equals("true")) {
+            if (!request.getConditions().get(ALL).isEmpty()) {
+                for (Condition condition:request.getConditions().get(ALL)) {
+                    if (condition.getConditionType().equals(ConditionType.EQ)
+                            && !Boolean.parseBoolean(String.valueOf(condition.getValue()))) {
                         addAccountIdCondition(request);
+                    } else {
+                        log.debug("Dont add account id condition.");
                     }
                 }
             }
