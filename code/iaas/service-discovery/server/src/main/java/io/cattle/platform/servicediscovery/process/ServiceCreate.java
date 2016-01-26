@@ -34,6 +34,7 @@ public class ServiceCreate extends AbstractObjectProcessHandler {
         Service service = (Service) state.getResource();
         sdService.setVIP(service);
         sdService.setPorts(service);
+        sdService.setToken(service);
         return null;
     }
 }

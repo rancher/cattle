@@ -38,4 +38,6 @@ public interface ServiceDiscoveryService {
     void setPorts(Service service);
 
     void releasePorts(Service service);
+
+    void setToken(Service service);
 }
