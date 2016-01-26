@@ -351,6 +351,7 @@
         "fieldDocumentation": "r",
 
         "userPreference" : "crud",
+        "userPreference.all" : "r",
         "userPreference.value" : "crud",
 
         "volume" : "r",

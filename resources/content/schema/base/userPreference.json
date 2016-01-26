@@ -1,7 +1,14 @@
 {
-  "resourceFields": {
-    "name": {
-      "unique": true
+    "resourceFields" : {
+        "all" : {
+            "type": "boolean"
+        }
+    },
+    "collectionFilters" : {
+        "all" : {
+            "modifiers" : [
+                "eq"
+            ]
+        }
     }
-  }
 }
