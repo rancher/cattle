@@ -25,7 +25,7 @@
     <management:executor-service 
         id="ProcessExecutorService"
         keep-alive="120"
-        pool-size="25-150"
+        pool-size="25"
         queue-capacity="1000"
         />
 
