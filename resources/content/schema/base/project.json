@@ -50,14 +50,24 @@
     },
     "swarm": {
       "type": "boolean",
-      "nullable": "true",
+      "nullable": false,
+      "default": false,
       "attributes" : {
         "scheduleUpdate" : true
       }
     },
     "kubernetes": {
       "type": "boolean",
-      "nullable": "true",
+      "nullable": false,
+      "default": false,
+      "attributes" : {
+        "scheduleUpdate" : true
+      }
+    },
+    "publicDns": {
+      "type": "boolean",
+      "nullable": false,
+      "default": false,
       "attributes" : {
         "scheduleUpdate" : true
       }

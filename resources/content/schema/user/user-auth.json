@@ -265,6 +265,7 @@
         "project.members" : "cr",
         "project.swarm" : "cru",
         "project.kubernetes" : "cru",
+        "project.publicDns" : "cru",
         "project.servicesPortRange": "cru",
 
         "projectMember" : "cr",
