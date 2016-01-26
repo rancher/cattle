@@ -16,4 +16,7 @@ public class AgentConstants {
     public static final String PROCESS_REMOVE = "agent.remove";
 
     public static final String REMOVE_OPTION = "remove";
+
+    public static final String AGENT_INSTANCE_BIND_MOUNT = "/var/lib/rancher/etc:/var/lib/rancher/etc:ro";
+
 }
