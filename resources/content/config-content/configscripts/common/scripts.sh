@@ -168,8 +168,14 @@ reload_haproxy()
 {
     CONFIG=$1
 
-    if [ ! -f /var/run/haproxy.pid ]; then
-        return 0
+    cleanup_haproxy_invalid_processes
+
+     if [ ! -f /var/run/haproxy.pid ]; then
+        if haproxy -p /var/run/haproxy.pid -f $CONFIG; then
+            return 0
+        else
+            return 1
+        fi
     fi
 
     # apply new config
@@ -178,6 +184,21 @@ reload_haproxy()
     else
         return 1
     fi
+}
+
+cleanup_haproxy_invalid_processes() {
+    PID="nullpid"
+    if [ -f /var/run/haproxy.pid ]; then
+        PID=`cat /var/run/haproxy.pid`
+    fi
+    for p in `ps -ef | grep -v grep | grep 'haproxy -p' | awk {'print $2'} | grep -v $PID`
+    do
+        if kill -9 $p; then
+            continue
+        else
+            return 1
+        fi
+    done
 }
 
 check_debug
