@@ -31,8 +31,8 @@ ipsec_settings()
 
 unload_racoon()
 {
-    monit stop racoon || true
-    monit unmonitor racoon || true
+    monit stop racoon 2>/dev/null || true
+    monit unmonitor racoon 2>/dev/null || true
     rm -f /etc/monit/conf.d/racoon
     monit reload || true
 
