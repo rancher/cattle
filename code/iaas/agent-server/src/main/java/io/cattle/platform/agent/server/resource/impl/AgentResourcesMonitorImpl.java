@@ -54,8 +54,8 @@ public class AgentResourcesMonitorImpl implements AgentResourcesEventListener {
     private static final DynamicLongProperty CACHE_RESOURCE = ArchaiusUtil.getLong("agent.resource.monitor.cache.resource.seconds");
 
     private static final String[] UPDATABLE_HOST_FIELDS = new String[] {
-            ObjectMetaDataManager.NAME_FIELD,
             HostConstants.FIELD_API_PROXY,
+            HostConstants.FIELD_HOSTNAME,
             HostConstants.FIELD_INFO,
             HostConstants.FIELD_LABELS };
     private static final Set<String> ORCHESTRATE_FIELDS = new HashSet<>(Arrays.asList(HostConstants.FIELD_LABELS));

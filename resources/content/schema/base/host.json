@@ -6,6 +6,9 @@
         "agentState": {
             "type" : "string"
         },
+        "hostname": {
+            "type" : "string"
+        },
         "apiProxy": {
             "type" : "string",
             "nullable" : true

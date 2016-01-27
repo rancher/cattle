@@ -593,6 +593,7 @@ def test_host_auth(admin_user_client, user_client, project_client):
         'computeTotal': 'r',
         'data': 'r',
         'physicalHostId': 'r',
+        'hostname': 'r',
         'info': 'r',
         'labels': 'r',
         'publicEndpoints': 'r'
@@ -603,6 +604,7 @@ def test_host_auth(admin_user_client, user_client, project_client):
         'agentState': 'r',
         'computeTotal': 'r',
         'physicalHostId': 'r',
+        'hostname': 'r',
         'info': 'r',
         'labels': 'r',
         'publicEndpoints': 'r'
@@ -613,6 +615,7 @@ def test_host_auth(admin_user_client, user_client, project_client):
         'agentState': 'r',
         'computeTotal': 'r',
         'physicalHostId': 'r',
+        'hostname': 'r',
         'info': 'r',
         'labels': 'ru',
         'publicEndpoints': 'r'
