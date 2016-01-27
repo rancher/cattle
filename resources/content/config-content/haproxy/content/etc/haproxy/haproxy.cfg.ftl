@@ -99,5 +99,6 @@ backend ${listener.uuid}_${backend.uuid}_backend
 </#list>
 </#if>
 
-listen default 0.0.0.0:42
+listen default 
+	bind 0.0.0.0:42
 
