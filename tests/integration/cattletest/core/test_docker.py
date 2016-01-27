@@ -660,9 +660,17 @@ def test_container_fields(docker_client, super_client):
     assert actual_devices[0]['PathInContainer'] == "/dev/xnull"
 
 
-def check_mounts(resource, count):
-    mounts = [x for x in resource.mounts() if x.state != 'inactive']
-    assert len(mounts) == count
+def get_mounts(resource):
+    return [x for x in resource.mounts() if x.state != 'inactive']
+
+
+def check_mounts(client, resource, count):
+    def wait_for_mount_count(res):
+        m = get_mounts(res)
+        return len(m) == count
+
+    wait_for_condition(client, resource, wait_for_mount_count)
+    mounts = get_mounts(resource)
     return mounts
 
 
@@ -682,7 +690,7 @@ def volume_cleanup_setup(docker_client, uuid, strategy=None):
     if strategy:
         assert c.labels[VOLUME_CLEANUP_LABEL] == strategy
 
-    mounts = check_mounts(c, 2)
+    mounts = check_mounts(docker_client, c, 2)
     v1 = mounts[0].volume()
     v2 = mounts[1].volume()
     wait_for_condition(docker_client, v1, lambda x: x.state == 'active',
@@ -693,14 +701,14 @@ def volume_cleanup_setup(docker_client, uuid, strategy=None):
     unnamed_vol = v1 if v1.name != vol_name else v2
     c = docker_client.wait_success(c.stop(remove=True, timeout=0))
     c = docker_client.wait_success(c.purge())
-    check_mounts(c, 0)
+    check_mounts(docker_client, c, 0)
     return c, named_vol, unnamed_vol
 
 
 @if_docker
 def test_cleanup_volume_strategy(docker_client):
     # Using nginx because it has a baked in volume, which is a good test case
-    uuid = 'docker:nginx:latest'
+    uuid = 'docker:nginx:1.9.0'
 
     c, named_vol, unnamed_vol = volume_cleanup_setup(docker_client, uuid)
     assert docker_client.wait_success(named_vol).state == 'inactive'
@@ -725,7 +733,7 @@ def test_cleanup_volume_strategy(docker_client):
 @if_docker
 def test_docker_mount_life_cycle(docker_client):
     # Using nginx because it has a baked in volume, which is a good test case
-    uuid = 'docker:nginx:latest'
+    uuid = 'docker:nginx:1.9.0'
     bind_mount_uuid = py_uuid.uuid4().hex
     bar_host_path = '/tmp/bar%s' % bind_mount_uuid
     bar_bind_mount = '%s:/bar' % bar_host_path
@@ -738,7 +746,7 @@ def test_docker_mount_life_cycle(docker_client):
 
     c = docker_client.wait_success(c)
     c = docker_client.wait_success(c.start())
-    mounts = check_mounts(c, 3)
+    mounts = check_mounts(docker_client, c, 3)
     v1 = mounts[0].volume()
     v2 = mounts[1].volume()
     v3 = mounts[2].volume()
@@ -753,7 +761,7 @@ def test_docker_mount_life_cycle(docker_client):
 
     c = docker_client.wait_success(c.restore())
     assert c.state == 'stopped'
-    check_mounts(c, 0)
+    check_mounts(docker_client, c, 0)
     wait_for_condition(docker_client, v1, lambda x: x.state == 'inactive',
                        lambda x: 'state is %s' % x)
     wait_for_condition(docker_client, v2, lambda x: x.state == 'inactive',
@@ -763,7 +771,7 @@ def test_docker_mount_life_cycle(docker_client):
 
     c = docker_client.wait_success(c.start())
     assert c.state == 'running'
-    check_mounts(c, 3)
+    check_mounts(docker_client, c, 3)
     wait_for_condition(docker_client, v1, lambda x: x.state == 'active',
                        lambda x: 'state is %s' % x)
     wait_for_condition(docker_client, v2, lambda x: x.state == 'active',
@@ -772,7 +780,7 @@ def test_docker_mount_life_cycle(docker_client):
                        lambda x: 'state is %s' % x)
 
     c = docker_client.wait_success(c.stop(remove=True, timeout=0))
-    check_mounts(c, 0)
+    check_mounts(docker_client, c, 0)
     assert docker_client.wait_success(v1).state == 'inactive'
     assert docker_client.wait_success(v2).state == 'inactive'
     assert docker_client.wait_success(v3).state == 'inactive'
