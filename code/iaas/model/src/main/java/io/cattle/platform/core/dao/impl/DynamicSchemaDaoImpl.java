@@ -64,6 +64,7 @@ public class DynamicSchemaDaoImpl extends AbstractJooqDao implements DynamicSche
                         .and(SERVICE.REMOVED.isNull())
                         .and(INSTANCE.REMOVED.isNull())
                         .and(SERVICE_EXPOSE_MAP.REMOVED.isNull())
+                        .and(SERVICE.ENVIRONMENT_ID.eq(service.getEnvironmentId()))
                 ).fetch().intoArray(INSTANCE.AGENT_ID));
     }
 
