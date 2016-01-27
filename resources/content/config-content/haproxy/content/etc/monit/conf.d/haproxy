@@ -1,3 +1,3 @@
 check process haproxy with pidfile /var/run/haproxy.pid
-   start program = "/var/lib/cattle/haproxy_reload.sh"
+   start program = "/etc/init.d/haproxy start"
    stop  program = "/etc/init.d/haproxy stop"
