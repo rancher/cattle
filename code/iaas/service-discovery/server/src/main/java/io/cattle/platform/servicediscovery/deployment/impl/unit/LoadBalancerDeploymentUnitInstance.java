@@ -34,7 +34,7 @@ public class LoadBalancerDeploymentUnitInstance extends DefaultDeploymentUnitIns
     }
 
     protected void setSystemContainer(Map<String, Object> launchConfigData) {
-        launchConfigData.put(InstanceConstants.FIELD_PRIVILEGED, "true");
+        launchConfigData.put(InstanceConstants.FIELD_PRIVILEGED, true);
         launchConfigData.put(InstanceConstants.FIELD_SYSTEM_CONTAINER, SystemContainer.LoadBalancerAgent);
     }
 
