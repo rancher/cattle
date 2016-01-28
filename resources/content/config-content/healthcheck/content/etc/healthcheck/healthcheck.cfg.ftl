@@ -39,4 +39,5 @@ backend ${healthCheckEntry.healthCheckUuid}_backend
 </#if>
 
 # Need to listen on something since we have no front ends
-listen web 127.0.0.1:42
+listen web
+	bind  127.0.0.1:42

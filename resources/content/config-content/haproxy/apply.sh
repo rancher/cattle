@@ -9,9 +9,10 @@ awk '/BEGIN.*PRIVATE KEY/{i++}{print > "/etc/haproxy/certs/server"i".pem"}' /etc
 rm /etc/haproxy/certs/certs.pem
 if [ ! -s /etc/haproxy/certs/default.pem ]; then rm /etc/haproxy/certs/default.pem;fi
 
-if ! haproxy -v | grep -q 'version 1.5'; then
-    echo deb http://archive.ubuntu.com/ubuntu trusty-backports main universe > /etc/apt/sources.list.d/backports.list
-    apt-get update && apt-get install -y haproxy -t trusty-backports
+if ! haproxy -v | grep -q 'version 1.6'; then
+    apt-get update -y && apt-get install -y software-properties-common \
+    && add-apt-repository -y ppa:vbernat/haproxy-1.6 \
+    && apt-get update && apt-get -y purge haproxy && apt-get -y install haproxy
 fi
 
 reload_haproxy /etc/haproxy/haproxy.cfg
