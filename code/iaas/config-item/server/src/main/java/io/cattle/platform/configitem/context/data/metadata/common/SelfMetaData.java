@@ -1,7 +1,10 @@
 package io.cattle.platform.configitem.context.data.metadata.common;
 
+import io.cattle.platform.object.util.DataAccessor;
+import io.cattle.platform.servicediscovery.api.constants.ServiceDiscoveryConstants;
 
 public class SelfMetaData {
+
     public static class Self {
         ContainerMetaData container;
         ServiceMetaData service;
@@ -11,7 +14,10 @@ public class SelfMetaData {
         public Self(ContainerMetaData container, ServiceMetaData service, StackMetaData stack, HostMetaData host) {
             super();
             this.container = container;
-            this.service = service;
+            if(service != null){
+                this.service = new ServiceMetaData(service);
+                this.service.token = DataAccessor.fieldString(service.getService(), ServiceDiscoveryConstants.FIELD_TOKEN);
+            }
             this.stack = stack;
             this.host = host;
         }
