@@ -9,6 +9,6 @@ public class UserPreferenceDaoImpl extends AbstractJooqDao implements UserPrefer
     public boolean isUnique(UserPreference userPreference, long accountId) {
         return create().selectFrom(USER_PREFERENCE)
                 .where(USER_PREFERENCE.NAME.eq(userPreference.getName())
-                        .and(USER_PREFERENCE.ACCOUNT_ID.eq(accountId))).fetch().size() == 0;
+                        .and(USER_PREFERENCE.ACCOUNT_ID.eq(accountId)).and(USER_PREFERENCE.REMOVED.isNull())).fetch().size() == 0;
     }
 }
