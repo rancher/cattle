@@ -1,6 +1,13 @@
 package io.cattle.platform.configitem.context.data.metadata.common;
 
+import io.cattle.platform.core.constants.InstanceConstants;
+import io.cattle.platform.core.model.Host;
+import io.cattle.platform.object.util.DataAccessor;
+
+import java.util.Collections;
 import java.util.Map;
+
+import org.apache.commons.lang3.StringUtils;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
@@ -27,13 +34,16 @@ public class HostMetaData {
 
     }
 
-    public HostMetaData(String agent_ip, String name, Map<String, String> labels, long hostId, String uuid) {
+    @SuppressWarnings("unchecked")
+    public HostMetaData(String agent_ip, Host host) {
         super();
         this.agent_ip = agent_ip;
-        this.name = name;
-        this.labels = labels;
-        this.hostId = hostId;
-        this.uuid = uuid;
+        this.name = StringUtils.isEmpty(host.getName()) ? DataAccessor.fieldString(host, "hostname") : host.getName();
+        this.labels = (Map<String, String>) DataAccessor.fields(host)
+                .withKey(InstanceConstants.FIELD_LABELS)
+                .withDefault(Collections.EMPTY_MAP).as(Map.class);
+        this.hostId = host.getId();
+        this.uuid = host.getUuid();
     }
 
     @JsonIgnore
