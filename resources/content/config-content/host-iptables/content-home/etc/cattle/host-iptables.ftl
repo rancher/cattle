@@ -18,7 +18,7 @@
         <#if (mapping.publicIpAddress.address)?? && (mapping.privateIpAddress.address)?? && (mapping.port.publicPort)?? && (mapping.port.privatePort)?? >
             <#-- This is a hack because IPsec traffic must go to the Docker IP and not the Cattle IP -->
             <#if mapping.port.publicPort != 500 && mapping.port.publicPort != 4500 >
--A CATTLE_PREROUTING -p ${mapping.port.protocol} -m addrtype --dst-type LOCAL --dport ${mapping.port.publicPort} -j DNAT --to ${mapping.privateIpAddress.address}:${mapping.port.privatePort}
+-A CATTLE_PREROUTING %BRIDGE% -p ${mapping.port.protocol} -m addrtype --dst-type LOCAL --dport ${mapping.port.publicPort} -j DNAT --to ${mapping.privateIpAddress.address}:${mapping.port.privatePort}
             </#if>
         </#if>
     </#list>
@@ -39,8 +39,8 @@
 </#list>
 
 <#list metadataRedirects as redirect >
--A CATTLE_PREROUTING -s ${redirect.subnet.networkAddress}/${redirect.subnet.cidrSize} -d 169.254.169.254 -j DNAT --to ${redirect.ipAddress.address}
--A CATTLE_PREROUTING -s ${redirect.subnet.networkAddress}/${redirect.subnet.cidrSize} -d 169.254.169.250 -j DNAT --to ${redirect.ipAddress.address}
+-A CATTLE_PREROUTING %BRIDGE% -s ${redirect.subnet.networkAddress}/${redirect.subnet.cidrSize} -d 169.254.169.254 -j DNAT --to ${redirect.ipAddress.address}
+-A CATTLE_PREROUTING %BRIDGE% -s ${redirect.subnet.networkAddress}/${redirect.subnet.cidrSize} -d 169.254.169.250 -j DNAT --to ${redirect.ipAddress.address}
 </#list>
 
 #POSTRULES

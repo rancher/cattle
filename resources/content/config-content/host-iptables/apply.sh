@@ -2,15 +2,25 @@
 
 . ${CATTLE_HOME:-/var/lib/cattle}/common/scripts.sh
 
-MASQ="$(iptables-save | grep -- '-A POSTROUTING.* -o docker0 -j MASQUERADE' | sed 's/-A POSTROUTING //')"
+BRIDGE=docker0
+if docker-1.9 version >/dev/null 2>&1; then
+    BRIDGE=$(docker-1.9 network inspect bridge | jq -r '.[0].Options["com.docker.network.bridge.name"]')
+    if ! ip link show dev $BRIDGE >/dev/null ; then
+        BRIDGE=docker0
+    fi
+fi
+
+MASQ="$(iptables-save | grep -E -- '-A POSTROUTING.* -o '$BRIDGE' -j MASQUERADE' | sed 's/-A POSTROUTING //')"
 
 if [ -n "$MASQ" ]; then
-   cat > masq-rules << EOF
+    cat > masq-rules << EOF
 -A CATTLE_POSTROUTING -p tcp ${MASQ} --to-ports 1024-65535
 -A CATTLE_POSTROUTING -p udp ${MASQ} --to-ports 1024-65535
 EOF
-   sed -i '/#POSTRULES/r masq-rules' content-home/etc/cattle/host-iptables
+    sed -i '/#POSTRULES/r masq-rules' content-home/etc/cattle/host-iptables
 fi
+
+sed -i "s/%BRIDGE%/! -i $BRIDGE/g" content-home/etc/cattle/host-iptables
 
 apply_config iptables-restore -n etc/cattle/host-iptables
 
