@@ -1,3 +1,4 @@
+
 package io.cattle.platform.servicediscovery.deployment;
 
 import io.cattle.platform.core.constants.CommonStatesConstants;
@@ -108,4 +109,6 @@ public abstract class DeploymentUnitInstance {
     public abstract void waitForAllocate();
 
     public abstract boolean isHealthCheckInitializing();
+
+    public abstract Long getServiceIndex();
 }

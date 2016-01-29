@@ -7,6 +7,7 @@ import io.cattle.platform.configitem.model.ItemVersion;
 import io.cattle.platform.configitem.request.ConfigUpdateRequest;
 import io.cattle.platform.configitem.version.ConfigItemStatusManager;
 import io.cattle.platform.core.constants.CommonStatesConstants;
+import io.cattle.platform.core.dao.ServiceDao;
 import io.cattle.platform.core.model.Service;
 import io.cattle.platform.core.model.ServiceExposeMap;
 import io.cattle.platform.engine.idempotent.IdempotentRetryException;
@@ -70,6 +71,8 @@ public class DeploymentManagerImpl implements DeploymentManager {
     EventService eventService;
     @Inject
     JsonMapper mapper;
+    @Inject
+    ServiceDao svcDao;
 
 
     @Override
@@ -191,6 +194,11 @@ public class DeploymentManagerImpl implements DeploymentManager {
          * Delete the units that have a bad health
          */
         planner.cleanupUnhealthyUnits();
+
+        /*
+         * Cleanup unused service indexes
+         */
+        planner.cleanupUnusedServiceIndexes();
     }
 
     private Map<Long, DeploymentUnitInstanceIdGenerator> populateUsedNames(
@@ -199,7 +207,7 @@ public class DeploymentManagerImpl implements DeploymentManager {
         for (Service service : services) {
             Map<String, List<Integer>> launchConfigUsedIds = new HashMap<>();
             for (String launchConfigName : ServiceDiscoveryUtil.getServiceLaunchConfigNames(service)) {
-                List<Integer> usedIds = sdSvc.getServiceInstanceUsedOrderIds(service, launchConfigName);
+                List<Integer> usedIds = sdSvc.getServiceInstanceUsedSuffixes(service, launchConfigName);
                 launchConfigUsedIds.put(launchConfigName, usedIds);
             }
             generator.put(service.getId(),
@@ -303,5 +311,6 @@ public class DeploymentManagerImpl implements DeploymentManager {
         final public DeploymentUnitInstanceFactory deploymentUnitInstanceFactory = unitInstanceFactory;
         final public AllocatorService allocatorService = allocatorSvc;
         final public JsonMapper jsonMapper = mapper;
+        final public ServiceDao serviceDao = svcDao;
     }
 }

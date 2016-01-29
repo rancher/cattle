@@ -545,7 +545,6 @@ def test_destroy_svc_instance(super_client, context, client, image_uuid):
 
     instance = _wait_for_instance_start(super_client, maps[0].instanceId)
     client.wait_success(client.delete(instance))
-    _validate_svc_instance_map_count(client, service, "active", 0)
 
     client.wait_success(service)
     _validate_svc_instance_map_count(client, service, "active", 1)
@@ -1075,21 +1074,14 @@ def _validate_add_service_link(client, service, consumedService, ports=None):
     assert service_map is not None
 
 
-def _validate_remove_service_link(client, service, consumedService, count,
-                                  timeout=30):
-    start = time.time()
-    service_maps = client. \
-        list_serviceConsumeMap(serviceId=service.id,
-                               consumedServiceId=consumedService.id,
-                               state='removed')
-    while len(service_maps) != count:
-        time.sleep(.5)
-        service_maps = client. \
+def _validate_remove_service_link(client, service, consumedService, count):
+    def wait_for_map_count(service):
+        m = client. \
             list_serviceConsumeMap(serviceId=service.id,
                                    consumedServiceId=consumedService.id,
                                    state='removed')
-        if time.time() - start > timeout:
-            assert 'Timeout waiting for map to be removed.'
+        return len(m) == count
+        wait_for_condition(client, service, wait_for_map_count)
 
 
 def _create_cert(client):
@@ -1111,18 +1103,15 @@ def _read_cert(name):
 
 
 def _validate_svc_instance_map_count(client, service,
-                                     state, count, timeout=30):
-    start = time.time()
-    instance_service_map = client. \
-        list_serviceExposeMap(serviceId=service.id, state=state)
-    while len(instance_service_map) < count:
-        time.sleep(.5)
-        instance_service_map = client. \
+                                     state, count):
+    def wait_for_map_count(service):
+        m = client. \
             list_serviceExposeMap(serviceId=service.id, state=state)
-        if time.time() - start > timeout:
-            assert 'Timeout waiting for map to be in correct state'
+        return len(m) == count
 
-    return instance_service_map
+    wait_for_condition(client, service, wait_for_map_count)
+    return client. \
+        list_serviceExposeMap(serviceId=service.id, state=state)
 
 
 def _wait_for_instance_start(super_client, id):

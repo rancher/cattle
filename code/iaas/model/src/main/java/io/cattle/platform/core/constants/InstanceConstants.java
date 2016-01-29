@@ -50,6 +50,7 @@ public class InstanceConstants {
     public static final String FIELD_SYSTEM_CONTAINER = "systemContainer";
     public static final String FIELD_DISKS = "disks";
     public static final String FIELD_HEALTH_UPDATED = "healthUpdated";
+    public static final String FIELD_ALLOCATED_IP_ADDRESS = "allocatedIpAddress";
 
     public static final String PROCESS_DATA_NO_OP = "containerNoOpEvent";
 

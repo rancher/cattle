@@ -392,7 +392,7 @@ def _validate_svc_instance_map_count(client, service,
         instance_service_map = client. \
             list_serviceExposeMap(serviceId=service.id, state=state)
         if time.time() - start > timeout:
-            assert 'Timeout waiting for map to be in correct state'
+            raise Exception('Timeout waiting for map to be in correct state')
 
     return instance_service_map
 

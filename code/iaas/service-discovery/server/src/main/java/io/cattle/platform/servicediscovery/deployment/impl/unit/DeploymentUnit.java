@@ -401,7 +401,7 @@ public class DeploymentUnit {
         return unitLabels;
     }
 
-    protected List<DeploymentUnitInstance> getDeploymentUnitInstances() {
+    public List<DeploymentUnitInstance> getDeploymentUnitInstances() {
         List<DeploymentUnitInstance> instances = new ArrayList<>();
         for (Long serviceId : svc.keySet()) {
             DeploymentUnitService duService = svc.get(serviceId);

@@ -421,6 +421,7 @@
         "service.selectorContainer" : "cr",
         "service.fqdn" : "r",
         "service.publicEndpoints" : "r",
+        "service.retainIp" : "cr",
 
         "addRemoveServiceLinkInput" : "r",
         "addRemoveServiceLinkInput.serviceLink" : "cr",
@@ -490,7 +491,7 @@
         "externalService.resourceActions.addservicelink" : "",
         "externalService.resourceActions.removeservicelink" : "",
         "externalService.resourceActions.setservicelinks" : "",
-
+        "externalService.retainIp" : "",
 
         "dnsService" : "r",
         "dnsService.scale" : "",
