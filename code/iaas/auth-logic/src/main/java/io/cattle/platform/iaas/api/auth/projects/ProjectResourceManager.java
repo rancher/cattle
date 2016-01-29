@@ -109,7 +109,7 @@ public class ProjectResourceManager extends AbstractObjectResourceManager {
     }
 
     private Account giveProjectAccess(Account project, Policy policy) {
-        if (project == null) {
+        if (project == null || !ProjectConstants.TYPE.equalsIgnoreCase(project.getKind())) {
             return null;
         }
         if (!authDao.hasAccessToProject(project.getId(), policy.getAccountId(),
