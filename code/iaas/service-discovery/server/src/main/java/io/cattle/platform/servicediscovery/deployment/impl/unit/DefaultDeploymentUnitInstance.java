@@ -263,5 +263,17 @@ public class DefaultDeploymentUnitInstance extends DeploymentUnitInstance implem
         
         return serviceIndexObj;
     }
+
+    @Override
+    public void waitForScheduleStop() {
+        this.instance = context.resourceMonitor.waitFor(this.instance,
+                new ResourcePredicate<Instance>() {
+            @Override
+            public boolean evaluate(Instance obj) {
+                        return InstanceConstants.STATE_STOPPING.equals(obj.getState())
+                                || InstanceConstants.STATE_STOPPED.equals(obj.getState());
+            }
+        });
+    }
 }
 
