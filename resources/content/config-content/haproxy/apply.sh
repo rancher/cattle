@@ -10,9 +10,11 @@ rm /etc/haproxy/certs/certs.pem
 if [ ! -s /etc/haproxy/certs/default.pem ]; then rm /etc/haproxy/certs/default.pem;fi
 
 if ! haproxy -v | grep -q 'version 1.6'; then
+    cp /etc/haproxy/haproxy.cfg /etc/haproxy/haproxy.cfg_temp
     apt-get update -y && apt-get install -y software-properties-common \
     && add-apt-repository -y ppa:vbernat/haproxy-1.6 \
     && apt-get update && apt-get -y purge haproxy && apt-get -y install haproxy
+    cp /etc/haproxy/haproxy.cfg_temp /etc/haproxy/haproxy.cfg
 fi
 
 reload_haproxy /etc/haproxy/haproxy.cfg
