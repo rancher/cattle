@@ -47,17 +47,12 @@ public class PortsConstraint extends HardConstraint implements Constraint {
     public String toString() {
         StringBuilder sb = new StringBuilder();
         for (Port port: ports) {
-            sb.append("{ public: ipAddressId=");
-            sb.append(port.getPublicIpAddressId());
-            sb.append(", port=");
+            if (sb.length() > 0) {
+                sb.append(", ");
+            }
             sb.append(port.getPublicPort());
-            sb.append("; private: ipAddressId=");
-            sb.append(port.getPrivateIpAddressId());
-            sb.append(", port=");
-            sb.append(port.getPrivatePort());
-            sb.append("; protocol=");
+            sb.append("/");
             sb.append(port.getProtocol());
-            sb.append("} ");
         }
         return String.format("host needs ports %s available", sb.toString());
     }

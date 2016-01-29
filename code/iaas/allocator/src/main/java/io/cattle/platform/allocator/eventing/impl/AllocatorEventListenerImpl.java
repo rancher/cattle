@@ -1,6 +1,7 @@
 package io.cattle.platform.allocator.eventing.impl;
 
 import io.cattle.platform.allocator.eventing.AllocatorEventListener;
+import io.cattle.platform.allocator.exception.FailedToAllocate;
 import io.cattle.platform.allocator.service.AllocationRequest;
 import io.cattle.platform.allocator.service.Allocator;
 import io.cattle.platform.archaius.util.ArchaiusUtil;
@@ -49,14 +50,19 @@ public class AllocatorEventListenerImpl implements AllocatorEventListener {
         log.info("Allocating [{}:{}]", event.getResourceType(), event.getResourceId());
 
         AllocationRequest request = new AllocationRequest(event);
+        String errorMessage = "Failed to find a placement";
         boolean handled = false;
 
-        for (Allocator allocator : allocators) {
-            if (allocator.allocate(request)) {
-                handled = true;
-                log.info("Allocator [{}] handled request [{}]", allocator, request);
-                break;
+        try {
+            for (Allocator allocator : allocators) {
+                if (allocator.allocate(request)) {
+                    handled = true;
+                    log.info("Allocator [{}] handled request [{}]", allocator, request);
+                    break;
+                }
             }
+        } catch (FailedToAllocate e) {
+            errorMessage = "Scheduling failed: " + e.getMessage();
         }
 
         if (handled) {
@@ -66,7 +72,7 @@ public class AllocatorEventListenerImpl implements AllocatorEventListener {
         } else {
             log.error("No allocator handled [{}]", event);
             if (FAIL_ON_NO_ALLOCATOR.get()) {
-                eventService.publish(EventVO.reply(event).withTransitioningMessage("Failed to find a placement").withTransitioning(Event.TRANSITIONING_ERROR));
+                eventService.publish(EventVO.reply(event).withTransitioningMessage(errorMessage).withTransitioning(Event.TRANSITIONING_ERROR));
             }
         }
     }
