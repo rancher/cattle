@@ -11,7 +11,7 @@ package io.cattle.platform.core.model;
 @java.lang.SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class CattleTable extends org.jooq.impl.SchemaImpl {
 
-	private static final long serialVersionUID = 1241210802;
+	private static final long serialVersionUID = 1288866941;
 
 	/**
 	 * The singleton instance of <code>cattle</code>
@@ -50,6 +50,7 @@ public class CattleTable extends org.jooq.impl.SchemaImpl {
 			io.cattle.platform.core.model.tables.DatabasechangelogTable.DATABASECHANGELOG,
 			io.cattle.platform.core.model.tables.DatabasechangeloglockTable.DATABASECHANGELOGLOCK,
 			io.cattle.platform.core.model.tables.DynamicSchemaTable.DYNAMIC_SCHEMA,
+			io.cattle.platform.core.model.tables.DynamicSchemaRoleTable.DYNAMIC_SCHEMA_ROLE,
 			io.cattle.platform.core.model.tables.EnvironmentTable.ENVIRONMENT,
 			io.cattle.platform.core.model.tables.ExternalEventTable.EXTERNAL_EVENT,
 			io.cattle.platform.core.model.tables.ExternalHandlerTable.EXTERNAL_HANDLER,
@@ -73,6 +74,7 @@ public class CattleTable extends org.jooq.impl.SchemaImpl {
 			io.cattle.platform.core.model.tables.IpAssociationTable.IP_ASSOCIATION,
 			io.cattle.platform.core.model.tables.IpPoolTable.IP_POOL,
 			io.cattle.platform.core.model.tables.LabelTable.LABEL,
+			io.cattle.platform.core.model.tables.MachineDriverTable.MACHINE_DRIVER,
 			io.cattle.platform.core.model.tables.MountTable.MOUNT,
 			io.cattle.platform.core.model.tables.NetworkTable.NETWORK,
 			io.cattle.platform.core.model.tables.NetworkServiceTable.NETWORK_SERVICE,

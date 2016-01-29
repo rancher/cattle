@@ -11,7 +11,7 @@ package io.cattle.platform.core.model.tables;
 @java.lang.SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class PhysicalHostTable extends org.jooq.impl.TableImpl<io.cattle.platform.core.model.tables.records.PhysicalHostRecord> {
 
-	private static final long serialVersionUID = 424359385;
+	private static final long serialVersionUID = 22184833;
 
 	/**
 	 * The singleton instance of <code>cattle.physical_host</code>
@@ -90,6 +90,11 @@ public class PhysicalHostTable extends org.jooq.impl.TableImpl<io.cattle.platfor
 	 * The column <code>cattle.physical_host.external_id</code>.
 	 */
 	public final org.jooq.TableField<io.cattle.platform.core.model.tables.records.PhysicalHostRecord, java.lang.String> EXTERNAL_ID = createField("external_id", org.jooq.impl.SQLDataType.VARCHAR.length(128).defaulted(true), this, "");
+
+	/**
+	 * The column <code>cattle.physical_host.driver</code>.
+	 */
+	public final org.jooq.TableField<io.cattle.platform.core.model.tables.records.PhysicalHostRecord, java.lang.String> DRIVER = createField("driver", org.jooq.impl.SQLDataType.VARCHAR.length(128), this, "");
 
 	/**
 	 * Create a <code>cattle.physical_host</code> table reference

@@ -19,6 +19,8 @@ public @interface Field {
 
     String name() default "";
 
+    String description() default "";
+
     int displayIndex() default 0;
 
     boolean create() default false;

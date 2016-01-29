@@ -681,8 +681,26 @@ public class DefaultObjectMetaDataManager implements ObjectMetaDataManager, Sche
     @Override
     public Relationship getRelationship(String type, String linkName) {
         Class<?> clz = schemaFactory.getSchemaClass(type, true);
+        if (clz == null) {
+            return null;
+        }
         Map<String, List<Relationship>> relationship = relationshipsBothCase.get(clz);
         List<Relationship> relationshipList = relationship.get(linkName);
+        return getRelationship(relationshipList, linkName);
+    }
+
+    @Override
+    public Relationship getRelationship(Class<?> clz, String linkName) {
+        if (clz == null) {
+            return null;
+        }
+        Map<String, List<Relationship>> relationship = relationshipsBothCase.get(clz);
+        List<Relationship> relationshipList = relationship.get(linkName);
+        return getRelationship(relationshipList, linkName);
+    }
+
+
+    private Relationship getRelationship(List<Relationship> relationshipList, String linkName) {
         if (relationshipList == null || relationshipList.size() == 0) {
             return null;
         }
@@ -702,6 +720,17 @@ public class DefaultObjectMetaDataManager implements ObjectMetaDataManager, Sche
         Class<?> clz = schemaFactory.getSchemaClass(type, true);
         Map<String, List<Relationship>> relationship = relationshipsBothCase.get(clz);
         List<Relationship> relationshipList = relationship.get(linkName);
+        return getRelationShipField(relationshipList, linkName, fieldName);
+    }
+
+    @Override
+    public Relationship getRelationship(Class<?> clz, String linkName, String fieldName) {
+        Map<String, List<Relationship>> relationship = relationshipsBothCase.get(clz);
+        List<Relationship> relationshipList = relationship.get(linkName);
+        return getRelationShipField(relationshipList, linkName, fieldName);
+    }
+
+    private Relationship getRelationShipField(List<Relationship> relationshipList, String linkName, String fieldName) {
         if (relationshipList == null || relationshipList.size() == 0) {
             return null;
         }

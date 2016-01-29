@@ -1,6 +1,7 @@
 package io.cattle.platform.iaas.api.auth.dao;
 
 import io.cattle.platform.api.auth.Identity;
+import io.cattle.platform.api.auth.Policy;
 import io.cattle.platform.core.model.Account;
 import io.cattle.platform.core.model.ProjectMember;
 import io.cattle.platform.iaas.api.auth.projects.Member;
@@ -58,4 +59,6 @@ public interface AuthDao {
     Account getByUsername(String username);
 
     Account getAccountByLogin(String publicValue, String secretValue, TransformationService transformationService);
+
+    String getRole(Account account, Policy policy);
 }

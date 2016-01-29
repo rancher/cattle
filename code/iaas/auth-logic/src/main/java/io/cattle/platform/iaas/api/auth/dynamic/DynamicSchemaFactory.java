@@ -23,12 +23,14 @@ public class DynamicSchemaFactory extends AbstractSchemaFactory implements Schem
     SchemaFactory factory;
     DynamicSchemaDao dynamicSchemaDao;
     JsonMapper jsonMapper;
+    String role;
 
-    public DynamicSchemaFactory(long accountId, SchemaFactory factory, DynamicSchemaDao dynamicSchemaDao, JsonMapper jsonMapper) {
+    public DynamicSchemaFactory(long accountId, SchemaFactory factory, DynamicSchemaDao dynamicSchemaDao, JsonMapper jsonMapper, String role) {
         this.accountId = accountId;
         this.factory = factory;
         this.dynamicSchemaDao = dynamicSchemaDao;
         this.jsonMapper = jsonMapper;
+        this.role = role;
     }
 
     @Override
@@ -39,7 +41,7 @@ public class DynamicSchemaFactory extends AbstractSchemaFactory implements Schem
     @Override
     public List<Schema> listSchemas() {
         List<Schema> base = factory.listSchemas();
-        List<? extends DynamicSchema> dynamic = dynamicSchemaDao.getSchemas(accountId);
+        List<? extends DynamicSchema> dynamic = dynamicSchemaDao.getSchemas(accountId, role);
 
         List<Schema> result = new ArrayList<>(base.size() + dynamic.size());
         result.addAll(base);
@@ -61,12 +63,14 @@ public class DynamicSchemaFactory extends AbstractSchemaFactory implements Schem
 
     @Override
     public Schema getSchema(String type) {
+        if (type == null) {
+            return null;
+        }
         Schema schema = factory.getSchema(type);
         if (schema != null) {
             return schema;
         }
-
-        DynamicSchema dynamicSchema = dynamicSchemaDao.getSchema(type, accountId);
+        DynamicSchema dynamicSchema = dynamicSchemaDao.getSchema(type, accountId, role);
         return safeConvert(dynamicSchema);
     }
 
@@ -84,17 +88,26 @@ public class DynamicSchemaFactory extends AbstractSchemaFactory implements Schem
             return null;
         }
 
+        if (dynamicSchema.getParent() == null) {
+            SchemaImpl newSchema = jsonMapper.readValue(dynamicSchema.getDefinition().getBytes("UTF-8"), SchemaImpl.class);
+            newSchema.setId(dynamicSchema.getName());
+            return newSchema;
+        }
+
         Schema parentSchema = factory.getSchema(dynamicSchema.getParent());
         if (parentSchema == null || !(parentSchema instanceof SchemaImpl)) {
             return null;
         }
 
         SchemaImpl newSchema = jsonMapper.readValue(dynamicSchema.getDefinition().getBytes("UTF-8"), SchemaImpl.class);
+        newSchema.setName(dynamicSchema.getName());
         SchemaImpl mergedSchema = new SchemaImpl((SchemaImpl)parentSchema);
         mergedSchema.getResourceFields().putAll(newSchema.getResourceFields());
+        mergedSchema.setPluralName(newSchema.getPluralName());
         mergedSchema.setId(dynamicSchema.getName());
         mergedSchema.setParent(dynamicSchema.getParent());
-
+        mergedSchema.setCollectionMethods(newSchema.getCollectionMethods());
+        mergedSchema.setResourceMethods(newSchema.getResourceMethods());
         return mergedSchema;
     }
 
