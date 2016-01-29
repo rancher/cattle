@@ -2,10 +2,9 @@
 /.gitconfig
 
 /.cache
-/.idea
+.idea
 /.m2
 
-code/packaging/app/keys.properties
 
 .classpath
 .project
@@ -24,7 +23,7 @@ tests/integration/.idea/
 tests/integration/.tox/
 tests/integration/MANIFEST
 .venv
-.idea
+
 *.iml
 *.egg-info
 *.launch

@@ -47,7 +47,7 @@
         </developer>
     </developers>
     <properties>
-        <jetty.version>9.2.11.v20150529</jetty.version>
+        <jetty.version>9.2.14.v20151106</jetty.version>
         <jooq.version>3.3.0</jooq.version>
         <jackson.version>2.5.3</jackson.version>
         <spring.version>3.2.4.RELEASE</spring.version>
@@ -290,7 +290,7 @@
             <dependency>
                 <groupId>mysql</groupId>
                 <artifactId>mysql-connector-java</artifactId>
-                <version>5.1.26</version>
+                <version>5.1.38</version>
                 <scope>runtime</scope>
             </dependency>
             <dependency>

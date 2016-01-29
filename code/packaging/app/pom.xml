@@ -8,4 +8,11 @@
         <relativePath>../app-parent/pom.xml</relativePath>
     </parent>
     <packaging>war</packaging>
+
+    <dependencies>
+        <dependency>
+            <groupId>mysql</groupId>
+            <artifactId>mysql-connector-java</artifactId>
+        </dependency>
+    </dependencies>
 </project>
