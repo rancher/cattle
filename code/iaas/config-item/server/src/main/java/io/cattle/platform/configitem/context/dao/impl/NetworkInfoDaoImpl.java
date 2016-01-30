@@ -16,7 +16,6 @@ import static io.cattle.platform.core.model.tables.PortTable.*;
 import static io.cattle.platform.core.model.tables.SubnetTable.*;
 import static io.cattle.platform.core.model.tables.VnetTable.*;
 import static io.cattle.platform.core.constants.NetworkServiceConstants.*;
-
 import io.cattle.platform.configitem.context.dao.NetworkInfoDao;
 import io.cattle.platform.configitem.context.data.ClientIpsecTunnelInfo;
 import io.cattle.platform.configitem.context.data.HostPortForwardData;
@@ -24,6 +23,7 @@ import io.cattle.platform.configitem.context.data.HostRouteData;
 import io.cattle.platform.configitem.context.data.IpAssociationData;
 import io.cattle.platform.configitem.context.data.NetworkClientData;
 import io.cattle.platform.core.constants.CommonStatesConstants;
+import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.constants.IpAddressConstants;
 import io.cattle.platform.core.constants.NetworkServiceConstants;
 import io.cattle.platform.core.constants.NetworkServiceProviderConstants;
@@ -61,6 +61,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
 import javax.inject.Inject;
 
 public class NetworkInfoDaoImpl extends AbstractJooqDao implements NetworkInfoDao {
@@ -285,7 +286,8 @@ public class NetworkInfoDaoImpl extends AbstractJooqDao implements NetworkInfoDa
                         .and(ipAddress.REMOVED.isNull())
                         .and(host.REMOVED.isNull())
                         .and(subnet.REMOVED.isNull())
-                        .and(instance.REMOVED.isNull()))
+                        .and(instance.REMOVED.isNull())
+                        .and(instance.STATE.in(InstanceConstants.STATE_RUNNING, InstanceConstants.STATE_STARTING)))
                 .fetch().map(mapper);
 
         List<ClientIpsecTunnelInfo> result = new ArrayList<ClientIpsecTunnelInfo>(tempResult.size());

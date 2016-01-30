@@ -130,4 +130,8 @@ public class ExternalDeploymentUnitInstance extends DeploymentUnitInstance {
     public Long getServiceIndex() {
         return null;
     }
+
+    @Override
+    public void waitForScheduleStop() {
+    }
 }

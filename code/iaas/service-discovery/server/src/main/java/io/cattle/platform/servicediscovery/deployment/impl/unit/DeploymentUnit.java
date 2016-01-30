@@ -235,6 +235,12 @@ public class DeploymentUnit {
         }
     }
 
+    public void waitForScheduleStop() {
+        for (DeploymentUnitInstance instance : getDeploymentUnitInstances()) {
+            instance.waitForScheduleStop();
+        }
+    }
+
     protected DeploymentUnitInstance createInstance(String launchConfigName, Service service) {
         List<Integer> volumesFromInstanceIds = getSidekickContainersId(service, launchConfigName, SidekickType.DATA);
         List<Integer> networkContainerIds = getSidekickContainersId(service, launchConfigName, SidekickType.NETWORK);

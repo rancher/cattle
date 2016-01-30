@@ -234,4 +234,15 @@ public abstract class ServiceDeploymentPlanner {
             }
         }
     }
+
+    public void scheduleUnhealthyUnitsStop() {
+        List<DeploymentUnit> watchList = new ArrayList<>();
+        for (DeploymentUnit unit : this.unhealthyUnits) {
+            unit.stop();
+            watchList.add(unit);
+        }
+        for (DeploymentUnit toWatch : watchList) {
+            toWatch.waitForScheduleStop();
+        }
+    }
 }

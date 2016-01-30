@@ -283,3 +283,28 @@ def test_validate_service_token(client, context, super_client):
     assert service.name == svc_name
     assert service.data.fields.token is not None
     assert service.data.fields.token == token
+
+
+def test_ip_retain(client, context, super_client):
+    env = _create_stack(client)
+
+    image_uuid = context.image_uuid
+    launch_config = {"imageUuid": image_uuid}
+
+    svc = client.create_service(name=random_str(),
+                                environmentId=env.id,
+                                launchConfig=launch_config,
+                                scale=1,
+                                retainIp=True)
+    svc = client.wait_success(svc)
+    assert svc.state == "inactive"
+
+    # validate that startFirst can't be used on a service with retainIp = true
+    strategy = {"launchConfig": launch_config,
+                "intervalMillis": 100,
+                "startFirst": True}
+    with pytest.raises(ApiError) as e:
+        svc.upgrade_action(inServiceStrategy=strategy)
+    assert e.value.error.status == 422
+    assert e.value.error.code == 'InvalidOption'
+

@@ -45,7 +45,6 @@ public class ServiceUpgradeValidationFilter extends AbstractDefaultResourceManag
     }
 
     @Override
-    @SuppressWarnings("unchecked")
     public Object resourceAction(String type, ApiRequest request, ResourceManager next) {
         if (request.getAction().equals(ServiceDiscoveryConstants.ACTION_SERVICE_UPGRADE)) {
             Service service = objectManager.loadResource(Service.class, request.getId());
@@ -58,27 +57,33 @@ public class ServiceUpgradeValidationFilter extends AbstractDefaultResourceManag
                         "Upgrade strategy needs to be set");
             }
 
-            if (strategy instanceof InServiceUpgradeStrategy) {
-                InServiceUpgradeStrategy inServiceStrategy = (InServiceUpgradeStrategy) strategy;
-                inServiceStrategy = validateUpgrade(service, inServiceStrategy);
-                setVersion(inServiceStrategy);
-                
-                Object launchConfig = DataAccessor.field(service, ServiceDiscoveryConstants.FIELD_LAUNCH_CONFIG,
-                        Object.class);
-                List<Object> secondaryLaunchConfigs = DataAccessor.fields(service)
-                        .withKey(ServiceDiscoveryConstants.FIELD_SECONDARY_LAUNCH_CONFIGS)
-                        .withDefault(Collections.EMPTY_LIST).as(
-                                List.class);
-                inServiceStrategy.setPreviousLaunchConfig(launchConfig);
-                inServiceStrategy.setPreviousSecondaryLaunchConfigs(secondaryLaunchConfigs);
-                upgrade.setInServiceStrategy(inServiceStrategy);
-                request.setRequestObject(jsonMapper.writeValueAsMap(upgrade));
-                ServiceDiscoveryUtil.upgradeServiceConfigs(service, inServiceStrategy, false);
-            }
-            objectManager.persist(service);
+            processInServiceUpgradeStrategy(request, service, upgrade, strategy);
         }
 
         return super.resourceAction(type, request, next);
+    }
+
+    @SuppressWarnings("unchecked")
+    protected void processInServiceUpgradeStrategy(ApiRequest request, Service service, ServiceUpgrade upgrade,
+            ServiceUpgradeStrategy strategy) {
+        if (strategy instanceof InServiceUpgradeStrategy) {
+            InServiceUpgradeStrategy inServiceStrategy = (InServiceUpgradeStrategy) strategy;
+            inServiceStrategy = validateUpgrade(service, inServiceStrategy);
+            setVersion(inServiceStrategy);
+            
+            Object launchConfig = DataAccessor.field(service, ServiceDiscoveryConstants.FIELD_LAUNCH_CONFIG,
+                    Object.class);
+            List<Object> secondaryLaunchConfigs = DataAccessor.fields(service)
+                    .withKey(ServiceDiscoveryConstants.FIELD_SECONDARY_LAUNCH_CONFIGS)
+                    .withDefault(Collections.EMPTY_LIST).as(
+                            List.class);
+            inServiceStrategy.setPreviousLaunchConfig(launchConfig);
+            inServiceStrategy.setPreviousSecondaryLaunchConfigs(secondaryLaunchConfigs);
+            upgrade.setInServiceStrategy(inServiceStrategy);
+            request.setRequestObject(jsonMapper.writeValueAsMap(upgrade));
+            ServiceDiscoveryUtil.upgradeServiceConfigs(service, inServiceStrategy, false);
+        }
+        objectManager.persist(service);
     }
 
     protected void setVersion(InServiceUpgradeStrategy upgrade) {
@@ -104,6 +109,15 @@ public class ServiceUpgradeValidationFilter extends AbstractDefaultResourceManag
             ValidationErrorCodes.throwValidationError(ValidationErrorCodes.INVALID_OPTION,
                     "LaunchConfig/secondaryLaunchConfigs need to be specified for inService strategy");
         }
+
+        if (DataAccessor.fieldBool(service, ServiceDiscoveryConstants.FIELD_SERVICE_RETAIN_IP)) {
+            if (strategy.getStartFirst()) {
+                ValidationErrorCodes.throwValidationError(ValidationErrorCodes.INVALID_OPTION,
+                        "StartFirst option can't be used for service with "
+                                + ServiceDiscoveryConstants.FIELD_SERVICE_RETAIN_IP + " field set");
+            }
+        }
+
         Map<String, Map<Object, Object>> serviceLCs = getExistingLaunchConfigs(service);
         Map<String, Map<Object, Object>> lCsToUpdateInitial = getLaunchConfigsToUpdateInitial(service, strategy,
                 serviceLCs);
