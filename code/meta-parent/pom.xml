@@ -153,7 +153,7 @@
             <dependency>
                 <groupId>fr.xebia.management</groupId>
                 <artifactId>xebia-management-extras</artifactId>
-                <version>1.2.3</version>
+                <version>1.2.4</version>
             </dependency>
             <dependency>
                 <groupId>com.h2database</groupId>
