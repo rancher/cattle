@@ -11,7 +11,7 @@ package io.cattle.platform.core.model.tables;
 @java.lang.SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class ProcessExecutionTable extends org.jooq.impl.TableImpl<io.cattle.platform.core.model.tables.records.ProcessExecutionRecord> {
 
-	private static final long serialVersionUID = -1841899956;
+	private static final long serialVersionUID = -968070923;
 
 	/**
 	 * The singleton instance of <code>cattle.process_execution</code>
@@ -45,6 +45,11 @@ public class ProcessExecutionTable extends org.jooq.impl.TableImpl<io.cattle.pla
 	 * The column <code>cattle.process_execution.log</code>.
 	 */
 	public final org.jooq.TableField<io.cattle.platform.core.model.tables.records.ProcessExecutionRecord, java.util.Map<String,Object>> LOG = createField("log", org.jooq.impl.SQLDataType.CLOB.length(16777215).asConvertedDataType(new io.cattle.platform.db.jooq.converter.DataConverter()), this, "");
+
+	/**
+	 * The column <code>cattle.process_execution.created</code>.
+	 */
+	public final org.jooq.TableField<io.cattle.platform.core.model.tables.records.ProcessExecutionRecord, java.util.Date> CREATED = createField("created", org.jooq.impl.SQLDataType.TIMESTAMP.asConvertedDataType(new io.cattle.platform.db.jooq.converter.DateConverter()), this, "");
 
 	/**
 	 * Create a <code>cattle.process_execution</code> table reference

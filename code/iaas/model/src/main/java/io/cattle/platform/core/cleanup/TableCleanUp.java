@@ -4,6 +4,7 @@ import static io.cattle.platform.core.model.tables.AgentTable.AGENT;
 import static io.cattle.platform.core.model.tables.ContainerEventTable.CONTAINER_EVENT;
 import static io.cattle.platform.core.model.tables.ConfigItemStatusTable.CONFIG_ITEM_STATUS;
 import static io.cattle.platform.core.model.tables.ProcessInstanceTable.PROCESS_INSTANCE;
+import static io.cattle.platform.core.model.tables.ProcessExecutionTable.PROCESS_EXECUTION;
 import static io.cattle.platform.core.model.tables.ServiceEventTable.SERVICE_EVENT;
 import static io.cattle.platform.core.model.tables.ServiceTable.SERVICE;
 import static io.cattle.platform.core.model.tables.AuditLogTable.AUDIT_LOG;
@@ -45,6 +46,17 @@ public class TableCleanUp extends AbstractJooqDao {
                 .execute();
 
         long endProcessInstance = System.currentTimeMillis();
+
+        long startProcessExecution = System.currentTimeMillis();
+
+        int deletedProcessExecutionRecords = create()
+                .delete(PROCESS_EXECUTION)
+                .where(PROCESS_EXECUTION.CREATED.isNull().or(PROCESS_EXECUTION.CREATED.lt(new Date(System.currentTimeMillis() -
+                        (PROCESS_INSTANCE_TIME.get() / 1000)))))
+                .execute();
+
+        long endProcessExecution = System.currentTimeMillis();
+
         Date expiredEvents = new Date(System.currentTimeMillis() - (EVENT_TIME.get() * 1000));
         long startServiceEvent = System.currentTimeMillis();
         int deletedServiceEventRecords = create()
@@ -80,17 +92,19 @@ public class TableCleanUp extends AbstractJooqDao {
 
         long endConfigItemStatusStart = System.currentTimeMillis();
 
-        if ((deletedContainerEventRecords + deletedProcessInstanceRecords + deletedServiceEventRecords + deletedConfigItemStatuses) > 0) {
+        if ((deletedContainerEventRecords + deletedProcessExecutionRecords + deletedConfigItemStatuses +
+                deletedProcessInstanceRecords + deletedServiceEventRecords + deletedAuditLogRecords) > 0) {
             logger.info("Deleted " + deletedProcessInstanceRecords + " from PROCESS_INSTANCE in " +
-                    (endProcessInstance - startProcessInstance) + "ms, " +
-                    deletedServiceEventRecords + " from SERVICE_EVENT in " + (endServiceEvent - startServiceEvent) +
-                    "ms, and " +
-                    deletedContainerEventRecords + " from CONTAINER_EVENT in " + (endContainerEvent - startContainerEvent) + "ms, " +
-                    deletedConfigItemStatuses + " from CONFIG_ITEM_STATUS in " + (endConfigItemStatusStart - startConfigItemStatusStart) + "ms, " +
-                    deletedAuditLogRecords + " from CONTAINER_EVENT in " + (endAuditLog - startAuditLog) + "ms. ");
+                (endProcessInstance - startProcessInstance) + "ms, " +
+                deletedProcessExecutionRecords + " from PROCESS_EXECUTION in " + (endProcessExecution - startProcessExecution) + "ms, " +
+                deletedServiceEventRecords + " from SERVICE_EVENT in " + (endServiceEvent - startServiceEvent) +
+                "ms, and " +
+                deletedContainerEventRecords + " from CONTAINER_EVENT in " + (endContainerEvent - startContainerEvent) + "ms." +
+                deletedConfigItemStatuses + " from CONFIG_ITEM_STATUS in " + (endConfigItemStatusStart - startConfigItemStatusStart) + "ms, " +
+                deletedAuditLogRecords + " from AUDIT_LOG in " + (endAuditLog - startAuditLog) + "ms.");
         }
-        logger.debug("Clean up for PROCESS_INSTANCE, SERVICE_EVENT, CONTAINER_EVENT, AUDIT_LOG, and CONFIG_ITEM_STATUS tables finished.");
-
+        logger.debug("Clean up for PROCESS_INSTANCE, PROCESS_EXECUTION, SERVICE_EVENT, CONTAINER_EVENT " +
+                ", CONFIG_ITEM_STATUS and AUDIT_LOG tables finished.");
     }
 
     private int deleteConfigItemStatus(ResultQuery<Record1<Long>>  query) {

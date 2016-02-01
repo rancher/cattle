@@ -80,4 +80,5 @@
     <include file="db/core-073.xml"/>
     <include file="db/core-074.xml"/>
     <include file="db/core-075.xml"/>
+    <include file="db/core-076.xml"/>
 </databaseChangeLog>

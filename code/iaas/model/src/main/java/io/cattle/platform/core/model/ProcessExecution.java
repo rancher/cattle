@@ -58,6 +58,17 @@ public interface ProcessExecution extends java.io.Serializable {
 	@javax.persistence.Column(name = "log", length = 16777215)
 	public java.util.Map<String,Object> getLog();
 
+	/**
+	 * Setter for <code>cattle.process_execution.created</code>.
+	 */
+	public void setCreated(java.util.Date value);
+
+	/**
+	 * Getter for <code>cattle.process_execution.created</code>.
+	 */
+	@javax.persistence.Column(name = "created")
+	public java.util.Date getCreated();
+
 	// -------------------------------------------------------------------------
 	// FROM and INTO
 	// -------------------------------------------------------------------------
