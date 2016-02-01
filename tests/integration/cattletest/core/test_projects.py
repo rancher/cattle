@@ -480,12 +480,6 @@ def _create_resources(client):
         publicValue='rancher',
         secretValue='rancher')
     client.wait_success(reg_cred)
-    name = random_str()
-    machine = client.create_machine(name=name,
-                                    virtualboxConfig={})
-
-    machine = client.wait_success(machine)
-    assert machine.state == 'active'
 
 
 def _set_members(admin_user_client, client, id, members, status):

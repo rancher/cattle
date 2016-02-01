@@ -157,6 +157,17 @@ public interface PhysicalHost extends java.io.Serializable {
 	@javax.persistence.Column(name = "external_id", length = 128)
 	public java.lang.String getExternalId();
 
+	/**
+	 * Setter for <code>cattle.physical_host.driver</code>.
+	 */
+	public void setDriver(java.lang.String value);
+
+	/**
+	 * Getter for <code>cattle.physical_host.driver</code>.
+	 */
+	@javax.persistence.Column(name = "driver", length = 128)
+	public java.lang.String getDriver();
+
 	// -------------------------------------------------------------------------
 	// FROM and INTO
 	// -------------------------------------------------------------------------

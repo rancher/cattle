@@ -84,6 +84,8 @@
                 <value>externalDnsEvent,parent=externalEvent</value>
                 <value>externalHostEvent,parent=externalEvent</value>
                 <value>loadBalancerConfig</value>
+                <value>machineDriverUpdateInput</value>
+                <value>machineDriverErrorInput</value>
             </set>
         </property>
     </bean>

@@ -204,4 +204,17 @@
     <!-- Storage Pool Host Map -->
     <process:process name="storagepoolhostmap.create" resourceType="storagePoolHostMap" start="requested" transitioning="activating" done="active" />
     <process:process name="storagepoolhostmap.remove" resourceType="storagePoolHostMap" start="active,activating" transitioning="removing" done="removed" />
+
+    <!-- Machine driver-->
+    <process:process name="machinedriver.create" resourceType="machineDriver" start="requested" transitioning="creating" done="inactive" />
+    <process:process name="machinedriver.activate" resourceType="machineDriver" start="inactive,registering,erroring,error,active" transitioning="activating" done="active" />
+    <process:process name="machinedriver.error" resourceType="machineDriver" start="active,activating,creating,updating,inactive" transitioning="erroring" done="error" />
+    <process:process name="machinedriver.update" resourceType="machineDriver" start="active,activating,inactive,error,erroring" transitioning="updating" done="inactive" />
+    <process:process name="machinedriver.remove" resourceType="machineDriver" start="requested,inactive,activating,creating,active,error,erroring" transitioning="removing" done="removed" />
+    <process:process name="machinedriver.purge" resourceType="machineDriver" start="removed" transitioning="purging" done="purged" />
+
+    <!-- Dynamic Schema-->
+    <process:process name="dynamicschema.create" resourceType="dynamicSchema" start="requested" transitioning="creating" done="active" />
+    <process:process name="dynamicschema.remove" resourceType="dynamicSchema" start="active" transitioning="removing" done="purged" />
+
 </beans>

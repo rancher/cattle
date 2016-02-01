@@ -1,7 +1,0 @@
-{
-    "resourceFields": {
-        "accessToken": {
-            "required": true
-        }
-    }
-}
