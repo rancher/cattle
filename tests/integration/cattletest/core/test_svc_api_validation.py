@@ -307,4 +307,3 @@ def test_ip_retain(client, context, super_client):
         svc.upgrade_action(inServiceStrategy=strategy)
     assert e.value.error.status == 422
     assert e.value.error.code == 'InvalidOption'
-
