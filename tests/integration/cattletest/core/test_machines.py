@@ -2,7 +2,6 @@ from common_fixtures import *  # NOQA
 from cattle import ApiError
 from test_physical_host import disable_go_machine_service  # NOQA
 from copy import deepcopy
-from test_authorization import service_client  # NOQA
 
 
 @pytest.fixture(scope='module')
@@ -32,364 +31,31 @@ def update_ping_settings(request, super_client):
     request.addfinalizer(revert_settings)
 
 
-FOO_DEFINITION = '''
-    {
-        "resourceFields": {
-             "fooBar": {
-                  "type": "string",
-                  "create": true
-             },
-             "diskSize": {
-                  "type": "string",
-                  "create": true
-             },
-             "fooBaz": {
-                  "type": "string",
-                  "create": true
-             }
-        }
-    }
-    '''
-
-BAR_DEFINITION = '''
-    {
-        "resourceFields": {
-             "fooBar": {
-                  "type": "string",
-                  "create": true
-             },
-             "diskSize": {
-                  "type": "string",
-                  "create": true
-             },
-             "fooBaz": {
-                  "type": "string",
-                  "required": true,
-                  "nullable": false,
-                  "create": true
-             }
-        }
-    }
-    '''
-
-MACHINE_DEFINITION = '''
-{
-    "collectionMethods":[
-        "GET",
-        "POST",
-        "DELETE"
-    ],
-    "resourceMethods":[
-        "GET",
-        "PUT",
-        "DELETE"
-    ],
-    "resourceFields":{
-        "name":{
-            "type":"string",
-            "nullable":false,
-            "minLength":1,
-            "required":true,
-            "create":true
-        },
-        "authCertificateAuthority":{
-            "type":"string",
-            "nullable":true,
-            "create":true
-        },
-        "fooConfig":{
-            "type":"fooConfig",
-            "nullable":true,
-            "required":false,
-            "create":true
-        },
-        "barConfig":{
-            "type":"barConfig",
-            "nullable":true,
-            "required":false,
-            "create":true
-        },
-        "authKey":{
-            "type":"string",
-            "nullable":true,
-            "create":true
-        },
-        "labels":{
-            "type":"map[string]",
-            "nullable":true,
-            "create":true
-        },
-        "engineInstallUrl":{
-            "type":"string",
-            "nullable":true,
-            "create":true
-        },
-        "dockerVersion":{
-            "type":"string",
-            "nullable":true,
-            "create":true
-        },
-        "engineOpt":{
-            "type":"map[string]",
-            "nullable":true,
-            "create":true
-        },
-        "engineInsecureRegistry":{
-            "type":"array[string]",
-            "nullable":true,
-            "create":true
-        },
-        "engineRegistryMirror":{
-            "type":"array[string]",
-            "nullable":true,
-            "create":true
-        },
-        "engineLabel":{
-            "type":"map[string]",
-            "nullable":true,
-            "create":true
-        },
-        "engineStorageDriver":{
-            "type":"string",
-            "nullable":true,
-            "create":true
-        },
-        "engineEnv":{
-            "type":"map[string]",
-            "nullable":true,
-            "create":true
-        }
-    }
-}
-'''
-
-SUPER_MACHINE_DEFINITION = '''
-{
-    "collectionMethods":[
-        "GET",
-        "POST",
-        "DELETE"
-    ],
-    "resourceMethods":[
-        "GET",
-        "PUT",
-        "DELETE"
-    ],
-    "resourceFields":{
-        "name":{
-            "type":"string",
-            "nullable":false,
-            "minLength":1,
-            "required":true,
-            "create":true
-        },
-        "authCertificateAuthority":{
-            "type":"string",
-            "nullable":true,
-            "create":true
-        },
-        "fooConfig":{
-            "type":"fooConfig",
-            "nullable":true,
-            "required":false,
-            "create":true
-        },
-        "barConfig":{
-            "type":"barConfig",
-            "nullable":true,
-            "required":false,
-            "create":true
-        },
-        "authKey":{
-            "type":"string",
-            "nullable":true,
-            "create":true
-        },
-        "labels":{
-            "type":"map[string]",
-            "nullable":true,
-            "create":true
-        },
-        "engineInstallUrl":{
-            "type":"string",
-            "nullable":true,
-            "create":true
-        },
-        "dockerVersion":{
-            "type":"string",
-            "nullable":true,
-            "create":true
-        },
-        "engineOpt":{
-            "type":"map[string]",
-            "nullable":true,
-            "create":true
-        },
-        "engineInsecureRegistry":{
-            "type":"array[string]",
-            "nullable":true,
-            "create":true
-        },
-        "engineRegistryMirror":{
-            "type":"array[string]",
-            "nullable":true,
-            "create":true
-        },
-        "engineLabel":{
-            "type":"map[string]",
-            "nullable":true,
-            "create":true
-        },
-        "engineStorageDriver":{
-            "type":"string",
-            "nullable":true,
-            "create":true
-        },
-        "extractedConfig":{
-            "type":"string",
-            "nullable":true,
-            "create":true,
-            "update":true
-        },
-        "engineEnv":{
-            "type":"map[string]",
-            "nullable":true,
-            "create":true
-        }
-    }
-}
-'''
+@pytest.fixture(scope='module')
+def machine_context(admin_user_client):
+    return create_context(admin_user_client, create_project=True,
+                          add_host=True)
 
 
-MACHINE_READ_ONLY_DEFINITION = '''
-{
-    "collectionMethods":[
-        "GET"
-    ],
-    "resourceMethods":[
-        "GET"
-    ],
-    "resourceFields":{
-        "name":{
-            "type":"string",
-            "nullable":false,
-            "minLength":1,
-            "required":true
-        },
-        "authCertificateAuthority":{
-            "type":"string",
-            "nullable":true
-        },
-        "fooConfig":{
-            "type":"fooConfig",
-            "nullable":true,
-            "required":false
-        },
-        "barConfig":{
-            "type":"barConfig",
-            "nullable":true,
-            "required":false
-        },
-        "authKey":{
-            "type":"string",
-            "nullable":true
-        },
-        "labels":{
-            "type":"map[string]",
-            "nullable":true
-        },
-        "engineInstallUrl":{
-            "type":"string",
-            "nullable":true
-        },
-        "dockerVersion":{
-            "type":"string",
-            "nullable":true
-        },
-        "engineOpt":{
-            "type":"map[string]",
-            "nullable":true
-        },
-        "engineInsecureRegistry":{
-            "type":"array[string]",
-            "nullable":true
-        },
-        "engineRegistryMirror":{
-            "type":"array[string]",
-            "nullable":true
-        },
-        "engineLabel":{
-            "type":"map[string]",
-            "nullable":true
-        },
-        "engineStorageDriver":{
-            "type":"string",
-            "nullable":true
-        },
-        "engineEnv":{
-            "type":"map[string]",
-            "nullable":true
-        }
-    }
-}
-'''
+@pytest.fixture(scope='module')
+def admin_client(machine_context):
+    return machine_context.client
 
 
-def remove_schemas(service_client, schemas):  # NOQA
-    for schema in schemas:
-        got_schemas = service_client.list_dynamic_schema(name=schema)
-        for got_schema in got_schemas:
-            if got_schema.state != 'purged':
-                service_client.wait_success(got_schema.remove())
+@pytest.fixture(scope='module')
+def admin_account(machine_context):
+    return machine_context.project
 
 
-@pytest.fixture(scope='module')  # NOQA
-def machine_context(admin_user_client, service_client,  # NOQA
-                    super_client):  # NOQA
-    ctx = create_context(admin_user_client, create_project=True,
-                         add_host=True)
-    remove_schemas(service_client, ['fooConfig', 'barConfig', 'machine'])
-    service_client.wait_success(service_client.create_dynamic_schema(
-                                name='fooConfig',
-                                parent='baseMachineConfig',
-                                definition=FOO_DEFINITION,
-                                roles=['project', 'owner', 'member',
-                                       'superadmin', 'readonly']))
-    service_client.wait_success(service_client.create_dynamic_schema(
-                                name='barConfig',
-                                parent='baseMachineConfig',
-                                definition=BAR_DEFINITION,
-                                roles=['project', 'owner', 'member',
-                                       'superadmin', 'readonly']))
-    service_client.wait_success(service_client.create_dynamic_schema(
-                                name='machine',
-                                parent='physicalHost',
-                                definition=MACHINE_DEFINITION,
-                                roles=['project', 'owner', 'member']))
-    service_client.wait_success(service_client.create_dynamic_schema(
-                                name='machine',
-                                parent='physicalHost',
-                                definition=SUPER_MACHINE_DEFINITION,
-                                roles=['superadmin', 'admin']))
-    service_client.wait_success(service_client.create_dynamic_schema(
-                                name='machine',
-                                parent='physicalHost',
-                                definition=MACHINE_READ_ONLY_DEFINITION,
-                                roles=['readonly', 'agent']))
-    super_client.reload_schema()
-    ctx.client.reload_schema()
-    return ctx
-
-
-def test_machine_lifecycle(super_client, machine_context,
+def test_machine_lifecycle(super_client, admin_client, admin_account,
                            update_ping_settings):
     name = random_str()
-    machine = machine_context.client.create_machine(name=name,
-                                                    fooConfig={})
+    machine = admin_client.create_machine(name=name,
+                                          virtualboxConfig={})
 
-    machine = machine_context.client.wait_success(machine)
+    machine = admin_client.wait_success(machine)
     assert machine.state == 'active'
-    assert machine.fooConfig is not None
+    assert machine.virtualboxConfig is not None
 
     external_id = super_client.reload(machine).externalId
     assert external_id is not None
@@ -403,7 +69,7 @@ def test_machine_lifecycle(super_client, machine_context,
     data = {scope: {}}
     data[scope]['addPhysicalHost'] = True
     data[scope]['externalId'] = external_id
-    account_id = get_plain_id(super_client, machine_context.project)
+    account_id = get_plain_id(super_client, admin_account)
     data[scope]['agentResourcesAccountId'] = account_id
     data['agentResourcesAccountId'] = account_id
 
@@ -414,10 +80,9 @@ def test_machine_lifecycle(super_client, machine_context,
     hosts = agent.hosts()
 
     assert len(hosts) == 1
-    host = hosts[0].physicalHost()
-    assert host.kind == 'machine'
+    host = hosts[0]
+    assert host.physicalHostId == machine.id
     assert machine.accountId == host.accountId
-    assert machine.uuid == host.uuid
 
     # Need to force a ping because they cause physical hosts to be created
     # under non-machine use cases. Ensures the machine isnt overridden
@@ -432,78 +97,187 @@ def test_machine_lifecycle(super_client, machine_context,
     physical_hosts = host.physicalHost()
     assert physical_hosts.id == machine.id
 
-    machine = machine_context.client.wait_success(machine.remove())
+    machine = admin_client.wait_success(machine.remove())
     assert machine.state == 'removed'
 
     agent = super_client.wait_success(super_client.reload(machine).agent())
     assert agent.state == 'removed'
 
-    host = machine_context.client.wait_success(machine_context
-                                               .client.reload(host))
+    host = admin_client.wait_success(admin_client.reload(host))
     assert host.state == 'removed'
 
 
-def test_machine_driver_config(machine_context):
+def test_machine_driver_config(admin_client):
     name = "test-%s" % random_str()
-    foo_config = {
-        "fooBar": "foo_string",
+    vbox_config = {
+        "memory": "2048",
         "diskSize": "40000",
-        "fooBaz": "http://localhost/random",
+        "boot2dockerUrl": "http://localhost/random",
     }
     ca = "ca-1"
     key = "key-1"
-    host = machine_context.client.create_machine(name=name,
-                                                 fooConfig=foo_config,
-                                                 authCertificateAuthority=ca,
-                                                 authKey=key)
-    host = machine_context.client.wait_success(host)
+    host = admin_client.create_machine(name=name,
+                                       virtualboxConfig=vbox_config,
+                                       authCertificateAuthority=ca,
+                                       authKey=key)
+    host = admin_client.wait_success(host)
     assert host.state == 'active'
-    assert foo_config == host.fooConfig
+    assert vbox_config == host.virtualboxConfig
     assert ca == host.authCertificateAuthority
     assert key == host.authKey
-    assert host.driver == 'foo'
+    assert host.driver == 'virtualbox'
+
+    name = "test-%s" % random_str()
+    digoc_config = {
+        "image": "img1",
+        "region": "reg1",
+        "size": "40000",
+        "accessToken": "ac-1",
+        "ipv6": True,
+        "privateNetworking": True,
+        "backups": True
+    }
+    host = admin_client.create_machine(name=name,
+                                       digitaloceanConfig=digoc_config)
+    host = admin_client.wait_success(host)
+    assert host.state == 'active'
+    assert digoc_config == host.digitaloceanConfig
+    assert host.driver == 'digitalocean'
+
+    name = "test-%s" % random_str()
+    ec2_config = {
+        "accessKey": "accesskey1",
+        "ami": "ami1",
+        "iamInstanceProfile": "profile1",
+        "instanceType": "type1",
+        "monitoring": False,
+        "privateAddressOnly": False,
+        "region": "us-east-1",
+        "requestSpotInstance": False,
+        "rootSize": "60GB",
+        "secretKey": "secretkey1",
+        "securityGroup": "docker-machine",
+        "sessionToken": "sessiontoken1",
+        "spotPrice": "spotPrice1",
+        "sshUser": "sshUser1",
+        "subnetId": "5678",
+        "usePrivateAddress": False,
+        "vpcId": "1234",
+        "zone": "us-east-1a",
+    }
+    host = admin_client.create_machine(name=name,
+                                       amazonec2Config=ec2_config)
+    host = admin_client.wait_success(host)
+    assert host.state == 'active'
+    assert ec2_config == host.amazonec2Config
+    assert host.driver == 'amazonec2'
+
+    name = "test-%s" % random_str()
+    packet_config = {
+        "apiKey": "apikey1",
+        "billingCycle": "hourly",
+        "facilityCode": "ewr1",
+        "os": "centos_7",
+        "plan": "baremetal_1",
+        "projectId": "projectId",
+    }
+    host = admin_client.create_machine(name=name,
+                                       packetConfig=packet_config)
+    host = admin_client.wait_success(host)
+    assert host.state == 'active'
+    assert packet_config == host.packetConfig
+    assert host.driver == 'packet'
+
+    name = "test-%s" % random_str()
+    azure_config = {
+        "dockerPort": "dockerPort",
+        "dockerSwarmMasterPort": "dockerSwarmMasterPort1",
+        "image": "image",
+        "location": "location",
+        "password": "password",
+        "publishSettingsFile": "publishSettingsFile",
+        "size": "size",
+        "sshPort": "sshPort1",
+        "subscriptionCert": "subscriptionCert",
+        "subscriptionId": "subscriptionId",
+        "username": "username",
+    }
+    host = admin_client.create_machine(name=name,
+                                       azureConfig=azure_config)
+    host = admin_client.wait_success(host)
+    assert host.state == 'active'
+    assert azure_config == host.azureConfig
+    assert host.driver == 'azure'
+
+    name = "test-%s" % random_str()
+    rackspace_config = {
+        "apiKey": "apiKey",
+        "dockerInstall": "dockerInstall",
+        "endpointType": "endpointType",
+        "flavorId": "flavorId",
+        "imageId": "imageId",
+        "region": "region",
+        "sshPort": "sshPort",
+        "sshUser": "sshUser",
+        "username": "username",
+    }
+    host = admin_client.create_machine(name=name,
+                                       rackspaceConfig=rackspace_config)
+    host = admin_client.wait_success(host)
+    assert host.state == 'active'
+    assert rackspace_config == host.rackspaceConfig
+    assert host.driver == 'rackspace'
 
 
-def test_machine_validation(machine_context):
+def test_machine_validation(admin_client):
     name = "test-%s" % random_str()
 
     # Can't set two drivers
-    with pytest.raises(ApiError) as e:
-        machine_context.client.create_machine(name=name,
-                                              fooConfig={},
-                                              barConfig={"fooBaz": "fasd"})
-    assert e.value.error.status == 422
-    assert e.value.error.code == 'DriverConfigExactlyOneRequired'
+    try:
+        admin_client.create_machine(name=name,
+                                    virtualboxConfig={},
+                                    digitaloceanConfig={"accessToken": "a"})
+    except ApiError as e:
+        assert e.error.status == 422
+        assert e.error.code == 'DriverConfigExactlyOneRequired'
+    else:
+        assert False, "Should not have been able to set two drivers."
 
     # Must set at least one driver
-    with pytest.raises(ApiError) as e:
-        machine_context.client.create_machine(name=name)
-    assert e.value.error.status == 422
-    assert e.value.error.code == 'DriverConfigExactlyOneRequired'
+    try:
+        admin_client.create_machine(name=name)
+    except ApiError as e:
+        assert e.error.status == 422
+        assert e.error.code == 'DriverConfigExactlyOneRequired'
+    else:
+        assert False, "Should have been required to set a driver."
 
     # Property present, but None/nil/null is acceptable
-    host = machine_context.client.create_machine(name=name,
-                                                 fooConfig={},
-                                                 barConfig=None)
+    host = admin_client.create_machine(name=name,
+                                       virtualboxConfig={},
+                                       digitaloceanConfig=None)
     assert host is not None
 
 
-def test_bar_config_machine(machine_context):
+def test_digitalocean_config_validation(admin_client):
     name = "test-%s" % random_str()
 
     # accessToken is required
-    with pytest.raises(ApiError) as e:
-        machine_context.client.create_machine(name=name,
-                                              barConfig={})
-    assert e.value.error.status == 422
-    assert e.value.error.code == 'MissingRequired'
+    try:
+        admin_client.create_machine(name=name,
+                                    digitaloceanConfig={})
+    except ApiError as e:
+        assert e.error.status == 422
+        assert e.error.code == 'MissingRequired'
+    else:
+        assert False, 'Should have got MissingRequired for accessToken'
 
 
-def test_config_link_readonly(admin_user_client, super_client, request,
-                              machine_context):
+def test_config_link_readonly(admin_user_client, super_client, request):
+    user1_context = create_context(admin_user_client, create_project=True)
     user2_context = new_context(admin_user_client, request)
 
-    project = machine_context.user_client.reload(machine_context.project)
+    project = user1_context.user_client.reload(user1_context.project)
 
     members = get_plain_members(project.projectMembers())
     members.append({
@@ -513,7 +287,7 @@ def test_config_link_readonly(admin_user_client, super_client, request,
     })
     project.setmembers(members=members)
 
-    user1_client = machine_context.user_client
+    user1_client = user1_context.user_client
     user2_client = user2_context.user_client
 
     new_headers = deepcopy(user1_client._headers)
@@ -526,14 +300,18 @@ def test_config_link_readonly(admin_user_client, super_client, request,
     user2_client.reload_schema()
 
     name = "test-%s" % random_str()
-    foo_config = {
-        "fooBar": "foo_string",
-        "diskSize": "40000",
-        "fooBaz": "http://localhost/random",
+    digoc_config = {
+        "image": "img1",
+        "region": "reg1",
+        "size": "40000",
+        "accessToken": "ac-1",
+        "ipv6": True,
+        "privateNetworking": True,
+        "backups": True
     }
 
     host = user1_client.create_machine(name=name,
-                                       fooConfig=foo_config)
+                                       digitaloceanConfig=digoc_config)
     host = user1_client.wait_success(host)
     host = super_client.by_id('physicalHost', host.id)
 
@@ -541,7 +319,6 @@ def test_config_link_readonly(admin_user_client, super_client, request,
 
     host = super_client.reload(host)
     assert 'config' in host.links
-
     host = user1_client.reload(host)
     assert 'config' in host.links
     host = user2_client.reload(host)

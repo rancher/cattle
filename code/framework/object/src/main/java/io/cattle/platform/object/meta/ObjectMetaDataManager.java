@@ -49,11 +49,7 @@ public interface ObjectMetaDataManager {
 
     Relationship getRelationship(String type, String linkName);
 
-    Relationship getRelationship(Class<?> clz, String linkName);
-
     Relationship getRelationship(String type, String linkName, String fieldName);
-
-    Relationship getRelationship(Class<?> clz, String linkName, String fieldName);
 
     Map<String, Object> getTransitionFields(Schema schema, Object obj);
 

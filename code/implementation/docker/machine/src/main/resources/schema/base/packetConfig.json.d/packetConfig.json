@@ -1,0 +1,10 @@
+{
+    "resourceFields": {
+        "apiKey": {
+            "required": true
+        },
+        "projectId": {
+            "required": true
+        }
+    }
+}
