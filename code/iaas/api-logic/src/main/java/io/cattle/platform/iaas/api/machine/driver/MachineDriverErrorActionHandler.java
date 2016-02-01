@@ -1,9 +1,8 @@
-package io.cattle.platform.iaas.api.machinedriver;
+package io.cattle.platform.iaas.api.machine.driver;
 
 import io.cattle.platform.api.action.ActionHandler;
 import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.model.MachineDriver;
-import io.cattle.platform.core.model.tables.records.MachineDriverRecord;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.util.DataAccessor;
 import io.github.ibuildthecloud.gdapi.exception.ClientVisibleException;
@@ -14,7 +13,9 @@ import javax.inject.Inject;
 
 import org.apache.commons.lang3.StringUtils;
 
-public class MachineDriverUpdateActionHandler implements ActionHandler{
+public class MachineDriverErrorActionHandler implements ActionHandler{
+
+    static final String ERROR_MESSAGE = "errorMessage";
 
     @Inject
     ObjectManager objectManager;
@@ -22,18 +23,11 @@ public class MachineDriverUpdateActionHandler implements ActionHandler{
     @Override
     public Object perform(String name, Object obj, ApiRequest request) {
         if (obj instanceof MachineDriver) {
-            MachineDriverUpdateInput machineDriverUpdate = request.proxyRequestObject(MachineDriverUpdateInput.class);
-            MachineDriver driver = ((MachineDriverRecord) obj);
-            driver.setMd5checksum(machineDriverUpdate.getmd5checksum());
-            if (StringUtils.isNotBlank(machineDriverUpdate.getUri())) {
-                driver.setName(machineDriverUpdate.getName());
+            MachineDriverErrorInput machineDriverErrorInput = request.proxyRequestObject(MachineDriverErrorInput.class);
+            if (StringUtils.isNotBlank(machineDriverErrorInput.getErrorMessage())) {
+                DataAccessor.fields(obj).withKey(ERROR_MESSAGE).set(machineDriverErrorInput.getErrorMessage());
+                ((MachineDriver) obj).setState(CommonStatesConstants.ERROR);
             }
-            if (StringUtils.isNotBlank(machineDriverUpdate.getUri())) {
-                driver.setUri(machineDriverUpdate.getUri());
-            }
-            driver.setState(CommonStatesConstants.INACTIVE);
-            DataAccessor.fields(obj).withKey(MachineDriverErrorActionHandler.ERROR_MESSAGE)
-                    .set(null);
             objectManager.persist(obj);
             return objectManager.reload(obj);
         }
@@ -42,6 +36,6 @@ public class MachineDriverUpdateActionHandler implements ActionHandler{
 
     @Override
     public String getName() {
-        return "machinedriver.update";
+        return "machinedriver.error";
     }
 }
