@@ -2,8 +2,6 @@ package io.cattle.platform.configitem.context.dao;
 
 import io.cattle.platform.configitem.context.data.metadata.common.ContainerMetaData;
 import io.cattle.platform.configitem.context.data.metadata.common.HostMetaData;
-import io.cattle.platform.configitem.context.data.metadata.common.ServiceMetaData;
-import io.cattle.platform.configitem.context.data.metadata.common.StackMetaData;
 import io.cattle.platform.core.model.Instance;
 
 import java.util.List;
@@ -43,7 +41,4 @@ public interface MetaDataInfoDao {
 
     List<HostMetaData> getInstanceHostMetaData(long accountId, Instance instance);
 
-    StackMetaData getStackMetaData(StackMetaData stackData, Version version);
-
-    ServiceMetaData getServiceMetaData(ServiceMetaData serviceData, Version version);
 }

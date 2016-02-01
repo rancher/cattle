@@ -115,7 +115,7 @@ public class ServiceMetadataInfoFactory extends AbstractAgentBaseContextFactory 
         stackNameToStack = applyVersionToStack(stackNameToStack, serviceIdToServiceLaunchConfigs, version);
 
         // 4. populate self section
-        populateSelfSection(instance, containersMD, stackNameToStack, serviceIdToServiceLaunchConfigs, selfMD);
+        populateSelfSection(instance, containersMD, stackNameToStack, serviceIdToServiceLaunchConfigs, selfMD, version);
 
         // 5. get host meta data
         List<HostMetaData> hostsMD = metaDataInfoDao.getInstanceHostMetaData(instance.getAccountId(), null);
@@ -151,7 +151,8 @@ public class ServiceMetadataInfoFactory extends AbstractAgentBaseContextFactory 
 
     protected void populateSelfSection(Instance instance, List<ContainerMetaData> containersMD,
             Map<String, StackMetaData> stackNameToStack,
-            Map<Long, Map<String, ServiceMetaData>> serviceIdToServiceLaunchConfigs, Map<String, SelfMetaData> selfMD) {
+            Map<Long, Map<String, ServiceMetaData>> serviceIdToServiceLaunchConfigs, Map<String, SelfMetaData> selfMD,
+            Version version) {
         for (ContainerMetaData containerMD : containersMD) {
             ServiceMetaData svcData = null;
             StackMetaData stackData = null;
@@ -166,7 +167,7 @@ public class ServiceMetadataInfoFactory extends AbstractAgentBaseContextFactory 
                     stackData = stackNameToStack.get(svcData.getStack_name());
                 }
             }
-            addToSelf(selfMD, containerMD, svcData, stackData, getInstanceHostId(instance));
+            addToSelf(selfMD, containerMD, svcData, stackData, getInstanceHostId(instance), version);
         }
     }
 
@@ -186,7 +187,7 @@ public class ServiceMetadataInfoFactory extends AbstractAgentBaseContextFactory 
                             svcMDOriginal.setContainersObj(serviceIdToLaunchConfigToContainer.get(serviceId)
                                     .get(launchConfigName));
                         }
-                        ServiceMetaData serviceMDModified = metaDataInfoDao.getServiceMetaData(svcMDOriginal, version);
+                        ServiceMetaData serviceMDModified = ServiceMetaData.getServiceMetaData(svcMDOriginal, version);
                         launchConfigToServiceModified.put(launchConfigName, serviceMDModified);
                     }
                 }
@@ -213,7 +214,7 @@ public class ServiceMetadataInfoFactory extends AbstractAgentBaseContextFactory 
                 }
             }
             original.setServicesObj(services);
-            StackMetaData stackMDModified = metaDataInfoDao.getStackMetaData(original, version);
+            StackMetaData stackMDModified = StackMetaData.getStackMetaData(original, version);
             newData.put(stackMDModified.getName(), stackMDModified);
         }
         return newData;
@@ -280,7 +281,7 @@ public class ServiceMetadataInfoFactory extends AbstractAgentBaseContextFactory 
     }
 
     protected void addToSelf(Map<String, SelfMetaData> self, ContainerMetaData containerMD,
-            ServiceMetaData serviceMD, StackMetaData stackMD, long hostId) {
+            ServiceMetaData serviceMD, StackMetaData stackMD, long hostId, Version version) {
         if (containerMD.getPrimary_ip() == null) {
             return;
         }
@@ -291,7 +292,7 @@ public class ServiceMetadataInfoFactory extends AbstractAgentBaseContextFactory 
 
         if (containerMD.getHostMetaData().getHostId().equals(hostId)) {
             self.put(containerMD.getPrimary_ip(), new SelfMetaData(containerMD, serviceMD,
-                    stackMD, containerMD.getHostMetaData()));
+                    stackMD, containerMD.getHostMetaData(), version));
         }
     }
 

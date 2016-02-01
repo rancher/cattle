@@ -11,12 +11,6 @@ import static io.cattle.platform.core.model.tables.ServiceExposeMapTable.SERVICE
 import io.cattle.platform.configitem.context.dao.MetaDataInfoDao;
 import io.cattle.platform.configitem.context.data.metadata.common.ContainerMetaData;
 import io.cattle.platform.configitem.context.data.metadata.common.HostMetaData;
-import io.cattle.platform.configitem.context.data.metadata.common.ServiceMetaData;
-import io.cattle.platform.configitem.context.data.metadata.common.StackMetaData;
-import io.cattle.platform.configitem.context.data.metadata.version1.ServiceMetaDataVersion1;
-import io.cattle.platform.configitem.context.data.metadata.version1.StackMetaDataVersion1;
-import io.cattle.platform.configitem.context.data.metadata.version2.ServiceMetaDataVersion2;
-import io.cattle.platform.configitem.context.data.metadata.version2.StackMetaDataVersion2;
 import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.IpAddressConstants;
 import io.cattle.platform.core.model.Host;
@@ -135,21 +129,5 @@ public class MetaDataInfoDaoImpl extends AbstractJooqDao implements MetaDataInfo
                 .fetch().map(mapper);
     }
 
-    @Override
-    public StackMetaData getStackMetaData(StackMetaData stackData, Version version) {
-        if (version == MetaDataInfoDao.Version.version1) {
-            return new StackMetaDataVersion1(stackData);
-        } else {
-            return new StackMetaDataVersion2(stackData);
-        }
-    }
 
-    @Override
-    public ServiceMetaData getServiceMetaData(ServiceMetaData serviceData, Version version) {
-        if (version == MetaDataInfoDao.Version.version1) {
-            return new ServiceMetaDataVersion1(serviceData);
-        } else {
-            return new ServiceMetaDataVersion2(serviceData);
-        }
-    }
 }
