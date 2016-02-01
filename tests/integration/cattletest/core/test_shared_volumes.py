@@ -306,7 +306,7 @@ def test_volume_create_failed_allocation(new_context):
         c = client.create_container(imageUuid=new_context.image_uuid,
                                     dataVolumeMounts=data_volume_mounts)
         client.wait_success(c)
-    assert e.value.message.startswith('Scheduling failed: valid host')
+    assert e.value.message.startswith('Scheduling failed')
 
 
 def test_external_volume_event(super_client, new_context):
