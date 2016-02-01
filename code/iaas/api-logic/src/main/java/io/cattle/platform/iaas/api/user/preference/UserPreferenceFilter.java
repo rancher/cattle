@@ -1,4 +1,4 @@
-package io.cattle.platform.iaas.api.userPreference;
+package io.cattle.platform.iaas.api.user.preference;
 
 import io.cattle.platform.api.auth.Policy;
 import io.cattle.platform.core.constants.CredentialConstants;
