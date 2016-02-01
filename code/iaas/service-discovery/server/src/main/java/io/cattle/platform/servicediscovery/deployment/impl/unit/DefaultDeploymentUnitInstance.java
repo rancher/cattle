@@ -35,7 +35,7 @@ public class DefaultDeploymentUnitInstance extends DeploymentUnitInstance implem
     protected String instanceName;
     protected boolean startOnce;
     protected Instance instance;
-    protected long serviceIndexId;
+    protected ServiceIndex serviceIndex;
 
     public DefaultDeploymentUnitInstance(DeploymentServiceContext context, String uuid,
             Service service, String instanceName, Instance instance, Map<String, String> labels, String launchConfigName) {
@@ -44,9 +44,14 @@ public class DefaultDeploymentUnitInstance extends DeploymentUnitInstance implem
         this.instance = instance;
         if (this.instance != null) {
             exposeMap = context.exposeMapDao.findInstanceExposeMap(this.instance);
+            if (this.instance.getServiceIndexId() != null) {
+                serviceIndex = context.objectManager
+                        .loadResource(ServiceIndex.class, this.instance.getServiceIndexId());
+            }
+        } else {
+            this.serviceIndex = createServiceIndex();
         }
         setStartOnce(service, launchConfigName);
-        setServiceIndexId();
     }
 
     @SuppressWarnings("unchecked")
@@ -123,11 +128,9 @@ public class DefaultDeploymentUnitInstance extends DeploymentUnitInstance implem
             }
         }
 
-        ServiceIndex serviceIndexObj = context.objectManager.loadResource(ServiceIndex.class, this.serviceIndexId);
-
-        launchConfigData.put(ServiceDiscoveryConstants.FIELD_SERVICE_INSTANCE_SERVICE_INDEX_ID, serviceIndexObj.getId());
-        launchConfigData.put(ServiceDiscoveryConstants.FIELD_SERVICE_INSTANCE_SERVICE_INDEX, serviceIndexObj.getServiceIndex());
-        launchConfigData.put(InstanceConstants.FIELD_ALLOCATED_IP_ADDRESS, serviceIndexObj.getAddress());
+        launchConfigData.put(ServiceDiscoveryConstants.FIELD_SERVICE_INSTANCE_SERVICE_INDEX_ID,
+                this.serviceIndex.getId());
+        launchConfigData.put(InstanceConstants.FIELD_ALLOCATED_IP_ADDRESS, serviceIndex.getAddress());
         return launchConfigData;
     }
 
@@ -233,20 +236,8 @@ public class DefaultDeploymentUnitInstance extends DeploymentUnitInstance implem
         return this;
     }
 
-    public Long getServiceIndex() {
-        return this.serviceIndexId;
-    }
-
-    protected void setServiceIndexId() {
-        if (this.instance == null) {
-            ServiceIndex serviceIndex = createServiceIndex();
-            if (serviceIndex != null) {
-                this.serviceIndexId = serviceIndex.getId();
-            }
-        } else {
-            this.serviceIndexId = DataAccessor
-                    .fieldLong(this.instance, ServiceDiscoveryConstants.FIELD_SERVICE_INSTANCE_SERVICE_INDEX_ID);
-        }
+    public ServiceIndex getServiceIndex() {
+        return this.serviceIndex;
     }
 
     protected ServiceIndex createServiceIndex() {

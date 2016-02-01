@@ -207,7 +207,7 @@ public class DeploymentManagerImpl implements DeploymentManager {
         /*
          * Cleanup unused service indexes
          */
-        planner.cleanupUnusedServiceIndexes();
+        planner.cleanupUnusedAndDuplicatedServiceIndexes();
     }
 
     private Map<Long, DeploymentUnitInstanceIdGenerator> populateUsedNames(
