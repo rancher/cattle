@@ -13,8 +13,8 @@
 		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.0.xsd">
 
        <bean class="io.cattle.platform.iaas.api.auth.integration.local.ChangeSecretActionHandler" />
-       <bean class="io.cattle.platform.iaas.api.machine.driver.MachineDriverUpdateActionHandler" />
-       <bean class="io.cattle.platform.iaas.api.machine.driver.MachineDriverErrorActionHandler" />
+       <bean class="io.cattle.platform.iaas.api.machinedriver.MachineDriverUpdateActionHandler" />
+       <bean class="io.cattle.platform.iaas.api.machinedriver.MachineDriverErrorActionHandler" />
        <bean class="io.cattle.platform.iaas.api.auth.dao.impl.PasswordDaoImpl" />
        <bean class="io.cattle.platform.iaas.api.auth.dao.impl.CredentialUniqueFilter" >
               <property name="schemaFactory" ref="CoreSchemaFactory" />

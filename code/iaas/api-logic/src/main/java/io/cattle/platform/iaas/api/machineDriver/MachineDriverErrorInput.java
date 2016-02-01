@@ -1,4 +1,4 @@
-package io.cattle.platform.iaas.api.machine.driver;
+package io.cattle.platform.iaas.api.machinedriver;
 
 public interface MachineDriverErrorInput {
 

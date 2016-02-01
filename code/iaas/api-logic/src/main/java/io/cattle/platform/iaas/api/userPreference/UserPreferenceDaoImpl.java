@@ -1,4 +1,4 @@
-package io.cattle.platform.iaas.api.user.preference;
+package io.cattle.platform.iaas.api.userPreference;
 
 import io.cattle.platform.core.model.UserPreference;
 import static io.cattle.platform.core.model.tables.UserPreferenceTable.*;
