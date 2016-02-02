@@ -1,12 +1,5 @@
 {
     "resourceFields": {
-        "appCookieStickinessPolicy":{
-            "type": "loadBalancerAppCookieStickinessPolicy",
-            "nullable": true,
-            "attributes" : {
-                "scheduleUpdate" : true
-            }
-        },
         "lbCookieStickinessPolicy":{
             "type": "loadBalancerCookieStickinessPolicy",
             "nullable": true,

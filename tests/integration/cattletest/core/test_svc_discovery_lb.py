@@ -319,18 +319,12 @@ def test_create_svc_with_lb_config(context, client):
     image_uuid = context.image_uuid
     launch_config = {"imageUuid": image_uuid}
 
-    app_policy = {"name": "policy1", "cookie": "cookie1",
-                  "maxLength": 4, "prefix": "true",
-                  "requestLearn": "false", "timeout": 10,
-                  "mode": "query_string"}
-
     lb_policy = {"name": "policy2", "cookie": "cookie1",
                  "domain": ".test.com", "indirect": "true",
                  "nocache": "true", "postonly": "true",
                  "mode": "insert"}
     haproxy_cfg = {"defaults": "balance first", "global": "group haproxy"}
     lb_config = {"name": name,
-                 "appCookieStickinessPolicy": app_policy,
                  "lbCookieStickinessPolicy": lb_policy,
                  "haproxyConfig": haproxy_cfg}
 
@@ -346,15 +340,6 @@ def test_create_svc_with_lb_config(context, client):
 
     # verify the load balancer config info
     config = service.loadBalancerConfig
-
-    assert config.appCookieStickinessPolicy is not None
-    assert config.appCookieStickinessPolicy.name == "policy1"
-    assert config.appCookieStickinessPolicy.cookie == "cookie1"
-    assert config.appCookieStickinessPolicy.maxLength == 4
-    assert config.appCookieStickinessPolicy.prefix is True
-    assert config.appCookieStickinessPolicy.requestLearn is False
-    assert config.appCookieStickinessPolicy.timeout == 10
-    assert config.appCookieStickinessPolicy.mode == "query_string"
 
     assert config.lbCookieStickinessPolicy is not None
     assert config.lbCookieStickinessPolicy.name == "policy2"

@@ -8,7 +8,6 @@ import io.cattle.platform.configitem.server.model.ConfigItem;
 import io.cattle.platform.configitem.server.model.impl.ArchiveContext;
 import io.cattle.platform.core.addon.HaproxyConfig;
 import io.cattle.platform.core.addon.InstanceHealthCheck;
-import io.cattle.platform.core.addon.LoadBalancerAppCookieStickinessPolicy;
 import io.cattle.platform.core.addon.LoadBalancerCookieStickinessPolicy;
 import io.cattle.platform.core.addon.LoadBalancerTargetInput;
 import io.cattle.platform.core.constants.InstanceConstants;
@@ -83,7 +82,6 @@ public class LoadBalancerInfoFactory extends AbstractAgentBaseContextFactory {
             }
         }
         
-        LoadBalancerAppCookieStickinessPolicy appPolicy = null;
         LoadBalancerCookieStickinessPolicy lbPolicy = null;
         HaproxyConfig customConfig = null;
         
@@ -91,8 +89,6 @@ public class LoadBalancerInfoFactory extends AbstractAgentBaseContextFactory {
                 Object.class);
         Map<String, Object> data = CollectionUtils.toMap(config);
         if (config != null) {
-            appPolicy = jsonMapper.convertValue(data.get(LoadBalancerConstants.FIELD_LB_APP_COOKIE_POLICY),
-                    LoadBalancerAppCookieStickinessPolicy.class);
             lbPolicy = jsonMapper.convertValue(data.get(LoadBalancerConstants.FIELD_LB_COOKIE_POLICY),
                     LoadBalancerCookieStickinessPolicy.class);
             customConfig = jsonMapper.convertValue(data.get(LoadBalancerConstants.FIELD_HAPROXY_CONFIG),
@@ -109,7 +105,6 @@ public class LoadBalancerInfoFactory extends AbstractAgentBaseContextFactory {
         context.getData().put("listeners", listeners);
         context.getData().put("publicIp", ipAddressDao.getInstancePrimaryIp(instance).getAddress());
         context.getData().put("backends", listenerToTargetMap);
-        context.getData().put("appPolicy", appPolicy);
         context.getData().put("lbPolicy", lbPolicy);
         context.getData().put("sslProto", sslProto);
         context.getData().put("certs", svcDao.getLoadBalancerServiceCertificates(lbService));
