@@ -20,6 +20,7 @@ import javax.servlet.FilterConfig;
 import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
+import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -28,11 +29,14 @@ import org.apache.cloudstack.spring.module.web.ModuleBasedFilter;
 
 import com.codahale.metrics.Timer;
 import com.netflix.config.DynamicStringListProperty;
+import com.netflix.config.DynamicStringProperty;
 
 public class ApiRequestFilter extends ModuleBasedFilter {
 
     private static final String DEFAULT_MODULE = "api-server";
     private static final DynamicStringListProperty IGNORE = ArchaiusUtil.getList("api.ignore.paths");
+    private static final DynamicStringProperty PL_SETTING = ArchaiusUtil.getString("ui.pl");
+    private static final String PL = "PL";
 
     ApiRequestFilterDelegate delegate;
     Versions versions;
@@ -62,6 +66,8 @@ public class ApiRequestFilter extends ModuleBasedFilter {
             chain.doFilter(request, response);
             return;
         }
+
+        addPLCookie(httpRequest, (HttpServletResponse) response);
 
         if (isUIRequest(httpRequest, path)) {
             if (path.contains(".") || !indexFile.canServeContent()) {
@@ -175,6 +181,25 @@ public class ApiRequestFilter extends ModuleBasedFilter {
         public WrappedException(Throwable cause) {
             super(cause);
         }
+    }
+
+
+    private void addPLCookie(HttpServletRequest httpRequest, HttpServletResponse response) {
+        Cookie plCookie = null;
+        if (httpRequest.getCookies() != null) {
+            for (Cookie c : httpRequest.getCookies()) {
+                if (PL.equals(c.getName()) && c.getName() != null) {
+                    plCookie = c;
+                    break;
+                }
+            }
+        }
+
+        if (plCookie == null || !PL_SETTING.getValue().equalsIgnoreCase(plCookie.getValue())) {
+            plCookie = new Cookie(PL, PL_SETTING.getValue());
+            plCookie.setPath("/");
+            response.addCookie(plCookie);
+        } 
     }
 
 }
