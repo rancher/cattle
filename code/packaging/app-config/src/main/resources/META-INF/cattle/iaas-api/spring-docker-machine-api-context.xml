@@ -14,6 +14,30 @@
                 <value>io.cattle.platform.docker.machine.api.addon.BaseMachineConfig</value> 
             </set>
         </property>
+        <property name="typeNames">
+            <set>
+                <value>amazonec2Config,parent=baseMachineConfig</value>  
+                <value>azureConfig,parent=baseMachineConfig</value>  
+                <value>digitaloceanConfig,parent=baseMachineConfig</value>  
+                <value>exoscaleConfig,parent=baseMachineConfig</value>  
+                <value>openstackConfig,parent=baseMachineConfig</value>  
+                <value>packetConfig,parent=baseMachineConfig</value>  
+                <value>rackspaceConfig,parent=baseMachineConfig</value>  
+                <value>softlayerConfig,parent=baseMachineConfig</value>  
+                <value>ubiquityConfig,parent=baseMachineConfig</value>  
+                <value>virtualboxConfig,parent=baseMachineConfig</value>  
+                <value>vmwarevcloudairConfig,parent=baseMachineConfig</value>  
+                <value>vmwarevsphereConfig,parent=baseMachineConfig</value>  
+            </set>
+        </property>
+    </bean>
+
+    <bean id="MachineTypeSet" class="io.cattle.platform.object.meta.TypeSet" >
+        <property name="typeNames">
+            <set>
+                <value>machine,parent=physicalHost</value>
+            </set>
+        </property>
     </bean>
 
     <bean class="io.cattle.platform.docker.machine.api.filter.MachineValidationFilter" />

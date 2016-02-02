@@ -16,7 +16,7 @@ import javax.xml.bind.annotation.XmlTransient;
 
 public class FieldImpl implements Field {
 
-    String name, type, validChars, invalidChars, transform, description;
+    String name, type, validChars, invalidChars, transform;
     Integer displayIndex;
     boolean create, update, includeInList = true, nullable, unique, required, defaultIsNull, readOnCreateOnly = false;
     FieldType typeEnum;
@@ -33,7 +33,6 @@ public class FieldImpl implements Field {
 
     public FieldImpl(Field field) {
         this.name = field.getName();
-        this.description = field.getDescription();
         this.validChars = field.getValidChars();
         this.invalidChars = field.getInvalidChars();
         this.create = field.isCreate();
@@ -84,15 +83,6 @@ public class FieldImpl implements Field {
 
     public void setName(String name) {
         this.name = name;
-    }
-
-    @Override
-    public String getDescription() {
-        return description;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
     }
 
     @Override
@@ -299,7 +289,7 @@ public class FieldImpl implements Field {
                 + displayIndex + ", create=" + create + ", update=" + update + ", includeInList=" + includeInList + ", nullable=" + nullable + ", unique="
                 + unique + ", required=" + required + ", defaultIsNull=" + defaultIsNull + ", typeEnum=" + typeEnum + ", subTypeEnums=" + subTypeEnums
                 + ", subTypes=" + subTypes + ", min=" + min + ", max=" + max + ", minLength=" + minLength + ", maxLength=" + maxLength + ", defaultValue="
-                + defaultValue + ", options=" + options + ", readMethod=" + readMethod + "description=" + description + "]";
+                + defaultValue + ", options=" + options + ", readMethod=" + readMethod + "]";
     }
 
     public void setSubTypesList(List<TypeAndName> subTypes) {

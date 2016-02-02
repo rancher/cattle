@@ -5,7 +5,6 @@ import io.cattle.platform.api.auth.Policy;
 import io.cattle.platform.core.dao.DynamicSchemaDao;
 import io.cattle.platform.core.model.Account;
 import io.cattle.platform.iaas.api.auth.AuthorizationProvider;
-import io.cattle.platform.iaas.api.auth.dao.AuthDao;
 import io.github.ibuildthecloud.gdapi.factory.SchemaFactory;
 import io.github.ibuildthecloud.gdapi.json.JsonMapper;
 import io.github.ibuildthecloud.gdapi.request.ApiRequest;
@@ -24,9 +23,6 @@ public class DynamicSchemaAuthorizationProvider implements AuthorizationProvider
 
     AuthorizationProvider authorizationProvider;
 
-    @Inject
-    AuthDao authDao;
-
     @Override
     public SchemaFactory getSchemaFactory(Account account, Policy policy, ApiRequest request) {
         SchemaFactory factory = authorizationProvider.getSchemaFactory(account, policy, request);
@@ -35,13 +31,7 @@ public class DynamicSchemaAuthorizationProvider implements AuthorizationProvider
             return null;
         }
 
-        return new DynamicSchemaFactory(account.getId(), factory, dynamicSchemaDao, jsonMapper,
-                getRole(account, policy, request));
-    }
-
-    @Override
-    public String getRole(Account account, Policy policy, ApiRequest request) {
-        return authorizationProvider.getRole(account, policy, request);
+        return new DynamicSchemaFactory(account.getId(), factory, dynamicSchemaDao, jsonMapper);
     }
 
     @Override

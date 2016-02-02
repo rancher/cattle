@@ -1,0 +1,10 @@
+{
+    "resourceFields": {
+        "username": {
+            "required": true
+        },
+        "apiKey": {
+            "required": true
+        }
+    }
+}

@@ -11,9 +11,9 @@ package io.cattle.platform.core.model.tables.records;
 @java.lang.SuppressWarnings({ "all", "unchecked", "rawtypes" })
 @javax.persistence.Entity
 @javax.persistence.Table(name = "physical_host", schema = "cattle")
-public class PhysicalHostRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.platform.core.model.tables.records.PhysicalHostRecord> implements io.cattle.platform.db.jooq.utils.TableRecordJaxb, org.jooq.Record14<java.lang.Long, java.lang.String, java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.util.Date, java.util.Date, java.util.Date, java.util.Map<String,Object>, java.lang.Long, java.lang.String, java.lang.String>, io.cattle.platform.core.model.PhysicalHost {
+public class PhysicalHostRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.platform.core.model.tables.records.PhysicalHostRecord> implements io.cattle.platform.db.jooq.utils.TableRecordJaxb, org.jooq.Record13<java.lang.Long, java.lang.String, java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.util.Date, java.util.Date, java.util.Date, java.util.Map<String,Object>, java.lang.Long, java.lang.String>, io.cattle.platform.core.model.PhysicalHost {
 
-	private static final long serialVersionUID = 2121344761;
+	private static final long serialVersionUID = 829666503;
 
 	/**
 	 * Setter for <code>cattle.physical_host.id</code>.
@@ -237,23 +237,6 @@ public class PhysicalHostRecord extends org.jooq.impl.UpdatableRecordImpl<io.cat
 		return (java.lang.String) getValue(12);
 	}
 
-	/**
-	 * Setter for <code>cattle.physical_host.driver</code>.
-	 */
-	@Override
-	public void setDriver(java.lang.String value) {
-		setValue(13, value);
-	}
-
-	/**
-	 * Getter for <code>cattle.physical_host.driver</code>.
-	 */
-	@javax.persistence.Column(name = "driver", length = 128)
-	@Override
-	public java.lang.String getDriver() {
-		return (java.lang.String) getValue(13);
-	}
-
 	// -------------------------------------------------------------------------
 	// Primary key information
 	// -------------------------------------------------------------------------
@@ -267,23 +250,23 @@ public class PhysicalHostRecord extends org.jooq.impl.UpdatableRecordImpl<io.cat
 	}
 
 	// -------------------------------------------------------------------------
-	// Record14 type implementation
+	// Record13 type implementation
 	// -------------------------------------------------------------------------
 
 	/**
 	 * {@inheritDoc}
 	 */
 	@Override
-	public org.jooq.Row14<java.lang.Long, java.lang.String, java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.util.Date, java.util.Date, java.util.Date, java.util.Map<String,Object>, java.lang.Long, java.lang.String, java.lang.String> fieldsRow() {
-		return (org.jooq.Row14) super.fieldsRow();
+	public org.jooq.Row13<java.lang.Long, java.lang.String, java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.util.Date, java.util.Date, java.util.Date, java.util.Map<String,Object>, java.lang.Long, java.lang.String> fieldsRow() {
+		return (org.jooq.Row13) super.fieldsRow();
 	}
 
 	/**
 	 * {@inheritDoc}
 	 */
 	@Override
-	public org.jooq.Row14<java.lang.Long, java.lang.String, java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.util.Date, java.util.Date, java.util.Date, java.util.Map<String,Object>, java.lang.Long, java.lang.String, java.lang.String> valuesRow() {
-		return (org.jooq.Row14) super.valuesRow();
+	public org.jooq.Row13<java.lang.Long, java.lang.String, java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.util.Date, java.util.Date, java.util.Date, java.util.Map<String,Object>, java.lang.Long, java.lang.String> valuesRow() {
+		return (org.jooq.Row13) super.valuesRow();
 	}
 
 	/**
@@ -394,14 +377,6 @@ public class PhysicalHostRecord extends org.jooq.impl.UpdatableRecordImpl<io.cat
 	 * {@inheritDoc}
 	 */
 	@Override
-	public org.jooq.Field<java.lang.String> field14() {
-		return io.cattle.platform.core.model.tables.PhysicalHostTable.PHYSICAL_HOST.DRIVER;
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
 	public java.lang.Long value1() {
 		return getId();
 	}
@@ -500,14 +475,6 @@ public class PhysicalHostRecord extends org.jooq.impl.UpdatableRecordImpl<io.cat
 	@Override
 	public java.lang.String value13() {
 		return getExternalId();
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public java.lang.String value14() {
-		return getDriver();
 	}
 
 	/**
@@ -631,16 +598,7 @@ public class PhysicalHostRecord extends org.jooq.impl.UpdatableRecordImpl<io.cat
 	 * {@inheritDoc}
 	 */
 	@Override
-	public PhysicalHostRecord value14(java.lang.String value) {
-		setDriver(value);
-		return this;
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public PhysicalHostRecord values(java.lang.Long value1, java.lang.String value2, java.lang.Long value3, java.lang.String value4, java.lang.String value5, java.lang.String value6, java.lang.String value7, java.util.Date value8, java.util.Date value9, java.util.Date value10, java.util.Map<String,Object> value11, java.lang.Long value12, java.lang.String value13, java.lang.String value14) {
+	public PhysicalHostRecord values(java.lang.Long value1, java.lang.String value2, java.lang.Long value3, java.lang.String value4, java.lang.String value5, java.lang.String value6, java.lang.String value7, java.util.Date value8, java.util.Date value9, java.util.Date value10, java.util.Map<String,Object> value11, java.lang.Long value12, java.lang.String value13) {
 		return this;
 	}
 
@@ -666,7 +624,6 @@ public class PhysicalHostRecord extends org.jooq.impl.UpdatableRecordImpl<io.cat
 		setData(from.getData());
 		setAgentId(from.getAgentId());
 		setExternalId(from.getExternalId());
-		setDriver(from.getDriver());
 	}
 
 	/**
@@ -692,7 +649,7 @@ public class PhysicalHostRecord extends org.jooq.impl.UpdatableRecordImpl<io.cat
 	/**
 	 * Create a detached, initialised PhysicalHostRecord
 	 */
-	public PhysicalHostRecord(java.lang.Long id, java.lang.String name, java.lang.Long accountId, java.lang.String kind, java.lang.String uuid, java.lang.String description, java.lang.String state, java.util.Date created, java.util.Date removed, java.util.Date removeTime, java.util.Map<String,Object> data, java.lang.Long agentId, java.lang.String externalId, java.lang.String driver) {
+	public PhysicalHostRecord(java.lang.Long id, java.lang.String name, java.lang.Long accountId, java.lang.String kind, java.lang.String uuid, java.lang.String description, java.lang.String state, java.util.Date created, java.util.Date removed, java.util.Date removeTime, java.util.Map<String,Object> data, java.lang.Long agentId, java.lang.String externalId) {
 		super(io.cattle.platform.core.model.tables.PhysicalHostTable.PHYSICAL_HOST);
 
 		setValue(0, id);
@@ -708,6 +665,5 @@ public class PhysicalHostRecord extends org.jooq.impl.UpdatableRecordImpl<io.cat
 		setValue(10, data);
 		setValue(11, agentId);
 		setValue(12, externalId);
-		setValue(13, driver);
 	}
 }

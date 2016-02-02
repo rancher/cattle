@@ -160,7 +160,7 @@ public abstract class AbstractObjectResourceManager extends AbstractBaseResource
 
         }
 
-        Object result = objectManager.setFields(schema, obj, filteredUpdates);
+        Object result = objectManager.setFields(obj, filteredUpdates);
         if (schedule) {
             filteredUpdates.put("old", existingValues);
             objectProcessManager.scheduleStandardProcess(StandardProcess.UPDATE, obj, filteredUpdates);
@@ -191,13 +191,7 @@ public abstract class AbstractObjectResourceManager extends AbstractBaseResource
             }
         }
 
-        Class<?> clz = request.getSchemaFactory().getSchemaClass(type, true);
-        Relationship relationship;
-        if (clz != null) {
-            relationship = getRelationship(clz, link);
-        } else {
-            relationship = getRelationship(type, link);
-        }
+        Relationship relationship = getRelationship(type, link);
 
         if (relationship == null) {
             return null;
@@ -334,8 +328,7 @@ public abstract class AbstractObjectResourceManager extends AbstractBaseResource
         if (link == null) {
             return request.getType();
         } else {
-            Relationship relationship = getRelationship(request.getSchemaFactory()
-                    .getSchemaClass(request.getType(), true), link);
+            Relationship relationship = getRelationship(request.getType(), link);
             return request.getSchemaFactory().getSchemaName(relationship.getObjectType());
         }
     }
@@ -493,10 +486,6 @@ public abstract class AbstractObjectResourceManager extends AbstractBaseResource
 
     protected Relationship getRelationship(String type, String linkName) {
         return metaDataManager.getRelationship(type, linkName);
-    }
-
-    protected Relationship getRelationship(Class<?> clz, String linkName) {
-        return metaDataManager.getRelationship(clz, linkName);
     }
 
     @Override

@@ -154,11 +154,6 @@ public class AgentQualifierAuthorizationProvider implements AuthorizationProvide
         return null;
     }
 
-    @Override
-    public String getRole(Account account, Policy policy, ApiRequest request) {
-        return null;
-    }
-
     public AchaiusPolicyOptionsFactory getOptionsFactory() {
         return optionsFactory;
     }

@@ -2,7 +2,6 @@ package io.cattle.platform.object;
 
 import io.cattle.platform.object.meta.Relationship;
 import io.github.ibuildthecloud.gdapi.factory.SchemaFactory;
-import io.github.ibuildthecloud.gdapi.model.Schema;
 
 import java.util.List;
 import java.util.Map;
@@ -36,8 +35,6 @@ public interface ObjectManager {
     <T> T loadResource(String resourceType, Long resourceId);
 
     <T> T setFields(Object obj, Map<String, Object> values);
-
-    <T> T setFields(Schema schema, Object obj, Map<String, Object> values);
 
     <T> T setFields(Object obj, Object key, Object... valueKeyValue);
 
