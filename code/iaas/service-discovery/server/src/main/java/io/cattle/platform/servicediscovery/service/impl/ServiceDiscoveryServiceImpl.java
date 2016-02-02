@@ -129,11 +129,7 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
                             HealthcheckConstants.HEALTH_STATE_UPDATING_UNHEALTHY)) {
                 continue;
             }
-            String serviceSuffix = DataAccessor.fieldString(instance,
-                    ServiceDiscoveryConstants.FIELD_SERVICE_INSTANCE_SERVICE_INDEX);
-            if (serviceSuffix != null) {
-                usedSuffixes.add(Integer.valueOf(serviceSuffix));
-            } else if (ServiceDiscoveryUtil.isServiceGeneratedName(env, service, instance.getName())) {
+            if (ServiceDiscoveryUtil.isServiceGeneratedName(env, service, instance.getName())) {
                 // legacy code - to support old data where service suffix wasn't set
                 String configName = launchConfigName == null
                         || launchConfigName.equals(ServiceDiscoveryConstants.PRIMARY_LAUNCH_CONFIG_NAME) ? ""

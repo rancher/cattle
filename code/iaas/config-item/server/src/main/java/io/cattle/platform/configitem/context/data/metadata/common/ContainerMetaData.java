@@ -5,7 +5,6 @@ import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.IpAddress;
 import io.cattle.platform.core.model.ServiceExposeMap;
 import io.cattle.platform.object.util.DataAccessor;
-import io.cattle.platform.servicediscovery.api.constants.ServiceDiscoveryConstants;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -96,8 +95,6 @@ public class ContainerMetaData {
         this.create_index = instance.getCreateIndex();
         this.health_state = instance.getHealthState();
         this.start_count = instance.getStartCount();
-        this.service_index = DataAccessor.fieldString(instance,
-                ServiceDiscoveryConstants.FIELD_SERVICE_INSTANCE_SERVICE_INDEX);
     }
 
     public void setService_name(String service_name) {

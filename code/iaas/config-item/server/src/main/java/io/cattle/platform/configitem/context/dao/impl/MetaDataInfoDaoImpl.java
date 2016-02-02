@@ -8,6 +8,7 @@ import static io.cattle.platform.core.model.tables.IpAddressNicMapTable.IP_ADDRE
 import static io.cattle.platform.core.model.tables.IpAddressTable.IP_ADDRESS;
 import static io.cattle.platform.core.model.tables.NicTable.NIC;
 import static io.cattle.platform.core.model.tables.ServiceExposeMapTable.SERVICE_EXPOSE_MAP;
+import static io.cattle.platform.core.model.tables.ServiceIndexTable.SERVICE_INDEX;
 import io.cattle.platform.configitem.context.dao.MetaDataInfoDao;
 import io.cattle.platform.configitem.context.data.metadata.common.ContainerMetaData;
 import io.cattle.platform.configitem.context.data.metadata.common.HostMetaData;
@@ -17,10 +18,12 @@ import io.cattle.platform.core.model.Host;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.IpAddress;
 import io.cattle.platform.core.model.ServiceExposeMap;
+import io.cattle.platform.core.model.ServiceIndex;
 import io.cattle.platform.core.model.tables.HostTable;
 import io.cattle.platform.core.model.tables.InstanceTable;
 import io.cattle.platform.core.model.tables.IpAddressTable;
 import io.cattle.platform.core.model.tables.ServiceExposeMapTable;
+import io.cattle.platform.core.model.tables.ServiceIndexTable;
 import io.cattle.platform.db.jooq.dao.impl.AbstractJooqDao;
 import io.cattle.platform.db.jooq.mapper.MultiRecordMapper;
 
@@ -51,6 +54,10 @@ public class MetaDataInfoDaoImpl extends AbstractJooqDao implements MetaDataInfo
                 if (input.get(4) != null) {
                     data.setExposeMap((ServiceExposeMap) input.get(4));
                 }
+
+                if (input.get(5) != null) {
+                    data.setService_index(((ServiceIndex) input.get(5)).getServiceIndex());
+                }
                 return data;
             }
         };
@@ -60,6 +67,7 @@ public class MetaDataInfoDaoImpl extends AbstractJooqDao implements MetaDataInfo
         HostTable host = mapper.add(HOST);
         IpAddressTable instanceIpAddress = mapper.add(IP_ADDRESS);
         ServiceExposeMapTable exposeMap = mapper.add(SERVICE_EXPOSE_MAP);
+        ServiceIndexTable serviceIndex = mapper.add(SERVICE_INDEX);
         return create()
                 .select(mapper.fields())
                 .from(hostIpAddress)
@@ -79,6 +87,8 @@ public class MetaDataInfoDaoImpl extends AbstractJooqDao implements MetaDataInfo
                 .on(instance.ID.eq(INSTANCE_HOST_MAP.INSTANCE_ID))
                 .join(exposeMap, JoinType.LEFT_OUTER_JOIN)
                 .on(exposeMap.INSTANCE_ID.eq(instance.ID))
+                .join(serviceIndex, JoinType.LEFT_OUTER_JOIN)
+                .on(serviceIndex.ID.eq(instance.SERVICE_INDEX_ID))
                 .where(host.REMOVED.isNull())
                 .and(instance.ACCOUNT_ID.eq(accountId))
                 .and(instanceIpAddress.ROLE.eq(IpAddressConstants.ROLE_PRIMARY))
