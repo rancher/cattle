@@ -371,7 +371,6 @@
         "volume.resourceActions.deactivate" : "",
 
         "loadBalancerConfig" : "r",
-        "loadBalancerConfig.appCookieStickinessPolicy" : "cru",
         "loadBalancerConfig.lbCookieStickinessPolicy" : "cru",
         "loadBalancerConfig.serviceId" : "r",
         "loadBalancerConfig.haproxyConfig" : "cru",
