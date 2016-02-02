@@ -48,6 +48,7 @@ public class AuditServiceImpl implements AuditService{
                     "scripts",
                     "serviceEvent".toLowerCase(),
                     "userPreference".toLowerCase(),
+                    "dynamicSchema".toLowerCase(),
                     ContainerEventConstants.CONTAINER_EVENT_KIND.toLowerCase(),
                     ExternalEventConstants.KIND_EXTERNAL_EVENT.toLowerCase(),
                     ExternalEventConstants.KIND_SERVICE_EVENT.toLowerCase(),

@@ -1,6 +1,7 @@
 package io.cattle.platform.iaas.api.request.handler;
 
 import io.cattle.platform.api.auth.Policy;
+import io.cattle.platform.api.formatter.DefaultIdFormatter;
 import io.cattle.platform.api.utils.ApiUtils;
 import io.github.ibuildthecloud.gdapi.context.ApiContext;
 import io.github.ibuildthecloud.gdapi.id.IdentityFormatter;
@@ -23,6 +24,10 @@ public class IdFormatterRequestHandler extends AbstractApiRequestHandler impleme
             ApiContext.getContext().setIdFormatter(plainFormatter);
         } else if (policy.isOption(Policy.PLAIN_ID_OPTION) && "true".equalsIgnoreCase(request.getOptions().get("_plainId"))) {
             ApiContext.getContext().setIdFormatter(plainFormatter);
+        } else {
+            DefaultIdFormatter formatter = new DefaultIdFormatter();
+            formatter.setSchemaFactory(request.getSchemaFactory());
+            ApiContext.getContext().setIdFormatter(formatter);
         }
     }
 

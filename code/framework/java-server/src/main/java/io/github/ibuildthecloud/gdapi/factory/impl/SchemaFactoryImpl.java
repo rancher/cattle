@@ -390,6 +390,10 @@ public class SchemaFactoryImpl extends AbstractSchemaFactory implements SchemaFa
             field.setName(f.name());
         }
 
+        if (StringUtils.isNotEmpty(f.description())) {
+            field.setDescription(f.description());
+        }
+
         if (f.displayIndex() > 0) {
             field.setDisplayIndex(f.displayIndex());
         }

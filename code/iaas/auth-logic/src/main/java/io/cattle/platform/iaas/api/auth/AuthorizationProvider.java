@@ -12,6 +12,8 @@ public interface AuthorizationProvider {
 
     SchemaFactory getSchemaFactory(Account account, Policy policy, ApiRequest request);
 
+    String getRole(Account account, Policy policy, ApiRequest request);
+
     Policy getPolicy(Account account, Account authenticatedAsAccount, Set<Identity> identities, ApiRequest request);
 
 }
