@@ -23,9 +23,11 @@ import io.cattle.platform.core.model.tables.HostTable;
 import io.cattle.platform.core.model.tables.InstanceTable;
 import io.cattle.platform.core.model.tables.IpAddressTable;
 import io.cattle.platform.core.model.tables.ServiceExposeMapTable;
-import io.cattle.platform.core.model.tables.ServiceIndexTable;
+import io.cattle.platform.core.model.tables.records.ServiceIndexRecord;
 import io.cattle.platform.db.jooq.dao.impl.AbstractJooqDao;
 import io.cattle.platform.db.jooq.mapper.MultiRecordMapper;
+import io.cattle.platform.object.util.DataAccessor;
+import io.cattle.platform.servicediscovery.api.constants.ServiceDiscoveryConstants;
 
 import java.util.List;
 
@@ -49,14 +51,25 @@ public class MetaDataInfoDaoImpl extends AbstractJooqDao implements MetaDataInfo
                         hostMetaData = new HostMetaData(hostIpAddress.getAddress(), host);
                     }
                 }
-                data.setInstanceAndHostMetadata((Instance) input.get(1), hostMetaData);
+                Instance instance = (Instance) input.get(1);
+                data.setInstanceAndHostMetadata(instance, hostMetaData);
 
                 if (input.get(4) != null) {
                     data.setExposeMap((ServiceExposeMap) input.get(4));
                 }
 
-                if (input.get(5) != null) {
-                    data.setService_index(((ServiceIndex) input.get(5)).getServiceIndex());
+                Long svcIndexId = DataAccessor.fieldLong(instance,
+                        ServiceDiscoveryConstants.FIELD_SERVICE_INSTANCE_SERVICE_INDEX_ID);
+                if (svcIndexId != null) {
+                    List<? extends ServiceIndex> indexes = create()
+                            .select(SERVICE_INDEX.fields())
+                            .from(SERVICE_INDEX)
+                            .where(SERVICE_INDEX.REMOVED.isNull()).and(SERVICE_INDEX.ID.eq(svcIndexId))
+                            .fetchInto(ServiceIndexRecord.class);
+                    if (indexes.size() > 0) {
+                        ServiceIndex serviceIndex = indexes.get(0);
+                        data.setService_index(serviceIndex.getServiceIndex());
+                    }
                 }
                 return data;
             }
@@ -67,7 +80,6 @@ public class MetaDataInfoDaoImpl extends AbstractJooqDao implements MetaDataInfo
         HostTable host = mapper.add(HOST);
         IpAddressTable instanceIpAddress = mapper.add(IP_ADDRESS);
         ServiceExposeMapTable exposeMap = mapper.add(SERVICE_EXPOSE_MAP);
-        ServiceIndexTable serviceIndex = mapper.add(SERVICE_INDEX);
         return create()
                 .select(mapper.fields())
                 .from(hostIpAddress)
@@ -87,8 +99,6 @@ public class MetaDataInfoDaoImpl extends AbstractJooqDao implements MetaDataInfo
                 .on(instance.ID.eq(INSTANCE_HOST_MAP.INSTANCE_ID))
                 .join(exposeMap, JoinType.LEFT_OUTER_JOIN)
                 .on(exposeMap.INSTANCE_ID.eq(instance.ID))
-                .join(serviceIndex, JoinType.LEFT_OUTER_JOIN)
-                .on(serviceIndex.ID.eq(instance.SERVICE_INDEX_ID))
                 .where(host.REMOVED.isNull())
                 .and(instance.ACCOUNT_ID.eq(accountId))
                 .and(instanceIpAddress.ROLE.eq(IpAddressConstants.ROLE_PRIMARY))

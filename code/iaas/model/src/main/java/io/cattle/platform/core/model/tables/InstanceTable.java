@@ -11,7 +11,7 @@ package io.cattle.platform.core.model.tables;
 @java.lang.SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class InstanceTable extends org.jooq.impl.TableImpl<io.cattle.platform.core.model.tables.records.InstanceRecord> {
 
-	private static final long serialVersionUID = 453800376;
+	private static final long serialVersionUID = 1690742757;
 
 	/**
 	 * The singleton instance of <code>cattle.instance</code>
@@ -202,11 +202,6 @@ public class InstanceTable extends org.jooq.impl.TableImpl<io.cattle.platform.co
 	public final org.jooq.TableField<io.cattle.platform.core.model.tables.records.InstanceRecord, java.util.Date> HEALTH_UPDATED = createField("health_updated", org.jooq.impl.SQLDataType.TIMESTAMP.asConvertedDataType(new io.cattle.platform.db.jooq.converter.DateConverter()), this, "");
 
 	/**
-	 * The column <code>cattle.instance.service_index_id</code>.
-	 */
-	public final org.jooq.TableField<io.cattle.platform.core.model.tables.records.InstanceRecord, java.lang.Long> SERVICE_INDEX_ID = createField("service_index_id", org.jooq.impl.SQLDataType.BIGINT, this, "");
-
-	/**
 	 * Create a <code>cattle.instance</code> table reference
 	 */
 	public InstanceTable() {
@@ -257,7 +252,7 @@ public class InstanceTable extends org.jooq.impl.TableImpl<io.cattle.platform.co
 	 */
 	@Override
 	public java.util.List<org.jooq.ForeignKey<io.cattle.platform.core.model.tables.records.InstanceRecord, ?>> getReferences() {
-		return java.util.Arrays.<org.jooq.ForeignKey<io.cattle.platform.core.model.tables.records.InstanceRecord, ?>>asList(io.cattle.platform.core.model.Keys.FK_INSTANCE__ACCOUNT_ID, io.cattle.platform.core.model.Keys.FK_INSTANCE__IMAGE_ID, io.cattle.platform.core.model.Keys.FK_INSTANCE__OFFERING_ID, io.cattle.platform.core.model.Keys.FK_INSTANCE__ZONE_ID, io.cattle.platform.core.model.Keys.FK_INSTANCE__AGENT_ID, io.cattle.platform.core.model.Keys.FK_INSTANCE__REGISTRY_CREDENTIAL_ID, io.cattle.platform.core.model.Keys.FK_INSTANCE__INSTANCE_ID, io.cattle.platform.core.model.Keys.FK_INSTANCE__SERVICE_INDEX_ID);
+		return java.util.Arrays.<org.jooq.ForeignKey<io.cattle.platform.core.model.tables.records.InstanceRecord, ?>>asList(io.cattle.platform.core.model.Keys.FK_INSTANCE__ACCOUNT_ID, io.cattle.platform.core.model.Keys.FK_INSTANCE__IMAGE_ID, io.cattle.platform.core.model.Keys.FK_INSTANCE__OFFERING_ID, io.cattle.platform.core.model.Keys.FK_INSTANCE__ZONE_ID, io.cattle.platform.core.model.Keys.FK_INSTANCE__AGENT_ID, io.cattle.platform.core.model.Keys.FK_INSTANCE__REGISTRY_CREDENTIAL_ID, io.cattle.platform.core.model.Keys.FK_INSTANCE__INSTANCE_ID);
 	}
 
 	/**
