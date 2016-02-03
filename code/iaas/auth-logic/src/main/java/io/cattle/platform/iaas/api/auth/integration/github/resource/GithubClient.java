@@ -17,18 +17,22 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
 import javax.inject.Inject;
 
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.http.HeaderElement;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.fluent.Request;
 import org.apache.http.message.BasicNameValuePair;
 
 public class GithubClient extends GithubConfigurable{
+
+    private static final String LINK = "link";
+    private static final String RELATION = "rel";
+    private static final String NEXT = "next";
 
     @Inject
     private GithubTokenUtil githubTokenUtils;
@@ -38,28 +42,20 @@ public class GithubClient extends GithubConfigurable{
 
     private static final Log logger = LogFactory.getLog(GithubClient.class);
 
-    public GithubAccountInfo getUserAccountInfo(String githubAccessToken) {
+    private Identity getUserIdentity(String githubAccessToken) {
         if (StringUtils.isEmpty(githubAccessToken)) {
             noAccessToken();
         }
-        Map<String, Object> jsonData;
-
-        HttpResponse response;
         try {
-            response = Request.Get(getURL(GithubClientEndpoints.USER_INFO))
-                    .addHeader(GithubConstants.AUTHORIZATION, "token " + githubAccessToken)
-                    .addHeader(GithubConstants.ACCEPT, GithubConstants.APPLICATION_JSON).execute().returnResponse();
-            int statusCode = response.getStatusLine().getStatusCode();
-            if (statusCode != 200) {
-                noGithub(statusCode);
-            }
-            jsonData = jsonMapper.readValue(response.getEntity().getContent());
+            HttpResponse response = getFromGithub(githubAccessToken, getURL(GithubClientEndpoints.USER_INFO));
+
+            Map<String, Object> jsonData = jsonMapper.readValue(response.getEntity().getContent());
+            return jsonToGithubAccountInfo(jsonData).toIdentity(GithubConstants.USER_SCOPE);
         } catch (IOException e) {
-            logger.error("Failed to get user account info.", e);
+            logger.error("Failed to get Github user account info.", e);
             throw new ClientVisibleException(ResponseCodes.INTERNAL_SERVER_ERROR, GithubConstants.GITHUB_CLIENT,
-                    "Failed to get user account info.", null);
+                    "Failed to get Github user account info.", null);
         }
-        return jsonToGithubAccountInfo(jsonData);
     }
 
     public String getAccessToken(String code) {
@@ -108,28 +104,24 @@ public class GithubClient extends GithubConfigurable{
         return new GithubAccountInfo(accountId, accountName, profilePicture, profileUrl, name);
     }
 
-    public List<GithubAccountInfo> getOrgAccountInfo(String githubAccessToken) {
+    public List<Identity> getOrgAccountInfo(String githubAccessToken) {
         try {
             if (StringUtils.isEmpty(githubAccessToken)) {
                 noAccessToken();
             }
-            List<GithubAccountInfo> orgInfoList = new ArrayList<>();
+            List<Identity> orgs = new ArrayList<>();
             List<Map<String, Object>> jsonData;
 
-            HttpResponse response = Request.Get(getURL(GithubClientEndpoints.ORG_INFO))
-                    .addHeader(GithubConstants.AUTHORIZATION, "token " + githubAccessToken)
-                    .addHeader(GithubConstants.ACCEPT, GithubConstants.APPLICATION_JSON).execute().returnResponse();
+            List<HttpResponse> responses = paginateGithub(githubAccessToken, getURL(GithubClientEndpoints.ORG_INFO));
+            for (HttpResponse response :
+                    responses) {
+                jsonData = jsonMapper.readCollectionValue(response.getEntity().getContent(), List.class, Map.class);
 
-            int statusCode = response.getStatusLine().getStatusCode();
-            if (statusCode != 200) {
-                noGithub(statusCode);
+                for (Map<String, Object> orgObject : jsonData) {
+                    orgs.add(jsonToGithubAccountInfo(orgObject).toIdentity(GithubConstants.ORG_SCOPE));
+                }
             }
-            jsonData = jsonMapper.readCollectionValue(response.getEntity().getContent(), List.class, Map.class);
-
-            for (Map<String, Object> orgObject : jsonData) {
-                orgInfoList.add(jsonToGithubAccountInfo(orgObject));
-            }
-            return orgInfoList;
+            return orgs;
         }
         catch (IOException e){
             logger.error("Failed to get org account info.", e);
@@ -138,42 +130,92 @@ public class GithubClient extends GithubConfigurable{
         }
     }
 
+    private List<HttpResponse> paginateGithub(String githubAccessToken, String url) throws IOException {
+        List<HttpResponse> responses = new ArrayList<>();
+        HttpResponse response = getFromGithub(githubAccessToken, url);
+        responses.add(response);
+        String nextUrl = nextGithubPage(response);
+        while (StringUtils.isNotBlank(nextUrl)) {
+            response = getFromGithub(githubAccessToken, nextUrl);
+            responses.add(response);
+            nextUrl = nextGithubPage(response);
+        }
+        return responses;
+    }
+
     private void noAccessToken() {
         throw new ClientVisibleException(ResponseCodes.INTERNAL_SERVER_ERROR,
                 "GithubAccessToken", "No github Access token", null);
     }
 
-    public List<TeamAccountInfo> getOrgTeamInfo(String githubAccessToken, String org) {
+    public List<Identity> getTeamsInfo(String githubAccessToken) {
         try {
             if (StringUtils.isEmpty(githubAccessToken)) {
                 noAccessToken();
             }
-            List<TeamAccountInfo> teamInfoList = new ArrayList<>();
-            List<Map<String, Object>> jsonData;
 
-            HttpResponse response = Request.Get(getURL(GithubClientEndpoints.ORGS) + org + "/teams").addHeader(GithubConstants.AUTHORIZATION, "token " +
-                    "" + githubAccessToken).addHeader(GithubConstants.ACCEPT, GithubConstants.APPLICATION_JSON).execute().returnResponse();
-            int statusCode = response.getStatusLine().getStatusCode();
-            if (statusCode != 200) {
-                noGithub(statusCode);
+            List<HttpResponse> responses = paginateGithub(githubAccessToken, getURL(GithubClientEndpoints.TEAMS));
+            ArrayList<Identity> teams = new ArrayList<>();
+            for (HttpResponse response :
+                    responses) {
+                teams.addAll(getTeamInfo(response));
             }
-            jsonData = jsonMapper.readCollectionValue(response.getEntity().getContent(), List.class, Map.class);
-
-            for (Map<String, Object> orgObject : jsonData) {
-                String accountId = ObjectUtils.toString(orgObject.get("id"));
-                String accountName = ObjectUtils.toString(orgObject.get(GithubConstants.NAME_FIELD));
-                String slug = ObjectUtils.toString(orgObject.get("slug"));
-                if (!StringUtils.equalsIgnoreCase("Owners", accountName)) {
-                    teamInfoList.add(new TeamAccountInfo(org, accountName, accountId, slug));
-                }
-            }
-            return teamInfoList;
+            return teams;
         }
         catch (IOException e) {
             logger.error("Failed to get team account info.", e);
             throw new ClientVisibleException(ResponseCodes.INTERNAL_SERVER_ERROR, GithubConstants.GITHUB_CLIENT,
                     "Failed to get team account info.", null);
         }
+    }
+
+    private List<Identity> getTeamInfo(HttpResponse response) throws IOException {
+        List<Identity> teams = new ArrayList<>();
+        List<Map<String, Object>> jsonData;
+        jsonData = jsonMapper.readCollectionValue(response.getEntity().getContent(), List.class, Map.class);
+        for (Map<String, Object> teamObject : jsonData) {
+            teams.add(getTeam(teamObject));
+        }
+        return teams;
+
+    }
+
+    public Identity getTeam(Map<String, Object> teamObject) {
+        String accountId = ObjectUtils.toString(teamObject.get(GithubConstants.TEAM_ID));
+        String teamName = ObjectUtils.toString(teamObject.get(GithubConstants.NAME_FIELD));
+        String slug = ObjectUtils.toString(teamObject.get("slug"));
+        Map<String, Object> org = CollectionUtils.toMap(teamObject.get("organization"));
+        String orgLogin = ObjectUtils.toString(org.get(GithubConstants.LOGIN));
+        String orgName = ObjectUtils.toString(org.get(GithubConstants.LOGIN));
+        String profilePicture = ObjectUtils.toString(org.get(GithubConstants.PROFILE_PICTURE));
+        String profileUrl = String.format(getURL(GithubClientEndpoints.TEAM_PROFILE), orgLogin, slug);
+        return new Identity(GithubConstants.TEAM_SCOPE, accountId,
+                StringUtils.isBlank(orgName) ? orgLogin : orgName + " : " + teamName,
+                profileUrl, profilePicture, slug);
+    }
+
+    private String nextGithubPage(HttpResponse response) {
+        if (response.getFirstHeader(LINK) != null) {
+            for(HeaderElement element: response.getFirstHeader(LINK).getElements()) {
+                if (element.getParameterByName(RELATION) != null &&
+                        NEXT.equalsIgnoreCase(element.getParameterByName(RELATION).getValue())){
+                    String next = String.valueOf(element).split(";")[0];
+                    return next.substring(1, next.length() - 1);
+                }
+            }
+        }
+        return null;
+    }
+
+    public HttpResponse getFromGithub(String githubAccessToken, String url) throws IOException {
+
+        HttpResponse response = Request.Get(url).addHeader(GithubConstants.AUTHORIZATION, "token " +
+                "" + githubAccessToken).addHeader(GithubConstants.ACCEPT, GithubConstants.APPLICATION_JSON).execute().returnResponse();
+        int statusCode = response.getStatusLine().getStatusCode();
+        if (statusCode != 200) {
+            noGithub(statusCode);
+        }
+        return response;
     }
 
     public GithubAccountInfo getGithubUserByName(String username) {
@@ -190,13 +232,7 @@ public class GithubClient extends GithubConfigurable{
             if (getGithubOrgByName(username) != null){
                 return null;
             }
-            HttpResponse response = Request.Get(getURL(GithubClientEndpoints.USERS) + username)
-                    .addHeader(GithubConstants.ACCEPT, GithubConstants.APPLICATION_JSON).addHeader(
-                            GithubConstants.AUTHORIZATION, "token " + githubAccessToken).execute().returnResponse();
-            int statusCode = response.getStatusLine().getStatusCode();
-            if (statusCode != 200) {
-                noGithub(statusCode);
-            }
+            HttpResponse response = getFromGithub(githubAccessToken, getURL(GithubClientEndpoints.USERS) + username);
             Map<String, Object> jsonData = CollectionUtils.toMap(jsonMapper.readValue(response.getEntity().getContent(), Map.class));
             return jsonToGithubAccountInfo(jsonData);
         } catch (IOException e) {
@@ -216,17 +252,9 @@ public class GithubClient extends GithubConfigurable{
                 throw new ClientVisibleException(ResponseCodes.INTERNAL_SERVER_ERROR,
                         "noGithubOrgName", "No org name specified when retrieving from Github.", null);
             }
-            org = URLEncoder.encode(org, "UTF-8");;
-            HttpResponse response = Request.Get(getURL(GithubClientEndpoints.ORGS) + org)
-                    .addHeader(GithubConstants.ACCEPT, GithubConstants.APPLICATION_JSON)
-                    .addHeader(GithubConstants.AUTHORIZATION, "token " + githubAccessToken).execute().returnResponse();
-            int statusCode = response.getStatusLine().getStatusCode();
-            if (statusCode != 200) {
-                if (statusCode == 404) {
-                    return null;
-                }
-                noGithub(statusCode);
-            }
+            org = URLEncoder.encode(org, "UTF-8");
+            HttpResponse response = getFromGithub(githubAccessToken, getURL(GithubClientEndpoints.ORGS) + org);
+
             Map<String, Object> jsonData = CollectionUtils.toMap(jsonMapper.readValue(response.getEntity().getContent
                     (), Map.class));
             return jsonToGithubAccountInfo(jsonData);
@@ -269,7 +297,7 @@ public class GithubClient extends GithubConfigurable{
                 toReturn = apiEndpoint + "/user";
                 break;
             case ORG_INFO:
-                toReturn = apiEndpoint + "/user/orgs";
+                toReturn = apiEndpoint + "/user/orgs?per_page=100";
                 break;
             case USER_PICTURE:
                 toReturn = "https://avatars.githubusercontent.com/u/" + val + "?v=3&s=72";
@@ -279,6 +307,12 @@ public class GithubClient extends GithubConfigurable{
                 break;
             case TEAM:
                 toReturn = apiEndpoint + "/teams/";
+                break;
+            case TEAMS:
+                toReturn = apiEndpoint + "/user/teams?per_page=100";
+                break;
+            case TEAM_PROFILE:
+                toReturn = hostName + "/orgs/%s/teams/%s";
                 break;
             default:
                 throw new ClientVisibleException(ResponseCodes.INTERNAL_SERVER_ERROR,
@@ -293,13 +327,8 @@ public class GithubClient extends GithubConfigurable{
             noAccessToken();
         }
         try {
-            HttpResponse response = Request.Get(getURL(GithubClientEndpoints.USER_INFO) + '/' + id)
-                    .addHeader(GithubConstants.ACCEPT, GithubConstants.APPLICATION_JSON).addHeader(
-                            GithubConstants.AUTHORIZATION, "token " + githubAccessToken).execute().returnResponse();
-            int statusCode = response.getStatusLine().getStatusCode();
-            if (statusCode != 200) {
-                noGithub(statusCode);
-            }
+            HttpResponse response = getFromGithub(githubAccessToken, getURL(GithubClientEndpoints.USER_INFO) + '/' + id);
+
             Map<String, Object> jsonData = CollectionUtils.toMap(jsonMapper.readValue(response.getEntity().getContent(), Map.class));
             return jsonToGithubAccountInfo(jsonData);
         } catch (IOException e) {
@@ -310,18 +339,12 @@ public class GithubClient extends GithubConfigurable{
     @SuppressWarnings("unchecked")
     public List<Map<String, Object>> searchGithub(String url) {
         try {
-            HttpResponse res = Request.Get(url)
-                    .addHeader("Authorization", "token " + githubTokenUtils.getAccessToken()).addHeader
-                            ("Accept", "application/json").execute().returnResponse();
-            int statusCode = res.getStatusLine().getStatusCode();
-            if (statusCode != 200) {
-                noGithub(statusCode);
-            }
+            HttpResponse res = getFromGithub(githubTokenUtils.getAccessToken(), url);
             //TODO:Finish implementing search.
             Map<String, Object> jsonData = jsonMapper.readValue(res.getEntity().getContent());
             return (List<Map<String, Object>>) jsonData.get("items");
         } catch (IOException e) {
-            //TODO: Propper Error Handling.
+            //TODO: Proper Error Handling.
             return new ArrayList<>();
         }
     }
@@ -332,25 +355,10 @@ public class GithubClient extends GithubConfigurable{
     }
 
     public Set<Identity> getIdentities(String accessToken) {
-        List<TeamAccountInfo> teamsAccountInfo = new ArrayList<>();
-        GithubAccountInfo userAccountInfo = getUserAccountInfo(accessToken);
-        List<GithubAccountInfo> orgAccountInfo = getOrgAccountInfo(accessToken);
         Set<Identity> identities = new HashSet<>();
-
-        Identity user = userAccountInfo.toIdentity(GithubConstants.USER_SCOPE);
-        identities.add(user);
-
-        for (GithubAccountInfo info : orgAccountInfo) {
-            teamsAccountInfo.addAll(getOrgTeamInfo(accessToken, info.getAccountName()));
-            Identity org = info.toIdentity(GithubConstants.ORG_SCOPE);
-            identities.add(org);
-        }
-
-        for (TeamAccountInfo info : teamsAccountInfo) {
-            Identity team = new Identity(GithubConstants.TEAM_SCOPE, info.getId(), info.getOrg() + ":" + info.getName(),
-                    null, null, null);
-            identities.add(team);
-        }
+        identities.add(getUserIdentity(accessToken));
+        identities.addAll(getOrgAccountInfo(accessToken));
+        identities.addAll(getTeamsInfo(accessToken));
         return identities;
     }
 }
