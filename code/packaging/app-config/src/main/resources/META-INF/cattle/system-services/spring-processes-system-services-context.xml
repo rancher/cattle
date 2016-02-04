@@ -12,7 +12,11 @@
 
     <bean id="ProcessRecordDao" class="io.cattle.platform.engine.manager.impl.jooq.JooqProcessRecordDao" />
 
-    <bean id="ProcessServerImpl" class="io.cattle.platform.engine.server.impl.ProcessServerImpl" />
+    <bean id="ProcessServerImpl" class="io.cattle.platform.engine.server.impl.ProcessServerImpl" >
+        <property name="dispatcher" >
+            <bean class="io.cattle.platform.engine.server.impl.ProcessInstanceParallelDispatcher" />
+        </property>
+    </bean>
 
     <bean class="io.cattle.platform.engine.manager.impl.DefaultProcessManager" >
         <property name="definitionList" value="#{extensionManager.list('process.definition')}" />
@@ -22,7 +26,7 @@
         <property name="changeMonitors" value="#{extensionManager.list('state.change.monitor')}" />
     </bean>
 
-    <bean id="ProcessInstanceDispatcher" class="io.cattle.platform.engine.server.impl.EventingDispatcher" />
+    <bean class="io.cattle.platform.engine.server.impl.EventingDispatcher" />
 
     <bean class="io.cattle.platform.object.process.impl.DefaultObjectProcessManager" />
     <bean class="io.cattle.platform.process.monitor.EventNotificationChangeMonitor" />
