@@ -235,7 +235,7 @@ public class InstanceStart extends AbstractDefaultProcessHandler {
             if (port.getRemoved() == null
                     && !(port.getState().equalsIgnoreCase(CommonStatesConstants.REMOVED) || port.getState()
                             .equalsIgnoreCase(CommonStatesConstants.REMOVING))) {
-                activate(port, state.getData());
+                createThenActivate(port, state.getData());
             }
         }
     }

@@ -23,6 +23,7 @@ import io.cattle.platform.core.model.ConfigItemStatus;
 import io.cattle.platform.core.model.Service;
 import io.cattle.platform.core.model.tables.records.ConfigItemStatusRecord;
 import io.cattle.platform.db.jooq.dao.impl.AbstractJooqDao;
+import io.cattle.platform.metrics.util.MetricsUtil;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.util.type.CollectionUtils;
 
@@ -43,27 +44,37 @@ import org.jooq.exception.DataAccessException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.codahale.metrics.Timer;
+import com.codahale.metrics.Timer.Context;
 import com.netflix.config.DynamicIntProperty;
 
 public class ConfigItemStatusDaoImpl extends AbstractJooqDao implements ConfigItemStatusDao {
+
 
     private static final Logger log = LoggerFactory.getLogger(ConfigItemStatusDaoImpl.class);
     private static final DynamicIntProperty BATCH_SIZE = ArchaiusUtil.getInt("item.sync.batch.size");
 
     ObjectManager objectManager;
+    Timer incrementTimer = MetricsUtil.getRegistry().timer("config.item.increment");
+    Timer appliedTimer = MetricsUtil.getRegistry().timer("config.item.applied");
 
     @Override
     public long incrementOrApply(Client client, String itemName) {
-        if ( ! increment(client, itemName) ) {
-            RuntimeException e = apply(client, itemName);
-            if ( e != null ) {
-                if ( ! increment(client, itemName) ) {
-                    throw new IllegalStateException("Failed to increment [" + itemName + "] on [" + client + "]", e);
+        Context t = incrementTimer.time();
+        try {
+            if ( ! increment(client, itemName) ) {
+                RuntimeException e = apply(client, itemName);
+                if ( e != null ) {
+                    if ( ! increment(client, itemName) ) {
+                        throw new IllegalStateException("Failed to increment [" + itemName + "] on [" + client + "]", e);
+                    }
                 }
             }
-        }
 
-        return getRequestedVersion(client, itemName);
+            return getRequestedVersion(client, itemName);
+        } finally {
+            t.stop();
+        }
     }
 
     @Override
@@ -145,21 +156,26 @@ public class ConfigItemStatusDaoImpl extends AbstractJooqDao implements ConfigIt
 
     @Override
     public boolean setApplied(Client client, String itemName, ItemVersion version) {
-        int updated = update(CONFIG_ITEM_STATUS)
-            .set(CONFIG_ITEM_STATUS.APPLIED_VERSION, version.getRevision())
-            .set(CONFIG_ITEM_STATUS.SOURCE_VERSION, version.getSourceRevision())
-            .set(CONFIG_ITEM_STATUS.APPLIED_UPDATED, new Timestamp(System.currentTimeMillis()))
-            .where(
-                    CONFIG_ITEM_STATUS.NAME.eq(itemName)
-                    .and(targetObjectCondition(client)))
-            .execute();
+        Context t = appliedTimer.time();
+        try {
+            int updated = update(CONFIG_ITEM_STATUS)
+                .set(CONFIG_ITEM_STATUS.APPLIED_VERSION, version.getRevision())
+                .set(CONFIG_ITEM_STATUS.SOURCE_VERSION, version.getSourceRevision())
+                .set(CONFIG_ITEM_STATUS.APPLIED_UPDATED, new Timestamp(System.currentTimeMillis()))
+                .where(
+                        CONFIG_ITEM_STATUS.NAME.eq(itemName)
+                        .and(targetObjectCondition(client)))
+                .execute();
 
-        if ( updated > 1 ) {
-            log.error("Updated too many rows [{}] for client [{}] itemName [{}] itemVersion [{}]",
-                    updated, client, itemName, version);
+            if ( updated > 1 ) {
+                log.error("Updated too many rows [{}] for client [{}] itemName [{}] itemVersion [{}]",
+                        updated, client, itemName, version);
+            }
+
+            return updated == 1;
+        } finally {
+            t.stop();
         }
-
-        return updated == 1;
     }
 
 
