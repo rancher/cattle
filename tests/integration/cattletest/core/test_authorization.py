@@ -531,6 +531,7 @@ def test_project_auth(admin_user_client, user_client, project_client):
         'members': 'cr',
         'swarm': 'cru',
         'kubernetes': 'cru',
+        'publicDns': 'cru',
         'servicesPortRange': 'cru',
     })
 
@@ -542,6 +543,7 @@ def test_project_auth(admin_user_client, user_client, project_client):
         'members': 'cr',
         'swarm': 'cru',
         'kubernetes': 'cru',
+        'publicDns': 'cru',
         'servicesPortRange': 'cru',
     })
 
@@ -553,6 +555,7 @@ def test_project_auth(admin_user_client, user_client, project_client):
         'members': 'r',
         'swarm': 'r',
         'kubernetes': 'r',
+        'publicDns': 'r',
         'servicesPortRange': 'r',
     })
 
