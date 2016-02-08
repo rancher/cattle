@@ -1781,7 +1781,8 @@ def test_export_config(client, context):
         create_service(name="web",
                        environmentId=env.id,
                        launchConfig=launch_config,
-                       metadata=metadata)
+                       metadata=metadata,
+                       retainIp=True)
 
     service = client.wait_success(service)
 
@@ -1798,6 +1799,7 @@ def test_export_config(client, context):
     metadata = {"$$bar": {"metadata": [updated]}}
     assert rancher_yml[service.name]['metadata'] is not None
     assert rancher_yml[service.name]['metadata'] == metadata
+    assert rancher_yml[service.name]['retain_ip'] is True
 
 
 def test_validate_create_only_containers(client, context):
