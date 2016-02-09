@@ -76,6 +76,15 @@ public class TypeIdFormatter implements IdFormatter {
         }
     }
 
+    @Override
+    public IdFormatter withSchemaFactory(SchemaFactory schemaFactory) {
+        TypeIdFormatter formatter = new TypeIdFormatter();
+        formatter.schemaFactory = schemaFactory;
+        formatter.globalPrefix = this.globalPrefix;
+        formatter.plainTypes = this.plainTypes;
+        return formatter;
+    }
+
     protected String getShortType(String type) {
         String base = schemaFactory.getBaseType(type);
         if (base != null) {
