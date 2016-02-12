@@ -6,7 +6,10 @@ import yaml
 def _get_agent_for_container(container):
     agent = None
     for map in container.hosts()[0].instanceHostMaps():
-        c = map.instance()
+        try:
+            c = map.instance()
+        except Exception:
+            continue
         if c.agentId is not None:
             agent = c.agent()
             break
