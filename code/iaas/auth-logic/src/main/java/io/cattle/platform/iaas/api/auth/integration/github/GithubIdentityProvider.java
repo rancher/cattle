@@ -30,12 +30,10 @@ import java.util.Map;
 import java.util.Set;
 import javax.inject.Inject;
 
-import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.http.HttpResponse;
-import org.apache.http.client.fluent.Request;
 
 public class GithubIdentityProvider extends GithubConfigurable implements IdentityProvider {
 
@@ -218,25 +216,12 @@ public class GithubIdentityProvider extends GithubConfigurable implements Identi
             if (StringUtils.isEmpty(id)) {
                 return null;
             }
-            HttpResponse response = Request.Get(githubClient.getURL(GithubClientEndpoints.TEAM) + id)
-                    .addHeader(GithubConstants.ACCEPT, GithubConstants.APPLICATION_JSON)
-                    .addHeader(GithubConstants.AUTHORIZATION, "token " + gitHubAccessToken).execute().returnResponse();
-            int statusCode = response.getStatusLine().getStatusCode();
-            if (statusCode != 200) {
-                githubClient.noGithub(statusCode);
-            }
-            Map<String, Object> jsonData = CollectionUtils.toMap(jsonMapper.readValue(response.getEntity().getContent
+            HttpResponse response = githubClient.getFromGithub(gitHubAccessToken, githubClient.getURL(GithubClientEndpoints.TEAM) + id);
+
+            Map<String, Object> teamData = CollectionUtils.toMap(jsonMapper.readValue(response.getEntity().getContent
                     (), Map.class));
 
-            Map<String, String> org = (Map<String, String>) jsonData.get("organization");
-            String orgLogin = ObjectUtils.toString(org.get(GithubConstants.LOGIN));
-            String orgName = ObjectUtils.toString(org.get(GithubConstants.NAME_FIELD));
-            String orgProfilePicture = ObjectUtils.toString(org.get(GithubConstants.PROFILE_PICTURE));
-            String accountId = ObjectUtils.toString(jsonData.get("id"));
-            String name = ObjectUtils.toString(jsonData.get(GithubConstants.NAME_FIELD));
-            String profileUrl = "https://github.com/orgs/" + orgLogin + "/teams/" + name;
-            return new Identity(GithubConstants.TEAM_SCOPE, accountId, StringUtils.isBlank(orgName) ? orgLogin : orgName + ':' + name,
-                    profileUrl, orgProfilePicture, name);
+            return githubClient.getTeam(teamData);
         } catch (IOException e) {
             throw new ClientVisibleException(ResponseCodes.SERVICE_UNAVAILABLE, "GithubUnavailable", "Could not retrieve orgId from Github", null);
         }
