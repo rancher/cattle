@@ -5,6 +5,7 @@ import io.cattle.platform.core.model.VolumeStoragePoolMap;
 import io.cattle.platform.engine.handler.HandlerResult;
 import io.cattle.platform.engine.process.ProcessInstance;
 import io.cattle.platform.engine.process.ProcessState;
+import io.cattle.platform.engine.process.impl.ProcessCancelException;
 import io.cattle.platform.process.base.AbstractDefaultProcessHandler;
 
 import java.util.HashSet;
@@ -22,7 +23,11 @@ public class VolumeDeactivate extends AbstractDefaultProcessHandler {
         Set<Long> pools = new HashSet<Long>();
         for (VolumeStoragePoolMap map : getObjectManager().children(volume, VolumeStoragePoolMap.class)) {
             if (map.getRemoved() == null) {
-                deactivate(map, state.getData());
+                try {
+                    deactivate(map, state.getData());
+                } catch (ProcessCancelException e) {
+                    remove(map, state.getData());
+                }
                 pools.add(map.getStoragePoolId());
             }
         }
