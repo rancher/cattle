@@ -227,6 +227,17 @@ public class ProjectResourceManager extends AbstractObjectResourceManager {
     }
 
     @Override
+    protected Relationship getRelationship(Class<?> clz, String linkName) {
+        if (linkName.equalsIgnoreCase("projectmembers")) {
+            Relationship rel = super.getMetaDataManager().getRelationship(clz, linkName, "projectid");
+            if (rel != null) {
+                return rel;
+            }
+        }
+        return super.getRelationship(clz, linkName);
+    }
+
+    @Override
     protected void addLinks(Object obj, SchemaFactory schemaFactory, Schema schema, Resource resource) {
         super.addLinks(obj, schemaFactory, schema, resource);
 

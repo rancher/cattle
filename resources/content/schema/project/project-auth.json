@@ -3,6 +3,7 @@
         "addRemoveClusterHostInput" : "cr",
         "addRemoveServiceLinkInput" : "cr",
         "apiKey" : "crud",
+        "baseMachineConfig" : "r",
         "certificate" : "crud",
         "cluster" : "crud",
         "composeConfigInput" : "cr",

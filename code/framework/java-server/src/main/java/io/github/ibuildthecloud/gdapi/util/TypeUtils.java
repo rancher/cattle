@@ -14,4 +14,14 @@ public class TypeUtils {
         return name + "s";
     }
 
+    public static String guessSingularName(String name) {
+        if (name == null) {
+            return null;
+        }
+
+        if (name.endsWith("ses") || name.endsWith("ches") || name.endsWith("xes"))
+            return name.substring(0, name.length()-2);
+        return name.substring(0, name.length()-1);
+    }
+
 }

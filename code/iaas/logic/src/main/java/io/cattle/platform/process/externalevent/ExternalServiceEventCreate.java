@@ -70,7 +70,7 @@ public class ExternalServiceEventCreate extends AbstractDefaultProcessHandler {
                 }
 
                 String kind = serviceData.get(ObjectMetaDataManager.KIND_FIELD) != null ? serviceData.get(ObjectMetaDataManager.KIND_FIELD).toString() : null;
-                if (StringUtils.isEmpty(kind) || schemaDao.getSchema(kind, event.getAccountId()) == null) {
+                if (StringUtils.isEmpty(kind) || schemaDao.getSchema(kind, event.getAccountId(), null) == null) {
                     log.warn("Couldn't find schema for service type [{}]. Returning.", kind);
                     return;
                 }

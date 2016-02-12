@@ -94,6 +94,11 @@ public class Tables {
 	public static final io.cattle.platform.core.model.tables.DynamicSchemaTable DYNAMIC_SCHEMA = io.cattle.platform.core.model.tables.DynamicSchemaTable.DYNAMIC_SCHEMA;
 
 	/**
+	 * The table cattle.dynamic_schema_role
+	 */
+	public static final io.cattle.platform.core.model.tables.DynamicSchemaRoleTable DYNAMIC_SCHEMA_ROLE = io.cattle.platform.core.model.tables.DynamicSchemaRoleTable.DYNAMIC_SCHEMA_ROLE;
+
+	/**
 	 * The table cattle.environment
 	 */
 	public static final io.cattle.platform.core.model.tables.EnvironmentTable ENVIRONMENT = io.cattle.platform.core.model.tables.EnvironmentTable.ENVIRONMENT;
@@ -207,6 +212,11 @@ public class Tables {
 	 * The table cattle.label
 	 */
 	public static final io.cattle.platform.core.model.tables.LabelTable LABEL = io.cattle.platform.core.model.tables.LabelTable.LABEL;
+
+	/**
+	 * The table cattle.machine_driver
+	 */
+	public static final io.cattle.platform.core.model.tables.MachineDriverTable MACHINE_DRIVER = io.cattle.platform.core.model.tables.MachineDriverTable.MACHINE_DRIVER;
 
 	/**
 	 * The table cattle.mount
