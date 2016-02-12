@@ -503,12 +503,12 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
     }
 
     @Override
-    public void allocateIpToServiceIndex(ServiceIndex serviceIndex) {
+    public void allocateIpToServiceIndex(ServiceIndex serviceIndex, String requestedIp) {
         if (StringUtils.isEmpty(serviceIndex.getAddress())) {
             Network ntwk = ntwkDao.getNetworkForObject(serviceIndex, NetworkConstants.KIND_HOSTONLY);
             if (ntwk != null) {
                 Subnet subnet = ntwkDao.addManagedNetworkSubnet(ntwk);
-                String ipAddress = allocateIpForService(serviceIndex, subnet, null);
+                String ipAddress = allocateIpForService(serviceIndex, subnet, requestedIp);
                 serviceIndex.setAddress(ipAddress);
                 objectManager.persist(serviceIndex);
             }

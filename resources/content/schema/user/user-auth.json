@@ -535,6 +535,7 @@
         "launchConfig.userdata" : "cr",
         "launchConfig.memoryMb" : "cr",
         "launchConfig.disks" : "cr",
+        "launchConfig.requestedIpAddress": "cr",
 
         "secondaryLaunchConfig" : "cr",
         "secondaryLaunchConfig.name" : "cr",

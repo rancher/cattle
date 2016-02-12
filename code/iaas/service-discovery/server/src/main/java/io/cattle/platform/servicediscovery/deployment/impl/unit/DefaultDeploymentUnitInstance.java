@@ -250,7 +250,10 @@ public class DefaultDeploymentUnitInstance extends DeploymentUnitInstance implem
         
         // allocate ip address if not set
         if (DataAccessor.fieldBool(service, ServiceDiscoveryConstants.FIELD_SERVICE_RETAIN_IP)) {
-            context.sdService.allocateIpToServiceIndex(serviceIndexObj);
+            Object requestedIp = ServiceDiscoveryUtil.getLaunchConfigObject(service, launchConfigName,
+                    InstanceConstants.FIELD_REQUESTED_IP_ADDRESS);
+            context.sdService.allocateIpToServiceIndex(serviceIndexObj, requestedIp != null ? requestedIp.toString()
+                    : null);
         }
         
         return serviceIndexObj;

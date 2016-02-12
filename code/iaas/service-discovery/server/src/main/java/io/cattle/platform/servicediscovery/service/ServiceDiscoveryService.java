@@ -47,7 +47,7 @@ public interface ServiceDiscoveryService {
 
     String allocateIpForService(Object owner, Subnet subnet, String requestedIp);
 
-    void allocateIpToServiceIndex(ServiceIndex serviceIndex);
+    void allocateIpToServiceIndex(ServiceIndex serviceIndex, String requestedIp);
 
     void releaseIpFromServiceIndex(ServiceIndex serviceIndex);
     
