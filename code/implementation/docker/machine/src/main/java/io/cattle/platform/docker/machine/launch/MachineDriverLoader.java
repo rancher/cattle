@@ -45,13 +45,17 @@ public class MachineDriverLoader implements InitializationTask {
     @Override
     public void start() {
         // do logic once
-        loadDrivers();
         CONFIG_FILE.addCallback(new Runnable() {
             @Override
             public void run() {
                 loadDrivers();
             }
         });
+        try {
+            loadDrivers();
+        } catch (Exception e) {
+            log.error("Failed to load drivers.", e);
+        }
     }
 
     public void loadDrivers() {
@@ -83,7 +87,7 @@ public class MachineDriverLoader implements InitializationTask {
                 }
                 
                 List<MachineDriver> driverList = objectManager.find(MachineDriver.class, MACHINE_DRIVER.REMOVED, (Object)null);
-                Map<String, MachineDriver> existingDrivers = new HashMap<String, MachineDriver>();
+                Map<String, MachineDriver> existingDrivers = new HashMap<>();
                 for (MachineDriver d : driverList) {
                     existingDrivers.put(d.getName(), d);
                 }
