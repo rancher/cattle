@@ -64,6 +64,7 @@ public class InstanceConstants {
     public static final String PROCESS_REMOVE = "instance.remove";
     public static final String PROCESS_RESTORE = "instance.restore";
     public static final String PROCESS_PURGE = "instance.purge";
+    public static final String PROCESS_ERROR = "instance.error";
 
     public static final String KIND_CONTAINER = "container";
     public static final String KIND_VIRTUAL_MACHINE = "virtualMachine";
@@ -75,6 +76,8 @@ public class InstanceConstants {
     public static final String STATE_STOPPING = "stopping";
     public static final String STATE_STARTING = "starting";
     public static final String STATE_RESTARTING = "restarting";
+    public static final String STATE_ERRORING = "erroring";
+    public static final String STATE_ERROR = "error";
 
     public static final String ON_STOP_STOP = "stop";
     public static final String ON_STOP_RESTART = "restart";

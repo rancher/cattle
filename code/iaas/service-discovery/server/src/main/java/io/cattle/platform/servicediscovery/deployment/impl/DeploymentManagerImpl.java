@@ -13,6 +13,7 @@ import io.cattle.platform.core.model.ServiceExposeMap;
 import io.cattle.platform.engine.idempotent.IdempotentRetryException;
 import io.cattle.platform.eventing.EventService;
 import io.cattle.platform.eventing.model.EventVO;
+import io.cattle.platform.iaas.api.auditing.AuditService;
 import io.cattle.platform.json.JsonMapper;
 import io.cattle.platform.lock.LockCallback;
 import io.cattle.platform.lock.LockCallbackNoReturn;
@@ -35,6 +36,7 @@ import io.cattle.platform.servicediscovery.deployment.impl.lock.ServicesSidekick
 import io.cattle.platform.servicediscovery.deployment.impl.unit.DeploymentUnit;
 import io.cattle.platform.servicediscovery.deployment.impl.unit.DeploymentUnitInstanceIdGeneratorImpl;
 import io.cattle.platform.servicediscovery.service.ServiceDiscoveryService;
+import io.github.ibuildthecloud.gdapi.id.IdFormatter;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -75,7 +77,10 @@ public class DeploymentManagerImpl implements DeploymentManager {
     JsonMapper mapper;
     @Inject
     ServiceDao svcDao;
-
+    @Inject
+    AuditService auditService;
+    @Inject
+    IdFormatter idFrmt;
 
     @Override
     public boolean isHealthy(Service service) {
@@ -269,7 +274,7 @@ public class DeploymentManagerImpl implements DeploymentManager {
                 List<DeploymentUnit> units = unitInstanceFactory.collectDeploymentUnits(
                         Arrays.asList(service), new DeploymentServiceContext());
                 for (DeploymentUnit unit : units) {
-                    unit.remove(false);
+                    unit.remove(false, ServiceDiscoveryConstants.AUDIT_LOG_REMOVE_EXTRA);
                 }
             }
         });
@@ -321,5 +326,7 @@ public class DeploymentManagerImpl implements DeploymentManager {
         final public AllocatorService allocatorService = allocatorSvc;
         final public JsonMapper jsonMapper = mapper;
         final public ServiceDao serviceDao = svcDao;
+        final public AuditService auditSvc = auditService;
+        final public IdFormatter idFormatter = idFrmt;
     }
 }

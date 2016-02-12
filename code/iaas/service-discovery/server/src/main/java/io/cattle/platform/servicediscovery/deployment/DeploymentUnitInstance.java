@@ -26,6 +26,8 @@ public abstract class DeploymentUnitInstance {
 
     public abstract boolean isError();
 
+    public abstract boolean isIgnore();
+
     public void remove() {
         removeUnitInstance();
         if (exposeMap != null) {
