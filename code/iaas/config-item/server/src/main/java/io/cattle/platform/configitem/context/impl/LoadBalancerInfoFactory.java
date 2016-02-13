@@ -26,6 +26,7 @@ import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.servicediscovery.api.constants.ServiceDiscoveryConstants;
 import io.cattle.platform.servicediscovery.api.dao.ServiceDao;
 import io.cattle.platform.servicediscovery.api.dao.ServiceExposeMapDao;
+import io.cattle.platform.servicediscovery.api.util.ServiceDiscoveryUtil;
 import io.cattle.platform.util.type.CollectionUtils;
 
 import java.util.ArrayList;
@@ -95,6 +96,13 @@ public class LoadBalancerInfoFactory extends AbstractAgentBaseContextFactory {
                     HaproxyConfig.class);
         }
 
+        Object healthCheck = ServiceDiscoveryUtil.getLaunchConfigObject(lbService,
+                ServiceDiscoveryConstants.PRIMARY_LAUNCH_CONFIG_NAME, InstanceConstants.FIELD_HEALTH_CHECK);
+        InstanceHealthCheck lbHealthCheck = null;
+        if (healthCheck != null) {
+            lbHealthCheck = jsonMapper.convertValue(healthCheck, InstanceHealthCheck.class);
+        }
+
         List<LoadBalancerTargetsInfo> targetsInfo = populateTargetsInfo(lbService, listeners);
         if (targetsInfo.isEmpty()) {
             return;
@@ -109,6 +117,7 @@ public class LoadBalancerInfoFactory extends AbstractAgentBaseContextFactory {
         context.getData().put("sslProto", sslProto);
         context.getData().put("certs", svcDao.getLoadBalancerServiceCertificates(lbService));
         context.getData().put("defaultCert", svcDao.getLoadBalancerServiceDefaultCertificate(lbService));
+        context.getData().put("lbHealthCheck", lbHealthCheck);
         context.getData().put(LoadBalancerConstants.FIELD_HAPROXY_CONFIG, customConfig);
     }
 

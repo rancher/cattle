@@ -97,6 +97,7 @@ backend ${listener.uuid}_${backend.uuid}_backend
 </#list>
 </#if>
 
-listen default 
-	bind 0.0.0.0:42
+listen default
+<#if lbHealthCheck??><#assign defaultPort = lbHealthCheck.port><#else><#assign defaultPort = 42></#if>
+	bind 0.0.0.0:${defaultPort}
 
