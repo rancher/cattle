@@ -102,7 +102,7 @@ public class UpgradeManagerImpl implements UpgradeManager {
             // upgrade deployment units
             upgradeDeploymentUnits(service, deploymentUnitInstancesToUpgrade, deploymentUnitInstancesUpgradedManaged,
                     deploymentUnitInstancesUpgradedUnmanaged,
-                    deploymentUnitInstancesToCleanup, batchSize, startFirst);
+                    deploymentUnitInstancesToCleanup, batchSize, startFirst, strategy.isFullUpgrade());
 
             // check if empty
             if (deploymentUnitInstancesToUpgrade.isEmpty()) {
@@ -120,16 +120,14 @@ public class UpgradeManagerImpl implements UpgradeManager {
             final Map<String, List<Instance>> deploymentUnitInstancesUpgradedManaged,
             final Map<String, List<Instance>> deploymentUnitInstancesUpgradedUnmanaged,
             final Map<String, List<Instance>> deploymentUnitInstancesToCleanup,
-            final long batchSize, final boolean startFirst) {
+            final long batchSize, final boolean startFirst, final boolean fullUpgrade) {
         // hold the lock so service.reconcile triggered by config.update
         // (in turn triggered by instance.remove) won't interfere
         lockManager.lock(new ServicesSidekickLock(Arrays.asList(service)), new LockCallbackNoReturn() {
             @Override
             public void doWithLockNoResult() {
                 // 1. mark for upgrade
-                markForUpgrade(deploymentUnitInstancesToUpgrade, deploymentUnitInstancesUpgradedManaged,
-                        deploymentUnitInstancesUpgradedUnmanaged,
-                        deploymentUnitInstancesToCleanup, batchSize);
+                markForUpgrade(batchSize);
 
                 if (startFirst) {
                     // 1. reconcile to start new instances
@@ -145,38 +143,19 @@ public class UpgradeManagerImpl implements UpgradeManager {
                 }
             }
 
-            protected void markForUpgrade(final Map<String, List<Instance>> deploymentUnitInstancesToUpgrade,
-                    Map<String, List<Instance>> deploymentUnitInstancesUpgradedManaged,
-                    Map<String, List<Instance>> deploymentUnitInstancesUpgradedUnmanaged,
-                    Map<String, List<Instance>> deploymentUnitInstancesToCleanup, final long batchSize) {
-
-                markForCleanup(deploymentUnitInstancesToUpgrade, deploymentUnitInstancesUpgradedManaged,
-                        deploymentUnitInstancesToCleanup, batchSize);
+            protected void markForUpgrade(final long batchSize) {
+                markForCleanup(batchSize, fullUpgrade);
             }
 
-            protected void markForRollback(Map<String, List<Instance>> deploymentUnitInstancesUpgradedManaged,
-                    String deploymentUnitUUIDToRollback) {
-                List<Instance> instances = deploymentUnitInstancesUpgradedUnmanaged.get(deploymentUnitUUIDToRollback);
-                if (instances != null) {
-                    for (Instance instance : instances) {
-                        ServiceExposeMap map = objectManager.findAny(ServiceExposeMap.class,
-                                SERVICE_EXPOSE_MAP.INSTANCE_ID, instance.getId());
-                        setUpgrade(map, false);
-                    }
-                    deploymentUnitInstancesUpgradedManaged.put(deploymentUnitUUIDToRollback, instances);
-                }
-            }
-
-            protected void markForCleanup(final Map<String, List<Instance>> deploymentUnitInstancesToUpgrade,
-                    Map<String, List<Instance>> deploymentUnitInstancesUpgradedManaged,
-                    Map<String, List<Instance>> deploymentUnitInstancesToCleanup, final long batchSize) {
+            protected void markForCleanup(final long batchSize,
+                    boolean fullUpgrade) {
                 long i = 0;
                 Iterator<Map.Entry<String, List<Instance>>> it = deploymentUnitInstancesToUpgrade.entrySet()
                         .iterator();
                 while (it.hasNext() && i < batchSize) {
                     Map.Entry<String, List<Instance>> instances = it.next();
                     String deploymentUnitUUID = instances.getKey();
-                    markForRollback(deploymentUnitInstancesUpgradedManaged, deploymentUnitUUID);
+                    markForRollback(deploymentUnitUUID);
                     for (Instance instance : instances.getValue()) {
                         ServiceExposeMap map = objectManager.findAny(ServiceExposeMap.class,
                                 SERVICE_EXPOSE_MAP.INSTANCE_ID, instance.getId());
@@ -185,6 +164,33 @@ public class UpgradeManagerImpl implements UpgradeManager {
                     deploymentUnitInstancesToCleanup.put(deploymentUnitUUID, instances.getValue());
                     it.remove();
                     i++;
+                }
+            }
+
+            protected void markForRollback(String deploymentUnitUUIDToRollback) {
+                List<Instance> instances = new ArrayList<>();
+                if (fullUpgrade) {
+                    // for full upgrade, we don't care what deployment unit needs to be rolled back
+                    String toExtract = null;
+                    for (String key : deploymentUnitInstancesUpgradedUnmanaged.keySet()) {
+                        if (toExtract != null) {
+                            break;
+                        }
+                        toExtract = key;
+                    }
+                    instances = deploymentUnitInstancesUpgradedUnmanaged.get(toExtract);
+                    deploymentUnitInstancesUpgradedUnmanaged.remove(toExtract);
+                } else {
+                    // for partial upgrade, rollback a specific deployment unit
+                    instances = deploymentUnitInstancesUpgradedUnmanaged.get(deploymentUnitUUIDToRollback);
+                }
+                if (instances != null) {
+                    for (Instance instance : instances) {
+                        ServiceExposeMap map = objectManager.findAny(ServiceExposeMap.class,
+                                SERVICE_EXPOSE_MAP.INSTANCE_ID, instance.getId());
+                        setUpgrade(map, false);
+                    }
+                    deploymentUnitInstancesUpgradedManaged.put(deploymentUnitUUIDToRollback, instances);
                 }
             }
         });

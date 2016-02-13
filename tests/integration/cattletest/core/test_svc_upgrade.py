@@ -831,3 +831,35 @@ def _rollback(client, super_client,
     assert roll_v == strategy.previousLaunchConfig.version
     _validate_rollback(super_client, svc, rolledback_svc,
                        primary, secondary1, secondary2)
+
+
+def test_rollback_id(context, client, super_client):
+    env = client.create_environment(name=random_str())
+    env = client.wait_success(env)
+    assert env.state == 'active'
+    image_uuid = context.image_uuid
+    launch_config = {'imageUuid': image_uuid,
+                     'networkMode': None}
+    svc = client.create_service(name=random_str(),
+                                environmentId=env.id,
+                                scale=1,
+                                launchConfig=launch_config,
+                                image=image_uuid)
+    svc = client.wait_success(svc)
+    svc = client.wait_success(svc.activate(), timeout=120)
+    maps = _wait_for_map_count(super_client, svc)
+    expose_map = maps[0]
+    c1 = super_client.reload(expose_map.instance())
+
+    svc = _run_insvc_upgrade(svc, batchSize=2,
+                             launchConfig=launch_config,
+                             startFirst=False,
+                             intervalMillis=100)
+
+    svc = client.wait_success(svc)
+
+    svc = client.wait_success(svc.rollback())
+    maps = _wait_for_map_count(super_client, svc)
+    expose_map = maps[0]
+    c2 = super_client.reload(expose_map.instance())
+    assert c1.uuid == c2.uuid
