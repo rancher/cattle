@@ -24,5 +24,10 @@
             <version>${project.version}</version>
             <optional>true</optional>
         </dependency>
+        <dependency>
+            <groupId>io.cattle</groupId>
+            <artifactId>cattle-framework-engine</artifactId>
+            <version>${project.version}</version>
+        </dependency>
     </dependencies>
 </project>

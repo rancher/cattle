@@ -41,5 +41,10 @@
             <artifactId>cattle-framework-system-task</artifactId>
             <version>${project.version}</version>
         </dependency>
+        <dependency>
+            <groupId>io.cattle</groupId>
+            <artifactId>cattle-framework-java-server</artifactId>
+            <version>${project.version}</version>
+        </dependency>
     </dependencies>
 </project>

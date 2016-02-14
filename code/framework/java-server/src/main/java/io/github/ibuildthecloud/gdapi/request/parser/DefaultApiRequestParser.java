@@ -1,5 +1,6 @@
 package io.github.ibuildthecloud.gdapi.request.parser;
 
+import com.google.common.collect.Maps;
 import io.github.ibuildthecloud.gdapi.exception.ClientVisibleException;
 import io.github.ibuildthecloud.gdapi.model.Resource;
 import io.github.ibuildthecloud.gdapi.request.ApiRequest;
@@ -97,7 +98,20 @@ public class DefaultApiRequestParser implements ApiRequestParser {
         try {
             Map<String, Object> multiPart = parseMultipart(request);
 
-            return multiPart == null ? request.getParameterMap() : multiPart;
+            if(multiPart == null) {
+                multiPart = Maps.newHashMap();
+
+                Map<String, String[]> map = request.getParameterMap();
+                for(String key : map.keySet()) {
+                    multiPart.put(key, map.get(key));
+                }
+            }
+
+            return multiPart;
+
+            // return multiPart == null ? request.getParameterMap() : multiPart;
+            // Map<String,? extends Object>无法转换为Map<String,Object>
+
         } catch (IOException e) {
             if (e.getCause() instanceof FileUploadBase.SizeLimitExceededException)
                 throw new ClientVisibleException(ResponseCodes.REQUEST_ENTITY_TOO_LARGE);
