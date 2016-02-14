@@ -2,8 +2,6 @@
     "authorize": {
         "host": "r",
         "host.resourceActions\\..*": "",
-        "machine": "r",
-        "machine.resourceActions\\..*": "",
         "physicalHost": "r",
         "physicalHost.resourceActions\\..*": "",
         "registrationToken" : "",

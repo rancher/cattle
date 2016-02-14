@@ -32,6 +32,7 @@ public interface ObjectMetaDataManager {
     public static final String REMOVE_TIME_FIELD = "removeTime";
     public static final String TYPE_FIELD = "type";
     public static final String UUID_FIELD = "uuid";
+    public static final String CREATED_FIELD = "created";
 
     public static final String MAP_SUFFIX = "Map";
 
@@ -49,7 +50,11 @@ public interface ObjectMetaDataManager {
 
     Relationship getRelationship(String type, String linkName);
 
+    Relationship getRelationship(Class<?> clz, String linkName);
+
     Relationship getRelationship(String type, String linkName, String fieldName);
+
+    Relationship getRelationship(Class<?> clz, String linkName, String fieldName);
 
     Map<String, Object> getTransitionFields(Schema schema, Object obj);
 

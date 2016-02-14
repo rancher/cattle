@@ -86,6 +86,9 @@ public class ServiceDiscoveryConfigItem {
     public static final ServiceDiscoveryConfigItem METADATA = new ServiceDiscoveryConfigItem(
             ServiceDiscoveryConstants.FIELD_METADATA,
             ServiceDiscoveryConstants.FIELD_METADATA, false, false);
+    public static final ServiceDiscoveryConfigItem RETAIN_IP = new ServiceDiscoveryConfigItem(
+            ServiceDiscoveryConstants.FIELD_SERVICE_RETAIN_IP,
+            "retain_ip", false, false);
 
     /**
      * Name as it appears in docker-compose file

@@ -79,6 +79,13 @@ public class ApiAuthenticator extends AbstractApiRequestHandler {
             if (SecurityConstants.SECURITY.get()) {
                 throwUnauthorized();
             }
+        } else if (request.getType() != null && request.getType().endsWith("s")) {
+            //In case the SchemaFactory didn't have the type before.
+            //we need to make it singular.
+            String singleType = schemaFactory.getSingularName(request.getType());
+            if (singleType != null) {
+                request.setType(singleType);
+            }
         }
         saveInContext(request, policy, schemaFactory);
     }

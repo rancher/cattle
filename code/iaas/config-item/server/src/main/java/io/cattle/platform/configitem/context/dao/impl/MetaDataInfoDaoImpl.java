@@ -8,27 +8,26 @@ import static io.cattle.platform.core.model.tables.IpAddressNicMapTable.IP_ADDRE
 import static io.cattle.platform.core.model.tables.IpAddressTable.IP_ADDRESS;
 import static io.cattle.platform.core.model.tables.NicTable.NIC;
 import static io.cattle.platform.core.model.tables.ServiceExposeMapTable.SERVICE_EXPOSE_MAP;
+import static io.cattle.platform.core.model.tables.ServiceIndexTable.SERVICE_INDEX;
 import io.cattle.platform.configitem.context.dao.MetaDataInfoDao;
 import io.cattle.platform.configitem.context.data.metadata.common.ContainerMetaData;
 import io.cattle.platform.configitem.context.data.metadata.common.HostMetaData;
-import io.cattle.platform.configitem.context.data.metadata.common.ServiceMetaData;
-import io.cattle.platform.configitem.context.data.metadata.common.StackMetaData;
-import io.cattle.platform.configitem.context.data.metadata.version1.ServiceMetaDataVersion1;
-import io.cattle.platform.configitem.context.data.metadata.version1.StackMetaDataVersion1;
-import io.cattle.platform.configitem.context.data.metadata.version2.ServiceMetaDataVersion2;
-import io.cattle.platform.configitem.context.data.metadata.version2.StackMetaDataVersion2;
 import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.IpAddressConstants;
 import io.cattle.platform.core.model.Host;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.IpAddress;
 import io.cattle.platform.core.model.ServiceExposeMap;
+import io.cattle.platform.core.model.ServiceIndex;
 import io.cattle.platform.core.model.tables.HostTable;
 import io.cattle.platform.core.model.tables.InstanceTable;
 import io.cattle.platform.core.model.tables.IpAddressTable;
 import io.cattle.platform.core.model.tables.ServiceExposeMapTable;
+import io.cattle.platform.core.model.tables.records.ServiceIndexRecord;
 import io.cattle.platform.db.jooq.dao.impl.AbstractJooqDao;
 import io.cattle.platform.db.jooq.mapper.MultiRecordMapper;
+import io.cattle.platform.object.util.DataAccessor;
+import io.cattle.platform.servicediscovery.api.constants.ServiceDiscoveryConstants;
 
 import java.util.List;
 
@@ -52,10 +51,25 @@ public class MetaDataInfoDaoImpl extends AbstractJooqDao implements MetaDataInfo
                         hostMetaData = new HostMetaData(hostIpAddress.getAddress(), host);
                     }
                 }
-                data.setInstanceAndHostMetadata((Instance) input.get(1), hostMetaData);
+                Instance instance = (Instance) input.get(1);
+                data.setInstanceAndHostMetadata(instance, hostMetaData);
 
                 if (input.get(4) != null) {
                     data.setExposeMap((ServiceExposeMap) input.get(4));
+                }
+
+                Long svcIndexId = DataAccessor.fieldLong(instance,
+                        ServiceDiscoveryConstants.FIELD_SERVICE_INSTANCE_SERVICE_INDEX_ID);
+                if (svcIndexId != null) {
+                    List<? extends ServiceIndex> indexes = create()
+                            .select(SERVICE_INDEX.fields())
+                            .from(SERVICE_INDEX)
+                            .where(SERVICE_INDEX.REMOVED.isNull()).and(SERVICE_INDEX.ID.eq(svcIndexId))
+                            .fetchInto(ServiceIndexRecord.class);
+                    if (indexes.size() > 0) {
+                        ServiceIndex serviceIndex = indexes.get(0);
+                        data.setService_index(serviceIndex.getServiceIndex());
+                    }
                 }
                 return data;
             }
@@ -135,21 +149,5 @@ public class MetaDataInfoDaoImpl extends AbstractJooqDao implements MetaDataInfo
                 .fetch().map(mapper);
     }
 
-    @Override
-    public StackMetaData getStackMetaData(StackMetaData stackData, Version version) {
-        if (version == MetaDataInfoDao.Version.version1) {
-            return new StackMetaDataVersion1(stackData);
-        } else {
-            return new StackMetaDataVersion2(stackData);
-        }
-    }
 
-    @Override
-    public ServiceMetaData getServiceMetaData(ServiceMetaData serviceData, Version version) {
-        if (version == MetaDataInfoDao.Version.version1) {
-            return new ServiceMetaDataVersion1(serviceData);
-        } else {
-            return new ServiceMetaDataVersion2(serviceData);
-        }
-    }
 }

@@ -272,7 +272,7 @@ def test_volume_affinity(new_context):
                                             'affinity:volumes': n1},
                                     dataVolumes=['%s:/foo' % n1])
         client.wait_success(c)
-    assert e.value.message == 'Failed to find a placement'
+    assert e.value.message.startswith('Scheduling failed: valid host')
 
 
 def test_volume_create_failed_allocation(new_context):
@@ -293,7 +293,7 @@ def test_volume_create_failed_allocation(new_context):
                                     requestedHostId=new_host.id,
                                     dataVolumeMounts=data_volume_mounts)
         client.wait_success(c)
-    assert e.value.message == 'Failed to find a placement'
+    assert e.value.message.startswith('Scheduling failed: valid host')
 
     # Put two volumes from mutually exclusive storage pools onto a container
     # and it should fail to find placement
@@ -306,7 +306,7 @@ def test_volume_create_failed_allocation(new_context):
         c = client.create_container(imageUuid=new_context.image_uuid,
                                     dataVolumeMounts=data_volume_mounts)
         client.wait_success(c)
-    assert e.value.message == 'Failed to find a placement'
+    assert e.value.message.startswith('Scheduling failed')
 
 
 def test_external_volume_event(super_client, new_context):

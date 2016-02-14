@@ -24,11 +24,13 @@ import io.cattle.platform.engine.process.ProcessState;
 import io.cattle.platform.json.JsonMapper;
 import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.process.base.AbstractDefaultProcessHandler;
+import io.cattle.platform.process.common.util.ProcessUtils;
 import io.cattle.platform.process.containerevent.ContainerEventCreate;
 import io.cattle.platform.process.progress.ProcessProgress;
 import io.cattle.platform.util.exception.ExecutionException;
 import io.cattle.platform.util.type.CollectionUtils;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -76,7 +78,7 @@ public class InstanceStart extends AbstractDefaultProcessHandler {
                 storage(instance, state);
             } catch (ExecutionException e) {
                 log.error("Failed to {} for instance [{}]", progress.getCurrentCheckpoint(), instance.getId());
-                return stopOrRemove(state, instance, e);
+                return stopOrErrorOut(state, instance, e);
             }
 
             try {
@@ -85,7 +87,7 @@ public class InstanceStart extends AbstractDefaultProcessHandler {
             } catch (ExecutionException e) {
                 log.error("Failed to {} for instance [{}]", progress.getCurrentCheckpoint(), instance.getId());
                 if (incrementComputeTry(state) >= getMaxComputeTries(instance)) {
-                    return stopOrRemove(state, instance, e);
+                    return stopOrErrorOut(state, instance, e);
                 }
                 throw e;
             }
@@ -99,7 +101,7 @@ public class InstanceStart extends AbstractDefaultProcessHandler {
             activatePorts(instance, state);
         } catch (ExecutionException e) {
             log.error("Failed to {} for instance [{}]", progress.getCurrentCheckpoint(), instance.getId());
-            return stopOrRemove(state, instance, e);
+            return stopOrErrorOut(state, instance, e);
         }
 
         assignPrimaryIpAddress(instance, resultData);
@@ -173,10 +175,11 @@ public class InstanceStart extends AbstractDefaultProcessHandler {
         return COMPUTE_TRIES.get();
     }
 
-    protected HandlerResult stopOrRemove(ProcessState state, Instance instance, ExecutionException e) {
+    protected HandlerResult stopOrErrorOut(ProcessState state, Instance instance, ExecutionException e) {
         if (InstanceCreate.isCreateStart(state) && !ContainerEventCreate.isNativeDockerStart(state) ) {
             getObjectProcessManager().scheduleProcessInstance(InstanceConstants.PROCESS_STOP, instance,
-                    CollectionUtils.asMap(InstanceConstants.REMOVE_OPTION, true));
+                    ProcessUtils.chainInData(new HashMap<String, Object>(), InstanceConstants.PROCESS_STOP,
+                            InstanceConstants.PROCESS_ERROR));
         } else {
             getObjectProcessManager().scheduleProcessInstance(InstanceConstants.PROCESS_STOP, instance, null);
         }
@@ -235,7 +238,7 @@ public class InstanceStart extends AbstractDefaultProcessHandler {
             if (port.getRemoved() == null
                     && !(port.getState().equalsIgnoreCase(CommonStatesConstants.REMOVED) || port.getState()
                             .equalsIgnoreCase(CommonStatesConstants.REMOVING))) {
-                activate(port, state.getData());
+                createThenActivate(port, state.getData());
             }
         }
     }

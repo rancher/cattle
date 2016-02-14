@@ -292,7 +292,7 @@ def test_virtual_machine_no_ip(super_client, context):
                                  subnetIds=[subnet.id])
     vm = super_client.wait_transitioning(vm)
 
-    assert vm.state == 'removed'
+    assert vm.state == 'error'
     assert vm.transitioning == 'error'
     assert vm.transitioningMessage == \
         'Failed to allocate IP from subnet : IP allocation error'

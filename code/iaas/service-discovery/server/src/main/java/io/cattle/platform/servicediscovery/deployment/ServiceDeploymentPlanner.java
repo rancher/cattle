@@ -39,6 +39,7 @@ public abstract class ServiceDeploymentPlanner {
     private List<DeploymentUnit> incompleteUnits = new ArrayList<>();
     protected DeploymentServiceContext context;
     protected HealthCheckActionHandler healthActionHandler = new RecreateHealthCheckActionHandler();
+    private List<DeploymentUnit> ignoreUnits = new ArrayList<>();
 
     public ServiceDeploymentPlanner(List<Service> services, List<DeploymentUnit> units,
             DeploymentServiceContext context) {
@@ -54,6 +55,8 @@ public abstract class ServiceDeploymentPlanner {
             for (DeploymentUnit unit : units) {
                 if (unit.isError()) {
                     badUnits.add(unit);
+                } else if (unit.isIgnore()) {
+                    ignoreUnits.add(unit);
                 } else {
                     healthyUnhealthyUnits.add(unit);
                     if (!unit.isComplete()) {
@@ -64,7 +67,6 @@ public abstract class ServiceDeploymentPlanner {
             healthActionHandler.populateHealthyUnhealthyUnits(this.healthyUnits, this.unhealthyUnits,
                     healthyUnhealthyUnits);
         }
-        getUsedServiceIndexes(true);
     }
 
     protected void setHealthCheckAction(List<Service> services, DeploymentServiceContext context) {
@@ -95,30 +97,30 @@ public abstract class ServiceDeploymentPlanner {
         }
     }
 
-    protected Map<String, List<Long>> getUsedServiceIndexes(boolean cleanupDuplicates) {
+    protected Map<String, List<Long>> getUsedServiceIndexesIds(boolean cleanupDuplicates) {
         // revamp healthy/bad units by excluding units with duplicated indexes
         Map<String, List<Long>> launchConfigToServiceIndexes = new HashMap<>();
         Iterator<DeploymentUnit> it = healthyUnits.iterator();
         while (it.hasNext()) {
             DeploymentUnit healthyUnit = it.next();
             for (DeploymentUnitInstance instance : healthyUnit.getDeploymentUnitInstances()) {
-                Long serviceIndex = instance.getServiceIndex();
-                if (serviceIndex == null) {
+                if (instance.getServiceIndex() == null) {
                     continue;
                 }
+                Long serviceIndexId = instance.getServiceIndex().getId();
                 String launchConfigName = instance.getLaunchConfigName();
                 List<Long> usedServiceIndexes = launchConfigToServiceIndexes.get(launchConfigName);
                 if (usedServiceIndexes == null) {
                     usedServiceIndexes = new ArrayList<>();
                 }
                 if (cleanupDuplicates) {
-                    if (usedServiceIndexes.contains(serviceIndex)) {
+                    if (usedServiceIndexes.contains(serviceIndexId)) {
                         badUnits.add(healthyUnit);
                         it.remove();
                     }
                 }
 
-                usedServiceIndexes.add(serviceIndex);
+                usedServiceIndexes.add(serviceIndexId);
                 launchConfigToServiceIndexes.put(launchConfigName, usedServiceIndexes);
             }
         }
@@ -176,7 +178,7 @@ public abstract class ServiceDeploymentPlanner {
         while (it.hasNext()) {
             DeploymentUnit next = it.next();
             watchList.add(next);
-            next.remove(false);
+            next.remove(false, ServiceDiscoveryConstants.AUDIT_LOG_REMOVE_BAD);
             it.remove();
         }
         for (DeploymentUnit toWatch : watchList) {
@@ -199,7 +201,7 @@ public abstract class ServiceDeploymentPlanner {
         while (it.hasNext()) {
             DeploymentUnit next = it.next();
             watchList.add(next);
-            next.remove(false);
+            next.remove(false, ServiceDiscoveryConstants.AUDIT_LOG_REMOVE_UNHEATLHY);
             it.remove();
         }
         for (DeploymentUnit toWatch : watchList) {
@@ -215,8 +217,8 @@ public abstract class ServiceDeploymentPlanner {
         return allUnits;
     }
 
-    public void cleanupUnusedServiceIndexes() {
-        Map<String, List<Long>> launchConfigToServiceIndexes = getUsedServiceIndexes(false);
+    public void cleanupUnusedAndDuplicatedServiceIndexes() {
+        Map<String, List<Long>> launchConfigToServiceIndexes = getUsedServiceIndexesIds(true);
 
         for (ServiceIndex serviceIndex : context.objectManager.find(ServiceIndex.class, SERVICE_INDEX.SERVICE_ID, services
                 .get(0).getId(), SERVICE_INDEX.REMOVED, null)) {
@@ -230,8 +232,19 @@ public abstract class ServiceDeploymentPlanner {
                 }
             }
             if (remove) {
-                context.objectProcessManager.scheduleStandardProcess(StandardProcess.REMOVE, serviceIndex, null);
+                context.objectProcessManager.scheduleStandardProcessAsync(StandardProcess.REMOVE, serviceIndex, null);
             }
+        }
+    }
+
+    public void scheduleUnhealthyUnitsStop() {
+        List<DeploymentUnit> watchList = new ArrayList<>();
+        for (DeploymentUnit unit : this.unhealthyUnits) {
+            unit.stop();
+            watchList.add(unit);
+        }
+        for (DeploymentUnit toWatch : watchList) {
+            toWatch.waitForScheduleStop();
         }
     }
 }

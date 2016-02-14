@@ -1,0 +1,23 @@
+{
+    "resourceFields": {
+        "uri": {
+            "required": true,
+            "nullable": false
+        },
+        "errorMessage": {
+            "type": "string"
+        }
+    },
+    "resourceActions" : {
+        "update" : {
+            "input" : "machineDriverUpdateInput",
+            "output" : "machineDriver"
+
+        },
+        "error" : {
+            "input" : "machineDriverErrorInput",
+            "output" : "machineDriver"
+
+        }
+    }
+}

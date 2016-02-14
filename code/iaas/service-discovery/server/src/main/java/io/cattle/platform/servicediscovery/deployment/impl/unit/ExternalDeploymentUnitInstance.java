@@ -3,6 +3,7 @@ package io.cattle.platform.servicediscovery.deployment.impl.unit;
 import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.model.Service;
 import io.cattle.platform.core.model.ServiceExposeMap;
+import io.cattle.platform.core.model.ServiceIndex;
 import io.cattle.platform.deferred.util.DeferredUtils;
 import io.cattle.platform.object.process.StandardProcess;
 import io.cattle.platform.object.resource.ResourcePredicate;
@@ -127,7 +128,16 @@ public class ExternalDeploymentUnitInstance extends DeploymentUnitInstance {
     }
 
     @Override
-    public Long getServiceIndex() {
+    public ServiceIndex getServiceIndex() {
         return null;
+    }
+
+    @Override
+    public void waitForScheduleStop() {
+    }
+
+    @Override
+    public boolean isIgnore() {
+        return false;
     }
 }

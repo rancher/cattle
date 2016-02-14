@@ -25,8 +25,16 @@
     <management:executor-service 
         id="ProcessExecutorService"
         keep-alive="120"
-        pool-size="25"
-        queue-capacity="1000"
+        pool-size="0-25"
+        queue-capacity="0"
+        />
+
+    <management:executor-service
+        id="ProcessExecutorServiceReplay"
+        keep-alive="120"
+        pool-size="0-25"
+        queue-capacity="0"
+        rejection-policy="CALLER_RUNS"
         />
 
     <management:executor-service 

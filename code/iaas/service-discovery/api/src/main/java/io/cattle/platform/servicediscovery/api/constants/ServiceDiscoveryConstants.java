@@ -42,8 +42,6 @@ public class ServiceDiscoveryConstants {
     public static final String FIELD_TOKEN = "token";
     public static final String FIELD_SERVICE_INSTANCE_SERVICE_INDEX_ID = "serviceIndexId";
     public static final String FIELD_SERVICE_RETAIN_IP = "retainIp";
-    public static final String FIELD_SERVICE_INSTANCE_SERVICE_INDEX = "serviceIndex";
-
     public static final String STACK_FIELD_DOCKER_COMPOSE = "dockerCompose";
     public static final String STACK_FIELD_RANCHER_COMPOSE = "rancherCompose";
     public static final String STACK_FIELD_START_ON_CREATE = "startOnCreate";
@@ -119,4 +117,9 @@ public class ServiceDiscoveryConstants {
     public static final String LABEL_SELECTOR_LINK = "io.rancher.service.selector.link";
 
     public static final String IMAGE_NONE = "rancher/none";
+
+    public static final String AUDIT_LOG_REMOVE_EXTRA = "Extra service instance is removed by service.reconcile";
+    public static final String AUDIT_LOG_REMOVE_UNHEATLHY = "Unhealthy service instance is removed by service.reconcile";
+    public static final String AUDIT_LOG_REMOVE_BAD = "Service instance in a bad state is removed by service.reconcile";
+    public static final String AUDIT_LOG_CREATE_EXTRA = "Extra service instance is created by service.reconcile";
 }

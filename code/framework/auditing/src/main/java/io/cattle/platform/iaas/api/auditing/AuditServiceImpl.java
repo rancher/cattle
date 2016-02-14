@@ -48,6 +48,7 @@ public class AuditServiceImpl implements AuditService{
                     "scripts",
                     "serviceEvent".toLowerCase(),
                     "userPreference".toLowerCase(),
+                    "dynamicSchema".toLowerCase(),
                     ContainerEventConstants.CONTAINER_EVENT_KIND.toLowerCase(),
                     ExternalEventConstants.KIND_EXTERNAL_EVENT.toLowerCase(),
                     ExternalEventConstants.KIND_SERVICE_EVENT.toLowerCase(),
@@ -95,8 +96,8 @@ public class AuditServiceImpl implements AuditService{
         long runtime = ((long) request.getAttribute("requestEndTime")) - ((long)request.getAttribute("requestStartTime"));
         String authType = (String) request.getAttribute(AccountConstants.AUTH_TYPE);
         String resourceId =request.getResponseObject() instanceof Resource ? ((Resource) request.getResponseObject()).getId(): null;
-        String resourceType = convertResourceType(request.getType());
-        String eventType = "api." + resourceType + "." + (StringUtils.isNotBlank(request.getAction()) ?
+        String resourceType = request.getType();
+        String eventType = "api." + convertResourceType(resourceType) + "." + (StringUtils.isNotBlank(request.getAction()) ?
                 request.getAction() :convertToAction(request.getMethod()));
         publishEvent(auditLogDao.create(resourceType, parseId(resourceId), data, user,
                 policy.getAccountId(), policy.getAuthenticatedAsAccountId(), eventType, authType, runtime, null, request.getClientIp()));

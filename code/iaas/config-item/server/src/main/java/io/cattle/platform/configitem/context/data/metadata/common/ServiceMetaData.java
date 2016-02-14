@@ -1,5 +1,9 @@
 package io.cattle.platform.configitem.context.data.metadata.common;
 
+import io.cattle.platform.configitem.context.dao.MetaDataInfoDao;
+import io.cattle.platform.configitem.context.dao.MetaDataInfoDao.Version;
+import io.cattle.platform.configitem.context.data.metadata.version1.ServiceMetaDataVersion1;
+import io.cattle.platform.configitem.context.data.metadata.version2.ServiceMetaDataVersion2;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.model.Environment;
 import io.cattle.platform.core.model.Service;
@@ -38,7 +42,7 @@ public class ServiceMetaData {
     protected List<String> expose = new ArrayList<>();
     protected String token;
 
-    public ServiceMetaData(ServiceMetaData that) {
+    protected ServiceMetaData(ServiceMetaData that) {
         this.name = that.name;
         this.uuid = that.uuid;
         this.stack_name = that.stack_name;
@@ -263,5 +267,13 @@ public class ServiceMetaData {
 
     public Service getService() {
         return service;
+    }
+
+    public static ServiceMetaData getServiceMetaData(ServiceMetaData serviceData, Version version) {
+        if (version == MetaDataInfoDao.Version.version1) {
+            return new ServiceMetaDataVersion1(serviceData);
+        } else {
+            return new ServiceMetaDataVersion2(serviceData);
+        }
     }
 }

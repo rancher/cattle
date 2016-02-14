@@ -673,7 +673,7 @@ def test_validate_service_scaleup_scaledown(client, context):
     instance12 = _validate_compose_instance_start(client, service, env, "1")
     instance22 = _validate_compose_instance_start(client, service, env, "2")
     instance32 = _validate_instance_start(service, client, instance32.name)
-    instance41 = _validate_compose_instance_start(client, service, env, "4")
+    instance41 = _validate_compose_instance_start(client, service, env, "3")
 
     assert instance41.createIndex > instance32.createIndex
     assert instance32.createIndex > instance22.createIndex
@@ -798,7 +798,7 @@ def test_service_rename(client, context):
     assert service2.name == new_name
     _validate_compose_instance_start(client, service1, env, "1")
     _validate_compose_instance_start(client, service1, env, "2")
-    _validate_compose_instance_start(client, service2, env, "3")
+    _validate_compose_instance_start(client, service2, env, "1")
 
 
 def test_env_rename(client, context):
@@ -1781,7 +1781,8 @@ def test_export_config(client, context):
         create_service(name="web",
                        environmentId=env.id,
                        launchConfig=launch_config,
-                       metadata=metadata)
+                       metadata=metadata,
+                       retainIp=True)
 
     service = client.wait_success(service)
 
@@ -1798,6 +1799,7 @@ def test_export_config(client, context):
     metadata = {"$$bar": {"metadata": [updated]}}
     assert rancher_yml[service.name]['metadata'] is not None
     assert rancher_yml[service.name]['metadata'] == metadata
+    assert rancher_yml[service.name]['retain_ip'] is True
 
 
 def test_validate_create_only_containers(client, context):
@@ -2639,6 +2641,45 @@ def test_ip_retain(client, context, super_client):
     ip3 = c3.primaryIpAddress
     assert c2.id != c3.id
     assert ip2 == ip3
+
+
+def test_ip_retain_requested_ip(client, context, super_client):
+    env = _create_stack(client)
+
+    image_uuid = context.image_uuid
+    req_ip = '10.42.77.88'
+    launch_config = {"imageUuid": image_uuid, "requestedIpAddress": req_ip}
+
+    svc = client.create_service(name=random_str(),
+                                environmentId=env.id,
+                                launchConfig=launch_config,
+                                scale=1,
+                                retainIp=True)
+    svc = client.wait_success(svc)
+    assert svc.state == "inactive"
+
+    env.activateservices()
+    svc = client.wait_success(svc, 120)
+    assert svc.state == "active"
+
+    c1 = _wait_for_compose_instance_start(client, svc, env, "1")
+    c1 = super_client.reload(c1)
+    ip1 = c1.primaryIpAddress
+    assert ip1 == req_ip
+
+    # remove instance and
+    # check that c1 and c2 got the same ip
+    _instance_remove(c1, client)
+    _wait_until_active_map_count(svc, 1, client)
+    svc = client.wait_success(svc)
+    assert svc.state == "active"
+
+    c2 = _wait_for_compose_instance_start(client, svc, env, "1")
+
+    c2 = super_client.reload(c2)
+    ip2 = c2.primaryIpAddress
+    assert c1.id != c2.id
+    assert ip1 == ip2
 
 
 def _get_instance_for_service(super_client, serviceId):

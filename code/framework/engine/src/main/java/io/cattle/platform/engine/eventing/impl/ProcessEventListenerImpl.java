@@ -51,8 +51,10 @@ public class ProcessEventListenerImpl implements ProcessEventListener {
         if (event.getResourceId() == null)
             return;
 
-        long processId = new Long(event.getResourceId());
+        processExecute(new Long(event.getResourceId()));
+    }
 
+    public void processExecute(long processId) {
         if (shouldWaitLonger(processId)) {
             return;
         }
@@ -68,24 +70,24 @@ public class ProcessEventListenerImpl implements ProcessEventListener {
             DONE.inc();
         } catch (ProcessNotFoundException e) {
             NOT_FOUND.inc();
-            log.debug("Failed to find process for id [{}]", event.getResourceId());
+            log.debug("Failed to find process for id [{}]", processId);
         } catch (ProcessInstanceException e) {
             counters.get(e.getExitReason()).inc();
             if (e.getExitReason().isError()) {
-                log.error("Process [{}:{}] on [{}] failed, exit [{}] : {}", instance.getName(), event.getResourceId(), instance.getResourceId(), e
+                log.error("Process [{}:{}] on [{}] failed, exit [{}] : {}", instance.getName(), processId, instance.getResourceId(), e
                         .getExitReason(), e.getMessage());
             }
         } catch (TimeoutException e) {
             TIMEOUT.inc();
-            log.info("Communication timeout on process [{}:{}] on [{}] : {}", instance.getName(), event.getResourceId(), instance.getResourceId(), e
+            log.info("Communication timeout on process [{}:{}] on [{}] : {}", instance.getName(), processId, instance.getResourceId(), e
                     .getMessage());
         } catch (ProcessCancelException e) {
             CANCELED.inc();
-            log.info("Process canceled [{}:{}] on [{}] : {}", instance.getName(), event.getResourceId(), instance.getResourceId(), e.getMessage());
+            log.info("Process canceled [{}:{}] on [{}] : {}", instance.getName(), processId, instance.getResourceId(), e.getMessage());
 
         } catch (Throwable e) {
             EXCEPTION.inc();
-            log.error("Unknown exception running process [{}:{}] on [{}]", instance == null ? null : instance.getName(), event.getResourceId(),
+            log.error("Unknown exception running process [{}:{}] on [{}]", instance == null ? null : instance.getName(), processId,
                     instance == null ? null : instance.getResourceId(), e);
         }
 

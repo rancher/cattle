@@ -42,6 +42,7 @@ public class GithubConstants {
     public static final String PROFILE_PICTURE = "avatar_url";
     public static final String PROFILE_URL = "html_url";
     public static final String SCHEME_SETTING = "api.github.scheme";
+    public static final String TEAM_ID = "id";
     public static final String TEAM_SCOPE = NAME + "_team";
     public static final String USER_SCOPE = NAME + "_user";
 

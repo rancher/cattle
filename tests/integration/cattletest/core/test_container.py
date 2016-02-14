@@ -274,6 +274,21 @@ def _assert_removed(container):
     return container
 
 
+def _assert_error(container):
+    assert container.state == "error"
+
+    volumes = container.volumes()
+    assert len(volumes) == 1
+
+    assert volumes[0].state != "removed"
+
+    volume_mappings = volumes[0].volumeStoragePoolMaps()
+    assert len(volume_mappings) == 1
+    assert volume_mappings[0].state == "inactive"
+
+    return container
+
+
 def test_container_remove(client, super_client, context):
     container = context.create_container(name="test")
     container = client.wait_success(container)
@@ -414,7 +429,7 @@ def test_container_compute_fail(super_client, context):
     assert container.transitioningMessage == \
         'Failing [compute.instance.activate]'
 
-    _assert_removed(super_client.reload(container))
+    _assert_error(super_client.reload(container))
 
 
 def test_container_storage_fail(super_client, context):
@@ -428,7 +443,7 @@ def test_container_storage_fail(super_client, context):
     assert container.transitioningMessage == \
         'Failing [storage.volume.activate]'
 
-    _assert_removed(super_client.reload(container))
+    _assert_error(super_client.reload(container))
 
 
 def test_create_with_vnet(super_client, new_context):

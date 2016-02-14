@@ -6,7 +6,10 @@ import yaml
 def _get_agent_for_container(container):
     agent = None
     for map in container.hosts()[0].instanceHostMaps():
-        c = map.instance()
+        try:
+            c = map.instance()
+        except Exception:
+            continue
         if c.agentId is not None:
             agent = c.agent()
             break
@@ -73,7 +76,8 @@ def _create_svc_w_healthcheck(client, context):
 def test_health_check_create_service(super_client, context, client):
     service = _create_svc_w_healthcheck(client, context)
 
-    expose_map = find_one(service.serviceExposeMaps)
+    maps = _wait_until_active_map_count(service, 1, client)
+    expose_map = maps[0]
     c = super_client.reload(expose_map.instance())
     hci = find_one(c.healthcheckInstances)
     hcihm = find_one(hci.healthcheckInstanceHostMaps)
@@ -209,7 +213,8 @@ def test_health_check_ip_retain(super_client, context, client):
     service = client.wait_success(client.wait_success(service).activate())
     assert service.state == 'active'
 
-    expose_map = find_one(service.serviceExposeMaps)
+    maps = _wait_until_active_map_count(service, 1, client)
+    expose_map = maps[0]
     c1 = super_client.reload(expose_map.instance())
     ip1 = c1.primaryIpAddress
     hci = find_one(c1.healthcheckInstances)
@@ -271,7 +276,8 @@ def test_health_check_init_timeout(super_client, context, client):
     h_c = service.launchConfig.healthCheck
     assert h_c.initializingTimeout == 1
 
-    expose_map = find_one(service.serviceExposeMaps)
+    maps = _wait_until_active_map_count(service, 1, client)
+    expose_map = maps[0]
     c = super_client.reload(expose_map.instance())
     hci = find_one(c.healthcheckInstances)
     hcihm = find_one(hci.healthcheckInstanceHostMaps)
@@ -298,7 +304,8 @@ def test_health_check_reinit_timeout(super_client, context, client):
     h_c = service.launchConfig.healthCheck
     assert h_c.reinitializingTimeout == 1
 
-    expose_map = find_one(service.serviceExposeMaps)
+    maps = _wait_until_active_map_count(service, 1, client)
+    expose_map = maps[0]
     c = super_client.reload(expose_map.instance())
     hci = find_one(c.healthcheckInstances)
     hcihm = find_one(hci.healthcheckInstanceHostMaps)
@@ -342,7 +349,8 @@ def test_health_check_bad_external_timestamp(super_client, context, client):
     service = client.wait_success(client.wait_success(service).activate())
     assert service.state == 'active'
 
-    expose_map = find_one(service.serviceExposeMaps)
+    maps = _wait_until_active_map_count(service, 1, client)
+    expose_map = maps[0]
     container = super_client.reload(expose_map.instance())
     hci = find_one(container.healthcheckInstances)
     hcihm = find_one(hci.healthcheckInstanceHostMaps)
@@ -371,7 +379,8 @@ def test_health_check_noop(super_client, context, client):
     assert svc.state == 'active'
     assert svc.launchConfig.healthCheck.strategy == 'none'
 
-    expose_map = find_one(svc.serviceExposeMaps)
+    maps = _wait_until_active_map_count(svc, 1, client)
+    expose_map = maps[0]
     c = super_client.reload(expose_map.instance())
     hci = find_one(c.healthcheckInstances)
     hcihm = find_one(hci.healthcheckInstanceHostMaps)
@@ -509,7 +518,8 @@ def test_health_check_bad_agent(super_client, context, client):
     service = client.wait_success(client.wait_success(service).activate())
     assert service.state == 'active'
 
-    expose_map = find_one(service.serviceExposeMaps)
+    maps = _wait_until_active_map_count(service, 1, client)
+    expose_map = maps[0]
     container = super_client.reload(expose_map.instance())
     hci = find_one(container.healthcheckInstances)
     hcihm = None
@@ -556,7 +566,8 @@ def test_health_check_host_remove(super_client, context, client):
     multiport = client.wait_success(client.wait_success(multiport).activate())
     assert multiport.state == 'active'
 
-    expose_map = find_one(service.serviceExposeMaps)
+    maps = _wait_until_active_map_count(service, 1, client)
+    expose_map = maps[0]
     c = super_client.reload(expose_map.instance())
     initial_len = len(c.healthcheckInstanceHostMaps())
     assert initial_len == 3
@@ -604,7 +615,8 @@ def test_healtcheck(client, context, super_client):
                                     launchConfig=launch_config)
     service = client.wait_success(service)
     service = client.wait_success(service.activate(), 120)
-    expose_map = find_one(service.serviceExposeMaps)
+    maps = _wait_until_active_map_count(service, 1, client)
+    expose_map = maps[0]
     c = super_client.reload(expose_map.instance())
     c_host_id = super_client.reload(c).instanceHostMaps()[0].hostId
     health_c = super_client. \
@@ -705,3 +717,14 @@ def _update_unhealthy(agent, hcihm, c, super_client):
     assert hcihm.healthState == 'unhealthy'
     wait_for(lambda: super_client.reload(c).healthState == 'unhealthy',
              timeout=5)
+
+
+def _wait_until_active_map_count(service, count, client):
+    def wait_for_map_count(service):
+        m = client. \
+            list_serviceExposeMap(serviceId=service.id, state='active')
+        return len(m) == count
+
+    wait_for_condition(client, service, wait_for_map_count)
+    return client. \
+        list_serviceExposeMap(serviceId=service.id, state='active')

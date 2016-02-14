@@ -9,6 +9,7 @@ import io.cattle.platform.core.model.Host;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.Service;
 import io.cattle.platform.docker.constants.DockerInstanceConstants;
+import io.cattle.platform.iaas.api.auditing.AuditEventType;
 import io.cattle.platform.servicediscovery.api.constants.ServiceDiscoveryConstants;
 import io.cattle.platform.servicediscovery.api.util.ServiceDiscoveryUtil;
 import io.cattle.platform.servicediscovery.deployment.DeploymentUnitInstance;
@@ -115,6 +116,18 @@ public class DeploymentUnit {
         return false;
     }
 
+    public boolean isIgnore() {
+        /*
+         * This should check for instances with an error transitioning state
+         */
+        for (DeploymentUnitInstance instance : getDeploymentUnitInstances()) {
+            if (instance.isIgnore()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     private boolean isHostActive() {
         for (DeploymentUnitInstance deployUnitInstance : getDeploymentUnitInstances()) {
             if (!(deployUnitInstance instanceof InstanceUnit)) {
@@ -143,11 +156,12 @@ public class DeploymentUnit {
         return true;
     }
 
-    public void remove(boolean waitForRemoval) {
+    public void remove(boolean waitForRemoval, String reason) {
         /*
          * Delete all instances. This should be non-blocking (don't wait)
          */
         for (DeploymentUnitInstance instance : getDeploymentUnitInstances()) {
+            auditLogOperation(instance, AuditEventType.delete, reason);
             instance.remove();
         }
 
@@ -159,6 +173,24 @@ public class DeploymentUnit {
     public void waitForRemoval() {
         for (DeploymentUnitInstance instance : getDeploymentUnitInstances()) {
             instance.waitForRemoval();
+        }
+    }
+
+    protected void auditLogOperation(DeploymentUnitInstance instance, AuditEventType eventType, String description) {
+        if (instance instanceof DefaultDeploymentUnitInstance) {
+            DefaultDeploymentUnitInstance defaultInstance = (DefaultDeploymentUnitInstance) instance;
+            if (defaultInstance.getInstance() != null) {
+                Object serviceIdObf = context.idFormatter.formatId(
+                        context.objectManager.getType(instance.getService()),
+                        instance.getService().getId());
+                Map<String, Object> data = new HashMap<>();
+                data.put("serviceId", serviceIdObf);
+                data.put("description", description);
+                context.auditSvc.logResourceModification(defaultInstance.getInstance(), data, eventType, description
+                        + ". Service id: " + serviceIdObf,
+                        defaultInstance.getInstance().getAccountId(),
+                        null);
+            }
         }
     }
 
@@ -235,6 +267,12 @@ public class DeploymentUnit {
         }
     }
 
+    public void waitForScheduleStop() {
+        for (DeploymentUnitInstance instance : getDeploymentUnitInstances()) {
+            instance.waitForScheduleStop();
+        }
+    }
+
     protected DeploymentUnitInstance createInstance(String launchConfigName, Service service) {
         List<Integer> volumesFromInstanceIds = getSidekickContainersId(service, launchConfigName, SidekickType.DATA);
         List<Integer> networkContainerIds = getSidekickContainersId(service, launchConfigName, SidekickType.NETWORK);
@@ -246,7 +284,10 @@ public class DeploymentUnit {
                                 volumesFromInstanceIds,
                                 networkContainerId));
 
-        return getDeploymentUnitInstance(service, launchConfigName);
+        DeploymentUnitInstance toReturn = getDeploymentUnitInstance(service, launchConfigName);
+        auditLogOperation(toReturn, AuditEventType.create,
+                ServiceDiscoveryConstants.AUDIT_LOG_CREATE_EXTRA);
+        return toReturn;
     }
 
     @SuppressWarnings("unchecked")

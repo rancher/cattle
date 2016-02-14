@@ -13,6 +13,7 @@ import io.cattle.platform.core.model.ServiceExposeMap;
 import io.cattle.platform.engine.idempotent.IdempotentRetryException;
 import io.cattle.platform.eventing.EventService;
 import io.cattle.platform.eventing.model.EventVO;
+import io.cattle.platform.iaas.api.auditing.AuditService;
 import io.cattle.platform.json.JsonMapper;
 import io.cattle.platform.lock.LockCallback;
 import io.cattle.platform.lock.LockCallbackNoReturn;
@@ -22,6 +23,8 @@ import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.process.ObjectProcessManager;
 import io.cattle.platform.object.process.StandardProcess;
 import io.cattle.platform.object.resource.ResourceMonitor;
+import io.cattle.platform.object.util.DataAccessor;
+import io.cattle.platform.servicediscovery.api.constants.ServiceDiscoveryConstants;
 import io.cattle.platform.servicediscovery.api.dao.ServiceExposeMapDao;
 import io.cattle.platform.servicediscovery.api.util.ServiceDiscoveryUtil;
 import io.cattle.platform.servicediscovery.deployment.DeploymentManager;
@@ -33,6 +36,7 @@ import io.cattle.platform.servicediscovery.deployment.impl.lock.ServicesSidekick
 import io.cattle.platform.servicediscovery.deployment.impl.unit.DeploymentUnit;
 import io.cattle.platform.servicediscovery.deployment.impl.unit.DeploymentUnitInstanceIdGeneratorImpl;
 import io.cattle.platform.servicediscovery.service.ServiceDiscoveryService;
+import io.github.ibuildthecloud.gdapi.id.IdFormatter;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -73,7 +77,10 @@ public class DeploymentManagerImpl implements DeploymentManager {
     JsonMapper mapper;
     @Inject
     ServiceDao svcDao;
-
+    @Inject
+    AuditService auditService;
+    @Inject
+    IdFormatter idFrmt;
 
     @Override
     public boolean isHealthy(Service service) {
@@ -186,6 +193,13 @@ public class DeploymentManagerImpl implements DeploymentManager {
         planner.cleanupIncompleteUnits();
 
         /*
+         * Stop unhealthy units for service with retainIp=true
+         */
+        if (DataAccessor.fieldBool(planner.getServices().get(0), ServiceDiscoveryConstants.FIELD_SERVICE_RETAIN_IP)) {
+            planner.scheduleUnhealthyUnitsStop();
+        }
+
+        /*
          * Activate all the units
          */
         startUnits(planner);
@@ -198,7 +212,7 @@ public class DeploymentManagerImpl implements DeploymentManager {
         /*
          * Cleanup unused service indexes
          */
-        planner.cleanupUnusedServiceIndexes();
+        planner.cleanupUnusedAndDuplicatedServiceIndexes();
     }
 
     private Map<Long, DeploymentUnitInstanceIdGenerator> populateUsedNames(
@@ -260,7 +274,7 @@ public class DeploymentManagerImpl implements DeploymentManager {
                 List<DeploymentUnit> units = unitInstanceFactory.collectDeploymentUnits(
                         Arrays.asList(service), new DeploymentServiceContext());
                 for (DeploymentUnit unit : units) {
-                    unit.remove(false);
+                    unit.remove(false, ServiceDiscoveryConstants.AUDIT_LOG_REMOVE_EXTRA);
                 }
             }
         });
@@ -312,5 +326,7 @@ public class DeploymentManagerImpl implements DeploymentManager {
         final public AllocatorService allocatorService = allocatorSvc;
         final public JsonMapper jsonMapper = mapper;
         final public ServiceDao serviceDao = svcDao;
+        final public AuditService auditSvc = auditService;
+        final public IdFormatter idFormatter = idFrmt;
     }
 }

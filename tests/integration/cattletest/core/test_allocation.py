@@ -47,8 +47,9 @@ def test_inactive_agent(super_client, new_context):
 
     c = new_context.create_container_no_success()
     assert c.transitioning == 'error'
-    assert c.transitioningMessage == 'Failed to find a placement'
-    assert c.state == 'removed'
+    assert c.transitioningMessage == \
+        'Scheduling failed: No candidates available'
+    assert c.state == 'error'
 
 
 def test_spread(super_client, new_context):
@@ -142,9 +143,10 @@ def test_allocate_to_host_with_pool(new_context, super_client):
         requestedHostId=host2.id,
         dataVolume=['vol1:/con/path'])
     c = super_client.reload(c)
-    assert c.state == 'removed'
+    assert c.state == 'error'
     assert c.transitioning == 'error'
-    assert c.transitioningMessage == 'Failed to find a placement'
+    assert c.transitioningMessage.startswith(
+        'Scheduling failed: valid host(s) [')
 
 
 def _set_one(super_client, new_context):
@@ -158,9 +160,12 @@ def test_allocation_failed_on_create(super_client, new_context):
     c = new_context.create_container_no_success(networkMode='bridge')
     c = super_client.reload(c)
 
-    assert c.state == 'removed'
+    assert c.state == 'error'
     assert c.transitioning == 'error'
-    assert c.transitioningMessage == 'Failed to find a placement'
+    assert c.transitioningMessage == \
+        'Scheduling failed: No candidates available'
+
+    c = super_client.wait_success(super_client.reload(c.remove()))
 
     assert c.allocationState == 'activating'
     assert c.volumes()[0].state == 'removed'
@@ -181,7 +186,8 @@ def test_allocation_failed_on_start(super_client, new_context):
     c1 = client.wait_transitioning(c1.start())
     assert c1.state == 'stopped'
     assert c1.transitioning == 'error'
-    assert c1.transitioningMessage == 'Failed to find a placement'
+    assert c1.transitioningMessage == \
+        'Scheduling failed: No candidates available'
 
     c2 = client.wait_success(client.delete(c2))
     assert c2.state == 'removed'
@@ -364,8 +370,9 @@ def test_port_constraint(new_context):
             .super_create_container_no_success(validHostIds=[host1.id],
                                                ports=['8081:81/tcp'])
         assert c2.transitioning == 'error'
-        assert c2.transitioningMessage == 'Failed to find a placement'
-        assert c2.state == 'removed'
+        assert c2.transitioningMessage == \
+            'Scheduling failed: host needs ports 8081/tcp available'
+        assert c2.state == 'error'
 
         # increase host pool and check whether allocator picks other host
         c2 = new_context.super_create_container(validHostIds=[host1.id,
@@ -387,8 +394,9 @@ def test_port_constraint(new_context):
             .super_create_container_no_success(validHostIds=[host1.id],
                                                ports=['8081:81/udp'])
         assert c5.transitioning == 'error'
-        assert c5.transitioningMessage == 'Failed to find a placement'
-        assert c5.state == 'removed'
+        assert c5.transitioningMessage == \
+            'Scheduling failed: host needs ports 8081/udp available'
+        assert c5.state == 'error'
     finally:
         for c in containers:
             if c is not None:

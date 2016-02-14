@@ -13,6 +13,8 @@ public interface Field {
     @io.github.ibuildthecloud.gdapi.annotation.Field(include = false)
     String getName();
 
+    String getDescription();
+
     String getType();
 
     @XmlTransient

@@ -7,9 +7,9 @@ import java.util.List;
 
 public interface DynamicSchemaDao {
 
-    List<? extends DynamicSchema> getSchemas(long accountId);
+    List<? extends DynamicSchema> getSchemas(long accountId, String role);
 
-    DynamicSchema getSchema(String name, long accountId);
+    DynamicSchema getSchema(String name, long accountId, String role);
 
     DynamicSchema getSchema(String name, long accountId, long serviceId);
 
@@ -17,4 +17,9 @@ public interface DynamicSchemaDao {
 
     List<Long> getAgentForService(Service service);
 
+    void createRoles(DynamicSchema dynamicSchema);
+
+    void removeRoles(DynamicSchema dynamicSchema);
+
+    boolean isUnique(String name, List<String> roles, Long accountId);
 }

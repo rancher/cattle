@@ -42,7 +42,7 @@ public class MachineLauncher extends GenericServiceLauncher implements Initializ
 
     @Override
     protected boolean isReady() {
-        return ServerContext.isCustomApiHost();
+        return true;
     }
 
 }

@@ -43,6 +43,8 @@
 
         "auditLog.resourceActions\\..*" : "",
 
+        "baseMachineConfig": "r",
+
         "changeSecretInput" : "cr",
         "changeSecretInput.oldSecret" : "cr",
         "changeSecretInput.newSecret" : "cr",
@@ -173,6 +175,7 @@
         "host.agentState" : "r",
         "host.agentId" : "r",
         "host.computeTotal" : "r",
+        "host.hostname" : "r",
         "host.info" : "r",
         "host.physicalHostId" : "r",
         "host.zoneId" : "ru",
@@ -247,6 +250,8 @@
         "password.publicValue" : "cr",
 
         "physicalHost": "r",
+        "physicalHost.externalId": "r",
+        "physicalHost.driver": "r",
 
         "port" : "r",
         "port.instanceId" : "r",
@@ -264,6 +269,7 @@
         "project.members" : "cr",
         "project.swarm" : "cru",
         "project.kubernetes" : "cru",
+        "project.publicDns" : "cru",
         "project.servicesPortRange": "cru",
 
         "projectMember" : "cr",
@@ -366,7 +372,6 @@
         "volume.resourceActions.deactivate" : "",
 
         "loadBalancerConfig" : "r",
-        "loadBalancerConfig.appCookieStickinessPolicy" : "cru",
         "loadBalancerConfig.lbCookieStickinessPolicy" : "cru",
         "loadBalancerConfig.serviceId" : "r",
         "loadBalancerConfig.haproxyConfig" : "cru",
@@ -530,6 +535,7 @@
         "launchConfig.userdata" : "cr",
         "launchConfig.memoryMb" : "cr",
         "launchConfig.disks" : "cr",
+        "launchConfig.requestedIpAddress": "cr",
 
         "secondaryLaunchConfig" : "cr",
         "secondaryLaunchConfig.name" : "cr",

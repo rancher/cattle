@@ -1,6 +1,8 @@
 package io.cattle.platform.host.stats.api;
 
 import io.cattle.platform.api.link.LinkHandler;
+import io.cattle.platform.core.constants.CommonStatesConstants;
+import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.model.Host;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.Service;
@@ -15,6 +17,7 @@ import io.github.ibuildthecloud.gdapi.request.ApiRequest;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -58,7 +61,9 @@ public class ServiceContainerStatsLinkHandler implements LinkHandler {
         StatsAccess meta = new StatsAccess();
         List<StatsAccess> serviceStatsQuery = new ArrayList<>();
         for (Instance instance : serviceInstances) {
-            if (instance.getRemoved() != null) {
+            List<String> invalidStates = Arrays.asList(CommonStatesConstants.REMOVING, CommonStatesConstants.REMOVED,
+                    InstanceConstants.STATE_ERRORING, InstanceConstants.STATE_ERROR);
+            if (instance.getRemoved() != null || invalidStates.contains(instance.getState())) {
                 continue;
             }
             String dockerId = DockerUtils.getDockerIdentifier(instance);
@@ -67,6 +72,10 @@ public class ServiceContainerStatsLinkHandler implements LinkHandler {
                 continue;
             }
             Host host = DockerUtils.getHostFromContainer(objectManager, instance);
+            if (host == null) {
+                // host can be null when initial instance.start failed, so its being stopped/error out as a result
+                continue;
+            }
             Map<String, Object> payload = new HashMap<>();
             Map<String, Object> containerIdsMap = new HashMap<String, Object>();
             containerIdsMap.put(DockerUtils.getDockerIdentifier(instance),

@@ -1,0 +1,20 @@
+{
+    "collectionMethods" : [],
+    "resourceFields": {
+        "uri": {
+            "type": "string",
+            "required": false,
+            "nullable": true
+        },
+        "name": {
+            "type": "string",
+            "required": false,
+            "nullable": true
+        },
+        "md5checksum": {
+            "type": "string",
+            "required": false,
+            "nullable": true
+        }
+    }
+}

@@ -4,13 +4,9 @@ import io.cattle.platform.api.auth.Identity;
 import io.cattle.platform.api.auth.Policy;
 import io.cattle.platform.api.pubsub.util.SubscriptionUtils;
 import io.cattle.platform.api.pubsub.util.SubscriptionUtils.SubscriptionStyle;
-import io.cattle.platform.archaius.util.ArchaiusUtil;
-import io.cattle.platform.core.constants.ProjectConstants;
 import io.cattle.platform.core.model.Account;
-import io.cattle.platform.core.model.ProjectMember;
 import io.cattle.platform.iaas.api.auth.AchaiusPolicyOptionsFactory;
 import io.cattle.platform.iaas.api.auth.AuthorizationProvider;
-import io.cattle.platform.iaas.api.auth.SecurityConstants;
 import io.cattle.platform.iaas.api.auth.dao.AuthDao;
 import io.cattle.platform.iaas.event.IaasEvents;
 import io.cattle.platform.util.type.InitializationTask;
@@ -58,36 +54,31 @@ public class DefaultAuthorizationProvider implements AuthorizationProvider, Init
                 return schemaFactory;
             }
         }
-        List<? extends ProjectMember> projectMembers;
-        if (account != null && account.getKind().equalsIgnoreCase(ProjectConstants.TYPE)) {
-            projectMembers = authDao.getProjectMembersByIdentity(account.getId(), policy.getIdentities());
-            if (projectMembers == null || projectMembers.size() == 0) {
-                return schemaFactories.get(account.getKind());
-            } else {
-                String role = null;
-                for (ProjectMember projectMember : projectMembers) {
-
-                    if (role == null) {
-                        role = projectMember.getRole();
-                    } else {
-                        String newRole = projectMember.getRole();
-
-                        if (getRolePriority(newRole) < getRolePriority(role)) {
-                            role = newRole;
-                        }
-                    }
-                }
-                return role != null ? schemaFactories.get(role) : null;
-            }
-        } else if (account != null){
-            return schemaFactories.get(account.getKind());
-        } else {
-            return null;
-        }
+        return schemaFactories.get(authDao.getRole(account, policy));
     }
 
-    private int getRolePriority(String role) {
-        return ArchaiusUtil.getInt(SecurityConstants.ROLE_SETTING_BASE + role).get();
+    @Override
+    public String getRole(Account account, Policy policy, ApiRequest request) {
+        Object name = request.getAttribute(ACCOUNT_SCHEMA_FACTORY_NAME);
+
+        if (name == null) {
+            name = getRole(policy, request);
+        }
+
+        if (name != null) {
+            SchemaFactory schemaFactory = schemaFactories.get(name.toString());
+            if (schemaFactory == null) {
+                log.error("Failed to find schema factory [{}]", name);
+            } else {
+                return name.toString();
+            }
+        }
+        String role = authDao.getRole(account, policy);
+        SchemaFactory schemaFactory = schemaFactories.get(role);
+        if (schemaFactory != null) {
+            return role;
+        }
+        return null;
     }
 
     @Override

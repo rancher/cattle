@@ -35,7 +35,7 @@ public class DefaultDeploymentUnitInstance extends DeploymentUnitInstance implem
     protected String instanceName;
     protected boolean startOnce;
     protected Instance instance;
-    protected long serviceIndexId;
+    protected ServiceIndex serviceIndex;
 
     public DefaultDeploymentUnitInstance(DeploymentServiceContext context, String uuid,
             Service service, String instanceName, Instance instance, Map<String, String> labels, String launchConfigName) {
@@ -44,9 +44,15 @@ public class DefaultDeploymentUnitInstance extends DeploymentUnitInstance implem
         this.instance = instance;
         if (this.instance != null) {
             exposeMap = context.exposeMapDao.findInstanceExposeMap(this.instance);
+            Long svcIndexId = DataAccessor.fieldLong(instance, ServiceDiscoveryConstants.FIELD_SERVICE_INSTANCE_SERVICE_INDEX_ID);
+            if (svcIndexId != null) {
+                serviceIndex = context.objectManager
+                        .loadResource(ServiceIndex.class, svcIndexId);
+            }
+        } else {
+            this.serviceIndex = createServiceIndex();
         }
         setStartOnce(service, launchConfigName);
-        setServiceIndexId();
     }
 
     @SuppressWarnings("unchecked")
@@ -123,11 +129,9 @@ public class DefaultDeploymentUnitInstance extends DeploymentUnitInstance implem
             }
         }
 
-        ServiceIndex serviceIndexObj = context.objectManager.loadResource(ServiceIndex.class, this.serviceIndexId);
-
-        launchConfigData.put(ServiceDiscoveryConstants.FIELD_SERVICE_INSTANCE_SERVICE_INDEX_ID, serviceIndexObj.getId());
-        launchConfigData.put(ServiceDiscoveryConstants.FIELD_SERVICE_INSTANCE_SERVICE_INDEX, serviceIndexObj.getServiceIndex());
-        launchConfigData.put(InstanceConstants.FIELD_ALLOCATED_IP_ADDRESS, serviceIndexObj.getAddress());
+        launchConfigData.put(ServiceDiscoveryConstants.FIELD_SERVICE_INSTANCE_SERVICE_INDEX_ID,
+                this.serviceIndex.getId());
+        launchConfigData.put(InstanceConstants.FIELD_ALLOCATED_IP_ADDRESS, serviceIndex.getAddress());
         return launchConfigData;
     }
 
@@ -233,20 +237,8 @@ public class DefaultDeploymentUnitInstance extends DeploymentUnitInstance implem
         return this;
     }
 
-    public Long getServiceIndex() {
-        return this.serviceIndexId;
-    }
-
-    protected void setServiceIndexId() {
-        if (this.instance == null) {
-            ServiceIndex serviceIndex = createServiceIndex();
-            if (serviceIndex != null) {
-                this.serviceIndexId = serviceIndex.getId();
-            }
-        } else {
-            this.serviceIndexId = DataAccessor
-                    .fieldLong(this.instance, ServiceDiscoveryConstants.FIELD_SERVICE_INSTANCE_SERVICE_INDEX_ID);
-        }
+    public ServiceIndex getServiceIndex() {
+        return this.serviceIndex;
     }
 
     protected ServiceIndex createServiceIndex() {
@@ -258,10 +250,31 @@ public class DefaultDeploymentUnitInstance extends DeploymentUnitInstance implem
         
         // allocate ip address if not set
         if (DataAccessor.fieldBool(service, ServiceDiscoveryConstants.FIELD_SERVICE_RETAIN_IP)) {
-            context.sdService.allocateIpToServiceIndex(serviceIndexObj);
+            Object requestedIp = ServiceDiscoveryUtil.getLaunchConfigObject(service, launchConfigName,
+                    InstanceConstants.FIELD_REQUESTED_IP_ADDRESS);
+            context.sdService.allocateIpToServiceIndex(serviceIndexObj, requestedIp != null ? requestedIp.toString()
+                    : null);
         }
         
         return serviceIndexObj;
+    }
+
+    @Override
+    public void waitForScheduleStop() {
+        this.instance = context.resourceMonitor.waitFor(this.instance,
+                new ResourcePredicate<Instance>() {
+            @Override
+            public boolean evaluate(Instance obj) {
+                        return InstanceConstants.STATE_STOPPING.equals(obj.getState())
+                                || InstanceConstants.STATE_STOPPED.equals(obj.getState());
+            }
+        });
+    }
+
+    @Override
+    public boolean isIgnore() {
+        List<String> errorStates = Arrays.asList(CommonStatesConstants.ERROR, CommonStatesConstants.ERRORING);
+        return this.instance != null && errorStates.contains(this.instance.getState());
     }
 }
 

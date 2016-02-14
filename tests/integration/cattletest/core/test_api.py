@@ -262,7 +262,9 @@ def test_state_enum(super_client):
         'stopped',
         'stopping',
         'updating-running',
-        'updating-stopped'
+        'updating-stopped',
+        'error',
+        'erroring'
     ])
 
     assert container_schema.resourceFields['state'].type == 'enum'

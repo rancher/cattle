@@ -5,6 +5,7 @@ import static io.cattle.platform.core.model.tables.CredentialTable.*;
 import static io.cattle.platform.core.model.tables.ProjectMemberTable.*;
 
 import io.cattle.platform.api.auth.Identity;
+import io.cattle.platform.api.auth.Policy;
 import io.cattle.platform.archaius.util.ArchaiusUtil;
 import io.cattle.platform.core.constants.AccountConstants;
 import io.cattle.platform.core.constants.CommonStatesConstants;
@@ -17,6 +18,7 @@ import io.cattle.platform.core.model.ProjectMember;
 import io.cattle.platform.core.model.tables.records.AccountRecord;
 import io.cattle.platform.core.model.tables.records.ProjectMemberRecord;
 import io.cattle.platform.db.jooq.dao.impl.AbstractJooqDao;
+import io.cattle.platform.iaas.api.auth.SecurityConstants;
 import io.cattle.platform.iaas.api.auth.projects.ProjectLock;
 import io.cattle.platform.iaas.api.auth.dao.AuthDao;
 import io.cattle.platform.iaas.api.auth.projects.Member;
@@ -125,6 +127,40 @@ public class AuthDaoImpl extends AbstractJooqDao implements AuthDao {
         } else {
             return null;
         }
+    }
+
+    @Override
+    public String getRole(Account account, Policy policy) {
+        List<? extends ProjectMember> projectMembers;
+        if (account != null && account.getKind().equalsIgnoreCase(ProjectConstants.TYPE)) {
+            projectMembers = getProjectMembersByIdentity(account.getId(), policy.getIdentities());
+            if (projectMembers == null || projectMembers.size() == 0) {
+                return account.getKind();
+            } else {
+                String role = null;
+                for (ProjectMember projectMember : projectMembers) {
+                    if (role == null) {
+                        role = projectMember.getRole();
+                    } else {
+                        String newRole = projectMember.getRole();
+
+                        if (getRolePriority(newRole) < getRolePriority(role)) {
+                            role = newRole;
+                        }
+                    }
+                }
+                return role;
+            }
+        } else if (account != null){
+            return account.getKind();
+        } else {
+            return null;
+        }
+    }
+
+
+    private int getRolePriority(String role) {
+        return ArchaiusUtil.getInt(SecurityConstants.ROLE_SETTING_BASE + role).get();
     }
 
     @Override

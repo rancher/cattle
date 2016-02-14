@@ -4,7 +4,7 @@ from common_fixtures import *  # NOQA
 def test_project_update(new_context):
     client = new_context.client
     user_client = new_context.user_client
-    assert new_context.project.swarm is None
+    assert new_context.project.swarm is False
 
     stacks = client.list_environment()
     assert len(stacks) == 0

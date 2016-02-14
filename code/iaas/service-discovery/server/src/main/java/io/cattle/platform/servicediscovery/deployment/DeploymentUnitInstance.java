@@ -4,6 +4,7 @@ package io.cattle.platform.servicediscovery.deployment;
 import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.model.Service;
 import io.cattle.platform.core.model.ServiceExposeMap;
+import io.cattle.platform.core.model.ServiceIndex;
 import io.cattle.platform.object.process.StandardProcess;
 import io.cattle.platform.object.resource.ResourcePredicate;
 import io.cattle.platform.servicediscovery.deployment.impl.DeploymentManagerImpl.DeploymentServiceContext;
@@ -24,6 +25,8 @@ public abstract class DeploymentUnitInstance {
     protected Service service;
 
     public abstract boolean isError();
+
+    public abstract boolean isIgnore();
 
     public void remove() {
         removeUnitInstance();
@@ -110,5 +113,7 @@ public abstract class DeploymentUnitInstance {
 
     public abstract boolean isHealthCheckInitializing();
 
-    public abstract Long getServiceIndex();
+    public abstract ServiceIndex getServiceIndex();
+
+    public abstract void waitForScheduleStop();
 }

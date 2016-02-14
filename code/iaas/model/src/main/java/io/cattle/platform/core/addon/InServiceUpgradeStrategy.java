@@ -53,4 +53,15 @@ public class InServiceUpgradeStrategy extends ServiceUpgradeStrategy {
     public void setStartFirst(boolean startFirst) {
         this.startFirst = startFirst;
     }
+
+    public boolean isFullUpgrade() {
+        boolean primaryUpgrade = this.launchConfig != null && this.previousLaunchConfig != null;
+        boolean isEmptySec = this.secondaryLaunchConfigs == null || this.secondaryLaunchConfigs.isEmpty();
+        boolean isEmptyPrevSesc = this.previousSecondaryLaunchConfigs == null
+                || this.previousSecondaryLaunchConfigs.isEmpty();
+
+        boolean allSecondaryUpgrades = (isEmptySec == isEmptyPrevSesc)
+                && (isEmptySec || this.secondaryLaunchConfigs.size() == this.previousSecondaryLaunchConfigs.size());
+        return primaryUpgrade && allSecondaryUpgrades;
+    }
 }

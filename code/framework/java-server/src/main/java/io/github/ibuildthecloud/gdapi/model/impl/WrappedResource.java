@@ -89,6 +89,14 @@ public class WrappedResource extends ResourceImpl implements Resource {
                     value = decrypted;
                 }
             }
+
+            if (value == null && field.getTypeEnum() == FieldType.BOOLEAN && !field.isNullable()) {
+                value = field.getDefault();
+                if (value == null) {
+                    value = false;
+                }
+            }
+
             addField(name, IdFormatterUtils.formatReference(field, idFormatter, value));
             if (createTsFields && field.getTypeEnum() == FieldType.DATE && value instanceof Date) {
                 addField(name + "TS", ((Date)value).getTime());

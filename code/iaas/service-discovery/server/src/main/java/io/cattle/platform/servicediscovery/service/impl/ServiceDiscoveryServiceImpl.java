@@ -129,11 +129,7 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
                             HealthcheckConstants.HEALTH_STATE_UPDATING_UNHEALTHY)) {
                 continue;
             }
-            String serviceSuffix = DataAccessor.fieldString(instance,
-                    ServiceDiscoveryConstants.FIELD_SERVICE_INSTANCE_SERVICE_INDEX);
-            if (serviceSuffix != null) {
-                usedSuffixes.add(Integer.valueOf(serviceSuffix));
-            } else if (ServiceDiscoveryUtil.isServiceGeneratedName(env, service, instance.getName())) {
+            if (ServiceDiscoveryUtil.isServiceGeneratedName(env, service, instance.getName())) {
                 // legacy code - to support old data where service suffix wasn't set
                 String configName = launchConfigName == null
                         || launchConfigName.equals(ServiceDiscoveryConstants.PRIMARY_LAUNCH_CONFIG_NAME) ? ""
@@ -507,12 +503,12 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
     }
 
     @Override
-    public void allocateIpToServiceIndex(ServiceIndex serviceIndex) {
+    public void allocateIpToServiceIndex(ServiceIndex serviceIndex, String requestedIp) {
         if (StringUtils.isEmpty(serviceIndex.getAddress())) {
             Network ntwk = ntwkDao.getNetworkForObject(serviceIndex, NetworkConstants.KIND_HOSTONLY);
             if (ntwk != null) {
                 Subnet subnet = ntwkDao.addManagedNetworkSubnet(ntwk);
-                String ipAddress = allocateIpForService(serviceIndex, subnet, null);
+                String ipAddress = allocateIpForService(serviceIndex, subnet, requestedIp);
                 serviceIndex.setAddress(ipAddress);
                 objectManager.persist(serviceIndex);
             }

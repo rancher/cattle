@@ -131,6 +131,18 @@
         "localAuthConfig.password" : "cro",
         "localAuthConfig.enabled" : "cr",
 
+        "machineDriver": "crud",
+        "machineDriver.errorMessage": "r",
+        "machineDriver.uri": "cru",
+        "machineDriver.md5checksum": "cru",
+
+        "machineDriverErrorInput": "cr",
+        "machineDriverErrorInput.errorMessage": "cr",
+
+        "machineDriverUpdateInput": "cr",
+        "machineDriverUpdateInput.uri": "cr",
+        "machineDriverUpdateInput.md5checksum": "cr",
+        "machineDriverUpdateInput.name": "cr",
 
         "openldapconfig" : "cru",
         "openldapconfig.accessMode" : "cr",

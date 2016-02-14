@@ -480,12 +480,6 @@ def _create_resources(client):
         publicValue='rancher',
         secretValue='rancher')
     client.wait_success(reg_cred)
-    name = random_str()
-    machine = client.create_machine(name=name,
-                                    virtualboxConfig={})
-
-    machine = client.wait_success(machine)
-    assert machine.state == 'active'
 
 
 def _set_members(admin_user_client, client, id, members, status):
@@ -552,3 +546,20 @@ def _create_members(user_clients, members):
             'externalIdType': 'rancher_id'
         })
     return newMembers
+
+
+def test_update_project_publicdns(user_clients, project):
+    project = user_clients['Owner'].update(
+        project, name='Project Name', description='Some description',
+        publicDns=True)
+    assert project.publicDns is True
+
+    client = user_clients['Owner']
+    members = _create_members(user_clients, ['Owner'])
+    project = client.create_project(members=members,
+                                    publicDns=True)
+    project = client.wait_success(project)
+
+    project = client.update(project, publicDns=False)
+    project = client.wait_success(project)
+    assert project.publicDns is False
