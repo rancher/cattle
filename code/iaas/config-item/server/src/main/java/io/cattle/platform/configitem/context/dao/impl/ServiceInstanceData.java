@@ -1,5 +1,6 @@
 package io.cattle.platform.configitem.context.dao.impl;
 
+import io.cattle.platform.core.model.Environment;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.IpAddress;
 import io.cattle.platform.core.model.Nic;
@@ -8,15 +9,17 @@ import io.cattle.platform.core.model.ServiceExposeMap;
 
 public class ServiceInstanceData {
     Service service;
+    Environment stack;
     IpAddress ipAddress;
     Instance instance;
     ServiceExposeMap exposeMap;
     Nic nic;
 
-    public ServiceInstanceData(Service service, IpAddress ipAddress, Instance instance, ServiceExposeMap exposeMap,
-            Nic nic) {
+    public ServiceInstanceData(Environment stack, Service service, IpAddress ipAddress, Instance instance,
+            ServiceExposeMap exposeMap, Nic nic) {
         super();
         this.service = service;
+        this.stack = stack;
         this.ipAddress = ipAddress;
         this.instance = instance;
         this.exposeMap = exposeMap;
@@ -58,6 +61,14 @@ public class ServiceInstanceData {
 
     public void setNic(Nic nic) {
         this.nic = nic;
+    }
+
+    public Environment getStack() {
+        return stack;
+    }
+
+    public void setStack(Environment stack) {
+        this.stack = stack;
     }
 
 }

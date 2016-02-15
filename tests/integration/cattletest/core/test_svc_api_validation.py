@@ -185,15 +185,13 @@ def test_vip_requested_ip(client, context):
     env = _create_stack(client)
     image_uuid = context.image_uuid
     launch_config = {"imageUuid": image_uuid}
-    # vip out of the range
-    with pytest.raises(ApiError) as e:
-        vip = "169.255.65.30"
-        client.create_service(name=random_str(),
-                              environmentId=env.id,
-                              launchConfig=launch_config,
-                              vip=vip)
-    assert e.value.error.status == 422
-    assert e.value.error.code == 'InvalidOption'
+    # vip out of the range - still accepted
+    vip = "169.255.65.30"
+    svc = client.create_service(name=random_str(),
+                                environmentId=env.id,
+                                launchConfig=launch_config,
+                                vip=vip)
+    assert svc.vip == vip
 
 
 def test_add_svc_to_removed_stack(client, context):

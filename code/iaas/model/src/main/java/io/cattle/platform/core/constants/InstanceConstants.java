@@ -5,7 +5,6 @@ import java.util.HashSet;
 import java.util.Set;
 
 public class InstanceConstants {
-
     public enum SystemContainer {
         NetworkAgent,
         LoadBalancerAgent,

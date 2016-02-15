@@ -311,6 +311,9 @@ public class DeploymentManagerImpl implements DeploymentManager {
 
     protected void reconcileForClient(ConfigUpdate update, Client client, Runnable run) {
         ItemVersion itemVersion = itemManager.getRequestedVersion(client, RECONCILE);
+        if (itemVersion == null) {
+            return;
+        }
         run.run();
         itemManager.setApplied(client, RECONCILE, itemVersion);
         eventService.publish(EventVO.reply(update));

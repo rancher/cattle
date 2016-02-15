@@ -1,8 +1,5 @@
 {
     "resourceFields": {
-        "loadBalancerInstanceUriPredicate": {
-            "type" : "string"
-        },
         "loadBalancerConfig": {
             "type" : "loadBalancerConfig",
             "nullable": true
