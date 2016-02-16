@@ -69,11 +69,7 @@ public class ServiceUpdateActivate extends AbstractObjectProcessHandler {
             progress.checkPoint("Reconciling");
             deploymentMgr.activate(service);
         } catch (TimeoutException ex) {
-            if (ex.getMessage().contains(ResourceMonitor.ERROR_MSG)) {
-                error = obfuscateId(ex);
-            } else {
-                error = ex.getMessage();
-            }
+            error = obfuscateId(ex);
             throw ex;
         } catch (Exception ex) {
             error = ex.getMessage();
@@ -90,20 +86,28 @@ public class ServiceUpdateActivate extends AbstractObjectProcessHandler {
     }
 
     protected String obfuscateId(TimeoutException ex) {
-        String error;
-        error = ex.getMessage();
-        // obfuscate id
-        String[] msg = ex.getMessage().split("\\]");
-        String[] splittedForId = msg[0].split(":");
-        String[] splittedForResourceType = splittedForId[0].split("\\[");
-        String resourceId = splittedForId[1];
-        String resourceType = splittedForResourceType[1];
-        Object obfuscatedId = idFormatter.formatId(resourceType, resourceId);
-        error = error.replace(resourceId + "]", obfuscatedId + "]");
-        String transitioningMsg = DataAccessor.fieldString(objectManager.getType(resourceType), "transitioningMessage");
-        if (!StringUtils.isEmpty(transitioningMsg)) {
-            error = error + ". " + resourceType + " status: " + transitioningMsg;
+        String error = ex.getMessage();
+        if (ex.getMessage().contains(ResourceMonitor.ERROR_MSG)) {
+            // obfuscate id of predicated resource
+            String[] msg = ex.getMessage().split("\\]");
+            String[] splittedForId = msg[0].split(":");
+            String[] splittedForResourceType = splittedForId[0].split("\\[");
+            String resourceId = splittedForId[1];
+            String resourceType = splittedForResourceType[1];
+            Object obfuscatedId = idFormatter.formatId(resourceType, resourceId);
+            error = error.replace(resourceId + "]", obfuscatedId + "]");
+
+            // append predicated resource's transitioninig message to an error
+            Object predicateResource = objectManager.loadResource(resourceType, resourceId);
+            if (predicateResource != null) {
+                String transitioningMsg = DataAccessor.fieldString(predicateResource,
+                        "transitioningMessage");
+                if (!StringUtils.isEmpty(transitioningMsg)) {
+                    error = error + ". " + resourceType + " status: " + transitioningMsg;
+                }
+            }
         }
+
         return error;
     }
 
