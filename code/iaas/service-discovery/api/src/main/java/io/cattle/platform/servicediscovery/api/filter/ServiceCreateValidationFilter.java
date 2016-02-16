@@ -17,7 +17,6 @@ import io.cattle.platform.servicediscovery.api.dao.ServiceExposeMapDao;
 import io.cattle.platform.servicediscovery.api.util.ServiceDiscoveryUtil;
 import io.cattle.platform.servicediscovery.api.util.selector.SelectorUtils;
 import io.cattle.platform.storage.service.StorageService;
-import io.cattle.platform.util.net.NetUtils;
 import io.cattle.platform.util.type.CollectionUtils;
 import io.github.ibuildthecloud.gdapi.exception.ValidationErrorException;
 import io.github.ibuildthecloud.gdapi.request.ApiRequest;
@@ -78,8 +77,6 @@ public class ServiceCreateValidationFilter extends AbstractDefaultResourceManage
         validateIpsHostName(request);
 
         validateImage(request, service);
-
-        validateRequestedVip(request);
 
         validatePorts(service, type, request);
 
@@ -185,20 +182,6 @@ public class ServiceCreateValidationFilter extends AbstractDefaultResourceManage
                             InstanceConstants.FIELD_IMAGE_UUID);
                 }
             }
-        }
-    }
-
-    protected void validateRequestedVip(ApiRequest request) {
-        String requestedVip = DataUtils.getFieldFromRequest(request, ServiceDiscoveryConstants.FIELD_VIP,
-                String.class);
-        if (requestedVip == null) {
-            return;
-        }
-        String vipCidr = ntwkDao.getVIPSubnetCidr();
-        if (!NetUtils.isIpInSubnet(vipCidr, requestedVip)) {
-            ValidationErrorCodes.throwValidationError(ValidationErrorCodes.INVALID_OPTION,
-                            "Requested VIP " + ServiceDiscoveryConstants.FIELD_VIP
-                                    + " is outside of configured vip cidr range");
         }
     }
 

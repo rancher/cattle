@@ -45,6 +45,9 @@ public class SelectorServiceCreateValidationFilter extends AbstractDefaultResour
     protected void validateSelectorOnlyService(ApiRequest request, Service service) {
         Map<String, Object> data = CollectionUtils.toMap(request.getRequestObject());
         Map<String, Object> primaryLaunchConfig = (Map<String, Object>)data.get(ServiceDiscoveryConstants.FIELD_LAUNCH_CONFIG);
+        if (primaryLaunchConfig == null) {
+            return;
+        }
         Object selector = data.get(ServiceDiscoveryConstants.FIELD_SELECTOR_CONTAINER);
         boolean isSelector = selector != null && !selector.toString().isEmpty();
         validateImage(primaryLaunchConfig, isSelector);

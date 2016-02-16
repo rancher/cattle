@@ -113,7 +113,7 @@ public class AgentBasedProcessHandler extends AbstractObjectProcessHandler imple
         Map<String, Object> data = serializer == null ? null : serializer.serialize(dataResource);
 
         Map<String, Object> processData = new HashMap<String, Object>();
-        for (String key : processDataKeys) {
+        for (String key : getProcessDataKeys()) {
             Object value = state.getData().get(key);
             if (value != null) {
                 processData.put(key, value);

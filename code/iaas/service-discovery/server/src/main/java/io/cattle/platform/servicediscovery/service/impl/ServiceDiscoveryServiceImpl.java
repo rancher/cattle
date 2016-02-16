@@ -53,6 +53,7 @@ import io.cattle.platform.servicediscovery.api.util.ServiceDiscoveryUtil;
 import io.cattle.platform.servicediscovery.api.util.selector.SelectorUtils;
 import io.cattle.platform.servicediscovery.deployment.impl.lock.ServiceEndpointsUpdateLock;
 import io.cattle.platform.servicediscovery.service.ServiceDiscoveryService;
+import io.cattle.platform.util.net.NetUtils;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -248,7 +249,19 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
 
     @Override
     public void setVIP(Service service) {
-        String vip = allocateVip(service);
+        String requestedVip = service.getVip();
+        String vip = null;
+        // if requested vip is outside of vip range, just allocate it
+        // its needed for service like k8s where vip is configured outside
+        if (requestedVip != null) {
+            String vipCidr = ntwkDao.getVIPSubnetCidr();
+            if (!NetUtils.isIpInSubnet(vipCidr, requestedVip)) {
+                vip = requestedVip;
+            }
+        }
+        if (vip == null) {
+            vip = allocateVip(service);
+        }
         if (vip != null) {
             service.setVip(vip);
             objectManager.persist(service);

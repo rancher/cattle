@@ -44,5 +44,6 @@ public class ExternalEventConstants {
     public static final String FIELD_HOST_LABEL = "hostLabel";
     public static final String FIELD_HOST_ID = "hostId";
     public static final String FIELD_DELETE_HOST = "deleteHost";
+    public static final String FIELD_UUID = "uuid";
 
 }
