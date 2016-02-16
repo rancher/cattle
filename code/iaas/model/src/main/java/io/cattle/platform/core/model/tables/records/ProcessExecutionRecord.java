@@ -11,9 +11,9 @@ package io.cattle.platform.core.model.tables.records;
 @java.lang.SuppressWarnings({ "all", "unchecked", "rawtypes" })
 @javax.persistence.Entity
 @javax.persistence.Table(name = "process_execution", schema = "cattle")
-public class ProcessExecutionRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.platform.core.model.tables.records.ProcessExecutionRecord> implements io.cattle.platform.db.jooq.utils.TableRecordJaxb, org.jooq.Record4<java.lang.Long, java.lang.Long, java.lang.String, java.util.Map<String,Object>>, io.cattle.platform.core.model.ProcessExecution {
+public class ProcessExecutionRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.platform.core.model.tables.records.ProcessExecutionRecord> implements io.cattle.platform.db.jooq.utils.TableRecordJaxb, org.jooq.Record5<java.lang.Long, java.lang.Long, java.lang.String, java.util.Map<String,Object>, java.util.Date>, io.cattle.platform.core.model.ProcessExecution {
 
-	private static final long serialVersionUID = 467030492;
+	private static final long serialVersionUID = -1649302147;
 
 	/**
 	 * Setter for <code>cattle.process_execution.id</code>.
@@ -84,6 +84,23 @@ public class ProcessExecutionRecord extends org.jooq.impl.UpdatableRecordImpl<io
 		return (java.util.Map<String,Object>) getValue(3);
 	}
 
+	/**
+	 * Setter for <code>cattle.process_execution.created</code>.
+	 */
+	@Override
+	public void setCreated(java.util.Date value) {
+		setValue(4, value);
+	}
+
+	/**
+	 * Getter for <code>cattle.process_execution.created</code>.
+	 */
+	@javax.persistence.Column(name = "created")
+	@Override
+	public java.util.Date getCreated() {
+		return (java.util.Date) getValue(4);
+	}
+
 	// -------------------------------------------------------------------------
 	// Primary key information
 	// -------------------------------------------------------------------------
@@ -97,23 +114,23 @@ public class ProcessExecutionRecord extends org.jooq.impl.UpdatableRecordImpl<io
 	}
 
 	// -------------------------------------------------------------------------
-	// Record4 type implementation
+	// Record5 type implementation
 	// -------------------------------------------------------------------------
 
 	/**
 	 * {@inheritDoc}
 	 */
 	@Override
-	public org.jooq.Row4<java.lang.Long, java.lang.Long, java.lang.String, java.util.Map<String,Object>> fieldsRow() {
-		return (org.jooq.Row4) super.fieldsRow();
+	public org.jooq.Row5<java.lang.Long, java.lang.Long, java.lang.String, java.util.Map<String,Object>, java.util.Date> fieldsRow() {
+		return (org.jooq.Row5) super.fieldsRow();
 	}
 
 	/**
 	 * {@inheritDoc}
 	 */
 	@Override
-	public org.jooq.Row4<java.lang.Long, java.lang.Long, java.lang.String, java.util.Map<String,Object>> valuesRow() {
-		return (org.jooq.Row4) super.valuesRow();
+	public org.jooq.Row5<java.lang.Long, java.lang.Long, java.lang.String, java.util.Map<String,Object>, java.util.Date> valuesRow() {
+		return (org.jooq.Row5) super.valuesRow();
 	}
 
 	/**
@@ -152,6 +169,14 @@ public class ProcessExecutionRecord extends org.jooq.impl.UpdatableRecordImpl<io
 	 * {@inheritDoc}
 	 */
 	@Override
+	public org.jooq.Field<java.util.Date> field5() {
+		return io.cattle.platform.core.model.tables.ProcessExecutionTable.PROCESS_EXECUTION.CREATED;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
 	public java.lang.Long value1() {
 		return getId();
 	}
@@ -178,6 +203,14 @@ public class ProcessExecutionRecord extends org.jooq.impl.UpdatableRecordImpl<io
 	@Override
 	public java.util.Map<String,Object> value4() {
 		return getLog();
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public java.util.Date value5() {
+		return getCreated();
 	}
 
 	/**
@@ -220,7 +253,16 @@ public class ProcessExecutionRecord extends org.jooq.impl.UpdatableRecordImpl<io
 	 * {@inheritDoc}
 	 */
 	@Override
-	public ProcessExecutionRecord values(java.lang.Long value1, java.lang.Long value2, java.lang.String value3, java.util.Map<String,Object> value4) {
+	public ProcessExecutionRecord value5(java.util.Date value) {
+		setCreated(value);
+		return this;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public ProcessExecutionRecord values(java.lang.Long value1, java.lang.Long value2, java.lang.String value3, java.util.Map<String,Object> value4, java.util.Date value5) {
 		return this;
 	}
 
@@ -237,6 +279,7 @@ public class ProcessExecutionRecord extends org.jooq.impl.UpdatableRecordImpl<io
 		setProcessInstanceId(from.getProcessInstanceId());
 		setUuid(from.getUuid());
 		setLog(from.getLog());
+		setCreated(from.getCreated());
 	}
 
 	/**
@@ -262,12 +305,13 @@ public class ProcessExecutionRecord extends org.jooq.impl.UpdatableRecordImpl<io
 	/**
 	 * Create a detached, initialised ProcessExecutionRecord
 	 */
-	public ProcessExecutionRecord(java.lang.Long id, java.lang.Long processInstanceId, java.lang.String uuid, java.util.Map<String,Object> log) {
+	public ProcessExecutionRecord(java.lang.Long id, java.lang.Long processInstanceId, java.lang.String uuid, java.util.Map<String,Object> log, java.util.Date created) {
 		super(io.cattle.platform.core.model.tables.ProcessExecutionTable.PROCESS_EXECUTION);
 
 		setValue(0, id);
 		setValue(1, processInstanceId);
 		setValue(2, uuid);
 		setValue(3, log);
+		setValue(4, created);
 	}
 }

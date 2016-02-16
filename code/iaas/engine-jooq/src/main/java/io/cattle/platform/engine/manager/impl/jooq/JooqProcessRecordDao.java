@@ -2,6 +2,7 @@ package io.cattle.platform.engine.manager.impl.jooq;
 
 import static io.cattle.platform.core.model.tables.ProcessExecutionTable.*;
 import static io.cattle.platform.core.model.tables.ProcessInstanceTable.*;
+
 import io.cattle.platform.archaius.util.ArchaiusUtil;
 import io.cattle.platform.core.model.tables.records.ProcessInstanceRecord;
 import io.cattle.platform.db.jooq.dao.impl.AbstractJooqDao;
@@ -22,7 +23,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
 import javax.inject.Inject;
 
 import org.apache.commons.lang3.EnumUtils;
@@ -158,8 +158,9 @@ public class JooqProcessRecordDao extends AbstractJooqDao implements ProcessReco
             int result = create().update(PROCESS_EXECUTION).set(PROCESS_EXECUTION.LOG, log).where(PROCESS_EXECUTION.UUID.eq(uuid)).execute();
 
             if (result == 0) {
-                create().insertInto(PROCESS_EXECUTION, PROCESS_EXECUTION.PROCESS_INSTANCE_ID, PROCESS_EXECUTION.UUID, PROCESS_EXECUTION.LOG).values(
-                        record.getId(), uuid, log).execute();
+                create().insertInto(PROCESS_EXECUTION, PROCESS_EXECUTION.PROCESS_INSTANCE_ID, PROCESS_EXECUTION.UUID,
+                        PROCESS_EXECUTION.LOG, PROCESS_EXECUTION.CREATED)
+                        .values(record.getId(), uuid, log, new Timestamp(System.currentTimeMillis())).execute();
             }
         }
     }
