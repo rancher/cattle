@@ -14,4 +14,8 @@ public interface AccountDao {
     Account findByUuid(String uuid);
 
     void deleteProjectMemberEntries(Account account);
+
+    Account getAdminAccountExclude(long accountId);
+
+    Account getAccountById(Long id);
 }
