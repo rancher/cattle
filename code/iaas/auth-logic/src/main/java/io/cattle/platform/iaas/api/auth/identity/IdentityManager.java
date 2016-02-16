@@ -117,6 +117,10 @@ public class IdentityManager extends AbstractNoOpResourceManager {
         return identitiesToReturn;
     }
 
+    public Identity getIdentity(String id) {
+        return projectMemberToIdentity(id);
+    }
+
     public Identity projectMemberToIdentity(String id) {
         String[] split = id.split(":", 2);
         if (split.length != 2) {

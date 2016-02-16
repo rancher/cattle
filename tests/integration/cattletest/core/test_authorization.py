@@ -1179,6 +1179,7 @@ def test_account_auth(admin_user_client, user_client, project_client):
         'id': 'r',
         'externalId': 'cru',
         'externalIdType': 'cru',
+        'identity': 'r',
         'removeTime': 'r',
         'data': 'r',
         'kind': 'cru',

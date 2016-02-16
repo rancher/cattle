@@ -3,6 +3,9 @@
         "kind": {
             "default": "user"
         },
+        "identity": {
+            "type": "reference[identity]"
+        },
         "defaultNetworkId": {
             "type" : "reference[network]",
             "nullable" : true
