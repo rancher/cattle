@@ -31,9 +31,7 @@ import io.cattle.platform.servicediscovery.api.constants.ServiceDiscoveryConstan
 
 import java.util.List;
 
-import org.jooq.Condition;
 import org.jooq.JoinType;
-import org.jooq.impl.DSL;
 
 public class MetaDataInfoDaoImpl extends AbstractJooqDao implements MetaDataInfoDao {
     @Override
@@ -116,7 +114,6 @@ public class MetaDataInfoDaoImpl extends AbstractJooqDao implements MetaDataInfo
         MultiRecordMapper<HostMetaData> mapper = new MultiRecordMapper<HostMetaData>() {
             @Override
             protected HostMetaData map(List<Object> input) {
-
                 Host host = (Host)input.get(0);
                 IpAddress hostIp = (IpAddress)input.get(1);
                 HostMetaData data = new HostMetaData(hostIp.getAddress(), host);
@@ -127,11 +124,6 @@ public class MetaDataInfoDaoImpl extends AbstractJooqDao implements MetaDataInfo
         HostTable host = mapper.add(HOST);
         IpAddressTable hostIpAddress = mapper.add(IP_ADDRESS);
 
-        Condition condition = DSL.trueCondition();
-        if (instance != null) {
-            condition = INSTANCE_HOST_MAP.INSTANCE_ID.eq(instance.getId());
-        }
-            
         return create()
                 .select(mapper.fields())
                 .from(hostIpAddress)
@@ -139,11 +131,40 @@ public class MetaDataInfoDaoImpl extends AbstractJooqDao implements MetaDataInfo
                 .on(HOST_IP_ADDRESS_MAP.IP_ADDRESS_ID.eq(hostIpAddress.ID))
                 .join(host)
                 .on(host.ID.eq(HOST_IP_ADDRESS_MAP.HOST_ID))
-                .leftOuterJoin(INSTANCE_HOST_MAP)
+                .join(INSTANCE_HOST_MAP)
                 .on(host.ID.eq(INSTANCE_HOST_MAP.HOST_ID))
                 .where(host.REMOVED.isNull())
                 .and(host.STATE.notIn(CommonStatesConstants.REMOVING, CommonStatesConstants.REMOVED))
-                .and(condition)
+                .and(INSTANCE_HOST_MAP.INSTANCE_ID.eq(instance.getId()))
+                .and(hostIpAddress.REMOVED.isNull())
+                .and(host.ACCOUNT_ID.eq(accountId)).groupBy(host.ID)
+                .fetch().map(mapper);
+    }
+
+    @Override
+    public List<HostMetaData> getAllInstanceHostMetaData(long accountId) {
+        MultiRecordMapper<HostMetaData> mapper = new MultiRecordMapper<HostMetaData>() {
+            @Override
+            protected HostMetaData map(List<Object> input) {
+                Host host = (Host)input.get(0);
+                IpAddress hostIp = (IpAddress)input.get(1);
+                HostMetaData data = new HostMetaData(hostIp.getAddress(), host);
+                return data;
+            }
+        };
+
+        HostTable host = mapper.add(HOST);
+        IpAddressTable hostIpAddress = mapper.add(IP_ADDRESS);
+
+        return create()
+                .select(mapper.fields())
+                .from(hostIpAddress)
+                .join(HOST_IP_ADDRESS_MAP)
+                .on(HOST_IP_ADDRESS_MAP.IP_ADDRESS_ID.eq(hostIpAddress.ID))
+                .join(host)
+                .on(host.ID.eq(HOST_IP_ADDRESS_MAP.HOST_ID))
+                .where(host.REMOVED.isNull())
+                .and(host.STATE.notIn(CommonStatesConstants.REMOVING, CommonStatesConstants.REMOVED))
                 .and(hostIpAddress.REMOVED.isNull())
                 .and(host.ACCOUNT_ID.eq(accountId)).groupBy(host.ID)
                 .fetch().map(mapper);
