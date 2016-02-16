@@ -5,6 +5,7 @@ import static io.cattle.platform.core.model.tables.DynamicSchemaTable.*;
 import static io.cattle.platform.core.model.tables.InstanceTable.*;
 import static io.cattle.platform.core.model.tables.ServiceExposeMapTable.*;
 import static io.cattle.platform.core.model.tables.ServiceTable.*;
+import static io.cattle.platform.core.model.tables.AgentTable.*;
 
 import io.cattle.platform.core.addon.DynamicSchemaWithRole;
 import io.cattle.platform.core.constants.CommonStatesConstants;
@@ -157,12 +158,15 @@ public class DynamicSchemaDaoImpl extends AbstractJooqDao implements DynamicSche
                     .on(SERVICE_EXPOSE_MAP.SERVICE_ID.eq(SERVICE.ID))
                 .join(INSTANCE)
                     .on(SERVICE_EXPOSE_MAP.INSTANCE_ID.eq(INSTANCE.ID))
+                .join(AGENT)
+                .on(AGENT.ID.eq(INSTANCE.AGENT_ID))
                 .where(DYNAMIC_SCHEMA.NAME.eq(service.getKind())
                         .and(DYNAMIC_SCHEMA.ACCOUNT_ID.eq(service.getAccountId()))
                         .and(INSTANCE.AGENT_ID.isNotNull())
                         .and(SERVICE.REMOVED.isNull())
                         .and(INSTANCE.REMOVED.isNull())
                         .and(SERVICE_EXPOSE_MAP.REMOVED.isNull())
+                        .and(AGENT.REMOVED.isNull())
                 ).fetch().intoArray(INSTANCE.AGENT_ID));
     }
 

@@ -71,6 +71,8 @@ public class ServiceCreatePostListener extends AbstractObjectProcessLogic implem
 
             SchemaImpl schema = jsonMapper.convertValue(entry.getValue(), SchemaImpl.class);
             schema.setId(name);
+            schema.setCollectionMethods(schema.getCollectionMethods());
+            schema.setResourceMethods(schema.getResourceMethods());
 
             try {
                 saveService(service, merge(baseSchema, schema));
@@ -88,13 +90,21 @@ public class ServiceCreatePostListener extends AbstractObjectProcessLogic implem
         SchemaImpl mergedSchema = new SchemaImpl();
         mergedSchema.setParent(baseSchema.getId());
         mergedSchema.setId(newSchema.getId());
+        mergedSchema.setCollectionMethods(newSchema.getCollectionMethods());
+        mergedSchema.setResourceMethods(newSchema.getResourceMethods());
 
+        mergeResourceFields(baseSchema, newSchema, allowedTypes, mergedSchema);
+
+        return mergedSchema;
+    }
+
+    protected void mergeResourceFields(Schema baseSchema, SchemaImpl newSchema, Set<String> allowedTypes,
+            SchemaImpl mergedSchema) {
         Map<String, Field> resourceFields = newSchema.getResourceFields();
-        Map<String, Field> baseResourceFields = baseSchema.getResourceFields();
 
         for (String fieldName : resourceFields.keySet()) {
             Field newField = resourceFields.get(fieldName);
-            if (newField == null || baseResourceFields.containsKey(fieldName)) {
+            if (newField == null) {
                 continue;
             }
 
@@ -104,8 +114,6 @@ public class ServiceCreatePostListener extends AbstractObjectProcessLogic implem
 
             mergedSchema.getResourceFields().put(fieldName, newField);
         }
-
-        return mergedSchema;
     }
 
     protected void saveService(Service service, Schema schema) throws IOException {
