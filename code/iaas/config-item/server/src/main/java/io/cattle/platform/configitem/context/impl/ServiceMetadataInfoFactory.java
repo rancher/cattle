@@ -118,7 +118,7 @@ public class ServiceMetadataInfoFactory extends AbstractAgentBaseContextFactory 
         populateSelfSection(instance, containersMD, stackNameToStack, serviceIdToServiceLaunchConfigs, selfMD, version);
 
         // 5. get host meta data
-        List<HostMetaData> hostsMD = metaDataInfoDao.getInstanceHostMetaData(instance.getAccountId(), null);
+        List<HostMetaData> hostsMD = metaDataInfoDao.getAllInstanceHostMetaData(instance.getAccountId());
         List<HostMetaData> selfHostMD = metaDataInfoDao.getInstanceHostMetaData(instance.getAccountId(),
                 instance);
 
@@ -332,7 +332,7 @@ public class ServiceMetadataInfoFactory extends AbstractAgentBaseContextFactory 
         String serviceName = isPrimaryConfig ? service.getName()
                 : launchConfigName;
         List<String> sidekicks = new ArrayList<>();
-        
+
         if (isPrimaryConfig) {
             getSidekicksInfo(service, sidekicks, launchConfigNames);
         }
