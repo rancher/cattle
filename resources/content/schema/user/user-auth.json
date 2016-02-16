@@ -23,6 +23,12 @@
         "apiKey.publicValue" : "r",
         "apiKey.secretValue" : "ro",
 
+        "apiRequestPolicy" : "r",
+        "apiRequestPolicy.username" : "r",
+        "apiRequestPolicy.authenticatedAsAccountId" : "r",
+        "apiRequestPolicy.accountId" : "r",
+        "apiRequestPolicy.identities" : "r",
+
         "addRemoveClusterHostInput" : "cr",
         "addRemoveClusterHostInput.hostId" : "cr",
 
