@@ -52,7 +52,7 @@ public class TableCleanUp extends AbstractJooqDao {
         int deletedProcessExecutionRecords = create()
                 .delete(PROCESS_EXECUTION)
                 .where(PROCESS_EXECUTION.CREATED.isNull().or(PROCESS_EXECUTION.CREATED.lt(new Date(System.currentTimeMillis() -
-                        (PROCESS_INSTANCE_TIME.get() / 1000)))))
+                        (PROCESS_INSTANCE_TIME.get() * 1000)))))
                 .execute();
 
         long endProcessExecution = System.currentTimeMillis();
