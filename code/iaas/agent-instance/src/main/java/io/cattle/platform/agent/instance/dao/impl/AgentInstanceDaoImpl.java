@@ -62,7 +62,9 @@ public class AgentInstanceDaoImpl extends AbstractJooqDao implements AgentInstan
         return create()
                 .selectFrom(INSTANCE)
                 .where(INSTANCE.AGENT_ID.eq(agent.getId())
-                        .and(INSTANCE.REMOVED.isNull()))
+                        .and(INSTANCE.REMOVED.isNull())
+                        .and(INSTANCE.STATE.notIn(CommonStatesConstants.ERROR, CommonStatesConstants.ERRORING,
+                                CommonStatesConstants.REMOVING)))
                 .fetchAny();
     }
 
@@ -97,7 +99,9 @@ public class AgentInstanceDaoImpl extends AbstractJooqDao implements AgentInstan
                         .on(NIC.INSTANCE_ID.eq(INSTANCE.ID))
                     .where(NIC.VNET_ID.eq(nic.getVnetId())
                             .and(NETWORK_SERVICE_PROVIDER_INSTANCE_MAP.NETWORK_SERVICE_PROVIDER_ID.eq(provider.getId()))
-                            .and(INSTANCE.REMOVED.isNull()))
+                        .and(INSTANCE.REMOVED.isNull())
+                        .and(INSTANCE.STATE.notIn(CommonStatesConstants.ERROR, CommonStatesConstants.ERRORING,
+                                CommonStatesConstants.REMOVING)))
                     .fetchInto(InstanceRecord.class);
 
         return records.size() > 0 ? records.get(0) : null;
@@ -126,7 +130,9 @@ public class AgentInstanceDaoImpl extends AbstractJooqDao implements AgentInstan
                 .join(NETWORK_SERVICE_PROVIDER_INSTANCE_MAP)
                     .on(NETWORK_SERVICE_PROVIDER_INSTANCE_MAP.INSTANCE_ID.eq(INSTANCE.ID))
                 .where(INSTANCE.REMOVED.isNull()
-                        .and(NETWORK_SERVICE_PROVIDER_INSTANCE_MAP.NETWORK_SERVICE_PROVIDER_ID.eq(provider.getId())))
+                        .and(NETWORK_SERVICE_PROVIDER_INSTANCE_MAP.NETWORK_SERVICE_PROVIDER_ID.eq(provider.getId()))
+                        .and(INSTANCE.STATE.notIn(CommonStatesConstants.ERROR, CommonStatesConstants.ERRORING,
+                                CommonStatesConstants.REMOVING)))
                 .fetchInto(AgentRecord.class);
     }
 

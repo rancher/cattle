@@ -4,6 +4,7 @@ import static io.cattle.platform.core.model.tables.HostTable.*;
 import static io.cattle.platform.core.model.tables.InstanceHostMapTable.*;
 import static io.cattle.platform.core.model.tables.InstanceTable.*;
 import io.cattle.platform.agent.connection.delegate.dao.AgentDelegateDao;
+import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.model.Agent;
 import io.cattle.platform.core.model.Host;
 import io.cattle.platform.core.model.Instance;
@@ -24,7 +25,9 @@ public class AgentDelegateDaoImpl extends AbstractJooqDao implements AgentDelega
                     .join(HOST)
                         .on(INSTANCE_HOST_MAP.HOST_ID.eq(HOST.ID))
                     .where(INSTANCE.AGENT_ID.eq(agent.getId())
-                            .and(INSTANCE.REMOVED.isNull())
+                        .and(INSTANCE.REMOVED.isNull().and(
+                                INSTANCE.STATE.notIn(CommonStatesConstants.ERROR, CommonStatesConstants.ERRORING,
+                                        CommonStatesConstants.REMOVING)))
                             .and(HOST.REMOVED.isNull()))
                     .fetchAny();
 
@@ -36,7 +39,9 @@ public class AgentDelegateDaoImpl extends AbstractJooqDao implements AgentDelega
         return create()
                 .selectFrom(INSTANCE)
                 .where(INSTANCE.AGENT_ID.eq(agent.getId())
-                        .and(INSTANCE.REMOVED.isNull()))
+                        .and(INSTANCE.REMOVED.isNull())
+                        .and(INSTANCE.STATE.notIn(CommonStatesConstants.ERROR, CommonStatesConstants.ERRORING,
+                                CommonStatesConstants.REMOVING)))
                 .fetchOne();
     }
 
