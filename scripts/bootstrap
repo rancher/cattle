@@ -27,6 +27,9 @@ install_build_tools
 if [ "${CATTLE_DB_CATTLE_DATABASE}" == "mysql" ]; then
     sed -i "0,/3306/! {0,/3306/ s/3306/${CATTLE_DB_CATTLE_MYSQL_PORT}/}" /etc/mysql/my.cnf
     sed -i 's/^#\(max_connections.*\)/\1/;s/100$/1000/' /etc/mysql/my.cnf
+    sed -i 's/^key_buffer[[:space:]]/key_buffer_size/' /etc/mysql/my.cnf
+    sed -i '/^log_bin.*$/a innodb_flush_log_at_trx_commit = 1' /etc/mysql/my.cnf
+    sed -i '/^max_connections.*$/a sql_mode = ONLY_FULL_GROUP_BY' /etc/mysql/my.cnf
     service mysql start
 
     set +e
