@@ -1,6 +1,7 @@
 package io.cattle.platform.servicediscovery.process;
 
 import static io.cattle.platform.core.model.tables.InstanceTable.INSTANCE;
+import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.dao.NetworkDao;
 import io.cattle.platform.core.model.Instance;
@@ -11,6 +12,7 @@ import io.cattle.platform.json.JsonMapper;
 import io.cattle.platform.process.common.handler.AbstractObjectProcessHandler;
 import io.cattle.platform.servicediscovery.service.ServiceDiscoveryService;
 
+import java.util.Arrays;
 import java.util.List;
 
 import javax.inject.Inject;
@@ -43,9 +45,14 @@ public class NetworkFromInstanceStop extends AbstractObjectProcessHandler {
         if (dependants.isEmpty()) {
             return null;
         }
-        
+
+        List<String> invalidStates = Arrays.asList(CommonStatesConstants.REMOVING, CommonStatesConstants.ERROR,
+                CommonStatesConstants.ERRORING);
         for (Instance dependant : dependants) {
-            objectProcessManager.scheduleProcessInstance(InstanceConstants.PROCESS_STOP, dependant, null);
+            if (!invalidStates.contains(dependant.getState())) {
+                objectProcessManager.scheduleProcessInstance(InstanceConstants.PROCESS_STOP, dependant, null);
+
+            }
         }
 
         return null;

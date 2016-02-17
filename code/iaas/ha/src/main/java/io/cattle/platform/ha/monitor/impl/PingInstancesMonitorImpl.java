@@ -7,6 +7,7 @@ import static io.cattle.platform.process.instance.InstanceProcessOptions.*;
 import io.cattle.platform.agent.AgentLocator;
 import io.cattle.platform.agent.RemoteAgent;
 import io.cattle.platform.archaius.util.ArchaiusUtil;
+import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.dao.AgentDao;
 import io.cattle.platform.core.model.Agent;
@@ -34,6 +35,7 @@ import io.cattle.platform.object.util.DataUtils;
 import io.cattle.platform.process.instance.InstanceProcessOptions;
 import io.cattle.platform.util.type.CollectionUtils;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -209,7 +211,9 @@ public class PingInstancesMonitorImpl implements PingInstancesMonitor {
 
         // Anything left in inRancher is in rancher, but not on the host.
         for (KnownInstance ki : inRancher.values()) {
+            List<String> forRemove = Arrays.asList(CommonStatesConstants.REMOVING, CommonStatesConstants.ERROR, CommonStatesConstants.ERRORING);
             if (objectMetaDataManager.isTransitioningState(Instance.class, ki.getState()) || ki.getRemoved() != null
+                    || forRemove.contains(ki.getState())
                     || (STATE_STOPPED.equals(ki.getState()) && StringUtils.isEmpty(ki.getExternalId())))
                 continue;
 
