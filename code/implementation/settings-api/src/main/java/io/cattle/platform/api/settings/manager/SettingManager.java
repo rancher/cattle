@@ -91,9 +91,9 @@ public class SettingManager extends AbstractJooqResourceManager {
         }
 
         if (setting == null) {
-            return getSettingByName(id, config);
+            return getSettingByName(id, config, true);
         } else {
-            ActiveSetting activeSetting = getSettingByName(setting.getName(), config);
+            ActiveSetting activeSetting = getSettingByName(setting.getName(), config, true);
             activeSetting.setSetting(setting);
             return activeSetting;
         }
@@ -160,11 +160,10 @@ public class SettingManager extends AbstractJooqResourceManager {
     }
 
     protected List<ActiveSetting> getSettings(List<Setting> settings, Configuration config) {
-
         Map<String, ActiveSetting> result = new TreeMap<String, ActiveSetting>();
 
         for (Setting setting : settings) {
-            ActiveSetting activeSetting = getSettingByName(setting.getName(), config);
+            ActiveSetting activeSetting = getSettingByName(setting.getName(), config, false);
             activeSetting.setSetting(setting);
             result.put(activeSetting.getName(), activeSetting);
         }
@@ -181,7 +180,7 @@ public class SettingManager extends AbstractJooqResourceManager {
                 continue;
             }
 
-            ActiveSetting activeSetting = getSettingByName(key, config);
+            ActiveSetting activeSetting = getSettingByName(key, config, false);
             if (activeSetting != null) {
                 result.put(activeSetting.getName(), activeSetting);
             }
@@ -190,7 +189,7 @@ public class SettingManager extends AbstractJooqResourceManager {
         return new ArrayList<ActiveSetting>(result.values());
     }
 
-    protected ActiveSetting getSettingByName(String name, Configuration config) {
+    protected ActiveSetting getSettingByName(String name, Configuration config, boolean checkDb) {
         if (name == null) {
             return null;
         }
@@ -205,9 +204,11 @@ public class SettingManager extends AbstractJooqResourceManager {
 
         ActiveSetting activeSetting = new ActiveSetting(name, value, toString(source));
 
-        Setting setting = create().selectFrom(SETTING).where(SETTING.NAME.eq(name)).fetchAny();
-        if (setting != null) {
-            activeSetting.setSetting(setting);
+        if (checkDb) {
+            Setting setting = create().selectFrom(SETTING).where(SETTING.NAME.eq(name)).fetchAny();
+            if (setting != null) {
+                activeSetting.setSetting(setting);
+            }
         }
 
         return activeSetting;
