@@ -137,7 +137,7 @@ public class MetaDataInfoDaoImpl extends AbstractJooqDao implements MetaDataInfo
                 .and(host.STATE.notIn(CommonStatesConstants.REMOVING, CommonStatesConstants.REMOVED))
                 .and(INSTANCE_HOST_MAP.INSTANCE_ID.eq(instance.getId()))
                 .and(hostIpAddress.REMOVED.isNull())
-                .and(host.ACCOUNT_ID.eq(accountId)).groupBy(host.ID)
+                .and(host.ACCOUNT_ID.eq(accountId))
                 .fetch().map(mapper);
     }
 
@@ -166,7 +166,7 @@ public class MetaDataInfoDaoImpl extends AbstractJooqDao implements MetaDataInfo
                 .where(host.REMOVED.isNull())
                 .and(host.STATE.notIn(CommonStatesConstants.REMOVING, CommonStatesConstants.REMOVED))
                 .and(hostIpAddress.REMOVED.isNull())
-                .and(host.ACCOUNT_ID.eq(accountId)).groupBy(host.ID)
+                .and(host.ACCOUNT_ID.eq(accountId))
                 .fetch().map(mapper);
     }
 
