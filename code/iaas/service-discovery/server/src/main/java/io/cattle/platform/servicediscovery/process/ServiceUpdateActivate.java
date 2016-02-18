@@ -6,6 +6,8 @@ import io.cattle.platform.core.model.Service;
 import io.cattle.platform.engine.handler.HandlerResult;
 import io.cattle.platform.engine.process.ProcessInstance;
 import io.cattle.platform.engine.process.ProcessState;
+import io.cattle.platform.iaas.api.auditing.AuditEventType;
+import io.cattle.platform.iaas.api.auditing.AuditService;
 import io.cattle.platform.object.meta.ObjectMetaDataManager;
 import io.cattle.platform.object.resource.ResourceMonitor;
 import io.cattle.platform.object.resource.ResourcePredicate;
@@ -17,7 +19,9 @@ import io.cattle.platform.servicediscovery.deployment.DeploymentManager;
 import io.github.ibuildthecloud.gdapi.id.IdFormatter;
 
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -43,6 +47,9 @@ public class ServiceUpdateActivate extends AbstractObjectProcessHandler {
 
     @Inject
     IdFormatter idFormatter;
+
+    @Inject
+    AuditService auditSvc;
 
     @Override
     public String[] getProcessNames() {
@@ -79,6 +86,11 @@ public class ServiceUpdateActivate extends AbstractObjectProcessHandler {
                 objectManager.setFields(objectManager.reload(service),
                         ObjectMetaDataManager.TRANSITIONING_MESSAGE_FIELD,
                         error);
+                Map<String, Object> data = new HashMap<>();
+                data.put("description", error);
+                auditSvc.logResourceModification(service, data, AuditEventType.reconcile, error,
+                        service.getAccountId(),
+                        null);
             }
         }
 
