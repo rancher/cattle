@@ -14,4 +14,8 @@ public interface ResourceChangeEventListener extends AnnotatedEventListener {
 
     @EventHandler
     public void resourceProgress(Event event);
+
+    @EventHandler
+    public void serviceEvent(Event event);
+
 }
