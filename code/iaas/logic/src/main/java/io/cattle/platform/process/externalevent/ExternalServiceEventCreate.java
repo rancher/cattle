@@ -3,7 +3,6 @@ package io.cattle.platform.process.externalevent;
 import static io.cattle.platform.core.model.tables.EnvironmentTable.*;
 import static io.cattle.platform.process.externalevent.ExternalEventConstants.*;
 import io.cattle.platform.core.constants.CommonStatesConstants;
-import io.cattle.platform.core.dao.DynamicSchemaDao;
 import io.cattle.platform.core.dao.GenericResourceDao;
 import io.cattle.platform.core.dao.ServiceDao;
 import io.cattle.platform.core.model.Environment;
@@ -25,6 +24,7 @@ import io.cattle.platform.object.util.ObjectUtils;
 import io.cattle.platform.process.base.AbstractDefaultProcessHandler;
 import io.cattle.platform.process.common.util.ProcessUtils;
 import io.cattle.platform.util.type.CollectionUtils;
+import io.github.ibuildthecloud.gdapi.factory.SchemaFactory;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -51,8 +51,9 @@ public class ExternalServiceEventCreate extends AbstractDefaultProcessHandler {
     @Inject
     LockManager lockManager;
     @Inject
-    DynamicSchemaDao schemaDao;
+    SchemaFactory schemaFactory;
 
+    @Override
     public HandlerResult handle(ProcessState state, ProcessInstance process) {
         final ExternalEvent event = (ExternalEvent)state.getResource();
 
@@ -70,7 +71,7 @@ public class ExternalServiceEventCreate extends AbstractDefaultProcessHandler {
                 }
 
                 String kind = serviceData.get(ObjectMetaDataManager.KIND_FIELD) != null ? serviceData.get(ObjectMetaDataManager.KIND_FIELD).toString() : null;
-                if (StringUtils.isEmpty(kind) || schemaDao.getSchema(kind, event.getAccountId(), null) == null) {
+                if (StringUtils.isEmpty(kind) || schemaFactory.getSchema(kind) == null) {
                     log.warn("Couldn't find schema for service type [{}]. Returning.", kind);
                     return;
                 }
@@ -100,11 +101,11 @@ public class ExternalServiceEventCreate extends AbstractDefaultProcessHandler {
         }
 
         Map<String, Object> service = new HashMap<String, Object>();
-        service.put(ObjectMetaDataManager.ACCOUNT_FIELD, event.getAccountId());
-        service.put(FIELD_ENVIRIONMENT_ID, environment.getId());
         if (serviceData != null) {
             service.putAll(serviceData);
         }
+        service.put(ObjectMetaDataManager.ACCOUNT_FIELD, event.getAccountId());
+        service.put(FIELD_ENVIRIONMENT_ID, environment.getId());
 
         try {
             String create = objectProcessManager.getStandardProcessName(StandardProcess.CREATE, Service.class);
@@ -112,7 +113,7 @@ public class ExternalServiceEventCreate extends AbstractDefaultProcessHandler {
             ProcessUtils.chainInData(service, create, activate);
             resourceDao.createAndSchedule(Service.class, service);
         } catch (ProcessCancelException e) {
-            log.info("Create and activate process cancelled for service with account id {}and external id {}", 
+            log.info("Create and activate process cancelled for service with account id {}and external id {}",
                     event.getAccountId(), event.getExternalId());
         }
     }

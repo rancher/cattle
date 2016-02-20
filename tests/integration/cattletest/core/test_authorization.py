@@ -42,6 +42,29 @@ def service_client(admin_user_client):
     return create_context(admin_user_client, create_project=False,
                           add_host=False, kind='service').user_client
 
+def _clean_types(types):
+    for i in ['openstackConfig',
+              'notThere',
+              'azureConfig',
+              'vmwarevcloudairConfig',
+              'exoscaleConfig',
+              'rackspaceConfig',
+              'hypervConfig',
+              'googleConfig',
+              'vmwarevsphereConfig',
+              'virtualboxConfig',
+              'amazonec2Config',
+              'genericConfig',
+              'vmwarefusionConfig',
+              'digitaloceanConfig',
+              'softlayerConfig',
+              'noneConfig']:
+        try:
+            types.remove(i)
+        except ValueError:
+            pass
+    return types
+
 
 def test_user_types(user_client, adds=set(), removes=set()):
     types = {
@@ -86,6 +109,7 @@ def test_user_types(user_client, adds=set(), removes=set()):
         'instanceStop',
         'ipAddress',
         'ipAddressAssociateInput',
+        'kubernetesService',
         'label',
         'loadBalancerAppCookieStickinessPolicy',
         'loadBalancerConfig',
@@ -147,7 +171,7 @@ def test_user_types(user_client, adds=set(), removes=set()):
     }
     types.update(adds)
     types.difference_update(removes)
-    assert set(user_client.schema.types.keys()) == types
+    assert set(_clean_types(user_client.schema.types.keys())) == types
     return types
 
 
@@ -177,7 +201,7 @@ def test_readonly_types(admin_user_client):
 
 
 def test_agent_register_types(agent_register_client):
-    assert set(agent_register_client.schema.types.keys()) == {
+    assert set(_clean_types(agent_register_client.schema.types.keys())) == {
         'agent',
         'error',
         'schema',
@@ -185,7 +209,7 @@ def test_agent_register_types(agent_register_client):
 
 
 def test_agent_types(agent_client):
-    assert set(agent_client.schema.types.keys()) == {
+    assert set(_clean_types(agent_client.schema.types.keys())) == {
         'agent',
         'configContent',
         'containerEvent',
@@ -1511,7 +1535,6 @@ def test_svc_discovery_service(admin_user_client, user_client, project_client):
         'environmentId': 'r',
         'scale': 'r',
         'launchConfig': 'r',
-        'serviceSchemas': 'r',
         'accountId': 'r',
         'data': 'r',
         'upgrade': 'r',
@@ -1533,7 +1556,6 @@ def test_svc_discovery_service(admin_user_client, user_client, project_client):
         'environmentId': 'r',
         'scale': 'r',
         'launchConfig': 'r',
-        'serviceSchemas': 'r',
         'accountId': 'r',
         'upgrade': 'r',
         'secondaryLaunchConfigs': 'r',
@@ -1555,7 +1577,6 @@ def test_svc_discovery_service(admin_user_client, user_client, project_client):
         'environmentId': 'cr',
         'scale': 'cru',
         'launchConfig': 'cr',
-        'serviceSchemas': 'cr',
         'accountId': 'r',
         'upgrade': 'r',
         'secondaryLaunchConfigs': 'cr',
@@ -2306,4 +2327,37 @@ def test_virtual_machine_disk(admin_user_client, user_client, project_client):
         'opts': 'cr',
         'driver': 'cr',
         'root': 'cr',
+    })
+
+
+def test_kubernetes_service(admin_user_client, user_client, project_client):
+    auth_check(admin_user_client.schema, 'kubernetesService', 'r', {
+        'name': 'r',
+        'externalId': 'r',
+        'environmentId': 'r',
+        'accountId': 'r',
+        'data': 'r',
+        'vip': 'r',
+        'selectorContainer': 'r',
+        'template': 'r',
+    })
+
+    auth_check(user_client.schema, 'kubernetesService', 'r', {
+        'name': 'r',
+        'externalId': 'r',
+        'environmentId': 'r',
+        'accountId': 'r',
+        'vip': 'r',
+        'selectorContainer': 'r',
+        'template': 'r',
+    })
+
+    auth_check(project_client.schema, 'kubernetesService', 'r', {
+        'name': 'r',
+        'externalId': 'r',
+        'environmentId': 'r',
+        'accountId': 'r',
+        'vip': 'r',
+        'selectorContainer': 'r',
+        'template': 'r',
     })
