@@ -23,4 +23,14 @@ public class ConfigUpdate extends EventVO<ConfigUpdateData> {
         setData(updateData);
     }
 
+    public ConfigUpdate(ConfigUpdate configUpdate, List<ConfigUpdateItem> items) {
+        super(configUpdate, null);
+
+        ConfigUpdateData updateData = new ConfigUpdateData();
+        updateData.setItems(items);
+        updateData.setConfigUrl(configUpdate.getData().getConfigUrl());
+
+        setData(updateData);
+    }
+
 }
