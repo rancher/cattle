@@ -269,6 +269,9 @@ public abstract class LDAPIdentityProvider implements IdentityProvider{
     }
 
     protected LdapContext login(String username, String password) {
+        if (StringUtils.isEmpty(password)) {
+            throw new UserLoginFailureException("Failed to login ldap User : Invalid Credentials");
+        }
         Hashtable<String, String> props = new Hashtable<>();
         props.put(Context.SECURITY_AUTHENTICATION, "simple");
         props.put(Context.SECURITY_PRINCIPAL, username);
