@@ -14,8 +14,6 @@ public interface ServiceDao {
      */
     List<? extends Service> getServicesOnHost(long hostId);
 
-    List<? extends Instance> getInstancesWithHealtcheckScheduledOnHost(long hostId);
-
     List<? extends Instance> getInstancesWithHealtcheckEnabled(long accountId);
 
     List<Certificate> getLoadBalancerServiceCertificates(Service lbService);

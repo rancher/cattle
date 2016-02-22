@@ -45,19 +45,6 @@ public class HostDaoImpl extends AbstractJooqDao implements HostDao {
     }
 
     @Override
-    public List<? extends IpAddress> getHostIpAddresses(long hostId) {
-        return create()
-                .select(IP_ADDRESS.fields())
-                .from(IP_ADDRESS)
-                .join(HOST_IP_ADDRESS_MAP)
-                .on(HOST_IP_ADDRESS_MAP.IP_ADDRESS_ID.eq(IP_ADDRESS.ID))
-                .where(HOST_IP_ADDRESS_MAP.HOST_ID.eq(hostId)
-                .and(IP_ADDRESS.REMOVED.isNull())
-                .and(HOST_IP_ADDRESS_MAP.REMOVED.isNull()))
-                .fetchInto(IpAddressRecord.class);
-    }
-
-    @Override
     public IpAddress getIpAddressForHost(Long hostId) {
         return create()
             .select(IP_ADDRESS.fields())

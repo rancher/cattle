@@ -11,8 +11,6 @@ public interface HostDao {
 
     List<? extends Host> getActiveHosts(Long accountId);
 
-    List<? extends IpAddress> getHostIpAddresses(long hostId);
-
     Host getHostForIpAddress(long ipAddressId);
 
     IpAddress getIpAddressForHost(Long hostId);
