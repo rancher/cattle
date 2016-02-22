@@ -63,13 +63,10 @@ public class InstanceStart extends AbstractDefaultProcessHandler {
         Map<String, Object> resultData = new ConcurrentHashMap<String, Object>();
         HandlerResult result = new HandlerResult(resultData);
 
-        progress.init(state, 5, 5, 80, 5, 5);
+        progress.init(state, 5, 80, 5, 5);
 
         try {
             try {
-                progress.checkPoint("Scheduling");
-                allocate(instance);
-
                 progress.checkPoint("Networking");
                 network(instance, state);
                 activatePorts(instance, state);

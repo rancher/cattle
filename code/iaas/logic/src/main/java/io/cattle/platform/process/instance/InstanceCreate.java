@@ -29,6 +29,9 @@ import io.cattle.platform.object.process.StandardProcess;
 import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.object.util.DataUtils;
 import io.cattle.platform.process.base.AbstractDefaultProcessHandler;
+import io.cattle.platform.process.containerevent.ContainerEventCreate;
+import io.cattle.platform.util.exception.ExecutionException;
+import io.cattle.platform.util.type.CollectionUtils;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -41,8 +44,13 @@ import java.util.TreeSet;
 import javax.inject.Inject;
 import javax.inject.Named;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 @Named
 public class InstanceCreate extends AbstractDefaultProcessHandler {
+
+    private static final Logger log = LoggerFactory.getLogger(InstanceStart.class);
 
     @Inject
     LabelsService labelsService;
@@ -70,6 +78,14 @@ public class InstanceCreate extends AbstractDefaultProcessHandler {
         Set<Long> creds = createCreds(instance, state.getData());
         Set<Long> volumesIds = createVolumes(instance, volumes, state.getData());
         Set<Long> nicIds = createNics(instance, nics, state.getData());
+
+
+       try {
+            allocate(instance);
+        } catch (ExecutionException e) {
+            log.error("Failed to allocate instance in instanceCreate [{}]", instance.getId());
+            return stopOrRemove(state, instance, e);
+        }
 
         HandlerResult result = new HandlerResult("_volumeIds", volumesIds, "_nicIds", nicIds, "_creds", creds, InstanceConstants.FIELD_DATA_VOLUMES,
                 dataVolumes);
@@ -125,6 +141,10 @@ public class InstanceCreate extends AbstractDefaultProcessHandler {
 
             labelsService.createContainerLabel(instance.getAccountId(), instance.getId(), labelKey, labelValue);
         }
+    }
+
+    protected void allocate(Instance instance) {
+        execute("instance.allocate", instance, null);
     }
 
     protected Set<Long> createVolumes(Instance instance, List<Volume> volumes, Map<String, Object> data) {
@@ -362,6 +382,18 @@ public class InstanceCreate extends AbstractDefaultProcessHandler {
 
     protected void setCreateStart(ProcessState state) {
         DataAccessor.fromMap(state.getData()).withScope(InstanceCreate.class).withKey(InstanceConstants.FIELD_START_ON_CREATE).set(true);
+    }
+
+    protected HandlerResult stopOrRemove(ProcessState state, Instance instance, ExecutionException e) {
+        if (isCreateStart(state) && !ContainerEventCreate.isNativeDockerStart(state) ) {
+            getObjectProcessManager().scheduleProcessInstance(InstanceConstants.PROCESS_STOP, instance,
+                    CollectionUtils.asMap(InstanceConstants.REMOVE_OPTION, true));
+        } else {
+            getObjectProcessManager().scheduleProcessInstance(InstanceConstants.PROCESS_STOP, instance, null);
+        }
+
+        e.setResources(state.getResource());
+        throw e;
     }
 
 }

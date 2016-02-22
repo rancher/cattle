@@ -798,3 +798,35 @@ def test_container_start_item_unique(client, super_client, context):
         for item in update.items:
             assert item.name not in seen
             seen.add(item.name)
+
+
+def test_container_stopped_allocated(client, super_client, context):
+    c = client.create_container(imageUuid=context.image_uuid,
+                                startOnCreate=False)
+    c = client.wait_success(c)
+    assert_fields(super_client.reload(c), {
+        "allocationState": "active",
+        "state": "stopped"
+    })
+
+
+def test_container_valid_hosts(client, super_client, context):
+    host1 = context.host
+
+    c = client.create_container(imageUuid=context.image_uuid,
+                                startOnCreate=False,
+                                validHostIds=[host1.id])
+    c = client.wait_success(c)
+    assert_fields(super_client.reload(c), {
+        "allocationState": "active",
+        "state": "stopped",
+        "validHostIds": [host1.id]
+    })
+
+    url = c.links["hosts"]
+
+    response = requests.get(url)
+    assert response.status_code == 200
+    resp = response.json()
+    assert resp['data'][0] is not None
+    assert resp['data'][0].get("id") == host1.id
