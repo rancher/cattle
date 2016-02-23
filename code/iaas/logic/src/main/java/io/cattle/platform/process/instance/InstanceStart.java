@@ -78,7 +78,7 @@ public class InstanceStart extends AbstractDefaultProcessHandler {
                 storage(instance, state);
             } catch (ExecutionException e) {
                 log.error("Failed to {} for instance [{}]", progress.getCurrentCheckpoint(), instance.getId());
-                return stopOrErrorOut(state, instance, e);
+                return handleStartError(state, instance, e);
             }
 
             try {
@@ -87,7 +87,7 @@ public class InstanceStart extends AbstractDefaultProcessHandler {
             } catch (ExecutionException e) {
                 log.error("Failed to {} for instance [{}]", progress.getCurrentCheckpoint(), instance.getId());
                 if (incrementComputeTry(state) >= getMaxComputeTries(instance)) {
-                    return stopOrErrorOut(state, instance, e);
+                    return handleStartError(state, instance, e);
                 }
                 throw e;
             }
@@ -101,7 +101,7 @@ public class InstanceStart extends AbstractDefaultProcessHandler {
             activatePorts(instance, state);
         } catch (ExecutionException e) {
             log.error("Failed to {} for instance [{}]", progress.getCurrentCheckpoint(), instance.getId());
-            return stopOrErrorOut(state, instance, e);
+            return handleStartError(state, instance, e);
         }
 
         assignPrimaryIpAddress(instance, resultData);
@@ -175,11 +175,13 @@ public class InstanceStart extends AbstractDefaultProcessHandler {
         return COMPUTE_TRIES.get();
     }
 
-    protected HandlerResult stopOrErrorOut(ProcessState state, Instance instance, ExecutionException e) {
+    protected HandlerResult handleStartError(ProcessState state, Instance instance, ExecutionException e) {
+        String chainProcess = instance.getSystemContainer() == null ? InstanceConstants.PROCESS_ERROR
+                : InstanceConstants.PROCESS_REMOVE;
         if (InstanceCreate.isCreateStart(state) && !ContainerEventCreate.isNativeDockerStart(state) ) {
             getObjectProcessManager().scheduleProcessInstance(InstanceConstants.PROCESS_STOP, instance,
                     ProcessUtils.chainInData(new HashMap<String, Object>(), InstanceConstants.PROCESS_STOP,
-                            InstanceConstants.PROCESS_ERROR));
+                            chainProcess));
         } else {
             getObjectProcessManager().scheduleProcessInstance(InstanceConstants.PROCESS_STOP, instance, null);
         }

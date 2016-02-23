@@ -320,6 +320,7 @@ public abstract class AbstractJooqResourceManager extends AbstractObjectResource
         switch (sort.getOrderEnum()) {
         case DESC:
             query.addOrderBy(sortField.desc());
+            break;
         default:
             query.addOrderBy(sortField.asc());
         }

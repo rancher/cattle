@@ -1,12 +1,20 @@
 package io.cattle.platform.iaas.api.change.impl;
 
+import static io.cattle.platform.core.model.tables.AgentTable.*;
+
+import io.cattle.platform.core.constants.AgentConstants;
+import io.cattle.platform.core.model.Account;
+import io.cattle.platform.core.model.Agent;
 import io.cattle.platform.eventing.EventService;
 import io.cattle.platform.eventing.model.Event;
 import io.cattle.platform.eventing.model.EventVO;
 import io.cattle.platform.iaas.api.change.ResourceChangeEventListener;
 import io.cattle.platform.iaas.event.IaasEvents;
+import io.cattle.platform.json.JsonMapper;
 import io.cattle.platform.lock.LockDelegator;
+import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.meta.ObjectMetaDataManager;
+import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.task.Task;
 import io.cattle.platform.task.TaskOptions;
 
@@ -23,6 +31,10 @@ public class ResourceChangeEventListenerImpl implements ResourceChangeEventListe
     volatile Map<Pair<String, String>, Object> changed = new ConcurrentHashMap<Pair<String, String>, Object>();
     LockDelegator lockDelegator;
     EventService eventService;
+    @Inject
+    ObjectManager objectManager;
+    @Inject
+    JsonMapper jsonMapper;
 
     @Override
     public void stateChange(Event event) {
@@ -37,6 +49,33 @@ public class ResourceChangeEventListenerImpl implements ResourceChangeEventListe
     @Override
     public void resourceProgress(Event event) {
         add(event);
+    }
+
+    @Override
+    public void serviceEvent(Event event) {
+        Account account = objectManager.loadResource(Account.class, event.getResourceId());
+        if (account == null) {
+            return;
+        }
+
+        Agent agent = objectManager.findAny(Agent.class, AGENT.ACCOUNT_ID, new Long(event.getResourceId()));
+        if (agent == null) {
+            return;
+        }
+
+        Long resourceAccId = DataAccessor.fromDataFieldOf(agent)
+                .withKey(AgentConstants.DATA_AGENT_RESOURCES_ACCOUNT_ID)
+                .as(Long.class);
+        if (resourceAccId == null) {
+            return;
+        }
+
+        Event originalEvent = jsonMapper.convertValue(event.getData(), EventVO.class);
+        EventVO<?> eventWithAccount = new EventVO<>(originalEvent, null);
+        eventWithAccount.setName(IaasEvents.appendAccount(originalEvent.getName(), resourceAccId));
+
+        eventService.publish(originalEvent);
+        eventService.publish(eventWithAccount);
     }
 
     protected void add(Event event) {

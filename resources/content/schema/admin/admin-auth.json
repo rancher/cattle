@@ -13,6 +13,7 @@
         "account.kind" : "cru",
         "account.uuid" : "cr",
         "account.projectId" : "r",
+        "account.identity" : "r",
 
         "activeSetting" : "rud",
         "activeSetting.activeValue" : "r",
@@ -196,6 +197,8 @@
         "processInstance.runningProcessServerId" : "r",
         "processInstance.startProcessServerId" : "r",
         "processInstance.startTime" : "r",
+
+        "project.identity" : "",
 
         "publish": "cr",
         "publish.data": "cr",

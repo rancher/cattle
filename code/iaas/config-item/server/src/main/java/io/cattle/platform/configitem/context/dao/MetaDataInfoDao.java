@@ -39,6 +39,7 @@ public interface MetaDataInfoDao {
 
     List<ContainerMetaData> getContainersData(long accountId);
 
-    List<HostMetaData> getInstanceHostMetaData(long accountId, Instance instance);
+    List<HostMetaData> getAllInstanceHostMetaData(long accountId);
 
+    List<HostMetaData> getInstanceHostMetaData(long accountId, Instance instance);
 }

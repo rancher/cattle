@@ -73,7 +73,9 @@ public class InstanceDaoImpl extends AbstractJooqDao implements InstanceDao {
                 .join(INSTANCE_HOST_MAP)
                     .on(INSTANCE_HOST_MAP.HOST_ID.eq(hostId)
                             .and(INSTANCE_HOST_MAP.INSTANCE_ID.eq(INSTANCE.ID)))
-                .where(INSTANCE.REMOVED.isNull())
+                .where(INSTANCE.REMOVED.isNull().and(
+                        INSTANCE.STATE.notIn(CommonStatesConstants.ERROR, CommonStatesConstants.ERRORING,
+                                CommonStatesConstants.REMOVING)))
                 .fetchInto(InstanceRecord.class);
     }
 

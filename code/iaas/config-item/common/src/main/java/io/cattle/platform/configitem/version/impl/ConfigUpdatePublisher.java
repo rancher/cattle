@@ -197,15 +197,24 @@ public class ConfigUpdatePublisher extends NoExceptionRunnable implements Initia
     }
 
     protected void publishUpdate(final WorkItem item, Client client, ConfigUpdate update) {
+        Map<String, ItemVersion> applied = getApplied(item.client);
+        List<ConfigUpdateItem> updateItems = new ArrayList<>();
+
+        for (ConfigUpdateItem updateItem : update.getData().getItems()) {
+            if (!itemDone(updateItem, applied)) {
+                updateItems.add(updateItem);
+            }
+        }
+
         if (log.isTraceEnabled()) {
             log.info("\t=== Publish ===");
             List<String> items = new ArrayList<>();
-            for (ConfigUpdateItem updateItem : update.getData().getItems()) {
+            for (ConfigUpdateItem updateItem : updateItems) {
                 items.add(updateItem.getName());
             }
             log.info("\t\tUpdate [{}:{}] {}", update.getResourceType(), update.getResourceId(), items);
         }
-        ListenableFuture<? extends Event> future = call(client, update);
+        ListenableFuture<? extends Event> future = call(client, new ConfigUpdate(update, updateItems));
         Futures.addCallback(future, new FutureCallback<Event>() {
             @Override
             public void onSuccess(Event result) {
@@ -283,6 +292,23 @@ public class ConfigUpdatePublisher extends NoExceptionRunnable implements Initia
 
     protected Map<String, ItemVersion> getApplied(Client client) {
         return configItemStatusDao.getApplied(client);
+    }
+
+    protected boolean itemDone(ConfigUpdateItem item, Map<String, ItemVersion> applied) {
+        ItemVersion version = applied.get(item.getName());
+        if (version == null) {
+            return false;
+        }
+
+        if (item.getRequestedVersion() == null) {
+            return false;
+        }
+
+        if (version.getRevision() < item.getRequestedVersion()) {
+            return false;
+        }
+
+        return true;
     }
 
     protected boolean satisfies(boolean isRequest, ConfigUpdate request, Map<String, ItemVersion> applied) {
