@@ -15,18 +15,15 @@ import java.io.File;
 import java.io.IOException;
 
 @Controller
-public class ComposeController {
+public class DownloadController {
 
-    @RequestMapping("/compose/{filePath}")
-    public ResponseEntity<byte[]> composeDown(@PathVariable("filePath") String filePath,
+    @RequestMapping("/*")
+    public ResponseEntity<byte[]> composeDown(
                                               HttpServletRequest request) throws IOException {
+        String filePath = "static/" + request.getRequestURI();
 
-        String[] dirs =  request.getRequestURI().split("compose");
-        if(dirs.length == 2) {
-            filePath = dirs[1];
-        }
         System.out.println(filePath);
-        ClassPathResource resource = new ClassPathResource("static/compose/" + filePath);
+        ClassPathResource resource = new ClassPathResource(filePath);
         File downFile = resource.getFile();
 
         //默认文件名称
