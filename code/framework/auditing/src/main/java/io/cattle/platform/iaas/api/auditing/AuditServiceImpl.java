@@ -75,6 +75,10 @@ public class AuditServiceImpl implements AuditService{
 
     @Override
     public void logRequest(ApiRequest request, Policy policy) {
+        if (policy == null) {
+            return;
+        }
+
         if (Schema.Method.GET.isMethod(request.getMethod()) ||
                 BLACK_LIST_TYPES.contains(request.getType().toLowerCase())) {
             return;

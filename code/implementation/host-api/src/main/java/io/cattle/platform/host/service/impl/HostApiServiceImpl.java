@@ -19,6 +19,7 @@ import io.github.ibuildthecloud.gdapi.request.ApiRequest;
 import io.github.ibuildthecloud.gdapi.util.ResponseCodes;
 
 import java.security.PublicKey;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -41,12 +42,17 @@ public class HostApiServiceImpl implements HostApiService {
 
     @Override
     public HostApiAccess getAccess(ApiRequest request, Long hostId, Map<String, Object> data, String... resourcePathSegments) {
+        return getAccess(request, hostId, data, null, resourcePathSegments);
+    }
+
+    @Override
+    public HostApiAccess getAccess(ApiRequest request, Long hostId, Map<String, Object> data, Date expiration, String... resourcePathSegments) {
         Host host = objectManager.loadResource(Host.class, hostId);
         if (host == null) {
             return null;
         }
 
-        String token = getToken(host, data);
+        String token = getToken(host, data, expiration);
         if (token == null) {
             return null;
         }
@@ -99,7 +105,7 @@ public class HostApiServiceImpl implements HostApiService {
         return keyProvider.getPublicKeys();
     }
 
-    protected String getToken(Host host, Map<String, Object> inputData) {
+    protected String getToken(Host host, Map<String, Object> inputData, Date expiration) {
         Map<String, Object> data = new HashMap<String, Object>(inputData);
         String uuid = DataAccessor.fields(host).withKey(HostConstants.FIELD_REPORTED_UUID).as(String.class);
         if (uuid != null) {
@@ -108,7 +114,11 @@ public class HostApiServiceImpl implements HostApiService {
             data.put(HOST_UUID, host.getUuid());
         }
 
-        return tokenService.generateToken(data);
+        if (expiration == null) {
+            return tokenService.generateToken(data);
+        } else {
+            return tokenService.generateToken(data, expiration);
+        }
     }
 
     protected IpAddress getIpAddress(Host host) {
