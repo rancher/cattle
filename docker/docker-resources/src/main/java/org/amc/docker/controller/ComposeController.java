@@ -10,6 +10,7 @@ import org.springframework.util.FileCopyUtils;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 
+import javax.servlet.http.HttpServletRequest;
 import java.io.File;
 import java.io.IOException;
 
@@ -17,8 +18,13 @@ import java.io.IOException;
 public class ComposeController {
 
     @RequestMapping("/compose/{filePath}")
-    public ResponseEntity<byte[]> composeDown(@PathVariable("filePath") String filePath) throws IOException {
+    public ResponseEntity<byte[]> composeDown(@PathVariable("filePath") String filePath,
+                                              HttpServletRequest request) throws IOException {
 
+        String[] dirs =  request.getRequestURI().split("compose");
+        if(dirs.length == 2) {
+            filePath = dirs[1];
+        }
         System.out.println(filePath);
         ClassPathResource resource = new ClassPathResource("static/compose/" + filePath);
         File downFile = resource.getFile();
