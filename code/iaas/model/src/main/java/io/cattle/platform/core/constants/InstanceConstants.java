@@ -20,7 +20,6 @@ public class InstanceConstants {
     public static final String FIELD_CREDENTIAL_IDS = "credentialIds";
     public static final String FIELD_ENVIRONMENT = "environment";
     public static final String FIELD_IMAGE_UUID = "imageUuid";
-    public static final String FIELD_IMAGE_ID = "imageId";
     public static final String FIELD_INSTANCE_LINKS = "instanceLinks";
     public static final String FIELD_INSTANCE_TRIGGERED_STOP = "instanceTriggeredStop";
     public static final String FIELD_PUBLIC_IP_ADDRESS_POOL_ID = "publicIpAddressPoolId";
@@ -37,7 +36,6 @@ public class InstanceConstants {
     public static final String FIELD_VCPU = "vcpu";
     public static final String FIELD_VNET_IDS = "vnetIds";
     public static final String FIELD_VOLUME_OFFERING_IDS = "volumeOfferingIds";
-    public static final String FIELD_COMPUTE_TRIES = "computeTries";
     public static final String FIELD_LABELS = "labels";
     public static final String FIELD_HEALTH_CHECK = "healthCheck";
     public static final String FIELD_EXPOSE = "expose";

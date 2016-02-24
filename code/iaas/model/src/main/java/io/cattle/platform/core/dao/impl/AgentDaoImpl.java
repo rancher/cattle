@@ -66,23 +66,6 @@ public class AgentDaoImpl extends AbstractCoreDao implements AgentDao {
     }
 
     @Override
-    public Map<String, Host> getHostsForDelegate(long agentId) {
-        List<? extends Host> hostList = create()
-                .select(HOST.fields())
-                .from(HOST)
-                .join(INSTANCE_HOST_MAP)
-                    .on(INSTANCE_HOST_MAP.HOST_ID.eq(HOST.ID))
-                .join(INSTANCE)
-                    .on(INSTANCE_HOST_MAP.INSTANCE_ID.eq(INSTANCE.ID))
-                .where(
-                        INSTANCE.AGENT_ID.eq(agentId)
-                                .and(HOST.REMOVED.isNull()))
-                .fetchInto(HostRecord.class);
-
-        return groupByReportedUUid(hostList);
-    }
-
-    @Override
     public Map<String, StoragePool> getStoragePools(long agentId) {
         Map<String,StoragePool> pools = new HashMap<>();
 

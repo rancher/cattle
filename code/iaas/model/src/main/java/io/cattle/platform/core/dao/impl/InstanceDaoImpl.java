@@ -13,7 +13,6 @@ import io.cattle.platform.core.dao.GenericMapDao;
 import io.cattle.platform.core.dao.InstanceDao;
 import io.cattle.platform.core.model.Account;
 import io.cattle.platform.core.model.Instance;
-import io.cattle.platform.core.model.InstanceHostMap;
 import io.cattle.platform.core.model.Service;
 import io.cattle.platform.core.model.tables.records.InstanceRecord;
 import io.cattle.platform.core.model.tables.records.ServiceRecord;
@@ -149,16 +148,6 @@ public class InstanceDaoImpl extends AbstractJooqDao implements InstanceDao {
                         .and(INSTANCE.STATE.notIn(CommonStatesConstants.PURGING, CommonStatesConstants.PURGED,
                                 CommonStatesConstants.REMOVED, CommonStatesConstants.REMOVING)))
                 .fetchInto(InstanceRecord.class);
-    }
-
-    @Override
-    public Long getInstanceHostId(long instanceId) {
-        List<? extends InstanceHostMap> maps = mapDao.findNonRemoved(InstanceHostMap.class, Instance.class,
-                instanceId);
-        if (maps.isEmpty()) {
-            return null;
-        }
-        return maps.get(0).getHostId();
     }
 
 }
