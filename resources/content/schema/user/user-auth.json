@@ -132,6 +132,17 @@
         "containerLogs.follow":"cr",
         "containerLogs.lines":"cr",
 
+        "containerProxy":"r",
+        "containerProxy.port":"cr",
+        "containerProxy.scheme":"cr",
+
+        "serviceProxy":"r",
+        "serviceProxy.port":"cr",
+        "serviceProxy.scheme":"cr",
+        "serviceProxy.service":"cr",
+        "serviceProxy.token":"r",
+        "serviceProxy.url":"r",
+
         "credential" : "r",
         "credential.publicValue" : "r",
         "credential.secretValue" : "r",
