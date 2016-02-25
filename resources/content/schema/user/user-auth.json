@@ -518,6 +518,7 @@
         "dnsService.publicEndpoints" : "",
 
         "kubernetesService" : "r",
+        "kubernetesService.assignServiceIpAddress" : "",
         "kubernetesService.createIndex" : "",
         "kubernetesService.fqdn" : "",
         "kubernetesService.launchConfig" : "",

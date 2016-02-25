@@ -42,6 +42,7 @@ def service_client(admin_user_client):
     return create_context(admin_user_client, create_project=False,
                           add_host=False, kind='service').user_client
 
+
 def _clean_types(types):
     for i in ['openstackConfig',
               'notThere',
@@ -62,6 +63,8 @@ def _clean_types(types):
         try:
             types.remove(i)
         except ValueError:
+            pass
+        except KeyError:
             pass
     return types
 
@@ -186,7 +189,7 @@ def test_readonly_types(admin_user_client):
     client = context.user_client
     test_user_types(client, adds={'subscribe'},
                     removes={'userPreference', 'registrationToken'})
-    for type in client.schema.types:
+    for type in _clean_types(set(client.schema.types.keys())):
         type = client.schema.types[type]
         assert len(type['actions']) == 0
         if type.id == 'container':
@@ -304,6 +307,7 @@ def test_admin_types(admin_user_client, adds=set(), removes=set()):
         'instanceStop',
         'ipAddress',
         'ipAddressAssociateInput',
+        'kubernetesService',
         'label',
         'ldapconfig',
         'loadBalancerAppCookieStickinessPolicy',
@@ -377,7 +381,7 @@ def test_admin_types(admin_user_client, adds=set(), removes=set()):
     }
     types.update(adds)
     types.difference_update(removes)
-    assert set(admin_user_client.schema.types.keys()) == types
+    assert set(_clean_types(admin_user_client.schema.types.keys())) == types
 
 
 def test_instance_link_auth(admin_user_client, user_client, project_client):

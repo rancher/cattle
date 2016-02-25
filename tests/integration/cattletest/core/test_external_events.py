@@ -1,7 +1,7 @@
 from common_fixtures import *  # NOQA
 from cattle import ApiError
 
-SERVICE_KIND = 'testservicekind'
+SERVICE_KIND = 'kubernetesService'
 
 
 def from_context(context):
@@ -180,9 +180,7 @@ def create_dns_event(client, agent_client, super_client,
     return event
 
 
-def test_external_service_event_create(client, context,
-                                       create_dynamic_service_type,
-                                       super_client):
+def test_external_service_event_create(client, context, super_client):
     agent_client = context.agent_client
 
     env_external_id = random_str()
@@ -257,28 +255,8 @@ def test_external_service_event_create(client, context,
                        lambda x: 'State is: ' + x.state)
 
 
-@pytest.fixture
-def create_dynamic_service_type(client, context):
-    env = client.wait_success(client.create_environment(name='test'))
-    service = client.create_service(environmentId=env.id,
-                                    name='test',
-                                    launchConfig={
-                                        'imageUuid': context.image_uuid
-                                    },
-                                    serviceSchemas={SERVICE_KIND: {
-                                        'resourceFields': {
-                                            'template': {
-                                                'type': 'json',
-                                                'create': True,
-                                            }
-                                        }
-                                    }})
-    client.wait_success(service)
-    client.reload_schema()
-
-
 def service_wait(client, external_id):
-    services = client.list_testservicekind(externalId=external_id)
+    services = client.list_kubernetes_service(externalId=external_id)
     if len(services) and services[0].state == 'active':
         return services[0]
 
