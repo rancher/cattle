@@ -28,12 +28,18 @@ public class ServiceDiscoveryDnsUtil {
                 .append(getNamespace(service)).toString().toLowerCase();
     }
 
-    public static String getFqdn(Environment stack, Service service, String launchConfigName) {
-        return getServiceNamespace(stack, service, launchConfigName).toLowerCase() + ".";
+
+    public static String getFqdn(Environment stack, Service service, String launchConfigName, boolean forDefault) {
+        if (forDefault) {
+            return getServiceNamespace(stack, service, launchConfigName).toLowerCase() + ".";
+
+        } else {
+            return launchConfigName.toLowerCase() + ".";
+        }
     }
 
     public static String getDnsName(Service service, Environment stack, String linkName,
-            String dnsPrefix, boolean self) {
+            String dnsPrefix, boolean self, boolean forDefault) {
 
         if (!StringUtils.isEmpty(linkName)) {
             return linkName;
@@ -46,6 +52,6 @@ public class ServiceDiscoveryDnsUtil {
             dnsName = dnsPrefix == null ? service.getName() : dnsPrefix + "." + service.getName();
         }
 
-        return ServiceDiscoveryDnsUtil.getFqdn(stack, service, dnsName);
+        return ServiceDiscoveryDnsUtil.getFqdn(stack, service, dnsName, forDefault);
     }
 }
