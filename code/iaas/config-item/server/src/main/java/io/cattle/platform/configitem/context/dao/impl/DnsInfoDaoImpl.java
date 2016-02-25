@@ -78,7 +78,8 @@ public class DnsInfoDaoImpl extends AbstractJooqDao implements DnsInfoDao {
                 resolve.put(((InstanceLink) input.get(0)).getLinkName(), ips);
                 String sourceIp = ((IpAddress) input.get(2)).getAddress();
                 Instance instance = (Instance)input.get(3);
-                DnsEntryData data = new DnsEntryData(sourceIp, resolve, null, instance);
+                DnsEntryData data = new DnsEntryData(sourceIp, resolve, null, instance,
+                        Arrays.asList(ServiceDiscoveryDnsUtil.RANCHER_NAMESPACE));
                 return data;
             }
         };
@@ -245,16 +246,28 @@ public class DnsInfoDaoImpl extends AbstractJooqDao implements DnsInfoDao {
             }
 
             List<ServiceInstanceData> clientInstanceData = servicesClientInstances.get(clientService.getId());
+
             if (forDefault) {
-                DnsEntryData data = new DnsEntryData("default", resolve, resolveCname, null);
+                DnsEntryData data = new DnsEntryData("default", resolve, resolveCname, null, null);
                 returnData.add(data);
-            } else if (clientInstanceData != null) {
-                for (ServiceInstanceData clientInstance : clientInstanceData) {
-                    String clientIp = getIpAddress(clientInstance, instanceIdToHostIpMap, true);
-                    DnsEntryData data = new DnsEntryData(clientIp, resolve, resolveCname,
-                            clientInstance.getInstance());
-                    returnData.add(data);
-                }
+            }
+
+            if (clientInstanceData != null) {
+                    for (ServiceInstanceData clientInstance : clientInstanceData) {
+                        String clientIp = getIpAddress(clientInstance, instanceIdToHostIpMap, true);
+                        if (!forDefault) {
+                            DnsEntryData data = new DnsEntryData(clientIp, resolve, resolveCname,
+                                    clientInstance.getInstance(), null);
+                            returnData.add(data);
+                        }
+                        // to add search domains
+                        List<String> searchDomains = ServiceDiscoveryDnsUtil.getNamespaces(
+                                serviceData.getClientStack(),
+                                serviceData.getClientService(), clientInstance.getExposeMap().getDnsPrefix());
+                        DnsEntryData data = new DnsEntryData(clientIp, null, null,
+                                null, searchDomains);
+                        returnData.add(data);
+                    }
             }
         }
 
@@ -263,7 +276,7 @@ public class DnsInfoDaoImpl extends AbstractJooqDao implements DnsInfoDao {
             metadataIp.put(ServiceDiscoveryDnsUtil.METADATA_IP, null);
             Map<String, Map<String, String>> resolve = new HashMap<>();
             resolve.put(ServiceDiscoveryDnsUtil.METADATA_FQDN, metadataIp);
-            DnsEntryData data = new DnsEntryData("default", resolve, null, null);
+            DnsEntryData data = new DnsEntryData("default", resolve, null, null, null);
             returnData.add(data);
         }
 

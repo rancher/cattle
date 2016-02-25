@@ -50,7 +50,8 @@ public class DnsInfoFactory extends AbstractAgentBaseContextFactory {
                 DnsEntryData processedEntry = processedDnsEntries.get(newEntry.getSourceIpAddress());
                 toAdd = new DnsEntryData(newEntry.getSourceIpAddress(), DnsEntryData.mergeResolve(newEntry,
                         processedEntry),
-                        DnsEntryData.mergeCname(newEntry, processedEntry), newEntry.getInstance());
+                        DnsEntryData.mergeCname(newEntry, processedEntry), newEntry.getInstance(),
+                        DnsEntryData.mergeSearchDomains(newEntry, processedEntry));
             } else {
                 toAdd = newEntry;
             }
