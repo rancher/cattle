@@ -27,7 +27,6 @@
     <bean class="io.cattle.platform.agent.instance.service.impl.IpAssociationNicLookup" />
     <bean class="io.cattle.platform.agent.instance.service.impl.ServiceExposeMapCreateNicLookup" />
     <bean class="io.cattle.platform.agent.instance.service.impl.ServiceConsumeMapCreateNicLookup" />
-    <bean class="io.cattle.platform.agent.instance.service.impl.VIPProviderNicLookup" />
     <bean class="io.cattle.platform.agent.instance.service.impl.ServiceNicLookup" />
     <bean class="io.cattle.platform.agent.instance.service.impl.HostCreateRemoveNicLookup" />
     <bean class="io.cattle.platform.agent.instance.service.impl.HealthcheckInstanceHostMapNicLookup" />

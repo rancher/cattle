@@ -146,49 +146,49 @@ def test_activate_single_service(client, context, super_client):
                      "healthCheck": health_check}
 
     metadata = {"bar": {"foo": [{"id": 0}]}}
-    service = client.create_service(name=random_str(),
-                                    environmentId=env.id,
-                                    launchConfig=launch_config,
-                                    metadata=metadata)
-    service = client.wait_success(service)
+    svc = client.create_service(name=random_str(),
+                                environmentId=env.id,
+                                launchConfig=launch_config,
+                                metadata=metadata)
+    svc = client.wait_success(svc)
 
     # validate that parameters were set for service
-    assert service.state == "inactive"
-    assert service.launchConfig.imageUuid == image_uuid
-    assert service.launchConfig.command == ['sleep', '42']
-    assert len(service.launchConfig.environment) == 1
-    assert len(service.launchConfig.ports) == 2
-    assert len(service.launchConfig.dataVolumes) == 1
+    assert svc.state == "inactive"
+    assert svc.launchConfig.imageUuid == image_uuid
+    assert svc.launchConfig.command == ['sleep', '42']
+    assert len(svc.launchConfig.environment) == 1
+    assert len(svc.launchConfig.ports) == 2
+    assert len(svc.launchConfig.dataVolumes) == 1
     # assert set(service.launchConfig.dataVolumesFrom) == set([container1.id])
-    assert service.launchConfig.capAdd == caps
-    assert service.launchConfig.capDrop == caps
-    assert service.launchConfig.dns == dns
-    assert service.launchConfig.dnsSearch == dns
-    assert service.launchConfig.privileged is True
-    assert service.launchConfig.domainName == "rancher.io"
-    assert service.launchConfig.memory == 8000000
-    assert service.launchConfig.stdinOpen is True
-    assert service.launchConfig.tty is True
-    assert service.launchConfig.entryPoint == ["/bin/sh", "-c"]
-    assert service.launchConfig.cpuShares == 400
-    assert service.launchConfig.workingDir == "/"
-    assert service.launchConfig.hostname == "test"
-    assert service.launchConfig.user == "test"
-    assert len(service.launchConfig.instanceLinks) == 1
-    assert service.kind == "service"
+    assert svc.launchConfig.capAdd == caps
+    assert svc.launchConfig.capDrop == caps
+    assert svc.launchConfig.dns == dns
+    assert svc.launchConfig.dnsSearch == dns
+    assert svc.launchConfig.privileged is True
+    assert svc.launchConfig.domainName == "rancher.io"
+    assert svc.launchConfig.memory == 8000000
+    assert svc.launchConfig.stdinOpen is True
+    assert svc.launchConfig.tty is True
+    assert svc.launchConfig.entryPoint == ["/bin/sh", "-c"]
+    assert svc.launchConfig.cpuShares == 400
+    assert svc.launchConfig.workingDir == "/"
+    assert svc.launchConfig.hostname == "test"
+    assert svc.launchConfig.user == "test"
+    assert len(svc.launchConfig.instanceLinks) == 1
+    assert svc.kind == "service"
     # assert service.launchConfig.registryCredentialId == reg_cred.id
-    assert service.launchConfig.healthCheck.name == "check1"
-    assert service.launchConfig.healthCheck.responseTimeout == 3
-    assert service.launchConfig.healthCheck.interval == 4
-    assert service.launchConfig.healthCheck.healthyThreshold == 5
-    assert service.launchConfig.healthCheck.unhealthyThreshold == 6
-    assert service.launchConfig.healthCheck.requestLine == "index.html"
-    assert service.launchConfig.healthCheck.port == 200
-    assert service.metadata == metadata
-    assert service.launchConfig.version == '0'
+    assert svc.launchConfig.healthCheck.name == "check1"
+    assert svc.launchConfig.healthCheck.responseTimeout == 3
+    assert svc.launchConfig.healthCheck.interval == 4
+    assert svc.launchConfig.healthCheck.healthyThreshold == 5
+    assert svc.launchConfig.healthCheck.unhealthyThreshold == 6
+    assert svc.launchConfig.healthCheck.requestLine == "index.html"
+    assert svc.launchConfig.healthCheck.port == 200
+    assert svc.metadata == metadata
+    assert svc.launchConfig.version == '0'
 
     # activate the service and validate that parameters were set for instance
-    service = client.wait_success(service.activate(), 120)
+    service = client.wait_success(svc.activate(), 120)
     assert service.state == "active"
     instance_service_map = client \
         .list_serviceExposeMap(serviceId=service.id)
@@ -212,7 +212,9 @@ def test_activate_single_service(client, context, super_client):
     assert container.capAdd == caps
     assert container.capDrop == caps
     assert container.dns == dns
-    assert container.dnsSearch == dns
+    dns.append(svc.name + "." + env.name + "." + "rancher.internal")
+    dns.append(env.name + "." + "rancher.internal")
+    assert set(dns).issubset(container.dnsSearch)
     assert container.privileged is True
     assert container.domainName == "rancher.io"
     assert container.memory == 8000000
@@ -2067,39 +2069,12 @@ def test_vip_service(client, context):
 
     service = client.create_service(name=random_str(),
                                     environmentId=env.id,
-                                    launchConfig=launch_config)
+                                    launchConfig=launch_config,
+                                    assignServiceIpAddress=True)
     service = client.wait_success(service)
     assert service.state == "inactive"
     assert service.vip is not None
     assert IPAddress(service.vip) in IPNetwork("169.254.64.0/18")
-
-    service = client.wait_success(service.activate())
-    assert service.state == "active"
-    instance = _validate_compose_instance_start(client, service, env, "1")
-    assert all(item in instance.labels for item in init_labels) is True
-
-    # verify that instance was registered as a provider
-    account_id = context.project.id
-    networks = client.list_network(kind="hostOnlyNetwork",
-                                   accountId=account_id)
-    assert len(networks) == 1
-    nsps = super_client(None).reload(networks[0]).networkServiceProviders()
-    assert len(nsps) == 2
-    for nsp in nsps:
-        if nsp.kind == "externalProvider":
-            vip_nsp = nsp
-    assert vip_nsp is not None
-
-    vip_nsp_maps = vip_nsp.networkServiceProviderInstanceMaps()
-    assert len(vip_nsp_maps) == 1
-    assert vip_nsp_maps[0].instanceId == instance.id
-
-    # delete the service and verify that the instance is no longer a provider
-    service = client.wait_success(service.remove())
-    _validate_compose_instance_removed(client, service, env)
-    vip_nsp_maps = vip_nsp.networkServiceProviderInstanceMaps()
-    assert len(vip_nsp_maps) == 1
-    assert vip_nsp_maps[0].state in ('removing', 'removed', 'purged')
 
 
 def test_vip_requested_ip(client, context):

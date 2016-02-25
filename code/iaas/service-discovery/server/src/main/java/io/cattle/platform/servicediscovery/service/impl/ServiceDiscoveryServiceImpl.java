@@ -248,6 +248,9 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
 
     @Override
     public void setVIP(Service service) {
+        if (!(DataAccessor.fieldBool(service, ServiceDiscoveryConstants.FIELD_SET_VIP) || service.getVip() != null)) {
+            return;
+        }
         String vip = allocateVip(service);
         if (vip != null) {
             service.setVip(vip);

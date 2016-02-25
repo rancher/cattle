@@ -1,73 +1,154 @@
 package io.cattle.platform.configitem.context.data;
 
 import io.cattle.platform.core.model.Instance;
+import io.cattle.platform.docker.constants.DockerInstanceConstants;
+import io.cattle.platform.object.util.DataAccessor;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.lang3.StringUtils;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.collect.Lists;
 
 public class DnsEntryData {
+    @JsonIgnore
     String sourceIpAddress;
+    @JsonIgnore
     Map<String, Map<String, String>> resolveServicesAndContainers = new HashMap<>();
-    Map<String, List<String>> resolve = new HashMap<>();
-    Map<String, String> resolveCname = new HashMap<>();
+    @JsonIgnore
+    Map<String, List<String>> aRecords = new HashMap<>();
+    @JsonIgnore
+    Map<String, String> cnameRecords = new HashMap<>();
+
+    List<String> recurse = new ArrayList<>();
+    Map<String, Map<String, List<String>>> a = new HashMap<>();
+    Map<String, Map<String, String>> cname = new HashMap<>();
+
+    @JsonIgnore
     Instance instance;
 
-    public DnsEntryData() {
+    public DnsEntryData(String sourceIpAddress, Map<String, Map<String, String>> resolveServicesAndContainers,
+            Map<String, String> resolveCname,
+            Instance instance) {
+        this.sourceIpAddress = sourceIpAddress;
+        setResolveServicesAndContainers(resolveServicesAndContainers);
+        this.setCnameRecords(resolveCname);
+        setInstance(instance);
     }
 
     public String getSourceIpAddress() {
         return sourceIpAddress;
     }
 
-    public void setSourceIpAddress(String sourceIpAddress) {
-        this.sourceIpAddress = sourceIpAddress;
-    }
-
-
-    public Map<String, Map<String, String>> getResolveServicesAndContainers() {
-        return resolveServicesAndContainers;
-    }
-
-    public void setResolveServicesAndContainers(Map<String, Map<String, String>> resolve) {
+    private void setResolveServicesAndContainers(Map<String, Map<String, String>> resolve) {
         this.resolveServicesAndContainers = resolve;
+        Map<String, List<String>> aRecordsMerged = new HashMap<>();
         for (String serviceName : resolve.keySet()) {
-            this.resolve.put(serviceName, Lists.newArrayList(resolve.get(serviceName).keySet()));
+            aRecordsMerged.put(serviceName, Lists.newArrayList(resolve.get(serviceName).keySet()));
             for (String ipAddress : resolve.get(serviceName).keySet()) {
                 String instanceName = resolve.get(serviceName).get(ipAddress);
-                if (instanceName != null) {
+                if (!StringUtils.isEmpty(instanceName)) {
                     List<String> ips = new ArrayList<>();
                     ips.add(ipAddress);
-                    this.resolve.put(instanceName, ips);
+                    aRecordsMerged.put(instanceName.toLowerCase(), ips);
                 }
             }
         }
+        this.setaRecords(aRecordsMerged);
+    }
+
+    private void setCnameRecords(Map<String, String> cnameRecords) {
+        if (cnameRecords == null) {
+            return;
+        }
+        this.cnameRecords = cnameRecords;
+        for (String dnsName : this.cnameRecords.keySet()) {
+            Map<String, String> records = new HashMap<>();
+            records.put("answer", this.cnameRecords.get(dnsName));
+            this.cname.put(dnsName, records);
+        }
+    }
+
+    private void setaRecords(Map<String, List<String>> aRecords) {
+        if (aRecords == null) {
+            return;
+        }
+        this.aRecords = aRecords;
+        for (String dnsName : this.aRecords.keySet()) {
+            Map<String, List<String>> records = new HashMap<>();
+            records.put("answer", this.aRecords.get(dnsName));
+            this.a.put(dnsName, records);
+        }
+    }
+
+    private Map<String, Map<String, String>> getResolveServicesAndContainers() {
+        return resolveServicesAndContainers;
+    }
+
+    public List<String> getRecurse() {
+        return recurse;
+    }
+
+    public void setRecurse(List<String> recurse) {
+        this.recurse = recurse;
+    }
+
+    private void setInstance(Instance instance) {
+        this.instance = instance;
+        if (instance != null) {
+            List<String> dns = DataAccessor.fieldStringList(instance, DockerInstanceConstants.FIELD_DNS);
+            recurse.addAll(dns);
+        }
+        if (recurse.isEmpty()) {
+            recurse.add("PARENT_DNS");
+        }
+    }
+
+    public static Map<String, String> mergeCname(DnsEntryData first, DnsEntryData second) {
+        Map<String, String> resolveCname = second.cnameRecords;
+        for (String dnsName : first.cnameRecords.keySet()) {
+            if (!resolveCname.containsKey(dnsName)) {
+                resolveCname.putAll(first.cnameRecords);
+            }
+        }
+        return resolveCname;
+    }
+
+    public static Map<String, Map<String, String>> mergeResolve(DnsEntryData first, DnsEntryData second) {
+        Map<String, Map<String, String>> resolve = second.getResolveServicesAndContainers();
+        for (String dnsName : first.getResolveServicesAndContainers().keySet()) {
+            Map<String, String> ips = new HashMap<>();
+            if (resolve.containsKey(dnsName)) {
+                ips.putAll(resolve.get(dnsName));
+            }
+            ips.putAll(first.getResolveServicesAndContainers().get(dnsName));
+            resolve.put(dnsName, ips);
+        }
+        return resolve;
     }
 
     public Instance getInstance() {
         return instance;
     }
 
-    public void setInstance(Instance instance) {
-        this.instance = instance;
+    public Map<String, Map<String, List<String>>> getA() {
+        return a;
     }
 
-    public Map<String, String> getResolveCname() {
-        return resolveCname;
+    public void setA(Map<String, Map<String, List<String>>> a) {
+        this.a = a;
     }
 
-    public void setResolveCname(Map<String, String> resolveCname) {
-        this.resolveCname = resolveCname;
+    public Map<String, Map<String, String>> getCname() {
+        return cname;
     }
 
-    public Map<String, List<String>> getResolve() {
-        return resolve;
+    public void setCname(Map<String, Map<String, String>> cname) {
+        this.cname = cname;
     }
 
-    public void setResolve(Map<String, List<String>> resolve) {
-        this.resolve = resolve;
-    }
 }

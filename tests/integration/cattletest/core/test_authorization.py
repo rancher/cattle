@@ -1519,7 +1519,8 @@ def test_svc_discovery_service(admin_user_client, user_client, project_client):
         'selectorContainer': 'r',
         'fqdn': 'r',
         'publicEndpoints': 'r',
-        'retainIp': 'r'
+        'retainIp': 'r',
+        'assignServiceIpAddress': 'r',
     })
 
     auth_check(user_client.schema, 'service', 'r', {
@@ -1539,7 +1540,9 @@ def test_svc_discovery_service(admin_user_client, user_client, project_client):
         'selectorContainer': 'r',
         'fqdn': 'r',
         'publicEndpoints': 'r',
-        'retainIp': 'r'
+        'retainIp': 'r',
+        'assignServiceIpAddress': 'r',
+
     })
 
     auth_check(project_client.schema, 'service', 'crud', {
@@ -1559,7 +1562,8 @@ def test_svc_discovery_service(admin_user_client, user_client, project_client):
         'selectorContainer': 'cr',
         'fqdn': 'r',
         'publicEndpoints': 'r',
-        'retainIp': 'cr'
+        'retainIp': 'cr',
+        'assignServiceIpAddress': 'cr',
     })
 
 
@@ -1622,7 +1626,8 @@ def test_svc_discovery_lb_service(admin_user_client, user_client,
         'selectorLink': 'r',
         'fqdn': 'r',
         'publicEndpoints': 'r',
-        'retainIp': 'r'
+        'retainIp': 'r',
+        'assignServiceIpAddress': 'r',
     })
 
     auth_check(user_client.schema, 'loadBalancerService', 'r', {
@@ -1641,7 +1646,8 @@ def test_svc_discovery_lb_service(admin_user_client, user_client,
         'selectorLink': 'r',
         'fqdn': 'r',
         'publicEndpoints': 'r',
-        'retainIp': 'r'
+        'retainIp': 'r',
+        'assignServiceIpAddress': 'r',
     })
 
     auth_check(project_client.schema, 'loadBalancerService', 'crud', {
@@ -1660,7 +1666,8 @@ def test_svc_discovery_lb_service(admin_user_client, user_client,
         'selectorLink': 'cr',
         'fqdn': 'r',
         'publicEndpoints': 'r',
-        'retainIp': 'cr'
+        'retainIp': 'cr',
+        'assignServiceIpAddress': 'cr',
     })
 
 

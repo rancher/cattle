@@ -10,7 +10,7 @@ import java.util.Map;
 public interface DnsInfoDao {
     List<DnsEntryData> getInstanceLinksDnsData(Instance instance);
 
-    List<DnsEntryData> getServiceDnsData(Instance instance, boolean isVIPProvider);
+    List<DnsEntryData> getServiceDnsData(Instance instance, boolean forDefault);
 
     Map<Long, IpAddress> getInstanceWithHostNetworkingToIpMap(long accountId);
 }

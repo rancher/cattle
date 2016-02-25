@@ -2,13 +2,18 @@
 package io.cattle.platform.servicediscovery.deployment;
 
 import io.cattle.platform.core.constants.CommonStatesConstants;
+import io.cattle.platform.core.model.Environment;
 import io.cattle.platform.core.model.Service;
 import io.cattle.platform.core.model.ServiceExposeMap;
 import io.cattle.platform.core.model.ServiceIndex;
 import io.cattle.platform.object.process.StandardProcess;
 import io.cattle.platform.object.resource.ResourcePredicate;
+import io.cattle.platform.servicediscovery.api.constants.ServiceDiscoveryConstants;
+import io.cattle.platform.servicediscovery.api.util.ServiceDiscoveryDnsUtil;
 import io.cattle.platform.servicediscovery.deployment.impl.DeploymentManagerImpl.DeploymentServiceContext;
 
+import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -23,6 +28,7 @@ public abstract class DeploymentUnitInstance {
     protected ServiceExposeMap exposeMap;
     protected String launchConfigName;
     protected Service service;
+    protected Environment stack;
 
     public abstract boolean isError();
 
@@ -57,6 +63,7 @@ public abstract class DeploymentUnitInstance {
         this.uuid = uuid;
         this.launchConfigName = launchConfigName;
         this.service = service;
+        this.stack = context.objectManager.loadResource(Environment.class, service.getEnvironmentId());
     }
 
     public DeploymentUnitInstance createAndStart(Map<String, Object> deployParams) {
@@ -116,4 +123,18 @@ public abstract class DeploymentUnitInstance {
     public abstract ServiceIndex getServiceIndex();
 
     public abstract void waitForScheduleStop();
+
+    public Environment getStack() {
+        return stack;
+    }
+
+    public List<String> getSearchDomains() {
+        String serviceNamespace = ServiceDiscoveryDnsUtil.getStackNamespace(this.stack, this.service);
+        String lcName = this.getLaunchConfigName().equalsIgnoreCase(
+                ServiceDiscoveryConstants.PRIMARY_LAUNCH_CONFIG_NAME) ? this.getService().getName() : this
+                .getLaunchConfigName();
+        String containerNamespace = ServiceDiscoveryDnsUtil
+                .getServiceNamespace(this.stack, this.service, lcName);
+        return Arrays.asList(serviceNamespace, containerNamespace);
+    }
 }

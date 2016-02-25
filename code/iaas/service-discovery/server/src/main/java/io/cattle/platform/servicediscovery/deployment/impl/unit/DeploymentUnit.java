@@ -397,6 +397,7 @@ public class DeploymentUnit {
         deployParams.put(InstanceConstants.FIELD_DEPLOYMENT_UNIT_UUID, this.uuid);
         deployParams.put(ServiceDiscoveryConstants.FIELD_VERSION, ServiceDiscoveryUtil.getLaunchConfigObject(
                 instance.getService(), instance.getLaunchConfigName(), ServiceDiscoveryConstants.FIELD_VERSION));
+        deployParams.put(DockerInstanceConstants.FIELD_DNS_SEARCH, instance.getSearchDomains());
 
         return deployParams;
     }
@@ -437,6 +438,8 @@ public class DeploymentUnit {
 
         return labels;
     }
+
+
 
     public Map<String, String> getLabels() {
         return unitLabels;

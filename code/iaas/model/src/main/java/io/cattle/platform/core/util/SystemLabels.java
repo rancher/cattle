@@ -7,6 +7,7 @@ public class SystemLabels {
     public static final String LABEL_REQUESTED_IP = "io.rancher.container.requested_ip";
     public static final String LABEL_AGENT_URI_PREFIX = "io.rancher.container.agent.uri.prefix";
     public static final String LABEL_VOLUME_CLEANUP_STRATEGY = "io.rancher.container.volume_cleanup_strategy";
+    public static final String LABEL_CONTAINER_NAMESPACE = "io.rancher.container.namespace";
 
     /**
      * Indicates an instance runs an agent that provides the labels provider service
