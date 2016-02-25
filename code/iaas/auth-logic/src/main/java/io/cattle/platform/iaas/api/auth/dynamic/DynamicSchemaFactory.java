@@ -5,12 +5,15 @@ import io.cattle.platform.core.model.DynamicSchema;
 import io.github.ibuildthecloud.gdapi.factory.SchemaFactory;
 import io.github.ibuildthecloud.gdapi.factory.impl.AbstractSchemaFactory;
 import io.github.ibuildthecloud.gdapi.json.JsonMapper;
+import io.github.ibuildthecloud.gdapi.model.Field;
 import io.github.ibuildthecloud.gdapi.model.Schema;
+import io.github.ibuildthecloud.gdapi.model.impl.FieldImpl;
 import io.github.ibuildthecloud.gdapi.model.impl.SchemaImpl;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -102,12 +105,20 @@ public class DynamicSchemaFactory extends AbstractSchemaFactory implements Schem
         SchemaImpl newSchema = jsonMapper.readValue(dynamicSchema.getDefinition().getBytes("UTF-8"), SchemaImpl.class);
         newSchema.setName(dynamicSchema.getName());
         SchemaImpl mergedSchema = new SchemaImpl((SchemaImpl)parentSchema);
-        mergedSchema.getResourceFields().putAll(newSchema.getResourceFields());
         mergedSchema.setPluralName(newSchema.getPluralName());
         mergedSchema.setId(dynamicSchema.getName());
         mergedSchema.setParent(dynamicSchema.getParent());
         mergedSchema.setCollectionMethods(newSchema.getCollectionMethods());
         mergedSchema.setResourceMethods(newSchema.getResourceMethods());
+
+        Map<String, Field> existingFields = mergedSchema.getResourceFields();
+        for (Map.Entry<String, Field> entry : newSchema.getResourceFields().entrySet()) {
+            Field oldField = existingFields.put(entry.getKey(), entry.getValue());
+            if (oldField instanceof FieldImpl) {
+                ((FieldImpl)entry.getValue()).setReadMethod(((FieldImpl) oldField).getReadMethod());
+            }
+        }
+
         return mergedSchema;
     }
 
