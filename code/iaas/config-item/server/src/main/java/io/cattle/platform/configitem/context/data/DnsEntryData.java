@@ -24,6 +24,7 @@ public class DnsEntryData {
     @JsonIgnore
     Map<String, String> cnameRecords = new HashMap<>();
 
+    List<String> search = new ArrayList<>();
     List<String> recurse = new ArrayList<>();
     Map<String, Map<String, List<String>>> a = new HashMap<>();
     Map<String, Map<String, String>> cname = new HashMap<>();
@@ -33,11 +34,14 @@ public class DnsEntryData {
 
     public DnsEntryData(String sourceIpAddress, Map<String, Map<String, String>> resolveServicesAndContainers,
             Map<String, String> resolveCname,
-            Instance instance) {
+            Instance instance, List<String> searchDomains) {
         this.sourceIpAddress = sourceIpAddress;
         setResolveServicesAndContainers(resolveServicesAndContainers);
         this.setCnameRecords(resolveCname);
         setInstance(instance);
+        if (searchDomains != null) {
+            search = searchDomains;
+        }
     }
 
     public String getSourceIpAddress() {
@@ -45,9 +49,15 @@ public class DnsEntryData {
     }
 
     private void setResolveServicesAndContainers(Map<String, Map<String, String>> resolve) {
+        if (resolve == null) {
+            return;
+        }
         this.resolveServicesAndContainers = resolve;
         Map<String, List<String>> aRecordsMerged = new HashMap<>();
         for (String serviceName : resolve.keySet()) {
+            if (StringUtils.isEmpty(serviceName)) {
+                continue;
+            }
             aRecordsMerged.put(serviceName, Lists.newArrayList(resolve.get(serviceName).keySet()));
             for (String ipAddress : resolve.get(serviceName).keySet()) {
                 String instanceName = resolve.get(serviceName).get(ipAddress);
@@ -67,6 +77,9 @@ public class DnsEntryData {
         }
         this.cnameRecords = cnameRecords;
         for (String dnsName : this.cnameRecords.keySet()) {
+            if (StringUtils.isEmpty(dnsName)) {
+                continue;
+            }
             Map<String, String> records = new HashMap<>();
             records.put("answer", this.cnameRecords.get(dnsName));
             this.cname.put(dnsName, records);
@@ -118,6 +131,23 @@ public class DnsEntryData {
         return resolveCname;
     }
 
+    public static List<String> mergeSearchDomains(DnsEntryData first, DnsEntryData second) {
+
+        List<String> searches = new ArrayList<>();
+        if (second.search != null) {
+            searches.addAll(second.search);
+        }
+        if (first.search != null) {
+            for (String search : first.search) {
+                if (!searches.contains(search)) {
+                    searches.addAll(first.search);
+                }
+            }
+        }
+
+        return searches;
+    }
+
     public static Map<String, Map<String, String>> mergeResolve(DnsEntryData first, DnsEntryData second) {
         Map<String, Map<String, String>> resolve = second.getResolveServicesAndContainers();
         for (String dnsName : first.getResolveServicesAndContainers().keySet()) {
@@ -151,4 +181,11 @@ public class DnsEntryData {
         this.cname = cname;
     }
 
+    public List<String> getSearch() {
+        return search;
+    }
+
+    public void setSearch(List<String> search) {
+        this.search = search;
+    }
 }

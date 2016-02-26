@@ -18,6 +18,7 @@ import java.util.Map;
 import javax.inject.Inject;
 import javax.inject.Named;
 
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -45,12 +46,16 @@ public class DnsInfoFactory extends AbstractAgentBaseContextFactory {
         // aggregate the links based on the source ip address
         Map<String, DnsEntryData> processedDnsEntries = new HashMap<>();
         for (DnsEntryData newEntry : dnsEntries) {
+            if (StringUtils.isEmpty(newEntry.getSourceIpAddress())) {
+                continue;
+            }
             DnsEntryData toAdd = null;
             if (processedDnsEntries.containsKey(newEntry.getSourceIpAddress())) {
                 DnsEntryData processedEntry = processedDnsEntries.get(newEntry.getSourceIpAddress());
                 toAdd = new DnsEntryData(newEntry.getSourceIpAddress(), DnsEntryData.mergeResolve(newEntry,
                         processedEntry),
-                        DnsEntryData.mergeCname(newEntry, processedEntry), newEntry.getInstance());
+                        DnsEntryData.mergeCname(newEntry, processedEntry), newEntry.getInstance(),
+                        DnsEntryData.mergeSearchDomains(newEntry, processedEntry));
             } else {
                 toAdd = newEntry;
             }
