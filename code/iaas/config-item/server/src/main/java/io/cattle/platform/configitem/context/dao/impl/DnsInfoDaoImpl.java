@@ -43,6 +43,7 @@ import io.cattle.platform.core.model.tables.ServiceTable;
 import io.cattle.platform.db.jooq.dao.impl.AbstractJooqDao;
 import io.cattle.platform.db.jooq.mapper.MultiRecordMapper;
 import io.cattle.platform.object.ObjectManager;
+import io.cattle.platform.object.util.DataUtils;
 import io.cattle.platform.servicediscovery.api.constants.ServiceDiscoveryConstants;
 import io.cattle.platform.servicediscovery.api.util.ServiceDiscoveryDnsUtil;
 
@@ -310,7 +311,7 @@ public class DnsInfoDaoImpl extends AbstractJooqDao implements DnsInfoDao {
             if (ips == null) {
                 ips = new HashMap<>();
             }
-            if (targetInstance.getService().getVip() != null) {
+            if (getVip(targetInstance.getService()) != null) {
                 ips.put(targetInstance.getService().getVip(), dnsName);
             }
             if (linkName == null) {
@@ -329,6 +330,21 @@ public class DnsInfoDaoImpl extends AbstractJooqDao implements DnsInfoDao {
                 resolveCname.put(dnsName, cname + ".");
             }
         }
+    }
+
+    protected String getVip(Service service) {
+        String vip = service.getVip();
+        //indicator that its pre-upgraded setup that had vip set for every service by default
+        // vip will be set only
+        // a) field_set_vip is set via API
+        // b) for k8s services
+        Map<String, Object> data = new HashMap<>();
+        data.putAll(DataUtils.getFields(service));
+        if (data.containsKey(ServiceDiscoveryConstants.FIELD_SET_VIP)
+                || service.getKind().equalsIgnoreCase("kubernetesservice")) {
+            return vip;
+        }
+        return null;
     }
 
     protected String getIpAddress(ServiceInstanceData serviceInstanceData, Map<Long, IpAddress> instanceIdToHostIpMap, boolean isSource) {
