@@ -43,4 +43,10 @@
         <aop:advisor advice-ref="AllocatorAdvice" pointcut="execution(* io.cattle.platform.allocator.dao.AllocatorDao.*(..))" />
     </aop:config>
 
+    <bean class="io.cattle.platform.simple.allocator.dao.impl.SimpleAllocatorDaoImpl" />
+
+    <bean class="io.cattle.platform.simple.allocator.SimpleAllocator" >
+        <property name="allocationConstraintProviders" value="#{extensionManager.list('allocation.constraints.provider')}" />
+    </bean>
+
 </beans>
