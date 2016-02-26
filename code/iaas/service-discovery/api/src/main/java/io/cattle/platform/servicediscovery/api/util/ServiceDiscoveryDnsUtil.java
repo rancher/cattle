@@ -3,6 +3,9 @@ package io.cattle.platform.servicediscovery.api.util;
 import io.cattle.platform.core.model.Environment;
 import io.cattle.platform.core.model.Service;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.apache.commons.lang3.StringUtils;
 
 public class ServiceDiscoveryDnsUtil {
@@ -47,5 +50,15 @@ public class ServiceDiscoveryDnsUtil {
         }
 
         return ServiceDiscoveryDnsUtil.getFqdn(stack, service, dnsName);
+    }
+
+    public static List<String> getNamespaces(Environment stack, Service service, String launchConfigName) {
+        List<String> toReturn = new ArrayList<>();
+        toReturn.add(getNamespace(service));
+        toReturn.add(getStackNamespace(stack, service));
+        String name = StringUtils.isEmpty(launchConfigName) ? service.getName() : launchConfigName;
+        toReturn.add(getServiceNamespace(stack, service, name));
+
+        return toReturn;
     }
 }
