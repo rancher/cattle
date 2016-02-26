@@ -20,4 +20,5 @@
               <property name="schemaFactory" ref="CoreSchemaFactory" />
        </bean>
 
+       <bean class="io.cattle.platform.iaas.api.account.AccountDeactivateActionHandler"/>
 </beans>

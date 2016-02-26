@@ -70,4 +70,25 @@ public class AccountDaoImpl extends AbstractCoreDao implements AccountDao {
         }
     }
 
+    @Override
+    public Account getAdminAccountExclude(long accountId) {
+        return create()
+                .selectFrom(ACCOUNT)
+                .where(ACCOUNT.STATE.eq(CommonStatesConstants.ACTIVE)
+                        .and(ACCOUNT.KIND.eq(AccountConstants.ADMIN_KIND))
+                        .and(ACCOUNT.ID.ne(accountId)))
+                .orderBy(ACCOUNT.ID.asc()).limit(1).fetchOne();
+    }
+
+
+    @Override
+    public Account getAccountById(Long id) {
+        return create()
+                .selectFrom(ACCOUNT)
+                .where(
+                        ACCOUNT.ID.eq(id)
+                                .and(ACCOUNT.STATE.ne(CommonStatesConstants.PURGED))
+                                .and(ACCOUNT.REMOVED.isNull())
+                ).fetchOne();
+    }
 }
