@@ -24,5 +24,7 @@ public interface InstanceDao {
 
     List<? extends Instance> findInstancesFor(Service service);
 
-    Long getInstanceHostId(long instanceId);
+    List<? extends Instance> findInstanceByServiceName(long accountId, String serviceName);
+
+    List<? extends Instance> findInstanceByServiceName(long accountId, String serviceName, String environmentName);
 }

@@ -35,7 +35,6 @@
 	<bean class="io.cattle.platform.iaas.api.auth.projects.ProjectResourceManager"/>
 	<bean class="io.cattle.platform.iaas.api.auth.projects.ProjectMemberResourceManager"/>
     <bean class="io.cattle.platform.iaas.api.auth.projects.SetProjectMembersActionHandler"/>
-    <bean class="io.cattle.platform.iaas.api.auth.projects.ProjectDeactivate"/>
 
     <bean class="io.cattle.platform.iaas.api.auth.integration.internal.rancher.TokenAuthLookup">
         <property name="tokenUtilsMap" value="#{extensionManager.map('token.util')}" />

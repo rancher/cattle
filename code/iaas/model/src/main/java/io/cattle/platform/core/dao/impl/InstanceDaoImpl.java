@@ -1,5 +1,6 @@
 package io.cattle.platform.core.dao.impl;
 
+import static io.cattle.platform.core.model.tables.EnvironmentTable.ENVIRONMENT;
 import static io.cattle.platform.core.model.tables.InstanceHostMapTable.INSTANCE_HOST_MAP;
 import static io.cattle.platform.core.model.tables.InstanceTable.INSTANCE;
 import static io.cattle.platform.core.model.tables.ServiceExposeMapTable.SERVICE_EXPOSE_MAP;
@@ -9,11 +10,11 @@ import static io.cattle.platform.core.model.tables.StoragePoolTable.STORAGE_POOL
 import static io.cattle.platform.core.model.tables.VolumeStoragePoolMapTable.VOLUME_STORAGE_POOL_MAP;
 import static io.cattle.platform.core.model.tables.VolumeTable.VOLUME;
 import io.cattle.platform.core.constants.CommonStatesConstants;
+import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.dao.GenericMapDao;
 import io.cattle.platform.core.dao.InstanceDao;
 import io.cattle.platform.core.model.Account;
 import io.cattle.platform.core.model.Instance;
-import io.cattle.platform.core.model.InstanceHostMap;
 import io.cattle.platform.core.model.Service;
 import io.cattle.platform.core.model.tables.records.InstanceRecord;
 import io.cattle.platform.core.model.tables.records.ServiceRecord;
@@ -152,13 +153,38 @@ public class InstanceDaoImpl extends AbstractJooqDao implements InstanceDao {
     }
 
     @Override
-    public Long getInstanceHostId(long instanceId) {
-        List<? extends InstanceHostMap> maps = mapDao.findNonRemoved(InstanceHostMap.class, Instance.class,
-                instanceId);
-        if (maps.isEmpty()) {
-            return null;
-        }
-        return maps.get(0).getHostId();
+    public List<? extends Instance> findInstanceByServiceName(long accountId, String serviceName) {
+        return create().select(INSTANCE.fields())
+            .from(INSTANCE)
+            .join(SERVICE_EXPOSE_MAP)
+                .on(INSTANCE.ID.eq(SERVICE_EXPOSE_MAP.INSTANCE_ID))
+            .join(SERVICE)
+                .on(SERVICE.ID.eq(SERVICE_EXPOSE_MAP.SERVICE_ID))
+            .where(INSTANCE.STATE.eq(InstanceConstants.STATE_RUNNING)
+                    .and(INSTANCE.ACCOUNT_ID.eq(accountId))
+                    .and(SERVICE_EXPOSE_MAP.REMOVED.isNull())
+                    .and(SERVICE.REMOVED.isNull())
+                    .and(SERVICE.NAME.eq(serviceName)))
+            .fetchInto(InstanceRecord.class);
+    }
+
+    @Override
+    public List<? extends Instance> findInstanceByServiceName(long accountId, String serviceName, String environmentName) {
+        return create().select(INSTANCE.fields())
+            .from(INSTANCE)
+            .join(SERVICE_EXPOSE_MAP)
+                .on(INSTANCE.ID.eq(SERVICE_EXPOSE_MAP.INSTANCE_ID))
+            .join(SERVICE)
+                .on(SERVICE.ID.eq(SERVICE_EXPOSE_MAP.SERVICE_ID))
+            .join(ENVIRONMENT)
+                .on(ENVIRONMENT.ID.eq(SERVICE.ENVIRONMENT_ID))
+            .where(INSTANCE.STATE.eq(InstanceConstants.STATE_RUNNING)
+                    .and(INSTANCE.ACCOUNT_ID.eq(accountId))
+                    .and(SERVICE_EXPOSE_MAP.REMOVED.isNull())
+                    .and(SERVICE.REMOVED.isNull())
+                    .and(SERVICE.NAME.eq(serviceName))
+                    .and(ENVIRONMENT.NAME.eq(environmentName)))
+            .fetchInto(InstanceRecord.class);
     }
 
 }

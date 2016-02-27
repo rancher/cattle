@@ -33,7 +33,7 @@ for address in $(cat /etc/resolv.conf  | sed 's/^# nameserver/nameserver/' | gre
     fi
 done
 
-sed -i "s/PARENT_DNS/$DNS/" content-home/etc/cattle/dns/answers.json
+sed -i "s/\"PARENT_DNS\"/$DNS/g" content-home/etc/cattle/dns/answers.json
 
 stage_files
 

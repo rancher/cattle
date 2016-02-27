@@ -4,6 +4,7 @@ import io.cattle.platform.configitem.events.ConfigUpdate;
 import io.cattle.platform.core.model.Service;
 import io.cattle.platform.eventing.annotation.AnnotatedEventListener;
 import io.cattle.platform.eventing.annotation.EventHandler;
+import io.cattle.platform.eventing.lock.EventLock;
 
 import java.util.Collection;
 
@@ -15,7 +16,7 @@ public interface DeploymentManager extends AnnotatedEventListener {
 
     void remove(Service service);
 
-    @EventHandler
+    @EventHandler(lock=EventLock.class)
     void serviceUpdate(ConfigUpdate update);
 
     void reconcileServices(Collection<? extends Service> services);

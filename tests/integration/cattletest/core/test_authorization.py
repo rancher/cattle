@@ -43,6 +43,32 @@ def service_client(admin_user_client):
                           add_host=False, kind='service').user_client
 
 
+def _clean_types(types):
+    for i in ['openstackConfig',
+              'notThere',
+              'azureConfig',
+              'vmwarevcloudairConfig',
+              'exoscaleConfig',
+              'rackspaceConfig',
+              'hypervConfig',
+              'googleConfig',
+              'vmwarevsphereConfig',
+              'virtualboxConfig',
+              'amazonec2Config',
+              'genericConfig',
+              'vmwarefusionConfig',
+              'digitaloceanConfig',
+              'softlayerConfig',
+              'noneConfig']:
+        try:
+            types.remove(i)
+        except ValueError:
+            pass
+        except KeyError:
+            pass
+    return types
+
+
 def test_user_types(user_client, adds=set(), removes=set()):
     types = {
         'account',
@@ -61,6 +87,7 @@ def test_user_types(user_client, adds=set(), removes=set()):
         'containerEvent',
         'containerExec',
         'containerLogs',
+        'containerProxy',
         'credential',
         'dnsService',
         'environment',
@@ -85,6 +112,7 @@ def test_user_types(user_client, adds=set(), removes=set()):
         'instanceStop',
         'ipAddress',
         'ipAddressAssociateInput',
+        'kubernetesService',
         'label',
         'loadBalancerAppCookieStickinessPolicy',
         'loadBalancerConfig',
@@ -108,6 +136,7 @@ def test_user_types(user_client, adds=set(), removes=set()):
         'schema',
         'service',
         'serviceExposeMap',
+        'serviceProxy',
         'setLabelsInput',
         'setLabelsInput',
         'setProjectMembersInput',
@@ -145,7 +174,7 @@ def test_user_types(user_client, adds=set(), removes=set()):
     }
     types.update(adds)
     types.difference_update(removes)
-    assert set(user_client.schema.types.keys()) == types
+    assert set(_clean_types(user_client.schema.types.keys())) == types
     return types
 
 
@@ -160,7 +189,7 @@ def test_readonly_types(admin_user_client):
     client = context.user_client
     test_user_types(client, adds={'subscribe'},
                     removes={'userPreference', 'registrationToken'})
-    for type in client.schema.types:
+    for type in _clean_types(set(client.schema.types.keys())):
         type = client.schema.types[type]
         assert len(type['actions']) == 0
         if type.id == 'container':
@@ -175,7 +204,7 @@ def test_readonly_types(admin_user_client):
 
 
 def test_agent_register_types(agent_register_client):
-    assert set(agent_register_client.schema.types.keys()) == {
+    assert set(_clean_types(agent_register_client.schema.types.keys())) == {
         'agent',
         'error',
         'schema',
@@ -183,7 +212,7 @@ def test_agent_register_types(agent_register_client):
 
 
 def test_agent_types(agent_client):
-    assert set(agent_client.schema.types.keys()) == {
+    assert set(_clean_types(agent_client.schema.types.keys())) == {
         'agent',
         'configContent',
         'containerEvent',
@@ -243,6 +272,7 @@ def test_admin_types(admin_user_client, adds=set(), removes=set()):
         'containerEvent',
         'containerExec',
         'containerLogs',
+        'containerProxy',
         'credential',
         'databasechangelog',
         'databasechangeloglock',
@@ -277,6 +307,7 @@ def test_admin_types(admin_user_client, adds=set(), removes=set()):
         'instanceStop',
         'ipAddress',
         'ipAddressAssociateInput',
+        'kubernetesService',
         'label',
         'ldapconfig',
         'loadBalancerAppCookieStickinessPolicy',
@@ -311,6 +342,7 @@ def test_admin_types(admin_user_client, adds=set(), removes=set()):
         'schema',
         'service',
         'serviceExposeMap',
+        'serviceProxy',
         'serviceUpgrade',
         'setLabelsInput',
         'setProjectMembersInput',
@@ -349,7 +381,7 @@ def test_admin_types(admin_user_client, adds=set(), removes=set()):
     }
     types.update(adds)
     types.difference_update(removes)
-    assert set(admin_user_client.schema.types.keys()) == types
+    assert set(_clean_types(admin_user_client.schema.types.keys())) == types
 
 
 def test_instance_link_auth(admin_user_client, user_client, project_client):
@@ -1507,7 +1539,6 @@ def test_svc_discovery_service(admin_user_client, user_client, project_client):
         'environmentId': 'r',
         'scale': 'r',
         'launchConfig': 'r',
-        'serviceSchemas': 'r',
         'accountId': 'r',
         'data': 'r',
         'upgrade': 'r',
@@ -1519,7 +1550,8 @@ def test_svc_discovery_service(admin_user_client, user_client, project_client):
         'selectorContainer': 'r',
         'fqdn': 'r',
         'publicEndpoints': 'r',
-        'retainIp': 'r'
+        'retainIp': 'r',
+        'assignServiceIpAddress': 'r',
     })
 
     auth_check(user_client.schema, 'service', 'r', {
@@ -1528,7 +1560,6 @@ def test_svc_discovery_service(admin_user_client, user_client, project_client):
         'environmentId': 'r',
         'scale': 'r',
         'launchConfig': 'r',
-        'serviceSchemas': 'r',
         'accountId': 'r',
         'upgrade': 'r',
         'secondaryLaunchConfigs': 'r',
@@ -1539,7 +1570,9 @@ def test_svc_discovery_service(admin_user_client, user_client, project_client):
         'selectorContainer': 'r',
         'fqdn': 'r',
         'publicEndpoints': 'r',
-        'retainIp': 'r'
+        'retainIp': 'r',
+        'assignServiceIpAddress': 'r',
+
     })
 
     auth_check(project_client.schema, 'service', 'crud', {
@@ -1548,7 +1581,6 @@ def test_svc_discovery_service(admin_user_client, user_client, project_client):
         'environmentId': 'cr',
         'scale': 'cru',
         'launchConfig': 'cr',
-        'serviceSchemas': 'cr',
         'accountId': 'r',
         'upgrade': 'r',
         'secondaryLaunchConfigs': 'cr',
@@ -1559,7 +1591,8 @@ def test_svc_discovery_service(admin_user_client, user_client, project_client):
         'selectorContainer': 'cr',
         'fqdn': 'r',
         'publicEndpoints': 'r',
-        'retainIp': 'cr'
+        'retainIp': 'cr',
+        'assignServiceIpAddress': 'cr',
     })
 
 
@@ -1622,7 +1655,8 @@ def test_svc_discovery_lb_service(admin_user_client, user_client,
         'selectorLink': 'r',
         'fqdn': 'r',
         'publicEndpoints': 'r',
-        'retainIp': 'r'
+        'retainIp': 'r',
+        'assignServiceIpAddress': 'r',
     })
 
     auth_check(user_client.schema, 'loadBalancerService', 'r', {
@@ -1641,7 +1675,8 @@ def test_svc_discovery_lb_service(admin_user_client, user_client,
         'selectorLink': 'r',
         'fqdn': 'r',
         'publicEndpoints': 'r',
-        'retainIp': 'r'
+        'retainIp': 'r',
+        'assignServiceIpAddress': 'r',
     })
 
     auth_check(project_client.schema, 'loadBalancerService', 'crud', {
@@ -1660,7 +1695,8 @@ def test_svc_discovery_lb_service(admin_user_client, user_client,
         'selectorLink': 'cr',
         'fqdn': 'r',
         'publicEndpoints': 'r',
-        'retainIp': 'cr'
+        'retainIp': 'cr',
+        'assignServiceIpAddress': 'cr',
     })
 
 
@@ -2295,4 +2331,37 @@ def test_virtual_machine_disk(admin_user_client, user_client, project_client):
         'opts': 'cr',
         'driver': 'cr',
         'root': 'cr',
+    })
+
+
+def test_kubernetes_service(admin_user_client, user_client, project_client):
+    auth_check(admin_user_client.schema, 'kubernetesService', 'r', {
+        'name': 'r',
+        'externalId': 'r',
+        'environmentId': 'r',
+        'accountId': 'r',
+        'data': 'r',
+        'vip': 'r',
+        'selectorContainer': 'r',
+        'template': 'r',
+    })
+
+    auth_check(user_client.schema, 'kubernetesService', 'r', {
+        'name': 'r',
+        'externalId': 'r',
+        'environmentId': 'r',
+        'accountId': 'r',
+        'vip': 'r',
+        'selectorContainer': 'r',
+        'template': 'r',
+    })
+
+    auth_check(project_client.schema, 'kubernetesService', 'r', {
+        'name': 'r',
+        'externalId': 'r',
+        'environmentId': 'r',
+        'accountId': 'r',
+        'vip': 'r',
+        'selectorContainer': 'r',
+        'template': 'r',
     })

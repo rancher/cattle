@@ -94,6 +94,11 @@ public class RemoveMonitorImpl implements RemoveMonitor, Task {
                 continue;
             }
 
+            // restricting it to instance for now
+            if (!type.equalsIgnoreCase("instance")) {
+                continue;
+            }
+
             Object stateField = objectMetaDataManager.convertFieldNameFor(type, ObjectMetaDataManager.STATE_FIELD);
             if (stateField == null) {
                 continue;

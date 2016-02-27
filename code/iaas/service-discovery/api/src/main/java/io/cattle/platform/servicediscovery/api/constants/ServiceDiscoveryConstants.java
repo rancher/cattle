@@ -26,7 +26,6 @@ public class ServiceDiscoveryConstants {
     public static final String FIELD_DATA_VOLUMES_LAUNCH_CONFIG = "dataVolumesFromLaunchConfigs";
     public static final String FIELD_WAIT_FOR_CONSUMED_SERVICES_IDS = "waitForConsumedServicesIds";
     public static final String FIELD_SERVICE_LINK = "serviceLink";
-    public static final String FIELD_SERVICE_SCHEMAS = "serviceSchemas";
     public static final String FIELD_HOSTNAME = "hostname";
     public static final String FIELD_VIP = "vip";
     public static final String FIELD_METADATA = "metadata";
@@ -45,6 +44,7 @@ public class ServiceDiscoveryConstants {
     public static final String STACK_FIELD_DOCKER_COMPOSE = "dockerCompose";
     public static final String STACK_FIELD_RANCHER_COMPOSE = "rancherCompose";
     public static final String STACK_FIELD_START_ON_CREATE = "startOnCreate";
+    public static final String FIELD_SET_VIP = "assignServiceIpAddress";
 
     public static final String ACTION_SERVICE_ACTIVATE = "activate";
     public static final String ACTION_SERVICE_CREATE = "create";
@@ -91,18 +91,20 @@ public class ServiceDiscoveryConstants {
     // LEGACY: preserving project_name
     public static final String LABEL_PROJECT_NAME = "io.rancher.project.name";
     public static final String LABEL_PROJECT_SERVICE_NAME = "io.rancher.project_service.name";
-
     public static final String LABEL_SERVICE_GLOBAL = "io.rancher.scheduler.global";
     public static final String LABEL_SERVICE_REQUESTED_HOST_ID = "io.rancher.service.requested.host.id";
     public static final String LABEL_SERVICE_LAUNCH_CONFIG = "io.rancher.service.launch.config";
     public static final String LABEL_SERVICE_CONTAINER_CREATE_ONLY = "io.rancher.container.start_once";
     public static final String LABEL_SERVICE_ALLOACATE_SKIP_SERIALIZE = "io.rancher.service.allocate.skip.serialize";
-
-    public static final String PRIMARY_LAUNCH_CONFIG_NAME = "io.rancher.service.primary.launch.config";
     public static final String LABEL_SIDEKICK = "io.rancher.sidekicks";
     public static final String LABEL_LB_TARGET = "io.rancher.loadbalancer.target.";
     public static final String LABEL_OVERRIDE_HOSTNAME = "io.rancher.container.hostname_override";
     public static final String LABEL_LB_SSL_PORTS = "io.rancher.loadbalancer.ssl.ports";
+    public static final String LABEL_SELECTOR_CONTAINER = "io.rancher.service.selector.container";
+    public static final String LABEL_SELECTOR_LINK = "io.rancher.service.selector.link";
+
+    public static final String PRIMARY_LAUNCH_CONFIG_NAME = "io.rancher.service.primary.launch.config";
+
     public static final String STATE_UPGRADING = "upgrading";
     public static final String STATE_ROLLINGBACK = "rolling-back";
     public static final String STATE_CANCELING_UPGRADE = "canceling-upgrade";
@@ -112,9 +114,6 @@ public class ServiceDiscoveryConstants {
     public static final String STATE_UPGRADED = "upgraded";
     public static final String STATE_FINISHING_UPGRADE = "finishing-upgrade";
     public static final String STATE_RESTARTING = "restarting";
-
-    public static final String LABEL_SELECTOR_CONTAINER = "io.rancher.service.selector.container";
-    public static final String LABEL_SELECTOR_LINK = "io.rancher.service.selector.link";
 
     public static final String IMAGE_NONE = "rancher/none";
 

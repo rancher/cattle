@@ -14,6 +14,7 @@ import io.cattle.platform.core.model.Environment;
 import io.cattle.platform.eventing.EventService;
 import io.cattle.platform.eventing.annotation.AnnotatedEventListener;
 import io.cattle.platform.eventing.annotation.EventHandler;
+import io.cattle.platform.eventing.lock.EventLock;
 import io.cattle.platform.eventing.model.EventVO;
 import io.cattle.platform.json.JsonMapper;
 import io.cattle.platform.lock.LockCallbackNoReturn;
@@ -75,7 +76,7 @@ public class SystemStackUpdate implements AnnotatedEventListener {
     @Inject
     JsonMapper jsonMapper;
 
-    @EventHandler
+    @EventHandler(lock=EventLock.class)
     public void globalServiceUpdate(ConfigUpdate update) {
         if (update.getResourceId() == null) {
             return;

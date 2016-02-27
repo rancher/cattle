@@ -14,9 +14,6 @@
                 "scheduleUpdate" : true
             }
         },
-        "networkId":{
-            "type": "reference[network]"
-        },
         "name":{
             "required": true,
             "validChars": "a-zA-Z0-9-",
@@ -59,17 +56,16 @@
             "required": false,
             "nullable": true
         },
-        "serviceSchemas": {
-            "type": "map[schema]",
-            "nullable": true,
-            "required": false
-        },
         "publicEndpoints":{
             "type": "array[publicEndpoint]",
             "required": false,
             "nullable": true
         },
         "retainIp": {
+          "type": "boolean",
+          "nullable": true
+        },
+        "assignServiceIpAddress": {
           "type": "boolean",
           "nullable": true
         }

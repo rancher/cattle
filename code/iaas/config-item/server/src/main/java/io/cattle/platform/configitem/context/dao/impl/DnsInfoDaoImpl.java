@@ -1,5 +1,6 @@
 package io.cattle.platform.configitem.context.dao.impl;
 
+import static io.cattle.platform.core.model.tables.EnvironmentTable.ENVIRONMENT;
 import static io.cattle.platform.core.model.tables.HostIpAddressMapTable.HOST_IP_ADDRESS_MAP;
 import static io.cattle.platform.core.model.tables.InstanceHostMapTable.INSTANCE_HOST_MAP;
 import static io.cattle.platform.core.model.tables.InstanceLinkTable.INSTANCE_LINK;
@@ -19,6 +20,7 @@ import io.cattle.platform.core.constants.HealthcheckConstants;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.constants.IpAddressConstants;
 import io.cattle.platform.core.dao.NetworkDao;
+import io.cattle.platform.core.model.Environment;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.InstanceHostMap;
 import io.cattle.platform.core.model.InstanceLink;
@@ -28,6 +30,7 @@ import io.cattle.platform.core.model.Nic;
 import io.cattle.platform.core.model.Service;
 import io.cattle.platform.core.model.ServiceConsumeMap;
 import io.cattle.platform.core.model.ServiceExposeMap;
+import io.cattle.platform.core.model.tables.EnvironmentTable;
 import io.cattle.platform.core.model.tables.InstanceHostMapTable;
 import io.cattle.platform.core.model.tables.InstanceLinkTable;
 import io.cattle.platform.core.model.tables.InstanceTable;
@@ -40,15 +43,19 @@ import io.cattle.platform.core.model.tables.ServiceTable;
 import io.cattle.platform.db.jooq.dao.impl.AbstractJooqDao;
 import io.cattle.platform.db.jooq.mapper.MultiRecordMapper;
 import io.cattle.platform.object.ObjectManager;
+import io.cattle.platform.object.util.DataUtils;
 import io.cattle.platform.servicediscovery.api.constants.ServiceDiscoveryConstants;
+import io.cattle.platform.servicediscovery.api.util.ServiceDiscoveryDnsUtil;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import javax.inject.Inject;
 
+import org.apache.commons.lang3.StringUtils;
 import org.jooq.Condition;
 
 public class DnsInfoDaoImpl extends AbstractJooqDao implements DnsInfoDao {
@@ -61,19 +68,19 @@ public class DnsInfoDaoImpl extends AbstractJooqDao implements DnsInfoDao {
 
     @Override
     public List<DnsEntryData> getInstanceLinksDnsData(final Instance instance) {
+        // adds all instance links
         MultiRecordMapper<DnsEntryData> mapper = new MultiRecordMapper<DnsEntryData>() {
             @Override
             protected DnsEntryData map(List<Object> input) {
-                DnsEntryData data = new DnsEntryData();
                 Map<String, Map<String, String>> resolve = new HashMap<>();
                 Map<String, String> ips = new HashMap<>();
                 String targetInstanceName = input.get(4) == null ? null : ((Instance) input.get(4)).getName();
                 ips.put(((IpAddress) input.get(1)).getAddress(), targetInstanceName);
-                // add all instance links
                 resolve.put(((InstanceLink) input.get(0)).getLinkName(), ips);
-                data.setSourceIpAddress(((IpAddress) input.get(2)).getAddress());
-                data.setResolveServicesAndContainers(resolve);
-                data.setInstance((Instance)input.get(3));
+                String sourceIp = ((IpAddress) input.get(2)).getAddress();
+                Instance instance = (Instance)input.get(3);
+                DnsEntryData data = new DnsEntryData(sourceIp, resolve, null, instance,
+                        Arrays.asList(ServiceDiscoveryDnsUtil.RANCHER_NAMESPACE));
                 return data;
             }
         };
@@ -129,14 +136,17 @@ public class DnsInfoDaoImpl extends AbstractJooqDao implements DnsInfoDao {
     }
 
     @Override
-    public List<DnsEntryData> getServiceDnsData(final Instance instance, final boolean isVIPProvider) {
+    public List<DnsEntryData> getServiceDnsData(final Instance instance, boolean forDefault) {
         MultiRecordMapper<ServiceDnsEntryData> mapper = new MultiRecordMapper<ServiceDnsEntryData>() {
             @Override
             protected ServiceDnsEntryData map(List<Object> input) {
                 Service clientService = (Service) input.get(0);
                 Service targetService = (Service) input.get(1);
                 ServiceConsumeMap consumeMap = (ServiceConsumeMap) input.get(2);
-                ServiceDnsEntryData data = new ServiceDnsEntryData(clientService, targetService, consumeMap);
+                Environment clientStack = (Environment) input.get(3);
+                Environment targetStack = (Environment) input.get(4);
+                ServiceDnsEntryData data = new ServiceDnsEntryData(clientService, targetService, consumeMap,
+                        clientStack, targetStack);
                 return data;
             }
         };
@@ -144,23 +154,36 @@ public class DnsInfoDaoImpl extends AbstractJooqDao implements DnsInfoDao {
         ServiceTable clientService = mapper.add(SERVICE);
         ServiceTable targetService = mapper.add(SERVICE);
         ServiceConsumeMapTable serviceConsumeMap = mapper.add(SERVICE_CONSUME_MAP);
+        EnvironmentTable clientStack = mapper.add(ENVIRONMENT);
+        EnvironmentTable targetStack = mapper.add(ENVIRONMENT);
 
-        // there are 2 conditions below linked with OR clause
-        // first condition - means to return all non-dns clientService + target service map within the same stack
-        // that are not linked
-        // second condition - return only clientService + targetService with explicit links
-        Condition condition = (clientService.KIND.ne(ServiceDiscoveryConstants.KIND.DNSSERVICE.name())
-                    .and(targetService.ENVIRONMENT_ID.eq(clientService.ENVIRONMENT_ID))
-                .and(serviceConsumeMap.ID.isNull())).or(serviceConsumeMap.ID.isNotNull()
-                .and(serviceConsumeMap.REMOVED.isNull())
-                        .and(serviceConsumeMap.STATE.in(CommonStatesConstants.ACTIVATING,
-                                CommonStatesConstants.ACTIVE)));
+        Condition condition = null;
+        if (forDefault) {
+            // all services records
+            condition = (clientService.KIND.ne(ServiceDiscoveryConstants.KIND.DNSSERVICE.name())
+                    .and(targetService.ID.eq(clientService.ID))
+                    .and(serviceConsumeMap.ID.isNull()))
+                    .or((clientService.KIND.eq(ServiceDiscoveryConstants.KIND.DNSSERVICE.name())
+                            .and(serviceConsumeMap.ID.isNotNull()
+                    .and(serviceConsumeMap.REMOVED.isNull())
+                    .and(serviceConsumeMap.STATE.in(CommonStatesConstants.ACTIVATING,
+                            CommonStatesConstants.ACTIVE)))));
+        } else {
+            // all linked records
+            condition = serviceConsumeMap.ID.isNotNull().and(serviceConsumeMap.REMOVED.isNull())
+                                    .and(serviceConsumeMap.STATE.in(CommonStatesConstants.ACTIVATING,
+                            CommonStatesConstants.ACTIVE));
+        }
 
         List<ServiceDnsEntryData> serviceDnsEntries = create()
                 .select(mapper.fields())
                 .from(clientService)
                 .join(targetService)
                 .on(targetService.ACCOUNT_ID.eq(clientService.ACCOUNT_ID))
+                .join(clientStack)
+                .on(clientService.ENVIRONMENT_ID.eq(clientStack.ID))
+                .join(targetStack)
+                .on(targetService.ENVIRONMENT_ID.eq(targetStack.ID))
                 .leftOuterJoin(serviceConsumeMap)
                 .on(serviceConsumeMap.SERVICE_ID.eq(clientService.ID).and(
                         serviceConsumeMap.CONSUMED_SERVICE_ID.eq(targetService.ID))
@@ -172,15 +195,15 @@ public class DnsInfoDaoImpl extends AbstractJooqDao implements DnsInfoDao {
 
         Nic nic = ntwkDao.getPrimaryNic(instance.getId());
         long vnetId = nic.getVnetId();
-        return convertToDnsEntryData(isVIPProvider, serviceDnsEntries, instance.getAccountId(), vnetId);
+        return convertToDnsEntryData(serviceDnsEntries, instance.getAccountId(), vnetId, forDefault);
     }
 
-    protected List<DnsEntryData> convertToDnsEntryData(final boolean isVIPProvider, List<ServiceDnsEntryData> serviceDnsData,
-            long accountId, long vnetId) {
+    protected List<DnsEntryData> convertToDnsEntryData(List<ServiceDnsEntryData> serviceDnsData,
+            long accountId, long vnetId, boolean forDefault) {
         final Map<Long, IpAddress> instanceIdToHostIpMap = getInstanceWithHostNetworkingToIpMap(accountId);
-        Map<Long, List<ServiceInstanceData>> servicesClientInstances = getServiceInstancesData(accountId,
+        Map<Long, List<ServiceInstanceData>> servicesClientInstances = getServiceIdToServiceInstancesData(accountId,
                 true, vnetId);
-        Map<Long, List<ServiceInstanceData>> servicesTargetInstances = getServiceInstancesData(accountId,
+        Map<Long, List<ServiceInstanceData>> servicesTargetInstances = getServiceIdToServiceInstancesData(accountId,
                 false, vnetId);
         Map<Long, List<ServiceDnsEntryData>> clientServiceIdToServiceData = new HashMap<>();
         for (ServiceDnsEntryData data : serviceDnsData) {
@@ -194,7 +217,6 @@ public class DnsInfoDaoImpl extends AbstractJooqDao implements DnsInfoDao {
         }
  
         List<DnsEntryData> returnData = new ArrayList<>();
-
         for (ServiceDnsEntryData serviceData : serviceDnsData) {
             Service clientService = serviceData.getClientService();
             Map<String, Map<String, String>> resolve = new HashMap<>();
@@ -202,24 +224,63 @@ public class DnsInfoDaoImpl extends AbstractJooqDao implements DnsInfoDao {
             Service targetService = serviceData.getTargetService();
             List<ServiceInstanceData> targetInstancesData = populateTargetInstancesData(servicesTargetInstances,
                     clientServiceIdToServiceData, targetService);
-            
-            for (ServiceInstanceData targetInstance : targetInstancesData) {
-                populateResolveInfo(isVIPProvider, instanceIdToHostIpMap, serviceData, clientService, resolve,
-                        resolveCname, targetService, targetInstance);
-            }
-
-            if (servicesClientInstances.containsKey(clientService.getId())) {
-                for (ServiceInstanceData clientInstance : servicesClientInstances.get(clientService.getId())) {
-                    DnsEntryData data = new DnsEntryData();
-                    String clientIp = getIpAddress(clientInstance, true, instanceIdToHostIpMap);
-                    data.setSourceIpAddress(clientIp);
-                    data.setResolveServicesAndContainers(resolve);
-                    data.setInstance(clientInstance.getInstance());
-                    data.setResolveCname(resolveCname);
-                    returnData.add(data);
+            String linkName = null;
+            if (serviceData.getConsumeMap() != null) {
+                if (clientService.getKind().equalsIgnoreCase(ServiceDiscoveryConstants.KIND.DNSSERVICE.name())) {
+                    linkName = ServiceDiscoveryDnsUtil.getFqdn(serviceData.getClientStack(),
+                            serviceData.getClientService(), serviceData.getClientService().getName());
+                } else {
+                    if (!StringUtils.isEmpty(serviceData.getConsumeMap().getName())) {
+                        linkName = serviceData.getConsumeMap().getName() + ".";
+                    } else {
+                        linkName = targetService.getName() + ".";
+                    }
                 }
             }
+            for (ServiceInstanceData targetInstance : targetInstancesData) {
+
+                String dnsPrefix = targetInstance.getExposeMap() != null ? targetInstance.getExposeMap().getDnsPrefix()
+                        : null;
+                boolean self = clientService.getId().equals(targetService.getId()) && !forDefault;
+                populateResolveInfo(targetInstance, self, linkName, dnsPrefix, instanceIdToHostIpMap,
+                        resolveCname, resolve);
+            }
+
+            List<ServiceInstanceData> clientInstanceData = servicesClientInstances.get(clientService.getId());
+
+            if (forDefault) {
+                DnsEntryData data = new DnsEntryData("default", resolve, resolveCname, null, null);
+                returnData.add(data);
+            }
+
+            if (clientInstanceData != null) {
+                    for (ServiceInstanceData clientInstance : clientInstanceData) {
+                        String clientIp = getIpAddress(clientInstance, instanceIdToHostIpMap, true);
+                        if (!forDefault) {
+                            DnsEntryData data = new DnsEntryData(clientIp, resolve, resolveCname,
+                                    clientInstance.getInstance(), null);
+                            returnData.add(data);
+                        }
+                        // to add search domains
+                        List<String> searchDomains = ServiceDiscoveryDnsUtil.getNamespaces(
+                                serviceData.getClientStack(),
+                                serviceData.getClientService(), clientInstance.getExposeMap().getDnsPrefix());
+                        DnsEntryData data = new DnsEntryData(clientIp, null, null,
+                                null, searchDomains);
+                        returnData.add(data);
+                    }
+            }
         }
+
+        if (forDefault) {
+            Map<String, String> metadataIp = new HashMap<>();
+            metadataIp.put(ServiceDiscoveryDnsUtil.METADATA_IP, null);
+            Map<String, Map<String, String>> resolve = new HashMap<>();
+            resolve.put(ServiceDiscoveryDnsUtil.METADATA_FQDN, metadataIp);
+            DnsEntryData data = new DnsEntryData("default", resolve, null, null, null);
+            returnData.add(data);
+        }
+
         return returnData;
     }
 
@@ -249,61 +310,57 @@ public class DnsInfoDaoImpl extends AbstractJooqDao implements DnsInfoDao {
         return targetInstancesData;
     }
 
-    protected void populateResolveInfo(final boolean isVIPProvider, final Map<Long, IpAddress> instanceIdToHostIpMap,
-            ServiceDnsEntryData serviceData, Service clientService, Map<String, Map<String, String>> resolve,
-            Map<String, String> resolveCname, Service targetService, ServiceInstanceData targetInstance) {
+    protected void populateResolveInfo(ServiceInstanceData targetInstance, boolean self,
+            String linkName, String dnsPrefix, final Map<Long, IpAddress> instanceIdToHostIpMap,
+            Map<String, String> resolveCname, Map<String, Map<String, String>> resolve) {
         String targetInstanceName = targetInstance.getInstance() == null ? null : targetInstance
                 .getInstance().getName();
 
-        boolean self = clientService.getId().equals(targetService.getId());
-        String dnsName = getDnsName(targetService, serviceData.getConsumeMap(),
-                targetInstance.getExposeMap(), self);
-
-
-        String targetIp = isVIPProvider ? clientService.getVip() : getIpAddress(
-                targetInstance, false,
-                instanceIdToHostIpMap);
+        String dnsName = ServiceDiscoveryDnsUtil.getDnsName(targetInstance.getService(), targetInstance.getStack(),
+                linkName, dnsPrefix, self);
+        String targetIp = getIpAddress(targetInstance, instanceIdToHostIpMap, false);
         if (targetIp != null) {
             Map<String, String> ips = resolve.get(dnsName);
             if (ips == null) {
                 ips = new HashMap<>();
             }
-            ips.put(targetIp, targetInstanceName);
-
+            if (getVip(targetInstance.getService()) != null) {
+                ips.put(targetInstance.getService().getVip(), dnsName);
+            }
+            if (linkName == null) {
+                if (StringUtils.isEmpty(targetInstanceName)) {
+                    ips.put(targetIp, null);
+                } else {
+                    ips.put(targetIp, targetInstanceName + "." + dnsName);
+                }
+            } else {
+                ips.put(targetIp, null);
+            }
             resolve.put(dnsName, ips);
         } else {
             String cname = targetInstance.getExposeMap().getHostName();
             if (cname != null) {
-                resolveCname.put(dnsName, cname);
+                resolveCname.put(dnsName, cname + ".");
             }
         }
     }
 
-    protected String getDnsName(Object service, Object serviceConsumeMap, Object serviceExposeMap, boolean self) {
-
-        String dnsPrefix = null;
-        if (serviceExposeMap != null) {
-            dnsPrefix = ((ServiceExposeMap) serviceExposeMap).getDnsPrefix();
+    protected String getVip(Service service) {
+        String vip = service.getVip();
+        //indicator that its pre-upgraded setup that had vip set for every service by default
+        // vip will be set only
+        // a) field_set_vip is set via API
+        // b) for k8s services
+        Map<String, Object> data = new HashMap<>();
+        data.putAll(DataUtils.getFields(service));
+        if (data.containsKey(ServiceDiscoveryConstants.FIELD_SET_VIP)
+                || service.getKind().equalsIgnoreCase("kubernetesservice")) {
+            return vip;
         }
-
-        String consumeMapName = null;
-        if (serviceConsumeMap != null) {
-            consumeMapName = ((ServiceConsumeMap) serviceConsumeMap).getName();
-        }
-
-        String primaryDnsName = (consumeMapName != null && !consumeMapName.isEmpty()) ? consumeMapName
-                : ((Service) service).getName();
-        String dnsName = primaryDnsName;
-        if (self) {
-            dnsName = dnsPrefix == null ? dnsName : dnsPrefix;
-        } else {
-            dnsName = dnsPrefix == null ? dnsName : dnsPrefix + "." + dnsName;
-        }
-
-        return dnsName;
+        return null;
     }
 
-    protected String getIpAddress(ServiceInstanceData serviceInstanceData, boolean isSource, Map<Long, IpAddress> instanceIdToHostIpMap) {
+    protected String getIpAddress(ServiceInstanceData serviceInstanceData, Map<Long, IpAddress> instanceIdToHostIpMap, boolean isSource) {
         Nic nic = serviceInstanceData.getNic();
         ServiceExposeMap exposeMap = serviceInstanceData.getExposeMap();
         IpAddress ipAddr = serviceInstanceData.getIpAddress();
@@ -322,7 +379,6 @@ public class DnsInfoDaoImpl extends AbstractJooqDao implements DnsInfoDao {
                 ip = exposeMap.getIpAddress();
             }
         }
-
         if (nic == null || nic.getDeviceNumber().equals(0)) {
             return ip;
         } else {
@@ -348,14 +404,9 @@ public class DnsInfoDaoImpl extends AbstractJooqDao implements DnsInfoDao {
         return instanceIdToHostIpMap;
     }
 
-    protected Map<Long, List<ServiceInstanceData>> getServiceInstancesData(long accountId, boolean client, long vnetId) {
+    protected Map<Long, List<ServiceInstanceData>> getServiceIdToServiceInstancesData(long accountId, boolean client, long vnetId) {
         Map<Long, List<ServiceInstanceData>> returnData = new HashMap<>();
-        List<ServiceInstanceData> serviceData = new ArrayList<>();
-        if (client) {
-            serviceData = getServiceInstanceInstancesData(accountId, true, vnetId);
-        } else {
-            serviceData = getServiceInstanceInstancesData(accountId, false, vnetId);
-        }
+        List<ServiceInstanceData> serviceData = getServiceInstanceInstancesData(accountId, client, vnetId);
 
         for (ServiceInstanceData data : serviceData) {
             List<ServiceInstanceData> existingData = returnData.get(data.getService().getId());
@@ -377,9 +428,12 @@ public class DnsInfoDaoImpl extends AbstractJooqDao implements DnsInfoDao {
                 for (int i = 0; i < originalInstances.size(); i++) {
                     ServiceInstanceData instance = originalInstances.get(i);
                     if (instance.getInstance() != null) {
-                        if (instance.getInstance().getHealthState() == null
+                        boolean isHealthy = instance.getInstance().getHealthState() == null
                                 || instance.getInstance().getHealthState()
-                                        .equalsIgnoreCase(HealthcheckConstants.HEALTH_STATE_HEALTHY)) {
+                                        .equalsIgnoreCase(HealthcheckConstants.HEALTH_STATE_HEALTHY);
+                        boolean isRunning = Arrays.asList(InstanceConstants.STATE_RUNNING,
+                                InstanceConstants.STATE_STARTING).contains(instance.getInstance().getState());
+                        if (isRunning && isHealthy) {
                             filteredInstances.add(instance);
                         } else if (i == originalInstances.size() - 1 && filteredInstances.size() == 0) {
                             filteredInstances.add(instance);
@@ -404,7 +458,8 @@ public class DnsInfoDaoImpl extends AbstractJooqDao implements DnsInfoDao {
                 Instance instance = (Instance) input.get(2);
                 ServiceExposeMap exposeMap = (ServiceExposeMap) input.get(3);
                 Nic nic = (Nic) input.get(4);
-                ServiceInstanceData data = new ServiceInstanceData(service, ip, instance, exposeMap, nic);
+                Environment stack = (Environment) input.get(5);
+                ServiceInstanceData data = new ServiceInstanceData(stack, service, ip, instance, exposeMap, nic);
                 return data;
             }
         };
@@ -415,6 +470,7 @@ public class DnsInfoDaoImpl extends AbstractJooqDao implements DnsInfoDao {
         InstanceTable instance = mapper.add(INSTANCE);
         ServiceExposeMapTable exposeMap = mapper.add(SERVICE_EXPOSE_MAP);
         NicTable nic = mapper.add(NIC);
+        EnvironmentTable stack = mapper.add(ENVIRONMENT);
         
         Condition condition = null;
         if (client) {
@@ -429,6 +485,8 @@ public class DnsInfoDaoImpl extends AbstractJooqDao implements DnsInfoDao {
                 .from(service)
                 .join(exposeMap)
                 .on(service.ID.eq(exposeMap.SERVICE_ID))
+                .join(stack)
+                .on(stack.ID.eq(service.ENVIRONMENT_ID))
                 .leftOuterJoin(instance)
                 .on(instance.ID.eq(exposeMap.INSTANCE_ID))
                 .leftOuterJoin(nic)
@@ -443,8 +501,6 @@ public class DnsInfoDaoImpl extends AbstractJooqDao implements DnsInfoDao {
                 .and(nic.REMOVED.isNull())
                 .and(ipAddress.REMOVED.isNull())
                 .and(instance.REMOVED.isNull())
-                .and(instance.STATE.isNull().or(instance.STATE.in(InstanceConstants.STATE_RUNNING,
-                        InstanceConstants.STATE_STARTING)))
                 .and(condition)
                 .fetch().map(mapper);
     }

@@ -20,12 +20,6 @@
     <bean class="io.cattle.platform.servicediscovery.process.ServiceDeactivate" />
     <bean class="io.cattle.platform.servicediscovery.process.ServiceRemove" />
     <bean class="io.cattle.platform.servicediscovery.process.ServiceCreate" />
-    <bean class="io.cattle.platform.servicediscovery.process.ServiceCreatePostListener" >
-        <property name="jsonMapper">
-            <bean class="io.github.ibuildthecloud.gdapi.json.JacksonMapper" />
-        </property>
-        <property name="schemaFactory" ref="CoreSchemaFactory" />
-    </bean>
     <bean class="io.cattle.platform.servicediscovery.process.ServiceUpgrade" />
     <bean class="io.cattle.platform.servicediscovery.process.ServiceRollback" />
     <bean class="io.cattle.platform.servicediscovery.process.ServiceFinishUpgrade" />

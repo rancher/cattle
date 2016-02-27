@@ -34,6 +34,6 @@ def test_audit_entry_created(new_context, admin_user_client):
         serverAddress='test.io', name='test'))
     objects.append(new_context.user_client.create_api_key())
     objects.append(new_context.user_client.create_environment(
-            name='env-' + random_str()))
+                   name='env-' + random_str()))
     for object in objects:
         made_log(object, admin_user_client, new_context)

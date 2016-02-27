@@ -42,6 +42,13 @@
             "attributes" : {
                 "state" : "running"
             }
+        },
+        "proxy": {
+            "input": "containerProxy",
+            "output": "hostAccess",
+            "attributes" : {
+                "state" : "running"
+            }
         }
     }
 }
