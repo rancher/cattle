@@ -52,6 +52,7 @@ public class GithubIdentityProvider extends GithubConfigurable implements Identi
     private static final Log logger = LogFactory.getLog(GithubIdentityProvider.class);
 
 
+    @Override
     public List<Identity> searchIdentities(String name, boolean exactMatch) {
         if (!isConfigured()){
             notConfigured();
@@ -206,7 +207,6 @@ public class GithubIdentityProvider extends GithubConfigurable implements Identi
                 "NotConfigured", "Github is not configured", null);
     }
 
-    @SuppressWarnings("unchecked")
     private Identity getTeamById(String id) {
         if (!isConfigured()) {
             notConfigured();

@@ -2,6 +2,6 @@
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.2.xsd">
 
-    <bean id="extensionManager" class="io.cattle.platform.extension.dynamic.DynamicExtensionManager" />
+    <bean class="io.cattle.platform.archaius.eventing.impl.ArchaiusEventListenerImpl" />
 
 </beans>
