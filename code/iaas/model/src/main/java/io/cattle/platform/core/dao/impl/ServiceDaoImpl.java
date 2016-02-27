@@ -1,7 +1,7 @@
 package io.cattle.platform.core.dao.impl;
 
-import static io.cattle.platform.core.model.tables.ServiceIndexTable.SERVICE_INDEX;
-import static io.cattle.platform.core.model.tables.ServiceTable.SERVICE;
+import static io.cattle.platform.core.model.tables.ServiceIndexTable.*;
+import static io.cattle.platform.core.model.tables.ServiceTable.*;
 import io.cattle.platform.core.dao.ServiceDao;
 import io.cattle.platform.core.model.Service;
 import io.cattle.platform.core.model.ServiceIndex;
@@ -9,6 +9,8 @@ import io.cattle.platform.db.jooq.dao.impl.AbstractJooqDao;
 import io.cattle.platform.object.ObjectManager;
 
 import javax.inject.Inject;
+
+import org.jooq.Record;
 
 public class ServiceDaoImpl extends AbstractJooqDao implements ServiceDao {
 
@@ -37,5 +39,17 @@ public class ServiceDaoImpl extends AbstractJooqDao implements ServiceDao {
                     SERVICE_INDEX.ACCOUNT_ID, service.getAccountId());
         }
         return serviceIndexObj;
+    }
+
+    @Override
+    public Service getServiceByServiceIndexId(long serviceIndexId) {
+        Record record = create()
+                .select(SERVICE.fields())
+                .from(SERVICE)
+                .join(SERVICE_INDEX).on(SERVICE.ID.eq(SERVICE_INDEX.SERVICE_ID))
+                .where(SERVICE_INDEX.ID.eq(serviceIndexId))
+                .fetchAny();
+
+        return record == null ? null : record.into(Service.class);
     }
 }

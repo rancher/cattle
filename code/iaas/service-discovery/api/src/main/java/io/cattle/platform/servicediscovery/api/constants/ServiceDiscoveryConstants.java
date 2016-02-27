@@ -39,7 +39,6 @@ public class ServiceDiscoveryConstants {
     public static final String FIELD_PUBLIC_ENDPOINTS = "publicEndpoints";
     public static final String FIELD_RESTART = "restart";
     public static final String FIELD_TOKEN = "token";
-    public static final String FIELD_SERVICE_INSTANCE_SERVICE_INDEX_ID = "serviceIndexId";
     public static final String FIELD_SERVICE_RETAIN_IP = "retainIp";
     public static final String STACK_FIELD_DOCKER_COMPOSE = "dockerCompose";
     public static final String STACK_FIELD_RANCHER_COMPOSE = "rancherCompose";

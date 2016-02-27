@@ -2,13 +2,14 @@ package io.cattle.platform.vm.process;
 
 import static io.cattle.platform.core.model.tables.InstanceTable.*;
 import static io.cattle.platform.core.model.tables.VolumeTable.*;
-
 import io.cattle.platform.core.addon.VirtualMachineDisk;
 import io.cattle.platform.core.constants.ContainerEventConstants;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.constants.VolumeConstants;
+import io.cattle.platform.core.dao.ServiceDao;
 import io.cattle.platform.core.dao.VolumeDao;
 import io.cattle.platform.core.model.Instance;
+import io.cattle.platform.core.model.Service;
 import io.cattle.platform.core.model.Volume;
 import io.cattle.platform.core.util.SystemLabels;
 import io.cattle.platform.docker.constants.DockerInstanceConstants;
@@ -42,6 +43,9 @@ public class VirtualMachinePreCreate extends AbstractObjectProcessLogic implemen
 
     @Inject
     VolumeDao volumeDao;
+
+    @Inject
+    ServiceDao serviceDao;
 
     @Inject
     JsonMapper jsonMapper;
@@ -98,10 +102,20 @@ public class VirtualMachinePreCreate extends AbstractObjectProcessLogic implemen
         Object objectDisks = DataAccessor.field(instance, InstanceConstants.FIELD_DISKS, Object.class);
         if (objectDisks instanceof List<?>) {
             String namePrefix = instance.getName();
-            if (StringUtils.isBlank(namePrefix) || !NAME_PATTERN.matcher(namePrefix).matches()) {
-                namePrefix = instance.getUuid().substring(0, 7);
+            Long svcIndexId = DataAccessor.fieldLong(instance, InstanceConstants.FIELD_SERVICE_INSTANCE_SERVICE_INDEX_ID);
+
+            String uuidPart = null;
+            if (svcIndexId != null) {
+                Service svc = serviceDao.getServiceByServiceIndexId(svcIndexId);
+                uuidPart = svc.getUuid().substring(0, 7);
             } else {
-                namePrefix += "-" + instance.getUuid().substring(0, 7);
+                uuidPart = instance.getUuid().substring(0, 7);
+            }
+
+            if (StringUtils.isBlank(namePrefix) || !NAME_PATTERN.matcher(namePrefix).matches()) {
+                namePrefix = uuidPart;
+            } else {
+                namePrefix += "-" + uuidPart;
             }
 
             boolean rootFound = false;
