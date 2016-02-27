@@ -10,6 +10,9 @@ import java.util.List;
 
 import javax.inject.Inject;
 
+/**
+ * 处理请求类型为scripts的请求。
+ */
 public class Scripts extends AbstractResponseGenerator {
 
     private static final String SCRIPTS = "scripts";
@@ -36,7 +39,7 @@ public class Scripts extends AbstractResponseGenerator {
             throw new ClientVisibleException(ResponseCodes.NOT_FOUND);
         }
 
-        if ( request.getResponseObject() == null ) {
+        if (request.getResponseObject() == null) {
             request.setResponseObject(new Object());
             request.commit();
         }

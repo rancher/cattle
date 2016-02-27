@@ -1,6 +1,7 @@
 package io.github.ibuildthecloud.gdapi.util;
 
 import static io.github.ibuildthecloud.gdapi.model.Schema.Method.*;
+
 import io.github.ibuildthecloud.gdapi.condition.Condition;
 import io.github.ibuildthecloud.gdapi.condition.ConditionType;
 import io.github.ibuildthecloud.gdapi.request.ApiRequest;
@@ -35,10 +36,17 @@ public class RequestUtils {
         return !isWriteMethod(method);
     }
 
+
     public static boolean isWriteMethod(String method) {
         return POST.isMethod(method) || PUT.isMethod(method) || DELETE.isMethod(method);
     }
 
+    /**
+     * 如果是POST或PUT方法，则需要响应体部分。
+     *
+     * @param method 方法名称
+     * @return  是否有响应体
+     */
     public static boolean mayHaveBody(String method) {
         return POST.isMethod(method) || PUT.isMethod(method);
     }
@@ -51,12 +59,12 @@ public class RequestUtils {
 
     public static Object makeSingular(Object input) {
         if (input instanceof List) {
-            List<?> list = (List<?>)input;
+            List<?> list = (List<?>) input;
             return list.size() == 0 ? null : list.get(0);
         }
 
         if (input instanceof String[]) {
-            String[] array = (String[])input;
+            String[] array = (String[]) input;
             return array.length == 0 ? null : array[0];
         }
 
@@ -65,7 +73,7 @@ public class RequestUtils {
 
     public static Object makeSingularIfCan(Object input) {
         if (input instanceof List) {
-            List<?> list = (List<?>)input;
+            List<?> list = (List<?>) input;
             if (list.size() == 1)
                 return makeSingularIfCan(list.get(0));
             if (list.size() == 0)
@@ -73,7 +81,7 @@ public class RequestUtils {
         }
 
         if (input instanceof String[]) {
-            String[] array = (String[])input;
+            String[] array = (String[]) input;
             if (array.length == 1) {
                 return makeSingularIfCan(array[0]);
             }
@@ -83,8 +91,8 @@ public class RequestUtils {
             return Arrays.asList(array);
         }
 
-        if (input instanceof Condition && ((Condition)input).getConditionType() == ConditionType.EQ) {
-            return makeSingularIfCan(((Condition)input).getValue());
+        if (input instanceof Condition && ((Condition) input).getConditionType() == ConditionType.EQ) {
+            return makeSingularIfCan(((Condition) input).getValue());
         }
 
         return input;
@@ -106,7 +114,7 @@ public class RequestUtils {
 
     public static List<?> toList(Object obj) {
         if (obj instanceof List) {
-            return (List<?>)obj;
+            return (List<?>) obj;
         } else if (obj == null) {
             return Collections.emptyList();
         } else {
@@ -121,7 +129,7 @@ public class RequestUtils {
         }
 
         if (obj instanceof Map) {
-            return (Map<K, V>)obj;
+            return (Map<K, V>) obj;
         } else {
             return new HashMap<K, V>();
         }

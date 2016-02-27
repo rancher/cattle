@@ -14,6 +14,9 @@ import java.util.List;
 
 import javax.inject.Inject;
 
+/**
+ * 处理请求中没有请求版本信息的情况。
+ */
 public class VersionsHandler extends AbstractResponseGenerator {
 
     Versions versions;

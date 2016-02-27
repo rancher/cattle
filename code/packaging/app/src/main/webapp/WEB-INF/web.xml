@@ -3,7 +3,8 @@
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee
                       http://xmlns.jcp.org/xml/ns/javaee/web-app_3_1.xsd"
-         version="3.1" metadata-complete="true">
+         version="3.1"
+         metadata-complete="true">
 
     <listener>
         <listener-class>io.cattle.platform.context.WebContextLoaderListener</listener-class>
@@ -51,6 +52,18 @@
     <filter-mapping>
         <filter-name>ApiFilter</filter-name>
         <url-pattern>/*</url-pattern>
+        <dispatcher>REQUEST</dispatcher>
+        <dispatcher>FORWARD</dispatcher>
+    </filter-mapping>
+
+    <filter>
+        <filter-name>dfilter</filter-name>
+        <filter-class>com.zte.zxjos.docker.filter.SmartPodApiRequestFilter</filter-class>
+        <async-supported>true</async-supported>
+    </filter>
+    <filter-mapping>
+        <filter-name>dfilter</filter-name>
+        <url-pattern>/v1/tenants/*</url-pattern>
         <dispatcher>REQUEST</dispatcher>
         <dispatcher>FORWARD</dispatcher>
     </filter-mapping>

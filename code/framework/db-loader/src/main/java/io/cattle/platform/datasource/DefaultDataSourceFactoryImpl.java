@@ -25,6 +25,10 @@ public class DefaultDataSourceFactoryImpl implements DataSourceFactory {
                     String.format("db.%s.", alias), "db.", "global.pool.");
         }
 
+        if("mysql".contentEquals(server)) {
+            ds.setDriverClassName("com.mysql.jdbc.Driver");
+        }
+
         return ds;
     }
 

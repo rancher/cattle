@@ -34,6 +34,9 @@ import org.apache.http.protocol.HTTP;
 import com.netflix.config.DynamicBooleanProperty;
 import com.netflix.config.DynamicStringListProperty;
 
+/**
+ * 处理类型为proxy的请求，白名单。
+ */
 public class GenericWhitelistedProxy extends AbstractResponseGenerator {
 
     public static final String ALLOWED_HOST = GenericWhitelistedProxy.class.getName() + "allowed.host";
@@ -98,34 +101,34 @@ public class GenericWhitelistedProxy extends AbstractResponseGenerator {
         Request temp;
         String method = servletRequest.getMethod();
         if (servletRequest instanceof ProxyPreFilter.Request) {
-            method = ((ProxyPreFilter.Request)servletRequest).getRealMethod();
+            method = ((ProxyPreFilter.Request) servletRequest).getRealMethod();
         }
 
         switch (method) {
-        case "POST":
-            temp = Request.Post(redirect);
-            break;
-        case "GET":
-            temp = Request.Get(redirect);
-            break;
-        case "PUT":
-            temp = Request.Put(redirect);
-            break;
-        case "DELETE":
-            temp = Request.Delete(redirect);
-            break;
-        case "HEAD":
-            temp = Request.Head(redirect);
-            break;
-        default:
-            throw new ClientVisibleException(ResponseCodes.BAD_REQUEST, "Invalid method", "The method " + method + " is not supported", null);
+            case "POST":
+                temp = Request.Post(redirect);
+                break;
+            case "GET":
+                temp = Request.Get(redirect);
+                break;
+            case "PUT":
+                temp = Request.Put(redirect);
+                break;
+            case "DELETE":
+                temp = Request.Delete(redirect);
+                break;
+            case "HEAD":
+                temp = Request.Head(redirect);
+                break;
+            default:
+                throw new ClientVisibleException(ResponseCodes.BAD_REQUEST, "Invalid method", "The method " + method + " is not supported", null);
         }
 
-        for (String headerName : (List<String>)Collections.list(servletRequest.getHeaderNames())) {
+        for (String headerName : (List<String>) Collections.list(servletRequest.getHeaderNames())) {
             if (BAD_HEADERS.contains(headerName.toLowerCase())) {
                 continue;
             }
-            for (String headerVal : (List<String>)Collections.list(servletRequest.getHeaders(headerName))) {
+            for (String headerVal : (List<String>) Collections.list(servletRequest.getHeaders(headerName))) {
                 temp.addHeader(headerName, StringUtils.removeStart(headerVal, "rancher:"));
             }
         }

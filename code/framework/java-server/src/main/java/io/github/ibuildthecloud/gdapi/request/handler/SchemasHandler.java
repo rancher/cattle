@@ -8,6 +8,9 @@ import io.github.ibuildthecloud.gdapi.util.ResponseCodes;
 
 import java.io.IOException;
 
+/**
+ * 处理Schema类型的请求。
+ */
 public class SchemasHandler extends AbstractResponseGenerator {
 
     @Override

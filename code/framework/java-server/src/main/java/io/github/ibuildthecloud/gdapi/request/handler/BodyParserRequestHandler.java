@@ -21,6 +21,9 @@ import javax.inject.Inject;
 
 import org.apache.commons.io.IOUtils;
 
+/**
+ * 处理有响应体的POST， PUT类型的请求。
+ */
 public class BodyParserRequestHandler extends AbstractApiRequestHandler implements ApiRequestHandler {
 
     JsonMapper jsonMarshaller;

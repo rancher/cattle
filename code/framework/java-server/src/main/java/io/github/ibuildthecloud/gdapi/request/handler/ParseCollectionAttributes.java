@@ -23,6 +23,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
+/**
+ * 根据Schema，解析GET请求参数中的集合属性。只处理GET请求。
+ */
 public class ParseCollectionAttributes extends AbstractApiRequestHandler {
 
     Integer defaultLimit = 100;
