@@ -56,18 +56,6 @@
         <dispatcher>FORWARD</dispatcher>
     </filter-mapping>
 
-    <filter>
-        <filter-name>dfilter</filter-name>
-        <filter-class>com.zte.zxjos.docker.filter.SmartPodApiRequestFilter</filter-class>
-        <async-supported>true</async-supported>
-    </filter>
-    <filter-mapping>
-        <filter-name>dfilter</filter-name>
-        <url-pattern>/v1/tenants/*</url-pattern>
-        <dispatcher>REQUEST</dispatcher>
-        <dispatcher>FORWARD</dispatcher>
-    </filter-mapping>
-
     <servlet>
         <servlet-name>HealthCheck</servlet-name>
         <servlet-class>com.codahale.metrics.servlets.HealthCheckServlet</servlet-class>

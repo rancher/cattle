@@ -10,15 +10,11 @@
     <packaging>war</packaging>
 
     <dependencies>
+
         <dependency>
             <groupId>mysql</groupId>
             <artifactId>mysql-connector-java</artifactId>
         </dependency>
 
-        <dependency>
-            <groupId>io.cattle</groupId>
-            <artifactId>dstack</artifactId>
-            <version>${project.version}</version>
-        </dependency>
     </dependencies>
 </project>
