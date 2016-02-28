@@ -433,5 +433,6 @@
 
     <bean class="io.cattle.platform.vm.process.VirtualMachineMetadata" />
     <bean class="io.cattle.platform.vm.process.VirtualMachinePreCreate" />
+    <bean class="io.cattle.platform.vm.process.ServiceVirtualMachinePreCreate" />
 
 </beans>
