@@ -1,13 +1,9 @@
 <beans xmlns="http://www.springframework.org/schema/beans"
-       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-       xmlns:context="http://www.springframework.org/schema/context"
-       xmlns:aop="http://www.springframework.org/schema/aop"
-       xsi:schemaLocation="http://www.springframework.org/schema/beans
-                      http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
-                      http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-3.0.xsd
-                      http://www.springframework.org/schema/context
-                      http://www.springframework.org/schema/context/spring-context-3.0.xsd"
-                      >
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:metrics="http://www.ryantenney.com/schema/metrics"
+    xsi:schemaLocation="
+		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.2.xsd
+        http://www.ryantenney.com/schema/metrics http://www.ryantenney.com/schema/metrics/metrics-3.0.xsd">
 
     <import resource="classpath:META-INF/cattle/spring-bootstrap/extension-fragment-context.xml"/>
 
@@ -34,5 +30,11 @@
     <bean class="org.apache.cloudstack.managed.context.ManagedContextRunnable" factory-method="initializeGlobalContext" >
         <constructor-arg ref="DefaultManagedContext" />
     </bean>
+
+    <bean class="io.cattle.platform.logback.Startup" depends-on="ConfigContext" />
+
+    <metrics:annotation-driven 
+        metric-registry="MetricsRegistry"
+        health-check-registry="HealthCheckRegistry"/>
 
 </beans>
