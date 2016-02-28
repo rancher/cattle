@@ -12,6 +12,7 @@ import io.cattle.platform.object.process.ObjectProcessManager;
 import io.cattle.platform.object.process.StandardProcess;
 import io.cattle.platform.util.type.InitializationTask;
 
+import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.net.URL;
 import java.util.HashMap;
@@ -75,6 +76,9 @@ public class MachineDriverLoader implements InitializationTask {
                     in = configUrl.openStream();
                     configJson = IOUtils.toByteArray(in);
                     dc = jsonMapper.readValue(configJson, DriverConfig.class);
+                } catch (FileNotFoundException e) {
+                    log.info("Not loading [{}], file is not found", configLocation);
+                    return;
                 } catch (Exception e) {
                     log.error("Error while reading machine driver config json.", e);
                     return;
