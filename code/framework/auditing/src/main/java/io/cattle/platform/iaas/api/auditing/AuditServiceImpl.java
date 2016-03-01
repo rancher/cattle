@@ -75,7 +75,7 @@ public class AuditServiceImpl implements AuditService{
 
     @Override
     public void logRequest(ApiRequest request, Policy policy) {
-        if (policy == null) {
+        if (policy == null || request == null) {
             return;
         }
 
@@ -108,7 +108,7 @@ public class AuditServiceImpl implements AuditService{
     }
 
     private String convertResourceType(String type) {
-        switch (type.toLowerCase()) {
+        switch (StringUtils.lowerCase(type)) {
             case "environment":
                 return "stack";
             case "project":
