@@ -318,7 +318,6 @@ def test_admin_types(admin_user_client, adds=set(), removes=set()):
         'logConfig',
         'machine',
         'machineDriver',
-        'machineDriverUpdateInput',
         'machineDriverErrorInput',
         'mount',
         'network',
