@@ -31,9 +31,23 @@ public class CertificateCreateValidationFilter extends AbstractDefaultResourceMa
     public Object create(String type, ApiRequest request, ResourceManager next) {
         String cert = DataUtils.getFieldFromRequest(request, "cert", String.class);
 
-        // set extra fields
         Certificate certificate = request.proxyRequestObject(Certificate.class);
+        setCertificateFields(cert, certificate);
 
+        return super.create(type, request, next);
+    }
+
+    @Override
+    public Object update(String type, String id, ApiRequest request, ResourceManager next) {
+        String cert = DataUtils.getFieldFromRequest(request, "cert", String.class);
+
+        Certificate certificate = request.proxyRequestObject(Certificate.class);
+        setCertificateFields(cert, certificate);
+
+        return super.update(type, id, request, next);
+    }
+
+    protected void setCertificateFields(String cert, Certificate certificate) {
         try {
             DataUtils.getWritableFields(certificate).put("certFingerprint",
                     SslCertificateUtils.getCertificateFingerprint(cert));
@@ -60,7 +74,5 @@ public class CertificateCreateValidationFilter extends AbstractDefaultResourceMa
             throw new ClientVisibleException(ResponseCodes.UNPROCESSABLE_ENTITY, ValidationErrorCodes.INVALID_FORMAT,
                     e.getMessage(), null);
         }
-
-        return super.create(type, request, next);
     }
 }

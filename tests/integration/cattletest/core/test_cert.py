@@ -86,3 +86,36 @@ def test_create_cert_chain(client):
 def _read_cert(name):
     with open(os.path.join(RESOURCE_DIR, name)) as f:
         return f.read()
+
+
+def test_update_cert(client):
+    cert1 = _read_cert("enduser-example.com.crt")
+    key1 = _read_cert("enduser-example.com.key")
+    c1 = client. \
+        create_certificate(name=random_str(),
+                           cert=cert1,
+                           key=key1)
+    c1 = client.wait_success(c1)
+
+    cert2 = _read_cert("san_domain_com.crt")
+    key2 = _read_cert("san_domain_com.key")
+    c2 = client.update(c1, cert=cert2, key=key2)
+    c2 = client.wait_success(c2, 120)
+    assert c2.certFingerprint is not None
+    assert c2.expiresAt is not None
+    assert c2.CN is not None
+    assert c2.issuer is not None
+    assert c2.issuedAt is not None
+    assert c2.algorithm is not None
+    assert c2.version is not None
+    assert c2.serialNumber is not None
+    assert c2.keySize == 2048
+    assert c2.subjectAlternativeNames is not None
+
+    assert c2.cert == cert2
+    assert c2.certFingerprint != c1.certFingerprint
+    assert c2.expiresAt != c1.expiresAt
+    assert c2.CN != c1.CN
+    assert c2.issuer != c1.issuer
+    assert c2.issuedAt != c1.issuedAt
+    assert c2.serialNumber != c1.serialNumber
