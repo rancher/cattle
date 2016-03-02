@@ -31,7 +31,9 @@
         },
         "upgrade": {
             "type": "serviceUpgrade",
-            "create": false
+            "create": false,
+            "required": false,
+            "nullable": true
         },
         "restart": {
             "type": "serviceRestart",

@@ -51,7 +51,7 @@ public class SelectorServiceCreateValidationFilter extends AbstractDefaultResour
     }
 
     protected void validateImage(Map<String, Object> primaryLaunchConfig, boolean isSelector) {
-        if (!isSelector) {
+        if (!isSelector && primaryLaunchConfig != null) {
             Object image = primaryLaunchConfig.get(InstanceConstants.FIELD_IMAGE_UUID);
             if (image == null || image.toString().equalsIgnoreCase(ServiceDiscoveryConstants.IMAGE_NONE)) {
                 throw new ValidationErrorException(ValidationErrorCodes.INVALID_OPTION,
