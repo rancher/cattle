@@ -9,14 +9,18 @@ import io.github.ibuildthecloud.gdapi.util.ResponseCodes;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.net.ProxySelector;
 import java.net.URISyntaxException;
 import java.net.URLDecoder;
+import java.security.KeyManagementException;
+import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import javax.net.ssl.SSLContext;
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.lang3.StringUtils;
@@ -24,11 +28,23 @@ import org.apache.http.Header;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.ClientProtocolException;
+import org.apache.http.client.HttpClient;
 import org.apache.http.client.ResponseHandler;
+import org.apache.http.client.fluent.Executor;
 import org.apache.http.client.fluent.Request;
 import org.apache.http.client.fluent.Response;
 import org.apache.http.client.utils.URIBuilder;
+import org.apache.http.config.Registry;
+import org.apache.http.config.RegistryBuilder;
+import org.apache.http.conn.socket.ConnectionSocketFactory;
+import org.apache.http.conn.socket.LayeredConnectionSocketFactory;
+import org.apache.http.conn.socket.PlainConnectionSocketFactory;
+import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
+import org.apache.http.conn.ssl.SSLInitializationException;
 import org.apache.http.entity.InputStreamEntity;
+import org.apache.http.impl.client.HttpClientBuilder;
+import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
+import org.apache.http.impl.conn.SystemDefaultRoutePlanner;
 import org.apache.http.protocol.HTTP;
 
 import com.netflix.config.DynamicBooleanProperty;
@@ -45,6 +61,39 @@ public class GenericWhitelistedProxy extends AbstractResponseGenerator {
     private static final String API_AUTH = "X-API-AUTH-HEADER";
     private static final Set<String> BAD_HEADERS = new HashSet<>(Arrays.asList(HTTP.TARGET_HOST.toLowerCase(), "authorization",
             HTTP.TRANSFER_ENCODING.toLowerCase(), HTTP.CONTENT_LEN.toLowerCase(), API_AUTH.toLowerCase()));
+
+    private static final Executor EXECUTOR;
+
+    static {
+        LayeredConnectionSocketFactory ssl = null;
+        try {
+            ssl = SSLConnectionSocketFactory.getSystemSocketFactory();
+        } catch (final SSLInitializationException ex) {
+            final SSLContext sslcontext;
+            try {
+                sslcontext = SSLContext.getInstance(SSLConnectionSocketFactory.TLS);
+                sslcontext.init(null, null, null);
+                ssl = new SSLConnectionSocketFactory(sslcontext);
+            } catch (final SecurityException ignore) {
+            } catch (final KeyManagementException ignore) {
+            } catch (final NoSuchAlgorithmException ignore) {
+            }
+        }
+
+        final Registry<ConnectionSocketFactory> sfr = RegistryBuilder.<ConnectionSocketFactory>create()
+            .register("http", PlainConnectionSocketFactory.getSocketFactory())
+            .register("https", ssl != null ? ssl : SSLConnectionSocketFactory.getSocketFactory())
+            .build();
+
+        PoolingHttpClientConnectionManager cm = new PoolingHttpClientConnectionManager(sfr);
+        cm.setDefaultMaxPerRoute(100);
+        cm.setMaxTotal(200);
+        HttpClient httpClient = HttpClientBuilder.create()
+                .setConnectionManager(cm)
+                .setRoutePlanner(new SystemDefaultRoutePlanner(ProxySelector.getDefault()))
+                .build();
+        EXECUTOR = Executor.newInstance(httpClient);
+    }
 
     @SuppressWarnings("unchecked")
     @Override
@@ -147,7 +196,7 @@ public class GenericWhitelistedProxy extends AbstractResponseGenerator {
             temp.body(entity);
         }
 
-        Response res = temp.execute();
+        Response res = EXECUTOR.execute(temp);
 
         res.handleResponse(new ResponseHandler<Object>() {
             @Override
