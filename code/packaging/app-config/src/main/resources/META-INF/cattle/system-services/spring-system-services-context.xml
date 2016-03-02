@@ -1,3 +1,4 @@
+
 <beans xmlns="http://www.springframework.org/schema/beans"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xmlns:aop="http://www.springframework.org/schema/aop"
@@ -436,6 +437,7 @@
     <bean class="io.cattle.platform.servicediscovery.process.ServiceLinkPreInstanceStateHandler" />
     <bean class="io.cattle.platform.servicediscovery.process.LoadBalancerServiceUpdateConfig" />
     <bean class="io.cattle.platform.servicediscovery.process.LoadBalancerInstanceStart" />
+    <bean class="io.cattle.platform.servicediscovery.process.StackHealthStateUpdate" />
 
     <bean class="io.cattle.platform.servicediscovery.dao.impl.ServiceConsumeMapDaoImpl" />
     <bean class="io.cattle.platform.servicediscovery.dao.impl.ServiceExposeMapDaoImpl">

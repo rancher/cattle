@@ -201,6 +201,17 @@ public interface Service extends java.io.Serializable {
 	@javax.persistence.Column(name = "external_id", length = 255)
 	public java.lang.String getExternalId();
 
+	/**
+	 * Setter for <code>cattle.service.health_state</code>.
+	 */
+	public void setHealthState(java.lang.String value);
+
+	/**
+	 * Getter for <code>cattle.service.health_state</code>.
+	 */
+	@javax.persistence.Column(name = "health_state", length = 128)
+	public java.lang.String getHealthState();
+
 	// -------------------------------------------------------------------------
 	// FROM and INTO
 	// -------------------------------------------------------------------------

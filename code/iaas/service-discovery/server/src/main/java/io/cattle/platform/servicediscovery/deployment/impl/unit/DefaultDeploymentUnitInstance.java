@@ -61,7 +61,7 @@ public class DefaultDeploymentUnitInstance extends DeploymentUnitInstance implem
                 InstanceConstants.FIELD_LABELS);
         if (serviceLabels != null) {
             String startOnceLabel = ((Map<String, String>) serviceLabels)
-                    .get(ServiceDiscoveryConstants.LABEL_SERVICE_CONTAINER_CREATE_ONLY);
+                    .get(ServiceDiscoveryConstants.LABEL_SERVICE_CONTAINER_START_ONCE);
             if (StringUtils.equalsIgnoreCase(startOnceLabel, "true")) {
                 startOnce = true;
             }

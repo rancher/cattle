@@ -438,6 +438,7 @@
         "service.publicEndpoints" : "r",
         "service.retainIp" : "cr",
         "service.assignServiceIpAddress" : "cr",
+        "service.healthState": "r",
 
         "addRemoveServiceLinkInput" : "r",
         "addRemoveServiceLinkInput.serviceLink" : "cr",
@@ -612,6 +613,7 @@
         "environmentUpgrade.rancherCompose" : "cr",
         "environmentUpgrade.environment" : "cr",
         "environmentUpgrade.externalId" : "cr",
+        "environment.healthState": "r",
 
         "publicEndpoint" : "r",
         "publicEndpoint.ipAddress" : "r",

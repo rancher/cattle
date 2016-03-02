@@ -9,6 +9,9 @@ public class HealthcheckConstants {
     public static final String HEALTH_STATE_INITIALIZING = "initializing";
     public static final String HEALTH_STATE_REINITIALIZING = "reinitializing";
 
+    public static final String SERVICE_HEALTH_STATE_DEGRADED = "degraded";
+    public static final String SERVICE_HEALTH_STATE_STARTED_ONCE = "started-once";
+
     public static final String PROCESS_UPDATE_HEALTHY = "instance.updatehealthy";
     public static final String PROCESS_UPDATE_UNHEALTHY = "instance.updateunhealthy";
     public static final String PROCESS_UPDATE_REINITIALIZING = "instance.updatereinitializing";

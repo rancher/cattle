@@ -1551,6 +1551,7 @@ def test_svc_discovery_service(admin_user_client, user_client, project_client):
         'publicEndpoints': 'r',
         'retainIp': 'r',
         'assignServiceIpAddress': 'r',
+        'healthState': 'r',
     })
 
     auth_check(user_client.schema, 'service', 'r', {
@@ -1571,6 +1572,7 @@ def test_svc_discovery_service(admin_user_client, user_client, project_client):
         'publicEndpoints': 'r',
         'retainIp': 'r',
         'assignServiceIpAddress': 'r',
+        'healthState': 'r',
 
     })
 
@@ -1592,6 +1594,7 @@ def test_svc_discovery_service(admin_user_client, user_client, project_client):
         'publicEndpoints': 'r',
         'retainIp': 'cr',
         'assignServiceIpAddress': 'cr',
+        'healthState': 'r',
     })
 
 
@@ -1608,6 +1611,7 @@ def test_svc_discovery_environment(admin_user_client, user_client,
         'previousExternalId': 'r',
         'outputs': 'r',
         'startOnCreate': 'r',
+        'healthState': 'r',
     })
 
     auth_check(user_client.schema, 'environment', 'r', {
@@ -1620,6 +1624,7 @@ def test_svc_discovery_environment(admin_user_client, user_client,
         'previousExternalId': 'r',
         'outputs': 'r',
         'startOnCreate': 'r',
+        'healthState': 'r',
     })
 
     auth_check(project_client.schema, 'environment', 'crud', {
@@ -1632,6 +1637,7 @@ def test_svc_discovery_environment(admin_user_client, user_client,
         'previousExternalId': 'cru',
         'outputs': 'cru',
         'startOnCreate': 'cr',
+        'healthState': 'r',
     })
 
 
@@ -1656,6 +1662,7 @@ def test_svc_discovery_lb_service(admin_user_client, user_client,
         'publicEndpoints': 'r',
         'retainIp': 'r',
         'assignServiceIpAddress': 'r',
+        'healthState': 'r',
     })
 
     auth_check(user_client.schema, 'loadBalancerService', 'r', {
@@ -1676,6 +1683,7 @@ def test_svc_discovery_lb_service(admin_user_client, user_client,
         'publicEndpoints': 'r',
         'retainIp': 'r',
         'assignServiceIpAddress': 'r',
+        'healthState': 'r',
     })
 
     auth_check(project_client.schema, 'loadBalancerService', 'crud', {
@@ -1696,6 +1704,7 @@ def test_svc_discovery_lb_service(admin_user_client, user_client,
         'publicEndpoints': 'r',
         'retainIp': 'cr',
         'assignServiceIpAddress': 'cr',
+        'healthState': 'r',
     })
 
 
@@ -1874,7 +1883,8 @@ def test_svc_discovery_external_service(admin_user_client, user_client,
         'healthCheck': 'r',
         'metadata': 'r',
         'launchConfig': 'r',
-        'fqdn': 'r'
+        'fqdn': 'r',
+        'healthState': 'r',
     })
 
     auth_check(user_client.schema, 'externalService', 'r', {
@@ -1888,7 +1898,8 @@ def test_svc_discovery_external_service(admin_user_client, user_client,
         'healthCheck': 'r',
         'metadata': 'r',
         'launchConfig': 'r',
-        'fqdn': 'r'
+        'fqdn': 'r',
+        'healthState': 'r',
     })
 
     auth_check(project_client.schema, 'externalService', 'crud', {
@@ -1902,7 +1913,8 @@ def test_svc_discovery_external_service(admin_user_client, user_client,
         'healthCheck': 'cr',
         'metadata': 'cru',
         'launchConfig': 'cr',
-        'fqdn': 'r'
+        'fqdn': 'r',
+        'healthState': 'r',
     })
 
 
@@ -2343,6 +2355,7 @@ def test_kubernetes_service(admin_user_client, user_client, project_client):
         'vip': 'r',
         'selectorContainer': 'r',
         'template': 'r',
+        'healthState': 'r',
     })
 
     auth_check(user_client.schema, 'kubernetesService', 'r', {
@@ -2353,6 +2366,7 @@ def test_kubernetes_service(admin_user_client, user_client, project_client):
         'vip': 'r',
         'selectorContainer': 'r',
         'template': 'r',
+        'healthState': 'r',
     })
 
     auth_check(project_client.schema, 'kubernetesService', 'r', {
@@ -2363,4 +2377,5 @@ def test_kubernetes_service(admin_user_client, user_client, project_client):
         'vip': 'r',
         'selectorContainer': 'r',
         'template': 'r',
+        'healthState': 'r',
     })
