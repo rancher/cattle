@@ -7,6 +7,18 @@
             "nullable": false,
             "minLength": 1,
             "maxLength": 63
+        },
+        "networkMode": {
+            "type": "enum",
+            "options": [
+                "none",
+                "bridge",
+                "host",
+                "managed",
+                "container"
+            ],
+            "default": null,
+            "nullable": true
         }
     }
 }

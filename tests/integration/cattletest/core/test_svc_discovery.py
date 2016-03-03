@@ -186,6 +186,7 @@ def test_activate_single_service(client, context, super_client):
     assert svc.launchConfig.healthCheck.port == 200
     assert svc.metadata == metadata
     assert svc.launchConfig.version == '0'
+    assert svc.launchConfig.networkMode == "managed"
 
     # activate the service and validate that parameters were set for instance
     service = client.wait_success(svc.activate(), 120)
@@ -448,7 +449,8 @@ def test_link_volumes(client, context):
 
     labels = {"io.rancher.container.start_once": "true"}
     secondary_lc = {"imageUuid": image_uuid,
-                    "name": "secondary", "labels": labels}
+                    "name": "secondary", "labels": labels,
+                    "networkMode": "managed"}
 
     service = client.create_service(name=random_str(),
                                     environmentId=env.id,
@@ -474,10 +476,12 @@ def test_volumes_service_links_scale_one(client, context):
     image_uuid = context.image_uuid
     launch_config = {"imageUuid": image_uuid}
     sec_lc_1 = {"imageUuid": image_uuid, "name": "secondary1",
-                "dataVolumesFromLaunchConfigs": ["primary"]}
+                "dataVolumesFromLaunchConfigs": ["primary"],
+                "networkMode": "managed"}
     sec_lc_2 = {"imageUuid": image_uuid, "name": "secondary2",
                 "dataVolumesFromLaunchConfigs":
-                    ["primary", "secondary1"]}
+                    ["primary", "secondary1"],
+                    "networkMode": "managed"}
     service = client. \
         create_service(name="primary",
                        environmentId=env.id,
@@ -510,7 +514,8 @@ def test_volumes_service_links_scale_two(client, context):
     image_uuid = context.image_uuid
     launch_config = {"imageUuid": image_uuid,
                      "dataVolumesFromLaunchConfigs": ["secondary"]}
-    secondary_lc = {"imageUuid": image_uuid, "name": "secondary"}
+    secondary_lc = {"imageUuid": image_uuid, "name": "secondary",
+                    "networkMode": "managed"}
     service = client.create_service(name=random_str(),
                                     environmentId=env.id,
                                     launchConfig=launch_config,
@@ -942,7 +947,8 @@ def test_sidekick_destroy_instance(client, context):
     image_uuid = context.image_uuid
     launch_config = {"imageUuid": image_uuid,
                      "dataVolumesFromLaunchConfigs": ['secondary']}
-    secondary_lc = {"imageUuid": image_uuid, "name": "secondary"}
+    secondary_lc = {"imageUuid": image_uuid, "name": "secondary",
+                    "networkMode": "managed"}
 
     service = client.create_service(name=random_str(),
                                     environmentId=env.id,
@@ -987,7 +993,8 @@ def test_sidekick_restart_instances(client, context):
     env = _create_stack(client)
     image_uuid = context.image_uuid
     launch_config = {"imageUuid": image_uuid}
-    secondary_lc = {"imageUuid": image_uuid, "name": "secondary"}
+    secondary_lc = {"imageUuid": image_uuid, "name": "secondary",
+                    "networkMode": "managed"}
 
     service = client.create_service(name=random_str(),
                                     environmentId=env.id,
@@ -1029,7 +1036,8 @@ def test_sidekick_scaleup(client, context):
 
     image_uuid = context.image_uuid
     launch_config = {"imageUuid": image_uuid}
-    secondary_lc = {"imageUuid": image_uuid, "name": "secondary"}
+    secondary_lc = {"imageUuid": image_uuid, "name": "secondary",
+                    "networkMode": "managed"}
 
     service = client.create_service(name=random_str(),
                                     environmentId=env.id,
@@ -1443,7 +1451,8 @@ def test_network_from_service(client, context):
     image_uuid = context.image_uuid
     launch_config = {"imageUuid": image_uuid, "networkMode": 'container',
                      "networkLaunchConfig": "secondary"}
-    secondary_lc = {"imageUuid": image_uuid, "name": "secondary"}
+    secondary_lc = {"imageUuid": image_uuid, "name": "secondary",
+                    "networkMode": "managed"}
 
     service = client.create_service(name=random_str(),
                                     environmentId=env.id,
@@ -1683,7 +1692,8 @@ def test_anti_affinity_sidekick(new_context):
     }
     secondary_lc = {
         "imageUuid": image_uuid,
-        "name": "secondary"
+        "name": "secondary",
+        "networkMode": "managed"
     }
 
     service = client.create_service(name=service_name,
@@ -1866,8 +1876,10 @@ def test_indirect_ref_sidekick_destroy_instance(client, context):
     launch_config = {"imageUuid": image_uuid,
                      "dataVolumesFromLaunchConfigs": ['secondary']}
     secondary_lc = {"imageUuid": image_uuid, "name": "secondary",
-                    "dataVolumesFromLaunchConfigs": ['secondary1']}
-    secondary_lc1 = {"imageUuid": image_uuid, "name": "secondary1"}
+                    "dataVolumesFromLaunchConfigs": ['secondary1'],
+                    "networkMode": "managed"}
+    secondary_lc1 = {"imageUuid": image_uuid, "name": "secondary1",
+                     "networkMode": "managed"}
 
     service = client.create_service(name=random_str(),
                                     environmentId=env.id,
@@ -2125,7 +2137,8 @@ def test_stop_network_from_container(client, context, super_client):
     image_uuid = context.image_uuid
     launch_config = {"imageUuid": image_uuid, "networkMode": 'container',
                      "networkLaunchConfig": "secondary"}
-    secondary_lc = {"imageUuid": image_uuid, "name": "secondary"}
+    secondary_lc = {"imageUuid": image_uuid, "name": "secondary",
+                    "networkMode": "managed"}
 
     service = client.create_service(name=random_str(),
                                     environmentId=env.id,
@@ -2175,9 +2188,10 @@ def test_remove_network_from_container(client, context, super_client):
     env = _create_stack(client)
     svc_name = random_str()
     image_uuid = context.image_uuid
-    launch_config = {"imageUuid": image_uuid, "networkMode": 'container'}
+    launch_config = {"imageUuid": image_uuid, "networkMode": 'managed'}
     secondary_lc = {"imageUuid": image_uuid, "name": "secondary",
-                    "networkLaunchConfig": svc_name}
+                    "networkLaunchConfig": svc_name,
+                    "networkMode": "container"}
 
     service = client.create_service(name=svc_name,
                                     environmentId=env.id,
@@ -2186,8 +2200,8 @@ def test_remove_network_from_container(client, context, super_client):
                                     secondaryLaunchConfigs=[secondary_lc])
     service = client.wait_success(service)
     assert len(service.secondaryLaunchConfigs) == 1
-    assert service.launchConfig.networkMode == 'container'
-    assert service.secondaryLaunchConfigs[0].networkMode == 'managed'
+    assert service.launchConfig.networkMode == 'managed'
+    assert service.secondaryLaunchConfigs[0].networkMode == 'container'
 
     service = client.wait_success(service.activate(), 120)
 
@@ -2279,7 +2293,8 @@ def test_service_restart(client, context):
 
     image_uuid = context.image_uuid
     launch_config = {"imageUuid": image_uuid}
-    secondary_lc = {"imageUuid": image_uuid, "name": "secondary"}
+    secondary_lc = {"imageUuid": image_uuid, "name": "secondary",
+                    "networkMode": "managed"}
     service = client.create_service(name=random_str(),
                                     environmentId=env.id,
                                     launchConfig=launch_config,
@@ -2431,7 +2446,8 @@ def test_random_ports_sidekicks(new_context):
     image_uuid = new_context.image_uuid
     launch_config = {"imageUuid": image_uuid, "ports": ['6666', '7775']}
     secondary_lc = {"imageUuid": image_uuid,
-                    "name": "secondary", "ports": ['6666']}
+                    "name": "secondary", "ports": ['6666'],
+                    "networkMode": "managed"}
 
     svc = client.create_service(name=random_str(),
                                 environmentId=env.id,
@@ -2692,3 +2708,22 @@ def _wait_for_compose_instance_start(client, service, env,
         lambda: len(client.list_container(name=name, state='running')) > 0
     )
     return client.list_container(name=name, state='running')[0]
+
+
+def test_sidekick_network_mode(client, context):
+    env = _create_stack(client)
+    image_uuid = context.image_uuid
+    launch_config = {"imageUuid": image_uuid}
+    secondary_lc = {"imageUuid": image_uuid, "name": "secondary"}
+
+    service = client.create_service(name=random_str(),
+                                    environmentId=env.id,
+                                    launchConfig=launch_config,
+                                    scale=2,
+                                    secondaryLaunchConfigs=[secondary_lc])
+    service = client.wait_success(service)
+
+    assert service.launchConfig.networkMode == 'managed'
+    slc = service.secondaryLaunchConfigs[0]
+    assert slc.networkMode == 'container'
+    assert slc.networkLaunchConfig == service.name

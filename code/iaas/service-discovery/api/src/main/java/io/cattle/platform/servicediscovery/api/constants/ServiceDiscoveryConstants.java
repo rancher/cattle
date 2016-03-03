@@ -11,7 +11,6 @@ public class ServiceDiscoveryConstants {
 
     public static final String TYPE_ENVIRONMENT = "environment";
     public static final String FIELD_SCALE = "scale";
-    public static final String FIELD_NETWORK_ID = "networkId";
     public static final String FIELD_SERVICE_ID = "serviceId";
     public static final String FIELD_SERVICE_IDS = "serviceIds";
     public static final String FIELD_UPGRADE = "upgrade";
