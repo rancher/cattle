@@ -86,21 +86,33 @@ public class HealthcheckServiceImpl implements HealthcheckService {
         lockManager.lock(new HealthcheckInstanceLock(hcihm.getHealthcheckInstanceId()), new LockCallbackNoReturn() {
             @Override
             public void doWithLockNoResult() {
-                processHealthcheckInstance(updatedHcihm, externalTimestamp, healthState);
+                processHealthcheckInstance(updatedHcihm, healthState);
             }
         });
     }
 
-    protected void processHealthcheckInstance(HealthcheckInstanceHostMap hcihm, long externalTimestamp,
-            String healthState) {
+    @Override
+    public void healthCheckReconcile(final HealthcheckInstanceHostMap hcihm, final String healthState) {
+        final HealthcheckInstance hcInstance = objectManager.loadResource(HealthcheckInstance.class,
+                hcihm.getHealthcheckInstanceId());
+        lockManager.lock(new HealthcheckInstanceLock(hcInstance.getId()), new LockCallbackNoReturn() {
+            @Override
+            public void doWithLockNoResult() {
+                processHealthcheckInstance(hcihm, healthState);
+            }
+        });
+    }
+
+    protected void processHealthcheckInstance(HealthcheckInstanceHostMap hcihm, String healthState) {
         HealthcheckInstance hcInstance = objectManager.loadResource(HealthcheckInstance.class, hcihm.getHealthcheckInstanceId());
-        String updateWithState = determineNewHealthState(hcInstance, hcihm, externalTimestamp, healthState);
+        String updateWithState = determineNewHealthState(hcInstance, hcihm, healthState);
         if (updateWithState == null) {
             return;
         }
         Instance instance = objectManager.loadResource(Instance.class, hcInstance.getInstanceId());
         updateInstanceHealthState(instance, updateWithState);
     }
+
 
     protected boolean shouldUpdate(HealthcheckInstanceHostMap hcihm, long externalTimestamp, String healthState) {
         HealthcheckInstance hcInstance = objectManager.loadResource(HealthcheckInstance.class,
@@ -122,7 +134,7 @@ public class HealthcheckServiceImpl implements HealthcheckService {
     }
 
     protected String determineNewHealthState(HealthcheckInstance hcInstance, HealthcheckInstanceHostMap hcihm,
-            long externalTimestamp, String healthState) {
+            String healthState) {
         List<HealthcheckInstanceHostMap> others = objectManager.find(HealthcheckInstanceHostMap.class,
                 HEALTHCHECK_INSTANCE_HOST_MAP.HEALTHCHECK_INSTANCE_ID, hcInstance.getId(),
                 HEALTHCHECK_INSTANCE_HOST_MAP.STATE, CommonStatesConstants.ACTIVE);
