@@ -1,5 +1,12 @@
 package io.cattle.platform.iaas.api.dashboard;
 
+import static io.cattle.platform.core.model.tables.AuditLogTable.*;
+import static io.cattle.platform.core.model.tables.EnvironmentTable.*;
+import static io.cattle.platform.core.model.tables.HostTable.*;
+import static io.cattle.platform.core.model.tables.InstanceTable.*;
+import static io.cattle.platform.core.model.tables.ProcessInstanceTable.*;
+import static io.cattle.platform.core.model.tables.ServiceTable.*;
+
 import io.cattle.platform.core.model.AuditLog;
 import io.cattle.platform.core.model.Environment;
 import io.cattle.platform.core.model.Host;
@@ -12,27 +19,47 @@ import java.util.List;
 public class DashBoardDaoImpl extends AbstractJooqDao implements DashBoardDao {
     @Override
     public List<AuditLog> getAuditLogs(int numLogsToGet) {
-        return null;
+        return create()
+                .selectFrom(AUDIT_LOG)
+                .orderBy(AUDIT_LOG.CREATED.desc())
+                .limit(numLogsToGet)
+                .fetchInto(AuditLog.class);
     }
 
     @Override
     public List<Host> getAllHosts(long accountID) {
-        return null;
+        return create()
+                .selectFrom(HOST)
+                .where(HOST.ACCOUNT_ID.eq(accountID)
+                .and(HOST.REMOVED.isNull()))
+                .fetchInto(Host.class);
     }
 
     @Override
     public List<Service> getAllServices(long accountID) {
-        return null;
+        return create()
+                .selectFrom(SERVICE)
+                .where(SERVICE.ACCOUNT_ID.eq(accountID))
+                .fetchInto(Service.class);
     }
 
     @Override
     public List<Environment> getAllStacks(long accountID) {
-        return null;
+        return create()
+                .selectFrom(ENVIRONMENT)
+                .where(ENVIRONMENT.ACCOUNT_ID.eq(accountID)
+                        .and(ENVIRONMENT.REMOVED.isNull()))
+                .fetchInto(Environment.class);
     }
 
     @Override
     public List<Instance> getAllContainers(long accountID) {
-        return null;
+        return create()
+                .selectFrom(INSTANCE)
+                .where(INSTANCE.ACCOUNT_ID.eq(accountID)
+                        .and(INSTANCE.KIND.equalIgnoreCase("container")
+                        .and(INSTANCE.REMOVED.isNull())))
+                .fetchInto(Instance.class);
     }
 
     @Override
@@ -42,11 +69,11 @@ public class DashBoardDaoImpl extends AbstractJooqDao implements DashBoardDao {
 
     @Override
     public long getCurrentProcesses(long accountID) {
-        return 0;
+        return create().selectFrom(PROCESS_INSTANCE).where(PROCESS_INSTANCE.END_TIME.isNull()).fetchCount();
     }
 
     @Override
     public long getRecentProcesses(long accountID) {
-        return 0;
+        return create().selectFrom(PROCESS_INSTANCE).fetchCount();
     }
 }

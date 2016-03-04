@@ -1,21 +1,23 @@
 package io.cattle.platform.iaas.api.dashboard;
 
-import static sun.jvm.hotspot.code.CompressedStream.L;
-
 import io.cattle.platform.api.auth.Policy;
 import io.cattle.platform.core.model.Environment;
 import io.cattle.platform.core.model.Host;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.Service;
+import io.cattle.platform.object.util.ObjectUtils;
 import io.github.ibuildthecloud.gdapi.context.ApiContext;
 import io.github.ibuildthecloud.gdapi.exception.ClientVisibleException;
 import io.github.ibuildthecloud.gdapi.factory.SchemaFactory;
+import io.github.ibuildthecloud.gdapi.id.IdFormatter;
+import io.github.ibuildthecloud.gdapi.id.IdFormatterUtils;
 import io.github.ibuildthecloud.gdapi.model.ListOptions;
 import io.github.ibuildthecloud.gdapi.request.resource.impl.AbstractNoOpResourceManager;
 import io.github.ibuildthecloud.gdapi.util.ResponseCodes;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import javax.inject.Inject;
@@ -24,6 +26,9 @@ public class DashboardResourceManager extends AbstractNoOpResourceManager {
 
     @Inject
     DashBoardDao dashBoardDao;
+
+    @Inject
+    IdFormatter idformatter;
 
     @Override
     public Class<?>[] getTypeClasses() {
@@ -43,7 +48,7 @@ public class DashboardResourceManager extends AbstractNoOpResourceManager {
         }
         long accountID = policy.getAccountId();
 
-        int numBuckets = 10;
+        int numBuckets = 1;
 
         List<Host> hosts = dashBoardDao.getAllHosts(accountID);
         List<Service> services = dashBoardDao.getAllServices(accountID);
@@ -61,20 +66,116 @@ public class DashboardResourceManager extends AbstractNoOpResourceManager {
     }
 
     private Map<String, Map<String, Long>> getStates(List<Host> hosts, List<Service> services, List<Environment> stacks, List<Instance> containers) {
-        return null;
+        Map<String, Map<String, Long>> states = new HashMap<>();
+        Map<String, Long> hostStates = new HashMap<>();
+        for (Host host: hosts) {
+            Long count = hostStates.get(host.getState());
+            if (count == null) {
+                count = 0L;
+            }
+            count++;
+            hostStates.put(host.getState(), count);
+        }
+        states.put("hosts", hostStates);
+        Map<String, Long> serviceStates = new HashMap<>();
+        for (Service service: services) {
+            Long count = serviceStates.get(service.getState());
+            if (count == null) {
+                count = 0L;
+            }
+            count++;
+            serviceStates.put(service.getState(), count);
+        }
+        states.put("services", serviceStates);
+        Map<String, Long> stackStates = new HashMap<>();
+        for (Environment stack: stacks) {
+            Long count = stackStates.get(stack.getState());
+            if (count == null) {
+                count = 0L;
+            }
+            count++;
+            stackStates.put(stack.getState(), count);
+        }
+        states.put("stacks", stackStates);
+        Map<String, Long> containerStates = new HashMap<>();
+        for (Instance containter: containers) {
+            Long count = containerStates.get(containter.getState());
+            if (count == null) {
+                count = 0L;
+            }
+            count++;
+            containerStates.put(containter.getState(), count);
+        }
+        states.put("containers", containerStates);
+        return states;
     }
 
+    @SuppressWarnings("unchecked")
     private HostInfo getHostInfo(List<Host> hosts, int numBuckets) {
         List<Bucket> cores = newListOfBuckets(numBuckets);
+        for (Host host : hosts) {
+            for (Double corePercent :
+                    (List<Double>) ObjectUtils.getValue(
+                            ObjectUtils.getValue(
+                                    ObjectUtils.getValue(host, "info"), "cpuInfo"), "cpuCoresPercentages")) {
+                for (Bucket bucket : cores) {
+                    if (bucket.addValue(
+                            corePercent ,
+                            String.valueOf(IdFormatterUtils.getFormatter(idformatter).formatId(host.getKind(), host.getId())))) {
+                        break;
+                    }
+                }
+            }
+        }
         List<Bucket> memory = newListOfBuckets(numBuckets);
+        for (Host host : hosts) {
+            Map<String, Double> memInfo = ((Map<String, Double>) ObjectUtils.getValue(ObjectUtils.getValue(host, "info"), "memoryInfo"));
+            Double memTotal = memInfo.get("memTotal");
+            Double memFree = memInfo.get("memFree");
+            Double buffers = memInfo.get("buffers");
+            Double cached = memInfo.get("cached");
+            Double memUsed = ((memTotal-memFree-buffers-cached)/memTotal) * 100;
+            for (Bucket bucket : cores) {
+                if (bucket.addValue(
+                        clampPercent(memUsed),
+                        String.valueOf(IdFormatterUtils.getFormatter(idformatter).formatId(host.getKind(), host.getId())))) {
+                    break;
+                }
+            }
+        }
         List<Bucket> mounts = newListOfBuckets(numBuckets);
+        putHostsInBuckets(mounts, hosts);
         List<Bucket> networkIn = newListOfBuckets(numBuckets);
         List<Bucket> networkOut = newListOfBuckets(numBuckets);
-        return new HostInfo(cores, memory, mounts, networkIn, networkOut, 0L, 0L, 0L, 0L, 0L, 0L);
+        return new HostInfo(cores, memory, mounts, networkIn, networkOut, 0L, 0L, 0L, 0L, 0L, countAllBuckets(cores));
+    }
+
+    private void putHostsInBuckets(List<Bucket> cores, List<Host> hosts) {
+        for (Host host : hosts) {
+            for (Double corePercent : (List<Double>) ObjectUtils.getValue(ObjectUtils.getValue(ObjectUtils.getValue(host, "info"), "cpuInfo"), "cpuCoresPercentages")) {
+                for (Bucket bucket : cores) {
+                    if (bucket.addValue(corePercent , String.valueOf(IdFormatterUtils.getFormatter(idformatter).formatId(host.getKind(), host.getId())))) {
+                        break;
+                    }
+                }
+            }
+        }
+    }
+
+    private Double clampPercent(Double toClamp) {
+        return Math.max(0, Math.min(100, toClamp));
+    }
+
+    private long countAllBuckets(List<Bucket> buckets) {
+        long count = 0;
+        for (Bucket bucket: buckets) {
+            count += bucket.getIds().size();
+        }
+        return count;
     }
 
     private List<Bucket> newListOfBuckets(int numBuckets) {
-        List<Bucket> buckets = new ArrayList<Bucket>();
+        List<Bucket> buckets = new ArrayList<>();
         float sizeOfBuckets = 100 / numBuckets;
         for (int i = 0; i < numBuckets; i++) {
             float start = sizeOfBuckets * i;

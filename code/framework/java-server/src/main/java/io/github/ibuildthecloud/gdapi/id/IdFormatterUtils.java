@@ -1,5 +1,6 @@
 package io.github.ibuildthecloud.gdapi.id;
 
+import io.github.ibuildthecloud.gdapi.context.ApiContext;
 import io.github.ibuildthecloud.gdapi.model.Field;
 import io.github.ibuildthecloud.gdapi.model.FieldType;
 
@@ -10,6 +11,12 @@ import java.util.Map;
 
 public class IdFormatterUtils {
 
+    public static IdFormatter getFormatter(IdFormatter idformatter) {
+        if (ApiContext.getContext() !=  null && ApiContext.getContext().getIdFormatter() != null) {
+            return ApiContext.getContext().getIdFormatter();
+        }
+        return idformatter;
+    }
     public static Object formatReference(Field field, IdFormatter formatter, Object value) {
         return formatReference(field.getTypeEnum(), field.getSubTypeEnums(), field.getSubTypes(), formatter, value);
     }
