@@ -2,6 +2,7 @@ package io.cattle.platform.servicediscovery.api.filter;
 
 import static io.cattle.platform.core.model.tables.ServiceTable.*;
 import io.cattle.platform.core.addon.InstanceHealthCheck;
+import io.cattle.platform.core.addon.ScalePolicy;
 import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.dao.NetworkDao;
@@ -11,6 +12,7 @@ import io.cattle.platform.core.util.PortSpec;
 import io.cattle.platform.iaas.api.filter.common.AbstractDefaultResourceManagerFilter;
 import io.cattle.platform.json.JsonMapper;
 import io.cattle.platform.object.ObjectManager;
+import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.object.util.DataUtils;
 import io.cattle.platform.servicediscovery.api.constants.ServiceDiscoveryConstants;
 import io.cattle.platform.servicediscovery.api.dao.ServiceExposeMapDao;
@@ -82,6 +84,8 @@ public class ServiceCreateValidationFilter extends AbstractDefaultResourceManage
         validatePorts(service, type, request);
 
         request = setHealthCheck(type, request);
+        
+        validateScalePolicy(service, request, false);
 
         return super.create(type, request, next);
     }
@@ -101,6 +105,39 @@ public class ServiceCreateValidationFilter extends AbstractDefaultResourceManage
                     }
                 }
             }
+        }
+    }
+    
+    protected void validateScalePolicy(Service service, ApiRequest request, boolean forUpdate) {
+        Integer scale = DataUtils.getFieldFromRequest(request,
+                ServiceDiscoveryConstants.FIELD_SCALE,
+                Integer.class);
+        if (scale == null && forUpdate) {
+            scale = DataAccessor.fieldInteger(service, ServiceDiscoveryConstants.FIELD_SCALE);
+        }
+
+        if (scale == null) {
+            return;
+        }
+
+        Object policyObj = DataUtils.getFieldFromRequest(request,
+                ServiceDiscoveryConstants.FIELD_SCALE_POLICY,
+                Object.class);
+        ScalePolicy policy = null;
+        if (policyObj != null) {
+            policy = jsonMapper.convertValue(policyObj,
+                    ScalePolicy.class);
+        } else if (forUpdate) {
+            policy = DataAccessor.field(service,
+                    ServiceDiscoveryConstants.FIELD_SCALE_POLICY, jsonMapper, ScalePolicy.class);
+        }
+        if (policy == null) {
+            return;
+        }
+
+        if (policy.getMin().intValue() > policy.getMax().intValue()) {
+            throw new ValidationErrorException(ValidationErrorCodes.MAX_LIMIT_EXCEEDED,
+                    "Min scale can't exceed scale");
         }
     }
 
@@ -210,6 +247,7 @@ public class ServiceCreateValidationFilter extends AbstractDefaultResourceManage
 
         validateLaunchConfigs(service, request);
         validateSelector(request);
+        validateScalePolicy(service, request, true);
 
         return super.update(type, id, request, next);
     }

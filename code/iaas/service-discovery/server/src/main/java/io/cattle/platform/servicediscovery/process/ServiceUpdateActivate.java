@@ -17,6 +17,7 @@ import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.process.common.handler.AbstractObjectProcessHandler;
 import io.cattle.platform.process.progress.ProcessProgress;
 import io.cattle.platform.servicediscovery.api.constants.ServiceDiscoveryConstants;
+import io.cattle.platform.servicediscovery.api.dao.ServiceExposeMapDao;
 import io.cattle.platform.servicediscovery.deployment.DeploymentManager;
 import io.github.ibuildthecloud.gdapi.id.IdFormatter;
 
@@ -52,6 +53,9 @@ public class ServiceUpdateActivate extends AbstractObjectProcessHandler {
 
     @Inject
     AuditService auditSvc;
+
+    @Inject
+    ServiceExposeMapDao exposeDao;
 
     @Override
     public String[] getProcessNames() {
@@ -98,7 +102,8 @@ public class ServiceUpdateActivate extends AbstractObjectProcessHandler {
             }
         }
 
-        return null;
+        int currentScale = exposeDao.listServiceInstances(service.getId()).size();
+        return new HandlerResult(ServiceDiscoveryConstants.FIELD_CURRENT_SCALE, currentScale);
     }
 
     protected String obfuscateId(TimeoutException ex) {

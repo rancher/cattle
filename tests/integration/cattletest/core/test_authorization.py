@@ -188,6 +188,7 @@ def test_user_types(user_client, adds=set(), removes=set()):
         'volumeSnapshotInput',
         'nfsConfig',
         'blkioDeviceOption',
+        'scalePolicy',
     }
     types.update(adds)
     types.difference_update(removes)
@@ -407,6 +408,7 @@ def test_admin_types(admin_user_client, adds=set(), removes=set()):
         'volumeSnapshotInput',
         'nfsConfig',
         'blkioDeviceOption',
+        'scalePolicy'
     }
     types.update(adds)
     types.difference_update(removes)
@@ -1656,6 +1658,8 @@ def test_svc_discovery_service(admin_user_client, user_client, project_client,
         'assignServiceIpAddress': 'r',
         'healthState': 'r',
         'startOnCreate': 'r',
+        'scalePolicy': 'r',
+        'currentScale': 'r',
     })
 
     auth_check(user_client.schema, 'service', 'r', {
@@ -1678,6 +1682,8 @@ def test_svc_discovery_service(admin_user_client, user_client, project_client,
         'assignServiceIpAddress': 'r',
         'healthState': 'r',
         'startOnCreate': 'r',
+        'scalePolicy': 'r',
+        'currentScale': 'r',
     })
 
     auth_check(project_client.schema, 'service', 'crud', {
@@ -1700,6 +1706,8 @@ def test_svc_discovery_service(admin_user_client, user_client, project_client,
         'assignServiceIpAddress': 'cr',
         'healthState': 'r',
         'startOnCreate': 'cr',
+        'scalePolicy': 'cru',
+        'currentScale': 'r',
     })
 
     resource_action_check(user_client.schema, 'service', [
@@ -1877,6 +1885,8 @@ def test_svc_discovery_lb_service(admin_user_client, user_client,
         'assignServiceIpAddress': 'r',
         'healthState': 'r',
         'startOnCreate': 'r',
+        'scalePolicy': 'r',
+        'currentScale': 'r',
     })
 
     auth_check(user_client.schema, 'loadBalancerService', 'r', {
@@ -1899,6 +1909,8 @@ def test_svc_discovery_lb_service(admin_user_client, user_client,
         'assignServiceIpAddress': 'r',
         'healthState': 'r',
         'startOnCreate': 'r',
+        'scalePolicy': 'r',
+        'currentScale': 'r',
     })
 
     auth_check(project_client.schema, 'loadBalancerService', 'crud', {
@@ -1921,6 +1933,8 @@ def test_svc_discovery_lb_service(admin_user_client, user_client,
         'assignServiceIpAddress': 'cr',
         'healthState': 'r',
         'startOnCreate': 'cr',
+        'scalePolicy': 'cru',
+        'currentScale': 'r',
     })
 
 
@@ -2592,6 +2606,8 @@ def test_compose_service(admin_user_client, user_client, project_client):
         'selectorLink': 'r',
         'scale': 'r',
         'publicEndpoints': 'r',
+        'scalePolicy': 'r',
+        'currentScale': 'r',
     })
 
     auth_check(user_client.schema, 'composeService', 'r', {
@@ -2608,6 +2624,8 @@ def test_compose_service(admin_user_client, user_client, project_client):
         'selectorLink': 'r',
         'scale': 'r',
         'publicEndpoints': 'r',
+        'scalePolicy': 'r',
+        'currentScale': 'r',
     })
 
     auth_check(project_client.schema, 'composeService', 'rd', {
@@ -2624,6 +2642,8 @@ def test_compose_service(admin_user_client, user_client, project_client):
         'selectorLink': 'r',
         'scale': 'r',
         'publicEndpoints': 'r',
+        'scalePolicy': 'r',
+        'currentScale': 'r',
     })
 
 

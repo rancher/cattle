@@ -18,8 +18,17 @@ public class DefaultServiceDeploymentPlanner extends ServiceDeploymentPlanner {
             DeploymentServiceContext context) {
         super(services, units, context);
         for (Service service : services) {
-            int scale = DataAccessor.fieldInteger(service,
-                    ServiceDiscoveryConstants.FIELD_SCALE);
+            int scale;
+            // internal desired scale populated by scale policy driven deployment
+            Integer scaleInternal = DataAccessor.fieldInteger(service,
+                    ServiceDiscoveryConstants.FIELD_DESIRED_SCALE_INTERNAL);
+            if (scaleInternal != null) {
+                scale = scaleInternal;
+            } else {
+                scale = DataAccessor.fieldInteger(service,
+                        ServiceDiscoveryConstants.FIELD_SCALE);
+            }
+
             if (scale > this.requestedScale) {
                 this.requestedScale = scale;
             }

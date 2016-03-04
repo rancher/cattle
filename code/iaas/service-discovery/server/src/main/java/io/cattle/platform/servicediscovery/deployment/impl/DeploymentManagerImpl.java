@@ -6,6 +6,7 @@ import io.cattle.platform.configitem.model.Client;
 import io.cattle.platform.configitem.model.ItemVersion;
 import io.cattle.platform.configitem.request.ConfigUpdateRequest;
 import io.cattle.platform.configitem.version.ConfigItemStatusManager;
+import io.cattle.platform.core.addon.ScalePolicy;
 import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.dao.ServiceDao;
 import io.cattle.platform.core.model.Service;
@@ -23,6 +24,7 @@ import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.process.ObjectProcessManager;
 import io.cattle.platform.object.process.StandardProcess;
 import io.cattle.platform.object.resource.ResourceMonitor;
+import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.servicediscovery.api.constants.ServiceDiscoveryConstants;
 import io.cattle.platform.servicediscovery.api.dao.ServiceExposeMapDao;
 import io.cattle.platform.servicediscovery.api.util.ServiceDiscoveryUtil;
@@ -47,9 +49,13 @@ import java.util.Map;
 
 import javax.inject.Inject;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 public class DeploymentManagerImpl implements DeploymentManager {
 
     private static final String RECONCILE = "reconcile";
+    private static final Logger log = LoggerFactory.getLogger(DeploymentManagerImpl.class);
 
     @Inject
     LockManager lockManager;
@@ -112,33 +118,125 @@ public class DeploymentManagerImpl implements DeploymentManager {
                 if (!sdSvc.isActiveService(service)) {
                     return false;
                 }
-                // get existing deployment units
-                ServiceDeploymentPlanner planner = getPlanner(services);
-
-                // don't process if there is no need to reconcile
-                boolean needToReconcile = needToReconcile(services, planner);
-
-                if (!needToReconcile) {
-                    return false;
-                }
-
-                if (checkState) {
-                    return !planner.isHealthcheckInitiailizing();
-                }
-
-                activateServices(service, services);
-                activateDeploymentUnits(planner);
-
-                // reload planner as there can be new hosts added for Global services
-                planner = getPlanner(services);
-                if (needToReconcile(services, planner)) {
-                    throw new ServiceReconcileException(
-                            "Failed to do service reconcile for service [" + service.getId() + "]");
-                }
-
-                return false;
+                return reconcileDeployment(service, checkState, services);
             }
+
         });
+    }
+
+    protected boolean reconcileDeployment(final Service service, final boolean checkState,
+            final List<Service> services) {
+        ScalePolicy policy = DataAccessor.field(service,
+                ServiceDiscoveryConstants.FIELD_SCALE_POLICY, mapper, ScalePolicy.class);
+        boolean result = false;
+        if (policy == null) {
+            result = deploy(service, checkState, services);
+        } else {
+            result = deployWithScaleAdjustement(service, checkState, services, policy);
+        }
+        return result;
+    }
+
+    protected boolean deployWithScaleAdjustement(final Service service, final boolean checkState,
+            final List<Service> services, ScalePolicy policy) {
+
+        Integer desiredScaleToReset = null;
+        Integer desiredScaleSet = DataAccessor.fieldInteger(service,
+                ServiceDiscoveryConstants.FIELD_DESIRED_SCALE_INTERNAL);
+        if (desiredScaleSet == null) {
+            desiredScaleToReset = policy.getMin();
+        } else if (desiredScaleSet.intValue() > policy.getMax().intValue()) {
+            desiredScaleToReset = policy.getMax();
+        }
+
+        if (desiredScaleToReset != null) {
+            desiredScaleToReset = setDesiredScaleInternal(service, desiredScaleToReset);
+            log.info("Set service [{}] desired scale to [{}]", service.getUuid(), desiredScaleToReset);
+        }
+
+        return incremenetScaleAndDeploy(service, checkState, services, policy);
+    }
+
+    protected boolean incremenetScaleAndDeploy(final Service service, final boolean checkState,
+            final List<Service> services, ScalePolicy policy) {
+        Integer desiredScale = DataAccessor.fieldInteger(service,
+                ServiceDiscoveryConstants.FIELD_DESIRED_SCALE_INTERNAL);
+        try {
+            deploy(service, checkState, services);
+        } catch (Exception ex) {
+            reduceScaleAndDeploy(service, checkState, services, policy);
+            return false;
+        }
+        if (desiredScale.intValue() < policy.getMax().intValue()) {
+            Integer newDesiredScale = policy.getMax() - desiredScale < policy.getIncrement().intValue() ? policy
+                    .getMax()
+                    : desiredScale
+                            + policy.getIncrement();
+            desiredScale = setDesiredScaleInternal(service, newDesiredScale);
+            log.info("Incremented service [{}] scale to [{}] as reconcile has succeed", service.getUuid(),
+                    desiredScale);
+            incremenetScaleAndDeploy(service, checkState, services, policy);
+        }
+        
+        return false;
+    }
+
+    protected boolean reduceScaleAndDeploy(Service service, boolean checkState, List<Service> services, ScalePolicy policy) {
+        int desiredScale = DataAccessor.fieldInteger(service, ServiceDiscoveryConstants.FIELD_DESIRED_SCALE_INTERNAL).intValue();
+        int minScale = policy.getMin().intValue();
+        int increment = policy.getIncrement().intValue();
+        if (desiredScale >= minScale) {
+            // reduce scale by interval and try to deploy again
+            Integer newDesiredScale = desiredScale - increment <= minScale ? minScale : desiredScale
+                    - policy.getIncrement();
+            desiredScale = setDesiredScaleInternal(service, newDesiredScale);
+            log.info("Decremented service [{}] scale to [{}] as reconcile has failed", service.getUuid(), desiredScale);
+            try {
+                deploy(service, checkState, services);
+            } catch (Exception ex) {
+                if (desiredScale == minScale) {
+                    throw ex;
+                }
+                reduceScaleAndDeploy(service, checkState, services, policy);
+            }
+        }
+        return false;
+    }
+
+    protected Integer setDesiredScaleInternal(Service service, Integer newScale) {
+        service = objectMgr.reload(service);
+        Map<String, Object> data = new HashMap<>();
+        data.put(ServiceDiscoveryConstants.FIELD_DESIRED_SCALE_INTERNAL, newScale);
+        objectMgr.setFields(service, data);
+        return newScale;
+    }
+
+    protected boolean deploy(final Service service, final boolean checkState, final List<Service> services) {
+        // get existing deployment units
+        ServiceDeploymentPlanner planner = getPlanner(services);
+
+        // don't process if there is no need to reconcile
+        boolean needToReconcile = needToReconcile(services, planner);
+
+        if (!needToReconcile) {
+            return false;
+        }
+
+        if (checkState) {
+            return !planner.isHealthcheckInitiailizing();
+        }
+
+        activateServices(service, services);
+        activateDeploymentUnits(planner);
+
+        // reload planner as there can be new hosts added for Global services
+        planner = getPlanner(services);
+        if (needToReconcile(services, planner)) {
+            throw new ServiceReconcileException(
+                    "Failed to do service reconcile for service [" + service.getId() + "]");
+        }
+
+        return false;
     }
     
     private ServiceDeploymentPlanner getPlanner(List<Service> services) {
@@ -295,7 +393,7 @@ public class DeploymentManagerImpl implements DeploymentManager {
             @Override
             public void run() {
                 Service service = objectMgr.loadResource(Service.class, client.getResourceId());
-                if (service != null && sdSvc.isActiveService(service)) {
+                if (service != null && service.getState().equalsIgnoreCase(CommonStatesConstants.ACTIVE)) {
                     activate(service);
                 }
             }
