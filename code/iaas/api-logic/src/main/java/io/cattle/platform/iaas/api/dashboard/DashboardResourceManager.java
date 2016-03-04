@@ -48,7 +48,7 @@ public class DashboardResourceManager extends AbstractNoOpResourceManager {
         }
         long accountID = policy.getAccountId();
 
-        int numBuckets = 1;
+        int numBuckets = 10;
 
         List<Host> hosts = dashBoardDao.getAllHosts(accountID);
         List<Service> services = dashBoardDao.getAllServices(accountID);
@@ -113,6 +113,7 @@ public class DashboardResourceManager extends AbstractNoOpResourceManager {
     @SuppressWarnings("unchecked")
     private HostInfo getHostInfo(List<Host> hosts, int numBuckets) {
         List<Bucket> cores = newListOfBuckets(numBuckets);
+        long totalCores = 0L;
         for (Host host : hosts) {
             for (Double corePercent :
                     (List<Double>) ObjectUtils.getValue(
@@ -125,9 +126,12 @@ public class DashboardResourceManager extends AbstractNoOpResourceManager {
                         break;
                     }
                 }
+                totalCores++;
             }
         }
         List<Bucket> memory = newListOfBuckets(numBuckets);
+        double memoryUsed = 0;
+        double totalMemory = 0;
         for (Host host : hosts) {
             Map<String, Double> memInfo = ((Map<String, Double>) ObjectUtils.getValue(ObjectUtils.getValue(host, "info"), "memoryInfo"));
             Double memTotal = memInfo.get("memTotal");
@@ -135,7 +139,9 @@ public class DashboardResourceManager extends AbstractNoOpResourceManager {
             Double buffers = memInfo.get("buffers");
             Double cached = memInfo.get("cached");
             Double memUsed = ((memTotal-memFree-buffers-cached)/memTotal) * 100;
-            for (Bucket bucket : cores) {
+            memoryUsed += memTotal-memFree-buffers-cached;
+            totalMemory += memTotal;
+            for (Bucket bucket : memory) {
                 if (bucket.addValue(
                         clampPercent(memUsed),
                         String.valueOf(IdFormatterUtils.getFormatter(idformatter).formatId(host.getKind(), host.getId())))) {
@@ -144,34 +150,33 @@ public class DashboardResourceManager extends AbstractNoOpResourceManager {
             }
         }
         List<Bucket> mounts = newListOfBuckets(numBuckets);
-        putHostsInBuckets(mounts, hosts);
-        List<Bucket> networkIn = newListOfBuckets(numBuckets);
-        List<Bucket> networkOut = newListOfBuckets(numBuckets);
-        return new HostInfo(cores, memory, mounts, networkIn, networkOut, 0L, 0L, 0L, 0L, 0L, countAllBuckets(cores));
-    }
-
-    private void putHostsInBuckets(List<Bucket> cores, List<Host> hosts) {
+        double diskTotal = 0;
+        double diskUsed = 0;
         for (Host host : hosts) {
-            for (Double corePercent : (List<Double>) ObjectUtils.getValue(ObjectUtils.getValue(ObjectUtils.getValue(host, "info"), "cpuInfo"), "cpuCoresPercentages")) {
-                for (Bucket bucket : cores) {
-                    if (bucket.addValue(corePercent , String.valueOf(IdFormatterUtils.getFormatter(idformatter).formatId(host.getKind(), host.getId())))) {
+            for (Map<String, Double> mount: ((Map<String, Map<String, Double>>)
+                    ObjectUtils.getValue(ObjectUtils.getValue(ObjectUtils.getValue(host, "info"), "diskInfo"), "mountPoints")).values()) {
+                diskTotal += mount.get("total");
+                diskUsed += mount.get("used");
+                for (Bucket bucket : mounts) {
+                    if (bucket.addValue(clampPercent(mount.get("percentUsed")) ,
+                            String.valueOf(IdFormatterUtils.getFormatter(idformatter).formatId(host.getKind(), host.getId())))) {
                         break;
                     }
                 }
             }
         }
+        List<Bucket> networkIn = newListOfBuckets(numBuckets);
+        putHostsInBuckets(networkIn, hosts);
+        List<Bucket> networkOut = newListOfBuckets(numBuckets);
+        return new HostInfo(cores, memory, mounts, networkIn, networkOut, 0, memoryUsed, totalMemory, diskUsed, diskTotal, totalCores);
+    }
+
+    private void putHostsInBuckets(List<Bucket> buckets, List<Host> hosts) {
+
     }
 
     private Double clampPercent(Double toClamp) {
         return Math.max(0, Math.min(100, toClamp));
-    }
-
-    private long countAllBuckets(List<Bucket> buckets) {
-        long count = 0;
-        for (Bucket bucket: buckets) {
-            count += bucket.getIds().size();
-        }
-        return count;
     }
 
     private List<Bucket> newListOfBuckets(int numBuckets) {

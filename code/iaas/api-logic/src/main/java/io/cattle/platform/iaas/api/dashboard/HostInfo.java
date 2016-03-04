@@ -8,16 +8,16 @@ public class HostInfo {
     private List<Bucket> mounts;
     private List<Bucket> networkIn;
     private List<Bucket> networkOut;
-    private long networkMax;
-    private long memoryUsed;
-    private long memoryTotal;
-    private long diskUsed;
-    private long diskTotal;
-    private long coreCount;
+    private double networkMax;
+    private double memoryUsed;
+    private double memoryTotal;
+    private double diskUsed;
+    private double diskTotal;
+    private double coreCount;
 
     public HostInfo(List<Bucket> cores, List<Bucket> memory, List<Bucket> mounts, List<Bucket> networkIn,
-                    List<Bucket> networkOut, long networkMax, long memoryUsed, long memoryTotal, long diskUsed, long
-                            diskTotal, long coreCount) {
+                    List<Bucket> networkOut, double networkMax, double memoryUsed, double memoryTotal, double diskUsed, double
+                            diskTotal, double coreCount) {
         this.cores = cores;
         this.memory = memory;
         this.mounts = mounts;
@@ -71,51 +71,51 @@ public class HostInfo {
         this.networkOut = networkOut;
     }
 
-    public long getNetworkMax() {
+    public double getNetworkMax() {
         return networkMax;
     }
 
-    public void setNetworkMax(long networkMax) {
+    public void setNetworkMax(double networkMax) {
         this.networkMax = networkMax;
     }
 
-    public long getMemoryUsed() {
+    public double getMemoryUsed() {
         return memoryUsed;
     }
 
-    public void setMemoryUsed(long memoryUsed) {
+    public void setMemoryUsed(double memoryUsed) {
         this.memoryUsed = memoryUsed;
     }
 
-    public long getMemoryTotal() {
+    public double getMemoryTotal() {
         return memoryTotal;
     }
 
-    public void setMemoryTotal(long memoryTotal) {
+    public void setMemoryTotal(double memoryTotal) {
         this.memoryTotal = memoryTotal;
     }
 
-    public long getDiskUsed() {
+    public double getDiskUsed() {
         return diskUsed;
     }
 
-    public void setDiskUsed(long diskUsed) {
+    public void setDiskUsed(double diskUsed) {
         this.diskUsed = diskUsed;
     }
 
-    public long getDiskTotal() {
+    public double getDiskTotal() {
         return diskTotal;
     }
 
-    public void setDiskTotal(long diskTotal) {
+    public void setDiskTotal(double diskTotal) {
         this.diskTotal = diskTotal;
     }
 
-    public long getCoreCount() {
+    public double getCoreCount() {
         return coreCount;
     }
 
-    public void setCoreCount(long coreCount) {
+    public void setCoreCount(double coreCount) {
         this.coreCount = coreCount;
     }
 }

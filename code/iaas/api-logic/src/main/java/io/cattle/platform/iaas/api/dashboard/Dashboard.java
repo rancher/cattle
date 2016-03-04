@@ -9,7 +9,7 @@ import java.util.Map;
 @Type(name = "dashboard")
 public class Dashboard {
     private HostInfo host;
-    private Map<String,Map<String, Long>> states;
+    private Map<String, Map<String, Long>> states;
     private ProcessesInfo processes;
 
     public Dashboard(HostInfo host, Map<String, Map<String, Long>> states, ProcessesInfo processes, List<AuditLog>
