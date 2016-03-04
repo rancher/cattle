@@ -47,7 +47,7 @@ public class NetworkFromInstanceStop extends AbstractObjectProcessHandler {
         }
 
         List<String> invalidStates = Arrays.asList(CommonStatesConstants.REMOVING, CommonStatesConstants.ERROR,
-                CommonStatesConstants.ERRORING);
+                CommonStatesConstants.ERRORING, InstanceConstants.STATE_STOPPING, InstanceConstants.STATE_STOPPED);
         for (Instance dependant : dependants) {
             if (!invalidStates.contains(dependant.getState())) {
                 objectProcessManager.scheduleProcessInstance(InstanceConstants.PROCESS_STOP, dependant, null);
