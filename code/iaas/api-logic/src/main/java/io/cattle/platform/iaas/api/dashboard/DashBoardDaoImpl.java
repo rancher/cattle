@@ -16,6 +16,9 @@ import io.cattle.platform.db.jooq.dao.impl.AbstractJooqDao;
 
 import java.util.List;
 
+import org.jooq.Condition;
+import org.jooq.impl.DSL;
+
 public class DashBoardDaoImpl extends AbstractJooqDao implements DashBoardDao {
     @Override
     public List<AuditLog> getAuditLogs(int numLogsToGet) {
@@ -63,17 +66,19 @@ public class DashBoardDaoImpl extends AbstractJooqDao implements DashBoardDao {
     }
 
     @Override
-    public long getSlowProcesses(long accountID) {
-        return 0;
+    public long getSlowProcesses() {
+        return create().selectFrom(PROCESS_INSTANCE).where(PROCESS_INSTANCE.END_TIME.isNotNull()
+                .and("TIMESTAMPDIFF(MINUTE, process_instance.start_time, process_instance.end_time)>=5")
+        ).fetchCount();
     }
 
     @Override
-    public long getCurrentProcesses(long accountID) {
+    public long getCurrentProcesses() {
         return create().selectFrom(PROCESS_INSTANCE).where(PROCESS_INSTANCE.END_TIME.isNull()).fetchCount();
     }
 
     @Override
-    public long getRecentProcesses(long accountID) {
+    public long getRecentProcesses() {
         return create().selectFrom(PROCESS_INSTANCE).fetchCount();
     }
 }

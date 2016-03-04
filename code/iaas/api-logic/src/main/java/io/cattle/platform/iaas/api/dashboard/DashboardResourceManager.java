@@ -1,6 +1,8 @@
 package io.cattle.platform.iaas.api.dashboard;
 
 import io.cattle.platform.api.auth.Policy;
+import io.cattle.platform.core.cleanup.TableCleanUp;
+import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.model.Environment;
 import io.cattle.platform.core.model.Host;
 import io.cattle.platform.core.model.Instance;
@@ -21,6 +23,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import javax.inject.Inject;
+
+import org.apache.commons.lang3.StringUtils;
 
 public class DashboardResourceManager extends AbstractNoOpResourceManager {
 
@@ -54,10 +58,10 @@ public class DashboardResourceManager extends AbstractNoOpResourceManager {
         List<Service> services = dashBoardDao.getAllServices(accountID);
         List<Environment> stacks = dashBoardDao.getAllStacks(accountID);
         List<Instance> containers = dashBoardDao.getAllContainers(accountID);
-        long slowProcesses = dashBoardDao.getSlowProcesses(accountID);
-        long nowProcesses = dashBoardDao.getCurrentProcesses(accountID);
-        long recentProcesses = dashBoardDao.getRecentProcesses(accountID);
-        long recentThreshold = 86400;
+        long slowProcesses = dashBoardDao.getSlowProcesses();
+        long nowProcesses = dashBoardDao.getCurrentProcesses();
+        long recentProcesses = dashBoardDao.getRecentProcesses();
+        long recentThreshold = TableCleanUp.PROCESS_INSTANCE_TIME.get();
 
 
         Map<String, Map<String, Long>> states = getStates(hosts, services, stacks, containers);
@@ -69,45 +73,45 @@ public class DashboardResourceManager extends AbstractNoOpResourceManager {
         Map<String, Map<String, Long>> states = new HashMap<>();
         Map<String, Long> hostStates = new HashMap<>();
         for (Host host: hosts) {
-            Long count = hostStates.get(host.getState());
-            if (count == null) {
-                count = 0L;
-            }
-            count++;
-            hostStates.put(host.getState(), count);
+            String state = combineStates(host.getState(), host.getAgentState());
+            addState(hostStates, state);
         }
         states.put("hosts", hostStates);
         Map<String, Long> serviceStates = new HashMap<>();
         for (Service service: services) {
-            Long count = serviceStates.get(service.getState());
-            if (count == null) {
-                count = 0L;
-            }
-            count++;
-            serviceStates.put(service.getState(), count);
+            String state = combineStates(service.getState(), service.getHealthState());
+            addState(serviceStates, state);
         }
         states.put("services", serviceStates);
         Map<String, Long> stackStates = new HashMap<>();
         for (Environment stack: stacks) {
-            Long count = stackStates.get(stack.getState());
-            if (count == null) {
-                count = 0L;
-            }
-            count++;
-            stackStates.put(stack.getState(), count);
+            String state = combineStates(stack.getState(), stack.getHealthState());
+            addState(stackStates, state);
         }
         states.put("stacks", stackStates);
         Map<String, Long> containerStates = new HashMap<>();
-        for (Instance containter: containers) {
-            Long count = containerStates.get(containter.getState());
-            if (count == null) {
-                count = 0L;
-            }
-            count++;
-            containerStates.put(containter.getState(), count);
+        for (Instance container: containers) {
+            String state = combineStates(container.getState(), container.getHealthState());
+            addState(containerStates, state);
         }
         states.put("containers", containerStates);
         return states;
+    }
+
+    private void addState(Map<String, Long> states, String state) {
+        Long count = states.get(state);
+        if (count == null) {
+            count = 0L;
+        }
+        count++;
+        states.put(state, count);
+    }
+
+    private String combineStates(String state, String secondState) {
+        if (StringUtils.equalsIgnoreCase(state, CommonStatesConstants.ACTIVE) && StringUtils.isNotBlank(secondState)) {
+            return secondState;
+        }
+        return state;
     }
 
     @SuppressWarnings("unchecked")

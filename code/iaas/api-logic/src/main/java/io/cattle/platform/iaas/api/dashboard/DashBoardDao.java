@@ -19,9 +19,9 @@ public interface DashBoardDao{
 
     List<Instance> getAllContainers(long accountID);
 
-    long getSlowProcesses(long accountID);
+    long getSlowProcesses();
 
-    long getCurrentProcesses(long accountID);
+    long getCurrentProcesses();
 
-    long getRecentProcesses(long accountID);
+    long getRecentProcesses();
 }
