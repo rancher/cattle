@@ -17,4 +17,4 @@ if [ -t 1 ]; then
 fi
 
 HOST=${1:-http://${DEV_HOST}}
-docker run $DOCKER_ARGS --rm $CONSOLE_ARGS -v /var/run/docker.sock:/var/run/docker.sock $AGENT_IMAGE $HOST
+docker run -e CATTLE_SCRIPT_DEBUG $DOCKER_ARGS --rm $CONSOLE_ARGS -v /var/run/docker.sock:/var/run/docker.sock $AGENT_IMAGE $HOST
