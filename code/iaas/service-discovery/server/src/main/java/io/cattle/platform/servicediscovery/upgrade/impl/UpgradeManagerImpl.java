@@ -417,17 +417,18 @@ public class UpgradeManagerImpl implements UpgradeManager {
         List<Instance> waitList = new ArrayList<>();
         for (ServiceExposeMap map : maps) {
             Instance instance = objectManager.loadResource(Instance.class, map.getInstanceId());
-            if (instance == null) {
+            if (instance == null || instance.getState().equals(CommonStatesConstants.REMOVED) || instance.getState().equals(
+                            CommonStatesConstants.REMOVING)) {
                 continue;
             }
             try {
+                objectProcessMgr.scheduleProcessInstanceAsync(InstanceConstants.PROCESS_REMOVE,
+                        instance, null);
+            } catch (ProcessCancelException ex) {
                 // in case instance was manually restarted
                 objectProcessMgr.scheduleProcessInstanceAsync(InstanceConstants.PROCESS_STOP,
                         instance, ProcessUtils.chainInData(new HashMap<String, Object>(),
                                 InstanceConstants.PROCESS_STOP, InstanceConstants.PROCESS_REMOVE));
-            } catch (ProcessCancelException ex) {
-                objectProcessMgr.scheduleProcessInstanceAsync(InstanceConstants.PROCESS_REMOVE,
-                        instance, null);
             }
         }
 
