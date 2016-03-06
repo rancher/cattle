@@ -76,7 +76,7 @@ public class DnsInfoDaoImpl extends AbstractJooqDao implements DnsInfoDao {
                 Map<String, String> ips = new HashMap<>();
                 String targetInstanceName = input.get(4) == null ? null : ((Instance) input.get(4)).getName();
                 ips.put(((IpAddress) input.get(1)).getAddress(), targetInstanceName);
-                resolve.put(((InstanceLink) input.get(0)).getLinkName(), ips);
+                resolve.put(((InstanceLink) input.get(0)).getLinkName() + ".", ips);
                 String sourceIp = ((IpAddress) input.get(2)).getAddress();
                 Instance instance = (Instance)input.get(3);
                 DnsEntryData data = new DnsEntryData(sourceIp, resolve, null, instance,
