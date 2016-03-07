@@ -207,8 +207,8 @@ public class DashboardResourceManager extends AbstractNoOpResourceManager {
             }
         }
 
-        return new HostInfo(cores, memory, mounts, networkIn, networkOut, networkMaxRx, networkMaxTx, networkTotalUsedRx,
-                networkTotalUsedTx, memoryUsed, totalMemory, diskUsed, diskTotal, totalCores);
+        return new HostInfo(cores, memory, mounts, networkIn, networkOut, networkMaxRx, networkMaxTx,
+                memoryUsed, totalMemory, diskUsed, diskTotal, totalCores);
     }
 
     private void putHostsInBuckets(List<Bucket> buckets, List<Host> hosts) {

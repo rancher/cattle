@@ -8,33 +8,29 @@ public class HostInfo {
     private List<Bucket> mounts;
     private List<Bucket> networkIn;
     private List<Bucket> networkOut;
-    private double networkMaxRx;
-    private double networkMaxTx;
-    private double networkTotalUsedRx;
-    private double networkTotalUsedTx;
-    private double memoryUsed;
-    private double memoryTotal;
-    private double diskUsed;
-    private double diskTotal;
+    private double networkMaxRxBytesPerSec;
+    private double networkMaxTxBytesPerSec;
+    private double memoryUsedMB;
+    private double memoryTotalMB;
+    private double diskUsedMB;
+    private double diskTotalMB;
     private double coreCount;
 
     public HostInfo(List<Bucket> cores, List<Bucket> memory, List<Bucket> mounts, List<Bucket> networkIn,
-                    List<Bucket> networkOut, double networkMaxRx, double networkMaxTx, double networkTotalUsedRx,
-                    double networkTotalUsedTx, double memoryUsed, double memoryTotal, double diskUsed, double
-                            diskTotal, double coreCount) {
+                    List<Bucket> networkOut, double networkMaxRxBytesPerSec, double networkMaxTxBytesPerSec,
+                    double memoryUsedMB, double memoryTotalMB, double diskUsed, double
+                            diskTotalMB, double coreCount) {
         this.cores = cores;
         this.memory = memory;
         this.mounts = mounts;
         this.networkIn = networkIn;
         this.networkOut = networkOut;
-        this.networkMaxRx = networkMaxRx;
-        this.networkMaxTx = networkMaxTx;
-        this.networkTotalUsedRx = networkTotalUsedRx;
-        this.networkTotalUsedTx = networkTotalUsedTx;
-        this.memoryUsed = memoryUsed;
-        this.memoryTotal = memoryTotal;
-        this.diskUsed = diskUsed;
-        this.diskTotal = diskTotal;
+        this.networkMaxRxBytesPerSec = networkMaxRxBytesPerSec;
+        this.networkMaxTxBytesPerSec = networkMaxTxBytesPerSec;
+        this.memoryUsedMB = memoryUsedMB;
+        this.memoryTotalMB = memoryTotalMB;
+        this.diskUsedMB = diskUsed;
+        this.diskTotalMB = diskTotalMB;
         this.coreCount = coreCount;
     }
 
@@ -78,68 +74,52 @@ public class HostInfo {
         this.networkOut = networkOut;
     }
 
-    public double getNetworkMaxRx() {
-        return networkMaxRx;
+    public double getNetworkMaxRxBytesPerSec() {
+        return networkMaxRxBytesPerSec;
     }
 
-    public void setNetworkMaxRx(double networkMaxRx) {
-        this.networkMaxRx = networkMaxRx;
+    public void setNetworkMaxRxBytesPerSec(double networkMaxRxBytesPerSec) {
+        this.networkMaxRxBytesPerSec = networkMaxRxBytesPerSec;
     }
 
-    public double getNetworkMaxTx() {
-        return networkMaxTx;
+    public double getNetworkMaxTxBytesPerSec() {
+        return networkMaxTxBytesPerSec;
     }
 
-    public void setNetworkMaxTx(double networkMaxTx) {
-        this.networkMaxTx = networkMaxTx;
+    public void setNetworkMaxTxBytesPerSec(double networkMaxTxBytesPerSec) {
+        this.networkMaxTxBytesPerSec = networkMaxTxBytesPerSec;
     }
 
-    public double getNetworkTotalUsedRx() {
-        return networkTotalUsedRx;
+    public double getMemoryUsedMB() {
+        return memoryUsedMB;
     }
 
-    public void setNetworkTotalUsedRx(double networkTotalUsedRx) {
-        this.networkTotalUsedRx = networkTotalUsedRx;
+    public void setMemoryUsedMB(double memoryUsedMB) {
+        this.memoryUsedMB = memoryUsedMB;
     }
 
-    public double getNetworkTotalUsedTx() {
-        return networkTotalUsedTx;
+    public double getMemoryTotalMB() {
+        return memoryTotalMB;
     }
 
-    public void setNetworkTotalUsedTx(double networkTotalUsedTx) {
-        this.networkTotalUsedTx = networkTotalUsedTx;
+    public void setMemoryTotalMB(double memoryTotalMB) {
+        this.memoryTotalMB = memoryTotalMB;
     }
 
-    public double getMemoryUsed() {
-        return memoryUsed;
+    public double getDiskUsedMB() {
+        return diskUsedMB;
     }
 
-    public void setMemoryUsed(double memoryUsed) {
-        this.memoryUsed = memoryUsed;
+    public void setDiskUsedMB(double diskUsedMB) {
+        this.diskUsedMB = diskUsedMB;
     }
 
-    public double getMemoryTotal() {
-        return memoryTotal;
+    public double getDiskTotalMB() {
+        return diskTotalMB;
     }
 
-    public void setMemoryTotal(double memoryTotal) {
-        this.memoryTotal = memoryTotal;
-    }
-
-    public double getDiskUsed() {
-        return diskUsed;
-    }
-
-    public void setDiskUsed(double diskUsed) {
-        this.diskUsed = diskUsed;
-    }
-
-    public double getDiskTotal() {
-        return diskTotal;
-    }
-
-    public void setDiskTotal(double diskTotal) {
-        this.diskTotal = diskTotal;
+    public void setDiskTotalMB(double diskTotalMB) {
+        this.diskTotalMB = diskTotalMB;
     }
 
     public double getCoreCount() {
