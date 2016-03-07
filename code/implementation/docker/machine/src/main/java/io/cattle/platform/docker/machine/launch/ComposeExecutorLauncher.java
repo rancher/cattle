@@ -33,7 +33,7 @@ public class ComposeExecutorLauncher extends GenericServiceLauncher implements I
         Credential cred = getCredential();
         env.put("CATTLE_ACCESS_KEY", cred.getPublicValue());
         env.put("CATTLE_SECRET_KEY", cred.getSecretValue());
-        env.put("CATTLE_URL", ServerContext.getHostApiBaseUrl(BaseProtocol.HTTP));
+        env.put("CATTLE_URL", ServerContext.getLocalhostUrl(BaseProtocol.HTTP));
     }
 
     @Override
