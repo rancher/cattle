@@ -12,7 +12,7 @@ public class ServiceDiscoveryDnsUtil {
     public static final String RANCHER_NAMESPACE = "rancher.internal";
     public static final String KUBERNETES_SVC_NAMESPACE = "svc.cluster.local";
     public static final String METADATA_FQDN = "rancher-metadata" + "." + RANCHER_NAMESPACE + ".";
-    public static final String METADATA_IP = "169.254.169.250";
+    public static final String NETWORK_AGENT_IP = "169.254.169.250";
 
     private static String getNamespace(Service service) {
         if (service.getKind().equalsIgnoreCase("kubernetesservice")) {
