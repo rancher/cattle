@@ -8,7 +8,10 @@ public class HostInfo {
     private List<Bucket> mounts;
     private List<Bucket> networkIn;
     private List<Bucket> networkOut;
-    private double networkMax;
+    private double networkMaxRx;
+    private double networkMaxTx;
+    private double networkTotalUsedRx;
+    private double networkTotalUsedTx;
     private double memoryUsed;
     private double memoryTotal;
     private double diskUsed;
@@ -16,14 +19,18 @@ public class HostInfo {
     private double coreCount;
 
     public HostInfo(List<Bucket> cores, List<Bucket> memory, List<Bucket> mounts, List<Bucket> networkIn,
-                    List<Bucket> networkOut, double networkMax, double memoryUsed, double memoryTotal, double diskUsed, double
+                    List<Bucket> networkOut, double networkMaxRx, double networkMaxTx, double networkTotalUsedRx,
+                    double networkTotalUsedTx, double memoryUsed, double memoryTotal, double diskUsed, double
                             diskTotal, double coreCount) {
         this.cores = cores;
         this.memory = memory;
         this.mounts = mounts;
         this.networkIn = networkIn;
         this.networkOut = networkOut;
-        this.networkMax = networkMax;
+        this.networkMaxRx = networkMaxRx;
+        this.networkMaxTx = networkMaxTx;
+        this.networkTotalUsedRx = networkTotalUsedRx;
+        this.networkTotalUsedTx = networkTotalUsedTx;
         this.memoryUsed = memoryUsed;
         this.memoryTotal = memoryTotal;
         this.diskUsed = diskUsed;
@@ -71,12 +78,36 @@ public class HostInfo {
         this.networkOut = networkOut;
     }
 
-    public double getNetworkMax() {
-        return networkMax;
+    public double getNetworkMaxRx() {
+        return networkMaxRx;
     }
 
-    public void setNetworkMax(double networkMax) {
-        this.networkMax = networkMax;
+    public void setNetworkMaxRx(double networkMaxRx) {
+        this.networkMaxRx = networkMaxRx;
+    }
+
+    public double getNetworkMaxTx() {
+        return networkMaxTx;
+    }
+
+    public void setNetworkMaxTx(double networkMaxTx) {
+        this.networkMaxTx = networkMaxTx;
+    }
+
+    public double getNetworkTotalUsedRx() {
+        return networkTotalUsedRx;
+    }
+
+    public void setNetworkTotalUsedRx(double networkTotalUsedRx) {
+        this.networkTotalUsedRx = networkTotalUsedRx;
+    }
+
+    public double getNetworkTotalUsedTx() {
+        return networkTotalUsedTx;
+    }
+
+    public void setNetworkTotalUsedTx(double networkTotalUsedTx) {
+        this.networkTotalUsedTx = networkTotalUsedTx;
     }
 
     public double getMemoryUsed() {

@@ -38,7 +38,7 @@ public class Bucket {
     }
 
     public boolean addValue(double value, String id) {
-        if (start <= value && value < end) {
+        if (start < value && value <= end) {
             ids.add(id);
             return true;
         }

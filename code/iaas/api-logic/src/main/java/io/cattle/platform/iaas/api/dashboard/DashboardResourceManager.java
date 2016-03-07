@@ -1,5 +1,7 @@
 package io.cattle.platform.iaas.api.dashboard;
 
+import static org.bouncycastle.asn1.x509.X509ObjectIdentifiers.id;
+
 import io.cattle.platform.api.auth.Policy;
 import io.cattle.platform.core.cleanup.TableCleanUp;
 import io.cattle.platform.core.constants.CommonStatesConstants;
@@ -170,9 +172,43 @@ public class DashboardResourceManager extends AbstractNoOpResourceManager {
             }
         }
         List<Bucket> networkIn = newListOfBuckets(numBuckets);
-        putHostsInBuckets(networkIn, hosts);
         List<Bucket> networkOut = newListOfBuckets(numBuckets);
-        return new HostInfo(cores, memory, mounts, networkIn, networkOut, 0, memoryUsed, totalMemory, diskUsed, diskTotal, totalCores);
+        double networkMaxRx = 0;
+        double networkMaxTx = 0;
+        double networkTotalUsedRx = 0;
+        double networkTotalUsedTx = 0;
+        for (Host host : hosts) {
+            Map<String, Object> networkInfo = (Map<String, Object>) ObjectUtils.getValue(ObjectUtils.getValue(host, "info"), "networkInfo");
+            double rxBytes = (double) (int) networkInfo.get("rx_bytes_sec");
+            double txBytes = (double) (int) networkInfo.get("tx_bytes_sec");
+            if (rxBytes > networkMaxRx) {
+                networkMaxRx = rxBytes;
+            }
+            if (txBytes > networkMaxTx) {
+                networkMaxTx = txBytes;
+            }
+            networkTotalUsedRx += (double) (int) networkInfo.get("rx_bytes");
+            networkTotalUsedTx += (double) (int) networkInfo.get("tx_bytes");
+        }
+        for (Host host : hosts) {
+            Map<String, Object> networkInfo = (Map<String, Object>) ObjectUtils.getValue(ObjectUtils.getValue(host, "info"), "networkInfo");
+            double rxBytes = (double) (int) networkInfo.get("rx_bytes_sec") / networkMaxRx * 100;
+            double txBytes = (double) (int) networkInfo.get("tx_bytes_sec") / networkMaxTx * 100;
+            String id = String.valueOf(IdFormatterUtils.getFormatter(idformatter).formatId(host.getKind(), host.getId()));
+            for (Bucket bucket : networkIn) {
+                if (bucket.addValue(rxBytes, id)) {
+                    break;
+                }
+            }
+            for (Bucket bucket : networkOut) {
+                if (bucket.addValue(txBytes, id)) {
+                    break;
+                }
+            }
+        }
+
+        return new HostInfo(cores, memory, mounts, networkIn, networkOut, networkMaxRx, networkMaxTx, networkTotalUsedRx,
+                networkTotalUsedTx, memoryUsed, totalMemory, diskUsed, diskTotal, totalCores);
     }
 
     private void putHostsInBuckets(List<Bucket> buckets, List<Host> hosts) {
