@@ -534,8 +534,10 @@ def test_local_auth(admin_user_client, user_client, project_client):
     })
 
 
-def test_project_auth(admin_user_client, user_client, project_client):
+def test_project_auth(admin_user_client, user_client, service_client,
+                      project_client):
     auth_check(admin_user_client.schema, 'project', 'crud', {
+        'allowSystemRole': 'cru',
         'description': 'cru',
         'kind': 'r',
         'name': 'cru',
@@ -570,6 +572,17 @@ def test_project_auth(admin_user_client, user_client, project_client):
         'kubernetes': 'r',
         'publicDns': 'r',
         'servicesPortRange': 'r',
+    })
+
+    auth_check(service_client.schema, 'project', 'cr', {
+        'allowSystemRole': 'cr',
+        'data': 'r',
+        'kubernetes': 'cr',
+        'members': 'cr',
+        'publicDns': 'cr',
+        'servicesPortRange': 'cr',
+        'swarm': 'cr',
+        'uuid': 'cr',
     })
 
 
