@@ -229,9 +229,11 @@ public class GithubClient extends GithubConfigurable{
                         "getGithubUser", "No github username specified.", null);
             }
             username = URLEncoder.encode(username, "UTF-8");
-            if (getGithubOrgByName(username) != null){
-                return null;
-            }
+            try {
+                if (getGithubOrgByName(username) != null) {
+                    return null;
+                }
+            } catch (ClientVisibleException ignored) {}
             HttpResponse response = getFromGithub(githubAccessToken, getURL(GithubClientEndpoints.USERS) + username);
             Map<String, Object> jsonData = CollectionUtils.toMap(jsonMapper.readValue(response.getEntity().getContent(), Map.class));
             return jsonToGithubAccountInfo(jsonData);
