@@ -122,7 +122,7 @@ def test_activate_single_service(client, context, super_client):
     launch_config = {"imageUuid": image_uuid,
                      "command": ['sleep', '42'],
                      "environment": {'TEST_FILE': "/etc/testpath.conf"},
-                     "ports": ['8081', '8082/tcp'],
+                     "ports": ['8681', '8082/tcp'],
                      "dataVolumes": ['/foo'],
                      "dataVolumesFrom": [container1.id],
                      "capAdd": caps,

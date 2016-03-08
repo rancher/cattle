@@ -9,6 +9,11 @@
         "defaultNetworkId": {
             "type" : "reference[network]",
             "nullable" : true
+        },
+        "name": {
+             "attributes" : {
+                "scheduleUpdate" : true
+            }
         }
     }
 }

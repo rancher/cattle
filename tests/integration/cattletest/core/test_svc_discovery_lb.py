@@ -119,7 +119,7 @@ def test_targets(super_client, client, context):
     db_service = client.wait_success(db_service)
 
     lb_launch_config = {"imageUuid": image_uuid,
-                        "ports": [8081, '909:1001']}
+                        "ports": [8181, '909:1001']}
     lb_svc = client. \
         create_loadBalancerService(name=random_str(),
                                    environmentId=env.id,
@@ -128,7 +128,7 @@ def test_targets(super_client, client, context):
     assert lb_svc.state == "inactive"
     lb_svc = client.wait_success(lb_svc.activate(), 120)
     _validate_lb_svc_activate(env,
-                              lb_svc, client, ['8081:8081', '909:1001'])
+                              lb_svc, client, ['8181:8181', '909:1001'])
 
     # map web service to lb service - early binding,
     # before web service is activated
@@ -367,7 +367,7 @@ def test_scale(new_context):
     env = _create_stack(client)
     image_uuid = new_context.image_uuid
     launch_config = {"imageUuid": image_uuid,
-                     "ports": [8081, '909:1001']}
+                     "ports": [8281, '909:1001']}
     cert1 = _create_cert(client)
     cert2 = _create_cert(client)
     service = client.create_loadBalancerService(name=random_str(),
@@ -754,7 +754,7 @@ def test_export_config(client, context):
     web_external = _create_service(client, env2, launch_config, "web2")
 
     lb_launch_config = {"imageUuid": image_uuid,
-                        "ports": [8081, '909:1001']}
+                        "ports": [8381, '909:1001']}
     lb_service = client. \
         create_loadBalancerService(name=random_str(),
                                    environmentId=env1.id,
@@ -1028,7 +1028,7 @@ def _activate_svc_w_scale_two(new_context, random_str):
     host2 = register_simulated_host(new_context)
     env = _create_stack(client)
     launch_config = {"imageUuid": new_context.image_uuid,
-                     "ports": [8081, '909:1001']}
+                     "ports": [8481, '909:1001']}
     service = client. \
         create_loadBalancerService(name=random_str,
                                    environmentId=env.id,

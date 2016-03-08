@@ -2,7 +2,7 @@ package io.cattle.platform.agent.instance.service.impl;
 
 import io.cattle.platform.agent.instance.service.InstanceNicLookup;
 import io.cattle.platform.core.dao.GenericMapDao;
-import io.cattle.platform.core.model.Instance;
+import io.cattle.platform.core.model.Account;
 import io.cattle.platform.core.model.Nic;
 import io.cattle.platform.object.ObjectManager;
 
@@ -10,12 +10,7 @@ import java.util.List;
 
 import javax.inject.Inject;
 
-/**
- * This class is invoked on instance healthcheck changes
- * 
- *
- */
-public class ContainerNicLookup extends NicPerVnetNicLookup implements InstanceNicLookup {
+public class AccountRenameNicLookup extends NicPerVnetNicLookup implements InstanceNicLookup {
     @Inject
     ObjectManager objectManager;
 
@@ -24,10 +19,10 @@ public class ContainerNicLookup extends NicPerVnetNicLookup implements InstanceN
 
     @Override
     public List<? extends Nic> getNics(Object obj) {
-        if (!(obj instanceof Instance)) {
+        if (!(obj instanceof Account)) {
             return null;
         }
-        Instance container = (Instance) obj;
-        return super.getNicPerVnetForAccount(container.getAccountId());
+        Account account = (Account) obj;
+        return super.getNicPerVnetForAccount(account.getId());
     }
 }
