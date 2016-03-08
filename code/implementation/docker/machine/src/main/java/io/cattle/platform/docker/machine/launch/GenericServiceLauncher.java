@@ -40,6 +40,7 @@ import com.netflix.config.DynamicStringProperty;
 public abstract class GenericServiceLauncher extends NoExceptionRunnable implements InitializationTask, Runnable {
 
     private static final String SERVICE_USER_UUID = "machineServiceAccount";
+    private static final String SERVICE_USER_NAME = "System Service";
     private static final int WAIT = 2000;
 
     @Inject
@@ -94,6 +95,10 @@ public abstract class GenericServiceLauncher extends NoExceptionRunnable impleme
         return SERVICE_USER_UUID;
     }
 
+    protected String getAccountName() {
+        return SERVICE_USER_NAME;
+    }
+
     protected DynamicStringProperty getReloadSetting() {
         return null;
     }
@@ -113,7 +118,7 @@ public abstract class GenericServiceLauncher extends NoExceptionRunnable impleme
             account = DeferredUtils.nest(new Callable<Account>() {
                 @Override
                 public Account call() throws Exception {
-                    return resourceDao.createAndSchedule(Account.class, ACCOUNT.UUID, getAccountUuid(), ACCOUNT.NAME, getAccountUuid(), ACCOUNT.KIND,
+                    return resourceDao.createAndSchedule(Account.class, ACCOUNT.UUID, getAccountUuid(), ACCOUNT.NAME, getAccountName(), ACCOUNT.KIND,
                             AccountConstants.SERVICE_KIND);
                 }
             });
