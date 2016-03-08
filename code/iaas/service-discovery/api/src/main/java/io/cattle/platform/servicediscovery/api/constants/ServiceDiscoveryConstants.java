@@ -15,6 +15,7 @@ public class ServiceDiscoveryConstants {
     public static final String FIELD_SERVICE_IDS = "serviceIds";
     public static final String FIELD_UPGRADE = "upgrade";
     public static final String FIELD_LAUNCH_CONFIG = "launchConfig";
+    public static final String FIELD_LOG_CONFIG = "logConfig";
     public static final String FIELD_LOAD_BALANCER_CONFIG = "loadBalancerConfig";
     public static final String FIELD_ENVIRIONMENT_ID = "environmentId";
     public static final String FIELD_EXTERNALIPS = "externalIpAddresses";

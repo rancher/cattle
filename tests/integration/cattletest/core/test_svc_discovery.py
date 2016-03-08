@@ -1790,7 +1790,10 @@ def test_export_config(client, context):
     restart_policy = {"maximumRetryCount": 2, "name": "on-failure"}
     launch_config = {"imageUuid": image_uuid,
                      "cpuSet": "0,1", "labels": labels,
-                     "restartPolicy": restart_policy}
+                     "restartPolicy": restart_policy,
+                     "logConfig": {"config": {"labels": "foo"},
+                                   "driver": "json-file"}
+                     }
     service = client. \
         create_service(name="web",
                        environmentId=env.id,
@@ -1806,6 +1809,8 @@ def test_export_config(client, context):
     assert docker_yml[service.name]['cpuset'] == "0,1"
     assert docker_yml[service.name]['labels'] == labels
     assert "restart" not in docker_yml[service.name]
+    assert docker_yml[service.name]["log_driver"] == "json-file"
+    assert docker_yml[service.name]["log_opt"] is not None
 
     rancher_yml = yaml.load(compose_config.rancherComposeConfig)
     assert 'scale' not in rancher_yml[service.name]
