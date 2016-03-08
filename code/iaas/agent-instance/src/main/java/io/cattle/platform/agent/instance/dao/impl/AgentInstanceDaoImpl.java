@@ -64,7 +64,7 @@ public class AgentInstanceDaoImpl extends AbstractJooqDao implements AgentInstan
                 .selectFrom(INSTANCE)
                 .where(INSTANCE.AGENT_ID.eq(agent.getId())
                         .and(INSTANCE.REMOVED.isNull())
-                        .and(INSTANCE.STATE.notIn(CommonStatesConstants.ERROR, CommonStatesConstants.ERRORING,
+                        .and(INSTANCE.STATE.notIn(InstanceConstants.STATE_ERROR, InstanceConstants.STATE_ERRORING,
                                 CommonStatesConstants.REMOVING)))
                 .fetchAny();
     }
@@ -101,7 +101,7 @@ public class AgentInstanceDaoImpl extends AbstractJooqDao implements AgentInstan
                     .where(NIC.VNET_ID.eq(nic.getVnetId())
                             .and(NETWORK_SERVICE_PROVIDER_INSTANCE_MAP.NETWORK_SERVICE_PROVIDER_ID.eq(provider.getId()))
                         .and(INSTANCE.REMOVED.isNull())
-                        .and(INSTANCE.STATE.notIn(CommonStatesConstants.ERROR, CommonStatesConstants.ERRORING,
+                        .and(INSTANCE.STATE.notIn(InstanceConstants.STATE_ERROR, InstanceConstants.STATE_ERRORING,
                                 CommonStatesConstants.REMOVING)))
                     .fetchInto(InstanceRecord.class);
 
@@ -132,7 +132,7 @@ public class AgentInstanceDaoImpl extends AbstractJooqDao implements AgentInstan
                     .on(NETWORK_SERVICE_PROVIDER_INSTANCE_MAP.INSTANCE_ID.eq(INSTANCE.ID))
                 .where(INSTANCE.REMOVED.isNull()
                         .and(NETWORK_SERVICE_PROVIDER_INSTANCE_MAP.NETWORK_SERVICE_PROVIDER_ID.eq(provider.getId()))
-                        .and(INSTANCE.STATE.notIn(CommonStatesConstants.ERROR, CommonStatesConstants.ERRORING,
+                        .and(INSTANCE.STATE.notIn(InstanceConstants.STATE_ERROR, InstanceConstants.STATE_ERRORING,
                                 CommonStatesConstants.REMOVING)))
                 .fetchInto(AgentRecord.class);
     }

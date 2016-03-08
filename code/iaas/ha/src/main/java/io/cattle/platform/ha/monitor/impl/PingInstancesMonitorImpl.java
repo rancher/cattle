@@ -211,7 +211,8 @@ public class PingInstancesMonitorImpl implements PingInstancesMonitor {
 
         // Anything left in inRancher is in rancher, but not on the host.
         for (KnownInstance ki : inRancher.values()) {
-            List<String> forRemove = Arrays.asList(CommonStatesConstants.REMOVING, CommonStatesConstants.ERROR, CommonStatesConstants.ERRORING);
+            List<String> forRemove = Arrays.asList(CommonStatesConstants.REMOVING, InstanceConstants.STATE_ERROR,
+                    InstanceConstants.STATE_ERRORING);
             if (objectMetaDataManager.isTransitioningState(Instance.class, ki.getState()) || ki.getRemoved() != null
                     || forRemove.contains(ki.getState())
                     || (STATE_STOPPED.equals(ki.getState()) && StringUtils.isEmpty(ki.getExternalId())))

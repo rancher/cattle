@@ -257,6 +257,8 @@
     <process:process name="instance.updatehealthy" resourceType="instance" stateField="healthState" start="healthy,unhealthy,initializing,reinitializing" transitioning="updating-healthy" done="healthy" />
     <process:process name="instance.updateunhealthy" resourceType="instance" stateField="healthState" start="healthy,unhealthy" transitioning="updating-unhealthy" done="unhealthy" />
     <process:process name="instance.updatereinitializing" resourceType="instance" stateField="healthState" start="healthy" transitioning="updating-reinitializing" done="reinitializing" />
+    <process:process name="instance.error" resourceType="instance" start="creating,stopped" transitioning="erroring" done="error" />
+    <process:process name="instance.remove" resourceType="instance" start="requested,creating,updating-running,updating-stopped,stopped,erroring,error" transitioning="removing" done="removed" />
 
     <!-- Volume -->
     <process:defaultProcesses resourceType="volume" exclude="volume.activate"/>

@@ -15,7 +15,4 @@ public class CommonStatesConstants {
     public static final String UPDATING_ACTIVE = "updating-active";
     public static final String REMOVED = "removed";
     public static final String UPDATING_INACTIVE = "updating-inactive";
-    public static final String ERROR = "error";
-    public static final String ERRORING = "erroring";
-
 }

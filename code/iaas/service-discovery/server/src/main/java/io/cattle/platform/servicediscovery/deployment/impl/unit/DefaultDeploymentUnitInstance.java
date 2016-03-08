@@ -285,7 +285,7 @@ public class DefaultDeploymentUnitInstance extends DeploymentUnitInstance implem
 
     @Override
     public boolean isIgnore() {
-        List<String> errorStates = Arrays.asList(CommonStatesConstants.ERROR, CommonStatesConstants.ERRORING);
+        List<String> errorStates = Arrays.asList(InstanceConstants.STATE_ERROR, InstanceConstants.STATE_ERRORING);
         return this.instance != null && errorStates.contains(this.instance.getState());
     }
 }

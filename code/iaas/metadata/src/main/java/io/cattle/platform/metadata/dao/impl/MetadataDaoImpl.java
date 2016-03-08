@@ -17,6 +17,7 @@ import static io.cattle.platform.core.model.tables.VnetTable.*;
 import static io.cattle.platform.core.model.tables.VolumeTable.*;
 import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.CredentialConstants;
+import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.constants.IpAddressConstants;
 import io.cattle.platform.core.constants.NetworkServiceConstants;
 import io.cattle.platform.core.dao.NetworkDao;
@@ -183,7 +184,7 @@ public class MetadataDaoImpl extends AbstractJooqDao implements MetadataDao {
                         .and(INSTANCE_HOST_MAP.REMOVED.isNull())
                         .and(NIC.REMOVED.isNull())
                         .and(INSTANCE.REMOVED.isNull())
-                        .and(INSTANCE.STATE.notIn(CommonStatesConstants.ERROR, CommonStatesConstants.ERRORING,
+                        .and(INSTANCE.STATE.notIn(InstanceConstants.STATE_ERROR, InstanceConstants.STATE_ERRORING,
                                 CommonStatesConstants.REMOVING))
                         .and(IP_ADDRESS_NIC_MAP.REMOVED.isNull())
                         .and(subnet.REMOVED.isNull()))
