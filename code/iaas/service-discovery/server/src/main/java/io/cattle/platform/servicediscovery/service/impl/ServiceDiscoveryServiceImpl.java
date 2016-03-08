@@ -2,6 +2,7 @@ package io.cattle.platform.servicediscovery.service.impl;
 
 import static io.cattle.platform.core.model.tables.EnvironmentTable.ENVIRONMENT;
 import static io.cattle.platform.core.model.tables.ServiceIndexTable.SERVICE_INDEX;
+import static io.cattle.platform.core.model.tables.ServiceTable.SERVICE;
 import static io.cattle.platform.core.model.tables.SubnetTable.SUBNET;
 import io.cattle.platform.allocator.service.AllocatorService;
 import io.cattle.platform.core.addon.LoadBalancerServiceLink;
@@ -28,12 +29,16 @@ import io.cattle.platform.core.model.Subnet;
 import io.cattle.platform.core.util.PortSpec;
 import io.cattle.platform.deferred.util.DeferredUtils;
 import io.cattle.platform.eventing.EventService;
+import io.cattle.platform.eventing.model.Event;
+import io.cattle.platform.eventing.model.EventVO;
+import io.cattle.platform.framework.event.FrameworkEvents;
 import io.cattle.platform.framework.event.util.EventUtils;
 import io.cattle.platform.iaas.api.filter.apikey.ApiKeyFilter;
 import io.cattle.platform.json.JsonMapper;
 import io.cattle.platform.lock.LockCallbackNoReturn;
 import io.cattle.platform.lock.LockManager;
 import io.cattle.platform.object.ObjectManager;
+import io.cattle.platform.object.meta.ObjectMetaDataManager;
 import io.cattle.platform.object.process.ObjectProcessManager;
 import io.cattle.platform.object.process.StandardProcess;
 import io.cattle.platform.object.resource.ResourceMonitor;
@@ -52,6 +57,7 @@ import io.cattle.platform.servicediscovery.api.dao.ServiceExposeMapDao;
 import io.cattle.platform.servicediscovery.api.util.ServiceDiscoveryUtil;
 import io.cattle.platform.servicediscovery.api.util.selector.SelectorUtils;
 import io.cattle.platform.servicediscovery.deployment.impl.lock.ServiceEndpointsUpdateLock;
+import io.cattle.platform.servicediscovery.deployment.impl.lock.StackHealthStateUpdateLock;
 import io.cattle.platform.servicediscovery.service.ServiceDiscoveryService;
 
 import java.util.ArrayList;
@@ -527,5 +533,165 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
                 poolManager.releaseResource(subnet, serviceIndex);
             }
         }
+    }
+
+    @Override
+    public void updateHealthState(final List<? extends Service> services) {
+        if (services == null || services.size() == 0) {
+            return;
+        }
+        // assuming instance can't belong to more than one stack
+        // (possible only for instances joining service by selector)
+        final Environment stack = objectManager.loadResource(Environment.class, services.get(0).getEnvironmentId());
+        lockManager.lock(new StackHealthStateUpdateLock(stack), new LockCallbackNoReturn() {
+            @Override
+            public void doWithLockNoResult() {
+                // modify service health state
+                setServiceHealthState(services);
+
+                setStackHealthState(stack);
+            }
+
+            protected void setStackHealthState(final Environment stack) {
+                String stackHealthState = getStackHealthState(stack);
+
+                Map<String, Object> fields = new HashMap<>();
+                        fields.put("healthState", stackHealthState);
+                        objectManager.setFields(stack, fields);
+                publishEvent(stack.getAccountId(), stack.getId(), stack.getKind());
+            }
+
+            protected String getStackHealthState(final Environment stack) {
+                List<Service> services = objectManager.find(Service.class, SERVICE.ENVIRONMENT_ID, stack.getId(),
+                        SERVICE.REMOVED, null);
+
+                int init = 0;
+                int healthy = 0;
+                int expectedCount = 0;
+                List<String> activeStates = Arrays.asList(CommonStatesConstants.ACTIVE.toLowerCase(),
+                        CommonStatesConstants.ACTIVATING.toLowerCase());
+                List<String> healthyStates = Arrays.asList(
+                        HealthcheckConstants.SERVICE_HEALTH_STATE_STARTED_ONCE.toLowerCase(),
+                        HealthcheckConstants.HEALTH_STATE_HEALTHY.toLowerCase());
+                List<String> ignoreStates = Arrays.asList(CommonStatesConstants.REMOVING,
+                        CommonStatesConstants.REMOVED, CommonStatesConstants.PURGED, CommonStatesConstants.PURGING);
+                for (Service service : services) {
+                    String sHS = service.getHealthState() == null ? HealthcheckConstants.HEALTH_STATE_HEALTHY : service.getHealthState().toLowerCase();
+                    if (ignoreStates.contains(service.getState())) {
+                        continue;
+                    }
+                    expectedCount++;
+                    if (activeStates.contains(service.getState().toLowerCase()) && healthyStates.contains(sHS)) {
+                        healthy++;
+                    } else if (sHS.equalsIgnoreCase(HealthcheckConstants.HEALTH_STATE_INITIALIZING)) {
+                        init++;
+                    }
+                }
+
+                String stackHealthState = HealthcheckConstants.HEALTH_STATE_UNHEALTHY;
+                if (healthy >= expectedCount) {
+                    stackHealthState = HealthcheckConstants.HEALTH_STATE_HEALTHY;
+                } else if (init > 0) {
+                    stackHealthState = HealthcheckConstants.HEALTH_STATE_INITIALIZING;
+                } else if (healthy > 0) {
+                    stackHealthState = HealthcheckConstants.SERVICE_HEALTH_STATE_DEGRADED;
+                }
+                return stackHealthState;
+            }
+
+            protected void setServiceHealthState(final List<? extends Service> services) {
+                for (Service service : services) {
+                    String serviceHealthState = getServiceHealthState(service);
+
+                    Map<String, Object> fields = new HashMap<>();
+                    fields.put("healthState", serviceHealthState);
+                    objectManager.setFields(service, fields);
+                    publishEvent(service.getAccountId(), service.getId(), service.getKind());
+                }
+            }
+
+            protected String getServiceHealthState(Service service) {
+                String serviceHealthState = null;
+                List<String> supportedKinds = Arrays.asList(
+                        ServiceDiscoveryConstants.KIND.SERVICE.name().toLowerCase(),
+                        ServiceDiscoveryConstants.KIND.LOADBALANCERSERVICE.name().toLowerCase());
+                if (!supportedKinds.contains(service.getKind().toLowerCase())) {
+                    serviceHealthState = HealthcheckConstants.HEALTH_STATE_HEALTHY;
+                } else {
+                    List<? extends Instance> serviceInstances = exposeMapDao.listServiceManagedInstances(service
+                            .getId());
+                    List<String> healthyStates = Arrays.asList(HealthcheckConstants.HEALTH_STATE_HEALTHY,
+                            HealthcheckConstants.HEALTH_STATE_UPDATING_HEALTHY);
+                    List<String> initStates = Arrays.asList(HealthcheckConstants.HEALTH_STATE_INITIALIZING,
+                            HealthcheckConstants.HEALTH_STATE_REINITIALIZING);
+
+                    Integer scale = DataAccessor.fieldInteger(service, ServiceDiscoveryConstants.FIELD_SCALE);
+                    if (scale == null || ServiceDiscoveryUtil.isNoopService(service, allocatorService)) {
+                        scale = 0;
+                    }
+                    List<String> lcs = ServiceDiscoveryUtil.getServiceLaunchConfigNames(service);
+                    Integer expectedScale = scale * lcs.size();
+                    boolean isGlobal = isGlobalService(service);
+                    int healthyCount = 0;
+                    int initCount = 0;
+                    int instanceCount = serviceInstances.size();
+                    int startedOnce = 0;
+                    List<String> runningStates = Arrays.asList(InstanceConstants.STATE_RUNNING);
+                    for (Instance instance : serviceInstances) {
+                        String iHS = instance.getHealthState() == null ? HealthcheckConstants.HEALTH_STATE_HEALTHY : instance.getHealthState().toLowerCase();
+                        if (runningStates.contains(instance.getState().toLowerCase())) {
+                            if (healthyStates.contains(iHS)) {
+                                healthyCount++;
+                            } else if (initStates.contains(iHS)) {
+                                initCount++;
+                            }
+                        }
+                        
+                        if (isStartOnce(instance)) {
+                            startedOnce++;
+                        }
+                    }
+
+                    if (startedOnce > 0 && startedOnce == expectedScale) {
+                        return HealthcheckConstants.SERVICE_HEALTH_STATE_STARTED_ONCE;
+                    }
+
+                    if ((isGlobal && healthyCount >= instanceCount && instanceCount > 0)
+                            || (!isGlobal && healthyCount >= expectedScale)) {
+                        return HealthcheckConstants.HEALTH_STATE_HEALTHY;
+                    } else if (initCount > 0) {
+                        serviceHealthState = HealthcheckConstants.HEALTH_STATE_INITIALIZING;
+                    } else if (healthyCount > 0) {
+                        serviceHealthState = HealthcheckConstants.SERVICE_HEALTH_STATE_DEGRADED;
+                    } else {
+                        serviceHealthState = HealthcheckConstants.HEALTH_STATE_UNHEALTHY;
+                    }
+                }
+                return serviceHealthState;
+            }
+
+            protected boolean isStartOnce(Instance instance) {
+                Map<String, Object> labels = DataAccessor
+                        .fieldMap(instance, InstanceConstants.FIELD_LABELS);
+                boolean startOnce = false;
+                if (labels.containsKey(ServiceDiscoveryConstants.LABEL_SERVICE_CONTAINER_START_ONCE)) {
+                    startOnce = Boolean.valueOf(((String) labels
+                            .get(ServiceDiscoveryConstants.LABEL_SERVICE_CONTAINER_START_ONCE)));
+                }
+                return startOnce;
+            }
+        });
+    }
+
+    protected void publishEvent(long accountId, long resourceId, String resourceType) {
+        Map<String, Object> data = new HashMap<>();
+        data.put(ObjectMetaDataManager.ACCOUNT_FIELD, accountId);
+
+        Event event = EventVO.newEvent(FrameworkEvents.STATE_CHANGE)
+                .withData(data)
+                .withResourceType(resourceType)
+                .withResourceId(String.valueOf(resourceId));
+
+        eventService.publish(event);
     }
 }

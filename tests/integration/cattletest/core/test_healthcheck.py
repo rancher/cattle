@@ -262,6 +262,164 @@ def test_health_check_ip_retain(super_client, context, client):
         break
 
 
+def test_health_state_stack(super_client, context, client):
+    env = client.create_environment(name='env-' + random_str())
+    service = client.create_service(name='test', launchConfig={
+        'imageUuid': context.image_uuid,
+        'healthCheck': {
+            'port': 80,
+        }
+    }, environmentId=env.id, scale=1)
+
+    service = client.wait_success(client.wait_success(service).activate())
+    assert service.state == 'active'
+    i = 'initializing'
+    wait_for(lambda: super_client.reload(service).healthState == i,
+             timeout=5)
+    wait_for(lambda: super_client.reload(env).healthState == i,
+             timeout=5)
+
+    maps = _wait_until_active_map_count(service, 1, client)
+    expose_map = maps[0]
+    c1 = super_client.reload(expose_map.instance())
+    hci = find_one(c1.healthcheckInstances)
+    hcihm = find_one(hci.healthcheckInstanceHostMaps)
+    agent = _get_agent_for_container(c1)
+    assert hcihm.healthState == 'initializing'
+    assert c1.healthState == 'initializing'
+
+    ts = int(time.time())
+    client = _get_agent_client(agent)
+    se = client.create_service_event(externalTimestamp=ts,
+                                     reportedHealth='UP',
+                                     healthcheckUuid=hcihm.uuid)
+    super_client.wait_success(se)
+    hcihm = super_client.wait_success(super_client.reload(hcihm))
+    assert hcihm.healthState == 'healthy'
+    wait_for(lambda: super_client.reload(c1).healthState == 'healthy',
+             timeout=5)
+
+    wait_for(lambda: super_client.reload(service).healthState == 'healthy',
+             timeout=5)
+    wait_for(lambda: super_client.reload(env).healthState == 'healthy',
+             timeout=5)
+
+    ts = int(time.time())
+    client = _get_agent_client(agent)
+    se = client.create_service_event(externalTimestamp=ts,
+                                     reportedHealth='Something Bad',
+                                     healthcheckUuid=hcihm.uuid)
+
+    se = super_client.wait_success(se)
+    assert se.state == 'created'
+    assert se.accountId == c1.accountId
+    assert se.instanceId == c1.id
+    assert se.healthcheckInstanceId == hci.id
+
+    hcihm = super_client.wait_success(super_client.reload(hcihm))
+    assert hcihm.healthState == 'unhealthy'
+    assert hcihm.externalTimestamp == ts
+
+    wait_for(lambda: super_client.reload(c1).healthState == 'unhealthy',
+             timeout=5)
+    wait_for(lambda: super_client.reload(service).healthState == 'unhealthy',
+             timeout=5)
+    wait_for(lambda: super_client.reload(env).healthState == 'unhealthy',
+             timeout=5)
+
+
+def test_health_state_start_once(super_client, context, client):
+    env = client.create_environment(name='env-' + random_str())
+    labels = {"io.rancher.container.start_once": "true"}
+    svc = client.create_service(name='test', launchConfig={
+        'imageUuid': context.image_uuid,
+        'healthCheck': {
+            'port': 80,
+        },
+        'labels': labels
+    }, environmentId=env.id, scale=1)
+
+    svc = client.wait_success(client.wait_success(svc).activate())
+    assert svc.state == 'active'
+    wait_for(lambda: super_client.reload(svc).healthState == 'started-once',
+             timeout=5)
+    wait_for(lambda: super_client.reload(env).healthState == 'healthy',
+             timeout=5)
+
+    maps = _wait_until_active_map_count(svc, 1, client)
+    expose_map = maps[0]
+    c1 = super_client.reload(expose_map.instance())
+    hci = find_one(c1.healthcheckInstances)
+    hcihm = find_one(hci.healthcheckInstanceHostMaps)
+    agent = _get_agent_for_container(c1)
+    assert hcihm.healthState == 'initializing'
+    assert c1.healthState == 'initializing'
+
+    ts = int(time.time())
+    client = _get_agent_client(agent)
+    se = client.create_service_event(externalTimestamp=ts,
+                                     reportedHealth='UP',
+                                     healthcheckUuid=hcihm.uuid)
+    super_client.wait_success(se)
+    hcihm = super_client.wait_success(super_client.reload(hcihm))
+    assert hcihm.healthState == 'healthy'
+    wait_for(lambda: super_client.reload(c1).healthState == 'healthy',
+             timeout=5)
+
+    wait_for(lambda: super_client.reload(svc).healthState == 'started-once',
+             timeout=5)
+    wait_for(lambda: super_client.reload(env).healthState == 'healthy',
+             timeout=5)
+
+    super_client.wait_success(c1.stop())
+
+    wait_for(lambda: super_client.reload(svc).healthState == 'started-once',
+             timeout=5)
+    wait_for(lambda: super_client.reload(env).healthState == 'healthy',
+             timeout=5)
+
+
+def test_health_state_selectors(context, client):
+    env = client.create_environment(name='env-' + random_str())
+    labels = {'foo': "bar"}
+    container1 = client.create_container(imageUuid=context.image_uuid,
+                                         startOnCreate=True,
+                                         labels=labels)
+    container1 = client.wait_success(container1)
+    assert container1.state == "running"
+
+    launch_config = {"imageUuid": "rancher/none"}
+    service = client.create_service(name=random_str(),
+                                    environmentId=env.id,
+                                    launchConfig=launch_config,
+                                    selectorContainer="foo=bar")
+    service = client.wait_success(service)
+    assert service.selectorContainer == "foo=bar"
+
+    service = client.wait_success(service.activate())
+    wait_for(lambda: client.reload(service).healthState == 'healthy',
+             timeout=5)
+    wait_for(lambda: client.reload(env).healthState == 'healthy',
+             timeout=5)
+
+
+def test_svc_health_state(context, client):
+    env = client.create_environment(name='env-' + random_str())
+
+    launch_config = {"imageUuid": context.image_uuid}
+    service = client.create_service(name=random_str(),
+                                    environmentId=env.id,
+                                    launchConfig=launch_config,
+                                    scale=1)
+    service = client.wait_success(service)
+
+    service = client.wait_success(service.activate())
+    wait_for(lambda: client.reload(service).healthState == 'healthy',
+             timeout=5)
+    wait_for(lambda: client.reload(env).healthState == 'healthy',
+             timeout=5)
+
+
 def test_health_check_init_timeout(super_client, context, client):
     env = client.create_environment(name='env-' + random_str())
     service = client.create_service(name='test', launchConfig={

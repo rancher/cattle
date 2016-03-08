@@ -51,4 +51,6 @@ public interface ServiceDiscoveryService {
 
     void releaseIpFromServiceIndex(ServiceIndex serviceIndex);
     
+    void updateHealthState(List<? extends Service> services);
+
 }
