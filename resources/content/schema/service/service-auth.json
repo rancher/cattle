@@ -12,6 +12,11 @@
         "dynamicSchema.roles": "cr",
         "machineDriver.resourceActions\\..*": "c",
         "machineDriver.resourceActions.create": "",
+        "project": "cr",
+        "project.allowSystemRole": "cru",
+        "project.uuid": "cr",
+        "project.name": "cr",
+        "project.description": "cr",
         "end" : ""
     }
 }

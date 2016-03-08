@@ -15,6 +15,11 @@
         "rancherCompose":{
             "type": "string"
         },
+        "allowSystemRole":{
+            "type": "boolean",
+            "default": false,
+            "required": false
+        },
         "environment":{
             "type": "map[string]"
         },

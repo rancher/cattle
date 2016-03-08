@@ -533,8 +533,10 @@ def test_local_auth(admin_user_client, user_client, project_client):
     })
 
 
-def test_project_auth(admin_user_client, user_client, project_client):
+def test_project_auth(admin_user_client, user_client, service_client,
+                      project_client):
     auth_check(admin_user_client.schema, 'project', 'crud', {
+        'allowSystemRole': 'cru',
         'description': 'cru',
         'kind': 'r',
         'name': 'cru',
@@ -569,6 +571,17 @@ def test_project_auth(admin_user_client, user_client, project_client):
         'kubernetes': 'r',
         'publicDns': 'r',
         'servicesPortRange': 'r',
+    })
+
+    auth_check(service_client.schema, 'project', 'cr', {
+        'allowSystemRole': 'cr',
+        'data': 'r',
+        'kubernetes': 'cr',
+        'members': 'cr',
+        'publicDns': 'cr',
+        'servicesPortRange': 'cr',
+        'swarm': 'cr',
+        'uuid': 'cr',
     })
 
 
@@ -2377,4 +2390,46 @@ def test_kubernetes_service(admin_user_client, user_client, project_client):
         'selectorContainer': 'r',
         'template': 'r',
         'healthState': 'r',
+    })
+
+
+def test_project_auth(admin_user_client, user_client,
+                      service_client, project_client):
+    auth_check(admin_user_client.schema, 'project', 'crud', {
+        'allowSystemRole': 'cru',
+        'data': 'r',
+        'kubernetes': 'cru',
+        'members': 'cr',
+        'publicDns': 'cru',
+        'servicesPortRange': 'cru',
+        'swarm': 'cru',
+        'uuid': 'cr',
+    })
+
+    auth_check(user_client.schema, 'project', 'crud', {
+        'kubernetes': 'cru',
+        'members': 'cr',
+        'publicDns': 'cru',
+        'servicesPortRange': 'cru',
+        'swarm': 'cru',
+    })
+
+    auth_check(project_client.schema, 'project', 'r', {
+        'kubernetes': 'r',
+        'members': 'r',
+        'publicDns': 'r',
+        'servicesPortRange': 'r',
+        'swarm': 'r',
+        'uuid': 'r',
+    })
+
+    auth_check(service_client.schema, 'project', 'cr', {
+        'allowSystemRole': 'cr',
+        'data': 'r',
+        'kubernetes': 'cr',
+        'members': 'cr',
+        'publicDns': 'cr',
+        'servicesPortRange': 'cr',
+        'swarm': 'cr',
+        'uuid': 'cr',
     })
