@@ -201,7 +201,7 @@ public class ServiceCreateValidationFilter extends AbstractDefaultResourceManage
 
     protected void validateEnvironment(Service service) {
         Environment env = objectManager.loadResource(Environment.class, service.getEnvironmentId());
-        List<String> invalidStates = Arrays.asList(CommonStatesConstants.ERROR, CommonStatesConstants.REMOVED,
+        List<String> invalidStates = Arrays.asList(InstanceConstants.STATE_ERROR, CommonStatesConstants.REMOVED,
                 CommonStatesConstants.REMOVING);
         if (invalidStates.contains(env.getState())) {
             throw new ValidationErrorException(ValidationErrorCodes.INVALID_STATE, 

@@ -1,10 +1,11 @@
 package io.cattle.platform.agent.connection.delegate.dao.impl;
 
-import static io.cattle.platform.core.model.tables.HostTable.*;
-import static io.cattle.platform.core.model.tables.InstanceHostMapTable.*;
-import static io.cattle.platform.core.model.tables.InstanceTable.*;
+import static io.cattle.platform.core.model.tables.HostTable.HOST;
+import static io.cattle.platform.core.model.tables.InstanceHostMapTable.INSTANCE_HOST_MAP;
+import static io.cattle.platform.core.model.tables.InstanceTable.INSTANCE;
 import io.cattle.platform.agent.connection.delegate.dao.AgentDelegateDao;
 import io.cattle.platform.core.constants.CommonStatesConstants;
+import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.model.Agent;
 import io.cattle.platform.core.model.Host;
 import io.cattle.platform.core.model.Instance;
@@ -26,7 +27,7 @@ public class AgentDelegateDaoImpl extends AbstractJooqDao implements AgentDelega
                         .on(INSTANCE_HOST_MAP.HOST_ID.eq(HOST.ID))
                     .where(INSTANCE.AGENT_ID.eq(agent.getId())
                         .and(INSTANCE.REMOVED.isNull().and(
-                                INSTANCE.STATE.notIn(CommonStatesConstants.ERROR, CommonStatesConstants.ERRORING,
+                                INSTANCE.STATE.notIn(InstanceConstants.STATE_ERROR, InstanceConstants.STATE_ERRORING,
                                         CommonStatesConstants.REMOVING)))
                             .and(HOST.REMOVED.isNull()))
                     .fetchAny();
@@ -40,7 +41,7 @@ public class AgentDelegateDaoImpl extends AbstractJooqDao implements AgentDelega
                 .selectFrom(INSTANCE)
                 .where(INSTANCE.AGENT_ID.eq(agent.getId())
                         .and(INSTANCE.REMOVED.isNull())
-                        .and(INSTANCE.STATE.notIn(CommonStatesConstants.ERROR, CommonStatesConstants.ERRORING,
+                        .and(INSTANCE.STATE.notIn(InstanceConstants.STATE_ERROR, InstanceConstants.STATE_ERRORING,
                                 CommonStatesConstants.REMOVING)))
                 .fetchOne();
     }

@@ -411,7 +411,7 @@ public class AllocatorDaoImpl extends AbstractJooqDao implements AllocatorDao {
                         .and(INSTANCE_LABEL_MAP.REMOVED.isNull())
                         .and(INSTANCE_HOST_MAP.REMOVED.isNull())
                         .and(INSTANCE.REMOVED.isNull())
-                .and(INSTANCE.STATE.notIn(CommonStatesConstants.ERROR, CommonStatesConstants.ERRORING))
+                .and(INSTANCE.STATE.notIn(InstanceConstants.STATE_ERROR, InstanceConstants.STATE_ERRORING))
                         .and(LABEL.KEY.equalIgnoreCase(labelKey))
                         .and(LABEL.VALUE.equalIgnoreCase(labelValue))
                 .and(SERVICE_EXPOSE_MAP.UPGRADE.eq(false).or(SERVICE_EXPOSE_MAP.UPGRADE.isNull()))
