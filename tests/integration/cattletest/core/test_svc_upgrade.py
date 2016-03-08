@@ -159,7 +159,7 @@ def test_big_scale(context, client):
 
     svc = client.create_service(name=random_str(),
                                 environmentId=env.id,
-                                scale=15,
+                                scale=10,
                                 launchConfig=launch_config,
                                 intervalMillis=100)
     svc = client.wait_success(svc)
