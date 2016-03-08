@@ -39,7 +39,7 @@ public class ServiceDiscoveryDnsUtil {
             String dnsPrefix, boolean self) {
 
         if (!StringUtils.isEmpty(linkName)) {
-            return linkName;
+            return linkName.toLowerCase();
         }
 
         String dnsName = null;
