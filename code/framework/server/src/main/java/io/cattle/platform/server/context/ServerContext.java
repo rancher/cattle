@@ -37,6 +37,27 @@ public class ServerContext {
         HTTP, WEBSOCKET
     }
 
+    public static String getLocalhostUrl(BaseProtocol proto) {
+        StringBuilder buffer = new StringBuilder();
+        if (HTTPS_PORT.get() > 0) {
+            buffer.append("https://localhost");
+            buffer.append(":").append(HTTPS_PORT.get());
+        } else {
+            buffer.append("http://localhost");
+            buffer.append(":").append(HTTP_PORT.get());
+        }
+        String url = buffer.toString();
+
+        if (BaseProtocol.WEBSOCKET.equals(proto)) {
+            url = url.replaceFirst("http", "ws");
+        } else {
+            // websocket endpoints don't follow same pathing as rest of api
+            url += URL_PATH.get();
+        }
+
+        return url;
+    }
+
     public static String getHostApiBaseUrl(BaseProtocol proto) {
         String url = null;
 

@@ -19,7 +19,6 @@ import io.cattle.platform.object.process.ObjectProcessManager;
 import io.cattle.platform.object.process.StandardProcess;
 import io.cattle.platform.object.resource.ResourceMonitor;
 import io.cattle.platform.process.common.util.ProcessUtils;
-import io.cattle.platform.server.context.ServerContext;
 import io.cattle.platform.util.type.InitializationTask;
 
 import java.io.IOException;
@@ -64,12 +63,15 @@ public abstract class GenericServiceLauncher extends NoExceptionRunnable impleme
     @Override
     public void start() {
         future = executor.scheduleWithFixedDelay(this, WAIT, WAIT, TimeUnit.MILLISECONDS);
-        getReloadSetting().addCallback(new Runnable() {
-            @Override
-            public void run() {
-                processDestroy();
-            }
-        });
+        DynamicStringProperty reload = getReloadSetting();
+        if (reload != null) {
+            reload.addCallback(new Runnable() {
+                @Override
+                public void run() {
+                    processDestroy();
+                }
+            });
+        }
     }
 
     @Override
@@ -93,7 +95,7 @@ public abstract class GenericServiceLauncher extends NoExceptionRunnable impleme
     }
 
     protected DynamicStringProperty getReloadSetting() {
-        return ServerContext.HOST;
+        return null;
     }
 
     protected Credential getCredential() {
