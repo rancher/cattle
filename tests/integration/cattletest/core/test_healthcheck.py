@@ -843,7 +843,8 @@ def test_health_check_host_remove(super_client, context, client):
 def test_healtcheck(client, context, super_client):
     stack = client.create_environment(name='env-' + random_str())
     image_uuid = context.image_uuid
-    register_simulated_host(context)
+    host = register_simulated_host(context)
+    client.wait_success(host)
 
     # test that external service was set with healtcheck
     health_check = {"name": "check1", "responseTimeout": 3,

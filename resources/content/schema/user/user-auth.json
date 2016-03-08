@@ -350,7 +350,7 @@
         "certificate" : "r",
         "certificate.certChain" : "crud",
         "certificate.cert" : "crud",
-        "certificate.key" : "cro",
+        "certificate.key" : "curo",
         "certificate.certFingerprint" : "r",
         "certificate.CN" : "r",
         "certificate.expiresAt" : "r",
