@@ -1,6 +1,7 @@
 {   
     "authorize" : {
 
+        "certificate.accountId": "cr",
         "registrationToken.accountId" : "cr",
         "physicalHost": "r",
         "physicalHost.driver": "r",
