@@ -66,20 +66,19 @@ public class HostApiServiceImpl implements HostApiService {
     protected String getHostAccessUrl(ApiRequest request, Host host, String... segments) {
         StringBuilder buffer = new StringBuilder();
         switch (getHostApiProxyMode()) {
-        case HOST_API_PROXY_MODE_EMBEDDED:
-            String url = request.getResponseUrlBase().replaceFirst("http", "ws");
-            buffer.append(url);
-            break;
-
         case HOST_API_PROXY_MODE_HA:
             // TODO Implement HA-aware proxy lookup
             String proxyHost = HostApiUtils.HOST_API_PROXY_HOST.get();
             if (StringUtils.isNotBlank(proxyHost)) {
                 String scheme = StringUtils.startsWithIgnoreCase(request.getResponseUrlBase(), "https") ? "wss://" : "ws://";
                 buffer.append(scheme).append(proxyHost);
+                break;
             }
+            // Purposefully fall through
+        case HOST_API_PROXY_MODE_EMBEDDED:
+            String url = request.getResponseUrlBase().replaceFirst("http", "ws");
+            buffer.append(url);
             break;
-
         case HOST_API_PROXY_MODE_OFF:
             throw new ClientVisibleException(501, "HostApiProxyDisabled");
         }

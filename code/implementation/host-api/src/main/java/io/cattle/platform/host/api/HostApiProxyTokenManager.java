@@ -53,6 +53,13 @@ public class HostApiProxyTokenManager extends AbstractNoOpResourceManager {
 
         StringBuilder buffer = new StringBuilder();
         switch (getHostApiProxyMode()) {
+        case HOST_API_PROXY_MODE_HA:
+            if (StringUtils.isNotBlank(HostApiUtils.HOST_API_PROXY_HOST.get())) {
+                String scheme = StringUtils.startsWithIgnoreCase(request.getResponseUrlBase(), "https") ? "wss://" : "ws://";
+                buffer.append(scheme).append(HostApiUtils.HOST_API_PROXY_HOST.get());
+                break;
+            }
+            // Purposefully fall through
         case HOST_API_PROXY_MODE_EMBEDDED:
             if (ServerContext.isCustomApiHost()) {
                 buffer.append(ServerContext.getHostApiBaseUrl(ServerContext.BaseProtocol.WEBSOCKET));
@@ -61,10 +68,6 @@ public class HostApiProxyTokenManager extends AbstractNoOpResourceManager {
             }
             break;
 
-        case HOST_API_PROXY_MODE_HA:
-            String scheme = StringUtils.startsWithIgnoreCase(request.getResponseUrlBase(), "https") ? "wss://" : "ws://";
-            buffer.append(scheme).append(HostApiUtils.HOST_API_PROXY_HOST.get());
-            break;
 
         case HOST_API_PROXY_MODE_OFF:
             throw new ClientVisibleException(501, "HostApiProxyDisabled");
