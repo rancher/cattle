@@ -237,10 +237,15 @@ public class DnsInfoDaoImpl extends AbstractJooqDao implements DnsInfoDao {
                     }
                 }
             }
-            for (ServiceInstanceData targetInstance : targetInstancesData) {
 
+            boolean isLink = serviceData.getConsumeMap() != null;
+            for (ServiceInstanceData targetInstance : targetInstancesData) {
                 String dnsPrefix = targetInstance.getExposeMap() != null ? targetInstance.getExposeMap().getDnsPrefix()
                         : null;
+                if (dnsPrefix != null && isLink) {
+                    // skip sidekick from link resolution
+                    continue;
+                }
                 boolean self = clientService.getId().equals(targetService.getId()) && !forDefault;
                 populateResolveInfo(targetInstance, self, linkName, dnsPrefix, instanceIdToHostIpMap,
                         resolveCname, resolve);
@@ -266,7 +271,7 @@ public class DnsInfoDaoImpl extends AbstractJooqDao implements DnsInfoDao {
                                 serviceData.getClientStack(),
                                 serviceData.getClientService(), clientInstance.getExposeMap().getDnsPrefix());
                         DnsEntryData data = new DnsEntryData(clientIp, null, null,
-                                null, searchDomains);
+                            clientInstance.getInstance(), searchDomains);
                         returnData.add(data);
                     }
             }
@@ -274,7 +279,7 @@ public class DnsInfoDaoImpl extends AbstractJooqDao implements DnsInfoDao {
 
         if (forDefault) {
             Map<String, String> metadataIp = new HashMap<>();
-            metadataIp.put(ServiceDiscoveryDnsUtil.METADATA_IP, null);
+            metadataIp.put(ServiceDiscoveryDnsUtil.NETWORK_AGENT_IP, null);
             Map<String, Map<String, String>> resolve = new HashMap<>();
             resolve.put(ServiceDiscoveryDnsUtil.METADATA_FQDN, metadataIp);
             DnsEntryData data = new DnsEntryData("default", resolve, null, null, null);

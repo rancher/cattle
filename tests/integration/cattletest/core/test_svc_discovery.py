@@ -105,6 +105,7 @@ def test_activate_single_service(client, context, super_client):
     caps = ["SYS_MODULE"]
 
     dns = ['8.8.8.8', '1.2.3.4']
+    search = ['foo', 'bar']
 
     health_check = {"name": "check1", "responseTimeout": 3,
                     "interval": 4, "healthyThreshold": 5,
@@ -126,7 +127,7 @@ def test_activate_single_service(client, context, super_client):
                      "dataVolumesFrom": [container1.id],
                      "capAdd": caps,
                      "capDrop": caps,
-                     "dnsSearch": dns,
+                     "dnsSearch": search,
                      "dns": dns,
                      "privileged": True,
                      "domainName": "rancher.io",
@@ -163,7 +164,7 @@ def test_activate_single_service(client, context, super_client):
     assert svc.launchConfig.capAdd == caps
     assert svc.launchConfig.capDrop == caps
     assert svc.launchConfig.dns == dns
-    assert svc.launchConfig.dnsSearch == dns
+    assert svc.launchConfig.dnsSearch == search
     assert svc.launchConfig.privileged is True
     assert svc.launchConfig.domainName == "rancher.io"
     assert svc.launchConfig.memory == 8000000
@@ -188,7 +189,7 @@ def test_activate_single_service(client, context, super_client):
     assert svc.launchConfig.version == '0'
 
     # activate the service and validate that parameters were set for instance
-    service = client.wait_success(svc.activate(), 120)
+    service = client.wait_success(svc.activate())
     assert service.state == "active"
     instance_service_map = client \
         .list_serviceExposeMap(serviceId=service.id)
@@ -211,10 +212,11 @@ def test_activate_single_service(client, context, super_client):
     assert set(container.dataVolumesFrom) == set([container1.id])
     assert container.capAdd == caps
     assert container.capDrop == caps
-    assert container.dns == dns
-    dns.append(svc.name + "." + env.name + "." + "rancher.internal")
-    dns.append(env.name + "." + "rancher.internal")
-    assert set(dns).issubset(container.dnsSearch)
+    dns.append("169.254.169.250")
+    assert set(dns).issubset(container.dns)
+    search.append(svc.name + "." + env.name + "." + "rancher.internal")
+    search.append(env.name + "." + "rancher.internal")
+    assert set(search).issubset(container.dnsSearch)
     assert container.privileged is True
     assert container.domainName == "rancher.io"
     assert container.memory == 8000000
