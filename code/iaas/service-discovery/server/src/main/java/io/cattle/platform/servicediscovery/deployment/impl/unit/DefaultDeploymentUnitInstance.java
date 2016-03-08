@@ -10,6 +10,7 @@ import io.cattle.platform.core.model.InstanceHostMap;
 import io.cattle.platform.core.model.Service;
 import io.cattle.platform.core.model.ServiceExposeMap;
 import io.cattle.platform.core.model.ServiceIndex;
+import io.cattle.platform.core.util.SystemLabels;
 import io.cattle.platform.docker.constants.DockerInstanceConstants;
 import io.cattle.platform.engine.process.impl.ProcessCancelException;
 import io.cattle.platform.object.process.StandardProcess;
@@ -241,6 +242,7 @@ public class DefaultDeploymentUnitInstance extends DeploymentUnitInstance implem
         return this.serviceIndex;
     }
 
+    @SuppressWarnings("unchecked")
     protected ServiceIndex createServiceIndex() {
         // create index
         Environment stack = context.objectManager.loadResource(Environment.class, service.getEnvironmentId());
@@ -250,10 +252,20 @@ public class DefaultDeploymentUnitInstance extends DeploymentUnitInstance implem
         
         // allocate ip address if not set
         if (DataAccessor.fieldBool(service, ServiceDiscoveryConstants.FIELD_SERVICE_RETAIN_IP)) {
-            Object requestedIp = ServiceDiscoveryUtil.getLaunchConfigObject(service, launchConfigName,
+            Object requestedIpObj = ServiceDiscoveryUtil.getLaunchConfigObject(service, launchConfigName,
                     InstanceConstants.FIELD_REQUESTED_IP_ADDRESS);
-            context.sdService.allocateIpToServiceIndex(serviceIndexObj, requestedIp != null ? requestedIp.toString()
-                    : null);
+            String requestedIp = null;
+            if (requestedIpObj != null) {
+                requestedIp = requestedIpObj.toString();
+            } else {
+                // can be passed via labels
+                Object labels = ServiceDiscoveryUtil.getLaunchConfigObject(service, launchConfigName,
+                        InstanceConstants.FIELD_LABELS);
+                if (labels != null) {
+                    requestedIp = ((Map<String, String>) labels).get(SystemLabels.LABEL_REQUESTED_IP);
+                }
+            }
+            context.sdService.allocateIpToServiceIndex(serviceIndexObj, requestedIp);
         }
         
         return serviceIndexObj;
