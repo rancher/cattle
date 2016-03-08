@@ -27,6 +27,7 @@ import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -139,6 +140,7 @@ public class ServiceDiscoveryApiServiceImpl implements ServiceDiscoveryApiServic
                     populateSidekickLabels(service, composeServiceData, isPrimaryConfig);
                     populateLoadBalancerServiceLabels(service, launchConfigName, composeServiceData);
                     populateSelectorServiceLabels(service, launchConfigName, composeServiceData);
+                    populateLogConfig(cattleServiceData, composeServiceData);
                 }
                 if (!composeServiceData.isEmpty()) {
                     data.put(isPrimaryConfig ? service.getName() : launchConfigName, composeServiceData);
@@ -147,7 +149,7 @@ public class ServiceDiscoveryApiServiceImpl implements ServiceDiscoveryApiServic
         }
         return data;
     }
-    
+
     @SuppressWarnings("unchecked")
     protected void formatScale(Service service, Map<String, Object> composeServiceData) {
         if (composeServiceData.get(InstanceConstants.FIELD_LABELS) != null) {
@@ -155,6 +157,25 @@ public class ServiceDiscoveryApiServiceImpl implements ServiceDiscoveryApiServic
             if (labels.containsKey(ServiceDiscoveryConstants.LABEL_SERVICE_GLOBAL)
                     && labels.get(ServiceDiscoveryConstants.LABEL_SERVICE_GLOBAL).equals(String.valueOf(Boolean.TRUE))) {
                 composeServiceData.remove(ServiceDiscoveryConstants.FIELD_SCALE);
+            }
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    private void populateLogConfig(Map<String, Object> cattleServiceData, Map<String, Object> composeServiceData) {
+        Object value = cattleServiceData.get(ServiceDiscoveryConstants.FIELD_LOG_CONFIG);
+        if (value instanceof Map) {
+            if (!((Map<?, ?>) value).isEmpty()) {
+                Map<String, Object> map = (Map<String, Object>)value;
+                Iterator<String> it = map.keySet().iterator();
+                while (it.hasNext()) {
+                    String key = it.next();
+                    if (key.equalsIgnoreCase("config")) {
+                        composeServiceData.put("log_opt", map.get(key));
+                    } else if (key.equalsIgnoreCase("driver")) {
+                        composeServiceData.put("log_driver", map.get(key));
+                    }
+                }
             }
         }
     }
