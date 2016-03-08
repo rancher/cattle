@@ -227,6 +227,7 @@
     <bean class="io.cattle.iaas.healthcheck.process.HealthCheckReconcileTrigger" />
     <bean class="io.cattle.iaas.healthcheck.process.HealthCheckReconcilePostTrigger" />
     <bean class="io.cattle.iaas.healthcheck.process.InstanceHealthCheckUpdate" />
+    <bean class="io.cattle.iaas.healthcheck.process.HealthCheckReconcile" />
 
 	<bean class="io.cattle.iaas.healthcheck.service.impl.AgentHealthcheckHostLookup" />
 	<bean class="io.cattle.iaas.healthcheck.service.impl.HostHealthcheckHostLookup" />
