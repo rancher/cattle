@@ -69,7 +69,8 @@
         },
         "assignServiceIpAddress": {
           "type": "boolean",
-          "nullable": true
+          "nullable": false,
+          "default": false
         }
     },
     "resourceActions" : {
