@@ -430,10 +430,7 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
     public boolean isGlobalService(Service service) {
         Map<String, String> serviceLabels = ServiceDiscoveryUtil.getServiceLabels(service, allocatorService);
         String globalService = serviceLabels.get(ServiceDiscoveryConstants.LABEL_SERVICE_GLOBAL);
-        if (globalService != null && Boolean.valueOf(globalService).equals(true)) {
-            return true;
-        }
-        return false;
+        return Boolean.valueOf(globalService);
     }
 
     protected void updateObjectEndPoint(final Object object, final String resourceType, final Long resourceId,

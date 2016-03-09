@@ -40,7 +40,7 @@ public class ServiceDeploymentPlannerFactoryImpl implements ServiceDeploymentPla
     protected boolean isGlobalDeploymentStrategy(DeploymentServiceContext context, Service service) {
         Map<String, String> serviceLabels = ServiceDiscoveryUtil.getServiceLabels(service, context.allocatorService);
         String globalService = serviceLabels.get(ServiceDiscoveryConstants.LABEL_SERVICE_GLOBAL);
-        return globalService != null;
+        return Boolean.valueOf(globalService);
     }
 
     protected boolean isNoopStrategy(DeploymentServiceContext context, Service service) {
