@@ -1,8 +1,8 @@
 package io.cattle.platform.servicediscovery.process;
 
 
-import static io.cattle.platform.core.model.tables.InstanceTable.*;
-import static io.cattle.platform.core.model.tables.ServiceTable.*;
+import static io.cattle.platform.core.model.tables.InstanceTable.INSTANCE;
+import static io.cattle.platform.core.model.tables.ServiceTable.SERVICE;
 import io.cattle.platform.core.addon.LoadBalancerServiceLink;
 import io.cattle.platform.core.addon.ServiceLink;
 import io.cattle.platform.core.constants.CommonStatesConstants;
@@ -18,6 +18,7 @@ import io.cattle.platform.lock.LockManager;
 import io.cattle.platform.object.process.StandardProcess;
 import io.cattle.platform.process.common.handler.AbstractObjectProcessLogic;
 import io.cattle.platform.servicediscovery.api.constants.ServiceDiscoveryConstants;
+import io.cattle.platform.servicediscovery.api.dao.ServiceConsumeMapDao;
 import io.cattle.platform.servicediscovery.api.dao.ServiceExposeMapDao;
 import io.cattle.platform.servicediscovery.deployment.impl.lock.ServiceInstanceLock;
 import io.cattle.platform.servicediscovery.service.ServiceDiscoveryService;
@@ -29,6 +30,8 @@ import java.util.List;
 import java.util.Map;
 
 import javax.inject.Inject;
+
+import org.apache.commons.lang3.StringUtils;
 
 public class SelectorServiceCreatePostListener extends AbstractObjectProcessLogic implements ProcessPostListener,
         Priority {
@@ -42,6 +45,9 @@ public class SelectorServiceCreatePostListener extends AbstractObjectProcessLogi
     @Inject
     LockManager lockManager;
 
+    @Inject
+    ServiceConsumeMapDao consumeMapDao;
+
     @Override
     public String[] getProcessNames() {
         return new String[] { ServiceDiscoveryConstants.PROCESS_SERVICE_CREATE, ServiceDiscoveryConstants.PROCESS_SERVICE_UPDATE };
@@ -50,9 +56,31 @@ public class SelectorServiceCreatePostListener extends AbstractObjectProcessLogi
     @Override
     public HandlerResult handle(ProcessState state, ProcessInstance process) {
         Service service = (Service)state.getResource();
+
         registerServiceLinks(service);
         registerInstances(service);
+
+        if (process.getName().equalsIgnoreCase(ServiceDiscoveryConstants.PROCESS_SERVICE_UPDATE)) {
+            cleanupOldSelectorLinks(state, service);
+        }
+
         return null;
+    }
+
+    @SuppressWarnings("unchecked")
+    protected void cleanupOldSelectorLinks(ProcessState state, Service service) {
+        String selectorLink = service.getSelectorLink();
+        String oldSelectorLink = "";
+        Object oldObj = state.getData().get("old");
+        if (oldObj != null) {
+            Map<String, Object> old = (Map<String, Object>) oldObj;
+            if (old.containsKey(ServiceDiscoveryConstants.FIELD_SELECTOR_LINK)) {
+                oldSelectorLink = old.get(ServiceDiscoveryConstants.FIELD_SELECTOR_LINK).toString();
+            }
+        }
+        if (!StringUtils.isEmpty(oldSelectorLink) && !oldSelectorLink.equalsIgnoreCase(selectorLink)) {
+            deregisterOldServiceLinks(service, oldSelectorLink);
+        }
     }
 
     protected void registerServiceLinks(Service service) {
@@ -64,13 +92,33 @@ public class SelectorServiceCreatePostListener extends AbstractObjectProcessLogi
             if (targetService.getId().equals(service.getId())) {
                 continue;
             }
-            if (sdService.isSelectorLinkMatch(service, targetService)) {
+            if (sdService.isSelectorLinkMatch(service.getSelectorLink(), targetService)) {
                 addServiceLink(service, targetService);
             }
-            if (sdService.isSelectorLinkMatch(targetService, service)) {
+            if (sdService.isSelectorLinkMatch(targetService.getSelectorLink(), service)) {
                 addServiceLink(targetService, service);
             }
         }
+    }
+
+    protected void deregisterOldServiceLinks(Service service, String selectorLink) {
+        List<? extends Service> targetServices = consumeMapDao.findLinkedServices(service.getId());
+        for (Service targetService : targetServices) {
+            if (sdService.isSelectorLinkMatch(selectorLink, targetService)) {
+                removeServiceLink(service, targetService);
+            }
+        }
+    }
+
+
+    protected void removeServiceLink(Service service, Service targetService) {
+        ServiceLink link = null;
+        if (service.getKind().equalsIgnoreCase(ServiceDiscoveryConstants.KIND.LOADBALANCERSERVICE.name())) {
+            link = new LoadBalancerServiceLink(targetService.getId(), null, new ArrayList<String>());
+        } else {
+            link = new ServiceLink(targetService.getId(), null);
+        }
+        sdService.removeServiceLink(service, link);
     }
 
     protected void addServiceLink(Service service, Service targetService) {
@@ -94,7 +142,7 @@ public class SelectorServiceCreatePostListener extends AbstractObjectProcessLogi
         }
 
         for (final Instance instance : instances) {
-            boolean matched = sdService.isSelectorContainerMatch(service, instance.getId());
+            boolean matched = sdService.isSelectorContainerMatch(service.getSelectorContainer(), instance.getId());
             if (matched && !currentMappedInstances.containsKey(instance.getId())) {
                 lockManager.lock(new ServiceInstanceLock(service, instance), new LockCallbackNoReturn() {
                     @Override

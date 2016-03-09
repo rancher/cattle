@@ -350,6 +350,96 @@ def test_svc_invalid_selector(client):
     assert e.value.error.code == 'InvalidFormat'
 
 
+def test_update_instance_selector(client, context):
+    env = _create_stack(client)
+
+    image_uuid = context.image_uuid
+
+    labels = {'foo1': "bar1"}
+    c1 = client.create_container(name=random_str(),
+                                 imageUuid=image_uuid,
+                                 startOnCreate=True,
+                                 labels=labels)
+    c1 = client.wait_success(c1)
+    assert c1.state == "running"
+
+    labels = {'bar1': "foo1"}
+    c2 = client.create_container(name=random_str(),
+                                 imageUuid=image_uuid,
+                                 startOnCreate=True,
+                                 labels=labels)
+    c2 = client.wait_success(c2)
+    assert c2.state == "running"
+
+    launch_config = {"imageUuid": "rancher/none"}
+    svc = client.create_service(name=random_str(),
+                                environmentId=env.id,
+                                launchConfig=launch_config,
+                                selectorContainer="foo1=bar1")
+    svc = client.wait_success(svc)
+    assert svc.selectorContainer == "foo1=bar1"
+
+    svc = client.wait_success(svc.activate())
+
+    wait_for(
+        lambda: len(client.
+                    list_serviceExposeMap(serviceId=svc.id,
+                                          state='active')) == 1
+    )
+    maps = client.list_serviceExposeMap(serviceId=svc.id,
+                                        state='active')
+    assert maps[0].instanceId == c1.id
+
+    # update selector, validate c1 got de-registered, and c2 registered
+    svc = client.update(svc, selectorContainer="bar1=foo1")
+    client.wait_success(svc)
+
+    wait_for(
+        lambda: len(client.
+                    list_serviceExposeMap(serviceId=svc.id,
+                                          state='active')) == 1
+    )
+
+    maps = client.list_serviceExposeMap(serviceId=svc.id, state='active')
+    assert maps[0].instanceId == c2.id
+
+
+def test_update_link_selector(client, context):
+    env = _create_stack(client)
+
+    image_uuid = context.image_uuid
+    labels = {'foo1': "bar1"}
+    launch_config = {"imageUuid": image_uuid, "labels": labels}
+    s1 = client.create_service(name=random_str(),
+                               environmentId=env.id,
+                               launchConfig=launch_config)
+    s1 = client.wait_success(s1)
+    assert s1.launchConfig.labels == labels
+
+    labels = {'bar1': "foo1"}
+    launch_config = {"imageUuid": image_uuid, "labels": labels}
+    s2 = client.create_service(name=random_str(),
+                               environmentId=env.id,
+                               launchConfig=launch_config)
+    s2 = client.wait_success(s2)
+    assert s2.launchConfig.labels == labels
+
+    launch_config = {"imageUuid": image_uuid}
+    svc = client.create_service(name=random_str(),
+                                environmentId=env.id,
+                                launchConfig=launch_config,
+                                selectorLink="foo1=bar1")
+    svc = client.wait_success(svc)
+    assert svc.selectorLink == "foo1=bar1"
+    _validate_add_service_link(svc, s1, client)
+
+    # update selector link
+    service = client.update(svc, selectorLink="bar1=foo1")
+    client.wait_success(service)
+    _validate_add_service_link(svc, s2, client)
+    _validate_remove_service_link(svc, s1, client)
+
+
 def _validate_add_service_link(service,
                                consumedService, client):
     service_maps = client. \
@@ -364,8 +454,26 @@ def _validate_add_service_link(service,
         lambda x: 'State is: ' + x.state)
 
 
+def _validate_remove_service_link(service,
+                                  consumedService, client):
+    service_maps = client. \
+        list_serviceConsumeMap(serviceId=service.id,
+                               consumedServiceId=consumedService.id)
+
+    assert len(service_maps) == 1
+
+    service_map = service_maps[0]
+    wait_for_condition(
+        client, service_map, _resource_is_removed,
+        lambda x: 'State is: ' + x.state)
+
+
 def _resource_is_active(resource):
     return resource.state == 'active'
+
+
+def _resource_is_removed(resource):
+    return resource.state == 'removed'
 
 
 def _validate_config_item_update(super_client, bf, agent_id):

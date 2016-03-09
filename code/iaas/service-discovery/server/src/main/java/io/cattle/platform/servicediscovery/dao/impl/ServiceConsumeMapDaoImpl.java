@@ -263,4 +263,15 @@ public class ServiceConsumeMapDaoImpl extends AbstractJooqDao implements Service
                 fetchInto(ServiceConsumeMapRecord.class);
     }
 
+    @Override
+    public List<? extends Service> findLinkedServices(long serviceId) {
+        return create()
+                .select(SERVICE.fields())
+                .from(SERVICE)
+                .join(SERVICE_CONSUME_MAP)
+                .on(SERVICE_CONSUME_MAP.CONSUMED_SERVICE_ID.eq(SERVICE.ID))
+                .where(
+                        SERVICE_CONSUME_MAP.SERVICE_ID.eq(serviceId)
+                                .and(SERVICE_CONSUME_MAP.REMOVED.isNull())).fetchInto(Service.class);
+    }
 }
