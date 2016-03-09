@@ -373,7 +373,7 @@ public abstract class AbstractJooqResourceManager extends AbstractObjectResource
     @Override
     public boolean handleException(Throwable t, ApiRequest apiRequest) {
         if (t instanceof DataAccessException) {
-            log.error("Database error", t);
+            log.info("Database error", t.getMessage());
             throw new ClientVisibleException(ResponseCodes.CONFLICT);
         }
         return super.handleException(t, apiRequest);
