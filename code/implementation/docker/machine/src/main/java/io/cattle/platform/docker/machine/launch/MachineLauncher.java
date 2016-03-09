@@ -5,6 +5,8 @@ import io.cattle.platform.core.model.Credential;
 import io.cattle.platform.lock.definition.LockDefinition;
 import io.cattle.platform.server.context.ServerContext;
 import io.cattle.platform.server.context.ServerContext.BaseProtocol;
+import io.cattle.platform.service.launcher.GenericServiceLauncher;
+import io.cattle.platform.service.launcher.LauncherLockDefinitions;
 import io.cattle.platform.util.type.InitializationTask;
 
 import java.util.Map;

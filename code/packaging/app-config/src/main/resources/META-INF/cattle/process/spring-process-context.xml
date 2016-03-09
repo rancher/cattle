@@ -388,6 +388,7 @@
     <bean class="io.cattle.platform.docker.process.account.DockerAccountCreate" />
     <bean class="io.cattle.platform.docker.process.instancehostmap.DockerPostInstanceHostMapActivate" />
     <bean class="io.cattle.platform.docker.process.serializer.DockerContainerSerializer" />
+    <bean class="io.cattle.platform.service.account.SystemRoleObjectPostProcessor" />
     <bean class="io.cattle.platform.docker.process.nic.DockerNicDeactivate" />
     <bean class="io.cattle.platform.docker.process.ipaddress.DockerIpAddressDeactivate" />
 
@@ -407,6 +408,7 @@
     <bean class="io.cattle.platform.docker.machine.launch.MachineLauncher" />
     <bean class="io.cattle.platform.docker.machine.launch.ComposeExecutorLauncher" />
     <bean class="io.cattle.platform.docker.machine.launch.CatalogLauncher" />
+    <bean class="io.cattle.platform.service.launcher.ServiceAccountCreateStartup" />
     
     <process:defaultProcesses resourceType="externalHandler" />
     <process:defaultProcesses resourceType="externalHandlerProcess" />

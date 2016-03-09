@@ -1,6 +1,5 @@
 package io.cattle.platform.engine.server.impl;
 
-import io.cattle.platform.deferred.util.DeferredUtils;
 import io.cattle.platform.engine.manager.ProcessManager;
 import io.cattle.platform.engine.server.ProcessInstanceDispatcher;
 import io.cattle.platform.engine.server.ProcessServer;
@@ -20,16 +19,8 @@ public class ProcessServerImpl implements ProcessServer {
     }
 
     @Override
-    public void runRemainingTasks(long processId) {
-        final Long nextId = repository.getRemainingTask(processId);
-        if (nextId != null) {
-            DeferredUtils.defer(new Runnable() {
-                @Override
-                public void run() {
-                    dispatcher.execute(nextId);
-                }
-            });
-        }
+    public Long getRemainingTasks(long processId) {
+        return repository.getRemainingTask(processId);
     }
 
     public ProcessManager getRepository() {

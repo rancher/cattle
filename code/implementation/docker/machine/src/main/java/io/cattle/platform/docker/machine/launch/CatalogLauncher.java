@@ -2,6 +2,7 @@ package io.cattle.platform.docker.machine.launch;
 
 import io.cattle.platform.archaius.util.ArchaiusUtil;
 import io.cattle.platform.lock.definition.LockDefinition;
+import io.cattle.platform.service.launcher.GenericServiceLauncher;
 import io.cattle.platform.util.type.InitializationTask;
 
 import java.util.List;

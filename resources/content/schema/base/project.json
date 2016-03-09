@@ -44,6 +44,11 @@
     }
   },
   "resourceFields": {
+    "allowSystemRole":{
+        "type": "boolean",
+        "default": false,
+        "required": false
+    },
     "members": {
       "type": "array[projectMember]",
       "nullable": "true"

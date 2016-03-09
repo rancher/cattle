@@ -4,6 +4,6 @@ public interface ProcessServer {
 
     void runOutstandingJobs();
 
-    void runRemainingTasks(long processId);
+    Long getRemainingTasks(long processId);
 
 }

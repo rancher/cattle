@@ -198,6 +198,7 @@
         "processInstance.startTime" : "r",
 
         "project.identity" : "",
+        "project.allowSystemRole": "cru",
 
         "publish": "cr",
         "publish.data": "cr",
