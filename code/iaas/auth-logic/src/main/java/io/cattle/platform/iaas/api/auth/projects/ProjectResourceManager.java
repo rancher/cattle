@@ -40,8 +40,6 @@ import java.util.Map;
 import java.util.TreeMap;
 import javax.inject.Inject;
 
-import org.apache.commons.lang3.StringUtils;
-
 public class ProjectResourceManager extends AbstractObjectResourceManager {
 
     @Inject
@@ -160,8 +158,7 @@ public class ProjectResourceManager extends AbstractObjectResourceManager {
     }
 
     public Account createProjectForUser(Identity identity) {
-        String projectName = StringUtils.isBlank(identity.getName()) ? identity.getLogin() : identity.getName();
-        Account project = authDao.createProject(projectName + ProjectConstants.PROJECT_DEFAULT_NAME, null);
+        Account project = authDao.createProject(identity.getLogin() + ProjectConstants.PROJECT_DEFAULT_NAME, null);
         authDao.createProjectMember(project, new Member(identity, ProjectConstants.OWNER));
         return project;
     }

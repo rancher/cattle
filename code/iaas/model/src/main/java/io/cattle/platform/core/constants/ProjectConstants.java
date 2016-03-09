@@ -8,7 +8,7 @@ import java.util.Set;
 public class ProjectConstants {
 
     public static final String TYPE = "project";
-    public static final String PROJECT_DEFAULT_NAME = " Default";
+    public static final String PROJECT_DEFAULT_NAME = "-Default";
 
     public static final String RANCHER_ID = "rancher_id";
     public static final String NAME = "rancher";
