@@ -92,7 +92,10 @@ public class ProcessEventListenerImpl implements ProcessEventListener {
         }
 
         if (runRemaining) {
-            processServer.runRemainingTasks(processId);
+            Long nextId = processServer.getRemainingTasks(processId);
+            if (nextId != null) {
+                processExecute(nextId);
+            }
         }
     }
 
