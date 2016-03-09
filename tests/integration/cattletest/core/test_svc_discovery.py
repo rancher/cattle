@@ -2734,3 +2734,33 @@ def test_sidekick_network_mode(client, context):
     slc = service.secondaryLaunchConfigs[0]
     assert slc.networkMode == 'container'
     assert slc.networkLaunchConfig == service.name
+
+
+def test_host_dns(client, context, super_client):
+    env = _create_stack(client)
+
+    image_uuid = context.image_uuid
+
+    launch_config = {"imageUuid": image_uuid, "networkMode": "host"}
+
+    svc = client.create_service(name=random_str(),
+                                environmentId=env.id,
+                                launchConfig=launch_config)
+    svc = client.wait_success(svc)
+
+    # activate the service and validate that parameters were set for instance
+    service = client.wait_success(svc.activate())
+    assert service.state == "active"
+    instance_service_map = client \
+        .list_serviceExposeMap(serviceId=service.id)
+
+    assert len(instance_service_map) == 1
+    wait_for_condition(
+        client, instance_service_map[0], _resource_is_active,
+        lambda x: 'State is: ' + x.state)
+
+    instances = client. \
+        list_container(name=env.name + "_" + service.name + "_" + "1")
+    assert len(instances) == 1
+    c = instances[0]
+    assert len(c.dns) == 0
