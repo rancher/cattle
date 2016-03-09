@@ -202,11 +202,28 @@ def test_restart_stack(client, context):
     web_svc = client.wait_success(web_svc)
     assert web_svc.state == 'inactive'
 
-    env = client.wait_success(env.activateservices())
+    _validate_instance_stopped(lb_svc, client, env)
+    _validate_instance_stopped(web_svc, client, env)
+
+    client.wait_success(env.activateservices())
     lb_svc = client.wait_success(lb_svc, 120)
     assert lb_svc.state == 'active'
     web_svc = client.wait_success(lb_svc)
     assert web_svc.state == 'active'
+
+
+def _validate_instance_stopped(service, client, env):
+    instances = client. \
+        list_container(name=env.name + "_" + service.name + "_" + "1")
+    assert len(instances) == 1
+    instance = instances[0]
+    wait_for_condition(
+        client, instance, _resource_is_stopped,
+        lambda x: 'State is: ' + x.state)
+
+
+def _resource_is_stopped(resource):
+    return resource.state == 'stopped'
 
 
 def test_internal_lb(client, context):
