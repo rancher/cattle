@@ -17,6 +17,9 @@ public class SchemasHandler extends AbstractResponseGenerator {
         if (!schemaFactory.typeStringMatches(Schema.class, request.getType()))
             return;
 
+        if (!"GET".equalsIgnoreCase(request.getMethod())) {
+            throw new ClientVisibleException(ResponseCodes.METHOD_NOT_ALLOWED);
+        }
         if (request.getId() == null) {
             request.setResponseObject(schemaFactory.listSchemas());
         } else {
