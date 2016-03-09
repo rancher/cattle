@@ -11,11 +11,11 @@ import io.github.ibuildthecloud.gdapi.request.resource.ResourceManager;
 import io.github.ibuildthecloud.gdapi.util.ResponseCodes;
 import io.github.ibuildthecloud.gdapi.validation.ValidationErrorCodes;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class CertificateCreateValidationFilter extends AbstractDefaultResourceManagerFilter {
-    private static final Log logger = LogFactory.getLog(CertificateCreateValidationFilter.class);
+    private static final Logger log = LoggerFactory.getLogger(CertificateCreateValidationFilter.class);
 
     @Override
     public String[] getTypes() {
@@ -70,7 +70,8 @@ public class CertificateCreateValidationFilter extends AbstractDefaultResourceMa
             DataUtils.getWritableFields(certificate).put("subjectAlternativeNames",
                     SslCertificateUtils.getSubjectAlternativeNames(cert));
         } catch (Exception e) {
-            logger.error("Exception parsing certificate fields ", e);
+            log.info("Exception parsing certificate fields: {} : [{}]", e.getCause().getClass().getSimpleName(), e
+                    .getCause().getMessage());
             throw new ClientVisibleException(ResponseCodes.UNPROCESSABLE_ENTITY, ValidationErrorCodes.INVALID_FORMAT,
                     e.getMessage(), null);
         }
