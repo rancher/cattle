@@ -42,4 +42,6 @@ public interface MetaDataInfoDao {
     List<HostMetaData> getAllInstanceHostMetaData(long accountId);
 
     List<HostMetaData> getInstanceHostMetaData(long accountId, Instance instance);
+
+    List<String> getPrimaryIpsOnInstanceHost(Instance instance);
 }
