@@ -62,4 +62,9 @@ public class ContainerAffinityConstraint implements Constraint {
     public boolean isHardConstraint() {
         return (op == AffinityOps.EQ || op == AffinityOps.NE);
     }
+
+    @Override
+    public String toString() {
+        return String.format("needs container with label %s%s", containerIdentifier, op.getLabelSymbol());
+    }
 }
