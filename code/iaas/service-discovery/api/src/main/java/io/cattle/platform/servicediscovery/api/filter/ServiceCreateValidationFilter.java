@@ -8,8 +8,6 @@ import io.cattle.platform.core.dao.NetworkDao;
 import io.cattle.platform.core.model.Environment;
 import io.cattle.platform.core.model.Service;
 import io.cattle.platform.core.util.PortSpec;
-import io.cattle.platform.docker.constants.DockerInstanceConstants;
-import io.cattle.platform.docker.constants.DockerNetworkConstants;
 import io.cattle.platform.iaas.api.filter.common.AbstractDefaultResourceManagerFilter;
 import io.cattle.platform.json.JsonMapper;
 import io.cattle.platform.object.ObjectManager;
@@ -74,8 +72,6 @@ public class ServiceCreateValidationFilter extends AbstractDefaultResourceManage
 
         validateMetadata(request);
 
-        request = setNetworkMode(type, service.getName(), request);
-
         validateLaunchConfigs(service, request);
 
         validateIpsHostName(request);
@@ -105,39 +101,6 @@ public class ServiceCreateValidationFilter extends AbstractDefaultResourceManage
                 }
             }
         }
-    }
-
-    @SuppressWarnings("unchecked")
-    public ApiRequest setNetworkMode(String type, String serviceName, ApiRequest request) {
-        if (!type.equalsIgnoreCase(ServiceDiscoveryConstants.KIND.SERVICE.name())) {
-            return request;
-        }
-        Map<String, Object> data = CollectionUtils.toMap(request.getRequestObject());
-
-        if (data.get(ServiceDiscoveryConstants.FIELD_LAUNCH_CONFIG) != null) {
-            Map<String, Object> lc = (Map<String, Object>) data
-                    .get(ServiceDiscoveryConstants.FIELD_LAUNCH_CONFIG);
-            if (lc.get(DockerInstanceConstants.FIELD_NETWORK_MODE) != null) {
-                String ntwkMode = (String) lc.get(DockerInstanceConstants.FIELD_NETWORK_MODE);
-                if (!ntwkMode.equalsIgnoreCase(DockerInstanceConstants.FIELD_NETWORK_MODE)) {
-                    if (data.get(ServiceDiscoveryConstants.FIELD_SECONDARY_LAUNCH_CONFIGS) != null) {
-                        for (Map<String, Object> slc : (List<Map<String, Object>>) data
-                                .get(ServiceDiscoveryConstants.FIELD_SECONDARY_LAUNCH_CONFIGS)) {
-                            if (slc.get(DockerInstanceConstants.FIELD_NETWORK_MODE) == null) {
-                                slc.put(DockerInstanceConstants.FIELD_NETWORK_MODE,
-                                        DockerNetworkConstants.NETWORK_MODE_CONTAINER);
-                                slc.put(ServiceDiscoveryConstants.FIELD_NETWORK_LAUNCH_CONFIG, serviceName);
-                            }
-                        }
-                    }
-                    data.put(ServiceDiscoveryConstants.FIELD_SECONDARY_LAUNCH_CONFIGS,
-                            data.get(ServiceDiscoveryConstants.FIELD_SECONDARY_LAUNCH_CONFIGS));
-                    request.setRequestObject(data);
-                }
-            }
-        }
-
-        return request;
     }
 
 
