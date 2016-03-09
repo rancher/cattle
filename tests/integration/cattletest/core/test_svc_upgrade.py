@@ -299,10 +299,8 @@ def test_in_service_upgrade_networks_from(context, client, super_client):
     image_uuid = context.image_uuid
     launch_config = {"imageUuid": image_uuid, "networkMode": 'container',
                      "networkLaunchConfig": "secondary1"}
-    secondary1 = {"imageUuid": image_uuid, "name": "secondary1",
-                  "networkMode": "managed"}
-    secondary2 = {"imageUuid": image_uuid, "name": "secondary2",
-                  "networkMode": "managed"}
+    secondary1 = {"imageUuid": image_uuid, "name": "secondary1"}
+    secondary2 = {"imageUuid": image_uuid, "name": "secondary2"}
     svc = client.create_service(name=random_str(),
                                 environmentId=env.id,
                                 scale=2,
@@ -693,10 +691,8 @@ def _create_multi_lc_svc(super_client, client, context, activate=True):
     launch_config = {'imageUuid': image_uuid,
                      'networkMode': None}
     secondary_lc1 = {"imageUuid": image_uuid, "name": "secondary1",
-                     "dataVolumesFromLaunchConfigs": ['secondary2'],
-                     "networkMode": "managed"}
-    secondary_lc2 = {"imageUuid": image_uuid, "name": "secondary2",
-                     "networkMode": "managed"}
+                     "dataVolumesFromLaunchConfigs": ['secondary2']}
+    secondary_lc2 = {"imageUuid": image_uuid, "name": "secondary2"}
     secondary = [secondary_lc1, secondary_lc2]
     svc = client.create_service(name=random_str(),
                                 environmentId=env.id,
