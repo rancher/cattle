@@ -154,8 +154,8 @@ public class ServiceDiscoveryApiServiceImpl implements ServiceDiscoveryApiServic
     protected void formatScale(Service service, Map<String, Object> composeServiceData) {
         if (composeServiceData.get(InstanceConstants.FIELD_LABELS) != null) {
             Map<String, String> labels = ((HashMap<String, String>) composeServiceData.get(InstanceConstants.FIELD_LABELS));
-            if (labels.containsKey(ServiceDiscoveryConstants.LABEL_SERVICE_GLOBAL)
-                    && labels.get(ServiceDiscoveryConstants.LABEL_SERVICE_GLOBAL).equals(String.valueOf(Boolean.TRUE))) {
+            String globalService = labels.get(ServiceDiscoveryConstants.LABEL_SERVICE_GLOBAL);
+            if (Boolean.valueOf(globalService) == true) {
                 composeServiceData.remove(ServiceDiscoveryConstants.FIELD_SCALE);
             }
         }
