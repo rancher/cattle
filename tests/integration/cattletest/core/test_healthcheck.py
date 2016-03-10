@@ -379,6 +379,26 @@ def test_health_state_start_once(super_client, context, client):
              timeout=5)
 
 
+def test_health_state_sidekick_start_once(super_client, context, client):
+    env = client.create_environment(name='env-' + random_str())
+    labels = {"io.rancher.container.start_once": "true"}
+    slc = {'imageUuid': context.image_uuid, 'name': "test1"}
+    svc = client.create_service(name='test', launchConfig={
+        'imageUuid': context.image_uuid,
+        'labels': labels
+    }, environmentId=env.id, scale=1, secondaryLaunchConfigs=[slc])
+
+    svc = client.wait_success(client.wait_success(svc).activate())
+    assert svc.state == 'active'
+    wait_for(lambda: super_client.reload(svc).healthState == 'started-once',
+             timeout=5)
+
+    wait_for(lambda: super_client.reload(svc).healthState == 'started-once',
+             timeout=5)
+    wait_for(lambda: super_client.reload(env).healthState == 'healthy',
+             timeout=5)
+
+
 def test_health_state_selectors(context, client):
     env = client.create_environment(name='env-' + random_str())
     labels = {'foo': "bar"}
