@@ -9,10 +9,8 @@ import io.cattle.platform.core.model.Host;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.Service;
 import io.cattle.platform.docker.constants.DockerInstanceConstants;
-import io.cattle.platform.docker.constants.DockerNetworkConstants;
 import io.cattle.platform.iaas.api.auditing.AuditEventType;
 import io.cattle.platform.servicediscovery.api.constants.ServiceDiscoveryConstants;
-import io.cattle.platform.servicediscovery.api.util.ServiceDiscoveryDnsUtil;
 import io.cattle.platform.servicediscovery.api.util.ServiceDiscoveryUtil;
 import io.cattle.platform.servicediscovery.deployment.DeploymentUnitInstance;
 import io.cattle.platform.servicediscovery.deployment.DeploymentUnitInstanceIdGenerator;
@@ -399,28 +397,9 @@ public class DeploymentUnit {
         deployParams.put(InstanceConstants.FIELD_DEPLOYMENT_UNIT_UUID, this.uuid);
         deployParams.put(ServiceDiscoveryConstants.FIELD_VERSION, ServiceDiscoveryUtil.getLaunchConfigObject(
                 instance.getService(), instance.getLaunchConfigName(), ServiceDiscoveryConstants.FIELD_VERSION));
-        setDns(instance, deployParams);
+        deployParams.put(DockerInstanceConstants.FIELD_DNS_SEARCH, instance.getSearchDomains());
 
         return deployParams;
-    }
-
-    @SuppressWarnings("unchecked")
-    protected void setDns(DeploymentUnitInstance instance, Map<String, Object> deployParams) {
-        deployParams.put(DockerInstanceConstants.FIELD_DNS_SEARCH, instance.getSearchDomains());
-        List<String> dns = new ArrayList<>();
-        Object ntwkModeObj = ServiceDiscoveryUtil.getLaunchConfigObject(
-                instance.getService(), instance.getLaunchConfigName(), DockerInstanceConstants.FIELD_NETWORK_MODE);
-        if (ntwkModeObj != null) {
-            if (ntwkModeObj.toString().equalsIgnoreCase(DockerNetworkConstants.NETWORK_MODE_MANAGED)) {
-                dns.add(ServiceDiscoveryDnsUtil.NETWORK_AGENT_IP);
-            }
-        }
-        Object dnsObj = ServiceDiscoveryUtil.getLaunchConfigObject(
-                instance.getService(), instance.getLaunchConfigName(), DockerInstanceConstants.FIELD_DNS);
-        if (dnsObj != null) {
-            dns.addAll((List<String>) dnsObj);
-        }
-        deployParams.put(DockerInstanceConstants.FIELD_DNS, dns);
     }
 
     protected Map<String, String> getLabels(DeploymentUnitInstance instance) {
