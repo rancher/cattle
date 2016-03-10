@@ -3,6 +3,7 @@ package io.cattle.platform.configitem.context.data;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.docker.constants.DockerInstanceConstants;
 import io.cattle.platform.object.util.DataAccessor;
+import io.cattle.platform.servicediscovery.api.util.ServiceDiscoveryDnsUtil;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -114,9 +115,11 @@ public class DnsEntryData {
         this.instance = instance;
         if (instance != null) {
             List<String> dns = DataAccessor.fieldStringList(instance, DockerInstanceConstants.FIELD_DNS);
+            //remove itself from recurse
+            dns.remove(ServiceDiscoveryDnsUtil.NETWORK_AGENT_IP);
             recurse.addAll(dns);
         }
-        if (recurse.isEmpty()) {
+        if ("default".equals(sourceIpAddress)) {
             recurse.add("PARENT_DNS");
         }
     }
