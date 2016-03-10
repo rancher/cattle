@@ -244,9 +244,9 @@ public class SampleDataStartupV4 extends AbstractSampleData {
     toCreate.add(getObjectManager().create(DynamicSchema.class, properties));
 
     toCreate.add(createByUuid(MachineDriver.class, "packet", MACHINE_DRIVER.KIND, "machineDriver", MACHINE_DRIVER.MD5CHECKSUM,
-            "558a264002166868acc9d175357c12c4", MACHINE_DRIVER.URI,
+            "cd610cd7d962dfdf88a811ec026bcdcf", MACHINE_DRIVER.URI,
             "https://github.com/packethost/docker-machine-driver-packet/releases/" +
-                    "download/v0.1.0/docker-machine-driver-packet_linux-amd64.zip", MACHINE_DRIVER.NAME, "packet",
+                    "download/v0.1.2/docker-machine-driver-packet_linux-amd64.zip", MACHINE_DRIVER.NAME, "packet",
             MACHINE_DRIVER.STATE, CommonStatesConstants.REQUESTED));
     toCreate.add(createByUuid(MachineDriver.class, "ubiquity", MACHINE_DRIVER.KIND, "machineDriver", MACHINE_DRIVER.MD5CHECKSUM,
             "7fba983dfdb040311a93d217b12161d1", MACHINE_DRIVER.URI,
