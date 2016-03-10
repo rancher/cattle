@@ -204,7 +204,7 @@ public class DockerPostInstanceHostMapActivate extends AbstractObjectProcessLogi
         if (volume != null)
             return volume;
 
-        return lockManager.lock(new DockerStoragePoolVolumeCreateLock(storagePool, dVol.getUri()), new LockCallback<Volume>() {
+        return lockManager.lock(new DockerStoragePoolVolumeCreateLock(storagePool, dVol.getExternalId()), new LockCallback<Volume>() {
             @Override
             public Volume doWithLock() {
                 Volume volume = dockerDao.createDockerVolumeInPool(instance.getAccountId(), dVol.getName(), dVol.getUri(), dVol.getExternalId(),

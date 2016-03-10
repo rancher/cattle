@@ -19,6 +19,7 @@ import io.cattle.platform.core.model.Service;
 import io.cattle.platform.core.model.StoragePool;
 import io.cattle.platform.core.model.StoragePoolHostMap;
 import io.cattle.platform.core.model.Volume;
+import io.cattle.platform.docker.process.lock.DockerStoragePoolVolumeCreateLock;
 import io.cattle.platform.engine.handler.HandlerResult;
 import io.cattle.platform.engine.process.ProcessInstance;
 import io.cattle.platform.engine.process.ProcessState;
@@ -85,21 +86,23 @@ public class ExternalEventCreate extends AbstractDefaultProcessHandler {
     }
 
     protected void handleVolumeEvent(final ExternalEvent event, ProcessState state, ProcessInstance process) {
-        lockManager.lock(new ExternalEventLock(VOLUME_POOL_LOCK_NAME, event.getAccountId(), event.getExternalId()), new LockCallbackNoReturn() {
+        //new DockerStoragePoolVolumeCreateLock(storagePool, dVol.getUri())
+        Object driver = CollectionUtils.getNestedValue(DataUtils.getFields(event), FIELD_VOLUME, VolumeConstants.FIELD_VOLUME_DRIVER);
+        final Object name = CollectionUtils.getNestedValue(DataUtils.getFields(event), FIELD_VOLUME, FIELD_NAME);
+        if (driver == null || name == null) {
+            log.warn("Driver or volume name not specified. Returning. Event: {}", event);
+            return;
+        }
+        String driverName = driver.toString();
+        final StoragePool storagePool = storagePoolDao.findStoragePoolByDriverName(event.getAccountId(), driverName);
+        if (storagePool == null) {
+            log.warn("Unknown storage pool. Returning. Driver name: {}", driverName);
+            return;
+        }
+
+        lockManager.lock(new DockerStoragePoolVolumeCreateLock(storagePool, event.getExternalId()), new LockCallbackNoReturn() {
             @Override
             public void doWithLockNoResult() {
-                Object driver = CollectionUtils.getNestedValue(DataUtils.getFields(event), FIELD_VOLUME, VolumeConstants.FIELD_VOLUME_DRIVER);
-                Object name = CollectionUtils.getNestedValue(DataUtils.getFields(event), FIELD_VOLUME, FIELD_NAME);
-                if (driver == null || name == null) {
-                    log.warn("Driver or volume name not specified. Returning. Event: {}", event);
-                    return;
-                }
-                String driverName = driver.toString();
-                StoragePool storagePool = storagePoolDao.findStoragePoolByDriverName(event.getAccountId(), driverName);
-                if (storagePool == null) {
-                    log.warn("Unknown storage pool. Returning. Driver name: {}", driverName);
-                    return;
-                }
                 Volume volume = volumeDao.findVolumeByExternalId(storagePool.getId(), event.getExternalId());
                 switch (event.getEventType()) {
                 case ExternalEventConstants.TYPE_VOLUME_CREATE:
