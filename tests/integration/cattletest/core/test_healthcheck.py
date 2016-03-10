@@ -840,11 +840,20 @@ def test_health_check_host_remove(super_client, context, client):
     assert hcim is None
 
 
-def test_healtcheck(client, context, super_client):
+def test_healtcheck(new_context, super_client):
+    client = new_context.client
+    image_uuid = new_context.image_uuid
     stack = client.create_environment(name='env-' + random_str())
-    image_uuid = context.image_uuid
-    host = register_simulated_host(context)
+    host = register_simulated_host(new_context)
     client.wait_success(host)
+
+    # create dummy service to span network agents
+    multiport = client.create_service(name='foo', launchConfig={
+        'imageUuid': new_context.image_uuid,
+        'ports': "54557"
+    }, environmentId=stack.id, scale=2)
+    multiport = client.wait_success(client.wait_success(multiport).activate())
+    assert multiport.state == 'active'
 
     # test that external service was set with healtcheck
     health_check = {"name": "check1", "responseTimeout": 3,
@@ -885,9 +894,17 @@ def test_healtcheck(client, context, super_client):
     # that healthcheckers number was completed to 3, excluding
     # container's host
     service = client.wait_success(service.deactivate(), 120)
-    register_simulated_host(context)
-    register_simulated_host(context)
-    register_simulated_host(context)
+    for i in range(0, 3):
+        host = register_simulated_host(new_context)
+        client.wait_success(host)
+
+    multiport = client.create_service(name='bar', launchConfig={
+        'imageUuid': new_context.image_uuid,
+        'ports': "54558"
+    }, environmentId=stack.id, scale=5)
+    multiport = client.wait_success(client.wait_success(multiport).activate())
+    assert multiport.state == 'active'
+
     client.wait_success(service.activate(), 120)
 
     host_maps = _wait_health_host_count(super_client, health_id, 3)
