@@ -258,7 +258,11 @@ public class ServiceDiscoveryUtil {
                         ((Map<Object, Object>) dataObj).putAll((Map<Object, Object>) launchConfigItems.get(key));
                     }
                 } else if (dataObj instanceof List) {
-                    ((List<Object>) dataObj).addAll((List<Object>) launchConfigItems.get(key));
+                    for (Object existing : (List<Object>) launchConfigItems.get(key)) {
+                        if (!((List<Object>) dataObj).contains(existing)) {
+                            ((List<Object>) dataObj).add(existing);
+                        }
+                    }
                 }
             }
             if (dataObj != null) {
