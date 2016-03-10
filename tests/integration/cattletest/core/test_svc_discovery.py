@@ -212,7 +212,6 @@ def test_activate_single_service(client, context, super_client):
     assert set(container.dataVolumesFrom) == set([container1.id])
     assert container.capAdd == caps
     assert container.capDrop == caps
-    dns.append("169.254.169.250")
     assert set(dns).issubset(container.dns)
     search.append(svc.name + "." + env.name + "." + "rancher.internal")
     search.append(env.name + "." + "rancher.internal")
