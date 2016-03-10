@@ -64,14 +64,18 @@ public abstract class GenericServiceLauncher extends NoExceptionRunnable impleme
     @Override
     public void start() {
         future = executor.scheduleWithFixedDelay(this, WAIT, WAIT, TimeUnit.MILLISECONDS);
-        DynamicStringProperty reload = getReloadSetting();
-        if (reload != null) {
-            reload.addCallback(new Runnable() {
-                @Override
-                public void run() {
-                    processDestroy();
+        List<DynamicStringProperty> reloadList = getReloadSettings();
+        if (reloadList != null) {
+            for(DynamicStringProperty reload : reloadList) {
+                if (reload != null) {
+                    reload.addCallback(new Runnable() {
+                        @Override
+                        public void run() {
+                            processDestroy();
+                        }
+                    });
                 }
-            });
+            }
         }
     }
 
@@ -99,7 +103,7 @@ public abstract class GenericServiceLauncher extends NoExceptionRunnable impleme
         return SERVICE_USER_NAME;
     }
 
-    protected DynamicStringProperty getReloadSetting() {
+    protected List<DynamicStringProperty> getReloadSettings() {
         return null;
     }
 
