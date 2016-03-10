@@ -187,9 +187,11 @@ public class DockerPostInstanceHostMapActivate extends AbstractObjectProcessLogi
             if (CommonStatesConstants.REMOVED.equals(volume.getState())) {
                 restore(volume, state.getData());
                 action = "Restored";
-            } else {
+            } else if (CommonStatesConstants.REQUESTED.equals(volume.getState())) {
                 action = "Created";
                 createIgnoreCancel(volume, state.getData());
+            } else {
+                action = "Using existing";
             }
             log.debug("{} volume [{}] in storage pool [{}].", action, volume.getId(), pool.getId());
 
