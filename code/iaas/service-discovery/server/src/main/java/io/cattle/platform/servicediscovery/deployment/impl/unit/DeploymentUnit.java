@@ -8,6 +8,7 @@ import io.cattle.platform.core.model.Environment;
 import io.cattle.platform.core.model.Host;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.Service;
+import io.cattle.platform.core.util.SystemLabels;
 import io.cattle.platform.docker.constants.DockerInstanceConstants;
 import io.cattle.platform.docker.constants.DockerNetworkConstants;
 import io.cattle.platform.iaas.api.auditing.AuditEventType;
@@ -18,6 +19,7 @@ import io.cattle.platform.servicediscovery.deployment.DeploymentUnitInstance;
 import io.cattle.platform.servicediscovery.deployment.DeploymentUnitInstanceIdGenerator;
 import io.cattle.platform.servicediscovery.deployment.InstanceUnit;
 import io.cattle.platform.servicediscovery.deployment.impl.DeploymentManagerImpl.DeploymentServiceContext;
+import io.cattle.platform.util.type.CollectionUtils;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -399,28 +401,34 @@ public class DeploymentUnit {
         deployParams.put(InstanceConstants.FIELD_DEPLOYMENT_UNIT_UUID, this.uuid);
         deployParams.put(ServiceDiscoveryConstants.FIELD_VERSION, ServiceDiscoveryUtil.getLaunchConfigObject(
                 instance.getService(), instance.getLaunchConfigName(), ServiceDiscoveryConstants.FIELD_VERSION));
-        setDns(instance, deployParams);
+        addDns(instance, deployParams);
 
         return deployParams;
     }
 
-    @SuppressWarnings("unchecked")
-    protected void setDns(DeploymentUnitInstance instance, Map<String, Object> deployParams) {
-        deployParams.put(DockerInstanceConstants.FIELD_DNS_SEARCH, instance.getSearchDomains());
-        List<String> dns = new ArrayList<>();
-        Object ntwkModeObj = ServiceDiscoveryUtil.getLaunchConfigObject(
-                instance.getService(), instance.getLaunchConfigName(), DockerInstanceConstants.FIELD_NETWORK_MODE);
-        if (ntwkModeObj != null) {
-            if (ntwkModeObj.toString().equalsIgnoreCase(DockerNetworkConstants.NETWORK_MODE_MANAGED)) {
-                dns.add(ServiceDiscoveryDnsUtil.NETWORK_AGENT_IP);
+    protected void addDns(DeploymentUnitInstance instance, Map<String, Object> deployParams) {
+        boolean addDns = true;
+        Object labelsObj = ServiceDiscoveryUtil.getLaunchConfigObject(
+                instance.getService(), instance.getLaunchConfigName(), InstanceConstants.FIELD_LABELS);
+        if (labelsObj != null) {
+            Map<String, Object> labels = CollectionUtils.toMap(labelsObj);
+            if (labels.containsKey(SystemLabels.LABEL_USE_RANCHER_DNS)
+                    && !Boolean.valueOf(SystemLabels.LABEL_USE_RANCHER_DNS))
+                addDns = false;
+        }
+
+        if (addDns) {
+            Object ntwkModeObj = ServiceDiscoveryUtil.getLaunchConfigObject(
+                    instance.getService(), instance.getLaunchConfigName(), DockerInstanceConstants.FIELD_NETWORK_MODE);
+            if (ntwkModeObj != null) {
+                if (ntwkModeObj.toString().equalsIgnoreCase(DockerNetworkConstants.NETWORK_MODE_MANAGED)) {
+                    List<String> dns = new ArrayList<>();
+                    dns.add(ServiceDiscoveryDnsUtil.NETWORK_AGENT_IP);
+                    deployParams.put(DockerInstanceConstants.FIELD_DNS, dns);
+                }
             }
+            deployParams.put(DockerInstanceConstants.FIELD_DNS_SEARCH, instance.getSearchDomains());
         }
-        Object dnsObj = ServiceDiscoveryUtil.getLaunchConfigObject(
-                instance.getService(), instance.getLaunchConfigName(), DockerInstanceConstants.FIELD_DNS);
-        if (dnsObj != null) {
-            dns.addAll((List<String>) dnsObj);
-        }
-        deployParams.put(DockerInstanceConstants.FIELD_DNS, dns);
     }
 
     protected Map<String, String> getLabels(DeploymentUnitInstance instance) {
