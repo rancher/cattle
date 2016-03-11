@@ -27,7 +27,7 @@ public class HealthCheckReconcile extends AbstractObjectProcessLogic implements 
     @Override
     public HandlerResult handle(ProcessState state, ProcessInstance process) {
         HealthcheckInstanceHostMap hcihm = (HealthcheckInstanceHostMap) state.getResource();
-        hcSvc.healthCheckReconcile(hcihm, HealthcheckConstants.HEALTH_STATE_UNHEALTHY);
+        hcSvc.healthCheckReconcile(hcihm, HealthcheckConstants.HEALTH_STATE_RECONCILE);
         return null;
     }
 

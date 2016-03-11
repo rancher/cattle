@@ -782,6 +782,151 @@ def test_health_check_reconcile(super_client, new_context):
              timeout=5)
 
 
+def test_health_check_all_hosts_removed_reconcile(super_client, new_context):
+    super_client.reload(register_simulated_host(new_context))
+    client = new_context.client
+
+    env = client.create_environment(name='env-' + random_str())
+    service = client.create_service(name='test', launchConfig={
+        'imageUuid': new_context.image_uuid,
+        'healthCheck': {
+            'port': 80,
+        }
+    }, environmentId=env.id)
+
+    service = client.wait_success(client.wait_success(service).activate())
+    assert service.state == 'active'
+
+    multiport = client.create_service(name='manyports', launchConfig={
+        'imageUuid': new_context.image_uuid,
+        'ports': "54537"
+    }, environmentId=env.id, scale=2)
+    multiport = client.wait_success(client.wait_success(multiport).activate())
+    assert multiport.state == 'active'
+
+    maps = _wait_until_active_map_count(service, 1, client)
+    expose_map = maps[0]
+    c = super_client.reload(expose_map.instance())
+    initial_len = len(c.healthcheckInstanceHostMaps())
+    assert initial_len == 2
+
+    for h in c.healthcheckInstanceHostMaps():
+        assert h.healthState == c.healthState
+
+    hcihm1 = c.healthcheckInstanceHostMaps()[0]
+    hosts = super_client.list_host(uuid=hcihm1.host().uuid)
+    assert len(hosts) == 1
+    host1 = hosts[0]
+
+    hcihm2 = c.healthcheckInstanceHostMaps()[1]
+    hosts = super_client.list_host(uuid=hcihm2.host().uuid)
+    assert len(hosts) == 1
+    host2 = hosts[0]
+
+    agent = _get_agent_for_container(c)
+
+    assert hcihm1.healthState == 'initializing'
+    assert hcihm2.healthState == 'initializing'
+    assert c.healthState == 'initializing'
+
+    ts = int(time.time())
+    client = _get_agent_client(agent)
+    se = client.create_service_event(externalTimestamp=ts,
+                                     reportedHealth='UP',
+                                     healthcheckUuid=hcihm1.uuid)
+    super_client.wait_success(se)
+    hcihm1 = super_client.wait_success(super_client.reload(hcihm1))
+    se = client.create_service_event(externalTimestamp=ts,
+                                     reportedHealth='UP',
+                                     healthcheckUuid=hcihm2.uuid)
+    super_client.wait_success(se)
+    super_client.wait_success(super_client.reload(hcihm2))
+    wait_for(lambda: super_client.reload(c).healthState == 'healthy',
+             timeout=5)
+
+    # remove both hosts
+    host1 = super_client.wait_success(host1.deactivate())
+    host1 = super_client.wait_success(super_client.delete(host1))
+    assert host1.state == 'removed'
+    host2 = super_client.wait_success(host2.deactivate())
+    host2 = super_client.wait_success(super_client.delete(host2))
+    assert host2.state == 'removed'
+
+    # instance should remain as healthy as there are no reporters at this point
+    try:
+        wait_for(lambda: super_client.reload(c).healthState == 'unhealthy',
+                 timeout=5)
+    except Exception:
+        pass
+
+    wait_for(lambda: super_client.reload(c).healthState == 'healthy',
+             timeout=5)
+
+
+def test_hosts_removed_reconcile_when_init(super_client, new_context):
+    super_client.reload(register_simulated_host(new_context))
+    client = new_context.client
+
+    env = client.create_environment(name='env-' + random_str())
+    service = client.create_service(name='test', launchConfig={
+        'imageUuid': new_context.image_uuid,
+        'healthCheck': {
+            'port': 80,
+        }
+    }, environmentId=env.id)
+
+    service = client.wait_success(client.wait_success(service).activate())
+    assert service.state == 'active'
+
+    multiport = client.create_service(name='manyports', launchConfig={
+        'imageUuid': new_context.image_uuid,
+        'ports': "54531"
+    }, environmentId=env.id, scale=2)
+    multiport = client.wait_success(client.wait_success(multiport).activate())
+    assert multiport.state == 'active'
+
+    maps = _wait_until_active_map_count(service, 1, client)
+    expose_map = maps[0]
+    c = super_client.reload(expose_map.instance())
+    initial_len = len(c.healthcheckInstanceHostMaps())
+    assert initial_len == 2
+
+    for h in c.healthcheckInstanceHostMaps():
+        assert h.healthState == c.healthState
+
+    hcihm1 = c.healthcheckInstanceHostMaps()[0]
+    hosts = super_client.list_host(uuid=hcihm1.host().uuid)
+    assert len(hosts) == 1
+    host1 = hosts[0]
+
+    hcihm2 = c.healthcheckInstanceHostMaps()[1]
+    hosts = super_client.list_host(uuid=hcihm2.host().uuid)
+    assert len(hosts) == 1
+    host2 = hosts[0]
+
+    assert hcihm1.healthState == 'initializing'
+    assert hcihm2.healthState == 'initializing'
+    assert c.healthState == 'initializing'
+
+    # remove both hosts
+    host1 = super_client.wait_success(host1.deactivate())
+    host1 = super_client.wait_success(super_client.delete(host1))
+    assert host1.state == 'removed'
+    host2 = super_client.wait_success(host2.deactivate())
+    host2 = super_client.wait_success(super_client.delete(host2))
+    assert host2.state == 'removed'
+
+    # instance should remain as healthy as there are no reporters at this point
+    try:
+        wait_for(lambda: super_client.reload(c).healthState == 'unhealthy',
+                 timeout=5)
+    except Exception:
+        pass
+
+    wait_for(lambda: super_client.reload(c).healthState == 'initializing',
+             timeout=5)
+
+
 def test_health_check_host_remove(super_client, context, client):
     # create 4 hosts for healtcheck as one of them would be removed later
     super_client.reload(register_simulated_host(context))
