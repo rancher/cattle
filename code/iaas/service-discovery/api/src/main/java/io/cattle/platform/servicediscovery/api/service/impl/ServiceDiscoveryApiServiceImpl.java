@@ -127,6 +127,7 @@ public class ServiceDiscoveryApiServiceImpl implements ServiceDiscoveryApiServic
                 Map<String, Object> cattleServiceData = ServiceDiscoveryUtil.getServiceDataAsMap(service,
                         launchConfigName, allocatorService);
                 Map<String, Object> composeServiceData = new HashMap<>();
+                excludeLables(cattleServiceData);
                 formatScale(service, cattleServiceData);
                 for (String cattleService : cattleServiceData.keySet()) {
                     translateRancherToCompose(forDockerCompose, cattleServiceData, composeServiceData, cattleService, service);
@@ -148,6 +149,19 @@ public class ServiceDiscoveryApiServiceImpl implements ServiceDiscoveryApiServic
             }
         }
         return data;
+    }
+
+    @SuppressWarnings("unchecked")
+    private void excludeLables(Map<String, Object> composeServiceData) {
+        if (composeServiceData.get(InstanceConstants.FIELD_LABELS) != null) {
+            Map<String, String> labels = new HashMap<>();
+            labels.putAll((HashMap<String, String>) composeServiceData.get(InstanceConstants.FIELD_LABELS));
+            String serviceHash = labels.get(ServiceDiscoveryConstants.LABEL_SERVICE_HASH);
+            if (serviceHash != null) {
+                labels.remove(ServiceDiscoveryConstants.LABEL_SERVICE_HASH);
+                composeServiceData.put(InstanceConstants.FIELD_LABELS, labels);
+            }
+        }
     }
 
     @SuppressWarnings("unchecked")
