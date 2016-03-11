@@ -107,15 +107,20 @@ public class ServiceUpdateActivate extends AbstractObjectProcessHandler {
             String resourceId = splittedForId[1];
             String resourceType = splittedForResourceType[1];
             Object obfuscatedId = idFormatter.formatId(resourceType, resourceId);
-            error = error.replace(resourceId + "]", obfuscatedId + "]");
 
-            // append predicated resource's transitioninig message to an error
+
+            // append predicated resource's transitioning message to an error
             Object predicateResource = objectManager.loadResource(resourceType, resourceId);
+            error = "Waiting for [" + resourceType + ":" + obfuscatedId + "]";
             if (predicateResource != null) {
                 String transitioningMsg = DataAccessor.fieldString(predicateResource,
                         "transitioningMessage");
-                if (!StringUtils.isEmpty(transitioningMsg)) {
-                    error = error + ". " + resourceType + " status: " + transitioningMsg;
+                // Upper case first letter in resourceType
+                StringBuffer sb = new StringBuffer(resourceType);
+                sb.replace(0, 1, resourceType.substring(0, 1).toUpperCase());
+
+                if (!StringUtils.isEmpty(sb)) {
+                    error = error + ". " + sb + " status: " + transitioningMsg;
                 }
             }
         }
