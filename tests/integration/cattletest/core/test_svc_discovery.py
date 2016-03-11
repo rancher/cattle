@@ -112,6 +112,8 @@ def test_activate_single_service(client, context, super_client):
                     "unhealthyThreshold": 6, "requestLine": "index.html",
                     "port": 200}
 
+    labels = {"foo": "bar"}
+
     launch_config = {"imageUuid": image_uuid}
 
     consumed_service = client.create_service(name=random_str(),
@@ -144,7 +146,8 @@ def test_activate_single_service(client, context, super_client):
                          'container2_link':
                              container2.id},
                      "requestedHostId": host.id,
-                     "healthCheck": health_check}
+                     "healthCheck": health_check,
+                     "labels": labels}
 
     metadata = {"bar": {"foo": [{"id": 0}]}}
     svc = client.create_service(name=random_str(),
@@ -2728,4 +2731,67 @@ def test_host_dns(client, context, super_client):
         list_container(name=env.name + "_" + service.name + "_" + "1")
     assert len(instances) == 1
     c = instances[0]
-    assert len(c.dns) == 0
+    assert c.dns is None or len(c.dns) == 0
+
+
+def test_dns_label(client, context):
+    env = _create_stack(client)
+
+    image_uuid = context.image_uuid
+    labels = {'io.rancher.container.dns': "false"}
+    launch_config = {"imageUuid": image_uuid,
+                     "labels": labels}
+
+    svc = client.create_service(name=random_str(),
+                                environmentId=env.id,
+                                launchConfig=launch_config)
+    svc = client.wait_success(svc)
+
+    service = client.wait_success(svc.activate())
+    assert service.state == "active"
+    instance_service_map = client \
+        .list_serviceExposeMap(serviceId=service.id)
+
+    assert len(instance_service_map) == 1
+    wait_for_condition(
+        client, instance_service_map[0], _resource_is_active,
+        lambda x: 'State is: ' + x.state)
+
+    instances = client. \
+        list_container(name=env.name + "_" + service.name + "_" + "1")
+    assert len(instances) == 1
+    c = instances[0]
+    assert c.dns is None or len(c.dns) == 0
+
+
+def test_dns_label_and_dns_param(client, context):
+    env = _create_stack(client)
+
+    image_uuid = context.image_uuid
+    labels = {'io.rancher.container.dns': "false"}
+    launch_config = {"imageUuid": image_uuid,
+                     "labels": labels,
+                     "dns": ["1.1.1.1"],
+                     "dnsSearch": ["foo"]}
+
+    svc = client.create_service(name=random_str(),
+                                environmentId=env.id,
+                                launchConfig=launch_config)
+    svc = client.wait_success(svc)
+
+    service = client.wait_success(svc.activate())
+    assert service.state == "active"
+    instance_service_map = client \
+        .list_serviceExposeMap(serviceId=service.id)
+
+    assert len(instance_service_map) == 1
+    wait_for_condition(
+        client, instance_service_map[0], _resource_is_active,
+        lambda x: 'State is: ' + x.state)
+
+    instances = client. \
+        list_container(name=env.name + "_" + service.name + "_" + "1")
+    assert len(instances) == 1
+    c = instances[0]
+    assert c.dns == ["1.1.1.1"]
+    assert c.dnsSearch == ["foo"]
