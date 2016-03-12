@@ -351,6 +351,9 @@ def test_env_deactivate_services(client, context):
     assert service1.state == "active"
     assert service2.state == "active"
 
+    # deactivate service
+    service1 = client.wait_success(service1.deactivate())
+
     # deactivate services
     env.deactivateservices()
     service1 = client.wait_success(service1)
@@ -359,6 +362,11 @@ def test_env_deactivate_services(client, context):
     assert service2.state == "inactive"
     _validate_instance_stopped(service1, client, env)
     _validate_instance_stopped(service2, client, env)
+
+    # remove services
+    client.wait_success(service1.remove())
+    client.wait_success(service2.remove())
+    env.deactivateservices()
 
 
 def test_remove_inactive_service(client, context):
