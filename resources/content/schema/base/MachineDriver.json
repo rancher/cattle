@@ -6,6 +6,10 @@
         },
         "errorMessage": {
             "type": "string"
+        },
+        "name": {
+            "validChars": "a-zA-Z0-9-",
+            "unique": true
         }
     },
     "resourceActions" : {
