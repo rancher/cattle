@@ -33,6 +33,7 @@ public class ServiceDiscoveryConstants {
     public static final String FIELD_VERSION = "version";
     public static final String FIELD_SELECTOR_CONTAINER = "selectorContainer";
     public static final String FIELD_SELECTOR_LINK = "selectorLink";
+    public static final String FIELD_START_ON_CREATE = "startOnCreate";
     public static final String FIELD_IN_SERVICE_STRATEGY = "inServiceStrategy";
     public static final String FIELD_TO_SERVICE_STRATEGY = "toServiceStrategy";
     public static final String FIELD_FQDN = "fqdn";
