@@ -6,6 +6,7 @@ import io.cattle.platform.engine.handler.HandlerResult;
 import io.cattle.platform.engine.process.ProcessInstance;
 import io.cattle.platform.engine.process.ProcessState;
 import io.cattle.platform.json.JsonMapper;
+import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.process.common.handler.AbstractObjectProcessHandler;
 import io.cattle.platform.servicediscovery.api.constants.ServiceDiscoveryConstants;
 import io.cattle.platform.servicediscovery.service.ServiceDiscoveryService;
@@ -35,6 +36,11 @@ public class ServiceCreate extends AbstractObjectProcessHandler {
         sdService.setVIP(service);
         sdService.setPorts(service);
         sdService.setToken(service);
+
+        if (DataAccessor.fieldBool(service, ServiceDiscoveryConstants.FIELD_START_ON_CREATE)) {
+            return new HandlerResult().withShouldContinue(true).withChainProcessName(ServiceDiscoveryConstants.PROCESS_SERVICE_ACTIVATE);
+        }
+
         return null;
     }
 }

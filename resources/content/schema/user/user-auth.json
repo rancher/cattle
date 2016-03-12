@@ -439,6 +439,7 @@
         "service.retainIp" : "cr",
         "service.assignServiceIpAddress" : "cr",
         "service.healthState": "r",
+        "service.startOnCreate": "cr",
 
         "addRemoveServiceLinkInput" : "r",
         "addRemoveServiceLinkInput.serviceLink" : "cr",
