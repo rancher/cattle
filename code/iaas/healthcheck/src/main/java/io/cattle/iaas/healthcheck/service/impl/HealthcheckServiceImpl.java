@@ -151,14 +151,26 @@ public class HealthcheckServiceImpl implements HealthcheckService {
             }
 
             boolean allUnHealthy = true;
+            int i = 0;
             for (HealthcheckInstanceHostMap map : others) {
                 if (map.getId().equals(hcihm.getId())) {
                     continue;
                 }
-
+                i++;
                 if (!HEALTH_STATE_UNHEALTHY.equals(map.getHealthState())) {
                     allUnHealthy = false;
                     break;
+                }
+            }
+
+            if (healthState.equalsIgnoreCase(HealthcheckConstants.HEALTH_STATE_RECONCILE)) {
+                // if no other hosts are present, don't change the state;
+                // otherwise calculate based on the health check present
+                if (i == 0) {
+                    return null;
+                } else {
+                    return allUnHealthy ? HealthcheckConstants.HEALTH_STATE_UNHEALTHY
+                            : null;
                 }
             }
 
