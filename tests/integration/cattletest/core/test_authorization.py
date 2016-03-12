@@ -1564,6 +1564,7 @@ def test_svc_discovery_service(admin_user_client, user_client, project_client):
         'retainIp': 'r',
         'assignServiceIpAddress': 'r',
         'healthState': 'r',
+        'startOnCreate': 'r',
     })
 
     auth_check(user_client.schema, 'service', 'r', {
@@ -1585,7 +1586,7 @@ def test_svc_discovery_service(admin_user_client, user_client, project_client):
         'retainIp': 'r',
         'assignServiceIpAddress': 'r',
         'healthState': 'r',
-
+        'startOnCreate': 'r',
     })
 
     auth_check(project_client.schema, 'service', 'crud', {
@@ -1607,6 +1608,7 @@ def test_svc_discovery_service(admin_user_client, user_client, project_client):
         'retainIp': 'cr',
         'assignServiceIpAddress': 'cr',
         'healthState': 'r',
+        'startOnCreate': 'cr',
     })
 
 

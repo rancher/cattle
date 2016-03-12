@@ -71,6 +71,11 @@
           "type": "boolean",
           "nullable": false,
           "default": false
+        },
+        "startOnCreate": {
+            "type": "boolean",
+            "nullable": true,
+            "default": false
         }
     },
     "resourceActions" : {
