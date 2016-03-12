@@ -358,7 +358,9 @@ public class DnsInfoDaoImpl extends AbstractJooqDao implements DnsInfoDao {
         // b) for k8s services
         Map<String, Object> data = new HashMap<>();
         data.putAll(DataUtils.getFields(service));
-        if (data.containsKey(ServiceDiscoveryConstants.FIELD_SET_VIP)
+        Object vipObj = data.get(ServiceDiscoveryConstants.FIELD_SET_VIP);
+        boolean setVip = vipObj != null && Boolean.valueOf(vipObj.toString());
+        if (setVip
                 || service.getKind().equalsIgnoreCase("kubernetesservice")) {
             return vip;
         }
