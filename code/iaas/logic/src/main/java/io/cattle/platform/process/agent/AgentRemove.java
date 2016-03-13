@@ -1,8 +1,10 @@
 package io.cattle.platform.process.agent;
 
 import io.cattle.platform.agent.util.AgentUtils;
+import io.cattle.platform.core.constants.StoragePoolConstants;
 import io.cattle.platform.core.model.Account;
 import io.cattle.platform.core.model.Agent;
+import io.cattle.platform.core.model.StoragePool;
 import io.cattle.platform.engine.handler.HandlerResult;
 import io.cattle.platform.engine.process.ProcessInstance;
 import io.cattle.platform.engine.process.ProcessState;
@@ -40,6 +42,13 @@ public class AgentRemove extends AbstractObjectProcessHandler {
             }
 
             for (Object obj : objectManager.children(agent, clz)) {
+                if (obj instanceof StoragePool) {
+                    StoragePool sp = (StoragePool)obj;
+                    if (StoragePoolConstants.TYPE.equals(sp.getKind())) {
+                        // Don't automatically delete shared storage pools
+                        continue;
+                    }
+                }
                 deactivateThenScheduleRemove(obj, state.getData());
             }
         }

@@ -64,6 +64,19 @@ def test_storage_pool_update(new_context, super_client):
     assert sp.state == 'active'
 
 
+def test_storage_pool_agent_delete(new_context, super_client):
+    client = new_context.client
+    sp = add_storage_pool(new_context)
+
+    original_agent = super_client.list_agent(accountId=new_context.agent.id)[0]
+
+    original_agent = super_client.wait_success(original_agent.deactivate())
+    original_agent = super_client.wait_success(original_agent.remove())
+
+    sp = client.reload(sp)
+    assert sp.state == 'active'
+
+
 def test_multiple_sp_volume_schedule(new_context):
     # Tests that when a host has more than one storage pool (one local, one
     # shared), and a container is scheduled to it, the root volume can be
