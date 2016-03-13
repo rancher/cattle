@@ -36,6 +36,7 @@ import io.cattle.platform.servicediscovery.deployment.impl.lock.ServicesSidekick
 import io.cattle.platform.servicediscovery.deployment.impl.unit.DeploymentUnit;
 import io.cattle.platform.servicediscovery.deployment.impl.unit.DeploymentUnitInstanceIdGeneratorImpl;
 import io.cattle.platform.servicediscovery.service.ServiceDiscoveryService;
+import io.cattle.platform.util.exception.ServiceReconcileException;
 import io.github.ibuildthecloud.gdapi.id.IdFormatter;
 
 import java.util.ArrayList;
@@ -132,7 +133,7 @@ public class DeploymentManagerImpl implements DeploymentManager {
                 // reload planner as there can be new hosts added for Global services
                 planner = getPlanner(services);
                 if (needToReconcile(services, planner)) {
-                    throw new IllegalStateException(
+                    throw new ServiceReconcileException(
                             "Failed to do service reconcile for service [" + service.getId() + "]");
                 }
 

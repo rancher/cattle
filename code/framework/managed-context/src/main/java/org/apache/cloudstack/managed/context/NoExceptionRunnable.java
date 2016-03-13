@@ -1,5 +1,7 @@
 package org.apache.cloudstack.managed.context;
 
+import io.cattle.platform.util.exception.LoggableException;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -12,7 +14,11 @@ public abstract class NoExceptionRunnable extends ManagedContextRunnable {
         try {
             doRun();
         } catch (Throwable t) {
-            log.error("Uncaught exception", t);
+            if (t instanceof LoggableException) {
+                ((LoggableException) t).log();
+            } else {
+                log.error("Uncaught exception", t);
+            }
         }
     }
 
