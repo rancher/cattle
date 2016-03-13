@@ -2803,3 +2803,19 @@ def test_dns_label_and_dns_param(client, context):
     c = instances[0]
     assert c.dns == ["1.1.1.1"]
     assert c.dnsSearch == ["foo"]
+
+
+def test_service_start_on_create(client, context):
+    env = _create_stack(client)
+
+    image_uuid = context.image_uuid
+    launch_config = {"imageUuid": image_uuid}
+
+    svc = client.create_service(name=random_str(),
+                                environmentId=env.id,
+                                startOnCreate=True,
+                                launchConfig=launch_config)
+    assert svc.startOnCreate
+
+    svc = client.wait_success(svc)
+    assert svc.state == 'active'
