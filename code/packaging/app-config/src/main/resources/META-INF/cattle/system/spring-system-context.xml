@@ -20,7 +20,7 @@
 
 	<bean id="JarInJarServiceLocator" class="io.cattle.platform.liquibase.JarInJarServiceLocator" />
 	<bean id="liquibase-core" class="io.cattle.platform.liquibase.Loader" depends-on="JarInJarServiceLocator" >
-		<property name="dataSource" ref="DataSource" />
+		<property name="dataSourceFactory" ref="DataSourceFactory" />
 		<property name="changeLog" value="classpath:db/changelog.xml" />
 	</bean>
 

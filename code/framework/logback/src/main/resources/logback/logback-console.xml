@@ -27,6 +27,10 @@
         <appender-ref ref="CONSOLE_STATUS" />
     </logger>
 
+    <logger name="liquibase" additivity="false" >
+        <appender-ref ref="CONSOLE_STATUS" />
+    </logger>
+
     <root>
         <appender-ref ref="CONSOLE" />
     </root>

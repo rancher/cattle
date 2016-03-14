@@ -1,6 +1,7 @@
 package io.cattle.platform.liquibase;
 
 import io.cattle.platform.archaius.util.ArchaiusUtil;
+import io.cattle.platform.datasource.DataSourceFactory;
 
 import java.util.EnumSet;
 import java.util.Set;
@@ -28,9 +29,14 @@ public class Loader extends SpringLiquibase {
     Configuration configuration;
     String lockTable = "DATABASECHANGELOGLOCK";
     String changeLogTable = "DATABASECHANGELOG";
+    DataSourceFactory dataSourceFactory;
 
     @Override
     public void afterPropertiesSet() throws LiquibaseException {
+        if (getDataSource() == null && dataSourceFactory != null) {
+            setDataSource(dataSourceFactory.createDataSource("liquibase"));
+        }
+
         String oldLockTable = System.getProperty(LOCK_OPTION);
         String oldLogTable = System.getProperty(LOG_OPTION);
         try {
@@ -91,6 +97,14 @@ public class Loader extends SpringLiquibase {
 
     public void setChangeLogTable(String changeLogTable) {
         this.changeLogTable = changeLogTable;
+    }
+
+    public DataSourceFactory getDataSourceFactory() {
+        return dataSourceFactory;
+    }
+
+    public void setDataSourceFactory(DataSourceFactory dataSourceFactory) {
+        this.dataSourceFactory = dataSourceFactory;
     }
 
 }
