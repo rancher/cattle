@@ -155,7 +155,7 @@ public class ValidationHandler extends AbstractResponseGenerator {
                 continue;
             }
 
-            boolean wasNull = value == null;
+            boolean wasNull = value == null && (field.isNullable() || !field.hasDefault());
             value = convert(fieldName, field, value, context);
 
             if (value != null || wasNull) {
