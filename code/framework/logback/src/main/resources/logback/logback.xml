@@ -68,6 +68,10 @@
         <name>logback.other.level</name>
     </define>
 
+    <define name="liquibaseLevel" class="io.cattle.platform.logback.ArchaiusProperty" >
+        <name>logback.liquibase.level</name>
+    </define>
+
     <define name="aggregationLevel" class="io.cattle.platform.logback.ArchaiusProperty" >
         <name>logback.aggregation.level</name>
     </define>
@@ -135,7 +139,7 @@
     <include optional="true" resource="logback-additional.xml" />
 
     <logger name="liquibase">
-        <level value="${otherLevel}" />
+        <level value="${liquibaseLevel}" />
     </logger>
 
     <logger name="com">
