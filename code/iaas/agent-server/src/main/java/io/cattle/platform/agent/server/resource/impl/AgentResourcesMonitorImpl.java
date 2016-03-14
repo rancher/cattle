@@ -1,7 +1,7 @@
 package io.cattle.platform.agent.server.resource.impl;
 
-import static io.cattle.platform.core.model.tables.PhysicalHostTable.*;
 import static io.cattle.platform.core.model.tables.HostTable.*;
+import static io.cattle.platform.core.model.tables.PhysicalHostTable.*;
 import io.cattle.platform.agent.server.ping.dao.PingDao;
 import io.cattle.platform.agent.server.resource.AgentResourcesEventListener;
 import io.cattle.platform.agent.server.util.AgentConnectionUtils;
@@ -19,6 +19,10 @@ import io.cattle.platform.core.model.Host;
 import io.cattle.platform.core.model.IpAddress;
 import io.cattle.platform.core.model.PhysicalHost;
 import io.cattle.platform.core.model.StoragePool;
+import io.cattle.platform.eventing.EventService;
+import io.cattle.platform.eventing.model.Event;
+import io.cattle.platform.eventing.model.EventVO;
+import io.cattle.platform.framework.event.FrameworkEvents;
 import io.cattle.platform.framework.event.Ping;
 import io.cattle.platform.lock.LockCallbackNoReturn;
 import io.cattle.platform.lock.LockDelegator;
@@ -76,6 +80,8 @@ public class AgentResourcesMonitorImpl implements AgentResourcesEventListener {
     LockDelegator lockDelegator;
     @Inject
     LockManager lockManager;
+    @Inject
+    EventService eventService;
     Cache<String, Boolean> resourceCache;
 
     public AgentResourcesMonitorImpl() {
@@ -229,6 +235,13 @@ public class AgentResourcesMonitorImpl implements AgentResourcesEventListener {
                         resourceDao.updateAndSchedule(host, updateFields);
                     } else {
                         objectManager.setFields(host, updateFields);
+                        updateFields.put(ObjectMetaDataManager.ACCOUNT_FIELD, host.getAccountId());
+                        // send host update event
+                        Event event = EventVO.newEvent(FrameworkEvents.STATE_CHANGE)
+                                .withData(updateFields)
+                                .withResourceType(host.getKind())
+                                .withResourceId(host.getId().toString());
+                        eventService.publish(event);
                     }
                 }
             } else {
