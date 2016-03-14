@@ -13,7 +13,7 @@ kubelet:
         - --healthz-bind-address=0.0.0.0
         - --cluster-dns=169.254.169.250
         - --cluster-domain=cluster.local
-    image: rancher/k8s:v1.2.0-alpha.8-rancher-2
+    image: rancher/k8s:v1.2.0-alpha.8-rancher-3
     volumes:
         - /var/run/docker.sock:/var/run/docker.sock
         - /var/run:/host/var/run
@@ -35,7 +35,7 @@ proxy:
         - --v=2
         - --healthz-bind-address=0.0.0.0
         - --proxy-mode=userspace
-    image: rancher/k8s:v1.2.0-alpha.8-rancher-2
+    image: rancher/k8s:v1.2.0-alpha.8-rancher-3
     privileged: true
     net: host
     links:
@@ -47,7 +47,7 @@ etcd:
         - --advertise-client-urls=http://etcd:4001
         - --listen-client-urls=http://0.0.0.0:4001
         - --data-dir=/var/etcd/data
-    image: gcr.io/google_containers/etcd:2.0.12
+    image: rancher/etcd:2.0.12
 
 kubernetes:
     labels:
@@ -60,7 +60,7 @@ kubernetes:
         - --insecure-bind-address=0.0.0.0
         - --insecure-port=80
         - --cloud-provider=rancher
-    image: rancher/kube-apiserver:v1.2.0-alpha.8-rancher-2
+    image: rancher/kube-apiserver:v1.2.0-alpha.8-rancher-3
     links:
         - etcd
 
@@ -79,7 +79,7 @@ scheduler:
         - /usr/local/bin/kube-scheduler
         - --master=http://master
         - --address=0.0.0.0
-    image: rancher/kube-scheduler:v1.2.0-alpha.8-rancher-2
+    image: rancher/kube-scheduler:v1.2.0-alpha.8-rancher-3
     links:
         - kubernetes:master
 
@@ -89,7 +89,7 @@ controller-manager:
         - --master=http://master
         - --cloud-provider=rancher
         - --address=0.0.0.0
-    image: rancher/kube-controller-manager:v1.2.0-alpha.8-rancher-2
+    image: rancher/kube-controller-manager:v1.2.0-alpha.8-rancher-3
     labels:
         io.rancher.container.create_agent: "true"
         io.rancher.container.agent.role: environment
