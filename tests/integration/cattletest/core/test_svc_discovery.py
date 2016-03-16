@@ -584,7 +584,7 @@ def _wait_until_active_map_count(service, count, client):
             list_serviceExposeMap(serviceId=service.id, state='active')
         return len(m) == count
 
-    wait_for_condition(client, service, wait_for_map_count)
+    wait_for(lambda: wait_for_condition(client, service, wait_for_map_count))
     return client. \
         list_serviceExposeMap(serviceId=service.id, state='active')
 
@@ -1081,7 +1081,8 @@ def _validate_service_ip_map(client, service, ip, state):
                                   state=state)
         return len(m) >= 1
 
-    wait_for_condition(client, service, wait_for_map_count)
+    wait_for(lambda: wait_for_condition(client, service,
+                                        wait_for_map_count), timeout=5)
     return client. \
         list_serviceExposeMap(serviceId=service.id, state=state)
 
@@ -1092,7 +1093,9 @@ def _validate_service_instance_map_count(client, service, state, count):
             list_serviceExposeMap(serviceId=service.id, state=state)
         return len(m) >= count
 
-    wait_for_condition(client, service, wait_for_map_count)
+    wait_for(lambda: wait_for_condition(client, service,
+                                        wait_for_map_count), timeout=5)
+
     return client. \
         list_serviceExposeMap(serviceId=service.id, state=state)
 
@@ -1104,7 +1107,8 @@ def _validate_service_hostname_map(client, service, host_name, state):
                                   hostname=host_name, state=state)
         return len(m) >= 1
 
-    wait_for_condition(client, service, wait_for_map_count)
+    wait_for(lambda: wait_for_condition(client, service,
+                                        wait_for_map_count), timeout=5)
 
 
 def test_external_service_w_ips(client, context):
