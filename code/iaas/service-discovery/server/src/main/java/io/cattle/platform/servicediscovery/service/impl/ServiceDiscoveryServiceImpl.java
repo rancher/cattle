@@ -646,13 +646,13 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
                                 initCount++;
                             }
                         }
-                        
+
                         if (isStartOnce(instance)) {
                             startedOnce++;
                         }
                     }
 
-                    if (startedOnce > 0 && startedOnce == expectedScale) {
+                    if (startedOnce > 0 && startedOnce + healthyCount >= expectedScale) {
                         return HealthcheckConstants.SERVICE_HEALTH_STATE_STARTED_ONCE;
                     }
 
