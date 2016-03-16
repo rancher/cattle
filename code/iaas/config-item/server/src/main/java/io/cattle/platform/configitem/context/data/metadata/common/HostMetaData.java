@@ -17,6 +17,7 @@ public class HostMetaData {
     Map<String, String> labels;
     Long hostId;
     String uuid;
+    String hostname;
 
     public String getAgent_ip() {
         return agent_ip;
@@ -38,7 +39,9 @@ public class HostMetaData {
     public HostMetaData(String agent_ip, Host host) {
         super();
         this.agent_ip = agent_ip;
-        this.name = StringUtils.isEmpty(host.getName()) ? DataAccessor.fieldString(host, "hostname") : host.getName();
+        String hostname = DataAccessor.fieldString(host, "hostname");
+        this.name = StringUtils.isEmpty(host.getName()) ?  hostname: host.getName();
+        this.hostname = hostname;
         this.labels = (Map<String, String>) DataAccessor.fields(host)
                 .withKey(InstanceConstants.FIELD_LABELS)
                 .withDefault(Collections.EMPTY_MAP).as(Map.class);
@@ -73,5 +76,13 @@ public class HostMetaData {
 
     public void setUuid(String uuid) {
         this.uuid = uuid;
+    }
+
+    public String getHostname() {
+        return hostname;
+    }
+
+    public void setHostname(String hostname) {
+        this.hostname = hostname;
     }
 }
