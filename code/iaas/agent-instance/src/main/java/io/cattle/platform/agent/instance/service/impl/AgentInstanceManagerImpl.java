@@ -6,9 +6,11 @@ import io.cattle.platform.agent.instance.service.AgentInstanceManager;
 import io.cattle.platform.agent.instance.service.InstanceNicLookup;
 import io.cattle.platform.agent.instance.service.NetworkServiceInfo;
 import io.cattle.platform.core.constants.AgentConstants;
+import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.constants.InstanceConstants.SystemContainer;
 import io.cattle.platform.core.dao.GenericResourceDao;
+import io.cattle.platform.core.model.Account;
 import io.cattle.platform.core.model.Agent;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.NetworkServiceProvider;
@@ -58,6 +60,12 @@ public class AgentInstanceManagerImpl implements AgentInstanceManager {
         Instance instance = objectManager.loadResource(Instance.class, nic.getInstanceId());
 
         if (instance == null) {
+            return result;
+        }
+
+        Account account = objectManager.loadResource(Account.class, instance.getAccountId());
+        List<String> removedStates = Arrays.asList(CommonStatesConstants.REMOVED, CommonStatesConstants.REMOVING);
+        if (account == null || removedStates.contains(account.getState())) {
             return result;
         }
 

@@ -199,6 +199,7 @@ def test_health_check_create_service(super_client, context, client):
     wait_for(lambda: super_client.reload(c).healthState == 'unhealthy',
              timeout=5)
     wait_for(lambda: len(service.serviceExposeMaps()) > 1)
+    service.remove()
 
 
 def test_health_check_ip_retain(super_client, context, client):
@@ -260,6 +261,7 @@ def test_health_check_ip_retain(super_client, context, client):
         assert c2.name == c1.name
         assert c2.primaryIpAddress == ip1
         break
+    service.remove()
 
 
 def test_health_state_stack(super_client, context, client):
@@ -326,6 +328,7 @@ def test_health_state_stack(super_client, context, client):
              timeout=5)
     wait_for(lambda: super_client.reload(env).healthState == 'unhealthy',
              timeout=5)
+    service.remove()
 
 
 def test_health_state_start_once(super_client, context, client):
@@ -377,6 +380,7 @@ def test_health_state_start_once(super_client, context, client):
              timeout=5)
     wait_for(lambda: super_client.reload(env).healthState == 'healthy',
              timeout=5)
+    svc.remove()
 
 
 def test_health_state_selectors(context, client):
@@ -401,6 +405,7 @@ def test_health_state_selectors(context, client):
              timeout=5)
     wait_for(lambda: client.reload(env).healthState == 'healthy',
              timeout=5)
+    service.remove()
 
 
 def test_svc_health_state(context, client):
@@ -418,6 +423,7 @@ def test_svc_health_state(context, client):
              timeout=5)
     wait_for(lambda: client.reload(env).healthState == 'healthy',
              timeout=5)
+    service.remove()
 
 
 def test_health_check_init_timeout(super_client, context, client):
@@ -446,6 +452,7 @@ def test_health_check_init_timeout(super_client, context, client):
     # wait for the instance to be removed
     wait_for_condition(client, c,
                        lambda x: x.state == 'removed')
+    service.remove()
 
 
 def test_health_check_reinit_timeout(super_client, context, client):
@@ -493,6 +500,7 @@ def test_health_check_reinit_timeout(super_client, context, client):
     # wait for the instance to be removed
     wait_for_condition(super_client, c,
                        lambda x: x.state == 'removed')
+    service.remove()
 
 
 def test_health_check_bad_external_timestamp(super_client, context, client):
@@ -522,6 +530,7 @@ def test_health_check_bad_external_timestamp(super_client, context, client):
                                           healthcheckUuid=hcihm.uuid)
     assert e.value.error.code == 'MissingRequired'
     assert e.value.error.fieldName == 'externalTimestamp'
+    service.remove()
 
 
 def test_health_check_noop(super_client, context, client):
@@ -556,6 +565,7 @@ def test_health_check_noop(super_client, context, client):
     assert len(svc.serviceExposeMaps()) == 1
     c = super_client.wait_success(c)
     assert c.state == 'running'
+    svc.remove()
 
 
 def test_health_check_quorum(super_client, context, client):
@@ -623,6 +633,7 @@ def test_health_check_quorum(super_client, context, client):
     assert len(svc.serviceExposeMaps()) >= 3
     wait_for_condition(client, c1,
                        lambda x: x.state == 'removed')
+    svc.remove()
 
 
 def test_health_check_default(super_client, context, client):
@@ -655,6 +666,7 @@ def test_health_check_default(super_client, context, client):
     c1 = super_client.wait_success(c1)
     wait_for_condition(client, c1,
                        lambda x: x.state == 'removed')
+    svc.remove()
 
 
 def test_health_check_bad_agent(super_client, context, client):
@@ -697,6 +709,7 @@ def test_health_check_bad_agent(super_client, context, client):
                                           reportedHealth='Something Bad',
                                           healthcheckUuid=hcihm.uuid)
     assert e.value.error.code == 'CantVerifyHealthcheck'
+    service.remove()
 
 
 def test_health_check_reconcile(super_client, new_context):
@@ -714,12 +727,14 @@ def test_health_check_reconcile(super_client, new_context):
     service = client.wait_success(client.wait_success(service).activate())
     assert service.state == 'active'
 
+    # to trigger network-agent creation on host
     multiport = client.create_service(name='manyports', launchConfig={
         'imageUuid': new_context.image_uuid,
         'ports': "5453"
     }, environmentId=env.id, scale=2)
     multiport = client.wait_success(client.wait_success(multiport).activate())
     assert multiport.state == 'active'
+    multiport.remove()
 
     maps = _wait_until_active_map_count(service, 1, client)
     expose_map = maps[0]
@@ -771,7 +786,6 @@ def test_health_check_reconcile(super_client, new_context):
     # still healthy as only one host reported healthy
     wait_for(lambda: super_client.reload(c).healthState == 'healthy',
              timeout=5)
-
     # remove the host 1
     host2 = super_client.wait_success(host2.deactivate())
     host2 = super_client.wait_success(super_client.delete(host2))
@@ -780,6 +794,7 @@ def test_health_check_reconcile(super_client, new_context):
     # should be unhealthy as the only health state reported is unhealthy
     wait_for(lambda: super_client.reload(c).healthState == 'unhealthy',
              timeout=5)
+    service.remove()
 
 
 def test_health_check_all_hosts_removed_reconcile(super_client, new_context):
@@ -797,12 +812,14 @@ def test_health_check_all_hosts_removed_reconcile(super_client, new_context):
     service = client.wait_success(client.wait_success(service).activate())
     assert service.state == 'active'
 
+    # to trigger network agent creation on hosts
     multiport = client.create_service(name='manyports', launchConfig={
         'imageUuid': new_context.image_uuid,
         'ports': "54537"
     }, environmentId=env.id, scale=2)
     multiport = client.wait_success(client.wait_success(multiport).activate())
     assert multiport.state == 'active'
+    multiport.remove()
 
     maps = _wait_until_active_map_count(service, 1, client)
     expose_map = maps[0]
@@ -861,6 +878,7 @@ def test_health_check_all_hosts_removed_reconcile(super_client, new_context):
 
     wait_for(lambda: super_client.reload(c).healthState == 'healthy',
              timeout=5)
+    service.remove()
 
 
 def test_hosts_removed_reconcile_when_init(super_client, new_context):
@@ -877,13 +895,14 @@ def test_hosts_removed_reconcile_when_init(super_client, new_context):
 
     service = client.wait_success(client.wait_success(service).activate())
     assert service.state == 'active'
-
+    # to trigger network agent creation on hosts
     multiport = client.create_service(name='manyports', launchConfig={
         'imageUuid': new_context.image_uuid,
         'ports': "54531"
     }, environmentId=env.id, scale=2)
     multiport = client.wait_success(client.wait_success(multiport).activate())
     assert multiport.state == 'active'
+    multiport.remove()
 
     maps = _wait_until_active_map_count(service, 1, client)
     expose_map = maps[0]
@@ -925,6 +944,7 @@ def test_hosts_removed_reconcile_when_init(super_client, new_context):
 
     wait_for(lambda: super_client.reload(c).healthState == 'initializing',
              timeout=5)
+    service.remove()
 
 
 def test_health_check_host_remove(super_client, context, client):
@@ -942,12 +962,14 @@ def test_health_check_host_remove(super_client, context, client):
         }
     }, environmentId=env.id)
 
+    # to trigger network agent creation on hosts
     multiport = client.create_service(name='manyports', launchConfig={
         'imageUuid': context.image_uuid,
         'ports': "5454"
     }, environmentId=env.id, scale=3)
     multiport = client.wait_success(client.wait_success(multiport).activate())
     assert multiport.state == 'active'
+    multiport.remove()
 
     service = client.wait_success(client.wait_success(service).activate())
     assert service.state == 'active'
@@ -983,6 +1005,7 @@ def test_health_check_host_remove(super_client, context, client):
                 break
 
     assert hcim is None
+    service.remove()
 
 
 def test_healtcheck(new_context, super_client):
@@ -999,6 +1022,7 @@ def test_healtcheck(new_context, super_client):
     }, environmentId=stack.id, scale=2)
     multiport = client.wait_success(client.wait_success(multiport).activate())
     assert multiport.state == 'active'
+    multiport.remove()
 
     # test that external service was set with healtcheck
     health_check = {"name": "check1", "responseTimeout": 3,
@@ -1049,11 +1073,13 @@ def test_healtcheck(new_context, super_client):
     }, environmentId=stack.id, scale=5)
     multiport = client.wait_success(client.wait_success(multiport).activate())
     assert multiport.state == 'active'
+    multiport.remove()
 
     client.wait_success(service.activate(), 120)
 
     host_maps = _wait_health_host_count(super_client, health_id, 3)
     validate_container_host(host_maps)
+    service.remove()
 
 
 def _wait_health_host_count(super_client, health_id, count):

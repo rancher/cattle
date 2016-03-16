@@ -1,14 +1,14 @@
 package io.cattle.platform.configitem.context.dao.impl;
 
-import static io.cattle.platform.core.model.tables.HostIpAddressMapTable.*;
-import static io.cattle.platform.core.model.tables.HostTable.*;
-import static io.cattle.platform.core.model.tables.InstanceHostMapTable.*;
-import static io.cattle.platform.core.model.tables.InstanceTable.*;
-import static io.cattle.platform.core.model.tables.IpAddressNicMapTable.*;
-import static io.cattle.platform.core.model.tables.IpAddressTable.*;
-import static io.cattle.platform.core.model.tables.NicTable.*;
-import static io.cattle.platform.core.model.tables.ServiceExposeMapTable.*;
-import static io.cattle.platform.core.model.tables.ServiceIndexTable.*;
+import static io.cattle.platform.core.model.tables.HostIpAddressMapTable.HOST_IP_ADDRESS_MAP;
+import static io.cattle.platform.core.model.tables.HostTable.HOST;
+import static io.cattle.platform.core.model.tables.InstanceHostMapTable.INSTANCE_HOST_MAP;
+import static io.cattle.platform.core.model.tables.InstanceTable.INSTANCE;
+import static io.cattle.platform.core.model.tables.IpAddressNicMapTable.IP_ADDRESS_NIC_MAP;
+import static io.cattle.platform.core.model.tables.IpAddressTable.IP_ADDRESS;
+import static io.cattle.platform.core.model.tables.NicTable.NIC;
+import static io.cattle.platform.core.model.tables.ServiceExposeMapTable.SERVICE_EXPOSE_MAP;
+import static io.cattle.platform.core.model.tables.ServiceIndexTable.SERVICE_INDEX;
 import io.cattle.platform.configitem.context.dao.MetaDataInfoDao;
 import io.cattle.platform.configitem.context.data.metadata.common.ContainerMetaData;
 import io.cattle.platform.configitem.context.data.metadata.common.HostMetaData;
@@ -23,15 +23,19 @@ import io.cattle.platform.core.model.ServiceIndex;
 import io.cattle.platform.core.model.tables.HostTable;
 import io.cattle.platform.core.model.tables.InstanceTable;
 import io.cattle.platform.core.model.tables.IpAddressTable;
+import io.cattle.platform.core.model.tables.NicTable;
 import io.cattle.platform.core.model.tables.ServiceExposeMapTable;
 import io.cattle.platform.core.model.tables.records.ServiceIndexRecord;
 import io.cattle.platform.db.jooq.dao.impl.AbstractJooqDao;
 import io.cattle.platform.db.jooq.mapper.MultiRecordMapper;
 import io.cattle.platform.object.util.DataAccessor;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.jooq.JoinType;
+import org.jooq.Record1;
+import org.jooq.RecordHandler;
 
 public class MetaDataInfoDaoImpl extends AbstractJooqDao implements MetaDataInfoDao {
     @Override
@@ -107,6 +111,37 @@ public class MetaDataInfoDaoImpl extends AbstractJooqDao implements MetaDataInfo
                         exposeMap.STATE.notIn(CommonStatesConstants.REMOVING, CommonStatesConstants.REMOVED)))
                 .orderBy(instance.ID)
                 .fetch().map(mapper);
+    }
+
+    @Override
+    public List<String> getPrimaryIpsOnInstanceHost(final Instance instance) {
+        final List<String> ips = new ArrayList<>();
+        NicTable networkInstanceNic = NIC.as("client_nic");
+        NicTable userInstanceNic = NIC.as("target_nic");
+        create().select(IP_ADDRESS.ADDRESS)
+                .from(IP_ADDRESS)
+                .join(IP_ADDRESS_NIC_MAP)
+                .on(IP_ADDRESS_NIC_MAP.IP_ADDRESS_ID.eq(IP_ADDRESS.ID))
+                .join(userInstanceNic)
+                .on(userInstanceNic.ID.eq(IP_ADDRESS_NIC_MAP.NIC_ID))
+                .join(networkInstanceNic)
+                .on(networkInstanceNic.VNET_ID.eq(userInstanceNic.VNET_ID))
+                .where(networkInstanceNic.INSTANCE_ID.eq(instance.getId())
+                        .and(networkInstanceNic.VNET_ID.isNotNull())
+                        .and(networkInstanceNic.REMOVED.isNull())
+                        .and(userInstanceNic.ID.ne(networkInstanceNic.ID))
+                        .and(userInstanceNic.REMOVED.isNull())
+                        .and(networkInstanceNic.REMOVED.isNull())
+                        .and(IP_ADDRESS.REMOVED.isNull())
+                        .and(IP_ADDRESS.ROLE.eq(IpAddressConstants.ROLE_PRIMARY))
+                )
+                .fetchInto(new RecordHandler<Record1<String>>() {
+                    @Override
+                    public void next(Record1<String> record) {
+                        ips.add(record.value1());
+                    }
+                });
+        return ips;
     }
 
     @Override
