@@ -147,8 +147,13 @@
             </dependency>
             <dependency>
                 <groupId>org.bouncycastle</groupId>
-                <artifactId>bcprov-jdk16</artifactId>
-                <version>1.46</version>
+                <artifactId>bcpkix-jdk15on</artifactId>
+                <version>1.54</version>
+            </dependency>
+            <dependency>
+                <groupId>org.bouncycastle</groupId>
+                <artifactId>bcprov-jdk15on</artifactId>
+                <version>1.54</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.sshd</groupId>
@@ -269,12 +274,6 @@
                 <groupId>org.postgresql</groupId>
                 <artifactId>postgresql</artifactId>
                 <version>9.3-1101-jdbc41</version>
-                <scope>runtime</scope>
-            </dependency>
-            <dependency>
-                <groupId>mysql</groupId>
-                <artifactId>mysql-connector-java</artifactId>
-                <version>5.1.26</version>
                 <scope>runtime</scope>
             </dependency>
             <dependency>
@@ -408,13 +407,7 @@
             <dependency>
                 <groupId>com.nimbusds</groupId>
                 <artifactId>nimbus-jose-jwt</artifactId>
-                <version>3.2</version>
-                <exclusions>
-                    <exclusion>
-                        <artifactId>bcprov-jdk15on</artifactId>
-                        <groupId>org.bouncycastle</groupId>
-                    </exclusion>
-                </exclusions>
+                <version>4.12</version>
             </dependency>
             <dependency>
                 <groupId>org.yaml</groupId>

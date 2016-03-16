@@ -34,7 +34,7 @@ import javax.naming.ldap.Rdn;
 
 import org.apache.commons.codec.binary.Hex;
 import org.bouncycastle.jce.provider.X509CertificateObject;
-import org.bouncycastle.openssl.PEMReader;
+import org.bouncycastle.openssl.PEMParser;
 
 public class SslCertificateUtils {
 
@@ -50,6 +50,7 @@ public class SslCertificateUtils {
 
     public static List<?> getSubjectAlternativeNames(String certInput) throws Exception {
         X509CertificateObject cert = getCertificateFromPem(certInput);
+        @SuppressWarnings("unchecked")
         Collection<List<?>> names = cert.getSubjectAlternativeNames();
         if (names == null) {
             return null;
@@ -141,7 +142,7 @@ public class SslCertificateUtils {
 
     private static X509CertificateObject getCertificateFromPem(String certInput) throws IOException {
         StringReader reader = new StringReader(certInput);
-        PEMReader pr = new PEMReader(reader);
+        PEMParser pr = new PEMParser(reader);
         try {
             X509CertificateObject obj = (X509CertificateObject) pr.readObject();
             return obj;
@@ -152,7 +153,7 @@ public class SslCertificateUtils {
 
     private static PublicKey getPublicKey(String keyInput) throws IOException {
         StringReader reader = new StringReader(keyInput);
-        PEMReader pr = new PEMReader(reader);
+        PEMParser pr = new PEMParser(reader);
         try {
             KeyPair keyPair = (KeyPair) pr.readObject();
             return keyPair.getPublic();
@@ -163,7 +164,7 @@ public class SslCertificateUtils {
 
     private static List<X509CertificateObject> getCertificateChain(String certChainInput) throws IOException {
         StringReader reader = new StringReader(certChainInput);
-        PEMReader pr = new PEMReader(reader);
+        PEMParser pr = new PEMParser(reader);
         Object obj;
         List<X509CertificateObject> chain = new ArrayList<>();
         try {

@@ -16,17 +16,14 @@
         <dependency>
             <groupId>com.nimbusds</groupId>
             <artifactId>nimbus-jose-jwt</artifactId>
-            <exclusions>
-             <exclusion>
-              <artifactId>bcprov-jdk15on</artifactId>
-              <groupId>org.bouncycastle</groupId>
-             </exclusion>
-            </exclusions>
         </dependency>
         <dependency>
         	<groupId>org.bouncycastle</groupId>
-        	<artifactId>bcprov-jdk16</artifactId>
-        	<scope>test</scope>
+            <artifactId>bcprov-jdk15on</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.bouncycastle</groupId>
+            <artifactId>bcpkix-jdk15on</artifactId>
         </dependency>
     </dependencies>
 </project>
