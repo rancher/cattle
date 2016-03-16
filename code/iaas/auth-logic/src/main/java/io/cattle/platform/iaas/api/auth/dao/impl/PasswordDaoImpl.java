@@ -2,6 +2,7 @@ package io.cattle.platform.iaas.api.auth.dao.impl;
 
 import static io.cattle.platform.core.model.tables.AccountTable.*;
 import static io.cattle.platform.core.model.tables.CredentialTable.*;
+
 import io.cattle.platform.api.auth.Policy;
 import io.cattle.platform.core.constants.AccountConstants;
 import io.cattle.platform.core.constants.CommonStatesConstants;
@@ -21,10 +22,10 @@ import io.github.ibuildthecloud.gdapi.exception.ClientVisibleException;
 import io.github.ibuildthecloud.gdapi.util.ResponseCodes;
 import io.github.ibuildthecloud.gdapi.util.TransformationService;
 
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
 import javax.inject.Inject;
 
 import org.apache.commons.lang3.StringUtils;
@@ -64,16 +65,28 @@ public class PasswordDaoImpl extends AbstractJooqDao implements PasswordDao {
             throw new ClientVisibleException(ResponseCodes.CONFLICT, "UsernameIsTaken", "Username: " + username +" is taken", null);
         }
 
-        Map<Object, Object> properties = new HashMap<>();
+
+
+        account = create()
+                .selectFrom(ACCOUNT)
+                .where(ACCOUNT.STATE.eq(CommonStatesConstants.ACTIVE)
+                        .and(ACCOUNT.KIND.eq(AccountConstants.ADMIN_KIND)))
+                .orderBy(ACCOUNT.ID.asc()).limit(1).fetchOne();
+
+        Date now = new Date(System.currentTimeMillis());
+
+        create().update(CREDENTIAL).set(CREDENTIAL.STATE, CommonStatesConstants.PURGED)
+                .set(CREDENTIAL.REMOVED, now)
+                .set(CREDENTIAL.REMOVE_TIME, now)
+                .where(CREDENTIAL.ACCOUNT_ID.eq(account.getId())
+                .and(CREDENTIAL.KIND.eq("password")))
+                .execute();
 
         if (StringUtils.isNotEmpty(name)) {
-            properties.put(ACCOUNT.NAME, name);
+            account.setName(name);
         }
-        properties.put(ACCOUNT.KIND, AccountConstants.ADMIN_KIND);
-        account = resourceDao.createAndSchedule(Account.class, objectManager.convertToPropertiesFor(Account.class,
-                properties));
 
-        properties = new HashMap<>();
+        Map<Object, Object> properties = new HashMap<>();
 
         properties.put(CREDENTIAL.PUBLIC_VALUE, username);
         properties.put(CREDENTIAL.SECRET_VALUE, transformationService.transform(password, EncryptionConstants.HASH));

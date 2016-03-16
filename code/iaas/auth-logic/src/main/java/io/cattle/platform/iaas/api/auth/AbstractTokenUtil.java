@@ -288,13 +288,8 @@ public abstract class AbstractTokenUtil implements TokenUtil {
             if (account != null){
                 account.setKind(AccountConstants.ADMIN_KIND);
                 objectManager.persist(account);
-            } else if (createAccount()){
-                account = authDao.createAccount(user.getName(), AccountConstants.ADMIN_KIND, user
-                                .getExternalId(), user.getExternalIdType());
             } else {
-                throw new ClientVisibleException(ResponseCodes.INTERNAL_SERVER_ERROR, "MissingAccount",
-                        "Account for " + user.getLogin() + " not found.",
-                        "When creating token to login account for user was not found and cannot be created.");
+                account = authDao.getAdminAccount();
             }
             authDao.ensureAllProjectsHaveNonRancherIdMembers(user);
             settingsUtils.changeSetting(SecurityConstants.AUTH_ENABLER, user.getId());
@@ -324,7 +319,7 @@ public abstract class AbstractTokenUtil implements TokenUtil {
 
         postAuthModification(account);
 
-        account = authDao.updateAccount(account, account.getName(), account.getKind(), user.getExternalId(), user
+        account = authDao.updateAccount(account, user.getName(), account.getKind(), user.getExternalId(), user
                 .getExternalIdType());
 
         Map<String, Object> jsonData = new HashMap<>();

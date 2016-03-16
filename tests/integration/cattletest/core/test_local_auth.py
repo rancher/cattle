@@ -109,6 +109,15 @@ def test_local_login(admin_user_client, request):
     assert len(identities) == 1
     assert identities[0].externalId == account.id
 
+    client, account, username, password =\
+        make_user_and_client(admin_user_client, password="   " + random_str())
+    identities = client.list_identity()
+    projects = client.list_project()
+    assert len(projects) == 1
+
+    assert len(identities) == 1
+    assert identities[0].externalId == account.id
+
 
 @pytest.mark.nonparallel
 def test_local_login_only_create1_project(admin_user_client):
