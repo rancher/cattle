@@ -1,36 +1,40 @@
 package io.cattle.platform.agent.instance.service.impl;
 
-import static io.cattle.platform.core.model.tables.InstanceTable.INSTANCE;
-import static io.cattle.platform.core.model.tables.NicTable.NIC;
-import static io.cattle.platform.core.model.tables.VnetTable.VNET;
+import static io.cattle.platform.core.model.tables.NicTable.*;
+import io.cattle.platform.core.constants.NetworkConstants;
+import io.cattle.platform.core.dao.NetworkDao;
+import io.cattle.platform.core.model.Network;
 import io.cattle.platform.core.model.Nic;
-import io.cattle.platform.core.model.tables.records.NicRecord;
 import io.cattle.platform.db.jooq.dao.impl.AbstractJooqDao;
+import io.cattle.platform.object.ObjectManager;
 
+import java.util.ArrayList;
 import java.util.List;
 
-import org.jooq.impl.DSL;
+import javax.inject.Inject;
 
 public class NicPerVnetNicLookup extends AbstractJooqDao {
 
-    public List<? extends Nic> getNicPerVnetForAccount(long accountId) {
-        List<Long> nicIds = create()
-                .select(DSL.max(NIC.ID))
-                .from(NIC)
-                .join(VNET)
-                .on(VNET.ID.eq(NIC.VNET_ID))
-                .join(INSTANCE)
-                .on(INSTANCE.ID.eq(NIC.INSTANCE_ID))
-                .where(NIC.ACCOUNT_ID.eq(accountId))
-                .and(NIC.REMOVED.isNull())
-                .and(INSTANCE.REMOVED.isNull())
-                .and(INSTANCE.SYSTEM_CONTAINER.isNull())
-                        .groupBy(VNET.ID)
-                        .fetchInto(Long.class);
-                
-        return create().select(NIC.fields())
-                .from(NIC)
-                .where(NIC.ID.in(nicIds))
-                .fetchInto(NicRecord.class);
+    @Inject
+    NetworkDao ntwkDao;
+
+    @Inject
+    ObjectManager objMgr;
+
+    public List<? extends Nic> getRandomNicForAccount(long accountId) {
+        List<Nic> nics = new ArrayList<>();
+        List<? extends Network> ntwks = ntwkDao.getNetworksForAccount(accountId, NetworkConstants.KIND_HOSTONLY);
+        if (ntwks.isEmpty()) {
+            return nics;
+        }
+        Nic nic = create()
+                .selectFrom(NIC)
+                .where(NIC.NETWORK_ID.eq(ntwks.get(0).getId())
+                        .and(NIC.REMOVED.isNull()))
+                .fetchAny();
+        if (nic != null) {
+            nics.add(nic);
+        }
+        return nics;
     }
 }

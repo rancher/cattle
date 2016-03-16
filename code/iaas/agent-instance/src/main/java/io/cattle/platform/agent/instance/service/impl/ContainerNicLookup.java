@@ -1,5 +1,6 @@
 package io.cattle.platform.agent.instance.service.impl;
 
+import static io.cattle.platform.core.model.tables.NicTable.*;
 import io.cattle.platform.agent.instance.service.InstanceNicLookup;
 import io.cattle.platform.core.dao.GenericMapDao;
 import io.cattle.platform.core.model.Instance;
@@ -28,6 +29,9 @@ public class ContainerNicLookup extends NicPerVnetNicLookup implements InstanceN
             return null;
         }
         Instance container = (Instance) obj;
-        return super.getNicPerVnetForAccount(container.getAccountId());
+        return create().selectFrom(NIC)
+                .where(NIC.INSTANCE_ID.eq(container.getId())
+                        .and(NIC.REMOVED.isNull()))
+                .fetch();
     }
 }

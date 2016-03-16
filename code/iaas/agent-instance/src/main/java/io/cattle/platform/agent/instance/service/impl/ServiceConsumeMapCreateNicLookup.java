@@ -24,6 +24,6 @@ public class ServiceConsumeMapCreateNicLookup extends NicPerVnetNicLookup implem
         }
 
         ServiceConsumeMap consumeMap = (ServiceConsumeMap) obj;
-        return super.getNicPerVnetForAccount(consumeMap.getAccountId());
+        return super.getRandomNicForAccount(consumeMap.getAccountId());
     }
 }
