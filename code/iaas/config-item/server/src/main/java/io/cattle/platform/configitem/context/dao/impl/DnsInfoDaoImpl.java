@@ -325,23 +325,23 @@ public class DnsInfoDaoImpl extends AbstractJooqDao implements DnsInfoDao {
                 linkName, dnsPrefix, self);
         String targetIp = getIpAddress(targetInstance, instanceIdToHostIpMap, false);
         if (targetIp != null) {
-            Map<String, String> ips = resolve.get(dnsName);
-            if (ips == null) {
-                ips = new HashMap<>();
+            Map<String, String> ipToInstanceName = resolve.get(dnsName);
+            if (ipToInstanceName == null) {
+                ipToInstanceName = new HashMap<>();
             }
             if (getVip(targetInstance.getService()) != null) {
-                ips.put(targetInstance.getService().getVip(), dnsName);
+                targetIp = targetInstance.getService().getVip();
             }
             if (linkName == null) {
                 if (StringUtils.isEmpty(targetInstanceName)) {
-                    ips.put(targetIp, null);
+                    ipToInstanceName.put(targetIp, null);
                 } else {
-                    ips.put(targetIp, targetInstanceName + "." + dnsName);
+                    ipToInstanceName.put(targetIp, targetInstanceName + "." + dnsName);
                 }
             } else {
-                ips.put(targetIp, null);
+                ipToInstanceName.put(targetIp, null);
             }
-            resolve.put(dnsName, ips);
+            resolve.put(dnsName, ipToInstanceName);
         } else {
             String cname = targetInstance.getExposeMap().getHostName();
             if (cname != null) {
