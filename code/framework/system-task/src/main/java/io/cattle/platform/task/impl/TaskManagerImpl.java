@@ -96,13 +96,10 @@ public class TaskManagerImpl implements TaskManager, InitializationTask, Runnabl
             Runnable runnable = new NoExceptionRunnable() {
                 @Override
                 protected void doRun() throws Exception {
-                    Object record = taskDao.newRecord(task);
                     try {
                         task.run();
-                        taskDao.finish(record);
                     } catch (Throwable t) {
                         log.error("Task [{}] failed", name, t);
-                        taskDao.failed(record, t);
                     }
                 }
             };
