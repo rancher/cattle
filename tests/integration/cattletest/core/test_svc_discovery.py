@@ -1792,7 +1792,8 @@ def test_export_config(client, context):
     image_uuid = context.image_uuid
     labels = {'io.rancher.scheduler.global': 'true',
               'io.rancher.service.hash': '088b54be-2b79-99e30b3a1a24'}
-    metadata = {"$bar": {"metadata": [{"$id$$foo$bar$$": "${HOSTNAME}"}]}}
+    metadata = {"io.rancher.service.hash": "088b54be-2b79-99e30b3a1a24",
+                "$bar": {"metadata": [{"$id$$foo$bar$$": "${HOSTNAME}"}]}}
     restart_policy = {"maximumRetryCount": 2, "name": "on-failure"}
     launch_config = {"imageUuid": image_uuid,
                      "cpuSet": "0,1", "labels": labels,
