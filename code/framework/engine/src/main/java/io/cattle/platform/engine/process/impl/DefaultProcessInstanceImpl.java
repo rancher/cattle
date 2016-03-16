@@ -44,11 +44,13 @@ import io.cattle.platform.lock.definition.Namespace;
 import io.cattle.platform.lock.exception.FailedToAcquireLockException;
 import io.cattle.platform.util.exception.ExceptionUtils;
 import io.cattle.platform.util.exception.ExecutionException;
+import io.cattle.platform.util.exception.LoggableException;
 
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Stack;
+
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -215,7 +217,11 @@ public class DefaultProcessInstanceImpl implements ProcessInstance {
                 throw new ProcessExecutionExitException(TIMEOUT, t);
             } catch (Throwable t) {
                 execution.setException(new ExceptionLog(t));
-                log.error("Unknown exception", t);
+                if (t instanceof LoggableException) {
+                    ((LoggableException) t).log();
+                } else {
+                    log.error("Unknown exception", t);
+                }
                 throw new ProcessExecutionExitException(UNKNOWN_EXCEPTION, t);
             } finally {
                 closeLog(engineContext);
