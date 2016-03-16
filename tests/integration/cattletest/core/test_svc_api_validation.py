@@ -305,3 +305,18 @@ def test_ip_retain(client, context, super_client):
         svc.upgrade_action(inServiceStrategy=strategy)
     assert e.value.error.status == 422
     assert e.value.error.code == 'InvalidOption'
+
+
+def test_null_scale(client, context):
+    env = _create_stack(client)
+
+    image_uuid = context.image_uuid
+    launch_config = {"imageUuid": image_uuid}
+
+    svc = client.create_service(name=random_str(),
+                                environmentId=env.id,
+                                launchConfig=launch_config,
+                                scale=None)
+    svc = client.wait_success(svc)
+    assert svc.state == "inactive"
+    assert svc.scale is not None
