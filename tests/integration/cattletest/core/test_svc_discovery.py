@@ -1786,7 +1786,8 @@ def test_export_config(client, context):
     # cpuCet
     # global vs scale
     image_uuid = context.image_uuid
-    labels = {'io.rancher.scheduler.global': 'true'}
+    labels = {'io.rancher.scheduler.global': 'true',
+              'io.rancher.service.hash': '088b54be-2b79-99e30b3a1a24'}
     metadata = {"$bar": {"metadata": [{"$id$$foo$bar$$": "${HOSTNAME}"}]}}
     restart_policy = {"maximumRetryCount": 2, "name": "on-failure"}
     launch_config = {"imageUuid": image_uuid,
@@ -1804,6 +1805,8 @@ def test_export_config(client, context):
     service = client.wait_success(service)
 
     compose_config = env.exportconfig()
+    labels = {'io.rancher.scheduler.global': 'true'}
+
     assert compose_config is not None
     docker_yml = yaml.load(compose_config.dockerComposeConfig)
     assert docker_yml[service.name]['cpuset'] == "0,1"

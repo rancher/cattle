@@ -102,6 +102,7 @@ public class ServiceDiscoveryConstants {
     public static final String LABEL_LB_SSL_PORTS = "io.rancher.loadbalancer.ssl.ports";
     public static final String LABEL_SELECTOR_CONTAINER = "io.rancher.service.selector.container";
     public static final String LABEL_SELECTOR_LINK = "io.rancher.service.selector.link";
+    public static final String LABEL_SERVICE_HASH = "io.rancher.service.hash";
 
     public static final String PRIMARY_LAUNCH_CONFIG_NAME = "io.rancher.service.primary.launch.config";
 
