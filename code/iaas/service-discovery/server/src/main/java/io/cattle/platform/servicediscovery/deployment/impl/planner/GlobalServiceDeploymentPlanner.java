@@ -55,6 +55,6 @@ public class GlobalServiceDeploymentPlanner extends ServiceDeploymentPlanner {
 
     @Override
     public boolean needToReconcileDeploymentImpl() {
-        return (healthyUnits.size() != hostIds.size());
+        return !hostToUnits.keySet().containsAll(hostIds);
     }
 }

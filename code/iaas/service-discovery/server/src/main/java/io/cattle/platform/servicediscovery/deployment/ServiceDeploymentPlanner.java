@@ -117,6 +117,7 @@ public abstract class ServiceDeploymentPlanner {
                     if (usedServiceIndexes.contains(serviceIndexId)) {
                         badUnits.add(healthyUnit);
                         it.remove();
+                        break;
                     }
                 }
 
