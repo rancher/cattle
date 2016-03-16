@@ -67,6 +67,10 @@ public class PortActivateDeactivatePostListener extends AbstractObjectProcessLog
         Instance instance = objectManager.loadResource(Instance.class, port.getInstanceId());
         List<? extends Service> services = instanceDao.findServicesFor(objectManager.loadResource(Instance.class,
                 port.getInstanceId()));
+        if (services.size() == 0) {
+            // standalone instance
+            services.add(null);
+        }
         for (Service service : services) {
             PublicEndpoint newEndPoint = new PublicEndpoint(ip.getAddress(), port.getPublicPort(), host, instance, service);
             sdService.propagatePublicEndpoint(newEndPoint, add);

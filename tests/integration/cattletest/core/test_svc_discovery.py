@@ -1785,8 +1785,7 @@ def test_export_config(client, context):
                      "cpuSet": "0,1", "labels": labels,
                      "restartPolicy": restart_policy,
                      "logConfig": {"config": {"labels": "foo"},
-                                   "driver": "json-file"}
-                     }
+                                   "driver": "json-file"}}
     service = client. \
         create_service(name="web",
                        environmentId=env.id,
@@ -2307,7 +2306,7 @@ def test_service_restart(client, context):
         instances.append(client.reload(exposeMap.instance()))
 
     # restart service
-    service = client.\
+    service = client. \
         wait_success(service.restart(rollingRestartStrategy={}), 120)
     assert service.state == 'active'
 
@@ -2317,16 +2316,19 @@ def test_service_restart(client, context):
         assert new > old
 
 
-def _validate_endpoint(endpoints, public_port, host, service):
+def _validate_endpoint(endpoints, public_port, host, service=None):
     host_ip = host.ipAddresses()[0].address
     found = False
     for endpoint in endpoints:
         if host_ip == endpoint.ipAddress:
             if endpoint.port == public_port \
                     and endpoint.hostId == host.id \
-                    and endpoint.serviceId == service.id \
                     and endpoint.instanceId is not None:
-                found = True
+                if service is not None:
+                    if endpoint.serviceId == service.id:
+                        found = True
+                else:
+                    found = True
                 break
     assert found is True, "Cant find endpoint for " \
                           + host_ip + ":" + str(public_port)
@@ -2795,3 +2797,61 @@ def test_dns_label_and_dns_param(client, context):
     c = instances[0]
     assert c.dns == ["1.1.1.1"]
     assert c.dnsSearch == ["foo"]
+
+
+def test_standalone_container_endpoint(new_context):
+    client = new_context.client
+    host = new_context.host
+    client.wait_success(host)
+    env = _create_stack(client)
+    port1 = 5535
+    port2 = 6636
+
+    image_uuid = new_context.image_uuid
+    launch_config = {"imageUuid": image_uuid, "ports": [str(port1) + ':6666']}
+    svc = client.create_service(name=random_str(),
+                                environmentId=env.id,
+                                launchConfig=launch_config)
+    svc = client.wait_success(svc)
+    assert svc.state == "inactive"
+    svc = client.wait_success(svc.activate(), 120)
+    assert svc.state == "active"
+
+    c = client.create_container(imageUuid=image_uuid,
+                                startOnCreate=True,
+                                ports=[str(port2) + ':6666'])
+    c = client.wait_success(c)
+
+    wait_for(
+        lambda: client.reload(host).publicEndpoints is not None and len(
+            client.reload(host).publicEndpoints) == 2)
+    endpoints = client.reload(host).publicEndpoints
+    svc_e = None
+    c_e = None
+    for endpoint in endpoints:
+        if endpoint.port == port1:
+            svc_e = endpoint
+        elif endpoint.port == port2:
+            c_e = endpoint
+
+    assert svc_e is not None
+    assert c_e is not None
+    _validate_endpoint([svc_e], port1, host, svc)
+    _validate_endpoint([c_e], port2, host)
+
+    c = client.wait_success(c.stop())
+    client.wait_success(c.remove())
+    wait_for(
+        lambda: client.reload(host).publicEndpoints is not None and len(
+            client.reload(host).publicEndpoints) == 1)
+    endpoints = client.reload(host).publicEndpoints
+    svc_e = None
+    c_e = None
+    for endpoint in endpoints:
+        if endpoint.port == port1:
+            svc_e = endpoint
+        elif endpoint.port == port2:
+            c_e = endpoint
+
+    assert svc_e is not None
+    assert c_e is None
