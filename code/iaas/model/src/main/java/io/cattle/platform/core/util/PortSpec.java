@@ -9,6 +9,8 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.commons.lang3.StringUtils;
+
 public class PortSpec {
 
     public static final String WRONG_FORMAT = "PortWrongFormat";
@@ -35,9 +37,27 @@ public class PortSpec {
     }
 
     public PortSpec(String spec, boolean defaultProtocol) {
+        // format: ip:hostPort:containerPort | ip::containerPort | hostPort:containerPort | containerPort
+
+        // Check for an IP address
+        String[] parts = spec.split("\\]");
+        String ipAddr = null;
+        if (parts.length == 2) {
+            // IPv6, right?
+            if (!parts[0].startsWith("[")) {
+                throw new ClientVisibleException(ResponseCodes.UNPROCESSABLE_ENTITY, WRONG_FORMAT);
+            }
+            ipAddr = parts[0].replace("[", "");
+            spec = StringUtils.removeStart(parts[1], ":");
+        } else if (StringUtils.countMatches(spec, ":") == 2) {
+            parts = spec.split("\\:", 2);
+            ipAddr = parts[0];
+            spec = StringUtils.removeStart(parts[1], ":");
+        }
+
         Matcher m = PATTERN.matcher(spec);
 
-        if ( ! m.matches() ) {
+        if (!m.matches()) {
             throw new ClientVisibleException(ResponseCodes.UNPROCESSABLE_ENTITY, WRONG_FORMAT);
         }
 
@@ -45,11 +65,11 @@ public class PortSpec {
         Integer publicPort = m.group(2) == null ? null : Integer.parseInt(m.group(2));
         String protocol = m.group(5);
 
-        if ( privatePort <= 0 || privatePort > 65535 ) {
+        if (privatePort <= 0 || privatePort > 65535) {
             throw new ClientVisibleException(ResponseCodes.UNPROCESSABLE_ENTITY, INVALID_PRIVATE_PORT);
         }
 
-        if ( publicPort != null && ( publicPort <= 0 || publicPort > 65535 ) ) {
+        if (publicPort != null && (publicPort <= 0 || publicPort > 65535)) {
             throw new ClientVisibleException(ResponseCodes.UNPROCESSABLE_ENTITY, INVALID_PUBLIC_PORT);
         }
 
@@ -63,6 +83,7 @@ public class PortSpec {
             }
         }
 
+        this.ipAddress = ipAddr;
         this.publicPort = publicPort;
         this.privatePort = privatePort;
         this.protocol = protocol;
@@ -107,6 +128,10 @@ public class PortSpec {
     public String toSpec() {
         String privatePortProto = this.privatePort + (this.protocol != null ? "/" + this.protocol : "");
         String publicPort = this.publicPort != null ? this.publicPort.toString() + ":" : "";
-        return publicPort + privatePortProto;
+        String bindIP = "";
+        if (StringUtils.isNotBlank(this.ipAddress)) {
+            bindIP = this.ipAddress + ":";
+        }
+        return bindIP + publicPort + privatePortProto;
     }
 }

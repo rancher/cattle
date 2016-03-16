@@ -271,6 +271,7 @@
         "port.protocol" : "r",
         "port.publicIpAddressId" : "r",
         "port.publicPort" : "ru",
+        "port.bindAddress" : "r",
 
         "project" : "crud",
         "project.externalId" : "",
