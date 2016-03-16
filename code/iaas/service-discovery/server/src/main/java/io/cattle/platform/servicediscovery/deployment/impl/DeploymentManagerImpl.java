@@ -277,6 +277,17 @@ public class DeploymentManagerImpl implements DeploymentManager {
                 for (DeploymentUnit unit : units) {
                     unit.remove(false, ServiceDiscoveryConstants.AUDIT_LOG_REMOVE_EXTRA);
                 }
+
+                // remove unmanaged instances
+                boolean removeUnmanaged = DataAccessor.fieldBool(service,
+                        ServiceDiscoveryConstants.FIELD_REMOVE_UNMANAGED);
+                if (removeUnmanaged) {
+                    units = unitInstanceFactory.collectUnmanagedInstancesToRemove(service,
+                            new DeploymentServiceContext());
+                    for (DeploymentUnit unit : units) {
+                        unit.remove(false, ServiceDiscoveryConstants.AUDIT_LOG_REMOVE_EXTRA);
+                    }
+                }
             }
         });
     }

@@ -29,4 +29,6 @@ public interface DeploymentUnitInstanceFactory {
      * @return list of deployment units per service
      */
     public List<DeploymentUnit> collectDeploymentUnits(List<Service> service, DeploymentServiceContext context);
+
+    List<DeploymentUnit> collectUnmanagedInstancesToRemove(Service service, DeploymentServiceContext context);
 }

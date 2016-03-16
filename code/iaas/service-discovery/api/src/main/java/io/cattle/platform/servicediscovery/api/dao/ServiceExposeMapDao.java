@@ -62,4 +62,6 @@ public interface ServiceExposeMapDao {
 
     List<? extends Instance> getUpgradedInstances(Service service, String launchConfigName, String toVersion, boolean managed);
 
+    List<? extends Instance> listServiceUnmanagedInstances(long serviceId);
+
 }

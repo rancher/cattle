@@ -15,6 +15,7 @@ import io.cattle.platform.servicediscovery.deployment.DeploymentUnitInstanceFact
 import io.cattle.platform.servicediscovery.deployment.impl.DeploymentManagerImpl.DeploymentServiceContext;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -60,6 +61,15 @@ public class DeploymentUnitInstanceFactoryImpl implements DeploymentUnitInstance
                     ipHostName.getRight());
         }
         return null;
+    }
+
+    @Override
+    public List<DeploymentUnit> collectUnmanagedInstancesToRemove(Service service,
+            DeploymentServiceContext context) {
+        List<DeploymentUnitInstance> instances = collectUnmanagedServiceInstances(context, service);
+
+        return Arrays.asList(new DeploymentUnit(context, null, Arrays.asList(service), instances,
+                null));
     }
 
 
@@ -178,6 +188,19 @@ public class DeploymentUnitInstanceFactoryImpl implements DeploymentUnitInstance
             addToDeploymentUnitList(uuidToLabels, uuidToInstances, instanceLabels, deploymentUnitUUID,
                     unitInstance);
         }
+    }
+
+    protected List<DeploymentUnitInstance> collectUnmanagedServiceInstances(DeploymentServiceContext context,
+            Service service) {
+        List<? extends Instance> serviceContainers = expMapDao.listServiceUnmanagedInstances(service.getId());
+        List<DeploymentUnitInstance> instances = new ArrayList<>();
+        for (Instance serviceContainer : serviceContainers) {
+
+            DeploymentUnitInstance unitInstance = createDeploymentUnitInstance(context, null,
+                    service, serviceContainer.getName(), serviceContainer, null, null);
+            instances.add(unitInstance);
+        }
+        return instances;
     }
 
 
