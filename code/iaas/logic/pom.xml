@@ -93,5 +93,10 @@
             <artifactId>cattle-iaas-labels</artifactId>
             <version>${project.version}</version>
         </dependency>
+        <dependency>
+            <groupId>io.cattle</groupId>
+            <artifactId>cattle-docker-common</artifactId>
+            <version>${project.version}</version>
+        </dependency>
     </dependencies>
 </project>
