@@ -15,8 +15,6 @@ public interface IpAddressDao {
 
     IpAddress mapNewIpAddress(Nic nic, Object key, Object... values);
 
-    IpAddress assignNewAddress(Host host, String ipAddress);
-
     IpAddress assignAndActivateNewAddress(Host host, String ipAddress);
 
     IpAddress updateIpAddress(IpAddress ipAddress, String newIpAddress);

@@ -473,7 +473,7 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
     @Override
     public void propagatePublicEndpoint(final PublicEndpoint publicEndpoint, final boolean add) {
         final Host host = publicEndpoint.getHost();
-        if (host.getRemoved() == null) {
+        if (host != null && host.getRemoved() == null) {
             lockManager.lock(new HostEndpointsUpdateLock(host),
                     new LockCallbackNoReturn() {
                         @Override
@@ -485,12 +485,14 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
         }
 
         final Service service = publicEndpoint.getService();
-        lockManager.lock(new ServiceEndpointsUpdateLock(service), new LockCallbackNoReturn() {
-            @Override
-            public void doWithLockNoResult() {
-                updateObjectEndPoint(service, service.getKind(), service.getId(), publicEndpoint, add);
-            }
-        });
+        if (service != null) {
+            lockManager.lock(new ServiceEndpointsUpdateLock(service), new LockCallbackNoReturn() {
+                @Override
+                public void doWithLockNoResult() {
+                    updateObjectEndPoint(service, service.getKind(), service.getId(), publicEndpoint, add);
+                }
+            });
+        }
     }
 
     @Override

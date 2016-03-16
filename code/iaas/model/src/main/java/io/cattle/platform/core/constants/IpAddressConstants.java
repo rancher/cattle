@@ -4,6 +4,8 @@ public class IpAddressConstants {
 
     public static final String TYPE = "ipAddress";
 
+    public static final String FIELD_ADDRESS = "address";
+
     public static final String STATE_ASSOCIATED = "associated";
 
     public static final String KIND_POOLED_IP_ADDRESS = "pooledIpAddress";
@@ -25,4 +27,5 @@ public class IpAddressConstants {
 
     public static final String PROCESS_IP_DISASSOCIATE = "ipaddress.disassociate";
     public static final String PROCESS_IP_ASSOCIATE = "ipaddress.associate";
+    public static final String PROCESS_IP_UPDATE = "ipaddress.update";
 }

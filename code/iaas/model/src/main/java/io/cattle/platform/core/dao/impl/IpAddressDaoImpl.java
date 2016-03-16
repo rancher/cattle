@@ -102,19 +102,6 @@ public class IpAddressDaoImpl extends AbstractJooqDao implements IpAddressDao {
     }
 
     @Override
-    public IpAddress assignNewAddress(Host host, String ipAddress) {
-        IpAddress ipAddressObj = objectManager.create(IpAddress.class,
-                IP_ADDRESS.ADDRESS, ipAddress,
-                IP_ADDRESS.ACCOUNT_ID, host.getAccountId());
-
-        objectManager.create(HostIpAddressMap.class,
-                HOST_IP_ADDRESS_MAP.IP_ADDRESS_ID, ipAddressObj.getId(),
-                HOST_IP_ADDRESS_MAP.HOST_ID, host.getId());
-
-        return ipAddressObj;
-    }
-
-    @Override
     public IpAddress assignAndActivateNewAddress(Host host, String ipAddress) {
         IpAddress ipAddressObj = objectManager.create(IpAddress.class,
                 IP_ADDRESS.ADDRESS, ipAddress,
@@ -132,8 +119,12 @@ public class IpAddressDaoImpl extends AbstractJooqDao implements IpAddressDao {
 
     @Override
     public IpAddress updateIpAddress(IpAddress ipAddress, String newIpAddress) {
+        Map<String, Object> data = new HashMap<>();
+        Map<String, Object> old = new HashMap<>();
+        old.put(IpAddressConstants.FIELD_ADDRESS, ipAddress.getAddress());
+        data.put("old", old);
         objectManager.setFields(ipAddress, IP_ADDRESS.ADDRESS, newIpAddress);
-        processManager.scheduleStandardProcess(StandardProcess.UPDATE, ipAddress, null);
+        processManager.scheduleStandardProcess(StandardProcess.UPDATE, ipAddress, data);
         return ipAddress;
     }
 
