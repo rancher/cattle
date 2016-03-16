@@ -76,6 +76,8 @@
                 <value>externalDnsEvent,parent=externalEvent</value>
                 <value>externalHostEvent,parent=externalEvent</value>
                 <value>loadBalancerConfig</value>
+                <value>composeService,parent=service</value>
+                <value>composeProject,parent=environment</value>
                 <value>machineDriverUpdateInput</value>
                 <value>machineDriverErrorInput</value>
             </set>

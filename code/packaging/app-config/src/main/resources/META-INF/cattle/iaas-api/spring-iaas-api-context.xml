@@ -308,6 +308,7 @@
     <bean class="io.cattle.platform.iaas.api.filter.instance.InstancePortsValidationFilter" />
     <bean class="io.cattle.platform.iaas.api.filter.instance.InstanceVolumeCleanupStrategyValidationFilter" />
     <bean class="io.cattle.platform.iaas.api.credential.SshKeyOutputFilter" />
+    <bean class="io.cattle.platform.iaas.api.credential.ApiKeyOutputFilter" />
     <bean class="io.cattle.platform.iaas.api.filter.containerevent.ContainerEventFilter" />
     <bean class="io.cattle.platform.iaas.api.filter.externalevent.ExternalEventFilter" />
     <bean class="io.cattle.platform.iaas.api.filter.registry.RegistryServerAddressFilter" />

@@ -61,4 +61,6 @@ public interface AuthDao {
     Account getAccountByLogin(String publicValue, String secretValue, TransformationService transformationService);
 
     String getRole(Account account, Policy policy);
+
+    Account getAccountByAccessKey(String accessKey);
 }

@@ -6,6 +6,8 @@
         "baseMachineConfig" : "r",
         "certificate" : "crud",
         "cluster" : "crud",
+        "composeProject" : "crud",
+        "composeService" : "rd",
         "composeConfigInput" : "cr",
         "container" : "crud",
         "containerExec" : "cr",

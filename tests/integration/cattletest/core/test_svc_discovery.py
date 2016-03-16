@@ -2815,7 +2815,6 @@ def test_dns_label_and_dns_param(client, context):
     assert c.dnsSearch == ["foo"]
 
 
-<<<<<<< HEAD
 def test_standalone_container_endpoint(new_context):
     client = new_context.client
     host = new_context.host

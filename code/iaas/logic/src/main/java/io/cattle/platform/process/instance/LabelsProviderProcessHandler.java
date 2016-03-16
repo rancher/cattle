@@ -15,7 +15,6 @@ import io.cattle.platform.object.util.ObjectUtils;
 import io.cattle.platform.process.common.handler.AgentBasedProcessHandler;
 import io.cattle.platform.util.type.CollectionUtils;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -37,7 +36,6 @@ public class LabelsProviderProcessHandler extends AgentBasedProcessHandler imple
         Object instance = getObjectByRelationship("instance", state.getResource());
         Long accountId = (Long)ObjectUtils.getAccountId(instance);
         List<Long> agentIds = agentInstanceDao.getAgentProvider(SystemLabels.LABEL_AGENT_SERVICE_LABELS_PROVIDER, accountId);
-        Collections.sort(agentIds);
         Long agentId = agentIds.size() == 0 ? null : agentIds.get(0);
         if ((instance instanceof Instance) && agentIds.contains(((Instance) instance).getAgentId())) {
             return null;
