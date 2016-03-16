@@ -25,9 +25,11 @@ public interface ServiceDiscoveryService {
 
     void addServiceLink(Service service, ServiceLink serviceLink);
 
-    boolean isSelectorLinkMatch(Service sourceService, Service targetService);
+    void removeServiceLink(Service service, ServiceLink serviceLink);
 
-    boolean isSelectorContainerMatch(Service sourceService, long instanceId);
+    boolean isSelectorLinkMatch(String selector, Service targetService);
+
+    boolean isSelectorContainerMatch(String selector, long instanceId);
 
     boolean isServiceInstance(Service service, Instance instance);
 

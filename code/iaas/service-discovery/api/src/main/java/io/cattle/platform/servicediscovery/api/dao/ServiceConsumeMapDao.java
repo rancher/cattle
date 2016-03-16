@@ -62,4 +62,6 @@ public interface ServiceConsumeMapDao {
     ServiceConsumeMap createServiceLink(Service service, ServiceLink serviceLink);
 
     List<ServiceConsumeMap> createServiceLinks(List<ServiceLink> serviceLink);
+
+    List<? extends Service> findLinkedServices(long serviceId);
 }

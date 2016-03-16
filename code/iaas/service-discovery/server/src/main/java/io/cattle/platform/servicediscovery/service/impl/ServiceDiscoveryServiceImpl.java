@@ -390,8 +390,22 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
     }
 
     @Override
-    public boolean isSelectorLinkMatch(Service sourceService, Service targetService) {
-        String selector = sourceService.getSelectorLink();
+    public void removeServiceLink(final Service service, final ServiceLink serviceLink) {
+        DeferredUtils.nest(new Runnable() {
+            @Override
+            public void run() {
+                ServiceConsumeMap map = consumeMapDao.findMapToRemove(service.getId(), serviceLink.getServiceId());
+                if (map != null) {
+                    objectProcessManager.scheduleProcessInstanceAsync(
+                            ServiceDiscoveryConstants.PROCESS_SERVICE_CONSUME_MAP_REMOVE,
+                            map, null);
+                }
+            }
+        });
+    }
+
+    @Override
+    public boolean isSelectorLinkMatch(String selector, Service targetService) {
         if (StringUtils.isBlank(selector)) {
             return false;
         }
@@ -404,8 +418,7 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
     }
 
     @Override
-    public boolean isSelectorContainerMatch(Service sourceService, long instanceId) {
-        String selector = sourceService.getSelectorContainer();
+    public boolean isSelectorContainerMatch(String selector, long instanceId) {
         if (StringUtils.isBlank(selector)) {
             return false;
         }
