@@ -127,7 +127,7 @@ public class ServiceDiscoveryApiServiceImpl implements ServiceDiscoveryApiServic
                 Map<String, Object> cattleServiceData = ServiceDiscoveryUtil.getServiceDataAsMap(service,
                         launchConfigName, allocatorService);
                 Map<String, Object> composeServiceData = new HashMap<>();
-                excludeLables(cattleServiceData);
+                excludeRancherHash(cattleServiceData);
                 formatScale(service, cattleServiceData);
                 for (String cattleService : cattleServiceData.keySet()) {
                     translateRancherToCompose(forDockerCompose, cattleServiceData, composeServiceData, cattleService, service);
@@ -152,7 +152,7 @@ public class ServiceDiscoveryApiServiceImpl implements ServiceDiscoveryApiServic
     }
 
     @SuppressWarnings("unchecked")
-    private void excludeLables(Map<String, Object> composeServiceData) {
+    private void excludeRancherHash(Map<String, Object> composeServiceData) {
         if (composeServiceData.get(InstanceConstants.FIELD_LABELS) != null) {
             Map<String, String> labels = new HashMap<>();
             labels.putAll((HashMap<String, String>) composeServiceData.get(InstanceConstants.FIELD_LABELS));
@@ -162,6 +162,17 @@ public class ServiceDiscoveryApiServiceImpl implements ServiceDiscoveryApiServic
                 composeServiceData.put(InstanceConstants.FIELD_LABELS, labels);
             }
         }
+
+        if (composeServiceData.get(InstanceConstants.FIELD_METADATA) != null) {
+            Map<String, String> metadata = new HashMap<>();
+            metadata.putAll((HashMap<String, String>) composeServiceData.get(InstanceConstants.FIELD_METADATA));
+            String serviceHash = metadata.get(ServiceDiscoveryConstants.LABEL_SERVICE_HASH);
+            if (serviceHash != null) {
+                metadata.remove(ServiceDiscoveryConstants.LABEL_SERVICE_HASH);
+                composeServiceData.put(InstanceConstants.FIELD_METADATA, metadata);
+            }
+        }
+
     }
 
     @SuppressWarnings("unchecked")
