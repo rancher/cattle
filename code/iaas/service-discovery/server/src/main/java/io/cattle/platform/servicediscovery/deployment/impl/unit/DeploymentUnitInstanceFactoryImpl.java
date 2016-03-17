@@ -38,30 +38,29 @@ public class DeploymentUnitInstanceFactoryImpl implements DeploymentUnitInstance
     @SuppressWarnings("unchecked")
     public DeploymentUnitInstance createDeploymentUnitInstance(DeploymentServiceContext context, String uuid,
             Service service, String instanceName, Object instanceObj, Map<String, String> labels, String launchConfigName) {
-        if (service.getKind().equalsIgnoreCase(KIND.LOADBALANCERSERVICE.name())) {
+        if (service.getKind().equalsIgnoreCase(KIND.SERVICE.name())) {
+            Instance instance = null;
+            if (instanceObj != null) {
+                instance = (Instance) instanceObj;
+            }
+            return new DefaultDeploymentUnitInstance(context, uuid, service,
+                    instanceName, instance, labels, launchConfigName);
+        } else if (service.getKind().equalsIgnoreCase(KIND.LOADBALANCERSERVICE.name())) {
             Instance instance = null;
             if (instanceObj != null) {
                 instance = (Instance) instanceObj;
             }
             return new LoadBalancerDeploymentUnitInstance(context, uuid, service,
                     instanceName, instance, labels, launchConfigName);
-        } else if (service.getKind().equalsIgnoreCase(KIND.EXTERNALSERVICE.name())) {
+        }else if (service.getKind().equalsIgnoreCase(KIND.EXTERNALSERVICE.name())) {
             Pair<String, String> ipHostName = null;
             if (instanceObj != null) {
                 ipHostName = (Pair<String, String>) instanceObj;
             }
             return new ExternalDeploymentUnitInstance(context, uuid, service, launchConfigName, ipHostName.getLeft(),
                     ipHostName.getRight());
-        } else {
-            Instance instance = null;
-            if (instanceObj != null && instanceObj instanceof Instance) {
-                instance = (Instance) instanceObj;
-            } else {
-                return null;
-            }
-            return new DefaultDeploymentUnitInstance(context, uuid, service,
-                    instanceName, instance, labels, launchConfigName);
         }
+        return null;
     }
 
     @Override
