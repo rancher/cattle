@@ -9,6 +9,7 @@ import static io.cattle.platform.core.model.tables.IpAddressTable.IP_ADDRESS;
 import static io.cattle.platform.core.model.tables.NicTable.NIC;
 import static io.cattle.platform.core.model.tables.ServiceExposeMapTable.SERVICE_EXPOSE_MAP;
 import static io.cattle.platform.core.model.tables.ServiceIndexTable.SERVICE_INDEX;
+import io.cattle.platform.configitem.context.dao.DnsInfoDao;
 import io.cattle.platform.configitem.context.dao.MetaDataInfoDao;
 import io.cattle.platform.configitem.context.data.metadata.common.ContainerMetaData;
 import io.cattle.platform.configitem.context.data.metadata.common.HostMetaData;
@@ -32,19 +33,37 @@ import io.cattle.platform.object.util.DataAccessor;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import javax.inject.Inject;
 
 import org.jooq.JoinType;
 import org.jooq.Record1;
 import org.jooq.RecordHandler;
 
 public class MetaDataInfoDaoImpl extends AbstractJooqDao implements MetaDataInfoDao {
+
+    @Inject
+    DnsInfoDao dnsInfoDao;
+
     @Override
     public List<ContainerMetaData> getContainersData(long accountId) {
+
+        final Map<Long, IpAddress> instanceIdToHostIpMap = dnsInfoDao
+                .getInstanceWithHostNetworkingToIpMap(accountId);
+
         MultiRecordMapper<ContainerMetaData> mapper = new MultiRecordMapper<ContainerMetaData>() {
             @Override
             protected ContainerMetaData map(List<Object> input) {
                 ContainerMetaData data = new ContainerMetaData();
-                data.setIp((IpAddress) input.get(3));
+
+                Instance instance = (Instance) input.get(1);
+
+                if (instanceIdToHostIpMap != null && instanceIdToHostIpMap.containsKey(instance.getId())) {
+                    data.setIp((IpAddress) instanceIdToHostIpMap.get(instance.getId()));
+                } else {
+                    data.setIp((IpAddress) input.get(3));
+                }
+
                 HostMetaData hostMetaData = null;
                 if (input.get(2) != null) {
                     Host host = (Host) input.get(2);
@@ -53,7 +72,6 @@ public class MetaDataInfoDaoImpl extends AbstractJooqDao implements MetaDataInfo
                         hostMetaData = new HostMetaData(hostIpAddress.getAddress(), host);
                     }
                 }
-                Instance instance = (Instance) input.get(1);
                 data.setInstanceAndHostMetadata(instance, hostMetaData);
 
                 if (input.get(4) != null) {
