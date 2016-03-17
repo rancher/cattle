@@ -17,6 +17,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.cloudstack.managed.threadlocal.ManagedThreadLocal;
 import org.apache.commons.lang3.StringUtils;
 import org.jooq.InsertValuesStep2;
 import org.jooq.Record;
@@ -28,6 +29,12 @@ import org.slf4j.LoggerFactory;
 public class DynamicSchemaDaoImpl extends AbstractJooqDao implements DynamicSchemaDao {
 
     private static final Logger log = LoggerFactory.getLogger(DynamicSchemaDaoImpl.class);
+    private static final ManagedThreadLocal<Map<CacheKey,DynamicSchema>> CACHE = new ManagedThreadLocal<Map<CacheKey,DynamicSchema>>() {
+        @Override
+        protected Map<CacheKey, DynamicSchema> initialValue() {
+            return new HashMap<>();
+        }
+    };
 
     @Override
     public List<? extends DynamicSchema> getSchemas(long accountId, String role) {
@@ -50,10 +57,22 @@ public class DynamicSchemaDaoImpl extends AbstractJooqDao implements DynamicSche
                 log.error("Failed to get a schema record.", e);
             }
             if (schema != null) {
+                cache(schema.getName(), accountId, role, schema);
                 recordsToReturn.add(schema);
             }
         }
         return recordsToReturn;
+    }
+
+    private DynamicSchema get(String name, long accountId, String role) {
+        return CACHE.get().get(new CacheKey(name, accountId, role));
+    }
+
+    private DynamicSchema cache(String name, long accountId, String role, DynamicSchema schema) {
+        if (schema != null) {
+            CACHE.get().put(new CacheKey(name, accountId, role), schema);
+        }
+        return schema;
     }
 
     private SelectConditionStep<Record> schemaQuery(long accountId, String role) {
@@ -74,6 +93,21 @@ public class DynamicSchemaDaoImpl extends AbstractJooqDao implements DynamicSche
 
     @Override
     public DynamicSchema getSchema(String name, long accountId, String role) {
+        if (name == null) {
+            return null;
+        }
+        if (!name.contains("machine") && !name.contains("Config")) {
+            return null;
+        }
+        DynamicSchema schema = get(name, accountId, role);
+        if (schema != null) {
+            return schema;
+        }
+
+        return cache(name, accountId, role, getSchemaInternal(name, accountId, role));
+    }
+
+    private DynamicSchema getSchemaInternal(String name, long accountId, String role) {
 
         List<Record> records = schemaQuery(accountId, role)
                 .and(DYNAMIC_SCHEMA.NAME.eq(name))
@@ -125,13 +159,6 @@ public class DynamicSchemaDaoImpl extends AbstractJooqDao implements DynamicSche
         return record == null ? null : record.into(DynamicSchema.class);
     }
 
-    @Override
-    public int deleteSchemas(long serviceId) {
-        return create().delete(DYNAMIC_SCHEMA)
-                .where(DYNAMIC_SCHEMA.SERVICE_ID.eq(serviceId))
-                .execute();
-    }
-
     @SuppressWarnings("unchecked")
     @Override
     public void createRoles(DynamicSchema dynamicSchema) {
@@ -143,14 +170,15 @@ public class DynamicSchemaDaoImpl extends AbstractJooqDao implements DynamicSche
                     insertStart = insertStart.values(dynamicSchema.getId(), role);
         }
         insertStart.execute();
+        CACHE.get().clear();
     }
 
     @Override
     public void removeRoles(DynamicSchema dynamicSchema) {
+        CACHE.get().clear();
         create().delete(DYNAMIC_SCHEMA_ROLE)
                 .where(DYNAMIC_SCHEMA_ROLE.DYNAMIC_SCHEMA_ID.eq(dynamicSchema.getId()))
                 .execute();
-
     }
 
     @Override
@@ -198,4 +226,57 @@ public class DynamicSchemaDaoImpl extends AbstractJooqDao implements DynamicSche
 
     }
 
+    class CacheKey {
+        String name;
+        long accountId;
+        String role;
+
+        public CacheKey(String name, long accountId, String role) {
+            super();
+            this.name = name;
+            this.accountId = accountId;
+            this.role = role;
+        }
+
+        @Override
+        public int hashCode() {
+            final int prime = 31;
+            int result = 1;
+            result = prime * result + getOuterType().hashCode();
+            result = prime * result + (int) (accountId ^ (accountId >>> 32));
+            result = prime * result + ((name == null) ? 0 : name.hashCode());
+            result = prime * result + ((role == null) ? 0 : role.hashCode());
+            return result;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (this == obj)
+                return true;
+            if (obj == null)
+                return false;
+            if (getClass() != obj.getClass())
+                return false;
+            CacheKey other = (CacheKey) obj;
+            if (!getOuterType().equals(other.getOuterType()))
+                return false;
+            if (accountId != other.accountId)
+                return false;
+            if (name == null) {
+                if (other.name != null)
+                    return false;
+            } else if (!name.equals(other.name))
+                return false;
+            if (role == null) {
+                if (other.role != null)
+                    return false;
+            } else if (!role.equals(other.role))
+                return false;
+            return true;
+        }
+
+        private DynamicSchemaDaoImpl getOuterType() {
+            return DynamicSchemaDaoImpl.this;
+        }
+    }
 }
