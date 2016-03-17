@@ -1,6 +1,7 @@
 package io.github.ibuildthecloud.gdapi.model.impl;
 
 import io.github.ibuildthecloud.gdapi.context.ApiContext;
+import io.github.ibuildthecloud.gdapi.factory.SchemaFactory;
 import io.github.ibuildthecloud.gdapi.id.IdFormatter;
 import io.github.ibuildthecloud.gdapi.id.IdFormatterUtils;
 import io.github.ibuildthecloud.gdapi.model.Field;
@@ -23,6 +24,7 @@ import org.apache.commons.lang3.StringUtils;
 public class WrappedResource extends ResourceImpl implements Resource {
 
     Schema schema;
+    SchemaFactory schemaFactory;
     Object obj;
     Map<String, Object> priorityFields = new LinkedHashMap<String, Object>();
     Map<String, Object> additionalFields;
@@ -33,12 +35,14 @@ public class WrappedResource extends ResourceImpl implements Resource {
     IdFormatter idFormatter;
 
     public WrappedResource(IdFormatter idFormatter, Schema schema, Object obj, Map<String, Object> additionalFields, String method) {
-        this(idFormatter, schema, obj, additionalFields, null, method);
+        this(idFormatter, null, schema, obj, additionalFields, null, method);
     }
 
-    public WrappedResource(IdFormatter idFormatter, Schema schema, Object obj, Map<String, Object> additionalFields, Set<String> priorityFieldNames,
-            String method) {
+    public WrappedResource(IdFormatter idFormatter, SchemaFactory schemaFactory,
+            Schema schema, Object obj, Map<String, Object> additionalFields,
+            Set<String> priorityFieldNames, String method) {
         super();
+        this.schemaFactory = schemaFactory;
         this.schema = schema;
         this.resourceFields = schema.getResourceFields();
         this.obj = obj;
@@ -49,8 +53,8 @@ public class WrappedResource extends ResourceImpl implements Resource {
         init();
     }
 
-    public WrappedResource(IdFormatter idFormatter, Schema schema, Object obj, String method) {
-        this(idFormatter, schema, obj, new HashMap<String, Object>(), method);
+    public WrappedResource(IdFormatter idFormatter, SchemaFactory schemaFactory, Schema schema, Object obj, String method) {
+        this(idFormatter, schemaFactory, schema, obj, new HashMap<String, Object>(), null, method);
     }
 
     protected void addField(String key, Object value) {
@@ -97,7 +101,7 @@ public class WrappedResource extends ResourceImpl implements Resource {
                 }
             }
 
-            addField(name, IdFormatterUtils.formatReference(field, idFormatter, value));
+            addField(name, IdFormatterUtils.formatReference(field, idFormatter, value, schemaFactory));
             if (createTsFields && field.getTypeEnum() == FieldType.DATE && value instanceof Date) {
                 addField(name + "TS", ((Date)value).getTime());
             }

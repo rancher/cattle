@@ -163,7 +163,7 @@ def test_activate_single_service(client, context, super_client):
     assert len(svc.launchConfig.environment) == 1
     assert len(svc.launchConfig.ports) == 2
     assert len(svc.launchConfig.dataVolumes) == 1
-    # assert set(service.launchConfig.dataVolumesFrom) == set([container1.id])
+    assert svc.launchConfig.dataVolumesFrom == list([container1.id])
     assert svc.launchConfig.capAdd == caps
     assert svc.launchConfig.capDrop == caps
     assert svc.launchConfig.dns == dns
@@ -190,6 +190,7 @@ def test_activate_single_service(client, context, super_client):
     assert svc.launchConfig.healthCheck.port == 200
     assert svc.metadata == metadata
     assert svc.launchConfig.version == '0'
+    assert svc.launchConfig.requestedHostId == host.id
 
     # activate the service and validate that parameters were set for instance
     service = client.wait_success(svc.activate())

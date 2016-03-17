@@ -149,7 +149,7 @@ public class ApiUtils {
     }
 
     public static Resource createResourceWithAttachments(final ResourceManager resourceManager, final ApiRequest request, final IdFormatter idFormatter,
-            final Schema schema, Object obj, Map<String, Object> inputAdditionalFields) {
+            final SchemaFactory schemaFactory, final Schema schema, Object obj, Map<String, Object> inputAdditionalFields) {
         Integer depth = DEPTH.get();
 
         try {
@@ -176,7 +176,7 @@ public class ApiUtils {
                 additionalFields.putAll(attachments);
             }
             String method = request == null ? null : request.getMethod();
-            return new WrappedResource(idFormatter, schema, obj, additionalFields, PRIORITY_FIELDS, method);
+            return new WrappedResource(idFormatter, schemaFactory, schema, obj, additionalFields, PRIORITY_FIELDS, method);
         } finally {
             DEPTH.set(depth);
         }

@@ -359,7 +359,7 @@ public abstract class AbstractObjectResourceManager extends AbstractBaseResource
     @Override
     protected Resource constructResource(IdFormatter idFormatter, SchemaFactory schemaFactory, Schema schema, Object obj, ApiRequest apiRequest) {
         Map<String, Object> transitioningFields = metaDataManager.getTransitionFields(schema, obj);
-        return ApiUtils.createResourceWithAttachments(this, apiRequest, idFormatter, schema, obj, transitioningFields);
+        return ApiUtils.createResourceWithAttachments(this, apiRequest, idFormatter, schemaFactory, schema, obj, transitioningFields);
     }
 
     @Override

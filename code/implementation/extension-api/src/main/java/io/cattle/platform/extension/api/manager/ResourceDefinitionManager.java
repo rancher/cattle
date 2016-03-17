@@ -96,7 +96,7 @@ public class ResourceDefinitionManager extends AbstractNoOpResourceManager {
 
     @Override
     protected Resource constructResource(final IdFormatter idFormatter, SchemaFactory schemaFactory, final Schema schema, Object obj, ApiRequest apiRequest) {
-        return ApiUtils.createResourceWithAttachments(this, apiRequest, idFormatter, schema, obj, new HashMap<String, Object>());
+        return ApiUtils.createResourceWithAttachments(this, apiRequest, idFormatter, schemaFactory, schema, obj, new HashMap<String, Object>());
     }
 
     protected List<?> getLinkInternal(ResourceDefinition def, String link, ApiRequest request) {
