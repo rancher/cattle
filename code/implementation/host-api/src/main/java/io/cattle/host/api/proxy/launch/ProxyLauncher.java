@@ -1,7 +1,10 @@
 package io.cattle.host.api.proxy.launch;
 
 import static io.cattle.platform.server.context.ServerContext.*;
+
+import io.cattle.platform.core.model.Credential;
 import io.cattle.platform.host.service.HostApiService;
+import io.cattle.platform.service.launcher.ServiceAccountCreateStartup;
 import io.cattle.platform.ssh.common.SshKeyGen;
 import io.cattle.platform.util.type.InitializationTask;
 
@@ -31,6 +34,9 @@ public class ProxyLauncher extends NoExceptionRunnable implements Initialization
 
     @Inject
     ScheduledExecutorService executor;
+
+    @Inject
+    ServiceAccountCreateStartup serviceAccount;
 
     Process process;
 
@@ -114,6 +120,10 @@ public class ProxyLauncher extends NoExceptionRunnable implements Initialization
                 env.put("PROXY_PARENT_PID", parts[0]);
             }
         }
+
+        Credential cred = serviceAccount.getCredential();
+        env.put("CATTLE_ACCESS_KEY", cred.getPublicValue());
+        env.put("CATTLE_SECRET_KEY", cred.getSecretValue());
 
         pb.redirectOutput(Redirect.INHERIT);
         pb.redirectError(Redirect.INHERIT);

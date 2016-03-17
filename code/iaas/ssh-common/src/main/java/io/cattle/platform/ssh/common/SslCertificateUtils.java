@@ -4,7 +4,6 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.StringReader;
 import java.security.DigestInputStream;
-import java.security.KeyPair;
 import java.security.MessageDigest;
 import java.security.PublicKey;
 import java.security.cert.CertificateException;

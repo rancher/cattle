@@ -41,6 +41,10 @@ public class DataAccessor {
         return accessor;
     }
 
+    public static void setField(Object obj, String field, Object fieldValue) {
+        DataAccessor.fields(obj).withKey(field).set(fieldValue);
+    }
+
     public static String fieldString(Object obj, String key) {
         return fields(obj).withKey(key).as(String.class);
     }

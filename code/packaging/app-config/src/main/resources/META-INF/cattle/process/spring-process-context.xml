@@ -137,6 +137,17 @@
         </property>
     </bean>
 
+    <bean class="io.cattle.platform.docker.process.environment.DockerComposeEnvironmentHandler"
+        p:name="DockerComposeEnvironmentHandler"
+        p:commandName="composeProject.create"
+        p:dataTypeClass="io.cattle.platform.core.model.Environment"
+        p:processNames="environment.create"
+        p:errorChainProcess="environment.error" >
+        <property name="priority">
+            <util:constant static-field="io.cattle.platform.util.type.Priority.DEFAULT"/>
+        </property>
+    </bean>
+
     <bean class="io.cattle.platform.process.instance.PostInstancePurge"
         p:commandName="compute.instance.remove" >
     </bean>
@@ -387,6 +398,8 @@
     <bean class="io.cattle.platform.service.account.SystemRoleObjectPostProcessor" />
     <bean class="io.cattle.platform.docker.process.nic.DockerNicDeactivate" />
     <bean class="io.cattle.platform.docker.process.ipaddress.DockerIpAddressDeactivate" />
+    <bean class="io.cattle.platform.docker.process.instancehostmap.DockerComposeInstanceHostMapActivate" />
+    <bean class="io.cattle.platform.docker.process.instance.DockerComposeServiceCleanup" />
 
     <tx:advice id="DockerComputeDaoImplAdvice" transaction-manager="CoreTransactionManager">
         <tx:attributes>
@@ -404,7 +417,6 @@
     <bean class="io.cattle.platform.docker.machine.launch.MachineLauncher" />
     <bean class="io.cattle.platform.docker.machine.launch.ComposeExecutorLauncher" />
     <bean class="io.cattle.platform.docker.machine.launch.CatalogLauncher" />
-    <bean class="io.cattle.platform.service.launcher.ServiceAccountCreateStartup" />
     
     <process:defaultProcesses resourceType="externalHandler" />
     <process:defaultProcesses resourceType="externalHandlerProcess" />

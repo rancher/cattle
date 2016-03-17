@@ -1,6 +1,8 @@
 package io.cattle.platform.token.impl;
 
 import static org.junit.Assert.*;
+
+import io.cattle.platform.token.CertSet;
 import io.cattle.platform.token.TokenException;
 
 import java.math.BigInteger;
@@ -16,10 +18,10 @@ import java.security.spec.RSAPublicKeySpec;
 import java.util.Date;
 import java.util.Map;
 
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.junit.Before;
 import org.junit.Test;
 
-import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import com.nimbusds.jose.util.Base64;
 
 public class JwtTokenServiceImplTest {
@@ -69,6 +71,11 @@ public class JwtTokenServiceImplTest {
                 } catch (Exception e) {
                     throw new RuntimeException(e);
                 }
+            }
+
+            @Override
+            public CertSet generateCertificate(String subject) throws Exception {
+                return null;
             }
         });
 

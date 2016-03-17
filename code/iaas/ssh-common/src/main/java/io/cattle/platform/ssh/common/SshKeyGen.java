@@ -79,7 +79,8 @@ public class SshKeyGen {
         return new JcaX509CertificateConverter().setProvider("BC").getCertificate(certBldr.build(signer));
     }
 
-    public static X509Certificate generateClientCert(String subject, PublicKey entityKey, PrivateKey caKey, X509Certificate caCert) throws NoSuchAlgorithmException, CertIOException, OperatorCreationException, CertificateException {
+    public static X509Certificate generateClientCert(String subject, PublicKey entityKey, PrivateKey caKey,
+            X509Certificate caCert) throws NoSuchAlgorithmException, CertIOException, OperatorCreationException, CertificateException {
         X509v3CertificateBuilder   certBldr = new JcaX509v3CertificateBuilder(
                 caCert.getSubjectX500Principal(),
                 BigInteger.valueOf(Math.abs(RANDOM.nextLong())),

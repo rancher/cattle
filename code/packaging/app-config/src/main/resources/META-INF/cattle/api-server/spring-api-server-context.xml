@@ -240,9 +240,8 @@
     <bean class="io.cattle.platform.host.stats.api.ContainerStatsLinkHandler" />
     <bean class="io.cattle.platform.host.stats.api.ServiceContainerStatsLinkHandler" />
 
-    <!-- This really shouldn't be here, it's because LinkHandler and ActionHandler are
-         not properly managed and rely on Spring auto wiring and not the ExtensionManager -->
     <bean class="io.cattle.platform.iaas.api.credential.SshKeyPemDownloadLinkHandler" />
+    <bean class="io.cattle.platform.iaas.api.credential.ApiKeyCertificateDownloadLinkHandler" />
     <bean class="io.cattle.platform.iaas.api.ippool.IpPoolAcquireActionHandler" />
     <bean class="io.cattle.platform.docker.machine.api.MachineConfigLinkHandler" />
 

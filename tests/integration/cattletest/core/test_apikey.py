@@ -117,3 +117,11 @@ def test_identical_public_value_api_key_inactive_removed(admin_user_client):
         admin_user_client.create_api_key(publicValue=public_value,
                                          secretValue=secret_value)
     assert e.value.error.status == 422
+
+
+def test_credential_download(client):
+    key = client.create_api_key()
+    key = client.wait_success(key)
+
+    blob = key.certificate()
+    assert blob is not None

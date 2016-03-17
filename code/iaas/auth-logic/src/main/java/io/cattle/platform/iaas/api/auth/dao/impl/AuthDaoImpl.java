@@ -175,6 +175,21 @@ public class AuthDaoImpl extends AbstractJooqDao implements AuthDao {
     }
 
     @Override
+    public Account getAccountByAccessKey(String accessKey) {
+        return create()
+                .select(ACCOUNT.fields())
+                    .from(ACCOUNT)
+                .join(CREDENTIAL)
+                    .on(CREDENTIAL.ACCOUNT_ID.eq(ACCOUNT.ID))
+                .where(
+                        CREDENTIAL.STATE.eq(CommonStatesConstants.ACTIVE)
+                                .and(CREDENTIAL.PUBLIC_VALUE.eq(accessKey))
+                                .and(CREDENTIAL.KIND.eq(CredentialConstants.KIND_API_KEY))
+                                .and(ACCOUNT.STATE.eq(CommonStatesConstants.ACTIVE)))
+                .fetchOneInto(AccountRecord.class);
+    }
+
+    @Override
     public Account getAccountByKeys(String access, String secretKey, TransformationService transformationService) {
         try {
             Credential credential = create()
@@ -352,6 +367,7 @@ public class AuthDaoImpl extends AbstractJooqDao implements AuthDao {
         return projects;
     }
 
+    @Override
     public List<? extends ProjectMember> getActiveProjectMembers(long id) {
         return create()
                 .selectFrom(PROJECT_MEMBER)
@@ -361,6 +377,7 @@ public class AuthDaoImpl extends AbstractJooqDao implements AuthDao {
                 .orderBy(PROJECT_MEMBER.ID.asc()).fetch();
     }
 
+    @Override
     public List<? extends ProjectMember> getProjectMembersByIdentity(long projectId, Set<Identity> identities) {
         Condition allMembers = DSL.falseCondition();
         for (Identity identity : identities) {
@@ -414,6 +431,7 @@ public class AuthDaoImpl extends AbstractJooqDao implements AuthDao {
         return !projectMembers.isEmpty();
     }
 
+    @Override
     public boolean isProjectMember(long projectId, Long usingAccount, boolean isAdmin, Set<Identity> identities) {
         if (identities == null) {
             return false;
@@ -438,6 +456,7 @@ public class AuthDaoImpl extends AbstractJooqDao implements AuthDao {
     public List<? extends ProjectMember> setProjectMembers(final Account project, final Set<Member> members,
                                                            final IdFormatter idFormatter) {
         return lockManager.lock(new ProjectLock(project), new LockCallback<List<? extends ProjectMember>>() {
+            @Override
             public List<? extends ProjectMember> doWithLock() {
                 List<? extends ProjectMember> previousMembers = getActiveProjectMembers(project.getId());
                 Set<Member> otherPreviousMembers = new HashSet<>();
@@ -472,6 +491,7 @@ public class AuthDaoImpl extends AbstractJooqDao implements AuthDao {
         });
     }
 
+    @Override
     public ProjectMember createProjectMember(Account project, Member member) {
         Map<Object, Object> properties = new HashMap<>();
         properties.put(PROJECT_MEMBER.PROJECT_ID, project.getId());
