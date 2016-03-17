@@ -1,0 +1,8 @@
+{
+    "resourceFields": {
+        "templates":{
+            "type": "map[string]",
+            "required": true
+        }
+    }
+}

@@ -8,7 +8,6 @@ import io.cattle.platform.token.TokenService;
 import java.security.interfaces.RSAPublicKey;
 import java.text.ParseException;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.Map;
 
 import javax.inject.Inject;
@@ -68,31 +67,40 @@ public class JwtTokenServiceImpl implements TokenService {
     protected String generateToken(Map<String, Object> payload, Date issueTime, Date expireDate, boolean encrypted) {
 
         // Prepare JWT with claims set
-        JWTClaimsSet claimsSet = new JWTClaimsSet();
-
-        Map<String, Object> customClaims = new HashMap<>();
+        JWTClaimsSet.Builder builder = new JWTClaimsSet.Builder();
 
         if (payload != null) {
-            customClaims.putAll(payload);
+            for (Map.Entry<String, Object> entry : payload.entrySet()) {
+                builder.claim(entry.getKey(), entry.getValue());
+            }
         }
 
         if (expireDate != null) {
-            claimsSet.setExpirationTime(expireDate);
+            builder.expirationTime(expireDate);
         }
 
-        claimsSet.setCustomClaims(customClaims);
-        claimsSet.setSubject(SUBJECT.get());
-        claimsSet.setIssueTime(issueTime);
-        claimsSet.setIssuer(ISSUER.get());
+        builder.subject(SUBJECT.get());
+        builder.issueTime(issueTime);
+        builder.issuer(ISSUER.get());
 
-        if (!encrypted) {
+        if (encrypted) {
+            JWEHeader header = new JWEHeader(JWEAlgorithm.RSA_OAEP, EncryptionMethod.A128GCM);
+            EncryptedJWT jwt = new EncryptedJWT(header, builder.build());
+            RSAEncrypter encrypter = new RSAEncrypter((RSAPublicKey) keyProvider.getDefaultPublicKey());
+            try {
+                jwt.encrypt(encrypter);
+            } catch (JOSEException e) {
+                throw new RuntimeException("Failed to generate encrypted token", e);
+            }
+            return jwt.serialize();
+        } else {
             RSAPrivateKeyHolder privateKey = keyProvider.getPrivateKey();
 
-            customClaims.put(KEY_ID, privateKey.getKeyId());
+            builder.claim(KEY_ID, privateKey.getKeyId());
             // Create RSA-signer with the private key
             JWSSigner signer = new RSASSASigner(privateKey.getKey());
 
-            SignedJWT signedJWT = new SignedJWT(new JWSHeader(JWSAlgorithm.RS256), claimsSet);
+            SignedJWT signedJWT = new SignedJWT(new JWSHeader(JWSAlgorithm.RS256), builder.build());
 
             // Compute the RSA signature
             try {
@@ -103,16 +111,6 @@ public class JwtTokenServiceImpl implements TokenService {
 
             return signedJWT.serialize();
         }
-        JWEHeader header = new JWEHeader(JWEAlgorithm.RSA_OAEP, EncryptionMethod.A128GCM);
-        EncryptedJWT jwt = new EncryptedJWT(header, claimsSet);
-        RSAEncrypter encrypter = new RSAEncrypter((RSAPublicKey) keyProvider.getDefaultPublicKey());
-        try {
-            jwt.encrypt(encrypter);
-        } catch (JOSEException e) {
-            throw new RuntimeException("Failed to generate encrypted token", e);
-        }
-        return jwt.serialize();
-
     }
 
     public RSAKeyProvider getKeyProvider() {

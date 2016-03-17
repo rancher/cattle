@@ -9,6 +9,7 @@ import io.cattle.platform.engine.process.ProcessState;
 import io.cattle.platform.eventing.EventCallOptions;
 import io.cattle.platform.eventing.EventProgress;
 import io.cattle.platform.eventing.exception.AgentRemovedException;
+import io.cattle.platform.eventing.exception.EventExecutionException;
 import io.cattle.platform.eventing.model.Event;
 import io.cattle.platform.eventing.model.EventVO;
 import io.cattle.platform.object.meta.Relationship;
@@ -44,6 +45,7 @@ public class AgentBasedProcessHandler extends AbstractObjectProcessHandler imple
 
     boolean reportProgress = false;
     boolean shouldContinue;
+    String errorChainProcess;
     String configPrefix = "event.data.";
     String dataType;
     Class<?> dataTypeClass;
@@ -98,13 +100,21 @@ public class AgentBasedProcessHandler extends AbstractObjectProcessHandler imple
             return new HandlerResult(true, CollectionUtils.asMap((Object) "_noAgent", true));
         }
 
-        Event reply = handleEvent(state, process, eventResource, dataResource, agentResource, agent);
+        try {
+            Event reply = handleEvent(state, process, eventResource, dataResource, agentResource, agent);
 
-        if (reply == null) {
-            return null;
+            if (reply == null) {
+                return null;
+            }
+
+            return new HandlerResult(shouldContinue, getResourceDataMap(getObjectManager().getType(eventResource), reply.getData()));
+        } catch (EventExecutionException e) {
+            if (StringUtils.isNotBlank(errorChainProcess)) {
+                getObjectProcessManager().scheduleProcessInstance(errorChainProcess, state.getResource(), null);
+                e.setResources(state.getResource());
+            }
+            throw e;
         }
-
-        return new HandlerResult(shouldContinue, getResourceDataMap(getObjectManager().getType(eventResource), reply.getData()));
     }
 
     protected Event handleEvent(ProcessState state, ProcessInstance process, Object eventResource, Object dataResource, Object agentResource,
@@ -278,15 +288,6 @@ public class AgentBasedProcessHandler extends AbstractObjectProcessHandler imple
         }
 
         DynamicStringProperty prop = getExpressionProperty(type);
-        if (StringUtils.isBlank(prop.get())) {
-            if (dataTypeClass != null || dataType != null || dataResourceRelationship != null) {
-                throw new IllegalStateException("Failed to find expression for object serialization for type [" + type + "] config property ["
-                        + getConfigPrefix() + type + "] is blank");
-            } else {
-                return null;
-            }
-        }
-
         prop.addCallback(new Runnable() {
             @Override
             public void run() {
@@ -463,5 +464,12 @@ public class AgentBasedProcessHandler extends AbstractObjectProcessHandler imple
         this.shortCircuitIfAgentRemoved = shortCircuitIfAgentRemoved;
     }
 
+    public String getErrorChainProcess() {
+        return errorChainProcess;
+    }
+
+    public void setErrorChainProcess(String errorChainProcess) {
+        this.errorChainProcess = errorChainProcess;
+    }
 
 }

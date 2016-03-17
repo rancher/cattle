@@ -3,6 +3,7 @@ package io.cattle.platform.host.service;
 import io.cattle.platform.archaius.util.ArchaiusUtil;
 import io.cattle.platform.core.dao.DataDao;
 import io.cattle.platform.ssh.common.SshKeyGen;
+import io.cattle.platform.token.CertSet;
 import io.cattle.platform.token.impl.RSAKeyProvider;
 import io.cattle.platform.token.impl.RSAPrivateKeyHolder;
 import io.cattle.platform.util.exception.ExceptionUtils;
@@ -10,6 +11,7 @@ import io.cattle.platform.util.type.InitializationTask;
 
 import java.security.KeyPair;
 import java.security.PublicKey;
+import java.security.cert.X509Certificate;
 import java.security.interfaces.RSAPrivateKey;
 import java.util.HashMap;
 import java.util.Map;
@@ -24,6 +26,7 @@ public class HostApiRSAKeyProvider implements RSAKeyProvider, InitializationTask
     private static final DynamicBooleanProperty GEN_ON_STARTUP = ArchaiusUtil.getBoolean("host.api.keygen.on.startup");
 
     private static final String KEY = "host.api.key";
+    private static final String CERT = "host.api.key.cert";
     private static final String DEFAULT = "default";
 
     DataDao dataDao;
@@ -41,6 +44,7 @@ public class HostApiRSAKeyProvider implements RSAKeyProvider, InitializationTask
     public void start() {
         if (GEN_ON_STARTUP.get()) {
             getPrivateKey();
+            getCACertificate();
         }
     }
 
@@ -53,7 +57,7 @@ public class HostApiRSAKeyProvider implements RSAKeyProvider, InitializationTask
             @Override
             public String call() throws Exception {
                 KeyPair kp = SshKeyGen.generateKeyPair();
-                return SshKeyGen.writeKeyPair(kp);
+                return SshKeyGen.toPEM(kp);
             }
         });
 
@@ -64,6 +68,35 @@ public class HostApiRSAKeyProvider implements RSAKeyProvider, InitializationTask
             /* Won't hit next line */
             return null;
         }
+    }
+
+    protected X509Certificate getCACertificate() {
+        final KeyPair kp = getKeyPair();
+        String encoded = dataDao.getOrCreate(CERT, false, new Callable<String>() {
+            @Override
+            public String call() throws Exception {
+                X509Certificate cert = SshKeyGen.createRootCACert(kp);
+                return SshKeyGen.toPEM(cert);
+            }
+        });
+
+        try {
+            return SshKeyGen.readCACert(encoded);
+        } catch (Exception e) {
+            ExceptionUtils.throwRuntime("Failed to CA cert from PEM", e);
+            /* Won't hit next line */
+            return null;
+        }
+    }
+
+    @Override
+    public CertSet generateCertificate(String subject) throws Exception {
+        KeyPair caKp = getKeyPair();
+        X509Certificate caCert = getCACertificate();
+        KeyPair clientKp = SshKeyGen.generateKeyPair();
+        X509Certificate clientCert = SshKeyGen.generateClientCert(subject, clientKp.getPublic(), caKp.getPrivate(), caCert);
+        CertSet result = new CertSet(caCert, clientCert, clientKp.getPrivate());
+        return result;
     }
 
     @Override

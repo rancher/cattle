@@ -4,14 +4,8 @@ import static io.cattle.platform.core.model.tables.TaskInstanceTable.*;
 import static io.cattle.platform.core.model.tables.TaskTable.*;
 import io.cattle.platform.archaius.util.ArchaiusUtil;
 import io.cattle.platform.core.model.Task;
-import io.cattle.platform.core.model.tables.records.TaskInstanceRecord;
 import io.cattle.platform.db.jooq.dao.impl.AbstractJooqDao;
-import io.cattle.platform.server.context.ServerContext;
-import io.cattle.platform.task.TaskOptions;
 import io.cattle.platform.task.dao.TaskDao;
-import io.cattle.platform.util.exception.ExceptionUtils;
-
-import java.sql.Timestamp;
 import java.util.Date;
 
 import org.jooq.exception.DataAccessException;
@@ -52,56 +46,6 @@ public class TaskDaoImpl extends AbstractJooqDao implements TaskDao {
                 }
             }
         }
-    }
-
-    @Override
-    public Object newRecord(io.cattle.platform.task.Task taskObj) {
-        if ( taskObj instanceof TaskOptions && ! ((TaskOptions)taskObj).isShouldRecord() ) {
-            return null;
-        }
-
-        String name = taskObj.getName();
-        Task task = getTask(name);
-        if ( task == null ) {
-            throw new IllegalStateException("Unknown task [" + name + "]");
-        }
-
-        TaskInstanceRecord record = new TaskInstanceRecord();
-        record.setStartTime(new Timestamp(System.currentTimeMillis()));
-        record.setTaskId(task.getId());
-        record.setName(task.getName());
-        record.setServerId(ServerContext.getServerId());
-        record.attach(getConfiguration());
-        record.insert();
-
-        return record;
-    }
-
-    @Override
-    public void finish(Object record) {
-        if ( record == null ) {
-            return;
-        }
-
-        TaskInstanceRecord task = (TaskInstanceRecord)record;
-        task.setEndTime(new Timestamp(System.currentTimeMillis()));
-        task.update();
-    }
-
-    @Override
-    public void failed(Object record, Throwable t) {
-        if ( record == null ) {
-            return;
-        }
-
-        TaskInstanceRecord task = (TaskInstanceRecord)record;
-        task.setEndTime(new Timestamp(System.currentTimeMillis()));
-        String exception = ExceptionUtils.toString(t);
-        if ( exception.length() > 255 ) {
-            exception = exception.substring(0, 255);
-        }
-        task.setException(exception);
-        task.update();
     }
 
     protected Task getTask(String name) {

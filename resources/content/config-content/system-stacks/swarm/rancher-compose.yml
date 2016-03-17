@@ -1,0 +1,8 @@
+swarm-agent:
+  health_check:
+    request_line: GET /healthcheck HTTP/1.0
+    port: 10240
+    interval: 2000
+    response_timeout: 2000
+    unhealthy_threshold: 3
+    healthy_threshold: 2
