@@ -81,11 +81,6 @@
              "attributes" : {
                 "scheduleUpdate" : true
             }
-        },
-        "removeUnmanaged": {
-          "type": "boolean",
-          "nullable": false,
-          "default": false
         }
     },
     "resourceActions" : {

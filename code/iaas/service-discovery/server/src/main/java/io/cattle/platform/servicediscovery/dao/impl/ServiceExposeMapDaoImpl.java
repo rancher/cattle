@@ -110,22 +110,6 @@ public class ServiceExposeMapDaoImpl extends AbstractJooqDao implements ServiceE
     }
 
     @Override
-    public List<? extends Instance> listServiceUnmanagedInstances(long serviceId) {
-        return create()
-                .select(INSTANCE.fields())
-                .from(INSTANCE)
-                .join(SERVICE_EXPOSE_MAP)
-                .on(SERVICE_EXPOSE_MAP.INSTANCE_ID.eq(INSTANCE.ID)
-                        .and(SERVICE_EXPOSE_MAP.SERVICE_ID.eq(serviceId))
-                        .and(SERVICE_EXPOSE_MAP.MANAGED.eq(false))
-                        .and(SERVICE_EXPOSE_MAP.STATE.in(CommonStatesConstants.ACTIVATING,
-                                CommonStatesConstants.ACTIVE, CommonStatesConstants.REQUESTED))
-                        .and(INSTANCE.STATE.notIn(CommonStatesConstants.PURGING, CommonStatesConstants.PURGED,
-                                CommonStatesConstants.REMOVED, CommonStatesConstants.REMOVING)))
-                .fetchInto(InstanceRecord.class);
-    }
-
-    @Override
     public List<? extends Instance> listServiceManagedInstances(Service service, String launchConfigName) {
         Condition condition = null;
         if (launchConfigName == null || launchConfigName.equals(service.getName())
