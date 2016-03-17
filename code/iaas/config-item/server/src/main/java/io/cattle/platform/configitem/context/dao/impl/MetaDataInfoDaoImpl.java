@@ -1,20 +1,19 @@
 package io.cattle.platform.configitem.context.dao.impl;
 
-import static io.cattle.platform.core.model.tables.HostIpAddressMapTable.HOST_IP_ADDRESS_MAP;
-import static io.cattle.platform.core.model.tables.HostTable.HOST;
-import static io.cattle.platform.core.model.tables.InstanceHostMapTable.INSTANCE_HOST_MAP;
-import static io.cattle.platform.core.model.tables.InstanceTable.INSTANCE;
-import static io.cattle.platform.core.model.tables.IpAddressNicMapTable.IP_ADDRESS_NIC_MAP;
-import static io.cattle.platform.core.model.tables.IpAddressTable.IP_ADDRESS;
-import static io.cattle.platform.core.model.tables.NicTable.NIC;
-import static io.cattle.platform.core.model.tables.ServiceExposeMapTable.SERVICE_EXPOSE_MAP;
-import static io.cattle.platform.core.model.tables.ServiceIndexTable.SERVICE_INDEX;
+import static io.cattle.platform.core.model.tables.HostIpAddressMapTable.*;
+import static io.cattle.platform.core.model.tables.HostTable.*;
+import static io.cattle.platform.core.model.tables.InstanceHostMapTable.*;
+import static io.cattle.platform.core.model.tables.InstanceTable.*;
+import static io.cattle.platform.core.model.tables.IpAddressNicMapTable.*;
+import static io.cattle.platform.core.model.tables.IpAddressTable.*;
+import static io.cattle.platform.core.model.tables.NicTable.*;
+import static io.cattle.platform.core.model.tables.ServiceExposeMapTable.*;
+import static io.cattle.platform.core.model.tables.ServiceIndexTable.*;
 import io.cattle.platform.configitem.context.dao.DnsInfoDao;
 import io.cattle.platform.configitem.context.dao.MetaDataInfoDao;
 import io.cattle.platform.configitem.context.data.metadata.common.ContainerMetaData;
 import io.cattle.platform.configitem.context.data.metadata.common.HostMetaData;
 import io.cattle.platform.core.constants.CommonStatesConstants;
-import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.constants.IpAddressConstants;
 import io.cattle.platform.core.model.Host;
 import io.cattle.platform.core.model.Instance;
@@ -26,14 +25,14 @@ import io.cattle.platform.core.model.tables.InstanceTable;
 import io.cattle.platform.core.model.tables.IpAddressTable;
 import io.cattle.platform.core.model.tables.NicTable;
 import io.cattle.platform.core.model.tables.ServiceExposeMapTable;
-import io.cattle.platform.core.model.tables.records.ServiceIndexRecord;
+import io.cattle.platform.core.model.tables.ServiceIndexTable;
 import io.cattle.platform.db.jooq.dao.impl.AbstractJooqDao;
 import io.cattle.platform.db.jooq.mapper.MultiRecordMapper;
-import io.cattle.platform.object.util.DataAccessor;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+
 import javax.inject.Inject;
 
 import org.jooq.JoinType;
@@ -78,19 +77,11 @@ public class MetaDataInfoDaoImpl extends AbstractJooqDao implements MetaDataInfo
                     data.setExposeMap((ServiceExposeMap) input.get(4));
                 }
 
-                Long svcIndexId = DataAccessor.fieldLong(instance,
-                        InstanceConstants.FIELD_SERVICE_INSTANCE_SERVICE_INDEX_ID);
-                if (svcIndexId != null) {
-                    List<? extends ServiceIndex> indexes = create()
-                            .select(SERVICE_INDEX.fields())
-                            .from(SERVICE_INDEX)
-                            .where(SERVICE_INDEX.REMOVED.isNull()).and(SERVICE_INDEX.ID.eq(svcIndexId))
-                            .fetchInto(ServiceIndexRecord.class);
-                    if (indexes.size() > 0) {
-                        ServiceIndex serviceIndex = indexes.get(0);
-                        data.setService_index(serviceIndex.getServiceIndex());
-                    }
+                if (input.get(5) != null) {
+                    ServiceIndex serviceIndex = (ServiceIndex) input.get(5);
+                    data.setService_index(serviceIndex.getServiceIndex());
                 }
+
                 return data;
             }
         };
@@ -100,6 +91,7 @@ public class MetaDataInfoDaoImpl extends AbstractJooqDao implements MetaDataInfo
         HostTable host = mapper.add(HOST);
         IpAddressTable instanceIpAddress = mapper.add(IP_ADDRESS);
         ServiceExposeMapTable exposeMap = mapper.add(SERVICE_EXPOSE_MAP);
+        ServiceIndexTable serviceIndex = mapper.add(SERVICE_INDEX);
         return create()
                 .select(mapper.fields())
                 .from(hostIpAddress)
@@ -119,6 +111,8 @@ public class MetaDataInfoDaoImpl extends AbstractJooqDao implements MetaDataInfo
                 .on(instance.ID.eq(INSTANCE_HOST_MAP.INSTANCE_ID))
                 .join(exposeMap, JoinType.LEFT_OUTER_JOIN)
                 .on(exposeMap.INSTANCE_ID.eq(instance.ID))
+                .join(serviceIndex, JoinType.LEFT_OUTER_JOIN)
+                .on(serviceIndex.ID.eq(instance.SERVICE_INDEX_ID))
                 .where(host.REMOVED.isNull())
                 .and(instance.ACCOUNT_ID.eq(accountId))
                 .and(instanceIpAddress.ROLE.eq(IpAddressConstants.ROLE_PRIMARY))
@@ -127,6 +121,8 @@ public class MetaDataInfoDaoImpl extends AbstractJooqDao implements MetaDataInfo
                 .and(exposeMap.REMOVED.isNull())
                 .and(exposeMap.STATE.isNull().or(
                         exposeMap.STATE.notIn(CommonStatesConstants.REMOVING, CommonStatesConstants.REMOVED)))
+                .and(serviceIndex.STATE.isNull().or(
+                        serviceIndex.STATE.notIn(CommonStatesConstants.REMOVING, CommonStatesConstants.REMOVED)))
                 .orderBy(instance.ID)
                 .fetch().map(mapper);
     }

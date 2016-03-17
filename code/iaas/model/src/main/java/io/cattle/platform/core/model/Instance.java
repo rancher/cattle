@@ -399,6 +399,17 @@ public interface Instance extends java.io.Serializable {
 	@javax.persistence.Column(name = "health_updated")
 	public java.util.Date getHealthUpdated();
 
+	/**
+	 * Setter for <code>cattle.instance.service_index_id</code>.
+	 */
+	public void setServiceIndexId(java.lang.Long value);
+
+	/**
+	 * Getter for <code>cattle.instance.service_index_id</code>.
+	 */
+	@javax.persistence.Column(name = "service_index_id", precision = 19)
+	public java.lang.Long getServiceIndexId();
+
 	// -------------------------------------------------------------------------
 	// FROM and INTO
 	// -------------------------------------------------------------------------

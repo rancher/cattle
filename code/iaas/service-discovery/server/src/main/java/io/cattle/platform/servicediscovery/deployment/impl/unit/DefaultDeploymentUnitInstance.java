@@ -46,7 +46,7 @@ public class DefaultDeploymentUnitInstance extends DeploymentUnitInstance implem
         this.instance = instance;
         if (this.instance != null) {
             exposeMap = context.exposeMapDao.findInstanceExposeMap(this.instance);
-            Long svcIndexId = DataAccessor.fieldLong(instance, InstanceConstants.FIELD_SERVICE_INSTANCE_SERVICE_INDEX_ID);
+            Long svcIndexId = instance.getServiceIndexId();
             if (svcIndexId != null) {
                 serviceIndex = context.objectManager
                         .loadResource(ServiceIndex.class, svcIndexId);
