@@ -1,3 +1,0 @@
-check process swarm with pidfile /var/run/swarm.pid
-   start program = "/etc/init.d/cluster start"
-   stop  program = "/etc/init.d/cluster stop"

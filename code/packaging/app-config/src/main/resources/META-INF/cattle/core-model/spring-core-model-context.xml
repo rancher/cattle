@@ -40,12 +40,10 @@
         <property name="typeNames">
             <set>
                 <value>addOutputsInput</value>
-                <value>addRemoveClusterHostInput</value>
                 <value>addRemoveServiceLinkInput</value>
                 <value>changeSecretInput</value>
                 <value>setLabelsInput</value>
                 <value>apiKey,parent=credential</value>
-                <value>cluster,parent=host</value>
                 <value>composeConfigInput</value>
                 <value>container,parent=instance</value>
                 <value>instanceConsole</value>
