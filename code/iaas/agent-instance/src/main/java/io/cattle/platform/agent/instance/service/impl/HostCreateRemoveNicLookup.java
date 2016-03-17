@@ -34,6 +34,6 @@ public class HostCreateRemoveNicLookup extends NicPerVnetNicLookup implements In
             return null;
         }
 
-        return super.getNicPerVnetForAccount(host.getAccountId());
+        return super.getRandomNicForAccount(host.getAccountId());
     }
 }

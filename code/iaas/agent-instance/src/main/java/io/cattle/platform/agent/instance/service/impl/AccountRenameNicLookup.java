@@ -23,6 +23,6 @@ public class AccountRenameNicLookup extends NicPerVnetNicLookup implements Insta
             return null;
         }
         Account account = (Account) obj;
-        return super.getNicPerVnetForAccount(account.getId());
+        return super.getRandomNicForAccount(account.getId());
     }
 }

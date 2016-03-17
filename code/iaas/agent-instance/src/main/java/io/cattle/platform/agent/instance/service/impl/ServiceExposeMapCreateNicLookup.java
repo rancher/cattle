@@ -4,6 +4,7 @@ import io.cattle.platform.agent.instance.service.InstanceNicLookup;
 import io.cattle.platform.core.model.Nic;
 import io.cattle.platform.core.model.ServiceExposeMap;
 import io.cattle.platform.object.ObjectManager;
+import static io.cattle.platform.core.model.tables.NicTable.*;
 
 import java.util.List;
 
@@ -24,7 +25,10 @@ public class ServiceExposeMapCreateNicLookup extends NicPerVnetNicLookup impleme
         }
 
         ServiceExposeMap map = (ServiceExposeMap) obj;
-        return super.getNicPerVnetForAccount(map.getAccountId());
+        return create().selectFrom(NIC)
+                .where(NIC.INSTANCE_ID.eq(map.getInstanceId())
+                        .and(NIC.REMOVED.isNull()))
+                .fetch();
     }
 
 }

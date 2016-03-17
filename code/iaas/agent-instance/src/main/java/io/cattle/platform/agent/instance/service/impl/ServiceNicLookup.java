@@ -26,6 +26,6 @@ public class ServiceNicLookup extends NicPerVnetNicLookup implements InstanceNic
             return null;
         }
         Service service = (Service) obj;
-        return super.getNicPerVnetForAccount(service.getAccountId());
+        return super.getRandomNicForAccount(service.getAccountId());
     }
 }
