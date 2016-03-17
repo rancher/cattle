@@ -1,13 +1,14 @@
 package io.cattle.platform.core.cleanup;
 
-import static io.cattle.platform.core.model.tables.AgentTable.AGENT;
-import static io.cattle.platform.core.model.tables.ContainerEventTable.CONTAINER_EVENT;
-import static io.cattle.platform.core.model.tables.ConfigItemStatusTable.CONFIG_ITEM_STATUS;
-import static io.cattle.platform.core.model.tables.ProcessInstanceTable.PROCESS_INSTANCE;
-import static io.cattle.platform.core.model.tables.ProcessExecutionTable.PROCESS_EXECUTION;
-import static io.cattle.platform.core.model.tables.ServiceEventTable.SERVICE_EVENT;
-import static io.cattle.platform.core.model.tables.ServiceTable.SERVICE;
-import static io.cattle.platform.core.model.tables.AuditLogTable.AUDIT_LOG;
+import static io.cattle.platform.core.model.tables.AccountTable.*;
+import static io.cattle.platform.core.model.tables.AgentTable.*;
+import static io.cattle.platform.core.model.tables.AuditLogTable.*;
+import static io.cattle.platform.core.model.tables.ConfigItemStatusTable.*;
+import static io.cattle.platform.core.model.tables.ContainerEventTable.*;
+import static io.cattle.platform.core.model.tables.ProcessExecutionTable.*;
+import static io.cattle.platform.core.model.tables.ProcessInstanceTable.*;
+import static io.cattle.platform.core.model.tables.ServiceEventTable.*;
+import static io.cattle.platform.core.model.tables.ServiceTable.*;
 
 import io.cattle.platform.archaius.util.ArchaiusUtil;
 import io.cattle.platform.core.constants.CommonStatesConstants;
@@ -89,6 +90,9 @@ public class TableCleanUp extends AbstractJooqDao {
 
         deletedConfigItemStatuses = deletedConfigItemStatuses + deleteConfigItemStatus(create().select(CONFIG_ITEM_STATUS.ID).from(CONFIG_ITEM_STATUS)
                 .join(SERVICE).on(CONFIG_ITEM_STATUS.SERVICE_ID.eq(SERVICE.ID)).where(SERVICE.REMOVED.isNotNull()).limit(100));
+
+        deletedConfigItemStatuses = deletedConfigItemStatuses + deleteConfigItemStatus(create().select(CONFIG_ITEM_STATUS.ID).from(CONFIG_ITEM_STATUS)
+                .join(ACCOUNT).on(CONFIG_ITEM_STATUS.ACCOUNT_ID.eq(ACCOUNT.ID)).where(ACCOUNT.REMOVED.isNotNull()).limit(100));
 
         long endConfigItemStatusStart = System.currentTimeMillis();
 
