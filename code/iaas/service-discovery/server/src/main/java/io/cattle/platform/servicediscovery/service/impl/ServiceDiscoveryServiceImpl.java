@@ -580,6 +580,7 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
                 int init = 0;
                 int healthy = 0;
                 int expectedCount = 0;
+                int startedOnce = 0;
                 List<String> activeStates = Arrays.asList(CommonStatesConstants.ACTIVE.toLowerCase(),
                         CommonStatesConstants.ACTIVATING.toLowerCase(),
                         CommonStatesConstants.UPDATING_ACTIVE.toLowerCase());
@@ -595,6 +596,10 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
                     }
                     expectedCount++;
                     if (activeStates.contains(service.getState().toLowerCase()) && healthyStates.contains(sHS)) {
+                        if (service.getHealthState().equalsIgnoreCase(
+                                HealthcheckConstants.SERVICE_HEALTH_STATE_STARTED_ONCE.toLowerCase())) {
+                            startedOnce++;
+                        }
                         healthy++;
                     } else if (sHS.equalsIgnoreCase(HealthcheckConstants.HEALTH_STATE_INITIALIZING)) {
                         init++;
@@ -602,7 +607,9 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
                 }
 
                 String stackHealthState = HealthcheckConstants.HEALTH_STATE_UNHEALTHY;
-                if (healthy >= expectedCount) {
+                if (startedOnce >= expectedCount) {
+                    stackHealthState = HealthcheckConstants.SERVICE_HEALTH_STATE_STARTED_ONCE;
+                } else if (healthy >= expectedCount) {
                     stackHealthState = HealthcheckConstants.HEALTH_STATE_HEALTHY;
                 } else if (init > 0) {
                     stackHealthState = HealthcheckConstants.HEALTH_STATE_INITIALIZING;
@@ -665,9 +672,11 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
                         }
                     }
 
-                    if (startedOnce > 0 && startedOnce + healthyCount >= expectedScale) {
+                    if (startedOnce > 0 && startedOnce >= expectedScale) {
                         return HealthcheckConstants.SERVICE_HEALTH_STATE_STARTED_ONCE;
                     }
+
+                    healthyCount = healthyCount + startedOnce;
 
                     if ((isGlobal && healthyCount >= instanceCount && instanceCount > 0)
                             || (!isGlobal && healthyCount >= expectedScale)) {

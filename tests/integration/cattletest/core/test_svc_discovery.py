@@ -626,10 +626,19 @@ def _validate_compose_instance_start(client, service, env,
     cn = launch_config_name + "_" if \
         launch_config_name is not None else ""
     name = env.name + "_" + service.name + "_" + cn + number
+
+    def wait_for_map_count(service):
+        instances = client. \
+            list_container(name=name,
+                           state="running")
+        return len(instances) == 1
+
+    wait_for(lambda: wait_for_condition(client, service,
+                                        wait_for_map_count), timeout=5)
+
     instances = client. \
         list_container(name=name,
                        state="running")
-    assert len(instances) == 1
     return instances[0]
 
 
