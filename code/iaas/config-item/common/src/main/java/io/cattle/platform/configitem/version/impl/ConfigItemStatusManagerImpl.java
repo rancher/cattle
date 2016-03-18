@@ -210,7 +210,7 @@ public class ConfigItemStatusManagerImpl implements ConfigItemStatusManager {
         return toTrigger;
     }
 
-    protected void addToList(List<ConfigUpdateItem> list, ConfigUpdateItem item) {
+    protected static void addToList(List<ConfigUpdateItem> list, ConfigUpdateItem item) {
         if (PRIORITY_ITEMS.get().contains(item.getName())) {
             list.add(0, item);
         } else {
