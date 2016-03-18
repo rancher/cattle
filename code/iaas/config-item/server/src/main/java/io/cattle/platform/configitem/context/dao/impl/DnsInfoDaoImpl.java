@@ -336,7 +336,11 @@ public class DnsInfoDaoImpl extends AbstractJooqDao implements DnsInfoDao {
                 if (StringUtils.isEmpty(targetInstanceName)) {
                     ipToInstanceName.put(targetIp, null);
                 } else {
-                    ipToInstanceName.put(targetIp, targetInstanceName + "." + dnsName);
+                    ipToInstanceName.put(
+                            targetIp,
+                            targetInstanceName
+                                    + "." + ServiceDiscoveryDnsUtil.getGlobalNamespace(targetInstance.getService())
+                                    + ".");
                 }
             } else {
                 ipToInstanceName.put(targetIp, null);

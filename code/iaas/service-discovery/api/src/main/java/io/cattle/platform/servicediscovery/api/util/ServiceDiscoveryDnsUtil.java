@@ -14,21 +14,21 @@ public class ServiceDiscoveryDnsUtil {
     public static final String METADATA_FQDN = "rancher-metadata" + "." + RANCHER_NAMESPACE + ".";
     public static final String NETWORK_AGENT_IP = "169.254.169.250";
 
-    private static String getNamespace(Service service) {
+    public static String getGlobalNamespace(Service service) {
         if (service.getKind().equalsIgnoreCase("kubernetesservice")) {
             return KUBERNETES_SVC_NAMESPACE;
         }
         return RANCHER_NAMESPACE;
     }
 
-    public static String getServiceNamespace(Environment stack, Service service, String launchConfigName) {
-        return new StringBuilder().append(launchConfigName).append(".").append(getStackNamespace(stack, service))
-                .toString().toLowerCase();
-    }
-
     public static String getStackNamespace(Environment stack, Service service) {
         return new StringBuilder().append(stack.getName()).append(".")
-                .append(getNamespace(service)).toString().toLowerCase();
+                .append(getGlobalNamespace(service)).toString().toLowerCase();
+    }
+
+    private static String getServiceNamespace(Environment stack, Service service, String launchConfigName) {
+        return new StringBuilder().append(launchConfigName).append(".").append(getStackNamespace(stack, service))
+                .toString().toLowerCase();
     }
 
     public static String getFqdn(Environment stack, Service service, String launchConfigName) {
@@ -54,10 +54,8 @@ public class ServiceDiscoveryDnsUtil {
 
     public static List<String> getNamespaces(Environment stack, Service service, String launchConfigName) {
         List<String> toReturn = new ArrayList<>();
-        toReturn.add(getNamespace(service));
+        toReturn.add(getGlobalNamespace(service));
         toReturn.add(getStackNamespace(stack, service));
-        String name = StringUtils.isEmpty(launchConfigName) ? service.getName() : launchConfigName;
-        toReturn.add(getServiceNamespace(stack, service, name));
 
         return toReturn;
     }
