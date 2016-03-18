@@ -326,7 +326,7 @@ def test_health_state_start_once(super_client, context, client):
     svc = client.wait_success(client.wait_success(svc).activate())
     assert svc.state == 'active'
     wait_for(lambda: super_client.reload(svc).healthState == 'started-once')
-    wait_for(lambda: super_client.reload(env).healthState == 'healthy')
+    wait_for(lambda: super_client.reload(env).healthState == 'started-once')
 
     maps = _wait_until_active_map_count(svc, 1, client)
     expose_map = maps[0]
@@ -348,12 +348,12 @@ def test_health_state_start_once(super_client, context, client):
     wait_for(lambda: super_client.reload(c1).healthState == 'healthy')
 
     wait_for(lambda: super_client.reload(svc).healthState == 'started-once')
-    wait_for(lambda: super_client.reload(env).healthState == 'healthy')
+    wait_for(lambda: super_client.reload(env).healthState == 'started-once')
 
     super_client.wait_success(c1.stop())
 
     wait_for(lambda: super_client.reload(svc).healthState == 'started-once')
-    wait_for(lambda: super_client.reload(env).healthState == 'healthy')
+    wait_for(lambda: super_client.reload(env).healthState == 'started-once')
     svc.remove()
 
 
@@ -368,9 +368,8 @@ def test_health_state_sidekick_start_once(super_client, context, client):
 
     svc = client.wait_success(client.wait_success(svc).activate())
     assert svc.state == 'active'
-    wait_for(lambda: super_client.reload(svc).healthState == 'started-once')
 
-    wait_for(lambda: super_client.reload(svc).healthState == 'started-once')
+    wait_for(lambda: super_client.reload(svc).healthState == 'healthy')
     wait_for(lambda: super_client.reload(env).healthState == 'healthy')
 
 
