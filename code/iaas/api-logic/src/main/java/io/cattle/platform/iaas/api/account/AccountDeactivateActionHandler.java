@@ -30,7 +30,7 @@ public class AccountDeactivateActionHandler implements ActionHandler {
                 Account anAdminAccount = accountDao.getAdminAccountExclude(accountToDeactivate.getId());
                 if (anAdminAccount == null) {
                     throw new ClientVisibleException(ResponseCodes.METHOD_NOT_ALLOWED, AccountConstants.LAST_ADMIN_ACCOUNT,
-                            "Cannot deactivate the last admin account.", AccountConstants.BOSS_MESSAGE);
+                            "Cannot deactivate the last admin account.", AccountConstants.ADMIN_REQUIRED_MESSAGE);
                 }
             } else if(AccountConstants.PROJECT_KIND.equalsIgnoreCase(accountToDeactivate.getKind())) {
                 accountToDeactivate = accountDao.getAccountById(accountToDeactivate.getId());

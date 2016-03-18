@@ -29,7 +29,7 @@ public class AccountFilter extends AbstractDefaultResourceManagerFilter {
             if (AccountConstants.ADMIN_KIND.equalsIgnoreCase(accountToEdit.getKind()) &&
                     hasAdmin && !AccountConstants.ADMIN_KIND.equalsIgnoreCase(String.valueOf(requestObject.get("kind")))) {
                 throw new ClientVisibleException(ResponseCodes.METHOD_NOT_ALLOWED, AccountConstants.LAST_ADMIN_ACCOUNT,
-                        "Cannot change the last admin account to not be admin.", AccountConstants.BOSS_MESSAGE);
+                        "Cannot change the last admin account to not be admin.", AccountConstants.ADMIN_REQUIRED_MESSAGE);
             }
 
         }
@@ -42,7 +42,7 @@ public class AccountFilter extends AbstractDefaultResourceManagerFilter {
         Account anAdminAccount = accountDao.getAdminAccountExclude(accountId);
         if (anAdminAccount == null) {
             throw new ClientVisibleException(ResponseCodes.METHOD_NOT_ALLOWED, AccountConstants.LAST_ADMIN_ACCOUNT,
-                    "Cannot delete the last admin account.", AccountConstants.BOSS_MESSAGE);
+                    "Cannot delete the last admin account.", AccountConstants.ADMIN_REQUIRED_MESSAGE);
         }
         return super.delete(type, id, request, next);
     }
