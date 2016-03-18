@@ -1,3 +1,17 @@
-swarm-master:
-  # This is just a placeholder right now
-  image: nginx
+swarm:
+  image: rancher/swarm-agent:v0.1.0
+  command: swarm-agent server -- swarm manage --heartbeat 2s -H tcp://0.0.0.0:2375 -H unix:///var/run/docker.sock
+  labels:
+    io.rancher.container.agent.role: 'environment'
+    io.rancher.container.create_agent: 'true'
+
+swarm-agent:
+  image: rancher/swarm-agent:v0.1.0
+  environment:
+    DOCKER_HOST: tcp://docker:2375
+  links:
+  - swarm:docker
+  labels:
+    io.rancher.container.agent_service.docker_compose: 'true'
+    io.rancher.container.create_agent: 'true'
+    io.rancher.swarm.cli: 'true'
