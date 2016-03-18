@@ -176,7 +176,7 @@ public class ConfigUpdatePublisher extends NoExceptionRunnable implements Initia
                     }
 
                     items.add(itemUpdate.getName());
-                    update.getData().getItems().add(itemUpdate);
+                    ConfigItemStatusManagerImpl.addToList(update.getData().getItems(), itemUpdate);
                 }
 
                 remaining.add(item);
