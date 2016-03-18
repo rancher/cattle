@@ -531,4 +531,10 @@
     <extension:discover class="io.cattle.platform.task.Task" />
     <bean class="io.cattle.platform.storage.simulator.pool.SimulatorStoragePoolDriver" />
     <bean class="io.cattle.platform.storage.simulator.process.SimulatorPoolCreate" />
+
+    <bean class="io.cattle.platform.docker.process.dao.impl.ComposeDaoImpl" />
+    <bean class="io.cattle.platform.docker.service.impl.ComposeManagerImpl" />
+
+    <bean class="io.cattle.platform.service.launcher.ServiceAccountCreateStartup" />
+
 </beans>

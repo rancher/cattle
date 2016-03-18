@@ -169,6 +169,7 @@ public class ApiAuthenticator extends AbstractApiRequestHandler {
 
     private Account getAccountRequested(Account authenticatedAsAccount, Set<Identity> identities, ApiRequest request) {
         Account project;
+        String parsedProjectId = null;
 
         String projectId = request.getServletContext().getRequest().getHeader(ProjectConstants.PROJECT_HEADER);
         if (projectId == null || projectId.isEmpty()) {
@@ -179,13 +180,23 @@ public class ApiAuthenticator extends AbstractApiRequestHandler {
         }
 
         if (projectId == null || projectId.isEmpty()) {
+            String accessKey = request.getServletContext().getRequest().getHeader(ProjectConstants.CLIENT_ACCESS_KEY);
+            if (StringUtils.isNotBlank(accessKey)) {
+                Account account = authDao.getAccountByAccessKey(accessKey);
+                if (account != null) {
+                    parsedProjectId = account.getId().toString();
+                }
+            }
+        }
+
+        if (StringUtils.isBlank(projectId) && StringUtils.isBlank(parsedProjectId)) {
             return authenticatedAsAccount;
         }
 
-        String parsedProjectId;
-
         try {
-            parsedProjectId = ApiContext.getContext().getIdFormatter().parseId(projectId);
+            if (parsedProjectId == null) {
+                parsedProjectId = ApiContext.getContext().getIdFormatter().parseId(projectId);
+            }
         } catch (NumberFormatException e) {
             throw new ClientVisibleException(ResponseCodes.BAD_REQUEST, "InvalidFormat", "projectId header format is incorrect " + projectId, null);
         }

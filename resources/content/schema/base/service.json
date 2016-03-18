@@ -81,6 +81,11 @@
              "attributes" : {
                 "scheduleUpdate" : true
             }
+        },
+        "startOnCreate": {
+            "type": "boolean",
+            "nullable": true,
+            "default": false
         }
     },
     "resourceActions" : {

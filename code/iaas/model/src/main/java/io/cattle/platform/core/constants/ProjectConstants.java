@@ -20,6 +20,7 @@ public class ProjectConstants {
     public static final String OAUTH_BASIC = "X-API-BEARER";
     public static final String AUTH_TYPE = "bearer ";
     public static final String PROJECT_HEADER = "X-API-Project-Id";
+    public static final String CLIENT_ACCESS_KEY = "X-API-Client-Access-Key";
     public static final String RANCHER_SEARCH_PROVIDER = "rancherIdentitySearchProvider";
     public static final Set<String> SCOPES = Collections.unmodifiableSet(new HashSet<>(Arrays.asList(
             RANCHER_ID

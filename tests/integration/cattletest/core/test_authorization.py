@@ -45,6 +45,8 @@ def service_client(admin_user_client):
 
 def _clean_types(types):
     for i in ['openstackConfig',
+              'ubiquityConfig',
+              'packetConfig',
               'notThere',
               'azureConfig',
               'vmwarevcloudairConfig',
@@ -79,6 +81,8 @@ def test_user_types(user_client, adds=set(), removes=set()):
         'baseMachineConfig',
         'certificate',
         'changeSecretInput',
+        'composeService',
+        'composeProject',
         'composeConfig',
         'composeConfigInput',
         'container',
@@ -262,6 +266,8 @@ def test_admin_types(admin_user_client, adds=set(), removes=set()):
         'changeSecretInput',
         'composeConfig',
         'composeConfigInput',
+        'composeProject',
+        'composeService',
         'configItem',
         'configItemStatus',
         'container',
@@ -1560,6 +1566,7 @@ def test_svc_discovery_service(admin_user_client, user_client, project_client):
         'retainIp': 'r',
         'assignServiceIpAddress': 'r',
         'healthState': 'r',
+        'startOnCreate': 'r',
     })
 
     auth_check(user_client.schema, 'service', 'r', {
@@ -1581,7 +1588,7 @@ def test_svc_discovery_service(admin_user_client, user_client, project_client):
         'retainIp': 'r',
         'assignServiceIpAddress': 'r',
         'healthState': 'r',
-
+        'startOnCreate': 'r',
     })
 
     auth_check(project_client.schema, 'service', 'crud', {
@@ -1602,6 +1609,40 @@ def test_svc_discovery_service(admin_user_client, user_client, project_client):
         'publicEndpoints': 'r',
         'retainIp': 'cr',
         'assignServiceIpAddress': 'cr',
+        'healthState': 'r',
+        'startOnCreate': 'cr',
+    })
+
+
+def test_auth_compose_project(admin_user_client, user_client, project_client):
+    auth_check(admin_user_client.schema, 'composeProject', 'r', {
+        'name': 'r',
+        'accountId': 'r',
+        'data': 'r',
+        'templates': 'r',
+        'environment': 'r',
+        'externalId': 'r',
+        'previousExternalId': 'r',
+        'healthState': 'r',
+    })
+
+    auth_check(user_client.schema, 'composeProject', 'r', {
+        'name': 'r',
+        'accountId': 'r',
+        'templates': 'r',
+        'environment': 'r',
+        'externalId': 'r',
+        'previousExternalId': 'r',
+        'healthState': 'r',
+    })
+
+    auth_check(project_client.schema, 'composeProject', 'crud', {
+        'name': 'cr',
+        'accountId': 'r',
+        'templates': 'cr',
+        'environment': 'cr',
+        'externalId': 'cru',
+        'previousExternalId': 'cru',
         'healthState': 'r',
     })
 
@@ -1671,6 +1712,7 @@ def test_svc_discovery_lb_service(admin_user_client, user_client,
         'retainIp': 'r',
         'assignServiceIpAddress': 'r',
         'healthState': 'r',
+        'startOnCreate': 'r',
     })
 
     auth_check(user_client.schema, 'loadBalancerService', 'r', {
@@ -1692,6 +1734,7 @@ def test_svc_discovery_lb_service(admin_user_client, user_client,
         'retainIp': 'r',
         'assignServiceIpAddress': 'r',
         'healthState': 'r',
+        'startOnCreate': 'r',
     })
 
     auth_check(project_client.schema, 'loadBalancerService', 'crud', {
@@ -1713,6 +1756,7 @@ def test_svc_discovery_lb_service(admin_user_client, user_client,
         'retainIp': 'cr',
         'assignServiceIpAddress': 'cr',
         'healthState': 'r',
+        'startOnCreate': 'cr',
     })
 
 
@@ -1893,6 +1937,7 @@ def test_svc_discovery_external_service(admin_user_client, user_client,
         'launchConfig': 'r',
         'fqdn': 'r',
         'healthState': 'r',
+        'startOnCreate': 'r',
     })
 
     auth_check(user_client.schema, 'externalService', 'r', {
@@ -1908,6 +1953,7 @@ def test_svc_discovery_external_service(admin_user_client, user_client,
         'launchConfig': 'r',
         'fqdn': 'r',
         'healthState': 'r',
+        'startOnCreate': 'r',
     })
 
     auth_check(project_client.schema, 'externalService', 'crud', {
@@ -1923,6 +1969,7 @@ def test_svc_discovery_external_service(admin_user_client, user_client,
         'launchConfig': 'cr',
         'fqdn': 'r',
         'healthState': 'r',
+        'startOnCreate': 'cr',
     })
 
 
@@ -2350,6 +2397,57 @@ def test_virtual_machine_disk(admin_user_client, user_client, project_client):
         'opts': 'cr',
         'driver': 'cr',
         'root': 'cr',
+    })
+
+
+def test_compose_service(admin_user_client, user_client, project_client):
+    auth_check(admin_user_client.schema, 'composeService', 'r', {
+        'name': 'r',
+        'externalId': 'r',
+        'environmentId': 'r',
+        'accountId': 'r',
+        'data': 'r',
+        'vip': 'r',
+        'selectorContainer': 'r',
+        'healthState': 'r',
+        'startOnCreate': 'r',
+        'launchConfig': 'r',
+        'fqdn': 'r',
+        'selectorLink': 'r',
+        'scale': 'r',
+        'publicEndpoints': 'r',
+    })
+
+    auth_check(user_client.schema, 'composeService', 'r', {
+        'name': 'r',
+        'externalId': 'r',
+        'environmentId': 'r',
+        'accountId': 'r',
+        'vip': 'r',
+        'selectorContainer': 'r',
+        'healthState': 'r',
+        'startOnCreate': 'r',
+        'launchConfig': 'r',
+        'fqdn': 'r',
+        'selectorLink': 'r',
+        'scale': 'r',
+        'publicEndpoints': 'r',
+    })
+
+    auth_check(project_client.schema, 'composeService', 'rd', {
+        'name': 'r',
+        'externalId': 'r',
+        'environmentId': 'r',
+        'accountId': 'r',
+        'vip': 'r',
+        'selectorContainer': 'r',
+        'healthState': 'r',
+        'startOnCreate': 'r',
+        'launchConfig': 'r',
+        'fqdn': 'r',
+        'selectorLink': 'r',
+        'scale': 'r',
+        'publicEndpoints': 'r',
     })
 
 

@@ -13,6 +13,7 @@ import io.cattle.platform.core.model.ServiceIndex;
 import io.cattle.platform.core.util.SystemLabels;
 import io.cattle.platform.docker.constants.DockerInstanceConstants;
 import io.cattle.platform.engine.process.impl.ProcessCancelException;
+import io.cattle.platform.object.process.ObjectProcessManager;
 import io.cattle.platform.object.process.StandardProcess;
 import io.cattle.platform.object.resource.ResourcePredicate;
 import io.cattle.platform.object.util.DataAccessor;
@@ -76,13 +77,17 @@ public class DefaultDeploymentUnitInstance extends DeploymentUnitInstance implem
 
     @Override
     protected void removeUnitInstance() {
+        removeInstance(instance, context.objectProcessManager);
+    }
+
+    public static void removeInstance(Instance instance, ObjectProcessManager objectProcessManager) {
         if (!(instance.getState().equals(CommonStatesConstants.REMOVED) || instance.getState().equals(
                 CommonStatesConstants.REMOVING))) {
             try {
-                context.objectProcessManager.scheduleStandardProcessAsync(StandardProcess.REMOVE, instance,
+                objectProcessManager.scheduleStandardProcessAsync(StandardProcess.REMOVE, instance,
                         null);
             } catch (ProcessCancelException e) {
-                context.objectProcessManager.scheduleProcessInstanceAsync(InstanceConstants.PROCESS_STOP,
+                objectProcessManager.scheduleProcessInstanceAsync(InstanceConstants.PROCESS_STOP,
                         instance, ProcessUtils.chainInData(new HashMap<String, Object>(),
                                 InstanceConstants.PROCESS_STOP, InstanceConstants.PROCESS_REMOVE));
             }
@@ -238,6 +243,7 @@ public class DefaultDeploymentUnitInstance extends DeploymentUnitInstance implem
         return this;
     }
 
+    @Override
     public ServiceIndex getServiceIndex() {
         return this.serviceIndex;
     }
@@ -249,7 +255,7 @@ public class DefaultDeploymentUnitInstance extends DeploymentUnitInstance implem
         String serviceIndex = ServiceDiscoveryUtil.getGeneratedServiceIndex(stack, service, launchConfigName,
                 instanceName);
         ServiceIndex serviceIndexObj = context.serviceDao.createServiceIndex(service, launchConfigName, serviceIndex);
-        
+
         // allocate ip address if not set
         if (DataAccessor.fieldBool(service, ServiceDiscoveryConstants.FIELD_SERVICE_RETAIN_IP)) {
             Object requestedIpObj = ServiceDiscoveryUtil.getLaunchConfigObject(service, launchConfigName,
@@ -267,7 +273,7 @@ public class DefaultDeploymentUnitInstance extends DeploymentUnitInstance implem
             }
             context.sdService.allocateIpToServiceIndex(serviceIndexObj, requestedIp);
         }
-        
+
         return serviceIndexObj;
     }
 

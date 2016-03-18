@@ -15,6 +15,7 @@ public class CredentialConstants {
     public static final String KIND_SSH_KEY = "sshKey";
 
     public static final String LINK_PEM_FILE = "pem";
+    public static final String LINK_CERTIFICATE = "certificate";
 
     public static final String KIND_REGISTRY_CREDENTIAL = "registryCredential";
     public static final String PUBLIC_VALUE = "publicValue";

@@ -11,6 +11,11 @@
     <dependencies>
         <dependency>
             <groupId>io.cattle</groupId>
+            <artifactId>cattle-iaas-logic-common</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.cattle</groupId>
             <artifactId>cattle-ssh-common</artifactId>
             <version>${project.version}</version>
         </dependency>

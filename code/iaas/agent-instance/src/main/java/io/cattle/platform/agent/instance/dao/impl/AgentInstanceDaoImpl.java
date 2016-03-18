@@ -229,6 +229,7 @@ public class AgentInstanceDaoImpl extends AbstractJooqDao implements AgentInstan
                 .where(INSTANCE.ACCOUNT_ID.eq(accountId)
                     .and(INSTANCE.AGENT_ID.isNotNull())
                     .and(INSTANCE.STATE.eq(InstanceConstants.STATE_RUNNING)))
+                .orderBy(INSTANCE.AGENT_ID.asc())
                 .fetch().intoArray(INSTANCE.AGENT_ID));
     }
 
