@@ -224,31 +224,34 @@ public class DnsInfoDaoImpl extends AbstractJooqDao implements DnsInfoDao {
             Service targetService = serviceData.getTargetService();
             List<ServiceInstanceData> targetInstancesData = populateTargetInstancesData(servicesTargetInstances,
                     clientServiceIdToServiceData, targetService);
-            String linkName = null;
+            String aliasName = null;
+            boolean isAliasService = false;
             if (serviceData.getConsumeMap() != null) {
                 if (clientService.getKind().equalsIgnoreCase(ServiceDiscoveryConstants.KIND.DNSSERVICE.name())) {
-                    linkName = ServiceDiscoveryDnsUtil.getFqdn(serviceData.getClientStack(),
+                    aliasName = ServiceDiscoveryDnsUtil.getFqdn(serviceData.getClientStack(),
                             serviceData.getClientService(), serviceData.getClientService().getName());
+                    isAliasService = true;
                 } else {
                     if (!StringUtils.isEmpty(serviceData.getConsumeMap().getName())) {
-                        linkName = serviceData.getConsumeMap().getName() + ".";
+                        aliasName = serviceData.getConsumeMap().getName();
                     } else {
-                        linkName = targetService.getName() + ".";
+                        aliasName = targetService.getName();
                     }
                 }
             }
 
             boolean isLink = serviceData.getConsumeMap() != null;
+            boolean self = clientService.getId().equals(targetService.getId()) && !forDefault;
             for (ServiceInstanceData targetInstance : targetInstancesData) {
-                String dnsPrefix = targetInstance.getExposeMap() != null ? targetInstance.getExposeMap().getDnsPrefix()
+                String dnsPrefix = targetInstance.getExposeMap() != null ? targetInstance.getExposeMap()
+                        .getDnsPrefix()
                         : null;
                 if (dnsPrefix != null && isLink) {
                     // skip sidekick from link resolution
                     continue;
                 }
-                boolean self = clientService.getId().equals(targetService.getId()) && !forDefault;
-                populateResolveInfo(targetInstance, self, linkName, dnsPrefix, instanceIdToHostIpMap,
-                        resolveCname, resolve);
+                populateResolveInfo(targetInstance, self, aliasName, dnsPrefix, instanceIdToHostIpMap,
+                        resolveCname, resolve, isAliasService, serviceData.getClientStack(), serviceData.getClientService());
             }
 
             List<ServiceInstanceData> clientInstanceData = servicesClientInstances.get(clientService.getId());
@@ -316,23 +319,39 @@ public class DnsInfoDaoImpl extends AbstractJooqDao implements DnsInfoDao {
     }
 
     protected void populateResolveInfo(ServiceInstanceData targetInstance, boolean self,
-            String linkName, String dnsPrefix, final Map<Long, IpAddress> instanceIdToHostIpMap,
-            Map<String, String> resolveCname, Map<String, Map<String, String>> resolve) {
+            String aliasName, String dnsPrefix, final Map<Long, IpAddress> instanceIdToHostIpMap,
+            Map<String, String> resolveCname, Map<String, Map<String, String>> resolve, boolean isAliasService,
+            Environment clientStack, Service clientService) {
         String targetInstanceName = targetInstance.getInstance() == null ? null : targetInstance
                 .getInstance().getName();
 
-        String dnsName = ServiceDiscoveryDnsUtil.getDnsName(targetInstance.getService(), targetInstance.getStack(),
-                linkName, dnsPrefix, self);
+        List<String> fqdns = new ArrayList<>();
+        if (!StringUtils.isEmpty(aliasName) && !isAliasService) {
+            fqdns.add(aliasName + "." + ServiceDiscoveryDnsUtil.getStackNamespace(clientStack, clientService) + ".");
+            fqdns.add(aliasName + "." + ServiceDiscoveryDnsUtil.getGlobalNamespace(clientService) + ".");
+        } else {
+            fqdns.add(ServiceDiscoveryDnsUtil.getDnsName(targetInstance.getService(), targetInstance.getStack(),
+                    aliasName, dnsPrefix, self));
+        }
+        for (String fqdn : fqdns) {
+            addToResolve(targetInstance, aliasName, instanceIdToHostIpMap, resolveCname, resolve, targetInstanceName,
+                    fqdn);
+        }
+    }
+
+    protected void addToResolve(ServiceInstanceData targetInstance, String aliasName,
+            final Map<Long, IpAddress> instanceIdToHostIpMap, Map<String, String> resolveCname,
+            Map<String, Map<String, String>> resolve, String targetInstanceName, String fqdn) {
         String targetIp = getIpAddress(targetInstance, instanceIdToHostIpMap, false);
         if (targetIp != null) {
-            Map<String, String> ipToInstanceName = resolve.get(dnsName);
+            Map<String, String> ipToInstanceName = resolve.get(fqdn);
             if (ipToInstanceName == null) {
                 ipToInstanceName = new HashMap<>();
             }
             if (getVip(targetInstance.getService()) != null) {
                 targetIp = targetInstance.getService().getVip();
             }
-            if (linkName == null) {
+            if (aliasName == null) {
                 if (StringUtils.isEmpty(targetInstanceName)) {
                     ipToInstanceName.put(targetIp, null);
                 } else {
@@ -345,11 +364,11 @@ public class DnsInfoDaoImpl extends AbstractJooqDao implements DnsInfoDao {
             } else {
                 ipToInstanceName.put(targetIp, null);
             }
-            resolve.put(dnsName, ipToInstanceName);
+            resolve.put(fqdn, ipToInstanceName);
         } else {
             String cname = targetInstance.getExposeMap().getHostName();
             if (cname != null) {
-                resolveCname.put(dnsName, cname + ".");
+                resolveCname.put(fqdn, cname + ".");
             }
         }
     }

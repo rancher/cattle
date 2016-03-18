@@ -217,7 +217,6 @@ def test_activate_single_service(client, context, super_client):
     assert container.capDrop == caps
     dns.append("169.254.169.250")
     assert set(dns).issubset(container.dns)
-    search.append(svc.name + "." + env.name + "." + "rancher.internal")
     search.append(env.name + "." + "rancher.internal")
     assert set(search).issubset(container.dnsSearch)
     assert container.privileged is True

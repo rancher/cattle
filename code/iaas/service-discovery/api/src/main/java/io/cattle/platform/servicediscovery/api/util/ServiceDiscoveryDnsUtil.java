@@ -21,14 +21,14 @@ public class ServiceDiscoveryDnsUtil {
         return RANCHER_NAMESPACE;
     }
 
-    public static String getStackNamespace(Environment stack, Service service) {
-        return new StringBuilder().append(stack.getName()).append(".")
-                .append(getGlobalNamespace(service)).toString().toLowerCase();
-    }
-
     private static String getServiceNamespace(Environment stack, Service service, String launchConfigName) {
         return new StringBuilder().append(launchConfigName).append(".").append(getStackNamespace(stack, service))
                 .toString().toLowerCase();
+    }
+
+    public static String getStackNamespace(Environment stack, Service service) {
+        return new StringBuilder().append(stack.getName()).append(".")
+                .append(getGlobalNamespace(service)).toString().toLowerCase();
     }
 
     public static String getFqdn(Environment stack, Service service, String launchConfigName) {

@@ -128,7 +128,7 @@ public abstract class DeploymentUnitInstance {
     }
 
     public List<String> getSearchDomains() {
-        String serviceNamespace = ServiceDiscoveryDnsUtil.getStackNamespace(this.stack, this.service);
-        return Arrays.asList(serviceNamespace);
+        String stackNamespace = ServiceDiscoveryDnsUtil.getStackNamespace(this.stack, this.service);
+        return Arrays.asList(stackNamespace);
     }
 }
