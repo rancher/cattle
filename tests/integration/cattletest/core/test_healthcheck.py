@@ -850,7 +850,8 @@ def test_health_check_all_hosts_removed_reconcile(super_client, new_context):
 
     # instance should remain as healthy as there are no reporters at this point
     try:
-        wait_for(lambda: super_client.reload(c).healthState == 'unhealthy')
+        wait_for(lambda: super_client.reload(c).healthState == 'unhealthy',
+                 timeout=5)
     except Exception:
         pass
 
@@ -914,7 +915,8 @@ def test_hosts_removed_reconcile_when_init(super_client, new_context):
 
     # instance should remain as healthy as there are no reporters at this point
     try:
-        wait_for(lambda: super_client.reload(c).healthState == 'unhealthy')
+        wait_for(lambda: super_client.reload(c).healthState == 'unhealthy',
+                 timeout=5)
     except Exception:
         pass
 
