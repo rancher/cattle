@@ -424,7 +424,6 @@
     <bean class="io.cattle.platform.servicediscovery.process.ServiceFinishUpgrade" />
     <bean class="io.cattle.platform.servicediscovery.process.NetworkFromInstanceStop" />
     <bean class="io.cattle.platform.servicediscovery.process.SelectorServiceCreatePostListener" />
-    <bean class="io.cattle.platform.servicediscovery.process.ServiceRemovePostListener" />
     <bean class="io.cattle.platform.servicediscovery.process.SelectorInstancePostListener" />
     <bean class="io.cattle.platform.servicediscovery.process.ServiceExposeMapCreate" />
     <bean class="io.cattle.platform.servicediscovery.process.PortActivateDeactivatePostListener" />

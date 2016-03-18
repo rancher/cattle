@@ -9,8 +9,6 @@ public interface DynamicSchemaDao {
 
     DynamicSchema getSchema(String name, long accountId, String role);
 
-    int deleteSchemas(long serviceId);
-
     void createRoles(DynamicSchema dynamicSchema);
 
     void removeRoles(DynamicSchema dynamicSchema);

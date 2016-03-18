@@ -17,7 +17,7 @@ DEFINITION = '''
 
 
 def test_schema_lifecycle(context, client, service_client):  # NOQA
-    schema = random_str()
+    schema = random_str() + 'Config'
     got_schema = client.by_id_schema(schema)
     assert got_schema is None
 
