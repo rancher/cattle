@@ -992,6 +992,7 @@ def test_port_auth(admin_user_client, user_client, project_client):
         'protocol': 'r',
         'publicIpAddressId': 'r',
         'publicPort': 'r',
+        'bindAddress': 'r',
     })
 
     auth_check(user_client.schema, 'port', 'r', {
@@ -1002,6 +1003,7 @@ def test_port_auth(admin_user_client, user_client, project_client):
         'protocol': 'r',
         'publicIpAddressId': 'r',
         'publicPort': 'r',
+        'bindAddress': 'r',
     })
 
     auth_check(project_client.schema, 'port', 'ru', {
@@ -1012,6 +1014,7 @@ def test_port_auth(admin_user_client, user_client, project_client):
         'protocol': 'r',
         'publicIpAddressId': 'r',
         'publicPort': 'ru',
+        'bindAddress': 'r',
     })
 
 

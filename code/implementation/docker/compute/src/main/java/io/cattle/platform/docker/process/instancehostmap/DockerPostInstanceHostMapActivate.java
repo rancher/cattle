@@ -2,7 +2,6 @@ package io.cattle.platform.docker.process.instancehostmap;
 
 import static io.cattle.platform.core.model.tables.IpAddressTable.*;
 import static io.cattle.platform.core.model.tables.MountTable.*;
-import static io.cattle.platform.core.model.tables.PortTable.*;
 import static io.cattle.platform.docker.constants.DockerInstanceConstants.*;
 import io.cattle.iaas.labels.service.LabelsService;
 import io.cattle.platform.archaius.util.ArchaiusUtil;
@@ -94,7 +93,7 @@ public class DockerPostInstanceHostMapActivate extends AbstractObjectProcessLogi
         return new String[] { "instancehostmap.activate" };
     }
 
-    @SuppressWarnings({ "rawtypes", "unchecked" })
+    @SuppressWarnings("unchecked")
     @Override
     public HandlerResult handle(ProcessState state, ProcessInstance process) {
         InstanceHostMap map = (InstanceHostMap)state.getResource();
@@ -105,7 +104,7 @@ public class DockerPostInstanceHostMapActivate extends AbstractObjectProcessLogi
         Nic nic = nicDao.getPrimaryNic(instance);
 
         IpAddress ipAddress = hostDao.getIpAddressForHost(host.getId());
-        Map ports = DataAccessor.fields(instance).withKey(DockerInstanceConstants.FIELD_DOCKER_PORTS).as(jsonMapper, Map.class);
+        List<String> ports = DataAccessor.fields(instance).withKey(DockerInstanceConstants.FIELD_DOCKER_PORTS).as(jsonMapper, List.class);
 
         if (dockerIp != null) {
             processDockerIp(instance, nic, dockerIp);
@@ -260,7 +259,7 @@ public class DockerPostInstanceHostMapActivate extends AbstractObjectProcessLogi
         }
     }
 
-    protected void processPorts(IpAddress ipAddress, Map<String, String> ports, Instance instance, Nic nic, final Host host) {
+    protected void processPorts(IpAddress ipAddress, List<String> ports, Instance instance, Nic nic, final Host host) {
         IpAddress dockerIpAddress = dockerDao.getDockerIp(DockerProcessUtils.getDockerIp(instance), instance);
         Long privateIpAddressId = dockerIpAddress == null ? null : dockerIpAddress.getId();
 
@@ -280,25 +279,41 @@ public class DockerPostInstanceHostMapActivate extends AbstractObjectProcessLogi
 
         Long publicIpAddressId = ipAddress == null ? null : ipAddress.getId();
 
-        for (Map.Entry<String, String> entry : ports.entrySet()) {
-            PortSpec spec = new PortSpec(entry.getKey());
+        for (String entry : ports) {
+            PortSpec spec = new PortSpec(entry);
             Port port = existing.get(spec.getPrivatePort());
 
             if (port == null) {
-                port = getObjectManager().create(Port.class, PORT.ACCOUNT_ID, instance.getAccountId(), PORT.INSTANCE_ID, instance.getId(), PORT.PUBLIC_PORT,
-                        entry.getValue(), PORT.PRIVATE_PORT, spec.getPrivatePort(), PORT.PROTOCOL, spec.getProtocol(), PORT.PUBLIC_IP_ADDRESS_ID,
-                        publicIpAddressId, PORT.PRIVATE_IP_ADDRESS_ID, privateIpAddressId, PORT.KIND, PortConstants.KIND_IMAGE);
-            } else {
-                if (hasPortNetworkService(instance.getId())) {
-                    if (ObjectUtils.equals(port.getPrivateIpAddressId(), privateIpAddressId)) {
-                        getObjectManager().setFields(port, PORT.PRIVATE_IP_ADDRESS_ID, privateIpAddressId);
-                    }
+                Port portObj = objectManager.newRecord(Port.class);
+                portObj.setAccountId(instance.getAccountId());
+                portObj.setKind(PortConstants.KIND_IMAGE);
+                portObj.setInstanceId(instance.getId());
+                portObj.setPublicPort(spec.getPublicPort());
+                portObj.setPrivatePort(spec.getPrivatePort());
+                portObj.setProtocol(spec.getProtocol());
+                if (StringUtils.isNotEmpty(spec.getIpAddress()) && !"0.0.0.0".equals(spec.getIpAddress())) {
+                    DataAccessor.fields(portObj).withKey(PortConstants.FIELD_BIND_ADDR).set(spec.getIpAddress());
                 } else {
-                    if (!ObjectUtils.equals(port.getPublicPort(), entry.getValue()) || !ObjectUtils.equals(port.getPrivateIpAddressId(), privateIpAddressId)
-                            || !ObjectUtils.equals(port.getPublicIpAddressId(), publicIpAddressId)) {
-                        getObjectManager().setFields(port, PORT.PUBLIC_PORT, entry.getValue(), PORT.PRIVATE_IP_ADDRESS_ID, privateIpAddressId,
-                                PORT.PUBLIC_IP_ADDRESS_ID, publicIpAddressId);
+                    portObj.setPublicIpAddressId(publicIpAddressId);
+                }
+                portObj.setPrivateIpAddressId(privateIpAddressId);
+                portObj = objectManager.create(portObj);
+            } else {
+                String bindAddress = DataAccessor.fields(port).withKey(PortConstants.FIELD_BIND_ADDR).as(String.class);
+                boolean bindAddressNull = bindAddress == null;
+                if (!hasPortNetworkService(instance.getId())
+                        && (!ObjectUtils.equals(port.getPublicPort(), spec.getPublicPort())
+                        || !ObjectUtils.equals(port.getPrivateIpAddressId(), privateIpAddressId)
+                        || (bindAddressNull && !ObjectUtils.equals(port.getPublicIpAddressId(), publicIpAddressId))
+                        || (!bindAddressNull && !bindAddress.equals(spec.getIpAddress())))){
+                    port.setPublicPort(spec.getPublicPort());
+                    port.setPrivateIpAddressId(privateIpAddressId);
+                    if (StringUtils.isNotEmpty(spec.getIpAddress()) && !"0.0.0.0".equals(spec.getIpAddress())) {
+                        DataAccessor.fields(port).withKey(PortConstants.FIELD_BIND_ADDR).set(spec.getIpAddress());
+                    } else {
+                        port.setPublicIpAddressId(publicIpAddressId);
                     }
+                    objectManager.persist(port);
                 }
             }
         }

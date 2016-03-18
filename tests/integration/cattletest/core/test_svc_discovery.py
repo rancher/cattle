@@ -2332,8 +2332,13 @@ def test_service_restart(client, context):
         assert new > old
 
 
-def _validate_endpoint(endpoints, public_port, host, service=None):
-    host_ip = host.ipAddresses()[0].address
+def _validate_endpoint(endpoints, public_port, host, service=None,
+                       bind_addr=None):
+    if bind_addr:
+        host_ip = bind_addr
+    else:
+        host_ip = host.ipAddresses()[0].address
+
     found = False
     for endpoint in endpoints:
         if host_ip == endpoint.ipAddress:
@@ -2820,11 +2825,15 @@ def test_standalone_container_endpoint(new_context):
     host = new_context.host
     client.wait_success(host)
     env = _create_stack(client)
+    port0 = 5534
     port1 = 5535
     port2 = 6636
+    port3 = 6637
 
     image_uuid = new_context.image_uuid
-    launch_config = {"imageUuid": image_uuid, "ports": [str(port1) + ':6666']}
+    launch_config = {"imageUuid": image_uuid,
+                     "ports": ['127.2.2.2:%s:%s' % (port0, '6666'),
+                               '%s:%s' % (port1, '6666')]}
     svc = client.create_service(name=random_str(),
                                 environmentId=env.id,
                                 launchConfig=launch_config)
@@ -2835,42 +2844,59 @@ def test_standalone_container_endpoint(new_context):
 
     c = client.create_container(imageUuid=image_uuid,
                                 startOnCreate=True,
-                                ports=[str(port2) + ':6666'])
+                                ports=['%s:%s' % (port2, '6666'),
+                                       '127.0.0.1:%s:%s' % (port3, '6666')])
     c = client.wait_success(c)
 
     wait_for(
         lambda: client.reload(host).publicEndpoints is not None and len(
-            client.reload(host).publicEndpoints) == 2)
+            client.reload(host).publicEndpoints) == 4)
     endpoints = client.reload(host).publicEndpoints
-    svc_e = None
-    c_e = None
+    svce_bind_ip = None
+    svce_no_ip = None
+    ce_no_ip = None
+    ce_bind_ip = None
     for endpoint in endpoints:
+        if endpoint.port == port0:
+            svce_bind_ip = endpoint
         if endpoint.port == port1:
-            svc_e = endpoint
+            svce_no_ip = endpoint
         elif endpoint.port == port2:
-            c_e = endpoint
+            ce_no_ip = endpoint
+        elif endpoint.port == port3:
+            ce_bind_ip = endpoint
 
-    assert svc_e is not None
-    assert c_e is not None
-    _validate_endpoint([svc_e], port1, host, svc)
-    _validate_endpoint([c_e], port2, host)
+    assert svce_no_ip is not None
+    assert ce_no_ip is not None
+    _validate_endpoint([svce_bind_ip], port0, host, svc, bind_addr='127.2.2.2')
+    _validate_endpoint([svce_no_ip], port1, host, svc)
+    _validate_endpoint([ce_no_ip], port2, host)
+    _validate_endpoint([ce_bind_ip], port3, host, bind_addr='127.0.0.1')
 
     c = client.wait_success(c.stop())
     client.wait_success(c.remove())
     wait_for(
         lambda: client.reload(host).publicEndpoints is not None and len(
-            client.reload(host).publicEndpoints) == 1)
+            client.reload(host).publicEndpoints) == 2)
     endpoints = client.reload(host).publicEndpoints
-    svc_e = None
-    c_e = None
+    svce_bind_ip = None
+    svce_no_ip = None
+    ce_no_ip = None
+    ce_bind_ip = None
     for endpoint in endpoints:
+        if endpoint.port == port0:
+            svce_bind_ip = endpoint
         if endpoint.port == port1:
-            svc_e = endpoint
+            svce_no_ip = endpoint
         elif endpoint.port == port2:
-            c_e = endpoint
+            ce_no_ip = endpoint
+        elif endpoint.port == port3:
+            ce_bind_ip = endpoint
 
-    assert svc_e is not None
-    assert c_e is None
+    assert svce_bind_ip is not None
+    assert svce_no_ip is not None
+    assert ce_no_ip is None
+    assert ce_bind_ip is None
 
 
 def test_service_start_on_create(client, context):

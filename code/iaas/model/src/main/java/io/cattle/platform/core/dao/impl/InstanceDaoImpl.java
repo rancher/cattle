@@ -1,21 +1,24 @@
 package io.cattle.platform.core.dao.impl;
 
-import static io.cattle.platform.core.model.tables.EnvironmentTable.ENVIRONMENT;
-import static io.cattle.platform.core.model.tables.InstanceHostMapTable.INSTANCE_HOST_MAP;
-import static io.cattle.platform.core.model.tables.InstanceTable.INSTANCE;
-import static io.cattle.platform.core.model.tables.ServiceExposeMapTable.SERVICE_EXPOSE_MAP;
-import static io.cattle.platform.core.model.tables.ServiceTable.SERVICE;
-import static io.cattle.platform.core.model.tables.StoragePoolHostMapTable.STORAGE_POOL_HOST_MAP;
-import static io.cattle.platform.core.model.tables.StoragePoolTable.STORAGE_POOL;
-import static io.cattle.platform.core.model.tables.VolumeStoragePoolMapTable.VOLUME_STORAGE_POOL_MAP;
-import static io.cattle.platform.core.model.tables.VolumeTable.VOLUME;
+import static io.cattle.platform.core.model.tables.EnvironmentTable.*;
+import static io.cattle.platform.core.model.tables.HostTable.*;
+import static io.cattle.platform.core.model.tables.InstanceHostMapTable.*;
+import static io.cattle.platform.core.model.tables.InstanceTable.*;
+import static io.cattle.platform.core.model.tables.ServiceExposeMapTable.*;
+import static io.cattle.platform.core.model.tables.ServiceTable.*;
+import static io.cattle.platform.core.model.tables.StoragePoolHostMapTable.*;
+import static io.cattle.platform.core.model.tables.StoragePoolTable.*;
+import static io.cattle.platform.core.model.tables.VolumeStoragePoolMapTable.*;
+import static io.cattle.platform.core.model.tables.VolumeTable.*;
 import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.dao.GenericMapDao;
 import io.cattle.platform.core.dao.InstanceDao;
 import io.cattle.platform.core.model.Account;
+import io.cattle.platform.core.model.Host;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.Service;
+import io.cattle.platform.core.model.tables.records.HostRecord;
 import io.cattle.platform.core.model.tables.records.InstanceRecord;
 import io.cattle.platform.core.model.tables.records.ServiceRecord;
 import io.cattle.platform.db.jooq.dao.impl.AbstractJooqDao;
@@ -185,6 +188,20 @@ public class InstanceDaoImpl extends AbstractJooqDao implements InstanceDao {
                     .and(SERVICE.NAME.eq(serviceName))
                     .and(ENVIRONMENT.NAME.eq(environmentName)))
             .fetchInto(InstanceRecord.class);
+    }
+
+    @Override
+    public List<? extends Host> findHosts(long accountId, long instanceId) {
+        return create().select(HOST.fields())
+                .from(INSTANCE)
+                .join(INSTANCE_HOST_MAP)
+                    .on(INSTANCE.ID.eq(INSTANCE_HOST_MAP.INSTANCE_ID))
+                .join(HOST)
+                    .on(HOST.ID.eq(INSTANCE_HOST_MAP.HOST_ID))
+                .where(HOST.REMOVED.isNull()
+                    .and(INSTANCE_HOST_MAP.REMOVED.isNull())
+                    .and(INSTANCE.ID.eq(instanceId)))
+                .fetchInto(HostRecord.class);
     }
 
 }
