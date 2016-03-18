@@ -211,6 +211,9 @@
                 <value>io.cattle.platform.extension.api.model.ResourceDefinition</value>
                 <value>io.cattle.platform.engine.process.StateTransition</value>
                 <value>io.cattle.platform.iaas.api.auth.identity.Token</value>
+                <value>io.cattle.platform.iaas.api.dashboard.Dashboard</value>
+                <value>io.cattle.platform.iaas.api.dashboard.HostInfo</value>
+                <value>io.cattle.platform.iaas.api.dashboard.ProcessesInfo</value>
                 <value>io.cattle.platform.iaas.api.auth.integration.github.resource.GithubConfig</value>
                 <value>io.cattle.platform.iaas.api.auth.projects.Member</value>
                 <value>io.cattle.platform.api.auth.Identity</value>

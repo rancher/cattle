@@ -147,6 +147,9 @@
         "credential.publicValue" : "r",
         "credential.secretValue" : "r",
 
+        "dashboard": "r",
+        "dashboard.*": "r",
+
         "dockerBuild" : "r",
         "dockerBuild.dockerfile" : "cr",
         "dockerBuild.remote" : "cr",

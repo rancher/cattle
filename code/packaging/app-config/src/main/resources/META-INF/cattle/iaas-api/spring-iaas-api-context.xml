@@ -320,6 +320,7 @@
     <bean class="io.cattle.platform.iaas.api.filter.dynamic.schema.DynamicSchemaFilter" />
     <bean class="io.cattle.platform.iaas.api.auth.identity.AccountOutputFilter" />
     <bean class="io.cattle.platform.iaas.api.filter.account.AccountFilter" />
+    <bean class="io.cattle.platform.iaas.api.dashboard.DashBoardDaoImpl" />
 
     <bean class="io.cattle.platform.iaas.api.object.postinit.AccountFieldPostInitHandler" />
 
@@ -496,6 +497,9 @@
     <bean class="io.cattle.platform.iaas.api.auth.integration.local.LocalAuthConfigManager" />
     <bean class="io.cattle.platform.iaas.api.auth.integration.local.LocalAuthTokenCreator" />
     <bean class="io.cattle.platform.iaas.api.auth.integration.local.LocalAuthTokenUtils" />
+
+    <bean class="io.cattle.platform.iaas.api.dashboard.DashboardResourceManager" />
+
 
     <extension:discover class="io.cattle.platform.iaas.api.auth.AuthorizationProvider"/>
     <extension:discover class="io.cattle.platform.iaas.api.auth.integration.interfaces.AccountLookup"/>

@@ -18,7 +18,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-
 import javax.inject.Inject;
 
 import org.apache.commons.lang3.StringUtils;
@@ -108,6 +107,7 @@ public class SimulatorPingProcessor implements AgentSimulatorEventProcessor {
 
             if (addPhysicalHost) {
                 host.put("physicalHostUuid", physicalHostUuid);
+                addStats(host);
             }
 
             for (long j = 0; j < poolsPerHost; j++) {
@@ -152,6 +152,48 @@ public class SimulatorPingProcessor implements AgentSimulatorEventProcessor {
              */
             resources.add(physicalHost);
         }
+    }
+
+    private void addStats(Map<String, Object> host) {
+        Map<String, Map<String, Object>> info = new HashMap<>();
+        Map<String, Object> cpuInfo = new HashMap<>();
+        cpuInfo.put("count", 4);
+
+        cpuInfo.put("cpuCoresPercentages", new Double[] {Math.random() * 100, Math.random() * 100,
+                Math.random() * 100, Math.random() * 100});
+        info.put("cpuInfo", cpuInfo);
+        Map<String, Object> memoryInfo = new HashMap<>();
+        memoryInfo.put("memTotal", 2002.262);
+        memoryInfo.put("swapTotal", 1421.211);
+        memoryInfo.put("cached", 652.586);
+        memoryInfo.put("swapFree", 0.035);
+        memoryInfo.put("memAvailable", 1415.547);
+        memoryInfo.put("memFree", 1061.391);
+        memoryInfo.put("inactive", 308.082);
+        memoryInfo.put("active", 515.883);
+        memoryInfo.put("buffers", 49.945);
+        info.put("memoryInfo", memoryInfo);
+        Map<String, Object> diskInfo = new HashMap<>();
+        Map<String, Object> mountPoints = new HashMap<>();
+        Map<String, Double> mount = new HashMap<>();
+        double total = Math.random() * 50000 + 2000;
+        mount.put("total", total);
+        double percentUsed = Math.random();
+        mount.put("free", total * (1- percentUsed));
+        mount.put("used", total * percentUsed);
+        mount.put("percentUsed", percentUsed * 100);
+        mountPoints.put("/dev/sda1", mount);
+        diskInfo.put("mountPoints", mountPoints);
+        info.put("diskInfo", diskInfo);
+        Map<String, Object> networkInfo = new HashMap<>();
+        double tx = Math.random() * 200000;
+        double rx = Math.random() * 200000;
+        networkInfo.put("rx_bytes", rx);
+        networkInfo.put("tx_bytes", tx);
+        networkInfo.put("tx_bytes_sec", tx / 60);
+        networkInfo.put("rx_bytes_sec", rx / 60);
+        info.put("networkInfo", networkInfo);
+        host.put("info", info);
     }
 
     public JsonMapper getJsonMapper() {

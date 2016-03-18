@@ -30,7 +30,7 @@ import com.netflix.config.DynamicLongProperty;
 public class TableCleanUp extends AbstractJooqDao {
 
     private static final Log logger = LogFactory.getLog(TableCleanUp.class);
-    private static final DynamicLongProperty PROCESS_INSTANCE_TIME = ArchaiusUtil.getLong("process_instance.purge.after.seconds");
+    public static final DynamicLongProperty PROCESS_INSTANCE_TIME = ArchaiusUtil.getLong("process_instance.purge.after.seconds");
     private static final DynamicLongProperty EVENT_TIME = ArchaiusUtil.getLong("events.purge.after.seconds");
     private static final DynamicLongProperty AUDIT_LOG_TIME = ArchaiusUtil.getLong("audit_log.purge.after.seconds");
 
