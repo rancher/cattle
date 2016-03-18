@@ -40,8 +40,7 @@ public class AccountConstants {
 
     public static final String AUTH_TYPE = "authType";
     public static final String LAST_ADMIN_ACCOUNT = "LastAdminAccount";
-    public static final String BOSS_MESSAGE = "Cattle requires at least one boss Rancher to be present or they will " +
-            "all run free.";
+    public static final String ADMIN_REQUIRED_MESSAGE = "At least one admin account is required at all times";
 
     public static ServicesPortRange getDefaultServicesPortRange() {
         PortRangeSpec spec = new PortRangeSpec(ENV_PORT_RANGE.get());
