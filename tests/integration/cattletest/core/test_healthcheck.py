@@ -56,8 +56,7 @@ def test_health_check_create_instance(super_client, context):
     assert hcihm.healthState == 'healthy'
     assert hcihm.externalTimestamp == ts
 
-    wait_for(lambda: super_client.reload(c).healthState == 'healthy',
-             timeout=5)
+    wait_for(lambda: super_client.reload(c).healthState == 'healthy')
 
 
 def _create_svc_w_healthcheck(client, context):
@@ -104,8 +103,7 @@ def test_health_check_create_service(super_client, context, client):
     super_client.wait_success(se)
     hcihm = super_client.wait_success(super_client.reload(hcihm))
     assert hcihm.healthState == 'healthy'
-    wait_for(lambda: super_client.reload(c).healthState == 'healthy',
-             timeout=5)
+    wait_for(lambda: super_client.reload(c).healthState == 'healthy')
 
     ts = int(time.time())
     client = _get_agent_client(agent)
@@ -115,8 +113,7 @@ def test_health_check_create_service(super_client, context, client):
     super_client.wait_success(se)
     hcihm = super_client.wait_success(super_client.reload(hcihm))
     assert hcihm.healthState == 'healthy'
-    wait_for(lambda: super_client.reload(c).healthState == 'healthy',
-             timeout=5)
+    wait_for(lambda: super_client.reload(c).healthState == 'healthy')
 
     ts = int(time.time())
     client = _get_agent_client(agent)
@@ -126,15 +123,12 @@ def test_health_check_create_service(super_client, context, client):
     super_client.wait_success(se)
     hcihm = super_client.wait_success(super_client.reload(hcihm))
     assert hcihm.healthState == 'healthy'
-    wait_for(lambda: super_client.reload(c).healthState == 'healthy',
-             timeout=5)
+    wait_for(lambda: super_client.reload(c).healthState == 'healthy')
 
     # restart the instance
     c = super_client.wait_success(c.stop())
-    wait_for(lambda: super_client.reload(c).state == 'running',
-             timeout=5)
-    wait_for(lambda: super_client.reload(c).healthState == 'reinitializing',
-             timeout=5)
+    wait_for(lambda: super_client.reload(c).state == 'running')
+    wait_for(lambda: super_client.reload(c).healthState == 'reinitializing')
 
     ts = int(time.time())
     client = _get_agent_client(agent)
@@ -144,8 +138,7 @@ def test_health_check_create_service(super_client, context, client):
     super_client.wait_success(se)
     hcihm = super_client.wait_success(super_client.reload(hcihm))
     assert hcihm.healthState == 'healthy'
-    wait_for(lambda: super_client.reload(c).healthState == 'reinitializing',
-             timeout=5)
+    wait_for(lambda: super_client.reload(c).healthState == 'reinitializing')
 
     ts = int(time.time())
     client = _get_agent_client(agent)
@@ -155,8 +148,7 @@ def test_health_check_create_service(super_client, context, client):
     super_client.wait_success(se)
     hcihm = super_client.wait_success(super_client.reload(hcihm))
     assert hcihm.healthState == 'healthy'
-    wait_for(lambda: super_client.reload(c).healthState == 'healthy',
-             timeout=5)
+    wait_for(lambda: super_client.reload(c).healthState == 'healthy')
 
     ts = int(time.time())
     client = _get_agent_client(agent)
@@ -166,8 +158,7 @@ def test_health_check_create_service(super_client, context, client):
     super_client.wait_success(se)
     hcihm = super_client.wait_success(super_client.reload(hcihm))
     assert hcihm.healthState == 'healthy'
-    wait_for(lambda: super_client.reload(c).healthState == 'healthy',
-             timeout=5)
+    wait_for(lambda: super_client.reload(c).healthState == 'healthy')
 
     ts = int(time.time())
     client = _get_agent_client(agent)
@@ -177,8 +168,7 @@ def test_health_check_create_service(super_client, context, client):
     super_client.wait_success(se)
     hcihm = super_client.wait_success(super_client.reload(hcihm))
     assert hcihm.healthState == 'healthy'
-    wait_for(lambda: super_client.reload(c).healthState == 'healthy',
-             timeout=5)
+    wait_for(lambda: super_client.reload(c).healthState == 'healthy')
 
     ts = int(time.time())
     client = _get_agent_client(agent)
@@ -196,8 +186,7 @@ def test_health_check_create_service(super_client, context, client):
     assert hcihm.healthState == 'unhealthy'
     assert hcihm.externalTimestamp == ts
 
-    wait_for(lambda: super_client.reload(c).healthState == 'unhealthy',
-             timeout=5)
+    wait_for(lambda: super_client.reload(c).healthState == 'unhealthy')
     wait_for(lambda: len(service.serviceExposeMaps()) > 1)
     service.remove()
 
@@ -276,10 +265,8 @@ def test_health_state_stack(super_client, context, client):
     service = client.wait_success(client.wait_success(service).activate())
     assert service.state == 'active'
     i = 'initializing'
-    wait_for(lambda: super_client.reload(service).healthState == i,
-             timeout=5)
-    wait_for(lambda: super_client.reload(env).healthState == i,
-             timeout=5)
+    wait_for(lambda: super_client.reload(service).healthState == i)
+    wait_for(lambda: super_client.reload(env).healthState == i)
 
     maps = _wait_until_active_map_count(service, 1, client)
     expose_map = maps[0]
@@ -298,13 +285,10 @@ def test_health_state_stack(super_client, context, client):
     super_client.wait_success(se)
     hcihm = super_client.wait_success(super_client.reload(hcihm))
     assert hcihm.healthState == 'healthy'
-    wait_for(lambda: super_client.reload(c1).healthState == 'healthy',
-             timeout=5)
+    wait_for(lambda: super_client.reload(c1).healthState == 'healthy')
 
-    wait_for(lambda: super_client.reload(service).healthState == 'healthy',
-             timeout=5)
-    wait_for(lambda: super_client.reload(env).healthState == 'healthy',
-             timeout=5)
+    wait_for(lambda: super_client.reload(service).healthState == 'healthy')
+    wait_for(lambda: super_client.reload(env).healthState == 'healthy')
 
     ts = int(time.time())
     client = _get_agent_client(agent)
@@ -322,12 +306,9 @@ def test_health_state_stack(super_client, context, client):
     assert hcihm.healthState == 'unhealthy'
     assert hcihm.externalTimestamp == ts
 
-    wait_for(lambda: super_client.reload(c1).healthState == 'unhealthy',
-             timeout=5)
-    wait_for(lambda: super_client.reload(service).healthState == 'unhealthy',
-             timeout=5)
-    wait_for(lambda: super_client.reload(env).healthState == 'unhealthy',
-             timeout=5)
+    wait_for(lambda: super_client.reload(c1).healthState == 'unhealthy')
+    wait_for(lambda: super_client.reload(service).healthState == 'unhealthy')
+    wait_for(lambda: super_client.reload(env).healthState == 'unhealthy')
     service.remove()
 
 
@@ -344,10 +325,8 @@ def test_health_state_start_once(super_client, context, client):
 
     svc = client.wait_success(client.wait_success(svc).activate())
     assert svc.state == 'active'
-    wait_for(lambda: super_client.reload(svc).healthState == 'started-once',
-             timeout=5)
-    wait_for(lambda: super_client.reload(env).healthState == 'healthy',
-             timeout=5)
+    wait_for(lambda: super_client.reload(svc).healthState == 'started-once')
+    wait_for(lambda: super_client.reload(env).healthState == 'healthy')
 
     maps = _wait_until_active_map_count(svc, 1, client)
     expose_map = maps[0]
@@ -366,20 +345,15 @@ def test_health_state_start_once(super_client, context, client):
     super_client.wait_success(se)
     hcihm = super_client.wait_success(super_client.reload(hcihm))
     assert hcihm.healthState == 'healthy'
-    wait_for(lambda: super_client.reload(c1).healthState == 'healthy',
-             timeout=5)
+    wait_for(lambda: super_client.reload(c1).healthState == 'healthy')
 
-    wait_for(lambda: super_client.reload(svc).healthState == 'started-once',
-             timeout=5)
-    wait_for(lambda: super_client.reload(env).healthState == 'healthy',
-             timeout=5)
+    wait_for(lambda: super_client.reload(svc).healthState == 'started-once')
+    wait_for(lambda: super_client.reload(env).healthState == 'healthy')
 
     super_client.wait_success(c1.stop())
 
-    wait_for(lambda: super_client.reload(svc).healthState == 'started-once',
-             timeout=5)
-    wait_for(lambda: super_client.reload(env).healthState == 'healthy',
-             timeout=5)
+    wait_for(lambda: super_client.reload(svc).healthState == 'started-once')
+    wait_for(lambda: super_client.reload(env).healthState == 'healthy')
     svc.remove()
 
 
@@ -394,13 +368,10 @@ def test_health_state_sidekick_start_once(super_client, context, client):
 
     svc = client.wait_success(client.wait_success(svc).activate())
     assert svc.state == 'active'
-    wait_for(lambda: super_client.reload(svc).healthState == 'started-once',
-             timeout=5)
+    wait_for(lambda: super_client.reload(svc).healthState == 'started-once')
 
-    wait_for(lambda: super_client.reload(svc).healthState == 'started-once',
-             timeout=5)
-    wait_for(lambda: super_client.reload(env).healthState == 'healthy',
-             timeout=5)
+    wait_for(lambda: super_client.reload(svc).healthState == 'started-once')
+    wait_for(lambda: super_client.reload(env).healthState == 'healthy')
 
 
 def test_health_state_selectors(context, client):
@@ -421,10 +392,8 @@ def test_health_state_selectors(context, client):
     assert service.selectorContainer == "foo=bar"
 
     service = client.wait_success(service.activate())
-    wait_for(lambda: client.reload(service).healthState == 'healthy',
-             timeout=5)
-    wait_for(lambda: client.reload(env).healthState == 'healthy',
-             timeout=5)
+    wait_for(lambda: client.reload(service).healthState == 'healthy')
+    wait_for(lambda: client.reload(env).healthState == 'healthy')
     service.remove()
 
 
@@ -439,10 +408,8 @@ def test_svc_health_state(context, client):
     service = client.wait_success(service)
 
     service = client.wait_success(service.activate())
-    wait_for(lambda: client.reload(service).healthState == 'healthy',
-             timeout=5)
-    wait_for(lambda: client.reload(env).healthState == 'healthy',
-             timeout=5)
+    wait_for(lambda: client.reload(service).healthState == 'healthy')
+    wait_for(lambda: client.reload(env).healthState == 'healthy')
     service.remove()
 
 
@@ -507,15 +474,12 @@ def test_health_check_reinit_timeout(super_client, context, client):
     super_client.wait_success(se)
     hcihm = super_client.wait_success(super_client.reload(hcihm))
     assert hcihm.healthState == 'healthy'
-    wait_for(lambda: super_client.reload(c).healthState == 'healthy',
-             timeout=5)
+    wait_for(lambda: super_client.reload(c).healthState == 'healthy')
 
     # restart the instance
     c = super_client.wait_success(c.stop())
-    wait_for(lambda: super_client.reload(c).state == 'running',
-             timeout=5)
-    wait_for(lambda: super_client.reload(c).healthState == 'reinitializing',
-             timeout=5)
+    wait_for(lambda: super_client.reload(c).state == 'running')
+    wait_for(lambda: super_client.reload(c).healthState == 'reinitializing')
 
     # wait for the instance to be removed
     wait_for_condition(super_client, c,
@@ -792,8 +756,7 @@ def test_health_check_reconcile(super_client, new_context):
                                      healthcheckUuid=hcihm2.uuid)
     super_client.wait_success(se)
     super_client.wait_success(super_client.reload(hcihm2))
-    wait_for(lambda: super_client.reload(c).healthState == 'healthy',
-             timeout=5)
+    wait_for(lambda: super_client.reload(c).healthState == 'healthy')
 
     ts = int(time.time())
     client = _get_agent_client(agent)
@@ -804,16 +767,14 @@ def test_health_check_reconcile(super_client, new_context):
     super_client.wait_success(super_client.reload(hcihm1))
 
     # still healthy as only one host reported healthy
-    wait_for(lambda: super_client.reload(c).healthState == 'healthy',
-             timeout=5)
+    wait_for(lambda: super_client.reload(c).healthState == 'healthy')
     # remove the host 1
     host2 = super_client.wait_success(host2.deactivate())
     host2 = super_client.wait_success(super_client.delete(host2))
     assert host2.state == 'removed'
 
     # should be unhealthy as the only health state reported is unhealthy
-    wait_for(lambda: super_client.reload(c).healthState == 'unhealthy',
-             timeout=5)
+    wait_for(lambda: super_client.reload(c).healthState == 'unhealthy')
     service.remove()
 
 
@@ -878,8 +839,7 @@ def test_health_check_all_hosts_removed_reconcile(super_client, new_context):
                                      healthcheckUuid=hcihm2.uuid)
     super_client.wait_success(se)
     super_client.wait_success(super_client.reload(hcihm2))
-    wait_for(lambda: super_client.reload(c).healthState == 'healthy',
-             timeout=5)
+    wait_for(lambda: super_client.reload(c).healthState == 'healthy')
 
     # remove both hosts
     host1 = super_client.wait_success(host1.deactivate())
@@ -891,13 +851,11 @@ def test_health_check_all_hosts_removed_reconcile(super_client, new_context):
 
     # instance should remain as healthy as there are no reporters at this point
     try:
-        wait_for(lambda: super_client.reload(c).healthState == 'unhealthy',
-                 timeout=5)
+        wait_for(lambda: super_client.reload(c).healthState == 'unhealthy')
     except Exception:
         pass
 
-    wait_for(lambda: super_client.reload(c).healthState == 'healthy',
-             timeout=5)
+    wait_for(lambda: super_client.reload(c).healthState == 'healthy')
     service.remove()
 
 
@@ -957,13 +915,11 @@ def test_hosts_removed_reconcile_when_init(super_client, new_context):
 
     # instance should remain as healthy as there are no reporters at this point
     try:
-        wait_for(lambda: super_client.reload(c).healthState == 'unhealthy',
-                 timeout=5)
+        wait_for(lambda: super_client.reload(c).healthState == 'unhealthy')
     except Exception:
         pass
 
-    wait_for(lambda: super_client.reload(c).healthState == 'initializing',
-             timeout=5)
+    wait_for(lambda: super_client.reload(c).healthState == 'initializing')
     service.remove()
 
 
@@ -1151,8 +1107,7 @@ def _update_healthy(agent, hcihm, c, super_client):
     super_client.wait_success(se)
     hcihm = super_client.wait_success(super_client.reload(hcihm))
     assert hcihm.healthState == 'healthy'
-    wait_for(lambda: super_client.reload(c).healthState == 'healthy',
-             timeout=5)
+    wait_for(lambda: super_client.reload(c).healthState == 'healthy')
     return hcihm
 
 
@@ -1165,8 +1120,7 @@ def _update_unhealthy(agent, hcihm, c, super_client):
     super_client.wait_success(se)
     hcihm = super_client.wait_success(super_client.reload(hcihm))
     assert hcihm.healthState == 'unhealthy'
-    wait_for(lambda: super_client.reload(c).healthState == 'unhealthy',
-             timeout=5)
+    wait_for(lambda: super_client.reload(c).healthState == 'unhealthy')
 
 
 def _wait_until_active_map_count(service, count, client):

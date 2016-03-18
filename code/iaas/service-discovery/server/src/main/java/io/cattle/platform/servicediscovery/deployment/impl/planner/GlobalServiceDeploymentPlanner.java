@@ -35,7 +35,7 @@ public class GlobalServiceDeploymentPlanner extends ServiceDeploymentPlanner {
 
     @Override
     public List<DeploymentUnit> deployHealthyUnits() {
-        if (this.healthyUnits.size() < hostIds.size()) {
+        if (needToReconcileDeploymentImpl()) {
             addMissingUnits();
         }
         return healthyUnits;
