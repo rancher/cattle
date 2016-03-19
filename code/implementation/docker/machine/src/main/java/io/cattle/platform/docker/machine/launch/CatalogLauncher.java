@@ -5,6 +5,7 @@ import io.cattle.platform.lock.definition.LockDefinition;
 import io.cattle.platform.service.launcher.GenericServiceLauncher;
 import io.cattle.platform.util.type.InitializationTask;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -29,8 +30,11 @@ public class CatalogLauncher extends GenericServiceLauncher implements Initializ
     }
 
     @Override
-    protected DynamicStringProperty getReloadSetting() {
-        return CATALOG_URL;
+    protected List<DynamicStringProperty> getReloadSettings() {
+        List<DynamicStringProperty> list = new ArrayList<DynamicStringProperty>();
+        list.add(CATALOG_URL);
+        list.add(CATALOG_REFRESH_INTERVAL);
+        return list;
     }
 
     @Override
