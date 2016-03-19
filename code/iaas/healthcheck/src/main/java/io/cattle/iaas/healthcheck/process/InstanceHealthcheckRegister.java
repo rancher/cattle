@@ -1,6 +1,6 @@
 package io.cattle.iaas.healthcheck.process;
 
-import static io.cattle.platform.core.model.tables.InstanceTable.INSTANCE;
+import static io.cattle.platform.core.model.tables.InstanceTable.*;
 import io.cattle.iaas.healthcheck.service.HealthcheckService;
 import io.cattle.iaas.healthcheck.service.HealthcheckService.HealthcheckInstanceType;
 import io.cattle.platform.core.addon.InstanceHealthCheck;
@@ -9,7 +9,7 @@ import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.Nic;
 import io.cattle.platform.engine.handler.HandlerResult;
-import io.cattle.platform.engine.handler.ProcessPreListener;
+import io.cattle.platform.engine.handler.ProcessPostListener;
 import io.cattle.platform.engine.process.ProcessInstance;
 import io.cattle.platform.engine.process.ProcessState;
 import io.cattle.platform.json.JsonMapper;
@@ -24,7 +24,7 @@ import javax.inject.Inject;
 import javax.inject.Named;
 
 @Named
-public class InstanceHealthcheckRegister extends AbstractObjectProcessLogic implements ProcessPreListener, Priority {
+public class InstanceHealthcheckRegister extends AbstractObjectProcessLogic implements ProcessPostListener, Priority {
     @Inject
     JsonMapper jsonMapper;
 

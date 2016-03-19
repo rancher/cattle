@@ -170,12 +170,12 @@ def test_restart_stack(client, context):
     # create lb and web services
     image_uuid = context.image_uuid
     launch_config = {"imageUuid": image_uuid}
-    web_service = client. \
+    web_svc = client. \
         create_service(name=random_str() + "web",
                        environmentId=env.id,
                        launchConfig=launch_config)
 
-    web_service = client.wait_success(web_service)
+    web_svc = client.wait_success(web_svc)
 
     lb_launch_config = {"imageUuid": image_uuid,
                         "ports": [8051, '808:1001']}
@@ -187,13 +187,13 @@ def test_restart_stack(client, context):
     assert lb_svc.state == "inactive"
 
     # map web service to lb service
-    service_link = {"serviceId": web_service.id, "ports": ["a.com:90"]}
+    service_link = {"serviceId": web_svc.id, "ports": ["a.com:90"]}
     lb_svc = lb_svc.addservicelink(serviceLink=service_link)
 
     env = client.wait_success(env.activateservices())
-    lb_svc = client.wait_success(lb_svc, 120)
+    lb_svc = client.wait_success(lb_svc, DEFAULT_TIMEOUT)
     assert lb_svc.state == 'active'
-    web_svc = client.wait_success(lb_svc)
+    web_svc = client.wait_success(web_svc)
     assert web_svc.state == 'active'
 
     env = client.wait_success(env.deactivateservices())
@@ -206,9 +206,9 @@ def test_restart_stack(client, context):
     _validate_instance_stopped(web_svc, client, env)
 
     client.wait_success(env.activateservices())
-    lb_svc = client.wait_success(lb_svc, 120)
+    lb_svc = client.wait_success(lb_svc, DEFAULT_TIMEOUT)
     assert lb_svc.state == 'active'
-    web_svc = client.wait_success(lb_svc)
+    web_svc = client.wait_success(web_svc)
     assert web_svc.state == 'active'
 
 

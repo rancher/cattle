@@ -188,7 +188,7 @@ def test_health_check_create_service(super_client, context, client):
 
     wait_for(lambda: super_client.reload(c).healthState == 'unhealthy')
     wait_for(lambda: len(service.serviceExposeMaps()) > 1)
-    service.remove()
+    remove_service(service)
 
 
 def test_health_check_ip_retain(super_client, context, client):
@@ -250,7 +250,7 @@ def test_health_check_ip_retain(super_client, context, client):
         assert c2.name == c1.name
         assert c2.primaryIpAddress == ip1
         break
-    service.remove()
+    remove_service(service)
 
 
 def test_health_state_stack(super_client, context, client):
@@ -309,7 +309,7 @@ def test_health_state_stack(super_client, context, client):
     wait_for(lambda: super_client.reload(c1).healthState == 'unhealthy')
     wait_for(lambda: super_client.reload(service).healthState == 'unhealthy')
     wait_for(lambda: super_client.reload(env).healthState == 'unhealthy')
-    service.remove()
+    remove_service(service)
 
 
 def test_health_state_start_once(super_client, context, client):
@@ -354,7 +354,7 @@ def test_health_state_start_once(super_client, context, client):
 
     wait_for(lambda: super_client.reload(svc).healthState == 'started-once')
     wait_for(lambda: super_client.reload(env).healthState == 'started-once')
-    svc.remove()
+    remove_service(svc)
 
 
 def test_health_state_sidekick_start_once(super_client, context, client):
@@ -393,7 +393,7 @@ def test_health_state_selectors(context, client):
     service = client.wait_success(service.activate())
     wait_for(lambda: client.reload(service).healthState == 'healthy')
     wait_for(lambda: client.reload(env).healthState == 'healthy')
-    service.remove()
+    remove_service(service)
 
 
 def test_svc_health_state(context, client):
@@ -409,7 +409,7 @@ def test_svc_health_state(context, client):
     service = client.wait_success(service.activate())
     wait_for(lambda: client.reload(service).healthState == 'healthy')
     wait_for(lambda: client.reload(env).healthState == 'healthy')
-    service.remove()
+    remove_service(service)
 
 
 def test_health_check_init_timeout(super_client, context, client):
@@ -438,7 +438,7 @@ def test_health_check_init_timeout(super_client, context, client):
     # wait for the instance to be removed
     wait_for_condition(client, c,
                        lambda x: x.state == 'removed')
-    service.remove()
+    remove_service(service)
 
 
 def test_health_check_reinit_timeout(super_client, context, client):
@@ -483,7 +483,7 @@ def test_health_check_reinit_timeout(super_client, context, client):
     # wait for the instance to be removed
     wait_for_condition(super_client, c,
                        lambda x: x.state == 'removed')
-    service.remove()
+    remove_service(service)
 
 
 def test_health_check_bad_external_timestamp(super_client, context, client):
@@ -513,7 +513,7 @@ def test_health_check_bad_external_timestamp(super_client, context, client):
                                           healthcheckUuid=hcihm.uuid)
     assert e.value.error.code == 'MissingRequired'
     assert e.value.error.fieldName == 'externalTimestamp'
-    service.remove()
+    remove_service(service)
 
 
 def test_health_check_noop(super_client, context, client):
@@ -548,7 +548,17 @@ def test_health_check_noop(super_client, context, client):
     assert len(svc.serviceExposeMaps()) == 1
     c = super_client.wait_success(c)
     assert c.state == 'running'
-    svc.remove()
+    remove_service(svc)
+
+
+def remove_service(svc):
+    for i in range(1, 3):
+        try:
+            svc.remove()
+            return
+        except Exception:
+            pass
+        time.sleep(1)
 
 
 def test_health_check_quorum(super_client, context, client):
@@ -616,7 +626,7 @@ def test_health_check_quorum(super_client, context, client):
     assert len(svc.serviceExposeMaps()) >= 3
     wait_for_condition(client, c1,
                        lambda x: x.state == 'removed')
-    svc.remove()
+    remove_service(svc)
 
 
 def test_health_check_default(super_client, context, client):
@@ -649,7 +659,7 @@ def test_health_check_default(super_client, context, client):
     c1 = super_client.wait_success(c1)
     wait_for_condition(client, c1,
                        lambda x: x.state == 'removed')
-    svc.remove()
+    remove_service(svc)
 
 
 def test_health_check_bad_agent(super_client, context, client):
@@ -692,7 +702,7 @@ def test_health_check_bad_agent(super_client, context, client):
                                           reportedHealth='Something Bad',
                                           healthcheckUuid=hcihm.uuid)
     assert e.value.error.code == 'CantVerifyHealthcheck'
-    service.remove()
+    remove_service(service)
 
 
 def test_health_check_reconcile(super_client, new_context):
@@ -774,7 +784,7 @@ def test_health_check_reconcile(super_client, new_context):
 
     # should be unhealthy as the only health state reported is unhealthy
     wait_for(lambda: super_client.reload(c).healthState == 'unhealthy')
-    service.remove()
+    remove_service(service)
 
 
 def test_health_check_all_hosts_removed_reconcile(super_client, new_context):
@@ -856,7 +866,7 @@ def test_health_check_all_hosts_removed_reconcile(super_client, new_context):
         pass
 
     wait_for(lambda: super_client.reload(c).healthState == 'healthy')
-    service.remove()
+    remove_service(service)
 
 
 def test_hosts_removed_reconcile_when_init(super_client, new_context):
@@ -921,7 +931,7 @@ def test_hosts_removed_reconcile_when_init(super_client, new_context):
         pass
 
     wait_for(lambda: super_client.reload(c).healthState == 'initializing')
-    service.remove()
+    remove_service(service)
 
 
 def test_health_check_host_remove(super_client, context, client):
@@ -982,7 +992,7 @@ def test_health_check_host_remove(super_client, context, client):
                 break
 
     assert hcim is None
-    service.remove()
+    remove_service(service)
 
 
 def test_healtcheck(new_context, super_client):
@@ -1056,7 +1066,7 @@ def test_healtcheck(new_context, super_client):
 
     host_maps = _wait_health_host_count(super_client, health_id, 3)
     validate_container_host(host_maps)
-    service.remove()
+    remove_service(service)
 
 
 def _wait_health_host_count(super_client, health_id, count):
