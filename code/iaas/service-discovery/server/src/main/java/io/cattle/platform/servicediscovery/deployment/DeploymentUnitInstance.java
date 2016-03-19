@@ -8,7 +8,6 @@ import io.cattle.platform.core.model.ServiceExposeMap;
 import io.cattle.platform.core.model.ServiceIndex;
 import io.cattle.platform.object.process.StandardProcess;
 import io.cattle.platform.object.resource.ResourcePredicate;
-import io.cattle.platform.servicediscovery.api.constants.ServiceDiscoveryConstants;
 import io.cattle.platform.servicediscovery.api.util.ServiceDiscoveryDnsUtil;
 import io.cattle.platform.servicediscovery.deployment.impl.DeploymentManagerImpl.DeploymentServiceContext;
 
@@ -129,12 +128,7 @@ public abstract class DeploymentUnitInstance {
     }
 
     public List<String> getSearchDomains() {
-        String serviceNamespace = ServiceDiscoveryDnsUtil.getStackNamespace(this.stack, this.service);
-        String lcName = this.getLaunchConfigName().equalsIgnoreCase(
-                ServiceDiscoveryConstants.PRIMARY_LAUNCH_CONFIG_NAME) ? this.getService().getName() : this
-                .getLaunchConfigName();
-        String containerNamespace = ServiceDiscoveryDnsUtil
-                .getServiceNamespace(this.stack, this.service, lcName);
-        return Arrays.asList(serviceNamespace, containerNamespace);
+        String stackNamespace = ServiceDiscoveryDnsUtil.getStackNamespace(this.stack, this.service);
+        return Arrays.asList(stackNamespace);
     }
 }
