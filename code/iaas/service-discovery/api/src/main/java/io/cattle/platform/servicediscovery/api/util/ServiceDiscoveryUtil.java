@@ -8,6 +8,7 @@ import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.Service;
 import io.cattle.platform.core.model.ServiceConsumeMap;
 import io.cattle.platform.core.model.ServiceExposeMap;
+import io.cattle.platform.core.util.PortSpec;
 import io.cattle.platform.object.meta.ObjectMetaDataManager;
 import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.object.util.DataUtils;
@@ -19,6 +20,7 @@ import io.github.ibuildthecloud.gdapi.validation.ValidationErrorCodes;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -358,6 +360,9 @@ public class ServiceDiscoveryUtil {
                     if (newLaunchConfig == null) {
                         // put old config here as we have to upgrade the entire secondary config list
                         newLaunchConfigNames.put(oldLaunchConfig.get("name").toString(), oldLaunchConfig);
+                    }else {
+                        //preserve old random ports if some are missing in newLaunchConfig
+                        preserveOldRandomPorts(service, newLaunchConfig, oldLaunchConfig);
                     }
                 }
                 DataAccessor.fields(service).withKey(ServiceDiscoveryConstants.FIELD_SECONDARY_LAUNCH_CONFIGS)
@@ -374,9 +379,56 @@ public class ServiceDiscoveryUtil {
                 newLaunchConfig = (Map<String, Object>) strategy.getPreviousLaunchConfig();
             } else {
                 newLaunchConfig = (Map<String, Object>) strategy.getLaunchConfig();
+                Map<String, Object> oldLaunchConfig = (Map<String, Object>) strategy.getPreviousLaunchConfig();
+                preserveOldRandomPorts(service, newLaunchConfig, oldLaunchConfig);
             }
             DataAccessor.fields(service).withKey(ServiceDiscoveryConstants.FIELD_LAUNCH_CONFIG)
                     .set(newLaunchConfig);
         }
+    }
+
+    protected static void preserveOldRandomPorts(Service service, Map<String, Object> newLaunchConfig, Map<String, Object> oldLaunchConfig) {
+        Map<Integer, PortSpec> oldPortMap = getServicePortsMap(service, oldLaunchConfig);
+        Map<Integer, PortSpec> newPortMap = getServicePortsMap(service, newLaunchConfig);
+
+        boolean changedNewPorts = false;
+
+        for(Integer privatePort : newPortMap.keySet()) {
+            if(newPortMap.get(privatePort).getPublicPort() == null) {
+                if (oldPortMap.containsKey(privatePort)) {
+                    newPortMap.get(privatePort).setPublicPort(oldPortMap.get(privatePort).getPublicPort());
+                    changedNewPorts = true;
+                }
+            }
+        }
+
+        if(changedNewPorts) {
+            List<String> newPorts = new ArrayList<>();
+            for (Map.Entry<Integer, PortSpec> entry : newPortMap.entrySet()) {
+                 newPorts.add(entry.getValue().toSpec());
+            }
+            if (!newPorts.isEmpty()) {
+                newLaunchConfig.put(InstanceConstants.FIELD_PORTS, newPorts);
+            }
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    protected static Map<Integer, PortSpec> getServicePortsMap(Service service, Map<String, Object> launchConfigData) {
+        if (launchConfigData.get(InstanceConstants.FIELD_PORTS) == null) {
+            return new LinkedHashMap<Integer, PortSpec>();
+        }
+        List<String> specs = (List<String>) launchConfigData.get(InstanceConstants.FIELD_PORTS);
+        Map<Integer, PortSpec> portMap = new LinkedHashMap<Integer, PortSpec>();
+        for (String spec : specs) {
+            boolean defaultProtocol = true;
+            if (service.getKind().equalsIgnoreCase(ServiceDiscoveryConstants.KIND.LOADBALANCERSERVICE.name())) {
+                defaultProtocol = false;
+            }
+            PortSpec portSpec = new PortSpec(spec, defaultProtocol);
+            portMap.put(new Integer(portSpec.getPrivatePort()), portSpec);
+
+        }
+        return portMap;
     }
 }

@@ -863,3 +863,40 @@ def test_rollback_id(context, client, super_client):
     expose_map = maps[0]
     c2 = super_client.reload(expose_map.instance())
     assert c1.uuid == c2.uuid
+
+
+def test_in_service_upgrade_port_mapping(context, client, super_client):
+    env = client.create_environment(name=random_str())
+    env = client.wait_success(env)
+    image_uuid = context.image_uuid
+    launch_config = {"imageUuid": image_uuid, 'ports': ['80', '82/tcp']}
+    secondary1 = {"imageUuid": image_uuid, "name": "secondary1",
+                  'ports': ['90']}
+    secondary2 = {"imageUuid": image_uuid, "name": "secondary2",
+                  'ports': ['100']}
+    svc = client.create_service(name=random_str(),
+                                environmentId=env.id,
+                                scale=1,
+                                launchConfig=launch_config,
+                                secondaryLaunchConfigs=[secondary1,
+                                                        secondary2])
+    svc = client.wait_success(svc)
+    svc = client.wait_success(svc.activate())
+
+    launch_config = {"imageUuid": image_uuid,
+                     'ports': ['80', '82/tcp', '8083:83/udp']}
+    u_svc = _run_insvc_upgrade(svc, launchConfig=launch_config,
+                               secondaryLaunchConfigs=[secondary1,
+                                                       secondary2],
+                               batchSize=1)
+    u_svc = client.wait_success(u_svc)
+    assert u_svc.state == 'upgraded'
+    u_svc = client.wait_success(u_svc.finishupgrade())
+
+    svc.launchConfig.ports.append(unicode('8083:83/udp'))
+    assert u_svc.launchConfig.ports == svc.launchConfig.ports
+
+    assert u_svc.secondaryLaunchConfigs[0].ports \
+        == svc.secondaryLaunchConfigs[0].ports
+    assert u_svc.secondaryLaunchConfigs[1].ports \
+        == svc.secondaryLaunchConfigs[1].ports
