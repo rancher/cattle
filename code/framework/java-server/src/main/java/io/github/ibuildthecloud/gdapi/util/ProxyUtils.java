@@ -23,7 +23,7 @@ public class ProxyUtils {
                 if (method.getName().startsWith("get")) {
                     String name = StringUtils.uncapitalize(method.getName().substring(3));
                     Object val = map.get(name);
-                    if (val instanceof Long && Integer.class.equals(method.getReturnType())) {
+                    if (val instanceof Long && (Integer.class.equals(method.getReturnType()) || Integer.TYPE.equals(method.getReturnType()))) {
                         return ((Long)val).intValue();
                     }
                     return val;
