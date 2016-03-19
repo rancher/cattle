@@ -596,7 +596,7 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
                     }
                     expectedCount++;
                     if (activeStates.contains(service.getState().toLowerCase()) && healthyStates.contains(sHS)) {
-                        if (service.getHealthState().equalsIgnoreCase(
+                        if (sHS.equalsIgnoreCase(
                                 HealthcheckConstants.SERVICE_HEALTH_STATE_STARTED_ONCE.toLowerCase())) {
                             startedOnce++;
                         }
