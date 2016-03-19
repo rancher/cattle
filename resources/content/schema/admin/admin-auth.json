@@ -99,8 +99,6 @@
 
         "instanceLink.ports" : "r",
 
-        "instanceStop.deallocateFromHost" : "cr",
-
         "ldapconfig" : "cru",
         "ldapconfig.accessMode" : "cr",
         "ldapconfig.domain" : "cr",

@@ -1,7 +1,6 @@
 package io.cattle.platform.process.instance;
 
 import io.cattle.platform.core.constants.CommonStatesConstants;
-import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.constants.InstanceLinkConstants;
 import io.cattle.platform.core.dao.GenericMapDao;
 import io.cattle.platform.core.dao.InstanceDao;
@@ -41,15 +40,7 @@ public class InstanceStop extends AbstractDefaultProcessHandler {
 
         storage(instance);
 
-        if (shouldDeallocate(instance, state)) {
-            deallocate(instance);
-        }
-
         return new HandlerResult(result);
-    }
-
-    protected boolean shouldDeallocate(Instance instance, ProcessState state) {
-        return Boolean.TRUE.equals(state.getData().get(InstanceConstants.DEALLOCATE_OPTION)) || instanceDao.isOnSharedStorage(instance);
     }
 
     protected void deallocate(Instance instance) {

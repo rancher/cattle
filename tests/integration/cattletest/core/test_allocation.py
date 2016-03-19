@@ -24,7 +24,9 @@ def test_compute_free(super_client, new_context):
     assert host.computeFree == start_free - count
 
     for c in containers:
-        c.stop(deallocateFromHost=True)
+        super_client.delete(c)
+        c = super_client.wait_success(c)
+        c = super_client.wait_success(c.purge())
 
     wait_all_success(admin_client, containers)
     for c in containers:
