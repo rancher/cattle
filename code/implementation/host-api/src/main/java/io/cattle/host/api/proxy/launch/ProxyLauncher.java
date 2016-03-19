@@ -107,6 +107,7 @@ public class ProxyLauncher extends NoExceptionRunnable implements Initialization
         env.put("PATH", System.getenv("PATH"));
         env.put("PROXY_JWT_PUBLIC_KEY_CONTENTS", pubKey);
         env.put("PROXY_LISTEN_ADDRESS", ":" + getProxyPort());
+        env.put("PROXY_TLS_LISTEN_ADDRESS", ":" + getProxyPort());
 
         String cattleProxyAddress = "localhost:" + getProxiedPort();
         env.put("PROXY_CATTLE_ADDRESS", cattleProxyAddress);
