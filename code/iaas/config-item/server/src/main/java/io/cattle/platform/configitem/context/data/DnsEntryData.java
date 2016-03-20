@@ -1,5 +1,6 @@
 package io.cattle.platform.configitem.context.data;
 
+import io.cattle.platform.core.constants.NetworkConstants;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.docker.constants.DockerInstanceConstants;
 import io.cattle.platform.object.util.DataAccessor;
@@ -27,6 +28,7 @@ public class DnsEntryData {
 
     List<String> search = new ArrayList<>();
     List<String> recurse = new ArrayList<>();
+    List<String> authoritative = new ArrayList<>();
     Map<String, Map<String, List<String>>> a = new HashMap<>();
     Map<String, Map<String, String>> cname = new HashMap<>();
 
@@ -121,6 +123,7 @@ public class DnsEntryData {
         }
         if ("default".equals(sourceIpAddress)) {
             recurse.add("PARENT_DNS");
+            authoritative.add(NetworkConstants.INTERNAL_DNS_SEARCH_DOMAIN);
         }
     }
 
@@ -190,5 +193,13 @@ public class DnsEntryData {
 
     public void setSearch(List<String> search) {
         this.search = search;
+    }
+
+    public List<String> getAuthoritative() {
+        return authoritative;
+    }
+
+    public void setAuthoritative(List<String> authoritative) {
+        this.authoritative = authoritative;
     }
 }

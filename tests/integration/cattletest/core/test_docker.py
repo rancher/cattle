@@ -637,9 +637,9 @@ def test_container_fields(docker_client, super_client):
     assert set(c.data['dockerInspect']['HostConfig']['CapAdd']) == set(caps)
     assert set(c.data['dockerInspect']['HostConfig']['CapDrop']) == set(caps)
     actual_dns = c.data['dockerInspect']['HostConfig']['Dns']
-    assert set(actual_dns) == set(['8.8.8.8', '1.2.3.4'])
+    assert set(actual_dns) == set(['8.8.8.8', '1.2.3.4', '169.254.169.250'])
     actual_dns = c.data['dockerInspect']['HostConfig']['DnsSearch']
-    assert set(actual_dns) == set(['8.8.8.8', '1.2.3.4'])
+    assert set(actual_dns) == set(['8.8.8.8', '1.2.3.4', 'rancher.internal'])
     assert c.data['dockerInspect']['HostConfig']['Privileged']
     assert c.data['dockerInspect']['Config']['Domainname'] == "rancher.io"
     assert c.data['dockerInspect']['Config']['Memory'] == 8000000
