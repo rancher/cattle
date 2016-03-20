@@ -36,7 +36,8 @@ public class StackHealthStateUpdate extends AbstractObjectProcessHandler impleme
                 InstanceConstants.PROCESS_REMOVE, InstanceConstants.PROCESS_START,
                 ServiceDiscoveryConstants.PROCESS_SERVICE_ACTIVATE,
                 ServiceDiscoveryConstants.PROCESS_SERVICE_DEACTIVATE,
-                ServiceDiscoveryConstants.PROCESS_SERVICE_UPDATE };
+                ServiceDiscoveryConstants.PROCESS_SERVICE_UPDATE,
+                ServiceDiscoveryConstants.PROCESS_SERVICE_CREATE };
     }
 
     @Override
