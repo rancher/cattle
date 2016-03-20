@@ -14,6 +14,7 @@ import io.cattle.platform.engine.process.impl.ProcessCancelException;
 import io.cattle.platform.engine.server.ProcessServer;
 import io.cattle.platform.eventing.model.Event;
 import io.cattle.platform.metrics.util.MetricsUtil;
+import io.cattle.platform.util.exception.LoggableException;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -87,8 +88,13 @@ public class ProcessEventListenerImpl implements ProcessEventListener {
 
         } catch (Throwable e) {
             EXCEPTION.inc();
-            log.error("Unknown exception running process [{}:{}] on [{}]", instance == null ? null : instance.getName(), processId,
-                    instance == null ? null : instance.getResourceId(), e);
+            if (e instanceof LoggableException) {
+                ((LoggableException) e).log();
+            } else {
+                log.error("Unknown exception running process [{}:{}] on [{}]",
+                        instance == null ? null : instance.getName(), processId,
+                        instance == null ? null : instance.getResourceId(), e);
+            }
         }
 
         if (runRemaining) {
