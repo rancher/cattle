@@ -118,6 +118,7 @@ start()
 if [ "$1" = "start" ]; then
     start
 elif [ "$1" = "init" ]; then
+    rm -rf /var/run/*pid
     export -p > /.dockerenv-save
     touch /etc/agent-instance
     echo '::sysinit:bash /etc/init.d/agent-instance-startup start' > /etc/inittab
