@@ -16,11 +16,13 @@ import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.output.NullOutputStream;
 
+import com.netflix.config.DynamicBooleanProperty;
 import com.netflix.config.DynamicStringListProperty;
 
 public abstract class AbstractCachingResourceRoot implements ResourceRoot {
 
     public static final DynamicStringListProperty IGNORE_PREFIX = ArchaiusUtil.getList("config.item.ignore.prefixes");
+    public static final DynamicBooleanProperty DYNAMIC = ArchaiusUtil.getBoolean("config.item.dynamic");
 
     Collection<Resource> resources;
     String sourceRevision;
@@ -42,7 +44,7 @@ public abstract class AbstractCachingResourceRoot implements ResourceRoot {
     }
 
     protected boolean isDynamic() {
-        return true;
+        return DYNAMIC.get();
     }
 
     @Override
