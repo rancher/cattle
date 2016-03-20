@@ -124,6 +124,9 @@ public class DnsEntryData {
         if ("default".equals(sourceIpAddress)) {
             recurse.add("PARENT_DNS");
             authoritative.add(NetworkConstants.INTERNAL_DNS_SEARCH_DOMAIN);
+            if (!search.contains(ServiceDiscoveryDnsUtil.RANCHER_NAMESPACE)) {
+                search.add(ServiceDiscoveryDnsUtil.RANCHER_NAMESPACE);
+            }
         }
     }
 
@@ -146,7 +149,7 @@ public class DnsEntryData {
         if (first.search != null) {
             for (String search : first.search) {
                 if (!searches.contains(search)) {
-                    searches.addAll(first.search);
+                    searches.add(search);
                 }
             }
         }
@@ -188,6 +191,10 @@ public class DnsEntryData {
     }
 
     public List<String> getSearch() {
+        if (search.contains(ServiceDiscoveryDnsUtil.RANCHER_NAMESPACE)) {
+            search.remove(ServiceDiscoveryDnsUtil.RANCHER_NAMESPACE);
+            search.add(ServiceDiscoveryDnsUtil.RANCHER_NAMESPACE);
+        }
         return search;
     }
 

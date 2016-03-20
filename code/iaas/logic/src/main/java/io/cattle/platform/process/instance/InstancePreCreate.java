@@ -43,7 +43,7 @@ public class InstancePreCreate extends AbstractObjectProcessLogic implements Pro
             dataVolumes.add(AgentConstants.AGENT_INSTANCE_BIND_MOUNT);
             data.put(InstanceConstants.FIELD_DATA_VOLUMES, dataVolumes);
         }
-        if (InstanceConstants.CONTAINER_LIKE.contains(instance.getKind())) {
+        if (InstanceConstants.KIND_CONTAINER.equals(instance.getKind())) {
             boolean addDns = true;
             if (labels.containsKey(SystemLabels.LABEL_USE_RANCHER_DNS)
                     && !Boolean.valueOf(SystemLabels.LABEL_USE_RANCHER_DNS)) {
