@@ -80,9 +80,9 @@ public class ContainerMetaData {
         List<String> portsObj = DataAccessor.fields(instance)
                 .withKey(InstanceConstants.FIELD_PORTS).withDefault(Collections.EMPTY_LIST)
                 .as(List.class);
+        this.hostname = instance.getHostname();
         if (hostMetaData != null) {
             this.host_uuid = hostMetaData.getUuid();
-            this.hostname = hostMetaData.getName();
             String hostIp = hostMetaData.agent_ip;
             if (hostIp == null) {
                 ports.addAll(portsObj);
