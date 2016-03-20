@@ -320,3 +320,46 @@ def test_null_scale(client, context):
     svc = client.wait_success(svc)
     assert svc.state == "inactive"
     assert svc.scale is not None
+
+
+def test_validate_svc_name(client, context):
+    env = _create_stack(client)
+    image_uuid = context.image_uuid
+    launch_config = {"imageUuid": image_uuid}
+    # svc_name starting with hyphen
+    svc_name = "-" + random_str()
+    with pytest.raises(ApiError) as e:
+        client.create_service(name=svc_name,
+                              environmentId=env.id,
+                              launchConfig=launch_config)
+
+    assert e.value.error.status == 422
+    assert e.value.error.code == 'InvalidCharacters'
+
+    # svc_name ending in hyphen
+    svc_name = random_str() + "-"
+    with pytest.raises(ApiError) as e:
+        client.create_service(name=svc_name,
+                              environmentId=env.id,
+                              launchConfig=launch_config)
+    assert e.value.error.status == 422
+    assert e.value.error.code == 'InvalidCharacters'
+
+    # svc_name with --
+    svc_name = random_str() + "--end"
+    with pytest.raises(ApiError) as e:
+        client.create_service(name=svc_name,
+                              environmentId=env.id,
+                              launchConfig=launch_config)
+    assert e.value.error.status == 422
+    assert e.value.error.code == 'InvalidCharacters'
+
+    # svc_name with more than 63 chars
+    svc_name = random_str() + "myLinkTOOLONGtoolongtoolongtoolongmy" \
+                              "LinkTOOLONGtoolongtoolongtoolong"
+    with pytest.raises(ApiError) as e:
+        client.create_service(name=svc_name,
+                              environmentId=env.id,
+                              launchConfig=launch_config)
+    assert e.value.error.status == 422
+    assert e.value.error.code == 'MaxLengthExceeded'
