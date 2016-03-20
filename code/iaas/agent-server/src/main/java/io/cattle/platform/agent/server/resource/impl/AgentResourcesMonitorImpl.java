@@ -239,7 +239,7 @@ public class AgentResourcesMonitorImpl implements AgentResourcesEventListener {
                         // send host update event
                         Event event = EventVO.newEvent(FrameworkEvents.STATE_CHANGE)
                                 .withData(updateFields)
-                                .withResourceType(host.getKind())
+                                .withResourceType(HostConstants.TYPE)
                                 .withResourceId(host.getId().toString());
                         eventService.publish(event);
                     }
