@@ -10,10 +10,8 @@ import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.Service;
 import io.cattle.platform.core.util.SystemLabels;
 import io.cattle.platform.docker.constants.DockerInstanceConstants;
-import io.cattle.platform.docker.constants.DockerNetworkConstants;
 import io.cattle.platform.iaas.api.auditing.AuditEventType;
 import io.cattle.platform.servicediscovery.api.constants.ServiceDiscoveryConstants;
-import io.cattle.platform.servicediscovery.api.util.ServiceDiscoveryDnsUtil;
 import io.cattle.platform.servicediscovery.api.util.ServiceDiscoveryUtil;
 import io.cattle.platform.servicediscovery.deployment.DeploymentUnitInstance;
 import io.cattle.platform.servicediscovery.deployment.DeploymentUnitInstanceIdGenerator;
@@ -418,15 +416,6 @@ public class DeploymentUnit {
         }
 
         if (addDns) {
-            Object ntwkModeObj = ServiceDiscoveryUtil.getLaunchConfigObject(
-                    instance.getService(), instance.getLaunchConfigName(), DockerInstanceConstants.FIELD_NETWORK_MODE);
-            if (ntwkModeObj != null) {
-                if (ntwkModeObj.toString().equalsIgnoreCase(DockerNetworkConstants.NETWORK_MODE_MANAGED)) {
-                    List<String> dns = new ArrayList<>();
-                    dns.add(ServiceDiscoveryDnsUtil.NETWORK_AGENT_IP);
-                    deployParams.put(DockerInstanceConstants.FIELD_DNS, dns);
-                }
-            }
             deployParams.put(DockerInstanceConstants.FIELD_DNS_SEARCH, instance.getSearchDomains());
         }
     }
