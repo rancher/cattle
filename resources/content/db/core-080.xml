@@ -7,7 +7,7 @@
             <column name="environment_id" type="BIGINT"/>
         </addColumn>
     </changeSet>
-    <changeSet author="darren (generated)" id="dump2">
+    <changeSet author="alena (generated)" id="dump2">
         <addForeignKeyConstraint baseColumnNames="environment_id" baseTableName="config_item_status" constraintName="fk_config_item__environment_id" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="environment"/>
     </changeSet>
 </databaseChangeLog>

@@ -310,7 +310,11 @@ public class ServiceMetadataInfoFactory extends AbstractAgentBaseContextFactory 
         }
         for (Environment env : envs) {
             StackMetaData stackMetaData = new StackMetaData(env, account);
-            List<ServiceMetaData> stackServicesMD = getServicesInfo(env, account, envIdToService.get(env.getId()));
+            List<Service> services = envIdToService.get(env.getId());
+            if (services == null) {
+                services = new ArrayList<>();
+            }
+            List<ServiceMetaData> stackServicesMD = getServicesInfo(env, account, services);
             stacksMD.put(stackMetaData.getName(), stackMetaData);
             for (ServiceMetaData stackServiceMD : stackServicesMD) {
                 Map<String, ServiceMetaData> launchConfigToSvcMap = servicesMD.get(stackServiceMD.getServiceId());
