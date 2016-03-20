@@ -1,3 +1,3 @@
-check process haproxy with pidfile /var/run/haproxy.pid
+check process haproxy matching "haproxy"
    start program = "/etc/init.d/haproxy start"
    stop  program = "/etc/init.d/haproxy stop"
