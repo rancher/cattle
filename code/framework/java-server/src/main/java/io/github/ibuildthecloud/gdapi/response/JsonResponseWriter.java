@@ -97,7 +97,7 @@ public class JsonResponseWriter extends AbstractApiRequestHandler {
 
         Schema schema = schemaFactory.getSchema(obj.getClass());
         ApiContext apiContext = ApiContext.getContext();
-        return schema == null ? null : new WrappedResource(apiContext.getIdFormatter(), schema, obj, apiContext.getApiRequest().getMethod());
+        return schema == null ? null : new WrappedResource(apiContext.getIdFormatter(), schemaFactory, schema, obj, apiContext.getApiRequest().getMethod());
     }
 
     protected void writeJson(OutputStream os, Object responseObject, ApiRequest request) throws IOException {
