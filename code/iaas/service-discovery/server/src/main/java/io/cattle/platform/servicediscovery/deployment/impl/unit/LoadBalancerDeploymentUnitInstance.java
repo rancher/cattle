@@ -63,7 +63,11 @@ public class LoadBalancerDeploymentUnitInstance extends DefaultDeploymentUnitIns
                 if (spec.getPublicPort() == null) {
                     spec.setPublicPort(spec.getPrivatePort());
                 }
-                String fullPort = spec.getPublicPort().toString() + ":" + spec.getPublicPort().toString();
+                // private port of LB instance = public port. Original private port specified,
+                // is set on lb target in config backend section
+                // protocol is always tcp
+                spec.setPrivatePort(spec.getPublicPort());
+                String fullPort = spec.toSpec();
                 newPorts.add(fullPort);
             }
             launchConfigData.put(InstanceConstants.FIELD_PORTS, newPorts);

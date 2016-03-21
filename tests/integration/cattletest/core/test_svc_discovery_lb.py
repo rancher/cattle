@@ -1128,3 +1128,27 @@ def _create_stack(client):
     env = client.wait_success(env)
     assert env.state == "active"
     return env
+
+
+def test_bind_to_ip(super_client, context, client, image_uuid):
+    context.host
+    env = _create_stack(client)
+    port0 = 731
+    ports = ['127.2.2.2:%s:%s' % (port0, '6666')]
+    launch_config = {"imageUuid": image_uuid,
+                     "ports": ports}
+
+    svc = client. \
+        create_loadBalancerService(name=random_str(),
+                                   environmentId=env.id,
+                                   launchConfig=launch_config)
+    svc = client.wait_success(svc)
+    assert svc.state == "inactive"
+    assert svc.launchConfig.ports == ports
+
+    svc = client.wait_success(svc.activate(), 120)
+    instances = client. \
+        list_container(name=env.name + "_" + svc.name + "_" + "1")
+    assert len(instances) == 1
+    c = instances[0]
+    assert c.ports == ['127.2.2.2:%s:%s/tcp' % (port0, port0)]
