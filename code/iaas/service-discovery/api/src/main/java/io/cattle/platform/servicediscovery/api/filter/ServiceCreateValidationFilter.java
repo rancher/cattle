@@ -51,7 +51,6 @@ public class ServiceCreateValidationFilter extends AbstractDefaultResourceManage
     
     private static final int LB_HEALTH_CHECK_PORT = 42;
 
-
     @Override
     public Class<?>[] getTypeClasses() {
         return new Class<?>[] { Service.class };
@@ -338,12 +337,7 @@ public class ServiceCreateValidationFilter extends AbstractDefaultResourceManage
         }
     }
 
-
-
     protected void validateName(String name) {
-        if (name != null && (name.startsWith("-") || name.endsWith("-"))) {
-            ValidationErrorCodes.throwValidationError(ValidationErrorCodes.INVALID_CHARACTERS,
-                    "name");
-        }
+       validateDNSPatternForName(name);
     }
 }

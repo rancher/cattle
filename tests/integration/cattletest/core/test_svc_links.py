@@ -421,3 +421,58 @@ def _resource_is_active(resource):
 
 def _resource_is_removed(resource):
     return resource.state == 'removed'
+
+
+def test_validate_svc_link_name(client, context):
+    env = _create_stack(client)
+
+    image_uuid = context.image_uuid
+    launch_config = {"imageUuid": image_uuid}
+
+    service1 = client.create_service(name=random_str(),
+                                     environmentId=env.id,
+                                     launchConfig=launch_config)
+    service1 = client.wait_success(service1)
+
+    service2 = client.create_service(name=random_str(),
+                                     environmentId=env.id,
+                                     launchConfig=launch_config)
+    service2 = client.wait_success(service2)
+
+    # link service2 to service1
+    service_link = {"serviceId": service2.id, "name": '-myLink'}
+
+    with pytest.raises(ApiError) as e:
+        service1.addservicelink(serviceLink=service_link)
+
+    assert e.value.error.status == 422
+    assert e.value.error.code == 'InvalidCharacters'
+
+    # link service2 to service1
+    service_link = {"serviceId": service2.id, "name": 'myLink-'}
+
+    with pytest.raises(ApiError) as e:
+        service1.addservicelink(serviceLink=service_link)
+
+    assert e.value.error.status == 422
+    assert e.value.error.code == 'InvalidCharacters'
+
+    # link service2 to service1
+    service_link = {"serviceId": service2.id, "name": 'my--Link'}
+
+    with pytest.raises(ApiError) as e:
+        service1.addservicelink(serviceLink=service_link)
+
+    assert e.value.error.status == 422
+    assert e.value.error.code == 'InvalidCharacters'
+
+    # link service2 to service1
+    service_link = {"serviceId": service2.id, "name":
+                    'myLinkTOOLONGtoolongtoolongtoo'
+                    'longmyLinkTOOLONGtoolongtoolongtoo'}
+
+    with pytest.raises(ApiError) as e:
+        service1.addservicelink(serviceLink=service_link)
+
+    assert e.value.error.status == 422
+    assert e.value.error.code == 'MaxLengthExceeded'
