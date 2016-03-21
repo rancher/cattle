@@ -16,6 +16,10 @@
             "nullable" : true,
             "includeInList" : false
         },
+        "hostId" : {
+            "type" : "reference[host]",
+            "nullable" : true
+        },
         "count" : {
             "type" : "int",
             "nullable" : true,

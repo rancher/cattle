@@ -111,6 +111,7 @@ def _assert_running(container):
         "allocationState": "active",
         "state": "running",
         "startCount": NOT_NONE,
+        "hostId": NOT_NONE,
         "firstRunning": NOT_NONE
     })
 

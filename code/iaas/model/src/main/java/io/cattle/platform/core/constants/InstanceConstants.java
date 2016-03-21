@@ -42,7 +42,7 @@ public class InstanceConstants {
     public static final String FIELD_CREATE_INDEX = "createIndex";
     public static final String FIELD_DEPLOYMENT_UNIT_UUID = "deploymentUnitUuid";
     public static final String FIELD_DATA_VOLUME_MOUNTS = "dataVolumeMounts";
-    public static final String FIELD_DATA_VOLUMES = "dataVolumes"; 
+    public static final String FIELD_DATA_VOLUMES = "dataVolumes";
     public static final String FIELD_VOLUME_DRIVER = "volumeDriver";
     public static final String FIELD_SYSTEM_CONTAINER = "systemContainer";
     public static final String FIELD_DISKS = "disks";
@@ -50,6 +50,7 @@ public class InstanceConstants {
     public static final String FIELD_ALLOCATED_IP_ADDRESS = "allocatedIpAddress";
     public static final String FIELD_SERVICE_INSTANCE_SERVICE_INDEX_ID = "serviceIndexId";
     public static final String FIELD_METADATA = "metadata";
+    public static final String FIELD_HOST_ID = "hostId";
 
     public static final String PROCESS_DATA_NO_OP = "containerNoOpEvent";
 

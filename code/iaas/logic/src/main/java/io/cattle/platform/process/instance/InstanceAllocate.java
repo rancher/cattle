@@ -1,5 +1,6 @@
 package io.cattle.platform.process.instance;
 
+import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.dao.GenericMapDao;
 import io.cattle.platform.core.dao.NicDao;
 import io.cattle.platform.core.model.Instance;
@@ -53,11 +54,15 @@ public class InstanceAllocate extends EventBasedProcessHandler {
         result.put("_allocationData", allocationData);
 
         Instance instance = (Instance) state.getResource();
+        Long hostId = null;
 
         for (InstanceHostMap map : mapDao.findNonRemoved(InstanceHostMap.class, Instance.class, instance.getId())) {
             CollectionUtils.addToMap(allocationData, "instance:" + instance.getId(), map.getHostId(), HashSet.class);
             create(map, state.getData());
+            hostId = map.getHostId();
         }
+
+        result.put(InstanceConstants.FIELD_HOST_ID, hostId);
 
         List<Volume> volumes = getObjectManager().children(instance, Volume.class);
         List<Volume> dataMountVolumes = InstanceHelpers.extractVolumesFromMounts(instance, getObjectManager());
