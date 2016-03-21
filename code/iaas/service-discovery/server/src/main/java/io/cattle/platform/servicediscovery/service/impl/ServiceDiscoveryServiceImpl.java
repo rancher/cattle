@@ -692,9 +692,11 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
         Map<String, Object> labels = DataAccessor
                 .fieldMap(instance, InstanceConstants.FIELD_LABELS);
         boolean startOnce = false;
+        List<String> stoppedStates = Arrays.asList(InstanceConstants.STATE_STOPPED, InstanceConstants.STATE_STOPPING);
         if (labels.containsKey(ServiceDiscoveryConstants.LABEL_SERVICE_CONTAINER_START_ONCE)) {
             startOnce = Boolean.valueOf(((String) labels
-                    .get(ServiceDiscoveryConstants.LABEL_SERVICE_CONTAINER_START_ONCE)));
+                    .get(ServiceDiscoveryConstants.LABEL_SERVICE_CONTAINER_START_ONCE)))
+                    && instance.getStartCount() >= 1L && stoppedStates.contains(instance.getState());
         }
         return startOnce;
     }
