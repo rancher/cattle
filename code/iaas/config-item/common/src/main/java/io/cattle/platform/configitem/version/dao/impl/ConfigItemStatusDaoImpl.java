@@ -4,6 +4,7 @@ import static io.cattle.platform.core.model.tables.AccountTable.*;
 import static io.cattle.platform.core.model.tables.AgentTable.*;
 import static io.cattle.platform.core.model.tables.ConfigItemStatusTable.*;
 import static io.cattle.platform.core.model.tables.ConfigItemTable.*;
+import static io.cattle.platform.core.model.tables.EnvironmentTable.*;
 import static io.cattle.platform.core.model.tables.InstanceTable.*;
 import static io.cattle.platform.core.model.tables.ServiceTable.*;
 import io.cattle.platform.archaius.util.ArchaiusUtil;
@@ -20,6 +21,7 @@ import io.cattle.platform.core.model.Account;
 import io.cattle.platform.core.model.Agent;
 import io.cattle.platform.core.model.ConfigItem;
 import io.cattle.platform.core.model.ConfigItemStatus;
+import io.cattle.platform.core.model.Environment;
 import io.cattle.platform.core.model.Service;
 import io.cattle.platform.core.model.tables.records.ConfigItemStatusRecord;
 import io.cattle.platform.db.jooq.dao.impl.AbstractJooqDao;
@@ -135,6 +137,11 @@ public class ConfigItemStatusDaoImpl extends AbstractJooqDao implements ConfigIt
         if ( client.getResourceType() == Service.class ) {
             return CONFIG_ITEM_STATUS.SERVICE_ID;
         }
+
+        if (client.getResourceType() == Environment.class) {
+            return CONFIG_ITEM_STATUS.ENVIRONMENT_ID;
+        }
+
         if ( client.getResourceType() == Account.class ) {
             return CONFIG_ITEM_STATUS.ACCOUNT_ID;
         }
@@ -273,6 +280,11 @@ public class ConfigItemStatusDaoImpl extends AbstractJooqDao implements ConfigIt
             CollectionUtils.addToMap(result, client, status.getName(), ArrayList.class);
         }
 
+        for (ConfigItemStatus status : (migration ? stackMigrationItems() : stackOutOfSyncItems())) {
+            Client client = new Client(status);
+            CollectionUtils.addToMap(result, client, status.getName(), ArrayList.class);
+        }
+
         for ( ConfigItemStatus status : (migration ? agentMigrationItems() : agentOutOfSyncItems()) ) {
             Client client = new Client(status);
             CollectionUtils.addToMap(result, client, status.getName(), ArrayList.class);
@@ -317,6 +329,18 @@ public class ConfigItemStatusDaoImpl extends AbstractJooqDao implements ConfigIt
                 .fetchInto(ConfigItemStatusRecord.class);
     }
 
+    protected List<? extends ConfigItemStatus> stackOutOfSyncItems() {
+        return create()
+                .select(CONFIG_ITEM_STATUS.fields())
+                .from(CONFIG_ITEM_STATUS)
+                .join(ENVIRONMENT)
+                .on(ENVIRONMENT.ID.eq(CONFIG_ITEM_STATUS.ENVIRONMENT_ID))
+                .where(CONFIG_ITEM_STATUS.REQUESTED_VERSION.ne(CONFIG_ITEM_STATUS.APPLIED_VERSION)
+                        .and(ENVIRONMENT.REMOVED.isNull()))
+                .limit(BATCH_SIZE.get())
+                .fetchInto(ConfigItemStatusRecord.class);
+    }
+
     protected List<? extends ConfigItemStatus> serviceMigrationItems() {
         return create()
                 .select(CONFIG_ITEM_STATUS.fields())
@@ -328,6 +352,21 @@ public class ConfigItemStatusDaoImpl extends AbstractJooqDao implements ConfigIt
                 .where(CONFIG_ITEM_STATUS.SOURCE_VERSION.isNotNull()
                         .and(CONFIG_ITEM_STATUS.SOURCE_VERSION.ne(CONFIG_ITEM.SOURCE_VERSION))
                         .and(SERVICE.REMOVED.isNull()))
+                .limit(BATCH_SIZE.get())
+                .fetchInto(ConfigItemStatusRecord.class);
+    }
+
+    protected List<? extends ConfigItemStatus> stackMigrationItems() {
+        return create()
+                .select(CONFIG_ITEM_STATUS.fields())
+                .from(CONFIG_ITEM_STATUS)
+                .join(ENVIRONMENT)
+                .on(ENVIRONMENT.ID.eq(CONFIG_ITEM_STATUS.ENVIRONMENT_ID))
+                .join(CONFIG_ITEM)
+                .on(CONFIG_ITEM.NAME.eq(CONFIG_ITEM_STATUS.NAME))
+                .where(CONFIG_ITEM_STATUS.SOURCE_VERSION.isNotNull()
+                        .and(CONFIG_ITEM_STATUS.SOURCE_VERSION.ne(CONFIG_ITEM.SOURCE_VERSION))
+                        .and(ENVIRONMENT.REMOVED.isNull()))
                 .limit(BATCH_SIZE.get())
                 .fetchInto(ConfigItemStatusRecord.class);
     }

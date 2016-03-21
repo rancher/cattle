@@ -2,6 +2,7 @@ package io.cattle.platform.servicediscovery.service;
 
 import io.cattle.platform.core.addon.PublicEndpoint;
 import io.cattle.platform.core.addon.ServiceLink;
+import io.cattle.platform.core.model.Environment;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.Service;
 import io.cattle.platform.core.model.ServiceIndex;
@@ -53,6 +54,6 @@ public interface ServiceDiscoveryService {
 
     void releaseIpFromServiceIndex(ServiceIndex serviceIndex);
     
-    void updateHealthState(List<? extends Service> services);
+    void updateHealthState(Environment stack);
 
 }

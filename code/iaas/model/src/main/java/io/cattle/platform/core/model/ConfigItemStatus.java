@@ -148,6 +148,17 @@ public interface ConfigItemStatus extends java.io.Serializable {
 	@javax.persistence.Column(name = "resource_type", nullable = false, length = 128)
 	public java.lang.String getResourceType();
 
+	/**
+	 * Setter for <code>cattle.config_item_status.environment_id</code>.
+	 */
+	public void setEnvironmentId(java.lang.Long value);
+
+	/**
+	 * Getter for <code>cattle.config_item_status.environment_id</code>.
+	 */
+	@javax.persistence.Column(name = "environment_id", precision = 19)
+	public java.lang.Long getEnvironmentId();
+
 	// -------------------------------------------------------------------------
 	// FROM and INTO
 	// -------------------------------------------------------------------------
