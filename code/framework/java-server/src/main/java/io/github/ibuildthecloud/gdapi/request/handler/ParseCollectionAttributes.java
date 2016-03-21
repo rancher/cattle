@@ -26,7 +26,7 @@ import java.util.TreeMap;
 public class ParseCollectionAttributes extends AbstractApiRequestHandler {
 
     Integer defaultLimit = 100;
-    Integer maxLimit = 1000;
+    Integer maxLimit = 10000;
 
     @Override
     public void handle(ApiRequest request) throws IOException {
@@ -132,7 +132,11 @@ public class ParseCollectionAttributes extends AbstractApiRequestHandler {
                 if (maxLimit != null && limitInt.intValue() > maxLimit.intValue()) {
                     limitInt = maxLimit;
                 }
-                pagination.setLimit(limitInt);
+                if (limitInt != null && limitInt.intValue() <= 0) {
+                    pagination.setLimit(null);
+                } else {
+                    pagination.setLimit(limitInt);
+                }
             }
         } catch (NumberFormatException e) {
             // ignore
