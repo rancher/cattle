@@ -1,9 +1,9 @@
 package io.cattle.platform.configitem.context.dao;
 
 import io.cattle.platform.configitem.context.data.ClientIpsecTunnelInfo;
+import io.cattle.platform.configitem.context.data.HostInstanceData;
 import io.cattle.platform.configitem.context.data.HostPortForwardData;
 import io.cattle.platform.configitem.context.data.HostRouteData;
-import io.cattle.platform.configitem.context.data.IpAssociationData;
 import io.cattle.platform.configitem.context.data.NetworkClientData;
 import io.cattle.platform.core.model.Agent;
 import io.cattle.platform.core.model.Instance;
@@ -31,10 +31,10 @@ public interface NetworkInfoDao {
 
     List<HostRouteData> getHostRoutes(Agent agent);
 
-    List<IpAssociationData> getHostIps(Agent agent);
-
     Map<Nic, Subnet> getNicsAndSubnet(Instance instance);
 
     List<? extends NetworkService> networkServices(Agent agent);
+
+    List<HostInstanceData> getHostInstances(Agent agent);
 
 }

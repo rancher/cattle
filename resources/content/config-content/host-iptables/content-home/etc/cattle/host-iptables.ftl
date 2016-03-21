@@ -43,6 +43,13 @@
 -A CATTLE_PREROUTING %BRIDGE% -s ${redirect.subnet.networkAddress}/${redirect.subnet.cidrSize} -d 169.254.169.250 -j DNAT --to ${redirect.ipAddress.address}
 </#list>
 
+<#list instances as instance >
+    <#if (instance.nic.macAddress)?? && (instance.mark)?? && (instance.ipAddress.address)?? && (instance.subnet.networkAddress)?? && (instance.subnet.cidrSize)?? >
+-A CATTLE_PREROUTING -d 169.254.169.250 ! -s ${instance.subnet.networkAddress}/${instance.subnet.cidrSize} -m mac --mac-source ${instance.nic.macAddress} -j MARK --set-mark ${instance.mark}
+-A CATTLE_POSTROUTING -d 169.254.169.250 ! -s ${instance.subnet.networkAddress}/${instance.subnet.cidrSize} -m mark --mark ${instance.mark} -j SNAT --to ${instance.ipAddress.address}
+    </#if>
+</#list>
+
 #POSTRULES
 
 COMMIT
