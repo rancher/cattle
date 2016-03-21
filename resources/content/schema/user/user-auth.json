@@ -232,6 +232,7 @@
 
         "instance" : "r",
         "instance.externalId": "r",
+        "instance.hostId": "r",
 
         "instanceStop" : "r",
         "instanceStop.remove" : "cr",
