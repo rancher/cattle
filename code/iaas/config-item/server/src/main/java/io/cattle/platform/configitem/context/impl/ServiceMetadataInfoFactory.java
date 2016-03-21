@@ -116,7 +116,9 @@ public class ServiceMetadataInfoFactory extends AbstractAgentBaseContextFactory 
         // 4. populate self section
         Map<String, SelfMetaData> selfMD = new HashMap<>();
         List<String> ipsOnHost = metaDataInfoDao.getPrimaryIpsOnInstanceHost(instance);
-        populateSelfSection(instance, containersMD, stackNameToStack, serviceIdToServiceLaunchConfigs, selfMD, version, ipsOnHost);
+        long hostId = getNetworkInstanceHostId(instance);
+        populateSelfSection(instance, containersMD, stackNameToStack, serviceIdToServiceLaunchConfigs, selfMD, version,
+                ipsOnHost, hostId);
 
         // 5. get host meta data
         List<HostMetaData> hostsMD = metaDataInfoDao.getAllInstanceHostMetaData(instance.getAccountId());
@@ -153,7 +155,7 @@ public class ServiceMetadataInfoFactory extends AbstractAgentBaseContextFactory 
     protected void populateSelfSection(Instance instance, List<ContainerMetaData> containersMD,
             Map<String, StackMetaData> stackNameToStack,
             Map<Long, Map<String, ServiceMetaData>> serviceIdToServiceLaunchConfigs, Map<String, SelfMetaData> selfMD,
-            Version version, List<String> ipsOnHost) {
+            Version version, List<String> ipsOnHost, long hostId) {
         for (ContainerMetaData containerMD : containersMD) {
             if (!ipsOnHost.contains(containerMD.getPrimary_ip())) {
                 continue;
@@ -171,7 +173,7 @@ public class ServiceMetadataInfoFactory extends AbstractAgentBaseContextFactory 
                     stackData = stackNameToStack.get(svcData.getStack_name());
                 }
             }
-            addToSelf(selfMD, containerMD, svcData, stackData, getInstanceHostId(instance), version);
+            addToSelf(selfMD, containerMD, svcData, stackData, hostId, version);
         }
     }
 
@@ -375,7 +377,7 @@ public class ServiceMetadataInfoFactory extends AbstractAgentBaseContextFactory 
         serviceMD.setLinks(links);
     }
 
-    protected long getInstanceHostId(Instance instance) {
+    protected long getNetworkInstanceHostId(Instance instance) {
         List<? extends InstanceHostMap> maps = mapDao.findNonRemoved(InstanceHostMap.class, Instance.class,
                 instance.getId());
         if (!maps.isEmpty()) {
