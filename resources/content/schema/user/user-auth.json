@@ -423,6 +423,7 @@
         "environment.environment": "cr",
         "environment.externalId": "cru",
         "environment.previousExternalId": "cru",
+        "environment.previousEnvironment": "cru",
         "environment.outputs": "cru",
         "environment.startOnCreate": "cr",
 

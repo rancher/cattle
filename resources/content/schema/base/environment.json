@@ -27,6 +27,10 @@
             "type": "string",
             "nullable": true
         },
+        "previousEnvironment":{
+            "type": "map[string]",
+            "nullable": true
+        },
         "startOnCreate": {
             "type": "boolean",
             "nullable": true
