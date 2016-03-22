@@ -1,12 +1,11 @@
 package io.cattle.platform.servicediscovery.deployment.impl.lock;
 
-import io.cattle.platform.core.model.Environment;
 import io.cattle.platform.lock.definition.AbstractBlockingLockDefintion;
 
 public class StackHealthStateUpdateLock extends AbstractBlockingLockDefintion {
 
-    public StackHealthStateUpdateLock(Environment stack) {
-        super("STACK." + stack.getId() + "HEALTHSTATE.UPDATE");
+    public StackHealthStateUpdateLock(long stackId) {
+        super("STACK." + stackId + "HEALTHSTATE.UPDATE");
     }
 
     @Override

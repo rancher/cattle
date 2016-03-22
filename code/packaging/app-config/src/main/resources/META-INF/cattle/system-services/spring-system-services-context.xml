@@ -409,6 +409,7 @@
 
     <bean class="io.cattle.platform.sample.data.SampleDataStartupV3" />
     <bean class="io.cattle.platform.sample.data.SampleDataStartupV4" />
+    <bean class="io.cattle.platform.sample.data.SampleDataStartupV6" />
 
         
     <!-- We are not using this at the moment, we will just disable
@@ -440,6 +441,7 @@
     <bean class="io.cattle.platform.servicediscovery.process.LoadBalancerServiceUpdateConfig" />
     <bean class="io.cattle.platform.servicediscovery.process.LoadBalancerInstanceStart" />
     <bean class="io.cattle.platform.servicediscovery.process.StackHealthStateUpdate" />
+    <bean class="io.cattle.platform.servicediscovery.process.StackHealthStateUpdateTrigger" />
 
     <bean class="io.cattle.platform.servicediscovery.dao.impl.ServiceConsumeMapDaoImpl" />
     <bean class="io.cattle.platform.servicediscovery.dao.impl.ServiceExposeMapDaoImpl">

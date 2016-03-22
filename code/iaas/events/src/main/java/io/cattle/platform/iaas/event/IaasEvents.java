@@ -12,6 +12,7 @@ public class IaasEvents {
     public static final String SERVICE_UPDATE = "service.update";
     public static final String GLOBAL_SERVICE_UPDATE = "global.service.update";
     public static final String RESOURCE_CHANGE = "resource.change";
+    public static final String STACK_UPDATE = "stack.update";
 
     public static final String ACCOUNT_QUALIFIER = "account";
     public static final String AGENT_QUALIFIER = "agent";

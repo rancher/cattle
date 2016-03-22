@@ -3,6 +3,7 @@ package io.cattle.platform.configitem.model;
 import io.cattle.platform.core.model.Account;
 import io.cattle.platform.core.model.Agent;
 import io.cattle.platform.core.model.ConfigItemStatus;
+import io.cattle.platform.core.model.Environment;
 import io.cattle.platform.core.model.Service;
 import io.cattle.platform.iaas.event.IaasEvents;
 
@@ -30,6 +31,9 @@ public class Client {
         } else if (status.getServiceId() != null) {
             resourceType = Service.class;
             resourceId = status.getServiceId();
+        } else if (status.getEnvironmentId() != null) {
+            resourceType = Environment.class;
+            resourceId = status.getEnvironmentId();
         }
 
         assignEvent();
@@ -49,6 +53,8 @@ public class Client {
             eventName = IaasEvents.GLOBAL_SERVICE_UPDATE;
         } else if (resourceType == Service.class) {
             eventName = IaasEvents.SERVICE_UPDATE;
+        } else if (resourceType == Environment.class) {
+            eventName = IaasEvents.STACK_UPDATE;
         } else {
             log.error("Failed to assign event name for client");
         }
