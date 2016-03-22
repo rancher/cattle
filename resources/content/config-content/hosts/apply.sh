@@ -5,6 +5,7 @@
 reload_service()
 {
     local service=$1
+    local port=$2
     if [ ! -e /etc/init.d/rancher-${service} ]; then
         # rancher-${service} is not yet installed
         return
@@ -15,7 +16,7 @@ reload_service()
     if [ -z "$PID" ]; then
         /etc/init.d/rancher-${service} start
     else
-        kill -HUP $PID
+        curl -sf -X POST http://localhost:${port}/v1/reload
     fi
 }
 
@@ -42,5 +43,5 @@ if ! ip route show | grep -q 169.254.169.254; then
     ip route add 169.254.169.254/32 dev eth0 via $(ip route get 8.8.8.8 | grep via | awk '{print $3}')
 fi
 
-reload_service dns
-reload_service metadata
+reload_service dns 8113
+reload_service metadata 8112
