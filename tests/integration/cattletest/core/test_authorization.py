@@ -1629,6 +1629,7 @@ def test_auth_compose_project(admin_user_client, user_client, project_client):
         'environment': 'r',
         'externalId': 'r',
         'previousExternalId': 'r',
+        'previousEnvironment': 'r',
         'healthState': 'r',
     })
 
@@ -1639,6 +1640,7 @@ def test_auth_compose_project(admin_user_client, user_client, project_client):
         'environment': 'r',
         'externalId': 'r',
         'previousExternalId': 'r',
+        'previousEnvironment': 'r',
         'healthState': 'r',
     })
 
@@ -1649,6 +1651,7 @@ def test_auth_compose_project(admin_user_client, user_client, project_client):
         'environment': 'cr',
         'externalId': 'cru',
         'previousExternalId': 'cru',
+        'previousEnvironment': 'cru',
         'healthState': 'r',
     })
 
@@ -1664,6 +1667,7 @@ def test_svc_discovery_environment(admin_user_client, user_client,
         'environment': 'r',
         'externalId': 'r',
         'previousExternalId': 'r',
+        'previousEnvironment': 'r',
         'outputs': 'r',
         'startOnCreate': 'r',
         'healthState': 'r',
@@ -1677,6 +1681,7 @@ def test_svc_discovery_environment(admin_user_client, user_client,
         'environment': 'r',
         'externalId': 'r',
         'previousExternalId': 'r',
+        'previousEnvironment': 'r',
         'outputs': 'r',
         'startOnCreate': 'r',
         'healthState': 'r',
@@ -1690,6 +1695,7 @@ def test_svc_discovery_environment(admin_user_client, user_client,
         'environment': 'cr',
         'externalId': 'cru',
         'previousExternalId': 'cru',
+        'previousEnvironment': 'cru',
         'outputs': 'cru',
         'startOnCreate': 'cr',
         'healthState': 'r',
