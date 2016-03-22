@@ -66,6 +66,8 @@ public class DnsInfoDaoImpl extends AbstractJooqDao implements DnsInfoDao {
     @Inject
     ObjectManager objManager;
 
+
+
     @Override
     public List<DnsEntryData> getInstanceLinksDnsData(final Instance instance) {
         // adds all instance links
@@ -74,13 +76,17 @@ public class DnsInfoDaoImpl extends AbstractJooqDao implements DnsInfoDao {
             protected DnsEntryData map(List<Object> input) {
                 Map<String, Map<String, String>> resolve = new HashMap<>();
                 Map<String, String> ips = new HashMap<>();
-                String targetInstanceName = input.get(4) == null ? null : ((Instance) input.get(4)).getName();
+                String targetInstanceName = input.get(4) == null ? null : ((Instance) input.get(4)).getName() + "."
+                        + ServiceDiscoveryDnsUtil.RANCHER_NAMESPACE + ".";
                 ips.put(((IpAddress) input.get(1)).getAddress(), targetInstanceName);
-                resolve.put(((InstanceLink) input.get(0)).getLinkName().toLowerCase() + ".", ips);
+                resolve.put(((InstanceLink) input.get(0)).getLinkName().toLowerCase() + "."
+                        + ServiceDiscoveryDnsUtil.RANCHER_NAMESPACE + ".", ips);
                 String sourceIp = ((IpAddress) input.get(2)).getAddress();
                 Instance instance = (Instance)input.get(3);
+                List<String> dnsSearch = new ArrayList<>();
+                dnsSearch.add(ServiceDiscoveryDnsUtil.RANCHER_NAMESPACE);
                 DnsEntryData data = new DnsEntryData(sourceIp, resolve, null, instance,
-                        Arrays.asList(ServiceDiscoveryDnsUtil.RANCHER_NAMESPACE));
+                        dnsSearch);
                 return data;
             }
         };

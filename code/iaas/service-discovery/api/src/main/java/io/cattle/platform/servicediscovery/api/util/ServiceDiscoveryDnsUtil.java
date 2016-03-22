@@ -21,8 +21,13 @@ public class ServiceDiscoveryDnsUtil {
         return RANCHER_NAMESPACE;
     }
 
-    private static String getServiceNamespace(Environment stack, Service service, String launchConfigName) {
+    private static String getLaunchConfigNamespace(Environment stack, Service service, String launchConfigName) {
         return new StringBuilder().append(launchConfigName).append(".").append(getStackNamespace(stack, service))
+                .toString().toLowerCase();
+    }
+
+    public static String getServiceNamespace(Environment stack, Service service) {
+        return new StringBuilder().append(service.getName()).append(".").append(getStackNamespace(stack, service))
                 .toString().toLowerCase();
     }
 
@@ -32,7 +37,7 @@ public class ServiceDiscoveryDnsUtil {
     }
 
     public static String getFqdn(Environment stack, Service service, String launchConfigName) {
-        return getServiceNamespace(stack, service, launchConfigName).toLowerCase() + ".";
+        return getLaunchConfigNamespace(stack, service, launchConfigName).toLowerCase() + ".";
     }
 
     public static String getDnsName(Service service, Environment stack, String linkName,
@@ -54,8 +59,9 @@ public class ServiceDiscoveryDnsUtil {
 
     public static List<String> getNamespaces(Environment stack, Service service, String launchConfigName) {
         List<String> toReturn = new ArrayList<>();
-        toReturn.add(getGlobalNamespace(service));
         toReturn.add(getStackNamespace(stack, service));
+        toReturn.add(getGlobalNamespace(service));
+        toReturn.add(getServiceNamespace(stack, service));
 
         return toReturn;
     }
