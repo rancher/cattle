@@ -13,7 +13,7 @@ kubelet:
         - --healthz-bind-address=0.0.0.0
         - --cluster-dns=169.254.169.250
         - --cluster-domain=cluster.local
-    image: rancher/k8s:v1.2.0-alpha.8-rancher-3
+    image: rancher/k8s:v1.2.0-rancher-1
     volumes:
         - /var/run/docker.sock:/var/run/docker.sock
         - /var/run:/host/var/run
@@ -30,12 +30,12 @@ proxy:
         io.rancher.container.dns: "true"
         io.rancher.scheduler.global: "true"
     command:
-        - /kube-proxy
+        - kube-proxy
         - --master=http://master
         - --v=2
         - --healthz-bind-address=0.0.0.0
         - --proxy-mode=userspace
-    image: rancher/k8s:v1.2.0-alpha.8-rancher-3
+    image: rancher/k8s:v1.2.0-rancher-1
     privileged: true
     net: host
     links:
@@ -48,19 +48,33 @@ etcd:
         - --listen-client-urls=http://0.0.0.0:4001
         - --data-dir=/var/etcd/data
     image: rancher/etcd:2.0.12
+    labels:
+        io.rancher.sidekicks: etcd-data
+    volumes_from:
+        - etcd-data
+
+etcd-data:
+    image: busybox
+    volumes:
+        - /var/etcd/data
+    labels:
+        io.rancher.container.start_once: "true"
+        io.rancher.container.hostname_override: container_name
+    command: /bin/true
+    net: none
 
 kubernetes:
     labels:
         io.rancher.container.create_agent: "true"
         io.rancher.container.agent.role: environment
     command: 
-        - /usr/local/bin/kube-apiserver
+        - kube-apiserver
         - --service-cluster-ip-range=10.43.0.0/16
         - --etcd-servers=http://etcd:4001
         - --insecure-bind-address=0.0.0.0
         - --insecure-port=80
         - --cloud-provider=rancher
-    image: rancher/kube-apiserver:v1.2.0-alpha.8-rancher-3
+    image: rancher/k8s:v1.2.0-rancher-1
     links:
         - etcd
 
@@ -76,20 +90,20 @@ kubectld:
 
 scheduler:
     command:
-        - /usr/local/bin/kube-scheduler
+        - kube-scheduler
         - --master=http://master
         - --address=0.0.0.0
-    image: rancher/kube-scheduler:v1.2.0-alpha.8-rancher-3
+    image: rancher/k8s:v1.2.0-rancher-1
     links:
         - kubernetes:master
 
 controller-manager:
     command:
-        - /usr/local/bin/kube-controller-manager
+        - kube-controller-manager
         - --master=http://master
         - --cloud-provider=rancher
         - --address=0.0.0.0
-    image: rancher/kube-controller-manager:v1.2.0-alpha.8-rancher-3
+    image: rancher/k8s:v1.2.0-rancher-1
     labels:
         io.rancher.container.create_agent: "true"
         io.rancher.container.agent.role: environment
@@ -102,7 +116,7 @@ rancher-kubernetes-agent:
         io.rancher.container.agent_service.labels_provider: "true"
     environment:
         KUBERNETES_URL: http://master
-    image: rancher/kubernetes-agent:v0.0.2
+    image: rancher/kubernetes-agent:v0.1.0
     privileged: true
     volumes:
         - /var/run/docker.sock:/var/run/docker.sock
