@@ -3,11 +3,12 @@
     <property name="mediumtext" value="TEXT" dbms="postgresql" />
     <property name="mediumtext" value="MEDIUMTEXT" />
     <changeSet author="alena (generated)" id="dump1">
-        <addColumn tableName="config_item_status">
-            <column name="environment_id" type="BIGINT"/>
+        <addColumn tableName="instance">
+            <column name="service_index_id" type="BIGINT">
+            </column>
         </addColumn>
     </changeSet>
     <changeSet author="alena (generated)" id="dump2">
-        <addForeignKeyConstraint baseColumnNames="environment_id" baseTableName="config_item_status" constraintName="fk_config_item__environment_id" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="environment"/>
+        <addForeignKeyConstraint baseColumnNames="service_index_id" baseTableName="instance" constraintName="fk_instance__service_index_id" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="service_index"/>
     </changeSet>
 </databaseChangeLog>

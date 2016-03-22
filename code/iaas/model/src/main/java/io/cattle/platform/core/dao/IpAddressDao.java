@@ -7,6 +7,8 @@ import io.cattle.platform.core.model.IpAssociation;
 import io.cattle.platform.core.model.IpPool;
 import io.cattle.platform.core.model.Nic;
 
+import java.util.Map;
+
 public interface IpAddressDao {
 
     IpAddress getPrimaryIpAddress(Nic nic);
@@ -24,5 +26,7 @@ public interface IpAddressDao {
     IpAddress createIpAddressFromPool(IpPool pool, Object key, Object... values);
 
     IpAddress getInstancePrimaryIp(Instance instance);
+
+    Map<Long, IpAddress> getNicIdToPrimaryIpAddress(long accountId);
 
 }

@@ -1,5 +1,7 @@
 package io.cattle.platform.configitem.context.impl;
 
+import static io.cattle.platform.core.model.tables.InstanceTable.*;
+import static io.cattle.platform.core.model.tables.NicTable.*;
 import io.cattle.platform.configitem.context.dao.LoadBalancerInfoDao;
 import io.cattle.platform.configitem.context.data.LoadBalancerListenerInfo;
 import io.cattle.platform.configitem.context.data.LoadBalancerTargetInfo;
@@ -21,7 +23,6 @@ import io.cattle.platform.core.model.Nic;
 import io.cattle.platform.core.model.Service;
 import io.cattle.platform.core.util.LoadBalancerTargetPortSpec;
 import io.cattle.platform.json.JsonMapper;
-import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.servicediscovery.api.constants.ServiceDiscoveryConstants;
 import io.cattle.platform.servicediscovery.api.dao.ServiceDao;
@@ -41,9 +42,6 @@ import javax.inject.Named;
 
 @Named
 public class LoadBalancerInfoFactory extends AbstractAgentBaseContextFactory {
-
-    @Inject
-    ObjectManager objectManager;
 
     @Inject
     IpAddressDao ipAddressDao;
@@ -102,8 +100,15 @@ public class LoadBalancerInfoFactory extends AbstractAgentBaseContextFactory {
         if (healthCheck != null) {
             lbHealthCheck = jsonMapper.convertValue(healthCheck, InstanceHealthCheck.class);
         }
-
-        List<LoadBalancerTargetsInfo> targetsInfo = populateTargetsInfo(lbService, listeners);
+        List<Instance> instances = objectManager.find(Instance.class, INSTANCE.ACCOUNT_ID, instance.getAccountId(),
+                INSTANCE.REMOVED, null);
+        List<Nic> nics = objectManager.find(Nic.class, NIC.ACCOUNT_ID, instance.getAccountId(),
+                NIC.REMOVED, null);
+        Map<Long, Instance> instanceIdtoInstance = getInstanceIdToInstance(instances);
+        Map<Long, List<Nic>> instanceIdtoNic = getInstanceIdToNic(nics);
+        Map<Long, IpAddress> nicIdToIp = ipAddressDao.getNicIdToPrimaryIpAddress(instance.getAccountId());
+        List<LoadBalancerTargetsInfo> targetsInfo = populateTargetsInfo(lbService, listeners, instanceIdtoInstance,
+                instanceIdtoNic, nicIdToIp);
         if (targetsInfo.isEmpty()) {
             return;
         }
@@ -119,6 +124,29 @@ public class LoadBalancerInfoFactory extends AbstractAgentBaseContextFactory {
         context.getData().put("defaultCert", svcDao.getLoadBalancerServiceDefaultCertificate(lbService));
         context.getData().put("lbHealthCheck", lbHealthCheck);
         context.getData().put(LoadBalancerConstants.FIELD_HAPROXY_CONFIG, customConfig);
+    }
+
+
+    protected Map<Long, List<Nic>> getInstanceIdToNic(List<Nic> nics) {
+        Map<Long, List<Nic>> instanceIdtoNic = new HashMap<>();
+        for (Nic nic : nics) {
+            List<Nic> instanceNics = instanceIdtoNic.get(nic.getInstanceId());
+            if (instanceNics == null) {
+                instanceNics = new ArrayList<>();
+            }
+            instanceNics.add(nic);
+            instanceIdtoNic.put(nic.getInstanceId(), instanceNics);
+        }
+        return instanceIdtoNic;
+    }
+
+
+    protected Map<Long, Instance> getInstanceIdToInstance(List<Instance> instances) {
+        Map<Long, Instance> instanceIdtoInstance = new HashMap<>();
+        for (Instance i : instances) {
+            instanceIdtoInstance.put(i.getId(), i);
+        }
+        return instanceIdtoInstance;
     }
 
 
@@ -234,7 +262,10 @@ public class LoadBalancerInfoFactory extends AbstractAgentBaseContextFactory {
     }
 
 
-    private List<LoadBalancerTargetsInfo> populateTargetsInfo(Service lbService, List<? extends LoadBalancerListenerInfo> listeners) {
+    private List<LoadBalancerTargetsInfo> populateTargetsInfo(Service lbService,
+            List<? extends LoadBalancerListenerInfo> listeners, Map<Long, Instance> instanceIdtoInstance,
+            Map<Long, List<Nic>> instanceIdtoNic,
+            Map<Long, IpAddress> nicIdToIp) {
         List<? extends LoadBalancerTargetInput> targets = lbInfoDao.getLoadBalancerTargets(lbService);
 
         Map<String, List<LoadBalancerTargetInfo>> uuidToTargetInfos = new HashMap<>();
@@ -242,18 +273,21 @@ public class LoadBalancerInfoFactory extends AbstractAgentBaseContextFactory {
             String ipAddress = target.getIpAddress();
             InstanceHealthCheck healthCheck = null;
             if (ipAddress == null) {
-                Instance userInstance = objectManager.loadResource(Instance.class, target.getInstanceId());
-                healthCheck = DataAccessor.field(userInstance,
+                Instance targetInstance = instanceIdtoInstance.get(target.getInstanceId());
+                healthCheck = DataAccessor.field(targetInstance,
                         InstanceConstants.FIELD_HEALTH_CHECK, jsonMapper, InstanceHealthCheck.class);
 
-                if (userInstance.getState().equalsIgnoreCase(InstanceConstants.STATE_RUNNING)
-                        || userInstance.getState().equalsIgnoreCase(InstanceConstants.STATE_STARTING)
-                        || userInstance.getState().equalsIgnoreCase(InstanceConstants.STATE_RESTARTING)) {
-                    for (Nic nic : objectManager.children(userInstance, Nic.class)) {
-                        IpAddress ip = ipAddressDao.getPrimaryIpAddress(nic);
-                        if (ip != null) {
-                            ipAddress = ip.getAddress();
-                            break;
+                if (targetInstance.getState().equalsIgnoreCase(InstanceConstants.STATE_RUNNING)
+                        || targetInstance.getState().equalsIgnoreCase(InstanceConstants.STATE_STARTING)
+                        || targetInstance.getState().equalsIgnoreCase(InstanceConstants.STATE_RESTARTING)) {
+                    List<Nic> nics = instanceIdtoNic.get(targetInstance.getId());
+                    if (nics != null) {
+                        for (Nic nic : nics) {
+                            IpAddress ip = nicIdToIp.get(nic.getId());
+                            if (ip != null) {
+                                ipAddress = ip.getAddress();
+                                break;
+                            }
                         }
                     }
                 }

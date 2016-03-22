@@ -1,8 +1,6 @@
 package io.cattle.platform.configitem.context.data.metadata.common;
 
 import io.cattle.platform.configitem.context.dao.MetaDataInfoDao.Version;
-import io.cattle.platform.object.util.DataAccessor;
-import io.cattle.platform.servicediscovery.api.constants.ServiceDiscoveryConstants;
 
 public class SelfMetaData {
 
@@ -12,14 +10,17 @@ public class SelfMetaData {
         StackMetaData stack;
         HostMetaData host;
 
-        public Self(ContainerMetaData container, ServiceMetaData service, StackMetaData stack, HostMetaData host,
-                Version version) {
+        public Self(ContainerMetaData container, ServiceMetaData service, StackMetaData stack, HostMetaData host) {
             super();
             this.container = container;
             if(service != null){
-                this.service = ServiceMetaData.getServiceMetaData(service, version);
-                this.service.setToken(DataAccessor.fieldString(service.getService(),
-                        ServiceDiscoveryConstants.FIELD_TOKEN));
+                this.service = service;
+                // temporarily disabling token on the service
+                // as using it would require copy constructor, and that would
+                // eliminate yml anchoring/references
+                // will have to put under self/token in the future, not on the service
+                //this.service.setToken(DataAccessor.fieldString(service.getService(),
+                // ServiceDiscoveryConstants.FIELD_TOKEN));
             }
             this.stack = stack;
             this.host = host;
@@ -63,7 +64,7 @@ public class SelfMetaData {
     public SelfMetaData(ContainerMetaData container, ServiceMetaData service, StackMetaData stack, HostMetaData host,
             Version version) {
         super();
-        this.self = new Self(container, service, stack, host, version);
+        this.self = new Self(container, service, stack, host);
     }
 
     public Self getSelf() {
