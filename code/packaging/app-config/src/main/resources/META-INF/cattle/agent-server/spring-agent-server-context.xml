@@ -41,7 +41,6 @@
 
     <extension:discover class="io.cattle.platform.agent.server.connection.AgentConnectionFactory" />
 
-    <bean class="io.cattle.platform.agent.connection.delegate.dao.impl.AgentDelegateDaoImpl" />
     <bean class="io.cattle.platform.agent.connection.delegate.AgentDelegateConnectionFactory" />
 
 </beans>

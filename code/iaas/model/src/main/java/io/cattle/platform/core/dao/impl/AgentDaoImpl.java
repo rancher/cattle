@@ -2,21 +2,18 @@ package io.cattle.platform.core.dao.impl;
 
 import static io.cattle.platform.core.model.tables.AgentTable.*;
 import static io.cattle.platform.core.model.tables.HostTable.*;
-import static io.cattle.platform.core.model.tables.PhysicalHostTable.*;
-import static io.cattle.platform.core.model.tables.StoragePoolTable.*;
 import static io.cattle.platform.core.model.tables.InstanceHostMapTable.*;
 import static io.cattle.platform.core.model.tables.InstanceTable.*;
+import static io.cattle.platform.core.model.tables.PhysicalHostTable.*;
+import static io.cattle.platform.core.model.tables.StoragePoolTable.*;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import org.apache.commons.lang3.StringUtils;
-
+import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.HostConstants;
+import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.dao.AgentDao;
 import io.cattle.platform.core.model.Agent;
 import io.cattle.platform.core.model.Host;
+import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.PhysicalHost;
 import io.cattle.platform.core.model.StoragePool;
 import io.cattle.platform.core.model.tables.records.AgentRecord;
@@ -24,6 +21,13 @@ import io.cattle.platform.core.model.tables.records.HostRecord;
 import io.cattle.platform.core.model.tables.records.PhysicalHostRecord;
 import io.cattle.platform.core.model.tables.records.StoragePoolRecord;
 import io.cattle.platform.object.util.DataAccessor;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import org.apache.commons.lang3.StringUtils;
+import org.jooq.Record;
 
 public class AgentDaoImpl extends AbstractCoreDao implements AgentDao {
 
@@ -130,5 +134,36 @@ public class AgentDaoImpl extends AbstractCoreDao implements AgentDao {
                     .on(INSTANCE_HOST_MAP.INSTANCE_ID.eq(INSTANCE.ID))
                 .where(INSTANCE.AGENT_ID.eq(agentId)).fetchInto(AgentRecord.class);
         return result.size() == 0 ? null : result.get(0);
+    }
+
+    @Override
+    public Host getHost(Agent agent) {
+        Record record = create()
+                .select(HOST.fields())
+                    .from(INSTANCE)
+                    .join(INSTANCE_HOST_MAP)
+                        .on(INSTANCE_HOST_MAP.INSTANCE_ID.eq(INSTANCE.ID)
+                                .and(INSTANCE_HOST_MAP.REMOVED.isNull()))
+                    .join(HOST)
+                        .on(INSTANCE_HOST_MAP.HOST_ID.eq(HOST.ID))
+                    .where(INSTANCE.AGENT_ID.eq(agent.getId())
+                        .and(INSTANCE.REMOVED.isNull().and(
+                                INSTANCE.STATE.notIn(InstanceConstants.STATE_ERROR, InstanceConstants.STATE_ERRORING,
+                                        CommonStatesConstants.REMOVING)))
+                            .and(HOST.REMOVED.isNull()))
+                    .fetchAny();
+
+        return record == null ? null : record.into(Host.class);
+    }
+
+    @Override
+    public Instance getInstance(Agent agent) {
+        return create()
+                .selectFrom(INSTANCE)
+                .where(INSTANCE.AGENT_ID.eq(agent.getId())
+                        .and(INSTANCE.REMOVED.isNull())
+                        .and(INSTANCE.STATE.notIn(InstanceConstants.STATE_ERROR, InstanceConstants.STATE_ERRORING,
+                                CommonStatesConstants.REMOVING)))
+                .fetchOne();
     }
 }

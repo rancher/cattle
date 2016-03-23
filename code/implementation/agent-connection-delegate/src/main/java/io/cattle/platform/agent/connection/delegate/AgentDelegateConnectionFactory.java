@@ -2,10 +2,10 @@ package io.cattle.platform.agent.connection.delegate;
 
 import io.cattle.platform.agent.AgentLocator;
 import io.cattle.platform.agent.RemoteAgent;
-import io.cattle.platform.agent.connection.delegate.dao.AgentDelegateDao;
 import io.cattle.platform.agent.server.connection.AgentConnection;
 import io.cattle.platform.agent.server.connection.AgentConnectionFactory;
 import io.cattle.platform.core.constants.InstanceConstants;
+import io.cattle.platform.core.dao.AgentDao;
 import io.cattle.platform.core.model.Agent;
 import io.cattle.platform.core.model.Host;
 import io.cattle.platform.core.model.Instance;
@@ -25,9 +25,13 @@ public class AgentDelegateConnectionFactory implements AgentConnectionFactory {
     private static final Logger log = LoggerFactory.getLogger(AgentDelegateConnectionFactory.class);
     private static final String PROTOCOL = "delegate://";
 
+    @Inject
     EventService eventService;
-    AgentDelegateDao delegateDao;
+    @Inject
+    AgentDao delegateDao;
+    @Inject
     AgentLocator agentLocator;
+    @Inject
     JsonMapper jsonMapper;
 
     @Override
@@ -67,42 +71,6 @@ public class AgentDelegateConnectionFactory implements AgentConnectionFactory {
         Map<String, Object> instanceData = jsonMapper.convertValue(instance, Map.class);
 
         return new AgentDelegateConnection(remoteAgent, agent.getId(), agent.getUri(), instanceData, jsonMapper, eventService);
-    }
-
-    public EventService getEventService() {
-        return eventService;
-    }
-
-    @Inject
-    public void setEventService(EventService eventService) {
-        this.eventService = eventService;
-    }
-
-    public AgentDelegateDao getDelegateDao() {
-        return delegateDao;
-    }
-
-    @Inject
-    public void setDelegateDao(AgentDelegateDao delegateDao) {
-        this.delegateDao = delegateDao;
-    }
-
-    public JsonMapper getJsonMapper() {
-        return jsonMapper;
-    }
-
-    @Inject
-    public void setJsonMapper(JsonMapper jsonMapper) {
-        this.jsonMapper = jsonMapper;
-    }
-
-    public AgentLocator getAgentLocator() {
-        return agentLocator;
-    }
-
-    @Inject
-    public void setAgentLocator(AgentLocator agentLocator) {
-        this.agentLocator = agentLocator;
     }
 
 }

@@ -16,13 +16,11 @@ public class IaasEvents {
 
     public static final String ACCOUNT_QUALIFIER = "account";
     public static final String AGENT_QUALIFIER = "agent";
-    public static final String AGENT_GROUP_QUALIFIER = "agent.group";
 
     public static final String CONSOLE_ACCESS = "console.access";
 
     public static final String ACCOUNT_SUFFIX = FrameworkEvents.EVENT_SEP + ACCOUNT_QUALIFIER + "=";
     public static final String AGENT_SUFFIX = FrameworkEvents.EVENT_SEP + AGENT_QUALIFIER + "=";
-    public static final String AGENT_GROUP_SUFFIX = FrameworkEvents.EVENT_SEP + AGENT_GROUP_QUALIFIER + "=";
 
     public static String appendAccount(String name, Long accountId) {
         if (accountId == null) {
@@ -40,11 +38,4 @@ public class IaasEvents {
         return name + AGENT_SUFFIX + agentId;
     }
 
-    public static String appendAgentGroup(String name, Long agentGroupId) {
-        if (agentGroupId == null) {
-            throw new IllegalArgumentException("agentGroupId can not be null");
-        }
-
-        return name + AGENT_GROUP_SUFFIX + agentGroupId;
-    }
 }

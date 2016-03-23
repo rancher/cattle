@@ -35,10 +35,6 @@ public class FutureEventListener implements EventListener, PoolSpecificListener 
                 EventVO<Object> replyWithName = new EventVO<Object>(reply);
                 replyWithName.setName(appendReply(event.getName()));
 
-                if (eventService.isSubscribed(replyWithName.getName())) {
-                    eventService.publish(replyWithName);
-                }
-
                 String transitioning = replyWithName.getTransitioning();
 
                 if (transitioning == null || Event.TRANSITIONING_NO.equals(transitioning)) {
