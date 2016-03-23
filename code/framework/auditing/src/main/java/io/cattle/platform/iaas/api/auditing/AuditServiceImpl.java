@@ -3,6 +3,7 @@ package io.cattle.platform.iaas.api.auditing;
 import io.cattle.platform.api.auth.Identity;
 import io.cattle.platform.api.auth.Policy;
 import io.cattle.platform.core.constants.AccountConstants;
+import io.cattle.platform.core.constants.AuditLogConstants;
 import io.cattle.platform.core.constants.ContainerEventConstants;
 import io.cattle.platform.core.model.AuditLog;
 import io.cattle.platform.eventing.EventService;
@@ -168,7 +169,7 @@ public class AuditServiceImpl implements AuditService{
 
         Event event = EventVO.newEvent(FrameworkEvents.STATE_CHANGE)
                 .withData(data)
-                .withResourceType(auditLog.getClass().getName())
+                .withResourceType(AuditLogConstants.TYPE)
                 .withResourceId(auditLog.getId().toString());
 
         eventService.publish(event);
@@ -180,8 +181,7 @@ public class AuditServiceImpl implements AuditService{
             jsonMapper.writeValue(os, objectToPlace);
             data.put(fieldForObject, os.toString());
         } catch (IOException e) {
-            log.error(errMsg);
-            data.put("requestObject", "{\"object\":\"" + errMsg + "\"");
+            log.error("Failed to log [{}]", errMsg, e);
         }
     }
 }
