@@ -399,6 +399,20 @@ def test_port_constraint(new_context):
         assert c5.transitioningMessage == \
             'Scheduling failed: host needs ports 8081/udp available'
         assert c5.state == 'error'
+
+        # try different bind IP
+        c6 = new_context.\
+            super_create_container(validHostIds=[host1.id],
+                                   ports=['127.2.2.2:8081:81/tcp'])
+        containers.append(c6)
+
+        c7 = new_context \
+            .super_create_container_no_success(validHostIds=[host1.id],
+                                               ports=['127.2.2.2:8081:81/tcp'])
+        assert c7.transitioning == 'error'
+        assert c7.transitioningMessage == \
+            'Scheduling failed: host needs ports 8081/tcp available'
+        assert c7.state == 'error'
     finally:
         for c in containers:
             if c is not None:
