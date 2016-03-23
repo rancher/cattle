@@ -78,6 +78,12 @@ public class Token {
                 ? GithubConstants.GITHUB_HOSTNAME.get() : null;
     }
 
+    @Field(nullable = true)
+    public String getScheme() {
+        return GithubConstants.CONFIG.equalsIgnoreCase(SecurityConstants.AUTH_PROVIDER.get())
+                ? GithubConstants.SCHEME.get() : null;
+    }
+
 
     @Field(nullable = true, required = true)
     public String getCode() {

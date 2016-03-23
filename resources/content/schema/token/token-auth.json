@@ -10,6 +10,7 @@
         "token.defaultProject": "r",
         "token.enabled": "r",
         "token.hostname": "r",
+        "token.scheme": "r",
         "token.identities": "r",
         "token.jwt": "r",
         "token.security": "r",
