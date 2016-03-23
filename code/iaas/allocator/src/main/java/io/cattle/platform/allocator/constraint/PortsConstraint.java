@@ -3,10 +3,14 @@ package io.cattle.platform.allocator.constraint;
 import io.cattle.platform.allocator.dao.AllocatorDao;
 import io.cattle.platform.allocator.service.AllocationAttempt;
 import io.cattle.platform.allocator.service.AllocationCandidate;
+import io.cattle.platform.core.constants.PortConstants;
 import io.cattle.platform.core.model.Port;
+import io.cattle.platform.object.util.DataAccessor;
 
 import java.util.List;
 import java.util.Set;
+
+import org.apache.commons.lang3.StringUtils;
 
 public class PortsConstraint extends HardConstraint implements Constraint {
 
@@ -31,9 +35,7 @@ public class PortsConstraint extends HardConstraint implements Constraint {
                 for (Port requestedPort : ports) {
                     if (requestedPort.getPublicPort() != null &&
                             requestedPort.getPublicPort().equals(portUsed.getPublicPort()) &&
-                            (requestedPort.getPublicIpAddressId() == null ||
-                                requestedPort.getPublicIpAddressId() != null && requestedPort.getPublicIpAddressId().equals(portUsed.getPublicIpAddressId()))
-                            &&
+                            publicIpTheSame(requestedPort, portUsed) &&
                             requestedPort.getProtocol().equals(portUsed.getProtocol())) {
                         return false;
                     }
@@ -41,6 +43,16 @@ public class PortsConstraint extends HardConstraint implements Constraint {
             }
         }
         return true;
+    }
+
+    private boolean publicIpTheSame(Port requestedPort, Port portUsed) {
+        if (requestedPort.getPublicIpAddressId() != null) {
+            return requestedPort.getPublicIpAddressId().equals(portUsed.getPublicIpAddressId());
+        } else {
+            String requestedIp = DataAccessor.fields(requestedPort).withKey(PortConstants.FIELD_BIND_ADDR).as(String.class);
+            String usedIp = DataAccessor.fields(portUsed).withKey(PortConstants.FIELD_BIND_ADDR).as(String.class);
+            return StringUtils.equals(requestedIp, usedIp);
+        }
     }
 
     @Override
