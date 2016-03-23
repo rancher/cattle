@@ -8,7 +8,7 @@ import java.util.regex.Pattern;
 
 public class AbstractDefaultResourceManagerFilter extends AbstractResourceManagerFilter implements Priority {
 
-    private static final Pattern DNS_NAME_PATTERN = Pattern.compile("^[a-zA-Z0-9](?!.*--)[a-zA-Z0-9-]*[a-zA-Z0-9]$");
+    private static final Pattern DNS_NAME_PATTERN = Pattern.compile("^[a-zA-Z0-9](?!.*--)[a-zA-Z0-9-]*$");
 
     @Override
     public int getPriority() {
@@ -16,9 +16,14 @@ public class AbstractDefaultResourceManagerFilter extends AbstractResourceManage
     }
 
     protected void validateDNSPatternForName(String name) {
-        if (name != null && !DNS_NAME_PATTERN.matcher(name).matches()) {
-            ValidationErrorCodes.throwValidationError(ValidationErrorCodes.INVALID_CHARACTERS,
-                    "name");
+        if (name != null)  {
+            if(!DNS_NAME_PATTERN.matcher(name).matches()) {
+                ValidationErrorCodes.throwValidationError(ValidationErrorCodes.INVALID_CHARACTERS,
+                        "name");
+            } else if (name.endsWith("-")){
+                ValidationErrorCodes.throwValidationError(ValidationErrorCodes.INVALID_CHARACTERS,
+                        "name");
+            }
         }
     }
 

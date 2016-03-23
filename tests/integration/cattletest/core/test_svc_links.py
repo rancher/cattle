@@ -476,3 +476,8 @@ def test_validate_svc_link_name(client, context):
 
     assert e.value.error.status == 422
     assert e.value.error.code == 'MaxLengthExceeded'
+
+    # link service2 to service1 with single char link
+    service_link = {"serviceId": service2.id, "name": 'm'}
+    service1 = service1.addservicelink(serviceLink=service_link)
+    _validate_add_service_link(service1, service2, client)
