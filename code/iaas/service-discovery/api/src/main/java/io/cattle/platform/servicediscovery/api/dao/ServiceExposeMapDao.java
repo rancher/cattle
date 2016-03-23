@@ -50,8 +50,6 @@ public interface ServiceExposeMapDao {
 
     ServiceExposeMap createHostnameToServiceMap(Service service, String hostName);
 
-    Service getIpAddressService(String ipAddress, long accountId);
-
     ServiceExposeMap getServiceInstanceMap(Service service, Instance instance);
 
     List<? extends ServiceExposeMap> getInstancesSetForUpgrade(long serviceId);

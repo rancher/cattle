@@ -1,11 +1,11 @@
 package io.cattle.platform.configitem.context.dao.impl;
 
-import static io.cattle.platform.core.model.tables.HealthcheckInstanceHostMapTable.HEALTHCHECK_INSTANCE_HOST_MAP;
-import static io.cattle.platform.core.model.tables.HealthcheckInstanceTable.HEALTHCHECK_INSTANCE;
-import static io.cattle.platform.core.model.tables.InstanceTable.INSTANCE;
-import static io.cattle.platform.core.model.tables.IpAddressNicMapTable.IP_ADDRESS_NIC_MAP;
-import static io.cattle.platform.core.model.tables.IpAddressTable.IP_ADDRESS;
-import static io.cattle.platform.core.model.tables.NicTable.NIC;
+import static io.cattle.platform.core.model.tables.HealthcheckInstanceHostMapTable.*;
+import static io.cattle.platform.core.model.tables.HealthcheckInstanceTable.*;
+import static io.cattle.platform.core.model.tables.InstanceTable.*;
+import static io.cattle.platform.core.model.tables.IpAddressNicMapTable.*;
+import static io.cattle.platform.core.model.tables.IpAddressTable.*;
+import static io.cattle.platform.core.model.tables.NicTable.*;
 import io.cattle.platform.configitem.context.dao.DnsInfoDao;
 import io.cattle.platform.configitem.context.dao.HealthcheckInfoDao;
 import io.cattle.platform.configitem.context.data.HealthcheckData;
@@ -25,7 +25,6 @@ import io.cattle.platform.core.model.tables.NicTable;
 import io.cattle.platform.db.jooq.dao.impl.AbstractJooqDao;
 import io.cattle.platform.db.jooq.mapper.MultiRecordMapper;
 import io.cattle.platform.json.JsonMapper;
-import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.util.DataAccessor;
 
 import java.util.ArrayList;
@@ -35,9 +34,6 @@ import java.util.Map;
 import javax.inject.Inject;
 
 public class HealthcheckInfoDaoImpl extends AbstractJooqDao implements HealthcheckInfoDao {
-
-    @Inject
-    ObjectManager objectMgr;
 
     @Inject
     JsonMapper jsonMapper;
@@ -126,5 +122,4 @@ public class HealthcheckInfoDaoImpl extends AbstractJooqDao implements Healthche
                         .and(HEALTHCHECK_INSTANCE.INSTANCE_ID.isNotNull()))
                 .fetch().map(mapper);
     }
-
 }

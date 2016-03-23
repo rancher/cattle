@@ -292,7 +292,7 @@ public class LoadBalancerInfoFactory extends AbstractAgentBaseContextFactory {
                     }
                 }
             } else {
-                Service service = exposeMapDao.getIpAddressService(ipAddress, lbService.getAccountId());
+                Service service = target.getService();
                 if (service != null) {
                     healthCheck = DataAccessor.field(service,
                             InstanceConstants.FIELD_HEALTH_CHECK, jsonMapper, InstanceHealthCheck.class);

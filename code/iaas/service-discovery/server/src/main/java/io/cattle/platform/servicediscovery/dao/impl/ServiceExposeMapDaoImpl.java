@@ -251,23 +251,6 @@ public class ServiceExposeMapDaoImpl extends AbstractJooqDao implements ServiceE
                 .fetchInto(ServiceExposeMapRecord.class);
     }
 
-    @Override
-    public Service getIpAddressService(String ipAddress, long accountId) {
-        List<? extends Service> services = create()
-                .select(SERVICE.fields())
-                .from(SERVICE)
-                .join(SERVICE_EXPOSE_MAP)
-                .on(SERVICE_EXPOSE_MAP.SERVICE_ID.eq(SERVICE.ID))
-                .where(SERVICE.ACCOUNT_ID.eq(accountId))
-                .and(SERVICE_EXPOSE_MAP.IP_ADDRESS.eq(ipAddress))
-                .and(SERVICE.REMOVED.isNull())
-                .fetchInto(ServiceRecord.class);
-        if (services.isEmpty()) {
-            return null;
-        }
-        return services.get(0);
-    }
-
     public Configuration getLockingConfiguration() {
         return lockingConfiguration;
     }
