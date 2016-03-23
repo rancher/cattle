@@ -6,12 +6,15 @@ import io.cattle.platform.core.model.Environment;
 import io.cattle.platform.core.model.Service;
 import io.cattle.platform.core.model.ServiceExposeMap;
 import io.cattle.platform.core.model.ServiceIndex;
+import io.cattle.platform.iaas.api.auditing.AuditEventType;
 import io.cattle.platform.object.process.StandardProcess;
 import io.cattle.platform.object.resource.ResourcePredicate;
 import io.cattle.platform.servicediscovery.api.util.ServiceDiscoveryDnsUtil;
 import io.cattle.platform.servicediscovery.deployment.impl.DeploymentManagerImpl.DeploymentServiceContext;
+import io.cattle.platform.servicediscovery.deployment.impl.unit.DefaultDeploymentUnitInstance;
 
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -132,5 +135,23 @@ public abstract class DeploymentUnitInstance {
         String serviceNamespace = ServiceDiscoveryDnsUtil
                 .getServiceNamespace(this.stack, this.service);
         return Arrays.asList(stackNamespace, serviceNamespace);
+    }
+
+    public void generateAuditLog(AuditEventType eventType, String description) {
+        if (this instanceof DefaultDeploymentUnitInstance) {
+            DefaultDeploymentUnitInstance defaultInstance = (DefaultDeploymentUnitInstance) this;
+            if (defaultInstance.getInstance() != null) {
+                Object serviceIdObf = context.idFormatter.formatId(
+                        context.objectManager.getType(this.getService()),
+                        this.getService().getId());
+                Map<String, Object> data = new HashMap<>();
+                data.put("serviceId", serviceIdObf);
+                data.put("description", description);
+                context.auditSvc.logResourceModification(defaultInstance.getInstance(), data, eventType, description
+                        + ". Service id: " + serviceIdObf,
+                        defaultInstance.getInstance().getAccountId(),
+                        null);
+            }
+        }
     }
 }

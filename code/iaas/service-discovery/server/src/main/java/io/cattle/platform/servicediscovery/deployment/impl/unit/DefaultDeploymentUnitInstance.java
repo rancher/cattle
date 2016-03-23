@@ -13,6 +13,7 @@ import io.cattle.platform.core.model.ServiceIndex;
 import io.cattle.platform.core.util.SystemLabels;
 import io.cattle.platform.docker.constants.DockerInstanceConstants;
 import io.cattle.platform.engine.process.impl.ProcessCancelException;
+import io.cattle.platform.iaas.api.auditing.AuditEventType;
 import io.cattle.platform.object.process.ObjectProcessManager;
 import io.cattle.platform.object.process.StandardProcess;
 import io.cattle.platform.object.resource.ResourcePredicate;
@@ -102,6 +103,8 @@ public class DefaultDeploymentUnitInstance extends DeploymentUnitInstance implem
                     service);
             this.instance = instanceMapPair.getLeft();
             this.exposeMap = instanceMapPair.getRight();
+            this.generateAuditLog(AuditEventType.create,
+                    ServiceDiscoveryConstants.AUDIT_LOG_CREATE_EXTRA);
         }
 
         if (instance.getState().equalsIgnoreCase(CommonStatesConstants.REQUESTED)) {
