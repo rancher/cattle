@@ -420,6 +420,7 @@ def test_token_auth(token_client):
         'userType': 'r',
         'accountId': 'r',
         'hostname': 'r',
+        'scheme': 'r',
         'userIdentity': 'r',
         'authProvider': 'r',
         'enabled': 'r'
