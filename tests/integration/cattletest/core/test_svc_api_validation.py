@@ -363,3 +363,10 @@ def test_validate_svc_name(client, context):
                               launchConfig=launch_config)
     assert e.value.error.status == 422
     assert e.value.error.code == 'MaxLengthExceeded'
+
+    # svc_name with single char
+    svc = client.create_service(name='a',
+                                environmentId=env.id,
+                                launchConfig=launch_config)
+    svc = client.wait_success(svc)
+    assert svc.state == "inactive"
