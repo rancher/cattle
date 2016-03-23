@@ -6,17 +6,19 @@ reload_service()
 {
     local service=$1
     local port=$2
-    if [ ! -e /etc/init.d/rancher-${service} ]; then
-        # rancher-${service} is not yet installed
+    if [ ! -e /etc/init.d/${service} ]; then
+        # ${service} is not yet installed
         return
     fi
 
-    PID=$(pidof rancher-${service} || true)
+    PID=$(pidof ${service} || true)
 
     if [ -z "$PID" ]; then
-        /etc/init.d/rancher-${service} start
-    else
+        /etc/init.d/${service} start
+    elif [ -e ${CATTLE_HOME}/etc/cattle/${service}/http-reload ]; then
         curl -sf -X POST http://localhost:${port}/v1/reload
+    else
+        kill -HUP $PID
     fi
 }
 
@@ -43,5 +45,5 @@ if ! ip route show | grep -q 169.254.169.254; then
     ip route add 169.254.169.254/32 dev eth0 via $(ip route get 8.8.8.8 | grep via | awk '{print $3}')
 fi
 
-reload_service dns 8113
-reload_service metadata 8112
+reload_service rancher-dns 8113
+reload_service rancher-metadata 8112
