@@ -11,7 +11,7 @@ package io.cattle.platform.core.model.tables;
 @java.lang.SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class AuditLogTable extends org.jooq.impl.TableImpl<io.cattle.platform.core.model.tables.records.AuditLogRecord> {
 
-	private static final long serialVersionUID = 2009167210;
+	private static final long serialVersionUID = 1836262160;
 
 	/**
 	 * The singleton instance of <code>cattle.audit_log</code>
@@ -79,7 +79,7 @@ public class AuditLogTable extends org.jooq.impl.TableImpl<io.cattle.platform.co
 	/**
 	 * The column <code>cattle.audit_log.data</code>.
 	 */
-	public final org.jooq.TableField<io.cattle.platform.core.model.tables.records.AuditLogRecord, java.util.Map<String,Object>> DATA = createField("data", org.jooq.impl.SQLDataType.CLOB.length(65535).asConvertedDataType(new io.cattle.platform.db.jooq.converter.DataConverter()), this, "");
+	public final org.jooq.TableField<io.cattle.platform.core.model.tables.records.AuditLogRecord, java.util.Map<String,Object>> DATA = createField("data", org.jooq.impl.SQLDataType.CLOB.length(16777215).asConvertedDataType(new io.cattle.platform.db.jooq.converter.DataConverter()), this, "");
 
 	/**
 	 * The column <code>cattle.audit_log.authenticated_as_identity_id</code>.
