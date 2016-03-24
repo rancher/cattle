@@ -696,7 +696,8 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
         if (labels.containsKey(ServiceDiscoveryConstants.LABEL_SERVICE_CONTAINER_START_ONCE)) {
             startOnce = Boolean.valueOf(((String) labels
                     .get(ServiceDiscoveryConstants.LABEL_SERVICE_CONTAINER_START_ONCE)))
-                    && instance.getStartCount() >= 1L && stoppedStates.contains(instance.getState());
+                    && instance.getStartCount() != null && instance.getStartCount() >= 1L
+                    && stoppedStates.contains(instance.getState());
         }
         return startOnce;
     }

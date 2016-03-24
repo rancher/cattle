@@ -1,4 +1,5 @@
 {
     "allocationState" : "inactive",
-    "instanceTriggeredStop" : "stop"
+    "instanceTriggeredStop" : "stop",
+    "startCount": 0
 }
