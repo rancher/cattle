@@ -314,16 +314,18 @@ public class ServiceCreateValidationFilter extends AbstractDefaultResourceManage
             if (existingSvc.getId().equals(service.getId())) {
                 continue;
             }
-            usedNames.add(existingSvc.getName());
-            usedNames.addAll(ServiceDiscoveryUtil.getServiceLaunchConfigNames(existingSvc));
+            usedNames.add(existingSvc.getName().toLowerCase());
+            for (String usedLcName : ServiceDiscoveryUtil.getServiceLaunchConfigNames(existingSvc)) {
+                usedNames.add(usedLcName.toLowerCase());
+            }
         }
 
         List<String> namesToValidate = new ArrayList<>();
-        namesToValidate.add(serviceName);
+        namesToValidate.add(serviceName.toLowerCase());
         for (Map<String, Object> launchConfig : launchConfigs) {
             Object name = launchConfig.get("name");
             if (name != null) {
-                namesToValidate.add(name.toString());
+                namesToValidate.add(name.toString().toLowerCase());
             }
         }
 
@@ -333,7 +335,7 @@ public class ServiceCreateValidationFilter extends AbstractDefaultResourceManage
                 ValidationErrorCodes.throwValidationError(ValidationErrorCodes.NOT_UNIQUE,
                         "name");
             }
-            usedNames.add(name.toString());
+            usedNames.add(name.toString().toLowerCase());
         }
     }
 

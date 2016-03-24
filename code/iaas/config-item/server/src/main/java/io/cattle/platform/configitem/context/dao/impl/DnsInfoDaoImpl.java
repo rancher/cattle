@@ -66,8 +66,6 @@ public class DnsInfoDaoImpl extends AbstractJooqDao implements DnsInfoDao {
     @Inject
     ObjectManager objManager;
 
-
-
     @Override
     public List<DnsEntryData> getInstanceLinksDnsData(final Instance instance) {
         // adds all instance links
@@ -333,8 +331,9 @@ public class DnsInfoDaoImpl extends AbstractJooqDao implements DnsInfoDao {
 
         List<String> fqdns = new ArrayList<>();
         if (!StringUtils.isEmpty(aliasName) && !isAliasService) {
-            fqdns.add(aliasName + "." + ServiceDiscoveryDnsUtil.getStackNamespace(clientStack, clientService) + ".");
-            fqdns.add(aliasName + "." + ServiceDiscoveryDnsUtil.getGlobalNamespace(clientService) + ".");
+            fqdns.add(aliasName.toLowerCase() + "."
+                    + ServiceDiscoveryDnsUtil.getStackNamespace(clientStack, clientService) + ".");
+            fqdns.add(aliasName.toLowerCase() + "." + ServiceDiscoveryDnsUtil.getGlobalNamespace(clientService) + ".");
         } else {
             fqdns.add(ServiceDiscoveryDnsUtil.getDnsName(targetInstance.getService(), targetInstance.getStack(),
                     aliasName, dnsPrefix, self));
