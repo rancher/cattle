@@ -2,31 +2,59 @@ package io.cattle.platform.agent.impl;
 
 import io.cattle.platform.agent.AgentLocator;
 import io.cattle.platform.agent.RemoteAgent;
-import io.cattle.platform.archaius.util.ArchaiusUtil;
+import io.cattle.platform.core.constants.InstanceConstants;
+import io.cattle.platform.core.dao.AgentDao;
 import io.cattle.platform.core.model.Agent;
+import io.cattle.platform.core.model.Host;
+import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.eventing.EventService;
 import io.cattle.platform.json.JsonMapper;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.util.ObjectUtils;
 
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 import javax.inject.Inject;
 
-import com.google.common.cache.Cache;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.google.common.cache.CacheBuilder;
-import com.netflix.config.DynamicBooleanProperty;
-import com.netflix.config.DynamicLongProperty;
+import com.google.common.cache.CacheLoader;
+import com.google.common.cache.LoadingCache;
 
 public class AgentLocatorImpl implements AgentLocator {
 
-    private static final DynamicLongProperty CACHE_TIME = ArchaiusUtil.getLong("agent.group.id.cache.seconds");
-    private static final DynamicBooleanProperty DIRECT = ArchaiusUtil.getBoolean("agent.direct.request");
+    private static final String EVENTING = "event://";
+    private static final String DELEGATE = "delegate://";
 
+    private static final Logger log = LoggerFactory.getLogger(AgentLocatorImpl.class);
+
+    @Inject
+    AgentDao delegateDao;
+    @Inject
     ObjectManager objectManager;
+    @Inject
     EventService eventService;
+    @Inject
     JsonMapper jsonMapper;
-    Cache<Long, Long> groupIdCache = CacheBuilder.newBuilder().expireAfterWrite(CACHE_TIME.get(), TimeUnit.SECONDS).build();
+
+    LoadingCache<Long, RemoteAgent> cache = CacheBuilder.newBuilder().expireAfterAccess(15L, TimeUnit.MINUTES).build(new CacheLoader<Long, RemoteAgent>() {
+        @Override
+        public RemoteAgent load(Long agentId) throws Exception {
+            EventService wrappedEventService = getWrappedEventService(agentId);
+            if (wrappedEventService == null) {
+                wrappedEventService = buildDelegate(agentId);
+            }
+
+            if (wrappedEventService == null) {
+                wrappedEventService = eventService;
+            }
+
+            return new RemoteAgentImpl(jsonMapper, eventService, wrappedEventService, agentId);
+        }
+    });
 
     @Override
     public RemoteAgent lookupAgent(Object resource) {
@@ -35,13 +63,11 @@ public class AgentLocatorImpl implements AgentLocator {
         }
 
         Long agentId = null;
-        Long groupId = null;
 
         if (resource instanceof Long) {
             agentId = (Long) resource;
         } else if (resource instanceof Agent) {
             agentId = ((Agent) resource).getId();
-            groupId = ((Agent) resource).getAgentGroupId();
         }
 
         if (agentId == null) {
@@ -52,12 +78,57 @@ public class AgentLocatorImpl implements AgentLocator {
             return null;
         }
 
-        if (DIRECT.get() && groupId == null) {
-            Agent agent = objectManager.loadResource(Agent.class, agentId);
-            groupId = agent.getAgentGroupId();
+        return cache.getUnchecked(agentId);
+    }
+
+    protected EventService getWrappedEventService(long agentId) {
+        Agent agent = objectManager.loadResource(Agent.class, agentId);
+        if (agent == null) {
+            return null;
         }
 
-        return agentId == null ? null : new RemoteAgentImpl(jsonMapper, eventService, agentId, groupId);
+        String uri = agent.getUri();
+        if (uri != null && !uri.startsWith(EVENTING)) {
+            return null;
+        }
+
+        return new WrappedEventService(agentId, false, eventService, null, jsonMapper);
+    }
+
+    protected EventService buildDelegate(long agentId) {
+        Agent agent = objectManager.loadResource(Agent.class, agentId);
+        if (agent == null) {
+            return null;
+        }
+
+        String uri = agent.getUri();
+        if (uri != null && !uri.startsWith(DELEGATE)) {
+            return null;
+        }
+
+        Instance instance = delegateDao.getInstance(agent);
+
+        if (instance == null) {
+            log.info("Failed to find instance to delegate to for agent [{}] uri [{}]", agent.getId(), agent.getUri());
+            return null;
+        }
+
+        if (!InstanceConstants.STATE_RUNNING.equals(instance.getState())) {
+            log.info("Instance [{}] is not running, actual state [{}]", instance.getId(), instance.getState());
+            return null;
+        }
+
+        Host host = delegateDao.getHost(agent);
+
+        if (host == null || host.getAgentId() == null) {
+            log.error("Failed to find host to delegate to for agent [{}] uri [{}]", agent.getId(), agent.getUri());
+            return null;
+        }
+
+        @SuppressWarnings("unchecked")
+        Map<String, Object> instanceData = jsonMapper.convertValue(instance, Map.class);
+
+        return new WrappedEventService(host.getAgentId(), true, eventService, instanceData, jsonMapper);
     }
 
     public static Long getAgentId(Object resource) {
@@ -67,33 +138,6 @@ public class AgentLocatorImpl implements AgentLocator {
         }
 
         return null;
-    }
-
-    public ObjectManager getObjectManager() {
-        return objectManager;
-    }
-
-    @Inject
-    public void setObjectManager(ObjectManager objectManager) {
-        this.objectManager = objectManager;
-    }
-
-    public EventService getEventService() {
-        return eventService;
-    }
-
-    @Inject
-    public void setEventService(EventService eventService) {
-        this.eventService = eventService;
-    }
-
-    public JsonMapper getJsonMapper() {
-        return jsonMapper;
-    }
-
-    @Inject
-    public void setJsonMapper(JsonMapper jsonMapper) {
-        this.jsonMapper = jsonMapper;
     }
 
 }

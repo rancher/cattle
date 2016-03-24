@@ -17,11 +17,7 @@ public interface EventService {
 
     void unsubscribe(EventListener listener);
 
-    Event callSync(Event event);
-
     Event callSync(Event event, EventCallOptions callOptions);
-
-    ListenableFuture<Event> call(Event event);
 
     ListenableFuture<Event> call(Event event, EventCallOptions callOptions);
 

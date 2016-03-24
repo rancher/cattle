@@ -5,6 +5,7 @@ import io.cattle.platform.agent.AgentLocator;
 import io.cattle.platform.agent.RemoteAgent;
 import io.cattle.platform.agent.server.ping.PingMonitor;
 import io.cattle.platform.agent.server.ping.dao.PingDao;
+import io.cattle.platform.agent.server.service.AgentService;
 import io.cattle.platform.agent.server.util.AgentConnectionUtils;
 import io.cattle.platform.agent.util.AgentUtils;
 import io.cattle.platform.archaius.util.ArchaiusUtil;
@@ -48,6 +49,9 @@ public class PingMonitorImpl implements PingMonitor, Task, TaskOptions {
 
     private static final Logger log = LoggerFactory.getLogger(PingMonitorImpl.class);
 
+    @Inject
+    AgentService agentService;
+
     ObjectProcessManager processManager;
     ObjectManager objectManager;
     int interation = 0;
@@ -65,8 +69,7 @@ public class PingMonitorImpl implements PingMonitor, Task, TaskOptions {
 
     protected void handleUnowned(Agent agent) {
         if (isInterval(PING_UNMANAGED_EVERY.get())) {
-            RemoteAgent remoteAgent = agentLocator.lookupAgent(agent);
-            remoteAgent.publish(AgentUtils.newPing(agent));
+            agentService.execute(AgentUtils.newPing(agent));
         }
     }
 

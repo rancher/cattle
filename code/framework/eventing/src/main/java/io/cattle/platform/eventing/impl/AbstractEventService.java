@@ -246,11 +246,6 @@ public abstract class AbstractEventService implements EventService {
     }
 
     @Override
-    public Event callSync(Event event) {
-        return callSync(event, defaultCallOptions());
-    }
-
-    @Override
     public Event callSync(Event event, EventCallOptions options) {
         try {
             return AsyncUtils.get(call(event, options));
@@ -262,11 +257,6 @@ public abstract class AbstractEventService implements EventService {
              */
             throw EventExecutionException.fromEvent(e.getEvent());
         }
-    }
-
-    @Override
-    public ListenableFuture<Event> call(Event event) {
-        return call(event, defaultCallOptions());
     }
 
     @Override

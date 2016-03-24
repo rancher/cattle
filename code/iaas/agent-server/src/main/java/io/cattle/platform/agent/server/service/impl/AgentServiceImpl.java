@@ -73,7 +73,6 @@ public class AgentServiceImpl implements AgentService {
 
             AgentConnection connection = connectionManager.getConnection(agent);
             if (connection != null) {
-                eventService.publish(agentEvent);
                 final ListenableFuture<Event> future = connection.execute(agentEvent, new EventProgress() {
                     @Override
                     public void progress(Event agentResponse) {

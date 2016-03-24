@@ -5,16 +5,16 @@ import io.cattle.platform.agent.RemoteAgent;
 import io.cattle.platform.archaius.util.ArchaiusUtil;
 import io.cattle.platform.async.utils.AsyncUtils;
 import io.cattle.platform.eventing.EventCallOptions;
-import io.cattle.platform.eventing.EventProgress;
 import io.cattle.platform.eventing.EventService;
-import io.cattle.platform.eventing.RetryCallback;
 import io.cattle.platform.eventing.exception.EventExecutionException;
 import io.cattle.platform.eventing.model.Event;
 import io.cattle.platform.eventing.model.EventVO;
 import io.cattle.platform.json.JsonMapper;
 
-import com.google.common.base.Function;
-import com.google.common.util.concurrent.Futures;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
+
 import com.google.common.util.concurrent.ListenableFuture;
 import com.netflix.config.DynamicIntProperty;
 import com.netflix.config.DynamicLongProperty;
@@ -23,17 +23,18 @@ public class RemoteAgentImpl implements RemoteAgent {
 
     private static final DynamicLongProperty AGENT_DEFAULT_TIMEOUT = ArchaiusUtil.getLong("agent.timeout.millis");
     private static final DynamicIntProperty AGENT_RETRIES = ArchaiusUtil.getInt("agent.retries");
+    private static final Set<String> FRIENDLY_REPLY = new HashSet<>(Arrays.asList("ping", "compute.instance.activate"));
 
     JsonMapper jsonMapper;
-    EventService eventService;
+    EventService rawEventService;
+    EventService wrappedEventService;
     Long agentId;
-    Long groupId;
 
-    public RemoteAgentImpl(JsonMapper jsonMapper, EventService eventService, Long agentId, Long groupId) {
+    public RemoteAgentImpl(JsonMapper jsonMapper, EventService rawEventService, EventService wrappedEventService, Long agentId) {
         this.jsonMapper = jsonMapper;
-        this.eventService = eventService;
+        this.rawEventService = rawEventService;
+        this.wrappedEventService = wrappedEventService;
         this.agentId = agentId;
-        this.groupId = groupId;
     }
 
     @Override
@@ -41,13 +42,13 @@ public class RemoteAgentImpl implements RemoteAgent {
         return agentId;
     }
 
-    protected Event createRequest(Event event) {
-        return new AgentRequest(agentId, groupId, event);
+    protected AgentRequest createRequest(Event event) {
+        return new AgentRequest(agentId, event);
     }
 
     @Override
     public void publish(Event event) {
-        eventService.publish(createRequest(event));
+        wrappedEventService.publish(createRequest(event));
     }
 
     @Override
@@ -80,51 +81,11 @@ public class RemoteAgentImpl implements RemoteAgent {
 
     @Override
     public <T extends Event> ListenableFuture<T> call(final Event event, final Class<T> reply, EventCallOptions options) {
-        Event request = createRequest(event);
-        final EventProgress progress = options.getProgress();
-
-        if (progress != null) {
-            EventProgress newProgress = new EventProgress() {
-                @Override
-                public void progress(Event progressEvent) {
-                    T result = getReply(event, progressEvent, reply);
-
-                    if (result instanceof Event) {
-                        progress.progress(result);
-                    }
-                }
-            };
-
-            options.setProgress(newProgress);
-        }
-
-        final RetryCallback retryCallback = options.getRetryCallback();
-
-        if (retryCallback != null) {
-            RetryCallback newCallback = new RetryCallback() {
-                @Override
-                public Event beforeRetry(Event event) {
-                    Object data = event.getData();
-
-                    if (data instanceof Event) {
-                        data = retryCallback.beforeRetry((Event) data);
-                        EventVO<Object> newEvent = new EventVO<Object>(event);
-                        newEvent.setData(data);
-                        event = newEvent;
-                    }
-
-                    return event;
-                }
-            };
-
-            options.setRetryCallback(newCallback);
-        }
-
-        ListenableFuture<Event> future = eventService.call(request, options);
-        return Futures.transform(future, new Function<Event, T>() {
+        AgentRequest request = createRequest(event);
+        return EventCallProgressHelper.call(wrappedEventService, request, reply, options, new EventResponseMarshaller() {
             @Override
-            public T apply(Event input) {
-                return getReply(event, input, reply);
+            public <V> V convert(Event resultEvent, Class<V> reply) {
+                return getReply(event, resultEvent, reply);
             }
         });
     }
@@ -135,15 +96,17 @@ public class RemoteAgentImpl implements RemoteAgent {
         }
 
         T commandReply = jsonMapper.convertValue(resultEvent.getData(), reply);
-        EventVO<?> publishEvent = null;
-        if (commandReply instanceof EventVO) {
-            publishEvent = (EventVO<?>) commandReply;
-        } else {
-            publishEvent = jsonMapper.convertValue(resultEvent.getData(), EventVO.class);
-        }
+        if (FRIENDLY_REPLY.contains(inputEvent.getName())) {
+            EventVO<?> publishEvent = null;
+            if (commandReply instanceof EventVO) {
+                publishEvent = (EventVO<?>) commandReply;
+            } else {
+                publishEvent = jsonMapper.convertValue(resultEvent.getData(), EventVO.class);
+            }
 
-        publishEvent.setName(inputEvent.getName() + Event.REPLY_SUFFIX);
-        eventService.publish(publishEvent);
+            publishEvent.setName(inputEvent.getName() + Event.REPLY_SUFFIX);
+            rawEventService.publish(publishEvent);
+        }
 
         return commandReply;
     }
