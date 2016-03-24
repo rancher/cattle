@@ -29,6 +29,14 @@ def test_create_duplicated_services(client, context):
     assert e.value.error.fieldName == 'name'
 
     with pytest.raises(ApiError) as e:
+        client.create_service(name=service_name.upper(),
+                              environmentId=env.id,
+                              launchConfig=launch_config)
+    assert e.value.error.status == 422
+    assert e.value.error.code == 'NotUnique'
+    assert e.value.error.fieldName == 'name'
+
+    with pytest.raises(ApiError) as e:
         client.create_externalService(name=service_name,
                                       environmentId=env.id,
                                       launchConfig=launch_config,
