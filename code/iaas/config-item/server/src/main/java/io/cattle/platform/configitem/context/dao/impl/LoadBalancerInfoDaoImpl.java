@@ -221,13 +221,13 @@ public class LoadBalancerInfoDaoImpl implements LoadBalancerInfoDao {
                 List<? extends ServiceExposeMap> exposeIpMaps = exposeMapDao.getNonRemovedServiceIpMaps(consumedService
                         .getId());
                 for (ServiceExposeMap exposeIpMap : exposeIpMaps) {
-                    addToTarget(targets, lbLink, exposeIpMap);
+                    addToTarget(targets, lbLink, exposeIpMap, consumedService);
                 }
                 List<? extends ServiceExposeMap> exposeInstanceMaps = exposeMapDao
                         .getNonRemovedServiceInstanceMaps(consumedService
                                 .getId());
                 for (ServiceExposeMap exposeInstanceMap : exposeInstanceMaps) {
-                    addToTarget(targets, lbLink, exposeInstanceMap);
+                    addToTarget(targets, lbLink, exposeInstanceMap, consumedService);
                 }
             }
         }
@@ -236,9 +236,9 @@ public class LoadBalancerInfoDaoImpl implements LoadBalancerInfoDao {
     }
 
     protected void addToTarget(List<LoadBalancerTargetInput> targets, ServiceConsumeMap lbLink,
-            ServiceExposeMap exposeMap) {
+            ServiceExposeMap exposeMap, Service service) {
         if (exposeMap.getDnsPrefix() == null) {
-            targets.add(new LoadBalancerTargetInput(exposeMap, lbLink, jsonMapper));
+            targets.add(new LoadBalancerTargetInput(service, exposeMap, lbLink, jsonMapper));
         }
     }
 

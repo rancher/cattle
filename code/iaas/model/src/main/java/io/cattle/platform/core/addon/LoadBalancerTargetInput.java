@@ -1,6 +1,7 @@
 package io.cattle.platform.core.addon;
 
 import io.cattle.platform.core.constants.LoadBalancerConstants;
+import io.cattle.platform.core.model.Service;
 import io.cattle.platform.core.model.ServiceConsumeMap;
 import io.cattle.platform.core.model.ServiceExposeMap;
 import io.cattle.platform.json.JsonMapper;
@@ -15,8 +16,11 @@ public class LoadBalancerTargetInput {
     String ipAddress;
     String name;
     List<? extends String> ports = new ArrayList<>();
+    Service service;
 
-    public LoadBalancerTargetInput(ServiceExposeMap exposeMap, ServiceConsumeMap serviceLink, JsonMapper jsonMapper) {
+    public LoadBalancerTargetInput(Service service, ServiceExposeMap exposeMap, ServiceConsumeMap serviceLink,
+            JsonMapper jsonMapper) {
+        this.service = service;
         this.instanceId = exposeMap.getInstanceId();
         this.ipAddress = exposeMap.getIpAddress();
         this.name = exposeMap.getUuid();
@@ -54,5 +58,17 @@ public class LoadBalancerTargetInput {
 
     public String getName() {
         return name;
+    }
+
+    public Service getService() {
+        return service;
+    }
+
+    public void setService(Service service) {
+        this.service = service;
+    }
+
+    public void setName(String name) {
+        this.name = name;
     }
 }
