@@ -13,6 +13,6 @@ public interface RSAKeyProvider {
 
     PublicKey getDefaultPublicKey();
 
-    CertSet generateCertificate(String subject) throws Exception;
+    CertSet generateCertificate(String subject, String... sans) throws Exception;
 
 }

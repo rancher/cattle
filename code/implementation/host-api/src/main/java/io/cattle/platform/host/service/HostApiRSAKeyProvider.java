@@ -90,11 +90,11 @@ public class HostApiRSAKeyProvider implements RSAKeyProvider, InitializationTask
     }
 
     @Override
-    public CertSet generateCertificate(String subject) throws Exception {
+    public CertSet generateCertificate(String subject, String... sans) throws Exception {
         KeyPair caKp = getKeyPair();
         X509Certificate caCert = getCACertificate();
         KeyPair clientKp = SshKeyGen.generateKeyPair();
-        X509Certificate clientCert = SshKeyGen.generateClientCert(subject, clientKp.getPublic(), caKp.getPrivate(), caCert);
+        X509Certificate clientCert = SshKeyGen.generateClientCert(subject, clientKp.getPublic(), caKp.getPrivate(), caCert, sans);
         CertSet result = new CertSet(caCert, clientCert, clientKp.getPrivate());
         return result;
     }

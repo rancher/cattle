@@ -1,8 +1,13 @@
 package io.cattle.platform.iaas.api.credential;
 
 import io.cattle.platform.api.link.LinkHandler;
+import io.cattle.platform.core.constants.AccountConstants;
 import io.cattle.platform.core.constants.CredentialConstants;
+import io.cattle.platform.core.model.Account;
 import io.cattle.platform.core.model.Credential;
+import io.cattle.platform.object.ObjectManager;
+import io.cattle.platform.server.context.ServerContext;
+import io.cattle.platform.server.context.ServerContext.BaseProtocol;
 import io.cattle.platform.token.CertSet;
 import io.cattle.platform.token.impl.RSAKeyProvider;
 import io.github.ibuildthecloud.gdapi.context.ApiContext;
@@ -12,6 +17,9 @@ import io.github.ibuildthecloud.gdapi.request.ApiRequest;
 import io.github.ibuildthecloud.gdapi.util.ResponseCodes;
 
 import java.io.IOException;
+import java.net.URL;
+import java.util.LinkedHashSet;
+import java.util.Set;
 
 import javax.inject.Inject;
 import javax.servlet.http.HttpServletResponse;
@@ -26,6 +34,8 @@ public class ApiKeyCertificateDownloadLinkHandler implements LinkHandler {
 
     @Inject
     RSAKeyProvider keyProvider;
+    @Inject
+    ObjectManager objectManager;
 
     @Override
     public String[] getTypes() {
@@ -40,8 +50,9 @@ public class ApiKeyCertificateDownloadLinkHandler implements LinkHandler {
     @Override
     public Object link(String name, Object obj, ApiRequest request) throws IOException {
         if (obj instanceof Credential) {
-            String publicValue = ((Credential) obj).getPublicValue();
-            String secretValue = ((Credential) obj).getSecretValue();
+            Credential cred = (Credential)obj;
+            String publicValue = cred.getPublicValue();
+            String secretValue = cred.getSecretValue();
             if (secretValue == null || publicValue == null) {
                 return null;
             }
@@ -49,13 +60,29 @@ public class ApiKeyCertificateDownloadLinkHandler implements LinkHandler {
             HttpServletResponse response = request.getServletContext().getResponse();
 
             response.setContentType("application/octet-stream");
-            response.setHeader("Content-Disposition", "attachment; filename=" + getFilename((Credential) obj, request));
+            response.setHeader("Content-Disposition", "attachment; filename=" + getFilename(cred, request));
             response.setHeader("Cache-Control", "private");
             response.setHeader("Pragma", "private");
             response.setHeader("Expires", "Wed 24 Feb 1982 18:42:00 GMT");
 
             try {
-                CertSet cert = keyProvider.generateCertificate(publicValue);
+                String[] sans = new String[0];
+                Account account = objectManager.loadResource(Account.class, cred.getAccountId());
+                if (account != null && AccountConstants.SERVICE_KIND.equals(account.getKind())) {
+                    Set<String> sanSet = new LinkedHashSet<>();
+                    URL url = new URL(request.getResponseUrlBase());
+                    sanSet.add(url.getHost());
+
+                    url = new URL(ServerContext.getHostApiBaseUrl(BaseProtocol.HTTP));
+                    sanSet.add(url.getHost());
+
+                    sanSet.add("IP:127.0.0.1");
+                    sanSet.add("localhost");
+
+                    sans = sanSet.toArray(new String[sanSet.size()]);
+                }
+
+                CertSet cert = keyProvider.generateCertificate(publicValue, sans);
                 cert.writeZip(response.getOutputStream());
             } catch (Exception e) {
                 log.error("Failed to create certificate",  e);
