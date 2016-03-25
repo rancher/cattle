@@ -74,7 +74,7 @@ public class JwtTokenServiceImplTest {
             }
 
             @Override
-            public CertSet generateCertificate(String subject) throws Exception {
+            public CertSet generateCertificate(String subject, String... sans) throws Exception {
                 return null;
             }
         });

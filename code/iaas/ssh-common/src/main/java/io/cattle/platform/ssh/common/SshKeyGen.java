@@ -26,19 +26,20 @@ import javax.security.auth.x500.X500Principal;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.io.IOUtils;
 import org.apache.sshd.common.util.SecurityUtils;
+import org.bouncycastle.asn1.ASN1Encodable;
+import org.bouncycastle.asn1.DERSequence;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x509.BasicConstraints;
+import org.bouncycastle.asn1.x509.ExtendedKeyUsage;
 import org.bouncycastle.asn1.x509.Extension;
 import org.bouncycastle.asn1.x509.GeneralName;
 import org.bouncycastle.asn1.x509.GeneralNames;
+import org.bouncycastle.asn1.x509.KeyPurposeId;
 import org.bouncycastle.asn1.x509.KeyUsage;
 import org.bouncycastle.cert.CertIOException;
 import org.bouncycastle.cert.X509CertificateHolder;
-import org.bouncycastle.cert.X509v1CertificateBuilder;
 import org.bouncycastle.cert.X509v3CertificateBuilder;
 import org.bouncycastle.cert.jcajce.JcaX509CertificateConverter;
-import org.bouncycastle.cert.jcajce.JcaX509ExtensionUtils;
-import org.bouncycastle.cert.jcajce.JcaX509v1CertificateBuilder;
 import org.bouncycastle.cert.jcajce.JcaX509v3CertificateBuilder;
 import org.bouncycastle.openssl.PEMKeyPair;
 import org.bouncycastle.openssl.PEMParser;
@@ -68,46 +69,56 @@ public class SshKeyGen {
     }
 
     public static X509Certificate createRootCACert(KeyPair keyPair) throws Exception {
-        X509v1CertificateBuilder certBldr = new JcaX509v1CertificateBuilder(
-                new X500Name("CN=Container Platform"),
+        X509v3CertificateBuilder certBldr = new JcaX509v3CertificateBuilder(
+                new X500Name("O=cattle"),
                 BigInteger.valueOf(Math.abs(RANDOM.nextLong())),
                 new Date(System .currentTimeMillis()),
                 new Date(System.currentTimeMillis() + EXPIRATION.get() * 24 * 60 * 60 * 1000),
-                new X500Name("CN=Container Platform Root Certificate"), keyPair.getPublic());
+                new X500Name("O=cattle"), keyPair.getPublic());
+        certBldr.addExtension(Extension.basicConstraints,
+                              true, new BasicConstraints(true))
+                .addExtension(Extension.keyUsage,
+                              true, new KeyUsage(KeyUsage.keyCertSign | KeyUsage.digitalSignature | KeyUsage.keyEncipherment));
 
-        ContentSigner signer = new JcaContentSignerBuilder("SHA1withRSA").setProvider("BC").build(keyPair.getPrivate());
+        ContentSigner signer = new JcaContentSignerBuilder("SHA512withRSA").setProvider("BC").build(keyPair.getPrivate());
         return new JcaX509CertificateConverter().setProvider("BC").getCertificate(certBldr.build(signer));
     }
 
     public static X509Certificate generateClientCert(String subject, PublicKey entityKey, PrivateKey caKey,
-            X509Certificate caCert) throws NoSuchAlgorithmException, CertIOException, OperatorCreationException, CertificateException {
-        X509v3CertificateBuilder   certBldr = new JcaX509v3CertificateBuilder(
+            X509Certificate caCert, String... sans) throws NoSuchAlgorithmException, CertIOException, OperatorCreationException, CertificateException {
+        X509v3CertificateBuilder certBldr = new JcaX509v3CertificateBuilder(
                 caCert.getSubjectX500Principal(),
                 BigInteger.valueOf(Math.abs(RANDOM.nextLong())),
                 new Date(System.currentTimeMillis()),
                 new Date(System.currentTimeMillis() + EXPIRATION.get() * 24 * 60 * 60 * 1000),
                 new X500Principal("CN=" + subject),
                 entityKey);
-            JcaX509ExtensionUtils extUtils = new JcaX509ExtensionUtils();
 
-            GeneralNames subjectAltName = new GeneralNames(new GeneralName[] {
-                    new GeneralName(GeneralName.iPAddress, "0.0.0.0"),
-                    new GeneralName(GeneralName.dNSName, "localhost")
-            });
 
-            certBldr.addExtension(Extension.subjectAlternativeName,
-                                  false, subjectAltName)
-                    .addExtension(Extension.authorityKeyIdentifier,
-                                  false, extUtils.createAuthorityKeyIdentifier(caCert))
-                    .addExtension(Extension.subjectKeyIdentifier,
-                                  false, extUtils.createSubjectKeyIdentifier(entityKey))
-                    .addExtension(Extension.basicConstraints,
-                                  true, new BasicConstraints(false))
-                    .addExtension(Extension.keyUsage,
-                                  true, new KeyUsage(KeyUsage.digitalSignature
-                                                   | KeyUsage.keyEncipherment));
-            ContentSigner signer = new JcaContentSignerBuilder("SHA1withRSA").setProvider("BC").build(caKey);
-            return new JcaX509CertificateConverter().setProvider("BC").getCertificate(certBldr.build(signer));
+        GeneralName[] sanNames = new GeneralName[sans.length];
+        for (int i = 0 ; i < sanNames.length ; i++) {
+            if (sans[i].startsWith("IP:")) {
+                sanNames[i] = new GeneralName(GeneralName.iPAddress, sans[i].substring(3));
+            } else {
+                sanNames[i] = new GeneralName(GeneralName.dNSName, sans[i]);
+            }
+        }
+
+        certBldr.addExtension(Extension.subjectAlternativeName,
+                              false, new GeneralNames(sanNames))
+                .addExtension(Extension.basicConstraints,
+                              true, new BasicConstraints(false))
+                .addExtension(Extension.keyUsage,
+                              true, new KeyUsage(KeyUsage.digitalSignature
+                                               | KeyUsage.keyEncipherment))
+                .addExtension(Extension.extendedKeyUsage,
+                              true, ExtendedKeyUsage.getInstance(new DERSequence(new ASN1Encodable[]{
+                                      KeyPurposeId.id_kp_clientAuth, KeyPurposeId.id_kp_serverAuth
+                                      }))
+                              );
+
+        ContentSigner signer = new JcaContentSignerBuilder("SHA256withRSA").setProvider("BC").build(caKey);
+        return new JcaX509CertificateConverter().setProvider("BC").getCertificate(certBldr.build(signer));
     }
 
     public static KeyPair generateKeyPair(int keySize) throws Exception {
