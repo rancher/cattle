@@ -2,8 +2,10 @@ package io.cattle.platform.db.jooq.mapper;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.jooq.Field;
 import org.jooq.Record;
@@ -19,12 +21,21 @@ public abstract class MultiRecordMapper<T> implements RecordMapper<Record, T> {
     protected int count = 0;
 
     @SuppressWarnings({ "unchecked", "hiding" })
-    public <T extends Table<?>> T add(T input) {
+    public <T extends Table<?>> T add(T input, Field<?>... selectedFields) {
+        Set<String> selectFields = selectedFields == null || selectedFields.length == 0 ? null : new HashSet<String>();
         int index = count++;
         String prefix = String.format("%s_%d", input.getName(), index);
         Table<?> alias = input.as(prefix);
 
+        for (Field<?> field : selectedFields) {
+            selectFields.add(field.getName());
+        }
+
         for (Field<?> field : alias.fields()) {
+            if (selectFields != null && !"id".equals(field.getName()) && !selectFields.contains(field.getName())) {
+                continue;
+            }
+
             String fieldAlias = String.format("%s_%s", prefix, field.getName());
             Target target = new Target(field.getName(), index);
 
