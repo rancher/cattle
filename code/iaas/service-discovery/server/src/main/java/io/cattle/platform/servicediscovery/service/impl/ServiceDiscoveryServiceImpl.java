@@ -559,15 +559,17 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
     }
 
     protected void setStackHealthState(final Environment stack) {
-        String stackHealthState = getStackHealthState(stack);
-
-        Map<String, Object> fields = new HashMap<>();
-        fields.put("healthState", stackHealthState);
-        objectManager.setFields(stack, fields);
-        publishEvent(stack.getAccountId(), stack.getId(), stack.getKind());
+        String newHealthState = calculateStackHealthState(stack);
+        String currentHealthState = objectManager.reload(stack).getHealthState();
+        if (!newHealthState.equalsIgnoreCase(currentHealthState)) {
+            Map<String, Object> fields = new HashMap<>();
+            fields.put("healthState", newHealthState);
+            objectManager.setFields(stack, fields);
+            publishEvent(stack.getAccountId(), stack.getId(), stack.getKind());
+        }
     }
 
-    protected String getStackHealthState(final Environment stack) {
+    protected String calculateStackHealthState(final Environment stack) {
         List<Service> services = objectManager.find(Service.class, SERVICE.ENVIRONMENT_ID, stack.getId(),
                 SERVICE.REMOVED, null);
 
@@ -616,16 +618,18 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
 
     protected void setServiceHealthState(final List<? extends Service> services) {
         for (Service service : services) {
-            String serviceHealthState = getServiceHealthState(service);
-
-            Map<String, Object> fields = new HashMap<>();
-            fields.put("healthState", serviceHealthState);
-            objectManager.setFields(service, fields);
-            publishEvent(service.getAccountId(), service.getId(), service.getKind());
+            String newHealthState = calculateServiceHealthState(service);
+            String currentHealthState = objectManager.reload(service).getHealthState();
+            if (!newHealthState.equalsIgnoreCase(currentHealthState)) {
+                Map<String, Object> fields = new HashMap<>();
+                fields.put("healthState", newHealthState);
+                objectManager.setFields(service, fields);
+                publishEvent(service.getAccountId(), service.getId(), service.getKind());
+            }
         }
     }
 
-    protected String getServiceHealthState(Service service) {
+    protected String calculateServiceHealthState(Service service) {
         String serviceHealthState = null;
         List<String> supportedKinds = Arrays.asList(
                 ServiceDiscoveryConstants.KIND.SERVICE.name().toLowerCase(),
