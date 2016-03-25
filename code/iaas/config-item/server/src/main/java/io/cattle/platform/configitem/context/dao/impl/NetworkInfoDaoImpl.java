@@ -1,5 +1,6 @@
 package io.cattle.platform.configitem.context.dao.impl;
 
+import static io.cattle.platform.core.constants.NetworkServiceConstants.*;
 import static io.cattle.platform.core.model.tables.HostIpAddressMapTable.*;
 import static io.cattle.platform.core.model.tables.HostTable.*;
 import static io.cattle.platform.core.model.tables.InstanceHostMapTable.*;
@@ -10,11 +11,10 @@ import static io.cattle.platform.core.model.tables.NetworkServiceProviderTable.*
 import static io.cattle.platform.core.model.tables.NetworkServiceTable.*;
 import static io.cattle.platform.core.model.tables.NetworkTable.*;
 import static io.cattle.platform.core.model.tables.NicTable.*;
-import static io.cattle.platform.core.model.tables.PhysicalHostTable.*;
 import static io.cattle.platform.core.model.tables.PortTable.*;
 import static io.cattle.platform.core.model.tables.SubnetTable.*;
 import static io.cattle.platform.core.model.tables.VnetTable.*;
-import static io.cattle.platform.core.constants.NetworkServiceConstants.*;
+
 import io.cattle.platform.configitem.context.dao.NetworkInfoDao;
 import io.cattle.platform.configitem.context.data.ClientIpsecTunnelInfo;
 import io.cattle.platform.configitem.context.data.HostInstanceData;
@@ -34,7 +34,6 @@ import io.cattle.platform.core.model.IpAddress;
 import io.cattle.platform.core.model.Network;
 import io.cattle.platform.core.model.NetworkService;
 import io.cattle.platform.core.model.Nic;
-import io.cattle.platform.core.model.PhysicalHost;
 import io.cattle.platform.core.model.Port;
 import io.cattle.platform.core.model.Subnet;
 import io.cattle.platform.core.model.Vnet;
@@ -43,7 +42,6 @@ import io.cattle.platform.core.model.tables.InstanceTable;
 import io.cattle.platform.core.model.tables.IpAddressTable;
 import io.cattle.platform.core.model.tables.NetworkServiceTable;
 import io.cattle.platform.core.model.tables.NicTable;
-import io.cattle.platform.core.model.tables.PhysicalHostTable;
 import io.cattle.platform.core.model.tables.PortTable;
 import io.cattle.platform.core.model.tables.SubnetTable;
 import io.cattle.platform.core.model.tables.VnetTable;
@@ -53,8 +51,6 @@ import io.cattle.platform.db.jooq.dao.impl.AbstractJooqDao;
 import io.cattle.platform.db.jooq.mapper.MultiRecordMapper;
 import io.cattle.platform.json.JsonMapper;
 import io.cattle.platform.object.ObjectManager;
-import io.cattle.platform.object.util.DataAccessor;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -222,17 +218,10 @@ public class NetworkInfoDaoImpl extends AbstractJooqDao implements NetworkInfoDa
                 info.setHostIpAddress(ipAddress);
                 info.setIpAddress((IpAddress)input.get(3));
                 info.setSubnet((Subnet)input.get(4));
-                info.setPhysicalHost((PhysicalHost)input.get(5));
 
-                if ( instance.getAgentId() != null ) {
-                    Map<?,?> map = DataAccessor.fromDataFieldOf(instance)
-                                            .withScopeKey("ipsec")
-                                            .withKey(Long.toString(host.getId()))
-                                            .withDefault(new HashMap<String,Object>())
-                                            .as(jsonMapper, Map.class);
-
-                    Object natPort = map.get("nat");
-                    Object isaKmpPort = map.get("isakmp");
+                if (InstanceConstants.SystemContainer.NetworkAgent.name().equalsIgnoreCase(instance.getSystemContainer())) {
+                    Object natPort = 4500;
+                    Object isaKmpPort = 500;
 
                     if ( natPort instanceof Number && isaKmpPort instanceof Number ) {
                         info.setNatPort(((Number)natPort).intValue());
@@ -247,12 +236,11 @@ public class NetworkInfoDaoImpl extends AbstractJooqDao implements NetworkInfoDa
             }
         };
 
-        InstanceTable instance = mapper.add(INSTANCE);
-        HostTable host = mapper.add(HOST);
-        IpAddressTable ipAddress = mapper.add(IP_ADDRESS);
-        IpAddressTable clientIpAddress = mapper.add(IP_ADDRESS);
-        SubnetTable subnet = mapper.add(SUBNET);
-        PhysicalHostTable physicalHost = mapper.add(PHYSICAL_HOST);
+        InstanceTable instance = mapper.add(INSTANCE, INSTANCE.ID, INSTANCE.AGENT_ID, INSTANCE.SYSTEM_CONTAINER);
+        HostTable host = mapper.add(HOST, HOST.PHYSICAL_HOST_ID);
+        IpAddressTable ipAddress = mapper.add(IP_ADDRESS, IP_ADDRESS.ADDRESS);
+        IpAddressTable clientIpAddress = mapper.add(IP_ADDRESS, IP_ADDRESS.ADDRESS);
+        SubnetTable subnet = mapper.add(SUBNET, SUBNET.CIDR_SIZE);
 
         List<ClientIpsecTunnelInfo> tempResult = create()
                 .select(mapper.fields())
@@ -263,8 +251,6 @@ public class NetworkInfoDaoImpl extends AbstractJooqDao implements NetworkInfoDa
                     .on(INSTANCE_HOST_MAP.INSTANCE_ID.eq(instance.ID))
                 .join(host)
                     .on(INSTANCE_HOST_MAP.HOST_ID.eq(host.ID))
-                .leftOuterJoin(physicalHost)
-                    .on(physicalHost.ID.eq(host.PHYSICAL_HOST_ID))
                 .leftOuterJoin(HOST_IP_ADDRESS_MAP)
                     .on(HOST_IP_ADDRESS_MAP.HOST_ID.eq(host.ID))
                 .leftOuterJoin(ipAddress)
@@ -275,8 +261,7 @@ public class NetworkInfoDaoImpl extends AbstractJooqDao implements NetworkInfoDa
                     .on(clientIpAddress.ID.eq(IP_ADDRESS_NIC_MAP.IP_ADDRESS_ID))
                 .join(subnet)
                     .on(subnet.ID.eq(clientIpAddress.SUBNET_ID))
-                .where(NIC.NETWORK_ID.eq(primaryNic.getNetworkId())
-                        .and(clientIpAddress.ROLE.eq(IpAddressConstants.ROLE_PRIMARY))
+                .where(clientIpAddress.ROLE.eq(IpAddressConstants.ROLE_PRIMARY)
                         .and(NIC.REMOVED.isNull())
                         .and(HOST_IP_ADDRESS_MAP.REMOVED.isNull())
                         .and(IP_ADDRESS_NIC_MAP.REMOVED.isNull())
@@ -284,6 +269,7 @@ public class NetworkInfoDaoImpl extends AbstractJooqDao implements NetworkInfoDa
                         .and(ipAddress.REMOVED.isNull())
                         .and(host.REMOVED.isNull())
                         .and(subnet.REMOVED.isNull())
+                        .and(subnet.NETWORK_ID.eq(primaryNic.getNetworkId()))
                         .and(instance.REMOVED.isNull())
                         .and(instance.STATE.in(InstanceConstants.STATE_RUNNING, InstanceConstants.STATE_STARTING)))
                 .fetch().map(mapper);
