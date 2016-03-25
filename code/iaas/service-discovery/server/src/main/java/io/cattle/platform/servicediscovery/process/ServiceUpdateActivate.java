@@ -2,6 +2,7 @@ package io.cattle.platform.servicediscovery.process;
 
 import io.cattle.platform.async.utils.TimeoutException;
 import io.cattle.platform.core.constants.CommonStatesConstants;
+import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.Service;
 import io.cattle.platform.engine.handler.HandlerResult;
 import io.cattle.platform.engine.process.ProcessInstance;
@@ -106,8 +107,19 @@ public class ServiceUpdateActivate extends AbstractObjectProcessHandler {
             String[] splittedForResourceType = splittedForId[0].split("\\[");
             String resourceId = splittedForId[1];
             String resourceType = splittedForResourceType[1];
-            Object obfuscatedId = idFormatter.formatId(resourceType, resourceId);
-
+            Object obfuscatedId = null;
+            
+            if (Instance.class.getSimpleName().equalsIgnoreCase(resourceType)) {
+                // in most cases it's going to be instance
+                Instance instance = objectManager.loadResource(Instance.class, resourceId);
+                if (instance != null && instance.getName() != null) {
+                    obfuscatedId = instance.getName();
+                }
+            }
+            
+            if (obfuscatedId == null) {
+                obfuscatedId = idFormatter.formatId(resourceType, resourceId);
+            }
 
             // append predicated resource's transitioning message to an error
             Object predicateResource = objectManager.loadResource(resourceType, resourceId);
