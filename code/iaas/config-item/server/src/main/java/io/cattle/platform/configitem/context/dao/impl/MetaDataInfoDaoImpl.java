@@ -77,8 +77,10 @@ public class MetaDataInfoDaoImpl extends AbstractJooqDao implements MetaDataInfo
             }
         };
 
-        InstanceTable instance = mapper.add(INSTANCE);
-        ServiceExposeMapTable exposeMap = mapper.add(SERVICE_EXPOSE_MAP);
+        InstanceTable instance = mapper.add(INSTANCE, INSTANCE.UUID, INSTANCE.NAME, INSTANCE.CREATE_INDEX,
+                INSTANCE.HEALTH_STATE, INSTANCE.START_COUNT, INSTANCE.DATA);
+        ServiceExposeMapTable exposeMap = mapper.add(SERVICE_EXPOSE_MAP, SERVICE_EXPOSE_MAP.SERVICE_ID,
+                SERVICE_EXPOSE_MAP.DNS_PREFIX);
         return create()
                 .select(mapper.fields())
                 .from(instance)
