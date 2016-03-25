@@ -10,12 +10,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 public class ResourceStatesDefinition {
-
-    private static final Logger log = LoggerFactory.getLogger(ResourceStatesDefinition.class);
 
     public static final String DEFAULT_STATE_FIELD = "state";
 
@@ -97,12 +92,7 @@ public class ResourceStatesDefinition {
     }
 
     public boolean isValidState(String currentState) {
-        boolean result = isStart(currentState) || isTransitioning(currentState) || isDone(currentState);
-        if (!result) {
-            log.info("State [{}] is not a valid state", currentState);
-        }
-
-        return result;
+        return isStart(currentState) || isTransitioning(currentState) || isDone(currentState);
     }
 
     public Set<String> getStartStates() {

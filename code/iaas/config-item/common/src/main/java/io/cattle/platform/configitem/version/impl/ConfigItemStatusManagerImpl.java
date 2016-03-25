@@ -193,7 +193,7 @@ public class ConfigItemStatusManagerImpl implements ConfigItemStatusManager {
                     if (request.isMigration()) {
                         log.info("Waiting on [{}] on [{}], for migration", client, name);
                     } else {
-                        log.info("Waiting on [{}] on [{}], not in sync requested [{}] != applied [{}]", client, name, status.getRequestedVersion(), status
+                        log.debug("Waiting on [{}] on [{}], not in sync requested [{}] != applied [{}]", client, name, status.getRequestedVersion(), status
                                 .getAppliedVersion());
                     }
                     addToList(toTrigger, item);
@@ -201,7 +201,7 @@ public class ConfigItemStatusManagerImpl implements ConfigItemStatusManager {
             } else if (item.getRequestedVersion() != null) {
                 Long applied = status.getAppliedVersion();
                 if (applied == null || item.getRequestedVersion() > applied) {
-                    log.info("Waiting on [{}] on [{}], not applied requested [{}] > applied [{}]", client, name, item.getRequestedVersion(), applied);
+                    log.debug("Waiting on [{}] on [{}], not applied requested [{}] > applied [{}]", client, name, item.getRequestedVersion(), applied);
                     addToList(toTrigger, item);
                 }
             }

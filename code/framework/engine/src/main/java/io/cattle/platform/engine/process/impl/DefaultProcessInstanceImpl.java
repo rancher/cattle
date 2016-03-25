@@ -540,7 +540,7 @@ public class DefaultProcessInstanceImpl implements ProcessInstance {
 
         String previousState = state.getState();
         String newState = state.setTransitioning();
-        log.info("Changing state [{}->{}] on [{}:{}]", previousState, newState, record.getResourceType(), record.getResourceId());
+        log.debug("Changing state [{}->{}] on [{}:{}]", previousState, newState, record.getResourceType(), record.getResourceId());
         execution.getTransitions().add(new ProcessStateTransition(previousState, newState, "transitioning", now()));
         publishChanged(previousState, newState, schedule);
 
@@ -581,7 +581,7 @@ public class DefaultProcessInstanceImpl implements ProcessInstance {
         }
 
         String newState = chained ? state.getState() : state.setDone();
-        log.info("Changing state [{}->{}] on [{}:{}]", previousState, newState, record.getResourceType(), record.getResourceId());
+        log.debug("Changing state [{}->{}] on [{}:{}]", previousState, newState, record.getResourceType(), record.getResourceId());
         execution.getTransitions().add(new ProcessStateTransition(previousState, newState, chained ? "chain" : "done", now()));
         publishChanged(previousState, newState, schedule);
 
