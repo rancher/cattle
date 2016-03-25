@@ -64,8 +64,8 @@ def test_create_cert_invalid_cert(client):
             create_certificate(name=random_str(),
                                cert=cert,
                                key=key)
-    # catch io error
-    assert e.value.error.status == 500
+    assert e.value.error.status == 422
+    assert e.value.error.code == 'InvalidFormat'
 
 
 def test_create_cert_chain(client):

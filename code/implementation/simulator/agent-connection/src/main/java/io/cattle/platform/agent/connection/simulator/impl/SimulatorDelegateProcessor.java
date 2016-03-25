@@ -33,7 +33,7 @@ public class SimulatorDelegateProcessor implements AgentSimulatorEventProcessor,
     public Event handle(AgentConnectionSimulator simulator, final Event event) throws Exception {
         String name = event.getName();
 
-        if (!name.startsWith(IaasEvents.DELEGATE_REQUEST)) {
+        if (name == null || !name.startsWith(IaasEvents.DELEGATE_REQUEST)) {
             return null;
         }
 
