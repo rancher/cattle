@@ -235,6 +235,22 @@
          "startCount" : {
             "type" : "int",
             "nullable" : true
+        },
+		 "startOnCreate": {
+            "type": "boolean",
+            "nullable": false,
+            "default": "true"
+        },
+         "nativeContainer": {
+            "type": "boolean",
+            "nullable": false,
+            "default": "false"
+        },
+        "validHostIds" : {
+            "type" : "array[reference[host]",
+            "create" : true,
+            "update" : true,
+            "nullable" : true
         }
     },
     "resourceActions": {

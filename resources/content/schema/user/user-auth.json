@@ -104,7 +104,7 @@
         "container.tty" : "cr",
         "container.user" : "cr",
         "container.systemContainer" : "r",
-        "container.nativeContainer" : "r",
+        "container.nativeContainer" : "cr",
         "container.labels" : "cr",
         "container.volumeDriver" : "cr",
         "container.workingDir" : "cr",
@@ -113,6 +113,7 @@
         "container.deploymentUnitUuid" : "r",
         "container.version" : "r",
         "container.startCount" : "r",
+        "container.validHostIds" : "cr",
 
         "containerExec" : "r",
         "containerExec.attachStdin" : "cr",
