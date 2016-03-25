@@ -70,9 +70,9 @@ public class CertificateCreateValidationFilter extends AbstractDefaultResourceMa
             DataUtils.getWritableFields(certificate).put("subjectAlternativeNames",
                     SslCertificateUtils.getSubjectAlternativeNames(cert));
         } catch (Exception e) {
-            log.info("Exception parsing certificate fields: {} : [{}]", e.getCause() != null ? e.getCause()
-                    .getClass().getSimpleName() : null, e
-                    .getCause().getMessage());
+            String className = e.getCause() != null ? e.getCause().getClass().getSimpleName() : e.getClass()
+                    .getSimpleName();
+            log.info("Exception parsing certificate fields: {} : [{}]", className, e.getMessage());
             throw new ClientVisibleException(ResponseCodes.UNPROCESSABLE_ENTITY, ValidationErrorCodes.INVALID_FORMAT,
                     e.getMessage(), null);
         }
