@@ -500,13 +500,13 @@ public class DnsInfoDaoImpl extends AbstractJooqDao implements DnsInfoDao {
         };
         
 
-        ServiceTable service = mapper.add(SERVICE);
-        IpAddressTable ipAddress = mapper.add(IP_ADDRESS);
-        InstanceTable instance = mapper.add(INSTANCE);
+        ServiceTable service = mapper.add(SERVICE, SERVICE.ID, SERVICE.VIP, SERVICE.KIND, SERVICE.NAME);
+        IpAddressTable ipAddress = mapper.add(IP_ADDRESS, IP_ADDRESS.ADDRESS);
+        InstanceTable instance = mapper.add(INSTANCE, INSTANCE.NAME, INSTANCE.HEALTH_STATE, INSTANCE.DATA,
+                INSTANCE.STATE);
         ServiceExposeMapTable exposeMap = mapper.add(SERVICE_EXPOSE_MAP);
-        NicTable nic = mapper.add(NIC);
-        EnvironmentTable stack = mapper.add(ENVIRONMENT);
-        
+        NicTable nic = mapper.add(NIC, NIC.DEVICE_NUMBER, NIC.INSTANCE_ID);
+        EnvironmentTable stack = mapper.add(ENVIRONMENT, ENVIRONMENT.NAME);
         Condition condition = null;
         if (client) {
             condition = ipAddress.ROLE.eq(IpAddressConstants.ROLE_PRIMARY).and(nic.VNET_ID.eq(vnetId));
