@@ -4,7 +4,6 @@ import static io.cattle.platform.server.context.ServerContext.*;
 
 import io.cattle.platform.core.model.Credential;
 import io.cattle.platform.host.service.HostApiService;
-import io.cattle.platform.server.context.ServerContext;
 import io.cattle.platform.service.launcher.ServiceAccountCreateStartup;
 import io.cattle.platform.ssh.common.SshKeyGen;
 import io.cattle.platform.util.type.InitializationTask;
@@ -49,13 +48,6 @@ public class ProxyLauncher extends NoExceptionRunnable implements Initialization
             future = executor.scheduleWithFixedDelay(this, WAIT, WAIT, TimeUnit.MILLISECONDS);
 
             Runtime.getRuntime().addShutdownHook(new Thread() {
-                @Override
-                public void run() {
-                    processDestroy();
-                }
-            });
-
-            ServerContext.HOST.addCallback(new Runnable() {
                 @Override
                 public void run() {
                     processDestroy();
