@@ -3,6 +3,7 @@ package io.cattle.platform.api.resource.jooq;
 import io.cattle.platform.api.auth.Policy;
 import io.cattle.platform.api.resource.AbstractObjectResourceManager;
 import io.cattle.platform.api.utils.ApiUtils;
+import io.cattle.platform.engine.process.impl.ProcessCancelException;
 import io.cattle.platform.object.jooq.utils.JooqUtils;
 import io.cattle.platform.object.meta.MapRelationship;
 import io.cattle.platform.object.meta.ObjectMetaDataManager;
@@ -372,7 +373,10 @@ public abstract class AbstractJooqResourceManager extends AbstractObjectResource
 
     @Override
     public boolean handleException(Throwable t, ApiRequest apiRequest) {
-        if (t instanceof DataAccessException) {
+        if (t instanceof ProcessCancelException) {
+            log.info("Process cancel", t.getMessage());
+            throw new ClientVisibleException(ResponseCodes.CONFLICT);
+        } else if (t instanceof DataAccessException) {
             log.info("Database error", t.getMessage());
             throw new ClientVisibleException(ResponseCodes.CONFLICT);
         }

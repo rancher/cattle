@@ -84,7 +84,7 @@ public class ProcessEventListenerImpl implements ProcessEventListener {
                     .getMessage());
         } catch (ProcessCancelException e) {
             CANCELED.inc();
-            log.info("Process canceled [{}:{}] on [{}] : {}", instance.getName(), processId, instance.getResourceId(), e.getMessage());
+            log.debug("Process canceled [{}:{}] on [{}] : {}", instance.getName(), processId, instance.getResourceId(), e.getMessage());
 
         } catch (Throwable e) {
             EXCEPTION.inc();

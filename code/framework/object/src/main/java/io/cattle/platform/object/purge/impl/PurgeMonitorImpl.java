@@ -57,7 +57,7 @@ public class PurgeMonitorImpl implements PurgeMonitor, Task {
             for (Object obj : objects) {
                 try {
                     objectProcessManager.scheduleStandardProcess(StandardProcess.PURGE, obj, null);
-                    log.info("Scheduling purge for [{}] id [{}]", type, ObjectUtils.getId(obj));
+                    log.debug("Scheduling purge for [{}] id [{}]", type, ObjectUtils.getId(obj));
                 } catch (ProcessNotFoundException e) {
                 } catch (ProcessInstanceException e) {
                     log.info("Failed to scheduling purge for [{}] id [{}]", type, ObjectUtils.getId(obj), e);

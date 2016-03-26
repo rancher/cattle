@@ -127,7 +127,11 @@ public class PingMonitorImpl implements PingMonitor, Task, TaskOptions {
 
     protected void pingFailure(Agent agent) {
         long count = status.getUnchecked(agent.getId()).failed();
-        log.error("Failed to get ping from agent [{}] count [{}]", agent.getId(), count);
+        if (count < 3) {
+            log.info("Missed ping from agent [{}] count [{}]", agent.getId(), count);
+        } else {
+            log.error("Failed to get ping from agent [{}] count [{}]", agent.getId(), count);
+        }
         if (count >= BAD_PINGS.get()) {
             try {
                 agent = objectManager.reload(agent);
