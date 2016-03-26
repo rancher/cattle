@@ -2,8 +2,6 @@ package io.cattle.platform.configitem.context.data;
 
 import io.cattle.platform.core.constants.NetworkConstants;
 import io.cattle.platform.core.model.Instance;
-import io.cattle.platform.docker.constants.DockerInstanceConstants;
-import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.servicediscovery.api.util.ServiceDiscoveryDnsUtil;
 
 import java.util.ArrayList;
@@ -14,6 +12,7 @@ import java.util.Map;
 import org.apache.commons.lang3.StringUtils;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.google.common.base.Splitter;
 import com.google.common.collect.Lists;
 
 public class DnsEntryData {
@@ -116,7 +115,14 @@ public class DnsEntryData {
     private void setInstance(Instance instance) {
         this.instance = instance;
         if (instance != null) {
-            List<String> dns = DataAccessor.fieldStringList(instance, DockerInstanceConstants.FIELD_DNS);
+            List<String> dns = new ArrayList<>();
+            if (instance.getDnsInternal() != null) {
+                for (String entry : Splitter.on(",").omitEmptyStrings().trimResults()
+                        .split(instance.getDnsInternal())) {
+                    dns.add(entry);
+                }
+            }
+
             //remove itself from recurse
             dns.remove(ServiceDiscoveryDnsUtil.NETWORK_AGENT_IP);
             recurse.addAll(dns);
