@@ -410,6 +410,28 @@ public interface Instance extends java.io.Serializable {
 	@javax.persistence.Column(name = "service_index_id", precision = 19)
 	public java.lang.Long getServiceIndexId();
 
+	/**
+	 * Setter for <code>cattle.instance.dns_internal</code>.
+	 */
+	public void setDnsInternal(java.lang.String value);
+
+	/**
+	 * Getter for <code>cattle.instance.dns_internal</code>.
+	 */
+	@javax.persistence.Column(name = "dns_internal", length = 255)
+	public java.lang.String getDnsInternal();
+
+	/**
+	 * Setter for <code>cattle.instance.dns_search_internal</code>.
+	 */
+	public void setDnsSearchInternal(java.lang.String value);
+
+	/**
+	 * Getter for <code>cattle.instance.dns_search_internal</code>.
+	 */
+	@javax.persistence.Column(name = "dns_search_internal", length = 255)
+	public java.lang.String getDnsSearchInternal();
+
 	// -------------------------------------------------------------------------
 	// FROM and INTO
 	// -------------------------------------------------------------------------

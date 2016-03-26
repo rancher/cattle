@@ -502,7 +502,8 @@ public class DnsInfoDaoImpl extends AbstractJooqDao implements DnsInfoDao {
 
         ServiceTable service = mapper.add(SERVICE, SERVICE.ID, SERVICE.VIP, SERVICE.KIND, SERVICE.NAME);
         IpAddressTable ipAddress = mapper.add(IP_ADDRESS, IP_ADDRESS.ADDRESS);
-        InstanceTable instance = mapper.add(INSTANCE, INSTANCE.NAME, INSTANCE.HEALTH_STATE, INSTANCE.DATA,
+        InstanceTable instance = mapper.add(INSTANCE, INSTANCE.NAME, INSTANCE.HEALTH_STATE, INSTANCE.DNS_INTERNAL,
+                INSTANCE.DNS_SEARCH_INTERNAL,
                 INSTANCE.STATE);
         ServiceExposeMapTable exposeMap = mapper.add(SERVICE_EXPOSE_MAP);
         NicTable nic = mapper.add(NIC, NIC.DEVICE_NUMBER, NIC.INSTANCE_ID);

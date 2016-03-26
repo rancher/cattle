@@ -21,6 +21,8 @@ import java.util.Map;
 
 import javax.inject.Named;
 
+import com.google.common.base.Joiner;
+
 @Named
 public class InstancePreCreate extends AbstractObjectProcessLogic implements ProcessPreListener, Priority {
 
@@ -43,6 +45,15 @@ public class InstancePreCreate extends AbstractObjectProcessLogic implements Pro
             dataVolumes.add(AgentConstants.AGENT_INSTANCE_BIND_MOUNT);
             data.put(InstanceConstants.FIELD_DATA_VOLUMES, dataVolumes);
         }
+        setDns(instance, labels, data);
+
+        if (!data.isEmpty()) {
+            return new HandlerResult(data);
+        }
+        return null;
+    }
+
+    protected void setDns(Instance instance, Map<String, Object> labels, Map<Object, Object> data) {
         if (InstanceConstants.KIND_CONTAINER.equals(instance.getKind())) {
             boolean addDns = true;
             if (labels.containsKey(SystemLabels.LABEL_USE_RANCHER_DNS)
@@ -57,18 +68,15 @@ public class InstancePreCreate extends AbstractObjectProcessLogic implements Pro
                     List<String> dns = DataAccessor.fieldStringList(instance, DockerInstanceConstants.FIELD_DNS);
                     dns.add(NetworkConstants.INTERNAL_DNS_IP);
                     data.put(DockerInstanceConstants.FIELD_DNS, dns);
+                    data.put(InstanceConstants.FIELD_DNS_INTERNAL, Joiner.on(",").join(dns));
                 }
                 List<String> dnsSearch = DataAccessor.fieldStringList(instance,
                         DockerInstanceConstants.FIELD_DNS_SEARCH);
                 dnsSearch.add(NetworkConstants.INTERNAL_DNS_SEARCH_DOMAIN);
                 data.put(DockerInstanceConstants.FIELD_DNS_SEARCH, dnsSearch);
+                data.put(InstanceConstants.FIELD_DNS_SEARCH_INTERNAL, Joiner.on(",").join(dnsSearch));
             }
         }
-
-        if (!data.isEmpty()) {
-            return new HandlerResult(data);
-        }
-        return null;
     }
 
     @Override
