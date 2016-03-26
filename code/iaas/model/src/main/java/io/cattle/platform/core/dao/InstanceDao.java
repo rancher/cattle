@@ -6,6 +6,7 @@ import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.Service;
 
 import java.util.List;
+import java.util.Map;
 
 public interface InstanceDao {
 
@@ -28,4 +29,8 @@ public interface InstanceDao {
     List<? extends Instance> findInstanceByServiceName(long accountId, String serviceName, String environmentName);
 
     List<? extends Host> findHosts(long accountId, long instanceId);
+
+    Map<String, Object> getCacheInstanceData(long instanceId);
+
+    void clearCacheInstanceData(long instanceId);
 }

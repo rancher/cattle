@@ -14,6 +14,7 @@ import io.cattle.platform.configitem.context.data.metadata.common.HostMetaData;
 import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.constants.IpAddressConstants;
+import io.cattle.platform.core.dao.InstanceDao;
 import io.cattle.platform.core.model.Host;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.IpAddress;
@@ -42,6 +43,8 @@ public class MetaDataInfoDaoImpl extends AbstractJooqDao implements MetaDataInfo
 
     @Inject
     DnsInfoDao dnsInfoDao;
+    @Inject
+    InstanceDao instanceDao;
 
     @Override
     public List<ContainerMetaData> getContainersData(long accountId) {
@@ -56,6 +59,8 @@ public class MetaDataInfoDaoImpl extends AbstractJooqDao implements MetaDataInfo
                 ContainerMetaData data = new ContainerMetaData();
 
                 Instance instance = (Instance) input.get(0);
+                instance.setData(instanceDao.getCacheInstanceData(instance.getId()));
+
                 ServiceExposeMap serviceMap = input.get(1) != null ? (ServiceExposeMap) input.get(1) : null;
                 String primaryIp = DataAccessor.fieldString(instance, InstanceConstants.FIELD_PRIMARY_IP_ADDRESS);
                 String serviceIndex = DataAccessor.fieldString(instance,
@@ -78,7 +83,7 @@ public class MetaDataInfoDaoImpl extends AbstractJooqDao implements MetaDataInfo
         };
 
         InstanceTable instance = mapper.add(INSTANCE, INSTANCE.UUID, INSTANCE.NAME, INSTANCE.CREATE_INDEX,
-                INSTANCE.HEALTH_STATE, INSTANCE.START_COUNT, INSTANCE.DATA);
+                INSTANCE.HEALTH_STATE, INSTANCE.START_COUNT);
         ServiceExposeMapTable exposeMap = mapper.add(SERVICE_EXPOSE_MAP, SERVICE_EXPOSE_MAP.SERVICE_ID,
                 SERVICE_EXPOSE_MAP.DNS_PREFIX);
         return create()
@@ -92,7 +97,6 @@ public class MetaDataInfoDaoImpl extends AbstractJooqDao implements MetaDataInfo
                 .and(exposeMap.REMOVED.isNull())
                 .and(exposeMap.STATE.isNull().or(
                         exposeMap.STATE.notIn(CommonStatesConstants.REMOVING, CommonStatesConstants.REMOVED)))
-                .orderBy(instance.ID)
                 .fetch().map(mapper);
     }
 
