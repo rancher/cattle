@@ -141,4 +141,9 @@ public class DeploymentUnitService {
 
         return toReturn;
     }
+
+    public boolean hasSidekicks() {
+        return launchConfigNames.size() > 1;
+    }
+
 }
