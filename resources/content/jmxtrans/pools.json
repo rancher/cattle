@@ -122,6 +122,36 @@
                     "name" : "TaskCount"
                 }
             ]
+        },
+        {
+            "objectName" : "java.util.concurrent:type=ThreadPoolExecutor,name=ProcessExecutorServiceReplay",
+            "resultAlias" : "thread_pool.process_replay",
+            "attributes" : [
+                {
+                    "name" : "ActiveCount"
+                },
+                {
+                    "name" : "CompletedTaskCount"
+                },
+                {
+                    "name" : "CorePoolSize"
+                },
+                {
+                    "name" : "LargestPoolSize"
+                },
+                {
+                    "name" : "MaximumPoolSize"
+                },
+                {
+                    "name" : "QueueRemainingCapacity"
+                },
+                {
+                    "name" : "RejectedExecutionCount"
+                },
+                {
+                    "name" : "TaskCount"
+                }
+            ]
         }
     ]
 }
