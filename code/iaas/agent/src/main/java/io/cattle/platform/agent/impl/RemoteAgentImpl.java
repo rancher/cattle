@@ -4,12 +4,16 @@ import io.cattle.platform.agent.AgentRequest;
 import io.cattle.platform.agent.RemoteAgent;
 import io.cattle.platform.archaius.util.ArchaiusUtil;
 import io.cattle.platform.async.utils.AsyncUtils;
+import io.cattle.platform.async.utils.TimeoutException;
+import io.cattle.platform.core.model.Agent;
 import io.cattle.platform.eventing.EventCallOptions;
 import io.cattle.platform.eventing.EventService;
+import io.cattle.platform.eventing.exception.AgentRemovedException;
 import io.cattle.platform.eventing.exception.EventExecutionException;
 import io.cattle.platform.eventing.model.Event;
 import io.cattle.platform.eventing.model.EventVO;
 import io.cattle.platform.json.JsonMapper;
+import io.cattle.platform.object.ObjectManager;
 
 import java.util.Arrays;
 import java.util.HashSet;
@@ -26,12 +30,14 @@ public class RemoteAgentImpl implements RemoteAgent {
     private static final Set<String> FRIENDLY_REPLY = new HashSet<>(Arrays.asList("ping", "compute.instance.activate"));
 
     JsonMapper jsonMapper;
+    ObjectManager objectManager;
     EventService rawEventService;
     EventService wrappedEventService;
     Long agentId;
 
-    public RemoteAgentImpl(JsonMapper jsonMapper, EventService rawEventService, EventService wrappedEventService, Long agentId) {
+    public RemoteAgentImpl(JsonMapper jsonMapper, ObjectManager objectManager, EventService rawEventService, EventService wrappedEventService, Long agentId) {
         this.jsonMapper = jsonMapper;
+        this.objectManager = objectManager;
         this.rawEventService = rawEventService;
         this.wrappedEventService = wrappedEventService;
         this.agentId = agentId;
@@ -64,6 +70,12 @@ public class RemoteAgentImpl implements RemoteAgent {
          */
         try {
             return AsyncUtils.get(call(event, reply, options));
+        } catch (TimeoutException e) {
+            Agent agent = objectManager.loadResource(Agent.class, agentId);
+            if (agent == null || agent.getRemoved() != null) {
+                throw new AgentRemovedException("Agent is removed", event);
+            }
+            throw e;
         } catch (EventExecutionException e) {
             /*
              * This is done so that the exception will have a better stack
