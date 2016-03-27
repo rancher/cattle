@@ -1,8 +1,8 @@
 package io.cattle.platform.configitem.context.impl;
 
-import static io.cattle.platform.core.model.tables.EnvironmentTable.ENVIRONMENT;
-import static io.cattle.platform.core.model.tables.ServiceTable.SERVICE;
-import static io.cattle.platform.core.model.tables.ServiceConsumeMapTable.SERVICE_CONSUME_MAP;
+import static io.cattle.platform.core.model.tables.EnvironmentTable.*;
+import static io.cattle.platform.core.model.tables.ServiceConsumeMapTable.*;
+import static io.cattle.platform.core.model.tables.ServiceTable.*;
 import io.cattle.platform.configitem.context.dao.MetaDataInfoDao;
 import io.cattle.platform.configitem.context.dao.MetaDataInfoDao.Version;
 import io.cattle.platform.configitem.context.data.metadata.common.ContainerMetaData;
@@ -153,13 +153,14 @@ public class ServiceMetadataInfoFactory extends AbstractAgentBaseContextFactory 
                 ipsOnHost, hostId);
 
         // 5. get host meta data
-        List<HostMetaData> hostsMD = metaDataInfoDao.getAllInstanceHostMetaData(instance.getAccountId());
+        Map<Long, HostMetaData> hostIdToHost = metaDataInfoDao.getHostIdToHostMetadata(instance.getAccountId());
+        List<HostMetaData> hostsMD = new ArrayList<>(hostIdToHost.values());
         List<HostMetaData> selfHostMD = metaDataInfoDao.getInstanceHostMetaData(instance.getAccountId(),
                 instance);
 
         // 6. full data combined of (n) self sections and default one
         Map<String, Object> fullData = getFullMetaData(context, containersMD, stackNameToStack,
-                serviceIdToServiceLaunchConfigs, selfMD, hostsMD, selfHostMD);
+                serviceIdToServiceLaunchConfigs, selfMD, hostsMD, selfHostMD.size() == 0 ? null : selfHostMD.get(0));
 
         return fullData;
     }
@@ -167,7 +168,7 @@ public class ServiceMetadataInfoFactory extends AbstractAgentBaseContextFactory 
     protected Map<String, Object> getFullMetaData(ArchiveContext context, List<ContainerMetaData> containersMD,
             Map<String, StackMetaData> stackNameToStack,
             Map<Long, Map<String, ServiceMetaData>> serviceIdToServiceLaunchConfigs, Map<String, SelfMetaData> selfMD,
-            List<HostMetaData> hostsMD, List<HostMetaData> selfHostMD) {
+            List<HostMetaData> hostsMD, HostMetaData selfHostMD) {
         List<StackMetaData> stacksMD = new ArrayList<>();
         for (StackMetaData stack : stackNameToStack.values()) {
             stacksMD.add(stack);
@@ -180,7 +181,7 @@ public class ServiceMetadataInfoFactory extends AbstractAgentBaseContextFactory 
         Map<String, Object> fullData = new HashMap<>();
         fullData.putAll(selfMD);
         fullData.put("default", new DefaultMetaData(context.getVersion(), containersMD, servicesMD,
-                stacksMD, hostsMD, !selfHostMD.isEmpty() ? selfHostMD.get(0) : null));
+                stacksMD, hostsMD, selfHostMD));
         return fullData;
     }
 

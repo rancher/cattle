@@ -2,8 +2,8 @@ package io.cattle.platform.configitem.context.data.metadata.common;
 
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.model.Instance;
-import io.cattle.platform.core.model.IpAddress;
 import io.cattle.platform.core.model.ServiceExposeMap;
+import io.cattle.platform.core.util.PortSpec;
 import io.cattle.platform.object.util.DataAccessor;
 
 import java.util.ArrayList;
@@ -11,6 +11,8 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import org.apache.commons.lang3.StringUtils;
 
 public class ContainerMetaData {
     private Long serviceId;
@@ -64,8 +66,8 @@ public class ContainerMetaData {
         return labels;
     }
 
-    public void setIp(IpAddress ip) {
-        this.primary_ip = ip.getAddress();
+    public void setIp(String ip) {
+        this.primary_ip = ip;
         this.ips.add(primary_ip);
     }
 
@@ -88,7 +90,12 @@ public class ContainerMetaData {
                 ports.addAll(portsObj);
             } else {
                 for (String portObj : portsObj) {
-                    ports.add(hostIp + ":" + portObj);
+                    PortSpec port = new PortSpec(portObj);
+                    if (StringUtils.isEmpty(port.getIpAddress())) {
+                        ports.add(hostIp + ":" + portObj);
+                    } else {
+                        ports.add(portObj);
+                    }
                 }
             }
         }

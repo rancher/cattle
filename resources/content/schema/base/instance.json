@@ -88,6 +88,10 @@
         "requestedIpAddress" : {
             "type" : "string",
             "nullable" : true
+        },
+        "serviceIndex": {
+            "type": "string",
+            "nullable": true
         }
     },
     "resourceActions" : {
