@@ -2,6 +2,7 @@ package io.cattle.platform.configitem.context.dao.impl;
 
 import static io.cattle.platform.core.model.tables.HostIpAddressMapTable.*;
 import static io.cattle.platform.core.model.tables.HostTable.*;
+import static io.cattle.platform.core.model.tables.InstanceHostMapTable.*;
 import static io.cattle.platform.core.model.tables.InstanceTable.*;
 import static io.cattle.platform.core.model.tables.IpAddressNicMapTable.*;
 import static io.cattle.platform.core.model.tables.IpAddressTable.*;
@@ -62,9 +63,16 @@ public class MetaDataInfoDaoImpl extends AbstractJooqDao implements MetaDataInfo
                 instance.setData(instanceDao.getCacheInstanceData(instance.getId()));
 
                 ServiceExposeMap serviceMap = input.get(1) != null ? (ServiceExposeMap) input.get(1) : null;
-                String primaryIp = DataAccessor.fieldString(instance, InstanceConstants.FIELD_PRIMARY_IP_ADDRESS);
                 String serviceIndex = DataAccessor.fieldString(instance,
                         InstanceConstants.FIELD_SERVICE_INSTANCE_SERVICE_INDEX);
+                Host host = null;
+                if (input.get(2) != null) {
+                    host = (Host) input.get(2);
+                }
+                String primaryIp = null;
+                if (input.get(3) != null) {
+                    primaryIp = ((IpAddress) input.get(3)).getAddress();
+                }
 
                 if (instanceIdToHostIpMap != null && instanceIdToHostIpMap.containsKey(instance.getId())) {
                     data.setIp(instanceIdToHostIpMap.get(instance.getId()).getAddress());
@@ -72,8 +80,10 @@ public class MetaDataInfoDaoImpl extends AbstractJooqDao implements MetaDataInfo
                     data.setIp(primaryIp);
                 }
 
-                HostMetaData hostMetaData = getHostMetdataForInstance(instance, hostIdToHostMetadata);
-                data.setInstanceAndHostMetadata(instance, hostMetaData);
+                if (host != null) {
+                    HostMetaData hostMetaData = hostIdToHostMetadata.get(host.getId());
+                    data.setInstanceAndHostMetadata(instance, hostMetaData);
+                }
 
                 data.setExposeMap(serviceMap);
                 data.setService_index(serviceIndex);
@@ -86,15 +96,29 @@ public class MetaDataInfoDaoImpl extends AbstractJooqDao implements MetaDataInfo
                 INSTANCE.HEALTH_STATE, INSTANCE.START_COUNT);
         ServiceExposeMapTable exposeMap = mapper.add(SERVICE_EXPOSE_MAP, SERVICE_EXPOSE_MAP.SERVICE_ID,
                 SERVICE_EXPOSE_MAP.DNS_PREFIX);
+        HostTable host = mapper.add(HOST, HOST.ID);
+        IpAddressTable instanceIpAddress = mapper.add(IP_ADDRESS, IP_ADDRESS.ADDRESS);
         return create()
                 .select(mapper.fields())
                 .from(instance)
+                .join(INSTANCE_HOST_MAP)
+                .on(instance.ID.eq(INSTANCE_HOST_MAP.INSTANCE_ID))
+                .join(host)
+                .on(host.ID.eq(INSTANCE_HOST_MAP.HOST_ID))
                 .join(exposeMap, JoinType.LEFT_OUTER_JOIN)
                 .on(exposeMap.INSTANCE_ID.eq(instance.ID))
+                .join(NIC)
+                .on(NIC.INSTANCE_ID.eq(INSTANCE_HOST_MAP.INSTANCE_ID))
+                .join(IP_ADDRESS_NIC_MAP)
+                .on(IP_ADDRESS_NIC_MAP.NIC_ID.eq(NIC.ID))
+                .join(instanceIpAddress)
+                .on(instanceIpAddress.ID.eq(IP_ADDRESS_NIC_MAP.IP_ADDRESS_ID))
                 .where(instance.ACCOUNT_ID.eq(accountId))
                 .and(instance.REMOVED.isNull())
                 .and(instance.STATE.notIn(CommonStatesConstants.REMOVING, CommonStatesConstants.REMOVED))
                 .and(exposeMap.REMOVED.isNull())
+                .and(instanceIpAddress.ROLE.eq(IpAddressConstants.ROLE_PRIMARY))
+                .and((host.REMOVED.isNull()))
                 .and(exposeMap.STATE.isNull().or(
                         exposeMap.STATE.notIn(CommonStatesConstants.REMOVING, CommonStatesConstants.REMOVED)))
                 .fetch().map(mapper);
@@ -141,15 +165,6 @@ public class MetaDataInfoDaoImpl extends AbstractJooqDao implements MetaDataInfo
         return toReturn;
     }
 
-    @Override
-    public HostMetaData getHostMetdataForInstance(Instance instance, Map<Long, HostMetaData> allHostMetadata) {
-        Long hostId = DataAccessor.fieldLong(instance, InstanceConstants.FIELD_HOST_ID);
-        if (hostId == null) {
-            return null;
-        }
-        return allHostMetadata.get(hostId);
-    }
-
     protected List<HostMetaData> getAllInstanceHostMetaData(long accountId) {
         MultiRecordMapper<HostMetaData> mapper = new MultiRecordMapper<HostMetaData>() {
             @Override
@@ -178,5 +193,36 @@ public class MetaDataInfoDaoImpl extends AbstractJooqDao implements MetaDataInfo
                 .fetch().map(mapper);
     }
 
+    @Override
+    public List<HostMetaData> getInstanceHostMetaData(long accountId, Instance instance) {
+        MultiRecordMapper<HostMetaData> mapper = new MultiRecordMapper<HostMetaData>() {
+            @Override
+            protected HostMetaData map(List<Object> input) {
+                Host host = (Host) input.get(0);
+                IpAddress hostIp = (IpAddress) input.get(1);
+                HostMetaData data = new HostMetaData(hostIp.getAddress(), host);
+                return data;
+            }
+        };
+
+        HostTable host = mapper.add(HOST);
+        IpAddressTable hostIpAddress = mapper.add(IP_ADDRESS);
+
+        return create()
+                .select(mapper.fields())
+                .from(hostIpAddress)
+                .join(HOST_IP_ADDRESS_MAP)
+                .on(HOST_IP_ADDRESS_MAP.IP_ADDRESS_ID.eq(hostIpAddress.ID))
+                .join(host)
+                .on(host.ID.eq(HOST_IP_ADDRESS_MAP.HOST_ID))
+                .join(INSTANCE_HOST_MAP)
+                .on(host.ID.eq(INSTANCE_HOST_MAP.HOST_ID))
+                .where(host.REMOVED.isNull())
+                .and(host.STATE.notIn(CommonStatesConstants.REMOVING, CommonStatesConstants.REMOVED))
+                .and(INSTANCE_HOST_MAP.INSTANCE_ID.eq(instance.getId()))
+                .and(hostIpAddress.REMOVED.isNull())
+                .and(host.ACCOUNT_ID.eq(accountId))
+                .fetch().map(mapper);
+    }
 
 }
