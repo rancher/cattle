@@ -121,7 +121,7 @@ public class ProcessEventListenerImpl implements ProcessEventListener {
 
         long now = System.currentTimeMillis();
         long lastExecution = processRecordDao.getLastExecutionTimestamp(processId);
-        long maxWait = Math.min(RETRY_MAX_WAIT.get(), 15000L + (long)Math.pow(2,  numPreviousAttempts) * 500);
+        long maxWait = Math.min(RETRY_MAX_WAIT.get(), 15000L + (long)Math.pow(2,  numPreviousAttempts) / 2);
         return now < lastExecution + maxWait;
     }
 

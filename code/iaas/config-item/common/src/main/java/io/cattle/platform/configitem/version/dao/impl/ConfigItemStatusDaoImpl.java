@@ -7,7 +7,9 @@ import static io.cattle.platform.core.model.tables.ConfigItemTable.*;
 import static io.cattle.platform.core.model.tables.EnvironmentTable.*;
 import static io.cattle.platform.core.model.tables.InstanceTable.*;
 import static io.cattle.platform.core.model.tables.ServiceTable.*;
+
 import io.cattle.platform.archaius.util.ArchaiusUtil;
+import io.cattle.platform.configitem.events.ConfigUpdated;
 import io.cattle.platform.configitem.model.Client;
 import io.cattle.platform.configitem.model.DefaultItemVersion;
 import io.cattle.platform.configitem.model.ItemVersion;
@@ -25,6 +27,8 @@ import io.cattle.platform.core.model.Environment;
 import io.cattle.platform.core.model.Service;
 import io.cattle.platform.core.model.tables.records.ConfigItemStatusRecord;
 import io.cattle.platform.db.jooq.dao.impl.AbstractJooqDao;
+import io.cattle.platform.deferred.util.DeferredUtils;
+import io.cattle.platform.eventing.EventService;
 import io.cattle.platform.metrics.util.MetricsUtil;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.util.type.CollectionUtils;
@@ -56,12 +60,14 @@ public class ConfigItemStatusDaoImpl extends AbstractJooqDao implements ConfigIt
     private static final Logger log = LoggerFactory.getLogger(ConfigItemStatusDaoImpl.class);
     private static final DynamicIntProperty BATCH_SIZE = ArchaiusUtil.getInt("item.sync.batch.size");
 
+    @Inject
+    EventService eventService;
     ObjectManager objectManager;
     Timer incrementTimer = MetricsUtil.getRegistry().timer("config.item.increment");
     Timer appliedTimer = MetricsUtil.getRegistry().timer("config.item.applied");
 
     @Override
-    public long incrementOrApply(Client client, String itemName) {
+    public void incrementOrApply(Client client, String itemName) {
         Context t = incrementTimer.time();
         try {
             if ( ! increment(client, itemName) ) {
@@ -72,12 +78,11 @@ public class ConfigItemStatusDaoImpl extends AbstractJooqDao implements ConfigIt
                     }
                 }
             }
-
-            return getRequestedVersion(client, itemName);
         } finally {
             t.stop();
         }
     }
+
 
     @Override
     public Long getRequestedVersion(Client client, String itemName) {
@@ -179,7 +184,13 @@ public class ConfigItemStatusDaoImpl extends AbstractJooqDao implements ConfigIt
                         updated, client, itemName, version);
             }
 
-            return updated == 1;
+            if (updated == 1) {
+                ConfigUpdated event = new ConfigUpdated(client.getResourceType(), client.getResourceId(), itemName);
+                event.withResourceType(objectManager.getType(client.getResourceType())).withResourceId(Long.toString(client.getResourceId()));
+                DeferredUtils.deferPublish(eventService, event);
+            }
+
+            return false;
         } finally {
             t.stop();
         }

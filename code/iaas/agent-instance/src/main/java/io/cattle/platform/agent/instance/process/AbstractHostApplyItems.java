@@ -47,8 +47,7 @@ public abstract class AbstractHostApplyItems extends AbstractApplyItems implemen
     protected abstract Map<Host, List<NetworkServiceProvider>> getHosts(ProcessState state, ProcessInstance process);
 
     @Override
-    protected List<? extends Agent> getOtherAgents(NetworkServiceProvider provider, ConfigUpdateRequest request, Agent agent, ProcessState state,
-            ProcessInstance processInstance) {
+    protected List<? extends Agent> getOtherAgents(NetworkServiceProvider provider, ConfigUpdateRequest request, Agent agent) {
         return Collections.emptyList();
     }
 

@@ -17,8 +17,6 @@ import java.util.Map;
 
 public interface NetworkInfoDao {
 
-    List<NetworkClientData> networkClients(Instance instance);
-
     List<NetworkClientData> vnetClients(Instance instance);
 
     List<? extends NetworkService> networkServices(Instance instance);

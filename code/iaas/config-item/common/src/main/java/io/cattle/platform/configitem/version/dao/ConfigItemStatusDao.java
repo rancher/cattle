@@ -12,7 +12,7 @@ public interface ConfigItemStatusDao {
 
     Long getRequestedVersion(Client client, String itemName);
 
-    long incrementOrApply(Client client, String itemName);
+    void incrementOrApply(Client client, String itemName);
 
     boolean setApplied(Client client, String itemName, ItemVersion version);
 

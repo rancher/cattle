@@ -52,7 +52,7 @@ public class AgentHostStateUpdate extends AbstractObjectProcessPrePostListener i
     @Override
     protected HandlerResult preHandle(ProcessState state, ProcessInstance process) {
         for (Host host : objectManager.children(state.getResource(), Host.class)) {
-            log.info("Setting host [{}] agentState to [{}] on pre", host.getId(), state.getState());
+            log.debug("Setting host [{}] agentState to [{}] on pre", host.getId(), state.getState());
             objectManager.setFields(host, HOST.AGENT_STATE, state.getState());
             trigger(host);
         }
@@ -70,7 +70,7 @@ public class AgentHostStateUpdate extends AbstractObjectProcessPrePostListener i
         }
 
         for (Host host : objectManager.children(agent, Host.class)) {
-            log.info("Setting host [{}] agentState to [{}] on post", host.getId(), newState);
+            log.debug("Setting host [{}] agentState to [{}] on post", host.getId(), newState);
             objectManager.setFields(host, HOST.AGENT_STATE, newState);
             trigger(host);
         }

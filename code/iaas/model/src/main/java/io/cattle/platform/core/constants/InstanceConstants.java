@@ -49,8 +49,11 @@ public class InstanceConstants {
     public static final String FIELD_HEALTH_UPDATED = "healthUpdated";
     public static final String FIELD_ALLOCATED_IP_ADDRESS = "allocatedIpAddress";
     public static final String FIELD_SERVICE_INSTANCE_SERVICE_INDEX_ID = "serviceIndexId";
+    public static final String FIELD_SERVICE_INSTANCE_SERVICE_INDEX = "serviceIndex";
     public static final String FIELD_METADATA = "metadata";
     public static final String FIELD_HOST_ID = "hostId";
+    public static final String FIELD_DNS_INTERNAL = "dnsInternal";
+    public static final String FIELD_DNS_SEARCH_INTERNAL = "dnsSearchInternal";
 
     public static final String PROCESS_DATA_NO_OP = "containerNoOpEvent";
 

@@ -52,7 +52,7 @@ public class AgentLocatorImpl implements AgentLocator {
                 wrappedEventService = eventService;
             }
 
-            return new RemoteAgentImpl(jsonMapper, eventService, wrappedEventService, agentId);
+            return new RemoteAgentImpl(jsonMapper, objectManager, eventService, wrappedEventService, agentId);
         }
     });
 

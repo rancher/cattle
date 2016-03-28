@@ -73,6 +73,7 @@ public class ConfigItemStatusManagerImpl implements ConfigItemStatusManager {
             throw new IllegalArgumentException("Client is null on request [" + request + "]");
         }
 
+        log.trace("ITEM UPDATE: for [{}]", request.getClient());
         Client client = request.getClient();
         Map<String, ConfigItemStatus> statuses = getStatus(request);
         List<ConfigUpdateItem> toTrigger = new ArrayList<ConfigUpdateItem>();
@@ -84,16 +85,23 @@ public class ConfigItemStatusManagerImpl implements ConfigItemStatusManager {
 
             if (status == null) {
                 if (item.isApply()) {
-                    requestedVersion = configItemStatusDao.incrementOrApply(client, name);
+                    log.trace("ITEM UPDATE: incrementOrApply [{}]", request.getClient());
+                    configItemStatusDao.incrementOrApply(client, name);
+                    log.trace("ITEM UPDATE: done incrementOrApply [{}]", request.getClient());
+                } else {
+                    log.info("ITEM UPDATE: ignore [{}] [{}]", name, request.getClient());
+                    continue;
                 }
-            }
-
-            if (requestedVersion == null && item.isIncrement()) {
-                requestedVersion = configItemStatusDao.incrementOrApply(client, name);
-            }
-
-            if (requestedVersion == null) {
+                log.trace("ITEM UPDATE: get requested [{}]", request.getClient());
                 requestedVersion = configItemStatusDao.getRequestedVersion(client, name);
+                log.trace("ITEM UPDATE: done get requested [{}]", request.getClient());
+            } else if (requestedVersion == null && item.isIncrement()) {
+                log.trace("ITEM UPDATE: incrementOrApply [{}]", request.getClient());
+                configItemStatusDao.incrementOrApply(client, name);
+                log.trace("ITEM UPDATE: done incrementOrApply [{}]", request.getClient());
+                requestedVersion = status.getRequestedVersion() + 1;
+            } else if (requestedVersion == null) {
+                requestedVersion = status.getRequestedVersion();
             }
 
             item.setRequestedVersion(requestedVersion);

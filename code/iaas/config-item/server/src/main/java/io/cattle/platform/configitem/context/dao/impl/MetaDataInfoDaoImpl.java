@@ -8,28 +8,29 @@ import static io.cattle.platform.core.model.tables.IpAddressNicMapTable.*;
 import static io.cattle.platform.core.model.tables.IpAddressTable.*;
 import static io.cattle.platform.core.model.tables.NicTable.*;
 import static io.cattle.platform.core.model.tables.ServiceExposeMapTable.*;
-import static io.cattle.platform.core.model.tables.ServiceIndexTable.*;
 import io.cattle.platform.configitem.context.dao.DnsInfoDao;
 import io.cattle.platform.configitem.context.dao.MetaDataInfoDao;
 import io.cattle.platform.configitem.context.data.metadata.common.ContainerMetaData;
 import io.cattle.platform.configitem.context.data.metadata.common.HostMetaData;
 import io.cattle.platform.core.constants.CommonStatesConstants;
+import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.constants.IpAddressConstants;
+import io.cattle.platform.core.dao.InstanceDao;
 import io.cattle.platform.core.model.Host;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.IpAddress;
 import io.cattle.platform.core.model.ServiceExposeMap;
-import io.cattle.platform.core.model.ServiceIndex;
 import io.cattle.platform.core.model.tables.HostTable;
 import io.cattle.platform.core.model.tables.InstanceTable;
 import io.cattle.platform.core.model.tables.IpAddressTable;
 import io.cattle.platform.core.model.tables.NicTable;
 import io.cattle.platform.core.model.tables.ServiceExposeMapTable;
-import io.cattle.platform.core.model.tables.ServiceIndexTable;
 import io.cattle.platform.db.jooq.dao.impl.AbstractJooqDao;
 import io.cattle.platform.db.jooq.mapper.MultiRecordMapper;
+import io.cattle.platform.object.util.DataAccessor;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -43,87 +44,83 @@ public class MetaDataInfoDaoImpl extends AbstractJooqDao implements MetaDataInfo
 
     @Inject
     DnsInfoDao dnsInfoDao;
+    @Inject
+    InstanceDao instanceDao;
 
     @Override
     public List<ContainerMetaData> getContainersData(long accountId) {
 
         final Map<Long, IpAddress> instanceIdToHostIpMap = dnsInfoDao
                 .getInstanceWithHostNetworkingToIpMap(accountId);
+        final Map<Long, HostMetaData> hostIdToHostMetadata = getHostIdToHostMetadata(accountId);
 
         MultiRecordMapper<ContainerMetaData> mapper = new MultiRecordMapper<ContainerMetaData>() {
             @Override
             protected ContainerMetaData map(List<Object> input) {
                 ContainerMetaData data = new ContainerMetaData();
 
-                Instance instance = (Instance) input.get(1);
+                Instance instance = (Instance) input.get(0);
+                instance.setData(instanceDao.getCacheInstanceData(instance.getId()));
+
+                ServiceExposeMap serviceMap = input.get(1) != null ? (ServiceExposeMap) input.get(1) : null;
+                String serviceIndex = DataAccessor.fieldString(instance,
+                        InstanceConstants.FIELD_SERVICE_INSTANCE_SERVICE_INDEX);
+                Host host = null;
+                if (input.get(2) != null) {
+                    host = (Host) input.get(2);
+                }
+                String primaryIp = null;
+                if (input.get(3) != null) {
+                    primaryIp = ((IpAddress) input.get(3)).getAddress();
+                }
 
                 if (instanceIdToHostIpMap != null && instanceIdToHostIpMap.containsKey(instance.getId())) {
-                    data.setIp((IpAddress) instanceIdToHostIpMap.get(instance.getId()));
+                    data.setIp(instanceIdToHostIpMap.get(instance.getId()).getAddress());
                 } else {
-                    data.setIp((IpAddress) input.get(3));
+                    data.setIp(primaryIp);
                 }
 
-                HostMetaData hostMetaData = null;
-                if (input.get(2) != null) {
-                    Host host = (Host) input.get(2);
-                    IpAddress hostIpAddress = (IpAddress) input.get(0);
-                    if (host != null) {
-                        hostMetaData = new HostMetaData(hostIpAddress.getAddress(), host);
-                    }
-                }
-                data.setInstanceAndHostMetadata(instance, hostMetaData);
-
-                if (input.get(4) != null) {
-                    data.setExposeMap((ServiceExposeMap) input.get(4));
+                if (host != null) {
+                    HostMetaData hostMetaData = hostIdToHostMetadata.get(host.getId());
+                    data.setInstanceAndHostMetadata(instance, hostMetaData);
                 }
 
-                if (input.get(5) != null) {
-                    ServiceIndex serviceIndex = (ServiceIndex) input.get(5);
-                    data.setService_index(serviceIndex.getServiceIndex());
-                }
+                data.setExposeMap(serviceMap);
+                data.setService_index(serviceIndex);
 
                 return data;
             }
         };
 
-        IpAddressTable hostIpAddress = mapper.add(IP_ADDRESS);
-        InstanceTable instance = mapper.add(INSTANCE);
-        HostTable host = mapper.add(HOST);
-        IpAddressTable instanceIpAddress = mapper.add(IP_ADDRESS);
-        ServiceExposeMapTable exposeMap = mapper.add(SERVICE_EXPOSE_MAP);
-        ServiceIndexTable serviceIndex = mapper.add(SERVICE_INDEX);
+        InstanceTable instance = mapper.add(INSTANCE, INSTANCE.UUID, INSTANCE.NAME, INSTANCE.CREATE_INDEX,
+                INSTANCE.HEALTH_STATE, INSTANCE.START_COUNT);
+        ServiceExposeMapTable exposeMap = mapper.add(SERVICE_EXPOSE_MAP, SERVICE_EXPOSE_MAP.SERVICE_ID,
+                SERVICE_EXPOSE_MAP.DNS_PREFIX);
+        HostTable host = mapper.add(HOST, HOST.ID);
+        IpAddressTable instanceIpAddress = mapper.add(IP_ADDRESS, IP_ADDRESS.ADDRESS);
         return create()
                 .select(mapper.fields())
-                .from(hostIpAddress)
-                .join(HOST_IP_ADDRESS_MAP)
-                .on(HOST_IP_ADDRESS_MAP.IP_ADDRESS_ID.eq(hostIpAddress.ID))
-                .join(host)
-                .on(host.ID.eq(HOST_IP_ADDRESS_MAP.HOST_ID))
+                .from(instance)
                 .join(INSTANCE_HOST_MAP)
+                .on(instance.ID.eq(INSTANCE_HOST_MAP.INSTANCE_ID))
+                .join(host)
                 .on(host.ID.eq(INSTANCE_HOST_MAP.HOST_ID))
+                .join(exposeMap, JoinType.LEFT_OUTER_JOIN)
+                .on(exposeMap.INSTANCE_ID.eq(instance.ID))
                 .join(NIC)
                 .on(NIC.INSTANCE_ID.eq(INSTANCE_HOST_MAP.INSTANCE_ID))
                 .join(IP_ADDRESS_NIC_MAP)
                 .on(IP_ADDRESS_NIC_MAP.NIC_ID.eq(NIC.ID))
                 .join(instanceIpAddress)
                 .on(instanceIpAddress.ID.eq(IP_ADDRESS_NIC_MAP.IP_ADDRESS_ID))
-                .join(instance)
-                .on(instance.ID.eq(INSTANCE_HOST_MAP.INSTANCE_ID))
-                .join(exposeMap, JoinType.LEFT_OUTER_JOIN)
-                .on(exposeMap.INSTANCE_ID.eq(instance.ID))
-                .join(serviceIndex, JoinType.LEFT_OUTER_JOIN)
-                .on(serviceIndex.ID.eq(instance.SERVICE_INDEX_ID))
-                .where(host.REMOVED.isNull())
-                .and(instance.ACCOUNT_ID.eq(accountId))
-                .and(instanceIpAddress.ROLE.eq(IpAddressConstants.ROLE_PRIMARY))
+                .where(instance.ACCOUNT_ID.eq(accountId))
                 .and(instance.REMOVED.isNull())
                 .and(instance.STATE.notIn(CommonStatesConstants.REMOVING, CommonStatesConstants.REMOVED))
                 .and(exposeMap.REMOVED.isNull())
+                .and(instanceIpAddress.ROLE.eq(IpAddressConstants.ROLE_PRIMARY))
+                .and((host.REMOVED.isNull()))
                 .and(exposeMap.STATE.isNull().or(
                         exposeMap.STATE.notIn(CommonStatesConstants.REMOVING, CommonStatesConstants.REMOVED)))
-                .and(serviceIndex.STATE.isNull().or(
-                        serviceIndex.STATE.notIn(CommonStatesConstants.REMOVING, CommonStatesConstants.REMOVED)))
-                .orderBy(instance.ID)
                 .fetch().map(mapper);
     }
 
@@ -159,12 +156,50 @@ public class MetaDataInfoDaoImpl extends AbstractJooqDao implements MetaDataInfo
     }
 
     @Override
-    public List<HostMetaData> getInstanceHostMetaData(long accountId, Instance instance) {
+    public Map<Long, HostMetaData> getHostIdToHostMetadata(long accountId) {
+        Map<Long, HostMetaData> toReturn = new HashMap<>();
+        List<HostMetaData> hosts = getAllInstanceHostMetaData(accountId);
+        for (HostMetaData host : hosts) {
+            toReturn.put(host.getHostId(), host);
+        }
+        return toReturn;
+    }
+
+    protected List<HostMetaData> getAllInstanceHostMetaData(long accountId) {
         MultiRecordMapper<HostMetaData> mapper = new MultiRecordMapper<HostMetaData>() {
             @Override
             protected HostMetaData map(List<Object> input) {
                 Host host = (Host)input.get(0);
                 IpAddress hostIp = (IpAddress)input.get(1);
+                HostMetaData data = new HostMetaData(hostIp.getAddress(), host);
+                return data;
+            }
+        };
+
+        HostTable host = mapper.add(HOST);
+        IpAddressTable hostIpAddress = mapper.add(IP_ADDRESS);
+
+        return create()
+                .select(mapper.fields())
+                .from(hostIpAddress)
+                .join(HOST_IP_ADDRESS_MAP)
+                .on(HOST_IP_ADDRESS_MAP.IP_ADDRESS_ID.eq(hostIpAddress.ID))
+                .join(host)
+                .on(host.ID.eq(HOST_IP_ADDRESS_MAP.HOST_ID))
+                .where(host.REMOVED.isNull())
+                .and(host.STATE.notIn(CommonStatesConstants.REMOVING, CommonStatesConstants.REMOVED))
+                .and(hostIpAddress.REMOVED.isNull())
+                .and(host.ACCOUNT_ID.eq(accountId))
+                .fetch().map(mapper);
+    }
+
+    @Override
+    public List<HostMetaData> getInstanceHostMetaData(long accountId, Instance instance) {
+        MultiRecordMapper<HostMetaData> mapper = new MultiRecordMapper<HostMetaData>() {
+            @Override
+            protected HostMetaData map(List<Object> input) {
+                Host host = (Host) input.get(0);
+                IpAddress hostIp = (IpAddress) input.get(1);
                 HostMetaData data = new HostMetaData(hostIp.getAddress(), host);
                 return data;
             }
@@ -189,35 +224,5 @@ public class MetaDataInfoDaoImpl extends AbstractJooqDao implements MetaDataInfo
                 .and(host.ACCOUNT_ID.eq(accountId))
                 .fetch().map(mapper);
     }
-
-    @Override
-    public List<HostMetaData> getAllInstanceHostMetaData(long accountId) {
-        MultiRecordMapper<HostMetaData> mapper = new MultiRecordMapper<HostMetaData>() {
-            @Override
-            protected HostMetaData map(List<Object> input) {
-                Host host = (Host)input.get(0);
-                IpAddress hostIp = (IpAddress)input.get(1);
-                HostMetaData data = new HostMetaData(hostIp.getAddress(), host);
-                return data;
-            }
-        };
-
-        HostTable host = mapper.add(HOST);
-        IpAddressTable hostIpAddress = mapper.add(IP_ADDRESS);
-
-        return create()
-                .select(mapper.fields())
-                .from(hostIpAddress)
-                .join(HOST_IP_ADDRESS_MAP)
-                .on(HOST_IP_ADDRESS_MAP.IP_ADDRESS_ID.eq(hostIpAddress.ID))
-                .join(host)
-                .on(host.ID.eq(HOST_IP_ADDRESS_MAP.HOST_ID))
-                .where(host.REMOVED.isNull())
-                .and(host.STATE.notIn(CommonStatesConstants.REMOVING, CommonStatesConstants.REMOVED))
-                .and(hostIpAddress.REMOVED.isNull())
-                .and(host.ACCOUNT_ID.eq(accountId))
-                .fetch().map(mapper);
-    }
-
 
 }

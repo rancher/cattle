@@ -89,8 +89,8 @@
     <management:executor-service
         id="ProcessExecutorServiceReplay"
         keep-alive="120"
-        pool-size="0-25"
-        queue-capacity="0"
+        pool-size="25"
+        queue-capacity="1000"
         rejection-policy="CALLER_RUNS"
         />
 

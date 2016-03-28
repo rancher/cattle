@@ -19,17 +19,38 @@ import io.cattle.platform.core.model.tables.records.HostRecord;
 import io.cattle.platform.core.model.tables.records.InstanceRecord;
 import io.cattle.platform.core.model.tables.records.ServiceRecord;
 import io.cattle.platform.db.jooq.dao.impl.AbstractJooqDao;
+import io.cattle.platform.object.ObjectManager;
+import io.cattle.platform.object.util.DataUtils;
 
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 import javax.inject.Inject;
 
 import org.apache.commons.lang3.StringUtils;
 import org.jooq.Condition;
 
+import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.CacheLoader;
+import com.google.common.cache.LoadingCache;
+
 public class InstanceDaoImpl extends AbstractJooqDao implements InstanceDao {
     @Inject
     GenericMapDao mapDao;
+    @Inject
+    ObjectManager objectManager;
+
+    LoadingCache<Long, Map<String, Object>> instanceData = CacheBuilder.newBuilder()
+            .expireAfterAccess(24, TimeUnit.HOURS)
+            .build(new CacheLoader<Long, Map<String, Object>>() {
+                @Override
+                public Map<String, Object> load(Long key) throws Exception {
+                    return lookupCacheInstanceData(key);
+                }
+            });
 
     @Override
     public List<? extends Instance> getNonRemovedInstanceOn(Long hostId) {
@@ -164,6 +185,26 @@ public class InstanceDaoImpl extends AbstractJooqDao implements InstanceDao {
                     .and(INSTANCE_HOST_MAP.REMOVED.isNull())
                     .and(INSTANCE.ID.eq(instanceId)))
                 .fetchInto(HostRecord.class);
+    }
+
+    protected Map<String, Object> lookupCacheInstanceData(long instanceId) {
+        Instance instance = objectManager.loadResource(Instance.class, instanceId);
+        if (instance == null) {
+            return Collections.emptyMap();
+        }
+        Map<String, Object> newData = new HashMap<>();
+        newData.put(DataUtils.FIELDS, instance.getData().get(DataUtils.FIELDS));
+        return newData;
+    }
+
+    @Override
+    public Map<String, Object> getCacheInstanceData(long instanceId) {
+        return instanceData.getUnchecked(instanceId);
+    }
+
+    @Override
+    public void clearCacheInstanceData(long instanceId) {
+        instanceData.invalidate(instanceId);
     }
 
 }

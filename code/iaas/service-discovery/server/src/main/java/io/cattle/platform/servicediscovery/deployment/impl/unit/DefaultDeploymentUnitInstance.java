@@ -1,6 +1,6 @@
 package io.cattle.platform.servicediscovery.deployment.impl.unit;
 
-import static io.cattle.platform.core.model.tables.InstanceHostMapTable.INSTANCE_HOST_MAP;
+import static io.cattle.platform.core.model.tables.InstanceHostMapTable.*;
 import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.HealthcheckConstants;
 import io.cattle.platform.core.constants.InstanceConstants;
@@ -140,6 +140,8 @@ public class DefaultDeploymentUnitInstance extends DeploymentUnitInstance implem
 
         launchConfigData.put(InstanceConstants.FIELD_SERVICE_INSTANCE_SERVICE_INDEX_ID,
                 this.serviceIndex.getId());
+        launchConfigData.put(InstanceConstants.FIELD_SERVICE_INSTANCE_SERVICE_INDEX,
+                this.serviceIndex.getServiceIndex());
         launchConfigData.put(InstanceConstants.FIELD_ALLOCATED_IP_ADDRESS, serviceIndex.getAddress());
         return launchConfigData;
     }

@@ -5,6 +5,7 @@ import io.cattle.platform.configitem.context.data.metadata.common.HostMetaData;
 import io.cattle.platform.core.model.Instance;
 
 import java.util.List;
+import java.util.Map;
 
 public interface MetaDataInfoDao {
     public enum Version {
@@ -39,9 +40,9 @@ public interface MetaDataInfoDao {
 
     List<ContainerMetaData> getContainersData(long accountId);
 
-    List<HostMetaData> getAllInstanceHostMetaData(long accountId);
+    List<String> getPrimaryIpsOnInstanceHost(Instance instance);
+
+    Map<Long, HostMetaData> getHostIdToHostMetadata(long accountId);
 
     List<HostMetaData> getInstanceHostMetaData(long accountId, Instance instance);
-
-    List<String> getPrimaryIpsOnInstanceHost(Instance instance);
 }

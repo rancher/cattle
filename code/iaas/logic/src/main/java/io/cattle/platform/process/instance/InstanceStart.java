@@ -8,6 +8,7 @@ import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.constants.InstanceLinkConstants;
 import io.cattle.platform.core.dao.GenericMapDao;
+import io.cattle.platform.core.dao.InstanceDao;
 import io.cattle.platform.core.dao.IpAddressDao;
 import io.cattle.platform.core.model.Agent;
 import io.cattle.platform.core.model.Host;
@@ -52,6 +53,9 @@ public class InstanceStart extends AbstractDefaultProcessHandler {
     @Inject
     JsonMapper jsonMapper;
 
+    @Inject
+    InstanceDao instanceDao;
+
     GenericMapDao mapDao;
     IpAddressDao ipAddressDao;
     ProcessProgress progress;
@@ -69,6 +73,8 @@ public class InstanceStart extends AbstractDefaultProcessHandler {
             try {
                 progress.checkPoint("Scheduling");
                 allocate(instance);
+
+                instanceDao.clearCacheInstanceData(instance.getId());
 
                 progress.checkPoint("Networking");
                 network(instance, state);
@@ -105,6 +111,8 @@ public class InstanceStart extends AbstractDefaultProcessHandler {
         }
 
         assignPrimaryIpAddress(instance, resultData);
+
+        instanceDao.clearCacheInstanceData(instance.getId());
 
         return result;
     }

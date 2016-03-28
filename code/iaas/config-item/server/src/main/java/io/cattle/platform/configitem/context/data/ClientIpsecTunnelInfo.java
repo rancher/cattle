@@ -3,7 +3,6 @@ package io.cattle.platform.configitem.context.data;
 import io.cattle.platform.core.model.Host;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.IpAddress;
-import io.cattle.platform.core.model.PhysicalHost;
 import io.cattle.platform.core.model.Subnet;
 
 public class ClientIpsecTunnelInfo {
@@ -14,7 +13,6 @@ public class ClientIpsecTunnelInfo {
     IpAddress hostIpAddress;
     IpAddress ipAddress;
     Subnet subnet;
-    PhysicalHost physicalHost;
     int natPort;
     int isaKmpPort;
 
@@ -80,14 +78,6 @@ public class ClientIpsecTunnelInfo {
 
     public void setSubnet(Subnet subnet) {
         this.subnet = subnet;
-    }
-
-    public PhysicalHost getPhysicalHost() {
-        return physicalHost;
-    }
-
-    public void setPhysicalHost(PhysicalHost physicalHost) {
-        this.physicalHost = physicalHost;
     }
 
 }

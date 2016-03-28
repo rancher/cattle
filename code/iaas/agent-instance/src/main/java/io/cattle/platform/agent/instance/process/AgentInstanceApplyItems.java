@@ -50,9 +50,11 @@ public class AgentInstanceApplyItems extends AbstractApplyItems implements Proce
             Map<NetworkServiceProvider, Instance> agentInstances = agentInstanceManager.getAgentInstances(nic, true);
             for (Map.Entry<NetworkServiceProvider, Instance> entry : agentInstances.entrySet()) {
                 Agent agent = objectManager.loadResource(Agent.class, entry.getValue().getAgentId());
+                log.info("Processing agent [{}] nic [{}]", agent.getId(), nic.getId());
 
                 /* Don't wait if this nic is a nic to the agent instance */
                 assignItems(entry.getKey(), agent, nic, state, process, !entry.getValue().getId().equals(nic.getInstanceId()));
+                log.info("Done processing agent [{}] nic [{}]", agent.getId(), nic.getId());
             }
         }
 
@@ -65,8 +67,7 @@ public class AgentInstanceApplyItems extends AbstractApplyItems implements Proce
     }
 
     @Override
-    protected List<? extends Agent> getOtherAgents(NetworkServiceProvider provider, ConfigUpdateRequest request, Agent agent, ProcessState state,
-            ProcessInstance processInstance) {
+    protected List<? extends Agent> getOtherAgents(NetworkServiceProvider provider, ConfigUpdateRequest request, Agent agent) {
         return agentInstanceManager.getAgents(provider);
     }
 
