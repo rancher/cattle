@@ -274,6 +274,10 @@ public class LoadBalancerInfoFactory extends AbstractAgentBaseContextFactory {
             InstanceHealthCheck healthCheck = null;
             if (ipAddress == null) {
                 Instance targetInstance = instanceIdtoInstance.get(target.getInstanceId());
+                // instance can be removed at this point
+                if (targetInstance == null) {
+                    continue;
+                }
                 healthCheck = DataAccessor.field(targetInstance,
                         InstanceConstants.FIELD_HEALTH_CHECK, jsonMapper, InstanceHealthCheck.class);
 
