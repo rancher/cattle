@@ -6,6 +6,8 @@ import io.cattle.platform.eventing.EventListener;
 import io.cattle.platform.eventing.EventService;
 import io.cattle.platform.eventing.model.Event;
 import io.cattle.platform.eventing.model.EventVO;
+import io.cattle.platform.framework.event.Ping;
+import io.cattle.platform.framework.event.data.PingData;
 import io.cattle.platform.iaas.event.IaasEvents;
 import io.cattle.platform.iaas.event.delegate.DelegateEvent;
 import io.cattle.platform.json.JsonMapper;
@@ -49,11 +51,26 @@ public class WrappedEventService implements EventService {
         return eventService.publish(buildEvent(request));
     }
 
+    protected boolean useAgentConnection(Event unwrappedEvent) {
+        if (unwrappedEvent == null || unwrappedEvent.getName() == null) {
+            return false;
+        }
+        if (unwrappedEvent.getName().startsWith(IaasEvents.AGENT_CLOSE)) {
+            return true;
+        }
+        if (unwrappedEvent.getData() instanceof PingData) {
+            Map<String, Boolean> options = ((PingData) unwrappedEvent.getData()).getOptions();
+            if (options != null && Boolean.TRUE.equals(options.get(Ping.RESOURCES))) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     @Override
     public ListenableFuture<Event> call(final Event request, EventCallOptions callOptions) {
         Event unwrappedEvent = buildEvent(request);
-        if (unwrappedEvent != null && unwrappedEvent.getName() != null &&
-                unwrappedEvent.getName().startsWith(IaasEvents.AGENT_CLOSE)) {
+        if (useAgentConnection(unwrappedEvent)) {
             return eventService.call(request, callOptions);
         }
 
