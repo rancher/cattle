@@ -89,6 +89,7 @@ public class ConfigItemStatusManagerImpl implements ConfigItemStatusManager {
                     configItemStatusDao.incrementOrApply(client, name);
                     log.trace("ITEM UPDATE: done incrementOrApply [{}]", request.getClient());
                 } else {
+                    log.info("ITEM UPDATE: ignore [{}] [{}]", name, request.getClient());
                     continue;
                 }
                 log.trace("ITEM UPDATE: get requested [{}]", request.getClient());

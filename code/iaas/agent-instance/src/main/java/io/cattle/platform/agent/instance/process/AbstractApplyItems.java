@@ -17,9 +17,12 @@ import io.cattle.platform.process.common.handler.AbstractObjectProcessLogic;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.ExecutorService;
 
 import javax.inject.Inject;
+import javax.inject.Named;
 
+import org.apache.cloudstack.managed.context.NoExceptionRunnable;
 import org.slf4j.Logger;
 
 import com.netflix.config.DynamicStringListProperty;
@@ -29,6 +32,9 @@ public abstract class AbstractApplyItems extends AbstractObjectProcessLogic impl
     private static final DynamicStringListProperty BASE = ArchaiusUtil.getList("agent.instance.services.base.items");
     private static final Logger log = org.slf4j.LoggerFactory.getLogger(AbstractApplyItems.class);
 
+    @Inject
+    @Named("CoreExecutorService")
+    ExecutorService executorService;
     JsonMapper jsonMapper;
     ConfigItemStatusManager statusManager;
     boolean assignBase = true;
@@ -69,10 +75,10 @@ public abstract class AbstractApplyItems extends AbstractObjectProcessLogic impl
 
     protected abstract String getConfigPrefix();
 
-    protected void assignServiceItems(NetworkServiceProvider provider, ConfigUpdateRequest request, Agent agent, ProcessState state,
+    protected void assignServiceItems(final NetworkServiceProvider provider, final ConfigUpdateRequest request, final Agent agent, ProcessState state,
             ProcessInstance processInstance) {
-        Set<String> apply = new HashSet<String>();
-        Set<String> increment = new HashSet<String>();
+        final Set<String> apply = new HashSet<String>();
+        final Set<String> increment = new HashSet<String>();
         String prefix = String.format("%s%s.%s", getConfigPrefix(), processInstance.getName(), provider.getKind());
 
         for (NetworkService service : objectManager.children(provider, NetworkService.class)) {
@@ -86,29 +92,28 @@ public abstract class AbstractApplyItems extends AbstractObjectProcessLogic impl
         statusManager.updateConfig(request);
         log.trace("ITEMS: done update config [{}]", agent.getId());
 
-        for (Agent otherAgent : getOtherAgents(provider, request, agent, state, processInstance)) {
-            if (otherAgent.getId().equals(agent.getId())) {
-                continue;
-            }
+        executorService.submit(new NoExceptionRunnable() {
+            @Override
+            protected void doRun() throws Exception {
+                for (Agent otherAgent : getOtherAgents(provider, request, agent)) {
+                    if (otherAgent.getId().equals(agent.getId())) {
+                        continue;
+                    }
 
-            String context = getContext(processInstance, otherAgent, state.getResource());
-            ConfigUpdateRequest otherRequest = ConfigUpdateRequestUtils.getRequest(jsonMapper, state, context);
-            if (otherRequest == null) {
-                log.trace("ITEMS: other set items [{}]", otherAgent.getId());
-                otherRequest = ConfigUpdateRequest.forResource(Agent.class, otherAgent.getId());
-                setItems(otherRequest, apply, increment);
-                log.trace("ITEMS: done other set items [{}]", otherAgent.getId());
+                    log.trace("ITEMS: other set items [{}]", otherAgent.getId());
+                    ConfigUpdateRequest otherRequest = ConfigUpdateRequest.forResource(Agent.class, otherAgent.getId());
+                    setItems(otherRequest, apply, increment);
+                    log.trace("ITEMS: done other set items [{}]", otherAgent.getId());
 
-                log.trace("ITEMS: other update config [{}]", otherAgent.getId());
-                statusManager.updateConfig(otherRequest);
-                log.trace("ITEMS: done other update config [{}]", otherAgent.getId());
-                ConfigUpdateRequestUtils.setRequest(otherRequest, state, context);
+                    log.trace("ITEMS: other update config [{}]", otherAgent.getId());
+                    statusManager.updateConfig(otherRequest);
+                    log.trace("ITEMS: done other update config [{}]", otherAgent.getId());
+                }
             }
-        }
+        });
     }
 
-    protected abstract List<? extends Agent> getOtherAgents(NetworkServiceProvider provider, ConfigUpdateRequest request, Agent agent, ProcessState state,
-            ProcessInstance processInstance);
+    protected abstract List<? extends Agent> getOtherAgents(NetworkServiceProvider provider, ConfigUpdateRequest request, Agent agent);
 
     protected void setItems(ConfigUpdateRequest request, Set<String> apply, Set<String> increment) {
         for (String item : apply) {

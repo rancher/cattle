@@ -67,8 +67,7 @@ public class AgentInstanceApplyItems extends AbstractApplyItems implements Proce
     }
 
     @Override
-    protected List<? extends Agent> getOtherAgents(NetworkServiceProvider provider, ConfigUpdateRequest request, Agent agent, ProcessState state,
-            ProcessInstance processInstance) {
+    protected List<? extends Agent> getOtherAgents(NetworkServiceProvider provider, ConfigUpdateRequest request, Agent agent) {
         return agentInstanceManager.getAgents(provider);
     }
 
