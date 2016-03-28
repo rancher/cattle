@@ -44,7 +44,7 @@ public class AccountConstraintsProvider implements AllocationConstraintsProvider
             .as(Boolean.class);
 
         if (enabled) {
-            constraints.add(new AccountConstraint(objectManager, account.getId()));
+            constraints.add(new AccountConstraint(account.getId()));
         }
     }
 

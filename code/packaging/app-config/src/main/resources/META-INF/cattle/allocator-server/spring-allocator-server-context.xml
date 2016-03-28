@@ -21,7 +21,6 @@
     <extension:discover class="io.cattle.platform.allocator.service.Allocator" />
     <extension:discover class="io.cattle.platform.allocator.constraint.AllocationConstraintsProvider" />
 
-    <bean class="io.cattle.platform.allocator.constraint.ComputeConstraintProvider" />
     <bean class="io.cattle.platform.allocator.constraint.BaseConstraintsProvider" />
     <bean class="io.cattle.platform.allocator.constraint.HostVnetMatchConstraintProvider" />
     <bean class="io.cattle.platform.allocator.constraint.AccountConstraintsProvider" />
