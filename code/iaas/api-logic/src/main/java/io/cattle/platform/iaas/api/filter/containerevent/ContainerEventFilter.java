@@ -8,9 +8,11 @@ import io.cattle.platform.core.model.ContainerEvent;
 import io.cattle.platform.core.model.Host;
 import io.cattle.platform.iaas.api.filter.common.AbstractDefaultResourceManagerFilter;
 import io.cattle.platform.object.ObjectManager;
+import io.github.ibuildthecloud.gdapi.exception.ClientVisibleException;
 import io.github.ibuildthecloud.gdapi.exception.ValidationErrorException;
 import io.github.ibuildthecloud.gdapi.request.ApiRequest;
 import io.github.ibuildthecloud.gdapi.request.resource.ResourceManager;
+import io.github.ibuildthecloud.gdapi.util.ResponseCodes;
 import io.github.ibuildthecloud.gdapi.validation.ValidationErrorCodes;
 
 import java.util.Map;
@@ -38,8 +40,10 @@ public class ContainerEventFilter extends AbstractDefaultResourceManagerFilter {
         ContainerEvent event = request.proxyRequestObject(ContainerEvent.class);
 
         Policy policy = ApiUtils.getPolicy();
-        /* Will never return null, MissingRequired will be thrown if missing */
         Agent agent = objectManager.loadResource(Agent.class, policy.getOption(Policy.AGENT_ID));
+        if (agent == null) {
+            throw new ClientVisibleException(ResponseCodes.FORBIDDEN, VERIFY_AGENT);
+        }
 
         Map<String, Host> hosts = agentDao.getHosts(agent.getId());
         Host host = hosts.get(event.getReportedHostUuid());

@@ -37,8 +37,10 @@ public class ServiceEventFilter extends AbstractDefaultResourceManagerFilter {
     }
 
     protected Agent getAgent() {
-        /* Will never return null, MissingRequired will be thrown if missing */
         Agent agent = objectManager.loadResource(Agent.class, ApiUtils.getPolicy().getOption(Policy.AGENT_ID));
+        if (agent == null) {
+            throw new ClientVisibleException(ResponseCodes.FORBIDDEN, VERIFY_AGENT);
+        }
 
         return agentDao.getHostAgentForDelegate(agent.getId());
     }
