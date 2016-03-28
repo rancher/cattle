@@ -5,6 +5,7 @@ import io.cattle.platform.agent.connection.simulator.AgentSimulatorEventProcesso
 import io.cattle.platform.agent.util.AgentUtils;
 import io.cattle.platform.configitem.events.ConfigUpdate;
 import io.cattle.platform.configitem.request.ConfigUpdateItem;
+import io.cattle.platform.core.model.Agent;
 import io.cattle.platform.eventing.model.Event;
 import io.cattle.platform.eventing.model.EventVO;
 import io.cattle.platform.iaas.event.IaasEvents;
@@ -39,13 +40,16 @@ public class SimulatorConfigUpdateProcessor implements AgentSimulatorEventProces
         if (!IaasEvents.CONFIG_UPDATE.equals(event.getName())) {
             return null;
         }
+        return handle(simulator.getAgent(), event);
+    }
 
+    public Event handle(Agent agent, Event event) throws IOException {
         ConfigUpdate update = jsonMapper.convertValue(event, ConfigUpdate.class);
         String auth = ObjectUtils.toString(
-                AgentUtils.getAgentAuth(simulator.getAgent(), objectManager).get("CATTLE_AGENT_INSTANCE_AUTH"), null);
+                AgentUtils.getAgentAuth(agent, objectManager).get("CATTLE_AGENT_INSTANCE_AUTH"), null);
 
         if (auth == null) {
-            throw new IllegalStateException("Failed to get auth for agent [" + simulator.getAgentId() + "]");
+            throw new IllegalStateException("Failed to get auth for agent [" + agent.getId() + "]");
         }
 
         for (ConfigUpdateItem item : update.getData().getItems()) {
