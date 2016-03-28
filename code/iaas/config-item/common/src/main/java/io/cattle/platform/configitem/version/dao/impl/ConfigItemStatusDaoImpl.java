@@ -67,7 +67,7 @@ public class ConfigItemStatusDaoImpl extends AbstractJooqDao implements ConfigIt
     Timer appliedTimer = MetricsUtil.getRegistry().timer("config.item.applied");
 
     @Override
-    public long incrementOrApply(Client client, String itemName) {
+    public void incrementOrApply(Client client, String itemName) {
         Context t = incrementTimer.time();
         try {
             if ( ! increment(client, itemName) ) {
@@ -78,12 +78,11 @@ public class ConfigItemStatusDaoImpl extends AbstractJooqDao implements ConfigIt
                     }
                 }
             }
-
-            return getRequestedVersion(client, itemName);
         } finally {
             t.stop();
         }
     }
+
 
     @Override
     public Long getRequestedVersion(Client client, String itemName) {

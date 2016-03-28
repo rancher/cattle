@@ -86,21 +86,21 @@ public class ConfigItemStatusManagerImpl implements ConfigItemStatusManager {
             if (status == null) {
                 if (item.isApply()) {
                     log.trace("ITEM UPDATE: incrementOrApply [{}]", request.getClient());
-                    requestedVersion = configItemStatusDao.incrementOrApply(client, name);
+                    configItemStatusDao.incrementOrApply(client, name);
                     log.trace("ITEM UPDATE: done incrementOrApply [{}]", request.getClient());
+                } else {
+                    continue;
                 }
-            }
-
-            if (requestedVersion == null && item.isIncrement()) {
-                log.trace("ITEM UPDATE: incrementOrApply [{}]", request.getClient());
-                requestedVersion = configItemStatusDao.incrementOrApply(client, name);
-                log.trace("ITEM UPDATE: done incrementOrApply [{}]", request.getClient());
-            }
-
-            if (requestedVersion == null) {
-                log.trace("ITEM UPDATE: requestedVersion [{}]", request.getClient());
+                log.trace("ITEM UPDATE: get requested [{}]", request.getClient());
                 requestedVersion = configItemStatusDao.getRequestedVersion(client, name);
-                log.trace("ITEM UPDATE: done requestedVersion [{}]", request.getClient());
+                log.trace("ITEM UPDATE: done get requested [{}]", request.getClient());
+            } else if (requestedVersion == null && item.isIncrement()) {
+                log.trace("ITEM UPDATE: incrementOrApply [{}]", request.getClient());
+                configItemStatusDao.incrementOrApply(client, name);
+                log.trace("ITEM UPDATE: done incrementOrApply [{}]", request.getClient());
+                requestedVersion = status.getRequestedVersion() + 1;
+            } else if (requestedVersion == null) {
+                requestedVersion = status.getRequestedVersion();
             }
 
             item.setRequestedVersion(requestedVersion);

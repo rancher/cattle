@@ -56,12 +56,13 @@ public abstract class AbstractApplyItems extends AbstractObjectProcessLogic impl
             log.trace("ITEMS: assign items [{}]", agent.getId());
             assignServiceItems(provider, request, agent, state, processInstance);
             log.trace("ITEMS: done assign items [{}]", agent.getId());
-        }
-
-        if (request != null) {
+        } else {
             log.trace("ITEMS: update config [{}]", agent.getId());
             statusManager.updateConfig(request);
             log.trace("ITEMS: done update config [{}]", agent.getId());
+        }
+
+        if (request != null) {
             ConfigUpdateRequestUtils.setRequest(request, state, contextId);
         }
     }
@@ -80,6 +81,10 @@ public abstract class AbstractApplyItems extends AbstractObjectProcessLogic impl
         }
 
         setItems(request, apply, increment);
+
+        log.trace("ITEMS: update config [{}]", agent.getId());
+        statusManager.updateConfig(request);
+        log.trace("ITEMS: done update config [{}]", agent.getId());
 
         for (Agent otherAgent : getOtherAgents(provider, request, agent, state, processInstance)) {
             if (otherAgent.getId().equals(agent.getId())) {
