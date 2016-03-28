@@ -151,58 +151,6 @@ def test_allocate_to_host_with_pool(new_context, super_client):
         'Scheduling failed: valid host(s) [')
 
 
-def _set_one(super_client, new_context):
-    return super_client.update(new_context.host, computeFree=1)
-
-
-def test_allocation_failed_on_create(super_client, new_context):
-    _set_one(super_client, new_context)
-
-    new_context.create_container(networkMode='bridge')
-    c = new_context.create_container_no_success(networkMode='bridge')
-    c = super_client.reload(c)
-
-    assert c.state == 'error'
-    assert c.transitioning == 'error'
-    assert c.transitioningMessage == \
-        'Scheduling failed: No candidates available'
-
-    c = super_client.wait_success(super_client.reload(c.remove()))
-
-    assert c.allocationState == 'activating'
-    assert c.volumes()[0].state == 'removed'
-
-    c = super_client.wait_success(super_client.reload(c.purge()))
-    assert c.state == 'purged'
-    assert c.allocationState == 'inactive'
-
-
-def test_allocation_failed_on_start(super_client, new_context):
-    _set_one(super_client, new_context)
-    client = new_context.client
-
-    c2 = new_context.create_container(networkMode='bridge')
-    c1 = new_context.create_container(startOnCreate=False,
-                                      networkMode='bridge')
-
-    c1 = client.wait_transitioning(c1.start())
-    assert c1.state == 'stopped'
-    assert c1.transitioning == 'error'
-    assert c1.transitioningMessage == \
-        'Scheduling failed: No candidates available'
-
-    c2 = client.wait_success(client.delete(c2))
-    assert c2.state == 'removed'
-
-    c2 = client.wait_success(c2.purge())
-    assert c2.state == 'purged'
-
-    c1 = client.wait_success(c1.start())
-    assert c1.state == 'running'
-    assert c1.transitioning == 'no'
-    assert c1.transitioningMessage is None
-
-
 def test_host_vnet_association(super_client, new_context):
     account = new_context.project
     image_uuid = new_context.image_uuid
