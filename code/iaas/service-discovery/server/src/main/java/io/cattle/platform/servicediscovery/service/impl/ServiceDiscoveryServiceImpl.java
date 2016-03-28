@@ -579,7 +579,8 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
         int startedOnce = 0;
         List<String> activeStates = Arrays.asList(CommonStatesConstants.ACTIVE.toLowerCase(),
                 CommonStatesConstants.ACTIVATING.toLowerCase(),
-                CommonStatesConstants.UPDATING_ACTIVE.toLowerCase());
+                CommonStatesConstants.UPDATING_ACTIVE.toLowerCase(),
+                ServiceDiscoveryConstants.STATE_FINISHING_UPGRADE.toLowerCase());
         List<String> healthyStates = Arrays.asList(
                 HealthcheckConstants.SERVICE_HEALTH_STATE_STARTED_ONCE.toLowerCase(),
                 HealthcheckConstants.HEALTH_STATE_HEALTHY.toLowerCase());
