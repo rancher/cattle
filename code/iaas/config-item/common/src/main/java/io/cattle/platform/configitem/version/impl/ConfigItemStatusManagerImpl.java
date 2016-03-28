@@ -73,6 +73,7 @@ public class ConfigItemStatusManagerImpl implements ConfigItemStatusManager {
             throw new IllegalArgumentException("Client is null on request [" + request + "]");
         }
 
+        log.trace("ITEM UPDATE: for [{}]", request.getClient());
         Client client = request.getClient();
         Map<String, ConfigItemStatus> statuses = getStatus(request);
         List<ConfigUpdateItem> toTrigger = new ArrayList<ConfigUpdateItem>();
@@ -84,16 +85,22 @@ public class ConfigItemStatusManagerImpl implements ConfigItemStatusManager {
 
             if (status == null) {
                 if (item.isApply()) {
+                    log.trace("ITEM UPDATE: incrementOrApply [{}]", request.getClient());
                     requestedVersion = configItemStatusDao.incrementOrApply(client, name);
+                    log.trace("ITEM UPDATE: done incrementOrApply [{}]", request.getClient());
                 }
             }
 
             if (requestedVersion == null && item.isIncrement()) {
+                log.trace("ITEM UPDATE: incrementOrApply [{}]", request.getClient());
                 requestedVersion = configItemStatusDao.incrementOrApply(client, name);
+                log.trace("ITEM UPDATE: done incrementOrApply [{}]", request.getClient());
             }
 
             if (requestedVersion == null) {
+                log.trace("ITEM UPDATE: requestedVersion [{}]", request.getClient());
                 requestedVersion = configItemStatusDao.getRequestedVersion(client, name);
+                log.trace("ITEM UPDATE: done requestedVersion [{}]", request.getClient());
             }
 
             item.setRequestedVersion(requestedVersion);

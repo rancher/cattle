@@ -20,11 +20,14 @@ import java.util.Set;
 
 import javax.inject.Inject;
 
+import org.slf4j.Logger;
+
 import com.netflix.config.DynamicStringListProperty;
 
 public abstract class AbstractApplyItems extends AbstractObjectProcessLogic implements ProcessPostListener {
 
     private static final DynamicStringListProperty BASE = ArchaiusUtil.getList("agent.instance.services.base.items");
+    private static final Logger log = org.slf4j.LoggerFactory.getLogger(AbstractApplyItems.class);
 
     JsonMapper jsonMapper;
     ConfigItemStatusManager statusManager;
@@ -40,18 +43,25 @@ public abstract class AbstractApplyItems extends AbstractObjectProcessLogic impl
 
         ConfigUpdateRequest request = ConfigUpdateRequestUtils.getRequest(jsonMapper, state, contextId);
         if (request == null) {
+            log.trace("ITEMS: New request agent [{}]", agent.getId());
             request = ConfigUpdateRequest.forResource(Agent.class, agent.getId());
             if (waitFor) {
                 ConfigUpdateRequestUtils.setWaitFor(request);
             }
             if (assignBase) {
+                log.trace("ITEMS: assign base items [{}]", agent.getId());
                 assignBaseItems(provider, request, agent, processInstance);
+                log.trace("ITEMS: done assign base items [{}]", agent.getId());
             }
+            log.trace("ITEMS: assign items [{}]", agent.getId());
             assignServiceItems(provider, request, agent, state, processInstance);
+            log.trace("ITEMS: done assign items [{}]", agent.getId());
         }
 
         if (request != null) {
+            log.trace("ITEMS: update config [{}]", agent.getId());
             statusManager.updateConfig(request);
+            log.trace("ITEMS: done update config [{}]", agent.getId());
             ConfigUpdateRequestUtils.setRequest(request, state, contextId);
         }
     }
@@ -79,10 +89,14 @@ public abstract class AbstractApplyItems extends AbstractObjectProcessLogic impl
             String context = getContext(processInstance, otherAgent, state.getResource());
             ConfigUpdateRequest otherRequest = ConfigUpdateRequestUtils.getRequest(jsonMapper, state, context);
             if (otherRequest == null) {
+                log.trace("ITEMS: other set items [{}]", otherAgent.getId());
                 otherRequest = ConfigUpdateRequest.forResource(Agent.class, otherAgent.getId());
                 setItems(otherRequest, apply, increment);
+                log.trace("ITEMS: done other set items [{}]", otherAgent.getId());
 
+                log.trace("ITEMS: other update config [{}]", otherAgent.getId());
                 statusManager.updateConfig(otherRequest);
+                log.trace("ITEMS: done other update config [{}]", otherAgent.getId());
                 ConfigUpdateRequestUtils.setRequest(otherRequest, state, context);
             }
         }
