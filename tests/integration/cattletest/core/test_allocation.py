@@ -703,3 +703,81 @@ def test_network_mode_constraint(new_context):
     finally:
         for c in containers:
             new_context.delete(c)
+
+
+@pytest.mark.nonparallel
+def test_lots_of_hosts(admin_user_client, new_context, super_client):
+    # key = admin_user_client.create_api_key(accountId='1a15')
+    # admin_user_client.wait_success(key)
+    # client = api_client(key.publicValue, key.secretValue)
+    image_uuid = 'sim:112'
+    client = new_context.client
+    image_uuid = new_context.image_uuid
+
+    env = _create_stack(client)
+
+    for x in range(0, 100):
+        register_simulated_host(client)
+
+    launch_config = {"imageUuid": image_uuid,
+                     "command": ['sleep', '42']}
+
+    svc = client.create_service(name=random_str(),
+                                environmentId=env.id,
+                                launchConfig=launch_config)
+    svc = client.wait_success(svc)
+    svc = client.wait_success(svc.activate())
+    assert svc.state == 'active'
+
+    containers = _get_instance_for_service(super_client, svc.id)
+    processes = process_instances(super_client, containers[0], type='instance')
+    alloc_times = []
+    for p in processes:
+        execs = p.processExecutions()
+        for i in execs:
+            for e in i.log.executions:
+                stop_time = e.stopTime
+                start_time = e.startTime
+                alloc_time = stop_time - start_time
+                print '> %s: %s' % (e.name, alloc_time)
+                for pp in e.processHandlerExecutions:
+                    stop_time = pp.stopTime
+                    start_time = pp.startTime
+                    alloc_time = stop_time - start_time
+                    print '  > %s: %s' % (pp.name, alloc_time)
+                    for c in pp.children:
+                        for ce in c.executions:
+                            stop_time = ce.stopTime
+                            start_time = ce.startTime
+                            alloc_time = stop_time - start_time
+                            print '      > %s: %s' % (ce.name, alloc_time)
+                            if ce.name == 'instance.allocate':
+                                alloc_times.append(alloc_time)
+                            for cce in ce.children:
+                                stop_time = cce.stopTime
+                                start_time = cce.startTime
+                                alloc_time = stop_time - start_time
+                                print '        > %s: %s' % (
+                                    cce.name, alloc_time)
+
+    if len(alloc_times) == 0:
+        assert False, "Didn't find a an allocation process."
+
+    for t in alloc_times:
+        assert t < 150
+
+
+def _create_stack(client):
+    env = client.create_environment(name=random_str())
+    env = client.wait_success(env)
+    assert env.state == "active"
+    return env
+
+
+def _get_instance_for_service(super_client, serviceId):
+    instances = []
+    instance_service_maps = super_client. \
+        list_serviceExposeMap(serviceId=serviceId)
+    for mapping in instance_service_maps:
+        instances.append(mapping.instance())
+    return instances
