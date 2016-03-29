@@ -1,10 +1,10 @@
 package io.cattle.platform.servicediscovery.dao.impl;
 
-import static io.cattle.platform.core.model.tables.InstanceLinkTable.INSTANCE_LINK;
-import static io.cattle.platform.core.model.tables.InstanceTable.INSTANCE;
-import static io.cattle.platform.core.model.tables.ServiceConsumeMapTable.SERVICE_CONSUME_MAP;
-import static io.cattle.platform.core.model.tables.ServiceExposeMapTable.SERVICE_EXPOSE_MAP;
-import static io.cattle.platform.core.model.tables.ServiceTable.SERVICE;
+import static io.cattle.platform.core.model.tables.InstanceLinkTable.*;
+import static io.cattle.platform.core.model.tables.InstanceTable.*;
+import static io.cattle.platform.core.model.tables.ServiceConsumeMapTable.*;
+import static io.cattle.platform.core.model.tables.ServiceExposeMapTable.*;
+import static io.cattle.platform.core.model.tables.ServiceTable.*;
 import io.cattle.platform.core.addon.LoadBalancerServiceLink;
 import io.cattle.platform.core.addon.ServiceLink;
 import io.cattle.platform.core.constants.CommonStatesConstants;
@@ -174,6 +174,17 @@ public class ServiceConsumeMapDaoImpl extends AbstractJooqDao implements Service
     }
 
     protected ServiceConsumeMap createServiceLinkImpl(Service service, ServiceLink serviceLink) {
+        Service linkFrom = objectManager.reload(service);
+        if (linkFrom == null || linkFrom.getRemoved() != null
+                || linkFrom.getState().equalsIgnoreCase(CommonStatesConstants.REMOVING)) {
+            return null;
+        }
+        Service linkTo = objectManager.loadResource(Service.class, serviceLink.getServiceId());
+        if (linkTo == null || linkTo.getRemoved() != null
+                || linkTo.getState().equalsIgnoreCase(CommonStatesConstants.REMOVING)) {
+            return null;
+        }
+
         ServiceConsumeMap map = findNonRemovedMap(service.getId(), serviceLink.getServiceId(),
                 serviceLink.getName());
 
@@ -225,8 +236,10 @@ public class ServiceConsumeMapDaoImpl extends AbstractJooqDao implements Service
             if (service == null) {
                 continue;
             }
-
-            result.add(createServiceLink(service, serviceLink));
+            ServiceConsumeMap created = createServiceLink(service, serviceLink);
+            if (created != null) {
+                result.add(created);
+            }
         }
 
         return result;

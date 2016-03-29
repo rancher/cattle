@@ -3,17 +3,21 @@ package io.cattle.platform.servicediscovery.api.action;
 import io.cattle.platform.api.action.ActionHandler;
 import io.cattle.platform.core.addon.LoadBalancerServiceLink;
 import io.cattle.platform.core.addon.ServiceLink;
+import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.model.Service;
 import io.cattle.platform.core.model.ServiceConsumeMap;
 import io.cattle.platform.json.JsonMapper;
 import io.cattle.platform.lock.LockCallbackNoReturn;
 import io.cattle.platform.lock.LockManager;
+import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.servicediscovery.api.constants.ServiceDiscoveryConstants;
 import io.cattle.platform.servicediscovery.api.dao.ServiceConsumeMapDao;
 import io.cattle.platform.servicediscovery.api.lock.ServiceDiscoveryServiceSetLinksLock;
 import io.cattle.platform.servicediscovery.api.service.ServiceDiscoveryApiService;
+import io.github.ibuildthecloud.gdapi.id.IdFormatter;
 import io.github.ibuildthecloud.gdapi.request.ApiRequest;
+import io.github.ibuildthecloud.gdapi.validation.ValidationErrorCodes;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -37,6 +41,12 @@ public class SetServiceLinksActionHandler implements ActionHandler {
     @Inject
     ServiceDiscoveryApiService sdService;
 
+    @Inject
+    ObjectManager objMgr;
+
+    @Inject
+    IdFormatter idFormatter;
+
 
     @Override
     public String getName() {
@@ -49,9 +59,12 @@ public class SetServiceLinksActionHandler implements ActionHandler {
             return null;
         }
         final Service service = (Service) obj;
+
         final boolean forLb = service.getKind()
                 .equalsIgnoreCase(ServiceDiscoveryConstants.KIND.LOADBALANCERSERVICE.name());
         final Map<String, ServiceLink> newServiceLinks = populateNewServiceLinks(request, forLb);
+
+        validateLinks(newServiceLinks);
         if (newServiceLinks != null) {
             lockManager.lock(new ServiceDiscoveryServiceSetLinksLock(service), new LockCallbackNoReturn() {
                 @Override
@@ -66,6 +79,20 @@ public class SetServiceLinksActionHandler implements ActionHandler {
         }
         
         return service;
+    }
+
+    protected void validateLinks(final Map<String, ServiceLink> newServiceLinks) {
+        for (ServiceLink link : newServiceLinks.values()) {
+            Service targetService = objMgr.loadResource(Service.class, link.getServiceId());
+            if (targetService == null || targetService.getRemoved() != null
+                    || targetService.getState().equalsIgnoreCase(CommonStatesConstants.REMOVING)) {
+                Object obfuscatedId = idFormatter.formatId("service", link.getServiceId());
+                String obfuscatedIdStr = obfuscatedId != null ? obfuscatedId.toString() : null;
+                String svcName = targetService != null ? targetService.getName() : obfuscatedIdStr;
+                ValidationErrorCodes.throwValidationError(ValidationErrorCodes.INVALID_REFERENCE,
+                        "Service " + svcName + " is removed");
+            }
+        }
     }
 
     protected Map<String, ServiceLink> populateNewServiceLinks(ApiRequest request, boolean forLb) {
