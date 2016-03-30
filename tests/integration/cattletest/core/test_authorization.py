@@ -296,6 +296,8 @@ def test_admin_types(admin_user_client, adds=set(), removes=set()):
         'externalHostEvent',
         'fieldDocumentation',
         'githubconfig',
+        'haConfig',
+        'haConfigInput',
         'host',
         'hostAccess',
         'hostApiProxyToken',

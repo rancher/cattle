@@ -408,6 +408,9 @@ public class ServiceMetadataInfoFactory extends AbstractAgentBaseContextFactory 
         if (consumeMaps != null) {
             for (ServiceConsumeMap consumedMap : consumeMaps) {
                 Service service = svcIdsToSvc.get(consumedMap.getConsumedServiceId());
+                if (service == null) {
+                    continue;
+                }
                 Map<String, ServiceMetaData> consumedService = services.get(service.getId());
                 if (consumedService == null) {
                     continue;

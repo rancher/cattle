@@ -11,6 +11,7 @@ import io.cattle.platform.engine.process.ExitReason;
 import io.cattle.platform.engine.process.ProcessInstance;
 import io.cattle.platform.engine.process.ProcessInstanceException;
 import io.cattle.platform.engine.process.impl.ProcessCancelException;
+import io.cattle.platform.engine.process.util.ProcessEngineUtils;
 import io.cattle.platform.engine.server.ProcessServer;
 import io.cattle.platform.eventing.model.Event;
 import io.cattle.platform.metrics.util.MetricsUtil;
@@ -56,6 +57,10 @@ public class ProcessEventListenerImpl implements ProcessEventListener {
     }
 
     public void processExecute(long processId) {
+        if (!ProcessEngineUtils.enabled()) {
+            return;
+        }
+
         if (shouldWaitLonger(processId)) {
             return;
         }

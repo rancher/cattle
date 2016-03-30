@@ -14,6 +14,7 @@ import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.model.Agent;
 import io.cattle.platform.engine.process.ExitReason;
 import io.cattle.platform.engine.process.ProcessInstanceException;
+import io.cattle.platform.engine.process.util.ProcessEngineUtils;
 import io.cattle.platform.eventing.EventCallOptions;
 import io.cattle.platform.framework.event.Ping;
 import io.cattle.platform.lock.LockDelegator;
@@ -149,6 +150,10 @@ public class PingMonitorImpl implements PingMonitor, Task, TaskOptions {
 
     @Override
     public void run() {
+        if (!ProcessEngineUtils.enabled()) {
+            return;
+        }
+
         for (Agent agent : pingDao.findAgentsToPing()) {
             ping(agent);
         }

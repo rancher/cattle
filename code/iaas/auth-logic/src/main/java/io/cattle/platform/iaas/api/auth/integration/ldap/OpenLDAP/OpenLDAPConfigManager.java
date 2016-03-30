@@ -1,7 +1,7 @@
 package io.cattle.platform.iaas.api.auth.integration.ldap.OpenLDAP;
 
+import io.cattle.platform.core.util.SettingsUtils;
 import io.cattle.platform.iaas.api.auth.SecurityConstants;
-import io.cattle.platform.iaas.api.auth.SettingsUtils;
 import io.cattle.platform.iaas.api.auth.integration.ldap.LDAPUtils;
 import io.cattle.platform.iaas.api.auth.integration.ldap.interfaces.LDAPConstants;
 import io.cattle.platform.json.JsonMapper;

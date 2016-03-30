@@ -5,6 +5,7 @@ import io.cattle.platform.engine.manager.ProcessManager;
 import io.cattle.platform.engine.manager.ProcessNotFoundException;
 import io.cattle.platform.engine.process.ProcessDefinition;
 import io.cattle.platform.engine.process.ProcessInstanceException;
+import io.cattle.platform.engine.process.util.ProcessEngineUtils;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.meta.ObjectMetaDataManager;
 import io.cattle.platform.object.process.ObjectProcessManager;
@@ -53,6 +54,10 @@ public class RemoveMonitorImpl implements RemoveMonitor, Task {
 
     @Override
     public void run() {
+        if (!ProcessEngineUtils.enabled()) {
+            return;
+        }
+
         for (String type : findRemovableTypes()) {
             Class<?> schemaClass = schemaFactory.getSchemaClass(type);
             if (schemaClass == null) {

@@ -299,6 +299,9 @@
     </bean>
 
     <bean class="io.cattle.platform.iaas.api.manager.DataManager" />
+    <bean class="io.cattle.platform.iaas.api.manager.HaConfigManager" >
+        <property name="configuration" ref="FreemarkerConfig" />
+    </bean>
     <bean class="io.cattle.platform.iaas.api.manager.InstanceManager" />
     <bean class="io.cattle.platform.iaas.api.manager.VolumeManager" />
     <bean class="io.cattle.platform.iaas.api.filter.apikey.ApiKeyFilter" />
@@ -485,7 +488,7 @@
     <bean class="io.cattle.platform.iaas.api.auth.integration.ldap.OpenLDAP.OpenLDAPConfigManager" />
     <bean class="io.cattle.platform.iaas.api.auth.integration.ldap.OpenLDAP.OpenLDAPConstantsConfig" />
 
-    <bean class="io.cattle.platform.iaas.api.auth.SettingsUtils" />
+    <bean class="io.cattle.platform.core.util.SettingsUtils" />
     <bean class="io.cattle.platform.iaas.api.auth.identity.IdentityManager" >
         <property name="identityProviders" value="#{extensionManager.map('identity.provider')}" />
         <property name="executorService" ref="CoreExecutorService" />

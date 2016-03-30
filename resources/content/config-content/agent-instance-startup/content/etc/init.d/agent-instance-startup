@@ -75,7 +75,11 @@ download_agent()
 setup_config_url()
 {
     if [[ -e ${CATTLE_HOME}/etc/cattle/startup-env ]]; then
-        eval $(<${CATTLE_HOME}/etc/cattle/startup-env)
+        if [ -n "$CATTLE_CONFIG_URL" ] && curl -sfL --connect-timeout 60 $CATTLE_CONFIG_URL >/dev/null; then
+            return
+        fi
+
+        . ${CATTLE_HOME}/etc/cattle/startup-env
     fi
 
     if [ -n "$CATTLE_CONFIG_URL" ]; then

@@ -41,8 +41,7 @@ public class MachineConfigLinkHandler implements LinkHandler {
                 byte[] content = Base64.decodeBase64(extractedConfig.getBytes());
                 HttpServletResponse response = request.getServletContext().getResponse();
                 response.setContentLength(content.length);
-                response.setContentType("application/x-tar");
-                response.setHeader("Content-Encoding", "gzip");
+                response.setContentType("application/octet-stream");
                 response.setHeader("Content-Disposition", "attachment; filename=" + host.getName() + ".tar.gz");
                 response.setHeader("Cache-Control", "private");
                 response.setHeader("Pragma", "private");
