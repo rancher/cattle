@@ -1152,3 +1152,32 @@ def test_bind_to_ip(super_client, context, client, image_uuid):
     assert len(instances) == 1
     c = instances[0]
     assert c.ports == ['127.2.2.2:%s:%s/tcp' % (port0, port0)]
+
+
+def test_cert_update(client, image_uuid, super_client):
+    env = client.create_environment(name=random_str())
+    env = client.wait_success(env)
+
+    lb_launch_config = {"imageUuid": image_uuid,
+                        "ports": ['11451:1311']}
+    cert1 = _create_cert(client)
+    lb_svc = client. \
+        create_loadBalancerService(name=random_str(),
+                                   environmentId=env.id,
+                                   launchConfig=lb_launch_config,
+                                   defaultCertificateId=cert1.id)
+    lb_svc = client.wait_success(lb_svc)
+    assert lb_svc.state == "inactive"
+    lb_svc = client.wait_success(lb_svc.activate())
+
+    maps = _validate_svc_instance_map_count(client, lb_svc, "active", 1)
+    lb_instance = _wait_for_instance_start(super_client, maps[0].instanceId)
+    agent_id = lb_instance.agentId
+    item_before = _get_config_item(super_client, agent_id)
+
+    # update cert and validate that config item was updated
+    c = _read_cert("san_domain_com.crt")
+    k = _read_cert("san_domain_com.key")
+    cert2 = client.update(cert1, cert=c, key=k)
+    client.wait_success(cert2, 120)
+    _validate_config_item_update(super_client, item_before, agent_id)

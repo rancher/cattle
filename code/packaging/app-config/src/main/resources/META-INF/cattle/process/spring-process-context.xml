@@ -371,6 +371,7 @@
  	<!-- Certificate -->
     <process:process name="certificate.create" resourceType="certificate" start="requested" transitioning="activating" done="active" />
     <process:process name="certificate.remove" resourceType="certificate" start="requested,active,activating" transitioning="removing" done="removed" />
+    <process:process name="certificate.update" resourceType="certificate" start="active" transitioning="updating-active" done="active" />
 
     <!-- Storage Pool Host Map -->
     <process:process name="storagepoolhostmap.create" resourceType="storagePoolHostMap" start="requested" transitioning="activating" done="active" />

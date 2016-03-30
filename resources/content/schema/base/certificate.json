@@ -53,12 +53,18 @@
         "cert":{
             "type": "string",
             "required": true,
-            "nullable": false
+            "nullable": false,
+             "attributes" : {
+                "scheduleUpdate" : true
+            }
         },
          "key":{
             "type": "string",
             "required": true,
-            "nullable": false
+            "nullable": false,
+             "attributes" : {
+                "scheduleUpdate" : true
+            }
         },
          "name":{
             "required": true,

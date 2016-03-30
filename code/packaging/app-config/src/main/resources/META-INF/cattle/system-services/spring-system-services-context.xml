@@ -463,6 +463,7 @@
     <bean class="io.cattle.platform.servicediscovery.service.lbservice.impl.LinkChangeLoadBalancerServiceLookup" />
     <bean class="io.cattle.platform.servicediscovery.service.lbservice.impl.ServiceChangeLoadBalancerServiceLookup" />
     <bean class="io.cattle.platform.servicediscovery.service.lbservice.impl.ServiceExposeMapChangeLoadBalancerServiceLookup" />
+    <bean class="io.cattle.platform.servicediscovery.service.lbservice.impl.CertificateUpdateLoadBalancerServiceLookup" />
     
     <bean class="io.cattle.platform.servicediscovery.deployment.impl.DeploymentManagerImpl" />
     <bean class="io.cattle.platform.servicediscovery.deployment.impl.unit.DeploymentUnitInstanceFactoryImpl" />

@@ -65,7 +65,8 @@ public class LoadBalancerServiceUpdateConfig extends AbstractObjectProcessLogic 
                 ServiceDiscoveryConstants.PROCESS_SERVICE_ACTIVATE,
                 ServiceDiscoveryConstants.PROCESS_SERVICE_DEACTIVATE,
                 ServiceDiscoveryConstants.PROCESS_SERVICE_EXPOSE_MAP_CREATE,
-                ServiceDiscoveryConstants.PROCESS_SERVICE_EXPOSE_MAP_REMOVE
+                ServiceDiscoveryConstants.PROCESS_SERVICE_EXPOSE_MAP_REMOVE,
+                "certificate.update"
         };
     }
 
