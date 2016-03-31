@@ -111,7 +111,6 @@ public class GenericWhitelistedProxy extends AbstractResponseGenerator {
 
         String redirect = servletRequest.getRequestURI();
         redirect = StringUtils.substringAfter(redirect, "/proxy/");
-        redirect = URLDecoder.decode(redirect, "UTF-8");
         if (redirect.startsWith("http")) {
             /* We don't allow // so http:// will be http:/ and same with https. So we fixup here */
             redirect = redirect.replaceFirst("^http:/([^/])", "http://$1");
