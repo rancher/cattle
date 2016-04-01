@@ -1837,6 +1837,26 @@ def test_export_config(client, context):
     assert rancher_yml[service.name]['metadata'] == metadata
     assert rancher_yml[service.name]['retain_ip'] is True
 
+    launch_config_without_log = {"imageUuid": image_uuid,
+                                 "cpuSet": "0,1", "labels": labels,
+                                 "restartPolicy": restart_policy}
+    service_nolog = client. \
+        create_service(name="web-nolog",
+                       environmentId=env.id,
+                       launchConfig=launch_config_without_log,
+                       metadata=metadata,
+                       retainIp=True)
+
+    service_nolog = client.wait_success(service_nolog)
+
+    compose_config = env.exportconfig()
+    labels = {'io.rancher.scheduler.global': 'true'}
+
+    assert compose_config is not None
+    docker_yml = yaml.load(compose_config.dockerComposeConfig)
+    assert "log_driver" not in docker_yml[service_nolog.name]
+    assert "log_opt" not in docker_yml[service_nolog.name]
+
 
 def test_validate_create_only_containers(client, context):
     env = _create_stack(client)
