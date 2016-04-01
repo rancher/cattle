@@ -4,7 +4,6 @@
         "name": {
             "type": "string",
             "required": false,
-            "validChars": "a-zA-Z0-9-/",
             "nullable": true
         },
         "serviceId": {
