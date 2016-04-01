@@ -27,4 +27,40 @@ public class AbstractDefaultResourceManagerFilter extends AbstractResourceManage
         }
     }
 
+    protected void validateLinkName(String linkName){
+        if(linkName != null && !linkName.isEmpty()){
+            if(linkName.startsWith(".") || linkName.endsWith(".") || linkName.contains("..")) {
+                ValidationErrorCodes.throwValidationError(ValidationErrorCodes.INVALID_CHARACTERS,
+                        "name");
+            }
+            
+            //split around a "."
+            String[] parts = linkName.split("\\.");
+            if(parts.length > 1) {
+                //check total length <= 253
+                if (linkName.length() > 253) {
+                    ValidationErrorCodes.throwValidationError(ValidationErrorCodes.MAX_LENGTH_EXCEEDED,
+                            "name");
+                }
+            } 
+
+            for (String linkPart : parts) {
+                if(linkPart.startsWith("-") || linkPart.endsWith("-") || linkPart.contains("--")) {
+                    ValidationErrorCodes.throwValidationError(ValidationErrorCodes.INVALID_CHARACTERS,
+                            "name");
+                }
+                //check length
+                if (linkPart.length() < 1) {
+                    ValidationErrorCodes.throwValidationError(ValidationErrorCodes.MIN_LENGTH_EXCEEDED,
+                            "name");
+                }
+                if (linkPart.length() > 63) {
+                    ValidationErrorCodes.throwValidationError(ValidationErrorCodes.MAX_LENGTH_EXCEEDED,
+                            "name");
+                }
+
+            }
+        }
+    }
+
 }
