@@ -21,6 +21,7 @@ LOCK_DIR=${CATTLE_HOME}/locks
 LOCK=${LOCK_DIR}/config.lock
 DOWNLOAD=$CATTLE_HOME/download
 UPTODATE=false
+PARAM_FILE="config_download_params.txt"
 
 URL=$CATTLE_CONFIG_URL
 AUTH=${CATTLE_ACCESS_KEY}:${CATTLE_SECRET_KEY}
@@ -115,9 +116,16 @@ download()
         fi
     fi
 
-    info Downloading $DOWNLOAD_URL "current=$current"
+    params="current=$current"
+    echo ${content_root}
+    if [ -e ${DOWNLOAD}/$name/$PARAM_FILE ]; then
+        extra=$(<${DOWNLOAD}/$name/$PARAM_FILE)
+        params="$params&$extra"
+    fi
 
-    get $get_opts "$DOWNLOAD_URL?current=$current" > $DOWNLOAD_TEMP/download
+    info Downloading $DOWNLOAD_URL $params
+
+    get $get_opts "$DOWNLOAD_URL?$params" > $DOWNLOAD_TEMP/download
     HEADER=$(cat $DOWNLOAD_TEMP/download | head -n1)
     if [[ "$HEADER" =~ version:* ]]; then
         archive_version=$(echo $HEADER | cut -f2 -d:)
@@ -221,6 +229,9 @@ apply()
     pushd ${content_root} >/dev/null
     ./apply.sh "${opts[@]}" || CATTLE_SCRIPT_DEBUG=true ./apply.sh "${opts[@]}"
     echo $(basename $(pwd)) > ../current
+    if [ -e ${content_root}/$PARAM_FILE ]; then
+       cp ${content_root}/$PARAM_FILE ../.
+    fi
     popd >/dev/null
 }
 

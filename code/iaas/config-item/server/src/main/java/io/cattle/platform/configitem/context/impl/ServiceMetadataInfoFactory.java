@@ -86,6 +86,9 @@ public class ServiceMetadataInfoFactory extends AbstractAgentBaseContextFactory 
             dataWithVersionTag.put(version.getTag(), data);
         }
         context.getData().put("data", generateYml(dataWithVersionTag));
+
+        context.getData().put("params",
+                ServiceDiscoveryConstants.FIELD_METADATA_REVISION + "=" + account.getMetadataRevision());
     }
 
     protected Map<Long, List<ServiceConsumeMap>> getServiceIdToServiceLinks(Account account) {

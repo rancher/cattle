@@ -146,6 +146,17 @@ public interface Account extends java.io.Serializable {
 	@javax.persistence.Column(name = "external_id_type", length = 128)
 	public java.lang.String getExternalIdType();
 
+	/**
+	 * Setter for <code>cattle.account.metadata_revision</code>.
+	 */
+	public void setMetadataRevision(java.lang.Long value);
+
+	/**
+	 * Getter for <code>cattle.account.metadata_revision</code>.
+	 */
+	@javax.persistence.Column(name = "metadata_revision", nullable = false, precision = 19)
+	public java.lang.Long getMetadataRevision();
+
 	// -------------------------------------------------------------------------
 	// FROM and INTO
 	// -------------------------------------------------------------------------
