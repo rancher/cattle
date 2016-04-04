@@ -21,4 +21,6 @@ public interface ServiceDao {
     Certificate getLoadBalancerServiceDefaultCertificate(Service lbService);
 
     List<Service> getConsumingLbServices(long serviceId);
+
+    void incrementMetadataRevision(long accountId, Object object);
 }

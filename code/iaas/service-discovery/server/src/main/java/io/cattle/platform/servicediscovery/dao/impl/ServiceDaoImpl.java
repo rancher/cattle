@@ -1,14 +1,19 @@
 package io.cattle.platform.servicediscovery.dao.impl;
 
-import static io.cattle.platform.core.model.tables.CertificateTable.CERTIFICATE;
-import static io.cattle.platform.core.model.tables.HealthcheckInstanceTable.HEALTHCHECK_INSTANCE;
-import static io.cattle.platform.core.model.tables.InstanceHostMapTable.INSTANCE_HOST_MAP;
-import static io.cattle.platform.core.model.tables.InstanceTable.INSTANCE;
-import static io.cattle.platform.core.model.tables.ServiceExposeMapTable.SERVICE_EXPOSE_MAP;
-import static io.cattle.platform.core.model.tables.ServiceTable.SERVICE;
+import static io.cattle.platform.core.model.tables.CertificateTable.*;
+import static io.cattle.platform.core.model.tables.HealthcheckInstanceTable.*;
+import static io.cattle.platform.core.model.tables.InstanceHostMapTable.*;
+import static io.cattle.platform.core.model.tables.InstanceTable.*;
+import static io.cattle.platform.core.model.tables.ServiceExposeMapTable.*;
+import static io.cattle.platform.core.model.tables.ServiceTable.*;
+import io.cattle.platform.configitem.request.ConfigUpdateRequest;
+import io.cattle.platform.configitem.version.ConfigItemStatusManager;
+import io.cattle.platform.configitem.version.dao.ConfigItemStatusDao;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.constants.LoadBalancerConstants;
+import io.cattle.platform.core.model.Account;
 import io.cattle.platform.core.model.Certificate;
+import io.cattle.platform.core.model.Environment;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.Service;
 import io.cattle.platform.core.model.ServiceConsumeMap;
@@ -18,6 +23,7 @@ import io.cattle.platform.db.jooq.dao.impl.AbstractJooqDao;
 import io.cattle.platform.json.JsonMapper;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.util.DataAccessor;
+import io.cattle.platform.servicediscovery.api.constants.ServiceDiscoveryConstants;
 import io.cattle.platform.servicediscovery.api.constants.ServiceDiscoveryConstants.KIND;
 import io.cattle.platform.servicediscovery.api.dao.ServiceConsumeMapDao;
 import io.cattle.platform.servicediscovery.api.dao.ServiceDao;
@@ -25,11 +31,14 @@ import io.cattle.platform.servicediscovery.service.ServiceDiscoveryService;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.inject.Inject;
 
 public class ServiceDaoImpl extends AbstractJooqDao implements ServiceDao {
+    public static final String METADATA_REVISION_UPDATE_CONFIG = "metadata-revision-update";
 
     @Inject
     JsonMapper jsonMapper;
@@ -39,6 +48,10 @@ public class ServiceDaoImpl extends AbstractJooqDao implements ServiceDao {
     ServiceConsumeMapDao consumeMapDao;
     @Inject
     ServiceDiscoveryService sdService;
+    @Inject
+    ConfigItemStatusManager itemManager;
+    @Inject
+    ConfigItemStatusDao configItemStatusDao;
 
     @Override
     public List<? extends Service> getServicesOnHost(long hostId) {
@@ -116,6 +129,22 @@ public class ServiceDaoImpl extends AbstractJooqDao implements ServiceDao {
             } else if (consumingService.getKind().equalsIgnoreCase(KIND.DNSSERVICE.name())) {
                 findConsumingServicesImpl(consumingService.getId(), lbServices);
             }
+        }
+    }
+
+    @Override
+
+    public void incrementMetadataRevision(long accountId, Object object) {
+        ConfigUpdateRequest request = ConfigUpdateRequest.forResource(Account.class,
+                accountId);
+        request.addItem(METADATA_REVISION_UPDATE_CONFIG);
+        itemManager.updateConfig(request);
+
+        Long newRevision = configItemStatusDao.getRequestedVersion(request.getClient(), METADATA_REVISION_UPDATE_CONFIG);
+        if (object instanceof Service || object instanceof Instance || object instanceof Environment) {
+            Map<String, Object> params = new HashMap<>();
+            params.put(ServiceDiscoveryConstants.FIELD_REVISION, newRevision);
+            objectManager.setFields(object, params);
         }
     }
 }
