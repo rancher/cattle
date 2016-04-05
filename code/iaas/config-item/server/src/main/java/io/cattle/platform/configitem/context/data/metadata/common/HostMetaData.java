@@ -18,6 +18,7 @@ public class HostMetaData {
     Long hostId;
     String uuid;
     String hostname;
+    String state;
 
     public String getAgent_ip() {
         return agent_ip;
@@ -47,6 +48,7 @@ public class HostMetaData {
                 .withDefault(Collections.EMPTY_MAP).as(Map.class);
         this.hostId = host.getId();
         this.uuid = host.getUuid();
+        this.state = host.getState();
     }
 
     @JsonIgnore
@@ -84,5 +86,13 @@ public class HostMetaData {
 
     public void setHostname(String hostname) {
         this.hostname = hostname;
+    }
+
+    public String getState() {
+        return state;
+    }
+
+    public void setState(String state) {
+        this.state = state;
     }
 }

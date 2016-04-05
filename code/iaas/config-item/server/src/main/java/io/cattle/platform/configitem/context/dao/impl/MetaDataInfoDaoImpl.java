@@ -107,10 +107,12 @@ public class MetaDataInfoDaoImpl extends AbstractJooqDao implements MetaDataInfo
         IpAddressTable instanceIpAddress = mapper.add(IP_ADDRESS, IP_ADDRESS.ADDRESS);
         Condition condition = null;
         if (currentRevision != null && requestedRevision != null) {
-            condition = instance.REVISION.gt(currentRevision).and(instance.REVISION.le(requestedRevision))
-                    .and(instance.ACCOUNT_ID.eq(accountId));
+            condition = instance.REVISION.gt(currentRevision).and(instance.REVISION.le(requestedRevision));
         } else {
-            instance.ACCOUNT_ID.eq(accountId);
+            condition = (instance.REMOVED.isNull())
+            .and(instance.STATE.notIn(CommonStatesConstants.REMOVING, CommonStatesConstants.REMOVED))
+            .and(exposeMap.STATE.isNull().or(
+                        exposeMap.STATE.notIn(CommonStatesConstants.REMOVING, CommonStatesConstants.REMOVED)));
         }
         return create()
                 .select(mapper.fields())
@@ -128,13 +130,10 @@ public class MetaDataInfoDaoImpl extends AbstractJooqDao implements MetaDataInfo
                 .join(instanceIpAddress)
                 .on(instanceIpAddress.ID.eq(IP_ADDRESS_NIC_MAP.IP_ADDRESS_ID))
                 .where(condition)
-                .and(instance.REMOVED.isNull())
-                .and(instance.STATE.notIn(CommonStatesConstants.REMOVING, CommonStatesConstants.REMOVED))
+                .and(instance.ACCOUNT_ID.eq(accountId))
                 .and(exposeMap.REMOVED.isNull())
                 .and(instanceIpAddress.ROLE.eq(IpAddressConstants.ROLE_PRIMARY))
                 .and((host.REMOVED.isNull()))
-                .and(exposeMap.STATE.isNull().or(
-                        exposeMap.STATE.notIn(CommonStatesConstants.REMOVING, CommonStatesConstants.REMOVED)))
                 .fetch().map(mapper);
     }
 
@@ -244,7 +243,7 @@ public class MetaDataInfoDaoImpl extends AbstractJooqDao implements MetaDataInfo
         return create()
                 .select(SERVICE.fields())
                 .from(SERVICE)
-                .where(SERVICE.ACCOUNT_ID.eq(accountId).and(SERVICE.REMOVED.isNull())
+                .where(SERVICE.ACCOUNT_ID.eq(accountId)
                         .and(SERVICE.REVISION.gt(currentRevision)).and(SERVICE.REVISION.le(requestedRevision)))
                 .fetchInto(ServiceRecord.class);
     }
@@ -254,7 +253,7 @@ public class MetaDataInfoDaoImpl extends AbstractJooqDao implements MetaDataInfo
         return create()
                 .select(ENVIRONMENT.fields())
                 .from(ENVIRONMENT)
-                .where(ENVIRONMENT.ACCOUNT_ID.eq(accountId).and(ENVIRONMENT.REMOVED.isNull())
+                .where(ENVIRONMENT.ACCOUNT_ID.eq(accountId)
                         .and(ENVIRONMENT.REVISION.gt(currentRevision)).and(ENVIRONMENT.REVISION.le(requestedRevision)))
                 .fetchInto(EnvironmentRecord.class);
     }

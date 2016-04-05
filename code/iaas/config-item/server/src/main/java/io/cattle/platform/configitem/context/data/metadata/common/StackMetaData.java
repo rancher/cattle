@@ -18,12 +18,14 @@ public class StackMetaData {
     protected String name;
     protected String uuid;
     protected List<ServiceMetaData> services = new ArrayList<>();
+    String state;
 
     public StackMetaData(Environment stack, Account account) {
         this.name = stack.getName();
         this.uuid = stack.getUuid();
         this.environment_name = account.getName();
         this.id = stack.getId();
+        this.state = stack.getState();
     }
 
     protected StackMetaData(StackMetaData that) {
@@ -32,6 +34,7 @@ public class StackMetaData {
         this.uuid = that.uuid;
         this.services = that.services;
         this.id = that.id;
+        this.state = that.state;
     }
 
     public String getEnvironment_name() {

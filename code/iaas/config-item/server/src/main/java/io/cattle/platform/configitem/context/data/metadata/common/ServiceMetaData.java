@@ -42,6 +42,7 @@ public class ServiceMetaData {
     protected String fqdn;
     protected List<String> expose = new ArrayList<>();
     protected String token;
+    String state;
 
     protected ServiceMetaData(ServiceMetaData that) {
         this.name = that.name;
@@ -66,6 +67,7 @@ public class ServiceMetaData {
         this.isPrimaryConfig = that.isPrimaryConfig;
         this.launchConfigName = that.launchConfigName;
         this.stackId = that.stackId;
+        this.state = that.state;
     }
 
     public ServiceMetaData(Service service, String serviceName, Environment env, List<String> sidekicks,
@@ -91,6 +93,7 @@ public class ServiceMetaData {
         this.scale = DataAccessor.fieldInteger(service, ServiceDiscoveryConstants.FIELD_SCALE);
         this.fqdn = DataAccessor.fieldString(service, ServiceDiscoveryConstants.FIELD_FQDN);
         this.stackId = env.getId();
+        this.state = service.getState();
     }
 
     @SuppressWarnings("unchecked")
@@ -278,5 +281,13 @@ public class ServiceMetaData {
         }else {
             return new ServiceMetaDataVersion2(serviceData);
         }
+    }
+
+    public String getState() {
+        return state;
+    }
+
+    public void setState(String state) {
+        this.state = state;
     }
 }

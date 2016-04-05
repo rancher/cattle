@@ -34,6 +34,7 @@ public class ContainerMetaData {
     String health_state;
     Long start_count;
     String service_index;
+    String state;
 
     public ContainerMetaData() {
     }
@@ -102,6 +103,7 @@ public class ContainerMetaData {
         this.create_index = instance.getCreateIndex();
         this.health_state = instance.getHealthState();
         this.start_count = instance.getStartCount();
+        this.state = instance.getState();
     }
 
     public void setService_name(String service_name) {
