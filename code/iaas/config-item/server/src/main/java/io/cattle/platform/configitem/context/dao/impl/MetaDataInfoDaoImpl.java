@@ -59,7 +59,8 @@ public class MetaDataInfoDaoImpl extends AbstractJooqDao implements MetaDataInfo
 
         final Map<Long, IpAddress> instanceIdToHostIpMap = dnsInfoDao
                 .getInstanceWithHostNetworkingToIpMap(accountId);
-        final Map<Long, HostMetaData> hostIdToHostMetadata = getHostIdToHostMetadata(accountId);
+        final Map<Long, HostMetaData> hostIdToHostMetadata = getHostIdToHostMetadata(accountId, currentRevision,
+                requestedRevision);
 
         MultiRecordMapper<ContainerMetaData> mapper = new MultiRecordMapper<ContainerMetaData>() {
             @Override
@@ -169,16 +170,16 @@ public class MetaDataInfoDaoImpl extends AbstractJooqDao implements MetaDataInfo
     }
 
     @Override
-    public Map<Long, HostMetaData> getHostIdToHostMetadata(long accountId) {
+    public Map<Long, HostMetaData> getHostIdToHostMetadata(long accountId, Long currentRevision, Long requestedRevision) {
         Map<Long, HostMetaData> toReturn = new HashMap<>();
-        List<HostMetaData> hosts = getAllInstanceHostMetaData(accountId);
+        List<HostMetaData> hosts = getAllInstanceHostMetaData(accountId, currentRevision, requestedRevision);
         for (HostMetaData host : hosts) {
             toReturn.put(host.getHostId(), host);
         }
         return toReturn;
     }
 
-    protected List<HostMetaData> getAllInstanceHostMetaData(long accountId) {
+    protected List<HostMetaData> getAllInstanceHostMetaData(long accountId, Long currentRevision, Long requestedRevision) {
         MultiRecordMapper<HostMetaData> mapper = new MultiRecordMapper<HostMetaData>() {
             @Override
             protected HostMetaData map(List<Object> input) {
@@ -191,7 +192,13 @@ public class MetaDataInfoDaoImpl extends AbstractJooqDao implements MetaDataInfo
 
         HostTable host = mapper.add(HOST);
         IpAddressTable hostIpAddress = mapper.add(IP_ADDRESS);
-
+        Condition condition = null;
+        if (currentRevision != null && requestedRevision != null) {
+            condition = host.REVISION.gt(currentRevision).and(host.REVISION.le(requestedRevision));
+        } else {
+            condition = host.REMOVED.isNull().and(
+                    host.STATE.notIn(CommonStatesConstants.REMOVING, CommonStatesConstants.REMOVED));
+        }
         return create()
                 .select(mapper.fields())
                 .from(hostIpAddress)
@@ -199,15 +206,14 @@ public class MetaDataInfoDaoImpl extends AbstractJooqDao implements MetaDataInfo
                 .on(HOST_IP_ADDRESS_MAP.IP_ADDRESS_ID.eq(hostIpAddress.ID))
                 .join(host)
                 .on(host.ID.eq(HOST_IP_ADDRESS_MAP.HOST_ID))
-                .where(host.REMOVED.isNull())
-                .and(host.STATE.notIn(CommonStatesConstants.REMOVING, CommonStatesConstants.REMOVED))
+                .where(condition)
                 .and(hostIpAddress.REMOVED.isNull())
                 .and(host.ACCOUNT_ID.eq(accountId))
                 .fetch().map(mapper);
     }
 
     @Override
-    public List<HostMetaData> getInstanceHostMetaData(long accountId, Instance instance) {
+    public List<HostMetaData> getInstanceHostMetaData(Instance instance, Long currentRevision, Long requestedRevision) {
         MultiRecordMapper<HostMetaData> mapper = new MultiRecordMapper<HostMetaData>() {
             @Override
             protected HostMetaData map(List<Object> input) {
@@ -220,7 +226,13 @@ public class MetaDataInfoDaoImpl extends AbstractJooqDao implements MetaDataInfo
 
         HostTable host = mapper.add(HOST);
         IpAddressTable hostIpAddress = mapper.add(IP_ADDRESS);
-
+        Condition condition = null;
+        if (currentRevision != null && requestedRevision != null) {
+            condition = host.REVISION.gt(currentRevision).and(host.REVISION.le(requestedRevision));
+        } else {
+            condition = host.REMOVED.isNull().and(
+                    host.STATE.notIn(CommonStatesConstants.REMOVING, CommonStatesConstants.REMOVED));
+        }
         return create()
                 .select(mapper.fields())
                 .from(hostIpAddress)
@@ -230,11 +242,10 @@ public class MetaDataInfoDaoImpl extends AbstractJooqDao implements MetaDataInfo
                 .on(host.ID.eq(HOST_IP_ADDRESS_MAP.HOST_ID))
                 .join(INSTANCE_HOST_MAP)
                 .on(host.ID.eq(INSTANCE_HOST_MAP.HOST_ID))
-                .where(host.REMOVED.isNull())
-                .and(host.STATE.notIn(CommonStatesConstants.REMOVING, CommonStatesConstants.REMOVED))
+                .where(condition)
                 .and(INSTANCE_HOST_MAP.INSTANCE_ID.eq(instance.getId()))
                 .and(hostIpAddress.REMOVED.isNull())
-                .and(host.ACCOUNT_ID.eq(accountId))
+                .and(host.ACCOUNT_ID.eq(instance.getAccountId()))
                 .fetch().map(mapper);
     }
 

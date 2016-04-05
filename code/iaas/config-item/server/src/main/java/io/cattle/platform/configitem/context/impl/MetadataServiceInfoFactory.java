@@ -46,7 +46,7 @@ public class MetadataServiceInfoFactory extends AbstractAgentBaseContextFactory 
     protected void populateContext(Agent agent, Instance instance, ConfigItem item, ArchiveContext context, Request configRequest) {
         Account account = objectManager.loadResource(Account.class, instance.getAccountId());
         Object currentRev = configRequest.getParams().get(ServiceDiscoveryConstants.FIELD_METADATA_REVISION);
-        Long currentRevision = currentRev != null ? Long.valueOf(((String[]) currentRev)[0]) : 0;
+        Long currentRevision = currentRev != null ? Long.valueOf(((String[]) currentRev)[0]) : -1;
         Long requestedRevision = account.getMetadataRevision();
         // get all the objects who's metadata revision is greater than requested revision
         // and <= account metadata revision
@@ -88,10 +88,11 @@ public class MetadataServiceInfoFactory extends AbstractAgentBaseContextFactory 
         typeToData.put("stacks", stacksMd);
 
         // 4. get host meta data
-        Map<Long, HostMetaData> hostIdToHost = metadataInfoDao.getHostIdToHostMetadata(instance.getAccountId());
+        Map<Long, HostMetaData> hostIdToHost = metadataInfoDao.getHostIdToHostMetadata(instance.getAccountId(),
+                currentRevision, requestedRevision);
         List<HostMetaData> hostsMD = new ArrayList<>(hostIdToHost.values());
-        List<HostMetaData> selfHostMD = metadataInfoDao.getInstanceHostMetaData(instance.getAccountId(),
-                instance);
+        List<HostMetaData> selfHostMD = metadataInfoDao.getInstanceHostMetaData(instance,
+                currentRevision, requestedRevision);
         typeToData.put("hosts", hostsMD);
         typeToData.put("host", !selfHostMD.isEmpty() ? selfHostMD.get(0) : null);
         return typeToData;

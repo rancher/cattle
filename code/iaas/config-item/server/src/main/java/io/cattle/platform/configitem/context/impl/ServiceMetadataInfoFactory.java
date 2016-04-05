@@ -148,10 +148,11 @@ public class ServiceMetadataInfoFactory extends AbstractAgentBaseContextFactory 
                 ipsOnHost, hostId);
 
         // 5. get host meta data
-        Map<Long, HostMetaData> hostIdToHost = metaDataInfoDao.getHostIdToHostMetadata(instance.getAccountId());
+        Map<Long, HostMetaData> hostIdToHost = metaDataInfoDao.getHostIdToHostMetadata(instance.getAccountId(), null,
+                null);
         List<HostMetaData> hostsMD = new ArrayList<>(hostIdToHost.values());
-        List<HostMetaData> selfHostMD = metaDataInfoDao.getInstanceHostMetaData(instance.getAccountId(),
-                instance);
+        List<HostMetaData> selfHostMD = metaDataInfoDao.getInstanceHostMetaData(instance,
+                null, null);
 
         // 6. full data combined of (n) self sections and default one
         Map<String, Object> fullData = getFullMetaData(context, containersMD, stackNameToStack,

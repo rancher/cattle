@@ -45,9 +45,9 @@ public interface MetaDataInfoDao {
 
     List<String> getPrimaryIpsOnInstanceHost(Instance instance);
 
-    Map<Long, HostMetaData> getHostIdToHostMetadata(long accountId);
+    Map<Long, HostMetaData> getHostIdToHostMetadata(long accountId, Long currentRevision, Long requestedRevision);
 
-    List<HostMetaData> getInstanceHostMetaData(long accountId, Instance instance);
+    List<HostMetaData> getInstanceHostMetaData(Instance instance, Long currentRevision, Long requestedRevision);
 
     List<? extends Service> getServices(long accountId, Long currentRevision, Long requestedRevision);
 

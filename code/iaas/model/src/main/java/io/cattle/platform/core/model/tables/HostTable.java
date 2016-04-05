@@ -11,7 +11,7 @@ package io.cattle.platform.core.model.tables;
 @java.lang.SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class HostTable extends org.jooq.impl.TableImpl<io.cattle.platform.core.model.tables.records.HostRecord> {
 
-	private static final long serialVersionUID = -1758951054;
+	private static final long serialVersionUID = -167194669;
 
 	/**
 	 * The singleton instance of <code>cattle.host</code>
@@ -120,6 +120,11 @@ public class HostTable extends org.jooq.impl.TableImpl<io.cattle.platform.core.m
 	 * The column <code>cattle.host.agent_state</code>.
 	 */
 	public final org.jooq.TableField<io.cattle.platform.core.model.tables.records.HostRecord, java.lang.String> AGENT_STATE = createField("agent_state", org.jooq.impl.SQLDataType.VARCHAR.length(128), this, "");
+
+	/**
+	 * The column <code>cattle.host.revision</code>.
+	 */
+	public final org.jooq.TableField<io.cattle.platform.core.model.tables.records.HostRecord, java.lang.Long> REVISION = createField("revision", org.jooq.impl.SQLDataType.BIGINT.nullable(false).defaulted(true), this, "");
 
 	/**
 	 * Create a <code>cattle.host</code> table reference
