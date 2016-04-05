@@ -51,4 +51,10 @@ public class TemplatesBasedArchiveItem extends AbstractArchiveBasedConfigItem {
         }
     }
 
+    protected String getFileName(Template template, ArchiveContext context) {
+        String defaultName = template.getOutputName();
+        if (context.getData().containsKey("toReplace")) {
+            for ()
+        }
+    }
 }

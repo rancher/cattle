@@ -2,7 +2,6 @@ package io.cattle.platform.configitem.context.impl;
 
 import static io.cattle.platform.core.model.tables.EnvironmentTable.*;
 import static io.cattle.platform.core.model.tables.ServiceConsumeMapTable.*;
-import static io.cattle.platform.core.model.tables.ServiceTable.*;
 import io.cattle.platform.configitem.context.dao.MetaDataInfoDao;
 import io.cattle.platform.configitem.context.dao.MetaDataInfoDao.Version;
 import io.cattle.platform.configitem.context.data.metadata.common.ContainerMetaData;
@@ -63,32 +62,36 @@ public class ServiceMetadataInfoFactory extends AbstractAgentBaseContextFactory 
     @Override
     protected void populateContext(Agent agent, Instance instance, ConfigItem item, ArchiveContext context) {
         Account account = objectManager.loadResource(Account.class, instance.getAccountId());
+        Long newRevision = account.getMetadataRevision();
+
         List<ContainerMetaData> containersMD = metaDataInfoDao.getContainersData(account.getId());
-        Map<String, StackMetaData> stackNameToStack = new HashMap<>();
-        Map<Long, Map<String, ServiceMetaData>> serviceIdToServiceLaunchConfigs = new HashMap<>();
-        List<? extends Service> allSvcs = objectManager.find(Service.class, SERVICE.ACCOUNT_ID,
-                account.getId(), SERVICE.REMOVED, null);
-
-        Map<Long, Service> svcIdsToSvc = getServiceIdToService(allSvcs);
-        Map<Long, List<ServiceConsumeMap>> svcIdToSvcLinks = getServiceIdToServiceLinks(account);
-
-        populateStacksServicesInfo(account, stackNameToStack, serviceIdToServiceLaunchConfigs, allSvcs);
-
-        Map<String, Object> dataWithVersionTag = new HashMap<>();
-        Map<String, Object> versionToData = new HashMap<>();
-        for (MetaDataInfoDao.Version version : MetaDataInfoDao.Version.values()) {
-            Object data = versionToData.get(version.getValue());
-            if (data == null) {
-                data = getFullMetaData(instance, context, containersMD, stackNameToStack, serviceIdToServiceLaunchConfigs,
-                        version, svcIdsToSvc, svcIdToSvcLinks);
-                versionToData.put(version.getValue(), data);
-            }
-            dataWithVersionTag.put(version.getTag(), data);
-        }
-        context.getData().put("data", generateYml(dataWithVersionTag));
-
+// Map<String, StackMetaData> stackNameToStack = new HashMap<>();
+// Map<Long, Map<String, ServiceMetaData>> serviceIdToServiceLaunchConfigs = new HashMap<>();
+// List<? extends Service> allSvcs = objectManager.find(Service.class, SERVICE.ACCOUNT_ID,
+// account.getId(), SERVICE.REMOVED, null);
+//
+// Map<Long, Service> svcIdsToSvc = getServiceIdToService(allSvcs);
+// Map<Long, List<ServiceConsumeMap>> svcIdToSvcLinks = getServiceIdToServiceLinks(account);
+//
+// populateStacksServicesInfo(account, stackNameToStack, serviceIdToServiceLaunchConfigs, allSvcs);
+//
+// Map<String, Object> dataWithVersionTag = new HashMap<>();
+// Map<String, Object> versionToData = new HashMap<>();
+// for (MetaDataInfoDao.Version version : MetaDataInfoDao.Version.values()) {
+// Object data = versionToData.get(version.getValue());
+// if (data == null) {
+// data = getFullMetaData(instance, context, containersMD, stackNameToStack, serviceIdToServiceLaunchConfigs,
+// version, svcIdsToSvc, svcIdToSvcLinks);
+// versionToData.put(version.getValue(), data);
+// }
+// dataWithVersionTag.put(version.getTag(), data);
+// }
+        context.getData().put("data", generateYml(containersMD));
+        Map<String, String> toReplace = new HashMap<>();
+        toReplace.put("answers.yml", "answers_" + newRevision + ".yml");
+        context.getData().put("replace", toReplace);
         context.getData().put("params",
-                ServiceDiscoveryConstants.FIELD_METADATA_REVISION + "=" + account.getMetadataRevision());
+                ServiceDiscoveryConstants.FIELD_METADATA_REVISION + "=" + newRevision);
     }
 
     protected Map<Long, List<ServiceConsumeMap>> getServiceIdToServiceLinks(Account account) {
@@ -115,7 +118,7 @@ public class ServiceMetadataInfoFactory extends AbstractAgentBaseContextFactory 
         return svcIdsToSvc;
     }
 
-    protected String generateYml(Map<String, Object> dataWithVersion) {
+    protected String generateYml(Object object) {
         DumperOptions options = new DumperOptions();
         options.setDefaultFlowStyle(DumperOptions.FlowStyle.BLOCK);
         Representer representer = new Representer();
@@ -126,7 +129,7 @@ public class ServiceMetadataInfoFactory extends AbstractAgentBaseContextFactory 
         representer.addClassTag(StackMetaDataVersion1.class, Tag.MAP);
         representer.addClassTag(StackMetaDataVersion2.class, Tag.MAP);
         Yaml yaml = new Yaml(representer, options);
-        String yamlStr = yaml.dump(dataWithVersion);
+        String yamlStr = yaml.dump(object);
         return yamlStr;
     }
 
