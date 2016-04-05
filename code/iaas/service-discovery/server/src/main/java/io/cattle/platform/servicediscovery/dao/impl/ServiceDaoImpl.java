@@ -1,11 +1,13 @@
 package io.cattle.platform.servicediscovery.dao.impl;
 
 import static io.cattle.platform.core.model.tables.CertificateTable.*;
+import static io.cattle.platform.core.model.tables.ConfigItemStatusTable.*;
 import static io.cattle.platform.core.model.tables.HealthcheckInstanceTable.*;
 import static io.cattle.platform.core.model.tables.InstanceHostMapTable.*;
 import static io.cattle.platform.core.model.tables.InstanceTable.*;
 import static io.cattle.platform.core.model.tables.ServiceExposeMapTable.*;
 import static io.cattle.platform.core.model.tables.ServiceTable.*;
+import static io.cattle.platform.core.model.tables.AccountTable.*;
 import io.cattle.platform.configitem.request.ConfigUpdateRequest;
 import io.cattle.platform.configitem.version.ConfigItemStatusManager;
 import io.cattle.platform.configitem.version.dao.ConfigItemStatusDao;
@@ -29,6 +31,7 @@ import io.cattle.platform.servicediscovery.api.dao.ServiceConsumeMapDao;
 import io.cattle.platform.servicediscovery.api.dao.ServiceDao;
 import io.cattle.platform.servicediscovery.service.ServiceDiscoveryService;
 
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -135,15 +138,25 @@ public class ServiceDaoImpl extends AbstractJooqDao implements ServiceDao {
     @Override
 
     public void incrementMetadataRevision(long accountId, Object object) {
-        ConfigUpdateRequest request = ConfigUpdateRequest.forResource(Account.class,
-                accountId);
-        request.addItem(METADATA_REVISION_UPDATE_CONFIG);
-        itemManager.updateConfig(request);
-
-        Long newRevision = configItemStatusDao.getRequestedVersion(request.getClient(), METADATA_REVISION_UPDATE_CONFIG);
+        /*
+         * FIXME: yet to figure out optimal way of account metadta revision update
+         * 
+         * ConfigUpdateRequest request = ConfigUpdateRequest.forResource(Account.class,
+         * accountId);
+         * request.addItem(METADATA_REVISION_UPDATE_CONFIG);
+         * itemManager.updateConfig(request);
+         * Long newRevision = configItemStatusDao.getRequestedVersion(request.getClient(),
+         * METADATA_REVISION_UPDATE_CONFIG);
+         */
+        create()
+                .update(ACCOUNT)
+                .set(ACCOUNT.METADATA_REVISION, ACCOUNT.METADATA_REVISION.plus(1))
+                .where(
+                        ACCOUNT.ID.eq(accountId)).execute();
+        Account account = objectManager.loadResource(Account.class, accountId);
         if (object instanceof Service || object instanceof Instance || object instanceof Environment) {
             Map<String, Object> params = new HashMap<>();
-            params.put(ServiceDiscoveryConstants.FIELD_REVISION, newRevision);
+            params.put(ServiceDiscoveryConstants.FIELD_REVISION, account.getMetadataRevision());
             objectManager.setFields(object, params);
         }
     }

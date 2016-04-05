@@ -2,7 +2,9 @@ package io.cattle.platform.configitem.context.dao;
 
 import io.cattle.platform.configitem.context.data.metadata.common.ContainerMetaData;
 import io.cattle.platform.configitem.context.data.metadata.common.HostMetaData;
+import io.cattle.platform.core.model.Environment;
 import io.cattle.platform.core.model.Instance;
+import io.cattle.platform.core.model.Service;
 
 import java.util.List;
 import java.util.Map;
@@ -11,7 +13,8 @@ public interface MetaDataInfoDao {
     public enum Version {
         version1("2015-07-25", "2015-07-25"),
         version2("2015-12-19", "2015-12-19"),
-        latestVersion("latest", "2015-12-19");
+        latestVersion("latest", "2015-12-19"),
+        tempVersion("temp", "temp");
 
         String tag;
         String value;
@@ -38,11 +41,15 @@ public interface MetaDataInfoDao {
         }
     }
 
-    List<ContainerMetaData> getContainersData(long accountId);
+    List<ContainerMetaData> getContainersData(long accountId, Long currentRevision, Long requestedRevision);
 
     List<String> getPrimaryIpsOnInstanceHost(Instance instance);
 
     Map<Long, HostMetaData> getHostIdToHostMetadata(long accountId);
 
     List<HostMetaData> getInstanceHostMetaData(long accountId, Instance instance);
+
+    List<? extends Service> getServices(long accountId, Long currentRevision, Long requestedRevision);
+
+    List<? extends Environment> getStacks(long accountId, Long currentRevision, Long requestedRevision);
 }

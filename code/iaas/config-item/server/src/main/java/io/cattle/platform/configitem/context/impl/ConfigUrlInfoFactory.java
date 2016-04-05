@@ -1,11 +1,13 @@
 package io.cattle.platform.configitem.context.impl;
 
 import io.cattle.platform.configitem.server.model.ConfigItem;
+import io.cattle.platform.configitem.server.model.Request;
 import io.cattle.platform.configitem.server.model.impl.ArchiveContext;
 import io.cattle.platform.core.model.Agent;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.server.context.ServerContext;
 import io.cattle.platform.server.context.ServerContext.BaseProtocol;
+
 import java.io.UnsupportedEncodingException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -23,7 +25,7 @@ public class ConfigUrlInfoFactory extends AbstractAgentBaseContextFactory implem
     private static final Logger log = LoggerFactory.getLogger(ConfigUrlInfoFactory.class);
 
     @Override
-    protected void populateContext(Agent agent, Instance instance, ConfigItem item, ArchiveContext context) {
+    protected void populateContext(Agent agent, Instance instance, ConfigItem item, ArchiveContext context, Request configRequest) {
         context.getData().put("customApiHost", ServerContext.isCustomApiHost());
         context.getData().put("configUrl", ServerContext.getHostApiBaseUrl(BaseProtocol.HTTP));
     }

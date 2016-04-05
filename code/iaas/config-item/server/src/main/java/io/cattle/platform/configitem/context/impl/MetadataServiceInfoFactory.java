@@ -1,29 +1,21 @@
 package io.cattle.platform.configitem.context.impl;
 
-import static io.cattle.platform.core.model.tables.EnvironmentTable.*;
 import static io.cattle.platform.core.model.tables.ServiceConsumeMapTable.*;
-import static io.cattle.platform.core.model.tables.ServiceTable.*;
 import io.cattle.platform.configitem.context.dao.MetaDataInfoDao;
 import io.cattle.platform.configitem.context.dao.MetaDataInfoDao.Version;
 import io.cattle.platform.configitem.context.data.metadata.common.ContainerMetaData;
-import io.cattle.platform.configitem.context.data.metadata.common.DefaultMetaData;
 import io.cattle.platform.configitem.context.data.metadata.common.HostMetaData;
-import io.cattle.platform.configitem.context.data.metadata.common.SelfMetaData;
 import io.cattle.platform.configitem.context.data.metadata.common.ServiceMetaData;
 import io.cattle.platform.configitem.context.data.metadata.common.StackMetaData;
-import io.cattle.platform.configitem.context.data.metadata.version1.ServiceMetaDataVersion1;
-import io.cattle.platform.configitem.context.data.metadata.version1.StackMetaDataVersion1;
-import io.cattle.platform.configitem.context.data.metadata.version2.ServiceMetaDataVersion2;
-import io.cattle.platform.configitem.context.data.metadata.version2.StackMetaDataVersion2;
+import io.cattle.platform.configitem.context.data.metadata.version1.ServiceMetaDataVersionTemp;
+import io.cattle.platform.configitem.context.data.metadata.version1.StackMetaDataVersionTemp;
 import io.cattle.platform.configitem.server.model.ConfigItem;
 import io.cattle.platform.configitem.server.model.Request;
 import io.cattle.platform.configitem.server.model.impl.ArchiveContext;
-import io.cattle.platform.core.dao.GenericMapDao;
 import io.cattle.platform.core.model.Account;
 import io.cattle.platform.core.model.Agent;
 import io.cattle.platform.core.model.Environment;
 import io.cattle.platform.core.model.Instance;
-import io.cattle.platform.core.model.InstanceHostMap;
 import io.cattle.platform.core.model.Service;
 import io.cattle.platform.core.model.ServiceConsumeMap;
 import io.cattle.platform.object.util.DataAccessor;
@@ -45,42 +37,77 @@ import org.yaml.snakeyaml.nodes.Tag;
 import org.yaml.snakeyaml.representer.Representer;
 
 @Named
-public class ServiceMetadataInfoFactory extends AbstractAgentBaseContextFactory {
+public class MetadataServiceInfoFactory extends AbstractAgentBaseContextFactory {
 
     @Inject
-    MetaDataInfoDao metaDataInfoDao;
-
-    @Inject
-    GenericMapDao mapDao;
+    MetaDataInfoDao metadataInfoDao;
 
     @Override
     protected void populateContext(Agent agent, Instance instance, ConfigItem item, ArchiveContext context, Request configRequest) {
         Account account = objectManager.loadResource(Account.class, instance.getAccountId());
+        Object currentRev = configRequest.getParams().get(ServiceDiscoveryConstants.FIELD_METADATA_REVISION);
+        Long currentRevision = currentRev != null ? Long.valueOf(((String[]) currentRev)[0]) : 0;
+        Long requestedRevision = account.getMetadataRevision();
+        // get all the objects who's metadata revision is greater than requested revision
+        // and <= account metadata revision
+        Map<String, Object> typeToData = populateMetadata(account, instance, context, currentRevision, requestedRevision);
+        context.getData().put("newdata", generateYml(typeToData));
+        context.getReplaceInPath().put("newanswers.yml", "newanswers_" + requestedRevision + ".yml");
+        context.getData().put("params",
+                ServiceDiscoveryConstants.FIELD_METADATA_REVISION + "=" + requestedRevision);
+    }
 
-        List<ContainerMetaData> containersMD = metaDataInfoDao.getContainersData(account.getId(), null, null);
+    protected Map<String, Object> populateMetadata(Account account, Instance instance,
+            ArchiveContext context, Long currentRevision, Long requestedRevision) {
+        Map<String, Object> typeToData = new HashMap<>();
+        List<ContainerMetaData> containersMD = metadataInfoDao.getContainersData(account.getId(), currentRevision,
+                requestedRevision);
         Map<String, StackMetaData> stackNameToStack = new HashMap<>();
         Map<Long, Map<String, ServiceMetaData>> serviceIdToServiceLaunchConfigs = new HashMap<>();
-        List<? extends Service> allSvcs = objectManager.find(Service.class, SERVICE.ACCOUNT_ID,
-                account.getId(), SERVICE.REMOVED, null);
+        List<? extends Service> allSvcs = metadataInfoDao.getServices(account.getId(), currentRevision,
+                requestedRevision);
 
         Map<Long, Service> svcIdsToSvc = getServiceIdToService(allSvcs);
         Map<Long, List<ServiceConsumeMap>> svcIdToSvcLinks = getServiceIdToServiceLinks(account);
+        populateStacksServicesInfo(account, stackNameToStack, serviceIdToServiceLaunchConfigs, allSvcs,
+                currentRevision, requestedRevision);
+        // 1. generate containers metadata
+        Map<Long, Map<String, List<ContainerMetaData>>> serviceIdToLaunchConfigToContainer = new HashMap<>();
+        containersMD = populateContainersData(instance, containersMD, stackNameToStack,
+                serviceIdToServiceLaunchConfigs,
+                serviceIdToLaunchConfigToContainer);
+        typeToData.put("containers", containersMD);
 
-        populateStacksServicesInfo(account, stackNameToStack, serviceIdToServiceLaunchConfigs, allSvcs);
+        // 2. generate service metadata based on version + add generated containers to service
+        List<ServiceMetaData> servicesMd = generateServiceMetadata(serviceIdToServiceLaunchConfigs,
+                serviceIdToLaunchConfigToContainer, svcIdsToSvc, svcIdToSvcLinks);
+        typeToData.put("services", servicesMd);
 
-        Map<String, Object> dataWithVersionTag = new HashMap<>();
-        Map<String, Object> versionToData = new HashMap<>();
-        for (MetaDataInfoDao.Version version : MetaDataInfoDao.Version.values()) {
-            Object data = versionToData.get(version.getValue());
-            if (data == null) {
-                data = getFullMetaData(instance, context, containersMD, stackNameToStack,
-                        serviceIdToServiceLaunchConfigs,
-                        version, svcIdsToSvc, svcIdToSvcLinks);
-                versionToData.put(version.getValue(), data);
-            }
-            dataWithVersionTag.put(version.getTag(), data);
-        }
-        context.getData().put("data", generateYml(dataWithVersionTag));
+        // 3. generate stack metadata based on version + add services generated on the previous step
+        List<StackMetaData> stacksMd = generateStackMetadata(stackNameToStack, serviceIdToServiceLaunchConfigs);
+        typeToData.put("stacks", stacksMd);
+
+        // 4. get host meta data
+        Map<Long, HostMetaData> hostIdToHost = metadataInfoDao.getHostIdToHostMetadata(instance.getAccountId());
+        List<HostMetaData> hostsMD = new ArrayList<>(hostIdToHost.values());
+        List<HostMetaData> selfHostMD = metadataInfoDao.getInstanceHostMetaData(instance.getAccountId(),
+                instance);
+        typeToData.put("hosts", hostsMD);
+        typeToData.put("host", !selfHostMD.isEmpty() ? selfHostMD.get(0) : null);
+        return typeToData;
+    }
+
+    protected String generateYml(Object object) {
+        DumperOptions options = new DumperOptions();
+        options.setDefaultFlowStyle(DumperOptions.FlowStyle.BLOCK);
+        Representer representer = new Representer();
+        representer.addClassTag(ContainerMetaData.class, Tag.MAP);
+        representer.addClassTag(HostMetaData.class, Tag.MAP);
+        representer.addClassTag(ServiceMetaDataVersionTemp.class, Tag.MAP);
+        representer.addClassTag(StackMetaDataVersionTemp.class, Tag.MAP);
+        Yaml yaml = new Yaml(representer, options);
+        String yamlStr = yaml.dump(object);
+        return yamlStr;
     }
 
     protected Map<Long, List<ServiceConsumeMap>> getServiceIdToServiceLinks(Account account) {
@@ -107,112 +134,14 @@ public class ServiceMetadataInfoFactory extends AbstractAgentBaseContextFactory 
         return svcIdsToSvc;
     }
 
-    protected String generateYml(Object object) {
-        DumperOptions options = new DumperOptions();
-        options.setDefaultFlowStyle(DumperOptions.FlowStyle.BLOCK);
-        Representer representer = new Representer();
-        representer.addClassTag(SelfMetaData.class, Tag.MAP);
-        representer.addClassTag(DefaultMetaData.class, Tag.MAP);
-        representer.addClassTag(ServiceMetaDataVersion1.class, Tag.MAP);
-        representer.addClassTag(ServiceMetaDataVersion2.class, Tag.MAP);
-        representer.addClassTag(StackMetaDataVersion1.class, Tag.MAP);
-        representer.addClassTag(StackMetaDataVersion2.class, Tag.MAP);
-        Yaml yaml = new Yaml(representer, options);
-        String yamlStr = yaml.dump(object);
-        return yamlStr;
-    }
-
-    protected Map<String, Object> getFullMetaData(Instance instance, ArchiveContext context,
-            List<ContainerMetaData> containersMD, Map<String, StackMetaData> stackNameToStack,
-            Map<Long, Map<String, ServiceMetaData>> serviceIdToServiceLaunchConfigs, Version version,
-            Map<Long, Service> svcIdsToSvc, Map<Long, List<ServiceConsumeMap>> svcIdToSvcLinks) {
-
-        // 1. generate containers metadata
-        Map<Long, Map<String, List<ContainerMetaData>>> serviceIdToLaunchConfigToContainer = new HashMap<>();
-        containersMD = populateContainersData(instance, containersMD, stackNameToStack,
-                serviceIdToServiceLaunchConfigs,
-                serviceIdToLaunchConfigToContainer);
-
-        // 2. generate service metadata based on version + add generated containers to service
-        serviceIdToServiceLaunchConfigs = applyVersionToService(serviceIdToServiceLaunchConfigs,
-                serviceIdToLaunchConfigToContainer, version, svcIdsToSvc, svcIdToSvcLinks);
-
-        // 3. generate stack metadata based on version + add services generated on the previous step
-        stackNameToStack = applyVersionToStack(stackNameToStack, serviceIdToServiceLaunchConfigs, version);
-
-        // 4. populate self section
-        Map<String, SelfMetaData> selfMD = new HashMap<>();
-        List<String> ipsOnHost = metaDataInfoDao.getPrimaryIpsOnInstanceHost(instance);
-        long hostId = getNetworkInstanceHostId(instance);
-        populateSelfSection(instance, containersMD, stackNameToStack, serviceIdToServiceLaunchConfigs, selfMD, version,
-                ipsOnHost, hostId);
-
-        // 5. get host meta data
-        Map<Long, HostMetaData> hostIdToHost = metaDataInfoDao.getHostIdToHostMetadata(instance.getAccountId());
-        List<HostMetaData> hostsMD = new ArrayList<>(hostIdToHost.values());
-        List<HostMetaData> selfHostMD = metaDataInfoDao.getInstanceHostMetaData(instance.getAccountId(),
-                instance);
-
-        // 6. full data combined of (n) self sections and default one
-        Map<String, Object> fullData = getFullMetaData(context, containersMD, stackNameToStack,
-                serviceIdToServiceLaunchConfigs, selfMD, hostsMD, selfHostMD.size() == 0 ? null : selfHostMD.get(0));
-
-        return fullData;
-    }
-
-    protected Map<String, Object> getFullMetaData(ArchiveContext context, List<ContainerMetaData> containersMD,
-            Map<String, StackMetaData> stackNameToStack,
-            Map<Long, Map<String, ServiceMetaData>> serviceIdToServiceLaunchConfigs, Map<String, SelfMetaData> selfMD,
-            List<HostMetaData> hostsMD, HostMetaData selfHostMD) {
-        List<StackMetaData> stacksMD = new ArrayList<>();
-        for (StackMetaData stack : stackNameToStack.values()) {
-            stacksMD.add(stack);
-        }
-        List<ServiceMetaData> servicesMD = new ArrayList<>();
-        for (Map<String, ServiceMetaData> svcs : serviceIdToServiceLaunchConfigs.values()) {
-            servicesMD.addAll(svcs.values());
-        }
-
-        Map<String, Object> fullData = new HashMap<>();
-        fullData.putAll(selfMD);
-        fullData.put("default", new DefaultMetaData(context.getVersion(), containersMD, servicesMD,
-                stacksMD, hostsMD, selfHostMD));
-        return fullData;
-    }
-
-    protected void populateSelfSection(Instance instance, List<ContainerMetaData> containersMD,
-            Map<String, StackMetaData> stackNameToStack,
-            Map<Long, Map<String, ServiceMetaData>> serviceIdToServiceLaunchConfigs, Map<String, SelfMetaData> selfMD,
-            Version version, List<String> ipsOnHost, long hostId) {
-        for (ContainerMetaData containerMD : containersMD) {
-            if (!ipsOnHost.contains(containerMD.getPrimary_ip())) {
-                continue;
-            }
-            ServiceMetaData svcData = null;
-            StackMetaData stackData = null;
-            if (containerMD.getServiceId() != null) {
-                String configName = containerMD.getDnsPrefix();
-                if (configName == null) {
-                    configName = ServiceDiscoveryConstants.PRIMARY_LAUNCH_CONFIG_NAME;
-                }
-                Map<String, ServiceMetaData> svcsData = serviceIdToServiceLaunchConfigs.get(containerMD.getServiceId());
-                if (svcsData != null) {
-                    svcData = svcsData.get(configName);
-                    stackData = stackNameToStack.get(svcData.getStack_name());
-                }
-            }
-            addToSelf(selfMD, containerMD, svcData, stackData, hostId, version);
-        }
-    }
-
-    protected Map<Long, Map<String, ServiceMetaData>> applyVersionToService(Map<Long, Map<String, ServiceMetaData>> serviceIdToServiceLaunchConfigs,
+    protected List<ServiceMetaData> generateServiceMetadata(
+            Map<Long, Map<String, ServiceMetaData>> serviceIdToServiceLaunchConfigs,
             Map<Long, Map<String, List<ContainerMetaData>>> serviceIdToLaunchConfigToContainer,
-            Version version, Map<Long, Service> svcIdsToSvc, Map<Long, List<ServiceConsumeMap>> svcIdToSvcLinks) {
-        Map<Long, Map<String, ServiceMetaData>> newData = new HashMap<>();
+            Map<Long, Service> svcIdsToSvc, Map<Long, List<ServiceConsumeMap>> svcIdToSvcLinks) {
+        List<ServiceMetaData> newData = new ArrayList<>();
         for (Long serviceId : serviceIdToServiceLaunchConfigs.keySet()) {
             Map<String, ServiceMetaData> launchConfigToService = serviceIdToServiceLaunchConfigs.get(serviceId);
             if (launchConfigToService != null) {
-                Map<String, ServiceMetaData> launchConfigToServiceModified = new HashMap<>();
                 for (String launchConfigName : launchConfigToService.keySet()) {
                     ServiceMetaData svcMDOriginal = launchConfigToService.get(launchConfigName);
                     if (svcMDOriginal != null) {
@@ -221,21 +150,20 @@ public class ServiceMetadataInfoFactory extends AbstractAgentBaseContextFactory 
                             svcMDOriginal.setContainersObj(serviceIdToLaunchConfigToContainer.get(serviceId)
                                     .get(launchConfigName));
                         }
-                        ServiceMetaData serviceMDModified = ServiceMetaData.getServiceMetaData(svcMDOriginal, version);
-                        launchConfigToServiceModified.put(launchConfigName, serviceMDModified);
+                        ServiceMetaData serviceMDModified = ServiceMetaData.getServiceMetaData(svcMDOriginal,
+                                Version.tempVersion);
+                        newData.add(serviceMDModified);
                     }
                 }
-                newData.put(serviceId, launchConfigToServiceModified);
             }
         }
         return newData;
     }
 
-    protected Map<String, StackMetaData> applyVersionToStack(Map<String, StackMetaData> stackNameToStack,
-            Map<Long, Map<String, ServiceMetaData>> serviceIdToServiceLaunchConfigs,
-            Version version) {
+    protected List<StackMetaData> generateStackMetadata(Map<String, StackMetaData> stackNameToStack,
+            Map<Long, Map<String, ServiceMetaData>> serviceIdToServiceLaunchConfigs) {
         // modify stack data
-        Map<String, StackMetaData> newData = new HashMap<>();
+        List<StackMetaData> newData = new ArrayList<>();
         for (String stackName : stackNameToStack.keySet()) {
             StackMetaData original = stackNameToStack.get(stackName);
             // add service to stack
@@ -248,8 +176,8 @@ public class ServiceMetadataInfoFactory extends AbstractAgentBaseContextFactory 
                 }
             }
             original.setServicesObj(services);
-            StackMetaData stackMDModified = StackMetaData.getStackMetaData(original, version);
-            newData.put(stackMDModified.getName(), stackMDModified);
+            StackMetaData stackMDModified = StackMetaData.getStackMetaData(original, Version.tempVersion);
+            newData.add(stackMDModified);
         }
         return newData;
     }
@@ -292,9 +220,9 @@ public class ServiceMetadataInfoFactory extends AbstractAgentBaseContextFactory 
     }
 
     protected void populateStacksServicesInfo(Account account, Map<String, StackMetaData> stacksMD,
-            Map<Long, Map<String, ServiceMetaData>> servicesMD, List<? extends Service> allSvcs) {
-        List<? extends Environment> envs = objectManager.find(Environment.class, ENVIRONMENT.ACCOUNT_ID,
-                account.getId(), ENVIRONMENT.REMOVED, null);
+            Map<Long, Map<String, ServiceMetaData>> servicesMD, List<? extends Service> allSvcs, Long currentRevision,
+            Long requestedRevision) {
+        List<? extends Environment> envs = metadataInfoDao.getStacks(account.getId(), currentRevision, requestedRevision);
         Map<Long, List<Service>> envIdToService = new HashMap<>();
         for (Service svc : allSvcs) {
             List<Service> envSvcs = envIdToService.get(svc.getEnvironmentId());
@@ -326,23 +254,6 @@ public class ServiceMetadataInfoFactory extends AbstractAgentBaseContextFactory 
             }
         }
     }
-
-    protected void addToSelf(Map<String, SelfMetaData> self, ContainerMetaData containerMD,
-            ServiceMetaData serviceMD, StackMetaData stackMD, long hostId, Version version) {
-        if (containerMD.getPrimary_ip() == null) {
-            return;
-        }
-
-        if (containerMD.getHostMetaData() == null) {
-            return;
-        }
-
-        if (containerMD.getHostMetaData().getHostId().equals(hostId)) {
-            self.put(containerMD.getPrimary_ip(), new SelfMetaData(containerMD, serviceMD,
-                    stackMD, containerMD.getHostMetaData()));
-        }
-    }
-
 
     protected List<ServiceMetaData> getServicesInfo(Environment env, Account account, List<Service> services) {
         List<ServiceMetaData> stackServicesMD = new ArrayList<>();
@@ -419,14 +330,5 @@ public class ServiceMetadataInfoFactory extends AbstractAgentBaseContextFactory 
 
         serviceMD.setLinks(links);
     }
-
-    protected long getNetworkInstanceHostId(Instance instance) {
-        List<? extends InstanceHostMap> maps = mapDao.findNonRemoved(InstanceHostMap.class, Instance.class,
-                instance.getId());
-        if (!maps.isEmpty()) {
-            return maps.get(0).getHostId();
-        }
-        return 0;
-    }
-
 }
+

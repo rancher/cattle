@@ -1,0 +1,3 @@
+<#if newdata??>
+${newdata}
+</#if> 

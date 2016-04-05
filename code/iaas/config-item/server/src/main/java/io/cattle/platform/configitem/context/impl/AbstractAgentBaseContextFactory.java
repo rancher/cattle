@@ -66,11 +66,10 @@ public abstract class AbstractAgentBaseContextFactory implements ConfigItemConte
             log.error("Found more that one instance for Agent [{}], instances {}", agent.getId(), ids);
         }
 
-
-        populateContext(agent, instances.size() > 0 ? instances.get(0) : null, item, context);
+        populateContext(agent, instances.size() > 0 ? instances.get(0) : null, item, context, req);
     }
 
-    protected abstract void populateContext(Agent agent, Instance instance, ConfigItem item, ArchiveContext context);
+    protected abstract void populateContext(Agent agent, Instance instance, ConfigItem item, ArchiveContext context, Request configRequest);
 
     public ObjectManager getObjectManager() {
         return objectManager;

@@ -3,6 +3,7 @@ package io.cattle.platform.configitem.context.impl;
 import io.cattle.platform.configitem.context.dao.HealthcheckInfoDao;
 import io.cattle.platform.configitem.context.data.HealthcheckData;
 import io.cattle.platform.configitem.server.model.ConfigItem;
+import io.cattle.platform.configitem.server.model.Request;
 import io.cattle.platform.configitem.server.model.impl.ArchiveContext;
 import io.cattle.platform.core.dao.IpAddressDao;
 import io.cattle.platform.core.dao.NetworkDao;
@@ -30,7 +31,7 @@ public class HealthcheckInfoFactory extends AbstractAgentBaseContextFactory {
     IpAddressDao ipAddressDao;
 
     @Override
-    protected void populateContext(Agent agent, Instance instance, ConfigItem item, ArchiveContext context) {
+    protected void populateContext(Agent agent, Instance instance, ConfigItem item, ArchiveContext context, Request configRequest) {
         Nic primaryNic = networkDao.getPrimaryNic(instance.getId());
         if (primaryNic == null) {
             return;

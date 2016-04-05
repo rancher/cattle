@@ -7,6 +7,7 @@ import io.cattle.platform.configitem.context.data.LoadBalancerListenerInfo;
 import io.cattle.platform.configitem.context.data.LoadBalancerTargetInfo;
 import io.cattle.platform.configitem.context.data.LoadBalancerTargetsInfo;
 import io.cattle.platform.configitem.server.model.ConfigItem;
+import io.cattle.platform.configitem.server.model.Request;
 import io.cattle.platform.configitem.server.model.impl.ArchiveContext;
 import io.cattle.platform.core.addon.HaproxyConfig;
 import io.cattle.platform.core.addon.InstanceHealthCheck;
@@ -62,7 +63,7 @@ public class LoadBalancerInfoFactory extends AbstractAgentBaseContextFactory {
     LoadBalancerInfoDao lbInfoDao;
 
     @Override
-    protected void populateContext(Agent agent, Instance instance, ConfigItem item, ArchiveContext context) {
+    protected void populateContext(Agent agent, Instance instance, ConfigItem item, ArchiveContext context, Request configRequest) {
         List<? extends Service> services = instanceDao.findServicesFor(instance);
         if (services.isEmpty()) {
             return;

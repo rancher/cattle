@@ -42,7 +42,8 @@ public class TemplatesBasedArchiveItem extends AbstractArchiveBasedConfigItem {
                 continue;
 
             final Template templateFinal = template;
-            withEntry(context, templateFinal.getOutputName(), template.getSize(), new WithEntry() {
+            String templateName = getTemplateName(context, templateFinal);
+            withEntry(context, templateName, template.getSize(), new WithEntry() {
                 @Override
                 public void with(OutputStream os) throws IOException {
                     templateFinal.execute(context.getData(), os);
@@ -51,10 +52,12 @@ public class TemplatesBasedArchiveItem extends AbstractArchiveBasedConfigItem {
         }
     }
 
-    protected String getFileName(Template template, ArchiveContext context) {
-        String defaultName = template.getOutputName();
-        if (context.getData().containsKey("toReplace")) {
-            for ()
+    protected String getTemplateName(ArchiveContext context, final Template templateFinal) {
+        String baseFileName = templateFinal.getOutputName();
+        for (String toReplace : context.getReplaceInPath().keySet()) {
+            String replaceWith = context.getReplaceInPath().get(toReplace);
+            baseFileName = baseFileName.replace(toReplace, replaceWith);
         }
+        return baseFileName;
     }
 }

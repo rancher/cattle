@@ -3,6 +3,7 @@ package io.cattle.platform.configitem.context.impl;
 import io.cattle.platform.configitem.context.dao.DnsInfoDao;
 import io.cattle.platform.configitem.context.data.DnsEntryData;
 import io.cattle.platform.configitem.server.model.ConfigItem;
+import io.cattle.platform.configitem.server.model.Request;
 import io.cattle.platform.configitem.server.model.impl.ArchiveContext;
 import io.cattle.platform.core.dao.NetworkDao;
 import io.cattle.platform.core.model.Agent;
@@ -34,7 +35,7 @@ public class DnsInfoFactory extends AbstractAgentBaseContextFactory {
     JsonMapper jsonMapper;
 
     @Override
-    protected void populateContext(Agent agent, Instance instance, ConfigItem item, ArchiveContext context) {
+    protected void populateContext(Agent agent, Instance instance, ConfigItem item, ArchiveContext context, Request configRequest) {
         List<DnsEntryData> dnsEntries = new ArrayList<DnsEntryData>();
         // 1. retrieve all instance links for the hosts
         dnsEntries.addAll(dnsInfoDao.getInstanceLinksDnsData(instance));

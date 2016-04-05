@@ -14,6 +14,7 @@ public class ArchiveContext {
     TarArchiveOutputStream taos;
     Map<String, Object> data = new HashMap<String, Object>();
     Map<String, String> hashes = new HashMap<String, String>();
+    Map<String, String> replaceInPath = new HashMap<>();
 
     public ArchiveContext(Request request, TarArchiveOutputStream taos, String version) {
         super();
@@ -44,4 +45,7 @@ public class ArchiveContext {
         return hashes;
     }
 
+    public Map<String, String> getReplaceInPath() {
+        return replaceInPath;
+    }
 }

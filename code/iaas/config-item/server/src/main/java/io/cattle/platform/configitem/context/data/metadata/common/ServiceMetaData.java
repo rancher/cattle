@@ -3,6 +3,7 @@ package io.cattle.platform.configitem.context.data.metadata.common;
 import io.cattle.platform.configitem.context.dao.MetaDataInfoDao;
 import io.cattle.platform.configitem.context.dao.MetaDataInfoDao.Version;
 import io.cattle.platform.configitem.context.data.metadata.version1.ServiceMetaDataVersion1;
+import io.cattle.platform.configitem.context.data.metadata.version1.ServiceMetaDataVersionTemp;
 import io.cattle.platform.configitem.context.data.metadata.version2.ServiceMetaDataVersion2;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.model.Environment;
@@ -272,7 +273,9 @@ public class ServiceMetaData {
     public static ServiceMetaData getServiceMetaData(ServiceMetaData serviceData, Version version) {
         if (version == MetaDataInfoDao.Version.version1) {
             return new ServiceMetaDataVersion1(serviceData);
-        } else {
+        } else if (version == MetaDataInfoDao.Version.tempVersion) {
+            return new ServiceMetaDataVersionTemp(serviceData);
+        }else {
             return new ServiceMetaDataVersion2(serviceData);
         }
     }

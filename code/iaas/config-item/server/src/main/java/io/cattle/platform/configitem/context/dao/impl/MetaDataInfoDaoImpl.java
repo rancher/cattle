@@ -1,5 +1,6 @@
 package io.cattle.platform.configitem.context.dao.impl;
 
+import static io.cattle.platform.core.model.tables.EnvironmentTable.*;
 import static io.cattle.platform.core.model.tables.HostIpAddressMapTable.*;
 import static io.cattle.platform.core.model.tables.HostTable.*;
 import static io.cattle.platform.core.model.tables.InstanceHostMapTable.*;
@@ -8,6 +9,7 @@ import static io.cattle.platform.core.model.tables.IpAddressNicMapTable.*;
 import static io.cattle.platform.core.model.tables.IpAddressTable.*;
 import static io.cattle.platform.core.model.tables.NicTable.*;
 import static io.cattle.platform.core.model.tables.ServiceExposeMapTable.*;
+import static io.cattle.platform.core.model.tables.ServiceTable.*;
 import io.cattle.platform.configitem.context.dao.DnsInfoDao;
 import io.cattle.platform.configitem.context.dao.MetaDataInfoDao;
 import io.cattle.platform.configitem.context.data.metadata.common.ContainerMetaData;
@@ -16,15 +18,19 @@ import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.constants.IpAddressConstants;
 import io.cattle.platform.core.dao.InstanceDao;
+import io.cattle.platform.core.model.Environment;
 import io.cattle.platform.core.model.Host;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.IpAddress;
+import io.cattle.platform.core.model.Service;
 import io.cattle.platform.core.model.ServiceExposeMap;
 import io.cattle.platform.core.model.tables.HostTable;
 import io.cattle.platform.core.model.tables.InstanceTable;
 import io.cattle.platform.core.model.tables.IpAddressTable;
 import io.cattle.platform.core.model.tables.NicTable;
 import io.cattle.platform.core.model.tables.ServiceExposeMapTable;
+import io.cattle.platform.core.model.tables.records.EnvironmentRecord;
+import io.cattle.platform.core.model.tables.records.ServiceRecord;
 import io.cattle.platform.db.jooq.dao.impl.AbstractJooqDao;
 import io.cattle.platform.db.jooq.mapper.MultiRecordMapper;
 import io.cattle.platform.object.util.DataAccessor;
@@ -36,6 +42,7 @@ import java.util.Map;
 
 import javax.inject.Inject;
 
+import org.jooq.Condition;
 import org.jooq.JoinType;
 import org.jooq.Record1;
 import org.jooq.RecordHandler;
@@ -48,7 +55,7 @@ public class MetaDataInfoDaoImpl extends AbstractJooqDao implements MetaDataInfo
     InstanceDao instanceDao;
 
     @Override
-    public List<ContainerMetaData> getContainersData(long accountId) {
+    public List<ContainerMetaData> getContainersData(long accountId, Long currentRevision, Long requestedRevision) {
 
         final Map<Long, IpAddress> instanceIdToHostIpMap = dnsInfoDao
                 .getInstanceWithHostNetworkingToIpMap(accountId);
@@ -98,6 +105,13 @@ public class MetaDataInfoDaoImpl extends AbstractJooqDao implements MetaDataInfo
                 SERVICE_EXPOSE_MAP.DNS_PREFIX);
         HostTable host = mapper.add(HOST, HOST.ID);
         IpAddressTable instanceIpAddress = mapper.add(IP_ADDRESS, IP_ADDRESS.ADDRESS);
+        Condition condition = null;
+        if (currentRevision != null && requestedRevision != null) {
+            condition = instance.REVISION.gt(currentRevision).and(instance.REVISION.le(requestedRevision))
+                    .and(instance.ACCOUNT_ID.eq(accountId));
+        } else {
+            instance.ACCOUNT_ID.eq(accountId);
+        }
         return create()
                 .select(mapper.fields())
                 .from(instance)
@@ -113,7 +127,7 @@ public class MetaDataInfoDaoImpl extends AbstractJooqDao implements MetaDataInfo
                 .on(IP_ADDRESS_NIC_MAP.NIC_ID.eq(NIC.ID))
                 .join(instanceIpAddress)
                 .on(instanceIpAddress.ID.eq(IP_ADDRESS_NIC_MAP.IP_ADDRESS_ID))
-                .where(instance.ACCOUNT_ID.eq(accountId))
+                .where(condition)
                 .and(instance.REMOVED.isNull())
                 .and(instance.STATE.notIn(CommonStatesConstants.REMOVING, CommonStatesConstants.REMOVED))
                 .and(exposeMap.REMOVED.isNull())
@@ -225,4 +239,23 @@ public class MetaDataInfoDaoImpl extends AbstractJooqDao implements MetaDataInfo
                 .fetch().map(mapper);
     }
 
+    @Override
+    public List<? extends Service> getServices(long accountId, Long currentRevision, Long requestedRevision) {
+        return create()
+                .select(SERVICE.fields())
+                .from(SERVICE)
+                .where(SERVICE.ACCOUNT_ID.eq(accountId).and(SERVICE.REMOVED.isNull())
+                        .and(SERVICE.REVISION.gt(currentRevision)).and(SERVICE.REVISION.le(requestedRevision)))
+                .fetchInto(ServiceRecord.class);
+    }
+
+    @Override
+    public List<? extends Environment> getStacks(long accountId, Long currentRevision, Long requestedRevision) {
+        return create()
+                .select(ENVIRONMENT.fields())
+                .from(ENVIRONMENT)
+                .where(ENVIRONMENT.ACCOUNT_ID.eq(accountId).and(ENVIRONMENT.REMOVED.isNull())
+                        .and(ENVIRONMENT.REVISION.gt(currentRevision)).and(ENVIRONMENT.REVISION.le(requestedRevision)))
+                .fetchInto(EnvironmentRecord.class);
+    }
 }
