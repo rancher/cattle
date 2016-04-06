@@ -269,6 +269,7 @@ public class LoadBalancerInfoFactory extends AbstractAgentBaseContextFactory {
         List<? extends LoadBalancerTargetInput> targets = lbInfoDao.getLoadBalancerTargets(lbService);
 
         Map<String, List<LoadBalancerTargetInfo>> uuidToTargetInfos = new HashMap<>();
+        Map<Long, InstanceHealthCheck> svcToHC = new HashMap<>();
         for (LoadBalancerTargetInput target : targets) {
             String ipAddress = target.getIpAddress();
             InstanceHealthCheck healthCheck = null;
@@ -278,8 +279,16 @@ public class LoadBalancerInfoFactory extends AbstractAgentBaseContextFactory {
                 if (targetInstance == null) {
                     continue;
                 }
-                healthCheck = DataAccessor.field(targetInstance,
-                        InstanceConstants.FIELD_HEALTH_CHECK, jsonMapper, InstanceHealthCheck.class);
+
+                healthCheck = svcToHC.get(target.getService().getId());
+                if (healthCheck == null) {
+                    Object hC = ServiceDiscoveryUtil.getLaunchConfigObject(target.getService(),
+                            ServiceDiscoveryConstants.PRIMARY_LAUNCH_CONFIG_NAME, InstanceConstants.FIELD_HEALTH_CHECK);
+                    if (hC != null) {
+                        healthCheck = jsonMapper.convertValue(hC, InstanceHealthCheck.class);
+                        svcToHC.put(target.getService().getId(), healthCheck);
+                    }
+                }
 
                 if (targetInstance.getState().equalsIgnoreCase(InstanceConstants.STATE_RUNNING)
                         || targetInstance.getState().equalsIgnoreCase(InstanceConstants.STATE_STARTING)
