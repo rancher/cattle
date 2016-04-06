@@ -10,6 +10,7 @@ import static io.cattle.platform.core.model.tables.InstanceHostMapTable.*;
 import static io.cattle.platform.core.model.tables.InstanceLabelMapTable.*;
 import static io.cattle.platform.core.model.tables.InstanceTable.*;
 import static io.cattle.platform.core.model.tables.LabelTable.*;
+import static io.cattle.platform.core.model.tables.MountTable.*;
 import static io.cattle.platform.core.model.tables.NicTable.*;
 import static io.cattle.platform.core.model.tables.PortTable.*;
 import static io.cattle.platform.core.model.tables.ServiceExposeMapTable.*;
@@ -18,12 +19,15 @@ import static io.cattle.platform.core.model.tables.StoragePoolTable.*;
 import static io.cattle.platform.core.model.tables.SubnetVnetMapTable.*;
 import static io.cattle.platform.core.model.tables.VnetTable.*;
 import static io.cattle.platform.core.model.tables.VolumeStoragePoolMapTable.*;
+import static io.cattle.platform.core.model.tables.VolumeTable.*;
 import io.cattle.platform.allocator.dao.AllocatorDao;
 import io.cattle.platform.allocator.service.AllocationAttempt;
 import io.cattle.platform.allocator.service.AllocationCandidate;
 import io.cattle.platform.allocator.util.AllocatorUtils;
 import io.cattle.platform.core.constants.CommonStatesConstants;
+import io.cattle.platform.core.constants.HealthcheckConstants;
 import io.cattle.platform.core.constants.InstanceConstants;
+import io.cattle.platform.core.constants.VolumeConstants;
 import io.cattle.platform.core.dao.GenericMapDao;
 import io.cattle.platform.core.model.Host;
 import io.cattle.platform.core.model.Instance;
@@ -35,10 +39,12 @@ import io.cattle.platform.core.model.Volume;
 import io.cattle.platform.core.model.VolumeStoragePoolMap;
 import io.cattle.platform.core.model.tables.records.HostRecord;
 import io.cattle.platform.core.model.tables.records.StoragePoolRecord;
+import io.cattle.platform.core.util.InstanceHelpers;
 import io.cattle.platform.db.jooq.dao.impl.AbstractJooqDao;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.util.DataAccessor;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -57,6 +63,9 @@ import org.slf4j.LoggerFactory;
 public class AllocatorDaoImpl extends AbstractJooqDao implements AllocatorDao {
 
     private static final Logger log = LoggerFactory.getLogger(AllocatorDaoImpl.class);
+
+    static final List<String> IHM_STATES = Arrays.asList(new String[] { CommonStatesConstants.INACTIVE, CommonStatesConstants.DEACTIVATING,
+            CommonStatesConstants.REMOVED, CommonStatesConstants.REMOVING, CommonStatesConstants.PURGING, CommonStatesConstants.PURGED });
 
     ObjectManager objectManager;
     GenericMapDao mapDao;
@@ -166,8 +175,10 @@ public class AllocatorDaoImpl extends AbstractJooqDao implements AllocatorDao {
         Set<Long> existingHosts = attempt.getHostIds();
         Set<Long> newHosts = candidate.getHosts();
 
-        if ( existingHosts.size() == 0 ) {
-            for ( long hostId : newHosts ) {
+        if (existingHosts.size() == 0) {
+            long hId = 0;
+            for (long hostId : newHosts) {
+                hId = hostId;
                 log.info("Associating instance [{}] to host [{}]", attempt.getInstance().getId(), hostId);
                 objectManager.create(InstanceHostMap.class,
                         INSTANCE_HOST_MAP.HOST_ID, hostId,
@@ -175,8 +186,18 @@ public class AllocatorDaoImpl extends AbstractJooqDao implements AllocatorDao {
 
                 modifyCompute(hostId, attempt.getInstance(), false);
             }
+
+            // Assuming a single host. Just over-complexity to allow more than one host
+            if (hId != 0) {
+                List<Volume> vols = InstanceHelpers.extractVolumesFromMounts(attempt.getInstance(), objectManager);
+                for (Volume v : vols) {
+                    if (VolumeConstants.ACCESS_MODE_SINGLE_HOST_RW.equals(v.getAccessMode())) {
+                        objectManager.setFields(v, VOLUME.HOST_ID, hId);
+                    }
+                }
+            }
         } else {
-            if ( ! existingHosts.equals(newHosts) ) {
+            if (!existingHosts.equals(newHosts)) {
                 log.error("Can not move allocated instance [{}], currently {} new {}", attempt.getInstance().getId(),
                         existingHosts, newHosts);
                 throw new IllegalStateException("Can not move allocated instance [" + attempt.getInstance().getId()
@@ -199,7 +220,7 @@ public class AllocatorDaoImpl extends AbstractJooqDao implements AllocatorDao {
                 for (long poolId : newPoolsForVol) {
                     log.info("Associating volume [{}] to storage pool [{}]", volumeId, poolId);
                     objectManager.create(VolumeStoragePoolMap.class,
-                            VOLUME_STORAGE_POOL_MAP.VOLUME_ID, volumeId, 
+                            VOLUME_STORAGE_POOL_MAP.VOLUME_ID, volumeId,
                             VOLUME_STORAGE_POOL_MAP.STORAGE_POOL_ID, poolId);
                 }
             } else if (!existingPoolsForVol.equals(newPoolsForVol)) {
@@ -207,10 +228,10 @@ public class AllocatorDaoImpl extends AbstractJooqDao implements AllocatorDao {
             }
         }
 
-        for ( Nic nic : attempt.getNics() ) {
+        for (Nic nic : attempt.getNics()) {
             Long subnetId = candidate.getSubnetIds().get(nic.getId());
 
-            if ( subnetId == null || ( nic.getSubnetId() != null && subnetId.longValue() == nic.getSubnetId() ) ) {
+            if (subnetId == null || (nic.getSubnetId() != null && subnetId.longValue() == nic.getSubnetId())) {
                 continue;
             }
 
@@ -220,7 +241,7 @@ public class AllocatorDaoImpl extends AbstractJooqDao implements AllocatorDao {
                 .where(NIC.ID.eq(nic.getId()))
                 .execute();
 
-            if ( i != 1 ) {
+            if (i != 1) {
                 throw new IllegalStateException("Expected to update nic id ["
                             + nic.getId() + "] with subnet [" + subnetId + "] but update [" + i + "] rows");
             }
@@ -276,6 +297,22 @@ public class AllocatorDaoImpl extends AbstractJooqDao implements AllocatorDao {
             .fetch(HOST_VNET_MAP.HOST_ID);
     }
 
+    @Override
+    public boolean isVolumeInUseOnHost(long volumeId, long hostId) {
+        return create()
+                .select(INSTANCE.ID)
+                .from(INSTANCE)
+                .join(MOUNT)
+                    .on(MOUNT.INSTANCE_ID.eq(INSTANCE.ID).and(MOUNT.VOLUME_ID.eq(volumeId)))
+                .join(INSTANCE_HOST_MAP)
+                    .on(INSTANCE_HOST_MAP.INSTANCE_ID.eq(INSTANCE.ID).and(INSTANCE_HOST_MAP.HOST_ID.eq(hostId)))
+                .join(HOST)
+                    .on(HOST.ID.eq(INSTANCE_HOST_MAP.HOST_ID))
+                .where(INSTANCE.REMOVED.isNull()
+                    .and(INSTANCE_HOST_MAP.STATE.notIn(IHM_STATES))
+                    .and((INSTANCE.HEALTH_STATE.isNull().or(INSTANCE.HEALTH_STATE.eq(HealthcheckConstants.HEALTH_STATE_HEALTHY)))))
+                .fetch().size() > 0;
+    }
     @Override
     public List<Long> getPhysicalHostsForSubnet(long subnetId, Long vnetId) {
         return create()

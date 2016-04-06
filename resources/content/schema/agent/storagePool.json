@@ -11,6 +11,9 @@
         },
         "driverName": {
             "create": true
+        },
+        "volumeAccessMode": {
+            "create": true
         }
     }
 }

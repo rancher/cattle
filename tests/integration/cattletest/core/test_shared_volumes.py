@@ -46,6 +46,60 @@ def create_new_agent(super_client, project):
     return agent, account, agent_client
 
 
+def test_single_host_rw(super_client, new_context):
+    client, agent_client, host = from_context(new_context)
+    sp_name = 'storage-%s' % random_str()
+    host2 = register_simulated_host(new_context)
+    host_uuids = [host.uuid, host2.uuid]
+
+    create_sp_event(client, agent_client, new_context, sp_name, sp_name,
+                    SP_CREATE, host_uuids, sp_name,
+                    access_mode='singleHostRW')
+    storage_pool = wait_for(lambda: sp_wait(client, sp_name))
+    assert storage_pool.state == 'active'
+
+    assert storage_pool.volumeAccessMode == 'singleHostRW'
+
+    # Create a volume with a driver that points to a storage pool
+    v1 = client.create_volume(name=random_str(), driver=sp_name)
+    v1 = client.wait_success(v1)
+
+    data_volume_mounts = {'/con/path': v1.id}
+    c = client.create_container(imageUuid=new_context.image_uuid,
+                                dataVolumeMounts=data_volume_mounts)
+    c = client.wait_success(c)
+    assert c.state == 'running'
+
+    v1 = client.wait_success(v1)
+    create_mount(v1, c, client, super_client)
+    sps = v1.storagePools()
+    assert len(sps) == 1
+    assert sps[0].id == storage_pool.id
+    assert v1.accessMode == 'singleHostRW'
+
+    client.wait_success(host.deactivate())
+    c2 = client.create_container(imageUuid=new_context.image_uuid,
+                                 dataVolumes=['%s:/test/it' % v1.name])
+    c2 = client.wait_transitioning(c2)
+    assert c2.transitioning == 'error'
+    assert c2.transitioningMessage.startswith('Scheduling failed: Volume')
+    assert c2.state == 'error'
+
+    c = client.wait_success(c.stop())
+
+    c3 = client.create_container(imageUuid=new_context.image_uuid,
+                                 dataVolumes=['%s:/test/it' % v1.name])
+    c3 = client.wait_success(c3)
+
+
+def create_mount(volume, container, client, super_client):
+    mount = super_client.create_mount(volumeId=volume.id,
+                                      instanceId=container.id,
+                                      accountId=container.accountId)
+    mount = super_client.wait_success(mount)
+    return client.reload(container), mount
+
+
 def test_storage_pool_update(new_context, super_client):
     client = new_context.client
     sp = add_storage_pool(new_context)
@@ -426,16 +480,22 @@ def create_volume_event(client, agent_client, context, event_type,
 
 
 def create_sp_event(client, agent_client, context, external_id, name,
-                    event_type, host_uuids, driver_name, agent_account=None):
+                    event_type, host_uuids, driver_name, agent_account=None,
+                    access_mode=None):
+    storage_pool = {
+        'name': name,
+        'externalId': external_id,
+        'driverName': driver_name,
+    }
+
+    if access_mode is not None:
+        storage_pool['volumeAccessMode'] = access_mode
+
     event = agent_client.create_external_storage_pool_event(
         externalId=external_id,
         eventType=event_type,
         hostUuids=host_uuids,
-        storagePool={
-            'name': name,
-            'externalId': external_id,
-            'driverName': driver_name,
-        })
+        storagePool=storage_pool)
 
     assert event.externalId == external_id
     assert event.eventType == event_type
