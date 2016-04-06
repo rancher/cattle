@@ -118,7 +118,7 @@ download()
 
     params="current=$current"
     echo ${content_root}
-    if [ -e ${DOWNLOAD}/$name/$PARAM_FILE ]; then
+    if [ "$CATTLE_AGENT_STARTUP" != "true" ] && [ -e ${DOWNLOAD}/$name/$PARAM_FILE ]; then
         extra=$(<${DOWNLOAD}/$name/$PARAM_FILE)
         params="$params&$extra"
     fi
