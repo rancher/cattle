@@ -1,5 +1,6 @@
 package io.cattle.platform.servicediscovery.api.filter;
 
+import static io.github.ibuildthecloud.gdapi.validation.ValidationErrorCodes.*;
 import io.cattle.platform.core.addon.LoadBalancerServiceLink;
 import io.cattle.platform.core.addon.ServiceLink;
 import io.cattle.platform.core.model.Service;
@@ -87,23 +88,16 @@ public class ServiceSetServiceLinksValidationFilter extends AbstractDefaultResou
     }
 
     private void validateName(String linkName) {
-        if(linkName != null && !linkName.isEmpty()){
-            String[] parts = linkName.split("/");
-            if (parts.length > 2) {
-                ValidationErrorCodes.throwValidationError(ValidationErrorCodes.INVALID_CHARACTERS,
+       if(linkName != null && !linkName.isEmpty()){
+            validateDNSPatternForName(linkName);
+            //check length
+            if (linkName.length() < 1) {
+                ValidationErrorCodes.throwValidationError(ValidationErrorCodes.MIN_LENGTH_EXCEEDED,
                         "name");
             }
-            for (String linkPart : parts) {
-                validateDNSPatternForName(linkPart);
-                //check length
-                if (linkPart.length() < 1) {
-                    ValidationErrorCodes.throwValidationError(ValidationErrorCodes.MIN_LENGTH_EXCEEDED,
-                            "name");
-                }
-                if (linkPart.length() > 63) {
-                    ValidationErrorCodes.throwValidationError(ValidationErrorCodes.MAX_LENGTH_EXCEEDED,
-                            "name");
-                }
+            if (linkName.length() > 63) {
+                ValidationErrorCodes.throwValidationError(ValidationErrorCodes.MAX_LENGTH_EXCEEDED,
+                        "name");
             }
         }
     }
