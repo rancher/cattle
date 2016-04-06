@@ -114,6 +114,9 @@ public class ServiceDaoImpl extends AbstractJooqDao implements ServiceDao {
             if (consumingService.getKind().equalsIgnoreCase(KIND.LOADBALANCERSERVICE.name())) {
                 lbServices.add(consumingService);
             } else if (consumingService.getKind().equalsIgnoreCase(KIND.DNSSERVICE.name())) {
+                if (consumingService.getId().equals(serviceId)) {
+                    continue;
+                }
                 findConsumingServicesImpl(consumingService.getId(), lbServices);
             }
         }
