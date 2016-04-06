@@ -378,3 +378,28 @@ def test_validate_svc_name(client, context):
                                 launchConfig=launch_config)
     svc = client.wait_success(svc)
     assert svc.state == "inactive"
+
+
+def test_setlinks_on_removed(client, context):
+    env = _create_stack(client)
+
+    image_uuid = context.image_uuid
+    launch_config = {"imageUuid": image_uuid}
+
+    svc = client.create_service(name=random_str(),
+                                environmentId=env.id,
+                                launchConfig=launch_config)
+    svc = client.wait_success(svc)
+
+    target = client.create_service(name=random_str(),
+                                   environmentId=env.id,
+                                   launchConfig=launch_config)
+    target = client.wait_success(target)
+    client.wait_success(target.remove())
+
+    link = {"serviceId": target.id, "name": "link1"}
+    with pytest.raises(ApiError) as e:
+        svc. \
+            setservicelinks(serviceLinks=[link])
+    assert e.value.error.status == 422
+    assert e.value.error.code == 'InvalidReference'
