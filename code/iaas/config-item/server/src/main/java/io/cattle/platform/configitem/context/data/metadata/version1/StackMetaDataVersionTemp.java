@@ -1,20 +1,25 @@
 package io.cattle.platform.configitem.context.data.metadata.version1;
 
+import io.cattle.platform.configitem.context.data.metadata.common.ServiceMetaData;
 import io.cattle.platform.configitem.context.data.metadata.common.StackMetaData;
+import io.cattle.platform.core.constants.CommonStatesConstants;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
-import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.collections.TransformerUtils;
-
 public class StackMetaDataVersionTemp extends StackMetaData {
-    List<String> services;
+    List<String> services = new ArrayList<>();
 
-    @SuppressWarnings("unchecked")
     public StackMetaDataVersionTemp(StackMetaData stackData) {
         super(stackData);
-        this.services = (List<String>) CollectionUtils.collect(super.services,
-                TransformerUtils.invokerTransformer("getMetadataUuid"));
+        List<String> removedStates = Arrays.asList(CommonStatesConstants.REMOVED, CommonStatesConstants.REMOVING);
+        for (ServiceMetaData s : super.services) {
+            if (removedStates.contains(s.getState())) {
+                continue;
+            }
+            this.services.add(s.getMetadataUuid());
+        }
     }
 
     public List<String> getServices() {

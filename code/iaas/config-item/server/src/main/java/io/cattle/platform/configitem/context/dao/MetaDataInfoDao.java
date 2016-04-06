@@ -49,7 +49,7 @@ public interface MetaDataInfoDao {
 
     List<HostMetaData> getInstanceHostMetaData(Instance instance, Long currentRevision, Long requestedRevision);
 
-    List<? extends Service> getServices(long accountId, Long currentRevision, Long requestedRevision);
+    List<? extends Service> getServices(long accountId);
 
-    List<? extends Environment> getStacks(long accountId, Long currentRevision, Long requestedRevision);
+    List<? extends Environment> getStacks(long accountId);
 }

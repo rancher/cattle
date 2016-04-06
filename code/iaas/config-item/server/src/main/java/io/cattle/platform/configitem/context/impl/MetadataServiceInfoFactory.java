@@ -48,6 +48,9 @@ public class MetadataServiceInfoFactory extends AbstractAgentBaseContextFactory 
         Object currentRev = configRequest.getParams().get(ServiceDiscoveryConstants.FIELD_METADATA_REVISION);
         Long currentRevision = currentRev != null ? Long.valueOf(((String[]) currentRev)[0]) : -1;
         Long requestedRevision = account.getMetadataRevision();
+        if (currentRevision == requestedRevision) {
+            return;
+        }
         // get all the objects who's metadata revision is greater than requested revision
         // and <= account metadata revision
         Map<String, Map<String, String>> selfUuids = new HashMap<>();
@@ -68,31 +71,30 @@ public class MetadataServiceInfoFactory extends AbstractAgentBaseContextFactory 
                 requestedRevision);
         Map<String, StackMetaData> stackNameToStack = new HashMap<>();
         Map<Long, Map<String, ServiceMetaData>> serviceIdToServiceLaunchConfigs = new HashMap<>();
-        List<? extends Service> allSvcs = metadataInfoDao.getServices(account.getId(), currentRevision,
-                requestedRevision);
+        List<? extends Service> allSvcs = metadataInfoDao.getServices(account.getId());
 
         Map<Long, Service> svcIdsToSvc = getServiceIdToService(allSvcs);
         Map<Long, List<ServiceConsumeMap>> svcIdToSvcLinks = getServiceIdToServiceLinks(account);
         populateStacksServicesInfo(account, stackNameToStack, serviceIdToServiceLaunchConfigs, allSvcs,
                 currentRevision, requestedRevision);
         // 1. generate containers metadata
-        Map<Long, Map<String, List<ContainerMetaData>>> serviceIdToLaunchConfigToContainer = new HashMap<>();
-        containersMD = populateContainersData(instance, containersMD, stackNameToStack,
-                serviceIdToServiceLaunchConfigs,
-                serviceIdToLaunchConfigToContainer);
-        addToSelf(selfUuids, containersMD, stackNameToStack, serviceIdToServiceLaunchConfigs);
-        typeToData.put("containers", containersMD);
+        Map<Long, Map<String, List<ContainerMetaData>>> serviceIdToLaunchConfigToContainer = generateContainersMetadata(
+                instance, typeToData, selfUuids, containersMD, stackNameToStack, serviceIdToServiceLaunchConfigs);
 
         // 2. generate service metadata based on version + add generated containers to service
-        List<ServiceMetaData> servicesMd = generateServiceMetadata(serviceIdToServiceLaunchConfigs,
-                serviceIdToLaunchConfigToContainer, svcIdsToSvc, svcIdToSvcLinks);
-        typeToData.put("services", servicesMd);
+        generateServicesMetadata(typeToData, serviceIdToServiceLaunchConfigs, svcIdsToSvc, svcIdToSvcLinks,
+                serviceIdToLaunchConfigToContainer);
 
         // 3. generate stack metadata based on version + add services generated on the previous step
-        List<StackMetaData> stacksMd = generateStackMetadata(stackNameToStack, serviceIdToServiceLaunchConfigs);
-        typeToData.put("stacks", stacksMd);
+        generateStackMetadata(typeToData, stackNameToStack, serviceIdToServiceLaunchConfigs);
 
         // 4. get host meta data
+        generateHostMetadata(instance, currentRevision, requestedRevision, typeToData);
+        return typeToData;
+    }
+
+    protected void generateHostMetadata(Instance instance, Long currentRevision, Long requestedRevision,
+            Map<String, Object> typeToData) {
         Map<Long, HostMetaData> hostIdToHost = metadataInfoDao.getHostIdToHostMetadata(instance.getAccountId(),
                 currentRevision, requestedRevision);
         List<HostMetaData> hostsMD = new ArrayList<>(hostIdToHost.values());
@@ -100,13 +102,61 @@ public class MetadataServiceInfoFactory extends AbstractAgentBaseContextFactory 
                 currentRevision, requestedRevision);
         typeToData.put("hosts", hostsMD);
         typeToData.put("host", !selfHostMD.isEmpty() ? selfHostMD.get(0) : null);
-        return typeToData;
+    }
+
+    protected void generateStackMetadata(Map<String, Object> typeToData, Map<String, StackMetaData> stackNameToStack,
+            Map<Long, Map<String, ServiceMetaData>> serviceIdToServiceLaunchConfigs) {
+        List<StackMetaData> stacksMd = generateStackMetadata(stackNameToStack, serviceIdToServiceLaunchConfigs);
+        List<StackMetaData> finalData = new ArrayList<>();
+        for (StackMetaData stack : stacksMd) {
+            if (stack.isIncludeToData()) {
+                finalData.add(stack);
+            }
+        }
+        typeToData.put("stacks", finalData);
+    }
+
+    protected void generateServicesMetadata(Map<String, Object> typeToData,
+            Map<Long, Map<String, ServiceMetaData>> serviceIdToServiceLaunchConfigs, Map<Long, Service> svcIdsToSvc,
+            Map<Long, List<ServiceConsumeMap>> svcIdToSvcLinks,
+            Map<Long, Map<String, List<ContainerMetaData>>> serviceIdToLaunchConfigToContainer) {
+        List<ServiceMetaData> servicesMd = generateServiceMetadata(serviceIdToServiceLaunchConfigs,
+                serviceIdToLaunchConfigToContainer, svcIdsToSvc, svcIdToSvcLinks);
+        List<ServiceMetaData> finalData = new ArrayList<>();
+        for (ServiceMetaData svc : servicesMd) {
+            if (svc.isIncludeToData()) {
+                finalData.add(svc);
+            }
+        }
+        typeToData.put("services", finalData);
+    }
+
+    protected Map<Long, Map<String, List<ContainerMetaData>>> generateContainersMetadata(Instance instance,
+            Map<String, Object> typeToData, Map<String, Map<String, String>> selfUuids,
+            List<ContainerMetaData> containersMD, Map<String, StackMetaData> stackNameToStack,
+            Map<Long, Map<String, ServiceMetaData>> serviceIdToServiceLaunchConfigs) {
+        Map<Long, Map<String, List<ContainerMetaData>>> serviceIdToLaunchConfigToContainer = new HashMap<>();
+        containersMD = populateContainersData(instance, containersMD, stackNameToStack,
+                serviceIdToServiceLaunchConfigs,
+                serviceIdToLaunchConfigToContainer);
+        addToSelf(selfUuids, containersMD, stackNameToStack, serviceIdToServiceLaunchConfigs);
+        List<ContainerMetaData> finalData = new ArrayList<>();
+        for (ContainerMetaData cData : containersMD) {
+            if (cData.isIncludeToData()) {
+                finalData.add(cData);
+            }
+        }
+        typeToData.put("containers", finalData);
+        return serviceIdToLaunchConfigToContainer;
     }
 
     protected void addToSelf(Map<String, Map<String, String>> selfUuids, List<ContainerMetaData> containersMD,
             Map<String, StackMetaData> stackNameToStack,
             Map<Long, Map<String, ServiceMetaData>> serviceIdToServiceLaunchConfigs) {
         for (ContainerMetaData c : containersMD) {
+            if (!c.isIncludeToData()) {
+                continue;
+            }
             Map<String, String> selfData = selfUuids.get(c.getPrimary_ip());
             if (selfData == null) {
                 selfData = new HashMap<>();
@@ -262,7 +312,7 @@ public class MetadataServiceInfoFactory extends AbstractAgentBaseContextFactory 
     protected void populateStacksServicesInfo(Account account, Map<String, StackMetaData> stacksMD,
             Map<Long, Map<String, ServiceMetaData>> servicesMD, List<? extends Service> allSvcs, Long currentRevision,
             Long requestedRevision) {
-        List<? extends Environment> envs = metadataInfoDao.getStacks(account.getId(), currentRevision, requestedRevision);
+        List<? extends Environment> envs = metadataInfoDao.getStacks(account.getId());
         Map<Long, List<Service>> envIdToService = new HashMap<>();
         for (Service svc : allSvcs) {
             List<Service> envSvcs = envIdToService.get(svc.getEnvironmentId());
@@ -273,12 +323,17 @@ public class MetadataServiceInfoFactory extends AbstractAgentBaseContextFactory 
             envIdToService.put(svc.getEnvironmentId(), envSvcs);
         }
         for (Environment env : envs) {
-            StackMetaData stackMetaData = new StackMetaData(env, account);
+            boolean includeToData = false;
+            if (env.getRevision() > currentRevision && env.getRevision() <= requestedRevision) {
+                includeToData = true;
+            }
+            StackMetaData stackMetaData = new StackMetaData(env, account, includeToData);
             List<Service> services = envIdToService.get(env.getId());
             if (services == null) {
                 services = new ArrayList<>();
             }
-            List<ServiceMetaData> stackServicesMD = getServicesInfo(env, account, services);
+            List<ServiceMetaData> stackServicesMD = getServicesInfo(env, account, services, currentRevision,
+                    requestedRevision);
             stacksMD.put(stackMetaData.getName(), stackMetaData);
             for (ServiceMetaData stackServiceMD : stackServicesMD) {
                 Map<String, ServiceMetaData> launchConfigToSvcMap = servicesMD.get(stackServiceMD.getServiceId());
@@ -295,19 +350,23 @@ public class MetadataServiceInfoFactory extends AbstractAgentBaseContextFactory 
         }
     }
 
-    protected List<ServiceMetaData> getServicesInfo(Environment env, Account account, List<Service> services) {
+    protected List<ServiceMetaData> getServicesInfo(Environment env, Account account, List<Service> services,
+            Long currentRevision,
+            Long requestedRevision) {
         List<ServiceMetaData> stackServicesMD = new ArrayList<>();
         Map<Long, Service> idToService = new HashMap<>();
         for (Service service : services) {
             List<ContainerMetaData> serviceContainersMD = new ArrayList<>();
-            getServiceInfo(account, serviceContainersMD, env, stackServicesMD, idToService, service);
+            getServiceInfo(account, serviceContainersMD, env, stackServicesMD, idToService, service, currentRevision,
+                    requestedRevision);
         }
         return stackServicesMD;
     }
 
     protected void getServiceInfo(Account account, List<ContainerMetaData> serviceContainersMD,
             Environment env, List<ServiceMetaData> stackServices, Map<Long, Service> idToService,
-            Service service) {
+            Service service, Long currentRevision,
+            Long requestedRevision) {
         idToService.put(service.getId(), service);
         List<String> launchConfigNames = ServiceDiscoveryUtil.getServiceLaunchConfigNames(service);
         if (launchConfigNames.isEmpty()) {
@@ -315,14 +374,15 @@ public class MetadataServiceInfoFactory extends AbstractAgentBaseContextFactory 
         }
         for (String launchConfigName : launchConfigNames) {
             getLaunchConfigInfo(account, env, stackServices, idToService, service, launchConfigNames,
-                    launchConfigName);
+                    launchConfigName, currentRevision, requestedRevision);
         }
     }
 
     @SuppressWarnings("unchecked")
     protected void getLaunchConfigInfo(Account account, Environment env,
             List<ServiceMetaData> stackServices, Map<Long, Service> idToService, Service service,
-            List<String> launchConfigNames, String launchConfigName) {
+            List<String> launchConfigNames, String launchConfigName, Long currentRevision,
+            Long requestedRevision) {
         boolean isPrimaryConfig = launchConfigName
                 .equalsIgnoreCase(ServiceDiscoveryConstants.PRIMARY_LAUNCH_CONFIG_NAME);
         String serviceName = isPrimaryConfig ? service.getName()
@@ -334,7 +394,11 @@ public class MetadataServiceInfoFactory extends AbstractAgentBaseContextFactory 
         }
         Map<String, Object> metadata = DataAccessor.fields(service).withKey(ServiceDiscoveryConstants.FIELD_METADATA)
                 .withDefault(Collections.EMPTY_MAP).as(Map.class);
-        ServiceMetaData svcMetaData = new ServiceMetaData(service, serviceName, env, sidekicks, metadata);
+        boolean includeToData = false;
+        if (service.getRevision() > currentRevision && service.getRevision() <= requestedRevision) {
+            includeToData = true;
+        }
+        ServiceMetaData svcMetaData = new ServiceMetaData(service, serviceName, env, sidekicks, metadata, includeToData);
         stackServices.add(svcMetaData);
     }
 

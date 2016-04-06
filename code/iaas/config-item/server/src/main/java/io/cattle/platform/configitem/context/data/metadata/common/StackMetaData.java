@@ -13,6 +13,7 @@ import java.util.List;
 
 public class StackMetaData {
     private long id;
+    private boolean includeToData;
 
     protected String environment_name;
     protected String name;
@@ -21,7 +22,7 @@ public class StackMetaData {
     String state;
     String metadataUuid;
 
-    public StackMetaData(Environment stack, Account account) {
+    public StackMetaData(Environment stack, Account account, boolean includeToData) {
         this.name = stack.getName();
         this.uuid = stack.getUuid();
         this.environment_name = account.getName();
@@ -38,6 +39,7 @@ public class StackMetaData {
         this.id = that.id;
         this.state = that.state;
         this.metadataUuid = that.metadataUuid;
+        this.includeToData = that.includeToData;
     }
 
     public String getEnvironment_name() {
@@ -88,5 +90,9 @@ public class StackMetaData {
 
     public void setMetadataUuid(String metadataUuid) {
         this.metadataUuid = metadataUuid;
+    }
+
+    public boolean isIncludeToData() {
+        return includeToData;
     }
 }

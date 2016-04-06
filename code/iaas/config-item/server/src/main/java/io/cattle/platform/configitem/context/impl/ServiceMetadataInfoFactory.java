@@ -306,7 +306,7 @@ public class ServiceMetadataInfoFactory extends AbstractAgentBaseContextFactory 
             envIdToService.put(svc.getEnvironmentId(), envSvcs);
         }
         for (Environment env : envs) {
-            StackMetaData stackMetaData = new StackMetaData(env, account);
+            StackMetaData stackMetaData = new StackMetaData(env, account, true);
             List<Service> services = envIdToService.get(env.getId());
             if (services == null) {
                 services = new ArrayList<>();
@@ -384,7 +384,7 @@ public class ServiceMetadataInfoFactory extends AbstractAgentBaseContextFactory 
         }
         Map<String, Object> metadata = DataAccessor.fields(service).withKey(ServiceDiscoveryConstants.FIELD_METADATA)
                 .withDefault(Collections.EMPTY_MAP).as(Map.class);
-        ServiceMetaData svcMetaData = new ServiceMetaData(service, serviceName, env, sidekicks, metadata);
+        ServiceMetaData svcMetaData = new ServiceMetaData(service, serviceName, env, sidekicks, metadata, true);
         stackServices.add(svcMetaData);
     }
 

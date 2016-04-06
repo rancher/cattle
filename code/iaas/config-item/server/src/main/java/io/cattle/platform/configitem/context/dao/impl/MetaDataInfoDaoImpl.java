@@ -55,7 +55,8 @@ public class MetaDataInfoDaoImpl extends AbstractJooqDao implements MetaDataInfo
     InstanceDao instanceDao;
 
     @Override
-    public List<ContainerMetaData> getContainersData(long accountId, Long currentRevision, Long requestedRevision) {
+    public List<ContainerMetaData> getContainersData(long accountId, final Long currentRevision,
+            final Long requestedRevision) {
 
         final Map<Long, IpAddress> instanceIdToHostIpMap = dnsInfoDao
                 .getInstanceWithHostNetworkingToIpMap(accountId);
@@ -90,7 +91,13 @@ public class MetaDataInfoDaoImpl extends AbstractJooqDao implements MetaDataInfo
 
                 if (host != null) {
                     HostMetaData hostMetaData = hostIdToHostMetadata.get(host.getId());
-                    data.setInstanceAndHostMetadata(instance, hostMetaData);
+                    boolean includeToData = true;
+                    if (currentRevision != null && requestedRevision != null) {
+                        if (!(instance.getRevision() > currentRevision && instance.getRevision() <= requestedRevision)) {
+                            includeToData = false;
+                        }
+                    }
+                    data.setInstanceAndHostMetadata(instance, hostMetaData, includeToData);
                 }
 
                 data.setExposeMap(serviceMap);
@@ -101,19 +108,22 @@ public class MetaDataInfoDaoImpl extends AbstractJooqDao implements MetaDataInfo
         };
 
         InstanceTable instance = mapper.add(INSTANCE, INSTANCE.UUID, INSTANCE.NAME, INSTANCE.CREATE_INDEX,
-                INSTANCE.HEALTH_STATE, INSTANCE.START_COUNT);
+                INSTANCE.HEALTH_STATE, INSTANCE.START_COUNT, INSTANCE.REVISION);
         ServiceExposeMapTable exposeMap = mapper.add(SERVICE_EXPOSE_MAP, SERVICE_EXPOSE_MAP.SERVICE_ID,
                 SERVICE_EXPOSE_MAP.DNS_PREFIX);
         HostTable host = mapper.add(HOST, HOST.ID);
         IpAddressTable instanceIpAddress = mapper.add(IP_ADDRESS, IP_ADDRESS.ADDRESS);
         Condition condition = null;
-        if (currentRevision != null && requestedRevision != null) {
-            condition = instance.REVISION.gt(currentRevision).and(instance.REVISION.le(requestedRevision));
-        } else {
-            condition = (instance.REMOVED.isNull())
+        if (currentRevision == null && requestedRevision == null) {
+            condition =
+                    instance.ACCOUNT_ID
+                            .eq(accountId)
+                            .and(instance.REMOVED.isNull())
             .and(instance.STATE.notIn(CommonStatesConstants.REMOVING, CommonStatesConstants.REMOVED))
             .and(exposeMap.STATE.isNull().or(
                         exposeMap.STATE.notIn(CommonStatesConstants.REMOVING, CommonStatesConstants.REMOVED)));
+        } else {
+            condition = instance.ACCOUNT_ID.eq(accountId);
         }
         return create()
                 .select(mapper.fields())
@@ -250,22 +260,20 @@ public class MetaDataInfoDaoImpl extends AbstractJooqDao implements MetaDataInfo
     }
 
     @Override
-    public List<? extends Service> getServices(long accountId, Long currentRevision, Long requestedRevision) {
+    public List<? extends Service> getServices(long accountId) {
         return create()
                 .select(SERVICE.fields())
                 .from(SERVICE)
-                .where(SERVICE.ACCOUNT_ID.eq(accountId)
-                        .and(SERVICE.REVISION.gt(currentRevision)).and(SERVICE.REVISION.le(requestedRevision)))
+                .where(SERVICE.ACCOUNT_ID.eq(accountId))
                 .fetchInto(ServiceRecord.class);
     }
 
     @Override
-    public List<? extends Environment> getStacks(long accountId, Long currentRevision, Long requestedRevision) {
+    public List<? extends Environment> getStacks(long accountId) {
         return create()
                 .select(ENVIRONMENT.fields())
                 .from(ENVIRONMENT)
-                .where(ENVIRONMENT.ACCOUNT_ID.eq(accountId)
-                        .and(ENVIRONMENT.REVISION.gt(currentRevision)).and(ENVIRONMENT.REVISION.le(requestedRevision)))
+                .where(ENVIRONMENT.ACCOUNT_ID.eq(accountId))
                 .fetchInto(EnvironmentRecord.class);
     }
 }

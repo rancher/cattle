@@ -2,12 +2,11 @@ package io.cattle.platform.configitem.context.data.metadata.version1;
 
 import io.cattle.platform.configitem.context.data.metadata.common.ContainerMetaData;
 import io.cattle.platform.configitem.context.data.metadata.common.ServiceMetaData;
+import io.cattle.platform.core.constants.CommonStatesConstants;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
-
-import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.collections.TransformerUtils;
 
 public class ServiceMetaDataVersionTemp extends ServiceMetaData {
     List<String> containers = new ArrayList<>();
@@ -17,11 +16,15 @@ public class ServiceMetaDataVersionTemp extends ServiceMetaData {
         setContainerUuids();
     }
 
-    @SuppressWarnings("unchecked")
     protected void setContainerUuids() {
         if (super.containers != null) {
-            this.containers = (List<String>) CollectionUtils.collect(super.containers,
-                    TransformerUtils.invokerTransformer("getMetadataUuid"));
+            for (ContainerMetaData c: super.containers) {
+                List<String> removedStates = Arrays.asList(CommonStatesConstants.REMOVED, CommonStatesConstants.REMOVING);
+                if (removedStates.contains(c.getState())) {
+                    continue;
+                }
+                this.containers.add(c.getMetadataUuid());
+            }
         }
     }
 

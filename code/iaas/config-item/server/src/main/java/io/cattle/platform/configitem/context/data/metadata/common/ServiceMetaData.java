@@ -23,6 +23,7 @@ public class ServiceMetaData {
     private String launchConfigName;
     private Long stackId;
     private Service service;
+    private boolean includeToData = false;
     
     protected String name;
     protected String uuid;
@@ -70,10 +71,11 @@ public class ServiceMetaData {
         this.stackId = that.stackId;
         this.state = that.state;
         this.metadataUuid = that.metadataUuid;
+        this.includeToData = that.includeToData;
     }
 
     public ServiceMetaData(Service service, String serviceName, Environment env, List<String> sidekicks,
-            Map<String, Object> metadata) {
+            Map<String, Object> metadata, boolean includeToData) {
         this.serviceId = service.getId();
         this.service = service;
         this.name = serviceName;
@@ -98,6 +100,7 @@ public class ServiceMetaData {
         this.state = service.getState();
         // for sidekicks, uuid is going to be the same
         this.metadataUuid = this.uuid + "_" + this.name;
+        this.includeToData = includeToData;
     }
 
     @SuppressWarnings("unchecked")
@@ -303,4 +306,7 @@ public class ServiceMetaData {
         this.metadataUuid = metadataUuid;
     }
 
+    public boolean isIncludeToData() {
+        return includeToData;
+    }
 }
