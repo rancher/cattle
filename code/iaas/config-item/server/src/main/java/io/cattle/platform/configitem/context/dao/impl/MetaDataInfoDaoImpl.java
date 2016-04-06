@@ -60,8 +60,8 @@ public class MetaDataInfoDaoImpl extends AbstractJooqDao implements MetaDataInfo
 
         final Map<Long, IpAddress> instanceIdToHostIpMap = dnsInfoDao
                 .getInstanceWithHostNetworkingToIpMap(accountId);
-        final Map<Long, HostMetaData> hostIdToHostMetadata = getHostIdToHostMetadata(accountId, currentRevision,
-                requestedRevision);
+        final Map<Long, HostMetaData> hostIdToHostMetadata = getHostIdToHostMetadata(accountId, null,
+                null);
 
         MultiRecordMapper<ContainerMetaData> mapper = new MultiRecordMapper<ContainerMetaData>() {
             @Override
@@ -108,7 +108,7 @@ public class MetaDataInfoDaoImpl extends AbstractJooqDao implements MetaDataInfo
         };
 
         InstanceTable instance = mapper.add(INSTANCE, INSTANCE.UUID, INSTANCE.NAME, INSTANCE.CREATE_INDEX,
-                INSTANCE.HEALTH_STATE, INSTANCE.START_COUNT, INSTANCE.REVISION);
+                INSTANCE.HEALTH_STATE, INSTANCE.START_COUNT, INSTANCE.REVISION, INSTANCE.STATE);
         ServiceExposeMapTable exposeMap = mapper.add(SERVICE_EXPOSE_MAP, SERVICE_EXPOSE_MAP.SERVICE_ID,
                 SERVICE_EXPOSE_MAP.DNS_PREFIX);
         HostTable host = mapper.add(HOST, HOST.ID);
@@ -119,6 +119,7 @@ public class MetaDataInfoDaoImpl extends AbstractJooqDao implements MetaDataInfo
                     instance.ACCOUNT_ID
                             .eq(accountId)
                             .and(instance.REMOVED.isNull())
+                            .and(exposeMap.REMOVED.isNull())
             .and(instance.STATE.notIn(CommonStatesConstants.REMOVING, CommonStatesConstants.REMOVED))
             .and(exposeMap.STATE.isNull().or(
                         exposeMap.STATE.notIn(CommonStatesConstants.REMOVING, CommonStatesConstants.REMOVED)));
@@ -141,8 +142,6 @@ public class MetaDataInfoDaoImpl extends AbstractJooqDao implements MetaDataInfo
                 .join(instanceIpAddress)
                 .on(instanceIpAddress.ID.eq(IP_ADDRESS_NIC_MAP.IP_ADDRESS_ID))
                 .where(condition)
-                .and(instance.ACCOUNT_ID.eq(accountId))
-                .and(exposeMap.REMOVED.isNull())
                 .and(instanceIpAddress.ROLE.eq(IpAddressConstants.ROLE_PRIMARY))
                 .and((host.REMOVED.isNull()))
                 .fetch().map(mapper);

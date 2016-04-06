@@ -12,6 +12,7 @@ import io.cattle.platform.configitem.context.data.metadata.version1.StackMetaDat
 import io.cattle.platform.configitem.server.model.ConfigItem;
 import io.cattle.platform.configitem.server.model.Request;
 import io.cattle.platform.configitem.server.model.impl.ArchiveContext;
+import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.model.Account;
 import io.cattle.platform.core.model.Agent;
 import io.cattle.platform.core.model.Environment;
@@ -23,6 +24,7 @@ import io.cattle.platform.servicediscovery.api.constants.ServiceDiscoveryConstan
 import io.cattle.platform.servicediscovery.api.util.ServiceDiscoveryUtil;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -48,7 +50,9 @@ public class MetadataServiceInfoFactory extends AbstractAgentBaseContextFactory 
         Object currentRev = configRequest.getParams().get(ServiceDiscoveryConstants.FIELD_METADATA_REVISION);
         Long currentRevision = currentRev != null ? Long.valueOf(((String[]) currentRev)[0]) : -1;
         Long requestedRevision = account.getMetadataRevision();
-        if (currentRevision == requestedRevision) {
+        context.getData().put("params",
+                ServiceDiscoveryConstants.FIELD_METADATA_REVISION + "=" + requestedRevision);
+        if (currentRevision.equals(requestedRevision)) {
             return;
         }
         // get all the objects who's metadata revision is greater than requested revision
@@ -60,8 +64,6 @@ public class MetadataServiceInfoFactory extends AbstractAgentBaseContextFactory 
         context.getData().put("self", generateYml(selfUuids));
         context.getReplaceInPath().put("data.yml", "data_" + requestedRevision + ".yml");
         context.getReplaceInPath().put("self.yml", "self_" + requestedRevision + ".yml");
-        context.getData().put("params",
-                ServiceDiscoveryConstants.FIELD_METADATA_REVISION + "=" + requestedRevision);
     }
 
     protected Map<String, Object> populateMetadata(Account account, Instance instance,
@@ -155,6 +157,10 @@ public class MetadataServiceInfoFactory extends AbstractAgentBaseContextFactory 
             Map<Long, Map<String, ServiceMetaData>> serviceIdToServiceLaunchConfigs) {
         for (ContainerMetaData c : containersMD) {
             if (!c.isIncludeToData()) {
+                continue;
+            }
+            List<String> removedStates = Arrays.asList(CommonStatesConstants.REMOVED, CommonStatesConstants.REMOVING);
+            if (removedStates.contains(c.getState())) {
                 continue;
             }
             Map<String, String> selfData = selfUuids.get(c.getPrimary_ip());

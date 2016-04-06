@@ -106,7 +106,7 @@ public class ContainerMetaData {
         this.health_state = instance.getHealthState();
         this.start_count = instance.getStartCount();
         this.state = instance.getState();
-        this.metadataUuid = this.uuid + "_" + this.name;
+        this.metadataUuid = this.uuid;
         this.includeToData = includeToData;
     }
 

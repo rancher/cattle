@@ -28,7 +28,8 @@ public class StackMetaData {
         this.environment_name = account.getName();
         this.id = stack.getId();
         this.state = stack.getState();
-        this.metadataUuid = this.uuid + "_" + this.name;
+        this.metadataUuid = this.uuid;
+        this.includeToData = includeToData;
     }
 
     protected StackMetaData(StackMetaData that) {

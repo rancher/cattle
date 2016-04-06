@@ -50,7 +50,7 @@ public class HostMetaData {
         this.hostId = host.getId();
         this.uuid = host.getUuid();
         this.state = host.getState();
-        this.metadataUuid = this.uuid + "_" + this.name;
+        this.metadataUuid = this.uuid;
     }
 
     @JsonIgnore
