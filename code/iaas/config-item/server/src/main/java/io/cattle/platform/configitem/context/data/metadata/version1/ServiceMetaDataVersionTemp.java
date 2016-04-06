@@ -21,7 +21,7 @@ public class ServiceMetaDataVersionTemp extends ServiceMetaData {
     protected void setContainerUuids() {
         if (super.containers != null) {
             this.containers = (List<String>) CollectionUtils.collect(super.containers,
-                    TransformerUtils.invokerTransformer("getUuid"));
+                    TransformerUtils.invokerTransformer("getMetadataUuid"));
         }
     }
 

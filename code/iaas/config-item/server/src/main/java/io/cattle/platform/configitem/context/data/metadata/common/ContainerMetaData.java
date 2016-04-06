@@ -35,6 +35,7 @@ public class ContainerMetaData {
     Long start_count;
     String service_index;
     String state;
+    String metadataUuid;
 
     public ContainerMetaData() {
     }
@@ -104,6 +105,7 @@ public class ContainerMetaData {
         this.health_state = instance.getHealthState();
         this.start_count = instance.getStartCount();
         this.state = instance.getState();
+        this.metadataUuid = this.uuid + "_" + this.name;
     }
 
     public void setService_name(String service_name) {
@@ -207,5 +209,13 @@ public class ContainerMetaData {
 
     public void setService_index(String service_index) {
         this.service_index = service_index;
+    }
+
+    public String getMetadataUuid() {
+        return metadataUuid;
+    }
+
+    public void setMetadataUuid(String metadataUuid) {
+        this.metadataUuid = metadataUuid;
     }
 }

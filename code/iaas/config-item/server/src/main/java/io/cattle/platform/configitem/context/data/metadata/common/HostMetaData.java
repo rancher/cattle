@@ -19,6 +19,7 @@ public class HostMetaData {
     String uuid;
     String hostname;
     String state;
+    String metadataUuid;
 
     public String getAgent_ip() {
         return agent_ip;
@@ -49,6 +50,7 @@ public class HostMetaData {
         this.hostId = host.getId();
         this.uuid = host.getUuid();
         this.state = host.getState();
+        this.metadataUuid = this.uuid + "_" + this.name;
     }
 
     @JsonIgnore
@@ -95,4 +97,13 @@ public class HostMetaData {
     public void setState(String state) {
         this.state = state;
     }
+
+    public String getMetadataUuid() {
+        return metadataUuid;
+    }
+
+    public void setMetadataUuid(String metadataUuid) {
+        this.metadataUuid = metadataUuid;
+    }
+
 }

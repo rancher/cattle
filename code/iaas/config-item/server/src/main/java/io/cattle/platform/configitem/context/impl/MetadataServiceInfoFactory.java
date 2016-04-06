@@ -50,16 +50,20 @@ public class MetadataServiceInfoFactory extends AbstractAgentBaseContextFactory 
         Long requestedRevision = account.getMetadataRevision();
         // get all the objects who's metadata revision is greater than requested revision
         // and <= account metadata revision
-        Map<String, Object> typeToData = populateMetadata(account, instance, context, currentRevision, requestedRevision);
+        Map<String, Map<String, String>> selfUuids = new HashMap<>();
+        Map<String, Object> typeToData = new HashMap<>();
+        populateMetadata(account, instance, context, currentRevision, requestedRevision, typeToData, selfUuids);
         context.getData().put("newdata", generateYml(typeToData));
-        context.getReplaceInPath().put("newanswers.yml", "newanswers_" + requestedRevision + ".yml");
+        context.getData().put("self", generateYml(selfUuids));
+        context.getReplaceInPath().put("data.yml", "data_" + requestedRevision + ".yml");
+        context.getReplaceInPath().put("self.yml", "self_" + requestedRevision + ".yml");
         context.getData().put("params",
                 ServiceDiscoveryConstants.FIELD_METADATA_REVISION + "=" + requestedRevision);
     }
 
     protected Map<String, Object> populateMetadata(Account account, Instance instance,
-            ArchiveContext context, Long currentRevision, Long requestedRevision) {
-        Map<String, Object> typeToData = new HashMap<>();
+            ArchiveContext context, Long currentRevision, Long requestedRevision, Map<String, Object> typeToData,
+            Map<String, Map<String, String>> selfUuids) {
         List<ContainerMetaData> containersMD = metadataInfoDao.getContainersData(account.getId(), currentRevision,
                 requestedRevision);
         Map<String, StackMetaData> stackNameToStack = new HashMap<>();
@@ -76,6 +80,7 @@ public class MetadataServiceInfoFactory extends AbstractAgentBaseContextFactory 
         containersMD = populateContainersData(instance, containersMD, stackNameToStack,
                 serviceIdToServiceLaunchConfigs,
                 serviceIdToLaunchConfigToContainer);
+        addToSelf(selfUuids, containersMD, stackNameToStack, serviceIdToServiceLaunchConfigs);
         typeToData.put("containers", containersMD);
 
         // 2. generate service metadata based on version + add generated containers to service
@@ -96,6 +101,40 @@ public class MetadataServiceInfoFactory extends AbstractAgentBaseContextFactory 
         typeToData.put("hosts", hostsMD);
         typeToData.put("host", !selfHostMD.isEmpty() ? selfHostMD.get(0) : null);
         return typeToData;
+    }
+
+    protected void addToSelf(Map<String, Map<String, String>> selfUuids, List<ContainerMetaData> containersMD,
+            Map<String, StackMetaData> stackNameToStack,
+            Map<Long, Map<String, ServiceMetaData>> serviceIdToServiceLaunchConfigs) {
+        for (ContainerMetaData c : containersMD) {
+            Map<String, String> selfData = selfUuids.get(c.getPrimary_ip());
+            if (selfData == null) {
+                selfData = new HashMap<>();
+            }
+            selfData.put("container", c.getMetadataUuid());
+            if (c.getServiceId() != null) {
+                ServiceMetaData svcData = null;
+                StackMetaData stackData = null;
+                String configName = c.getDnsPrefix();
+                if (configName == null) {
+                    configName = ServiceDiscoveryConstants.PRIMARY_LAUNCH_CONFIG_NAME;
+                }
+                Map<String, ServiceMetaData> svcsData = serviceIdToServiceLaunchConfigs.get(c.getServiceId());
+                if (svcsData != null) {
+                    svcData = svcsData.get(configName);
+                    stackData = stackNameToStack.get(svcData.getStack_name());
+                    selfData.put("service", svcData.getMetadataUuid());
+                    selfData.put("stack", stackData.getMetadataUuid());
+                }
+
+                HostMetaData hostData = c.getHostMetaData();
+                if (hostData != null) {
+                    selfData.put("host", hostData.getMetadataUuid());
+                }
+            }
+
+            selfUuids.put(c.getPrimary_ip(), selfData);
+        }
     }
 
     protected String generateYml(Object object) {

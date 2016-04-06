@@ -14,7 +14,7 @@ public class StackMetaDataVersionTemp extends StackMetaData {
     public StackMetaDataVersionTemp(StackMetaData stackData) {
         super(stackData);
         this.services = (List<String>) CollectionUtils.collect(super.services,
-                TransformerUtils.invokerTransformer("getUuid"));
+                TransformerUtils.invokerTransformer("getMetadataUuid"));
     }
 
     public List<String> getServices() {

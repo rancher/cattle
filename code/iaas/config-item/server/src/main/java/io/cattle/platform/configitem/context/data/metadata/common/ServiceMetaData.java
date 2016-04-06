@@ -43,6 +43,7 @@ public class ServiceMetaData {
     protected List<String> expose = new ArrayList<>();
     protected String token;
     String state;
+    protected String metadataUuid;
 
     protected ServiceMetaData(ServiceMetaData that) {
         this.name = that.name;
@@ -68,6 +69,7 @@ public class ServiceMetaData {
         this.launchConfigName = that.launchConfigName;
         this.stackId = that.stackId;
         this.state = that.state;
+        this.metadataUuid = that.metadataUuid;
     }
 
     public ServiceMetaData(Service service, String serviceName, Environment env, List<String> sidekicks,
@@ -94,6 +96,8 @@ public class ServiceMetaData {
         this.fqdn = DataAccessor.fieldString(service, ServiceDiscoveryConstants.FIELD_FQDN);
         this.stackId = env.getId();
         this.state = service.getState();
+        // for sidekicks, uuid is going to be the same
+        this.metadataUuid = this.uuid + "_" + this.name;
     }
 
     @SuppressWarnings("unchecked")
@@ -290,4 +294,13 @@ public class ServiceMetaData {
     public void setState(String state) {
         this.state = state;
     }
+
+    public String getMetadataUuid() {
+        return metadataUuid;
+    }
+
+    public void setMetadataUuid(String metadataUuid) {
+        this.metadataUuid = metadataUuid;
+    }
+
 }
