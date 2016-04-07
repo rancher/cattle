@@ -111,6 +111,7 @@ public class DynamicSchemaDaoImpl extends AbstractJooqDao implements DynamicSche
 
         List<Record> records = schemaQuery(accountId, role)
                 .and(DYNAMIC_SCHEMA.NAME.eq(name))
+                .orderBy(DYNAMIC_SCHEMA.CREATED.asc())
                 .fetch();
 
         if (records.size() == 0 && name != null && name.endsWith("s")) {
@@ -149,11 +150,6 @@ public class DynamicSchemaDaoImpl extends AbstractJooqDao implements DynamicSche
             if (priority > lastPriority) {
                 lastPriority = priority;
                 record = r;
-            } else if (priority == lastPriority && priority != 0 &&
-                    !record.getValue(DYNAMIC_SCHEMA.UUID).equals(withRole.getUuid())) {
-                throw new InvalidResultException("Multiple dynamic schemas found of the" +
-                        " same role and account id combination: Name:" + withRole.getName() +
-                        "Role: " + withRole.getRole() + " AccountId: " + withRole.getAccountId());
             }
         }
         return record == null ? null : record.into(DynamicSchema.class);
