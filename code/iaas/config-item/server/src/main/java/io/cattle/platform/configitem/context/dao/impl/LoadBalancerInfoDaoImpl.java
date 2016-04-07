@@ -61,7 +61,9 @@ public class LoadBalancerInfoDaoImpl implements LoadBalancerInfoDao {
             }
         }
         
-        List<String> sslPorts = getSslPorts(launchConfigData);
+        List<String> sslPorts = getLabeledPorts(launchConfigData, ServiceDiscoveryConstants.LABEL_LB_SSL_PORTS);
+        List<String> proxyProtocolPorts = getLabeledPorts(launchConfigData,
+                ServiceDiscoveryConstants.LABEL_LB_PROXY_PORTS);
         List<LoadBalancerListenerInfo> listenersToReturn = new ArrayList<>();
         for (String port : portDefs.keySet()) {
             PortSpec spec = new PortSpec(port);
@@ -106,17 +108,17 @@ public class LoadBalancerInfoDaoImpl implements LoadBalancerInfoDao {
                 }
             }
             listenersToReturn.add(new LoadBalancerListenerInfo(lbService, privatePort, sourcePort,
-                    sourceProtocol, targetPort));
+                    sourceProtocol, targetPort, proxyProtocolPorts.contains(privatePort.toString())));
         }
         return listenersToReturn;
     }
 
     @SuppressWarnings("unchecked")
-    protected List<String> getSslPorts(Map<String, Object> launchConfigData) {
+    protected List<String> getLabeledPorts(Map<String, Object> launchConfigData, String labelName) {
         List<String> sslPorts = new ArrayList<>();
         Map<String, String> labels = (Map<String, String>) launchConfigData.get(InstanceConstants.FIELD_LABELS);
         if (labels != null) {
-            Object sslPortsObj = labels.get(ServiceDiscoveryConstants.LABEL_LB_SSL_PORTS);
+            Object sslPortsObj = labels.get(labelName);
             if (sslPortsObj != null) {
                 for (String sslPort : sslPortsObj.toString().split(",")) {
                     sslPorts.add(sslPort.trim());

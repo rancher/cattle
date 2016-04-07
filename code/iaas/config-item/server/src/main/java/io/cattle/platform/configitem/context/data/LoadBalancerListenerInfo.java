@@ -10,9 +10,10 @@ public class LoadBalancerListenerInfo {
     String targetProtocol;
     String uuid;
     Service lbSvc;
+    boolean proxyPort;
 
     public LoadBalancerListenerInfo(Service lbSvc, Integer privatePort, Integer sourcePort, String protocol,
-            Integer targetPort) {
+            Integer targetPort, boolean proxyPort) {
         super();
         this.privatePort = privatePort;
         this.sourcePort = sourcePort;
@@ -21,6 +22,7 @@ public class LoadBalancerListenerInfo {
         this.targetPort = targetPort;
         this.lbSvc = lbSvc;
         setUuid();
+        this.proxyPort = proxyPort;
     }
 
     public Integer getPrivatePort() {
@@ -51,4 +53,9 @@ public class LoadBalancerListenerInfo {
         Integer listenerPort = privatePort != null ? privatePort : sourcePort;
         this.uuid = lbSvc.getUuid() + "_" + listenerPort.toString();
     }
+
+    public boolean isProxyPort() {
+        return proxyPort;
+    }
+
 }
