@@ -11,6 +11,7 @@ import io.cattle.platform.core.dao.GenericResourceDao;
 import io.cattle.platform.core.model.Account;
 import io.cattle.platform.core.model.Credential;
 import io.cattle.platform.deferred.util.DeferredUtils;
+import io.cattle.platform.engine.process.util.ProcessEngineUtils;
 import io.cattle.platform.lock.LockCallback;
 import io.cattle.platform.lock.LockDelegator;
 import io.cattle.platform.lock.LockManager;
@@ -63,20 +64,22 @@ public abstract class GenericServiceLauncher extends NoExceptionRunnable impleme
 
     @Override
     public void start() {
+        Runnable cb = (new Runnable() {
+            @Override
+            public void run() {
+                processDestroy();
+            }
+        });
         future = executor.scheduleWithFixedDelay(this, WAIT, WAIT, TimeUnit.MILLISECONDS);
         List<DynamicStringProperty> reloadList = getReloadSettings();
         if (reloadList != null) {
             for(DynamicStringProperty reload : reloadList) {
                 if (reload != null) {
-                    reload.addCallback(new Runnable() {
-                        @Override
-                        public void run() {
-                            processDestroy();
-                        }
-                    });
+                    reload.addCallback(cb);
                 }
             }
         }
+        ProcessEngineUtils.HA_ENABLED.addCallback(cb);
     }
 
     @Override
@@ -160,7 +163,7 @@ public abstract class GenericServiceLauncher extends NoExceptionRunnable impleme
 
     @Override
     protected synchronized void doRun() throws Exception {
-        if (!shouldRun() || !isReady()) {
+        if (!ProcessEngineUtils.enabled() || !shouldRun() || !isReady()) {
             return;
         }
 

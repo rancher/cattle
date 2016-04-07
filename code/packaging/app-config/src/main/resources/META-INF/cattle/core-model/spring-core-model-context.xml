@@ -29,6 +29,7 @@
                 <value>io.cattle.platform.core.addon.ServiceRestart</value>
                 <value>io.cattle.platform.core.addon.ServicesPortRange</value>
                 <value>io.cattle.platform.core.addon.RecreateOnQuorumStrategyConfig</value>
+                <value>io.cattle.platform.core.addon.HaConfigInput</value>
             </set>
         </property>
     </bean>
@@ -80,6 +81,7 @@
                 <value>composeProject,parent=environment</value>
                 <value>machineDriverUpdateInput</value>
                 <value>machineDriverErrorInput</value>
+                <value>haConfig</value>
             </set>
         </property>
     </bean>

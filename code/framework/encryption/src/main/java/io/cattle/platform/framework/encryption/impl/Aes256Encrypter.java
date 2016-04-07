@@ -24,6 +24,7 @@ public class Aes256Encrypter extends Encrypter {
     private Key key;
     private SecureRandom rn;
 
+    @Override
     @PostConstruct
     public void init() {
         try {
@@ -41,7 +42,18 @@ public class Aes256Encrypter extends Encrypter {
         }
     }
 
+    public Key generateKey() {
+        byte[] encryptionKeyBytes = new byte[32];
+        rn.nextBytes(encryptionKeyBytes);
+        return new SecretKeySpec(encryptionKeyBytes, "AES");
+    }
+
+    @Override
     public String encrypt(String plainText) {
+        return encrypt(plainText, key);
+    }
+
+    public String encrypt(String plainText, Key key) {
         try {
             Cipher encrypter = Cipher.getInstance("AES/CBC/PKCS5PADDING", "SunJCE");
             byte[] ivbytes = new byte[16];
@@ -55,6 +67,7 @@ public class Aes256Encrypter extends Encrypter {
         }
     }
 
+    @Override
     public String decrypt(String value) {
         try {
             Cipher decrypter = Cipher.getInstance("AES/CBC/PKCS5PADDING", "SunJCE");

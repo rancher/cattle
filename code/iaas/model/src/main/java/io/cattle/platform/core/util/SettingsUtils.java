@@ -1,4 +1,4 @@
-package io.cattle.platform.iaas.api.auth;
+package io.cattle.platform.core.util;
 
 import io.cattle.platform.archaius.util.ArchaiusUtil;
 import io.cattle.platform.core.model.Setting;
@@ -30,7 +30,6 @@ public class SettingsUtils {
         }
 
         DeferredUtils.defer(new Runnable() {
-
             @Override
             public void run() {
                 ArchaiusUtil.refresh();

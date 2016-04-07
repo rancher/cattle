@@ -59,7 +59,11 @@ public class CSRFCookieHandler extends AbstractApiRequestHandler {
             /*
              * Very important to use request.getMethod() and not httpRequest.getMethod(). The client can override the HTTP method with _method
              */
-            if (!csrf.getValue().equals(httpRequest.getHeader(HEADER))) {
+            if (csrf.getValue().equals(httpRequest.getHeader(HEADER))) {
+                // Good
+            } else if (csrf.getValue().equals(httpRequest.getParameter(CSRF))) {
+                // Good
+            } else {
                 log.warn("Request's CSRF header did not match cookie");
                 throw new ClientVisibleException(ResponseCodes.FORBIDDEN, ValidationErrorCodes.INVALID_CSRF_TOKEN);
             }

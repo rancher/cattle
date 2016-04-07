@@ -1,7 +1,7 @@
 package io.cattle.platform.iaas.api.auth.integration.local;
 
+import io.cattle.platform.core.util.SettingsUtils;
 import io.cattle.platform.iaas.api.auth.SecurityConstants;
-import io.cattle.platform.iaas.api.auth.SettingsUtils;
 import io.cattle.platform.iaas.api.auth.dao.PasswordDao;
 import io.cattle.platform.util.type.CollectionUtils;
 import io.github.ibuildthecloud.gdapi.factory.SchemaFactory;
