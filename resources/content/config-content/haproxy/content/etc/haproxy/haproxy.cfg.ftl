@@ -47,7 +47,7 @@ defaults
 <#if listener.sourceProtocol == "https"><#assign protocol="http"></#if>
 <#if listener.sourceProtocol == "ssl"><#assign protocol="tcp"></#if>
 frontend ${listener.uuid}_frontend
-        bind *:${sourcePort}<#if (listener.sourceProtocol == "https" || listener.sourceProtocol == "ssl") && certs?has_content> ssl crt /etc/haproxy/certs/<#if !defaultCert??> strict-sni</#if></#if>
+        bind *:${sourcePort} <#if listener.proxyPort == true>accept-proxy </#if><#if (listener.sourceProtocol == "https" || listener.sourceProtocol == "ssl") && certs?has_content> ssl crt /etc/haproxy/certs/<#if !defaultCert??> strict-sni</#if></#if>
         mode ${protocol}
 
         <#list backends[listener.uuid] as backend >
