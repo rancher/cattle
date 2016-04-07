@@ -71,7 +71,7 @@ public class ServiceAddRemoveLinkServiceValidationFilter extends AbstractDefault
                 ValidationErrorCodes.throwValidationError(ValidationErrorCodes.INVALID_REFERENCE,
                         ServiceDiscoveryConstants.FIELD_SERVICE_ID);
             }
-            validateName(serviceLink.getName());
+            validateLinkName(serviceLink.getName());
 
         } else {
             if (consumeMapDao.findMapToRemove(serviceId, serviceLink.getServiceId()) == null) {
@@ -80,28 +80,4 @@ public class ServiceAddRemoveLinkServiceValidationFilter extends AbstractDefault
             }
         }
     }
-
-
-    private void validateName(String linkName) {
-        if(linkName != null && !linkName.isEmpty()) {
-            String[] parts = linkName.split("/");
-            if (parts.length > 2) {
-                ValidationErrorCodes.throwValidationError(ValidationErrorCodes.INVALID_CHARACTERS,
-                        "name");
-            }
-            for (String linkPart : parts) {
-                validateDNSPatternForName(linkPart);
-                //check length
-                if (linkPart.length() < 1) {
-                    ValidationErrorCodes.throwValidationError(ValidationErrorCodes.MIN_LENGTH_EXCEEDED,
-                            "name");
-                }
-                if (linkPart.length() > 63) {
-                    ValidationErrorCodes.throwValidationError(ValidationErrorCodes.MAX_LENGTH_EXCEEDED,
-                            "name");
-                }
-            }
-        }
-    }
-
 }

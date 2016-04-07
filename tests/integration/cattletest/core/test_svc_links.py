@@ -439,7 +439,27 @@ def test_validate_svc_link_name(client, context):
                                      launchConfig=launch_config)
     service2 = client.wait_success(service2)
 
-    # link service2 to service1
+    # single invalid char
+    # cannot contain special chars other than ".", "-", "_", "/"
+    service_link = {"serviceId": service2.id, "name": '+'}
+
+    with pytest.raises(ApiError) as e:
+        service1.addservicelink(serviceLink=service_link)
+
+    assert e.value.error.status == 422
+    assert e.value.error.code == 'InvalidCharacters'
+
+    # multiple invalid chars
+    # cannot contain special chars other than ".", "-", "_", "/"
+    service_link = {"serviceId": service2.id, "name": '$&()#@'}
+
+    with pytest.raises(ApiError) as e:
+        service1.addservicelink(serviceLink=service_link)
+
+    assert e.value.error.status == 422
+    assert e.value.error.code == 'InvalidCharacters'
+
+    # cannot start with -
     service_link = {"serviceId": service2.id, "name": '-myLink'}
 
     with pytest.raises(ApiError) as e:
@@ -448,7 +468,7 @@ def test_validate_svc_link_name(client, context):
     assert e.value.error.status == 422
     assert e.value.error.code == 'InvalidCharacters'
 
-    # link service2 to service1
+    # cannot end with -
     service_link = {"serviceId": service2.id, "name": 'myLink-'}
 
     with pytest.raises(ApiError) as e:
@@ -457,7 +477,7 @@ def test_validate_svc_link_name(client, context):
     assert e.value.error.status == 422
     assert e.value.error.code == 'InvalidCharacters'
 
-    # link service2 to service1
+    # cannot contain --
     service_link = {"serviceId": service2.id, "name": 'my--Link'}
 
     with pytest.raises(ApiError) as e:
@@ -466,7 +486,34 @@ def test_validate_svc_link_name(client, context):
     assert e.value.error.status == 422
     assert e.value.error.code == 'InvalidCharacters'
 
-    # link service2 to service1
+    # cannot start with .
+    service_link = {"serviceId": service2.id, "name": '.myLink'}
+
+    with pytest.raises(ApiError) as e:
+        service1.addservicelink(serviceLink=service_link)
+
+    assert e.value.error.status == 422
+    assert e.value.error.code == 'InvalidCharacters'
+
+    # cannot end with .
+    service_link = {"serviceId": service2.id, "name": 'myLink.'}
+
+    with pytest.raises(ApiError) as e:
+        service1.addservicelink(serviceLink=service_link)
+
+    assert e.value.error.status == 422
+    assert e.value.error.code == 'InvalidCharacters'
+
+    # cannot contain ..
+    service_link = {"serviceId": service2.id, "name": 'myL..ink'}
+
+    with pytest.raises(ApiError) as e:
+        service1.addservicelink(serviceLink=service_link)
+
+    assert e.value.error.status == 422
+    assert e.value.error.code == 'InvalidCharacters'
+
+    # link with no dots longer that 63
     service_link = {"serviceId": service2.id, "name":
                     'myLinkTOOLONGtoolongtoolongtoo'
                     'longmyLinkTOOLONGtoolongtoolongtoo'}
@@ -477,7 +524,45 @@ def test_validate_svc_link_name(client, context):
     assert e.value.error.status == 422
     assert e.value.error.code == 'MaxLengthExceeded'
 
-    # link service2 to service1 with single char link
+    # link with a . with single part longer that 63
+    service_link = {"serviceId": service2.id, "name":
+                    'myLinkTOOLONGtoolongtoolongtoo'
+                    'longmyLinkTOOLONGtoolongtoolongtoo.secondpart'}
+
+    with pytest.raises(ApiError) as e:
+        service1.addservicelink(serviceLink=service_link)
+
+    assert e.value.error.status == 422
+    assert e.value.error.code == 'MaxLengthExceeded'
+
+    # link with . with total length longer that 253
+    service_link = {"serviceId": service2.id, "name":
+                    'myLinkTOOLONGtoolongtoolongtoo.'
+                    'longmyLinkTOOLONGtoolongtoolongtoo.secondpart.'
+                    'myLinkTOOLONGtoolongtoolongtoo.'
+                    'longmyLinkTOOLONGtoolongtoolongtoo.secondpart.'
+                    'myLinkTOOLONGtoolongtoolongtoo.'
+                    'longmyLinkTOOLONGtoolongtoolongtoo.secondpart.'
+                    'myLinkTOOLONGtoolongtoolongtoo.'
+                    'longmyLinkTOOLONGtoolongtoolongtoo.secondpart'}
+
+    with pytest.raises(ApiError) as e:
+        service1.addservicelink(serviceLink=service_link)
+
+    assert e.value.error.status == 422
+    assert e.value.error.code == 'MaxLengthExceeded'
+
+    # link service2 to service1 with single valid char link
     service_link = {"serviceId": service2.id, "name": 'm'}
     service1 = service1.addservicelink(serviceLink=service_link)
     _validate_add_service_link(service1, service2, client)
+
+    service3 = client.create_service(name=random_str(),
+                                     environmentId=env.id,
+                                     launchConfig=launch_config)
+    service3 = client.wait_success(service3)
+
+    # link service3 to service1 with multiple valid chars
+    service_link2 = {"serviceId": service3.id, "name": 'm.gh_kl.a-b'}
+    service1 = service1.addservicelink(serviceLink=service_link2)
+    _validate_add_service_link(service1, service3, client)

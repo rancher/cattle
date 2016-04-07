@@ -1,6 +1,5 @@
 package io.cattle.platform.servicediscovery.api.filter;
 
-import static io.github.ibuildthecloud.gdapi.validation.ValidationErrorCodes.*;
 import io.cattle.platform.core.addon.LoadBalancerServiceLink;
 import io.cattle.platform.core.addon.ServiceLink;
 import io.cattle.platform.core.model.Service;
@@ -82,22 +81,7 @@ public class ServiceSetServiceLinksValidationFilter extends AbstractDefaultResou
                     ValidationErrorCodes.throwValidationError(ValidationErrorCodes.INVALID_REFERENCE,
                             ServiceDiscoveryConstants.FIELD_SERVICE_ID);
                 }
-                validateName(serviceLink.getName());
-            }
-        }
-    }
-
-    private void validateName(String linkName) {
-       if(linkName != null && !linkName.isEmpty()){
-            validateDNSPatternForName(linkName);
-            //check length
-            if (linkName.length() < 1) {
-                ValidationErrorCodes.throwValidationError(ValidationErrorCodes.MIN_LENGTH_EXCEEDED,
-                        "name");
-            }
-            if (linkName.length() > 63) {
-                ValidationErrorCodes.throwValidationError(ValidationErrorCodes.MAX_LENGTH_EXCEEDED,
-                        "name");
+                validateLinkName(serviceLink.getName());
             }
         }
     }
