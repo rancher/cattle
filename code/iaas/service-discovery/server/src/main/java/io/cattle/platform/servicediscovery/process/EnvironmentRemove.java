@@ -1,5 +1,6 @@
 package io.cattle.platform.servicediscovery.process;
 
+import static io.cattle.platform.core.model.tables.ServiceTable.*;
 import io.cattle.platform.core.model.Environment;
 import io.cattle.platform.core.model.Service;
 import io.cattle.platform.engine.handler.HandlerResult;
@@ -33,7 +34,8 @@ public class EnvironmentRemove extends AbstractObjectProcessHandler {
     @Override
     public HandlerResult handle(ProcessState state, ProcessInstance process) {
         Environment env = (Environment) state.getResource();
-        List<? extends Service> services = objectManager.mappedChildren(env, Service.class);
+        List<? extends Service> services = objectManager.find(Service.class, SERVICE.ENVIRONMENT_ID, env.getId(),
+                SERVICE.REMOVED, null);
         if (!services.isEmpty()) {
             removeServices(services);
         }
