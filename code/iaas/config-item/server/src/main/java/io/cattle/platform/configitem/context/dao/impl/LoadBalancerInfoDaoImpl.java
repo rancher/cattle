@@ -250,6 +250,9 @@ public class LoadBalancerInfoDaoImpl implements LoadBalancerInfoDao {
             if (service.getKind().equalsIgnoreCase(KIND.DNSSERVICE.name())) {
                 List<? extends ServiceConsumeMap> consumedMaps = consumeMapDao.findConsumedServices(serviceId);
                 for (ServiceConsumeMap consumedMap : consumedMaps) {
+                    if (serviceId == consumedMap.getConsumedServiceId().longValue()) {
+                        continue;
+                    }
                     findConsumedServicesImpl(consumedMap.getConsumedServiceId(), services);
                 }
             } else {
