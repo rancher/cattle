@@ -27,7 +27,6 @@ public class ExternalEventFilter extends AbstractDefaultResourceManagerFilter {
     @Override
     public Object create(String type, ApiRequest request, ResourceManager next) {
         Policy policy = ApiUtils.getPolicy();
-        /* Will never return null, MissingRequired will be thrown if missing */
         Agent agent = objectManager.loadResource(Agent.class, policy.getOption(Policy.AGENT_ID));
         if (agent == null) {
             throw new ClientVisibleException(ResponseCodes.FORBIDDEN, VERIFY_AGENT);
