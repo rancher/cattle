@@ -2796,6 +2796,36 @@ def test_dns_label(client, context):
     assert c.dns is None or len(c.dns) == 0
 
 
+def test_dns_label_true(client, context):
+    env = _create_stack(client)
+
+    image_uuid = context.image_uuid
+    labels = {'io.rancher.container.dns': "true"}
+    launch_config = {"imageUuid": image_uuid,
+                     "labels": labels}
+
+    svc = client.create_service(name=random_str(),
+                                environmentId=env.id,
+                                launchConfig=launch_config)
+    svc = client.wait_success(svc)
+
+    service = client.wait_success(svc.activate())
+    assert service.state == "active"
+    instance_service_map = client \
+        .list_serviceExposeMap(serviceId=service.id)
+
+    assert len(instance_service_map) == 1
+    wait_for_condition(
+        client, instance_service_map[0], _resource_is_active,
+        lambda x: 'State is: ' + x.state)
+
+    instances = client. \
+        list_container(name=env.name + "_" + service.name + "_" + "1")
+    assert len(instances) == 1
+    c = instances[0]
+    assert c.dns is not None and len(c.dns) > 0
+
+
 def test_dns_label_and_dns_param(client, context):
     env = _create_stack(client)
 
