@@ -157,6 +157,7 @@
         "machineDriver": "crd",
         "machineDriver.errorMessage": "r",
         "machineDriver.uri": "cru",
+        "machineDriver.uiUrl": "cru",
         "machineDriver.md5checksum": "cru",
         "machineDriver.resourceActions\\..*": "",
         "machineDriver.resourceActions.retry": "c",
