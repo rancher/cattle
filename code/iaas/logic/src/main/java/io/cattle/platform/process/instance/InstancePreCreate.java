@@ -54,10 +54,13 @@ public class InstancePreCreate extends AbstractObjectProcessLogic implements Pro
     }
 
     protected void setDns(Instance instance, Map<String, Object> labels, Map<Object, Object> data) {
+        if (instance.getSystemContainer() != null) {
+            return;
+        }
         if (InstanceConstants.KIND_CONTAINER.equals(instance.getKind())) {
             boolean addDns = true;
-            if (labels.containsKey(SystemLabels.LABEL_USE_RANCHER_DNS)
-                    && !Boolean.valueOf(SystemLabels.LABEL_USE_RANCHER_DNS)) {
+            Object lblValue = labels.get(SystemLabels.LABEL_USE_RANCHER_DNS);
+            if (lblValue != null && !Boolean.valueOf(lblValue.toString())) {
                 addDns = false;
             }
 
