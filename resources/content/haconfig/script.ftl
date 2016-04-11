@@ -22,13 +22,18 @@ export CATTLE_DB_CATTLE_MYSQL_NAME=${dbName}
 export CATTLE_DB_CATTLE_USERNAME=${dbUser}
 export CATTLE_DB_CATTLE_PASSWORD=${dbPass}
 
-export CATTLE_HA_REDIS_PORT=${redisPort}
-export CATTLE_HA_SWARM_PORT=${swarmPort}
-export CATTLE_HA_HTTP_PORT=${httpPort}
-export CATTLE_HA_HTTPS_PORT=${httpsPort}
-export CATTLE_HA_ZK_CLIENT_PORT=${zookeeperClientPort}
-export CATTLE_HA_ZK_QUORUM_PORT=${zookeeperQuorumPort}
-export CATTLE_HA_ZK_LEADER_PORT=${zookeeperLeaderPort}
+export CATTLE_HA_PORT_REDIS=${redisPort}
+export CATTLE_HA_PORT_SWARM=${swarmPort}
+export CATTLE_HA_PORT_HTTP=${httpPort}
+export CATTLE_HA_PORT_HTTPS=${httpsPort}
+export CATTLE_HA_PORT_PP_HTTP=${ppHttpPort}
+export CATTLE_HA_PORT_PP_HTTPS=${ppHttpsPort}
+export CATTLE_HA_PORT_ZK_CLIENT=${zookeeperClientPort}
+export CATTLE_HA_PORT_ZK_QUORUM=${zookeeperQuorumPort}
+export CATTLE_HA_PORT_ZK_LEADER=${zookeeperLeaderPort}
+
+# Uncomment below to force HA enabled and not require one to set it in the UI
+# export CATTLE_HA_ENABLED=true
 EOF
 
 <#if cert?? >

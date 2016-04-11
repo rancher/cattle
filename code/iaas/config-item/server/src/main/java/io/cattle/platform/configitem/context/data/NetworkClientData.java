@@ -14,6 +14,15 @@ public class NetworkClientData {
     String ipAddress;
     String networkDomain;
     String gateway;
+    boolean instanceNative;
+
+    public boolean isInstanceNative() {
+        return instanceNative;
+    }
+
+    public void setInstanceNative(boolean instanceNative) {
+        this.instanceNative = instanceNative;
+    }
 
     public String getFqdn() {
         return HostnameGenerator.lookup(true, hostname, instanceDomain, ipAddress, networkDomain);

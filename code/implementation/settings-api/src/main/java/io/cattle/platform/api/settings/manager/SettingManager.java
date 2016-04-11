@@ -202,6 +202,10 @@ public class SettingManager extends AbstractJooqResourceManager {
             source = ((CompositeConfiguration) config).getSource(name);
         }
 
+        if (value != null) {
+            value = value.toString();
+        }
+
         ActiveSetting activeSetting = new ActiveSetting(name, value, toString(source));
 
         if (checkDb) {

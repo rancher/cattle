@@ -21,6 +21,8 @@
         "haConfigInput.swarmEnabled" : "cr",
         "haConfigInput.httpsPort" : "cr",
         "haConfigInput.httpPort" : "cr",
+        "haConfigInput.ppHttpsPort" : "cr",
+        "haConfigInput.ppHttpPort" : "cr",
         "haConfigInput.redisPort" : "cr",
         "haConfigInput.swarmPort" : "cr",
         "haConfigInput.zookeeperClientPort" : "cr",
