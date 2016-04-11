@@ -4,6 +4,11 @@
             "required": true,
             "nullable": false
         },
+        "uiUrl": {
+            "type": "string",
+            "required": false,
+            "nullable": true
+        },
         "errorMessage": {
             "type": "string"
         },

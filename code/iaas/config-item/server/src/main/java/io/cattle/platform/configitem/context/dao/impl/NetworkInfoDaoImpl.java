@@ -78,6 +78,7 @@ public class NetworkInfoDaoImpl extends AbstractJooqDao implements NetworkInfoDa
                         INSTANCE.HOSTNAME.as("hostname"),
                         INSTANCE.ID.as("instance_id"),
                         INSTANCE.UUID.as("instance_uuid"),
+                        INSTANCE.NATIVE_CONTAINER.as("instance_native"),
                         IP_ADDRESS.ADDRESS.as("ip_address"),
                         SUBNET.GATEWAY.as("gateway")
                 )

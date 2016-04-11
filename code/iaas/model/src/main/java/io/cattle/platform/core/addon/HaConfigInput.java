@@ -13,6 +13,12 @@ public interface HaConfigInput {
     @Field(defaultValue = "443", min=1, max=65535)
     int getHttpsPort();
 
+    @Field(defaultValue = "81", min=1, max=65535, nullable=true)
+    int getPpHttpPort();
+
+    @Field(defaultValue = "444", min=1, max=65535)
+    int getPpHttpsPort();
+
     @Field(defaultValue = "6375", min=1, max=65535)
     int getRedisPort();
 
