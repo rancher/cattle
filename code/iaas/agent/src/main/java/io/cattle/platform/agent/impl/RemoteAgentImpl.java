@@ -76,6 +76,8 @@ public class RemoteAgentImpl implements RemoteAgent {
                 throw new AgentRemovedException("Agent is removed", event);
             }
             throw e;
+        } catch (AgentRemovedException e) {
+            throw e;
         } catch (EventExecutionException e) {
             /*
              * This is done so that the exception will have a better stack
