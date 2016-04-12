@@ -28,6 +28,7 @@ import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
 import org.jooq.Record;
+import org.jooq.Record1;
 
 public class AgentDaoImpl extends AbstractCoreDao implements AgentDao {
 
@@ -165,5 +166,14 @@ public class AgentDaoImpl extends AbstractCoreDao implements AgentDao {
                         .and(INSTANCE.STATE.notIn(InstanceConstants.STATE_ERROR, InstanceConstants.STATE_ERRORING,
                                 CommonStatesConstants.REMOVING)))
                 .fetchOne();
+    }
+
+    @Override
+    public String getAgentState(long agentId) {
+        Record1<String> r = create().select(AGENT.STATE)
+                .from(AGENT)
+                .where(AGENT.ID.eq(agentId)
+                        .and(AGENT.REMOVED.isNull())).fetchAny();
+        return r == null ? null : r.value1();
     }
 }

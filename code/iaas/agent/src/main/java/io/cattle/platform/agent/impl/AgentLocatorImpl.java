@@ -92,7 +92,7 @@ public class AgentLocatorImpl implements AgentLocator {
             return null;
         }
 
-        return new WrappedEventService(agentId, false, eventService, null, jsonMapper);
+        return new WrappedEventService(agentId, false, eventService, null, jsonMapper, delegateDao);
     }
 
     protected EventService buildDelegate(long agentId) {
@@ -128,7 +128,7 @@ public class AgentLocatorImpl implements AgentLocator {
         @SuppressWarnings("unchecked")
         Map<String, Object> instanceData = jsonMapper.convertValue(instance, Map.class);
 
-        return new WrappedEventService(host.getAgentId(), true, eventService, instanceData, jsonMapper);
+        return new WrappedEventService(host.getAgentId(), true, eventService, instanceData, jsonMapper, delegateDao);
     }
 
     public static Long getAgentId(Object resource) {

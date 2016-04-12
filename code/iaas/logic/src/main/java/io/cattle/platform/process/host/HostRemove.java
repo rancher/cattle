@@ -2,6 +2,7 @@ package io.cattle.platform.process.host;
 
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.dao.InstanceDao;
+import io.cattle.platform.core.model.Agent;
 import io.cattle.platform.core.model.Host;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.engine.handler.HandlerResult;
@@ -25,8 +26,14 @@ public class HostRemove extends AbstractDefaultProcessHandler {
     public HandlerResult handle(final ProcessState state, ProcessInstance process) {
         final Host host = (Host) state.getResource();
 
-        if (host.getAgentId() == null) {
+        Agent agent = objectManager.loadResource(Agent.class, host.getAgentId());
+        if (agent == null) {
             return null;
+        }
+
+        try {
+            objectProcessManager.scheduleStandardProcess(StandardProcess.DEACTIVATE, agent, null);
+        } catch (ProcessCancelException e) {
         }
 
         removeInstances(host);

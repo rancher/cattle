@@ -24,4 +24,6 @@ public interface AgentDao {
 
     Instance getInstance(Agent agent);
 
+    String getAgentState(long agentId);
+
 }
