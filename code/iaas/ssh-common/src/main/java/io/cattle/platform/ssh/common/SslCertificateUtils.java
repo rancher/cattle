@@ -119,7 +119,7 @@ public class SslCertificateUtils {
         return digest(cert);
     }
 
-    static String digest(X509Certificate k) throws Exception {
+    public static String digest(X509Certificate k) throws Exception {
         MessageDigest md5 = MessageDigest.getInstance("SHA1");
         DigestInputStream in = new DigestInputStream(new ByteArrayInputStream(k.getEncoded()), md5);
         try {
