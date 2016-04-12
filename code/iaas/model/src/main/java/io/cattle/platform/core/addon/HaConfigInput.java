@@ -19,10 +19,10 @@ public interface HaConfigInput {
     @Field(defaultValue = "444", min=1, max=65535)
     int getPpHttpsPort();
 
-    @Field(defaultValue = "6375", min=1, max=65535)
+    @Field(defaultValue = "6379", min=1, max=65535)
     int getRedisPort();
 
-    @Field(defaultValue = "2367", min=1, max=65535, nullable=true)
+    @Field(defaultValue = "2376", min=1, max=65535, nullable=true)
     int getSwarmPort();
 
     @Field(defaultValue = "2181", min=1, max=65535)

@@ -18,7 +18,9 @@ import java.security.PublicKey;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.security.interfaces.RSAPublicKey;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.Random;
 
 import javax.security.auth.x500.X500Principal;
@@ -95,14 +97,17 @@ public class SshKeyGen {
                 entityKey);
 
 
-        GeneralName[] sanNames = new GeneralName[sans.length];
-        for (int i = 0 ; i < sanNames.length ; i++) {
-            if (sans[i].startsWith("IP:")) {
-                sanNames[i] = new GeneralName(GeneralName.iPAddress, sans[i].substring(3));
+        List<GeneralName> sanNameList = new ArrayList<>();
+        for (String san : sans) {
+            if (san.startsWith("IP:")) {
+                sanNameList.add(new GeneralName(GeneralName.iPAddress, san.substring(3)));
+                sanNameList.add(new GeneralName(GeneralName.dNSName, san.substring(3)));
             } else {
-                sanNames[i] = new GeneralName(GeneralName.dNSName, sans[i]);
+                sanNameList.add(new GeneralName(GeneralName.dNSName, san));
             }
         }
+
+        GeneralName[] sanNames = sanNameList.toArray(new GeneralName[sanNameList.size()]);
 
         certBldr.addExtension(Extension.subjectAlternativeName,
                               false, new GeneralNames(sanNames))
