@@ -66,22 +66,27 @@ public class ServiceConsumeMapDaoImpl extends AbstractJooqDao implements Service
     @Override
     public ServiceConsumeMap findNonRemovedMap(long serviceId, long consumedServiceId, String linkName) {
         ServiceConsumeMap map = null;
+        List<? extends ServiceConsumeMap> maps = new ArrayList<>();
         if (linkName == null) {
-            map = objectManager.findOne(ServiceConsumeMap.class,
+            maps = objectManager.find(ServiceConsumeMap.class,
                     SERVICE_CONSUME_MAP.SERVICE_ID,
                     serviceId, SERVICE_CONSUME_MAP.CONSUMED_SERVICE_ID, consumedServiceId, SERVICE_CONSUME_MAP.REMOVED,
                     null);
         } else {
-            map = objectManager.findOne(ServiceConsumeMap.class,
+            maps = objectManager.find(ServiceConsumeMap.class,
                     SERVICE_CONSUME_MAP.SERVICE_ID,
                     serviceId, SERVICE_CONSUME_MAP.CONSUMED_SERVICE_ID, consumedServiceId, SERVICE_CONSUME_MAP.NAME,
                     linkName, SERVICE_CONSUME_MAP.REMOVED,
                     null);
         }
-        if (map != null && !map.getState().equalsIgnoreCase(CommonStatesConstants.REMOVING)) {
-            return map;
+
+        for (ServiceConsumeMap m : maps) {
+            if (m.getState().equalsIgnoreCase(CommonStatesConstants.REMOVING)) {
+                continue;
+            }
+            map = m;
         }
-        return null;
+        return map;
     }
 
     @Override
