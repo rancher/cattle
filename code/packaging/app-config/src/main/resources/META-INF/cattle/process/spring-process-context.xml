@@ -279,7 +279,7 @@
 
     <!-- Mount -->
     <process:process name="mount.create" resourceType="mount" start="requested" transitioning="activating" done="active" />
-    <process:process name="mount.deactivate" resourceType="mount" start="active,activating" transitioning="deactivating" done="inactive" />
+    <process:process name="mount.deactivate" resourceType="mount" start="requested,active,activating" transitioning="deactivating" done="inactive" />
     <process:process name="mount.remove" resourceType="mount" start="inactive,deactivating" transitioning="removing" done="removed" />
 
     <!-- Physical Host -->  
