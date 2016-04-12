@@ -1177,17 +1177,22 @@ def test_setting_auth(admin_user_client, user_client, project_client):
 
     auth_check(user_client.schema, 'setting', 'r', {
         'name': 'r',
+        'activeValue': 'r',
         'value': 'r',
     })
 
     auth_check(project_client.schema, 'setting', 'r', {
         'name': 'r',
+        'activeValue': 'r',
         'value': 'r',
     })
 
     auth_check(admin_user_client.schema, 'setting', 'crud', {
         'name': 'cr',
+        'activeValue': 'r',
         'value': 'cru',
+        'source': 'r',
+        'inDb': 'r',
     })
 
 
