@@ -8,6 +8,7 @@ if [ "$IMAGE" = "" ]; then
 fi
 
 mkdir -p /var/lib/rancher/etc/server
+mkdir -p /var/lib/rancher/etc/ssl
 mkdir -p /var/lib/rancher/bin
 
 echo Creating /var/lib/rancher/etc/server.conf
@@ -37,22 +38,22 @@ export CATTLE_HA_PORT_ZK_LEADER=${zookeeperLeaderPort}
 EOF
 
 <#if cert?? >
-echo Creating /var/lib/rancher/etc/server/cert.pem
-cat > /var/lib/rancher/etc/server/cert.pem << EOF
+echo Creating /var/lib/rancher/etc/ssl/server-cert.pem
+cat > /var/lib/rancher/etc/ssl/server-cert.pem << EOF
 ${cert}
 EOF
 </#if>
 
 <#if key?? >
-echo Creating /var/lib/rancher/etc/server/key.pem
-cat > /var/lib/rancher/etc/server/key.pem << EOF
+echo Creating /var/lib/rancher/etc/ssl/server-key.pem
+cat > /var/lib/rancher/etc/ssl/server-key.pem << EOF
 ${key}
 EOF
 </#if>
 
 <#if certChain?? >
-echo Creating /var/lib/rancher/etc/server/ca.pem
-cat > /var/lib/rancher/etc/server/ca.pem << EOF
+echo Creating /var/lib/rancher/etc/ssl/ca.crt
+cat > /var/lib/rancher/etc/ssl/ca.crt << EOF
 ${certChain}
 EOF
 </#if>
