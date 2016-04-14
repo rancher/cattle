@@ -11,7 +11,7 @@ package io.cattle.platform.core.model.tables;
 @java.lang.SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class EnvironmentTable extends org.jooq.impl.TableImpl<io.cattle.platform.core.model.tables.records.EnvironmentRecord> {
 
-	private static final long serialVersionUID = -1707020516;
+	private static final long serialVersionUID = -1622107037;
 
 	/**
 	 * The singleton instance of <code>cattle.environment</code>
@@ -90,6 +90,11 @@ public class EnvironmentTable extends org.jooq.impl.TableImpl<io.cattle.platform
 	 * The column <code>cattle.environment.health_state</code>.
 	 */
 	public final org.jooq.TableField<io.cattle.platform.core.model.tables.records.EnvironmentRecord, java.lang.String> HEALTH_STATE = createField("health_state", org.jooq.impl.SQLDataType.VARCHAR.length(128), this, "");
+
+	/**
+	 * The column <code>cattle.environment.revision</code>.
+	 */
+	public final org.jooq.TableField<io.cattle.platform.core.model.tables.records.EnvironmentRecord, java.lang.Long> REVISION = createField("revision", org.jooq.impl.SQLDataType.BIGINT.nullable(false).defaulted(true), this, "");
 
 	/**
 	 * Create a <code>cattle.environment</code> table reference

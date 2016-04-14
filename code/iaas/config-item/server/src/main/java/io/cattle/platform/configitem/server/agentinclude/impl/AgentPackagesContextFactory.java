@@ -6,6 +6,7 @@ import io.cattle.platform.configitem.model.Client;
 import io.cattle.platform.configitem.request.ConfigUpdateRequest;
 import io.cattle.platform.configitem.server.agentinclude.AgentIncludeMap;
 import io.cattle.platform.configitem.server.model.ConfigItem;
+import io.cattle.platform.configitem.server.model.Request;
 import io.cattle.platform.configitem.server.model.impl.ArchiveContext;
 import io.cattle.platform.configitem.version.ConfigItemStatusManager;
 import io.cattle.platform.core.model.Agent;
@@ -46,7 +47,7 @@ public class AgentPackagesContextFactory extends AbstractAgentBaseContextFactory
     }
 
     @Override
-    protected void populateContext(Agent agent, Instance instance, ConfigItem item, ArchiveContext context) {
+    protected void populateContext(Agent agent, Instance instance, ConfigItem item, ArchiveContext context, Request configRequest) {
         context.getData().put("data", map.getMap(name));
 
         if (instance != null) {

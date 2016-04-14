@@ -432,6 +432,17 @@ public interface Instance extends java.io.Serializable {
 	@javax.persistence.Column(name = "dns_search_internal", length = 255)
 	public java.lang.String getDnsSearchInternal();
 
+	/**
+	 * Setter for <code>cattle.instance.revision</code>.
+	 */
+	public void setRevision(java.lang.Long value);
+
+	/**
+	 * Getter for <code>cattle.instance.revision</code>.
+	 */
+	@javax.persistence.Column(name = "revision", nullable = false, precision = 19)
+	public java.lang.Long getRevision();
+
 	// -------------------------------------------------------------------------
 	// FROM and INTO
 	// -------------------------------------------------------------------------

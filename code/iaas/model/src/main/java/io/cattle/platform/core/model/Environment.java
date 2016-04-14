@@ -157,6 +157,17 @@ public interface Environment extends java.io.Serializable {
 	@javax.persistence.Column(name = "health_state", length = 128)
 	public java.lang.String getHealthState();
 
+	/**
+	 * Setter for <code>cattle.environment.revision</code>.
+	 */
+	public void setRevision(java.lang.Long value);
+
+	/**
+	 * Getter for <code>cattle.environment.revision</code>.
+	 */
+	@javax.persistence.Column(name = "revision", nullable = false, precision = 19)
+	public java.lang.Long getRevision();
+
 	// -------------------------------------------------------------------------
 	// FROM and INTO
 	// -------------------------------------------------------------------------

@@ -223,6 +223,17 @@ public interface Host extends java.io.Serializable {
 	@javax.persistence.Column(name = "agent_state", length = 128)
 	public java.lang.String getAgentState();
 
+	/**
+	 * Setter for <code>cattle.host.revision</code>.
+	 */
+	public void setRevision(java.lang.Long value);
+
+	/**
+	 * Getter for <code>cattle.host.revision</code>.
+	 */
+	@javax.persistence.Column(name = "revision", nullable = false, precision = 19)
+	public java.lang.Long getRevision();
+
 	// -------------------------------------------------------------------------
 	// FROM and INTO
 	// -------------------------------------------------------------------------

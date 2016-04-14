@@ -2,6 +2,7 @@ package io.cattle.platform.configitem.context.impl;
 
 import static io.cattle.platform.core.model.tables.DataTable.*;
 import io.cattle.platform.configitem.server.model.ConfigItem;
+import io.cattle.platform.configitem.server.model.Request;
 import io.cattle.platform.configitem.server.model.impl.ArchiveContext;
 import io.cattle.platform.core.constants.NetworkServiceConstants;
 import io.cattle.platform.core.dao.NetworkDao;
@@ -20,7 +21,7 @@ public class IpsecInfoFactory extends AbstractAgentBaseContextFactory {
     NetworkDao networkDao;
 
     @Override
-    protected void populateContext(Agent agent, Instance instance, ConfigItem item, ArchiveContext context) {
+    protected void populateContext(Agent agent, Instance instance, ConfigItem item, ArchiveContext context, Request configRequest) {
         Network network = null;
         Data data = null;
         for (NetworkService service : networkDao.getAgentInstanceNetworkService(instance.getId(), NetworkServiceConstants.KIND_IPSEC_TUNNEL)) {

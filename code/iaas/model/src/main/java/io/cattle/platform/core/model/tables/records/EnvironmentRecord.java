@@ -11,9 +11,9 @@ package io.cattle.platform.core.model.tables.records;
 @java.lang.SuppressWarnings({ "all", "unchecked", "rawtypes" })
 @javax.persistence.Entity
 @javax.persistence.Table(name = "environment", schema = "cattle")
-public class EnvironmentRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.platform.core.model.tables.records.EnvironmentRecord> implements io.cattle.platform.db.jooq.utils.TableRecordJaxb, org.jooq.Record13<java.lang.Long, java.lang.String, java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.util.Date, java.util.Date, java.util.Date, java.util.Map<String,Object>, java.lang.String, java.lang.String>, io.cattle.platform.core.model.Environment {
+public class EnvironmentRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.platform.core.model.tables.records.EnvironmentRecord> implements io.cattle.platform.db.jooq.utils.TableRecordJaxb, org.jooq.Record14<java.lang.Long, java.lang.String, java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.util.Date, java.util.Date, java.util.Date, java.util.Map<String,Object>, java.lang.String, java.lang.String, java.lang.Long>, io.cattle.platform.core.model.Environment {
 
-	private static final long serialVersionUID = -781319487;
+	private static final long serialVersionUID = -867613181;
 
 	/**
 	 * Setter for <code>cattle.environment.id</code>.
@@ -237,6 +237,23 @@ public class EnvironmentRecord extends org.jooq.impl.UpdatableRecordImpl<io.catt
 		return (java.lang.String) getValue(12);
 	}
 
+	/**
+	 * Setter for <code>cattle.environment.revision</code>.
+	 */
+	@Override
+	public void setRevision(java.lang.Long value) {
+		setValue(13, value);
+	}
+
+	/**
+	 * Getter for <code>cattle.environment.revision</code>.
+	 */
+	@javax.persistence.Column(name = "revision", nullable = false, precision = 19)
+	@Override
+	public java.lang.Long getRevision() {
+		return (java.lang.Long) getValue(13);
+	}
+
 	// -------------------------------------------------------------------------
 	// Primary key information
 	// -------------------------------------------------------------------------
@@ -250,23 +267,23 @@ public class EnvironmentRecord extends org.jooq.impl.UpdatableRecordImpl<io.catt
 	}
 
 	// -------------------------------------------------------------------------
-	// Record13 type implementation
+	// Record14 type implementation
 	// -------------------------------------------------------------------------
 
 	/**
 	 * {@inheritDoc}
 	 */
 	@Override
-	public org.jooq.Row13<java.lang.Long, java.lang.String, java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.util.Date, java.util.Date, java.util.Date, java.util.Map<String,Object>, java.lang.String, java.lang.String> fieldsRow() {
-		return (org.jooq.Row13) super.fieldsRow();
+	public org.jooq.Row14<java.lang.Long, java.lang.String, java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.util.Date, java.util.Date, java.util.Date, java.util.Map<String,Object>, java.lang.String, java.lang.String, java.lang.Long> fieldsRow() {
+		return (org.jooq.Row14) super.fieldsRow();
 	}
 
 	/**
 	 * {@inheritDoc}
 	 */
 	@Override
-	public org.jooq.Row13<java.lang.Long, java.lang.String, java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.util.Date, java.util.Date, java.util.Date, java.util.Map<String,Object>, java.lang.String, java.lang.String> valuesRow() {
-		return (org.jooq.Row13) super.valuesRow();
+	public org.jooq.Row14<java.lang.Long, java.lang.String, java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.util.Date, java.util.Date, java.util.Date, java.util.Map<String,Object>, java.lang.String, java.lang.String, java.lang.Long> valuesRow() {
+		return (org.jooq.Row14) super.valuesRow();
 	}
 
 	/**
@@ -377,6 +394,14 @@ public class EnvironmentRecord extends org.jooq.impl.UpdatableRecordImpl<io.catt
 	 * {@inheritDoc}
 	 */
 	@Override
+	public org.jooq.Field<java.lang.Long> field14() {
+		return io.cattle.platform.core.model.tables.EnvironmentTable.ENVIRONMENT.REVISION;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
 	public java.lang.Long value1() {
 		return getId();
 	}
@@ -475,6 +500,14 @@ public class EnvironmentRecord extends org.jooq.impl.UpdatableRecordImpl<io.catt
 	@Override
 	public java.lang.String value13() {
 		return getHealthState();
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public java.lang.Long value14() {
+		return getRevision();
 	}
 
 	/**
@@ -598,7 +631,16 @@ public class EnvironmentRecord extends org.jooq.impl.UpdatableRecordImpl<io.catt
 	 * {@inheritDoc}
 	 */
 	@Override
-	public EnvironmentRecord values(java.lang.Long value1, java.lang.String value2, java.lang.Long value3, java.lang.String value4, java.lang.String value5, java.lang.String value6, java.lang.String value7, java.util.Date value8, java.util.Date value9, java.util.Date value10, java.util.Map<String,Object> value11, java.lang.String value12, java.lang.String value13) {
+	public EnvironmentRecord value14(java.lang.Long value) {
+		setRevision(value);
+		return this;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public EnvironmentRecord values(java.lang.Long value1, java.lang.String value2, java.lang.Long value3, java.lang.String value4, java.lang.String value5, java.lang.String value6, java.lang.String value7, java.util.Date value8, java.util.Date value9, java.util.Date value10, java.util.Map<String,Object> value11, java.lang.String value12, java.lang.String value13, java.lang.Long value14) {
 		return this;
 	}
 
@@ -624,6 +666,7 @@ public class EnvironmentRecord extends org.jooq.impl.UpdatableRecordImpl<io.catt
 		setData(from.getData());
 		setExternalId(from.getExternalId());
 		setHealthState(from.getHealthState());
+		setRevision(from.getRevision());
 	}
 
 	/**
@@ -649,7 +692,7 @@ public class EnvironmentRecord extends org.jooq.impl.UpdatableRecordImpl<io.catt
 	/**
 	 * Create a detached, initialised EnvironmentRecord
 	 */
-	public EnvironmentRecord(java.lang.Long id, java.lang.String name, java.lang.Long accountId, java.lang.String kind, java.lang.String uuid, java.lang.String description, java.lang.String state, java.util.Date created, java.util.Date removed, java.util.Date removeTime, java.util.Map<String,Object> data, java.lang.String externalId, java.lang.String healthState) {
+	public EnvironmentRecord(java.lang.Long id, java.lang.String name, java.lang.Long accountId, java.lang.String kind, java.lang.String uuid, java.lang.String description, java.lang.String state, java.util.Date created, java.util.Date removed, java.util.Date removeTime, java.util.Map<String,Object> data, java.lang.String externalId, java.lang.String healthState, java.lang.Long revision) {
 		super(io.cattle.platform.core.model.tables.EnvironmentTable.ENVIRONMENT);
 
 		setValue(0, id);
@@ -665,5 +708,6 @@ public class EnvironmentRecord extends org.jooq.impl.UpdatableRecordImpl<io.catt
 		setValue(10, data);
 		setValue(11, externalId);
 		setValue(12, healthState);
+		setValue(13, revision);
 	}
 }

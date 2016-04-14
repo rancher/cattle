@@ -3,6 +3,7 @@ package io.cattle.platform.configitem.context.data.metadata.common;
 import io.cattle.platform.configitem.context.dao.MetaDataInfoDao;
 import io.cattle.platform.configitem.context.dao.MetaDataInfoDao.Version;
 import io.cattle.platform.configitem.context.data.metadata.version1.ServiceMetaDataVersion1;
+import io.cattle.platform.configitem.context.data.metadata.version1.ServiceMetaDataVersionTemp;
 import io.cattle.platform.configitem.context.data.metadata.version2.ServiceMetaDataVersion2;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.model.Environment;
@@ -22,6 +23,7 @@ public class ServiceMetaData {
     private String launchConfigName;
     private Long stackId;
     private Service service;
+    private boolean includeToData = false;
     
     protected String name;
     protected String uuid;
@@ -41,6 +43,8 @@ public class ServiceMetaData {
     protected String fqdn;
     protected List<String> expose = new ArrayList<>();
     protected String token;
+    String state;
+    protected String metadataUuid;
 
     protected ServiceMetaData(ServiceMetaData that) {
         this.name = that.name;
@@ -65,10 +69,13 @@ public class ServiceMetaData {
         this.isPrimaryConfig = that.isPrimaryConfig;
         this.launchConfigName = that.launchConfigName;
         this.stackId = that.stackId;
+        this.state = that.state;
+        this.metadataUuid = that.metadataUuid;
+        this.includeToData = that.includeToData;
     }
 
     public ServiceMetaData(Service service, String serviceName, Environment env, List<String> sidekicks,
-            Map<String, Object> metadata) {
+            Map<String, Object> metadata, boolean includeToData) {
         this.serviceId = service.getId();
         this.service = service;
         this.name = serviceName;
@@ -90,6 +97,10 @@ public class ServiceMetaData {
         this.scale = DataAccessor.fieldInteger(service, ServiceDiscoveryConstants.FIELD_SCALE);
         this.fqdn = DataAccessor.fieldString(service, ServiceDiscoveryConstants.FIELD_FQDN);
         this.stackId = env.getId();
+        this.state = service.getState();
+        // for sidekicks, uuid is going to be the same
+        this.metadataUuid = this.uuid + "_" + this.name;
+        this.includeToData = includeToData;
     }
 
     @SuppressWarnings("unchecked")
@@ -272,8 +283,30 @@ public class ServiceMetaData {
     public static ServiceMetaData getServiceMetaData(ServiceMetaData serviceData, Version version) {
         if (version == MetaDataInfoDao.Version.version1) {
             return new ServiceMetaDataVersion1(serviceData);
-        } else {
+        } else if (version == MetaDataInfoDao.Version.tempVersion) {
+            return new ServiceMetaDataVersionTemp(serviceData);
+        }else {
             return new ServiceMetaDataVersion2(serviceData);
         }
+    }
+
+    public String getState() {
+        return state;
+    }
+
+    public void setState(String state) {
+        this.state = state;
+    }
+
+    public String getMetadataUuid() {
+        return metadataUuid;
+    }
+
+    public void setMetadataUuid(String metadataUuid) {
+        this.metadataUuid = metadataUuid;
+    }
+
+    public boolean isIncludeToData() {
+        return includeToData;
     }
 }

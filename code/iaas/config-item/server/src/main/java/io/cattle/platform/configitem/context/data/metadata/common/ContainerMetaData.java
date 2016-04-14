@@ -18,6 +18,7 @@ public class ContainerMetaData {
     private Long serviceId;
     private HostMetaData hostMetaData;
     private String dnsPrefix;
+    private boolean includeToData = false;
 
     String name;
     String uuid;
@@ -34,6 +35,8 @@ public class ContainerMetaData {
     String health_state;
     Long start_count;
     String service_index;
+    String state;
+    String metadataUuid;
 
     public ContainerMetaData() {
     }
@@ -72,7 +75,7 @@ public class ContainerMetaData {
     }
 
     @SuppressWarnings("unchecked")
-    public void setInstanceAndHostMetadata(Instance instance, HostMetaData hostMetaData) {
+    public void setInstanceAndHostMetadata(Instance instance, HostMetaData hostMetaData, boolean includeToData) {
         this.hostMetaData = hostMetaData;
         this.name = instance.getName();
         this.uuid = instance.getUuid();
@@ -102,6 +105,9 @@ public class ContainerMetaData {
         this.create_index = instance.getCreateIndex();
         this.health_state = instance.getHealthState();
         this.start_count = instance.getStartCount();
+        this.state = instance.getState();
+        this.metadataUuid = this.uuid;
+        this.includeToData = includeToData;
     }
 
     public void setService_name(String service_name) {
@@ -205,5 +211,25 @@ public class ContainerMetaData {
 
     public void setService_index(String service_index) {
         this.service_index = service_index;
+    }
+
+    public String getMetadataUuid() {
+        return metadataUuid;
+    }
+
+    public void setMetadataUuid(String metadataUuid) {
+        this.metadataUuid = metadataUuid;
+    }
+
+    public boolean isIncludeToData() {
+        return includeToData;
+    }
+
+    public String getState() {
+        return state;
+    }
+
+    public void setState(String state) {
+        this.state = state;
     }
 }

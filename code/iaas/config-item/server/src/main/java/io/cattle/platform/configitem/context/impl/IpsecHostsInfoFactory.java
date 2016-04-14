@@ -3,6 +3,7 @@ package io.cattle.platform.configitem.context.impl;
 import io.cattle.platform.configitem.context.dao.NetworkInfoDao;
 import io.cattle.platform.configitem.context.data.ClientIpsecTunnelInfo;
 import io.cattle.platform.configitem.server.model.ConfigItem;
+import io.cattle.platform.configitem.server.model.Request;
 import io.cattle.platform.configitem.server.model.impl.ArchiveContext;
 import io.cattle.platform.core.model.Agent;
 import io.cattle.platform.core.model.Host;
@@ -20,7 +21,7 @@ public class IpsecHostsInfoFactory extends AbstractAgentBaseContextFactory {
     NetworkInfoDao networkInfoDao;
 
     @Override
-    protected void populateContext(Agent agent, Instance instance, ConfigItem item, ArchiveContext context) {
+    protected void populateContext(Agent agent, Instance instance, ConfigItem item, ArchiveContext context, Request configRequest) {
         List<Host> hosts = objectManager.mappedChildren(instance, Host.class);
 
         if (hosts.size() > 0) {

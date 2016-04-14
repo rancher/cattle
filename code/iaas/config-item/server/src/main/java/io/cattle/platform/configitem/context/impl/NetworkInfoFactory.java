@@ -3,6 +3,7 @@ package io.cattle.platform.configitem.context.impl;
 import io.cattle.platform.configitem.context.dao.NetworkInfoDao;
 import io.cattle.platform.configitem.context.data.NetworkServiceInfo;
 import io.cattle.platform.configitem.server.model.ConfigItem;
+import io.cattle.platform.configitem.server.model.Request;
 import io.cattle.platform.configitem.server.model.impl.ArchiveContext;
 import io.cattle.platform.core.dao.IpAddressDao;
 import io.cattle.platform.core.model.Agent;
@@ -31,7 +32,7 @@ public class NetworkInfoFactory extends AbstractAgentBaseContextFactory {
     IpAddressDao ipAddressDao;
 
     @Override
-    protected void populateContext(Agent agent, Instance instance, ConfigItem item, ArchiveContext context) {
+    protected void populateContext(Agent agent, Instance instance, ConfigItem item, ArchiveContext context, Request configRequest) {
         context.getData().put("hostnameGenerator", new HostnameGenerator());
         context.getData().put("instance", instance);
         context.getData().put("agent", agent);

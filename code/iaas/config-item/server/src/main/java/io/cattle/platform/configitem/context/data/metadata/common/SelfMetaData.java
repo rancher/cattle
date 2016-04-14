@@ -1,6 +1,5 @@
 package io.cattle.platform.configitem.context.data.metadata.common;
 
-import io.cattle.platform.configitem.context.dao.MetaDataInfoDao.Version;
 
 public class SelfMetaData {
 
@@ -61,8 +60,7 @@ public class SelfMetaData {
 
     Self self;
 
-    public SelfMetaData(ContainerMetaData container, ServiceMetaData service, StackMetaData stack, HostMetaData host,
-            Version version) {
+    public SelfMetaData(ContainerMetaData container, ServiceMetaData service, StackMetaData stack, HostMetaData host) {
         super();
         this.self = new Self(container, service, stack, host);
     }
