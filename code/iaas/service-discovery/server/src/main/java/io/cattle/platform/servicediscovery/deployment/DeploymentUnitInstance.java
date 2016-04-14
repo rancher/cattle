@@ -9,14 +9,13 @@ import io.cattle.platform.core.model.ServiceIndex;
 import io.cattle.platform.iaas.api.auditing.AuditEventType;
 import io.cattle.platform.object.process.StandardProcess;
 import io.cattle.platform.object.resource.ResourcePredicate;
-import io.cattle.platform.servicediscovery.api.util.ServiceDiscoveryDnsUtil;
 import io.cattle.platform.servicediscovery.deployment.impl.DeploymentManagerImpl.DeploymentServiceContext;
 import io.cattle.platform.servicediscovery.deployment.impl.unit.DefaultDeploymentUnitInstance;
 
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
 
 /**
  * TODO: Since the majority of the system references DeploymentUnitInstance and not InstanceUnit
@@ -130,13 +129,6 @@ public abstract class DeploymentUnitInstance {
         return stack;
     }
 
-    public List<String> getSearchDomains() {
-        String stackNamespace = ServiceDiscoveryDnsUtil.getStackNamespace(this.stack, this.service);
-        String serviceNamespace = ServiceDiscoveryDnsUtil
-                .getServiceNamespace(this.stack, this.service);
-        return Arrays.asList(stackNamespace, serviceNamespace);
-    }
-
     public void generateAuditLog(AuditEventType eventType, String description) {
         if (this instanceof DefaultDeploymentUnitInstance) {
             DefaultDeploymentUnitInstance defaultInstance = (DefaultDeploymentUnitInstance) this;
@@ -154,4 +146,6 @@ public abstract class DeploymentUnitInstance {
             }
         }
     }
+
+    public abstract List<String> getSearchDomains();
 }

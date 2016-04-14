@@ -140,4 +140,9 @@ public class ExternalDeploymentUnitInstance extends DeploymentUnitInstance {
     public boolean isIgnore() {
         return false;
     }
+
+    @Override
+    public List<String> getSearchDomains() {
+        return null;
+    }
 }
