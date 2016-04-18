@@ -226,6 +226,34 @@
         </property>
     </bean>
 
+     <bean id="ProjectAdmin" class="io.cattle.platform.api.schema.ObjectBasedSubSchemaFactory" >
+        <property name="id" value="projectadmin" />
+        <property name="schemaFactory" ref="CoreSchemaFactory" />
+        <property name="postProcessors">
+            <list>
+                <bean class="io.cattle.platform.schema.processor.JsonFileOverlayPostProcessor" >
+                    <property name="path" value="schema/projectadmin" />
+                </bean>
+                <bean class="io.cattle.platform.schema.processor.AuthOverlayPostProcessor" >
+                    <property name="resources" >
+                        <bean class="io.cattle.platform.spring.resource.SpringUrlListFactory" >
+                            <property name="resources">
+                                <list>
+                                    <value>classpath:schema/user/user-auth.json</value>
+                                    <value>classpath*:schema/user/user-auth.json.d/**/*.json</value>
+                                    <value>classpath:schema/project/project-auth.json</value>
+                                    <value>classpath*:schema/project/project-auth.json.d/**/*.json</value>
+                                    <value>classpath:schema/projectadmin/projectadmin-auth.json</value>
+                                    <value>classpath*:schema/projectadmin/projectadmin-auth.json.d/**/*.json</value>
+                                </list>
+                            </property>
+                        </bean>
+                    </property>
+                </bean>
+            </list>
+        </property>
+    </bean>
+
     <bean class="io.cattle.platform.api.schema.ObjectBasedSubSchemaFactory" >
         <property name="id" value="agentRegister" />
         <property name="schemaFactory" ref="CoreSchemaFactory" />

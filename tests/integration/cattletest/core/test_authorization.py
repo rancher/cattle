@@ -1446,7 +1446,7 @@ def test_registry_credentials(admin_user_client, user_client, project_client):
         'data': 'r',
         'email': 'r',
         'publicValue': 'r',
-        'secretValue': 'r',
+        'secretValue': 'ro',
         'registryId': 'r',
     })
 
@@ -1454,7 +1454,7 @@ def test_registry_credentials(admin_user_client, user_client, project_client):
         'accountId': 'r',
         'email': 'r',
         'publicValue': 'r',
-        'secretValue': 'r',
+        'secretValue': 'ro',
         'registryId': 'r',
     })
 
@@ -1462,7 +1462,7 @@ def test_registry_credentials(admin_user_client, user_client, project_client):
         'accountId': 'r',
         'email': 'cru',
         'publicValue': 'cru',
-        'secretValue': 'cru',
+        'secretValue': 'curo',
         'registryId': 'cr',
     })
 

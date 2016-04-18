@@ -157,6 +157,7 @@ public class SystemStackUpdate implements AnnotatedEventListener {
                 ServiceDiscoveryConstants.STACK_FIELD_START_ON_CREATE, true);
 
         Map<String, Object> props = objectManager.convertToPropertiesFor(Environment.class, data);
+        props.put("isSystem", true);
         resourceDao.createAndSchedule(Environment.class, props);
         return true;
     }

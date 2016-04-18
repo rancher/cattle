@@ -2,7 +2,6 @@ package io.cattle.platform.agent.instance.factory.impl;
 
 import io.cattle.platform.agent.instance.factory.AgentInstanceBuilder;
 import io.cattle.platform.archaius.util.ArchaiusUtil;
-import io.cattle.platform.core.constants.AccountConstants;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.constants.InstanceConstants.SystemContainer;
 import io.cattle.platform.core.constants.NetworkServiceProviderConstants;
@@ -10,7 +9,6 @@ import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.NetworkServiceProvider;
 import io.cattle.platform.core.util.SystemLabels;
 import io.cattle.platform.object.util.DataAccessor;
-import io.cattle.platform.util.type.CollectionUtils;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -46,7 +44,7 @@ public class AgentInstanceBuilderImpl implements AgentInstanceBuilder {
         this.factory = factory;
     }
 
-    public AgentInstanceBuilderImpl(AgentInstanceFactoryImpl factory, Instance instance) {
+    public AgentInstanceBuilderImpl(AgentInstanceFactoryImpl factory, Instance instance, Map<String, Object> accountData) {
         this(factory);
         this.accountId = instance.getAccountId();
         this.zoneId = instance.getZoneId();
@@ -58,10 +56,7 @@ public class AgentInstanceBuilderImpl implements AgentInstanceBuilder {
         }
         this.uri = uriPrefix + ":///instanceId=" + instance.getId();
         this.resourceAccountId = instance.getAccountId();
-
-        if ("environment".equals(labels.get(SystemLabels.LABEL_AGENT_ROLE))) {
-            accountData = CollectionUtils.asMap(AccountConstants.DATA_ACT_AS_RESOURCE_ACCOUNT, true);
-        }
+        this.accountData = accountData;
     }
 
     @Override
