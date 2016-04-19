@@ -1,0 +1,35 @@
+zookeeper:
+  image: rancher/zookeeper:3.4.6-2
+  volumes:
+  - /opt/zk/data
+  environment:
+    JVMFLAGS: -Xmx512m -Xms512m
+    CONFD_INTERVAL: 0
+mesos-master:
+  image: rancher/mesos-master:latest
+  environment:
+    MESOS_CLUSTER: Rancher
+    MESOS_QUORUM: 1
+    MASTER_PORT: 5050
+    ZK_SERVICE: Mesos/zookeeper
+    ZK_SESSION_TIMEOUT: 10secs
+  ports:
+  - "5050:5050"
+  labels:
+    io.rancher.scheduler.affinity:container_label_ne: io.rancher.stack_service.name=$${stack_name}/$${service_name}
+  volumes:
+  - /data
+mesos-slave:
+  image: rancher/mesos-slave:latest
+  environment:
+    SLAVE_PORT: 5051
+    ZK_SERVICE: Mesos/zookeeper
+  ports:
+  - "5051:5051"
+  labels:
+    io.rancher.scheduler.affinity:container_label_ne: io.rancher.stack_service.name=$${stack_name}/$${service_name}
+    io.rancher.scheduler.global: "true"
+  volumes:
+  - /var/run/docker.sock:/var/run/docker.sock
+  - /data
+  privileged: true
