@@ -1,8 +1,8 @@
 package io.cattle.platform.agent.instance.service.impl;
 
-import static io.cattle.platform.core.model.tables.HealthcheckInstanceHostMapTable.HEALTHCHECK_INSTANCE_HOST_MAP;
-import static io.cattle.platform.core.model.tables.HealthcheckInstanceTable.HEALTHCHECK_INSTANCE;
-import static io.cattle.platform.core.model.tables.NicTable.NIC;
+import static io.cattle.platform.core.model.tables.HealthcheckInstanceHostMapTable.*;
+import static io.cattle.platform.core.model.tables.HealthcheckInstanceTable.*;
+import static io.cattle.platform.core.model.tables.NicTable.*;
 import io.cattle.platform.agent.instance.service.InstanceNicLookup;
 import io.cattle.platform.core.model.HealthcheckInstanceHostMap;
 import io.cattle.platform.core.model.Nic;
@@ -29,7 +29,7 @@ public class HealthcheckInstanceHostMapNicLookup extends AbstractJooqDao impleme
                 .where(HEALTHCHECK_INSTANCE_HOST_MAP.HOST_ID.eq(hostMap.getHostId())
                         .and(NIC.REMOVED.isNull())
                         .and(HEALTHCHECK_INSTANCE_HOST_MAP.REMOVED.isNull())
-                        .and(HEALTHCHECK_INSTANCE.REMOVED.isNull()))
+                        .and(HEALTHCHECK_INSTANCE.REMOVED.isNull())).limit(1)
                 .fetchInto(NicRecord.class);
     }
 }
