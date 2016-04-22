@@ -159,8 +159,10 @@ def create_context(admin_user_client, create_project=False, add_host=False,
                    kind=None, name=None):
     now = time.strftime("%Y-%m-%d %H:%M:%S", time.gmtime())
     if name is None:
-        name = 'Integration Test User {}'.format(now)
-        project_name = 'Integration Test Project {}'.format(now)
+        name = 'Session {} Integration Test User {}' \
+            .format(os.getpid(), now)
+        project_name = 'Session {} Integration Test Project {}' \
+            .format(os.getpid(), now)
     else:
         project_name = name + '\'s Project {}'.format(now)
 
@@ -473,7 +475,7 @@ def delete_sim_instances(super_client):
             continue
 
         if account.name is not None and \
-                account.name.startswith("Integration Test"):
+                account.name.startswith('Session {}'.format(os.getpid())):
             account = super_client.wait_success(account)
             try:
                 if account.removed is None:
