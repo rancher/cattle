@@ -343,11 +343,21 @@ def remove_schemas(service_client, schemas):  # NOQA
                 service_client.wait_success(got_schema.remove())
 
 
+def cleanup(service_client, schemas):  # NOQA
+    remove_schemas(service_client, ['fooConfig', 'barConfig', 'machine'])
+    for schema in schemas:
+        service_client.wait_success(
+            service_client.create_dynamic_schema(schema))
+
+
 @pytest.fixture(scope='module')  # NOQA
 def machine_context(admin_user_client, service_client,  # NOQA
-                    super_client):  # NOQA
+                    super_client, request):  # NOQA
     ctx = create_context(admin_user_client, create_project=True,
                          add_host=True)
+    origMachineSchemas = service_client.list_dynamic_schema(name='machine')
+    request.addfinalizer(
+        lambda: cleanup(service_client, origMachineSchemas))
     remove_schemas(service_client, ['fooConfig', 'barConfig', 'machine'])
     service_client.wait_success(service_client.create_dynamic_schema(
                                 name='fooConfig',
@@ -381,6 +391,7 @@ def machine_context(admin_user_client, service_client,  # NOQA
     return ctx
 
 
+@pytest.mark.nonparallel
 def test_machine_lifecycle(super_client, machine_context,
                            update_ping_settings):
     name = random_str()
@@ -443,6 +454,7 @@ def test_machine_lifecycle(super_client, machine_context,
     assert host.state == 'removed'
 
 
+@pytest.mark.nonparallel
 def test_machine_driver_config(machine_context):
     name = "test-%s" % random_str()
     foo_config = {
@@ -464,6 +476,7 @@ def test_machine_driver_config(machine_context):
     assert host.driver == 'foo'
 
 
+@pytest.mark.nonparallel
 def test_machine_validation(machine_context):
     name = "test-%s" % random_str()
 
@@ -488,6 +501,7 @@ def test_machine_validation(machine_context):
     assert host is not None
 
 
+@pytest.mark.nonparallel
 def test_bar_config_machine(machine_context):
     name = "test-%s" % random_str()
 
@@ -499,6 +513,7 @@ def test_bar_config_machine(machine_context):
     assert e.value.error.code == 'MissingRequired'
 
 
+@pytest.mark.nonparallel
 def test_config_link_readonly(admin_user_client, super_client, request,
                               machine_context):
     user2_context = new_context(admin_user_client, request)
