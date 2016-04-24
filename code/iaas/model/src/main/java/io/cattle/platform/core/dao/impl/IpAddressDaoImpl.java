@@ -155,9 +155,11 @@ public class IpAddressDaoImpl extends AbstractJooqDao implements IpAddressDao {
     @Override
     public IpAddress updateIpAddress(IpAddress ipAddress, String newIpAddress) {
         Map<String, Object> data = new HashMap<>();
-        Map<String, Object> old = new HashMap<>();
-        old.put(IpAddressConstants.FIELD_ADDRESS, ipAddress.getAddress());
-        data.put("old", old);
+        if ( ipAddress.getAddress() != null ) {
+            Map<String, Object> old = new HashMap<>();
+            old.put(IpAddressConstants.FIELD_ADDRESS, ipAddress.getAddress());
+            data.put("old", old);
+        }
         objectManager.setFields(ipAddress, IP_ADDRESS.ADDRESS, newIpAddress);
         processManager.scheduleStandardProcess(StandardProcess.UPDATE, ipAddress, data);
         return ipAddress;
