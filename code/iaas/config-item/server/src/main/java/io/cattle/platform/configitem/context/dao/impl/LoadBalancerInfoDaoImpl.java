@@ -12,7 +12,6 @@ import io.cattle.platform.core.util.PortSpec;
 import io.cattle.platform.json.JsonMapper;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.servicediscovery.api.constants.ServiceDiscoveryConstants;
-import io.cattle.platform.servicediscovery.api.constants.ServiceDiscoveryConstants.KIND;
 import io.cattle.platform.servicediscovery.api.dao.ServiceConsumeMapDao;
 import io.cattle.platform.servicediscovery.api.dao.ServiceExposeMapDao;
 import io.cattle.platform.servicediscovery.api.util.ServiceDiscoveryUtil;
@@ -211,7 +210,7 @@ public class LoadBalancerInfoDaoImpl implements LoadBalancerInfoDao {
 
     @Override
     public List<LoadBalancerTargetInput> getLoadBalancerTargets(Service lbService) {
-        if (!lbService.getKind().equalsIgnoreCase(ServiceDiscoveryConstants.KIND.LOADBALANCERSERVICE.name())) {
+        if (!lbService.getKind().equalsIgnoreCase(ServiceDiscoveryConstants.KIND_LOAD_BALANCER_SERVICE)) {
             return new ArrayList<>();
         }
         List<LoadBalancerTargetInput> targets = new ArrayList<>();
@@ -247,7 +246,7 @@ public class LoadBalancerInfoDaoImpl implements LoadBalancerInfoDao {
     protected void findConsumedServicesImpl(long serviceId, List<Service> services) {
         Service service = objectManager.loadResource(Service.class, serviceId);
         if (sdService.isActiveService(service)) {
-            if (service.getKind().equalsIgnoreCase(KIND.DNSSERVICE.name())) {
+            if (service.getKind().equalsIgnoreCase(ServiceDiscoveryConstants.KIND_DNS_SERVICE)) {
                 List<? extends ServiceConsumeMap> consumedMaps = consumeMapDao.findConsumedServices(serviceId);
                 for (ServiceConsumeMap consumedMap : consumedMaps) {
                     if (serviceId == consumedMap.getConsumedServiceId().longValue()) {

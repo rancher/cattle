@@ -45,7 +45,7 @@ public class ServiceSetServiceLinksValidationFilter extends AbstractDefaultResou
 
         Service service = objectManager.loadResource(Service.class, request.getId());
         if (service.getKind()
-                .equalsIgnoreCase(ServiceDiscoveryConstants.KIND.LOADBALANCERSERVICE.name())) {
+                .equalsIgnoreCase(ServiceDiscoveryConstants.KIND_LOAD_BALANCER_SERVICE)) {
             List<? extends LoadBalancerServiceLink> serviceLinks = DataAccessor.fromMap(request.getRequestObject())
                     .withKey(
                     ServiceDiscoveryConstants.FIELD_SERVICE_LINKS).withDefault(Collections.EMPTY_LIST)
