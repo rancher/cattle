@@ -10,7 +10,7 @@
           default: "8090"
           description: This is the port that the Kubernetes API server should listen on.
 
-api-server:
+kubernetes:
     health_check:
         request_line: GET /healthz HTTP/1.0
         port: 80
@@ -50,6 +50,32 @@ controller-manager:
     health_check:
         request_line: GET /healthz HTTP/1.0
         port: 10252
+        interval: 2000
+        response_timeout: 2000
+        unhealthy_threshold: 3
+        healthy_threshold: 2
+
+kubectld:
+    health_check:
+        port: 8091
+        interval: 2000
+        response_timeout: 2000
+        unhealthy_threshold: 3
+        healthy_threshold: 2
+
+kubelet:
+    health_check:
+        request_line: GET /healthz HTTP/1.0
+        port: 10255
+        interval: 2000
+        response_timeout: 2000
+        unhealthy_threshold: 3
+        healthy_threshold: 2
+
+proxy:
+    health_check:
+        request_line: GET /healthz HTTP/1.0
+        port: 10249
         interval: 2000
         response_timeout: 2000
         unhealthy_threshold: 3
