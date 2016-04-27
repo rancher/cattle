@@ -2314,31 +2314,34 @@ def test_service_restart(client, context):
     image_uuid = context.image_uuid
     launch_config = {"imageUuid": image_uuid}
     secondary_lc = {"imageUuid": image_uuid, "name": "secondary"}
-    service = client.create_service(name=random_str(),
-                                    environmentId=env.id,
-                                    launchConfig=launch_config,
-                                    scale=2,
-                                    secondaryLaunchConfigs=[secondary_lc])
-    service = client.wait_success(service)
+    svc = client.create_service(name=random_str(),
+                                environmentId=env.id,
+                                launchConfig=launch_config,
+                                scale=2,
+                                secondaryLaunchConfigs=[secondary_lc])
+    svc = client.wait_success(svc)
 
-    service = client.wait_success(service.activate(), 120)
+    svc = client.wait_success(svc.activate(), 120)
 
-    assert service.state == "active"
+    assert svc.state == "active"
 
     # get initial start count for all the instances
     instances = []
-    for exposeMap in service.serviceExposeMaps():
+    for exposeMap in svc.serviceExposeMaps():
         instances.append(client.reload(exposeMap.instance()))
 
     # restart service
-    service = client. \
-        wait_success(service.restart(rollingRestartStrategy={}), 120)
-    assert service.state == 'active'
+    svc = client. \
+        wait_success(svc.restart(rollingRestartStrategy={}), 120)
+    assert svc.state == 'active'
 
     for instance in instances:
         old = instance.startCount
         new = client.reload(instance).startCount
         assert new > old
+
+    wait_for(lambda: client.reload(svc).healthState == 'healthy')
+    wait_for(lambda: client.reload(env).healthState == 'healthy')
 
 
 def _validate_endpoint(endpoints, public_port, host, service=None,
