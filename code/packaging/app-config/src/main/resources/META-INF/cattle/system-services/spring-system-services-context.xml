@@ -435,7 +435,9 @@
     <bean class="io.cattle.platform.servicediscovery.process.ServiceRestart" />
     <bean class="io.cattle.platform.servicediscovery.process.ServiceSuffixRemove" />
     <bean class="io.cattle.platform.servicediscovery.process.HostIpUpdatePostListener" />
-
+    <bean class="io.cattle.platform.servicediscovery.process.HostRemovePostListener" />
+    <bean class="io.cattle.platform.servicediscovery.process.InstancePurgePostListener" />
+    
     <bean class="io.cattle.platform.servicediscovery.process.EnvironmentRemove" />
     <bean class="io.cattle.platform.servicediscovery.process.ServiceDiscoveryInstanceRemovePreListener" />
     <bean class="io.cattle.platform.servicediscovery.process.ServicesReconcilePostTrigger" />

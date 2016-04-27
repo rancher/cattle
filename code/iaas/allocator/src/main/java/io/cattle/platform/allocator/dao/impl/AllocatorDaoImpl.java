@@ -1,26 +1,31 @@
 package io.cattle.platform.allocator.dao.impl;
 
-import static io.cattle.platform.core.model.tables.AgentTable.*;
-import static io.cattle.platform.core.model.tables.HostLabelMapTable.*;
-import static io.cattle.platform.core.model.tables.HostTable.*;
-import static io.cattle.platform.core.model.tables.HostVnetMapTable.*;
-import static io.cattle.platform.core.model.tables.ImageStoragePoolMapTable.*;
-import static io.cattle.platform.core.model.tables.ImageTable.*;
-import static io.cattle.platform.core.model.tables.InstanceHostMapTable.*;
-import static io.cattle.platform.core.model.tables.InstanceLabelMapTable.*;
-import static io.cattle.platform.core.model.tables.InstanceTable.*;
-import static io.cattle.platform.core.model.tables.LabelTable.*;
-import static io.cattle.platform.core.model.tables.NicTable.*;
-import static io.cattle.platform.core.model.tables.PortTable.*;
-import static io.cattle.platform.core.model.tables.ServiceExposeMapTable.*;
-import static io.cattle.platform.core.model.tables.StoragePoolHostMapTable.*;
-import static io.cattle.platform.core.model.tables.StoragePoolTable.*;
-import static io.cattle.platform.core.model.tables.SubnetVnetMapTable.*;
-import static io.cattle.platform.core.model.tables.VnetTable.*;
-import static io.cattle.platform.core.model.tables.VolumeStoragePoolMapTable.*;
+import static io.cattle.platform.core.model.tables.AgentTable.AGENT;
+import static io.cattle.platform.core.model.tables.HostLabelMapTable.HOST_LABEL_MAP;
+import static io.cattle.platform.core.model.tables.HostTable.HOST;
+import static io.cattle.platform.core.model.tables.HostVnetMapTable.HOST_VNET_MAP;
+import static io.cattle.platform.core.model.tables.ImageStoragePoolMapTable.IMAGE_STORAGE_POOL_MAP;
+import static io.cattle.platform.core.model.tables.ImageTable.IMAGE;
+import static io.cattle.platform.core.model.tables.InstanceHostMapTable.INSTANCE_HOST_MAP;
+import static io.cattle.platform.core.model.tables.InstanceLabelMapTable.INSTANCE_LABEL_MAP;
+import static io.cattle.platform.core.model.tables.InstanceTable.INSTANCE;
+import static io.cattle.platform.core.model.tables.LabelTable.LABEL;
+import static io.cattle.platform.core.model.tables.NicTable.NIC;
+import static io.cattle.platform.core.model.tables.PortTable.PORT;
+import static io.cattle.platform.core.model.tables.ServiceExposeMapTable.SERVICE_EXPOSE_MAP;
+import static io.cattle.platform.core.model.tables.StoragePoolHostMapTable.STORAGE_POOL_HOST_MAP;
+import static io.cattle.platform.core.model.tables.StoragePoolTable.STORAGE_POOL;
+import static io.cattle.platform.core.model.tables.SubnetVnetMapTable.SUBNET_VNET_MAP;
+import static io.cattle.platform.core.model.tables.VnetTable.VNET;
+import static io.cattle.platform.core.model.tables.VolumeStoragePoolMapTable.VOLUME_STORAGE_POOL_MAP;
+
 import io.cattle.platform.allocator.dao.AllocatorDao;
 import io.cattle.platform.allocator.service.AllocationAttempt;
 import io.cattle.platform.allocator.service.AllocationCandidate;
+import io.cattle.platform.allocator.service.CacheManager;
+import io.cattle.platform.allocator.service.DiskInfo;
+import io.cattle.platform.allocator.service.InstanceDiskReserveInfo;
+import io.cattle.platform.allocator.service.InstanceInfo;
 import io.cattle.platform.allocator.util.AllocatorUtils;
 import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.InstanceConstants;
@@ -42,6 +47,7 @@ import io.cattle.platform.object.util.DataAccessor;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 
 import javax.inject.Inject;
@@ -57,7 +63,6 @@ import org.slf4j.LoggerFactory;
 public class AllocatorDaoImpl extends AbstractJooqDao implements AllocatorDao {
 
     private static final Logger log = LoggerFactory.getLogger(AllocatorDaoImpl.class);
-
     ObjectManager objectManager;
     GenericMapDao mapDao;
 
@@ -161,6 +166,37 @@ public class AllocatorDaoImpl extends AbstractJooqDao implements AllocatorDao {
         objectManager.persist(host);
     }
 
+    protected void modifyDisk(long hostId, Instance instance, boolean add) {
+        CacheManager cm = CacheManager.getCacheManagerInstance(this.objectManager);
+        InstanceInfo instanceInfo = cm.getInstanceInfoForHost(hostId, instance.getId());
+
+        for (Entry<String, InstanceDiskReserveInfo> entry : instanceInfo.getAllReservedDisksInfo()) {
+            String diskDevicePath = entry.getKey();
+            InstanceDiskReserveInfo reserveInfo = entry.getValue();
+            Long reserveSize = reserveInfo.getReservedSize();
+            
+            // figure out available size
+            DiskInfo diskInfo = cm.getDiskInfoForHost(hostId, diskDevicePath);
+            Long allocated = diskInfo.getAllocatedSize();
+            if (add && (diskInfo.getCapacity() - allocated >= reserveSize)) {
+                diskInfo.addAllocatedSize(reserveSize);
+                log.debug("allocated disk space on disk [{}], {} {} {} = {}", diskInfo.getDiskDevicePath(), reserveSize, "+",
+                        allocated, allocated + reserveSize);
+
+                // mark reserved info for this instance
+                reserveInfo.setAllocated(true);
+            } else if (!add && reserveInfo.isAllocated()
+                    && allocated >= reserveSize) {
+                diskInfo.freeAllocatedSize(reserveSize);
+                log.debug("allocated disk space on disk [{}], {} {} {} = {}", diskInfo.getDiskDevicePath(), reserveSize, "-",
+                        allocated, allocated + reserveSize);
+
+                // release the reserved disk for this instance
+                instanceInfo.releaseDisk(reserveInfo);
+            }
+        }
+    }
+
     @Override
     public boolean recordCandidate(AllocationAttempt attempt, AllocationCandidate candidate) {
         Set<Long> existingHosts = attempt.getHostIds();
@@ -174,6 +210,7 @@ public class AllocatorDaoImpl extends AbstractJooqDao implements AllocatorDao {
                         INSTANCE_HOST_MAP.INSTANCE_ID, attempt.getInstance().getId());
 
                 modifyCompute(hostId, attempt.getInstance(), false);
+                modifyDisk(hostId, attempt.getInstance(), true);
             }
         } else {
             if ( ! existingHosts.equals(newHosts) ) {
@@ -249,7 +286,7 @@ public class AllocatorDaoImpl extends AbstractJooqDao implements AllocatorDao {
             Boolean done = data.as(Boolean.class);
             if ( done == null || ! done.booleanValue() ) {
                 modifyCompute(map.getHostId(), instance, true);
-
+                modifyDisk(map.getHostId(), instance, false);
                 data.set(true);
                 objectManager.persist(map);
             }

@@ -28,7 +28,7 @@
     <bean class="io.cattle.platform.allocator.constraint.AffinityConstraintsProvider" />
     <bean class="io.cattle.platform.allocator.constraint.VolumesFromConstraintProvider" />
     <bean class="io.cattle.platform.allocator.constraint.NetworkContainerConstraintProvider" />
-
+    <bean class="io.cattle.platform.allocator.constraint.DiskSizeConstraintProvider" />
     <tx:advice id="AllocatorAdvice" transaction-manager="CoreTransactionManager">
         <tx:attributes>
             <tx:method name="recordCandidate" />
