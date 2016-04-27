@@ -159,11 +159,16 @@ public class VirtualMachinePreCreate extends AbstractObjectProcessLogic implemen
                     objectManager.create(Volume.class,
                             VOLUME.NAME, name,
                             VOLUME.ACCOUNT_ID, instance.getAccountId(),
+                            VOLUME.ACCESS_MODE, VolumeConstants.ACCESS_MODE_SINGLE_INSTANCE_RW,
                             VolumeConstants.FIELD_VOLUME_DRIVER, localDriver,
                             VolumeConstants.FIELD_VOLUME_DRIVER_OPTS, opts);
                 } else {
                     /* Use name from DB because of case sensitivity */
-                    name = volumes.get(0).getName();
+                    Volume v = volumes.get(0);
+                    name = v.getName();
+                    if (!VolumeConstants.ACCESS_MODE_SINGLE_INSTANCE_RW.equals(v.getAccessMode())) {
+                        objectManager.setFields(v, VOLUME.ACCESS_MODE, VolumeConstants.ACCESS_MODE_SINGLE_INSTANCE_RW);
+                    }
                 }
 
                 String dataVolumeString = String.format("%s:/volumes/disk%02d", name, index);

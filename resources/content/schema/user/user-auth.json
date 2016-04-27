@@ -249,6 +249,13 @@
         "logConfig.driver" : "cr",
         "logConfig.config" : "cr",
 
+        "machineDriver": "r",
+        "machineDriver.errorMessage": "r",
+        "machineDriver.uri": "cru",
+        "machineDriver.uiUrl": "cru",
+        "machineDriver.md5checksum": "cru",
+        "machineDriver.resourceActions\\..*": "",
+
         "mount" : "r",
         "mount.instanceId" : "r",
         "mount.path" : "r",
@@ -282,6 +289,7 @@
         "project.members" : "cr",
         "project.swarm" : "cru",
         "project.kubernetes" : "cru",
+        "project.mesos" : "cru",
         "project.publicDns" : "cru",
         "project.servicesPortRange": "cru",
 
@@ -345,6 +353,7 @@
         "storagePool": "r",
         "storagePool.externalId": "r",
         "storagePool.driverName": "r",
+        "storagePool.volumeAccessMode": "r",
 
         "subscribe" : "",
         "subscribe.eventNames" : "cr",
@@ -382,6 +391,7 @@
         "volume.uri" : "r",
         "volume.driver": "cr",
         "volume.driverOpts": "cr",
+        "volume.accessMode": "r",
         "volume.resourceActions.deactivate" : "",
 
         "loadBalancerConfig" : "r",

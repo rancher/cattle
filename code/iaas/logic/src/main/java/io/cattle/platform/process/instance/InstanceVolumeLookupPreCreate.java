@@ -2,9 +2,11 @@ package io.cattle.platform.process.instance;
 
 import static io.cattle.platform.core.model.tables.VolumeTable.*;
 import io.cattle.platform.core.constants.InstanceConstants;
+import io.cattle.platform.core.constants.VolumeConstants;
 import io.cattle.platform.core.dao.StoragePoolDao;
 import io.cattle.platform.core.dao.VolumeDao;
 import io.cattle.platform.core.model.Instance;
+import io.cattle.platform.core.model.StoragePool;
 import io.cattle.platform.core.model.Volume;
 import io.cattle.platform.engine.handler.HandlerResult;
 import io.cattle.platform.engine.handler.ProcessPreListener;
@@ -26,6 +28,8 @@ import java.util.Set;
 
 import javax.inject.Inject;
 import javax.inject.Named;
+
+import org.apache.commons.lang3.StringUtils;
 
 @Named
 public class InstanceVolumeLookupPreCreate extends AbstractObjectProcessLogic implements ProcessPreListener {
@@ -64,6 +68,12 @@ public class InstanceVolumeLookupPreCreate extends AbstractObjectProcessLogic im
             affinities.addAll(Arrays.asList(va.toString().split(",")));
         }
 
+        String volumeDriver = DataAccessor.fieldString(instance, InstanceConstants.FIELD_VOLUME_DRIVER);
+        StoragePool sp = null;
+        if (StringUtils.isNotEmpty(volumeDriver) && !VolumeConstants.LOCAL_DRIVER.equals(volumeDriver)) {
+            sp = storagePoolDao.findStoragePoolByDriverName(instance.getAccountId(), volumeDriver);
+        }
+
         Map<Object, Object> data = new HashMap<>();
         List<String> dataVolumes = DataAccessor.fieldStringList(instance, InstanceConstants.FIELD_DATA_VOLUMES);
         Map<String, Object> dataVolumeMounts = DataAccessor.fieldMap(instance, InstanceConstants.FIELD_DATA_VOLUME_MOUNTS);
@@ -90,6 +100,10 @@ public class InstanceVolumeLookupPreCreate extends AbstractObjectProcessLogic im
                                 + "with that name exists.", volName));
                         ex.setResources(state.getResource());
                         throw ex;
+                    } else if (sp != null) {
+                        Volume newVol = objectManager.create(Volume.class, VOLUME.NAME, volName, VOLUME.ACCOUNT_ID, instance.getAccountId(),
+                                VolumeConstants.FIELD_VOLUME_DRIVER, volumeDriver);
+                        dataVolumeMounts.put(parts[1], newVol.getId());
                     }
                 }
             }

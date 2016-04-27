@@ -11,7 +11,7 @@ package io.cattle.platform.core.model.tables;
 @java.lang.SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class VolumeTable extends org.jooq.impl.TableImpl<io.cattle.platform.core.model.tables.records.VolumeRecord> {
 
-	private static final long serialVersionUID = -1641743246;
+	private static final long serialVersionUID = -2075181042;
 
 	/**
 	 * The singleton instance of <code>cattle.volume</code>
@@ -142,6 +142,16 @@ public class VolumeTable extends org.jooq.impl.TableImpl<io.cattle.platform.core
 	public final org.jooq.TableField<io.cattle.platform.core.model.tables.records.VolumeRecord, java.lang.String> EXTERNAL_ID = createField("external_id", org.jooq.impl.SQLDataType.VARCHAR.length(128), this, "");
 
 	/**
+	 * The column <code>cattle.volume.host_id</code>.
+	 */
+	public final org.jooq.TableField<io.cattle.platform.core.model.tables.records.VolumeRecord, java.lang.Long> HOST_ID = createField("host_id", org.jooq.impl.SQLDataType.BIGINT, this, "");
+
+	/**
+	 * The column <code>cattle.volume.access_mode</code>.
+	 */
+	public final org.jooq.TableField<io.cattle.platform.core.model.tables.records.VolumeRecord, java.lang.String> ACCESS_MODE = createField("access_mode", org.jooq.impl.SQLDataType.VARCHAR.length(255), this, "");
+
+	/**
 	 * Create a <code>cattle.volume</code> table reference
 	 */
 	public VolumeTable() {
@@ -192,7 +202,7 @@ public class VolumeTable extends org.jooq.impl.TableImpl<io.cattle.platform.core
 	 */
 	@Override
 	public java.util.List<org.jooq.ForeignKey<io.cattle.platform.core.model.tables.records.VolumeRecord, ?>> getReferences() {
-		return java.util.Arrays.<org.jooq.ForeignKey<io.cattle.platform.core.model.tables.records.VolumeRecord, ?>>asList(io.cattle.platform.core.model.Keys.FK_VOLUME__ACCOUNT_ID, io.cattle.platform.core.model.Keys.FK_VOLUME__INSTANCE_ID, io.cattle.platform.core.model.Keys.FK_VOLUME__IMAGE_ID, io.cattle.platform.core.model.Keys.FK_VOLUME__OFFERING_ID, io.cattle.platform.core.model.Keys.FK_VOLUME__ZONE_ID);
+		return java.util.Arrays.<org.jooq.ForeignKey<io.cattle.platform.core.model.tables.records.VolumeRecord, ?>>asList(io.cattle.platform.core.model.Keys.FK_VOLUME__ACCOUNT_ID, io.cattle.platform.core.model.Keys.FK_VOLUME__INSTANCE_ID, io.cattle.platform.core.model.Keys.FK_VOLUME__IMAGE_ID, io.cattle.platform.core.model.Keys.FK_VOLUME__OFFERING_ID, io.cattle.platform.core.model.Keys.FK_VOLUME__ZONE_ID, io.cattle.platform.core.model.Keys.FK_VOLUME__HOST_ID);
 	}
 
 	/**

@@ -64,8 +64,8 @@ public class AgentInstanceManagerImpl implements AgentInstanceManager {
         }
 
         Account account = objectManager.loadResource(Account.class, instance.getAccountId());
-        List<String> removedStates = Arrays.asList(CommonStatesConstants.REMOVED, CommonStatesConstants.REMOVING);
-        if (account == null || removedStates.contains(account.getState())) {
+        List<String> goodStates = Arrays.asList(CommonStatesConstants.ACTIVATING, CommonStatesConstants.ACTIVE);
+        if (account == null || !goodStates.contains(account.getState())) {
             return result;
         }
 
