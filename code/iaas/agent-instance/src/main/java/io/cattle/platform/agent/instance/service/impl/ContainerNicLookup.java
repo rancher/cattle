@@ -30,8 +30,7 @@ public class ContainerNicLookup extends NicPerVnetNicLookup implements InstanceN
         }
         Instance container = (Instance) obj;
         return create().selectFrom(NIC)
-                .where(NIC.INSTANCE_ID.eq(container.getId())
-                        .and(NIC.REMOVED.isNull()))
+                .where(NIC.INSTANCE_ID.eq(container.getId()))
                 .fetch();
     }
 }
