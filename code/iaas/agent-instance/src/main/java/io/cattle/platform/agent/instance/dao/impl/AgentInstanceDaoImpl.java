@@ -14,6 +14,7 @@ import static io.cattle.platform.core.model.tables.NicTable.*;
 import io.cattle.platform.agent.instance.dao.AgentInstanceDao;
 import io.cattle.platform.agent.instance.service.NetworkServiceInfo;
 import io.cattle.platform.core.constants.CommonStatesConstants;
+import io.cattle.platform.core.constants.HealthcheckConstants;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.constants.IpAddressConstants;
 import io.cattle.platform.core.constants.NetworkServiceProviderConstants;
@@ -228,7 +229,9 @@ public class AgentInstanceDaoImpl extends AbstractJooqDao implements AgentInstan
                     .on(LABEL.ID.eq(INSTANCE_LABEL_MAP.LABEL_ID).and(LABEL.KEY.eq(providedServiceLabel)))
                 .where(INSTANCE.ACCOUNT_ID.eq(accountId)
                     .and(INSTANCE.AGENT_ID.isNotNull())
-                    .and(INSTANCE.STATE.eq(InstanceConstants.STATE_RUNNING)))
+                        .and(INSTANCE.STATE.eq(InstanceConstants.STATE_RUNNING))
+                        .and(INSTANCE.HEALTH_STATE.in(HealthcheckConstants.HEALTH_STATE_HEALTHY,
+                                HealthcheckConstants.HEALTH_STATE_UPDATING_HEALTHY)))
                 .orderBy(INSTANCE.AGENT_ID.asc())
                 .fetch().intoArray(INSTANCE.AGENT_ID));
     }
