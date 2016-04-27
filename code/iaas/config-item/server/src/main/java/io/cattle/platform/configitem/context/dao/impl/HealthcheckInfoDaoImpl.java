@@ -110,6 +110,7 @@ public class HealthcheckInfoDaoImpl extends AbstractJooqDao implements Healthche
                 .on(HEALTHCHECK_INSTANCE.INSTANCE_ID.eq(targetInstance.ID))
                 .where(NIC.INSTANCE_ID.eq(instance.getId())
                         .and(healthcheckInstanceHostMap.HOST_ID.eq(hostId))
+                        .and(healthcheckInstanceHostMap.REMOVED.isNull())
                         .and(NIC.NETWORK_ID.isNotNull())
                         .and(NIC.REMOVED.isNull())
                         .and(ipAddress.ROLE.eq(IpAddressConstants.ROLE_PRIMARY))
