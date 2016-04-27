@@ -75,7 +75,9 @@ public class InstancePreCreate extends AbstractObjectProcessLogic implements Pro
                 }
                 List<String> dnsSearch = DataAccessor.fieldStringList(instance,
                         DockerInstanceConstants.FIELD_DNS_SEARCH);
-                dnsSearch.add(NetworkConstants.INTERNAL_DNS_SEARCH_DOMAIN);
+                if (!dnsSearch.contains(NetworkConstants.INTERNAL_DNS_SEARCH_DOMAIN)) {
+                    dnsSearch.add(NetworkConstants.INTERNAL_DNS_SEARCH_DOMAIN);
+                }
                 data.put(DockerInstanceConstants.FIELD_DNS_SEARCH, dnsSearch);
                 data.put(InstanceConstants.FIELD_DNS_SEARCH_INTERNAL, Joiner.on(",").join(dnsSearch));
             }
