@@ -30,8 +30,6 @@ import com.netflix.config.DynamicStringListProperty;
 public abstract class AbstractApplyItems extends AbstractObjectProcessLogic implements ProcessPostListener {
 
     private static final DynamicStringListProperty BASE = ArchaiusUtil.getList("agent.instance.services.base.items");
-    private static final DynamicStringListProperty SKIP_OTERHS = ArchaiusUtil
-            .getList("item.skip.others");
     private static final Logger log = org.slf4j.LoggerFactory.getLogger(AbstractApplyItems.class);
 
     @Inject
@@ -88,7 +86,7 @@ public abstract class AbstractApplyItems extends AbstractObjectProcessLogic impl
             increment.addAll(ArchaiusUtil.getList(String.format("%s.%s.increment", prefix, service.getKind())).get());
         }
 
-        setItems(request, apply, increment, true);
+        setItems(request, apply, increment);
 
         log.trace("ITEMS: update config [{}]", agent.getId());
         statusManager.updateConfig(request);
@@ -104,7 +102,7 @@ public abstract class AbstractApplyItems extends AbstractObjectProcessLogic impl
 
                     log.trace("ITEMS: other set items [{}]", otherAgent.getId());
                     ConfigUpdateRequest otherRequest = ConfigUpdateRequest.forResource(Agent.class, otherAgent.getId());
-                    setItems(otherRequest, apply, increment, false);
+                    setItems(otherRequest, apply, increment);
                     log.trace("ITEMS: done other set items [{}]", otherAgent.getId());
 
                     log.trace("ITEMS: other update config [{}]", otherAgent.getId());
@@ -117,18 +115,12 @@ public abstract class AbstractApplyItems extends AbstractObjectProcessLogic impl
 
     protected abstract List<? extends Agent> getOtherAgents(NetworkServiceProvider provider, ConfigUpdateRequest request, Agent agent);
 
-    protected void setItems(ConfigUpdateRequest request, Set<String> apply, Set<String> increment, boolean self) {
+    protected void setItems(ConfigUpdateRequest request, Set<String> apply, Set<String> increment) {
         for (String item : apply) {
-            if (!self && SKIP_OTERHS.get().contains(item)) {
-                continue;
-            }
             request.addItem(item).withApply(true).withIncrement(false).withCheckInSyncOnly(true);
         }
 
         for (String item : increment) {
-            if (!self && SKIP_OTERHS.get().contains(item)) {
-                continue;
-            }
             request.addItem(item).withApply(true).withIncrement(true).withCheckInSyncOnly(false);
         }
     }

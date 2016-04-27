@@ -330,8 +330,6 @@
     <!-- Instnace Healthcheck/Host map -->
     <process:process name="healthcheckinstancehostmap.create" resourceType="healthcheckInstanceHostMap" start="requested" transitioning="activating" done="active" />
     <process:process name="healthcheckinstancehostmap.remove" resourceType="healthcheckInstanceHostMap" start="active,activating" transitioning="removing" done="removed" />
-    <process:process name="healthcheckinstancehostmap.update" resourceType="healthcheckInstanceHostMap" start="active" transitioning="updating-active" done="active" />
-
 
     <!-- Container Event -->
     <process:process name="containerevent.create" resourceType="containerEvent" start="requested" transitioning="creating" done="created" />
