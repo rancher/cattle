@@ -21,6 +21,7 @@ import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.process.common.util.ProcessUtils;
 import io.cattle.platform.servicediscovery.api.constants.ServiceDiscoveryConstants;
 import io.cattle.platform.servicediscovery.api.resource.ServiceDiscoveryConfigItem;
+import io.cattle.platform.servicediscovery.api.util.ServiceDiscoveryDnsUtil;
 import io.cattle.platform.servicediscovery.api.util.ServiceDiscoveryUtil;
 import io.cattle.platform.servicediscovery.deployment.DeploymentUnitInstance;
 import io.cattle.platform.servicediscovery.deployment.InstanceUnit;
@@ -299,5 +300,14 @@ public class DefaultDeploymentUnitInstance extends DeploymentUnitInstance implem
         List<String> errorStates = Arrays.asList(InstanceConstants.STATE_ERROR, InstanceConstants.STATE_ERRORING);
         return this.instance != null && errorStates.contains(this.instance.getState());
     }
+
+    @Override
+    public List<String> getSearchDomains() {
+        String stackNamespace = ServiceDiscoveryDnsUtil.getStackNamespace(this.stack, this.service);
+        String serviceNamespace = ServiceDiscoveryDnsUtil
+                .getServiceNamespace(this.stack, this.service);
+        return Arrays.asList(stackNamespace, serviceNamespace);
+    }
+
 }
 

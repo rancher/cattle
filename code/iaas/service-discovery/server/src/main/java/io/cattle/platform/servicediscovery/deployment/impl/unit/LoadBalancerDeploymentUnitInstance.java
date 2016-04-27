@@ -73,4 +73,9 @@ public class LoadBalancerDeploymentUnitInstance extends DefaultDeploymentUnitIns
             launchConfigData.put(InstanceConstants.FIELD_PORTS, newPorts);
         }
     }
+
+    @Override
+    public List<String> getSearchDomains() {
+       return null;
+    }
 }
