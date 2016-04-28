@@ -58,7 +58,7 @@ public class AgentInstanceLinkActivate extends AbstractObjectProcessHandler {
             return null;
         }
 
-        if (info.getIpAddress().getAddress() == null) {
+        if (info.getIpAddress() == null || info.getIpAddress().getAddress() == null) {
             log.error("IP address for agent instance is not set");
             return null;
         }
