@@ -1,5 +1,5 @@
 zookeeper:
-  image: rancher/zookeeper:3.4.6-2
+  image: rawmind/rancher-zk:3.4.6-1
   volumes:
   - /opt/zk/data
   environment:
