@@ -46,7 +46,7 @@ public class InstancePreStart extends AbstractObjectProcessLogic implements Proc
                     continue;
                 }
                 final String accessMode = sp.getVolumeAccessMode();
-                if (StringUtils.isNotEmpty(accessMode) && !accessMode.equals(v.getAccessMode())) {
+                if (StringUtils.isNotEmpty(accessMode) && StringUtils.isEmpty(v.getAccessMode()) && !accessMode.equals(v.getAccessMode())) {
                     lockManager.lock(new InstanceVolumeAccessModeLock(v.getId()), new LockCallbackNoReturn() {
                         @Override
                         public void doWithLockNoResult() {

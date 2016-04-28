@@ -46,6 +46,96 @@ def create_new_agent(super_client, project):
     return agent, account, agent_client
 
 
+def test_single_instance_rw_new_disks(super_client, new_context):
+    disks = [
+        {
+            'size': '2g',
+        },
+        {
+            'name': 'foo',
+            'size': '2g',
+            'root': True,
+        },
+    ]
+
+    single_instance_rw_test(super_client, new_context, disks)
+
+
+def test_single_instance_rw_preexisting_volume(super_client, new_context):
+    client = new_context.client
+    name = 'exists-%s' % random_str()
+    sp_name = 'storage-%s' % random_str()
+    volume = client.create_volume(name=name, driver=sp_name)
+    assert volume.state == 'requested'
+    disks = [
+        {
+            'name': name,
+            'size': '2g',
+        },
+    ]
+
+    single_instance_rw_test(super_client, new_context, disks, sp_name=sp_name)
+
+
+def single_instance_rw_test(super_client, new_context, disks, sp_name=None):
+    client, agent_client, host = from_context(new_context)
+    if not sp_name:
+        sp_name = 'storage-%s' % random_str()
+    host2 = register_simulated_host(new_context)
+    host_uuids = [host.uuid, host2.uuid]
+
+    create_sp_event(client, agent_client, new_context, sp_name, sp_name,
+                    SP_CREATE, host_uuids, sp_name,
+                    access_mode='singleHostRW')
+    storage_pool = wait_for(lambda: sp_wait(client, sp_name))
+    assert storage_pool.state == 'active'
+
+    assert storage_pool.volumeAccessMode == 'singleHostRW'
+
+    vm = _create_virtual_machine(client, new_context, name=random_str(),
+                                 volumeDriver=sp_name,
+                                 userdata='hi', vcpu=2, memoryMb=42,
+                                 disks=disks)
+    vm = client.wait_success(vm)
+    assert vm.state == 'running'
+
+    svm = super_client.reload(vm)
+
+    for k, vol_id in svm.dataVolumeMounts.__dict__.iteritems():
+        create_mount(vol_id, vm, client, super_client)
+
+    data_volumes = []
+    for dv in svm.dataVolumes:
+        if not dv.startswith('/'):
+            vol_name = dv.split(':')[0]
+            data_volumes.append('%s:/%s' % (vol_name, vol_name))
+
+    c = client.create_container(imageUuid=new_context.image_uuid,
+                                dataVolumes=data_volumes)
+    c = client.wait_transitioning(c)
+    assert c.transitioning == 'error'
+    assert c.transitioningMessage.startswith('Scheduling failed: Volume')
+    assert c.state == 'error'
+
+    vm = client.wait_success(vm.stop())
+    client.wait_success(vm.remove())
+
+    c = client.create_container(imageUuid=new_context.image_uuid,
+                                dataVolumes=data_volumes)
+    c = client.wait_success(c)
+    assert c.state == 'running'
+
+
+def _create_virtual_machine(client, context, **kw):
+    args = {
+        'accountId': context.project.id,
+        'imageUuid': context.image_uuid,
+    }
+    args.update(kw)
+
+    return client.create_virtual_machine(**args)
+
+
 def test_single_host_rw(super_client, new_context):
     client, agent_client, host = from_context(new_context)
     sp_name = 'storage-%s' % random_str()
@@ -71,7 +161,7 @@ def test_single_host_rw(super_client, new_context):
     assert c.state == 'running'
 
     v1 = client.wait_success(v1)
-    create_mount(v1, c, client, super_client)
+    create_mount(v1.id, c, client, super_client)
     sps = v1.storagePools()
     assert len(sps) == 1
     assert sps[0].id == storage_pool.id
@@ -92,8 +182,8 @@ def test_single_host_rw(super_client, new_context):
     c3 = client.wait_success(c3)
 
 
-def create_mount(volume, container, client, super_client):
-    mount = super_client.create_mount(volumeId=volume.id,
+def create_mount(vol_id, container, client, super_client):
+    mount = super_client.create_mount(volumeId=vol_id,
                                       instanceId=container.id,
                                       accountId=container.accountId)
     mount = super_client.wait_success(mount)

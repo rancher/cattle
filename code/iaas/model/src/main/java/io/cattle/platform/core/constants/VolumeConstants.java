@@ -24,4 +24,6 @@ public class VolumeConstants {
 
     public static final String ACCESS_MODE_SINGLE_HOST_RW = "singleHostRW";
 
+    public static final String ACCESS_MODE_SINGLE_INSTANCE_RW = "singleInstanceRW";
+
 }

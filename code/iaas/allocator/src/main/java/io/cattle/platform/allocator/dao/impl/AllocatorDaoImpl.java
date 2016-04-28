@@ -298,6 +298,22 @@ public class AllocatorDaoImpl extends AbstractJooqDao implements AllocatorDao {
     }
 
     @Override
+    public List<Long> getInstancesWithVolumeMounted(long volumeId, long currentInstanceId) {
+        return create()
+                .select(INSTANCE.ID)
+                .from(INSTANCE)
+                .join(MOUNT)
+                    .on(MOUNT.INSTANCE_ID.eq(INSTANCE.ID).and(MOUNT.VOLUME_ID.eq(volumeId)))
+                .join(INSTANCE_HOST_MAP)
+                    .on(INSTANCE_HOST_MAP.INSTANCE_ID.eq(INSTANCE.ID))
+                .where(INSTANCE.REMOVED.isNull()
+                    .and(INSTANCE.ID.ne(currentInstanceId))
+                    .and(INSTANCE_HOST_MAP.STATE.notIn(IHM_STATES))
+                    .and((INSTANCE.HEALTH_STATE.isNull().or(INSTANCE.HEALTH_STATE.eq(HealthcheckConstants.HEALTH_STATE_HEALTHY)))))
+                .fetchInto(Long.class);
+    }
+
+    @Override
     public boolean isVolumeInUseOnHost(long volumeId, long hostId) {
         return create()
                 .select(INSTANCE.ID)

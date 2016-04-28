@@ -15,7 +15,7 @@ import java.util.List;
 
 import javax.inject.Inject;
 
-public class SingleHostVolumeInstanceConstraintProvider implements AllocationConstraintsProvider {
+public class VolumeAccessModeConstraintProvider implements AllocationConstraintsProvider {
 
     static final List<Object> IHM_STATES = Arrays.asList(new Object[] { CommonStatesConstants.INACTIVE, CommonStatesConstants.DEACTIVATING,
             CommonStatesConstants.REMOVED, CommonStatesConstants.REMOVING });
@@ -35,13 +35,16 @@ public class SingleHostVolumeInstanceConstraintProvider implements AllocationCon
 
         List<Volume> volumes = InstanceHelpers.extractVolumesFromMounts(instance, objectManager);
         for (Volume v : volumes) {
-            if (!VolumeConstants.ACCESS_MODE_SINGLE_HOST_RW.equals(v.getAccessMode())) {
-                continue;
-            }
-
-            if (v.getHostId() != null) {
-                boolean hardConstraint = allocatorDao.isVolumeInUseOnHost(v.getId(), v.getHostId());
-                constraints.add(new SingleHostVolumeInstanceConstraint(v.getHostId(), v.getId(), hardConstraint));
+            if (VolumeConstants.ACCESS_MODE_SINGLE_HOST_RW.equals(v.getAccessMode())) {
+                if (v.getHostId() != null) {
+                    boolean hardConstraint = allocatorDao.isVolumeInUseOnHost(v.getId(), v.getHostId());
+                    constraints.add(new VolumeAccessModeSingleHostConstraint(v.getHostId(), v.getId(), hardConstraint));
+                }
+            } else if (VolumeConstants.ACCESS_MODE_SINGLE_INSTANCE_RW.equals(v.getAccessMode())) {
+                List<Long> currentlyUsedBy = allocatorDao.getInstancesWithVolumeMounted(v.getId(), instance.getId());
+                if(currentlyUsedBy.size() > 0) {
+                    constraints.add(new VolumeAccessModeSingleInstanceConstraint(v.getId(), v.getAccessMode(), currentlyUsedBy));
+                }
             }
         }
     }
