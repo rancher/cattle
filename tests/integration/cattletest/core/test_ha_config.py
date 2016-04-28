@@ -43,8 +43,11 @@ def test_ha_config_script(admin_user_client):
     assert r.text is not None
     assert r.status_code == 200
 
-    ha_config = find_one(admin_user_client.list_ha_config)
-    assert ha_config.clusterSize == 5
+    def check():
+        ha_config = find_one(admin_user_client.list_ha_config)
+        return ha_config.clusterSize == 5
+
+    wait_for(check)
 
 
 @pytest.mark.nonparallel
