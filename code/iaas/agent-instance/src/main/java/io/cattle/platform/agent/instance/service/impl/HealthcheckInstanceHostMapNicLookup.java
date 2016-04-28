@@ -29,7 +29,7 @@ public class HealthcheckInstanceHostMapNicLookup extends AbstractJooqDao impleme
                 .where(HEALTHCHECK_INSTANCE_HOST_MAP.HOST_ID.eq(hostMap.getHostId())
                         .and(NIC.REMOVED.isNull())
                         .and(HEALTHCHECK_INSTANCE_HOST_MAP.REMOVED.isNull())
-                        .and(HEALTHCHECK_INSTANCE.REMOVED.isNull()))
+                        .and(HEALTHCHECK_INSTANCE.REMOVED.isNull())).limit(1)
                 .fetchInto(NicRecord.class);
     }
 }
