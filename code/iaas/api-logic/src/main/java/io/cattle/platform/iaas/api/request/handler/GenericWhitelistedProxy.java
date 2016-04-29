@@ -1,7 +1,14 @@
 package io.cattle.platform.iaas.api.request.handler;
 
 import io.cattle.platform.archaius.util.ArchaiusUtil;
+import io.cattle.platform.core.constants.CommonStatesConstants;
+import io.cattle.platform.core.model.MachineDriver;
 import io.cattle.platform.iaas.api.servlet.filter.ProxyPreFilter;
+import io.cattle.platform.object.ObjectManager;
+import io.cattle.platform.object.meta.ObjectMetaDataManager;
+import io.cattle.platform.object.util.DataAccessor;
+import io.github.ibuildthecloud.gdapi.condition.Condition;
+import io.github.ibuildthecloud.gdapi.condition.ConditionType;
 import io.github.ibuildthecloud.gdapi.exception.ClientVisibleException;
 import io.github.ibuildthecloud.gdapi.request.ApiRequest;
 import io.github.ibuildthecloud.gdapi.request.handler.AbstractResponseGenerator;
@@ -9,8 +16,10 @@ import io.github.ibuildthecloud.gdapi.util.ResponseCodes;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.net.MalformedURLException;
 import java.net.ProxySelector;
 import java.net.URISyntaxException;
+import java.net.URL;
 import java.net.URLDecoder;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
@@ -19,7 +28,9 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
+import javax.inject.Inject;
 import javax.net.ssl.SSLContext;
 import javax.servlet.http.HttpServletRequest;
 
@@ -47,6 +58,8 @@ import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 import org.apache.http.impl.conn.SystemDefaultRoutePlanner;
 import org.apache.http.protocol.HTTP;
 
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
 import com.netflix.config.DynamicBooleanProperty;
 import com.netflix.config.DynamicStringListProperty;
 
@@ -95,6 +108,43 @@ public class GenericWhitelistedProxy extends AbstractResponseGenerator {
         EXECUTOR = Executor.newInstance(httpClient);
     }
 
+    Cache<String, Boolean> allowCache = CacheBuilder.newBuilder()
+            .expireAfterAccess(24, TimeUnit.HOURS)
+            .maximumSize(100)
+            .build();
+
+    @Inject
+    ObjectManager objectManager;
+
+    protected boolean isAllowed(HttpServletRequest servletRequest, String host) {
+        boolean allowHost = Boolean.TRUE.equals(servletRequest.getAttribute(ALLOWED_HOST));
+        if (allowHost) {
+            return true;
+        }
+
+        if (isWhitelisted(host)) {
+            return true;
+        }
+
+        Boolean value = allowCache.getIfPresent(host);
+        if (value == null) {
+            List<MachineDriver> drivers = objectManager.find(MachineDriver.class, ObjectMetaDataManager.STATE_FIELD,
+                    new Condition(ConditionType.NE, CommonStatesConstants.PURGED));
+            for (MachineDriver driver : drivers) {
+                String url = DataAccessor.fieldString(driver, "uiUrl");
+                if (url != null) {
+                    try {
+                        URL parsed = new URL(url);
+                        allowCache.put(parsed.getHost(), true);
+                    } catch (MalformedURLException e) {
+                    }
+                }
+            }
+        }
+        value = allowCache.getIfPresent(host);
+        return value == null ? false : value;
+    }
+
     @SuppressWarnings("unchecked")
     @Override
     protected void generate(final ApiRequest request) throws IOException {
@@ -106,7 +156,6 @@ public class GenericWhitelistedProxy extends AbstractResponseGenerator {
         }
 
         HttpServletRequest servletRequest = request.getServletContext().getRequest();
-        boolean allowHost = Boolean.TRUE.equals(servletRequest.getAttribute(ALLOWED_HOST));
         boolean setCurrentHost = Boolean.TRUE.equals(servletRequest.getAttribute(SET_HOST_CURRENT_HOST));
 
         String redirect = servletRequest.getRequestURI();
@@ -140,7 +189,7 @@ public class GenericWhitelistedProxy extends AbstractResponseGenerator {
 
         String host = uri.getPort() > 0 ? String.format("%s:%s", uri.getHost(), uri.getPort()) : uri.getHost();
 
-        if (!allowHost && !isWhitelisted(host)) {
+        if (!isAllowed(servletRequest, host)) {
             throw new ClientVisibleException(ResponseCodes.FORBIDDEN);
         }
 
