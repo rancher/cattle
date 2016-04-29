@@ -41,7 +41,6 @@ public class FreemarkerTemplate implements io.cattle.platform.configitem.server.
             writer = new OutputStreamWriter(os);
             template.process(context, writer);
         } catch (TemplateException e) {
-            log.error("Failed to run template for [{}]", resource.getName(), e);
             throw new IOException(e);
         } finally {
             writer.flush();
