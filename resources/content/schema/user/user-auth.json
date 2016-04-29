@@ -282,6 +282,7 @@
         "project.members" : "cr",
         "project.swarm" : "cru",
         "project.kubernetes" : "cru",
+        "project.mesos" : "cru",
         "project.publicDns" : "cru",
         "project.servicesPortRange": "cru",
 
