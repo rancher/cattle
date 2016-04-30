@@ -249,6 +249,13 @@
         "logConfig.driver" : "cr",
         "logConfig.config" : "cr",
 
+        "machineDriver": "r",
+        "machineDriver.errorMessage": "r",
+        "machineDriver.uri": "cru",
+        "machineDriver.uiUrl": "cru",
+        "machineDriver.md5checksum": "cru",
+        "machineDriver.resourceActions\\..*": "",
+
         "mount" : "r",
         "mount.instanceId" : "r",
         "mount.path" : "r",

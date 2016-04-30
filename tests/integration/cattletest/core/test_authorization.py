@@ -122,6 +122,7 @@ def test_user_types(user_client, adds=set(), removes=set()):
         'loadBalancerService',
         'logConfig',
         'machine',
+        'machineDriver',
         'mount',
         'network',
         'password',
@@ -2475,6 +2476,36 @@ def test_compose_service(admin_user_client, user_client, project_client):
         'selectorLink': 'r',
         'scale': 'r',
         'publicEndpoints': 'r',
+    })
+
+
+def test_machine_driver(admin_user_client, user_client, project_client):
+    auth_check(admin_user_client.schema, 'machineDriver', 'crd', {
+        'name': 'cr',
+        'md5checksum': 'cr',
+        'errorMessage': 'r',
+        'uiUrl': 'cr',
+        'data': 'r',
+        'accountId': 'r',
+        'uri': 'cr',
+    })
+
+    auth_check(user_client.schema, 'machineDriver', 'r', {
+        'name': 'r',
+        'md5checksum': 'r',
+        'errorMessage': 'r',
+        'uiUrl': 'r',
+        'accountId': 'r',
+        'uri': 'r',
+    })
+
+    auth_check(project_client.schema, 'machineDriver', 'r', {
+        'name': 'r',
+        'md5checksum': 'r',
+        'errorMessage': 'r',
+        'uiUrl': 'r',
+        'accountId': 'r',
+        'uri': 'r',
     })
 
 
