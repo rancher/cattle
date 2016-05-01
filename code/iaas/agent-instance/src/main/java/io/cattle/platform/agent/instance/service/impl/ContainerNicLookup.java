@@ -1,19 +1,22 @@
 package io.cattle.platform.agent.instance.service.impl;
 
 import static io.cattle.platform.core.model.tables.NicTable.*;
+
 import io.cattle.platform.agent.instance.service.InstanceNicLookup;
+import io.cattle.platform.core.constants.InstanceConstants.SystemContainer;
 import io.cattle.platform.core.dao.GenericMapDao;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.Nic;
 import io.cattle.platform.object.ObjectManager;
 
+import java.util.Collections;
 import java.util.List;
 
 import javax.inject.Inject;
 
 /**
  * This class is invoked on instance healthcheck changes
- * 
+ *
  *
  */
 public class ContainerNicLookup extends NicPerVnetNicLookup implements InstanceNicLookup {
@@ -29,8 +32,15 @@ public class ContainerNicLookup extends NicPerVnetNicLookup implements InstanceN
             return null;
         }
         Instance container = (Instance) obj;
-        return create().selectFrom(NIC)
+        List<? extends Nic> result = create().selectFrom(NIC)
                 .where(NIC.INSTANCE_ID.eq(container.getId()))
                 .fetch();
+
+        /* We don't want to return removed network agents, this creates a loop in which a new network agent will automatically be recreated */
+        if (result.size() > 0 && result.get(0).getRemoved() != null && SystemContainer.NetworkAgent.name().equalsIgnoreCase(container.getSystemContainer())) {
+            return Collections.emptyList();
+        }
+
+        return result;
     }
 }
