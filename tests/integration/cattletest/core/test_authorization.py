@@ -701,6 +701,7 @@ def test_storagepool_auth(admin_user_client, user_client, project_client):
         'externalId': 'r',
         'name': 'r',
         'driverName': 'r',
+        'volumeAccessMode': 'r',
     })
 
     auth_check(user_client.schema, 'storagePool', 'r', {
@@ -708,6 +709,7 @@ def test_storagepool_auth(admin_user_client, user_client, project_client):
         'externalId': 'r',
         'name': 'r',
         'driverName': 'r',
+        'volumeAccessMode': 'r',
     })
 
     auth_check(project_client.schema, 'storagePool', 'r', {
@@ -715,6 +717,7 @@ def test_storagepool_auth(admin_user_client, user_client, project_client):
         'externalId': 'r',
         'name': 'r',
         'driverName': 'r',
+        'volumeAccessMode': 'r',
     })
 
 
@@ -740,7 +743,8 @@ def test_volume_auth(admin_user_client, user_client, project_client):
         'transitioning': 'r',
         'transitioningMessage': 'r',
         'transitioningProgress': 'r',
-        'isHostPath': 'r'
+        'isHostPath': 'r',
+        'accessMode': 'r',
     })
 
     auth_check(user_client.schema, 'volume', 'r', {
@@ -762,7 +766,8 @@ def test_volume_auth(admin_user_client, user_client, project_client):
         'transitioning': 'r',
         'transitioningMessage': 'r',
         'transitioningProgress': 'r',
-        'isHostPath': 'r'
+        'isHostPath': 'r',
+        'accessMode': 'r',
     })
 
     auth_check(project_client.schema, 'volume', 'crd', {
@@ -784,7 +789,8 @@ def test_volume_auth(admin_user_client, user_client, project_client):
         'transitioning': 'r',
         'transitioningMessage': 'r',
         'transitioningProgress': 'r',
-        'isHostPath': 'r'
+        'isHostPath': 'r',
+        'accessMode': 'r',
     })
 
 
@@ -1462,6 +1468,7 @@ def test_registry(admin_user_client, user_client, project_client):
         'driverName': 'r',
         'externalId': 'r',
         'serverAddress': 'r',
+        'volumeAccessMode': 'r',
     })
 
     auth_check(user_client.schema, 'registry', 'r', {
@@ -1469,6 +1476,7 @@ def test_registry(admin_user_client, user_client, project_client):
         'externalId': 'r',
         'driverName': 'r',
         'serverAddress': 'r',
+        'volumeAccessMode': 'r',
     })
 
     auth_check(project_client.schema, 'registry', 'crud', {
@@ -1476,6 +1484,7 @@ def test_registry(admin_user_client, user_client, project_client):
         'driverName': 'r',
         'externalId': 'r',
         'serverAddress': 'cr',
+        'volumeAccessMode': 'r',
     })
 
 

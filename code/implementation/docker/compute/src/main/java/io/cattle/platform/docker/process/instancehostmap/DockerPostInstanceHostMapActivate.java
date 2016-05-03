@@ -145,10 +145,10 @@ public class DockerPostInstanceHostMapActivate extends AbstractObjectProcessLogi
     protected void processVolumes(Instance instance, Host host, ProcessState state) {
 
         Map<String, Object> inspect = (Map<String, Object>) instance.getData().get(FIELD_DOCKER_INSPECT);
-        if (inspect == null) {
+        List<Object> mounts = (List<Object>) instance.getData().get(FIELD_DOCKER_MOUNTS);
+        if (inspect == null && mounts == null) {
             return;
         }
-        List<Object> mounts = (List<Object>) instance.getData().get(FIELD_DOCKER_MOUNTS);
         List<DockerInspectTransformVolume> dockerVolumes = transformer.transformVolumes(inspect, mounts);
 
         if (dockerVolumes.size() == 0) {
