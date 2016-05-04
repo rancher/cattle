@@ -4,6 +4,7 @@ import io.cattle.platform.allocator.service.AllocationAttempt;
 import io.cattle.platform.allocator.service.AllocationLog;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.model.Instance;
+import io.cattle.platform.core.util.SystemLabels;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.util.DataAccessor;
 
@@ -33,9 +34,10 @@ public class DiskSizeConstraintProvider implements AllocationConstraintsProvider
 
         for (Map.Entry<String, String> labelEntry : labels.entrySet()) {
             String labelKey = labelEntry.getKey();
-            if (labelKey.startsWith("io.rancher.scheduler.disksize.")) {
+            String labelPrefix = SystemLabels.LABEL_SCHEDULER_DISKSIZE_PREFIX;
+            if (labelKey.startsWith(labelPrefix) && labelKey.length() > labelPrefix.length()) {
+                String key = labelKey.substring(SystemLabels.LABEL_SCHEDULER_DISKSIZE_PREFIX.length());
                 String labelValue = labelEntry.getValue();
-                String key = labelKey.substring("io.rancher.scheduler.disksize.".length());
                 constraints.add(new DiskSizeConstraint(key, labelValue, objectManager));
             }
         }
