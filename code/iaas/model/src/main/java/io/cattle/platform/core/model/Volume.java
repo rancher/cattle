@@ -267,6 +267,28 @@ public interface Volume extends java.io.Serializable {
 	@javax.persistence.Column(name = "external_id", length = 128)
 	public java.lang.String getExternalId();
 
+	/**
+	 * Setter for <code>cattle.volume.host_id</code>.
+	 */
+	public void setHostId(java.lang.Long value);
+
+	/**
+	 * Getter for <code>cattle.volume.host_id</code>.
+	 */
+	@javax.persistence.Column(name = "host_id", precision = 19)
+	public java.lang.Long getHostId();
+
+	/**
+	 * Setter for <code>cattle.volume.access_mode</code>.
+	 */
+	public void setAccessMode(java.lang.String value);
+
+	/**
+	 * Getter for <code>cattle.volume.access_mode</code>.
+	 */
+	@javax.persistence.Column(name = "access_mode", length = 255)
+	public java.lang.String getAccessMode();
+
 	// -------------------------------------------------------------------------
 	// FROM and INTO
 	// -------------------------------------------------------------------------

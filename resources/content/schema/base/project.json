@@ -69,6 +69,14 @@
         "scheduleUpdate" : true
       }
     },
+    "mesos": {
+      "type": "boolean",
+      "nullable": false,
+      "default": false,
+      "attributes" : {
+        "scheduleUpdate" : true
+      }
+	},
     "publicDns": {
       "type": "boolean",
       "nullable": false,

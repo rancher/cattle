@@ -74,6 +74,8 @@ kubernetes:
         - --insecure-bind-address=0.0.0.0
         - --insecure-port=80
         - --cloud-provider=rancher
+        - --allow_privileged=true
+        - --admission-control=NamespaceLifecycle,LimitRanger,SecurityContextDeny,ResourceQuota
     image: rancher/k8s:v1.2.0-rancher-1
     links:
         - etcd
