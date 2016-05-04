@@ -83,6 +83,6 @@ public class DiskSizeConstraint extends HardConstraint implements Constraint {
 
     @Override
     public String toString() {
-        return String.format("host needs a disk with free space larger than %s GB ", this.reserveSize);
+        return String.format("host needs a disk with free space larger than %s GB", this.reserveSize);
     }
 }
