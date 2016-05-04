@@ -31,7 +31,6 @@
     <bean class="io.cattle.platform.allocator.constraint.DiskSizeConstraintProvider" />
     <bean class="io.cattle.platform.allocator.constraint.VolumeAccessModeConstraintProvider" />
 
->>>>>>> upstream/master
     <tx:advice id="AllocatorAdvice" transaction-manager="CoreTransactionManager">
         <tx:attributes>
             <tx:method name="recordCandidate" />
