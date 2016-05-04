@@ -19,8 +19,8 @@ public class CacheManager
 
     protected CacheManager(ObjectManager objectManager) {
         this.objectManager = objectManager;
-     }
-    
+    }
+
     public static CacheManager getCacheManagerInstance(ObjectManager objectManager) {
         if (instance == null) {
             instance = new CacheManager(objectManager);

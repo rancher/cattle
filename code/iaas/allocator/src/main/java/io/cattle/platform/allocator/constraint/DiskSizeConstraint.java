@@ -38,7 +38,7 @@ public class DiskSizeConstraint extends HardConstraint implements Constraint {
             // we will get a bunch of disks for that host and we need at least one disk with
             // free space large enough
             oneGood = checkDiskSize(cm, hostInfo, attempt.getInstanceId());
-            
+
             // if no disk with big enough free space for this host, then
             // candidate is no good
             if (!oneGood) {
@@ -80,7 +80,7 @@ public class DiskSizeConstraint extends HardConstraint implements Constraint {
         }
         return false;
     }
-    
+
     @Override
     public String toString() {
         return String.format("host needs a disk with free space larger than %s GB ", this.reserveSize);

@@ -174,7 +174,7 @@ public class AllocatorDaoImpl extends AbstractJooqDao implements AllocatorDao {
             String diskDevicePath = entry.getKey();
             InstanceDiskReserveInfo reserveInfo = entry.getValue();
             Long reserveSize = reserveInfo.getReservedSize();
-            
+
             // figure out available size
             DiskInfo diskInfo = cm.getDiskInfoForHost(hostId, diskDevicePath);
             Long allocated = diskInfo.getAllocatedSize();
