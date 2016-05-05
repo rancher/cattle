@@ -57,6 +57,11 @@ public class CacheManager
         @SuppressWarnings("unchecked")
         Map<Object, Object> mountPoints = (Map<Object, Object>) CollectionUtils.getNestedValue(obj, "diskInfo",
                 "mountPoints");
+
+        // if this host does not have any mountPoints in the case of simulator
+        if (mountPoints == null) {
+            return hostInfo;
+        }
         for (Entry<Object, Object> mp : mountPoints.entrySet()) {
             Double totalDouble = (Double)CollectionUtils.getNestedValue(mp.getValue(), "total");
             if (totalDouble == null) {
