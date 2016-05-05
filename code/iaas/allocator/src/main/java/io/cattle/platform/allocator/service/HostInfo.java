@@ -33,10 +33,6 @@ public class HostInfo {
         this.disks.put(diskInfo.getDiskDevicePath(), diskInfo);
     }
 
-    public void removeDisk(String diskDevicePath) {
-        this.disks.remove(diskDevicePath);
-    }
-
     public DiskInfo getDiskInfo(String diskDevicePath) {
         return this.disks.get(diskDevicePath);
     }

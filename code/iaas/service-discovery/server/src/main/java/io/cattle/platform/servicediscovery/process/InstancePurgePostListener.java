@@ -19,7 +19,13 @@ import java.util.List;
 
 import javax.inject.Inject;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 public class InstancePurgePostListener extends AbstractObjectProcessLogic implements ProcessPostListener, Priority {
+
+    private static final Logger log = LoggerFactory.getLogger(InstancePurgePostListener.class);
+
     @Inject
     ServiceDao serviceDao;
 
@@ -43,7 +49,9 @@ public class InstancePurgePostListener extends AbstractObjectProcessLogic implem
         CacheManager cm = CacheManager.getCacheManagerInstance(this.objectManager);
         HostInfo hostInfo = cm.getHostInfo(mapping.getHostId());
 
-        hostInfo.removeInstance(mapping.getInstanceId());;
+        hostInfo.removeInstance(mapping.getInstanceId());
+        log.debug("removed instance [{}] info from host [{}] info in cache manager", instance.getId(),
+                mapping.getHostId());
         return null;
     }
 

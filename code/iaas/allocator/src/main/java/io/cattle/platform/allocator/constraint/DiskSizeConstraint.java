@@ -4,15 +4,20 @@ import io.cattle.platform.allocator.service.AllocationAttempt;
 import io.cattle.platform.allocator.service.AllocationCandidate;
 import io.cattle.platform.allocator.service.CacheManager;
 import io.cattle.platform.allocator.service.DiskInfo;
-import io.cattle.platform.allocator.service.InstanceDiskReserveInfo;
 import io.cattle.platform.allocator.service.HostInfo;
+import io.cattle.platform.allocator.service.InstanceDiskReserveInfo;
 import io.cattle.platform.allocator.service.InstanceInfo;
 import io.cattle.platform.object.ObjectManager;
 
 import java.util.Map.Entry;
 import java.util.Set;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 public class DiskSizeConstraint extends HardConstraint implements Constraint {
+
+    private static final Logger log = LoggerFactory.getLogger(DiskSizeConstraint.class);
 
     private Long reserveSize;
     private String volumeName;
@@ -42,6 +47,7 @@ public class DiskSizeConstraint extends HardConstraint implements Constraint {
             // if no disk with big enough free space for this host, then
             // candidate is no good
             if (!oneGood) {
+                log.debug("Scheduling instance [{}] to host [{}] rejected", attempt.getInstanceId(), hostId);
                 return false;
             }
         }
@@ -73,6 +79,8 @@ public class DiskSizeConstraint extends HardConstraint implements Constraint {
                     diskReserved = new InstanceDiskReserveInfo(((DiskInfo)diskInfo).getDiskDevicePath(), this.reserveSize, this.volumeName);
                     instanceInfo.reserveDisk(diskReserved);
                 }
+                log.debug("instance [{}] has reserved disk [{}] with volume [{}] size [{}]", instanceId,
+                        ((DiskInfo) diskInfo).getDiskDevicePath(), this.volumeName, diskReserved.getReservedSize());
 
                 // set a scheduling size on the disk
                 return true;

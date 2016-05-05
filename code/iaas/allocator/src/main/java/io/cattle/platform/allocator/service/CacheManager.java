@@ -10,8 +10,13 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 public class CacheManager
 {
+    private static final Logger log = LoggerFactory.getLogger(CacheManager.class);
+
     // singleton
     private static CacheManager instance = null;
     private final Map<Long, HostInfo> hostsInfo = new HashMap<Long, HostInfo>();
@@ -50,7 +55,8 @@ public class CacheManager
         Object obj = DataAccessor.fields(host).withKey(HostConstants.FIELD_INFO).get();
 
         @SuppressWarnings("unchecked")
-        Map<Object, Object> mountPoints = (Map<Object, Object>) CollectionUtils.getNestedValue(obj, "diskInfo", "mountPoints");
+        Map<Object, Object> mountPoints = (Map<Object, Object>) CollectionUtils.getNestedValue(obj, "diskInfo",
+                "mountPoints");
         for (Entry<Object, Object> mp : mountPoints.entrySet()) {
             Double totalDouble = (Double)CollectionUtils.getNestedValue(mp.getValue(), "total");
             if (totalDouble == null) {
@@ -64,13 +70,18 @@ public class CacheManager
             Long used = Math.round(usedDouble);
             DiskInfo diskInfo = new DiskInfo((String)mp.getKey(), total, used);
             hostInfo.addDisk(diskInfo);
+
+            log.debug("Host [{}] has a mount point[{}, total:{}, used:{}]", hostId, (String) mp.getKey(), total, used);
         }
         this.hostsInfo.put(hostId, hostInfo);
+        log.debug("added host [{}] information into cache manager", hostId);
+
         return hostInfo;
     }
 
     public void removeHostInfo(Long hostId) {
         this.hostsInfo.remove(hostId);
+        log.debug("removed host [{}] information from cache manager", hostId);
     }
 
     public DiskInfo getDiskInfoForHost(Long hostId, String diskDevicePath) {
@@ -89,6 +100,8 @@ public class CacheManager
 
     private void setInstanceInfoForHost(Long hostId, InstanceInfo instanceInfo) {
         getHostInfo(hostId).addInstance(instanceInfo);
+        log.debug("added instance [{}] info into host [{}] info in cache manager", instanceInfo.getInstanceId(),
+                hostId);
     }
 
 }

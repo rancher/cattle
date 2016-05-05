@@ -190,16 +190,18 @@ public class AllocatorDaoImpl extends AbstractJooqDao implements AllocatorDao {
             Long allocated = diskInfo.getAllocatedSize();
             if (add && (diskInfo.getCapacity() - allocated >= reserveSize)) {
                 diskInfo.addAllocatedSize(reserveSize);
-                log.debug("allocated disk space on disk [{}], {} {} {} = {}", diskInfo.getDiskDevicePath(), reserveSize, "+",
-                        allocated, allocated + reserveSize);
+                log.info("allocated disk space on disk [{}] with total = {}, {} {} {} = {} as used",
+                        diskInfo.getDiskDevicePath(), diskInfo.getCapacity(), allocated, "+", reserveSize,
+                        allocated + reserveSize);
 
                 // mark reserved info for this instance
                 reserveInfo.setAllocated(true);
             } else if (!add && reserveInfo.isAllocated()
                     && allocated >= reserveSize) {
                 diskInfo.freeAllocatedSize(reserveSize);
-                log.debug("allocated disk space on disk [{}], {} {} {} = {}", diskInfo.getDiskDevicePath(), reserveSize, "-",
-                        allocated, allocated + reserveSize);
+                log.info("freed disk space on disk [{}] with total = {}, {} {} {} = {} as used",
+                        diskInfo.getDiskDevicePath(), diskInfo.getCapacity(), allocated, "-", reserveSize,
+                        allocated - reserveSize);
 
                 // release the reserved disk for this instance
                 instanceInfo.releaseDisk(reserveInfo);

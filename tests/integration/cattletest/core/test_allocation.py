@@ -653,7 +653,7 @@ def test_network_mode_constraint(new_context):
             new_context.delete(c)
 
 
-def test_container_label_disksize(super_client, new_context):
+def test_container_label_disksize_single_volume(super_client, new_context):
     # first host with really small disk size
     host1 = new_context.host
     containers = []
@@ -681,6 +681,16 @@ def test_container_label_disksize(super_client, new_context):
 
         # check c2 is on host2 with enough disk space
         assert c2.hosts()[0].id == host2.id
+
+        # now schedule another 50GB container on the host2, expect it to fail
+        # because host2 already used 1 + 50 GB disk space with total only 100
+        # so can't schedule more now
+        c3 = new_context.super_create_container_no_success(labels={label: '50'})
+        containers.append(c3)
+        assert c3.transitioning == 'error'
+        assert c3.transitioningMessage == \
+               'Scheduling failed: host needs a disk with free space larger than 50 GB'
+        assert c3.state == 'error'
 
     finally:
         for c in containers:
