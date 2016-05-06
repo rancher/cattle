@@ -124,6 +124,7 @@ def test_docker_create_with_start(docker_client, super_client):
 
 
 @if_docker
+@pytest.mark.nonparallel
 def test_docker_build(docker_client, super_client):
     uuid = 'image-' + random_str()
     url = 'https://github.com/rancherio/tiny-build/raw/master/build.tar'
