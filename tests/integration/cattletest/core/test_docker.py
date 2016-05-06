@@ -967,7 +967,7 @@ def test_delete_network_agent(super_client, docker_client):
     assert networkAgent.state == 'removed'
 
     c2 = docker_client.create_container(imageUuid=TEST_IMAGE_UUID)
-    c2 = docker_client.wait_success(c2, timeout=120)
+    c2 = docker_client.wait_success(c2)
     assert c2.state == 'running'
 
 
