@@ -20,9 +20,14 @@ import static io.cattle.platform.core.model.tables.SubnetVnetMapTable.*;
 import static io.cattle.platform.core.model.tables.VnetTable.*;
 import static io.cattle.platform.core.model.tables.VolumeStoragePoolMapTable.*;
 import static io.cattle.platform.core.model.tables.VolumeTable.*;
+
 import io.cattle.platform.allocator.dao.AllocatorDao;
 import io.cattle.platform.allocator.service.AllocationAttempt;
 import io.cattle.platform.allocator.service.AllocationCandidate;
+import io.cattle.platform.allocator.service.CacheManager;
+import io.cattle.platform.allocator.service.DiskInfo;
+import io.cattle.platform.allocator.service.InstanceDiskReserveInfo;
+import io.cattle.platform.allocator.service.InstanceInfo;
 import io.cattle.platform.allocator.util.AllocatorUtils;
 import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.HealthcheckConstants;
@@ -48,6 +53,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 
 import javax.inject.Inject;
@@ -170,6 +176,39 @@ public class AllocatorDaoImpl extends AbstractJooqDao implements AllocatorDao {
         objectManager.persist(host);
     }
 
+    protected void modifyDisk(long hostId, Instance instance, boolean add) {
+        CacheManager cm = CacheManager.getCacheManagerInstance(this.objectManager);
+        InstanceInfo instanceInfo = cm.getInstanceInfoForHost(hostId, instance.getId());
+
+        for (Entry<String, InstanceDiskReserveInfo> entry : instanceInfo.getAllReservedDisksInfo()) {
+            String diskDevicePath = entry.getKey();
+            InstanceDiskReserveInfo reserveInfo = entry.getValue();
+            Long reserveSize = reserveInfo.getReservedSize();
+
+            // figure out available size
+            DiskInfo diskInfo = cm.getDiskInfoForHost(hostId, diskDevicePath);
+            Long allocated = diskInfo.getAllocatedSize();
+            if (add && (diskInfo.getCapacity() - allocated >= reserveSize)) {
+                diskInfo.addAllocatedSize(reserveSize);
+                log.info("allocated disk space on disk [{}] with total = {}, {} {} {} = {} as used",
+                        diskInfo.getDiskDevicePath(), diskInfo.getCapacity(), allocated, "+", reserveSize,
+                        allocated + reserveSize);
+
+                // mark reserved info for this instance
+                reserveInfo.setAllocated(true);
+            } else if (!add && reserveInfo.isAllocated()
+                    && allocated >= reserveSize) {
+                diskInfo.freeAllocatedSize(reserveSize);
+                log.info("freed disk space on disk [{}] with total = {}, {} {} {} = {} as used",
+                        diskInfo.getDiskDevicePath(), diskInfo.getCapacity(), allocated, "-", reserveSize,
+                        allocated - reserveSize);
+
+                // release the reserved disk for this instance
+                instanceInfo.releaseDisk(reserveInfo);
+            }
+        }
+    }
+
     @Override
     public boolean recordCandidate(AllocationAttempt attempt, AllocationCandidate candidate) {
         Set<Long> existingHosts = attempt.getHostIds();
@@ -185,6 +224,7 @@ public class AllocatorDaoImpl extends AbstractJooqDao implements AllocatorDao {
                         INSTANCE_HOST_MAP.INSTANCE_ID, attempt.getInstance().getId());
 
                 modifyCompute(hostId, attempt.getInstance(), false);
+                modifyDisk(hostId, attempt.getInstance(), true);
             }
 
             // Assuming a single host. Just over-complexity to allow more than one host
@@ -270,7 +310,7 @@ public class AllocatorDaoImpl extends AbstractJooqDao implements AllocatorDao {
             Boolean done = data.as(Boolean.class);
             if ( done == null || ! done.booleanValue() ) {
                 modifyCompute(map.getHostId(), instance, true);
-
+                modifyDisk(map.getHostId(), instance, false);
                 data.set(true);
                 objectManager.persist(map);
             }
