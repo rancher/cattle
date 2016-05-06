@@ -528,25 +528,25 @@ def test_docker_volumes(docker_client, super_client):
             baz_mount = mount
             baz_vol = mount.volume()
 
-    foo_vol = docker_client.wait_success(foo_vol)
+    foo_vol = wait_for_condition(
+        docker_client, foo_vol, lambda x: x.state == 'active')
     assert foo_mount is not None
     assert foo_mount.permissions == 'rw'
     assert foo_vol is not None
-    assert foo_vol.state == 'active'
     assert _(foo_vol).attachedState == 'inactive'
 
-    bar_vol = docker_client.wait_success(bar_vol)
+    bar_vol = wait_for_condition(
+        docker_client, bar_vol, lambda x: x.state == 'active')
     assert bar_mount is not None
     assert bar_mount.permissions == 'rw'
     assert bar_vol is not None
-    assert bar_vol.state == 'active'
     assert _(bar_vol).attachedState == 'inactive'
 
-    baz_vol = docker_client.wait_success(baz_vol)
+    baz_vol = wait_for_condition(
+        docker_client, baz_vol, lambda x: x.state == 'active')
     assert baz_mount is not None
     assert baz_mount.permissions == 'ro'
     assert baz_vol is not None
-    assert baz_vol.state == 'active'
     assert _(baz_vol).attachedState == 'inactive'
 
     assert not foo_vol.isHostPath
