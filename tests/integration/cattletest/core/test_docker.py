@@ -53,7 +53,7 @@ def test_docker_create_only(docker_client, super_client):
         assert image.data.dockerImage.tag == 'latest'
     finally:
         if container is not None:
-            docker_client.wait_success(docker_client.delete(container))
+            docker_client.delete(container)
 
 
 @if_docker
@@ -90,7 +90,7 @@ def test_docker_create_only_from_sha(docker_client, super_client):
                                              '09c2cf2af5d73'
     finally:
         if container is not None:
-            docker_client.wait_success(docker_client.delete(container))
+            docker_client.delete(container)
 
 
 @if_docker
@@ -120,7 +120,7 @@ def test_docker_create_with_start(docker_client, super_client):
         assert image_mapping[0].imageId == image.id
     finally:
         if container is not None:
-            docker_client.wait_success(docker_client.delete(container))
+            docker_client.delete(container)
 
 
 @if_docker
@@ -143,7 +143,7 @@ def test_docker_build(docker_client, super_client):
         assert container.data.dockerContainer.Image == uuid + ':latest'
     finally:
         if container is not None:
-            docker_client.wait_success(docker_client.delete(container))
+            docker_client.delete(container)
 
 
 @if_docker
@@ -155,7 +155,7 @@ def test_docker_create_with_start_using_docker_io(docker_client, super_client):
     assert container.state == 'running'
     assert container.data.dockerContainer.Image == image + ':latest'
     if container is not None:
-        docker_client.wait_success(docker_client.delete(container))
+        docker_client.delete(container)
 
 
 @if_docker
@@ -170,7 +170,7 @@ def test_docker_command(docker_client, super_client):
         assert container.data.dockerContainer.Command == 'sleep 42'
     finally:
         if container is not None:
-            docker_client.wait_success(docker_client.delete(container))
+            docker_client.delete(container)
 
 
 @if_docker
@@ -186,7 +186,7 @@ def test_docker_command_args(docker_client, super_client):
         assert container.data.dockerContainer.Command == 'sleep 1 2 3'
     finally:
         if container is not None:
-            docker_client.wait_success(docker_client.delete(container))
+            docker_client.delete(container)
 
 
 @if_docker
@@ -268,7 +268,7 @@ def test_docker_image_format(docker_client, super_client):
         assert container.volumes()[0].format == 'docker'
     finally:
         if container is not None:
-            docker_client.wait_success(docker_client.delete(container))
+            docker_client.delete(container)
 
 
 @if_docker
@@ -292,7 +292,7 @@ def test_docker_ports_from_container_publish_all(docker_client):
     assert port.publicIpAddressId is not None
     assert port.kind == 'imagePort'
 
-    docker_client.wait_success(docker_client.delete(c))
+    docker_client.delete(c)
 
 
 @if_docker
@@ -314,7 +314,7 @@ def test_docker_ports_from_container_no_publish(docker_client):
     assert port.publicIpAddressId is not None
     assert port.kind == 'imagePort'
 
-    docker_client.wait_success(docker_client.delete(c))
+    docker_client.delete(c)
 
 
 @if_docker
@@ -426,7 +426,7 @@ def test_docker_ports_from_container(docker_client, super_client):
 
     assert count == 1
 
-    docker_client.wait_success(docker_client.delete(c))
+    docker_client.delete(c)
 
 
 @if_docker
@@ -477,7 +477,7 @@ def test_no_port_override(docker_client, super_client):
         assert ports[0].privatePort == 8080
     finally:
         if c is not None:
-            super_client.wait_success(super_client.delete(c))
+            super_client.delete(c)
 
 
 @if_docker
@@ -858,7 +858,7 @@ def test_docker_labels(docker_client):
     }
     assert actual_labels == expected_labels
 
-    docker_client.wait_success(docker_client.delete(c))
+    docker_client.delete(c)
 
 
 @if_docker
