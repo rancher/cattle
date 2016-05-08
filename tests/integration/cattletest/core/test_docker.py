@@ -26,8 +26,7 @@ def docker_client(super_client):
 @if_docker
 def test_docker_create_only(docker_client, super_client):
     uuid = TEST_IMAGE_UUID
-    container = docker_client.create_container(name='test',
-                                               imageUuid=uuid,
+    container = docker_client.create_container(imageUuid=uuid,
                                                startOnCreate=False)
     try:
         container = docker_client.wait_success(container)
@@ -96,7 +95,7 @@ def test_docker_create_only_from_sha(docker_client, super_client):
 @if_docker
 def test_docker_create_with_start(docker_client, super_client):
     uuid = TEST_IMAGE_UUID
-    container = docker_client.create_container(name='test', imageUuid=uuid)
+    container = docker_client.create_container(imageUuid=uuid)
 
     try:
         assert container.state == 'creating'
@@ -127,8 +126,7 @@ def test_docker_create_with_start(docker_client, super_client):
 def test_docker_build(docker_client, super_client):
     uuid = 'image-' + random_str()
     url = 'https://github.com/rancherio/tiny-build/raw/master/build.tar'
-    container = docker_client.create_container(name='test',
-                                               imageUuid='docker:' + uuid,
+    container = docker_client.create_container(imageUuid='docker:' + uuid,
                                                build={
                                                    'context': url,
                                                })
@@ -150,7 +148,7 @@ def test_docker_build(docker_client, super_client):
 def test_docker_create_with_start_using_docker_io(docker_client, super_client):
     image = 'docker.io/' + TEST_IMAGE
     uuid = 'docker:' + image
-    container = docker_client.create_container(name='test', imageUuid=uuid)
+    container = docker_client.create_container(imageUuid=uuid)
     container = super_client.wait_success(container)
     assert container.state == 'running'
     assert container.data.dockerContainer.Image == image + ':latest'
@@ -161,8 +159,7 @@ def test_docker_create_with_start_using_docker_io(docker_client, super_client):
 @if_docker
 def test_docker_command(docker_client, super_client):
     uuid = TEST_IMAGE_UUID
-    container = docker_client.create_container(name='test',
-                                               imageUuid=uuid,
+    container = docker_client.create_container(imageUuid=uuid,
                                                command=['sleep', '42'])
 
     try:
@@ -176,8 +173,7 @@ def test_docker_command(docker_client, super_client):
 @if_docker
 def test_docker_command_args(docker_client, super_client):
     uuid = TEST_IMAGE_UUID
-    container = docker_client.create_container(name='test',
-                                               imageUuid=uuid,
+    container = docker_client.create_container(imageUuid=uuid,
                                                command=['sleep', '1', '2',
                                                         '3'])
 
@@ -204,7 +200,7 @@ def test_short_lived_container(docker_client, super_client):
 @if_docker
 def test_docker_stop(docker_client):
     uuid = TEST_IMAGE_UUID
-    container = docker_client.create_container(name='test', imageUuid=uuid)
+    container = docker_client.create_container(imageUuid=uuid)
 
     assert container.state == 'creating'
 
@@ -225,7 +221,7 @@ def test_docker_stop(docker_client):
 @if_docker
 def test_docker_purge(docker_client):
     uuid = TEST_IMAGE_UUID
-    container = docker_client.create_container(name='test', imageUuid=uuid)
+    container = docker_client.create_container(imageUuid=uuid)
 
     assert container.state == 'creating'
 
@@ -257,7 +253,7 @@ def test_docker_purge(docker_client):
 @if_docker
 def test_docker_image_format(docker_client, super_client):
     uuid = TEST_IMAGE_UUID
-    container = docker_client.create_container(name='test', imageUuid=uuid)
+    container = docker_client.create_container(imageUuid=uuid)
 
     try:
         container = docker_client.wait_success(container)
@@ -275,7 +271,6 @@ def test_docker_image_format(docker_client, super_client):
 def test_docker_ports_from_container_publish_all(docker_client):
     uuid = TEST_IMAGE_UUID
     c = docker_client.create_container(networkMode='bridge',
-                                       name='test',
                                        publishAllPorts=True,
                                        imageUuid=uuid)
 
@@ -298,8 +293,7 @@ def test_docker_ports_from_container_publish_all(docker_client):
 @if_docker
 def test_docker_ports_from_container_no_publish(docker_client):
     uuid = TEST_IMAGE_UUID
-    c = docker_client.create_container(name='test',
-                                       imageUuid=uuid)
+    c = docker_client.create_container(imageUuid=uuid)
 
     c = docker_client.wait_success(c)
 
@@ -326,7 +320,6 @@ def test_docker_ports_from_container(docker_client, super_client):
 
     uuid = TEST_IMAGE_UUID
     c = docker_client.create_container(networkMode='bridge',
-                                       name='test',
                                        startOnCreate=False,
                                        publishAllPorts=True,
                                        imageUuid=uuid,
@@ -494,8 +487,7 @@ def test_docker_volumes(docker_client, super_client):
     baz_host_path = '/tmp/baz%s' % bind_mount_uuid
     baz_bind_mount = '%s:/baz:ro' % baz_host_path
 
-    c = docker_client.create_container(name="volumes_test",
-                                       imageUuid=uuid,
+    c = docker_client.create_container(imageUuid=uuid,
                                        startOnCreate=False,
                                        dataVolumes=['/foo',
                                                     bar_bind_mount,
@@ -769,8 +761,7 @@ def test_docker_mount_life_cycle(docker_client):
     bar_host_path = '/tmp/bar%s' % bind_mount_uuid
     bar_bind_mount = '%s:/bar' % bar_host_path
 
-    c = docker_client.create_container(name="volumes_test",
-                                       imageUuid=uuid,
+    c = docker_client.create_container(imageUuid=uuid,
                                        startOnCreate=False,
                                        dataVolumes=['%s:/foo' % random_str(),
                                                     bar_bind_mount])
