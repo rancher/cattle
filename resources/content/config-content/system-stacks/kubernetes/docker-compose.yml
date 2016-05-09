@@ -123,3 +123,17 @@ rancher-kubernetes-agent:
         - /var/run/docker.sock:/var/run/docker.sock
     links:
         - kubernetes:master
+
+rancher-ingress-controller:
+    image: rancher/ingress-controller:0.1.0
+    labels:
+        io.rancher.container.create_agent: "true"
+        io.rancher.container.agent.role: environment
+    environment:
+        KUBERNETES_URL: http://master
+    command:
+        - ingress-controller
+        - --lb-controller=kubernetes
+        - --lb-provider=rancher
+    links:
+        - kubernetes:master
