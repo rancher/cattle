@@ -1,6 +1,7 @@
 from cattle import ApiError
 
 from common_fixtures import *  # NOQA
+from test_shared_volumes import add_storage_pool
 
 
 def _create_virtual_machine(client, context, **kw):
@@ -51,30 +52,59 @@ def test_virtual_machine_case_sensitivity(super_client, client, context):
     assert c.dataVolumes[1] in {'R{}:/volumes/disk00'.format(name), n}
 
 
-def test_virtual_machine_root_disk(super_client, client, context):
-    disks = [
-        {
-            'size': '2g',
-        },
-        {
-            'name': 'foo',
-            'size': '2g',
-            'root': True,
-        },
-        {
-            'name': 'nope',
-            'size': '2g',
-            'root': True,
-        },
-        {
-            'size': '2g',
-        },
-    ]
+test_disks = [
+    {
+        'size': '2g',
+    },
+    {
+        'name': 'foo',
+        'size': '2g',
+        'root': True,
+    },
+    {
+        'name': 'nope',
+        'size': '2g',
+        'root': True,
+    },
+    {
+        'size': '2g',
+    },
+]
 
+
+def test_virtual_machine_with_device_enable_storage_pool(super_client, client,
+                                                         context):
+    sp = add_storage_pool(context, [context.host.uuid],
+                          block_device_path="/dev/test")
+    sp_name = sp.name
+    vm = _create_virtual_machine(client, context, name=random_str(),
+                                 volumeDriver=sp_name,
+                                 userdata='hi', vcpu=2, memoryMb=42,
+                                 disks=test_disks)
+    vm = client.wait_success(vm)
+    assert vm.state == 'running'
+
+    c = super_client.reload(vm)
+    prefix = c.name + '-' + c.uuid[0:7]
+    assert c.devices == ['/dev/kvm:/dev/kvm',
+                         '/dev/net/tun:/dev/net/tun',
+                         '/dev/test/{}-00:/dev/vm/disk00'.format(prefix),
+                         '/dev/test/{}-foo:/dev/vm/root'.format(prefix),
+                         '/dev/test/{}-01:/dev/vm/disk01'.format(prefix)]
+
+    volume1 = find_one(client.list_volume, name=prefix + '-foo')
+    assert volume1.driver == sp_name
+    assert volume1.driverOpts == {'vm': 'true',
+                                  'size': '2g',
+                                  'base-image': context.image_uuid,
+                                  'dont-format': 'true'}
+
+
+def test_virtual_machine_root_disk(super_client, client, context):
     vm = _create_virtual_machine(client, context, name=random_str(),
                                  volumeDriver='foo-bar',
                                  userdata='hi', vcpu=2, memoryMb=42,
-                                 disks=disks)
+                                 disks=test_disks)
     vm = client.wait_success(vm)
     assert vm.state == 'running'
 
@@ -84,6 +114,7 @@ def test_virtual_machine_root_disk(super_client, client, context):
                              '{}-00:/volumes/disk00'.format(prefix),
                              '{}-foo:/image'.format(prefix),
                              '{}-01:/volumes/disk01'.format(prefix)]
+    assert len(c.devices) == 2
 
 
 def test_virtual_machine_default_fields(super_client, client, context):

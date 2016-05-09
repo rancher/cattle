@@ -354,6 +354,7 @@
         "storagePool.externalId": "r",
         "storagePool.driverName": "r",
         "storagePool.volumeAccessMode": "r",
+        "storagePool.blockDevicePath": "r",
 
         "subscribe" : "",
         "subscribe.eventNames" : "cr",
