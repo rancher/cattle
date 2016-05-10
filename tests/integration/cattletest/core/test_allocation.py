@@ -659,7 +659,9 @@ def test_container_label_disksize_single_volume(super_client, new_context):
     containers = []
     try:
         # set host1 with disk size too small, verify that scheduling a container will fail
-        diskInfo1 = {"diskInfo": {"mountPoints": {"/dev/sda1": {"total": 10.0, "used": 1.0}}}}
+        total_size = 10.0 * 1024    # in MB for diskInfo, but we schedule in GB
+        used = 1.0 * 1024    # in MB for diskInfo, but we schedule in GB
+        diskInfo1 = {"diskInfo": {"mountPoints": {"/dev/sda1": {"total": total_size, "used": used}}}}
         host1 = super_client.update(host1, info=diskInfo1)
 
         # schedule a container requiring 50 disk size
@@ -673,8 +675,10 @@ def test_container_label_disksize_single_volume(super_client, new_context):
 
 
         # add a host2 with enough disk size
+        total_size = 100.0 * 1024    # in MB for diskInfo, but we schedule in GB
+        used = 1.0 * 1024    # in MB for diskInfo, but we schedule in GB
         host2 = register_simulated_host(new_context)
-        diskInfo2 = {"diskInfo": {"mountPoints": {"/dev/sda1": {"total": 100.0, "used" : 1.0}}}}
+        diskInfo2 = {"diskInfo": {"mountPoints": {"/dev/sda1": {"total": total_size, "used" : used}}}}
         host2 = super_client.update(host2, info=diskInfo2)
         c2 = new_context.create_container(labels={label: '50'})
         containers.append(c2)
@@ -703,8 +707,11 @@ def test_container_label_disksize_multiple_volumes(super_client, new_context):
     containers = []
     try:
         # set host1 with disks size too small, verify that scheduling a container will fail
-        diskInfo1 = {"diskInfo": {"mountPoints": {"/dev/sda1": {"total": 10.0, "used": 1.0},
-                                                  "/dev/sdb1": {"total": 10.0, "used": 0.0}}}}
+        total_size = 10.0 * 1024  # in MB for diskInfo, but we schedule in GB
+        used1 = 1.0 * 1024  # in MB for diskInfo, but we schedule in GB
+        used2 = 0.0 * 1024  # in MB for diskInfo, but we schedule in GB
+        diskInfo1 = {"diskInfo": {"mountPoints": {"/dev/sda1": {"total": total_size, "used": used1},
+                                                  "/dev/sdb1": {"total": total_size, "used": used2}}}}
         host1 = super_client.update(host1, info=diskInfo1)
 
         # schedule a container requiring 5 and 50 disk size volumes
@@ -724,9 +731,13 @@ def test_container_label_disksize_multiple_volumes(super_client, new_context):
 
 
         # add a host2 with enough disks size with 2 disks
+        total_size1 = 10.0 * 1024  # in MB for diskInfo, but we schedule in GB
+        total_size2 = 100.0 * 1024  # in MB for diskInfo, but we schedule in GB
+        used1 = 1.0 * 1024  # in MB for diskInfo, but we schedule in GB
+        used2 = 0.0 * 1024  # in MB for diskInfo, but we schedule in GB
         host2 = register_simulated_host(new_context)
-        diskInfo2 = {"diskInfo": {"mountPoints": {"/dev/sda1": {"total": 10.0, "used": 1.0},
-                                                  "/dev/sdb1": {"total": 100.0, "used": 0.0}}}}
+        diskInfo2 = {"diskInfo": {"mountPoints": {"/dev/sda1": {"total": total_size1, "used": used1},
+                                                  "/dev/sdb1": {"total": total_size2, "used": used2}}}}
         host2 = super_client.update(host2, info=diskInfo2)
         c2 = new_context.super_create_container_no_success(
             labels = {
@@ -753,7 +764,9 @@ def test_container_label_disksize_lifecycle(super_client, new_context):
         label = 'io.rancher.scheduler.disksize.v1'
 
         # set host with enough disk size
-        diskInfo = {"diskInfo": {"mountPoints": {"/dev/sda1": {"total": 100.0, "used" : 1.0}}}}
+        total_size = 100.0 * 1024    # in MB for diskInfo, but we schedule in GB
+        used = 1.0 * 1024    # in MB for diskInfo, but we schedule in GB
+        diskInfo = {"diskInfo": {"mountPoints": {"/dev/sda1": {"total": total_size, "used" : used}}}}
         host = super_client.update(host, info=diskInfo)
         c1 = new_context.create_container(labels={label: '50'})
         containers.append(c1)

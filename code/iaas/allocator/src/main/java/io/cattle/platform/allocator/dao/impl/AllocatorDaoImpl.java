@@ -220,7 +220,7 @@ public class AllocatorDaoImpl extends AbstractJooqDao implements AllocatorDao {
 
                 // release the reserved disk for this instance
                 instanceInfo.releaseDisk(diskDevicePath);
-            }            
+            }
         }
 
     }

@@ -67,12 +67,16 @@ public class CacheManager
             if (totalDouble == null) {
                 continue;
             }
-            Long total = Math.round(totalDouble);
+
+            // round down from MB to GB in integer format
+            Long total = Math.round(totalDouble / 1024);
             Double usedDouble = (Double)CollectionUtils.getNestedValue(mp.getValue(), "used");
             if (usedDouble == null) {
                 continue;
             }
-            Long used = Math.round(usedDouble);
+
+            // round down from MB to GB in integer format
+            Long used = Math.round(usedDouble / 1024);
             DiskInfo diskInfo = new DiskInfo((String)mp.getKey(), total, used);
             hostInfo.addDisk(diskInfo);
 

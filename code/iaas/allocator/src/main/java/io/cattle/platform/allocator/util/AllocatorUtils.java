@@ -73,7 +73,8 @@ public class AllocatorUtils {
         return instance.getCompute() == null ? DEFAULT_COMPUTE.get() : instance.getCompute();
     }
 
-    public static Map<Pair<String, Long>, DiskInfo> allocateDiskForVolumes(long hostId, Instance instance, ObjectManager objectManager) {
+    public static Map<Pair<String, Long>, DiskInfo> allocateDiskForVolumes(long hostId, Instance instance,
+            ObjectManager objectManager) {
         CacheManager cm = CacheManager.getCacheManagerInstance(objectManager);
         HostInfo hostInfo = cm.getHostInfo(hostId, true);
         InstanceInfo instanceInfo = hostInfo.getInstanceInfo(instance.getId());
@@ -102,14 +103,14 @@ public class AllocatorUtils {
             // there is no disksize label really
             return null;
         }
- 
+
         // figure out how to allocate volume requirements to disks with
         // different sizes: sort the allocating volumes by sizes(descending) and
         // sort the available disks by free space in descending order as well,
         // then loop through disks to try to allocate biggest requirement volume
         // first, so we can fail fast. If one volume is allocated, then move to
         // next for this same disk.
-        
+
         // sort by required volume size
         Collections.sort(volumeList, new Comparator<Pair<String, Long>>() {
             @Override
@@ -117,7 +118,7 @@ public class AllocatorUtils {
                 return v1.getRight() >= v2.getRight() ? -1 : 1;
             }
         });
-        
+
         // load disk info and free size into a temporary list
         List<Pair<DiskInfo, Long>> disks = new ArrayList<Pair<DiskInfo, Long>>();
         for (Entry<String, DiskInfo> entry : hostInfo.getAllDiskInfo()) {
@@ -134,12 +135,12 @@ public class AllocatorUtils {
                 return v1.getRight() >= v2.getRight() ? -1 : 1;
             }
         });
-        
+
         Map<Pair<String, Long>, DiskInfo> mapping = new HashMap<Pair<String, Long>, DiskInfo>();
         for (Pair<DiskInfo, Long> disk : disks) {
             // try to allocate as many volumes on one disk as possible
             int originalSize = volumeList.size();
-            for (int i = 0; i< volumeList.size(); i++) {
+            for (int i = 0; i < volumeList.size(); i++) {
                 Pair<String, Long> vol = volumeList.get(i);
                 if (vol.getRight() <= disk.getRight()) {
                     mapping.put(vol, disk.getLeft());
@@ -148,8 +149,9 @@ public class AllocatorUtils {
                     i--;
                     continue;
                 } else {
-                    // if there is no change in number of volumeList, then it means
-                    // no other disks could accommodate the largest of the rest volumes
+                    // if there is no change in number of volumeList, then it
+                    // means no other disks could accommodate the largest of the
+                    // rest volumes
                     if (volumeList.size() == originalSize) {
                         return null;
                     }
