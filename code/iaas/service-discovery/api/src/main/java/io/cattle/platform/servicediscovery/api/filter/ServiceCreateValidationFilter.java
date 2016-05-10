@@ -1,6 +1,6 @@
 package io.cattle.platform.servicediscovery.api.filter;
 
-import static io.cattle.platform.core.model.tables.ServiceTable.SERVICE;
+import static io.cattle.platform.core.model.tables.ServiceTable.*;
 import io.cattle.platform.core.addon.InstanceHealthCheck;
 import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.InstanceConstants;
@@ -27,8 +27,10 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.inject.Inject;
 
@@ -250,16 +252,16 @@ public class ServiceCreateValidationFilter extends AbstractDefaultResourceManage
 
     protected void validateLaunchConfigsCircularRefs(Service service, String serviceName,
             List<Map<String, Object>> launchConfigs) {
-        Map<String, List<String>> launchConfigRefs = populateLaunchConfigRefs(service, serviceName, launchConfigs);
+        Map<String, Set<String>> launchConfigRefs = populateLaunchConfigRefs(service, serviceName, launchConfigs);
         for (String launchConfigName : launchConfigRefs.keySet()) {
-            validateLaunchConfigCircularRef(launchConfigName, launchConfigRefs, new ArrayList<String>());
+            validateLaunchConfigCircularRef(launchConfigName, launchConfigRefs, new HashSet<String>());
         }
     }
 
     protected void validateLaunchConfigCircularRef(String launchConfigName,
-            Map<String, List<String>> launchConfigRefs,
-            List<String> alreadySeenReferences) {
-        List<String> myRefs = launchConfigRefs.get(launchConfigName);
+            Map<String, Set<String>> launchConfigRefs,
+            Set<String> alreadySeenReferences) {
+        Set<String> myRefs = launchConfigRefs.get(launchConfigName);
         alreadySeenReferences.add(launchConfigName);
         for (String myRef : myRefs) {
             if (!launchConfigRefs.containsKey(myRef)) {
@@ -279,15 +281,15 @@ public class ServiceCreateValidationFilter extends AbstractDefaultResourceManage
     }
 
     @SuppressWarnings("unchecked")
-    protected Map<String, List<String>> populateLaunchConfigRefs(Service service, String serviceName,
+    protected Map<String, Set<String>> populateLaunchConfigRefs(Service service, String serviceName,
             List<Map<String, Object>> launchConfigs) {
-        Map<String, List<String>> launchConfigRefs = new HashMap<>();
+        Map<String, Set<String>> launchConfigRefs = new HashMap<>();
         for (Map<String, Object> launchConfig : launchConfigs) {
             Object launchConfigName = launchConfig.get("name");
             if (launchConfigName == null) {
                 launchConfigName = serviceName;
             }
-            List<String> refs = new ArrayList<>();
+            Set<String> refs = new HashSet<>();
             Object networkFromLaunchConfig = launchConfig
                     .get(ServiceDiscoveryConstants.FIELD_NETWORK_LAUNCH_CONFIG);
             if (networkFromLaunchConfig != null) {

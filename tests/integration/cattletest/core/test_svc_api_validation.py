@@ -122,6 +122,31 @@ def test_circular_refs(client, context):
     assert e.value.error.code == 'InvalidReference'
 
 
+def test_no_circular_ref(client, context):
+    env = _create_stack(client)
+
+    # test that there is no circular reference when secondary has both
+    # net and volumes from and primary is using volumes_from
+    image_uuid = context.image_uuid
+    launch_config = {'imageUuid': image_uuid,
+                     'dataVolumesFromLaunchConfigs': ['secondary1']}
+
+    secondary1_lc = {'imageUuid': image_uuid, 'name': 'secondary1'}
+
+    secondary2_lc = {'imageUuid': image_uuid, 'name': 'secondary2',
+                     'dataVolumesFromLaunchConfigs': ['primary'],
+                     'networkMode': 'container',
+                     'networkLaunchConfig': 'primary'}
+
+    svc = client.create_service(name="primary",
+                                environmentId=env.id,
+                                launchConfig=launch_config,
+                                secondaryLaunchConfigs=[secondary1_lc,
+                                                        secondary2_lc])
+    svc = client.wait_success(svc)
+    assert svc.state == 'inactive'
+
+
 def test_validate_image(client, context):
     env = _create_stack(client)
 
