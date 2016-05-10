@@ -1,32 +1,32 @@
 package io.cattle.platform.allocator.dao.impl;
 
-import static io.cattle.platform.core.model.tables.AgentTable.*;
-import static io.cattle.platform.core.model.tables.HostLabelMapTable.*;
-import static io.cattle.platform.core.model.tables.HostTable.*;
-import static io.cattle.platform.core.model.tables.HostVnetMapTable.*;
-import static io.cattle.platform.core.model.tables.ImageStoragePoolMapTable.*;
-import static io.cattle.platform.core.model.tables.ImageTable.*;
-import static io.cattle.platform.core.model.tables.InstanceHostMapTable.*;
-import static io.cattle.platform.core.model.tables.InstanceLabelMapTable.*;
-import static io.cattle.platform.core.model.tables.InstanceTable.*;
-import static io.cattle.platform.core.model.tables.LabelTable.*;
-import static io.cattle.platform.core.model.tables.MountTable.*;
-import static io.cattle.platform.core.model.tables.NicTable.*;
-import static io.cattle.platform.core.model.tables.PortTable.*;
-import static io.cattle.platform.core.model.tables.ServiceExposeMapTable.*;
-import static io.cattle.platform.core.model.tables.StoragePoolHostMapTable.*;
-import static io.cattle.platform.core.model.tables.StoragePoolTable.*;
-import static io.cattle.platform.core.model.tables.SubnetVnetMapTable.*;
-import static io.cattle.platform.core.model.tables.VnetTable.*;
-import static io.cattle.platform.core.model.tables.VolumeStoragePoolMapTable.*;
-import static io.cattle.platform.core.model.tables.VolumeTable.*;
+import static io.cattle.platform.core.model.tables.AgentTable.AGENT;
+import static io.cattle.platform.core.model.tables.HostLabelMapTable.HOST_LABEL_MAP;
+import static io.cattle.platform.core.model.tables.HostTable.HOST;
+import static io.cattle.platform.core.model.tables.HostVnetMapTable.HOST_VNET_MAP;
+import static io.cattle.platform.core.model.tables.ImageStoragePoolMapTable.IMAGE_STORAGE_POOL_MAP;
+import static io.cattle.platform.core.model.tables.ImageTable.IMAGE;
+import static io.cattle.platform.core.model.tables.InstanceHostMapTable.INSTANCE_HOST_MAP;
+import static io.cattle.platform.core.model.tables.InstanceLabelMapTable.INSTANCE_LABEL_MAP;
+import static io.cattle.platform.core.model.tables.InstanceTable.INSTANCE;
+import static io.cattle.platform.core.model.tables.LabelTable.LABEL;
+import static io.cattle.platform.core.model.tables.MountTable.MOUNT;
+import static io.cattle.platform.core.model.tables.NicTable.NIC;
+import static io.cattle.platform.core.model.tables.PortTable.PORT;
+import static io.cattle.platform.core.model.tables.ServiceExposeMapTable.SERVICE_EXPOSE_MAP;
+import static io.cattle.platform.core.model.tables.StoragePoolHostMapTable.STORAGE_POOL_HOST_MAP;
+import static io.cattle.platform.core.model.tables.StoragePoolTable.STORAGE_POOL;
+import static io.cattle.platform.core.model.tables.SubnetVnetMapTable.SUBNET_VNET_MAP;
+import static io.cattle.platform.core.model.tables.VnetTable.VNET;
+import static io.cattle.platform.core.model.tables.VolumeStoragePoolMapTable.VOLUME_STORAGE_POOL_MAP;
+import static io.cattle.platform.core.model.tables.VolumeTable.VOLUME;
 
 import io.cattle.platform.allocator.dao.AllocatorDao;
 import io.cattle.platform.allocator.service.AllocationAttempt;
 import io.cattle.platform.allocator.service.AllocationCandidate;
 import io.cattle.platform.allocator.service.CacheManager;
 import io.cattle.platform.allocator.service.DiskInfo;
-import io.cattle.platform.allocator.service.InstanceDiskReserveInfo;
+import io.cattle.platform.allocator.service.HostInfo;
 import io.cattle.platform.allocator.service.InstanceInfo;
 import io.cattle.platform.allocator.util.AllocatorUtils;
 import io.cattle.platform.core.constants.CommonStatesConstants;
@@ -59,6 +59,7 @@ import java.util.Set;
 import javax.inject.Inject;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.tuple.Pair;
 import org.jooq.Condition;
 import org.jooq.Record3;
 import org.jooq.RecordHandler;
@@ -178,35 +179,50 @@ public class AllocatorDaoImpl extends AbstractJooqDao implements AllocatorDao {
 
     protected void modifyDisk(long hostId, Instance instance, boolean add) {
         CacheManager cm = CacheManager.getCacheManagerInstance(this.objectManager);
-        InstanceInfo instanceInfo = cm.getInstanceInfoForHost(hostId, instance.getId());
-
-        for (Entry<String, InstanceDiskReserveInfo> entry : instanceInfo.getAllReservedDisksInfo()) {
-            String diskDevicePath = entry.getKey();
-            InstanceDiskReserveInfo reserveInfo = entry.getValue();
-            Long reserveSize = reserveInfo.getReservedSize();
-
-            // figure out available size
-            DiskInfo diskInfo = cm.getDiskInfoForHost(hostId, diskDevicePath);
-            Long allocated = diskInfo.getAllocatedSize();
-            if (add && (diskInfo.getCapacity() - allocated >= reserveSize)) {
-                diskInfo.addAllocatedSize(reserveSize);
+        HostInfo hostInfo = cm.getHostInfo(hostId, false);
+        if (hostInfo == null) {
+            // we never tried to schedule disks at all in the past
+            return;
+        }
+        InstanceInfo instanceInfo = hostInfo.getInstanceInfo(instance.getId());
+        if (instanceInfo == null) {
+            // we never tried to schedule disks at all during constraint scheduling
+            return;
+        }
+        if (add) {
+            Map<Pair<String, Long>, DiskInfo> volumeToDiskMapping = AllocatorUtils.allocateDiskForVolumes(hostId, instance, this.objectManager);
+            if (volumeToDiskMapping == null) {
+                return;
+            }
+            
+            for (Entry<Pair<String, Long>, DiskInfo> mapping : volumeToDiskMapping.entrySet()) {
+                Pair<String, Long> vol = mapping.getKey();
+                DiskInfo disk = mapping.getValue();
+                Long allocated = disk.getAllocatedSize();
+                disk.addAllocatedSize(vol.getRight());
                 log.info("allocated disk space on disk [{}] with total = {}, {} {} {} = {} as used",
-                        diskInfo.getDiskDevicePath(), diskInfo.getCapacity(), allocated, "+", reserveSize,
-                        allocated + reserveSize);
+                        disk.getDiskDevicePath(), disk.getCapacity(), allocated, "+", vol.getRight(),
+                        allocated + vol.getRight());
 
-                // mark reserved info for this instance
-                reserveInfo.setAllocated(true);
-            } else if (!add && reserveInfo.isAllocated()
-                    && allocated >= reserveSize) {
+                // record to cache for deletion purpose
+                instanceInfo.addReservedSize(disk.getDiskDevicePath(), vol.getRight());
+            }
+        
+        } else {
+            for (Entry<String, Long> diskAllocated : instanceInfo.getAllocatedDisks()) {
+                String diskDevicePath = diskAllocated.getKey();
+                Long reserveSize = diskAllocated.getValue();
+                DiskInfo diskInfo = hostInfo.getDiskInfo(diskDevicePath);
                 diskInfo.freeAllocatedSize(reserveSize);
                 log.info("freed disk space on disk [{}] with total = {}, {} {} {} = {} as used",
-                        diskInfo.getDiskDevicePath(), diskInfo.getCapacity(), allocated, "-", reserveSize,
-                        allocated - reserveSize);
+                        diskInfo.getDiskDevicePath(), diskInfo.getCapacity(), diskInfo.getAllocatedSize(), "-", reserveSize,
+                        diskInfo.getAllocatedSize() - reserveSize);
 
                 // release the reserved disk for this instance
-                instanceInfo.releaseDisk(reserveInfo);
-            }
+                instanceInfo.releaseDisk(diskDevicePath);
+            }            
         }
+
     }
 
     @Override

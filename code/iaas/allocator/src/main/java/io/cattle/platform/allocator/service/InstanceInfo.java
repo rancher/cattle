@@ -8,20 +8,10 @@ import java.util.Set;
 public class InstanceInfo {
 
     private Long instanceId;
-    private Long hostId;
-    private Map<String, InstanceDiskReserveInfo> reserveDisks = new HashMap<String, InstanceDiskReserveInfo>();
+    private Map<String, Long> reserveDisks = new HashMap<String, Long>();
 
     public InstanceInfo(Long instanceId, Long hostId) {
         super();
-        this.instanceId = instanceId;
-        this.hostId = hostId;
-    }
-
-    public Long getHostId() {
-        return hostId;
-    }
-
-    public void setHostId(Long instanceId) {
         this.instanceId = instanceId;
     }
 
@@ -29,20 +19,22 @@ public class InstanceInfo {
         return instanceId;
     }
 
-    public void reserveDisk(InstanceDiskReserveInfo diskReserveInfo) {
-        this.reserveDisks.put(diskReserveInfo.getDiskDevicePath(), diskReserveInfo);
+    public synchronized void addReservedSize(String diskDevicePath, Long reserveSize) {
+        Long currentSize = this.reserveDisks.get(diskDevicePath);
+        if (currentSize == null) {
+            currentSize = 0L;
+        }
+        this.reserveDisks.put(diskDevicePath, currentSize + reserveSize);
     }
 
-    public void releaseDisk(InstanceDiskReserveInfo diskReserveInfo) {
-        this.reserveDisks.remove(diskReserveInfo.getDiskDevicePath());
+    public synchronized void releaseDisk(String diskDevicePath) {
+        this.reserveDisks.remove(diskDevicePath);
     }
 
-    public InstanceDiskReserveInfo getDiskReserveInfo(String diskDevicePath) {
-        return this.reserveDisks.get(diskDevicePath);
+
+    public  Set<Entry<String, Long>> getAllocatedDisks() {
+        return reserveDisks.entrySet();
     }
 
-    public Set<Entry<String, InstanceDiskReserveInfo>> getAllReservedDisksInfo() {
-        return this.reserveDisks.entrySet();
-    }
 
 }

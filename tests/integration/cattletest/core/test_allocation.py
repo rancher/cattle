@@ -668,7 +668,7 @@ def test_container_label_disksize_single_volume(super_client, new_context):
         containers.append(c1)
         assert c1.transitioning == 'error'
         assert c1.transitioningMessage == \
-            'Scheduling failed: host needs a disk with free space larger than 50 GB'
+            'Scheduling failed: host needs more free disk space'
         assert c1.state == 'error'
 
 
@@ -689,7 +689,7 @@ def test_container_label_disksize_single_volume(super_client, new_context):
         containers.append(c3)
         assert c3.transitioning == 'error'
         assert c3.transitioningMessage == \
-               'Scheduling failed: host needs a disk with free space larger than 50 GB'
+               'Scheduling failed: host needs more free disk space'
         assert c3.state == 'error'
 
     finally:
@@ -719,7 +719,7 @@ def test_container_label_disksize_multiple_volumes(super_client, new_context):
         containers.append(c1)
         assert c1.transitioning == 'error'
         assert c1.transitioningMessage == \
-            'Scheduling failed: host needs a disk with free space larger than 50 GB'
+            'Scheduling failed: host needs more free disk space'
         assert c1.state == 'error'
 
 
@@ -738,6 +738,54 @@ def test_container_label_disksize_multiple_volumes(super_client, new_context):
 
         # check c2 is on host2 with enough disk space
         assert c2.hosts()[0].id == host2.id
+
+    finally:
+        for c in containers:
+            new_context.delete(c)
+
+
+def test_container_label_disksize_lifecycle(super_client, new_context):
+    # first host with really small disk size
+    host = new_context.host
+    containers = []
+
+    try:
+        label = 'io.rancher.scheduler.disksize.v1'
+
+        # set host with enough disk size
+        diskInfo = {"diskInfo": {"mountPoints": {"/dev/sda1": {"total": 100.0, "used" : 1.0}}}}
+        host = super_client.update(host, info=diskInfo)
+        c1 = new_context.create_container(labels={label: '50'})
+        containers.append(c1)
+
+        # check c1 is on host1 with enough disk space
+        assert c1.hosts()[0].id == host.id
+
+        # now schedule another 50GB container on the host, expect it to fail
+        # because host already used 1 + 50 GB disk space with total only 100
+        # so can't schedule more now
+        c2 = new_context.super_create_container_no_success(labels={label: '50'})
+        containers.append(c2)
+        assert c2.transitioning == 'error'
+        assert c2.transitioningMessage == \
+               'Scheduling failed: host needs more free disk space'
+        assert c2.state == 'error'
+
+        # remove the container c1 from host and verify the disk size freed back
+        # and at this time we can schedule another container with the same size
+        super_client.delete(c1)
+        containers.remove(c1)
+        c1 = super_client.wait_success(c1)
+        c1 = super_client.wait_success(c1.purge())
+        c1 = super_client.reload(c1)
+        wait_for(lambda: super_client.reload(c1).allocationState == 'inactive')
+
+        c3 = new_context.create_container(labels={label: '50'})
+
+
+        # check c4 is on host2 with enough disk space
+        assert c3.hosts()[0].id == host.id
+        containers.append(c3)
 
     finally:
         for c in containers:

@@ -26,23 +26,23 @@ public class CacheManager
         this.objectManager = objectManager;
     }
 
-    public static CacheManager getCacheManagerInstance(ObjectManager objectManager) {
+    public static synchronized CacheManager getCacheManagerInstance(ObjectManager objectManager) {
         if (instance == null) {
             instance = new CacheManager(objectManager);
         }
         return instance;
     }
 
-    public HostInfo getHostInfo(Long hostId) {
+    public synchronized HostInfo getHostInfo(Long hostId, boolean create) {
         HostInfo hostInfo = this.hostsInfo.get(hostId);
-        if (hostInfo == null) {
+        if (hostInfo == null && create) {
             hostInfo = loadHostInfoToCache(hostId);
         }
 
         return hostInfo;
     }
 
-    public HostInfo loadHostInfoToCache(Long hostId) {
+    private HostInfo loadHostInfoToCache(Long hostId) {
         HostInfo hostInfo = new HostInfo(hostId);
         
         // we need to cache all host info related to disks first
@@ -84,29 +84,10 @@ public class CacheManager
         return hostInfo;
     }
 
-    public void removeHostInfo(Long hostId) {
-        this.hostsInfo.remove(hostId);
-        log.debug("removed host [{}] information from cache manager", hostId);
-    }
-
-    public DiskInfo getDiskInfoForHost(Long hostId, String diskDevicePath) {
-        return getHostInfo(hostId).getDiskInfo(diskDevicePath);
-    }
-
-    public InstanceInfo getInstanceInfoForHost(Long hostId, Long instanceID) {
-        InstanceInfo instanceInfo = getHostInfo(hostId).getInstanceInfo(instanceID);
-        if (instanceInfo == null) {
-            instanceInfo = new InstanceInfo(instanceID, hostId);
-            setInstanceInfoForHost(hostId, instanceInfo);
+    public synchronized void removeHostInfo(Long hostId) {
+        if (this.hostsInfo.remove(hostId) != null) {
+            log.debug("removed host [{}] information from cache manager", hostId);
         }
-
-        return instanceInfo;
-    }
-
-    private void setInstanceInfoForHost(Long hostId, InstanceInfo instanceInfo) {
-        getHostInfo(hostId).addInstance(instanceInfo);
-        log.debug("added instance [{}] info into host [{}] info in cache manager", instanceInfo.getInstanceId(),
-                hostId);
     }
 
 }

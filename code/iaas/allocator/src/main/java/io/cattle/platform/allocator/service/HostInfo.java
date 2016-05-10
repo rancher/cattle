@@ -29,7 +29,7 @@ public class HostInfo {
         this.instancesScheduled = new HashMap<Long, InstanceInfo>();
     }
 
-    public void addDisk(DiskInfo diskInfo) {
+    public synchronized void addDisk(DiskInfo diskInfo) {
         this.disks.put(diskInfo.getDiskDevicePath(), diskInfo);
     }
 
@@ -37,12 +37,12 @@ public class HostInfo {
         return this.disks.get(diskDevicePath);
     }
 
-    public void addInstance(InstanceInfo instanceInfo) {
+    public synchronized void addInstance(InstanceInfo instanceInfo) {
         this.instancesScheduled.put(instanceInfo.getInstanceId(), instanceInfo);
     }
 
-    public void removeInstance(Long instanceId) {
-        this.instancesScheduled.remove(instanceId);
+    public synchronized InstanceInfo removeInstance(Long instanceId) {
+        return this.instancesScheduled.remove(instanceId);
     }
 
     public InstanceInfo getInstanceInfo(Long instanceId) {

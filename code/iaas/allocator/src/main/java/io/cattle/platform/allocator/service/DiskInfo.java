@@ -23,11 +23,11 @@ public class DiskInfo {
         return allocatedSize;
     }
 
-    public void addAllocatedSize(Long allocateSize) {
+    public synchronized void addAllocatedSize(Long allocateSize) {
         this.allocatedSize += allocateSize;
     }
 
-    public void freeAllocatedSize(Long freeSize) {
+    public synchronized void freeAllocatedSize(Long freeSize) {
         this.allocatedSize -= freeSize;
     }
 }

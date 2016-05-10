@@ -4,6 +4,7 @@ import static io.cattle.platform.core.model.tables.InstanceHostMapTable.INSTANCE
 
 import io.cattle.platform.allocator.service.CacheManager;
 import io.cattle.platform.allocator.service.HostInfo;
+import io.cattle.platform.allocator.service.InstanceInfo;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.InstanceHostMap;
@@ -37,21 +38,25 @@ public class InstancePurgePostListener extends AbstractObjectProcessLogic implem
     @Override
     public HandlerResult handle(ProcessState state, ProcessInstance process) {
         Instance instance = (Instance) state.getResource();
-
-        List<InstanceHostMap> instanceHostMappings = objectManager.find(InstanceHostMap.class,
-                INSTANCE_HOST_MAP.INSTANCE_ID,
-                instance.getId());
-
-        if (instanceHostMappings.size() == 0) {
+        if (instance == null) {
             return null;
         }
-        InstanceHostMap mapping = instanceHostMappings.get(0);
-        CacheManager cm = CacheManager.getCacheManagerInstance(this.objectManager);
-        HostInfo hostInfo = cm.getHostInfo(mapping.getHostId());
 
-        hostInfo.removeInstance(mapping.getInstanceId());
-        log.debug("removed instance [{}] info from host [{}] info in cache manager", instance.getId(),
-                mapping.getHostId());
+        List<InstanceHostMap> instanceHostMappings = objectManager.find(InstanceHostMap.class,
+                INSTANCE_HOST_MAP.INSTANCE_ID, instance.getId());
+
+        for (InstanceHostMap mapping : instanceHostMappings) {
+            CacheManager cm = CacheManager.getCacheManagerInstance(this.objectManager);
+            HostInfo hostInfo = cm.getHostInfo(mapping.getHostId(), false);
+            if (hostInfo == null) {
+                return null;
+            }
+            InstanceInfo instanceInfo = hostInfo.removeInstance(mapping.getInstanceId());
+            if (instanceInfo != null) {
+                log.debug("removed instance [{}] info from host [{}] info in cache manager", instance.getId(),
+                        mapping.getHostId());
+            }
+        }
         return null;
     }
 
@@ -60,4 +65,3 @@ public class InstancePurgePostListener extends AbstractObjectProcessLogic implem
         return Priority.DEFAULT;
     }
 }
-

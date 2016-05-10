@@ -32,13 +32,15 @@ public class DiskSizeConstraintProvider implements AllocationConstraintsProvider
             return;
         }
 
+        DiskSizeConstraint diskSizeConstraint = null;
         for (Map.Entry<String, String> labelEntry : labels.entrySet()) {
             String labelKey = labelEntry.getKey();
             String labelPrefix = SystemLabels.LABEL_SCHEDULER_DISKSIZE_PREFIX;
             if (labelKey.startsWith(labelPrefix) && labelKey.length() > labelPrefix.length()) {
-                String key = labelKey.substring(SystemLabels.LABEL_SCHEDULER_DISKSIZE_PREFIX.length());
-                String labelValue = labelEntry.getValue();
-                constraints.add(new DiskSizeConstraint(key, labelValue, objectManager));
+                if (diskSizeConstraint == null) {
+                    diskSizeConstraint = new DiskSizeConstraint(objectManager);
+                    constraints.add(diskSizeConstraint);
+                }
             }
         }
     }
