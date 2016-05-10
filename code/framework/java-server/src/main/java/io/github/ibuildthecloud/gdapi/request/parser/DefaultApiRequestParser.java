@@ -168,16 +168,16 @@ public class DefaultApiRequestParser implements ApiRequestParser {
     }
 
     /**
-     * Constructs the request URL based off of standard headers in the request, falling back to the HttpServletRequest.getRequestURL() 
-     * if the headers aren't available. Here is the ordered list of how we'll attempt to construct the URL: 
+     * Constructs the request URL based off of standard headers in the request, falling back to the HttpServletRequest.getRequestURL()
+     * if the headers aren't available. Here is the ordered list of how we'll attempt to construct the URL:
      *  - x-api-request-url
      *  - x-forwarded-proto://x-forwarded-host:x-forwarded-port/HttpServletRequest.getRequestURI()
-     *  - x-forwarded-proto://x-forwarded-host/HttpServletRequest.getRequestURI() 
+     *  - x-forwarded-proto://x-forwarded-host/HttpServletRequest.getRequestURI()
      *  - x-forwarded-proto://host:x-forwarded-port/HttpServletRequest.getRequestURI()
      *  - x-forwarded-proto://host/HttpServletRequest.getRequestURI() request.getRequestURL()
-     * 
-     * Additional notes: 
-     *  - With x-api-request-url, the query string is passed, it will be dropped to match the other formats. 
+     *
+     * Additional notes:
+     *  - With x-api-request-url, the query string is passed, it will be dropped to match the other formats.
      *  - If the x-forwarded-host/host header has a port and x-forwarded-port has been passed, x-forwarded-port will be used.
      */
     protected String parseRequestUrl(ApiRequest apiRequest, HttpServletRequest request) {
@@ -199,21 +199,22 @@ public class DefaultApiRequestParser implements ApiRequestParser {
     }
 
     private String getUrlFromStandardHeaders(HttpServletRequest request) {
-        String xForwardedProto = getOverrideHeader(request, FORWARDED_PROTO_HEADER, null, false);
-        if (xForwardedProto == null) {
-            return null;
-        }
-
         String host = getOverrideHeader(request, FORWARDED_HOST_HEADER, null, false);
         if (host == null) {
             host = getOverrideHeader(request, HOST_HEADER, null, false);
         }
 
-        if (host == null) {
+        String port = getOverrideHeader(request, FORWARDED_PORT_HEADER, null, false);
+        String xForwardedProto = getOverrideHeader(request, FORWARDED_PROTO_HEADER, null, false);
+
+        if (xForwardedProto == null && isHttpsPort(host, port)) {
+            xForwardedProto = "https";
+        }
+
+        if (xForwardedProto == null || host == null) {
             return null;
         }
 
-        String port = getOverrideHeader(request, FORWARDED_PORT_HEADER, null, false);
         if (StringUtils.equals(port, "443") || StringUtils.equals(port, "80")) {
             port = null; // Don't include default ports in url
         }
@@ -357,6 +358,10 @@ public class DefaultApiRequestParser implements ApiRequestParser {
             allowedFormats.add(HTML);
             allowedFormats.add(JSON);
         }
+    }
+
+    public boolean isHttpsPort(String host, String port) {
+        return false;
     }
 
     public Set<String> getAllowedFormats() {
