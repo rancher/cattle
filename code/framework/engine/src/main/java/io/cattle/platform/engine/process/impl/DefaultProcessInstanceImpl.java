@@ -188,7 +188,7 @@ public class DefaultProcessInstanceImpl implements ProcessInstance {
             } catch (ProcessCancelException e) {
                 if (shouldAbort(e)) {
                     if (!instanceContext.getState().shouldCancel(record) && instanceContext.getState().isTransitioning())
-                        throw new IllegalStateException("Attempt to cancel when process is still transitioning");
+                        throw new IllegalStateException("Attempt to cancel when process is still transitioning", e);
                     throw e;
                 } else {
                     execution.exit(DELEGATE);
