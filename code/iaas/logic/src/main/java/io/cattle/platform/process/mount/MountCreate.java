@@ -26,7 +26,8 @@ public class MountCreate extends AbstractDefaultProcessHandler {
     public HandlerResult handle(final ProcessState state, ProcessInstance process) {
         Mount mount = (Mount)state.getResource();
         Volume volume = objectManager.loadResource(Volume.class, mount.getVolumeId());
-        if (!CommonStatesConstants.ACTIVE.equals(volume.getState()) && !CommonStatesConstants.ACTIVATING.equals(volume.getState())) {
+        if (!CommonStatesConstants.ACTIVE.equals(volume.getState()) && !CommonStatesConstants.ACTIVATING.equals(volume.getState())
+                && !CommonStatesConstants.RESTORING.equals(volume.getState())) {
             objectProcessManager.scheduleStandardProcess(StandardProcess.ACTIVATE, volume, state.getData());
         }
         return null;
