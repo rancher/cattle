@@ -20,9 +20,10 @@ kubernetes:
         healthy_threshold: 2
 
 etcd:
+    scale: 3
     health_check:
         request_line: GET /health HTTP/1.0
-        port: 4001
+        port: 2379
         interval: 2000
         response_timeout: 2000
         unhealthy_threshold: 3
