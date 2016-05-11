@@ -196,7 +196,7 @@ def test_host_remove(super_client, new_context):
     assert host.state == 'removed'
 
     agent = super_client.wait_success(agent)
-    assert agent.state == 'removed'
+    wait_for(lambda: super_client.reload(agent).state == 'removed')
 
     pool = super_client.wait_success(pool)
     assert pool.state == 'removed'
