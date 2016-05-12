@@ -702,6 +702,7 @@ def test_storagepool_auth(admin_user_client, user_client, project_client):
         'name': 'r',
         'driverName': 'r',
         'volumeAccessMode': 'r',
+        'blockDevicePath': 'r',
     })
 
     auth_check(user_client.schema, 'storagePool', 'r', {
@@ -710,6 +711,7 @@ def test_storagepool_auth(admin_user_client, user_client, project_client):
         'name': 'r',
         'driverName': 'r',
         'volumeAccessMode': 'r',
+        'blockDevicePath': 'r',
     })
 
     auth_check(project_client.schema, 'storagePool', 'r', {
@@ -718,6 +720,7 @@ def test_storagepool_auth(admin_user_client, user_client, project_client):
         'name': 'r',
         'driverName': 'r',
         'volumeAccessMode': 'r',
+        'blockDevicePath': 'r',
     })
 
 
@@ -1469,6 +1472,7 @@ def test_registry(admin_user_client, user_client, project_client):
         'externalId': 'r',
         'serverAddress': 'r',
         'volumeAccessMode': 'r',
+        'blockDevicePath': 'r',
     })
 
     auth_check(user_client.schema, 'registry', 'r', {
@@ -1477,6 +1481,7 @@ def test_registry(admin_user_client, user_client, project_client):
         'driverName': 'r',
         'serverAddress': 'r',
         'volumeAccessMode': 'r',
+        'blockDevicePath': 'r',
     })
 
     auth_check(project_client.schema, 'registry', 'crud', {
@@ -1485,6 +1490,7 @@ def test_registry(admin_user_client, user_client, project_client):
         'externalId': 'r',
         'serverAddress': 'cr',
         'volumeAccessMode': 'r',
+        'blockDevicePath': 'r',
     })
 
 

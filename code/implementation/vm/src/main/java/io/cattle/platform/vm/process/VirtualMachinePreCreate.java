@@ -5,11 +5,14 @@ import static io.cattle.platform.core.model.tables.VolumeTable.*;
 import io.cattle.platform.core.addon.VirtualMachineDisk;
 import io.cattle.platform.core.constants.ContainerEventConstants;
 import io.cattle.platform.core.constants.InstanceConstants;
+import io.cattle.platform.core.constants.StoragePoolConstants;
 import io.cattle.platform.core.constants.VolumeConstants;
 import io.cattle.platform.core.dao.ServiceDao;
+import io.cattle.platform.core.dao.StoragePoolDao;
 import io.cattle.platform.core.dao.VolumeDao;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.Service;
+import io.cattle.platform.core.model.StoragePool;
 import io.cattle.platform.core.model.Volume;
 import io.cattle.platform.core.util.SystemLabels;
 import io.cattle.platform.docker.constants.DockerInstanceConstants;
@@ -23,6 +26,7 @@ import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.process.common.handler.AbstractObjectProcessLogic;
 import io.cattle.platform.util.type.Priority;
 
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -43,6 +47,9 @@ public class VirtualMachinePreCreate extends AbstractObjectProcessLogic implemen
 
     @Inject
     VolumeDao volumeDao;
+
+    @Inject
+    StoragePoolDao storagePoolDao;
 
     @Inject
     ServiceDao serviceDao;
@@ -140,6 +147,16 @@ public class VirtualMachinePreCreate extends AbstractObjectProcessLogic implemen
                     volumes = volumeDao.findSharedOrUnmappedVolumes(instance.getAccountId(), name);
                 }
 
+                String localDriver = disk.getDriver();
+                if (localDriver == null) {
+                    localDriver = volumeDriver;
+                }
+                StoragePool storagePool = storagePoolDao.findStoragePoolByDriverName(instance.getAccountId(), localDriver);
+                String blockDevPath = null;
+                if (storagePool != null) {
+                    blockDevPath = DataAccessor.fieldString(storagePool, StoragePoolConstants.FIELD_BLOCK_DEVICE_PATH);
+                }
+
                 if (volumes.size() == 0) {
                     Map<String, String> opts = disk.getOpts();
                     if (opts == null) {
@@ -151,11 +168,18 @@ public class VirtualMachinePreCreate extends AbstractObjectProcessLogic implemen
                     if (disk.getSize() != null) {
                         opts.put("size", disk.getSize());
                     }
-
-                    String localDriver = disk.getDriver();
-                    if (localDriver == null) {
-                        localDriver = volumeDriver;
+                    
+                    
+                    if (StringUtils.isNotEmpty(blockDevPath)) {
+                        opts.put("dont-format", "true");
+                        if (disk.isRoot()) {
+                            String image = StringUtils.removeStart(DataAccessor.fieldString(instance, InstanceConstants.FIELD_IMAGE_UUID), "docker:");
+                            if (StringUtils.isNotBlank(image)) {
+                                opts.put("base-image", image);
+                            }
+                        }
                     }
+
                     objectManager.create(Volume.class,
                             VOLUME.NAME, name,
                             VOLUME.ACCOUNT_ID, instance.getAccountId(),
@@ -171,12 +195,21 @@ public class VirtualMachinePreCreate extends AbstractObjectProcessLogic implemen
                     }
                 }
 
-                String dataVolumeString = String.format("%s:/volumes/disk%02d", name, index);
+                String diskNameInContainer = String.format("disk%02d", index);
+                String dataVolumeString = String.format("%s:/volumes/%s", name, diskNameInContainer);
                 if (disk.isRoot()) {
                     rootFound = true;
                     dataVolumeString = String.format("%s:/image", name);
+                    diskNameInContainer = "root";
                 } else {
                     index++;
+                }
+
+                if (StringUtils.isNotEmpty(blockDevPath)) {
+                    String deviceOnHost = Paths.get(blockDevPath, name).toString();
+                    String deviceInContainer = String.format("/dev/vm/%s", diskNameInContainer);
+                    String deviceParam = String.format("%s:%s", deviceOnHost, deviceInContainer);
+                    addToList(devices, deviceParam);
                 }
 
                 addToList(dataVolumes, dataVolumeString);

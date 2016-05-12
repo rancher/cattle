@@ -1,0 +1,8 @@
+{
+    "resourceFields" : {
+        "blockDevicePath" : {
+            "type": "string",
+            "nullable": true
+        }
+    }
+}

@@ -15,14 +15,14 @@ def from_context(context):
     return context.client, context.agent_client, context.host
 
 
-def add_storage_pool(context, host_uuids=None):
+def add_storage_pool(context, host_uuids=None, **kwargs):
     client, agent_client, host = from_context(context)
     sp_name = 'convoy-%s' % random_str()
     if not host_uuids:
         host_uuids = [host.uuid]
 
     create_sp_event(client, agent_client, context,
-                    sp_name, sp_name, SP_CREATE, host_uuids, sp_name)
+                    sp_name, sp_name, SP_CREATE, host_uuids, sp_name, **kwargs)
     storage_pool = wait_for(lambda: sp_wait(client, sp_name))
     assert storage_pool.state == 'active'
     return storage_pool
@@ -571,7 +571,7 @@ def create_volume_event(client, agent_client, context, event_type,
 
 def create_sp_event(client, agent_client, context, external_id, name,
                     event_type, host_uuids, driver_name, agent_account=None,
-                    access_mode=None):
+                    access_mode=None, block_device_path=None):
     storage_pool = {
         'name': name,
         'externalId': external_id,
@@ -580,6 +580,9 @@ def create_sp_event(client, agent_client, context, external_id, name,
 
     if access_mode is not None:
         storage_pool['volumeAccessMode'] = access_mode
+
+    if block_device_path is not None:
+        storage_pool['blockDevicePath'] = block_device_path
 
     event = agent_client.create_external_storage_pool_event(
         externalId=external_id,
