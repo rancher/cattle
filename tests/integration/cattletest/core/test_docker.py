@@ -475,6 +475,39 @@ def test_no_port_override(docker_client, super_client):
 
 
 @if_docker
+def test_volume_restore(docker_client, super_client):
+    data_volume = '/tmp/%s:/foo' % random_str()
+    c = docker_client.create_container(imageUuid=TEST_IMAGE_UUID,
+                                       dataVolumes=[data_volume])
+    c = docker_client.wait_success(c)
+
+    mounts = c.mounts()
+    assert len(mounts) == 1
+    v = mounts[0].volume()
+    v = docker_client.wait_success(v)
+
+    c = docker_client.wait_success(c.stop())
+    c = docker_client.wait_success(c.remove())
+    assert c.state == 'removed'
+
+    v = docker_client.wait_success(v)
+    assert v.state == 'inactive'
+    v = docker_client.wait_success(v)
+    docker_client.wait_success(v.remove())
+
+    c = docker_client.create_container(imageUuid=TEST_IMAGE_UUID,
+                                       dataVolumes=[data_volume])
+    c = docker_client.wait_success(c)
+    assert c.state == 'running'
+    v = docker_client.wait_success(v, timeout=30)
+    assert v.state == 'active'
+
+    c = docker_client.wait_success(c.stop())
+    c = docker_client.wait_success(c.remove())
+    docker_client.wait_success(c.purge())
+
+
+@if_docker
 def test_docker_volumes(docker_client, super_client):
     def reload(x):
         return super_client.reload(x)
