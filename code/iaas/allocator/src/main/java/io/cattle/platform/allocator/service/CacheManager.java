@@ -37,6 +37,9 @@ public class CacheManager
         HostInfo hostInfo = this.hostsInfo.get(hostId);
         if (hostInfo == null && create) {
             hostInfo = loadHostInfoToCache(hostId);
+
+            // now load existing instances info that consumes host resources(disk etc) into hostInfo
+            hostInfo.loadAllocatedInstanceResource(this.objectManager);
         }
 
         return hostInfo;

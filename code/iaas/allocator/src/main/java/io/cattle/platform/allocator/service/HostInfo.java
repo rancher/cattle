@@ -1,9 +1,20 @@
 package io.cattle.platform.allocator.service;
 
+import static io.cattle.platform.core.model.tables.InstanceHostMapTable.INSTANCE_HOST_MAP;
+import static io.cattle.platform.core.model.tables.InstanceTable.INSTANCE;
+
+import io.cattle.platform.allocator.util.AllocatorUtils;
+import io.cattle.platform.core.model.Instance;
+import io.cattle.platform.core.model.InstanceHostMap;
+import io.cattle.platform.object.ObjectManager;
+
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+
+import org.apache.commons.lang3.tuple.Pair;
 
 public class HostInfo {
 
@@ -51,6 +62,40 @@ public class HostInfo {
 
     public Set<Entry<String, DiskInfo>> getAllDiskInfo() {
         return this.disks.entrySet();
+    }
+
+    public void loadAllocatedInstanceResource(ObjectManager objectManager) {
+        // load all instances that consume host resources into hostInfo. Then
+        // account for those resources for hostInfo.
+        List<InstanceHostMap> instanceHostMappings = objectManager.find(InstanceHostMap.class,
+                INSTANCE_HOST_MAP.HOST_ID, this.hostId, INSTANCE_HOST_MAP.REMOVED, null);
+
+        for (InstanceHostMap mapping : instanceHostMappings) {
+            Long instanceId = mapping.getInstanceId();
+            Instance instance = objectManager.findAny(Instance.class, INSTANCE.ID, instanceId, INSTANCE.REMOVED, null);
+            if (instance == null) {
+                continue;
+            }
+            Map<Pair<String, Long>, DiskInfo> volumeToDiskMapping = AllocatorUtils.allocateDiskForVolumes(this.hostId, instance, objectManager);
+            if (volumeToDiskMapping == null) {
+                continue;
+            }
+
+            for (Entry<Pair<String, Long>, DiskInfo> volumeToDisk : volumeToDiskMapping.entrySet()) {
+                Pair<String, Long> vol = volumeToDisk.getKey();
+                DiskInfo disk = volumeToDisk.getValue();
+
+                // account for disk size resource
+                disk.addAllocatedSize(vol.getRight());
+
+                InstanceInfo instanceInfo = this.getInstanceInfo(instanceId);
+                if (instanceInfo == null) {
+                    continue;
+                }
+                // record to cache for deletion purpose
+                instanceInfo.addReservedSize(disk.getDiskDevicePath(), vol.getRight());
+            }
+        }
     }
 
 }
