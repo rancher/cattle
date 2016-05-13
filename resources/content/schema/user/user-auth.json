@@ -291,6 +291,7 @@
         "project.kubernetes" : "cru",
         "project.mesos" : "cru",
         "project.publicDns" : "cru",
+        "project.virtualMachine" : "cru",
         "project.servicesPortRange": "cru",
 
         "projectMember" : "cr",

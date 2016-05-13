@@ -46,7 +46,7 @@ import org.slf4j.LoggerFactory;
 
 public class SystemStackUpdate implements AnnotatedEventListener {
 
-    private static final String[] STACKS = new String[] {"swarm", "kubernetes", "mesos", "publicDns"};
+    private static final String[] STACKS = new String[] {"swarm", "kubernetes", "mesos", "publicDns", "virtualMachine"};
     private static final String STACK_EXTERNAL_ID = "system://%s";
     private static final String STACK_RESOURCE = "/config-content/system-stacks/%s/%s";
     private static final Logger log = LoggerFactory.getLogger(SystemStackUpdate.class);
