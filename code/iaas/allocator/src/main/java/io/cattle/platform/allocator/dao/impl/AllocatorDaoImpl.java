@@ -20,9 +20,14 @@ import static io.cattle.platform.core.model.tables.SubnetVnetMapTable.*;
 import static io.cattle.platform.core.model.tables.VnetTable.*;
 import static io.cattle.platform.core.model.tables.VolumeStoragePoolMapTable.*;
 import static io.cattle.platform.core.model.tables.VolumeTable.*;
+
 import io.cattle.platform.allocator.dao.AllocatorDao;
 import io.cattle.platform.allocator.service.AllocationAttempt;
 import io.cattle.platform.allocator.service.AllocationCandidate;
+import io.cattle.platform.allocator.service.CacheManager;
+import io.cattle.platform.allocator.service.DiskInfo;
+import io.cattle.platform.allocator.service.HostInfo;
+import io.cattle.platform.allocator.service.InstanceInfo;
 import io.cattle.platform.allocator.util.AllocatorUtils;
 import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.HealthcheckConstants;
@@ -48,11 +53,13 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 
 import javax.inject.Inject;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.tuple.Pair;
 import org.jooq.Condition;
 import org.jooq.Record3;
 import org.jooq.RecordHandler;
@@ -170,6 +177,54 @@ public class AllocatorDaoImpl extends AbstractJooqDao implements AllocatorDao {
         objectManager.persist(host);
     }
 
+    protected void modifyDisk(long hostId, Instance instance, boolean add) {
+        CacheManager cm = CacheManager.getCacheManagerInstance(this.objectManager);
+        HostInfo hostInfo = cm.getHostInfo(hostId, false);
+        if (hostInfo == null) {
+            // we never tried to schedule disks at all in the past
+            return;
+        }
+        InstanceInfo instanceInfo = hostInfo.getInstanceInfo(instance.getId());
+        if (instanceInfo == null) {
+            // we never tried to schedule disks at all during constraint scheduling
+            return;
+        }
+        if (add) {
+            Map<Pair<String, Long>, DiskInfo> volumeToDiskMapping = AllocatorUtils.allocateDiskForVolumes(hostId, instance, this.objectManager);
+            if (volumeToDiskMapping == null) {
+                return;
+            }
+            
+            for (Entry<Pair<String, Long>, DiskInfo> mapping : volumeToDiskMapping.entrySet()) {
+                Pair<String, Long> vol = mapping.getKey();
+                DiskInfo disk = mapping.getValue();
+                Long allocated = disk.getAllocatedSize();
+                disk.addAllocatedSize(vol.getRight());
+                log.info("allocated disk space on disk [{}] with total = {}, {} {} {} = {} as used",
+                        disk.getDiskDevicePath(), disk.getCapacity(), allocated, "+", vol.getRight(),
+                        allocated + vol.getRight());
+
+                // record to cache for deletion purpose
+                instanceInfo.addReservedSize(disk.getDiskDevicePath(), vol.getRight());
+            }
+        
+        } else {
+            for (Entry<String, Long> diskAllocated : instanceInfo.getAllocatedDisks()) {
+                String diskDevicePath = diskAllocated.getKey();
+                Long reserveSize = diskAllocated.getValue();
+                DiskInfo diskInfo = hostInfo.getDiskInfo(diskDevicePath);
+                diskInfo.freeAllocatedSize(reserveSize);
+                log.info("freed disk space on disk [{}] with total = {}, {} {} {} = {} as used",
+                        diskInfo.getDiskDevicePath(), diskInfo.getCapacity(), diskInfo.getAllocatedSize(), "-", reserveSize,
+                        diskInfo.getAllocatedSize() - reserveSize);
+
+                // release the reserved disk for this instance
+                instanceInfo.releaseDisk(diskDevicePath);
+            }
+        }
+
+    }
+
     @Override
     public boolean recordCandidate(AllocationAttempt attempt, AllocationCandidate candidate) {
         Set<Long> existingHosts = attempt.getHostIds();
@@ -185,6 +240,7 @@ public class AllocatorDaoImpl extends AbstractJooqDao implements AllocatorDao {
                         INSTANCE_HOST_MAP.INSTANCE_ID, attempt.getInstance().getId());
 
                 modifyCompute(hostId, attempt.getInstance(), false);
+                modifyDisk(hostId, attempt.getInstance(), true);
             }
 
             // Assuming a single host. Just over-complexity to allow more than one host
@@ -270,7 +326,7 @@ public class AllocatorDaoImpl extends AbstractJooqDao implements AllocatorDao {
             Boolean done = data.as(Boolean.class);
             if ( done == null || ! done.booleanValue() ) {
                 modifyCompute(map.getHostId(), instance, true);
-
+                modifyDisk(map.getHostId(), instance, false);
                 data.set(true);
                 objectManager.persist(map);
             }
