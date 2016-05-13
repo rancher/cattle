@@ -126,7 +126,7 @@ rancher-kubernetes-agent:
         - kubernetes:master
 
 rancher-ingress-controller:
-    image: rancher/ingress-controller:0.1.0
+    image: rancher/ingress-controller:v0.1.0
     labels:
         io.rancher.container.create_agent: "true"
         io.rancher.container.agent.role: environment
