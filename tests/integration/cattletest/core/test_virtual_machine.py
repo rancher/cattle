@@ -96,7 +96,6 @@ def test_virtual_machine_with_device_enable_storage_pool(super_client, client,
     volume1 = find_one(client.list_volume, name=prefix + '-foo')
     assert volume1.driver == sp_name
     assert volume1.driverOpts == {'vm': 'true',
-                                  'size': '2g',
                                   'base-image': context.image_uuid,
                                   'dont-format': 'true'}
 
