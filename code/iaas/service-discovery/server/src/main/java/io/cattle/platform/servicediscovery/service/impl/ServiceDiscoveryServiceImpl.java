@@ -446,7 +446,7 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
     }
 
     protected void updateObjectEndPoint(final Object object, final String resourceType, final Long resourceId,
-            final PublicEndpoint publicEndpoint, final boolean add) {
+            final PublicEndpoint publicEndpoint, final boolean add, long accountId) {
         // have to reload the object to get the latest update for publicEndpoint
         // if don't reload, its possible that n concurrent updates would lack information.
         // update would be performed on the original object
@@ -472,6 +472,7 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
             objectManager.persist(object);
             final Map<String, Object> data = new HashMap<>();
             data.put(ServiceDiscoveryConstants.FIELD_PUBLIC_ENDPOINTS, publicEndpoints);
+            data.put(ObjectMetaDataManager.ACCOUNT_FIELD, accountId);
 
             DeferredUtils.nest(new Runnable() {
                 @Override
@@ -491,7 +492,7 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
                         @Override
                         public void doWithLockNoResult() {
                             updateObjectEndPoint(host, host.getKind(), Long.valueOf(publicEndpoint.getHostId()),
-                                    publicEndpoint, add);
+                                    publicEndpoint, add, host.getAccountId());
                         }
                     });
         }
@@ -501,7 +502,8 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
             lockManager.lock(new ServiceEndpointsUpdateLock(service), new LockCallbackNoReturn() {
                 @Override
                 public void doWithLockNoResult() {
-                    updateObjectEndPoint(service, service.getKind(), service.getId(), publicEndpoint, add);
+                    updateObjectEndPoint(service, service.getKind(), service.getId(), publicEndpoint, add,
+                            service.getAccountId());
                 }
             });
         }
