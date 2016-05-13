@@ -665,7 +665,7 @@ def test_container_label_disksize_single_volume(super_client, new_context):
         host1 = super_client.update(host1, info=diskInfo1)
 
         # schedule a container requiring 50 disk size
-        label = 'io.rancher.scheduler.disksize.v1'
+        label = 'io.rancher.resource.disksize.v1'
         c1 = new_context.super_create_container_no_success(labels={label: '50'})
         containers.append(c1)
         assert c1.transitioning == 'error'
@@ -715,8 +715,8 @@ def test_container_label_disksize_multiple_volumes(super_client, new_context):
         host1 = super_client.update(host1, info=diskInfo1)
 
         # schedule a container requiring 5 and 50 disk size volumes
-        label1 = 'io.rancher.scheduler.disksize.v1'
-        label2 = 'io.rancher.scheduler.disksize.v2'
+        label1 = 'io.rancher.resource.disksize.v1'
+        label2 = 'io.rancher.resource.disksize.v2'
         c1 = new_context.super_create_container_no_success(
             labels = {
                 label1 : '5',
@@ -761,7 +761,7 @@ def test_container_label_disksize_lifecycle(super_client, new_context):
     containers = []
 
     try:
-        label = 'io.rancher.scheduler.disksize.v1'
+        label = 'io.rancher.resource.disksize.v1'
 
         # set host with enough disk size
         total_size = 100.0 * 1024    # in MB for diskInfo, but we schedule in GB
