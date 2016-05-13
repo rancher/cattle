@@ -31,6 +31,8 @@
 <#list routes as route>
     <#if route.hostNatGatewayService?? && (route.subnet.gateway)?? && previous != route.subnet.networkAddress >
         <#assign previous = route.subnet.networkAddress >
+-A CATTLE_PREROUTING -d ${route.subnet.gateway} -s ${route.subnet.networkAddress}/${route.subnet.cidrSize} -p tcp --dport 53 -j DNAT --to 169.254.169.250
+-A CATTLE_PREROUTING -d ${route.subnet.gateway} -s ${route.subnet.networkAddress}/${route.subnet.cidrSize} -p udp --dport 53 -j DNAT --to 169.254.169.250
 -A CATTLE_POSTROUTING -s ${route.subnet.networkAddress}/${route.subnet.cidrSize} -d 169.254.169.250/32 -j ACCEPT
 -A CATTLE_POSTROUTING -p tcp -s ${route.subnet.networkAddress}/${route.subnet.cidrSize} ! -d ${route.subnet.networkAddress}/${route.subnet.cidrSize} -j MASQUERADE --to-ports 1024-65535
 -A CATTLE_POSTROUTING -p udp -s ${route.subnet.networkAddress}/${route.subnet.cidrSize} ! -d ${route.subnet.networkAddress}/${route.subnet.cidrSize} -j MASQUERADE --to-ports 1024-65535

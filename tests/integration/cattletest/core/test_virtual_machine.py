@@ -46,10 +46,11 @@ def test_virtual_machine_case_sensitivity(super_client, client, context):
     assert vm.state == 'running'
 
     c = super_client.reload(vm)
-    assert len(c.dataVolumes) == 2
+    assert len(c.dataVolumes) == 3
     n = '{}-{}-r{}:/volumes/disk00'.format(vm.name, vm.uuid[0:7], name)
     assert c.dataVolumes[0] == '/var/lib/rancher/vm:/vm'
-    assert c.dataVolumes[1] in {'R{}:/volumes/disk00'.format(name), n}
+    assert c.dataVolumes[1] == '/var/run/rancher:/var/run/rancher'
+    assert c.dataVolumes[2] in {'R{}:/volumes/disk00'.format(name), n}
 
 
 test_disks = [
@@ -111,6 +112,7 @@ def test_virtual_machine_root_disk(super_client, client, context):
     c = super_client.reload(vm)
     prefix = c.name + '-' + c.uuid[0:7]
     assert c.dataVolumes == ['/var/lib/rancher/vm:/vm',
+                             '/var/run/rancher:/var/run/rancher',
                              '{}-00:/volumes/disk00'.format(prefix),
                              '{}-foo:/image'.format(prefix),
                              '{}-01:/volumes/disk01'.format(prefix)]
@@ -148,6 +150,7 @@ def test_virtual_machine_default_fields(super_client, client, context):
     assert c.labels['io.rancher.vm.vcpu'] == '2'
     assert c.labels['io.rancher.vm.userdata'] == 'hi'
     assert c.dataVolumes == ['/var/lib/rancher/vm:/vm',
+                             '/var/run/rancher:/var/run/rancher',
                              '{}-00:/volumes/disk00'.format(c.uuid[0:7]),
                              '{}-{}:/volumes/disk01'.format(c.uuid[0:7],
                                                             disk_name)]

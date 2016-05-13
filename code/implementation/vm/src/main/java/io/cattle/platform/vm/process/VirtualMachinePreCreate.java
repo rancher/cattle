@@ -41,7 +41,7 @@ import org.apache.commons.lang3.StringUtils;
 public class VirtualMachinePreCreate extends AbstractObjectProcessLogic implements ProcessPreListener, Priority {
 
     private static final String[] CAPS = new String[] { "NET_ADMIN" };
-    private static final String[] VOLUMES = new String[] { "/var/lib/rancher/vm:/vm" };
+    private static final String[] VOLUMES = new String[] { "/var/lib/rancher/vm:/vm", "/var/run/rancher:/var/run/rancher" };
     private static final String[] DEVICES = new String[] { "/dev/kvm:/dev/kvm", "/dev/net/tun:/dev/net/tun" };
     private static final Pattern NAME_PATTERN = Pattern.compile("[a-zA-Z0-9][a-zA-Z0-9_.-]+");
 
