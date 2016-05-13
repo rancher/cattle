@@ -154,13 +154,7 @@
         "localAuthConfig.password" : "cro",
         "localAuthConfig.enabled" : "cr",
 
-        "machineDriver": "crd",
-        "machineDriver.resourceActions.retry": "c",
-        "machineDriver.resourceActions.remove": "c",
-
-
-        "machineDriverErrorInput": "cr",
-        "machineDriverErrorInput.errorMessage": "cr",
+        "machineDriver": "crud",
 
         "openldapconfig" : "cru",
         "openldapconfig.accessMode" : "cr",

@@ -79,9 +79,8 @@
                 <value>loadBalancerConfig</value>
                 <value>composeService,parent=service</value>
                 <value>composeProject,parent=environment</value>
-                <value>machineDriverUpdateInput</value>
-                <value>machineDriverErrorInput</value>
                 <value>haConfig</value>
+                <value>machine,parent=physicalHost</value>
             </set>
         </property>
     </bean>

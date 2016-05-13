@@ -1,0 +1,71 @@
+{
+  "resourceFields": {
+    "name": {
+      "type": "string",
+      "nullable": false,
+      "minLength": 1,
+      "required": true,
+      "create": true
+    },
+    "authCertificateAuthority": {
+      "type": "string",
+      "nullable": true,
+      "create": true
+    },
+    "authKey": {
+      "type": "string",
+      "nullable": true,
+      "create": true
+    },
+    "extractedConfig": {
+      "type": "string",
+      "nullable": true,
+      "update": true
+    },
+    "labels": {
+      "type": "map[string]",
+      "nullable": true,
+      "create": true
+    },
+    "engineInstallUrl": {
+      "type": "string",
+      "nullable": true,
+      "create": true
+    },
+    "dockerVersion": {
+      "type": "string",
+      "nullable": true,
+      "create": true
+    },
+    "engineOpt": {
+      "type": "map[string]",
+      "nullable": true,
+      "create": true
+    },
+    "engineInsecureRegistry": {
+      "type": "array[string]",
+      "nullable": true,
+      "create": true
+    },
+    "engineRegistryMirror": {
+      "type": "array[string]",
+      "nullable": true,
+      "create": true
+    },
+    "engineLabel": {
+      "type": "map[string]",
+      "nullable": true,
+      "create": true
+    },
+    "engineStorageDriver": {
+      "type": "string",
+      "nullable": true,
+      "create": true
+    },
+    "engineEnv": {
+      "type": "map[string]",
+      "nullable": true,
+      "create": true
+    }
+  }
+}

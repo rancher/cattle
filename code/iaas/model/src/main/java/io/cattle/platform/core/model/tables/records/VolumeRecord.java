@@ -13,7 +13,7 @@ package io.cattle.platform.core.model.tables.records;
 @javax.persistence.Table(name = "volume", schema = "cattle")
 public class VolumeRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.platform.core.model.tables.records.VolumeRecord> implements io.cattle.platform.db.jooq.utils.TableRecordJaxb, io.cattle.platform.core.model.Volume {
 
-	private static final long serialVersionUID = -1266632128;
+	private static final long serialVersionUID = 2122030402;
 
 	/**
 	 * Setter for <code>cattle.volume.id</code>.
@@ -408,28 +408,11 @@ public class VolumeRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.pl
 	}
 
 	/**
-	 * Setter for <code>cattle.volume.host_id</code>.
-	 */
-	@Override
-	public void setHostId(java.lang.Long value) {
-		setValue(23, value);
-	}
-
-	/**
-	 * Getter for <code>cattle.volume.host_id</code>.
-	 */
-	@javax.persistence.Column(name = "host_id", precision = 19)
-	@Override
-	public java.lang.Long getHostId() {
-		return (java.lang.Long) getValue(23);
-	}
-
-	/**
 	 * Setter for <code>cattle.volume.access_mode</code>.
 	 */
 	@Override
 	public void setAccessMode(java.lang.String value) {
-		setValue(24, value);
+		setValue(23, value);
 	}
 
 	/**
@@ -438,7 +421,24 @@ public class VolumeRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.pl
 	@javax.persistence.Column(name = "access_mode", length = 255)
 	@Override
 	public java.lang.String getAccessMode() {
-		return (java.lang.String) getValue(24);
+		return (java.lang.String) getValue(23);
+	}
+
+	/**
+	 * Setter for <code>cattle.volume.host_id</code>.
+	 */
+	@Override
+	public void setHostId(java.lang.Long value) {
+		setValue(24, value);
+	}
+
+	/**
+	 * Getter for <code>cattle.volume.host_id</code>.
+	 */
+	@javax.persistence.Column(name = "host_id", precision = 19)
+	@Override
+	public java.lang.Long getHostId() {
+		return (java.lang.Long) getValue(24);
 	}
 
 	// -------------------------------------------------------------------------
@@ -485,8 +485,8 @@ public class VolumeRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.pl
 		setZoneId(from.getZoneId());
 		setUri(from.getUri());
 		setExternalId(from.getExternalId());
-		setHostId(from.getHostId());
 		setAccessMode(from.getAccessMode());
+		setHostId(from.getHostId());
 	}
 
 	/**
@@ -512,7 +512,7 @@ public class VolumeRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.pl
 	/**
 	 * Create a detached, initialised VolumeRecord
 	 */
-	public VolumeRecord(java.lang.Long id, java.lang.String name, java.lang.Long accountId, java.lang.String kind, java.lang.String uuid, java.lang.String description, java.lang.String state, java.util.Date created, java.util.Date removed, java.util.Date removeTime, java.util.Map<String,Object> data, java.lang.Long physicalSizeMb, java.lang.Long virtualSizeMb, java.lang.Integer deviceNumber, java.lang.String format, java.lang.String allocationState, java.lang.String attachedState, java.lang.Long instanceId, java.lang.Long imageId, java.lang.Long offeringId, java.lang.Long zoneId, java.lang.String uri, java.lang.String externalId, java.lang.Long hostId, java.lang.String accessMode) {
+	public VolumeRecord(java.lang.Long id, java.lang.String name, java.lang.Long accountId, java.lang.String kind, java.lang.String uuid, java.lang.String description, java.lang.String state, java.util.Date created, java.util.Date removed, java.util.Date removeTime, java.util.Map<String,Object> data, java.lang.Long physicalSizeMb, java.lang.Long virtualSizeMb, java.lang.Integer deviceNumber, java.lang.String format, java.lang.String allocationState, java.lang.String attachedState, java.lang.Long instanceId, java.lang.Long imageId, java.lang.Long offeringId, java.lang.Long zoneId, java.lang.String uri, java.lang.String externalId, java.lang.String accessMode, java.lang.Long hostId) {
 		super(io.cattle.platform.core.model.tables.VolumeTable.VOLUME);
 
 		setValue(0, id);
@@ -538,7 +538,7 @@ public class VolumeRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.pl
 		setValue(20, zoneId);
 		setValue(21, uri);
 		setValue(22, externalId);
-		setValue(23, hostId);
-		setValue(24, accessMode);
+		setValue(23, accessMode);
+		setValue(24, hostId);
 	}
 }

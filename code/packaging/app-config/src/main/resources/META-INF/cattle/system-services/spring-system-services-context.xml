@@ -409,12 +409,12 @@
     <bean class="io.cattle.platform.resource.pool.port.EnvironmentPortGeneratorFactory" />
 
     <bean class="io.cattle.platform.sample.data.SampleDataStartupV3" />
-    <bean class="io.cattle.platform.sample.data.SampleDataStartupV4" />
     <bean class="io.cattle.platform.sample.data.SampleDataStartupV6" />
     <bean class="io.cattle.platform.sample.data.SampleDataStartupV5" />
     <bean class="io.cattle.platform.sample.data.SampleDataStartupV7" />
     <bean class="io.cattle.platform.sample.data.SampleDataStartupV8" />
     <bean class="io.cattle.platform.sample.data.SampleDataStartupV9" />
+    <bean class="io.cattle.platform.sample.data.SampleDataStartupV10" />
         
     <!-- We are not using this at the moment, we will just disable
     <bean class="io.cattle.platform.servicediscovery.process.ServiceAgentDelegateHandler" />

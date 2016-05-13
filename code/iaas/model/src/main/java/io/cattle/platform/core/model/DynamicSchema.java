@@ -146,6 +146,17 @@ public interface DynamicSchema extends java.io.Serializable {
 	@javax.persistence.Column(name = "service_id", precision = 19)
 	public java.lang.Long getServiceId();
 
+	/**
+	 * Setter for <code>cattle.dynamic_schema.removed</code>.
+	 */
+	public void setRemoved(java.util.Date value);
+
+	/**
+	 * Getter for <code>cattle.dynamic_schema.removed</code>.
+	 */
+	@javax.persistence.Column(name = "removed")
+	public java.util.Date getRemoved();
+
 	// -------------------------------------------------------------------------
 	// FROM and INTO
 	// -------------------------------------------------------------------------

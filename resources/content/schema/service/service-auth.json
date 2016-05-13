@@ -1,6 +1,5 @@
 {   
     "authorize" : {
-
         "certificate.accountId": "cr",
         "registrationToken.accountId" : "cr",
         "physicalHost": "r",
@@ -11,6 +10,10 @@
         "dynamicSchema.definition": "cr",
         "dynamicSchema.parent": "cr",
         "dynamicSchema.roles": "cr",
+        "machine": "crud",
+        "machine.labels": "cru",
+        "machine.extractedConfig": "ru",
+        "machineDriver.name": "ru",
         "machineDriver.resourceActions\\..*": "c",
         "machineDriver.resourceActions.create": "",
         "project": "cr",

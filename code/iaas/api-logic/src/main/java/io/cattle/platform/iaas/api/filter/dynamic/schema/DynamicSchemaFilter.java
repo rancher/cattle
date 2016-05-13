@@ -2,7 +2,6 @@ package io.cattle.platform.iaas.api.filter.dynamic.schema;
 
 import static io.cattle.platform.object.meta.ObjectMetaDataManager.*;
 
-import io.cattle.platform.core.dao.DynamicSchemaDao;
 import io.cattle.platform.core.model.DynamicSchema;
 import io.cattle.platform.lock.LockCallback;
 import io.cattle.platform.lock.LockManager;
@@ -21,9 +20,6 @@ import javax.inject.Inject;
 public class DynamicSchemaFilter extends AbstractResourceManagerFilter {
 
     private static final String DEFINITION_FIELD = "definition";
-
-    @Inject
-    DynamicSchemaDao dynamicSchemaDao;
 
     @Inject
     JsonMapper jsonMapper;
@@ -48,10 +44,6 @@ public class DynamicSchemaFilter extends AbstractResourceManagerFilter {
                 if ((roles == null || roles.isEmpty()) && accountId == null) {
                     throw new ValidationErrorException(ValidationErrorCodes.MISSING_REQUIRED, "MustSpecifyAccountIdOrRole");
                 }
-                if (!dynamicSchemaDao.isUnique(String.valueOf(requestObject.get("name")), roles, accountId)) {
-                    throw new ValidationErrorException(ValidationErrorCodes.NOT_UNIQUE, "SchemaExistsForGivenRoleAndOrId");
-                }
-
                 try {
                     jsonMapper.readValue(
                             String.valueOf(requestObject.get(DEFINITION_FIELD)).getBytes("UTF-8"), SchemaImpl.class);

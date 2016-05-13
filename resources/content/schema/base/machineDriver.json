@@ -1,32 +1,39 @@
 {
     "resourceFields": {
-        "uri": {
+        "url": {
+            "type": "string",
             "required": true,
+            "nullable": false,
+            "attributes" : {
+                "scheduleUpdate" : true
+            }
+        },
+        "builtin": {
+            "type": "boolean",
             "nullable": false
+        },
+        "defaultActive": {
+            "type": "boolean"
+        },
+        "checksum": {
+            "type": "string",
+            "required": false,
+            "nullable": true,
+            "attributes" : {
+                "scheduleUpdate" : true
+            }
         },
         "uiUrl": {
             "type": "string",
             "required": false,
-            "nullable": true
-        },
-        "errorMessage": {
-            "type": "string"
+            "nullable": true,
+            "attributes" : {
+                "scheduleUpdate" : true
+            }
         },
         "name": {
-            "validChars": "a-zA-Z0-9-",
-            "unique": true
-        }
-    },
-    "resourceActions" : {
-        "update" : {
-            "input" : "machineDriverUpdateInput",
-            "output" : "machineDriver"
-
-        },
-        "error" : {
-            "input" : "machineDriverErrorInput",
-            "output" : "machineDriver"
-
+            "type": "string",
+            "nullable": true
         }
     }
 }

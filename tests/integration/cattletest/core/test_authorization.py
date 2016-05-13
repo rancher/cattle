@@ -323,7 +323,6 @@ def test_admin_types(admin_user_client, adds=set(), removes=set()):
         'logConfig',
         'machine',
         'machineDriver',
-        'machineDriverErrorInput',
         'mount',
         'network',
         'openldapconfig',
@@ -2498,33 +2497,48 @@ def test_compose_service(admin_user_client, user_client, project_client):
     })
 
 
-def test_machine_driver(admin_user_client, user_client, project_client):
-    auth_check(admin_user_client.schema, 'machineDriver', 'crd', {
-        'name': 'cr',
-        'md5checksum': 'cr',
-        'errorMessage': 'r',
-        'uiUrl': 'cr',
+def test_machine_driver(admin_user_client, user_client, project_client,
+                        service_client):
+    auth_check(admin_user_client.schema, 'machineDriver', 'crud', {
+        'name': 'r',
+        'checksum': 'cru',
+        'uiUrl': 'cru',
         'data': 'r',
         'accountId': 'r',
-        'uri': 'cr',
+        'url': 'cru',
+        'defaultActive': 'r',
+        'builtin': 'cr',
+    })
+
+    auth_check(service_client.schema, 'machineDriver', 'crud', {
+        'name': 'ru',
+        'checksum': 'cru',
+        'uiUrl': 'cru',
+        'data': 'r',
+        'accountId': 'r',
+        'url': 'cru',
+        'defaultActive': 'r',
+        'builtin': 'cr',
     })
 
     auth_check(user_client.schema, 'machineDriver', 'r', {
         'name': 'r',
-        'md5checksum': 'r',
-        'errorMessage': 'r',
+        'checksum': 'r',
         'uiUrl': 'r',
         'accountId': 'r',
-        'uri': 'r',
+        'url': 'r',
+        'defaultActive': 'r',
+        'builtin': 'r',
     })
 
     auth_check(project_client.schema, 'machineDriver', 'r', {
         'name': 'r',
-        'md5checksum': 'r',
-        'errorMessage': 'r',
+        'checksum': 'r',
         'uiUrl': 'r',
         'accountId': 'r',
-        'uri': 'r',
+        'url': 'r',
+        'defaultActive': 'r',
+        'builtin': 'r',
     })
 
 
@@ -2561,4 +2575,82 @@ def test_kubernetes_service(admin_user_client, user_client, project_client):
         'selectorContainer': 'r',
         'template': 'r',
         'healthState': 'r',
+    })
+
+
+def test_machine(admin_user_client, user_client, project_client,
+                 service_client):
+    auth_check(project_client.schema, 'machine', 'crd', {
+        'accountId': 'r',
+        'name': 'cr',
+        'driver': 'r',
+        'externalId': 'r',
+        'engineRegistryMirror': 'cr',
+        'authCertificateAuthority': 'cr',
+        'authKey': 'cr',
+        'labels': 'cr',
+        'engineInstallUrl': 'cr',
+        'dockerVersion': 'cr',
+        'engineOpt': 'cr',
+        'engineInsecureRegistry': 'cr',
+        'engineLabel': 'cr',
+        'engineStorageDriver': 'cr',
+        'engineEnv': 'cr',
+    })
+
+    auth_check(service_client.schema, 'machine', 'crud', {
+        'accountId': 'r',
+        'name': 'cr',
+        'driver': 'r',
+        'data': 'r',
+        'extractedConfig': 'ru',
+        'externalId': 'r',
+        'engineRegistryMirror': 'cr',
+        'authCertificateAuthority': 'cr',
+        'authKey': 'cr',
+        'labels': 'cru',
+        'engineInstallUrl': 'cr',
+        'dockerVersion': 'cr',
+        'engineOpt': 'cr',
+        'engineInsecureRegistry': 'cr',
+        'engineLabel': 'cr',
+        'engineStorageDriver': 'cr',
+        'engineEnv': 'cr',
+    })
+
+    auth_check(admin_user_client.schema, 'machine', 'r', {
+        'accountId': 'r',
+        'name': 'r',
+        'data': 'r',
+        'driver': 'r',
+        'externalId': 'r',
+        'engineRegistryMirror': 'r',
+        'authCertificateAuthority': 'r',
+        'authKey': 'r',
+        'labels': 'r',
+        'engineInstallUrl': 'r',
+        'dockerVersion': 'r',
+        'engineOpt': 'r',
+        'engineInsecureRegistry': 'r',
+        'engineLabel': 'r',
+        'engineStorageDriver': 'r',
+        'engineEnv': 'r',
+    })
+
+    auth_check(user_client.schema, 'machine', 'r', {
+        'accountId': 'r',
+        'name': 'r',
+        'driver': 'r',
+        'externalId': 'r',
+        'engineRegistryMirror': 'r',
+        'authCertificateAuthority': 'r',
+        'authKey': 'r',
+        'labels': 'r',
+        'engineInstallUrl': 'r',
+        'dockerVersion': 'r',
+        'engineOpt': 'r',
+        'engineInsecureRegistry': 'r',
+        'engineLabel': 'r',
+        'engineStorageDriver': 'r',
+        'engineEnv': 'r',
     })

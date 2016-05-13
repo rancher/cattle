@@ -11,9 +11,9 @@ package io.cattle.platform.core.model.tables.records;
 @java.lang.SuppressWarnings({ "all", "unchecked", "rawtypes" })
 @javax.persistence.Entity
 @javax.persistence.Table(name = "dynamic_schema", schema = "cattle")
-public class DynamicSchemaRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.platform.core.model.tables.records.DynamicSchemaRecord> implements io.cattle.platform.db.jooq.utils.TableRecordJaxb, org.jooq.Record12<java.lang.Long, java.lang.String, java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.util.Date, java.util.Map<String,Object>, java.lang.String, java.lang.String, java.lang.Long>, io.cattle.platform.core.model.DynamicSchema {
+public class DynamicSchemaRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.platform.core.model.tables.records.DynamicSchemaRecord> implements io.cattle.platform.db.jooq.utils.TableRecordJaxb, org.jooq.Record13<java.lang.Long, java.lang.String, java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.util.Date, java.util.Map<String,Object>, java.lang.String, java.lang.String, java.lang.Long, java.util.Date>, io.cattle.platform.core.model.DynamicSchema {
 
-	private static final long serialVersionUID = -1135607951;
+	private static final long serialVersionUID = 693049348;
 
 	/**
 	 * Setter for <code>cattle.dynamic_schema.id</code>.
@@ -220,6 +220,23 @@ public class DynamicSchemaRecord extends org.jooq.impl.UpdatableRecordImpl<io.ca
 		return (java.lang.Long) getValue(11);
 	}
 
+	/**
+	 * Setter for <code>cattle.dynamic_schema.removed</code>.
+	 */
+	@Override
+	public void setRemoved(java.util.Date value) {
+		setValue(12, value);
+	}
+
+	/**
+	 * Getter for <code>cattle.dynamic_schema.removed</code>.
+	 */
+	@javax.persistence.Column(name = "removed")
+	@Override
+	public java.util.Date getRemoved() {
+		return (java.util.Date) getValue(12);
+	}
+
 	// -------------------------------------------------------------------------
 	// Primary key information
 	// -------------------------------------------------------------------------
@@ -233,23 +250,23 @@ public class DynamicSchemaRecord extends org.jooq.impl.UpdatableRecordImpl<io.ca
 	}
 
 	// -------------------------------------------------------------------------
-	// Record12 type implementation
+	// Record13 type implementation
 	// -------------------------------------------------------------------------
 
 	/**
 	 * {@inheritDoc}
 	 */
 	@Override
-	public org.jooq.Row12<java.lang.Long, java.lang.String, java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.util.Date, java.util.Map<String,Object>, java.lang.String, java.lang.String, java.lang.Long> fieldsRow() {
-		return (org.jooq.Row12) super.fieldsRow();
+	public org.jooq.Row13<java.lang.Long, java.lang.String, java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.util.Date, java.util.Map<String,Object>, java.lang.String, java.lang.String, java.lang.Long, java.util.Date> fieldsRow() {
+		return (org.jooq.Row13) super.fieldsRow();
 	}
 
 	/**
 	 * {@inheritDoc}
 	 */
 	@Override
-	public org.jooq.Row12<java.lang.Long, java.lang.String, java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.util.Date, java.util.Map<String,Object>, java.lang.String, java.lang.String, java.lang.Long> valuesRow() {
-		return (org.jooq.Row12) super.valuesRow();
+	public org.jooq.Row13<java.lang.Long, java.lang.String, java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.util.Date, java.util.Map<String,Object>, java.lang.String, java.lang.String, java.lang.Long, java.util.Date> valuesRow() {
+		return (org.jooq.Row13) super.valuesRow();
 	}
 
 	/**
@@ -352,6 +369,14 @@ public class DynamicSchemaRecord extends org.jooq.impl.UpdatableRecordImpl<io.ca
 	 * {@inheritDoc}
 	 */
 	@Override
+	public org.jooq.Field<java.util.Date> field13() {
+		return io.cattle.platform.core.model.tables.DynamicSchemaTable.DYNAMIC_SCHEMA.REMOVED;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
 	public java.lang.Long value1() {
 		return getId();
 	}
@@ -442,6 +467,14 @@ public class DynamicSchemaRecord extends org.jooq.impl.UpdatableRecordImpl<io.ca
 	@Override
 	public java.lang.Long value12() {
 		return getServiceId();
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public java.util.Date value13() {
+		return getRemoved();
 	}
 
 	/**
@@ -556,7 +589,16 @@ public class DynamicSchemaRecord extends org.jooq.impl.UpdatableRecordImpl<io.ca
 	 * {@inheritDoc}
 	 */
 	@Override
-	public DynamicSchemaRecord values(java.lang.Long value1, java.lang.String value2, java.lang.Long value3, java.lang.String value4, java.lang.String value5, java.lang.String value6, java.lang.String value7, java.util.Date value8, java.util.Map<String,Object> value9, java.lang.String value10, java.lang.String value11, java.lang.Long value12) {
+	public DynamicSchemaRecord value13(java.util.Date value) {
+		setRemoved(value);
+		return this;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public DynamicSchemaRecord values(java.lang.Long value1, java.lang.String value2, java.lang.Long value3, java.lang.String value4, java.lang.String value5, java.lang.String value6, java.lang.String value7, java.util.Date value8, java.util.Map<String,Object> value9, java.lang.String value10, java.lang.String value11, java.lang.Long value12, java.util.Date value13) {
 		return this;
 	}
 
@@ -581,6 +623,7 @@ public class DynamicSchemaRecord extends org.jooq.impl.UpdatableRecordImpl<io.ca
 		setParent(from.getParent());
 		setDefinition(from.getDefinition());
 		setServiceId(from.getServiceId());
+		setRemoved(from.getRemoved());
 	}
 
 	/**
@@ -606,7 +649,7 @@ public class DynamicSchemaRecord extends org.jooq.impl.UpdatableRecordImpl<io.ca
 	/**
 	 * Create a detached, initialised DynamicSchemaRecord
 	 */
-	public DynamicSchemaRecord(java.lang.Long id, java.lang.String name, java.lang.Long accountId, java.lang.String kind, java.lang.String uuid, java.lang.String description, java.lang.String state, java.util.Date created, java.util.Map<String,Object> data, java.lang.String parent, java.lang.String definition, java.lang.Long serviceId) {
+	public DynamicSchemaRecord(java.lang.Long id, java.lang.String name, java.lang.Long accountId, java.lang.String kind, java.lang.String uuid, java.lang.String description, java.lang.String state, java.util.Date created, java.util.Map<String,Object> data, java.lang.String parent, java.lang.String definition, java.lang.Long serviceId, java.util.Date removed) {
 		super(io.cattle.platform.core.model.tables.DynamicSchemaTable.DYNAMIC_SCHEMA);
 
 		setValue(0, id);
@@ -621,5 +664,6 @@ public class DynamicSchemaRecord extends org.jooq.impl.UpdatableRecordImpl<io.ca
 		setValue(9, parent);
 		setValue(10, definition);
 		setValue(11, serviceId);
+		setValue(12, removed);
 	}
 }

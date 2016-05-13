@@ -246,8 +246,6 @@
     <bean class="io.cattle.platform.docker.machine.api.MachineConfigLinkHandler" />
 
        <bean class="io.cattle.platform.iaas.api.auth.integration.local.ChangeSecretActionHandler" />
-       <bean class="io.cattle.platform.iaas.api.machine.driver.MachineDriverErrorActionHandler" />
-       <bean class="io.cattle.platform.iaas.api.machine.driver.MachineDriverRemoveActionHandler" />
        <bean class="io.cattle.platform.iaas.api.auth.dao.impl.PasswordDaoImpl" />
        <bean class="io.cattle.platform.iaas.api.auth.dao.impl.CredentialUniqueFilter" >
               <property name="schemaFactory" ref="CoreSchemaFactory" />

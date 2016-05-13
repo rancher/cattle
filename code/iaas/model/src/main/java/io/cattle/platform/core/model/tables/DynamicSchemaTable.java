@@ -11,7 +11,7 @@ package io.cattle.platform.core.model.tables;
 @java.lang.SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class DynamicSchemaTable extends org.jooq.impl.TableImpl<io.cattle.platform.core.model.tables.records.DynamicSchemaRecord> {
 
-	private static final long serialVersionUID = 433201263;
+	private static final long serialVersionUID = -1110883884;
 
 	/**
 	 * The singleton instance of <code>cattle.dynamic_schema</code>
@@ -85,6 +85,11 @@ public class DynamicSchemaTable extends org.jooq.impl.TableImpl<io.cattle.platfo
 	 * The column <code>cattle.dynamic_schema.service_id</code>.
 	 */
 	public final org.jooq.TableField<io.cattle.platform.core.model.tables.records.DynamicSchemaRecord, java.lang.Long> SERVICE_ID = createField("service_id", org.jooq.impl.SQLDataType.BIGINT, this, "");
+
+	/**
+	 * The column <code>cattle.dynamic_schema.removed</code>.
+	 */
+	public final org.jooq.TableField<io.cattle.platform.core.model.tables.records.DynamicSchemaRecord, java.util.Date> REMOVED = createField("removed", org.jooq.impl.SQLDataType.TIMESTAMP.asConvertedDataType(new io.cattle.platform.db.jooq.converter.DateConverter()), this, "");
 
 	/**
 	 * Create a <code>cattle.dynamic_schema</code> table reference
