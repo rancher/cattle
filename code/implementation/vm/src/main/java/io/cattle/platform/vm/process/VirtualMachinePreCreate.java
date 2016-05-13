@@ -177,6 +177,7 @@ public class VirtualMachinePreCreate extends AbstractObjectProcessLogic implemen
                             if (StringUtils.isNotBlank(image)) {
                                 opts.put("base-image", image);
                             }
+                            opts.remove("size");
                         }
                     }
 
