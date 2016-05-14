@@ -1,7 +1,7 @@
 dhcp:
   labels:
     io.rancher.scheduler.global: 'true'
-  image: rancher/vm-net:v0.1.0
+  image: rancher/vm-net:v0.2.0
   cap_add:
   - NET_ADMIN
   command: dhcp
@@ -9,7 +9,7 @@ dhcp:
 tapd:
   labels:
     io.rancher.scheduler.global: 'true'
-  image: rancher/vm-net:v0.1.0
+  image: rancher/vm-net:v0.2.0
   net: host
   cap_add:
   - NET_ADMIN
