@@ -7,7 +7,6 @@ import io.cattle.platform.core.addon.InstanceHealthCheck;
 import io.cattle.platform.core.constants.HealthcheckConstants;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.model.Instance;
-import io.cattle.platform.core.model.Nic;
 import io.cattle.platform.engine.handler.HandlerResult;
 import io.cattle.platform.engine.handler.ProcessPostListener;
 import io.cattle.platform.engine.process.ProcessInstance;
@@ -36,12 +35,7 @@ public class InstanceHealthcheckRegister extends AbstractObjectProcessLogic impl
 
     @Override
     public HandlerResult handle(ProcessState state, ProcessInstance process) {
-        Nic nic = (Nic) state.getResource();
-        Instance instance = objectManager.loadResource(Instance.class, nic.getInstanceId());
-
-        if (instance == null) {
-            return null;
-        }
+        Instance instance = (Instance) state.getResource();
 
         InstanceHealthCheck healthCheck = DataAccessor.field(instance,
                 InstanceConstants.FIELD_HEALTH_CHECK, jsonMapper, InstanceHealthCheck.class);
@@ -63,7 +57,7 @@ public class InstanceHealthcheckRegister extends AbstractObjectProcessLogic impl
 
     @Override
     public String[] getProcessNames() {
-        return new String[] { "nic.activate" };
+        return new String[] { "instance.start" };
     }
 
     @Override
