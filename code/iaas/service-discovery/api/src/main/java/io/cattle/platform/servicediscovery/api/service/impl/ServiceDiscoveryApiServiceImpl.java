@@ -195,9 +195,10 @@ public class ServiceDiscoveryApiServiceImpl implements ServiceDiscoveryApiServic
                 Iterator<String> it = map.keySet().iterator();
                 while (it.hasNext()) {
                     String key = it.next();
-                    if (key.equalsIgnoreCase("config")) {
-                        composeServiceData.put("log_opt", map.get(key));
-                    } else if (key.equalsIgnoreCase("driver")) {
+                    if (key.equalsIgnoreCase("config") && map.get(key) != null) {
+                        if (map.get(key) instanceof java.util.Map && !((Map<?, ?>)map.get(key)).isEmpty())
+                            composeServiceData.put("log_opt", map.get(key));
+                    } else if (key.equalsIgnoreCase("driver") && map.get(key) != null && map.get(key) != "") {
                         composeServiceData.put("log_driver", map.get(key));
                     }
                 }
