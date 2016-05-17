@@ -2511,7 +2511,7 @@ def test_machine_driver(admin_user_client, user_client, project_client,
     })
 
     auth_check(service_client.schema, 'machineDriver', 'crud', {
-        'name': 'ru',
+        'name': 'cru',
         'checksum': 'cru',
         'uiUrl': 'cru',
         'data': 'r',
