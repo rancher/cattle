@@ -19,7 +19,7 @@ disable_proxyarp()
 
 route_tables()
 {
-    if ! ip rule list | cut -f1 -d: | grep -q 200; then
+    if ip rule list | cut -f1 -d: | grep -q 200; then
         ip rule del iif $NETDEV table $TABLE pref 200 || true
     fi
 }
