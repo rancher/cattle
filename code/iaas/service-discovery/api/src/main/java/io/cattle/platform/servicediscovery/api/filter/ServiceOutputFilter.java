@@ -98,7 +98,7 @@ public class ServiceOutputFilter implements ResourceOutputFilter {
 
     @Override
     public String[] getTypes() {
-        return new String[]{ServiceDiscoveryConstants.KIND.SERVICE.toString().toLowerCase()};
+        return new String[]{ServiceDiscoveryConstants.KIND_SERVICE};
     }
 
     @Override

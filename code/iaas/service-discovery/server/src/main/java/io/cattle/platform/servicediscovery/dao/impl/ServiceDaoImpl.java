@@ -18,7 +18,7 @@ import io.cattle.platform.db.jooq.dao.impl.AbstractJooqDao;
 import io.cattle.platform.json.JsonMapper;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.util.DataAccessor;
-import io.cattle.platform.servicediscovery.api.constants.ServiceDiscoveryConstants.KIND;
+import io.cattle.platform.servicediscovery.api.constants.ServiceDiscoveryConstants;
 import io.cattle.platform.servicediscovery.api.dao.ServiceConsumeMapDao;
 import io.cattle.platform.servicediscovery.api.dao.ServiceDao;
 import io.cattle.platform.servicediscovery.service.ServiceDiscoveryService;
@@ -111,9 +111,9 @@ public class ServiceDaoImpl extends AbstractJooqDao implements ServiceDao {
                 .findConsumingServices(serviceId);
         for (ServiceConsumeMap consumingServiceMap : consumingServicesMaps) {
             Service consumingService = objectManager.loadResource(Service.class, consumingServiceMap.getServiceId());
-            if (consumingService.getKind().equalsIgnoreCase(KIND.LOADBALANCERSERVICE.name())) {
+            if (consumingService.getKind().equalsIgnoreCase(ServiceDiscoveryConstants.KIND_LOAD_BALANCER_SERVICE)) {
                 lbServices.add(consumingService);
-            } else if (consumingService.getKind().equalsIgnoreCase(KIND.DNSSERVICE.name())) {
+            } else if (consumingService.getKind().equalsIgnoreCase(ServiceDiscoveryConstants.KIND_DNS_SERVICE)) {
                 if (consumingService.getId().equals(serviceId)) {
                     continue;
                 }

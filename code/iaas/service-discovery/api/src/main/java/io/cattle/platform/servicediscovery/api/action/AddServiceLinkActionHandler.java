@@ -34,7 +34,7 @@ public class AddServiceLinkActionHandler implements ActionHandler {
             return null;
         }
         Service service = (Service) obj;
-        if (service.getKind().equalsIgnoreCase(ServiceDiscoveryConstants.KIND.LOADBALANCERSERVICE.name())) {
+        if (service.getKind().equalsIgnoreCase(ServiceDiscoveryConstants.KIND_LOAD_BALANCER_SERVICE)) {
             LoadBalancerServiceLink serviceLink = DataAccessor.fromMap(request.getRequestObject()).withKey(
                     ServiceDiscoveryConstants.FIELD_SERVICE_LINK).as(jsonMapper, LoadBalancerServiceLink.class);
 

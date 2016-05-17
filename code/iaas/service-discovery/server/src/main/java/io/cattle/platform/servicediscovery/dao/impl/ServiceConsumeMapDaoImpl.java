@@ -210,7 +210,7 @@ public class ServiceConsumeMapDaoImpl extends AbstractJooqDao implements Service
                     properties));
         } else {
             if (service.getKind()
-                    .equalsIgnoreCase(ServiceDiscoveryConstants.KIND.LOADBALANCERSERVICE.name())) {
+                    .equalsIgnoreCase(ServiceDiscoveryConstants.KIND_LOAD_BALANCER_SERVICE)) {
                 LoadBalancerServiceLink newLbServiceLink = (LoadBalancerServiceLink) serviceLink;
                 List<? extends String> newPorts = newLbServiceLink.getPorts() != null ? newLbServiceLink.getPorts()
                         : new ArrayList<String>();

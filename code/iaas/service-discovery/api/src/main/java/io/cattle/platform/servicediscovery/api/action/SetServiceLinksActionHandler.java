@@ -61,7 +61,7 @@ public class SetServiceLinksActionHandler implements ActionHandler {
         final Service service = (Service) obj;
 
         final boolean forLb = service.getKind()
-                .equalsIgnoreCase(ServiceDiscoveryConstants.KIND.LOADBALANCERSERVICE.name());
+                .equalsIgnoreCase(ServiceDiscoveryConstants.KIND_LOAD_BALANCER_SERVICE);
         final Map<String, ServiceLink> newServiceLinks = populateNewServiceLinks(request, forLb);
 
         validateLinks(newServiceLinks);

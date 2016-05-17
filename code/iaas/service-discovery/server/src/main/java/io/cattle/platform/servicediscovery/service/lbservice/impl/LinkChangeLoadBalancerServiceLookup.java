@@ -33,7 +33,7 @@ public class LinkChangeLoadBalancerServiceLookup implements LoadBalancerServiceL
         ServiceConsumeMap map = (ServiceConsumeMap) obj;
         List<Service> lbServices = new ArrayList<>();
         Service service = objMgr.loadResource(Service.class, map.getServiceId());
-        if (service.getKind().equalsIgnoreCase(ServiceDiscoveryConstants.KIND.LOADBALANCERSERVICE.name())) {
+        if (service.getKind().equalsIgnoreCase(ServiceDiscoveryConstants.KIND_LOAD_BALANCER_SERVICE)) {
             lbServices.add(service);
         } else {
             lbServices.addAll(serviceDao.getConsumingLbServices(service.getId()));

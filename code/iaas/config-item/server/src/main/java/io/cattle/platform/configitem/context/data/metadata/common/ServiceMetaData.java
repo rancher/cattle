@@ -108,7 +108,7 @@ public class ServiceMetaData {
 
     @SuppressWarnings("unchecked")
     protected void populateExternalServiceInfo(Service service) {
-        if (kind.equalsIgnoreCase(ServiceDiscoveryConstants.KIND.EXTERNALSERVICE.name())) {
+        if (kind.equalsIgnoreCase(ServiceDiscoveryConstants.KIND_EXTERNAL_SERVICE)) {
             this.hostname = DataAccessor.fields(service)
                     .withKey(ServiceDiscoveryConstants.FIELD_HOSTNAME).as(String.class);
             external_ips.addAll(DataAccessor.fields(service)

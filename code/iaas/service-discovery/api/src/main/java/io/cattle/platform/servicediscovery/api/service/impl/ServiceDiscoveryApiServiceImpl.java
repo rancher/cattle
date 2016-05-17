@@ -75,7 +75,7 @@ public class ServiceDiscoveryApiServiceImpl implements ServiceDiscoveryApiServic
 
     @Override
     public void addLoadBalancerServiceLink(Service service, LoadBalancerServiceLink serviceLink) {
-        if (!service.getKind().equalsIgnoreCase(ServiceDiscoveryConstants.KIND.LOADBALANCERSERVICE.name())) {
+        if (!service.getKind().equalsIgnoreCase(ServiceDiscoveryConstants.KIND_LOAD_BALANCER_SERVICE)) {
             return;
         }
 
@@ -209,7 +209,7 @@ public class ServiceDiscoveryApiServiceImpl implements ServiceDiscoveryApiServic
     @SuppressWarnings("unchecked")
     protected void populateLoadBalancerServiceLabels(Service service,
             String launchConfigName, Map<String, Object> composeServiceData) {
-        if (!service.getKind().equalsIgnoreCase(ServiceDiscoveryConstants.KIND.LOADBALANCERSERVICE.name())) {
+        if (!service.getKind().equalsIgnoreCase(ServiceDiscoveryConstants.KIND_LOAD_BALANCER_SERVICE)) {
             return;
         }
 
@@ -325,11 +325,11 @@ public class ServiceDiscoveryApiServiceImpl implements ServiceDiscoveryApiServic
 
     private void addExtraComposeParameters(Service service,
             String launchConfigName, Map<String, Object> composeServiceData) {
-        if (service.getKind().equalsIgnoreCase(ServiceDiscoveryConstants.KIND.DNSSERVICE.name())) {
+        if (service.getKind().equalsIgnoreCase(ServiceDiscoveryConstants.KIND_DNS_SERVICE)) {
             composeServiceData.put(ServiceDiscoveryConfigItem.IMAGE.getDockerName(), "rancher/dns-service");
-        } else if (service.getKind().equalsIgnoreCase(ServiceDiscoveryConstants.KIND.LOADBALANCERSERVICE.name())) {
+        } else if (service.getKind().equalsIgnoreCase(ServiceDiscoveryConstants.KIND_LOAD_BALANCER_SERVICE)) {
             composeServiceData.put(ServiceDiscoveryConfigItem.IMAGE.getDockerName(), "rancher/load-balancer-service");
-        } else if (service.getKind().equalsIgnoreCase(ServiceDiscoveryConstants.KIND.EXTERNALSERVICE.name())) {
+        } else if (service.getKind().equalsIgnoreCase(ServiceDiscoveryConstants.KIND_EXTERNAL_SERVICE)) {
             composeServiceData.put(ServiceDiscoveryConfigItem.IMAGE.getDockerName(), "rancher/external-service");
         }
     }

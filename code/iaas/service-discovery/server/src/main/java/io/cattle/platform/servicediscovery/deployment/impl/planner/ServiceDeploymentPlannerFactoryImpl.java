@@ -11,7 +11,6 @@ import io.cattle.platform.servicediscovery.deployment.impl.unit.DeploymentUnit;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.lang3.StringUtils;
 
 public class ServiceDeploymentPlannerFactoryImpl implements ServiceDeploymentPlannerFactory {
 
@@ -27,8 +26,8 @@ public class ServiceDeploymentPlannerFactoryImpl implements ServiceDeploymentPla
         boolean isGlobalDeploymentStrategy = isGlobalDeploymentStrategy(context, service);
         boolean isSelectorOnlyStrategy = isNoopStrategy(context, service);
         if (isSelectorOnlyStrategy
-                || service.getKind().equalsIgnoreCase(ServiceDiscoveryConstants.KIND.EXTERNALSERVICE.name())
-                || service.getKind().equalsIgnoreCase(ServiceDiscoveryConstants.KIND.DNSSERVICE.name())) {
+                || service.getKind().equalsIgnoreCase(ServiceDiscoveryConstants.KIND_EXTERNAL_SERVICE)
+                || service.getKind().equalsIgnoreCase(ServiceDiscoveryConstants.KIND_DNS_SERVICE)) {
             return new NoOpServiceDeploymentPlanner(services, units, context);
         } else if (isGlobalDeploymentStrategy) {
             return new GlobalServiceDeploymentPlanner(services, units, context);
@@ -51,11 +50,12 @@ public class ServiceDeploymentPlannerFactoryImpl implements ServiceDeploymentPla
     }
 
     protected boolean isExternallyProvidedService(Service service) {
-        try {
-            ServiceDiscoveryConstants.KIND.valueOf(StringUtils.upperCase(service.getKind()));
-        } catch (IllegalArgumentException e) {
-            return true;
+        if (service.getKind().equalsIgnoreCase(ServiceDiscoveryConstants.KIND_DNS_SERVICE)
+                || service.getKind().equalsIgnoreCase(ServiceDiscoveryConstants.KIND_EXTERNAL_SERVICE)
+                || service.getKind().equalsIgnoreCase(ServiceDiscoveryConstants.KIND_LOAD_BALANCER_SERVICE)
+                || service.getKind().equalsIgnoreCase(ServiceDiscoveryConstants.KIND_SERVICE)) {
+            return false;
         }
-        return false;
+        return true;
     }
 }

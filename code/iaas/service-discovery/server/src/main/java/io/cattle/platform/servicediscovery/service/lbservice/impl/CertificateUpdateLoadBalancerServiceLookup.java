@@ -29,7 +29,7 @@ public class CertificateUpdateLoadBalancerServiceLookup implements LoadBalancerS
         }
         Certificate cert = (Certificate) obj;
         List<Service> lbServices = objMgr.find(Service.class, SERVICE.ACCOUNT_ID, cert.getAccountId(), SERVICE.KIND,
-                ServiceDiscoveryConstants.KIND.LOADBALANCERSERVICE.name(), SERVICE.REMOVED, null);
+                ServiceDiscoveryConstants.KIND_LOAD_BALANCER_SERVICE, SERVICE.REMOVED, null);
         Iterator<Service> it = lbServices.iterator();
         while (it.hasNext()) {
             Service lbSvc = it.next();

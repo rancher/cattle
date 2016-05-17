@@ -164,10 +164,10 @@ public class DnsInfoDaoImpl extends AbstractJooqDao implements DnsInfoDao {
         Condition condition = null;
         if (forDefault) {
             // all services records
-            condition = (clientService.KIND.ne(ServiceDiscoveryConstants.KIND.DNSSERVICE.name())
+            condition = (clientService.KIND.ne(ServiceDiscoveryConstants.KIND_DNS_SERVICE)
                     .and(targetService.ID.eq(clientService.ID))
                     .and(serviceConsumeMap.ID.isNull()))
-                    .or((clientService.KIND.eq(ServiceDiscoveryConstants.KIND.DNSSERVICE.name())
+                    .or((clientService.KIND.eq(ServiceDiscoveryConstants.KIND_DNS_SERVICE)
                             .and(serviceConsumeMap.ID.isNotNull()
                     .and(serviceConsumeMap.REMOVED.isNull())
                     .and(serviceConsumeMap.STATE.in(CommonStatesConstants.ACTIVATING,
@@ -231,7 +231,7 @@ public class DnsInfoDaoImpl extends AbstractJooqDao implements DnsInfoDao {
             String aliasName = null;
             boolean isAliasService = false;
             if (serviceData.getConsumeMap() != null) {
-                if (clientService.getKind().equalsIgnoreCase(ServiceDiscoveryConstants.KIND.DNSSERVICE.name())) {
+                if (clientService.getKind().equalsIgnoreCase(ServiceDiscoveryConstants.KIND_DNS_SERVICE)) {
                     aliasName = ServiceDiscoveryDnsUtil.getFqdn(serviceData.getClientStack(),
                             serviceData.getClientService(), serviceData.getClientService().getName());
                     isAliasService = true;
@@ -300,7 +300,7 @@ public class DnsInfoDaoImpl extends AbstractJooqDao implements DnsInfoDao {
             Map<Long, List<ServiceInstanceData>> servicesTargetInstances,
             Map<Long, List<ServiceDnsEntryData>> clientServiceIdToServiceData, Service targetService) {
         List<ServiceInstanceData> targetInstancesData = new ArrayList<>();
-        if (targetService.getKind().equalsIgnoreCase(ServiceDiscoveryConstants.KIND.DNSSERVICE.name())) {
+        if (targetService.getKind().equalsIgnoreCase(ServiceDiscoveryConstants.KIND_DNS_SERVICE)) {
             List<ServiceDnsEntryData> behindAlias = clientServiceIdToServiceData.get(targetService.getId());
             if (behindAlias != null) {
                 for (ServiceDnsEntryData behindAliasEntry : behindAlias) {
@@ -403,7 +403,7 @@ public class DnsInfoDaoImpl extends AbstractJooqDao implements DnsInfoDao {
 
         if (isSource
                 && serviceInstanceData.getService().getKind()
-                        .equalsIgnoreCase(ServiceDiscoveryConstants.KIND.SERVICE.name())) {
+                        .equalsIgnoreCase(ServiceDiscoveryConstants.KIND_SERVICE)) {
             if (ipAddr != null) {
                 ip = ipAddr.getAddress();
             }

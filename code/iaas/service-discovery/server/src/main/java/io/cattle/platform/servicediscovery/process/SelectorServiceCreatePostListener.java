@@ -113,7 +113,7 @@ public class SelectorServiceCreatePostListener extends AbstractObjectProcessLogi
 
     protected void removeServiceLink(Service service, Service targetService) {
         ServiceLink link = null;
-        if (service.getKind().equalsIgnoreCase(ServiceDiscoveryConstants.KIND.LOADBALANCERSERVICE.name())) {
+        if (service.getKind().equalsIgnoreCase(ServiceDiscoveryConstants.KIND_LOAD_BALANCER_SERVICE)) {
             link = new LoadBalancerServiceLink(targetService.getId(), null, new ArrayList<String>());
         } else {
             link = new ServiceLink(targetService.getId(), null);
@@ -123,7 +123,7 @@ public class SelectorServiceCreatePostListener extends AbstractObjectProcessLogi
 
     protected void addServiceLink(Service service, Service targetService) {
         ServiceLink link = null;
-        if (service.getKind().equalsIgnoreCase(ServiceDiscoveryConstants.KIND.LOADBALANCERSERVICE.name())) {
+        if (service.getKind().equalsIgnoreCase(ServiceDiscoveryConstants.KIND_LOAD_BALANCER_SERVICE)) {
             link = new LoadBalancerServiceLink(targetService.getId(), null, new ArrayList<String>());
         } else {
             link = new ServiceLink(targetService.getId(), null);

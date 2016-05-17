@@ -422,7 +422,7 @@ public class ServiceDiscoveryUtil {
         Map<Integer, PortSpec> portMap = new LinkedHashMap<Integer, PortSpec>();
         for (String spec : specs) {
             boolean defaultProtocol = true;
-            if (service.getKind().equalsIgnoreCase(ServiceDiscoveryConstants.KIND.LOADBALANCERSERVICE.name())) {
+            if (service.getKind().equalsIgnoreCase(ServiceDiscoveryConstants.KIND_LOAD_BALANCER_SERVICE)) {
                 defaultProtocol = false;
             }
             PortSpec portSpec = new PortSpec(spec, defaultProtocol);

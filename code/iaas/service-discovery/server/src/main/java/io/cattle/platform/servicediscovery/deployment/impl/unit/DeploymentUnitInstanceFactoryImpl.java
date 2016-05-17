@@ -8,7 +8,6 @@ import io.cattle.platform.core.model.ServiceExposeMap;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.servicediscovery.api.constants.ServiceDiscoveryConstants;
-import io.cattle.platform.servicediscovery.api.constants.ServiceDiscoveryConstants.KIND;
 import io.cattle.platform.servicediscovery.api.dao.ServiceExposeMapDao;
 import io.cattle.platform.servicediscovery.deployment.DeploymentUnitInstance;
 import io.cattle.platform.servicediscovery.deployment.DeploymentUnitInstanceFactory;
@@ -37,21 +36,21 @@ public class DeploymentUnitInstanceFactoryImpl implements DeploymentUnitInstance
     @SuppressWarnings("unchecked")
     public DeploymentUnitInstance createDeploymentUnitInstance(DeploymentServiceContext context, String uuid,
             Service service, String instanceName, Object instanceObj, Map<String, String> labels, String launchConfigName) {
-        if (service.getKind().equalsIgnoreCase(KIND.SERVICE.name())) {
+        if (service.getKind().equalsIgnoreCase(ServiceDiscoveryConstants.KIND_SERVICE)) {
             Instance instance = null;
             if (instanceObj != null) {
                 instance = (Instance) instanceObj;
             }
             return new DefaultDeploymentUnitInstance(context, uuid, service,
                     instanceName, instance, labels, launchConfigName);
-        } else if (service.getKind().equalsIgnoreCase(KIND.LOADBALANCERSERVICE.name())) {
+        } else if (service.getKind().equalsIgnoreCase(ServiceDiscoveryConstants.KIND_LOAD_BALANCER_SERVICE)) {
             Instance instance = null;
             if (instanceObj != null) {
                 instance = (Instance) instanceObj;
             }
             return new LoadBalancerDeploymentUnitInstance(context, uuid, service,
                     instanceName, instance, labels, launchConfigName);
-        }else if (service.getKind().equalsIgnoreCase(KIND.EXTERNALSERVICE.name())) {
+        }else if (service.getKind().equalsIgnoreCase(ServiceDiscoveryConstants.KIND_EXTERNAL_SERVICE)) {
             Pair<String, String> ipHostName = null;
             if (instanceObj != null) {
                 ipHostName = (Pair<String, String>) instanceObj;
@@ -79,10 +78,10 @@ public class DeploymentUnitInstanceFactoryImpl implements DeploymentUnitInstance
         List<DeploymentUnit> units = new ArrayList<>();
 
         for (Service service : services) {
-            if (service.getKind().equalsIgnoreCase(KIND.SERVICE.name())
-                    || service.getKind().equalsIgnoreCase(KIND.LOADBALANCERSERVICE.name())) {
+            if (service.getKind().equalsIgnoreCase(ServiceDiscoveryConstants.KIND_SERVICE)
+                    || service.getKind().equalsIgnoreCase(ServiceDiscoveryConstants.KIND_LOAD_BALANCER_SERVICE)) {
                 collectDefaultServiceInstances(context, uuidToLabels, uuidToInstances, service);
-            } else if (service.getKind().equalsIgnoreCase(KIND.EXTERNALSERVICE.name())) {
+            } else if (service.getKind().equalsIgnoreCase(ServiceDiscoveryConstants.KIND_EXTERNAL_SERVICE)) {
                 collectExternalServiceInstances(context, uuidToLabels, uuidToInstances, service);
             }
             for (String uuid : uuidToInstances.keySet()) {

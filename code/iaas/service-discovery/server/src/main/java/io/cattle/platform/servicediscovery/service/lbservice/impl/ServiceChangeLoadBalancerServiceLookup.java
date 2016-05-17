@@ -25,10 +25,10 @@ public class ServiceChangeLoadBalancerServiceLookup implements LoadBalancerServi
         }
         Service service = (Service) obj;
         List<Service> lbServices = new ArrayList<>();
-        if (service.getKind().equalsIgnoreCase(ServiceDiscoveryConstants.KIND.LOADBALANCERSERVICE.name())) {
+        if (service.getKind().equalsIgnoreCase(ServiceDiscoveryConstants.KIND_LOAD_BALANCER_SERVICE)) {
             lbServices.add(service);
-        } else if (service.getKind().equalsIgnoreCase(ServiceDiscoveryConstants.KIND.DNSSERVICE.name())
-                || service.getKind().equalsIgnoreCase(ServiceDiscoveryConstants.KIND.EXTERNALSERVICE.name())) {
+        } else if (service.getKind().equalsIgnoreCase(ServiceDiscoveryConstants.KIND_DNS_SERVICE)
+                || service.getKind().equalsIgnoreCase(ServiceDiscoveryConstants.KIND_EXTERNAL_SERVICE)) {
             lbServices.addAll(svcDao.getConsumingLbServices(service.getId()));
         }
         return lbServices;

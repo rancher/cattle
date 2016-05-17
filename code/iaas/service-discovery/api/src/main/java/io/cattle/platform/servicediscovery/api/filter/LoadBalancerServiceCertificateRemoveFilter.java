@@ -45,7 +45,7 @@ public class LoadBalancerServiceCertificateRemoveFilter extends AbstractDefaultR
         Certificate cert = objectManager.loadResource(Certificate.class, certificateId);
         List<String> serviceNames = new ArrayList<>();
         List<? extends Service> lbServices = objectManager.find(Service.class, SERVICE.ACCOUNT_ID, cert.getAccountId(),
-                SERVICE.REMOVED, null, SERVICE.KIND, ServiceDiscoveryConstants.KIND.LOADBALANCERSERVICE.name());
+                SERVICE.REMOVED, null, SERVICE.KIND, ServiceDiscoveryConstants.KIND_LOAD_BALANCER_SERVICE);
         for (Service lbService : lbServices) {
             List<Long> certIds = (List<Long>) CollectionUtils.collect(
                     svcDao.getLoadBalancerServiceCertificates(lbService),

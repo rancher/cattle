@@ -51,7 +51,6 @@ import io.cattle.platform.resource.pool.PooledResourceOptions;
 import io.cattle.platform.resource.pool.ResourcePoolManager;
 import io.cattle.platform.resource.pool.util.ResourcePoolConstants;
 import io.cattle.platform.servicediscovery.api.constants.ServiceDiscoveryConstants;
-import io.cattle.platform.servicediscovery.api.constants.ServiceDiscoveryConstants.KIND;
 import io.cattle.platform.servicediscovery.api.dao.ServiceConsumeMapDao;
 import io.cattle.platform.servicediscovery.api.dao.ServiceExposeMapDao;
 import io.cattle.platform.servicediscovery.api.util.ServiceDiscoveryUtil;
@@ -209,9 +208,9 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
     }
 
     protected String allocateVip(Service service) {
-        if (service.getKind().equalsIgnoreCase(KIND.LOADBALANCERSERVICE.name())
-                || service.getKind().equalsIgnoreCase(KIND.SERVICE.name())
-                || service.getKind().equalsIgnoreCase(KIND.DNSSERVICE.name())) {
+        if (service.getKind().equalsIgnoreCase(ServiceDiscoveryConstants.KIND_LOAD_BALANCER_SERVICE)
+                || service.getKind().equalsIgnoreCase(ServiceDiscoveryConstants.KIND_SERVICE)
+                || service.getKind().equalsIgnoreCase(ServiceDiscoveryConstants.KIND_DNS_SERVICE)) {
             Subnet vipSubnet = getServiceVipSubnet(service);
             String requestedVip = service.getVip();
             return allocateIpForService(service, vipSubnet, requestedVip);
@@ -272,7 +271,7 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
         List<PortSpec> ports = new ArrayList<>();
         for (String spec : specs) {
             boolean defaultProtocol = true;
-            if (service.getKind().equalsIgnoreCase(ServiceDiscoveryConstants.KIND.LOADBALANCERSERVICE.name())) {
+            if (service.getKind().equalsIgnoreCase(ServiceDiscoveryConstants.KIND_LOAD_BALANCER_SERVICE)) {
                 defaultProtocol = false;
             }
             ports.add(new PortSpec(spec, defaultProtocol));
@@ -631,8 +630,8 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
     protected String calculateServiceHealthState(Service service) {
         String serviceHealthState = null;
         List<String> supportedKinds = Arrays.asList(
-                ServiceDiscoveryConstants.KIND.SERVICE.name().toLowerCase(),
-                ServiceDiscoveryConstants.KIND.LOADBALANCERSERVICE.name().toLowerCase());
+                ServiceDiscoveryConstants.KIND_SERVICE.toLowerCase(),
+                ServiceDiscoveryConstants.KIND_LOAD_BALANCER_SERVICE.toLowerCase());
         if (!supportedKinds.contains(service.getKind().toLowerCase())) {
             serviceHealthState = HealthcheckConstants.HEALTH_STATE_HEALTHY;
         } else {

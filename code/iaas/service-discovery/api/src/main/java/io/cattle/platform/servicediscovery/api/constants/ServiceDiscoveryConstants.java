@@ -2,12 +2,10 @@ package io.cattle.platform.servicediscovery.api.constants;
 
 public class ServiceDiscoveryConstants {
 
-    public enum KIND {
-        SERVICE,
-        LOADBALANCERSERVICE,
-        EXTERNALSERVICE,
-        DNSSERVICE
-    }
+    public static final String KIND_SERVICE = "service";
+    public static final String KIND_LOAD_BALANCER_SERVICE = "loadBalancerService";
+    public static final String KIND_EXTERNAL_SERVICE = "externalService";
+    public static final String KIND_DNS_SERVICE = "dnsService";
 
     public static final String TYPE_ENVIRONMENT = "environment";
     public static final String FIELD_SCALE = "scale";
