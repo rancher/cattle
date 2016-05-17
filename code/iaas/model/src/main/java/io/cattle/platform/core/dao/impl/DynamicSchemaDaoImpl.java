@@ -96,9 +96,6 @@ public class DynamicSchemaDaoImpl extends AbstractJooqDao implements DynamicSche
         if (name == null) {
             return null;
         }
-        if (!name.contains("machine") && !name.contains("Config")) {
-            return null;
-        }
         DynamicSchema schema = get(name, accountId, role);
         if (schema != null) {
             return schema;
@@ -171,10 +168,10 @@ public class DynamicSchemaDaoImpl extends AbstractJooqDao implements DynamicSche
 
     @Override
     public void removeRoles(DynamicSchema dynamicSchema) {
-        CACHE.get().clear();
         create().delete(DYNAMIC_SCHEMA_ROLE)
                 .where(DYNAMIC_SCHEMA_ROLE.DYNAMIC_SCHEMA_ID.eq(dynamicSchema.getId()))
                 .execute();
+        CACHE.get().clear();
     }
 
     @Override

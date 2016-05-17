@@ -378,11 +378,13 @@
     <process:process name="storagepoolhostmap.remove" resourceType="storagePoolHostMap" start="active,activating" transitioning="removing" done="removed" />
 
     <!-- Machine driver-->
-    <process:process name="machinedriver.create" resourceType="machineDriver" start="create" transitioning="requesting" done="requested" />
-    <process:process name="machinedriver.activate" resourceType="machineDriver" start="requested" transitioning="activating" done="active" />
-    <process:process name="machinedriver.error" resourceType="machineDriver" start="active,activating,requested" transitioning="erroring" done="error" />
-    <process:process name="machinedriver.remove" resourceType="machineDriver" start="requested,activating,active,error,erroring" transitioning="purging" done="purged" />
-    <process:process name="machinedriver.retry" resourceType="machineDriver" start="error,erroring" transitioning="requesting" done="requested" />
+    <process:process name="machinedriver.create" resourceType="machineDriver" start="requested" transitioning="registering" done="inactive" delegate="machinedriver.activate" />
+    <process:process name="machinedriver.activate" resourceType="machineDriver" start="error,inactive,registering" transitioning="activating" done="active" />
+    <process:process name="machinedriver.reactivate" resourceType="machineDriver" start="active" transitioning="activating" done="active" />
+    <process:process name="machinedriver.error" resourceType="machineDriver" start="active,activating,updating-active,updating-inactive" transitioning="erroring" done="error" />
+    <process:process name="machinedriver.deactivate" resourceType="machineDriver" start="active,activating,updating-active,updating-inactive" transitioning="deactivating" done="inactive" delegate="machinedriver.remove" />
+    <process:process name="machinedriver.remove" resourceType="machineDriver" start="requested,inactive,activating,deactivating,registering,updating-active,updating-inactive,active,error" transitioning="removing" done="removed" />
+    <process:process name="machinedriver.update" resourceType="machineDriver" start="error,inactive,active" transitioning="error=updating-inactive,inactive=updating-inactive,active=updating-active" done="updating-inactive=inactive,updating-active=active" />
 
     <!-- Dynamic Schema-->
     <process:process name="dynamicschema.create" resourceType="dynamicSchema" start="requested" transitioning="creating" done="active" />

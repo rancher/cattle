@@ -14,6 +14,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeMap;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -43,19 +44,22 @@ public class DynamicSchemaFactory extends AbstractSchemaFactory implements Schem
 
     @Override
     public List<Schema> listSchemas() {
-        List<Schema> base = factory.listSchemas();
-        List<? extends DynamicSchema> dynamic = dynamicSchemaDao.getSchemas(accountId, role);
+        Map<String, Schema> schemas = new TreeMap<String, Schema>();
+        for (Schema s : factory.listSchemas()) {
+            schemas.put(s.getId(), s);
+        }
 
-        List<Schema> result = new ArrayList<>(base.size() + dynamic.size());
-        result.addAll(base);
+        List<? extends DynamicSchema> dynamic = dynamicSchemaDao.getSchemas(accountId, role);
 
         for (DynamicSchema dynamicSchema : dynamic) {
             Schema schema = safeConvert(dynamicSchema);
             if (schema != null) {
-                result.add(schema);
+                schemas.put(schema.getId(), schema);
             }
         }
 
+        List<Schema> result = new ArrayList<>(schemas.size());
+        result.addAll(schemas.values());
         return result;
     }
 
@@ -69,12 +73,13 @@ public class DynamicSchemaFactory extends AbstractSchemaFactory implements Schem
         if (type == null) {
             return null;
         }
-        Schema schema = factory.getSchema(type);
-        if (schema != null) {
-            return schema;
+        if (type.contains("machine") || type.toLowerCase().contains("config")) {
+            DynamicSchema dynamicSchema = dynamicSchemaDao.getSchema(type, accountId, role);
+            if (dynamicSchema != null) {
+                return safeConvert(dynamicSchema);
+            }
         }
-        DynamicSchema dynamicSchema = dynamicSchemaDao.getSchema(type, accountId, role);
-        return safeConvert(dynamicSchema);
+        return factory.getSchema(type);
     }
 
     protected Schema safeConvert(DynamicSchema dynamicSchema) {

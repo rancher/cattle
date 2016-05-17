@@ -29,6 +29,7 @@
         "loadBalancerCookieStickinessPolicy" : "cru",
         "loadBalancerService" : "crud",
         "logConfig" : "cr",
+        "machine": "crd",
         "port" : "ru",
         "project" : "r",
         "projectMember" : "r",
