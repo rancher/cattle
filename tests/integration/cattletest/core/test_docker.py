@@ -490,17 +490,14 @@ def test_volume_restore(docker_client, super_client):
     c = docker_client.wait_success(c.remove())
     assert c.state == 'removed'
 
-    v = docker_client.wait_success(v)
-    assert v.state == 'inactive'
-    v = docker_client.wait_success(v)
+    v = wait_for_condition(docker_client, v, lambda x: x.state == 'inactive')
     docker_client.wait_success(v.remove())
 
     c = docker_client.create_container(imageUuid=TEST_IMAGE_UUID,
                                        dataVolumes=[data_volume])
     c = docker_client.wait_success(c)
     assert c.state == 'running'
-    v = docker_client.wait_success(v, timeout=30)
-    assert v.state == 'active'
+    wait_for_condition(docker_client, v, lambda x: x.state == 'active')
 
     c = docker_client.wait_success(c.stop())
     c = docker_client.wait_success(c.remove())
