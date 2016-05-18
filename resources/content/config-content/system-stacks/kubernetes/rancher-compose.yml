@@ -63,23 +63,6 @@ kubectld:
         unhealthy_threshold: 3
         healthy_threshold: 2
 
-kubelet:
-    health_check:
-        request_line: GET /healthz HTTP/1.0
-        port: 10255
-        interval: 2000
-        response_timeout: 2000
-        unhealthy_threshold: 3
-        healthy_threshold: 2
-
-proxy:
-    health_check:
-        request_line: GET /healthz HTTP/1.0
-        port: 10249
-        interval: 2000
-        response_timeout: 2000
-        unhealthy_threshold: 3
-        healthy_threshold: 2
 
 rancher-ingress-controller:
     health_check:
