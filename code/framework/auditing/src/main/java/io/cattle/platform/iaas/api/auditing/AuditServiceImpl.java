@@ -76,7 +76,7 @@ public class AuditServiceImpl implements AuditService{
 
     @Override
     public void logRequest(ApiRequest request, Policy policy) {
-        if (policy == null || request == null) {
+        if (policy == null || request == null || request.getType() == null) {
             return;
         }
 
