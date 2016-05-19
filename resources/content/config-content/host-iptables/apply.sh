@@ -30,6 +30,10 @@ for i in PRE POST; do
     fi
 done
 
+if ! iptables -n -L FORWARD | grep -q CATTLE_FORWARD; then
+    iptables -I FORWARD -j CATTLE_FORWARD
+fi
+
 add_route_table 300
 
 stage_files
