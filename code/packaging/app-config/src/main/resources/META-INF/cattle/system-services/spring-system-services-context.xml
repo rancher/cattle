@@ -527,7 +527,7 @@
 
     <bean class="io.cattle.platform.systemstack.process.SystemStackTrigger" />
     <bean class="io.cattle.platform.systemstack.listener.SystemStackUpdate" />
-
+    <bean class="io.cattle.platform.systemstack.listener.SystemStackRemovePostHandler" />
 
     <bean class="io.cattle.platform.task.impl.TaskManagerImpl" >
         <property name="tasks" value="#{extensionManager.list('task')}" />
