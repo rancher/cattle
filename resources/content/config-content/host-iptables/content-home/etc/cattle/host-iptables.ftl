@@ -1,3 +1,12 @@
+*filter
+
+:CATTLE_FORWARD -
+
+-F CATTLE_FORWARD
+-A CATTLE_FORWARD -m mark --mark 420000 -j ACCEPT
+
+COMMIT
+
 *nat
 
 :CATTLE_PREROUTING -
@@ -18,6 +27,7 @@
         <#if (mapping.publicIpAddress.address)?? && (mapping.privateIpAddress.address)?? && (mapping.port.publicPort)?? && (mapping.port.privatePort)?? >
             <#-- This is a hack because IPsec traffic must go to the Docker IP and not the Cattle IP -->
             <#if mapping.port.publicPort != 500 && mapping.port.publicPort != 4500 >
+-A CATTLE_PREROUTING %BRIDGE% -p ${mapping.port.protocol} -m addrtype --dst-type LOCAL --dport ${mapping.port.publicPort} -j MARK --set-mark 420000
 -A CATTLE_PREROUTING %BRIDGE% -p ${mapping.port.protocol} -m addrtype --dst-type LOCAL --dport ${mapping.port.publicPort} -j DNAT --to ${mapping.privateIpAddress.address}:${mapping.port.privatePort}
             </#if>
         </#if>
