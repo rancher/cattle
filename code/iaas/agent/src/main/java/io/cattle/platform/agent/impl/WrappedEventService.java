@@ -108,7 +108,7 @@ public class WrappedEventService implements EventService {
         });
     }
 
-    /* Boilerplate to implementate interface */
+    /* Boilerplate to implement interface */
     @Override
     public ListenableFuture<?> subscribe(String eventName, EventListener listener) {
         throw new UnsupportedOperationException();
