@@ -86,7 +86,7 @@ kubectld:
     environment:
         SERVER: http://master
         LISTEN: ":8091"
-    image: rancher/kubectld:v0.1.0
+    image: rancher/kubectld:v0.1.1
     links:
         - kubernetes:master
 
@@ -126,7 +126,7 @@ rancher-kubernetes-agent:
         - kubernetes:master
 
 rancher-ingress-controller:
-    image: rancher/ingress-controller:v0.1.1
+    image: rancher/ingress-controller:v0.1.2
     labels:
         io.rancher.container.create_agent: "true"
         io.rancher.container.agent.role: environment
