@@ -1,0 +1,8 @@
+{
+    "resourceFields": {
+        "destination": {
+            "required": true,
+            "nullable": false
+        }
+    }
+}

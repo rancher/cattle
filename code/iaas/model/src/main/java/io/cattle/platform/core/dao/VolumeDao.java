@@ -15,4 +15,6 @@ public interface VolumeDao {
     List<? extends Volume> findSharedOrUnmappedVolumes(long accountId, String volumeName);
 
     Set<? extends Volume> findNonremovedVolumesWithNoOtherMounts(long instanceId);
+
+    boolean isVolumeInUseByRunningInstance(long volumeId);
 }

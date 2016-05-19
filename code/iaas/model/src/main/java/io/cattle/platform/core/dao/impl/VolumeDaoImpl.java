@@ -1,10 +1,12 @@
 package io.cattle.platform.core.dao.impl;
 
+import static io.cattle.platform.core.model.tables.InstanceTable.*;
 import static io.cattle.platform.core.model.tables.MountTable.*;
 import static io.cattle.platform.core.model.tables.StoragePoolTable.*;
 import static io.cattle.platform.core.model.tables.VolumeStoragePoolMapTable.*;
 import static io.cattle.platform.core.model.tables.VolumeTable.*;
 import io.cattle.platform.core.constants.CommonStatesConstants;
+import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.dao.GenericResourceDao;
 import io.cattle.platform.core.dao.VolumeDao;
 import io.cattle.platform.core.model.StoragePool;
@@ -25,9 +27,10 @@ import java.util.Set;
 import javax.inject.Inject;
 
 import org.jooq.Record;
+import org.jooq.Record1;
+import org.jooq.Result;
 
 public class VolumeDaoImpl extends AbstractJooqDao implements VolumeDao {
-
     private static final Set<String> LOCAL_POOL_KINDS = new HashSet<String>(Arrays.asList(new String[]{"docker", "sim"}));
 
     @Inject
@@ -129,5 +132,26 @@ public class VolumeDaoImpl extends AbstractJooqDao implements VolumeDao {
 
         Set<? extends Volume> volumes = new HashSet<Volume>(vols);
         return volumes;
+    }
+
+    private static final Set<String> INSTANCE_STATES = new HashSet<String>(Arrays.asList(new String[] { InstanceConstants.STATE_STOPPED,
+            InstanceConstants.STATE_CREATED }));
+
+    @Override
+    public boolean isVolumeInUseByRunningInstance(long volumeId) {
+        Result<Record1<Integer>> result = create()
+                .selectCount()
+                .from(INSTANCE)
+                .join(MOUNT)
+                .on(MOUNT.INSTANCE_ID.eq(INSTANCE.ID))
+                .where(INSTANCE.STATE.notIn(INSTANCE_STATES))
+                .and(INSTANCE.REMOVED.isNull())
+                .and(MOUNT.REMOVED.isNull())
+                .and(MOUNT.VOLUME_ID.eq(volumeId))
+                .fetch();
+
+        Integer inUseCount = (Integer)result.getValue(0, 0);
+
+        return inUseCount > 0;
     }
 }

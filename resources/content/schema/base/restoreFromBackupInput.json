@@ -1,0 +1,10 @@
+{
+    "collectionMethods" : [],
+    "resourceFields" : {
+        "backupId" : {
+            "type": "reference[backup]",
+            "required": true,
+            "nullable": false
+        }
+    }
+}

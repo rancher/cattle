@@ -1,0 +1,10 @@
+{
+    "collectionMethods" : [],
+    "resourceFields" : {
+        "snapshotId" : {
+            "type": "reference[snapshot]",
+            "required": true,
+            "nullable": false
+        }
+    }
+}

@@ -175,7 +175,7 @@ public class VirtualMachinePreCreate extends AbstractObjectProcessLogic implemen
                         if (disk.isRoot()) {
                             String image = StringUtils.removeStart(DataAccessor.fieldString(instance, InstanceConstants.FIELD_IMAGE_UUID), "docker:");
                             if (StringUtils.isNotBlank(image)) {
-                                opts.put("base-image", image);
+                                opts.put(VolumeConstants.DRIVER_OPT_BASE_IMAGE, image);
                             }
                             opts.remove("size");
                         }

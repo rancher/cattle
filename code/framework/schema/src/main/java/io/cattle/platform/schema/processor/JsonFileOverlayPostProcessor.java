@@ -117,14 +117,8 @@ public class JsonFileOverlayPostProcessor extends AbstractSchemaPostProcessor im
                         : SchemaOverlayImpl.class);
 
                 processSchema(schema, data, mapData);
-            } catch (IllegalAccessException e) {
-                throw new IllegalStateException(e);
-            } catch (InvocationTargetException e) {
-                throw new IllegalStateException(e);
-            } catch (NoSuchMethodException e) {
-                throw new IllegalStateException(e);
-            } catch (IOException e) {
-                throw new IllegalStateException(e);
+            } catch (IllegalAccessException | InvocationTargetException | NoSuchMethodException | IOException e) {
+                throw new IllegalStateException("Error processing " + resource, e);
             } finally {
                 IOUtils.closeQuietly(is);
             }
