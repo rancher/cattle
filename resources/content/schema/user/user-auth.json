@@ -266,6 +266,7 @@
         "machine.name": "cr",
 
         "machineDriver": "r",
+        "machineDriver.activateOnCreate": "cr",
         "machineDriver.builtin": "cr",
         "machineDriver.defaultActive": "r",
         "machineDriver.name": "r",

@@ -35,7 +35,9 @@
                 match before includes -->
             <!--  <excludes>.*proc</excludes> -->
 
-            <excludes>.*load_balancer.*</excludes>
+            <includeExcludeColumns>true</includeExcludeColumns>
+
+            <excludes>.*load_balancer.*|cattle.machine_driver.account_id</excludes>
 
             <unsignedTypes>false</unsignedTypes>
 
