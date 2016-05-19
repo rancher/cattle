@@ -156,6 +156,7 @@
         p:shouldContinue="true"
         p:name="AgentConnectionClose"
         p:commandName="agent.close"
+        p:shortCircuitIfAgentRemoved="true"
         p:processNames="agent.deactivate,agent.remove" >
         <property name="priority">
             <util:constant static-field="io.cattle.platform.util.type.Priority.PRE"/>

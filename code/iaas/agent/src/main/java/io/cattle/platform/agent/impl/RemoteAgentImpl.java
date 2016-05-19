@@ -73,7 +73,7 @@ public class RemoteAgentImpl implements RemoteAgent {
         } catch (TimeoutException e) {
             Agent agent = objectManager.loadResource(Agent.class, agentId);
             if (agent == null || agent.getRemoved() != null) {
-                throw new AgentRemovedException("Agent is removed", event);
+                throw new AgentRemovedException("Agent [" + agentId + "] is removed", event);
             }
             throw e;
         } catch (AgentRemovedException e) {
