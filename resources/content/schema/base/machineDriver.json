@@ -13,7 +13,12 @@
             "nullable": false
         },
         "defaultActive": {
-            "type": "boolean"
+            "type": "boolean",
+            "nullable": false
+        },
+        "activateOnCreate": {
+            "type": "boolean",
+            "nullable": false
         },
         "checksum": {
             "type": "string",

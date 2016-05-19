@@ -214,12 +214,14 @@ def test_delete_project(admin_user_client, new_context,
     project = super_client.wait_success(project.deactivate())
     project = super_client.wait_success(project.remove())
     check_state(new_context.user_client, proj_id,
-                ['removed'], ['account', 'project', 'host', 'subscribe'])
+                ['removed'], ['account', 'project', 'host', 'subscribe',
+                              'machineDriver'])
     super_client.wait_success(project.purge())
     project = new_context.user_client.by_id('project', id=proj_id)
     assert project.state == 'purged'
     check_state(new_context.user_client, proj_id,
-                ['purged', 'removed'], ['account', 'project', 'subscribe'])
+                ['purged', 'removed'], ['account', 'project', 'subscribe',
+                                        'machineDriver'])
     project_members = admin_user_client\
         .list('projectMember')
     for member in project_members:

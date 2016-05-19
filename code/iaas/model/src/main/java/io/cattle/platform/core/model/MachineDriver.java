@@ -37,17 +37,6 @@ public interface MachineDriver extends java.io.Serializable {
 	public java.lang.String getName();
 
 	/**
-	 * Setter for <code>cattle.machine_driver.account_id</code>.
-	 */
-	public void setAccountId(java.lang.Long value);
-
-	/**
-	 * Getter for <code>cattle.machine_driver.account_id</code>.
-	 */
-	@javax.persistence.Column(name = "account_id", precision = 19)
-	public java.lang.Long getAccountId();
-
-	/**
 	 * Setter for <code>cattle.machine_driver.kind</code>.
 	 */
 	public void setKind(java.lang.String value);
@@ -143,7 +132,7 @@ public interface MachineDriver extends java.io.Serializable {
 	/**
 	 * Getter for <code>cattle.machine_driver.uri</code>.
 	 */
-	@javax.persistence.Column(name = "uri", nullable = false, length = 255)
+	@javax.persistence.Column(name = "uri", length = 255)
 	public java.lang.String getUri();
 
 	/**

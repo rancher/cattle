@@ -11,7 +11,7 @@ package io.cattle.platform.core.model.tables;
 @java.lang.SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class MachineDriverTable extends org.jooq.impl.TableImpl<io.cattle.platform.core.model.tables.records.MachineDriverRecord> {
 
-	private static final long serialVersionUID = -2143624470;
+	private static final long serialVersionUID = 1432013965;
 
 	/**
 	 * The singleton instance of <code>cattle.machine_driver</code>
@@ -35,11 +35,6 @@ public class MachineDriverTable extends org.jooq.impl.TableImpl<io.cattle.platfo
 	 * The column <code>cattle.machine_driver.name</code>.
 	 */
 	public final org.jooq.TableField<io.cattle.platform.core.model.tables.records.MachineDriverRecord, java.lang.String> NAME = createField("name", org.jooq.impl.SQLDataType.VARCHAR.length(255), this, "");
-
-	/**
-	 * The column <code>cattle.machine_driver.account_id</code>.
-	 */
-	public final org.jooq.TableField<io.cattle.platform.core.model.tables.records.MachineDriverRecord, java.lang.Long> ACCOUNT_ID = createField("account_id", org.jooq.impl.SQLDataType.BIGINT, this, "");
 
 	/**
 	 * The column <code>cattle.machine_driver.kind</code>.
@@ -84,7 +79,7 @@ public class MachineDriverTable extends org.jooq.impl.TableImpl<io.cattle.platfo
 	/**
 	 * The column <code>cattle.machine_driver.uri</code>.
 	 */
-	public final org.jooq.TableField<io.cattle.platform.core.model.tables.records.MachineDriverRecord, java.lang.String> URI = createField("uri", org.jooq.impl.SQLDataType.VARCHAR.length(255).nullable(false), this, "");
+	public final org.jooq.TableField<io.cattle.platform.core.model.tables.records.MachineDriverRecord, java.lang.String> URI = createField("uri", org.jooq.impl.SQLDataType.VARCHAR.length(255), this, "");
 
 	/**
 	 * The column <code>cattle.machine_driver.md5checksum</code>.
@@ -135,14 +130,6 @@ public class MachineDriverTable extends org.jooq.impl.TableImpl<io.cattle.platfo
 	@Override
 	public java.util.List<org.jooq.UniqueKey<io.cattle.platform.core.model.tables.records.MachineDriverRecord>> getKeys() {
 		return java.util.Arrays.<org.jooq.UniqueKey<io.cattle.platform.core.model.tables.records.MachineDriverRecord>>asList(io.cattle.platform.core.model.Keys.KEY_MACHINE_DRIVER_PRIMARY, io.cattle.platform.core.model.Keys.KEY_MACHINE_DRIVER_IDX_MACHINE_DRIVER_UUID);
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public java.util.List<org.jooq.ForeignKey<io.cattle.platform.core.model.tables.records.MachineDriverRecord, ?>> getReferences() {
-		return java.util.Arrays.<org.jooq.ForeignKey<io.cattle.platform.core.model.tables.records.MachineDriverRecord, ?>>asList(io.cattle.platform.core.model.Keys.FK_MACHINE_DRIVER__ACCOUNT_ID);
 	}
 
 	/**

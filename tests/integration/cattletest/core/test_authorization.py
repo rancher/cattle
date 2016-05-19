@@ -2504,10 +2504,10 @@ def test_machine_driver(admin_user_client, user_client, project_client,
         'checksum': 'cru',
         'uiUrl': 'cru',
         'data': 'r',
-        'accountId': 'r',
         'url': 'cru',
         'defaultActive': 'r',
         'builtin': 'cr',
+        'activateOnCreate': 'cr',
     })
 
     auth_check(service_client.schema, 'machineDriver', 'crud', {
@@ -2515,30 +2515,30 @@ def test_machine_driver(admin_user_client, user_client, project_client,
         'checksum': 'cru',
         'uiUrl': 'cru',
         'data': 'r',
-        'accountId': 'r',
         'url': 'cru',
         'defaultActive': 'r',
         'builtin': 'cr',
+        'activateOnCreate': 'cr',
     })
 
     auth_check(user_client.schema, 'machineDriver', 'r', {
         'name': 'r',
         'checksum': 'r',
         'uiUrl': 'r',
-        'accountId': 'r',
         'url': 'r',
         'defaultActive': 'r',
         'builtin': 'r',
+        'activateOnCreate': 'r',
     })
 
     auth_check(project_client.schema, 'machineDriver', 'r', {
         'name': 'r',
         'checksum': 'r',
         'uiUrl': 'r',
-        'accountId': 'r',
         'url': 'r',
         'defaultActive': 'r',
         'builtin': 'r',
+        'activateOnCreate': 'r',
     })
 
 
