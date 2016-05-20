@@ -60,7 +60,7 @@ public class InstanceHealthcheckRegister extends AbstractObjectProcessLogic impl
 
     @Override
     public int getPriority() {
-        return Priority.DEFAULT;
+        return Priority.PRE;
     }
 
 }
