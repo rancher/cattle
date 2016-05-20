@@ -35,6 +35,8 @@ public class AccountConstants {
 
     public static final String DATA_ACT_AS_RESOURCE_ACCOUNT = "actAsResourceAccount";
 
+    public static final String DATA_ACT_AS_RESOURCE_ADMIN_ACCOUNT = "actAsResourceAdminAccount";
+
     public static final String ACCOUNT_DEACTIVATE = "account.deactivate";
     public static final String ACCOUNT_REMOVE = "account.remove";
 

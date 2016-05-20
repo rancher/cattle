@@ -2,7 +2,7 @@ kubelet:
     labels:
         io.rancher.container.dns: "true"
         io.rancher.container.create_agent: "true"
-        io.rancher.container.agent.role: environment
+        io.rancher.container.agent.role: environmentAdmin
         io.rancher.scheduler.global: "true"
     command:
         - kubelet

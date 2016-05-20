@@ -2,21 +2,24 @@ package io.cattle.platform.agent.instance.factory.impl;
 
 import static io.cattle.platform.core.model.tables.AgentTable.*;
 import static io.cattle.platform.core.model.tables.InstanceTable.*;
-
 import io.cattle.platform.agent.AgentLocator;
 import io.cattle.platform.agent.RemoteAgent;
 import io.cattle.platform.agent.instance.dao.AgentInstanceDao;
 import io.cattle.platform.agent.instance.factory.AgentInstanceBuilder;
 import io.cattle.platform.agent.instance.factory.AgentInstanceFactory;
 import io.cattle.platform.agent.instance.factory.lock.AgentInstanceAgentCreateLock;
+import io.cattle.platform.core.constants.AccountConstants;
 import io.cattle.platform.core.constants.AgentConstants;
 import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.dao.AccountDao;
 import io.cattle.platform.core.dao.GenericResourceDao;
+import io.cattle.platform.core.dao.InstanceDao;
 import io.cattle.platform.core.model.Agent;
+import io.cattle.platform.core.model.Environment;
 import io.cattle.platform.core.model.Host;
 import io.cattle.platform.core.model.Instance;
+import io.cattle.platform.core.model.Service;
 import io.cattle.platform.core.util.SystemLabels;
 import io.cattle.platform.deferred.util.DeferredUtils;
 import io.cattle.platform.engine.process.impl.ProcessCancelException;
@@ -30,6 +33,7 @@ import io.cattle.platform.object.resource.ResourcePredicate;
 import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.process.common.util.ProcessUtils;
 import io.cattle.platform.storage.service.StorageService;
+import io.cattle.platform.util.type.CollectionUtils;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -62,6 +66,8 @@ public class AgentInstanceFactoryImpl implements AgentInstanceFactory {
     ResourceMonitor resourceMonitor;
     @Inject
     ObjectProcessManager processManager;
+    @Inject
+    InstanceDao instanceDao;
 
     @Override
     public AgentInstanceBuilder newBuilder() {
@@ -129,7 +135,24 @@ public class AgentInstanceFactoryImpl implements AgentInstanceFactory {
     @Override
     public Agent createAgent(Instance instance) {
         if (shouldCreateAgent(instance)) {
-            return getAgent(new AgentInstanceBuilderImpl(this, instance));
+            Map<String, Object> accountData = new HashMap<>();
+            Map<String, Object> labels = DataAccessor.fieldMap(instance, InstanceConstants.FIELD_LABELS);
+            if ("environment".equals(labels.get(SystemLabels.LABEL_AGENT_ROLE))) {
+                accountData = CollectionUtils.asMap(AccountConstants.DATA_ACT_AS_RESOURCE_ACCOUNT, true);
+            } else if ("environmentAdmin".equals(labels.get(SystemLabels.LABEL_AGENT_ROLE))) {
+                // allow to set this flag only for system services
+                List<? extends Service> services = instanceDao.findServicesFor(instance);
+                for (Service service : services) {
+                    Environment stack = objectManager.loadResource(Environment.class, service.getEnvironmentId());
+                    boolean isSystem = DataAccessor.fieldBool(stack, "isSystem");
+                    if (isSystem) {
+                        accountData = CollectionUtils.asMap(AccountConstants.DATA_ACT_AS_RESOURCE_ADMIN_ACCOUNT, true);
+                        break;
+                    }
+                }
+            }
+
+            return getAgent(new AgentInstanceBuilderImpl(this, instance, accountData));
         }
         return null;
     }

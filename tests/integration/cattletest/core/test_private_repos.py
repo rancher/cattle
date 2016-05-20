@@ -33,7 +33,7 @@ def _create_registry_and_credential(client):
     assert reg_cred.kind == 'registryCredential'
     assert reg_cred.registryId == registry.id
     assert reg_cred.publicValue == 'rancher'
-    assert 'secretValue' not in reg_cred
+    assert reg_cred.secretValue is None
 
     return reg_cred, registry
 
@@ -175,3 +175,48 @@ def test_create_same_registry_different_projects(admin_user_client):
         serverAddress=server, name=random_str()))
     context_2.client.wait_success(context_2.client.create_registry(
         serverAddress=server, name=random_str()))
+
+
+def test_registry_credentials(client, super_client, admin_user_client):
+    registry = _create_registry(client)
+    reg_cred = client.create_registry_credential(
+        registryId=registry.id,
+        email='test@rancher.com',
+        publicValue='rancher',
+        secretValue='rancher')
+
+    reg_cred = client.wait_success(reg_cred)
+    assert reg_cred is not None
+    assert reg_cred.secretValue is None
+    projectadmin_client = create_context(admin_user_client,
+                                         create_project=False,
+                                         add_host=False,
+                                         kind='projectadmin').user_client
+
+    registry = _create_registry(projectadmin_client)
+    reg_cred = projectadmin_client.create_registry_credential(
+        registryId=registry.id,
+        email='test@rancher.com',
+        publicValue='rancher',
+        secretValue='rancher')
+    reg_cred = projectadmin_client.wait_success(reg_cred)
+    assert reg_cred is not None
+    assert reg_cred.secretValue is not None
+
+    creds = client.list_registryCredential(publicValue=reg_cred.publicValue,
+                                           _role='projectadmin')
+
+    assert len(creds) >= 1
+    assert creds[0].secretValue is None
+
+    # only super admin can pass the role
+    creds = super_client.list_registryCredential(
+        publicValue=reg_cred.publicValue, _role='projectadmin')
+    assert len(creds) >= 1
+    assert creds[0].secretValue is not None
+
+    # validate that you can't pass other roles than projectadmin
+    creds = client.list_registryCredential(publicValue=reg_cred.publicValue,
+                                           _role='admin')
+    assert len(creds) >= 1
+    assert creds[0].secretValue is None

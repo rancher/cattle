@@ -2,7 +2,6 @@ package io.cattle.platform.iaas.api.auth.integration.internal.rancher;
 
 import static io.cattle.platform.core.model.tables.AccountTable.*;
 import static io.cattle.platform.core.model.tables.AgentTable.*;
-
 import io.cattle.platform.archaius.util.ArchaiusUtil;
 import io.cattle.platform.core.constants.AccountConstants;
 import io.cattle.platform.core.constants.AgentConstants;
@@ -56,7 +55,7 @@ public class BasicAuthImpl implements AccountLookup, Priority {
         }
         Account account = authDao.getAccountByKeys(auth[0], auth[1], ApiContext.getContext().getTransformationService());
         if (account != null) {
-            return switchAccount(account);
+            return switchAccount(account, request);
         } else if (auth[0].toLowerCase().startsWith(ProjectConstants.OAUTH_BASIC.toLowerCase()) && SecurityConstants.SECURITY.get()) {
             String[] splits = auth[0].split("=");
             String projectId = splits.length == 2 ? splits[1] : null;
@@ -71,11 +70,20 @@ public class BasicAuthImpl implements AccountLookup, Priority {
         return account;
     }
 
-    protected Account switchAccount(Account account) {
+    protected Account switchAccount(Account account, ApiRequest request) {
         boolean shouldSwitch = DataAccessor.fromDataFieldOf(account)
             .withKey(AccountConstants.DATA_ACT_AS_RESOURCE_ACCOUNT)
             .withDefault(false)
-            .as(Boolean.class);
+                .as(Boolean.class);
+
+        boolean projectAdmin = false;
+        if (DataAccessor.fromDataFieldOf(account)
+                .withKey(AccountConstants.DATA_ACT_AS_RESOURCE_ADMIN_ACCOUNT)
+                .withDefault(false)
+                .as(Boolean.class)) {
+            shouldSwitch = true;
+            projectAdmin = true;
+        }
 
         if (shouldSwitch) {
             Agent agent = objectManager.findAny(Agent.class, AGENT.ACCOUNT_ID, account.getId());
@@ -84,9 +92,13 @@ public class BasicAuthImpl implements AccountLookup, Priority {
                         .withKey(AgentConstants.DATA_AGENT_RESOURCES_ACCOUNT_ID)
                         .as(Long.class);
                 if (resourceAccId != null) {
-                    return objectManager.findAny(Account.class,
+                    Account resourceAccount = objectManager.findAny(Account.class,
                             ACCOUNT.ID, resourceAccId,
                             ACCOUNT.STATE, CommonStatesConstants.ACTIVE);
+                    if (projectAdmin) {
+                        resourceAccount.setKind("projectadmin");
+                    }
+                    return resourceAccount;
                 }
             }
         }
