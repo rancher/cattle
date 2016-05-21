@@ -18,6 +18,7 @@ kubelet:
         - /var/run/docker.sock:/var/run/docker.sock
         - /var/run:/host/var/run
         - /var/lib/docker:/var/lib/docker
+        - /dev:/host/dev
     net: host
     pid: host
     ipc: host
