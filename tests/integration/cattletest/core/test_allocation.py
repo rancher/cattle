@@ -695,7 +695,8 @@ def test_container_label_disksize_single_volume(super_client, new_context):
         c3 = new_context.super_create_container_no_success(
             labels={label: '50'})
         containers.append(c3)
-        assert c3.transitioning == 'error'
+
+        wait_for(lambda: super_client.reload(c3).transitioning == 'error')
         assert c3.transitioningMessage == \
             'Scheduling failed: host needs more free disk space'
         assert c3.state == 'error'
