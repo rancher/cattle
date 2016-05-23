@@ -1143,3 +1143,66 @@ def _wait_until_active_map_count(service, count, client):
     wait_for_condition(client, service, wait_for_map_count)
     return client. \
         list_serviceExposeMap(serviceId=service.id, state='active')
+
+
+def test_global_service_health(new_context):
+    client = new_context.client
+    host1 = new_context.host
+    host2 = register_simulated_host(new_context)
+
+    client.wait_success(host1)
+    client.wait_success(host2)
+
+    # create environment and services
+    env = client.create_environment(name='env-' + random_str())
+    image_uuid = new_context.image_uuid
+    labels = {"io.rancher.container.start_once": "true"}
+    secondary_lc = {"imageUuid": image_uuid, "name": "secondary",
+                    "labels": labels}
+    launch_config = {
+        "imageUuid": image_uuid,
+        "labels": {
+            'io.rancher.scheduler.global': 'true'
+        }
+    }
+    svc = client.create_service(name=random_str(),
+                                environmentId=env.id,
+                                launchConfig=launch_config,
+                                secondaryLaunchConfigs=[secondary_lc])
+    svc = client.wait_success(svc)
+    assert svc.state == "inactive"
+
+    svc = client.wait_success(svc.activate(), 120)
+
+    wait_for(lambda: client.reload(svc).healthState == 'healthy')
+
+    # stop instances
+    c1 = _validate_compose_instance_start(client, svc, env, "1",
+                                          "secondary")
+    c2 = _validate_compose_instance_start(client, svc, env, "2",
+                                          "secondary")
+    client.wait_success(c1.stop())
+    client.wait_success(c2.stop())
+
+    wait_for(lambda: client.reload(svc).healthState == 'healthy')
+
+
+def _validate_compose_instance_start(client, service, env,
+                                     number, launch_config_name=None):
+    cn = launch_config_name + "_" if \
+        launch_config_name is not None else ""
+    name = env.name + "_" + service.name + "_" + cn + number
+
+    def wait_for_map_count(service):
+        instances = client. \
+            list_container(name=name,
+                           state="running")
+        return len(instances) == 1
+
+    wait_for(lambda: wait_for_condition(client, service,
+                                        wait_for_map_count), timeout=5)
+
+    instances = client. \
+        list_container(name=name,
+                       state="running")
+    return instances[0]

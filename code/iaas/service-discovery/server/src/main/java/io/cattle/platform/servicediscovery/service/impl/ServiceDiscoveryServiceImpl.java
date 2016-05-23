@@ -670,7 +670,8 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
                 }
             }
 
-            if (startedOnce > 0 && startedOnce >= expectedScale) {
+            if (startedOnce > 0 && ((isGlobal && startedOnce >= instanceCount)
+                    || (!isGlobal && startedOnce >= expectedScale))) {
                 return HealthcheckConstants.SERVICE_HEALTH_STATE_STARTED_ONCE;
             }
 
