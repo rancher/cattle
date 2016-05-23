@@ -95,6 +95,9 @@ public class BasicAuthImpl implements AccountLookup, Priority {
                     Account resourceAccount = objectManager.findAny(Account.class,
                             ACCOUNT.ID, resourceAccId,
                             ACCOUNT.STATE, CommonStatesConstants.ACTIVE);
+                    if (resourceAccount == null) {
+                        return null;
+                    }
                     if (projectAdmin) {
                         resourceAccount.setKind("projectadmin");
                     }
