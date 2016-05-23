@@ -10,7 +10,7 @@ zookeeper:
   volumes_from:
   - zookeeper-data
 zookeeper-data:
-  image: rancher/zookeeper:3.4.8
+  image: busybox
   entrypoint: /bin/true
   labels:
     io.rancher.scheduler.affinity:container_label_ne: io.rancher.stack_service.name=$${stack_name}/$${service_name}
