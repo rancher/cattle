@@ -1,4 +1,6 @@
 zookeeper:
+  scale: 3
+  retain_ip: true
   health_check:
     port: 2181
     interval: 5000
@@ -7,6 +9,8 @@ zookeeper:
     healthy_threshold: 2
     response_timeout: 5000
 mesos-master:
+  scale: 3
+  retain_ip: true
   health_check:
     port: 5050
     interval: 3000
