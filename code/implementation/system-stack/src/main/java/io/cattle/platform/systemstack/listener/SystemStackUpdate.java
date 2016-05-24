@@ -11,6 +11,8 @@ import io.cattle.platform.core.dao.GenericResourceDao;
 import io.cattle.platform.core.dao.HostDao;
 import io.cattle.platform.core.model.Account;
 import io.cattle.platform.core.model.Environment;
+import io.cattle.platform.core.model.tables.records.EnvironmentRecord;
+import io.cattle.platform.db.jooq.dao.impl.AbstractJooqDao;
 import io.cattle.platform.eventing.EventService;
 import io.cattle.platform.eventing.annotation.AnnotatedEventListener;
 import io.cattle.platform.eventing.annotation.EventHandler;
@@ -31,6 +33,8 @@ import io.cattle.platform.util.type.CollectionUtils;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Callable;
 
@@ -44,10 +48,24 @@ import org.apache.http.conn.HttpHostConnectException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class SystemStackUpdate implements AnnotatedEventListener {
+public class SystemStackUpdate extends AbstractJooqDao implements AnnotatedEventListener {
 
-    public static final String[] STACKS = new String[] { "swarm", "kubernetes", "mesos", "publicDns", "virtualMachine" };
-    public static final String STACK_EXTERNAL_ID = "system://%s";
+    public static final String KUBERNETES_STACK = "kubernetes";
+    public static final String SWARM_STACK = "swarm";
+    public static final String MESOS_STACK = "mesos";
+    public static final String PUBLIC_DNS_STACK = "publicDns";
+    public static final String VIRTUAL_MACHINE_STACK = "virtualMachine";
+
+    public static final String[] STACKS = new String[] { SWARM_STACK, KUBERNETES_STACK, MESOS_STACK, PUBLIC_DNS_STACK,
+            VIRTUAL_MACHINE_STACK };
+    public static final Map<String, String> STACK_EXTERNAL_IDS = new HashMap<>();
+    static {
+        STACK_EXTERNAL_IDS.put("swarm", "system://%s%s");
+        STACK_EXTERNAL_IDS.put("mesos", "system://%s%s");
+        STACK_EXTERNAL_IDS.put("virtualMachine", "system://%s%s");
+        STACK_EXTERNAL_IDS.put("publicDns", "system-catalog://library:%s:%s");
+        STACK_EXTERNAL_IDS.put("kubernetes", "system-catalog://library:%s:%s");
+    }
     private static final String STACK_RESOURCE = "/config-content/system-stacks/%s/%s";
     private static final Logger log = LoggerFactory.getLogger(SystemStackUpdate.class);
     private static final String CATALOG_RESOURCE_URL = ArchaiusUtil.getString("system.stack.catalog.url").get();
@@ -130,6 +148,7 @@ public class SystemStackUpdate implements AnnotatedEventListener {
 
         compose = getFile(stack, "docker-compose.yml");
 
+        String version = "";
         if (compose == null) {
             //not found in classpath, fetch from catalog
             Template catalogEntry = getTemplateFromCatalog(stack);
@@ -139,6 +158,7 @@ public class SystemStackUpdate implements AnnotatedEventListener {
             }
             compose = catalogEntry.getDockerCompose();
             rancherCompose = catalogEntry.getRancherCompose();
+            version = catalogEntry.getId().substring(catalogEntry.getId().lastIndexOf(':') + 1);
         } else {
             rancherCompose = getFile(stack, "rancher-compose.yml");
         }
@@ -151,7 +171,7 @@ public class SystemStackUpdate implements AnnotatedEventListener {
         Map<Object, Object> data = CollectionUtils.asMap(
                 (Object)ENVIRONMENT.NAME, StringUtils.capitalize(stack),
                 ENVIRONMENT.ACCOUNT_ID, account.getId(),
-                ENVIRONMENT.EXTERNAL_ID, String.format(STACK_EXTERNAL_ID, stack),
+                ENVIRONMENT.EXTERNAL_ID, getExternalId(stack, version),
                 ServiceDiscoveryConstants.STACK_FIELD_DOCKER_COMPOSE, compose,
                 ServiceDiscoveryConstants.STACK_FIELD_RANCHER_COMPOSE, rancherCompose,
                 ServiceDiscoveryConstants.STACK_FIELD_START_ON_CREATE, true);
@@ -160,6 +180,19 @@ public class SystemStackUpdate implements AnnotatedEventListener {
         props.put("isSystem", true);
         resourceDao.createAndSchedule(Environment.class, props);
         return true;
+    }
+
+    public static String getExternalId(String stackType, String version) {
+        return String.format(STACK_EXTERNAL_IDS.get(stackType), stackType, version);
+    }
+
+    public static String getStackTypeFromExternalId(String externalId) {
+        for (String stackType : STACK_EXTERNAL_IDS.keySet()) {
+            if (externalId.startsWith(getExternalId(stackType, ""))) {
+                return stackType;
+            }
+        }
+        return null;
     }
 
     protected String getFile(String stack, String filename) throws IOException {
@@ -203,10 +236,17 @@ public class SystemStackUpdate implements AnnotatedEventListener {
     }
 
     protected Environment getStack(Account account, String stack) {
-        return objectManager.findAny(Environment.class,
-                ENVIRONMENT.ACCOUNT_ID, account.getId(),
-                ENVIRONMENT.EXTERNAL_ID, String.format(STACK_EXTERNAL_ID, stack),
-                ENVIRONMENT.REMOVED, null);
+        List<? extends Environment> stacks = create()
+                .select(ENVIRONMENT.fields())
+                .from(ENVIRONMENT)
+                .where(ENVIRONMENT.REMOVED.isNull())
+                .and(ENVIRONMENT.ACCOUNT_ID.eq(account.getId()))
+                .and(ENVIRONMENT.EXTERNAL_ID.startsWith(getExternalId(stack, "")))
+                .fetchInto(EnvironmentRecord.class);
+        if (stacks.isEmpty()) {
+            return null;
+        }
+        return stacks.get(0);
     }
 
     protected void removeStack(Account account, String stack) {

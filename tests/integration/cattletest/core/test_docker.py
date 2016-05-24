@@ -688,6 +688,10 @@ def test_container_fields(docker_client, super_client):
 
     c = super_client.wait_success(c)
 
+    wait_for(lambda: super_client.reload(c).data['dockerInspect'] is not None)
+    wait_for(lambda: super_client.
+             reload(c).data['dockerInspect']['HostConfig'] is not None)
+
     assert set(c.data['dockerInspect']['HostConfig']['CapAdd']) == set(caps)
     assert set(c.data['dockerInspect']['HostConfig']['CapDrop']) == set(caps)
     actual_dns = c.data['dockerInspect']['HostConfig']['Dns']

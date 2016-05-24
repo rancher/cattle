@@ -28,9 +28,7 @@ public class Template {
 
     Map<String, String> versionLinks;
 
-    String dockerCompose;
-
-    String rancherCompose;
+    Map<String, String> files;
 
     String uuid;
 
@@ -133,21 +131,21 @@ public class Template {
     }
     
     public String getDockerCompose() {
-    return dockerCompose;
-    }
-
-    public void setDockerCompose(String dockerCompose) {
-    this.dockerCompose = dockerCompose;
+        return this.getFiles().get("docker-compose.yml");
     }
 
     public String getRancherCompose() {
-    return rancherCompose;
+        return this.getFiles().get("rancher-compose.yml");
     }
 
-    public void setRancherCompose(String rancherCompose) {
-    this.rancherCompose = rancherCompose;
+    public Map<String, String> getFiles() {
+        return files;
     }
-    
+
+    public void setFiles(Map<String, String> files) {
+        this.files = files;
+    }
+
     public String getUuid() {
     return uuid;
     }
