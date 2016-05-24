@@ -53,17 +53,20 @@ public class SystemStackRemovePostHandler extends AbstractObjectProcessLogic imp
                 ENVIRONMENT.REMOVED, null);
         List<Environment> toCleanup = new ArrayList<>();
         String systemStackType = systemStack.getExternalId().replace(String.format(SystemStackUpdate.STACK_EXTERNAL_ID, ""), "");
-        for (String prefix : STACKS_TO_CLEANUP.get(systemStackType)) {
-            Iterator<Environment> it = all.iterator();
-            while (it.hasNext()) {
-                Environment stack = it.next();
-                if (stack.getExternalId() == null) {
-                    it.remove();
-                    continue;
-                }
-                if (stack.getExternalId().startsWith(prefix)) {
-                    toCleanup.add(stack);
-                    it.remove();
+        List<String> stackPrefixes = STACKS_TO_CLEANUP.get(systemStackType);
+        if (stackPrefixes != null) {
+            for (String prefix : stackPrefixes) {
+                Iterator<Environment> it = all.iterator();
+                while (it.hasNext()) {
+                    Environment stack = it.next();
+                    if (stack.getExternalId() == null) {
+                        it.remove();
+                        continue;
+                    }
+                    if (stack.getExternalId().startsWith(prefix)) {
+                        toCleanup.add(stack);
+                        it.remove();
+                    }
                 }
             }
         }
