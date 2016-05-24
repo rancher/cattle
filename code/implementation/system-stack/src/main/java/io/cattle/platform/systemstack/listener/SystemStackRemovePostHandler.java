@@ -22,7 +22,8 @@ public class SystemStackRemovePostHandler extends AbstractObjectProcessLogic imp
     
     private static final Map<String, List<String>> STACKS_TO_CLEANUP = new HashMap<>();
     static {
-        STACKS_TO_CLEANUP.put("kubernetes", Arrays.asList("kubernetes://", "kubernetes-loadbalancers://"));
+        STACKS_TO_CLEANUP.put("kubernetes",
+                Arrays.asList("kubernetes://", "kubernetes-loadbalancers://", "kubernetes-ingress-lbs://"));
     }
 
     @Override
