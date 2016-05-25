@@ -58,6 +58,7 @@ public class GenericWhitelistedProxy extends AbstractResponseGenerator {
     private static final DynamicBooleanProperty ALLOW_PROXY = ArchaiusUtil.getBoolean("api.proxy.allow");
     private static final DynamicStringListProperty PROXY_WHITELIST = ArchaiusUtil.getList("api.proxy.whitelist");
 
+    private static final String FORWARD_PROTO = "X-Forwarded-Proto";
     private static final String API_AUTH = "X-API-AUTH-HEADER";
     private static final Set<String> BAD_HEADERS = new HashSet<>(Arrays.asList(HTTP.TARGET_HOST.toLowerCase(), "authorization",
             HTTP.TRANSFER_ENCODING.toLowerCase(), HTTP.CONTENT_LEN.toLowerCase(), API_AUTH.toLowerCase()));
@@ -168,6 +169,12 @@ public class GenericWhitelistedProxy extends AbstractResponseGenerator {
             break;
         default:
             throw new ClientVisibleException(ResponseCodes.BAD_REQUEST, "Invalid method", "The method " + method + " is not supported", null);
+        }
+
+        // This isn't always available. As is the case for proxy protocol
+        String xForwardedProto = servletRequest.getHeader(FORWARD_PROTO);
+        if (xForwardedProto == null && request.getRequestUrl() != null && request.getRequestUrl().startsWith("https")) {
+            temp.addHeader(FORWARD_PROTO, "https");
         }
 
         for (String headerName : (List<String>)Collections.list(servletRequest.getHeaderNames())) {
