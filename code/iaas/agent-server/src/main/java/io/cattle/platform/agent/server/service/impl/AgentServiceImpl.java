@@ -48,7 +48,7 @@ public class AgentServiceImpl implements AgentService {
 
     @Override
     public void execute(final Event event) {
-        Agent agent = getAgent(event);
+        final Agent agent = getAgent(event);
         if (agent == null) {
             return;
         }
@@ -93,7 +93,7 @@ public class AgentServiceImpl implements AgentService {
                         } catch (EventExecutionException e) {
                             handleError(event, e.getEvent());
                         } catch (TimeoutException t) {
-                            log.info("Timeout waiting for response to [{}] id [{}]", agentEvent.getName(), agentEvent.getId());
+                            log.info("Timeout waiting for response to [{}] agent id [{}]", agentEvent.getName(), agent.getId());
                         }
                     }
                 }, executorService);
