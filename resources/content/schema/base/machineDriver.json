@@ -8,6 +8,10 @@
                 "scheduleUpdate" : true
             }
         },
+        "externalId": {
+            "type": "string",
+            "nullable": false
+        },
         "builtin": {
             "type": "boolean",
             "nullable": false

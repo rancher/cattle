@@ -269,6 +269,7 @@
         "machineDriver.activateOnCreate": "cr",
         "machineDriver.builtin": "cr",
         "machineDriver.defaultActive": "r",
+        "machineDriver.externalId": "cr",
         "machineDriver.name": "r",
         "machineDriver.url": "cru",
         "machineDriver.uiUrl": "cru",
