@@ -187,7 +187,7 @@ public class DynamicSchemaDaoImpl extends AbstractJooqDao implements DynamicSche
                     .on(DYNAMIC_SCHEMA_ROLE.DYNAMIC_SCHEMA_ID.eq(DYNAMIC_SCHEMA.ID))
                     .where(DYNAMIC_SCHEMA_ROLE.ROLE.in(roles))
                     .and(DYNAMIC_SCHEMA.NAME.eq(name))
-                    .and(DYNAMIC_SCHEMA.STATE.ne(CommonStatesConstants.PURGED))
+                    .and(DYNAMIC_SCHEMA.STATE.in(CommonStatesConstants.CREATING, CommonStatesConstants.ACTIVE))
                     .and(DYNAMIC_SCHEMA.ACCOUNT_ID.isNull())
                     .fetch().into(DynamicSchemaWithRole.class);
         } else if (roles == null || roles.isEmpty()) {
@@ -206,7 +206,7 @@ public class DynamicSchemaDaoImpl extends AbstractJooqDao implements DynamicSche
                     .where(DYNAMIC_SCHEMA_ROLE.ROLE.in(roles))
                     .and(DYNAMIC_SCHEMA.NAME.eq(name))
                     .and(DYNAMIC_SCHEMA.ACCOUNT_ID.eq(accountId))
-                    .and(DYNAMIC_SCHEMA.STATE.ne(CommonStatesConstants.PURGED))
+                    .and(DYNAMIC_SCHEMA.STATE.in(CommonStatesConstants.CREATING, CommonStatesConstants.ACTIVE))
                     .fetch().into(DynamicSchemaWithRole.class);
         }
         if (schemas.isEmpty()) {
