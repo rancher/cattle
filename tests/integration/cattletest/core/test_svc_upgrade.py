@@ -407,30 +407,14 @@ def test_service_upgrade_no_image_selector(client):
                                  selectorContainer="foo=barbar")
     svc1 = client.wait_success(svc1)
     svc1 = client.wait_success(svc1.activate())
+    strategy = {"intervalMillis": 100, "launchConfig": {}}
 
-    with pytest.raises(ApiError) as e:
-        svc1.upgrade_action(launchConfig=launch_config,
-                            intervalMillis=100)
-
-    assert e.value.error.status == 422
-    assert e.value.error.code == 'InvalidAction'
+    svc1.upgrade_action(launchConfig=launch_config,
+                        inServiceStrategy=strategy)
 
 
 def test_service_upgrade_mixed_selector(client, context):
     env = _create_stack(client)
-    launch_config = {"imageUuid": "rancher/none"}
-    svc1 = client.create_service(name=random_str(),
-                                 environmentId=env.id,
-                                 launchConfig=launch_config,
-                                 selectorContainer="foo=barbar")
-    svc1 = client.wait_success(svc1)
-    svc1 = client.wait_success(svc1.activate())
-
-    with pytest.raises(ApiError) as e:
-        _run_insvc_upgrade(svc1, launchConfig={'labels': {'foo': "bar"}})
-
-    assert e.value.error.status == 422
-    assert e.value.error.code == 'InvalidAction'
 
     image_uuid = context.image_uuid
     launch_config = {"imageUuid": image_uuid}
