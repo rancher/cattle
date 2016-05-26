@@ -1,10 +1,10 @@
 package io.cattle.platform.servicediscovery.dao.impl;
 
-import static io.cattle.platform.core.model.tables.HostTable.HOST;
-import static io.cattle.platform.core.model.tables.InstanceHostMapTable.INSTANCE_HOST_MAP;
-import static io.cattle.platform.core.model.tables.InstanceTable.INSTANCE;
-import static io.cattle.platform.core.model.tables.ServiceExposeMapTable.SERVICE_EXPOSE_MAP;
-import static io.cattle.platform.core.model.tables.ServiceTable.SERVICE;
+import static io.cattle.platform.core.model.tables.HostTable.*;
+import static io.cattle.platform.core.model.tables.InstanceHostMapTable.*;
+import static io.cattle.platform.core.model.tables.InstanceTable.*;
+import static io.cattle.platform.core.model.tables.ServiceExposeMapTable.*;
+import static io.cattle.platform.core.model.tables.ServiceTable.*;
 import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.dao.GenericMapDao;
@@ -25,12 +25,15 @@ import io.cattle.platform.servicediscovery.api.constants.ServiceDiscoveryConstan
 import io.cattle.platform.servicediscovery.api.dao.ServiceExposeMapDao;
 import io.cattle.platform.servicediscovery.service.ServiceDiscoveryService;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
 import javax.inject.Inject;
 
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.collections.TransformerUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.jooq.Condition;
 import org.jooq.Configuration;
@@ -118,7 +121,7 @@ public class ServiceExposeMapDaoImpl extends AbstractJooqDao implements ServiceE
         } else {
             condition = SERVICE_EXPOSE_MAP.DNS_PREFIX.eq(launchConfigName);
         }
-        return create()
+        List<? extends Instance> instances = create()
                 .select(INSTANCE.fields())
                 .from(INSTANCE)
                 .join(SERVICE_EXPOSE_MAP)
@@ -132,6 +135,27 @@ public class ServiceExposeMapDaoImpl extends AbstractJooqDao implements ServiceE
                                 InstanceConstants.STATE_ERROR, InstanceConstants.STATE_ERRORING))
                         .and(condition))
                 .fetchInto(InstanceRecord.class);
+
+        List<? extends Host> validHosts = create()
+                .select(HOST.fields())
+                .from(HOST)
+                .where(HOST.ACCOUNT_ID.eq(service.getAccountId()))
+                .and(HOST.STATE.notIn(CommonStatesConstants.REMOVED, CommonStatesConstants.REMOVING,
+                        CommonStatesConstants.PURGED, CommonStatesConstants.PURGING))
+                .and(HOST.ACCOUNT_ID.eq(service.getAccountId()))
+                        .fetchInto(HostRecord.class);
+        @SuppressWarnings("unchecked")
+        List<Long> validHostIds = (List<Long>) CollectionUtils.collect(validHosts,
+                TransformerUtils.invokerTransformer("getId"));
+        
+        List<Instance> toReturn = new ArrayList<>();
+        for (Instance instance : instances) {
+            Long hostId = DataAccessor.fieldLong(instance, InstanceConstants.FIELD_HOST_ID);
+            if (hostId == null || validHostIds.contains(hostId)) {
+                toReturn.add(instance);
+            }
+        }
+        return toReturn;
     }
 
     @Override
