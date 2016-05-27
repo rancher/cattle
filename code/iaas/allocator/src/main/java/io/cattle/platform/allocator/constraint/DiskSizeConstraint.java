@@ -30,6 +30,7 @@ public class DiskSizeConstraint extends HardConstraint implements Constraint {
         if (instance == null) {
             return false;
         }
+
         Set<Long> hostIds = candidate.getHosts();
 
         // if one of the host does not have enough free space then return false
@@ -46,6 +47,7 @@ public class DiskSizeConstraint extends HardConstraint implements Constraint {
         }
         return true;
     }
+
 
     @Override
     public String toString() {

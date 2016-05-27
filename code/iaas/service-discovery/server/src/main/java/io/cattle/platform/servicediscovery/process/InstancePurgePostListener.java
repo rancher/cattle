@@ -16,10 +16,16 @@ import io.cattle.platform.process.common.handler.AbstractObjectProcessLogic;
 import io.cattle.platform.servicediscovery.api.dao.ServiceDao;
 import io.cattle.platform.util.type.Priority;
 
+import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.inject.Inject;
 
+import org.apache.http.HttpResponse;
+import org.apache.http.client.fluent.Request;
+import org.apache.http.conn.HttpHostConnectException;
+import org.apache.http.message.BasicNameValuePair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -46,6 +52,12 @@ public class InstancePurgePostListener extends AbstractObjectProcessLogic implem
                 INSTANCE_HOST_MAP.INSTANCE_ID, instance.getId());
 
         for (InstanceHostMap mapping : instanceHostMappings) {
+            try {
+                removeInstanceFromScheduler(instance.getId(), mapping.getHostId(), instance.getAccountId());
+            } catch (IOException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
             CacheManager cm = CacheManager.getCacheManagerInstance(this.objectManager);
             HostInfo hostInfo = cm.getHostInfo(mapping.getHostId(), false);
             if (hostInfo == null) {
@@ -58,6 +70,33 @@ public class InstancePurgePostListener extends AbstractObjectProcessLogic implem
             }
         }
         return null;
+    }
+    
+    protected void removeInstanceFromScheduler(Long instanceId, Long hostId, Long envId) throws IOException {
+        String REMOVE_HOST_URL = "http://localhost:8090/v1-scheduler/remove-instance";
+        List<BasicNameValuePair> requestData = new ArrayList<>();
+
+        requestData.add(new BasicNameValuePair("hostId", "1h" + hostId.toString()));
+        requestData.add(new BasicNameValuePair("instanceId", "1i" + instanceId.toString()));
+        requestData.add(new BasicNameValuePair("envId", "1a" + envId.toString()));
+
+        HttpResponse response;
+        try {
+            response = Request.Post(REMOVE_HOST_URL)
+                    .addHeader("Accept", "application/json").bodyForm(requestData)
+                    .execute().returnResponse();
+            int statusCode = response.getStatusLine().getStatusCode();
+            if (statusCode != 200) {
+                log.error("statusCode: {}", statusCode);
+            }
+
+        } catch(HttpHostConnectException ex) {
+            log.error("Scheduler Service not reachable at [{}]", REMOVE_HOST_URL);
+            return;
+        }
+        log.info(response.toString());
+        return;
+
     }
 
     @Override

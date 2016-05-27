@@ -17,6 +17,7 @@ import io.cattle.platform.core.model.StoragePool;
 import io.cattle.platform.core.model.Subnet;
 import io.cattle.platform.core.model.Volume;
 import io.cattle.platform.core.util.InstanceHelpers;
+import io.cattle.platform.json.JsonMapper;
 import io.cattle.platform.lock.LockCallback;
 import io.cattle.platform.lock.LockCallbackNoReturn;
 import io.cattle.platform.lock.LockManager;
@@ -26,6 +27,7 @@ import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.process.ObjectProcessManager;
 import io.cattle.platform.object.util.DataAccessor;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -39,6 +41,10 @@ import java.util.Set;
 import javax.inject.Inject;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.http.HttpResponse;
+import org.apache.http.client.fluent.Request;
+import org.apache.http.conn.HttpHostConnectException;
+import org.apache.http.message.BasicNameValuePair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -228,13 +234,48 @@ public abstract class AbstractAllocator implements Allocator {
 
     protected boolean acquireLockAndAllocate(final AllocationRequest request, final AllocationAttempt attempt, Object deallocate) {
         final List<Constraint> finalFailedConstraints = new ArrayList<>();
+        final List<AllocationCandidate> candidates = new ArrayList<AllocationCandidate>();
         lockManager.lock(getAllocationLock(request, attempt), new LockCallbackNoReturn() {
             @Override
             public void doWithLockNoResult() {
                 Context c = allocateTimer.time();
                 try {
+                    Iterator<AllocationCandidate> iter = getCandidates(attempt);
+                    List<AllocationCandidate> candidatesForCPUMemoryIops = new ArrayList<AllocationCandidate>();
+                    while (iter.hasNext()) {
+                        candidatesForCPUMemoryIops.add(iter.next());
+                    }
+                    if (iter != null) {
+                        close(iter);
+                    }
+                    
+                    // scheduler the list and return a list that is able to schedule
+                    for (AllocationCandidate candidate : candidatesForCPUMemoryIops) {
+                        boolean good = true;
+                        
+                        // schedule cpu, memory and iops first
+                        try {
+                            for( Long hostId : candidate.getHosts() ){
+                                Instance instance = attempt.getInstance();
+                                good = schedulerIops(attempt.getInstanceId(), hostId, attempt.getInstance().getAccountId());
+                                if(good && InstanceConstants.KIND_VIRTUAL_MACHINE.equals(instance.getKind())) {
+                                    good = schedulerCpuMemory(attempt.getInstanceId(), hostId, attempt.getInstance().getAccountId());
+                                }
+                                if (!good)
+                                    break;
+                            }
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                        if (!good)
+                            continue;
+                        candidates.add(candidate);
+                    }
+                    if (candidates.size() == 0) {
+                        return;
+                    }
                     do {
-                        Set<Constraint> failedConstraints = runAllocation(request, attempt);
+                        Set<Constraint> failedConstraints = runAllocation(request, attempt, candidates);
                         if (attempt.getMatchedCandidate() == null) {
                             boolean removed = false;
                             // iterate over failed constraints and remove first soft constraint if any
@@ -259,6 +300,9 @@ public abstract class AbstractAllocator implements Allocator {
             }
         });
 
+        if (candidates.size() == 0) {
+            throw new FailedToAllocate("failed to schedule cpu/memory/iops");
+        }
         if (attempt.getMatchedCandidate() == null) {
             if (finalFailedConstraints.size() > 0) {
                 throw new FailedToAllocate(toErrorMessage(finalFailedConstraints));
@@ -277,57 +321,108 @@ public abstract class AbstractAllocator implements Allocator {
 
         return StringUtils.join(result, ", ");
     }
+    
+    @Inject
+    private JsonMapper jsonMapper;
+    
+    protected boolean schedulerIops(Long instanceId, Long hostId, Long envId) throws IOException {
+        String REMOVE_HOST_URL = "http://localhost:8090/v1-scheduler/iops";
+        List<BasicNameValuePair> requestData = new ArrayList<>();
 
-    protected Set<Constraint> runAllocation(AllocationRequest request, AllocationAttempt attempt) {
+        requestData.add(new BasicNameValuePair("hostId", "1h" + hostId.toString()));
+        requestData.add(new BasicNameValuePair("instanceId", "1i" + instanceId.toString()));
+        requestData.add(new BasicNameValuePair("envId", "1a" + envId.toString()));
+        Map<String, Object> jsonData;
+        HttpResponse response;
+        try {
+            response = Request.Post(REMOVE_HOST_URL)
+                    .addHeader("Accept", "application/json").bodyForm(requestData)
+                    .execute().returnResponse();
+            int statusCode = response.getStatusLine().getStatusCode();
+            if (statusCode != 200) {
+                log.error("statusCode: {}", statusCode);
+            }
+            jsonData = jsonMapper.readValue(response.getEntity().getContent());
+
+            String result = (String) jsonData.get("schedule");
+            return result.equals("yes");
+        } catch(HttpHostConnectException ex) {  
+            log.error("Scheduler Service not reachable at [{}]", REMOVE_HOST_URL);
+            throw ex;
+        }
+    }
+    
+    protected boolean schedulerCpuMemory(Long instanceId, Long hostId, Long envId) throws IOException {
+        String REMOVE_HOST_URL = "http://localhost:8090/v1-scheduler/cpu-memory";
+        List<BasicNameValuePair> requestData = new ArrayList<>();
+
+        requestData.add(new BasicNameValuePair("hostId", "1h" + hostId.toString()));
+        requestData.add(new BasicNameValuePair("vmId", "1i" + instanceId.toString()));
+        requestData.add(new BasicNameValuePair("envId", "1a" + envId.toString()));
+        Map<String, Object> jsonData;
+        HttpResponse response;
+        try {
+            response = Request.Post(REMOVE_HOST_URL)
+                    .addHeader("Accept", "application/json").bodyForm(requestData)
+                    .execute().returnResponse();
+            int statusCode = response.getStatusLine().getStatusCode();
+            if (statusCode != 200) {
+                log.error("statusCode: {}", statusCode);
+            }
+            jsonData = jsonMapper.readValue(response.getEntity().getContent());
+
+            String result = (String) jsonData.get("schedule");
+            return result.equals("yes");
+        } catch(HttpHostConnectException ex) {  
+            log.error("Scheduler Service not reachable at [{}]", REMOVE_HOST_URL);
+            throw ex;
+        }
+
+    }
+    
+    protected Set<Constraint> runAllocation(AllocationRequest request, AllocationAttempt attempt, List<AllocationCandidate> candidates) {
         logStart(attempt);
 
         List<Set<Constraint>> candidateFailedConstraintSets = new ArrayList<Set<Constraint>>();
-        Iterator<AllocationCandidate> iter = getCandidates(attempt);
-        try {
-            boolean foundOne = false;
-            while (iter.hasNext()) {
-                foundOne = true;
-                AllocationCandidate candidate = iter.next();
-                Set<Constraint> failedConstraints = new HashSet<Constraint>();
-                attempt.getCandidates().add(candidate);
+        boolean foundOne = false;
+        for (AllocationCandidate candidate : candidates) {
+            foundOne = true;
+            Set<Constraint> failedConstraints = new HashSet<Constraint>();
+            attempt.getCandidates().add(candidate);
 
-                String prefix = String.format("[%s][%s]", attempt.getId(), candidate.getId());
-                logCandidate(prefix, attempt, candidate);
+            String prefix = String.format("[%s][%s]", attempt.getId(), candidate.getId());
+            logCandidate(prefix, attempt, candidate);
 
-                boolean good = true;
-                for (Constraint constraint : attempt.getConstraints()) {
-                    boolean match = constraint.matches(attempt, candidate);
-                    log.info("{}   checking candidate [{}] : {}", prefix, match, constraint);
-                    if (!match) {
-                        good = false;
-                        failedConstraints.add(constraint);
-                    }
+            boolean good = true;
+            for (Constraint constraint : attempt.getConstraints()) {
+                boolean match = constraint.matches(attempt, candidate);
+                log.info("{}   checking candidate [{}] : {}", prefix, match, constraint);
+                if (!match) {
+                    good = false;
+                    failedConstraints.add(constraint);
+                }
+            }
+
+            log.info("{}   candidates result [{}]", prefix, good);
+            if (good) {
+                if (candidate.getHosts().size() > 0 && request.getType() == Type.VOLUME) {
+                    throw new IllegalStateException("Attempting to allocate hosts during a volume allocation");
                 }
 
-                log.info("{}   candidates result [{}]", prefix, good);
-                if (good) {
-                    if (candidate.getHosts().size() > 0 && request.getType() == Type.VOLUME) {
-                        throw new IllegalStateException("Attempting to allocate hosts during a volume allocation");
-                    }
-
-                    if (recordCandidate(attempt, candidate)) {
-                        attempt.setMatchedCandidate(candidate);
-                        return failedConstraints;
-                    } else {
-                        log.info("{}   can not record result", prefix);
-                    }
+                if (recordCandidate(attempt, candidate)) {
+                    attempt.setMatchedCandidate(candidate);
+                    return failedConstraints;
+                } else {
+                    log.info("{}   can not record result", prefix);
                 }
-                candidateFailedConstraintSets.add(failedConstraints);
             }
-            if (!foundOne) {
-                throw new FailedToAllocate("No candidates available");
-            }
-            return getWeakestConstraintSet(candidateFailedConstraintSets);
-        } finally {
-            if (iter != null) {
-                close(iter);
-            }
+            candidateFailedConstraintSets.add(failedConstraints);
         }
+        if (!foundOne) {
+            throw new FailedToAllocate("No candidates available");
+        }
+        return getWeakestConstraintSet(candidateFailedConstraintSets);
+
     }
 
     // ideally we want zero hard constraints and the fewest soft constraints

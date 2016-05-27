@@ -49,6 +49,8 @@ import io.cattle.platform.db.jooq.dao.impl.AbstractJooqDao;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.util.DataAccessor;
 
+import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -60,6 +62,10 @@ import javax.inject.Inject;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
+import org.apache.http.HttpResponse;
+import org.apache.http.client.fluent.Request;
+import org.apache.http.conn.HttpHostConnectException;
+import org.apache.http.message.BasicNameValuePair;
 import org.jooq.Condition;
 import org.jooq.Record3;
 import org.jooq.RecordHandler;
@@ -225,6 +231,114 @@ public class AllocatorDaoImpl extends AbstractJooqDao implements AllocatorDao {
 
     }
 
+    protected void recordIops(Long instanceId, Long hostId, Long envId) throws IOException {
+        String REMOVE_HOST_URL = "http://localhost:8090/v1-scheduler/allocate-iops";
+        List<BasicNameValuePair> requestData = new ArrayList<>();
+
+        requestData.add(new BasicNameValuePair("hostId", "1h" + hostId.toString()));
+        requestData.add(new BasicNameValuePair("instanceId", "1i" + instanceId.toString()));
+        requestData.add(new BasicNameValuePair("envId", "1a" + envId.toString()));
+
+        HttpResponse response;
+        try {
+            response = Request.Post(REMOVE_HOST_URL)
+                    .addHeader("Accept", "application/json").bodyForm(requestData)
+                    .execute().returnResponse();
+            int statusCode = response.getStatusLine().getStatusCode();
+            if (statusCode != 200) {
+                log.error("statusCode: {}", statusCode);
+            }
+
+        } catch(HttpHostConnectException ex) {
+            log.error("Scheduler Service not reachable at [{}]", REMOVE_HOST_URL);
+            return;
+        }
+        log.info(response.toString());
+        return;
+
+    }
+    
+    protected void recordCpuMemory(Long instanceId, Long hostId, Long envId) throws IOException {
+        String REMOVE_HOST_URL = "http://localhost:8090/v1-scheduler/allocate-cpu-memory";
+        List<BasicNameValuePair> requestData = new ArrayList<>();
+
+        requestData.add(new BasicNameValuePair("hostId", "1h" + hostId.toString()));
+        requestData.add(new BasicNameValuePair("vmId", "1i" + instanceId.toString()));
+        requestData.add(new BasicNameValuePair("envId", "1a" + envId.toString()));
+
+        HttpResponse response;
+        try {
+            response = Request.Post(REMOVE_HOST_URL)
+                    .addHeader("Accept", "application/json").bodyForm(requestData)
+                    .execute().returnResponse();
+            int statusCode = response.getStatusLine().getStatusCode();
+            if (statusCode != 200) {
+                log.error("statusCode: {}", statusCode);
+            }
+
+        } catch(HttpHostConnectException ex) {
+            log.error("Scheduler Service not reachable at [{}]", REMOVE_HOST_URL);
+            return;
+        }
+        log.info(response.toString());
+        return;
+
+    }
+    
+    protected void releaseIops(Long instanceId, Long hostId, Long envId) throws IOException {
+        String REMOVE_HOST_URL = "http://localhost:8090/v1-scheduler/deallocate-iops";
+        List<BasicNameValuePair> requestData = new ArrayList<>();
+
+        requestData.add(new BasicNameValuePair("hostId", "1h" + hostId.toString()));
+        requestData.add(new BasicNameValuePair("instanceId", "1i" + instanceId.toString()));
+        requestData.add(new BasicNameValuePair("envId", "1a" + envId.toString()));
+
+        HttpResponse response;
+        try {
+            response = Request.Post(REMOVE_HOST_URL)
+                    .addHeader("Accept", "application/json").bodyForm(requestData)
+                    .execute().returnResponse();
+            int statusCode = response.getStatusLine().getStatusCode();
+            if (statusCode != 200) {
+                log.error("statusCode: {}", statusCode);
+            }
+
+        } catch(HttpHostConnectException ex) {
+            log.error("Scheduler Service not reachable at [{}]", REMOVE_HOST_URL);
+            return;
+        }
+        log.info(response.toString());
+        return;
+
+    }
+    
+    protected void releaseCpuMemory(Long instanceId, Long hostId, Long envId) throws IOException {
+        String REMOVE_HOST_URL = "http://localhost:8090/v1-scheduler/deallocate-cpu-memory";
+        List<BasicNameValuePair> requestData = new ArrayList<>();
+
+        requestData.add(new BasicNameValuePair("hostId", "1h" + hostId.toString()));
+        requestData.add(new BasicNameValuePair("vmId", "1i" + instanceId.toString()));
+        requestData.add(new BasicNameValuePair("envId", "1a" + envId.toString()));
+
+        HttpResponse response;
+        try {
+            response = Request.Post(REMOVE_HOST_URL)
+                    .addHeader("Accept", "application/json").bodyForm(requestData)
+                    .execute().returnResponse();
+            int statusCode = response.getStatusLine().getStatusCode();
+            if (statusCode != 200) {
+                log.error("statusCode: {}", statusCode);
+            }
+
+        } catch(HttpHostConnectException ex) {
+            log.error("Scheduler Service not reachable at [{}]", REMOVE_HOST_URL);
+            return;
+        }
+        log.info(response.toString());
+        return;
+
+    }
+    
     @Override
     public boolean recordCandidate(AllocationAttempt attempt, AllocationCandidate candidate) {
         Set<Long> existingHosts = attempt.getHostIds();
@@ -241,6 +355,16 @@ public class AllocatorDaoImpl extends AbstractJooqDao implements AllocatorDao {
 
                 modifyCompute(hostId, attempt.getInstance(), false);
                 modifyDisk(hostId, attempt.getInstance(), true);
+                try {
+                    Instance instance = attempt.getInstance();
+                    recordIops(attempt.getInstanceId(), hostId, attempt.getInstance().getAccountId());
+                    if(InstanceConstants.KIND_VIRTUAL_MACHINE.equals(instance.getKind())) {
+                        recordCpuMemory(attempt.getInstanceId(), hostId, attempt.getInstance().getAccountId());
+                    }
+                } catch (IOException e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                }
             }
 
             // Assuming a single host. Just over-complexity to allow more than one host
@@ -327,6 +451,15 @@ public class AllocatorDaoImpl extends AbstractJooqDao implements AllocatorDao {
             if ( done == null || ! done.booleanValue() ) {
                 modifyCompute(map.getHostId(), instance, true);
                 modifyDisk(map.getHostId(), instance, false);
+                try {
+                    releaseIops(instance.getId(), map.getHostId(), instance.getAccountId());
+                    if(InstanceConstants.KIND_VIRTUAL_MACHINE.equals(instance.getKind())) {
+                        releaseCpuMemory(instance.getId(), map.getHostId(), instance.getAccountId());
+                    }
+                } catch (IOException e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                }
                 data.set(true);
                 objectManager.persist(map);
             }
