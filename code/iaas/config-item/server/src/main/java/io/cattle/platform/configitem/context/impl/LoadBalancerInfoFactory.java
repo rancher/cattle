@@ -193,7 +193,7 @@ public class LoadBalancerInfoFactory extends AbstractAgentBaseContextFactory {
         Collections.sort(targetsInfo, new Comparator<LoadBalancerTargetsInfo>() {
             @Override
             public int compare(LoadBalancerTargetsInfo s1, LoadBalancerTargetsInfo s2) {
-                return s1.getPortSpec().getPath().length() >= s2.getPortSpec().getPath().length() ? -1 : 1;
+                return Long.compare(s2.getPortSpec().getPath().length(), s1.getPortSpec().getPath().length());
             }
         });
 
@@ -255,7 +255,7 @@ public class LoadBalancerInfoFactory extends AbstractAgentBaseContextFactory {
         Collections.sort(targets, new Comparator<LoadBalancerTargetsInfo>() {
             @Override
             public int compare(LoadBalancerTargetsInfo s1, LoadBalancerTargetsInfo s2) {
-                return s1.getPortSpec().getPath().length() >= s2.getPortSpec().getPath().length() ? -1 : 1;
+                return Long.compare(s2.getPortSpec().getPath().length(), s1.getPortSpec().getPath().length());
             }
         });
         return targets;
