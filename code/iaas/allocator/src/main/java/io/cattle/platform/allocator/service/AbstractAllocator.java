@@ -238,6 +238,7 @@ public abstract class AbstractAllocator implements Allocator {
 
     protected boolean acquireLockAndAllocate(final AllocationRequest request, final AllocationAttempt attempt, Object deallocate) {
         final List<Constraint> finalFailedConstraints = new ArrayList<>();
+        final List<AllocationCandidate> candidatesForCPUMemoryIops = new ArrayList<AllocationCandidate>();
         final List<AllocationCandidate> candidates = new ArrayList<AllocationCandidate>();
         lockManager.lock(getAllocationLock(request, attempt), new LockCallbackNoReturn() {
             @Override
@@ -245,7 +246,6 @@ public abstract class AbstractAllocator implements Allocator {
                 Context c = allocateTimer.time();
                 try {
                     Iterator<AllocationCandidate> iter = getCandidates(attempt);
-                    List<AllocationCandidate> candidatesForCPUMemoryIops = new ArrayList<AllocationCandidate>();
                     while (iter.hasNext()) {
                         candidatesForCPUMemoryIops.add(iter.next());
                     }
@@ -304,6 +304,9 @@ public abstract class AbstractAllocator implements Allocator {
             }
         });
 
+        if (candidatesForCPUMemoryIops.size() == 0) {
+            throw new FailedToAllocate("No candidates available");
+        }
         if (candidates.size() == 0) {
             throw new FailedToAllocate("failed to schedule cpu/memory/iops");
         }
@@ -365,9 +368,7 @@ public abstract class AbstractAllocator implements Allocator {
         logStart(attempt);
 
         List<Set<Constraint>> candidateFailedConstraintSets = new ArrayList<Set<Constraint>>();
-        boolean foundOne = false;
         for (AllocationCandidate candidate : candidates) {
-            foundOne = true;
             Set<Constraint> failedConstraints = new HashSet<Constraint>();
             attempt.getCandidates().add(candidate);
 
@@ -398,9 +399,6 @@ public abstract class AbstractAllocator implements Allocator {
                 }
             }
             candidateFailedConstraintSets.add(failedConstraints);
-        }
-        if (!foundOne) {
-            throw new FailedToAllocate("No candidates available");
         }
         return getWeakestConstraintSet(candidateFailedConstraintSets);
 
