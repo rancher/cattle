@@ -3,7 +3,6 @@ package io.cattle.platform.servicediscovery.process;
 import io.cattle.platform.allocator.service.CacheManager;
 import io.cattle.platform.archaius.util.ArchaiusUtil;
 import io.cattle.platform.core.constants.HostConstants;
-import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.model.Host;
 import io.cattle.platform.engine.handler.HandlerResult;
 import io.cattle.platform.engine.handler.ProcessPostListener;

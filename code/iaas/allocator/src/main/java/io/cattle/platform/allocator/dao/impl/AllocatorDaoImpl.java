@@ -255,10 +255,8 @@ public class AllocatorDaoImpl extends AbstractJooqDao implements AllocatorDao {
             if (statusCode != 200) {
                 log.error("statusCode: {}", statusCode);
             }
-
         } catch (HttpHostConnectException ex) {
             log.error("Scheduler Service not reachable at [{}]", ALLOCATE_CPU_MEMORY_URL);
-            return;
         } catch (IOException e) {
             log.error((e.getStackTrace()).toString(), e);
         }

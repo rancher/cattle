@@ -9,6 +9,8 @@ import io.cattle.platform.allocator.lock.AllocateResourceLock;
 import io.cattle.platform.allocator.lock.AllocateVolumesResourceLock;
 import io.cattle.platform.allocator.service.AllocationRequest.Type;
 import io.cattle.platform.allocator.util.AllocatorUtils;
+import io.cattle.platform.archaius.util.ArchaiusUtil;
+import io.cattle.platform.core.constants.HostConstants;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.model.Host;
 import io.cattle.platform.core.model.Instance;
@@ -26,6 +28,7 @@ import io.cattle.platform.metrics.util.MetricsUtil;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.process.ObjectProcessManager;
 import io.cattle.platform.object.util.DataAccessor;
+import io.github.ibuildthecloud.gdapi.id.IdFormatter;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -54,6 +57,7 @@ import com.codahale.metrics.Timer.Context;
 public abstract class AbstractAllocator implements Allocator {
 
     private static final Logger log = LoggerFactory.getLogger(AbstractAllocator.class);
+    private static final String SCHEDULER_URL = ArchaiusUtil.getString("system.stack.scheduler.url").get();
 
     Timer allocateLockTimer = MetricsUtil.getRegistry().timer("allocator.allocate.with.lock");
     Timer allocateTimer = MetricsUtil.getRegistry().timer("allocator.allocate");
@@ -257,15 +261,15 @@ public abstract class AbstractAllocator implements Allocator {
                         try {
                             for( Long hostId : candidate.getHosts() ){
                                 Instance instance = attempt.getInstance();
-                                good = schedulerIops(attempt.getInstanceId(), hostId, attempt.getInstance().getAccountId());
+                                good = scheduleResources("iops", attempt.getInstanceId(), false, hostId, attempt.getInstance().getAccountId());
                                 if(good && InstanceConstants.KIND_VIRTUAL_MACHINE.equals(instance.getKind())) {
-                                    good = schedulerCpuMemory(attempt.getInstanceId(), hostId, attempt.getInstance().getAccountId());
+                                    good = scheduleResources("cpu-memory", attempt.getInstanceId(), true, hostId, attempt.getInstance().getAccountId());
                                 }
                                 if (!good)
                                     break;
                             }
                         } catch (IOException e) {
-                            e.printStackTrace();
+                            log.error((e.getStackTrace()).toString(), e);
                         }
                         if (!good)
                             continue;
@@ -325,44 +329,22 @@ public abstract class AbstractAllocator implements Allocator {
     @Inject
     private JsonMapper jsonMapper;
     
-    protected boolean schedulerIops(Long instanceId, Long hostId, Long envId) throws IOException {
-        String REMOVE_HOST_URL = "http://localhost:8090/v1-scheduler/iops";
-        List<BasicNameValuePair> requestData = new ArrayList<>();
-
-        requestData.add(new BasicNameValuePair("hostId", "1h" + hostId.toString()));
-        requestData.add(new BasicNameValuePair("instanceId", "1i" + instanceId.toString()));
-        requestData.add(new BasicNameValuePair("envId", "1a" + envId.toString()));
-        Map<String, Object> jsonData;
-        HttpResponse response;
-        try {
-            response = Request.Post(REMOVE_HOST_URL)
-                    .addHeader("Accept", "application/json").bodyForm(requestData)
-                    .execute().returnResponse();
-            int statusCode = response.getStatusLine().getStatusCode();
-            if (statusCode != 200) {
-                log.error("statusCode: {}", statusCode);
-            }
-            jsonData = jsonMapper.readValue(response.getEntity().getContent());
-
-            String result = (String) jsonData.get("schedule");
-            return result.equals("yes");
-        } catch(HttpHostConnectException ex) {  
-            log.error("Scheduler Service not reachable at [{}]", REMOVE_HOST_URL);
-            throw ex;
-        }
-    }
+    @Inject
+    IdFormatter idFormatter;
     
-    protected boolean schedulerCpuMemory(Long instanceId, Long hostId, Long envId) throws IOException {
-        String REMOVE_HOST_URL = "http://localhost:8090/v1-scheduler/cpu-memory";
+    protected boolean scheduleResources(String action, Long instanceId, boolean isVM, Long hostId, Long envId) throws IOException {
+        String SCHEDULE_IOPS__URL = SCHEDULER_URL + "/" + action;
         List<BasicNameValuePair> requestData = new ArrayList<>();
 
-        requestData.add(new BasicNameValuePair("hostId", "1h" + hostId.toString()));
-        requestData.add(new BasicNameValuePair("vmId", "1i" + instanceId.toString()));
+        requestData.add(new BasicNameValuePair("hostId", (String) idFormatter.formatId(HostConstants.TYPE, hostId)));
+        requestData.add(new BasicNameValuePair(isVM ? "vmId" : "instanceId",
+                (String) idFormatter.formatId(InstanceConstants.TYPE, instanceId)));
         requestData.add(new BasicNameValuePair("envId", "1a" + envId.toString()));
+
         Map<String, Object> jsonData;
         HttpResponse response;
         try {
-            response = Request.Post(REMOVE_HOST_URL)
+            response = Request.Post(SCHEDULE_IOPS__URL)
                     .addHeader("Accept", "application/json").bodyForm(requestData)
                     .execute().returnResponse();
             int statusCode = response.getStatusLine().getStatusCode();
@@ -374,10 +356,9 @@ public abstract class AbstractAllocator implements Allocator {
             String result = (String) jsonData.get("schedule");
             return result.equals("yes");
         } catch(HttpHostConnectException ex) {  
-            log.error("Scheduler Service not reachable at [{}]", REMOVE_HOST_URL);
+            log.error("Scheduler Service not reachable at [{}]", SCHEDULE_IOPS__URL);
             throw ex;
         }
-
     }
     
     protected Set<Constraint> runAllocation(AllocationRequest request, AllocationAttempt attempt, List<AllocationCandidate> candidates) {
