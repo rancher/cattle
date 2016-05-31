@@ -2,6 +2,7 @@ package io.cattle.platform.servicediscovery.process;
 
 import io.cattle.platform.allocator.service.CacheManager;
 import io.cattle.platform.archaius.util.ArchaiusUtil;
+import io.cattle.platform.core.constants.AccountConstants;
 import io.cattle.platform.core.constants.HostConstants;
 import io.cattle.platform.core.model.Host;
 import io.cattle.platform.engine.handler.HandlerResult;
@@ -54,7 +55,7 @@ public class HostRemovePostListener extends AbstractObjectProcessLogic implement
         List<BasicNameValuePair> requestData = new ArrayList<>();
 
         requestData.add(new BasicNameValuePair("hostId", (String) idFormatter.formatId(HostConstants.TYPE, hostId)));
-        requestData.add(new BasicNameValuePair("envId", "1a" + envId.toString()));
+        requestData.add(new BasicNameValuePair("envId", (String) idFormatter.formatId(AccountConstants.TYPE, envId)));
 
         HttpResponse response;
         try {

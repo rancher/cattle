@@ -30,6 +30,7 @@ import io.cattle.platform.allocator.service.HostInfo;
 import io.cattle.platform.allocator.service.InstanceInfo;
 import io.cattle.platform.allocator.util.AllocatorUtils;
 import io.cattle.platform.archaius.util.ArchaiusUtil;
+import io.cattle.platform.core.constants.AccountConstants;
 import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.HealthcheckConstants;
 import io.cattle.platform.core.constants.HostConstants;
@@ -245,7 +246,7 @@ public class AllocatorDaoImpl extends AbstractJooqDao implements AllocatorDao {
         requestData.add(new BasicNameValuePair("hostId", (String) idFormatter.formatId(HostConstants.TYPE, hostId)));
         requestData.add(new BasicNameValuePair(isVM ? "vmId" : "instanceId",
                 (String) idFormatter.formatId(InstanceConstants.TYPE, instanceId)));
-        requestData.add(new BasicNameValuePair("envId", "1a" + envId.toString()));
+        requestData.add(new BasicNameValuePair("envId", (String) idFormatter.formatId(AccountConstants.TYPE, envId)));
 
         HttpResponse response;
         try {

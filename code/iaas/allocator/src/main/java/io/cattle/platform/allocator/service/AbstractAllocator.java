@@ -10,6 +10,7 @@ import io.cattle.platform.allocator.lock.AllocateVolumesResourceLock;
 import io.cattle.platform.allocator.service.AllocationRequest.Type;
 import io.cattle.platform.allocator.util.AllocatorUtils;
 import io.cattle.platform.archaius.util.ArchaiusUtil;
+import io.cattle.platform.core.constants.AccountConstants;
 import io.cattle.platform.core.constants.HostConstants;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.model.Host;
@@ -342,7 +343,7 @@ public abstract class AbstractAllocator implements Allocator {
         requestData.add(new BasicNameValuePair("hostId", (String) idFormatter.formatId(HostConstants.TYPE, hostId)));
         requestData.add(new BasicNameValuePair(isVM ? "vmId" : "instanceId",
                 (String) idFormatter.formatId(InstanceConstants.TYPE, instanceId)));
-        requestData.add(new BasicNameValuePair("envId", "1a" + envId.toString()));
+        requestData.add(new BasicNameValuePair("envId", (String) idFormatter.formatId(AccountConstants.TYPE, envId)));
 
         Map<String, Object> jsonData;
         HttpResponse response;
