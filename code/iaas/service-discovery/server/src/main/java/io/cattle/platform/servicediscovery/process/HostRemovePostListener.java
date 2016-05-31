@@ -67,7 +67,6 @@ public class HostRemovePostListener extends AbstractObjectProcessLogic implement
 
         } catch (HttpHostConnectException ex) {
             log.error("Scheduler Service not reachable at [{}]", ALLOCATE_CPU_MEMORY_URL);
-            return;
         } catch (IOException e) {
             log.error((e.getStackTrace()).toString(), e);
         }
