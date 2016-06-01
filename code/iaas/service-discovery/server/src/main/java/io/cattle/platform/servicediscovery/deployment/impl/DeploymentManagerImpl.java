@@ -23,7 +23,6 @@ import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.process.ObjectProcessManager;
 import io.cattle.platform.object.process.StandardProcess;
 import io.cattle.platform.object.resource.ResourceMonitor;
-import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.servicediscovery.api.constants.ServiceDiscoveryConstants;
 import io.cattle.platform.servicediscovery.api.dao.ServiceExposeMapDao;
 import io.cattle.platform.servicediscovery.api.util.ServiceDiscoveryUtil;
@@ -189,26 +188,19 @@ public class DeploymentManagerImpl implements DeploymentManager {
         planner.cleanupBadUnits();
 
         /*
+         * Delete the units that have a bad health
+         */
+        planner.cleanupUnhealthyUnits();
+
+        /*
          * Cleanup incomplete units
          */
         planner.cleanupIncompleteUnits();
 
         /*
-         * Stop unhealthy units for service with retainIp=true
-         */
-        if (DataAccessor.fieldBool(planner.getServices().get(0), ServiceDiscoveryConstants.FIELD_SERVICE_RETAIN_IP)) {
-            planner.scheduleUnhealthyUnitsStop();
-        }
-
-        /*
          * Activate all the units
          */
         startUnits(planner);
-
-        /*
-         * Delete the units that have a bad health
-         */
-        planner.cleanupUnhealthyUnits();
 
         /*
          * Cleanup unused service indexes

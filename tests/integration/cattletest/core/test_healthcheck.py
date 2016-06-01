@@ -662,6 +662,93 @@ def test_health_check_default(super_client, context, client):
     remove_service(svc)
 
 
+def test_health_check_sidekick(super_client, context, client):
+    env = client.create_environment(name='env-' + random_str())
+    secondary_lc = {"imageUuid": context.image_uuid, "name": "secondary"}
+    svc = client.create_service(name=random_str(), launchConfig={
+        'imageUuid': context.image_uuid,
+        'healthCheck': {
+            'port': 80
+        }
+    }, environmentId=env.id, secondaryLaunchConfigs=[secondary_lc])
+    svc = client.wait_success(client.wait_success(svc).activate())
+    assert svc.state == 'active'
+
+    expose_maps = svc.serviceExposeMaps()
+    c1 = super_client.reload(expose_maps[0].instance())
+    c2 = super_client.reload(expose_maps[1].instance())
+    hci = find_one(c1.healthcheckInstances)
+    hcihm = find_one(hci.healthcheckInstanceHostMaps)
+    agent = _get_agent_for_container(c1)
+
+    assert hcihm.healthState == 'initializing'
+    assert c1.healthState == 'initializing'
+
+    hcihm = _update_healthy(agent, hcihm, c1, super_client)
+
+    # update unheatlhy, the container should be removed
+    _update_unhealthy(agent, hcihm, c1, super_client)
+    svc = super_client.wait_success(svc)
+    assert svc.state == "active"
+    assert len(svc.serviceExposeMaps()) >= 1
+    c1 = super_client.wait_success(c1)
+    wait_for_condition(client, c1,
+                       lambda x: x.state == 'removed')
+
+    # only c2 should be removed
+    c2 = client.reload(c2)
+    assert c2.state == 'running'
+
+    remove_service(svc)
+
+
+def test_health_check_sidekick_withdep(super_client, context, client):
+    env = client.create_environment(name='env-' + random_str())
+    secondary_lc = {"imageUuid": context.image_uuid, "name": "secondary",
+                    'healthCheck': {
+                        'port': 80
+                    }}
+    svc = client.create_service(name=random_str(), launchConfig={
+        'imageUuid': context.image_uuid,
+        "dataVolumesFromLaunchConfigs": ['secondary'],
+    }, environmentId=env.id, secondaryLaunchConfigs=[secondary_lc])
+    svc = client.wait_success(client.wait_success(svc).activate())
+    assert svc.state == 'active'
+
+    c1 = _validate_compose_instance_start(super_client, client, svc,
+                                          env, "1", "secondary")
+    c2 = _validate_compose_instance_start(super_client, client, svc,
+                                          env, "1")
+
+    hci = find_one(c1.healthcheckInstances)
+    hcihm = find_one(hci.healthcheckInstanceHostMaps)
+    agent = _get_agent_for_container(c1)
+
+    assert hcihm.healthState == 'initializing'
+    assert c1.healthState == 'initializing'
+
+    hcihm = _update_healthy(agent, hcihm, c1, super_client)
+    _update_healthy(agent, hcihm, c1, super_client)
+
+    # update unheatlhy, the container should be removed
+    _update_unhealthy(agent, hcihm, c1, super_client)
+    svc = super_client.wait_success(svc)
+    assert svc.state == "active"
+    assert len(svc.serviceExposeMaps()) >= 1
+    c1 = super_client.wait_success(c1)
+    wait_for_condition(client, c1,
+                       lambda x: x.state == 'removed')
+
+    # both instances should be removed and recreated
+    wait_for_condition(client, c1,
+                       lambda x: x.state == 'removed')
+
+    wait_for_condition(client, c2,
+                       lambda x: x.state == 'removed')
+
+    remove_service(svc)
+
+
 def test_health_check_bad_agent(super_client, context, client):
     # Create another host to get the agent from that host
     host2 = super_client.reload(register_simulated_host(context))
@@ -1143,3 +1230,24 @@ def _wait_until_active_map_count(service, count, client):
     wait_for_condition(client, service, wait_for_map_count)
     return client. \
         list_serviceExposeMap(serviceId=service.id, state='active')
+
+
+def _validate_compose_instance_start(super_client, client, service, env,
+                                     number, launch_config_name=None):
+    cn = launch_config_name + "_" if \
+        launch_config_name is not None else ""
+    name = env.name + "_" + service.name + "_" + cn + number
+
+    def wait_for_map_count(service):
+        instances = client. \
+            list_container(name=name,
+                           state="running")
+        return len(instances) == 1
+
+    wait_for(lambda: wait_for_condition(client, service,
+                                        wait_for_map_count), timeout=5)
+
+    instances = client. \
+        list_container(name=name,
+                       state="running")
+    return super_client.reload(instances[0])

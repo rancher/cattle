@@ -1,6 +1,6 @@
 package io.cattle.platform.servicediscovery.deployment;
 
-import static io.cattle.platform.core.model.tables.ServiceIndexTable.SERVICE_INDEX;
+import static io.cattle.platform.core.model.tables.ServiceIndexTable.*;
 import io.cattle.platform.core.addon.InstanceHealthCheck;
 import io.cattle.platform.core.addon.InstanceHealthCheck.Strategy;
 import io.cattle.platform.core.addon.RecreateOnQuorumStrategyConfig;
@@ -39,7 +39,6 @@ public abstract class ServiceDeploymentPlanner {
     private List<DeploymentUnit> incompleteUnits = new ArrayList<>();
     protected DeploymentServiceContext context;
     protected HealthCheckActionHandler healthActionHandler = new RecreateHealthCheckActionHandler();
-    private List<DeploymentUnit> ignoreUnits = new ArrayList<>();
 
     public ServiceDeploymentPlanner(List<Service> services, List<DeploymentUnit> units,
             DeploymentServiceContext context) {
@@ -55,8 +54,6 @@ public abstract class ServiceDeploymentPlanner {
             for (DeploymentUnit unit : units) {
                 if (unit.isError()) {
                     badUnits.add(unit);
-                } else if (unit.isIgnore()) {
-                    ignoreUnits.add(unit);
                 } else {
                     healthyUnhealthyUnits.add(unit);
                     if (!unit.isComplete()) {
@@ -202,11 +199,10 @@ public abstract class ServiceDeploymentPlanner {
         while (it.hasNext()) {
             DeploymentUnit next = it.next();
             watchList.add(next);
-            next.remove(false, ServiceDiscoveryConstants.AUDIT_LOG_REMOVE_UNHEATLHY);
+            next.cleanupUnealthy(true);
+            this.healthyUnits.add(next);
+            this.incompleteUnits.add(next);
             it.remove();
-        }
-        for (DeploymentUnit toWatch : watchList) {
-            toWatch.waitForRemoval();
         }
     }
 

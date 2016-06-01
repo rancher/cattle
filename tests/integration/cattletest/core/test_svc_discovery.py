@@ -1774,18 +1774,13 @@ def test_host_delete_reconcile_service(super_client, new_context):
     instance2_host = super_client.delete(instance2_host)
     super_client.wait_success(instance2_host)
 
-    # check that service is reconciled and instance2 gets recreated
-    # on host1.
-    # NOTE: This is a little strange, but since we don't stop the instance
-    # on the deleted host, that instance will still be in running state,
-    # so we'll have 3rd that shows up
     wait_for(
         lambda: len(client.list_container(
-            name=env.name + "_" + service.name + "_3",
+            name=env.name + "_" + service.name + "_2",
             state="running")) > 0
     )
     instance2 = client.list_container(
-        name=env.name + "_" + service.name + "_3",
+        name=env.name + "_" + service.name + "_2",
         state="running")[0]
     instance2_host = instance2.hosts()[0]
     assert instance1_host.id == instance2_host.id

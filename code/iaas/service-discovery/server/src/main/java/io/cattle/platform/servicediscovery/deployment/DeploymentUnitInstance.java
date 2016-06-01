@@ -35,7 +35,8 @@ public abstract class DeploymentUnitInstance {
 
     public abstract boolean isIgnore();
 
-    public void remove() {
+    public void remove(String reason) {
+        this.generateAuditLog(AuditEventType.delete, reason);
         removeUnitInstance();
         if (exposeMap != null) {
             context.objectProcessManager.scheduleStandardProcessAsync(StandardProcess.REMOVE, exposeMap, null);
