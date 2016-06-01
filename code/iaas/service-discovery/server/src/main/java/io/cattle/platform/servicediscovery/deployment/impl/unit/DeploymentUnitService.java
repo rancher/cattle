@@ -1,6 +1,6 @@
 package io.cattle.platform.servicediscovery.deployment.impl.unit;
 
-import static io.cattle.platform.core.model.tables.EnvironmentTable.ENVIRONMENT;
+import static io.cattle.platform.core.model.tables.EnvironmentTable.*;
 import io.cattle.platform.core.model.Environment;
 import io.cattle.platform.core.model.Service;
 import io.cattle.platform.servicediscovery.api.constants.ServiceDiscoveryConstants;
@@ -96,15 +96,30 @@ public class DeploymentUnitService {
             if (usedByInstance == null) {
                 continue;
             }
-            clenaupDeploymentInstance(usedByInstance);
+            cleanupDeploymentInstance(usedByInstance,
+                    ServiceDiscoveryConstants.AUDIT_LOG_REMOVE_WITH_MISSSING_DEPENDENCY);
             cleanupInstanceWithMissingDep(usedInLaunchConfig);
         }
     }
 
-    protected void clenaupDeploymentInstance(DeploymentUnitInstance instance) {
-        instance.remove();
-        launchConfigToInstance.remove(instance.getLaunchConfigName());
+    public void cleanupUnealthy(boolean waitForRemoval) {
+        List<DeploymentUnitInstance> waitList = new ArrayList<>();
+        for (DeploymentUnitInstance instance : launchConfigToInstance.values()) {
+            if (instance.isUnhealthy()) {
+                if (waitForRemoval) {
+                    waitList.add(instance);
+                }
+                cleanupDeploymentInstance(instance, ServiceDiscoveryConstants.AUDIT_LOG_REMOVE_UNHEATLHY);
+            }
+        }
+        for (DeploymentUnitInstance instanceToWait : waitList) {
+            instanceToWait.waitForRemoval();
+        }
+    }
 
+    protected void cleanupDeploymentInstance(DeploymentUnitInstance instance, String reason) {
+        instance.remove(reason);
+        launchConfigToInstance.remove(instance.getLaunchConfigName());
     }
 
     public List<String> getLaunchConfigNames() {

@@ -58,7 +58,7 @@ public class ExternalDeploymentUnitInstance extends DeploymentUnitInstance {
 
     @Override
     public void stop() {
-        super.remove();
+        super.remove(ServiceDiscoveryConstants.AUDIT_LOG_REMOVE_EXTRA);
     }
 
     @Override

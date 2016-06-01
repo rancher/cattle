@@ -5,6 +5,7 @@ import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.HealthcheckConstants;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.model.Environment;
+import io.cattle.platform.core.model.Host;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.InstanceHostMap;
 import io.cattle.platform.core.model.Service;
@@ -201,16 +202,36 @@ public class DefaultDeploymentUnitInstance extends DeploymentUnitInstance implem
 
     @Override
     public boolean isUnhealthy() {
+        boolean unhealthyState = false;
         if (instance != null) {
             if (instance.getHealthState() == null) {
                 return false;
             }
-            boolean unhealthyState = instance.getHealthState().equalsIgnoreCase(
+            unhealthyState = instance.getHealthState().equalsIgnoreCase(
                     HealthcheckConstants.HEALTH_STATE_UNHEALTHY) || instance.getHealthState().equalsIgnoreCase(
                     HealthcheckConstants.HEALTH_STATE_UPDATING_UNHEALTHY);
-            return unhealthyState;
         }
-        return false;
+        return unhealthyState || !isHostActive();
+    }
+
+    private boolean isHostActive() {
+        if (instance != null && instance.getId() != null) {
+            // TODO: Performance-wise, this is really bad! Especially, since we already
+            // know what host is going down from the host trigger.
+
+            // Check whether this instance has been deployed and if so, what is the state of the
+            // host?
+            Host host = context.exposeMapDao.getHostForInstance(instance.getId());
+            if (host != null) {
+                if (CommonStatesConstants.REMOVING.equals(host.getState()) ||
+                        CommonStatesConstants.REMOVED.equals(host.getState()) ||
+                        CommonStatesConstants.PURGING.equals(host.getState()) ||
+                        CommonStatesConstants.PURGED.equals(host.getState())) {
+                    return false;
+                }
+            }
+        }
+        return true;
     }
 
     @Override

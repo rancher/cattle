@@ -123,4 +123,5 @@ public class ServiceDiscoveryConstants {
     public static final String AUDIT_LOG_REMOVE_UNHEATLHY = "Unhealthy service instance is removed by service.reconcile";
     public static final String AUDIT_LOG_REMOVE_BAD = "Service instance in a bad state is removed by service.reconcile";
     public static final String AUDIT_LOG_CREATE_EXTRA = "Extra service instance is created by service.reconcile";
+    public static final String AUDIT_LOG_REMOVE_WITH_MISSSING_DEPENDENCY = "Service instance with missing dependency is removed by service.reconcile";
 }
