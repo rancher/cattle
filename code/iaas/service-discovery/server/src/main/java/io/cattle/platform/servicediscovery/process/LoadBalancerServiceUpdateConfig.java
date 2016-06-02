@@ -133,7 +133,7 @@ public class LoadBalancerServiceUpdateConfig extends AbstractObjectProcessLogic 
     }
 
     public String getContext(Agent agent, ProcessInstance instance) {
-        return String.format("AgentUpdateConfig:%s:%s", agent.getId(), instance.getName());
+        return String.format("AgentUpdateConfig:%s:%s", agent.getId(), instance.getId());
     }
 
     private List<? extends Instance> getLoadBalancerServiceInstances(ProcessState state,
