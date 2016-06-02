@@ -270,7 +270,7 @@ public abstract class AbstractAllocator implements Allocator {
                                     break;
                             }
                         } catch (IOException e) {
-                            //good = false;
+                            good = false;
                             log.error((e.getStackTrace()).toString(), e);
                         }
                         if (!good)

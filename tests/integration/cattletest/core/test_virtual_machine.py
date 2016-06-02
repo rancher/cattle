@@ -9,6 +9,13 @@ def _create_virtual_machine(client, context, **kw):
         'accountId': context.project.id,
         'imageUuid': context.image_uuid,
     }
+
+    # set host with some default cpu and memory information
+    cpu = 100
+    memoryMB = 10000
+    info = {"cpuInfo": {"count": cpu}, "memoryInfo": {"memTotal": memoryMB}}
+    client.update(context.host, info=info)
+
     args.update(kw)
 
     return client.create_virtual_machine(**args)
@@ -38,7 +45,7 @@ def test_virtual_machine_case_sensitivity(super_client, client, context):
         },
     ]
 
-    vm = _create_virtual_machine(client, context, name=random_str(),
+    vm = _create_virtual_machine(super_client, context, name=random_str(),
                                  volumeDriver='foo-bar',
                                  userdata='hi', vcpu=2, memoryMb=42,
                                  disks=disks)
@@ -78,7 +85,7 @@ def test_virtual_machine_with_device_enable_storage_pool(super_client, client,
     sp = add_storage_pool(context, [context.host.uuid],
                           block_device_path="/dev/test")
     sp_name = sp.name
-    vm = _create_virtual_machine(client, context, name=random_str(),
+    vm = _create_virtual_machine(super_client, context, name=random_str(),
                                  volumeDriver=sp_name,
                                  userdata='hi', vcpu=2, memoryMb=42,
                                  disks=test_disks)
@@ -101,7 +108,7 @@ def test_virtual_machine_with_device_enable_storage_pool(super_client, client,
 
 
 def test_virtual_machine_root_disk(super_client, client, context):
-    vm = _create_virtual_machine(client, context, name=random_str(),
+    vm = _create_virtual_machine(super_client, context, name=random_str(),
                                  volumeDriver='foo-bar',
                                  userdata='hi', vcpu=2, memoryMb=42,
                                  disks=test_disks)
@@ -135,7 +142,7 @@ def test_virtual_machine_default_fields(super_client, client, context):
         }
     ]
 
-    vm = _create_virtual_machine(client, context,
+    vm = _create_virtual_machine(super_client, context,
                                  volumeDriver='foo-bar',
                                  userdata='hi', vcpu=2, memoryMb=42,
                                  disks=disks)

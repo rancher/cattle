@@ -2,6 +2,23 @@ from common_fixtures import *  # NOQA
 from test_shared_volumes import add_storage_pool
 
 
+def _create_virtual_machine(client, context, **kw):
+    args = {
+        'accountId': context.project.id,
+        'imageUuid': context.image_uuid,
+    }
+
+    # set host with some default cpu and memory information
+    cpu = 100
+    memoryMB = 10000
+    info = {"cpuInfo": {"count": cpu}, "memoryInfo": {"memTotal": memoryMB}}
+    client.update(context.host, info=info)
+
+    args.update(kw)
+
+    return client.create_virtual_machine(**args)
+
+
 def test_compute_free(super_client, new_context):
     admin_client = new_context.client
     count = 5
@@ -214,17 +231,21 @@ def test_host_vnet_association(super_client, new_context):
 
     hosts = set()
     for _ in range(3):
-        vm = super_client.create_virtual_machine(accountId=account.id,
-                                                 subnetIds=[subnet1.id],
-                                                 imageUuid=image_uuid)
+        vm = _create_virtual_machine(super_client,
+                                     new_context,
+                                     accountId=account.id,
+                                     subnetIds=[subnet1.id],
+                                     imageUuid=image_uuid)
         vm = super_client.wait_success(vm)
         assert vm.state == 'running'
         hosts.add(vm.hosts()[0].id)
 
     for _ in range(3):
-        vm = super_client.create_virtual_machine(accountId=account.id,
-                                                 subnetIds=[subnet2.id],
-                                                 imageUuid=image_uuid)
+        vm = _create_virtual_machine(super_client,
+                                     new_context,
+                                     accountId=account.id,
+                                     subnetIds=[subnet2.id],
+                                     imageUuid=image_uuid)
         vm = super_client.wait_success(vm)
         assert vm.state == 'running'
         hosts.add(vm.hosts()[0].id)
@@ -811,3 +832,179 @@ def test_container_label_disksize_lifecycle(super_client, new_context):
     finally:
         for c in containers:
             new_context.delete(c)
+
+
+def test_container_label_iops_lifecycle(super_client, new_context):
+    # first host with really small disk size
+    host = new_context.host
+    containers = []
+
+    try:
+        read_label = 'io.rancher.resource.read_iops.v1'
+        write_label = 'io.rancher.resource.write_iops.v1'
+
+        # set host with iops information
+        total_read_iops = 100
+        total_write_iops = 100
+        iops_info = {"iopsInfo": {
+            "/dev/sda": {"read": total_read_iops, "write": total_write_iops}}}
+        host = super_client.update(host, info=iops_info)
+        c1 = new_context.create_container(
+            labels={
+                read_label: '60',
+                write_label: '60'
+            }
+        )
+        containers.append(c1)
+
+        # check c1 is on host1 with enough disk space
+        assert c1.hosts()[0].id == host.id
+
+        # now schedule another container on the host with the same
+        # iops requirement, expect it to fail, because host already
+        # used 60 iops with total only 100 so can't schedule more now
+        c2 = new_context.super_create_container_no_success(
+            labels={read_label: '60', write_label: '60'})
+        containers.append(c2)
+        assert c2.transitioning == 'error'
+        assert c2.transitioningMessage ==\
+            'Scheduling failed: failed to schedule cpu/memory/iops'
+        assert c2.state == 'error'
+
+        # remove the container c1 from host and verify the disk size freed back
+        # and at this time we can schedule another container with the same size
+        super_client.delete(c1)
+        containers.remove(c1)
+        c1 = super_client.wait_success(c1)
+        c1 = super_client.wait_success(c1.purge())
+        c1 = super_client.reload(c1)
+        wait_for(lambda: super_client.reload(c1).allocationState == 'inactive')
+
+        c3 = new_context.create_container(
+            labels={
+                read_label: '60',
+                write_label: '60'
+            }
+        )
+
+        # check c4 is on host2 with enough disk space
+        assert c3.hosts()[0].id == host.id
+        containers.append(c3)
+
+    finally:
+        for c in containers:
+            new_context.delete(c)
+
+
+def test_container_label_write_iops_lifecycle(super_client, new_context):
+    # first host with really small disk size
+    host = new_context.host
+    containers = []
+
+    try:
+        write_label = 'io.rancher.resource.write_iops.v1'
+
+        # set host with iops information
+        total_read_iops = 100
+        total_write_iops = 100
+        iops_info = {"iopsInfo": {
+            "/dev/sda": {"read": total_read_iops, "write": total_write_iops}}}
+        host = super_client.update(host, info=iops_info)
+        c1 = new_context.create_container(labels={write_label: '60'})
+        containers.append(c1)
+
+        # check c1 is on host1 with enough disk space
+        assert c1.hosts()[0].id == host.id
+
+        # now schedule another container on the host with the same
+        # iops requirement, expect it to fail, because host already
+        # used 60 iops with total only 100 so can't schedule more now
+        c2 = new_context.super_create_container_no_success(
+            labels={write_label: '60'})
+        containers.append(c2)
+        assert c2.transitioning == 'error'
+        assert c2.transitioningMessage ==\
+            'Scheduling failed: failed to schedule cpu/memory/iops'
+        assert c2.state == 'error'
+
+        # remove the container c1 from host and verify the disk size freed back
+        # and at this time we can schedule another container with the same size
+        super_client.delete(c1)
+        containers.remove(c1)
+        c1 = super_client.wait_success(c1)
+        c1 = super_client.wait_success(c1.purge())
+        c1 = super_client.reload(c1)
+        wait_for(lambda: super_client.reload(c1).allocationState == 'inactive')
+
+        c3 = new_context.create_container(labels={write_label: '60'})
+
+        # check c4 is on host2 with enough disk space
+        assert c3.hosts()[0].id == host.id
+        containers.append(c3)
+
+    finally:
+        for c in containers:
+            new_context.delete(c)
+
+
+def test_container_label_read_iops_lifecycle(super_client, new_context):
+    # first host with really small disk size
+    host = new_context.host
+    containers = []
+
+    try:
+        read_label = 'io.rancher.resource.read_iops.v1'
+
+        # set host with iops information
+        total_read_iops = 100
+        total_write_iops = 100
+        iops_info = {"iopsInfo": {
+            "/dev/sda": {"read": total_read_iops, "write": total_write_iops}}}
+        host = super_client.update(host, info=iops_info)
+        c1 = new_context.create_container(labels={read_label: '60'})
+        containers.append(c1)
+
+        # check c1 is on host1 with enough disk space
+        assert c1.hosts()[0].id == host.id
+
+        # now schedule another container on the host with the same
+        # iops requirement, expect it to fail, because host already
+        # used 60 iops with total only 100 so can't schedule more now
+        c2 = new_context.super_create_container_no_success(
+            labels={read_label: '60'})
+        containers.append(c2)
+        assert c2.transitioning == 'error'
+        assert c2.transitioningMessage ==\
+            'Scheduling failed: failed to schedule cpu/memory/iops'
+        assert c2.state == 'error'
+
+        # remove the container c1 from host and verify the disk size freed back
+        # and at this time we can schedule another container with the same size
+        super_client.delete(c1)
+        containers.remove(c1)
+        c1 = super_client.wait_success(c1)
+        c1 = super_client.wait_success(c1.purge())
+        c1 = super_client.reload(c1)
+        wait_for(lambda: super_client.reload(c1).allocationState == 'inactive')
+
+        c3 = new_context.create_container(labels={read_label: '60'})
+
+        # check c4 is on host2 with enough disk space
+        assert c3.hosts()[0].id == host.id
+        containers.append(c3)
+
+    finally:
+        for c in containers:
+            new_context.delete(c)
+
+
+def test_virtual_machine_allocate_cpu_memory(super_client, new_context):
+    # using default host from super_client, which has enough cpu/memory
+    vm = _create_virtual_machine(super_client, new_context,
+                                 vcpu=2, memoryMb=42)
+
+    vm = super_client.wait_success(vm)
+    assert vm.state == 'running'
+
+    assert vm.vcpu == 2
+    assert vm.memoryMb == 42
