@@ -95,12 +95,13 @@ public class LoadBalancerServiceUpdateConfig extends AbstractObjectProcessLogic 
 
         List<? extends Instance> lbInstances = getLoadBalancerServiceInstances(state, process, activeLbServices);
 
-        updateLoadBalancerConfigs(state, lbInstances);
+        updateLoadBalancerConfigs(state, lbInstances, process);
 
         return null;
     }
 
-    private void updateLoadBalancerConfigs(ProcessState state, List<? extends Instance> lbInstances) {
+    private void updateLoadBalancerConfigs(ProcessState state, List<? extends Instance> lbInstances,
+            ProcessInstance process) {
         Map<Long, Agent> agents = new HashMap<>();
         for (Instance lbInstance : lbInstances) {
             Agent agent = objectManager.findAny(Agent.class, AGENT.ID, lbInstance.getAgentId(), AGENT.REMOVED, null);
@@ -110,9 +111,10 @@ public class LoadBalancerServiceUpdateConfig extends AbstractObjectProcessLogic 
         }
 
         for (Agent agent : agents.values()) {
-            ConfigUpdateRequest request = ConfigUpdateRequestUtils.getRequest(jsonMapper, state, getContext(agent));
+            ConfigUpdateRequest request = ConfigUpdateRequestUtils.getRequest(jsonMapper, state,
+                    getContext(agent, process));
             request = before(request, agent);
-            ConfigUpdateRequestUtils.setRequest(request, state, getContext(agent));
+            ConfigUpdateRequestUtils.setRequest(request, state, getContext(agent, process));
         }
     }
 
@@ -130,8 +132,8 @@ public class LoadBalancerServiceUpdateConfig extends AbstractObjectProcessLogic 
         return request;
     }
 
-    public String getContext(Agent agent) {
-        return String.format("AgentUpdateConfig:%s", agent.getId());
+    public String getContext(Agent agent, ProcessInstance instance) {
+        return String.format("AgentUpdateConfig:%s:%s", agent.getId(), instance.getName());
     }
 
     private List<? extends Instance> getLoadBalancerServiceInstances(ProcessState state,
