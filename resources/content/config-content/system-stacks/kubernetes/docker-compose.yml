@@ -43,26 +43,37 @@ proxy:
         - kubernetes:master
 
 etcd:
-    command:
-        - /usr/local/bin/etcd
-        - --advertise-client-urls=http://etcd:4001
-        - --listen-client-urls=http://0.0.0.0:4001
-        - --data-dir=/var/etcd/data
-    image: rancher/etcd:2.0.12
+    image: rancher/etcd:v2.3.3
+    command: node 3
     labels:
         io.rancher.sidekicks: etcd-data
+        io.rancher.scheduler.affinity:container_label_soft_ne: io.rancher.stack_service.name=$${stack_name}/$${service_name}
     volumes_from:
         - etcd-data
 
 etcd-data:
     image: busybox
-    volumes:
-        - /var/etcd/data
-    labels:
-        io.rancher.container.start_once: "true"
-        io.rancher.container.hostname_override: container_name
     command: /bin/true
     net: none
+    volumes:
+        - /data
+    labels:
+        io.rancher.container.start_once: 'true'
+
+etcd-discovery:
+    image: rancher/etcd:v2.3.3
+    command: discovery_node
+    labels:
+        io.rancher.container.start_once: 'true'
+        io.rancher.sidekicks: etcd-bootstrap
+
+etcd-bootstrap:
+    image: rancher/etcd:v2.3.3
+    command: bootstrap 3
+    links:
+        - etcd-discovery
+    labels:
+        io.rancher.container.start_once: 'true'
 
 kubernetes:
     labels:
@@ -71,7 +82,7 @@ kubernetes:
     command: 
         - kube-apiserver
         - --service-cluster-ip-range=10.43.0.0/16
-        - --etcd-servers=http://etcd:4001
+        - --etcd-servers=http://etcd:2379
         - --insecure-bind-address=0.0.0.0
         - --insecure-port=80
         - --cloud-provider=rancher
