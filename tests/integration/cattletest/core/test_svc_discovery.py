@@ -634,7 +634,7 @@ def _validate_compose_instance_start(client, service, env,
         return len(instances) == 1
 
     wait_for(lambda: wait_for_condition(client, service,
-                                        wait_for_map_count), timeout=5)
+                                        wait_for_map_count))
 
     instances = client. \
         list_container(name=name,
@@ -1091,7 +1091,7 @@ def _validate_service_ip_map(client, service, ip, state):
         return len(m) >= 1
 
     wait_for(lambda: wait_for_condition(client, service,
-                                        wait_for_map_count), timeout=5)
+                                        wait_for_map_count))
     return client. \
         list_serviceExposeMap(serviceId=service.id, state=state)
 
@@ -1103,7 +1103,7 @@ def _validate_service_instance_map_count(client, service, state, count):
         return len(m) >= count
 
     wait_for(lambda: wait_for_condition(client, service,
-                                        wait_for_map_count), timeout=5)
+                                        wait_for_map_count))
 
     return client. \
         list_serviceExposeMap(serviceId=service.id, state=state)
@@ -1117,7 +1117,7 @@ def _validate_service_hostname_map(client, service, host_name, state):
         return len(m) >= 1
 
     wait_for(lambda: wait_for_condition(client, service,
-                                        wait_for_map_count), timeout=5)
+                                        wait_for_map_count))
 
 
 def test_external_service_w_ips(client, context):
@@ -1776,16 +1776,13 @@ def test_host_delete_reconcile_service(super_client, new_context):
 
     # check that service is reconciled and instance2 gets recreated
     # on host1.
-    # NOTE: This is a little strange, but since we don't stop the instance
-    # on the deleted host, that instance will still be in running state,
-    # so we'll have 3rd that shows up
     wait_for(
         lambda: len(client.list_container(
-            name=env.name + "_" + service.name + "_3",
+            name=env.name + "_" + service.name + "_2",
             state="running")) > 0
     )
     instance2 = client.list_container(
-        name=env.name + "_" + service.name + "_3",
+        name=env.name + "_" + service.name + "_2",
         state="running")[0]
     instance2_host = instance2.hosts()[0]
     assert instance1_host.id == instance2_host.id
