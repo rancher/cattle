@@ -1,6 +1,6 @@
 package io.cattle.platform.servicediscovery.deployment;
 
-import static io.cattle.platform.core.model.tables.ServiceIndexTable.SERVICE_INDEX;
+import static io.cattle.platform.core.model.tables.ServiceIndexTable.*;
 import io.cattle.platform.core.addon.InstanceHealthCheck;
 import io.cattle.platform.core.addon.InstanceHealthCheck.Strategy;
 import io.cattle.platform.core.addon.RecreateOnQuorumStrategyConfig;
@@ -235,17 +235,6 @@ public abstract class ServiceDeploymentPlanner {
             if (remove) {
                 context.objectProcessManager.scheduleStandardProcessAsync(StandardProcess.REMOVE, serviceIndex, null);
             }
-        }
-    }
-
-    public void scheduleUnhealthyUnitsStop() {
-        List<DeploymentUnit> watchList = new ArrayList<>();
-        for (DeploymentUnit unit : this.unhealthyUnits) {
-            unit.stop();
-            watchList.add(unit);
-        }
-        for (DeploymentUnit toWatch : watchList) {
-            toWatch.waitForScheduleStop();
         }
     }
 }
