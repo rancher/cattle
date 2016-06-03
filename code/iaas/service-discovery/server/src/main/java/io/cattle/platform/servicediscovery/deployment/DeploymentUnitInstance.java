@@ -123,8 +123,6 @@ public abstract class DeploymentUnitInstance {
 
     public abstract ServiceIndex getServiceIndex();
 
-    public abstract void waitForScheduleStop();
-
     public Environment getStack() {
         return stack;
     }

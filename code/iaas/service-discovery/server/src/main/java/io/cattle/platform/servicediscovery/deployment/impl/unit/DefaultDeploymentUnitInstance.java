@@ -284,18 +284,6 @@ public class DefaultDeploymentUnitInstance extends DeploymentUnitInstance implem
     }
 
     @Override
-    public void waitForScheduleStop() {
-        this.instance = context.resourceMonitor.waitFor(this.instance,
-                new ResourcePredicate<Instance>() {
-            @Override
-            public boolean evaluate(Instance obj) {
-                        return InstanceConstants.STATE_STOPPING.equals(obj.getState())
-                                || InstanceConstants.STATE_STOPPED.equals(obj.getState());
-            }
-        });
-    }
-
-    @Override
     public boolean isIgnore() {
         List<String> errorStates = Arrays.asList(InstanceConstants.STATE_ERROR, InstanceConstants.STATE_ERRORING);
         return this.instance != null && errorStates.contains(this.instance.getState());
