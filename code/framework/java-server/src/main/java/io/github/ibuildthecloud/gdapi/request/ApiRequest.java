@@ -409,4 +409,8 @@ public class ApiRequest {
         this.subContext = subContext;
     }
 
+    @Override
+    public String toString() {
+        return requestUrl == null ? "" : requestUrl;
+    }
 }

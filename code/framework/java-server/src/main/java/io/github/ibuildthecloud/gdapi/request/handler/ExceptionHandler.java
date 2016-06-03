@@ -60,14 +60,16 @@ public class ExceptionHandler implements ApiRequestHandler {
     }
 
     protected ApiError getUnknownError(ApiRequest apiRequest, Throwable t) throws IOException, ServletException {
-        log.error("Exception in API for request [{}]", apiRequest, t);
         if (throwUnknownErrors) {
+            log.error("Rethrowing exception in API for request [{}]", apiRequest, t);
             ExceptionUtils.rethrowRuntime(t);
             ExceptionUtils.rethrow(t, IOException.class);
             ExceptionUtils.rethrow(t, ServletException.class);
             throw new ServletException(t);
         } else {
-            return populateError(new ErrorImpl(ResponseCodes.INTERNAL_SERVER_ERROR), apiRequest.getLocale());
+            ErrorImpl e = new ErrorImpl(ResponseCodes.INTERNAL_SERVER_ERROR);
+            log.error("Exception in API for request [{}]. Error id: [{}].", apiRequest, e.getId(), t);
+            return populateError(e, apiRequest.getLocale());
         }
     }
 
