@@ -48,7 +48,12 @@ public class StackHealthStateUpdateTrigger extends AbstractObjectProcessHandler 
                 ServiceDiscoveryConstants.PROCESS_SERVICE_DEACTIVATE,
                 ServiceDiscoveryConstants.PROCESS_SERVICE_UPDATE,
                 ServiceDiscoveryConstants.PROCESS_SERVICE_CREATE,
-                ServiceDiscoveryConstants.PROCESS_SERVICE_FINISH_UPGRADE };
+                ServiceDiscoveryConstants.PROCESS_SERVICE_FINISH_UPGRADE,
+                ServiceDiscoveryConstants.PROCESS_SERVICE_RESTART,
+                ServiceDiscoveryConstants.PROCESS_SERVICE_UPGRADE,
+                ServiceDiscoveryConstants.PROCESS_SERVICE_ROLLBACK,
+                ServiceDiscoveryConstants.PROCESS_SERVICE_CANCEL_ROLLBACK,
+                ServiceDiscoveryConstants.PROCESS_SERVICE_CANCEL_UPGRADE };
     }
 
     @Override
