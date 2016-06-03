@@ -81,6 +81,10 @@
                 <value>composeProject,parent=environment</value>
                 <value>haConfig</value>
                 <value>machine,parent=physicalHost</value>
+                <value>revertToSnapshotInput</value>
+                <value>restoreFromBackupInput</value>
+                <value>snapshotBackupInput,parent=backup</value>
+                <value>volumeSnapshotInput</value>
             </set>
         </property>
     </bean>

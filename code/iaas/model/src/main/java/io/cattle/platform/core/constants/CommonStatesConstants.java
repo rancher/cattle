@@ -12,6 +12,7 @@ public class CommonStatesConstants {
     public static final String PURGING = "purging";
     public static final String REMOVING = "removing";
     public static final String REQUESTED = "requested";
+    public static final String REGISTERING = "registering";
     public static final String UPDATING_ACTIVE = "updating-active";
     public static final String REMOVED = "removed";
     public static final String UPDATING_INACTIVE = "updating-inactive";

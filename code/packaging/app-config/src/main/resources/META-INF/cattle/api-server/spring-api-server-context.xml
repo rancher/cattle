@@ -188,6 +188,8 @@
     <bean class="io.cattle.platform.docker.api.ContainerProxyActionHandler" />
     <bean class="io.cattle.platform.docker.api.DockerSocketProxyActionHandler" />
     <bean class="io.cattle.platform.docker.api.container.ServiceProxyManager" />
+    <bean class="io.cattle.platform.iaas.api.volume.VolumeSnapshotActionHandler" />
+    <bean class="io.cattle.platform.iaas.api.snapshot.SnapshotBackupActionHandler" />
 
     <bean id="DockerApiTypes" class="io.cattle.platform.object.meta.TypeSet" >
         <property name="typeClasses">

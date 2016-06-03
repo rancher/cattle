@@ -1,0 +1,9 @@
+{
+    "collectionMethods" : [],
+    "resourceFields" : {
+        "name" : {
+            "type": "string",
+            "maxLength": 255
+        }
+    }
+}

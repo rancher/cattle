@@ -10,4 +10,6 @@ public class StoragePoolConstants {
 
     public static final String FIELD_BLOCK_DEVICE_PATH = "blockDevicePath";
 
+    public static final String FIELD_VOLUME_CAPABILITIES = "volumeCapabilities";
+
 }

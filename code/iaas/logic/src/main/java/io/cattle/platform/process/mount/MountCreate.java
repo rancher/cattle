@@ -1,6 +1,7 @@
 package io.cattle.platform.process.mount;
 
 import io.cattle.platform.core.constants.CommonStatesConstants;
+import io.cattle.platform.core.constants.VolumeConstants;
 import io.cattle.platform.core.dao.GenericMapDao;
 import io.cattle.platform.core.model.Mount;
 import io.cattle.platform.core.model.Volume;
@@ -10,6 +11,7 @@ import io.cattle.platform.engine.process.ProcessState;
 import io.cattle.platform.lock.LockManager;
 import io.cattle.platform.object.process.StandardProcess;
 import io.cattle.platform.process.base.AbstractDefaultProcessHandler;
+import io.cattle.platform.process.common.util.ProcessUtils;
 
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -28,7 +30,12 @@ public class MountCreate extends AbstractDefaultProcessHandler {
         Volume volume = objectManager.loadResource(Volume.class, mount.getVolumeId());
         if (!CommonStatesConstants.ACTIVE.equals(volume.getState()) && !CommonStatesConstants.ACTIVATING.equals(volume.getState())
                 && !CommonStatesConstants.RESTORING.equals(volume.getState())) {
-            objectProcessManager.scheduleStandardProcess(StandardProcess.ACTIVATE, volume, state.getData());
+            if (CommonStatesConstants.REQUESTED.equals(volume.getState()) || CommonStatesConstants.REGISTERING.equals(volume.getState())) {
+                objectProcessManager.scheduleStandardProcess(StandardProcess.CREATE, volume,
+                        ProcessUtils.chainInData(state.getData(), VolumeConstants.PROCESS_CREATED, VolumeConstants.PROCESS_ACTIVATE));
+            } else {
+                objectProcessManager.scheduleStandardProcess(StandardProcess.ACTIVATE, volume, state.getData());
+            }
         }
         return null;
     }

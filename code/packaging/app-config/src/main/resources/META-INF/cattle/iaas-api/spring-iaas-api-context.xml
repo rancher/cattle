@@ -570,4 +570,6 @@
 
     <bean class="io.cattle.platform.register.dao.impl.RegistrationTokenAuthDaoImpl" />
 
+    <bean class="io.cattle.platform.iaas.api.volume.VolumeRevertRestoreActionOutputFilter" />
+    <bean class="io.cattle.platform.iaas.api.volume.VolumeRevertRestoreValidationFilter" />
 </beans>

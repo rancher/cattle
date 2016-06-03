@@ -15,6 +15,27 @@
         "driverOpts": {
             "type": "map[string]",
             "nullable": true
+        },
+        "capabilities" : {
+            "type" : "array[string]",
+            "nullable" : true
+        }
+    },
+    "resourceActions": {
+        "snapshot": {
+            "input": "volumeSnapshotInput",
+            "output": "snapshot",
+            "attributes": {
+                "states": ["active", "inactive"]
+            }
+        },
+        "reverttosnapshot": {
+            "input": "revertToSnapshotInput",
+            "output": "volume"
+        },
+        "restorefrombackup": {
+            "input": "restoreFromBackupInput",
+            "output": "volume"
         }
     }
 }

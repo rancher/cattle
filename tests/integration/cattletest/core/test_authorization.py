@@ -78,6 +78,8 @@ def test_user_types(user_client, adds=set(), removes=set()):
         'addRemoveServiceLinkInput',
         'apiKey',
         'auditLog',
+        'backup',
+        'backupTarget',
         'baseMachineConfig',
         'certificate',
         'changeSecretInput',
@@ -136,6 +138,8 @@ def test_user_types(user_client, adds=set(), removes=set()):
         'registry',
         'registryCredential',
         'restartPolicy',
+        'restoreFromBackupInput',
+        'revertToSnapshotInput',
         'schema',
         'service',
         'serviceExposeMap',
@@ -145,6 +149,7 @@ def test_user_types(user_client, adds=set(), removes=set()):
         'setProjectMembersInput',
         'setServiceLinksInput',
         'snapshot',
+        'snapshotBackupInput',
         'statsAccess',
         'storagePool',
         'typeDocumentation',
@@ -173,7 +178,8 @@ def test_user_types(user_client, adds=set(), removes=set()):
         'rollingRestartStrategy',
         'servicesPortRange',
         'healthcheckInstanceHostMap',
-        'recreateOnQuorumStrategyConfig'
+        'recreateOnQuorumStrategyConfig',
+        'volumeSnapshotInput',
     }
     types.update(adds)
     types.difference_update(removes)
@@ -262,6 +268,8 @@ def test_admin_types(admin_user_client, adds=set(), removes=set()):
         'agent',
         'apiKey',
         'auditLog',
+        'backup',
+        'backupTarget',
         'baseMachineConfig',
         'certificate',
         'changeSecretInput',
@@ -342,6 +350,8 @@ def test_admin_types(admin_user_client, adds=set(), removes=set()):
         'registryCredential',
         'resourceDefinition',
         'restartPolicy',
+        'restoreFromBackupInput',
+        'revertToSnapshotInput',
         'schema',
         'service',
         'serviceExposeMap',
@@ -352,6 +362,7 @@ def test_admin_types(admin_user_client, adds=set(), removes=set()):
         'setServiceLinksInput',
         'setting',
         'snapshot',
+        'snapshotBackupInput',
         'stateTransition',
         'statsAccess',
         'storagePool',
@@ -380,7 +391,8 @@ def test_admin_types(admin_user_client, adds=set(), removes=set()):
         'rollingRestartStrategy',
         'servicesPortRange',
         'healthcheckInstanceHostMap',
-        'recreateOnQuorumStrategyConfig'
+        'recreateOnQuorumStrategyConfig',
+        'volumeSnapshotInput'
     }
     types.update(adds)
     types.difference_update(removes)
@@ -706,6 +718,7 @@ def test_storagepool_auth(admin_user_client, user_client, project_client):
         'driverName': 'r',
         'volumeAccessMode': 'r',
         'blockDevicePath': 'r',
+        'volumeCapabilities': 'r',
     })
 
     auth_check(user_client.schema, 'storagePool', 'r', {
@@ -715,6 +728,7 @@ def test_storagepool_auth(admin_user_client, user_client, project_client):
         'driverName': 'r',
         'volumeAccessMode': 'r',
         'blockDevicePath': 'r',
+        'volumeCapabilities': 'r',
     })
 
     auth_check(project_client.schema, 'storagePool', 'r', {
@@ -724,6 +738,7 @@ def test_storagepool_auth(admin_user_client, user_client, project_client):
         'driverName': 'r',
         'volumeAccessMode': 'r',
         'blockDevicePath': 'r',
+        'volumeCapabilities': 'r',
     })
 
 
@@ -1476,6 +1491,7 @@ def test_registry(admin_user_client, user_client, project_client):
         'serverAddress': 'r',
         'volumeAccessMode': 'r',
         'blockDevicePath': 'r',
+        'volumeCapabilities': 'r',
     })
 
     auth_check(user_client.schema, 'registry', 'r', {
@@ -1485,6 +1501,7 @@ def test_registry(admin_user_client, user_client, project_client):
         'serverAddress': 'r',
         'volumeAccessMode': 'r',
         'blockDevicePath': 'r',
+        'volumeCapabilities': 'r',
     })
 
     auth_check(project_client.schema, 'registry', 'crud', {
@@ -1494,6 +1511,7 @@ def test_registry(admin_user_client, user_client, project_client):
         'serverAddress': 'cr',
         'volumeAccessMode': 'r',
         'blockDevicePath': 'r',
+        'volumeCapabilities': 'r',
     })
 
 
@@ -2657,4 +2675,70 @@ def test_machine(admin_user_client, user_client, project_client,
         'engineLabel': 'r',
         'engineStorageDriver': 'r',
         'engineEnv': 'r',
+    })
+
+
+def test_snapshot_auth(admin_user_client, user_client, project_client):
+    auth_check(admin_user_client.schema, 'snapshot', 'r', {
+        'accountId': 'r',
+        'data': 'r',
+        'volumeId': 'r',
+        })
+
+    auth_check(user_client.schema, 'snapshot', 'r', {
+        'accountId': 'r',
+        'volumeId': 'r',
+        })
+
+    auth_check(project_client.schema, 'snapshot', 'rd', {
+        'accountId': 'r',
+        'volumeId': 'r',
+        })
+
+
+def test_backup_auth(admin_user_client, user_client, project_client):
+    auth_check(admin_user_client.schema, 'backup', 'r', {
+        'accountId': 'r',
+        'data': 'r',
+        'backupTargetId': 'r',
+        'snapshotId': 'r',
+        'uri': 'r',
+        'volumeId': 'r',
+        })
+
+    auth_check(user_client.schema, 'backup', 'r', {
+        'accountId': 'r',
+        'backupTargetId': 'r',
+        'snapshotId': 'r',
+        'uri': 'r',
+        'volumeId': 'r',
+        })
+
+    auth_check(project_client.schema, 'backup', 'rd', {
+        'accountId': 'r',
+        'backupTargetId': 'r',
+        'snapshotId': 'r',
+        'uri': 'r',
+        'volumeId': 'r',
+        })
+
+
+def test_backup_target_auth(admin_user_client, user_client, project_client):
+    auth_check(admin_user_client.schema, 'backupTarget', 'r', {
+        'accountId': 'r',
+        'data': 'r',
+        'destination': 'r',
+        'credentialId': 'r',
+    })
+
+    auth_check(user_client.schema, 'backupTarget', 'r', {
+        'accountId': 'r',
+        'destination': 'r',
+        'credentialId': 'r',
+    })
+
+    auth_check(project_client.schema, 'backupTarget', 'crd', {
+        'accountId': 'r',
+        'destination': 'cr',
+        'credentialId': 'cr',
     })

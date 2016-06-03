@@ -43,6 +43,16 @@
 
         "auditLog.resourceActions\\..*" : "",
 
+        "backup" : "r",
+        "backup.snapshotId" : "r",
+        "backup.backupTargetId" : "r",
+        "backup.uri" : "r",
+        "backup.volumeId" : "r",
+
+        "backupTarget" : "r",
+        "backupTarget.credentialId" : "cr",
+        "backupTarget.destination" : "cr",
+
         "baseMachineConfig": "r",
 
         "changeSecretInput" : "cr",
@@ -360,6 +370,12 @@
         "restartPolicy" : "r",
         "restartPolicy.maximumRetryCount" : "cr",
 
+        "revertToSnapshotInput": "r",
+        "revertToSnapshotInput.snapshotId": "cr",
+
+        "restoreFromBackupInput": "r",
+        "restoreFromBackupInput.backupId": "cr",
+
         "schema" : "r",
         "schema\\..*" : "cr",
 
@@ -375,6 +391,7 @@
         "storagePool.driverName": "r",
         "storagePool.volumeAccessMode": "r",
         "storagePool.blockDevicePath": "r",
+        "storagePool.volumeCapabilities": "r",
 
         "subscribe" : "",
         "subscribe.eventNames" : "cr",
@@ -521,8 +538,15 @@
         "loadBalancerService.selectorContainer" : "",
 
         "snapshot" : "r",
-        "snapshot.volumeId" : "cr",
-        "snapshot.managedVolumeUUID" : "r",
+        "snapshot.volumeId" : "r",
+
+        "snapshotBackupInput" : "r",
+        "snapshotBackupInput\\..*" : "",
+        "snapshotBackupInput.backupTargetId" : "cr",
+        "snapshotBackupInput.name" : "cr",
+        "snapshotBackupInput.snapshotId" : "",
+        "snapshotBackupInput.uri" : "",
+        "snapshotBackupInput.volumeId" : "",
 
         "label" : "r",
         "label.type" : "",
@@ -724,6 +748,9 @@
         "virtualMachineDisk.opts" : "cr",
         "virtualMachineDisk.driver" : "cr",
         "virtualMachineDisk.root" : "cr",
+
+        "volumeSnapshotInput": "r",
+        "volumeSnapshotInput.name": "cr",
 
         "healthcheckInstanceHostMap" : "r",
         "healthcheckInstanceHostMap.instanceId" : "r",
