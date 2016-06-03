@@ -6,7 +6,6 @@ import io.cattle.platform.core.model.Service;
 import io.cattle.platform.iaas.api.filter.common.AbstractDefaultResourceManagerFilter;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.servicediscovery.api.constants.ServiceDiscoveryConstants;
-import io.cattle.platform.servicediscovery.api.util.ServiceDiscoveryUtil;
 import io.cattle.platform.util.type.CollectionUtils;
 import io.github.ibuildthecloud.gdapi.exception.ValidationErrorException;
 import io.github.ibuildthecloud.gdapi.request.ApiRequest;
@@ -59,18 +58,5 @@ public class SelectorServiceCreateValidationFilter extends AbstractDefaultResour
                                 + " is not passed in");
             }
         }
-    }
-
-    @Override
-    public Object resourceAction(String type, ApiRequest request, ResourceManager next) {
-        if (request.getAction().equalsIgnoreCase(ServiceDiscoveryConstants.ACTION_SERVICE_UPGRADE)) {
-            Service service = objManager.loadResource(Service.class, request.getId());
-            if (ServiceDiscoveryUtil.isNoopService(service, allocatorService)) {
-                throw new ValidationErrorException(ValidationErrorCodes.INVALID_ACTION,
-                        "Can't upgrade selector only service");
-            }
-        }
-
-        return super.resourceAction(type, request, next);
     }
 }
