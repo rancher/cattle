@@ -22,7 +22,7 @@ public class SystemStackRemovePostHandler extends AbstractObjectProcessLogic imp
     
     private static final Map<String, List<String>> STACKS_TO_CLEANUP = new HashMap<>();
     static {
-        STACKS_TO_CLEANUP.put("kubernetes",
+        STACKS_TO_CLEANUP.put(SystemStackUpdate.KUBERNETES_STACK,
                 Arrays.asList("kubernetes://", "kubernetes-loadbalancers://", "kubernetes-ingress-lbs://"));
     }
 
@@ -37,22 +37,23 @@ public class SystemStackRemovePostHandler extends AbstractObjectProcessLogic imp
         if (systemStack.getExternalId() == null) {
             return null;
         }
-        if (!systemStack.getExternalId().startsWith(String.format(SystemStackUpdate.STACK_EXTERNAL_ID, ""))) {
+        
+        String systemStackType = SystemStackUpdate.getStackTypeFromExternalId(systemStack.getExternalId());
+        if (systemStackType == null) {
             return null;
         }
 
-        for (Environment toCleanup : getStacksToCleanup(systemStack)) {
+        for (Environment toCleanup : getStacksToCleanup(systemStack, systemStackType)) {
             objectProcessManager.scheduleStandardProcess(StandardProcess.REMOVE, toCleanup, null);
         }
         return null;
     }
 
-    protected List<Environment> getStacksToCleanup(Environment systemStack) {
+    protected List<Environment> getStacksToCleanup(Environment systemStack, String systemStackType) {
         List<Environment> all = objectManager.find(Environment.class, ENVIRONMENT.ACCOUNT_ID,
                 systemStack.getAccountId(),
                 ENVIRONMENT.REMOVED, null);
         List<Environment> toCleanup = new ArrayList<>();
-        String systemStackType = systemStack.getExternalId().replace(String.format(SystemStackUpdate.STACK_EXTERNAL_ID, ""), "");
         List<String> stackPrefixes = STACKS_TO_CLEANUP.get(systemStackType);
         if (stackPrefixes != null) {
             for (String prefix : stackPrefixes) {
