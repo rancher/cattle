@@ -239,6 +239,14 @@
          "startCount" : {
             "type" : "int",
             "nullable" : true
+        },
+        "readIopsList": {
+            "type": "array[map[string]]",
+            "nullable": true
+        },
+        "writeIopsList": {
+            "type": "array[map[string]]",
+            "nullable": true
         }
     },
     "resourceActions": {

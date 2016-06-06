@@ -153,6 +153,9 @@
         "containerProxy.port":"cr",
         "containerProxy.scheme":"cr",
 
+        "container.readIopsList" : "cru",
+        "container.writeIopsList" : "cru",
+
         "serviceProxy":"r",
         "serviceProxy.port":"cr",
         "serviceProxy.scheme":"cr",
