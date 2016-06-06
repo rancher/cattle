@@ -2,23 +2,6 @@ from common_fixtures import *  # NOQA
 from test_shared_volumes import add_storage_pool
 
 
-def _create_virtual_machine(client, context, **kw):
-    args = {
-        'accountId': context.project.id,
-        'imageUuid': context.image_uuid,
-    }
-
-    # set host with some default cpu and memory information
-    cpu = 100
-    memoryMB = 10000
-    info = {"cpuInfo": {"count": cpu}, "memoryInfo": {"memTotal": memoryMB}}
-    client.update(context.host, info=info)
-
-    args.update(kw)
-
-    return client.create_virtual_machine(**args)
-
-
 def test_compute_free(super_client, new_context):
     admin_client = new_context.client
     count = 5
@@ -175,6 +158,10 @@ def test_host_vnet_association(super_client, new_context):
     host2 = register_simulated_host(new_context.client)
     host3 = register_simulated_host(new_context.client)
 
+    update_host_more_resource(super_client, host1)
+    update_host_more_resource(super_client, host2)
+    update_host_more_resource(super_client, host3)
+
     host1 = super_client.update(host1, computeFree=100000)
     host2 = super_client.update(host2, computeFree=100000)
     host3 = super_client.update(host3, computeFree=100000)
@@ -231,21 +218,17 @@ def test_host_vnet_association(super_client, new_context):
 
     hosts = set()
     for _ in range(3):
-        vm = _create_virtual_machine(super_client,
-                                     new_context,
-                                     accountId=account.id,
-                                     subnetIds=[subnet1.id],
-                                     imageUuid=image_uuid)
+        vm = super_client.create_virtual_machine(accountId=account.id,
+                                                 subnetIds=[subnet1.id],
+                                                 imageUuid=image_uuid)
         vm = super_client.wait_success(vm)
         assert vm.state == 'running'
         hosts.add(vm.hosts()[0].id)
 
     for _ in range(3):
-        vm = _create_virtual_machine(super_client,
-                                     new_context,
-                                     accountId=account.id,
-                                     subnetIds=[subnet2.id],
-                                     imageUuid=image_uuid)
+        vm = super_client.create_virtual_machine(accountId=account.id,
+                                                 subnetIds=[subnet2.id],
+                                                 imageUuid=image_uuid)
         vm = super_client.wait_success(vm)
         assert vm.state == 'running'
         hosts.add(vm.hosts()[0].id)
@@ -999,9 +982,9 @@ def test_container_label_read_iops_lifecycle(super_client, new_context):
 
 
 def test_virtual_machine_allocate_cpu_memory(super_client, new_context):
-    # using default host from super_client, which has enough cpu/memory
-    vm = _create_virtual_machine(super_client, new_context,
-                                 vcpu=2, memoryMb=42)
+    # using default host from super_client, which will have enough cpu/memory
+    vm = create_virtual_machine(super_client, new_context,
+                                vcpu=2, memoryMb=42)
 
     vm = super_client.wait_success(vm)
     assert vm.state == 'running'

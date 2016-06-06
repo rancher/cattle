@@ -15,8 +15,8 @@
         "account.projectId" : "r",
         "account.identity" : "r",
 
-        "container.readIopsList" : "cru",
-        "container.writeIopsList" : "cru",
+        "container.readIopsList" : "cr",
+        "container.writeIopsList" : "cr",
 
         "haConfigInput" : "cr",
         "haConfigInput.clusterSize" : "cr",
