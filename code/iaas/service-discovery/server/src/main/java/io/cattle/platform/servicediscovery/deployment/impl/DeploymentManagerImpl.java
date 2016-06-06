@@ -295,7 +295,7 @@ public class DeploymentManagerImpl implements DeploymentManager {
             @Override
             public void run() {
                 Service service = objectMgr.loadResource(Service.class, client.getResourceId());
-                if (service != null && service.getState().equalsIgnoreCase(CommonStatesConstants.ACTIVE)) {
+                if (service != null && sdSvc.isActiveService(service)) {
                     activate(service);
                 }
             }
