@@ -50,8 +50,7 @@
         "backup.volumeId" : "r",
 
         "backupTarget" : "r",
-        "backupTarget.credentialId" : "cr",
-        "backupTarget.destination" : "cr",
+        "backupTarget.nfsConfig" : "cr",
 
         "baseMachineConfig": "r",
 
@@ -292,6 +291,12 @@
         "mount.volumeId" : "r",
 
         "network" : "r",
+
+        "nfsConfig" : "r",
+        "nfsConfig.name" : "cr",
+        "nfsConfig.server" : "cr",
+        "nfsConfig.share" : "cr",
+        "nfsConfig.mountOptions" : "cr",
 
         "password" : "crud",
         "password.secretValue" : "cro",

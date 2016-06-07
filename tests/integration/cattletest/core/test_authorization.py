@@ -180,6 +180,7 @@ def test_user_types(user_client, adds=set(), removes=set()):
         'healthcheckInstanceHostMap',
         'recreateOnQuorumStrategyConfig',
         'volumeSnapshotInput',
+        'nfsConfig',
     }
     types.update(adds)
     types.difference_update(removes)
@@ -392,7 +393,8 @@ def test_admin_types(admin_user_client, adds=set(), removes=set()):
         'servicesPortRange',
         'healthcheckInstanceHostMap',
         'recreateOnQuorumStrategyConfig',
-        'volumeSnapshotInput'
+        'volumeSnapshotInput',
+        'nfsConfig',
     }
     types.update(adds)
     types.difference_update(removes)
@@ -2727,18 +2729,15 @@ def test_backup_target_auth(admin_user_client, user_client, project_client):
     auth_check(admin_user_client.schema, 'backupTarget', 'r', {
         'accountId': 'r',
         'data': 'r',
-        'destination': 'r',
-        'credentialId': 'r',
+        'nfsConfig': 'r',
     })
 
     auth_check(user_client.schema, 'backupTarget', 'r', {
         'accountId': 'r',
-        'destination': 'r',
-        'credentialId': 'r',
+        'nfsConfig': 'r',
     })
 
     auth_check(project_client.schema, 'backupTarget', 'crd', {
         'accountId': 'r',
-        'destination': 'cr',
-        'credentialId': 'cr',
+        'nfsConfig': 'cr',
     })

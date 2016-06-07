@@ -85,6 +85,7 @@
                 <value>restoreFromBackupInput</value>
                 <value>snapshotBackupInput,parent=backup</value>
                 <value>volumeSnapshotInput</value>
+                <value>nfsConfig</value>
             </set>
         </property>
     </bean>

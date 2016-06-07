@@ -135,28 +135,6 @@ public interface BackupTarget extends java.io.Serializable {
 	@javax.persistence.Column(name = "data", length = 65535)
 	public java.util.Map<String,Object> getData();
 
-	/**
-	 * Setter for <code>cattle.backup_target.credential_id</code>.
-	 */
-	public void setCredentialId(java.lang.Long value);
-
-	/**
-	 * Getter for <code>cattle.backup_target.credential_id</code>.
-	 */
-	@javax.persistence.Column(name = "credential_id", precision = 19)
-	public java.lang.Long getCredentialId();
-
-	/**
-	 * Setter for <code>cattle.backup_target.destination</code>.
-	 */
-	public void setDestination(java.lang.String value);
-
-	/**
-	 * Getter for <code>cattle.backup_target.destination</code>.
-	 */
-	@javax.persistence.Column(name = "destination", length = 4096)
-	public java.lang.String getDestination();
-
 	// -------------------------------------------------------------------------
 	// FROM and INTO
 	// -------------------------------------------------------------------------
