@@ -11,9 +11,9 @@ package io.cattle.platform.core.model.tables.records;
 @java.lang.SuppressWarnings({ "all", "unchecked", "rawtypes" })
 @javax.persistence.Entity
 @javax.persistence.Table(name = "backup_target", schema = "cattle")
-public class BackupTargetRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.platform.core.model.tables.records.BackupTargetRecord> implements io.cattle.platform.db.jooq.utils.TableRecordJaxb, org.jooq.Record13<java.lang.Long, java.lang.String, java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.util.Date, java.util.Date, java.util.Date, java.util.Map<String,Object>, java.lang.Long, java.lang.String>, io.cattle.platform.core.model.BackupTarget {
+public class BackupTargetRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.platform.core.model.tables.records.BackupTargetRecord> implements io.cattle.platform.db.jooq.utils.TableRecordJaxb, org.jooq.Record11<java.lang.Long, java.lang.String, java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.util.Date, java.util.Date, java.util.Date, java.util.Map<String,Object>>, io.cattle.platform.core.model.BackupTarget {
 
-	private static final long serialVersionUID = -2105608309;
+	private static final long serialVersionUID = -1924594820;
 
 	/**
 	 * Setter for <code>cattle.backup_target.id</code>.
@@ -203,40 +203,6 @@ public class BackupTargetRecord extends org.jooq.impl.UpdatableRecordImpl<io.cat
 		return (java.util.Map<String,Object>) getValue(10);
 	}
 
-	/**
-	 * Setter for <code>cattle.backup_target.credential_id</code>.
-	 */
-	@Override
-	public void setCredentialId(java.lang.Long value) {
-		setValue(11, value);
-	}
-
-	/**
-	 * Getter for <code>cattle.backup_target.credential_id</code>.
-	 */
-	@javax.persistence.Column(name = "credential_id", precision = 19)
-	@Override
-	public java.lang.Long getCredentialId() {
-		return (java.lang.Long) getValue(11);
-	}
-
-	/**
-	 * Setter for <code>cattle.backup_target.destination</code>.
-	 */
-	@Override
-	public void setDestination(java.lang.String value) {
-		setValue(12, value);
-	}
-
-	/**
-	 * Getter for <code>cattle.backup_target.destination</code>.
-	 */
-	@javax.persistence.Column(name = "destination", length = 4096)
-	@Override
-	public java.lang.String getDestination() {
-		return (java.lang.String) getValue(12);
-	}
-
 	// -------------------------------------------------------------------------
 	// Primary key information
 	// -------------------------------------------------------------------------
@@ -250,23 +216,23 @@ public class BackupTargetRecord extends org.jooq.impl.UpdatableRecordImpl<io.cat
 	}
 
 	// -------------------------------------------------------------------------
-	// Record13 type implementation
+	// Record11 type implementation
 	// -------------------------------------------------------------------------
 
 	/**
 	 * {@inheritDoc}
 	 */
 	@Override
-	public org.jooq.Row13<java.lang.Long, java.lang.String, java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.util.Date, java.util.Date, java.util.Date, java.util.Map<String,Object>, java.lang.Long, java.lang.String> fieldsRow() {
-		return (org.jooq.Row13) super.fieldsRow();
+	public org.jooq.Row11<java.lang.Long, java.lang.String, java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.util.Date, java.util.Date, java.util.Date, java.util.Map<String,Object>> fieldsRow() {
+		return (org.jooq.Row11) super.fieldsRow();
 	}
 
 	/**
 	 * {@inheritDoc}
 	 */
 	@Override
-	public org.jooq.Row13<java.lang.Long, java.lang.String, java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.util.Date, java.util.Date, java.util.Date, java.util.Map<String,Object>, java.lang.Long, java.lang.String> valuesRow() {
-		return (org.jooq.Row13) super.valuesRow();
+	public org.jooq.Row11<java.lang.Long, java.lang.String, java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.util.Date, java.util.Date, java.util.Date, java.util.Map<String,Object>> valuesRow() {
+		return (org.jooq.Row11) super.valuesRow();
 	}
 
 	/**
@@ -361,22 +327,6 @@ public class BackupTargetRecord extends org.jooq.impl.UpdatableRecordImpl<io.cat
 	 * {@inheritDoc}
 	 */
 	@Override
-	public org.jooq.Field<java.lang.Long> field12() {
-		return io.cattle.platform.core.model.tables.BackupTargetTable.BACKUP_TARGET.CREDENTIAL_ID;
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public org.jooq.Field<java.lang.String> field13() {
-		return io.cattle.platform.core.model.tables.BackupTargetTable.BACKUP_TARGET.DESTINATION;
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
 	public java.lang.Long value1() {
 		return getId();
 	}
@@ -459,22 +409,6 @@ public class BackupTargetRecord extends org.jooq.impl.UpdatableRecordImpl<io.cat
 	@Override
 	public java.util.Map<String,Object> value11() {
 		return getData();
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public java.lang.Long value12() {
-		return getCredentialId();
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public java.lang.String value13() {
-		return getDestination();
 	}
 
 	/**
@@ -580,25 +514,7 @@ public class BackupTargetRecord extends org.jooq.impl.UpdatableRecordImpl<io.cat
 	 * {@inheritDoc}
 	 */
 	@Override
-	public BackupTargetRecord value12(java.lang.Long value) {
-		setCredentialId(value);
-		return this;
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public BackupTargetRecord value13(java.lang.String value) {
-		setDestination(value);
-		return this;
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public BackupTargetRecord values(java.lang.Long value1, java.lang.String value2, java.lang.Long value3, java.lang.String value4, java.lang.String value5, java.lang.String value6, java.lang.String value7, java.util.Date value8, java.util.Date value9, java.util.Date value10, java.util.Map<String,Object> value11, java.lang.Long value12, java.lang.String value13) {
+	public BackupTargetRecord values(java.lang.Long value1, java.lang.String value2, java.lang.Long value3, java.lang.String value4, java.lang.String value5, java.lang.String value6, java.lang.String value7, java.util.Date value8, java.util.Date value9, java.util.Date value10, java.util.Map<String,Object> value11) {
 		return this;
 	}
 
@@ -622,8 +538,6 @@ public class BackupTargetRecord extends org.jooq.impl.UpdatableRecordImpl<io.cat
 		setRemoved(from.getRemoved());
 		setRemoveTime(from.getRemoveTime());
 		setData(from.getData());
-		setCredentialId(from.getCredentialId());
-		setDestination(from.getDestination());
 	}
 
 	/**
@@ -649,7 +563,7 @@ public class BackupTargetRecord extends org.jooq.impl.UpdatableRecordImpl<io.cat
 	/**
 	 * Create a detached, initialised BackupTargetRecord
 	 */
-	public BackupTargetRecord(java.lang.Long id, java.lang.String name, java.lang.Long accountId, java.lang.String kind, java.lang.String uuid, java.lang.String description, java.lang.String state, java.util.Date created, java.util.Date removed, java.util.Date removeTime, java.util.Map<String,Object> data, java.lang.Long credentialId, java.lang.String destination) {
+	public BackupTargetRecord(java.lang.Long id, java.lang.String name, java.lang.Long accountId, java.lang.String kind, java.lang.String uuid, java.lang.String description, java.lang.String state, java.util.Date created, java.util.Date removed, java.util.Date removeTime, java.util.Map<String,Object> data) {
 		super(io.cattle.platform.core.model.tables.BackupTargetTable.BACKUP_TARGET);
 
 		setValue(0, id);
@@ -663,7 +577,5 @@ public class BackupTargetRecord extends org.jooq.impl.UpdatableRecordImpl<io.cat
 		setValue(8, removed);
 		setValue(9, removeTime);
 		setValue(10, data);
-		setValue(11, credentialId);
-		setValue(12, destination);
 	}
 }

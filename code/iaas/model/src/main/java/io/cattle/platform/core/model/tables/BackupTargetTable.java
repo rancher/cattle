@@ -11,7 +11,7 @@ package io.cattle.platform.core.model.tables;
 @java.lang.SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class BackupTargetTable extends org.jooq.impl.TableImpl<io.cattle.platform.core.model.tables.records.BackupTargetRecord> {
 
-	private static final long serialVersionUID = -1149429179;
+	private static final long serialVersionUID = -458497012;
 
 	/**
 	 * The singleton instance of <code>cattle.backup_target</code>
@@ -82,16 +82,6 @@ public class BackupTargetTable extends org.jooq.impl.TableImpl<io.cattle.platfor
 	public final org.jooq.TableField<io.cattle.platform.core.model.tables.records.BackupTargetRecord, java.util.Map<String,Object>> DATA = createField("data", org.jooq.impl.SQLDataType.CLOB.length(65535).asConvertedDataType(new io.cattle.platform.db.jooq.converter.DataConverter()), this, "");
 
 	/**
-	 * The column <code>cattle.backup_target.credential_id</code>.
-	 */
-	public final org.jooq.TableField<io.cattle.platform.core.model.tables.records.BackupTargetRecord, java.lang.Long> CREDENTIAL_ID = createField("credential_id", org.jooq.impl.SQLDataType.BIGINT, this, "");
-
-	/**
-	 * The column <code>cattle.backup_target.destination</code>.
-	 */
-	public final org.jooq.TableField<io.cattle.platform.core.model.tables.records.BackupTargetRecord, java.lang.String> DESTINATION = createField("destination", org.jooq.impl.SQLDataType.VARCHAR.length(4096), this, "");
-
-	/**
 	 * Create a <code>cattle.backup_target</code> table reference
 	 */
 	public BackupTargetTable() {
@@ -142,7 +132,7 @@ public class BackupTargetTable extends org.jooq.impl.TableImpl<io.cattle.platfor
 	 */
 	@Override
 	public java.util.List<org.jooq.ForeignKey<io.cattle.platform.core.model.tables.records.BackupTargetRecord, ?>> getReferences() {
-		return java.util.Arrays.<org.jooq.ForeignKey<io.cattle.platform.core.model.tables.records.BackupTargetRecord, ?>>asList(io.cattle.platform.core.model.Keys.FK_BACKUP_TARGET__ACCOUNT_ID, io.cattle.platform.core.model.Keys.FK_BACKUP_TARGET__CREDENTIAL_ID);
+		return java.util.Arrays.<org.jooq.ForeignKey<io.cattle.platform.core.model.tables.records.BackupTargetRecord, ?>>asList(io.cattle.platform.core.model.Keys.FK_BACKUP_TARGET__ACCOUNT_ID);
 	}
 
 	/**
