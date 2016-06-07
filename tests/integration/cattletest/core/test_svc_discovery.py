@@ -1804,6 +1804,10 @@ def test_export_config(client, context):
     launch_config = {"imageUuid": image_uuid,
                      "cpuSet": "0,1", "labels": labels,
                      "restartPolicy": restart_policy,
+                     "pidMode": "host",
+                     "memory": 1048576,
+                     "memorySwap": 2097152,
+                     "devices": ["/dev/sdc:/dev/xsdc:rwm"],
                      "logConfig": {"config": {"labels": "foo"},
                                    "driver": "json-file"}}
     service = client. \
@@ -1825,6 +1829,10 @@ def test_export_config(client, context):
     assert "restart" not in docker_yml[service.name]
     assert docker_yml[service.name]["log_driver"] == "json-file"
     assert docker_yml[service.name]["log_opt"] is not None
+    assert docker_yml[service.name]["pid"] == "host"
+    assert docker_yml[service.name]["mem_limit"] == 1048576
+    assert docker_yml[service.name]["memswap_limit"] == 2097152
+    assert docker_yml[service.name]["devices"] is not None
 
     rancher_yml = yaml.load(compose_config.rancherComposeConfig)
     assert 'scale' not in rancher_yml[service.name]
