@@ -85,7 +85,7 @@ def test_backup_lifecycle(context, client, super_client):
     snap2 = take_snapshot(vol, client)
     snap3 = take_snapshot(vol, client)
 
-    target = client.create_backup_target(destination='vfs:///123')
+    target = client.create_backup_target(name='backupTarget1')
     target = client.wait_success(target)
 
     backup = snap2.backup(backupTargetId=target.id)
@@ -131,7 +131,7 @@ def test_root_volume_restore(context, client, super_client):
     snap1 = take_snapshot(root_vol1, client)
     non_root_snap = take_snapshot(non_root_vol, client)
 
-    target = client.create_backup_target(destination='vfs:///123')
+    target = client.create_backup_target(name='backupTarget1')
     target = client.wait_success(target)
 
     backup = snap1.backup(backupTargetId=target.id)

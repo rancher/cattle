@@ -1,8 +1,12 @@
 {
     "resourceFields": {
-        "destination": {
+        "name": {
             "required": true,
             "nullable": false
+        },
+        "nfsConfig": {
+            "nullable": true,
+            "type": "nfsConfig"
         }
     }
 }
