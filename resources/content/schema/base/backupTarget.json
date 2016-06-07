@@ -2,7 +2,8 @@
     "resourceFields": {
         "name": {
             "required": true,
-            "nullable": false
+            "nullable": false,
+            "validChars": "a-zA-Z0-9_.-"
         },
         "nfsConfig": {
             "nullable": true,

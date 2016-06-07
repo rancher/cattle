@@ -10,6 +10,8 @@ public class VirtualMachineDisk {
 
     String name;
     String size;
+    Integer readIops;
+    Integer writeIops;
     String driver;
     boolean root;
 
@@ -39,6 +41,22 @@ public class VirtualMachineDisk {
     @Field(defaultValue="40g")
     public void setSize(String size) {
         this.size = size;
+    }
+
+    public Integer getReadIops() {
+        return readIops;
+    }
+
+    public void setReadIops(Integer readIops) {
+        this.readIops = readIops;
+    }
+
+    public Integer getWriteIops() {
+        return writeIops;
+    }
+
+    public void setWriteIops(Integer writeIops) {
+        this.writeIops = writeIops;
     }
 
     public String getDriver() {
