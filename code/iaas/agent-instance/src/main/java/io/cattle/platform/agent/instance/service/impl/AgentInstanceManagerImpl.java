@@ -8,7 +8,6 @@ import io.cattle.platform.agent.instance.service.NetworkServiceInfo;
 import io.cattle.platform.core.constants.AgentConstants;
 import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.InstanceConstants;
-import io.cattle.platform.core.constants.InstanceConstants.SystemContainer;
 import io.cattle.platform.core.dao.GenericResourceDao;
 import io.cattle.platform.core.model.Account;
 import io.cattle.platform.core.model.Agent;
@@ -70,7 +69,8 @@ public class AgentInstanceManagerImpl implements AgentInstanceManager {
         }
 
         if (!includeNetworkAgent && instance.getAgentId() != null) {
-            if (StringUtils.equalsIgnoreCase(instance.getSystemContainer(), SystemContainer.NetworkAgent.name())) {
+            if (StringUtils.equalsIgnoreCase(instance.getSystemContainer(),
+                    InstanceConstants.SYSTEM_CONTAINER_NETWORK_AGENT)) {
                 return result;
             }
         }
@@ -88,7 +88,7 @@ public class AgentInstanceManagerImpl implements AgentInstanceManager {
                         .withInstance(instance)
                         .withAccountId(instance.getAccountId())
                         .withPrivileged(true).forVnetId(nic.getVnetId())
-                        .withSystemContainerType(SystemContainer.NetworkAgent)
+                        .withSystemContainerType(InstanceConstants.SYSTEM_CONTAINER_NETWORK_AGENT)
                         .withParameters(CollectionUtils.asMap(InstanceConstants.FIELD_DATA_VOLUMES,
                                 Arrays.asList(AgentConstants.AGENT_INSTANCE_BIND_MOUNT)))
                         .build();

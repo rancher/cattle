@@ -1,6 +1,5 @@
 package io.cattle.platform.agent.instance.factory;
 
-import io.cattle.platform.core.constants.InstanceConstants.SystemContainer;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.NetworkServiceProvider;
 
@@ -38,7 +37,7 @@ public interface AgentInstanceBuilder {
 
     AgentInstanceBuilder withParameters(Map<String, Object> params);
 
-    AgentInstanceBuilder withSystemContainerType(SystemContainer systemContainerType);
+    AgentInstanceBuilder withSystemContainerType(String systemContainerType);
 
     public Instance build();
 

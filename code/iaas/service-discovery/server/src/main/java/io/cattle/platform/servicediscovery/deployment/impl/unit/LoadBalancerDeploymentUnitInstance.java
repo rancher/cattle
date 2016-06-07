@@ -2,7 +2,6 @@ package io.cattle.platform.servicediscovery.deployment.impl.unit;
 
 import io.cattle.platform.archaius.util.ArchaiusUtil;
 import io.cattle.platform.core.constants.InstanceConstants;
-import io.cattle.platform.core.constants.InstanceConstants.SystemContainer;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.Service;
 import io.cattle.platform.core.util.PortSpec;
@@ -35,7 +34,7 @@ public class LoadBalancerDeploymentUnitInstance extends DefaultDeploymentUnitIns
 
     protected void setSystemContainer(Map<String, Object> launchConfigData) {
         launchConfigData.put(InstanceConstants.FIELD_PRIVILEGED, true);
-        launchConfigData.put(InstanceConstants.FIELD_SYSTEM_CONTAINER, SystemContainer.LoadBalancerAgent);
+        launchConfigData.put(InstanceConstants.FIELD_SYSTEM_CONTAINER, InstanceConstants.SYSTEM_CONTAINER_LB_AGENT);
     }
 
     @SuppressWarnings("unchecked")
@@ -44,7 +43,8 @@ public class LoadBalancerDeploymentUnitInstance extends DefaultDeploymentUnitIns
         if (labels == null) {
             labels = new HashMap<String, String>();
         }
-        ((HashMap<String, String>) labels).put(SystemLabels.LABEL_AGENT_ROLE, SystemContainer.LoadBalancerAgent.name());
+        ((HashMap<String, String>) labels)
+                .put(SystemLabels.LABEL_AGENT_ROLE, InstanceConstants.SYSTEM_CONTAINER_LB_AGENT);
         ((HashMap<String, String>) labels).put(SystemLabels.LABEL_AGENT_CREATE, "true");
         ((HashMap<String, String>) labels).put(SystemLabels.LABEL_AGENT_URI_PREFIX, "delegate");
         launchConfigData.put(InstanceConstants.FIELD_LABELS, labels);

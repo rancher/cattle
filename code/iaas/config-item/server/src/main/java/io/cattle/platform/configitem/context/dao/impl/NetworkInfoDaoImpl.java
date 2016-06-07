@@ -179,7 +179,7 @@ public class NetworkInfoDaoImpl extends AbstractJooqDao implements NetworkInfoDa
                 info.setIpAddress((IpAddress)input.get(3));
                 info.setSubnet((Subnet)input.get(4));
 
-                if (InstanceConstants.SystemContainer.NetworkAgent.name().equalsIgnoreCase(instance.getSystemContainer())) {
+                if (InstanceConstants.SYSTEM_CONTAINER_NETWORK_AGENT.equalsIgnoreCase(instance.getSystemContainer())) {
                     Object natPort = 4500;
                     Object isaKmpPort = 500;
 

@@ -3,7 +3,6 @@ package io.cattle.platform.agent.instance.factory.impl;
 import io.cattle.platform.agent.instance.factory.AgentInstanceBuilder;
 import io.cattle.platform.archaius.util.ArchaiusUtil;
 import io.cattle.platform.core.constants.InstanceConstants;
-import io.cattle.platform.core.constants.InstanceConstants.SystemContainer;
 import io.cattle.platform.core.constants.NetworkServiceProviderConstants;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.NetworkServiceProvider;
@@ -37,7 +36,7 @@ public class AgentInstanceBuilderImpl implements AgentInstanceBuilder {
     AgentInstanceFactoryImpl factory;
     String uri;
     Map<String, Object> params = new HashMap<>();
-    SystemContainer systemContainerType;
+    String systemContainerType;
 
     public AgentInstanceBuilderImpl(AgentInstanceFactoryImpl factory) {
         super();
@@ -240,12 +239,12 @@ public class AgentInstanceBuilderImpl implements AgentInstanceBuilder {
     }
 
     @Override
-    public AgentInstanceBuilder withSystemContainerType(SystemContainer systemContainerType) {
+    public AgentInstanceBuilder withSystemContainerType(String systemContainerType) {
         this.systemContainerType = systemContainerType;
         return this;
     }
 
-    public SystemContainer getSystemContainerType() {
+    public String getSystemContainerType() {
         return systemContainerType;
     }
 
