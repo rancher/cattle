@@ -240,11 +240,11 @@
             "type" : "int",
             "nullable" : true
         },
-        "readIopsList": {
+        "blkioDeviceReadIOps": {
             "type": "array[map[string]]",
             "nullable": true
         },
-        "writeIopsList": {
+        "blkioDeviceWriteIOps": {
             "type": "array[map[string]]",
             "nullable": true
         }

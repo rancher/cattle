@@ -15,8 +15,8 @@
         "account.projectId" : "r",
         "account.identity" : "r",
 
-        "container.readIopsList" : "cr",
-        "container.writeIopsList" : "cr",
+        "container.blkioDeviceReadIOps" : "cr",
+        "container.blkioDeviceWriteIOps" : "cr",
 
         "haConfigInput" : "cr",
         "haConfigInput.clusterSize" : "cr",

@@ -153,8 +153,8 @@
         "containerProxy.port":"cr",
         "containerProxy.scheme":"cr",
 
-        "container.readIopsList" : "cr",
-        "container.writeIopsList" : "cr",
+        "container.blkioDeviceReadIOps" : "cr",
+        "container.blkioDeviceWriteIOps" : "cr",
 
         "serviceProxy":"r",
         "serviceProxy.port":"cr",

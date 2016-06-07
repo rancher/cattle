@@ -887,8 +887,8 @@ def test_container_auth(admin_user_client, user_client, project_client):
         'deploymentUnitUuid': 'r',
         'version': 'r',
         'startCount': 'r',
-        'readIopsList': 'r',
-        'writeIopsList': 'r',
+        'blkioDeviceReadIOps': 'r',
+        'blkioDeviceWriteIOps': 'r',
     })
 
     auth_check(user_client.schema, 'container', 'r', {
@@ -953,8 +953,8 @@ def test_container_auth(admin_user_client, user_client, project_client):
         'deploymentUnitUuid': 'r',
         'version': 'r',
         'startCount': 'r',
-        'readIopsList': 'r',
-        'writeIopsList': 'r',
+        'blkioDeviceReadIOps': 'r',
+        'blkioDeviceWriteIOps': 'r',
     })
 
     auth_check(project_client.schema, 'container', 'crud', {
@@ -1019,8 +1019,8 @@ def test_container_auth(admin_user_client, user_client, project_client):
         'deploymentUnitUuid': 'r',
         'version': 'r',
         'startCount': 'r',
-        'readIopsList': 'cr',
-        'writeIopsList': 'cr',
+        'blkioDeviceReadIOps': 'cr',
+        'blkioDeviceWriteIOps': 'cr',
     })
 
     auth_check(project_client.schema, 'dockerBuild', 'cr', {
@@ -2353,8 +2353,8 @@ def test_virtual_machine(admin_user_client, user_client, project_client):
         'userdata': 'r',
         'memoryMb': 'r',
         'disks': 'r',
-        'readIopsList': 'r',
-        'writeIopsList': 'r',
+        'blkioDeviceReadIOps': 'r',
+        'blkioDeviceWriteIOps': 'r',
     })
 
     auth_check(user_client.schema, 'virtualMachine', 'r', {
@@ -2404,8 +2404,8 @@ def test_virtual_machine(admin_user_client, user_client, project_client):
         'userdata': 'r',
         'memoryMb': 'r',
         'disks': 'r',
-        'readIopsList': 'r',
-        'writeIopsList': 'r',
+        'blkioDeviceReadIOps': 'r',
+        'blkioDeviceWriteIOps': 'r',
     })
 
     auth_check(project_client.schema, 'virtualMachine', 'crud', {
@@ -2455,8 +2455,8 @@ def test_virtual_machine(admin_user_client, user_client, project_client):
         'userdata': 'cr',
         'memoryMb': 'cr',
         'disks': 'cr',
-        'readIopsList': 'cr',
-        'writeIopsList': 'cr',
+        'blkioDeviceReadIOps': 'cr',
+        'blkioDeviceWriteIOps': 'cr',
     })
 
 
