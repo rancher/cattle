@@ -2444,6 +2444,8 @@ def test_virtual_machine_disk(admin_user_client, user_client, project_client):
     auth_check(admin_user_client.schema, 'virtualMachineDisk', 'r', {
         'name': 'r',
         'size': 'r',
+        'readIops': 'r',
+        'writeIops': 'r',
         'opts': 'r',
         'driver': 'r',
         'root': 'r',
@@ -2452,6 +2454,8 @@ def test_virtual_machine_disk(admin_user_client, user_client, project_client):
     auth_check(user_client.schema, 'virtualMachineDisk', 'r', {
         'name': 'r',
         'size': 'r',
+        'readIops': 'r',
+        'writeIops': 'r',
         'opts': 'r',
         'driver': 'r',
         'root': 'r',
@@ -2460,6 +2464,8 @@ def test_virtual_machine_disk(admin_user_client, user_client, project_client):
     auth_check(project_client.schema, 'virtualMachineDisk', 'cr', {
         'name': 'cr',
         'size': 'cr',
+        'readIops': 'cr',
+        'writeIops': 'cr',
         'opts': 'cr',
         'driver': 'cr',
         'root': 'cr',

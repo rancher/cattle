@@ -750,6 +750,8 @@
         "virtualMachineDisk" : "r",
         "virtualMachineDisk.name" : "cr",
         "virtualMachineDisk.size" : "cr",
+        "virtualMachineDisk.readIops" : "cr",
+        "virtualMachineDisk.writeIops" : "cr",
         "virtualMachineDisk.opts" : "cr",
         "virtualMachineDisk.driver" : "cr",
         "virtualMachineDisk.root" : "cr",

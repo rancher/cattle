@@ -123,6 +123,8 @@ def test_virtual_machine_default_fields(super_client, client, context):
     disks = [
         {
             'size': '2g',
+            'readIops': 10000,
+            'writeIops': 9000,
             'opts': {
                 'foo': 'bar'
             }
@@ -159,7 +161,8 @@ def test_virtual_machine_default_fields(super_client, client, context):
 
     volume1 = find_one(client.list_volume, name=c.uuid[0:7] + '-00')
     assert volume1.driver == 'foo-bar'
-    assert volume1.driverOpts == {'vm': 'true', 'size': '2g', 'foo': 'bar'}
+    assert volume1.driverOpts == {'vm': 'true', 'size': '2g', 'foo': 'bar',
+                                  'read-iops': '10000', 'write-iops': '9000'}
 
     x = c.uuid[0:7] + '-' + disk_name
     volume2 = find_one(client.list_volume, name=x)

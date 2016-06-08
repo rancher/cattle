@@ -128,7 +128,7 @@ public class VirtualMachinePreCreate extends AbstractObjectProcessLogic implemen
             boolean rootFound = false;
             int index = 0;
             List<VirtualMachineDisk> disks = jsonMapper.convertCollectionValue(objectDisks, List.class, VirtualMachineDisk.class);
-            for (int i = 0 ; i < disks.size(); i++) {
+            for (int i = 0; i < disks.size(); i++) {
                 VirtualMachineDisk disk = disks.get(i);
                 if (disk.isRoot() && rootFound) {
                     continue;
@@ -168,8 +168,15 @@ public class VirtualMachinePreCreate extends AbstractObjectProcessLogic implemen
                     if (disk.getSize() != null) {
                         opts.put("size", disk.getSize());
                     }
-                    
-                    
+
+                    if (disk.getReadIops() != null) {
+                        opts.put("read-iops", disk.getReadIops().toString());
+                    }
+
+                    if (disk.getWriteIops() != null) {
+                        opts.put("write-iops", disk.getWriteIops().toString());
+                    }
+
                     if (StringUtils.isNotEmpty(blockDevPath)) {
                         opts.put("dont-format", "true");
                         if (disk.isRoot()) {
