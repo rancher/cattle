@@ -15,6 +15,9 @@
         "account.projectId" : "r",
         "account.identity" : "r",
 
+        "container.blkioDeviceReadIOps" : "cr",
+        "container.blkioDeviceWriteIOps" : "cr",
+
         "haConfigInput" : "cr",
         "haConfigInput.clusterSize" : "cr",
         "haConfigInput.httpEnabled" : "cr",
