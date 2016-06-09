@@ -70,7 +70,7 @@ DEV_HOST=localhost:8081 ../tools/development/register-boot2docker.sh >/tmp/regis
 
 ./test -e py27 -- -m nonparallel
 
-./test -- -m "'not nonparallel'" -n $(($(nproc) + 1)) -v || {
+./test -- -m "'not nonparallel'" -n $(($(nproc) + 1)) -v core/test_docker.py || {
     echo Test failed
     cat /tmp/run.log
     echo Test failed

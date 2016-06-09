@@ -1,3 +1,3 @@
-image: cjellick/cattle-build:1.10.3-rancher1
+image: rancher/build-cattle:1.10.3-rancher1
 script:
   - ./scripts/ci
