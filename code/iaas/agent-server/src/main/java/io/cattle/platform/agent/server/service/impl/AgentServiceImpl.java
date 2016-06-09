@@ -11,6 +11,7 @@ import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.model.Agent;
 import io.cattle.platform.eventing.EventProgress;
 import io.cattle.platform.eventing.EventService;
+import io.cattle.platform.eventing.exception.AgentInactiveException;
 import io.cattle.platform.eventing.exception.AgentRemovedException;
 import io.cattle.platform.eventing.exception.EventExecutionException;
 import io.cattle.platform.eventing.model.Event;
@@ -39,6 +40,13 @@ public class AgentServiceImpl implements AgentService {
     public static final Set<String> GOOD_AGENT_STATES = new HashSet<String>(Arrays.asList(CommonStatesConstants.ACTIVATING, CommonStatesConstants.ACTIVE,
             AgentConstants.STATE_RECONNECTING));
 
+    public static final Set<String> REMOVED_AGENT_STATES = new HashSet<String>(Arrays.asList(
+            CommonStatesConstants.REMOVED, CommonStatesConstants.REMOVING, CommonStatesConstants.PURGED,
+            CommonStatesConstants.PURGING));
+
+    public static final Set<String> INACTIVE_AGENT_STATES = new HashSet<String>(Arrays.asList(
+            CommonStatesConstants.DEACTIVATING, CommonStatesConstants.INACTIVE));
+
     AgentConnectionManager connectionManager;
     ObjectManager objectManager;
     JsonMapper jsonMapper;
@@ -62,10 +70,15 @@ public class AgentServiceImpl implements AgentService {
             connectionManager.closeConnection(agent);
             handleResponse(event, EventVO.reply(agentEvent));
         } else {
-            if (agent.getRemoved() != null) {
+            if (REMOVED_AGENT_STATES.contains(agent.getState())) {
                 handleError(event, EventVO.replyWithException(agentEvent, AgentRemovedException.class,
                         "Agent is removed"));
             }
+            if (INACTIVE_AGENT_STATES.contains(agent.getState())) {
+                handleError(event, EventVO.replyWithException(agentEvent, AgentInactiveException.class,
+                        "Agent is inactive"));
+            }
+
             if (!GOOD_AGENT_STATES.contains(agent.getState())) {
                 log.info("Dropping event [{}] [{}] for agent [{}] in state [{}]", event.getName(), event.getId(), agent.getId(), agent.getState());
                 return;
