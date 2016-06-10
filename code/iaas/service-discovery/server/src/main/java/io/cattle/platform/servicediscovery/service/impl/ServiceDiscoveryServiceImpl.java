@@ -602,7 +602,9 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
         }
 
         String stackHealthState = HealthcheckConstants.HEALTH_STATE_UNHEALTHY;
-        if (startedOnce >= expectedCount) {
+        if (expectedCount == 0) {
+            stackHealthState = HealthcheckConstants.HEALTH_STATE_HEALTHY;
+        } else if (startedOnce >= expectedCount) {
             stackHealthState = HealthcheckConstants.SERVICE_HEALTH_STATE_STARTED_ONCE;
         } else if (healthy >= expectedCount) {
             stackHealthState = HealthcheckConstants.HEALTH_STATE_HEALTHY;
