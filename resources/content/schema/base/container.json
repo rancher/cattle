@@ -181,6 +181,10 @@
             "type":"array[string]",
             "nullable": true
         },
+        "blkioDeviceOptions":{
+            "type":"map[blkioDeviceOption]",
+            "nullable": true
+        },
         "registryCredentialId":{
             "type":"reference[registryCredential]"
         },

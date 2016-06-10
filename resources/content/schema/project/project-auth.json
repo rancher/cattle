@@ -6,6 +6,7 @@
         "backup" : "rd",
         "backupTarget" : "crd",
         "baseMachineConfig" : "r",
+        "blkioDeviceOption": "cr",
         "certificate" : "crud",
         "cluster" : "crud",
         "composeProject" : "crud",

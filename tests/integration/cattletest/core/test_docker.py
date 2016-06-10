@@ -1028,6 +1028,31 @@ def test_service_links_with_no_ports(docker_client):
     assert service.state == 'active'
 
 
+@if_docker
+def test_blkio_device_options(super_client, docker_client):
+    dev_opts = {
+        '/dev/sda': {
+            'readIops': 1000,
+            'writeIops': 2000,
+        },
+        '/dev/null': {
+            'readBps': 3000,
+        }
+    }
+
+    c = docker_client.create_container(imageUuid=TEST_IMAGE_UUID,
+                                       networkMode=None,
+                                       blkioDeviceOptions=dev_opts)
+    c = docker_client.wait_success(c)
+    assert c.state == 'running'
+
+    super_c = super_client.reload(c)
+    hc = super_c.data.dockerInspect['HostConfig']
+    assert hc['BlkioDeviceReadIOps'] == [{'Path': '/dev/sda', 'Rate': 1000}]
+    assert hc['BlkioDeviceWriteIOps'] == [{'Path': '/dev/sda', 'Rate': 2000}]
+    assert hc['BlkioDeviceReadBps'] == [{'Path': '/dev/null', 'Rate': 3000}]
+
+
 def _check_path(volume, should_exist, client, super_client):
     path = _path_to_volume(volume)
     c = client. \

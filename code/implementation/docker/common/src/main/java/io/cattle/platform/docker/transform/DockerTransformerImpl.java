@@ -3,6 +3,7 @@ package io.cattle.platform.docker.transform;
 import static io.cattle.platform.core.constants.InstanceConstants.*;
 import static io.cattle.platform.docker.constants.DockerInstanceConstants.*;
 import static io.cattle.platform.docker.constants.DockerNetworkConstants.*;
+import io.cattle.platform.core.addon.BlkioDeviceOption;
 import io.cattle.platform.core.addon.LogConfig;
 import io.cattle.platform.core.constants.ContainerEventConstants;
 import io.cattle.platform.core.constants.InstanceConstants;
@@ -41,6 +42,7 @@ import com.github.dockerjava.api.model.VolumeBind;
 
 public class DockerTransformerImpl implements DockerTransformer {
 
+    private static final String HOST_CONFIG = "HostConfig";
     private static final String IMAGE_PREFIX = "docker:";
     private static final String IMAGE_KIND_PATTERN = "^(sim|docker):.*";
     private static final String READ_WRITE = "rw";
@@ -50,6 +52,12 @@ public class DockerTransformerImpl implements DockerTransformer {
     private static final String DEST = "Destination";
     private static final String SRC = "Source";
     private static final String NAME = "Name";
+    
+    private static final String READ_IOPS= "BlkioDeviceReadIOps";
+    private static final String WRITE_IOPS= "BlkioDeviceWriteIOps";
+    private static final String READ_BPS= "BlkioDeviceReadBps";
+    private static final String WRITE_BPS= "BlkioDeviceWriteBps";
+    private static final String WEIGHT = "BlkioWeightDevice";
 
     @Inject
     JsonMapper jsonMapper;
@@ -187,20 +195,86 @@ public class DockerTransformerImpl implements DockerTransformer {
             setDevices(instance, hostConfig.getDevices());
         }
 
+        setBlkioDeviceOptionss(instance, fromInspect);
         setNetworkMode(instance, containerConfig, hostConfig);
-        setField(instance, FIELD_SECURITY_OPT, fromInspect, "HostConfig", "SecurityOpt");
-        setField(instance, FIELD_PID_MODE, fromInspect, "HostConfig", "PidMode");
-        setField(instance, FIELD_READ_ONLY, fromInspect, "HostConfig", "ReadonlyRootfs");
-        setField(instance, FIELD_EXTRA_HOSTS, fromInspect, "HostConfig", "ExtraHosts");
-        setFieldIfNotEmpty(instance, FIELD_CPU_SHARES, fromInspect, "HostConfig", "CpuShares");
-        setFieldIfNotEmpty(instance, FIELD_CPU_SET, fromInspect, "HostConfig", "CpusetCpus");
-        setFieldIfNotEmpty(instance, FIELD_MEMORY, fromInspect, "HostConfig", "Memory");
-        setFieldIfNotEmpty(instance, FIELD_MEMORY_SWAP, fromInspect, "HostConfig", "MemorySwap");
+        setField(instance, FIELD_SECURITY_OPT, fromInspect, HOST_CONFIG, "SecurityOpt");
+        setField(instance, FIELD_PID_MODE, fromInspect, HOST_CONFIG, "PidMode");
+        setField(instance, FIELD_READ_ONLY, fromInspect, HOST_CONFIG, "ReadonlyRootfs");
+        setField(instance, FIELD_EXTRA_HOSTS, fromInspect, HOST_CONFIG, "ExtraHosts");
+        setFieldIfNotEmpty(instance, FIELD_CPU_SHARES, fromInspect, HOST_CONFIG, "CpuShares");
+        setFieldIfNotEmpty(instance, FIELD_CPU_SET, fromInspect, HOST_CONFIG, "CpusetCpus");
+        setFieldIfNotEmpty(instance, FIELD_MEMORY, fromInspect, HOST_CONFIG, "Memory");
+        setFieldIfNotEmpty(instance, FIELD_MEMORY_SWAP, fromInspect, HOST_CONFIG, "MemorySwap");
         setLogConfig(instance, fromInspect);
         setLabels(instance, fromInspect);
 
         // Currently not implemented: VolumesFrom, Links,
         // Consider: AttachStdin, AttachStdout, AttachStderr, StdinOnce,
+    }
+
+    @SuppressWarnings({ "rawtypes", "unchecked" })
+    void setBlkioDeviceOptionss(Instance instance, Map<String, Object> fromInspect) {
+        /*
+         * We're coverting from docker's structure of:
+         *  {BlkioDeviceReadIOps: [{Path: <device>, Rate: 1000} ... ], BlkioDeviceWriteIOps: [{Path: <device>, Rate: 1000} ... ] ... }
+         * to cattle's structure of:
+         *  {blkioDeviceOptions: {<device>: {readIops: 1000m writeIops: 1000 ... } ... }
+         */
+        List<String> fields = Arrays.asList(READ_IOPS, WRITE_IOPS, READ_BPS, WRITE_BPS, WEIGHT);
+        Map<String, BlkioDeviceOption> target = new HashMap<>();
+
+        for (String field : fields) {
+            List<Map> deviceOptions = null;
+            try {
+                deviceOptions = (List<Map>)CollectionUtils.toList(CollectionUtils.getNestedValue(fromInspect, HOST_CONFIG, field));
+            } catch (Exception e) {
+                continue;
+            }
+
+            if (deviceOptions == null || deviceOptions.isEmpty()) {
+                continue;
+            }
+
+            for (Map deviceOption : deviceOptions) {
+                String path = null;
+                Integer value = null;
+                try {
+                    path = (String)deviceOption.get("Path");
+                    value = (Integer)(field == WEIGHT ? deviceOption.get("Weight") : deviceOption.get("Rate"));
+                } catch (Exception e) {
+                    // just skip it
+                }
+                if (path != null && value != null) {
+                    BlkioDeviceOption targetDevOpt = target.get(path);
+                    if (targetDevOpt == null) {
+                        targetDevOpt = new BlkioDeviceOption();
+                        target.put(path, targetDevOpt);
+                    }
+
+                    switch (field) {
+                    case READ_IOPS:
+                        targetDevOpt.setReadIops(value);
+                        break;
+                    case WRITE_IOPS:
+                        targetDevOpt.setWriteIops(value);
+                        break;
+                    case READ_BPS:
+                        targetDevOpt.setReadBps(value);
+                        break;
+                    case WRITE_BPS:
+                        targetDevOpt.setWriteBps(value);
+                        break;
+                    case WEIGHT:
+                        targetDevOpt.setWeight(value);
+                        break;
+                    }
+                }
+            }
+        }
+
+        if (!target.isEmpty()) {
+            setField(instance, FIELD_BLKIO_DEVICE_OPTIONS, target);
+        }
     }
 
     void setNetworkMode(Instance instance, ContainerConfig containerConfig, HostConfig hostConfig) {
@@ -244,8 +318,8 @@ public class DockerTransformerImpl implements DockerTransformer {
 
     @SuppressWarnings("unchecked")
     void setLogConfig(Instance instance, Map<String, Object> fromInspect) {
-        Object type = CollectionUtils.getNestedValue(fromInspect, "HostConfig", "LogConfig", "Type");
-        Object config = CollectionUtils.getNestedValue(fromInspect, "HostConfig", "LogConfig", "Config");
+        Object type = CollectionUtils.getNestedValue(fromInspect, HOST_CONFIG, "LogConfig", "Type");
+        Object config = CollectionUtils.getNestedValue(fromInspect, HOST_CONFIG, "LogConfig", "Config");
 
         if (type == null && config == null) {
             return;
