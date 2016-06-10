@@ -253,7 +253,9 @@ public abstract class AbstractAllocator implements Allocator {
                     if (iter != null) {
                         close(iter);
                     }
-                    
+
+                    Set<Long> alreadyScheduledHostIds = new HashSet<Long>();
+
                     // scheduler the list and return a list that is able to schedule
                     for (AllocationCandidate candidate : candidatesForCPUMemoryIops) {
                         boolean good = true;
@@ -261,6 +263,13 @@ public abstract class AbstractAllocator implements Allocator {
                         // schedule cpu, memory and iops first
                         try {
                             for( Long hostId : candidate.getHosts() ){
+
+                                // in case we already tried to schedule instance for this hostId, then skip it
+                                if (alreadyScheduledHostIds.contains(hostId)) {
+                                    continue;
+                                } else {
+                                    alreadyScheduledHostIds.add(hostId);
+                                }
                                 Instance instance = attempt.getInstance();
                                 good = scheduleResources("iops", attempt.getInstanceId(), false, hostId, attempt.getInstance().getAccountId());
                                 if(good && InstanceConstants.KIND_VIRTUAL_MACHINE.equals(instance.getKind())) {
