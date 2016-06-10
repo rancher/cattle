@@ -15,7 +15,41 @@
         "CpuShares": 2,
         "CpusetCpus": "2,3",
         "Memory": 42,
-        "MemorySwap": 43
+        "MemorySwap": 43,
+        "BlkioDeviceReadBps": [
+          {
+            "Path": "/dev/sda",
+            "Rate": 10000
+          }
+        ],
+        "BlkioDeviceWriteBps": [
+          {
+            "Path": "/dev/sda",
+            "Rate": 20000
+          }
+        ],
+        "BlkioDeviceReadIOps": [
+          {
+            "Path": "/dev/sda",
+            "Rate": 30000
+          }
+        ],
+        "BlkioDeviceWriteIOps": [
+          {
+            "Path": "/dev/sda",
+            "Rate": 40000
+          },
+          {
+            "Path": "/dev/sdc",
+            "Rate": 50000
+          }
+        ],
+        "BlkioWeightDevice": [
+          {
+            "Path": "/dev/sdb",
+            "Weight": 500
+          }
+        ]
     },
     "HostnamePath": "/mnt/sda1/var/lib/docker/containers/f13e0c667453e85c0409022127f750abe4ea4e517a970b22cff523def62acc28/hostname",
     "HostsPath": "/mnt/sda1/var/lib/docker/containers/f13e0c667453e85c0409022127f750abe4ea4e517a970b22cff523def62acc28/hosts",

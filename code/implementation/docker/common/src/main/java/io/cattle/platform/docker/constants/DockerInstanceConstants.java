@@ -36,6 +36,7 @@ public class DockerInstanceConstants {
     public static final String FIELD_PID_MODE = "pidMode";
     public static final String FIELD_EXTRA_HOSTS = "extraHosts";
     public static final String FIELD_READ_ONLY = "readOnly";
+    public static final String FIELD_BLKIO_DEVICE_OPTIONS = "blkioDeviceOptions";
 
     public static final String EVENT_FIELD_VOLUMES_FROM = "dataVolumesFromContainers";
     public static final String EVENT_FIELD_VOLUMES_FROM_DVM = "volumesFromDataVolumeMounts";

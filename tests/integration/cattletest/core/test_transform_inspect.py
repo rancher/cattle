@@ -91,6 +91,30 @@ def test_transform_inspect_host_config(transform_url, client, super_client):
     assert container['memorySwap'] == 43
     assert container['cpuShares'] == 2
     assert container['cpuSet'] == '2,3'
+    assert len(container['blkioDeviceOptions']) == 3
+    assert container['blkioDeviceOptions']['/dev/sda'] == {
+        'readBps': 10000,
+        'writeBps': 20000,
+        'readIops': 30000,
+        'writeIops': 40000,
+        'weight': None,
+        }
+
+    assert container['blkioDeviceOptions']['/dev/sdb'] == {
+        'readBps': None,
+        'writeBps': None,
+        'readIops': None,
+        'writeIops': None,
+        'weight': 500,
+    }
+
+    assert container['blkioDeviceOptions']['/dev/sdc'] == {
+        'readBps': None,
+        'writeBps': None,
+        'readIops': None,
+        'writeIops': 50000,
+        'weight': None,
+    }
 
 
 def test_transform_inspect_full(transform_url, client, super_client):

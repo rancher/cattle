@@ -54,6 +54,13 @@
 
         "baseMachineConfig": "r",
 
+        "blkioDeviceOption": "r",
+        "blkioDeviceOption.readIops": "cr",
+        "blkioDeviceOption.writeIops": "cr",
+        "blkioDeviceOption.readBps": "cr",
+        "blkioDeviceOption.writeBps": "cr",
+        "blkioDeviceOption.weight": "cr",
+
         "changeSecretInput" : "cr",
         "changeSecretInput.oldSecret" : "cr",
         "changeSecretInput.newSecret" : "cr",
@@ -67,6 +74,7 @@
         "clusterHostMap" : "",
 
         "container" : "r",
+        "container.blkioDeviceOptions" : "cr",
         "container.build" : "cr",
         "container.capAdd" : "cr",
         "container.capDrop" : "cr",

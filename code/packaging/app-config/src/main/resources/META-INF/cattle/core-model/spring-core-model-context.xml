@@ -30,6 +30,7 @@
                 <value>io.cattle.platform.core.addon.ServicesPortRange</value>
                 <value>io.cattle.platform.core.addon.RecreateOnQuorumStrategyConfig</value>
                 <value>io.cattle.platform.core.addon.HaConfigInput</value>
+                <value>io.cattle.platform.core.addon.BlkioDeviceOption</value>
             </set>
         </property>
     </bean>

@@ -181,6 +181,7 @@ def test_user_types(user_client, adds=set(), removes=set()):
         'recreateOnQuorumStrategyConfig',
         'volumeSnapshotInput',
         'nfsConfig',
+        'blkioDeviceOption',
     }
     types.update(adds)
     types.difference_update(removes)
@@ -395,6 +396,7 @@ def test_admin_types(admin_user_client, adds=set(), removes=set()):
         'recreateOnQuorumStrategyConfig',
         'volumeSnapshotInput',
         'nfsConfig',
+        'blkioDeviceOption',
     }
     types.update(adds)
     types.difference_update(removes)
@@ -822,6 +824,7 @@ def test_container_auth(admin_user_client, user_client, project_client):
         'accountId': 'r',
         'agentId': 'r',
         'allocationState': 'r',
+        'blkioDeviceOptions': 'r',
         'build': 'r',
         'capAdd': 'r',
         'capDrop': 'r',
@@ -888,6 +891,7 @@ def test_container_auth(admin_user_client, user_client, project_client):
 
     auth_check(user_client.schema, 'container', 'r', {
         'accountId': 'r',
+        'blkioDeviceOptions': 'r',
         'build': 'r',
         'capAdd': 'r',
         'capDrop': 'r',
@@ -951,6 +955,7 @@ def test_container_auth(admin_user_client, user_client, project_client):
 
     auth_check(project_client.schema, 'container', 'crud', {
         'accountId': 'r',
+        'blkioDeviceOptions': 'cr',
         'build': 'cr',
         'capAdd': 'cr',
         'capDrop': 'cr',
@@ -2294,6 +2299,7 @@ def test_virtual_machine(admin_user_client, user_client, project_client):
         'accountId': 'r',
         'agentId': 'r',
         'allocationState': 'r',
+        'blkioDeviceOptions': 'r',
         'command': 'r',
         'count': 'r',
         'cpuSet': 'r',
@@ -2345,6 +2351,7 @@ def test_virtual_machine(admin_user_client, user_client, project_client):
 
     auth_check(user_client.schema, 'virtualMachine', 'r', {
         'accountId': 'r',
+        'blkioDeviceOptions': 'r',
         'command': 'r',
         'count': 'r',
         'cpuSet': 'r',
@@ -2393,6 +2400,7 @@ def test_virtual_machine(admin_user_client, user_client, project_client):
 
     auth_check(project_client.schema, 'virtualMachine', 'crud', {
         'accountId': 'r',
+        'blkioDeviceOptions': 'cr',
         'command': 'cr',
         'count': 'cr',
         'cpuSet': 'cr',
