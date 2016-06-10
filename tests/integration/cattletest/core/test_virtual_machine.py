@@ -166,20 +166,20 @@ def test_virtual_machine_default_fields(super_client, client, context):
     }
 
 
-def test_virtual_machine_stats(client, context):
-    vm = create_virtual_machine(client, context, vcpu=2, memoryMb=42)
-    vm = client.wait_success(vm)
+def test_virtual_machine_stats(super_client, context):
+    vm = create_virtual_machine(super_client, context, vcpu=2, memoryMb=42)
+    vm = super_client.wait_success(vm)
     assert vm.state == 'running'
 
     assert 'stats' in vm
     assert 'containerStats' in vm
 
 
-def test_virtual_machine_create_cpu_memory(client, context):
-    vm = create_virtual_machine(client, context,
+def test_virtual_machine_create_cpu_memory(super_client, context):
+    vm = create_virtual_machine(super_client, context,
                                 vcpu=2, memoryMb=42)
 
-    vm = client.wait_success(vm)
+    vm = super_client.wait_success(vm)
     assert vm.state == 'running'
 
     assert vm.vcpu == 2
