@@ -1,6 +1,8 @@
 from common_fixtures import *  # NOQA
 from cattle import ApiError
 
+DEFAULT_TIMEOUT = 120
+
 
 def test_upgrade_simple(context, client):
     _run_upgrade(context, client, 1, 1,
@@ -68,7 +70,7 @@ def test_upgrade_relink(context, client):
                 "updateLinks": True,
                 "intervalMillis": 100}
     service = service.upgrade_action(toServiceStrategy=strategy)
-    service = client.wait_success(service, timeout=120)
+    service = client.wait_success(service, timeout=DEFAULT_TIMEOUT)
     assert service.state == 'upgraded'
 
     assert len(source.consumedservices()) == 2
@@ -163,16 +165,16 @@ def test_big_scale(context, client):
                                 launchConfig=launch_config,
                                 intervalMillis=100)
     svc = client.wait_success(svc)
-    svc = client.wait_success(svc.activate(), timeout=240)
+    svc = client.wait_success(svc.activate(), DEFAULT_TIMEOUT)
     svc = _run_insvc_upgrade(svc,
                              batchSize=1,
                              launchConfig=launch_config)
-    svc = client.wait_success(svc, 120)
+    svc = client.wait_success(svc, DEFAULT_TIMEOUT)
     svc = client.wait_success(svc.finishupgrade())
     svc = _run_insvc_upgrade(svc,
                              batchSize=5,
                              launchConfig=launch_config)
-    svc = client.wait_success(svc, 120)
+    svc = client.wait_success(svc, DEFAULT_TIMEOUT)
     client.wait_success(svc.finishupgrade())
 
 
@@ -186,7 +188,7 @@ def test_rollback_regular_upgrade(context, client, super_client):
     time.sleep(1)
     svc = client.wait_success(svc.cancelupgrade())
     assert svc.state == 'canceled-upgrade'
-    svc = client.wait_success(svc.rollback())
+    svc = client.wait_success(svc.rollback(), DEFAULT_TIMEOUT)
     assert svc.state == 'active'
     _wait_for_map_count(super_client, svc)
 
@@ -200,11 +202,11 @@ def _create_and_schedule_inservice_upgrade(client, context, startFirst=False):
                      'networkMode': None}
     svc = client.create_service(name=random_str(),
                                 environmentId=env.id,
-                                scale=5,
+                                scale=4,
                                 launchConfig=launch_config,
                                 image=image_uuid)
     svc = client.wait_success(svc)
-    svc = client.wait_success(svc.activate(), timeout=120)
+    svc = client.wait_success(svc.activate(), timeout=DEFAULT_TIMEOUT)
     svc = _run_insvc_upgrade(svc, batchSize=2,
                              launchConfig=launch_config,
                              startFirst=startFirst,
@@ -213,7 +215,7 @@ def _create_and_schedule_inservice_upgrade(client, context, startFirst=False):
     def upgrade_not_null():
         return _validate_in_svc_upgrade(client, svc)
 
-    svc = wait_for(upgrade_not_null)
+    svc = wait_for(upgrade_not_null, DEFAULT_TIMEOUT)
     return svc
 
 
@@ -252,7 +254,7 @@ def test_cancelupgrade_rollback_cancelrollback(context, client):
     svc = _create_and_schedule_inservice_upgrade(client, context)
     svc = _cancel_upgrade(client, svc)
     svc = svc.rollback()
-    svc = client.wait_success(svc.cancelrollback())
+    svc = client.wait_success(svc.cancelrollback(), DEFAULT_TIMEOUT)
     svc.remove()
 
 
@@ -262,7 +264,7 @@ def test_cancelupgrade_rollback_cancelrollback_finish(context, client):
     svc = _create_and_schedule_inservice_upgrade(client, context)
     svc = _cancel_upgrade(client, svc)
     svc = svc.rollback()
-    svc = client.wait_success(svc.cancelrollback())
+    svc = client.wait_success(svc.cancelrollback(), DEFAULT_TIMEOUT)
     svc.finishupgrade()
 
 
@@ -271,24 +273,25 @@ def test_state_transition_start_first(context, client):
     # a) startFirst=false
     svc = _create_and_schedule_inservice_upgrade(client, context,
                                                  startFirst=False)
-    svc = client.wait_success(svc)
+    svc = client.wait_success(svc, DEFAULT_TIMEOUT)
     assert svc.state == 'upgraded'
     svc = svc.rollback()
-    svc = client.wait_success(svc)
+    svc = client.wait_success(svc, DEFAULT_TIMEOUT)
     assert svc.state == 'active'
+    return
     # b) startFirst=true
     svc = _create_and_schedule_inservice_upgrade(client, context,
                                                  startFirst=True)
-    svc = client.wait_success(svc)
+    svc = client.wait_success(svc, DEFAULT_TIMEOUT)
     assert svc.state == 'upgraded'
     svc = svc.rollback()
-    svc = client.wait_success(svc)
+    svc = client.wait_success(svc, DEFAULT_TIMEOUT)
     assert svc.state == 'active'
 
     # upgraded->removed
     svc = _create_and_schedule_inservice_upgrade(client, context,
                                                  startFirst=False)
-    svc = client.wait_success(svc)
+    svc = client.wait_success(svc, DEFAULT_TIMEOUT)
     assert svc.state == 'upgraded'
     client.wait_success(svc.remove())
 
@@ -313,9 +316,9 @@ def test_in_service_upgrade_networks_from(context, client, super_client):
     u_svc = _run_insvc_upgrade(svc,
                                secondaryLaunchConfigs=[secondary1],
                                batchSize=1)
-    u_svc = client.wait_success(u_svc)
+    u_svc = client.wait_success(u_svc, DEFAULT_TIMEOUT)
     assert u_svc.state == 'upgraded'
-    u_svc = client.wait_success(u_svc.finishupgrade())
+    u_svc = client.wait_success(u_svc.finishupgrade(), DEFAULT_TIMEOUT)
     _validate_upgrade(super_client, svc, u_svc,
                       primary='1', secondary1='1', secondary2='0')
 
@@ -341,9 +344,9 @@ def test_in_service_upgrade_volumes_from(context, client, super_client):
                                launchConfig=launch_config,
                                secondaryLaunchConfigs=[secondary2],
                                batchSize=1)
-    u_svc = client.wait_success(u_svc)
+    u_svc = client.wait_success(u_svc, DEFAULT_TIMEOUT)
     assert u_svc.state == 'upgraded'
-    u_svc = client.wait_success(u_svc.finishupgrade())
+    u_svc = client.wait_success(u_svc.finishupgrade(), DEFAULT_TIMEOUT)
     _validate_upgrade(super_client, svc, u_svc,
                       primary='1', secondary1='1', secondary2='1')
 
@@ -370,7 +373,7 @@ def test_dns_service_upgrade(client):
     launch_config = {"labels": labels}
     dns = _run_insvc_upgrade(dns, batchSize=1,
                              launchConfig=launch_config)
-    dns = client.wait_success(dns)
+    dns = client.wait_success(dns, DEFAULT_TIMEOUT)
     assert dns.launchConfig is not None
     assert dns.launchConfig.labels == labels
 
@@ -393,7 +396,7 @@ def test_external_service_upgrade(client):
     launch_config = {"labels": labels}
     svc = _run_insvc_upgrade(svc, batchSize=1,
                              launchConfig=launch_config)
-    svc = client.wait_success(svc)
+    svc = client.wait_success(svc, DEFAULT_TIMEOUT)
     assert svc.launchConfig is not None
     assert svc.launchConfig.labels == labels
 
@@ -449,10 +452,10 @@ def test_rollback_sidekicks(context, client, super_client):
     u_svc = _run_insvc_upgrade(svc,
                                secondaryLaunchConfigs=[secondary1],
                                batchSize=2)
-    u_svc = client.wait_success(u_svc, 120)
+    u_svc = client.wait_success(u_svc, DEFAULT_TIMEOUT)
     assert u_svc.state == 'upgraded'
 
-    u_svc = client.wait_success(u_svc.rollback(), 120)
+    u_svc = client.wait_success(u_svc.rollback(), DEFAULT_TIMEOUT)
     assert u_svc.state == 'active'
     final_maps = super_client. \
         list_serviceExposeMap(serviceId=u_svc.id,
@@ -517,10 +520,11 @@ def _insvc_upgrade(context, client, super_client, finish_upgrade,
         return _validate_in_svc_upgrade(client, svc)
 
     u_svc = wait_for(upgrade_not_null)
-    u_svc = client.wait_success(u_svc, timeout=120)
+    u_svc = client.wait_success(u_svc, timeout=DEFAULT_TIMEOUT)
     assert u_svc.state == 'upgraded'
     if finish_upgrade:
-        u_svc = client.wait_success(u_svc.finishupgrade())
+        u_svc = client.wait_success(u_svc.finishupgrade(),
+                                    DEFAULT_TIMEOUT)
         assert u_svc.state == 'active'
     return env, svc, u_svc
 
@@ -619,7 +623,7 @@ def _create_env_and_services(context, client, from_scale=1, to_scale=1):
                                     scale=from_scale,
                                     launchConfig=launch_config)
     service = client.wait_success(service)
-    service = client.wait_success(service.activate(), timeout=120)
+    service = client.wait_success(service.activate(), timeout=DEFAULT_TIMEOUT)
     assert service.state == 'active'
     assert service.upgrade is None
 
@@ -628,7 +632,8 @@ def _create_env_and_services(context, client, from_scale=1, to_scale=1):
                                      scale=to_scale,
                                      launchConfig=launch_config)
     service2 = client.wait_success(service2)
-    service2 = client.wait_success(service2.activate(), timeout=120)
+    service2 = client.wait_success(service2.activate(),
+                                   timeout=DEFAULT_TIMEOUT)
     assert service2.state == 'active'
     assert service2.upgrade is None
 
@@ -655,7 +660,7 @@ def _run_upgrade(context, client, from_scale, to_scale, **kw):
 
     service = wait_for(upgrade_not_null)
 
-    service = client.wait_success(service, timeout=120)
+    service = client.wait_success(service, timeout=DEFAULT_TIMEOUT)
     assert service.state == 'upgraded'
     assert service.scale == 0
 
@@ -663,7 +668,8 @@ def _run_upgrade(context, client, from_scale, to_scale, **kw):
     assert service2.state == 'active'
     assert service2.scale == kw['finalScale']
 
-    service = client.wait_success(service.finishupgrade())
+    service = client.wait_success(service.finishupgrade(),
+                                  DEFAULT_TIMEOUT)
     assert service.state == 'active'
 
 
@@ -686,7 +692,7 @@ def _create_multi_lc_svc(super_client, client, context, activate=True):
     svc = client.wait_success(svc)
 
     if activate:
-        svc = client.wait_success(svc.activate(), timeout=120)
+        svc = client.wait_success(svc.activate(), timeout=DEFAULT_TIMEOUT)
         assert svc.state == 'active'
         c11, c11_sec1, c11_sec2, c12, c12_sec1, c12_sec2 \
             = _get_containers(super_client, svc)
@@ -808,7 +814,8 @@ def _cancel_upgrade(client, svc):
 
 def _rollback(client, super_client,
               svc, primary=0, secondary1=0, secondary2=0):
-    rolledback_svc = client.wait_success(svc.rollback())
+    rolledback_svc = client.wait_success(svc.rollback(),
+                                         DEFAULT_TIMEOUT)
     assert rolledback_svc.state == 'active'
     roll_v = rolledback_svc.launchConfig.version
     strategy = svc.upgrade.inServiceStrategy
@@ -830,7 +837,7 @@ def test_rollback_id(context, client, super_client):
                                 launchConfig=launch_config,
                                 image=image_uuid)
     svc = client.wait_success(svc)
-    svc = client.wait_success(svc.activate(), timeout=120)
+    svc = client.wait_success(svc.activate(), timeout=DEFAULT_TIMEOUT)
     maps = _wait_for_map_count(super_client, svc)
     expose_map = maps[0]
     c1 = super_client.reload(expose_map.instance())
@@ -842,7 +849,7 @@ def test_rollback_id(context, client, super_client):
 
     svc = client.wait_success(svc)
 
-    svc = client.wait_success(svc.rollback())
+    svc = client.wait_success(svc.rollback(), DEFAULT_TIMEOUT)
     maps = _wait_for_map_count(super_client, svc)
     expose_map = maps[0]
     c2 = super_client.reload(expose_map.instance())
@@ -873,9 +880,10 @@ def test_in_service_upgrade_port_mapping(context, client, super_client):
                                secondaryLaunchConfigs=[secondary1,
                                                        secondary2],
                                batchSize=1)
-    u_svc = client.wait_success(u_svc)
+    u_svc = client.wait_success(u_svc, DEFAULT_TIMEOUT)
     assert u_svc.state == 'upgraded'
-    u_svc = client.wait_success(u_svc.finishupgrade())
+    u_svc = client.wait_success(u_svc.finishupgrade(),
+                                DEFAULT_TIMEOUT)
 
     svc.launchConfig.ports.append(unicode('8083:83/udp'))
     assert u_svc.launchConfig.ports == svc.launchConfig.ports

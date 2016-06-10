@@ -8,6 +8,7 @@ import io.cattle.platform.core.addon.ServiceRestart;
 import io.cattle.platform.core.addon.ServiceUpgradeStrategy;
 import io.cattle.platform.core.addon.ToServiceUpgradeStrategy;
 import io.cattle.platform.core.constants.CommonStatesConstants;
+import io.cattle.platform.core.constants.HealthcheckConstants;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.Service;
@@ -412,6 +413,22 @@ public class UpgradeManagerImpl implements UpgradeManager {
         }
     }
 
+    protected void waitForHealthyState(Service service) {
+        List<? extends Instance> serviceInstances = exposeMapDao.listServiceManagedInstances(service
+                .getId());
+        final List<String> healthyStates = Arrays.asList(HealthcheckConstants.HEALTH_STATE_HEALTHY,
+                HealthcheckConstants.HEALTH_STATE_UPDATING_HEALTHY);
+        for (final Instance instance : serviceInstances) {
+            resourceMntr.waitFor(instance,
+                    new ResourcePredicate<Instance>() {
+                        @Override
+                        public boolean evaluate(Instance obj) {
+                            return instance.getHealthState() == null || healthyStates.contains(obj.getHealthState());
+                        }
+                    });
+        }
+    }
+
     public void cleanupUpgradedInstances(Service service) {
         List<? extends ServiceExposeMap> maps = exposeMapDao.getInstancesSetForUpgrade(service.getId());
         List<Instance> waitList = new ArrayList<>();
@@ -519,7 +536,9 @@ public class UpgradeManagerImpl implements UpgradeManager {
     }
 
     protected void reconcile(Service service) {
-        // 2. wait for reconcile (new instances will be started along)
+        // 1. wait for reconcile (new instances will be started along)
         deploymentMgr.activate(service);
+        // 2. wait for service to become healthy
+        waitForHealthyState(service);
     }
 }
