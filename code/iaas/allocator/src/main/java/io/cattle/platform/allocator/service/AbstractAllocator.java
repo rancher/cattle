@@ -254,32 +254,35 @@ public abstract class AbstractAllocator implements Allocator {
                         close(iter);
                     }
 
-                    Set<Long> alreadyScheduledHostIds = new HashSet<Long>();
+                    Map<Long, Boolean> alreadyScheduledHostStatus = new HashMap<Long, Boolean>();
 
                     // scheduler the list and return a list that is able to schedule
                     for (AllocationCandidate candidate : candidatesForCPUMemoryIops) {
                         boolean good = true;
-                        
+                        Long currentHostId = 0L;
+
                         // schedule cpu, memory and iops first
                         try {
                             for( Long hostId : candidate.getHosts() ){
+                                currentHostId = hostId;
 
                                 // in case we already tried to schedule instance for this hostId, then skip it
-                                if (alreadyScheduledHostIds.contains(hostId)) {
+                                if (alreadyScheduledHostStatus.containsKey(hostId)) {
+                                    good = alreadyScheduledHostStatus.get(hostId);
                                     continue;
-                                } else {
-                                    alreadyScheduledHostIds.add(hostId);
                                 }
                                 Instance instance = attempt.getInstance();
                                 good = scheduleResources("iops", attempt.getInstanceId(), false, hostId, attempt.getInstance().getAccountId());
                                 if(good && InstanceConstants.KIND_VIRTUAL_MACHINE.equals(instance.getKind())) {
                                     good = scheduleResources("cpu-memory", attempt.getInstanceId(), true, hostId, attempt.getInstance().getAccountId());
                                 }
+                                alreadyScheduledHostStatus.put(hostId, good);
                                 if (!good)
                                     break;
                             }
                         } catch (IOException e) {
                             good = false;
+                            alreadyScheduledHostStatus.put(currentHostId, good);
                             log.error((e.getStackTrace()).toString(), e);
                         }
                         if (!good)
