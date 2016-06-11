@@ -13,6 +13,8 @@ import io.cattle.platform.lock.LockCallbackNoReturn;
 import io.cattle.platform.lock.LockManager;
 import io.cattle.platform.util.type.InitializationTask;
 
+import io.github.ibuildthecloud.gdapi.util.RequestUtils;
+
 import java.io.IOException;
 
 import javax.inject.Inject;
@@ -43,16 +45,28 @@ public class ConfigItemServerImpl implements ConfigItemServer, InitializationTas
         }
     }
 
+    protected ConfigItem retrieveItem(Request req) {
+        String arch = RequestUtils.makeSingularStringIfCan(req.getParams().get("arch"));
+        String archSuffix = "";
+        if (arch != null && arch.length() != 0 && !arch.equals("amd64")) {
+            archSuffix = "-" + arch;
+        }
+        ConfigItem item = itemRegistry.getConfigItem(req.getItemName() + archSuffix);
+        if (item == null) {
+            item = itemRegistry.getConfigItem(req.getItemName());
+        }
+        return item;
+    }
+
     protected void handleApplied(Request req) {
         ItemVersion version = req.getAppliedVersion();
+        ConfigItem item = retrieveItem(req);
 
         if (!versionManager.isAssigned(req.getClient(), req.getItemName())) {
             log.error("Client [{}] is reporting applied on non-assigned item [{}]", req.getClient(), req.getItemName());
             req.setResponseCode(Request.NOT_FOUND);
             return;
         }
-
-        ConfigItem item = itemRegistry.getConfigItem(req.getItemName());
 
         if (version.isLatest()) {
             if (item == null) {
@@ -73,7 +87,7 @@ public class ConfigItemServerImpl implements ConfigItemServer, InitializationTas
     }
 
     protected void handleDownload(Request req) throws IOException {
-        ConfigItem item = itemRegistry.getConfigItem(req.getItemName());
+        ConfigItem item = retrieveItem(req);
 
         if (item == null) {
             log.info("Client [{}] requested unknown item [{}]", req.getClient(), req.getItemName());
