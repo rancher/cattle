@@ -1,5 +1,6 @@
 package io.cattle.platform.process.instance;
 
+import io.cattle.platform.core.addon.LogConfig;
 import io.cattle.platform.core.constants.AgentConstants;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.constants.NetworkConstants;
@@ -11,6 +12,7 @@ import io.cattle.platform.engine.handler.HandlerResult;
 import io.cattle.platform.engine.handler.ProcessPreListener;
 import io.cattle.platform.engine.process.ProcessInstance;
 import io.cattle.platform.engine.process.ProcessState;
+import io.cattle.platform.json.JsonMapper;
 import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.process.common.handler.AbstractObjectProcessLogic;
 import io.cattle.platform.util.type.Priority;
@@ -19,12 +21,17 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.inject.Inject;
 import javax.inject.Named;
+
+import org.apache.commons.lang3.StringUtils;
 
 import com.google.common.base.Joiner;
 
 @Named
 public class InstancePreCreate extends AbstractObjectProcessLogic implements ProcessPreListener, Priority {
+    @Inject
+    JsonMapper jsonMapper;
 
     @Override
     public String[] getProcessNames() {
@@ -47,10 +54,21 @@ public class InstancePreCreate extends AbstractObjectProcessLogic implements Pro
         }
         setDns(instance, labels, data);
 
+        setLogConfig(instance, data);
+
         if (!data.isEmpty()) {
             return new HandlerResult(data);
         }
         return null;
+    }
+
+    protected void setLogConfig(Instance instance, Map<Object, Object> data) {
+        LogConfig logConfig = DataAccessor.field(instance,
+                InstanceConstants.FIELD_LOG_CONFIG, jsonMapper, LogConfig.class);
+        if (logConfig != null && !StringUtils.isEmpty(logConfig.getDriver()) && logConfig.getConfig() == null) {
+            logConfig.setConfig(new HashMap<String, String>());
+            data.put(InstanceConstants.FIELD_LOG_CONFIG, logConfig);
+        }
     }
 
     protected void setDns(Instance instance, Map<String, Object> labels, Map<Object, Object> data) {

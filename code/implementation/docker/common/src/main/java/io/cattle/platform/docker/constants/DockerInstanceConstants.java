@@ -32,7 +32,6 @@ public class DockerInstanceConstants {
     public static final String FIELD_DEVICES = "devices";
     public static final String FIELD_WORKING_DIR = "workingDir";
     public static final String FIELD_SECURITY_OPT = "securityOpt";
-    public static final String FIELD_LOG_CONFIG = "logConfig";
     public static final String FIELD_PID_MODE = "pidMode";
     public static final String FIELD_EXTRA_HOSTS = "extraHosts";
     public static final String FIELD_READ_ONLY = "readOnly";
