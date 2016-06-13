@@ -1206,3 +1206,19 @@ def _validate_compose_instance_start(client, service, env,
         list_container(name=name,
                        state="running")
     return instances[0]
+
+
+def test_stack_health_state(super_client, context, client):
+    env = client.create_environment(name='env-' + random_str())
+    svc = client.create_service(name='test', launchConfig={
+        'imageUuid': context.image_uuid
+    }, environmentId=env.id)
+    svc = client.wait_success(client.wait_success(svc).activate())
+    assert svc.state == 'active'
+
+    wait_for(lambda: super_client.reload(svc).healthState == 'healthy')
+    wait_for(lambda: super_client.reload(env).healthState == 'healthy')
+    remove_service(svc)
+    wait_for(lambda: super_client.reload(svc).state == 'removed')
+    time.sleep(3)
+    wait_for(lambda: super_client.reload(env).healthState == 'healthy')
