@@ -146,6 +146,7 @@
         "ldapconfig.userMemberAttribute" : "cr",
         "ldapconfig.groupMemberMappingAttribute" : "cr",
         "ldapconfig.connectionTimeout" : "cr",
+        "ldapconfig.allowedIdentities": "cr",
 
         "localAuthConfig" : "cr",
         "localAuthConfig.accessMode" : "cr",

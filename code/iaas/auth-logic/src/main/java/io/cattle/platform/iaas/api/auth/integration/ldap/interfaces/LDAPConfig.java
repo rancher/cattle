@@ -1,5 +1,9 @@
 package io.cattle.platform.iaas.api.auth.integration.ldap.interfaces;
 
+import io.cattle.platform.api.auth.Identity;
+
+import java.util.List;
+
 public interface LDAPConfig {
 
     String getAccessMode();
@@ -43,5 +47,7 @@ public interface LDAPConfig {
     String getGroupMemberMappingAttribute();
 
     long getConnectionTimeout();
+
+    List<Identity> getAllowedIdentities();
 
 }

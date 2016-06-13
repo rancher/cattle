@@ -1,7 +1,10 @@
 package io.cattle.platform.iaas.api.auth.integration.ldap.OpenLDAP;
 
+import io.cattle.platform.api.auth.Identity;
 import io.cattle.platform.iaas.api.auth.integration.ldap.interfaces.LDAPConstants;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 
 public class OpenLDAPConstantsConfig extends OpenLDAPConfigurable implements LDAPConstants{
@@ -143,5 +146,10 @@ public class OpenLDAPConstantsConfig extends OpenLDAPConfigurable implements LDA
     @Override
     public Set<String> scopes() {
         return OpenLDAPConstants.SCOPES;
+    }
+
+    @Override
+    public List<Identity> getAllowedIdentities() {
+        return new ArrayList<>();
     }
 }

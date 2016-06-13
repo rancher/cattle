@@ -1,9 +1,13 @@
 package io.cattle.platform.iaas.api.auth.integration.ldap.OpenLDAP;
 
+import io.cattle.platform.api.auth.Identity;
 import io.cattle.platform.iaas.api.auth.integration.interfaces.Configurable;
 import io.cattle.platform.iaas.api.auth.integration.ldap.interfaces.LDAPConfig;
 import io.github.ibuildthecloud.gdapi.annotation.Field;
 import io.github.ibuildthecloud.gdapi.annotation.Type;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Type(name = OpenLDAPConstants.CONFIG)
 public class OpenLDAPConfig implements Configurable, LDAPConfig {
@@ -173,5 +177,10 @@ public class OpenLDAPConfig implements Configurable, LDAPConfig {
     @Field(nullable = false, required = true, defaultValue = "1000")
     public long getConnectionTimeout() {
         return connectionTimeout;
+    }
+
+    @Override
+    public List<Identity> getAllowedIdentities() {
+        return new ArrayList<>();
     }
 }
