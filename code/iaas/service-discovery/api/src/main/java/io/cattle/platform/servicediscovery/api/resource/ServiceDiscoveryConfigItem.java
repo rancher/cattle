@@ -58,6 +58,11 @@ public class ServiceDiscoveryConfigItem {
 
     public static final ServiceDiscoveryConfigItem LABELS = new ServiceDiscoveryConfigItem(
             InstanceConstants.FIELD_LABELS, InstanceConstants.FIELD_LABELS);
+    public static final ServiceDiscoveryConfigItem MEMSWAPLIMIT = new ServiceDiscoveryConfigItem(
+            DockerInstanceConstants.FIELD_MEMORY_SWAP, "memswap_limit");
+    public static final ServiceDiscoveryConfigItem PIDMODE = new ServiceDiscoveryConfigItem(DockerInstanceConstants.FIELD_PID_MODE, "pid");
+    public static final ServiceDiscoveryConfigItem DEVICES = new ServiceDiscoveryConfigItem(
+            DockerInstanceConstants.FIELD_DEVICES, DockerInstanceConstants.FIELD_DEVICES);
 
     // CATTLE PARAMETERS
     public static final ServiceDiscoveryConfigItem SCALE = new ServiceDiscoveryConfigItem("scale", "scale",
