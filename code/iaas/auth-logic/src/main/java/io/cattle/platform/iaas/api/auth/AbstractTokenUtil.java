@@ -222,10 +222,9 @@ public abstract class AbstractTokenUtil implements TokenUtil {
 
     @Override
     public boolean isAllowed(List<String> idList, Set<Identity> identities) {
-        boolean hasAccessToAProject = authDao.hasAccessToAnyProject(identities, false, null);
         switch (accessMode()) {
             case "restricted":
-                if (hasAccessToAProject || isWhitelisted(idList)) {
+                if (isWhitelisted(idList)) {
                     break;
                 }
                 throw new ClientVisibleException(ResponseCodes.UNAUTHORIZED);
