@@ -15,6 +15,7 @@ public class NetworkClientData {
     String networkDomain;
     String gateway;
     boolean instanceNative;
+    String kind;
 
     public boolean isInstanceNative() {
         return instanceNative;
@@ -111,4 +112,13 @@ public class NetworkClientData {
     public void setGateway(String gateway) {
         this.gateway = gateway;
     }
+
+    public String getKind() {
+        return kind;
+    }
+
+    public void setKind(String kind) {
+        this.kind = kind;
+    }
+
 }
