@@ -302,7 +302,7 @@ public class DeploymentUnit {
                     }
                     // wait for start
                     sidekickUnitInstance.createAndStart(new HashMap<String, Object>());
-                    sidekickUnitInstance.waitForStart();
+                    sidekickUnitInstance.waitForAllocate();
                     sidekickInstanceIds.add(((InstanceUnit) sidekickUnitInstance).getInstance().getId()
                             .intValue());
                 }
