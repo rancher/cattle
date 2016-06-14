@@ -336,8 +336,9 @@ public class DockerTransformerImpl implements DockerTransformer {
         setField(instance, FIELD_LOG_CONFIG, logConfig);
     }
 
+    @Override
     @SuppressWarnings({ "rawtypes" })
-    void setLabels(Instance instance, Map<String, Object> fromInspect) {
+    public void setLabels(Instance instance, Map<String, Object> fromInspect) {
         // Labels not yet implemented in docker-java. Need to use the raw map
         Object l = CollectionUtils.getNestedValue(fromInspect, "Config", "Labels");
         Map<String, Object> cleanedLabels = new HashMap<String, Object>();
