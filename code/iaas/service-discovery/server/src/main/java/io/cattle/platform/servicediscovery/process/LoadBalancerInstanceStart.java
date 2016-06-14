@@ -3,7 +3,7 @@ package io.cattle.platform.servicediscovery.process;
 import io.cattle.platform.configitem.request.ConfigUpdateRequest;
 import io.cattle.platform.configitem.request.util.ConfigUpdateRequestUtils;
 import io.cattle.platform.configitem.version.ConfigItemStatusManager;
-import io.cattle.platform.core.constants.InstanceConstants.SystemContainer;
+import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.model.Agent;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.engine.handler.HandlerResult;
@@ -47,7 +47,7 @@ public class LoadBalancerInstanceStart extends AbstractObjectProcessLogic implem
         Agent agent = loadResource(Agent.class, instance.getAgentId());
 
         if (agent == null || instance.getSystemContainer() == null
-                || !instance.getSystemContainer().equals(SystemContainer.LoadBalancerAgent.name())) {
+                || !instance.getSystemContainer().equalsIgnoreCase(InstanceConstants.SYSTEM_CONTAINER_LB_AGENT)) {
             return null;
         }
 

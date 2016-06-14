@@ -5,11 +5,10 @@ import java.util.HashSet;
 import java.util.Set;
 
 public class InstanceConstants {
-    public enum SystemContainer {
-        NetworkAgent,
-        LoadBalancerAgent,
-        ClusterAgent;       // swarm
-    }
+
+    public static final String SYSTEM_CONTAINER_NETWORK_AGENT = "NetworkAgent";
+    public static final String SYSTEM_CONTAINER_LB_AGENT = "LoadBalancerAgent";
+    public static final String SYSTEM_CONTAINER_CLUSTER_AGENT = "ClusterAgent";
 
     public static final String TYPE = "instance";
     public static final String TYPE_CONTAINER = "container";
