@@ -135,7 +135,7 @@ public class AllocatorServiceImpl implements AllocatorService {
                     String[] components = userEnteredServiceName.split("/");
                     if (components.length == 1 &&
                             stackServiceNameWithLaunchConfig != null) {
-                        if (serviceNamesInStack.contains(userEnteredServiceName)) {
+                        if (serviceNamesInStack.contains(userEnteredServiceName.toLowerCase())) {
                             // prepend stack name
                             userEnteredServiceName = stackName + "/" + userEnteredServiceName;
                         }
@@ -158,7 +158,7 @@ public class AllocatorServiceImpl implements AllocatorService {
         List<? extends Service> services = objectManager.find(Service.class, SERVICE.ENVIRONMENT_ID, environmentId, SERVICE.REMOVED,
                 null);
         for (Service service : services) {
-            servicesInEnv.add(service.getName());
+            servicesInEnv.add(service.getName().toLowerCase());
         }
         return servicesInEnv;
     }
