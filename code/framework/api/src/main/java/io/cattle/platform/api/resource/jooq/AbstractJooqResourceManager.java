@@ -35,6 +35,7 @@ import org.jooq.SelectQuery;
 import org.jooq.Table;
 import org.jooq.TableField;
 import org.jooq.exception.DataAccessException;
+import org.jooq.exception.DataChangedException;
 import org.jooq.impl.DSL;
 import org.jooq.impl.DefaultDSLContext;
 import org.slf4j.Logger;
@@ -376,7 +377,7 @@ public abstract class AbstractJooqResourceManager extends AbstractObjectResource
         if (t instanceof ProcessCancelException) {
             log.info("Process cancel", t.getMessage());
             throw new ClientVisibleException(ResponseCodes.CONFLICT);
-        } else if (t instanceof DataAccessException) {
+        } else if (t instanceof DataAccessException || t instanceof DataChangedException) {
             log.info("Database error", t.getMessage());
             throw new ClientVisibleException(ResponseCodes.CONFLICT);
         }
