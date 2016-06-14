@@ -19,10 +19,14 @@ import io.cattle.platform.core.model.IpAddress;
 import io.cattle.platform.core.model.Nic;
 import io.cattle.platform.core.model.Port;
 import io.cattle.platform.core.model.Volume;
+import io.cattle.platform.core.util.SystemLabels;
+import io.cattle.platform.docker.constants.DockerInstanceConstants;
 import io.cattle.platform.engine.handler.HandlerResult;
 import io.cattle.platform.engine.process.ProcessInstance;
 import io.cattle.platform.engine.process.ProcessState;
 import io.cattle.platform.json.JsonMapper;
+import io.cattle.platform.object.resource.ResourceMonitor;
+import io.cattle.platform.object.resource.ResourcePredicate;
 import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.process.base.AbstractDefaultProcessHandler;
 import io.cattle.platform.process.common.util.ProcessUtils;
@@ -31,6 +35,8 @@ import io.cattle.platform.process.progress.ProcessProgress;
 import io.cattle.platform.util.exception.ExecutionException;
 import io.cattle.platform.util.type.CollectionUtils;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -60,6 +66,9 @@ public class InstanceStart extends AbstractDefaultProcessHandler {
     IpAddressDao ipAddressDao;
     ProcessProgress progress;
 
+    @Inject
+    ResourceMonitor resourceMonitor;
+
     @Override
     public HandlerResult handle(ProcessState state, ProcessInstance process) {
         final Instance instance = (Instance) state.getResource();
@@ -73,6 +82,9 @@ public class InstanceStart extends AbstractDefaultProcessHandler {
             try {
                 progress.checkPoint("Scheduling");
                 allocate(instance);
+
+                // wait till volumesFrom/networksFrom containers start up
+                waitForDependenciesStart(instance);
 
                 instanceDao.clearCacheInstanceData(instance.getId());
 
@@ -115,6 +127,60 @@ public class InstanceStart extends AbstractDefaultProcessHandler {
         instanceDao.clearCacheInstanceData(instance.getId());
 
         return result;
+    }
+
+    protected void waitForDependenciesStart(Instance instance) {
+        List<Long> instancesIds = DataAccessor.fieldLongList(instance, DockerInstanceConstants.FIELD_VOLUMES_FROM);
+        Long networkFromId = DataAccessor.fieldLong(instance, DockerInstanceConstants.FIELD_NETWORK_CONTAINER_ID);
+        if (networkFromId != null) {
+            instancesIds.add(networkFromId);
+        }
+        List<Instance> waitList = new ArrayList<>();
+        for (Long id : instancesIds) {
+            Instance i = objectManager.loadResource(Instance.class, id);
+            List<String> removedStates = Arrays.asList(CommonStatesConstants.REMOVED, CommonStatesConstants.REMOVING);
+            List<String> stoppedStates = Arrays.asList(InstanceConstants.STATE_STOPPED, InstanceConstants.STATE_STOPPING);
+            String type = networkFromId != null && networkFromId.equals(id) ? "networkFrom" : "volumeFrom";
+            if (removedStates.contains(i.getState())) {
+                throw new ExecutionException("Dependencies readiness error ", type + " instance is removed", i);
+            }
+            
+            if (!isStartOnce(i) && stoppedStates.contains(i.getState())) {
+                throw new ExecutionException("Dependencies readiness error ", type + " instance is not running", i);
+            }
+            waitList.add(i);
+        }
+
+        //timeout is 2 mins
+        Long timeout =  120000L;
+        for (Instance wait : waitList) {
+            resourceMonitor.waitFor(wait, timeout,
+                    new ResourcePredicate<Instance>() {
+                        @Override
+                        public boolean evaluate(Instance obj) {
+                            return validateState(obj);
+                        }
+                    });
+        }
+    }
+
+    protected boolean validateState(Instance instance) {
+        List<String> validStartOnceStates = Arrays.asList(InstanceConstants.STATE_STOPPED,
+                InstanceConstants.STATE_STOPPING,
+                InstanceConstants.STATE_RUNNING);
+        if (isStartOnce(instance)) {
+            return validStartOnceStates.contains(instance.getState());
+        }
+        return instance.getState().equals(InstanceConstants.STATE_RUNNING);
+    }
+
+    protected boolean isStartOnce(Instance instance) {
+        Map<String, Object> labels = DataAccessor.fieldMap(instance, InstanceConstants.FIELD_LABELS);
+        if (labels.get(SystemLabels.LABEL_SERVICE_CONTAINER_START_ONCE) != null) {
+            return Boolean.valueOf(((String) labels
+                    .get(SystemLabels.LABEL_SERVICE_CONTAINER_START_ONCE)));
+        }
+        return false;
     }
 
     protected void handleReconnecting(ProcessState state, Instance instance) {

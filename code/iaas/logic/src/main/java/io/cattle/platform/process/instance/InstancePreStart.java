@@ -33,6 +33,7 @@ public class InstancePreStart extends AbstractObjectProcessLogic implements Proc
     @Inject
     StoragePoolDao storagePoolDao;
 
+
     @Override
     public HandlerResult handle(ProcessState state, ProcessInstance process) {
         final Instance instance = (Instance)state.getResource();

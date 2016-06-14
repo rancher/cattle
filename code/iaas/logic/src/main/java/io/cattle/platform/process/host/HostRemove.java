@@ -31,11 +31,6 @@ public class HostRemove extends AbstractDefaultProcessHandler {
             return null;
         }
 
-        try {
-            objectProcessManager.scheduleStandardProcess(StandardProcess.DEACTIVATE, agent, null);
-        } catch (ProcessCancelException e) {
-        }
-
         removeInstances(host);
 
         return null;
