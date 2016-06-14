@@ -124,12 +124,20 @@ public class DockerPostInstanceHostMapActivate extends AbstractObjectProcessLogi
         return null;
     }
 
+    @SuppressWarnings("unchecked")
     void processLabels(Instance instance) {
         Map<String, String> labels = CollectionUtils.toMap(CollectionUtils.getNestedValue(instance.getData(), FIELD_DOCKER_INSPECT, "Config",
                 "Labels"));
         for (Map.Entry<String, String>label : labels.entrySet()) {
             labelsService.createContainerLabel(instance.getAccountId(), instance.getId(), label.getKey(), label.getValue());
         }
+
+        Map<String, Object> inspect = (Map<String, Object>)instance.getData().get(FIELD_DOCKER_INSPECT);
+        if (inspect == null) {
+            return;
+        }
+        transformer.setLabels(instance, inspect);
+        objectManager.persist(instance);
     }
 
     @SuppressWarnings({ "unchecked" })
