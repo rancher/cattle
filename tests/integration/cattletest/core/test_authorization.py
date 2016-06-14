@@ -886,7 +886,7 @@ def test_container_auth(admin_user_client, user_client, project_client):
         'createIndex': 'r',
         'deploymentUnitUuid': 'r',
         'version': 'r',
-        'startCount': 'r'
+        'startCount': 'r',
     })
 
     auth_check(user_client.schema, 'container', 'r', {
@@ -950,7 +950,7 @@ def test_container_auth(admin_user_client, user_client, project_client):
         'createIndex': 'r',
         'deploymentUnitUuid': 'r',
         'version': 'r',
-        'startCount': 'r'
+        'startCount': 'r',
     })
 
     auth_check(project_client.schema, 'container', 'crud', {
@@ -1014,7 +1014,7 @@ def test_container_auth(admin_user_client, user_client, project_client):
         'createIndex': 'r',
         'deploymentUnitUuid': 'r',
         'version': 'r',
-        'startCount': 'r'
+        'startCount': 'r',
     })
 
     auth_check(project_client.schema, 'dockerBuild', 'cr', {

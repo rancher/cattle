@@ -29,8 +29,11 @@ import io.cattle.platform.allocator.service.DiskInfo;
 import io.cattle.platform.allocator.service.HostInfo;
 import io.cattle.platform.allocator.service.InstanceInfo;
 import io.cattle.platform.allocator.util.AllocatorUtils;
+import io.cattle.platform.archaius.util.ArchaiusUtil;
+import io.cattle.platform.core.constants.AccountConstants;
 import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.HealthcheckConstants;
+import io.cattle.platform.core.constants.HostConstants;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.constants.VolumeConstants;
 import io.cattle.platform.core.dao.GenericMapDao;
@@ -48,7 +51,10 @@ import io.cattle.platform.core.util.InstanceHelpers;
 import io.cattle.platform.db.jooq.dao.impl.AbstractJooqDao;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.util.DataAccessor;
+import io.github.ibuildthecloud.gdapi.id.IdFormatter;
 
+import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -60,6 +66,10 @@ import javax.inject.Inject;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
+import org.apache.http.HttpResponse;
+import org.apache.http.client.fluent.Request;
+import org.apache.http.conn.HttpHostConnectException;
+import org.apache.http.message.BasicNameValuePair;
 import org.jooq.Condition;
 import org.jooq.Record3;
 import org.jooq.RecordHandler;
@@ -70,7 +80,8 @@ import org.slf4j.LoggerFactory;
 public class AllocatorDaoImpl extends AbstractJooqDao implements AllocatorDao {
 
     private static final Logger log = LoggerFactory.getLogger(AllocatorDaoImpl.class);
-
+    private static final String SCHEDULER_URL = ArchaiusUtil.getString("system.stack.scheduler.url").get();
+    
     static final List<String> IHM_STATES = Arrays.asList(new String[] { CommonStatesConstants.INACTIVE, CommonStatesConstants.DEACTIVATING,
             CommonStatesConstants.REMOVED, CommonStatesConstants.REMOVING, CommonStatesConstants.PURGING, CommonStatesConstants.PURGED });
 
@@ -225,6 +236,35 @@ public class AllocatorDaoImpl extends AbstractJooqDao implements AllocatorDao {
 
     }
 
+    @Inject
+    IdFormatter idFormatter;
+
+    public void addReleaseSchedulerResource(String action, Long instanceId, boolean isVM, Long hostId, Long envId) {
+        String ALLOCATE_CPU_MEMORY_URL = SCHEDULER_URL + "/" + action;
+        List<BasicNameValuePair> requestData = new ArrayList<>();
+
+        requestData.add(new BasicNameValuePair("hostId", (String) idFormatter.formatId(HostConstants.TYPE, hostId)));
+        requestData.add(new BasicNameValuePair(isVM ? "vmId" : "instanceId",
+                (String) idFormatter.formatId(InstanceConstants.TYPE, instanceId)));
+        requestData.add(new BasicNameValuePair("envId", (String) idFormatter.formatId(AccountConstants.TYPE, envId)));
+
+        HttpResponse response;
+        try {
+            response = Request.Post(ALLOCATE_CPU_MEMORY_URL).addHeader("Accept", "application/json")
+                    .bodyForm(requestData).execute().returnResponse();
+            int statusCode = response.getStatusLine().getStatusCode();
+            if (statusCode != 200) {
+                log.error("statusCode: {}", statusCode);
+            }
+        } catch (HttpHostConnectException ex) {
+            log.error("Scheduler Service not reachable at [{}]", ALLOCATE_CPU_MEMORY_URL);
+        } catch (IOException e) {
+            log.error((e.getStackTrace()).toString(), e);
+        }
+
+        return;
+    }
+    
     @Override
     public boolean recordCandidate(AllocationAttempt attempt, AllocationCandidate candidate) {
         Set<Long> existingHosts = attempt.getHostIds();
@@ -241,6 +281,11 @@ public class AllocatorDaoImpl extends AbstractJooqDao implements AllocatorDao {
 
                 modifyCompute(hostId, attempt.getInstance(), false);
                 modifyDisk(hostId, attempt.getInstance(), true);
+                Instance instance = attempt.getInstance();
+                addReleaseSchedulerResource("allocate-iops", attempt.getInstanceId(), false, hostId, attempt.getInstance().getAccountId());
+                if(InstanceConstants.KIND_VIRTUAL_MACHINE.equals(instance.getKind())) {
+                    addReleaseSchedulerResource("allocate-cpu-memory", attempt.getInstanceId(), true, hostId, attempt.getInstance().getAccountId());
+                }
             }
 
             // Assuming a single host. Just over-complexity to allow more than one host
@@ -327,6 +372,11 @@ public class AllocatorDaoImpl extends AbstractJooqDao implements AllocatorDao {
             if ( done == null || ! done.booleanValue() ) {
                 modifyCompute(map.getHostId(), instance, true);
                 modifyDisk(map.getHostId(), instance, false);
+                addReleaseSchedulerResource("deallocate-iops", instance.getId(), false, map.getHostId(), instance.getAccountId());
+                if(InstanceConstants.KIND_VIRTUAL_MACHINE.equals(instance.getKind())) {
+                    addReleaseSchedulerResource("deallocate-cpu-memory", instance.getId(), true, map.getHostId(), instance.getAccountId());
+                }
+                addReleaseSchedulerResource("remove-instance", instance.getId(), false, map.getHostId(), instance.getAccountId());
                 data.set(true);
                 objectManager.persist(map);
             }

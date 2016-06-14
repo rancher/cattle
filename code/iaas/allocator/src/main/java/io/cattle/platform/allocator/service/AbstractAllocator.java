@@ -9,6 +9,9 @@ import io.cattle.platform.allocator.lock.AllocateResourceLock;
 import io.cattle.platform.allocator.lock.AllocateVolumesResourceLock;
 import io.cattle.platform.allocator.service.AllocationRequest.Type;
 import io.cattle.platform.allocator.util.AllocatorUtils;
+import io.cattle.platform.archaius.util.ArchaiusUtil;
+import io.cattle.platform.core.constants.AccountConstants;
+import io.cattle.platform.core.constants.HostConstants;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.model.Host;
 import io.cattle.platform.core.model.Instance;
@@ -17,6 +20,7 @@ import io.cattle.platform.core.model.StoragePool;
 import io.cattle.platform.core.model.Subnet;
 import io.cattle.platform.core.model.Volume;
 import io.cattle.platform.core.util.InstanceHelpers;
+import io.cattle.platform.json.JsonMapper;
 import io.cattle.platform.lock.LockCallback;
 import io.cattle.platform.lock.LockCallbackNoReturn;
 import io.cattle.platform.lock.LockManager;
@@ -25,7 +29,9 @@ import io.cattle.platform.metrics.util.MetricsUtil;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.process.ObjectProcessManager;
 import io.cattle.platform.object.util.DataAccessor;
+import io.github.ibuildthecloud.gdapi.id.IdFormatter;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -39,6 +45,10 @@ import java.util.Set;
 import javax.inject.Inject;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.http.HttpResponse;
+import org.apache.http.client.fluent.Request;
+import org.apache.http.conn.HttpHostConnectException;
+import org.apache.http.message.BasicNameValuePair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -48,6 +58,7 @@ import com.codahale.metrics.Timer.Context;
 public abstract class AbstractAllocator implements Allocator {
 
     private static final Logger log = LoggerFactory.getLogger(AbstractAllocator.class);
+    private static final String SCHEDULER_URL = ArchaiusUtil.getString("system.stack.scheduler.url").get();
 
     Timer allocateLockTimer = MetricsUtil.getRegistry().timer("allocator.allocate.with.lock");
     Timer allocateTimer = MetricsUtil.getRegistry().timer("allocator.allocate");
@@ -228,13 +239,61 @@ public abstract class AbstractAllocator implements Allocator {
 
     protected boolean acquireLockAndAllocate(final AllocationRequest request, final AllocationAttempt attempt, Object deallocate) {
         final List<Constraint> finalFailedConstraints = new ArrayList<>();
+        final List<AllocationCandidate> candidatesForCPUMemoryIops = new ArrayList<AllocationCandidate>();
+        final List<AllocationCandidate> candidates = new ArrayList<AllocationCandidate>();
         lockManager.lock(getAllocationLock(request, attempt), new LockCallbackNoReturn() {
             @Override
             public void doWithLockNoResult() {
                 Context c = allocateTimer.time();
                 try {
+                    Iterator<AllocationCandidate> iter = getCandidates(attempt);
+                    while (iter.hasNext()) {
+                        candidatesForCPUMemoryIops.add(iter.next());
+                    }
+                    if (iter != null) {
+                        close(iter);
+                    }
+
+                    Map<Long, Boolean> alreadyScheduledHostStatus = new HashMap<Long, Boolean>();
+
+                    // scheduler the list and return a list that is able to schedule
+                    for (AllocationCandidate candidate : candidatesForCPUMemoryIops) {
+                        boolean good = true;
+                        Long currentHostId = 0L;
+
+                        // schedule cpu, memory and iops first
+                        try {
+                            for( Long hostId : candidate.getHosts() ){
+                                currentHostId = hostId;
+
+                                // in case we already tried to schedule instance for this hostId, then skip it
+                                if (alreadyScheduledHostStatus.containsKey(hostId)) {
+                                    good = alreadyScheduledHostStatus.get(hostId);
+                                    continue;
+                                }
+                                Instance instance = attempt.getInstance();
+                                good = scheduleResources("iops", attempt.getInstanceId(), false, hostId, attempt.getInstance().getAccountId());
+                                if(good && InstanceConstants.KIND_VIRTUAL_MACHINE.equals(instance.getKind())) {
+                                    good = scheduleResources("cpu-memory", attempt.getInstanceId(), true, hostId, attempt.getInstance().getAccountId());
+                                }
+                                alreadyScheduledHostStatus.put(hostId, good);
+                                if (!good)
+                                    break;
+                            }
+                        } catch (IOException e) {
+                            good = false;
+                            alreadyScheduledHostStatus.put(currentHostId, good);
+                            log.error((e.getStackTrace()).toString(), e);
+                        }
+                        if (!good)
+                            continue;
+                        candidates.add(candidate);
+                    }
+                    if (candidates.size() == 0) {
+                        return;
+                    }
                     do {
-                        Set<Constraint> failedConstraints = runAllocation(request, attempt);
+                        Set<Constraint> failedConstraints = runAllocation(request, attempt, candidates);
                         if (attempt.getMatchedCandidate() == null) {
                             boolean removed = false;
                             // iterate over failed constraints and remove first soft constraint if any
@@ -259,6 +318,12 @@ public abstract class AbstractAllocator implements Allocator {
             }
         });
 
+        if (candidatesForCPUMemoryIops.size() == 0) {
+            throw new FailedToAllocate("No candidates available");
+        }
+        if (candidates.size() == 0) {
+            throw new FailedToAllocate("failed to schedule cpu/memory/iops");
+        }
         if (attempt.getMatchedCandidate() == null) {
             if (finalFailedConstraints.size() > 0) {
                 throw new FailedToAllocate(toErrorMessage(finalFailedConstraints));
@@ -277,57 +342,80 @@ public abstract class AbstractAllocator implements Allocator {
 
         return StringUtils.join(result, ", ");
     }
+    
+    @Inject
+    private JsonMapper jsonMapper;
+    
+    @Inject
+    IdFormatter idFormatter;
+    
+    protected boolean scheduleResources(String action, Long instanceId, boolean isVM, Long hostId, Long envId) throws IOException {
+        String SCHEDULE_IOPS__URL = SCHEDULER_URL + "/" + action;
+        List<BasicNameValuePair> requestData = new ArrayList<>();
 
-    protected Set<Constraint> runAllocation(AllocationRequest request, AllocationAttempt attempt) {
+        requestData.add(new BasicNameValuePair("hostId", (String) idFormatter.formatId(HostConstants.TYPE, hostId)));
+        requestData.add(new BasicNameValuePair(isVM ? "vmId" : "instanceId",
+                (String) idFormatter.formatId(InstanceConstants.TYPE, instanceId)));
+        requestData.add(new BasicNameValuePair("envId", (String) idFormatter.formatId(AccountConstants.TYPE, envId)));
+
+        Map<String, Object> jsonData;
+        HttpResponse response;
+        try {
+            response = Request.Post(SCHEDULE_IOPS__URL)
+                    .addHeader("Accept", "application/json").bodyForm(requestData)
+                    .execute().returnResponse();
+            int statusCode = response.getStatusLine().getStatusCode();
+            if (statusCode != 200) {
+                log.error("statusCode: {}", statusCode);
+            }
+            jsonData = jsonMapper.readValue(response.getEntity().getContent());
+
+            String result = (String) jsonData.get("schedule");
+            return result.equals("yes");
+        } catch(HttpHostConnectException ex) {  
+            log.error("Scheduler Service not reachable at [{}]", SCHEDULE_IOPS__URL);
+            throw ex;
+        }
+    }
+    
+    protected Set<Constraint> runAllocation(AllocationRequest request, AllocationAttempt attempt, List<AllocationCandidate> candidates) {
         logStart(attempt);
 
         List<Set<Constraint>> candidateFailedConstraintSets = new ArrayList<Set<Constraint>>();
-        Iterator<AllocationCandidate> iter = getCandidates(attempt);
-        try {
-            boolean foundOne = false;
-            while (iter.hasNext()) {
-                foundOne = true;
-                AllocationCandidate candidate = iter.next();
-                Set<Constraint> failedConstraints = new HashSet<Constraint>();
-                attempt.getCandidates().add(candidate);
+        for (AllocationCandidate candidate : candidates) {
+            Set<Constraint> failedConstraints = new HashSet<Constraint>();
+            attempt.getCandidates().add(candidate);
 
-                String prefix = String.format("[%s][%s]", attempt.getId(), candidate.getId());
-                logCandidate(prefix, attempt, candidate);
+            String prefix = String.format("[%s][%s]", attempt.getId(), candidate.getId());
+            logCandidate(prefix, attempt, candidate);
 
-                boolean good = true;
-                for (Constraint constraint : attempt.getConstraints()) {
-                    boolean match = constraint.matches(attempt, candidate);
-                    log.info("{}   checking candidate [{}] : {}", prefix, match, constraint);
-                    if (!match) {
-                        good = false;
-                        failedConstraints.add(constraint);
-                    }
+            boolean good = true;
+            for (Constraint constraint : attempt.getConstraints()) {
+                boolean match = constraint.matches(attempt, candidate);
+                log.info("{}   checking candidate [{}] : {}", prefix, match, constraint);
+                if (!match) {
+                    good = false;
+                    failedConstraints.add(constraint);
+                }
+            }
+
+            log.info("{}   candidates result [{}]", prefix, good);
+            if (good) {
+                if (candidate.getHosts().size() > 0 && request.getType() == Type.VOLUME) {
+                    throw new IllegalStateException("Attempting to allocate hosts during a volume allocation");
                 }
 
-                log.info("{}   candidates result [{}]", prefix, good);
-                if (good) {
-                    if (candidate.getHosts().size() > 0 && request.getType() == Type.VOLUME) {
-                        throw new IllegalStateException("Attempting to allocate hosts during a volume allocation");
-                    }
-
-                    if (recordCandidate(attempt, candidate)) {
-                        attempt.setMatchedCandidate(candidate);
-                        return failedConstraints;
-                    } else {
-                        log.info("{}   can not record result", prefix);
-                    }
+                if (recordCandidate(attempt, candidate)) {
+                    attempt.setMatchedCandidate(candidate);
+                    return failedConstraints;
+                } else {
+                    log.info("{}   can not record result", prefix);
                 }
-                candidateFailedConstraintSets.add(failedConstraints);
             }
-            if (!foundOne) {
-                throw new FailedToAllocate("No candidates available");
-            }
-            return getWeakestConstraintSet(candidateFailedConstraintSets);
-        } finally {
-            if (iter != null) {
-                close(iter);
-            }
+            candidateFailedConstraintSets.add(failedConstraints);
         }
+        return getWeakestConstraintSet(candidateFailedConstraintSets);
+
     }
 
     // ideally we want zero hard constraints and the fewest soft constraints

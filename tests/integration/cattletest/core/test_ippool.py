@@ -134,6 +134,7 @@ def test_virtual_machine_with_public_ip(super_client, new_context, ip_pool):
     account = new_context.project
     network_id = new_context.nsp.networkId
     image_uuid = new_context.image_uuid
+    update_host_more_resource(super_client, new_context.host)
     vm = super_client.create_virtual_machine(accountId=account.id,
                                              imageUuid=image_uuid,
                                              networkIds=[network_id],
@@ -188,6 +189,7 @@ def test_virtual_machine_with_public_ip(super_client, new_context, ip_pool):
 def test_virtual_machine_assigned_ip_field(super_client, context, ip_pool):
     network_id = context.nsp.networkId
     image_uuid = context.image_uuid
+    update_host_more_resource(super_client, context.host)
     vm = super_client.create_virtual_machine(accountId=context.project.id,
                                              imageUuid=image_uuid,
                                              networkIds=[network_id],
@@ -207,6 +209,7 @@ def test_virtual_machine_assigned_ip_field(super_client, context, ip_pool):
 def test_virtual_machine_no_assigned_ip_field(super_client, context):
     network_id = context.nsp.networkId
     image_uuid = context.image_uuid
+    update_host_more_resource(super_client, context.host)
     vm = super_client.create_virtual_machine(accountId=context.project.id,
                                              networkIds=[network_id],
                                              imageUuid=image_uuid)
@@ -220,6 +223,7 @@ def test_virtual_machine_with_public_ip_restart(super_client,
                                                 context, ip_pool):
     network_id = context.nsp.networkId
     image_uuid = context.image_uuid
+    update_host_more_resource(super_client, context.host)
     vm = super_client.create_virtual_machine(accountId=context.project.id,
                                              imageUuid=image_uuid,
                                              networkIds=[network_id],

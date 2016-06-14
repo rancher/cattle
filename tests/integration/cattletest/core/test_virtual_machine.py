@@ -4,16 +4,6 @@ from common_fixtures import *  # NOQA
 from test_shared_volumes import add_storage_pool
 
 
-def _create_virtual_machine(client, context, **kw):
-    args = {
-        'accountId': context.project.id,
-        'imageUuid': context.image_uuid,
-    }
-    args.update(kw)
-
-    return client.create_virtual_machine(**args)
-
-
 @pytest.fixture(scope='module')
 def network(context):
     return context.nsp.network()
@@ -38,10 +28,10 @@ def test_virtual_machine_case_sensitivity(super_client, client, context):
         },
     ]
 
-    vm = _create_virtual_machine(client, context, name=random_str(),
-                                 volumeDriver='foo-bar',
-                                 userdata='hi', vcpu=2, memoryMb=42,
-                                 disks=disks)
+    vm = create_virtual_machine(super_client, context, name=random_str(),
+                                volumeDriver='foo-bar',
+                                userdata='hi', vcpu=2, memoryMb=42,
+                                disks=disks)
     vm = client.wait_success(vm)
     assert vm.state == 'running'
 
@@ -78,10 +68,10 @@ def test_virtual_machine_with_device_enable_storage_pool(super_client, client,
     sp = add_storage_pool(context, [context.host.uuid],
                           block_device_path="/dev/test")
     sp_name = sp.name
-    vm = _create_virtual_machine(client, context, name=random_str(),
-                                 volumeDriver=sp_name,
-                                 userdata='hi', vcpu=2, memoryMb=42,
-                                 disks=test_disks)
+    vm = create_virtual_machine(super_client, context, name=random_str(),
+                                volumeDriver=sp_name,
+                                userdata='hi', vcpu=2, memoryMb=42,
+                                disks=test_disks)
     vm = client.wait_success(vm)
     assert vm.state == 'running'
 
@@ -101,10 +91,10 @@ def test_virtual_machine_with_device_enable_storage_pool(super_client, client,
 
 
 def test_virtual_machine_root_disk(super_client, client, context):
-    vm = _create_virtual_machine(client, context, name=random_str(),
-                                 volumeDriver='foo-bar',
-                                 userdata='hi', vcpu=2, memoryMb=42,
-                                 disks=test_disks)
+    vm = create_virtual_machine(super_client, context, name=random_str(),
+                                volumeDriver='foo-bar',
+                                userdata='hi', vcpu=2, memoryMb=42,
+                                disks=test_disks)
     vm = client.wait_success(vm)
     assert vm.state == 'running'
 
@@ -135,10 +125,10 @@ def test_virtual_machine_default_fields(super_client, client, context):
         }
     ]
 
-    vm = _create_virtual_machine(client, context,
-                                 volumeDriver='foo-bar',
-                                 userdata='hi', vcpu=2, memoryMb=42,
-                                 disks=disks)
+    vm = create_virtual_machine(super_client, context,
+                                volumeDriver='foo-bar',
+                                userdata='hi', vcpu=2, memoryMb=42,
+                                disks=disks)
     vm = client.wait_success(vm)
     assert vm.state == 'running'
     assert vm.vcpu == 2
@@ -176,20 +166,20 @@ def test_virtual_machine_default_fields(super_client, client, context):
     }
 
 
-def test_virtual_machine_stats(client, context):
-    vm = _create_virtual_machine(client, context, vcpu=2, memoryMb=42)
-    vm = client.wait_success(vm)
+def test_virtual_machine_stats(super_client, context):
+    vm = create_virtual_machine(super_client, context, vcpu=2, memoryMb=42)
+    vm = super_client.wait_success(vm)
     assert vm.state == 'running'
 
     assert 'stats' in vm
     assert 'containerStats' in vm
 
 
-def test_virtual_machine_create_cpu_memory(client, context):
-    vm = _create_virtual_machine(client, context,
-                                 vcpu=2, memoryMb=42)
+def test_virtual_machine_create_cpu_memory(super_client, context):
+    vm = create_virtual_machine(super_client, context,
+                                vcpu=2, memoryMb=42)
 
-    vm = client.wait_success(vm)
+    vm = super_client.wait_success(vm)
     assert vm.state == 'running'
 
     assert vm.vcpu == 2
@@ -197,7 +187,7 @@ def test_virtual_machine_create_cpu_memory(client, context):
 
 
 def test_virtual_machine_create(super_client, context):
-    vm = _create_virtual_machine(super_client, context)
+    vm = create_virtual_machine(super_client, context)
 
     vm = super_client.wait_success(vm)
     assert vm.state == 'running'
@@ -209,8 +199,10 @@ def test_virtual_machine_create(super_client, context):
 def test_virtual_machine_create_null_network_id(super_client, context):
     image_uuid = context.image_uuid
     try:
-        super_client.create_virtual_machine(imageUuid=image_uuid,
-                                            networkIds=[None])
+        create_virtual_machine(super_client,
+                               context,
+                               imageUuid=image_uuid,
+                               networkIds=[None])
         assert False
     except ApiError as e:
         assert e.error.code == 'NotNullable'
@@ -220,17 +212,19 @@ def test_virtual_machine_n_ids_s_ids(super_client, context,
                                      network, subnet):
     image_uuid = context.image_uuid
     try:
-        super_client.create_virtual_machine(imageUuid=image_uuid,
-                                            networkIds=[network.id],
-                                            subnetIds=[subnet.id])
+        create_virtual_machine(super_client,
+                               context,
+                               imageUuid=image_uuid,
+                               networkIds=[network.id],
+                               subnetIds=[subnet.id])
     except ApiError as e:
         assert e.error.code == 'NetworkIdsSubnetIdsMutuallyExclusive'
 
 
 def test_virtual_machine_network(super_client, context, network, subnet):
     subnet_plain_id = get_plain_id(super_client, subnet)
-    vm = _create_virtual_machine(super_client, context,
-                                 networkIds=[network.id])
+    vm = create_virtual_machine(super_client, context,
+                                networkIds=[network.id])
 
     vm = super_client.wait_success(vm)
     assert vm.state == 'running'
@@ -276,8 +270,8 @@ def test_virtual_machine_network(super_client, context, network, subnet):
 
 def test_virtual_machine_subnet(super_client, context, subnet):
     network = subnet.network()
-    vm = _create_virtual_machine(super_client, context,
-                                 subnetIds=[subnet.id])
+    vm = create_virtual_machine(super_client, context,
+                                subnetIds=[subnet.id])
 
     vm = super_client.wait_success(vm)
     assert vm.state == 'running'
@@ -316,16 +310,16 @@ def test_virtual_machine_no_ip(super_client, context):
                                         endAddress='192.168.0.3')
     subnet = super_client.wait_success(subnet)
     assert subnet.state == 'active'
-    vm = _create_virtual_machine(super_client, context,
-                                 subnetIds=[subnet.id])
+    vm = create_virtual_machine(super_client, context,
+                                subnetIds=[subnet.id])
 
     vm = super_client.wait_success(vm)
 
     assert vm.state == 'running'
     assert vm.primaryIpAddress == '192.168.0.3'
 
-    vm = _create_virtual_machine(super_client, context,
-                                 subnetIds=[subnet.id])
+    vm = create_virtual_machine(super_client, context,
+                                subnetIds=[subnet.id])
     vm = super_client.wait_transitioning(vm)
 
     assert vm.state == 'error'
@@ -335,8 +329,8 @@ def test_virtual_machine_no_ip(super_client, context):
 
 
 def test_virtual_machine_stop_subnet(super_client, context, subnet):
-    vm = _create_virtual_machine(super_client, context,
-                                 subnetIds=[subnet.id])
+    vm = create_virtual_machine(super_client, context,
+                                subnetIds=[subnet.id])
     vm = super_client.wait_success(vm)
     assert vm.state == 'running'
 
@@ -360,8 +354,8 @@ def test_virtual_machine_stop_subnet(super_client, context, subnet):
 
 
 def test_virtual_machine_remove_subnet(super_client, context, subnet):
-    vm = _create_virtual_machine(super_client, context,
-                                 subnetIds=[subnet.id])
+    vm = create_virtual_machine(super_client, context,
+                                subnetIds=[subnet.id])
     vm = super_client.wait_success(vm)
     assert vm.state == 'running'
 
@@ -386,8 +380,8 @@ def test_virtual_machine_remove_subnet(super_client, context, subnet):
 
 def test_virtual_machine_purge_subnet(super_client, context, subnet):
     subnet_plain_id = get_plain_id(super_client, subnet)
-    vm = _create_virtual_machine(super_client, context,
-                                 subnetIds=[subnet.id])
+    vm = create_virtual_machine(super_client, context,
+                                subnetIds=[subnet.id])
     vm = super_client.wait_success(vm)
     assert vm.state == 'running'
 
@@ -440,8 +434,8 @@ def test_virtual_machine_purge_subnet(super_client, context, subnet):
 
 def test_virtual_machine_restore_subnet(super_client, context, subnet):
     subnet_plain_id = get_plain_id(super_client, subnet)
-    vm = _create_virtual_machine(super_client, context,
-                                 subnetIds=[subnet.id])
+    vm = create_virtual_machine(super_client, context,
+                                subnetIds=[subnet.id])
     vm = super_client.wait_success(vm)
     assert vm.state == 'running'
 
@@ -482,7 +476,7 @@ def test_virtual_machine_restore_subnet(super_client, context, subnet):
 
 
 def test_virtual_machine_console(super_client, context):
-    vm = _create_virtual_machine(super_client, context)
+    vm = create_virtual_machine(super_client, context)
     vm = super_client.wait_success(vm)
 
     assert 'console' in vm
@@ -495,7 +489,7 @@ def test_virtual_machine_console(super_client, context):
 
 
 def test_virtual_machine_console_visibility(super_client, context):
-    vm = _create_virtual_machine(super_client, context)
+    vm = create_virtual_machine(super_client, context)
     vm = super_client.wait_success(vm)
 
     assert 'console' in vm

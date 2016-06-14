@@ -92,10 +92,14 @@ def single_instance_rw_test(super_client, new_context, disks, sp_name=None):
 
     assert storage_pool.volumeAccessMode == 'singleHostRW'
 
-    vm = _create_virtual_machine(client, new_context, name=random_str(),
-                                 volumeDriver=sp_name,
-                                 userdata='hi', vcpu=2, memoryMb=42,
-                                 disks=disks)
+    vm = create_virtual_machine(super_client,
+                                new_context,
+                                name=random_str(),
+                                volumeDriver=sp_name,
+                                userdata='hi',
+                                vcpu=2,
+                                memoryMb=42,
+                                disks=disks)
     vm = client.wait_success(vm)
     assert vm.state == 'running'
 
@@ -124,16 +128,6 @@ def single_instance_rw_test(super_client, new_context, disks, sp_name=None):
                                 dataVolumes=data_volumes)
     c = client.wait_success(c)
     assert c.state == 'running'
-
-
-def _create_virtual_machine(client, context, **kw):
-    args = {
-        'accountId': context.project.id,
-        'imageUuid': context.image_uuid,
-    }
-    args.update(kw)
-
-    return client.create_virtual_machine(**args)
 
 
 def test_single_host_rw(super_client, new_context):
