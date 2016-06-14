@@ -689,3 +689,28 @@ def auth_header(client):
 def auth_header_map(client):
     b = base64.encodestring(client._access_key + ':' + client._secret_key)
     return {'Authorization': 'Basic {}'.format(b.replace('\n', ''))}
+
+
+def create_virtual_machine(client, context, **kw):
+    args = {
+        'accountId': context.project.id,
+        'imageUuid': context.image_uuid,
+    }
+
+    # set the default host with some default cpu and memory information
+    cpu = 10000
+    memoryMB = 1000000
+    info = {"cpuInfo": {"count": cpu}, "memoryInfo": {"memTotal": memoryMB}}
+    client.update(context.host, info=info)
+
+    args.update(kw)
+
+    return client.create_virtual_machine(**args)
+
+
+def update_host_more_resource(client, host):
+    # set the default host with some default cpu and memory information
+    cpu = 100
+    memoryMB = 10000
+    info = {"cpuInfo": {"count": cpu}, "memoryInfo": {"memTotal": memoryMB}}
+    client.update(host, info=info)

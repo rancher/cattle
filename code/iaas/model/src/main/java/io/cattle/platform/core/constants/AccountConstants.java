@@ -16,6 +16,7 @@ public class AccountConstants {
     private static final DynamicStringProperty ENV_PORT_RANGE = ArchaiusUtil
             .getString("environment.services.port.range");
 
+    public static final String TYPE = "account";
     public static final String REGISTERED_AGENT_KIND = "registeredAgent";
     public static final String AGENT_KIND = "agent";
     public static final String SERVICE_KIND = "service";
