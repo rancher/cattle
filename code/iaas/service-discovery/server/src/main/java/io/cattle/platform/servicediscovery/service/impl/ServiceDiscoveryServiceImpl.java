@@ -27,6 +27,7 @@ import io.cattle.platform.core.model.ServiceConsumeMap;
 import io.cattle.platform.core.model.ServiceIndex;
 import io.cattle.platform.core.model.Subnet;
 import io.cattle.platform.core.util.PortSpec;
+import io.cattle.platform.core.util.SystemLabels;
 import io.cattle.platform.deferred.util.DeferredUtils;
 import io.cattle.platform.eventing.EventService;
 import io.cattle.platform.eventing.model.Event;
@@ -698,9 +699,9 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
                 .fieldMap(instance, InstanceConstants.FIELD_LABELS);
         boolean startOnce = false;
         List<String> stoppedStates = Arrays.asList(InstanceConstants.STATE_STOPPED, InstanceConstants.STATE_STOPPING);
-        if (labels.containsKey(ServiceDiscoveryConstants.LABEL_SERVICE_CONTAINER_START_ONCE)) {
+        if (labels.containsKey(SystemLabels.LABEL_SERVICE_CONTAINER_START_ONCE)) {
             startOnce = Boolean.valueOf(((String) labels
-                    .get(ServiceDiscoveryConstants.LABEL_SERVICE_CONTAINER_START_ONCE)))
+                    .get(SystemLabels.LABEL_SERVICE_CONTAINER_START_ONCE)))
                     && instance.getStartCount() != null && instance.getStartCount() >= 1L
                     && stoppedStates.contains(instance.getState());
         }

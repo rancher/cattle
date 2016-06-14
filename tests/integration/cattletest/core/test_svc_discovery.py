@@ -2210,9 +2210,11 @@ def test_stop_network_from_container(client, context, super_client):
     assert s11_container.networkContainerId is not None
     assert s11_container.networkContainerId == s21_container.id
 
-    # stop s21 container, and validate s11 was restarted as well
+    # stop s21 container, wait till it's started
+    # and validate s11 was restarted as well
     s21_container = s21_container.stop()
     client.wait_success(s21_container)
+    wait_for(lambda: client.reload(s21_container).state == 'running')
 
     wait_for(
         lambda:
