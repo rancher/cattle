@@ -10,6 +10,15 @@ public class HostInstanceData {
     Nic nic;
     Subnet subnet;
     int mark;
+    String kind;
+
+    public String getKind() {
+        return kind;
+    }
+
+    public void setKind(String kind) {
+        this.kind = kind;
+    }
 
     public Subnet getSubnet() {
         return subnet;

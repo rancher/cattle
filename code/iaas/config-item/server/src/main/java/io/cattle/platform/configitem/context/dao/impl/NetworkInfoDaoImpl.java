@@ -80,7 +80,8 @@ public class NetworkInfoDaoImpl extends AbstractJooqDao implements NetworkInfoDa
                         INSTANCE.UUID.as("instance_uuid"),
                         INSTANCE.NATIVE_CONTAINER.as("instance_native"),
                         IP_ADDRESS.ADDRESS.as("ip_address"),
-                        SUBNET.GATEWAY.as("gateway")
+                        SUBNET.GATEWAY.as("gateway"),
+                        INSTANCE.KIND.as("kind")
                 )
                 .from(instanceNic)
                 .join(VNET)
@@ -318,6 +319,7 @@ public class NetworkInfoDaoImpl extends AbstractJooqDao implements NetworkInfoDa
                 data.setNic((Nic)input.get(0));
                 data.setSubnet((Subnet)input.get(1));
                 data.setIpAddress(ip);
+                data.setKind(((Instance)input.get(3)).getKind());
 
                 if (ip != null && ip.getAddress() != null) {
                     String[] parts = ip.getAddress().split("[.]");
@@ -337,16 +339,17 @@ public class NetworkInfoDaoImpl extends AbstractJooqDao implements NetworkInfoDa
         NicTable nic = mapper.add(NIC, NIC.MAC_ADDRESS);
         SubnetTable subnet = mapper.add(SUBNET, SUBNET.NETWORK_ADDRESS, SUBNET.CIDR_SIZE);
         IpAddressTable ip = mapper.add(IP_ADDRESS, IP_ADDRESS.ADDRESS);
+        InstanceTable instance = mapper.add(INSTANCE, INSTANCE.KIND);
 
         return create()
                 .select(mapper.fields())
                 .from(HOST)
                 .join(INSTANCE_HOST_MAP)
                     .on(INSTANCE_HOST_MAP.HOST_ID.eq(HOST.ID))
-                .join(INSTANCE)
-                    .on(INSTANCE.ID.eq(INSTANCE_HOST_MAP.INSTANCE_ID))
+                .join(instance)
+                    .on(instance.ID.eq(INSTANCE_HOST_MAP.INSTANCE_ID))
                 .join(nic)
-                    .on(nic.INSTANCE_ID.eq(INSTANCE.ID))
+                    .on(nic.INSTANCE_ID.eq(instance.ID))
                 .join(IP_ADDRESS_NIC_MAP)
                     .on(IP_ADDRESS_NIC_MAP.NIC_ID.eq(nic.ID))
                 .join(ip)
@@ -358,7 +361,7 @@ public class NetworkInfoDaoImpl extends AbstractJooqDao implements NetworkInfoDa
                         .and(HOST.REMOVED.isNull())
                         .and(INSTANCE_HOST_MAP.REMOVED.isNull())
                         .and(nic.REMOVED.isNull())
-                        .and(INSTANCE.REMOVED.isNull())
+                        .and(instance.REMOVED.isNull())
                         .and(IP_ADDRESS_NIC_MAP.REMOVED.isNull())
                         .and(subnet.REMOVED.isNull()))
                 .fetch().map(mapper);
