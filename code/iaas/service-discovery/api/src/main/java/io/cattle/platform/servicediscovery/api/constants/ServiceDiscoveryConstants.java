@@ -55,6 +55,7 @@ public class ServiceDiscoveryConstants {
     public static final String ACTION_SERVICE_ROLLBACK = "rollback";
     public static final String ACTION_ADD_OUTPUTS = "addoutputs";
     public static final String ACTION_SERVICE_RESTART = "restart";
+    public static final String ACTION_SERVICE_CERTIFICATE = "certificate";
 
     public static final String PROCESS_SERVICE_ACTIVATE = "service." + ACTION_SERVICE_ACTIVATE;
     public static final String PROCESS_SERVICE_CREATE = "service." + ACTION_SERVICE_CREATE;
@@ -81,6 +82,7 @@ public class ServiceDiscoveryConstants {
     public static final String PROCESS_SERVICE_FINISH_UPGRADE = "service.finishupgrade";
     public static final String PROCESS_SERVICE_RESTART = "service." + ACTION_SERVICE_RESTART;
     public static final String PROCESS_SERVICE_INDEX_REMOVE = "serviceindex.remove";
+    public static final String PROCESS_SERVICE_CERTIFICATE = "service." + ACTION_SERVICE_CERTIFICATE;
 
     public static final String LINK_DOCKER_COMPOSE_CONFIG = "dockerComposeConfig";
     public static final String LINK_RANCHER_COMPOSE_CONFIG = "rancherComposeConfig";

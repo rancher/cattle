@@ -21,4 +21,6 @@ public interface ServiceDiscoveryApiService {
     String buildDockerComposeConfig(List<? extends Service> services);
 
     String buildRancherComposeConfig(List<? extends Service> services);
+
+    String getServiceCertificate(Service service);
 }

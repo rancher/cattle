@@ -7,12 +7,14 @@ import io.cattle.platform.core.addon.LoadBalancerServiceLink;
 import io.cattle.platform.core.addon.ServiceLink;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.constants.LoadBalancerConstants;
+import io.cattle.platform.core.dao.DataDao;
 import io.cattle.platform.core.model.Environment;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.Service;
 import io.cattle.platform.core.model.ServiceConsumeMap;
 import io.cattle.platform.docker.constants.DockerInstanceConstants;
 import io.cattle.platform.docker.constants.DockerNetworkConstants;
+import io.cattle.platform.json.JsonMapper;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.process.ObjectProcessManager;
 import io.cattle.platform.object.util.DataAccessor;
@@ -22,10 +24,15 @@ import io.cattle.platform.servicediscovery.api.resource.ServiceDiscoveryConfigIt
 import io.cattle.platform.servicediscovery.api.service.RancherConfigToComposeFormatter;
 import io.cattle.platform.servicediscovery.api.service.ServiceDiscoveryApiService;
 import io.cattle.platform.servicediscovery.api.util.ServiceDiscoveryUtil;
+import io.cattle.platform.token.CertSet;
+import io.cattle.platform.token.impl.RSAKeyProvider;
 
 import java.util.AbstractMap.SimpleEntry;
+import java.util.concurrent.Callable;
+import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -34,6 +41,7 @@ import java.util.Map;
 import javax.inject.Inject;
 import javax.inject.Named;
 
+import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.TransformerUtils;
 import org.yaml.snakeyaml.DumperOptions;
@@ -57,6 +65,14 @@ public class ServiceDiscoveryApiServiceImpl implements ServiceDiscoveryApiServic
     @Inject
     AllocatorService allocatorService;
 
+    @Inject
+    JsonMapper jsonMapper;
+
+    @Inject
+    RSAKeyProvider keyProvider;
+
+    @Inject
+    DataDao dataDao;
 
     @Override
     public void addServiceLink(Service service, ServiceLink serviceLink) {
@@ -440,5 +456,47 @@ public class ServiceDiscoveryApiServiceImpl implements ServiceDiscoveryApiServic
             composeServiceData.put(ServiceDiscoveryConfigItem.VOLUMESFROM.getDockerName(), namesCombined);
         }
     }
-    
+
+    @Override
+    public String getServiceCertificate(final Service service) {
+        if (service == null) {
+            return null;
+        }
+
+        final Environment environment = objectManager.loadResource(Environment.class, service.getEnvironmentId());
+
+        if (environment == null) {
+            return null;
+        }
+
+        String key = String.format("service.%d.cert", service.getId());
+
+        return dataDao.getOrCreate(key, false, new Callable<String>() {
+            @Override
+            public String call() throws Exception {
+                return generateService(service, environment);
+            }
+        });
+    }
+
+    protected String generateService(Service service, Environment environment) throws Exception {
+        @SuppressWarnings("unchecked")
+        Map<String, Object> metadata = DataAccessor.fields(service).withKey(ServiceDiscoveryConstants.FIELD_METADATA)
+                .withDefault(Collections.EMPTY_MAP).as(Map.class);
+
+        String serviceName = service.getName();
+        List<? extends String> configuredSans = DataAccessor.fromMap(metadata).withKey("sans")
+            .withDefault(Collections.emptyList()).asList(jsonMapper, String.class);
+        List<String> sans = new ArrayList<>(configuredSans);
+
+        sans.add(serviceName.toLowerCase());
+        sans.add(String.format("%s.%s", serviceName, environment.getName()).toLowerCase());
+
+
+        CertSet certSet = keyProvider.generateCertificate(serviceName, sans.toArray(new String[sans.size()]));
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        certSet.writeZip(baos);
+
+        return Base64.encodeBase64String(baos.toByteArray());
+    }
 }

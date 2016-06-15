@@ -30,7 +30,6 @@ import org.slf4j.LoggerFactory;
 
 public class AuthOverlayPostProcessor implements SchemaPostProcessor {
 
-    private static final Pattern NOT_PATTERN = Pattern.compile("[a-zA-Z0-9]*(\\.[a-zA-Z0-9]*)?");
     private static final Logger log = LoggerFactory.getLogger(AuthOverlayPostProcessor.class);
 
     Map<String, Perm> perms = new LinkedHashMap<String, Perm>();
@@ -171,10 +170,10 @@ public class AuthOverlayPostProcessor implements SchemaPostProcessor {
             String key = entry.getKey().toString();
             Perm perm = new Perm(entry.getValue().toString());
 
-            if (NOT_PATTERN.matcher(key).matches()) {
-                perms.put(key, perm);
-            } else {
+            if (key.contains("*")) {
                 wildcards.add(new ImmutablePair<Pattern, Perm>(Pattern.compile(key), perm));
+            } else {
+                perms.put(key, perm);
             }
         }
     }

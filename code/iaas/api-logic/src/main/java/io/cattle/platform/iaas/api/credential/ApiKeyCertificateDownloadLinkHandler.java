@@ -57,14 +57,6 @@ public class ApiKeyCertificateDownloadLinkHandler implements LinkHandler {
                 return null;
             }
 
-            HttpServletResponse response = request.getServletContext().getResponse();
-
-            response.setContentType("application/octet-stream");
-            response.setHeader("Content-Disposition", "attachment; filename=" + getFilename(cred, request));
-            response.setHeader("Cache-Control", "private");
-            response.setHeader("Pragma", "private");
-            response.setHeader("Expires", "Wed 24 Feb 1982 18:42:00 GMT");
-
             try {
                 String[] sans = new String[0];
                 Account account = objectManager.loadResource(Account.class, cred.getAccountId());
@@ -83,6 +75,9 @@ public class ApiKeyCertificateDownloadLinkHandler implements LinkHandler {
                 }
 
                 CertSet cert = keyProvider.generateCertificate(publicValue, sans);
+                prepareRequest(getFilename(cred, request), request);
+
+                HttpServletResponse response = request.getServletContext().getResponse();
                 cert.writeZip(response.getOutputStream());
             } catch (Exception e) {
                 log.error("Failed to create certificate",  e);
@@ -94,6 +89,15 @@ public class ApiKeyCertificateDownloadLinkHandler implements LinkHandler {
         }
 
         return null;
+    }
+
+    public static void prepareRequest(String filename, ApiRequest request) throws IOException {
+        HttpServletResponse response = request.getServletContext().getResponse();
+        response.setContentType("application/octet-stream");
+        response.setHeader("Content-Disposition", "attachment; filename=" + filename);
+        response.setHeader("Cache-Control", "private");
+        response.setHeader("Pragma", "private");
+        response.setHeader("Expires", "Wed 24 Feb 1982 18:42:00 GMT");
     }
 
     protected String getFilename(Credential cred, ApiRequest request) {
