@@ -89,6 +89,8 @@
         }
     },
     "resourceActions" : {
+        "certificate" : {
+        },
         "addservicelink" : {
             "input" : "addRemoveServiceLinkInput",
             "output" : "service"

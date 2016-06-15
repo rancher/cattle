@@ -43,6 +43,12 @@ def service_client(admin_user_client):
                           add_host=False, kind='service').user_client
 
 
+@pytest.fixture(scope='module')
+def project_admin_client(admin_user_client):
+    return create_context(admin_user_client, create_project=False,
+                          add_host=False, kind='projectadmin').user_client
+
+
 def _clean_types(types):
     for i in ['openstackConfig',
               'ubiquityConfig',
@@ -205,7 +211,10 @@ def test_readonly_types(admin_user_client):
         assert len(type['actions']) == 0
         if type.id == 'container':
             assert type['resourceActions'].keys() == ['logs']
+        elif type.id == 'virtualMachine':
+            assert type['resourceActions'].keys() == ['logs']
         else:
+            print type.id
             assert len(type['resourceActions']) == 0
         assert len(type['collectionActions']) == 0
         if type.resourceFields is not None:
@@ -1607,7 +1616,8 @@ def test_service_events(admin_user_client, user_client, agent_client,
     })
 
 
-def test_svc_discovery_service(admin_user_client, user_client, project_client):
+def test_svc_discovery_service(admin_user_client, user_client, project_client,
+                               project_admin_client):
     auth_check(admin_user_client.schema, 'service', 'r', {
         'name': 'r',
         'externalId': 'r',
@@ -1674,6 +1684,75 @@ def test_svc_discovery_service(admin_user_client, user_client, project_client):
         'healthState': 'r',
         'startOnCreate': 'cr',
     })
+
+    resource_action_check(user_client.schema, 'service', [
+        'activate',
+        'addservicelink',
+        'cancelrollback',
+        'cancelupgrade',
+        'create',
+        'deactivate',
+        'finishupgrade',
+        'remove',
+        'removeservicelink',
+        'restart',
+        'rollback',
+        'setservicelinks',
+        'update',
+        'upgrade',
+    ])
+
+    resource_action_check(admin_user_client.schema, 'service', [
+        'activate',
+        'addservicelink',
+        'cancelrollback',
+        'cancelupgrade',
+        'create',
+        'deactivate',
+        'finishupgrade',
+        'remove',
+        'removeservicelink',
+        'restart',
+        'rollback',
+        'setservicelinks',
+        'update',
+        'upgrade',
+    ])
+
+    resource_action_check(project_client.schema, 'service', [
+        'activate',
+        'addservicelink',
+        'cancelrollback',
+        'cancelupgrade',
+        'create',
+        'deactivate',
+        'finishupgrade',
+        'remove',
+        'removeservicelink',
+        'restart',
+        'rollback',
+        'setservicelinks',
+        'update',
+        'upgrade',
+    ])
+
+    resource_action_check(project_admin_client.schema, 'service', [
+        'activate',
+        'addservicelink',
+        'cancelrollback',
+        'cancelupgrade',
+        'certificate',
+        'create',
+        'deactivate',
+        'finishupgrade',
+        'remove',
+        'removeservicelink',
+        'restart',
+        'rollback',
+        'setservicelinks',
+        'update',
+        'upgrade',
+    ])
 
 
 def test_auth_compose_project(admin_user_client, user_client, project_client):
