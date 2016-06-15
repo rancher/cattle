@@ -1683,6 +1683,58 @@ def test_affinity_auto_prepend_stack_other_service(super_client, new_context):
     assert instances[2].hosts()[0].id != instances[0].hosts()[0].id
 
 
+def test_affinity_auto_prepend_stack_same_service(super_client, new_context):
+    image_uuid = new_context.image_uuid
+    client = new_context.client
+
+    # create 2 containers on the default simulator host, we call it one
+    # in order to make default scheduler consider the second host
+    # for both containers of the same service. Build a trap.
+    cs = client.create_container(imageUuid=image_uuid,
+                                 count=2)
+    assert len(cs) == 2
+
+    for c in cs:
+        c = super_client.wait_success(c)
+        assert c.state == 'running'
+
+    # create a second host, we call it two
+    register_simulated_host(new_context)
+
+    env = _create_stack(client)
+    service_name = "service"
+
+    # upper case for the label service name, test logic in cattle
+    # prepending the stack name should be case insensitive
+    label_service_name = "SERVICE"
+
+    # test anti-affinity
+    # only service_name is supplied.
+    # env/project/stack should be automatically prepended
+    launch_config = {
+        "imageUuid": image_uuid,
+        "labels": {
+            "io.rancher.scheduler.affinity:container_label_ne":
+                "io.rancher.stack_service.name=" + label_service_name
+        }
+    }
+
+    service = client.create_service(name=service_name,
+                                    environmentId=env.id,
+                                    launchConfig=launch_config,
+                                    scale=2)
+    service = client.wait_success(service)
+    assert service.state == "inactive"
+
+    service = client.wait_success(service.activate(), 120)
+    assert service.state == "active"
+
+    # check that all containers are on different hosts
+    instances = _get_instance_for_service(super_client, service.id)
+    assert len(instances) == 2
+    assert instances[0].hosts()[0].id != instances[1].hosts()[0].id
+
+
 def test_anti_affinity_sidekick(new_context):
     register_simulated_host(new_context)
 
