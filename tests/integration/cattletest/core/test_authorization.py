@@ -495,7 +495,8 @@ def test_ldap_auth(admin_user_client, user_client, project_client):
         'userSearchField': 'cr',
         'groupMemberMappingAttribute': 'cr',
         'userMemberAttribute': 'cr',
-        'connectionTimeout': 'cr'
+        'connectionTimeout': 'cr',
+        'allowedIdentities': 'cr'
     })
 
 

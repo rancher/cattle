@@ -1,7 +1,6 @@
 package io.cattle.platform.iaas.api.auth.integration.ldap.ad;
 
 import io.cattle.platform.archaius.util.ArchaiusUtil;
-
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
@@ -43,6 +42,7 @@ public class ADConstants {
     public static final String GROUP_NAME_FIELD_SETTING = SETTING_BASE + "group.name.field";
     public static final String TLS_SETTING = SETTING_BASE + "tls";
     public static final String TIMEOUT_SETTING = SETTING_BASE + "connection.timeout";
+    public static final String ALLOWED_IDENTITIES_SETTING = SETTING_BASE + "allowed.identities";
 
     public static final Set<String> SCOPES = Collections.unmodifiableSet(
             new HashSet<>(Arrays.asList(
@@ -66,6 +66,7 @@ public class ADConstants {
     public static final DynamicStringProperty USER_OBJECT_CLASS = ArchaiusUtil.getString(USER_OBJECT_CLASS_SETTING);
     public static final DynamicIntProperty USER_DISABLED_BIT_MASK = ArchaiusUtil.getInt(USER_DISABLED_BIT_MASK_SETTING);
     public static final DynamicStringProperty USER_ENABLED_ATTRIBUTE = ArchaiusUtil.getString(USER_ENABLED_ATTRIBUTE_SETTING);
+    public static final DynamicStringProperty AD_ALLOWED_IDENTITIES = ArchaiusUtil.getString(ALLOWED_IDENTITIES_SETTING);
     public static final String MANAGER = NAME + "Manager";
 
 
@@ -81,4 +82,24 @@ public class ADConstants {
     public static final DynamicStringProperty GROUP_OBJECT_CLASS = ArchaiusUtil.getString(GROUP_OBJECT_CLASS_SETTING);
 
     public static final DynamicLongProperty CONNECTION_TIMEOUT = ArchaiusUtil.getLong(TIMEOUT_SETTING);
+
+    public static final String CONFIG_DOMAIN = "domain";
+    public static final String CONFIG_ALLOWED_IDENTITIES = "allowedIdentities";
+    public static final String CONFIG_GROUP_NAME_FIELD = "groupNameField";
+    public static final String CONFIG_GROUP_OBJECT_CLASS = "groupObjectClass";
+    public static final String CONFIG_GROUP_SEARCH_FIELD = "groupSearchField";
+    public static final String CONFIG_LOGIN_DOMAIN = "loginDomain";
+    public static final String CONFIG_PORT = "port";
+    public static final String CONFIG_SERVER = "server";
+    public static final String CONFIG_SERVICE_ACCOUNT_PASSWORD = "serviceAccountPassword";
+    public static final String CONFIG_SERVICE_ACCOUNT_USERNAME = "serviceAccountUsername";
+    public static final String CONFIG_TLS = "tls";
+    public static final String CONFIG_USER_DISABLED_BIT_MASK = "userDisabledBitMask";
+    public static final String CONFIG_USER_ENABLED_ATTRIBUTE = "userEnabledAttribute";
+    public static final String CONFIG_USER_LOGIN_FIELD = "userLoginField";
+    public static final String CONFIG_USER_NAME_FIELD = "userNameField";
+    public static final String CONFIG_USER_OBJECT_CLASS = "userObjectClass";
+    public static final String CONFIG_USER_SEARCH_FIELD = "userSearchField";
+    public static final String CONFIG_TIMEOUT = "connectionTimeout";
+    public static final String CONFIG_SECURITY = "enabled";
 }

@@ -1,9 +1,13 @@
 package io.cattle.platform.iaas.api.auth.integration.ldap.ad;
 
+
 import io.cattle.platform.iaas.api.auth.integration.interfaces.Configurable;
 import io.cattle.platform.iaas.api.auth.integration.ldap.interfaces.LDAPConfig;
+import io.cattle.platform.api.auth.Identity;
 import io.github.ibuildthecloud.gdapi.annotation.Field;
 import io.github.ibuildthecloud.gdapi.annotation.Type;
+
+import java.util.List;
 
 @Type(name = ADConstants.CONFIG)
 public class ADConfig implements Configurable, LDAPConfig {
@@ -27,12 +31,13 @@ public class ADConfig implements Configurable, LDAPConfig {
     private final String groupObjectClass;
     private final String groupNameField;
     private final long connectionTimeout;
+    private List<Identity> allowedIdentities;
 
     public ADConfig(String server, Integer port, Integer userDisabledBitMask, String loginDomain, String domain,
                     Boolean enabled, String accessMode, String serviceAccountUsername,
                     String serviceAccountPassword, Boolean tls, String userSearchField, String userLoginField,
                     String userObjectClass, String userNameField, String userEnabledAttribute, String groupSearchField,
-                    String groupObjectClass, String groupNameField, long connectionTimeout) {
+                    String groupObjectClass, String groupNameField, long connectionTimeout, List<Identity> allowedIdentities) {
         this.server = server;
         this.port = port;
         this.userDisabledBitMask = userDisabledBitMask;
@@ -52,6 +57,7 @@ public class ADConfig implements Configurable, LDAPConfig {
         this.groupObjectClass = groupObjectClass;
         this.groupNameField = groupNameField;
         this.connectionTimeout = connectionTimeout;
+        this.allowedIdentities = allowedIdentities;
     }
 
     @Field(required = true, nullable = false, minLength = 1)
@@ -181,5 +187,11 @@ public class ADConfig implements Configurable, LDAPConfig {
     @Field(nullable = false, required = true, defaultValue = "1000")
     public long getConnectionTimeout() {
         return connectionTimeout;
+    }
+
+    @Override
+    @Field(nullable = true)
+    public List<Identity> getAllowedIdentities() {
+        return allowedIdentities;
     }
 }

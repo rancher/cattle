@@ -1,8 +1,8 @@
 package io.cattle.platform.iaas.api.auth.integration.ldap.ad;
 
 import static javax.naming.directory.SearchControls.*;
-
 import io.cattle.platform.api.auth.Identity;
+import io.cattle.platform.core.constants.IdentityConstants;
 import io.cattle.platform.core.model.Account;
 import io.cattle.platform.core.model.AuthToken;
 import io.cattle.platform.iaas.api.auth.AbstractTokenUtil;
@@ -23,9 +23,12 @@ import io.github.ibuildthecloud.gdapi.util.ResponseCodes;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
+
 import javax.inject.Inject;
 import javax.naming.InvalidNameException;
 import javax.naming.NamingEnumeration;
@@ -94,15 +97,12 @@ public class ADIdentityProvider extends LDAPIdentityProvider implements Identity
                 throw new ClientVisibleException(ResponseCodes.INTERNAL_SERVER_ERROR, "LdapConfig",
                         "Organizational Unit not found.", null);
             }
-            try {
-                if (!results.hasMore()) {
-                    logger.error("Cannot locate user information for " + query);
-                    return null;
-                }
-            } catch (NamingException e) {
-                logger.error(query + " is not found.", e);
+
+            if (!results.hasMoreElements()) {
+                logger.error("Cannot locate user information for " + query);
                 return null;
             }
+
             SearchResult result;
             try {
                 result = results.next();
@@ -196,6 +196,17 @@ public class ADIdentityProvider extends LDAPIdentityProvider implements Identity
         }
         String name = getSamName(username);
         String query = "(" + getConstantsConfig().getUserLoginField() + '=' + name + ")";
+        //if restricted access
+        if("restricted".equalsIgnoreCase(adTokenUtils.accessMode())) {
+            String groupFilter = getAllowedIdentitiesFilter();
+            if(groupFilter.length() > 1) {
+                StringBuilder groupQuery = new StringBuilder("(&");
+                groupQuery.append(query);
+                groupQuery.append(groupFilter);
+                groupQuery.append(")");
+                query = groupQuery.toString();
+            }
+        }
         SearchResult userRecord = userRecord(query);
         if (userRecord == null){
             return new HashSet<>();
@@ -276,5 +287,73 @@ public class ADIdentityProvider extends LDAPIdentityProvider implements Identity
     @Override
     public String getName() {
         return getConstantsConfig().getProviderName();
+    }
+
+    public List<Identity> savedIdentities() {
+        List<String> ids = adTokenUtils.fromHashSeparatedString(ADConstants.AD_ALLOWED_IDENTITIES.get());
+        List<Identity> identities = new ArrayList<>();
+        if (ids.isEmpty() || !isConfigured()) {
+            return identities;
+        }
+        for(String id: ids){
+            String[] split = id.split(":", 2);
+            identities.add(getIdentity(split[1], split[0]));
+        }
+        return identities;
+    }
+
+    private String getAllowedIdentitiesFilter() {
+        StringBuilder filter = new StringBuilder();
+        String memberOf = "(memberof=";
+        String dn = "(distinguishedName=";
+        int identitySize = 0 ;
+
+        List<Identity> identities = savedIdentities();
+        for (Identity identity: identities){
+            if (getConstantsConfig().getGroupScope().equalsIgnoreCase(identity.getExternalIdType())){
+                identitySize = identitySize + 1;
+                filter.append(memberOf);
+                filter.append(identity.getExternalId());
+                filter.append(")");
+            } else if (getConstantsConfig().getUserScope().equalsIgnoreCase(identity.getExternalIdType())){
+                identitySize = identitySize + 1;
+                filter.append(dn);
+                filter.append(identity.getExternalId());
+                filter.append(")");
+            }
+        }
+
+        if(identitySize > 1) {
+            //add OR
+            StringBuilder outer = new StringBuilder("(|");
+            outer.append(filter.toString());
+            outer.append(")");
+            return outer.toString();
+        }
+
+        return filter.toString();
+    }
+
+    public String validateIdentities(List<Map<String, String>> identitiesGiven) {
+        List<Identity> identities = getIdentities(identitiesGiven);
+        return adTokenUtils.toHashSeparatedString(identities);
+    }
+
+    public List<Identity> getIdentities(List<Map<String, String>> identitiesGiven) {
+        if (identitiesGiven == null || identitiesGiven.isEmpty()){
+            return new ArrayList<>();
+        }
+
+        List<Identity> identities = new ArrayList<>();
+        for (Map<String, String> identity: identitiesGiven){
+            String externalId = identity.get(IdentityConstants.EXTERNAL_ID);
+            String externalIdType = identity.get(IdentityConstants.EXTERNAL_ID_TYPE);
+            Identity gotIdentity = getIdentity(externalId, externalIdType);
+            if (gotIdentity == null) {
+                throw new ClientVisibleException(ResponseCodes.BAD_REQUEST, "InvalidIdentity", "Invalid Identity", null);
+            }
+            identities.add(gotIdentity);
+        }
+        return identities;
     }
 }

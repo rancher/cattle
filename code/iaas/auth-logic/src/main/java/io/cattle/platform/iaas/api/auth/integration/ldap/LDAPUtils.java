@@ -1,5 +1,6 @@
 package io.cattle.platform.iaas.api.auth.integration.ldap;
 
+import io.cattle.platform.iaas.api.auth.SecurityConstants;
 import io.cattle.platform.iaas.api.auth.integration.ldap.interfaces.LDAPConstants;
 import io.github.ibuildthecloud.gdapi.exception.ClientVisibleException;
 import io.github.ibuildthecloud.gdapi.util.ResponseCodes;
@@ -8,6 +9,7 @@ import java.net.ConnectException;
 import java.util.Hashtable;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
 import javax.naming.Context;
 import javax.naming.NamingException;
 import javax.naming.ldap.InitialLdapContext;
@@ -32,7 +34,7 @@ public class LDAPUtils {
      * and resubmit it, without locking them out of cattle.
      */
     public static void validateConfig(LDAPConstants ldapConfig) {
-        if (ldapConfig.getEnabled() == null || !ldapConfig.getEnabled()) {
+        if (ldapConfig.getEnabled() == null || !ldapConfig.getEnabled() || SecurityConstants.SECURITY.get()) {
             return;
         }
         if (StringUtils.isBlank(ldapConfig.getServiceAccountUsername()) || StringUtils.isBlank(ldapConfig.getServiceAccountPassword())) {
