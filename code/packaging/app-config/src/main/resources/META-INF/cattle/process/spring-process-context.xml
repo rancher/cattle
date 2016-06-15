@@ -145,6 +145,12 @@
         p:dataTypeClass="io.cattle.platform.core.model.Backup"
         p:processNames="volume.restorefrombackup"
         p:shortCircuitIfAgentRemoved="true" >
+        <property name="processDataKeys">
+            <list>
+                <value>processId</value>
+                <value>volumeName</value>
+            </list>
+        </property>
         <property name="priority">
             <util:constant static-field="io.cattle.platform.util.type.Priority.DEFAULT"/>
         </property>
