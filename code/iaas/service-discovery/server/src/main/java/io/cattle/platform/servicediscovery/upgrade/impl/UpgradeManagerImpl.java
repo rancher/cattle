@@ -1,6 +1,6 @@
 package io.cattle.platform.servicediscovery.upgrade.impl;
 
-import static io.cattle.platform.core.model.tables.ServiceExposeMapTable.SERVICE_EXPOSE_MAP;
+import static io.cattle.platform.core.model.tables.ServiceExposeMapTable.*;
 import io.cattle.platform.async.utils.TimeoutException;
 import io.cattle.platform.core.addon.InServiceUpgradeStrategy;
 import io.cattle.platform.core.addon.RollingRestartStrategy;
@@ -42,6 +42,7 @@ import java.util.Map;
 import javax.inject.Inject;
 
 public class UpgradeManagerImpl implements UpgradeManager {
+    private static Long DEFAULT_WAIT_TIMEOUT = 60000L;
 
     private enum Type {
         ToUpgrade,
@@ -127,12 +128,14 @@ public class UpgradeManagerImpl implements UpgradeManager {
         lockManager.lock(new ServicesSidekickLock(Arrays.asList(service)), new LockCallbackNoReturn() {
             @Override
             public void doWithLockNoResult() {
-                // 1. mark for upgrade
+                // wait for healthy
+                waitForHealthyState(service);
+                // mark for upgrade
                 markForUpgrade(batchSize);
 
                 if (startFirst) {
                     // 1. reconcile to start new instances
-                    reconcile(service);
+                    deploymentMgr.activate(service);
                     // 2. stop instances
                     stopInstances(deploymentUnitInstancesToCleanup);
                 } else {
@@ -140,7 +143,7 @@ public class UpgradeManagerImpl implements UpgradeManager {
                     // 1. stop instances
                     stopInstances(deploymentUnitInstancesToCleanup);
                     // 2. wait for reconcile (new instances will be started along)
-                    reconcile(service);
+                    deploymentMgr.activate(service);
                 }
             }
 
@@ -419,7 +422,7 @@ public class UpgradeManagerImpl implements UpgradeManager {
         final List<String> healthyStates = Arrays.asList(HealthcheckConstants.HEALTH_STATE_HEALTHY,
                 HealthcheckConstants.HEALTH_STATE_UPDATING_HEALTHY);
         for (final Instance instance : serviceInstances) {
-            resourceMntr.waitFor(instance,
+            resourceMntr.waitFor(instance, DEFAULT_WAIT_TIMEOUT,
                     new ResourcePredicate<Instance>() {
                         @Override
                         public boolean evaluate(Instance obj) {
@@ -505,10 +508,12 @@ public class UpgradeManagerImpl implements UpgradeManager {
         lockManager.lock(new ServicesSidekickLock(Arrays.asList(service)), new LockCallbackNoReturn() {
             @Override
             public void doWithLockNoResult() {
-                // 1. stop instances
+                // 1. Wait for the service instances to become healthy
+                waitForHealthyState(service);
+                // 2. stop instances
                 stopInstances(deploymentUnitsToStop);
-                // 2. wait for reconcile (instances will be restarted along)
-                reconcile(service);
+                // 3. wait for reconcile (instances will be restarted along)
+                deploymentMgr.activate(service);
             }
         });
     }
@@ -533,12 +538,5 @@ public class UpgradeManagerImpl implements UpgradeManager {
                         }
                     });
         }
-    }
-
-    protected void reconcile(Service service) {
-        // 1. wait for reconcile (new instances will be started along)
-        deploymentMgr.activate(service);
-        // 2. wait for service to become healthy
-        waitForHealthyState(service);
     }
 }

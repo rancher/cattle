@@ -1233,10 +1233,7 @@ def upgrade_with_health(client, context, super_client, start_first=False):
     env = client.create_environment(name='env-' + random_str())
 
     image_uuid = context.image_uuid
-    launch_config = {"imageUuid": image_uuid,
-                     'healthCheck': {
-                         'port': 80,
-                     }}
+    launch_config = {"imageUuid": image_uuid}
 
     svc = client.create_service(name=random_str(),
                                 environmentId=env.id,
@@ -1251,7 +1248,11 @@ def upgrade_with_health(client, context, super_client, start_first=False):
 
     # upgrade the service and
     # check that c3 and c2 got the same ip
-    strategy = {"launchConfig": launch_config,
+    new_launch_config = {"imageUuid": image_uuid,
+                         'healthCheck': {
+                             'port': 80,
+                         }}
+    strategy = {"launchConfig": new_launch_config,
                 "intervalMillis": 100,
                 "startFirst": start_first}
     svc.upgrade_action(inServiceStrategy=strategy)
