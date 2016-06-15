@@ -48,6 +48,8 @@ import org.apache.http.conn.HttpHostConnectException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.netflix.config.DynamicStringProperty;
+
 public class SystemStackUpdate extends AbstractJooqDao implements AnnotatedEventListener {
 
     public static final String KUBERNETES_STACK = "kubernetes";
@@ -68,7 +70,8 @@ public class SystemStackUpdate extends AbstractJooqDao implements AnnotatedEvent
     }
     private static final String STACK_RESOURCE = "/config-content/system-stacks/%s/%s";
     private static final Logger log = LoggerFactory.getLogger(SystemStackUpdate.class);
-    private static final String CATALOG_RESOURCE_URL = ArchaiusUtil.getString("system.stack.catalog.url").get();
+    private static DynamicStringProperty CATALOG_RESOURCE_URL = ArchaiusUtil.getString("system.stack.catalog.url");
+    private static DynamicStringProperty CATALOG_RESOURCE_VERSION = ArchaiusUtil.getString("rancher.server.image");
 
     @Inject
     ObjectProcessManager processManager;
@@ -207,8 +210,14 @@ public class SystemStackUpdate extends AbstractJooqDao implements AnnotatedEvent
 
     protected Template getTemplateFromCatalog(String stack) throws IOException {
 
-        StringBuilder catalogTemplateUrl = new StringBuilder(CATALOG_RESOURCE_URL);
+        StringBuilder catalogTemplateUrl = new StringBuilder(CATALOG_RESOURCE_URL.get());
         catalogTemplateUrl.append(":").append(stack);
+        String minVersion = CATALOG_RESOURCE_VERSION.get();
+        if (!StringUtils.isEmpty(minVersion)) {
+            catalogTemplateUrl.append("?minimumRancherVersion_lte=")
+                    .append(minVersion);
+        }
+
         //get the latest version from the catalog template
         Request temp = Request.Get(catalogTemplateUrl.toString());
         Response res;
@@ -220,8 +229,24 @@ public class SystemStackUpdate extends AbstractJooqDao implements AnnotatedEvent
         }
         Template template = jsonMapper.readValue(res.returnContent().asBytes(), Template.class);
 
-        if (template != null && template.getDefaultVersion() != null && template.getVersionLinks() != null) {
-            String versionUrl = template.getVersionLinks().get(template.getDefaultVersion());
+        if (template != null && template.getVersionLinks() != null) {
+            String versionUrl = null;
+            String defaultVersionURL = template.getVersionLinks().get(template.getDefaultVersion());
+            if (!StringUtils.isEmpty(defaultVersionURL)) {
+                versionUrl = defaultVersionURL;
+            } else {
+                long maxVersion = 0;
+                for (String url : template.getVersionLinks().values()) {
+                    long currentMaxVersion = Long.valueOf(url.substring(url.lastIndexOf(":") + 1, url.length()));
+                    if (currentMaxVersion >= maxVersion) {
+                        maxVersion = Long.valueOf(currentMaxVersion);
+                        versionUrl = url;
+                    }
+                }
+            }
+            if (versionUrl == null) {
+                return null;
+            }
             log.debug("Catalog system template versionUrl is: [{}]", versionUrl);
 
             Request versionReq = Request.Get(versionUrl);
