@@ -1,7 +1,7 @@
 package io.cattle.platform.servicediscovery.api.service.impl;
 
-import static io.cattle.platform.core.model.tables.InstanceTable.INSTANCE;
-import static io.cattle.platform.core.model.tables.ServiceTable.SERVICE;
+import static io.cattle.platform.core.model.tables.InstanceTable.*;
+import static io.cattle.platform.core.model.tables.ServiceTable.*;
 import io.cattle.platform.allocator.service.AllocatorService;
 import io.cattle.platform.core.addon.LoadBalancerServiceLink;
 import io.cattle.platform.core.addon.ServiceLink;
@@ -129,6 +129,7 @@ public class ServiceDiscoveryApiServiceImpl implements ServiceDiscoveryApiServic
                 Map<String, Object> composeServiceData = new HashMap<>();
                 excludeRancherHash(cattleServiceData);
                 formatScale(service, cattleServiceData);
+                setupServiceType(service, cattleServiceData);
                 for (String cattleService : cattleServiceData.keySet()) {
                     translateRancherToCompose(forDockerCompose, cattleServiceData, composeServiceData, cattleService, service);
                 }
@@ -183,6 +184,16 @@ public class ServiceDiscoveryApiServiceImpl implements ServiceDiscoveryApiServic
             if (Boolean.valueOf(globalService) == true) {
                 composeServiceData.remove(ServiceDiscoveryConstants.FIELD_SCALE);
             }
+        }
+    }
+
+    protected void setupServiceType(Service service, Map<String, Object> composeServiceData) {
+        Object type = composeServiceData.get(ServiceDiscoveryConfigItem.SERVICE_TYPE.getCattleName());
+        if (type == null) {
+            return;
+        }
+        if (!InstanceConstants.KIND_VIRTUAL_MACHINE.equals(type.toString())) {
+            composeServiceData.remove(ServiceDiscoveryConfigItem.SERVICE_TYPE.getCattleName());
         }
     }
 
