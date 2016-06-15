@@ -528,6 +528,14 @@
     <bean class="io.cattle.platform.iaas.api.auth.integration.local.LocalAuthConfigManager" />
     <bean class="io.cattle.platform.iaas.api.auth.integration.local.LocalAuthTokenCreator" />
     <bean class="io.cattle.platform.iaas.api.auth.integration.local.LocalAuthTokenUtils" />
+    
+    <bean class="io.cattle.platform.iaas.api.auth.integration.azure.AzureIdentityProvider" />
+
+    <bean class="io.cattle.platform.iaas.api.auth.integration.azure.AzureTokenCreator" />
+    <bean class="io.cattle.platform.iaas.api.auth.integration.azure.AzureTokenUtil" />
+    <bean class="io.cattle.platform.iaas.api.auth.integration.azure.AzureConfigManager" />
+    <bean class="io.cattle.platform.iaas.api.auth.integration.azure.AzureRESTClient"/>
+    
 
     <extension:discover class="io.cattle.platform.iaas.api.auth.AuthorizationProvider"/>
     <extension:discover class="io.cattle.platform.iaas.api.auth.integration.interfaces.AccountLookup"/>

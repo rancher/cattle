@@ -219,6 +219,7 @@
                 <value>io.cattle.platform.iaas.api.auth.integration.ldap.ad.ADConfig</value>
                 <value>io.cattle.platform.iaas.api.auth.integration.ldap.OpenLDAP.OpenLDAPConfig</value>
                 <value>io.cattle.platform.iaas.api.auth.integration.local.LocalAuthConfig</value>
+                <value>io.cattle.platform.iaas.api.auth.integration.azure.AzureConfig</value>
             </list>
         </property>
     </bean>

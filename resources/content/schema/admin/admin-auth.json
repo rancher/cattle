@@ -114,6 +114,15 @@
         "githubconfig.hostname": "cr",
         "githubconfig.scheme": "cr",
 
+        "azureadconfig": "cru",
+        "azureadconfig.accessMode": "cr",
+        "azureadconfig.clientId": "cr",
+        "azureadconfig.tenantId": "cr",
+        "azureadconfig.domain": "cr",
+        "azureadconfig.enabled": "cr",
+        "azureadconfig.adminAccountUsername": "cr",
+        "azureadconfig.adminAccountPassword": "cro",
+
         "host.apiProxy" : "ru",
 
         "hostApiProxyToken" : "r",

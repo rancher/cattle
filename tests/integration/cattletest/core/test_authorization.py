@@ -316,6 +316,7 @@ def test_admin_types(admin_user_client, adds=set(), removes=set()):
         'externalHostEvent',
         'fieldDocumentation',
         'githubconfig',
+        'azureadconfig',
         'haConfig',
         'haConfigInput',
         'host',
@@ -466,6 +467,21 @@ def test_github_auth(admin_user_client, user_client, project_client):
         'accessMode': 'cr',
         'hostname': 'cr',
         'scheme': 'cr'
+    })
+
+
+def test_azure_auth(admin_user_client, user_client, project_client):
+    assert 'azureadconfig' not in user_client.schema.types
+    assert 'azureadconfig' not in project_client.schema.types
+
+    auth_check(admin_user_client.schema, 'azureadconfig', 'cru', {
+        'enabled': 'cr',
+        'clientId': 'cr',
+        'tenantId': 'cr',
+        'adminAccountPassword': 'cro',
+        'adminAccountUsername': 'cr',
+        'accessMode': 'cr',
+        'domain': 'cr'
     })
 
 
