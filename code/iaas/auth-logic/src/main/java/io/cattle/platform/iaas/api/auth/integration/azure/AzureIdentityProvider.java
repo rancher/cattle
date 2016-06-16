@@ -161,7 +161,7 @@ public class AzureIdentityProvider extends AzureConfigurable implements Identity
                 return org.toIdentity(AzureConstants.GROUP_SCOPE);
             default:
                 throw new ClientVisibleException(ResponseCodes.BAD_REQUEST,
-                        IdentityConstants.INVALID_TYPE, "Invalid scope for GithubSearchProvider", null);
+                        IdentityConstants.INVALID_TYPE, "Invalid scope for AzureSearchProvider", null);
         }
     }
 
