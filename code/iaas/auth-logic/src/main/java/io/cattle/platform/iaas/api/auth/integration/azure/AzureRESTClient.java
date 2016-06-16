@@ -9,6 +9,7 @@ import io.cattle.platform.util.type.CollectionUtils;
 
 import java.io.IOException;
 import java.net.URLEncoder;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -55,15 +56,66 @@ public class AzureRESTClient extends AzureConfigurable{
             }
             
             Map<String, Object> jsonData = jsonMapper.readValue(response.getEntity().getContent());
-            return jsonToAzureUserInfo(jsonData).toIdentity(AzureConstants.USER_SCOPE);
+            return jsonToAzureAccountInfo(jsonData).toIdentity(AzureConstants.USER_SCOPE);
         } catch (IOException e) {
             logger.error("Failed to get Azure user account info.", e);
             throw new ClientVisibleException(ResponseCodes.INTERNAL_SERVER_ERROR, AzureConstants.AZURE_CLIENT,
                     "Failed to get Azure user account info.", null);
+        } catch(ClientVisibleException ex) {
+            logger.error("Failed to get Azure user account info.", ex);
+            throw ex;
+        } catch(Exception ex) {
+            logger.error("Failed to get Azure user account info.", ex);
+            throw new RuntimeException(ex);
         }
     }
 
-    
+    private List<Identity> getGroupIdentities(String azureAccessToken) {
+        if (StringUtils.isEmpty(azureAccessToken)) {
+            noAccessToken();
+        }
+        try {
+            logger.debug("getGroupIdentities for logged in user");
+            HttpResponse response = getFromAzure(azureAccessToken, getURL(AzureClientEndpoints.GROUP, ""));
+            if(hasTokenExpired(response)) {
+                //refresh token
+                refreshAccessToken();
+                //retry the request
+                azureAccessToken = (String) ApiContext.getContext().getApiRequest().getAttribute(AzureConstants.AZURE_ACCESS_TOKEN);
+                response = getFromAzure(azureAccessToken, getURL(AzureClientEndpoints.GROUP, ""));
+            }
+            
+            int statusCode = response.getStatusLine().getStatusCode();
+            if (statusCode >= 300) {
+                noAzure(statusCode);
+            }
+
+            Map<String, Object> jsonData = CollectionUtils.toMap(jsonMapper.readValue(response.getEntity().getContent(), Map.class));
+            List<AzureAccountInfo> searchResponseList = parseSearchResponseList(jsonData);
+
+            List<Identity> groupIdentities = new ArrayList<Identity>();
+
+            if(searchResponseList != null && !searchResponseList.isEmpty()){
+                for(AzureAccountInfo userOrGroup : searchResponseList){
+                    groupIdentities.add(userOrGroup.toIdentity(AzureConstants.GROUP_SCOPE));
+                }
+            }
+
+            return groupIdentities;
+        } catch (IOException e) {
+            logger.error("Failed to get Azure group memberships.", e);
+            throw new ClientVisibleException(ResponseCodes.INTERNAL_SERVER_ERROR, AzureConstants.AZURE_CLIENT,
+                    "Failed to get Azure group memberships.", null);
+        } catch(ClientVisibleException ex) {
+            logger.error("Failed to get Azure group memberships.", ex);
+            throw ex;
+        } catch(Exception ex) {
+            logger.error("Failed to get Azure group memberships.", ex);
+            throw new RuntimeException(ex);
+        }
+    }
+
+
     public String getAccessToken(String code) {
         if (!isConfigured()) {
             throw new ClientVisibleException(ResponseCodes.INTERNAL_SERVER_ERROR, AzureConstants.CONFIG, "Azure Client and Tenant Id not configured", null);
@@ -116,7 +168,7 @@ public class AzureRESTClient extends AzureConfigurable{
             ApiContext.getContext().getApiRequest().setAttribute(AzureConstants.AZURE_ACCESS_TOKEN, accessToken);
             ApiContext.getContext().getApiRequest().setAttribute(AzureConstants.AZURE_REFRESH_TOKEN, refreshToken);
 
-        } catch(ClientVisibleException ex){
+        } catch(ClientVisibleException ex) {
             throw ex;
         } catch(Exception ex) {
             throw new RuntimeException(ex);
@@ -163,26 +215,34 @@ public class AzureRESTClient extends AzureConfigurable{
             logger.debug("Storing the new Azure access token to the Account");
             azureTokenUtil.refreshAccessToken();
     
-        }catch(Exception ex) {
+        } catch(ClientVisibleException ex) {
+            logger.error("Failed to refreshAccessToken for Azure user.", ex);
+            throw ex;
+        } catch(Exception ex) {
+            logger.error("Failed to refreshAccessToken for Azure user.", ex);
             throw new RuntimeException(ex);
-        }        
-
-    }    
-
-    public AzureUserInfo parseSearchResponse(Map<String, Object> jsonData) {
-        
-        List<Object> azureValueList = (List<Object>)CollectionUtils.toList(jsonData.get("value"));
-        
-        if (!azureValueList.isEmpty())
-        { 
-            Map<String, Object> result = CollectionUtils.toMap(azureValueList.get(0));
-            return jsonToAzureUserInfo(result);
         }
-        return null;
-        
+
     }
-    
-    public AzureUserInfo jsonToAzureUserInfo(Map<String, Object> jsonData) {
+
+    public List<AzureAccountInfo> parseSearchResponseList(Map<String, Object> jsonData) {
+        List<Object> azureValueList = (List<Object>)CollectionUtils.toList(jsonData.get("value"));
+        List<AzureAccountInfo> azureUserOrGroupList = new ArrayList<AzureAccountInfo>();
+        if (azureValueList != null && !azureValueList.isEmpty())
+        {
+            for(Object azureValue : azureValueList) {
+                Map<String, Object> result = CollectionUtils.toMap(azureValue);
+                String objectType = ObjectUtils.toString(result.get("objectType"));
+                if(objectType != null && (objectType.equalsIgnoreCase("User") || objectType.equalsIgnoreCase("Group"))) {
+                    AzureAccountInfo userOrGroupInfo = jsonToAzureAccountInfo(result);
+                    azureUserOrGroupList.add(userOrGroupInfo);
+                }
+            }
+        }
+        return azureUserOrGroupList;
+    }
+
+    public AzureAccountInfo jsonToAzureAccountInfo(Map<String, Object> jsonData) {
         String objectId = ObjectUtils.toString(jsonData.get("objectId"));
         String userPrincipalName = ObjectUtils.toString(jsonData.get("userPrincipalName"));
         String accountName = ObjectUtils.toString(jsonData.get("mailNickname"));
@@ -191,7 +251,7 @@ public class AzureRESTClient extends AzureConfigurable{
             name = accountName;
         }
         //String profilePicture = ObjectUtils.toString(jsonData.get(GithubConstants.PROFILE_PICTURE));
-        return new AzureUserInfo(objectId, accountName, null, userPrincipalName, name);
+        return new AzureAccountInfo(objectId, accountName, null, userPrincipalName, name);
     }
     
     public boolean hasTokenExpired(HttpResponse response) throws IOException {
@@ -263,7 +323,9 @@ public class AzureRESTClient extends AzureConfigurable{
             case USER:
                 toReturn = apiEndpoint + "me";
                 break;
-
+            case GROUP:
+                toReturn = apiEndpoint + "me/memberOf";
+                break;
             default:
                 throw new ClientVisibleException(ResponseCodes.INTERNAL_SERVER_ERROR,
                         "AzureClient", "Attempted to get invalid Api endpoint.", null);
@@ -272,7 +334,7 @@ public class AzureRESTClient extends AzureConfigurable{
     }    
     
 
-    public AzureUserInfo getAzureUserByName(String username) {
+    public AzureAccountInfo getAzureUserByName(String username) {
         String azureAccessToken = (String) ApiContext.getContext().getApiRequest().getAttribute(AzureConstants.AZURE_ACCESS_TOKEN);
         if (StringUtils.isEmpty(azureAccessToken)) {
             noAccessToken();
@@ -311,16 +373,26 @@ public class AzureRESTClient extends AzureConfigurable{
 
             
             Map<String, Object> jsonData = CollectionUtils.toMap(jsonMapper.readValue(response.getEntity().getContent(), Map.class));
-            return parseSearchResponse(jsonData);
+            List<AzureAccountInfo> searchResponseList = parseSearchResponseList(jsonData);
+            if(searchResponseList != null && !searchResponseList.isEmpty()) {
+                return searchResponseList.get(0);
+            }
+            return null;
         } catch (IOException e) {
             logger.error(e);
             throw new ClientVisibleException(ResponseCodes.SERVICE_UNAVAILABLE, "AzureUnavailable", "Could not retrieve User by name from Azure", null);
+        } catch(ClientVisibleException ex) {
+            logger.error("Failed to get Azure user account info by name.", ex);
+            throw ex;
+        } catch(Exception ex) {
+            logger.error("Failed to get Azure user account info by name.", ex);
+            throw new RuntimeException(ex);
         }
 
     }
-    
- 
-    public AzureUserInfo getAzureGroupByName(String org) {
+
+
+    public AzureAccountInfo getAzureGroupByName(String org) {
         String azureAccessToken = (String) ApiContext.getContext().getApiRequest().getAttribute(AzureConstants.AZURE_ACCESS_TOKEN);
         if (StringUtils.isEmpty(azureAccessToken)) {
             noAccessToken();
@@ -351,15 +423,25 @@ public class AzureRESTClient extends AzureConfigurable{
 
             Map<String, Object> jsonData = CollectionUtils.toMap(jsonMapper.readValue(response.getEntity().getContent
                     (), Map.class));
-            return parseSearchResponse(jsonData);
+            List<AzureAccountInfo> searchResponseList = parseSearchResponseList(jsonData);
+            if(searchResponseList != null && !searchResponseList.isEmpty()) {
+                return searchResponseList.get(0);
+            }
+            return null;
         } catch (IOException e) {
             logger.error(e);
             throw new ClientVisibleException(ResponseCodes.SERVICE_UNAVAILABLE, "AzureUnavailable", "Could not retrieve Group by name from Azure", null);
+        } catch(ClientVisibleException ex) {
+            logger.error("Failed to get Azure group info by name.", ex);
+            throw ex;
+        } catch(Exception ex) {
+            logger.error("Failed to get Azure group info by name.", ex);
+            throw new RuntimeException(ex);
         }
     }
     
     
-     public AzureUserInfo getUserById(String id) {
+     public AzureAccountInfo getUserById(String id) {
         String azureAccessToken = (String) ApiContext.getContext().getApiRequest().getAttribute(AzureConstants.AZURE_ACCESS_TOKEN);
         if (StringUtils.isEmpty(azureAccessToken)) {
             noAccessToken();
@@ -381,18 +463,24 @@ public class AzureRESTClient extends AzureConfigurable{
             }  
 
             Map<String, Object> jsonData = CollectionUtils.toMap(jsonMapper.readValue(response.getEntity().getContent(), Map.class));
-            return jsonToAzureUserInfo(jsonData);
+            return jsonToAzureAccountInfo(jsonData);
         } catch (IOException e) {
             throw new ClientVisibleException(ResponseCodes.SERVICE_UNAVAILABLE, "AzureUnavailable", "Could not retrieve User by Id from Azure", null);
+        } catch(ClientVisibleException ex) {
+            logger.error("Failed to get Azure user account info by Id.", ex);
+            throw ex;
+        } catch(Exception ex) {
+            logger.error("Failed to get Azure user account info by Id.", ex);
+            throw new RuntimeException(ex);
         }
     }
      
-     public AzureUserInfo getGroupById(String id) {
+     public AzureAccountInfo getGroupById(String id) {
          String azureAccessToken = (String) ApiContext.getContext().getApiRequest().getAttribute(AzureConstants.AZURE_ACCESS_TOKEN);
          if (StringUtils.isEmpty(azureAccessToken)) {
              noAccessToken();
          }
-         logger.debug("getGroupById: "+ id);      
+         logger.debug("getGroupById: "+ id);
          try {
              HttpResponse response = getFromAzure(azureAccessToken, getURL(AzureClientEndpoints.GROUPS, id));
              if(hasTokenExpired(response)) {
@@ -408,17 +496,23 @@ public class AzureRESTClient extends AzureConfigurable{
                  noAzure(statusCode);
              } 
              Map<String, Object> jsonData = CollectionUtils.toMap(jsonMapper.readValue(response.getEntity().getContent(), Map.class));
-             return jsonToAzureUserInfo(jsonData);
+             return jsonToAzureAccountInfo(jsonData);
          } catch (IOException e) {
              throw new ClientVisibleException(ResponseCodes.SERVICE_UNAVAILABLE, "AzureUnavailable", "Could not retrieve Group by Id from Azure", null);
+         } catch(ClientVisibleException ex) {
+             logger.error("Failed to get Azure group info by id.", ex);
+             throw ex;
+         } catch(Exception ex) {
+             logger.error("Failed to get Azure group info by id.", ex);
+             throw new RuntimeException(ex);
          }
-     }     
+     }
 
  
     public Set<Identity> getIdentities(String accessToken) {
         Set<Identity> identities = new HashSet<>();
         identities.add(getUserIdentity(accessToken));
-        //identities.addAll(getOrgAccountInfo(accessToken));
+        identities.addAll(getGroupIdentities(accessToken));
 
         return identities;
     }
