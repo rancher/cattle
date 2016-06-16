@@ -8,6 +8,7 @@ import io.github.ibuildthecloud.gdapi.util.RequestUtils;
 import java.io.IOException;
 
 import javax.inject.Inject;
+import javax.servlet.ServletException;
 
 public class ReadWriteApiHandler extends AbstractApiRequestHandler implements ApiRequestHandler {
 
@@ -20,6 +21,11 @@ public class ReadWriteApiHandler extends AbstractApiRequestHandler implements Ap
         } else {
             delegate.read(request);
         }
+    }
+
+    @Override
+    public boolean handleException(ApiRequest request, Throwable e) throws IOException, ServletException {
+        return delegate.handleException(request, e);
     }
 
     public ReadWriteApiDelegate getDelegate() {

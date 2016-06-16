@@ -10,6 +10,7 @@ import io.github.ibuildthecloud.gdapi.util.ResponseCodes;
 import java.io.IOException;
 
 import javax.inject.Inject;
+import javax.servlet.ServletException;
 
 public class ResourceManagerRequestHandler extends AbstractResponseGenerator {
 
@@ -59,7 +60,7 @@ public class ResourceManagerRequestHandler extends AbstractResponseGenerator {
     }
 
     @Override
-    public boolean handleException(ApiRequest request, Throwable e) {
+    public boolean handleException(ApiRequest request, Throwable e) throws IOException, ServletException {
         ResourceManager manager = resourceManagerLocator.getResourceManager(request);
 
         if (manager == null) {
