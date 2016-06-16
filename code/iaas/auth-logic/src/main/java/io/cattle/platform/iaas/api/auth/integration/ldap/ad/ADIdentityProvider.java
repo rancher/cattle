@@ -196,8 +196,8 @@ public class ADIdentityProvider extends LDAPIdentityProvider implements Identity
         }
         String name = getSamName(username);
         String query = "(" + getConstantsConfig().getUserLoginField() + '=' + name + ")";
-        //if restricted access
-        if("restricted".equalsIgnoreCase(adTokenUtils.accessMode())) {
+        //if required access
+        if(AbstractTokenUtil.isRequiredAccess(adTokenUtils.accessMode())) {
             String groupFilter = getAllowedIdentitiesFilter();
             if(groupFilter.length() > 1) {
                 StringBuilder groupQuery = new StringBuilder("(&");
