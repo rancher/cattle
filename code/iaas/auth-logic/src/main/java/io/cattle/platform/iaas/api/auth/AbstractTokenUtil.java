@@ -29,6 +29,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
 import javax.inject.Inject;
 import javax.servlet.http.Cookie;
 
@@ -43,6 +44,9 @@ public abstract class AbstractTokenUtil implements TokenUtil {
     public static final String ACCESS_TOKEN_INVALID = "InvalidAccessToken";
     public static final String ID_LIST = "idList";
 
+    public static final String REQUIRED_ACCESSMODE = "required";
+    public static final String RESTRICTED_ACCESSMODE = "restricted";
+    public static final String UNRESTRICTED_ACCESSMODE = "unrestricted";
 
     @Inject
     protected AuthDao authDao;
@@ -223,12 +227,18 @@ public abstract class AbstractTokenUtil implements TokenUtil {
     @Override
     public boolean isAllowed(List<String> idList, Set<Identity> identities) {
         switch (accessMode()) {
-            case "restricted":
+            case REQUIRED_ACCESSMODE:
                 if (isWhitelisted(idList)) {
                     break;
                 }
                 throw new ClientVisibleException(ResponseCodes.UNAUTHORIZED);
-            case "unrestricted":
+            case RESTRICTED_ACCESSMODE:
+                boolean hasAccessToAProject = authDao.hasAccessToAnyProject(identities, false, null);
+                if (hasAccessToAProject || isWhitelisted(idList)) {
+                    break;
+                }
+                throw new ClientVisibleException(ResponseCodes.UNAUTHORIZED);
+            case UNRESTRICTED_ACCESSMODE:
                 break;
             default:
                 throw new ClientVisibleException(ResponseCodes.UNAUTHORIZED);
@@ -355,4 +365,17 @@ public abstract class AbstractTokenUtil implements TokenUtil {
         return StringUtils.isNotBlank(SecurityConstants.AUTH_PROVIDER.get())
                 && getName().equalsIgnoreCase(SecurityConstants.AUTH_PROVIDER.get());
     }
+
+    public static boolean isRestrictedAccess(String accessMode){
+        return RESTRICTED_ACCESSMODE.equalsIgnoreCase(accessMode);
+    }
+
+    public static boolean isRequiredAccess(String accessMode){
+        return REQUIRED_ACCESSMODE.equalsIgnoreCase(accessMode);
+    }
+
+    public static boolean isUnrestrictedAccess(String accessMode){
+        return UNRESTRICTED_ACCESSMODE.equalsIgnoreCase(accessMode);
+    }
+
 }

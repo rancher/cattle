@@ -124,8 +124,10 @@ public class ADConfigManager extends AbstractNoOpResourceManager {
             groupNameField = (String)config.get(ADConstants.CONFIG_GROUP_NAME_FIELD);
         }
         List<Identity> identities = currentConfig.getAllowedIdentities();
-        if (config.get(ADConstants.CONFIG_ALLOWED_IDENTITIES) != null && (String)config.get(AbstractTokenUtil.ACCESSMODE) != null 
-                && "restricted".equalsIgnoreCase((String)config.get(AbstractTokenUtil.ACCESSMODE))){
+
+        String accessModeInConfig = (String)config.get(AbstractTokenUtil.ACCESSMODE);
+        if (config.get(ADConstants.CONFIG_ALLOWED_IDENTITIES) != null && accessModeInConfig != null 
+                && (AbstractTokenUtil.isRestrictedAccess(accessModeInConfig) || AbstractTokenUtil.isRequiredAccess(accessModeInConfig))) {
             identities = adIdentityProvider.getIdentities((List<Map<String, String>>) config.get(ADConstants.CONFIG_ALLOWED_IDENTITIES));
         }
         return new ADConfig(server, port, userEnabledMaskBit, loginDomain, domain, enabled, accessMode,
@@ -192,11 +194,12 @@ public class ADConfigManager extends AbstractNoOpResourceManager {
             settingsUtils.changeSetting(SecurityConstants.AUTH_PROVIDER_SETTING, SecurityConstants.NO_PROVIDER);
         }
 
-        if ("restricted".equalsIgnoreCase((String)config.get(AbstractTokenUtil.ACCESSMODE))) {
+        String accessModeInConfig = (String)config.get(AbstractTokenUtil.ACCESSMODE);
+        if (AbstractTokenUtil.isRestrictedAccess(accessModeInConfig) || AbstractTokenUtil.isRequiredAccess(accessModeInConfig)) {
             //validate the allowedIdentities
             String ids = adIdentityProvider.validateIdentities((List<Map<String, String>>) config.get(ADConstants.CONFIG_ALLOWED_IDENTITIES));
             settingsUtils.changeSetting(ADConstants.ALLOWED_IDENTITIES_SETTING, ids);
-        } else if ("unrestricted".equalsIgnoreCase((String)config.get(AbstractTokenUtil.ACCESSMODE))) {
+        } else if (AbstractTokenUtil.isUnrestrictedAccess(accessModeInConfig)) {
             //clear out the allowedIdentities Set
             settingsUtils.changeSetting(ADConstants.ALLOWED_IDENTITIES_SETTING, null);
         }
