@@ -6,7 +6,8 @@
       "default" : "unrestricted",
       "options" : [
         "restricted",
-        "unrestricted"
+        "unrestricted",
+        "required"
       ]
     },
     "allowedIdentities": {

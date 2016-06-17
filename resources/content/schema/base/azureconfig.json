@@ -2,7 +2,7 @@
     "resourceFields": {
         "accessMode": {
             "type" : "enum",
-            "options" : [ "unrestricted", "restricted" ]
+            "options" : [ "unrestricted", "restricted", "required" ]
         }
     }
 }
