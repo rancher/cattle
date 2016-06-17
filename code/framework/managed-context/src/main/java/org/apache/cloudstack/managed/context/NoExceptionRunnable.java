@@ -15,7 +15,7 @@ public abstract class NoExceptionRunnable extends ManagedContextRunnable {
             doRun();
         } catch (Throwable t) {
             if (t instanceof LoggableException) {
-                ((LoggableException) t).log();
+                ((LoggableException) t).log(log);
             } else {
                 log.error("Uncaught exception", t);
             }

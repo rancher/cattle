@@ -1,9 +1,13 @@
 package io.cattle.platform.engine.process.impl;
 
 import io.cattle.platform.engine.process.ExitReason;
+import io.cattle.platform.engine.process.ProcessResult;
+import io.cattle.platform.util.exception.LoggableException;
 
-public class ProcessExecutionExitException extends RuntimeException {
+import org.apache.commons.lang.StringUtils;
+import org.slf4j.Logger;
 
+public class ProcessExecutionExitException extends RuntimeException implements LoggableException {
     private static final long serialVersionUID = 1L;
 
     ExitReason exitReason;
@@ -27,6 +31,24 @@ public class ProcessExecutionExitException extends RuntimeException {
 
     public ExitReason getExitReason() {
         return exitReason;
+    }
+
+    @Override
+    public void log(Logger log) {
+        if (this.getExitReason() != null && this.getExitReason().getResult() == ProcessResult.SUCCESS) {
+            return;
+        } else if (this.getExitReason().isRethrow()) {
+            if (this.getExitReason().isError()) {
+                log.error("Exiting with code [{}] : {} : [{}]", this.getExitReason(), this.getCause().getClass().getSimpleName(), this.getCause().getMessage());
+            } else {
+                log.debug("Exiting with code [{}] : {} : [{}]", this.getExitReason(), this.getCause().getClass().getSimpleName(), this.getCause().getMessage());
+            }
+        } else if (this.getExitReason().isError()) {
+            log.error("Exiting with code [{}] : {}", this.getExitReason(), this.getMessage(), this.getCause());
+        } else {
+            log.debug("Exiting with code [{}] : {}", this.getExitReason(), this.getMessage(),
+                    this.getCause() != null ? this.getCause().getMessage() : StringUtils.EMPTY);
+        }
     }
 
 }
