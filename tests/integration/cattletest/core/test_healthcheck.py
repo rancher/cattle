@@ -27,8 +27,130 @@ def _get_agent_client(agent):
 
 
 def test_upgrade_with_health(client, context, super_client):
-    upgrade_with_health(client, context, super_client)
-    upgrade_with_health(client, context, super_client, True)
+    env = client.create_environment(name='env-' + random_str())
+
+    image_uuid = context.image_uuid
+    launch_config = {"imageUuid": image_uuid}
+
+    svc = client.create_service(name=random_str(),
+                                environmentId=env.id,
+                                launchConfig=launch_config,
+                                scale=1)
+    svc = client.wait_success(svc)
+    assert svc.state == "inactive"
+
+    env.activateservices()
+    svc = client.wait_success(svc, 120)
+    assert svc.state == "active"
+
+    # upgrade the service and
+    # check that c3 and c2 got the same ip
+    new_launch_config = {"imageUuid": image_uuid,
+                         'healthCheck': {
+                             'port': 80,
+                         }}
+    strategy = {"launchConfig": new_launch_config,
+                "intervalMillis": 100}
+    svc.upgrade_action(inServiceStrategy=strategy)
+
+    def wait_for_map_count(service):
+        m = super_client. \
+            list_serviceExposeMap(serviceId=service.id, state='active')
+        return len(m) == 2
+
+    def wait_for_managed_map_count(service):
+        m = super_client. \
+            list_serviceExposeMap(serviceId=service.id, state='active',
+                                  managed=True)
+        return len(m) == 1
+
+    wait_for_condition(client, svc, wait_for_map_count)
+    wait_for_condition(client, svc, wait_for_managed_map_count)
+
+    m = super_client. \
+        list_serviceExposeMap(serviceId=svc.id, state='active', managed=True)
+
+    c = super_client.reload(m[0].instance())
+
+    wait_for(lambda: super_client.reload(c).state == 'running')
+
+    c = super_client.reload(m[0].instance())
+
+    hci = find_one(c.healthcheckInstances)
+    hcihm = find_one(hci.healthcheckInstanceHostMaps)
+    agent = _get_agent_for_container(c)
+
+    assert hcihm.healthState == 'initializing'
+    assert c.healthState == 'initializing'
+
+    _update_healthy(agent, hcihm, c, super_client)
+
+    wait_for(lambda: super_client.reload(svc).healthState == 'healthy')
+    wait_for(lambda: super_client.reload(svc).state == 'upgraded')
+
+
+def test_upgrade_with_health_start_first(client, context, super_client):
+    env = client.create_environment(name='env-' + random_str())
+
+    image_uuid = context.image_uuid
+    launch_config = {"imageUuid": image_uuid}
+
+    svc = client.create_service(name=random_str(),
+                                environmentId=env.id,
+                                launchConfig=launch_config,
+                                scale=1)
+    svc = client.wait_success(svc)
+    assert svc.state == "inactive"
+
+    env.activateservices()
+    svc = client.wait_success(svc, 120)
+    assert svc.state == "active"
+
+    # upgrade the service and
+    # check that c3 and c2 got the same ip
+    new_launch_config = {"imageUuid": image_uuid,
+                         'healthCheck': {
+                             'port': 80,
+                         }}
+    strategy = {"launchConfig": new_launch_config,
+                "intervalMillis": 100,
+                "startFirst": True}
+    svc.upgrade_action(inServiceStrategy=strategy)
+
+    def wait_for_map_count(service):
+        m = super_client. \
+            list_serviceExposeMap(serviceId=service.id, state='active')
+        return len(m) == 2
+
+    def wait_for_managed_map_count(service):
+        m = super_client. \
+            list_serviceExposeMap(serviceId=service.id, state='active',
+                                  managed=True)
+        return len(m) == 1
+
+    wait_for_condition(client, svc, wait_for_map_count)
+    wait_for_condition(client, svc, wait_for_managed_map_count)
+
+    m = super_client. \
+        list_serviceExposeMap(serviceId=svc.id, state='active', managed=True)
+
+    c = super_client.reload(m[0].instance())
+
+    wait_for(lambda: super_client.reload(c).state == 'running')
+
+    c = super_client.reload(m[0].instance())
+
+    hci = find_one(c.healthcheckInstances)
+    hcihm = find_one(hci.healthcheckInstanceHostMaps)
+    agent = _get_agent_for_container(c)
+
+    assert hcihm.healthState == 'initializing'
+    assert c.healthState == 'initializing'
+
+    _update_healthy(agent, hcihm, c, super_client)
+
+    wait_for(lambda: super_client.reload(svc).healthState == 'healthy')
+    wait_for(lambda: super_client.reload(svc).state == 'upgraded')
 
 
 def test_health_check_create_instance(super_client, context):
@@ -1227,67 +1349,3 @@ def test_stack_health_state(super_client, context, client):
     wait_for(lambda: super_client.reload(svc).state == 'removed')
     time.sleep(3)
     wait_for(lambda: super_client.reload(env).healthState == 'healthy')
-
-
-def upgrade_with_health(client, context, super_client, start_first=False):
-    env = client.create_environment(name='env-' + random_str())
-
-    image_uuid = context.image_uuid
-    launch_config = {"imageUuid": image_uuid}
-
-    svc = client.create_service(name=random_str(),
-                                environmentId=env.id,
-                                launchConfig=launch_config,
-                                scale=1)
-    svc = client.wait_success(svc)
-    assert svc.state == "inactive"
-
-    env.activateservices()
-    svc = client.wait_success(svc, 120)
-    assert svc.state == "active"
-
-    # upgrade the service and
-    # check that c3 and c2 got the same ip
-    new_launch_config = {"imageUuid": image_uuid,
-                         'healthCheck': {
-                             'port': 80,
-                         }}
-    strategy = {"launchConfig": new_launch_config,
-                "intervalMillis": 100,
-                "startFirst": start_first}
-    svc.upgrade_action(inServiceStrategy=strategy)
-
-    def wait_for_map_count(service):
-        m = super_client. \
-            list_serviceExposeMap(serviceId=service.id, state='active')
-        return len(m) == 2
-
-    def wait_for_managed_map_count(service):
-        m = super_client. \
-            list_serviceExposeMap(serviceId=service.id, state='active',
-                                  managed=True)
-        return len(m) == 1
-
-    wait_for_condition(client, svc, wait_for_map_count)
-    wait_for_condition(client, svc, wait_for_managed_map_count)
-
-    m = super_client. \
-        list_serviceExposeMap(serviceId=svc.id, state='active', managed=True)
-
-    c = super_client.reload(m[0].instance())
-
-    wait_for(lambda: super_client.reload(c).state == 'running')
-
-    c = super_client.reload(m[0].instance())
-
-    hci = find_one(c.healthcheckInstances)
-    hcihm = find_one(hci.healthcheckInstanceHostMaps)
-    agent = _get_agent_for_container(c)
-
-    assert hcihm.healthState == 'initializing'
-    assert c.healthState == 'initializing'
-
-    _update_healthy(agent, hcihm, c, super_client)
-
-    wait_for(lambda: super_client.reload(svc).healthState == 'healthy')
-    wait_for(lambda: super_client.reload(svc).state == 'upgraded')
