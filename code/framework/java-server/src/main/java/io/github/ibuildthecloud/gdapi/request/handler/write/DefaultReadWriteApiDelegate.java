@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.util.List;
 
 import javax.inject.Inject;
+import javax.servlet.ServletException;
 
 public class DefaultReadWriteApiDelegate implements ReadWriteApiDelegate {
 
@@ -35,6 +36,16 @@ public class DefaultReadWriteApiDelegate implements ReadWriteApiDelegate {
     @Inject
     public void setHandlers(List<ApiRequestHandler> handlers) {
         this.handlers = handlers;
+    }
+
+    @Override
+    public boolean handleException(ApiRequest request, Throwable e) throws IOException, ServletException {
+        for (ApiRequestHandler handler : handlers) {
+            if (handler.handleException(request, e)) {
+                return true;
+            }
+        }
+        return false;
     }
 
 }
