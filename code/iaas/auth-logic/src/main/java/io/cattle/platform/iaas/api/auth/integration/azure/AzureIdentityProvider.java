@@ -69,7 +69,7 @@ public class AzureIdentityProvider extends AzureConfigurable implements Identity
 
     @Override
     public Set<Identity> getIdentities(Account account) {
-        if (!isConfigured() || !AzureConstants.CONFIG.equalsIgnoreCase(SecurityConstants.AUTH_PROVIDER.get()) ||
+        if (!isConfigured() ||
                 !AzureConstants.USER_SCOPE.equalsIgnoreCase(account.getExternalIdType())) {
             return new HashSet<>();
         }
@@ -114,7 +114,7 @@ public class AzureIdentityProvider extends AzureConfigurable implements Identity
     private List<Identity> searchGroups(String groupName, boolean exactMatch) {
         List<Identity> identities = new ArrayList<>();
 
-        AzureUserInfo group;
+        AzureAccountInfo group;
         try {
             group =  azureClient.getAzureGroupByName(groupName);
             if (group == null){
@@ -132,7 +132,7 @@ public class AzureIdentityProvider extends AzureConfigurable implements Identity
     private List<Identity> searchUsers(String userName, boolean exactMatch) {
         List<Identity> identities = new ArrayList<>();
 
-        AzureUserInfo user;
+        AzureAccountInfo user;
         try {
             user =  azureClient.getAzureUserByName(userName);
         } catch (ClientVisibleException e) {
@@ -154,10 +154,10 @@ public class AzureIdentityProvider extends AzureConfigurable implements Identity
         }
         switch (scope) {
             case AzureConstants.USER_SCOPE:
-                AzureUserInfo user = azureClient.getUserById(id);
+                AzureAccountInfo user = azureClient.getUserById(id);
                 return user.toIdentity(AzureConstants.USER_SCOPE);
             case AzureConstants.GROUP_SCOPE:
-                AzureUserInfo org = azureClient.getGroupById(id);
+                AzureAccountInfo org = azureClient.getGroupById(id);
                 return org.toIdentity(AzureConstants.GROUP_SCOPE);
             default:
                 throw new ClientVisibleException(ResponseCodes.BAD_REQUEST,

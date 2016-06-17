@@ -2,14 +2,14 @@ package io.cattle.platform.iaas.api.auth.integration.azure;
 
 import io.cattle.platform.api.auth.Identity;
 
-public class AzureUserInfo {
+public class AzureAccountInfo {
     private final String objectId;
     private final String accountName;    
     private final String userPrincipalName;
     private final String thumbNail;
     private final String displayName;
 
-    public AzureUserInfo(String objectId, String accountName, String thumbNail, String userPrincipalName, String displayName) {
+    public AzureAccountInfo(String objectId, String accountName, String thumbNail, String userPrincipalName, String displayName) {
         this.objectId = objectId;
         this.accountName = accountName;
         this.thumbNail = thumbNail;
