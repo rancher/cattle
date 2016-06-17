@@ -87,7 +87,7 @@ public class AzureRESTClient extends AzureConfigurable{
             
             int statusCode = response.getStatusLine().getStatusCode();
             if (statusCode >= 300) {
-                noAzure(statusCode);
+                noAzure(response);
             }
 
             Map<String, Object> jsonData = CollectionUtils.toMap(jsonMapper.readValue(response.getEntity().getContent(), Map.class));
