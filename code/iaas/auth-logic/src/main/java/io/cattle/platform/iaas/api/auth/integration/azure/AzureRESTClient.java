@@ -51,7 +51,7 @@ public class AzureRESTClient extends AzureConfigurable{
             
             int statusCode = response.getStatusLine().getStatusCode();
             if (statusCode >= 300) {
-                noAzure(statusCode);
+                noAzure(response);
             }
             
             Map<String, Object> jsonData = jsonMapper.readValue(response.getEntity().getContent());
@@ -98,15 +98,8 @@ public class AzureRESTClient extends AzureConfigurable{
                     .addHeader(AzureConstants.ACCEPT, AzureConstants.APPLICATION_FORM_URL_ENCODED)
                     .bodyString(body.toString(), ContentType.APPLICATION_FORM_URLENCODED).execute().returnResponse();
             int statusCode = response.getStatusLine().getStatusCode();
-            
-            if(statusCode == 400) {
-                if(isUnAuthorizedError(response)) {
-                    throw new ClientVisibleException(ResponseCodes.UNAUTHORIZED);
-                }
-            }
-
             if(statusCode >= 300) {
-                noAzure(statusCode);
+                noAzure(response);
             }
 
             Map<String, Object> jsonData = jsonMapper.readValue(response.getEntity().getContent());
@@ -151,7 +144,7 @@ public class AzureRESTClient extends AzureConfigurable{
                     .execute().returnResponse();
             int statusCode = response.getStatusLine().getStatusCode();
             if(statusCode >= 300) {
-                noAzure(statusCode);
+                noAzure(response);
             }
             
             Map<String, Object> jsonData = jsonMapper.readValue(response.getEntity().getContent());
@@ -208,21 +201,6 @@ public class AzureRESTClient extends AzureConfigurable{
         return false;
     }
 
-    public boolean isUnAuthorizedError(HttpResponse response) throws IOException {
-        int statusCode = response.getStatusLine().getStatusCode();
-        if(statusCode == 400) {
-            Map<String, Object> jsonData = jsonMapper.readValue(response.getEntity().getContent());
-            String azureError = (String)jsonData.get("error");
-            String azureErrorDesc = (String)jsonData.get("error_description");
-            if("invalid_grant".equalsIgnoreCase(azureError)) {
-                if(azureErrorDesc != null && azureErrorDesc.contains("AADSTS50126")) {
-                    return true;
-                }
-            }
-         }
-        return false;
-    }
-
     public HttpResponse getFromAzure(String azureAccessToken, String url) throws IOException {
 
         HttpResponse response = Request.Get(url).addHeader(AzureConstants.AUTHORIZATION, "Bearer " +
@@ -243,11 +221,24 @@ public class AzureRESTClient extends AzureConfigurable{
                 "AzureRefreshToken", "No Azure Refresh token", null);
     }
     
-    public void noAzure(Integer statusCode) {
-        throw new ClientVisibleException(ResponseCodes.SERVICE_UNAVAILABLE, AzureConstants.AZURE_ERROR,
-                "Non-200 Response from Azure", "Status code from Azure: " + Integer.toString(statusCode));
-    }    
-    
+    public void noAzure(HttpResponse response) {
+        int statusCode = response.getStatusLine().getStatusCode();
+
+        try {
+            Map<String, Object> jsonData = jsonMapper.readValue(response.getEntity().getContent());
+            String azureError = (String)jsonData.get("error");
+            String azureErrorDesc = (String)jsonData.get("error_description");
+            if("invalid_grant".equalsIgnoreCase(azureError) || "unauthorized_client".equalsIgnoreCase(azureError)) {
+                throw new ClientVisibleException(ResponseCodes.UNAUTHORIZED);
+            }
+            throw new ClientVisibleException(ResponseCodes.SERVICE_UNAVAILABLE, AzureConstants.AZURE_ERROR,
+                    "Error from Azure: " + Integer.toString(statusCode), "Details: " +azureError + ", Description: "+azureErrorDesc);
+        }catch(Exception ex) {
+            throw new ClientVisibleException(ResponseCodes.SERVICE_UNAVAILABLE, AzureConstants.AZURE_ERROR,
+                    "Error Response from Azure", "Status code from Azure: " + Integer.toString(statusCode));
+        } 
+    }
+
     public String getURL(AzureClientEndpoints val, String objectId) {
         String apiEndpoint = AzureConstants.GRAPH_API_ENDPOINT;
         String tenantId = AzureConstants.AZURE_TENANT_ID.get();
@@ -306,7 +297,7 @@ public class AzureRESTClient extends AzureConfigurable{
             
             int statusCode = response.getStatusLine().getStatusCode();
             if (statusCode >= 300) {
-                noAzure(statusCode);
+                noAzure(response);
             }
 
             
@@ -346,7 +337,7 @@ public class AzureRESTClient extends AzureConfigurable{
             
             int statusCode = response.getStatusLine().getStatusCode();
             if (statusCode >= 300) {
-                noAzure(statusCode);
+                noAzure(response);
             }  
 
             Map<String, Object> jsonData = CollectionUtils.toMap(jsonMapper.readValue(response.getEntity().getContent
@@ -377,7 +368,7 @@ public class AzureRESTClient extends AzureConfigurable{
             
             int statusCode = response.getStatusLine().getStatusCode();
             if (statusCode >= 300) {
-                noAzure(statusCode);
+                noAzure(response);
             }  
 
             Map<String, Object> jsonData = CollectionUtils.toMap(jsonMapper.readValue(response.getEntity().getContent(), Map.class));
@@ -405,7 +396,7 @@ public class AzureRESTClient extends AzureConfigurable{
              
              int statusCode = response.getStatusLine().getStatusCode();
              if (statusCode >= 300) {
-                 noAzure(statusCode);
+                 noAzure(response);
              } 
              Map<String, Object> jsonData = CollectionUtils.toMap(jsonMapper.readValue(response.getEntity().getContent(), Map.class));
              return jsonToAzureUserInfo(jsonData);
