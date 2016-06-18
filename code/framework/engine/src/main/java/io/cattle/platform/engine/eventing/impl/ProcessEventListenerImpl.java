@@ -94,7 +94,7 @@ public class ProcessEventListenerImpl implements ProcessEventListener {
         } catch (Throwable e) {
             EXCEPTION.inc();
             if (e instanceof LoggableException) {
-                ((LoggableException) e).log();
+                ((LoggableException) e).log(log);
             } else {
                 log.error("Unknown exception running process [{}:{}] on [{}]",
                         instance == null ? null : instance.getName(), processId,

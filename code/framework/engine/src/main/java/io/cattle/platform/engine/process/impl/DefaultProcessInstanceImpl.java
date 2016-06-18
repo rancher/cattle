@@ -51,7 +51,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Stack;
 
-import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -194,21 +193,7 @@ public class DefaultProcessInstanceImpl implements ProcessInstance {
                     execution.exit(DELEGATE);
                 }
             } catch (ProcessExecutionExitException e) {
-                if (e.getExitReason() != null && e.getExitReason().getResult() == ProcessResult.SUCCESS) {
-                    throw e;
-                } else if (e.getExitReason().isRethrow()) {
-                    if (e.getExitReason().isError()) {
-                        log.error("Exiting with code [{}] : {} : [{}]", e.getExitReason(), e.getCause().getClass().getSimpleName(), e.getCause().getMessage());
-                    } else {
-                        log.debug("Exiting with code [{}] : {} : [{}]", e.getExitReason(), e.getCause().getClass().getSimpleName(), e.getCause().getMessage());
-                    }
-                } else if (e.getExitReason().isError()) {
-                    log.error("Exiting with code [{}] : {}", e.getExitReason(), e.getMessage(), e.getCause());
-                } else {
-                    log.debug("Exiting with code [{}] : {}", e.getExitReason(), e.getMessage(),
-                            e.getCause() != null ? e.getCause().getMessage() : StringUtils.EMPTY);
-                }
-
+                e.log(log);
                 throw e;
             } catch (IdempotentRetryException e) {
                 execution.setException(new ExceptionLog(e));
@@ -218,7 +203,7 @@ public class DefaultProcessInstanceImpl implements ProcessInstance {
             } catch (Throwable t) {
                 execution.setException(new ExceptionLog(t));
                 if (t instanceof LoggableException) {
-                    ((LoggableException) t).log();
+                    ((LoggableException) t).log(log);
                 } else {
                     log.error("Unknown exception", t);
                 }

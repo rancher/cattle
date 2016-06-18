@@ -1,10 +1,8 @@
 package io.cattle.platform.util.exception;
 
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class ServiceReconcileException extends IllegalStateException implements LoggableException {
-    private static final Logger log = LoggerFactory.getLogger(ServiceReconcileException.class);
 
     private static final long serialVersionUID = 3938340725641990348L;
 
@@ -15,7 +13,7 @@ public class ServiceReconcileException extends IllegalStateException implements 
 
 
     @Override
-    public void log() {
+    public void log(Logger log) {
         log.info(this.getMessage());
     }
 }
