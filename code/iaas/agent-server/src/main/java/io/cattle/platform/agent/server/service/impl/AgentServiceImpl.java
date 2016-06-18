@@ -11,7 +11,6 @@ import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.model.Agent;
 import io.cattle.platform.eventing.EventProgress;
 import io.cattle.platform.eventing.EventService;
-import io.cattle.platform.eventing.exception.AgentInactiveException;
 import io.cattle.platform.eventing.exception.AgentRemovedException;
 import io.cattle.platform.eventing.exception.EventExecutionException;
 import io.cattle.platform.eventing.model.Event;
@@ -73,10 +72,6 @@ public class AgentServiceImpl implements AgentService {
             if (REMOVED_AGENT_STATES.contains(agent.getState())) {
                 handleError(event, EventVO.replyWithException(agentEvent, AgentRemovedException.class,
                         "Agent is removed"));
-            }
-            if (INACTIVE_AGENT_STATES.contains(agent.getState())) {
-                handleError(event, EventVO.replyWithException(agentEvent, AgentInactiveException.class,
-                        "Agent is inactive"));
             }
 
             if (!GOOD_AGENT_STATES.contains(agent.getState())) {
