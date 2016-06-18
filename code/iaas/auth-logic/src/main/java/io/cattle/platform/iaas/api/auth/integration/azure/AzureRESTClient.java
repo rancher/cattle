@@ -293,7 +293,10 @@ public class AzureRESTClient extends AzureConfigurable{
             }
             throw new ClientVisibleException(ResponseCodes.SERVICE_UNAVAILABLE, AzureConstants.AZURE_ERROR,
                     "Error from Azure: " + Integer.toString(statusCode), "Details: " +azureError + ", Description: "+azureErrorDesc);
-        }catch(Exception ex) {
+        } catch(ClientVisibleException ex) {
+            logger.error("Got error from Azure.", ex);
+            throw ex;
+        } catch(Exception ex) {
             throw new ClientVisibleException(ResponseCodes.SERVICE_UNAVAILABLE, AzureConstants.AZURE_ERROR,
                     "Error Response from Azure", "Status code from Azure: " + Integer.toString(statusCode));
         } 
