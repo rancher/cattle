@@ -87,9 +87,14 @@ public class InstancePreCreate extends AbstractObjectProcessLogic implements Pro
                         .as(String.class);
                 if (DockerNetworkConstants.NETWORK_MODE_MANAGED.equals(networkMode)) {
                     List<String> dns = DataAccessor.fieldStringList(instance, DockerInstanceConstants.FIELD_DNS);
-                    dns.add(NetworkConstants.INTERNAL_DNS_IP);
-                    data.put(DockerInstanceConstants.FIELD_DNS, dns);
-                    data.put(InstanceConstants.FIELD_DNS_INTERNAL, Joiner.on(",").join(dns));
+                    if (!dns.contains(NetworkConstants.INTERNAL_DNS_IP)) {
+                        dns.add(NetworkConstants.INTERNAL_DNS_IP);
+                        data.put(DockerInstanceConstants.FIELD_DNS, dns);
+                    }
+                    String dnsInternal = DataAccessor.fieldString(instance, InstanceConstants.FIELD_DNS_INTERNAL);
+                    if (StringUtils.isEmpty(dnsInternal)) {
+                        data.put(InstanceConstants.FIELD_DNS_INTERNAL, Joiner.on(",").join(dns));
+                    }
                 }
                 List<String> dnsSearch = DataAccessor.fieldStringList(instance,
                         DockerInstanceConstants.FIELD_DNS_SEARCH);
