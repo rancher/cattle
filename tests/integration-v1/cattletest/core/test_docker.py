@@ -923,7 +923,7 @@ def test_service_link_emu_docker_link(super_client, docker_client):
     assert link.ports[0].protocol == 'tcp'
     assert link.ports[0].ipAddress is not None
     assert link.targetInstanceId == target_instance.id
-    assert link.instanceNames == ['{}_server_1'.format(env_name)]
+    assert link.instanceNames == ['{}-server-1'.format(env_name)]
 
     docker_client.delete(env)
 

@@ -340,7 +340,7 @@ def test_simultaneous_port_allocation(new_context):
 
 
 def _wait_for_compose_instance_error(client, service, env):
-    name = env.name + "_" + service.name + "%"
+    name = env.name + "-" + service.name + "%"
     wait_for(
         lambda: len(client.list_container(name_like=name, state='error')) > 0
     )

@@ -573,7 +573,7 @@ def _validate_launch_config(super_client, launchConfig, svc):
 def _get_upgraded_instances(super_client, launchConfig, svc):
     c_name = svc.name
     if hasattr(launchConfig, 'name'):
-        c_name = svc.name + "_" + launchConfig.name
+        c_name = svc.name + "-" + launchConfig.name
     match = []
     instances = super_client. \
         list_container(state='running',
@@ -1122,9 +1122,9 @@ def _wait_until_active_map_count(service, count, client):
 
 def _validate_compose_instance_start(client, service, env,
                                      number, launch_config_name=None):
-    cn = launch_config_name + "_" if \
+    cn = launch_config_name + "-" if \
         launch_config_name is not None else ""
-    name = env.name + "_" + service.name + "_" + cn + number
+    name = env.name + "-" + service.name + "-" + cn + number
 
     def wait_for_map_count(service):
         instances = client. \

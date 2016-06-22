@@ -215,7 +215,7 @@ def test_restart_stack(client, context):
 
 def _validate_instance_stopped(service, client, env):
     instances = client. \
-        list_container(name=env.name + "_" + service.name + "_" + "1")
+        list_container(name=env.name + "-" + service.name + "-" + "1")
     assert len(instances) == 1
     instance = instances[0]
     wait_for_condition(
@@ -499,7 +499,7 @@ def test_inactive_lb(super_client, client, context):
     web_service = client.wait_success(web_service.activate(), 120)
     assert web_service.state == "active"
     web_instances = client. \
-        list_container(name=env.name + "_" + web_service.name + "_" + "1")
+        list_container(name=env.name + "-" + web_service.name + "-" + "1")
     assert len(web_instances) == 1
 
     # create lb service, but don't activate
@@ -1159,7 +1159,7 @@ def test_bind_to_ip(super_client, context, client, image_uuid):
 
     svc = client.wait_success(svc.activate(), 120)
     instances = client. \
-        list_container(name=env.name + "_" + svc.name + "_" + "1")
+        list_container(name=env.name + "-" + svc.name + "-" + "1")
     assert len(instances) == 1
     c = instances[0]
     assert c.ports == ['127.2.2.2:%s:%s/tcp' % (port0, port0)]
