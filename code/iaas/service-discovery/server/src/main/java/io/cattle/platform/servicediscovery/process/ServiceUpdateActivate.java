@@ -9,6 +9,7 @@ import io.cattle.platform.engine.process.ProcessInstance;
 import io.cattle.platform.engine.process.ProcessState;
 import io.cattle.platform.iaas.api.auditing.AuditEventType;
 import io.cattle.platform.iaas.api.auditing.AuditService;
+import io.cattle.platform.lock.exception.FailedToAcquireLockException;
 import io.cattle.platform.object.meta.ObjectMetaDataManager;
 import io.cattle.platform.object.resource.ResourceMonitor;
 import io.cattle.platform.object.resource.ResourcePredicate;
@@ -78,6 +79,8 @@ public class ServiceUpdateActivate extends AbstractObjectProcessHandler {
             deploymentMgr.activate(service);
         } catch (TimeoutException ex) {
             error = obfuscateId(ex);
+            throw ex;
+        } catch (FailedToAcquireLockException ex) {
             throw ex;
         } catch (Exception ex) {
             error = ex.getMessage();
