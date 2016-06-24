@@ -304,7 +304,7 @@ public class DefaultProcessInstanceImpl implements ProcessInstance {
 
             runLogic();
 
-            boolean chain = setDone();
+            boolean chain = setDone(previousState);
 
             success = true;
 
@@ -358,17 +358,14 @@ public class DefaultProcessInstanceImpl implements ProcessInstance {
 
     protected boolean runHandlers(ProcessPhase phase, List<? extends ProcessLogic> handlers) {
         boolean shouldDelegate = false;
-        boolean ran = false;
         final ProcessDefinition processDefinition = instanceContext.getProcessDefinition();
         final ProcessState state = instanceContext.getState();
-        final String previousState = state.getState();
         ProcessPhase currentPhase = instanceContext.getPhase();
 
         if (instanceContext.getPhase().ordinal() < phase.ordinal()) {
             final EngineContext context = EngineContext.getEngineContext();
 
             for (final ProcessLogic handler : handlers) {
-                ran = true;
                 HandlerResult result = Idempotent.execute(new IdempotentExecution<HandlerResult>() {
                     @Override
                     public HandlerResult execute() {
@@ -402,10 +399,6 @@ public class DefaultProcessInstanceImpl implements ProcessInstance {
             }
 
             instanceContext.setPhase(phase);
-        }
-
-        if (ran) {
-            assertState(previousState);
         }
 
         return shouldDelegate;
@@ -555,10 +548,10 @@ public class DefaultProcessInstanceImpl implements ProcessInstance {
         }
     }
 
-    protected boolean setDone() {
+    protected boolean setDone(String previousState) {
         boolean chained = false;
         final ProcessState state = instanceContext.getState();
-        String previousState = state.getState();
+        assertState(previousState);
 
         if (chainProcess != null) {
             scheduleChain(chainProcess);
