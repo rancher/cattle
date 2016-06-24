@@ -130,6 +130,8 @@
     <bean class="io.cattle.platform.core.dao.impl.VolumeDaoImpl" />
     <bean class="io.cattle.platform.core.dao.impl.ServiceDaoImpl" />
 
+    <bean class="io.cattle.platform.core.cache.DBCacheManager" />
+
     <tx:advice id="GenericResourceDaoImplAdvice" transaction-manager="CoreTransactionManager">
         <tx:attributes>
             <tx:method name="createAndSchedule" />

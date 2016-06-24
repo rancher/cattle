@@ -50,13 +50,13 @@ public class DataAccessor {
     }
 
     public static Map<String, Object> fieldMap(Object obj, String key) {
-        Object list = fields(obj).withKey(key).get();
+        Object list = fields(obj).withKey(key).getForWrite();
         return CollectionUtils.toMap(list);
     }
 
     public static List<String> fieldStringList(Object obj, String key) {
         List<String> result = new ArrayList<String>();
-        Object list = fields(obj).withKey(key).get();
+        Object list = fields(obj).withKey(key).getForWrite();
 
         if (list == null || !(list instanceof List)) {
             return result;
@@ -75,7 +75,7 @@ public class DataAccessor {
 
     public static List<Long> fieldLongList(Object obj, String key) {
         List<Long> result = new ArrayList<Long>();
-        Object list = fields(obj).withKey(key).get();
+        Object list = fields(obj).withKey(key).getForWrite();
 
         if (list == null || !(list instanceof List)) {
             return result;
@@ -154,6 +154,12 @@ public class DataAccessor {
 
     public Object get() {
         Map<String, Object> map = getTargetMap(false, true);
+        Object result = key == null ? null : map.get(key);
+        return result == null ? defaultValue : result;
+    }
+
+    public Object getForWrite() {
+        Map<String, Object> map = getTargetMap(false, false);
         Object result = key == null ? null : map.get(key);
         return result == null ? defaultValue : result;
     }

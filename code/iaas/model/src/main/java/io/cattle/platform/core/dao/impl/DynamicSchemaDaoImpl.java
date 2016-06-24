@@ -3,22 +3,17 @@ package io.cattle.platform.core.dao.impl;
 import static io.cattle.platform.core.model.tables.DynamicSchemaRoleTable.*;
 import static io.cattle.platform.core.model.tables.DynamicSchemaTable.*;
 
-import io.cattle.platform.core.addon.DynamicSchemaWithRole;
-import io.cattle.platform.core.constants.CommonStatesConstants;
-import io.cattle.platform.core.dao.DynamicSchemaDao;
-import io.cattle.platform.core.model.DynamicSchema;
-import io.cattle.platform.core.model.tables.records.DynamicSchemaRoleRecord;
-import io.cattle.platform.db.jooq.dao.impl.AbstractJooqDao;
-import io.cattle.platform.util.type.CollectionUtils;
-import io.github.ibuildthecloud.gdapi.util.TypeUtils;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
-import org.apache.cloudstack.managed.threadlocal.ManagedThreadLocal;
+import javax.annotation.PostConstruct;
+import javax.inject.Inject;
+
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.Pair;
 import org.jooq.InsertValuesStep2;
 import org.jooq.Record;
 import org.jooq.SelectConditionStep;
@@ -26,18 +21,60 @@ import org.jooq.exception.InvalidResultException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.CacheLoader;
+import com.google.common.cache.LoadingCache;
+
+import io.cattle.platform.core.addon.DynamicSchemaWithRole;
+import io.cattle.platform.core.cache.DBCacheManager;
+import io.cattle.platform.core.constants.CommonStatesConstants;
+import io.cattle.platform.core.dao.DynamicSchemaDao;
+import io.cattle.platform.core.model.DynamicSchema;
+import io.cattle.platform.core.model.tables.records.DynamicSchemaRecord;
+import io.cattle.platform.core.model.tables.records.DynamicSchemaRoleRecord;
+import io.cattle.platform.db.jooq.dao.impl.AbstractJooqDao;
+import io.cattle.platform.util.type.CollectionUtils;
+import io.github.ibuildthecloud.gdapi.util.TypeUtils;
+
 public class DynamicSchemaDaoImpl extends AbstractJooqDao implements DynamicSchemaDao {
 
     private static final Logger log = LoggerFactory.getLogger(DynamicSchemaDaoImpl.class);
-    private static final ManagedThreadLocal<Map<CacheKey,DynamicSchema>> CACHE = new ManagedThreadLocal<Map<CacheKey,DynamicSchema>>() {
-        @Override
-        protected Map<CacheKey, DynamicSchema> initialValue() {
-            return new HashMap<>();
-        }
-    };
+    private static final DynamicSchemaRecord NULL = new DynamicSchemaRecord();
+
+    @Inject
+    DBCacheManager dbCacheManager;
+    LoadingCache<Pair<Long, String>, List<? extends DynamicSchema>> schemasListCache;
+    LoadingCache<CacheKey, DynamicSchema> schemaCache;
+
+    @PostConstruct
+    public void init() {
+        schemasListCache = CacheBuilder.newBuilder()
+                .expireAfterWrite(15, TimeUnit.MINUTES)
+                .build(new CacheLoader<Pair<Long, String>, List<? extends DynamicSchema>>() {
+                    @Override
+                    public List<? extends DynamicSchema> load(Pair<Long, String> key) throws Exception {
+                        return getSchemasFromDb(key.getLeft(), key.getRight());
+                    }
+                });
+        schemaCache = CacheBuilder.newBuilder()
+                .expireAfterWrite(15, TimeUnit.MINUTES)
+                .build(new CacheLoader<CacheKey, DynamicSchema>() {
+                    @Override
+                    public DynamicSchema load(CacheKey key) throws Exception {
+                        return getSchemaInternal(key.name, key.accountId, key.role);
+                    }
+                });
+
+        dbCacheManager.register(schemasListCache);
+        dbCacheManager.register(schemaCache);
+    }
 
     @Override
     public List<? extends DynamicSchema> getSchemas(long accountId, String role) {
+        return schemasListCache.getUnchecked(Pair.of(accountId, role));
+    }
+
+    protected List<? extends DynamicSchema> getSchemasFromDb(long accountId, String role) {
         List<Record> records = schemaQuery(accountId, role)
                 .orderBy(DYNAMIC_SCHEMA.CREATED.asc())
                 .fetch();
@@ -56,23 +93,11 @@ public class DynamicSchemaDaoImpl extends AbstractJooqDao implements DynamicSche
             } catch (InvalidResultException e){
                 log.error("Failed to get a schema record.", e);
             }
-            if (schema != null) {
-                cache(schema.getName(), accountId, role, schema);
+            if (schema != null && schema != NULL) {
                 recordsToReturn.add(schema);
             }
         }
         return recordsToReturn;
-    }
-
-    private DynamicSchema get(String name, long accountId, String role) {
-        return CACHE.get().get(new CacheKey(name, accountId, role));
-    }
-
-    private DynamicSchema cache(String name, long accountId, String role, DynamicSchema schema) {
-        if (schema != null) {
-            CACHE.get().put(new CacheKey(name, accountId, role), schema);
-        }
-        return schema;
     }
 
     private SelectConditionStep<Record> schemaQuery(long accountId, String role) {
@@ -96,29 +121,24 @@ public class DynamicSchemaDaoImpl extends AbstractJooqDao implements DynamicSche
         if (name == null) {
             return null;
         }
-        DynamicSchema schema = get(name, accountId, role);
-        if (schema != null) {
-            return schema;
-        }
-
-        return cache(name, accountId, role, getSchemaInternal(name, accountId, role));
+        DynamicSchema result = schemaCache.getUnchecked(new CacheKey(name, accountId, role));
+        return result == NULL ? null : result;
     }
 
     private DynamicSchema getSchemaInternal(String name, long accountId, String role) {
-
         List<Record> records = schemaQuery(accountId, role)
                 .and(DYNAMIC_SCHEMA.NAME.eq(name))
                 .orderBy(DYNAMIC_SCHEMA.CREATED.asc())
                 .fetch();
 
         if (records.size() == 0 && name != null && name.endsWith("s")) {
-            return getSchema(TypeUtils.guessSingularName(name), accountId, role);
+            return getSchemaInternal(TypeUtils.guessSingularName(name), accountId, role);
         }
 
         if (records.size() == 1) {
             return records.get(0).into(DynamicSchema.class);
         } else if (records.size() == 0) {
-            return null;
+            return NULL;
         } else {
             return pickRecordOnPriority(records, accountId, role);
         }
@@ -149,7 +169,7 @@ public class DynamicSchemaDaoImpl extends AbstractJooqDao implements DynamicSche
                 record = r;
             }
         }
-        return record == null ? null : record.into(DynamicSchema.class);
+        return record == null ? NULL : record.into(DynamicSchema.class);
     }
 
     @SuppressWarnings("unchecked")
@@ -163,7 +183,6 @@ public class DynamicSchemaDaoImpl extends AbstractJooqDao implements DynamicSche
                     insertStart = insertStart.values(dynamicSchema.getId(), role);
         }
         insertStart.execute();
-        CACHE.get().clear();
     }
 
     @Override
@@ -171,7 +190,6 @@ public class DynamicSchemaDaoImpl extends AbstractJooqDao implements DynamicSche
         create().delete(DYNAMIC_SCHEMA_ROLE)
                 .where(DYNAMIC_SCHEMA_ROLE.DYNAMIC_SCHEMA_ID.eq(dynamicSchema.getId()))
                 .execute();
-        CACHE.get().clear();
     }
 
     @Override

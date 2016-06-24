@@ -20,8 +20,18 @@ public class JsonUnmodifiableMap<K, V> implements UnmodifiableMap<K, V> {
     Map<K, V> map;
     JsonMapper jsonMapper;
     String text;
+    boolean writeable;
 
-    public JsonUnmodifiableMap(JsonMapper mapper, String text) throws IOException {
+    protected JsonUnmodifiableMap(JsonUnmodifiableMap<K, V> map) {
+        this.jsonMapper = map.jsonMapper;
+        this.text = map.text;
+        if (map.writeable) {
+            this.map = map.map;
+        }
+        this.writeable = true;
+    }
+
+    public JsonUnmodifiableMap(JsonMapper mapper, String text) {
         this.jsonMapper = mapper;
         this.text = text;
     }
@@ -101,11 +111,20 @@ public class JsonUnmodifiableMap<K, V> implements UnmodifiableMap<K, V> {
         return getMap().toString();
     }
 
+    public void setText(String text) {
+        this.text = text;
+        this.map = null;
+        this.writeable = false;
+    }
+
     @SuppressWarnings("unchecked")
     protected  Map<K, V> getMap() {
         if (this.map == null) {
             try {
-                this.map = (Map<K, V>) Collections.unmodifiableMap(jsonMapper.readValue(text));
+                this.map = (Map<K, V>) jsonMapper.readValue(text);
+                if (!writeable) {
+                    this.map = (Map<K, V>) Collections.unmodifiableMap(this.map);
+                }
             } catch (IOException e) {
                 log.error("Failed to unmarshall {}", text, e);
                 this.map = (Map<K, V>)Collections.unmodifiableMap(new HashMap<>());
@@ -114,13 +133,8 @@ public class JsonUnmodifiableMap<K, V> implements UnmodifiableMap<K, V> {
         return this.map;
     }
 
-    @SuppressWarnings("unchecked")
     @Override
     public Map<K, V> getModifiableCopy() {
-        try {
-            return (Map<K, V>) jsonMapper.readValue(text);
-        } catch (IOException e) {
-            throw new IllegalStateException(e);
-        }
+        return new JsonUnmodifiableMap<K, V>(this);
     }
 }

@@ -15,6 +15,7 @@ public class ObjectExecutionExceptionHandler implements ExecutionExceptionHandle
         for (Object resource : e.getResources()) {
             if (state.getResource() == resource) {
                 Map<String, Object> data = TransitioningUtils.getTransitioningData(e);
+                state.reload();
                 state.applyData(data);
             }
         }

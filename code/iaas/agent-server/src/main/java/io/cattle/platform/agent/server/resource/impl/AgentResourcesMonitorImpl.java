@@ -230,6 +230,7 @@ public class AgentResourcesMonitorImpl implements AgentResourcesEventListener {
                 }
 
                 if (updates.size() > 0) {
+                    objectManager.reload(host);
                     Map<String, Object> updateFields = objectManager.convertToPropertiesFor(host, updates);
                     if (orchestrate) {
                         resourceDao.updateAndSchedule(host, updateFields);

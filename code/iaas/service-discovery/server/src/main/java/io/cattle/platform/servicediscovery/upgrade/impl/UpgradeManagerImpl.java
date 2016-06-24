@@ -16,6 +16,7 @@ import io.cattle.platform.core.model.ServiceExposeMap;
 import io.cattle.platform.engine.process.ExitReason;
 import io.cattle.platform.engine.process.impl.ProcessCancelException;
 import io.cattle.platform.engine.process.impl.ProcessExecutionExitException;
+import io.cattle.platform.json.JsonMapper;
 import io.cattle.platform.lock.LockCallbackNoReturn;
 import io.cattle.platform.lock.LockManager;
 import io.cattle.platform.object.ObjectManager;
@@ -72,6 +73,9 @@ public class UpgradeManagerImpl implements UpgradeManager {
     
     @Inject
     ServiceDiscoveryService serviceDiscoveryService;
+
+    @Inject
+    JsonMapper jsonMapper;
 
     private static final long SLEEP = 1000L;
 
@@ -235,7 +239,7 @@ public class UpgradeManagerImpl implements UpgradeManager {
         List<? extends Instance> instances = exposeMapDao.listServiceManagedInstances(service.getId());
         List<Instance> toRestart = new ArrayList<>();
         ServiceRestart svcRestart = DataAccessor.field(service, ServiceDiscoveryConstants.FIELD_RESTART,
-                ServiceRestart.class);
+                jsonMapper, ServiceRestart.class);
         RollingRestartStrategy strategy = svcRestart.getRollingRestartStrategy();
         Map<Long, Long> instanceToStartCount = strategy.getInstanceToStartCount();
         // compare its start_count with one set on the service restart field
