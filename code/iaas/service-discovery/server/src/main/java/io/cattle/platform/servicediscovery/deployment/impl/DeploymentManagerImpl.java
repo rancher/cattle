@@ -37,6 +37,7 @@ import io.cattle.platform.servicediscovery.deployment.impl.lock.ServicesSidekick
 import io.cattle.platform.servicediscovery.deployment.impl.unit.DeploymentUnit;
 import io.cattle.platform.servicediscovery.deployment.impl.unit.DeploymentUnitInstanceIdGeneratorImpl;
 import io.cattle.platform.servicediscovery.service.ServiceDiscoveryService;
+import io.cattle.platform.util.exception.ServiceInstanceAllocateException;
 import io.cattle.platform.util.exception.ServiceReconcileException;
 import io.github.ibuildthecloud.gdapi.id.IdFormatter;
 
@@ -163,7 +164,7 @@ public class DeploymentManagerImpl implements DeploymentManager {
                 ServiceDiscoveryConstants.FIELD_DESIRED_SCALE_INTERNAL);
         try {
             deploy(service, checkState, services);
-        } catch (Exception ex) {
+        } catch (ServiceInstanceAllocateException ex) {
             reduceScaleAndDeploy(service, checkState, services, policy);
             return false;
         }
@@ -193,7 +194,7 @@ public class DeploymentManagerImpl implements DeploymentManager {
             log.info("Decremented service [{}] scale to [{}] as reconcile has failed", service.getUuid(), desiredScale);
             try {
                 deploy(service, checkState, services);
-            } catch (Exception ex) {
+            } catch (ServiceInstanceAllocateException ex) {
                 if (desiredScale == minScale) {
                     throw ex;
                 }
