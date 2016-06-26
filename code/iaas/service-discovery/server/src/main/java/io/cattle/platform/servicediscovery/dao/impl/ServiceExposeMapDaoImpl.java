@@ -114,7 +114,7 @@ public class ServiceExposeMapDaoImpl extends AbstractJooqDao implements ServiceE
     }
 
     @Override
-    public List<? extends Instance> listServiceInstances(long serviceId) {
+    public Integer getCurrentScale(long serviceId) {
         return create()
                 .select(INSTANCE.fields())
                 .from(INSTANCE)
@@ -123,10 +123,11 @@ public class ServiceExposeMapDaoImpl extends AbstractJooqDao implements ServiceE
                         .and(SERVICE_EXPOSE_MAP.SERVICE_ID.eq(serviceId))
                         .and(SERVICE_EXPOSE_MAP.STATE.in(CommonStatesConstants.ACTIVATING,
                                 CommonStatesConstants.ACTIVE, CommonStatesConstants.REQUESTED))
+                        .and(SERVICE_EXPOSE_MAP.UPGRADE.eq(false))
                         .and(INSTANCE.STATE.notIn(CommonStatesConstants.PURGING, CommonStatesConstants.PURGED,
                                 CommonStatesConstants.REMOVED, CommonStatesConstants.REMOVING,
                                 InstanceConstants.STATE_ERROR, InstanceConstants.STATE_ERRORING)))
-                .fetchInto(InstanceRecord.class);
+                .fetchCount();
     }
 
     @Override

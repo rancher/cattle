@@ -15,7 +15,6 @@ import io.cattle.platform.object.resource.ResourceMonitor;
 import io.cattle.platform.object.resource.ResourcePredicate;
 import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.process.common.handler.AbstractObjectProcessHandler;
-import io.cattle.platform.process.progress.ProcessProgress;
 import io.cattle.platform.servicediscovery.api.constants.ServiceDiscoveryConstants;
 import io.cattle.platform.servicediscovery.api.dao.ServiceExposeMapDao;
 import io.cattle.platform.servicediscovery.deployment.DeploymentManager;
@@ -46,9 +45,6 @@ public class ServiceUpdateActivate extends AbstractObjectProcessHandler {
     ResourceMonitor resourceMonitor;
 
     @Inject
-    ProcessProgress progress;
-
-    @Inject
     IdFormatter idFormatter;
 
     @Inject
@@ -73,13 +69,15 @@ public class ServiceUpdateActivate extends AbstractObjectProcessHandler {
             return null;
         }
 
-        progress.init(state, 50, 50);
-
         String error = "";
         try {
-            progress.checkPoint("Activating consumed services");
             waitForConsumedServicesActivate(state);
-            progress.checkPoint("Reconciling");
+            if (StringUtils.isEmpty(DataAccessor
+                    .fieldString(service, ObjectMetaDataManager.TRANSITIONING_MESSAGE_FIELD))) {
+                objectManager.setFields(objectManager.reload(service),
+                        ObjectMetaDataManager.TRANSITIONING_MESSAGE_FIELD,
+                        "Reconciling");
+            }
             deploymentMgr.activate(service);
         } catch (TimeoutException ex) {
             error = obfuscateId(ex);
@@ -101,9 +99,8 @@ public class ServiceUpdateActivate extends AbstractObjectProcessHandler {
                         null);
             }
         }
-
-        int currentScale = exposeDao.listServiceInstances(service.getId()).size();
-        return new HandlerResult(ServiceDiscoveryConstants.FIELD_CURRENT_SCALE, currentScale);
+        objectManager.reload(state.getResource());
+        return new HandlerResult(ServiceDiscoveryConstants.FIELD_CURRENT_SCALE, exposeDao.getCurrentScale(service.getId()));
     }
 
     protected String obfuscateId(TimeoutException ex) {
