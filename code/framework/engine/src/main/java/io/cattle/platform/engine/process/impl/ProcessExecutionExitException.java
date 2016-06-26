@@ -40,6 +40,8 @@ public class ProcessExecutionExitException extends RuntimeException implements L
         } else if (this.getExitReason().isRethrow()) {
             if (this.getExitReason().isError()) {
                 log.error("Exiting with code [{}] : {} : [{}]", this.getExitReason(), this.getCause().getClass().getSimpleName(), this.getCause().getMessage());
+            } else if (this.getCause() == null) {
+                log.debug("Exiting with code [{}] : {} : [{}]", this.getExitReason(), this.getClass().getSimpleName(), this.getMessage());
             } else {
                 log.debug("Exiting with code [{}] : {} : [{}]", this.getExitReason(), this.getCause().getClass().getSimpleName(), this.getCause().getMessage());
             }
