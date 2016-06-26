@@ -14,6 +14,24 @@
                 "scheduleUpdate" : true
             }
         },
+        "desiredScaleInternal": {
+            "type": "int",
+            "required": false,
+            "nullable": false
+        },
+        "currentScale": {
+            "type": "int",
+            "required": false,
+            "nullable": false
+        },
+        "scalePolicy": {
+            "type": "scalePolicy",
+            "required": false,
+            "nullable": true,
+            "attributes" : {
+                "scheduleUpdate" : true
+            }
+        },
         "name":{
             "required": true,
             "validChars": "a-zA-Z0-9-",

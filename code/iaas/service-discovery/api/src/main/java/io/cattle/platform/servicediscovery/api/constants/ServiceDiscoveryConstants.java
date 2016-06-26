@@ -44,6 +44,9 @@ public class ServiceDiscoveryConstants {
     public static final String STACK_FIELD_RANCHER_COMPOSE = "rancherCompose";
     public static final String STACK_FIELD_START_ON_CREATE = "startOnCreate";
     public static final String FIELD_SET_VIP = "assignServiceIpAddress";
+    public static final String FIELD_SCALE_POLICY = "scalePolicy";
+    public static final String FIELD_DESIRED_SCALE_INTERNAL = "desiredScaleInternal";
+    public static final String FIELD_CURRENT_SCALE = "currentScale";
 
     public static final String ACTION_SERVICE_ACTIVATE = "activate";
     public static final String ACTION_SERVICE_CREATE = "create";

@@ -7,6 +7,7 @@ import static io.cattle.platform.core.model.tables.SubnetTable.*;
 import io.cattle.platform.allocator.service.AllocatorService;
 import io.cattle.platform.core.addon.LoadBalancerServiceLink;
 import io.cattle.platform.core.addon.PublicEndpoint;
+import io.cattle.platform.core.addon.ScalePolicy;
 import io.cattle.platform.core.addon.ServiceLink;
 import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.HealthcheckConstants;
@@ -649,6 +650,12 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
             if (scale == null || ServiceDiscoveryUtil.isNoopService(service, allocatorService)) {
                 scale = 0;
             }
+            ScalePolicy policy = DataAccessor.field(service,
+                    ServiceDiscoveryConstants.FIELD_SCALE_POLICY, jsonMapper, ScalePolicy.class);
+            if (policy != null) {
+                scale = policy.getMin();
+            }
+
             List<String> lcs = ServiceDiscoveryUtil.getServiceLaunchConfigNames(service);
             Integer expectedScale = scale * lcs.size();
             boolean isGlobal = isGlobalService(service);

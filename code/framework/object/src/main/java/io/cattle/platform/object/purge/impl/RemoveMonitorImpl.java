@@ -19,8 +19,10 @@ import io.github.ibuildthecloud.gdapi.factory.SchemaFactory;
 import io.github.ibuildthecloud.gdapi.model.Schema;
 
 import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import javax.inject.Inject;
@@ -71,7 +73,9 @@ public class RemoveMonitorImpl implements RemoveMonitor, Task {
 
             for (Object obj : objects) {
                 try {
-                    objectProcessManager.scheduleStandardProcess(StandardProcess.REMOVE, obj, null);
+                    Map<String, Object> data = new HashMap<>();
+                    data.put("errorState", true);
+                    objectProcessManager.scheduleStandardProcess(StandardProcess.REMOVE, obj, data);
                     log.info("Scheduling remove for [{}] id [{}]", type, ObjectUtils.getId(obj));
                 } catch (ProcessNotFoundException e) {
                 } catch (ProcessInstanceException e) {

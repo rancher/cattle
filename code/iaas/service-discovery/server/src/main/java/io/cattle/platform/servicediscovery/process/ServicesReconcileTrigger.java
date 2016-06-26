@@ -2,6 +2,7 @@ package io.cattle.platform.servicediscovery.process;
 
 import io.cattle.platform.core.constants.HealthcheckConstants;
 import io.cattle.platform.core.constants.InstanceConstants;
+import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.Service;
 import io.cattle.platform.engine.handler.HandlerResult;
 import io.cattle.platform.engine.process.ProcessInstance;
@@ -38,6 +39,11 @@ public class ServicesReconcileTrigger extends AbstractObjectProcessHandler {
         if (state.getResource() instanceof Service) {
             services.add((Service) state.getResource());
         } else {
+            if (state.getResource() instanceof Instance) {
+                if (state.getData().containsKey("errorState")) {
+                    return null;
+                }
+            }
             for (ServiceLookup lookup : serviceLookups) {
                 Collection<? extends Service> lookupSvs = lookup.getServices(state.getResource());
                 if (lookupSvs != null) {

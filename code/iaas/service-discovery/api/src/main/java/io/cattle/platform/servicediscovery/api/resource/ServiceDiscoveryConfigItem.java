@@ -98,6 +98,9 @@ public class ServiceDiscoveryConfigItem {
     public static final ServiceDiscoveryConfigItem RETAIN_IP = new ServiceDiscoveryConfigItem(
             ServiceDiscoveryConstants.FIELD_SERVICE_RETAIN_IP,
             "retain_ip", false, false);
+    public static final ServiceDiscoveryConfigItem SCALE_POLICY = new ServiceDiscoveryConfigItem(
+            ServiceDiscoveryConstants.FIELD_SCALE_POLICY,
+            "scale_policy", false, false);
 
     /**
      * Name as it appears in docker-compose file
