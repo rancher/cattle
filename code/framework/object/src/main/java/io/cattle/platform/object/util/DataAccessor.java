@@ -49,6 +49,11 @@ public class DataAccessor {
         return fields(obj).withKey(key).as(String.class);
     }
 
+    public static Map<String, Object> fieldMapRO(Object obj, String key) {
+        Object list = fields(obj).withKey(key).get();
+        return Collections.unmodifiableMap(CollectionUtils.<String, Object>toMap(list));
+    }
+
     public static Map<String, Object> fieldMap(Object obj, String key) {
         Object list = fields(obj).withKey(key).getForWrite();
         return CollectionUtils.toMap(list);
