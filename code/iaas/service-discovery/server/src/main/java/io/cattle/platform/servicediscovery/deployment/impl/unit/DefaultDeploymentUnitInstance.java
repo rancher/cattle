@@ -26,6 +26,7 @@ import io.cattle.platform.servicediscovery.api.util.ServiceDiscoveryUtil;
 import io.cattle.platform.servicediscovery.deployment.DeploymentUnitInstance;
 import io.cattle.platform.servicediscovery.deployment.InstanceUnit;
 import io.cattle.platform.servicediscovery.deployment.impl.DeploymentManagerImpl.DeploymentServiceContext;
+import io.cattle.platform.util.exception.ServiceInstanceAllocateException;
 
 import java.util.Arrays;
 import java.util.HashMap;
@@ -167,13 +168,15 @@ public class DefaultDeploymentUnitInstance extends DeploymentUnitInstance implem
 
     @Override
     public DeploymentUnitInstance waitForStartImpl() {
+        this.waitForAllocate();
+
         this.instance = context.resourceMonitor.waitFor(this.instance,
                 new ResourcePredicate<Instance>() {
-            @Override
-            public boolean evaluate(Instance obj) {
-                return InstanceConstants.STATE_RUNNING.equals(obj.getState());
-            }
-        });
+                    @Override
+                    public boolean evaluate(Instance obj) {
+                        return InstanceConstants.STATE_RUNNING.equals(obj.getState());
+                    }
+                });
         return this;
     }
 
@@ -229,14 +232,18 @@ public class DefaultDeploymentUnitInstance extends DeploymentUnitInstance implem
 
     @Override
     public void waitForAllocate() {
-        if (this.instance != null) {
-            instance = context.resourceMonitor.waitFor(instance, new ResourcePredicate<Instance>() {
-                @Override
-                public boolean evaluate(Instance obj) {
-                    return context.objectManager.find(InstanceHostMap.class, INSTANCE_HOST_MAP.INSTANCE_ID,
-                            instance.getId()).size() > 0;
-                }
-            });
+        try {
+            if (this.instance != null) {
+                instance = context.resourceMonitor.waitFor(instance, new ResourcePredicate<Instance>() {
+                    @Override
+                    public boolean evaluate(Instance obj) {
+                        return context.objectManager.find(InstanceHostMap.class, INSTANCE_HOST_MAP.INSTANCE_ID,
+                                instance.getId()).size() > 0;
+                    }
+                });
+            }
+        } catch (Exception ex) {
+            throw new ServiceInstanceAllocateException("Failed to allocate instance [" + instance.getId() + "]", ex);
         }
     }
 

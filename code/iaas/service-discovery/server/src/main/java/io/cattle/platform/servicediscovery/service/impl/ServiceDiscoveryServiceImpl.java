@@ -12,6 +12,7 @@ import io.cattle.platform.core.addon.ServiceLink;
 import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.HealthcheckConstants;
 import io.cattle.platform.core.constants.InstanceConstants;
+import io.cattle.platform.core.constants.IpAddressConstants;
 import io.cattle.platform.core.constants.LoadBalancerConstants;
 import io.cattle.platform.core.constants.NetworkConstants;
 import io.cattle.platform.core.constants.SubnetConstants;
@@ -46,7 +47,6 @@ import io.cattle.platform.object.process.StandardProcess;
 import io.cattle.platform.object.resource.ResourceMonitor;
 import io.cattle.platform.object.resource.ResourcePredicate;
 import io.cattle.platform.object.util.DataAccessor;
-import io.cattle.platform.object.util.DataUtils;
 import io.cattle.platform.process.lock.HostEndpointsUpdateLock;
 import io.cattle.platform.resource.pool.PooledResource;
 import io.cattle.platform.resource.pool.PooledResourceOptions;
@@ -468,9 +468,7 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
             } else {
                 publicEndpoints.remove(publicEndpoint);
             }
-            DataUtils.getWritableFields(object).put(ServiceDiscoveryConstants.FIELD_PUBLIC_ENDPOINTS,
-                    publicEndpoints);
-            objectManager.persist(object);
+            objectManager.setFields(object, ServiceDiscoveryConstants.FIELD_PUBLIC_ENDPOINTS, publicEndpoints);
             final Map<String, Object> data = new HashMap<>();
             data.put(ServiceDiscoveryConstants.FIELD_PUBLIC_ENDPOINTS, publicEndpoints);
             data.put(ObjectMetaDataManager.ACCOUNT_FIELD, accountId);
@@ -532,8 +530,7 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
             if (ntwk != null) {
                 Subnet subnet = ntwkDao.addManagedNetworkSubnet(ntwk);
                 String ipAddress = allocateIpForService(serviceIndex, subnet, requestedIp);
-                serviceIndex.setAddress(ipAddress);
-                objectManager.persist(serviceIndex);
+                objectManager.setFields(serviceIndex, IpAddressConstants.FIELD_ADDRESS, ipAddress);
             }
         }
     }
@@ -566,7 +563,7 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
         String currentHealthState = objectManager.reload(stack).getHealthState();
         if (!newHealthState.equalsIgnoreCase(currentHealthState)) {
             Map<String, Object> fields = new HashMap<>();
-            fields.put("healthState", newHealthState);
+            fields.put(ServiceDiscoveryConstants.FIELD_HEALTH_STATE, newHealthState);
             objectManager.setFields(stack, fields);
             publishEvent(stack.getAccountId(), stack.getId(), stack.getKind());
         }
@@ -624,7 +621,7 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
             String currentHealthState = objectManager.reload(service).getHealthState();
             if (!newHealthState.equalsIgnoreCase(currentHealthState)) {
                 Map<String, Object> fields = new HashMap<>();
-                fields.put("healthState", newHealthState);
+                fields.put(ServiceDiscoveryConstants.FIELD_HEALTH_STATE, newHealthState);
                 objectManager.setFields(service, fields);
                 publishEvent(service.getAccountId(), service.getId(), service.getKind());
             }

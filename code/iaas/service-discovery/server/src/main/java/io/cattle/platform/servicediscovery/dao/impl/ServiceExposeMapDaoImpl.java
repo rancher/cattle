@@ -37,6 +37,7 @@ import org.apache.commons.collections.TransformerUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.jooq.Condition;
 import org.jooq.Configuration;
+import org.jooq.impl.DSL;
 
 public class ServiceExposeMapDaoImpl extends AbstractJooqDao implements ServiceExposeMapDao {
 
@@ -114,19 +115,20 @@ public class ServiceExposeMapDaoImpl extends AbstractJooqDao implements ServiceE
     }
 
     @Override
-    public List<? extends Instance> listServiceInstances(long serviceId) {
+    public Integer getCurrentScale(long serviceId) {
         return create()
-                .select(INSTANCE.fields())
+                .select(DSL.count())
                 .from(INSTANCE)
                 .join(SERVICE_EXPOSE_MAP)
                 .on(SERVICE_EXPOSE_MAP.INSTANCE_ID.eq(INSTANCE.ID)
                         .and(SERVICE_EXPOSE_MAP.SERVICE_ID.eq(serviceId))
                         .and(SERVICE_EXPOSE_MAP.STATE.in(CommonStatesConstants.ACTIVATING,
                                 CommonStatesConstants.ACTIVE, CommonStatesConstants.REQUESTED))
+                        .and(SERVICE_EXPOSE_MAP.UPGRADE.eq(false))
                         .and(INSTANCE.STATE.notIn(CommonStatesConstants.PURGING, CommonStatesConstants.PURGED,
                                 CommonStatesConstants.REMOVED, CommonStatesConstants.REMOVING,
                                 InstanceConstants.STATE_ERROR, InstanceConstants.STATE_ERRORING)))
-                .fetchInto(InstanceRecord.class);
+                .fetchOne(0, Integer.class);
     }
 
     @Override

@@ -42,7 +42,7 @@ def test_activate_services_fail(super_client, new_context):
 
     image_uuid = new_context.image_uuid
     launch_config = {"imageUuid": image_uuid, 'ports': "5419"}
-    scale_policy = {"min": 2, "max": 4}
+    scale_policy = {"min": 1, "max": 4}
 
     svc = client.create_service(name=random_str(),
                                 environmentId=env.id,
@@ -55,7 +55,7 @@ def test_activate_services_fail(super_client, new_context):
     # service's final scale should be 2
     svc = client.wait_success(svc.activate())
     assert svc.state == "active"
-    wait_for(lambda: super_client.reload(svc).currentScale >= 2)
+    wait_for(lambda: super_client.reload(svc).currentScale >= 1)
 
 
 def test_scale_update(client, context, super_client):
