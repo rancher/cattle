@@ -95,7 +95,7 @@ public class MetaDataInfoDaoImpl extends AbstractJooqDao implements MetaDataInfo
         InstanceTable instance = mapper.add(INSTANCE, INSTANCE.UUID, INSTANCE.NAME, INSTANCE.CREATE_INDEX,
                 INSTANCE.HEALTH_STATE, INSTANCE.START_COUNT, INSTANCE.STATE);
         ServiceExposeMapTable exposeMap = mapper.add(SERVICE_EXPOSE_MAP, SERVICE_EXPOSE_MAP.SERVICE_ID,
-                SERVICE_EXPOSE_MAP.DNS_PREFIX);
+                SERVICE_EXPOSE_MAP.DNS_PREFIX, SERVICE_EXPOSE_MAP.UPGRADE);
         HostTable host = mapper.add(HOST, HOST.ID);
         IpAddressTable instanceIpAddress = mapper.add(IP_ADDRESS, IP_ADDRESS.ADDRESS);
         return create()
@@ -121,6 +121,7 @@ public class MetaDataInfoDaoImpl extends AbstractJooqDao implements MetaDataInfo
                 .and((host.REMOVED.isNull()))
                 .and(exposeMap.STATE.isNull().or(
                         exposeMap.STATE.notIn(CommonStatesConstants.REMOVING, CommonStatesConstants.REMOVED)))
+                .and(exposeMap.UPGRADE.eq(false))
                 .fetch().map(mapper);
     }
 
