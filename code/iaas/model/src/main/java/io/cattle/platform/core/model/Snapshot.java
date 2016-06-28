@@ -146,6 +146,28 @@ public interface Snapshot extends java.io.Serializable {
 	@javax.persistence.Column(name = "volume_id", precision = 19)
 	public java.lang.Long getVolumeId();
 
+	/**
+	 * Setter for <code>cattle.snapshot.backup_target_id</code>.
+	 */
+	public void setBackupTargetId(java.lang.Long value);
+
+	/**
+	 * Getter for <code>cattle.snapshot.backup_target_id</code>.
+	 */
+	@javax.persistence.Column(name = "backup_target_id", precision = 19)
+	public java.lang.Long getBackupTargetId();
+
+	/**
+	 * Setter for <code>cattle.snapshot.backup_uri</code>.
+	 */
+	public void setBackupUri(java.lang.String value);
+
+	/**
+	 * Getter for <code>cattle.snapshot.backup_uri</code>.
+	 */
+	@javax.persistence.Column(name = "backup_uri", length = 4096)
+	public java.lang.String getBackupUri();
+
 	// -------------------------------------------------------------------------
 	// FROM and INTO
 	// -------------------------------------------------------------------------

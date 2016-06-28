@@ -25,7 +25,7 @@ public class VolumePostRevertRestore extends AbstractObjectProcessLogic implemen
 
     @Override
     public String[] getProcessNames() {
-        return new String[] { VolumeConstants.PROCESS_REVERT, VolumeConstants.PROCESS_RESTORE_FROM_BACKUP };
+        return new String[] { VolumeConstants.PROCESS_REVERT };
     }
 
     @Override
@@ -33,9 +33,10 @@ public class VolumePostRevertRestore extends AbstractObjectProcessLogic implemen
         Volume volume = (Volume)state.getResource();
 
         List<Snapshot> snapshots = null;
-        if (VolumeConstants.PROCESS_RESTORE_FROM_BACKUP.equalsIgnoreCase(process.getName())) {
+        String action = (String)state.getData().get("action");
+        if ("restore".equals(action)){
             snapshots = objectManager.children(volume, Snapshot.class);
-        } else if (VolumeConstants.PROCESS_REVERT.equalsIgnoreCase(process.getName())) {
+        } else if ("revert".equals(action)) {
             Snapshot snapshot = objectManager.loadResource(Snapshot.class, state.getData().get("snapshotId").toString());
             Map<Object, Object> criteria = new HashMap<Object, Object>();
             criteria.put(SNAPSHOT.VOLUME_ID, volume.getId());
@@ -43,7 +44,7 @@ public class VolumePostRevertRestore extends AbstractObjectProcessLogic implemen
             criteria.put(SNAPSHOT.ID, new Condition(ConditionType.GT, snapshot.getId()));
             snapshots = objectManager.find(Snapshot.class, criteria);
         } else {
-            throw new IllegalStateException("Unknown process: " + process.getName());
+            throw new IllegalStateException("Unknown action: " + action);
         }
 
         for (Snapshot s : snapshots) {

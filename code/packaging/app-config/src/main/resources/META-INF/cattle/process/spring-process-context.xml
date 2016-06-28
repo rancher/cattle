@@ -96,32 +96,48 @@
     </bean>
 
     <bean class="io.cattle.platform.process.volume.SnapshotAgentProcessHandler"
-        p:name="SnapshotRemove"
+        p:name="RemoveLocalSnapshot"
+        p:commandName="storage.snapshot.removelocal"
+        p:dataTypeClass="io.cattle.platform.core.model.Snapshot"
+        p:processNames="snapshot.removelocalsnapshot"
+        p:shortCircuitIfAgentRemoved="true" >
+        <property name="priority">
+            <util:constant static-field="io.cattle.platform.util.type.Priority.DEFAULT"/>
+        </property>
+    </bean>
+
+    <bean class="io.cattle.platform.process.volume.SnapshotAgentProcessHandler"
+        p:name="BackupSnapshot"
+        p:commandName="storage.snapshot.backup"
+        p:dataTypeClass="io.cattle.platform.core.model.Snapshot"
+        p:processNames="snapshot.backup"
+        p:shortCircuitIfAgentRemoved="true" >
+        <property name="processDataKeys">
+            <list>
+                <value>processId</value>
+            </list>
+        </property>
+        <property name="priority">
+            <util:constant static-field="io.cattle.platform.util.type.Priority.DEFAULT"/>
+        </property>
+    </bean>
+
+    <bean class="io.cattle.platform.process.volume.SnapshotAgentProcessHandler"
+        p:name="SnapshotRemoveBackup"
+        p:commandName="storage.snapshot.removebackup"
+        p:dataTypeClass="io.cattle.platform.core.model.Snapshot"
+        p:processNames="snapshot.removebackup"
+        p:shortCircuitIfAgentRemoved="true" >
+        <property name="priority">
+            <util:constant static-field="io.cattle.platform.util.type.Priority.DEFAULT"/>
+        </property>
+    </bean>
+
+    <bean class="io.cattle.platform.process.volume.SnapshotAgentProcessHandler"
+        p:name="SnapshotAndBackupRemove"
         p:commandName="storage.snapshot.remove"
         p:dataTypeClass="io.cattle.platform.core.model.Snapshot"
         p:processNames="snapshot.remove"
-        p:shortCircuitIfAgentRemoved="true" >
-        <property name="priority">
-            <util:constant static-field="io.cattle.platform.util.type.Priority.DEFAULT"/>
-        </property>
-    </bean>
-
-    <bean class="io.cattle.platform.process.volume.SnapshotAgentProcessHandler"
-        p:name="BackupCreate"
-        p:commandName="storage.backup.create"
-        p:dataTypeClass="io.cattle.platform.core.model.Backup"
-        p:processNames="backup.create"
-        p:shortCircuitIfAgentRemoved="true" >
-        <property name="priority">
-            <util:constant static-field="io.cattle.platform.util.type.Priority.DEFAULT"/>
-        </property>
-    </bean>
-
-    <bean class="io.cattle.platform.process.volume.SnapshotAgentProcessHandler"
-        p:name="BackupRemove"
-        p:commandName="storage.backup.remove"
-        p:dataTypeClass="io.cattle.platform.core.model.Backup"
-        p:processNames="backup.remove"
         p:shortCircuitIfAgentRemoved="true" >
         <property name="priority">
             <util:constant static-field="io.cattle.platform.util.type.Priority.DEFAULT"/>
@@ -134,21 +150,11 @@
         p:dataTypeClass="io.cattle.platform.core.model.Snapshot"
         p:processNames="volume.reverttosnapshot"
         p:shortCircuitIfAgentRemoved="true" >
-        <property name="priority">
-            <util:constant static-field="io.cattle.platform.util.type.Priority.DEFAULT"/>
-        </property>
-    </bean>
-
-    <bean class="io.cattle.platform.process.volume.VolumeRevertRestoreAgentProcessHandler"
-        p:name="RestoreFromBackup"
-        p:commandName="storage.volume.restorefrombackup"
-        p:dataTypeClass="io.cattle.platform.core.model.Backup"
-        p:processNames="volume.restorefrombackup"
-        p:shortCircuitIfAgentRemoved="true" >
         <property name="processDataKeys">
             <list>
                 <value>processId</value>
                 <value>volumeName</value>
+                <value>action</value>
             </list>
         </property>
         <property name="priority">
@@ -408,15 +414,13 @@
     <process:process name="volume.allocate" resourceType="volume" stateField="allocationState" start="inactive" transitioning="activating" done="active" />
     <process:process name="volume.deallocate" resourceType="volume" stateField="allocationState" start="activating,active" transitioning="deactivating" done="inactive" />
     <process:process name="volume.reverttosnapshot" resourceType="volume" start="active,inactive" transitioning="active=reverting-active,inactive=reverting-inactive" done="reverting-active=active,reverting-inactive=inactive" />
-    <process:process name="volume.restorefrombackup" resourceType="volume" start="active,inactive" transitioning="active=restoring-active,inactive=restoring-inactive" done="restoring-active=active,restoring-inactive=inactive" />
 
     <!-- Snapshot -->
-    <process:process name="snapshot.create" resourceType="snapshot" start="requested" transitioning="creating" done="created" />
-    <process:process name="snapshot.remove" resourceType="snapshot" start="creating,created" transitioning="removing" done="removed" />
-
-    <!-- Backup -->
-    <process:process name="backup.create" resourceType="backup" start="requested" transitioning="creating" done="created" />
-    <process:process name="backup.remove" resourceType="backup" start="creating,created" transitioning="removing" done="removed" />
+    <process:process name="snapshot.create" resourceType="snapshot" start="requested" transitioning="snapshotting" done="snapshotted" />
+    <process:process name="snapshot.backup" resourceType="snapshot" start="snapshotted" transitioning="backingup" done="backedup" />
+    <process:process name="snapshot.removelocalsnapshot" resourceType="snapshot" start="backedup" transitioning="removing-local-snapshot" done="backedup-only" />
+    <process:process name="snapshot.removebackup" resourceType="snapshot" start="backingup,backedup" transitioning="removing-backup" done="snapshotted" />
+    <process:process name="snapshot.remove" resourceType="snapshot" start="snapshotting,snapshotted,backingup,backedup,removing-local-snapshot,backedup-only,removing-backup" transitioning="removing" done="removed" />
 
     <!-- Backup target-->
     <process:process name="backuptarget.create" resourceType="backupTarget" start="requested" transitioning="creating" done="created" />

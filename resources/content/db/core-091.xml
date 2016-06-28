@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog" xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.1.xsd http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+    <changeSet author="Rancher Labs" id="1467150177184-1">
+        <addColumn tableName="snapshot">
+            <column name="backup_target_id" type="BIGINT"/>
+        </addColumn>
+    </changeSet>
+    <changeSet author="Rancher Labs" id="1467150177184-2">
+        <addColumn tableName="snapshot">
+            <column name="backup_uri" type="VARCHAR(4096)"/>
+        </addColumn>
+    </changeSet>
+    <changeSet author="Rancher Labs" id="1467150177184-3">
+        <addForeignKeyConstraint baseColumnNames="backup_target_id" baseTableName="snapshot" constraintName="fk_snapshot__backup_target_id" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="backup_target"/>
+    </changeSet>
+</databaseChangeLog>

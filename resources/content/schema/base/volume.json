@@ -32,10 +32,6 @@
         "reverttosnapshot": {
             "input": "revertToSnapshotInput",
             "output": "volume"
-        },
-        "restorefrombackup": {
-            "input": "restoreFromBackupInput",
-            "output": "volume"
         }
     }
 }

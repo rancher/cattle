@@ -11,9 +11,9 @@ package io.cattle.platform.core.model.tables.records;
 @java.lang.SuppressWarnings({ "all", "unchecked", "rawtypes" })
 @javax.persistence.Entity
 @javax.persistence.Table(name = "snapshot", schema = "cattle")
-public class SnapshotRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.platform.core.model.tables.records.SnapshotRecord> implements io.cattle.platform.db.jooq.utils.TableRecordJaxb, org.jooq.Record12<java.lang.Long, java.lang.String, java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.util.Date, java.util.Date, java.util.Date, java.util.Map<String,Object>, java.lang.Long>, io.cattle.platform.core.model.Snapshot {
+public class SnapshotRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.platform.core.model.tables.records.SnapshotRecord> implements io.cattle.platform.db.jooq.utils.TableRecordJaxb, org.jooq.Record14<java.lang.Long, java.lang.String, java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.util.Date, java.util.Date, java.util.Date, java.util.Map<String,Object>, java.lang.Long, java.lang.Long, java.lang.String>, io.cattle.platform.core.model.Snapshot {
 
-	private static final long serialVersionUID = 987740428;
+	private static final long serialVersionUID = -587940695;
 
 	/**
 	 * Setter for <code>cattle.snapshot.id</code>.
@@ -220,6 +220,40 @@ public class SnapshotRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.
 		return (java.lang.Long) getValue(11);
 	}
 
+	/**
+	 * Setter for <code>cattle.snapshot.backup_target_id</code>.
+	 */
+	@Override
+	public void setBackupTargetId(java.lang.Long value) {
+		setValue(12, value);
+	}
+
+	/**
+	 * Getter for <code>cattle.snapshot.backup_target_id</code>.
+	 */
+	@javax.persistence.Column(name = "backup_target_id", precision = 19)
+	@Override
+	public java.lang.Long getBackupTargetId() {
+		return (java.lang.Long) getValue(12);
+	}
+
+	/**
+	 * Setter for <code>cattle.snapshot.backup_uri</code>.
+	 */
+	@Override
+	public void setBackupUri(java.lang.String value) {
+		setValue(13, value);
+	}
+
+	/**
+	 * Getter for <code>cattle.snapshot.backup_uri</code>.
+	 */
+	@javax.persistence.Column(name = "backup_uri", length = 4096)
+	@Override
+	public java.lang.String getBackupUri() {
+		return (java.lang.String) getValue(13);
+	}
+
 	// -------------------------------------------------------------------------
 	// Primary key information
 	// -------------------------------------------------------------------------
@@ -233,23 +267,23 @@ public class SnapshotRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.
 	}
 
 	// -------------------------------------------------------------------------
-	// Record12 type implementation
+	// Record14 type implementation
 	// -------------------------------------------------------------------------
 
 	/**
 	 * {@inheritDoc}
 	 */
 	@Override
-	public org.jooq.Row12<java.lang.Long, java.lang.String, java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.util.Date, java.util.Date, java.util.Date, java.util.Map<String,Object>, java.lang.Long> fieldsRow() {
-		return (org.jooq.Row12) super.fieldsRow();
+	public org.jooq.Row14<java.lang.Long, java.lang.String, java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.util.Date, java.util.Date, java.util.Date, java.util.Map<String,Object>, java.lang.Long, java.lang.Long, java.lang.String> fieldsRow() {
+		return (org.jooq.Row14) super.fieldsRow();
 	}
 
 	/**
 	 * {@inheritDoc}
 	 */
 	@Override
-	public org.jooq.Row12<java.lang.Long, java.lang.String, java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.util.Date, java.util.Date, java.util.Date, java.util.Map<String,Object>, java.lang.Long> valuesRow() {
-		return (org.jooq.Row12) super.valuesRow();
+	public org.jooq.Row14<java.lang.Long, java.lang.String, java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.util.Date, java.util.Date, java.util.Date, java.util.Map<String,Object>, java.lang.Long, java.lang.Long, java.lang.String> valuesRow() {
+		return (org.jooq.Row14) super.valuesRow();
 	}
 
 	/**
@@ -352,6 +386,22 @@ public class SnapshotRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.
 	 * {@inheritDoc}
 	 */
 	@Override
+	public org.jooq.Field<java.lang.Long> field13() {
+		return io.cattle.platform.core.model.tables.SnapshotTable.SNAPSHOT.BACKUP_TARGET_ID;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public org.jooq.Field<java.lang.String> field14() {
+		return io.cattle.platform.core.model.tables.SnapshotTable.SNAPSHOT.BACKUP_URI;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
 	public java.lang.Long value1() {
 		return getId();
 	}
@@ -442,6 +492,22 @@ public class SnapshotRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.
 	@Override
 	public java.lang.Long value12() {
 		return getVolumeId();
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public java.lang.Long value13() {
+		return getBackupTargetId();
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public java.lang.String value14() {
+		return getBackupUri();
 	}
 
 	/**
@@ -556,7 +622,25 @@ public class SnapshotRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.
 	 * {@inheritDoc}
 	 */
 	@Override
-	public SnapshotRecord values(java.lang.Long value1, java.lang.String value2, java.lang.Long value3, java.lang.String value4, java.lang.String value5, java.lang.String value6, java.lang.String value7, java.util.Date value8, java.util.Date value9, java.util.Date value10, java.util.Map<String,Object> value11, java.lang.Long value12) {
+	public SnapshotRecord value13(java.lang.Long value) {
+		setBackupTargetId(value);
+		return this;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public SnapshotRecord value14(java.lang.String value) {
+		setBackupUri(value);
+		return this;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public SnapshotRecord values(java.lang.Long value1, java.lang.String value2, java.lang.Long value3, java.lang.String value4, java.lang.String value5, java.lang.String value6, java.lang.String value7, java.util.Date value8, java.util.Date value9, java.util.Date value10, java.util.Map<String,Object> value11, java.lang.Long value12, java.lang.Long value13, java.lang.String value14) {
 		return this;
 	}
 
@@ -581,6 +665,8 @@ public class SnapshotRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.
 		setRemoveTime(from.getRemoveTime());
 		setData(from.getData());
 		setVolumeId(from.getVolumeId());
+		setBackupTargetId(from.getBackupTargetId());
+		setBackupUri(from.getBackupUri());
 	}
 
 	/**
@@ -606,7 +692,7 @@ public class SnapshotRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.
 	/**
 	 * Create a detached, initialised SnapshotRecord
 	 */
-	public SnapshotRecord(java.lang.Long id, java.lang.String name, java.lang.Long accountId, java.lang.String kind, java.lang.String uuid, java.lang.String description, java.lang.String state, java.util.Date created, java.util.Date removed, java.util.Date removeTime, java.util.Map<String,Object> data, java.lang.Long volumeId) {
+	public SnapshotRecord(java.lang.Long id, java.lang.String name, java.lang.Long accountId, java.lang.String kind, java.lang.String uuid, java.lang.String description, java.lang.String state, java.util.Date created, java.util.Date removed, java.util.Date removeTime, java.util.Map<String,Object> data, java.lang.Long volumeId, java.lang.Long backupTargetId, java.lang.String backupUri) {
 		super(io.cattle.platform.core.model.tables.SnapshotTable.SNAPSHOT);
 
 		setValue(0, id);
@@ -621,5 +707,7 @@ public class SnapshotRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.
 		setValue(9, removeTime);
 		setValue(10, data);
 		setValue(11, volumeId);
+		setValue(12, backupTargetId);
+		setValue(13, backupUri);
 	}
 }

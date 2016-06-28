@@ -2,6 +2,7 @@
     "collectionMethods": [],
     "resourceFields": {
         "backupTargetId": {
+            "type": "reference[backupTarget]",
             "required": true,
             "nullable": false
         }

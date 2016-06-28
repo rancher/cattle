@@ -11,7 +11,7 @@ package io.cattle.platform.core.model.tables;
 @java.lang.SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class SnapshotTable extends org.jooq.impl.TableImpl<io.cattle.platform.core.model.tables.records.SnapshotRecord> {
 
-	private static final long serialVersionUID = -2139683882;
+	private static final long serialVersionUID = -178037970;
 
 	/**
 	 * The singleton instance of <code>cattle.snapshot</code>
@@ -87,6 +87,16 @@ public class SnapshotTable extends org.jooq.impl.TableImpl<io.cattle.platform.co
 	public final org.jooq.TableField<io.cattle.platform.core.model.tables.records.SnapshotRecord, java.lang.Long> VOLUME_ID = createField("volume_id", org.jooq.impl.SQLDataType.BIGINT, this, "");
 
 	/**
+	 * The column <code>cattle.snapshot.backup_target_id</code>.
+	 */
+	public final org.jooq.TableField<io.cattle.platform.core.model.tables.records.SnapshotRecord, java.lang.Long> BACKUP_TARGET_ID = createField("backup_target_id", org.jooq.impl.SQLDataType.BIGINT, this, "");
+
+	/**
+	 * The column <code>cattle.snapshot.backup_uri</code>.
+	 */
+	public final org.jooq.TableField<io.cattle.platform.core.model.tables.records.SnapshotRecord, java.lang.String> BACKUP_URI = createField("backup_uri", org.jooq.impl.SQLDataType.VARCHAR.length(4096), this, "");
+
+	/**
 	 * Create a <code>cattle.snapshot</code> table reference
 	 */
 	public SnapshotTable() {
@@ -137,7 +147,7 @@ public class SnapshotTable extends org.jooq.impl.TableImpl<io.cattle.platform.co
 	 */
 	@Override
 	public java.util.List<org.jooq.ForeignKey<io.cattle.platform.core.model.tables.records.SnapshotRecord, ?>> getReferences() {
-		return java.util.Arrays.<org.jooq.ForeignKey<io.cattle.platform.core.model.tables.records.SnapshotRecord, ?>>asList(io.cattle.platform.core.model.Keys.FK_SNAPSHOT__ACCOUNT_ID, io.cattle.platform.core.model.Keys.FK_SNAPSHOT__VOLUME_ID);
+		return java.util.Arrays.<org.jooq.ForeignKey<io.cattle.platform.core.model.tables.records.SnapshotRecord, ?>>asList(io.cattle.platform.core.model.Keys.FK_SNAPSHOT__ACCOUNT_ID, io.cattle.platform.core.model.Keys.FK_SNAPSHOT__VOLUME_ID, io.cattle.platform.core.model.Keys.FK_SNAPSHOT__BACKUP_TARGET_ID);
 	}
 
 	/**

@@ -1,8 +1,6 @@
 package io.cattle.platform.process.volume;
 
-import io.cattle.platform.core.constants.VolumeConstants;
 import io.cattle.platform.core.dao.GenericMapDao;
-import io.cattle.platform.core.model.Backup;
 import io.cattle.platform.core.model.Snapshot;
 import io.cattle.platform.core.model.StoragePool;
 import io.cattle.platform.core.model.Volume;
@@ -30,13 +28,7 @@ public class VolumeRevertRestoreAgentProcessHandler extends AgentBasedProcessHan
 
     @Override
     protected Object getDataResource(ProcessState state, ProcessInstance process) {
-        if (process.getName().equalsIgnoreCase(VolumeConstants.PROCESS_REVERT)) {
-            Snapshot snapshot = objectManager.loadResource(Snapshot.class, state.getData().get("snapshotId").toString());
-            return snapshot;
-        } else if (process.getName().equalsIgnoreCase(VolumeConstants.PROCESS_RESTORE_FROM_BACKUP)) {
-            Backup backup = objectManager.loadResource(Backup .class, state.getData().get("backupId").toString());
-            return backup;
-        }
-        throw new IllegalStateException("Unsupported process: " + process.getName());
+        Snapshot snapshot = objectManager.loadResource(Snapshot.class, state.getData().get("snapshotId").toString());
+        return snapshot;
     }
 }

@@ -8,9 +8,9 @@
     "resourceActions": {
         "backup": {
             "input": "snapshotBackupInput",
-            "output": "backup",
+            "output": "snapshot",
             "attributes": {
-                "states": ["created"]
+                "states": ["snapshotted"]
             }
         }
     }

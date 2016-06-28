@@ -345,7 +345,7 @@
     <bean class="io.cattle.platform.iaas.api.filter.externalevent.ExternalEventFilter" />
     <bean class="io.cattle.platform.iaas.api.filter.registry.RegistryServerAddressFilter" />
     <bean class="io.cattle.platform.iaas.api.filter.serviceevent.ServiceEventFilter" />
-    <bean class="io.cattle.platform.iaas.api.filter.snapshot.SnapshotValidationFilter" />
+    <bean class="io.cattle.platform.iaas.api.snapshot.SnapshotValidationFilter" />
     <bean class="io.cattle.platform.iaas.api.filter.ssl.CertificateCreateValidationFilter" />
     <bean class="io.cattle.platform.iaas.api.user.preference.UserPreferenceFilter" />
     <bean class="io.cattle.platform.iaas.api.user.preference.UserPreferenceDaoImpl" />
