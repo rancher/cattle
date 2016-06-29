@@ -143,7 +143,7 @@ public class DeploymentManagerImpl implements DeploymentManager {
 
         Integer desiredScaleToReset = null;
         Integer desiredScaleSet = DataAccessor.fieldInteger(service,
-                ServiceDiscoveryConstants.FIELD_DESIRED_SCALE_INTERNAL);
+                ServiceDiscoveryConstants.FIELD_DESIRED_SCALE);
         if (desiredScaleSet == null) {
             desiredScaleToReset = policy.getMin();
         } else if (desiredScaleSet.intValue() > policy.getMax().intValue()) {
@@ -161,7 +161,7 @@ public class DeploymentManagerImpl implements DeploymentManager {
     protected boolean incremenetScaleAndDeploy(final Service service, final boolean checkState,
             final List<Service> services, ScalePolicy policy) {
         Integer desiredScale = DataAccessor.fieldInteger(service,
-                ServiceDiscoveryConstants.FIELD_DESIRED_SCALE_INTERNAL);
+                ServiceDiscoveryConstants.FIELD_DESIRED_SCALE);
         try {
             deploy(service, checkState, services);
         } catch (ServiceInstanceAllocateException ex) {
@@ -183,7 +183,7 @@ public class DeploymentManagerImpl implements DeploymentManager {
     }
 
     protected boolean reduceScaleAndDeploy(Service service, boolean checkState, List<Service> services, ScalePolicy policy) {
-        int desiredScale = DataAccessor.fieldInteger(service, ServiceDiscoveryConstants.FIELD_DESIRED_SCALE_INTERNAL).intValue();
+        int desiredScale = DataAccessor.fieldInteger(service, ServiceDiscoveryConstants.FIELD_DESIRED_SCALE).intValue();
         int minScale = policy.getMin().intValue();
         int increment = policy.getIncrement().intValue();
         if (desiredScale >= minScale) {
@@ -207,7 +207,7 @@ public class DeploymentManagerImpl implements DeploymentManager {
     protected Integer setDesiredScaleInternal(Service service, Integer newScale) {
         service = objectMgr.reload(service);
         Map<String, Object> data = new HashMap<>();
-        data.put(ServiceDiscoveryConstants.FIELD_DESIRED_SCALE_INTERNAL, newScale);
+        data.put(ServiceDiscoveryConstants.FIELD_DESIRED_SCALE, newScale);
         objectMgr.setFields(service, data);
         return newScale;
     }

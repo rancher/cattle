@@ -90,6 +90,10 @@ public class ServiceMetaData {
         this.scale = DataAccessor.fieldInteger(service, ServiceDiscoveryConstants.FIELD_SCALE);
         this.fqdn = DataAccessor.fieldString(service, ServiceDiscoveryConstants.FIELD_FQDN);
         this.stackId = env.getId();
+        Integer desiredScale = DataAccessor.fieldInteger(service, ServiceDiscoveryConstants.FIELD_DESIRED_SCALE);
+        if (desiredScale != null) {
+            this.scale = desiredScale;
+        }
     }
 
     @SuppressWarnings("unchecked")
@@ -276,4 +280,6 @@ public class ServiceMetaData {
             return new ServiceMetaDataVersion2(serviceData);
         }
     }
+
+    
 }
