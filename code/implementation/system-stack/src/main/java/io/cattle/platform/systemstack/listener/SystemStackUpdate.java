@@ -71,7 +71,7 @@ public class SystemStackUpdate extends AbstractJooqDao implements AnnotatedEvent
     private static final String STACK_RESOURCE = "/config-content/system-stacks/%s/%s";
     private static final Logger log = LoggerFactory.getLogger(SystemStackUpdate.class);
     private static DynamicStringProperty CATALOG_RESOURCE_URL = ArchaiusUtil.getString("system.stack.catalog.url");
-    private static DynamicStringProperty CATALOG_RESOURCE_VERSION = ArchaiusUtil.getString("rancher.server.image");
+    private static DynamicStringProperty CATALOG_RESOURCE_VERSION = ArchaiusUtil.getString("rancher.server.version");
 
     @Inject
     ObjectProcessManager processManager;
