@@ -388,7 +388,7 @@ public class ServiceMetadataInfoFactory extends AbstractAgentBaseContextFactory 
         }
         Map<String, Object> metadata = DataAccessor.fields(service).withKey(ServiceDiscoveryConstants.FIELD_METADATA)
                 .withDefault(Collections.EMPTY_MAP).as(Map.class);
-        ServiceMetaData svcMetaData = new ServiceMetaData(service, serviceName, env, sidekicks, metadata);
+        ServiceMetaData svcMetaData = new ServiceMetaData(service, serviceName, env, sidekicks, metadata, jsonMapper);
         stackServices.add(svcMetaData);
     }
 

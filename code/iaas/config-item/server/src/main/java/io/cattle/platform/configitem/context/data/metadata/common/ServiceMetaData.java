@@ -4,9 +4,11 @@ import io.cattle.platform.configitem.context.dao.MetaDataInfoDao;
 import io.cattle.platform.configitem.context.dao.MetaDataInfoDao.Version;
 import io.cattle.platform.configitem.context.data.metadata.version1.ServiceMetaDataVersion1;
 import io.cattle.platform.configitem.context.data.metadata.version2.ServiceMetaDataVersion2;
+import io.cattle.platform.core.addon.ScalePolicy;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.model.Environment;
 import io.cattle.platform.core.model.Service;
+import io.cattle.platform.json.JsonMapper;
 import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.servicediscovery.api.constants.ServiceDiscoveryConstants;
 import io.cattle.platform.servicediscovery.api.util.ServiceDiscoveryUtil;
@@ -41,6 +43,7 @@ public class ServiceMetaData {
     protected String fqdn;
     protected List<String> expose = new ArrayList<>();
     protected String token;
+    protected ScalePolicy scalePolicy;
 
     protected ServiceMetaData(ServiceMetaData that) {
         this.name = that.name;
@@ -65,10 +68,11 @@ public class ServiceMetaData {
         this.isPrimaryConfig = that.isPrimaryConfig;
         this.launchConfigName = that.launchConfigName;
         this.stackId = that.stackId;
+        this.scalePolicy = that.scalePolicy;
     }
 
     public ServiceMetaData(Service service, String serviceName, Environment env, List<String> sidekicks,
-            Map<String, Object> metadata) {
+            Map<String, Object> metadata, JsonMapper jsonMapper) {
         this.serviceId = service.getId();
         this.service = service;
         this.name = serviceName;
@@ -89,6 +93,8 @@ public class ServiceMetaData {
         this.metadata = metadata;
         this.scale = DataAccessor.fieldInteger(service, ServiceDiscoveryConstants.FIELD_SCALE);
         this.fqdn = DataAccessor.fieldString(service, ServiceDiscoveryConstants.FIELD_FQDN);
+        this.scalePolicy = DataAccessor.field(service, ServiceDiscoveryConstants.FIELD_SCALE_POLICY,
+                jsonMapper, ScalePolicy.class);
         this.stackId = env.getId();
     }
 
@@ -276,4 +282,13 @@ public class ServiceMetaData {
             return new ServiceMetaDataVersion2(serviceData);
         }
     }
+
+    public ScalePolicy getScalePolicy() {
+        return scalePolicy;
+    }
+
+    public void setScalePolicy(ScalePolicy scalePolicy) {
+        this.scalePolicy = scalePolicy;
+    }
+
 }
