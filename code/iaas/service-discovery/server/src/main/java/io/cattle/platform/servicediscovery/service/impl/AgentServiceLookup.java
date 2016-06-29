@@ -1,7 +1,7 @@
 package io.cattle.platform.servicediscovery.service.impl;
 
-import static io.cattle.platform.core.model.tables.HostTable.HOST;
-import static io.cattle.platform.core.model.tables.ServiceTable.SERVICE;
+import static io.cattle.platform.core.model.tables.HostTable.*;
+import static io.cattle.platform.core.model.tables.ServiceTable.*;
 import io.cattle.platform.core.model.Agent;
 import io.cattle.platform.core.model.Host;
 import io.cattle.platform.core.model.Service;
@@ -35,16 +35,16 @@ public class AgentServiceLookup extends AbstractJooqDao implements ServiceLookup
         }
         List<? extends Service> allServices = objMgr.find(Service.class, SERVICE.ACCOUNT_ID, host.getAccountId(),
                 SERVICE.REMOVED, null);
-        List<Service> globalServices = new ArrayList<>();
+        List<Service> svcsToReconcile = new ArrayList<>();
         for (Service service : allServices) {
             if (!sdService.isActiveService(service)) {
                 continue;
             }
-            if (sdService.isGlobalService(service)) {
-                globalServices.add(service);
+            if (sdService.isGlobalService(service) || sdService.isScalePolicyService(service)) {
+                svcsToReconcile.add(service);
             }
         }
-        return globalServices;
+        return svcsToReconcile;
     }
 
 }

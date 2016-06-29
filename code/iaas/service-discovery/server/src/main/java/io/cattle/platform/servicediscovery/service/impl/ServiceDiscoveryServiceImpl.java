@@ -723,4 +723,10 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
 
         eventService.publish(event);
     }
+
+    @Override
+    public boolean isScalePolicyService(Service service) {
+        return DataAccessor.field(service,
+                ServiceDiscoveryConstants.FIELD_SCALE_POLICY, jsonMapper, ScalePolicy.class) != null;
+    }
 }
