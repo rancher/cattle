@@ -56,4 +56,6 @@ public interface ServiceDiscoveryService {
     
     void updateHealthState(Environment stack);
 
+    boolean isScalePolicyService(Service service);
+
 }

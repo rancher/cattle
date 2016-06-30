@@ -1,14 +1,11 @@
 package io.cattle.platform.servicediscovery.service.impl;
 
 import static io.cattle.platform.core.model.tables.ServiceTable.*;
-import io.cattle.platform.core.addon.ScalePolicy;
 import io.cattle.platform.core.model.Host;
 import io.cattle.platform.core.model.Service;
-import io.cattle.platform.json.JsonMapper;
 import io.cattle.platform.object.ObjectManager;
-import io.cattle.platform.object.util.DataAccessor;
-import io.cattle.platform.servicediscovery.api.constants.ServiceDiscoveryConstants;
 import io.cattle.platform.servicediscovery.api.dao.ServiceDao;
+import io.cattle.platform.servicediscovery.service.ServiceDiscoveryService;
 import io.cattle.platform.servicediscovery.service.ServiceLookup;
 
 import java.util.ArrayList;
@@ -26,7 +23,7 @@ public class HostServiceLookup implements ServiceLookup {
     ObjectManager objMgr;
 
     @Inject
-    JsonMapper mapper;
+    ServiceDiscoveryService sdService;
 
     @Override
     public Collection<? extends Service> getServices(Object obj) {
@@ -42,9 +39,7 @@ public class HostServiceLookup implements ServiceLookup {
         List<? extends Service> allServices = objMgr.find(Service.class, SERVICE.ACCOUNT_ID, host.getAccountId(),
                 SERVICE.REMOVED, null);
         for (Service service : allServices) {
-            ScalePolicy policy = DataAccessor.field(service,
-                    ServiceDiscoveryConstants.FIELD_SCALE_POLICY, mapper, ScalePolicy.class);
-            if (policy != null) {
+            if (sdService.isScalePolicyService(service)) {
                 services.add(service);
             }
         }
