@@ -14,7 +14,7 @@
                 "scheduleUpdate" : true
             }
         },
-        "desiredScaleInternal": {
+        "desiredScale": {
             "type": "int",
             "required": false,
             "nullable": false

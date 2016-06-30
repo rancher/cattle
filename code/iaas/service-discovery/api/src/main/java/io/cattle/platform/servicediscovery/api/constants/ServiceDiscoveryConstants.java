@@ -45,7 +45,7 @@ public class ServiceDiscoveryConstants {
     public static final String STACK_FIELD_START_ON_CREATE = "startOnCreate";
     public static final String FIELD_SET_VIP = "assignServiceIpAddress";
     public static final String FIELD_SCALE_POLICY = "scalePolicy";
-    public static final String FIELD_DESIRED_SCALE_INTERNAL = "desiredScaleInternal";
+    public static final String FIELD_DESIRED_SCALE = "desiredScale";
     public static final String FIELD_CURRENT_SCALE = "currentScale";
     public static final String FIELD_HEALTH_STATE = "healthState";
 
