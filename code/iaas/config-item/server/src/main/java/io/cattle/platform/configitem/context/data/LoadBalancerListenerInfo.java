@@ -25,12 +25,9 @@ public class LoadBalancerListenerInfo {
         this.proxyPort = proxyPort;
     }
 
-    public Integer getPrivatePort() {
-        return privatePort;
-    }
-
+    // LEGACY code to support the case when private port is not defined
     public Integer getSourcePort() {
-        return sourcePort;
+        return this.privatePort != null ? this.privatePort : this.sourcePort;
     }
 
     public Integer getTargetPort() {

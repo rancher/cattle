@@ -7,5 +7,7 @@ public class LoadBalancerConstants {
     public static final String FIELD_LB_CERTIFICATE_IDS = "certificateIds";
     public static final String FIELD_LB_DEFAULT_CERTIFICATE_ID = "defaultCertificateId";
     public static final String FIELD_HAPROXY_CONFIG = "haproxyConfig";
-
+    public static final String FIELD_PORT_RULES = "portRules";
+    public static final String FIELD_CONFIG = "config";
+    public static final String FIELD_STICKINESS_POLICY = "stickinessPolicy";
 }

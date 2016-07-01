@@ -49,7 +49,8 @@ public class ServiceDeploymentPlannerFactoryImpl implements ServiceDeploymentPla
         if (service.getKind().equalsIgnoreCase(ServiceConstants.KIND_DNS_SERVICE)
                 || service.getKind().equalsIgnoreCase(ServiceConstants.KIND_EXTERNAL_SERVICE)
                 || service.getKind().equalsIgnoreCase(ServiceConstants.KIND_LOAD_BALANCER_SERVICE)
-                || service.getKind().equalsIgnoreCase(ServiceConstants.KIND_SERVICE)) {
+                || service.getKind().equalsIgnoreCase(ServiceConstants.KIND_SERVICE)
+                || service.getKind().equalsIgnoreCase(ServiceConstants.KIND_BALANCER_SERVICE)) {
             return false;
         }
         return true;

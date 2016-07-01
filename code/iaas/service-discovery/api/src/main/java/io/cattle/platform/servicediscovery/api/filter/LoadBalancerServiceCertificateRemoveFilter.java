@@ -14,6 +14,7 @@ import io.github.ibuildthecloud.gdapi.util.ResponseCodes;
 import io.github.ibuildthecloud.gdapi.validation.ValidationErrorCodes;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import javax.inject.Inject;
@@ -44,8 +45,13 @@ public class LoadBalancerServiceCertificateRemoveFilter extends AbstractDefaultR
     protected void validateIfCertificateInUse(String certificateId) {
         Certificate cert = objectManager.loadResource(Certificate.class, certificateId);
         List<String> serviceNames = new ArrayList<>();
-        List<? extends Service> lbServices = objectManager.find(Service.class, SERVICE.ACCOUNT_ID, cert.getAccountId(),
-                SERVICE.REMOVED, null, SERVICE.KIND, ServiceConstants.KIND_LOAD_BALANCER_SERVICE);
+        List<Service> lbServices = new ArrayList<>();
+        List<String> types = Arrays.asList(ServiceConstants.KIND_LOAD_BALANCER_SERVICE,
+                ServiceConstants.KIND_BALANCER_SERVICE);
+        for (String type : types) {
+            lbServices.addAll(objectManager.find(Service.class, SERVICE.ACCOUNT_ID, cert.getAccountId(),
+                SERVICE.REMOVED, null, SERVICE.KIND, type));
+        }
         for (Service lbService : lbServices) {
             List<Long> certIds = (List<Long>) CollectionUtils.collect(
                     svcDao.getLoadBalancerServiceCertificates(lbService),

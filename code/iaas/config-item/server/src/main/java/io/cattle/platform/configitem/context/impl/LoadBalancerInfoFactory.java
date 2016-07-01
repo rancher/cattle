@@ -153,8 +153,7 @@ public class LoadBalancerInfoFactory extends AbstractAgentBaseContextFactory {
         for (LoadBalancerListenerInfo listener : listeners) {
             List<LoadBalancerTargetsInfo> listenerTargets = new ArrayList<>();
             for (LoadBalancerTargetsInfo info : targetsInfo) {
-                Integer listnerPort = listener.getPrivatePort() == null ? listener.getSourcePort() : listener
-                        .getPrivatePort();
+                Integer listnerPort = listener.getSourcePort();
                 if (info.getPortSpec().getSourcePort().equals(listnerPort)) {
                     if (listener.getSourceProtocol().equalsIgnoreCase("http")
                             || listener.getSourceProtocol().equalsIgnoreCase("https")) {

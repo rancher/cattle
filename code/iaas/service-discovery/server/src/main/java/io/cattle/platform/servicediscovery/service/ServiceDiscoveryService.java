@@ -15,6 +15,8 @@ import java.util.List;
 
 public interface ServiceDiscoveryService extends AnnotatedEventListener {
 
+    void removeFromBalancerServices(Service service);
+
     void removeServiceMaps(Service service);
 
     List<Integer> getServiceInstanceUsedSuffixes(Service service, String launchConfigName);

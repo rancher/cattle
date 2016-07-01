@@ -33,6 +33,7 @@
         "loadBalancerConfig" : "crud",
         "loadBalancerCookieStickinessPolicy" : "cru",
         "loadBalancerService" : "crud",
+        "balancerService" : "crud",
         "logConfig" : "cr",
         "machine": "crd",
         "machineDriver.resourceActions\\..*": "",
@@ -79,6 +80,8 @@
         "volumeTemplate" : "cr",
         "volumeActivateInput" : "cr",
         "ulimit" : "cr",
+        "portRule": "cr",
+        "targetPortRule": "cr",
         "end" : ""
     }
 }

@@ -111,7 +111,8 @@ public class InstancePreCreate extends AbstractObjectProcessLogic implements Pro
     }
 
     protected void setDns(Instance instance, Map<String, Object> labels, Map<Object, Object> data) {
-        if (instance.getSystemContainer() != null) {
+        if (StringUtils.equalsIgnoreCase(instance.getSystemContainer(),
+                InstanceConstants.SYSTEM_CONTAINER_NETWORK_AGENT)) {
             return;
         }
         if (InstanceConstants.KIND_CONTAINER.equals(instance.getKind())) {

@@ -1,35 +1,46 @@
 package io.cattle.platform.servicediscovery.api.filter;
 
+import static io.cattle.platform.core.model.tables.CertificateTable.*;
 import static io.cattle.platform.core.model.tables.ServiceTable.*;
+import static io.cattle.platform.core.model.tables.StackTable.*;
 import io.cattle.platform.archaius.util.ArchaiusUtil;
 import io.cattle.platform.core.addon.InstanceHealthCheck;
+import io.cattle.platform.core.addon.LoadBalancerCookieStickinessPolicy;
+import io.cattle.platform.core.addon.PortRule;
 import io.cattle.platform.core.addon.ScalePolicy;
+import io.cattle.platform.core.addon.TargetPortRule;
+import io.cattle.platform.core.constants.AgentConstants;
 import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.InstanceConstants;
+import io.cattle.platform.core.constants.LoadBalancerConstants;
 import io.cattle.platform.core.constants.ServiceConstants;
-import io.cattle.platform.core.dao.NetworkDao;
-import io.cattle.platform.core.model.Stack;
+import io.cattle.platform.core.model.Certificate;
 import io.cattle.platform.core.model.Service;
+import io.cattle.platform.core.model.Stack;
+import io.cattle.platform.core.util.LBMetadataUtil;
+import io.cattle.platform.core.util.LBMetadataUtil.LBMetadata;
+import io.cattle.platform.core.util.LBMetadataUtil.StickinessPolicy;
 import io.cattle.platform.core.util.PortSpec;
+import io.cattle.platform.core.util.SystemLabels;
 import io.cattle.platform.iaas.api.filter.common.AbstractDefaultResourceManagerFilter;
 import io.cattle.platform.json.JsonMapper;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.object.util.DataUtils;
-import io.cattle.platform.servicediscovery.api.dao.ServiceExposeMapDao;
 import io.cattle.platform.servicediscovery.api.util.ServiceDiscoveryUtil;
 import io.cattle.platform.servicediscovery.api.util.selector.SelectorUtils;
+import io.cattle.platform.storage.api.filter.ExternalTemplateInstanceFilter;
 import io.cattle.platform.storage.service.StorageService;
 import io.cattle.platform.util.type.CollectionUtils;
 import io.github.ibuildthecloud.gdapi.exception.ValidationErrorException;
 import io.github.ibuildthecloud.gdapi.request.ApiRequest;
 import io.github.ibuildthecloud.gdapi.request.resource.ResourceManager;
 import io.github.ibuildthecloud.gdapi.validation.ValidationErrorCodes;
-import io.cattle.platform.storage.api.filter.ExternalTemplateInstanceFilter;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -38,12 +49,11 @@ import java.util.Set;
 
 import javax.inject.Inject;
 
+import org.apache.commons.lang3.StringUtils;
+
 import com.netflix.config.DynamicStringProperty;
 
 public class ServiceCreateValidationFilter extends AbstractDefaultResourceManagerFilter {
-
-    @Inject
-    ServiceExposeMapDao exposeMapDao;
 
     @Inject
     ObjectManager objectManager;
@@ -52,14 +62,13 @@ public class ServiceCreateValidationFilter extends AbstractDefaultResourceManage
     StorageService storageService;
 
     @Inject
-    NetworkDao ntwkDao;
-
-    @Inject
     JsonMapper jsonMapper;
-    
+
     private static final int LB_HEALTH_CHECK_PORT = 42;
     public static final DynamicStringProperty DEFAULT_REGISTRY = ArchaiusUtil.getString("registry.default");
     public static final DynamicStringProperty WHITELIST_REGISTRIES = ArchaiusUtil.getString("registry.whitelist");
+    private static final DynamicStringProperty DEFAULT_LB_IMAGE_UUID = ArchaiusUtil
+            .getString("lb.instance.image.uuid");
 
     @Override
     public Class<?>[] getTypeClasses() {
@@ -68,14 +77,17 @@ public class ServiceCreateValidationFilter extends AbstractDefaultResourceManage
 
     @Override
     public String[] getTypes() {
-        return new String[] { "service", "loadBalancerService", "externalService", "dnsService" };
+        return new String[] { ServiceConstants.KIND_SERVICE,
+                ServiceConstants.KIND_LOAD_BALANCER_SERVICE,
+                ServiceConstants.KIND_EXTERNAL_SERVICE, ServiceConstants.KIND_DNS_SERVICE,
+                ServiceConstants.KIND_BALANCER_SERVICE };
     }
 
     @Override
     public Object create(String type, ApiRequest request, ResourceManager next) {
         Service service = request.proxyRequestObject(Service.class);
         
-        validateStack(service);
+        Long accountId = validateStackAndGetAccountId(service);
 
         validateSelector(request);
 
@@ -95,6 +107,9 @@ public class ServiceCreateValidationFilter extends AbstractDefaultResourceManage
 
         request = setServiceIndexStrategy(type, request);
 
+        request = setLBServiceLBMetadata(service, type, false, request, accountId);
+        request = setServiceLBMetadata(service, type, false, request, accountId);
+
         return super.create(type, request, next);
     }
     
@@ -107,7 +122,180 @@ public class ServiceCreateValidationFilter extends AbstractDefaultResourceManage
                 ServiceConstants.SERVICE_INDEX_DU_STRATEGY);
 
         request.setRequestObject(data);
+        return request;
+    }
 
+    @SuppressWarnings("unchecked")
+    public ApiRequest setServiceLBMetadata(Service service, String type, boolean update, ApiRequest request,
+            long accountId) {
+        Map<String, Object> data = CollectionUtils.toMap(request.getRequestObject());
+
+        // add lb information to the metadata
+        if (!type.equalsIgnoreCase(ServiceConstants.KIND_SERVICE)) {
+            return request;
+        }
+        Map<String, Object> metadata = DataUtils.getFieldFromRequest(request, ServiceConstants.FIELD_METADATA,
+                Map.class);
+        List<? extends TargetPortRule> portRules = DataAccessor.fromMap(request.getRequestObject())
+                .withKey(LoadBalancerConstants.FIELD_PORT_RULES).asList(jsonMapper, TargetPortRule.class);
+
+        if (portRules == null) {
+            return request;
+        }
+
+        if (update) {
+            if (!data.containsKey(ServiceConstants.FIELD_METADATA)) {
+                metadata = DataAccessor.fields(service).withKey(ServiceConstants.FIELD_METADATA)
+                        .withDefault(Collections.EMPTY_MAP).as(Map.class);
+            }
+
+            if (!data.containsKey(LoadBalancerConstants.FIELD_PORT_RULES)) {
+                portRules = DataAccessor.fields(service).withKey(LoadBalancerConstants.FIELD_PORT_RULES)
+                        .asList(jsonMapper, TargetPortRule.class);
+            }
+        }
+
+        if (metadata == null) {
+            metadata = new HashMap<>();
+        }
+
+        Stack stack = objectManager.findOne(Stack.class, STACK.ID, service.getStackId());
+        LBMetadata lb = new LBMetadata(portRules, service.getName(), stack.getName());
+        metadata.put(LBMetadataUtil.LB_METADATA_KEY, lb);
+        data.put(ServiceConstants.FIELD_METADATA, metadata);
+        request.setRequestObject(data);
+        return request;
+    }
+
+    @SuppressWarnings("unchecked")
+    public ApiRequest setLBServiceLBMetadata(Service lbService, String type, boolean update, ApiRequest request, long accountId) {
+        Map<String, Object> data = CollectionUtils.toMap(request.getRequestObject());
+        // add lb information to the metadata
+        if (!type.equalsIgnoreCase(ServiceConstants.KIND_BALANCER_SERVICE)) {
+            return request;
+        }
+        Map<String, Object> metadata = DataUtils.getFieldFromRequest(request, ServiceConstants.FIELD_METADATA,
+                Map.class);
+        List<? extends PortRule> portRules = DataAccessor.fromMap(request.getRequestObject())
+                .withKey(LoadBalancerConstants.FIELD_PORT_RULES).asList(jsonMapper, PortRule.class);
+        Long defaultCertId = DataUtils.getFieldFromRequest(request, LoadBalancerConstants.FIELD_LB_DEFAULT_CERTIFICATE_ID,
+                Long.class);
+        List<Long> certIds = DataUtils.getFieldFromRequest(request, LoadBalancerConstants.FIELD_LB_CERTIFICATE_IDS,
+                List.class);
+
+        String config = DataUtils.getFieldFromRequest(request, LoadBalancerConstants.FIELD_CONFIG,
+                String.class);
+
+        LoadBalancerCookieStickinessPolicy stickinessPolicy = DataAccessor.fromMap(request.getRequestObject())
+                .withKey(LoadBalancerConstants.FIELD_STICKINESS_POLICY)
+                .as(jsonMapper, LoadBalancerCookieStickinessPolicy.class);
+        if (update) {
+            if (!data.containsKey(LoadBalancerConstants.FIELD_LB_DEFAULT_CERTIFICATE_ID)) {
+                defaultCertId = DataAccessor.fieldLong(lbService, LoadBalancerConstants.FIELD_LB_DEFAULT_CERTIFICATE_ID);
+            }
+            
+            if (!data.containsKey(LoadBalancerConstants.FIELD_LB_CERTIFICATE_IDS)) {
+                certIds = DataAccessor.fieldLongList(lbService, LoadBalancerConstants.FIELD_LB_DEFAULT_CERTIFICATE_ID);
+            }
+            
+            if (!data.containsKey(ServiceConstants.FIELD_METADATA)) {
+                metadata = DataAccessor.fields(lbService).withKey(ServiceConstants.FIELD_METADATA)
+                        .withDefault(Collections.EMPTY_MAP).as(Map.class);
+            }
+            
+            if (!data.containsKey(LoadBalancerConstants.FIELD_PORT_RULES)) {
+                portRules = DataAccessor.fields(lbService).withKey(LoadBalancerConstants.FIELD_PORT_RULES)
+                        .asList(jsonMapper, PortRule.class);
+            }
+            if (!data.containsKey(LoadBalancerConstants.FIELD_CONFIG)) {
+                config = DataAccessor.fieldString(lbService, LoadBalancerConstants.FIELD_PORT_RULES);
+            }
+            if (!data.containsKey(LoadBalancerConstants.FIELD_STICKINESS_POLICY)) {
+                stickinessPolicy = DataAccessor.fields(lbService).withKey(LoadBalancerConstants.FIELD_STICKINESS_POLICY)
+                        .as(jsonMapper, LoadBalancerCookieStickinessPolicy.class);
+            }
+        }
+
+        if (portRules == null) {
+            portRules = new ArrayList<>();
+            data.put(LoadBalancerConstants.FIELD_PORT_RULES, portRules);
+        }
+        for (PortRule rule : portRules) {
+            // either serviceId or selector are required
+            boolean emptySelector = StringUtils.isEmpty(rule.getSelector());
+            boolean emptyService = StringUtils.isEmpty(rule.getServiceId());
+            if (emptySelector && emptyService) {
+                throw new ValidationErrorException(ValidationErrorCodes.MISSING_REQUIRED, "serviceId");
+            }
+            if (!emptySelector && !emptyService) {
+                throw new ValidationErrorException(ValidationErrorCodes.INVALID_OPTION,
+                        "Can't specify both selector and serviceId");
+            }
+
+            if (!emptyService && rule.getTargetPort() == null) {
+                throw new ValidationErrorException(ValidationErrorCodes.MISSING_REQUIRED, "targetPort");
+            }
+        }
+        
+        if (metadata == null) {
+            metadata = new HashMap<>();
+        }
+        Map<Long, Service> serviceIdsToService = new HashMap<>();
+        Map<Long, Stack> stackIdsToStack = new HashMap<>();
+        Map<Long, Certificate> certIdsToCert = new HashMap<>();
+        for (Service service : objectManager.find(Service.class, SERVICE.ACCOUNT_ID,
+                accountId, SERVICE.REMOVED, null)) {
+            serviceIdsToService.put(service.getId(), service);
+        }
+        
+        for (Stack stack : objectManager.find(Stack.class,
+                STACK.ACCOUNT_ID,
+                accountId, STACK.REMOVED, null)) {
+            stackIdsToStack.put(stack.getId(), stack);
+        }
+        
+        for (Certificate cert : objectManager.find(Certificate.class,
+                CERTIFICATE.ACCOUNT_ID, accountId, CERTIFICATE.REMOVED, null)) {
+            certIdsToCert.put(cert.getId(), cert);
+        }
+        
+        StickinessPolicy policy = null;
+        if (stickinessPolicy != null) {
+            policy = new StickinessPolicy(stickinessPolicy);
+        }
+        
+        LBMetadata lb = new LBMetadata(portRules, certIds, defaultCertId, serviceIdsToService, stackIdsToStack,
+                certIdsToCert, config, policy);
+        metadata.put(LBMetadataUtil.LB_METADATA_KEY, lb);
+        data.put(ServiceConstants.FIELD_METADATA, metadata);
+
+        // set environment variables here
+        Map<String, Object> launchConfig = null;
+        if (data.get(ServiceConstants.FIELD_LAUNCH_CONFIG) != null) {
+            launchConfig = (Map<String, Object>) data.get(ServiceConstants.FIELD_LAUNCH_CONFIG);
+        } else {
+            launchConfig = DataAccessor.fields(lbService)
+                    .withKey(ServiceConstants.FIELD_LAUNCH_CONFIG).withDefault(Collections.EMPTY_MAP)
+                    .as(Map.class);
+        }
+
+        if (launchConfig == null) {
+            launchConfig = new HashMap<>();
+        }
+
+        Object labelsObj = launchConfig.get(InstanceConstants.FIELD_LABELS);
+        Map<String, String> labels = new HashMap<>();
+        if (labelsObj != null) {
+            labels = (Map<String, String>) labelsObj;
+        }
+        labels.put(SystemLabels.LABEL_AGENT_ROLE, AgentConstants.ENVIRONMENT_ADMIN_ROLE);
+        labels.put(SystemLabels.LABEL_AGENT_CREATE, "true");
+        launchConfig.put(InstanceConstants.FIELD_LABELS, labels);
+        if (launchConfig.get(InstanceConstants.FIELD_IMAGE_UUID) == null) {
+            launchConfig.put(InstanceConstants.FIELD_IMAGE_UUID, DEFAULT_LB_IMAGE_UUID.get());
+        }
+        data.put(ServiceConstants.FIELD_LAUNCH_CONFIG, launchConfig);
+        request.setRequestObject(data);
         return request;
     }
 
@@ -119,10 +307,12 @@ public class ServiceCreateValidationFilter extends AbstractDefaultResourceManage
                 for (Object port : ports) {
                     /* This will parse the PortSpec and throw an error */
                     PortSpec portSpec = new PortSpec(port.toString());
-                    if (type.equals("loadBalancerService") && portSpec.getPublicPort() != null
+                    if ((type.equals(ServiceConstants.KIND_LOAD_BALANCER_SERVICE) || type
+                            .equals(ServiceConstants.KIND_BALANCER_SERVICE))
+                            && portSpec.getPublicPort() != null
                             && portSpec.getPublicPort().equals(LB_HEALTH_CHECK_PORT)) {
                         throw new ValidationErrorException(ValidationErrorCodes.INVALID_OPTION,
-                                "Port " + LB_HEALTH_CHECK_PORT + " is reserved for loadBalancerService health check");
+                                "Port " + LB_HEALTH_CHECK_PORT + " is reserved for service health check");
                     }
                 }
             }
@@ -165,16 +355,17 @@ public class ServiceCreateValidationFilter extends AbstractDefaultResourceManage
 
     @SuppressWarnings("unchecked")
     public ApiRequest setHealthCheck(String type, ApiRequest request) {
-        if (!type.equalsIgnoreCase(ServiceConstants.KIND_LOAD_BALANCER_SERVICE)) {
+        if (!(type.equalsIgnoreCase(ServiceConstants.KIND_LOAD_BALANCER_SERVICE) || type
+                .equalsIgnoreCase(ServiceConstants.KIND_BALANCER_SERVICE))) {
             return request;
         }
         Map<String, Object> data = CollectionUtils.toMap(request.getRequestObject());
-        
+        Integer healthCheckPort = LB_HEALTH_CHECK_PORT;
         if (data.get(ServiceConstants.FIELD_LAUNCH_CONFIG) != null) {
             Map<String, Object> launchConfig = (Map<String, Object>)data.get(ServiceConstants.FIELD_LAUNCH_CONFIG);
             if (launchConfig.get(InstanceConstants.FIELD_HEALTH_CHECK) == null) {
                 InstanceHealthCheck healthCheck = new InstanceHealthCheck();
-                healthCheck.setPort(LB_HEALTH_CHECK_PORT);
+                healthCheck.setPort(healthCheckPort);
                 healthCheck.setInterval(2000);
                 healthCheck.setHealthyThreshold(2);
                 healthCheck.setUnhealthyThreshold(3);
@@ -221,13 +412,14 @@ public class ServiceCreateValidationFilter extends AbstractDefaultResourceManage
         }
     }
 
-    protected void validateStack(Service service) {
+    protected long validateStackAndGetAccountId(Service service) {
         Stack env = objectManager.loadResource(Stack.class, service.getStackId());
         List<String> invalidStates = Arrays.asList(InstanceConstants.STATE_ERROR, CommonStatesConstants.REMOVED,
                 CommonStatesConstants.REMOVING);
         if (env == null || invalidStates.contains(env.getState())) {
             throw new ValidationErrorException(ValidationErrorCodes.INVALID_STATE, ServiceConstants.FIELD_STACK_ID);
         }
+        return env.getAccountId();
     }
 
     @SuppressWarnings("unchecked")
@@ -292,6 +484,9 @@ public class ServiceCreateValidationFilter extends AbstractDefaultResourceManage
         validateLaunchConfigs(service, request);
         validateSelector(request);
         validateScalePolicy(service, request, true);
+
+        request = setLBServiceLBMetadata(service, type, true, request, service.getAccountId());
+        request = setServiceLBMetadata(service, type, true, request, service.getAccountId());
 
         return super.update(type, id, request, next);
     }

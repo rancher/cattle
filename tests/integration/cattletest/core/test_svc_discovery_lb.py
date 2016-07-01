@@ -521,7 +521,6 @@ def test_inactive_lb(super_client, client, context):
     assert lb_service.state == "active"
     maps = _validate_svc_instance_map_count(client, lb_service, "active", 1)
     lb_instance = _wait_for_instance_start(super_client, maps[0].instanceId)
-    assert lb_instance.data.fields.dnsSearch is None
     agent_id = lb_instance.agentId
     item_before = _get_config_item(super_client, agent_id)
 

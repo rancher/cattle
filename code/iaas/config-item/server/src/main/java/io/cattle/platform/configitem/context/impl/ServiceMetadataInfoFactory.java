@@ -4,6 +4,7 @@ import static io.cattle.platform.core.model.tables.InstanceHostMapTable.*;
 import static io.cattle.platform.core.model.tables.ServiceConsumeMapTable.*;
 import static io.cattle.platform.core.model.tables.ServiceTable.*;
 import static io.cattle.platform.core.model.tables.StackTable.*;
+import io.cattle.platform.configitem.context.dao.LoadBalancerInfoDao;
 import io.cattle.platform.configitem.context.dao.MetaDataInfoDao;
 import io.cattle.platform.configitem.context.dao.MetaDataInfoDao.Version;
 import io.cattle.platform.configitem.context.data.metadata.common.ContainerMetaData;
@@ -63,6 +64,9 @@ public class ServiceMetadataInfoFactory extends AbstractAgentBaseContextFactory 
 
     @Inject
     JsonMapper jsonMapper;
+
+    @Inject
+    LoadBalancerInfoDao lbInfoDao;
 
     @Override
     protected void populateContext(Agent agent, Instance instance, ConfigItem item, ArchiveContext context) {
@@ -420,6 +424,7 @@ public class ServiceMetadataInfoFactory extends AbstractAgentBaseContextFactory 
         }
         Map<String, Object> metadata = DataAccessor.fields(service).withKey(ServiceConstants.FIELD_METADATA)
                 .withDefault(Collections.EMPTY_MAP).as(Map.class);
+        metadata = lbInfoDao.processLBMetadata(service, lbInfoDao, metadata);
         Object hcO = null;
         if (service.getKind().equalsIgnoreCase(ServiceConstants.KIND_EXTERNAL_SERVICE)) {
             hcO = DataAccessor.field(service, InstanceConstants.FIELD_HEALTH_CHECK, Object.class);

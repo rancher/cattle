@@ -10,6 +10,7 @@ public class ServiceConstants {
     public static final String KIND_LOAD_BALANCER_SERVICE = "loadBalancerService";
     public static final String KIND_EXTERNAL_SERVICE = "externalService";
     public static final String KIND_DNS_SERVICE = "dnsService";
+    public static final String KIND_BALANCER_SERVICE = "balancerService";
 
     public static final String TYPE_STACK = "stack";
     public static final String FIELD_SCALE = "scale";

@@ -1,21 +1,36 @@
 package io.cattle.platform.configitem.context.dao.impl;
 
+import static io.cattle.platform.core.model.tables.CertificateTable.*;
+import static io.cattle.platform.core.model.tables.ServiceTable.*;
+import static io.cattle.platform.core.model.tables.StackTable.*;
 import io.cattle.platform.configitem.context.dao.LoadBalancerInfoDao;
 import io.cattle.platform.configitem.context.data.LoadBalancerListenerInfo;
+import io.cattle.platform.core.addon.HaproxyConfig;
+import io.cattle.platform.core.addon.LoadBalancerCookieStickinessPolicy;
 import io.cattle.platform.core.addon.LoadBalancerTargetInput;
+import io.cattle.platform.core.addon.PortRule;
 import io.cattle.platform.core.constants.InstanceConstants;
+import io.cattle.platform.core.constants.LoadBalancerConstants;
 import io.cattle.platform.core.constants.ServiceConstants;
+import io.cattle.platform.core.model.Certificate;
 import io.cattle.platform.core.model.Service;
 import io.cattle.platform.core.model.ServiceConsumeMap;
 import io.cattle.platform.core.model.ServiceExposeMap;
+import io.cattle.platform.core.model.Stack;
+import io.cattle.platform.core.util.LBMetadataUtil;
+import io.cattle.platform.core.util.LBMetadataUtil.LBMetadata;
+import io.cattle.platform.core.util.LBMetadataUtil.StickinessPolicy;
 import io.cattle.platform.core.util.LoadBalancerTargetPortSpec;
 import io.cattle.platform.core.util.PortSpec;
 import io.cattle.platform.json.JsonMapper;
 import io.cattle.platform.object.ObjectManager;
+import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.servicediscovery.api.dao.ServiceConsumeMapDao;
+import io.cattle.platform.servicediscovery.api.dao.ServiceDao;
 import io.cattle.platform.servicediscovery.api.dao.ServiceExposeMapDao;
 import io.cattle.platform.servicediscovery.api.util.ServiceDiscoveryUtil;
 import io.cattle.platform.servicediscovery.service.ServiceDiscoveryService;
+import io.cattle.platform.util.type.CollectionUtils;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -23,6 +38,8 @@ import java.util.List;
 import java.util.Map;
 
 import javax.inject.Inject;
+
+import org.apache.commons.lang3.StringUtils;
 
 public class LoadBalancerInfoDaoImpl implements LoadBalancerInfoDao {
     @Inject
@@ -39,6 +56,9 @@ public class LoadBalancerInfoDaoImpl implements LoadBalancerInfoDao {
 
     @Inject
     ServiceDiscoveryService sdService;
+
+    @Inject
+    ServiceDao svcDao;
 
     @Override
     @SuppressWarnings("unchecked")
@@ -134,7 +154,7 @@ public class LoadBalancerInfoDaoImpl implements LoadBalancerInfoDao {
         List<LoadBalancerTargetPortSpec> portSpecsInitial = new ArrayList<>();
         Map<Integer, LoadBalancerListenerInfo> lbSourcePorts = new HashMap<>();
         for (LoadBalancerListenerInfo listener : listeners) {
-            lbSourcePorts.put(getSourcePort(listener), listener);
+            lbSourcePorts.put(listener.getSourcePort(), listener);
         }
 
         List<Integer> targetSourcePorts = new ArrayList<>();
@@ -161,14 +181,9 @@ public class LoadBalancerInfoDaoImpl implements LoadBalancerInfoDao {
             if (!targetSourcePorts.contains(lbSourcePort)) {
                 LoadBalancerListenerInfo listener = lbSourcePorts.get(lbSourcePort);
                 completePortSpecs
-                        .add(new LoadBalancerTargetPortSpec(listener.getTargetPort(), getSourcePort(listener)));
+                        .add(new LoadBalancerTargetPortSpec(listener.getTargetPort(), listener.getSourcePort()));
             }
         }
-    }
-
-    protected Integer getSourcePort(LoadBalancerListenerInfo listener) {
-        // LEGACY code to support the case when private port is not defined
-        return listener.getPrivatePort() != null ? listener.getPrivatePort() : listener.getSourcePort();
     }
 
     protected List<LoadBalancerTargetPortSpec> completePortSpecs(List<LoadBalancerTargetPortSpec> portSpecsInitial,
@@ -180,7 +195,7 @@ public class LoadBalancerInfoDaoImpl implements LoadBalancerInfoDao {
             if (portSpec.getSourcePort() == null) {
                 for (LoadBalancerListenerInfo listener : listeners) {
                     LoadBalancerTargetPortSpec newSpec = new LoadBalancerTargetPortSpec(portSpec);
-                    newSpec.setSourcePort(getSourcePort(listener));
+                    newSpec.setSourcePort(listener.getSourcePort());
                     portSpecsWithSourcePorts.add(newSpec);
                     // register the fact that the source port is defined on the target
                     targetSourcePorts.add(newSpec.getSourcePort());
@@ -206,6 +221,27 @@ public class LoadBalancerInfoDaoImpl implements LoadBalancerInfoDao {
             }
         }
         return completePortSpecs;
+    }
+
+    @Override
+    public List<LoadBalancerTargetInput> getLoadBalancerTargetsV2(Service lbService) {
+        if (!lbService.getKind().equalsIgnoreCase(ServiceConstants.KIND_LOAD_BALANCER_SERVICE)) {
+            return new ArrayList<>();
+        }
+        List<LoadBalancerTargetInput> targets = new ArrayList<>();
+        List<? extends ServiceConsumeMap> lbLinks = consumeMapDao.findConsumedServices(lbService.getId());
+        for (ServiceConsumeMap lbLink : lbLinks) {
+            List<Service> consumedServices = new ArrayList<>();
+            Service svc = objectManager.loadResource(Service.class, lbLink.getConsumedServiceId());
+            if (sdService.isActiveService(svc)) {
+                consumedServices.add(svc);
+            }
+
+            for (Service consumedService : consumedServices) {
+                targets.add(new LoadBalancerTargetInput(consumedService, null, lbLink, jsonMapper));
+            }
+        }
+        return targets;
     }
 
     @Override
@@ -259,4 +295,158 @@ public class LoadBalancerInfoDaoImpl implements LoadBalancerInfoDao {
             }
         }
     }
+
+    protected List<Long> getLoadBalancerCertIds(Service lbService) {
+        List<Long> certsToReturn = new ArrayList<>();
+        for (Certificate cert : svcDao.getLoadBalancerServiceCertificates(lbService)) {
+            certsToReturn.add(cert.getId());
+        }
+        return certsToReturn;
+    }
+
+    protected Long getLoadBalancerDefaultCertId(Service lbService) {
+        Certificate defaultCert = svcDao.getLoadBalancerServiceDefaultCertificate(lbService);
+        if (defaultCert != null) {
+            return defaultCert.getId();
+        }
+        return null;
+    }
+
+    @Override
+    public Map<String, Object> processLBMetadata(Service lbService, LoadBalancerInfoDao lbInfoDao,
+            Map<String, Object> meta) {
+        if (!lbService.getKind().equalsIgnoreCase(ServiceConstants.KIND_LOAD_BALANCER_SERVICE)) {
+            return meta;
+        }
+
+        if (meta.get(LBMetadataUtil.LB_METADATA_KEY) != null) {
+            return meta;
+        }
+
+        // the logic below is to support legacy APIs by programming all the rules to metadata
+        List<? extends LoadBalancerListenerInfo> listeners = lbInfoDao.getListeners(lbService);
+        if (listeners.isEmpty()) {
+            return meta;
+        }
+        // map listeners by sourcePort
+        Map<Integer, LoadBalancerListenerInfo> portToListener = new HashMap<>();
+        Map<Integer, List<Long>> sourcePortToServiceId = new HashMap<>();
+        for (LoadBalancerListenerInfo listener : listeners) {
+            portToListener.put(listener.getSourcePort(), listener);
+            sourcePortToServiceId.put(listener.getSourcePort(), new ArrayList<Long>());
+        }
+
+        // get targets
+        List<? extends LoadBalancerTargetInput> targets = lbInfoDao.getLoadBalancerTargetsV2(lbService);
+        List<PortRule> rules = new ArrayList<>();
+        List<String> registeredRules = new ArrayList<>();
+        for (LoadBalancerTargetInput target : targets) {
+            // get data from the port spec
+            for (String portData : target.getPorts()) {
+                LoadBalancerTargetPortSpec portSpec = new LoadBalancerTargetPortSpec(portData);
+                List<LoadBalancerListenerInfo> listenersToRegisterTo = new ArrayList<>();
+                if (portSpec.getSourcePort() != null) {
+                    LoadBalancerListenerInfo l = portToListener.get(portSpec.getSourcePort());
+                    // in case user specified non-existent source port
+                    if (l != null) {
+                        listenersToRegisterTo.add(l);
+                    }
+                } else {
+                    listenersToRegisterTo.addAll(portToListener.values());
+                }
+
+                for (LoadBalancerListenerInfo listener : listenersToRegisterTo) {
+                    List<Long> svcs = sourcePortToServiceId.get(listener.getSourcePort());
+                    String path = portSpec.getPath().equalsIgnoreCase("default") ? "" : portSpec.getPath();
+                    String hostname = portSpec.getDomain().equalsIgnoreCase("default") ? "" : portSpec.getDomain();
+                    Integer targetPort = portSpec.getPort() != null ? portSpec.getPort() : listener.getTargetPort();
+                    PortRule portRule = new PortRule(hostname, path, listener.getSourcePort(), 0,
+                            PortRule.Protocol.valueOf(listener.getSourceProtocol()), String.valueOf(target.getService()
+                                    .getId()),
+                            targetPort, null, null);
+                    if (!registeredRules.contains(getUuid(portRule))) {
+                        svcs.add(target.getService().getId());
+                        sourcePortToServiceId.put(listener.getSourcePort(), svcs);
+                        registeredRules.add(getUuid(portRule));
+                        rules.add(portRule);
+                    }
+                }
+            }
+
+            for (Integer sourcePort : portToListener.keySet()) {
+                List<Long> svcs = sourcePortToServiceId.get(sourcePort);
+                if (svcs.contains(target.getService().getId())) {
+                    continue;
+                }
+                PortRule portRule = new PortRule("", "", sourcePort, 0, PortRule.Protocol.valueOf(portToListener.get(
+                        sourcePort)
+                        .getSourceProtocol()), String.valueOf(target.getService().getId()),
+                        portToListener.get(sourcePort).getTargetPort(), null, null);
+
+                if (!registeredRules.contains(getUuid(portRule))) {
+                    registeredRules.add(getUuid(portRule));
+                    rules.add(portRule);
+                }
+            }
+        }
+
+        Map<String, Object> metaToReturn = new HashMap<>();
+        metaToReturn.putAll(meta);
+
+        List<Long> certs = getLoadBalancerCertIds(lbService);
+        Long defaultCert = getLoadBalancerDefaultCertId(lbService);
+        Map<Long, Service> serviceIdsToService = new HashMap<>();
+        Map<Long, Stack> stackIdsToStack = new HashMap<>();
+        Map<Long, Certificate> certIdsToCert = new HashMap<>();
+        for (Service service : objectManager.find(Service.class, SERVICE.ACCOUNT_ID,
+                lbService.getAccountId(), SERVICE.REMOVED, null)) {
+            serviceIdsToService.put(service.getId(), service);
+        }
+        
+        for (Stack stack : objectManager.find(Stack.class,
+                STACK.ACCOUNT_ID,
+                lbService.getAccountId(), STACK.REMOVED, null)) {
+            stackIdsToStack.put(stack.getId(), stack);
+        }
+        
+        for (Certificate cert : objectManager.find(Certificate.class,
+                CERTIFICATE.ACCOUNT_ID, lbService.getAccountId(), CERTIFICATE.REMOVED, null)) {
+            certIdsToCert.put(cert.getId(), cert);
+        }
+
+        
+        Object configObj = DataAccessor.field(lbService, ServiceConstants.FIELD_LOAD_BALANCER_CONFIG,
+                Object.class);
+        Map<String, Object> data = CollectionUtils.toMap(configObj);
+        String config = null;
+        StickinessPolicy policy = null;
+        if (configObj != null) {
+            LoadBalancerCookieStickinessPolicy lbPolicy = jsonMapper.convertValue(data.get(LoadBalancerConstants.FIELD_LB_COOKIE_POLICY),
+                    LoadBalancerCookieStickinessPolicy.class);
+            if (lbPolicy != null) {
+                policy = new StickinessPolicy(lbPolicy);
+            }
+            HaproxyConfig customConfig = jsonMapper.convertValue(data.get(LoadBalancerConstants.FIELD_HAPROXY_CONFIG),
+                    HaproxyConfig.class);
+            if (customConfig != null) {
+                if (!StringUtils.isEmpty(customConfig.getGlobal())) {
+                    config = String.format("global\n%s\n", customConfig.getGlobal());
+                }
+                if (!StringUtils.isEmpty(customConfig.getDefaults())) {
+                    config = String.format("%sdefaults\n%s\n", config, customConfig.getDefaults());
+                }
+            }
+        }
+        
+        LBMetadata lb = new LBMetadata(rules, certs, defaultCert, serviceIdsToService, stackIdsToStack, certIdsToCert,
+                config, policy);
+        metaToReturn.put(LBMetadataUtil.LB_METADATA_KEY, lb);
+        return metaToReturn;
+    }
+
+    private static String getUuid(PortRule rule) {
+        return String.format("%s_%s_%s_%s", rule.getSourcePort(), rule.getServiceId(), rule.getHostname(), rule.getPath());
+    }
+
+
 }

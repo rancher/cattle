@@ -6,6 +6,7 @@ import io.cattle.platform.core.model.Service;
 import io.cattle.platform.core.util.LoadBalancerTargetPortSpec;
 
 import java.util.List;
+import java.util.Map;
 
 public interface LoadBalancerInfoDao {
     List<LoadBalancerListenerInfo> getListeners(Service lbService);
@@ -19,4 +20,8 @@ public interface LoadBalancerInfoDao {
             List<? extends LoadBalancerListenerInfo> listeners);
 
     List<LoadBalancerTargetInput> getLoadBalancerTargets(Service lbService);
+
+    Map<String, Object> processLBMetadata(Service lbService, LoadBalancerInfoDao lbInfoDao, Map<String, Object> meta);
+
+    List<LoadBalancerTargetInput> getLoadBalancerTargetsV2(Service lbService);
 }

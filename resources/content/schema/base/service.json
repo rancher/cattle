@@ -131,6 +131,13 @@
             "required": false,
             "nullable": false,
             "default": false
+        }, 
+        "portRules": {
+            "type" : "array[targetPortRule]",
+            "nullable": true,
+             "attributes" : {
+                "scheduleUpdate" : true
+            }
         }
     },
     "resourceActions" : {

@@ -21,9 +21,12 @@ public class LoadBalancerTargetInput {
     public LoadBalancerTargetInput(Service service, ServiceExposeMap exposeMap, ServiceConsumeMap serviceLink,
             JsonMapper jsonMapper) {
         this.service = service;
-        this.instanceId = exposeMap.getInstanceId();
-        this.ipAddress = exposeMap.getIpAddress();
-        this.name = exposeMap.getUuid();
+        if (exposeMap != null) {
+            this.instanceId = exposeMap.getInstanceId();
+            this.ipAddress = exposeMap.getIpAddress();
+            this.name = exposeMap.getUuid();
+        }
+
         this.ports = DataAccessor.fields(serviceLink).
                 withKey(LoadBalancerConstants.FIELD_LB_TARGET_PORTS).withDefault(Collections.EMPTY_LIST)
                 .asList(jsonMapper, String.class);

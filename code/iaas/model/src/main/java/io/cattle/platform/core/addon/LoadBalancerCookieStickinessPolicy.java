@@ -1,5 +1,6 @@
 package io.cattle.platform.core.addon;
 
+import io.github.ibuildthecloud.gdapi.annotation.Field;
 import io.github.ibuildthecloud.gdapi.annotation.Type;
 
 @Type(list = false)
@@ -13,7 +14,10 @@ public class LoadBalancerCookieStickinessPolicy {
     Boolean postonly = false;
     Mode mode;
 
-    enum Mode {
+    public LoadBalancerCookieStickinessPolicy() {
+    }
+
+    public enum Mode {
         rewrite,
         insert,
         prefix;
@@ -59,6 +63,7 @@ public class LoadBalancerCookieStickinessPolicy {
         this.postonly = postonly;
     }
 
+    @Field(required = false, nullable = true, defaultValue = "insert")
     public Mode getMode() {
         return mode;
     }

@@ -2,13 +2,13 @@ package io.cattle.platform.agent.instance.factory.impl;
 
 import static io.cattle.platform.core.model.tables.AgentTable.*;
 import static io.cattle.platform.core.model.tables.InstanceTable.*;
-
 import io.cattle.platform.agent.AgentLocator;
 import io.cattle.platform.agent.RemoteAgent;
 import io.cattle.platform.agent.instance.dao.AgentInstanceDao;
 import io.cattle.platform.agent.instance.factory.AgentInstanceBuilder;
 import io.cattle.platform.agent.instance.factory.AgentInstanceFactory;
 import io.cattle.platform.agent.instance.factory.lock.AgentInstanceAgentCreateLock;
+import io.cattle.platform.archaius.util.ArchaiusUtil;
 import io.cattle.platform.core.constants.AccountConstants;
 import io.cattle.platform.core.constants.AgentConstants;
 import io.cattle.platform.core.constants.CommonStatesConstants;
@@ -37,6 +37,7 @@ import io.cattle.platform.process.common.util.ProcessUtils;
 import io.cattle.platform.util.type.CollectionUtils;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -47,7 +48,12 @@ import javax.inject.Inject;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.ObjectUtils;
 
+import com.netflix.config.DynamicStringProperty;
+
 public class AgentInstanceFactoryImpl implements AgentInstanceFactory {
+
+    private static final DynamicStringProperty DEFAULT_LB_IMAGE_UUID = ArchaiusUtil
+            .getString("lb.instance.image.uuid");
 
     @Inject
     AccountDao accountDao;
@@ -136,9 +142,9 @@ public class AgentInstanceFactoryImpl implements AgentInstanceFactory {
         if (shouldCreateAgent(instance)) {
             Map<String, Object> accountData = new HashMap<>();
             Map<String, Object> labels = DataAccessor.fieldMap(instance, InstanceConstants.FIELD_LABELS);
-            if ("environment".equals(labels.get(SystemLabels.LABEL_AGENT_ROLE))) {
+            if (AgentConstants.ENVIRONMENT_ROLE.equals(labels.get(SystemLabels.LABEL_AGENT_ROLE))) {
                 accountData = CollectionUtils.asMap(AccountConstants.DATA_ACT_AS_RESOURCE_ACCOUNT, true);
-            } else if ("environmentAdmin".equals(labels.get(SystemLabels.LABEL_AGENT_ROLE))) {
+            } else if (AgentConstants.ENVIRONMENT_ADMIN_ROLE.equals(labels.get(SystemLabels.LABEL_AGENT_ROLE))) {
                 // allow to set this flag only for system services
                 List<? extends Service> services = instanceDao.findServicesNonRemovedLinksOnly(instance);
                 for (Service service : services) {
@@ -153,6 +159,25 @@ public class AgentInstanceFactoryImpl implements AgentInstanceFactory {
             return getAgent(new AgentInstanceBuilderImpl(this, instance, accountData));
         }
         return null;
+    }
+
+    @SuppressWarnings("unchecked")
+    protected boolean isSystemService(Service service) {
+        Stack stack = objectManager.loadResource(Stack.class, service.getStackId());
+        if (DataAccessor.fieldBool(stack, "isSystem")) {
+            return true;
+        }
+        
+        Map<String, Object> data = DataAccessor.fields(service)
+        .withKey("launchConfig").withDefault(Collections.EMPTY_MAP)
+                .as(Map.class);
+        
+        Object imageObj = data.get(InstanceConstants.FIELD_IMAGE_UUID);
+        if (imageObj == null) {
+            return false;
+        }
+
+        return DEFAULT_LB_IMAGE_UUID.get().equalsIgnoreCase(imageObj.toString());
     }
 
     @Override
