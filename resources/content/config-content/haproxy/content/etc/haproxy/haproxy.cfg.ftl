@@ -92,6 +92,7 @@ backend ${listener.uuid}_${backend.uuid}_backend
          <#if listener.sourceProtocol == "https">
         http-request add-header X-Forwarded-Proto https if { ssl_fc }
         </#if>
+        http-request set-header X-Forwarded-Port %dst_port
         
 </#list>
 </#list>
