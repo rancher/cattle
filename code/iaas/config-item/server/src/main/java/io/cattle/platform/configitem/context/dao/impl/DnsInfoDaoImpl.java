@@ -441,7 +441,7 @@ public class DnsInfoDaoImpl extends AbstractJooqDao implements DnsInfoDao {
 
     protected Map<Long, List<ServiceInstanceData>> getServiceIdToServiceInstancesData(long accountId, boolean client, long vnetId) {
         Map<Long, List<ServiceInstanceData>> returnData = new HashMap<>();
-        List<ServiceInstanceData> serviceData = getServiceInstanceInstancesData(accountId, client, vnetId);
+        List<ServiceInstanceData> serviceData = getServiceInstancesData(accountId, client, vnetId);
 
         for (ServiceInstanceData data : serviceData) {
             List<ServiceInstanceData> existingData = returnData.get(data.getService().getId());
@@ -484,7 +484,24 @@ public class DnsInfoDaoImpl extends AbstractJooqDao implements DnsInfoDao {
         return returnDataFiltered;
     }
 
-    protected List<ServiceInstanceData> getServiceInstanceInstancesData(long accountId, boolean client, long vnetId) {
+    protected List<ServiceInstanceData> getServiceInstancesData(long accountId, boolean client, long vnetId) {
+        List<ServiceInstanceData> data = getServiceInstancesDataImpl(accountId, client, vnetId);
+        Map<Long, IpAddress> instanceIdToIp = new HashMap<>();
+        for (ServiceInstanceData d : data) {
+            if (d.getInstance() != null) {
+                instanceIdToIp.put(d.getInstance().getId(), d.getIpAddress());
+            }
+        }
+
+        for (ServiceInstanceData d : data) {
+            if (d.getInstance() != null && d.getInstance().getNetworkContainerId() != null) {
+                        d.setIpAddress(instanceIdToIp.get(d.getInstance().getNetworkContainerId()));
+            }
+        }
+        return data;
+    }
+
+    protected List<ServiceInstanceData> getServiceInstancesDataImpl(long accountId, boolean client, long vnetId) {
         MultiRecordMapper<ServiceInstanceData> mapper = new MultiRecordMapper<ServiceInstanceData>() {
             @Override
             protected ServiceInstanceData map(List<Object> input) {
@@ -504,7 +521,8 @@ public class DnsInfoDaoImpl extends AbstractJooqDao implements DnsInfoDao {
         IpAddressTable ipAddress = mapper.add(IP_ADDRESS, IP_ADDRESS.ADDRESS);
         InstanceTable instance = mapper.add(INSTANCE, INSTANCE.NAME, INSTANCE.HEALTH_STATE, INSTANCE.DNS_INTERNAL,
                 INSTANCE.DNS_SEARCH_INTERNAL,
-                INSTANCE.STATE);
+                INSTANCE.STATE,
+                INSTANCE.NETWORK_CONTAINER_ID);
         ServiceExposeMapTable exposeMap = mapper.add(SERVICE_EXPOSE_MAP);
         NicTable nic = mapper.add(NIC, NIC.DEVICE_NUMBER, NIC.INSTANCE_ID);
         EnvironmentTable stack = mapper.add(ENVIRONMENT, ENVIRONMENT.NAME);
@@ -512,7 +530,8 @@ public class DnsInfoDaoImpl extends AbstractJooqDao implements DnsInfoDao {
         if (client) {
             condition = ipAddress.ROLE.eq(IpAddressConstants.ROLE_PRIMARY).and(nic.VNET_ID.eq(vnetId));
         } else {
-            condition = (ipAddress.ROLE.isNull().and(ipAddress.ADDRESS.isNull())).or(ipAddress.ROLE
+            condition = (ipAddress.ROLE.isNull().and(ipAddress.ADDRESS.isNull().or(ipAddress.ADDRESS.eq(""))))
+                    .or(ipAddress.ROLE
                     .eq(IpAddressConstants.ROLE_PRIMARY));
         }
 
