@@ -128,6 +128,7 @@ public class ServiceExposeMapDaoImpl extends AbstractJooqDao implements ServiceE
                         .and(INSTANCE.STATE.notIn(CommonStatesConstants.PURGING, CommonStatesConstants.PURGED,
                                 CommonStatesConstants.REMOVED, CommonStatesConstants.REMOVING,
                                 InstanceConstants.STATE_ERROR, InstanceConstants.STATE_ERRORING)))
+                .and(SERVICE_EXPOSE_MAP.DNS_PREFIX.isNull())
                 .fetchOne(0, Integer.class);
     }
 
