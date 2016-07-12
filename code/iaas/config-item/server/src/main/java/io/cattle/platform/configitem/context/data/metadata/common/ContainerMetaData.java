@@ -35,6 +35,7 @@ public class ContainerMetaData {
     Long start_count;
     String service_index;
     String state;
+    String external_id;
 
     public ContainerMetaData() {
     }
@@ -45,6 +46,10 @@ public class ContainerMetaData {
 
     public String getPrimary_ip() {
         return primary_ip;
+    }
+
+    public String getExternal_id() {
+        return external_id;
     }
 
     public List<String> getIps() {
@@ -77,6 +82,7 @@ public class ContainerMetaData {
         this.hostMetaData = hostMetaData;
         this.name = instance.getName();
         this.uuid = instance.getUuid();
+        this.external_id = instance.getExternalId();
         Map<String, String> labels = DataAccessor.fields(instance).withKey(InstanceConstants.FIELD_LABELS)
                 .withDefault(Collections.EMPTY_MAP).as(Map.class);
         this.labels = labels;
@@ -163,6 +169,10 @@ public class ContainerMetaData {
 
     public void setUuid(String uuid) {
         this.uuid = uuid;
+    }
+
+    public void setExternal_id(String external_id) {
+        this.external_id = external_id;
     }
 
     public void setPrimary_ip(String primary_ip) {
