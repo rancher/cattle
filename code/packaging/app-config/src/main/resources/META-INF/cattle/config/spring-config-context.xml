@@ -6,7 +6,6 @@
     <bean id="EnvironmentConfig" class="io.cattle.platform.archaius.sources.TransformedEnvironmentProperties" />
     <bean id="SystemConfig" class="io.cattle.platform.archaius.sources.NamedSystemConfiguration" />
     <bean id="CattleLocalFileConfig" factory-bean="CattleLocalFileConfigFactory" factory-method="getConfiguration" />
-    <bean id="CattleFileConfig" factory-bean="CattleFileConfigFactory" factory-method="getConfiguration" />
     <bean id="DatabaseConfig" class="io.cattle.platform.archaius.sources.NamedDynamicConfiguration" >
         <constructor-arg index="0" >
             <bean class="io.cattle.platform.archaius.sources.LazyJDBCSource" />
@@ -14,6 +13,7 @@
         <constructor-arg index="1" ref="ConfigScheduler" />
         <property name="sourceName" value="Database" />
     </bean>
+    <bean id="CattleFileConfig" factory-bean="CattleFileConfigFactory" factory-method="getConfiguration" />
     <bean id="CattleOverrideFileConfig" factory-bean="CattleOverrideFileConfigFactory" factory-method="getConfiguration" />
     <bean id="CattleGlobalFileConfig" factory-bean="CattleGlobalFileConfigFactory" factory-method="getConfiguration" />
     <bean id="DefaultsConfig" class="io.cattle.platform.archaius.sources.NamedMapConfiguration" >
