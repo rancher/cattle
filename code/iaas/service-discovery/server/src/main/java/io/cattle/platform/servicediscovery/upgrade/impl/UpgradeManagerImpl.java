@@ -90,7 +90,7 @@ public class UpgradeManagerImpl implements UpgradeManager {
         objectManager.persist(map);
     }
 
-    public boolean doInServiceUpgrade(Service service, InServiceUpgradeStrategy strategy) {
+    public boolean doInServiceUpgrade(Service service, InServiceUpgradeStrategy strategy, boolean isUpgrade) {
         try {
             long batchSize = strategy.getBatchSize();
             boolean startFirst = strategy.getStartFirst();
@@ -108,7 +108,7 @@ public class UpgradeManagerImpl implements UpgradeManager {
             // upgrade deployment units
             upgradeDeploymentUnits(service, deploymentUnitInstancesToUpgrade, deploymentUnitInstancesUpgradedManaged,
                     deploymentUnitInstancesUpgradedUnmanaged,
-                    deploymentUnitInstancesToCleanup, batchSize, startFirst, strategy.isFullUpgrade());
+                    deploymentUnitInstancesToCleanup, batchSize, startFirst, strategy.isFullUpgrade(), isUpgrade);
 
             // check if empty
             if (deploymentUnitInstancesToUpgrade.isEmpty()) {
@@ -126,14 +126,17 @@ public class UpgradeManagerImpl implements UpgradeManager {
             final Map<String, List<Instance>> deploymentUnitInstancesUpgradedManaged,
             final Map<String, List<Instance>> deploymentUnitInstancesUpgradedUnmanaged,
             final Map<String, List<Instance>> deploymentUnitInstancesToCleanup,
-            final long batchSize, final boolean startFirst, final boolean fullUpgrade) {
+            final long batchSize, final boolean startFirst, final boolean fullUpgrade, final boolean isUpgrade) {
         // hold the lock so service.reconcile triggered by config.update
         // (in turn triggered by instance.remove) won't interfere
         lockManager.lock(new ServicesSidekickLock(Arrays.asList(service)), new LockCallbackNoReturn() {
             @Override
             public void doWithLockNoResult() {
-                // wait for healthy
-                waitForHealthyState(service);
+                // wait for healthy only for upgrade
+                // should be skipped for rollback
+                if (isUpgrade) {
+                    waitForHealthyState(service);
+                }
                 // mark for upgrade
                 markForUpgrade(batchSize);
 
@@ -148,6 +151,9 @@ public class UpgradeManagerImpl implements UpgradeManager {
                     stopInstances(deploymentUnitInstancesToCleanup);
                     // 2. wait for reconcile (new instances will be started along)
                     deploymentMgr.activate(service);
+                }
+                if (isUpgrade) {
+                    waitForHealthyState(service);
                 }
             }
 
@@ -289,7 +295,7 @@ public class UpgradeManagerImpl implements UpgradeManager {
         if (strategy instanceof ToServiceUpgradeStrategy) {
             return;
         }
-        while (!doInServiceUpgrade(service, (InServiceUpgradeStrategy) strategy)) {
+        while (!doInServiceUpgrade(service, (InServiceUpgradeStrategy) strategy, false)) {
             sleep(service, strategy);
         }
     }
@@ -297,7 +303,7 @@ public class UpgradeManagerImpl implements UpgradeManager {
     public boolean doUpgrade(Service service, io.cattle.platform.core.addon.ServiceUpgradeStrategy strategy) {
         if (strategy instanceof InServiceUpgradeStrategy) {
             InServiceUpgradeStrategy inService = (InServiceUpgradeStrategy) strategy;
-            return doInServiceUpgrade(service, inService);
+            return doInServiceUpgrade(service, inService, true);
         } else {
             ToServiceUpgradeStrategy toService = (ToServiceUpgradeStrategy) strategy;
             return doToServiceUpgrade(service, toService);

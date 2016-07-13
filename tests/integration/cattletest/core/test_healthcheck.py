@@ -44,7 +44,6 @@ def test_upgrade_with_health(client, context, super_client):
     assert svc.state == "active"
 
     # upgrade the service and
-    # check that c3 and c2 got the same ip
     new_launch_config = {"imageUuid": image_uuid,
                          'healthCheck': {
                              'port': 80,
@@ -83,13 +82,55 @@ def test_upgrade_with_health(client, context, super_client):
     assert hcihm.healthState == 'initializing'
     assert c.healthState == 'initializing'
 
+    # shouldn't become upgraded at this point
+    try:
+        wait_for(lambda: super_client.reload(svc).state == 'upgraded',
+                 timeout=30)
+    except Exception:
+        pass
+
     _update_healthy(agent, hcihm, c, super_client)
 
     wait_for(lambda: super_client.reload(svc).healthState == 'healthy')
     wait_for(lambda: super_client.reload(svc).state == 'upgraded')
 
 
-def test_upgrade_with_health_start_first(client, context, super_client):
+def test_rollback_with_health(client, context, super_client):
+    env = client.create_environment(name='env-' + random_str())
+
+    image_uuid = context.image_uuid
+    launch_config = {"imageUuid": image_uuid,
+                     'healthCheck': {
+                         'port': 80,
+                     }}
+
+    svc = client.create_service(name=random_str(),
+                                environmentId=env.id,
+                                launchConfig=launch_config,
+                                scale=1)
+    svc = client.wait_success(svc)
+    assert svc.state == "inactive"
+
+    env.activateservices()
+    svc = client.wait_success(svc, 120)
+    assert svc.state == "active"
+
+    # issue the upgrade for the service
+    # it should get stuck in upgrading state
+    # as the health_state is init
+    strategy = {"launchConfig": launch_config,
+                "intervalMillis": 100}
+    svc.upgrade_action(inServiceStrategy=strategy)
+    wait_for(lambda: super_client.reload(svc).state == 'upgrading',
+             timeout=30)
+    svc = super_client.reload(svc)
+
+    # rollback the service
+    svc = client.wait_success(svc.cancelupgrade())
+    client.wait_success(svc.rollback())
+
+
+def test_upgrade_start_first_with_health(client, context, super_client):
     env = client.create_environment(name='env-' + random_str())
 
     image_uuid = context.image_uuid
