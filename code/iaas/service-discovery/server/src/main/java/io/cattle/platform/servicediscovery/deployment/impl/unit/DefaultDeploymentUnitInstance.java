@@ -304,5 +304,10 @@ public class DefaultDeploymentUnitInstance extends DeploymentUnitInstance implem
         return Arrays.asList(stackNamespace, serviceNamespace);
     }
 
+    @Override
+    public Long getCreateIndex() {
+        Long createIndex = this.instance == null ? null : this.instance.getCreateIndex();
+        return createIndex;
+    }
 }
 

@@ -146,4 +146,6 @@ public abstract class DeploymentUnitInstance {
     }
 
     public abstract List<String> getSearchDomains();
+
+    public abstract Long getCreateIndex();
 }

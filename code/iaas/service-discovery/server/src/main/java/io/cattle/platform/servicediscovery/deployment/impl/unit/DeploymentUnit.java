@@ -464,4 +464,23 @@ public class DeploymentUnit {
         }
         return false;
     }
+
+    public long getCreateIndex() {
+        long createIndex = 0L;
+        // find minimum created
+        for (DeploymentUnitInstance i : getDeploymentUnitInstances()) {
+            if (i.getCreateIndex() == null) {
+                continue;
+            }
+            if (createIndex == 0) {
+                createIndex = i.getCreateIndex();
+                continue;
+            }
+
+            if (i.getCreateIndex().longValue() < createIndex) {
+                createIndex = i.getCreateIndex();
+            }
+        }
+        return createIndex;
+    }
 }

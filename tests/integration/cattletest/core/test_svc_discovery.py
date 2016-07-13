@@ -3034,3 +3034,35 @@ def test_service_start_on_create(client, context):
 
     svc = client.wait_success(svc)
     assert svc.state == 'active'
+
+
+def test_validate_scaledown_order(client, context):
+    env = _create_stack(client)
+
+    image_uuid = context.image_uuid
+    launch_config = {"imageUuid": image_uuid,
+                     "dataVolumesFromLaunchConfigs": ['secondary']}
+
+    secondary_lc = {"imageUuid": image_uuid, "name": "secondary"}
+
+    service = client.create_service(name=random_str(),
+                                    environmentId=env.id,
+                                    launchConfig=launch_config,
+                                    secondaryLaunchConfigs=[secondary_lc],
+                                    scale=3)
+
+    service = client.wait_success(service)
+    assert service.state == "inactive"
+
+    # activate service
+    env.activateservices()
+    service = client.wait_success(service)
+    assert service.state == "active"
+    instance11 = _validate_compose_instance_start(client, service, env, "1")
+
+    # scale down, and validate the first instance is intact
+    service = client.update(service, scale=1)
+    service = client.wait_success(service, 120)
+    assert service.state == "active"
+    instance11 = client.reload(instance11)
+    assert instance11.state == 'running'

@@ -8,6 +8,8 @@ import io.cattle.platform.servicediscovery.deployment.impl.DeploymentManagerImpl
 import io.cattle.platform.servicediscovery.deployment.impl.unit.DeploymentUnit;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 public class DefaultServiceDeploymentPlanner extends ServiceDeploymentPlanner {
@@ -57,6 +59,13 @@ public class DefaultServiceDeploymentPlanner extends ServiceDeploymentPlanner {
         // delete units
         int i = this.healthyUnits.size() - 1;
         List<DeploymentUnit> watchList = new ArrayList<>();
+        Collections.sort(this.healthyUnits, new Comparator<DeploymentUnit>() {
+            @Override
+            public int compare(DeploymentUnit d1, DeploymentUnit d2) {
+                return Long.compare(d1.getCreateIndex(), d2.getCreateIndex());
+            }
+        });
+
         while (this.healthyUnits.size() > this.requestedScale) {
             DeploymentUnit toRemove = this.healthyUnits.get(i);
             watchList.add(toRemove);
