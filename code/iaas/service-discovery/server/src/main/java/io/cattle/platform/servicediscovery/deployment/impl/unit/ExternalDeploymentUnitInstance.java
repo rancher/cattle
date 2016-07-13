@@ -141,4 +141,9 @@ public class ExternalDeploymentUnitInstance extends DeploymentUnitInstance {
     public List<String> getSearchDomains() {
         return null;
     }
+
+    @Override
+    public Long getCreateIndex() {
+        return null;
+    }
 }
