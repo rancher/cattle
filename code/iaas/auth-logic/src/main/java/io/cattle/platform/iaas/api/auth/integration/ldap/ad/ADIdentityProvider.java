@@ -106,6 +106,7 @@ public class ADIdentityProvider extends LDAPIdentityProvider implements Identity
             SearchResult result;
             try {
                 result = results.next();
+                logger.trace("Found  LDAP SearchResult object: {}", result);
                 if (results.hasMoreElements()) {
                     logger.error("More than one result.");
                     return null;
@@ -128,7 +129,8 @@ public class ADIdentityProvider extends LDAPIdentityProvider implements Identity
     private Set<Identity> getIdentities(SearchResult result) {
         final Set<Identity> identities = new HashSet<>();
         final Attribute memberOf = result.getAttributes().get(getConstantsConfig().getUserMemberAttribute());
-
+        logger.trace("ADConstants userMemberAttribute() {}", getConstantsConfig().getUserMemberAttribute());
+        logger.trace("SearchResult memberOf attribute {}", memberOf);
         if (!isType(result.getAttributes(), getConstantsConfig().getUserObjectClass()))
         {
             return identities;
@@ -207,6 +209,7 @@ public class ADIdentityProvider extends LDAPIdentityProvider implements Identity
                 query = groupQuery.toString();
             }
         }
+        logger.trace("LDAP Search query: {}", query);
         SearchResult userRecord = userRecord(query);
         if (userRecord == null){
             return new HashSet<>();

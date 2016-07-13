@@ -35,6 +35,8 @@ import javax.servlet.http.Cookie;
 
 import org.apache.commons.lang.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public abstract class AbstractTokenUtil implements TokenUtil {
 
@@ -47,6 +49,8 @@ public abstract class AbstractTokenUtil implements TokenUtil {
     public static final String REQUIRED_ACCESSMODE = "required";
     public static final String RESTRICTED_ACCESSMODE = "restricted";
     public static final String UNRESTRICTED_ACCESSMODE = "unrestricted";
+
+    private static final Logger log = LoggerFactory.getLogger(AbstractTokenUtil.class);
 
     @Inject
     protected AuthDao authDao;
@@ -166,6 +170,7 @@ public abstract class AbstractTokenUtil implements TokenUtil {
     @SuppressWarnings("unchecked")
     protected boolean isAllowed(Map<String, Object> jsonData) {
         List<String> idList = (List<String>) jsonData.get(ID_LIST);
+        log.trace("ID List in the token: {}", idList);
         Set<Identity> identities = identities(jsonData);
         return isAllowed(idList, identities);
     }
@@ -178,7 +183,12 @@ public abstract class AbstractTokenUtil implements TokenUtil {
         }
         List<String> idList = (List<String>) jsonData.get(ID_LIST);
         for (String id : idList) {
-            identities.add(Identity.fromId(id));
+            Identity identityObj = Identity.fromId(id);
+            if (identityObj != null) {
+                identities.add(identityObj);
+            } else {
+                log.trace("Identity is null for id: {}", id);
+            }
         }
         return identities;
     }
