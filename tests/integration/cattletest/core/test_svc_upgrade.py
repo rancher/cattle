@@ -248,6 +248,18 @@ def test_cancelupgrade_finish(context, client):
     svc.finishupgrade()
 
 
+def test_upgrade_finish_cancel_rollback(context, client):
+    # upgrading-cancelingupgrade-canceledupgrade-finishupgrade
+    svc = _create_and_schedule_inservice_upgrade(client, context)
+    svc = client.wait_success(svc, DEFAULT_TIMEOUT)
+    assert svc.state == 'upgraded'
+    svc = svc.finishupgrade()
+    wait_for(lambda: client.reload(svc).state == 'finishing-upgrade')
+    svc = _cancel_upgrade(client, svc)
+    assert svc.state == 'canceled-upgrade'
+    svc = client.wait_success(svc.rollback())
+
+
 def test_cancelupgrade_rollback_cancelrollback(context, client):
     # upgrading-cancelingupgrade-canceledupgrade-rollback
     # -cancelingrolback-canceledrollback-remove

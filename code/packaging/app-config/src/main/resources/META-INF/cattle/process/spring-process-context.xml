@@ -360,7 +360,7 @@
     <process:process name="environment.remove" resourceType="environment" start="requested, active, activating, updating-active, error, erroring, upgrading, canceling-upgrade, canceling-rollback, rolling-back, finishing-upgrade, upgraded, canceled-upgrade" transitioning="removing" done="removed" />
     <process:process name="environment.error" resourceType="environment" start="activating" transitioning="erroring" done="error" />
     <process:process name="environment.upgrade" resourceType="environment" start="active" transitioning="upgrading" done="upgraded" />
-    <process:process name="environment.cancelupgrade" resourceType="environment" start="upgrading" transitioning="canceling-upgrade" done="canceled-upgrade" />
+    <process:process name="environment.cancelupgrade" resourceType="environment" start="upgrading,finishing-upgrade" transitioning="canceling-upgrade" done="canceled-upgrade" />
     <process:process name="environment.rollback" resourceType="environment" start="upgraded,canceled-upgrade" transitioning="rolling-back" done="active" />
     <process:process name="environment.cancelrollback" resourceType="environment" start="rolling-back" transitioning="canceling-rollback" done="canceled-upgrade" />
     <process:process name="environment.finishupgrade" resourceType="environment" start="upgraded,canceled-upgrade" transitioning="finishing-upgrade" done="active" />
@@ -373,7 +373,7 @@
     <process:process name="service.deactivate" resourceType="service" start="restarting,active,activating, updating-inactive, updating-active" transitioning="deactivating" done="inactive" />
     <process:process name="service.remove" resourceType="service" start="inactive, registering, active, activating, updating-inactive, updating-active, upgrading, canceling-upgrade, rolling-back, deactivating, requested,canceled-upgrade,rolling-back,canceling-rollback,canceled-rollback,upgraded,finishing-upgrade,restarting" transitioning="removing" done="removed" />
     <process:process name="service.upgrade" resourceType="service" start="active,inactive" transitioning="upgrading" done="upgraded" />
-    <process:process name="service.cancelupgrade" resourceType="service" start="upgrading" transitioning="canceling-upgrade" done="canceled-upgrade" />
+    <process:process name="service.cancelupgrade" resourceType="service" start="upgrading,finishing-upgrade" transitioning="canceling-upgrade" done="canceled-upgrade" />
     <process:process name="service.rollback" resourceType="service" start="canceled-upgrade,upgraded" transitioning="rolling-back" done="active" />
     <process:process name="service.cancelrollback" resourceType="service" start="rolling-back" transitioning="canceling-rollback" done="canceled-rollback" />
     <process:process name="service.finishupgrade" resourceType="service" start="upgraded,canceled-upgrade,canceled-rollback" transitioning="finishing-upgrade" done="active" />
