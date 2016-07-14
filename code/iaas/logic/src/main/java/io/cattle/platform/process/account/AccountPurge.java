@@ -52,6 +52,24 @@ public class AccountPurge extends AbstractDefaultProcessHandler {
             deactivateThenRemove(cred, state.getData());
         }
 
+        for (Environment env : getObjectManager().children(account, Environment.class)) {
+            if (env.getRemoved() != null) {
+                continue;
+            }
+            objectProcessManager.scheduleStandardProcessAsync(StandardProcess.REMOVE, env, null);
+        }
+
+        for (Instance instance : instanceDao.listNonRemovedInstances(account, false)) {
+            deleteAgentAccount(instance.getAgentId(), state.getData());
+
+            try {
+                objectProcessManager.scheduleStandardProcess(StandardProcess.REMOVE, instance, null);
+            } catch (ProcessCancelException e) {
+                objectProcessManager.scheduleProcessInstance(InstanceConstants.PROCESS_STOP, instance,
+                        CollectionUtils.asMap(InstanceConstants.REMOVE_OPTION, true));
+            }
+        }
+
         for (Host host : getObjectManager().children(account, Host.class)) {
             try {
                 deactivateThenRemove(host, state.getData());
@@ -74,24 +92,6 @@ public class AccountPurge extends AbstractDefaultProcessHandler {
                 continue;
             }
             deactivateThenRemove(agent, state.getData());
-        }
-
-        for (Environment env : getObjectManager().children(account, Environment.class)) {
-            if (env.getRemoved() != null) {
-                continue;
-            }
-            objectProcessManager.scheduleStandardProcessAsync(StandardProcess.REMOVE, env, null);
-        }
-
-        for (Instance instance : instanceDao.listNonRemovedInstances(account, false)) {
-            deleteAgentAccount(instance.getAgentId(), state.getData());
-
-            try {
-                objectProcessManager.scheduleStandardProcess(StandardProcess.REMOVE, instance, null);
-            } catch (ProcessCancelException e) {
-                objectProcessManager.scheduleProcessInstance(InstanceConstants.PROCESS_STOP, instance,
-                        CollectionUtils.asMap(InstanceConstants.REMOVE_OPTION, true));
-            }
         }
 
         accountDao.deleteProjectMemberEntries(account);
