@@ -173,7 +173,7 @@ def test_service_affinity_rules_w_policy(super_client, new_context):
     assert svc.currentScale == 1
 
     # add extra host 1
-    register_simulated_host(new_context)
+    host = register_simulated_host(new_context)
 
     # wait for service instances to be 2
     wait_for(lambda: super_client.reload(svc).currentScale >= 2)
@@ -183,6 +183,18 @@ def test_service_affinity_rules_w_policy(super_client, new_context):
 
     # wait for service instances to be 3
     wait_for(lambda: super_client.reload(svc).currentScale >= 3)
+
+    # deactivate and remove host
+    host = client.wait_success(host.deactivate())
+    client.wait_success(host.remove())
+    # make sure that the serivce gets stcuk in activa
+    wait_for(lambda: client.reload(svc).state == 'updating-active')
+    # shouldn't become active at this point
+    try:
+        wait_for(lambda: super_client.reload(svc).state == 'active',
+                 timeout=15)
+    except Exception:
+        pass
 
 
 def _get_instance_for_service(super_client, serviceId):

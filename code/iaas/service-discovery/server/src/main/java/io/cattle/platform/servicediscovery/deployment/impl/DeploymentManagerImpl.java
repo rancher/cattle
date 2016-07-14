@@ -152,6 +152,7 @@ public class DeploymentManagerImpl implements DeploymentManager {
 
         if (desiredScaleToReset != null) {
             desiredScaleToReset = setDesiredScaleInternal(service, desiredScaleToReset);
+            lockScale(service);
             log.info("Set service [{}] desired scale to [{}]", service.getUuid(), desiredScaleToReset);
         }
 
@@ -164,6 +165,7 @@ public class DeploymentManagerImpl implements DeploymentManager {
                 ServiceDiscoveryConstants.FIELD_DESIRED_SCALE);
         try {
             deploy(service, checkState, services);
+            lockScale(service);
         } catch (ServiceInstanceAllocateException ex) {
             reduceScaleAndDeploy(service, checkState, services, policy);
             return false;
@@ -184,7 +186,16 @@ public class DeploymentManagerImpl implements DeploymentManager {
 
     protected boolean reduceScaleAndDeploy(Service service, boolean checkState, List<Service> services, ScalePolicy policy) {
         int desiredScale = DataAccessor.fieldInteger(service, ServiceDiscoveryConstants.FIELD_DESIRED_SCALE).intValue();
-        int minScale = policy.getMin().intValue();
+        int lockedScale = DataAccessor.fieldInteger(service, ServiceDiscoveryConstants.FIELD_LOCKED_SCALE).intValue();
+        int minScale = policy.getMin();
+        // account for the fact that scale policy can be updated
+        if (lockedScale > policy.getMin().intValue()) {
+            minScale = lockedScale;
+        }
+        if (lockedScale >= policy.getMax().intValue()) {
+            minScale = policy.getMax();
+        }
+
         int increment = policy.getIncrement().intValue();
         if (desiredScale >= minScale) {
             // reduce scale by interval and try to deploy again
@@ -210,6 +221,15 @@ public class DeploymentManagerImpl implements DeploymentManager {
         data.put(ServiceDiscoveryConstants.FIELD_DESIRED_SCALE, newScale);
         objectMgr.setFields(service, data);
         return newScale;
+    }
+
+    protected void lockScale(Service service) {
+        Integer desiredScale = DataAccessor.fieldInteger(service,
+                ServiceDiscoveryConstants.FIELD_DESIRED_SCALE);
+        service = objectMgr.reload(service);
+        Map<String, Object> data = new HashMap<>();
+        data.put(ServiceDiscoveryConstants.FIELD_LOCKED_SCALE, desiredScale);
+        objectMgr.setFields(service, data);
     }
 
     protected boolean deploy(final Service service, final boolean checkState, final List<Service> services) {
