@@ -13,7 +13,6 @@ import io.github.ibuildthecloud.gdapi.util.ResponseCodes;
 
 import java.util.ArrayList;
 import java.util.Hashtable;
-import java.util.Iterator;
 import java.util.List;
 
 import javax.annotation.PostConstruct;
@@ -184,7 +183,7 @@ public abstract class LDAPIdentityProvider implements IdentityProvider{
             log.trace("Attributes for dn: " + dn + " to translate: " + search);
             String externalIdType;
             String accountName;
-            String externalId = removeSpacesAroundRDN(dn.toString());
+            String externalId = dn.toString();
             String login;
             if (isType(search, getConstantsConfig().getUserObjectClass())){
                 externalIdType = getConstantsConfig().getUserScope();
@@ -217,28 +216,6 @@ public abstract class LDAPIdentityProvider implements IdentityProvider{
                 getContextPool().returnObject(context);
             }
         }
-    }
-
-    private String removeSpacesAroundRDN(String dn) {
-
-        if (StringUtils.isEmpty(dn)) {
-            return dn;
-        }
-        List<String> strings = new ArrayList<>();
-        String[] splitted = dn.split(",");
-        for (String aSplitted : splitted) {
-            String element = aSplitted.trim();
-            strings.add(element);
-        }
-        StringBuilder sb = new StringBuilder();
-        Iterator<String> idIterator = strings.iterator();
-        while (idIterator.hasNext()){
-            sb.append(idIterator.next().trim());
-            if (idIterator.hasNext()) sb.append(',');
-        }
-
-        return sb.toString();
-
     }
 
     protected boolean isType(Attributes search, String type) {
