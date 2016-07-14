@@ -475,8 +475,6 @@
         "composeConfigInput" : "cr",
         "composeConfigInput.serviceIds" : "cr",
 
-        "composeProject" : "r",
-
         "environment" : "r",
         "environment.dockerCompose": "cr",
         "environment.rancherCompose": "cr",
@@ -644,6 +642,25 @@
         "kubernetesService.startOnCreate" : "",
         "kubernetesService.scalePolicy" : "",
         "kubernetesService.currentScale" : "",
+
+        "kubernetesStack" : "r",
+        "kubernetesStack.name": "cr",
+        "kubernetesStack.templates": "cr",
+        "kubernetesStack.namespace": "cr",
+        "kubernetesStack.dockerCompose": "",
+        "kubernetesStack.rancherCompose": "",
+        "kubernetesStack.outputs": "",
+        "kubernetesStack.startOnCreate": "",
+        "kubernetesStack.resourceActions.addoutputs" : "",
+        "kubernetesStack.resourceActions.deactivateservices" : "",
+        "kubernetesStack.resourceActions.update" : "",
+        "kubernetesStack.resourceActions.activateservices" : "",
+        "kubernetesStack.resourceActions.exportconfig" : "",
+
+        "kubernetesStackUpgrade" : "r",
+        "kubernetesStackUpgrade.templates" : "cr",
+        "kubernetesStackUpgrade.environment" : "cr",
+        "kubernetesStackUpgrade.externalId" : "cr",
 
         "serviceEvent" : "r",
         "serviceEvent.instanceId" : "r",
