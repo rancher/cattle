@@ -348,7 +348,7 @@ public class DnsInfoDaoImpl extends AbstractJooqDao implements DnsInfoDao {
             final Map<Long, IpAddress> instanceIdToHostIpMap, Map<String, String> resolveCname,
             Map<String, Map<String, String>> resolve, String targetInstanceName, String fqdn) {
         String targetIp = getIpAddress(targetInstance, instanceIdToHostIpMap, false);
-        if (targetIp != null) {
+        if (!StringUtils.isEmpty(targetIp)) {
             Map<String, String> ipToInstanceName = resolve.get(fqdn);
             if (ipToInstanceName == null) {
                 ipToInstanceName = new HashMap<>();
