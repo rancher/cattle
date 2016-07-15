@@ -1,12 +1,7 @@
 package io.cattle.platform.core.addon;
 
-import io.cattle.platform.core.model.Host;
-import io.cattle.platform.core.model.Instance;
-import io.cattle.platform.core.model.Service;
 import io.github.ibuildthecloud.gdapi.annotation.Field;
 import io.github.ibuildthecloud.gdapi.annotation.Type;
-
-import com.fasterxml.jackson.annotation.JsonIgnore;
 
 @Type(list = false)
 public class PublicEndpoint {
@@ -15,9 +10,6 @@ public class PublicEndpoint {
     String serviceId;
     String hostId;
     String instanceId;
-    Host host;
-    Service service;
-    Instance instance;
 
     public String getIpAddress() {
         return ipAddress;
@@ -62,36 +54,18 @@ public class PublicEndpoint {
         this.instanceId = instanceId;
     }
 
-    @JsonIgnore
-    public Host getHost() {
-        return host;
-    }
-
-    @JsonIgnore
-    public Service getService() {
-        return service;
-    }
-
-    @JsonIgnore
-    public Instance getInstance() {
-        return instance;
-    }
-
-    public PublicEndpoint(String ipAddress, Integer port, Host host, Instance instance, Service service) {
+    public PublicEndpoint(String ipAddress, Integer port, Long hostId, Long instanceId, Long serviceId) {
         this.ipAddress = ipAddress;
         this.port = port;
-        if (host != null) {
-            this.host = host;
-            this.hostId = host.getId().toString();
+        if (hostId != null) {
+            this.hostId = hostId.toString();
         }
-        if (instance != null) {
-            this.instance = instance;
-            this.instanceId = instance.getId().toString();
+        if (instanceId != null) {
+            this.instanceId = instanceId.toString();
         }
 
-        if (service != null) {
-            this.service = service;
-            this.serviceId = service.getId().toString();
+        if (serviceId != null) {
+            this.serviceId = serviceId.toString();
         }
     }
 
