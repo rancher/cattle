@@ -797,6 +797,54 @@ def test_health_check_quorum(super_client, context, client):
     remove_service(svc)
 
 
+def test_health_check_chk_name_quorum(super_client, context, client):
+    env = client.create_environment(name='env-' + random_str())
+    svc = client.create_service(name='test', launchConfig={
+        'imageUuid': context.image_uuid,
+        'healthCheck': {
+            'port': 80,
+            'recreateOnQuorumStrategyConfig': {"quorum": 2},
+            'strategy': "recreateOnQuorum"
+        }
+    }, environmentId=env.id, scale=1)
+    svc = client.wait_success(client.wait_success(svc).activate())
+    assert svc.state == 'active'
+    action = svc.launchConfig.healthCheck.strategy
+    config = svc.launchConfig.healthCheck.recreateOnQuorumStrategyConfig
+    assert action == 'recreateOnQuorum'
+    assert config.quorum == 2
+
+    expose_maps = svc.serviceExposeMaps()
+    c1 = super_client.reload(expose_maps[0].instance())
+    hci1 = find_one(c1.healthcheckInstances)
+    hcihm1 = find_one(hci1.healthcheckInstanceHostMaps)
+    agent1 = _get_agent_for_container(c1)
+    assert hcihm1.healthState == 'initializing'
+    assert c1.healthState == 'initializing'
+    hcihm1 = _update_healthy(agent1, hcihm1, c1, super_client)
+
+    # update unheatlhy, check container is not removed
+    _update_unhealthy(agent1, hcihm1, c1, super_client)
+    svc = super_client.wait_success(svc)
+    assert svc.state == "active"
+    assert len(svc.serviceExposeMaps()) == 1
+    c1 = super_client.wait_success(c1)
+    assert c1.state == 'running'
+
+    # leave the container as unhealthy and scale up
+    # check that the new container is created
+    # with new service index
+    svc = client.update(svc, scale=2, name=svc.name)
+    svc = client.wait_success(svc)
+    expose_maps = svc.serviceExposeMaps()
+    assert len(expose_maps) == 2
+    c1 = super_client.reload(expose_maps[0].instance())
+    c2 = super_client.reload(expose_maps[1].instance())
+    assert c1.state == 'running'
+    assert c2.state == 'running'
+    assert c1.serviceIndex != c2.serviceIndex
+
+
 def test_health_check_default(super_client, context, client):
     env = client.create_environment(name='env-' + random_str())
     svc = client.create_service(name='test', launchConfig={

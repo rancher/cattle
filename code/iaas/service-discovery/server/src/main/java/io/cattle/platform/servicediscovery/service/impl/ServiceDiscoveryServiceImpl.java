@@ -129,12 +129,6 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
         List<Integer> usedSuffixes = new ArrayList<>();
         List<? extends Instance> serviceInstances = exposeMapDao.listServiceManagedInstances(service, launchConfigName);
         for (Instance instance : serviceInstances) {
-            // exclude unhealthy instances as they are going to be replaced
-            if (StringUtils.equals(instance.getHealthState(), HealthcheckConstants.HEALTH_STATE_UNHEALTHY)
-                    || StringUtils.equals(instance.getHealthState(),
-                            HealthcheckConstants.HEALTH_STATE_UPDATING_UNHEALTHY)) {
-                continue;
-            }
             if (ServiceDiscoveryUtil.isServiceGeneratedName(env, service, instance.getName())) {
                 // legacy code - to support old data where service suffix wasn't set
                 String configName = launchConfigName == null
