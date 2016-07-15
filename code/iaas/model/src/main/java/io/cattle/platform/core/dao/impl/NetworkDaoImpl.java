@@ -2,14 +2,14 @@ package io.cattle.platform.core.dao.impl;
 
 
 
-import static io.cattle.platform.core.model.tables.InstanceHostMapTable.INSTANCE_HOST_MAP;
-import static io.cattle.platform.core.model.tables.InstanceTable.INSTANCE;
-import static io.cattle.platform.core.model.tables.NetworkServiceProviderInstanceMapTable.NETWORK_SERVICE_PROVIDER_INSTANCE_MAP;
-import static io.cattle.platform.core.model.tables.NetworkServiceProviderTable.NETWORK_SERVICE_PROVIDER;
-import static io.cattle.platform.core.model.tables.NetworkServiceTable.NETWORK_SERVICE;
-import static io.cattle.platform.core.model.tables.NetworkTable.NETWORK;
-import static io.cattle.platform.core.model.tables.NicTable.NIC;
-import static io.cattle.platform.core.model.tables.SubnetTable.SUBNET;
+import static io.cattle.platform.core.model.tables.InstanceHostMapTable.*;
+import static io.cattle.platform.core.model.tables.InstanceTable.*;
+import static io.cattle.platform.core.model.tables.NetworkServiceProviderInstanceMapTable.*;
+import static io.cattle.platform.core.model.tables.NetworkServiceProviderTable.*;
+import static io.cattle.platform.core.model.tables.NetworkServiceTable.*;
+import static io.cattle.platform.core.model.tables.NetworkTable.*;
+import static io.cattle.platform.core.model.tables.NicTable.*;
+import static io.cattle.platform.core.model.tables.SubnetTable.*;
 import io.cattle.platform.archaius.util.ArchaiusUtil;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.constants.NetworkServiceProviderConstants;

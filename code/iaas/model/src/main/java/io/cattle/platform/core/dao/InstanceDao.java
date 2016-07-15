@@ -1,5 +1,6 @@
 package io.cattle.platform.core.dao;
 
+import io.cattle.platform.core.dao.impl.InstanceDaoImpl.IpAddressToServiceIndex;
 import io.cattle.platform.core.model.Account;
 import io.cattle.platform.core.model.Host;
 import io.cattle.platform.core.model.Instance;
@@ -33,4 +34,6 @@ public interface InstanceDao {
     Map<String, Object> getCacheInstanceData(long instanceId);
 
     void clearCacheInstanceData(long instanceId);
+
+    List<IpAddressToServiceIndex> getIpToIndex(Service service);
 }
