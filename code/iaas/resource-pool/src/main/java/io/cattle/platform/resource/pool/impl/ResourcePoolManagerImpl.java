@@ -96,6 +96,36 @@ public class ResourcePoolManagerImpl implements ResourcePoolManager {
     }
 
     @Override
+    public void transferResource(Object pool, Object owner, Object newOwner) {
+        transferResource(pool, owner, newOwner, new PooledResourceOptions());
+    }
+
+    @Override
+    public void transferResource(Object pool, Object owner, Object newOwner, PooledResourceOptions options) {
+        String poolType = getResourceType(pool);
+        long poolId = getResourceId(pool);
+        String ownerType = getResourceType(owner);
+        long ownerId = getResourceId(owner);
+        String newOwnerType = getResourceType(newOwner);
+        long newOwnerId = getResourceId(newOwner);
+
+        Map<Object, Object> keys = CollectionUtils.asMap((Object) RESOURCE_POOL.POOL_TYPE, poolType,
+                (Object) RESOURCE_POOL.POOL_ID, poolId,
+                RESOURCE_POOL.QUALIFIER, options.getQualifier(), RESOURCE_POOL.OWNER_TYPE, ownerType,
+                RESOURCE_POOL.OWNER_ID, ownerId);
+
+        for (ResourcePool resource : objectManager.find(ResourcePool.class, keys)) {
+            log.info("Transfering [{}] id [{}] from pool [{}:{}] from owner [{}:{}] to owner [{}:{}]",
+                    resource.getItem(), resource.getId(), poolType,
+                    poolId, ownerType, ownerId, newOwnerType, newOwnerId);
+            resource.setOwnerType(newOwnerType);
+            resource.setOwnerId(newOwnerId);
+            objectManager.persist(resource);
+        }
+
+    }
+
+    @Override
     public PooledResource allocateOneResource(Object pool, Object owner, PooledResourceOptions options) {
         List<PooledResource> resources = allocateResource(pool, owner, options);
         return (resources == null || resources.size() == 0) ? null : resources.get(0);

@@ -227,6 +227,7 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
         return null;
     }
 
+
     protected Subnet getServiceVipSubnet(final Service service) {
         Subnet vipSubnet = DeferredUtils.nest(new Callable<Subnet>() {
             @Override
@@ -524,9 +525,14 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
             if (ntwk != null) {
                 Subnet subnet = ntwkDao.addManagedNetworkSubnet(ntwk);
                 String ipAddress = allocateIpForService(serviceIndex, subnet, requestedIp);
-                objectManager.setFields(serviceIndex, IpAddressConstants.FIELD_ADDRESS, ipAddress);
+                setServiceIndexIp(serviceIndex, ipAddress);
             }
         }
+    }
+
+    @Override
+    public void setServiceIndexIp(ServiceIndex serviceIndex, String ipAddress) {
+        objectManager.setFields(serviceIndex, IpAddressConstants.FIELD_ADDRESS, ipAddress);
     }
 
     @Override

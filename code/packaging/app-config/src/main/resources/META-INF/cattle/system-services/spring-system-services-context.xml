@@ -440,6 +440,7 @@
     <bean class="io.cattle.platform.servicediscovery.process.HostIpUpdatePostListener" />
     <bean class="io.cattle.platform.servicediscovery.process.HostRemovePostListener" />
     <bean class="io.cattle.platform.servicediscovery.process.InstancePurgePostListener" />
+    <bean class="io.cattle.platform.servicediscovery.process.ServiceUpdatePreListener" />
 
     <bean class="io.cattle.platform.servicediscovery.process.EnvironmentRemove" />
     <bean class="io.cattle.platform.servicediscovery.process.ServiceDiscoveryInstanceRemovePreListener" />

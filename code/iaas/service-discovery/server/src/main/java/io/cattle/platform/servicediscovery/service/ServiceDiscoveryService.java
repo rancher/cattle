@@ -58,4 +58,6 @@ public interface ServiceDiscoveryService {
 
     boolean isScalePolicyService(Service service);
 
+    void setServiceIndexIp(ServiceIndex serviceIndex, String ipAddress);
+
 }

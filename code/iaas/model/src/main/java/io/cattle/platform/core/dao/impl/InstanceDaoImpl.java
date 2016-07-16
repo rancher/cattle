@@ -4,21 +4,37 @@ import static io.cattle.platform.core.model.tables.EnvironmentTable.*;
 import static io.cattle.platform.core.model.tables.HostTable.*;
 import static io.cattle.platform.core.model.tables.InstanceHostMapTable.*;
 import static io.cattle.platform.core.model.tables.InstanceTable.*;
+import static io.cattle.platform.core.model.tables.IpAddressNicMapTable.*;
+import static io.cattle.platform.core.model.tables.IpAddressTable.*;
+import static io.cattle.platform.core.model.tables.NicTable.*;
 import static io.cattle.platform.core.model.tables.ServiceExposeMapTable.*;
+import static io.cattle.platform.core.model.tables.ServiceIndexTable.*;
 import static io.cattle.platform.core.model.tables.ServiceTable.*;
-
+import static io.cattle.platform.core.model.tables.SubnetTable.*;
 import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.InstanceConstants;
+import io.cattle.platform.core.constants.IpAddressConstants;
 import io.cattle.platform.core.dao.GenericMapDao;
 import io.cattle.platform.core.dao.InstanceDao;
+import io.cattle.platform.core.dao.NetworkDao;
 import io.cattle.platform.core.model.Account;
 import io.cattle.platform.core.model.Host;
 import io.cattle.platform.core.model.Instance;
+import io.cattle.platform.core.model.IpAddress;
 import io.cattle.platform.core.model.Service;
+import io.cattle.platform.core.model.ServiceIndex;
+import io.cattle.platform.core.model.Subnet;
+import io.cattle.platform.core.model.tables.InstanceTable;
+import io.cattle.platform.core.model.tables.IpAddressTable;
+import io.cattle.platform.core.model.tables.NicTable;
+import io.cattle.platform.core.model.tables.ServiceExposeMapTable;
+import io.cattle.platform.core.model.tables.ServiceIndexTable;
+import io.cattle.platform.core.model.tables.SubnetTable;
 import io.cattle.platform.core.model.tables.records.HostRecord;
 import io.cattle.platform.core.model.tables.records.InstanceRecord;
 import io.cattle.platform.core.model.tables.records.ServiceRecord;
 import io.cattle.platform.db.jooq.dao.impl.AbstractJooqDao;
+import io.cattle.platform.db.jooq.mapper.MultiRecordMapper;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.util.DataUtils;
 
@@ -42,6 +58,45 @@ public class InstanceDaoImpl extends AbstractJooqDao implements InstanceDao {
     GenericMapDao mapDao;
     @Inject
     ObjectManager objectManager;
+    @Inject
+    NetworkDao ntwkDao;
+
+    public static class IpAddressToServiceIndex {
+        ServiceIndex index;
+        IpAddress ipAddress;
+        Subnet subnet;
+
+        public ServiceIndex getIndex() {
+            return index;
+        }
+
+        public void setIndex(ServiceIndex index) {
+            this.index = index;
+        }
+
+        public IpAddress getIpAddress() {
+            return ipAddress;
+        }
+
+        public void setIpAddress(IpAddress ipAddress) {
+            this.ipAddress = ipAddress;
+        }
+
+        public Subnet getSubnet() {
+            return subnet;
+        }
+
+        public void setSubnet(Subnet subnet) {
+            this.subnet = subnet;
+        }
+
+        public IpAddressToServiceIndex(ServiceIndex index, IpAddress ipAddress, Subnet subnet) {
+            super();
+            this.index = index;
+            this.ipAddress = ipAddress;
+            this.subnet = subnet;
+        }
+    }
 
     LoadingCache<Long, Map<String, Object>> instanceData = CacheBuilder.newBuilder()
             .expireAfterAccess(24, TimeUnit.HOURS)
@@ -207,4 +262,49 @@ public class InstanceDaoImpl extends AbstractJooqDao implements InstanceDao {
         instanceData.invalidate(instanceId);
     }
 
+    @Override
+    public List<IpAddressToServiceIndex> getIpToIndex(Service service) {
+        MultiRecordMapper<IpAddressToServiceIndex> mapper = new MultiRecordMapper<IpAddressToServiceIndex>() {
+            @Override
+            protected IpAddressToServiceIndex map(List<Object> input) {
+                ServiceIndex index = (ServiceIndex) input.get(0);
+                IpAddress ip = (IpAddress) input.get(1);
+                Subnet subnet = (Subnet) input.get(2);
+                IpAddressToServiceIndex data = new IpAddressToServiceIndex(index, ip, subnet);
+                return data;
+            }
+        };
+
+        ServiceIndexTable serviceIndex = mapper.add(SERVICE_INDEX);
+        IpAddressTable ipAddress = mapper.add(IP_ADDRESS);
+        SubnetTable subnet = mapper.add(SUBNET);
+        ServiceExposeMapTable exposeMap = mapper.add(SERVICE_EXPOSE_MAP, SERVICE_EXPOSE_MAP.REMOVED);
+        NicTable nic = mapper.add(NIC, NIC.DEVICE_NUMBER, NIC.INSTANCE_ID, NIC.REMOVED, NIC.SUBNET_ID);
+        InstanceTable instance = mapper.add(INSTANCE, INSTANCE.SERVICE_INDEX_ID, INSTANCE.REMOVED, INSTANCE.ID);
+
+
+        return create()
+                .select(mapper.fields())
+                .from(instance)
+                .join(exposeMap)
+                .on(exposeMap.INSTANCE_ID.eq(instance.ID))
+                .join(nic)
+                .on(nic.INSTANCE_ID.eq(exposeMap.INSTANCE_ID))
+                .join(IP_ADDRESS_NIC_MAP)
+                .on(IP_ADDRESS_NIC_MAP.NIC_ID.eq(nic.ID))
+                .join(ipAddress)
+                .on(IP_ADDRESS_NIC_MAP.IP_ADDRESS_ID.eq(ipAddress.ID))
+                .join(serviceIndex)
+                .on(serviceIndex.ID.eq(instance.SERVICE_INDEX_ID))
+                .join(subnet)
+                .on(nic.SUBNET_ID.eq(subnet.ID))
+                .where(exposeMap.SERVICE_ID.eq(service.getId()))
+                .and(exposeMap.REMOVED.isNull())
+                .and(nic.REMOVED.isNull())
+                .and(ipAddress.REMOVED.isNull())
+                .and(ipAddress.ADDRESS.isNotNull())
+                .and(instance.REMOVED.isNull())
+                .and(ipAddress.ROLE.eq(IpAddressConstants.ROLE_PRIMARY))
+                .fetch().map(mapper);
+    }
 }

@@ -530,7 +530,7 @@
         "service.selectorContainer" : "cru",
         "service.fqdn" : "r",
         "service.publicEndpoints" : "r",
-        "service.retainIp" : "cr",
+        "service.retainIp" : "cru",
         "service.assignServiceIpAddress" : "cr",
         "service.healthState": "r",
         "service.startOnCreate": "cr",
