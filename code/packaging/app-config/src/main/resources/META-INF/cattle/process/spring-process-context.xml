@@ -198,11 +198,22 @@
         </property>
     </bean>
 
-    <bean class="io.cattle.platform.process.instance.LabelsProviderProcessHandler"
-        p:name="LabelsProviders"
+    <bean class="io.cattle.platform.process.instance.LabelsProviderProcessPreListener"
+        p:name="PreInstanceCreateLabelsProviders"
+        p:commandName="compute.instance.providelabels"
+        p:dataTypeClass="io.cattle.platform.core.model.Instance"
+        p:agentResourceRelationship="host"
+        p:shouldContinue="true"
+        p:processNames="instance.create"
+        p:priority="0" >
+    </bean>
+
+    <bean class="io.cattle.platform.process.instance.LabelsProviderProcessPostListener"
+        p:name="PostStartLabelsProviders"
         p:commandName="compute.instance.providelabels"
         p:dataTypeClass="io.cattle.platform.core.model.InstanceHostMap"
         p:agentResourceRelationship="host"
+        p:shouldContinue="true"
         p:processNames="instancehostmap.activate" >
         <property name="priority">
             <util:constant static-field="io.cattle.platform.util.type.Priority.DEFAULT"/>

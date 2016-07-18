@@ -73,7 +73,7 @@ public class VirtualMachinePreCreate extends AbstractObjectProcessLogic implemen
         Map<String, Object> labels = DataAccessor.fieldMap(instance, InstanceConstants.FIELD_LABELS);
 
         labels.put("io.rancher.scheduler.affinity:host_label_soft", "kvm=true");
-        labels.put(ContainerEventConstants.RANCHER_NETWORK, "true");
+        labels.put(ContainerEventConstants.LABEL_RANCHER_NETWORK, "true");
         labels.put(SystemLabels.LABEL_VM, "true");
         long mem = 512L;
         if (instance.getMemoryMb() == null) {

@@ -1,5 +1,8 @@
 package io.cattle.platform.process.instance;
 
+import static io.cattle.platform.core.constants.ContainerEventConstants.*;
+import static io.cattle.platform.docker.constants.DockerInstanceConstants.*;
+
 import io.cattle.platform.core.addon.LogConfig;
 import io.cattle.platform.core.constants.AgentConstants;
 import io.cattle.platform.core.constants.InstanceConstants;
@@ -13,6 +16,7 @@ import io.cattle.platform.engine.handler.ProcessPreListener;
 import io.cattle.platform.engine.process.ProcessInstance;
 import io.cattle.platform.engine.process.ProcessState;
 import io.cattle.platform.json.JsonMapper;
+import io.cattle.platform.object.meta.ObjectMetaDataManager;
 import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.process.common.handler.AbstractObjectProcessLogic;
 import io.cattle.platform.util.type.Priority;
@@ -24,6 +28,8 @@ import java.util.Map;
 import javax.inject.Inject;
 import javax.inject.Named;
 
+import org.apache.commons.lang3.BooleanUtils;
+import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import com.google.common.base.Joiner;
@@ -53,13 +59,33 @@ public class InstancePreCreate extends AbstractObjectProcessLogic implements Pro
             data.put(InstanceConstants.FIELD_DATA_VOLUMES, dataVolumes);
         }
         setDns(instance, labels, data);
-
         setLogConfig(instance, data);
+        setName(instance, labels, data);
+        setNetworkMode(instance, labels, data);
 
         if (!data.isEmpty()) {
             return new HandlerResult(data);
         }
         return null;
+    }
+
+    protected String toString(Object obj) {
+        return ObjectUtils.toString(obj, null);
+    }
+
+    protected void setNetworkMode(Instance instance, Map<String, Object> labels, Map<Object, Object> data) {
+        if (BooleanUtils.toBoolean(toString(labels.get(LABEL_RANCHER_NETWORK)))) {
+            data.put(FIELD_NETWORK_MODE, DockerNetworkConstants.NETWORK_MODE_MANAGED);
+        }
+    }
+
+    protected void setName(Instance instance, Map<String, Object> labels, Map<Object, Object> data) {
+        String name = toString(labels.get(LABEL_DISPLAY_NAME));
+        if (StringUtils.isBlank(name)) {
+            return;
+        }
+
+        data.put(ObjectMetaDataManager.NAME_FIELD, name.replaceFirst("/", ""));
     }
 
     protected void setLogConfig(Instance instance, Map<Object, Object> data) {

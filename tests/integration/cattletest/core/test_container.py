@@ -154,6 +154,25 @@ def _assert_running(container):
     })
 
 
+def test_container_special_labels(client, context):
+    uuid = "sim:{}".format(random_num())
+    labels = {
+        'io.rancher.container.display_name': 'from-label',
+        'io.rancher.container.network': 'true',
+    }
+    container = client.create_container(accountId=context.project.id,
+                                        networkMode='none',
+                                        imageUuid=uuid,
+                                        name="test",
+                                        labels=labels,
+                                        startOnCreate=False)
+    container = client.wait_success(container)
+
+    assert container.state == 'stopped'
+    assert container.name == 'from-label'
+    assert container.networkMode == 'managed'
+
+
 def test_container_create_then_start(super_client, client, context):
     container = client.create_container(startOnCreate=False,
                                         imageUuid=context.image_uuid)

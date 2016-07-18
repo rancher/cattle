@@ -369,6 +369,9 @@ public class DockerTransformerImpl implements DockerTransformer {
     void setName(Instance instance, InspectContainerResponse inspect, Map<String, Object> fromInspect) {
         String name = inspect.getName();
         Object displayNameLabel = CollectionUtils.getNestedValue(fromInspect, "Config", "Labels", ContainerEventConstants.LABEL_DISPLAY_NAME);
+        if (displayNameLabel == null) {
+            displayNameLabel = DataAccessor.fieldMap(instance, FIELD_LABELS).get(ContainerEventConstants.LABEL_DISPLAY_NAME);
+        }
         if (displayNameLabel != null) {
             String displayName = displayNameLabel.toString();
             if (StringUtils.isNotBlank(displayName)) {
