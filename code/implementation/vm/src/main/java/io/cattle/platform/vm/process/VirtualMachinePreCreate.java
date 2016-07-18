@@ -225,12 +225,15 @@ public class VirtualMachinePreCreate extends AbstractObjectProcessLogic implemen
         }
 
         // TODO: I'd really like to remove this
-        List<Object> command = new ArrayList<>();
-        command.add("-m");
-        command.add(labels.get(SystemLabels.LABEL_VM_MEMORY));
-        command.add("-smp");
-        command.add("cpus=" + labels.get(SystemLabels.LABEL_VM_VCPU));
-        command.addAll(DataAccessor.fieldStringList(instance, DockerInstanceConstants.FIELD_COMMAND));
+        List<Object> command = new ArrayList<Object>(DataAccessor.fieldStringList(instance, DockerInstanceConstants.FIELD_COMMAND));
+        if (!command.contains("-m")) {
+            command.add("-m");
+            command.add(labels.get(SystemLabels.LABEL_VM_MEMORY));
+        }
+        if (!command.contains("-smp")) {
+            command.add("-smp");
+            command.add("cpus=" + labels.get(SystemLabels.LABEL_VM_VCPU));
+        }
 
         fields.put(DockerInstanceConstants.FIELD_COMMAND, command);
         fields.put(InstanceConstants.FIELD_ENVIRONMENT, env);
