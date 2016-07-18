@@ -38,6 +38,9 @@
         "outputs":{
             "type": "map[string]",
             "nullable": true
+        },
+        "upgrade":{
+            "type": "kubernetesStackUpgrade"
         }
     },
     "resourceActions" : {

@@ -123,6 +123,8 @@ def test_user_types(user_client, adds=set(), removes=set()):
         'ipAddress',
         'ipAddressAssociateInput',
         'kubernetesService',
+        'kubernetesStack',
+        'kubernetesStackUpgrade',
         'label',
         'loadBalancerAppCookieStickinessPolicy',
         'loadBalancerConfig',
@@ -334,6 +336,8 @@ def test_admin_types(admin_user_client, adds=set(), removes=set()):
         'ipAddress',
         'ipAddressAssociateInput',
         'kubernetesService',
+        'kubernetesStack',
+        'kubernetesStackUpgrade',
         'label',
         'ldapconfig',
         'loadBalancerAppCookieStickinessPolicy',
@@ -1816,6 +1820,45 @@ def test_auth_compose_project(admin_user_client, user_client, project_client):
     })
 
 
+def test_auth_kubernetes_stack(admin_user_client, user_client, project_client):
+    auth_check(admin_user_client.schema, 'kubernetesStack', 'r', {
+        'name': 'r',
+        'accountId': 'r',
+        'data': 'r',
+        'namespace': 'r',
+        'templates': 'r',
+        'environment': 'r',
+        'externalId': 'r',
+        'previousExternalId': 'r',
+        'previousEnvironment': 'r',
+        'healthState': 'r',
+    })
+
+    auth_check(user_client.schema, 'kubernetesStack', 'r', {
+        'name': 'r',
+        'accountId': 'r',
+        'namespace': 'r',
+        'templates': 'r',
+        'environment': 'r',
+        'externalId': 'r',
+        'previousExternalId': 'r',
+        'previousEnvironment': 'r',
+        'healthState': 'r',
+    })
+
+    auth_check(project_client.schema, 'kubernetesStack', 'crud', {
+        'name': 'cr',
+        'accountId': 'r',
+        'namespace': 'cr',
+        'templates': 'cr',
+        'environment': 'cr',
+        'externalId': 'cru',
+        'previousExternalId': 'cru',
+        'previousEnvironment': 'cru',
+        'healthState': 'r',
+    })
+
+
 def test_svc_discovery_environment(admin_user_client, user_client,
                                    project_client):
     auth_check(admin_user_client.schema, 'environment', 'r', {
@@ -1963,6 +2006,27 @@ def test_svc_discovery_consume_map(admin_user_client, user_client,
         'consumedServiceId': 'r',
         'ports': 'r',
         'accountId': 'r',
+    })
+
+
+def test_auth_k8s_stack_upgrade(admin_user_client, user_client,
+                                project_client):
+    auth_check(admin_user_client.schema, 'kubernetesStackUpgrade', 'r', {
+        'templates': 'r',
+        'environment': 'r',
+        'externalId': 'r',
+    })
+
+    auth_check(user_client.schema, 'kubernetesStackUpgrade', 'r', {
+        'templates': 'r',
+        'environment': 'r',
+        'externalId': 'r',
+    })
+
+    auth_check(project_client.schema, 'kubernetesStackUpgrade', 'cr', {
+        'templates': 'cr',
+        'environment': 'cr',
+        'externalId': 'cr',
     })
 
 

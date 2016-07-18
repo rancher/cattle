@@ -220,6 +220,75 @@
         </property>
     </bean>
 
+    <bean class="io.cattle.platform.process.environment.EnvironmentAgentHandler"
+        p:name="EnvironmentAgentHandler"
+        p:commandName="kubernetesStack.create"
+        p:dataTypeClass="io.cattle.platform.core.model.Environment"
+        p:processNames="environment.create"
+        p:environmentKind="kubernetesStack"
+        p:agentService="io.rancher.container.agent_service.kubernetes_stack"
+        p:errorChainProcess="environment.error" >
+        <property name="priority">
+            <util:constant static-field="io.cattle.platform.util.type.Priority.DEFAULT"/>
+        </property>
+    </bean>
+
+    <bean class="io.cattle.platform.process.environment.EnvironmentAgentHandler"
+        p:name="EnvironmentAgentHandler"
+        p:commandName="kubernetesStack.rollback"
+        p:dataTypeClass="io.cattle.platform.core.model.Environment"
+        p:environmentKind="kubernetesStack"
+        p:agentService="io.rancher.container.agent_service.kubernetes_stack"
+        p:processNames="environment.rollback" >
+        <property name="priority">
+            <util:constant static-field="io.cattle.platform.util.type.Priority.DEFAULT"/>
+        </property>
+    </bean>
+
+    <bean class="io.cattle.platform.process.environment.EnvironmentAgentHandler"
+        p:name="EnvironmentAgentHandler"
+        p:commandName="kubernetesStack.finishupgrade"
+        p:dataTypeClass="io.cattle.platform.core.model.Environment"
+        p:environmentKind="kubernetesStack"
+        p:agentService="io.rancher.container.agent_service.kubernetes_stack"
+        p:processNames="environment.finishupgrade" >
+        <property name="priority">
+            <util:constant static-field="io.cattle.platform.util.type.Priority.DEFAULT"/>
+        </property>
+    </bean>
+
+    <bean class="io.cattle.platform.process.environment.EnvironmentAgentHandler"
+        p:name="EnvironmentAgentHandler"
+        p:commandName="kubernetesStack.upgrade"
+        p:dataTypeClass="io.cattle.platform.core.model.Environment"
+        p:environmentKind="kubernetesStack"
+        p:agentService="io.rancher.container.agent_service.kubernetes_stack"
+        p:processNames="environment.upgrade"
+        p:errorChainProcess="environment.cancelupgrade" >
+        <property name="processDataKeys" >
+            <list>
+                <value>templates</value>
+                <value>environment</value>
+                <value>externalId</value>
+            </list>
+        </property>
+        <property name="priority">
+            <util:constant static-field="io.cattle.platform.util.type.Priority.DEFAULT"/>
+        </property>
+    </bean>
+
+    <bean class="io.cattle.platform.process.environment.EnvironmentAgentHandler"
+        p:name="EnvironmentAgentHandler"
+        p:commandName="kubernetesStack.remove"
+        p:dataTypeClass="io.cattle.platform.core.model.Environment"
+        p:environmentKind="kubernetesStack"
+        p:agentService="io.rancher.container.agent_service.kubernetes_stack"
+        p:processNames="environment.remove" >
+        <property name="priority">
+            <util:constant static-field="io.cattle.platform.util.type.Priority.DEFAULT"/>
+        </property>
+    </bean>
+
     <bean class="io.cattle.platform.process.instance.PostInstancePurge"
         p:commandName="compute.instance.remove" >
     </bean>

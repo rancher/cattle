@@ -1,0 +1,13 @@
+{
+    "resourceFields": {
+        "templates":{
+            "type": "map[string]"
+        },
+        "externalId":{
+            "type": "string"
+        },
+        "environment":{
+            "type": "map[string]"
+        }
+    }
+}
