@@ -58,13 +58,12 @@ def test_volume_cleanup_strategy_label(client, host, agent_cli, user_id):
                                         agent_cli, user_id)
     assert container.labels[VOLUME_CLEANUP_LABEL] == 'none'
 
-    # Assert that label isn't prepopulated if it is in the inspect
     external_id = random_str()
     inspect = {'Config': {'Labels': {VOLUME_CLEANUP_LABEL: 'all'}}}
     container = \
         create_native_container(client, host, external_id, agent_cli, user_id,
                                 inspect=inspect)
-    assert not container.labels
+    assert container.labels[VOLUME_CLEANUP_LABEL] == 'all'
 
 
 def test_container_event_start_stop(client, host, agent_cli, user_id):

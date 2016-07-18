@@ -12,7 +12,7 @@ public class ContainerEventConstants {
     
     public static final String LABEL_RANCHER_SYSTEM_CONTAINER = "io.rancher.container.system";
     public static final String LABEL_RANCHER_UUID = "io.rancher.container.uuid";
-    public static final String RANCHER_NETWORK = "io.rancher.container.network";
+    public static final String LABEL_RANCHER_NETWORK = "io.rancher.container.network";
     public static final String LABEL_DISPLAY_NAME = "io.rancher.container.display_name";
     
     public static final String CONTAINER_EVENT_KIND = "containerEvent";

@@ -73,7 +73,7 @@ public class VirtualMachinePreCreate extends AbstractObjectProcessLogic implemen
         Map<String, Object> labels = DataAccessor.fieldMap(instance, InstanceConstants.FIELD_LABELS);
 
         labels.put("io.rancher.scheduler.affinity:host_label_soft", "kvm=true");
-        labels.put(ContainerEventConstants.RANCHER_NETWORK, "true");
+        labels.put(ContainerEventConstants.LABEL_RANCHER_NETWORK, "true");
         labels.put(SystemLabels.LABEL_VM, "true");
         long mem = 512L;
         if (instance.getMemoryMb() == null) {
@@ -225,12 +225,15 @@ public class VirtualMachinePreCreate extends AbstractObjectProcessLogic implemen
         }
 
         // TODO: I'd really like to remove this
-        List<Object> command = new ArrayList<>();
-        command.add("-m");
-        command.add(labels.get(SystemLabels.LABEL_VM_MEMORY));
-        command.add("-smp");
-        command.add("cpus=" + labels.get(SystemLabels.LABEL_VM_VCPU));
-        command.addAll(DataAccessor.fieldStringList(instance, DockerInstanceConstants.FIELD_COMMAND));
+        List<Object> command = new ArrayList<Object>(DataAccessor.fieldStringList(instance, DockerInstanceConstants.FIELD_COMMAND));
+        if (!command.contains("-m")) {
+            command.add("-m");
+            command.add(labels.get(SystemLabels.LABEL_VM_MEMORY));
+        }
+        if (!command.contains("-smp")) {
+            command.add("-smp");
+            command.add("cpus=" + labels.get(SystemLabels.LABEL_VM_VCPU));
+        }
 
         fields.put(DockerInstanceConstants.FIELD_COMMAND, command);
         fields.put(InstanceConstants.FIELD_ENVIRONMENT, env);

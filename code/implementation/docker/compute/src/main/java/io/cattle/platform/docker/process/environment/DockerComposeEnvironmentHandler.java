@@ -7,13 +7,13 @@ import io.cattle.platform.docker.process.util.DockerConstants;
 import io.cattle.platform.engine.handler.ProcessPostListener;
 import io.cattle.platform.engine.process.ProcessInstance;
 import io.cattle.platform.engine.process.ProcessState;
-import io.cattle.platform.process.common.handler.AgentBasedProcessHandler;
+import io.cattle.platform.process.common.handler.AgentBasedProcessLogic;
 
 import java.util.List;
 
 import javax.inject.Inject;
 
-public class DockerComposeEnvironmentHandler extends AgentBasedProcessHandler implements ProcessPostListener {
+public class DockerComposeEnvironmentHandler extends AgentBasedProcessLogic implements ProcessPostListener {
 
     @Inject
     AgentInstanceDao agentInstanceDao;

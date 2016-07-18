@@ -7,6 +7,7 @@ import static io.cattle.platform.core.constants.NetworkConstants.*;
 import static io.cattle.platform.core.model.tables.HostTable.*;
 import static io.cattle.platform.docker.constants.DockerInstanceConstants.*;
 import static io.cattle.platform.docker.constants.DockerNetworkConstants.*;
+
 import io.cattle.platform.agent.AgentLocator;
 import io.cattle.platform.agent.RemoteAgent;
 import io.cattle.platform.archaius.util.ArchaiusUtil;
@@ -45,7 +46,6 @@ import java.util.Map;
 import javax.inject.Inject;
 import javax.inject.Named;
 
-import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -67,7 +67,6 @@ public class ContainerEventCreate extends AbstractDefaultProcessHandler {
     private static final String IMAGE_PREFIX = "docker:";
     private static final String IMAGE_KIND_PATTERN = "^(sim|docker):.*";
     private static final String RANCHER_UUID_ENV_VAR = "RANCHER_UUID=";
-    private static final String RANCHER_NETWORK_ENV_VAR = "RANCHER_NETWORK=";
 
     private static final Logger log = LoggerFactory.getLogger(ContainerEventCreate.class);
 
@@ -189,6 +188,10 @@ public class ContainerEventCreate extends AbstractDefaultProcessHandler {
         setHost(event, instance);
         setVolumeCleanupStrategy(inspect, data, instance);
 
+        Map<String, Object> labels = DataAccessor.fieldMap(instance, InstanceConstants.FIELD_LABELS);
+        labels.putAll(getLabels(inspect, data));
+        DataAccessor.setField(instance, InstanceConstants.FIELD_LABELS, labels);
+
         instance = objectManager.create(instance);
         objectProcessManager.scheduleProcessInstance(PROCESS_CREATE, instance, makeData());
     }
@@ -259,11 +262,6 @@ public class ContainerEventCreate extends AbstractDefaultProcessHandler {
         String name = DataAccessor.fromMap(data).withKey(CONTAINER_EVENT_SYNC_NAME).as(String.class);
         if (StringUtils.isEmpty(name))
             name = DataAccessor.fromMap(inspect).withKey(INSPECT_NAME).as(String.class);
-
-        String nameFromLabel = getLabel(LABEL_DISPLAY_NAME, inspect, data);
-        if (StringUtils.isNotBlank(nameFromLabel)) {
-            name = nameFromLabel;
-        }
 
         if (name != null)
             name = name.replaceFirst("/", "");
@@ -360,9 +358,7 @@ public class ContainerEventCreate extends AbstractDefaultProcessHandler {
             DataAccessor.fields(instance).withKey(FIELD_REQUESTED_IP_ADDRESS).set(ip);
             return NETWORK_MODE_MANAGED;
         }
-        if (BooleanUtils.toBoolean(getRancherNetworkLabel(inspect, data))) {
-            return NETWORK_MODE_MANAGED;
-        }
+
         return NETWORK_MODE_BRIDGE;
     }
 
@@ -403,12 +399,21 @@ public class ContainerEventCreate extends AbstractDefaultProcessHandler {
         return getLabel(LABEL_RANCHER_UUID, RANCHER_UUID_ENV_VAR, inspect, data);
     }
 
-    String getRancherNetworkLabel(Map<String, Object> inspect, Map<String, Object> data) {
-        return getLabel(RANCHER_NETWORK, RANCHER_NETWORK_ENV_VAR, inspect, data);
-    }
-
     String getLabel(String labelKey, Map<String, Object> inspect, Map<String, Object> data) {
         return getLabel(labelKey, null, inspect, data);
+    }
+
+    Map<String, Object> getLabels(Map<String, Object> inspect, Map<String, Object> data) {
+        Map<String, Object> labels = new HashMap<>();
+        Map<String, Object> labelsFromData = CollectionUtils.toMap(DataAccessor.fromMap(data).withKey(CONTAINER_EVENT_SYNC_LABELS).get());
+
+        Map<String, Object> config = CollectionUtils.toMap(inspect.get(INSPECT_CONFIG));
+        Map<String, Object> inspectLabels = CollectionUtils.toMap(config.get(INSPECT_LABELS));
+
+        labels.putAll(inspectLabels);
+        labels.putAll(labelsFromData);
+
+        return labels;
     }
 
     @SuppressWarnings("unchecked")
