@@ -1,9 +1,15 @@
 package io.cattle.platform.core.addon;
 
+import io.cattle.platform.util.type.CollectionUtils;
 import io.github.ibuildthecloud.gdapi.annotation.Field;
 import io.github.ibuildthecloud.gdapi.annotation.Type;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+
+import org.apache.commons.lang3.tuple.Pair;
 
 @Type(list = false, parent = "serviceUpgradeStrategy")
 public class InServiceUpgradeStrategy extends ServiceUpgradeStrategy {
@@ -63,5 +69,29 @@ public class InServiceUpgradeStrategy extends ServiceUpgradeStrategy {
         boolean allSecondaryUpgrades = (isEmptySec == isEmptyPrevSesc)
                 && (isEmptySec || this.secondaryLaunchConfigs.size() == this.previousSecondaryLaunchConfigs.size());
         return primaryUpgrade && allSecondaryUpgrades;
+    }
+
+    public Map<String, Pair<String, Map<String, Object>>> getNameToVersionToConfig(String svcName,
+            boolean previous) {
+        List<Object> lcs = new ArrayList<>();
+        if (previous) {
+            lcs.addAll(this.getPreviousSecondaryLaunchConfigs());
+            lcs.add(this.getPreviousLaunchConfig());
+        } else {
+            lcs.addAll(this.getSecondaryLaunchConfigs());
+            lcs.add(this.getLaunchConfig());
+        }
+        Map<String, Pair<String, Map<String, Object>>> lcNames = new HashMap<>();
+        for (Object lc : lcs) {
+            Map<String, Object> mapped = CollectionUtils.toMap(lc);
+            Object name = mapped.get("name");
+            if (name != null) {
+                lcNames.put(name.toString(), Pair.of(mapped.get("version").toString(), mapped));
+            } else {
+                // primary config doesn't have the name set
+                lcNames.put(svcName, Pair.of(mapped.get("version").toString(), mapped));
+            }
+        }
+        return lcNames;
     }
 }

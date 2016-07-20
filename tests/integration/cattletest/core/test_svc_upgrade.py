@@ -1,5 +1,4 @@
 from common_fixtures import *  # NOQA
-from cattle import ApiError
 
 DEFAULT_TIMEOUT = 120
 
@@ -136,19 +135,6 @@ def test_in_service_upgrade_mix(context, client, super_client):
                                       batchSize=1)
     _validate_upgrade(super_client, svc, up_svc,
                       primary='1', secondary1='1', secondary2='0')
-
-
-def test_upgrade_invalid_config(context, client, super_client):
-    # pass invalid config name
-    image_uuid = context.image_uuid
-    secondary_invalid = {"imageUuid": image_uuid, "name": "secondary3"}
-    with pytest.raises(ApiError) as e:
-        _insvc_upgrade(context, client, super_client, True,
-                       launchConfig={'labels': {'foo': "bar"}},
-                       secondaryLaunchConfigs=secondary_invalid,
-                       batchSize=1)
-    assert e.value.error.status == 422
-    assert e.value.error.code == 'InvalidOption'
 
 
 def test_big_scale(context, client):
@@ -904,3 +890,271 @@ def test_in_service_upgrade_port_mapping(context, client, super_client):
         == svc.secondaryLaunchConfigs[0].ports
     assert u_svc.secondaryLaunchConfigs[1].ports \
         == svc.secondaryLaunchConfigs[1].ports
+
+
+def test_sidekick_addition(context, client):
+    env = client.create_environment(name=random_str())
+    env = client.wait_success(env)
+    image_uuid = context.image_uuid
+    launch_config = {"imageUuid": image_uuid}
+    secondary1 = {"imageUuid": image_uuid, "name": "secondary1"}
+    secondary2 = {"imageUuid": image_uuid, "name": "secondary2"}
+    svc = client.create_service(name=random_str(),
+                                environmentId=env.id,
+                                scale=1,
+                                launchConfig=launch_config,
+                                secondaryLaunchConfigs=[secondary1])
+    svc = client.wait_success(svc)
+    svc = client.wait_success(svc.activate())
+
+    c2_pre = _validate_compose_instance_start(client, svc, env,
+                                              "1", "secondary1")
+
+    u_svc = _run_insvc_upgrade(svc,
+                               launchConfig=launch_config,
+                               secondaryLaunchConfigs=[secondary2],
+                               batchSize=1)
+    u_svc = client.wait_success(u_svc, DEFAULT_TIMEOUT)
+    assert u_svc.state == 'upgraded'
+    u_svc = client.wait_success(u_svc.finishupgrade(), DEFAULT_TIMEOUT)
+
+    # validate that all service instances are present, and their version
+    _wait_until_active_map_count(u_svc, 3, client)
+    c1 = _validate_compose_instance_start(client, svc, env, "1")
+    assert c1.version != '0'
+    c2 = _validate_compose_instance_start(client, svc, env, "1",
+                                          "secondary1")
+    assert c2.version == '0'
+    assert c2.id == c2_pre.id
+    c3 = _validate_compose_instance_start(client, svc, env, "1",
+                                          "secondary2")
+    assert c3.version != '0'
+
+
+def test_sidekick_addition_rollback(context, client):
+    env = client.create_environment(name=random_str())
+    env = client.wait_success(env)
+    image_uuid = context.image_uuid
+    launch_config = {"imageUuid": image_uuid}
+    secondary1 = {"imageUuid": image_uuid, "name": "secondary1"}
+    secondary2 = {"imageUuid": image_uuid, "name": "secondary2"}
+    svc = client.create_service(name=random_str(),
+                                environmentId=env.id,
+                                scale=2,
+                                launchConfig=launch_config,
+                                secondaryLaunchConfigs=[secondary1])
+    svc = client.wait_success(svc)
+    svc = client.wait_success(svc.activate())
+    c11_pre = _validate_compose_instance_start(client, svc, env, "1")
+    c12_pre = _validate_compose_instance_start(client, svc, env, "2")
+    c21_pre = _validate_compose_instance_start(client, svc, env, "1",
+                                               "secondary1")
+    c22_pre = _validate_compose_instance_start(client, svc, env, "2",
+                                               "secondary1")
+
+    u_svc = _run_insvc_upgrade(svc,
+                               launchConfig=launch_config,
+                               secondaryLaunchConfigs=[secondary2],
+                               batchSize=1)
+    u_svc = client.wait_success(u_svc, DEFAULT_TIMEOUT)
+    assert u_svc.state == 'upgraded'
+    u_svc = client.wait_success(u_svc.rollback(), DEFAULT_TIMEOUT)
+
+    # validate that all service instances are present, and their version
+    _wait_until_active_map_count(u_svc, 4, client)
+    c11 = _validate_compose_instance_start(client, svc, env, "1")
+    assert c11.version == '0'
+    assert c11.id == c11_pre.id
+    c12 = _validate_compose_instance_start(client, svc, env, "2")
+    assert c12.version == '0'
+    assert c12.id == c12_pre.id
+    c21 = _validate_compose_instance_start(client, svc, env, "1",
+                                           "secondary1")
+    assert c21.version == '0'
+    assert c21.id == c21_pre.id
+    c22 = _validate_compose_instance_start(client, svc, env, "2",
+                                           "secondary1")
+    assert c22.version == '0'
+    assert c22.id == c22_pre.id
+
+
+def test_sidekick_addition_wo_primary(context, client):
+    env = client.create_environment(name=random_str())
+    env = client.wait_success(env)
+    image_uuid = context.image_uuid
+    launch_config = {"imageUuid": image_uuid}
+    secondary1 = {"imageUuid": image_uuid, "name": "secondary1"}
+    secondary2 = {"imageUuid": image_uuid, "name": "secondary2"}
+    svc = client.create_service(name=random_str(),
+                                environmentId=env.id,
+                                scale=1,
+                                launchConfig=launch_config,
+                                secondaryLaunchConfigs=[secondary1])
+    svc = client.wait_success(svc)
+    svc = client.wait_success(svc.activate())
+    c1_pre = _validate_compose_instance_start(client, svc, env, "1")
+    c2_pre = _validate_compose_instance_start(client, svc, env, "1",
+                                              "secondary1")
+
+    u_svc = _run_insvc_upgrade(svc,
+                               secondaryLaunchConfigs=[secondary2],
+                               batchSize=1)
+    u_svc = client.wait_success(u_svc, DEFAULT_TIMEOUT)
+    assert u_svc.state == 'upgraded'
+    u_svc = client.wait_success(u_svc.finishupgrade(), DEFAULT_TIMEOUT)
+
+    # validate that all service instances are present, and their version
+    _wait_until_active_map_count(u_svc, 3, client)
+    c1 = _validate_compose_instance_start(client, svc, env, "1")
+    assert c1.version == '0'
+    assert c1.id == c1_pre.id
+    c2 = _validate_compose_instance_start(client, svc, env, "1",
+                                          "secondary1")
+    assert c2.version == '0'
+    assert c2.id == c2_pre.id
+    c3 = _validate_compose_instance_start(client, svc, env, "1",
+                                          "secondary2")
+    assert c3.version != '0'
+
+
+def test_sidekick_addition_two_sidekicks(context, client):
+    env = client.create_environment(name=random_str())
+    env = client.wait_success(env)
+    image_uuid = context.image_uuid
+    launch_config = {"imageUuid": image_uuid}
+    secondary1 = {"imageUuid": image_uuid, "name": "secondary1"}
+    secondary2 = {"imageUuid": image_uuid, "name": "secondary2"}
+    svc = client.create_service(name=random_str(),
+                                environmentId=env.id,
+                                scale=1,
+                                launchConfig=launch_config)
+    svc = client.wait_success(svc)
+    svc = client.wait_success(svc.activate())
+    c1_pre = _validate_compose_instance_start(client, svc, env, "1")
+
+    u_svc = _run_insvc_upgrade(svc,
+                               secondaryLaunchConfigs=[secondary1, secondary2],
+                               batchSize=1)
+    u_svc = client.wait_success(u_svc, DEFAULT_TIMEOUT)
+    assert u_svc.state == 'upgraded'
+    u_svc = client.wait_success(u_svc.finishupgrade(), DEFAULT_TIMEOUT)
+
+    # validate that all service instances are present, and their version
+    _wait_until_active_map_count(u_svc, 3, client)
+    c1 = _validate_compose_instance_start(client, svc, env, "1")
+    assert c1.version == '0'
+    assert c1.id == c1_pre.id
+    c2 = _validate_compose_instance_start(client, svc, env, "1", "secondary1")
+    assert c2.version != '0'
+    c3 = _validate_compose_instance_start(client, svc, env, "1", "secondary2")
+    assert c3.version != '0'
+
+
+def test_sidekick_removal(context, client):
+    env = client.create_environment(name=random_str())
+    env = client.wait_success(env)
+    image_uuid = context.image_uuid
+    launch_config = {"imageUuid": image_uuid}
+    secondary1 = {"imageUuid": image_uuid, "name": "secondary1"}
+    secondary2 = {"imageUuid": image_uuid, "name": "secondary2"}
+    svc = client.create_service(name=random_str(),
+                                environmentId=env.id,
+                                scale=1,
+                                launchConfig=launch_config,
+                                secondaryLaunchConfigs=[secondary1,
+                                                        secondary2])
+    svc = client.wait_success(svc)
+    svc = client.wait_success(svc.activate())
+    c1_pre = _validate_compose_instance_start(client, svc, env, "1")
+
+    secondary2 = {"imageUuid": image_uuid, "name": "secondary2",
+                  'imageUuid': "rancher/none"}
+    u_svc = _run_insvc_upgrade(svc,
+                               secondaryLaunchConfigs=[secondary1, secondary2],
+                               batchSize=1)
+    u_svc = client.wait_success(u_svc, DEFAULT_TIMEOUT)
+    assert u_svc.state == 'upgraded'
+    u_svc = client.wait_success(u_svc.finishupgrade(), DEFAULT_TIMEOUT)
+
+    # validate that all service instances are present, and their version
+    _wait_until_active_map_count(u_svc, 2, client)
+    c1 = _validate_compose_instance_start(client, svc, env, "1")
+    assert c1.version == '0'
+    assert c1.id == c1_pre.id
+    c2 = _validate_compose_instance_start(client, svc, env, "1", "secondary1")
+    assert c2.version != '0'
+
+
+def test_sidekick_removal_rollback(context, client):
+    env = client.create_environment(name=random_str())
+    env = client.wait_success(env)
+    image_uuid = context.image_uuid
+    launch_config = {"imageUuid": image_uuid}
+    secondary1 = {"imageUuid": image_uuid, "name": "secondary1"}
+    secondary2 = {"imageUuid": image_uuid, "name": "secondary2"}
+    svc = client.create_service(name=random_str(),
+                                environmentId=env.id,
+                                scale=1,
+                                launchConfig=launch_config,
+                                secondaryLaunchConfigs=[secondary1,
+                                                        secondary2])
+    svc = client.wait_success(svc)
+    svc = client.wait_success(svc.activate())
+    c1_pre = _validate_compose_instance_start(client, svc, env, "1")
+    c2_pre = _validate_compose_instance_start(client, svc, env, "1",
+                                              "secondary1")
+    c3_pre = _validate_compose_instance_start(client, svc, env, "1",
+                                              "secondary2")
+
+    secondary2 = {"imageUuid": image_uuid, "name": "secondary2",
+                  'imageUuid': "rancher/none"}
+    u_svc = _run_insvc_upgrade(svc,
+                               secondaryLaunchConfigs=[secondary1, secondary2],
+                               batchSize=1)
+    u_svc = client.wait_success(u_svc, DEFAULT_TIMEOUT)
+    assert u_svc.state == 'upgraded'
+    u_svc = client.wait_success(u_svc.rollback(), DEFAULT_TIMEOUT)
+
+    # validate that all service instances are present, and their version
+    _wait_until_active_map_count(u_svc, 3, client)
+    c1 = _validate_compose_instance_start(client, svc, env, "1")
+    assert c1.version == '0'
+    assert c1.id == c1_pre.id
+    c2 = _validate_compose_instance_start(client, svc, env, "1", "secondary1")
+    assert c2.version == '0'
+    assert c2.id == c2_pre.id
+    c3 = _validate_compose_instance_start(client, svc, env, "1", "secondary2")
+    assert c3.version == '0'
+    assert c3.id == c3_pre.id
+
+
+def _wait_until_active_map_count(service, count, client):
+    def wait_for_map_count(service):
+        m = client. \
+            list_serviceExposeMap(serviceId=service.id, state='active')
+        return len(m) == count
+
+    wait_for(lambda: wait_for_condition(client, service, wait_for_map_count))
+    return client. \
+        list_serviceExposeMap(serviceId=service.id, state='active')
+
+
+def _validate_compose_instance_start(client, service, env,
+                                     number, launch_config_name=None):
+    cn = launch_config_name + "_" if \
+        launch_config_name is not None else ""
+    name = env.name + "_" + service.name + "_" + cn + number
+
+    def wait_for_map_count(service):
+        instances = client. \
+            list_container(name=name,
+                           state="running")
+        return len(instances) == 1
+
+    wait_for(lambda: wait_for_condition(client, service,
+                                        wait_for_map_count))
+
+    instances = client. \
+        list_container(name=name,
+                       state="running")
+    return instances[0]

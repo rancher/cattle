@@ -3,6 +3,7 @@ package io.cattle.platform.servicediscovery.api.filter;
 import io.cattle.platform.core.addon.InServiceUpgradeStrategy;
 import io.cattle.platform.core.addon.ServiceUpgrade;
 import io.cattle.platform.core.addon.ServiceUpgradeStrategy;
+import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.model.Service;
 import io.cattle.platform.iaas.api.filter.common.AbstractDefaultResourceManagerFilter;
 import io.cattle.platform.json.JsonMapper;
@@ -18,12 +19,14 @@ import io.github.ibuildthecloud.gdapi.validation.ValidationErrorCodes;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
 import javax.inject.Inject;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 
 public class ServiceUpgradeValidationFilter extends AbstractDefaultResourceManagerFilter {
@@ -68,8 +71,7 @@ public class ServiceUpgradeValidationFilter extends AbstractDefaultResourceManag
             ServiceUpgradeStrategy strategy) {
         if (strategy instanceof InServiceUpgradeStrategy) {
             InServiceUpgradeStrategy inServiceStrategy = (InServiceUpgradeStrategy) strategy;
-            inServiceStrategy = validateUpgrade(service, inServiceStrategy);
-            setVersion(inServiceStrategy);
+            inServiceStrategy = finalizeUpgradeStrategy(service, inServiceStrategy);
             
             Object launchConfig = DataAccessor.field(service, ServiceDiscoveryConstants.FIELD_LAUNCH_CONFIG,
                     Object.class);
@@ -104,7 +106,7 @@ public class ServiceUpgradeValidationFilter extends AbstractDefaultResourceManag
         launchConfig.put(ServiceDiscoveryConstants.FIELD_VERSION, version);
     }
 
-    protected InServiceUpgradeStrategy validateUpgrade(Service service, InServiceUpgradeStrategy strategy) {
+    protected InServiceUpgradeStrategy finalizeUpgradeStrategy(Service service, InServiceUpgradeStrategy strategy) {
         if (strategy.getLaunchConfig() == null && strategy.getSecondaryLaunchConfigs() == null) {
             ValidationErrorCodes.throwValidationError(ValidationErrorCodes.INVALID_OPTION,
                     "LaunchConfig/secondaryLaunchConfigs need to be specified for inService strategy");
@@ -139,6 +141,46 @@ public class ServiceUpgradeValidationFilter extends AbstractDefaultResourceManag
                 }
             }
         }
+
+        // set new version on the configs-to-upgrade
+        setVersion(strategy);
+
+        // add launch configs that don't need to be upgraded
+        // they will get saved with the old version value
+        List<Object> finalizedSecondary = new ArrayList<>();
+        if (strategy.getSecondaryLaunchConfigs() != null) {
+            finalizedSecondary.addAll(strategy.getSecondaryLaunchConfigs());
+        }
+        Object finalizedPrimary = strategy.getLaunchConfig();
+        Map<String, Map<Object, Object>> existingLCs = getExistingLaunchConfigs(service);
+        for (String scName : existingLCs.keySet()) {
+            if (!lCsToUpdateFinal.containsKey(scName)) {
+                if (StringUtils.equals(scName, service.getName())) {
+                    finalizedPrimary = existingLCs.get(scName);
+                } else {
+                    finalizedSecondary.add(existingLCs.get(scName));
+                }
+            }
+        }
+
+        // remove secondary launch configs marked with labels
+        Iterator<Object> it = finalizedSecondary.iterator();
+        while (it.hasNext()) {
+            Object lc = it.next();
+            Map<String, Object> mapped = CollectionUtils.toMap(lc);
+            Object imageUuid = mapped.get(InstanceConstants.FIELD_IMAGE_UUID);
+            if (imageUuid == null) {
+                continue;
+            }
+            if (service.getSelectorContainer() == null
+                    && StringUtils.equalsIgnoreCase(ServiceDiscoveryConstants.IMAGE_NONE, imageUuid.toString())) {
+                it.remove();
+            }
+        }
+
+        strategy.setLaunchConfig(finalizedPrimary);
+        strategy.setSecondaryLaunchConfigs(finalizedSecondary);
+
         return strategy;
     }
 
@@ -165,10 +207,6 @@ public class ServiceUpgradeValidationFilter extends AbstractDefaultResourceManag
         if (strategy.getSecondaryLaunchConfigs() != null) {
             for (Object secondaryLC : strategy.getSecondaryLaunchConfigs()) {
                 String lcName = CollectionUtils.toMap(secondaryLC).get("name").toString();
-                if (!serviceLCs.containsKey(lcName)) {
-                    ValidationErrorCodes.throwValidationError(ValidationErrorCodes.INVALID_OPTION,
-                            "Invalid secondary launch config name " + lcName);
-                }
                 lCsToUpdateInitial.put(lcName, (Map<Object, Object>) secondaryLC);
             }
         }
@@ -184,6 +222,7 @@ public class ServiceUpgradeValidationFilter extends AbstractDefaultResourceManag
     }
 
     @SuppressWarnings("unchecked")
+    // this method finalizes volumeFrom/networkFrom dependencies that need to be updated as well
     protected void finalizeLCNamesToUpdate(Map<String, Map<Object, Object>> serviceLCs,
             Map<String, Map<Object, Object>> lCToUpdateFinal,
             Pair<String, Map<Object, Object>> lcToUpdate) {
