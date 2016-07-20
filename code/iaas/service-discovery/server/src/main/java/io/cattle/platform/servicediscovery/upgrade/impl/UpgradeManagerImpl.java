@@ -27,7 +27,6 @@ import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.process.common.util.ProcessUtils;
 import io.cattle.platform.servicediscovery.api.constants.ServiceDiscoveryConstants;
 import io.cattle.platform.servicediscovery.api.dao.ServiceExposeMapDao;
-import io.cattle.platform.servicediscovery.api.util.ServiceDiscoveryUtil;
 import io.cattle.platform.servicediscovery.deployment.DeploymentManager;
 import io.cattle.platform.servicediscovery.deployment.impl.lock.ServicesSidekickLock;
 import io.cattle.platform.servicediscovery.service.ServiceDiscoveryService;
@@ -42,15 +41,15 @@ import java.util.Map;
 
 import javax.inject.Inject;
 
+import org.apache.commons.lang3.tuple.Pair;
+
 public class UpgradeManagerImpl implements UpgradeManager {
     private static Long DEFAULT_WAIT_TIMEOUT = 60000L;
 
     private enum Type {
         ToUpgrade,
         ToCleanup,
-        UpgradedManaged,
         UpgradedUnmanaged,
-        ToRestart
     }
 
     @Inject
@@ -95,20 +94,19 @@ public class UpgradeManagerImpl implements UpgradeManager {
             long batchSize = strategy.getBatchSize();
             boolean startFirst = strategy.getStartFirst();
 
-            Map<String, List<Instance>> deploymentUnitInstancesToUpgrade = formDeploymentUnits(service, Type.ToUpgrade);
+            Map<String, List<Instance>> deploymentUnitInstancesToUpgrade = formDeploymentUnitsForUpgrade(service,
+                    Type.ToUpgrade, isUpgrade, strategy);
 
-            Map<String, List<Instance>> deploymentUnitInstancesUpgradedManaged = formDeploymentUnits(service,
-                    Type.UpgradedManaged);
+            Map<String, List<Instance>> deploymentUnitInstancesUpgradedUnmanaged = formDeploymentUnitsForUpgrade(service,
+                    Type.UpgradedUnmanaged, isUpgrade, strategy);
 
-            Map<String, List<Instance>> deploymentUnitInstancesUpgradedUnmanaged = formDeploymentUnits(service,
-                    Type.UpgradedUnmanaged);
-
-            Map<String, List<Instance>> deploymentUnitInstancesToCleanup = formDeploymentUnits(service, Type.ToCleanup);
+            Map<String, List<Instance>> deploymentUnitInstancesToCleanup = formDeploymentUnitsForUpgrade(service,
+                    Type.ToCleanup, isUpgrade, strategy);
 
             // upgrade deployment units
-            upgradeDeploymentUnits(service, deploymentUnitInstancesToUpgrade, deploymentUnitInstancesUpgradedManaged,
-                    deploymentUnitInstancesUpgradedUnmanaged,
-                    deploymentUnitInstancesToCleanup, batchSize, startFirst, strategy.isFullUpgrade(), isUpgrade);
+            upgradeDeploymentUnits(service, deploymentUnitInstancesToUpgrade, deploymentUnitInstancesUpgradedUnmanaged,
+                    deploymentUnitInstancesToCleanup,
+                    batchSize, startFirst, strategy.isFullUpgrade(), isUpgrade);
 
             // check if empty
             if (deploymentUnitInstancesToUpgrade.isEmpty()) {
@@ -123,10 +121,10 @@ public class UpgradeManagerImpl implements UpgradeManager {
 
     protected void upgradeDeploymentUnits(final Service service,
             final Map<String, List<Instance>> deploymentUnitInstancesToUpgrade,
-            final Map<String, List<Instance>> deploymentUnitInstancesUpgradedManaged,
             final Map<String, List<Instance>> deploymentUnitInstancesUpgradedUnmanaged,
             final Map<String, List<Instance>> deploymentUnitInstancesToCleanup,
-            final long batchSize, final boolean startFirst, final boolean fullUpgrade, final boolean isUpgrade) {
+            final long batchSize,
+            final boolean startFirst, final boolean fullUpgrade, final boolean isUpgrade) {
         // hold the lock so service.reconcile triggered by config.update
         // (in turn triggered by instance.remove) won't interfere
         lockManager.lock(new ServicesSidekickLock(Arrays.asList(service)), new LockCallbackNoReturn() {
@@ -204,39 +202,65 @@ public class UpgradeManagerImpl implements UpgradeManager {
                                 SERVICE_EXPOSE_MAP.INSTANCE_ID, instance.getId());
                         setUpgrade(map, false);
                     }
-                    deploymentUnitInstancesUpgradedManaged.put(deploymentUnitUUIDToRollback, instances);
                 }
             }
         });
-
     }
 
-    protected Map<String, List<Instance>> formDeploymentUnits(Service service, Type type) {
-        List<String> launchConfigNames = ServiceDiscoveryUtil.getServiceLaunchConfigNames(service);
+    protected Map<String, List<Instance>> formDeploymentUnitsForUpgrade(Service service, Type type, boolean isUpgrade,
+            InServiceUpgradeStrategy strategy) {
+        Map<String, Pair<String, Map<String, Object>>> preUpgradeLaunchConfigNamesToVersion = new HashMap<>();
+        Map<String, Pair<String, Map<String, Object>>> postUpgradeLaunchConfigNamesToVersion = new HashMap<>();
+        // getting an original config set (to cover the scenario when config could be removed along with the upgrade)
+        if (isUpgrade) {
+            postUpgradeLaunchConfigNamesToVersion.putAll(strategy.getNameToVersionToConfig(service.getName(), false));
+            preUpgradeLaunchConfigNamesToVersion.putAll(strategy.getNameToVersionToConfig(service.getName(), true));
+        } else {
+            postUpgradeLaunchConfigNamesToVersion.putAll(strategy.getNameToVersionToConfig(service.getName(), true));
+            preUpgradeLaunchConfigNamesToVersion.putAll(strategy.getNameToVersionToConfig(service.getName(), false));
+        }
         Map<String, List<Instance>> deploymentUnitInstances = new HashMap<>();
-        for (String launchConfigName : launchConfigNames) {
-            String toVersion = ServiceDiscoveryUtil.getLaunchConfigObject(service,
-                    launchConfigName,
-                    ServiceDiscoveryConstants.FIELD_VERSION).toString();
-            List<Instance> instances = new ArrayList<>();
-            if (type == Type.ToUpgrade) {
-                instances.addAll(exposeMapDao.getInstancesToUpgrade(service, launchConfigName, toVersion));
-            } else if (type == Type.UpgradedManaged) {
-                instances.addAll(exposeMapDao.getUpgradedInstances(service,
-                        launchConfigName, toVersion, true));
-            } else if (type == Type.ToCleanup) {
-                instances.addAll(exposeMapDao.getInstancesToCleanup(service, launchConfigName, toVersion));
-            } else if (type == Type.UpgradedUnmanaged) {
+        // iterate over pre-upgraded state
+        // get desired version from post upgrade state
+        if (type == Type.UpgradedUnmanaged) {
+            for (String launchConfigName : postUpgradeLaunchConfigNamesToVersion.keySet()) {
+                List<Instance> instances = new ArrayList<>();
+                Pair<String, Map<String, Object>> post = postUpgradeLaunchConfigNamesToVersion.get(launchConfigName);
+                String toVersion = post.getLeft();
                 instances.addAll(exposeMapDao.getUpgradedInstances(service,
                         launchConfigName, toVersion, false));
-            } else if (type == Type.ToRestart) {
-                instances.addAll(getServiceInstancesToRestart(service));
+                for (Instance instance : instances) {
+                    addInstanceToDeploymentUnits(deploymentUnitInstances, instance);
+                }
             }
-            for (Instance instance : instances) {
-                addInstanceToDeploymentUnits(deploymentUnitInstances, instance);
+        } else {
+            for (String launchConfigName : preUpgradeLaunchConfigNamesToVersion.keySet()) {
+                String toVersion = "undefined";
+                Pair<String, Map<String, Object>> post = postUpgradeLaunchConfigNamesToVersion.get(launchConfigName);
+                if (post != null) {
+                    toVersion = post.getLeft();
+                }
+                List<Instance> instances = new ArrayList<>();
+                if (type == Type.ToUpgrade) {
+                    instances.addAll(exposeMapDao.getInstancesToUpgrade(service, launchConfigName, toVersion));
+                } else if (type == Type.ToCleanup) {
+                    instances.addAll(exposeMapDao.getInstancesToCleanup(service, launchConfigName, toVersion));
+                }
+                for (Instance instance : instances) {
+                    addInstanceToDeploymentUnits(deploymentUnitInstances, instance);
+                }
             }
         }
-        
+
+        return deploymentUnitInstances;
+    }
+
+    protected Map<String, List<Instance>> formDeploymentUnitsForRestart(Service service) {
+        Map<String, List<Instance>> deploymentUnitInstances = new HashMap<>();
+        List<? extends Instance> instances = getServiceInstancesToRestart(service);
+        for (Instance instance : instances) {
+            addInstanceToDeploymentUnits(deploymentUnitInstances, instance);
+        }
         return deploymentUnitInstances;
     }
 
@@ -475,7 +499,7 @@ public class UpgradeManagerImpl implements UpgradeManager {
 
     @Override
     public void restart(Service service, RollingRestartStrategy strategy) {
-        Map<String, List<Instance>> toRestart = formDeploymentUnits(service, Type.ToRestart);
+        Map<String, List<Instance>> toRestart = formDeploymentUnitsForRestart(service);
         while (!doRestart(service, strategy, toRestart)) {
             sleep(service, strategy);
         }

@@ -273,6 +273,9 @@ public class ServiceMetadataInfoFactory extends AbstractAgentBaseContextFactory 
                 Map<String, ServiceMetaData> svcsData = serviceIdToServiceLaunchConfigs.get(containerMD.getServiceId());
                 if (svcsData != null) {
                     ServiceMetaData svcData = svcsData.get(configName);
+                    if (svcData == null) {
+                        continue;
+                    }
                     containerMD.setStack_name(svcData.getStack_name());
                     containerMD.setService_name(svcData.getName());
 

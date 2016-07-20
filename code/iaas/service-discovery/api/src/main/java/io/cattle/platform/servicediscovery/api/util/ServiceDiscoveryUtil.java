@@ -15,7 +15,6 @@ import io.cattle.platform.object.util.DataUtils;
 import io.cattle.platform.servicediscovery.api.constants.ServiceDiscoveryConstants;
 import io.cattle.platform.servicediscovery.api.resource.ServiceDiscoveryConfigItem;
 import io.cattle.platform.util.type.CollectionUtils;
-import io.github.ibuildthecloud.gdapi.validation.ValidationErrorCodes;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -27,7 +26,6 @@ import java.util.Map;
 import org.apache.commons.lang.StringUtils;
 
 public class ServiceDiscoveryUtil {
-
     public static String getInstanceName(Instance instance) {
         if (instance != null && instance.getRemoved() == null) {
             return instance.getUuid();
@@ -108,7 +106,7 @@ public class ServiceDiscoveryUtil {
     }
 
     @SuppressWarnings("unchecked")
-    public static Map<String, String> getServiceLabels(String lcn, Service service, AllocatorService allocatorService) {
+    protected static Map<String, String> getServiceLabels(String lcn, Service service, AllocatorService allocatorService) {
         List<String> launchConfigNames = getServiceLaunchConfigNames(service);
         Map<String, String> labelsStr = new HashMap<>();
         for (String currentLaunchConfigName : launchConfigNames) {
@@ -134,7 +132,8 @@ public class ServiceDiscoveryUtil {
         return labelsStr;
     }
 
-    public static Map<String, Object> getLaunchConfigDataWLabelsUnion(Service service, String launchConfigName, AllocatorService allocatorService) {
+    protected static Map<String, Object> getLaunchConfigDataWLabelsUnion(Service service, String launchConfigName,
+            AllocatorService allocatorService) {
         Map<String, Object> launchConfigData = new HashMap<>();
 
         // 1) get launch config data from the list of primary/secondary
@@ -317,7 +316,6 @@ public class ServiceDiscoveryUtil {
 
     public static void upgradeServiceConfigs(Service service, InServiceUpgradeStrategy strategy, boolean rollback) {
         updatePrimaryLaunchConfig(strategy, service, rollback);
-
         updateSecondaryLaunchConfigs(strategy, service, rollback);
     }
 
@@ -329,62 +327,39 @@ public class ServiceDiscoveryUtil {
             newLaunchConfigs = strategy.getPreviousSecondaryLaunchConfigs();
         } else {
             newLaunchConfigs = strategy.getSecondaryLaunchConfigs();
-        }
-
-        Map<String, Map<String, Object>> newLaunchConfigNames = new HashMap<>();
-        if (newLaunchConfigs != null) {
-            for (Map<String, Object> newLaunchConfig : (List<Map<String, Object>>) newLaunchConfigs) {
-                newLaunchConfigNames.put(newLaunchConfig.get("name").toString(),
-                        newLaunchConfig);
-            }
-        }
-
-        List<String> oldlaunchConfigNames = ServiceDiscoveryUtil.getServiceLaunchConfigNames(service);
-        for (String newLaunchConfigName : newLaunchConfigNames.keySet()) {
-            if (!oldlaunchConfigNames.contains(newLaunchConfigName)) {
-                ValidationErrorCodes.throwValidationError(ValidationErrorCodes.INVALID_OPTION,
-                        "Invalid secondary launch config name " + newLaunchConfigName);
-            }
-        }
-
-        List<Map<String, Object>> oldLaunchConfigs = DataAccessor
-                .fields(service)
-                .withKey(ServiceDiscoveryConstants.FIELD_SECONDARY_LAUNCH_CONFIGS)
-                .withDefault(Collections.EMPTY_LIST)
-                .as(List.class);
-        if (!newLaunchConfigNames.isEmpty()) {
-            if (!oldLaunchConfigs.isEmpty()) {
-                for (Map<String, Object> oldLaunchConfig : oldLaunchConfigs) {
+            Map<String, Map<String, Object>> newLaunchConfigNames = new HashMap<>();
+            if (newLaunchConfigs != null) {
+                for (Map<String, Object> newLaunchConfig : (List<Map<String, Object>>) newLaunchConfigs) {
+                    newLaunchConfigNames.put(newLaunchConfig.get("name").toString(),
+                            newLaunchConfig);
+                }
+                Object oldLaunchConfigs = strategy.getPreviousSecondaryLaunchConfigs();
+                for (Map<String, Object> oldLaunchConfig : (List<Map<String, Object>>)oldLaunchConfigs) {
                     Map<String, Object> newLaunchConfig = newLaunchConfigNames
                             .get(oldLaunchConfig.get("name"));
-                    if (newLaunchConfig == null) {
-                        // put old config here as we have to upgrade the entire secondary config list
-                        newLaunchConfigNames.put(oldLaunchConfig.get("name").toString(), oldLaunchConfig);
-                    }else {
-                        //preserve old random ports if some are missing in newLaunchConfig
+                    if (newLaunchConfig != null) {
                         preserveOldRandomPorts(service, newLaunchConfig, oldLaunchConfig);
                     }
                 }
-                DataAccessor.fields(service).withKey(ServiceDiscoveryConstants.FIELD_SECONDARY_LAUNCH_CONFIGS)
-                        .set(newLaunchConfigNames.values());
             }
         }
+
+        DataAccessor.fields(service).withKey(ServiceDiscoveryConstants.FIELD_SECONDARY_LAUNCH_CONFIGS)
+                .set(newLaunchConfigs);
     }
 
     @SuppressWarnings("unchecked")
     protected static void updatePrimaryLaunchConfig(InServiceUpgradeStrategy strategy, Service service, boolean rollback) {
-        if (strategy.getLaunchConfig() != null) {
-            Map<String, Object> newLaunchConfig = null;
-            if (rollback) {
-                newLaunchConfig = (Map<String, Object>) strategy.getPreviousLaunchConfig();
-            } else {
-                newLaunchConfig = (Map<String, Object>) strategy.getLaunchConfig();
-                Map<String, Object> oldLaunchConfig = (Map<String, Object>) strategy.getPreviousLaunchConfig();
-                preserveOldRandomPorts(service, newLaunchConfig, oldLaunchConfig);
-            }
-            DataAccessor.fields(service).withKey(ServiceDiscoveryConstants.FIELD_LAUNCH_CONFIG)
-                    .set(newLaunchConfig);
+        Map<String, Object> newLaunchConfig = null;
+        if (rollback) {
+            newLaunchConfig = (Map<String, Object>) strategy.getPreviousLaunchConfig();
+        } else {
+            newLaunchConfig = (Map<String, Object>) strategy.getLaunchConfig();
+            Map<String, Object> oldLaunchConfig = (Map<String, Object>) strategy.getPreviousLaunchConfig();
+            preserveOldRandomPorts(service, newLaunchConfig, oldLaunchConfig);
         }
+        DataAccessor.fields(service).withKey(ServiceDiscoveryConstants.FIELD_LAUNCH_CONFIG)
+                .set(newLaunchConfig);
     }
 
     protected static void preserveOldRandomPorts(Service service, Map<String, Object> newLaunchConfig, Map<String, Object> oldLaunchConfig) {

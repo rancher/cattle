@@ -42,7 +42,7 @@ public class ServiceRollbackValidationFilter extends AbstractDefaultResourceMana
 
             if (upgrade != null && upgrade.getInServiceStrategy() != null) {
                 InServiceUpgradeStrategy strategy = upgrade.getInServiceStrategy();
-                if (strategy.getPreviousLaunchConfig() != null || strategy.getSecondaryLaunchConfigs() != null) {
+                if (strategy.getPreviousLaunchConfig() != null || strategy.getPreviousSecondaryLaunchConfigs() != null) {
                     ServiceDiscoveryUtil.upgradeServiceConfigs(service, strategy, true);
                 }
 
