@@ -2423,9 +2423,8 @@ def test_service_restart(client, context):
     wait_for(lambda: client.reload(env).healthState == 'healthy')
 
 
-def _validate_endpoint(client, endpoints, public_port, host, service=None,
+def _validate_endpoint(endpoints, public_port, host, service=None,
                        bind_addr=None):
-    host = client.reload(host)
     if bind_addr:
         host_ip = bind_addr
     else:
@@ -2438,7 +2437,6 @@ def _validate_endpoint(client, endpoints, public_port, host, service=None,
                     and endpoint.hostId == host.id \
                     and endpoint.instanceId is not None:
                 if service is not None:
-                    service = client.reload(service)
                     if endpoint.serviceId == service.id:
                         found = True
                 else:
@@ -2665,12 +2663,12 @@ def test_update_port_endpoint(new_context):
         client.reload(svc).publicEndpoints) == 1)
     endpoints = client.reload(svc).publicEndpoints
     for host in hosts:
-        _validate_endpoint(client, endpoints, port1, host, svc)
+        _validate_endpoint(endpoints, port1, host, svc)
 
     wait_for(lambda: client.reload(host1).publicEndpoints is not None and len(
         client.reload(host1).publicEndpoints) == 1)
     endpoints = client.reload(host1).publicEndpoints
-    _validate_endpoint(client, endpoints, port1, hosts[0], svc)
+    _validate_endpoint(endpoints, port1, hosts[0], svc)
 
     # update port
     c = _wait_for_compose_instance_start(client, svc, env, "1")
@@ -2691,12 +2689,12 @@ def test_update_port_endpoint(new_context):
     wait_for(lambda: client.reload(host).publicEndpoints[0].port == port2)
     endpoints = client.reload(svc).publicEndpoints
     for host in hosts:
-        _validate_endpoint(client, endpoints, port2, host, svc)
+        _validate_endpoint(endpoints, port2, host, svc)
 
     wait_for(lambda: client.reload(host1).publicEndpoints is not None and len(
         client.reload(host1).publicEndpoints) == 1)
     endpoints = client.reload(host1).publicEndpoints
-    _validate_endpoint(client, endpoints, port2, hosts[0], svc)
+    _validate_endpoint(endpoints, port2, hosts[0], svc)
 
 
 def test_ip_retain(client, context, super_client):

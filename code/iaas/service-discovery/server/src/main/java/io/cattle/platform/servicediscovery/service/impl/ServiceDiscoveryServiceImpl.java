@@ -44,7 +44,6 @@ import io.cattle.platform.framework.event.FrameworkEvents;
 import io.cattle.platform.framework.event.util.EventUtils;
 import io.cattle.platform.iaas.api.filter.apikey.ApiKeyFilter;
 import io.cattle.platform.json.JsonMapper;
-import io.cattle.platform.lock.LockCallbackNoReturn;
 import io.cattle.platform.lock.LockManager;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.meta.ObjectMetaDataManager;
@@ -53,7 +52,6 @@ import io.cattle.platform.object.process.StandardProcess;
 import io.cattle.platform.object.resource.ResourceMonitor;
 import io.cattle.platform.object.resource.ResourcePredicate;
 import io.cattle.platform.object.util.DataAccessor;
-import io.cattle.platform.process.lock.HostEndpointsUpdateLock;
 import io.cattle.platform.resource.pool.PooledResource;
 import io.cattle.platform.resource.pool.PooledResourceOptions;
 import io.cattle.platform.resource.pool.ResourcePoolManager;
@@ -63,7 +61,6 @@ import io.cattle.platform.servicediscovery.api.dao.ServiceConsumeMapDao;
 import io.cattle.platform.servicediscovery.api.dao.ServiceExposeMapDao;
 import io.cattle.platform.servicediscovery.api.util.ServiceDiscoveryUtil;
 import io.cattle.platform.servicediscovery.api.util.selector.SelectorUtils;
-import io.cattle.platform.servicediscovery.deployment.impl.lock.ServiceEndpointsUpdateLock;
 import io.cattle.platform.servicediscovery.service.ServiceDiscoveryService;
 
 import java.util.ArrayList;
@@ -503,27 +500,17 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
         final List<PublicEndpoint> newData = instanceDao.getPublicEndpoints(host.getAccountId(), null, host.getId());
 
         if (host != null && host.getRemoved() == null) {
-            lockManager.lock(new HostEndpointsUpdateLock(host),
-                    new LockCallbackNoReturn() {
-                        @Override
-                        public void doWithLockNoResult() {
-                            updateObjectEndPoints(host, host.getKind(), host.getId(),
+            updateObjectEndPoints(host, host.getKind(), host.getId(),
                                     host.getAccountId(), newData);
-                        }
-                    });
         }
     }
 
     protected void reconcileServiceEndpointsImpl(final Service service) {
         final List<PublicEndpoint> newData = instanceDao.getPublicEndpoints(service.getAccountId(), service.getId(),
                 null);
-
-        lockManager.lock(new ServiceEndpointsUpdateLock(service), new LockCallbackNoReturn() {
-            @Override
-            public void doWithLockNoResult() {
-                updateObjectEndPoints(service, service.getKind(), service.getId(), service.getAccountId(), newData);
-            }
-        });
+        if (service != null && service.getRemoved() == null) {
+            updateObjectEndPoints(service, service.getKind(), service.getId(), service.getAccountId(), newData);
+        }
     }
 
     @Override
