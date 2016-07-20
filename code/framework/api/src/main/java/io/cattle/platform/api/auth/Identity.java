@@ -139,7 +139,7 @@ public class Identity {
         if (StringUtils.isBlank(id)) {
             return null;
         }
-        String[] split = id.split(":");
+        String[] split = id.split(":", 2);
         if (split.length != 2){
             return null;
         }
