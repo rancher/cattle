@@ -150,10 +150,20 @@ public class DeploymentManagerImpl implements DeploymentManager {
             desiredScaleToReset = policy.getMax();
         }
 
+        boolean initLockScale = false;
+        if (DataAccessor.fieldInteger(service,
+                ServiceDiscoveryConstants.FIELD_LOCKED_SCALE) == null) {
+            initLockScale = true;
+        }
+
         if (desiredScaleToReset != null) {
+            initLockScale = true;
             desiredScaleToReset = setDesiredScaleInternal(service, desiredScaleToReset);
-            lockScale(service);
             log.info("Set service [{}] desired scale to [{}]", service.getUuid(), desiredScaleToReset);
+        }
+
+        if (initLockScale) {
+            lockScale(service);
         }
 
         return incremenetScaleAndDeploy(service, checkState, services, policy);
