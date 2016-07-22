@@ -432,13 +432,16 @@ public class UpgradeManagerImpl implements UpgradeManager {
         final List<String> healthyStates = Arrays.asList(HealthcheckConstants.HEALTH_STATE_HEALTHY,
                 HealthcheckConstants.HEALTH_STATE_UPDATING_HEALTHY);
         for (final Instance instance : serviceInstances) {
-            resourceMntr.waitFor(instance, DEFAULT_WAIT_TIMEOUT,
-                    new ResourcePredicate<Instance>() {
-                        @Override
-                        public boolean evaluate(Instance obj) {
-                            return instance.getHealthState() == null || healthyStates.contains(obj.getHealthState());
-                        }
-                    });
+            if (instance.getState().equalsIgnoreCase(InstanceConstants.STATE_RUNNING)) {
+                resourceMntr.waitFor(instance, DEFAULT_WAIT_TIMEOUT,
+                        new ResourcePredicate<Instance>() {
+                            @Override
+                            public boolean evaluate(Instance obj) {
+                                return instance.getHealthState() == null
+                                        || healthyStates.contains(obj.getHealthState());
+                            }
+                        });
+            }
         }
     }
 
