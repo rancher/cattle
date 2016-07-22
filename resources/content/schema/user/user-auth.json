@@ -515,7 +515,7 @@
         "composeService.resourceActions.upgrade" : "",
 
         "service" : "r",
-        "service.externalId" : "r",
+        "service.externalId" : "cr",
         "service.environmentId" : "cr",
         "service.scale" : "cru",
         "service.launchConfig" : "cr",

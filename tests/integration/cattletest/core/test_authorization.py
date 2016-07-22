@@ -1692,7 +1692,7 @@ def test_svc_discovery_service(admin_user_client, user_client, project_client,
 
     auth_check(project_client.schema, 'service', 'crud', {
         'name': 'cru',
-        'externalId': 'r',
+        'externalId': 'cr',
         'environmentId': 'cr',
         'scale': 'cru',
         'launchConfig': 'cr',
@@ -1958,7 +1958,7 @@ def test_svc_discovery_lb_service(admin_user_client, user_client,
 
     auth_check(project_client.schema, 'loadBalancerService', 'crud', {
         'name': 'cru',
-        'externalId': 'r',
+        'externalId': 'cr',
         'environmentId': 'cr',
         'scale': 'cru',
         'launchConfig': 'cr',
@@ -2200,7 +2200,7 @@ def test_svc_discovery_external_service(admin_user_client, user_client,
 
     auth_check(project_client.schema, 'externalService', 'crud', {
         'name': 'cru',
-        'externalId': 'r',
+        'externalId': 'cr',
         'environmentId': 'cr',
         'hostname': 'cru',
         'externalIpAddresses': 'cru',
