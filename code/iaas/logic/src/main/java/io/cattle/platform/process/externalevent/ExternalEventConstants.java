@@ -15,6 +15,7 @@ public class ExternalEventConstants {
     public static final String TYPE_SERVICE_CREATE = "service.create";
     public static final String TYPE_SERVICE_UPDATE = "service.update";
     public static final String TYPE_SERVICE_DELETE = "service.remove";
+    public static final String TYPE_STACK_DELETE=  "stack.remove";
     public static final String TYPE_HOST_EVACUATE = "host.evacuate";
     public static final String VOLUME_POOL_LOCK_NAME = "VOLUME";
     public static final String STORAGE_POOL_LOCK_NAME = "STORAGEPOOL";
