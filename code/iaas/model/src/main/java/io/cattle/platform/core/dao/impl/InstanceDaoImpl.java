@@ -7,13 +7,16 @@ import static io.cattle.platform.core.model.tables.InstanceTable.*;
 import static io.cattle.platform.core.model.tables.IpAddressNicMapTable.*;
 import static io.cattle.platform.core.model.tables.IpAddressTable.*;
 import static io.cattle.platform.core.model.tables.NicTable.*;
+import static io.cattle.platform.core.model.tables.PortTable.*;
 import static io.cattle.platform.core.model.tables.ServiceExposeMapTable.*;
 import static io.cattle.platform.core.model.tables.ServiceIndexTable.*;
 import static io.cattle.platform.core.model.tables.ServiceTable.*;
 import static io.cattle.platform.core.model.tables.SubnetTable.*;
+import io.cattle.platform.core.addon.PublicEndpoint;
 import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.constants.IpAddressConstants;
+import io.cattle.platform.core.constants.PortConstants;
 import io.cattle.platform.core.dao.GenericMapDao;
 import io.cattle.platform.core.dao.InstanceDao;
 import io.cattle.platform.core.dao.NetworkDao;
@@ -21,12 +24,16 @@ import io.cattle.platform.core.model.Account;
 import io.cattle.platform.core.model.Host;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.IpAddress;
+import io.cattle.platform.core.model.Port;
 import io.cattle.platform.core.model.Service;
+import io.cattle.platform.core.model.ServiceExposeMap;
 import io.cattle.platform.core.model.ServiceIndex;
 import io.cattle.platform.core.model.Subnet;
+import io.cattle.platform.core.model.tables.HostTable;
 import io.cattle.platform.core.model.tables.InstanceTable;
 import io.cattle.platform.core.model.tables.IpAddressTable;
 import io.cattle.platform.core.model.tables.NicTable;
+import io.cattle.platform.core.model.tables.PortTable;
 import io.cattle.platform.core.model.tables.ServiceExposeMapTable;
 import io.cattle.platform.core.model.tables.ServiceIndexTable;
 import io.cattle.platform.core.model.tables.SubnetTable;
@@ -36,8 +43,10 @@ import io.cattle.platform.core.model.tables.records.ServiceRecord;
 import io.cattle.platform.db.jooq.dao.impl.AbstractJooqDao;
 import io.cattle.platform.db.jooq.mapper.MultiRecordMapper;
 import io.cattle.platform.object.ObjectManager;
+import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.object.util.DataUtils;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -262,6 +271,83 @@ public class InstanceDaoImpl extends AbstractJooqDao implements InstanceDao {
         instanceData.invalidate(instanceId);
     }
 
+    @Override
+    public List<PublicEndpoint> getPublicEndpoints(long accountId, Long serviceId, Long hostId) {
+        List<PublicEndpoint> toReturn = new ArrayList<>();
+        for (PublicEndpoint ep : getPublicEndpointsInternal(accountId, serviceId, hostId)) {
+            if (ep.getHostId() != null && ep.getInstanceId() != null && !StringUtils.isEmpty(ep.getIpAddress())) {
+                toReturn.add(ep);
+            }
+        }
+        return toReturn;
+    }
+
+    private List<PublicEndpoint> getPublicEndpointsInternal(long accountId, Long serviceId, Long hostId) {
+        MultiRecordMapper<PublicEndpoint> mapper = new MultiRecordMapper<PublicEndpoint>() {
+            @Override
+            protected PublicEndpoint map(List<Object> input) {
+                Instance instance = (Instance) input.get(0);
+                Port port = (Port) input.get(1);
+                Host host = (Host) input.get(2);
+
+                String address = "";
+                IpAddress ip = (IpAddress) input.get(3);
+                if (ip != null) {
+                    address = ip.getAddress();
+                } else {
+                    address = DataAccessor.fieldString(port, PortConstants.FIELD_BIND_ADDR);
+                }
+
+                ServiceExposeMap exposeMap = (ServiceExposeMap) input.get(4);
+                Long serviceId = exposeMap != null ? exposeMap.getServiceId() : null;
+                PublicEndpoint data = new PublicEndpoint(address, port.getPublicPort(), host.getId(),
+                        instance.getId(), serviceId);
+                return data;
+            }
+        };
+
+        InstanceTable instance = mapper.add(INSTANCE, INSTANCE.ID, INSTANCE.ACCOUNT_ID);
+        PortTable port = mapper.add(PORT);
+        HostTable host = mapper.add(HOST, HOST.ID);
+        IpAddressTable ipAddress = mapper.add(IP_ADDRESS, IP_ADDRESS.ID, IP_ADDRESS.ADDRESS);
+        ServiceExposeMapTable exposeMap = mapper.add(SERVICE_EXPOSE_MAP, SERVICE_EXPOSE_MAP.INSTANCE_ID,
+                SERVICE_EXPOSE_MAP.SERVICE_ID);
+
+        Condition condition = null;
+        if (serviceId != null && hostId != null) {
+            condition = host.ID.eq(hostId).and(exposeMap.SERVICE_ID.eq(serviceId));
+        } else if (hostId != null) {
+            condition = host.ID.eq(hostId);
+        } else if (serviceId != null) {
+            condition = (exposeMap.SERVICE_ID.eq(serviceId));
+        }
+
+        return create()
+                .select(mapper.fields())
+                .from(instance)
+                .join(port)
+                .on(port.INSTANCE_ID.eq(instance.ID))
+                .join(INSTANCE_HOST_MAP)
+                .on(INSTANCE_HOST_MAP.INSTANCE_ID.eq(instance.ID))
+                .join(host)
+                .on(INSTANCE_HOST_MAP.HOST_ID.eq(host.ID))
+                .leftOuterJoin(ipAddress)
+                .on(port.PUBLIC_IP_ADDRESS_ID.eq(ipAddress.ID))
+                .leftOuterJoin(exposeMap)
+                .on(exposeMap.INSTANCE_ID.eq(instance.ID))
+                .where(instance.ACCOUNT_ID.eq(accountId))
+                .and(instance.REMOVED.isNull())
+                .and(port.REMOVED.isNull())
+                .and(host.REMOVED.isNull())
+                .and(ipAddress.REMOVED.isNull())
+                .and(exposeMap.REMOVED.isNull())
+                .and(port.PUBLIC_PORT.isNotNull())
+                .and(port.STATE.in(CommonStatesConstants.ACTIVATING, CommonStatesConstants.ACTIVE,
+                        CommonStatesConstants.UPDATING_ACTIVE))
+                .and(condition)
+                .fetch().map(mapper);
+    }
+    
     @Override
     public List<IpAddressToServiceIndex> getIpToIndex(Service service) {
         MultiRecordMapper<IpAddressToServiceIndex> mapper = new MultiRecordMapper<IpAddressToServiceIndex>() {

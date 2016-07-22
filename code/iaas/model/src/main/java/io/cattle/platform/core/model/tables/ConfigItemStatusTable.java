@@ -11,7 +11,7 @@ package io.cattle.platform.core.model.tables;
 @java.lang.SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class ConfigItemStatusTable extends org.jooq.impl.TableImpl<io.cattle.platform.core.model.tables.records.ConfigItemStatusRecord> {
 
-	private static final long serialVersionUID = -948306477;
+	private static final long serialVersionUID = -153766011;
 
 	/**
 	 * The singleton instance of <code>cattle.config_item_status</code>
@@ -92,6 +92,11 @@ public class ConfigItemStatusTable extends org.jooq.impl.TableImpl<io.cattle.pla
 	public final org.jooq.TableField<io.cattle.platform.core.model.tables.records.ConfigItemStatusRecord, java.lang.Long> ENVIRONMENT_ID = createField("environment_id", org.jooq.impl.SQLDataType.BIGINT, this, "");
 
 	/**
+	 * The column <code>cattle.config_item_status.host_id</code>.
+	 */
+	public final org.jooq.TableField<io.cattle.platform.core.model.tables.records.ConfigItemStatusRecord, java.lang.Long> HOST_ID = createField("host_id", org.jooq.impl.SQLDataType.BIGINT, this, "");
+
+	/**
 	 * Create a <code>cattle.config_item_status</code> table reference
 	 */
 	public ConfigItemStatusTable() {
@@ -142,7 +147,7 @@ public class ConfigItemStatusTable extends org.jooq.impl.TableImpl<io.cattle.pla
 	 */
 	@Override
 	public java.util.List<org.jooq.ForeignKey<io.cattle.platform.core.model.tables.records.ConfigItemStatusRecord, ?>> getReferences() {
-		return java.util.Arrays.<org.jooq.ForeignKey<io.cattle.platform.core.model.tables.records.ConfigItemStatusRecord, ?>>asList(io.cattle.platform.core.model.Keys.FK_CONFIG_ITEM__NAME, io.cattle.platform.core.model.Keys.FK_CONFIG_ITEM__AGENT_ID, io.cattle.platform.core.model.Keys.FK_CONFIG_ITEM__ACCOUNT_ID, io.cattle.platform.core.model.Keys.FK_CONFIG_ITEM__SERVICE_ID, io.cattle.platform.core.model.Keys.FK_CONFIG_ITEM__ENVIRONMENT_ID);
+		return java.util.Arrays.<org.jooq.ForeignKey<io.cattle.platform.core.model.tables.records.ConfigItemStatusRecord, ?>>asList(io.cattle.platform.core.model.Keys.FK_CONFIG_ITEM__NAME, io.cattle.platform.core.model.Keys.FK_CONFIG_ITEM__AGENT_ID, io.cattle.platform.core.model.Keys.FK_CONFIG_ITEM__ACCOUNT_ID, io.cattle.platform.core.model.Keys.FK_CONFIG_ITEM__SERVICE_ID, io.cattle.platform.core.model.Keys.FK_CONFIG_ITEM__ENVIRONMENT_ID, io.cattle.platform.core.model.Keys.FK_CONFIG_ITEM__HOST_ID);
 	}
 
 	/**

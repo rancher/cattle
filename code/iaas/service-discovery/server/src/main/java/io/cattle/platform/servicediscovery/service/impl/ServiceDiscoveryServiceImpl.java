@@ -5,6 +5,11 @@ import static io.cattle.platform.core.model.tables.ServiceIndexTable.*;
 import static io.cattle.platform.core.model.tables.ServiceTable.*;
 import static io.cattle.platform.core.model.tables.SubnetTable.*;
 import io.cattle.platform.allocator.service.AllocatorService;
+import io.cattle.platform.configitem.events.ConfigUpdate;
+import io.cattle.platform.configitem.model.Client;
+import io.cattle.platform.configitem.model.ItemVersion;
+import io.cattle.platform.configitem.request.ConfigUpdateRequest;
+import io.cattle.platform.configitem.version.ConfigItemStatusManager;
 import io.cattle.platform.core.addon.LoadBalancerServiceLink;
 import io.cattle.platform.core.addon.PublicEndpoint;
 import io.cattle.platform.core.addon.ScalePolicy;
@@ -16,6 +21,7 @@ import io.cattle.platform.core.constants.IpAddressConstants;
 import io.cattle.platform.core.constants.LoadBalancerConstants;
 import io.cattle.platform.core.constants.NetworkConstants;
 import io.cattle.platform.core.constants.SubnetConstants;
+import io.cattle.platform.core.dao.InstanceDao;
 import io.cattle.platform.core.dao.LabelsDao;
 import io.cattle.platform.core.dao.NetworkDao;
 import io.cattle.platform.core.model.Account;
@@ -38,7 +44,6 @@ import io.cattle.platform.framework.event.FrameworkEvents;
 import io.cattle.platform.framework.event.util.EventUtils;
 import io.cattle.platform.iaas.api.filter.apikey.ApiKeyFilter;
 import io.cattle.platform.json.JsonMapper;
-import io.cattle.platform.lock.LockCallbackNoReturn;
 import io.cattle.platform.lock.LockManager;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.meta.ObjectMetaDataManager;
@@ -47,7 +52,6 @@ import io.cattle.platform.object.process.StandardProcess;
 import io.cattle.platform.object.resource.ResourceMonitor;
 import io.cattle.platform.object.resource.ResourcePredicate;
 import io.cattle.platform.object.util.DataAccessor;
-import io.cattle.platform.process.lock.HostEndpointsUpdateLock;
 import io.cattle.platform.resource.pool.PooledResource;
 import io.cattle.platform.resource.pool.PooledResourceOptions;
 import io.cattle.platform.resource.pool.ResourcePoolManager;
@@ -57,15 +61,16 @@ import io.cattle.platform.servicediscovery.api.dao.ServiceConsumeMapDao;
 import io.cattle.platform.servicediscovery.api.dao.ServiceExposeMapDao;
 import io.cattle.platform.servicediscovery.api.util.ServiceDiscoveryUtil;
 import io.cattle.platform.servicediscovery.api.util.selector.SelectorUtils;
-import io.cattle.platform.servicediscovery.deployment.impl.lock.ServiceEndpointsUpdateLock;
 import io.cattle.platform.servicediscovery.service.ServiceDiscoveryService;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.Callable;
 
 import javax.inject.Inject;
@@ -73,6 +78,9 @@ import javax.inject.Inject;
 import org.apache.commons.lang3.StringUtils;
 
 public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
+
+    private static final String HOST_ENDPOINTS_UPDATE = "host-endpoints-update";
+    private static final String SERVICE_ENDPOINTS_UPDATE = "service-endpoints-update";
 
     @Inject
     ServiceConsumeMapDao consumeMapDao;
@@ -109,6 +117,12 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
 
     @Inject
     EventService eventService;
+
+    @Inject
+    InstanceDao instanceDao;
+
+    @Inject
+    ConfigItemStatusManager itemManager;
 
     protected long getServiceNetworkId(Service service) {
         Network network = ntwkDao.getNetworkForObject(service, NetworkConstants.KIND_HOSTONLY);
@@ -441,65 +455,61 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
         return Boolean.valueOf(globalService);
     }
 
-    protected void updateObjectEndPoint(final Object object, final String resourceType, final Long resourceId,
-            final PublicEndpoint publicEndpoint, final boolean add, long accountId) {
+    protected void updateObjectEndPoints(final Object object, final String resourceType, final Long resourceId,
+            long accountId, List<PublicEndpoint> newData) {
         // have to reload the object to get the latest update for publicEndpoint
         // if don't reload, its possible that n concurrent updates would lack information.
         // update would be performed on the original object
-
-        if (publicEndpoint.getPort() == null || publicEndpoint.getIpAddress() == null) {
-            return;
-        }
         Object reloaded = objectManager.reload(object);
-        List<PublicEndpoint> publicEndpoints = new ArrayList<>();
-        publicEndpoints.addAll(DataAccessor.fields(reloaded)
+        List<PublicEndpoint> oldData = new ArrayList<>();
+        oldData.addAll(DataAccessor.fields(reloaded)
                 .withKey(ServiceDiscoveryConstants.FIELD_PUBLIC_ENDPOINTS)
                 .withDefault(Collections.EMPTY_LIST)
                 .asList(jsonMapper, PublicEndpoint.class));
 
-        if (publicEndpoints.contains(publicEndpoint) != add) {
-            if (add) {
-                publicEndpoints.add(publicEndpoint);
-            } else {
-                publicEndpoints.remove(publicEndpoint);
-            }
-            objectManager.setFields(object, ServiceDiscoveryConstants.FIELD_PUBLIC_ENDPOINTS, publicEndpoints);
-            final Map<String, Object> data = new HashMap<>();
-            data.put(ServiceDiscoveryConstants.FIELD_PUBLIC_ENDPOINTS, publicEndpoints);
-            data.put(ObjectMetaDataManager.ACCOUNT_FIELD, accountId);
+        Set<String> newPortToIp = new HashSet<>();
+        Set<String> oldPortToIp = new HashSet<>();
+        for (PublicEndpoint newD : newData) {
+            newPortToIp.add(new StringBuilder().append(newD.getPort()).append("_").append(newD.getIpAddress())
+                    .toString());
+        }
 
-            DeferredUtils.nest(new Runnable() {
-                @Override
-                public void run() {
-                    EventUtils.TriggerStateChanged(eventService, resourceId.toString(), resourceType, data);
-                }
-            });
+        for (PublicEndpoint oldD : oldData) {
+            oldPortToIp.add(new StringBuilder().append(oldD.getPort()).append("_").append(oldD.getIpAddress())
+                    .toString());
+        }
+
+        if (oldPortToIp.contains(newPortToIp) && newPortToIp.contains(oldPortToIp)) {
+            return;
+        }
+
+        objectManager.setFields(object, ServiceDiscoveryConstants.FIELD_PUBLIC_ENDPOINTS, newData);
+        final Map<String, Object> data = new HashMap<>();
+        data.put(ServiceDiscoveryConstants.FIELD_PUBLIC_ENDPOINTS, newData);
+        data.put(ObjectMetaDataManager.ACCOUNT_FIELD, accountId);
+
+        DeferredUtils.nest(new Runnable() {
+            @Override
+            public void run() {
+                EventUtils.TriggerStateChanged(eventService, resourceId.toString(), resourceType, data);
+            }
+        });
+    }
+
+    protected void reconcileHostEndpointsImpl(final Host host) {
+        final List<PublicEndpoint> newData = instanceDao.getPublicEndpoints(host.getAccountId(), null, host.getId());
+
+        if (host != null && host.getRemoved() == null) {
+            updateObjectEndPoints(host, host.getKind(), host.getId(),
+                                    host.getAccountId(), newData);
         }
     }
 
-    @Override
-    public void propagatePublicEndpoint(final PublicEndpoint publicEndpoint, final boolean add) {
-        final Host host = publicEndpoint.getHost();
-        if (host != null && host.getRemoved() == null) {
-            lockManager.lock(new HostEndpointsUpdateLock(host),
-                    new LockCallbackNoReturn() {
-                        @Override
-                        public void doWithLockNoResult() {
-                            updateObjectEndPoint(host, host.getKind(), Long.valueOf(publicEndpoint.getHostId()),
-                                    publicEndpoint, add, host.getAccountId());
-                        }
-                    });
-        }
-
-        final Service service = publicEndpoint.getService();
-        if (service != null) {
-            lockManager.lock(new ServiceEndpointsUpdateLock(service), new LockCallbackNoReturn() {
-                @Override
-                public void doWithLockNoResult() {
-                    updateObjectEndPoint(service, service.getKind(), service.getId(), publicEndpoint, add,
-                            service.getAccountId());
-                }
-            });
+    protected void reconcileServiceEndpointsImpl(final Service service) {
+        final List<PublicEndpoint> newData = instanceDao.getPublicEndpoints(service.getAccountId(), service.getId(),
+                null);
+        if (service != null && service.getRemoved() == null) {
+            updateObjectEndPoints(service, service.getKind(), service.getId(), service.getAccountId(), newData);
         }
     }
 
@@ -728,5 +738,75 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
     public boolean isScalePolicyService(Service service) {
         return DataAccessor.field(service,
                 ServiceDiscoveryConstants.FIELD_SCALE_POLICY, jsonMapper, ScalePolicy.class) != null;
+    }
+
+    @Override
+    public void serviceEndpointsUpdate(ConfigUpdate update) {
+        if (update.getResourceId() == null) {
+            return;
+        }
+        final Client client = new Client(Service.class, new Long(update.getResourceId()));
+        reconcileForService(update, client, new Runnable() {
+            @Override
+            public void run() {
+                Service service = objectManager.loadResource(Service.class, client.getResourceId());
+                if (service != null && service.getRemoved() == null) {
+                    reconcileServiceEndpointsImpl(service);
+                }
+            }
+        });
+    }
+
+    @Override
+    public void hostEndpointsUpdate(ConfigUpdate update) {
+        if (update.getResourceId() == null) {
+            return;
+        }
+        final Client client = new Client(Host.class, new Long(update.getResourceId()));
+        reconcileForHost(update, client, new Runnable() {
+            @Override
+            public void run() {
+                Host host = objectManager.loadResource(Host.class, client.getResourceId());
+                if (host != null && host.getRemoved() == null) {
+                    reconcileHostEndpointsImpl(host);
+                }
+            }
+        });
+    }
+
+    protected void reconcileForHost(ConfigUpdate update, Client client, Runnable run) {
+        ItemVersion itemVersion = itemManager.getRequestedVersion(client, HOST_ENDPOINTS_UPDATE);
+        if (itemVersion == null) {
+            return;
+        }
+        run.run();
+        itemManager.setApplied(client, HOST_ENDPOINTS_UPDATE, itemVersion);
+        eventService.publish(EventVO.reply(update));
+    }
+
+    protected void reconcileForService(ConfigUpdate update, Client client, Runnable run) {
+        ItemVersion itemVersion = itemManager.getRequestedVersion(client, SERVICE_ENDPOINTS_UPDATE);
+        if (itemVersion == null) {
+            return;
+        }
+        run.run();
+        itemManager.setApplied(client, SERVICE_ENDPOINTS_UPDATE, itemVersion);
+        eventService.publish(EventVO.reply(update));
+    }
+
+    @Override
+    public void reconcileServiceEndpoints(Service service) {
+        ConfigUpdateRequest request = ConfigUpdateRequest.forResource(Service.class, service.getId());
+        request.addItem(SERVICE_ENDPOINTS_UPDATE);
+        request.withDeferredTrigger(true);
+        itemManager.updateConfig(request);
+    }
+
+    @Override
+    public void reconcileHostEndpoints(Host host) {
+        ConfigUpdateRequest request = ConfigUpdateRequest.forResource(Host.class, host.getId());
+        request.addItem(HOST_ENDPOINTS_UPDATE);
+        request.withDeferredTrigger(true);
+        itemManager.updateConfig(request);
     }
 }

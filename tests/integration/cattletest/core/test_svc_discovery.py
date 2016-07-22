@@ -2685,6 +2685,9 @@ def test_update_port_endpoint(new_context):
     wait_for(lambda: client.reload(svc).publicEndpoints is not None and len(
         client.reload(svc).publicEndpoints) == 1)
     endpoints = client.reload(svc).publicEndpoints
+    wait_for(lambda: client.reload(svc).publicEndpoints[0].port == port2)
+    wait_for(lambda: client.reload(host).publicEndpoints[0].port == port2)
+    endpoints = client.reload(svc).publicEndpoints
     for host in hosts:
         _validate_endpoint(endpoints, port2, host, svc)
 

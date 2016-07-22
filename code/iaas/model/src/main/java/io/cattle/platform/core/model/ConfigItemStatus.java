@@ -159,6 +159,17 @@ public interface ConfigItemStatus extends java.io.Serializable {
 	@javax.persistence.Column(name = "environment_id", precision = 19)
 	public java.lang.Long getEnvironmentId();
 
+	/**
+	 * Setter for <code>cattle.config_item_status.host_id</code>.
+	 */
+	public void setHostId(java.lang.Long value);
+
+	/**
+	 * Getter for <code>cattle.config_item_status.host_id</code>.
+	 */
+	@javax.persistence.Column(name = "host_id", precision = 19)
+	public java.lang.Long getHostId();
+
 	// -------------------------------------------------------------------------
 	// FROM and INTO
 	// -------------------------------------------------------------------------
