@@ -40,7 +40,7 @@ public class AgentLocatorImpl implements AgentLocator {
     @Inject
     JsonMapper jsonMapper;
 
-    LoadingCache<Long, RemoteAgent> cache = CacheBuilder.newBuilder().expireAfterAccess(15L, TimeUnit.MINUTES).build(new CacheLoader<Long, RemoteAgent>() {
+    LoadingCache<Long, RemoteAgent> cache = CacheBuilder.newBuilder().expireAfterWrite(15L, TimeUnit.MINUTES).build(new CacheLoader<Long, RemoteAgent>() {
         @Override
         public RemoteAgent load(Long agentId) throws Exception {
             EventService wrappedEventService = getWrappedEventService(agentId);
