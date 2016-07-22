@@ -360,11 +360,17 @@ public class DnsInfoDaoImpl extends AbstractJooqDao implements DnsInfoDao {
                 if (StringUtils.isEmpty(targetInstanceName)) {
                     ipToInstanceName.put(targetIp, null);
                 } else {
+                    String dnsName;
+                    if (targetInstance.getService().getKind().equalsIgnoreCase("kubernetesservice")) {
+                        dnsName = ServiceDiscoveryDnsUtil.getServiceNamespace(targetInstance.getStack(), targetInstance.getService());
+                    } else {
+                        dnsName = ServiceDiscoveryDnsUtil.getGlobalNamespace(targetInstance.getService());
+                    }
                     ipToInstanceName.put(
                             targetIp,
                             targetInstanceName
-                                    + "." + ServiceDiscoveryDnsUtil.getGlobalNamespace(targetInstance.getService())
-                                    + ".");
+                            + "." + dnsName
+                            + ".");
                 }
             } else {
                 ipToInstanceName.put(targetIp, null);
