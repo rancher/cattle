@@ -6,6 +6,7 @@ public class ExternalEventConstants {
     public static final String KIND_STORAGE_POOL_EVENT = "externalStoragePoolEvent";
     public static final String KIND_EXTERNAL_DNS_EVENT = "externalDnsEvent";
     public static final String KIND_SERVICE_EVENT = "externalServiceEvent";
+    public static final String KIND_STACK_EVENT = "externalStackEvent";
     public static final String KIND_EXTERNAL_HOST_EVENT = "externalHostEvent";
     public static final String KIND_EXTERNAL_EVENT = "externalEvent";
     public static final String FIELD_REPORTED_ACCOUNT_ID = "reportedAccountId";
@@ -15,14 +16,17 @@ public class ExternalEventConstants {
     public static final String TYPE_SERVICE_CREATE = "service.create";
     public static final String TYPE_SERVICE_UPDATE = "service.update";
     public static final String TYPE_SERVICE_DELETE = "service.remove";
+    public static final String TYPE_STACK_DELETE=  "stack.remove";
     public static final String TYPE_HOST_EVACUATE = "host.evacuate";
     public static final String VOLUME_POOL_LOCK_NAME = "VOLUME";
     public static final String STORAGE_POOL_LOCK_NAME = "STORAGEPOOL";
     public static final String EXERNAL_DNS_LOCK_NAME = "EXTERNALDNS";
     public static final String SERVICE_LOCK_NAME = "SERVICE";
+    public static final String STACK_LOCK_NAME = "STACK";
     public static final String FIELD_STORAGE_POOL = "storagePool";
     public static final String FIELD_VOLUME = "volume";
     public static final String FIELD_SERVICE = "service";
+    public static final String FIELD_STACK = "environment";
     public static final String FIELD_ZONE_ID = "zoneId";
     public static final String FIELD_NAME = "name";
     public static final String FIELD_DRIVER_NAME = "driverName";

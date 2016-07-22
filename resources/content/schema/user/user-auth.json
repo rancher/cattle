@@ -193,6 +193,9 @@
         "externalServiceEvent.service" : "r",
         "externalServiceEvent.environment" : "r",
 
+        "externalStackEvent" : "r",
+        "externalStackEvent.environment" : "r",
+
         "externalHostEvent" : "r",
         "externalHostEvent.deleteHost" : "cr",
         "externalHostEvent.hostId" : "cr",

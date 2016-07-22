@@ -1,0 +1,17 @@
+{
+    "collectionMethods": ["GET", "POST"],
+    "resourceMethods" : ["GET"],
+    "resourceFields": {
+        "id": {
+        },
+        "externalId": {
+            "create": true
+        },
+        "eventType": {
+            "create": true
+        },
+        "environment": {
+            "create": true
+        }
+    }
+}

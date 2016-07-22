@@ -13,6 +13,7 @@ import io.cattle.platform.engine.handler.HandlerResult;
 import io.cattle.platform.engine.process.ProcessInstance;
 import io.cattle.platform.engine.process.ProcessState;
 import io.cattle.platform.engine.process.impl.ProcessCancelException;
+import io.cattle.platform.lock.LockCallback;
 import io.cattle.platform.lock.LockCallbackNoReturn;
 import io.cattle.platform.lock.LockManager;
 import io.cattle.platform.object.meta.ObjectMetaDataManager;
@@ -118,39 +119,50 @@ public class ExternalServiceEventCreate extends AbstractDefaultProcessHandler {
         }
     }
 
-    Environment getEnvironment(ExternalEvent event) {
-        Map<String, Object> env = CollectionUtils.castMap(DataUtils.getFields(event).get(FIELD_ENVIRIONMENT));
+    Environment getEnvironment(final ExternalEvent event) {
+        final Map<String, Object> env = CollectionUtils.castMap(DataUtils.getFields(event).get(FIELD_ENVIRIONMENT));
         Object eId = CollectionUtils.getNestedValue(env, FIELD_EXTERNAL_ID);
         if (eId == null) {
             return null;
         }
-        String envExtId = eId.toString();
+        final String envExtId = eId.toString();
 
-        Environment environment = objectManager.findOne(Environment.class, ENVIRONMENT.EXTERNAL_ID, envExtId, ENVIRONMENT.REMOVED, null);
-        if (environment == null) {
-            final Environment newEnv = objectManager.newRecord(Environment.class);
+        return lockManager.lock(new ExternalEventLock(STACK_LOCK_NAME, event.getAccountId(), envExtId),
+                new LockCallback<Environment>() {
+            @Override
+            public Environment doWithLock() {
+                Environment environment = objectManager.findOne(Environment.class, ENVIRONMENT.EXTERNAL_ID, envExtId);              
+                 //If environment has not been created yet
+                if (environment == null) {
+                    final Environment newEnv = objectManager.newRecord(Environment.class);
 
-            Object possibleName = CollectionUtils.getNestedValue(env, "name");
-            newEnv.setExternalId(envExtId);
-            newEnv.setAccountId(event.getAccountId());
-            String name = possibleName != null ? possibleName.toString() : envExtId;
-            newEnv.setName(name);
+                    Object possibleName = CollectionUtils.getNestedValue(env, "name");
+                    newEnv.setExternalId(envExtId);
+                    newEnv.setAccountId(event.getAccountId());
+                    String name = possibleName != null ? possibleName.toString() : envExtId;
+                    newEnv.setName(name);
 
-            environment = DeferredUtils.nest(new Callable<Environment>() {
-                @Override
-                public Environment call() {
-                    return resourceDao.createAndSchedule(newEnv);
+                    environment = DeferredUtils.nest(new Callable<Environment>() {
+                        @Override
+                        public Environment call() {
+                            return resourceDao.createAndSchedule(newEnv);
+                        }
+                    });
+
+                    environment = resourceMonitor.waitFor(environment, new ResourcePredicate<Environment>() {
+                        @Override
+                        public boolean evaluate(Environment obj) {
+                            return obj != null && CommonStatesConstants.ACTIVE.equals(obj.getState());
+                        }
+                    });
+                } // If environment was created and removed as well
+                else if (environment.getRemoved() != null) {
+                    // This will return null and ensure that service does not get created
+                    return null;
                 }
-            });
-
-            environment = resourceMonitor.waitFor(environment, new ResourcePredicate<Environment>() {
-                @Override
-                public boolean evaluate(Environment obj) {
-                    return obj != null && CommonStatesConstants.ACTIVE.equals(obj.getState());
-                }
-            });
-        }
-        return environment;
+                return environment;
+            }
+        });
     }
 
     void updateService(ExternalEvent event, Map<String, Object> serviceData) {
