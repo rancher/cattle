@@ -8,9 +8,14 @@ if docker-1.9 version >/dev/null 2>&1; then
     if ! ip link show dev $BRIDGE >/dev/null ; then
         BRIDGE=docker0
     fi
+    BRIDGE_SUBNET=$(docker-1.9 network inspect bridge | jq -r '.[0].IPAM.Config[0].Subnet')
 fi
 
-MASQ="$(iptables-save | grep -E -- '-A POSTROUTING.* -o '$BRIDGE' -j MASQUERADE' | sed 's/-A POSTROUTING //')"
+if [ -n "$BRIDGE_SUBNET" ] && [ -n "$BRIDGE" ]; then
+    MASQ="-s $BRIDGE_SUBNET ! -o $BRIDGE -j MASQUERADE"
+else
+    MASQ="$(iptables-save | grep -E -- '-A POSTROUTING.* -o '$BRIDGE' -j MASQUERADE' | sed 's/-A POSTROUTING //')"
+fi
 
 if [ -n "$MASQ" ]; then
     cat > masq-rules << EOF
