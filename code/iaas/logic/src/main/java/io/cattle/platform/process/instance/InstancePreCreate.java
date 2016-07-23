@@ -61,10 +61,10 @@ public class InstancePreCreate extends AbstractObjectProcessLogic implements Pro
             }
             data.put(InstanceConstants.FIELD_DATA_VOLUMES, dataVolumes);
         }
-        setDns(instance, labels, data);
-        setLogConfig(instance, data);
         setName(instance, labels, data);
         setNetworkMode(instance, labels, data);
+        setDns(instance, labels, data);
+        setLogConfig(instance, data);
 
         if (!data.isEmpty()) {
             return new HandlerResult(data);
