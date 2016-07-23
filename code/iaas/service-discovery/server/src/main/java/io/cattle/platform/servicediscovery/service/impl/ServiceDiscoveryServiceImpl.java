@@ -798,7 +798,7 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
     public void reconcileServiceEndpoints(Service service) {
         ConfigUpdateRequest request = ConfigUpdateRequest.forResource(Service.class, service.getId());
         request.addItem(SERVICE_ENDPOINTS_UPDATE);
-        request.withDeferredTrigger(true);
+        request.withDeferredTrigger(false);
         itemManager.updateConfig(request);
     }
 
@@ -806,7 +806,7 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
     public void reconcileHostEndpoints(Host host) {
         ConfigUpdateRequest request = ConfigUpdateRequest.forResource(Host.class, host.getId());
         request.addItem(HOST_ENDPOINTS_UPDATE);
-        request.withDeferredTrigger(true);
+        request.withDeferredTrigger(false);
         itemManager.updateConfig(request);
     }
 }
