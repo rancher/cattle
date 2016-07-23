@@ -45,7 +45,11 @@ public class LDAPUtils {
         try {
             Hashtable<String, String> props = new Hashtable<>();
             props.put(Context.SECURITY_AUTHENTICATION, "simple");
-            props.put(Context.SECURITY_PRINCIPAL, ldapConfig.getServiceAccountUsername());
+            String username = ldapConfig.getServiceAccountUsername();
+            if (StringUtils.isNotBlank(ldapConfig.getLoginDomain()) && !username.contains("\\")) {
+                username = ldapConfig.getLoginDomain() + '\\' +username;
+            }
+            props.put(Context.SECURITY_PRINCIPAL, username);
             props.put(Context.SECURITY_CREDENTIALS, ldapConfig.getServiceAccountPassword());
             props.put(Context.INITIAL_CONTEXT_FACTORY, "com.sun.jndi.ldap.LdapCtxFactory");
             props.put("com.sun.jndi.ldap.connect.timeout", String.valueOf(ldapConfig.getConnectionTimeout()));
