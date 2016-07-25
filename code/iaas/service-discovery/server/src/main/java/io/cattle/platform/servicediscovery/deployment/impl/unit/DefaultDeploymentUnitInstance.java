@@ -182,7 +182,7 @@ public class DefaultDeploymentUnitInstance extends DeploymentUnitInstance implem
 
     @Override
     protected boolean isStartedImpl() {
-        if (startOnce && context.objectManager.reload(this.instance).getStartCount().longValue() > 0) {
+        if (startOnce) {
             List<String> validStates = Arrays.asList(InstanceConstants.STATE_STOPPED, InstanceConstants.STATE_STOPPING,
                     InstanceConstants.STATE_RUNNING);
             return validStates.contains(context.objectManager.reload(this.instance).getState());
