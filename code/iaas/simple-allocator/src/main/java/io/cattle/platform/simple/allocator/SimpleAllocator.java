@@ -16,7 +16,6 @@ import io.cattle.platform.simple.allocator.dao.SimpleAllocatorDao;
 import io.cattle.platform.simple.allocator.dao.impl.AllocationCandidateIterator;
 import io.cattle.platform.simple.allocator.network.NetworkAllocationCandidates;
 import io.cattle.platform.util.type.Named;
-import io.cattle.platform.util.type.NamedUtils;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -27,18 +26,20 @@ import javax.inject.Inject;
 public class SimpleAllocator extends AbstractAllocator implements Allocator, Named {
 
     String name = getClass().getSimpleName();
+
+    @Inject
     SimpleAllocatorDao simpleAllocatorDao;
 
     @Override
-    protected synchronized boolean acquireLockAndAllocate(AllocationRequest request, AllocationAttempt attempt, Object deallocate) {
+    protected synchronized void acquireLockAndAllocate(AllocationRequest request, AllocationAttempt attempt, Object deallocate) {
         /* Overriding just to add synchronized */
-        return super.acquireLockAndAllocate(request, attempt, deallocate);
+        super.acquireLockAndAllocate(request, attempt, deallocate);
     }
 
     @Override
-    protected synchronized boolean acquireLockAndDeallocate(AllocationRequest request) {
+    protected synchronized void acquireLockAndDeallocate(AllocationRequest request) {
         /* Overriding just to add synchronized */
-        return super.acquireLockAndDeallocate(request);
+        super.acquireLockAndDeallocate(request);
     }
 
     @Override
@@ -89,7 +90,7 @@ public class SimpleAllocator extends AbstractAllocator implements Allocator, Nam
             return null;
         }
 
-        return new NetworkAllocationCandidates(getObjectManager(), request);
+        return new NetworkAllocationCandidates(objectManager, request);
     }
 
     @Override
@@ -102,31 +103,12 @@ public class SimpleAllocator extends AbstractAllocator implements Allocator, Nam
     }
 
     @Override
-    protected boolean supports(AllocationRequest request) {
-        return true;
-    }
-
-    public SimpleAllocatorDao getSimulatorAllocatorDao() {
-        return simpleAllocatorDao;
-    }
-
-    @Inject
-    public void setSimulatorAllocatorDao(SimpleAllocatorDao simulatorAllocatorDao) {
-        this.simpleAllocatorDao = simulatorAllocatorDao;
-    }
-
-    @Override
     public String toString() {
-        return NamedUtils.getName(this);
+        return getName();
     }
 
     @Override
     public String getName() {
         return name;
     }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
 }

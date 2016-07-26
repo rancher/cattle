@@ -9,8 +9,6 @@ import io.cattle.platform.eventing.exception.FailedToAllocateEventException;
 import io.cattle.platform.eventing.model.Event;
 import io.cattle.platform.eventing.model.EventVO;
 
-import java.util.List;
-
 import javax.inject.Inject;
 
 import org.slf4j.Logger;
@@ -20,7 +18,9 @@ public class AllocatorEventListenerImpl implements AllocatorEventListener {
 
     private static final Logger log = LoggerFactory.getLogger(AllocatorEventListenerImpl.class);
 
-    List<Allocator> allocators;
+    @Inject
+    Allocator allocator;
+    @Inject
     EventService eventService;
 
     @Override
@@ -47,24 +47,13 @@ public class AllocatorEventListenerImpl implements AllocatorEventListener {
         log.info("Allocating [{}:{}]", event.getResourceType(), event.getResourceId());
 
         AllocationRequest request = new AllocationRequest(event);
-        String errorMessage = "Failed to find a placement";
-        boolean handled = false;
 
         try {
-            for (Allocator allocator : allocators) {
-                if (allocator.allocate(request)) {
-                    handled = true;
-                    log.info("Allocator [{}] handled request [{}]", allocator, request);
-                    break;
-                }
-            }
-        } catch (FailedToAllocate e) {
-            errorMessage = "Scheduling failed: " + e.getMessage();
-        }
-
-        if (handled) {
+            allocator.allocate(request);
+            log.info("Allocator [{}] handled request [{}]", allocator, request);
             eventService.publish(EventVO.reply(event));
-        } else {
+        } catch (FailedToAllocate e) {
+            String errorMessage = "Scheduling failed: " + e.getMessage();
             eventService.publish(EventVO.replyWithException(event, FailedToAllocateEventException.class, errorMessage));
         }
     }
@@ -73,37 +62,14 @@ public class AllocatorEventListenerImpl implements AllocatorEventListener {
         log.info("Deallocating [{}:{}]", event.getResourceType(), event.getResourceId());
 
         AllocationRequest request = new AllocationRequest(event);
-        boolean handled = false;
 
-        for (Allocator allocator : allocators) {
-            if (allocator.deallocate(request)) {
-                handled = true;
-                log.info("Deallocator [{}] handled request [{}]", allocator, request);
-                break;
-            }
-        }
-
-        if (handled) {
+        try {
+            allocator.deallocate(request);
+            log.info("Deallocator [{}] handled request [{}]", allocator, request);
             eventService.publish(EventVO.reply(event));
+        } catch (FailedToAllocate e) {
+            String errorMessage = "Failed to deallocate: " + e.getMessage();
+            eventService.publish(EventVO.reply(event).withTransitioningMessage(errorMessage).withTransitioning(Event.TRANSITIONING_ERROR));
         }
     }
-
-    public EventService getEventService() {
-        return eventService;
-    }
-
-    @Inject
-    public void setEventService(EventService eventService) {
-        this.eventService = eventService;
-    }
-
-    public List<Allocator> getAllocators() {
-        return allocators;
-    }
-
-    @Inject
-    public void setAllocators(List<Allocator> allocators) {
-        this.allocators = allocators;
-    }
-
 }
