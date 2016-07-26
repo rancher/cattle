@@ -257,6 +257,11 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
                     public boolean evaluate(Subnet obj) {
                         return CommonStatesConstants.ACTIVE.equals(obj.getState());
                     }
+
+                    @Override
+                    public String getMessage() {
+                        return "active state";
+                    }
                 });
         return vipSubnet;
     }

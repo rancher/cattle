@@ -1,6 +1,7 @@
 package io.cattle.platform.eventing.exception;
 
 import io.cattle.platform.eventing.model.Event;
+import io.cattle.platform.eventing.model.EventVO;
 import io.cattle.platform.util.exception.ExecutionException;
 
 import java.lang.reflect.InvocationTargetException;
@@ -37,6 +38,9 @@ public class EventExecutionException extends ExecutionException {
             try {
                 Class<?> clz = Class.forName(className);
                 if (EventExecutionException.class.isAssignableFrom(clz)) {
+                    if (event instanceof EventVO) {
+                        ((EventVO<?>) event).setTransitioningInternalMessage(null);
+                    }
                     return (EventExecutionException) clz.getConstructor(String.class, Event.class)
                             .newInstance(event.getTransitioningMessage(), event);
                 }

@@ -50,7 +50,8 @@ def test_inactive_agent(super_client, new_context):
     c = new_context.create_container_no_success()
     assert c.transitioning == 'error'
     assert c.transitioningMessage == \
-        'Scheduling failed: No candidates available'
+        'Scheduling failed: No healthy hosts with sufficient ' \
+        'resources available'
     assert c.state == 'error'
 
 

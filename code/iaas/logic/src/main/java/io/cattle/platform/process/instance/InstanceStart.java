@@ -160,6 +160,11 @@ public class InstanceStart extends AbstractDefaultProcessHandler {
                         public boolean evaluate(Instance obj) {
                             return validateState(obj);
                         }
+
+                        @Override
+                        public String getMessage() {
+                            return "running state";
+                        }
                     });
         }
     }

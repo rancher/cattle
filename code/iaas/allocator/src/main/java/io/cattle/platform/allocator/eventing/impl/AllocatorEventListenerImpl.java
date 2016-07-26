@@ -6,6 +6,7 @@ import io.cattle.platform.allocator.service.AllocationRequest;
 import io.cattle.platform.allocator.service.Allocator;
 import io.cattle.platform.archaius.util.ArchaiusUtil;
 import io.cattle.platform.eventing.EventService;
+import io.cattle.platform.eventing.exception.FailedToAllocateEventException;
 import io.cattle.platform.eventing.model.Event;
 import io.cattle.platform.eventing.model.EventVO;
 
@@ -72,7 +73,7 @@ public class AllocatorEventListenerImpl implements AllocatorEventListener {
         } else {
             log.error("No allocator handled [{}]", event);
             if (FAIL_ON_NO_ALLOCATOR.get()) {
-                eventService.publish(EventVO.reply(event).withTransitioningMessage(errorMessage).withTransitioning(Event.TRANSITIONING_ERROR));
+                eventService.publish(EventVO.replyWithException(event, FailedToAllocateEventException.class, errorMessage));
             }
         }
     }

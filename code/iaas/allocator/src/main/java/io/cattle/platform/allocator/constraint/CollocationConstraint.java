@@ -10,6 +10,8 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
+import org.apache.commons.lang3.StringUtils;
+
 public class CollocationConstraint extends HardConstraint implements Constraint {
 
     GenericMapDao mapDao;
@@ -41,4 +43,10 @@ public class CollocationConstraint extends HardConstraint implements Constraint 
         }
         return true;
     }
+
+    @Override
+    public String toString() {
+        return String.format("On the same host as " + StringUtils.join(otherInstances, ", "));
+    }
+
 }

@@ -71,6 +71,11 @@ public class AgentInstanceLinkActivate extends AbstractObjectProcessHandler {
                 public boolean evaluate(Instance obj) {
                     return obj.getFirstRunning() != null;
                 }
+
+                @Override
+                public String getMessage() {
+                    return "running";
+                }
             });
         } catch (TimeoutException e) {
             /* We are going to ignore this now and just continue forward with no ports.  This is really only needed for the

@@ -1,6 +1,7 @@
 package io.cattle.platform.servicediscovery.upgrade.impl;
 
 import static io.cattle.platform.core.model.tables.ServiceExposeMapTable.*;
+
 import io.cattle.platform.async.utils.TimeoutException;
 import io.cattle.platform.core.addon.InServiceUpgradeStrategy;
 import io.cattle.platform.core.addon.RollingRestartStrategy;
@@ -464,6 +465,11 @@ public class UpgradeManagerImpl implements UpgradeManager {
                                 return instance.getHealthState() == null
                                         || healthyStates.contains(obj.getHealthState());
                             }
+
+                            @Override
+                            public String getMessage() {
+                                return "healthy";
+                            }
                         });
             }
         }
@@ -490,13 +496,7 @@ public class UpgradeManagerImpl implements UpgradeManager {
         }
 
         for (Instance instance : waitList) {
-            resourceMntr.waitFor(instance,
-                    new ResourcePredicate<Instance>() {
-                        @Override
-                        public boolean evaluate(Instance obj) {
-                            return CommonStatesConstants.REMOVED.equals(obj.getState());
-                        }
-                    });
+            resourceMntr.waitForState(instance, CommonStatesConstants.REMOVED);
         }
     }
 
@@ -567,13 +567,7 @@ public class UpgradeManagerImpl implements UpgradeManager {
             }
         }
         for (Instance instance : toStop) {
-            resourceMntr.waitFor(instance,
-                    new ResourcePredicate<Instance>() {
-                        @Override
-                        public boolean evaluate(Instance obj) {
-                            return InstanceConstants.STATE_STOPPED.equals(obj.getState());
-                        }
-                    });
+            resourceMntr.waitForState(instance, InstanceConstants.STATE_STOPPED);
         }
     }
 }

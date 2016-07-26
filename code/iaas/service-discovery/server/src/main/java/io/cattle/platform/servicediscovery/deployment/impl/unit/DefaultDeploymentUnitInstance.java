@@ -176,6 +176,11 @@ public class DefaultDeploymentUnitInstance extends DeploymentUnitInstance implem
                     public boolean evaluate(Instance obj) {
                         return InstanceConstants.STATE_RUNNING.equals(obj.getState());
                     }
+
+                    @Override
+                    public String getMessage() {
+                        return "running state";
+                    }
                 });
         return this;
     }
@@ -239,6 +244,11 @@ public class DefaultDeploymentUnitInstance extends DeploymentUnitInstance implem
                     public boolean evaluate(Instance obj) {
                         return context.objectManager.find(InstanceHostMap.class, INSTANCE_HOST_MAP.INSTANCE_ID,
                                 instance.getId()).size() > 0;
+                    }
+
+                    @Override
+                    public String getMessage() {
+                        return "allocated";
                     }
                 });
             }

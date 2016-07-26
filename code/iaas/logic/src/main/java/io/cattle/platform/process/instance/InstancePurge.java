@@ -48,6 +48,8 @@ public class InstancePurge extends AbstractDefaultProcessHandler {
 
         deallocate(instance, null);
 
+        objectManager.reload(instance);
+
         return null;
     }
 

@@ -148,6 +148,11 @@ public class AgentInstanceManagerImpl implements AgentInstanceManager {
                 public boolean evaluate(Instance obj) {
                     return InstanceConstants.STATE_RUNNING.equals(obj.getState());
                 }
+
+                @Override
+                public String getMessage() {
+                    return "running";
+                }
             });
 
             info.setAgentInstance(instance);
