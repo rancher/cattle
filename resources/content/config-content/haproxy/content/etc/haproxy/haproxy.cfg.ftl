@@ -87,7 +87,7 @@ backend ${listener.uuid}_${backend.uuid}_backend
         </#if>
         </#if>
         <#list backend.targets as target >
-        server ${target.name} ${target.ipAddress}:${target.portSpec.port}<#if target.healthCheck??> check<#if target.healthCheck.port??> port ${target.healthCheck.port}</#if><#if target.healthCheck.interval??> inter ${target.healthCheck.interval}</#if><#if target.healthCheck.healthyThreshold??> rise ${target.healthCheck.healthyThreshold}</#if><#if target.healthCheck.unhealthyThreshold??> fall ${target.healthCheck.unhealthyThreshold}</#if></#if><#if protocol="http" && lbPolicy??> cookie ${target.cookie}</#if>
+        server ${target.name} ${target.ipAddress}:${target.portSpec.port}<#if (listener.sourceProtocol == "https" || listener.sourceProtocol == "ssl")> ssl</#if><#if target.healthCheck??> check<#if target.healthCheck.port??> port ${target.healthCheck.port}</#if><#if target.healthCheck.interval??> inter ${target.healthCheck.interval}</#if><#if target.healthCheck.healthyThreshold??> rise ${target.healthCheck.healthyThreshold}</#if><#if target.healthCheck.unhealthyThreshold??> fall ${target.healthCheck.unhealthyThreshold}</#if></#if><#if protocol="http" && lbPolicy??> cookie ${target.cookie}</#if>
         </#list>
          <#if listener.sourceProtocol == "https">
         http-request add-header X-Forwarded-Proto https if { ssl_fc }
