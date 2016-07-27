@@ -263,7 +263,7 @@ public class GenericWhitelistedProxy extends AbstractResponseGenerator {
                 OutputStream writer = request.getServletContext().getResponse().getOutputStream();
                 Header[] headers = response.getAllHeaders();
                 for (int i = 0; i < headers.length; i++) {
-                    request.getServletContext().getResponse().addHeader(headers[i].getName(), headers[i].getValue());
+                    request.getServletContext().getResponse().setHeader(headers[i].getName(), headers[i].getValue());
                 }
                 HttpEntity entity = response.getEntity();
                 if (entity != null) {
