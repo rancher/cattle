@@ -1158,3 +1158,46 @@ def _validate_compose_instance_start(client, service, env,
         list_container(name=name,
                        state="running")
     return instances[0]
+
+
+def test_upgrade_global_service(new_context):
+    client = new_context.client
+    host1 = new_context.host
+    host2 = register_simulated_host(new_context)
+    host3 = register_simulated_host(new_context)
+    client.wait_success(host1)
+    client.wait_success(host2)
+    client.wait_success(host3)
+
+    # create environment and services
+    env = _create_stack(client)
+    image_uuid = new_context.image_uuid
+    launch_config = {
+        "imageUuid": image_uuid,
+        "labels": {
+            'io.rancher.scheduler.global': 'true'
+        }
+    }
+    service = client.create_service(name=random_str(),
+                                    environmentId=env.id,
+                                    launchConfig=launch_config)
+    service = client.wait_success(service)
+    assert service.state == "inactive"
+
+    # 1. verify that the service was activated
+    service = client.wait_success(service.activate(), 120)
+    assert service.state == "active"
+
+    c = client. \
+        list_serviceExposeMap(serviceId=service.id, state='active')
+
+    strategy = {"launchConfig": launch_config,
+                "intervalMillis": 100}
+    service.upgrade_action(inServiceStrategy=strategy)
+    wait_for(lambda: client.reload(service).state == 'upgraded')
+
+    service = client.reload(service)
+
+    # rollback the service
+    service = client.wait_success(service.rollback())
+    _wait_until_active_map_count(service, len(c), client)
