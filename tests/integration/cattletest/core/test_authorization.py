@@ -105,6 +105,7 @@ def test_user_types(user_client, adds=set(), removes=set()):
         'externalService',
         'externalEvent',
         'externalServiceEvent',
+        'externalStackEvent',
         'externalStoragePoolEvent',
         'externalVolumeEvent',
         'externalDnsEvent',
@@ -243,6 +244,7 @@ def test_agent_types(agent_client):
         'externalEvent',
         'externalVolumeEvent',
         'externalServiceEvent',
+        'externalStackEvent',
         'externalStoragePoolEvent',
         'externalDnsEvent',
         'hostApiProxyToken',
@@ -314,6 +316,7 @@ def test_admin_types(admin_user_client, adds=set(), removes=set()):
         'externalEvent',
         'externalVolumeEvent',
         'externalServiceEvent',
+        'externalStackEvent',
         'externalStoragePoolEvent',
         'externalDnsEvent',
         'externalHostEvent',
@@ -2389,6 +2392,42 @@ def test_external_dns_event(agent_client, admin_user_client, user_client,
         'stackName': 'cr',
         'serviceName': 'cr',
         'fqdn': 'cr'
+    })
+
+
+def test_external_stack_event(agent_client, admin_user_client, user_client,
+                              project_client):
+    type = 'externalStackEvent'
+
+    auth_check(admin_user_client.schema, type, 'r', {
+        'accountId': 'r',
+        'data': 'r',
+        'externalId': 'r',
+        'eventType': 'r',
+        'reportedAccountId': 'r',
+        'environment': 'r',
+    })
+
+    auth_check(user_client.schema, type, 'r', {
+        'accountId': 'r',
+        'externalId': 'r',
+        'eventType': 'r',
+        'reportedAccountId': 'r',
+        'environment': 'r',
+    })
+
+    auth_check(project_client.schema, type, 'r', {
+        'accountId': 'r',
+        'externalId': 'r',
+        'eventType': 'r',
+        'reportedAccountId': 'r',
+        'environment': 'r',
+    })
+
+    auth_check(agent_client.schema, type, 'cr', {
+        'externalId': 'cr',
+        'eventType': 'cr',
+        'environment': 'cr',
     })
 
 

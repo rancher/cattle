@@ -75,6 +75,7 @@
                 <value>externalVolumeEvent,parent=externalEvent</value>
                 <value>externalStoragePoolEvent,parent=externalEvent</value>
                 <value>externalServiceEvent,parent=externalEvent</value>
+                <value>externalStackEvent,parent=externalEvent</value>
                 <value>environmentUpgrade</value>
                 <value>kubernetesStackUpgrade</value>
                 <value>externalDnsEvent,parent=externalEvent</value>
