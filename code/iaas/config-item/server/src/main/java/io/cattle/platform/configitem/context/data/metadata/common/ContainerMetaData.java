@@ -37,7 +37,7 @@ public class ContainerMetaData {
     String service_index;
     String state;
     String external_id;
-    String mac_address;
+    String primary_mac_address;
 
 
     public ContainerMetaData() {
@@ -132,7 +132,7 @@ public class ContainerMetaData {
 
     public void setNicInformation(Nic nic) {
         if(nic != null) {
-            this.mac_address = nic.getMacAddress();
+            this.primary_mac_address = nic.getMacAddress();
         }
     }
 
@@ -236,11 +236,11 @@ public class ContainerMetaData {
         this.state = state;
     }
 
-    public String getMac_address() {
-        return mac_address;
+    public String getPrimary_mac_address() {
+        return primary_mac_address;
     }
 
-    public void setMac_address(String mac_address) {
-        this.mac_address = mac_address;
+    public void setPrimary_mac_address(String mac_address) {
+        this.primary_mac_address = mac_address;
     }
 }
