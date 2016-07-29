@@ -674,7 +674,7 @@ def test_container_fields(docker_client, super_client):
                                        dns=['8.8.8.8', '1.2.3.4'],
                                        privileged=True,
                                        domainName="rancher.io",
-                                       memory=8000000,
+                                       memory=12000000,
                                        memorySwap=16000000,
                                        cpuSet="0,1",
                                        stdinOpen=True,
