@@ -76,15 +76,16 @@ public class InstanceStart extends AbstractDefaultProcessHandler {
         Map<String, Object> resultData = new ConcurrentHashMap<String, Object>();
         HandlerResult result = new HandlerResult(resultData);
 
-        progress.init(state, 5, 5, 80, 5, 5);
+        progress.init(state, 1, 4, 5, 80, 5, 5);
 
         try {
             try {
-                progress.checkPoint("Scheduling");
-                allocate(instance);
-
+                progress.checkPoint("Waiting for dependencies");
                 // wait till volumesFrom/networksFrom containers start up
                 waitForDependenciesStart(instance);
+
+                progress.checkPoint("Scheduling");
+                allocate(instance);
 
                 instanceDao.clearCacheInstanceData(instance.getId());
 
