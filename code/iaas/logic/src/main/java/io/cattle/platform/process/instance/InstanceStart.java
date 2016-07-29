@@ -142,11 +142,11 @@ public class InstanceStart extends AbstractDefaultProcessHandler {
             List<String> stoppedStates = Arrays.asList(InstanceConstants.STATE_STOPPED, InstanceConstants.STATE_STOPPING);
             String type = networkFromId != null && networkFromId.equals(id) ? "networkFrom" : "volumeFrom";
             if (removedStates.contains(i.getState())) {
-                throw new ExecutionException("Dependencies readiness error ", type + " instance is removed", i);
+                throw new ExecutionException("Dependencies readiness error", type + " instance is removed", i);
             }
             
             if (!isStartOnce(i) && stoppedStates.contains(i.getState())) {
-                throw new ExecutionException("Dependencies readiness error ", type + " instance is not running", i);
+                throw new ExecutionException("Dependencies readiness error", type + " instance is not running", i);
             }
             waitList.add(i);
         }
