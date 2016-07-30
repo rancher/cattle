@@ -3,6 +3,7 @@ package io.cattle.platform.process.externalevent;
 import static io.cattle.platform.core.model.tables.EnvironmentTable.*;
 import static io.cattle.platform.process.externalevent.ExternalEventConstants.*;
 import io.cattle.platform.core.constants.CommonStatesConstants;
+import io.cattle.platform.core.dao.EnvironmentDao;
 import io.cattle.platform.core.dao.GenericResourceDao;
 import io.cattle.platform.core.dao.ServiceDao;
 import io.cattle.platform.core.model.Environment;
@@ -52,6 +53,8 @@ public class ExternalServiceEventCreate extends AbstractDefaultProcessHandler {
     LockManager lockManager;
     @Inject
     SchemaFactory schemaFactory;
+    @Inject
+    EnvironmentDao environmentDao;
 
     @Override
     public HandlerResult handle(ProcessState state, ProcessInstance process) {
@@ -82,6 +85,8 @@ public class ExternalServiceEventCreate extends AbstractDefaultProcessHandler {
                     updateService(event, serviceData);
                 } else if (StringUtils.equals(event.getEventType(), TYPE_SERVICE_DELETE)) {
                     deleteService(event, serviceData);
+                } else if (StringUtils.equals(event.getEventType(), TYPE_STACK_DELETE)) {
+                    deleteStack(event, serviceData);
                 }
             }
         });
@@ -118,15 +123,16 @@ public class ExternalServiceEventCreate extends AbstractDefaultProcessHandler {
         }
     }
 
-    Environment getEnvironment(ExternalEvent event) {
-        Map<String, Object> env = CollectionUtils.castMap(DataUtils.getFields(event).get(FIELD_ENVIRIONMENT));
+    Environment getEnvironment(final ExternalEvent event) {
+        final Map<String, Object> env = CollectionUtils.castMap(DataUtils.getFields(event).get(FIELD_ENVIRIONMENT));
         Object eId = CollectionUtils.getNestedValue(env, FIELD_EXTERNAL_ID);
         if (eId == null) {
             return null;
         }
-        String envExtId = eId.toString();
+        final String envExtId = eId.toString();
 
-        Environment environment = objectManager.findOne(Environment.class, ENVIRONMENT.EXTERNAL_ID, envExtId, ENVIRONMENT.REMOVED, null);
+        Environment environment = objectManager.findOne(Environment.class, ENVIRONMENT.EXTERNAL_ID, envExtId);              
+         //If environment has not been created yet
         if (environment == null) {
             final Environment newEnv = objectManager.newRecord(Environment.class);
 
@@ -149,6 +155,10 @@ public class ExternalServiceEventCreate extends AbstractDefaultProcessHandler {
                     return obj != null && CommonStatesConstants.ACTIVE.equals(obj.getState());
                 }
             });
+        } // If environment was created and removed as well
+        else if (environment.getRemoved() != null) {
+            // This will return null and ensure that service does not get created
+            return null;
         }
         return environment;
     }
@@ -187,6 +197,13 @@ public class ExternalServiceEventCreate extends AbstractDefaultProcessHandler {
         Service svc = serviceDao.getServiceByExternalId(event.getAccountId(), event.getExternalId());
         if (svc != null) {
             objectProcessManager.scheduleStandardProcess(StandardProcess.REMOVE, svc, null);
+        }
+    }
+    
+    void deleteStack(ExternalEvent event, Map<String, Object> stackData) {
+        Environment env = environmentDao.getEnvironmentByExternalId(event.getAccountId(), event.getExternalId());
+        if (env != null) {
+            objectProcessManager.scheduleStandardProcess(StandardProcess.REMOVE, env, null);
         }
     }
 
