@@ -1,4 +1,5 @@
 {
+    "collectionMethods": [],
     "resourceFields": {
         "backupTargetId": {
             "required": true,

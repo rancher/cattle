@@ -1,9 +1,11 @@
 package io.cattle.platform.docker.api.model;
 
 import io.github.ibuildthecloud.gdapi.annotation.Field;
+import io.github.ibuildthecloud.gdapi.annotation.Type;
 
 import java.util.List;
 
+@Type(list=false)
 public interface ContainerExec {
 
     @Field(defaultValue = "true")

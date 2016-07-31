@@ -1,5 +1,8 @@
 package io.cattle.platform.docker.api.model;
 
+import io.github.ibuildthecloud.gdapi.annotation.Type;
+
+@Type(list=false)
 public class HostAccess {
 
     String url;

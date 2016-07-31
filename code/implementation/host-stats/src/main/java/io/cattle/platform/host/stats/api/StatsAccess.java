@@ -1,5 +1,8 @@
 package io.cattle.platform.host.stats.api;
 
+import io.github.ibuildthecloud.gdapi.annotation.Type;
+
+@Type(list=false)
 public class StatsAccess {
 
     String url;
