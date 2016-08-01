@@ -62,6 +62,9 @@ public class ServiceMetadataInfoFactory extends AbstractAgentBaseContextFactory 
 
     @Override
     protected void populateContext(Agent agent, Instance instance, ConfigItem item, ArchiveContext context) {
+        if (instance == null) {
+            return;
+        }
         Account account = objectManager.loadResource(Account.class, instance.getAccountId());
         List<ContainerMetaData> containersMD = metaDataInfoDao.getContainersData(account.getId());
         Map<String, StackMetaData> stackNameToStack = new HashMap<>();

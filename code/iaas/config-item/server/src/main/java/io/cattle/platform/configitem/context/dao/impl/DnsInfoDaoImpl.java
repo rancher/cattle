@@ -198,6 +198,9 @@ public class DnsInfoDaoImpl extends AbstractJooqDao implements DnsInfoDao {
                 .fetch().map(mapper);
 
         Nic nic = ntwkDao.getPrimaryNic(instance.getId());
+        if (nic == null) {
+            return new ArrayList<>();
+        }
         long vnetId = nic.getVnetId();
         return convertToDnsEntryData(serviceDnsEntries, instance.getAccountId(), vnetId, forDefault);
     }
