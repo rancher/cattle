@@ -35,6 +35,9 @@ public class DnsInfoFactory extends AbstractAgentBaseContextFactory {
 
     @Override
     protected void populateContext(Agent agent, Instance instance, ConfigItem item, ArchiveContext context) {
+        if (instance == null) {
+            return;
+        }
         List<DnsEntryData> dnsEntries = new ArrayList<DnsEntryData>();
         // 1. retrieve all instance links for the hosts
         dnsEntries.addAll(dnsInfoDao.getInstanceLinksDnsData(instance));

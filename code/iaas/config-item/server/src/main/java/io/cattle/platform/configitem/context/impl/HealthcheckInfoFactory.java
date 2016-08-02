@@ -31,6 +31,9 @@ public class HealthcheckInfoFactory extends AbstractAgentBaseContextFactory {
 
     @Override
     protected void populateContext(Agent agent, Instance instance, ConfigItem item, ArchiveContext context) {
+        if (instance == null) {
+            return;
+        }
         Nic primaryNic = networkDao.getPrimaryNic(instance.getId());
         if (primaryNic == null) {
             return;
