@@ -14,6 +14,7 @@ import io.cattle.platform.configitem.version.ConfigItemStatusManager;
 import io.cattle.platform.configitem.version.dao.ConfigItemStatusDao;
 import io.cattle.platform.core.model.ConfigItemStatus;
 import io.cattle.platform.deferred.util.DeferredUtils;
+import io.cattle.platform.eventing.exception.AgentRemovedException;
 import io.cattle.platform.eventing.model.Event;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.server.context.ServerContext;
@@ -262,6 +263,8 @@ public class ConfigItemStatusManagerImpl implements ConfigItemStatusManager {
                     public void onFailure(Throwable t) {
                         if (t instanceof TimeoutException) {
                             log.info("Timeout {} item(s) {} on [{}]", migration ? "migrating" : "updating", entry.getValue(), client);
+                        } else if (t instanceof AgentRemovedException) {
+                            log.info("Agent removed {} item(s) {} on [{}]", migration ? "migrating" : "updating", entry.getValue(), client);
                         } else {
                             log.error("Error {} item(s) {} on [{}]", migration ? "migrating" : "updating", entry.getValue(), client, t);
                         }
