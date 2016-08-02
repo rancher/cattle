@@ -100,31 +100,30 @@ public class InstancePreCreate extends AbstractObjectProcessLogic implements Pro
         }
     }
 
+    protected boolean isRancherNetwork(Instance instance, Map<Object, Object> data) {
+        String networkMode = DataAccessor.fromMap(data).withKey(FIELD_NETWORK_MODE).as(String.class);
+        if (networkMode == null) {
+            networkMode = DataAccessor.fields(instance).withKey(DockerInstanceConstants.FIELD_NETWORK_MODE)
+                    .as(String.class);
+        }
+
+        return DockerNetworkConstants.NETWORK_MODE_MANAGED.equals(networkMode);
+    }
+
     protected void setDns(Instance instance, Map<String, Object> labels, Map<Object, Object> data) {
         if (instance.getSystemContainer() != null) {
             return;
         }
         if (InstanceConstants.KIND_CONTAINER.equals(instance.getKind())) {
-            boolean addDns = true;
-            Object lblValue = labels.get(SystemLabels.LABEL_USE_RANCHER_DNS);
-            if (lblValue != null && !Boolean.valueOf(lblValue.toString())) {
-                addDns = false;
-            }
-
+            boolean addDns = DataAccessor.fromMap(labels).withKey(SystemLabels.LABEL_USE_RANCHER_DNS).withDefault(true).as(Boolean.class);
             if (addDns) {
-                String networkMode = DataAccessor.fields(instance).withKey(DockerInstanceConstants.FIELD_NETWORK_MODE)
-                        .as(String.class);
-                if (DockerNetworkConstants.NETWORK_MODE_MANAGED.equals(networkMode)) {
+                if (isRancherNetwork(instance, data)) {
                     List<String> dns = new ArrayList<>(DataAccessor.fieldStringList(instance, DockerInstanceConstants.FIELD_DNS));
                     if (!dns.contains(NetworkConstants.INTERNAL_DNS_IP)) {
                         dns.add(NetworkConstants.INTERNAL_DNS_IP);
                     }
                     data.put(DockerInstanceConstants.FIELD_DNS, dns);
-
-                    String dnsInternal = DataAccessor.fieldString(instance, InstanceConstants.FIELD_DNS_INTERNAL);
-                    if (StringUtils.isEmpty(dnsInternal)) {
-                        data.put(InstanceConstants.FIELD_DNS_INTERNAL, Joiner.on(",").join(dns));
-                    }
+                    data.put(InstanceConstants.FIELD_DNS_INTERNAL, Joiner.on(",").join(dns));
                 }
 
                 List<String> dnsSearch = new ArrayList<>(DataAccessor.fieldStringList(instance, DockerInstanceConstants.FIELD_DNS_SEARCH));
