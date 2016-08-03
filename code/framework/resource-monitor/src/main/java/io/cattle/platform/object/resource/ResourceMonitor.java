@@ -1,8 +1,6 @@
 package io.cattle.platform.object.resource;
 
 public interface ResourceMonitor {
-    public static final String ERROR_MSG = "failed to satisfy predicate";
-
     /**
      * 
      * @param obj

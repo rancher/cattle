@@ -1,11 +1,15 @@
 package io.cattle.platform.eventing.exception;
 
 import io.cattle.platform.eventing.model.Event;
+import io.cattle.platform.eventing.model.EventVO;
 import io.cattle.platform.util.exception.ExecutionException;
+import io.cattle.platform.util.exception.LoggableException;
 
 import java.lang.reflect.InvocationTargetException;
 
-public class EventExecutionException extends ExecutionException {
+import org.slf4j.Logger;
+
+public class EventExecutionException extends ExecutionException implements LoggableException {
 
     private static final long serialVersionUID = 3499233034118987175L;
 
@@ -37,6 +41,9 @@ public class EventExecutionException extends ExecutionException {
             try {
                 Class<?> clz = Class.forName(className);
                 if (EventExecutionException.class.isAssignableFrom(clz)) {
+                    if (event instanceof EventVO) {
+                        ((EventVO<?>) event).setTransitioningInternalMessage(null);
+                    }
                     return (EventExecutionException) clz.getConstructor(String.class, Event.class)
                             .newInstance(event.getTransitioningMessage(), event);
                 }
@@ -51,6 +58,18 @@ public class EventExecutionException extends ExecutionException {
         String message = event.getTransitioningInternalMessage() == null ?
                 event.getTransitioningMessage() : event.getTransitioningInternalMessage();
         return new EventExecutionException(message, event);
+    }
+
+    @Override
+    public void log(Logger log) {
+        Object name = null;
+        if (event != null) {
+            name = event.getPreviousNames();
+            if (name == null) {
+                name = event.getName();
+            }
+        }
+        log.error("Agent error for [{}]: {}", name, getMessage());
     }
 
 }

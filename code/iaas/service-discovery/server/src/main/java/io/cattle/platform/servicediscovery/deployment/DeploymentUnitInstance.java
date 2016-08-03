@@ -50,6 +50,11 @@ public abstract class DeploymentUnitInstance {
                         public boolean evaluate(ServiceExposeMap obj) {
                             return CommonStatesConstants.REMOVED.equals(obj.getState());
                         }
+
+                        @Override
+                        public String getMessage() {
+                            return "removed state";
+                        }
                     });
         }
     }

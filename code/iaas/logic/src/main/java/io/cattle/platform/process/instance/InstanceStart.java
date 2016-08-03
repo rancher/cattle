@@ -76,15 +76,16 @@ public class InstanceStart extends AbstractDefaultProcessHandler {
         Map<String, Object> resultData = new ConcurrentHashMap<String, Object>();
         HandlerResult result = new HandlerResult(resultData);
 
-        progress.init(state, 5, 5, 80, 5, 5);
+        progress.init(state, 1, 4, 5, 80, 5, 5);
 
         try {
             try {
-                progress.checkPoint("Scheduling");
-                allocate(instance);
-
+                progress.checkPoint("Waiting for dependencies");
                 // wait till volumesFrom/networksFrom containers start up
                 waitForDependenciesStart(instance);
+
+                progress.checkPoint("Scheduling");
+                allocate(instance);
 
                 instanceDao.clearCacheInstanceData(instance.getId());
 
@@ -142,11 +143,11 @@ public class InstanceStart extends AbstractDefaultProcessHandler {
             List<String> stoppedStates = Arrays.asList(InstanceConstants.STATE_STOPPED, InstanceConstants.STATE_STOPPING);
             String type = networkFromId != null && networkFromId.equals(id) ? "networkFrom" : "volumeFrom";
             if (removedStates.contains(i.getState())) {
-                throw new ExecutionException("Dependencies readiness error ", type + " instance is removed", i);
+                throw new ExecutionException("Dependencies readiness error", type + " instance is removed", i);
             }
             
             if (!isStartOnce(i) && stoppedStates.contains(i.getState())) {
-                throw new ExecutionException("Dependencies readiness error ", type + " instance is not running", i);
+                throw new ExecutionException("Dependencies readiness error", type + " instance is not running", i);
             }
             waitList.add(i);
         }
@@ -159,6 +160,11 @@ public class InstanceStart extends AbstractDefaultProcessHandler {
                         @Override
                         public boolean evaluate(Instance obj) {
                             return validateState(obj);
+                        }
+
+                        @Override
+                        public String getMessage() {
+                            return "running state";
                         }
                     });
         }

@@ -89,7 +89,7 @@ public class ResourceMonitorImpl implements ResourceMonitor, AnnotatedEventListe
             }
         }
 
-        throw new TimeoutException("Object [" + key + "] " + ERROR_MSG + " [" + timeout + "] millis");
+        throw new TimeoutException("Timeout waiting for " + predicate.getMessage() + " on [" + key + "]");
     }
 
     @Override
@@ -116,6 +116,11 @@ public class ResourceMonitorImpl implements ResourceMonitor, AnnotatedEventListe
             public boolean evaluate(T obj) {
                 return desiredState.equals(ObjectUtils.getState(obj));
             }
+
+            @Override
+            public String getMessage() {
+                return "state to equal " + desiredState;
+            }
         });
     }
 
@@ -125,6 +130,11 @@ public class ResourceMonitorImpl implements ResourceMonitor, AnnotatedEventListe
             @Override
             public boolean evaluate(T obj) {
                 return !objectMetaDataManger.isTransitioningState(obj.getClass(), (ObjectUtils.getState(obj)));
+            }
+
+            @Override
+            public String getMessage() {
+                return "a resting state";
             }
         });
     }

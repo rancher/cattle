@@ -1,8 +1,10 @@
 package io.cattle.platform.process.common.generic;
 
 import io.cattle.platform.engine.manager.impl.ProcessRecord;
+import io.cattle.platform.engine.process.ExitReason;
 import io.cattle.platform.engine.process.LaunchConfiguration;
 import io.cattle.platform.engine.process.impl.AbstractStatesBasedProcessState;
+import io.cattle.platform.engine.process.impl.ProcessExecutionExitException;
 import io.cattle.platform.engine.process.impl.ResourceStatesDefinition;
 import io.cattle.platform.json.JsonMapper;
 import io.cattle.platform.lock.definition.LockDefinition;
@@ -16,6 +18,7 @@ import java.util.Map;
 
 import org.apache.commons.beanutils.BeanUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.jooq.exception.DataChangedException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -82,18 +85,26 @@ public class GenericResourceProcessState extends AbstractStatesBasedProcessState
             }
         }
 
-        Object newResource = objectManager.setFields(resource, getStatesDefinition().getStateField(), newState);
-        if (newResource == null) {
+        try {
+            Object newResource = objectManager.setFields(resource, getStatesDefinition().getStateField(), newState);
+            if (newResource == null) {
+                return false;
+            } else {
+                resource = newResource;
+                return true;
+            }
+        } catch (DataChangedException e) {
             return false;
-        } else {
-            resource = newResource;
-            return true;
         }
     }
 
     @Override
     public void applyData(Map<String, Object> data) {
-        resource = objectManager.setFields(resource, data);
+        try {
+            resource = objectManager.setFields(resource, data);
+        } catch (DataChangedException e) {
+            throw new ProcessExecutionExitException(ExitReason.STATE_CHANGED);
+        }
     }
 
     @Override

@@ -201,6 +201,11 @@ public class AgentInstanceFactoryImpl implements AgentInstanceFactory {
             public boolean evaluate(Agent obj) {
                 return factoryDao.getActivateCredentials(obj).size() > 0;
             }
+
+            @Override
+            public String getMessage() {
+                return "active credentials";
+            }
         });
 
         return agent;

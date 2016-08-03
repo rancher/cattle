@@ -320,7 +320,7 @@ public abstract class AbstractAllocator implements Allocator {
                 candidateFailedConstraintSets.add(failedConstraints);
             }
             if (!foundOne) {
-                throw new FailedToAllocate("No candidates available");
+                throw new FailedToAllocate("No healthy hosts with sufficient resources available");
             }
             return getWeakestConstraintSet(candidateFailedConstraintSets);
         } finally {

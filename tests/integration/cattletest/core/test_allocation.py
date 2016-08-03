@@ -50,7 +50,8 @@ def test_inactive_agent(super_client, new_context):
     c = new_context.create_container_no_success()
     assert c.transitioning == 'error'
     assert c.transitioningMessage == \
-        'Scheduling failed: No candidates available'
+        'Scheduling failed: No healthy hosts with sufficient ' \
+        'resources available'
     assert c.state == 'error'
 
 
@@ -612,13 +613,11 @@ def test_volumes_from_constraint(new_context):
                                                      dataVolumesFrom=[c3.id])
 
         c4 = c4.start()
-        c3 = c3.start()
-        c4 = new_context.wait_for_state(c4, 'running')
-        c3 = new_context.wait_for_state(c3, 'running')
-        containers.append(c3)
-        containers.append(c4)
-
-        assert c3.hosts()[0].id == c4.hosts()[0].id
+        c4 = new_context.client.wait_transitioning(c4)
+        assert c4.transitioning == 'error'
+        assert c4.transitioningMessage == 'volumeFrom instance is not ' \
+                                          'running : Dependencies readiness' \
+                                          ' error'
     finally:
         for c in containers:
             new_context.delete(c)

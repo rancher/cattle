@@ -154,6 +154,11 @@ public class ExternalServiceEventCreate extends AbstractDefaultProcessHandler {
                 public boolean evaluate(Environment obj) {
                     return obj != null && CommonStatesConstants.ACTIVE.equals(obj.getState());
                 }
+
+                @Override
+                public String getMessage() {
+                    return "active state";
+                }
             });
         } // If environment was created and removed as well
         else if (environment.getRemoved() != null) {
