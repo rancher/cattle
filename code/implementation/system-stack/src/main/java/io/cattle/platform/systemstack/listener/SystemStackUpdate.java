@@ -223,7 +223,9 @@ public class SystemStackUpdate extends AbstractJooqDao implements AnnotatedEvent
     }
 
     protected Template getTemplateFromCatalog(String stack) throws IOException {
-
+        if (ALTERNATIVE_NAME.containsKey(stack)) {
+            stack = ALTERNATIVE_NAME.get(stack);
+        }
         StringBuilder catalogTemplateUrl = new StringBuilder(CATALOG_RESOURCE_URL.get());
         catalogTemplateUrl.append(":").append(stack);
         String minVersion = CATALOG_RESOURCE_VERSION.get();
