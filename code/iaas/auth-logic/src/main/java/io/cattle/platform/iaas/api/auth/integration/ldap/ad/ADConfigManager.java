@@ -48,6 +48,7 @@ public class ADConfigManager extends AbstractNoOpResourceManager {
         return updateCurrentConfig(configMap);
     }
 
+    @SuppressWarnings("unchecked")
     private ADConfig currentLdapConfig(Map<String, Object> config) {
         ADConfig currentConfig = (ADConfig) listInternal(null, null, null, null);
         String domain = currentConfig.getDomain();
@@ -197,6 +198,7 @@ public class ADConfigManager extends AbstractNoOpResourceManager {
         String accessModeInConfig = (String)config.get(AbstractTokenUtil.ACCESSMODE);
         if (AbstractTokenUtil.isRestrictedAccess(accessModeInConfig) || AbstractTokenUtil.isRequiredAccess(accessModeInConfig)) {
             //validate the allowedIdentities
+            @SuppressWarnings("unchecked")
             String ids = adIdentityProvider.validateIdentities((List<Map<String, String>>) config.get(ADConstants.CONFIG_ALLOWED_IDENTITIES));
             settingsUtils.changeSetting(ADConstants.ALLOWED_IDENTITIES_SETTING, ids);
         } else if (AbstractTokenUtil.isUnrestrictedAccess(accessModeInConfig)) {

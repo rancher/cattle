@@ -66,7 +66,6 @@ public class AzureConfigManager extends AbstractNoOpResourceManager {
         return updateCurrentConfig(config);
     }
 
-    @SuppressWarnings("unchecked")
     public AzureConfig getCurrentConfig(Map<String, Object> config) {
         if (config == null){
             config = new HashMap<>();
@@ -109,7 +108,6 @@ public class AzureConfigManager extends AbstractNoOpResourceManager {
         return getCurrentConfig(new HashMap<String, Object>());
     }
 
-    @SuppressWarnings("unchecked")
     public AzureConfig updateCurrentConfig(Map<String, Object> config) {
 
         settingsUtils.changeSetting(SecurityConstants.SECURITY_SETTING, config.get(SecurityConstants.ENABLED));

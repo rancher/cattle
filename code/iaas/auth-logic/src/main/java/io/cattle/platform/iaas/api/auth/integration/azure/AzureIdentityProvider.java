@@ -13,16 +13,16 @@ import io.github.ibuildthecloud.gdapi.context.ApiContext;
 import io.github.ibuildthecloud.gdapi.exception.ClientVisibleException;
 import io.github.ibuildthecloud.gdapi.request.ApiRequest;
 import io.github.ibuildthecloud.gdapi.util.ResponseCodes;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+
 import javax.inject.Inject;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 public class AzureIdentityProvider extends AzureConfigurable implements IdentityProvider {
 
@@ -35,9 +35,6 @@ public class AzureIdentityProvider extends AzureConfigurable implements Identity
     private AuthTokenDao authTokenDao;
     @Inject
     AzureTokenCreator azureTokenCreator;
-
-    private static final Log logger = LogFactory.getLog(AzureIdentityProvider.class);
-
 
     @Override
     public List<Identity> searchIdentities(String name, boolean exactMatch) {

@@ -219,7 +219,7 @@ public class AzureRESTClient extends AzureConfigurable{
     }
 
     public List<AzureAccountInfo> parseSearchResponseList(Map<String, Object> jsonData) {
-        List<Object> azureValueList = (List<Object>)CollectionUtils.toList(jsonData.get("value"));
+        List<?> azureValueList = CollectionUtils.toList(jsonData.get("value"));
         List<AzureAccountInfo> azureUserOrGroupList = new ArrayList<AzureAccountInfo>();
         if (azureValueList != null && !azureValueList.isEmpty())
         {
