@@ -3,7 +3,7 @@
 set -e
 
 source $(dirname $0)/common/scripts.sh
-
+info "debug"
 cleanup()
 {
     EXIT=$?
