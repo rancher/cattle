@@ -10,9 +10,7 @@
         http://cattle.io/schemas/spring/extension http://cattle.io/schemas/spring/extension-1.0.xsd
         http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx.xsd">
 
-    <bean class="io.cattle.platform.allocator.eventing.impl.AllocatorEventListenerImpl" >
-        <property name="allocators" value="#{extensionManager.list('allocator')}" />
-    </bean>
+    <bean class="io.cattle.platform.allocator.eventing.impl.AllocatorEventListenerImpl" />
 
     <bean class="io.cattle.platform.allocator.dao.impl.AllocatorDaoImpl" />
 

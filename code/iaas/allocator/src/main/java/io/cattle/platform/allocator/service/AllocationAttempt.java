@@ -20,6 +20,9 @@ import java.util.UUID;
 
 public class AllocationAttempt {
     String id = UUID.randomUUID().toString();
+
+    Long accountId;
+
     Instance instance;
 
     Set<Host> hosts;
@@ -41,9 +44,10 @@ public class AllocationAttempt {
     List<AllocationCandidate> candidates = new ArrayList<AllocationCandidate>();
     AllocationCandidate matchedCandidate;
 
-    public AllocationAttempt(Instance instance, Set<Host> hosts, Set<Volume> volumes, Map<Volume, Set<StoragePool>> pools, Set<Nic> nics,
+    public AllocationAttempt(long accountId, Instance instance, Set<Host> hosts, Set<Volume> volumes, Map<Volume, Set<StoragePool>> pools, Set<Nic> nics,
             Map<Nic, Subnet> subnets) {
         super();
+        this.accountId = accountId;
         this.instance = instance;
         this.hosts = hosts;
         this.volumes = volumes;
@@ -89,6 +93,10 @@ public class AllocationAttempt {
         }
 
         constraints.add(new IsValidConstraint());
+    }
+
+    public Long getAccountId() {
+        return accountId;
     }
 
     public Instance getInstance() {
