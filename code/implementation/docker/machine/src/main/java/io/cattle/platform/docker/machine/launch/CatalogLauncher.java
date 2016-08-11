@@ -1,7 +1,5 @@
 package io.cattle.platform.docker.machine.launch;
 
-import org.apache.http.client.fluent.Request;
-
 import io.cattle.platform.archaius.util.ArchaiusUtil;
 import io.cattle.platform.json.JsonMapper;
 import io.cattle.platform.lock.definition.LockDefinition;
@@ -16,6 +14,8 @@ import java.util.List;
 import java.util.Map;
 
 import javax.inject.Inject;
+
+import org.apache.http.client.fluent.Request;
 
 import com.netflix.config.DynamicBooleanProperty;
 import com.netflix.config.DynamicStringProperty;
@@ -33,7 +33,6 @@ public class CatalogLauncher extends GenericServiceLauncher implements Initializ
         String branch;
 
         public CatalogEntry() {
-
         }
 
         public String getRepoURL() {
@@ -78,7 +77,6 @@ public class CatalogLauncher extends GenericServiceLauncher implements Initializ
         }
 
         public ConfigFileFields() {
-
         }
     }
 
@@ -155,11 +153,12 @@ public class CatalogLauncher extends GenericServiceLauncher implements Initializ
         return true;
     }
 
+    @Override
     public void reload() {
         try {
             prepareConfigFile();
             Request.Post("http://localhost:8088/v1-catalog/templates?action=refresh").execute();
-        } catch (Exception e) {
+        } catch (IOException e) {
             throw new RuntimeException(e);
         }
     }
