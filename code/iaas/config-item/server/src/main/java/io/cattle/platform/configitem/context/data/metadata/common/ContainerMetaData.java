@@ -2,6 +2,7 @@ package io.cattle.platform.configitem.context.data.metadata.common;
 
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.model.Instance;
+import io.cattle.platform.core.model.Nic;
 import io.cattle.platform.core.model.ServiceExposeMap;
 import io.cattle.platform.core.util.PortSpec;
 import io.cattle.platform.object.util.DataAccessor;
@@ -36,6 +37,8 @@ public class ContainerMetaData {
     String service_index;
     String state;
     String external_id;
+    String primary_mac_address;
+
 
     public ContainerMetaData() {
     }
@@ -124,6 +127,12 @@ public class ContainerMetaData {
         if (exposeMap != null) {
             this.dnsPrefix = exposeMap.getDnsPrefix();
             this.serviceId = exposeMap.getServiceId();
+        }
+    }
+
+    public void setNicInformation(Nic nic) {
+        if(nic != null) {
+            this.primary_mac_address = nic.getMacAddress();
         }
     }
 
@@ -225,5 +234,13 @@ public class ContainerMetaData {
 
     public void setState(String state) {
         this.state = state;
+    }
+
+    public String getPrimary_mac_address() {
+        return primary_mac_address;
+    }
+
+    public void setPrimary_mac_address(String mac_address) {
+        this.primary_mac_address = mac_address;
     }
 }
