@@ -10,6 +10,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -28,51 +29,40 @@ public class CatalogLauncher extends GenericServiceLauncher implements Initializ
     private static final DynamicBooleanProperty LAUNCH_CATALOG = ArchaiusUtil.getBoolean("catalog.execute");
 
     public static class CatalogEntry {
-        String name;
-        String repoURL;
+        String url;
         String branch;
 
-        public CatalogEntry() {
+        public String getUrl() {
+            return url;
         }
 
-        public String getRepoURL() {
-            return repoURL;
+        public void setUrl(String url) {
+            this.url = url;
         }
-
-
-        public void setRepoURL(String repoURL) {
-            this.repoURL = repoURL;
-        }
-
 
         public String getBranch() {
             return branch;
         }
 
-
         public void setBranch(String branch) {
             this.branch = branch;
         }
 
-
-        public void setName(String name) {
-            this.name = name;
+        public CatalogEntry() {
+            this.branch = "master";
         }
 
 
-        public String getName() {
-            return name;
-        }
     }
 
     public static class ConfigFileFields {
-        List<CatalogEntry> Catalogs;
+        Map<String, CatalogEntry> Catalogs;
 
-        public List<CatalogEntry> getCatalogs() {
+        public Map<String, CatalogEntry> getCatalogs() {
             return Catalogs;
         }
 
-        public void setCatalogs(List<CatalogEntry> catalogs) {
+        public void setCatalogs(Map<String, CatalogEntry> catalogs) {
             Catalogs = catalogs;
         }
 
@@ -124,16 +114,15 @@ public class CatalogLauncher extends GenericServiceLauncher implements Initializ
         }
         else {
             String []catalogs = catUrl.split(",");
-            List<CatalogEntry> catalogEntryList = new ArrayList<>();
+            Map<String, CatalogEntry> catalogEntryMap = new HashMap<String, CatalogEntry>();
             for (String catalog: catalogs) {
                 CatalogEntry entry = new CatalogEntry();
                 String[]splitted = catalog.split("=");
-                entry.setName(splitted[0]);
-                entry.setRepoURL(splitted[1]);
+                entry.setUrl(splitted[1]);
                 entry.setBranch("master");
-                catalogEntryList.add(entry);
+                catalogEntryMap.put(splitted[0], entry);
             }
-            configCatalogEntries.setCatalogs(catalogEntryList);
+            configCatalogEntries.setCatalogs(catalogEntryMap);
             fos = new FileOutputStream(configFile.getAbsoluteFile());
             jsonMapper.writeValue(fos, configCatalogEntries);
         }
