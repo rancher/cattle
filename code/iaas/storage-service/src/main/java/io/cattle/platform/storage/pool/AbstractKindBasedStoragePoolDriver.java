@@ -23,7 +23,7 @@ public abstract class AbstractKindBasedStoragePoolDriver implements StoragePoolD
         return populateImageInternal(uuid, image);
     }
 
-    protected String stripKindPrefix(String str) {
+    public String stripKindPrefix(String str) {
         return StringUtils.removeStart(str, kindPrefix);
     }
 

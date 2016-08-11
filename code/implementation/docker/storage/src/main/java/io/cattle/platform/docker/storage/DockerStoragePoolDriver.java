@@ -3,7 +3,6 @@ package io.cattle.platform.docker.storage;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.model.Image;
 import io.cattle.platform.core.model.StoragePool;
-import io.cattle.platform.docker.client.DockerImage;
 import io.cattle.platform.docker.constants.DockerStoragePoolConstants;
 import io.cattle.platform.docker.storage.dao.DockerStorageDao;
 import io.cattle.platform.lock.LockCallbackNoReturn;
@@ -32,13 +31,7 @@ public class DockerStoragePoolDriver extends AbstractKindBasedStoragePoolDriver 
 
     @Override
     protected boolean populateImageInternal(String uuid, Image image) {
-        DockerImage dockerImage = DockerImage.parse(stripKindPrefix(uuid));
-
-        if (dockerImage == null) {
-            return false;
-        }
-
-        image.setName(dockerImage.getFullName());
+        image.setName(uuid);
 
         Map<String, Object> data = image.getData();
         if (data == null) {
@@ -46,7 +39,7 @@ public class DockerStoragePoolDriver extends AbstractKindBasedStoragePoolDriver 
             image.setData(data);
         }
 
-        data.put("dockerImage", dockerImage);
+        data.put("dockerImage", stripKindPrefix(uuid));
         image.setFormat(DockerStoragePoolConstants.DOCKER_FORMAT);
         image.setInstanceKind(InstanceConstants.KIND_CONTAINER);
 

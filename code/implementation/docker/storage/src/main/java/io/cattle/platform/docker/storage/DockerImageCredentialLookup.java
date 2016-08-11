@@ -8,28 +8,25 @@ import io.cattle.platform.core.constants.StoragePoolConstants;
 import io.cattle.platform.core.model.Credential;
 import io.cattle.platform.core.model.StoragePool;
 import io.cattle.platform.db.jooq.dao.impl.AbstractJooqDao;
-import io.cattle.platform.docker.client.DockerImage;
 import io.cattle.platform.storage.ImageCredentialLookup;
 import io.cattle.platform.util.type.CollectionUtils;
 
 import java.util.List;
+import javax.inject.Inject;
 
 public class DockerImageCredentialLookup extends AbstractJooqDao implements ImageCredentialLookup {
+    @Inject
+    DockerStoragePoolDriver dockerStoragePoolDriver;
 
     @Override
     public Credential getDefaultCredential(String uuid, long currentAccount) {
-        DockerImage image = DockerImage.parse(uuid);
-        if ( image == null){
-            return null;
-        }
-        String serverAddress = image.getServer();
         Long registryId = null;
         List<StoragePool> storagePools = create().selectFrom(STORAGE_POOL)
                 .where(STORAGE_POOL.STATE.eq(CommonStatesConstants.ACTIVE)
                         .and(STORAGE_POOL.ACCOUNT_ID.eq(currentAccount)
                         .and(STORAGE_POOL.KIND.eq(StoragePoolConstants.KIND_REGISTRY)))).fetchInto(StoragePool.class);
         for(StoragePool registry: storagePools){
-            if (serverAddress.equalsIgnoreCase((String) CollectionUtils.getNestedValue(registry.getData(), "fields", StoragePoolConstants.SERVER_ADDRESS))) {
+            if (getServer(uuid).equalsIgnoreCase((String) CollectionUtils.getNestedValue(registry.getData(), "fields", StoragePoolConstants.SERVER_ADDRESS))) {
                 registryId = registry.getId();
                 break;
             }
@@ -45,5 +42,20 @@ public class DockerImageCredentialLookup extends AbstractJooqDao implements Imag
                         .orderBy(CREDENTIAL.ID.asc()).fetchAny();
 
         return credential;
+    }
+
+    private String getServer(String uuid) {
+        String[] splits = dockerStoragePoolDriver.stripKindPrefix(uuid).split("/");
+        switch (splits.length) {
+            case 1:
+                return "index.docker.io";
+            default:
+                String first = splits[0];
+                if (first.contains(".") || first.contains(":") || first.equals("localhost")) {
+                    return first;
+                } else {
+                    return "index.docker.io";
+                }
+        }
     }
 }
