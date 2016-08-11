@@ -48,7 +48,7 @@ ref()
         SUFFIX=""
     fi
 cat << EOF
-  \`${1}_id\` bigint(19)$SUFFIX,
+  \`${1}_id\` bigint(20)$SUFFIX,
 EOF
 }
 
@@ -59,7 +59,7 @@ string()
 
 bigint()
 {
-    echo "  \`$1\` bigint(19) DEFAULT NULL,"
+    echo "  \`$1\` bigint(20) DEFAULT NULL,"
 }
 
 int()
