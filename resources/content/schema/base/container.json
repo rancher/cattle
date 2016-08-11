@@ -239,6 +239,14 @@
          "startCount" : {
             "type" : "int",
             "nullable" : true
+        },
+        "blkioDeviceReadIOps": {
+            "type": "array[map[string]]",
+            "nullable": true
+        },
+        "blkioDeviceWriteIOps": {
+            "type": "array[map[string]]",
+            "nullable": true
         }
     },
     "resourceActions": {
