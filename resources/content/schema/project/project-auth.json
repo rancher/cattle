@@ -3,7 +3,6 @@
         "addRemoveClusterHostInput" : "cr",
         "addRemoveServiceLinkInput" : "cr",
         "apiKey" : "crud",
-        "backup" : "rd",
         "backupTarget" : "crd",
         "baseMachineConfig" : "r",
         "blkioDeviceOption": "cr",

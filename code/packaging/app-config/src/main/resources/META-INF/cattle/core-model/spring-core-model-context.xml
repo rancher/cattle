@@ -86,8 +86,7 @@
                 <value>haConfig</value>
                 <value>machine,parent=physicalHost</value>
                 <value>revertToSnapshotInput</value>
-                <value>restoreFromBackupInput</value>
-                <value>snapshotBackupInput,parent=backup</value>
+                <value>snapshotBackupInput</value>
                 <value>volumeSnapshotInput</value>
                 <value>nfsConfig</value>
             </set>

@@ -66,7 +66,7 @@ def test_snapshot_lifecycle(context, client, super_client):
     # snapshot must be removed. older ones must not be removed
     wait_for_condition(client, snap4, lambda x: x.state == 'removed')
     snap1 = client.wait_success(snap1)
-    assert snap1.state == 'created'
+    assert snap1.state == 'snapshotted'
 
 
 def test_backup_lifecycle(context, client, super_client):
@@ -88,17 +88,19 @@ def test_backup_lifecycle(context, client, super_client):
     target = client.create_backup_target(name='backupTarget1')
     target = client.wait_success(target)
 
-    backup = snap2.backup(backupTargetId=target.id)
-    backup = client.wait_success(backup)
+    snap2 = client.wait_success(snap2.backup(backupTargetId=target.id))
+    # Delete the local snapshot to ensure a restore from backup is preformed
+    snap2 = client.wait_success(snap2.removelocalsnapshot())
+    assert snap2.state == 'backedup-only'
 
     # Cannot restore a volume mounted to a running container
     with pytest.raises(AttributeError):
-        vol.restorefrombackup(backupId=backup.id)
+        vol.reverttosnapshot(snapshotId=snap2.id)
 
     # Container stopped, can restore
     client.wait_success(c.stop())
     vol = client.reload(vol)
-    vol = client.wait_success(vol.restorefrombackup(backupId=backup.id))
+    vol = client.wait_success(vol.reverttosnapshot(snapshotId=snap2.id))
     assert vol.state == 'active'
 
     # When a volume is restored from a backup , all snapshots are removed
@@ -134,26 +136,26 @@ def test_root_volume_restore(context, client, super_client):
     target = client.create_backup_target(name='backupTarget1')
     target = client.wait_success(target)
 
-    backup = snap1.backup(backupTargetId=target.id)
-    backup = client.wait_success(backup)
-    assert backup.state == 'created'
+    snap1 = snap1.backup(backupTargetId=target.id)
+    snap1 = client.wait_success(snap1)
+    assert snap1.state == 'backedup'
 
-    non_root_backup = non_root_snap.backup(backupTargetId=target.id)
-    non_root_backup = client.wait_success(non_root_backup)
-    assert non_root_backup.state == 'created'
+    non_root_snap = non_root_snap.backup(backupTargetId=target.id)
+    non_root_snap = client.wait_success(non_root_snap)
+    assert non_root_snap.state == 'backedup'
 
     # Container stopped, can restore
     client.wait_success(c.stop())
     root_vol1 = client.reload(root_vol1)
     non_root_vol = client.reload(non_root_vol)
 
-    # If target volume is root, cannot restore across volumes
+    # If target volume is root, cannot revert across volumes
     with pytest.raises(ApiError):
-        root_vol1.restorefrombackup(backupId=non_root_backup.id)
+        root_vol1.reverttosnapshot(snapshotId=non_root_snap.id)
 
-    # If source volume is root, cannot restore across volumes
+    # If source volume is root, cannot revertacross volumes
     with pytest.raises(ApiError):
-        non_root_vol.restorefrombackup(backupId=root_vol1.id)
+        non_root_vol.reverttosnapshot(snapshotId=root_vol1.id)
 
 
 def take_snapshot(vol, client):
@@ -161,7 +163,7 @@ def take_snapshot(vol, client):
     snap = vol.snapshot()
     client.wait_success(vol)
     snap = client.wait_success(snap)
-    assert snap.state == 'created'
+    assert snap.state == 'snapshotted'
     return snap
 
 

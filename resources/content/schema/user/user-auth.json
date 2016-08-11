@@ -43,12 +43,6 @@
 
         "auditLog.resourceActions\\..*" : "",
 
-        "backup" : "r",
-        "backup.snapshotId" : "r",
-        "backup.backupTargetId" : "r",
-        "backup.uri" : "r",
-        "backup.volumeId" : "r",
-
         "backupTarget" : "r",
         "backupTarget.nfsConfig" : "cr",
 
@@ -551,15 +545,13 @@
         "loadBalancerService.selectorContainer" : "",
 
         "snapshot" : "r",
+        "snapshot.backupTargetId" : "r",
+        "snapshot.backupUri" : "r",
         "snapshot.volumeId" : "r",
 
         "snapshotBackupInput" : "r",
         "snapshotBackupInput\\..*" : "",
         "snapshotBackupInput.backupTargetId" : "cr",
-        "snapshotBackupInput.name" : "cr",
-        "snapshotBackupInput.snapshotId" : "",
-        "snapshotBackupInput.uri" : "",
-        "snapshotBackupInput.volumeId" : "",
 
         "label" : "r",
         "label.type" : "",

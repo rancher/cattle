@@ -44,6 +44,8 @@ public class VolumePurge extends AbstractDefaultProcessHandler {
             }
         }
 
+        // TODO TODOCAJ remove stanpshots (but now backups!)
+
         return new HandlerResult();
     }
 

@@ -1,9 +1,12 @@
-package io.cattle.platform.iaas.api.filter.snapshot;
+package io.cattle.platform.iaas.api.snapshot;
 
 import static io.cattle.platform.core.model.tables.SnapshotTable.*;
+import io.cattle.platform.core.constants.CommonStatesConstants;
+import io.cattle.platform.core.model.BackupTarget;
 import io.cattle.platform.core.model.Snapshot;
 import io.cattle.platform.iaas.api.filter.common.AbstractDefaultResourceManagerFilter;
 import io.cattle.platform.object.ObjectManager;
+import io.cattle.platform.object.util.DataAccessor;
 import io.github.ibuildthecloud.gdapi.condition.Condition;
 import io.github.ibuildthecloud.gdapi.condition.ConditionType;
 import io.github.ibuildthecloud.gdapi.exception.ClientVisibleException;
@@ -31,6 +34,13 @@ public class SnapshotValidationFilter extends AbstractDefaultResourceManagerFilt
     public Object resourceAction(String type, ApiRequest request, ResourceManager next) {
         if ("remove".equalsIgnoreCase(request.getAction())) {
             validateSnapshotRemove(request);
+        } else if ("backup".equalsIgnoreCase(request.getAction())) {
+            Long targetId = DataAccessor.fromMap(request.getRequestObject()).withKey("backupTargetId").as(Long.class);
+            BackupTarget target = objectManager.loadResource(BackupTarget.class, targetId);
+            if (!CommonStatesConstants.CREATED.equalsIgnoreCase(target.getState())) {
+                throw new ClientVisibleException(ResponseCodes.UNPROCESSABLE_ENTITY, ValidationErrorCodes.INVALID_REFERENCE,
+                        "BackupTarget must be in created state.", null);
+            }
         }
         return super.resourceAction(type, request, next);
     }

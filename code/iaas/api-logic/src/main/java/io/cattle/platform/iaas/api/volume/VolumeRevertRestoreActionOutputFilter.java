@@ -37,7 +37,6 @@ public class VolumeRevertRestoreActionOutputFilter implements ResourceOutputFilt
 
         if (!snapshotCapable || volumeDao.isVolumeInUseByRunningInstance(volume.getId())) {
             converted.getActions().remove(VolumeConstants.ACTION_REVERT);
-            converted.getActions().remove(VolumeConstants.ACTION_RESTORE);
         }
 
         return converted;
