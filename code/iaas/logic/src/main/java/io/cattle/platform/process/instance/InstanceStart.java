@@ -175,7 +175,7 @@ public class InstanceStart extends AbstractDefaultProcessHandler {
                 InstanceConstants.STATE_STOPPING,
                 InstanceConstants.STATE_RUNNING);
         if (isStartOnce(instance)) {
-            return validStartOnceStates.contains(instance.getState());
+            return instance.getStartCount().longValue() > 0 && validStartOnceStates.contains(instance.getState());
         }
         return instance.getState().equals(InstanceConstants.STATE_RUNNING);
     }
