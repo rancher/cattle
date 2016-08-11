@@ -6,7 +6,7 @@
                 <constraints primaryKey="true"/>
             </column>
             <column name="name" type="VARCHAR(255)"/>
-            <column name="account_id" type="BIGINT(19)"/>
+            <column name="account_id" type="BIGINT"/>
             <column name="kind" type="VARCHAR(255)">
                 <constraints nullable="false"/>
             </column>
@@ -21,8 +21,8 @@
             <column name="removed" type="datetime"/>
             <column name="remove_time" type="datetime"/>
             <column name="data" type="TEXT"/>
-            <column name="volume_id" type="BIGINT(19)"/>
-            <column name="instance_id" type="BIGINT(19)"/>
+            <column name="volume_id" type="BIGINT"/>
+            <column name="instance_id" type="BIGINT"/>
             <column name="permissions" type="VARCHAR(128)"/>
             <column name="path" type="VARCHAR(512)"/>
         </createTable>
