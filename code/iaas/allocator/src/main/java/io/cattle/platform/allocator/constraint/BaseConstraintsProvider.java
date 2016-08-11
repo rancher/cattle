@@ -19,6 +19,7 @@ import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.object.util.DataUtils;
 import io.cattle.platform.util.type.Priority;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -111,9 +112,9 @@ public class BaseConstraintsProvider implements AllocationConstraintsProvider, P
         for (Map.Entry<Volume, Set<StoragePool>> entry : attempt.getPools().entrySet()) {
             Volume volume = entry.getKey();
             boolean alreadyMappedToPool = entry.getValue().size() > 0;
-            VolumeValidStoragePoolConstraint volumeToPoolConstraint = new VolumeValidStoragePoolConstraint(volume, alreadyMappedToPool);
+            Set<Long> storagePoolIds = new HashSet<>();
             for (StoragePool pool : entry.getValue()) {
-                volumeToPoolConstraint.getStoragePools().add(pool.getId());
+                storagePoolIds.add(pool.getId());
                 storagePoolToHostConstraint(constraints, pool);
             }
 
@@ -123,9 +124,9 @@ public class BaseConstraintsProvider implements AllocationConstraintsProvider, P
                 if (StringUtils.isNotEmpty(driver) && !VolumeConstants.LOCAL_DRIVER.equals(driver)) {
                     StoragePool pool = storagePoolDao.findStoragePoolByDriverName(volume.getAccountId(), driver);
                     if (pool != null) {
-                        VolumeValidStoragePoolConstraint spByDriverConstraint = new VolumeValidStoragePoolConstraint(volume, alreadyMappedToPool);
-                        spByDriverConstraint.getStoragePools().add(pool.getId());
-                        constraints.add(spByDriverConstraint);
+                        Set<Long> poolIds = new HashSet<>();
+                        poolIds.add(pool.getId());
+                        constraints.add(new VolumeValidStoragePoolConstraint(volume, false, poolIds));
                         storagePoolToHostConstraint(constraints, pool);
                         restrictToUnmanagedPool = false;
                     }
@@ -139,14 +140,14 @@ public class BaseConstraintsProvider implements AllocationConstraintsProvider, P
                 if (instance != null) {
                     for (Host host : allocatorDao.getHosts(instance)) {
                         for (StoragePool pool : allocatorDao.getAssociatedUnmanagedPools(host)) {
-                            volumeToPoolConstraint.getStoragePools().add(pool.getId());
+                            storagePoolIds.add(pool.getId());
                         }
                     }
                 }
             }
 
-            if (volumeToPoolConstraint.getStoragePools().size() > 0) {
-                constraints.add(volumeToPoolConstraint);
+            if (storagePoolIds.size() > 0) {
+                constraints.add(new VolumeValidStoragePoolConstraint(volume, alreadyMappedToPool, storagePoolIds));
             }
 
             if (volume.getImageId() != null) {
