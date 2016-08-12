@@ -70,12 +70,6 @@
             "nullable": true,
             "create" : true
         },
-        "validHostIds" : {
-            "type" : "array[reference[host]",
-            "create" : true,
-            "update" : true,
-            "nullable" : true
-        },
         "systemContainer" : {
             "type": "enum",
             "options": [ "NetworkAgent", "LoadBalancerAgent"]
