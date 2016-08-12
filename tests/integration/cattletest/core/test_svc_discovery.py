@@ -2326,7 +2326,7 @@ def test_remove_network_from_container(client, context, super_client):
     _wait_until_active_map_count(service, 2, client)
 
 
-def test_metadata(client, context, super_client):
+def test_metadata(client, context):
     env = _create_stack(client)
 
     image_uuid = context.image_uuid
@@ -2339,6 +2339,14 @@ def test_metadata(client, context, super_client):
     service = client.wait_success(service)
     assert service.metadata == metadata
 
+    # Wait until unhealthy to avoid a race condition
+    def wait_unhealthy():
+        svc = client.reload(service)
+        if svc.healthState == 'unhealthy':
+            return svc
+        else:
+            return None
+    service = wait_for(wait_unhealthy)
     metadata = {"bar1": {"foo1": [{"id": 0}]}}
     service = client.update(service, metadata=metadata)
     assert service.metadata == metadata
