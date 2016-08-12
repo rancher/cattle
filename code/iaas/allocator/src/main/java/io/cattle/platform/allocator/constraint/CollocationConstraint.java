@@ -9,7 +9,6 @@ import io.cattle.platform.core.model.InstanceHostMap;
 
 import java.util.Collection;
 import java.util.List;
-import java.util.Set;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -27,7 +26,6 @@ public class CollocationConstraint extends HardConstraint implements Constraint 
     @Override
     public boolean matches(AllocationAttempt attempt,
             AllocationCandidate candidate) {
-        Set<Long> hostIds = candidate.getHosts();
         for (Integer instanceId : otherInstances) {
             List<? extends InstanceHostMap> maps = mapDao.findNonRemoved(InstanceHostMap.class, Instance.class, instanceId);
             if (maps.size() > 0) {
@@ -35,7 +33,7 @@ public class CollocationConstraint extends HardConstraint implements Constraint 
                 if (hostId == null) {
                     throw new FailedToAllocate("Dependent instance not allocated yet: " + instanceId);
                 }
-                if (!hostIds.contains(hostId)) {
+                if (!hostId.equals(candidate.getHost())) {
                     return false;
                 }
             } else {

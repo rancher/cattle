@@ -81,8 +81,8 @@ public class BaseConstraintsProvider implements AllocationConstraintsProvider, P
 
     protected void addComputeConstraints(AllocationAttempt attempt, List<Constraint> constraints) {
         ValidHostsConstraint hostSet = new ValidHostsConstraint();
-        for (Host host : attempt.getHosts()) {
-            hostSet.addHost(host.getId());
+        if (attempt.getHostId() != null) {
+            hostSet.addHost(attempt.getHostId());
         }
 
         Instance instance = attempt.getInstance();
@@ -128,7 +128,8 @@ public class BaseConstraintsProvider implements AllocationConstraintsProvider, P
 
                 Instance instance = objectManager.loadResource(Instance.class, volume.getInstanceId());
                 if (instance != null) {
-                    for (Host host : allocatorDao.getHosts(instance)) {
+                    Host host = allocatorDao.getHost(instance);
+                    if (host != null) {
                         for (StoragePool pool : allocatorDao.getAssociatedUnmanagedPools(host)) {
                             storagePoolIds.add(pool.getId());
                         }

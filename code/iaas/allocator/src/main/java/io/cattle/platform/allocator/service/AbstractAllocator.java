@@ -136,7 +136,7 @@ public abstract class AbstractAllocator implements Allocator {
             return;
         }
 
-        final Set<Host> hosts = new HashSet<Host>(allocatorDao.getHosts(instance));
+        final Host host = allocatorDao.getHost(instance);
         final Set<Volume> volumes = new HashSet<Volume>(objectManager.children(instance, Volume.class));
         volumes.addAll(InstanceHelpers.extractVolumesFromMounts(instance, objectManager));
         final Map<Volume, Set<StoragePool>> pools = new HashMap<Volume, Set<StoragePool>>();
@@ -158,7 +158,7 @@ public abstract class AbstractAllocator implements Allocator {
         lockManager.lock(new AllocateVolumesResourceLock(volumes), new LockCallbackNoReturn() {
             @Override
             public void doWithLockNoResult() {
-                AllocationAttempt attempt = new AllocationAttempt(instance.getAccountId(), instance, hosts, volumes, pools, nics, subnets);
+                AllocationAttempt attempt = new AllocationAttempt(instance.getAccountId(), instance, host, volumes, pools, nics, subnets);
 
                 doAllocate(request, attempt, instance);
             }
@@ -187,7 +187,7 @@ public abstract class AbstractAllocator implements Allocator {
         Set<StoragePool> associatedPools = new HashSet<StoragePool>(allocatorDao.getAssociatedPools(volume));
         pools.put(volume, associatedPools);
 
-        AllocationAttempt attempt = new AllocationAttempt(volume.getAccountId(), null, new HashSet<Host>(), volumes, pools, null, null);
+        AllocationAttempt attempt = new AllocationAttempt(volume.getAccountId(), null, null, volumes, pools, null, null);
 
         doAllocate(request, attempt, volume);
     }
@@ -282,7 +282,7 @@ public abstract class AbstractAllocator implements Allocator {
 
                 log.info("{}   candidates result [{}]", prefix, good);
                 if (good) {
-                    if (candidate.getHosts().size() > 0 && request.getType() == Type.VOLUME) {
+                    if (candidate.getHost() != null && request.getType() == Type.VOLUME) {
                         throw new IllegalStateException("Attempting to allocate hosts during a volume allocation");
                     }
 
@@ -359,8 +359,8 @@ public abstract class AbstractAllocator implements Allocator {
 
     protected void logCandidate(String prefix, AllocationAttempt attempt, AllocationCandidate candidate) {
         log.info("{} Checking candidate:", prefix);
-        for (long hostId : candidate.getHosts()) {
-            log.info("{}   host [{}]", prefix, hostId);
+        if (candidate.getHost() != null) {
+            log.info("{}   host [{}]", prefix, candidate.getHost());
         }
         for (Map.Entry<Long, Set<Long>> entry : candidate.getPools().entrySet()) {
             log.info("{}   volume [{}]", prefix, entry.getKey());

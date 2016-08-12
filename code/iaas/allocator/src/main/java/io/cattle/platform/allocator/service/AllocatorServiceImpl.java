@@ -103,9 +103,7 @@ public class AllocatorServiceImpl implements AllocatorService {
     private boolean hostSatisfiesHostAffinity(long hostId, List<Constraint> hostAffinityConstraints) {
         for (Constraint constraint: hostAffinityConstraints) {
             AllocationCandidate candidate = new AllocationCandidate();
-            Set<Long> hostIds = new HashSet<Long>();
-            hostIds.add(hostId);
-            candidate.setHosts(hostIds);
+            candidate.setHost(hostId);
             if (!constraint.matches(null, candidate)) {
                 return false;
             }

@@ -130,7 +130,7 @@ public class AllocatorDaoImpl extends AbstractJooqDao implements AllocatorDao {
     }
 
     @Override
-    public List<? extends Host> getHosts(Instance instance) {
+    public Host getHost(Instance instance) {
         return create()
                 .select(HOST.fields())
                 .from(HOST)
@@ -139,7 +139,7 @@ public class AllocatorDaoImpl extends AbstractJooqDao implements AllocatorDao {
                 .where(
                     INSTANCE_HOST_MAP.REMOVED.isNull()
                     .and(INSTANCE_HOST_MAP.INSTANCE_ID.eq(instance.getId())))
-                .fetchInto(HostRecord.class);
+                .fetchOneInto(HostRecord.class);
     }
 
     @Override
@@ -227,37 +227,32 @@ public class AllocatorDaoImpl extends AbstractJooqDao implements AllocatorDao {
 
     @Override
     public boolean recordCandidate(AllocationAttempt attempt, AllocationCandidate candidate) {
-        Set<Long> existingHosts = attempt.getHostIds();
-        Set<Long> newHosts = candidate.getHosts();
+        Long existingHost = attempt.getHostId();
+        Long newHost = candidate.getHost();
 
-        if (existingHosts.size() == 0) {
-            long hId = 0;
-            for (long hostId : newHosts) {
-                hId = hostId;
-                log.info("Associating instance [{}] to host [{}]", attempt.getInstance().getId(), hostId);
+        if (existingHost == null) {
+            if (newHost != null) {
+                log.info("Associating instance [{}] to host [{}]", attempt.getInstance().getId(), newHost);
                 objectManager.create(InstanceHostMap.class,
-                        INSTANCE_HOST_MAP.HOST_ID, hostId,
+                        INSTANCE_HOST_MAP.HOST_ID, newHost,
                         INSTANCE_HOST_MAP.INSTANCE_ID, attempt.getInstance().getId());
 
-                modifyCompute(hostId, attempt.getInstance(), false);
-                modifyDisk(hostId, attempt.getInstance(), true);
-            }
+                modifyCompute(newHost, attempt.getInstance(), false);
+                modifyDisk(newHost, attempt.getInstance(), true);
 
-            // Assuming a single host. Just over-complexity to allow more than one host
-            if (hId != 0) {
                 List<Volume> vols = InstanceHelpers.extractVolumesFromMounts(attempt.getInstance(), objectManager);
                 for (Volume v : vols) {
                     if (VolumeConstants.ACCESS_MODE_SINGLE_HOST_RW.equals(v.getAccessMode())) {
-                        objectManager.setFields(v, VOLUME.HOST_ID, hId);
+                        objectManager.setFields(v, VOLUME.HOST_ID, newHost);
                     }
                 }
             }
         } else {
-            if (!existingHosts.equals(newHosts)) {
+            if (!newHost.equals(existingHost)) {
                 log.error("Can not move allocated instance [{}], currently {} new {}", attempt.getInstance().getId(),
-                        existingHosts, newHosts);
+                        existingHost, newHost);
                 throw new IllegalStateException("Can not move allocated instance [" + attempt.getInstance().getId()
-                        + "], currently " + existingHosts + " new " + newHosts);
+                        + "], currently " + existingHost + " new " + newHost);
             }
         }
 

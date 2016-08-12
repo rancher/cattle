@@ -8,7 +8,6 @@ import io.cattle.platform.core.model.Port;
 import io.cattle.platform.object.util.DataAccessor;
 
 import java.util.List;
-import java.util.Set;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -24,21 +23,20 @@ public class PortsConstraint extends HardConstraint implements Constraint {
     }
 
     @Override
-    public boolean matches(AllocationAttempt attempt,
-            AllocationCandidate candidate) {
-        Set<Long> hostIds = candidate.getHosts();
+    public boolean matches(AllocationAttempt attempt, AllocationCandidate candidate) {
+        if (candidate.getHost() == null) {
+            return false;
+        }
 
-        for (Long hostId : hostIds) {
-            // TODO: Performance improvement. Move more of the filtering into the DB query itself
-            List<Port> portsUsedByHost = allocatorDao.getUsedPortsForHostExcludingInstance(hostId, attempt.getInstanceId());
-            for (Port portUsed : portsUsedByHost) {
-                for (Port requestedPort : ports) {
-                    if (requestedPort.getPublicPort() != null &&
-                            requestedPort.getPublicPort().equals(portUsed.getPublicPort()) &&
-                            publicIpTheSame(requestedPort, portUsed) &&
-                            requestedPort.getProtocol().equals(portUsed.getProtocol())) {
-                        return false;
-                    }
+        // TODO: Performance improvement. Move more of the filtering into the DB query itself
+        List<Port> portsUsedByHost = allocatorDao.getUsedPortsForHostExcludingInstance(candidate.getHost(), attempt.getInstanceId());
+        for (Port portUsed : portsUsedByHost) {
+            for (Port requestedPort : ports) {
+                if (requestedPort.getPublicPort() != null &&
+                        requestedPort.getPublicPort().equals(portUsed.getPublicPort()) &&
+                        publicIpTheSame(requestedPort, portUsed) &&
+                        requestedPort.getProtocol().equals(portUsed.getProtocol())) {
+                    return false;
                 }
             }
         }
