@@ -2,7 +2,6 @@ package io.cattle.platform.simple.allocator;
 
 import io.cattle.platform.allocator.constraint.AccountConstraint;
 import io.cattle.platform.allocator.constraint.Constraint;
-import io.cattle.platform.allocator.constraint.KindConstraint;
 import io.cattle.platform.allocator.constraint.ValidHostsConstraint;
 import io.cattle.platform.allocator.service.AbstractAllocator;
 import io.cattle.platform.allocator.service.AllocationAttempt;
@@ -65,10 +64,6 @@ public class SimpleAllocator extends AbstractAllocator implements Allocator, Nam
         QueryOptions options = new QueryOptions();
 
         for (Constraint constraint : request.getConstraints()) {
-            if (constraint instanceof KindConstraint) {
-                options.setKind(((KindConstraint) constraint).getKind());
-            }
-
             if (constraint instanceof ValidHostsConstraint) {
                 options.getHosts().addAll(((ValidHostsConstraint) constraint).getHosts());
             }
