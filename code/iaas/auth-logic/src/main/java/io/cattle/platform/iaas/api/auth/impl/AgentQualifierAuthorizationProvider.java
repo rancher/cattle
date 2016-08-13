@@ -28,6 +28,7 @@ import io.github.ibuildthecloud.gdapi.validation.ValidationErrorCodes;
 
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import javax.inject.Inject;
 
@@ -121,32 +122,26 @@ public class AgentQualifierAuthorizationProvider implements AuthorizationProvide
     }
 
     protected Long getAgent() {
-        ApiRequest request = ApiContext.getContext().getApiRequest();
         Long agentId = getRawAgentId();
         if (agentId != null) {
             return agentId;
         }
 
-        String type = request.getSchemaFactory().getSchemaName(Agent.class);
+        String type = ApiContext.getContext().getApiRequest().getSchemaFactory().getSchemaName(Agent.class);
         ResourceManager rm = getLocator().getResourceManagerByType(type);
-        Long id = null;
-
-        /*  This really isn't the best logic.  Basically we are looking for agents with state in STATES */
-        for (Object agent : rm.list(type, null, Pagination.limit(2))) {
-            if (!(agent instanceof Agent)) {
-                continue;
+        List<?> list = rm.list(type, null, Pagination.limit(2));
+        if (list.size() > 0) {
+            if (list.size() > 1) {
+                throw new ValidationErrorException(ValidationErrorCodes.MISSING_REQUIRED, "agentId");
             }
 
-            if (STATES.contains(((Agent) agent).getState())) {
-                if (id != null) {
-                    throw new ValidationErrorException(ValidationErrorCodes.MISSING_REQUIRED, "agentId");
-                } else {
-                    id = ((Agent) agent).getId();
-                }
+            Object agent = list.get(0);
+            if ((agent instanceof Agent) || STATES.contains(((Agent) agent).getState())) {
+                return ((Agent) agent).getId();
             }
         }
 
-        return id;
+        return null;
     }
 
     @Override
