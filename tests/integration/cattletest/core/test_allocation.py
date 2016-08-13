@@ -624,25 +624,27 @@ def test_volumes_from_constraint(new_context):
 
 
 def test_network_mode_constraint(new_context):
+    client = new_context.client
+
     # Three hosts
     register_simulated_host(new_context)
     register_simulated_host(new_context)
 
     containers = []
     try:
-        c1 = new_context.create_container_no_success(startOnCreate=False)
+        c1 = new_context.create_container(startOnCreate=False)
 
         c2 = new_context.create_container(startOnCreate=False,
                                           networkMode='container',
                                           networkContainerId=c1.id)
 
-        c1 = c1.start()
-        c2 = c2.start()
+        c1 = client.wait_success(c1.start())
+        c2 = client.wait_success(c2.start())
 
-        c1 = new_context.wait_for_state(c1, 'running')
+        assert c1.state == 'running'
         containers.append(c1)
 
-        c2 = new_context.wait_for_state(c2, 'running')
+        assert c1.state == 'running'
         containers.append(c2)
 
         assert c1.hosts()[0].id == c2.hosts()[0].id
