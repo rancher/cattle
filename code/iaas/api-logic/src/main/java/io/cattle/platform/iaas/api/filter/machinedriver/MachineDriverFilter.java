@@ -28,7 +28,7 @@ public class MachineDriverFilter extends AbstractDefaultResourceManagerFilter {
         String url = DataAccessor.fromMap(request.getRequestObject()).withKey("url").as(String.class);
         MachineDriver md = request.proxyRequestObject(MachineDriver.class);
         
-        if (url != null) {
+        if (url != null && StringUtils.isBlank(md.getName())) {
             String[] parts = url.split("/");
             String name = parts[parts.length-1];
             name = StringUtils.removeStart(name, "docker-machine-driver-");
