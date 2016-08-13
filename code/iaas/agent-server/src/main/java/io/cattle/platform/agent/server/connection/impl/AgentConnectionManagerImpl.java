@@ -3,7 +3,6 @@ package io.cattle.platform.agent.server.connection.impl;
 import io.cattle.platform.agent.server.connection.AgentConnection;
 import io.cattle.platform.agent.server.connection.AgentConnectionFactory;
 import io.cattle.platform.agent.server.connection.AgentConnectionManager;
-import io.cattle.platform.agent.server.group.AgentGroupManager;
 import io.cattle.platform.agent.server.lock.AgentConnectionManagementLock;
 import io.cattle.platform.agent.server.util.AgentConnectionUtils;
 import io.cattle.platform.archaius.util.ArchaiusUtil;
@@ -36,7 +35,6 @@ public class AgentConnectionManagerImpl implements AgentConnectionManager {
 
     private static final DynamicLongProperty AGENT_LOCK_FAILURE_CACHE_TIME = ArchaiusUtil.getLong("agent.lock.failure.cache.time.millis");
 
-    AgentGroupManager groupManager;
     ObjectManager objectManager;
     LockDelegator lockDelegator;
     LockManager lockManager;
@@ -56,11 +54,6 @@ public class AgentConnectionManagerImpl implements AgentConnectionManager {
     public AgentConnection getConnection(Agent agent) {
         if (agent == null)
             return null;
-
-        if (!groupManager.shouldHandle(agent)) {
-            closeIfExists(agent);
-            return null;
-        }
 
         LockDefinition lockDefinition = AgentConnectionUtils.getConnectionLock(agent);
         if (!haveLock(lockDefinition)) {
@@ -189,15 +182,6 @@ public class AgentConnectionManagerImpl implements AgentConnectionManager {
     @Inject
     public void setLockManager(LockManager lockManager) {
         this.lockManager = lockManager;
-    }
-
-    public AgentGroupManager getGroupManager() {
-        return groupManager;
-    }
-
-    @Inject
-    public void setGroupManager(AgentGroupManager groupManager) {
-        this.groupManager = groupManager;
     }
 
 }

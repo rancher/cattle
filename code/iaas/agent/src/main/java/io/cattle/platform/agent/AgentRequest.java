@@ -1,9 +1,9 @@
 package io.cattle.platform.agent;
 
+import io.cattle.platform.core.constants.AgentConstants;
 import io.cattle.platform.eventing.model.Event;
 import io.cattle.platform.eventing.model.EventVO;
 import io.cattle.platform.iaas.event.IaasEvents;
-import io.cattle.platform.util.type.TypeConstants;
 
 public class AgentRequest extends EventVO<Event> {
 
@@ -17,7 +17,7 @@ public class AgentRequest extends EventVO<Event> {
 
         setName(IaasEvents.AGENT_REQUEST);
         setResourceId(agentId.toString());
-        setResourceType(TypeConstants.AGENT);
+        setResourceType(AgentConstants.TYPE);
         setData(event);
     }
 
