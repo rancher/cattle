@@ -8,7 +8,6 @@ import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.object.ObjectManager;
 
 import java.util.List;
-import java.util.Set;
 
 public class ContainerAffinityConstraint implements Constraint {
 
@@ -29,29 +28,25 @@ public class ContainerAffinityConstraint implements Constraint {
     }
 
     @Override
-    public boolean matches(AllocationAttempt attempt,
-            AllocationCandidate candidate) {
-        Set<Long> hostIds = candidate.getHosts();
+    public boolean matches(AllocationAttempt attempt, AllocationCandidate candidate) {
+        if (candidate.getHost() == null) {
+            return false;
+        }
+
         if (op == AffinityOps.SOFT_EQ || op == AffinityOps.EQ) {
-            for (Long hostId : hostIds) {
-                List<? extends Instance> instances = instanceDao.getNonRemovedInstanceOn(hostId);
-                for (Instance instance : instances) {
-                    if (containerIdentifier != null && 
-                            (containerIdentifier.equalsIgnoreCase(instance.getName()) ||
-                                    containerIdentifier.equalsIgnoreCase(instance.getUuid()))) {
-                        return true;
-                    }
+            List<? extends Instance> instances = instanceDao.getNonRemovedInstanceOn(candidate.getHost());
+            for (Instance instance : instances) {
+                if (containerIdentifier != null
+                        && (containerIdentifier.equalsIgnoreCase(instance.getName()) || containerIdentifier.equalsIgnoreCase(instance.getUuid()))) {
+                    return true;
                 }
             }
             return false;
         } else {
-            for (Long hostId : hostIds) {
-                List<? extends Instance> instances = instanceDao.getNonRemovedInstanceOn(hostId);
-                for (Instance instance : instances) {
-                    if (containerIdentifier != null &&
-                            (containerIdentifier.equals(instance.getName()) || containerIdentifier.equals(instance.getUuid()))) {
-                        return false;
-                    }
+            List<? extends Instance> instances = instanceDao.getNonRemovedInstanceOn(candidate.getHost());
+            for (Instance instance : instances) {
+                if (containerIdentifier != null && (containerIdentifier.equals(instance.getName()) || containerIdentifier.equals(instance.getUuid()))) {
+                    return false;
                 }
             }
             return true;

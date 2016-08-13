@@ -23,7 +23,7 @@ public class VolumeAccessModeSingleHostConstraint implements Constraint {
 
     @Override
     public boolean matches(AllocationAttempt attempt, AllocationCandidate candidate) {
-        return candidate.getHosts().size() == 1 && candidate.getHosts().contains(hostId);
+        return hostId.equals(candidate.getHost());
     }
 
     @Override

@@ -16,7 +16,6 @@ import io.cattle.platform.core.model.Vnet;
 import io.cattle.platform.core.model.Volume;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.util.DataAccessor;
-import io.cattle.platform.object.util.DataUtils;
 import io.cattle.platform.util.type.Priority;
 
 import java.util.HashSet;
@@ -82,8 +81,8 @@ public class BaseConstraintsProvider implements AllocationConstraintsProvider, P
 
     protected void addComputeConstraints(AllocationAttempt attempt, List<Constraint> constraints) {
         ValidHostsConstraint hostSet = new ValidHostsConstraint();
-        for (Host host : attempt.getHosts()) {
-            hostSet.addHost(host.getId());
+        if (attempt.getHostId() != null) {
+            hostSet.addHost(attempt.getHostId());
         }
 
         Instance instance = attempt.getInstance();
@@ -91,15 +90,6 @@ public class BaseConstraintsProvider implements AllocationConstraintsProvider, P
             Long requestedHostId = DataAccessor.fieldLong(instance, InstanceConstants.FIELD_REQUESTED_HOST_ID);
             if (requestedHostId != null) {
                 hostSet.addHost(requestedHostId);
-            }
-
-            List<Long> validHosts = DataUtils.getFieldList(instance.getData(), InstanceConstants.FIELD_VALID_HOST_IDS, Long.class);
-            if (validHosts != null) {
-                for (Long id : validHosts) {
-                    if (id != null) {
-                        hostSet.addHost(id);
-                    }
-                }
             }
         }
 
@@ -138,7 +128,8 @@ public class BaseConstraintsProvider implements AllocationConstraintsProvider, P
 
                 Instance instance = objectManager.loadResource(Instance.class, volume.getInstanceId());
                 if (instance != null) {
-                    for (Host host : allocatorDao.getHosts(instance)) {
+                    Host host = allocatorDao.getHost(instance);
+                    if (host != null) {
                         for (StoragePool pool : allocatorDao.getAssociatedUnmanagedPools(host)) {
                             storagePoolIds.add(pool.getId());
                         }

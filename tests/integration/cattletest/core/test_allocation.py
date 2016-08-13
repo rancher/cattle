@@ -307,61 +307,70 @@ def test_vnet_stickiness(super_client, new_context):
 
 def test_port_constraint(new_context):
     host1 = new_context.host
-    host2 = register_simulated_host(new_context.client)
+    client = new_context.client
+    image_uuid = new_context.image_uuid
 
     containers = []
 
     try:
-        c = new_context.create_container(requestedHostId=host1.id,
-                                         ports=['8081:81/tcp'])
+        c = client.wait_success(
+            client.create_container(imageUuid=image_uuid,
+                                    requestedHostId=host1.id,
+                                    ports=['8081:81/tcp']))
         containers.append(c)
 
         # try to deploy another container with same public port + protocol
-        c2 = new_context\
-            .super_create_container_no_success(validHostIds=[host1.id],
-                                               ports=['8081:81/tcp'])
+        c2 = client.wait_transitioning(
+            client.create_container(imageUuid=image_uuid,
+                                    ports=['8081:81/tcp']))
         assert c2.transitioning == 'error'
         assert c2.transitioningMessage == \
             'Scheduling failed: host needs ports 8081/tcp available'
         assert c2.state == 'error'
 
-        # increase host pool and check whether allocator picks other host
-        c2 = new_context.super_create_container(validHostIds=[host1.id,
-                                                              host2.id],
-                                                ports=['8081:81/tcp'])
-        containers.append(c2)
-
         # try different public port
-        c3 = new_context.super_create_container(validHostIds=[host1.id],
+        c3 = new_context.super_create_container(imageUuid=image_uuid,
                                                 ports=['8082:81/tcp'])
         containers.append(c3)
 
         # try different protocol
-        c4 = new_context.super_create_container(validHostIds=[host1.id],
-                                                ports=['8081:81/udp'])
+        c4 = client.wait_success(
+            client.create_container(imageUuid=image_uuid,
+                                    ports=['8081:81/udp']))
         containers.append(c4)
 
-        c5 = new_context\
-            .super_create_container_no_success(validHostIds=[host1.id],
-                                               ports=['8081:81/udp'])
+        # UDP is now taken
+        c5 = client.wait_transitioning(
+            client.create_container(imageUuid=image_uuid,
+                                    ports=['8081:81/udp']))
         assert c5.transitioning == 'error'
         assert c5.transitioningMessage == \
             'Scheduling failed: host needs ports 8081/udp available'
         assert c5.state == 'error'
 
         # try different bind IP
-        c6 = new_context.\
-            super_create_container(validHostIds=[host1.id],
-                                   ports=['127.2.2.2:8081:81/tcp'])
+        c6 = client.wait_success(
+            client.create_container(imageUuid=image_uuid,
+                                    requestedHostId=host1.id,
+                                    ports=['127.2.2.2:8081:81/tcp']))
         containers.append(c6)
 
-        c7 = new_context \
-            .super_create_container_no_success(validHostIds=[host1.id],
-                                               ports=['127.2.2.2:8081:81/tcp'])
+        # Bind IP is now taken
+        c7 = client.wait_transitioning(
+            client.create_container(imageUuid=image_uuid,
+                                    ports=['127.2.2.2:8081:81/tcp']))
         assert c7.transitioning == 'error'
         assert c7.transitioningMessage == \
             'Scheduling failed: host needs ports 8081/tcp available'
         assert c7.state == 'error'
+
+        # increase host pool and check whether allocator picks other host
+        host2 = register_simulated_host(new_context.client)
+        c8 = client.wait_success(
+            client.create_container(imageUuid=image_uuid,
+                                    ports=['8081:81/tcp']))
+        assert c8.hosts()[0].id == host2.id
+        containers.append(c8)
     finally:
         for c in containers:
             if c is not None:

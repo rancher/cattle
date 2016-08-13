@@ -25,8 +25,8 @@ public class AllocationAttempt {
 
     Instance instance;
 
-    Set<Host> hosts;
-    Set<Long> hostIds;
+    Host host;
+    Long hostId;
 
     Set<Volume> volumes;
     Set<Long> volumeIds;
@@ -44,21 +44,17 @@ public class AllocationAttempt {
     List<AllocationCandidate> candidates = new ArrayList<AllocationCandidate>();
     AllocationCandidate matchedCandidate;
 
-    public AllocationAttempt(long accountId, Instance instance, Set<Host> hosts, Set<Volume> volumes, Map<Volume, Set<StoragePool>> pools, Set<Nic> nics,
+    public AllocationAttempt(long accountId, Instance instance, Host host, Set<Volume> volumes, Map<Volume, Set<StoragePool>> pools, Set<Nic> nics,
             Map<Nic, Subnet> subnets) {
         super();
         this.accountId = accountId;
         this.instance = instance;
-        this.hosts = hosts;
+        this.host = host;
         this.volumes = volumes;
         this.pools = pools;
         this.nics = nics;
         this.subnets = subnets == null ? Collections.<Nic, Subnet> emptyMap() : subnets;
-
-        this.hostIds = new HashSet<Long>(hosts.size());
-        for (Host h : hosts) {
-            this.hostIds.add(h.getId());
-        }
+        this.hostId = host == null ? null : host.getId();
 
         this.volumeIds = new HashSet<Long>(volumes.size());
         this.poolIds = new HashMap<Long, Set<Long>>();
@@ -107,8 +103,8 @@ public class AllocationAttempt {
         return instance == null ? null : instance.getId();
     }
 
-    public Set<Host> getHosts() {
-        return hosts;
+    public Host getHost() {
+        return host;
     }
 
     public Set<Volume> getVolumes() {
@@ -135,8 +131,8 @@ public class AllocationAttempt {
         this.instance = instance;
     }
 
-    public void setHosts(Set<Host> hosts) {
-        this.hosts = hosts;
+    public void setHost(Host host) {
+        this.host = host;
     }
 
     public void setVolumes(Set<Volume> volumes) {
@@ -167,20 +163,20 @@ public class AllocationAttempt {
         this.matchedCandidate = matchedCandidate;
     }
 
-    public Set<Long> getHostIds() {
-        return hostIds;
+    public Long getHostId() {
+        return hostId;
     }
 
-    public void setHostIds(Set<Long> hostIds) {
-        this.hostIds = hostIds;
+    public void setHostId(Long hostId) {
+        this.hostId = hostId;
     }
 
     public Set<Long> getVolumeIds() {
         return volumeIds;
     }
 
-    public void setVolumeIds(Set<Long> volumeIds) {
-        this.volumeIds = volumeIds;
+    public void setVolumeIds(Set<Long> volumeId) {
+        this.volumeIds = volumeId;
     }
 
     public Map<Long, Set<Long>> getPoolIds() {
