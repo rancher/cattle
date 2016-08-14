@@ -12,6 +12,8 @@ code/packaging/app/keys.properties
 .settings
 code/packaging/app/keys.properties
 code/framework/encryption/keys.properties
+code/packaging/app/DATA
+code/packaging/app/repo.json
 dist
 docs/build
 resources/content/db/mysql/cattle_dump*.sql

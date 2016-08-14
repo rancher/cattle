@@ -33,8 +33,6 @@
         <property name="factories" value="#{extensionManager.list('agent.connection.factory')}" />
     </bean>
 
-    <bean class="io.cattle.platform.agent.server.group.impl.AgentGroupManagerImpl" />
-
     <bean class="io.cattle.platform.agent.server.ping.dao.impl.PingDaoImpl" />
     <bean class="io.cattle.platform.agent.server.ping.impl.PingMonitorImpl" />
     <bean class="io.cattle.platform.agent.server.resource.impl.AgentResourcesMonitorImpl" />

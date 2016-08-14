@@ -85,22 +85,12 @@
         </dependency>
         <dependency>
             <groupId>io.cattle</groupId>
-            <artifactId>cattle-agent-resources</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>io.cattle</groupId>
             <artifactId>cattle-framework-metrics</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>io.cattle</groupId>
             <artifactId>cattle-config-item-api</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>io.cattle</groupId>
-            <artifactId>cattle-iaas-accounts</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>

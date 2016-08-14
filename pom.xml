@@ -58,8 +58,6 @@
                 </property>
             </activation>
             <modules>
-                <module>code/iaas/accounts</module>
-                <module>code/iaas/agent</module>
                 <module>code/iaas/agent-instance</module>
                 <module>code/iaas/agent-server</module>
                 <module>code/iaas/allocator</module>
@@ -98,7 +96,6 @@
                 </property>
             </activation>
             <modules>
-                <module>code/agent</module>
                 <module>code/implementation/agent-connection-delegate</module>
                 <module>code/implementation/agent-connection-event</module>
                 <module>code/implementation/agent-instance-impl</module>
@@ -123,7 +120,6 @@
                 <module>code/packaging/app</module>
                 <module>code/packaging/app-config</module>
                 <module>code/packaging/app-parent</module>
-                <module>code/packaging/app-intellij</module>
                 <module>code/packaging/dev</module>
                 <module>code/packaging/meta</module>
             </modules>
