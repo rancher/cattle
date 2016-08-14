@@ -35,28 +35,8 @@
 
     <extension:discover class="io.cattle.platform.api.pubsub.subscribe.SubscriptionHandler" />
 
-    <bean class="io.cattle.platform.api.pubsub.subscribe.BlockingSubscriptionHandler" >
+    <bean id="JettyWebSocketSubcriptionHandler" class="io.cattle.platform.api.pubsub.subscribe.jetty.JettyWebSocketSubcriptionHandler" >
         <property name="executorService" ref="CoreExecutorService" />
-        <property name="eventProcessors" value="#{extensionManager.list('api.pub.sub.event.post.processor')}" />
-    </bean>
-
-    <bean id="ServletAsyncSubscriptionHandler" class="io.cattle.platform.api.pubsub.manager.impl.ClassAvailableSubscriptionHandler" >
-        <property name="executorService" ref="CoreExecutorService" />
-        <property name="testClass" value="javax.servlet.AsyncContext" />
-        <property name="className" value="io.cattle.platform.api.pubsub.subscribe.ServletAsyncSubscriptionHandler" />
-        <property name="priority">
-            <util:constant static-field="io.cattle.platform.util.type.Priority.DEFAULT_OVERRIDE" />
-        </property>
-        <property name="eventProcessors" value="#{extensionManager.list('api.pub.sub.event.post.processor')}" />
-    </bean>
-
-    <bean id="JettyWebSocketSubcriptionHandler" class="io.cattle.platform.api.pubsub.manager.impl.ClassAvailableSubscriptionHandler" >
-        <property name="executorService" ref="CoreExecutorService" />
-        <property name="testClass" value="org.eclipse.jetty.websocket.server.WebSocketServerFactory" />
-        <property name="className" value="io.cattle.platform.api.pubsub.subscribe.jetty.JettyWebSocketSubcriptionHandler" />
-        <property name="priority">
-            <util:constant static-field="io.cattle.platform.util.type.Priority.SPECIFIC" />
-        </property>
         <property name="eventProcessors" value="#{extensionManager.list('api.pub.sub.event.post.processor')}" />
     </bean>
 
