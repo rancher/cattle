@@ -16,6 +16,7 @@ import io.cattle.platform.process.common.handler.AbstractObjectProcessHandler;
 import io.cattle.platform.servicediscovery.api.constants.ServiceDiscoveryConstants;
 import io.cattle.platform.servicediscovery.api.dao.ServiceExposeMapDao;
 import io.cattle.platform.servicediscovery.deployment.DeploymentManager;
+import io.cattle.platform.servicediscovery.service.ServiceDiscoveryService;
 import io.github.ibuildthecloud.gdapi.id.IdFormatter;
 
 import java.util.Collections;
@@ -38,6 +39,9 @@ public class ServiceUpdateActivate extends AbstractObjectProcessHandler {
 
     @Inject
     DeploymentManager deploymentMgr;
+
+    @Inject
+    ServiceDiscoveryService serviceDiscoveryService;
 
     @Inject
     ResourceMonitor resourceMonitor;
@@ -75,6 +79,7 @@ public class ServiceUpdateActivate extends AbstractObjectProcessHandler {
                 objectManager.setFields(objectManager.reload(service),
                         ObjectMetaDataManager.TRANSITIONING_MESSAGE_FIELD,
                         "Reconciling");
+                serviceDiscoveryService.publishChanged(service);
             }
             deploymentMgr.activate(service);
         } catch (TimeoutException ex) {
@@ -87,6 +92,7 @@ public class ServiceUpdateActivate extends AbstractObjectProcessHandler {
             throw ex;
         } finally {
             if (!StringUtils.isEmpty(error)) {
+                serviceDiscoveryService.publishChanged(service);
                 objectManager.setFields(objectManager.reload(service),
                         ObjectMetaDataManager.TRANSITIONING_MESSAGE_FIELD,
                         error);
