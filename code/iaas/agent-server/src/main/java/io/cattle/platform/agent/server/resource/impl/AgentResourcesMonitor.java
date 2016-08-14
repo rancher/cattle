@@ -2,8 +2,8 @@ package io.cattle.platform.agent.server.resource.impl;
 
 import static io.cattle.platform.core.model.tables.HostTable.*;
 import static io.cattle.platform.core.model.tables.PhysicalHostTable.*;
+
 import io.cattle.platform.agent.server.ping.dao.PingDao;
-import io.cattle.platform.agent.server.resource.AgentResourcesEventListener;
 import io.cattle.platform.agent.server.util.AgentConnectionUtils;
 import io.cattle.platform.archaius.util.ArchaiusUtil;
 import io.cattle.platform.core.constants.AgentConstants;
@@ -20,6 +20,8 @@ import io.cattle.platform.core.model.IpAddress;
 import io.cattle.platform.core.model.PhysicalHost;
 import io.cattle.platform.core.model.StoragePool;
 import io.cattle.platform.eventing.EventService;
+import io.cattle.platform.eventing.annotation.AnnotatedEventListener;
+import io.cattle.platform.eventing.annotation.EventHandler;
 import io.cattle.platform.eventing.model.Event;
 import io.cattle.platform.eventing.model.EventVO;
 import io.cattle.platform.framework.event.FrameworkEvents;
@@ -52,9 +54,9 @@ import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.netflix.config.DynamicLongProperty;
 
-public class AgentResourcesMonitorImpl implements AgentResourcesEventListener {
+public class AgentResourcesMonitor implements AnnotatedEventListener {
 
-    private static final Logger log = LoggerFactory.getLogger(AgentResourcesMonitorImpl.class);
+    private static final Logger log = LoggerFactory.getLogger(AgentResourcesMonitor.class);
     private static final DynamicLongProperty CACHE_RESOURCE = ArchaiusUtil.getLong("agent.resource.monitor.cache.resource.seconds");
 
     private static final String[] UPDATABLE_HOST_FIELDS = new String[] {
@@ -84,7 +86,7 @@ public class AgentResourcesMonitorImpl implements AgentResourcesEventListener {
     EventService eventService;
     Cache<String, Boolean> resourceCache;
 
-    public AgentResourcesMonitorImpl() {
+    public AgentResourcesMonitor() {
         super();
         buildCache();
         CACHE_RESOURCE.addCallback(new Runnable() {
@@ -99,8 +101,8 @@ public class AgentResourcesMonitorImpl implements AgentResourcesEventListener {
         resourceCache = CacheBuilder.newBuilder().expireAfterWrite(CACHE_RESOURCE.get(), TimeUnit.SECONDS).build();
     }
 
-    @Override
-    public void pingReply(Ping ping) {
+    @EventHandler(name="ping.reply")
+    public void processPingReply(Ping ping) {
         String agentIdStr = ping.getResourceId();
         if (agentIdStr == null) {
             return;

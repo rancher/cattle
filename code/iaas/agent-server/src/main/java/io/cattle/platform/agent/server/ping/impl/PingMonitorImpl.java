@@ -1,10 +1,12 @@
 package io.cattle.platform.agent.server.ping.impl;
 
 import static com.google.common.util.concurrent.Futures.*;
+
 import io.cattle.platform.agent.AgentLocator;
 import io.cattle.platform.agent.RemoteAgent;
 import io.cattle.platform.agent.server.ping.PingMonitor;
 import io.cattle.platform.agent.server.ping.dao.PingDao;
+import io.cattle.platform.agent.server.resource.impl.AgentResourcesMonitor;
 import io.cattle.platform.agent.server.service.AgentService;
 import io.cattle.platform.agent.server.util.AgentConnectionUtils;
 import io.cattle.platform.agent.util.AgentUtils;
@@ -42,7 +44,6 @@ public class PingMonitorImpl implements PingMonitor, Task, TaskOptions {
 
     private static final DynamicLongProperty BAD_PINGS = ArchaiusUtil.getLong("agent.ping.reconnect.after.failed.count");
     private static final DynamicLongProperty PING_TIMEOUT = ArchaiusUtil.getLong("agent.ping.timeout.seconds");
-    private static final DynamicLongProperty PING_UNMANAGED_EVERY = ArchaiusUtil.getLong("agent.ping.unmanaged.every");
     private static final DynamicLongProperty PING_STATS_EVERY = ArchaiusUtil.getLong("agent.ping.stats.every");
     private static final DynamicLongProperty PING_RESOURCES_EVERY = ArchaiusUtil.getLong("agent.ping.resources.every");
     private static final DynamicLongProperty PING_INSTANCES_EVERY = ArchaiusUtil.getLong("agent.ping.instances.every");
@@ -52,13 +53,20 @@ public class PingMonitorImpl implements PingMonitor, Task, TaskOptions {
 
     @Inject
     AgentService agentService;
-
+    @Inject
+    AgentResourcesMonitor agentResourceManager;
+    @Inject
     ObjectProcessManager processManager;
+    @Inject
     ObjectManager objectManager;
     int interation = 0;
+    @Inject
     PingDao pingDao;
+    @Inject
     LockDelegator lockDelegator;
+    @Inject
     AgentLocator agentLocator;
+    @Inject
     ListeningExecutorService executorService;
     LoadingCache<Long, PingStatus> status = CacheBuilder.newBuilder().expireAfterAccess(PING_SCHEDULE.get() * 3, TimeUnit.SECONDS).build(
             new CacheLoader<Long, PingStatus>() {
@@ -67,12 +75,6 @@ public class PingMonitorImpl implements PingMonitor, Task, TaskOptions {
                     return new PingStatus(key);
                 }
             });
-
-    protected void handleUnowned(Agent agent) {
-        if (isInterval(PING_UNMANAGED_EVERY.get())) {
-            agentService.execute(AgentUtils.newPing(agent));
-        }
-    }
 
     protected void handleOwned(Agent agent) {
         Ping ping = AgentUtils.newPing(agent);
@@ -98,11 +100,11 @@ public class PingMonitorImpl implements PingMonitor, Task, TaskOptions {
 
     protected void ping(Agent agent) {
         LockDefinition lockDef = AgentConnectionUtils.getConnectionLock(agent);
-        if (lockDelegator.isLocked(lockDef)) {
-            handleOwned(agent);
-        } else {
-            handleUnowned(agent);
+        if (!lockDelegator.isLocked(lockDef) && !lockDelegator.tryLock(lockDef)) {
+            return;
         }
+
+        handleOwned(agent);
     }
 
     protected void doPing(final Agent agent, Ping ping) {
@@ -124,6 +126,7 @@ public class PingMonitorImpl implements PingMonitor, Task, TaskOptions {
 
     protected void pingSuccess(Agent agent, Ping pong) {
         status.getUnchecked(agent.getId()).success();
+        agentResourceManager.processPingReply(pong);
     }
 
     protected void pingFailure(Agent agent) {
@@ -173,60 +176,6 @@ public class PingMonitorImpl implements PingMonitor, Task, TaskOptions {
     @Override
     public String getName() {
         return "agent.ping";
-    }
-
-    public PingDao getPingDao() {
-        return pingDao;
-    }
-
-    @Inject
-    public void setPingDao(PingDao pingDao) {
-        this.pingDao = pingDao;
-    }
-
-    public LockDelegator getLockDelegator() {
-        return lockDelegator;
-    }
-
-    @Inject
-    public void setLockDelegator(LockDelegator lockDelegator) {
-        this.lockDelegator = lockDelegator;
-    }
-
-    public AgentLocator getAgentLocator() {
-        return agentLocator;
-    }
-
-    @Inject
-    public void setAgentLocator(AgentLocator agentLocator) {
-        this.agentLocator = agentLocator;
-    }
-
-    public ListeningExecutorService getExecutorService() {
-        return executorService;
-    }
-
-    @Inject
-    public void setExecutorService(ListeningExecutorService executorService) {
-        this.executorService = executorService;
-    }
-
-    public ObjectProcessManager getProcessManager() {
-        return processManager;
-    }
-
-    @Inject
-    public void setProcessManager(ObjectProcessManager processManager) {
-        this.processManager = processManager;
-    }
-
-    public ObjectManager getObjectManager() {
-        return objectManager;
-    }
-
-    @Inject
-    public void setObjectManager(ObjectManager objectManager) {
-        this.objectManager = objectManager;
     }
 
 }
