@@ -70,7 +70,12 @@ DEV_HOST=localhost:8081 ../tools/development/register-boot2docker.sh >/tmp/regis
 
 ./test -e py27 -- -m nonparallel
 
-./test -- -m "'not nonparallel'" -n $(($(nproc) + 1)) -v || {
+
+threads=$(($(nproc) + 1))
+if [ $threads -gt 5 ]; then
+    threads=5
+fi
+./test -- -m "'not nonparallel'" -n $threads -v || {
     echo Test failed
     cat /tmp/run.log
     echo Test failed
