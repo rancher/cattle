@@ -727,6 +727,11 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
         return startOnce;
     }
 
+    @Override
+    public void publishChanged(Service service) {
+        publishEvent(service.getAccountId(), service.getId(), objectManager.getType(service));
+    }
+
     protected void publishEvent(long accountId, long resourceId, String resourceType) {
         Map<String, Object> data = new HashMap<>();
         data.put(ObjectMetaDataManager.ACCOUNT_FIELD, accountId);

@@ -12,6 +12,7 @@ import io.cattle.platform.object.resource.ResourcePredicate;
 import io.cattle.platform.object.util.ObjectUtils;
 import io.cattle.platform.task.Task;
 import io.cattle.platform.task.TaskOptions;
+import io.github.ibuildthecloud.gdapi.id.IdFormatter;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -30,6 +31,8 @@ public class ResourceMonitorImpl implements ResourceMonitor, AnnotatedEventListe
     ConcurrentMap<String, Object> waiters = new ConcurrentHashMap<String, Object>();
     @Inject
     ObjectMetaDataManager objectMetaDataManger;
+    @Inject
+    IdFormatter idFormatter;
 
     @EventHandler
     public void resourceChange(Event event) {
@@ -44,6 +47,7 @@ public class ResourceMonitorImpl implements ResourceMonitor, AnnotatedEventListe
     }
 
     protected String key(Object resourceType, Object resourceId) {
+        resourceId = idFormatter.formatId(resourceType.toString(), resourceId);
         return String.format("%s:%s", resourceType, resourceId);
     }
 
@@ -53,7 +57,10 @@ public class ResourceMonitorImpl implements ResourceMonitor, AnnotatedEventListe
             return obj;
         }
 
-        String type = objectManager.getType(obj);
+        String type = ObjectUtils.getKind(obj);
+        if (type == null) {
+            type = objectManager.getType(obj);
+        }
         Object id = ObjectUtils.getId(obj);
 
         if (type == null || id == null) {
@@ -89,7 +96,7 @@ public class ResourceMonitorImpl implements ResourceMonitor, AnnotatedEventListe
             }
         }
 
-        throw new TimeoutException("Timeout waiting for " + predicate.getMessage() + " on [" + key + "]");
+        throw new TimeoutException("Timeout: " + predicate.getMessage() + " [" + key + "]");
     }
 
     @Override
@@ -126,6 +133,8 @@ public class ResourceMonitorImpl implements ResourceMonitor, AnnotatedEventListe
 
     @Override
     public <T> T waitForNotTransitioning(T obj) {
+        final String type = ObjectUtils.getKind(obj);
+        final String state = ObjectUtils.getState(obj);
         return waitFor(obj, new ResourcePredicate<T>() {
             @Override
             public boolean evaluate(T obj) {
@@ -134,7 +143,11 @@ public class ResourceMonitorImpl implements ResourceMonitor, AnnotatedEventListe
 
             @Override
             public String getMessage() {
-                return "a resting state";
+                if (type == null || state == null) {
+                    return "a resting state";
+                } else {
+                    return type + " " + state;
+                }
             }
         });
     }
