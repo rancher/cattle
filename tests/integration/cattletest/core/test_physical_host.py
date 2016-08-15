@@ -10,13 +10,13 @@ def disable_go_machine_service(request, super_client):
     svc_handlers = super_client.list_external_handler(
         state='active', name_like=name)
     for h in svc_handlers:
-        wait_success(super_client, h.deactivate())
+        super_client.wait_success(h.deactivate())
 
     def enable(handlers, super_client):
         for handler in handlers:
             handler = super_client.reload(handler)
             try:
-                wait_success(super_client, handler.activate())
+                super_client.wait_success(handler.activate())
             except AttributeError:
                 pass
 
