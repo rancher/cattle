@@ -32,6 +32,11 @@ public class ResourceMonitorImpl implements ResourceMonitor, AnnotatedEventListe
     ObjectMetaDataManager objectMetaDataManger;
 
     @EventHandler
+    public void stateChanged(Event event) {
+        resourceChange(event);
+    }
+
+    @EventHandler
     public void resourceChange(Event event) {
         String key = key(event.getResourceType(), event.getResourceId());
         Object wait = waiters.get(key);
