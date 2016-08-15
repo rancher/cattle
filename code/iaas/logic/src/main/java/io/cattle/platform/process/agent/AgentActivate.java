@@ -15,7 +15,9 @@ import io.cattle.platform.engine.handler.HandlerResult;
 import io.cattle.platform.engine.process.ProcessInstance;
 import io.cattle.platform.engine.process.ProcessState;
 import io.cattle.platform.eventing.EventCallOptions;
+import io.cattle.platform.eventing.EventService;
 import io.cattle.platform.eventing.model.Event;
+import io.cattle.platform.eventing.model.EventVO;
 import io.cattle.platform.framework.event.Ping;
 import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.process.base.AbstractDefaultProcessHandler;
@@ -23,9 +25,11 @@ import io.cattle.platform.process.base.AbstractDefaultProcessHandler;
 import javax.inject.Inject;
 import javax.inject.Named;
 
+import org.apache.cloudstack.managed.context.NoExceptionRunnable;
 import org.apache.commons.lang3.StringUtils;
 
 import com.google.common.util.concurrent.ListenableFuture;
+import com.google.common.util.concurrent.MoreExecutors;
 import com.netflix.config.DynamicIntProperty;
 import com.netflix.config.DynamicLongProperty;
 
@@ -35,7 +39,10 @@ public class AgentActivate extends AbstractDefaultProcessHandler {
     private static final DynamicIntProperty PING_RETRY = ArchaiusUtil.getInt("agent.activate.ping.retries");
     private static final DynamicLongProperty PING_TIMEOUT = ArchaiusUtil.getLong("agent.activate.ping.timeout");
 
+    @Inject
     AgentLocator agentLocator;
+    @Inject
+    EventService eventService;
 
     @Override
     public HandlerResult handle(ProcessState state, ProcessInstance process) {
@@ -60,9 +67,19 @@ public class AgentActivate extends AbstractDefaultProcessHandler {
                         .as(Boolean.class);
 
         RemoteAgent remoteAgent = agentLocator.lookupAgent(agent);
-        ListenableFuture<? extends Event> future = remoteAgent.call(AgentUtils.newPing(agent)
+        final ListenableFuture<? extends Event> future = remoteAgent.call(AgentUtils.newPing(agent)
                 .withOption(Ping.STATS, true)
                 .withOption(Ping.RESOURCES, true), new EventCallOptions(PING_RETRY.get(), PING_TIMEOUT.get()));
+        future.addListener(new NoExceptionRunnable() {
+            @Override
+            protected void doRun() throws Exception {
+                Event resp = future.get();
+                EventVO<?> respCopy = new EventVO<>(resp);
+                respCopy.setName("ping.reply");
+                eventService.publish(respCopy);
+            }
+        }, MoreExecutors.sameThreadExecutor());
+
 
         if (waitFor) {
             try {

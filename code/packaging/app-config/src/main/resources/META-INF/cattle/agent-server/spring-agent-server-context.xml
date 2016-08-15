@@ -35,7 +35,7 @@
 
     <bean class="io.cattle.platform.agent.server.ping.dao.impl.PingDaoImpl" />
     <bean class="io.cattle.platform.agent.server.ping.impl.PingMonitorImpl" />
-    <bean class="io.cattle.platform.agent.server.resource.impl.AgentResourcesMonitorImpl" />
+    <bean class="io.cattle.platform.agent.server.resource.impl.AgentResourcesMonitor" />
 
     <extension:discover class="io.cattle.platform.agent.server.connection.AgentConnectionFactory" />
 
