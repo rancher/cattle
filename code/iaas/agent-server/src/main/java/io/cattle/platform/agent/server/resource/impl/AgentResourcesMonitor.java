@@ -4,7 +4,6 @@ import static io.cattle.platform.core.model.tables.HostTable.*;
 import static io.cattle.platform.core.model.tables.PhysicalHostTable.*;
 
 import io.cattle.platform.agent.server.ping.dao.PingDao;
-import io.cattle.platform.agent.server.util.AgentConnectionUtils;
 import io.cattle.platform.archaius.util.ArchaiusUtil;
 import io.cattle.platform.core.constants.AgentConstants;
 import io.cattle.platform.core.constants.HostConstants;
@@ -27,9 +26,7 @@ import io.cattle.platform.eventing.model.EventVO;
 import io.cattle.platform.framework.event.FrameworkEvents;
 import io.cattle.platform.framework.event.Ping;
 import io.cattle.platform.lock.LockCallbackNoReturn;
-import io.cattle.platform.lock.LockDelegator;
 import io.cattle.platform.lock.LockManager;
-import io.cattle.platform.lock.definition.LockDefinition;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.meta.ObjectMetaDataManager;
 import io.cattle.platform.object.util.DataAccessor;
@@ -79,8 +76,6 @@ public class AgentResourcesMonitor implements AnnotatedEventListener {
     @Inject
     ObjectManager objectManager;
     @Inject
-    LockDelegator lockDelegator;
-    @Inject
     LockManager lockManager;
     @Inject
     EventService eventService;
@@ -101,7 +96,11 @@ public class AgentResourcesMonitor implements AnnotatedEventListener {
         resourceCache = CacheBuilder.newBuilder().expireAfterWrite(CACHE_RESOURCE.get(), TimeUnit.SECONDS).build();
     }
 
-    @EventHandler(name="ping.reply")
+    @EventHandler
+    public void pingReply(Ping ping) {
+        processPingReply(ping);
+    }
+
     public void processPingReply(Ping ping) {
         String agentIdStr = ping.getResourceId();
         if (agentIdStr == null) {
@@ -109,11 +108,6 @@ public class AgentResourcesMonitor implements AnnotatedEventListener {
         }
 
         long agentId = Long.parseLong(agentIdStr);
-        LockDefinition lockDef = AgentConnectionUtils.getConnectionLock(agentId);
-        if (!lockDelegator.isLocked(lockDef)) {
-            return;
-        }
-
         if (ping.getData() == null) {
             return;
         }
@@ -130,7 +124,6 @@ public class AgentResourcesMonitor implements AnnotatedEventListener {
         }
 
         final Agent agent = objectManager.loadResource(Agent.class, agentId);
-
         lockManager.lock(new AgentResourceCreateLock(agent), new LockCallbackNoReturn() {
             @Override
             public void doWithLockNoResult() {

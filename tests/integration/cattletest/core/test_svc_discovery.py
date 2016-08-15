@@ -2223,6 +2223,7 @@ def test_validate_scaledown_updating(client, context):
 
     # change scale two times in a row
     service = client.update(service, scale=10, name=service.name)
+    wait_for(lambda: client.reload(service).scale == 10)
     service = client.update(service, scale=1, name=service.name)
     service = client.wait_success(service, 120)
     assert service.state == "active"

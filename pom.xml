@@ -58,6 +58,7 @@
                 </property>
             </activation>
             <modules>
+                <module>code/iaas/agent</module>
                 <module>code/iaas/agent-instance</module>
                 <module>code/iaas/agent-server</module>
                 <module>code/iaas/allocator</module>
@@ -96,8 +97,6 @@
                 </property>
             </activation>
             <modules>
-                <module>code/implementation/agent-connection-delegate</module>
-                <module>code/implementation/agent-connection-event</module>
                 <module>code/implementation/agent-instance-impl</module>
                 <module>code/implementation/docker/api</module>
                 <module>code/implementation/docker/common</module>
