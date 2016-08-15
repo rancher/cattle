@@ -47,6 +47,12 @@ public class AgentActivate extends AbstractDefaultProcessHandler {
             return null;
         }
 
+        for (String prefix : AgentConstants.AGENT_IGNORE_PREFIXES) {
+            if (agent.getUri() == null || agent.getUri().startsWith(prefix)) {
+                return new HandlerResult();
+            }
+        }
+
         boolean waitFor = DataAccessor.fromDataFieldOf(agent)
                 .withScope(AgentActivate.class)
                 .withKey("waitForPing")

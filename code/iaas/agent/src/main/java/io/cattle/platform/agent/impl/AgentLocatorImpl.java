@@ -10,6 +10,8 @@ import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.eventing.EventService;
 import io.cattle.platform.json.JsonMapper;
 import io.cattle.platform.object.ObjectManager;
+import io.cattle.platform.object.resource.ResourceMonitor;
+import io.cattle.platform.object.resource.ResourcePredicate;
 import io.cattle.platform.object.util.ObjectUtils;
 
 import java.util.Map;
@@ -39,6 +41,8 @@ public class AgentLocatorImpl implements AgentLocator {
     EventService eventService;
     @Inject
     JsonMapper jsonMapper;
+    @Inject
+    ResourceMonitor resourceMonitor;
 
     LoadingCache<Long, RemoteAgent> cache = CacheBuilder.newBuilder().expireAfterWrite(15L, TimeUnit.MINUTES).build(new CacheLoader<Long, RemoteAgent>() {
         @Override
@@ -107,27 +111,37 @@ public class AgentLocatorImpl implements AgentLocator {
         }
 
         Instance instance = delegateDao.getInstance(agent);
-
         if (instance == null) {
-            log.info("Failed to find instance to delegate to for agent [{}] uri [{}]", agent.getId(), agent.getUri());
-            return null;
+            log.error("Failed to find instance to delegate to for agent [{}] uri [{}]", agent.getId(), agent.getUri());
+            throw new IllegalStateException("Delegate [" + agent.getUri() + "] has no instance associated");
         }
 
-        if (!InstanceConstants.STATE_RUNNING.equals(instance.getState())) {
-            log.info("Instance [{}] is not running, actual state [{}]", instance.getId(), instance.getState());
-            return null;
-        }
+        instance = resourceMonitor.waitFor(instance, new ResourcePredicate<Instance>() {
+            @Override
+            public boolean evaluate(Instance obj) {
+                return InstanceConstants.STATE_RUNNING.equals(obj.getState());
+            }
+
+            @Override
+            public String getMessage() {
+                return "wait for running";
+            }
+        });
 
         Host host = delegateDao.getHost(agent);
-
         if (host == null || host.getAgentId() == null) {
             log.error("Failed to find host to delegate to for agent [{}] uri [{}]", agent.getId(), agent.getUri());
             return null;
         }
 
+        Agent hostAgent = objectManager.loadResource(Agent.class, host.getAgentId());
+        String hostAgentUri = hostAgent.getUri();
+        if (hostAgentUri != null && !hostAgentUri.startsWith(EVENTING)) {
+            return null;
+        }
+
         @SuppressWarnings("unchecked")
         Map<String, Object> instanceData = jsonMapper.convertValue(instance, Map.class);
-
         return new WrappedEventService(host.getAgentId(), true, eventService, instanceData, jsonMapper, delegateDao);
     }
 
