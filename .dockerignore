@@ -1,15 +1,1 @@
-.git
-.m2
-
-code
 resources/local
-dist
-docs
-LICENSE
-pom.xml
-README.md
-resources
-runtime
-tests
-tmp
-tools

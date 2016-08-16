@@ -2,6 +2,8 @@
 pipeline:
   build:
     privileged: true
-    image: rancher/build-cattle:1.10.3-rancher1
+    image: rancher/dapper:1.10.3
+    volumes:
+    - /var/run/docker.sock:/var/run/docker.sock
     commands:
-      - ./scripts/ci
+    - dapper ci
