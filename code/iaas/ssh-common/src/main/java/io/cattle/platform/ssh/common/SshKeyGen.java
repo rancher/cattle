@@ -12,7 +12,9 @@ import java.io.StringWriter;
 import java.math.BigInteger;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
+import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.cert.CertificateException;
@@ -23,11 +25,11 @@ import java.util.Date;
 import java.util.List;
 import java.util.Random;
 
+import javax.crypto.KeyAgreement;
 import javax.security.auth.x500.X500Principal;
 
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.io.IOUtils;
-import org.apache.sshd.common.util.SecurityUtils;
 import org.bouncycastle.asn1.ASN1Encodable;
 import org.bouncycastle.asn1.DERSequence;
 import org.bouncycastle.asn1.x500.X500Name;
@@ -43,6 +45,7 @@ import org.bouncycastle.cert.X509CertificateHolder;
 import org.bouncycastle.cert.X509v3CertificateBuilder;
 import org.bouncycastle.cert.jcajce.JcaX509CertificateConverter;
 import org.bouncycastle.cert.jcajce.JcaX509v3CertificateBuilder;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.openssl.PEMKeyPair;
 import org.bouncycastle.openssl.PEMParser;
 import org.bouncycastle.openssl.jcajce.JcaPEMKeyConverter;
@@ -61,6 +64,19 @@ public class SshKeyGen {
     private static final DynamicLongProperty EXPIRATION = ArchaiusUtil.getLong("cert.expiry.days");
     private static final JcaPEMKeyConverter CONVERTER = new JcaPEMKeyConverter().setProvider("BC");
     private static final Random RANDOM = new Random();
+    public static final String BOUNCY_CASTLE = "BC";
+
+    static {
+        if (java.security.Security.getProvider(BOUNCY_CASTLE) == null) {
+            java.security.Security.addProvider(new BouncyCastleProvider());
+            try {
+                MessageDigest.getInstance("MD5", BOUNCY_CASTLE);
+                KeyAgreement.getInstance("DH", BOUNCY_CASTLE);
+            } catch (NoSuchAlgorithmException | NoSuchProviderException e) {
+                throw new RuntimeException(e);
+            }
+        }
+    }
 
     public static String[] generateKeys() throws Exception {
         KeyPair pair = generateKeyPair();
@@ -127,7 +143,7 @@ public class SshKeyGen {
     }
 
     public static KeyPair generateKeyPair(int keySize) throws Exception {
-        KeyPairGenerator generator = SecurityUtils.getKeyPairGenerator("RSA");
+        KeyPairGenerator generator = KeyPairGenerator.getInstance("RSA", BOUNCY_CASTLE);
         generator.initialize(keySize);
         return generator.generateKeyPair();
     }
@@ -137,8 +153,6 @@ public class SshKeyGen {
     }
 
     public static X509Certificate readCACert(String encoded) throws Exception {
-        SecurityUtils.isBouncyCastleRegistered();
-
         try (PEMParser r = new PEMParser(new StringReader(encoded))) {
             X509CertificateHolder holder = ((X509CertificateHolder) r.readObject());
             return new JcaX509CertificateConverter().setProvider("BC").getCertificate(holder);
@@ -146,8 +160,6 @@ public class SshKeyGen {
     }
 
     public static KeyPair readKeyPair(String key) throws Exception {
-        SecurityUtils.isBouncyCastleRegistered();
-
         PEMParser r = null;
         try {
             if (key.startsWith("---")) {
@@ -168,8 +180,6 @@ public class SshKeyGen {
     }
 
     public static String toPEM(Object obj) throws Exception {
-        SecurityUtils.isBouncyCastleRegistered();
-
         StringWriter stringWriter = new StringWriter();
 
         try (JcaPEMWriter w = new JcaPEMWriter(stringWriter)) {
@@ -181,8 +191,6 @@ public class SshKeyGen {
     }
 
     public static String writePublicKey(PublicKey pk) throws Exception {
-        SecurityUtils.isBouncyCastleRegistered();
-
         StringWriter stringWriter = new StringWriter();
 
         JcaPEMWriter w = new JcaPEMWriter(stringWriter);
