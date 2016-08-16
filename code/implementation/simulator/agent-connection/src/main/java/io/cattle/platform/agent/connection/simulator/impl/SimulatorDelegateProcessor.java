@@ -2,9 +2,7 @@ package io.cattle.platform.agent.connection.simulator.impl;
 
 import io.cattle.platform.agent.connection.simulator.AgentConnectionSimulator;
 import io.cattle.platform.agent.connection.simulator.AgentSimulatorEventProcessor;
-import io.cattle.platform.async.utils.AsyncUtils;
 import io.cattle.platform.core.model.Agent;
-import io.cattle.platform.eventing.EventProgress;
 import io.cattle.platform.eventing.model.Event;
 import io.cattle.platform.eventing.model.EventVO;
 import io.cattle.platform.iaas.event.IaasEvents;
@@ -15,13 +13,11 @@ import io.cattle.platform.util.type.Priority;
 
 import javax.inject.Inject;
 
-import com.google.common.util.concurrent.AsyncFunction;
-import com.google.common.util.concurrent.Futures;
-import com.google.common.util.concurrent.ListenableFuture;
-
 public class SimulatorDelegateProcessor implements AgentSimulatorEventProcessor, Priority {
 
+    @Inject
     JsonMapper jsonMapper;
+    @Inject
     ObjectManager objectManager;
 
     @Override
@@ -49,36 +45,9 @@ public class SimulatorDelegateProcessor implements AgentSimulatorEventProcessor,
             throw new IllegalStateException("Failed to find agent to simulate for delegate event [" + event.getId() + "]");
         }
 
-        AgentConnectionSimulator delegateSimulator = new AgentConnectionSimulator(agent, simulator.getProcessors());
+        AgentConnectionSimulator delegateSimulator = new AgentConnectionSimulator(objectManager, agent, simulator.getProcessors());
 
-        return Futures.transform(delegateSimulator.execute(delegate.getData().getEvent(), new EventProgress() {
-            @Override
-            public void progress(Event event) {
-            }
-        }), new AsyncFunction<Event, Event>() {
-            @Override
-            public ListenableFuture<Event> apply(Event input) throws Exception {
-                return AsyncUtils.done((Event) EventVO.reply(event).withData(input));
-            }
-        }).get();
+        Event input = delegateSimulator.execute(delegate.getData().getEvent());
+        return EventVO.reply(event).withData(input);
     }
-
-    public JsonMapper getJsonMapper() {
-        return jsonMapper;
-    }
-
-    @Inject
-    public void setJsonMapper(JsonMapper jsonMapper) {
-        this.jsonMapper = jsonMapper;
-    }
-
-    public ObjectManager getObjectManager() {
-        return objectManager;
-    }
-
-    @Inject
-    public void setObjectManager(ObjectManager objectManager) {
-        this.objectManager = objectManager;
-    }
-
 }

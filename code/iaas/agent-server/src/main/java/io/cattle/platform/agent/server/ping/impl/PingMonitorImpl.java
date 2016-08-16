@@ -7,7 +7,6 @@ import io.cattle.platform.agent.RemoteAgent;
 import io.cattle.platform.agent.server.ping.PingMonitor;
 import io.cattle.platform.agent.server.ping.dao.PingDao;
 import io.cattle.platform.agent.server.resource.impl.AgentResourcesMonitor;
-import io.cattle.platform.agent.server.service.AgentService;
 import io.cattle.platform.agent.server.util.AgentConnectionUtils;
 import io.cattle.platform.agent.util.AgentUtils;
 import io.cattle.platform.archaius.util.ArchaiusUtil;
@@ -19,6 +18,7 @@ import io.cattle.platform.engine.process.ProcessInstanceException;
 import io.cattle.platform.engine.process.util.ProcessEngineUtils;
 import io.cattle.platform.eventing.EventCallOptions;
 import io.cattle.platform.framework.event.Ping;
+import io.cattle.platform.ha.monitor.PingInstancesMonitor;
 import io.cattle.platform.lock.LockDelegator;
 import io.cattle.platform.lock.definition.LockDefinition;
 import io.cattle.platform.object.ObjectManager;
@@ -52,9 +52,9 @@ public class PingMonitorImpl implements PingMonitor, Task, TaskOptions {
     private static final Logger log = LoggerFactory.getLogger(PingMonitorImpl.class);
 
     @Inject
-    AgentService agentService;
-    @Inject
     AgentResourcesMonitor agentResourceManager;
+    @Inject
+    PingInstancesMonitor pingInstanceMonitor;
     @Inject
     ObjectProcessManager processManager;
     @Inject
@@ -127,6 +127,7 @@ public class PingMonitorImpl implements PingMonitor, Task, TaskOptions {
     protected void pingSuccess(Agent agent, Ping pong) {
         status.getUnchecked(agent.getId()).success();
         agentResourceManager.processPingReply(pong);
+        pingInstanceMonitor.pingReply(pong);
     }
 
     protected void pingFailure(Agent agent) {

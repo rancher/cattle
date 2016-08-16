@@ -13,6 +13,7 @@ import io.cattle.platform.object.resource.ResourceMonitor;
 import io.cattle.platform.object.resource.ResourcePredicate;
 import io.cattle.platform.object.util.ObjectUtils;
 
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
@@ -99,6 +100,22 @@ public class AgentLocatorImpl implements AgentLocator {
     }
 
     protected EventService buildDelegate(long agentId) {
+        Map<String, Object> instanceData = new LinkedHashMap<>();
+        Agent hostAgent = getAgentForDelegate(agentId, instanceData);
+        if (hostAgent == null) {
+            return null;
+        }
+
+        String hostAgentUri = hostAgent.getUri();
+        if (hostAgentUri != null && !hostAgentUri.startsWith(EVENTING)) {
+            return null;
+        }
+
+        return new WrappedEventService(hostAgent.getId(), true, eventService, instanceData, jsonMapper, delegateDao);
+    }
+
+    @Override
+    public Agent getAgentForDelegate(long agentId, Map<String, Object> outInstanceData) {
         final Agent agent = objectManager.loadResource(Agent.class, agentId);
         if (agent == null) {
             return null;
@@ -123,7 +140,7 @@ public class AgentLocatorImpl implements AgentLocator {
 
             @Override
             public String getMessage() {
-                return "wait for allocated";
+                return "agent wait for allocated";
             }
         });
 
@@ -133,15 +150,12 @@ public class AgentLocatorImpl implements AgentLocator {
             return null;
         }
 
-        Agent hostAgent = objectManager.loadResource(Agent.class, host.getAgentId());
-        String hostAgentUri = hostAgent.getUri();
-        if (hostAgentUri != null && !hostAgentUri.startsWith(EVENTING)) {
-            return null;
+        if (outInstanceData != null) {
+            @SuppressWarnings("unchecked")
+            Map<String, Object> instanceData = jsonMapper.convertValue(instance, Map.class);
+            outInstanceData.putAll(instanceData);
         }
-
-        @SuppressWarnings("unchecked")
-        Map<String, Object> instanceData = jsonMapper.convertValue(instance, Map.class);
-        return new WrappedEventService(host.getAgentId(), true, eventService, instanceData, jsonMapper, delegateDao);
+        return objectManager.loadResource(Agent.class, host.getAgentId());
     }
 
     public static Long getAgentId(Object resource) {

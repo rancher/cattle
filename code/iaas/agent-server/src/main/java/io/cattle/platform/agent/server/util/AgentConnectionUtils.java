@@ -10,8 +10,4 @@ public class AgentConnectionUtils {
         return new AgentConnectionLockDefinition(agent);
     }
 
-    public static LockDefinition getConnectionLock(Long agentId) {
-        return new AgentConnectionLockDefinition(agentId);
-    }
-
 }

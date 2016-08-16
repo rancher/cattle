@@ -488,6 +488,7 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
             return;
         }
 
+        objectManager.reload(object);
         objectManager.setFields(object, ServiceDiscoveryConstants.FIELD_PUBLIC_ENDPOINTS, newData);
         final Map<String, Object> data = new HashMap<>();
         data.put(ServiceDiscoveryConstants.FIELD_PUBLIC_ENDPOINTS, newData);

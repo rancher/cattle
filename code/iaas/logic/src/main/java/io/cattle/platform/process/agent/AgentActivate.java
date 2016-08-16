@@ -72,11 +72,14 @@ public class AgentActivate extends AbstractDefaultProcessHandler {
                 .withOption(Ping.RESOURCES, true), new EventCallOptions(PING_RETRY.get(), PING_TIMEOUT.get()));
         future.addListener(new NoExceptionRunnable() {
             @Override
-            protected void doRun() throws Exception {
-                Event resp = future.get();
-                EventVO<?> respCopy = new EventVO<>(resp);
-                respCopy.setName("ping.reply");
-                eventService.publish(respCopy);
+            protected void doRun() {
+                try {
+                    Event resp = future.get();
+                    EventVO<?> respCopy = new EventVO<>(resp);
+                    respCopy.setName("ping.reply");
+                    eventService.publish(respCopy);
+                } catch (Exception e) {
+                }
             }
         }, MoreExecutors.sameThreadExecutor());
 
