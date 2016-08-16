@@ -2,7 +2,6 @@ package io.cattle.platform.agent.impl;
 
 import io.cattle.platform.agent.AgentLocator;
 import io.cattle.platform.agent.RemoteAgent;
-import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.dao.AgentDao;
 import io.cattle.platform.core.model.Agent;
 import io.cattle.platform.core.model.Host;
@@ -100,7 +99,7 @@ public class AgentLocatorImpl implements AgentLocator {
     }
 
     protected EventService buildDelegate(long agentId) {
-        Agent agent = objectManager.loadResource(Agent.class, agentId);
+        final Agent agent = objectManager.loadResource(Agent.class, agentId);
         if (agent == null) {
             return null;
         }
@@ -119,12 +118,12 @@ public class AgentLocatorImpl implements AgentLocator {
         instance = resourceMonitor.waitFor(instance, new ResourcePredicate<Instance>() {
             @Override
             public boolean evaluate(Instance obj) {
-                return InstanceConstants.STATE_RUNNING.equals(obj.getState());
+                return delegateDao.getHost(agent) != null;
             }
 
             @Override
             public String getMessage() {
-                return "wait for running";
+                return "wait for allocated";
             }
         });
 
