@@ -72,8 +72,8 @@ DEV_HOST=localhost:8081 ../tools/development/register-boot2docker.sh >/tmp/regis
 
 
 threads=$(($(nproc) + 1))
-if [ $threads -gt 5 ]; then
-    threads=5
+if [ $threads -gt 8 ]; then
+    threads=8
 fi
 ./test -- -m "'not nonparallel'" -n $threads -v || {
     echo Test failed
