@@ -1,4 +1,4 @@
-# Cattle [![Build Status](http://ci.rancher.io/api/badge/github.com/rancher/cattle/status.svg?branch=master)](http://ci.rancher.io/github.com/rancher/cattle)
+# Cattle [![Build Status](https://drone.rancher.io/api/badges/rancher/cattle/status.svg)](https://drone.rancher.io/rancher/cattle)
 
 Cattle is the orchestration engine that powers Rancher.  Its primary role is meta data management and orchestration of external systems.  Cattle in fact does no real work, but instead delegates to other components (agents) to do the actual work.  You can look at Cattle as the middle management layer in Rancher.  Do middle managers really do anything?
 
