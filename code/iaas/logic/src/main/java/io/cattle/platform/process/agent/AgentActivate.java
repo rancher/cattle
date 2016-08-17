@@ -26,7 +26,6 @@ import javax.inject.Inject;
 import javax.inject.Named;
 
 import org.apache.cloudstack.managed.context.NoExceptionRunnable;
-import org.apache.commons.lang3.StringUtils;
 
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.MoreExecutors;
@@ -38,14 +37,33 @@ public class AgentActivate extends AbstractDefaultProcessHandler {
 
     private static final DynamicIntProperty PING_RETRY = ArchaiusUtil.getInt("agent.activate.ping.retries");
     private static final DynamicLongProperty PING_TIMEOUT = ArchaiusUtil.getLong("agent.activate.ping.timeout");
+    private static final DynamicLongProperty PING_DISCONNECT_TIMEOUT = ArchaiusUtil.getLong("agent.disconnect.after.seconds");
 
     @Inject
     AgentLocator agentLocator;
     @Inject
     EventService eventService;
 
+    protected HandlerResult checkDisconnect(ProcessState state) {
+        DataAccessor acc = DataAccessor.fromMap(state.getData()).withScope(AgentActivate.class).withKey("start");
+        Long startTime = acc.as(Long.class);
+        if (startTime == null) {
+            startTime = System.currentTimeMillis();
+            acc.set(startTime);
+        }
+
+        if (PING_DISCONNECT_TIMEOUT.get() * 1000L < (System.currentTimeMillis() - startTime)) {
+            return new HandlerResult().withChainProcessName(AgentConstants.PROCESS_DECONNECT).withShouldContinue(false);
+        }
+
+        return null;
+    }
+
     @Override
     public HandlerResult handle(ProcessState state, ProcessInstance process) {
+        /* This will save the time */
+        checkDisconnect(state);
+
         Agent agent = (Agent) state.getResource();
         Instance instance = objectManager.findAny(Instance.class, INSTANCE.AGENT_ID, agent.getId());
 
@@ -88,10 +106,11 @@ public class AgentActivate extends AbstractDefaultProcessHandler {
             try {
                 AsyncUtils.get(future);
             } catch (TimeoutException e) {
-                if (StringUtils.startsWith(agent.getUri(), "delegate://")) {
-                    // ignore
-                } else {
+                HandlerResult result = checkDisconnect(state);
+                if (result == null) {
                     throw e;
+                } else {
+                    return result;
                 }
             }
         }

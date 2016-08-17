@@ -15,6 +15,7 @@ import io.cattle.platform.core.model.Agent;
 import io.cattle.platform.iaas.api.auth.AchaiusPolicyOptionsFactory;
 import io.cattle.platform.iaas.api.auth.AuthorizationProvider;
 import io.cattle.platform.iaas.event.IaasEvents;
+import io.cattle.platform.object.process.ObjectProcessManager;
 import io.github.ibuildthecloud.gdapi.context.ApiContext;
 import io.github.ibuildthecloud.gdapi.exception.ClientVisibleException;
 import io.github.ibuildthecloud.gdapi.exception.ValidationErrorException;
@@ -41,11 +42,19 @@ public class AgentQualifierAuthorizationProvider implements AuthorizationProvide
     private static final Set<String> STATES = new HashSet<String>(Arrays.asList(
             CommonStatesConstants.ACTIVATING,
             CommonStatesConstants.ACTIVE,
-            AgentConstants.STATE_RECONNECTING
+            AgentConstants.STATE_RECONNECTING,
+            AgentConstants.STATE_DISCONNECTED,
+            AgentConstants.STATE_DISCONNECTING
+    ));
+    private static final Set<String> DISCONNECTED = new HashSet<String>(Arrays.asList(
+            AgentConstants.STATE_DISCONNECTED,
+            AgentConstants.STATE_DISCONNECTING
     ));
 
     AchaiusPolicyOptionsFactory optionsFactory;
     ResourceManagerLocator locator;
+    @Inject
+    ObjectProcessManager processManager;
 
     @Override
     public Policy getPolicy(final Account account, Account authenticatedAsAccount, Set<Identity> identities, ApiRequest request) {
@@ -132,16 +141,21 @@ public class AgentQualifierAuthorizationProvider implements AuthorizationProvide
         Long id = null;
 
         /*  This really isn't the best logic.  Basically we are looking for agents with state in STATES */
-        for (Object agent : rm.list(type, null, Pagination.limit(2))) {
-            if (!(agent instanceof Agent)) {
+        for (Object obj : rm.list(type, null, Pagination.limit(2))) {
+            if (!(obj instanceof Agent)) {
                 continue;
             }
 
-            if (STATES.contains(((Agent) agent).getState())) {
+            Agent agent = (Agent)obj;
+
+            if (STATES.contains(agent.getState())) {
                 if (id != null) {
                     throw new ValidationErrorException(ValidationErrorCodes.MISSING_REQUIRED, "agentId");
                 } else {
-                    id = ((Agent) agent).getId();
+                    if (DISCONNECTED.contains(agent.getState())) {
+                        processManager.scheduleProcessInstance(AgentConstants.PROCESS_RECONNECT, agent, null);
+                    }
+                    id = agent.getId();
                 }
             }
         }

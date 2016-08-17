@@ -144,6 +144,10 @@ public class CatalogLauncher extends GenericServiceLauncher implements Initializ
 
     @Override
     public void reload() {
+        if (!shouldRun()) {
+            return;
+        }
+
         try {
             prepareConfigFile();
             Request.Post("http://localhost:8088/v1-catalog/templates?action=refresh").execute();
