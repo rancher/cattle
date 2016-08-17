@@ -197,7 +197,8 @@ public class InstanceStart extends AbstractDefaultProcessHandler {
         for (InstanceHostMap map : mapDao.findNonRemoved(InstanceHostMap.class, Instance.class, instance.getId())) {
             Host host = objectManager.loadResource(Host.class, map.getHostId());
             Agent agent = host == null ? null : objectManager.loadResource(Agent.class, host.getAgentId());
-            if (agent != null && AgentConstants.STATE_RECONNECTING.equals(agent.getState())) {
+            if (agent != null && (AgentConstants.STATE_RECONNECTING.equals(agent.getState()) ||
+                    AgentConstants.STATE_DISCONNECTED.equals(agent.getState()))) {
                 reconnecting = true;
             } else {
                 reconnecting = false;
