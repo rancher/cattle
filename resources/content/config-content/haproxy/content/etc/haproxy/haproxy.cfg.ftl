@@ -49,12 +49,14 @@ defaults
 frontend ${listener.uuid}_frontend
         bind *:${sourcePort} <#if listener.proxyPort == true>accept-proxy </#if><#if (listener.sourceProtocol == "https" || listener.sourceProtocol == "ssl") && certs?has_content> ssl crt /etc/haproxy/certs/<#if !defaultCert??> strict-sni</#if></#if>
         mode ${protocol}
-
         <#list backends[listener.uuid] as backend >
         <#if (listener.sourceProtocol == "http" || listener.sourceProtocol == "https") && (backend.portSpec.domain != "default" || backend.portSpec.path != "default")>
         <#if backend.portSpec.domain != "default">
         <#assign length=backend.portSpec.domain?length>
-            <#if (length > 2) && backend.portSpec.domain[0..1] == "*.">
+	        <#if (length > 2) && backend.portSpec.domain[0] == "^" && backend.portSpec.domain[length-1] == "$">
+                acl ${backend.uuid}_host hdr_reg(host) -i ${backend.portSpec.domain[0..length-1]}
+                acl ${backend.uuid}_host hdr_reg(host) -i ${backend.portSpec.domain[0..length-2]}:${sourcePort}$
+            <#elseif (length > 2) && backend.portSpec.domain[0..1] == "*.">
                 acl ${backend.uuid}_host hdr_end(host) -i ${backend.portSpec.domain[1..]}
                 acl ${backend.uuid}_host hdr_end(host) -i ${backend.portSpec.domain[1..]}:${sourcePort}
             <#elseif (length > 2) && backend.portSpec.domain[length-2..length-1] == ".*">
