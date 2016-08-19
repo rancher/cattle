@@ -86,9 +86,10 @@ public class GithubIdentityProvider extends GithubConfigurable implements Identi
                 !GithubConstants.USER_SCOPE.equalsIgnoreCase(account.getExternalIdType())) {
             return new HashSet<>();
         }
+        ApiRequest request = ApiContext.getContext().getApiRequest();
         String accessToken = (String) DataAccessor.fields(account).withKey(GithubConstants.GITHUB_ACCESS_TOKEN).get();
+        request.setAttribute(GithubConstants.GITHUB_ACCESS_TOKEN, accessToken);
         if (githubTokenUtils.findAndSetJWT()){
-            ApiRequest request = ApiContext.getContext().getApiRequest();
             request.setAttribute(GithubConstants.GITHUB_ACCESS_TOKEN, accessToken);
             return githubTokenUtils.getIdentities();
         }
@@ -115,9 +116,7 @@ public class GithubIdentityProvider extends GithubConfigurable implements Identi
         if (StringUtils.isBlank(jwt)){
             return Collections.emptySet();
         }
-        ApiRequest request = ApiContext.getContext().getApiRequest();
         request.setAttribute(GithubConstants.GITHUB_JWT, jwt);
-        request.setAttribute(GithubConstants.GITHUB_ACCESS_TOKEN, accessToken);
         return githubTokenUtils.getIdentities();
     }
 
