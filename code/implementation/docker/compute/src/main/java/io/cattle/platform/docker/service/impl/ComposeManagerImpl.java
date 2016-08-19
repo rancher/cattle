@@ -15,6 +15,7 @@ import io.cattle.platform.docker.process.lock.ComposeProjectLock;
 import io.cattle.platform.docker.process.lock.ComposeServiceLock;
 import io.cattle.platform.docker.process.util.DockerConstants;
 import io.cattle.platform.docker.service.ComposeManager;
+import io.cattle.platform.json.JsonMapper;
 import io.cattle.platform.lock.LockCallback;
 import io.cattle.platform.lock.LockCallbackNoReturn;
 import io.cattle.platform.lock.LockManager;
@@ -31,8 +32,10 @@ import io.github.ibuildthecloud.gdapi.condition.Condition;
 import io.github.ibuildthecloud.gdapi.condition.ConditionType;
 
 import java.util.Date;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.UUID;
 
 import javax.inject.Inject;
@@ -56,6 +59,8 @@ public class ComposeManagerImpl implements ComposeManager {
     ServiceExposeMapDao serviceExportMapDao;
     @Inject
     ObjectProcessManager objectProcessManager;
+    @Inject
+    JsonMapper jsonMapper;
 
     protected String getString(Map<String, Object> labels, String key) {
         Object value = labels.get(key);
@@ -99,6 +104,20 @@ public class ComposeManagerImpl implements ComposeManager {
         String project = getString(labels, PROJECT_LABEL);
         String service = getString(labels, SERVICE_LABEL);
 
+        Map<String, Object> instanceData = jsonMapper.writeValueAsMap(instance);
+        instanceData.remove(ObjectMetaDataManager.ID_FIELD);
+        instanceData.remove(ObjectMetaDataManager.STATE_FIELD);
+        instanceData.remove("token");
+        instanceData.remove(ObjectMetaDataManager.DATA_FIELD);
+        instanceData.remove(ObjectMetaDataManager.CREATED_FIELD);
+        Iterator<Entry<String, Object>> iter = instanceData.entrySet().iterator();
+        while (iter.hasNext()) {
+            Entry<String, Object> entry = iter.next();
+            if (entry.getValue() == null || entry.getValue() instanceof Number) {
+                iter.remove();
+            }
+        }
+
         Environment env = getEnvironment(instance.getAccountId(), project);
 
         return resourceDao.createAndSchedule(Service.class,
@@ -107,7 +126,7 @@ public class ComposeManagerImpl implements ComposeManager {
                 SERVICE.ENVIRONMENT_ID, env.getId(),
                 SERVICE.SELECTOR_CONTAINER, String.format("%s=%s, %s=%s", PROJECT_LABEL, project, SERVICE_LABEL, service),
                 ServiceDiscoveryConstants.FIELD_START_ON_CREATE, true,
-                ServiceDiscoveryConstants.FIELD_LAUNCH_CONFIG, instance,
+                ServiceDiscoveryConstants.FIELD_LAUNCH_CONFIG, instanceData,
                 SERVICE.KIND, "composeService");
     }
 
