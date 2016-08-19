@@ -15,6 +15,7 @@ import io.cattle.platform.docker.process.lock.ComposeProjectLock;
 import io.cattle.platform.docker.process.lock.ComposeServiceLock;
 import io.cattle.platform.docker.process.util.DockerConstants;
 import io.cattle.platform.docker.service.ComposeManager;
+import io.cattle.platform.json.JsonMapper;
 import io.cattle.platform.lock.LockCallback;
 import io.cattle.platform.lock.LockCallbackNoReturn;
 import io.cattle.platform.lock.LockManager;
@@ -27,12 +28,15 @@ import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.servicediscovery.api.constants.ServiceDiscoveryConstants;
 import io.cattle.platform.servicediscovery.api.dao.ServiceExposeMapDao;
 import io.cattle.platform.servicediscovery.deployment.impl.unit.DefaultDeploymentUnitInstance;
+import io.cattle.platform.util.type.CollectionUtils;
 import io.github.ibuildthecloud.gdapi.condition.Condition;
 import io.github.ibuildthecloud.gdapi.condition.ConditionType;
 
 import java.util.Date;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.UUID;
 
 import javax.inject.Inject;
@@ -42,6 +46,8 @@ import org.apache.commons.lang3.StringUtils;
 public class ComposeManagerImpl implements ComposeManager {
 
     public static final String SERVICE_LABEL = "com.docker.compose.service";
+    public static final String SERVICE_ID = "com.docker.swarm.service.id";
+    public static final String SWARM_SERVICE = "com.docker.swarm.service.name";
     public static final String PROJECT_LABEL = "com.docker.compose.project";
 
     @Inject
@@ -56,25 +62,48 @@ public class ComposeManagerImpl implements ComposeManager {
     ServiceExposeMapDao serviceExportMapDao;
     @Inject
     ObjectProcessManager objectProcessManager;
+    @Inject
+    JsonMapper jsonMapper;
 
     protected String getString(Map<String, Object> labels, String key) {
         Object value = labels.get(key);
         return value == null ? null : value.toString();
-
     }
 
     @Override
     public void setupServiceAndInstance(Instance instance) {
         Map<String, Object> labels = DataAccessor.fieldMap(instance, InstanceConstants.FIELD_LABELS);
-        String project = getString(labels, PROJECT_LABEL);
         String service = getString(labels, SERVICE_LABEL);
+        if (service == null) {
+            service = getString(labels, SWARM_SERVICE);
+        }
 
-        if (StringUtils.isBlank(project) || StringUtils.isBlank(service)) {
+        if (StringUtils.isBlank(service)) {
             return;
         }
 
+        String project = getProject(instance, labels);
+        String serviceId = getString(labels, SERVICE_ID);
+
         instance = setupLabels(instance, service, project);
-        getService(instance, service, project);
+        getService(instance, service, project, serviceId);
+    }
+
+    protected String getProject(Instance instance, Map<String, Object> labels) {
+        String project = getString(labels, PROJECT_LABEL);
+        if (project != null) {
+            return project;
+        }
+
+        Map<String, Object> networks = CollectionUtils.toMap(CollectionUtils.getNestedValue(instance.getData(),
+                "dockerContainer", "NetworkSettings", "Networks"));
+
+        if (networks.size() == 0) {
+            return "default";
+        }
+
+        String networkName = networks.keySet().iterator().next();
+        return "bridge".equals(networkName) ? "default" : networkName;
     }
 
     private Instance setupLabels(Instance instance, String service, String project) {
@@ -94,24 +123,38 @@ public class ComposeManagerImpl implements ComposeManager {
         }
     }
 
-    protected Service createService(Instance instance) {
-        Map<String, Object> labels = DataAccessor.fieldMap(instance, InstanceConstants.FIELD_LABELS);
-        String project = getString(labels, PROJECT_LABEL);
-        String service = getString(labels, SERVICE_LABEL);
-
+    protected Service createService(Instance instance, String project, String service, String serviceId) {
         Environment env = getEnvironment(instance.getAccountId(), project);
+        Map<String, Object> instanceData = jsonMapper.writeValueAsMap(instance);
+        instanceData.remove(ObjectMetaDataManager.ID_FIELD);
+        instanceData.remove(ObjectMetaDataManager.STATE_FIELD);
+        instanceData.remove("token");
+        instanceData.remove(ObjectMetaDataManager.DATA_FIELD);
+        instanceData.remove(ObjectMetaDataManager.CREATED_FIELD);
+        Iterator<Entry<String, Object>> iter = instanceData.entrySet().iterator();
+        while (iter.hasNext()) {
+            Entry<String, Object> entry = iter.next();
+            if (entry.getValue() == null || entry.getValue() instanceof Number) {
+                iter.remove();
+            }
+        }
+
+        String selector = String.format("%s=%s", SERVICE_ID, serviceId);
+        if (serviceId == null) {
+            selector = String.format("%s=%s, %s=%s", PROJECT_LABEL, project, SERVICE_LABEL, service);
+        }
 
         return resourceDao.createAndSchedule(Service.class,
                 SERVICE.NAME, service,
                 SERVICE.ACCOUNT_ID, instance.getAccountId(),
                 SERVICE.ENVIRONMENT_ID, env.getId(),
-                SERVICE.SELECTOR_CONTAINER, String.format("%s=%s, %s=%s", PROJECT_LABEL, project, SERVICE_LABEL, service),
+                SERVICE.SELECTOR_CONTAINER, selector,
                 ServiceDiscoveryConstants.FIELD_START_ON_CREATE, true,
-                ServiceDiscoveryConstants.FIELD_LAUNCH_CONFIG, instance,
+                ServiceDiscoveryConstants.FIELD_LAUNCH_CONFIG, instanceData,
                 SERVICE.KIND, "composeService");
     }
 
-    protected Service getService(final Instance instance, final String name, final String projectName) {
+    protected Service getService(final Instance instance, final String name, final String projectName, final String serviceId) {
         Service service = composeDao.getComposeServiceByName(instance.getAccountId(), name, projectName);
         if (service != null) {
             return service;
@@ -125,7 +168,7 @@ public class ComposeManagerImpl implements ComposeManager {
                     return service;
                 }
 
-                return createService(instance);
+                return createService(instance, projectName, name, serviceId);
             }
         });
     }
