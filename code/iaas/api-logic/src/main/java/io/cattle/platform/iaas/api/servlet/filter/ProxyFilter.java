@@ -19,6 +19,7 @@ public class ProxyFilter implements Filter {
 
     String proxy;
     boolean redirects = true;
+    boolean parseform = false;
 
     @Override
     public void init(FilterConfig filterConfig) throws ServletException {
@@ -26,6 +27,10 @@ public class ProxyFilter implements Filter {
         String value = filterConfig.getInitParameter("redirects");
         if (StringUtils.isNotBlank(value)) {
             redirects = Boolean.parseBoolean(value);
+        }
+        String parseFormValue = filterConfig.getInitParameter("parseform");
+        if (StringUtils.isNotBlank(parseFormValue)) {
+            parseform = Boolean.parseBoolean(parseFormValue);
         }
     }
 
@@ -35,6 +40,8 @@ public class ProxyFilter implements Filter {
         request.setAttribute(GenericWhitelistedProxy.ALLOWED_HOST, true);
         request.setAttribute(GenericWhitelistedProxy.SET_HOST_CURRENT_HOST, true);
         request.setAttribute(GenericWhitelistedProxy.REDIRECTS, redirects);
+        request.setAttribute(GenericWhitelistedProxy.PARSE_FORM, parseform);
+
         rd.forward(request, response);
         return;
     }

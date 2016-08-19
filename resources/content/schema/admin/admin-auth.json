@@ -106,15 +106,6 @@
         "externalHandlerExternalHandlerProcessMap.eventName" : "r",
         "externalHandlerProcess" : "r",
 
-        "githubconfig": "cru",
-        "githubconfig.allowedIdentities": "cr",
-        "githubconfig.accessMode": "cr",
-        "githubconfig.clientId": "cr",
-        "githubconfig.clientSecret": "cro",
-        "githubconfig.enabled": "cr",
-        "githubconfig.hostname": "cr",
-        "githubconfig.scheme": "cr",
-
         "azureadconfig": "cru",
         "azureadconfig.accessMode": "cr",
         "azureadconfig.clientId": "cr",

@@ -5,18 +5,16 @@
         "token": "cr",
         "token.accountId": "r",
         "token.accountId": "r",
-        "token.clientId": "r",
         "token.code": "cr",
         "token.defaultProject": "r",
         "token.enabled": "r",
-        "token.hostname": "r",
-        "token.scheme": "r",
         "token.identities": "r",
         "token.jwt": "r",
         "token.security": "r",
         "token.user": "r",
         "token.userIdentity": "r",
         "token.authProvider": "r",
+        "token.redirectUrl": "r",
         "token.userType": "r"
     }
 }

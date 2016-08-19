@@ -45,6 +45,8 @@ public abstract class AbstractTokenUtil implements TokenUtil {
     public static final String ACCOUNT_ID = "account_id";
     public static final String ACCESS_TOKEN_INVALID = "InvalidAccessToken";
     public static final String ID_LIST = "idList";
+    public static final String USER_IDENTITY = "userIdentity";
+    public static final String USER_TYPE = "userType";
 
     public static final String REQUIRED_ACCESSMODE = "required";
     public static final String RESTRICTED_ACCESSMODE = "restricted";
@@ -346,6 +348,9 @@ public abstract class AbstractTokenUtil implements TokenUtil {
         jsonData.put(AbstractTokenUtil.TOKEN, tokenType());
         jsonData.put(AbstractTokenUtil.ACCOUNT_ID, user.getExternalId());
         jsonData.put(AbstractTokenUtil.ID_LIST, identitiesToIdList(identities));
+        jsonData.put(AbstractTokenUtil.USER_IDENTITY, user);
+        jsonData.put(AbstractTokenUtil.USER_TYPE, account.getKind());
+
         String accountId = (String) ApiContext.getContext().getIdFormatter().formatId(objectManager.getType(Account.class), account.getId());
         Date expiry = new Date(System.currentTimeMillis() + SecurityConstants.TOKEN_EXPIRY_MILLIS.get());
         String jwt = tokenService.generateEncryptedToken(jsonData, expiry);

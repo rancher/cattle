@@ -3,6 +3,7 @@ package io.cattle.platform.iaas.api.auth.integration.internal.rancher;
 import io.cattle.platform.core.model.Account;
 import io.cattle.platform.iaas.api.auth.SecurityConstants;
 import io.cattle.platform.iaas.api.auth.AbstractTokenUtil;
+import io.cattle.platform.iaas.api.auth.integration.external.ExternalServiceTokenUtil;
 import io.cattle.platform.iaas.api.auth.integration.interfaces.TokenUtil;
 import io.cattle.platform.iaas.api.auth.integration.interfaces.AccountLookup;
 import io.cattle.platform.util.type.Priority;
@@ -11,6 +12,7 @@ import io.github.ibuildthecloud.gdapi.request.ApiRequest;
 import io.github.ibuildthecloud.gdapi.util.ResponseCodes;
 
 import java.util.Map;
+
 import javax.inject.Inject;
 
 import org.apache.commons.lang3.StringUtils;
@@ -18,6 +20,9 @@ import org.apache.commons.lang3.StringUtils;
 public class TokenAuthLookup implements AccountLookup, Priority {
 
     Map<String, TokenUtil> tokenUtilsMap;
+
+    @Inject
+    ExternalServiceTokenUtil externalTokenUtil;
 
     @Override
     public int getPriority() {
@@ -46,11 +51,15 @@ public class TokenAuthLookup implements AccountLookup, Priority {
     }
 
     private TokenUtil tokenUtils(){
-        TokenUtil tokenUtil = tokenUtilsMap.get(SecurityConstants.AUTH_PROVIDER.get());
-        if (tokenUtil == null || !tokenUtil.isConfigured()) {
-            throw new ClientVisibleException(ResponseCodes.INTERNAL_SERVER_ERROR, "TokenUtilNotConfigured");
+        if (SecurityConstants.INTERNAL_AUTH_PROVIDERS.contains(SecurityConstants.AUTH_PROVIDER.get())) {
+            TokenUtil tokenUtil = tokenUtilsMap.get(SecurityConstants.AUTH_PROVIDER.get());
+            if (tokenUtil == null || !tokenUtil.isConfigured()) {
+                throw new ClientVisibleException(ResponseCodes.INTERNAL_SERVER_ERROR, "TokenUtilNotConfigured");
+            }
+            return tokenUtil;
+        } else {
+            return externalTokenUtil;
         }
-        return tokenUtil;
     }
 
     @Override

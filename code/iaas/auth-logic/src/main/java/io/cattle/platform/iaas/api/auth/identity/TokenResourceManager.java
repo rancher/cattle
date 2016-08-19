@@ -4,6 +4,7 @@ import io.cattle.platform.api.auth.Identity;
 import io.cattle.platform.api.auth.Policy;
 import io.cattle.platform.iaas.api.auth.SecurityConstants;
 import io.cattle.platform.iaas.api.auth.dao.AuthTokenDao;
+import io.cattle.platform.iaas.api.auth.integration.external.ExternalServiceAuthProvider;
 import io.cattle.platform.iaas.api.auth.integration.interfaces.TokenCreator;
 import io.cattle.platform.iaas.api.auth.AbstractTokenUtil;
 import io.github.ibuildthecloud.gdapi.context.ApiContext;
@@ -30,6 +31,9 @@ public class TokenResourceManager extends AbstractNoOpResourceManager {
     @Inject
     IdentityManager identityManager;
 
+    @Inject
+    ExternalServiceAuthProvider externalAuthProvider;
+
     private List<TokenCreator> tokenCreators;
 
     @Override
@@ -51,20 +55,26 @@ public class TokenResourceManager extends AbstractNoOpResourceManager {
             throw new ClientVisibleException(ResponseCodes.INTERNAL_SERVER_ERROR,
                     "NoAuthProvider", "No Auth provider is configured.", null);
         }
-        for (TokenCreator tokenCreator : tokenCreators) {
-            if (tokenCreator.isConfigured() && tokenCreator.providerType().equalsIgnoreCase(SecurityConstants.AUTH_PROVIDER.get())) {
-                if (!SecurityConstants.SECURITY.get()) {
-                    tokenCreator.reset();
+
+        if (SecurityConstants.INTERNAL_AUTH_PROVIDERS.contains(SecurityConstants.AUTH_PROVIDER.get())) {
+            for (TokenCreator tokenCreator : tokenCreators) {
+                if (tokenCreator.isConfigured() && tokenCreator.providerType().equalsIgnoreCase(SecurityConstants.AUTH_PROVIDER.get())) {
+                    if (!SecurityConstants.SECURITY.get()) {
+                        tokenCreator.reset();
+                    }
+                    token = tokenCreator.getToken(request);
+                    break;
                 }
-                token = tokenCreator.getToken(request);
-                break;
             }
+        } else {
+            //call external service
+            token = externalAuthProvider.getToken(request);
         }
+
         if (token == null){
             throw new ClientVisibleException(ResponseCodes.BAD_REQUEST,
                     "codeInvalid", "Code provided is invalid.", null);
         }
-
         Identity[] identities = token.getIdentities();
         List<Identity> transFormedIdentities = new ArrayList<>();
         for (Identity identity : identities) {
@@ -78,7 +88,22 @@ public class TokenResourceManager extends AbstractNoOpResourceManager {
 
     @Override
     protected Object listInternal(SchemaFactory schemaFactory, String type, Map<Object, Object> criteria, ListOptions options) {
-        return new Token();
+        Token token = new Token();
+
+        //get RedirectUrl if applicable
+        if (SecurityConstants.AUTH_PROVIDER.get() == null || SecurityConstants.NO_PROVIDER.equalsIgnoreCase(SecurityConstants.AUTH_PROVIDER.get())) {
+            return token;
+        }
+
+        if (SecurityConstants.INTERNAL_AUTH_PROVIDERS.contains(SecurityConstants.AUTH_PROVIDER.get())) {
+            return token;
+        } else {
+            //get redirect Url from external service
+            if (externalAuthProvider.isConfigured()) {
+                return externalAuthProvider.readCurrentToken();
+            }
+        }
+        return token;
     }
 
     public List<TokenCreator> getTokenCreators() {
