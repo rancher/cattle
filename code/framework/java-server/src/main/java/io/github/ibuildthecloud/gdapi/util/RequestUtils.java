@@ -1,6 +1,7 @@
 package io.github.ibuildthecloud.gdapi.util;
 
 import static io.github.ibuildthecloud.gdapi.model.Schema.Method.*;
+
 import io.github.ibuildthecloud.gdapi.condition.Condition;
 import io.github.ibuildthecloud.gdapi.condition.ConditionType;
 import io.github.ibuildthecloud.gdapi.request.ApiRequest;
@@ -47,6 +48,20 @@ public class RequestUtils {
         Object obj = params.get(key);
         Object singleObj = makeSingular(obj);
         return ObjectUtils.toString(singleObj, null);
+    }
+    
+    public static String getConditionValue(String key, Map<Object, Object> params) {
+        Object value = params.get(key);
+        if (value == null) {
+            return null;
+        }
+        
+        value = makeSingular(value);
+        if (value instanceof Condition) {
+            return ObjectUtils.toString(((Condition) value).getValue(), null);
+        }
+
+        return ObjectUtils.toString(value, null);
     }
 
     public static Object makeSingular(Object input) {

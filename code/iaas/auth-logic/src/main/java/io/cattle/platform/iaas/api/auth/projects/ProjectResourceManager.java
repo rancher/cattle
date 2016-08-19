@@ -18,7 +18,6 @@ import io.cattle.platform.object.process.ObjectProcessManager;
 import io.cattle.platform.object.process.StandardProcess;
 import io.cattle.platform.process.common.util.ProcessUtils;
 import io.cattle.platform.util.type.CollectionUtils;
-import io.github.ibuildthecloud.gdapi.condition.Condition;
 import io.github.ibuildthecloud.gdapi.context.ApiContext;
 import io.github.ibuildthecloud.gdapi.exception.ClientVisibleException;
 import io.github.ibuildthecloud.gdapi.factory.SchemaFactory;
@@ -28,6 +27,7 @@ import io.github.ibuildthecloud.gdapi.model.Schema;
 import io.github.ibuildthecloud.gdapi.model.impl.CollectionImpl;
 import io.github.ibuildthecloud.gdapi.request.ApiRequest;
 import io.github.ibuildthecloud.gdapi.url.UrlBuilder;
+import io.github.ibuildthecloud.gdapi.util.RequestUtils;
 import io.github.ibuildthecloud.gdapi.util.ResponseCodes;
 
 import java.net.URL;
@@ -38,7 +38,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
+
 import javax.inject.Inject;
+
+import org.apache.commons.lang3.StringUtils;
 
 public class ProjectResourceManager extends AbstractObjectResourceManager {
 
@@ -70,19 +73,14 @@ public class ProjectResourceManager extends AbstractObjectResourceManager {
     public Object listInternal(SchemaFactory schemaFactory, String type, Map<Object, Object> criteria, ListOptions options) {
         ApiRequest request = ApiContext.getContext().getApiRequest();
         Policy policy = (Policy) ApiContext.getContext().getPolicy();
-        Object obj = criteria.get("id");
-        String id;
-        if (obj != null) {
-            if (obj instanceof String) {
-                id = (String) obj;
-            } else {
-                throw new ClientVisibleException(ResponseCodes.NOT_FOUND);
-            }
+        String id = RequestUtils.getConditionValue("id", criteria);
+        String uuid = RequestUtils.getConditionValue("uuid", criteria);
+        String name = RequestUtils.getConditionValue("name", criteria);
+        if (!StringUtils.isBlank(id)) {
             Account project = giveProjectAccess(getObjectManager().loadResource(Account.class, id), policy);
             return Collections.singletonList(project);
         }
-        if (criteria.get("uuid") != null) {
-            String uuid = ((String) ((Condition) ((ArrayList<?>) criteria.get("uuid")).get(0)).getValue());
+        if (!StringUtils.isBlank(uuid)) {
             return giveProjectAccess(authDao.getAccountByUuid(uuid), policy);
         }
         boolean isAdmin;
@@ -101,6 +99,9 @@ public class ProjectResourceManager extends AbstractObjectResourceManager {
                 isAdmin, policy.getAccountId());
         List<Account> projectsFiltered = new ArrayList<>();
         for (Account project : projects) {
+            if (StringUtils.isNotBlank(name) && !name.equalsIgnoreCase(project.getName())) {
+                continue;
+            }
             projectsFiltered.add(giveProjectAccess(project, policy));
         }
         return projectsFiltered;
