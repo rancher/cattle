@@ -4,6 +4,7 @@ import io.github.ibuildthecloud.gdapi.model.Field;
 import io.github.ibuildthecloud.gdapi.model.FieldType;
 import io.github.ibuildthecloud.gdapi.model.FieldType.TypeAndName;
 
+import java.io.Serializable;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -14,7 +15,9 @@ import java.util.Map;
 
 import javax.xml.bind.annotation.XmlTransient;
 
-public class FieldImpl implements Field {
+public class FieldImpl implements Field, Serializable {
+
+    private static final long serialVersionUID = -2165031896296545902L;
 
     String name, type, validChars, invalidChars, transform, description;
     Integer displayIndex;
@@ -25,7 +28,7 @@ public class FieldImpl implements Field {
     Long min, max, minLength, maxLength;
     Object defaultValue;
     List<String> options;
-    Method readMethod;
+    transient Method readMethod;
     Map<String, Object> attributes = new HashMap<String, Object>();
 
     public FieldImpl() {
