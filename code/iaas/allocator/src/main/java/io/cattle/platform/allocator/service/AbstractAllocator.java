@@ -136,7 +136,8 @@ public abstract class AbstractAllocator implements Allocator {
             return;
         }
 
-        final Host host = allocatorDao.getHost(instance);
+        Host host = allocatorDao.getHost(instance);
+        final Long hostId = host == null ? null : host.getId();
         final Set<Volume> volumes = new HashSet<Volume>(objectManager.children(instance, Volume.class));
         volumes.addAll(InstanceHelpers.extractVolumesFromMounts(instance, objectManager));
         final Map<Volume, Set<StoragePool>> pools = new HashMap<Volume, Set<StoragePool>>();
@@ -158,7 +159,7 @@ public abstract class AbstractAllocator implements Allocator {
         lockManager.lock(new AllocateVolumesResourceLock(volumes), new LockCallbackNoReturn() {
             @Override
             public void doWithLockNoResult() {
-                AllocationAttempt attempt = new AllocationAttempt(instance.getAccountId(), instance, host, volumes, pools, nics, subnets);
+                AllocationAttempt attempt = new AllocationAttempt(instance.getAccountId(), instance, hostId, volumes, pools, nics, subnets);
 
                 doAllocate(request, attempt, instance);
             }

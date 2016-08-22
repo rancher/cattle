@@ -2,7 +2,6 @@ package io.cattle.platform.allocator.service;
 
 import io.cattle.platform.allocator.constraint.Constraint;
 import io.cattle.platform.allocator.constraint.IsValidConstraint;
-import io.cattle.platform.core.model.Host;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.Nic;
 import io.cattle.platform.core.model.StoragePool;
@@ -25,7 +24,6 @@ public class AllocationAttempt {
 
     Instance instance;
 
-    Host host;
     Long hostId;
 
     Set<Volume> volumes;
@@ -44,17 +42,16 @@ public class AllocationAttempt {
     List<AllocationCandidate> candidates = new ArrayList<AllocationCandidate>();
     AllocationCandidate matchedCandidate;
 
-    public AllocationAttempt(long accountId, Instance instance, Host host, Set<Volume> volumes, Map<Volume, Set<StoragePool>> pools, Set<Nic> nics,
+    public AllocationAttempt(long accountId, Instance instance, Long hostId, Set<Volume> volumes, Map<Volume, Set<StoragePool>> pools, Set<Nic> nics,
             Map<Nic, Subnet> subnets) {
         super();
         this.accountId = accountId;
         this.instance = instance;
-        this.host = host;
+        this.hostId = hostId;
         this.volumes = volumes;
         this.pools = pools;
         this.nics = nics;
         this.subnets = subnets == null ? Collections.<Nic, Subnet> emptyMap() : subnets;
-        this.hostId = host == null ? null : host.getId();
 
         this.volumeIds = new HashSet<Long>(volumes.size());
         this.poolIds = new HashMap<Long, Set<Long>>();
@@ -103,8 +100,8 @@ public class AllocationAttempt {
         return instance == null ? null : instance.getId();
     }
 
-    public Host getHost() {
-        return host;
+    public Long getHostId() {
+        return hostId;
     }
 
     public Set<Volume> getVolumes() {
@@ -131,8 +128,8 @@ public class AllocationAttempt {
         this.instance = instance;
     }
 
-    public void setHost(Host host) {
-        this.host = host;
+    public void setHostId(Long hostId) {
+        this.hostId = hostId;
     }
 
     public void setVolumes(Set<Volume> volumes) {
@@ -161,14 +158,6 @@ public class AllocationAttempt {
 
     public void setMatchedCandidate(AllocationCandidate matchedCandidate) {
         this.matchedCandidate = matchedCandidate;
-    }
-
-    public Long getHostId() {
-        return hostId;
-    }
-
-    public void setHostId(Long hostId) {
-        this.hostId = hostId;
     }
 
     public Set<Long> getVolumeIds() {
