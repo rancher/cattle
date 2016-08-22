@@ -29,18 +29,6 @@ public class SimpleAllocator extends AbstractAllocator implements Allocator, Nam
     SimpleAllocatorDao simpleAllocatorDao;
 
     @Override
-    protected synchronized void acquireLockAndAllocate(AllocationRequest request, AllocationAttempt attempt, Object deallocate) {
-        /* Overriding just to add synchronized */
-        super.acquireLockAndAllocate(request, attempt, deallocate);
-    }
-
-    @Override
-    protected synchronized void acquireLockAndDeallocate(AllocationRequest request) {
-        /* Overriding just to add synchronized */
-        super.acquireLockAndDeallocate(request);
-    }
-
-    @Override
     protected LockDefinition getAllocationLock(AllocationRequest request, AllocationAttempt attempt) {
         if (attempt != null) {
             return new AccountAllocatorLock(attempt.getAccountId());
