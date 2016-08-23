@@ -18,7 +18,7 @@ public interface AllocatorService {
      * This address various usability issues allowing users to provide shorthand versions of the service
      * name
      */
-    void normalizeLabels(long environmentId, Map<String, String> systemLabels, Map<String, String> serviceUserLabels);
+    void normalizeLabels(long stackId, Map<String, String> systemLabels, Map<String, String> serviceUserLabels);
 
     List<Long> getHostsSatisfyingHostAffinity(Long accountId, Map<String, String> labelConstraints);
 

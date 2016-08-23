@@ -1,6 +1,7 @@
 package io.cattle.platform.systemstack.listener;
 
-import static io.cattle.platform.core.model.tables.EnvironmentTable.*;
+import static io.cattle.platform.core.model.tables.StackTable.*;
+
 import io.cattle.platform.archaius.util.ArchaiusUtil;
 import io.cattle.platform.configitem.events.ConfigUpdate;
 import io.cattle.platform.configitem.model.Client;
@@ -10,8 +11,8 @@ import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.dao.GenericResourceDao;
 import io.cattle.platform.core.dao.HostDao;
 import io.cattle.platform.core.model.Account;
-import io.cattle.platform.core.model.Environment;
-import io.cattle.platform.core.model.tables.records.EnvironmentRecord;
+import io.cattle.platform.core.model.Stack;
+import io.cattle.platform.core.model.tables.records.StackRecord;
 import io.cattle.platform.db.jooq.dao.impl.AbstractJooqDao;
 import io.cattle.platform.eventing.EventService;
 import io.cattle.platform.eventing.annotation.AnnotatedEventListener;
@@ -143,7 +144,7 @@ public class SystemStackUpdate extends AbstractJooqDao implements AnnotatedEvent
     }
 
     protected boolean addStack(Account account, String stack) throws IOException {
-        Environment env = getStack(account, stack);
+        Stack env = getStack(account, stack);
         if (env != null && CommonStatesConstants.REMOVING.equals(env.getState())) {
             /* Stack is deleting, so just wait */
             return false;
@@ -178,16 +179,16 @@ public class SystemStackUpdate extends AbstractJooqDao implements AnnotatedEvent
         }
 
         Map<Object, Object> data = CollectionUtils.asMap(
-                (Object)ENVIRONMENT.NAME, StringUtils.capitalize(stack),
-                ENVIRONMENT.ACCOUNT_ID, account.getId(),
-                ENVIRONMENT.EXTERNAL_ID, getExternalId(stack, version, true),
+                (Object)STACK.NAME, StringUtils.capitalize(stack),
+                STACK.ACCOUNT_ID, account.getId(),
+                STACK.EXTERNAL_ID, getExternalId(stack, version, true),
                 ServiceDiscoveryConstants.STACK_FIELD_DOCKER_COMPOSE, compose,
                 ServiceDiscoveryConstants.STACK_FIELD_RANCHER_COMPOSE, rancherCompose,
                 ServiceDiscoveryConstants.STACK_FIELD_START_ON_CREATE, true);
 
-        Map<String, Object> props = objectManager.convertToPropertiesFor(Environment.class, data);
+        Map<String, Object> props = objectManager.convertToPropertiesFor(Stack.class, data);
         props.put("isSystem", true);
-        resourceDao.createAndSchedule(Environment.class, props);
+        resourceDao.createAndSchedule(Stack.class, props);
         return true;
     }
 
@@ -276,19 +277,19 @@ public class SystemStackUpdate extends AbstractJooqDao implements AnnotatedEvent
 
     }
 
-    protected Environment getStack(Account account, String stackType) {
-        List<Environment> stacks = new ArrayList<>();
+    protected Stack getStack(Account account, String stackType) {
+        List<Stack> stacks = new ArrayList<>();
         List<String> externalIds = new ArrayList<>();
         externalIds.add(getExternalId(stackType, "", false));
         externalIds.add(getExternalId(stackType, "", true));
         for (String externalId : externalIds) {
             stacks.addAll(create()
-                .select(ENVIRONMENT.fields())
-                .from(ENVIRONMENT)
-                .where(ENVIRONMENT.REMOVED.isNull())
-                .and(ENVIRONMENT.ACCOUNT_ID.eq(account.getId()))
-                    .and(ENVIRONMENT.EXTERNAL_ID.startsWith(externalId))
-                    .fetchInto(EnvironmentRecord.class));
+                .select(STACK.fields())
+                .from(STACK)
+                .where(STACK.REMOVED.isNull())
+                .and(STACK.ACCOUNT_ID.eq(account.getId()))
+                    .and(STACK.EXTERNAL_ID.startsWith(externalId))
+                    .fetchInto(StackRecord.class));
         }
 
         if (stacks.isEmpty()) {
@@ -298,7 +299,7 @@ public class SystemStackUpdate extends AbstractJooqDao implements AnnotatedEvent
     }
 
     protected void removeStack(Account account, String stackType) {
-        Environment env = getStack(account, stackType);
+        Stack env = getStack(account, stackType);
         if (env != null) {
             processManager.scheduleStandardProcess(StandardProcess.REMOVE, env, null);
         }

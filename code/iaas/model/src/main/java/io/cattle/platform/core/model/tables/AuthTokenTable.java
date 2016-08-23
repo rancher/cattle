@@ -11,7 +11,7 @@ package io.cattle.platform.core.model.tables;
 @java.lang.SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class AuthTokenTable extends org.jooq.impl.TableImpl<io.cattle.platform.core.model.tables.records.AuthTokenRecord> {
 
-	private static final long serialVersionUID = 419018058;
+	private static final long serialVersionUID = -1756331728;
 
 	/**
 	 * The singleton instance of <code>cattle.auth_token</code>
@@ -109,7 +109,7 @@ public class AuthTokenTable extends org.jooq.impl.TableImpl<io.cattle.platform.c
 	 */
 	@Override
 	public java.util.List<org.jooq.UniqueKey<io.cattle.platform.core.model.tables.records.AuthTokenRecord>> getKeys() {
-		return java.util.Arrays.<org.jooq.UniqueKey<io.cattle.platform.core.model.tables.records.AuthTokenRecord>>asList(io.cattle.platform.core.model.Keys.KEY_AUTH_TOKEN_PRIMARY, io.cattle.platform.core.model.Keys.KEY_AUTH_TOKEN_KEY, io.cattle.platform.core.model.Keys.KEY_AUTH_TOKEN_IDX_AUTH_TOKEN_KEY);
+		return java.util.Arrays.<org.jooq.UniqueKey<io.cattle.platform.core.model.tables.records.AuthTokenRecord>>asList(io.cattle.platform.core.model.Keys.KEY_AUTH_TOKEN_PRIMARY, io.cattle.platform.core.model.Keys.KEY_AUTH_TOKEN_IDX_AUTH_TOKEN_KEY, io.cattle.platform.core.model.Keys.KEY_AUTH_TOKEN_KEY);
 	}
 
 	/**

@@ -8,7 +8,7 @@ import io.cattle.platform.core.addon.ServiceLink;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.constants.LoadBalancerConstants;
 import io.cattle.platform.core.dao.DataDao;
-import io.cattle.platform.core.model.Environment;
+import io.cattle.platform.core.model.Stack;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.Service;
 import io.cattle.platform.core.model.ServiceConsumeMap;
@@ -99,8 +99,8 @@ public class ServiceDiscoveryApiServiceImpl implements ServiceDiscoveryApiServic
     }
 
     @Override
-    public List<? extends Service> listEnvironmentServices(long environmentId) {
-        return objectManager.find(Service.class, SERVICE.ENVIRONMENT_ID, environmentId, SERVICE.REMOVED,
+    public List<? extends Service> listStackServices(long stackId) {
+        return objectManager.find(Service.class, SERVICE.STACK_ID, stackId, SERVICE.REMOVED,
                 null);
     }
 
@@ -251,9 +251,9 @@ public class ServiceDiscoveryApiServiceImpl implements ServiceDiscoveryApiServic
             Service consumedService = objectManager.loadResource(Service.class, map.getConsumedServiceId());
             List<String> ports = DataAccessor.fieldStringList(map, LoadBalancerConstants.FIELD_LB_TARGET_PORTS);
             String consumedServiceName = consumedService.getName();
-            if (!service.getEnvironmentId().equals(consumedService.getEnvironmentId())) {
-                Environment env = objectManager.loadResource(Environment.class,
-                        consumedService.getEnvironmentId());
+            if (!service.getStackId().equals(consumedService.getStackId())) {
+                Stack env = objectManager.loadResource(Stack.class,
+                        consumedService.getStackId());
                 consumedServiceName = env.getName() + "/" + consumedServiceName;
             }
             String labelName = ServiceDiscoveryConstants.LABEL_LB_TARGET + consumedServiceName;
@@ -335,10 +335,10 @@ public class ServiceDiscoveryApiServiceImpl implements ServiceDiscoveryApiServic
                     .getName());
             if (servicesToExportIds.contains(consumedServiceMap.getConsumedServiceId())) {
                 serviceLinksWithNames.add(linkName);
-            } else if (!consumedService.getEnvironmentId().equals(service.getEnvironmentId())) {
-                Environment externalEnvironment = objectManager.loadResource(Environment.class,
-                        consumedService.getEnvironmentId());
-                externalLinksServices.add(externalEnvironment.getName() + "/" + linkName);
+            } else if (!consumedService.getStackId().equals(service.getStackId())) {
+                Stack externalStack = objectManager.loadResource(Stack.class,
+                        consumedService.getStackId());
+                externalLinksServices.add(externalStack.getName() + "/" + linkName);
             }
         }
         if (!serviceLinksWithNames.isEmpty()) {
@@ -474,9 +474,9 @@ public class ServiceDiscoveryApiServiceImpl implements ServiceDiscoveryApiServic
             return null;
         }
 
-        final Environment environment = objectManager.loadResource(Environment.class, service.getEnvironmentId());
+        final Stack stack = objectManager.loadResource(Stack.class, service.getStackId());
 
-        if (environment == null) {
+        if (stack == null) {
             return null;
         }
 
@@ -485,12 +485,12 @@ public class ServiceDiscoveryApiServiceImpl implements ServiceDiscoveryApiServic
         return dataDao.getOrCreate(key, false, new Callable<String>() {
             @Override
             public String call() throws Exception {
-                return generateService(service, environment);
+                return generateService(service, stack);
             }
         });
     }
 
-    protected String generateService(Service service, Environment environment) throws Exception {
+    protected String generateService(Service service, Stack stack) throws Exception {
         @SuppressWarnings("unchecked")
         Map<String, Object> metadata = DataAccessor.fields(service).withKey(ServiceDiscoveryConstants.FIELD_METADATA)
                 .withDefault(Collections.EMPTY_MAP).as(Map.class);
@@ -501,7 +501,7 @@ public class ServiceDiscoveryApiServiceImpl implements ServiceDiscoveryApiServic
         List<String> sans = new ArrayList<>(configuredSans);
 
         sans.add(serviceName.toLowerCase());
-        sans.add(String.format("%s.%s", serviceName, environment.getName()).toLowerCase());
+        sans.add(String.format("%s.%s", serviceName, stack.getName()).toLowerCase());
 
 
         CertSet certSet = keyProvider.generateCertificate(serviceName, sans.toArray(new String[sans.size()]));

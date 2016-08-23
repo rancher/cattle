@@ -111,7 +111,7 @@ public class Tables {
 	/**
 	 * The table cattle.environment
 	 */
-	public static final io.cattle.platform.core.model.tables.EnvironmentTable ENVIRONMENT = io.cattle.platform.core.model.tables.EnvironmentTable.ENVIRONMENT;
+	public static final io.cattle.platform.core.model.tables.StackTable STACK = io.cattle.platform.core.model.tables.StackTable.STACK;
 
 	/**
 	 * The table cattle.external_event

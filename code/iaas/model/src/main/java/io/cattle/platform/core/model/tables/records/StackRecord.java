@@ -11,9 +11,9 @@ package io.cattle.platform.core.model.tables.records;
 @java.lang.SuppressWarnings({ "all", "unchecked", "rawtypes" })
 @javax.persistence.Entity
 @javax.persistence.Table(name = "environment", schema = "cattle")
-public class EnvironmentRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.platform.core.model.tables.records.EnvironmentRecord> implements io.cattle.platform.db.jooq.utils.TableRecordJaxb, org.jooq.Record13<java.lang.Long, java.lang.String, java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.util.Date, java.util.Date, java.util.Date, java.util.Map<String,Object>, java.lang.String, java.lang.String>, io.cattle.platform.core.model.Environment {
+public class StackRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.platform.core.model.tables.records.StackRecord> implements io.cattle.platform.db.jooq.utils.TableRecordJaxb, org.jooq.Record13<java.lang.Long, java.lang.String, java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.util.Date, java.util.Date, java.util.Date, java.util.Map<String,Object>, java.lang.String, java.lang.String>, io.cattle.platform.core.model.Stack {
 
-	private static final long serialVersionUID = -781319487;
+	private static final long serialVersionUID = 1157199454;
 
 	/**
 	 * Setter for <code>cattle.environment.id</code>.
@@ -274,7 +274,7 @@ public class EnvironmentRecord extends org.jooq.impl.UpdatableRecordImpl<io.catt
 	 */
 	@Override
 	public org.jooq.Field<java.lang.Long> field1() {
-		return io.cattle.platform.core.model.tables.EnvironmentTable.ENVIRONMENT.ID;
+		return io.cattle.platform.core.model.tables.StackTable.STACK.ID;
 	}
 
 	/**
@@ -282,7 +282,7 @@ public class EnvironmentRecord extends org.jooq.impl.UpdatableRecordImpl<io.catt
 	 */
 	@Override
 	public org.jooq.Field<java.lang.String> field2() {
-		return io.cattle.platform.core.model.tables.EnvironmentTable.ENVIRONMENT.NAME;
+		return io.cattle.platform.core.model.tables.StackTable.STACK.NAME;
 	}
 
 	/**
@@ -290,7 +290,7 @@ public class EnvironmentRecord extends org.jooq.impl.UpdatableRecordImpl<io.catt
 	 */
 	@Override
 	public org.jooq.Field<java.lang.Long> field3() {
-		return io.cattle.platform.core.model.tables.EnvironmentTable.ENVIRONMENT.ACCOUNT_ID;
+		return io.cattle.platform.core.model.tables.StackTable.STACK.ACCOUNT_ID;
 	}
 
 	/**
@@ -298,7 +298,7 @@ public class EnvironmentRecord extends org.jooq.impl.UpdatableRecordImpl<io.catt
 	 */
 	@Override
 	public org.jooq.Field<java.lang.String> field4() {
-		return io.cattle.platform.core.model.tables.EnvironmentTable.ENVIRONMENT.KIND;
+		return io.cattle.platform.core.model.tables.StackTable.STACK.KIND;
 	}
 
 	/**
@@ -306,7 +306,7 @@ public class EnvironmentRecord extends org.jooq.impl.UpdatableRecordImpl<io.catt
 	 */
 	@Override
 	public org.jooq.Field<java.lang.String> field5() {
-		return io.cattle.platform.core.model.tables.EnvironmentTable.ENVIRONMENT.UUID;
+		return io.cattle.platform.core.model.tables.StackTable.STACK.UUID;
 	}
 
 	/**
@@ -314,7 +314,7 @@ public class EnvironmentRecord extends org.jooq.impl.UpdatableRecordImpl<io.catt
 	 */
 	@Override
 	public org.jooq.Field<java.lang.String> field6() {
-		return io.cattle.platform.core.model.tables.EnvironmentTable.ENVIRONMENT.DESCRIPTION;
+		return io.cattle.platform.core.model.tables.StackTable.STACK.DESCRIPTION;
 	}
 
 	/**
@@ -322,7 +322,7 @@ public class EnvironmentRecord extends org.jooq.impl.UpdatableRecordImpl<io.catt
 	 */
 	@Override
 	public org.jooq.Field<java.lang.String> field7() {
-		return io.cattle.platform.core.model.tables.EnvironmentTable.ENVIRONMENT.STATE;
+		return io.cattle.platform.core.model.tables.StackTable.STACK.STATE;
 	}
 
 	/**
@@ -330,7 +330,7 @@ public class EnvironmentRecord extends org.jooq.impl.UpdatableRecordImpl<io.catt
 	 */
 	@Override
 	public org.jooq.Field<java.util.Date> field8() {
-		return io.cattle.platform.core.model.tables.EnvironmentTable.ENVIRONMENT.CREATED;
+		return io.cattle.platform.core.model.tables.StackTable.STACK.CREATED;
 	}
 
 	/**
@@ -338,7 +338,7 @@ public class EnvironmentRecord extends org.jooq.impl.UpdatableRecordImpl<io.catt
 	 */
 	@Override
 	public org.jooq.Field<java.util.Date> field9() {
-		return io.cattle.platform.core.model.tables.EnvironmentTable.ENVIRONMENT.REMOVED;
+		return io.cattle.platform.core.model.tables.StackTable.STACK.REMOVED;
 	}
 
 	/**
@@ -346,7 +346,7 @@ public class EnvironmentRecord extends org.jooq.impl.UpdatableRecordImpl<io.catt
 	 */
 	@Override
 	public org.jooq.Field<java.util.Date> field10() {
-		return io.cattle.platform.core.model.tables.EnvironmentTable.ENVIRONMENT.REMOVE_TIME;
+		return io.cattle.platform.core.model.tables.StackTable.STACK.REMOVE_TIME;
 	}
 
 	/**
@@ -354,7 +354,7 @@ public class EnvironmentRecord extends org.jooq.impl.UpdatableRecordImpl<io.catt
 	 */
 	@Override
 	public org.jooq.Field<java.util.Map<String,Object>> field11() {
-		return io.cattle.platform.core.model.tables.EnvironmentTable.ENVIRONMENT.DATA;
+		return io.cattle.platform.core.model.tables.StackTable.STACK.DATA;
 	}
 
 	/**
@@ -362,7 +362,7 @@ public class EnvironmentRecord extends org.jooq.impl.UpdatableRecordImpl<io.catt
 	 */
 	@Override
 	public org.jooq.Field<java.lang.String> field12() {
-		return io.cattle.platform.core.model.tables.EnvironmentTable.ENVIRONMENT.EXTERNAL_ID;
+		return io.cattle.platform.core.model.tables.StackTable.STACK.EXTERNAL_ID;
 	}
 
 	/**
@@ -370,7 +370,7 @@ public class EnvironmentRecord extends org.jooq.impl.UpdatableRecordImpl<io.catt
 	 */
 	@Override
 	public org.jooq.Field<java.lang.String> field13() {
-		return io.cattle.platform.core.model.tables.EnvironmentTable.ENVIRONMENT.HEALTH_STATE;
+		return io.cattle.platform.core.model.tables.StackTable.STACK.HEALTH_STATE;
 	}
 
 	/**
@@ -481,7 +481,7 @@ public class EnvironmentRecord extends org.jooq.impl.UpdatableRecordImpl<io.catt
 	 * {@inheritDoc}
 	 */
 	@Override
-	public EnvironmentRecord value1(java.lang.Long value) {
+	public StackRecord value1(java.lang.Long value) {
 		setId(value);
 		return this;
 	}
@@ -490,7 +490,7 @@ public class EnvironmentRecord extends org.jooq.impl.UpdatableRecordImpl<io.catt
 	 * {@inheritDoc}
 	 */
 	@Override
-	public EnvironmentRecord value2(java.lang.String value) {
+	public StackRecord value2(java.lang.String value) {
 		setName(value);
 		return this;
 	}
@@ -499,7 +499,7 @@ public class EnvironmentRecord extends org.jooq.impl.UpdatableRecordImpl<io.catt
 	 * {@inheritDoc}
 	 */
 	@Override
-	public EnvironmentRecord value3(java.lang.Long value) {
+	public StackRecord value3(java.lang.Long value) {
 		setAccountId(value);
 		return this;
 	}
@@ -508,7 +508,7 @@ public class EnvironmentRecord extends org.jooq.impl.UpdatableRecordImpl<io.catt
 	 * {@inheritDoc}
 	 */
 	@Override
-	public EnvironmentRecord value4(java.lang.String value) {
+	public StackRecord value4(java.lang.String value) {
 		setKind(value);
 		return this;
 	}
@@ -517,7 +517,7 @@ public class EnvironmentRecord extends org.jooq.impl.UpdatableRecordImpl<io.catt
 	 * {@inheritDoc}
 	 */
 	@Override
-	public EnvironmentRecord value5(java.lang.String value) {
+	public StackRecord value5(java.lang.String value) {
 		setUuid(value);
 		return this;
 	}
@@ -526,7 +526,7 @@ public class EnvironmentRecord extends org.jooq.impl.UpdatableRecordImpl<io.catt
 	 * {@inheritDoc}
 	 */
 	@Override
-	public EnvironmentRecord value6(java.lang.String value) {
+	public StackRecord value6(java.lang.String value) {
 		setDescription(value);
 		return this;
 	}
@@ -535,7 +535,7 @@ public class EnvironmentRecord extends org.jooq.impl.UpdatableRecordImpl<io.catt
 	 * {@inheritDoc}
 	 */
 	@Override
-	public EnvironmentRecord value7(java.lang.String value) {
+	public StackRecord value7(java.lang.String value) {
 		setState(value);
 		return this;
 	}
@@ -544,7 +544,7 @@ public class EnvironmentRecord extends org.jooq.impl.UpdatableRecordImpl<io.catt
 	 * {@inheritDoc}
 	 */
 	@Override
-	public EnvironmentRecord value8(java.util.Date value) {
+	public StackRecord value8(java.util.Date value) {
 		setCreated(value);
 		return this;
 	}
@@ -553,7 +553,7 @@ public class EnvironmentRecord extends org.jooq.impl.UpdatableRecordImpl<io.catt
 	 * {@inheritDoc}
 	 */
 	@Override
-	public EnvironmentRecord value9(java.util.Date value) {
+	public StackRecord value9(java.util.Date value) {
 		setRemoved(value);
 		return this;
 	}
@@ -562,7 +562,7 @@ public class EnvironmentRecord extends org.jooq.impl.UpdatableRecordImpl<io.catt
 	 * {@inheritDoc}
 	 */
 	@Override
-	public EnvironmentRecord value10(java.util.Date value) {
+	public StackRecord value10(java.util.Date value) {
 		setRemoveTime(value);
 		return this;
 	}
@@ -571,7 +571,7 @@ public class EnvironmentRecord extends org.jooq.impl.UpdatableRecordImpl<io.catt
 	 * {@inheritDoc}
 	 */
 	@Override
-	public EnvironmentRecord value11(java.util.Map<String,Object> value) {
+	public StackRecord value11(java.util.Map<String,Object> value) {
 		setData(value);
 		return this;
 	}
@@ -580,7 +580,7 @@ public class EnvironmentRecord extends org.jooq.impl.UpdatableRecordImpl<io.catt
 	 * {@inheritDoc}
 	 */
 	@Override
-	public EnvironmentRecord value12(java.lang.String value) {
+	public StackRecord value12(java.lang.String value) {
 		setExternalId(value);
 		return this;
 	}
@@ -589,7 +589,7 @@ public class EnvironmentRecord extends org.jooq.impl.UpdatableRecordImpl<io.catt
 	 * {@inheritDoc}
 	 */
 	@Override
-	public EnvironmentRecord value13(java.lang.String value) {
+	public StackRecord value13(java.lang.String value) {
 		setHealthState(value);
 		return this;
 	}
@@ -598,7 +598,7 @@ public class EnvironmentRecord extends org.jooq.impl.UpdatableRecordImpl<io.catt
 	 * {@inheritDoc}
 	 */
 	@Override
-	public EnvironmentRecord values(java.lang.Long value1, java.lang.String value2, java.lang.Long value3, java.lang.String value4, java.lang.String value5, java.lang.String value6, java.lang.String value7, java.util.Date value8, java.util.Date value9, java.util.Date value10, java.util.Map<String,Object> value11, java.lang.String value12, java.lang.String value13) {
+	public StackRecord values(java.lang.Long value1, java.lang.String value2, java.lang.Long value3, java.lang.String value4, java.lang.String value5, java.lang.String value6, java.lang.String value7, java.util.Date value8, java.util.Date value9, java.util.Date value10, java.util.Map<String,Object> value11, java.lang.String value12, java.lang.String value13) {
 		return this;
 	}
 
@@ -610,7 +610,7 @@ public class EnvironmentRecord extends org.jooq.impl.UpdatableRecordImpl<io.catt
 	 * {@inheritDoc}
 	 */
 	@Override
-	public void from(io.cattle.platform.core.model.Environment from) {
+	public void from(io.cattle.platform.core.model.Stack from) {
 		setId(from.getId());
 		setName(from.getName());
 		setAccountId(from.getAccountId());
@@ -630,7 +630,7 @@ public class EnvironmentRecord extends org.jooq.impl.UpdatableRecordImpl<io.catt
 	 * {@inheritDoc}
 	 */
 	@Override
-	public <E extends io.cattle.platform.core.model.Environment> E into(E into) {
+	public <E extends io.cattle.platform.core.model.Stack> E into(E into) {
 		into.from(this);
 		return into;
 	}
@@ -640,17 +640,17 @@ public class EnvironmentRecord extends org.jooq.impl.UpdatableRecordImpl<io.catt
 	// -------------------------------------------------------------------------
 
 	/**
-	 * Create a detached EnvironmentRecord
+	 * Create a detached StackRecord
 	 */
-	public EnvironmentRecord() {
-		super(io.cattle.platform.core.model.tables.EnvironmentTable.ENVIRONMENT);
+	public StackRecord() {
+		super(io.cattle.platform.core.model.tables.StackTable.STACK);
 	}
 
 	/**
-	 * Create a detached, initialised EnvironmentRecord
+	 * Create a detached, initialised StackRecord
 	 */
-	public EnvironmentRecord(java.lang.Long id, java.lang.String name, java.lang.Long accountId, java.lang.String kind, java.lang.String uuid, java.lang.String description, java.lang.String state, java.util.Date created, java.util.Date removed, java.util.Date removeTime, java.util.Map<String,Object> data, java.lang.String externalId, java.lang.String healthState) {
-		super(io.cattle.platform.core.model.tables.EnvironmentTable.ENVIRONMENT);
+	public StackRecord(java.lang.Long id, java.lang.String name, java.lang.Long accountId, java.lang.String kind, java.lang.String uuid, java.lang.String description, java.lang.String state, java.util.Date created, java.util.Date removed, java.util.Date removeTime, java.util.Map<String,Object> data, java.lang.String externalId, java.lang.String healthState) {
+		super(io.cattle.platform.core.model.tables.StackTable.STACK);
 
 		setValue(0, id);
 		setValue(1, name);

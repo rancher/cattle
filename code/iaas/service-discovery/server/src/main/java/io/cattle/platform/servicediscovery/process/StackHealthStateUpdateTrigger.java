@@ -5,7 +5,7 @@ import io.cattle.platform.configitem.version.ConfigItemStatusManager;
 import io.cattle.platform.core.constants.HealthcheckConstants;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.dao.InstanceDao;
-import io.cattle.platform.core.model.Environment;
+import io.cattle.platform.core.model.Stack;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.Service;
 import io.cattle.platform.engine.handler.HandlerResult;
@@ -67,11 +67,11 @@ public class StackHealthStateUpdateTrigger extends AbstractObjectProcessHandler 
 
         Set<Long> stackIds = new HashSet<>();
         for (Service service : services) {
-            stackIds.add(service.getEnvironmentId());
+            stackIds.add(service.getStackId());
         }
 
         for (Long stackId : stackIds) {
-            ConfigUpdateRequest request = ConfigUpdateRequest.forResource(Environment.class,
+            ConfigUpdateRequest request = ConfigUpdateRequest.forResource(Stack.class,
                     stackId);
             request.addItem(STACK);
             request.withDeferredTrigger(true);

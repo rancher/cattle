@@ -3,7 +3,7 @@ package io.cattle.platform.servicediscovery.api.action;
 import io.cattle.platform.api.action.ActionHandler;
 import io.cattle.platform.core.addon.ComposeConfig;
 import io.cattle.platform.core.constants.CommonStatesConstants;
-import io.cattle.platform.core.model.Environment;
+import io.cattle.platform.core.model.Stack;
 import io.cattle.platform.core.model.Service;
 import io.cattle.platform.json.JsonMapper;
 import io.cattle.platform.object.ObjectManager;
@@ -17,7 +17,7 @@ import java.util.List;
 import java.util.Map;
 import javax.inject.Inject;
 
-public class EnvironmentExportConfigActionHandler implements ActionHandler {
+public class StackExportConfigActionHandler implements ActionHandler {
     @Inject
     ObjectManager objectManager;
 
@@ -29,15 +29,15 @@ public class EnvironmentExportConfigActionHandler implements ActionHandler {
 
     @Override
     public String getName() {
-        return ServiceDiscoveryConstants.PROCESS_ENV_EXPORT_CONFIG;
+        return ServiceDiscoveryConstants.PROCESS_STACK_EXPORT_CONFIG;
     }
 
     @Override
     public Object perform(String name, Object obj, ApiRequest request) {
-        if (!(obj instanceof Environment)) {
+        if (!(obj instanceof Stack)) {
             return null;
         }
-        Environment env = (Environment) obj;
+        Stack env = (Stack) obj;
         List<? extends Long> serviceIds = DataAccessor.fromMap(request.getRequestObject())
                 .withKey(ServiceDiscoveryConstants.FIELD_SERVICE_IDS).asList(jsonMapper, Long.class);
 

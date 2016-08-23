@@ -6,7 +6,7 @@ import io.cattle.platform.configitem.model.ItemVersion;
 import io.cattle.platform.configitem.version.ConfigItemStatusManager;
 import io.cattle.platform.core.dao.GenericResourceDao;
 import io.cattle.platform.core.dao.HostDao;
-import io.cattle.platform.core.model.Environment;
+import io.cattle.platform.core.model.Stack;
 import io.cattle.platform.eventing.EventService;
 import io.cattle.platform.eventing.annotation.AnnotatedEventListener;
 import io.cattle.platform.eventing.annotation.EventHandler;
@@ -60,7 +60,7 @@ public class StackHealthStateUpdate implements AnnotatedEventListener {
             return;
         }
 
-        final Client client = new Client(Environment.class, new Long(update.getResourceId()));
+        final Client client = new Client(Stack.class, new Long(update.getResourceId()));
         reconcileForClient(update, client, new Callable<Boolean>() {
             @Override
             public Boolean call() throws IOException {
@@ -70,7 +70,7 @@ public class StackHealthStateUpdate implements AnnotatedEventListener {
     }
 
     protected boolean process(long stackId) throws IOException {
-        Environment stack = objectManager.loadResource(Environment.class, stackId);
+        Stack stack = objectManager.loadResource(Stack.class, stackId);
         if (stack == null || stack.getRemoved() != null) {
             return true;
         }

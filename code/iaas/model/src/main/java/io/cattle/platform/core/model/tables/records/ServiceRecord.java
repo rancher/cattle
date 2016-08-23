@@ -13,7 +13,7 @@ package io.cattle.platform.core.model.tables.records;
 @javax.persistence.Table(name = "service", schema = "cattle")
 public class ServiceRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.platform.core.model.tables.records.ServiceRecord> implements io.cattle.platform.db.jooq.utils.TableRecordJaxb, org.jooq.Record18<java.lang.Long, java.lang.String, java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.util.Date, java.util.Date, java.util.Date, java.util.Map<String,Object>, java.lang.Long, java.lang.String, java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String>, io.cattle.platform.core.model.Service {
 
-	private static final long serialVersionUID = -1442540038;
+	private static final long serialVersionUID = -646295153;
 
 	/**
 	 * Setter for <code>cattle.service.id</code>.
@@ -207,7 +207,7 @@ public class ServiceRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.p
 	 * Setter for <code>cattle.service.environment_id</code>.
 	 */
 	@Override
-	public void setEnvironmentId(java.lang.Long value) {
+	public void setStackId(java.lang.Long value) {
 		setValue(11, value);
 	}
 
@@ -216,7 +216,7 @@ public class ServiceRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.p
 	 */
 	@javax.persistence.Column(name = "environment_id", precision = 19)
 	@Override
-	public java.lang.Long getEnvironmentId() {
+	public java.lang.Long getStackId() {
 		return (java.lang.Long) getValue(11);
 	}
 
@@ -447,7 +447,7 @@ public class ServiceRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.p
 	 */
 	@Override
 	public org.jooq.Field<java.lang.Long> field12() {
-		return io.cattle.platform.core.model.tables.ServiceTable.SERVICE.ENVIRONMENT_ID;
+		return io.cattle.platform.core.model.tables.ServiceTable.SERVICE.STACK_ID;
 	}
 
 	/**
@@ -591,7 +591,7 @@ public class ServiceRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.p
 	 */
 	@Override
 	public java.lang.Long value12() {
-		return getEnvironmentId();
+		return getStackId();
 	}
 
 	/**
@@ -746,7 +746,7 @@ public class ServiceRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.p
 	 */
 	@Override
 	public ServiceRecord value12(java.lang.Long value) {
-		setEnvironmentId(value);
+		setStackId(value);
 		return this;
 	}
 
@@ -832,7 +832,7 @@ public class ServiceRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.p
 		setRemoved(from.getRemoved());
 		setRemoveTime(from.getRemoveTime());
 		setData(from.getData());
-		setEnvironmentId(from.getEnvironmentId());
+		setStackId(from.getStackId());
 		setVip(from.getVip());
 		setCreateIndex(from.getCreateIndex());
 		setSelectorLink(from.getSelectorLink());

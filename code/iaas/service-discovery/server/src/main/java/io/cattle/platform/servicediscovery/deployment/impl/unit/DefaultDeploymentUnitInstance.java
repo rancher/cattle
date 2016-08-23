@@ -4,7 +4,7 @@ import static io.cattle.platform.core.model.tables.InstanceHostMapTable.*;
 import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.HealthcheckConstants;
 import io.cattle.platform.core.constants.InstanceConstants;
-import io.cattle.platform.core.model.Environment;
+import io.cattle.platform.core.model.Stack;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.InstanceHostMap;
 import io.cattle.platform.core.model.Service;
@@ -274,7 +274,7 @@ public class DefaultDeploymentUnitInstance extends DeploymentUnitInstance implem
     @SuppressWarnings("unchecked")
     protected ServiceIndex createServiceIndex() {
         // create index
-        Environment stack = context.objectManager.loadResource(Environment.class, service.getEnvironmentId());
+        Stack stack = context.objectManager.loadResource(Stack.class, service.getStackId());
         String serviceIndex = ServiceDiscoveryUtil.getGeneratedServiceIndex(stack, service, launchConfigName,
                 instanceName);
         ServiceIndex serviceIndexObj = context.serviceDao.createServiceIndex(service, launchConfigName, serviceIndex);

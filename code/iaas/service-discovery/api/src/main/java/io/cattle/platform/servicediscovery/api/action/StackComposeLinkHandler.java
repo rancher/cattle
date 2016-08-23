@@ -2,7 +2,7 @@ package io.cattle.platform.servicediscovery.api.action;
 
 import static io.cattle.platform.core.model.tables.ServiceTable.SERVICE;
 import io.cattle.platform.api.link.LinkHandler;
-import io.cattle.platform.core.model.Environment;
+import io.cattle.platform.core.model.Stack;
 import io.cattle.platform.core.model.Service;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.servicediscovery.api.constants.ServiceDiscoveryConstants;
@@ -20,7 +20,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang.StringUtils;
 
-public class EnvironmentComposeLinkHandler implements LinkHandler {
+public class StackComposeLinkHandler implements LinkHandler {
     @Inject
     ServiceDiscoveryApiService discoverySvc;
 
@@ -29,7 +29,7 @@ public class EnvironmentComposeLinkHandler implements LinkHandler {
 
     @Override
     public String[] getTypes() {
-        return new String[] { "environment" };
+        return new String[] { "stack" };
     }
 
     @Override
@@ -39,8 +39,8 @@ public class EnvironmentComposeLinkHandler implements LinkHandler {
 
     @Override
     public Object link(String name, Object obj, ApiRequest request) throws IOException {
-        Environment env = (Environment) obj;
-        List<? extends Service> services = objectManager.find(Service.class, SERVICE.ENVIRONMENT_ID, env.getId(),
+        Stack env = (Stack) obj;
+        List<? extends Service> services = objectManager.find(Service.class, SERVICE.STACK_ID, env.getId(),
                 SERVICE.REMOVED, null);
         String dockerCompose = discoverySvc.buildDockerComposeConfig(services);
         String rancherCompose = discoverySvc.buildRancherComposeConfig(services);

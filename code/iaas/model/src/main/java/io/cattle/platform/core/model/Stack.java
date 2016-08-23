@@ -11,7 +11,7 @@ package io.cattle.platform.core.model;
 @java.lang.SuppressWarnings({ "all", "unchecked", "rawtypes" })
 @javax.persistence.Entity
 @javax.persistence.Table(name = "environment", schema = "cattle")
-public interface Environment extends java.io.Serializable {
+public interface Stack extends java.io.Serializable {
 
 	/**
 	 * Setter for <code>cattle.environment.id</code>.
@@ -162,12 +162,12 @@ public interface Environment extends java.io.Serializable {
 	// -------------------------------------------------------------------------
 
 	/**
-	 * Load data from another generated Record/POJO implementing the common interface Environment
+	 * Load data from another generated Record/POJO implementing the common interface Stack
 	 */
-	public void from(io.cattle.platform.core.model.Environment from);
+	public void from(io.cattle.platform.core.model.Stack from);
 
 	/**
-	 * Copy data into another generated Record/POJO implementing the common interface Environment
+	 * Copy data into another generated Record/POJO implementing the common interface Stack
 	 */
-	public <E extends io.cattle.platform.core.model.Environment> E into(E into);
+	public <E extends io.cattle.platform.core.model.Stack> E into(E into);
 }

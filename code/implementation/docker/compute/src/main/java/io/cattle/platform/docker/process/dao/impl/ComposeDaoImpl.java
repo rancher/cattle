@@ -1,10 +1,10 @@
 package io.cattle.platform.docker.process.dao.impl;
 
-import static io.cattle.platform.core.model.tables.EnvironmentTable.*;
+import static io.cattle.platform.core.model.tables.StackTable.*;
 import static io.cattle.platform.core.model.tables.ServiceTable.*;
 
 import io.cattle.platform.core.constants.CommonStatesConstants;
-import io.cattle.platform.core.model.Environment;
+import io.cattle.platform.core.model.Stack;
 import io.cattle.platform.core.model.Service;
 import io.cattle.platform.core.model.tables.records.ServiceRecord;
 import io.cattle.platform.db.jooq.dao.impl.AbstractJooqDao;
@@ -25,8 +25,8 @@ public class ComposeDaoImpl extends AbstractJooqDao implements ComposeDao {
     ObjectManager objectManager;
 
     @Override
-    public Environment getComposeProjectByName(long accountId, String name) {
-        return objectManager.findAny(Environment.class,
+    public Stack getComposeProjectByName(long accountId, String name) {
+        return objectManager.findAny(Stack.class,
                 ObjectMetaDataManager.NAME_FIELD, name,
                 ObjectMetaDataManager.ACCOUNT_FIELD, accountId,
                 ObjectMetaDataManager.REMOVED_FIELD, null,
@@ -38,16 +38,16 @@ public class ComposeDaoImpl extends AbstractJooqDao implements ComposeDao {
     public Service getComposeServiceByName(long accountId, String name, String projectName) {
         List<? extends Service> services = create().select(SERVICE.fields())
             .from(SERVICE)
-            .join(ENVIRONMENT)
-                .on(ENVIRONMENT.ID.eq(SERVICE.ENVIRONMENT_ID))
+            .join(STACK)
+                .on(STACK.ID.eq(SERVICE.STACK_ID))
             .where(SERVICE.ACCOUNT_ID.eq(accountId)
                     .and(SERVICE.NAME.eq(name))
                     .and(SERVICE.REMOVED.isNull())
                     .and(SERVICE.STATE.ne(CommonStatesConstants.REMOVING))
                     .and(SERVICE.KIND.eq(DockerConstants.TYPE_COMPOSE_SERVICE))
-                    .and(ENVIRONMENT.NAME.eq(projectName))
-                    .and(ENVIRONMENT.KIND.eq(DockerConstants.TYPE_COMPOSE_PROJECT))
-                    .and(ENVIRONMENT.REMOVED.isNull())).fetchInto(ServiceRecord.class);
+                    .and(STACK.NAME.eq(projectName))
+                    .and(STACK.KIND.eq(DockerConstants.TYPE_COMPOSE_PROJECT))
+                    .and(STACK.REMOVED.isNull())).fetchInto(ServiceRecord.class);
 
         return services.size() > 0 ? services.get(0) : null;
     }
