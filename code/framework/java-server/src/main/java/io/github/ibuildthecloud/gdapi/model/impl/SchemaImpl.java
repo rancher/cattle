@@ -8,6 +8,7 @@ import io.github.ibuildthecloud.gdapi.model.Schema;
 import io.github.ibuildthecloud.gdapi.url.UrlBuilder;
 import io.github.ibuildthecloud.gdapi.util.TypeUtils;
 
+import java.io.Serializable;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -18,7 +19,9 @@ import java.util.TreeMap;
 
 import javax.xml.bind.annotation.XmlTransient;
 
-public class SchemaImpl extends ResourceImpl implements Schema {
+public class SchemaImpl extends ResourceImpl implements Schema, Serializable {
+
+    private static final long serialVersionUID = -7914785389963262084L;
 
     String name, parent;
     String pluralName;

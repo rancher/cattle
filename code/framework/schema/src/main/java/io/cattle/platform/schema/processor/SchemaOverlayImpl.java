@@ -4,6 +4,8 @@ import io.github.ibuildthecloud.gdapi.model.impl.SchemaImpl;
 
 public class SchemaOverlayImpl extends SchemaImpl {
 
+    private static final long serialVersionUID = -7324841846559047697L;
+
     boolean resourceFieldsExplicit;
     boolean resourceActionsExplicit;
     boolean collectionActionsExplicit;

@@ -1,5 +1,6 @@
 package io.github.ibuildthecloud.gdapi.factory.impl;
 
+import io.cattle.platform.archaius.util.ArchaiusUtil;
 import io.github.ibuildthecloud.gdapi.factory.SchemaFactory;
 import io.github.ibuildthecloud.gdapi.model.Field;
 import io.github.ibuildthecloud.gdapi.model.FieldType;
@@ -7,6 +8,10 @@ import io.github.ibuildthecloud.gdapi.model.Filter;
 import io.github.ibuildthecloud.gdapi.model.Schema;
 import io.github.ibuildthecloud.gdapi.model.impl.SchemaImpl;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -16,7 +21,12 @@ import java.util.Map;
 
 import javax.inject.Inject;
 
+import com.netflix.config.DynamicBooleanProperty;
+
 public class SubSchemaFactory extends AbstractSchemaFactory implements SchemaFactory {
+
+    private static DynamicBooleanProperty SERIALIZE = ArchaiusUtil.getBoolean("serialize.schemas");
+
     SchemaFactory schemaFactory;
     String id;
     Map<String, Schema> schemaMap;
@@ -68,7 +78,24 @@ public class SubSchemaFactory extends AbstractSchemaFactory implements SchemaFac
             prune(schema);
         }
 
+        if (SERIALIZE.get()) {
+            serializeSchema(listSchemas(), getId());
+            synchronized (schemaFactory) {
+                serializeSchema(schemaFactory.listSchemas(), schemaFactory.getId());
+            }
+        }
+
         init = true;
+    }
+
+    protected static void serializeSchema(List<Schema> schemaList, String id) {
+        try(FileOutputStream fos = new FileOutputStream(new File(id + ".ser"))) {
+            ObjectOutputStream oos = new ObjectOutputStream(fos);
+            oos.writeObject(schemaList);
+            oos.close();
+        } catch (IOException e) {
+            throw new IllegalStateException(e);
+        }
     }
 
     protected void prune(SchemaImpl schema) {
