@@ -253,8 +253,13 @@ public class DefaultDeploymentUnitInstance extends DeploymentUnitInstance implem
                 });
             }
         } catch (Exception ex) {
-            throw new ServiceInstanceAllocateException("Failed to allocate instance [" + instance.getId() + "]", ex);
+            throw new ServiceInstanceAllocateException("Failed to allocate instance [" + key(instance) + "]", ex);
         }
+    }
+
+    protected String key(Instance instance) {
+        Object resourceId = context.idFormatter.formatId(instance.getKind(), instance.getId());
+        return String.format("%s:%s", instance.getKind(), resourceId);
     }
 
     @Override
