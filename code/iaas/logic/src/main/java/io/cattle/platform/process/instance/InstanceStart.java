@@ -139,15 +139,16 @@ public class InstanceStart extends AbstractDefaultProcessHandler {
         List<Instance> waitList = new ArrayList<>();
         for (Long id : instancesIds) {
             Instance i = objectManager.loadResource(Instance.class, id);
-            List<String> removedStates = Arrays.asList(CommonStatesConstants.REMOVED, CommonStatesConstants.REMOVING);
+            List<String> removedStates = Arrays.asList(CommonStatesConstants.REMOVED, CommonStatesConstants.REMOVING,
+                    CommonStatesConstants.PURGED, CommonStatesConstants.PURGING);
             List<String> stoppedStates = Arrays.asList(InstanceConstants.STATE_STOPPED, InstanceConstants.STATE_STOPPING);
             String type = networkFromId != null && networkFromId.equals(id) ? "networkFrom" : "volumeFrom";
             if (removedStates.contains(i.getState())) {
-                throw new ExecutionException("Dependencies readiness error", type + " instance is removed", i);
+                throw new ExecutionException("Dependencies readiness error", type + " instance is removed", instance.getId());
             }
             
             if (!isStartOnce(i) && stoppedStates.contains(i.getState())) {
-                throw new ExecutionException("Dependencies readiness error", type + " instance is not running", i);
+                throw new ExecutionException("Dependencies readiness error", type + " instance is not running", instance.getId());
             }
             waitList.add(i);
         }
@@ -155,7 +156,8 @@ public class InstanceStart extends AbstractDefaultProcessHandler {
         //timeout is 2 mins
         Long timeout =  120000L;
         for (Instance wait : waitList) {
-            resourceMonitor.waitFor(wait, timeout,
+            try {
+                resourceMonitor.waitFor(wait, timeout,
                     new ResourcePredicate<Instance>() {
                         @Override
                         public boolean evaluate(Instance obj) {
@@ -166,7 +168,11 @@ public class InstanceStart extends AbstractDefaultProcessHandler {
                         public String getMessage() {
                             return "running state";
                         }
-                    });
+                    }
+                );
+            } catch (TimeoutException e) {
+                throw new ExecutionException("Dependencies readiness error", "instance is not running", instance.getId());
+            }
         }
     }
 

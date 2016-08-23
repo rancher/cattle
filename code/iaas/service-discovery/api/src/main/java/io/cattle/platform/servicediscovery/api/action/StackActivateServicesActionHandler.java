@@ -2,7 +2,7 @@ package io.cattle.platform.servicediscovery.api.action;
 
 import io.cattle.platform.api.action.ActionHandler;
 import io.cattle.platform.core.constants.CommonStatesConstants;
-import io.cattle.platform.core.model.Environment;
+import io.cattle.platform.core.model.Stack;
 import io.cattle.platform.core.model.Service;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.process.ObjectProcessManager;
@@ -24,7 +24,7 @@ import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.TransformerUtils;
 
 @Named
-public class EnvironmentActivateServicesActionHandler implements ActionHandler {
+public class StackActivateServicesActionHandler implements ActionHandler {
 
     @Inject
     ObjectProcessManager objectProcessManager;
@@ -40,16 +40,16 @@ public class EnvironmentActivateServicesActionHandler implements ActionHandler {
 
     @Override
     public String getName() {
-        return ServiceDiscoveryConstants.PROCESS_ENV_ACTIVATE_SERVICES;
+        return ServiceDiscoveryConstants.PROCESS_STACK_ACTIVATE_SERVICES;
     }
 
     @Override
     public Object perform(String name, Object obj, ApiRequest request) {
-        if (!(obj instanceof Environment)) {
+        if (!(obj instanceof Stack)) {
             return null;
         }
-        Environment env = (Environment) obj;
-        List<? extends Service> services = sdService.listEnvironmentServices(env.getId());
+        Stack env = (Stack) obj;
+        List<? extends Service> services = sdService.listStackServices(env.getId());
         activateServices(services);
 
         return env;

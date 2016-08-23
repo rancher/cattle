@@ -1,7 +1,7 @@
 package io.cattle.platform.servicediscovery.deployment.impl.unit;
 
-import static io.cattle.platform.core.model.tables.EnvironmentTable.ENVIRONMENT;
-import io.cattle.platform.core.model.Environment;
+import static io.cattle.platform.core.model.tables.StackTable.STACK;
+import io.cattle.platform.core.model.Stack;
 import io.cattle.platform.core.model.Service;
 import io.cattle.platform.servicediscovery.api.constants.ServiceDiscoveryConstants;
 import io.cattle.platform.servicediscovery.api.util.ServiceDiscoveryUtil;
@@ -20,11 +20,11 @@ public class DeploymentUnitService {
     List<String> launchConfigNames = new ArrayList<>();
     Map<String, List<String>> sidekickUsedByMap = new HashMap<>();
     DeploymentServiceContext context;
-    Environment env;
+    Stack env;
 
     public DeploymentUnitService(Service service, List<String> launchConfigNames, DeploymentServiceContext context) {
         this.service = service;
-        this.env = context.objectManager.findOne(Environment.class, ENVIRONMENT.ID, service.getEnvironmentId());
+        this.env = context.objectManager.findOne(Stack.class, STACK.ID, service.getStackId());
         this.launchConfigNames = launchConfigNames;
         this.context = context;
         for (String launchConfigName : launchConfigNames) {

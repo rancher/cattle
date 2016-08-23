@@ -1,7 +1,7 @@
-package io.cattle.platform.docker.process.environment;
+package io.cattle.platform.docker.process.stack;
 
 import io.cattle.platform.agent.instance.dao.AgentInstanceDao;
-import io.cattle.platform.core.model.Environment;
+import io.cattle.platform.core.model.Stack;
 import io.cattle.platform.core.util.SystemLabels;
 import io.cattle.platform.docker.process.util.DockerConstants;
 import io.cattle.platform.engine.handler.ProcessPostListener;
@@ -13,14 +13,14 @@ import java.util.List;
 
 import javax.inject.Inject;
 
-public class DockerComposeEnvironmentHandler extends AgentBasedProcessLogic implements ProcessPostListener {
+public class DockerComposeStackHandler extends AgentBasedProcessLogic implements ProcessPostListener {
 
     @Inject
     AgentInstanceDao agentInstanceDao;
 
     @Override
     protected Object getAgentResource(ProcessState state, ProcessInstance process, Object dataResource) {
-        Environment env = (Environment)state.getResource();
+        Stack env = (Stack)state.getResource();
         if (!DockerConstants.TYPE_COMPOSE_PROJECT.equals(env.getKind())) {
             return null;
         }

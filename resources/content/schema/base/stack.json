@@ -45,22 +45,22 @@
     },
     "resourceActions" : {
         "upgrade" : {
-            "input" : "environmentUpgrade",
-            "output" : "environment"
+            "input" : "stackUpgrade",
+            "output" : "stack"
         },
         "addoutputs" : {
             "input" : "addOutputsInput",
-            "output" : "environment"
+            "output" : "stack"
         },
         "exportconfig" : {
             "input" : "composeConfigInput",
             "output" : "composeConfig"
         },
         "activateservices" : {
-            "output": "environment"
+            "output": "stack"
         },
         "deactivateservices" : {
-            "output": "environment"
+            "output": "stack"
         }
     }
 }

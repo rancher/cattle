@@ -1,8 +1,8 @@
 package io.cattle.platform.sample.data;
 
-import static io.cattle.platform.core.model.tables.EnvironmentTable.*;
+import static io.cattle.platform.core.model.tables.StackTable.*;
 import io.cattle.platform.core.model.Account;
-import io.cattle.platform.core.model.Environment;
+import io.cattle.platform.core.model.Stack;
 import io.github.ibuildthecloud.gdapi.condition.Condition;
 import io.github.ibuildthecloud.gdapi.condition.ConditionType;
 
@@ -19,10 +19,10 @@ public class SampleDataStartupV11 extends AbstractSampleData {
 
     @Override
     protected void populatedData(Account system, List<Object> toCreate) {
-        List<Environment> stacks = objectManager
-                .find(Environment.class, ENVIRONMENT.REMOVED, new Condition(ConditionType.NULL),
-                        ENVIRONMENT.EXTERNAL_ID, "system://kubernetes");
-        for (Environment stack : stacks) {
+        List<Stack> stacks = objectManager
+                .find(Stack.class, STACK.REMOVED, new Condition(ConditionType.NULL),
+                        STACK.EXTERNAL_ID, "system://kubernetes");
+        for (Stack stack : stacks) {
             Map<String, Object> data = new HashMap<>();
             data.put("externalId", "system-catalog://library:kubernetes:0");
             objectManager.setFields(stack, data);

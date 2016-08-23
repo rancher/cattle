@@ -133,9 +133,10 @@ def test_account_context_create(new_context):
     assert len(new_context.user_client.list_project()) == 1
 
 
-def test_account_purge(super_client, new_context):
+def test_account_purge(admin_user_client, super_client, new_context):
     account_id = new_context.project.id
     account = new_context.project
+    client = new_context.client
     image_uuid = 'sim:{}'.format(random_num())
     host = new_context.host
     assert host.state == 'active'
@@ -145,44 +146,39 @@ def test_account_purge(super_client, new_context):
     assert host2.state == 'active'
 
     # create containers
-    c1 = super_client.create_container(accountId=account_id,
-                                       imageUuid=image_uuid,
-                                       requestedHostId=host.id)
-    c1 = super_client.wait_success(c1)
+    c1 = client.create_container(imageUuid=image_uuid,
+                                 requestedHostId=host.id)
+    c1 = client.wait_success(c1)
     assert c1.state == 'running'
 
-    c2 = super_client.create_container(accountId=account_id,
-                                       imageUuid=image_uuid,
-                                       requestedHostId=host.id)
-    c2 = super_client.wait_success(c2)
+    c2 = client.create_container(imageUuid=image_uuid,
+                                 requestedHostId=host.id)
+    c2 = client.wait_success(c2)
     assert c2.state == 'running'
 
     # create environment and services
-    env = super_client. \
-        create_environment(accountId=account_id,
-                           name=random_str())
-    env = super_client.wait_success(env)
+    env = client.create_environment(name=random_str())
+    env = client.wait_success(env)
     assert env.state == "active"
 
     launch_config = {"imageUuid": image_uuid}
 
-    service1 = super_client.create_service(accountId=account_id,
-                                           name=random_str(),
-                                           environmentId=env.id,
-                                           launchConfig=launch_config)
-    service1 = super_client.wait_success(service1)
+    service1 = client.create_service(name=random_str(),
+                                     environmentId=env.id,
+                                     launchConfig=launch_config)
+    service1 = client.wait_success(service1)
     assert service1.state == "inactive"
 
-    service2 = super_client.create_service(accountId=account_id,
-                                           name=random_str(),
-                                           environmentId=env.id,
-                                           launchConfig=launch_config)
-    service2 = super_client.wait_success(service2)
+    service2 = client.create_service(accountId=account_id,
+                                     name=random_str(),
+                                     environmentId=env.id,
+                                     launchConfig=launch_config)
+    service2 = client.wait_success(service2)
     assert service2.state == "inactive"
 
     env.activateservices()
-    service1 = super_client.wait_success(service1, 120)
-    service2 = super_client.wait_success(service2, 120)
+    service1 = client.wait_success(service1, 120)
+    service2 = client.wait_success(service2, 120)
     assert service1.state == "active"
     assert service2.state == "active"
 
@@ -226,7 +222,7 @@ def test_account_purge(super_client, new_context):
     service2 = super_client.wait_success(service2)
     assert service2.state == 'removed'
 
-    env = super_client.wait_success(env)
+    env = admin_user_client.wait_success(env)
     assert env.state == 'removed'
 
 

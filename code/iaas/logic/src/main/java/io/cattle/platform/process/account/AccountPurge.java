@@ -7,7 +7,7 @@ import io.cattle.platform.core.model.Account;
 import io.cattle.platform.core.model.Agent;
 import io.cattle.platform.core.model.Certificate;
 import io.cattle.platform.core.model.Credential;
-import io.cattle.platform.core.model.Environment;
+import io.cattle.platform.core.model.Stack;
 import io.cattle.platform.core.model.Host;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.PhysicalHost;
@@ -52,7 +52,7 @@ public class AccountPurge extends AbstractDefaultProcessHandler {
             deactivateThenRemove(cred, state.getData());
         }
 
-        for (Environment env : getObjectManager().children(account, Environment.class)) {
+        for (Stack env : getObjectManager().children(account, Stack.class)) {
             if (env.getRemoved() != null) {
                 continue;
             }

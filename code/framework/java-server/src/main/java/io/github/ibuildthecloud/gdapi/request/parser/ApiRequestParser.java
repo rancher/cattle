@@ -8,4 +8,6 @@ public interface ApiRequestParser {
 
     boolean parse(ApiRequest apiRequest) throws IOException;
 
+    String parseVersion(String servletPath);
+
 }

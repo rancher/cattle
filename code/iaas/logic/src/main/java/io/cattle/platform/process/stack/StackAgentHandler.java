@@ -1,7 +1,7 @@
-package io.cattle.platform.process.environment;
+package io.cattle.platform.process.stack;
 
 import io.cattle.platform.agent.instance.dao.AgentInstanceDao;
-import io.cattle.platform.core.model.Environment;
+import io.cattle.platform.core.model.Stack;
 import io.cattle.platform.engine.process.ProcessInstance;
 import io.cattle.platform.engine.process.ProcessState;
 import io.cattle.platform.process.common.handler.AgentBasedProcessHandler;
@@ -10,17 +10,17 @@ import java.util.List;
 
 import javax.inject.Inject;
 
-public class EnvironmentAgentHandler extends AgentBasedProcessHandler {
+public class StackAgentHandler extends AgentBasedProcessHandler {
 
     @Inject
     AgentInstanceDao agentInstanceDao;
     String agentService;
-    String environmentKind;
+    String stackKind;
 
     @Override
     protected Object getAgentResource(ProcessState state, ProcessInstance process, Object dataResource) {
-        Environment env = (Environment)state.getResource();
-        if (!environmentKind.equals(env.getKind())) {
+        Stack env = (Stack)state.getResource();
+        if (!stackKind.equals(env.getKind())) {
             return null;
         }
 
@@ -29,13 +29,13 @@ public class EnvironmentAgentHandler extends AgentBasedProcessHandler {
         return agentIds.size() == 0 ? null : agentIds.get(0);
     }
 
-    public String getEnvironmentKind() {
-        return environmentKind;
+    public String getStackKind() {
+        return stackKind;
     }
 
     @Inject
-    public void setEnvironmentKind(String environmentKind) {
-        this.environmentKind = environmentKind;
+    public void setStackKind(String environmentKind) {
+        this.stackKind = environmentKind;
     }
 
     public String getAgentService() {

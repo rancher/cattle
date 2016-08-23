@@ -17,7 +17,7 @@ import io.cattle.platform.core.dao.AccountDao;
 import io.cattle.platform.core.dao.GenericResourceDao;
 import io.cattle.platform.core.dao.InstanceDao;
 import io.cattle.platform.core.model.Agent;
-import io.cattle.platform.core.model.Environment;
+import io.cattle.platform.core.model.Stack;
 import io.cattle.platform.core.model.Host;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.Service;
@@ -141,7 +141,7 @@ public class AgentInstanceFactoryImpl implements AgentInstanceFactory {
                 // allow to set this flag only for system services
                 List<? extends Service> services = instanceDao.findServicesFor(instance);
                 for (Service service : services) {
-                    Environment stack = objectManager.loadResource(Environment.class, service.getEnvironmentId());
+                    Stack stack = objectManager.loadResource(Stack.class, service.getStackId());
                     boolean isSystem = DataAccessor.fieldBool(stack, "isSystem");
                     if (isSystem) {
                         accountData = CollectionUtils.asMap(AccountConstants.DATA_ACT_AS_RESOURCE_ADMIN_ACCOUNT, true);

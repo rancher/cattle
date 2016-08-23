@@ -466,6 +466,7 @@ def test_health_check_ip_retain(super_client, context, client):
 
 
 def test_health_state_stack(super_client, context, client):
+    c = client
     env = client.create_environment(name='env-' + random_str())
     service = client.create_service(name='test', launchConfig={
         'imageUuid': context.image_uuid,
@@ -478,7 +479,7 @@ def test_health_state_stack(super_client, context, client):
     assert service.state == 'active'
     i = 'initializing'
     wait_for(lambda: super_client.reload(service).healthState == i)
-    wait_for(lambda: super_client.reload(env).healthState == i)
+    wait_for(lambda: client.reload(env).healthState == i)
 
     maps = _wait_until_active_map_count(service, 1, client)
     expose_map = maps[0]
@@ -500,7 +501,7 @@ def test_health_state_stack(super_client, context, client):
     wait_for(lambda: super_client.reload(c1).healthState == 'healthy')
 
     wait_for(lambda: super_client.reload(service).healthState == 'healthy')
-    wait_for(lambda: super_client.reload(env).healthState == 'healthy')
+    wait_for(lambda: c.reload(env).healthState == 'healthy')
 
     ts = int(time.time())
     client = _get_agent_client(agent)
@@ -520,11 +521,12 @@ def test_health_state_stack(super_client, context, client):
 
     wait_for(lambda: super_client.reload(c1).healthState == 'unhealthy')
     wait_for(lambda: super_client.reload(service).healthState == 'unhealthy')
-    wait_for(lambda: super_client.reload(env).healthState == 'unhealthy')
+    wait_for(lambda: c.reload(env).healthState == 'unhealthy')
     remove_service(service)
 
 
 def test_health_state_start_once(super_client, context, client):
+    c = client
     env = client.create_environment(name='env-' + random_str())
     labels = {"io.rancher.container.start_once": "true"}
     svc = client.create_service(name='test', launchConfig={
@@ -538,7 +540,7 @@ def test_health_state_start_once(super_client, context, client):
     svc = client.wait_success(client.wait_success(svc).activate())
     assert svc.state == 'active'
     wait_for(lambda: super_client.reload(svc).healthState == 'initializing')
-    wait_for(lambda: super_client.reload(env).healthState == 'initializing')
+    wait_for(lambda: c.reload(env).healthState == 'initializing')
 
     maps = _wait_until_active_map_count(svc, 1, client)
     expose_map = maps[0]
@@ -560,12 +562,12 @@ def test_health_state_start_once(super_client, context, client):
     wait_for(lambda: super_client.reload(c1).healthState == 'healthy')
 
     wait_for(lambda: super_client.reload(svc).healthState == 'healthy')
-    wait_for(lambda: super_client.reload(env).healthState == 'healthy')
+    wait_for(lambda: c.reload(env).healthState == 'healthy')
 
     super_client.wait_success(c1.stop())
 
     wait_for(lambda: super_client.reload(svc).healthState == 'started-once')
-    wait_for(lambda: super_client.reload(env).healthState == 'started-once')
+    wait_for(lambda: c.reload(env).healthState == 'started-once')
     remove_service(svc)
 
 
@@ -582,7 +584,7 @@ def test_health_state_sidekick_start_once(super_client, context, client):
     assert svc.state == 'active'
 
     wait_for(lambda: super_client.reload(svc).healthState == 'healthy')
-    wait_for(lambda: super_client.reload(env).healthState == 'healthy')
+    wait_for(lambda: client.reload(env).healthState == 'healthy')
 
 
 def test_health_state_selectors(context, client):
@@ -1469,6 +1471,7 @@ def _validate_compose_instance_start(client, service, env,
 
 
 def test_stack_health_state(super_client, context, client):
+    c = client
     env = client.create_environment(name='env-' + random_str())
     svc = client.create_service(name='test', launchConfig={
         'imageUuid': context.image_uuid
@@ -1477,8 +1480,8 @@ def test_stack_health_state(super_client, context, client):
     assert svc.state == 'active'
 
     wait_for(lambda: super_client.reload(svc).healthState == 'healthy')
-    wait_for(lambda: super_client.reload(env).healthState == 'healthy')
+    wait_for(lambda: c.reload(env).healthState == 'healthy')
     remove_service(svc)
     wait_for(lambda: super_client.reload(svc).state == 'removed')
     time.sleep(3)
-    wait_for(lambda: super_client.reload(env).healthState == 'healthy')
+    wait_for(lambda: c.reload(env).healthState == 'healthy')

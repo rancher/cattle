@@ -5,7 +5,7 @@ import io.cattle.platform.configitem.context.dao.MetaDataInfoDao.Version;
 import io.cattle.platform.configitem.context.data.metadata.version1.ServiceMetaDataVersion1;
 import io.cattle.platform.configitem.context.data.metadata.version2.ServiceMetaDataVersion2;
 import io.cattle.platform.core.constants.InstanceConstants;
-import io.cattle.platform.core.model.Environment;
+import io.cattle.platform.core.model.Stack;
 import io.cattle.platform.core.model.Service;
 import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.servicediscovery.api.constants.ServiceDiscoveryConstants;
@@ -67,7 +67,7 @@ public class ServiceMetaData {
         this.stackId = that.stackId;
     }
 
-    public ServiceMetaData(Service service, String serviceName, Environment env, List<String> sidekicks,
+    public ServiceMetaData(Service service, String serviceName, Stack env, List<String> sidekicks,
             Map<String, Object> metadata) {
         this.serviceId = service.getId();
         this.service = service;

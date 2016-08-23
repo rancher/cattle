@@ -1,7 +1,7 @@
 package io.cattle.platform.systemstack.listener;
 
-import static io.cattle.platform.core.model.tables.EnvironmentTable.*;
-import io.cattle.platform.core.model.Environment;
+import static io.cattle.platform.core.model.tables.StackTable.*;
+import io.cattle.platform.core.model.Stack;
 import io.cattle.platform.engine.handler.HandlerResult;
 import io.cattle.platform.engine.handler.ProcessPostListener;
 import io.cattle.platform.engine.process.ProcessInstance;
@@ -28,12 +28,12 @@ public class SystemStackRemovePostHandler extends AbstractObjectProcessLogic imp
 
     @Override
     public String[] getProcessNames() {
-        return new String[] { "environment.remove" };
+        return new String[] { "stack.remove" };
     }
 
     @Override
     public HandlerResult handle(ProcessState state, ProcessInstance process) {
-        Environment systemStack = (Environment) state.getResource();
+        Stack systemStack = (Stack) state.getResource();
         if (systemStack.getExternalId() == null) {
             return null;
         }
@@ -43,23 +43,23 @@ public class SystemStackRemovePostHandler extends AbstractObjectProcessLogic imp
             return null;
         }
 
-        for (Environment toCleanup : getStacksToCleanup(systemStack, systemStackType)) {
+        for (Stack toCleanup : getStacksToCleanup(systemStack, systemStackType)) {
             objectProcessManager.scheduleStandardProcess(StandardProcess.REMOVE, toCleanup, null);
         }
         return null;
     }
 
-    protected List<Environment> getStacksToCleanup(Environment systemStack, String systemStackType) {
-        List<Environment> all = objectManager.find(Environment.class, ENVIRONMENT.ACCOUNT_ID,
+    protected List<Stack> getStacksToCleanup(Stack systemStack, String systemStackType) {
+        List<Stack> all = objectManager.find(Stack.class, STACK.ACCOUNT_ID,
                 systemStack.getAccountId(),
-                ENVIRONMENT.REMOVED, null);
-        List<Environment> toCleanup = new ArrayList<>();
+                STACK.REMOVED, null);
+        List<Stack> toCleanup = new ArrayList<>();
         List<String> stackPrefixes = STACKS_TO_CLEANUP.get(systemStackType);
         if (stackPrefixes != null) {
             for (String prefix : stackPrefixes) {
-                Iterator<Environment> it = all.iterator();
+                Iterator<Stack> it = all.iterator();
                 while (it.hasNext()) {
-                    Environment stack = it.next();
+                    Stack stack = it.next();
                     if (stack.getExternalId() == null) {
                         it.remove();
                         continue;

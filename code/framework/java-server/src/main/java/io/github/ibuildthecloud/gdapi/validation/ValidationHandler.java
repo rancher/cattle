@@ -53,7 +53,6 @@ public class ValidationHandler extends AbstractResponseGenerator {
         context.idFormatter = ApiContext.getContext().getIdFormatter();
         context.schema = context.schemaFactory.getSchema(request.getType());
 
-        validateVersion(request, context);
         validateId(request, context);
         validateType(request, context);
         validateAction(request, context);
@@ -434,13 +433,6 @@ public class ValidationHandler extends AbstractResponseGenerator {
             if (stringValue.matches("^[" + invalidChars + "]*$")) {
                 error(INVALID_CHARACTERS, fieldName);
             }
-        }
-    }
-
-    protected void validateVersion(ApiRequest request, ValidationContext context) {
-        String version = request.getRequestVersion();
-        if (version != null && !request.getApiVersion().equals(version)) {
-            error(UNSUPPORTED_VERSION, null);
         }
     }
 

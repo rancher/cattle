@@ -33,7 +33,7 @@ public class ExternalEventConstants {
     public static final String FIELD_VOL_ID = "deviceNumber";
     public static final String FIELD_SP_ID = "deviceNumber";
     public static final String FIELD_ENVIRIONMENT = "environment";
-    public static final String FIELD_ENVIRIONMENT_ID = "environmentId";
+    public static final String FIELD_STACK_ID = "stackId";
     public static final String FIELD_EXTERNAL_ID = "externalId";
     public static final String PROC_VOL_MAP_CREATE = "volumestoragepoolmap.create";
     public static final String PROC_VOL_MAP_ACTIVATE = "volumestoragepoolmap.activate";

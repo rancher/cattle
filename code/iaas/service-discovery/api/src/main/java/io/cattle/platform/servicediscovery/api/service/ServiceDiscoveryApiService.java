@@ -14,7 +14,7 @@ public interface ServiceDiscoveryApiService {
 
     void addLoadBalancerServiceLink(Service service, LoadBalancerServiceLink serviceLink);
 
-    List<? extends Service> listEnvironmentServices(long environmentId);
+    List<? extends Service> listStackServices(long stackId);
 
     Map.Entry<String, String> buildComposeConfig(List<? extends Service> services);
 

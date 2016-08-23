@@ -1,6 +1,6 @@
 package io.cattle.platform.servicediscovery.api.filter;
 
-import io.cattle.platform.core.model.Environment;
+import io.cattle.platform.core.model.Stack;
 import io.cattle.platform.iaas.api.filter.common.AbstractDefaultResourceManagerFilter;
 import io.cattle.platform.object.meta.ObjectMetaDataManager;
 import io.github.ibuildthecloud.gdapi.condition.Condition;
@@ -16,19 +16,19 @@ import java.util.Map;
 
 import javax.inject.Inject;
 
-public class EnvironmentCreateValidationFilter extends AbstractDefaultResourceManagerFilter {
+public class StackCreateValidationFilter extends AbstractDefaultResourceManagerFilter {
 
     @Inject
     ResourceManagerLocator locator;
 
     @Override
     public Class<?>[] getTypeClasses() {
-        return new Class<?>[] { Environment.class };
+        return new Class<?>[] { Stack.class };
     }
 
     @Override
     public Object create(String type, ApiRequest request, ResourceManager next) {
-        Environment env = request.proxyRequestObject(Environment.class);
+        Stack env = request.proxyRequestObject(Stack.class);
 
         if (env.getName().startsWith("-") || env.getName().endsWith("-")) {
             ValidationErrorCodes.throwValidationError(ValidationErrorCodes.INVALID_CHARACTERS,

@@ -2,11 +2,11 @@ package io.cattle.platform.sample.data;
 
 import static io.cattle.platform.core.model.tables.ConfigItemStatusTable.*;
 import static io.cattle.platform.core.model.tables.ConfigItemTable.*;
-import static io.cattle.platform.core.model.tables.EnvironmentTable.*;
+import static io.cattle.platform.core.model.tables.StackTable.*;
 import io.cattle.platform.core.model.Account;
 import io.cattle.platform.core.model.ConfigItem;
 import io.cattle.platform.core.model.ConfigItemStatus;
-import io.cattle.platform.core.model.Environment;
+import io.cattle.platform.core.model.Stack;
 import io.github.ibuildthecloud.gdapi.condition.Condition;
 import io.github.ibuildthecloud.gdapi.condition.ConditionType;
 
@@ -23,16 +23,16 @@ public class SampleDataStartupV6 extends AbstractSampleData {
 
     @Override
     protected void populatedData(Account system, List<Object> toCreate) {
-        List<Environment> stacks = objectManager
-                .find(Environment.class, ENVIRONMENT.REMOVED, new Condition(ConditionType.NULL));
+        List<Stack> stacks = objectManager
+                .find(Stack.class, STACK.REMOVED, new Condition(ConditionType.NULL));
         createConfigItem();
         createConfigItemStatus(stacks);
     }
 
-    protected void createConfigItemStatus(List<Environment> stacks) {
-        for (Environment stack : stacks) {
+    protected void createConfigItemStatus(List<Stack> stacks) {
+        for (Stack stack : stacks) {
             ConfigItemStatus existing = objectManager.findAny(ConfigItemStatus.class, CONFIG_ITEM_STATUS.NAME,
-                    CONFIG_NAME, CONFIG_ITEM_STATUS.RESOURCE_ID, stack.getId(), CONFIG_ITEM_STATUS.ENVIRONMENT_ID,
+                    CONFIG_NAME, CONFIG_ITEM_STATUS.RESOURCE_ID, stack.getId(), CONFIG_ITEM_STATUS.STACK_ID,
                     stack.getId(), CONFIG_ITEM_STATUS.RESOURCE_TYPE, "environment_id");
             if (existing == null) {
                 try {

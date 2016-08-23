@@ -20,7 +20,7 @@ public class VersionsHandler extends AbstractResponseGenerator {
 
     @Override
     protected void generate(ApiRequest request) throws IOException {
-        if (request.getRequestVersion() != null)
+        if (request.getVersion() != null)
             return;
 
         UrlBuilder urlBuilder = ApiContext.getUrlBuilder();
