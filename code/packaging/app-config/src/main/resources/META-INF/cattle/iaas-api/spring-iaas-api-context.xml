@@ -331,9 +331,11 @@
     <bean class="io.cattle.platform.iaas.api.manager.HaConfigManager" >
         <property name="configuration" ref="FreemarkerConfig" />
     </bean>
+    <bean class="io.cattle.platform.iaas.api.manager.ServiceManager" />
     <bean class="io.cattle.platform.iaas.api.manager.InstanceManager" />
     <bean class="io.cattle.platform.iaas.api.manager.VolumeManager" />
     <bean class="io.cattle.platform.iaas.api.filter.apikey.ApiKeyFilter" />
+    <bean class="io.cattle.platform.iaas.api.filter.compat.CompatibilityOutputFilter" />
     <bean class="io.cattle.platform.iaas.api.filter.agent.AgentFilter" />
     <bean class="io.cattle.platform.iaas.api.filter.instance.InstanceImageValidationFilter" />
     <bean class="io.cattle.platform.iaas.api.filter.instance.InstanceNetworkValidationFilter" />
@@ -368,6 +370,7 @@
             <bean class="io.github.ibuildthecloud.gdapi.id.IdentityFormatter" />
         </property>
     </bean>
+    <bean class="io.cattle.platform.iaas.api.request.handler.RequestReRouterHandler" />
     <bean class="io.github.ibuildthecloud.gdapi.request.handler.CSRFCookieHandler" />
     <bean class="io.cattle.platform.iaas.api.request.handler.PostChildLinkHandler" />
     <bean class="io.github.ibuildthecloud.gdapi.request.handler.ParseCollectionAttributes" />
