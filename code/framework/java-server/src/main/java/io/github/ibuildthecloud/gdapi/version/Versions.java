@@ -1,20 +1,21 @@
 package io.github.ibuildthecloud.gdapi.version;
 
-import java.util.List;
+import java.util.Set;
 
 import javax.inject.Inject;
 
 public class Versions {
 
-    List<String> versions;
+    Set<String> versions;
     String latest;
+    String rootVersion;
 
-    public List<String> getVersions() {
+    public Set<String> getVersions() {
         return versions;
     }
 
     @Inject
-    public void setVersions(List<String> versions) {
+    public void setVersions(Set<String> versions) {
         this.versions = versions;
     }
 
@@ -25,6 +26,14 @@ public class Versions {
     @Inject
     public void setLatest(String latest) {
         this.latest = latest;
+    }
+
+    public String getRootVersion() {
+        return rootVersion;
+    }
+
+    public void setRootVersion(String rootVersion) {
+        this.rootVersion = rootVersion;
     }
 
 }

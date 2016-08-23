@@ -459,7 +459,6 @@
         <aop:advisor advice-ref="ApiDelegateAdvice" pointcut="execution(* io.github.ibuildthecloud.gdapi.request.handler.write.ReadWriteApiDelegate.*(..))" />
     </aop:config>
 
-    <extension:discover class="io.github.ibuildthecloud.gdapi.factory.SchemaFactory"/>
     <extension:discover class="io.cattle.platform.api.pubsub.subscribe.ApiPubSubEventPostProcessor"/>
     <extension:discover class="io.cattle.platform.iaas.api.request.handler.ScriptsHandler"/>
 

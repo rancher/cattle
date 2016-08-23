@@ -47,14 +47,28 @@ public class DefaultAuthorizationProvider implements AuthorizationProvider, Init
         }
 
         if (name != null) {
-            SchemaFactory schemaFactory = schemaFactories.get(name.toString());
+            SchemaFactory schemaFactory = getByName(request, name.toString());
             if (schemaFactory == null) {
                 log.error("Failed to find schema factory [{}]", name);
             } else {
                 return schemaFactory;
             }
         }
-        return schemaFactories.get(authDao.getRole(account, policy));
+        return getByName(request, authDao.getRole(account, policy));
+    }
+
+    protected SchemaFactory getByName(ApiRequest request, String name) {
+        String version = request.getSchemaVersion();
+        if (version == null) {
+            return schemaFactories.get(name);
+        }
+
+        SchemaFactory factory = schemaFactories.get(version + "-" + name);
+        if (factory != null) {
+            return factory;
+        }
+
+        return schemaFactories.get(name);
     }
 
     @Override

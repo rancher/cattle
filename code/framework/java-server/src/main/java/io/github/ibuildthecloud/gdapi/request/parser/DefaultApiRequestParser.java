@@ -1,6 +1,7 @@
 package io.github.ibuildthecloud.gdapi.request.parser;
 
 import io.github.ibuildthecloud.gdapi.exception.ClientVisibleException;
+import io.github.ibuildthecloud.gdapi.factory.SchemaFactory;
 import io.github.ibuildthecloud.gdapi.model.Resource;
 import io.github.ibuildthecloud.gdapi.request.ApiRequest;
 import io.github.ibuildthecloud.gdapi.util.RequestUtils;
@@ -59,7 +60,7 @@ public class DefaultApiRequestParser implements ApiRequestParser {
         apiRequest.setRequestUrl(parseRequestUrl(apiRequest, request));
         apiRequest.setClientIp(parseClientIp(apiRequest, request));
         apiRequest.setResponseUrlBase(parseResponseUrlBase(apiRequest, request));
-        apiRequest.setRequestVersion(parseRequestVersion(apiRequest, request));
+        apiRequest.setVersion(parseVersion(apiRequest, request));
         apiRequest.setResponseFormat(parseResponseType(apiRequest, request));
         apiRequest.setQueryString(parseQueryString(apiRequest, request));
 
@@ -260,8 +261,12 @@ public class DefaultApiRequestParser implements ApiRequestParser {
         }
     }
 
-    protected String parseRequestVersion(ApiRequest apiRequest, HttpServletRequest request) {
-        String servletPath = request.getServletPath();
+    protected String parseVersion(ApiRequest apiRequest, HttpServletRequest request) {
+        return parseVersion(request.getServletPath());
+    }
+
+    @Override
+    public String parseVersion(String servletPath) {
         servletPath = trimPrefix(servletPath.replaceAll("//+", "/"));
 
         if (!servletPath.startsWith("/") || servletPath.length() < 2)
@@ -299,13 +304,13 @@ public class DefaultApiRequestParser implements ApiRequestParser {
     }
 
     protected void parsePath(ApiRequest apiRequest, HttpServletRequest request) {
-        if (apiRequest.getRequestVersion() == null)
+        if (apiRequest.getVersion() == null)
             return;
 
         String servletPath = request.getServletPath();
         servletPath = trimPrefix(servletPath.replaceAll("//+", "/"));
 
-        String versionPrefix = "/" + apiRequest.getRequestVersion();
+        String versionPrefix = "/" + apiRequest.getVersion();
         if (!servletPath.startsWith(versionPrefix)) {
             return;
         }
@@ -319,8 +324,13 @@ public class DefaultApiRequestParser implements ApiRequestParser {
         if (StringUtils.isBlank(typeName)) {
             return;
         } else {
-            String singleType = apiRequest.getSchemaFactory().getSingularName(typeName);
-            apiRequest.setType(singleType == null ? typeName : singleType);
+            SchemaFactory schemaFactory = apiRequest.getSchemaFactory();
+            if (schemaFactory == null) {
+                apiRequest.setType(typeName);
+            } else {
+                String singleType = apiRequest.getSchemaFactory().getSingularName(typeName);
+                apiRequest.setType(singleType == null ? typeName : singleType);
+            }
         }
 
         if (StringUtils.isBlank(id)) {
