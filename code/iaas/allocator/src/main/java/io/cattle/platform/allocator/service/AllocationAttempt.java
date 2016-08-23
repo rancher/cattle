@@ -26,7 +26,6 @@ public class AllocationAttempt {
 
     Long hostId;
 
-    Set<Volume> volumes;
     Set<Long> volumeIds;
 
     Map<Volume, Set<StoragePool>> pools;
@@ -48,7 +47,6 @@ public class AllocationAttempt {
         this.accountId = accountId;
         this.instance = instance;
         this.hostId = hostId;
-        this.volumes = volumes;
         this.pools = pools;
         this.nics = nics;
         this.subnets = subnets == null ? Collections.<Nic, Subnet> emptyMap() : subnets;
@@ -104,10 +102,6 @@ public class AllocationAttempt {
         return hostId;
     }
 
-    public Set<Volume> getVolumes() {
-        return volumes;
-    }
-
     public Map<Volume, Set<StoragePool>> getPools() {
         return pools;
     }
@@ -130,10 +124,6 @@ public class AllocationAttempt {
 
     public void setHostId(Long hostId) {
         this.hostId = hostId;
-    }
-
-    public void setVolumes(Set<Volume> volumes) {
-        this.volumes = volumes;
     }
 
     public void setPools(Map<Volume, Set<StoragePool>> pools) {

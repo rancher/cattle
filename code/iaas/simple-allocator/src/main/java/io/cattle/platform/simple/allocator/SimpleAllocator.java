@@ -7,7 +7,6 @@ import io.cattle.platform.allocator.service.AllocationAttempt;
 import io.cattle.platform.allocator.service.AllocationCandidate;
 import io.cattle.platform.allocator.service.AllocationRequest;
 import io.cattle.platform.allocator.service.Allocator;
-import io.cattle.platform.core.model.Volume;
 import io.cattle.platform.lock.definition.LockDefinition;
 import io.cattle.platform.simple.allocator.dao.QueryOptions;
 import io.cattle.platform.simple.allocator.dao.SimpleAllocatorDao;
@@ -39,10 +38,7 @@ public class SimpleAllocator extends AbstractAllocator implements Allocator, Nam
 
     @Override
     protected Iterator<AllocationCandidate> getCandidates(AllocationAttempt request) {
-        List<Long> volumeIds = new ArrayList<Long>(request.getVolumes().size());
-        for (Volume v : request.getVolumes()) {
-            volumeIds.add(v.getId());
-        }
+        List<Long> volumeIds = new ArrayList<Long>(request.getVolumeIds());
 
         QueryOptions options = new QueryOptions();
 
