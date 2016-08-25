@@ -3,10 +3,16 @@ package io.cattle.platform.iaas.api.auditing;
 import io.cattle.platform.api.auth.Identity;
 import io.cattle.platform.api.auth.Policy;
 import io.cattle.platform.core.constants.AccountConstants;
+import io.cattle.platform.core.constants.AuditLogConstants;
 import io.cattle.platform.core.constants.ContainerEventConstants;
+import io.cattle.platform.core.model.AuditLog;
 import io.cattle.platform.eventing.EventService;
+import io.cattle.platform.eventing.model.Event;
+import io.cattle.platform.eventing.model.EventVO;
+import io.cattle.platform.framework.event.FrameworkEvents;
 import io.cattle.platform.iaas.api.auditing.dao.AuditLogDao;
 import io.cattle.platform.object.ObjectManager;
+import io.cattle.platform.object.meta.ObjectMetaDataManager;
 import io.cattle.platform.object.util.ObjectUtils;
 import io.cattle.platform.process.externalevent.ExternalEventConstants;
 import io.github.ibuildthecloud.gdapi.context.ApiContext;
@@ -24,7 +30,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-
 import javax.inject.Inject;
 
 import org.apache.commons.lang3.StringUtils;
@@ -99,9 +104,8 @@ public class AuditServiceImpl implements AuditService{
         String resourceType = request.getType();
         String eventType = "api." + convertResourceType(resourceType) + "." + (StringUtils.isNotBlank(request.getAction()) ?
                 request.getAction() :convertToAction(request.getMethod()));
-        auditLogDao.create(resourceType, parseId(resourceId), data, user,
-                policy.getAccountId(), policy.getAuthenticatedAsAccountId(), eventType, authType, runtime, null,
-                request.getClientIp());
+        publishEvent(auditLogDao.create(resourceType, parseId(resourceId), data, user,
+                policy.getAccountId(), policy.getAuthenticatedAsAccountId(), eventType, authType, runtime, null, request.getClientIp()));
     }
 
     private String convertResourceType(String type) {
@@ -155,8 +159,20 @@ public class AuditServiceImpl implements AuditService{
             putInAsString(data, "resource", "Failed to convert resource to json.", resource);
         }
         String event =  objectManager.getType(resource) + "." + eventType.toString();
-        auditLogDao.create(objectManager.getType(resource), parseId(String.valueOf(ObjectUtils.getId(resource))),
-                data, null, accountId, null, event, null, null, description, clientIp);
+        publishEvent(auditLogDao.create(objectManager.getType(resource), parseId(String.valueOf(ObjectUtils.getId(resource))),
+                data, null, accountId, null, event, null, null, description, clientIp));
+    }
+
+    protected void publishEvent(AuditLog auditLog) {
+        Map<String, Object> data = new HashMap<>();
+        data.put(ObjectMetaDataManager.ACCOUNT_FIELD, auditLog.getAccountId());
+
+        Event event = EventVO.newEvent(FrameworkEvents.STATE_CHANGE)
+                .withData(data)
+                .withResourceType(AuditLogConstants.TYPE)
+                .withResourceId(auditLog.getId().toString());
+
+        eventService.publish(event);
     }
 
     private void putInAsString(Map<String, Object> data, String fieldForObject, String errMsg, Object objectToPlace) {
