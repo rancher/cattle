@@ -38,6 +38,7 @@ public class ContainerMetaData {
     String state;
     String external_id;
     String primary_mac_address;
+    Long memory;
 
 
     public ContainerMetaData() {
@@ -113,6 +114,8 @@ public class ContainerMetaData {
         this.health_state = instance.getHealthState();
         this.start_count = instance.getStartCount();
         this.state = instance.getState();
+        this.memory = DataAccessor.fieldLong(instance, "memory");
+
     }
 
     public void setService_name(String service_name) {
@@ -242,5 +245,13 @@ public class ContainerMetaData {
 
     public void setPrimary_mac_address(String mac_address) {
         this.primary_mac_address = mac_address;
+    }
+
+    public Long getMemory() {
+        return memory;
+    }
+
+    public void setMemory(Long memory) {
+        this.memory = memory;
     }
 }

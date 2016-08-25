@@ -1,7 +1,5 @@
 package io.cattle.platform.simple.allocator.dao.impl;
 
-import static io.cattle.platform.core.model.tables.HostTable.*;
-import static io.cattle.platform.core.model.tables.StoragePoolTable.*;
 import io.cattle.platform.allocator.service.AllocationCandidate;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.simple.allocator.AllocationCandidateCallback;
@@ -9,8 +7,8 @@ import io.cattle.platform.simple.allocator.AllocationCandidateCallback;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -18,8 +16,6 @@ import java.util.Stack;
 
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
-import org.jooq.Cursor;
-import org.jooq.Record2;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -28,19 +24,20 @@ public class AllocationCandidateIterator implements Iterator<AllocationCandidate
     private static final Logger log = LoggerFactory.getLogger(AllocationCandidateIterator.class);
 
     List<Long> volumeIds;
-    Cursor<Record2<Long, Long>> cursor;
-    Record2<Long, Long> last;
+    Iterator<Map.Entry<Long, Set<Long>>> iterator;
+    Map<Long, String> hostIdsToUuids;
     Stack<AllocationCandidate> candidates = new Stack<AllocationCandidate>();
     ObjectManager objectManager;
     boolean hosts;
     AllocationCandidateCallback callback;
 
-    public AllocationCandidateIterator(ObjectManager objectManager, Cursor<Record2<Long, Long>> cursor, List<Long> volumeIds, boolean hosts,
-            AllocationCandidateCallback callback) {
+    public AllocationCandidateIterator(ObjectManager objectManager, LinkedHashMap<Long, Set<Long>> hostsAndStoragePools, Map<Long, String> hostIdsToUuids,
+            List<Long> volumeIds, boolean hosts, AllocationCandidateCallback callback) {
         super();
         this.objectManager = objectManager;
         this.volumeIds = volumeIds;
-        this.cursor = cursor;
+        this.iterator = hostsAndStoragePools.entrySet().iterator();
+        this.hostIdsToUuids = hostIdsToUuids;
         this.hosts = hosts;
         this.callback = callback;
     }
@@ -55,30 +52,10 @@ public class AllocationCandidateIterator implements Iterator<AllocationCandidate
     }
 
     protected boolean readNext() {
-        Long hostId = last == null ? null : last.getValue(HOST.ID);
-        Set<Long> pools = new HashSet<Long>();
-        if (last != null) {
-            Long poolId = last.getValue(STORAGE_POOL.ID);
-            if (poolId != null) {
-                pools.add(poolId);
-            }
-            last = null;
+        if (iterator.hasNext()) {
+            Map.Entry<Long, Set<Long>>hostAndPools = iterator.next();
+            enumerate(hostAndPools.getKey(), hostAndPools.getValue());
         }
-
-        while (cursor.hasNext()) {
-            Record2<Long, Long> record = cursor.fetchOne();
-            long nextHostId = record.getValue(HOST.ID);
-            Long poolId = record.getValue(STORAGE_POOL.ID);
-            if (hostId == null || hostId.longValue() == nextHostId) {
-                hostId = nextHostId;
-                pools.add(poolId);
-            } else if (hostId.longValue() != nextHostId) {
-                last = record;
-                break;
-            }
-        }
-
-        enumerate(hostId, pools);
 
         return candidates.size() > 0;
     }
@@ -91,11 +68,12 @@ public class AllocationCandidateIterator implements Iterator<AllocationCandidate
         }
 
         Long candidateHostId = this.hosts ? hostId : null;
+        String candidateHostUuid = this.hosts ? this.hostIdsToUuids.get(hostId) : null;
 
         Map<Pair<Class<?>, Long>, Object> cache = new HashMap<Pair<Class<?>, Long>, Object>();
 
         if (volumeIds.size() == 0) {
-            pushCandidate(new AllocationCandidate(objectManager, cache, candidateHostId, Collections.<Long, Long> emptyMap()));
+            pushCandidate(new AllocationCandidate(objectManager, cache, candidateHostId, candidateHostUuid, Collections.<Long, Long> emptyMap()));
         }
 
         for (List<Pair<Long, Long>> pairs : traverse(volumeIds, pools)) {
@@ -104,7 +82,7 @@ public class AllocationCandidateIterator implements Iterator<AllocationCandidate
                 volumeToPool.put(pair.getLeft(), pair.getRight());
             }
 
-            pushCandidate(new AllocationCandidate(objectManager, cache, candidateHostId, volumeToPool));
+            pushCandidate(new AllocationCandidate(objectManager, cache, candidateHostId, candidateHostUuid, volumeToPool));
         }
     }
 
@@ -151,9 +129,5 @@ public class AllocationCandidateIterator implements Iterator<AllocationCandidate
     @Override
     public void remove() {
         throw new UnsupportedOperationException();
-    }
-
-    public void close() {
-        cursor.close();
     }
 }
