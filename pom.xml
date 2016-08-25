@@ -97,6 +97,7 @@
                 </property>
             </activation>
             <modules>
+                <module>code/implementation/activity-log</module>
                 <module>code/implementation/agent-instance-impl</module>
                 <module>code/implementation/docker/api</module>
                 <module>code/implementation/docker/common</module>

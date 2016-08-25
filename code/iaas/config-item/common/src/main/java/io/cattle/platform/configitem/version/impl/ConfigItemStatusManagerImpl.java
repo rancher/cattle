@@ -70,7 +70,7 @@ public class ConfigItemStatusManagerImpl implements ConfigItemStatusManager {
     EventService eventService;
 
     @Override
-    public boolean runUpdateForEvent(String itemName, ConfigUpdate update, Client client, Runnable run) {
+    public boolean runUpdateForEvent(final String itemName, final ConfigUpdate update, final Client client, final Runnable run) {
         boolean found = false;
         for (ConfigUpdateItem item : update.getData().getItems()) {
             if (itemName.equals(item.getName())) {
