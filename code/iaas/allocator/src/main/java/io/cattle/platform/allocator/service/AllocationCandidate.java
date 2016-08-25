@@ -15,6 +15,7 @@ public class AllocationCandidate {
 
     String id = UUID.randomUUID().toString();
     Long host;
+    String hostUuid;
     Map<Long, Long> subnetIds = new HashMap<Long, Long>();
     Map<Long, Set<Long>> pools = new HashMap<Long, Set<Long>>();
     ObjectManager objectManager;
@@ -26,6 +27,7 @@ public class AllocationCandidate {
 
     public AllocationCandidate(AllocationCandidate candidate) {
         this.host = candidate.host;
+        this.hostUuid = candidate.hostUuid;
         this.subnetIds = candidate.subnetIds == null ? null : new HashMap<Long, Long>(candidate.subnetIds);
         this.pools = candidate.pools == null ? null : new HashMap<Long, Set<Long>>(candidate.pools);
         this.objectManager = candidate.objectManager;
@@ -33,11 +35,12 @@ public class AllocationCandidate {
         this.valid = candidate.valid;
     }
 
-    public AllocationCandidate(ObjectManager objectManager, Map<Pair<Class<?>, Long>, Object> resources, Long hostId, Map<Long, Long> pools) {
+    public AllocationCandidate(ObjectManager objectManager, Map<Pair<Class<?>, Long>, Object> resources, Long hostId, String hostUuid, Map<Long, Long> pools) {
         super();
         this.objectManager = objectManager;
         this.resources = resources;
         this.host = hostId;
+        this.hostUuid = hostUuid;
         this.pools = new HashMap<Long, Set<Long>>();
 
         for (Map.Entry<Long, Long> entry : pools.entrySet()) {
@@ -78,6 +81,14 @@ public class AllocationCandidate {
 
     public void setHost(Long host) {
         this.host = host;
+    }
+
+    public String getHostUuid() {
+        return hostUuid;
+    }
+
+    public void setHostUuid(String hostUuid) {
+        this.hostUuid = hostUuid;
     }
 
     public Map<Long, Set<Long>> getPools() {

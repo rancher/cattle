@@ -61,6 +61,8 @@ import javax.inject.Inject;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.jooq.Condition;
+import org.jooq.Field;
+import org.jooq.Record;
 import org.jooq.Record3;
 import org.jooq.RecordHandler;
 import org.jooq.impl.DSL;
@@ -312,25 +314,44 @@ public class AllocatorDaoImpl extends AbstractJooqDao implements AllocatorDao {
     }
 
     @Override
-    public void releaseAllocation(Instance instance) {
-        for ( InstanceHostMap map : mapDao.findNonRemoved(InstanceHostMap.class, Instance.class, instance.getId()) ) {
-            DataAccessor data = DataAccessor.fromDataFieldOf(map)
-                                    .withScope(AllocatorDaoImpl.class)
+    public void releaseAllocation(Instance instance,  InstanceHostMap map) {
+        //Reload for persisting
+        map = objectManager.loadResource(InstanceHostMap.class, map.getId());
+
+        DataAccessor data = DataAccessor.fromDataFieldOf(map)
+                                    .withScope(AllocatorDao.class)
                                     .withKey("deallocated");
 
-            Boolean done = data.as(Boolean.class);
-            if ( done == null || ! done.booleanValue() ) {
-                modifyCompute(map.getHostId(), instance, true);
-                modifyDisk(map.getHostId(), instance, false);
-                data.set(true);
-                objectManager.persist(map);
-            }
+        Boolean done = data.as(Boolean.class);
+        if ( done == null || ! done.booleanValue() ) {
+            modifyCompute(map.getHostId(), instance, true);
+            modifyDisk(map.getHostId(), instance, false);
+            data.set(true);
+            objectManager.persist(map);
         }
     }
 
     @Override
     public void releaseAllocation(Volume volume) {
         // Nothing to do?
+    }
+
+    @Override
+    public Map<String, List<InstanceHostMap>> getInstanceHostMapsWithHostUuid(long instanceId) {
+        Map<Record, List<InstanceHostMap>> result = create()
+        .select(INSTANCE_HOST_MAP.fields()).select(HOST.UUID)
+        .from(INSTANCE_HOST_MAP)
+        .join(HOST).on(INSTANCE_HOST_MAP.HOST_ID.eq(HOST.ID))
+        .where(INSTANCE_HOST_MAP.INSTANCE_ID.eq(instanceId)
+        .and(INSTANCE_HOST_MAP.REMOVED.isNull()))
+        .fetchGroups(new Field[]{HOST.UUID}, InstanceHostMap.class);
+
+        Map<String, List<InstanceHostMap>> maps = new HashMap<>();
+        for (Map.Entry<Record, List<InstanceHostMap>>entry : result.entrySet()) {
+            String uuid = (String)entry.getKey().getValue(0);
+            maps.put(uuid, entry.getValue());
+        }
+        return maps;
     }
 
     @Override
