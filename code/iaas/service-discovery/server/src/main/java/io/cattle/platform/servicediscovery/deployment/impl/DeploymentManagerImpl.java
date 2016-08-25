@@ -1,9 +1,9 @@
 package io.cattle.platform.servicediscovery.deployment.impl;
 
+import io.cattle.platform.activity.ActivityService;
 import io.cattle.platform.allocator.service.AllocatorService;
 import io.cattle.platform.configitem.events.ConfigUpdate;
 import io.cattle.platform.configitem.model.Client;
-import io.cattle.platform.configitem.model.ItemVersion;
 import io.cattle.platform.configitem.request.ConfigUpdateRequest;
 import io.cattle.platform.configitem.version.ConfigItemStatusManager;
 import io.cattle.platform.core.addon.ScalePolicy;
@@ -13,7 +13,6 @@ import io.cattle.platform.core.model.Service;
 import io.cattle.platform.core.model.ServiceExposeMap;
 import io.cattle.platform.engine.idempotent.IdempotentRetryException;
 import io.cattle.platform.eventing.EventService;
-import io.cattle.platform.eventing.model.EventVO;
 import io.cattle.platform.iaas.api.auditing.AuditService;
 import io.cattle.platform.json.JsonMapper;
 import io.cattle.platform.lock.LockCallback;
@@ -59,6 +58,8 @@ public class DeploymentManagerImpl implements DeploymentManager {
     private static final Logger log = LoggerFactory.getLogger(DeploymentManagerImpl.class);
 
     @Inject
+    ActivityService activity;
+    @Inject
     LockManager lockManager;
     @Inject
     DeploymentUnitInstanceFactory unitInstanceFactory;
@@ -88,6 +89,8 @@ public class DeploymentManagerImpl implements DeploymentManager {
     AuditService auditService;
     @Inject
     IdFormatter idFrmt;
+    @Inject
+    ActivityService activityService;
 
     @Override
     public boolean isHealthy(Service service) {
@@ -245,11 +248,18 @@ public class DeploymentManagerImpl implements DeploymentManager {
     protected boolean deploy(final Service service, final boolean checkState, final List<Service> services) {
         // get existing deployment units
         ServiceDeploymentPlanner planner = getPlanner(services);
+        
+        if (!checkState) {
+            activityService.info(planner.getStatus());
+        }
 
         // don't process if there is no need to reconcile
         boolean needToReconcile = needToReconcile(services, planner);
 
         if (!needToReconcile) {
+            if (!checkState) {
+                activityService.info("State reconciled");
+            }
             return false;
         }
 
@@ -402,7 +412,6 @@ public class DeploymentManagerImpl implements DeploymentManager {
         });
     }
 
-
     @Override
     public void reconcileServices(Collection<? extends Service> services) {
         for (Service service: services) {
@@ -419,10 +428,13 @@ public class DeploymentManagerImpl implements DeploymentManager {
         itemManager.runUpdateForEvent(RECONCILE, update, client, new Runnable() {
             @Override
             public void run() {
-                Service service = objectMgr.loadResource(Service.class, client.getResourceId());
+                final Service service = objectMgr.loadResource(Service.class, client.getResourceId());
                 if (service != null && service.getState().equalsIgnoreCase(CommonStatesConstants.ACTIVE)) {
-                    activity.run(service, "service.trigger", ()-> {
-                        activate(service);
+                    activity.run(service, "service.trigger", new Runnable() {
+                        @Override
+                        public void run() {
+                            activate(service);
+                        }
                     });
                 }
             }

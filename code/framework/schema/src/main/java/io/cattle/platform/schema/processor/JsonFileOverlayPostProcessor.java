@@ -113,8 +113,12 @@ public class JsonFileOverlayPostProcessor extends AbstractSchemaPostProcessor im
                 byte[] bytes = IOUtils.toByteArray(is);
 
                 Map<String, Object> mapData = jsonMapper.readValue(bytes);
-                SchemaOverlayImpl data = schemaMashaller.readValue(bytes, explicitByDefault ? ExplicitByDefaultSchemaOverlayImpl.class
-                        : SchemaOverlayImpl.class);
+                SchemaOverlayImpl data = null;
+                if (explicitByDefault) {
+                    data = schemaMashaller.readValue(bytes, ExplicitByDefaultSchemaOverlayImpl.class);
+                } else {
+                    data = schemaMashaller.readValue(bytes, SchemaOverlayImpl.class);
+                }
 
                 processSchema(schema, data, mapData);
             } catch (IllegalAccessException | InvocationTargetException | NoSuchMethodException | IOException e) {

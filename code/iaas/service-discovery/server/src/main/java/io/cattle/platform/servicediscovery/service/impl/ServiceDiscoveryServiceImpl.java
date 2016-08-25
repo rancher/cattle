@@ -490,16 +490,11 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
 
         objectManager.reload(object);
         objectManager.setFields(object, ServiceDiscoveryConstants.FIELD_PUBLIC_ENDPOINTS, newData);
-        final Map<String, Object> data = new HashMap<>();
+        Map<String, Object> data = new HashMap<>();
         data.put(ServiceDiscoveryConstants.FIELD_PUBLIC_ENDPOINTS, newData);
         data.put(ObjectMetaDataManager.ACCOUNT_FIELD, accountId);
 
-        DeferredUtils.nest(new Runnable() {
-            @Override
-            public void run() {
-                EventUtils.TriggerStateChanged(eventService, resourceId.toString(), resourceType, data);
-            }
-        });
+        EventUtils.triggerStateChanged(eventService, resourceId.toString(), resourceType, data);
     }
 
     protected void reconcileHostEndpointsImpl(final Host host) {
@@ -757,7 +752,7 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
             return;
         }
 
-        Client client = new Client(Service.class, new Long(update.getResourceId()));
+        final Client client = new Client(Service.class, new Long(update.getResourceId()));
         itemManager.runUpdateForEvent(SERVICE_ENDPOINTS_UPDATE, update, client, new Runnable() {
             @Override
             public void run() {
