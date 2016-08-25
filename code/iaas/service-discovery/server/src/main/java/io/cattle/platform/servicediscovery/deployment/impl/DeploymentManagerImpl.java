@@ -415,30 +415,18 @@ public class DeploymentManagerImpl implements DeploymentManager {
 
     @Override
     public void serviceUpdate(ConfigUpdate update) {
-        if (update.getResourceId() == null) {
-            return;
-        }
-
         final Client client = new Client(Service.class, new Long(update.getResourceId()));
-        reconcileForClient(update, client, new Runnable() {
+        itemManager.runUpdateForEvent(RECONCILE, update, client, new Runnable() {
             @Override
             public void run() {
                 Service service = objectMgr.loadResource(Service.class, client.getResourceId());
                 if (service != null && service.getState().equalsIgnoreCase(CommonStatesConstants.ACTIVE)) {
-                    activate(service);
+                    activity.run(service, "service.trigger", ()-> {
+                        activate(service);
+                    });
                 }
             }
         });
-    }
-
-    protected void reconcileForClient(ConfigUpdate update, Client client, Runnable run) {
-        ItemVersion itemVersion = itemManager.getRequestedVersion(client, RECONCILE);
-        if (itemVersion == null) {
-            return;
-        }
-        run.run();
-        itemManager.setApplied(client, RECONCILE, itemVersion);
-        eventService.publish(EventVO.reply(update));
     }
 
     public final class DeploymentServiceContext {

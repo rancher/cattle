@@ -2,15 +2,14 @@ package io.cattle.platform.servicediscovery.service;
 
 import io.cattle.platform.configitem.events.ConfigUpdate;
 import io.cattle.platform.core.addon.ServiceLink;
-import io.cattle.platform.core.model.Stack;
 import io.cattle.platform.core.model.Host;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.Service;
 import io.cattle.platform.core.model.ServiceIndex;
+import io.cattle.platform.core.model.Stack;
 import io.cattle.platform.core.model.Subnet;
 import io.cattle.platform.eventing.annotation.AnnotatedEventListener;
 import io.cattle.platform.eventing.annotation.EventHandler;
-import io.cattle.platform.eventing.lock.EventLock;
 
 import java.util.List;
 
@@ -62,10 +61,10 @@ public interface ServiceDiscoveryService extends AnnotatedEventListener {
 
     void setServiceIndexIp(ServiceIndex serviceIndex, String ipAddress);
 
-    @EventHandler(lock = EventLock.class)
-    void serviceEndpointsUpdate(ConfigUpdate update);
+    @EventHandler
+    void serviceUpdate(ConfigUpdate update);
 
-    @EventHandler(lock = EventLock.class)
+    @EventHandler
     void hostEndpointsUpdate(ConfigUpdate update);
 
     void reconcileServiceEndpoints(Service service);

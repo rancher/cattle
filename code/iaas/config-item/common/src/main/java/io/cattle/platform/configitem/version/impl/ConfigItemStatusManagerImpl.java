@@ -14,8 +14,12 @@ import io.cattle.platform.configitem.version.ConfigItemStatusManager;
 import io.cattle.platform.configitem.version.dao.ConfigItemStatusDao;
 import io.cattle.platform.core.model.ConfigItemStatus;
 import io.cattle.platform.deferred.util.DeferredUtils;
+import io.cattle.platform.eventing.EventService;
 import io.cattle.platform.eventing.exception.AgentRemovedException;
 import io.cattle.platform.eventing.model.Event;
+import io.cattle.platform.eventing.model.EventVO;
+import io.cattle.platform.lock.LockCallback;
+import io.cattle.platform.lock.LockManager;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.server.context.ServerContext;
 import io.cattle.platform.server.context.ServerContext.BaseProtocol;
@@ -26,6 +30,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
 import javax.inject.Inject;
 
 import org.apache.commons.lang3.ObjectUtils;
@@ -57,6 +62,41 @@ public class ConfigItemStatusManagerImpl implements ConfigItemStatusManager {
 
     @Inject
     ConfigUpdatePublisher publisher;
+
+    @Inject
+    LockManager lockManager;
+
+    @Inject
+    EventService eventService;
+
+    @Override
+    public boolean runUpdateForEvent(String itemName, ConfigUpdate update, Client client, Runnable run) {
+        boolean found = false;
+        for (ConfigUpdateItem item : update.getData().getItems()) {
+            if (itemName.equals(item.getName())) {
+                found = true;
+            }
+        }
+
+        if (!found) {
+            return false;
+        }
+
+        return lockManager.tryLock(new ConfigItemProcessLock(itemName, client), new LockCallback<Object>() {
+            @Override
+            public Object doWithLock() {
+                ItemVersion itemVersion = getRequestedVersion(client, itemName);
+                if (itemVersion == null) {
+                    return null;
+                }
+                run.run();
+                setApplied(client, itemName, itemVersion);
+                eventService.publish(EventVO.reply(update));
+                return new Object();
+            }
+        }) != null;
+    }
+
 
     protected Map<String, ConfigItemStatus> getStatus(ConfigUpdateRequest request) {
         Map<String, ConfigItemStatus> statuses = new HashMap<String, ConfigItemStatus>();
@@ -324,5 +364,4 @@ public class ConfigItemStatusManagerImpl implements ConfigItemStatusManager {
     public ItemVersion getRequestedVersion(Client client, String itemName) {
         return configItemStatusDao.getRequestedItemVersion(client, itemName);
     }
-
 }
