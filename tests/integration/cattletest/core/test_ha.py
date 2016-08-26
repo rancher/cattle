@@ -23,7 +23,8 @@ def test_container_ha_default(super_client, new_context):
             return None
         return processes
 
-    processes = wait_for(callback)
+    processes = wait_for(callback,
+                         fail_handler=lambda: proc_err(c, super_client))
 
     c = wait_for_condition(client, c,
                            lambda x: x.state == 'removed',
@@ -89,7 +90,8 @@ def test_container_ha_stop(super_client, new_context):
             return None
         return processes
 
-    processes = wait_for(callback)
+    processes = wait_for(callback,
+                         fail_handler=lambda: proc_err(c, super_client))
 
     wait_for_condition(super_client, c,
                        lambda x: x.state == 'stopped',
@@ -118,7 +120,8 @@ def test_container_ha_restart(super_client, new_context):
             return None
         return processes
 
-    processes = wait_for(callback)
+    processes = wait_for(callback,
+                         fail_handler=lambda: proc_err(c, super_client))
 
     wait_for_condition(super_client, c,
                        lambda x: x.state == 'running',
@@ -150,7 +153,8 @@ def test_container_ha_remove(super_client, new_context):
             return None
         return processes
 
-    processes = wait_for(callback)
+    processes = wait_for(callback,
+                         fail_handler=lambda: proc_err(c, super_client))
 
     wait_for_condition(super_client, c,
                        lambda x: x.state == 'removed',
@@ -164,3 +168,9 @@ def test_container_ha_remove(super_client, new_context):
 
 def process_executions(cli, id=None):
     return cli.list_process_execution(processInstanceId=id)
+
+
+def proc_err(c, super_client):
+    processes = process_instances(super_client, c, type='instance')
+    c = super_client.reload(c)
+    return 'Instance: %s\nProcesses: %s' % (c, processes.data)
