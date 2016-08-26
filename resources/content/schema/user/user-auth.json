@@ -484,6 +484,7 @@
         "stack.previousEnvironment": "cru",
         "stack.outputs": "cru",
         "stack.startOnCreate": "cr",
+        "stack.binding": "cru",
 
         "composeProject" : "r",
         "composeProject.name": "cr",
@@ -661,6 +662,15 @@
         "kubernetesStackUpgrade.templates" : "cr",
         "kubernetesStackUpgrade.environment" : "cr",
         "kubernetesStackUpgrade.externalId" : "cr",
+        
+        "binding" : "r",
+        "binding.services" : "cr",
+
+        "serviceBinding" : "r",
+        "serviceBinding.labels" : "cr",
+        "serviceBinding.ports" : "cr",
+        "serviceBinding.scale" : "cr",
+        
 
         "serviceEvent" : "r",
         "serviceEvent.instanceId" : "r",

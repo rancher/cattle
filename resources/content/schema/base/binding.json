@@ -1,0 +1,7 @@
+{
+	"resourceFields": {
+		"services": {
+			"type": "map[serviceBinding]"
+		}
+	}
+}

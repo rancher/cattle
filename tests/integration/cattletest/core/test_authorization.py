@@ -192,6 +192,8 @@ def test_user_types(user_client, adds=set(), removes=set()):
         'nfsConfig',
         'blkioDeviceOption',
         'scalePolicy',
+        'binding',
+        'serviceBinding',
     }
     types.update(adds)
     types.difference_update(removes)
@@ -414,7 +416,9 @@ def test_admin_types(admin_user_client, adds=set(), removes=set()):
         'volumeSnapshotInput',
         'nfsConfig',
         'blkioDeviceOption',
-        'scalePolicy'
+        'scalePolicy',
+        'binding',
+        'serviceBinding',
     }
     types.update(adds)
     types.difference_update(removes)
@@ -1793,6 +1797,7 @@ def test_auth_compose_project(admin_user_client, user_client, project_client):
         'previousExternalId': 'r',
         'previousEnvironment': 'r',
         'healthState': 'r',
+        'binding': 'r',
     })
 
     auth_check(user_client.schema, 'composeProject', 'r', {
@@ -1804,6 +1809,7 @@ def test_auth_compose_project(admin_user_client, user_client, project_client):
         'previousExternalId': 'r',
         'previousEnvironment': 'r',
         'healthState': 'r',
+        'binding': 'r',
     })
 
     auth_check(project_client.schema, 'composeProject', 'crud', {
@@ -1815,6 +1821,7 @@ def test_auth_compose_project(admin_user_client, user_client, project_client):
         'previousExternalId': 'cru',
         'previousEnvironment': 'cru',
         'healthState': 'r',
+        'binding': 'cru',
     })
 
 
@@ -1830,6 +1837,7 @@ def test_auth_kubernetes_stack(admin_user_client, user_client, project_client):
         'previousExternalId': 'r',
         'previousEnvironment': 'r',
         'healthState': 'r',
+        'binding': 'r',
     })
 
     auth_check(user_client.schema, 'kubernetesStack', 'r', {
@@ -1842,6 +1850,7 @@ def test_auth_kubernetes_stack(admin_user_client, user_client, project_client):
         'previousExternalId': 'r',
         'previousEnvironment': 'r',
         'healthState': 'r',
+        'binding': 'r',
     })
 
     auth_check(project_client.schema, 'kubernetesStack', 'crud', {
@@ -1854,6 +1863,7 @@ def test_auth_kubernetes_stack(admin_user_client, user_client, project_client):
         'previousExternalId': 'cru',
         'previousEnvironment': 'cru',
         'healthState': 'r',
+        'binding': 'cru',
     })
 
 
@@ -1871,6 +1881,7 @@ def test_svc_discovery_stack(admin_user_client, user_client, project_client):
         'outputs': 'r',
         'startOnCreate': 'r',
         'healthState': 'r',
+        'binding': 'r',
     })
 
     auth_check(user_client.schema, 'stack', 'r', {
@@ -1885,6 +1896,7 @@ def test_svc_discovery_stack(admin_user_client, user_client, project_client):
         'outputs': 'r',
         'startOnCreate': 'r',
         'healthState': 'r',
+        'binding': 'r',
     })
 
     auth_check(project_client.schema, 'stack', 'crud', {
@@ -1899,6 +1911,7 @@ def test_svc_discovery_stack(admin_user_client, user_client, project_client):
         'outputs': 'cru',
         'startOnCreate': 'cr',
         'healthState': 'r',
+        'binding': 'cru',
     })
 
 

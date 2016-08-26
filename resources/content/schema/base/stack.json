@@ -41,6 +41,10 @@
         },
         "upgrade":{
             "type": "kubernetesStackUpgrade"
+        },
+        "binding":{
+        	"type": "binding",
+        	"nullable": true
         }
     },
     "resourceActions" : {
