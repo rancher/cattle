@@ -2223,11 +2223,16 @@ def test_validate_scaledown_updating(client, context):
 
     # change scale two times in a row
     service = client.update(service, scale=10, name=service.name)
-    wait_for(lambda: client.reload(service).scale == 10)
+
+    def wait():
+        s = client.reload(service)
+        return s.scale == 10 and s.healthState == 'degraded'
+    wait_for(wait)
+
     service = client.update(service, scale=1, name=service.name)
     service = client.wait_success(service, 120)
     assert service.state == "active"
-    assert service.scale == 1
+    wait_for(lambda: client.reload(service).scale == 1)
     _wait_until_active_map_count(service, 1, client)
 
 
