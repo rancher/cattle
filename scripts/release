@@ -3,5 +3,4 @@ set -e
 
 cd $(dirname $0)
 
-./clean
 ./build --release

@@ -26,19 +26,6 @@ selectjar()
 
 build()
 {
-    echo HOME=$HOME
-
-    if [ -d /source ]; then
-        if [ ! -e /source/.m2 ] && [ -e ${HOME}/.m2 ]; then
-            cp -rf ${HOME}/.m2 /source
-        fi
-
-        if [ ! -L ${HOME}/.m2 ] && [ -d /source/.m2 ]; then
-            mv ${HOME}/.m2{,.backup}
-            ln -s /source/.m2 ${HOME}/.m2
-        fi
-    fi
-
     mvn ${MAVEN_ARGS} ${RELEASE_ARGS} ${MAVEN_TARGET:-install}
     mkdir -p dist/artifacts
 
