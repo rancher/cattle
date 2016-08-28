@@ -67,7 +67,7 @@ public class ServiceUpdateActivate extends AbstractObjectProcessHandler {
             return null;
         }
         
-        activity.run(service, process.getName(), new Runnable() {
+        activity.run(service, process.getName(), getMessage(process.getName()), new Runnable() {
             @Override
             public void run() {
                 deploymentMgr.activate(service);
@@ -108,6 +108,18 @@ public class ServiceUpdateActivate extends AbstractObjectProcessHandler {
 //        }
         objectManager.reload(state.getResource());
         return new HandlerResult(ServiceDiscoveryConstants.FIELD_CURRENT_SCALE, exposeDao.getCurrentScale(service.getId()));
+    }
+    
+    protected String getMessage(String name) {
+        if (name == null) {
+            return null;
+        }
+        switch (name) {
+        case "service.activate":
+            return "Activating service";
+        default:
+            return "Updating service";
+        }
     }
 
     @SuppressWarnings("unchecked")

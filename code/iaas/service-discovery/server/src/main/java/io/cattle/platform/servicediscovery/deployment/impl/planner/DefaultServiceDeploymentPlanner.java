@@ -69,7 +69,7 @@ public class DefaultServiceDeploymentPlanner extends ServiceDeploymentPlanner {
         while (this.healthyUnits.size() > this.requestedScale) {
             DeploymentUnit toRemove = this.healthyUnits.get(i);
             watchList.add(toRemove);
-            toRemove.remove(false, ServiceDiscoveryConstants.AUDIT_LOG_REMOVE_EXTRA);
+            toRemove.remove(ServiceDiscoveryConstants.AUDIT_LOG_REMOVE_EXTRA);
             this.healthyUnits.remove(i);
             i--;
         }
@@ -82,5 +82,10 @@ public class DefaultServiceDeploymentPlanner extends ServiceDeploymentPlanner {
     @Override
     public boolean needToReconcileDeploymentImpl() {
         return (healthyUnits.size() != requestedScale);
+    }
+
+    @Override
+    public String getStatus() {
+        return String.format("Requested: %d, %s", requestedScale, super.getStatus());
     }
 }

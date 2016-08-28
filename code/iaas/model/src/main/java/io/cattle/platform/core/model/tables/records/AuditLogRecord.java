@@ -11,9 +11,9 @@ package io.cattle.platform.core.model.tables.records;
 @java.lang.SuppressWarnings({ "all", "unchecked", "rawtypes" })
 @javax.persistence.Entity
 @javax.persistence.Table(name = "audit_log", schema = "cattle")
-public class AuditLogRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.platform.core.model.tables.records.AuditLogRecord> implements io.cattle.platform.db.jooq.utils.TableRecordJaxb, org.jooq.Record19<java.lang.Long, java.lang.Long, java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.Long, java.lang.String, java.util.Date, java.util.Map<String,Object>, java.lang.String, java.lang.Long, java.lang.String, java.util.Date, java.lang.Long, java.lang.Long, java.lang.String, java.lang.Boolean>, io.cattle.platform.core.model.AuditLog {
+public class AuditLogRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.platform.core.model.tables.records.AuditLogRecord> implements io.cattle.platform.db.jooq.utils.TableRecordJaxb, org.jooq.Record20<java.lang.Long, java.lang.Long, java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.Long, java.lang.String, java.util.Date, java.util.Map<String,Object>, java.lang.String, java.lang.Long, java.lang.String, java.util.Date, java.lang.Long, java.lang.Long, java.lang.String, java.lang.Boolean, java.lang.String>, io.cattle.platform.core.model.AuditLog {
 
-	private static final long serialVersionUID = -39005889;
+	private static final long serialVersionUID = -534327260;
 
 	/**
 	 * Setter for <code>cattle.audit_log.id</code>.
@@ -339,6 +339,23 @@ public class AuditLogRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.
 		return (java.lang.Boolean) getValue(18);
 	}
 
+	/**
+	 * Setter for <code>cattle.audit_log.level</code>.
+	 */
+	@Override
+	public void setLevel(java.lang.String value) {
+		setValue(19, value);
+	}
+
+	/**
+	 * Getter for <code>cattle.audit_log.level</code>.
+	 */
+	@javax.persistence.Column(name = "level", nullable = false, length = 128)
+	@Override
+	public java.lang.String getLevel() {
+		return (java.lang.String) getValue(19);
+	}
+
 	// -------------------------------------------------------------------------
 	// Primary key information
 	// -------------------------------------------------------------------------
@@ -352,23 +369,23 @@ public class AuditLogRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.
 	}
 
 	// -------------------------------------------------------------------------
-	// Record19 type implementation
+	// Record20 type implementation
 	// -------------------------------------------------------------------------
 
 	/**
 	 * {@inheritDoc}
 	 */
 	@Override
-	public org.jooq.Row19<java.lang.Long, java.lang.Long, java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.Long, java.lang.String, java.util.Date, java.util.Map<String,Object>, java.lang.String, java.lang.Long, java.lang.String, java.util.Date, java.lang.Long, java.lang.Long, java.lang.String, java.lang.Boolean> fieldsRow() {
-		return (org.jooq.Row19) super.fieldsRow();
+	public org.jooq.Row20<java.lang.Long, java.lang.Long, java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.Long, java.lang.String, java.util.Date, java.util.Map<String,Object>, java.lang.String, java.lang.Long, java.lang.String, java.util.Date, java.lang.Long, java.lang.Long, java.lang.String, java.lang.Boolean, java.lang.String> fieldsRow() {
+		return (org.jooq.Row20) super.fieldsRow();
 	}
 
 	/**
 	 * {@inheritDoc}
 	 */
 	@Override
-	public org.jooq.Row19<java.lang.Long, java.lang.Long, java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.Long, java.lang.String, java.util.Date, java.util.Map<String,Object>, java.lang.String, java.lang.Long, java.lang.String, java.util.Date, java.lang.Long, java.lang.Long, java.lang.String, java.lang.Boolean> valuesRow() {
-		return (org.jooq.Row19) super.valuesRow();
+	public org.jooq.Row20<java.lang.Long, java.lang.Long, java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.Long, java.lang.String, java.util.Date, java.util.Map<String,Object>, java.lang.String, java.lang.Long, java.lang.String, java.util.Date, java.lang.Long, java.lang.Long, java.lang.String, java.lang.Boolean, java.lang.String> valuesRow() {
+		return (org.jooq.Row20) super.valuesRow();
 	}
 
 	/**
@@ -527,6 +544,14 @@ public class AuditLogRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.
 	 * {@inheritDoc}
 	 */
 	@Override
+	public org.jooq.Field<java.lang.String> field20() {
+		return io.cattle.platform.core.model.tables.AuditLogTable.AUDIT_LOG.LEVEL;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
 	public java.lang.Long value1() {
 		return getId();
 	}
@@ -673,6 +698,14 @@ public class AuditLogRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.
 	@Override
 	public java.lang.Boolean value19() {
 		return getSubLog();
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public java.lang.String value20() {
+		return getLevel();
 	}
 
 	/**
@@ -850,7 +883,16 @@ public class AuditLogRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.
 	 * {@inheritDoc}
 	 */
 	@Override
-	public AuditLogRecord values(java.lang.Long value1, java.lang.Long value2, java.lang.Long value3, java.lang.String value4, java.lang.String value5, java.lang.String value6, java.lang.String value7, java.lang.Long value8, java.lang.String value9, java.util.Date value10, java.util.Map<String,Object> value11, java.lang.String value12, java.lang.Long value13, java.lang.String value14, java.util.Date value15, java.lang.Long value16, java.lang.Long value17, java.lang.String value18, java.lang.Boolean value19) {
+	public AuditLogRecord value20(java.lang.String value) {
+		setLevel(value);
+		return this;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public AuditLogRecord values(java.lang.Long value1, java.lang.Long value2, java.lang.Long value3, java.lang.String value4, java.lang.String value5, java.lang.String value6, java.lang.String value7, java.lang.Long value8, java.lang.String value9, java.util.Date value10, java.util.Map<String,Object> value11, java.lang.String value12, java.lang.Long value13, java.lang.String value14, java.util.Date value15, java.lang.Long value16, java.lang.Long value17, java.lang.String value18, java.lang.Boolean value19, java.lang.String value20) {
 		return this;
 	}
 
@@ -882,6 +924,7 @@ public class AuditLogRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.
 		setInstanceId(from.getInstanceId());
 		setTransactionId(from.getTransactionId());
 		setSubLog(from.getSubLog());
+		setLevel(from.getLevel());
 	}
 
 	/**
@@ -907,7 +950,7 @@ public class AuditLogRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.
 	/**
 	 * Create a detached, initialised AuditLogRecord
 	 */
-	public AuditLogRecord(java.lang.Long id, java.lang.Long accountId, java.lang.Long authenticatedAsAccountId, java.lang.String kind, java.lang.String authType, java.lang.String eventType, java.lang.String resourceType, java.lang.Long resourceId, java.lang.String description, java.util.Date created, java.util.Map<String,Object> data, java.lang.String authenticatedAsIdentityId, java.lang.Long runtime, java.lang.String clientIp, java.util.Date endTime, java.lang.Long serviceId, java.lang.Long instanceId, java.lang.String transactionId, java.lang.Boolean subLog) {
+	public AuditLogRecord(java.lang.Long id, java.lang.Long accountId, java.lang.Long authenticatedAsAccountId, java.lang.String kind, java.lang.String authType, java.lang.String eventType, java.lang.String resourceType, java.lang.Long resourceId, java.lang.String description, java.util.Date created, java.util.Map<String,Object> data, java.lang.String authenticatedAsIdentityId, java.lang.Long runtime, java.lang.String clientIp, java.util.Date endTime, java.lang.Long serviceId, java.lang.Long instanceId, java.lang.String transactionId, java.lang.Boolean subLog, java.lang.String level) {
 		super(io.cattle.platform.core.model.tables.AuditLogTable.AUDIT_LOG);
 
 		setValue(0, id);
@@ -929,5 +972,6 @@ public class AuditLogRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.
 		setValue(16, instanceId);
 		setValue(17, transactionId);
 		setValue(18, subLog);
+		setValue(19, level);
 	}
 }

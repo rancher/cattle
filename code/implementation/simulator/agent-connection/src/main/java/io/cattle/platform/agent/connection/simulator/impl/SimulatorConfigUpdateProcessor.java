@@ -17,6 +17,7 @@ import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLConnection;
+import java.util.Map;
 import java.util.zip.GZIPInputStream;
 
 import javax.inject.Inject;
@@ -45,9 +46,12 @@ public class SimulatorConfigUpdateProcessor implements AgentSimulatorEventProces
 
     public Event handle(Agent agent, Event event) throws IOException {
         ConfigUpdate update = jsonMapper.convertValue(event, ConfigUpdate.class);
-        String auth = ObjectUtils.toString(
-                AgentUtils.getAgentAuth(agent, objectManager).get("CATTLE_AGENT_INSTANCE_AUTH"), null);
+        Map<String, Object> authMap = AgentUtils.getAgentAuth(agent, objectManager);
+        if (authMap == null) {
+            return null;
+        }
 
+        String auth = ObjectUtils.toString(authMap.get("CATTLE_AGENT_INSTANCE_AUTH"), null);
         if (auth == null) {
             throw new IllegalStateException("Failed to get auth for agent [" + agent.getId() + "]");
         }

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog" xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.2.xsd">
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog" xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.1.xsd">
     <property name="mediumtext" value="TEXT" dbms="postgresql" />
     <property name="mediumtext" value="MEDIUMTEXT" />
     <changeSet author="darren (generated)" id="dump1">
@@ -14,27 +14,34 @@
     </changeSet>
     <changeSet author="darren (generated)" id="dump3">
         <addColumn tableName="audit_log">
-            <column name="service_id" type="BIGINT"/>
-        </addColumn>
-    </changeSet>
-    <changeSet author="darren (generated)" id="dump4">
-        <addColumn tableName="audit_log">
-            <column defaultValue="0" name="sub_log" type="BIT">
+            <column name="level" type="VARCHAR(128)">
                 <constraints nullable="false"/>
             </column>
         </addColumn>
     </changeSet>
+    <changeSet author="darren (generated)" id="dump4">
+        <addColumn tableName="audit_log">
+            <column name="service_id" type="BIGINT"/>
+        </addColumn>
+    </changeSet>
     <changeSet author="darren (generated)" id="dump5">
+        <addColumn tableName="audit_log">
+            <column defaultValueNumeric="0" name="sub_log" type="BIT">
+                <constraints nullable="false"/>
+            </column>
+        </addColumn>
+    </changeSet>
+    <changeSet author="darren (generated)" id="dump6">
         <addColumn tableName="audit_log">
             <column name="transaction_id" type="VARCHAR(128)"/>
         </addColumn>
     </changeSet>
-    <changeSet author="darren (generated)" id="dump6">
+    <changeSet author="darren (generated)" id="dump7">
         <createIndex indexName="instance_id" tableName="audit_log" unique="false">
             <column name="instance_id"/>
         </createIndex>
     </changeSet>
-    <changeSet author="darren (generated)" id="dump7">
+    <changeSet author="darren (generated)" id="dump8">
         <createIndex indexName="service_id" tableName="audit_log" unique="false">
             <column name="service_id"/>
         </createIndex>

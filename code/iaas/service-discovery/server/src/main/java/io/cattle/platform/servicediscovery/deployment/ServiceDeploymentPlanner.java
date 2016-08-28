@@ -183,39 +183,29 @@ public abstract class ServiceDeploymentPlanner {
     }
 
     public void cleanupBadUnits() {
-        List<DeploymentUnit> watchList = new ArrayList<>();
-        Iterator<DeploymentUnit> it = this.badUnits.iterator();
-        while (it.hasNext()) {
-            DeploymentUnit next = it.next();
-            watchList.add(next);
-            next.remove(false, ServiceDiscoveryConstants.AUDIT_LOG_REMOVE_BAD);
-            it.remove();
-        }
-        for (DeploymentUnit toWatch : watchList) {
-            toWatch.waitForRemoval();
+        for (DeploymentUnit next : this.badUnits) {
+            next.remove(ServiceDiscoveryConstants.AUDIT_LOG_REMOVE_BAD);
         }
     }
 
     public void cleanupIncompleteUnits() {
-        Iterator<DeploymentUnit> it = this.incompleteUnits.iterator();
-        while (it.hasNext()) {
-            DeploymentUnit next = it.next();
+        for (DeploymentUnit next : this.incompleteUnits) {
             next.cleanupUnit();
-            it.remove();
         }
     }
 
     public void cleanupUnhealthyUnits() {
-        List<DeploymentUnit> watchList = new ArrayList<>();
-        Iterator<DeploymentUnit> it = this.unhealthyUnits.iterator();
-        while (it.hasNext()) {
-            DeploymentUnit next = it.next();
-            watchList.add(next);
-            next.remove(false, ServiceDiscoveryConstants.AUDIT_LOG_REMOVE_UNHEATLHY);
-            it.remove();
+        for (DeploymentUnit next : this.unhealthyUnits) {
+            next.remove(ServiceDiscoveryConstants.AUDIT_LOG_REMOVE_UNHEATLHY);
         }
-        for (DeploymentUnit toWatch : watchList) {
-            toWatch.waitForRemoval();
+    }
+    
+    public void waitForRemoval() {
+        List<DeploymentUnit> waitList = new ArrayList<>();
+        waitList.addAll(this.badUnits);
+        waitList.addAll(this.unhealthyUnits);
+        for (DeploymentUnit next : waitList) {
+            next.waitForRemoval();
         }
     }
 

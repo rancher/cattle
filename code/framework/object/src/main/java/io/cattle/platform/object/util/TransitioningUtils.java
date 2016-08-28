@@ -11,6 +11,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import com.netflix.config.DynamicBooleanProperty;
@@ -28,14 +29,19 @@ public class TransitioningUtils {
     }
 
     public static Map<String, Object> getTransitioningErrorData(Object obj) {
+        String state = io.cattle.platform.object.util.ObjectUtils.getState(obj);
         String error = DataAccessor.fieldString(obj, TRANSITIONING_FIELD);
         String message = DataAccessor.fieldString(obj, TRANSITIONING_MESSAGE_FIELD);
 
-        if (TRANSITIONING_ERROR.equals(error)) {
+        if (TRANSITIONING_ERROR.equals(error) || TRANSITIONING_ERROR.equals(state)) {
             return CollectionUtils.asMap(TRANSITIONING_FIELD, error, TRANSITIONING_MESSAGE_FIELD, message);
         }
 
         return Collections.emptyMap();
+    }
+
+    public static String getTransitioningError(Object obj) {
+        return ObjectUtils.toString(getTransitioningErrorData(obj).get(TRANSITIONING_MESSAGE_FIELD), null);
     }
 
     public static Map<String, Object> getTransitioningData(String message, String internalMessage) {

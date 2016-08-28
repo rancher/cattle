@@ -2,7 +2,7 @@ package io.cattle.platform.util.exception;
 
 import org.slf4j.Logger;
 
-public class ServiceInstanceAllocateException extends IllegalStateException implements LoggableException {
+public class ServiceInstanceAllocateException extends InstanceException implements LoggableException {
 
     private static final long serialVersionUID = -5376205462062705074L;
 
@@ -11,8 +11,8 @@ public class ServiceInstanceAllocateException extends IllegalStateException impl
         log.info(this.getMessage());
     }
 
-    public ServiceInstanceAllocateException(String message, Exception ex) {
-        super(message + ": " + ex.getMessage());
+    public ServiceInstanceAllocateException(String message, Exception ex, Object instance) {
+        super(message, ex, instance);
     }
 
 }

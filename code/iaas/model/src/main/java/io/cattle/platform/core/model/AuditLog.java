@@ -223,6 +223,17 @@ public interface AuditLog extends java.io.Serializable {
 	@javax.persistence.Column(name = "sub_log", nullable = false, precision = 1)
 	public java.lang.Boolean getSubLog();
 
+	/**
+	 * Setter for <code>cattle.audit_log.level</code>.
+	 */
+	public void setLevel(java.lang.String value);
+
+	/**
+	 * Getter for <code>cattle.audit_log.level</code>.
+	 */
+	@javax.persistence.Column(name = "level", nullable = false, length = 128)
+	public java.lang.String getLevel();
+
 	// -------------------------------------------------------------------------
 	// FROM and INTO
 	// -------------------------------------------------------------------------
