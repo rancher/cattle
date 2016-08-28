@@ -56,10 +56,6 @@ public class RemoveMonitorImpl implements RemoveMonitor, Task {
 
     @Override
     public void run() {
-        if (true) {
-            return;
-        }
-
         if (!ProcessEngineUtils.enabled()) {
             return;
         }

@@ -27,7 +27,7 @@ public class ActivityService {
     public void info(String message, Object... args) {
         ActivityLog activityLog = TL.get();
         if (activityLog == null) {
-            log.error("Failed to find a context transaction");
+            return;
         }
         activityLog.info(message, args);
     }
