@@ -11,6 +11,7 @@ import io.cattle.platform.core.model.Service;
 import io.cattle.platform.core.util.SystemLabels;
 import io.cattle.platform.docker.constants.DockerInstanceConstants;
 import io.cattle.platform.iaas.api.auditing.AuditEventType;
+import io.cattle.platform.object.util.TransitioningUtils;
 import io.cattle.platform.servicediscovery.api.constants.ServiceDiscoveryConstants;
 import io.cattle.platform.servicediscovery.api.util.ServiceDiscoveryUtil;
 import io.cattle.platform.servicediscovery.deployment.DeploymentUnitInstance;
@@ -25,6 +26,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+
+import org.apache.commons.lang3.StringUtils;
 
 public class DeploymentUnit {
     
@@ -158,17 +161,20 @@ public class DeploymentUnit {
         return true;
     }
 
-    public void remove(boolean waitForRemoval, String reason) {
+    public void remove(String reason) {
         /*
          * Delete all instances. This should be non-blocking (don't wait)
          */
         for (DeploymentUnitInstance instance : getDeploymentUnitInstances()) {
+            String error = "";
+            if (instance instanceof InstanceUnit) {
+                error = TransitioningUtils.getTransitioningError(((DefaultDeploymentUnitInstance) instance).getInstance());
+            }
+            if (StringUtils.isNotBlank(error)) {
+                reason = reason + ": " + error;
+            }
             instance.generateAuditLog(AuditEventType.delete, reason);
             instance.remove();
-        }
-
-        if (waitForRemoval) {
-            waitForRemoval();
         }
     }
 

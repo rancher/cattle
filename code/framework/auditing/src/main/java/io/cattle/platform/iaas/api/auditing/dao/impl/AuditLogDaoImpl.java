@@ -36,7 +36,6 @@ public class AuditLogDaoImpl extends AbstractJooqDao implements AuditLogDao {
         logs.setResourceId(resourceId);
         logs.setResourceType(resourceType);
         logs.setClientIp(clientIp);
-        objectManager.create(logs);
-        return objectManager.reload(logs);
+        return objectManager.create(logs);
     }
 }

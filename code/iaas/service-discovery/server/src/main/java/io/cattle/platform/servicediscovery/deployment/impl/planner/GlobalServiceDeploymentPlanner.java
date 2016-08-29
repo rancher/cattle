@@ -64,7 +64,7 @@ public class GlobalServiceDeploymentPlanner extends ServiceDeploymentPlanner {
             String hostId = unitLabels.get(ServiceDiscoveryConstants.LABEL_SERVICE_REQUESTED_HOST_ID);
             if (hostIds.contains(hostId)) {
                 watchList.add(unit);
-                unit.remove(false, ServiceDiscoveryConstants.AUDIT_LOG_REMOVE_EXTRA);
+                unit.remove(ServiceDiscoveryConstants.AUDIT_LOG_REMOVE_EXTRA);
                 this.healthyUnits.remove(i);
             } else {
                 hostIds.add(hostId);

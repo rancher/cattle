@@ -1,0 +1,6 @@
+pedantic-wilson:
+  labels:
+    a: g
+  ports:
+  - 1234:1234
+  image: nginx

@@ -15,7 +15,9 @@ import io.cattle.platform.task.TaskOptions;
 import io.github.ibuildthecloud.gdapi.id.IdFormatter;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
@@ -33,6 +35,7 @@ public class ResourceMonitorImpl implements ResourceMonitor, AnnotatedEventListe
     ObjectMetaDataManager objectMetaDataManger;
     @Inject
     IdFormatter idFormatter;
+    Set<String> seen = new HashSet<>();
 
     @EventHandler
     public void stateChanged(Event event) {
@@ -62,9 +65,10 @@ public class ResourceMonitorImpl implements ResourceMonitor, AnnotatedEventListe
             return obj;
         }
 
-        String type = ObjectUtils.getKind(obj);
-        if (type == null) {
-            type = objectManager.getType(obj);
+        String type = objectManager.getType(obj);
+        String kind = ObjectUtils.getKind(obj);
+        if (kind == null) {
+            kind = type;
         }
         Object id = ObjectUtils.getId(obj);
 
@@ -72,36 +76,39 @@ public class ResourceMonitorImpl implements ResourceMonitor, AnnotatedEventListe
             throw new IllegalArgumentException("Type and id are required got [" + type + "] [" + id + "]");
         }
 
+        String printKey = key(kind, id);
         String key = key(type, id);
         long start = System.currentTimeMillis();
+        Object wait = new Object();
+        Object oldValue = waiters.putIfAbsent(key, wait);
+        if (oldValue != null) {
+            wait = oldValue;
+        }
 
-        while (start + timeout > System.currentTimeMillis()) {
-            obj = objectManager.reload(obj);
+        synchronized (wait) {
+            while (start + timeout > System.currentTimeMillis()) {
+                obj = objectManager.reload(obj);
 
-            if (predicate.evaluate(obj)) {
-                return obj;
-            }
+                if (predicate.evaluate(obj)) {
+                    return obj;
+                }
 
-            Object wait = new Object();
-            Object oldValue = waiters.putIfAbsent(key, wait);
-            if (oldValue != null) {
-                wait = oldValue;
-            }
 
-            long waitTime = timeout - (System.currentTimeMillis() - start);
-            if (waitTime <= 0) {
-                break;
-            }
-            synchronized (wait) {
-                try {
-                    wait.wait(waitTime);
-                } catch (InterruptedException e) {
-                    throw new IllegalStateException("Interrupted", e);
+                long waitTime = timeout - (System.currentTimeMillis() - start);
+                if (waitTime <= 0) {
+                    break;
+                }
+                synchronized (wait) {
+                    try {
+                        wait.wait(waitTime);
+                    } catch (InterruptedException e) {
+                        throw new IllegalStateException("Interrupted", e);
+                    }
                 }
             }
         }
 
-        throw new TimeoutException("Timeout: " + predicate.getMessage() + " [" + key + "]");
+        throw new TimeoutException("Timeout: " + predicate.getMessage() + " [" + printKey + "]");
     }
 
     @Override
@@ -111,12 +118,20 @@ public class ResourceMonitorImpl implements ResourceMonitor, AnnotatedEventListe
 
     @Override
     public void run() {
+        Set<String> previouslySeen = this.seen;
+        this.seen = new HashSet<>();
         Map<String, Object> copy = new HashMap<String, Object>(waiters);
+
         for (Map.Entry<String, Object> entry : copy.entrySet()) {
+            String key = entry.getKey();
             Object value = entry.getValue();
-            waiters.remove(entry.getKey(), entry.getValue());
-            synchronized (value) {
-                value.notifyAll();
+            seen.add(key);
+            
+            if (previouslySeen.contains(key)) {
+                waiters.remove(entry.getKey(), entry.getValue());
+                synchronized (value) {
+                    value.notifyAll();
+                }
             }
         }
     }
