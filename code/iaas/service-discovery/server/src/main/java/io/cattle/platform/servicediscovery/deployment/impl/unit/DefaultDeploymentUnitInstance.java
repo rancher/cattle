@@ -1,5 +1,7 @@
 package io.cattle.platform.servicediscovery.deployment.impl.unit;
 
+import static io.cattle.platform.core.model.tables.InstanceHostMapTable.*;
+
 import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.HealthcheckConstants;
 import io.cattle.platform.core.constants.InstanceConstants;
@@ -38,8 +40,6 @@ import java.util.Set;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
-
-import static io.cattle.platform.core.model.tables.InstanceHostMapTable.*;
 
 public class DefaultDeploymentUnitInstance extends DeploymentUnitInstance implements InstanceUnit {
     private static final Set<String> ERROR_STATES = new HashSet<String>(Arrays.asList(
