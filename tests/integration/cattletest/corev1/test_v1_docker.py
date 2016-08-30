@@ -946,6 +946,36 @@ def test_service_link_emu_docker_link(super_client, docker_client):
 
 
 @if_docker
+@pytest.mark.nonparallel
+def test_delete_network_agent(super_client, docker_client):
+    # Create a container so we know the network agent is in use
+    c1 = docker_client.create_container(imageUuid=TEST_IMAGE_UUID)
+    c1 = docker_client.wait_success(c1)
+    assert c1.state == 'running'
+
+    c1 = super_client.reload(c1)
+    agentNsp = None
+    for nsp in c1.nics()[0].network().networkServiceProviders():
+        if nsp.type == 'agentInstanceProvider':
+            agentNsp = nsp
+
+    assert agentNsp is not None
+    networkAgent = agentNsp.instances()[0]
+
+    assert networkAgent.state == 'running'
+    assert networkAgent.dataVolumes == \
+        ['/var/lib/rancher/etc:/var/lib/rancher/etc:ro']
+    docker_client.delete(networkAgent)
+
+    networkAgent = docker_client.wait_success(networkAgent)
+    assert networkAgent.state == 'removed'
+
+    c2 = docker_client.create_container(imageUuid=TEST_IMAGE_UUID)
+    c2 = docker_client.wait_success(c2)
+    assert c2.state == 'running'
+
+
+@if_docker
 def test_service_links_with_no_ports(docker_client):
     env = docker_client.create_environment(name=random_str())
     env = docker_client.wait_success(env)
