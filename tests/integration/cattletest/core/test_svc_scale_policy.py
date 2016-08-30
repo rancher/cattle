@@ -3,7 +3,7 @@ from cattle import ApiError
 
 
 def _create_stack(client):
-    env = client.create_environment(name=random_str())
+    env = client.create_stack(name=random_str())
     env = client.wait_success(env)
     assert env.state == "active"
     return env
@@ -17,7 +17,7 @@ def test_activate_svc(client, context, super_client):
     scale_policy = {"min": 2, "max": 4, "increment": 2}
 
     svc = client.create_service(name=random_str(),
-                                environmentId=env.id,
+                                stackId=env.id,
                                 launchConfig=launch_config,
                                 scalePolicy=scale_policy,
                                 scale=6)
@@ -45,7 +45,7 @@ def test_activate_services_fail(super_client, new_context):
     scale_policy = {"min": 1, "max": 4}
 
     svc = client.create_service(name=random_str(),
-                                environmentId=env.id,
+                                stackId=env.id,
                                 launchConfig=launch_config,
                                 scalePolicy=scale_policy)
     svc = client.wait_success(svc)
@@ -66,7 +66,7 @@ def test_scale_update(client, context, super_client):
     scale_policy = {"min": 1, "max": 3}
 
     svc = client.create_service(name=random_str(),
-                                environmentId=env.id,
+                                stackId=env.id,
                                 launchConfig=launch_config,
                                 scalePolicy=scale_policy)
     svc = client.wait_success(svc)
@@ -86,7 +86,7 @@ def test_validate_scale_policy_create(client, context):
     scale_policy = {"min": 2, "max": 1, "increment": 2}
     with pytest.raises(ApiError) as e:
         client.create_service(name=random_str(),
-                              environmentId=env.id,
+                              stackId=env.id,
                               launchConfig=launch_config,
                               scalePolicy=scale_policy)
     assert e.value.error.status == 422
@@ -101,7 +101,7 @@ def test_validate_scale_policy_update(client, context):
     scale_policy = {"min": 1, "max": 4, "increment": 2}
 
     svc = client.create_service(name=random_str(),
-                                environmentId=env.id,
+                                stackId=env.id,
                                 launchConfig=launch_config,
                                 scalePolicy=scale_policy)
     svc = client.wait_success(svc)
@@ -124,7 +124,7 @@ def test_policy_update(client, context, super_client):
     scale_policy = {"min": 1, "max": 4, "increment": 2}
 
     svc = client.create_service(name=random_str(),
-                                environmentId=env.id,
+                                stackId=env.id,
                                 launchConfig=launch_config,
                                 scalePolicy=scale_policy)
     svc = client.wait_success(svc)
@@ -161,7 +161,7 @@ def test_service_affinity_rules_w_policy(super_client, new_context):
     }
 
     svc = client.create_service(name=service_name,
-                                environmentId=env.id,
+                                stackId=env.id,
                                 launchConfig=launch_config,
                                 scalePolicy=scale_policy)
     svc = client.wait_success(svc)

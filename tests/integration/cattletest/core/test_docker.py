@@ -905,17 +905,17 @@ def test_container_bad_build(super_client, docker_client):
 @if_docker
 def test_service_link_emu_docker_link(super_client, docker_client):
     env_name = random_str()
-    env = docker_client.create_environment(name=env_name)
+    env = docker_client.create_stack(name=env_name)
     env = docker_client.wait_success(env)
     assert env.state == "active"
 
     server = docker_client.create_service(name='server', launchConfig={
         'imageUuid': TEST_IMAGE_UUID
-    }, environmentId=env.id)
+    }, stackId=env.id)
 
     service = docker_client.create_service(name='client', launchConfig={
         'imageUuid': TEST_IMAGE_UUID
-    }, environmentId=env.id)
+    }, stackId=env.id)
 
     service_link = {"serviceId": server.id, "name": "other"}
     service.setservicelinks(serviceLinks=[service_link])
@@ -947,7 +947,7 @@ def test_service_link_emu_docker_link(super_client, docker_client):
 
 @if_docker
 def test_service_links_with_no_ports(docker_client):
-    env = docker_client.create_environment(name=random_str())
+    env = docker_client.create_stack(name=random_str())
     env = docker_client.wait_success(env)
     assert env.state == "active"
 
@@ -955,7 +955,7 @@ def test_service_links_with_no_ports(docker_client):
         'imageUuid': TEST_IMAGE_UUID,
         'stdinOpen': True,
         'tty': True,
-    }, environmentId=env.id)
+    }, stackId=env.id)
     server = docker_client.wait_success(server)
     assert server.state == 'inactive'
 
@@ -963,7 +963,7 @@ def test_service_links_with_no_ports(docker_client):
         'imageUuid': TEST_IMAGE_UUID,
         'stdinOpen': True,
         'tty': True,
-    }, environmentId=env.id)
+    }, stackId=env.id)
     service = docker_client.wait_success(service)
     assert service.state == 'inactive'
 

@@ -6,7 +6,7 @@ def test_project_update(new_context):
     user_client = new_context.user_client
     assert new_context.project.swarm is False
 
-    stacks = client.list_environment()
+    stacks = client.list_stack()
     assert len(stacks) == 0
 
     p = user_client.update(new_context.project, swarm=True)
@@ -17,7 +17,7 @@ def test_project_update(new_context):
     assert p.swarm
 
     def get_stack():
-        stacks = client.list_environment()
+        stacks = client.list_stack()
         if len(stacks) > 0:
             return stacks[0]
 
@@ -35,7 +35,7 @@ def test_project_update(new_context):
     assert not p.swarm
 
     def get_no_stack():
-        stacks = client.list_environment(removed_null=True)
+        stacks = client.list_stack(removed_null=True)
         if len(stacks) > 0:
             assert stacks[0].externalId == 'system://swarm'
         else:
