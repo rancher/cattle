@@ -11,7 +11,7 @@ package io.cattle.platform.core.model.tables;
 @java.lang.SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class AuditLogTable extends org.jooq.impl.TableImpl<io.cattle.platform.core.model.tables.records.AuditLogRecord> {
 
-	private static final long serialVersionUID = 1836262160;
+	private static final long serialVersionUID = -1533945776;
 
 	/**
 	 * The singleton instance of <code>cattle.audit_log</code>
@@ -95,6 +95,31 @@ public class AuditLogTable extends org.jooq.impl.TableImpl<io.cattle.platform.co
 	 * The column <code>cattle.audit_log.client_ip</code>.
 	 */
 	public final org.jooq.TableField<io.cattle.platform.core.model.tables.records.AuditLogRecord, java.lang.String> CLIENT_IP = createField("client_ip", org.jooq.impl.SQLDataType.VARCHAR.length(255), this, "");
+
+	/**
+	 * The column <code>cattle.audit_log.end_time</code>.
+	 */
+	public final org.jooq.TableField<io.cattle.platform.core.model.tables.records.AuditLogRecord, java.util.Date> END_TIME = createField("end_time", org.jooq.impl.SQLDataType.TIMESTAMP.asConvertedDataType(new io.cattle.platform.db.jooq.converter.DateConverter()), this, "");
+
+	/**
+	 * The column <code>cattle.audit_log.service_id</code>.
+	 */
+	public final org.jooq.TableField<io.cattle.platform.core.model.tables.records.AuditLogRecord, java.lang.Long> SERVICE_ID = createField("service_id", org.jooq.impl.SQLDataType.BIGINT, this, "");
+
+	/**
+	 * The column <code>cattle.audit_log.instance_id</code>.
+	 */
+	public final org.jooq.TableField<io.cattle.platform.core.model.tables.records.AuditLogRecord, java.lang.Long> INSTANCE_ID = createField("instance_id", org.jooq.impl.SQLDataType.BIGINT, this, "");
+
+	/**
+	 * The column <code>cattle.audit_log.transaction_id</code>.
+	 */
+	public final org.jooq.TableField<io.cattle.platform.core.model.tables.records.AuditLogRecord, java.lang.String> TRANSACTION_ID = createField("transaction_id", org.jooq.impl.SQLDataType.VARCHAR.length(128), this, "");
+
+	/**
+	 * The column <code>cattle.audit_log.sub_log</code>.
+	 */
+	public final org.jooq.TableField<io.cattle.platform.core.model.tables.records.AuditLogRecord, java.lang.Boolean> SUB_LOG = createField("sub_log", org.jooq.impl.SQLDataType.BIT.nullable(false).defaulted(true), this, "");
 
 	/**
 	 * Create a <code>cattle.audit_log</code> table reference

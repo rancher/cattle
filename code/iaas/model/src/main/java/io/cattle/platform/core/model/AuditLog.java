@@ -168,6 +168,61 @@ public interface AuditLog extends java.io.Serializable {
 	@javax.persistence.Column(name = "client_ip", length = 255)
 	public java.lang.String getClientIp();
 
+	/**
+	 * Setter for <code>cattle.audit_log.end_time</code>.
+	 */
+	public void setEndTime(java.util.Date value);
+
+	/**
+	 * Getter for <code>cattle.audit_log.end_time</code>.
+	 */
+	@javax.persistence.Column(name = "end_time")
+	public java.util.Date getEndTime();
+
+	/**
+	 * Setter for <code>cattle.audit_log.service_id</code>.
+	 */
+	public void setServiceId(java.lang.Long value);
+
+	/**
+	 * Getter for <code>cattle.audit_log.service_id</code>.
+	 */
+	@javax.persistence.Column(name = "service_id", precision = 19)
+	public java.lang.Long getServiceId();
+
+	/**
+	 * Setter for <code>cattle.audit_log.instance_id</code>.
+	 */
+	public void setInstanceId(java.lang.Long value);
+
+	/**
+	 * Getter for <code>cattle.audit_log.instance_id</code>.
+	 */
+	@javax.persistence.Column(name = "instance_id", precision = 19)
+	public java.lang.Long getInstanceId();
+
+	/**
+	 * Setter for <code>cattle.audit_log.transaction_id</code>.
+	 */
+	public void setTransactionId(java.lang.String value);
+
+	/**
+	 * Getter for <code>cattle.audit_log.transaction_id</code>.
+	 */
+	@javax.persistence.Column(name = "transaction_id", length = 128)
+	public java.lang.String getTransactionId();
+
+	/**
+	 * Setter for <code>cattle.audit_log.sub_log</code>.
+	 */
+	public void setSubLog(java.lang.Boolean value);
+
+	/**
+	 * Getter for <code>cattle.audit_log.sub_log</code>.
+	 */
+	@javax.persistence.Column(name = "sub_log", nullable = false, precision = 1)
+	public java.lang.Boolean getSubLog();
+
 	// -------------------------------------------------------------------------
 	// FROM and INTO
 	// -------------------------------------------------------------------------

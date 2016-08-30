@@ -3,20 +3,17 @@ package io.cattle.platform.configitem.model;
 import io.cattle.platform.core.model.Account;
 import io.cattle.platform.core.model.Agent;
 import io.cattle.platform.core.model.ConfigItemStatus;
-import io.cattle.platform.core.model.Stack;
 import io.cattle.platform.core.model.Host;
 import io.cattle.platform.core.model.Service;
+import io.cattle.platform.core.model.Stack;
 import io.cattle.platform.iaas.event.IaasEvents;
 
-import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class Client {
 
     private static final Logger log = LoggerFactory.getLogger(Client.class);
-
-    private static String SERVICE_ENDPOINTS_UPDATE_ITEM_NAME = "service-endpoints-update";
 
     Class<?> resourceType;
     long resourceId;
@@ -59,12 +56,7 @@ public class Client {
         } else if (resourceType == Account.class) {
             eventName = IaasEvents.GLOBAL_SERVICE_UPDATE;
         } else if (resourceType == Service.class) {
-
-            if (StringUtils.equals(SERVICE_ENDPOINTS_UPDATE_ITEM_NAME, configItemStatusName)) {
-                eventName = IaasEvents.SERVICE_ENDPOINTS_UPDATE;
-            } else {
-                eventName = IaasEvents.SERVICE_UPDATE;
-            }
+            eventName = IaasEvents.SERVICE_UPDATE;
         } else if (resourceType == Stack.class) {
             eventName = IaasEvents.STACK_UPDATE;
         } else if (resourceType == Host.class) {

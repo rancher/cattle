@@ -48,6 +48,15 @@ public abstract class ServiceDeploymentPlanner {
         setHealthCheckAction(services, context);
         populateDeploymentUnits(units);
     }
+    
+    public String getStatus() {
+        return String.format("Healthy: %d, Unhealthy: %d, Bad: %d, Incomplete: %d, Ignore: %d",
+                healthyUnits.size(),
+                unhealthyUnits.size(),
+                badUnits.size(),
+                incompleteUnits.size(),
+                ignoreUnits.size());
+    }
 
     protected void populateDeploymentUnits(List<DeploymentUnit> units) {
         List<DeploymentUnit> healthyUnhealthyUnits = new ArrayList<>();
