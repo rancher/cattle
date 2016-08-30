@@ -1,7 +1,7 @@
 {
 "entries": [
 <#list ipsecClients as client>
-    <#if client.host.physicalHostId == currentHost.physicalHostId && client.instance.id == client.agentInstance.id >
+    <#if (client.ipAddress.address)?? && client.host.physicalHostId == currentHost.physicalHostId && client.instance.id == client.agentInstance.id >
         <#assign agentInstanceIp = client.ipAddress.address >
     </#if>
 </#list>
