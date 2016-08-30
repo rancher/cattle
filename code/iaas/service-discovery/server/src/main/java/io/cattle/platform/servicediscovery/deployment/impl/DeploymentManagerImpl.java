@@ -396,12 +396,11 @@ public class DeploymentManagerImpl implements DeploymentManager {
                 List<DeploymentUnit> units = unitInstanceFactory.collectDeploymentUnits(
                         Arrays.asList(service), new DeploymentServiceContext());
                 for (DeploymentUnit unit : units) {
-                    unit.remove(false, ServiceDiscoveryConstants.AUDIT_LOG_REMOVE_EXTRA);
+                    unit.remove(ServiceDiscoveryConstants.AUDIT_LOG_REMOVE_EXTRA);
                 }
             }
         });
     }
-
 
     @Override
     public void reconcileServices(Collection<? extends Service> services) {
