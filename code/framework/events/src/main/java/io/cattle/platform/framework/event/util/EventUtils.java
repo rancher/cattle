@@ -9,7 +9,7 @@ import java.util.Map;
 
 public class EventUtils {
 
-    public static void TriggerStateChanged(EventService eventService, String resourceId, String resourceType,
+    public static void triggerStateChanged(EventService eventService, String resourceId, String resourceType,
             Map<String, Object> data) {
         Event event = EventVO.newEvent(FrameworkEvents.STATE_CHANGE)
                 .withData(data)
