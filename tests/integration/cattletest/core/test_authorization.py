@@ -1859,8 +1859,7 @@ def test_auth_kubernetes_stack(admin_user_client, user_client, project_client):
     })
 
 
-def test_svc_discovery_stack(admin_user_client, user_client,
-                                   project_client):
+def test_svc_discovery_stack(admin_user_client, user_client, project_client):
     auth_check(admin_user_client.schema, 'stack', 'r', {
         'name': 'r',
         'accountId': 'r',

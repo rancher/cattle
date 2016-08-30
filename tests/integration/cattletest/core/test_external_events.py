@@ -259,8 +259,8 @@ def test_external_stack_event_create(client, context, super_client):
     agent_client = context.agent_client
 
     env_external_id = random_str()
-    environment = {"name": env_external_id, "externalId": env_external_id,
-                   "kind": "environment"}
+    stack = {"name": env_external_id, "externalId": env_external_id,
+             "kind": "environment"}
 
     env = client.create_stack(stack)
     env = client.wait_success(env)
@@ -271,7 +271,7 @@ def test_external_stack_event_create(client, context, super_client):
 
     event = agent_client.create_external_service_event(
         eventType='stack.remove',
-        environment=environment,
+        environment=stack,
         externalId=env_external_id,
         service=service,
     )
@@ -284,7 +284,7 @@ def test_external_stack_event_create(client, context, super_client):
 
     env = envs[0]
     assert env.externalId == env_external_id
-    assert env.name == environment["name"]
+    assert env.name == stack["name"]
     assert env.kind == "stack"
 
     wait_for_condition(client, env,

@@ -2360,7 +2360,7 @@ def test_metadata(client, context):
 
 def test_env_external_id(client):
     env = client.create_stack(name='env-' + random_str(),
-                                    externalId='something')
+                              externalId='something')
     assert env.externalId == 'something'
 
 
