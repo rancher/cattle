@@ -43,6 +43,15 @@
 
         "auditLog.resourceActions\\..*" : "",
 
+        "backup" : "r",
+        "backup.snapshotId" : "r",
+        "backup.backupTargetId" : "r",
+        "backup.uri" : "r",
+        "backup.volumeId" : "r",
+
+        "backupTarget" : "r",
+        "backupTarget.nfsConfig" : "cr",
+
         "baseMachineConfig": "r",
 
         "blkioDeviceOption": "r",
@@ -127,6 +136,14 @@
         "containerExec.attachStdout" : "cr",
         "containerExec.command" : "cr",
         "containerExec.tty" : "cr",
+        "containerEvent" : "r",
+        "containerEvent.externalId" : "r",
+        "containerEvent.externalStatus" : "r",
+        "containerEvent.externalFrom" : "r",
+        "containerEvent.externalTimestamp" : "r",
+        "containerEvent.reportedHostUuid" : "r",
+        "containerEvent.hostId" : "r",
+        "containerEvent.dockerInspect" : "r",
 
         "containerLogs":"r",
         "containerLogs.follow":"cr",

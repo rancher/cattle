@@ -17,7 +17,7 @@ _SUPER_CLIENT = None
 @pytest.fixture(scope='session')
 def cattle_url():
     default_url = 'http://localhost:8080/v1/schemas'
-    return os.environ.get('CATTLE_URL', default_url)
+    return os.environ.get('CATTLE_URL', default_url).replace('/v1', '/v2-beta')
 
 
 @pytest.fixture(scope='function')
@@ -663,10 +663,10 @@ def api_client(access_key, secret_key):
 
 def base_url():
     base_url = cattle_url()
-    if (base_url.endswith('/v1/schemas')):
+    if (base_url.endswith('/v2-beta/schemas')):
         base_url = base_url[:-7]
-    elif (not base_url.endswith('/v1/')):
-        base_url = base_url + '/v1/'
+    elif (not base_url.endswith('/v2-beta/')):
+        base_url = base_url + '/v2-beta/'
     return base_url
 
 

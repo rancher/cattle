@@ -1,0 +1,99 @@
+{
+    "AppArmorProfile": "",
+    "Args": [
+        "1",
+        "2",
+        "3"
+    ],
+    "Config": {
+        "CpuShares": 1,
+        "Cpuset": "1,2",
+        "Memory": 4194304,
+        "MemorySwap": 0
+    },
+    "HostConfig": {
+        "CpuShares": 2,
+        "CpusetCpus": "2,3",
+        "Memory": 42,
+        "MemorySwap": 43,
+        "BlkioDeviceReadBps": [
+          {
+            "Path": "/dev/sda",
+            "Rate": 10000
+          }
+        ],
+        "BlkioDeviceWriteBps": [
+          {
+            "Path": "/dev/sda",
+            "Rate": 20000
+          }
+        ],
+        "BlkioDeviceReadIOps": [
+          {
+            "Path": "/dev/sda",
+            "Rate": 30000
+          }
+        ],
+        "BlkioDeviceWriteIOps": [
+          {
+            "Path": "/dev/sda",
+            "Rate": 40000
+          },
+          {
+            "Path": "/dev/sdc",
+            "Rate": 50000
+          }
+        ],
+        "BlkioWeightDevice": [
+          {
+            "Path": "/dev/sdb",
+            "Weight": 500
+          }
+        ]
+    },
+    "HostnamePath": "/mnt/sda1/var/lib/docker/containers/f13e0c667453e85c0409022127f750abe4ea4e517a970b22cff523def62acc28/hostname",
+    "HostsPath": "/mnt/sda1/var/lib/docker/containers/f13e0c667453e85c0409022127f750abe4ea4e517a970b22cff523def62acc28/hosts",
+    "Id": "f13e0c667453e85c0409022127f750abe4ea4e517a970b22cff523def62acc28",
+    "Image": "4986bf8c15363d1c5d15512d5266f8777bfba4974ac56e3270e7760f6f0a8125",
+    "MountLabel": "",
+    "Name": "/boring_euclid",
+    "NetworkSettings": {
+        "Bridge": "",
+        "Gateway": "",
+        "GlobalIPv6Address": "",
+        "GlobalIPv6PrefixLen": 0,
+        "IPAddress": "",
+        "IPPrefixLen": 0,
+        "IPv6Gateway": "",
+        "LinkLocalIPv6Address": "",
+        "LinkLocalIPv6PrefixLen": 0,
+        "MacAddress": "",
+        "PortMapping": null,
+        "Ports": null
+    },
+    "Path": "sleep",
+    "ProcessLabel": "",
+    "ResolvConfPath": "/mnt/sda1/var/lib/docker/containers/f13e0c667453e85c0409022127f750abe4ea4e517a970b22cff523def62acc28/resolv.conf",
+    "RestartCount": 0,
+    "State": {
+        "Error": "",
+        "ExitCode": 0,
+        "FinishedAt": "2015-04-16T05:30:54.823874152Z",
+        "OOMKilled": false,
+        "Paused": false,
+        "Pid": 0,
+        "Restarting": false,
+        "Running": false,
+        "StartedAt": "2015-04-16T05:30:53.726869757Z"
+    },
+    "Volumes": {
+        "/tmpcontainer": "/mnt/sda1/tmp",
+        "/tmpcontainer2": "/mnt/sda1/var/lib/docker/vfs/dir/f21f65473ccabeecd96ed8de4062cd5676252aebfa14e32737f118c56866358c",
+      "/tmpcontainer3": "/mnt/sda1/tmp3"
+    },
+    "VolumesRW": {
+        "/tmpcontainer": true,
+        "/tmpcontainer2": true,
+        "/tmpcontainer3": false
+    }
+}
