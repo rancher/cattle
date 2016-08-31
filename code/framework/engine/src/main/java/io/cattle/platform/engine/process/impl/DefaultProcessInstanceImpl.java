@@ -112,9 +112,6 @@ public class DefaultProcessInstanceImpl implements ProcessInstance {
             throw new ProcessInstanceException(this, new ProcessExecutionExitException(PROCESS_ALREADY_IN_PROGRESS));
         } finally {
             log.debug("Exiting [{}] process [{}:{}] on resource [{}]", finalReason, getName(), getId(), instanceContext.state.getResourceId());
-            if (finalReason == null) {
-                log.error("final ExitReason is null, should not be");
-            }
         }
     }
 
@@ -264,7 +261,8 @@ public class DefaultProcessInstanceImpl implements ProcessInstance {
         }
 
         if (instanceContext.getState().shouldCancel(record)) {
-            throw new ProcessCancelException("State [" + instanceContext.getState().getState() + "] is not valid");
+            throw new ProcessCancelException("State [" + instanceContext.getState().getState() + "] is not valid for process [" +
+                    getName() + ":" + getId() + "] on resource [" + getResourceId() + "]");
         }
     }
 

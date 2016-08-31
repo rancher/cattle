@@ -1,14 +1,14 @@
 package io.cattle.platform.configitem.context.data;
 
-import io.cattle.platform.core.model.Environment;
+import io.cattle.platform.core.model.Stack;
 import io.cattle.platform.core.model.Service;
 import io.cattle.platform.core.model.ServiceConsumeMap;
 
 public class ServiceDnsEntryData {
-    Environment clientStack;
+    Stack clientStack;
     Service clientService;
     Service targetService;
-    Environment targetStack;
+    Stack targetStack;
     ServiceConsumeMap consumeMap;
 
     public Service getClientService() {
@@ -36,7 +36,7 @@ public class ServiceDnsEntryData {
     }
 
     public ServiceDnsEntryData(Service clientService, Service targetService, ServiceConsumeMap consumeMap,
-            Environment clientStack, Environment targetStack) {
+            Stack clientStack, Stack targetStack) {
         super();
         this.clientService = clientService;
         this.targetService = targetService;
@@ -45,19 +45,19 @@ public class ServiceDnsEntryData {
         this.targetStack = targetStack;
     }
 
-    public Environment getClientStack() {
+    public Stack getClientStack() {
         return clientStack;
     }
 
-    public void setClientStack(Environment clientStack) {
+    public void setClientStack(Stack clientStack) {
         this.clientStack = clientStack;
     }
 
-    public Environment getTargetStack() {
+    public Stack getTargetStack() {
         return targetStack;
     }
 
-    public void setTargetStack(Environment targetStack) {
+    public void setTargetStack(Stack targetStack) {
         this.targetStack = targetStack;
     }
 

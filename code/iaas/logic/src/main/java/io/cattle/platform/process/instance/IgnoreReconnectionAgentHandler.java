@@ -12,7 +12,8 @@ public class IgnoreReconnectionAgentHandler extends AgentBasedProcessHandler {
     @Override
     protected Event callSync(RemoteAgent remoteAgent, Event event, EventCallOptions options) {
         Agent agent = loadResource(Agent.class, remoteAgent.getAgentId());
-        if (agent != null && AgentConstants.STATE_RECONNECTING.equals(agent.getState())) {
+        if (agent != null && (AgentConstants.STATE_RECONNECTING.equals(agent.getState()) ||
+                AgentConstants.STATE_DISCONNECTED.equals(agent.getState()))) {
             return null;
         }
         return super.callSync(remoteAgent, event, options);

@@ -75,14 +75,14 @@
                 <value>externalVolumeEvent,parent=externalEvent</value>
                 <value>externalStoragePoolEvent,parent=externalEvent</value>
                 <value>externalServiceEvent,parent=externalEvent</value>
-                <value>environmentUpgrade</value>
+                <value>stackUpgrade</value>
                 <value>kubernetesStackUpgrade</value>
                 <value>externalDnsEvent,parent=externalEvent</value>
                 <value>externalHostEvent,parent=externalEvent</value>
                 <value>loadBalancerConfig</value>
                 <value>composeService,parent=service</value>
-                <value>composeProject,parent=environment</value>
-                <value>kubernetesStack,parent=environment</value>
+                <value>composeProject,parent=stack</value>
+                <value>kubernetesStack,parent=stack</value>
                 <value>haConfig</value>
                 <value>machine,parent=physicalHost</value>
                 <value>revertToSnapshotInput</value>

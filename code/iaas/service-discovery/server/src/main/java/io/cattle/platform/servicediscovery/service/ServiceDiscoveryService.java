@@ -2,7 +2,7 @@ package io.cattle.platform.servicediscovery.service;
 
 import io.cattle.platform.configitem.events.ConfigUpdate;
 import io.cattle.platform.core.addon.ServiceLink;
-import io.cattle.platform.core.model.Environment;
+import io.cattle.platform.core.model.Stack;
 import io.cattle.platform.core.model.Host;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.Service;
@@ -56,7 +56,7 @@ public interface ServiceDiscoveryService extends AnnotatedEventListener {
 
     void releaseIpFromServiceIndex(ServiceIndex serviceIndex);
     
-    void updateHealthState(Environment stack);
+    void updateHealthState(Stack stack);
 
     boolean isScalePolicyService(Service service);
 
@@ -71,5 +71,7 @@ public interface ServiceDiscoveryService extends AnnotatedEventListener {
     void reconcileServiceEndpoints(Service service);
 
     void reconcileHostEndpoints(Host host);
+
+    void publishChanged(Service service);
 
 }

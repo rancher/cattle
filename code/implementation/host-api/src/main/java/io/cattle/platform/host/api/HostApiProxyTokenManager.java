@@ -77,6 +77,10 @@ public class HostApiProxyTokenManager extends AbstractNoOpResourceManager {
             throw new ClientVisibleException(ResponseCodes.INTERNAL_SERVER_ERROR, "CantConstructUrl");
         }
 
+        if ('/' == buffer.charAt(buffer.length() - 1)) {
+            buffer.deleteCharAt(buffer.length() - 1);
+        }
+
         String url = buffer.append(HostApiUtils.HOST_API_PROXY_BACKEND.get()).toString();
         token.setUrl(url);
         return token;

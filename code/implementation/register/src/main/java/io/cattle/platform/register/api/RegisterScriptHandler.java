@@ -78,7 +78,7 @@ public class RegisterScriptHandler implements ScriptsHandler {
             return ServerContext.getHostApiBaseUrl(BaseProtocol.HTTP);
         }
 
-        return request.getUrlBuilder().version(request.getApiVersion()).toExternalForm();
+        return request.getUrlBuilder().version(request.getVersion()).toExternalForm();
     }
 
     protected String getScript() {

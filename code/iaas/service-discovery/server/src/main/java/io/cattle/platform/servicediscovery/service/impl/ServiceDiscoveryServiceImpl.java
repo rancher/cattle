@@ -1,6 +1,6 @@
 package io.cattle.platform.servicediscovery.service.impl;
 
-import static io.cattle.platform.core.model.tables.EnvironmentTable.*;
+import static io.cattle.platform.core.model.tables.StackTable.*;
 import static io.cattle.platform.core.model.tables.ServiceIndexTable.*;
 import static io.cattle.platform.core.model.tables.ServiceTable.*;
 import static io.cattle.platform.core.model.tables.SubnetTable.*;
@@ -25,7 +25,7 @@ import io.cattle.platform.core.dao.InstanceDao;
 import io.cattle.platform.core.dao.LabelsDao;
 import io.cattle.platform.core.dao.NetworkDao;
 import io.cattle.platform.core.model.Account;
-import io.cattle.platform.core.model.Environment;
+import io.cattle.platform.core.model.Stack;
 import io.cattle.platform.core.model.Host;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.Label;
@@ -138,7 +138,7 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
     @Override
 
     public List<Integer> getServiceInstanceUsedSuffixes(Service service, String launchConfigName) {
-        Environment env = objectManager.findOne(Environment.class, ENVIRONMENT.ID, service.getEnvironmentId());
+        Stack env = objectManager.findOne(Stack.class, STACK.ID, service.getStackId());
         // get all existing instances to check if the name is in use by the instance of the same service
         List<Integer> usedSuffixes = new ArrayList<>();
         List<? extends Instance> serviceInstances = exposeMapDao.listServiceManagedInstances(service, launchConfigName);
@@ -159,7 +159,7 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
     }
 
     protected String getLoadBalancerName(Service service) {
-        Environment env = objectManager.findOne(Environment.class, ENVIRONMENT.ID, service.getEnvironmentId());
+        Stack env = objectManager.findOne(Stack.class, STACK.ID, service.getStackId());
         return String.format("%s_%s", env.getName(), service.getName());
     }
 
@@ -256,6 +256,11 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
                     @Override
                     public boolean evaluate(Subnet obj) {
                         return CommonStatesConstants.ACTIVE.equals(obj.getState());
+                    }
+
+                    @Override
+                    public String getMessage() {
+                        return "active state";
                     }
                 });
         return vipSubnet;
@@ -483,17 +488,13 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
             return;
         }
 
+        objectManager.reload(object);
         objectManager.setFields(object, ServiceDiscoveryConstants.FIELD_PUBLIC_ENDPOINTS, newData);
-        final Map<String, Object> data = new HashMap<>();
+        Map<String, Object> data = new HashMap<>();
         data.put(ServiceDiscoveryConstants.FIELD_PUBLIC_ENDPOINTS, newData);
         data.put(ObjectMetaDataManager.ACCOUNT_FIELD, accountId);
 
-        DeferredUtils.nest(new Runnable() {
-            @Override
-            public void run() {
-                EventUtils.TriggerStateChanged(eventService, resourceId.toString(), resourceType, data);
-            }
-        });
+        EventUtils.triggerStateChanged(eventService, resourceId.toString(), resourceType, data);
     }
 
     protected void reconcileHostEndpointsImpl(final Host host) {
@@ -557,18 +558,18 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
     }
 
     @Override
-    public void updateHealthState(final Environment stack) {
+    public void updateHealthState(final Stack stack) {
         if (stack == null) {
             return;
         }
-        List<Service> services = objectManager.find(Service.class, SERVICE.ENVIRONMENT_ID,
+        List<Service> services = objectManager.find(Service.class, SERVICE.STACK_ID,
                 stack.getId(), SERVICE.REMOVED, null);
         setServiceHealthState(services);
 
         setStackHealthState(stack);
     }
 
-    protected void setStackHealthState(final Environment stack) {
+    protected void setStackHealthState(final Stack stack) {
         String newHealthState = calculateStackHealthState(stack);
         String currentHealthState = objectManager.reload(stack).getHealthState();
         if (!newHealthState.equalsIgnoreCase(currentHealthState)) {
@@ -579,8 +580,8 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
         }
     }
 
-    protected String calculateStackHealthState(final Environment stack) {
-        List<Service> services = objectManager.find(Service.class, SERVICE.ENVIRONMENT_ID, stack.getId(),
+    protected String calculateStackHealthState(final Stack stack) {
+        List<Service> services = objectManager.find(Service.class, SERVICE.STACK_ID, stack.getId(),
                 SERVICE.REMOVED, null);
 
         int init = 0;
@@ -720,6 +721,11 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
                     && stoppedStates.contains(instance.getState());
         }
         return startOnce;
+    }
+
+    @Override
+    public void publishChanged(Service service) {
+        publishEvent(service.getAccountId(), service.getId(), objectManager.getType(service));
     }
 
     protected void publishEvent(long accountId, long resourceId, String resourceType) {

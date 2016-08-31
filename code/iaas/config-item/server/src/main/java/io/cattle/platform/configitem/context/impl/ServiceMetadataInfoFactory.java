@@ -1,6 +1,6 @@
 package io.cattle.platform.configitem.context.impl;
 
-import static io.cattle.platform.core.model.tables.EnvironmentTable.*;
+import static io.cattle.platform.core.model.tables.StackTable.*;
 import static io.cattle.platform.core.model.tables.ServiceConsumeMapTable.*;
 import static io.cattle.platform.core.model.tables.ServiceTable.*;
 import io.cattle.platform.configitem.context.dao.MetaDataInfoDao;
@@ -20,7 +20,7 @@ import io.cattle.platform.configitem.server.model.impl.ArchiveContext;
 import io.cattle.platform.core.dao.GenericMapDao;
 import io.cattle.platform.core.model.Account;
 import io.cattle.platform.core.model.Agent;
-import io.cattle.platform.core.model.Environment;
+import io.cattle.platform.core.model.Stack;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.InstanceHostMap;
 import io.cattle.platform.core.model.Service;
@@ -62,6 +62,9 @@ public class ServiceMetadataInfoFactory extends AbstractAgentBaseContextFactory 
 
     @Override
     protected void populateContext(Agent agent, Instance instance, ConfigItem item, ArchiveContext context) {
+        if (instance == null) {
+            return;
+        }
         Account account = objectManager.loadResource(Account.class, instance.getAccountId());
         List<ContainerMetaData> containersMD = metaDataInfoDao.getContainersData(account.getId());
         Map<String, StackMetaData> stackNameToStack = new HashMap<>();
@@ -301,18 +304,18 @@ public class ServiceMetadataInfoFactory extends AbstractAgentBaseContextFactory 
 
     protected void populateStacksServicesInfo(Account account, Map<String, StackMetaData> stacksMD,
             Map<Long, Map<String, ServiceMetaData>> servicesMD, List<? extends Service> allSvcs) {
-        List<? extends Environment> envs = objectManager.find(Environment.class, ENVIRONMENT.ACCOUNT_ID,
-                account.getId(), ENVIRONMENT.REMOVED, null);
+        List<? extends Stack> envs = objectManager.find(Stack.class, STACK.ACCOUNT_ID,
+                account.getId(), STACK.REMOVED, null);
         Map<Long, List<Service>> envIdToService = new HashMap<>();
         for (Service svc : allSvcs) {
-            List<Service> envSvcs = envIdToService.get(svc.getEnvironmentId());
+            List<Service> envSvcs = envIdToService.get(svc.getStackId());
             if (envSvcs == null) {
                 envSvcs = new ArrayList<>();
             }
             envSvcs.add(svc);
-            envIdToService.put(svc.getEnvironmentId(), envSvcs);
+            envIdToService.put(svc.getStackId(), envSvcs);
         }
-        for (Environment env : envs) {
+        for (Stack env : envs) {
             StackMetaData stackMetaData = new StackMetaData(env, account);
             List<Service> services = envIdToService.get(env.getId());
             if (services == null) {
@@ -352,7 +355,7 @@ public class ServiceMetadataInfoFactory extends AbstractAgentBaseContextFactory 
     }
 
 
-    protected List<ServiceMetaData> getServicesInfo(Environment env, Account account, List<Service> services) {
+    protected List<ServiceMetaData> getServicesInfo(Stack env, Account account, List<Service> services) {
         List<ServiceMetaData> stackServicesMD = new ArrayList<>();
         Map<Long, Service> idToService = new HashMap<>();
         for (Service service : services) {
@@ -363,7 +366,7 @@ public class ServiceMetadataInfoFactory extends AbstractAgentBaseContextFactory 
     }
 
     protected void getServiceInfo(Account account, List<ContainerMetaData> serviceContainersMD,
-            Environment env, List<ServiceMetaData> stackServices, Map<Long, Service> idToService,
+            Stack env, List<ServiceMetaData> stackServices, Map<Long, Service> idToService,
             Service service) {
         idToService.put(service.getId(), service);
         List<String> launchConfigNames = ServiceDiscoveryUtil.getServiceLaunchConfigNames(service);
@@ -377,7 +380,7 @@ public class ServiceMetadataInfoFactory extends AbstractAgentBaseContextFactory 
     }
 
     @SuppressWarnings("unchecked")
-    protected void getLaunchConfigInfo(Account account, Environment env,
+    protected void getLaunchConfigInfo(Account account, Stack env,
             List<ServiceMetaData> stackServices, Map<Long, Service> idToService, Service service,
             List<String> launchConfigNames, String launchConfigName) {
         boolean isPrimaryConfig = launchConfigName

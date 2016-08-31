@@ -43,15 +43,6 @@
 
         "auditLog.resourceActions\\..*" : "",
 
-        "backup" : "r",
-        "backup.snapshotId" : "r",
-        "backup.backupTargetId" : "r",
-        "backup.uri" : "r",
-        "backup.volumeId" : "r",
-
-        "backupTarget" : "r",
-        "backupTarget.nfsConfig" : "cr",
-
         "baseMachineConfig": "r",
 
         "blkioDeviceOption": "r",
@@ -136,14 +127,6 @@
         "containerExec.attachStdout" : "cr",
         "containerExec.command" : "cr",
         "containerExec.tty" : "cr",
-        "containerEvent" : "r",
-        "containerEvent.externalId" : "r",
-        "containerEvent.externalStatus" : "r",
-        "containerEvent.externalFrom" : "r",
-        "containerEvent.externalTimestamp" : "r",
-        "containerEvent.reportedHostUuid" : "r",
-        "containerEvent.hostId" : "r",
-        "containerEvent.dockerInspect" : "r",
 
         "containerLogs":"r",
         "containerLogs.follow":"cr",
@@ -286,7 +269,7 @@
         "machineDriver.activateOnCreate": "cr",
         "machineDriver.builtin": "cr",
         "machineDriver.defaultActive": "r",
-        "machineDriver.externalId": "cr",
+        "machineDriver.externalId": "cru",
         "machineDriver.name": "r",
         "machineDriver.url": "cru",
         "machineDriver.uiUrl": "cru",
@@ -475,15 +458,15 @@
         "composeConfigInput" : "cr",
         "composeConfigInput.serviceIds" : "cr",
 
-        "environment" : "r",
-        "environment.dockerCompose": "cr",
-        "environment.rancherCompose": "cr",
-        "environment.environment": "cr",
-        "environment.externalId": "cru",
-        "environment.previousExternalId": "cru",
-        "environment.previousEnvironment": "cru",
-        "environment.outputs": "cru",
-        "environment.startOnCreate": "cr",
+        "stack" : "r",
+        "stack.dockerCompose": "cr",
+        "stack.rancherCompose": "cr",
+        "stack.environment": "cr",
+        "stack.externalId": "cru",
+        "stack.previousExternalId": "cru",
+        "stack.previousEnvironment": "cru",
+        "stack.outputs": "cru",
+        "stack.startOnCreate": "cr",
 
         "composeProject" : "r",
         "composeProject.name": "cr",
@@ -516,7 +499,7 @@
 
         "service" : "r",
         "service.externalId" : "cr",
-        "service.environmentId" : "cr",
+        "service.stackId" : "cr",
         "service.scale" : "cru",
         "service.launchConfig" : "cr",
         "service.upgrade" : "r",
@@ -737,12 +720,13 @@
         "inServiceUpgradeStrategy.previousSecondaryLaunchConfigs" : "r",
         "inServiceUpgradeStrategy.startFirst" : "cr",
 
-        "environmentUpgrade" : "r",
-        "environmentUpgrade.dockerCompose" : "cr",
-        "environmentUpgrade.rancherCompose" : "cr",
-        "environmentUpgrade.environment" : "cr",
-        "environmentUpgrade.externalId" : "cr",
-        "environment.healthState": "r",
+        "stackUpgrade" : "r",
+        "stackUpgrade.dockerCompose" : "cr",
+        "stackUpgrade.rancherCompose" : "cr",
+        "stackUpgrade.environment" : "cr",
+        "stackUpgrade.externalId" : "cr",
+
+        "stack.healthState": "r",
 
         "publicEndpoint" : "r",
         "publicEndpoint.ipAddress" : "r",

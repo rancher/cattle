@@ -1,12 +1,12 @@
 package io.cattle.platform.docker.service.impl;
 
-import static io.cattle.platform.core.model.tables.EnvironmentTable.*;
+import static io.cattle.platform.core.model.tables.StackTable.*;
 import static io.cattle.platform.core.model.tables.ServiceTable.*;
 
 import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.dao.GenericResourceDao;
-import io.cattle.platform.core.model.Environment;
+import io.cattle.platform.core.model.Stack;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.Service;
 import io.cattle.platform.core.model.ServiceExposeMap;
@@ -15,6 +15,7 @@ import io.cattle.platform.docker.process.lock.ComposeProjectLock;
 import io.cattle.platform.docker.process.lock.ComposeServiceLock;
 import io.cattle.platform.docker.process.util.DockerConstants;
 import io.cattle.platform.docker.service.ComposeManager;
+import io.cattle.platform.json.JsonMapper;
 import io.cattle.platform.lock.LockCallback;
 import io.cattle.platform.lock.LockCallbackNoReturn;
 import io.cattle.platform.lock.LockManager;
@@ -31,8 +32,10 @@ import io.github.ibuildthecloud.gdapi.condition.Condition;
 import io.github.ibuildthecloud.gdapi.condition.ConditionType;
 
 import java.util.Date;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.UUID;
 
 import javax.inject.Inject;
@@ -56,6 +59,8 @@ public class ComposeManagerImpl implements ComposeManager {
     ServiceExposeMapDao serviceExportMapDao;
     @Inject
     ObjectProcessManager objectProcessManager;
+    @Inject
+    JsonMapper jsonMapper;
 
     protected String getString(Map<String, Object> labels, String key) {
         Object value = labels.get(key);
@@ -99,15 +104,29 @@ public class ComposeManagerImpl implements ComposeManager {
         String project = getString(labels, PROJECT_LABEL);
         String service = getString(labels, SERVICE_LABEL);
 
-        Environment env = getEnvironment(instance.getAccountId(), project);
+        Map<String, Object> instanceData = jsonMapper.writeValueAsMap(instance);
+        instanceData.remove(ObjectMetaDataManager.ID_FIELD);
+        instanceData.remove(ObjectMetaDataManager.STATE_FIELD);
+        instanceData.remove("token");
+        instanceData.remove(ObjectMetaDataManager.DATA_FIELD);
+        instanceData.remove(ObjectMetaDataManager.CREATED_FIELD);
+        Iterator<Entry<String, Object>> iter = instanceData.entrySet().iterator();
+        while (iter.hasNext()) {
+            Entry<String, Object> entry = iter.next();
+            if (entry.getValue() == null || entry.getValue() instanceof Number) {
+                iter.remove();
+            }
+        }
+
+        Stack stack = getStack(instance.getAccountId(), project);
 
         return resourceDao.createAndSchedule(Service.class,
                 SERVICE.NAME, service,
                 SERVICE.ACCOUNT_ID, instance.getAccountId(),
-                SERVICE.ENVIRONMENT_ID, env.getId(),
+                SERVICE.STACK_ID, stack.getId(),
                 SERVICE.SELECTOR_CONTAINER, String.format("%s=%s, %s=%s", PROJECT_LABEL, project, SERVICE_LABEL, service),
                 ServiceDiscoveryConstants.FIELD_START_ON_CREATE, true,
-                ServiceDiscoveryConstants.FIELD_LAUNCH_CONFIG, instance,
+                ServiceDiscoveryConstants.FIELD_LAUNCH_CONFIG, instanceData,
                 SERVICE.KIND, "composeService");
     }
 
@@ -130,24 +149,24 @@ public class ComposeManagerImpl implements ComposeManager {
         });
     }
 
-    protected Environment getEnvironment(final long accountId, final String project) {
-        Environment env = composeDao.getComposeProjectByName(accountId, project);
+    protected Stack getStack(final long accountId, final String project) {
+        Stack env = composeDao.getComposeProjectByName(accountId, project);
         if (env != null) {
             return env;
         }
 
-        return lockManager.lock(new ComposeProjectLock(accountId, project), new LockCallback<Environment>() {
+        return lockManager.lock(new ComposeProjectLock(accountId, project), new LockCallback<Stack>() {
             @Override
-            public Environment doWithLock() {
-                Environment env = composeDao.getComposeProjectByName(accountId, project);
+            public Stack doWithLock() {
+                Stack env = composeDao.getComposeProjectByName(accountId, project);
                 if (env != null) {
                     return env;
                 }
 
-                return resourceDao.createAndSchedule(Environment.class,
-                        ENVIRONMENT.NAME, project,
-                        ENVIRONMENT.ACCOUNT_ID, accountId,
-                        ENVIRONMENT.KIND, "composeProject");
+                return resourceDao.createAndSchedule(Stack.class,
+                        STACK.NAME, project,
+                        STACK.ACCOUNT_ID, accountId,
+                        STACK.KIND, "composeProject");
             }
         });
     }
@@ -158,7 +177,7 @@ public class ComposeManagerImpl implements ComposeManager {
             return;
         }
 
-        final Environment env = objectManager.loadResource(Environment.class, service.getEnvironmentId());
+        final Stack env = objectManager.loadResource(Stack.class, service.getStackId());
         lockManager.lock(new DefaultMultiLockDefinition(new ComposeProjectLock(env.getAccountId(), env.getName()),
                 new ComposeServiceLock(env.getAccountId(), service.getName())), new LockCallbackNoReturn() {
             @Override
@@ -168,7 +187,7 @@ public class ComposeManagerImpl implements ComposeManager {
         });
     }
 
-    protected void checkAndDelete(Service service, Environment env) {
+    protected void checkAndDelete(Service service, Stack env) {
         service = objectManager.reload(service);
         env = objectManager.reload(env);
 
@@ -191,7 +210,7 @@ public class ComposeManagerImpl implements ComposeManager {
         }
 
         List<Service> services = objectManager.find(Service.class,
-                SERVICE.ENVIRONMENT_ID, env.getId(),
+                SERVICE.STACK_ID, env.getId(),
                 ObjectMetaDataManager.STATE_FIELD, new Condition(ConditionType.NE, CommonStatesConstants.REMOVING),
                 ObjectMetaDataManager.REMOVED_FIELD, null);
         if (services.size() == 0) {

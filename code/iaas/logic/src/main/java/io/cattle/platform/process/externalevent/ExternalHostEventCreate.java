@@ -117,6 +117,11 @@ public class ExternalHostEventCreate extends AbstractObjectProcessHandler {
                 public boolean evaluate(Instance obj) {
                     return obj.getRemoved() != null;
                 }
+
+                @Override
+                public String getMessage() {
+                    return "removed";
+                }
             });
         }
     }

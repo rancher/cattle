@@ -5,7 +5,7 @@ import io.cattle.platform.configitem.context.dao.MetaDataInfoDao.Version;
 import io.cattle.platform.configitem.context.data.metadata.version1.StackMetaDataVersion1;
 import io.cattle.platform.configitem.context.data.metadata.version2.StackMetaDataVersion2;
 import io.cattle.platform.core.model.Account;
-import io.cattle.platform.core.model.Environment;
+import io.cattle.platform.core.model.Stack;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -19,7 +19,7 @@ public class StackMetaData {
     protected String uuid;
     protected List<ServiceMetaData> services = new ArrayList<>();
 
-    public StackMetaData(Environment stack, Account account) {
+    public StackMetaData(Stack stack, Account account) {
         this.name = stack.getName();
         this.uuid = stack.getUuid();
         this.environment_name = account.getName();

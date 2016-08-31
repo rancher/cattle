@@ -92,6 +92,11 @@ public class ExternalDeploymentUnitInstance extends DeploymentUnitInstance {
             public boolean evaluate(ServiceExposeMap obj) {
                 return obj != null && CommonStatesConstants.ACTIVE.equals(obj.getState());
             }
+
+            @Override
+            public String getMessage() {
+                return "active state";
+            }
         });
         return this;
     }

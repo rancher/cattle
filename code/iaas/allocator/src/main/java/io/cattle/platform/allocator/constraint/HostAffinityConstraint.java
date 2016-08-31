@@ -7,7 +7,6 @@ import io.cattle.platform.allocator.service.AllocationCandidate;
 import io.cattle.platform.core.constants.CommonStatesConstants;
 
 import java.util.Map;
-import java.util.Set;
 
 public class HostAffinityConstraint implements Constraint {
     public static final String ENV_HEADER_AFFINITY_HOST_LABEL = "constraint:";
@@ -29,37 +28,31 @@ public class HostAffinityConstraint implements Constraint {
     }
 
     @Override
-    public boolean matches(AllocationAttempt attempt,
-            AllocationCandidate candidate) {
-        Set<Long> hostIds = candidate.getHosts();
-        if (op == AffinityOps.SOFT_EQ || op == AffinityOps.EQ) {
-            for (Long hostId : hostIds) {
-                Map<String, String[]> labelsForHost = allocatorDao.getLabelsForHost(hostId);
-                if (labelsForHost.get(labelKey) == null) { // key doesn't exist
-                    return false;
-                }
-                String value = labelsForHost.get(labelKey)[0];
-                String hostLabelMapState = labelsForHost.get(labelKey)[1];
-                if (!labelValue.equals(value)) { // value doesn't match
-                    return false;
-                }
-                if (CommonStatesConstants.REMOVING.equals(hostLabelMapState)) { // value matches but it's currently getting removed
-                    return false;
-                }
-            }
-            return true;
-        } else {
-            for (Long hostId : hostIds) {
-                Map<String, String[]> labelsForHost = allocatorDao.getLabelsForHost(hostId);
-                if (labelsForHost.get(labelKey) != null 
-                        && labelValue.equals(labelsForHost.get(labelKey)[0]) 
-                        && (CommonStatesConstants.CREATING.equals(labelsForHost.get(labelKey)[1])
-                                || CommonStatesConstants.CREATED.equals(labelsForHost.get(labelKey)[1]))) {
-                    return false;
-                }
-            }
-            return true;
+    public boolean matches(AllocationAttempt attempt, AllocationCandidate candidate) {
+        if (candidate.getHost() == null) {
+            return false;
         }
+
+        if (op == AffinityOps.SOFT_EQ || op == AffinityOps.EQ) {
+            Map<String, String[]> labelsForHost = allocatorDao.getLabelsForHost(candidate.getHost());
+            if (labelsForHost.get(labelKey) == null) { // key doesn't exist
+                return false;
+            }
+            String value = labelsForHost.get(labelKey)[0];
+            String hostLabelMapState = labelsForHost.get(labelKey)[1];
+            if (!labelValue.equals(value) || CommonStatesConstants.REMOVING.equals(hostLabelMapState)) {
+                return false;
+            }
+        } else {
+            Map<String, String[]> labelsForHost = allocatorDao.getLabelsForHost(candidate.getHost());
+            if (labelsForHost.get(labelKey) != null
+                    && labelValue.equals(labelsForHost.get(labelKey)[0])
+                    && (CommonStatesConstants.CREATING.equals(labelsForHost.get(labelKey)[1])
+                            || CommonStatesConstants.CREATED.equals(labelsForHost.get(labelKey)[1]))) {
+                return false;
+            }
+        }
+        return true;
     }
 
     @Override

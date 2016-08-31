@@ -3,7 +3,7 @@ package io.cattle.platform.configitem.model;
 import io.cattle.platform.core.model.Account;
 import io.cattle.platform.core.model.Agent;
 import io.cattle.platform.core.model.ConfigItemStatus;
-import io.cattle.platform.core.model.Environment;
+import io.cattle.platform.core.model.Stack;
 import io.cattle.platform.core.model.Host;
 import io.cattle.platform.core.model.Service;
 import io.cattle.platform.iaas.event.IaasEvents;
@@ -35,9 +35,9 @@ public class Client {
         } else if (status.getServiceId() != null) {
             resourceType = Service.class;
             resourceId = status.getServiceId();
-        } else if (status.getEnvironmentId() != null) {
-            resourceType = Environment.class;
-            resourceId = status.getEnvironmentId();
+        } else if (status.getStackId() != null) {
+            resourceType = Stack.class;
+            resourceId = status.getStackId();
         } else if (status.getHostId() != null) {
             resourceType = Host.class;
             resourceId = status.getHostId();
@@ -65,7 +65,7 @@ public class Client {
             } else {
                 eventName = IaasEvents.SERVICE_UPDATE;
             }
-        } else if (resourceType == Environment.class) {
+        } else if (resourceType == Stack.class) {
             eventName = IaasEvents.STACK_UPDATE;
         } else if (resourceType == Host.class) {
             eventName = IaasEvents.HOST_ENDPOINTS_UPDATE;

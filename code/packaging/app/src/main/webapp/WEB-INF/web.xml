@@ -38,6 +38,19 @@
     </filter-mapping>
 
     <filter>
+        <filter-name>Telemetry</filter-name>
+        <filter-class>io.cattle.platform.iaas.api.servlet.filter.ProxyFilter</filter-class>
+        <init-param>
+            <param-name>proxy</param-name>
+            <param-value>http://localhost:8114</param-value>
+        </init-param>
+    </filter>
+    <filter-mapping>
+        <filter-name>Telemetry</filter-name>
+        <url-pattern>/v1-telemetry/*</url-pattern>
+    </filter-mapping>
+
+    <filter>
         <filter-name>ApiFilter</filter-name>
         <filter-class>io.cattle.platform.api.servlet.ApiRequestFilter</filter-class>
         <async-supported>true</async-supported>

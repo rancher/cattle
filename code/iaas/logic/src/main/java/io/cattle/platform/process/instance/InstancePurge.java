@@ -15,6 +15,7 @@ import io.cattle.platform.engine.handler.HandlerResult;
 import io.cattle.platform.engine.process.ProcessInstance;
 import io.cattle.platform.engine.process.ProcessState;
 import io.cattle.platform.object.process.StandardProcess;
+import io.cattle.platform.object.resource.ResourceMonitor;
 import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.process.base.AbstractDefaultProcessHandler;
 import io.cattle.platform.process.common.util.ProcessUtils;
@@ -32,6 +33,9 @@ public class InstancePurge extends AbstractDefaultProcessHandler {
     @Inject
     VolumeDao volumeDao;
 
+    @Inject
+    ResourceMonitor resourceMonitor;
+
     @Override
     public HandlerResult handle(ProcessState state, ProcessInstance process) {
         Instance instance = (Instance)state.getResource();
@@ -47,6 +51,8 @@ public class InstancePurge extends AbstractDefaultProcessHandler {
         deleteVolumes(instance, state);
 
         deallocate(instance, null);
+
+        objectManager.reload(instance);
 
         return null;
     }
@@ -70,6 +76,7 @@ public class InstancePurge extends AbstractDefaultProcessHandler {
                 objectProcessManager.scheduleStandardProcess(StandardProcess.DEACTIVATE, v,
                         ProcessUtils.chainInData(state.getData(), VolumeConstants.PROCESS_DEACTIVATE, VolumeConstants.PROCESS_REMOVE));
             } else {
+                resourceMonitor.waitForNotTransitioning(v);
                 objectProcessManager.scheduleStandardProcess(StandardProcess.REMOVE, v, state.getData());
             }
         }

@@ -67,7 +67,7 @@ public abstract class GenericServiceLauncher extends NoExceptionRunnable impleme
         Runnable cb = (new Runnable() {
             @Override
             public void run() {
-                processDestroy();
+                reload();
             }
         });
         future = executor.scheduleWithFixedDelay(this, WAIT, WAIT, TimeUnit.MILLISECONDS);
@@ -80,6 +80,10 @@ public abstract class GenericServiceLauncher extends NoExceptionRunnable impleme
             }
         }
         ProcessEngineUtils.HA_ENABLED.addCallback(cb);
+    }
+
+    public void reload() {
+        processDestroy();    
     }
 
     @Override
@@ -208,6 +212,6 @@ public abstract class GenericServiceLauncher extends NoExceptionRunnable impleme
         }
     }
 
-    protected void prepareProcess(ProcessBuilder pb) {
+    protected void prepareProcess(ProcessBuilder pb) throws IOException {
     }
 }

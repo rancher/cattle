@@ -1,7 +1,7 @@
 package io.cattle.platform.process.externalevent;
 
 import static io.cattle.platform.core.model.tables.AgentTable.*;
-import static io.cattle.platform.core.model.tables.EnvironmentTable.*;
+import static io.cattle.platform.core.model.tables.StackTable.*;
 import static io.cattle.platform.core.model.tables.ServiceTable.*;
 import static io.cattle.platform.process.externalevent.ExternalEventConstants.*;
 import io.cattle.platform.core.constants.CommonStatesConstants;
@@ -12,7 +12,7 @@ import io.cattle.platform.core.dao.HostDao;
 import io.cattle.platform.core.dao.StoragePoolDao;
 import io.cattle.platform.core.dao.VolumeDao;
 import io.cattle.platform.core.model.Agent;
-import io.cattle.platform.core.model.Environment;
+import io.cattle.platform.core.model.Stack;
 import io.cattle.platform.core.model.ExternalEvent;
 import io.cattle.platform.core.model.Host;
 import io.cattle.platform.core.model.Service;
@@ -219,14 +219,14 @@ public class ExternalEventCreate extends AbstractDefaultProcessHandler {
                             return;
                         }
 
-                        Environment stack = objectManager.findAny(Environment.class, ENVIRONMENT.ACCOUNT_ID,
-                                event.getAccountId(), ENVIRONMENT.REMOVED, null, ENVIRONMENT.NAME, stackName);
+                        Stack stack = objectManager.findAny(Stack.class, STACK.ACCOUNT_ID,
+                                event.getAccountId(), STACK.REMOVED, null, STACK.NAME, stackName);
                         if (stack == null) {
                             log.info("Stack not found for external DNS [event: " + event.getId() + "]");
                             return;
                         }
                         Service service = objectManager.findAny(Service.class, SERVICE.ACCOUNT_ID,
-                                event.getAccountId(), SERVICE.REMOVED, null, SERVICE.ENVIRONMENT_ID, stack.getId(),
+                                event.getAccountId(), SERVICE.REMOVED, null, SERVICE.STACK_ID, stack.getId(),
                                 SERVICE.NAME, serviceName);
                         if (service == null) {
                             log.info("Service not found for external DNS [event: " + event.getId() + "]");

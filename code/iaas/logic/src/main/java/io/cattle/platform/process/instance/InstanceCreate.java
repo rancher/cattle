@@ -129,37 +129,10 @@ public class InstanceCreate extends AbstractDefaultProcessHandler {
 
     protected Set<Long> createVolumes(Instance instance, List<Volume> volumes, Map<String, Object> data) {
         Set<Long> volumeIds = new TreeSet<Long>();
-
-        long deviceId = 0;
         Volume root = createRoot(instance, volumes, data);
         if (root != null) {
             volumeIds.add(root.getId());
-            deviceId++;
         }
-
-        List<Long> volumeOfferingIds = DataUtils.getFieldList(instance.getData(), InstanceConstants.FIELD_VOLUME_OFFERING_IDS, Long.class);
-        if (volumeOfferingIds == null) {
-            volumeOfferingIds = new ArrayList<Long>();
-        }
-
-        for (int i = 0; i < volumeOfferingIds.size(); i++) {
-            long deviceNumber = deviceId + i;
-            Volume newVolume = null;
-            for (Volume volume : volumes) {
-                if (volume.getDeviceNumber().intValue() == deviceNumber) {
-                    newVolume = volume;
-                    break;
-                }
-            }
-
-            if (newVolume == null) {
-                newVolume = objectManager.create(Volume.class, VOLUME.ACCOUNT_ID, instance.getAccountId(), VOLUME.INSTANCE_ID, instance.getId(),
-                        VOLUME.OFFERING_ID, volumeOfferingIds.get(i), VOLUME.DEVICE_NUMBER, deviceNumber, VOLUME.ATTACHED_STATE, CommonStatesConstants.ACTIVE);
-            }
-
-            volumeIds.add(newVolume.getId());
-        }
-
         return volumeIds;
     }
 

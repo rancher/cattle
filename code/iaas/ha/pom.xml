@@ -23,10 +23,5 @@
             <artifactId>cattle-framework-jooq</artifactId>
             <version>${project.version}</version>
         </dependency>
-        <dependency>
-            <groupId>${project.groupId}</groupId>
-            <artifactId>cattle-iaas-agent-server</artifactId>
-            <version>${project.version}</version>
-        </dependency>
     </dependencies>
 </project>

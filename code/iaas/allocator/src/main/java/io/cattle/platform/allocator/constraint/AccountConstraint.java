@@ -12,13 +12,8 @@ public class AccountConstraint extends HardConstraint implements Constraint {
 
     @Override
     public boolean matches(AllocationAttempt attempt, AllocationCandidate candidate) {
-        // This constraint is used to build the initial candidate query and to obtain an allocation lock, but it doesn't need to 
-        // do any matching since the query will limit allocation based on account id.
+        // This constraint and doesn't need to  do any matching since the query will limit allocation based on account id.
         return true;
-    }
-
-    public long getAccountId() {
-        return accountId;
     }
 
     @Override

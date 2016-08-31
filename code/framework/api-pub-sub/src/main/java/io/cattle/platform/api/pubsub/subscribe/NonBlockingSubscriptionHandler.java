@@ -13,7 +13,6 @@ import io.cattle.platform.framework.event.Ping;
 import io.cattle.platform.json.JsonMapper;
 import io.github.ibuildthecloud.gdapi.context.ApiContext;
 import io.github.ibuildthecloud.gdapi.id.IdFormatter;
-import io.github.ibuildthecloud.gdapi.model.Schema.Method;
 import io.github.ibuildthecloud.gdapi.request.ApiRequest;
 
 import java.io.IOException;
@@ -35,39 +34,24 @@ import com.google.common.util.concurrent.SettableFuture;
 import com.netflix.config.DynamicIntProperty;
 import com.netflix.config.DynamicLongProperty;
 
-public class NonBlockingSubscriptionHandler implements SubscriptionHandler {
+public abstract class NonBlockingSubscriptionHandler implements SubscriptionHandler {
 
     private static final Logger log = LoggerFactory.getLogger(NonBlockingSubscriptionHandler.class);
 
     public static final DynamicLongProperty API_SUB_PING_INVERVAL = ArchaiusUtil.getLong("api.sub.ping.interval.millis");
     public static final DynamicIntProperty API_MAX_PINGS = ArchaiusUtil.getInt("api.sub.max.pings");
 
+    @Inject
     JsonMapper jsonMapper;
+    @Inject
     EventService eventService;
+    @Inject
     RetryTimeoutService retryTimeout;
     ExecutorService executorService;
-    boolean supportGet = false;
     List<ApiPubSubEventPostProcessor> eventProcessors;
-
-    public NonBlockingSubscriptionHandler() {
-    }
-
-    public NonBlockingSubscriptionHandler(JsonMapper jsonMapper, EventService eventService, RetryTimeoutService retryTimeout, ExecutorService executorService,
-            List<ApiPubSubEventPostProcessor> eventProcessors) {
-        super();
-        this.jsonMapper = jsonMapper;
-        this.eventService = eventService;
-        this.retryTimeout = retryTimeout;
-        this.executorService = executorService;
-        this.eventProcessors = eventProcessors;
-    }
 
     @Override
     public boolean subscribe(Collection<String> eventNames, final ApiRequest apiRequest, final boolean strip) throws IOException {
-        if (Method.GET.isMethod(apiRequest.getMethod()) && !supportGet) {
-            return false;
-        }
-
         ApiContext apiContext = ApiContext.getContext();
 
         final Object writeLock = new Object();
@@ -126,9 +110,7 @@ public class NonBlockingSubscriptionHandler implements SubscriptionHandler {
         }
     }
 
-    protected MessageWriter getMessageWriter(ApiRequest apiRequest) throws IOException {
-        return new OutputStreamMessageWriter(apiRequest.getOutputStream());
-    }
+    protected abstract MessageWriter getMessageWriter(ApiRequest apiRequest) throws IOException;
 
     protected void write(Event event, MessageWriter writer, Object writeLock, boolean strip) throws IOException {
         EventVO<Object> newEvent = new EventVO<Object>(event);
@@ -155,7 +137,7 @@ public class NonBlockingSubscriptionHandler implements SubscriptionHandler {
                 eventService.subscribe(eventName, listener).get(API_SUB_PING_INVERVAL.get(), TimeUnit.MILLISECONDS);
             }
             write(new Ping(), writer, writeLock, strip);
-            return schedulePing(listener, writer, disconnect, writeLock, strip);
+            return schedulePing(listener, writer, disconnect);
         } catch (Throwable e) {
             unsubscribe = true;
         } finally {
@@ -167,8 +149,7 @@ public class NonBlockingSubscriptionHandler implements SubscriptionHandler {
         return null;
     }
 
-    protected Future<?> schedulePing(final EventListener listener, final MessageWriter writer, final AtomicBoolean disconnect, final Object writeLock,
-            final boolean strip) {
+    protected Future<?> schedulePing(final EventListener listener, final MessageWriter writer, final AtomicBoolean disconnect) {
         final SettableFuture<?> future = SettableFuture.create();
         retryTimeout.submit(new Retry(API_MAX_PINGS.get(), API_SUB_PING_INVERVAL.get(), future, new Runnable() {
             @Override
@@ -178,14 +159,7 @@ public class NonBlockingSubscriptionHandler implements SubscriptionHandler {
                     future.setException(new CancelRetryException());
                     throw new CancelRetryException();
                 }
-                try {
-                    write(new Ping(), writer, writeLock, strip);
-                } catch (IOException e) {
-                    log.debug("Got exception on write, disconnecting : {} [{}]", e.getClass(), e.getMessage());
-                    unsubscribe(disconnect, writer, listener);
-                    future.setException(e);
-                    throw new CancelRetryException();
-                }
+                listener.onEvent(new Ping());
             }
         }));
 
@@ -211,31 +185,13 @@ public class NonBlockingSubscriptionHandler implements SubscriptionHandler {
         eventService.unsubscribe(listener);
     }
 
-    public JsonMapper getJsonMapper() {
-        return jsonMapper;
+    public List<ApiPubSubEventPostProcessor> getEventProcessors() {
+        return eventProcessors;
     }
 
     @Inject
-    public void setJsonMapper(JsonMapper jsonMapper) {
-        this.jsonMapper = jsonMapper;
-    }
-
-    public EventService getEventService() {
-        return eventService;
-    }
-
-    @Inject
-    public void setEventService(EventService eventService) {
-        this.eventService = eventService;
-    }
-
-    public RetryTimeoutService getRetryTimeout() {
-        return retryTimeout;
-    }
-
-    @Inject
-    public void setRetryTimeout(RetryTimeoutService retryTimeout) {
-        this.retryTimeout = retryTimeout;
+    public void setEventProcessors(List<ApiPubSubEventPostProcessor> eventProcessors) {
+        this.eventProcessors = eventProcessors;
     }
 
     public ExecutorService getExecutorService() {
@@ -245,23 +201,6 @@ public class NonBlockingSubscriptionHandler implements SubscriptionHandler {
     @Inject
     public void setExecutorService(ExecutorService executorService) {
         this.executorService = executorService;
-    }
-
-    public boolean isSupportGet() {
-        return supportGet;
-    }
-
-    public void setSupportGet(boolean supportGet) {
-        this.supportGet = supportGet;
-    }
-
-    public List<ApiPubSubEventPostProcessor> getEventProcessors() {
-        return eventProcessors;
-    }
-
-    @Inject
-    public void setEventProcessors(List<ApiPubSubEventPostProcessor> eventProcessors) {
-        this.eventProcessors = eventProcessors;
     }
 
 }

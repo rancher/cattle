@@ -3,12 +3,16 @@ package io.cattle.platform.api.resource.jooq;
 import io.cattle.platform.api.auth.Policy;
 import io.cattle.platform.api.resource.AbstractObjectResourceManager;
 import io.cattle.platform.api.utils.ApiUtils;
+import io.cattle.platform.engine.process.ExitReason;
+import io.cattle.platform.engine.process.ProcessInstanceException;
 import io.cattle.platform.engine.process.impl.ProcessCancelException;
+import io.cattle.platform.engine.process.impl.ProcessExecutionExitException;
 import io.cattle.platform.object.jooq.utils.JooqUtils;
 import io.cattle.platform.object.meta.MapRelationship;
 import io.cattle.platform.object.meta.ObjectMetaDataManager;
 import io.cattle.platform.object.meta.Relationship;
 import io.cattle.platform.object.meta.Relationship.RelationshipType;
+import io.cattle.platform.util.exception.ExceptionUtils;
 import io.github.ibuildthecloud.gdapi.context.ApiContext;
 import io.github.ibuildthecloud.gdapi.exception.ClientVisibleException;
 import io.github.ibuildthecloud.gdapi.factory.SchemaFactory;
@@ -373,7 +377,13 @@ public abstract class AbstractJooqResourceManager extends AbstractObjectResource
 
     @Override
     public boolean handleException(Throwable t, ApiRequest apiRequest) {
-        if (t instanceof ProcessCancelException) {
+        if (t instanceof ProcessInstanceException) {
+            Throwable t2 = ExceptionUtils.getRootCause(t);
+            if (t2 instanceof ProcessExecutionExitException && ((ProcessInstanceException) t2).getExitReason() == ExitReason.RESOURCE_BUSY) {
+                log.info("Resource busy", t.getMessage());
+                throw new ClientVisibleException(ResponseCodes.CONFLICT);
+            }
+        } else if (t instanceof ProcessCancelException) {
             log.info("Process cancel", t.getMessage());
             throw new ClientVisibleException(ResponseCodes.CONFLICT);
         } else if (t instanceof DataAccessException) {

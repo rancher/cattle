@@ -76,15 +76,16 @@ public class InstanceStart extends AbstractDefaultProcessHandler {
         Map<String, Object> resultData = new ConcurrentHashMap<String, Object>();
         HandlerResult result = new HandlerResult(resultData);
 
-        progress.init(state, 5, 5, 80, 5, 5);
+        progress.init(state, 1, 4, 5, 80, 5, 5);
 
         try {
             try {
-                progress.checkPoint("Scheduling");
-                allocate(instance);
-
+                progress.checkPoint("Waiting for dependencies");
                 // wait till volumesFrom/networksFrom containers start up
                 waitForDependenciesStart(instance);
+
+                progress.checkPoint("Scheduling");
+                allocate(instance);
 
                 instanceDao.clearCacheInstanceData(instance.getId());
 
@@ -138,15 +139,16 @@ public class InstanceStart extends AbstractDefaultProcessHandler {
         List<Instance> waitList = new ArrayList<>();
         for (Long id : instancesIds) {
             Instance i = objectManager.loadResource(Instance.class, id);
-            List<String> removedStates = Arrays.asList(CommonStatesConstants.REMOVED, CommonStatesConstants.REMOVING);
+            List<String> removedStates = Arrays.asList(CommonStatesConstants.REMOVED, CommonStatesConstants.REMOVING,
+                    CommonStatesConstants.PURGED, CommonStatesConstants.PURGING);
             List<String> stoppedStates = Arrays.asList(InstanceConstants.STATE_STOPPED, InstanceConstants.STATE_STOPPING);
             String type = networkFromId != null && networkFromId.equals(id) ? "networkFrom" : "volumeFrom";
             if (removedStates.contains(i.getState())) {
-                throw new ExecutionException("Dependencies readiness error ", type + " instance is removed", i);
+                throw new ExecutionException("Dependencies readiness error", type + " instance is removed", instance.getId());
             }
             
             if (!isStartOnce(i) && stoppedStates.contains(i.getState())) {
-                throw new ExecutionException("Dependencies readiness error ", type + " instance is not running", i);
+                throw new ExecutionException("Dependencies readiness error", type + " instance is not running", instance.getId());
             }
             waitList.add(i);
         }
@@ -154,13 +156,23 @@ public class InstanceStart extends AbstractDefaultProcessHandler {
         //timeout is 2 mins
         Long timeout =  120000L;
         for (Instance wait : waitList) {
-            resourceMonitor.waitFor(wait, timeout,
+            try {
+                resourceMonitor.waitFor(wait, timeout,
                     new ResourcePredicate<Instance>() {
                         @Override
                         public boolean evaluate(Instance obj) {
                             return validateState(obj);
                         }
-                    });
+
+                        @Override
+                        public String getMessage() {
+                            return "running state";
+                        }
+                    }
+                );
+            } catch (TimeoutException e) {
+                throw new ExecutionException("Dependencies readiness error", "instance is not running", instance.getId());
+            }
         }
     }
 
@@ -191,7 +203,8 @@ public class InstanceStart extends AbstractDefaultProcessHandler {
         for (InstanceHostMap map : mapDao.findNonRemoved(InstanceHostMap.class, Instance.class, instance.getId())) {
             Host host = objectManager.loadResource(Host.class, map.getHostId());
             Agent agent = host == null ? null : objectManager.loadResource(Agent.class, host.getAgentId());
-            if (agent != null && AgentConstants.STATE_RECONNECTING.equals(agent.getState())) {
+            if (agent != null && (AgentConstants.STATE_RECONNECTING.equals(agent.getState()) ||
+                    AgentConstants.STATE_DISCONNECTED.equals(agent.getState()))) {
                 reconnecting = true;
             } else {
                 reconnecting = false;

@@ -16,12 +16,21 @@ export CATTLE_DB_CATTLE_MYSQL_PORT
 # Uncomment this if you're impatient
 #export CATTLE_IDEMPOTENT_CHECKS=false
 
-
-if [ -x "$(which wrapdocker)" ]; then
-    echo Launching Docker
-    wrapdocker >/tmp/docker.log 2>&1
-    docker info
+echo Launching Docker
+if grep -q overlay /proc/filesystems; then
+    GRAPH=overlay
+else
+    GRAPH=aufs
 fi
+docker daemon -D -s $GRAPH >/tmp/docker.log 2>&1 &
+for i in {1..10}; do
+    if docker info >/dev/null 2>&1; then
+        break
+    else
+        sleep 1
+    fi
+done
+docker info
 
 echo_dot()
 {
@@ -53,8 +62,7 @@ run()
 # Background to start the Docker pulls
 ./test-warm >/dev/null &
 
-run ./bootstrap
-run ./clean
+run ./mysql
 
 CI=true MAVEN_ARGS='-B -q' run ./build
 
@@ -70,7 +78,12 @@ DEV_HOST=localhost:8081 ../tools/development/register-boot2docker.sh >/tmp/regis
 
 ./test -e py27 -- -m nonparallel
 
-./test -- -m "'not nonparallel'" -n $(($(nproc) + 1)) -v || {
+
+threads=$(($(nproc) + 1))
+if [ $threads -gt 8 ]; then
+    threads=8
+fi
+./test -- -m "'not nonparallel'" -n $threads -v || {
     echo Test failed
     cat /tmp/run.log
     echo Test failed

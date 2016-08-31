@@ -219,7 +219,7 @@ public class AzureRESTClient extends AzureConfigurable{
     }
 
     public List<AzureAccountInfo> parseSearchResponseList(Map<String, Object> jsonData) {
-        List<Object> azureValueList = (List<Object>)CollectionUtils.toList(jsonData.get("value"));
+        List<?> azureValueList = CollectionUtils.toList(jsonData.get("value"));
         List<AzureAccountInfo> azureUserOrGroupList = new ArrayList<AzureAccountInfo>();
         if (azureValueList != null && !azureValueList.isEmpty())
         {
@@ -237,8 +237,14 @@ public class AzureRESTClient extends AzureConfigurable{
 
     public AzureAccountInfo jsonToAzureAccountInfo(Map<String, Object> jsonData) {
         String objectId = ObjectUtils.toString(jsonData.get("objectId"));
+        String objectType = ObjectUtils.toString(jsonData.get("objectType"));
         String userPrincipalName = ObjectUtils.toString(jsonData.get("userPrincipalName"));
         String accountName = ObjectUtils.toString(jsonData.get("mailNickname"));
+
+        if("Group".equalsIgnoreCase(objectType)) {
+            accountName = ObjectUtils.toString(jsonData.get("displayName"));
+        }
+
         String name = ObjectUtils.toString(jsonData.get("displayName"));
         if (StringUtils.isBlank(name)) {
             name = accountName;
@@ -246,7 +252,7 @@ public class AzureRESTClient extends AzureConfigurable{
         //String profilePicture = ObjectUtils.toString(jsonData.get(GithubConstants.PROFILE_PICTURE));
         return new AzureAccountInfo(objectId, accountName, null, userPrincipalName, name);
     }
-    
+
     public boolean hasTokenExpired(HttpResponse response) throws IOException {
         int statusCode = response.getStatusLine().getStatusCode();
         if(statusCode == 401) {
@@ -291,6 +297,8 @@ public class AzureRESTClient extends AzureConfigurable{
             if("invalid_grant".equalsIgnoreCase(azureError) || "unauthorized_client".equalsIgnoreCase(azureError)) {
                 throw new ClientVisibleException(ResponseCodes.UNAUTHORIZED);
             }
+            logger.error("Error received from Azure: " + azureError);
+            logger.error("Error Description received from Azure: " + azureErrorDesc);
             throw new ClientVisibleException(ResponseCodes.SERVICE_UNAVAILABLE, AzureConstants.AZURE_ERROR,
                     "Error from Azure: " + Integer.toString(statusCode), "Details: " +azureError + ", Description: "+azureErrorDesc);
         } catch(ClientVisibleException ex) {

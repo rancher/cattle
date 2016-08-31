@@ -60,7 +60,7 @@ public final class DefaultUrlBuilder implements UrlBuilder {
     }
 
     protected URL constructBasicUrl(boolean lowercase, String... parts) {
-        StringBuilder builder = new StringBuilder().append(apiRequest.getResponseUrlBase()).append("/").append(apiRequest.getApiVersion()).append(subContext);
+        StringBuilder builder = new StringBuilder().append(apiRequest.getResponseUrlBase()).append("/").append(apiRequest.getVersion()).append(subContext);
 
         for (String part : parts) {
             if (part == null)

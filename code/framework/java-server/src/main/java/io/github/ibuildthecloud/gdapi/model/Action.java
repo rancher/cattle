@@ -1,11 +1,14 @@
 package io.github.ibuildthecloud.gdapi.model;
 
+import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
 import javax.xml.bind.annotation.XmlTransient;
 
-public class Action {
+public class Action implements Serializable {
+
+    private static final long serialVersionUID = -7616300411012161180L;
 
     String input, output;
     Map<String, Object> attributes = new HashMap<String, Object>();

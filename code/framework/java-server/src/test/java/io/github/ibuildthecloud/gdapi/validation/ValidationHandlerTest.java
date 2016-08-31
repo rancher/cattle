@@ -29,7 +29,7 @@ public class ValidationHandlerTest {
 
         schema.getResourceFields().put("test", field);
 
-        ApiRequest request = new ApiRequest(null, null, null);
+        ApiRequest request = new ApiRequest(null, null);
         ValidationContext context = new ValidationContext();
         ValidationHandler handler = new ValidationHandler();
 
@@ -50,7 +50,7 @@ public class ValidationHandlerTest {
 
         schema.getResourceFields().put("test", field);
 
-        ApiRequest request = new ApiRequest(null, null, null);
+        ApiRequest request = new ApiRequest(null, null);
         ValidationContext context = new ValidationContext();
         ValidationHandler handler = new ValidationHandler();
 
@@ -76,7 +76,7 @@ public class ValidationHandlerTest {
         factory.getTypes().add(SubType.class);
         factory.init();
 
-        ApiRequest request = new ApiRequest(null, null, null);
+        ApiRequest request = new ApiRequest(null, null);
         ValidationContext context = new ValidationContext();
         ValidationHandler handler = new ValidationHandler();
 
@@ -108,7 +108,7 @@ public class ValidationHandlerTest {
         factory.getTypes().add(SubType.class);
         factory.init();
 
-        ApiRequest request = new ApiRequest(null, null, null);
+        ApiRequest request = new ApiRequest(null, null);
         ValidationContext context = new ValidationContext();
         ValidationHandler handler = new ValidationHandler();
 

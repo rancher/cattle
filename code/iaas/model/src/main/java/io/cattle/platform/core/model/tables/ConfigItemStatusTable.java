@@ -11,7 +11,7 @@ package io.cattle.platform.core.model.tables;
 @java.lang.SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class ConfigItemStatusTable extends org.jooq.impl.TableImpl<io.cattle.platform.core.model.tables.records.ConfigItemStatusRecord> {
 
-	private static final long serialVersionUID = -153766011;
+	private static final long serialVersionUID = 1856976442;
 
 	/**
 	 * The singleton instance of <code>cattle.config_item_status</code>
@@ -89,7 +89,7 @@ public class ConfigItemStatusTable extends org.jooq.impl.TableImpl<io.cattle.pla
 	/**
 	 * The column <code>cattle.config_item_status.environment_id</code>.
 	 */
-	public final org.jooq.TableField<io.cattle.platform.core.model.tables.records.ConfigItemStatusRecord, java.lang.Long> ENVIRONMENT_ID = createField("environment_id", org.jooq.impl.SQLDataType.BIGINT, this, "");
+	public final org.jooq.TableField<io.cattle.platform.core.model.tables.records.ConfigItemStatusRecord, java.lang.Long> STACK_ID = createField("environment_id", org.jooq.impl.SQLDataType.BIGINT, this, "");
 
 	/**
 	 * The column <code>cattle.config_item_status.host_id</code>.

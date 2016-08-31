@@ -2,6 +2,7 @@ package io.cattle.platform.agent.instance.factory.impl;
 
 import static io.cattle.platform.core.model.tables.AgentTable.*;
 import static io.cattle.platform.core.model.tables.InstanceTable.*;
+
 import io.cattle.platform.agent.AgentLocator;
 import io.cattle.platform.agent.RemoteAgent;
 import io.cattle.platform.agent.instance.dao.AgentInstanceDao;
@@ -16,7 +17,7 @@ import io.cattle.platform.core.dao.AccountDao;
 import io.cattle.platform.core.dao.GenericResourceDao;
 import io.cattle.platform.core.dao.InstanceDao;
 import io.cattle.platform.core.model.Agent;
-import io.cattle.platform.core.model.Environment;
+import io.cattle.platform.core.model.Stack;
 import io.cattle.platform.core.model.Host;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.Service;
@@ -32,7 +33,6 @@ import io.cattle.platform.object.resource.ResourceMonitor;
 import io.cattle.platform.object.resource.ResourcePredicate;
 import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.process.common.util.ProcessUtils;
-import io.cattle.platform.storage.service.StorageService;
 import io.cattle.platform.util.type.CollectionUtils;
 
 import java.util.ArrayList;
@@ -58,8 +58,6 @@ public class AgentInstanceFactoryImpl implements AgentInstanceFactory {
     LockManager lockManager;
     @Inject
     GenericResourceDao resourceDao;
-    @Inject
-    StorageService storageService;
     @Inject
     AgentLocator agentLocator;
     @Inject
@@ -143,7 +141,7 @@ public class AgentInstanceFactoryImpl implements AgentInstanceFactory {
                 // allow to set this flag only for system services
                 List<? extends Service> services = instanceDao.findServicesFor(instance);
                 for (Service service : services) {
-                    Environment stack = objectManager.loadResource(Environment.class, service.getEnvironmentId());
+                    Stack stack = objectManager.loadResource(Stack.class, service.getStackId());
                     boolean isSystem = DataAccessor.fieldBool(stack, "isSystem");
                     if (isSystem) {
                         accountData = CollectionUtils.asMap(AccountConstants.DATA_ACT_AS_RESOURCE_ADMIN_ACCOUNT, true);
@@ -200,6 +198,11 @@ public class AgentInstanceFactoryImpl implements AgentInstanceFactory {
             @Override
             public boolean evaluate(Agent obj) {
                 return factoryDao.getActivateCredentials(obj).size() > 0;
+            }
+
+            @Override
+            public String getMessage() {
+                return "active credentials";
             }
         });
 

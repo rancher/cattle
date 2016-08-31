@@ -103,9 +103,7 @@ public class AllocatorServiceImpl implements AllocatorService {
     private boolean hostSatisfiesHostAffinity(long hostId, List<Constraint> hostAffinityConstraints) {
         for (Constraint constraint: hostAffinityConstraints) {
             AllocationCandidate candidate = new AllocationCandidate();
-            Set<Long> hostIds = new HashSet<Long>();
-            hostIds.add(hostId);
-            candidate.setHosts(hostIds);
+            candidate.setHost(hostId);
             if (!constraint.matches(null, candidate)) {
                 return false;
             }
@@ -114,12 +112,12 @@ public class AllocatorServiceImpl implements AllocatorService {
     }
 
     @Override
-    public void normalizeLabels(long environmentId, Map<String, String> systemLabels, Map<String, String> serviceUserLabels) {
+    public void normalizeLabels(long stackId, Map<String, String> systemLabels, Map<String, String> serviceUserLabels) {
         String stackName = systemLabels.get(LABEL_STACK_NAME);
         String stackServiceNameWithLaunchConfig = systemLabels.get(LABEL_STACK_SERVICE_NAME);
         String launchConfig = systemLabels.get(LABEL_SERVICE_LAUNCH_CONFIG);
 
-        Set<String> serviceNamesInStack = getServiceNamesInStack(environmentId);
+        Set<String> serviceNamesInStack = getServiceNamesInStack(stackId);
 
         for (Map.Entry<String, String> entry : serviceUserLabels.entrySet()) {
             String labelValue = entry.getValue();
@@ -152,10 +150,10 @@ public class AllocatorServiceImpl implements AllocatorService {
     }
 
     // TODO: Fix repeated DB call even if DB's cache no longer hits the disk
-    private Set<String> getServiceNamesInStack(long environmentId) {
+    private Set<String> getServiceNamesInStack(long stackId) {
         Set<String> servicesInEnv = new HashSet<String>();
 
-        List<? extends Service> services = objectManager.find(Service.class, SERVICE.ENVIRONMENT_ID, environmentId, SERVICE.REMOVED,
+        List<? extends Service> services = objectManager.find(Service.class, SERVICE.STACK_ID, stackId, SERVICE.REMOVED,
                 null);
         for (Service service : services) {
             servicesInEnv.add(service.getName().toLowerCase());

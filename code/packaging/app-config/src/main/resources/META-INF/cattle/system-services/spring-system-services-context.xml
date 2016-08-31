@@ -129,6 +129,7 @@
     <bean class="io.cattle.platform.core.dao.impl.HostDaoImpl" />
     <bean class="io.cattle.platform.core.dao.impl.VolumeDaoImpl" />
     <bean class="io.cattle.platform.core.dao.impl.ServiceDaoImpl" />
+    <bean class="io.cattle.platform.core.dao.impl.StackDaoImpl" />
 
     <bean class="io.cattle.platform.core.cache.DBCacheManager" />
 
@@ -181,7 +182,6 @@
     
     <bean class="io.cattle.platform.docker.storage.DockerImageCredentialLookup" />
     <bean class="io.cattle.platform.docker.storage.DockerStoragePoolDriver" />
-    <bean class="io.cattle.platform.docker.storage.process.DockerStoragePoolCreate" />
     <bean class="io.cattle.platform.docker.storage.process.PullTaskCreate" >
         <property name="imageCredentialLookups" value="#{extensionManager.list('image.credential.lookup')}" />
     </bean>
@@ -442,7 +442,7 @@
     <bean class="io.cattle.platform.servicediscovery.process.InstancePurgePostListener" />
     <bean class="io.cattle.platform.servicediscovery.process.ServiceUpdatePreListener" />
 
-    <bean class="io.cattle.platform.servicediscovery.process.EnvironmentRemove" />
+    <bean class="io.cattle.platform.servicediscovery.process.StackRemove" />
     <bean class="io.cattle.platform.servicediscovery.process.ServiceDiscoveryInstanceRemovePreListener" />
     <bean class="io.cattle.platform.servicediscovery.process.ServicesReconcilePostTrigger" />
     <bean class="io.cattle.platform.servicediscovery.process.ServicesReconcileTrigger" />

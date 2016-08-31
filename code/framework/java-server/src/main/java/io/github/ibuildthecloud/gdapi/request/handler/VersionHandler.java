@@ -17,10 +17,10 @@ public class VersionHandler extends AbstractResponseGenerator {
 
     @Override
     protected void generate(ApiRequest request) throws IOException {
-        if (request.getType() == null && request.getApiVersion() != null) {
+        if (request.getType() == null && request.getVersion() != null) {
             UrlBuilder urlBuilder = ApiContext.getUrlBuilder();
             SchemaFactory schemaFactory = ApiContext.getSchemaFactory();
-            VersionImpl version = new VersionImpl(request.getApiVersion());
+            VersionImpl version = new VersionImpl(request.getVersion());
 
             Map<String, URL> links = new TreeMap<String, URL>();
             version.setLinks(links);

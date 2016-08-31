@@ -3,7 +3,7 @@ package io.cattle.platform.servicediscovery.api.util;
 import io.cattle.platform.allocator.service.AllocatorService;
 import io.cattle.platform.core.addon.InServiceUpgradeStrategy;
 import io.cattle.platform.core.constants.InstanceConstants;
-import io.cattle.platform.core.model.Environment;
+import io.cattle.platform.core.model.Stack;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.Service;
 import io.cattle.platform.core.model.ServiceConsumeMap;
@@ -201,7 +201,7 @@ public class ServiceDiscoveryUtil {
         return serviceData.get(objectName);
     }
 
-    public static String generateServiceInstanceName(Environment env, Service service, String launchConfigName,
+    public static String generateServiceInstanceName(Stack env, Service service, String launchConfigName,
             int finalOrder) {
         String configName = launchConfigName == null
                 || launchConfigName.equals(ServiceDiscoveryConstants.PRIMARY_LAUNCH_CONFIG_NAME) ? ""
@@ -210,11 +210,11 @@ public class ServiceDiscoveryUtil {
         return name;
     }
 
-    public static boolean isServiceGeneratedName(Environment env, Service service, String instanceName) {
+    public static boolean isServiceGeneratedName(Stack env, Service service, String instanceName) {
         return instanceName.startsWith(String.format("%s_%s", env.getName(), service.getName()));
     }
 
-    public static String getGeneratedServiceIndex(Environment env, Service service,
+    public static String getGeneratedServiceIndex(Stack env, Service service,
             String launchConfigName,
             String instanceName) {
         if (!isServiceGeneratedName(env, service, instanceName)) {
@@ -250,7 +250,7 @@ public class ServiceDiscoveryUtil {
                     // unfortunately, need to make an except for labels due to the merging aspect of the values
                     if (key.equalsIgnoreCase(InstanceConstants.FIELD_LABELS)) {
                         allocatorService.normalizeLabels(
-                                service.getEnvironmentId(),
+                                service.getStackId(),
                                 (Map<String, String>) launchConfigItems.get(key),
                                 (Map<String, String>) dataObj);
                         allocatorService.mergeLabels((Map<String, String>) launchConfigItems.get(key),

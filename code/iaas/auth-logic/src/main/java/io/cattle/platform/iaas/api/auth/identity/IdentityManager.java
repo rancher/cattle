@@ -26,13 +26,13 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
+
 import javax.inject.Inject;
 
 import org.apache.cloudstack.managed.context.ManagedContext;
 import org.apache.cloudstack.managed.context.impl.DefaultManagedContext;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.mina.core.RuntimeIoException;
 
 public class IdentityManager extends AbstractNoOpResourceManager {
 
@@ -112,7 +112,7 @@ public class IdentityManager extends AbstractNoOpResourceManager {
             throw new RuntimeException(e);
         } catch (ExecutionException e) {
             logger.error("Error when executing search for Identity.", e);
-            throw new RuntimeIoException(e);
+            throw new RuntimeException(e);
         }
         return identitiesToReturn;
     }

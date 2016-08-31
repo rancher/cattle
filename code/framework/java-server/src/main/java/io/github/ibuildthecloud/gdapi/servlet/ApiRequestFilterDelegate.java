@@ -9,11 +9,13 @@ import io.github.ibuildthecloud.gdapi.request.handler.ApiRequestHandler;
 import io.github.ibuildthecloud.gdapi.request.parser.ApiRequestParser;
 import io.github.ibuildthecloud.gdapi.server.model.ApiServletContext;
 import io.github.ibuildthecloud.gdapi.util.ExceptionUtils;
+import io.github.ibuildthecloud.gdapi.version.Versions;
 
 import java.io.EOFException;
 import java.io.IOException;
 import java.net.URL;
 import java.util.List;
+import java.util.Map;
 
 import javax.inject.Inject;
 import javax.servlet.FilterChain;
@@ -32,11 +34,12 @@ public class ApiRequestFilterDelegate {
 
     private static final Logger log = LoggerFactory.getLogger(ApiRequestFilterDelegate.class);
 
+    @Inject
+    Versions versions;
     ApiRequestParser parser;
     List<ApiRequestHandler> handlers;
     boolean throwErrors = false;
-    String version;
-    SchemaFactory schemaFactory;
+    Map<String, SchemaFactory> schemaFactories;
     IdFormatter idFormatter;
 
     public ApiContext doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
@@ -46,22 +49,17 @@ public class ApiRequestFilterDelegate {
             return null;
         }
 
-        if (version == null) {
-            log.error("No version set");
-            chain.doFilter(request, response);
-            return null;
-        }
-
         HttpServletRequest httpRequest = (HttpServletRequest)request;
         HttpServletResponse httpResponse = (HttpServletResponse)response;
 
-        ApiRequest apiRequest = new ApiRequest(version, new ApiServletContext(httpRequest, httpResponse, chain), schemaFactory);
+        String version = parser.parseVersion(httpRequest.getServletPath());
+        SchemaFactory schemaFactory = schemaFactories.get(version);
+
+        ApiRequest apiRequest = new ApiRequest(new ApiServletContext(httpRequest, httpResponse, chain), schemaFactory);
         apiRequest.setAttribute("requestStartTime", System.currentTimeMillis());
         ApiContext context = null;
 
         try {
-            apiRequest.setSchemaFactory(schemaFactory);
-
             context = ApiContext.newContext();
             context.setApiRequest(apiRequest);
 
@@ -74,7 +72,22 @@ public class ApiRequestFilterDelegate {
                 return null;
             }
 
-            URL schemaUrl = ApiContext.getUrlBuilder().resourceCollection(Schema.class);
+            URL schemaUrl = null;
+            if (schemaFactory == null) {
+                // Not a valid version
+                SchemaFactory defaultFactory = schemaFactories.get(versions.getLatest());
+                if (apiRequest.getVersion() == null) {
+                    apiRequest.setVersion(versions.getRootVersion());
+                } else {
+                    apiRequest.setVersion(versions.getLatest());
+                }
+                apiRequest.setSchemaFactory(defaultFactory);
+                schemaUrl = ApiContext.getUrlBuilder().resourceCollection(Schema.class);
+                apiRequest.setVersion(null);
+            } else {
+                schemaUrl = ApiContext.getUrlBuilder().resourceCollection(Schema.class);
+            }
+
             if (schemaUrl != null) {
                 httpResponse.setHeader(SCHEMAS_HEADER, schemaUrl.toExternalForm());
             }
@@ -155,30 +168,20 @@ public class ApiRequestFilterDelegate {
         this.handlers = handlers;
     }
 
-    public String getVersion() {
-        return version;
-    }
-
-    @Inject
-    public void setVersion(String version) {
-        this.version = version;
-    }
-
-    public SchemaFactory getSchemaFactory() {
-        return schemaFactory;
-    }
-
-    @Inject
-    public void setSchemaFactory(SchemaFactory schemaFactory) {
-        this.schemaFactory = schemaFactory;
-    }
-
     public IdFormatter getIdFormatter() {
         return idFormatter;
     }
 
     public void setIdFormatter(IdFormatter idFormatter) {
         this.idFormatter = idFormatter;
+    }
+
+    public Map<String, SchemaFactory> getSchemaFactories() {
+        return schemaFactories;
+    }
+
+    public void setSchemaFactories(Map<String, SchemaFactory> schemaFactories) {
+        this.schemaFactories = schemaFactories;
     }
 
 }

@@ -1,43 +1,32 @@
 package io.cattle.platform.agent.connection.simulator;
 
-import io.cattle.platform.agent.server.connection.AgentConnection;
-import io.cattle.platform.async.utils.AsyncUtils;
 import io.cattle.platform.core.model.Agent;
-import io.cattle.platform.eventing.EventProgress;
 import io.cattle.platform.eventing.model.Event;
 import io.cattle.platform.eventing.model.EventVO;
+import io.cattle.platform.object.ObjectManager;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import com.google.common.util.concurrent.ListenableFuture;
-
-public class AgentConnectionSimulator implements AgentConnection {
+public class AgentConnectionSimulator implements Simulator {
 
     Agent agent;
     boolean open = true;
+    ObjectManager objectManager;
     List<AgentSimulatorEventProcessor> processors;
     Map<String, Object[]> instances = new HashMap<String, Object[]>();
 
-    public AgentConnectionSimulator(Agent agent, List<AgentSimulatorEventProcessor> processors) {
+    public AgentConnectionSimulator(ObjectManager objectManager, Agent agent, List<AgentSimulatorEventProcessor> processors) {
         super();
+        this.objectManager = objectManager;
         this.agent = agent;
         this.processors = processors;
     }
 
     @Override
-    public long getAgentId() {
-        return agent.getId();
-    }
-
-    @Override
-    public String getUri() {
-        return agent.getUri();
-    }
-
-    @Override
-    public ListenableFuture<Event> execute(Event event, EventProgress process) {
+    public Event execute(Event event) {
+        objectManager.reload(agent);
         for (AgentSimulatorEventProcessor processor : processors) {
             Event response;
             try {
@@ -46,22 +35,12 @@ public class AgentConnectionSimulator implements AgentConnection {
                 throw new IllegalStateException(e);
             }
             if (response != null) {
-                return AsyncUtils.done(response);
+                return response;
             }
         }
-        return AsyncUtils.done((Event) EventVO.reply(event));
+        return EventVO.reply(event);
     }
-
-    @Override
-    public void close() {
-        open = false;
-    }
-
-    @Override
-    public boolean isOpen() {
-        return open;
-    }
-
+    
     public Agent getAgent() {
         return agent;
     }

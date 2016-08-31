@@ -1,5 +1,6 @@
 package io.cattle.platform.allocator.util;
 
+import io.cattle.platform.allocator.exception.FailedToAllocate;
 import io.cattle.platform.allocator.service.CacheManager;
 import io.cattle.platform.allocator.service.DiskInfo;
 import io.cattle.platform.allocator.service.HostInfo;
@@ -39,30 +40,25 @@ public class AllocatorUtils {
 
     private static final Logger log = LoggerFactory.getLogger(AllocatorUtils.class);
 
-    public static Boolean checkAllocateState(long resourceId, String state, String logType) {
+    public static boolean assertAllocated(long resourceId, String state, String logType) {
         if (CommonStatesConstants.ACTIVE.equals(state)) {
             log.info("{} [{}] is already allocated", logType, resourceId);
             return true;
         } else if (!CommonStatesConstants.ACTIVATING.equals(state)) {
-            log.error("Can not allocate {} [{}] in allocation state [{}]", logType, resourceId, state);
-            return false;
+            throw new FailedToAllocate(String.format("Illegal allocation state: %s", state));
         }
-
-        return null;
+        return false;
     }
 
-    public static Boolean checkDeallocateState(long resourceId, String state, String logType) {
+    public static boolean assertDeallocated(long resourceId, String state, String logType) {
         if (CommonStatesConstants.INACTIVE.equals(state)) {
             log.info("{} [{}] is already deallocated", logType, resourceId);
             return true;
+        } else if (!CommonStatesConstants.DEACTIVATING.equals(state)) {
+            throw new FailedToAllocate(String.format("Illegal deallocation state: %s", state));
         }
 
-        if (!CommonStatesConstants.DEACTIVATING.equals(state)) {
-            log.info("Can not deallocate {} [{}], is not in an deactivating allocation state", logType, resourceId);
-            return false;
-        }
-
-        return null;
+        return false;
     }
 
     public static long getCompute(Instance instance) {

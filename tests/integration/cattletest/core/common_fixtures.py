@@ -599,14 +599,18 @@ def _sleep_time():
             sleep = 1
 
 
-def wait_for(callback, timeout=DEFAULT_TIMEOUT):
+def wait_for(callback, timeout=DEFAULT_TIMEOUT, fail_handler=None):
     sleep_time = _sleep_time()
     start = time.time()
     ret = callback()
     while ret is None or ret is False:
         time.sleep(sleep_time.next())
         if time.time() - start > timeout:
-            raise Exception('Timeout waiting for condition')
+            exception_msg = 'Timeout waiting for condition.'
+            if fail_handler:
+                exception_msg = exception_msg + ' Fail handler message: ' + \
+                                fail_handler()
+            raise Exception(exception_msg)
         ret = callback()
     return ret
 

@@ -10,6 +10,16 @@
     <dependencies>
         <dependency>
             <groupId>io.cattle</groupId>
+            <artifactId>cattle-iaas-ha</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.cattle</groupId>
+            <artifactId>cattle-framework-api-pub-sub</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.cattle</groupId>
             <artifactId>cattle-framework-eventing</artifactId>
             <version>${project.version}</version>
         </dependency>

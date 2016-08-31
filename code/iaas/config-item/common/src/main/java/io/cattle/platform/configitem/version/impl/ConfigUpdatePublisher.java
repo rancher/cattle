@@ -81,7 +81,7 @@ public class ConfigUpdatePublisher extends NoExceptionRunnable implements Initia
         if (update.getData() == null || update.getData().getItems().size() == 0) {
             reply(item, null, null);
         } else {
-            log.info("\t\tStaring work item {} [{}]", item.key, item.hashCode());
+            log.debug("\t\tStaring work item {} [{}]", item.key, item.hashCode());
             requests.add(item);
         }
 
@@ -393,7 +393,7 @@ public class ConfigUpdatePublisher extends NoExceptionRunnable implements Initia
             event.setData(response.getData());
         }
 
-        log.info("\t\tFinished work item {} [{}]", item.key, item.hashCode());
+        log.debug("\t\tFinished work item {} [{}]", item.key, item.hashCode());
         item.future.set(event);
     }
 

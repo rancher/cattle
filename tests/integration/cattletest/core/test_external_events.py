@@ -255,6 +255,43 @@ def test_external_service_event_create(client, context, super_client):
                        lambda x: 'State is: ' + x.state)
 
 
+def test_external_stack_event_create(client, context, super_client):
+    agent_client = context.agent_client
+
+    env_external_id = random_str()
+    environment = {"name": env_external_id, "externalId": env_external_id,
+                   "kind": "environment"}
+
+    env = client.create_environment(environment)
+    env = client.wait_success(env)
+
+    service = {
+        'kind': SERVICE_KIND,
+    }
+
+    event = agent_client.create_external_service_event(
+        eventType='stack.remove',
+        environment=environment,
+        externalId=env_external_id,
+        service=service,
+    )
+
+    event = wait_for(lambda: event_wait(client, event))
+    assert event is not None
+
+    envs = client.list_environment(externalId=env_external_id)
+    assert len(envs) == 1
+
+    env = envs[0]
+    assert env.externalId == env_external_id
+    assert env.name == environment["name"]
+    assert env.kind == "environment"
+
+    wait_for_condition(client, env,
+                       lambda x: x.state == "removed",
+                       lambda x: 'State is: ' + x.state)
+
+
 def service_wait(client, external_id):
     services = client.list_kubernetes_service(externalId=external_id)
     if len(services) and services[0].state == 'active':

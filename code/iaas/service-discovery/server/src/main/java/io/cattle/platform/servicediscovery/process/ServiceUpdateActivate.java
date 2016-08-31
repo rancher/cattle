@@ -2,7 +2,6 @@ package io.cattle.platform.servicediscovery.process;
 
 import io.cattle.platform.async.utils.TimeoutException;
 import io.cattle.platform.core.constants.CommonStatesConstants;
-import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.Service;
 import io.cattle.platform.engine.handler.HandlerResult;
 import io.cattle.platform.engine.process.ProcessInstance;
@@ -12,12 +11,12 @@ import io.cattle.platform.iaas.api.auditing.AuditService;
 import io.cattle.platform.lock.exception.FailedToAcquireLockException;
 import io.cattle.platform.object.meta.ObjectMetaDataManager;
 import io.cattle.platform.object.resource.ResourceMonitor;
-import io.cattle.platform.object.resource.ResourcePredicate;
 import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.process.common.handler.AbstractObjectProcessHandler;
 import io.cattle.platform.servicediscovery.api.constants.ServiceDiscoveryConstants;
 import io.cattle.platform.servicediscovery.api.dao.ServiceExposeMapDao;
 import io.cattle.platform.servicediscovery.deployment.DeploymentManager;
+import io.cattle.platform.servicediscovery.service.ServiceDiscoveryService;
 import io.github.ibuildthecloud.gdapi.id.IdFormatter;
 
 import java.util.Collections;
@@ -40,6 +39,9 @@ public class ServiceUpdateActivate extends AbstractObjectProcessHandler {
 
     @Inject
     DeploymentManager deploymentMgr;
+
+    @Inject
+    ServiceDiscoveryService serviceDiscoveryService;
 
     @Inject
     ResourceMonitor resourceMonitor;
@@ -77,10 +79,11 @@ public class ServiceUpdateActivate extends AbstractObjectProcessHandler {
                 objectManager.setFields(objectManager.reload(service),
                         ObjectMetaDataManager.TRANSITIONING_MESSAGE_FIELD,
                         "Reconciling");
+                serviceDiscoveryService.publishChanged(service);
             }
             deploymentMgr.activate(service);
         } catch (TimeoutException ex) {
-            error = obfuscateId(ex);
+            error = ex.getMessage();
             throw ex;
         } catch (FailedToAcquireLockException ex) {
             throw ex;
@@ -89,6 +92,7 @@ public class ServiceUpdateActivate extends AbstractObjectProcessHandler {
             throw ex;
         } finally {
             if (!StringUtils.isEmpty(error)) {
+                serviceDiscoveryService.publishChanged(service);
                 objectManager.setFields(objectManager.reload(service),
                         ObjectMetaDataManager.TRANSITIONING_MESSAGE_FIELD,
                         error);
@@ -103,48 +107,6 @@ public class ServiceUpdateActivate extends AbstractObjectProcessHandler {
         return new HandlerResult(ServiceDiscoveryConstants.FIELD_CURRENT_SCALE, exposeDao.getCurrentScale(service.getId()));
     }
 
-    protected String obfuscateId(TimeoutException ex) {
-        String error = ex.getMessage();
-        if (ex.getMessage().contains(ResourceMonitor.ERROR_MSG)) {
-            // obfuscate id of predicated resource
-            String[] msg = ex.getMessage().split("\\]");
-            String[] splittedForId = msg[0].split(":");
-            String[] splittedForResourceType = splittedForId[0].split("\\[");
-            String resourceId = splittedForId[1];
-            String resourceType = splittedForResourceType[1];
-            Object obfuscatedId = null;
-            
-            if (Instance.class.getSimpleName().equalsIgnoreCase(resourceType)) {
-                // in most cases it's going to be instance
-                Instance instance = objectManager.loadResource(Instance.class, resourceId);
-                if (instance != null && instance.getName() != null) {
-                    obfuscatedId = instance.getName();
-                }
-            }
-            
-            if (obfuscatedId == null) {
-                obfuscatedId = idFormatter.formatId(resourceType, resourceId);
-            }
-
-            // append predicated resource's transitioning message to an error
-            Object predicateResource = objectManager.loadResource(resourceType, resourceId);
-            error = "Waiting for [" + resourceType + ":" + obfuscatedId + "]";
-            if (predicateResource != null) {
-                String transitioningMsg = DataAccessor.fieldString(predicateResource,
-                        "transitioningMessage");
-                // Upper case first letter in resourceType
-                StringBuffer sb = new StringBuffer(resourceType);
-                sb.replace(0, 1, resourceType.substring(0, 1).toUpperCase());
-
-                if (!StringUtils.isEmpty(sb)) {
-                    error = error + ". " + sb + " status: " + transitioningMsg;
-                }
-            }
-        }
-
-        return error;
-    }
-
     @SuppressWarnings("unchecked")
     protected void waitForConsumedServicesActivate(ProcessState state) {
         List<Integer> consumedServicesIds = DataAccessor.fromMap(state.getData())
@@ -153,13 +115,7 @@ public class ServiceUpdateActivate extends AbstractObjectProcessHandler {
 
         for (Integer consumedServiceId : consumedServicesIds) {
             Service consumedService = objectManager.loadResource(Service.class, consumedServiceId.longValue());
-            resourceMonitor.waitFor(consumedService,
-                    new ResourcePredicate<Service>() {
-                        @Override
-                        public boolean evaluate(Service obj) {
-                            return CommonStatesConstants.ACTIVE.equals(obj.getState());
-                        }
-                    });
+            resourceMonitor.waitForState(consumedService, CommonStatesConstants.ACTIVE);
         }
     }
 }

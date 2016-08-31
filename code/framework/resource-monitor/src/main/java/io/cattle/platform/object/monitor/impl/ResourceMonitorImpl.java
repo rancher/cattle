@@ -12,9 +12,12 @@ import io.cattle.platform.object.resource.ResourcePredicate;
 import io.cattle.platform.object.util.ObjectUtils;
 import io.cattle.platform.task.Task;
 import io.cattle.platform.task.TaskOptions;
+import io.github.ibuildthecloud.gdapi.id.IdFormatter;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
@@ -30,6 +33,14 @@ public class ResourceMonitorImpl implements ResourceMonitor, AnnotatedEventListe
     ConcurrentMap<String, Object> waiters = new ConcurrentHashMap<String, Object>();
     @Inject
     ObjectMetaDataManager objectMetaDataManger;
+    @Inject
+    IdFormatter idFormatter;
+    Set<String> seen = new HashSet<>();
+
+    @EventHandler
+    public void stateChanged(Event event) {
+        resourceChange(event);
+    }
 
     @EventHandler
     public void resourceChange(Event event) {
@@ -44,6 +55,7 @@ public class ResourceMonitorImpl implements ResourceMonitor, AnnotatedEventListe
     }
 
     protected String key(Object resourceType, Object resourceId) {
+        resourceId = idFormatter.formatId(resourceType.toString(), resourceId);
         return String.format("%s:%s", resourceType, resourceId);
     }
 
@@ -54,42 +66,44 @@ public class ResourceMonitorImpl implements ResourceMonitor, AnnotatedEventListe
         }
 
         String type = objectManager.getType(obj);
+        String kind = ObjectUtils.getKind(obj);
+        if (kind == null) {
+            kind = type;
+        }
         Object id = ObjectUtils.getId(obj);
 
         if (type == null || id == null) {
             throw new IllegalArgumentException("Type and id are required got [" + type + "] [" + id + "]");
         }
 
+        String printKey = key(kind, id);
         String key = key(type, id);
-        long start = System.currentTimeMillis();
+        long end = System.currentTimeMillis() + timeout;
+        Object wait = new Object();
+        Object oldValue = waiters.putIfAbsent(key, wait);
+        if (oldValue != null) {
+            wait = oldValue;
+        }
 
-        while (start + timeout > System.currentTimeMillis()) {
-            obj = objectManager.reload(obj);
+        synchronized (wait) {
+            while (System.currentTimeMillis() < end) {
+                obj = objectManager.reload(obj);
 
-            if (predicate.evaluate(obj)) {
-                return obj;
-            }
+                if (predicate.evaluate(obj)) {
+                    return obj;
+                }
 
-            Object wait = new Object();
-            Object oldValue = waiters.putIfAbsent(key, wait);
-            if (oldValue != null) {
-                wait = oldValue;
-            }
-
-            long waitTime = timeout - (System.currentTimeMillis() - start);
-            if (waitTime <= 0) {
-                break;
-            }
-            synchronized (wait) {
-                try {
-                    wait.wait(waitTime);
-                } catch (InterruptedException e) {
-                    throw new IllegalStateException("Interrupted", e);
+                synchronized (wait) {
+                    try {
+                        wait.wait(5000L);
+                    } catch (InterruptedException e) {
+                        throw new IllegalStateException("Interrupted", e);
+                    }
                 }
             }
         }
 
-        throw new TimeoutException("Object [" + key + "] " + ERROR_MSG + " [" + timeout + "] millis");
+        throw new TimeoutException("Timeout: " + predicate.getMessage() + " [" + printKey + "]");
     }
 
     @Override
@@ -99,12 +113,20 @@ public class ResourceMonitorImpl implements ResourceMonitor, AnnotatedEventListe
 
     @Override
     public void run() {
+        Set<String> previouslySeen = this.seen;
+        this.seen = new HashSet<>();
         Map<String, Object> copy = new HashMap<String, Object>(waiters);
+
         for (Map.Entry<String, Object> entry : copy.entrySet()) {
+            String key = entry.getKey();
             Object value = entry.getValue();
-            waiters.remove(entry.getKey(), entry.getValue());
-            synchronized (value) {
-                value.notifyAll();
+            seen.add(key);
+
+            if (previouslySeen.contains(key)) {
+                waiters.remove(entry.getKey(), entry.getValue());
+                synchronized (value) {
+                    value.notifyAll();
+                }
             }
         }
     }
@@ -116,15 +138,31 @@ public class ResourceMonitorImpl implements ResourceMonitor, AnnotatedEventListe
             public boolean evaluate(T obj) {
                 return desiredState.equals(ObjectUtils.getState(obj));
             }
+
+            @Override
+            public String getMessage() {
+                return "state to equal " + desiredState;
+            }
         });
     }
 
     @Override
     public <T> T waitForNotTransitioning(T obj) {
+        final String type = ObjectUtils.getKind(obj);
+        final String state = ObjectUtils.getState(obj);
         return waitFor(obj, new ResourcePredicate<T>() {
             @Override
             public boolean evaluate(T obj) {
                 return !objectMetaDataManger.isTransitioningState(obj.getClass(), (ObjectUtils.getState(obj)));
+            }
+
+            @Override
+            public String getMessage() {
+                if (type == null || state == null) {
+                    return "a resting state";
+                } else {
+                    return type + " " + state;
+                }
             }
         });
     }

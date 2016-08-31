@@ -1,15 +1,4 @@
-.git
-.m2
-
-code
+**/target*
 resources/local
-dist
-docs
-LICENSE
-pom.xml
-README.md
-resources
+resources/content/db/mysql/*.gz
 runtime
-tests
-tmp
-tools

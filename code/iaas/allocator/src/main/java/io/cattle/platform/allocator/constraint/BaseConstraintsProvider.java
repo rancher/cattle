@@ -16,9 +16,9 @@ import io.cattle.platform.core.model.Vnet;
 import io.cattle.platform.core.model.Volume;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.util.DataAccessor;
-import io.cattle.platform.object.util.DataUtils;
 import io.cattle.platform.util.type.Priority;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -81,8 +81,8 @@ public class BaseConstraintsProvider implements AllocationConstraintsProvider, P
 
     protected void addComputeConstraints(AllocationAttempt attempt, List<Constraint> constraints) {
         ValidHostsConstraint hostSet = new ValidHostsConstraint();
-        for (Host host : attempt.getHosts()) {
-            hostSet.addHost(host.getId());
+        if (attempt.getHostId() != null) {
+            hostSet.addHost(attempt.getHostId());
         }
 
         Instance instance = attempt.getInstance();
@@ -90,15 +90,6 @@ public class BaseConstraintsProvider implements AllocationConstraintsProvider, P
             Long requestedHostId = DataAccessor.fieldLong(instance, InstanceConstants.FIELD_REQUESTED_HOST_ID);
             if (requestedHostId != null) {
                 hostSet.addHost(requestedHostId);
-            }
-
-            List<Long> validHosts = DataUtils.getFieldList(instance.getData(), InstanceConstants.FIELD_VALID_HOST_IDS, Long.class);
-            if (validHosts != null) {
-                for (Long id : validHosts) {
-                    if (id != null) {
-                        hostSet.addHost(id);
-                    }
-                }
             }
         }
 
@@ -111,9 +102,9 @@ public class BaseConstraintsProvider implements AllocationConstraintsProvider, P
         for (Map.Entry<Volume, Set<StoragePool>> entry : attempt.getPools().entrySet()) {
             Volume volume = entry.getKey();
             boolean alreadyMappedToPool = entry.getValue().size() > 0;
-            VolumeValidStoragePoolConstraint volumeToPoolConstraint = new VolumeValidStoragePoolConstraint(volume, alreadyMappedToPool);
+            Set<Long> storagePoolIds = new HashSet<>();
             for (StoragePool pool : entry.getValue()) {
-                volumeToPoolConstraint.getStoragePools().add(pool.getId());
+                storagePoolIds.add(pool.getId());
                 storagePoolToHostConstraint(constraints, pool);
             }
 
@@ -123,9 +114,9 @@ public class BaseConstraintsProvider implements AllocationConstraintsProvider, P
                 if (StringUtils.isNotEmpty(driver) && !VolumeConstants.LOCAL_DRIVER.equals(driver)) {
                     StoragePool pool = storagePoolDao.findStoragePoolByDriverName(volume.getAccountId(), driver);
                     if (pool != null) {
-                        VolumeValidStoragePoolConstraint spByDriverConstraint = new VolumeValidStoragePoolConstraint(volume, alreadyMappedToPool);
-                        spByDriverConstraint.getStoragePools().add(pool.getId());
-                        constraints.add(spByDriverConstraint);
+                        Set<Long> poolIds = new HashSet<>();
+                        poolIds.add(pool.getId());
+                        constraints.add(new VolumeValidStoragePoolConstraint(volume, false, poolIds));
                         storagePoolToHostConstraint(constraints, pool);
                         restrictToUnmanagedPool = false;
                     }
@@ -137,16 +128,17 @@ public class BaseConstraintsProvider implements AllocationConstraintsProvider, P
 
                 Instance instance = objectManager.loadResource(Instance.class, volume.getInstanceId());
                 if (instance != null) {
-                    for (Host host : allocatorDao.getHosts(instance)) {
+                    Host host = allocatorDao.getHost(instance);
+                    if (host != null) {
                         for (StoragePool pool : allocatorDao.getAssociatedUnmanagedPools(host)) {
-                            volumeToPoolConstraint.getStoragePools().add(pool.getId());
+                            storagePoolIds.add(pool.getId());
                         }
                     }
                 }
             }
 
-            if (volumeToPoolConstraint.getStoragePools().size() > 0) {
-                constraints.add(volumeToPoolConstraint);
+            if (storagePoolIds.size() > 0) {
+                constraints.add(new VolumeValidStoragePoolConstraint(volume, alreadyMappedToPool, storagePoolIds));
             }
 
             if (volume.getImageId() != null) {

@@ -2,7 +2,7 @@
 package io.cattle.platform.servicediscovery.deployment;
 
 import io.cattle.platform.core.constants.CommonStatesConstants;
-import io.cattle.platform.core.model.Environment;
+import io.cattle.platform.core.model.Stack;
 import io.cattle.platform.core.model.Service;
 import io.cattle.platform.core.model.ServiceExposeMap;
 import io.cattle.platform.core.model.ServiceIndex;
@@ -29,7 +29,7 @@ public abstract class DeploymentUnitInstance {
     protected ServiceExposeMap exposeMap;
     protected String launchConfigName;
     protected Service service;
-    protected Environment stack;
+    protected Stack stack;
 
     public abstract boolean isError();
 
@@ -50,6 +50,11 @@ public abstract class DeploymentUnitInstance {
                         public boolean evaluate(ServiceExposeMap obj) {
                             return CommonStatesConstants.REMOVED.equals(obj.getState());
                         }
+
+                        @Override
+                        public String getMessage() {
+                            return "removed state";
+                        }
                     });
         }
     }
@@ -64,7 +69,7 @@ public abstract class DeploymentUnitInstance {
         this.uuid = uuid;
         this.launchConfigName = launchConfigName;
         this.service = service;
-        this.stack = context.objectManager.loadResource(Environment.class, service.getEnvironmentId());
+        this.stack = context.objectManager.loadResource(Stack.class, service.getStackId());
     }
 
     public DeploymentUnitInstance createAndStart(Map<String, Object> deployParams) {
@@ -123,7 +128,7 @@ public abstract class DeploymentUnitInstance {
 
     public abstract ServiceIndex getServiceIndex();
 
-    public Environment getStack() {
+    public Stack getStack() {
         return stack;
     }
 

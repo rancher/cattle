@@ -5,8 +5,6 @@ import io.cattle.platform.allocator.dao.AllocatorDao;
 import io.cattle.platform.allocator.service.AllocationAttempt;
 import io.cattle.platform.allocator.service.AllocationCandidate;
 
-import java.util.Set;
-
 public class ContainerLabelAffinityConstraint implements Constraint {
     public static final String ENV_HEADER_AFFINITY_CONTAINER_LABEL = "affinity:";
     public static final String LABEL_HEADER_AFFINITY_CONTAINER_LABEL = "io.rancher.scheduler.affinity:container_label";
@@ -28,23 +26,16 @@ public class ContainerLabelAffinityConstraint implements Constraint {
     // If necessary we can do additional optimizations to allow multiple container label or host label
     // affinity constraints to share results from DB queries
     @Override
-    public boolean matches(AllocationAttempt attempt,
-            AllocationCandidate candidate) {
-        Set<Long> hostIds = candidate.getHosts();
+    public boolean matches(AllocationAttempt attempt, AllocationCandidate candidate) {
+        if (candidate.getHost() == null) {
+            return false;
+        }
+
         if (op == AffinityOps.SOFT_EQ || op == AffinityOps.EQ) {
-            for (Long hostId : hostIds) {
-                if (!allocatorDao.hostHasContainerLabel(hostId, labelKey, labelValue)) {
-                    return false;
-                }
-            }
-            return true;
+            return allocatorDao.hostHasContainerLabel(candidate.getHost(), labelKey, labelValue);
         } else {
-            for (Long hostId : hostIds) {
-                if (allocatorDao.hostHasContainerLabel(hostId, labelKey, labelValue)) {
-                    return false;
-                }
-            }
-            return true;
+            // Anti-affinity
+            return !allocatorDao.hostHasContainerLabel(candidate.getHost(), labelKey, labelValue);
         }
     }
 
@@ -52,4 +43,10 @@ public class ContainerLabelAffinityConstraint implements Constraint {
     public boolean isHardConstraint() {
         return (op == AffinityOps.EQ || op == AffinityOps.NE);
     }
+
+    @Override
+    public String toString() {
+        return String.format("needs container with label %s%s%s", labelKey, op.getLabelSymbol(), labelValue);
+    }
+
 }

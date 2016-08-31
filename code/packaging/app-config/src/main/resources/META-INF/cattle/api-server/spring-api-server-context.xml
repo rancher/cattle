@@ -3,6 +3,7 @@
     xmlns:context="http://www.springframework.org/schema/context"
     xmlns:extension="http://cattle.io/schemas/spring/extension"
     xmlns:util="http://www.springframework.org/schema/util"
+    xmlns:p="http://www.springframework.org/schema/p"
     xsi:schemaLocation="
 		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.2.xsd
 		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.2.xsd
@@ -35,28 +36,8 @@
 
     <extension:discover class="io.cattle.platform.api.pubsub.subscribe.SubscriptionHandler" />
 
-    <bean class="io.cattle.platform.api.pubsub.subscribe.BlockingSubscriptionHandler" >
+    <bean id="JettyWebSocketSubcriptionHandler" class="io.cattle.platform.api.pubsub.subscribe.jetty.JettyWebSocketSubcriptionHandler" >
         <property name="executorService" ref="CoreExecutorService" />
-        <property name="eventProcessors" value="#{extensionManager.list('api.pub.sub.event.post.processor')}" />
-    </bean>
-
-    <bean id="ServletAsyncSubscriptionHandler" class="io.cattle.platform.api.pubsub.manager.impl.ClassAvailableSubscriptionHandler" >
-        <property name="executorService" ref="CoreExecutorService" />
-        <property name="testClass" value="javax.servlet.AsyncContext" />
-        <property name="className" value="io.cattle.platform.api.pubsub.subscribe.ServletAsyncSubscriptionHandler" />
-        <property name="priority">
-            <util:constant static-field="io.cattle.platform.util.type.Priority.DEFAULT_OVERRIDE" />
-        </property>
-        <property name="eventProcessors" value="#{extensionManager.list('api.pub.sub.event.post.processor')}" />
-    </bean>
-
-    <bean id="JettyWebSocketSubcriptionHandler" class="io.cattle.platform.api.pubsub.manager.impl.ClassAvailableSubscriptionHandler" >
-        <property name="executorService" ref="CoreExecutorService" />
-        <property name="testClass" value="org.eclipse.jetty.websocket.server.WebSocketServerFactory" />
-        <property name="className" value="io.cattle.platform.api.pubsub.subscribe.jetty.JettyWebSocketSubcriptionHandler" />
-        <property name="priority">
-            <util:constant static-field="io.cattle.platform.util.type.Priority.SPECIFIC" />
-        </property>
         <property name="eventProcessors" value="#{extensionManager.list('api.pub.sub.event.post.processor')}" />
     </bean>
 
@@ -64,17 +45,25 @@
         <property name="versions">
             <list>
                 <value type="java.lang.String">v1</value>
+                <value type="java.lang.String">v2-beta</value>
             </list>
         </property>
-        <property name="latest" value="v1" />
+        <property name="latest" value="v2-beta" />
+        <property name="rootVersion" value="v1" />
     </bean>
 
     <bean class="io.github.ibuildthecloud.gdapi.servlet.ApiRequestFilterDelegate" >
-        <property name="schemaFactory" ref="CoreSchemaFactory" />
-        <property name="handlers" value="#{extensionManager.list('api.request.handler')}" />
-        <property name="version">
-            <bean factory-bean="Versions" factory-method="getLatest" />
+        <property name="schemaFactories" >
+            <map>
+                <entry key="v1" >
+                    <ref bean="V1-base-factory" />
+                </entry>
+                <entry key="v2-beta" >
+                    <ref bean="CoreSchemaFactory" />
+                </entry>
+            </map>
         </property>
+        <property name="handlers" value="#{extensionManager.list('api.request.handler')}" />
         <property name="idFormatter" value="#{extensionManager.first('id.formatter', 'io.github.ibuildthecloud.gdapi.id.IdFormatter')}" />
     </bean>
 
@@ -256,9 +245,9 @@
 
        <bean class="io.cattle.platform.iaas.api.account.AccountDeactivateActionHandler"/>
        <bean class="io.cattle.platform.servicediscovery.api.filter.ServiceCreateValidationFilter" />
-       <bean class="io.cattle.platform.servicediscovery.api.filter.EnvironmentCreateValidationFilter" />
+       <bean class="io.cattle.platform.servicediscovery.api.filter.StackCreateValidationFilter" />
        <bean class="io.cattle.platform.servicediscovery.api.filter.ServiceAddRemoveLinkServiceValidationFilter" />
-       <bean class="io.cattle.platform.servicediscovery.api.filter.ServiceDiscoveryEnvironmentOutputFilter" />
+       <bean class="io.cattle.platform.servicediscovery.api.filter.ServiceDiscoveryStackOutputFilter" />
        <bean class="io.cattle.platform.servicediscovery.api.filter.ServiceSetServiceLinksValidationFilter" />
        <bean class="io.cattle.platform.servicediscovery.api.filter.ServiceOutputFilter" />
        <bean class="io.cattle.platform.servicediscovery.api.filter.LoadBalancerServiceCertificateRemoveFilter" />
@@ -272,13 +261,13 @@
        
        <bean class="io.cattle.platform.servicediscovery.api.action.AddOutputsActionHandler" />
        <bean class="io.cattle.platform.servicediscovery.api.action.AddServiceLinkActionHandler" />
-       <bean class="io.cattle.platform.servicediscovery.api.action.EnvironmentExportConfigActionHandler" />
+       <bean class="io.cattle.platform.servicediscovery.api.action.StackExportConfigActionHandler" />
        <bean class="io.cattle.platform.servicediscovery.api.action.RemoveServiceLinkActionHandler" />
        <bean class="io.cattle.platform.servicediscovery.api.action.ServiceCertificateActionHandler" />
        <bean class="io.cattle.platform.servicediscovery.api.action.SetServiceLinksActionHandler" />
-       <bean class="io.cattle.platform.servicediscovery.api.action.EnvironmentActivateServicesActionHandler" />
-       <bean class="io.cattle.platform.servicediscovery.api.action.EnvironmentDeactivateServicesActionHandler" />
-       <bean class="io.cattle.platform.servicediscovery.api.action.EnvironmentComposeLinkHandler" />
+       <bean class="io.cattle.platform.servicediscovery.api.action.StackActivateServicesActionHandler" />
+       <bean class="io.cattle.platform.servicediscovery.api.action.StackDeactivateServicesActionHandler" />
+       <bean class="io.cattle.platform.servicediscovery.api.action.StackComposeLinkHandler" />
        
        <bean class="io.cattle.platform.servicediscovery.api.service.impl.RancherImageToComposeFormatter" />
        <bean class="io.cattle.platform.servicediscovery.api.service.impl.RancherGenericMapToComposeFormatter" />
@@ -306,5 +295,23 @@
     <!-- This really shouldn't be here, it's because LinkHandler and ActionHandler are
          not properly managed and rely on Spring auto wiring and not the ExtensionManager -->
     <bean class="io.cattle.platform.vm.api.InstanceConsoleActionHandler" />
+
+    <extension:discover class="io.github.ibuildthecloud.gdapi.factory.SchemaFactory"/>
+
+    <bean id="V1-admin-factory" p:file="schema/v1/admin.ser" class="io.cattle.platform.api.schema.FileSchemaFactory" />
+    <bean id="V1-member-factory" p:file="schema/v1/member.ser" class="io.cattle.platform.api.schema.FileSchemaFactory" />
+    <bean id="V1-owner-factory" p:file="schema/v1/owner.ser" class="io.cattle.platform.api.schema.FileSchemaFactory" />
+    <bean id="V1-project-factory" p:file="schema/v1/project.ser" class="io.cattle.platform.api.schema.FileSchemaFactory" />
+    <bean id="V1-projectadmin-factory" p:file="schema/v1/projectadmin.ser" class="io.cattle.platform.api.schema.FileSchemaFactory" />
+    <bean id="V1-readAdmin-factory" p:file="schema/v1/readAdmin.ser" class="io.cattle.platform.api.schema.FileSchemaFactory" />
+    <bean id="V1-readonly-factory" p:file="schema/v1/readonly.ser" class="io.cattle.platform.api.schema.FileSchemaFactory" />
+    <bean id="V1-register-factory" p:file="schema/v1/register.ser" class="io.cattle.platform.api.schema.FileSchemaFactory" />
+    <bean id="V1-restricted-factory" p:file="schema/v1/restricted.ser" class="io.cattle.platform.api.schema.FileSchemaFactory" />
+    <bean id="V1-service-factory" p:file="schema/v1/service.ser" class="io.cattle.platform.api.schema.FileSchemaFactory" />
+    <bean id="V1-token-factory" p:file="schema/v1/token.ser" class="io.cattle.platform.api.schema.FileSchemaFactory" />
+    <bean id="V1-user-factory" p:file="schema/v1/user.ser" class="io.cattle.platform.api.schema.FileSchemaFactory" />
+    <bean id="V1-agent-factory" p:file="schema/v1/agent.ser" class="io.cattle.platform.api.schema.FileSchemaFactory" />
+    <bean id="V1-agentRegister-factory" p:file="schema/v1/agentRegister.ser" class="io.cattle.platform.api.schema.FileSchemaFactory" />
+    <bean id="V1-base-factory" p:file="schema/v1/base.ser" class="io.cattle.platform.api.schema.FileSchemaFactory" />
 
 </beans>

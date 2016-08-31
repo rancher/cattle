@@ -1,11 +1,12 @@
 package io.cattle.platform.process.externalevent;
 
-import static io.cattle.platform.core.model.tables.EnvironmentTable.*;
+import static io.cattle.platform.core.model.tables.StackTable.*;
 import static io.cattle.platform.process.externalevent.ExternalEventConstants.*;
 import io.cattle.platform.core.constants.CommonStatesConstants;
+import io.cattle.platform.core.dao.StackDao;
 import io.cattle.platform.core.dao.GenericResourceDao;
 import io.cattle.platform.core.dao.ServiceDao;
-import io.cattle.platform.core.model.Environment;
+import io.cattle.platform.core.model.Stack;
 import io.cattle.platform.core.model.ExternalEvent;
 import io.cattle.platform.core.model.Service;
 import io.cattle.platform.deferred.util.DeferredUtils;
@@ -52,6 +53,8 @@ public class ExternalServiceEventCreate extends AbstractDefaultProcessHandler {
     LockManager lockManager;
     @Inject
     SchemaFactory schemaFactory;
+    @Inject
+    StackDao stackDao;
 
     @Override
     public HandlerResult handle(ProcessState state, ProcessInstance process) {
@@ -82,6 +85,8 @@ public class ExternalServiceEventCreate extends AbstractDefaultProcessHandler {
                     updateService(event, serviceData);
                 } else if (StringUtils.equals(event.getEventType(), TYPE_SERVICE_DELETE)) {
                     deleteService(event, serviceData);
+                } else if (StringUtils.equals(event.getEventType(), TYPE_STACK_DELETE)) {
+                    deleteStack(event, serviceData);
                 }
             }
         });
@@ -94,9 +99,9 @@ public class ExternalServiceEventCreate extends AbstractDefaultProcessHandler {
             return;
         }
 
-        Environment environment = getEnvironment(event);
-        if (environment == null) {
-            log.info("Can't process service event. Could not get or create environment. Event: [{}]", event);
+        Stack stack = getStack(event);
+        if (stack == null) {
+            log.info("Can't process service event. Could not get or create stack. Event: [{}]", event);
             return;
         }
 
@@ -105,7 +110,7 @@ public class ExternalServiceEventCreate extends AbstractDefaultProcessHandler {
             service.putAll(serviceData);
         }
         service.put(ObjectMetaDataManager.ACCOUNT_FIELD, event.getAccountId());
-        service.put(FIELD_ENVIRIONMENT_ID, environment.getId());
+        service.put(FIELD_STACK_ID, stack.getId());
 
         try {
             String create = objectProcessManager.getStandardProcessName(StandardProcess.CREATE, Service.class);
@@ -118,17 +123,18 @@ public class ExternalServiceEventCreate extends AbstractDefaultProcessHandler {
         }
     }
 
-    Environment getEnvironment(ExternalEvent event) {
-        Map<String, Object> env = CollectionUtils.castMap(DataUtils.getFields(event).get(FIELD_ENVIRIONMENT));
+    Stack getStack(final ExternalEvent event) {
+        final Map<String, Object> env = CollectionUtils.castMap(DataUtils.getFields(event).get(FIELD_ENVIRIONMENT));
         Object eId = CollectionUtils.getNestedValue(env, FIELD_EXTERNAL_ID);
         if (eId == null) {
             return null;
         }
-        String envExtId = eId.toString();
+        final String envExtId = eId.toString();
 
-        Environment environment = objectManager.findOne(Environment.class, ENVIRONMENT.EXTERNAL_ID, envExtId, ENVIRONMENT.REMOVED, null);
-        if (environment == null) {
-            final Environment newEnv = objectManager.newRecord(Environment.class);
+        Stack stack = objectManager.findOne(Stack.class, STACK.EXTERNAL_ID, envExtId);              
+         //If stack has not been created yet
+        if (stack == null) {
+            final Stack newEnv = objectManager.newRecord(Stack.class);
 
             Object possibleName = CollectionUtils.getNestedValue(env, "name");
             newEnv.setExternalId(envExtId);
@@ -136,21 +142,30 @@ public class ExternalServiceEventCreate extends AbstractDefaultProcessHandler {
             String name = possibleName != null ? possibleName.toString() : envExtId;
             newEnv.setName(name);
 
-            environment = DeferredUtils.nest(new Callable<Environment>() {
+            stack = DeferredUtils.nest(new Callable<Stack>() {
                 @Override
-                public Environment call() {
+                public Stack call() {
                     return resourceDao.createAndSchedule(newEnv);
                 }
             });
 
-            environment = resourceMonitor.waitFor(environment, new ResourcePredicate<Environment>() {
+            stack = resourceMonitor.waitFor(stack, new ResourcePredicate<Stack>() {
                 @Override
-                public boolean evaluate(Environment obj) {
+                public boolean evaluate(Stack obj) {
                     return obj != null && CommonStatesConstants.ACTIVE.equals(obj.getState());
                 }
+
+                @Override
+                public String getMessage() {
+                    return "active state";
+                }
             });
+        } // If stack was created and removed as well
+        else if (stack.getRemoved() != null) {
+            // This will return null and ensure that service does not get created
+            return null;
         }
-        return environment;
+        return stack;
     }
 
     void updateService(ExternalEvent event, Map<String, Object> serviceData) {
@@ -187,6 +202,13 @@ public class ExternalServiceEventCreate extends AbstractDefaultProcessHandler {
         Service svc = serviceDao.getServiceByExternalId(event.getAccountId(), event.getExternalId());
         if (svc != null) {
             objectProcessManager.scheduleStandardProcess(StandardProcess.REMOVE, svc, null);
+        }
+    }
+    
+    void deleteStack(ExternalEvent event, Map<String, Object> stackData) {
+        Stack env = stackDao.getStackByExternalId(event.getAccountId(), event.getExternalId());
+        if (env != null) {
+            objectProcessManager.scheduleStandardProcess(StandardProcess.REMOVE, env, null);
         }
     }
 

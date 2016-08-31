@@ -2,7 +2,6 @@ package io.cattle.platform.allocator.service;
 
 import io.cattle.platform.allocator.constraint.Constraint;
 import io.cattle.platform.allocator.constraint.IsValidConstraint;
-import io.cattle.platform.core.model.Host;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.Nic;
 import io.cattle.platform.core.model.StoragePool;
@@ -20,12 +19,13 @@ import java.util.UUID;
 
 public class AllocationAttempt {
     String id = UUID.randomUUID().toString();
+
+    Long accountId;
+
     Instance instance;
 
-    Set<Host> hosts;
-    Set<Long> hostIds;
+    Long hostId;
 
-    Set<Volume> volumes;
     Set<Long> volumeIds;
 
     Map<Volume, Set<StoragePool>> pools;
@@ -41,20 +41,15 @@ public class AllocationAttempt {
     List<AllocationCandidate> candidates = new ArrayList<AllocationCandidate>();
     AllocationCandidate matchedCandidate;
 
-    public AllocationAttempt(Instance instance, Set<Host> hosts, Set<Volume> volumes, Map<Volume, Set<StoragePool>> pools, Set<Nic> nics,
+    public AllocationAttempt(long accountId, Instance instance, Long hostId, Set<Volume> volumes, Map<Volume, Set<StoragePool>> pools, Set<Nic> nics,
             Map<Nic, Subnet> subnets) {
         super();
+        this.accountId = accountId;
         this.instance = instance;
-        this.hosts = hosts;
-        this.volumes = volumes;
+        this.hostId = hostId;
         this.pools = pools;
         this.nics = nics;
         this.subnets = subnets == null ? Collections.<Nic, Subnet> emptyMap() : subnets;
-
-        this.hostIds = new HashSet<Long>(hosts.size());
-        for (Host h : hosts) {
-            this.hostIds.add(h.getId());
-        }
 
         this.volumeIds = new HashSet<Long>(volumes.size());
         this.poolIds = new HashMap<Long, Set<Long>>();
@@ -91,6 +86,10 @@ public class AllocationAttempt {
         constraints.add(new IsValidConstraint());
     }
 
+    public Long getAccountId() {
+        return accountId;
+    }
+
     public Instance getInstance() {
         return instance;
     }
@@ -99,12 +98,8 @@ public class AllocationAttempt {
         return instance == null ? null : instance.getId();
     }
 
-    public Set<Host> getHosts() {
-        return hosts;
-    }
-
-    public Set<Volume> getVolumes() {
-        return volumes;
+    public Long getHostId() {
+        return hostId;
     }
 
     public Map<Volume, Set<StoragePool>> getPools() {
@@ -127,12 +122,8 @@ public class AllocationAttempt {
         this.instance = instance;
     }
 
-    public void setHosts(Set<Host> hosts) {
-        this.hosts = hosts;
-    }
-
-    public void setVolumes(Set<Volume> volumes) {
-        this.volumes = volumes;
+    public void setHostId(Long hostId) {
+        this.hostId = hostId;
     }
 
     public void setPools(Map<Volume, Set<StoragePool>> pools) {
@@ -159,20 +150,12 @@ public class AllocationAttempt {
         this.matchedCandidate = matchedCandidate;
     }
 
-    public Set<Long> getHostIds() {
-        return hostIds;
-    }
-
-    public void setHostIds(Set<Long> hostIds) {
-        this.hostIds = hostIds;
-    }
-
     public Set<Long> getVolumeIds() {
         return volumeIds;
     }
 
-    public void setVolumeIds(Set<Long> volumeIds) {
-        this.volumeIds = volumeIds;
+    public void setVolumeIds(Set<Long> volumeId) {
+        this.volumeIds = volumeId;
     }
 
     public Map<Long, Set<Long>> getPoolIds() {

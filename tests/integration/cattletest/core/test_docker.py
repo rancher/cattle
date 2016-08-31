@@ -123,7 +123,6 @@ def test_docker_create_with_start(docker_client, super_client):
 
 
 @if_docker
-@pytest.mark.nonparallel
 def test_docker_build(docker_client, super_client):
     uuid = 'image-' + random_str()
     url = 'https://github.com/rancherio/tiny-build/raw/master/build.tar'
@@ -497,7 +496,14 @@ def test_volume_restore(docker_client, super_client):
                                        dataVolumes=[data_volume])
     c = docker_client.wait_success(c)
     assert c.state == 'running'
-    wait_for_condition(docker_client, v, lambda x: x.state == 'active')
+
+    mounts = check_mounts(docker_client, c, 1)
+    vol = mounts[0].volume()
+    if vol.id != v.id:
+        v = docker_client.reload(v)
+        print '\n\nVolume %s does not equal %s.\nContainer: %s\n\n' % (vol, v,
+                                                                       c)
+        assert vol.id == v.id
 
     c = docker_client.wait_success(c.stop())
     c = docker_client.wait_success(c.remove())
@@ -515,20 +521,15 @@ def test_docker_volumes(docker_client, super_client):
     bind_mount_uuid = py_uuid.uuid4().hex
     bar_host_path = '/tmp/bar%s' % bind_mount_uuid
     bar_bind_mount = '%s:/bar' % bar_host_path
-    baz_host_path = '/tmp/baz%s' % bind_mount_uuid
-    baz_bind_mount = '%s:/baz:ro' % baz_host_path
 
     c = docker_client.create_container(imageUuid=uuid,
                                        startOnCreate=False,
                                        dataVolumes=['/foo',
-                                                    bar_bind_mount,
-                                                    baz_bind_mount])
+                                                    bar_bind_mount])
 
     c = docker_client.wait_success(c)
-    assert len(c.dataVolumes) == 3
-    assert set(c.dataVolumes) == set(['/foo',
-                                      bar_bind_mount,
-                                      baz_bind_mount])
+    assert len(c.dataVolumes) == 2
+    assert set(c.dataVolumes) == set(['/foo', bar_bind_mount])
 
     c = super_client.wait_success(c.start())
 
@@ -536,9 +537,9 @@ def test_docker_volumes(docker_client, super_client):
     assert len(volumes) == 1
 
     mounts = c.mounts()
-    assert len(mounts) == 3
-    foo_mount, bar_mount, baz_mount = None, None, None
-    foo_vol, bar_vol, baz_vol = None, None, None
+    assert len(mounts) == 2
+    foo_mount, bar_mount = None, None
+    foo_vol, bar_vol = None, None
     for mount in mounts:
         assert mount.instance().id == c.id
         if mount.path == '/foo':
@@ -547,15 +548,13 @@ def test_docker_volumes(docker_client, super_client):
         elif mount.path == '/bar':
             bar_mount = mount
             bar_vol = mount.volume()
-        elif mount.path == '/baz':
-            baz_mount = mount
-            baz_vol = mount.volume()
 
     foo_vol = wait_for_condition(
         docker_client, foo_vol, lambda x: x.state == 'active')
     assert foo_mount is not None
     assert foo_mount.permissions == 'rw'
     assert foo_vol is not None
+    assert not foo_vol.isHostPath
     assert _(foo_vol).attachedState == 'inactive'
 
     bar_vol = wait_for_condition(
@@ -564,23 +563,10 @@ def test_docker_volumes(docker_client, super_client):
     assert bar_mount.permissions == 'rw'
     assert bar_vol is not None
     assert _(bar_vol).attachedState == 'inactive'
-
-    baz_vol = wait_for_condition(
-        docker_client, baz_vol, lambda x: x.state == 'active')
-    assert baz_mount is not None
-    assert baz_mount.permissions == 'ro'
-    assert baz_vol is not None
-    assert _(baz_vol).attachedState == 'inactive'
-
-    assert not foo_vol.isHostPath
-
     assert bar_vol.isHostPath
     # We use 'in' instead of '==' because Docker uses the fully qualified
     # non-linked path and it might look something like: /mnt/sda1/<path>
     assert bar_host_path in bar_vol.uri
-
-    assert baz_vol.isHostPath
-    assert baz_host_path in baz_vol.uri
 
     c2 = docker_client.create_container(name="volumes_from_test",
                                         imageUuid=uuid,
@@ -592,7 +578,7 @@ def test_docker_volumes(docker_client, super_client):
 
     c2 = super_client.wait_success(c2.start())
     c2_mounts = c2.mounts()
-    assert len(c2_mounts) == 3
+    assert len(c2_mounts) == 2
 
     for mount in c2_mounts:
         assert mount.instance().id == c2.id
@@ -600,15 +586,12 @@ def test_docker_volumes(docker_client, super_client):
             assert mount.volumeId == foo_vol.id
         elif mount.path == '/bar':
             assert mount.volumeId == bar_vol.id
-        elif mount.path == '/baz':
-            assert mount.volumeId == baz_vol.id
 
     c = docker_client.wait_success(c.stop(remove=True, timeout=0))
     c2 = docker_client.wait_success(c2.stop(remove=True, timeout=0))
 
     _check_path(foo_vol, True, docker_client, super_client)
     _check_path(bar_vol, True, docker_client, super_client)
-    _check_path(baz_vol, True, docker_client, super_client)
 
     docker_client.wait_success(c.purge())
     docker_client.wait_success(c2.purge())
@@ -623,12 +606,6 @@ def test_docker_volumes(docker_client, super_client):
     bar_vol = docker_client.wait_success(bar_vol.purge())
     # Host bind mount. Wont actually delete the dir on the host.
     _check_path(bar_vol, True, docker_client, super_client)
-
-    baz_vol = wait_for_condition(
-        docker_client, baz_vol, lambda x: x.state == 'removed')
-    baz_vol = docker_client.wait_success(baz_vol.purge())
-    # Host bind mount. Wont actually delete the dir on the host.
-    _check_path(baz_vol, True, docker_client, super_client)
 
 
 @if_docker
@@ -675,7 +652,7 @@ def test_container_fields(docker_client, super_client):
                                        dns=['8.8.8.8', '1.2.3.4'],
                                        privileged=True,
                                        domainName="rancher.io",
-                                       memory=8000000,
+                                       memory=12000000,
                                        memorySwap=16000000,
                                        cpuSet="0,1",
                                        stdinOpen=True,
@@ -700,8 +677,8 @@ def test_container_fields(docker_client, super_client):
     assert set(actual_dns) == set(['8.8.8.8', '1.2.3.4', 'rancher.internal'])
     assert c.data['dockerInspect']['HostConfig']['Privileged']
     assert c.data['dockerInspect']['Config']['Domainname'] == "rancher.io"
-    assert c.data['dockerInspect']['Config']['Memory'] == 8000000
-    assert c.data['dockerInspect']['Config']['MemorySwap'] == 16000000
+    assert c.data['dockerInspect']['Config']['Memory'] == 12000000
+    # assert c.data['dockerInspect']['Config']['MemorySwap'] == 16000000
     assert c.data['dockerInspect']['Config']['Cpuset'] == "0,1"
     assert c.data['dockerInspect']['Config']['Tty']
     assert c.data['dockerInspect']['Config']['OpenStdin']
@@ -740,11 +717,10 @@ def volume_cleanup_setup(docker_client, uuid, strategy=None):
     vol_name = random_str()
     c = docker_client.create_container(name="volume_cleanup_test",
                                        imageUuid=uuid,
-                                       startOnCreate=False,
-                                       dataVolumes=['%s:/foo' % vol_name],
+                                       dataVolumes=['/tmp/foo',
+                                                    '%s:/foo' % vol_name],
                                        labels=labels)
     c = docker_client.wait_success(c)
-    c = docker_client.wait_success(c.start())
     if strategy:
         assert c.labels[VOLUME_CLEANUP_LABEL] == strategy
 
@@ -765,24 +741,25 @@ def volume_cleanup_setup(docker_client, uuid, strategy=None):
 
 @if_docker
 def test_cleanup_volume_strategy(docker_client):
-    # Using nginx because it has a baked in volume, which is a good test case
-    uuid = 'docker:nginx:1.9.0'
-
-    c, named_vol, unnamed_vol = volume_cleanup_setup(docker_client, uuid)
+    c, named_vol, unnamed_vol = volume_cleanup_setup(docker_client,
+                                                     TEST_IMAGE_UUID)
     assert docker_client.wait_success(named_vol).state == 'inactive'
     assert docker_client.wait_success(unnamed_vol).state == 'removed'
 
-    c, named_vol, unnamed_vol = volume_cleanup_setup(docker_client, uuid,
+    c, named_vol, unnamed_vol = volume_cleanup_setup(docker_client,
+                                                     TEST_IMAGE_UUID,
                                                      strategy='unnamed')
     assert docker_client.wait_success(named_vol).state == 'inactive'
     assert docker_client.wait_success(unnamed_vol).state == 'removed'
 
-    c, named_vol, unnamed_vol = volume_cleanup_setup(docker_client, uuid,
+    c, named_vol, unnamed_vol = volume_cleanup_setup(docker_client,
+                                                     TEST_IMAGE_UUID,
                                                      strategy='none')
     assert docker_client.wait_success(named_vol).state == 'inactive'
     assert docker_client.wait_success(unnamed_vol).state == 'inactive'
 
-    c, named_vol, unnamed_vol = volume_cleanup_setup(docker_client, uuid,
+    c, named_vol, unnamed_vol = volume_cleanup_setup(docker_client,
+                                                     TEST_IMAGE_UUID,
                                                      strategy='all')
     assert docker_client.wait_success(named_vol).state == 'removed'
     assert docker_client.wait_success(unnamed_vol).state == 'removed'
@@ -969,6 +946,7 @@ def test_service_link_emu_docker_link(super_client, docker_client):
 
 
 @if_docker
+@pytest.mark.nonparallel
 def test_delete_network_agent(super_client, docker_client):
     # Create a container so we know the network agent is in use
     c1 = docker_client.create_container(imageUuid=TEST_IMAGE_UUID)
@@ -1004,7 +982,7 @@ def test_service_links_with_no_ports(docker_client):
     assert env.state == "active"
 
     server = docker_client.create_service(name='server', launchConfig={
-        'imageUuid': 'docker:busybox',
+        'imageUuid': TEST_IMAGE_UUID,
         'stdinOpen': True,
         'tty': True,
     }, environmentId=env.id)
@@ -1012,7 +990,7 @@ def test_service_links_with_no_ports(docker_client):
     assert server.state == 'inactive'
 
     service = docker_client.create_service(name='client', launchConfig={
-        'imageUuid': 'docker:busybox',
+        'imageUuid': TEST_IMAGE_UUID,
         'stdinOpen': True,
         'tty': True,
     }, environmentId=env.id)

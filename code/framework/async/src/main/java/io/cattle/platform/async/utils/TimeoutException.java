@@ -5,7 +5,7 @@ public class TimeoutException extends RuntimeException {
     private static final long serialVersionUID = -6006003990363888144L;
 
     public TimeoutException() {
-        super();
+        super("Timeout");
     }
 
     public TimeoutException(String message, Throwable cause) {

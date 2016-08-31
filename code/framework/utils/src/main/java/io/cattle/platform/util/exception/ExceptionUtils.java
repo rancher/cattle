@@ -35,4 +35,14 @@ public class ExceptionUtils {
         return writer.toString();
     }
 
+    public static Throwable getRootCause(Throwable t) {
+        /* Specifically recursive so that if we get a loop it will create a stack overflow,
+           not an infinite loop */
+        if (t == null) {
+            return null;
+        }
+        Throwable cause = t.getCause();
+        return cause == null ? t : getRootCause(cause);
+    }
+
 }

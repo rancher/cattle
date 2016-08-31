@@ -14,7 +14,7 @@ import org.apache.commons.lang3.tuple.Pair;
 public class AllocationCandidate {
 
     String id = UUID.randomUUID().toString();
-    Set<Long> hosts = new HashSet<Long>();
+    Long host;
     Map<Long, Long> subnetIds = new HashMap<Long, Long>();
     Map<Long, Set<Long>> pools = new HashMap<Long, Set<Long>>();
     ObjectManager objectManager;
@@ -25,7 +25,7 @@ public class AllocationCandidate {
     }
 
     public AllocationCandidate(AllocationCandidate candidate) {
-        this.hosts = candidate.hosts == null ? null : new HashSet<Long>(candidate.hosts);
+        this.host = candidate.host;
         this.subnetIds = candidate.subnetIds == null ? null : new HashMap<Long, Long>(candidate.subnetIds);
         this.pools = candidate.pools == null ? null : new HashMap<Long, Set<Long>>(candidate.pools);
         this.objectManager = candidate.objectManager;
@@ -37,10 +37,7 @@ public class AllocationCandidate {
         super();
         this.objectManager = objectManager;
         this.resources = resources;
-        this.hosts = new HashSet<Long>();
-        if (hostId != null) {
-            this.hosts.add(hostId);
-        }
+        this.host = hostId;
         this.pools = new HashMap<Long, Set<Long>>();
 
         for (Map.Entry<Long, Long> entry : pools.entrySet()) {
@@ -75,12 +72,12 @@ public class AllocationCandidate {
         this.id = id;
     }
 
-    public Set<Long> getHosts() {
-        return hosts;
+    public Long getHost() {
+        return host;
     }
 
-    public void setHosts(Set<Long> hosts) {
-        this.hosts = hosts;
+    public void setHost(Long host) {
+        this.host = host;
     }
 
     public Map<Long, Set<Long>> getPools() {

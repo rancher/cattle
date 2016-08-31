@@ -53,7 +53,7 @@ public class OpenLDAPTokenCreator extends OpenLDAPConfigurable implements TokenC
             throw new ClientVisibleException(ResponseCodes.SERVICE_UNAVAILABLE, "OpenLDAPConfig", "OpenLDAPConfig is not Configured.", null);
         }
         String code = ObjectUtils.toString(requestBody.get(SecurityConstants.CODE));
-        String[] split = code.split(":");
+        String[] split = code.split(":", 2);
         if (split.length != 2) {
             throw new ClientVisibleException(ResponseCodes.FORBIDDEN);
         }

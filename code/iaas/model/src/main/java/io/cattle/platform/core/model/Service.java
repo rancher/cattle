@@ -138,13 +138,13 @@ public interface Service extends java.io.Serializable {
 	/**
 	 * Setter for <code>cattle.service.environment_id</code>.
 	 */
-	public void setEnvironmentId(java.lang.Long value);
+	public void setStackId(java.lang.Long value);
 
 	/**
 	 * Getter for <code>cattle.service.environment_id</code>.
 	 */
 	@javax.persistence.Column(name = "environment_id", precision = 19)
-	public java.lang.Long getEnvironmentId();
+	public java.lang.Long getStackId();
 
 	/**
 	 * Setter for <code>cattle.service.vip</code>.

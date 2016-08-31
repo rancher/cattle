@@ -1,6 +1,6 @@
 package io.cattle.platform.servicediscovery.api.util;
 
-import io.cattle.platform.core.model.Environment;
+import io.cattle.platform.core.model.Stack;
 import io.cattle.platform.core.model.Service;
 
 import java.util.ArrayList;
@@ -21,26 +21,26 @@ public class ServiceDiscoveryDnsUtil {
         return RANCHER_NAMESPACE;
     }
 
-    private static String getLaunchConfigNamespace(Environment stack, Service service, String launchConfigName) {
+    private static String getLaunchConfigNamespace(Stack stack, Service service, String launchConfigName) {
         return new StringBuilder().append(launchConfigName).append(".").append(getStackNamespace(stack, service))
                 .toString().toLowerCase();
     }
 
-    public static String getServiceNamespace(Environment stack, Service service) {
+    public static String getServiceNamespace(Stack stack, Service service) {
         return new StringBuilder().append(service.getName()).append(".").append(getStackNamespace(stack, service))
                 .toString().toLowerCase();
     }
 
-    public static String getStackNamespace(Environment stack, Service service) {
+    public static String getStackNamespace(Stack stack, Service service) {
         return new StringBuilder().append(stack.getName()).append(".")
                 .append(getGlobalNamespace(service)).toString().toLowerCase();
     }
 
-    public static String getFqdn(Environment stack, Service service, String launchConfigName) {
+    public static String getFqdn(Stack stack, Service service, String launchConfigName) {
         return getLaunchConfigNamespace(stack, service, launchConfigName).toLowerCase() + ".";
     }
 
-    public static String getDnsName(Service service, Environment stack, String linkName,
+    public static String getDnsName(Service service, Stack stack, String linkName,
             String dnsPrefix, boolean self) {
 
         if (!StringUtils.isEmpty(linkName)) {
@@ -57,7 +57,7 @@ public class ServiceDiscoveryDnsUtil {
         return ServiceDiscoveryDnsUtil.getFqdn(stack, service, dnsName);
     }
 
-    public static List<String> getNamespaces(Environment stack, Service service, String launchConfigName) {
+    public static List<String> getNamespaces(Stack stack, Service service, String launchConfigName) {
         List<String> toReturn = new ArrayList<>();
         toReturn.add(getStackNamespace(stack, service));
         toReturn.add(getGlobalNamespace(service));

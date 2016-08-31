@@ -40,8 +40,8 @@ public class ApiRequest {
     Object requestObject;
     Map<String, Object> requestParams;
     String requestUrl;
-    String requestVersion;
-    String apiVersion;
+    String version;
+    String schemaVersion;
     String responseUrlBase;
     String responseFormat;
     String responseContentType;
@@ -73,8 +73,8 @@ public class ApiRequest {
         this.requestObject = request.getRequestObject();
         this.requestParams = request.getRequestParams();
         this.requestUrl = request.getRequestUrl();
-        this.requestVersion = request.getRequestVersion();
-        this.apiVersion = request.getApiVersion();
+        this.version = request.getVersion();
+        this.schemaVersion = request.getSchemaVersion();
         this.responseUrlBase = request.getResponseUrlBase();
         this.responseFormat = request.getResponseFormat();
         this.responseContentType = request.getResponseContentType();
@@ -92,9 +92,8 @@ public class ApiRequest {
         this.subContext = request.getSubContext();
     }
 
-    public ApiRequest(String apiVersion, ApiServletContext requestServletContext, SchemaFactory schemaFactory) {
+    public ApiRequest(ApiServletContext requestServletContext, SchemaFactory schemaFactory) {
         super();
-        this.apiVersion = apiVersion;
         this.apiServletContext = requestServletContext;
         this.locale = requestServletContext == null ? null : requestServletContext.getRequest().getLocale();
         this.schemaFactory = schemaFactory;
@@ -112,8 +111,8 @@ public class ApiRequest {
         responseObject = null;
         requestObject = null;
         requestParams = null;
-        requestVersion = null;
-        apiVersion = null;
+        version = null;
+        schemaVersion = null;
         startTime = System.currentTimeMillis();
         conditions = new LinkedHashMap<String, List<Condition>>();
         sort = null;
@@ -249,12 +248,12 @@ public class ApiRequest {
         this.responseUrlBase = responseUrlBase;
     }
 
-    public String getRequestVersion() {
-        return requestVersion;
+    public String getVersion() {
+        return version;
     }
 
-    public void setRequestVersion(String requestVersion) {
-        this.requestVersion = requestVersion;
+    public void setVersion(String version) {
+        this.version = version;
     }
 
     public String getResponseFormat() {
@@ -310,14 +309,6 @@ public class ApiRequest {
 
     public void setUrlBuilder(UrlBuilder urlWriter) {
         this.urlBuilder = urlWriter;
-    }
-
-    public String getApiVersion() {
-        return apiVersion;
-    }
-
-    public void setApiVersion(String apiVersion) {
-        this.apiVersion = apiVersion;
     }
 
     public Map<String, List<Condition>> getConditions() {
@@ -413,4 +404,16 @@ public class ApiRequest {
     public String toString() {
         return requestUrl == null ? "" : requestUrl;
     }
+
+    public String getSchemaVersion() {
+        if (schemaVersion == null) {
+            return version;
+        }
+        return schemaVersion;
+    }
+
+    public void setSchemaVersion(String schemaVersion) {
+        this.schemaVersion = schemaVersion;
+    }
+
 }

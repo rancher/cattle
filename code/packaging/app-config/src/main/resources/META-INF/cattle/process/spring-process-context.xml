@@ -220,62 +220,62 @@
         </property>
     </bean>
 
-    <bean class="io.cattle.platform.docker.process.environment.DockerComposeEnvironmentHandler"
-        p:name="DockerComposeEnvironmentHandler"
+    <bean class="io.cattle.platform.docker.process.stack.DockerComposeStackHandler"
+        p:name="DockerComposeStackHandler"
         p:commandName="composeProject.create"
-        p:dataTypeClass="io.cattle.platform.core.model.Environment"
-        p:processNames="environment.create"
-        p:errorChainProcess="environment.error" >
+        p:dataTypeClass="io.cattle.platform.core.model.Stack"
+        p:processNames="stack.create"
+        p:errorChainProcess="stack.error" >
         <property name="priority">
             <util:constant static-field="io.cattle.platform.util.type.Priority.DEFAULT"/>
         </property>
     </bean>
 
-    <bean class="io.cattle.platform.process.environment.EnvironmentAgentHandler"
-        p:name="EnvironmentAgentHandler"
+    <bean class="io.cattle.platform.process.stack.StackAgentHandler"
+        p:name="StackAgentHandler"
         p:commandName="kubernetesStack.create"
-        p:dataTypeClass="io.cattle.platform.core.model.Environment"
-        p:processNames="environment.create"
-        p:environmentKind="kubernetesStack"
+        p:dataTypeClass="io.cattle.platform.core.model.Stack"
+        p:processNames="stack.create"
+        p:stackKind="kubernetesStack"
         p:agentService="io.rancher.container.agent_service.kubernetes_stack"
-        p:errorChainProcess="environment.error" >
+        p:errorChainProcess="stack.error" >
         <property name="priority">
             <util:constant static-field="io.cattle.platform.util.type.Priority.DEFAULT"/>
         </property>
     </bean>
 
-    <bean class="io.cattle.platform.process.environment.EnvironmentAgentHandler"
-        p:name="EnvironmentAgentHandler"
+    <bean class="io.cattle.platform.process.stack.StackAgentHandler"
+        p:name="StackAgentHandler"
         p:commandName="kubernetesStack.rollback"
-        p:dataTypeClass="io.cattle.platform.core.model.Environment"
-        p:environmentKind="kubernetesStack"
+        p:dataTypeClass="io.cattle.platform.core.model.Stack"
+        p:stackKind="kubernetesStack"
         p:agentService="io.rancher.container.agent_service.kubernetes_stack"
-        p:processNames="environment.rollback" >
+        p:processNames="stack.rollback" >
         <property name="priority">
             <util:constant static-field="io.cattle.platform.util.type.Priority.DEFAULT"/>
         </property>
     </bean>
 
-    <bean class="io.cattle.platform.process.environment.EnvironmentAgentHandler"
-        p:name="EnvironmentAgentHandler"
+    <bean class="io.cattle.platform.process.stack.StackAgentHandler"
+        p:name="StackAgentHandler"
         p:commandName="kubernetesStack.finishupgrade"
-        p:dataTypeClass="io.cattle.platform.core.model.Environment"
-        p:environmentKind="kubernetesStack"
+        p:dataTypeClass="io.cattle.platform.core.model.Stack"
+        p:stackKind="kubernetesStack"
         p:agentService="io.rancher.container.agent_service.kubernetes_stack"
-        p:processNames="environment.finishupgrade" >
+        p:processNames="stack.finishupgrade" >
         <property name="priority">
             <util:constant static-field="io.cattle.platform.util.type.Priority.DEFAULT"/>
         </property>
     </bean>
 
-    <bean class="io.cattle.platform.process.environment.EnvironmentAgentHandler"
-        p:name="EnvironmentAgentHandler"
+    <bean class="io.cattle.platform.process.stack.StackAgentHandler"
+        p:name="StackAgentHandler"
         p:commandName="kubernetesStack.upgrade"
-        p:dataTypeClass="io.cattle.platform.core.model.Environment"
-        p:environmentKind="kubernetesStack"
+        p:dataTypeClass="io.cattle.platform.core.model.Stack"
+        p:stackKind="kubernetesStack"
         p:agentService="io.rancher.container.agent_service.kubernetes_stack"
-        p:processNames="environment.upgrade"
-        p:errorChainProcess="environment.cancelupgrade" >
+        p:processNames="stack.upgrade"
+        p:errorChainProcess="stack.cancelupgrade" >
         <property name="processDataKeys" >
             <list>
                 <value>templates</value>
@@ -288,13 +288,13 @@
         </property>
     </bean>
 
-    <bean class="io.cattle.platform.process.environment.EnvironmentAgentHandler"
-        p:name="EnvironmentAgentHandler"
+    <bean class="io.cattle.platform.process.stack.StackAgentHandler"
+        p:name="StackAgentHandler"
         p:commandName="kubernetesStack.remove"
-        p:dataTypeClass="io.cattle.platform.core.model.Environment"
-        p:environmentKind="kubernetesStack"
+        p:dataTypeClass="io.cattle.platform.core.model.Stack"
+        p:stackKind="kubernetesStack"
         p:agentService="io.rancher.container.agent_service.kubernetes_stack"
-        p:processNames="environment.remove" >
+        p:processNames="stack.remove" >
         <property name="priority">
             <util:constant static-field="io.cattle.platform.util.type.Priority.DEFAULT"/>
         </property>
@@ -302,17 +302,6 @@
 
     <bean class="io.cattle.platform.process.instance.PostInstancePurge"
         p:commandName="compute.instance.remove" >
-    </bean>
-
-    <bean class="io.cattle.platform.process.common.handler.AgentBasedProcessHandler"
-        p:shouldContinue="true"
-        p:name="AgentConnectionClose"
-        p:commandName="agent.close"
-        p:shortCircuitIfAgentRemoved="true"
-        p:processNames="agent.deactivate,agent.remove" >
-        <property name="priority">
-            <util:constant static-field="io.cattle.platform.util.type.Priority.PRE"/>
-        </property>
     </bean>
 
     <bean class="io.cattle.platform.process.common.spring.GenericResourceProcessDefinitionCollector" />
@@ -369,10 +358,13 @@
     <process:process name="ipaddress.disassociate" resourceType="ipAddress" start="associating,associated" transitioning="disassociating" done="active" />
 
     <!-- Agent -->
-    <process:defaultProcesses resourceType="agent" exclude="agent.deactivate" />
-    <process:process name="agent.deactivate" resourceType="agent" start="active,activating,reconnecting,updating-active,updating-inactive" 
+    <process:defaultProcesses resourceType="agent" exclude="agent.deactivate,agent.remove" />
+    <process:process name="agent.remove" resourceType="agent" start="disconnecting,disconnected,requested,inactive,registering,updating-active,updating-inactive"
+                                            transitioning="removing" done="removed" />
+    <process:process name="agent.deactivate" resourceType="agent" start="disconnecting,disconnected,active,activating,reconnecting,updating-active,updating-inactive"
                                             transitioning="deactivating" done="inactive" />
-    <process:process name="agent.reconnect" resourceType="agent" start="active,activating" transitioning="reconnecting" done="active" />
+    <process:process name="agent.reconnect" resourceType="agent" start="disconnecting,disconnected,active,activating" transitioning="reconnecting" done="active" />
+    <process:process name="agent.disconnect" resourceType="agent" start="reconnecting,active" transitioning="disconnecting" done="disconnected" />
 
 
     <!-- Credential -->
@@ -401,6 +393,7 @@
     <process:process name="instance.updatereinitializing" resourceType="instance" stateField="healthState" start="healthy" transitioning="updating-reinitializing" done="reinitializing" />
     <process:process name="instance.error" resourceType="instance" start="creating,stopped" transitioning="erroring" done="error" />
     <process:process name="instance.remove" resourceType="instance" start="requested,creating,updating-running,updating-stopped,stopped,erroring,error" transitioning="removing" done="removed" />
+    <process:process name="instance.stop" resourceType="instance" start="creating,running,starting,restarting,updating-running,updating-stopped" transitioning="stopping" done="stopped" />
 
     <!-- Volume -->
     <process:defaultProcesses resourceType="volume" exclude="volume.activate"/>
@@ -434,16 +427,16 @@
     <process:process name="physicalhost.update" resourceType="physicalHost" start="active" transitioning="updating" done="active" />
     <process:process name="physicalhost.error" resourceType="physicalHost" start="creating, bootstrapping, updating" transitioning="erroring" done="error" />
 
-    <!-- Service Discovery Environment -->
-    <process:process name="environment.create" resourceType="environment" start="requested" transitioning="activating" done="active" />
-    <process:process name="environment.update" resourceType="environment" start="active" transitioning="updating-active" done="active" />
-    <process:process name="environment.remove" resourceType="environment" start="requested, active, activating, updating-active, error, erroring, upgrading, canceling-upgrade, canceling-rollback, rolling-back, finishing-upgrade, upgraded, canceled-upgrade" transitioning="removing" done="removed" />
-    <process:process name="environment.error" resourceType="environment" start="activating" transitioning="erroring" done="error" />
-    <process:process name="environment.upgrade" resourceType="environment" start="active" transitioning="upgrading" done="upgraded" />
-    <process:process name="environment.cancelupgrade" resourceType="environment" start="upgrading,finishing-upgrade" transitioning="canceling-upgrade" done="canceled-upgrade" />
-    <process:process name="environment.rollback" resourceType="environment" start="upgraded,canceled-upgrade" transitioning="rolling-back" done="active" />
-    <process:process name="environment.cancelrollback" resourceType="environment" start="rolling-back" transitioning="canceling-rollback" done="canceled-upgrade" />
-    <process:process name="environment.finishupgrade" resourceType="environment" start="upgraded,canceled-upgrade" transitioning="finishing-upgrade" done="active" />
+    <!-- Stack -->
+    <process:process name="stack.create" resourceType="stack" start="requested" transitioning="activating" done="active" />
+    <process:process name="stack.update" resourceType="stack" start="active" transitioning="updating-active" done="active" />
+    <process:process name="stack.remove" resourceType="stack" start="requested, active, activating, updating-active, error, erroring, upgrading, canceling-upgrade, canceling-rollback, rolling-back, finishing-upgrade, upgraded, canceled-upgrade" transitioning="removing" done="removed" />
+    <process:process name="stack.error" resourceType="stack" start="activating" transitioning="erroring" done="error" />
+    <process:process name="stack.upgrade" resourceType="stack" start="active" transitioning="upgrading" done="upgraded" />
+    <process:process name="stack.cancelupgrade" resourceType="stack" start="upgrading,finishing-upgrade" transitioning="canceling-upgrade" done="canceled-upgrade" />
+    <process:process name="stack.rollback" resourceType="stack" start="upgraded,canceled-upgrade" transitioning="rolling-back" done="active" />
+    <process:process name="stack.cancelrollback" resourceType="stack" start="rolling-back" transitioning="canceling-rollback" done="canceled-upgrade" />
+    <process:process name="stack.finishupgrade" resourceType="stack" start="upgraded,canceled-upgrade" transitioning="finishing-upgrade" done="active" />
 
     
     <!-- Service Discovery Service -->
@@ -556,6 +549,7 @@
     <bean class="io.cattle.platform.docker.machine.launch.MachineLauncher" />
     <bean class="io.cattle.platform.docker.machine.launch.ComposeExecutorLauncher" />
     <bean class="io.cattle.platform.docker.machine.launch.CatalogLauncher" />
+    <bean class="io.cattle.platform.docker.machine.launch.TelemetryLauncher" />
     
     <process:defaultProcesses resourceType="externalHandler" />
     <process:defaultProcesses resourceType="externalHandlerProcess" />

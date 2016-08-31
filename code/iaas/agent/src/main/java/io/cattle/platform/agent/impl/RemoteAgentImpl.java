@@ -27,7 +27,7 @@ public class RemoteAgentImpl implements RemoteAgent {
 
     private static final DynamicLongProperty AGENT_DEFAULT_TIMEOUT = ArchaiusUtil.getLong("agent.timeout.millis");
     private static final DynamicIntProperty AGENT_RETRIES = ArchaiusUtil.getInt("agent.retries");
-    private static final Set<String> FRIENDLY_REPLY = new HashSet<>(Arrays.asList("ping", "compute.instance.activate"));
+    private static final Set<String> FRIENDLY_REPLY = new HashSet<>(Arrays.asList("compute.instance.activate"));
 
     JsonMapper jsonMapper;
     ObjectManager objectManager;

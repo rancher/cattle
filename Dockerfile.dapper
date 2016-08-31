@@ -1,0 +1,57 @@
+FROM ubuntu:14.04.3
+
+ENV DAPPER_RUN_ARGS --privileged
+ENV DAPPER_SOURCE /usr/src/cattle
+WORKDIR ${DAPPER_SOURCE}
+
+# Install Java and Python
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends openjdk-7-jdk maven python-pip  && \
+    # Hack to work around overlay issue && \
+    pip uninstall -y py >/dev/null >/dev/null 2>&1 || true && \
+    pip install --upgrade pip==6.0.3 tox==1.8.1 virtualenv==12.0.4
+
+# Install MySQL
+RUN DEBIAN_FRONTEND=noninteractive apt-get -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confold" install -y mysql-server
+
+# Build Tools
+ENV BUILD_TOOLS_VERSION 0.3.1
+RUN apt-get install -y curl
+RUN mkdir /tmp/build-tools && \
+    cd /tmp/build-tools && \
+    curl -sSL -o build-tools.tar.gz https://github.com/rancherio/build-tools/archive/v${BUILD_TOOLS_VERSION}.tar.gz && \
+    tar -xzvf build-tools.tar.gz && cp ./build-tools-${BUILD_TOOLS_VERSION}/bin/* /usr/local/bin && \
+    rm -rf /tmp/build-tools
+
+# Setup MySQL
+ENV CATTLE_DB_CATTLE_MYSQL_PORT 13306
+RUN sed -i  -e "0,/3306/! {0,/3306/ s/3306/${CATTLE_DB_CATTLE_MYSQL_PORT}/}" \
+    -e 's/^#\(max_connections.*\)/\1/;s/100$/1000/' \
+    -e '/^log_error.*$/a innodb_flush_log_at_trx_commit = 0' \
+    -e '/^max_connections.*$/a sql_mode = ONLY_FULL_GROUP_BY' /etc/mysql/my.cnf
+
+# Cache Maven stuff
+RUN apt-get install -y git && \
+    cd /tmp && \
+    git clone https://github.com/rancher/cattle.git && \
+    cd cattle && \
+    git checkout v0.160.0 && \
+    mvn package && \
+    ./scripts/checkstyle && \
+    cd .. && \
+    rm -rf cattle
+
+# Install Docker
+RUN apt-get install -y iptables && \
+    curl -o /usr/bin/docker -sL -f https://get.docker.com/builds/Linux/x86_64/docker-1.10.3 && \
+    chmod +x /usr/bin/docker
+
+# Cache binaries
+RUN apt-get install -y xz-utils
+COPY ./resources/content/cattle-global.properties ${DAPPER_SOURCE}/resources/content/
+RUN bash -x cattle-binary-pull
+
+VOLUME /var/lib/docker
+
+ENTRYPOINT ["./scripts/entry"]
+CMD ["ci"]

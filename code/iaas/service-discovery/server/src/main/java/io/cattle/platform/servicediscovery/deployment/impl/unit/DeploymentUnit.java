@@ -4,7 +4,7 @@ import io.cattle.platform.allocator.constraint.AffinityConstraintDefinition.Affi
 import io.cattle.platform.allocator.constraint.ContainerLabelAffinityConstraint;
 import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.InstanceConstants;
-import io.cattle.platform.core.model.Environment;
+import io.cattle.platform.core.model.Stack;
 import io.cattle.platform.core.model.Host;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.Service;
@@ -400,7 +400,7 @@ public class DeploymentUnit {
         if (!ServiceDiscoveryConstants.PRIMARY_LAUNCH_CONFIG_NAME.equals(instance.getLaunchConfigName())) {
             serviceName = serviceName + '/' + instance.getLaunchConfigName();
         }
-        String envName = context.objectManager.loadResource(Environment.class, instance.getService().getEnvironmentId())
+        String envName = context.objectManager.loadResource(Stack.class, instance.getService().getStackId())
                 .getName();
         labels.put(ServiceDiscoveryConstants.LABEL_STACK_NAME, envName);
         labels.put(ServiceDiscoveryConstants.LABEL_STACK_SERVICE_NAME, envName + "/" + serviceName);

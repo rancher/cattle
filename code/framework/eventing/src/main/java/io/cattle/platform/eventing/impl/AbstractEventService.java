@@ -247,16 +247,7 @@ public abstract class AbstractEventService implements EventService {
 
     @Override
     public Event callSync(Event event, EventCallOptions options) {
-        try {
-            return AsyncUtils.get(call(event, options));
-        } catch (EventExecutionException e) {
-            /*
-             * This is done so that the exception will have a better stack
-             * trace. Normally the exceptions from a future will have a pretty
-             * sparse stack not giving too much context
-             */
-            throw EventExecutionException.fromEvent(e.getEvent());
-        }
+        return AsyncUtils.get(call(event, options));
     }
 
     @Override

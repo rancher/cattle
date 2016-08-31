@@ -35,11 +35,6 @@
         </dependency>
         <dependency>
             <groupId>io.cattle</groupId>
-            <artifactId>cattle-agent-connection-delegate</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>io.cattle</groupId>
             <artifactId>cattle-iaas-agent-instance</artifactId>
             <version>${project.version}</version>
         </dependency>
@@ -85,22 +80,12 @@
         </dependency>
         <dependency>
             <groupId>io.cattle</groupId>
-            <artifactId>cattle-agent-resources</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>io.cattle</groupId>
             <artifactId>cattle-framework-metrics</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>io.cattle</groupId>
             <artifactId>cattle-config-item-api</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>io.cattle</groupId>
-            <artifactId>cattle-iaas-accounts</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
@@ -147,11 +132,6 @@
         <dependency>
             <groupId>io.cattle</groupId>
             <artifactId>cattle-iaas-agent-server</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>io.cattle</groupId>
-            <artifactId>cattle-agent-connection-event</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>

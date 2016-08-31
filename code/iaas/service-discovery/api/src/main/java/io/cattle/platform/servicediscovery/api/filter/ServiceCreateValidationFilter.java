@@ -6,7 +6,7 @@ import io.cattle.platform.core.addon.ScalePolicy;
 import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.dao.NetworkDao;
-import io.cattle.platform.core.model.Environment;
+import io.cattle.platform.core.model.Stack;
 import io.cattle.platform.core.model.Service;
 import io.cattle.platform.core.util.PortSpec;
 import io.cattle.platform.iaas.api.filter.common.AbstractDefaultResourceManagerFilter;
@@ -201,7 +201,7 @@ public class ServiceCreateValidationFilter extends AbstractDefaultResourceManage
     }
 
     protected void validateEnvironment(Service service) {
-        Environment env = objectManager.loadResource(Environment.class, service.getEnvironmentId());
+        Stack env = objectManager.loadResource(Stack.class, service.getStackId());
         List<String> invalidStates = Arrays.asList(InstanceConstants.STATE_ERROR, CommonStatesConstants.REMOVED,
                 CommonStatesConstants.REMOVING);
         if (invalidStates.contains(env.getState())) {
@@ -348,8 +348,8 @@ public class ServiceCreateValidationFilter extends AbstractDefaultResourceManage
     protected void validateLaunchConfigNames(Service service, String serviceName,
             List<Map<String, Object>> launchConfigs) {
         List<String> usedNames = new ArrayList<>();
-        List<? extends Service> existingSvcs = objectManager.find(Service.class, SERVICE.ENVIRONMENT_ID,
-                service.getEnvironmentId(), SERVICE.REMOVED, null);
+        List<? extends Service> existingSvcs = objectManager.find(Service.class, SERVICE.STACK_ID,
+                service.getStackId(), SERVICE.REMOVED, null);
         for (Service existingSvc : existingSvcs) {
             if (existingSvc.getId().equals(service.getId())) {
                 continue;

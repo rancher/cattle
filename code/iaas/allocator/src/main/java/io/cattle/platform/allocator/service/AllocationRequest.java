@@ -11,7 +11,6 @@ public class AllocationRequest {
     Type type;
     Event event;
     long resourceId;
-    boolean sendReply = true;
 
     public AllocationRequest(Event event) {
         super();
@@ -34,14 +33,6 @@ public class AllocationRequest {
 
     public long getResourceId() {
         return resourceId;
-    }
-
-    public boolean isSendReply() {
-        return sendReply;
-    }
-
-    public void setSendReply(boolean sendReply) {
-        this.sendReply = sendReply;
     }
 
     public void setType(Type type) {

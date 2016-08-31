@@ -1,6 +1,7 @@
 package io.cattle.platform.systemstack.listener;
 
-import static io.cattle.platform.core.model.tables.EnvironmentTable.*;
+import static io.cattle.platform.core.model.tables.StackTable.*;
+
 import io.cattle.platform.archaius.util.ArchaiusUtil;
 import io.cattle.platform.configitem.events.ConfigUpdate;
 import io.cattle.platform.configitem.model.Client;
@@ -10,8 +11,8 @@ import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.dao.GenericResourceDao;
 import io.cattle.platform.core.dao.HostDao;
 import io.cattle.platform.core.model.Account;
-import io.cattle.platform.core.model.Environment;
-import io.cattle.platform.core.model.tables.records.EnvironmentRecord;
+import io.cattle.platform.core.model.Stack;
+import io.cattle.platform.core.model.tables.records.StackRecord;
 import io.cattle.platform.db.jooq.dao.impl.AbstractJooqDao;
 import io.cattle.platform.eventing.EventService;
 import io.cattle.platform.eventing.annotation.AnnotatedEventListener;
@@ -33,6 +34,7 @@ import io.cattle.platform.util.type.CollectionUtils;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -57,6 +59,11 @@ public class SystemStackUpdate extends AbstractJooqDao implements AnnotatedEvent
     public static final String MESOS_STACK = "mesos";
     public static final String PUBLIC_DNS_STACK = "publicDns";
     public static final String VIRTUAL_MACHINE_STACK = "virtualMachine";
+
+    public static final Map<String, String> ALTERNATIVE_NAME = new HashMap<>();
+    static {
+        ALTERNATIVE_NAME.put(KUBERNETES_STACK, "k8s");
+    }
 
     public static final String[] STACKS = new String[] { SWARM_STACK, KUBERNETES_STACK, MESOS_STACK, PUBLIC_DNS_STACK,
             VIRTUAL_MACHINE_STACK };
@@ -137,7 +144,7 @@ public class SystemStackUpdate extends AbstractJooqDao implements AnnotatedEvent
     }
 
     protected boolean addStack(Account account, String stack) throws IOException {
-        Environment env = getStack(account, stack);
+        Stack env = getStack(account, stack);
         if (env != null && CommonStatesConstants.REMOVING.equals(env.getState())) {
             /* Stack is deleting, so just wait */
             return false;
@@ -172,26 +179,34 @@ public class SystemStackUpdate extends AbstractJooqDao implements AnnotatedEvent
         }
 
         Map<Object, Object> data = CollectionUtils.asMap(
-                (Object)ENVIRONMENT.NAME, StringUtils.capitalize(stack),
-                ENVIRONMENT.ACCOUNT_ID, account.getId(),
-                ENVIRONMENT.EXTERNAL_ID, getExternalId(stack, version),
+                (Object)STACK.NAME, StringUtils.capitalize(stack),
+                STACK.ACCOUNT_ID, account.getId(),
+                STACK.EXTERNAL_ID, getExternalId(stack, version, true),
                 ServiceDiscoveryConstants.STACK_FIELD_DOCKER_COMPOSE, compose,
                 ServiceDiscoveryConstants.STACK_FIELD_RANCHER_COMPOSE, rancherCompose,
                 ServiceDiscoveryConstants.STACK_FIELD_START_ON_CREATE, true);
 
-        Map<String, Object> props = objectManager.convertToPropertiesFor(Environment.class, data);
+        Map<String, Object> props = objectManager.convertToPropertiesFor(Stack.class, data);
         props.put("isSystem", true);
-        resourceDao.createAndSchedule(Environment.class, props);
+        resourceDao.createAndSchedule(Stack.class, props);
         return true;
     }
 
-    public static String getExternalId(String stackType, String version) {
+    public static String getExternalId(String stackType, String version, boolean alternativeName) {
+        if (alternativeName && ALTERNATIVE_NAME.containsKey(stackType)) {
+            return String.format(STACK_EXTERNAL_IDS.get(stackType), ALTERNATIVE_NAME.get(stackType), version);
+        }
         return String.format(STACK_EXTERNAL_IDS.get(stackType), stackType, version);
     }
 
     public static String getStackTypeFromExternalId(String externalId) {
         for (String stackType : STACK_EXTERNAL_IDS.keySet()) {
-            if (externalId.startsWith(getExternalId(stackType, ""))) {
+            if (ALTERNATIVE_NAME.containsKey(stackType)) {
+                if (externalId.startsWith(getExternalId(stackType, "", true))) {
+                    return stackType;
+                }
+            }
+            if (externalId.startsWith(getExternalId(stackType, "", false))) {
                 return stackType;
             }
         }
@@ -209,7 +224,9 @@ public class SystemStackUpdate extends AbstractJooqDao implements AnnotatedEvent
     }
 
     protected Template getTemplateFromCatalog(String stack) throws IOException {
-
+        if (ALTERNATIVE_NAME.containsKey(stack)) {
+            stack = ALTERNATIVE_NAME.get(stack);
+        }
         StringBuilder catalogTemplateUrl = new StringBuilder(CATALOG_RESOURCE_URL.get());
         catalogTemplateUrl.append(":").append(stack);
         String minVersion = CATALOG_RESOURCE_VERSION.get();
@@ -260,22 +277,29 @@ public class SystemStackUpdate extends AbstractJooqDao implements AnnotatedEvent
 
     }
 
-    protected Environment getStack(Account account, String stack) {
-        List<? extends Environment> stacks = create()
-                .select(ENVIRONMENT.fields())
-                .from(ENVIRONMENT)
-                .where(ENVIRONMENT.REMOVED.isNull())
-                .and(ENVIRONMENT.ACCOUNT_ID.eq(account.getId()))
-                .and(ENVIRONMENT.EXTERNAL_ID.startsWith(getExternalId(stack, "")))
-                .fetchInto(EnvironmentRecord.class);
+    protected Stack getStack(Account account, String stackType) {
+        List<Stack> stacks = new ArrayList<>();
+        List<String> externalIds = new ArrayList<>();
+        externalIds.add(getExternalId(stackType, "", false));
+        externalIds.add(getExternalId(stackType, "", true));
+        for (String externalId : externalIds) {
+            stacks.addAll(create()
+                .select(STACK.fields())
+                .from(STACK)
+                .where(STACK.REMOVED.isNull())
+                .and(STACK.ACCOUNT_ID.eq(account.getId()))
+                    .and(STACK.EXTERNAL_ID.startsWith(externalId))
+                    .fetchInto(StackRecord.class));
+        }
+
         if (stacks.isEmpty()) {
             return null;
         }
         return stacks.get(0);
     }
 
-    protected void removeStack(Account account, String stack) {
-        Environment env = getStack(account, stack);
+    protected void removeStack(Account account, String stackType) {
+        Stack env = getStack(account, stackType);
         if (env != null) {
             processManager.scheduleStandardProcess(StandardProcess.REMOVE, env, null);
         }

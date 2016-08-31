@@ -13,14 +13,11 @@ public class VolumeValidStoragePoolConstraint extends HardConstraint implements 
     Set<Long> storagePools = new HashSet<Long>();
     boolean exactMatch;
 
-    public VolumeValidStoragePoolConstraint(Volume volume, boolean exactMatch) {
+    public VolumeValidStoragePoolConstraint(Volume volume, boolean exactMatch, Set<Long> storagePoolIds) {
         super();
         this.volume = volume;
+        this.storagePools = storagePoolIds;
         this.exactMatch = exactMatch;
-    }
-
-    public Set<Long> getStoragePools() {
-        return storagePools;
     }
 
     @Override
@@ -46,7 +43,7 @@ public class VolumeValidStoragePoolConstraint extends HardConstraint implements 
 
     @Override
     public String toString() {
-        String matchText = exactMatch ? "have exactly these pool(s): " : "must be one of pool(s)";
+        String matchText = exactMatch ? "must have exactly these pool(s): " : "must be one of pool(s)";
         return String.format("volume [%d] %s %s", volume.getId(), matchText, storagePools);
     }
 

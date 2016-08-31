@@ -50,7 +50,8 @@ def test_inactive_agent(super_client, new_context):
     c = new_context.create_container_no_success()
     assert c.transitioning == 'error'
     assert c.transitioningMessage == \
-        'Scheduling failed: No candidates available'
+        'Scheduling failed: No healthy hosts with sufficient ' \
+        'resources available'
     assert c.state == 'error'
 
 
@@ -306,61 +307,70 @@ def test_vnet_stickiness(super_client, new_context):
 
 def test_port_constraint(new_context):
     host1 = new_context.host
-    host2 = register_simulated_host(new_context.client)
+    client = new_context.client
+    image_uuid = new_context.image_uuid
 
     containers = []
 
     try:
-        c = new_context.create_container(requestedHostId=host1.id,
-                                         ports=['8081:81/tcp'])
+        c = client.wait_success(
+            client.create_container(imageUuid=image_uuid,
+                                    requestedHostId=host1.id,
+                                    ports=['8081:81/tcp']))
         containers.append(c)
 
         # try to deploy another container with same public port + protocol
-        c2 = new_context\
-            .super_create_container_no_success(validHostIds=[host1.id],
-                                               ports=['8081:81/tcp'])
+        c2 = client.wait_transitioning(
+            client.create_container(imageUuid=image_uuid,
+                                    ports=['8081:81/tcp']))
         assert c2.transitioning == 'error'
         assert c2.transitioningMessage == \
             'Scheduling failed: host needs ports 8081/tcp available'
         assert c2.state == 'error'
 
-        # increase host pool and check whether allocator picks other host
-        c2 = new_context.super_create_container(validHostIds=[host1.id,
-                                                              host2.id],
-                                                ports=['8081:81/tcp'])
-        containers.append(c2)
-
         # try different public port
-        c3 = new_context.super_create_container(validHostIds=[host1.id],
+        c3 = new_context.super_create_container(imageUuid=image_uuid,
                                                 ports=['8082:81/tcp'])
         containers.append(c3)
 
         # try different protocol
-        c4 = new_context.super_create_container(validHostIds=[host1.id],
-                                                ports=['8081:81/udp'])
+        c4 = client.wait_success(
+            client.create_container(imageUuid=image_uuid,
+                                    ports=['8081:81/udp']))
         containers.append(c4)
 
-        c5 = new_context\
-            .super_create_container_no_success(validHostIds=[host1.id],
-                                               ports=['8081:81/udp'])
+        # UDP is now taken
+        c5 = client.wait_transitioning(
+            client.create_container(imageUuid=image_uuid,
+                                    ports=['8081:81/udp']))
         assert c5.transitioning == 'error'
         assert c5.transitioningMessage == \
             'Scheduling failed: host needs ports 8081/udp available'
         assert c5.state == 'error'
 
         # try different bind IP
-        c6 = new_context.\
-            super_create_container(validHostIds=[host1.id],
-                                   ports=['127.2.2.2:8081:81/tcp'])
+        c6 = client.wait_success(
+            client.create_container(imageUuid=image_uuid,
+                                    requestedHostId=host1.id,
+                                    ports=['127.2.2.2:8081:81/tcp']))
         containers.append(c6)
 
-        c7 = new_context \
-            .super_create_container_no_success(validHostIds=[host1.id],
-                                               ports=['127.2.2.2:8081:81/tcp'])
+        # Bind IP is now taken
+        c7 = client.wait_transitioning(
+            client.create_container(imageUuid=image_uuid,
+                                    ports=['127.2.2.2:8081:81/tcp']))
         assert c7.transitioning == 'error'
         assert c7.transitioningMessage == \
             'Scheduling failed: host needs ports 8081/tcp available'
         assert c7.state == 'error'
+
+        # increase host pool and check whether allocator picks other host
+        host2 = register_simulated_host(new_context.client)
+        c8 = client.wait_success(
+            client.create_container(imageUuid=image_uuid,
+                                    ports=['8081:81/tcp']))
+        assert c8.hosts()[0].id == host2.id
+        containers.append(c8)
     finally:
         for c in containers:
             if c is not None:
@@ -612,38 +622,38 @@ def test_volumes_from_constraint(new_context):
                                                      dataVolumesFrom=[c3.id])
 
         c4 = c4.start()
-        c3 = c3.start()
-        c4 = new_context.wait_for_state(c4, 'running')
-        c3 = new_context.wait_for_state(c3, 'running')
-        containers.append(c3)
-        containers.append(c4)
-
-        assert c3.hosts()[0].id == c4.hosts()[0].id
+        c4 = new_context.client.wait_transitioning(c4)
+        assert c4.transitioning == 'error'
+        assert c4.transitioningMessage == 'volumeFrom instance is not ' \
+                                          'running : Dependencies readiness' \
+                                          ' error'
     finally:
         for c in containers:
             new_context.delete(c)
 
 
 def test_network_mode_constraint(new_context):
+    client = new_context.client
+
     # Three hosts
     register_simulated_host(new_context)
     register_simulated_host(new_context)
 
     containers = []
     try:
-        c1 = new_context.create_container_no_success(startOnCreate=False)
+        c1 = new_context.create_container(startOnCreate=False)
 
         c2 = new_context.create_container(startOnCreate=False,
                                           networkMode='container',
                                           networkContainerId=c1.id)
 
-        c1 = c1.start()
-        c2 = c2.start()
+        c1 = client.wait_success(c1.start())
+        c2 = client.wait_success(c2.start())
 
-        c1 = new_context.wait_for_state(c1, 'running')
+        assert c1.state == 'running'
         containers.append(c1)
 
-        c2 = new_context.wait_for_state(c2, 'running')
+        assert c1.state == 'running'
         containers.append(c2)
 
         assert c1.hosts()[0].id == c2.hosts()[0].id

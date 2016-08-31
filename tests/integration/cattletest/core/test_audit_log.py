@@ -3,11 +3,17 @@ from copy import deepcopy
 
 
 def made_log(object, admin_user_client, context, accountId=None):
+    t = object.type
+    if t == 'environment':
+        t = 'stack'
     logs = admin_user_client.list_audit_log(resourceId=object.id,
-                                            resourceType=object.type)
+                                            resourceType=t)
     assert len(logs) == 1
-    assert logs[0].resourceType == object.type
-    assert "{}".format(logs[0].resourceId) == object.id
+    assert logs[0].resourceType == t
+    if str(logs[0].resourceId) != object.id:
+        assert str(logs[0].resourceId).replace('1s', '1e') == object.id
+    else:
+        assert str(logs[0].resourceId) == object.id
     if accountId is None:
         assert logs[0].accountId == context.project.id
     else:

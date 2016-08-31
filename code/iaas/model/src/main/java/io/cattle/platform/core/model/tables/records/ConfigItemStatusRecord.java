@@ -15,7 +15,7 @@ package io.cattle.platform.core.model.tables.records;
 })
 public class ConfigItemStatusRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.platform.core.model.tables.records.ConfigItemStatusRecord> implements io.cattle.platform.db.jooq.utils.TableRecordJaxb, org.jooq.Record14<java.lang.Long, java.lang.String, java.lang.Long, java.lang.Long, java.lang.String, java.util.Date, java.util.Date, java.lang.Long, java.lang.Long, java.lang.Long, java.lang.Long, java.lang.String, java.lang.Long, java.lang.Long>, io.cattle.platform.core.model.ConfigItemStatus {
 
-	private static final long serialVersionUID = 394376138;
+	private static final long serialVersionUID = 1375585557;
 
 	/**
 	 * Setter for <code>cattle.config_item_status.id</code>.
@@ -226,7 +226,7 @@ public class ConfigItemStatusRecord extends org.jooq.impl.UpdatableRecordImpl<io
 	 * Setter for <code>cattle.config_item_status.environment_id</code>.
 	 */
 	@Override
-	public void setEnvironmentId(java.lang.Long value) {
+	public void setStackId(java.lang.Long value) {
 		setValue(12, value);
 	}
 
@@ -235,7 +235,7 @@ public class ConfigItemStatusRecord extends org.jooq.impl.UpdatableRecordImpl<io
 	 */
 	@javax.persistence.Column(name = "environment_id", precision = 19)
 	@Override
-	public java.lang.Long getEnvironmentId() {
+	public java.lang.Long getStackId() {
 		return (java.lang.Long) getValue(12);
 	}
 
@@ -389,7 +389,7 @@ public class ConfigItemStatusRecord extends org.jooq.impl.UpdatableRecordImpl<io
 	 */
 	@Override
 	public org.jooq.Field<java.lang.Long> field13() {
-		return io.cattle.platform.core.model.tables.ConfigItemStatusTable.CONFIG_ITEM_STATUS.ENVIRONMENT_ID;
+		return io.cattle.platform.core.model.tables.ConfigItemStatusTable.CONFIG_ITEM_STATUS.STACK_ID;
 	}
 
 	/**
@@ -501,7 +501,7 @@ public class ConfigItemStatusRecord extends org.jooq.impl.UpdatableRecordImpl<io
 	 */
 	@Override
 	public java.lang.Long value13() {
-		return getEnvironmentId();
+		return getStackId();
 	}
 
 	/**
@@ -625,7 +625,7 @@ public class ConfigItemStatusRecord extends org.jooq.impl.UpdatableRecordImpl<io
 	 */
 	@Override
 	public ConfigItemStatusRecord value13(java.lang.Long value) {
-		setEnvironmentId(value);
+		setStackId(value);
 		return this;
 	}
 
@@ -667,7 +667,7 @@ public class ConfigItemStatusRecord extends org.jooq.impl.UpdatableRecordImpl<io
 		setServiceId(from.getServiceId());
 		setResourceId(from.getResourceId());
 		setResourceType(from.getResourceType());
-		setEnvironmentId(from.getEnvironmentId());
+		setStackId(from.getStackId());
 		setHostId(from.getHostId());
 	}
 

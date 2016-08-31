@@ -1,0 +1,66 @@
+{
+    "resourceFields": {
+        "name":{
+            "required": true,
+            "validChars": "a-zA-Z0-9-",
+            "minLength": 1,
+            "maxLength": 63,
+             "attributes" : {
+                "scheduleUpdate" : true
+            }
+        },
+        "dockerCompose":{
+            "type": "string"
+        },
+        "rancherCompose":{
+            "type": "string"
+        },
+        "allowSystemRole":{
+            "type": "boolean",
+            "default": false,
+            "required": false
+        },
+        "environment":{
+            "type": "map[string]"
+        },
+        "previousExternalId":{
+            "type": "string",
+            "nullable": true
+        },
+        "previousEnvironment":{
+            "type": "map[string]",
+            "nullable": true
+        },
+        "startOnCreate": {
+            "type": "boolean",
+            "nullable": true
+        },
+        "outputs":{
+            "type": "map[string]",
+            "nullable": true
+        },
+        "upgrade":{
+            "type": "kubernetesStackUpgrade"
+        }
+    },
+    "resourceActions" : {
+        "upgrade" : {
+            "input" : "stackUpgrade",
+            "output" : "stack"
+        },
+        "addoutputs" : {
+            "input" : "addOutputsInput",
+            "output" : "stack"
+        },
+        "exportconfig" : {
+            "input" : "composeConfigInput",
+            "output" : "composeConfig"
+        },
+        "activateservices" : {
+            "output": "stack"
+        },
+        "deactivateservices" : {
+            "output": "stack"
+        }
+    }
+}

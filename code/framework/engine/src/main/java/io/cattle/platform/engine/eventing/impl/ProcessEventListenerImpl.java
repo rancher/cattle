@@ -15,6 +15,7 @@ import io.cattle.platform.engine.process.util.ProcessEngineUtils;
 import io.cattle.platform.engine.server.ProcessServer;
 import io.cattle.platform.eventing.model.Event;
 import io.cattle.platform.metrics.util.MetricsUtil;
+import io.cattle.platform.util.exception.ExceptionUtils;
 import io.cattle.platform.util.exception.LoggableException;
 
 import java.util.HashMap;
@@ -92,13 +93,22 @@ public class ProcessEventListenerImpl implements ProcessEventListener {
             log.debug("Process canceled [{}:{}] on [{}] : {}", instance.getName(), processId, instance.getResourceId(), e.getMessage());
 
         } catch (Throwable e) {
-            EXCEPTION.inc();
             if (e instanceof LoggableException) {
+                EXCEPTION.inc();
                 ((LoggableException) e).log(log);
             } else {
-                log.error("Unknown exception running process [{}:{}] on [{}]",
-                        instance == null ? null : instance.getName(), processId,
-                        instance == null ? null : instance.getResourceId(), e);
+                Throwable cause = ExceptionUtils.getRootCause(e);
+                if (cause instanceof ProcessCancelException) {
+                    CANCELED.inc();
+                    log.error("Unknown exception running process [{}:{}] on [{}], canceled by [{}]",
+                            instance == null ? null : instance.getName(), processId,
+                            instance == null ? null : instance.getResourceId(), cause.getMessage());
+                } else {
+                    EXCEPTION.inc();
+                    log.error("Unknown exception running process [{}:{}] on [{}]",
+                            instance == null ? null : instance.getName(), processId,
+                            instance == null ? null : instance.getResourceId(), e);
+                }
             }
         }
 

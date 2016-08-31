@@ -331,9 +331,11 @@
     <bean class="io.cattle.platform.iaas.api.manager.HaConfigManager" >
         <property name="configuration" ref="FreemarkerConfig" />
     </bean>
+    <bean class="io.cattle.platform.iaas.api.manager.ServiceManager" />
     <bean class="io.cattle.platform.iaas.api.manager.InstanceManager" />
     <bean class="io.cattle.platform.iaas.api.manager.VolumeManager" />
     <bean class="io.cattle.platform.iaas.api.filter.apikey.ApiKeyFilter" />
+    <bean class="io.cattle.platform.iaas.api.filter.compat.CompatibilityOutputFilter" />
     <bean class="io.cattle.platform.iaas.api.filter.agent.AgentFilter" />
     <bean class="io.cattle.platform.iaas.api.filter.instance.InstanceImageValidationFilter" />
     <bean class="io.cattle.platform.iaas.api.filter.instance.InstanceNetworkValidationFilter" />
@@ -352,6 +354,7 @@
     <bean class="io.cattle.platform.iaas.api.filter.dynamic.schema.DynamicSchemaFilter" />
     <bean class="io.cattle.platform.iaas.api.auth.identity.AccountOutputFilter" />
     <bean class="io.cattle.platform.iaas.api.filter.account.AccountFilter" />
+    <bean class="io.cattle.platform.iaas.api.filter.machinedriver.MachineDriverFilter" />
 
     <bean class="io.cattle.platform.iaas.api.object.postinit.AccountFieldPostInitHandler" />
 
@@ -367,6 +370,7 @@
             <bean class="io.github.ibuildthecloud.gdapi.id.IdentityFormatter" />
         </property>
     </bean>
+    <bean class="io.cattle.platform.iaas.api.request.handler.RequestReRouterHandler" />
     <bean class="io.github.ibuildthecloud.gdapi.request.handler.CSRFCookieHandler" />
     <bean class="io.cattle.platform.iaas.api.request.handler.PostChildLinkHandler" />
     <bean class="io.github.ibuildthecloud.gdapi.request.handler.ParseCollectionAttributes" />
@@ -458,7 +462,6 @@
         <aop:advisor advice-ref="ApiDelegateAdvice" pointcut="execution(* io.github.ibuildthecloud.gdapi.request.handler.write.ReadWriteApiDelegate.*(..))" />
     </aop:config>
 
-    <extension:discover class="io.github.ibuildthecloud.gdapi.factory.SchemaFactory"/>
     <extension:discover class="io.cattle.platform.api.pubsub.subscribe.ApiPubSubEventPostProcessor"/>
     <extension:discover class="io.cattle.platform.iaas.api.request.handler.ScriptsHandler"/>
 

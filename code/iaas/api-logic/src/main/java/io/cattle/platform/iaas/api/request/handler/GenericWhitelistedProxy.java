@@ -149,7 +149,7 @@ public class GenericWhitelistedProxy extends AbstractResponseGenerator {
     @SuppressWarnings("unchecked")
     @Override
     protected void generate(final ApiRequest request) throws IOException {
-        if (request.getRequestVersion() == null || !ALLOW_PROXY.get())
+        if (request.getVersion() == null || !ALLOW_PROXY.get())
             return;
 
         if (!"proxy".equals(request.getType())) {
@@ -263,7 +263,7 @@ public class GenericWhitelistedProxy extends AbstractResponseGenerator {
                 OutputStream writer = request.getServletContext().getResponse().getOutputStream();
                 Header[] headers = response.getAllHeaders();
                 for (int i = 0; i < headers.length; i++) {
-                    request.getServletContext().getResponse().addHeader(headers[i].getName(), headers[i].getValue());
+                    request.getServletContext().getResponse().setHeader(headers[i].getName(), headers[i].getValue());
                 }
                 HttpEntity entity = response.getEntity();
                 if (entity != null) {

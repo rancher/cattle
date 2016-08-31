@@ -1,6 +1,6 @@
 package io.cattle.platform.configitem.context.dao.impl;
 
-import static io.cattle.platform.core.model.tables.EnvironmentTable.ENVIRONMENT;
+import static io.cattle.platform.core.model.tables.StackTable.STACK;
 import static io.cattle.platform.core.model.tables.HostIpAddressMapTable.HOST_IP_ADDRESS_MAP;
 import static io.cattle.platform.core.model.tables.InstanceHostMapTable.INSTANCE_HOST_MAP;
 import static io.cattle.platform.core.model.tables.InstanceLinkTable.INSTANCE_LINK;
@@ -20,7 +20,7 @@ import io.cattle.platform.core.constants.HealthcheckConstants;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.constants.IpAddressConstants;
 import io.cattle.platform.core.dao.NetworkDao;
-import io.cattle.platform.core.model.Environment;
+import io.cattle.platform.core.model.Stack;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.InstanceHostMap;
 import io.cattle.platform.core.model.InstanceLink;
@@ -30,7 +30,7 @@ import io.cattle.platform.core.model.Nic;
 import io.cattle.platform.core.model.Service;
 import io.cattle.platform.core.model.ServiceConsumeMap;
 import io.cattle.platform.core.model.ServiceExposeMap;
-import io.cattle.platform.core.model.tables.EnvironmentTable;
+import io.cattle.platform.core.model.tables.StackTable;
 import io.cattle.platform.core.model.tables.InstanceHostMapTable;
 import io.cattle.platform.core.model.tables.InstanceLinkTable;
 import io.cattle.platform.core.model.tables.InstanceTable;
@@ -147,8 +147,8 @@ public class DnsInfoDaoImpl extends AbstractJooqDao implements DnsInfoDao {
                 Service clientService = (Service) input.get(0);
                 Service targetService = (Service) input.get(1);
                 ServiceConsumeMap consumeMap = (ServiceConsumeMap) input.get(2);
-                Environment clientStack = (Environment) input.get(3);
-                Environment targetStack = (Environment) input.get(4);
+                Stack clientStack = (Stack) input.get(3);
+                Stack targetStack = (Stack) input.get(4);
                 ServiceDnsEntryData data = new ServiceDnsEntryData(clientService, targetService, consumeMap,
                         clientStack, targetStack);
                 return data;
@@ -158,8 +158,8 @@ public class DnsInfoDaoImpl extends AbstractJooqDao implements DnsInfoDao {
         ServiceTable clientService = mapper.add(SERVICE);
         ServiceTable targetService = mapper.add(SERVICE);
         ServiceConsumeMapTable serviceConsumeMap = mapper.add(SERVICE_CONSUME_MAP);
-        EnvironmentTable clientStack = mapper.add(ENVIRONMENT);
-        EnvironmentTable targetStack = mapper.add(ENVIRONMENT);
+        StackTable clientStack = mapper.add(STACK);
+        StackTable targetStack = mapper.add(STACK);
 
         Condition condition = null;
         if (forDefault) {
@@ -185,9 +185,9 @@ public class DnsInfoDaoImpl extends AbstractJooqDao implements DnsInfoDao {
                 .join(targetService)
                 .on(targetService.ACCOUNT_ID.eq(clientService.ACCOUNT_ID))
                 .join(clientStack)
-                .on(clientService.ENVIRONMENT_ID.eq(clientStack.ID))
+                .on(clientService.STACK_ID.eq(clientStack.ID))
                 .join(targetStack)
-                .on(targetService.ENVIRONMENT_ID.eq(targetStack.ID))
+                .on(targetService.STACK_ID.eq(targetStack.ID))
                 .leftOuterJoin(serviceConsumeMap)
                 .on(serviceConsumeMap.SERVICE_ID.eq(clientService.ID).and(
                         serviceConsumeMap.CONSUMED_SERVICE_ID.eq(targetService.ID))
@@ -198,6 +198,9 @@ public class DnsInfoDaoImpl extends AbstractJooqDao implements DnsInfoDao {
                 .fetch().map(mapper);
 
         Nic nic = ntwkDao.getPrimaryNic(instance.getId());
+        if (nic == null) {
+            return new ArrayList<>();
+        }
         long vnetId = nic.getVnetId();
         return convertToDnsEntryData(serviceDnsEntries, instance.getAccountId(), vnetId, forDefault);
     }
@@ -325,7 +328,7 @@ public class DnsInfoDaoImpl extends AbstractJooqDao implements DnsInfoDao {
     protected void populateResolveInfo(ServiceInstanceData targetInstance, boolean self,
             String aliasName, String dnsPrefix, final Map<Long, IpAddress> instanceIdToHostIpMap,
             Map<String, String> resolveCname, Map<String, Map<String, String>> resolve, boolean isAliasService,
-            Environment clientStack, Service clientService) {
+            Stack clientStack, Service clientService) {
         String targetInstanceName = targetInstance.getInstance() == null ? null : targetInstance
                 .getInstance().getName();
 
@@ -516,7 +519,7 @@ public class DnsInfoDaoImpl extends AbstractJooqDao implements DnsInfoDao {
                 Instance instance = (Instance) input.get(2);
                 ServiceExposeMap exposeMap = (ServiceExposeMap) input.get(3);
                 Nic nic = (Nic) input.get(4);
-                Environment stack = (Environment) input.get(5);
+                Stack stack = (Stack) input.get(5);
                 ServiceInstanceData data = new ServiceInstanceData(stack, service, ip, instance, exposeMap, nic);
                 return data;
             }
@@ -531,7 +534,7 @@ public class DnsInfoDaoImpl extends AbstractJooqDao implements DnsInfoDao {
                 INSTANCE.NETWORK_CONTAINER_ID);
         ServiceExposeMapTable exposeMap = mapper.add(SERVICE_EXPOSE_MAP);
         NicTable nic = mapper.add(NIC, NIC.DEVICE_NUMBER, NIC.INSTANCE_ID);
-        EnvironmentTable stack = mapper.add(ENVIRONMENT, ENVIRONMENT.NAME);
+        StackTable stack = mapper.add(STACK, STACK.NAME);
         Condition condition = null;
         if (client) {
             condition = ipAddress.ROLE.eq(IpAddressConstants.ROLE_PRIMARY).and(nic.VNET_ID.eq(vnetId));
@@ -547,7 +550,7 @@ public class DnsInfoDaoImpl extends AbstractJooqDao implements DnsInfoDao {
                 .join(exposeMap)
                 .on(service.ID.eq(exposeMap.SERVICE_ID))
                 .join(stack)
-                .on(stack.ID.eq(service.ENVIRONMENT_ID))
+                .on(stack.ID.eq(service.STACK_ID))
                 .leftOuterJoin(instance)
                 .on(instance.ID.eq(exposeMap.INSTANCE_ID))
                 .leftOuterJoin(nic)

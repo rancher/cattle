@@ -7,9 +7,7 @@
         http://www.xebia.fr/schema/xebia-management-extras http://www.xebia.fr/schema/management/xebia-management-extras.xsd
         http://cattle.io/schemas/spring/extension http://cattle.io/schemas/spring/extension-1.0.xsd">
 
-    <bean class="io.cattle.platform.agent.connection.event.AgentEventingConnectionFactory" />
-
-    <bean class="io.cattle.platform.agent.connection.simulator.AgentConnectionSimulatorFactory" >
+    <bean class="io.cattle.platform.agent.connection.simulator.AgentSimulator" >
         <property name="processors" value="#{extensionManager.list('agent.simulator.event.processor')}" />
     </bean>
 
@@ -23,24 +21,8 @@
     <bean class="io.cattle.platform.agent.connection.simulator.impl.SimulatorStartStopProcessor" />
     <bean class="io.cattle.platform.agent.connection.simulator.impl.SimulatorInstanceInspectProcessor" />
 
-    <bean class="io.cattle.platform.agent.server.service.impl.AgentServiceImpl" >
-        <property name="executorService" ref="CoreExecutorService" />
-    </bean>
-
-    <bean class="io.cattle.platform.agent.server.eventing.impl.AgentEventListenerImpl" />
-
-    <bean class="io.cattle.platform.agent.server.connection.impl.AgentConnectionManagerImpl" >
-        <property name="factories" value="#{extensionManager.list('agent.connection.factory')}" />
-    </bean>
-
-    <bean class="io.cattle.platform.agent.server.group.impl.AgentGroupManagerImpl" />
-
     <bean class="io.cattle.platform.agent.server.ping.dao.impl.PingDaoImpl" />
     <bean class="io.cattle.platform.agent.server.ping.impl.PingMonitorImpl" />
-    <bean class="io.cattle.platform.agent.server.resource.impl.AgentResourcesMonitorImpl" />
-
-    <extension:discover class="io.cattle.platform.agent.server.connection.AgentConnectionFactory" />
-
-    <bean class="io.cattle.platform.agent.connection.delegate.AgentDelegateConnectionFactory" />
+    <bean class="io.cattle.platform.agent.server.resource.impl.AgentResourcesMonitor" />
 
 </beans>

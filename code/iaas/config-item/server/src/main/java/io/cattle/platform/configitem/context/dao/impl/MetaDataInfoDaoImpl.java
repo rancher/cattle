@@ -19,6 +19,7 @@ import io.cattle.platform.core.dao.InstanceDao;
 import io.cattle.platform.core.model.Host;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.IpAddress;
+import io.cattle.platform.core.model.Nic;
 import io.cattle.platform.core.model.ServiceExposeMap;
 import io.cattle.platform.core.model.tables.HostTable;
 import io.cattle.platform.core.model.tables.InstanceTable;
@@ -88,6 +89,12 @@ public class MetaDataInfoDaoImpl extends AbstractJooqDao implements MetaDataInfo
                 data.setExposeMap(serviceMap);
                 data.setService_index(serviceIndex);
 
+                Nic nic = null;
+                if (input.get(4) != null) {
+                    nic = (Nic) input.get(4);
+                    data.setNicInformation(nic);
+                }
+
                 return data;
             }
         };
@@ -98,6 +105,7 @@ public class MetaDataInfoDaoImpl extends AbstractJooqDao implements MetaDataInfo
                 SERVICE_EXPOSE_MAP.DNS_PREFIX);
         HostTable host = mapper.add(HOST, HOST.ID);
         IpAddressTable instanceIpAddress = mapper.add(IP_ADDRESS, IP_ADDRESS.ADDRESS);
+        NicTable nic = mapper.add(NIC, NIC.ID, NIC.INSTANCE_ID, NIC.MAC_ADDRESS);
         return create()
                 .select(mapper.fields())
                 .from(instance)
@@ -107,10 +115,10 @@ public class MetaDataInfoDaoImpl extends AbstractJooqDao implements MetaDataInfo
                 .on(host.ID.eq(INSTANCE_HOST_MAP.HOST_ID))
                 .join(exposeMap, JoinType.LEFT_OUTER_JOIN)
                 .on(exposeMap.INSTANCE_ID.eq(instance.ID))
-                .join(NIC)
-                .on(NIC.INSTANCE_ID.eq(INSTANCE_HOST_MAP.INSTANCE_ID))
+                .join(nic)
+                .on(nic.INSTANCE_ID.eq(INSTANCE_HOST_MAP.INSTANCE_ID))
                 .join(IP_ADDRESS_NIC_MAP)
-                .on(IP_ADDRESS_NIC_MAP.NIC_ID.eq(NIC.ID))
+                .on(IP_ADDRESS_NIC_MAP.NIC_ID.eq(nic.ID))
                 .join(instanceIpAddress)
                 .on(instanceIpAddress.ID.eq(IP_ADDRESS_NIC_MAP.IP_ADDRESS_ID))
                 .where(instance.ACCOUNT_ID.eq(accountId))

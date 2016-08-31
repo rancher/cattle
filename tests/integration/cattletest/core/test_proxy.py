@@ -20,8 +20,8 @@ def test_proxy(client, admin_user_client):
     base_url = client.schema.types['schema'].links['collection']
     base_url = base_url.replace('/schemas', '')
 
-    r = requests.get(base_url + '/proxy/{}/{}'.format(domain,
-                                                      'ui/latest/humans.txt'),
+    r = requests.get(base_url + '/proxy/http://{}/{}'
+                     .format(domain, 'ui/latest/humans.txt'),
                      headers=auth_header_map(client))
 
     assert r.status_code == 200

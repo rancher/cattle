@@ -1,9 +1,12 @@
 package io.github.ibuildthecloud.gdapi.model;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Filter {
+public class Filter implements Serializable {
+
+    private static final long serialVersionUID = -4183989166167896474L;
 
     List<String> modifiers;
 

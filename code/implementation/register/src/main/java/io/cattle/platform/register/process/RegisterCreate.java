@@ -67,6 +67,11 @@ public class RegisterCreate extends AbstractGenericObjectProcessLogic implements
             public boolean evaluate(Agent obj) {
                 return getCredential(obj) != null;
             }
+
+            @Override
+            public String getMessage() {
+                return "credentials assigned";
+            }
         });
 
         Credential cred = getCredential(agent);

@@ -151,7 +151,8 @@ public class WrappedResource extends ResourceImpl implements Resource {
 
     @Override
     public String getType() {
-        return schema.getId();
+        String type = super.getType();
+        return type == null ? schema.getId() : type;
     }
 
     @Override
