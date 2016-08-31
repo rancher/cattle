@@ -20,7 +20,7 @@ def test_create_env_and_svc(client, image_uuid):
     # create service
     service = client. \
         create_loadBalancerService(name=random_str(),
-                                   environmentId=env.id,
+                                   stackId=env.id,
                                    launchConfig=launch_config)
     service = client.wait_success(service)
     assert service.state == "inactive"
@@ -36,7 +36,7 @@ def test_activate_lb_svc(super_client, context, client, image_uuid):
 
     svc = client. \
         create_loadBalancerService(name=random_str(),
-                                   environmentId=env.id,
+                                   stackId=env.id,
                                    launchConfig=launch_config)
     svc = client.wait_success(svc)
     assert svc.state == "inactive"
@@ -106,14 +106,14 @@ def test_targets(super_client, client, context):
     launch_config = {"imageUuid": image_uuid}
     web_service = client. \
         create_service(name=random_str() + "web",
-                       environmentId=env.id,
+                       stackId=env.id,
                        launchConfig=launch_config)
 
     web_service = client.wait_success(web_service)
 
     db_service = client. \
         create_service(name=random_str() + "db",
-                       environmentId=env.id,
+                       stackId=env.id,
                        launchConfig=launch_config)
 
     db_service = client.wait_success(db_service)
@@ -122,7 +122,7 @@ def test_targets(super_client, client, context):
                         "ports": [8181, '909:1001']}
     lb_svc = client. \
         create_loadBalancerService(name=random_str(),
-                                   environmentId=env.id,
+                                   stackId=env.id,
                                    launchConfig=lb_launch_config)
     lb_svc = client.wait_success(lb_svc)
     assert lb_svc.state == "inactive"
@@ -172,7 +172,7 @@ def test_restart_stack(client, context):
     launch_config = {"imageUuid": image_uuid}
     web_svc = client. \
         create_service(name=random_str() + "web",
-                       environmentId=env.id,
+                       stackId=env.id,
                        launchConfig=launch_config)
 
     web_svc = client.wait_success(web_svc)
@@ -181,7 +181,7 @@ def test_restart_stack(client, context):
                         "ports": [8051, '808:1001']}
     lb_svc = client. \
         create_loadBalancerService(name=random_str(),
-                                   environmentId=env.id,
+                                   stackId=env.id,
                                    launchConfig=lb_launch_config)
     lb_svc = client.wait_success(lb_svc)
     assert lb_svc.state == "inactive"
@@ -235,7 +235,7 @@ def test_internal_lb(client, context):
                         "expose": [8051]}
     lb_svc = client. \
         create_loadBalancerService(name=random_str(),
-                                   environmentId=env.id,
+                                   stackId=env.id,
                                    launchConfig=lb_launch_config)
     lb_svc = client.wait_success(lb_svc)
     assert lb_svc.state == "inactive"
@@ -268,7 +268,7 @@ def test_target_ips(super_client, client, context):
     web_ips = ["72.22.16.5", '72.22.16.6']
     web_service = client. \
         create_externalService(name=random_str() + "web",
-                               environmentId=env.id,
+                               stackId=env.id,
                                launchConfig=launch_config,
                                externalIpAddresses=web_ips)
 
@@ -277,7 +277,7 @@ def test_target_ips(super_client, client, context):
     db_ips = ["192.168.0.9", '192.168.0.10']
     db_service = client. \
         create_externalService(name=random_str() + "db",
-                               environmentId=env.id,
+                               stackId=env.id,
                                launchConfig=launch_config,
                                externalIpAddresses=db_ips)
 
@@ -287,7 +287,7 @@ def test_target_ips(super_client, client, context):
                         "ports": [1010, '111:111']}
     lb_svc = client. \
         create_loadBalancerService(name=random_str(),
-                                   environmentId=env.id,
+                                   stackId=env.id,
                                    launchConfig=lb_launch_config,
                                    accountId=user_account_id)
     lb_svc = client.wait_success(lb_svc)
@@ -348,7 +348,7 @@ def test_create_svc_with_lb_config(context, client):
     # create service
     service = client. \
         create_loadBalancerService(name=name,
-                                   environmentId=env.id,
+                                   stackId=env.id,
                                    launchConfig=launch_config,
                                    loadBalancerConfig=lb_config)
     service = client.wait_success(service)
@@ -388,7 +388,7 @@ def test_scale(new_context):
     cert1 = _create_cert(client)
     cert2 = _create_cert(client)
     service = client.create_loadBalancerService(name=random_str(),
-                                                environmentId=env.id,
+                                                stackId=env.id,
                                                 launchConfig=launch_config,
                                                 defaultCertificateId=cert1.id)
     service = client.wait_success(service)
@@ -438,7 +438,7 @@ def test_labels(super_client, client, context):
 
     lb_svc = client. \
         create_loadBalancerService(name=service_name,
-                                   environmentId=env.id,
+                                   stackId=env.id,
                                    launchConfig=launch_config)
     lb_svc = client.wait_success(lb_svc)
     assert lb_svc.state == "inactive"
@@ -462,7 +462,7 @@ def test_labels(super_client, client, context):
 
     lb_svc = client. \
         create_loadBalancerService(name=service_name,
-                                   environmentId=env.id,
+                                   stackId=env.id,
                                    launchConfig=launch_config)
     lb_svc = client.wait_success(lb_svc)
     assert lb_svc.state == "inactive"
@@ -485,7 +485,7 @@ def test_inactive_lb(super_client, client, context):
     launch_config = {"imageUuid": image_uuid}
     web_service = client. \
         create_service(name=random_str() + "web",
-                       environmentId=env.id,
+                       stackId=env.id,
                        launchConfig=launch_config)
 
     web_service = client.wait_success(web_service)
@@ -500,7 +500,7 @@ def test_inactive_lb(super_client, client, context):
                         "ports": [1000]}
     lb_service = client. \
         create_loadBalancerService(name=random_str(),
-                                   environmentId=env.id,
+                                   stackId=env.id,
                                    launchConfig=lb_launch_config)
     lb_service = client.wait_success(lb_service)
     assert lb_service.state == "inactive"
@@ -536,7 +536,7 @@ def test_destroy_svc_instance(super_client, context, client, image_uuid):
 
     service = client. \
         create_loadBalancerService(name=random_str(),
-                                   environmentId=env.id,
+                                   stackId=env.id,
                                    launchConfig=launch_config)
     service = client.wait_success(service)
     assert service.state == "inactive"
@@ -560,17 +560,17 @@ def test_set_service_links(client, context):
     launch_config = {"imageUuid": image_uuid}
 
     lb_service = client.create_loadBalancerService(name="lb",
-                                                   environmentId=env1.id,
+                                                   stackId=env1.id,
                                                    launchConfig=launch_config)
     lb_service = client.wait_success(lb_service)
 
     service2 = client.create_service(name=random_str(),
-                                     environmentId=env1.id,
+                                     stackId=env1.id,
                                      launchConfig=launch_config)
     service2 = client.wait_success(service2)
 
     service3 = client.create_service(name=random_str(),
-                                     environmentId=env1.id,
+                                     stackId=env1.id,
                                      launchConfig=launch_config)
     service3 = client.wait_success(service3)
 
@@ -619,12 +619,12 @@ def test_modify_link(client, context):
     launch_config = {"imageUuid": image_uuid}
 
     lb_service = client.create_loadBalancerService(name="lb",
-                                                   environmentId=env.id,
+                                                   stackId=env.id,
                                                    launchConfig=launch_config)
     lb_service = client.wait_success(lb_service)
 
     service = client.create_service(name=random_str(),
-                                    environmentId=env.id,
+                                    stackId=env.id,
                                     launchConfig=launch_config)
     service = client.wait_success(service)
 
@@ -648,7 +648,7 @@ def _create_service(client, env, launch_config, name=None):
     else:
         svc_name = random_str()
     service1 = client.create_service(name=svc_name,
-                                     environmentId=env.id,
+                                     stackId=env.id,
                                      launchConfig=launch_config)
     service1 = client.wait_success(service1)
     return service1
@@ -661,7 +661,7 @@ def test_create_links(client, context):
     launch_config = {"imageUuid": image_uuid}
 
     lb_service = client.create_loadBalancerService(name="lb",
-                                                   environmentId=env.id,
+                                                   stackId=env.id,
                                                    launchConfig=launch_config)
     lb_service = client.wait_success(lb_service)
 
@@ -775,7 +775,7 @@ def test_export_config(client, context):
                         "ports": [8381, '909:1001']}
     lb_service = client. \
         create_loadBalancerService(name=random_str(),
-                                   environmentId=env1.id,
+                                   stackId=env1.id,
                                    launchConfig=lb_launch_config)
     lb_service = client.wait_success(lb_service)
     assert lb_service.state == "inactive"
@@ -816,7 +816,7 @@ def test_lb_service_w_certificate(client, context, image_uuid):
 
     lb_svc = client. \
         create_loadBalancerService(name=random_str(),
-                                   environmentId=env.id,
+                                   stackId=env.id,
                                    launchConfig=launch_config,
                                    certificateIds=[cert1.id, cert2.id],
                                    defaultCertificateId=cert1.id)
@@ -853,7 +853,7 @@ def test_lb_service_update_certificate(client, context, image_uuid):
 
     lb_svc = client. \
         create_loadBalancerService(name=random_str(),
-                                   environmentId=env.id,
+                                   stackId=env.id,
                                    launchConfig=launch_config,
                                    certificateIds=[cert1.id, cert2.id],
                                    defaultCertificateId=cert1.id)
@@ -918,7 +918,7 @@ def test_lb_with_certs_service_update(new_context, image_uuid):
     cert2 = _create_cert(client)
     labels = {'io.rancher.loadbalancer.ssl.ports': "1772,1773"}
 
-    env = client.create_environment(name=random_str())
+    env = client.create_stack(name=random_str())
     env = client.wait_success(env)
     assert env.state == "active"
 
@@ -928,7 +928,7 @@ def test_lb_with_certs_service_update(new_context, image_uuid):
 
     service = client. \
         create_loadBalancerService(name=random_str(),
-                                   environmentId=env.id,
+                                   stackId=env.id,
                                    launchConfig=launch_config,
                                    certificateIds=[cert1.id, cert2.id],
                                    defaultCertificateId=cert1.id,
@@ -951,7 +951,7 @@ def test_lb_with_certs_service_update(new_context, image_uuid):
 
 
 def test_cert_in_use(client, context, image_uuid):
-    env = client.create_environment(name=random_str())
+    env = client.create_stack(name=random_str())
     env = client.wait_success(env)
     assert env.state == "active"
     cert1 = _create_cert(client)
@@ -963,7 +963,7 @@ def test_cert_in_use(client, context, image_uuid):
 
     lb_svc = client. \
         create_loadBalancerService(name=random_str(),
-                                   environmentId=env.id,
+                                   stackId=env.id,
                                    launchConfig=launch_config,
                                    certificateIds=[cert1.id, cert2.id],
                                    defaultCertificateId=cert1.id)
@@ -1000,7 +1000,7 @@ def test_concurrent_acitvate_setlinks(client, context):
                         "ports": [8777, '8778:8778']}
     lb_svc = client. \
         create_loadBalancerService(name=random_str(),
-                                   environmentId=env1.id,
+                                   stackId=env1.id,
                                    launchConfig=lb_launch_config)
     lb_svc = client.wait_success(lb_svc)
 
@@ -1049,7 +1049,7 @@ def _activate_svc_w_scale_two(new_context, random_str):
                      "ports": [8481, '909:1001']}
     service = client. \
         create_loadBalancerService(name=random_str,
-                                   environmentId=env.id,
+                                   stackId=env.id,
                                    launchConfig=launch_config,
                                    scale=2)
     service = client.wait_success(service)
@@ -1125,7 +1125,7 @@ def _wait_for_instance_start(super_client, id):
 
 
 def _create_stack(client):
-    env = client.create_environment(name=random_str())
+    env = client.create_stack(name=random_str())
     env = client.wait_success(env)
     assert env.state == "active"
     return env
@@ -1141,7 +1141,7 @@ def test_bind_to_ip(super_client, context, client, image_uuid):
 
     svc = client. \
         create_loadBalancerService(name=random_str(),
-                                   environmentId=env.id,
+                                   stackId=env.id,
                                    launchConfig=launch_config)
     svc = client.wait_success(svc)
     assert svc.state == "inactive"
@@ -1156,7 +1156,7 @@ def test_bind_to_ip(super_client, context, client, image_uuid):
 
 
 def test_cert_update(client, image_uuid, super_client):
-    env = client.create_environment(name=random_str())
+    env = client.create_stack(name=random_str())
     env = client.wait_success(env)
 
     lb_launch_config = {"imageUuid": image_uuid,
@@ -1164,7 +1164,7 @@ def test_cert_update(client, image_uuid, super_client):
     cert1 = _create_cert(client)
     lb_svc = client. \
         create_loadBalancerService(name=random_str(),
-                                   environmentId=env.id,
+                                   stackId=env.id,
                                    launchConfig=lb_launch_config,
                                    defaultCertificateId=cert1.id)
     lb_svc = client.wait_success(lb_svc)

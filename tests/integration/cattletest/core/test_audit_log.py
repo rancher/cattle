@@ -4,7 +4,7 @@ from copy import deepcopy
 
 def made_log(object, admin_user_client, context, accountId=None):
     t = object.type
-    if t == 'environment':
+    if t == 'stack':
         t = 'stack'
     logs = admin_user_client.list_audit_log(resourceId=object.id,
                                             resourceType=t)
@@ -39,7 +39,7 @@ def test_audit_entry_created(new_context, admin_user_client):
     objects.append(new_context.user_client.create_registry(
         serverAddress='test.io', name='test'))
     objects.append(new_context.user_client.create_api_key())
-    objects.append(new_context.user_client.create_environment(
+    objects.append(new_context.user_client.create_stack(
                    name='env-' + random_str()))
     for object in objects:
         made_log(object, admin_user_client, new_context)
