@@ -3,28 +3,6 @@ set -e
 
 cd $(dirname $0)/..
 
-SCRATCH_TEMP=
-
-trap destroy_root exit
-
-setup_root()
-{
-    if [ -d /scratch ]; then
-        SCRATCH_TEMP=$(mktemp -d /scratch/cattle.XXXXX)
-        rsync --exclude '*.pyc' -a tests $SCRATCH_TEMP
-        pushd $SCRATCH_TEMP
-    fi
-}
-
-destroy_root()
-{
-    if [[ -n "$SCRATCH_TEMP" && -d "$SCRATCH_TEMP" ]]; then
-        popd
-        rsync --delete -a ${SCRATCH_TEMP}/tests/integration/.tox ./tests/integration
-        rm -rf "$SCRATCH_TEMP"
-    fi
-}
-
 check_schemas()
 {
     for i in resources/content/db/core*xml; do
@@ -38,9 +16,12 @@ check_schemas()
 
 check_schemas
 
-setup_root
+if [ -z "$API_VERSION" ] || [ "$API_VERSION" = "v2" ]; then
+    cd tests/integration
+else
+    cd tests/integration-${API_VERSION}
+fi
 
-cd tests/integration
 export CATTLE_URL=${CATTLE_TEST_URL:-http://localhost:8081/v1/schemas}
 
 if [ -e .tox ] && [ ! -e .tox/py27/include/python2.7 ]; then

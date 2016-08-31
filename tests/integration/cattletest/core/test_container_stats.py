@@ -29,7 +29,7 @@ def test_stats_container(docker_client, cattle_url):
 
 @if_docker
 def test_stats_service(docker_client, context, cattle_url):
-    env = docker_client.create_environment(name=random_str())
+    env = docker_client.create_stack(name=random_str())
     env = docker_client.wait_success(env)
     assert env.state == "active"
 
@@ -37,7 +37,7 @@ def test_stats_service(docker_client, context, cattle_url):
     launch_config = {"imageUuid": image_uuid}
 
     service = docker_client.create_service(name=random_str(),
-                                           environmentId=env.id,
+                                           stackId=env.id,
                                            launchConfig=launch_config)
     service = docker_client.wait_success(service)
     assert service.state == "inactive"

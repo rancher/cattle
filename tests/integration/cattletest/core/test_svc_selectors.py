@@ -8,25 +8,25 @@ def _create_service(client, env, image_uuid, service_kind):
     if service_kind == "service":
         launch_config = {"imageUuid": image_uuid, "labels": labels}
         service = client.create_service(name=random_str(),
-                                        environmentId=env.id,
+                                        stackId=env.id,
                                         launchConfig=launch_config)
 
     elif service_kind == "loadBalancerService":
         launch_config = {"labels": labels}
         service = client.create_loadBalancerService(name=random_str(),
-                                                    environmentId=env.id,
+                                                    stackId=env.id,
                                                     launchConfig=launch_config)
 
     elif service_kind == "dnsService":
         launch_config = {"labels": labels}
         service = client.create_dnsService(name=random_str(),
-                                           environmentId=env.id,
+                                           stackId=env.id,
                                            launchConfig=launch_config)
 
     elif service_kind == "externalService":
         launch_config = {"labels": labels}
         service = client.create_externalService(name=random_str(),
-                                                environmentId=env.id,
+                                                stackId=env.id,
                                                 launchConfig=launch_config,
                                                 hostname="a.com")
 
@@ -44,7 +44,7 @@ def _validate_service_link(client, context, service_kind):
     assert service.launchConfig.labels == labels
     launch_config = {"imageUuid": image_uuid}
     service1 = client.create_service(name=random_str(),
-                                     environmentId=env.id,
+                                     stackId=env.id,
                                      launchConfig=launch_config,
                                      selectorLink="foo=bar")
     service1 = client.wait_success(service1)
@@ -88,7 +88,7 @@ def test_service_add_instance_selector(client, context):
 
     launch_config = {"imageUuid": "rancher/none"}
     service = client.create_service(name=random_str(),
-                                    environmentId=env.id,
+                                    stackId=env.id,
                                     launchConfig=launch_config,
                                     selectorContainer="foo=bar")
     service = client.wait_success(service)
@@ -137,7 +137,7 @@ def test_service_add_instance_selector(client, context):
 
 
 def _create_stack(client):
-    env = client.create_environment(name=random_str())
+    env = client.create_stack(name=random_str())
     env = client.wait_success(env)
     assert env.state == "active"
     return env
@@ -156,7 +156,7 @@ def test_service_mixed_selector_based_wo_image(client, context):
 
     launch_config = {"imageUuid": "sim:rancher/none:latest"}
     service = client.create_service(name=random_str(),
-                                    environmentId=env.id,
+                                    stackId=env.id,
                                     launchConfig=launch_config,
                                     selectorContainer="foo=barbar")
     service = client.wait_success(service)
@@ -187,7 +187,7 @@ def test_service_no_image_no_selector(client, context):
     with pytest.raises(ApiError) as e:
         launch_config = {"imageUuid": "rancher/none"}
         client.create_service(name=random_str(),
-                              environmentId=env.id,
+                              stackId=env.id,
                               launchConfig=launch_config)
     assert e.value.error.status == 422
     assert e.value.error.code == 'InvalidOption'
@@ -207,7 +207,7 @@ def test_service_mixed_selector_based_w_image(client, context):
 
     launch_config = {"imageUuid": image_uuid}
     service = client.create_service(name=random_str(),
-                                    environmentId=env.id,
+                                    stackId=env.id,
                                     launchConfig=launch_config,
                                     selectorContainer="foo=test")
     service = client.wait_success(service)
@@ -282,7 +282,7 @@ def test_lb_service_add_instance_selector(super_client, client, context):
 
     launch_config = {"imageUuid": "rancher/none"}
     service = client.create_service(name=random_str(),
-                                    environmentId=env.id,
+                                    stackId=env.id,
                                     launchConfig=launch_config,
                                     selectorContainer="foo32=bar")
     service = client.wait_success(service)
@@ -299,7 +299,7 @@ def test_lb_service_add_instance_selector(super_client, client, context):
                      "ports": [567, '568:569'],
                      "expose": [9999, '9998:9997']}
     lb_service = client.create_loadBalancerService(name=random_str(),
-                                                   environmentId=env.id,
+                                                   stackId=env.id,
                                                    launchConfig=launch_config)
     lb_service = client.wait_success(lb_service)
     assert lb_service.state == "inactive"
@@ -334,7 +334,7 @@ def test_svc_invalid_selector(client):
 
     with pytest.raises(ApiError) as e:
         client.create_service(name=random_str(),
-                              environmentId=env.id,
+                              stackId=env.id,
                               launchConfig=launch_config,
                               selectorContainer="foo not in barbar")
     assert e.value.error.status == 422
@@ -342,7 +342,7 @@ def test_svc_invalid_selector(client):
 
     with pytest.raises(ApiError) as e:
         client.create_service(name=random_str(),
-                              environmentId=env.id,
+                              stackId=env.id,
                               launchConfig=launch_config,
                               selectorContainer="foo notin barbar",
                               selectorLink="foo not in barbar")
@@ -373,7 +373,7 @@ def test_update_instance_selector(client, context):
 
     launch_config = {"imageUuid": "rancher/none"}
     svc = client.create_service(name=random_str(),
-                                environmentId=env.id,
+                                stackId=env.id,
                                 launchConfig=launch_config,
                                 selectorContainer="foo1=bar1")
     svc = client.wait_success(svc)
@@ -411,7 +411,7 @@ def test_update_link_selector(client, context):
     labels = {'foo1': "bar1"}
     launch_config = {"imageUuid": image_uuid, "labels": labels}
     s1 = client.create_service(name=random_str(),
-                               environmentId=env.id,
+                               stackId=env.id,
                                launchConfig=launch_config)
     s1 = client.wait_success(s1)
     assert s1.launchConfig.labels == labels
@@ -419,14 +419,14 @@ def test_update_link_selector(client, context):
     labels = {'bar1': "foo1"}
     launch_config = {"imageUuid": image_uuid, "labels": labels}
     s2 = client.create_service(name=random_str(),
-                               environmentId=env.id,
+                               stackId=env.id,
                                launchConfig=launch_config)
     s2 = client.wait_success(s2)
     assert s2.launchConfig.labels == labels
 
     launch_config = {"imageUuid": image_uuid}
     svc = client.create_service(name=random_str(),
-                                environmentId=env.id,
+                                stackId=env.id,
                                 launchConfig=launch_config,
                                 selectorLink="foo1=bar1")
     svc = client.wait_success(svc)

@@ -3,7 +3,7 @@ from cattle import ApiError
 
 
 def _create_stack(client):
-    env = client.create_environment(name=random_str())
+    env = client.create_stack(name=random_str())
     env = client.wait_success(env)
     assert env.state == "active"
     return env
@@ -16,12 +16,12 @@ def test_service_add_remove_service_link(client, context):
     launch_config = {"imageUuid": image_uuid}
 
     service1 = client.create_service(name=random_str(),
-                                     environmentId=env.id,
+                                     stackId=env.id,
                                      launchConfig=launch_config)
     service1 = client.wait_success(service1)
 
     service2 = client.create_service(name=random_str(),
-                                     environmentId=env.id,
+                                     stackId=env.id,
                                      launchConfig=launch_config)
     service2 = client.wait_success(service2)
 
@@ -49,12 +49,12 @@ def test_links_after_service_remove(client, context):
     image_uuid = context.image_uuid
     launch_config = {"imageUuid": image_uuid}
     service1 = client.create_service(name=random_str(),
-                                     environmentId=env.id,
+                                     stackId=env.id,
                                      launchConfig=launch_config)
     service1 = client.wait_success(service1)
 
     service2 = client.create_service(name=random_str(),
-                                     environmentId=env.id,
+                                     stackId=env.id,
                                      launchConfig=launch_config)
     service2 = client.wait_success(service2)
 
@@ -83,13 +83,13 @@ def test_link_services_from_diff_env(client, context):
     launch_config = {"imageUuid": image_uuid}
 
     service1 = client.create_service(name=random_str(),
-                                     environmentId=env1.id,
+                                     stackId=env1.id,
                                      launchConfig=launch_config)
     service1 = client.wait_success(service1)
 
     env2 = _create_stack(client)
     service2 = client.create_service(name=random_str(),
-                                     environmentId=env2.id,
+                                     stackId=env2.id,
                                      launchConfig=launch_config)
     service2 = client.wait_success(service2)
 
@@ -106,17 +106,17 @@ def test_set_service_links(client, context):
     launch_config = {"imageUuid": image_uuid}
 
     service1 = client.create_service(name=random_str(),
-                                     environmentId=env1.id,
+                                     stackId=env1.id,
                                      launchConfig=launch_config)
     service1 = client.wait_success(service1)
 
     service2 = client.create_service(name=random_str(),
-                                     environmentId=env1.id,
+                                     stackId=env1.id,
                                      launchConfig=launch_config)
     service2 = client.wait_success(service2)
 
     service3 = client.create_service(name=random_str(),
-                                     environmentId=env1.id,
+                                     stackId=env1.id,
                                      launchConfig=launch_config)
     service3 = client.wait_success(service3)
 
@@ -148,11 +148,11 @@ def test_set_service_links(client, context):
     service1 = service1.setservicelinks(serviceLinks=[])
     _validate_remove_service_link(service1, service2, client, "link3")
 
-    # try to link to the service from diff environment - should work
+    # try to link to the service from diff stack - should work
     env2 = _create_stack(client)
 
     service4 = client.create_service(name=random_str(),
-                                     environmentId=env2.id,
+                                     stackId=env2.id,
                                      launchConfig=launch_config)
     service4 = client.wait_success(service4)
 
@@ -170,12 +170,12 @@ def test_link_service_twice(client, context):
     launch_config = {"imageUuid": image_uuid}
 
     service1 = client.create_service(name=random_str(),
-                                     environmentId=env.id,
+                                     stackId=env.id,
                                      launchConfig=launch_config)
     service1 = client.wait_success(service1)
 
     service2 = client.create_service(name=random_str(),
-                                     environmentId=env.id,
+                                     stackId=env.id,
                                      launchConfig=launch_config)
     service2 = client.wait_success(service2)
 
@@ -201,22 +201,22 @@ def test_dns_service(client, context):
     launch_config = {"imageUuid": image_uuid}
 
     web1 = client.create_service(name=random_str(),
-                                 environmentId=env.id,
+                                 stackId=env.id,
                                  launchConfig=launch_config)
     web1 = client.wait_success(web1)
 
     web2 = client.create_service(name=random_str(),
-                                 environmentId=env.id,
+                                 stackId=env.id,
                                  launchConfig=launch_config)
     web2 = client.wait_success(web2)
 
     app = client.create_service(name=random_str(),
-                                environmentId=env.id,
+                                stackId=env.id,
                                 launchConfig=launch_config)
     app = client.wait_success(app)
 
     dns = client.create_dnsService(name='tata',
-                                   environmentId=env.id)
+                                   stackId=env.id)
     dns = client.wait_success(dns)
 
     env.activateservices()
@@ -245,27 +245,27 @@ def test_dns_service(client, context):
 def test_service_link_emu_docker_link(super_client, client, context):
     env = _create_stack(client)
 
-    dns = client.create_dns_service(name='dns', environmentId=env.id)
+    dns = client.create_dns_service(name='dns', stackId=env.id)
 
     server = client.create_service(name='server', launchConfig={
         'imageUuid': context.image_uuid
-    }, environmentId=env.id)
+    }, stackId=env.id)
 
     server2 = client.create_service(name='server2', launchConfig={
         'imageUuid': context.image_uuid
-    }, environmentId=env.id)
+    }, stackId=env.id)
 
     service = client.create_service(name='client', launchConfig={
         'imageUuid': context.image_uuid
-    }, environmentId=env.id)
+    }, stackId=env.id)
 
     server3 = client.create_service(name='server3', launchConfig={
         'imageUuid': context.image_uuid
-    }, environmentId=env.id)
+    }, stackId=env.id)
 
     server4 = client.create_service(name='server4', launchConfig={
         'imageUuid': context.image_uuid
-    }, environmentId=env.id)
+    }, stackId=env.id)
 
     service_link1 = {"serviceId": dns.id, "name": "dns"}
     service_link2 = {"serviceId": server.id, "name": "other"}
@@ -348,12 +348,12 @@ def test_set_service_links_duplicated_service(client, context):
     launch_config = {"imageUuid": image_uuid}
 
     service1 = client.create_service(name=random_str(),
-                                     environmentId=env1.id,
+                                     stackId=env1.id,
                                      launchConfig=launch_config)
     service1 = client.wait_success(service1)
 
     service2 = client.create_service(name=random_str(),
-                                     environmentId=env1.id,
+                                     stackId=env1.id,
                                      launchConfig=launch_config)
     service2 = client.wait_success(service2)
 
@@ -430,12 +430,12 @@ def test_validate_svc_link_name(client, context):
     launch_config = {"imageUuid": image_uuid}
 
     service1 = client.create_service(name=random_str(),
-                                     environmentId=env.id,
+                                     stackId=env.id,
                                      launchConfig=launch_config)
     service1 = client.wait_success(service1)
 
     service2 = client.create_service(name=random_str(),
-                                     environmentId=env.id,
+                                     stackId=env.id,
                                      launchConfig=launch_config)
     service2 = client.wait_success(service2)
 
@@ -558,7 +558,7 @@ def test_validate_svc_link_name(client, context):
     _validate_add_service_link(service1, service2, client)
 
     service3 = client.create_service(name=random_str(),
-                                     environmentId=env.id,
+                                     stackId=env.id,
                                      launchConfig=launch_config)
     service3 = client.wait_success(service3)
 

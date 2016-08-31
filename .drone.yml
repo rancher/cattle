@@ -1,8 +1,15 @@
 ---
+matrix:
+  API_VERSION:
+  - v1
+  - v2
+
 pipeline:
   build:
     privileged: true
     image: rancher/dapper:1.10.3
+    environment:
+      API_VERSION: ${API_VERSION}
     volumes:
     - /var/run/docker.sock:/var/run/docker.sock
     commands:

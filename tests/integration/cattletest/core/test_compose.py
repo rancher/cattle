@@ -17,7 +17,7 @@ def test_container_create_count(client, context):
 
     s = find_one(c.services)
     s = client.wait_success(s)
-    env = client.wait_success(s.environment())
+    env = client.wait_success(s.stack())
 
     assert s.name == service
     assert s.type == 'composeService'
@@ -58,7 +58,7 @@ def test_container_remove(client, context):
     s = find_one(c.services)
     map = find_one(s.serviceExposeMaps)
     s = client.wait_success(s)
-    env = client.wait_success(s.environment())
+    env = client.wait_success(s.stack())
 
     c = client.delete(c)
     c = client.wait_success(c)
@@ -82,7 +82,7 @@ def test_container_two_remove(client, context):
     s = find_one(c.services)
     maps = s.serviceExposeMaps()
     s = client.wait_success(s)
-    env = client.wait_success(s.environment())
+    env = client.wait_success(s.stack())
 
     assert len(maps) == 2
 
@@ -107,7 +107,7 @@ def test_service_two_remove(client, context):
     s = find_one(c.services)
     map = find_one(s.serviceExposeMaps)
     s = client.wait_success(s)
-    env = client.wait_success(s.environment())
+    env = client.wait_success(s.stack())
     assert len(env.services()) == 2
 
     assert s.state == 'active'
@@ -132,7 +132,7 @@ def test_service_remove(client, context):
     s = find_one(c.services)
     map = find_one(s.serviceExposeMaps)
     s = client.wait_success(s)
-    env = client.wait_success(s.environment())
+    env = client.wait_success(s.stack())
 
     assert s.state == 'active'
 
@@ -156,7 +156,7 @@ def test_env_remove(client, context):
     s = find_one(c.services)
     map = find_one(s.serviceExposeMaps)
     s = client.wait_success(s)
-    env = client.wait_success(s.environment())
+    env = client.wait_success(s.stack())
 
     assert s.state == 'active'
 
