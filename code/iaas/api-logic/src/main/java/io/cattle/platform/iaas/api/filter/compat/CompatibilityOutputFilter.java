@@ -100,7 +100,7 @@ public class CompatibilityOutputFilter implements ResourceOutputFilter {
     @Override
     public String[] getTypes() {
         return new String[] { "stack", "service", "dnsService",
-            "externalService", "lbService", "kubernetesService",
+            "externalService", "loadBalancerService", "kubernetesService",
             "composeService" };
     }
 
