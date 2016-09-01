@@ -69,6 +69,9 @@ public class ExternalDynamicExtensionHandlerImpl implements DynamicExtensionHand
     }
 
     protected Object toEventHandler(String eventName, ExternalHandlerData handler) {
+        if (handler.getEventName() != null) {
+            eventName = handler.getEventName();
+        }
         Integer retries = DataAccessor.fieldInteger(handler, ExternalHandlerConstants.FIELD_RETRIES);
         Long timeout = DataAccessor.fieldLong(handler, ExternalHandlerConstants.FIELD_TIMEOUT);
         String priorityName = DataAccessor.fieldString(handler, ExternalHandlerConstants.FIELD_PRIORITY_NAME);

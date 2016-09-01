@@ -4,6 +4,7 @@ package io.cattle.platform.extension.dynamic.data;
 public class ExternalHandlerData {
 
     String name;
+    String eventName;
     Integer priority;
     String onError;
     Integer retries;
@@ -65,5 +66,13 @@ public class ExternalHandlerData {
 
     public void setData(java.util.Map<String, Object> data) {
         this.data = data;
+    }
+
+    public String getEventName() {
+        return eventName;
+    }
+
+    public void setEventName(String eventName) {
+        this.eventName = eventName;
     }
 }
