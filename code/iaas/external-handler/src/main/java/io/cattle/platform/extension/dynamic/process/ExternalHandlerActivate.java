@@ -25,9 +25,13 @@ import java.util.Map;
 
 import javax.inject.Inject;
 
+import org.apache.commons.lang3.StringUtils;
+
 public class ExternalHandlerActivate extends AbstractDefaultProcessHandler {
 
+    @Inject
     LockManager lockManager;
+    @Inject
     GenericMapDao mapDao;
     @Inject
     JsonMapper jsonMapper;
@@ -36,19 +40,24 @@ public class ExternalHandlerActivate extends AbstractDefaultProcessHandler {
     public HandlerResult handle(ProcessState state, ProcessInstance process) {
         ExternalHandler externalHandler = (ExternalHandler) state.getResource();
 
-        Map<String, String> processConfigs = new HashMap<String, String>();
+        Map<String, Config> processConfigs = new HashMap<String, Config>();
         DataAccessor accessor = DataAccessor.fields(externalHandler).withKey(ExternalHandlerConstants.FIELD_PROCESS_CONFIGS);
 
         List<? extends ExternalHandlerProcessConfig> list = accessor.asList(jsonMapper, ExternalHandlerProcessConfig.class);
         if (list != null) {
             for (ExternalHandlerProcessConfig config : list) {
-                String name = config.getName();
-                for (String part : name.toString().trim().split("\\s*,\\s*")) {
-                    /* Handle migration from v1 to v2 api */
-                    if (part.startsWith("environment.")) {
-                        part = part.replace("environment.", "stack.");
+                for (String part : config.getName().toString().trim().split("\\s*,\\s*")) {
+                    String[] moreParts = StringUtils.split(part, ":", 2);
+                    String name = moreParts[0];
+                    String eventName = null;
+                    if (moreParts.length > 1) {
+                        eventName = moreParts[1];
+                    } else if (name.startsWith("environment.")) {
+                        /* Handle migration from v1 to v2 api */
+                        eventName = name;
+                        name = part.replace("environment.", "stack.");
                     }
-                    processConfigs.put(part, config.getOnError());
+                    processConfigs.put(name, new Config(config.getOnError(), eventName));
                 }
             }
         }
@@ -71,9 +80,18 @@ public class ExternalHandlerActivate extends AbstractDefaultProcessHandler {
                             }
                         });
 
-                getObjectManager().create(ExternalHandlerExternalHandlerProcessMap.class, EXTERNAL_HANDLER_EXTERNAL_HANDLER_PROCESS_MAP.EXTERNAL_HANDLER_ID,
-                        externalHandler.getId(), EXTERNAL_HANDLER_EXTERNAL_HANDLER_PROCESS_MAP.EXTERNAL_HANDLER_PROCESS_ID, handlerProcess.getId(),
-                        EXTERNAL_HANDLER_EXTERNAL_HANDLER_PROCESS_MAP.ON_ERROR, processConfigs.get(processName));
+                Config config = processConfigs.get(processName);
+                String onError = null;
+                String eventName = null;
+                if (config != null) {
+                    onError = config.onError;
+                    eventName = config.eventName;
+                }
+                getObjectManager().create(ExternalHandlerExternalHandlerProcessMap.class,
+                        EXTERNAL_HANDLER_EXTERNAL_HANDLER_PROCESS_MAP.EXTERNAL_HANDLER_ID, externalHandler.getId(),
+                        EXTERNAL_HANDLER_EXTERNAL_HANDLER_PROCESS_MAP.EXTERNAL_HANDLER_PROCESS_ID, handlerProcess.getId(),
+                        EXTERNAL_HANDLER_EXTERNAL_HANDLER_PROCESS_MAP.ON_ERROR, onError,
+                        EXTERNAL_HANDLER_EXTERNAL_HANDLER_PROCESS_MAP.EVENT_NAME, eventName);
             }
         }
 
@@ -104,21 +122,14 @@ public class ExternalHandlerActivate extends AbstractDefaultProcessHandler {
         return getObjectManager().reload(process);
     }
 
-    public LockManager getLockManager() {
-        return lockManager;
-    }
+    private static class Config {
+        String onError;
+        String eventName;
 
-    @Inject
-    public void setLockManager(LockManager lockManager) {
-        this.lockManager = lockManager;
-    }
-
-    public GenericMapDao getMapDao() {
-        return mapDao;
-    }
-
-    @Inject
-    public void setMapDao(GenericMapDao mapDao) {
-        this.mapDao = mapDao;
+        public Config(String onError, String eventName) {
+            super();
+            this.onError = onError;
+            this.eventName = eventName;
+        }
     }
 }
