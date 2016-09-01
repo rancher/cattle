@@ -25,6 +25,7 @@ def test_create_env_and_svc(client, image_uuid):
     service = client.wait_success(service)
     assert service.state == "inactive"
     assert service.launchConfig.healthCheck is not None
+    assert service.environmentId == env.id
 
 
 def test_activate_lb_svc(super_client, context, client, image_uuid):

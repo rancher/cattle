@@ -44,6 +44,10 @@ public class ExternalHandlerActivate extends AbstractDefaultProcessHandler {
             for (ExternalHandlerProcessConfig config : list) {
                 String name = config.getName();
                 for (String part : name.toString().trim().split("\\s*,\\s*")) {
+                    /* Handle migration from v1 to v2 api */
+                    if (part.startsWith("environment.")) {
+                        part = part.replace("environment.", "stack.");
+                    }
                     processConfigs.put(part, config.getOnError());
                 }
             }

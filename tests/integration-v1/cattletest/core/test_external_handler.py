@@ -37,7 +37,7 @@ def _disable_test_handlers(client):
 @pytest.mark.nonparallel
 def test_external_handler(admin_user_client):
     name = '{}-{}'.format(TEST_HANDLER_PREFIX, random_str())
-    configs = [{'name': 'instance.start', 'onError': 'instance.stop'}]
+    configs = [{'name': 'environment.create', 'onError': 'instance.stop'}]
     h = admin_user_client.create_external_handler(name=name,
                                                   processConfigs=configs)
 
@@ -57,9 +57,9 @@ def test_external_handler(admin_user_client):
 
     process = maps[0].externalHandlerProcess()
     assert process.state == 'active'
-    assert process.name == 'instance.start'
+    assert process.name == 'stack.create'
 
-    ep = _get_extension(admin_user_client, 'process.instance.start.handlers',
+    ep = _get_extension(admin_user_client, 'process.stack.create.handlers',
                         name)
     assert ep is not None
 
