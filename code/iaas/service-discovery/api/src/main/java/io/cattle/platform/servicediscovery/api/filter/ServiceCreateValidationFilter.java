@@ -205,7 +205,7 @@ public class ServiceCreateValidationFilter extends AbstractDefaultResourceManage
         List<String> invalidStates = Arrays.asList(InstanceConstants.STATE_ERROR, CommonStatesConstants.REMOVED,
                 CommonStatesConstants.REMOVING);
         if (invalidStates.contains(env.getState())) {
-            throw new ValidationErrorException(ValidationErrorCodes.INVALID_STATE, ServiceDiscoveryConstants.TYPE_STACK);
+            throw new ValidationErrorException(ValidationErrorCodes.INVALID_STATE, ServiceDiscoveryConstants.FIELD_STACK_ID);
         }
     }
     

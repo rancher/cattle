@@ -48,6 +48,7 @@ public class ServiceDiscoveryConstants {
     public static final String FIELD_CURRENT_SCALE = "currentScale";
     public static final String FIELD_HEALTH_STATE = "healthState";
     public static final String FIELD_LOCKED_SCALE = "lockedScale";
+    public static final String FIELD_STACK_ID = "stackId";
 
     public static final String ACTION_SERVICE_ACTIVATE = "activate";
     public static final String ACTION_SERVICE_CREATE = "create";
