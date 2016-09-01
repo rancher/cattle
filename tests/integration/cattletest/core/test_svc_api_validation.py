@@ -249,7 +249,7 @@ def test_add_svc_to_removed_stack(client, context):
                               launchConfig=launch_config)
     assert e.value.error.status == 422
     assert e.value.error.code == 'InvalidState'
-    assert e.value.error.fieldName == 'stack'
+    assert e.value.error.fieldName == 'stackId'
 
     with pytest.raises(ApiError) as e:
         client.create_service(name=random_str(),
@@ -257,7 +257,7 @@ def test_add_svc_to_removed_stack(client, context):
                               launchConfig=launch_config)
     assert e.value.error.status == 422
     assert e.value.error.code == 'InvalidState'
-    assert e.value.error.fieldName == 'stack'
+    assert e.value.error.fieldName == 'stackId'
 
 
 def test_validate_launch_config_name(client, context):
