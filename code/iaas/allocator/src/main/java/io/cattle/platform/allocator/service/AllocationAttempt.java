@@ -1,7 +1,6 @@
 package io.cattle.platform.allocator.service;
 
 import io.cattle.platform.allocator.constraint.Constraint;
-import io.cattle.platform.allocator.constraint.IsValidConstraint;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.Nic;
 import io.cattle.platform.core.model.StoragePool;
@@ -82,8 +81,6 @@ public class AllocationAttempt {
                 }
             }
         }
-
-        constraints.add(new IsValidConstraint());
     }
 
     public Long getAccountId() {
