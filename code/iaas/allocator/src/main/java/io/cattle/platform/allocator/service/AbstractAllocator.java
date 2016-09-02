@@ -271,7 +271,7 @@ public abstract class AbstractAllocator implements Allocator {
 
                 boolean good = true;
                 for (Constraint constraint : attempt.getConstraints()) {
-                    boolean match = constraint.matches(attempt, candidate);
+                    boolean match = constraint.matches(candidate);
                     log.info("{}   checking candidate [{}] : {}", prefix, match, constraint);
                     if (!match) {
                         good = false;

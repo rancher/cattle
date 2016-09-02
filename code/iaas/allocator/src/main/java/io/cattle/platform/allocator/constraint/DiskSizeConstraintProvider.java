@@ -36,7 +36,7 @@ public class DiskSizeConstraintProvider implements AllocationConstraintsProvider
             String labelKey = labelEntry.getKey();
             String labelPrefix = SystemLabels.LABEL_SCHEDULER_DISKSIZE_PREFIX;
             if (labelKey.startsWith(labelPrefix) && labelKey.length() > labelPrefix.length()) {
-                constraints.add(new DiskSizeConstraint(objectManager));
+                constraints.add(new DiskSizeConstraint(instance, objectManager));
                 return;
             }
         }

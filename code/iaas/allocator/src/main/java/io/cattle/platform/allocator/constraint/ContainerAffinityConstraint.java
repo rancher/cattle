@@ -1,7 +1,6 @@
 package io.cattle.platform.allocator.constraint;
 
 import io.cattle.platform.allocator.constraint.AffinityConstraintDefinition.AffinityOps;
-import io.cattle.platform.allocator.service.AllocationAttempt;
 import io.cattle.platform.allocator.service.AllocationCandidate;
 import io.cattle.platform.core.dao.InstanceDao;
 import io.cattle.platform.core.model.Instance;
@@ -28,7 +27,7 @@ public class ContainerAffinityConstraint implements Constraint {
     }
 
     @Override
-    public boolean matches(AllocationAttempt attempt, AllocationCandidate candidate) {
+    public boolean matches(AllocationCandidate candidate) {
         if (candidate.getHost() == null) {
             return false;
         }

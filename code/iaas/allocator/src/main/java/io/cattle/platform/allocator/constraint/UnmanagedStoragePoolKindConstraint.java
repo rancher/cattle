@@ -1,6 +1,5 @@
 package io.cattle.platform.allocator.constraint;
 
-import io.cattle.platform.allocator.service.AllocationAttempt;
 import io.cattle.platform.allocator.service.AllocationCandidate;
 import io.cattle.platform.allocator.util.AllocatorUtils;
 import io.cattle.platform.core.model.StoragePool;
@@ -18,7 +17,7 @@ public class UnmanagedStoragePoolKindConstraint extends HardConstraint implement
     }
 
     @Override
-    public boolean matches(AllocationAttempt attempt, AllocationCandidate candidate) {
+    public boolean matches(AllocationCandidate candidate) {
         Set<Long> poolIds = candidate.getPools().get(volume.getId());
         for (Long id : poolIds) {
             StoragePool pool = candidate.loadResource(StoragePool.class, id);
