@@ -52,4 +52,6 @@ public interface AllocatorDao {
     List<Long> getInstancesWithVolumeMounted(long volumeId, long currentInstanceId);
 
     Map<String, List<InstanceHostMap>> getInstanceHostMapsWithHostUuid(long instanceId);
-}
+
+    List<Instance> getUnmappedDeploymentUnitInstances(String deploymentUnitUuid);
+ }

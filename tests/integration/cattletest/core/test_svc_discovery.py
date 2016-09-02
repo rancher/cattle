@@ -1281,12 +1281,20 @@ def test_service_spread_deployment(super_client, new_context):
 
     env = _create_stack(client)
     image_uuid = new_context.image_uuid
-    launch_config = {"imageUuid": image_uuid}
-
-    service = client.create_service(name=random_str(),
+    svc1_name = random_str()
+    launch_config = {
+        "imageUuid": image_uuid,
+        "labels": {
+            "io.rancher.scheduler.affinity:container_label_ne":
+                "io.rancher.stack_service.name=" +
+                env.name + '/' + svc1_name
+        }
+    }
+    service = client.create_service(name=svc1_name,
                                     stackId=env.id,
                                     launchConfig=launch_config,
                                     scale=2)
+
     service = client.wait_success(service)
     assert service.state == "inactive"
 
@@ -1299,7 +1307,6 @@ def test_service_spread_deployment(super_client, new_context):
     # containers should be spread across the hosts
     instance1 = _validate_compose_instance_start(client, service, env, "1")
     instance1_host = instance1.hosts()[0].id
-
     instance2 = _validate_compose_instance_start(client, service, env, "2")
     instance2_host = instance2.hosts()[0].id
     assert instance1_host != instance2_host

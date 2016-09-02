@@ -79,8 +79,9 @@ def test_spread(super_client, new_context):
 
     containers = []
     for _ in range(len(hosts) * count):
-        c = client.create_container(imageUuid=new_context.image_uuid,
-                                    networkMode='bridge')
+        c = client.wait_success(
+            client.create_container(imageUuid=new_context.image_uuid,
+                                    networkMode='bridge'))
         containers.append(c)
 
     wait_all_success(super_client, containers, timeout=60)
@@ -597,6 +598,7 @@ def test_volumes_from_constraint(new_context):
     # Three hosts
     register_simulated_host(new_context)
     register_simulated_host(new_context)
+    client = new_context.client
 
     containers = []
     try:
@@ -606,9 +608,9 @@ def test_volumes_from_constraint(new_context):
         c2 = new_context.create_container_no_success(startOnCreate=False,
                                                      dataVolumesFrom=[c1.id])
 
-        c1 = c1.start()
+        c1 = client.wait_success(c1.start())
+        assert c1.state == 'running'
         c2 = c2.start()
-        c1 = new_context.wait_for_state(c1, 'running')
         c2 = new_context.wait_for_state(c2, 'running')
 
         containers.append(c1)
@@ -624,9 +626,9 @@ def test_volumes_from_constraint(new_context):
         c4 = c4.start()
         c4 = new_context.client.wait_transitioning(c4)
         assert c4.transitioning == 'error'
-        assert c4.transitioningMessage == 'volumeFrom instance is not ' \
-                                          'running : Dependencies readiness' \
-                                          ' error'
+        print c4.transitioningMessage
+        assert c4.transitioningMessage.startswith(
+            'Scheduling failed: Dependent instance not allocated yet:')
     finally:
         for c in containers:
             new_context.delete(c)

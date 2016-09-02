@@ -1034,7 +1034,7 @@ def test_sidekick_restart_instances(client, context):
     # scale should be restored
     client.wait_success(instance11.stop())
     _instance_remove(instance22, client)
-    service = client.wait_success(service)
+    service = wait_state(client, service, 'active')
     service = client.update(service, scale=2, name=service.name)
     service = client.wait_success(service, 120)
 
@@ -1246,9 +1246,16 @@ def test_service_spread_deployment(super_client, new_context):
 
     env = _create_stack(client)
     image_uuid = new_context.image_uuid
-    launch_config = {"imageUuid": image_uuid}
-
-    service = client.create_service(name=random_str(),
+    svc1_name = random_str()
+    launch_config = {
+        "imageUuid": image_uuid,
+        "labels": {
+            "io.rancher.scheduler.affinity:container_label_ne":
+                "io.rancher.stack_service.name=" +
+                env.name + '/' + svc1_name
+        }
+    }
+    service = client.create_service(name=svc1_name,
                                     environmentId=env.id,
                                     launchConfig=launch_config,
                                     scale=2)

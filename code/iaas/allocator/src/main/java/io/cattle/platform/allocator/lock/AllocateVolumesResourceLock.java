@@ -18,7 +18,7 @@ public class AllocateVolumesResourceLock extends AbstractMultiLockDefinition {
 
         int i = 0;
         for (Volume v : volumes) {
-            result[i++] = new AllocateResourceLock(Type.VOLUME, v.getId());
+            result[i++] = new AllocateResourceBlockingLock(Type.VOLUME, v.getId());
         }
 
         return result;

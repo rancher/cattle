@@ -2,7 +2,6 @@ package io.cattle.platform.allocator.constraint;
 
 import io.cattle.platform.allocator.constraint.AffinityConstraintDefinition.AffinityOps;
 import io.cattle.platform.allocator.dao.AllocatorDao;
-import io.cattle.platform.allocator.service.AllocationAttempt;
 import io.cattle.platform.allocator.service.AllocationCandidate;
 
 public class ContainerLabelAffinityConstraint implements Constraint {
@@ -26,7 +25,7 @@ public class ContainerLabelAffinityConstraint implements Constraint {
     // If necessary we can do additional optimizations to allow multiple container label or host label
     // affinity constraints to share results from DB queries
     @Override
-    public boolean matches(AllocationAttempt attempt, AllocationCandidate candidate) {
+    public boolean matches(AllocationCandidate candidate) {
         if (candidate.getHost() == null) {
             return false;
         }

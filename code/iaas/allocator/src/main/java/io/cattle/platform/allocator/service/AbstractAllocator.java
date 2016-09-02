@@ -1,16 +1,19 @@
 package io.cattle.platform.allocator.service;
 
+import static io.cattle.platform.core.model.tables.InstanceHostMapTable.*;
 import io.cattle.platform.allocator.constraint.AllocationConstraintsProvider;
 import io.cattle.platform.allocator.constraint.Constraint;
 import io.cattle.platform.allocator.dao.AllocatorDao;
 import io.cattle.platform.allocator.exception.FailedToAllocate;
 import io.cattle.platform.allocator.lock.AllocateResourceLock;
 import io.cattle.platform.allocator.lock.AllocateVolumesResourceLock;
+import io.cattle.platform.allocator.service.AllocationAttempt.AllocationType;
 import io.cattle.platform.allocator.service.AllocationRequest.Type;
-import io.cattle.platform.allocator.util.AllocatorUtils;
+import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.model.Host;
 import io.cattle.platform.core.model.Instance;
+import io.cattle.platform.core.model.InstanceHostMap;
 import io.cattle.platform.core.model.Nic;
 import io.cattle.platform.core.model.StoragePool;
 import io.cattle.platform.core.model.Subnet;
@@ -115,7 +118,7 @@ public abstract class AbstractAllocator implements Allocator {
 
     protected void deallocateInstance(final AllocationRequest request) {
         final Instance instance = objectManager.loadResource(Instance.class, request.getResourceId()); 
-        if (AllocatorUtils.assertDeallocated(request.getResourceId(), instance.getAllocationState(), "Instance")) {
+        if (assertDeallocated(request.getResourceId(), instance.getAllocationState(), "Instance")) {
             return;
         }
 
@@ -128,45 +131,94 @@ public abstract class AbstractAllocator implements Allocator {
         allocatorDao.releaseAllocation(volume);
     }
 
+    protected List<Instance> getDeployementUnitInstances(Instance instance) {
+        if (instance.getDeploymentUnitUuid() != null) {
+            return allocatorDao.getUnmappedDeploymentUnitInstances(instance.getDeploymentUnitUuid());
+        } else {
+            List<Instance> instances = new ArrayList<>();
+            instances.add(instance);
+            return instances;
+        }
+    }
+
     protected void allocateInstance(final AllocationRequest request) {
-        final Instance instance = objectManager.loadResource(Instance.class, request.getResourceId());
-        if (AllocatorUtils.assertAllocated(request.getResourceId(), instance.getAllocationState(), "Instance")) {
-            return;
-        }
-
-        Host host = allocatorDao.getHost(instance);
-        final Long hostId = host == null ? null : host.getId();
-        final Set<Volume> volumes = new HashSet<Volume>(objectManager.children(instance, Volume.class));
-        volumes.addAll(InstanceHelpers.extractVolumesFromMounts(instance, objectManager));
-        final Map<Volume, Set<StoragePool>> pools = new HashMap<Volume, Set<StoragePool>>();
-
-        for (Volume v : volumes) {
-            pools.put(v, new HashSet<StoragePool>(allocatorDao.getAssociatedPools(v)));
-        }
-
-        final Set<Nic> nics = new HashSet<Nic>(objectManager.children(instance, Nic.class));
-        final Map<Nic, Subnet> subnets = new HashMap<Nic, Subnet>();
-
-        for (Nic n : nics) {
-            Subnet subnet = objectManager.loadResource(Subnet.class, n.getSubnetId());
-            if (subnet != null) {
-                subnets.put(n, subnet);
-            }
+        final Instance origInstance = objectManager.loadResource(Instance.class, request.getResourceId());
+        final List<Instance> instances = getDeployementUnitInstances(origInstance);
+        final Set<Volume> volumes = new HashSet<Volume>();
+        for (Instance instance : instances) {
+            volumes.addAll(objectManager.children(instance, Volume.class));
+            volumes.addAll(InstanceHelpers.extractVolumesFromMounts(instance, objectManager));
         }
 
         lockManager.lock(new AllocateVolumesResourceLock(volumes), new LockCallbackNoReturn() {
             @Override
             public void doWithLockNoResult() {
-                AllocationAttempt attempt = new AllocationAttempt(instance.getAccountId(), instance, hostId, volumes, pools, nics, subnets);
+                boolean origAllocated = assertAllocated(request.getResourceId(), origInstance.getAllocationState(), "Instance", true);
 
-                doAllocate(request, attempt, instance);
+                for (Instance instance : instances) {
+                    boolean allocated = assertAllocated(request.getResourceId(), instance.getAllocationState(), "Instance", false);
+                    if (origAllocated ^ allocated) {
+                        throw new FailedToAllocate(String.format("Instance %s is in allocation state %s and instance %s is in allocation state %s.",
+                                origInstance.getId(), origInstance.getAllocationState(), instance.getId(), instance.getAllocationState()));
+                    }
+                }
+
+                if (origAllocated) {
+                    return;
+                }
+
+                Map<Volume, Set<StoragePool>> pools = new HashMap<Volume, Set<StoragePool>>();
+                Set<Nic> nics = new HashSet<Nic>();
+                Map<Nic, Subnet> subnets = new HashMap<Nic, Subnet>();
+                Long tempReqHostId = null;
+                Long tempHostId = null;
+                for (Instance instance : instances) {
+                    Host host = allocatorDao.getHost(instance);
+                    if (host != null) {
+                        if (tempHostId == null) {
+                            tempHostId = host.getId();
+                        } else if (!tempHostId.equals(host.getId())) {
+                            throw new FailedToAllocate("Instances in deployment unit already assigned to different hosts.");
+                        }
+                    }
+
+                    Long rhid = DataAccessor.fields(instance).withKey(InstanceConstants.FIELD_REQUESTED_HOST_ID).as(Long.class);
+                    if (rhid != null) {
+                        if (tempReqHostId == null) {
+                            tempReqHostId = rhid;
+                        } else if (!tempReqHostId.equals(rhid)) {
+                            throw new FailedToAllocate(String.format(
+                                    "Instances in deployment unit have conflicting requested host ids. Current instance id: %s. Requested host ids: %s, %s.",
+                                    instance.getId(), tempReqHostId, rhid));
+                        }
+                    }
+
+                    for (Volume v : volumes) {
+                        pools.put(v, new HashSet<StoragePool>(allocatorDao.getAssociatedPools(v)));
+                    }
+
+                    nics.addAll(objectManager.children(instance, Nic.class));
+                    for (Nic n : nics) {
+                        Subnet subnet = objectManager.loadResource(Subnet.class, n.getSubnetId());
+                        if (subnet != null) {
+                            subnets.put(n, subnet);
+                        }
+                    }
+                }
+                Long hostId = tempHostId;
+                Long requestedHostId = tempReqHostId;
+
+                AllocationAttempt attempt =
+                        new AllocationAttempt(AllocationType.INSTANCE, origInstance.getAccountId(), instances, hostId, requestedHostId, volumes, pools, nics,
+                                subnets);
+                doAllocate(request, attempt);
             }
         });
     }
 
     protected void deallocateVolume(AllocationRequest request) {
         final Volume volume = objectManager.loadResource(Volume.class, request.getResourceId());
-        if (AllocatorUtils.assertDeallocated(request.getResourceId(), volume.getAllocationState(), "Volume")) {
+        if (assertDeallocated(request.getResourceId(), volume.getAllocationState(), "Volume")) {
             return;
         }
 
@@ -175,7 +227,7 @@ public abstract class AbstractAllocator implements Allocator {
 
     protected void allocateVolume(AllocationRequest request) {
         Volume volume = objectManager.loadResource(Volume.class, request.getResourceId());
-        if(AllocatorUtils.assertAllocated(request.getResourceId(), volume.getAllocationState(), "Volume")) {
+        if(assertAllocated(request.getResourceId(), volume.getAllocationState(), "Volume", true)) {
             return;
         }
 
@@ -186,24 +238,24 @@ public abstract class AbstractAllocator implements Allocator {
         Set<StoragePool> associatedPools = new HashSet<StoragePool>(allocatorDao.getAssociatedPools(volume));
         pools.put(volume, associatedPools);
 
-        AllocationAttempt attempt = new AllocationAttempt(volume.getAccountId(), null, null, volumes, pools, null, null);
+        AllocationAttempt attempt = new AllocationAttempt(AllocationType.VOLUME, volume.getAccountId(), null, null, null, volumes, pools, null, null);
 
-        doAllocate(request, attempt, volume);
+        doAllocate(request, attempt);
     }
 
-    protected void doAllocate(final AllocationRequest request, final AllocationAttempt attempt, Object deallocate) {
+    protected void doAllocate(final AllocationRequest request, final AllocationAttempt attempt) {
         AllocationLog log = getLog(request);
         populateConstraints(attempt, log);
 
         Context c = allocateLockTimer.time();
         try {
-            acquireLockAndAllocate(request, attempt, deallocate);
+            acquireLockAndAllocate(request, attempt);
         } finally {
             c.stop();
         }
     }
 
-    protected void acquireLockAndAllocate(final AllocationRequest request, final AllocationAttempt attempt, Object deallocate) {
+    protected void acquireLockAndAllocate(final AllocationRequest request, final AllocationAttempt attempt) {
         final List<Constraint> finalFailedConstraints = new ArrayList<>();
         lockManager.lock(getAllocationLock(request, attempt), new LockCallbackNoReturn() {
             @Override
@@ -269,17 +321,18 @@ public abstract class AbstractAllocator implements Allocator {
                 String prefix = String.format("[%s][%s]", attempt.getId(), candidate.getId());
                 logCandidate(prefix, attempt, candidate);
 
+                StringBuilder lg = new StringBuilder(String.format("%s Checking constraints:\n", prefix));
                 boolean good = true;
                 for (Constraint constraint : attempt.getConstraints()) {
-                    boolean match = constraint.matches(attempt, candidate);
-                    log.info("{}   checking candidate [{}] : {}", prefix, match, constraint);
+                    boolean match = constraint.matches(candidate);
+                    lg.append(String.format("  %s   constraint result [%s] : %s\n", prefix, match, constraint));
                     if (!match) {
                         good = false;
                         failedConstraints.add(constraint);
                     }
                 }
-
-                log.info("{}   candidates result [{}]", prefix, good);
+                lg.append(String.format("  %s   candidate result  [%s]", prefix, good));
+                log.info(lg.toString());
                 if (good) {
                     if (candidate.getHost() != null && request.getType() == Type.VOLUME) {
                         throw new IllegalStateException("Attempting to allocate hosts during a volume allocation");
@@ -355,38 +408,44 @@ public abstract class AbstractAllocator implements Allocator {
     }
 
     protected void logCandidate(String prefix, AllocationAttempt attempt, AllocationCandidate candidate) {
-        log.info("{} Checking candidate:", prefix);
+        StringBuilder candidateLog = new StringBuilder(String.format("%s Checking candidate:\n", prefix));
         if (candidate.getHost() != null) {
-            log.info("{}   host [{}]", prefix, candidate.getHost());
+            candidateLog.append(String.format("  %s   host [%s]\n", prefix, candidate.getHost()));
         }
         for (Map.Entry<Long, Set<Long>> entry : candidate.getPools().entrySet()) {
-            log.info("{}   volume [{}]", prefix, entry.getKey());
+            candidateLog.append(String.format("  %s   volume [%s]\n", prefix, entry.getKey()));
             for (long poolId : entry.getValue()) {
-                log.info("{}     pool [{}]", prefix, poolId);
+                candidateLog.append(String.format("  %s   pool [%s]\n", prefix, poolId));
             }
         }
         for (Map.Entry<Long, Long> entry : candidate.getSubnetIds().entrySet()) {
-            log.info("{}   nic [{}] subnet [{}]", prefix, entry.getKey(), entry.getValue());
+            candidateLog.append(String.format("  %s   nic [%s] subnet [%s]\n", prefix, entry.getKey(), entry.getValue()));
         }
+        log.info(candidateLog.toString());
     }
 
-    protected void logStart(AllocationAttempt request) {
-        String id = request.getId();
-        log.info("[{}] Attemping allocation for:", id);
-        if (request.getInstance() != null) {
-            log.info("[{}]   instance [{}]", id, request.getInstance().getId());
+    protected void logStart(AllocationAttempt attempt) {
+        String id = attempt.getId();
+        StringBuilder candidateLog = new StringBuilder(String.format("[%s] Attempting allocation for:\n", id));
+        if (attempt.getInstances() != null) {
+            List<Long>instanceIds = new ArrayList<Long>();
+            for (Instance i : attempt.getInstances()) {
+                instanceIds.add(i.getId());
+            }
+            candidateLog.append(String.format("  [%s] instance [%s]\n", id, instanceIds));
         }
-        for (Map.Entry<Volume, Set<StoragePool>> entry : request.getPools().entrySet()) {
+        for (Map.Entry<Volume, Set<StoragePool>> entry : attempt.getPools().entrySet()) {
             long volumeId = entry.getKey().getId();
-            log.info("[{}]   volume [{}]", id, volumeId);
+            candidateLog.append(String.format("  [%s] volume [%s]\n", id, volumeId));
             for (StoragePool pool : entry.getValue()) {
-                log.info("[{}]     pool [{}]", id, pool.getId());
+                candidateLog.append(String.format("  [%s] pool [%s]\n", id, pool.getId()));
             }
         }
-        log.info("[{}] constraints:", id);
-        for (Constraint constraint : request.getConstraints()) {
-            log.info("[{}]   {}", id, constraint);
+        candidateLog.append(String.format("  [%s] constraints:\n", id));
+        for (Constraint constraint : attempt.getConstraints()) {
+            candidateLog.append(String.format("  [%s]   %s\n", id, constraint));
         }
+        log.info(candidateLog.toString());
     }
 
     protected void close(Iterator<AllocationCandidate> iter) {
@@ -397,14 +456,8 @@ public abstract class AbstractAllocator implements Allocator {
     protected void populateConstraints(AllocationAttempt attempt, AllocationLog log) {
         List<Constraint> constraints = attempt.getConstraints();
 
-        Instance instance = attempt.getInstance();
-        Long requestedHostId = null;
-        if (instance != null) {
-            requestedHostId = DataAccessor.fields(instance).withKey(InstanceConstants.FIELD_REQUESTED_HOST_ID).as(Long.class);
-        }
-
         for (AllocationConstraintsProvider provider : allocationConstraintProviders) {
-            if (requestedHostId == null || provider.isCritical()) {
+            if (attempt.getRequestedHostId() == null || provider.isCritical()) {
                 provider.appendConstraints(attempt, log, constraints);
             }
         }
@@ -419,6 +472,28 @@ public abstract class AbstractAllocator implements Allocator {
                 return 1;
             }
         });
+    }
+
+    public boolean assertAllocated(long resourceId, String state, String type, boolean raiseOnBadState) {
+        if (CommonStatesConstants.ACTIVE.equals(state) || ("instance".equalsIgnoreCase(type)
+                && objectManager.findAny(InstanceHostMap.class, INSTANCE_HOST_MAP.INSTANCE_ID, resourceId, INSTANCE_HOST_MAP.REMOVED, null) != null)){
+            log.info("{} [{}] is already allocated", type, resourceId);
+            return true;
+        }else if (raiseOnBadState && !CommonStatesConstants.ACTIVATING.equals(state)) {
+            throw new FailedToAllocate(String.format("Illegal allocation state: %s", state));
+        }
+        return false;
+    }
+
+    public static boolean assertDeallocated(long resourceId, String state, String logType) {
+        if (CommonStatesConstants.INACTIVE.equals(state)) {
+            log.info("{} [{}] is already deallocated", logType, resourceId);
+            return true;
+        } else if (!CommonStatesConstants.DEACTIVATING.equals(state)) {
+            throw new FailedToAllocate(String.format("Illegal deallocation state: %s", state));
+        }
+
+        return false;
     }
 
     @Inject

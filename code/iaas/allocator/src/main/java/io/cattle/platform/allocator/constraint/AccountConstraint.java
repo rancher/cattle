@@ -1,6 +1,5 @@
 package io.cattle.platform.allocator.constraint;
 
-import io.cattle.platform.allocator.service.AllocationAttempt;
 import io.cattle.platform.allocator.service.AllocationCandidate;
 
 public class AccountConstraint extends HardConstraint implements Constraint {
@@ -11,7 +10,7 @@ public class AccountConstraint extends HardConstraint implements Constraint {
     }
 
     @Override
-    public boolean matches(AllocationAttempt attempt, AllocationCandidate candidate) {
+    public boolean matches(AllocationCandidate candidate) {
         // This constraint and doesn't need to  do any matching since the query will limit allocation based on account id.
         return true;
     }

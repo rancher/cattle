@@ -11,7 +11,6 @@ import io.cattle.platform.allocator.service.AllocationAttempt;
 import io.cattle.platform.allocator.service.AllocationCandidate;
 import io.cattle.platform.allocator.service.AllocationRequest;
 import io.cattle.platform.allocator.service.Allocator;
-import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.dao.GenericMapDao;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.InstanceHostMap;
@@ -69,27 +68,27 @@ public class SimpleAllocator extends AbstractAllocator implements Allocator, Nam
     }
 
     @Override
-    protected Iterator<AllocationCandidate> getCandidates(AllocationAttempt request) {
-        List<Long> volumeIds = new ArrayList<Long>(request.getVolumeIds());
+    protected Iterator<AllocationCandidate> getCandidates(AllocationAttempt attempt) {
+        List<Long> volumeIds = new ArrayList<Long>(attempt.getVolumeIds());
 
         QueryOptions options = new QueryOptions();
 
-        options.setAccountId(request.getAccountId());
+        options.setAccountId(attempt.getAccountId());
 
-        for (Constraint constraint : request.getConstraints()) {
+        for (Constraint constraint : attempt.getConstraints()) {
             if (constraint instanceof ValidHostsConstraint) {
                 options.getHosts().addAll(((ValidHostsConstraint)constraint).getHosts());
             }
         }
 
-        if (request.getInstance() == null) {
+        if (!attempt.isInstanceAllocation()) {
             return simpleAllocatorDao.iteratorPools(volumeIds, options);
         } else {
             List<String> orderedHostUUIDs = null;
-            if (DataAccessor.fields(request.getInstance()).withKey(InstanceConstants.FIELD_REQUESTED_HOST_ID) == null) {
-                orderedHostUUIDs = callExternalSchedulerForHosts(request.getInstance());
+            if (attempt.getRequestedHostId() == null) {
+                orderedHostUUIDs = callExternalSchedulerForHosts(attempt);
             }
-            return simpleAllocatorDao.iteratorHosts(orderedHostUUIDs, volumeIds, options, getCallback(request));
+            return simpleAllocatorDao.iteratorHosts(orderedHostUUIDs, volumeIds, options, getCallback(attempt));
         }
     }
 
@@ -97,13 +96,13 @@ public class SimpleAllocator extends AbstractAllocator implements Allocator, Nam
     protected void releaseAllocation(Instance instance) {
         // This is kind of strange logic to remove deallocatefor every instance host map, but in truth there will be only one ihm
         Map<String, List<InstanceHostMap>> maps = allocatorDao.getInstanceHostMapsWithHostUuid(instance.getId());
-        for (Map.Entry<String, List<InstanceHostMap>>entry : maps.entrySet()) {
+        for (Map.Entry<String, List<InstanceHostMap>> entry : maps.entrySet()) {
             for (InstanceHostMap map : entry.getValue()) {
                 DataAccessor data = DataAccessor.fromDataFieldOf(map)
                                         .withScope(AllocatorDao.class)
                                         .withKey("deallocated");
                 Boolean done = data.as(Boolean.class);
-                if ( done == null || ! done.booleanValue() ) {
+                if (done == null || !done.booleanValue()) {
                     allocatorDao.releaseAllocation(instance, map);
                     callExternalSchedulerToRelease(instance, entry.getKey());
                 }
@@ -113,7 +112,7 @@ public class SimpleAllocator extends AbstractAllocator implements Allocator, Nam
 
     @Override
     protected boolean recordCandidate(AllocationAttempt attempt, AllocationCandidate candidate) {
-        if (attempt.getInstance() != null) {
+        if (attempt.isInstanceAllocation()) {
             Long existingHost = attempt.getHostId();
             Long newHost = candidate.getHost();
             if (existingHost == null && newHost != null) {
@@ -124,14 +123,15 @@ public class SimpleAllocator extends AbstractAllocator implements Allocator, Nam
     }
 
     void callExternalSchedulerToReserve(AllocationAttempt attempt, AllocationCandidate candidate) {
-        Long agentId = getAgentResource(attempt.getInstance());
+        Long agentId = getAgentResource(attempt.getAccountId(), attempt.getInstances());
         if (agentId != null) {
-            EventVO<Map<String, Object>> schedulerEvent = buildExternalSchedulerEvent(attempt.getInstance(), SCHEDULER_RESERVE_EVENT);
+            EventVO<Map<String, Object>> schedulerEvent = buildExternalSchedulerEvent(SCHEDULER_RESERVE_EVENT, (Instance[])attempt.getInstances().toArray());
+            ;
             if (schedulerEvent != null) {
                 Map<String, Object> reqData = CollectionUtils.toMap(schedulerEvent.getData().get(SCHEDULER_REQUEST_DATA_NAME));
                 reqData.put(HOST_ID, candidate.getHostUuid());
 
-                if (DataAccessor.fields(attempt.getInstance()).withKey(InstanceConstants.FIELD_REQUESTED_HOST_ID) != null) {
+                if (attempt.getRequestedHostId() != null) {
                     reqData.put(FORCE_RESERVE, true);
                 }
 
@@ -144,7 +144,7 @@ public class SimpleAllocator extends AbstractAllocator implements Allocator, Nam
     void callExternalSchedulerToRelease(Instance instance, String hostUuid) {
         Long agentId = getAgentResource(instance);
         if (agentId != null) {
-            EventVO<Map<String, Object>> schedulerEvent = buildExternalSchedulerEvent(instance, SCHEDULER_RELEASE_EVENT);
+            EventVO<Map<String, Object>> schedulerEvent = buildExternalSchedulerEvent(SCHEDULER_RELEASE_EVENT, instance);
             if (schedulerEvent != null) {
                 Map<String, Object> reqData = CollectionUtils.toMap(schedulerEvent.getData().get(SCHEDULER_REQUEST_DATA_NAME));
                 reqData.put(HOST_ID, hostUuid);
@@ -155,11 +155,11 @@ public class SimpleAllocator extends AbstractAllocator implements Allocator, Nam
     }
 
     @SuppressWarnings("unchecked")
-    private List<String> callExternalSchedulerForHosts(Instance instance) {
+    private List<String> callExternalSchedulerForHosts(AllocationAttempt attempt) {
         List<String> hosts = null;
-        Long agentId = getAgentResource(instance);
+        Long agentId = getAgentResource(attempt.getAccountId(), attempt.getInstances());
         if (agentId != null) {
-            EventVO<Map<String, Object>> schedulerEvent = buildExternalSchedulerEvent(instance, SCHEDULER_PRIORITIZE_EVENT);
+            EventVO<Map<String, Object>> schedulerEvent = buildExternalSchedulerEvent(SCHEDULER_PRIORITIZE_EVENT, (Instance[])attempt.getInstances().toArray());
 
             if (schedulerEvent != null) {
                 RemoteAgent agent = agentLocator.lookupAgent(agentId);
@@ -170,8 +170,8 @@ public class SimpleAllocator extends AbstractAllocator implements Allocator, Nam
         return hosts;
     }
 
-    EventVO<Map<String, Object>> buildExternalSchedulerEvent(Instance instance, String eventName) {
-        List<ResourceRequest> resourceRequests = gatherResourceRequests(instance);
+    EventVO<Map<String, Object>> buildExternalSchedulerEvent(String eventName, Instance... instances) {
+        List<ResourceRequest> resourceRequests = gatherResourceRequests(instances);
         if (resourceRequests == null || resourceRequests.isEmpty()) {
             return null;
         }
@@ -179,15 +179,21 @@ public class SimpleAllocator extends AbstractAllocator implements Allocator, Nam
         Map<String, Object> reqData = new HashMap<>();
         reqData.put(RESOURCE_REQUESTS, resourceRequests);
         eventData.put(SCHEDULER_REQUEST_DATA_NAME, reqData);
-        EventVO<Map<String, Object>> schedulerEvent = EventVO.<Map<String, Object>>newEvent(eventName).withData(eventData);
+        EventVO<Map<String, Object>> schedulerEvent = EventVO.<Map<String, Object>> newEvent(eventName).withData(eventData);
         schedulerEvent.setResourceType(SCHEDULER_REQUEST_DATA_NAME);
         return schedulerEvent;
     }
 
-    private List<ResourceRequest> gatherResourceRequests(Instance instance) {
+    private List<ResourceRequest> gatherResourceRequests(Instance[] instances) {
         List<ResourceRequest> requests = new ArrayList<>();
-        Long memory = DataAccessor.fieldLong(instance, "memory");
-        if (memory != null) {
+        long memory = 0l;
+        for (Instance instance : instances) {
+            Long instMemory = DataAccessor.fieldLong(instance, "memory");
+            if (instMemory != null) {
+                memory += instMemory;
+            }
+        }
+        if (memory > 0l) {
             ResourceRequest rr = new ResourceRequest();
             rr.setAmount(memory);
             rr.setResource("memory");
@@ -197,22 +203,32 @@ public class SimpleAllocator extends AbstractAllocator implements Allocator, Nam
         return requests;
     }
 
-    private Long getAgentResource(Instance instance) {
-        Long accountId = instance.getAccountId();
+    private Long getAgentResource(Long accountId, List<Instance> instances) {
         List<Long> agentIds = agentInstanceDao.getAgentProvider(SystemLabels.LABEL_AGENT_SERVICE_SCHEDULING_PROVIDER, accountId);
         Long agentId = agentIds.size() == 0 ? null : agentIds.get(0);
-        if ((instance instanceof Instance) && agentIds.contains(instance.getAgentId())) {
+        for (Instance instance : instances) {
+            if (agentIds.contains(instance.getAgentId())) {
+                return null;
+            }
+        }
+        return agentId;
+    }
+
+    private Long getAgentResource(Instance instance) {
+        List<Long> agentIds = agentInstanceDao.getAgentProvider(SystemLabels.LABEL_AGENT_SERVICE_SCHEDULING_PROVIDER, instance.getAccountId());
+        Long agentId = agentIds.size() == 0 ? null : agentIds.get(0);
+        if (agentIds.contains(instance.getAgentId())) {
             return null;
         }
         return agentId;
     }
 
-    protected AllocationCandidateCallback getCallback(AllocationAttempt request) {
-        if (request.getInstance() == null) {
+    protected AllocationCandidateCallback getCallback(AllocationAttempt attempt) {
+        if (!attempt.isInstanceAllocation()) {
             return null;
         }
 
-        return new NetworkAllocationCandidates(objectManager, request);
+        return new NetworkAllocationCandidates(objectManager, attempt);
     }
 
     @Override
