@@ -1,6 +1,7 @@
 from common_fixtures import *  # NOQA
 import yaml
 from netaddr import IPNetwork, IPAddress
+from cattle import ApiError
 
 
 def _create_stack(client):
@@ -93,17 +94,89 @@ def test_env_set_outputs(client, context):
     assert env.outputs == {'foo': 'bar', 'foo2': 'bar2', 'foo3': 'bar3'}
 
 
-def test_activate_single_service(client, context, super_client):
+def test_registries(super_client, client, context,
+                    admin_user_client):
+    id = 'registry.default'
+    default_registry = admin_user_client.by_id_setting(id)
+
+    id = 'registry.whitelist'
+    whitelist_registries = admin_user_client.by_id_setting(id)
+
+    default_value = 'sim:localhost.localdomain:5000'
+    whitelist_value = 'sim:localhost.localdomain:5000,index.docker.io'
+    whitelist_value = whitelist_value+',sim:rancher,docker.io'
+    default_registry = admin_user_client.update(default_registry,
+                                                value=default_value)
+    whitelist_registries = admin_user_client.update(whitelist_registries,
+                                                    value=whitelist_value)
+
+    env = _create_stack(client)
+
+    uuid = "sim:namespace/ubuntu:{}".format(random_num())
+    lc_registry = {"imageUuid": uuid}
+    with pytest.raises(ApiError) as e:
+        service = client.create_service(name=random_str(),
+                                        stackId=env.id,
+                                        launchConfig=lc_registry,
+                                        scale=1)
+    assert e.value.error.status == 422
+    assert e.value.error.code == 'InvalidOption'
+
+    uuid = "sim:localhost.localdomain:5000/ubuntu:{}".format(random_num())
+    lc_registry = {"imageUuid": uuid}
+    service = client.create_service(name=random_str(),
+                                    stackId=env.id,
+                                    launchConfig=lc_registry,
+                                    scale=1)
+
+    assert service.launchConfig.imageUuid == uuid
+
+    uuid1 = "ubuntu:v1"
+    lc_registry = {"imageUuid": uuid1}
+    lc_registry_sec = {"imageUuid": uuid1, "name": "secondary"}
+    service = client.create_service(name=random_str(),
+                                    stackId=env.id,
+                                    launchConfig=lc_registry,
+                                    secondaryLaunchConfigs=[lc_registry_sec],
+                                    scale=1)
+
+    uuid2 = 'sim:localhost.localdomain:5000/ubuntu:v1'
+    assert service.launchConfig.imageUuid == uuid2
+    assert service.secondaryLaunchConfigs[0].imageUuid == uuid2
+
+    uuid1 = "ubuntu:v1"
+    lc_registry = {"imageUuid": uuid1}
+    launch_config_upgrade = {"imageUuid": "sim:registry/ubuntu:v1"}
+    service = client.create_service(name=random_str(),
+                                    stackId=env.id,
+                                    launchConfig=lc_registry,
+                                    scale=1)
+    service = wait_state(client, service, 'inactive')
+    with pytest.raises(ApiError) as e:
+        strategy = {"launchConfig": launch_config_upgrade,
+                    "intervalMillis": 100}
+        service.upgrade_action(inServiceStrategy=strategy)
+    assert e.value.error.status == 422
+    assert e.value.error.code == 'InvalidOption'
+
+    default_registry = admin_user_client.update(default_registry,
+                                                value='')
+
+
+def test_activate_single_service(client, context,
+                                 super_client, admin_user_client):
     env = _create_stack(client)
 
     image_uuid = context.image_uuid
-    host = context.host
+
     container1 = client.create_container(imageUuid=image_uuid,
                                          startOnCreate=True)
-    container1 = client.wait_success(container1)
-
     container2 = client.create_container(imageUuid=image_uuid,
                                          startOnCreate=True)
+
+    host = context.host
+    container1 = client.wait_success(container1)
+
     container2 = client.wait_success(container2)
 
     caps = ["SYS_MODULE"]
@@ -1513,7 +1586,13 @@ def test_global_add_host(new_context):
 
 
 def test_svc_container_reg_cred_and_image(super_client, client):
+    id = 'registry.whitelist'
+    whitelist_registries = super_client.by_id_setting(id)
+
     server = 'server{0}.io'.format(random_num())
+    whitelist_value = 'index.docker.io,'+server
+    whitelist_registries = super_client.update(whitelist_registries,
+                                               value=whitelist_value)
     registry = client.create_registry(serverAddress=server,
                                       name=random_str())
     registry = client.wait_success(registry)

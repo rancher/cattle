@@ -1,6 +1,7 @@
 package io.cattle.platform.servicediscovery.api.filter;
 
 import static io.cattle.platform.core.model.tables.ServiceTable.*;
+import io.cattle.platform.archaius.util.ArchaiusUtil;
 import io.cattle.platform.core.addon.InstanceHealthCheck;
 import io.cattle.platform.core.addon.ScalePolicy;
 import io.cattle.platform.core.constants.CommonStatesConstants;
@@ -24,6 +25,7 @@ import io.github.ibuildthecloud.gdapi.exception.ValidationErrorException;
 import io.github.ibuildthecloud.gdapi.request.ApiRequest;
 import io.github.ibuildthecloud.gdapi.request.resource.ResourceManager;
 import io.github.ibuildthecloud.gdapi.validation.ValidationErrorCodes;
+import io.cattle.platform.storage.api.filter.ExternalTemplateInstanceFilter;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -35,6 +37,8 @@ import java.util.Map;
 import java.util.Set;
 
 import javax.inject.Inject;
+
+import com.netflix.config.DynamicStringProperty;
 
 public class ServiceCreateValidationFilter extends AbstractDefaultResourceManagerFilter {
 
@@ -54,6 +58,8 @@ public class ServiceCreateValidationFilter extends AbstractDefaultResourceManage
     JsonMapper jsonMapper;
     
     private static final int LB_HEALTH_CHECK_PORT = 42;
+    public static final DynamicStringProperty DEFAULT_REGISTRY = ArchaiusUtil.getString("registry.default");
+    public static final DynamicStringProperty WHITELIST_REGISTRIES = ArchaiusUtil.getString("registry.whitelist");
 
     @Override
     public Class<?>[] getTypeClasses() {
@@ -79,7 +85,7 @@ public class ServiceCreateValidationFilter extends AbstractDefaultResourceManage
 
         validateIpsHostName(request);
 
-        validateImage(request, service);
+        request = validateAndSetImage(request, service);
 
         validatePorts(service, type, request);
 
@@ -224,17 +230,41 @@ public class ServiceCreateValidationFilter extends AbstractDefaultResourceManage
         }
     }
 
-    protected void validateImage(ApiRequest request, Service service) {
-        List<Map<String, Object>> launchConfigs = populateLaunchConfigs(service, request);
-        for (Map<String, Object> launchConfig : launchConfigs) {
-            Object imageUuid = launchConfig.get(InstanceConstants.FIELD_IMAGE_UUID);
-            if (imageUuid != null && !imageUuid.toString().equalsIgnoreCase(ServiceConstants.IMAGE_NONE)) {
-                if (!storageService.isValidUUID(imageUuid.toString())) {
-                    throw new ValidationErrorException(ValidationErrorCodes.INVALID_REFERENCE,
-                            InstanceConstants.FIELD_IMAGE_UUID);
+    @SuppressWarnings("unchecked")
+    protected ApiRequest validateAndSetImage(ApiRequest request, Service service) {
+        Map<String, Object> data = CollectionUtils.toMap(request.getRequestObject());
+        if (data.get(ServiceConstants.FIELD_LAUNCH_CONFIG) != null) {
+            Map<String, Object> launchConfig = (Map<String, Object>)data.get(ServiceConstants.FIELD_LAUNCH_CONFIG);
+            if (launchConfig.get(InstanceConstants.FIELD_IMAGE_UUID) != null) {
+                Object imageUuid = launchConfig.get(InstanceConstants.FIELD_IMAGE_UUID);
+                if (imageUuid != null && !imageUuid.toString().equalsIgnoreCase(ServiceConstants.IMAGE_NONE)) {
+                    String fullImageName = ExternalTemplateInstanceFilter.getImageUuid(imageUuid.toString(), storageService);
+                    launchConfig.put(InstanceConstants.FIELD_IMAGE_UUID, fullImageName);
+                    data.put(ServiceConstants.FIELD_LAUNCH_CONFIG, launchConfig);
                 }
             }
         }
+
+        List<Object> modifiedSlcs = new ArrayList<>();
+        if (data.get(ServiceConstants.FIELD_SECONDARY_LAUNCH_CONFIGS) != null) {
+           List<Object> slcs = (List<Object>)data.get(ServiceConstants.FIELD_SECONDARY_LAUNCH_CONFIGS);
+           for (Object slcObj : slcs) {
+                Map<String, Object> slc = (Map<String, Object>) slcObj;
+                if (slc.get(InstanceConstants.FIELD_IMAGE_UUID) != null) {
+                    Object imageUuid = slc.get(InstanceConstants.FIELD_IMAGE_UUID);
+                    if (imageUuid != null && !imageUuid.toString().equalsIgnoreCase(ServiceConstants.IMAGE_NONE)) {
+                        String fullImageName = ExternalTemplateInstanceFilter.getImageUuid(imageUuid.toString(), storageService);
+                        slc.put(InstanceConstants.FIELD_IMAGE_UUID, fullImageName);
+                    }
+                }
+                modifiedSlcs.add(slc);
+            }
+
+            data.put(ServiceConstants.FIELD_SECONDARY_LAUNCH_CONFIGS, modifiedSlcs);
+        }
+
+        request.setRequestObject(data);
+        return request;
     }
 
     protected void validateIpsHostName(ApiRequest request) {
