@@ -131,7 +131,7 @@ public class ExternalServiceEventCreate extends AbstractDefaultProcessHandler {
         }
         final String envExtId = eId.toString();
 
-        Stack stack = objectManager.findOne(Stack.class, STACK.EXTERNAL_ID, envExtId);              
+        Stack stack = stackDao.getStackByExternalId(event.getAccountId(), envExtId);
          //If stack has not been created yet
         if (stack == null) {
             final Stack newEnv = objectManager.newRecord(Stack.class);
@@ -160,10 +160,6 @@ public class ExternalServiceEventCreate extends AbstractDefaultProcessHandler {
                     return "active state";
                 }
             });
-        } // If stack was created and removed as well
-        else if (stack.getRemoved() != null) {
-            // This will return null and ensure that service does not get created
-            return null;
         }
         return stack;
     }
