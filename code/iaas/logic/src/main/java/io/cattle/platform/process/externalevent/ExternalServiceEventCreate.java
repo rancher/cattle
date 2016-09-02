@@ -131,7 +131,7 @@ public class ExternalServiceEventCreate extends AbstractDefaultProcessHandler {
         }
         final String envExtId = eId.toString();
 
-        Environment environment = objectManager.findOne(Environment.class, ENVIRONMENT.EXTERNAL_ID, envExtId);              
+        Environment environment = environmentDao.getEnvironmentByExternalId(event.getAccountId(), envExtId);
          //If environment has not been created yet
         if (environment == null) {
             final Environment newEnv = objectManager.newRecord(Environment.class);
@@ -155,10 +155,6 @@ public class ExternalServiceEventCreate extends AbstractDefaultProcessHandler {
                     return obj != null && CommonStatesConstants.ACTIVE.equals(obj.getState());
                 }
             });
-        } // If environment was created and removed as well
-        else if (environment.getRemoved() != null) {
-            // This will return null and ensure that service does not get created
-            return null;
         }
         return environment;
     }
