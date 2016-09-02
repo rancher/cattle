@@ -69,27 +69,27 @@ public class SimpleAllocator extends AbstractAllocator implements Allocator, Nam
     }
 
     @Override
-    protected Iterator<AllocationCandidate> getCandidates(AllocationAttempt request) {
-        List<Long> volumeIds = new ArrayList<Long>(request.getVolumeIds());
+    protected Iterator<AllocationCandidate> getCandidates(AllocationAttempt attempt) {
+        List<Long> volumeIds = new ArrayList<Long>(attempt.getVolumeIds());
 
         QueryOptions options = new QueryOptions();
 
-        options.setAccountId(request.getAccountId());
+        options.setAccountId(attempt.getAccountId());
 
-        for (Constraint constraint : request.getConstraints()) {
+        for (Constraint constraint : attempt.getConstraints()) {
             if (constraint instanceof ValidHostsConstraint) {
                 options.getHosts().addAll(((ValidHostsConstraint)constraint).getHosts());
             }
         }
 
-        if (request.getInstance() == null) {
+        if (attempt.getInstance() == null) {
             return simpleAllocatorDao.iteratorPools(volumeIds, options);
         } else {
             List<String> orderedHostUUIDs = null;
-            if (DataAccessor.fields(request.getInstance()).withKey(InstanceConstants.FIELD_REQUESTED_HOST_ID) == null) {
-                orderedHostUUIDs = callExternalSchedulerForHosts(request.getInstance());
+            if (DataAccessor.fields(attempt.getInstance()).withKey(InstanceConstants.FIELD_REQUESTED_HOST_ID) == null) {
+                orderedHostUUIDs = callExternalSchedulerForHosts(attempt.getInstance());
             }
-            return simpleAllocatorDao.iteratorHosts(orderedHostUUIDs, volumeIds, options, getCallback(request));
+            return simpleAllocatorDao.iteratorHosts(orderedHostUUIDs, volumeIds, options, getCallback(attempt));
         }
     }
 
@@ -207,12 +207,12 @@ public class SimpleAllocator extends AbstractAllocator implements Allocator, Nam
         return agentId;
     }
 
-    protected AllocationCandidateCallback getCallback(AllocationAttempt request) {
-        if (request.getInstance() == null) {
+    protected AllocationCandidateCallback getCallback(AllocationAttempt attempt) {
+        if (attempt.getInstance() == null) {
             return null;
         }
 
-        return new NetworkAllocationCandidates(objectManager, request);
+        return new NetworkAllocationCandidates(objectManager, attempt);
     }
 
     @Override

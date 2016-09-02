@@ -370,13 +370,13 @@ public abstract class AbstractAllocator implements Allocator {
         }
     }
 
-    protected void logStart(AllocationAttempt request) {
-        String id = request.getId();
+    protected void logStart(AllocationAttempt attempt) {
+        String id = attempt.getId();
         log.info("[{}] Attemping allocation for:", id);
-        if (request.getInstance() != null) {
-            log.info("[{}]   instance [{}]", id, request.getInstance().getId());
+        if (attempt.getInstance() != null) {
+            log.info("[{}]   instance [{}]", id, attempt.getInstance().getId());
         }
-        for (Map.Entry<Volume, Set<StoragePool>> entry : request.getPools().entrySet()) {
+        for (Map.Entry<Volume, Set<StoragePool>> entry : attempt.getPools().entrySet()) {
             long volumeId = entry.getKey().getId();
             log.info("[{}]   volume [{}]", id, volumeId);
             for (StoragePool pool : entry.getValue()) {
@@ -384,7 +384,7 @@ public abstract class AbstractAllocator implements Allocator {
             }
         }
         log.info("[{}] constraints:", id);
-        for (Constraint constraint : request.getConstraints()) {
+        for (Constraint constraint : attempt.getConstraints()) {
             log.info("[{}]   {}", id, constraint);
         }
     }
