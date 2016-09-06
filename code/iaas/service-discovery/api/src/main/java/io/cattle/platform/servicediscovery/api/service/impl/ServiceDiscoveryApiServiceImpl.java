@@ -2,16 +2,15 @@ package io.cattle.platform.servicediscovery.api.service.impl;
 
 import static io.cattle.platform.core.model.tables.InstanceTable.*;
 import static io.cattle.platform.core.model.tables.ServiceTable.*;
-import io.cattle.platform.allocator.service.AllocatorService;
 import io.cattle.platform.core.addon.LoadBalancerServiceLink;
 import io.cattle.platform.core.addon.ServiceLink;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.constants.LoadBalancerConstants;
 import io.cattle.platform.core.dao.DataDao;
-import io.cattle.platform.core.model.Stack;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.Service;
 import io.cattle.platform.core.model.ServiceConsumeMap;
+import io.cattle.platform.core.model.Stack;
 import io.cattle.platform.docker.constants.DockerInstanceConstants;
 import io.cattle.platform.docker.constants.DockerNetworkConstants;
 import io.cattle.platform.json.JsonMapper;
@@ -27,9 +26,8 @@ import io.cattle.platform.servicediscovery.api.util.ServiceDiscoveryUtil;
 import io.cattle.platform.token.CertSet;
 import io.cattle.platform.token.impl.RSAKeyProvider;
 
-import java.util.AbstractMap.SimpleEntry;
-import java.util.concurrent.Callable;
 import java.io.ByteArrayOutputStream;
+import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -37,6 +35,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Callable;
 
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -61,9 +60,6 @@ public class ServiceDiscoveryApiServiceImpl implements ServiceDiscoveryApiServic
 
     @Inject
     List<RancherConfigToComposeFormatter> formatters;
-
-    @Inject
-    AllocatorService allocatorService;
 
     @Inject
     JsonMapper jsonMapper;
@@ -140,8 +136,8 @@ public class ServiceDiscoveryApiServiceImpl implements ServiceDiscoveryApiServic
             for (String launchConfigName : launchConfigNames) {
                 boolean isPrimaryConfig = launchConfigName
                         .equals(ServiceDiscoveryConstants.PRIMARY_LAUNCH_CONFIG_NAME);
-                Map<String, Object> cattleServiceData = ServiceDiscoveryUtil.getServiceDataAsMap(service,
-                        launchConfigName, allocatorService);
+                Map<String, Object> cattleServiceData = ServiceDiscoveryUtil.getLaunchConfigWithServiceDataAsMap(
+                        service, launchConfigName);
                 Map<String, Object> composeServiceData = new HashMap<>();
                 excludeRancherHash(cattleServiceData);
                 formatScale(service, cattleServiceData);
