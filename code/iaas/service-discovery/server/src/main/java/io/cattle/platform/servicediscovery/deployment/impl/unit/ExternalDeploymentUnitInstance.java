@@ -147,4 +147,9 @@ public class ExternalDeploymentUnitInstance extends DeploymentUnitInstance {
     public Long getCreateIndex() {
         return null;
     }
+
+    @Override
+    public void scheduleCreate() {
+        return;
+    }
 }
