@@ -22,11 +22,12 @@ public class VolumesFromConstraintProvider implements AllocationConstraintsProvi
     JsonMapper jsonMapper;
 
     @Override
-    public void appendConstraints(AllocationAttempt attempt, AllocationLog log,
-            List<Constraint> constraints) {
-        Instance instance = attempt.getInstance();
+    public void appendConstraints(AllocationAttempt attempt, AllocationLog log, List<Constraint> constraints) {
+        if (!attempt.isInstanceAllocation()) {
+            return;
+        }
 
-        if (instance != null) {
+        for (Instance instance : attempt.getInstances()) {
             @SuppressWarnings("unchecked")
             Set<Integer> dataVolumesFrom = DataAccessor.fields(instance).withKey(DockerInstanceConstants.FIELD_VOLUMES_FROM).as(jsonMapper, Set.class);
             if (dataVolumesFrom != null && !dataVolumesFrom.isEmpty()) {

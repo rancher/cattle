@@ -21,11 +21,12 @@ public class PortsConstraintProvider implements AllocationConstraintsProvider {
     ObjectManager objectManager;
 
     @Override
-    public void appendConstraints(AllocationAttempt attempt, AllocationLog log,
-            List<Constraint> constraints) {
-        Instance instance = attempt.getInstance();
+    public void appendConstraints(AllocationAttempt attempt, AllocationLog log, List<Constraint> constraints) {
+        if (!attempt.isInstanceAllocation()) {
+            return;
+        }
 
-        if (instance != null) {
+        for (Instance instance : attempt.getInstances()) {
             List<Port> ports = objectManager.find(Port.class, PORT.INSTANCE_ID, instance.getId(), PORT.REMOVED, null);
             if (ports.size() > 0) {
                 constraints.add(new PortsConstraint(instance.getId(), ports, allocatorDao));

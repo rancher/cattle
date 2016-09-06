@@ -85,12 +85,8 @@ public class BaseConstraintsProvider implements AllocationConstraintsProvider, P
             hostSet.addHost(attempt.getHostId());
         }
 
-        Instance instance = attempt.getInstance();
-        if (instance != null) {
-            Long requestedHostId = DataAccessor.fieldLong(instance, InstanceConstants.FIELD_REQUESTED_HOST_ID);
-            if (requestedHostId != null) {
-                hostSet.addHost(requestedHostId);
-            }
+        if (attempt.getRequestedHostId() != null) {
+            hostSet.addHost(attempt.getRequestedHostId());
         }
 
         if (hostSet.getHosts().size() > 0) {
@@ -146,12 +142,14 @@ public class BaseConstraintsProvider implements AllocationConstraintsProvider, P
             }
         }
 
-        if (attempt.getInstance() != null) {
-            String driver = DataAccessor.fieldString(attempt.getInstance(), InstanceConstants.FIELD_VOLUME_DRIVER);
-            if (StringUtils.isNotEmpty(driver) && !VolumeConstants.LOCAL_DRIVER.equals(driver)) {
-                StoragePool pool = storagePoolDao.findStoragePoolByDriverName(attempt.getInstance().getAccountId(), driver);
-                if (pool != null) {
-                    storagePoolToHostConstraint(constraints, pool);
+        if (attempt.isInstanceAllocation()) {
+            for (Instance instance : attempt.getInstances()) {
+                String driver = DataAccessor.fieldString(instance, InstanceConstants.FIELD_VOLUME_DRIVER);
+                if (StringUtils.isNotEmpty(driver) && !VolumeConstants.LOCAL_DRIVER.equals(driver)) {
+                    StoragePool pool = storagePoolDao.findStoragePoolByDriverName(instance.getAccountId(), driver);
+                    if (pool != null) {
+                        storagePoolToHostConstraint(constraints, pool);
+                    }
                 }
             }
         }

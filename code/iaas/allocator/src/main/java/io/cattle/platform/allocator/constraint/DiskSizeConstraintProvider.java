@@ -20,24 +20,26 @@ public class DiskSizeConstraintProvider implements AllocationConstraintsProvider
 
     @Override
     public void appendConstraints(AllocationAttempt attempt, AllocationLog log, List<Constraint> constraints) {
-        Instance instance = attempt.getInstance();
-        if (instance == null) {
+        if(!attempt.isInstanceAllocation()) {
             return;
         }
 
-        @SuppressWarnings("unchecked")
-        Map<String, String> labels = DataAccessor.fields(instance).withKey(InstanceConstants.FIELD_LABELS)
-                .as(Map.class);
-        if (labels == null) {
-            return;
-        }
+        for (Instance instance : attempt.getInstances()) {
+            @SuppressWarnings("unchecked")
+            Map<String, String> labels = DataAccessor.fields(instance).withKey(InstanceConstants.FIELD_LABELS).as(Map.class);
+            if (labels == null) {
+                continue;
+            }
 
-        for (Map.Entry<String, String> labelEntry : labels.entrySet()) {
-            String labelKey = labelEntry.getKey();
-            String labelPrefix = SystemLabels.LABEL_SCHEDULER_DISKSIZE_PREFIX;
-            if (labelKey.startsWith(labelPrefix) && labelKey.length() > labelPrefix.length()) {
-                constraints.add(new DiskSizeConstraint(instance, objectManager));
-                return;
+            for (Map.Entry<String, String> labelEntry : labels.entrySet()) {
+                String labelKey = labelEntry.getKey();
+                String labelPrefix = SystemLabels.LABEL_SCHEDULER_DISKSIZE_PREFIX;
+                // TOODO TODOCAJ Why is this exiting after first label found? Seems like a hack to avoid adding this constraint more than once,
+                // but I think we need to suppport that now.
+                if (labelKey.startsWith(labelPrefix) && labelKey.length() > labelPrefix.length()) {
+                    constraints.add(new DiskSizeConstraint(instance, objectManager));
+                    return;
+                }
             }
         }
     }

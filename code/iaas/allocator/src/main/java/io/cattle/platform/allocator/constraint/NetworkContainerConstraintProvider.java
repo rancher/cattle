@@ -23,11 +23,12 @@ public class NetworkContainerConstraintProvider implements AllocationConstraints
     JsonMapper jsonMapper;
 
     @Override
-    public void appendConstraints(AllocationAttempt attempt, AllocationLog log,
-            List<Constraint> constraints) {
-        Instance instance = attempt.getInstance();
+    public void appendConstraints(AllocationAttempt attempt, AllocationLog log, List<Constraint> constraints) {
+        if (!attempt.isInstanceAllocation()) {
+            return;
+        }
 
-        if (instance != null) {
+        for (Instance instance : attempt.getInstances()) {
             String networkMode = DataAccessor.fields(instance).withKey(DockerInstanceConstants.FIELD_NETWORK_MODE).as(String.class);
             if (DockerNetworkConstants.NETWORK_MODE_CONTAINER.equals(networkMode) && instance.getNetworkContainerId() != null) {
                 Integer containerId = instance.getNetworkContainerId().intValue();
