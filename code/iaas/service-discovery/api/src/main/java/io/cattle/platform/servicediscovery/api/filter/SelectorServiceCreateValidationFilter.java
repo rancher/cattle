@@ -1,6 +1,5 @@
 package io.cattle.platform.servicediscovery.api.filter;
 
-import io.cattle.platform.allocator.service.AllocatorService;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.model.Service;
 import io.cattle.platform.iaas.api.filter.common.AbstractDefaultResourceManagerFilter;
@@ -17,8 +16,6 @@ import java.util.Map;
 import javax.inject.Inject;
 
 public class SelectorServiceCreateValidationFilter extends AbstractDefaultResourceManagerFilter {
-    @Inject
-    AllocatorService allocatorService;
     @Inject
     ObjectManager objManager;
 

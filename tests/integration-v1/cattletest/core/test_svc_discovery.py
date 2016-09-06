@@ -2232,7 +2232,7 @@ def test_validate_scaledown_updating(client, context):
 
     def wait():
         s = client.reload(service)
-        return s.scale == 10 and s.healthState == 'degraded'
+        return s.scale == 10
     wait_for(wait)
 
     service = client.update(service, scale=1, name=service.name)

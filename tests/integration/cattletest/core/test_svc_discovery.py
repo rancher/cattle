@@ -1115,7 +1115,7 @@ def test_sidekick_restart_instances(client, context):
     # scale should be restored
     client.wait_success(instance11.stop())
     _instance_remove(instance22, client)
-    service = client.wait_success(service)
+    service = wait_state(client, service, 'active')
     service = client.update(service, scale=2, name=service.name)
     service = client.wait_success(service, 120)
 
@@ -2313,8 +2313,7 @@ def test_validate_scaledown_updating(client, context):
 
     def wait():
         s = client.reload(service)
-        return s.scale == 10 and s.healthState == 'degraded'
-
+        return s.scale == 10
     wait_for(wait)
 
     service = client.update(service, scale=1, name=service.name)
