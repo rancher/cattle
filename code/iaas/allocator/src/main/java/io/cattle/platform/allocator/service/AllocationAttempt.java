@@ -17,13 +17,22 @@ import java.util.Set;
 import java.util.UUID;
 
 public class AllocationAttempt {
+
+    public enum AllocationType {
+        INSTANCE, VOLUME
+    }
+
     String id = UUID.randomUUID().toString();
+
+    AllocationType type;
 
     Long accountId;
 
-    Instance instance;
+    List<Instance> instances;
 
     Long hostId;
+
+    Long requestedHostId;
 
     Set<Long> volumeIds;
 
@@ -40,11 +49,12 @@ public class AllocationAttempt {
     List<AllocationCandidate> candidates = new ArrayList<AllocationCandidate>();
     AllocationCandidate matchedCandidate;
 
-    public AllocationAttempt(long accountId, Instance instance, Long hostId, Set<Volume> volumes, Map<Volume, Set<StoragePool>> pools, Set<Nic> nics,
-            Map<Nic, Subnet> subnets) {
+    public AllocationAttempt(AllocationType type, long accountId, List<Instance> instances, Long hostId, Long requestedHostId, Set<Volume> volumes,
+            Map<Volume, Set<StoragePool>> pools, Set<Nic> nics, Map<Nic, Subnet> subnets) {
         super();
+        this.type = type;
         this.accountId = accountId;
-        this.instance = instance;
+        this.instances = instances;
         this.hostId = hostId;
         this.pools = pools;
         this.nics = nics;
@@ -83,28 +93,8 @@ public class AllocationAttempt {
         }
     }
 
-    public Long getAccountId() {
-        return accountId;
-    }
-
-    public Instance getInstance() {
-        return instance;
-    }
-
-    public Long getInstanceId() {
-        return instance == null ? null : instance.getId();
-    }
-
-    public Long getHostId() {
-        return hostId;
-    }
-
-    public Map<Volume, Set<StoragePool>> getPools() {
-        return pools;
-    }
-
-    public List<Constraint> getConstraints() {
-        return constraints;
+    public boolean isInstanceAllocation() {
+        return AllocationType.INSTANCE.equals(type);
     }
 
     public String getId() {
@@ -115,16 +105,52 @@ public class AllocationAttempt {
         this.id = id;
     }
 
-    public void setInstance(Instance instance) {
-        this.instance = instance;
+    public AllocationType getType() {
+        return type;
+    }
+
+    public void setType(AllocationType type) {
+        this.type = type;
+    }
+
+    public Long getAccountId() {
+        return accountId;
+    }
+
+    public List<Instance> getInstances() {
+        return instances;
+    }
+
+    public void setInstances(List<Instance> instances) {
+        this.instances = instances;
+    }
+
+    public Long getHostId() {
+        return hostId;
     }
 
     public void setHostId(Long hostId) {
         this.hostId = hostId;
     }
 
+    public Long getRequestedHostId() {
+        return requestedHostId;
+    }
+
+    public void setRequestedHostId(Long requestedHostId) {
+        this.requestedHostId = requestedHostId;
+    }
+
+    public Map<Volume, Set<StoragePool>> getPools() {
+        return pools;
+    }
+
     public void setPools(Map<Volume, Set<StoragePool>> pools) {
         this.pools = pools;
+    }
+
+    public List<Constraint> getConstraints() {
+        return constraints;
     }
 
     public void setConstraints(List<Constraint> constraints) {
@@ -194,5 +220,4 @@ public class AllocationAttempt {
     public void setSubnetIds(Map<Long, Long> subnetIds) {
         this.subnetIds = subnetIds;
     }
-
 }

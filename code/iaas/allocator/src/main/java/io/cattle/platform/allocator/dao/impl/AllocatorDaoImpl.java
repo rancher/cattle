@@ -20,7 +20,6 @@ import static io.cattle.platform.core.model.tables.SubnetVnetMapTable.*;
 import static io.cattle.platform.core.model.tables.VnetTable.*;
 import static io.cattle.platform.core.model.tables.VolumeStoragePoolMapTable.*;
 import static io.cattle.platform.core.model.tables.VolumeTable.*;
-
 import io.cattle.platform.allocator.dao.AllocatorDao;
 import io.cattle.platform.allocator.service.AllocationAttempt;
 import io.cattle.platform.allocator.service.AllocationCandidate;
@@ -49,6 +48,7 @@ import io.cattle.platform.db.jooq.dao.impl.AbstractJooqDao;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.util.DataAccessor;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -232,29 +232,28 @@ public class AllocatorDaoImpl extends AbstractJooqDao implements AllocatorDao {
         Long existingHost = attempt.getHostId();
         Long newHost = candidate.getHost();
 
-        if (existingHost == null) {
-            if (newHost != null) {
-                log.info("Associating instance [{}] to host [{}]", attempt.getInstance().getId(), newHost);
+        if (existingHost != null && !newHost.equals(existingHost)) {
+            List<Long> instanceIds = new ArrayList<Long>();
+            for (Instance i : attempt.getInstances()) {
+                instanceIds.add(i.getId());
+            }
+            throw new IllegalStateException(String.format("Can not move allocated instance(s) %s, currently  %s new %s", instanceIds, existingHost, newHost));
+        } else if (existingHost == null && newHost != null) {
+            for (Instance instance : attempt.getInstances()) {
+                log.info("Associating instance [{}] to host [{}]", instance.getId(), newHost);
                 objectManager.create(InstanceHostMap.class,
                         INSTANCE_HOST_MAP.HOST_ID, newHost,
-                        INSTANCE_HOST_MAP.INSTANCE_ID, attempt.getInstance().getId());
+                        INSTANCE_HOST_MAP.INSTANCE_ID, instance.getId());
 
-                modifyCompute(newHost, attempt.getInstance(), false);
-                modifyDisk(newHost, attempt.getInstance(), true);
+                modifyCompute(newHost, instance, false);
+                modifyDisk(newHost, instance, true);
 
-                List<Volume> vols = InstanceHelpers.extractVolumesFromMounts(attempt.getInstance(), objectManager);
+                List<Volume> vols = InstanceHelpers.extractVolumesFromMounts(instance, objectManager);
                 for (Volume v : vols) {
                     if (VolumeConstants.ACCESS_MODE_SINGLE_HOST_RW.equals(v.getAccessMode())) {
                         objectManager.setFields(v, VOLUME.HOST_ID, newHost);
                     }
                 }
-            }
-        } else {
-            if (!newHost.equals(existingHost)) {
-                log.error("Can not move allocated instance [{}], currently {} new {}", attempt.getInstance().getId(),
-                        existingHost, newHost);
-                throw new IllegalStateException("Can not move allocated instance [" + attempt.getInstance().getId()
-                        + "], currently " + existingHost + " new " + newHost);
             }
         }
 
