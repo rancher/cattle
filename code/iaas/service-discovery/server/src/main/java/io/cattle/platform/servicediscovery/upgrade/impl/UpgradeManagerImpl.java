@@ -2,6 +2,8 @@ package io.cattle.platform.servicediscovery.upgrade.impl;
 
 import static io.cattle.platform.core.model.tables.ServiceExposeMapTable.*;
 
+import io.cattle.platform.activity.ActivityLog;
+import io.cattle.platform.activity.ActivityService;
 import io.cattle.platform.async.utils.TimeoutException;
 import io.cattle.platform.core.addon.InServiceUpgradeStrategy;
 import io.cattle.platform.core.addon.RollingRestartStrategy;
@@ -36,9 +38,11 @@ import io.cattle.platform.servicediscovery.upgrade.UpgradeManager;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.inject.Inject;
 
@@ -46,6 +50,10 @@ import org.apache.commons.lang3.tuple.Pair;
 
 public class UpgradeManagerImpl implements UpgradeManager {
     private static Long DEFAULT_WAIT_TIMEOUT = 60000L;
+
+    private static final Set<String> UPGRADE_STATES = new HashSet<>(Arrays.asList(
+            ServiceDiscoveryConstants.STATE_UPGRADING,
+            ServiceDiscoveryConstants.STATE_ROLLINGBACK));
 
     private enum Type {
         ToUpgrade,
@@ -70,12 +78,15 @@ public class UpgradeManagerImpl implements UpgradeManager {
 
     @Inject
     ResourceMonitor resourceMntr;
-    
+
     @Inject
     ServiceDiscoveryService serviceDiscoveryService;
 
     @Inject
     JsonMapper jsonMapper;
+
+    @Inject
+    ActivityService activityService;
 
     private static final long SLEEP = 1000L;
 
@@ -141,15 +152,15 @@ public class UpgradeManagerImpl implements UpgradeManager {
 
                 if (startFirst) {
                     // 1. reconcile to start new instances
-                    deploymentMgr.activate(service);
+                    activate(service);
                     // 2. stop instances
-                    stopInstances(deploymentUnitInstancesToCleanup);
+                    stopInstances(service, deploymentUnitInstancesToCleanup);
                 } else {
                     // reverse order
                     // 1. stop instances
-                    stopInstances(deploymentUnitInstancesToCleanup);
+                    stopInstances(service, deploymentUnitInstancesToCleanup);
                     // 2. wait for reconcile (new instances will be started along)
-                    deploymentMgr.activate(service);
+                    activate(service);
                 }
                 if (isUpgrade) {
                     waitForHealthyState(service);
@@ -170,6 +181,7 @@ public class UpgradeManagerImpl implements UpgradeManager {
                     String deploymentUnitUUID = instances.getKey();
                     markForRollback(deploymentUnitUUID);
                     for (Instance instance : instances.getValue()) {
+                        activityService.instance(instance, "mark.upgrade", "Mark for upgrade", ActivityLog.INFO);
                         ServiceExposeMap map = objectManager.findAny(ServiceExposeMap.class,
                                 SERVICE_EXPOSE_MAP.INSTANCE_ID, instance.getId());
                         setUpgrade(map, true);
@@ -297,10 +309,6 @@ public class UpgradeManagerImpl implements UpgradeManager {
 
     @Override
     public void upgrade(Service service, io.cattle.platform.core.addon.ServiceUpgradeStrategy strategy) {
-        /*
-         * TODO: move this and all downstream methods to a UpgradeManager with pluggable
-         * strategies
-         */
         if (strategy instanceof ToServiceUpgradeStrategy) {
             ToServiceUpgradeStrategy toServiceStrategy = (ToServiceUpgradeStrategy) strategy;
             Service toService = objectManager.loadResource(Service.class, toServiceStrategy.getToServiceId());
@@ -344,30 +352,38 @@ public class UpgradeManagerImpl implements UpgradeManager {
                 strategy.getToServiceId()));
     }
 
-    protected Service sleep(Service service, ServiceUpgradeStrategy strategy) {
-        long interval = strategy.getIntervalMillis();
+    protected void sleep(final Service service, ServiceUpgradeStrategy strategy) {
+        final long interval = strategy.getIntervalMillis();
 
-        for (int i = 0;; i++) {
-            long sleepTime = Math.max(0, Math.min(SLEEP, interval - i * SLEEP));
-            if (sleepTime == 0) {
-                break;
-            } else {
-                try {
-                    Thread.sleep(sleepTime);
-                } catch (InterruptedException e) {
-                    throw new RuntimeException(e);
+        activityService.run(service, "sleep", String.format("Sleeping for %d seconds", interval/1000), new Runnable() {
+            @Override
+            public void run() {
+                for (int i = 0;; i++) {
+                    final long sleepTime = Math.max(0, Math.min(SLEEP, interval - i * SLEEP));
+                    if (sleepTime == 0) {
+                        break;
+                    } else {
+                        try {
+                            Thread.sleep(sleepTime);
+                        } catch (InterruptedException e) {
+                            throw new RuntimeException(e);
+                        }
+                    }
+                    assertUpgrading(service);
                 }
             }
+        });
+    }
 
-            service = reload(service);
+    protected void assertUpgrading(Service service) {
+        if (!UPGRADE_STATES.contains(reload(service).getState())) {
+            throw new TimeoutException("Canceling upgrade");
         }
-
-        return service;
     }
 
     protected Service reload(Service service) {
         service = objectManager.reload(service);
-        
+
         List<String> states = Arrays.asList(ServiceDiscoveryConstants.STATE_UPGRADING,
                 ServiceDiscoveryConstants.STATE_ROLLINGBACK, ServiceDiscoveryConstants.STATE_RESTARTING);
         if (!states.contains(service.getState())) {
@@ -451,28 +467,37 @@ public class UpgradeManagerImpl implements UpgradeManager {
         }
     }
 
-    protected void waitForHealthyState(Service service) {
-        List<? extends Instance> serviceInstances = exposeMapDao.listServiceManagedInstances(service
-                .getId());
-        final List<String> healthyStates = Arrays.asList(HealthcheckConstants.HEALTH_STATE_HEALTHY,
-                HealthcheckConstants.HEALTH_STATE_UPDATING_HEALTHY);
-        for (final Instance instance : serviceInstances) {
-            if (instance.getState().equalsIgnoreCase(InstanceConstants.STATE_RUNNING)) {
-                resourceMntr.waitFor(instance, DEFAULT_WAIT_TIMEOUT,
-                        new ResourcePredicate<Instance>() {
-                            @Override
-                            public boolean evaluate(Instance obj) {
-                                return instance.getHealthState() == null
-                                        || healthyStates.contains(obj.getHealthState());
-                            }
+    protected void waitForHealthyState(final Service service) {
+        activityService.run(service, "wait", "Waiting for all instances to be healthy", new Runnable() {
+            @Override
+            public void run() {
+                List<? extends Instance> serviceInstances = exposeMapDao.listServiceManagedInstances(service
+                        .getId());
+                final List<String> healthyStates = Arrays.asList(HealthcheckConstants.HEALTH_STATE_HEALTHY,
+                        HealthcheckConstants.HEALTH_STATE_UPDATING_HEALTHY);
+                for (final Instance instance : serviceInstances) {
+                    if (instance.getState().equalsIgnoreCase(InstanceConstants.STATE_RUNNING)) {
+                        resourceMntr.waitFor(instance, DEFAULT_WAIT_TIMEOUT,
+                                new ResourcePredicate<Instance>() {
+                                    @Override
+                                    public boolean evaluate(Instance obj) {
+                                        boolean healthy = instance.getHealthState() == null
+                                                || healthyStates.contains(obj.getHealthState());
+                                        if (!healthy) {
+                                            assertUpgrading(service);
+                                        }
+                                        return healthy;
+                                    }
 
-                            @Override
-                            public String getMessage() {
-                                return "healthy";
-                            }
-                        });
+                                    @Override
+                                    public String getMessage() {
+                                        return "healthy";
+                                    }
+                                });
+                    }
+                }
             }
-        }
+        });
     }
 
     public void cleanupUpgradedInstances(Service service) {
@@ -548,26 +573,46 @@ public class UpgradeManagerImpl implements UpgradeManager {
                 // 1. Wait for the service instances to become healthy
                 waitForHealthyState(service);
                 // 2. stop instances
-                stopInstances(deploymentUnitsToStop);
+                stopInstances(service, deploymentUnitsToStop);
                 // 3. wait for reconcile (instances will be restarted along)
-                deploymentMgr.activate(service);
+                activate(service);
             }
         });
     }
 
-    protected void stopInstances(Map<String, List<Instance>> deploymentUnitInstancesToStop) {
-        List<Instance> toStop = new ArrayList<>();
-        for (String key : deploymentUnitInstancesToStop.keySet()) {
-            toStop.addAll(deploymentUnitInstancesToStop.get(key));
-        }
-        for (Instance instance : toStop) {
-            if (!instance.getState().equalsIgnoreCase(InstanceConstants.STATE_STOPPED)) {
-                objectProcessMgr.scheduleProcessInstanceAsync(InstanceConstants.PROCESS_STOP,
-                        instance, null);
+    protected void activate(final Service service) {
+        activityService.run(service, "starting", "Starting new instances", new Runnable() {
+            @Override
+            public void run() {
+                deploymentMgr.activate(service);
             }
-        }
-        for (Instance instance : toStop) {
-            resourceMntr.waitForState(instance, InstanceConstants.STATE_STOPPED);
-        }
+        });
+
+    }
+    protected void stopInstances(Service service, final Map<String, List<Instance>> deploymentUnitInstancesToStop) {
+        activityService.run(service, "stopping", "Stopping instances", new Runnable() {
+            @Override
+            public void run() {
+                List<Instance> toStop = new ArrayList<>();
+                List<Instance> toWait = new ArrayList<>();
+                for (String key : deploymentUnitInstancesToStop.keySet()) {
+                    toStop.addAll(deploymentUnitInstancesToStop.get(key));
+                }
+                for (Instance instance : toStop) {
+                    instance = resourceMntr.waitForNotTransitioning(instance);
+                    if (InstanceConstants.STATE_ERROR.equals(instance.getState())) {
+                        objectProcessMgr.scheduleProcessInstanceAsync(InstanceConstants.PROCESS_REMOVE,
+                                instance, null);
+                    } else if (!instance.getState().equalsIgnoreCase(InstanceConstants.STATE_STOPPED)) {
+                        objectProcessMgr.scheduleProcessInstanceAsync(InstanceConstants.PROCESS_STOP,
+                                instance, null);
+                        toWait.add(instance);
+                    }
+                }
+                for (Instance instance : toWait) {
+                    resourceMntr.waitForState(instance, InstanceConstants.STATE_STOPPED);
+                }
+            }
+        });
     }
 }

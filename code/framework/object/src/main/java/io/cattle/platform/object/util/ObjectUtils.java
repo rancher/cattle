@@ -1,9 +1,17 @@
 package io.cattle.platform.object.util;
 
+import io.cattle.platform.eventing.EventService;
+import io.cattle.platform.eventing.model.Event;
+import io.cattle.platform.eventing.model.EventVO;
+import io.cattle.platform.framework.event.FrameworkEvents;
+import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.meta.ObjectMetaDataManager;
+
 import java.beans.PropertyDescriptor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.apache.commons.beanutils.BeanUtils;
 import org.apache.commons.beanutils.PropertyUtils;
@@ -148,6 +156,32 @@ public class ObjectUtils {
             }
             return String.format("%s:%s", obj.getClass().getSimpleName(), ObjectUtils.getId(obj));
         }
+    }
+
+    public static String toString(Object obj) {
+        if (obj == null) {
+            return null;
+        }
+        return obj.toString();
+    }
+
+    public static void publishChanged(EventService eventService, ObjectManager objectManager, Object obj) {
+        Object accountId = getAccountId(obj);
+        Object resourceId = getId(obj);
+        String type = objectManager.getType(obj);
+        publishChanged(eventService, accountId, resourceId, type);
+    }
+
+    public static void publishChanged(final EventService eventService, Object accountId, Object resourceId, String resourceType) {
+        Map<String, Object> data = new HashMap<>();
+        data.put(ObjectMetaDataManager.ACCOUNT_FIELD, accountId);
+
+        final Event event = EventVO.newEvent(FrameworkEvents.STATE_CHANGE)
+                .withData(data)
+                .withResourceType(resourceType)
+                .withResourceId(toString(resourceId));
+
+        eventService.publish(event);
     }
 
 }

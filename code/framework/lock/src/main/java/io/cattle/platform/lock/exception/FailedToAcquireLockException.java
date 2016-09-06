@@ -13,8 +13,13 @@ public class FailedToAcquireLockException extends RuntimeException {
         this.lockDefition = lockDefinition;
     }
 
-    public LockDefinition getLockDefition() {
-        return lockDefition;
+    public boolean isLock(LockDefinition lockDef) {
+        if (lockDef == null) {
+            return lockDefition == null;
+        } else if (lockDefition == null) {
+            return false;
+        }
+        return lockDef.getLockId().equals(lockDefition.getLockId());
     }
 
 }

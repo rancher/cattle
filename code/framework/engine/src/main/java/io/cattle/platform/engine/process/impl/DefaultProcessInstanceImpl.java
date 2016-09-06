@@ -99,17 +99,22 @@ public class DefaultProcessInstanceImpl implements ProcessInstance {
             return exit(ALREADY_DONE);
         }
 
+        LockDefinition lockDef = new ProcessLock(this);
         try {
             log.debug("Attempting to run process [{}:{}] on resource [{}]", getName(), getId(), instanceContext.state.getResourceId());
-            return context.getLockManager().lock(new ProcessLock(this), new LockCallback<ExitReason>() {
+            return context.getLockManager().lock(lockDef, new LockCallback<ExitReason>() {
                 @Override
                 public ExitReason doWithLock() {
                     return executeWithProcessInstanceLock();
                 }
             });
         } catch (FailedToAcquireLockException e) {
-            exit(PROCESS_ALREADY_IN_PROGRESS);
-            throw new ProcessInstanceException(this, new ProcessExecutionExitException(PROCESS_ALREADY_IN_PROGRESS));
+            if (e.isLock(lockDef)) {
+                exit(PROCESS_ALREADY_IN_PROGRESS);
+                throw new ProcessInstanceException(this, new ProcessExecutionExitException(PROCESS_ALREADY_IN_PROGRESS));
+            } else {
+                throw e;
+            }
         } finally {
             log.debug("Exiting [{}] process [{}:{}] on resource [{}]", finalReason, getName(), getId(), instanceContext.state.getResourceId());
         }
@@ -243,7 +248,7 @@ public class DefaultProcessInstanceImpl implements ProcessInstance {
                 }
             });
         } catch (FailedToAcquireLockException e) {
-            lockFailed(e.getLockDefition(), e);
+            throw new ProcessExecutionExitException(RESOURCE_BUSY, e);
         }
     }
 
@@ -584,10 +589,6 @@ public class DefaultProcessInstanceImpl implements ProcessInstance {
         }
 
         instanceContext.setProcessLock(lockDef);
-    }
-
-    protected void lockFailed(LockDefinition lockDef, FailedToAcquireLockException e) {
-        throw new ProcessExecutionExitException(RESOURCE_BUSY, e);
     }
 
     protected ExitReason exit(ExitReason reason) {

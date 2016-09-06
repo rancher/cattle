@@ -803,6 +803,18 @@
         "scalePolicy.max" : "cr",
         "scalePolicy.increment" : "cr",
 
+        "serviceLog" : "r",
+        "serviceLog.accountId" : "r",
+        "serviceLog.resourceType" : "r",
+        "serviceLog.resourceId" : "r",
+        "serviceLog.endTime" : "r",
+        "serviceLog.eventType" : "r",
+        "serviceLog.serviceId" : "r",
+        "serviceLog.instanceId" : "r",
+        "serviceLog.transactionId" : "r",
+        "serviceLog.subLog" : "r",
+        "serviceLog.level" : "r",
+
         "end" : ""
     }
 }

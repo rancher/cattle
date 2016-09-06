@@ -96,4 +96,5 @@
     <include file="db/core-089.xml"/>
     <include file="db/core-090.xml"/>
     <include file="db/core-091.xml"/>
+    <include file="db/core-092.xml"/>
 </databaseChangeLog>

@@ -15,7 +15,7 @@ public interface ServiceExposeMapDao {
     /**
      * this method is wrapped up in transaction. All instances will get created and scheduled for create inside one
      * transaction
-     * 
+     *
      * @param properties
      * @param service
      * @return
@@ -61,5 +61,7 @@ public interface ServiceExposeMapDao {
     List<? extends Instance> getUpgradedInstances(Service service, String launchConfigName, String toVersion, boolean managed);
 
     Integer getCurrentScale(long serviceId);
+
+    List<? extends Instance> listServiceManagedInstancesAll(long serviceId);
 
 }
