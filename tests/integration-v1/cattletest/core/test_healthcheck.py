@@ -95,50 +95,6 @@ def test_upgrade_with_health(client, context, super_client):
     wait_for(lambda: super_client.reload(svc).state == 'upgraded')
 
 
-def test_upgrade_stopped_with_health(client, context, super_client):
-    env = client.create_environment(name='env-' + random_str())
-
-    image_uuid = context.image_uuid
-    launch_config = {"imageUuid": image_uuid,
-                     'healthCheck': {
-                         'port': 80,
-                     }}
-
-    svc = client.create_service(name=random_str(),
-                                environmentId=env.id,
-                                launchConfig=launch_config,
-                                scale=1)
-    svc = client.wait_success(svc)
-    assert svc.state == "inactive"
-
-    env.activateservices()
-    svc = client.wait_success(svc, 120)
-    assert svc.state == "active"
-
-    m = super_client. \
-        list_serviceExposeMap(serviceId=svc.id, state='active', managed=True)
-
-    c = super_client.reload(m[0].instance())
-
-    # upgrade the service
-    new_launch_config = {"imageUuid": image_uuid}
-    strategy = {"launchConfig": new_launch_config,
-                "intervalMillis": 100}
-    svc.upgrade_action(inServiceStrategy=strategy)
-
-    # initial health state check should fail
-    try:
-        wait_for(lambda: super_client.reload(svc).state == 'upgraded',
-                 timeout=10)
-    except Exception:
-        pass
-
-    # stop the instance
-    super_client.wait_success(c.stop())
-
-    wait_for(lambda: super_client.reload(svc).state == 'upgraded')
-
-
 def test_rollback_with_health(client, context, super_client):
     env = client.create_environment(name='env-' + random_str())
 
