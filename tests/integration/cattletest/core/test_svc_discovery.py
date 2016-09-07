@@ -163,6 +163,7 @@ def test_activate_single_service(client, context, super_client):
     assert len(svc.launchConfig.environment) == 1
     assert len(svc.launchConfig.ports) == 2
     assert len(svc.launchConfig.dataVolumes) == 1
+    assert svc.launchConfig.type == 'launchConfig'
     assert svc.launchConfig.dataVolumesFrom == list([container1.id])
     assert svc.launchConfig.capAdd == caps
     assert svc.launchConfig.capDrop == caps

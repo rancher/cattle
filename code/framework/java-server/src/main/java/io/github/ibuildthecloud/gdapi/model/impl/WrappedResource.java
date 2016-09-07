@@ -34,10 +34,6 @@ public class WrappedResource extends ResourceImpl implements Resource {
     Set<String> priorityFieldNames = null;
     IdFormatter idFormatter;
 
-    public WrappedResource(IdFormatter idFormatter, Schema schema, Object obj, Map<String, Object> additionalFields, String method) {
-        this(idFormatter, null, schema, obj, additionalFields, null, method);
-    }
-
     public WrappedResource(IdFormatter idFormatter, SchemaFactory schemaFactory,
             Schema schema, Object obj, Map<String, Object> additionalFields,
             Set<String> priorityFieldNames, String method) {
