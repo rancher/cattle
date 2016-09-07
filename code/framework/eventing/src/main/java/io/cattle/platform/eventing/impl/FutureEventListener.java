@@ -97,18 +97,8 @@ public class FutureEventListener implements EventListener, PoolSpecificListener 
     }
 
     @Override
-    public boolean isAllowQueueing() {
-        return true;
-    }
-
-    @Override
     public String getPoolKey() {
         return "reply";
-    }
-
-    @Override
-    public int getQueueDepth() {
-        return 1000;
     }
 
     public EventProgress getProgress() {
