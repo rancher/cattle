@@ -329,6 +329,19 @@ public abstract class AbstractJooqResourceManager extends AbstractObjectResource
         default:
             query.addOrderBy(sortField.asc());
         }
+
+        TableField<?, Object> idSort = JooqUtils.getTableField(getMetaDataManager(), type, ObjectMetaDataManager.ID_FIELD);
+        if (idSort == null) {
+            return;
+        }
+
+        switch (sort.getOrderEnum()) {
+        case DESC:
+            query.addOrderBy(idSort.desc());
+            break;
+        default:
+            query.addOrderBy(idSort.asc());
+        }
     }
 
     @Override
