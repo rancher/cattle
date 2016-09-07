@@ -246,26 +246,6 @@ def test_upgrade_finish_cancel_rollback(context, client):
     svc = client.wait_success(svc.rollback())
 
 
-def test_cancelupgrade_rollback_cancelrollback(context, client):
-    # upgrading-cancelingupgrade-canceledupgrade-rollback
-    # -cancelingrolback-canceledrollback-remove
-    svc = _create_and_schedule_inservice_upgrade(client, context)
-    svc = _cancel_upgrade(client, svc)
-    svc = svc.rollback()
-    svc = client.wait_success(svc.cancelrollback(), DEFAULT_TIMEOUT)
-    svc.remove()
-
-
-def test_cancelupgrade_rollback_cancelrollback_finish(context, client):
-    # upgrading-cancelingupgrade-canceledupgrade-rollback
-    # -cancelingrolback-canceledrollback-finishupgrade
-    svc = _create_and_schedule_inservice_upgrade(client, context)
-    svc = _cancel_upgrade(client, svc)
-    svc = svc.rollback()
-    svc = client.wait_success(svc.cancelrollback(), DEFAULT_TIMEOUT)
-    svc.finishupgrade()
-
-
 def test_state_transition_start_first(context, client):
     # upgrading--upgrade-rollback
     # a) startFirst=false

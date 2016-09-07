@@ -162,7 +162,7 @@ public class DeploymentUnitInstanceFactoryImpl implements DeploymentUnitInstance
     protected void collectDefaultServiceInstances(DeploymentServiceContext context,
             Map<String, Map<String, String>> uuidToLabels, Map<String, List<DeploymentUnitInstance>> uuidToInstances,
             Service service) {
-        List<? extends Instance> serviceContainers = expMapDao.listServiceManagedInstancesAll(service.getId());
+        List<? extends Instance> serviceContainers = expMapDao.listServiceManagedInstancesAll(service);
         for (Instance serviceContainer : serviceContainers) {
             Map<String, String> instanceLabels = DataAccessor.fields(serviceContainer)
                     .withKey(InstanceConstants.FIELD_LABELS).withDefault(Collections.EMPTY_MAP).as(Map.class);

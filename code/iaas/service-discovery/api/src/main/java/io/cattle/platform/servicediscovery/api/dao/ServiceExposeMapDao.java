@@ -22,7 +22,7 @@ public interface ServiceExposeMapDao {
      */
     Pair<Instance, ServiceExposeMap> createServiceInstance(Map<String, Object> properties, Service service);
 
-    List<? extends Instance> listServiceManagedInstances(long serviceId);
+    List<? extends Instance> listServiceManagedInstances(Service service);
 
     List<? extends Instance> listServiceManagedInstances(Service service, String launchConfigName);
 
@@ -62,6 +62,6 @@ public interface ServiceExposeMapDao {
 
     Integer getCurrentScale(long serviceId);
 
-    List<? extends Instance> listServiceManagedInstancesAll(long serviceId);
+    List<? extends Instance> listServiceManagedInstancesAll(Service service);
 
 }

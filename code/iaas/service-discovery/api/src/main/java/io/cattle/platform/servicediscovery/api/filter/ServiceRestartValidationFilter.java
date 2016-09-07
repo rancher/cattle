@@ -52,7 +52,7 @@ public class ServiceRestartValidationFilter extends AbstractDefaultResourceManag
             }
 
             Map<Long, Long> instanceToStartCount = new HashMap<>();
-            for (Instance instance : exposeMapDao.listServiceManagedInstances(service.getId())) {
+            for (Instance instance : exposeMapDao.listServiceManagedInstances(service)) {
                 instanceToStartCount.put(instance.getId(), instance.getStartCount());
             }
 
