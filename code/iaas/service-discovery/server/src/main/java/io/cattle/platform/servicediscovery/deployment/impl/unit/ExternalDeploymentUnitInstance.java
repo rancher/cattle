@@ -123,6 +123,7 @@ public class ExternalDeploymentUnitInstance extends DeploymentUnitInstance {
         return;
     }
 
+    @Override
     public boolean isHealthCheckInitializing() {
         return false;
     }
@@ -135,11 +136,6 @@ public class ExternalDeploymentUnitInstance extends DeploymentUnitInstance {
     @Override
     public ServiceIndex getServiceIndex() {
         return null;
-    }
-
-    @Override
-    public boolean isIgnore() {
-        return false;
     }
 
     @Override

@@ -12,6 +12,7 @@ public interface ObjectMetaDataManager {
     public static final String TRANSITIONING_YES = Event.TRANSITIONING_YES;
     public static final String TRANSITIONING_NO = Event.TRANSITIONING_NO;
     public static final String TRANSITIONING_ERROR = Event.TRANSITIONING_ERROR;
+    public static final String TRANSITIONING_ERROR_OVERRIDE = Event.TRANSITIONING_ERROR + "Override";
 
     public static final String TRANSITIONING_FIELD = "transitioning";
     public static final String TRANSITIONING_PROGRESS_FIELD = "transitioningProgress";

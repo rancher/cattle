@@ -1,5 +1,6 @@
 package io.cattle.platform.servicediscovery.process;
 
+import io.cattle.platform.activity.ActivityService;
 import io.cattle.platform.core.model.Service;
 import io.cattle.platform.engine.handler.HandlerResult;
 import io.cattle.platform.engine.process.ProcessInstance;
@@ -19,15 +20,22 @@ public class ServiceRestart extends AbstractDefaultProcessHandler {
     @Inject
     UpgradeManager upgradeManager;
 
+    @Inject
+    ActivityService activityService;
+
     @Override
     public HandlerResult handle(ProcessState state, ProcessInstance process) {
-        Service service = (Service) state.getResource();
-        io.cattle.platform.core.addon.ServiceRestart restart = jsonMapper.convertValue(state.getData(),
+        final Service service = (Service) state.getResource();
+        final io.cattle.platform.core.addon.ServiceRestart restart = jsonMapper.convertValue(state.getData(),
                 io.cattle.platform.core.addon.ServiceRestart.class);
 
         objectManager.setFields(service, ServiceDiscoveryConstants.FIELD_RESTART, restart);
 
-        upgradeManager.restart(service, restart.getRollingRestartStrategy());
+        activityService.run(service, "service.restart", "Restarting service", new Runnable() {
+            public void run() {
+                upgradeManager.restart(service, restart.getRollingRestartStrategy());
+            }
+        });
 
         return null;
     }

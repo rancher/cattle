@@ -4,13 +4,14 @@ import io.cattle.platform.allocator.constraint.AffinityConstraintDefinition.Affi
 import io.cattle.platform.allocator.constraint.ContainerLabelAffinityConstraint;
 import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.InstanceConstants;
-import io.cattle.platform.core.model.Stack;
 import io.cattle.platform.core.model.Host;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.Service;
+import io.cattle.platform.core.model.Stack;
 import io.cattle.platform.core.util.SystemLabels;
 import io.cattle.platform.docker.constants.DockerInstanceConstants;
 import io.cattle.platform.iaas.api.auditing.AuditEventType;
+import io.cattle.platform.object.util.TransitioningUtils;
 import io.cattle.platform.servicediscovery.api.constants.ServiceDiscoveryConstants;
 import io.cattle.platform.servicediscovery.api.util.ServiceDiscoveryUtil;
 import io.cattle.platform.servicediscovery.deployment.DeploymentUnitInstance;
@@ -26,8 +27,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+import org.apache.commons.lang3.StringUtils;
+
 public class DeploymentUnit {
-    
+
     public static class SidekickType {
         public static List<SidekickType> supportedTypes = new ArrayList<>();
         public static final SidekickType DATA = new SidekickType(DockerInstanceConstants.FIELD_VOLUMES_FROM,
@@ -37,7 +40,7 @@ public class DeploymentUnit {
         public String launchConfigFieldName;
         public String launchConfigType;
         public boolean isList;
-        
+
         public SidekickType(String launchConfigFieldName, String launchConfigType, boolean isList) {
             this.launchConfigFieldName = launchConfigFieldName;
             this.launchConfigType = launchConfigType;
@@ -118,18 +121,6 @@ public class DeploymentUnit {
         return false;
     }
 
-    public boolean isIgnore() {
-        /*
-         * This should check for instances with an error transitioning state
-         */
-        for (DeploymentUnitInstance instance : getDeploymentUnitInstances()) {
-            if (instance.isIgnore()) {
-                return true;
-            }
-        }
-        return false;
-    }
-
     private boolean isHostActive() {
         for (DeploymentUnitInstance deployUnitInstance : getDeploymentUnitInstances()) {
             if (!(deployUnitInstance instanceof InstanceUnit)) {
@@ -158,12 +149,19 @@ public class DeploymentUnit {
         return true;
     }
 
-    public void remove(boolean waitForRemoval, String reason) {
+    public void remove(boolean waitForRemoval, String reason, String level) {
         /*
          * Delete all instances. This should be non-blocking (don't wait)
          */
         for (DeploymentUnitInstance instance : getDeploymentUnitInstances()) {
-            instance.generateAuditLog(AuditEventType.delete, reason);
+            String error = "";
+            if (instance instanceof InstanceUnit) {
+                error = TransitioningUtils.getTransitioningError(((DefaultDeploymentUnitInstance) instance).getInstance());
+            }
+            if (StringUtils.isNotBlank(error)) {
+                reason = reason + ": " + error;
+            }
+            instance.generateAuditLog(AuditEventType.delete, reason, level);
             instance.remove();
         }
 
@@ -202,11 +200,11 @@ public class DeploymentUnit {
          * Start the instances in the correct order depending on the volumes from.
          * Attempt to start things in parallel, but if not possible (like volumes-from) then start each service
          * sequentially.
-         * 
+         *
          * If there are three services but only two containers, create the third
-         * 
+         *
          * If one of the containers service health is bad, then create another one (but don't delete the existing).
-         * 
+         *
          */
         createMissingUnitInstances(svcInstanceIdGenerator);
 
@@ -238,7 +236,7 @@ public class DeploymentUnit {
             this.waitForAllocate();
         }
     }
-    
+
     protected void waitForAllocate() {
         for (DeploymentUnitInstance instance : getDeploymentUnitInstances()) {
             instance.waitForAllocate();

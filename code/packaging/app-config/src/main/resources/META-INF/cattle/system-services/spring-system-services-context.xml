@@ -11,6 +11,7 @@
         http://cattle.io/schemas/spring/extension http://cattle.io/schemas/spring/extension-1.0.xsd
         http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx.xsd">
 
+    <bean class="io.cattle.platform.activity.ActivityService" />
     <bean class="io.cattle.platform.agent.instance.dao.impl.AgentInstanceDaoImpl" />
     <bean id="AgentInstanceFactory" class="io.cattle.platform.agent.instance.factory.impl.AgentInstanceFactoryImpl" />
     <bean class="io.cattle.platform.agent.instance.serialization.AgentInstanceAuthObjectPostProcessor" />

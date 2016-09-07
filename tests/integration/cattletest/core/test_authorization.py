@@ -151,6 +151,7 @@ def test_user_types(user_client, adds=set(), removes=set()):
         'schema',
         'service',
         'serviceExposeMap',
+        'serviceLog',
         'serviceProxy',
         'setLabelsInput',
         'setLabelsInput',
@@ -391,6 +392,7 @@ def test_admin_types(admin_user_client, adds=set(), removes=set()):
         'virtualMachineDisk',
         'volume',
         'launchConfig',
+        'serviceLog',
         'serviceEvent',
         'serviceConsumeMap',
         'dockerBuild',
@@ -2933,4 +2935,40 @@ def test_backup_target_auth(admin_user_client, user_client, project_client):
     auth_check(project_client.schema, 'backupTarget', 'crd', {
         'accountId': 'r',
         'nfsConfig': 'cr',
+    })
+
+
+def test_service_log(admin_user_client, user_client, project_client):
+    auth_check(admin_user_client.schema, 'serviceLog', 'r', {
+        'accountId': 'r',
+        'data': 'r',
+        'endTime': 'r',
+        'eventType': 'r',
+        'serviceId': 'r',
+        'instanceId': 'r',
+        'transactionId': 'r',
+        'subLog': 'r',
+        'level': 'r',
+    })
+
+    auth_check(user_client.schema, 'serviceLog', 'r', {
+        'accountId': 'r',
+        'endTime': 'r',
+        'eventType': 'r',
+        'serviceId': 'r',
+        'instanceId': 'r',
+        'transactionId': 'r',
+        'subLog': 'r',
+        'level': 'r',
+    })
+
+    auth_check(project_client.schema, 'serviceLog', 'r', {
+        'accountId': 'r',
+        'endTime': 'r',
+        'eventType': 'r',
+        'serviceId': 'r',
+        'instanceId': 'r',
+        'transactionId': 'r',
+        'subLog': 'r',
+        'level': 'r',
     })

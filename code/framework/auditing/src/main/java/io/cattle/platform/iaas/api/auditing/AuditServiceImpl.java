@@ -7,7 +7,6 @@ import io.cattle.platform.core.constants.ContainerEventConstants;
 import io.cattle.platform.eventing.EventService;
 import io.cattle.platform.iaas.api.auditing.dao.AuditLogDao;
 import io.cattle.platform.object.ObjectManager;
-import io.cattle.platform.object.util.ObjectUtils;
 import io.cattle.platform.process.externalevent.ExternalEventConstants;
 import io.github.ibuildthecloud.gdapi.context.ApiContext;
 import io.github.ibuildthecloud.gdapi.id.IdFormatter;
@@ -146,17 +145,6 @@ public class AuditServiceImpl implements AuditService{
             default:
                 return AuditEventType.UNKNOWN;
         }
-    }
-
-    @Override
-    public void logResourceModification(Object resource, Map<String, Object> data, AuditEventType eventType,
-                                        String description, Long accountId, String clientIp) {
-        if (data != null) {
-            putInAsString(data, "resource", "Failed to convert resource to json.", resource);
-        }
-        String event =  objectManager.getType(resource) + "." + eventType.toString();
-        auditLogDao.create(objectManager.getType(resource), parseId(String.valueOf(ObjectUtils.getId(resource))),
-                data, null, accountId, null, event, null, null, description, clientIp);
     }
 
     private void putInAsString(Map<String, Object> data, String fieldForObject, String errMsg, Object objectToPlace) {

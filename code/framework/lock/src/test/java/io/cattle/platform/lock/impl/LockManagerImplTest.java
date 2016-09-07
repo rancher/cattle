@@ -52,7 +52,7 @@ public class LockManagerImplTest {
                 }
             });
         } catch (FailedToAcquireLockException e) {
-            assertEquals(badLockDef, e.getLockDefition());
+            assertTrue(e.isLock(badLockDef));
         }
 
         verify(goodLock, times(1)).lock();

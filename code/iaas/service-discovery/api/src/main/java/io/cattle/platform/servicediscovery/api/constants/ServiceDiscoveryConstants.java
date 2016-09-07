@@ -127,8 +127,8 @@ public class ServiceDiscoveryConstants {
 
     public static final String IMAGE_NONE = "rancher/none";
 
-    public static final String AUDIT_LOG_REMOVE_EXTRA = "Extra service instance is removed by service.reconcile";
-    public static final String AUDIT_LOG_REMOVE_UNHEATLHY = "Unhealthy service instance is removed by service.reconcile";
-    public static final String AUDIT_LOG_REMOVE_BAD = "Service instance in a bad state is removed by service.reconcile";
-    public static final String AUDIT_LOG_CREATE_EXTRA = "Extra service instance is created by service.reconcile";
+    public static final String AUDIT_LOG_REMOVE_EXTRA = "Removing extra service instance";
+    public static final String AUDIT_LOG_REMOVE_UNHEATLHY = "Removing unhealthy service instance";
+    public static final String AUDIT_LOG_REMOVE_BAD = "Removing bad service instance";
+    public static final String AUDIT_LOG_CREATE_EXTRA = "Creating extra service instance";
 }

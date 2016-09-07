@@ -1,7 +1,7 @@
 package io.cattle.platform.object.monitor.impl;
 
 import io.cattle.platform.archaius.util.ArchaiusUtil;
-import io.cattle.platform.async.utils.TimeoutException;
+import io.cattle.platform.async.utils.ResourceTimeoutException;
 import io.cattle.platform.eventing.annotation.AnnotatedEventListener;
 import io.cattle.platform.eventing.annotation.EventHandler;
 import io.cattle.platform.eventing.model.Event;
@@ -103,7 +103,7 @@ public class ResourceMonitorImpl implements ResourceMonitor, AnnotatedEventListe
             }
         }
 
-        throw new TimeoutException("Timeout: " + predicate.getMessage() + " [" + printKey + "]");
+        throw new ResourceTimeoutException(obj, "Timeout: " + predicate.getMessage() + " [" + printKey + "]");
     }
 
     @Override
