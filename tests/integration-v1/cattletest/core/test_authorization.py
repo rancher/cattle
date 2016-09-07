@@ -1717,7 +1717,6 @@ def test_svc_discovery_service(admin_user_client, user_client, project_client,
     resource_action_check(user_client.schema, 'service', [
         'activate',
         'addservicelink',
-        'cancelrollback',
         'cancelupgrade',
         'create',
         'deactivate',
@@ -1729,12 +1728,12 @@ def test_svc_discovery_service(admin_user_client, user_client, project_client,
         'setservicelinks',
         'update',
         'upgrade',
+        'cancelrollback',
     ])
 
     resource_action_check(admin_user_client.schema, 'service', [
         'activate',
         'addservicelink',
-        'cancelrollback',
         'cancelupgrade',
         'create',
         'deactivate',
@@ -1746,12 +1745,12 @@ def test_svc_discovery_service(admin_user_client, user_client, project_client,
         'setservicelinks',
         'update',
         'upgrade',
+        'cancelrollback',
     ])
 
     resource_action_check(project_client.schema, 'service', [
         'activate',
         'addservicelink',
-        'cancelrollback',
         'cancelupgrade',
         'create',
         'deactivate',
@@ -1763,12 +1762,12 @@ def test_svc_discovery_service(admin_user_client, user_client, project_client,
         'setservicelinks',
         'update',
         'upgrade',
+        'cancelrollback',
     ])
 
     resource_action_check(project_admin_client.schema, 'service', [
         'activate',
         'addservicelink',
-        'cancelrollback',
         'cancelupgrade',
         'certificate',
         'create',
@@ -1781,6 +1780,7 @@ def test_svc_discovery_service(admin_user_client, user_client, project_client,
         'setservicelinks',
         'update',
         'upgrade',
+        'cancelrollback',
     ])
 
 

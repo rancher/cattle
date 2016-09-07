@@ -4,7 +4,6 @@ import static io.cattle.platform.core.model.tables.ServiceIndexTable.*;
 import static io.cattle.platform.core.model.tables.ServiceTable.*;
 import static io.cattle.platform.core.model.tables.StackTable.*;
 import static io.cattle.platform.core.model.tables.SubnetTable.*;
-
 import io.cattle.platform.allocator.service.AllocatorService;
 import io.cattle.platform.configitem.events.ConfigUpdate;
 import io.cattle.platform.configitem.model.Client;
@@ -186,8 +185,6 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
                 ServiceDiscoveryConstants.STATE_UPGRADING, ServiceDiscoveryConstants.STATE_ROLLINGBACK,
                 ServiceDiscoveryConstants.STATE_CANCELING_UPGRADE,
                 ServiceDiscoveryConstants.STATE_CANCELED_UPGRADE,
-                ServiceDiscoveryConstants.STATE_CANCELING_ROLLBACK,
-                ServiceDiscoveryConstants.STATE_CANCELED_ROLLBACK,
                 ServiceDiscoveryConstants.STATE_FINISHING_UPGRADE,
                 ServiceDiscoveryConstants.STATE_UPGRADED,
                 ServiceDiscoveryConstants.STATE_RESTARTING);
@@ -639,8 +636,7 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
         if (!supportedKinds.contains(service.getKind().toLowerCase())) {
             serviceHealthState = HealthcheckConstants.HEALTH_STATE_HEALTHY;
         } else {
-            List<? extends Instance> serviceInstances = exposeMapDao.listServiceManagedInstances(service
-                    .getId());
+            List<? extends Instance> serviceInstances = exposeMapDao.listServiceManagedInstances(service);
             List<String> healthyStates = Arrays.asList(HealthcheckConstants.HEALTH_STATE_HEALTHY,
                     HealthcheckConstants.HEALTH_STATE_UPDATING_HEALTHY);
             List<String> initStates = Arrays.asList(HealthcheckConstants.HEALTH_STATE_INITIALIZING,

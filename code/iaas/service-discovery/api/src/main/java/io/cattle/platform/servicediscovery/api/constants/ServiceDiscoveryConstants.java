@@ -82,7 +82,6 @@ public class ServiceDiscoveryConstants {
     public static final String PROCESS_SERVICE_EXPOSE_MAP_REMOVE = "serviceexposemap.remove";
     public static final String PROCESS_SERVICE_UPGRADE = "service." + ACTION_SERVICE_UPGRADE;
     public static final String PROCESS_SERVICE_ROLLBACK = "service." + ACTION_SERVICE_ROLLBACK;
-    public static final String PROCESS_SERVICE_CANCEL_ROLLBACK = "service.cancelrollback";
     public static final String PROCESS_SERVICE_CANCEL_UPGRADE = "service.cancelupgrade";
     public static final String PROCESS_SERVICE_FINISH_UPGRADE = "service.finishupgrade";
     public static final String PROCESS_SERVICE_RESTART = "service." + ACTION_SERVICE_RESTART;
@@ -119,8 +118,6 @@ public class ServiceDiscoveryConstants {
     public static final String STATE_ROLLINGBACK = "rolling-back";
     public static final String STATE_CANCELING_UPGRADE = "canceling-upgrade";
     public static final String STATE_CANCELED_UPGRADE = "canceled-upgrade";
-    public static final String STATE_CANCELING_ROLLBACK = "canceling-rollback";
-    public static final String STATE_CANCELED_ROLLBACK = "canceled-rollback";
     public static final String STATE_UPGRADED = "upgraded";
     public static final String STATE_FINISHING_UPGRADE = "finishing-upgrade";
     public static final String STATE_RESTARTING = "restarting";

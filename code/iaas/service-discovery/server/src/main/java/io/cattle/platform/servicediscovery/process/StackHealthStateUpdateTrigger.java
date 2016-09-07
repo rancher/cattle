@@ -5,9 +5,9 @@ import io.cattle.platform.configitem.version.ConfigItemStatusManager;
 import io.cattle.platform.core.constants.HealthcheckConstants;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.dao.InstanceDao;
-import io.cattle.platform.core.model.Stack;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.Service;
+import io.cattle.platform.core.model.Stack;
 import io.cattle.platform.engine.handler.HandlerResult;
 import io.cattle.platform.engine.handler.ProcessPostListener;
 import io.cattle.platform.engine.process.ProcessInstance;
@@ -52,7 +52,6 @@ public class StackHealthStateUpdateTrigger extends AbstractObjectProcessHandler 
                 ServiceDiscoveryConstants.PROCESS_SERVICE_RESTART,
                 ServiceDiscoveryConstants.PROCESS_SERVICE_UPGRADE,
                 ServiceDiscoveryConstants.PROCESS_SERVICE_ROLLBACK,
-                ServiceDiscoveryConstants.PROCESS_SERVICE_CANCEL_ROLLBACK,
                 ServiceDiscoveryConstants.PROCESS_SERVICE_CANCEL_UPGRADE };
     }
 

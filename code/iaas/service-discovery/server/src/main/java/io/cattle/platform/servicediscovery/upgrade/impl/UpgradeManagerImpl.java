@@ -1,7 +1,6 @@
 package io.cattle.platform.servicediscovery.upgrade.impl;
 
 import static io.cattle.platform.core.model.tables.ServiceExposeMapTable.*;
-
 import io.cattle.platform.activity.ActivityLog;
 import io.cattle.platform.activity.ActivityService;
 import io.cattle.platform.async.utils.TimeoutException;
@@ -146,6 +145,7 @@ public class UpgradeManagerImpl implements UpgradeManager {
                 // should be skipped for rollback
                 if (isUpgrade) {
                     waitForHealthyState(service);
+                    deploymentMgr.activate(service);
                 }
                 // mark for upgrade
                 markForUpgrade(batchSize);
@@ -279,7 +279,7 @@ public class UpgradeManagerImpl implements UpgradeManager {
 
     protected List<? extends Instance> getServiceInstancesToRestart(Service service) {
         // get all instances of the service
-        List<? extends Instance> instances = exposeMapDao.listServiceManagedInstances(service.getId());
+        List<? extends Instance> instances = exposeMapDao.listServiceManagedInstances(service);
         List<Instance> toRestart = new ArrayList<>();
         ServiceRestart svcRestart = DataAccessor.field(service, ServiceDiscoveryConstants.FIELD_RESTART,
                 jsonMapper, ServiceRestart.class);
@@ -471,8 +471,7 @@ public class UpgradeManagerImpl implements UpgradeManager {
         activityService.run(service, "wait", "Waiting for all instances to be healthy", new Runnable() {
             @Override
             public void run() {
-                List<? extends Instance> serviceInstances = exposeMapDao.listServiceManagedInstances(service
-                        .getId());
+                List<? extends Instance> serviceInstances = exposeMapDao.listServiceManagedInstances(service);
                 final List<String> healthyStates = Arrays.asList(HealthcheckConstants.HEALTH_STATE_HEALTHY,
                         HealthcheckConstants.HEALTH_STATE_UPDATING_HEALTHY);
                 for (final Instance instance : serviceInstances) {
