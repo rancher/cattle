@@ -599,6 +599,11 @@ def _sleep_time():
             sleep = 1
 
 
+def wait_state(client, obj, state):
+    wait_for(lambda: client.reload(obj).state == state)
+    return client.reload(obj)
+
+
 def wait_for(callback, timeout=DEFAULT_TIMEOUT, fail_handler=None):
     sleep_time = _sleep_time()
     start = time.time()
