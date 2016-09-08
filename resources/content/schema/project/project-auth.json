@@ -70,6 +70,8 @@
         "rollingRestartStrategy" : "cr",
         "servicesPortRange" : "cru",
         "recreateOnQuorumStrategyConfig" : "cr",
+        "binding" : "cru",
+        "serviceBinding" : "cru",
         "end" : ""
     }
 }
