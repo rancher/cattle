@@ -48,7 +48,6 @@ import javax.inject.Inject;
 import org.apache.commons.lang3.tuple.Pair;
 
 public class UpgradeManagerImpl implements UpgradeManager {
-    private static Long DEFAULT_WAIT_TIMEOUT = 60000L;
 
     private static final Set<String> UPGRADE_STATES = new HashSet<>(Arrays.asList(
             ServiceDiscoveryConstants.STATE_UPGRADING,
@@ -476,7 +475,7 @@ public class UpgradeManagerImpl implements UpgradeManager {
                         HealthcheckConstants.HEALTH_STATE_UPDATING_HEALTHY);
                 for (final Instance instance : serviceInstances) {
                     if (instance.getState().equalsIgnoreCase(InstanceConstants.STATE_RUNNING)) {
-                        resourceMntr.waitFor(instance, DEFAULT_WAIT_TIMEOUT,
+                        resourceMntr.waitFor(instance,
                                 new ResourcePredicate<Instance>() {
                                     @Override
                                     public boolean evaluate(Instance obj) {
