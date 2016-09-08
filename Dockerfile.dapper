@@ -3,6 +3,7 @@ FROM ubuntu:14.04.3
 ENV DAPPER_ENV API_VERSION
 ENV DAPPER_RUN_ARGS --privileged
 ENV DAPPER_SOURCE /usr/src/cattle
+ENV DAPPER_OUTPUT dist
 WORKDIR ${DAPPER_SOURCE}
 
 # Install Java and Python
