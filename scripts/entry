@@ -2,7 +2,7 @@
 set -e
 
 
-mkdir -p bin
+mkdir -p bin dist
 if [ -e ./scripts/$1 ]; then
     ./scripts/"$@"
 else
