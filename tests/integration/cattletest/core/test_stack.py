@@ -1,14 +1,16 @@
 from common_fixtures import *  # NOQA
 
-binding_input = {"services":
-                  {"service_1":
-                   {"labels":
-                    {"label_1": "value_1"},
+binding_input = {
+    "services":
+        {
+            "service_1":
+                {
+                    "labels": {"label_1": "value_1"},
                     "ports": [],
                     "scale": "scale_1"
-                    }
-                   }
-                  }
+                }
+        }
+    }
 
 
 def _create_stack(client):
