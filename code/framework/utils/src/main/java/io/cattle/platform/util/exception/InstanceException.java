@@ -1,6 +1,8 @@
 package io.cattle.platform.util.exception;
 
-public class InstanceException extends IllegalStateException {
+import org.slf4j.Logger;
+
+public class InstanceException extends IllegalStateException implements LoggableException {
     private static final long serialVersionUID = 4868400759427367403L;
 
     Object instance;
@@ -21,5 +23,10 @@ public class InstanceException extends IllegalStateException {
 
     public Object getInstance() {
         return instance;
+    }
+
+    @Override
+    public void log(Logger log) {
+        log.error(this.getMessage());
     }
 }
