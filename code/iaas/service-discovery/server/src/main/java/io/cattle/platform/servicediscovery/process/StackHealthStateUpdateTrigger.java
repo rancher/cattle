@@ -12,8 +12,7 @@ import io.cattle.platform.engine.handler.HandlerResult;
 import io.cattle.platform.engine.handler.ProcessPostListener;
 import io.cattle.platform.engine.process.ProcessInstance;
 import io.cattle.platform.engine.process.ProcessState;
-import io.cattle.platform.process.common.handler.AbstractObjectProcessHandler;
-import io.cattle.platform.servicediscovery.api.constants.ServiceDiscoveryConstants;
+import io.cattle.platform.process.common.handler.AbstractObjectProcessLogic;
 import io.cattle.platform.servicediscovery.service.ServiceDiscoveryService;
 import io.cattle.platform.util.type.Priority;
 
@@ -26,7 +25,7 @@ import javax.inject.Inject;
 import javax.inject.Named;
 
 @Named
-public class StackHealthStateUpdateTrigger extends AbstractObjectProcessHandler implements ProcessPostListener, Priority {
+public class StackHealthStateUpdateTrigger extends AbstractObjectProcessLogic implements ProcessPostListener, Priority {
 
     public static final String STACK = "stack-reconcile";
 
@@ -44,15 +43,7 @@ public class StackHealthStateUpdateTrigger extends AbstractObjectProcessHandler 
         return new String[] { HealthcheckConstants.PROCESS_UPDATE_HEALTHY,
                 HealthcheckConstants.PROCESS_UPDATE_UNHEALTHY, InstanceConstants.PROCESS_STOP,
                 InstanceConstants.PROCESS_REMOVE, InstanceConstants.PROCESS_START,
-                ServiceDiscoveryConstants.PROCESS_SERVICE_ACTIVATE,
-                ServiceDiscoveryConstants.PROCESS_SERVICE_DEACTIVATE,
-                ServiceDiscoveryConstants.PROCESS_SERVICE_UPDATE,
-                ServiceDiscoveryConstants.PROCESS_SERVICE_CREATE,
-                ServiceDiscoveryConstants.PROCESS_SERVICE_FINISH_UPGRADE,
-                ServiceDiscoveryConstants.PROCESS_SERVICE_RESTART,
-                ServiceDiscoveryConstants.PROCESS_SERVICE_UPGRADE,
-                ServiceDiscoveryConstants.PROCESS_SERVICE_ROLLBACK,
-                ServiceDiscoveryConstants.PROCESS_SERVICE_CANCEL_UPGRADE };
+                "service.*"};
     }
 
     @Override
