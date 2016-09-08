@@ -78,11 +78,15 @@ public class TypeIdFormatter implements IdFormatter {
 
     @Override
     public IdFormatter withSchemaFactory(SchemaFactory schemaFactory) {
-        TypeIdFormatter formatter = new TypeIdFormatter();
+        TypeIdFormatter formatter = newFormatter();
         formatter.schemaFactory = schemaFactory;
         formatter.globalPrefix = this.globalPrefix;
         formatter.plainTypes = this.plainTypes;
         return formatter;
+    }
+
+    protected TypeIdFormatter newFormatter() {
+        return new TypeIdFormatter();
     }
 
     protected String getShortType(String type) {

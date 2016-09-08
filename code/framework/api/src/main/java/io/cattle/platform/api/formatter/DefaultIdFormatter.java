@@ -10,4 +10,17 @@ public class DefaultIdFormatter extends TypeIdFormatter implements Priority {
         return Priority.DEFAULT;
     }
 
+    @Override
+    protected String getShortType(String type) {
+        if ("stack".equals(type)) {
+            return "1st";
+        }
+        return super.getShortType(type);
+    }
+
+    @Override
+    protected TypeIdFormatter newFormatter() {
+        return new DefaultIdFormatter();
+    }
+
 }
