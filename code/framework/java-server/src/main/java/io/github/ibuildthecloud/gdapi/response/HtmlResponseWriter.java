@@ -1,5 +1,6 @@
 package io.github.ibuildthecloud.gdapi.response;
 
+import io.github.ibuildthecloud.gdapi.json.JsonMapper;
 import io.github.ibuildthecloud.gdapi.request.ApiRequest;
 
 import java.io.IOException;
@@ -22,9 +23,9 @@ public class HtmlResponseWriter extends JsonResponseWriter {
     }
 
     @Override
-    protected void writeJson(OutputStream os, Object responseObject, ApiRequest request) throws IOException {
+    protected void writeJson(JsonMapper jsonMapper, OutputStream os, Object responseObject, ApiRequest request) throws IOException {
         os.write(htmlTemplate.getHeader(request, responseObject));
-        super.writeJson(os, responseObject, request);
+        super.writeJson(jsonMapper, os, responseObject, request);
         os.write(htmlTemplate.getFooter(request, responseObject));
     }
 

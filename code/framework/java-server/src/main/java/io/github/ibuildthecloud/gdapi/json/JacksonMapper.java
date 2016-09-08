@@ -28,14 +28,11 @@ import com.fasterxml.jackson.module.jaxb.JaxbAnnotationModule;
 public class JacksonMapper implements JsonMapper {
 
     ObjectMapper mapper;
-    boolean escapeForwardSlashes;
+    boolean escapeForwardSlashes = true;
 
     @PostConstruct
     public void init() {
-        SimpleModule module = new SimpleModule();
-        module.setMixInAnnotation(Resource.class, ResourceMix.class);
-        module.setMixInAnnotation(SchemaCollection.class, SchemaCollectionMixin.class);
-        module.setMixInAnnotation(SchemaImpl.class, SchemaImplMixin.class);
+        SimpleModule module = getModule();
 
         SimpleDateFormat df = new SimpleDateFormat(DateUtils.DATE_FORMAT);
         df.setTimeZone(TimeZone.getTimeZone("GMT"));
@@ -50,6 +47,14 @@ public class JacksonMapper implements JsonMapper {
         if (escapeForwardSlashes) {
             mapper.getFactory().setCharacterEscapes(new EscapeForwardSlash());
         }
+    }
+
+    protected SimpleModule getModule() {
+        SimpleModule module = new SimpleModule();
+        module.setMixInAnnotation(Resource.class, ResourceMix.class);
+        module.setMixInAnnotation(SchemaCollection.class, SchemaCollectionMixin.class);
+        module.setMixInAnnotation(SchemaImpl.class, SchemaImplMixin.class);
+        return module;
     }
 
     @Override

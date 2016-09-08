@@ -2,6 +2,7 @@ package io.github.ibuildthecloud.gdapi.response;
 
 import io.github.ibuildthecloud.gdapi.context.ApiContext;
 import io.github.ibuildthecloud.gdapi.factory.SchemaFactory;
+import io.github.ibuildthecloud.gdapi.json.ActionLinksMapper;
 import io.github.ibuildthecloud.gdapi.json.JsonMapper;
 import io.github.ibuildthecloud.gdapi.model.Collection;
 import io.github.ibuildthecloud.gdapi.model.Resource;
@@ -11,6 +12,7 @@ import io.github.ibuildthecloud.gdapi.model.impl.WrappedResource;
 import io.github.ibuildthecloud.gdapi.request.ApiRequest;
 import io.github.ibuildthecloud.gdapi.request.handler.AbstractApiRequestHandler;
 
+import java.io.BufferedOutputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -21,7 +23,8 @@ import javax.inject.Inject;
 public class JsonResponseWriter extends AbstractApiRequestHandler {
 
     JsonMapper jsonMapper;
-    boolean chunked = false;
+    JsonMapper actionLinksMapper = new ActionLinksMapper();
+    boolean chunked = true;
 
     @Override
     public void handle(ApiRequest request) throws IOException {
@@ -39,9 +42,16 @@ public class JsonResponseWriter extends AbstractApiRequestHandler {
 
         request.setResponseContentType(getContentType());
 
+        JsonMapper jsonMapper = this.jsonMapper;
+        if (request.getServletContext().getRequest().getHeader("X-API-Action-Links") != null) {
+            jsonMapper = actionLinksMapper;
+        }
+
         OutputStream os = request.getOutputStream();
+        BufferedOutputStream buf = new BufferedOutputStream(os);
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        writeJson(chunked ? os : baos, responseObject, request);
+        writeJson(jsonMapper, chunked ? buf : baos, responseObject, request);
+        buf.flush();
 
         if (!chunked) {
             byte[] bytes = baos.toByteArray();
@@ -100,7 +110,7 @@ public class JsonResponseWriter extends AbstractApiRequestHandler {
         return schema == null ? null : new WrappedResource(apiContext.getIdFormatter(), schemaFactory, schema, obj, apiContext.getApiRequest().getMethod());
     }
 
-    protected void writeJson(OutputStream os, Object responseObject, ApiRequest request) throws IOException {
+    protected void writeJson(JsonMapper jsonMapper, OutputStream os, Object responseObject, ApiRequest request) throws IOException {
         jsonMapper.writeValue(os, responseObject);
     }
 
