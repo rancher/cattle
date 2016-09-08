@@ -231,7 +231,7 @@ def test_cancelupgrade_finish(context, client):
     # upgrading-cancelingupgrade-canceledupgrade-finishupgrade
     svc = _create_and_schedule_inservice_upgrade(client, context)
     svc = _cancel_upgrade(client, svc)
-    svc.finishupgrade()
+    svc.continueupgrade()
 
 
 def test_upgrade_finish_cancel_rollback(context, client):
@@ -782,8 +782,9 @@ def _validate_rollback(super_client, svc, rolledback_svc,
 
 
 def _cancel_upgrade(client, svc):
-    svc = client.wait_success(svc.cancelupgrade())
-    assert svc.state == 'canceled-upgrade'
+    svc.cancelupgrade()
+    wait_for(lambda: client.reload(svc).state == 'canceled-upgrade')
+    svc = client.reload(svc)
     strategy = svc.upgrade.inServiceStrategy
     assert strategy.previousLaunchConfig is not None
     assert strategy.previousSecondaryLaunchConfigs is not None

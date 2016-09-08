@@ -1369,8 +1369,7 @@ def test_global_service_update_label(new_context):
     # destroy the instance, reactivate the service and check
     # both hosts got instances
     _instance_remove(instance1, client)
-    service = client.wait_success(service.deactivate(), 120)
-    assert service.state == "inactive"
+    service = wait_state(client, service.deactivate(), 'inactive')
     service = client.wait_success(service.activate(), 120)
     assert service.state == "active"
     instance1 = _validate_compose_instance_start(client, service, env, "1")
