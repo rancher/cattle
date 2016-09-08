@@ -17,10 +17,6 @@ public @interface EventHandler {
 
     Class<? extends EventNameProvider> nameProvider() default EventNameProvider.class;
 
-    boolean allowQueueing() default false;
-
-    int queueDepth() default 0;
-
     String poolKey() default DEFAULT_POOL_KEY;
 
     Class<? extends LockDefinition> lock() default LockDefinition.class;
