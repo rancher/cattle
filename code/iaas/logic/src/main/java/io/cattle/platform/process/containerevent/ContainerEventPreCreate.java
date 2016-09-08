@@ -3,6 +3,7 @@ package io.cattle.platform.process.containerevent;
 import static io.cattle.platform.core.model.tables.AgentTable.*;
 import static io.cattle.platform.core.model.tables.ContainerEventTable.*;
 import static io.cattle.platform.process.containerevent.ContainerEventCreate.*;
+
 import io.cattle.platform.core.constants.AgentConstants;
 import io.cattle.platform.core.model.Agent;
 import io.cattle.platform.core.model.ContainerEvent;
@@ -35,7 +36,7 @@ public class ContainerEventPreCreate extends AbstractObjectProcessLogic implemen
         // Checks to make sure agent's resource account id and the host's
         // account id match
         ContainerEvent event = (ContainerEvent)state.getResource();
-        Agent agent = objectManager.findOne(Agent.class, AGENT.ACCOUNT_ID, event.getAccountId());
+        Agent agent = objectManager.findAny(Agent.class, AGENT.ACCOUNT_ID, event.getAccountId());
 
         Long resourceAccId = null;
         Host host = objectManager.loadResource(Host.class, event.getHostId());
