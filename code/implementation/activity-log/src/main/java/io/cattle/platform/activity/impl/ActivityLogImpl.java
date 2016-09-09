@@ -10,6 +10,7 @@ import io.cattle.platform.core.model.ServiceLog;
 import io.cattle.platform.engine.idempotent.IdempotentRetryException;
 import io.cattle.platform.engine.process.ProcessInstanceException;
 import io.cattle.platform.eventing.EventService;
+import io.cattle.platform.lock.exception.FailedToAcquireLockException;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.meta.ObjectMetaDataManager;
 import io.cattle.platform.object.util.ObjectUtils;
@@ -132,7 +133,14 @@ public class ActivityLogImpl implements ActivityLog {
         log.setDescription(t.getMessage());
         log.setLevel("error");
 
+        if (t instanceof FailedToAcquireLockException) {
+            entryImpl.failed = false;
+            log.setLevel("info");
+            log.setDescription("Busy processing [" + ((FailedToAcquireLockException)t).getLockId() + "] will try later");
+        }
+
         if (t instanceof TimeoutException) {
+            entryImpl.failed = false;
             log.setLevel("info");
             Instance instance = objectManager.loadResource(Instance.class, log.getInstanceId());
             if (instance != null) {
