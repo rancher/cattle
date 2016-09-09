@@ -204,3 +204,30 @@ def _get_instance_for_service(super_client, serviceId):
     for mapping in instance_service_maps:
         instances.append(mapping.instance())
     return instances
+
+
+def test_activate_services_startonce_fail(super_client, new_context):
+    client = new_context.client
+    env = _create_stack(client)
+    host = super_client.reload(register_simulated_host(new_context))
+    wait_for(lambda: super_client.reload(host).state == 'active',
+             timeout=5)
+
+    image_uuid = new_context.image_uuid
+    labels = {"io.rancher.container.start_once": "true"}
+    launch_config = {"imageUuid": image_uuid, 'ports': "5419",
+                     "labels": labels}
+    scale_policy = {"min": 1, "max": 4}
+
+    svc = client.create_service(name=random_str(),
+                                stackId=env.id,
+                                launchConfig=launch_config,
+                                scalePolicy=scale_policy)
+    svc = client.wait_success(svc)
+    assert svc.state == "inactive"
+
+    # as we have only 2 hosts available,
+    # service's final scale should be 2
+    svc = client.wait_success(svc.activate())
+    assert svc.state == "active"
+    wait_for(lambda: super_client.reload(svc).currentScale >= 1)

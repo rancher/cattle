@@ -262,7 +262,9 @@ public class DefaultDeploymentUnitInstance extends DeploymentUnitInstance implem
                 instance = context.resourceMonitor.waitFor(instance, new ResourcePredicate<Instance>() {
                     @Override
                     public boolean evaluate(Instance obj) {
-                        if (!startOnce && (obj.getRemoved() != null || BAD_ALLOCATING_STATES.contains(obj.getState()))) {
+                        if ((startOnce && ERROR_STATES.contains(obj.getState()))
+                                || obj.getRemoved() != null
+                                || (!startOnce && BAD_ALLOCATING_STATES.contains(obj.getState()))) {
                             String error = TransitioningUtils.getTransitioningError(obj);
                             String message = "Bad instance [" + key(instance) + "] in state [" + obj.getState() + "]";
                             if (StringUtils.isNotBlank(error)) {
@@ -285,6 +287,7 @@ public class DefaultDeploymentUnitInstance extends DeploymentUnitInstance implem
         } catch (Exception ex) {
             throw new ServiceInstanceAllocateException("Failed to allocate instance [" + key(instance) + "]", ex, this.instance);
         }
+
     }
 
     protected String key(Instance instance) {
