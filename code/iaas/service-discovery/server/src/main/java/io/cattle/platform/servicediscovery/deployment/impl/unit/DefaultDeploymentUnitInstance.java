@@ -187,7 +187,7 @@ public class DefaultDeploymentUnitInstance extends DeploymentUnitInstance implem
         this.waitForAllocate();
 
         instance = context.resourceMonitor.waitForNotTransitioning(instance);
-        if (!InstanceConstants.STATE_RUNNING.equals(instance.getState())) {
+        if (!((startOnce && isStartedOnce()) || (InstanceConstants.STATE_RUNNING.equals(instance.getState())))) {
             String error = TransitioningUtils.getTransitioningError(instance);
             String message = String.format("Expected state running but got %s", instance.getState());
             if (org.apache.commons.lang3.StringUtils.isNotBlank(error)) {
@@ -202,11 +202,17 @@ public class DefaultDeploymentUnitInstance extends DeploymentUnitInstance implem
     @Override
     protected boolean isStartedImpl() {
         if (startOnce) {
-            List<String> validStates = Arrays.asList(InstanceConstants.STATE_STOPPED, InstanceConstants.STATE_STOPPING,
-                    InstanceConstants.STATE_RUNNING);
-            return validStates.contains(context.objectManager.reload(this.instance).getState());
+            return isStartedOnce();
         }
         return context.objectManager.reload(this.instance).getState().equalsIgnoreCase(InstanceConstants.STATE_RUNNING);
+    }
+
+    protected boolean isStartedOnce() {
+        List<String> validStates = Arrays.asList(InstanceConstants.STATE_STOPPED, InstanceConstants.STATE_STOPPING,
+                InstanceConstants.STATE_RUNNING);
+        return validStates.contains(context.objectManager.reload(this.instance).getState())
+                && context.objectManager.find(InstanceHostMap.class, INSTANCE_HOST_MAP.INSTANCE_ID,
+                        instance.getId()).size() > 0;
     }
 
     @Override
