@@ -984,7 +984,7 @@ def test_sidekick_destroy_instance(client, context):
 
     # destroy primary instance and wait for the service to reconcile
     _instance_remove(instance11, client)
-    service = client.wait_success(service)
+    service = wait_state(client, service, 'active')
     _validate_service_instance_map_count(client, service, "active", 2)
     instance11 = _validate_compose_instance_start(client, service, env, "1")
 
@@ -994,7 +994,7 @@ def test_sidekick_destroy_instance(client, context):
 
     # destroy secondary instance and wait for the service to reconcile
     _instance_remove(instance12, client)
-    service = client.wait_success(service)
+    service = wait_state(client, service, 'active')
     _validate_service_instance_map_count(client, service, "active", 2)
 
     _validate_compose_instance_start(client, service, env, "1")
