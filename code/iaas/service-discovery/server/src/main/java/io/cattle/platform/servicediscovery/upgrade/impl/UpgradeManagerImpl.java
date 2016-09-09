@@ -1,6 +1,7 @@
 package io.cattle.platform.servicediscovery.upgrade.impl;
 
 import static io.cattle.platform.core.model.tables.ServiceExposeMapTable.*;
+
 import io.cattle.platform.activity.ActivityLog;
 import io.cattle.platform.activity.ActivityService;
 import io.cattle.platform.async.utils.TimeoutException;
@@ -50,6 +51,7 @@ import org.apache.commons.lang3.tuple.Pair;
 public class UpgradeManagerImpl implements UpgradeManager {
 
     private static final Set<String> UPGRADE_STATES = new HashSet<>(Arrays.asList(
+            ServiceDiscoveryConstants.STATE_RESTARTING,
             ServiceDiscoveryConstants.STATE_UPGRADING,
             ServiceDiscoveryConstants.STATE_ROLLINGBACK));
 
@@ -368,15 +370,15 @@ public class UpgradeManagerImpl implements UpgradeManager {
                             throw new RuntimeException(e);
                         }
                     }
-                    assertUpgrading(service);
+                    assertUpgradingRestarting(service);
                 }
             }
         });
     }
 
-    protected void assertUpgrading(Service service) {
+    protected void assertUpgradingRestarting(Service service) {
         if (!UPGRADE_STATES.contains(reload(service).getState())) {
-            throw new TimeoutException("Canceling upgrade");
+            throw new TimeoutException("Canceling");
         }
     }
 
@@ -482,7 +484,7 @@ public class UpgradeManagerImpl implements UpgradeManager {
                                         boolean healthy = instance.getHealthState() == null
                                                 || healthyStates.contains(obj.getHealthState());
                                         if (!healthy) {
-                                            assertUpgrading(service);
+                                            assertUpgradingRestarting(service);
                                         }
                                         return healthy;
                                     }

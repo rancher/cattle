@@ -16,6 +16,7 @@ import io.cattle.platform.object.meta.ObjectMetaDataManager;
 import io.cattle.platform.object.util.ObjectUtils;
 import io.cattle.platform.object.util.TransitioningUtils;
 import io.cattle.platform.util.exception.InstanceException;
+import io.cattle.platform.util.exception.ServiceReconcileException;
 
 import java.util.Date;
 import java.util.Stack;
@@ -132,6 +133,11 @@ public class ActivityLogImpl implements ActivityLog {
         log.setInstanceId(getInstanceIdFromThrowable(t));
         log.setDescription(t.getMessage());
         log.setLevel("error");
+
+        if (t instanceof ServiceReconcileException) {
+            entryImpl.failed = false;
+            log.setLevel("info");
+        }
 
         if (t instanceof FailedToAcquireLockException) {
             entryImpl.failed = false;
