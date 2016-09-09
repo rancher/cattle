@@ -11,7 +11,7 @@ def made_log(object, admin_user_client, context, accountId=None):
     assert len(logs) == 1
     assert logs[0].resourceType == t
     if str(logs[0].resourceId) != object.id:
-        assert str(logs[0].resourceId).replace('1s', '1e') == object.id
+        assert str(logs[0].resourceId).replace('1st', '1e') == object.id
     else:
         assert str(logs[0].resourceId) == object.id
     if accountId is None:
