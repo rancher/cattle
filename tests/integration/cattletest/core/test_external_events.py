@@ -11,9 +11,10 @@ def from_context(context):
 def test_bad_agent(super_client):
     # Even though super_client will have permissions to create the container
     # event, additional logic should assert that the creator is a valid agent.
-    with pytest.raises(ApiError) as e:
+
+    try:
         external_id = random_str()
-        super_client.create_external_storage_pool_event(
+        sp = super_client.create_external_storage_pool_event(
             externalId=external_id,
             eventType="storagepool.create",
             hostUuids=[],
@@ -21,7 +22,11 @@ def test_bad_agent(super_client):
                 'name': 'name-%s' % external_id,
                 'externalId': external_id,
             })
-    assert e.value.error.code == 'MissingRequired'
+    except ApiError as e:
+        assert e.error.code == 'MissingRequired'
+    else:
+        print 'Created storage pool unexpectedly: %s' % sp
+        assert False
 
 
 def test_external_host_event_miss(new_context):

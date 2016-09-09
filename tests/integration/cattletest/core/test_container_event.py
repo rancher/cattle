@@ -188,14 +188,18 @@ def test_rancher_container_events(client, context, host, agent_cli, user_id):
 def test_bad_agent(super_client, host):
     # Even though super_client will have permissions to create the container
     # event, additional logic should assert that the creator is a valid agent.
-    with pytest.raises(ApiError) as e:
-        super_client.create_container_event(
+    try:
+        sp = super_client.create_container_event(
             reportedHostUuid=host.data.fields['reportedUuid'],
             externalId=random_str(),
             externalFrom='busybox:latest',
             externalTimestamp=int(time.time()),
             externalStatus='start')
-    assert e.value.error.code == 'MissingRequired'
+    except ApiError as e:
+        assert e.error.code == 'MissingRequired'
+    else:
+        print 'Created storage pool unexpectedly: %s' % sp
+        assert False
 
 
 def test_bad_host(host, new_context):
