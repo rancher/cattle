@@ -892,14 +892,14 @@ def test_validate_scale_down_restore_state(client, context):
     _instance_remove(instance3, client)
 
     # wait for reconcile
-    service = client.wait_success(service)
+    service = wait_state(client, service, 'active')
 
     # scale down the service and validate that:
     # first instance is running
     # second instance is removed
     # third instance is removed
     service = client.update(service, scale=1, name=service.name)
-    client.wait_success(service, 120)
+    service = wait_state(client, service, 'active')
 
     # validate that only one service instance mapping exists
     instance_service_map = client. \
