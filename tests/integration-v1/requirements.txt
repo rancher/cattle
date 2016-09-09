@@ -1,4 +1,5 @@
 cattle==0.5.3
+gdapi-python==0.5.3
 websocket-client==0.23.0
 PyJWT==1.4.0
 
