@@ -3,6 +3,7 @@ package io.cattle.platform.core.dao.impl;
 import static io.cattle.platform.core.model.tables.ServiceIndexTable.*;
 import static io.cattle.platform.core.model.tables.ServiceTable.*;
 import io.cattle.platform.core.dao.ServiceDao;
+import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.Service;
 import io.cattle.platform.core.model.ServiceIndex;
 import io.cattle.platform.db.jooq.dao.impl.AbstractJooqDao;
@@ -51,5 +52,10 @@ public class ServiceDaoImpl extends AbstractJooqDao implements ServiceDao {
                 .fetchAny();
 
         return record == null ? null : record.into(Service.class);
+    }
+
+    @Override
+    public boolean isServiceInstance(Instance instance) {
+        return instance.getDeploymentUnitUuid() != null;
     }
 }
