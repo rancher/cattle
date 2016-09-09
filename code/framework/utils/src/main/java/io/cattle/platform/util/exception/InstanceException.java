@@ -1,5 +1,6 @@
 package io.cattle.platform.util.exception;
 
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 
 public class InstanceException extends IllegalStateException implements LoggableException {
@@ -12,8 +13,18 @@ public class InstanceException extends IllegalStateException implements Loggable
     }
 
     public InstanceException(String message, Throwable cause, Object instance) {
-        super(message + ": " + cause.getMessage());
+        super(message + ": " + getMessage(cause));
         this.instance = instance;
+    }
+
+    private static String getMessage(Throwable t) {
+        if (t == null) {
+            return "";
+        }
+        if (StringUtils.isBlank(t.getMessage())) {
+            return t.getClass().getSimpleName();
+        }
+        return t.getMessage();
     }
 
     public InstanceException(String message, Object instance) {
