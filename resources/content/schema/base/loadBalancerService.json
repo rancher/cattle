@@ -2,7 +2,10 @@
     "resourceFields": {
         "loadBalancerConfig": {
             "type" : "loadBalancerConfig",
-            "nullable": true
+            "nullable": true,
+             "attributes" : {
+                "scheduleUpdate" : true
+            }
         },
         "certificateIds":{
             "type": "array[reference[certificate]]",
