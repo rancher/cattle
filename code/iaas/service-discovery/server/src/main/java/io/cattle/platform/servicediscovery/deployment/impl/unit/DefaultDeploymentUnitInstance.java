@@ -40,7 +40,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 
 public class DefaultDeploymentUnitInstance extends DeploymentUnitInstance implements InstanceUnit {
@@ -264,11 +264,11 @@ public class DefaultDeploymentUnitInstance extends DeploymentUnitInstance implem
                     public boolean evaluate(Instance obj) {
                         if (!startOnce && (obj.getRemoved() != null || BAD_ALLOCATING_STATES.contains(obj.getState()))) {
                             String error = TransitioningUtils.getTransitioningError(obj);
-                            String message = "Bad instance [" + key(instance) + "]";
+                            String message = "Bad instance [" + key(instance) + "] in state [" + obj.getState() + "]";
                             if (StringUtils.isNotBlank(error)) {
                                 message = message + ": " + error;
                             }
-                            throw new RuntimeException(error);
+                            throw new RuntimeException(message);
                         }
                         return context.objectManager.find(InstanceHostMap.class, INSTANCE_HOST_MAP.INSTANCE_ID,
                                 instance.getId()).size() > 0;

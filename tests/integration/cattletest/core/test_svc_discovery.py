@@ -892,14 +892,14 @@ def test_validate_scale_down_restore_state(client, context):
     _instance_remove(instance3, client)
 
     # wait for reconcile
-    service = client.wait_success(service)
+    service = wait_state(client, service, 'active')
 
     # scale down the service and validate that:
     # first instance is running
     # second instance is removed
     # third instance is removed
     service = client.update(service, scale=1, name=service.name)
-    client.wait_success(service, 120)
+    service = wait_state(client, service, 'active')
 
     # validate that only one service instance mapping exists
     instance_service_map = client. \
@@ -984,7 +984,7 @@ def test_sidekick_destroy_instance(client, context):
 
     # destroy primary instance and wait for the service to reconcile
     _instance_remove(instance11, client)
-    service = client.wait_success(service)
+    service = wait_state(client, service, 'active')
     _validate_service_instance_map_count(client, service, "active", 2)
     instance11 = _validate_compose_instance_start(client, service, env, "1")
 
@@ -994,7 +994,7 @@ def test_sidekick_destroy_instance(client, context):
 
     # destroy secondary instance and wait for the service to reconcile
     _instance_remove(instance12, client)
-    service = client.wait_success(service)
+    service = wait_state(client, service, 'active')
     _validate_service_instance_map_count(client, service, "active", 2)
 
     _validate_compose_instance_start(client, service, env, "1")

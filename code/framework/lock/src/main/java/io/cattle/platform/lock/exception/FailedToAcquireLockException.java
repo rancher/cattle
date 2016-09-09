@@ -22,4 +22,11 @@ public class FailedToAcquireLockException extends RuntimeException {
         return lockDef.getLockId().equals(lockDefition.getLockId());
     }
 
+    public String getLockId() {
+        if (lockDefition == null) {
+            return null;
+        }
+        return lockDefition.getLockId();
+    }
+
 }

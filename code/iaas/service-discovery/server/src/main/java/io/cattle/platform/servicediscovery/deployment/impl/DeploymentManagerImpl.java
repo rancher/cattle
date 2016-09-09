@@ -191,7 +191,7 @@ public class DeploymentManagerImpl implements DeploymentManager {
                     desiredScale);
             incremenetScaleAndDeploy(service, checkState, services, policy);
         }
-        
+
         return false;
     }
 
@@ -271,14 +271,13 @@ public class DeploymentManagerImpl implements DeploymentManager {
         // reload planner as there can be new hosts added for Global services
         planner = getPlanner(services);
         if (needToReconcile(services, planner)) {
-            throw new ServiceReconcileException(
-                    "Failed to do service reconcile for service [" + service.getId() + "]");
+            throw new ServiceReconcileException("Need to restart service reconcile");
         }
 
         actvtyService.info("Service reconciled: " + planner.getStatus());
         return false;
     }
-    
+
     private ServiceDeploymentPlanner getPlanner(List<Service> services) {
         List<DeploymentUnit> units = unitInstanceFactory.collectDeploymentUnits(services,
                 new DeploymentServiceContext());
