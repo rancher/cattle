@@ -257,8 +257,13 @@ public class DefaultDeploymentUnitInstance extends DeploymentUnitInstance implem
 
     @Override
     public void waitForAllocate() {
+
         try {
             if (this.instance != null) {
+                if (context.objectManager.find(InstanceHostMap.class, INSTANCE_HOST_MAP.INSTANCE_ID,
+                        instance.getId()).size() > 0) {
+                    return;
+                }
                 instance = context.resourceMonitor.waitFor(instance, new ResourcePredicate<Instance>() {
                     @Override
                     public boolean evaluate(Instance obj) {
