@@ -8,12 +8,13 @@ def from_context(context):
     return context.client, context.agent_client, context.host
 
 
-def test_bad_agent(super_client):
-    # Even though super_client will have permissions to create the container
-    # event, additional logic should assert that the creator is a valid agent.
-    with pytest.raises(ApiError) as e:
+def test_bad_agent(super_client, new_context):
+    _, account, agent_client = register_simulated_host(new_context,
+                                                       return_agent=True)
+
+    def post():
         external_id = random_str()
-        super_client.create_external_storage_pool_event(
+        agent_client.create_external_storage_pool_event(
             externalId=external_id,
             eventType="storagepool.create",
             hostUuids=[],
@@ -21,7 +22,24 @@ def test_bad_agent(super_client):
                 'name': 'name-%s' % external_id,
                 'externalId': external_id,
             })
+
+    # Test it works
+    post()
+
+    # Test it fails with two agents
+    super_client.wait_success(super_client.create_agent(
+        uri='test://' + random_str(),
+        accountId=account.id))
+    with pytest.raises(ApiError) as e:
+        post()
     assert e.value.error.code == 'MissingRequired'
+
+    # Test it fails with no agents
+    for agent in super_client.list_agent(accountId=account.id):
+        super_client.wait_success(agent.deactivate())
+    with pytest.raises(ApiError) as e:
+        post()
+    assert e.value.error.code == 'CantVerifyAgent'
 
 
 def test_external_host_event_miss(new_context):

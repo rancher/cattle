@@ -185,17 +185,36 @@ def test_rancher_container_events(client, context, host, agent_cli, user_id):
     assert container.state == 'removed'
 
 
-def test_bad_agent(super_client, host):
-    # Even though super_client will have permissions to create the container
-    # event, additional logic should assert that the creator is a valid agent.
-    with pytest.raises(ApiError) as e:
-        super_client.create_container_event(
+def test_bad_agent(super_client, new_context):
+    host, account, agent_client = register_simulated_host(new_context,
+                                                          return_agent=True)
+    host = super_client.reload(host)
+
+    def post():
+        agent_client.create_container_event(
             reportedHostUuid=host.data.fields['reportedUuid'],
             externalId=random_str(),
             externalFrom='busybox:latest',
             externalTimestamp=int(time.time()),
             externalStatus='start')
+
+    # Test it works
+    post()
+
+    # Test it fails with two agents
+    super_client.wait_success(super_client.create_agent(
+        uri='test://' + random_str(),
+        accountId=account.id))
+    with pytest.raises(ApiError) as e:
+        post()
     assert e.value.error.code == 'MissingRequired'
+
+    # Test it fails with no agents
+    for agent in super_client.list_agent(accountId=account.id):
+        super_client.wait_success(agent.deactivate())
+    with pytest.raises(ApiError) as e:
+        post()
+    assert e.value.error.code == 'CantVerifyAgent'
 
 
 def test_bad_host(host, new_context):
