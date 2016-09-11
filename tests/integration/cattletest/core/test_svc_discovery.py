@@ -517,6 +517,41 @@ def test_volumes_service_links_scale_one(client, context):
                                                      s2_container.id])
 
 
+def test_volumes_service_links_deactivate(client, context):
+    env = _create_stack(client)
+
+    image_uuid = context.image_uuid
+    launch_config = {"imageUuid": image_uuid,
+                     "dataVolumesFromLaunchConfigs": ["secondary1"]}
+    sec_lc_1 = {"imageUuid": image_uuid, "name": "secondary1",
+                "dataVolumesFromLaunchConfigs": ["secondary2"]}
+    sec_lc_2 = {"imageUuid": image_uuid, "name": "secondary2"}
+    service = client. \
+        create_service(name="primary",
+                       stackId=env.id,
+                       launchConfig=launch_config,
+                       secondaryLaunchConfigs=[sec_lc_1, sec_lc_2])
+    service = client.wait_success(service)
+
+    service = client.wait_success(service.activate(), 120)
+
+    assert service.state == "active"
+
+    # 2. validate instances
+    s1_container = _validate_compose_instance_start(client, service, env, "1")
+    s2_container = _validate_compose_instance_start(client, service, env,
+                                                    "1", "secondary1")
+    s3_container = _validate_compose_instance_start(client, service, env,
+                                                    "1", "secondary2")
+
+    # deactivate service and activate again
+    service = client.wait_success(service.deactivate())
+    client.wait_success(s1_container)
+    client.wait_success(s2_container)
+    client.wait_success(s3_container)
+    client.wait_success(service.activate())
+
+
 def test_volumes_service_links_scale_two(client, context):
     env = _create_stack(client)
 
@@ -2226,6 +2261,7 @@ def test_validate_scaledown_updating(client, context):
     def wait():
         s = client.reload(service)
         return s.scale == 10 and s.healthState == 'degraded'
+
     wait_for(wait)
 
     service = client.update(service, scale=1, name=service.name)
@@ -2351,6 +2387,7 @@ def test_metadata(client, context):
             return svc
         else:
             return None
+
     service = wait_for(wait_unhealthy)
     metadata = {"bar1": {"foo1": [{"id": 0}]}}
     service = client.update(service, metadata=metadata)
