@@ -28,5 +28,5 @@ public interface DeploymentUnitInstanceFactory {
      * @param context TODO
      * @return list of deployment units per service
      */
-    public List<DeploymentUnit> collectDeploymentUnits(List<Service> service, DeploymentServiceContext context);
+    public List<DeploymentUnit> collectDeploymentUnits(Service service, DeploymentServiceContext context);
 }

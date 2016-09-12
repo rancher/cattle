@@ -8,6 +8,6 @@ import java.util.List;
 
 public interface ServiceDeploymentPlannerFactory {
 
-    ServiceDeploymentPlanner createServiceDeploymentPlanner(List<Service> services, List<DeploymentUnit> units,
+    ServiceDeploymentPlanner createServiceDeploymentPlanner(Service service, List<DeploymentUnit> units,
             DeploymentServiceContext context);
 }

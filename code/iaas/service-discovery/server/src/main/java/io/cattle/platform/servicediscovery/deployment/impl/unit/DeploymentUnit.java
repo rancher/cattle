@@ -1,5 +1,6 @@
 package io.cattle.platform.servicediscovery.deployment.impl.unit;
 
+import static io.cattle.platform.core.model.tables.StackTable.*;
 import io.cattle.platform.allocator.constraint.AffinityConstraintDefinition.AffinityOps;
 import io.cattle.platform.allocator.constraint.ContainerLabelAffinityConstraint;
 import io.cattle.platform.core.constants.CommonStatesConstants;
@@ -49,10 +50,14 @@ public class DeploymentUnit {
         }
     }
 
+    Service service;
+    Stack env;
     String uuid;
     DeploymentServiceContext context;
     Map<String, String> unitLabels = new HashMap<>();
-    Map<Long, DeploymentUnitService> svc = new HashMap<>();
+    Map<String, DeploymentUnitInstance> launchConfigToInstance = new HashMap<>();
+    List<String> launchConfigNames = new ArrayList<>();
+    Map<String, List<String>> sidekickUsedByMap = new HashMap<>();
 
     private static List<String> supportedUnitLabels = Arrays
             .asList(ServiceDiscoveryConstants.LABEL_SERVICE_REQUESTED_HOST_ID);
@@ -64,31 +69,38 @@ public class DeploymentUnit {
      * This constructor is called to add existing unit
      */
     public DeploymentUnit(DeploymentServiceContext context, String uuid,
-            List<Service> services, List<DeploymentUnitInstance> deploymentUnitInstances, Map<String, String> labels) {
-        this(context, uuid, services);
+            Service service, List<DeploymentUnitInstance> deploymentUnitInstances, Map<String, String> labels) {
+        this(context, uuid, service);
         for (DeploymentUnitInstance instance : deploymentUnitInstances) {
-            Service service = instance.getService();
-            DeploymentUnitService duService = svc.get(service.getId());
-            duService.addDeploymentInstance(instance.getLaunchConfigName(), instance);
+            addDeploymentInstance(instance.getLaunchConfigName(), instance);
         }
         setLabels(labels);
     }
 
-    protected DeploymentUnit(DeploymentServiceContext context, String uuid, List<Service> services) {
+    protected DeploymentUnit(DeploymentServiceContext context, String uuid, Service service) {
         this.context = context;
-        this.uuid = uuid;
-        for (Service service : services) {
-            this.svc.put(service.getId(),
-                    new DeploymentUnitService(service, ServiceDiscoveryUtil.getServiceLaunchConfigNames(service),
-                            context));
+
+        for (String launchConfigName : launchConfigNames) {
+            for (String sidekick : getSidekickRefs(service, launchConfigName)) {
+                List<String> usedBy = sidekickUsedByMap.get(sidekick);
+                if (usedBy == null) {
+                    usedBy = new ArrayList<>();
+                }
+                usedBy.add(launchConfigName);
+                sidekickUsedByMap.put(sidekick, usedBy);
+            }
         }
+        this.service = service;
+        this.uuid = uuid;
+        this.env = context.objectManager.findOne(Stack.class, STACK.ID, service.getStackId());
+        this.launchConfigNames = ServiceDiscoveryUtil.getServiceLaunchConfigNames(service);
     }
 
     /*
      * this constructor is called to create a new unit
      */
-    public DeploymentUnit(DeploymentServiceContext context, List<Service> services, Map<String, String> labels) {
-        this(context, UUID.randomUUID().toString(), services);
+    public DeploymentUnit(DeploymentServiceContext context, Service service, Map<String, String> labels) {
+        this(context, UUID.randomUUID().toString(), service);
         setLabels(labels);
     }
 
@@ -103,10 +115,7 @@ public class DeploymentUnit {
     }
 
     private void createMissingUnitInstances(Map<Long, DeploymentUnitInstanceIdGenerator> svcInstanceIdGenerator) {
-        for (Long serviceId : svc.keySet()) {
-            DeploymentUnitService duService = svc.get(serviceId);
-            duService.createMissingInstances(svcInstanceIdGenerator.get(serviceId), uuid);
-        }
+        createMissingInstances(svcInstanceIdGenerator.get(service.getId()), uuid);
     }
 
     public boolean isError() {
@@ -180,10 +189,7 @@ public class DeploymentUnit {
         /*
          * Delete all the units having missing dependencies
          */
-        for (Long serviceId : svc.keySet()) {
-            DeploymentUnitService duService = svc.get(serviceId);
-            duService.cleanupInstancesWithMissingDependencies();
-        }
+        cleanupInstancesWithMissingDependencies();
     }
 
     public void stop() {
@@ -221,12 +227,8 @@ public class DeploymentUnit {
 
     protected List<DeploymentUnitInstance> createServiceInstances() {
         List<DeploymentUnitInstance> createdInstances = new ArrayList<>();
-        for (Long serviceId : svc.keySet()) {
-            DeploymentUnitService duService = svc.get(serviceId);
-            List<String> launchConfigNames = duService.getLaunchConfigNames();
-            for (String launchConfigName : launchConfigNames) {
-                createdInstances.add(createInstance(launchConfigName, duService.getService()));
-            }
+        for (String launchConfigName : launchConfigNames) {
+            createdInstances.add(createInstance(launchConfigName, service));
         }
         return createdInstances;
     }
@@ -241,13 +243,13 @@ public class DeploymentUnit {
         List<Integer> volumesFromInstanceIds = getSidekickContainersId(service, launchConfigName, SidekickType.DATA);
         List<Integer> networkContainerIds = getSidekickContainersId(service, launchConfigName, SidekickType.NETWORK);
         Integer networkContainerId = networkContainerIds.isEmpty() ? null : networkContainerIds.get(0);
-        getDeploymentUnitInstance(service, launchConfigName)
+        launchConfigToInstance.get(launchConfigName)
                 .create(
-                        populateDeployParams(getDeploymentUnitInstance(service, launchConfigName),
+                        populateDeployParams(launchConfigToInstance.get(launchConfigName),
                                 volumesFromInstanceIds,
                                 networkContainerId));
 
-        DeploymentUnitInstance toReturn = getDeploymentUnitInstance(service, launchConfigName);
+        DeploymentUnitInstance toReturn = launchConfigToInstance.get(launchConfigName);
         return toReturn;
     }
 
@@ -278,8 +280,8 @@ public class DeploymentUnit {
                 if (sidekickLaunchConfigName.toString().equalsIgnoreCase(service.getName())) {
                     sidekickLaunchConfigName = ServiceDiscoveryConstants.PRIMARY_LAUNCH_CONFIG_NAME;
                 }
-                DeploymentUnitInstance sidekickUnitInstance = getDeploymentUnitInstance(service,
-                        sidekickLaunchConfigName.toString());
+                DeploymentUnitInstance sidekickUnitInstance = launchConfigToInstance.get(sidekickLaunchConfigName
+                        .toString());
                 if (sidekickUnitInstance != null && sidekickUnitInstance instanceof InstanceUnit) {
                     if (((InstanceUnit) sidekickUnitInstance).getInstance() == null) {
                         // request new instance creation
@@ -323,15 +325,6 @@ public class DeploymentUnit {
             return true;
         }
         return false;
-    }
-
-    public boolean isComplete() {
-        for (DeploymentUnitService duService : svc.values()) {
-            if (!duService.isComplete()) {
-                return false;
-            }
-        }
-        return true;
     }
 
     protected Map<String, Object> populateDeployParams(DeploymentUnitInstance instance,
@@ -424,26 +417,12 @@ public class DeploymentUnit {
 
     public List<DeploymentUnitInstance> getDeploymentUnitInstances() {
         List<DeploymentUnitInstance> instances = new ArrayList<>();
-        for (Long serviceId : svc.keySet()) {
-            DeploymentUnitService duService = svc.get(serviceId);
-            instances.addAll(duService.getInstances());
-        }
+        instances.addAll(launchConfigToInstance.values());
         return instances;
     }
 
-    protected DeploymentUnitInstance getDeploymentUnitInstance(Service service, String launchConfigName) {
-        DeploymentUnitService duService = svc.get(service.getId());
-        return duService.getInstance(launchConfigName);
-    }
-
     private boolean hasSidekicks() {
-        for (Long serviceId : svc.keySet()) {
-            DeploymentUnitService duService = svc.get(serviceId);
-            if (duService.hasSidekicks()) {
-                return true;
-            }
-        }
-        return false;
+        return launchConfigNames.size() > 1;
     }
 
     public long getCreateIndex() {
@@ -463,5 +442,86 @@ public class DeploymentUnit {
             }
         }
         return createIndex;
+    }
+
+    public void addDeploymentInstance(String launchConfig, DeploymentUnitInstance instance) {
+        this.launchConfigToInstance.put(launchConfig, instance);
+    }
+
+    public boolean isComplete() {
+        return launchConfigNames.size() == launchConfigToInstance.size();
+    }
+
+    public void createMissingInstances(DeploymentUnitInstanceIdGenerator svcInstanceIdGenerator, String uuid) {
+        Integer order = null;
+        for (String launchConfigName : launchConfigNames) {
+            if (!launchConfigToInstance.containsKey(launchConfigName)) {
+                if (order == null) {
+                    order = svcInstanceIdGenerator.getNextAvailableId(launchConfigName);
+                }
+                String instanceName = ServiceDiscoveryUtil.generateServiceInstanceName(env,
+                        service, launchConfigName, order);
+                DeploymentUnitInstance deploymentUnitInstance = context.deploymentUnitInstanceFactory
+                        .createDeploymentUnitInstance(context, uuid, service, instanceName, null, null,
+                                launchConfigName);
+                addDeploymentInstance(launchConfigName, deploymentUnitInstance);
+            }
+        }
+    }
+
+    public void cleanupInstancesWithMissingDependencies() {
+        for (String launchConfigName : launchConfigNames) {
+            if (!launchConfigToInstance.containsKey(launchConfigName)) {
+                cleanupInstanceWithMissingDep(launchConfigName);
+            }
+        }
+    }
+
+    protected void cleanupInstanceWithMissingDep(String launchConfigName) {
+        List<String> usedInLaunchConfigs = sidekickUsedByMap.get(launchConfigName);
+        if (usedInLaunchConfigs == null) {
+            return;
+        }
+        for (String usedInLaunchConfig : usedInLaunchConfigs) {
+            DeploymentUnitInstance usedByInstance = launchConfigToInstance.get(usedInLaunchConfig);
+            if (usedByInstance == null) {
+                continue;
+            }
+            clenaupDeploymentInstance(usedByInstance);
+            cleanupInstanceWithMissingDep(usedInLaunchConfig);
+        }
+    }
+
+    protected void clenaupDeploymentInstance(DeploymentUnitInstance instance) {
+        instance.remove();
+        launchConfigToInstance.remove(instance.getLaunchConfigName());
+
+    }
+
+    @SuppressWarnings("unchecked")
+    public List<String> getSidekickRefs(Service service, String launchConfigName) {
+        List<String> configNames = new ArrayList<>();
+        for (DeploymentUnit.SidekickType sidekickType : DeploymentUnit.SidekickType.supportedTypes) {
+            Object sidekicksLaunchConfigObj = ServiceDiscoveryUtil.getLaunchConfigObject(service, launchConfigName,
+                    sidekickType.launchConfigType);
+            if (sidekicksLaunchConfigObj != null) {
+                if (sidekickType.isList) {
+                    configNames.addAll((List<String>) sidekicksLaunchConfigObj);
+                } else {
+                    configNames.add(sidekicksLaunchConfigObj.toString());
+                }
+            }
+        }
+
+        List<String> toReturn = new ArrayList<>();
+        for (String name : configNames) {
+            if (name.equalsIgnoreCase(service.getName())) {
+                toReturn.add(ServiceDiscoveryConstants.PRIMARY_LAUNCH_CONFIG_NAME);
+            } else {
+                toReturn.add(name);
+            }
+        }
+
+        return toReturn;
     }
 }
