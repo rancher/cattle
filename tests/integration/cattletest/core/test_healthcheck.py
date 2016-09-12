@@ -781,7 +781,7 @@ def test_health_check_quorum(super_client, context, client):
     # as quorum is reached
     svc = super_client.update(svc, scale=3)
     svc = super_client.wait_success(svc)
-    expose_maps = svc.serviceExposeMaps()
+    expose_maps = _wait_until_active_map_count(svc, 3, client)
     c3 = super_client.reload(expose_maps[2].instance())
     hci3 = find_one(c3.healthcheckInstances)
     hcihm3 = find_one(hci3.healthcheckInstanceHostMaps)
