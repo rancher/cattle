@@ -17,24 +17,22 @@ public class DefaultServiceDeploymentPlanner extends ServiceDeploymentPlanner {
 
     protected Integer requestedScale = 0;
 
-    public DefaultServiceDeploymentPlanner(List<Service> services, List<DeploymentUnit> units,
+    public DefaultServiceDeploymentPlanner(Service service, List<DeploymentUnit> units,
             DeploymentServiceContext context) {
-        super(services, units, context);
-        for (Service service : services) {
-            int scale;
-            // internal desired scale populated by scale policy driven deployment
-            Integer scaleInternal = DataAccessor.fieldInteger(service,
-                    ServiceDiscoveryConstants.FIELD_DESIRED_SCALE);
-            if (scaleInternal != null) {
-                scale = scaleInternal;
-            } else {
-                scale = DataAccessor.fieldInteger(service,
-                        ServiceDiscoveryConstants.FIELD_SCALE);
-            }
+        super(service, units, context);
+        int scale;
+        // internal desired scale populated by scale policy driven deployment
+        Integer scaleInternal = DataAccessor.fieldInteger(service,
+                ServiceDiscoveryConstants.FIELD_DESIRED_SCALE);
+        if (scaleInternal != null) {
+            scale = scaleInternal;
+        } else {
+            scale = DataAccessor.fieldInteger(service,
+                    ServiceDiscoveryConstants.FIELD_SCALE);
+        }
 
-            if (scale > this.requestedScale) {
-                this.requestedScale = scale;
-            }
+        if (scale > this.requestedScale) {
+            this.requestedScale = scale;
         }
     }
 
@@ -51,7 +49,7 @@ public class DefaultServiceDeploymentPlanner extends ServiceDeploymentPlanner {
 
     private void addMissingUnits() {
         while (this.healthyUnits.size() < this.requestedScale) {
-            DeploymentUnit unit = new DeploymentUnit(context, services, null);
+            DeploymentUnit unit = new DeploymentUnit(context, service, null);
             this.healthyUnits.add(unit);
         }
     }

@@ -699,7 +699,7 @@ def test_validate_service_scaleup_scaledown(client, context):
     instance12 = _validate_compose_instance_start(client, service, env, "1")
     instance22 = _validate_compose_instance_start(client, service, env, "2")
     instance32 = _validate_instance_start(service, client, instance32.name)
-    instance41 = _validate_compose_instance_start(client, service, env, "3")
+    instance41 = _validate_compose_instance_start(client, service, env, "4")
 
     assert instance41.createIndex > instance32.createIndex
     assert instance32.createIndex > instance22.createIndex
@@ -824,7 +824,7 @@ def test_service_rename(client, context):
     assert service2.name == new_name
     _validate_compose_instance_start(client, service1, env, "1")
     _validate_compose_instance_start(client, service1, env, "2")
-    _validate_compose_instance_start(client, service2, env, "1")
+    _validate_compose_instance_start(client, service2, env, "3")
 
 
 def test_env_rename(client, context):

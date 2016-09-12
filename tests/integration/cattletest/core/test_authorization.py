@@ -200,6 +200,7 @@ def test_user_types(user_client, adds=set(), removes=set()):
         'scalePolicy',
         'binding',
         'serviceBinding',
+        'volumeTemplate',
     }
     types.update(adds)
     types.difference_update(removes)
@@ -425,6 +426,7 @@ def test_admin_types(admin_user_client, adds=set(), removes=set()):
         'scalePolicy',
         'binding',
         'serviceBinding',
+        'volumeTemplate',
     }
     types.update(adds)
     types.difference_update(removes)
@@ -814,6 +816,8 @@ def test_volume_auth(admin_user_client, user_client, project_client):
         'transitioningProgress': 'r',
         'isHostPath': 'r',
         'accessMode': 'r',
+        'stackId': 'r',
+        'volumeTemplateId': 'r',
     })
 
     auth_check(user_client.schema, 'volume', 'r', {
@@ -837,6 +841,8 @@ def test_volume_auth(admin_user_client, user_client, project_client):
         'transitioningProgress': 'r',
         'isHostPath': 'r',
         'accessMode': 'r',
+        'stackId': 'r',
+        'volumeTemplateId': 'r',
     })
 
     auth_check(project_client.schema, 'volume', 'crd', {
@@ -860,6 +866,8 @@ def test_volume_auth(admin_user_client, user_client, project_client):
         'transitioningProgress': 'r',
         'isHostPath': 'r',
         'accessMode': 'r',
+        'stackId': 'cr',
+        'volumeTemplateId': 'cr',
     })
 
 

@@ -1,0 +1,8 @@
+{
+    "resourceFields": {
+        "labels": {
+            "type": "map[string]",
+            "create": true
+        }
+    }
+}

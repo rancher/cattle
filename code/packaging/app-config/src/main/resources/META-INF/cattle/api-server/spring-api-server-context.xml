@@ -256,6 +256,7 @@
        <bean class="io.cattle.platform.servicediscovery.api.filter.ServiceRollbackValidationFilter" />
        <bean class="io.cattle.platform.servicediscovery.api.filter.HostOutputFilter" />
        <bean class="io.cattle.platform.servicediscovery.api.filter.ServiceRestartValidationFilter" />
+       <bean class="io.cattle.platform.servicediscovery.api.filter.VolumeTemplateCreateValidationFilter" />
        
        <bean class="io.cattle.platform.servicediscovery.api.service.impl.ServiceDiscoveryApiServiceImpl" />
        

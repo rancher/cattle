@@ -9,7 +9,7 @@ import java.util.Map;
 
 public class DeploymentUnitInstanceIdGeneratorImpl implements DeploymentUnitInstanceIdGenerator {
     Map<String, List<Integer>> launchConfigUsedIds = new HashMap<>();
-    
+
     public DeploymentUnitInstanceIdGeneratorImpl(Map<String, List<Integer>> launchConfigUsedIds) {
         this.launchConfigUsedIds = launchConfigUsedIds;
     }
@@ -27,6 +27,10 @@ public class DeploymentUnitInstanceIdGeneratorImpl implements DeploymentUnitInst
 
     protected Integer getNewId(String launchConfigName) {
         List<Integer> usedIds = launchConfigUsedIds.get(launchConfigName);
+        return generateNewId(usedIds);
+    }
+
+    public static Integer generateNewId(List<Integer> usedIds) {
         Integer idToReturn = null;
         if (usedIds.size() == 0) {
             idToReturn = 1;
@@ -48,5 +52,4 @@ public class DeploymentUnitInstanceIdGeneratorImpl implements DeploymentUnitInst
 
         return idToReturn;
     }
-
 }

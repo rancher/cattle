@@ -99,6 +99,11 @@ public class Tables {
 	public static final io.cattle.platform.core.model.tables.DatabasechangeloglockTable DATABASECHANGELOGLOCK = io.cattle.platform.core.model.tables.DatabasechangeloglockTable.DATABASECHANGELOGLOCK;
 
 	/**
+	 * The table cattle.deployment_unit
+	 */
+	public static final io.cattle.platform.core.model.tables.DeploymentUnitTable DEPLOYMENT_UNIT = io.cattle.platform.core.model.tables.DeploymentUnitTable.DEPLOYMENT_UNIT;
+
+	/**
 	 * The table cattle.dynamic_schema
 	 */
 	public static final io.cattle.platform.core.model.tables.DynamicSchemaTable DYNAMIC_SCHEMA = io.cattle.platform.core.model.tables.DynamicSchemaTable.DYNAMIC_SCHEMA;
@@ -382,6 +387,11 @@ public class Tables {
 	 * The table cattle.volume_storage_pool_map
 	 */
 	public static final io.cattle.platform.core.model.tables.VolumeStoragePoolMapTable VOLUME_STORAGE_POOL_MAP = io.cattle.platform.core.model.tables.VolumeStoragePoolMapTable.VOLUME_STORAGE_POOL_MAP;
+
+	/**
+	 * The table cattle.volume_template
+	 */
+	public static final io.cattle.platform.core.model.tables.VolumeTemplateTable VOLUME_TEMPLATE = io.cattle.platform.core.model.tables.VolumeTemplateTable.VOLUME_TEMPLATE;
 
 	/**
 	 * The table cattle.zone

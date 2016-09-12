@@ -14,24 +14,23 @@ import java.util.List;
 public class ServiceDeploymentPlannerFactoryImpl implements ServiceDeploymentPlannerFactory {
 
     @Override
-    public ServiceDeploymentPlanner createServiceDeploymentPlanner(List<Service> services, List<DeploymentUnit> units,
+    public ServiceDeploymentPlanner createServiceDeploymentPlanner(Service service, List<DeploymentUnit> units,
             DeploymentServiceContext context) {
 
-        if (services.isEmpty()) {
+        if (service == null) {
             return null;
         }
 
-        Service service = services.get(0);
         boolean isGlobalDeploymentStrategy = isGlobalDeploymentStrategy(context, service);
         boolean isSelectorOnlyStrategy = isNoopStrategy(context, service);
         if (isSelectorOnlyStrategy
                 || service.getKind().equalsIgnoreCase(ServiceDiscoveryConstants.KIND_EXTERNAL_SERVICE)
                 || service.getKind().equalsIgnoreCase(ServiceDiscoveryConstants.KIND_DNS_SERVICE)) {
-            return new NoOpServiceDeploymentPlanner(services, units, context);
+            return new NoOpServiceDeploymentPlanner(service, units, context);
         } else if (isGlobalDeploymentStrategy) {
-            return new GlobalServiceDeploymentPlanner(services, units, context);
+            return new GlobalServiceDeploymentPlanner(service, units, context);
         } else {
-            return new DefaultServiceDeploymentPlanner(services, units, context);
+            return new DefaultServiceDeploymentPlanner(service, units, context);
         }
     }
 
