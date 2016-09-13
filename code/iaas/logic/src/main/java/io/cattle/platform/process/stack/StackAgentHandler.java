@@ -4,9 +4,12 @@ import io.cattle.platform.agent.instance.dao.AgentInstanceDao;
 import io.cattle.platform.core.model.Stack;
 import io.cattle.platform.engine.process.ProcessInstance;
 import io.cattle.platform.engine.process.ProcessState;
+import io.cattle.platform.eventing.model.EventVO;
 import io.cattle.platform.process.common.handler.AgentBasedProcessHandler;
+import io.cattle.platform.util.type.CollectionUtils;
 
 import java.util.List;
+import java.util.Map;
 
 import javax.inject.Inject;
 
@@ -28,6 +31,16 @@ public class StackAgentHandler extends AgentBasedProcessHandler {
         List<Long> agentIds = agentInstanceDao.getAgentProvider(agentService, accountId);
         return agentIds.size() == 0 ? null : agentIds.get(0);
     }
+
+    @Override
+    protected void preProcessEvent(EventVO<?> event, ProcessState state, ProcessInstance process, Object eventResource, Object dataResource,
+            Object agentResource) {
+        super.preProcessEvent(event, state, process, eventResource, dataResource, agentResource);
+
+        Map<String, Object> data = CollectionUtils.toMap(event.getData());
+        data.put("environment", data.get("stack"));
+    }
+
 
     public String getStackKind() {
         return stackKind;
