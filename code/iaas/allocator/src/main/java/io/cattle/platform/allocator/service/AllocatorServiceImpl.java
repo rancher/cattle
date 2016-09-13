@@ -1,6 +1,6 @@
 package io.cattle.platform.allocator.service;
 
-import static io.cattle.platform.core.model.tables.ServiceTable.SERVICE;
+import static io.cattle.platform.core.model.tables.ServiceTable.*;
 import io.cattle.platform.allocator.constraint.AffinityConstraintDefinition;
 import io.cattle.platform.allocator.constraint.AffinityConstraintDefinition.AffinityOps;
 import io.cattle.platform.allocator.constraint.Constraint;
@@ -8,13 +8,18 @@ import io.cattle.platform.allocator.constraint.ContainerAffinityConstraint;
 import io.cattle.platform.allocator.constraint.ContainerLabelAffinityConstraint;
 import io.cattle.platform.allocator.constraint.HostAffinityConstraint;
 import io.cattle.platform.allocator.dao.AllocatorDao;
+import io.cattle.platform.allocator.lock.AllocateConstraintLock;
+import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.dao.InstanceDao;
 import io.cattle.platform.core.dao.LabelsDao;
 import io.cattle.platform.core.model.Host;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.Label;
 import io.cattle.platform.core.model.Service;
+import io.cattle.platform.json.JsonMapper;
+import io.cattle.platform.lock.definition.LockDefinition;
 import io.cattle.platform.object.ObjectManager;
+import io.cattle.platform.object.util.DataAccessor;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -53,6 +58,9 @@ public class AllocatorServiceImpl implements AllocatorService {
 
     @Inject
     ObjectManager objectManager;
+
+    @Inject
+    JsonMapper jsonMapper;
 
     @Override
     public List<Long> getAllHostsSatisfyingHostAffinity(Long accountId, Map<String, String> labelConstraints) {
@@ -363,4 +371,77 @@ public class AllocatorServiceImpl implements AllocatorService {
         }
         return defs;
     }
+
+    @Override
+    @SuppressWarnings({ "unchecked", "rawtypes" })
+    public List<LockDefinition> extractAllocationLockDefinitions(Instance instance) {
+        Map env = DataAccessor.fields(instance).withKey(InstanceConstants.FIELD_ENVIRONMENT).as(jsonMapper, Map.class);
+        List<LockDefinition> lockDefs = extractAllocationLockDefinitionsFromEnv(env);
+
+        Map labels = DataAccessor.fields(instance).withKey(InstanceConstants.FIELD_LABELS).as(jsonMapper, Map.class);
+        if (labels == null) {
+            return lockDefs;
+        }
+
+        Iterator<Map.Entry> iter = labels.entrySet().iterator();
+        while (iter.hasNext()) {
+            Map.Entry affinityDef = iter.next();
+            String key = ((String)affinityDef.getKey()).toLowerCase();
+            String valueStr = (String)affinityDef.getValue();
+            valueStr = valueStr == null ? "" : valueStr.toLowerCase();
+
+            if (instance != null) {
+                valueStr = evaluateMacros(valueStr, instance);
+            }
+
+            String opStr = "";
+            if (key.startsWith(ContainerLabelAffinityConstraint.LABEL_HEADER_AFFINITY_CONTAINER_LABEL)) {
+                opStr = key.substring(ContainerLabelAffinityConstraint.LABEL_HEADER_AFFINITY_CONTAINER_LABEL.length());
+                List<AffinityConstraintDefinition> defs = extractAffinityConstraintDefinitionFromLabel(opStr, valueStr, true);
+                for (AffinityConstraintDefinition def: defs) {
+                    lockDefs.add(new AllocateConstraintLock("affinity." + def.getValue()));
+                }
+
+            } else if (key.startsWith(ContainerAffinityConstraint.LABEL_HEADER_AFFINITY_CONTAINER)) {
+                opStr = key.substring(ContainerAffinityConstraint.LABEL_HEADER_AFFINITY_CONTAINER.length());
+                List<AffinityConstraintDefinition> defs = extractAffinityConstraintDefinitionFromLabel(opStr, valueStr, false);
+                for (AffinityConstraintDefinition def: defs) {
+                    lockDefs.add(new AllocateConstraintLock("affinity." + def.getValue()));
+                }
+
+            }
+        }
+        return lockDefs;
+    }
+
+    @SuppressWarnings({ "unchecked", "rawtypes" })
+    private List<LockDefinition> extractAllocationLockDefinitionsFromEnv(Map env) {
+        List<LockDefinition> constraints = new ArrayList<LockDefinition>();
+        if (env != null) {
+            Set<String> affinityDefinitions = env.keySet();
+            for (String affinityDef : affinityDefinitions) {
+                if (affinityDef == null) {
+                    continue;
+                }
+
+                if (affinityDef.startsWith(ContainerAffinityConstraint.ENV_HEADER_AFFINITY_CONTAINER)) {
+                    affinityDef = affinityDef.substring(ContainerAffinityConstraint.ENV_HEADER_AFFINITY_CONTAINER.length());
+                    AffinityConstraintDefinition def = extractAffinitionConstraintDefinitionFromEnv(affinityDef);
+                    if (def != null && !StringUtils.isEmpty(def.getValue())) {
+                        constraints.add(new AllocateConstraintLock("affinity." + def.getValue()));
+                    }
+
+                } else if (affinityDef.startsWith(ContainerLabelAffinityConstraint.ENV_HEADER_AFFINITY_CONTAINER_LABEL)) {
+                    affinityDef = affinityDef.substring(ContainerLabelAffinityConstraint.ENV_HEADER_AFFINITY_CONTAINER_LABEL.length());
+                    AffinityConstraintDefinition def = extractAffinitionConstraintDefinitionFromEnv(affinityDef);
+                    if (def != null && !StringUtils.isEmpty(def.getKey())) {
+                        constraints.add(new AllocateConstraintLock("affinity." + def.getValue()));
+                    }
+                }
+            }
+        }
+        return constraints;
+    }
+
+
 }

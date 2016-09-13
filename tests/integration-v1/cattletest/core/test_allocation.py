@@ -598,7 +598,6 @@ def test_volumes_from_constraint(new_context):
     # Three hosts
     register_simulated_host(new_context)
     register_simulated_host(new_context)
-    client = new_context.client
 
     containers = []
     try:
@@ -608,8 +607,7 @@ def test_volumes_from_constraint(new_context):
         c2 = new_context.create_container_no_success(startOnCreate=False,
                                                      dataVolumesFrom=[c1.id])
 
-        c1 = client.wait_success(c1.start())
-        assert c1.state == 'running'
+        c1 = c1.start()
         c2 = c2.start()
         c1 = new_context.wait_for_state(c1, 'running')
         c2 = new_context.wait_for_state(c2, 'running')
@@ -627,8 +625,9 @@ def test_volumes_from_constraint(new_context):
         c4 = c4.start()
         c4 = new_context.client.wait_transitioning(c4)
         assert c4.transitioning == 'error'
-        assert c4.transitioningMessage.startswith(
-            'Scheduling failed: Dependent instance not allocated yet:')
+        assert c4.transitioningMessage == 'volumeFrom instance is not ' \
+                                          'running : Dependencies readiness' \
+                                          ' error'
     finally:
         for c in containers:
             new_context.delete(c)

@@ -378,6 +378,38 @@ def test_port_constraint(new_context):
                 new_context.delete(c)
 
 
+def test_simultaneous_port_allocation(new_context):
+    # This test ensures if two containers are allocated simultaneously, only
+    # one will get the port and the other will fail to allocate.
+    # By nature, this test is exercise a race condition, so it isn't perfect.
+    client = new_context.client
+    image_uuid = new_context.image_uuid
+
+    env = client.create_stack(name=random_str())
+    env = client.wait_success(env)
+    assert env.state == "active"
+
+    launch_config = {"imageUuid": image_uuid, "ports": ['5555:6666']}
+    svc = client.create_service(name=random_str(),
+                                stackId=env.id,
+                                launchConfig=launch_config,
+                                scale=2)
+    svc = client.wait_success(svc)
+    assert svc.state == "inactive"
+
+    svc = svc.activate()
+    c = _wait_for_compose_instance_error(client, svc, env)
+    assert 'host needs ports 5555/tcp available' in c.transitioningMessage
+
+
+def _wait_for_compose_instance_error(client, service, env):
+    name = env.name + "_" + service.name + "%"
+    wait_for(
+        lambda: len(client.list_container(name_like=name, state='error')) > 0
+    )
+    return client.list_container(name_like=name, state='error')[0]
+
+
 def test_request_host_override(new_context):
     host = new_context.host
     c = None
@@ -598,7 +630,6 @@ def test_volumes_from_constraint(new_context):
     # Three hosts
     register_simulated_host(new_context)
     register_simulated_host(new_context)
-    client = new_context.client
 
     containers = []
     try:
@@ -608,9 +639,9 @@ def test_volumes_from_constraint(new_context):
         c2 = new_context.create_container_no_success(startOnCreate=False,
                                                      dataVolumesFrom=[c1.id])
 
-        c1 = client.wait_success(c1.start())
-        assert c1.state == 'running'
+        c1 = c1.start()
         c2 = c2.start()
+        c1 = new_context.wait_for_state(c1, 'running')
         c2 = new_context.wait_for_state(c2, 'running')
 
         containers.append(c1)
@@ -626,9 +657,9 @@ def test_volumes_from_constraint(new_context):
         c4 = c4.start()
         c4 = new_context.client.wait_transitioning(c4)
         assert c4.transitioning == 'error'
-        print c4.transitioningMessage
-        assert c4.transitioningMessage.startswith(
-            'Scheduling failed: Dependent instance not allocated yet:')
+        assert c4.transitioningMessage == 'volumeFrom instance is not ' \
+                                          'running : Dependencies readiness' \
+                                          ' error'
     finally:
         for c in containers:
             new_context.delete(c)

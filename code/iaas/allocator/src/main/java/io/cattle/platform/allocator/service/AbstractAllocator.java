@@ -1,12 +1,14 @@
 package io.cattle.platform.allocator.service;
 
 import static io.cattle.platform.core.model.tables.InstanceHostMapTable.*;
+import static io.cattle.platform.core.model.tables.PortTable.*;
 import io.cattle.platform.allocator.constraint.AllocationConstraintsProvider;
 import io.cattle.platform.allocator.constraint.Constraint;
 import io.cattle.platform.allocator.dao.AllocatorDao;
 import io.cattle.platform.allocator.exception.FailedToAllocate;
+import io.cattle.platform.allocator.lock.AllocateConstraintLock;
 import io.cattle.platform.allocator.lock.AllocateResourceLock;
-import io.cattle.platform.allocator.lock.AllocateVolumesResourceLock;
+import io.cattle.platform.allocator.lock.AllocationBlockingMultiLock;
 import io.cattle.platform.allocator.service.AllocationAttempt.AllocationType;
 import io.cattle.platform.allocator.service.AllocationRequest.Type;
 import io.cattle.platform.core.constants.CommonStatesConstants;
@@ -15,10 +17,12 @@ import io.cattle.platform.core.model.Host;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.InstanceHostMap;
 import io.cattle.platform.core.model.Nic;
+import io.cattle.platform.core.model.Port;
 import io.cattle.platform.core.model.StoragePool;
 import io.cattle.platform.core.model.Subnet;
 import io.cattle.platform.core.model.Volume;
 import io.cattle.platform.core.util.InstanceHelpers;
+import io.cattle.platform.docker.constants.DockerInstanceConstants;
 import io.cattle.platform.lock.LockCallbackNoReturn;
 import io.cattle.platform.lock.LockManager;
 import io.cattle.platform.lock.definition.LockDefinition;
@@ -62,6 +66,7 @@ public abstract class AbstractAllocator implements Allocator {
     protected ObjectManager objectManager;
     @Inject
     protected ObjectProcessManager processManager;
+    @Inject AllocatorService allocatorService;
     protected List<AllocationConstraintsProvider> allocationConstraintProviders;
 
     @Override
@@ -117,7 +122,7 @@ public abstract class AbstractAllocator implements Allocator {
     }
 
     protected void deallocateInstance(final AllocationRequest request) {
-        final Instance instance = objectManager.loadResource(Instance.class, request.getResourceId()); 
+        final Instance instance = objectManager.loadResource(Instance.class, request.getResourceId());
         if (assertDeallocated(request.getResourceId(), instance.getAllocationState(), "Instance")) {
             return;
         }
@@ -131,7 +136,7 @@ public abstract class AbstractAllocator implements Allocator {
         allocatorDao.releaseAllocation(volume);
     }
 
-    protected List<Instance> getDeployementUnitInstances(Instance instance) {
+    protected List<Instance> getInstancesToAllocate(Instance instance) {
         if (instance.getDeploymentUnitUuid() != null) {
             return allocatorDao.getUnmappedDeploymentUnitInstances(instance.getDeploymentUnitUuid());
         } else {
@@ -143,77 +148,106 @@ public abstract class AbstractAllocator implements Allocator {
 
     protected void allocateInstance(final AllocationRequest request) {
         final Instance origInstance = objectManager.loadResource(Instance.class, request.getResourceId());
-        final List<Instance> instances = getDeployementUnitInstances(origInstance);
-        final Set<Volume> volumes = new HashSet<Volume>();
+        final List<Instance> instances = getInstancesToAllocate(origInstance);
+
+        LockDefinition lock = getInstanceLockDef(origInstance, instances);
+        if (lock != null) {
+            Context c = allocateLockTimer.time();
+            try {
+                lockManager.lock(lock, new LockCallbackNoReturn() {
+                    @Override
+                    public void doWithLockNoResult() {
+                        allocateInstanceInternal(request, origInstance, instances);
+                    }
+                });
+            } finally {
+                c.stop();
+            }
+        } else {
+            allocateInstanceInternal(request, origInstance, instances);
+        }
+    }
+
+    protected void allocateInstanceInternal(AllocationRequest  request, Instance origInstance, List<Instance> instances) {
+        boolean origAllocated = assertAllocated(request.getResourceId(), origInstance.getAllocationState(), "Instance", true);
+        for (Instance instance : instances) {
+            boolean allocated = assertAllocated(request.getResourceId(), instance.getAllocationState(), "Instance", false);
+            if (origAllocated ^ allocated) {
+                throw new FailedToAllocate(String.format("Instance %s is in allocation state %s and instance %s is in allocation state %s.",
+                        origInstance.getId(), origInstance.getAllocationState(), instance.getId(), instance.getAllocationState()));
+            }
+        }
+
+        if (origAllocated) {
+            return;
+        }
+
+        Host host = allocatorDao.getHost(origInstance);
+        Long hostId = host != null ? host.getId() : null;
+
+        Set<Volume> volumes = new HashSet<Volume>();
+        Map<Volume, Set<StoragePool>> pools = new HashMap<Volume, Set<StoragePool>>();
+        Set<Nic> nics = new HashSet<Nic>();
+        Map<Nic, Subnet> subnets = new HashMap<Nic, Subnet>();
+        Long requestedHostId = null;
+
         for (Instance instance : instances) {
             volumes.addAll(objectManager.children(instance, Volume.class));
             volumes.addAll(InstanceHelpers.extractVolumesFromMounts(instance, objectManager));
+
+            Long rhid = DataAccessor.fields(instance).withKey(InstanceConstants.FIELD_REQUESTED_HOST_ID).as(Long.class);
+
+            if (rhid != null) {
+                if (requestedHostId == null) {
+                    requestedHostId = rhid;
+                } else if (!requestedHostId.equals(rhid)) {
+                    throw new FailedToAllocate(String.format(
+                            "Instances to allocate have conflicting requested host ids. Current instance id: %s. Requested host ids: %s, %s.",
+                            instance.getId(), requestedHostId, rhid));
+                }
+            }
+
+            nics.addAll(objectManager.children(instance, Nic.class));
+            for (Nic n : nics) {
+                Subnet subnet = objectManager.loadResource(Subnet.class, n.getSubnetId());
+                if (subnet != null) {
+                    subnets.put(n, subnet);
+                }
+            }
         }
 
-        lockManager.lock(new AllocateVolumesResourceLock(volumes), new LockCallbackNoReturn() {
-            @Override
-            public void doWithLockNoResult() {
-                boolean origAllocated = assertAllocated(request.getResourceId(), origInstance.getAllocationState(), "Instance", true);
+        for (Volume v : volumes) {
+            pools.put(v, new HashSet<StoragePool>(allocatorDao.getAssociatedPools(v)));
+        }
 
-                for (Instance instance : instances) {
-                    boolean allocated = assertAllocated(request.getResourceId(), instance.getAllocationState(), "Instance", false);
-                    if (origAllocated ^ allocated) {
-                        throw new FailedToAllocate(String.format("Instance %s is in allocation state %s and instance %s is in allocation state %s.",
-                                origInstance.getId(), origInstance.getAllocationState(), instance.getId(), instance.getAllocationState()));
-                    }
-                }
+        doAllocate(request, new AllocationAttempt(AllocationType.INSTANCE, origInstance.getAccountId(), instances, hostId, requestedHostId, volumes, pools,
+                nics, subnets));
+    }
 
-                if (origAllocated) {
-                    return;
-                }
+    protected LockDefinition getInstanceLockDef(Instance origInstance, List<Instance> instances) {
+        List<LockDefinition> locks = allocatorService.extractAllocationLockDefinitions(origInstance);
 
-                Map<Volume, Set<StoragePool>> pools = new HashMap<Volume, Set<StoragePool>>();
-                Set<Nic> nics = new HashSet<Nic>();
-                Map<Nic, Subnet> subnets = new HashMap<Nic, Subnet>();
-                Long tempReqHostId = null;
-                Long tempHostId = null;
-                for (Instance instance : instances) {
-                    Host host = allocatorDao.getHost(instance);
-                    if (host != null) {
-                        if (tempHostId == null) {
-                            tempHostId = host.getId();
-                        } else if (!tempHostId.equals(host.getId())) {
-                            throw new FailedToAllocate("Instances in deployment unit already assigned to different hosts.");
-                        }
-                    }
+        if (origInstance.getDeploymentUnitUuid() != null) {
+            locks.add(new AllocateConstraintLock("DEPLOYMENT_UNIT." + origInstance.getDeploymentUnitUuid()));
+        }
 
-                    Long rhid = DataAccessor.fields(instance).withKey(InstanceConstants.FIELD_REQUESTED_HOST_ID).as(Long.class);
-                    if (rhid != null) {
-                        if (tempReqHostId == null) {
-                            tempReqHostId = rhid;
-                        } else if (!tempReqHostId.equals(rhid)) {
-                            throw new FailedToAllocate(String.format(
-                                    "Instances in deployment unit have conflicting requested host ids. Current instance id: %s. Requested host ids: %s, %s.",
-                                    instance.getId(), tempReqHostId, rhid));
-                        }
-                    }
+        List<Long> instancesIds = DataAccessor.fieldLongList(origInstance, DockerInstanceConstants.FIELD_VOLUMES_FROM);
+        Long networkFromId = DataAccessor.fieldLong(origInstance, DockerInstanceConstants.FIELD_NETWORK_CONTAINER_ID);
+        if (networkFromId != null) {
+            instancesIds.add(networkFromId);
+        }
+        for (Long id : instancesIds) {
+            locks.add(new AllocateResourceLock(Type.INSTANCE, id));
+        }
 
-                    for (Volume v : volumes) {
-                        pools.put(v, new HashSet<StoragePool>(allocatorDao.getAssociatedPools(v)));
-                    }
-
-                    nics.addAll(objectManager.children(instance, Nic.class));
-                    for (Nic n : nics) {
-                        Subnet subnet = objectManager.loadResource(Subnet.class, n.getSubnetId());
-                        if (subnet != null) {
-                            subnets.put(n, subnet);
-                        }
-                    }
-                }
-                Long hostId = tempHostId;
-                Long requestedHostId = tempReqHostId;
-
-                AllocationAttempt attempt =
-                        new AllocationAttempt(AllocationType.INSTANCE, origInstance.getAccountId(), instances, hostId, requestedHostId, volumes, pools, nics,
-                                subnets);
-                doAllocate(request, attempt);
+        for (Instance i : instances) {
+            List<Port> ports = objectManager.find(Port.class, PORT.INSTANCE_ID, i.getId(), PORT.REMOVED, null);
+            for (Port port : ports) {
+                locks.add(new AllocateConstraintLock(String.format("PORT.%s.%s", port.getProtocol(), port.getPublicPort())));
             }
-        });
+        }
+
+        return locks.size() > 0 ? new AllocationBlockingMultiLock(locks) : null;
     }
 
     protected void deallocateVolume(AllocationRequest request) {
@@ -247,46 +281,32 @@ public abstract class AbstractAllocator implements Allocator {
         AllocationLog log = getLog(request);
         populateConstraints(attempt, log);
 
-        Context c = allocateLockTimer.time();
+        List<Constraint> finalFailedConstraints = new ArrayList<>();
+        Context c = allocateTimer.time();
         try {
-            acquireLockAndAllocate(request, attempt);
+            do {
+                Set<Constraint> failedConstraints = runAllocation(request, attempt);
+                if (attempt.getMatchedCandidate() == null) {
+                    boolean removed = false;
+                    // iterate over failed constraints and remove first soft constraint if any
+                    Iterator<Constraint> failedIter = failedConstraints.iterator();
+                    while (failedIter.hasNext() && !removed) {
+                        Constraint failedConstraint = failedIter.next();
+                        if (failedConstraint.isHardConstraint()) {
+                            continue;
+                        }
+                        attempt.getConstraints().remove(failedConstraint);
+                        removed = true;
+                    }
+                    if (!removed) {
+                        finalFailedConstraints.addAll(failedConstraints);
+                        break;
+                    }
+                }
+            } while (attempt.getMatchedCandidate() == null);
         } finally {
             c.stop();
         }
-    }
-
-    protected void acquireLockAndAllocate(final AllocationRequest request, final AllocationAttempt attempt) {
-        final List<Constraint> finalFailedConstraints = new ArrayList<>();
-        lockManager.lock(getAllocationLock(request, attempt), new LockCallbackNoReturn() {
-            @Override
-            public void doWithLockNoResult() {
-                Context c = allocateTimer.time();
-                try {
-                    do {
-                        Set<Constraint> failedConstraints = runAllocation(request, attempt);
-                        if (attempt.getMatchedCandidate() == null) {
-                            boolean removed = false;
-                            // iterate over failed constraints and remove first soft constraint if any
-                            Iterator<Constraint> failedIter = failedConstraints.iterator();
-                            while (failedIter.hasNext() && !removed) {
-                                Constraint failedConstraint = failedIter.next();
-                                if (failedConstraint.isHardConstraint()) {
-                                    continue;
-                                }
-                                attempt.getConstraints().remove(failedConstraint);
-                                removed = true;
-                            }
-                            if (!removed) {
-                                finalFailedConstraints.addAll(failedConstraints);
-                                break;
-                            }
-                        }
-                    } while (attempt.getMatchedCandidate() == null);
-                } finally {
-                    c.stop();
-                }
-            }
-        });
 
         if (attempt.getMatchedCandidate() == null) {
             if (finalFailedConstraints.size() > 0) {

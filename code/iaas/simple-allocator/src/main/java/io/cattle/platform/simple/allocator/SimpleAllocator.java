@@ -113,9 +113,8 @@ public class SimpleAllocator extends AbstractAllocator implements Allocator, Nam
     @Override
     protected boolean recordCandidate(AllocationAttempt attempt, AllocationCandidate candidate) {
         if (attempt.isInstanceAllocation()) {
-            Long existingHost = attempt.getHostId();
             Long newHost = candidate.getHost();
-            if (existingHost == null && newHost != null) {
+            if (newHost != null) {
                 callExternalSchedulerToReserve(attempt, candidate);
             }
         }

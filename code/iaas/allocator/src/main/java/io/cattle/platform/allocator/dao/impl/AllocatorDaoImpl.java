@@ -21,6 +21,7 @@ import static io.cattle.platform.core.model.tables.VnetTable.*;
 import static io.cattle.platform.core.model.tables.VolumeStoragePoolMapTable.*;
 import static io.cattle.platform.core.model.tables.VolumeTable.*;
 import io.cattle.platform.allocator.dao.AllocatorDao;
+import io.cattle.platform.allocator.exception.FailedToAllocate;
 import io.cattle.platform.allocator.service.AllocationAttempt;
 import io.cattle.platform.allocator.service.AllocationCandidate;
 import io.cattle.platform.allocator.service.CacheManager;
@@ -66,6 +67,7 @@ import org.jooq.Field;
 import org.jooq.Record;
 import org.jooq.Record3;
 import org.jooq.RecordHandler;
+import org.jooq.exception.InvalidResultException;
 import org.jooq.impl.DSL;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -134,15 +136,30 @@ public class AllocatorDaoImpl extends AbstractJooqDao implements AllocatorDao {
 
     @Override
     public Host getHost(Instance instance) {
-        return create()
-                .select(HOST.fields())
-                .from(HOST)
-                .join(INSTANCE_HOST_MAP)
-                    .on(INSTANCE_HOST_MAP.HOST_ID.eq(HOST.ID))
-                .where(
-                    INSTANCE_HOST_MAP.REMOVED.isNull()
-                    .and(INSTANCE_HOST_MAP.INSTANCE_ID.eq(instance.getId())))
-                .fetchOneInto(HostRecord.class);
+       Condition cond = getInstanceHostConstraint(instance);
+       try {
+           return create()
+                   .selectDistinct(HOST.fields())
+                   .from(HOST)
+                   .join(INSTANCE_HOST_MAP)
+                       .on(INSTANCE_HOST_MAP.HOST_ID.eq(HOST.ID))
+                   .join(INSTANCE)
+                       .on(INSTANCE_HOST_MAP.INSTANCE_ID.eq(INSTANCE.ID))
+                   .where(
+                       INSTANCE_HOST_MAP.REMOVED.isNull()
+                       .and(cond))
+                   .fetchOneInto(HostRecord.class);
+       } catch (InvalidResultException e) {
+           throw new FailedToAllocate("Instances to allocate assigned to different hosts.");
+       }
+    }
+
+    public Condition getInstanceHostConstraint(Instance instance) {
+        if (StringUtils.isEmpty(instance.getDeploymentUnitUuid())) {
+            return INSTANCE_HOST_MAP.INSTANCE_ID.eq(instance.getId());
+        } else {
+            return INSTANCE.DEPLOYMENT_UNIT_UUID.eq(instance.getDeploymentUnitUuid());
+        }
     }
 
     @Override
@@ -230,16 +247,8 @@ public class AllocatorDaoImpl extends AbstractJooqDao implements AllocatorDao {
 
     @Override
     public boolean recordCandidate(AllocationAttempt attempt, AllocationCandidate candidate) {
-        Long existingHost = attempt.getHostId();
         Long newHost = candidate.getHost();
-
-        if (existingHost != null && !newHost.equals(existingHost)) {
-            List<Long> instanceIds = new ArrayList<Long>();
-            for (Instance i : attempt.getInstances()) {
-                instanceIds.add(i.getId());
-            }
-            throw new IllegalStateException(String.format("Can not move allocated instance(s) %s, currently  %s new %s", instanceIds, existingHost, newHost));
-        } else if (existingHost == null && newHost != null) {
+        if (newHost != null) {
             for (Instance instance : attempt.getInstances()) {
                 log.info("Associating instance [{}] to host [{}]", instance.getId(), newHost);
                 objectManager.create(InstanceHostMap.class,
