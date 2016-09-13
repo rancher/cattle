@@ -36,21 +36,21 @@ public class DeploymentUnitInstanceFactoryImpl implements DeploymentUnitInstance
     @Override
     @SuppressWarnings("unchecked")
     public DeploymentUnitInstance createDeploymentUnitInstance(DeploymentServiceContext context, String uuid,
-            Service service, String instanceName, Object instanceObj, Map<String, String> labels, String launchConfigName) {
+            Service service, String instanceName, Object instanceObj, String launchConfigName) {
         if (service.getKind().equalsIgnoreCase(ServiceDiscoveryConstants.KIND_SERVICE)) {
             Instance instance = null;
             if (instanceObj != null) {
                 instance = (Instance) instanceObj;
             }
             return new DefaultDeploymentUnitInstance(context, uuid, service,
-                    instanceName, instance, labels, launchConfigName);
+                    instanceName, instance, launchConfigName);
         } else if (service.getKind().equalsIgnoreCase(ServiceDiscoveryConstants.KIND_LOAD_BALANCER_SERVICE)) {
             Instance instance = null;
             if (instanceObj != null) {
                 instance = (Instance) instanceObj;
             }
             return new LoadBalancerDeploymentUnitInstance(context, uuid, service,
-                    instanceName, instance, labels, launchConfigName);
+                    instanceName, instance, launchConfigName);
         }else if (service.getKind().equalsIgnoreCase(ServiceDiscoveryConstants.KIND_EXTERNAL_SERVICE)) {
             Pair<String, String> ipHostName = null;
             if (instanceObj != null) {
@@ -152,7 +152,7 @@ public class DeploymentUnitInstanceFactoryImpl implements DeploymentUnitInstance
             Service service, String externalIp, String hostName) {
         String uuid = UUID.randomUUID().toString();
         DeploymentUnitInstance unitInstance = createDeploymentUnitInstance(context, uuid, service, null,
-                Pair.of(externalIp, hostName), null, ServiceDiscoveryConstants.PRIMARY_LAUNCH_CONFIG_NAME);
+                Pair.of(externalIp, hostName), ServiceDiscoveryConstants.PRIMARY_LAUNCH_CONFIG_NAME);
         addToDeploymentUnitList(uuidToLabels, uuidToInstances, new HashMap<String, String>(), uuid,
                 unitInstance);
     }
@@ -171,7 +171,7 @@ public class DeploymentUnitInstanceFactoryImpl implements DeploymentUnitInstance
                     .get(ServiceDiscoveryConstants.LABEL_SERVICE_LAUNCH_CONFIG);
 
             DeploymentUnitInstance unitInstance = createDeploymentUnitInstance(context, deploymentUnitUUID,
-                    service, serviceContainer.getName(), serviceContainer, instanceLabels, launchConfigName);
+                    service, serviceContainer.getName(), serviceContainer, launchConfigName);
 
             addToDeploymentUnitList(uuidToLabels, uuidToInstances, instanceLabels, deploymentUnitUUID,
                     unitInstance);
@@ -183,7 +183,15 @@ public class DeploymentUnitInstanceFactoryImpl implements DeploymentUnitInstance
                 service.getAccountId(), DEPLOYMENT_UNIT.REMOVED, null, DEPLOYMENT_UNIT.SERVICE_ID, service.getId());
         for (io.cattle.platform.core.model.DeploymentUnit unit : units) {
             if (!uuidToInstances.containsKey(unit.getUuid())) {
-                uuidToInstances.put(unit.getUuid(), new ArrayList<DeploymentUnitInstance>());
+                Map<String, String> labels = new HashMap<>();
+                Map<String, Object> labelsObj = DataAccessor.fieldMap(unit,
+                        InstanceConstants.FIELD_LABELS);
+                for (String key : labelsObj.keySet()) {
+                    labels.put(key, labelsObj.get(key).toString());
+                }
+                addToDeploymentUnitList(uuidToLabels, uuidToInstances, labels, unit.getUuid(),
+                        null);
+
             }
         }
     }
@@ -200,7 +208,9 @@ public class DeploymentUnitInstanceFactoryImpl implements DeploymentUnitInstance
         if (deploymentUnitInstances == null) {
             deploymentUnitInstances = new ArrayList<>();
         }
-        deploymentUnitInstances.add(unitInstance);
+        if (unitInstance != null) {
+            deploymentUnitInstances.add(unitInstance);
+        }
         uuidToInstances.put(deploymentUnitUUID, deploymentUnitInstances);
     }
 }

@@ -21,7 +21,6 @@ public class DockerInstanceConstants {
     public static final String FIELD_STDIN_OPEN = "stdinOpen";
     public static final String FIELD_COMMAND = "command";
     public static final String FIELD_ENTRY_POINT = "entryPoint";
-    public static final String FIELD_DATA_VOLUMES = "dataVolumes";
     public static final String FIELD_PUBLISH_ALL_PORTS = "publishAllPorts";
     public static final String FIELD_LXC_CONF = "lxcConf";
     public static final String FIELD_DNS = "dns";

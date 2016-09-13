@@ -68,6 +68,7 @@ public class InServiceUpgradeStrategy extends ServiceUpgradeStrategy {
 
         boolean allSecondaryUpgrades = (isEmptySec == isEmptyPrevSesc)
                 && (isEmptySec || this.secondaryLaunchConfigs.size() == this.previousSecondaryLaunchConfigs.size());
+
         return primaryUpgrade && allSecondaryUpgrades;
     }
 

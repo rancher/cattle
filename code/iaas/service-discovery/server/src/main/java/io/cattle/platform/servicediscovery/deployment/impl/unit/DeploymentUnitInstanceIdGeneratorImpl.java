@@ -30,7 +30,7 @@ public class DeploymentUnitInstanceIdGeneratorImpl implements DeploymentUnitInst
         return generateNewId(usedIds);
     }
 
-    private Integer generateNewId(List<Integer> usedIds) {
+    public static Integer generateNewId(List<Integer> usedIds) {
         Integer idToReturn = null;
         if (usedIds.size() == 0) {
             idToReturn = 1;

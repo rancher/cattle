@@ -719,9 +719,6 @@ def test_validate_service_scaleup_scaledown(client, context):
     client.wait_success(instance21.stop())
     service = client.wait_success(service)
 
-    # rename the instance 3
-    instance32 = client.update(instance31, name='newName')
-
     # scale up the service
     # instance 2 should get started
     service = client.update(service, scale=4, name=service.name)
@@ -731,8 +728,8 @@ def test_validate_service_scaleup_scaledown(client, context):
 
     instance12 = _validate_compose_instance_start(client, service, env, "1")
     instance22 = _validate_compose_instance_start(client, service, env, "2")
-    instance32 = _validate_instance_start(service, client, instance32.name)
-    instance41 = _validate_compose_instance_start(client, service, env, "3")
+    instance32 = _validate_compose_instance_start(client, service, env, "3")
+    instance41 = _validate_compose_instance_start(client, service, env, "4")
 
     assert instance41.createIndex > instance32.createIndex
     assert instance32.createIndex > instance22.createIndex
@@ -804,12 +801,14 @@ def test_destroy_service_instance(client, context):
 
     # 3. activate the service
     service.activate()
-    service = client.wait_success(service, 120)
+    wait_state(client, service, 'active')
+    service = client.reload(service)
     assert service.state == "active"
 
     # 4. destroy instance3 and update the service's scale.
     _instance_remove(instance3, client)
-    service = client.wait_success(service)
+    wait_state(client, service, 'active')
+    service = client.reload(service)
 
     service = client.update(service, scale=4, name=service.name)
     service = client.wait_success(service, 120)

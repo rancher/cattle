@@ -389,6 +389,11 @@ public class Tables {
 	public static final io.cattle.platform.core.model.tables.VolumeStoragePoolMapTable VOLUME_STORAGE_POOL_MAP = io.cattle.platform.core.model.tables.VolumeStoragePoolMapTable.VOLUME_STORAGE_POOL_MAP;
 
 	/**
+	 * The table cattle.volume_template
+	 */
+	public static final io.cattle.platform.core.model.tables.VolumeTemplateTable VOLUME_TEMPLATE = io.cattle.platform.core.model.tables.VolumeTemplateTable.VOLUME_TEMPLATE;
+
+	/**
 	 * The table cattle.zone
 	 */
 	public static final io.cattle.platform.core.model.tables.ZoneTable ZONE = io.cattle.platform.core.model.tables.ZoneTable.ZONE;

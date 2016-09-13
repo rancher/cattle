@@ -1259,7 +1259,10 @@ def test_healtcheck(new_context, super_client):
     # reactivate the service and
     # verify that its still has less than 3 healthchecks
     service = client.wait_success(service.deactivate(), 120)
-    service = client.wait_success(service.activate(), 120)
+
+    # wait for the service state
+    wait_state(client, service.activate(), "active")
+    service = client.reload(service)
 
     host_maps = _wait_health_host_count(super_client, health_id, 3)
     validate_container_host(host_maps)

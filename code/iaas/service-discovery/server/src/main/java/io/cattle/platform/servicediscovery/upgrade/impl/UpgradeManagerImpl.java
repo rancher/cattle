@@ -1,7 +1,6 @@
 package io.cattle.platform.servicediscovery.upgrade.impl;
 
 import static io.cattle.platform.core.model.tables.ServiceExposeMapTable.*;
-
 import io.cattle.platform.activity.ActivityLog;
 import io.cattle.platform.activity.ActivityService;
 import io.cattle.platform.async.utils.TimeoutException;
@@ -46,6 +45,7 @@ import java.util.Set;
 
 import javax.inject.Inject;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 
 public class UpgradeManagerImpl implements UpgradeManager {
@@ -118,7 +118,7 @@ public class UpgradeManagerImpl implements UpgradeManager {
             // upgrade deployment units
             upgradeDeploymentUnits(service, deploymentUnitInstancesToUpgrade, deploymentUnitInstancesUpgradedUnmanaged,
                     deploymentUnitInstancesToCleanup,
-                    batchSize, startFirst, strategy.isFullUpgrade(), isUpgrade);
+                    batchSize, startFirst, preseveDeploymentUnit(service, strategy), isUpgrade);
 
             // check if empty
             if (deploymentUnitInstancesToUpgrade.isEmpty()) {
@@ -131,12 +131,19 @@ public class UpgradeManagerImpl implements UpgradeManager {
         }
     }
 
+    protected boolean preseveDeploymentUnit(Service service, InServiceUpgradeStrategy strategy) {
+        boolean isServiceIndexDUStrategy = StringUtils.equalsIgnoreCase(
+                ServiceDiscoveryConstants.SERVICE_INDEX_DU_STRATEGY,
+                DataAccessor.fieldString(service, ServiceDiscoveryConstants.FIELD_SERVICE_INDEX_STRATEGY));
+        return isServiceIndexDUStrategy || strategy.isFullUpgrade();
+    }
+
     protected void upgradeDeploymentUnits(final Service service,
             final Map<String, List<Instance>> deploymentUnitInstancesToUpgrade,
             final Map<String, List<Instance>> deploymentUnitInstancesUpgradedUnmanaged,
             final Map<String, List<Instance>> deploymentUnitInstancesToCleanup,
             final long batchSize,
-            final boolean startFirst, final boolean fullUpgrade, final boolean isUpgrade) {
+            final boolean startFirst, final boolean preseveDeploymentUnit, final boolean isUpgrade) {
         // hold the lock so service.reconcile triggered by config.update
         // (in turn triggered by instance.remove) won't interfere
         lockManager.lock(new ServicesSidekickLock(Arrays.asList(service)), new LockCallbackNoReturn() {
@@ -169,11 +176,11 @@ public class UpgradeManagerImpl implements UpgradeManager {
             }
 
             protected void markForUpgrade(final long batchSize) {
-                markForCleanup(batchSize, fullUpgrade);
+                markForCleanup(batchSize, preseveDeploymentUnit);
             }
 
             protected void markForCleanup(final long batchSize,
-                    boolean fullUpgrade) {
+                    boolean preseveDeploymentUnit) {
                 long i = 0;
                 Iterator<Map.Entry<String, List<Instance>>> it = deploymentUnitInstancesToUpgrade.entrySet()
                         .iterator();
@@ -195,7 +202,7 @@ public class UpgradeManagerImpl implements UpgradeManager {
 
             protected void markForRollback(String deploymentUnitUUIDToRollback) {
                 List<Instance> instances = new ArrayList<>();
-                if (fullUpgrade) {
+                if (preseveDeploymentUnit) {
                     // for full upgrade, we don't care what deployment unit needs to be rolled back
                     String toExtract = null;
                     for (String key : deploymentUnitInstancesUpgradedUnmanaged.keySet()) {
