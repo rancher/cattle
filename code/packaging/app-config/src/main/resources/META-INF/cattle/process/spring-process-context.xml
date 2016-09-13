@@ -351,6 +351,7 @@
     <process:defaultProcesses resourceType="volumeStoragePoolMap" />
     <process:defaultProcesses resourceType="zone" />
     <process:defaultProcesses resourceType="serviceIndex" />
+    <process:defaultProcesses resourceType="deploymentUnit" />
 
     <!-- IP Address -->
     <process:defaultProcesses resourceType="ipAddress" />

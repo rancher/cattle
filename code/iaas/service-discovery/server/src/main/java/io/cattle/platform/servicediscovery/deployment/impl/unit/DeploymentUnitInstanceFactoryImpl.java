@@ -1,5 +1,6 @@
 package io.cattle.platform.servicediscovery.deployment.impl.unit;
 
+import static io.cattle.platform.core.model.tables.DeploymentUnitTable.*;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.dao.GenericMapDao;
 import io.cattle.platform.core.model.Instance;
@@ -174,6 +175,16 @@ public class DeploymentUnitInstanceFactoryImpl implements DeploymentUnitInstance
 
             addToDeploymentUnitList(uuidToLabels, uuidToInstances, instanceLabels, deploymentUnitUUID,
                     unitInstance);
+        }
+
+        List<? extends io.cattle.platform.core.model.DeploymentUnit> units = context.objectManager.find(
+                io.cattle.platform.core.model.DeploymentUnit.class,
+                DEPLOYMENT_UNIT.ACCOUNT_ID,
+                service.getAccountId(), DEPLOYMENT_UNIT.REMOVED, null, DEPLOYMENT_UNIT.SERVICE_ID, service.getId());
+        for (io.cattle.platform.core.model.DeploymentUnit unit : units) {
+            if (!uuidToInstances.containsKey(unit.getUuid())) {
+                uuidToInstances.put(unit.getUuid(), new ArrayList<DeploymentUnitInstance>());
+            }
         }
     }
 

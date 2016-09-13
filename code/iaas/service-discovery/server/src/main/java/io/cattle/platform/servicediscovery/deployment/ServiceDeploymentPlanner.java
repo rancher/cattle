@@ -135,7 +135,7 @@ public abstract class ServiceDeploymentPlanner {
         return false;
     }
 
-    public List<DeploymentUnit> deploy(Map<Long, DeploymentUnitInstanceIdGenerator> svcInstanceIdGenerator) {
+    public List<DeploymentUnit> deploy(DeploymentUnitInstanceIdGenerator svcInstanceIdGenerator) {
         List<DeploymentUnit> units = this.deployHealthyUnits();
         for (DeploymentUnit unit : units) {
             unit.create(svcInstanceIdGenerator);

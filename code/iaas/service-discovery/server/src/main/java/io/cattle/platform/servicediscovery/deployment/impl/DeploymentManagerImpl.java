@@ -345,21 +345,18 @@ public class DeploymentManagerImpl implements DeploymentManager {
         planner.cleanupUnusedAndDuplicatedServiceIndexes();
     }
 
-    private Map<Long, DeploymentUnitInstanceIdGenerator> populateUsedNames(
+    private DeploymentUnitInstanceIdGenerator populateUsedNames(
             Service service) {
-        Map<Long, DeploymentUnitInstanceIdGenerator> generator = new HashMap<>();
         Map<String, List<Integer>> launchConfigUsedIds = new HashMap<>();
         for (String launchConfigName : ServiceDiscoveryUtil.getServiceLaunchConfigNames(service)) {
             List<Integer> usedIds = sdSvc.getServiceInstanceUsedSuffixes(service, launchConfigName);
             launchConfigUsedIds.put(launchConfigName, usedIds);
         }
-        generator.put(service.getId(),
-                new DeploymentUnitInstanceIdGeneratorImpl(launchConfigUsedIds));
-        return generator;
+        return new DeploymentUnitInstanceIdGeneratorImpl(launchConfigUsedIds);
     }
 
     protected void startUnits(ServiceDeploymentPlanner planner) {
-        Map<Long, DeploymentUnitInstanceIdGenerator> svcInstanceIdGenerator = populateUsedNames(planner.getService());
+        DeploymentUnitInstanceIdGenerator svcInstanceIdGenerator = populateUsedNames(planner.getService());
         /*
          * Ask the planner to deploy more units/ remove extra units
          */

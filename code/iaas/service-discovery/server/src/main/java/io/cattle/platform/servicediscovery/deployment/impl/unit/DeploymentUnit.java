@@ -1,5 +1,6 @@
 package io.cattle.platform.servicediscovery.deployment.impl.unit;
 
+import static io.cattle.platform.core.model.tables.DeploymentUnitTable.*;
 import static io.cattle.platform.core.model.tables.StackTable.*;
 import io.cattle.platform.allocator.constraint.AffinityConstraintDefinition.AffinityOps;
 import io.cattle.platform.allocator.constraint.ContainerLabelAffinityConstraint;
@@ -12,6 +13,7 @@ import io.cattle.platform.core.model.Stack;
 import io.cattle.platform.core.util.SystemLabels;
 import io.cattle.platform.docker.constants.DockerInstanceConstants;
 import io.cattle.platform.iaas.api.auditing.AuditEventType;
+import io.cattle.platform.object.process.StandardProcess;
 import io.cattle.platform.object.util.TransitioningUtils;
 import io.cattle.platform.servicediscovery.api.constants.ServiceDiscoveryConstants;
 import io.cattle.platform.servicediscovery.api.util.ServiceDiscoveryUtil;
@@ -23,6 +25,7 @@ import io.cattle.platform.util.type.CollectionUtils;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -58,6 +61,7 @@ public class DeploymentUnit {
     Map<String, DeploymentUnitInstance> launchConfigToInstance = new HashMap<>();
     List<String> launchConfigNames = new ArrayList<>();
     Map<String, List<String>> sidekickUsedByMap = new HashMap<>();
+    io.cattle.platform.core.model.DeploymentUnit unit;
 
     private static List<String> supportedUnitLabels = Arrays
             .asList(ServiceDiscoveryConstants.LABEL_SERVICE_REQUESTED_HOST_ID);
@@ -92,8 +96,28 @@ public class DeploymentUnit {
         }
         this.service = service;
         this.uuid = uuid;
+        this.unit = context.objectManager.findOne(io.cattle.platform.core.model.DeploymentUnit.class,
+                DEPLOYMENT_UNIT.ACCOUNT_ID,
+                service.getAccountId(), DEPLOYMENT_UNIT.REMOVED, null, DEPLOYMENT_UNIT.SERVICE_ID, service.getId(),
+                DEPLOYMENT_UNIT.UUID, uuid);
         this.env = context.objectManager.findOne(Stack.class, STACK.ID, service.getStackId());
         this.launchConfigNames = ServiceDiscoveryUtil.getServiceLaunchConfigNames(service);
+    }
+
+    public Long getServiceIndex() {
+        List<? extends io.cattle.platform.core.model.DeploymentUnit> dus = context.objectManager.find(
+                io.cattle.platform.core.model.DeploymentUnit.class,
+                DEPLOYMENT_UNIT.ACCOUNT_ID,
+                service.getAccountId(), DEPLOYMENT_UNIT.REMOVED, null, DEPLOYMENT_UNIT.SERVICE_ID, service.getId());
+        List<Long> indexes = new ArrayList<>();
+        for (io.cattle.platform.core.model.DeploymentUnit du : dus) {
+            indexes.add(Long.valueOf(du.getServiceIndex()));
+        }
+        Collections.sort(indexes);
+        if (indexes.size() == 0) {
+            return 1L;
+        }
+        return indexes.get(indexes.size() - 1) + 1;
     }
 
     /*
@@ -101,6 +125,14 @@ public class DeploymentUnit {
      */
     public DeploymentUnit(DeploymentServiceContext context, Service service, Map<String, String> labels) {
         this(context, UUID.randomUUID().toString(), service);
+        Map<String, Object> params = new HashMap<>();
+        // create uuid
+        params.put("uuid", this.uuid);
+        params.put(ServiceDiscoveryConstants.FIELD_SERVICE_ID, service.getId());
+        params.put(InstanceConstants.FIELD_SERVICE_INSTANCE_SERVICE_INDEX, getServiceIndex());
+        params.put("accountId", service.getAccountId());
+        this.unit = context.objectManager.create(io.cattle.platform.core.model.DeploymentUnit.class, params);
+        context.objectProcessManager.scheduleStandardProcessAsync(StandardProcess.CREATE, this.unit, null);
         setLabels(labels);
     }
 
@@ -114,8 +146,23 @@ public class DeploymentUnit {
         }
     }
 
-    private void createMissingUnitInstances(Map<Long, DeploymentUnitInstanceIdGenerator> svcInstanceIdGenerator) {
-        createMissingInstances(svcInstanceIdGenerator.get(service.getId()), uuid);
+    private void createMissingUnitInstances(DeploymentUnitInstanceIdGenerator svcInstanceIdGenerator) {
+        Integer order = null;
+        for (String launchConfigName : launchConfigNames) {
+            if (!launchConfigToInstance.containsKey(launchConfigName)) {
+                if (this.unit != null) {
+                    order = Integer.valueOf(this.unit.getServiceIndex());
+                } else if (order == null) {
+                    order = svcInstanceIdGenerator.getNextAvailableId(launchConfigName);
+                }
+                String instanceName = ServiceDiscoveryUtil.generateServiceInstanceName(env,
+                        service, launchConfigName, order);
+                DeploymentUnitInstance deploymentUnitInstance = context.deploymentUnitInstanceFactory
+                        .createDeploymentUnitInstance(context, uuid, service, instanceName, null, null,
+                                launchConfigName);
+                addDeploymentInstance(launchConfigName, deploymentUnitInstance);
+            }
+        }
     }
 
     public boolean isError() {
@@ -177,6 +224,11 @@ public class DeploymentUnit {
         if (waitForRemoval) {
             waitForRemoval();
         }
+
+        // remove deployment unit object
+        if (unit != null) {
+            context.objectProcessManager.scheduleStandardProcessAsync(StandardProcess.REMOVE, unit, null);
+        }
     }
 
     public void waitForRemoval() {
@@ -207,7 +259,7 @@ public class DeploymentUnit {
         }
     }
 
-    public void create(Map<Long, DeploymentUnitInstanceIdGenerator> svcInstanceIdGenerator) {
+    public void create(DeploymentUnitInstanceIdGenerator svcInstanceIdGenerator) {
         /*
          * Start the instances in the correct order depending on the volumes from.
          * Attempt to start things in parallel, but if not possible (like volumes-from) then start each service
@@ -426,6 +478,9 @@ public class DeploymentUnit {
     }
 
     public long getCreateIndex() {
+        if (unit != null) {
+            return unit.getId();
+        }
         long createIndex = 0L;
         // find minimum created
         for (DeploymentUnitInstance i : getDeploymentUnitInstances()) {
@@ -450,23 +505,6 @@ public class DeploymentUnit {
 
     public boolean isComplete() {
         return launchConfigNames.size() == launchConfigToInstance.size();
-    }
-
-    public void createMissingInstances(DeploymentUnitInstanceIdGenerator svcInstanceIdGenerator, String uuid) {
-        Integer order = null;
-        for (String launchConfigName : launchConfigNames) {
-            if (!launchConfigToInstance.containsKey(launchConfigName)) {
-                if (order == null) {
-                    order = svcInstanceIdGenerator.getNextAvailableId(launchConfigName);
-                }
-                String instanceName = ServiceDiscoveryUtil.generateServiceInstanceName(env,
-                        service, launchConfigName, order);
-                DeploymentUnitInstance deploymentUnitInstance = context.deploymentUnitInstanceFactory
-                        .createDeploymentUnitInstance(context, uuid, service, instanceName, null, null,
-                                launchConfigName);
-                addDeploymentInstance(launchConfigName, deploymentUnitInstance);
-            }
-        }
     }
 
     public void cleanupInstancesWithMissingDependencies() {

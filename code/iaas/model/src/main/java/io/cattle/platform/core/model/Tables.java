@@ -99,6 +99,11 @@ public class Tables {
 	public static final io.cattle.platform.core.model.tables.DatabasechangeloglockTable DATABASECHANGELOGLOCK = io.cattle.platform.core.model.tables.DatabasechangeloglockTable.DATABASECHANGELOGLOCK;
 
 	/**
+	 * The table cattle.deployment_unit
+	 */
+	public static final io.cattle.platform.core.model.tables.DeploymentUnitTable DEPLOYMENT_UNIT = io.cattle.platform.core.model.tables.DeploymentUnitTable.DEPLOYMENT_UNIT;
+
+	/**
 	 * The table cattle.dynamic_schema
 	 */
 	public static final io.cattle.platform.core.model.tables.DynamicSchemaTable DYNAMIC_SCHEMA = io.cattle.platform.core.model.tables.DynamicSchemaTable.DYNAMIC_SCHEMA;
