@@ -10,7 +10,7 @@
         },
         "externalId": {
             "type": "string",
-            "nullable": false
+            "nullable": true
         },
         "builtin": {
             "type": "boolean",

@@ -3,6 +3,7 @@ package io.github.ibuildthecloud.gdapi.id;
 import io.github.ibuildthecloud.gdapi.factory.SchemaFactory;
 
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -17,6 +18,10 @@ public class TypeIdFormatter implements IdFormatter {
     String globalPrefix = "1";
     SchemaFactory schemaFactory;
     Set<String> plainTypes = new HashSet<String>();
+    Map<String, String> typeMappings = new HashMap<>();
+
+    protected TypeIdFormatter() {
+    }
 
     @Override
     public String formatId(String type, Object id) {
@@ -82,6 +87,7 @@ public class TypeIdFormatter implements IdFormatter {
         formatter.schemaFactory = schemaFactory;
         formatter.globalPrefix = this.globalPrefix;
         formatter.plainTypes = this.plainTypes;
+        formatter.typeMappings = this.typeMappings;
         return formatter;
     }
 
@@ -96,8 +102,13 @@ public class TypeIdFormatter implements IdFormatter {
         }
 
         StringBuilder buffer = new StringBuilder(globalPrefix);
-        buffer.append(type.charAt(0));
-        buffer.append(type.replaceAll("[a-z]+", ""));
+        String mapping = typeMappings.get(type);
+        if (mapping == null) {
+            buffer.append(type.charAt(0));
+            buffer.append(type.replaceAll("[a-z]+", ""));
+        } else {
+            buffer.append(mapping);
+        }
 
         String result = buffer.toString().toLowerCase();
         typeCache.put(type, result);
@@ -121,4 +132,13 @@ public class TypeIdFormatter implements IdFormatter {
     public void setPlainTypes(Set<String> plainTypes) {
         this.plainTypes = plainTypes;
     }
+
+    public Map<String, String> getTypeMappings() {
+        return typeMappings;
+    }
+
+    public void setTypeMappings(Map<String, String> typeMappings) {
+        this.typeMappings = typeMappings;
+    }
+
 }

@@ -85,6 +85,11 @@
                 <value>scripts</value>
             </set>
         </property>
+        <property name="typeMappings">
+            <map>
+                <entry key="stack" value="st" />
+            </map>
+        </property>
     </bean>
 
     <extension:discover class="io.github.ibuildthecloud.gdapi.id.IdFormatter" />
