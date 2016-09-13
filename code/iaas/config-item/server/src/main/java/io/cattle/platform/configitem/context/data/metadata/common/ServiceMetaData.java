@@ -21,6 +21,7 @@ public class ServiceMetaData {
     private boolean isPrimaryConfig;
     private String launchConfigName;
     private Long stackId;
+    private String stackUuid;
     private Service service;
     
     protected String name;
@@ -65,6 +66,7 @@ public class ServiceMetaData {
         this.isPrimaryConfig = that.isPrimaryConfig;
         this.launchConfigName = that.launchConfigName;
         this.stackId = that.stackId;
+        this.stackUuid = that.stackUuid;
     }
 
     public ServiceMetaData(Service service, String serviceName, Stack env, List<String> sidekicks,
@@ -75,6 +77,7 @@ public class ServiceMetaData {
         this.uuid = service.getUuid();
         this.stack_name = env.getName();
         this.stackId = env.getId();
+        this.stackUuid = env.getUuid();
         this.kind = service.getKind();
         this.sidekicks = sidekicks;
         this.vip = service.getVip();
@@ -89,7 +92,6 @@ public class ServiceMetaData {
         this.metadata = metadata;
         this.scale = DataAccessor.fieldInteger(service, ServiceDiscoveryConstants.FIELD_SCALE);
         this.fqdn = DataAccessor.fieldString(service, ServiceDiscoveryConstants.FIELD_FQDN);
-        this.stackId = env.getId();
         Integer desiredScale = DataAccessor.fieldInteger(service, ServiceDiscoveryConstants.FIELD_DESIRED_SCALE);
         if (desiredScale != null) {
             this.scale = desiredScale;
@@ -279,6 +281,14 @@ public class ServiceMetaData {
         } else {
             return new ServiceMetaDataVersion2(serviceData);
         }
+    }
+
+    public String getStackUuid() {
+        return stackUuid;
+    }
+
+    public void setStackUuid(String stackUuid) {
+        this.stackUuid = stackUuid;
     }
 
     

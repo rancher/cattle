@@ -28,6 +28,7 @@ public class ContainerMetaData {
     List<String> ports = new ArrayList<>();
     String service_name;
     String stack_name;
+    String stack_uuid;
     Map<String, String> labels = new HashMap<>();
     Long create_index;
     String host_uuid;
@@ -69,6 +70,14 @@ public class ContainerMetaData {
 
     public String getStack_name() {
         return stack_name;
+    }
+
+    public String getStack_uuid() {
+        return stack_uuid;
+    }
+
+    public void setStack_uuid(String stack_uuid) {
+        this.stack_uuid = stack_uuid;
     }
 
     public Map<String, String> getLabels() {
