@@ -1,7 +1,5 @@
 package io.cattle.platform.servicediscovery.deployment.impl.unit;
 
-import io.cattle.platform.allocator.constraint.AffinityConstraintDefinition.AffinityOps;
-import io.cattle.platform.allocator.constraint.ContainerLabelAffinityConstraint;
 import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.model.Host;
@@ -401,17 +399,6 @@ public class DeploymentUnit {
          */
         labels.put(ServiceDiscoveryConstants.LABEL_SERVICE_LAUNCH_CONFIG, instance.getLaunchConfigName());
 
-        if (this.hasSidekicks()) {
-            /*
-             * Put affinity constraint on every instance to let allocator know that they should go to the same host
-             */
-            // TODO: Might change labels into a Multimap or add a service function to handle merging
-            String containerLabelSoftAffinityKey = ContainerLabelAffinityConstraint.LABEL_HEADER_AFFINITY_CONTAINER_LABEL
-                    + AffinityOps.SOFT_EQ.getLabelSymbol();
-            labels.put(containerLabelSoftAffinityKey, ServiceDiscoveryConstants.LABEL_SERVICE_DEPLOYMENT_UNIT + "="
-                    + this.uuid);
-        }
-
         labels.putAll(this.unitLabels);
 
         return labels;
@@ -434,16 +421,6 @@ public class DeploymentUnit {
     protected DeploymentUnitInstance getDeploymentUnitInstance(Service service, String launchConfigName) {
         DeploymentUnitService duService = svc.get(service.getId());
         return duService.getInstance(launchConfigName);
-    }
-
-    private boolean hasSidekicks() {
-        for (Long serviceId : svc.keySet()) {
-            DeploymentUnitService duService = svc.get(serviceId);
-            if (duService.hasSidekicks()) {
-                return true;
-            }
-        }
-        return false;
     }
 
     public long getCreateIndex() {
