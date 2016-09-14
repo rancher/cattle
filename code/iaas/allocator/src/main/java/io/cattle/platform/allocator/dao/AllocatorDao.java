@@ -4,6 +4,7 @@ import io.cattle.platform.allocator.service.AllocationAttempt;
 import io.cattle.platform.allocator.service.AllocationCandidate;
 import io.cattle.platform.core.model.Host;
 import io.cattle.platform.core.model.Instance;
+import io.cattle.platform.core.model.InstanceHostMap;
 import io.cattle.platform.core.model.Port;
 import io.cattle.platform.core.model.StoragePool;
 import io.cattle.platform.core.model.Volume;
@@ -23,7 +24,7 @@ public interface AllocatorDao {
 
     boolean recordCandidate(AllocationAttempt attempt, AllocationCandidate candidate);
 
-    void releaseAllocation(Instance instance);
+    void releaseAllocation(Instance instance, InstanceHostMap map);
 
     void releaseAllocation(Volume volume);
 
@@ -49,4 +50,6 @@ public interface AllocatorDao {
     boolean isVolumeInUseOnHost(long volumeId, long hostId);
 
     List<Long> getInstancesWithVolumeMounted(long volumeId, long currentInstanceId);
+
+    Map<String, List<InstanceHostMap>> getInstanceHostMapsWithHostUuid(long instanceId);
 }

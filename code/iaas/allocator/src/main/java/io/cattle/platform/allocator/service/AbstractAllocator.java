@@ -122,9 +122,7 @@ public abstract class AbstractAllocator implements Allocator {
         releaseAllocation(instance);
     }
 
-    protected void releaseAllocation(Instance instance) {
-        allocatorDao.releaseAllocation(instance);
-    }
+    protected abstract void releaseAllocation(Instance instance);
 
     protected void releaseAllocation(Volume volume) {
         allocatorDao.releaseAllocation(volume);
@@ -348,9 +346,7 @@ public abstract class AbstractAllocator implements Allocator {
         return candidateFailedConstraintSets.get(0);
     }
 
-    protected boolean recordCandidate(AllocationAttempt attempt, AllocationCandidate candidate) {
-        return allocatorDao.recordCandidate(attempt, candidate);
-    }
+    protected abstract boolean recordCandidate(AllocationAttempt attempt, AllocationCandidate candidate);
 
     protected abstract LockDefinition getAllocationLock(AllocationRequest request, AllocationAttempt attempt);
 
