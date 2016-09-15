@@ -2,3 +2,6 @@
 resources/local
 resources/content/db/mysql/*.gz
 runtime
+tests/integration*/.tox
+tests/integration*/.venv
+**/*.pyc
