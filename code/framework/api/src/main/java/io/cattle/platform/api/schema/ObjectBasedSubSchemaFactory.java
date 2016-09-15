@@ -24,7 +24,9 @@ public class ObjectBasedSubSchemaFactory extends SubSchemaFactory implements Nam
         if (rels == null || rels.size() == 0) {
             return;
         } else {
-            schema.getIncludeableLinks().addAll(rels.keySet());
+            for (Relationship rel : rels.values()) {
+                schema.getIncludeableLinks().add(rel.getName());
+            }
         }
     }
 
