@@ -26,7 +26,7 @@ public class GlobalServiceDeploymentPlanner extends ServiceDeploymentPlanner {
         for (Service service : services) {
             List<Long> hostIdsToDeployService =
                     context.allocatorService.getHostsSatisfyingHostAffinity(service.getAccountId(),
-                            ServiceDiscoveryUtil.getServiceLabels(service, context.allocatorService));
+                            ServiceDiscoveryUtil.getMergedServiceLabels(service, context.allocatorService));
             hostIds.addAll(hostIdsToDeployService);
         }
         for (DeploymentUnit unit : units) {

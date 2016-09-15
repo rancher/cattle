@@ -125,16 +125,6 @@ public class DefaultDeploymentUnitInstance extends DeploymentUnitInstance implem
                     ServiceDiscoveryConstants.AUDIT_LOG_CREATE_EXTRA, ActivityLog.INFO);
         }
 
-        if (instance.getState().equalsIgnoreCase(CommonStatesConstants.REQUESTED)) {
-            context.objectProcessManager.scheduleStandardProcessAsync(StandardProcess.CREATE, instance,
-                    null);
-        }
-
-        if (exposeMap.getState().equalsIgnoreCase(CommonStatesConstants.REQUESTED)) {
-            context.objectProcessManager.scheduleStandardProcessAsync(StandardProcess.CREATE, exposeMap,
-                    null);
-        }
-
         this.instance = context.objectManager.reload(this.instance);
         return this;
     }
@@ -356,6 +346,19 @@ public class DefaultDeploymentUnitInstance extends DeploymentUnitInstance implem
     public Long getCreateIndex() {
         Long createIndex = this.instance == null ? null : this.instance.getCreateIndex();
         return createIndex;
+    }
+
+    @Override
+    public void scheduleCreate() {
+        if (instance.getState().equalsIgnoreCase(CommonStatesConstants.REQUESTED)) {
+            context.objectProcessManager.scheduleStandardProcessAsync(StandardProcess.CREATE, instance,
+                    null);
+        }
+
+        if (exposeMap.getState().equalsIgnoreCase(CommonStatesConstants.REQUESTED)) {
+            context.objectProcessManager.scheduleStandardProcessAsync(StandardProcess.CREATE, exposeMap,
+                    null);
+        }
     }
 }
 
