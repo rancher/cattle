@@ -1,6 +1,5 @@
 package io.cattle.platform.allocator.constraint;
 
-import io.cattle.platform.allocator.dao.AllocatorDao;
 import io.cattle.platform.allocator.service.AllocationCandidate;
 import io.cattle.platform.core.constants.PortConstants;
 import io.cattle.platform.core.model.Port;
@@ -12,15 +11,12 @@ import org.apache.commons.lang3.StringUtils;
 
 public class PortsConstraint extends HardConstraint implements Constraint {
 
-    AllocatorDao allocatorDao;
-
     List<Port> ports;
 
     long instanceId;
 
-    public PortsConstraint(long instanceId, List<Port> ports, AllocatorDao allocatorDao) {
+    public PortsConstraint(long instanceId, List<Port> ports) {
         this.ports = ports;
-        this.allocatorDao = allocatorDao;
         this.instanceId = instanceId;
     }
 
@@ -31,7 +27,7 @@ public class PortsConstraint extends HardConstraint implements Constraint {
         }
 
         // TODO: Performance improvement. Move more of the filtering into the DB query itself
-        List<Port> portsUsedByHost = allocatorDao.getUsedPortsForHostExcludingInstance(candidate.getHost(), instanceId);
+        List<Port> portsUsedByHost = candidate.getUsedPorts();
         for (Port portUsed : portsUsedByHost) {
             for (Port requestedPort : ports) {
                 if (requestedPort.getPublicPort() != null &&

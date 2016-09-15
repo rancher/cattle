@@ -378,6 +378,32 @@ def test_port_constraint(new_context):
                 new_context.delete(c)
 
 
+def test_conflicting_ports_in_deployment_unit(new_context):
+    client = new_context.client
+    image_uuid = new_context.image_uuid
+    client.wait_success(client.create_container(name='reset',
+                                                imageUuid=image_uuid))
+
+    env = client.create_stack(name=random_str())
+    env = client.wait_success(env)
+    assert env.state == "active"
+
+    launch_config = {"imageUuid": image_uuid, "ports": ['5555:6666']}
+    secondary_lc = {"imageUuid": image_uuid,
+                    "name": "secondary", "ports": ['5555:6666']}
+
+    svc = client.create_service(name=random_str(),
+                                stackId=env.id,
+                                launchConfig=launch_config,
+                                secondaryLaunchConfigs=[secondary_lc])
+    svc = client.wait_success(svc)
+    assert svc.state == "inactive"
+
+    svc = svc.activate()
+    c = _wait_for_compose_instance_error(client, svc, env)
+    assert 'Port 5555/tcp requested more than once.' in c.transitioningMessage
+
+
 def test_simultaneous_port_allocation(new_context):
     # This test ensures if two containers are allocated simultaneously, only
     # one will get the port and the other will fail to allocate.

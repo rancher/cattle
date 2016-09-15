@@ -1,6 +1,7 @@
 package io.cattle.platform.simple.allocator.dao.impl;
 
 import io.cattle.platform.allocator.service.AllocationCandidate;
+import io.cattle.platform.core.model.Port;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.simple.allocator.AllocationCandidateCallback;
 
@@ -26,18 +27,20 @@ public class AllocationCandidateIterator implements Iterator<AllocationCandidate
     List<Long> volumeIds;
     Iterator<Map.Entry<Long, Set<Long>>> iterator;
     Map<Long, String> hostIdsToUuids;
+    Map<Long, List<Port>> hostIdsToUsedPorts;
     Stack<AllocationCandidate> candidates = new Stack<AllocationCandidate>();
     ObjectManager objectManager;
     boolean hosts;
     AllocationCandidateCallback callback;
 
     public AllocationCandidateIterator(ObjectManager objectManager, LinkedHashMap<Long, Set<Long>> hostsAndStoragePools, Map<Long, String> hostIdsToUuids,
-            List<Long> volumeIds, boolean hosts, AllocationCandidateCallback callback) {
+            Map<Long, List<Port>> hostIdsToUsedPorts, List<Long> volumeIds, boolean hosts, AllocationCandidateCallback callback) {
         super();
         this.objectManager = objectManager;
         this.volumeIds = volumeIds;
         this.iterator = hostsAndStoragePools.entrySet().iterator();
         this.hostIdsToUuids = hostIdsToUuids;
+        this.hostIdsToUsedPorts = hostIdsToUsedPorts;
         this.hosts = hosts;
         this.callback = callback;
     }
@@ -69,11 +72,12 @@ public class AllocationCandidateIterator implements Iterator<AllocationCandidate
 
         Long candidateHostId = this.hosts ? hostId : null;
         String candidateHostUuid = this.hosts ? this.hostIdsToUuids.get(hostId) : null;
+        List<Port> usedPorts =  hostIdsToUsedPorts != null ? hostIdsToUsedPorts.get(hostId) : new ArrayList<Port>();
 
         Map<Pair<Class<?>, Long>, Object> cache = new HashMap<Pair<Class<?>, Long>, Object>();
 
         if (volumeIds.size() == 0) {
-            pushCandidate(new AllocationCandidate(objectManager, cache, candidateHostId, candidateHostUuid, Collections.<Long, Long> emptyMap()));
+            pushCandidate(new AllocationCandidate(objectManager, cache, candidateHostId, candidateHostUuid, usedPorts, Collections.<Long, Long> emptyMap()));
         }
 
         for (List<Pair<Long, Long>> pairs : traverse(volumeIds, pools)) {
@@ -82,7 +86,7 @@ public class AllocationCandidateIterator implements Iterator<AllocationCandidate
                 volumeToPool.put(pair.getLeft(), pair.getRight());
             }
 
-            pushCandidate(new AllocationCandidate(objectManager, cache, candidateHostId, candidateHostUuid, volumeToPool));
+            pushCandidate(new AllocationCandidate(objectManager, cache, candidateHostId, candidateHostUuid, usedPorts, volumeToPool));
         }
     }
 

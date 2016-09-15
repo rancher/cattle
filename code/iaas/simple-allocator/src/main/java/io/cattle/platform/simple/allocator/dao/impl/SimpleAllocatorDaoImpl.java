@@ -2,11 +2,17 @@ package io.cattle.platform.simple.allocator.dao.impl;
 
 import static io.cattle.platform.core.model.tables.AgentTable.*;
 import static io.cattle.platform.core.model.tables.HostTable.*;
+import static io.cattle.platform.core.model.tables.InstanceHostMapTable.*;
+import static io.cattle.platform.core.model.tables.InstanceTable.*;
+import static io.cattle.platform.core.model.tables.PortTable.*;
+import static io.cattle.platform.core.model.tables.ServiceExposeMapTable.*;
 import static io.cattle.platform.core.model.tables.StoragePoolHostMapTable.*;
 import static io.cattle.platform.core.model.tables.StoragePoolTable.*;
 import io.cattle.platform.allocator.service.AllocationCandidate;
 import io.cattle.platform.archaius.util.ArchaiusUtil;
 import io.cattle.platform.core.constants.CommonStatesConstants;
+import io.cattle.platform.core.constants.InstanceConstants;
+import io.cattle.platform.core.model.Port;
 import io.cattle.platform.db.jooq.dao.impl.AbstractJooqDao;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.simple.allocator.AllocationCandidateCallback;
@@ -85,7 +91,32 @@ public class SimpleAllocatorDaoImpl extends AbstractJooqDao implements SimpleAll
             }
         }
 
-        return new AllocationCandidateIterator(objectManager, orderedResults, hostIdsToUuids, volumes, hosts, callback);
+        Map<Long, List<Port>> hostIdsToUsedPorts = new HashMap<>();
+        for (Long hostId : hostIdsToUuids.keySet()) {
+            List<Port> ports = getUsedPortsForHostExcludingInstance(hostId);
+            hostIdsToUsedPorts.put(hostId, ports);
+        }
+
+        return new AllocationCandidateIterator(objectManager, orderedResults, hostIdsToUuids, hostIdsToUsedPorts, volumes, hosts, callback);
+    }
+
+    private List<Port> getUsedPortsForHostExcludingInstance(long hostId) {
+        return create()
+                .select(PORT.fields())
+                    .from(PORT)
+                    .join(INSTANCE_HOST_MAP)
+                        .on(PORT.INSTANCE_ID.eq(INSTANCE_HOST_MAP.INSTANCE_ID))
+                    .join(INSTANCE)
+                        .on(INSTANCE_HOST_MAP.INSTANCE_ID.eq(INSTANCE.ID))
+                .leftOuterJoin(SERVICE_EXPOSE_MAP)
+                .on(SERVICE_EXPOSE_MAP.INSTANCE_ID.eq(INSTANCE.ID))
+                    .where(INSTANCE_HOST_MAP.HOST_ID.eq(hostId)
+                        .and(INSTANCE.REMOVED.isNull())
+                        .and(INSTANCE.STATE.in(InstanceConstants.STATE_STARTING, InstanceConstants.STATE_RESTARTING, InstanceConstants.STATE_RUNNING))
+                        .and(INSTANCE_HOST_MAP.REMOVED.isNull())
+                        .and(PORT.REMOVED.isNull())
+                        .and(SERVICE_EXPOSE_MAP.UPGRADE.eq(false).or(SERVICE_EXPOSE_MAP.UPGRADE.isNull())))
+                .fetchInto(Port.class);
     }
 
     protected SelectSeekStep2<Record3<String, Long, Long>, Long, Long> getHostQuery(List<String> orderedHostUUIDs, QueryOptions options) {
