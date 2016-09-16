@@ -277,6 +277,8 @@ def register_simulated_host(client_or_context, return_agent=False):
     host = client.wait_success(host)
     s.wait_success(agents[0])
 
+    wait_for(lambda: client.reload(host).state == 'active')
+
     if return_agent:
         return host, keys[0].account(), c
     else:
