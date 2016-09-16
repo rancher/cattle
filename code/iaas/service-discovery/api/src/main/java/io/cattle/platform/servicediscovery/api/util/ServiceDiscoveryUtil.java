@@ -3,11 +3,11 @@ package io.cattle.platform.servicediscovery.api.util;
 import io.cattle.platform.allocator.service.AllocatorService;
 import io.cattle.platform.core.addon.InServiceUpgradeStrategy;
 import io.cattle.platform.core.constants.InstanceConstants;
-import io.cattle.platform.core.model.Stack;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.Service;
 import io.cattle.platform.core.model.ServiceConsumeMap;
 import io.cattle.platform.core.model.ServiceExposeMap;
+import io.cattle.platform.core.model.Stack;
 import io.cattle.platform.core.util.PortSpec;
 import io.cattle.platform.object.meta.ObjectMetaDataManager;
 import io.cattle.platform.object.util.DataAccessor;
@@ -23,8 +23,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.lang.StringUtils;
-
 public class ServiceDiscoveryUtil {
     public static String getInstanceName(Instance instance) {
         if (instance != null && instance.getRemoved() == null) {
@@ -32,28 +30,6 @@ public class ServiceDiscoveryUtil {
         } else {
             return null;
         }
-    }
-
-    public static Map<String, Object> getServiceDataAsMap(Service service, String launchConfigName, AllocatorService allocatorService) {
-        Map<String, Object> data = new HashMap<>();
-        data.putAll(DataUtils.getFields(service));
-
-        // 1) remove launchConfig/secondaryConfig data
-        Object launchConfig = data
-                .get(ServiceDiscoveryConstants.FIELD_LAUNCH_CONFIG);
-        if (launchConfig != null) {
-            data.remove(ServiceDiscoveryConstants.FIELD_LAUNCH_CONFIG);
-        }
-
-        Object secondaryLaunchConfigs = data
-                .get(ServiceDiscoveryConstants.FIELD_SECONDARY_LAUNCH_CONFIGS);
-        if (secondaryLaunchConfigs != null) {
-            data.remove(ServiceDiscoveryConstants.FIELD_SECONDARY_LAUNCH_CONFIGS);
-        }
-        // 2) populate launch config data
-        data.putAll(getLaunchConfigDataWLabelsUnion(service, launchConfigName, allocatorService));
-
-        return data;
     }
 
     @SuppressWarnings("unchecked")
@@ -75,6 +51,29 @@ public class ServiceDiscoveryUtil {
         }
 
         return launchConfigNames;
+    }
+
+    public static Map<String, Object> getLaunchConfigWithServiceDataAsMap(Service service, String launchConfigName) {
+        Map<String, Object> data = new HashMap<>();
+        // 1) get service data
+        data.putAll(DataUtils.getFields(service));
+
+        // 2) remove launchConfig/secondaryConfig data
+        Object launchConfig = data
+                .get(ServiceDiscoveryConstants.FIELD_LAUNCH_CONFIG);
+        if (launchConfig != null) {
+            data.remove(ServiceDiscoveryConstants.FIELD_LAUNCH_CONFIG);
+        }
+
+        Object secondaryLaunchConfigs = data
+                .get(ServiceDiscoveryConstants.FIELD_SECONDARY_LAUNCH_CONFIGS);
+        if (secondaryLaunchConfigs != null) {
+            data.remove(ServiceDiscoveryConstants.FIELD_SECONDARY_LAUNCH_CONFIGS);
+        }
+        // 3) populate launch config data
+        data.putAll(getLaunchConfigDataAsMap(service, launchConfigName));
+
+        return data;
     }
 
     @SuppressWarnings("unchecked")
@@ -101,12 +100,8 @@ public class ServiceDiscoveryUtil {
         return launchConfigsWithNames;
     }
 
-    public static Map<String, String> getServiceLabels(Service service, AllocatorService allocatorService) {
-        return getServiceLabels(null, service, allocatorService);
-    }
-
     @SuppressWarnings("unchecked")
-    protected static Map<String, String> getServiceLabels(String lcn, Service service, AllocatorService allocatorService) {
+    public static Map<String, String> getMergedServiceLabels(Service service, AllocatorService allocatorService) {
         List<String> launchConfigNames = getServiceLaunchConfigNames(service);
         Map<String, String> labelsStr = new HashMap<>();
         for (String currentLaunchConfigName : launchConfigNames) {
@@ -114,37 +109,10 @@ public class ServiceDiscoveryUtil {
             Object l = data.get(ServiceDiscoveryConfigItem.LABELS.getCattleName());
             if (l != null) {
                 Map<String, String> labels = (HashMap<String, String>) l;
-                if (lcn == null || lcn.equals(currentLaunchConfigName)) {
                     allocatorService.mergeLabels(labels, labelsStr);
-                } else {
-                    // Only merge scheduling labels
-                    Map<String, String> schedulingLabels = new HashMap<String, String>();
-                    for (Map.Entry<String, String> label : labels.entrySet()) {
-                        if (StringUtils.startsWith(label.getKey(), "io.rancher.scheduler")) {
-                            schedulingLabels.put(label.getKey(), label.getValue());
-                        }
-                    }
-                    allocatorService.mergeLabels(schedulingLabels, labelsStr);
-                }
             }
         }
-
         return labelsStr;
-    }
-
-    protected static Map<String, Object> getLaunchConfigDataWLabelsUnion(Service service, String launchConfigName,
-            AllocatorService allocatorService) {
-        Map<String, Object> launchConfigData = new HashMap<>();
-
-        // 1) get launch config data from the list of primary/secondary
-        launchConfigData.putAll(getLaunchConfigDataAsMap(service, launchConfigName));
-
-        // 2. remove labels, and request the union
-        launchConfigData.remove(InstanceConstants.FIELD_LABELS);
-        launchConfigData.put(InstanceConstants.FIELD_LABELS,
-                getServiceLabels(launchConfigName, service, allocatorService));
-
-        return launchConfigData;
     }
 
     @SuppressWarnings("unchecked")
@@ -233,8 +201,7 @@ public class ServiceDiscoveryUtil {
     @SuppressWarnings("unchecked")
     public static Map<String, Object> buildServiceInstanceLaunchData(Service service, Map<String, Object> deployParams,
             String launchConfigName, AllocatorService allocatorService) {
-        Map<String, Object> serviceData = ServiceDiscoveryUtil.getLaunchConfigDataWLabelsUnion(service,
-                launchConfigName, allocatorService);
+        Map<String, Object> serviceData = getLaunchConfigDataAsMap(service, launchConfigName);
         Map<String, Object> launchConfigItems = new HashMap<>();
 
         // 1. put all parameters retrieved through deployParams
@@ -305,9 +272,9 @@ public class ServiceDiscoveryUtil {
         return dnsName;
     }
 
-    public static boolean isNoopService(Service service, AllocatorService allocatorService) {
-        Object imageUUID = ServiceDiscoveryUtil.getServiceDataAsMap(service,
-                ServiceDiscoveryConstants.PRIMARY_LAUNCH_CONFIG_NAME, allocatorService).get(
+    public static boolean isNoopService(Service service) {
+        Object imageUUID = ServiceDiscoveryUtil.getLaunchConfigDataAsMap(service,
+                ServiceDiscoveryConstants.PRIMARY_LAUNCH_CONFIG_NAME).get(
                 InstanceConstants.FIELD_IMAGE_UUID);
         return service.getSelectorContainer() != null
                 && (imageUUID == null || imageUUID.toString().toLowerCase()

@@ -79,8 +79,9 @@ def test_spread(super_client, new_context):
 
     containers = []
     for _ in range(len(hosts) * count):
-        c = client.create_container(imageUuid=new_context.image_uuid,
-                                    networkMode='bridge')
+        c = client.wait_success(
+            client.create_container(imageUuid=new_context.image_uuid,
+                                    networkMode='bridge'))
         containers.append(c)
 
     wait_all_success(super_client, containers, timeout=60)

@@ -2,6 +2,7 @@ package io.cattle.platform.allocator.service;
 
 import io.cattle.platform.allocator.constraint.Constraint;
 import io.cattle.platform.core.model.Instance;
+import io.cattle.platform.lock.definition.LockDefinition;
 
 import java.util.List;
 import java.util.Map;
@@ -32,4 +33,5 @@ public interface AllocatorService {
 
     List<Long> getAllHostsSatisfyingHostAffinity(Long accountId, Map<String, String> labelConstraints);
 
+    List<LockDefinition> extractAllocationLockDefinitions(Instance instance);
 }

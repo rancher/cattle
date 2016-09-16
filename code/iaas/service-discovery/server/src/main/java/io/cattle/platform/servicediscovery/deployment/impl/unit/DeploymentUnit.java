@@ -1,7 +1,5 @@
 package io.cattle.platform.servicediscovery.deployment.impl.unit;
 
-import io.cattle.platform.allocator.constraint.AffinityConstraintDefinition.AffinityOps;
-import io.cattle.platform.allocator.constraint.ContainerLabelAffinityConstraint;
 import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.model.Host;
@@ -195,7 +193,13 @@ public class DeploymentUnit {
         }
     }
 
-    public void start(Map<Long, DeploymentUnitInstanceIdGenerator> svcInstanceIdGenerator) {
+    public void start() {
+        for (DeploymentUnitInstance instance : getDeploymentUnitInstances()) {
+            instance.start();
+        }
+    }
+
+    public void create(Map<Long, DeploymentUnitInstanceIdGenerator> svcInstanceIdGenerator) {
         /*
          * Start the instances in the correct order depending on the volumes from.
          * Attempt to start things in parallel, but if not possible (like volumes-from) then start each service
@@ -207,40 +211,22 @@ public class DeploymentUnit {
          *
          */
         createMissingUnitInstances(svcInstanceIdGenerator);
-
-        boolean hasSidekicks = false;
-        boolean skipSerialize = false;
-        for (Long serviceId : svc.keySet()) {
-            DeploymentUnitService duService = svc.get(serviceId);
-            List<String> launchConfigNames = duService.getLaunchConfigNames();
-            if (launchConfigNames.size() > 1) {
-                hasSidekicks = true;
-            }
-            for (String launchConfigName : launchConfigNames) {
-                createInstance(launchConfigName, duService.getService());
-            }
-            Map<String, String> labels = ServiceDiscoveryUtil.getServiceLabels(
-                    svc.get(serviceId).getService(),
-                    context.allocatorService);
-            if (labels
-                    .containsKey(ServiceDiscoveryConstants.LABEL_SERVICE_ALLOACATE_SKIP_SERIALIZE)
-                    && Boolean.valueOf(labels
-                            .get(ServiceDiscoveryConstants.LABEL_SERVICE_ALLOACATE_SKIP_SERIALIZE)) == true) {
-                skipSerialize = true;
-            }
-        }
-
-        // don't wait for instance allocate unless sidekicks are present
-
-        if (hasSidekicks && !skipSerialize) {
-            this.waitForAllocate();
+        List<DeploymentUnitInstance> createdInstances = createServiceInstances();
+        for (DeploymentUnitInstance instance : createdInstances) {
+            instance.scheduleCreate();
         }
     }
 
-    protected void waitForAllocate() {
-        for (DeploymentUnitInstance instance : getDeploymentUnitInstances()) {
-            instance.waitForAllocate();
+    protected List<DeploymentUnitInstance> createServiceInstances() {
+        List<DeploymentUnitInstance> createdInstances = new ArrayList<>();
+        for (Long serviceId : svc.keySet()) {
+            DeploymentUnitService duService = svc.get(serviceId);
+            List<String> launchConfigNames = duService.getLaunchConfigNames();
+            for (String launchConfigName : launchConfigNames) {
+                createdInstances.add(createInstance(launchConfigName, duService.getService()));
+            }
         }
+        return createdInstances;
     }
 
     public void waitForStart(){
@@ -253,9 +239,8 @@ public class DeploymentUnit {
         List<Integer> volumesFromInstanceIds = getSidekickContainersId(service, launchConfigName, SidekickType.DATA);
         List<Integer> networkContainerIds = getSidekickContainersId(service, launchConfigName, SidekickType.NETWORK);
         Integer networkContainerId = networkContainerIds.isEmpty() ? null : networkContainerIds.get(0);
-        getDeploymentUnitInstance(service, launchConfigName).waitForNotTransitioning();
         getDeploymentUnitInstance(service, launchConfigName)
-                .createAndStart(
+                .create(
                         populateDeployParams(getDeploymentUnitInstance(service, launchConfigName),
                                 volumesFromInstanceIds,
                                 networkContainerId));
@@ -271,7 +256,7 @@ public class DeploymentUnit {
                 sidekickType.launchConfigFieldName);
         if (sidekickInstances != null) {
             if (sidekickType.isList) {
-                sidekickInstanceIds.addAll((List<Integer>)sidekickInstances);
+                sidekickInstanceIds.addAll((List<Integer>) sidekickInstances);
             } else {
                 sidekickInstanceIds.add((Integer) sidekickInstances);
             }
@@ -298,9 +283,6 @@ public class DeploymentUnit {
                         // request new instance creation
                         sidekickUnitInstance = createInstance(sidekickUnitInstance.getLaunchConfigName(), service);
                     }
-                    // wait for start
-                    sidekickUnitInstance.createAndStart(new HashMap<String, Object>());
-                    sidekickUnitInstance.waitForAllocate();
                     sidekickInstanceIds.add(((InstanceUnit) sidekickUnitInstance).getInstance().getId()
                             .intValue());
                 }
@@ -309,7 +291,6 @@ public class DeploymentUnit {
 
         return sidekickInstanceIds;
     }
-
 
     public boolean isStarted() {
         for (DeploymentUnitInstance instance : getDeploymentUnitInstances()) {
@@ -418,17 +399,6 @@ public class DeploymentUnit {
          */
         labels.put(ServiceDiscoveryConstants.LABEL_SERVICE_LAUNCH_CONFIG, instance.getLaunchConfigName());
 
-        if (this.hasSidekicks()) {
-            /*
-             * Put affinity constraint on every instance to let allocator know that they should go to the same host
-             */
-            // TODO: Might change labels into a Multimap or add a service function to handle merging
-            String containerLabelSoftAffinityKey = ContainerLabelAffinityConstraint.LABEL_HEADER_AFFINITY_CONTAINER_LABEL
-                    + AffinityOps.SOFT_EQ.getLabelSymbol();
-            labels.put(containerLabelSoftAffinityKey, ServiceDiscoveryConstants.LABEL_SERVICE_DEPLOYMENT_UNIT + "="
-                    + this.uuid);
-        }
-
         labels.putAll(this.unitLabels);
 
         return labels;
@@ -451,16 +421,6 @@ public class DeploymentUnit {
     protected DeploymentUnitInstance getDeploymentUnitInstance(Service service, String launchConfigName) {
         DeploymentUnitService duService = svc.get(service.getId());
         return duService.getInstance(launchConfigName);
-    }
-
-    private boolean hasSidekicks() {
-        for (Long serviceId : svc.keySet()) {
-            DeploymentUnitService duService = svc.get(serviceId);
-            if (duService.hasSidekicks()) {
-                return true;
-            }
-        }
-        return false;
     }
 
     public long getCreateIndex() {

@@ -1,12 +1,10 @@
 package io.cattle.platform.allocator.util;
 
-import io.cattle.platform.allocator.exception.FailedToAllocate;
 import io.cattle.platform.allocator.service.CacheManager;
 import io.cattle.platform.allocator.service.DiskInfo;
 import io.cattle.platform.allocator.service.HostInfo;
 import io.cattle.platform.allocator.service.InstanceInfo;
 import io.cattle.platform.archaius.util.ArchaiusUtil;
-import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.util.SystemLabels;
@@ -21,14 +19,12 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.Map.Entry;
+import java.util.Set;
 
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.MutablePair;
 import org.apache.commons.lang3.tuple.Pair;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.netflix.config.DynamicLongProperty;
 
@@ -37,29 +33,6 @@ public class AllocatorUtils {
     public static final Set<String> UNMANGED_STORAGE_POOLS = new HashSet<String>(Arrays.asList(new String[]{"docker", "sim"}));
 
     public static final DynamicLongProperty DEFAULT_COMPUTE = ArchaiusUtil.getLong("instance.compute.default");
-
-    private static final Logger log = LoggerFactory.getLogger(AllocatorUtils.class);
-
-    public static boolean assertAllocated(long resourceId, String state, String logType) {
-        if (CommonStatesConstants.ACTIVE.equals(state)) {
-            log.info("{} [{}] is already allocated", logType, resourceId);
-            return true;
-        } else if (!CommonStatesConstants.ACTIVATING.equals(state)) {
-            throw new FailedToAllocate(String.format("Illegal allocation state: %s", state));
-        }
-        return false;
-    }
-
-    public static boolean assertDeallocated(long resourceId, String state, String logType) {
-        if (CommonStatesConstants.INACTIVE.equals(state)) {
-            log.info("{} [{}] is already deallocated", logType, resourceId);
-            return true;
-        } else if (!CommonStatesConstants.DEACTIVATING.equals(state)) {
-            throw new FailedToAllocate(String.format("Illegal deallocation state: %s", state));
-        }
-
-        return false;
-    }
 
     public static long getCompute(Instance instance) {
         if (instance == null) {

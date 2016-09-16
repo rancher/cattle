@@ -1,7 +1,5 @@
 package io.cattle.platform.allocator.constraint;
 
-import io.cattle.platform.allocator.dao.AllocatorDao;
-import io.cattle.platform.allocator.service.AllocationAttempt;
 import io.cattle.platform.allocator.service.AllocationCandidate;
 import io.cattle.platform.core.constants.PortConstants;
 import io.cattle.platform.core.model.Port;
@@ -13,23 +11,23 @@ import org.apache.commons.lang3.StringUtils;
 
 public class PortsConstraint extends HardConstraint implements Constraint {
 
-    AllocatorDao allocatorDao;
-
     List<Port> ports;
 
-    public PortsConstraint(List<Port> ports, AllocatorDao allocatorDao) {
+    long instanceId;
+
+    public PortsConstraint(long instanceId, List<Port> ports) {
         this.ports = ports;
-        this.allocatorDao = allocatorDao;
+        this.instanceId = instanceId;
     }
 
     @Override
-    public boolean matches(AllocationAttempt attempt, AllocationCandidate candidate) {
+    public boolean matches(AllocationCandidate candidate) {
         if (candidate.getHost() == null) {
             return false;
         }
 
         // TODO: Performance improvement. Move more of the filtering into the DB query itself
-        List<Port> portsUsedByHost = allocatorDao.getUsedPortsForHostExcludingInstance(candidate.getHost(), attempt.getInstanceId());
+        List<Port> portsUsedByHost = candidate.getUsedPorts();
         for (Port portUsed : portsUsedByHost) {
             for (Port requestedPort : ports) {
                 if (requestedPort.getPublicPort() != null &&

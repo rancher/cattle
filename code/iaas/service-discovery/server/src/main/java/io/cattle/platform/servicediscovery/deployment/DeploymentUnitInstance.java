@@ -68,15 +68,11 @@ public abstract class DeploymentUnitInstance {
         this.stack = context.objectManager.loadResource(Stack.class, service.getStackId());
     }
 
-    public DeploymentUnitInstance createAndStart(Map<String, Object> deployParams) {
-        this.create(deployParams);
-        this.start();
-        return this;
-    }
+    public abstract DeploymentUnitInstance create(Map<String, Object> deployParams);
 
-    protected abstract DeploymentUnitInstance create(Map<String, Object> deployParams);
+    public abstract void scheduleCreate();
 
-    protected DeploymentUnitInstance start() {
+    public DeploymentUnitInstance start() {
         if (this.isStarted()) {
             return this;
         }

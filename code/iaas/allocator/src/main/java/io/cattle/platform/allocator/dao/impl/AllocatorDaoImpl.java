@@ -20,8 +20,8 @@ import static io.cattle.platform.core.model.tables.SubnetVnetMapTable.*;
 import static io.cattle.platform.core.model.tables.VnetTable.*;
 import static io.cattle.platform.core.model.tables.VolumeStoragePoolMapTable.*;
 import static io.cattle.platform.core.model.tables.VolumeTable.*;
-
 import io.cattle.platform.allocator.dao.AllocatorDao;
+import io.cattle.platform.allocator.exception.FailedToAllocate;
 import io.cattle.platform.allocator.service.AllocationAttempt;
 import io.cattle.platform.allocator.service.AllocationCandidate;
 import io.cattle.platform.allocator.service.CacheManager;
@@ -43,12 +43,14 @@ import io.cattle.platform.core.model.StoragePool;
 import io.cattle.platform.core.model.Volume;
 import io.cattle.platform.core.model.VolumeStoragePoolMap;
 import io.cattle.platform.core.model.tables.records.HostRecord;
+import io.cattle.platform.core.model.tables.records.InstanceRecord;
 import io.cattle.platform.core.model.tables.records.StoragePoolRecord;
 import io.cattle.platform.core.util.InstanceHelpers;
 import io.cattle.platform.db.jooq.dao.impl.AbstractJooqDao;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.util.DataAccessor;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -61,8 +63,11 @@ import javax.inject.Inject;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.jooq.Condition;
+import org.jooq.Field;
+import org.jooq.Record;
 import org.jooq.Record3;
 import org.jooq.RecordHandler;
+import org.jooq.exception.InvalidResultException;
 import org.jooq.impl.DSL;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -131,15 +136,30 @@ public class AllocatorDaoImpl extends AbstractJooqDao implements AllocatorDao {
 
     @Override
     public Host getHost(Instance instance) {
-        return create()
-                .select(HOST.fields())
-                .from(HOST)
-                .join(INSTANCE_HOST_MAP)
-                    .on(INSTANCE_HOST_MAP.HOST_ID.eq(HOST.ID))
-                .where(
-                    INSTANCE_HOST_MAP.REMOVED.isNull()
-                    .and(INSTANCE_HOST_MAP.INSTANCE_ID.eq(instance.getId())))
-                .fetchOneInto(HostRecord.class);
+       Condition cond = getInstanceHostConstraint(instance);
+       try {
+           return create()
+                   .selectDistinct(HOST.fields())
+                   .from(HOST)
+                   .join(INSTANCE_HOST_MAP)
+                       .on(INSTANCE_HOST_MAP.HOST_ID.eq(HOST.ID))
+                   .join(INSTANCE)
+                       .on(INSTANCE_HOST_MAP.INSTANCE_ID.eq(INSTANCE.ID))
+                   .where(
+                       INSTANCE_HOST_MAP.REMOVED.isNull()
+                       .and(cond))
+                   .fetchOneInto(HostRecord.class);
+       } catch (InvalidResultException e) {
+           throw new FailedToAllocate("Instances to allocate assigned to different hosts.");
+       }
+    }
+
+    public Condition getInstanceHostConstraint(Instance instance) {
+        if (StringUtils.isEmpty(instance.getDeploymentUnitUuid())) {
+            return INSTANCE_HOST_MAP.INSTANCE_ID.eq(instance.getId());
+        } else {
+            return INSTANCE.DEPLOYMENT_UNIT_UUID.eq(instance.getDeploymentUnitUuid());
+        }
     }
 
     @Override
@@ -227,32 +247,23 @@ public class AllocatorDaoImpl extends AbstractJooqDao implements AllocatorDao {
 
     @Override
     public boolean recordCandidate(AllocationAttempt attempt, AllocationCandidate candidate) {
-        Long existingHost = attempt.getHostId();
         Long newHost = candidate.getHost();
-
-        if (existingHost == null) {
-            if (newHost != null) {
-                log.info("Associating instance [{}] to host [{}]", attempt.getInstance().getId(), newHost);
+        if (newHost != null) {
+            for (Instance instance : attempt.getInstances()) {
+                log.info("Associating instance [{}] to host [{}]", instance.getId(), newHost);
                 objectManager.create(InstanceHostMap.class,
                         INSTANCE_HOST_MAP.HOST_ID, newHost,
-                        INSTANCE_HOST_MAP.INSTANCE_ID, attempt.getInstance().getId());
+                        INSTANCE_HOST_MAP.INSTANCE_ID, instance.getId());
 
-                modifyCompute(newHost, attempt.getInstance(), false);
-                modifyDisk(newHost, attempt.getInstance(), true);
+                modifyCompute(newHost, instance, false);
+                modifyDisk(newHost, instance, true);
 
-                List<Volume> vols = InstanceHelpers.extractVolumesFromMounts(attempt.getInstance(), objectManager);
+                List<Volume> vols = InstanceHelpers.extractVolumesFromMounts(instance, objectManager);
                 for (Volume v : vols) {
                     if (VolumeConstants.ACCESS_MODE_SINGLE_HOST_RW.equals(v.getAccessMode())) {
                         objectManager.setFields(v, VOLUME.HOST_ID, newHost);
                     }
                 }
-            }
-        } else {
-            if (!newHost.equals(existingHost)) {
-                log.error("Can not move allocated instance [{}], currently {} new {}", attempt.getInstance().getId(),
-                        existingHost, newHost);
-                throw new IllegalStateException("Can not move allocated instance [" + attempt.getInstance().getId()
-                        + "], currently " + existingHost + " new " + newHost);
             }
         }
 
@@ -312,25 +323,44 @@ public class AllocatorDaoImpl extends AbstractJooqDao implements AllocatorDao {
     }
 
     @Override
-    public void releaseAllocation(Instance instance) {
-        for ( InstanceHostMap map : mapDao.findNonRemoved(InstanceHostMap.class, Instance.class, instance.getId()) ) {
-            DataAccessor data = DataAccessor.fromDataFieldOf(map)
-                                    .withScope(AllocatorDaoImpl.class)
+    public void releaseAllocation(Instance instance,  InstanceHostMap map) {
+        //Reload for persisting
+        map = objectManager.loadResource(InstanceHostMap.class, map.getId());
+
+        DataAccessor data = DataAccessor.fromDataFieldOf(map)
+                                    .withScope(AllocatorDao.class)
                                     .withKey("deallocated");
 
-            Boolean done = data.as(Boolean.class);
-            if ( done == null || ! done.booleanValue() ) {
-                modifyCompute(map.getHostId(), instance, true);
-                modifyDisk(map.getHostId(), instance, false);
-                data.set(true);
-                objectManager.persist(map);
-            }
+        Boolean done = data.as(Boolean.class);
+        if ( done == null || ! done.booleanValue() ) {
+            modifyCompute(map.getHostId(), instance, true);
+            modifyDisk(map.getHostId(), instance, false);
+            data.set(true);
+            objectManager.persist(map);
         }
     }
 
     @Override
     public void releaseAllocation(Volume volume) {
         // Nothing to do?
+    }
+
+    @Override
+    public Map<String, List<InstanceHostMap>> getInstanceHostMapsWithHostUuid(long instanceId) {
+        Map<Record, List<InstanceHostMap>> result = create()
+        .select(INSTANCE_HOST_MAP.fields()).select(HOST.UUID)
+        .from(INSTANCE_HOST_MAP)
+        .join(HOST).on(INSTANCE_HOST_MAP.HOST_ID.eq(HOST.ID))
+        .where(INSTANCE_HOST_MAP.INSTANCE_ID.eq(instanceId)
+        .and(INSTANCE_HOST_MAP.REMOVED.isNull()))
+        .fetchGroups(new Field[]{HOST.UUID}, InstanceHostMap.class);
+
+        Map<String, List<InstanceHostMap>> maps = new HashMap<>();
+        for (Map.Entry<Record, List<InstanceHostMap>>entry : result.entrySet()) {
+            String uuid = (String)entry.getKey().getValue(0);
+            maps.put(uuid, entry.getValue());
+        }
+        return maps;
     }
 
     @Override
@@ -521,5 +551,23 @@ public class AllocatorDaoImpl extends AbstractJooqDao implements AllocatorDao {
                 .and(SERVICE_EXPOSE_MAP.UPGRADE.eq(false).or(SERVICE_EXPOSE_MAP.UPGRADE.isNull()))
                 .fetchInto(Long.class).size() > 0;
 
+    }
+
+    public List<Instance> getUnmappedDeploymentUnitInstances(String deploymentUnitUuid) {
+        List<? extends Instance> instanceRecords = create()
+                .select(INSTANCE.fields())
+                .from(INSTANCE)
+                .leftOuterJoin(INSTANCE_HOST_MAP)
+                    .on(INSTANCE_HOST_MAP.INSTANCE_ID.eq(INSTANCE.ID).and(INSTANCE_HOST_MAP.REMOVED.isNull()))
+                .where(INSTANCE.REMOVED.isNull())
+                .and(INSTANCE.DEPLOYMENT_UNIT_UUID.eq(deploymentUnitUuid))
+                .and(INSTANCE_HOST_MAP.ID.isNull())
+                .fetchInto(InstanceRecord.class);
+
+        List<Instance> instances = new ArrayList<Instance>();
+        for (Instance i : instanceRecords) {
+            instances.add(i);
+        }
+        return instances;
     }
 }

@@ -30,25 +30,25 @@ public class AffinityConstraintsProvider implements AllocationConstraintsProvide
 
     @SuppressWarnings("rawtypes")
     @Override
-    public void appendConstraints(AllocationAttempt attempt, AllocationLog log,
-            List<Constraint> constraints) {
-        Instance instance = attempt.getInstance();
-        if (instance == null) {
+    public void appendConstraints(AllocationAttempt attempt, AllocationLog log, List<Constraint> constraints) {
+        if (!attempt.isInstanceAllocation()) {
             return;
         }
 
-        Map env = DataAccessor.fields(instance).withKey(InstanceConstants.FIELD_ENVIRONMENT).as(jsonMapper, Map.class);
-        // TODO: hack for now.  assuming all affinity:constraint specs are just found in the key
-        List<Constraint> affinityConstraintsFromEnv = allocatorService.extractConstraintsFromEnv(env);
-        for (Constraint constraint : affinityConstraintsFromEnv) {
-            constraints.add(constraint);
-        }
+        for (Instance instance : attempt.getInstances()) {
+            Map env = DataAccessor.fields(instance).withKey(InstanceConstants.FIELD_ENVIRONMENT).as(jsonMapper, Map.class);
+            // TODO: hack for now. assuming all affinity:constraint specs are just found in the key
+            List<Constraint> affinityConstraintsFromEnv = allocatorService.extractConstraintsFromEnv(env);
+            for (Constraint constraint : affinityConstraintsFromEnv) {
+                constraints.add(constraint);
+            }
 
-        // Currently, intentionally duplicating code to be explicit
-        Map labels = DataAccessor.fields(instance).withKey(InstanceConstants.FIELD_LABELS).as(jsonMapper, Map.class);
-        List<Constraint> affinityConstraintsFromLabels = allocatorService.extractConstraintsFromLabels(labels, attempt.getInstance());
-        for (Constraint constraint : affinityConstraintsFromLabels) {
-            constraints.add(constraint);
+            // Currently, intentionally duplicating code to be explicit
+            Map labels = DataAccessor.fields(instance).withKey(InstanceConstants.FIELD_LABELS).as(jsonMapper, Map.class);
+            List<Constraint> affinityConstraintsFromLabels = allocatorService.extractConstraintsFromLabels(labels, instance);
+            for (Constraint constraint : affinityConstraintsFromLabels) {
+                constraints.add(constraint);
+            }
         }
     }
 
