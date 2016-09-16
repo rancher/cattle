@@ -4,7 +4,7 @@ websocket-client==0.23.0
 PyJWT==1.4.0
 
 flake8==2.5.1
-pytest==2.7.1
+pytest==3.0.2
 pytest-xdist
 pyyaml
 netaddr
