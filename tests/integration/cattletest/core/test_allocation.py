@@ -79,8 +79,9 @@ def test_spread(super_client, new_context):
 
     containers = []
     for _ in range(len(hosts) * count):
-        c = client.create_container(imageUuid=new_context.image_uuid,
-                                    networkMode='bridge')
+        c = client.wait_success(
+            client.create_container(imageUuid=new_context.image_uuid,
+                                    networkMode='bridge'))
         containers.append(c)
 
     wait_all_success(super_client, containers, timeout=60)
@@ -375,6 +376,64 @@ def test_port_constraint(new_context):
         for c in containers:
             if c is not None:
                 new_context.delete(c)
+
+
+def test_conflicting_ports_in_deployment_unit(new_context):
+    client = new_context.client
+    image_uuid = new_context.image_uuid
+    client.wait_success(client.create_container(name='reset',
+                                                imageUuid=image_uuid))
+
+    env = client.create_stack(name=random_str())
+    env = client.wait_success(env)
+    assert env.state == "active"
+
+    launch_config = {"imageUuid": image_uuid, "ports": ['5555:6666']}
+    secondary_lc = {"imageUuid": image_uuid,
+                    "name": "secondary", "ports": ['5555:6666']}
+
+    svc = client.create_service(name=random_str(),
+                                stackId=env.id,
+                                launchConfig=launch_config,
+                                secondaryLaunchConfigs=[secondary_lc])
+    svc = client.wait_success(svc)
+    assert svc.state == "inactive"
+
+    svc = svc.activate()
+    c = _wait_for_compose_instance_error(client, svc, env)
+    assert 'Port 5555/tcp requested more than once.' in c.transitioningMessage
+
+
+def test_simultaneous_port_allocation(new_context):
+    # This test ensures if two containers are allocated simultaneously, only
+    # one will get the port and the other will fail to allocate.
+    # By nature, this test is exercise a race condition, so it isn't perfect.
+    client = new_context.client
+    image_uuid = new_context.image_uuid
+
+    env = client.create_stack(name=random_str())
+    env = client.wait_success(env)
+    assert env.state == "active"
+
+    launch_config = {"imageUuid": image_uuid, "ports": ['5555:6666']}
+    svc = client.create_service(name=random_str(),
+                                stackId=env.id,
+                                launchConfig=launch_config,
+                                scale=2)
+    svc = client.wait_success(svc)
+    assert svc.state == "inactive"
+
+    svc = svc.activate()
+    c = _wait_for_compose_instance_error(client, svc, env)
+    assert 'host needs ports 5555/tcp available' in c.transitioningMessage
+
+
+def _wait_for_compose_instance_error(client, service, env):
+    name = env.name + "_" + service.name + "%"
+    wait_for(
+        lambda: len(client.list_container(name_like=name, state='error')) > 0
+    )
+    return client.list_container(name_like=name, state='error')[0]
 
 
 def test_request_host_override(new_context):

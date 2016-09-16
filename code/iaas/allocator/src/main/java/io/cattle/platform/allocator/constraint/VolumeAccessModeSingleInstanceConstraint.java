@@ -1,6 +1,5 @@
 package io.cattle.platform.allocator.constraint;
 
-import io.cattle.platform.allocator.service.AllocationAttempt;
 import io.cattle.platform.allocator.service.AllocationCandidate;
 
 import java.util.List;
@@ -24,7 +23,7 @@ public class VolumeAccessModeSingleInstanceConstraint extends HardConstraint {
     }
 
     @Override
-    public boolean matches(AllocationAttempt attempt, AllocationCandidate candidate) {
+    public boolean matches(AllocationCandidate candidate) {
         return false;
     }
 }

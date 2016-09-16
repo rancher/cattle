@@ -50,7 +50,7 @@ def events_by_type(collected, type):
     return filter(lambda x: x.resourceType == type, collected)
 
 
-@pytest.skip
+@pytest.mark.skipif('True')
 def test_events(admin_client, client, sim_context, request):
     collected = []
     collector = collect_events(admin_client, collected)

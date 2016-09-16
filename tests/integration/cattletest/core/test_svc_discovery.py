@@ -993,6 +993,52 @@ def test_validate_labels(client, context):
     assert all(item in instance2.labels for item in result_labels_2) is True
 
 
+def test_deployment_unit_destroy_instance(super_client, new_context):
+    client = new_context.client
+    env = _create_stack(client)
+
+    image_uuid = new_context.image_uuid
+    launch_config = {"imageUuid": image_uuid,
+                     "labels": {"io.rancher.sidekicks": "secondary"}}
+    secondary_lc = {"imageUuid": image_uuid, "name": "secondary"}
+
+    assert len(client.list_host()) == 1
+
+    service = client.create_service(name=random_str(),
+                                    stackId=env.id,
+                                    launchConfig=launch_config,
+                                    secondaryLaunchConfigs=[secondary_lc])
+    service = client.wait_success(service)
+
+    # activate service1
+    service = client.wait_success(service.activate(), 120)
+    assert service.state == "active"
+    _validate_service_instance_map_count(client, service, "active", 2)
+
+    instance11 = _validate_compose_instance_start(client, service, env, "1")
+
+    # Add a host
+    host1 = new_context.host
+    assert instance11.hosts()[0].id == host1.id
+    register_simulated_host(new_context)
+
+    client.wait_success(client.create_container(imageUuid=image_uuid,
+                                                requestedHostId=host1.id))
+    client.wait_success(client.create_container(imageUuid=image_uuid,
+                                                requestedHostId=host1.id))
+    client.wait_success(client.create_container(imageUuid=image_uuid,
+                                                requestedHostId=host1.id))
+    client.wait_success(client.create_container(imageUuid=image_uuid,
+                                                requestedHostId=host1.id))
+
+    # destroy primary instance and wait for the service to reconcile
+    _instance_remove(instance11, client)
+    service = wait_state(client, service, 'active')
+    _validate_service_instance_map_count(client, service, "active", 2)
+    instance11 = _validate_compose_instance_start(client, service, env, "1")
+    assert instance11.hosts()[0].id == host1.id
+
+
 def test_sidekick_destroy_instance(client, context):
     env = _create_stack(client)
 
@@ -1069,7 +1115,7 @@ def test_sidekick_restart_instances(client, context):
     # scale should be restored
     client.wait_success(instance11.stop())
     _instance_remove(instance22, client)
-    service = client.wait_success(service)
+    service = wait_state(client, service, 'active')
     service = client.update(service, scale=2, name=service.name)
     service = client.wait_success(service, 120)
 
@@ -1281,12 +1327,20 @@ def test_service_spread_deployment(super_client, new_context):
 
     env = _create_stack(client)
     image_uuid = new_context.image_uuid
-    launch_config = {"imageUuid": image_uuid}
-
-    service = client.create_service(name=random_str(),
+    svc1_name = random_str()
+    launch_config = {
+        "imageUuid": image_uuid,
+        "labels": {
+            "io.rancher.scheduler.affinity:container_label_ne":
+                "io.rancher.stack_service.name=" +
+                env.name + '/' + svc1_name
+        }
+    }
+    service = client.create_service(name=svc1_name,
                                     stackId=env.id,
                                     launchConfig=launch_config,
                                     scale=2)
+
     service = client.wait_success(service)
     assert service.state == "inactive"
 
@@ -1299,7 +1353,6 @@ def test_service_spread_deployment(super_client, new_context):
     # containers should be spread across the hosts
     instance1 = _validate_compose_instance_start(client, service, env, "1")
     instance1_host = instance1.hosts()[0].id
-
     instance2 = _validate_compose_instance_start(client, service, env, "2")
     instance2_host = instance2.hosts()[0].id
     assert instance1_host != instance2_host
@@ -2260,8 +2313,7 @@ def test_validate_scaledown_updating(client, context):
 
     def wait():
         s = client.reload(service)
-        return s.scale == 10 and s.healthState == 'degraded'
-
+        return s.scale == 10
     wait_for(wait)
 
     service = client.update(service, scale=1, name=service.name)

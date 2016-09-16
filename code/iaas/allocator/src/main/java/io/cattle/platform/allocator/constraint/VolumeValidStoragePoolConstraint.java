@@ -1,6 +1,5 @@
 package io.cattle.platform.allocator.constraint;
 
-import io.cattle.platform.allocator.service.AllocationAttempt;
 import io.cattle.platform.allocator.service.AllocationCandidate;
 import io.cattle.platform.core.model.Volume;
 
@@ -21,7 +20,7 @@ public class VolumeValidStoragePoolConstraint extends HardConstraint implements 
     }
 
     @Override
-    public boolean matches(AllocationAttempt attempt, AllocationCandidate candidate) {
+    public boolean matches(AllocationCandidate candidate) {
         Set<Long> poolIds = candidate.getPools().get(volume.getId());
 
         if (storagePools.size() == 0 && poolIds.size() == 0) {

@@ -3,6 +3,7 @@ package io.cattle.platform.configitem.context.data.metadata.common;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.model.Host;
 import io.cattle.platform.object.util.DataAccessor;
+import io.cattle.platform.util.type.CollectionUtils;
 
 import java.util.Collections;
 import java.util.Map;
@@ -18,6 +19,7 @@ public class HostMetaData {
     Long hostId;
     String uuid;
     String hostname;
+    Long memory;
 
     public String getAgent_ip() {
         return agent_ip;
@@ -47,6 +49,10 @@ public class HostMetaData {
                 .withDefault(Collections.EMPTY_MAP).as(Map.class);
         this.hostId = host.getId();
         this.uuid = host.getUuid();
+        Object obj = CollectionUtils.getNestedValue(DataAccessor.fieldMap(host, "info"), "memoryInfo", "memTotal");
+        if (obj != null && obj instanceof Number) {
+            this.memory = ((Number)obj).longValue() * 1024 * 1024;
+        }
     }
 
     @JsonIgnore
@@ -84,5 +90,13 @@ public class HostMetaData {
 
     public void setHostname(String hostname) {
         this.hostname = hostname;
+    }
+
+    public Long getMemory() {
+        return memory;
+    }
+
+    public void setMemory(Long memory) {
+        this.memory = memory;
     }
 }

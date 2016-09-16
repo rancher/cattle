@@ -269,6 +269,11 @@ public class DeploymentManagerImpl implements DeploymentManager {
         activateDeploymentUnits(service, planner);
 
         // reload planner as there can be new hosts added for Global services
+        // reload services as well
+        List<Service> reloaded = new ArrayList<>();
+        for (Service svc : services) {
+            reloaded.add(objectMgr.reload(svc));
+        }
         planner = getPlanner(services);
         if (needToReconcile(services, planner)) {
             throw new ServiceReconcileException("Need to restart service reconcile");
