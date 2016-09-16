@@ -574,6 +574,9 @@ public class DeploymentUnit {
     }
 
     public long getCreateIndex() {
+        if (this.unit != null && getDeploymentUnitInstances().size() == 0) {
+            return Long.valueOf(this.unit.getServiceIndex());
+        }
         long createIndex = 0L;
         // find minimum created
         for (DeploymentUnitInstance i : getDeploymentUnitInstances()) {

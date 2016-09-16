@@ -238,3 +238,94 @@ def _validate_compose_instance_start(client, service, env,
         list_container(name=name,
                        state="running")
     return instances[0]
+
+
+def test_upgrade_du_volume(client, context, super_client):
+    opts = {'foo': 'true', 'bar': 'true'}
+    stack = client.create_stack(name=random_str())
+    stack = client.wait_success(stack)
+
+    client.create_volumeTemplate(name="foo", driver="nfs",
+                                 driverOpts=opts,
+                                 stackId=stack.id,
+                                 container=True)
+
+    # create service
+    image_uuid = context.image_uuid
+    launch_config = {"imageUuid": image_uuid, "dataVolumes": "foo:/bar"}
+    secondary_lc = {"imageUuid": image_uuid, "name": "secondary",
+                    "dataVolumes": "foo:/bar"}
+    svc = client.create_service(name=random_str(),
+                                stackId=stack.id,
+                                launchConfig=launch_config,
+                                scale=1,
+                                secondaryLaunchConfigs=[secondary_lc])
+    svc = client.wait_success(svc)
+    client.wait_success(svc.activate())
+
+    c11 = _validate_compose_instance_start(client, svc, stack, "1")
+    path_to_mount = c11.dataVolumeMounts
+    assert len(path_to_mount) == 1
+    for key, value in path_to_mount.iteritems():
+        assert key == '/bar'
+        assert value is not None
+
+    c11 = super_client.reload(c11)
+
+    volumes = client.list_volume(name=c11.deploymentUnitUuid + "_foo")
+    assert len(volumes) == 1
+    v11 = volumes[0]
+    assert v11.name == c11.deploymentUnitUuid + "_foo"
+    assert v11.driver == 'nfs'
+    assert v11.driverOpts == opts
+
+    # upgrade service
+    strategy = {"launchConfig": launch_config,
+                "intervalMillis": 100}
+    svc.upgrade_action(inServiceStrategy=strategy)
+    svc = client.wait_success(svc)
+
+    c12 = _validate_compose_instance_start(client, svc, stack, "1")
+
+    assert c11.id != c12.id
+
+    path_to_mount = c12.dataVolumeMounts
+    assert len(path_to_mount) == 1
+    for key, value in path_to_mount.iteritems():
+        assert key == '/bar'
+        assert value is not None
+
+    c12 = super_client.reload(c12)
+
+    volumes = client.list_volume(name=c12.deploymentUnitUuid + "_foo")
+    assert len(volumes) == 1
+    v12 = volumes[0]
+    assert v11.id == v12.id
+
+    client.wait_success(svc.finishupgrade())
+    volumes = client.list_volume(name=c12.deploymentUnitUuid + "_foo")
+    assert len(volumes) == 1
+    v12 = volumes[0]
+    assert v11.id == v12.id
+
+
+def test_classic_volume(client, context, super_client):
+    stack = client.create_stack(name=random_str())
+    stack = client.wait_success(stack)
+
+    # create service
+    image_uuid = context.image_uuid
+    launch_config = {"imageUuid": image_uuid, "dataVolumes": "foo:/bar"}
+    secondary_lc = {"imageUuid": image_uuid, "name": "secondary",
+                    "dataVolumes": "foo:/bar"}
+    svc = client.create_service(name=random_str(),
+                                stackId=stack.id,
+                                launchConfig=launch_config,
+                                scale=1,
+                                secondaryLaunchConfigs=[secondary_lc])
+    svc = client.wait_success(svc)
+    client.wait_success(svc.activate())
+
+    c11 = _validate_compose_instance_start(client, svc, stack, "1")
+    assert len(c11.dataVolumeMounts) == 0
+    assert "foo:/bar" in c11.dataVolumes

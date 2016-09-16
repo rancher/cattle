@@ -19,6 +19,8 @@ import io.cattle.platform.servicediscovery.deployment.impl.healthaction.Recreate
 import io.cattle.platform.servicediscovery.deployment.impl.unit.DeploymentUnit;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -137,6 +139,13 @@ public abstract class ServiceDeploymentPlanner {
 
     public List<DeploymentUnit> deploy(DeploymentUnitInstanceIdGenerator svcInstanceIdGenerator) {
         List<DeploymentUnit> units = this.deployHealthyUnits();
+        // sort based on create index
+        Collections.sort(units, new Comparator<DeploymentUnit>() {
+            @Override
+            public int compare(DeploymentUnit d1, DeploymentUnit d2) {
+                return Long.compare(d1.getCreateIndex(), d2.getCreateIndex());
+            }
+        });
         for (DeploymentUnit unit : units) {
             unit.create(svcInstanceIdGenerator);
         }
