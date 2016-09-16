@@ -448,7 +448,7 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
 
     @Override
     public boolean isGlobalService(Service service) {
-        Map<String, String> serviceLabels = ServiceDiscoveryUtil.getServiceLabels(service, allocatorService);
+        Map<String, String> serviceLabels = ServiceDiscoveryUtil.getMergedServiceLabels(service, allocatorService);
         String globalService = serviceLabels.get(ServiceDiscoveryConstants.LABEL_SERVICE_GLOBAL);
         return Boolean.valueOf(globalService);
     }
@@ -643,7 +643,7 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
                     HealthcheckConstants.HEALTH_STATE_REINITIALIZING);
 
             Integer scale = DataAccessor.fieldInteger(service, ServiceDiscoveryConstants.FIELD_SCALE);
-            if (scale == null || ServiceDiscoveryUtil.isNoopService(service, allocatorService)) {
+            if (scale == null || ServiceDiscoveryUtil.isNoopService(service)) {
                 scale = 0;
             }
             ScalePolicy policy = DataAccessor.field(service,

@@ -1,7 +1,6 @@
 package io.cattle.platform.servicediscovery.deployment;
 
 import static io.cattle.platform.core.model.tables.ServiceIndexTable.*;
-
 import io.cattle.platform.activity.ActivityLog;
 import io.cattle.platform.core.addon.InstanceHealthCheck;
 import io.cattle.platform.core.addon.InstanceHealthCheck.Strategy;
@@ -20,6 +19,8 @@ import io.cattle.platform.servicediscovery.deployment.impl.healthaction.Recreate
 import io.cattle.platform.servicediscovery.deployment.impl.unit.DeploymentUnit;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -34,7 +35,7 @@ import java.util.Map;
  */
 public abstract class ServiceDeploymentPlanner {
 
-    protected List<Service> services;
+    protected Service service;
     protected List<DeploymentUnit> healthyUnits = new ArrayList<>();
     private List<DeploymentUnit> unhealthyUnits = new ArrayList<>();
     private List<DeploymentUnit> badUnits = new ArrayList<>();
@@ -42,11 +43,11 @@ public abstract class ServiceDeploymentPlanner {
     protected DeploymentServiceContext context;
     protected HealthCheckActionHandler healthActionHandler = new RecreateHealthCheckActionHandler();
 
-    public ServiceDeploymentPlanner(List<Service> services, List<DeploymentUnit> units,
+    public ServiceDeploymentPlanner(Service service, List<DeploymentUnit> units,
             DeploymentServiceContext context) {
-        this.services = services;
+        this.service = service;
         this.context = context;
-        setHealthCheckAction(services, context);
+        setHealthCheckAction(service, context);
         populateDeploymentUnits(units);
     }
 
@@ -76,30 +77,21 @@ public abstract class ServiceDeploymentPlanner {
         }
     }
 
-    protected void setHealthCheckAction(List<Service> services, DeploymentServiceContext context) {
-        boolean set = false;
-        for (Service service : services) {
-            if (set) {
-                break;
-            }
-            // get the strategy from the first service
-            Object healthCheckObj = ServiceDiscoveryUtil.getLaunchConfigObject(service,
-                    ServiceDiscoveryConstants.PRIMARY_LAUNCH_CONFIG_NAME, InstanceConstants.FIELD_HEALTH_CHECK);
-            if (healthCheckObj != null) {
-                InstanceHealthCheck healthCheck = context.jsonMapper.convertValue(healthCheckObj,
-                        InstanceHealthCheck.class);
-                if (healthCheck.getStrategy() == Strategy.none) {
-                    healthActionHandler = new NoopHealthCheckActionHandler();
-                    set = true;
-                } else if (healthCheck.getStrategy() == Strategy.recreateOnQuorum) {
-                    if (healthCheck
-                            .getRecreateOnQuorumStrategyConfig() == null) {
-                        healthCheck.setRecreateOnQuorumStrategyConfig(new RecreateOnQuorumStrategyConfig(1));
-                    }
-                    healthActionHandler = new RecreateOnQuorumHealthCheckActionHandler(healthCheck
-                            .getRecreateOnQuorumStrategyConfig().getQuorum());
-                    set = true;
+    protected void setHealthCheckAction(Service service, DeploymentServiceContext context) {
+        Object healthCheckObj = ServiceDiscoveryUtil.getLaunchConfigObject(service,
+                ServiceDiscoveryConstants.PRIMARY_LAUNCH_CONFIG_NAME, InstanceConstants.FIELD_HEALTH_CHECK);
+        if (healthCheckObj != null) {
+            InstanceHealthCheck healthCheck = context.jsonMapper.convertValue(healthCheckObj,
+                    InstanceHealthCheck.class);
+            if (healthCheck.getStrategy() == Strategy.none) {
+                healthActionHandler = new NoopHealthCheckActionHandler();
+            } else if (healthCheck.getStrategy() == Strategy.recreateOnQuorum) {
+                if (healthCheck
+                        .getRecreateOnQuorumStrategyConfig() == null) {
+                    healthCheck.setRecreateOnQuorumStrategyConfig(new RecreateOnQuorumStrategyConfig(1));
                 }
+                healthActionHandler = new RecreateOnQuorumHealthCheckActionHandler(healthCheck
+                        .getRecreateOnQuorumStrategyConfig().getQuorum());
             }
         }
     }
@@ -145,10 +137,21 @@ public abstract class ServiceDeploymentPlanner {
         return false;
     }
 
-    public List<DeploymentUnit> deploy(Map<Long, DeploymentUnitInstanceIdGenerator> svcInstanceIdGenerator) {
+    public List<DeploymentUnit> deploy(DeploymentUnitInstanceIdGenerator svcInstanceIdGenerator) {
         List<DeploymentUnit> units = this.deployHealthyUnits();
+        // sort based on create index
+        Collections.sort(units, new Comparator<DeploymentUnit>() {
+            @Override
+            public int compare(DeploymentUnit d1, DeploymentUnit d2) {
+                return Long.compare(d1.getCreateIndex(), d2.getCreateIndex());
+            }
+        });
         for (DeploymentUnit unit : units) {
-            unit.start(svcInstanceIdGenerator);
+            unit.create(svcInstanceIdGenerator);
+        }
+
+        for (DeploymentUnit unit : units) {
+            unit.start();
         }
 
         for (DeploymentUnit unit : units) {
@@ -176,8 +179,8 @@ public abstract class ServiceDeploymentPlanner {
 
     protected abstract boolean needToReconcileDeploymentImpl();
 
-    public List<Service> getServices() {
-        return services;
+    public Service getService() {
+        return service;
     }
 
     public void cleanupBadUnits() {
@@ -228,8 +231,8 @@ public abstract class ServiceDeploymentPlanner {
     public void cleanupUnusedAndDuplicatedServiceIndexes() {
         Map<String, List<Long>> launchConfigToServiceIndexes = getUsedServiceIndexesIds(true);
 
-        for (ServiceIndex serviceIndex : context.objectManager.find(ServiceIndex.class, SERVICE_INDEX.SERVICE_ID, services
-                .get(0).getId(), SERVICE_INDEX.REMOVED, null)) {
+        for (ServiceIndex serviceIndex : context.objectManager.find(ServiceIndex.class, SERVICE_INDEX.SERVICE_ID,
+                service.getId(), SERVICE_INDEX.REMOVED, null)) {
             boolean remove = false;
             List<Long> usedServiceIndexes = launchConfigToServiceIndexes.get(serviceIndex.getLaunchConfigName());
             if (usedServiceIndexes == null) {

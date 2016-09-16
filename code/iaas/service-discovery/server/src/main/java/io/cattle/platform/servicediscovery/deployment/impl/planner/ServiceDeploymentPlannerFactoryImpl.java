@@ -9,41 +9,37 @@ import io.cattle.platform.servicediscovery.deployment.impl.DeploymentManagerImpl
 import io.cattle.platform.servicediscovery.deployment.impl.unit.DeploymentUnit;
 
 import java.util.List;
-import java.util.Map;
 
 
 public class ServiceDeploymentPlannerFactoryImpl implements ServiceDeploymentPlannerFactory {
 
     @Override
-    public ServiceDeploymentPlanner createServiceDeploymentPlanner(List<Service> services, List<DeploymentUnit> units,
+    public ServiceDeploymentPlanner createServiceDeploymentPlanner(Service service, List<DeploymentUnit> units,
             DeploymentServiceContext context) {
 
-        if (services.isEmpty()) {
+        if (service == null) {
             return null;
         }
 
-        Service service = services.get(0);
         boolean isGlobalDeploymentStrategy = isGlobalDeploymentStrategy(context, service);
         boolean isSelectorOnlyStrategy = isNoopStrategy(context, service);
         if (isSelectorOnlyStrategy
                 || service.getKind().equalsIgnoreCase(ServiceDiscoveryConstants.KIND_EXTERNAL_SERVICE)
                 || service.getKind().equalsIgnoreCase(ServiceDiscoveryConstants.KIND_DNS_SERVICE)) {
-            return new NoOpServiceDeploymentPlanner(services, units, context);
+            return new NoOpServiceDeploymentPlanner(service, units, context);
         } else if (isGlobalDeploymentStrategy) {
-            return new GlobalServiceDeploymentPlanner(services, units, context);
+            return new GlobalServiceDeploymentPlanner(service, units, context);
         } else {
-            return new DefaultServiceDeploymentPlanner(services, units, context);
+            return new DefaultServiceDeploymentPlanner(service, units, context);
         }
     }
 
     protected boolean isGlobalDeploymentStrategy(DeploymentServiceContext context, Service service) {
-        Map<String, String> serviceLabels = ServiceDiscoveryUtil.getServiceLabels(service, context.allocatorService);
-        String globalService = serviceLabels.get(ServiceDiscoveryConstants.LABEL_SERVICE_GLOBAL);
-        return Boolean.valueOf(globalService);
+        return context.sdService.isGlobalService(service);
     }
 
     protected boolean isNoopStrategy(DeploymentServiceContext context, Service service) {
-        if (ServiceDiscoveryUtil.isNoopService(service, context.allocatorService) || isExternallyProvidedService(service)) {
+        if (ServiceDiscoveryUtil.isNoopService(service) || isExternallyProvidedService(service)) {
             return true;
         }
         return false;

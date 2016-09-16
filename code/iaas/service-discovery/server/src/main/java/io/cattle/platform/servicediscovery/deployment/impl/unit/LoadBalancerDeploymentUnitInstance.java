@@ -20,8 +20,8 @@ public class LoadBalancerDeploymentUnitInstance extends DefaultDeploymentUnitIns
             .getString("agent.instance.image.uuid");
 
     public LoadBalancerDeploymentUnitInstance(DeploymentServiceContext context, String uuid,
-            Service service, String instanceName, Instance instance, Map<String, String> labels, String launchConfigName) {
-        super(context, uuid, service, instanceName, instance, labels, launchConfigName);
+            Service service, String instanceName, Instance instance, String launchConfigName) {
+        super(context, uuid, service, instanceName, instance, launchConfigName);
     }
 
     protected Map<String, Object> populateLaunchConfigData(Map<String, Object> deployParams) {

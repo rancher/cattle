@@ -1,0 +1,11 @@
+{
+    "resourceFields": {
+        "name":{
+            "required": true
+        },
+        "driverOpts": {
+            "type": "map[string]",
+            "nullable": true
+        }
+    }
+}

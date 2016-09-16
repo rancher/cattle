@@ -1,7 +1,6 @@
 package io.cattle.platform.servicediscovery.deployment.impl.unit;
 
 import static io.cattle.platform.core.model.tables.InstanceHostMapTable.*;
-
 import io.cattle.platform.activity.ActivityLog;
 import io.cattle.platform.async.utils.TimeoutException;
 import io.cattle.platform.core.constants.CommonStatesConstants;
@@ -33,6 +32,7 @@ import io.cattle.platform.servicediscovery.deployment.impl.DeploymentManagerImpl
 import io.cattle.platform.util.exception.InstanceException;
 import io.cattle.platform.util.exception.ServiceInstanceAllocateException;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -59,7 +59,7 @@ public class DefaultDeploymentUnitInstance extends DeploymentUnitInstance implem
     protected ServiceIndex serviceIndex;
 
     public DefaultDeploymentUnitInstance(DeploymentServiceContext context, String uuid,
-            Service service, String instanceName, Instance instance, Map<String, String> labels, String launchConfigName) {
+            Service service, String instanceName, Instance instance, String launchConfigName) {
         super(context, uuid, service, launchConfigName);
         this.instanceName = instanceName;
         this.instance = instance;
@@ -114,25 +114,30 @@ public class DefaultDeploymentUnitInstance extends DeploymentUnitInstance implem
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     public DeploymentUnitInstance create(Map<String, Object> deployParams) {
         if (createNew()) {
             Map<String, Object> launchConfigData = populateLaunchConfigData(deployParams);
+            // remove named volumes from the list
+            if (launchConfigData.get(InstanceConstants.FIELD_DATA_VOLUMES) != null) {
+                List<String> dataVolumes = new ArrayList<>();
+                dataVolumes.addAll((List<String>) launchConfigData.get(InstanceConstants.FIELD_DATA_VOLUMES));
+                if (deployParams.get(ServiceDiscoveryConstants.FIELD_INTERNAL_VOLUMES) != null) {
+                    for (String namedVolume : (List<String>) deployParams
+                            .get(ServiceDiscoveryConstants.FIELD_INTERNAL_VOLUMES)) {
+                        dataVolumes.remove(namedVolume);
+                    }
+                    launchConfigData.put(InstanceConstants.FIELD_DATA_VOLUMES, dataVolumes);
+                }
+                launchConfigData.remove(ServiceDiscoveryConstants.FIELD_INTERNAL_VOLUMES);
+            }
+
             Pair<Instance, ServiceExposeMap> instanceMapPair = context.exposeMapDao.createServiceInstance(launchConfigData,
                     service);
             this.instance = instanceMapPair.getLeft();
             this.exposeMap = instanceMapPair.getRight();
             this.generateAuditLog(AuditEventType.create,
                     ServiceDiscoveryConstants.AUDIT_LOG_CREATE_EXTRA, ActivityLog.INFO);
-        }
-
-        if (instance.getState().equalsIgnoreCase(CommonStatesConstants.REQUESTED)) {
-            context.objectProcessManager.scheduleStandardProcessAsync(StandardProcess.CREATE, instance,
-                    null);
-        }
-
-        if (exposeMap.getState().equalsIgnoreCase(CommonStatesConstants.REQUESTED)) {
-            context.objectProcessManager.scheduleStandardProcessAsync(StandardProcess.CREATE, exposeMap,
-                    null);
         }
 
         this.instance = context.objectManager.reload(this.instance);
@@ -356,6 +361,19 @@ public class DefaultDeploymentUnitInstance extends DeploymentUnitInstance implem
     public Long getCreateIndex() {
         Long createIndex = this.instance == null ? null : this.instance.getCreateIndex();
         return createIndex;
+    }
+
+    @Override
+    public void scheduleCreate() {
+        if (instance.getState().equalsIgnoreCase(CommonStatesConstants.REQUESTED)) {
+            context.objectProcessManager.scheduleStandardProcessAsync(StandardProcess.CREATE, instance,
+                    null);
+        }
+
+        if (exposeMap.getState().equalsIgnoreCase(CommonStatesConstants.REQUESTED)) {
+            context.objectProcessManager.scheduleStandardProcessAsync(StandardProcess.CREATE, exposeMap,
+                    null);
+        }
     }
 }
 

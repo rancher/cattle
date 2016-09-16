@@ -49,7 +49,7 @@ public class GlobalHostActivateServiceLookup implements ServiceLookup {
         List<? extends Service> services = expMapDao.getActiveServices(host.getAccountId());
         List<Service> activeGlobalServices = new ArrayList<Service>();
         for (Service service : services) {
-            Map<String, String> serviceLabels = ServiceDiscoveryUtil.getServiceLabels(service, allocatorSvc);
+            Map<String, String> serviceLabels = ServiceDiscoveryUtil.getMergedServiceLabels(service, allocatorSvc);
             if ((sdSvc.isGlobalService(service) || sdSvc.isScalePolicyService(service)) &&
                     allocatorSvc.hostChangesAffectsHostAffinityRules(host.getId(), serviceLabels)) {
                 activeGlobalServices.add(service);

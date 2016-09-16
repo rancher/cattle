@@ -719,9 +719,6 @@ def test_validate_service_scaleup_scaledown(client, context):
     client.wait_success(instance21.stop())
     service = client.wait_success(service)
 
-    # rename the instance 3
-    instance32 = client.update(instance31, name='newName')
-
     # scale up the service
     # instance 2 should get started
     service = client.update(service, scale=4, name=service.name)
@@ -731,8 +728,8 @@ def test_validate_service_scaleup_scaledown(client, context):
 
     instance12 = _validate_compose_instance_start(client, service, env, "1")
     instance22 = _validate_compose_instance_start(client, service, env, "2")
-    instance32 = _validate_instance_start(service, client, instance32.name)
-    instance41 = _validate_compose_instance_start(client, service, env, "3")
+    instance32 = _validate_compose_instance_start(client, service, env, "3")
+    instance41 = _validate_compose_instance_start(client, service, env, "4")
 
     assert instance41.createIndex > instance32.createIndex
     assert instance32.createIndex > instance22.createIndex
@@ -804,12 +801,14 @@ def test_destroy_service_instance(client, context):
 
     # 3. activate the service
     service.activate()
-    service = client.wait_success(service, 120)
+    wait_state(client, service, 'active')
+    service = client.reload(service)
     assert service.state == "active"
 
     # 4. destroy instance3 and update the service's scale.
     _instance_remove(instance3, client)
-    service = client.wait_success(service)
+    wait_state(client, service, 'active')
+    service = client.reload(service)
 
     service = client.update(service, scale=4, name=service.name)
     service = client.wait_success(service, 120)
@@ -857,7 +856,7 @@ def test_service_rename(client, context):
     assert service2.name == new_name
     _validate_compose_instance_start(client, service1, env, "1")
     _validate_compose_instance_start(client, service1, env, "2")
-    _validate_compose_instance_start(client, service2, env, "1")
+    _validate_compose_instance_start(client, service2, env, "3")
 
 
 def test_env_rename(client, context):
@@ -1057,28 +1056,54 @@ def test_sidekick_restart_instances(client, context):
     service = client.wait_success(service.activate(), 120)
     assert service.state == "active"
 
-    instance11 = _validate_compose_instance_start(client, service, env, "1")
-    _validate_compose_instance_start(client, service, env, "2")
-    _validate_compose_instance_start(client, service, env, "1", "secondary")
-    instance22 = _validate_compose_instance_start(client, service,
-                                                  env, "2", "secondary")
+    i11 = _validate_compose_instance_start(client, service, env, "1")
+    i12 = _validate_compose_instance_start(client, service, env, "2")
+    i21 = _validate_compose_instance_start(client, service, env, "1",
+                                           "secondary")
+    i22 = _validate_compose_instance_start(client, service,
+                                           env, "2", "secondary")
 
     _wait_until_active_map_count(service, 4, client)
+    assert i11.deploymentUnitUuid == i21.deploymentUnitUuid
+    assert i12.deploymentUnitUuid == i22.deploymentUnitUuid
 
     # stop instance11, destroy instance12 and call update on a service1
     # scale should be restored
-    client.wait_success(instance11.stop())
-    _instance_remove(instance22, client)
-    service = client.wait_success(service)
+    client.wait_success(i11.stop())
+    _instance_remove(i22, client)
+    service = wait_state(client, service, 'active')
     service = client.update(service, scale=2, name=service.name)
     service = client.wait_success(service, 120)
 
-    _validate_compose_instance_start(client, service, env, "1")
-    _validate_compose_instance_start(client, service, env, "2")
-    _validate_compose_instance_start(client, service, env, "1", "secondary")
-    _validate_compose_instance_start(client, service, env, "2", "secondary")
+    i11v1 = _validate_compose_instance_start(client, service, env, "1")
+    i12v1 = _validate_compose_instance_start(client, service, env, "2")
+    i21v1 = _validate_compose_instance_start(client, service, env,
+                                             "1", "secondary")
+    i22v1 = _validate_compose_instance_start(client, service, env,
+                                             "2", "secondary")
 
     _wait_until_active_map_count(service, 4, client)
+    assert i11v1.deploymentUnitUuid == i21v1.deploymentUnitUuid
+    assert i12v1.deploymentUnitUuid == i22v1.deploymentUnitUuid
+    assert i11.deploymentUnitUuid == i11v1.deploymentUnitUuid
+    assert i22.deploymentUnitUuid == i22v1.deploymentUnitUuid
+
+    # remove all instances, validate the deployment unit is preserved
+    _instance_remove(i11v1, client)
+    _instance_remove(i12v1, client)
+    _instance_remove(i21v1, client)
+    _instance_remove(i22v1, client)
+    _wait_until_active_map_count(service, 4, client)
+    i11v2 = _validate_compose_instance_start(client, service, env, "1")
+    i12v2 = _validate_compose_instance_start(client, service, env, "2")
+    i21v2 = _validate_compose_instance_start(client, service, env,
+                                             "1", "secondary")
+    i22v2 = _validate_compose_instance_start(client, service, env,
+                                             "2", "secondary")
+    assert i11v2.deploymentUnitUuid == i21v2.deploymentUnitUuid
+    assert i12v2.deploymentUnitUuid == i22v2.deploymentUnitUuid
+    assert i11v1.deploymentUnitUuid == i11v2.deploymentUnitUuid
+    assert i22v1.deploymentUnitUuid == i22v2.deploymentUnitUuid
 
 
 def test_sidekick_scaleup(client, context):
@@ -2260,8 +2285,7 @@ def test_validate_scaledown_updating(client, context):
 
     def wait():
         s = client.reload(service)
-        return s.scale == 10 and s.healthState == 'degraded'
-
+        return s.scale == 10
     wait_for(wait)
 
     service = client.update(service, scale=1, name=service.name)
