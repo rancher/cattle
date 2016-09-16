@@ -13,7 +13,7 @@ package io.cattle.platform.core.model.tables.records;
 @javax.persistence.Table(name = "volume_template", schema = "cattle")
 public class VolumeTemplateRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.platform.core.model.tables.records.VolumeTemplateRecord> implements io.cattle.platform.db.jooq.utils.TableRecordJaxb, org.jooq.Record15<java.lang.Long, java.lang.String, java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.util.Date, java.util.Date, java.util.Date, java.util.Map<String,Object>, java.lang.String, java.lang.Long, java.lang.Boolean, java.lang.Boolean>, io.cattle.platform.core.model.VolumeTemplate {
 
-	private static final long serialVersionUID = 1056674796;
+	private static final long serialVersionUID = -1940660042;
 
 	/**
 	 * Setter for <code>cattle.volume_template.id</code>.
@@ -255,19 +255,19 @@ public class VolumeTemplateRecord extends org.jooq.impl.UpdatableRecordImpl<io.c
 	}
 
 	/**
-	 * Setter for <code>cattle.volume_template.container</code>.
+	 * Setter for <code>cattle.volume_template.per_container</code>.
 	 */
 	@Override
-	public void setContainer(java.lang.Boolean value) {
+	public void setPerContainer(java.lang.Boolean value) {
 		setValue(14, value);
 	}
 
 	/**
-	 * Getter for <code>cattle.volume_template.container</code>.
+	 * Getter for <code>cattle.volume_template.per_container</code>.
 	 */
-	@javax.persistence.Column(name = "container", nullable = false, precision = 1)
+	@javax.persistence.Column(name = "per_container", nullable = false, precision = 1)
 	@Override
-	public java.lang.Boolean getContainer() {
+	public java.lang.Boolean getPerContainer() {
 		return (java.lang.Boolean) getValue(14);
 	}
 
@@ -420,7 +420,7 @@ public class VolumeTemplateRecord extends org.jooq.impl.UpdatableRecordImpl<io.c
 	 */
 	@Override
 	public org.jooq.Field<java.lang.Boolean> field15() {
-		return io.cattle.platform.core.model.tables.VolumeTemplateTable.VOLUME_TEMPLATE.CONTAINER;
+		return io.cattle.platform.core.model.tables.VolumeTemplateTable.VOLUME_TEMPLATE.PER_CONTAINER;
 	}
 
 	/**
@@ -540,7 +540,7 @@ public class VolumeTemplateRecord extends org.jooq.impl.UpdatableRecordImpl<io.c
 	 */
 	@Override
 	public java.lang.Boolean value15() {
-		return getContainer();
+		return getPerContainer();
 	}
 
 	/**
@@ -674,7 +674,7 @@ public class VolumeTemplateRecord extends org.jooq.impl.UpdatableRecordImpl<io.c
 	 */
 	@Override
 	public VolumeTemplateRecord value15(java.lang.Boolean value) {
-		setContainer(value);
+		setPerContainer(value);
 		return this;
 	}
 
@@ -709,7 +709,7 @@ public class VolumeTemplateRecord extends org.jooq.impl.UpdatableRecordImpl<io.c
 		setDriver(from.getDriver());
 		setStackId(from.getStackId());
 		setExternal(from.getExternal());
-		setContainer(from.getContainer());
+		setPerContainer(from.getPerContainer());
 	}
 
 	/**
@@ -735,7 +735,7 @@ public class VolumeTemplateRecord extends org.jooq.impl.UpdatableRecordImpl<io.c
 	/**
 	 * Create a detached, initialised VolumeTemplateRecord
 	 */
-	public VolumeTemplateRecord(java.lang.Long id, java.lang.String name, java.lang.Long accountId, java.lang.String kind, java.lang.String uuid, java.lang.String description, java.lang.String state, java.util.Date created, java.util.Date removed, java.util.Date removeTime, java.util.Map<String,Object> data, java.lang.String driver, java.lang.Long environmentId, java.lang.Boolean external, java.lang.Boolean container) {
+	public VolumeTemplateRecord(java.lang.Long id, java.lang.String name, java.lang.Long accountId, java.lang.String kind, java.lang.String uuid, java.lang.String description, java.lang.String state, java.util.Date created, java.util.Date removed, java.util.Date removeTime, java.util.Map<String,Object> data, java.lang.String driver, java.lang.Long environmentId, java.lang.Boolean external, java.lang.Boolean perContainer) {
 		super(io.cattle.platform.core.model.tables.VolumeTemplateTable.VOLUME_TEMPLATE);
 
 		setValue(0, id);
@@ -752,6 +752,6 @@ public class VolumeTemplateRecord extends org.jooq.impl.UpdatableRecordImpl<io.c
 		setValue(11, driver);
 		setValue(12, environmentId);
 		setValue(13, external);
-		setValue(14, container);
+		setValue(14, perContainer);
 	}
 }

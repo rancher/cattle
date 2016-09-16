@@ -169,15 +169,15 @@ public interface VolumeTemplate extends java.io.Serializable {
 	public java.lang.Boolean getExternal();
 
 	/**
-	 * Setter for <code>cattle.volume_template.container</code>.
+	 * Setter for <code>cattle.volume_template.per_container</code>.
 	 */
-	public void setContainer(java.lang.Boolean value);
+	public void setPerContainer(java.lang.Boolean value);
 
 	/**
-	 * Getter for <code>cattle.volume_template.container</code>.
+	 * Getter for <code>cattle.volume_template.per_container</code>.
 	 */
-	@javax.persistence.Column(name = "container", nullable = false, precision = 1)
-	public java.lang.Boolean getContainer();
+	@javax.persistence.Column(name = "per_container", nullable = false, precision = 1)
+	public java.lang.Boolean getPerContainer();
 
 	// -------------------------------------------------------------------------
 	// FROM and INTO

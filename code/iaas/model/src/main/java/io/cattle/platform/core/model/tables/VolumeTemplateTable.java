@@ -11,7 +11,7 @@ package io.cattle.platform.core.model.tables;
 @java.lang.SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class VolumeTemplateTable extends org.jooq.impl.TableImpl<io.cattle.platform.core.model.tables.records.VolumeTemplateRecord> {
 
-	private static final long serialVersionUID = -150079243;
+	private static final long serialVersionUID = 629070327;
 
 	/**
 	 * The singleton instance of <code>cattle.volume_template</code>
@@ -97,9 +97,9 @@ public class VolumeTemplateTable extends org.jooq.impl.TableImpl<io.cattle.platf
 	public final org.jooq.TableField<io.cattle.platform.core.model.tables.records.VolumeTemplateRecord, java.lang.Boolean> EXTERNAL = createField("external", org.jooq.impl.SQLDataType.BIT.nullable(false).defaulted(true), this, "");
 
 	/**
-	 * The column <code>cattle.volume_template.container</code>.
+	 * The column <code>cattle.volume_template.per_container</code>.
 	 */
-	public final org.jooq.TableField<io.cattle.platform.core.model.tables.records.VolumeTemplateRecord, java.lang.Boolean> CONTAINER = createField("container", org.jooq.impl.SQLDataType.BIT.nullable(false).defaulted(true), this, "");
+	public final org.jooq.TableField<io.cattle.platform.core.model.tables.records.VolumeTemplateRecord, java.lang.Boolean> PER_CONTAINER = createField("per_container", org.jooq.impl.SQLDataType.BIT.nullable(false).defaulted(true), this, "");
 
 	/**
 	 * Create a <code>cattle.volume_template</code> table reference

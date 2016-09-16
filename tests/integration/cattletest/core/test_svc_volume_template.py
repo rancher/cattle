@@ -146,7 +146,7 @@ def test_du_volume(client, context, super_client):
     client.create_volumeTemplate(name="foo", driver="nfs",
                                  driverOpts=opts,
                                  stackId=stack.id,
-                                 container=True)
+                                 perContainer=True)
 
     # create service
     image_uuid = context.image_uuid
@@ -248,7 +248,7 @@ def test_upgrade_du_volume(client, context, super_client):
     client.create_volumeTemplate(name="foo", driver="nfs",
                                  driverOpts=opts,
                                  stackId=stack.id,
-                                 container=True)
+                                 perContainer=True)
 
     # create service
     image_uuid = context.image_uuid

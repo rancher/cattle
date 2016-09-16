@@ -339,7 +339,7 @@ public class DeploymentUnit {
         } else {
             Map<String, Object> params = new HashMap<>();
             String name = "";
-            if (template.getContainer()) {
+            if (template.getPerContainer()) {
                 name = uuid + "_" + volumeNamePostfix;
                 volume = context.objectManager
                         .findOne(Volume.class, VOLUME.ACCOUNT_ID, service.getAccountId(),

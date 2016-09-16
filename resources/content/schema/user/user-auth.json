@@ -832,7 +832,7 @@
         "volumeTemplate.driver" : "cr",
         "volumeTemplate.driverOpts" : "cr",
         "volumeTemplate.external" : "cr",
-        "volumeTemplate.container" : "cr",
+        "volumeTemplate.perContainer" : "cr",
 
         "end" : ""
     }

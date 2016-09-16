@@ -28,7 +28,7 @@
             <column defaultValueNumeric="0" name="external" type="BIT">
                 <constraints nullable="false"/>
             </column>
-            <column defaultValueNumeric="0" name="container" type="BIT">
+            <column defaultValueNumeric="0" name="per_container" type="BIT">
                 <constraints nullable="false"/>
             </column>
         </createTable>
