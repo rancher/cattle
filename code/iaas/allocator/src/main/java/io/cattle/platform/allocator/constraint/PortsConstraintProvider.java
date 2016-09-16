@@ -1,6 +1,6 @@
 package io.cattle.platform.allocator.constraint;
 
-import static io.cattle.platform.core.model.tables.PortTable.PORT;
+import static io.cattle.platform.core.model.tables.PortTable.*;
 import io.cattle.platform.allocator.dao.AllocatorDao;
 import io.cattle.platform.allocator.service.AllocationAttempt;
 import io.cattle.platform.allocator.service.AllocationLog;
@@ -21,14 +21,15 @@ public class PortsConstraintProvider implements AllocationConstraintsProvider {
     ObjectManager objectManager;
 
     @Override
-    public void appendConstraints(AllocationAttempt attempt, AllocationLog log,
-            List<Constraint> constraints) {
-        Instance instance = attempt.getInstance();
+    public void appendConstraints(AllocationAttempt attempt, AllocationLog log, List<Constraint> constraints) {
+        if (!attempt.isInstanceAllocation()) {
+            return;
+        }
 
-        if (instance != null) {
+        for (Instance instance : attempt.getInstances()) {
             List<Port> ports = objectManager.find(Port.class, PORT.INSTANCE_ID, instance.getId(), PORT.REMOVED, null);
             if (ports.size() > 0) {
-                constraints.add(new PortsConstraint(ports, allocatorDao));
+                constraints.add(new PortsConstraint(instance.getId(), ports, allocatorDao));
             }
         }
     }

@@ -22,14 +22,11 @@ import com.google.common.collect.Sets;
 
 public class NetworkAllocationCandidates implements AllocationCandidateCallback {
 
-    AllocationAttempt attempt;
     Set<List<Pair<Long, Long>>> subnetIds = new HashSet<List<Pair<Long, Long>>>();
     ObjectManager objectManager;
 
     @SuppressWarnings("unchecked")
     public NetworkAllocationCandidates(ObjectManager objectManager, AllocationAttempt attempt) {
-        this.attempt = attempt;
-
         List<Set<Pair<Long, Long>>> nicToSubnets = new ArrayList<Set<Pair<Long, Long>>>();
 
         for (Nic nic : attempt.getNics()) {

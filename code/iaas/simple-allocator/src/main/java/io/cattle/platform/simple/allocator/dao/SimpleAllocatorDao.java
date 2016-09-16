@@ -8,7 +8,7 @@ import java.util.List;
 
 public interface SimpleAllocatorDao {
 
-    Iterator<AllocationCandidate> iteratorHosts(List<Long> volumeIds, QueryOptions options, AllocationCandidateCallback callback);
+    Iterator<AllocationCandidate> iteratorHosts(List<String> hostUUIDs, List<Long> volumeIds, QueryOptions options, AllocationCandidateCallback callback);
 
     Iterator<AllocationCandidate> iteratorPools(List<Long> volumeIds, QueryOptions options);
 

@@ -1,6 +1,5 @@
 package io.cattle.platform.allocator.constraint;
 
-import io.cattle.platform.allocator.service.AllocationAttempt;
 import io.cattle.platform.allocator.service.AllocationCandidate;
 
 public class VolumeAccessModeSingleHostConstraint implements Constraint {
@@ -22,7 +21,7 @@ public class VolumeAccessModeSingleHostConstraint implements Constraint {
     }
 
     @Override
-    public boolean matches(AllocationAttempt attempt, AllocationCandidate candidate) {
+    public boolean matches(AllocationCandidate candidate) {
         return hostId.equals(candidate.getHost());
     }
 

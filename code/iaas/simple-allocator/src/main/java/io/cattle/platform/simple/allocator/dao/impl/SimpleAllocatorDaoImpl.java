@@ -13,14 +13,20 @@ import io.cattle.platform.simple.allocator.AllocationCandidateCallback;
 import io.cattle.platform.simple.allocator.dao.QueryOptions;
 import io.cattle.platform.simple.allocator.dao.SimpleAllocatorDao;
 
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import javax.inject.Inject;
 
 import org.jooq.Condition;
-import org.jooq.Cursor;
-import org.jooq.Record2;
+import org.jooq.Record3;
+import org.jooq.Result;
+import org.jooq.SelectSeekStep2;
 import org.jooq.impl.DSL;
 
 import com.netflix.config.DynamicBooleanProperty;
@@ -33,18 +39,58 @@ public class SimpleAllocatorDaoImpl extends AbstractJooqDao implements SimpleAll
 
     @Override
     public Iterator<AllocationCandidate> iteratorPools(List<Long> volumes, QueryOptions options) {
-        return iteratorHosts(volumes, options, false, null);
+        return iteratorHosts(null, volumes, options, false, null);
     }
 
     @Override
-    public Iterator<AllocationCandidate> iteratorHosts(List<Long> volumes, QueryOptions options, AllocationCandidateCallback callback) {
-        return iteratorHosts(volumes, options, true, callback);
+    public Iterator<AllocationCandidate> iteratorHosts(List<String> orderedHostUUIDs, List<Long> volumes, QueryOptions options, AllocationCandidateCallback callback) {
+        return iteratorHosts(orderedHostUUIDs, volumes, options, true, callback);
     }
 
-    protected Iterator<AllocationCandidate> iteratorHosts(List<Long> volumes, QueryOptions options, boolean hosts,
+    protected Iterator<AllocationCandidate> iteratorHosts(List<String> orderedHostUuids, List<Long> volumes, QueryOptions options, boolean hosts,
             AllocationCandidateCallback callback) {
-        final Cursor<Record2<Long,Long>> cursor = create()
-                .select(HOST.ID, STORAGE_POOL.ID)
+        LinkedHashMap<Long, Set<Long>>orderedResults = new LinkedHashMap<>();
+        Map<Long, String> hostIdsToUuids = new HashMap<>();
+        if (orderedHostUuids == null) {
+            Result<Record3<String, Long, Long>> result = getHostQuery(orderedHostUuids, options).fetch();
+
+            for (Record3<String, Long, Long> r : result) {
+                Long hostId = r.value2();
+                hostIdsToUuids.put(hostId, r.value1());
+                Set<Long> poolIDs = orderedResults.get(hostId); 
+                if (poolIDs == null) {
+                    poolIDs = new HashSet<Long>();
+                    orderedResults.put(hostId, poolIDs);
+                }
+                poolIDs.add(r.value3());
+            }
+        } else {
+            Map<String, Result<Record3<String, Long, Long>>> result = getHostQuery(orderedHostUuids, options).fetchGroups(HOST.UUID);
+
+            for (String uuid : orderedHostUuids) {
+                Result<Record3<String, Long, Long>>val = result.get(uuid);
+                if (val != null) {
+                    Set<Long>poolIds = new HashSet<>();
+                    Long hostId = null;
+                    for (Record3<String, Long, Long>r : val) {
+                        poolIds.add(r.value3());
+                        // host id is same in all records for this group
+                        if (hostId == null) {
+                            hostId = r.value2();
+                        }
+                    }
+                    hostIdsToUuids.put(hostId, uuid);
+                    orderedResults.put(hostId, poolIds);
+                }
+            }
+        }
+
+        return new AllocationCandidateIterator(objectManager, orderedResults, hostIdsToUuids, volumes, hosts, callback);
+    }
+
+    protected SelectSeekStep2<Record3<String, Long, Long>, Long, Long> getHostQuery(List<String> orderedHostUUIDs, QueryOptions options) {
+        return create()
+                .select(HOST.UUID, HOST.ID, STORAGE_POOL.ID)
                 .from(HOST)
                 .leftOuterJoin(STORAGE_POOL_HOST_MAP)
                     .on(STORAGE_POOL_HOST_MAP.HOST_ID.eq(HOST.ID)
@@ -58,10 +104,15 @@ public class SimpleAllocatorDaoImpl extends AbstractJooqDao implements SimpleAll
                     .and(HOST.STATE.in(CommonStatesConstants.ACTIVE, CommonStatesConstants.UPDATING_ACTIVE))
                     .and(STORAGE_POOL.STATE.eq(CommonStatesConstants.ACTIVE))
                     .and(getQueryOptionCondition(options)))
-                .orderBy((SPREAD.get() ? HOST.COMPUTE_FREE.desc() : HOST.COMPUTE_FREE.asc()), HOST.ID.asc())
-                .fetchLazy();
+                    .and(inHostList(orderedHostUUIDs))
+                .orderBy((SPREAD.get() ? HOST.COMPUTE_FREE.desc() : HOST.COMPUTE_FREE.asc()), HOST.ID.asc());
+    }
 
-        return new AllocationCandidateIterator(objectManager, cursor, volumes, hosts, callback);
+    protected Condition inHostList(List<String> hostUUIDs) {
+        if (hostUUIDs == null || hostUUIDs.isEmpty()) {
+            return DSL.trueCondition();
+        }
+        return HOST.UUID.in(hostUUIDs);
     }
 
     protected Condition getQueryOptionCondition(QueryOptions options) {

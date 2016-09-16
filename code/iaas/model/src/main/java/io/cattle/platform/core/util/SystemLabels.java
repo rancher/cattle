@@ -11,12 +11,12 @@ public class SystemLabels {
     public static final String LABEL_CONTAINER_NAMESPACE = "io.rancher.container.namespace";
     public static final String LABEL_SERVICE_CONTAINER_START_ONCE = "io.rancher.container.start_once";
 
-
     /**
      * Indicates an instance runs an agent that provides the labels provider service
      */
     public static final String LABEL_AGENT_SERVICE_LABELS_PROVIDER = "io.rancher.container.agent_service.labels_provider";
     public static final String LABEL_AGENT_SERVICE_COMPOSE_PROVIDER = "io.rancher.container.agent_service.docker_compose";
+    public static final String LABEL_AGENT_SERVICE_SCHEDULING_PROVIDER = "io.rancher.container.agent_service.scheduling";
 
     public static final String LABEL_VM = "io.rancher.vm";
     public static final String LABEL_VM_USERDATA = "io.rancher.vm.userdata";
