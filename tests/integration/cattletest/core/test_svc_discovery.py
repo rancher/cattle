@@ -696,6 +696,7 @@ def test_validate_service_scaleup_scaledown(client, context):
                                     scale=2)
     service = client.wait_success(service)
     assert service.state == "inactive"
+    wait_for(lambda: client.reload(service).healthState == 'unhealthy')
 
     # scale up the inactive service
     service = client.update(service, scale=3, name=service.name)
@@ -718,6 +719,7 @@ def test_validate_service_scaleup_scaledown(client, context):
     # stop the instance2
     client.wait_success(instance21.stop())
     service = client.wait_success(service)
+    wait_for(lambda: client.reload(service).healthState == 'healthy')
 
     # rename the instance 3
     instance32 = client.update(instance31, name='newName')
