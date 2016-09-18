@@ -43,6 +43,15 @@
 
         "auditLog.resourceActions\\..*" : "",
 
+        "backup" : "r",
+        "backup.snapshotId" : "r",
+        "backup.backupTargetId" : "r",
+        "backup.uri" : "r",
+        "backup.volumeId" : "r",
+
+        "backupTarget" : "r",
+        "backupTarget.nfsConfig" : "cr",
+
         "baseMachineConfig": "r",
 
         "blkioDeviceOption": "r",
@@ -127,6 +136,14 @@
         "containerExec.attachStdout" : "cr",
         "containerExec.command" : "cr",
         "containerExec.tty" : "cr",
+        "containerEvent" : "r",
+        "containerEvent.externalId" : "r",
+        "containerEvent.externalStatus" : "r",
+        "containerEvent.externalFrom" : "r",
+        "containerEvent.externalTimestamp" : "r",
+        "containerEvent.reportedHostUuid" : "r",
+        "containerEvent.hostId" : "r",
+        "containerEvent.dockerInspect" : "r",
 
         "containerLogs":"r",
         "containerLogs.follow":"cr",
@@ -467,6 +484,7 @@
         "stack.previousEnvironment": "cru",
         "stack.outputs": "cru",
         "stack.startOnCreate": "cr",
+        "stack.binding": "cru",
 
         "composeProject" : "r",
         "composeProject.name": "cr",
@@ -644,6 +662,15 @@
         "kubernetesStackUpgrade.templates" : "cr",
         "kubernetesStackUpgrade.environment" : "cr",
         "kubernetesStackUpgrade.externalId" : "cr",
+        
+        "binding" : "r",
+        "binding.services" : "cr",
+
+        "serviceBinding" : "r",
+        "serviceBinding.labels" : "cr",
+        "serviceBinding.ports" : "cr",
+        "serviceBinding.scale" : "cr",
+        
 
         "serviceEvent" : "r",
         "serviceEvent.instanceId" : "r",
@@ -785,6 +812,18 @@
         "scalePolicy.min" : "cr",
         "scalePolicy.max" : "cr",
         "scalePolicy.increment" : "cr",
+
+        "serviceLog" : "r",
+        "serviceLog.accountId" : "r",
+        "serviceLog.resourceType" : "r",
+        "serviceLog.resourceId" : "r",
+        "serviceLog.endTime" : "r",
+        "serviceLog.eventType" : "r",
+        "serviceLog.serviceId" : "r",
+        "serviceLog.instanceId" : "r",
+        "serviceLog.transactionId" : "r",
+        "serviceLog.subLog" : "r",
+        "serviceLog.level" : "r",
 
         "end" : ""
     }

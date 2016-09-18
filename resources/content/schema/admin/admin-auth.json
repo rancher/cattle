@@ -103,6 +103,7 @@
         "externalHandlerExternalHandlerProcessMap.externalHandlerId" : "r",
         "externalHandlerExternalHandlerProcessMap.externalHandlerProcessId" : "r",
         "externalHandlerExternalHandlerProcessMap.onError" : "r",
+        "externalHandlerExternalHandlerProcessMap.eventName" : "r",
         "externalHandlerProcess" : "r",
 
         "githubconfig": "cru",

@@ -280,6 +280,7 @@ public class ServiceMetadataInfoFactory extends AbstractAgentBaseContextFactory 
                         continue;
                     }
                     containerMD.setStack_name(svcData.getStack_name());
+                    containerMD.setStack_uuid(svcData.getStackUuid());
                     containerMD.setService_name(svcData.getName());
 
                     Map<String, List<ContainerMetaData>> launchConfigToContainer = serviceIdToLaunchConfigToContainer

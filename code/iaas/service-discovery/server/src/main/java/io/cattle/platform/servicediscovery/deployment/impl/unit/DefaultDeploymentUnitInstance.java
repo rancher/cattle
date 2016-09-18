@@ -1,15 +1,18 @@
 package io.cattle.platform.servicediscovery.deployment.impl.unit;
 
 import static io.cattle.platform.core.model.tables.InstanceHostMapTable.*;
+
+import io.cattle.platform.activity.ActivityLog;
+import io.cattle.platform.async.utils.TimeoutException;
 import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.HealthcheckConstants;
 import io.cattle.platform.core.constants.InstanceConstants;
-import io.cattle.platform.core.model.Stack;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.InstanceHostMap;
 import io.cattle.platform.core.model.Service;
 import io.cattle.platform.core.model.ServiceExposeMap;
 import io.cattle.platform.core.model.ServiceIndex;
+import io.cattle.platform.core.model.Stack;
 import io.cattle.platform.core.util.SystemLabels;
 import io.cattle.platform.docker.constants.DockerInstanceConstants;
 import io.cattle.platform.engine.process.impl.ProcessCancelException;
@@ -18,6 +21,7 @@ import io.cattle.platform.object.process.ObjectProcessManager;
 import io.cattle.platform.object.process.StandardProcess;
 import io.cattle.platform.object.resource.ResourcePredicate;
 import io.cattle.platform.object.util.DataAccessor;
+import io.cattle.platform.object.util.TransitioningUtils;
 import io.cattle.platform.process.common.util.ProcessUtils;
 import io.cattle.platform.servicediscovery.api.constants.ServiceDiscoveryConstants;
 import io.cattle.platform.servicediscovery.api.resource.ServiceDiscoveryConfigItem;
@@ -26,17 +30,29 @@ import io.cattle.platform.servicediscovery.api.util.ServiceDiscoveryUtil;
 import io.cattle.platform.servicediscovery.deployment.DeploymentUnitInstance;
 import io.cattle.platform.servicediscovery.deployment.InstanceUnit;
 import io.cattle.platform.servicediscovery.deployment.impl.DeploymentManagerImpl.DeploymentServiceContext;
+import io.cattle.platform.util.exception.InstanceException;
 import io.cattle.platform.util.exception.ServiceInstanceAllocateException;
 
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 
 public class DefaultDeploymentUnitInstance extends DeploymentUnitInstance implements InstanceUnit {
+    private static final Set<String> ERROR_STATES = new HashSet<String>(Arrays.asList(
+            InstanceConstants.STATE_ERRORING,
+            InstanceConstants.STATE_ERROR));
+    private static final Set<String> BAD_ALLOCATING_STATES = new HashSet<String>(Arrays.asList(
+            InstanceConstants.STATE_ERRORING,
+            InstanceConstants.STATE_ERROR,
+            InstanceConstants.STATE_STOPPING,
+            InstanceConstants.STATE_STOPPED));
+
     protected String instanceName;
     protected boolean startOnce;
     protected Instance instance;
@@ -75,7 +91,7 @@ public class DefaultDeploymentUnitInstance extends DeploymentUnitInstance implem
 
     @Override
     public boolean isError() {
-        return this.instance != null && this.instance.getRemoved() != null;
+        return this.instance != null && (ERROR_STATES.contains(this.instance.getState()) || this.instance.getRemoved() != null);
     }
 
     @Override
@@ -106,17 +122,7 @@ public class DefaultDeploymentUnitInstance extends DeploymentUnitInstance implem
             this.instance = instanceMapPair.getLeft();
             this.exposeMap = instanceMapPair.getRight();
             this.generateAuditLog(AuditEventType.create,
-                    ServiceDiscoveryConstants.AUDIT_LOG_CREATE_EXTRA);
-        }
-
-        if (instance.getState().equalsIgnoreCase(CommonStatesConstants.REQUESTED)) {
-            context.objectProcessManager.scheduleStandardProcessAsync(StandardProcess.CREATE, instance,
-                    null);
-        }
-
-        if (exposeMap.getState().equalsIgnoreCase(CommonStatesConstants.REQUESTED)) {
-            context.objectProcessManager.scheduleStandardProcessAsync(StandardProcess.CREATE, exposeMap,
-                    null);
+                    ServiceDiscoveryConstants.AUDIT_LOG_CREATE_EXTRA, ActivityLog.INFO);
         }
 
         this.instance = context.objectManager.reload(this.instance);
@@ -170,29 +176,33 @@ public class DefaultDeploymentUnitInstance extends DeploymentUnitInstance implem
     public DeploymentUnitInstance waitForStartImpl() {
         this.waitForAllocate();
 
-        this.instance = context.resourceMonitor.waitFor(this.instance,
-                new ResourcePredicate<Instance>() {
-                    @Override
-                    public boolean evaluate(Instance obj) {
-                        return InstanceConstants.STATE_RUNNING.equals(obj.getState());
-                    }
+        instance = context.resourceMonitor.waitForNotTransitioning(instance);
+        if (!((startOnce && isStartedOnce()) || (InstanceConstants.STATE_RUNNING.equals(instance.getState())))) {
+            String error = TransitioningUtils.getTransitioningError(instance);
+            String message = String.format("Expected state running but got %s", instance.getState());
+            if (org.apache.commons.lang3.StringUtils.isNotBlank(error)) {
+                message = message + ": " + error;
+            }
+            throw new InstanceException(message, instance);
+        }
 
-                    @Override
-                    public String getMessage() {
-                        return "running state";
-                    }
-                });
         return this;
     }
 
     @Override
     protected boolean isStartedImpl() {
         if (startOnce) {
-            List<String> validStates = Arrays.asList(InstanceConstants.STATE_STOPPED, InstanceConstants.STATE_STOPPING,
-                    InstanceConstants.STATE_RUNNING);
-            return validStates.contains(context.objectManager.reload(this.instance).getState());
+            return isStartedOnce();
         }
         return context.objectManager.reload(this.instance).getState().equalsIgnoreCase(InstanceConstants.STATE_RUNNING);
+    }
+
+    protected boolean isStartedOnce() {
+        List<String> validStates = Arrays.asList(InstanceConstants.STATE_STOPPED, InstanceConstants.STATE_STOPPING,
+                InstanceConstants.STATE_RUNNING);
+        return validStates.contains(context.objectManager.reload(this.instance).getState())
+                && context.objectManager.find(InstanceHostMap.class, INSTANCE_HOST_MAP.INSTANCE_ID,
+                        instance.getId()).size() > 0;
     }
 
     @Override
@@ -237,11 +247,26 @@ public class DefaultDeploymentUnitInstance extends DeploymentUnitInstance implem
 
     @Override
     public void waitForAllocate() {
+
         try {
             if (this.instance != null) {
+                if (context.objectManager.find(InstanceHostMap.class, INSTANCE_HOST_MAP.INSTANCE_ID,
+                        instance.getId()).size() > 0) {
+                    return;
+                }
                 instance = context.resourceMonitor.waitFor(instance, new ResourcePredicate<Instance>() {
                     @Override
                     public boolean evaluate(Instance obj) {
+                        if ((startOnce && ERROR_STATES.contains(obj.getState()))
+                                || obj.getRemoved() != null
+                                || (!startOnce && BAD_ALLOCATING_STATES.contains(obj.getState()))) {
+                            String error = TransitioningUtils.getTransitioningError(obj);
+                            String message = "Bad instance [" + key(instance) + "] in state [" + obj.getState() + "]";
+                            if (StringUtils.isNotBlank(error)) {
+                                message = message + ": " + error;
+                            }
+                            throw new RuntimeException(message);
+                        }
                         return context.objectManager.find(InstanceHostMap.class, INSTANCE_HOST_MAP.INSTANCE_ID,
                                 instance.getId()).size() > 0;
                     }
@@ -252,9 +277,12 @@ public class DefaultDeploymentUnitInstance extends DeploymentUnitInstance implem
                     }
                 });
             }
+        } catch (TimeoutException e) {
+            throw e;
         } catch (Exception ex) {
-            throw new ServiceInstanceAllocateException("Failed to allocate instance [" + key(instance) + "]", ex);
+            throw new ServiceInstanceAllocateException("Failed to allocate instance [" + key(instance) + "]", ex, this.instance);
         }
+
     }
 
     protected String key(Instance instance) {
@@ -265,6 +293,7 @@ public class DefaultDeploymentUnitInstance extends DeploymentUnitInstance implem
     @Override
     public DeploymentUnitInstance startImpl() {
         if (instance != null && InstanceConstants.STATE_STOPPED.equals(instance.getState())) {
+            context.activityService.instance(instance, "start", "Starting stopped instance", ActivityLog.INFO);
             context.objectProcessManager.scheduleProcessInstanceAsync(
                     InstanceConstants.PROCESS_START, instance, null);
         }
@@ -306,12 +335,6 @@ public class DefaultDeploymentUnitInstance extends DeploymentUnitInstance implem
     }
 
     @Override
-    public boolean isIgnore() {
-        List<String> errorStates = Arrays.asList(InstanceConstants.STATE_ERROR, InstanceConstants.STATE_ERRORING);
-        return this.instance != null && errorStates.contains(this.instance.getState());
-    }
-
-    @Override
     public List<String> getSearchDomains() {
         String stackNamespace = ServiceDiscoveryDnsUtil.getStackNamespace(this.stack, this.service);
         String serviceNamespace = ServiceDiscoveryDnsUtil
@@ -323,6 +346,19 @@ public class DefaultDeploymentUnitInstance extends DeploymentUnitInstance implem
     public Long getCreateIndex() {
         Long createIndex = this.instance == null ? null : this.instance.getCreateIndex();
         return createIndex;
+    }
+
+    @Override
+    public void scheduleCreate() {
+        if (instance.getState().equalsIgnoreCase(CommonStatesConstants.REQUESTED)) {
+            context.objectProcessManager.scheduleStandardProcessAsync(StandardProcess.CREATE, instance,
+                    null);
+        }
+
+        if (exposeMap.getState().equalsIgnoreCase(CommonStatesConstants.REQUESTED)) {
+            context.objectProcessManager.scheduleStandardProcessAsync(StandardProcess.CREATE, exposeMap,
+                    null);
+        }
     }
 }
 

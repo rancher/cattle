@@ -103,24 +103,6 @@ public class MethodInvokingListener implements EventListener, PoolSpecificListen
     }
 
     @Override
-    public boolean isAllowQueueing() {
-        if (target instanceof PoolSpecificListener) {
-            return ((PoolSpecificListener) target).isAllowQueueing();
-        }
-
-        return handler.allowQueueing();
-    }
-
-    @Override
-    public int getQueueDepth() {
-        if (target instanceof PoolSpecificListener) {
-            return ((PoolSpecificListener) target).getQueueDepth();
-        }
-
-        return handler.queueDepth();
-    }
-
-    @Override
     public String getPoolKey() {
         if (target instanceof PoolSpecificListener) {
             ;

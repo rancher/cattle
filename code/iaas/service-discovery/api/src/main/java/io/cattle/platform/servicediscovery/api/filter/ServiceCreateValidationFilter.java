@@ -69,7 +69,7 @@ public class ServiceCreateValidationFilter extends AbstractDefaultResourceManage
     public Object create(String type, ApiRequest request, ResourceManager next) {
         Service service = request.proxyRequestObject(Service.class);
         
-        validateEnvironment(service);
+        validateStack(service);
 
         validateSelector(request);
 
@@ -200,13 +200,12 @@ public class ServiceCreateValidationFilter extends AbstractDefaultResourceManage
         }
     }
 
-    protected void validateEnvironment(Service service) {
+    protected void validateStack(Service service) {
         Stack env = objectManager.loadResource(Stack.class, service.getStackId());
         List<String> invalidStates = Arrays.asList(InstanceConstants.STATE_ERROR, CommonStatesConstants.REMOVED,
                 CommonStatesConstants.REMOVING);
         if (invalidStates.contains(env.getState())) {
-            throw new ValidationErrorException(ValidationErrorCodes.INVALID_STATE, 
-                    InstanceConstants.FIELD_ENVIRONMENT);
+            throw new ValidationErrorException(ValidationErrorCodes.INVALID_STATE, ServiceDiscoveryConstants.FIELD_STACK_ID);
         }
     }
     

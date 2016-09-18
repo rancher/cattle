@@ -11,6 +11,7 @@
         http://cattle.io/schemas/spring/extension http://cattle.io/schemas/spring/extension-1.0.xsd
         http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx.xsd">
 
+    <bean class="io.cattle.platform.activity.ActivityService" />
     <bean class="io.cattle.platform.agent.instance.dao.impl.AgentInstanceDaoImpl" />
     <bean id="AgentInstanceFactory" class="io.cattle.platform.agent.instance.factory.impl.AgentInstanceFactoryImpl" />
     <bean class="io.cattle.platform.agent.instance.serialization.AgentInstanceAuthObjectPostProcessor" />
@@ -83,6 +84,11 @@
                 <value>typeDocumentation</value>
                 <value>scripts</value>
             </set>
+        </property>
+        <property name="typeMappings">
+            <map>
+                <entry key="stack" value="st" />
+            </map>
         </property>
     </bean>
 
@@ -428,6 +434,7 @@
     <bean class="io.cattle.platform.servicediscovery.process.ServiceRemove" />
     <bean class="io.cattle.platform.servicediscovery.process.ServiceCreate" />
     <bean class="io.cattle.platform.servicediscovery.process.ServiceUpgrade" />
+    <bean class="io.cattle.platform.servicediscovery.process.ServiceContinueupgrade" />
     <bean class="io.cattle.platform.servicediscovery.process.ServiceRollback" />
     <bean class="io.cattle.platform.servicediscovery.process.ServiceFinishUpgrade" />
     <bean class="io.cattle.platform.servicediscovery.process.NetworkFromInstanceStop" />

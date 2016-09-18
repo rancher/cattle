@@ -1,16 +1,15 @@
 package io.cattle.platform.servicediscovery.deployment.impl.unit;
 
-import io.cattle.platform.allocator.constraint.AffinityConstraintDefinition.AffinityOps;
-import io.cattle.platform.allocator.constraint.ContainerLabelAffinityConstraint;
 import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.InstanceConstants;
-import io.cattle.platform.core.model.Stack;
 import io.cattle.platform.core.model.Host;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.Service;
+import io.cattle.platform.core.model.Stack;
 import io.cattle.platform.core.util.SystemLabels;
 import io.cattle.platform.docker.constants.DockerInstanceConstants;
 import io.cattle.platform.iaas.api.auditing.AuditEventType;
+import io.cattle.platform.object.util.TransitioningUtils;
 import io.cattle.platform.servicediscovery.api.constants.ServiceDiscoveryConstants;
 import io.cattle.platform.servicediscovery.api.util.ServiceDiscoveryUtil;
 import io.cattle.platform.servicediscovery.deployment.DeploymentUnitInstance;
@@ -26,8 +25,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+import org.apache.commons.lang3.StringUtils;
+
 public class DeploymentUnit {
-    
+
     public static class SidekickType {
         public static List<SidekickType> supportedTypes = new ArrayList<>();
         public static final SidekickType DATA = new SidekickType(DockerInstanceConstants.FIELD_VOLUMES_FROM,
@@ -37,7 +38,7 @@ public class DeploymentUnit {
         public String launchConfigFieldName;
         public String launchConfigType;
         public boolean isList;
-        
+
         public SidekickType(String launchConfigFieldName, String launchConfigType, boolean isList) {
             this.launchConfigFieldName = launchConfigFieldName;
             this.launchConfigType = launchConfigType;
@@ -118,18 +119,6 @@ public class DeploymentUnit {
         return false;
     }
 
-    public boolean isIgnore() {
-        /*
-         * This should check for instances with an error transitioning state
-         */
-        for (DeploymentUnitInstance instance : getDeploymentUnitInstances()) {
-            if (instance.isIgnore()) {
-                return true;
-            }
-        }
-        return false;
-    }
-
     private boolean isHostActive() {
         for (DeploymentUnitInstance deployUnitInstance : getDeploymentUnitInstances()) {
             if (!(deployUnitInstance instanceof InstanceUnit)) {
@@ -158,12 +147,19 @@ public class DeploymentUnit {
         return true;
     }
 
-    public void remove(boolean waitForRemoval, String reason) {
+    public void remove(boolean waitForRemoval, String reason, String level) {
         /*
          * Delete all instances. This should be non-blocking (don't wait)
          */
         for (DeploymentUnitInstance instance : getDeploymentUnitInstances()) {
-            instance.generateAuditLog(AuditEventType.delete, reason);
+            String error = "";
+            if (instance instanceof InstanceUnit) {
+                error = TransitioningUtils.getTransitioningError(((DefaultDeploymentUnitInstance) instance).getInstance());
+            }
+            if (StringUtils.isNotBlank(error)) {
+                reason = reason + ": " + error;
+            }
+            instance.generateAuditLog(AuditEventType.delete, reason, level);
             instance.remove();
         }
 
@@ -197,52 +193,40 @@ public class DeploymentUnit {
         }
     }
 
-    public void start(Map<Long, DeploymentUnitInstanceIdGenerator> svcInstanceIdGenerator) {
+    public void start() {
+        for (DeploymentUnitInstance instance : getDeploymentUnitInstances()) {
+            instance.start();
+        }
+    }
+
+    public void create(Map<Long, DeploymentUnitInstanceIdGenerator> svcInstanceIdGenerator) {
         /*
          * Start the instances in the correct order depending on the volumes from.
          * Attempt to start things in parallel, but if not possible (like volumes-from) then start each service
          * sequentially.
-         * 
+         *
          * If there are three services but only two containers, create the third
-         * 
+         *
          * If one of the containers service health is bad, then create another one (but don't delete the existing).
-         * 
+         *
          */
         createMissingUnitInstances(svcInstanceIdGenerator);
+        List<DeploymentUnitInstance> createdInstances = createServiceInstances();
+        for (DeploymentUnitInstance instance : createdInstances) {
+            instance.scheduleCreate();
+        }
+    }
 
-        boolean hasSidekicks = false;
-        boolean skipSerialize = false;
+    protected List<DeploymentUnitInstance> createServiceInstances() {
+        List<DeploymentUnitInstance> createdInstances = new ArrayList<>();
         for (Long serviceId : svc.keySet()) {
             DeploymentUnitService duService = svc.get(serviceId);
             List<String> launchConfigNames = duService.getLaunchConfigNames();
-            if (launchConfigNames.size() > 1) {
-                hasSidekicks = true;
-            }
             for (String launchConfigName : launchConfigNames) {
-                createInstance(launchConfigName, duService.getService());
-            }
-            Map<String, String> labels = ServiceDiscoveryUtil.getServiceLabels(
-                    svc.get(serviceId).getService(),
-                    context.allocatorService);
-            if (labels
-                    .containsKey(ServiceDiscoveryConstants.LABEL_SERVICE_ALLOACATE_SKIP_SERIALIZE)
-                    && Boolean.valueOf(labels
-                            .get(ServiceDiscoveryConstants.LABEL_SERVICE_ALLOACATE_SKIP_SERIALIZE)) == true) {
-                skipSerialize = true;
+                createdInstances.add(createInstance(launchConfigName, duService.getService()));
             }
         }
-
-        // don't wait for instance allocate unless sidekicks are present
-
-        if (hasSidekicks && !skipSerialize) {
-            this.waitForAllocate();
-        }
-    }
-    
-    protected void waitForAllocate() {
-        for (DeploymentUnitInstance instance : getDeploymentUnitInstances()) {
-            instance.waitForAllocate();
-        }
+        return createdInstances;
     }
 
     public void waitForStart(){
@@ -255,9 +239,8 @@ public class DeploymentUnit {
         List<Integer> volumesFromInstanceIds = getSidekickContainersId(service, launchConfigName, SidekickType.DATA);
         List<Integer> networkContainerIds = getSidekickContainersId(service, launchConfigName, SidekickType.NETWORK);
         Integer networkContainerId = networkContainerIds.isEmpty() ? null : networkContainerIds.get(0);
-        getDeploymentUnitInstance(service, launchConfigName).waitForNotTransitioning();
         getDeploymentUnitInstance(service, launchConfigName)
-                .createAndStart(
+                .create(
                         populateDeployParams(getDeploymentUnitInstance(service, launchConfigName),
                                 volumesFromInstanceIds,
                                 networkContainerId));
@@ -273,7 +256,7 @@ public class DeploymentUnit {
                 sidekickType.launchConfigFieldName);
         if (sidekickInstances != null) {
             if (sidekickType.isList) {
-                sidekickInstanceIds.addAll((List<Integer>)sidekickInstances);
+                sidekickInstanceIds.addAll((List<Integer>) sidekickInstances);
             } else {
                 sidekickInstanceIds.add((Integer) sidekickInstances);
             }
@@ -300,9 +283,6 @@ public class DeploymentUnit {
                         // request new instance creation
                         sidekickUnitInstance = createInstance(sidekickUnitInstance.getLaunchConfigName(), service);
                     }
-                    // wait for start
-                    sidekickUnitInstance.createAndStart(new HashMap<String, Object>());
-                    sidekickUnitInstance.waitForAllocate();
                     sidekickInstanceIds.add(((InstanceUnit) sidekickUnitInstance).getInstance().getId()
                             .intValue());
                 }
@@ -311,7 +291,6 @@ public class DeploymentUnit {
 
         return sidekickInstanceIds;
     }
-
 
     public boolean isStarted() {
         for (DeploymentUnitInstance instance : getDeploymentUnitInstances()) {
@@ -420,17 +399,6 @@ public class DeploymentUnit {
          */
         labels.put(ServiceDiscoveryConstants.LABEL_SERVICE_LAUNCH_CONFIG, instance.getLaunchConfigName());
 
-        if (this.hasSidekicks()) {
-            /*
-             * Put affinity constraint on every instance to let allocator know that they should go to the same host
-             */
-            // TODO: Might change labels into a Multimap or add a service function to handle merging
-            String containerLabelSoftAffinityKey = ContainerLabelAffinityConstraint.LABEL_HEADER_AFFINITY_CONTAINER_LABEL
-                    + AffinityOps.SOFT_EQ.getLabelSymbol();
-            labels.put(containerLabelSoftAffinityKey, ServiceDiscoveryConstants.LABEL_SERVICE_DEPLOYMENT_UNIT + "="
-                    + this.uuid);
-        }
-
         labels.putAll(this.unitLabels);
 
         return labels;
@@ -453,16 +421,6 @@ public class DeploymentUnit {
     protected DeploymentUnitInstance getDeploymentUnitInstance(Service service, String launchConfigName) {
         DeploymentUnitService duService = svc.get(service.getId());
         return duService.getInstance(launchConfigName);
-    }
-
-    private boolean hasSidekicks() {
-        for (Long serviceId : svc.keySet()) {
-            DeploymentUnitService duService = svc.get(serviceId);
-            if (duService.hasSidekicks()) {
-                return true;
-            }
-        }
-        return false;
     }
 
     public long getCreateIndex() {

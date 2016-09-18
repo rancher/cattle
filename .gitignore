@@ -22,9 +22,9 @@ resources/content/db/dump-*.xml
 resources/local
 runtime
 target
-tests/integration/.idea/
-tests/integration/.tox/
-tests/integration/MANIFEST
+tests/integration*/.idea/
+tests/integration*/.tox/
+tests/integration*/MANIFEST
 .venv
 .idea
 *.iml

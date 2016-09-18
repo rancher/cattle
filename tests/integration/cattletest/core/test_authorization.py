@@ -100,8 +100,8 @@ def test_user_types(user_client, adds=set(), removes=set()):
         'containerProxy',
         'credential',
         'dnsService',
-        'environment',
-        'environmentUpgrade',
+        'stack',
+        'stackUpgrade',
         'externalService',
         'externalEvent',
         'externalServiceEvent',
@@ -151,6 +151,7 @@ def test_user_types(user_client, adds=set(), removes=set()):
         'schema',
         'service',
         'serviceExposeMap',
+        'serviceLog',
         'serviceProxy',
         'setLabelsInput',
         'setLabelsInput',
@@ -191,6 +192,8 @@ def test_user_types(user_client, adds=set(), removes=set()):
         'nfsConfig',
         'blkioDeviceOption',
         'scalePolicy',
+        'binding',
+        'serviceBinding',
     }
     types.update(adds)
     types.difference_update(removes)
@@ -302,8 +305,8 @@ def test_admin_types(admin_user_client, adds=set(), removes=set()):
         'databasechangelog',
         'databasechangeloglock',
         'dnsService',
-        'environment',
-        'environmentUpgrade',
+        'stack',
+        'stackUpgrade',
         'extensionImplementation',
         'extensionPoint',
         'externalHandler',
@@ -391,6 +394,7 @@ def test_admin_types(admin_user_client, adds=set(), removes=set()):
         'virtualMachineDisk',
         'volume',
         'launchConfig',
+        'serviceLog',
         'serviceEvent',
         'serviceConsumeMap',
         'dockerBuild',
@@ -412,7 +416,9 @@ def test_admin_types(admin_user_client, adds=set(), removes=set()):
         'volumeSnapshotInput',
         'nfsConfig',
         'blkioDeviceOption',
-        'scalePolicy'
+        'scalePolicy',
+        'binding',
+        'serviceBinding',
     }
     types.update(adds)
     types.difference_update(removes)
@@ -1644,7 +1650,7 @@ def test_svc_discovery_service(admin_user_client, user_client, project_client,
     auth_check(admin_user_client.schema, 'service', 'r', {
         'name': 'r',
         'externalId': 'r',
-        'environmentId': 'r',
+        'stackId': 'r',
         'scale': 'r',
         'launchConfig': 'r',
         'accountId': 'r',
@@ -1669,7 +1675,7 @@ def test_svc_discovery_service(admin_user_client, user_client, project_client,
     auth_check(user_client.schema, 'service', 'r', {
         'name': 'r',
         'externalId': 'r',
-        'environmentId': 'r',
+        'stackId': 'r',
         'scale': 'r',
         'launchConfig': 'r',
         'accountId': 'r',
@@ -1693,7 +1699,7 @@ def test_svc_discovery_service(admin_user_client, user_client, project_client,
     auth_check(project_client.schema, 'service', 'crud', {
         'name': 'cru',
         'externalId': 'cr',
-        'environmentId': 'cr',
+        'stackId': 'cr',
         'scale': 'cru',
         'launchConfig': 'cr',
         'accountId': 'r',
@@ -1717,11 +1723,11 @@ def test_svc_discovery_service(admin_user_client, user_client, project_client,
     resource_action_check(user_client.schema, 'service', [
         'activate',
         'addservicelink',
-        'cancelrollback',
         'cancelupgrade',
         'create',
         'deactivate',
         'finishupgrade',
+        'continueupgrade',
         'remove',
         'removeservicelink',
         'restart',
@@ -1734,11 +1740,11 @@ def test_svc_discovery_service(admin_user_client, user_client, project_client,
     resource_action_check(admin_user_client.schema, 'service', [
         'activate',
         'addservicelink',
-        'cancelrollback',
         'cancelupgrade',
         'create',
         'deactivate',
         'finishupgrade',
+        'continueupgrade',
         'remove',
         'removeservicelink',
         'restart',
@@ -1751,8 +1757,8 @@ def test_svc_discovery_service(admin_user_client, user_client, project_client,
     resource_action_check(project_client.schema, 'service', [
         'activate',
         'addservicelink',
-        'cancelrollback',
         'cancelupgrade',
+        'continueupgrade',
         'create',
         'deactivate',
         'finishupgrade',
@@ -1768,12 +1774,12 @@ def test_svc_discovery_service(admin_user_client, user_client, project_client,
     resource_action_check(project_admin_client.schema, 'service', [
         'activate',
         'addservicelink',
-        'cancelrollback',
         'cancelupgrade',
         'certificate',
         'create',
         'deactivate',
         'finishupgrade',
+        'continueupgrade',
         'remove',
         'removeservicelink',
         'restart',
@@ -1795,6 +1801,7 @@ def test_auth_compose_project(admin_user_client, user_client, project_client):
         'previousExternalId': 'r',
         'previousEnvironment': 'r',
         'healthState': 'r',
+        'binding': 'r',
     })
 
     auth_check(user_client.schema, 'composeProject', 'r', {
@@ -1806,6 +1813,7 @@ def test_auth_compose_project(admin_user_client, user_client, project_client):
         'previousExternalId': 'r',
         'previousEnvironment': 'r',
         'healthState': 'r',
+        'binding': 'r',
     })
 
     auth_check(project_client.schema, 'composeProject', 'crud', {
@@ -1817,6 +1825,7 @@ def test_auth_compose_project(admin_user_client, user_client, project_client):
         'previousExternalId': 'cru',
         'previousEnvironment': 'cru',
         'healthState': 'r',
+        'binding': 'cru',
     })
 
 
@@ -1832,6 +1841,7 @@ def test_auth_kubernetes_stack(admin_user_client, user_client, project_client):
         'previousExternalId': 'r',
         'previousEnvironment': 'r',
         'healthState': 'r',
+        'binding': 'r',
     })
 
     auth_check(user_client.schema, 'kubernetesStack', 'r', {
@@ -1844,6 +1854,7 @@ def test_auth_kubernetes_stack(admin_user_client, user_client, project_client):
         'previousExternalId': 'r',
         'previousEnvironment': 'r',
         'healthState': 'r',
+        'binding': 'r',
     })
 
     auth_check(project_client.schema, 'kubernetesStack', 'crud', {
@@ -1856,12 +1867,12 @@ def test_auth_kubernetes_stack(admin_user_client, user_client, project_client):
         'previousExternalId': 'cru',
         'previousEnvironment': 'cru',
         'healthState': 'r',
+        'binding': 'cru',
     })
 
 
-def test_svc_discovery_environment(admin_user_client, user_client,
-                                   project_client):
-    auth_check(admin_user_client.schema, 'environment', 'r', {
+def test_svc_discovery_stack(admin_user_client, user_client, project_client):
+    auth_check(admin_user_client.schema, 'stack', 'r', {
         'name': 'r',
         'accountId': 'r',
         'data': 'r',
@@ -1874,9 +1885,10 @@ def test_svc_discovery_environment(admin_user_client, user_client,
         'outputs': 'r',
         'startOnCreate': 'r',
         'healthState': 'r',
+        'binding': 'r',
     })
 
-    auth_check(user_client.schema, 'environment', 'r', {
+    auth_check(user_client.schema, 'stack', 'r', {
         'name': 'r',
         'accountId': 'r',
         'dockerCompose': 'r',
@@ -1888,9 +1900,10 @@ def test_svc_discovery_environment(admin_user_client, user_client,
         'outputs': 'r',
         'startOnCreate': 'r',
         'healthState': 'r',
+        'binding': 'r',
     })
 
-    auth_check(project_client.schema, 'environment', 'crud', {
+    auth_check(project_client.schema, 'stack', 'crud', {
         'name': 'cru',
         'accountId': 'r',
         'dockerCompose': 'cr',
@@ -1902,6 +1915,7 @@ def test_svc_discovery_environment(admin_user_client, user_client,
         'outputs': 'cru',
         'startOnCreate': 'cr',
         'healthState': 'r',
+        'binding': 'cru',
     })
 
 
@@ -1910,7 +1924,7 @@ def test_svc_discovery_lb_service(admin_user_client, user_client,
     auth_check(admin_user_client.schema, 'loadBalancerService', 'r', {
         'name': 'r',
         'externalId': 'r',
-        'environmentId': 'r',
+        'stackId': 'r',
         'scale': 'r',
         'launchConfig': 'r',
         'accountId': 'r',
@@ -1935,7 +1949,7 @@ def test_svc_discovery_lb_service(admin_user_client, user_client,
     auth_check(user_client.schema, 'loadBalancerService', 'r', {
         'name': 'r',
         'externalId': 'r',
-        'environmentId': 'r',
+        'stackId': 'r',
         'scale': 'r',
         'launchConfig': 'r',
         'accountId': 'r',
@@ -1959,7 +1973,7 @@ def test_svc_discovery_lb_service(admin_user_client, user_client,
     auth_check(project_client.schema, 'loadBalancerService', 'crud', {
         'name': 'cru',
         'externalId': 'cr',
-        'environmentId': 'cr',
+        'stackId': 'cr',
         'scale': 'cru',
         'launchConfig': 'cr',
         'accountId': 'r',
@@ -2032,21 +2046,21 @@ def test_auth_k8s_stack_upgrade(admin_user_client, user_client,
 
 def test_auth_env_upgrade(admin_user_client, user_client,
                           project_client):
-    auth_check(admin_user_client.schema, 'environmentUpgrade', 'r', {
+    auth_check(admin_user_client.schema, 'stackUpgrade', 'r', {
         'dockerCompose': 'r',
         'rancherCompose': 'r',
         'environment': 'r',
         'externalId': 'r',
     })
 
-    auth_check(user_client.schema, 'environmentUpgrade', 'r', {
+    auth_check(user_client.schema, 'stackUpgrade', 'r', {
         'dockerCompose': 'r',
         'rancherCompose': 'r',
         'environment': 'r',
         'externalId': 'r',
     })
 
-    auth_check(project_client.schema, 'environmentUpgrade', 'cr', {
+    auth_check(project_client.schema, 'stackUpgrade', 'cr', {
         'dockerCompose': 'cr',
         'rancherCompose': 'cr',
         'environment': 'cr',
@@ -2168,7 +2182,7 @@ def test_svc_discovery_external_service(admin_user_client, user_client,
     auth_check(admin_user_client.schema, 'externalService', 'r', {
         'name': 'r',
         'externalId': 'r',
-        'environmentId': 'r',
+        'stackId': 'r',
         'hostname': 'r',
         'externalIpAddresses': 'r',
         'accountId': 'r',
@@ -2185,7 +2199,7 @@ def test_svc_discovery_external_service(admin_user_client, user_client,
     auth_check(user_client.schema, 'externalService', 'r', {
         'name': 'r',
         'externalId': 'r',
-        'environmentId': 'r',
+        'stackId': 'r',
         'hostname': 'r',
         'externalIpAddresses': 'r',
         'accountId': 'r',
@@ -2201,7 +2215,7 @@ def test_svc_discovery_external_service(admin_user_client, user_client,
     auth_check(project_client.schema, 'externalService', 'crud', {
         'name': 'cru',
         'externalId': 'cr',
-        'environmentId': 'cr',
+        'stackId': 'cr',
         'hostname': 'cru',
         'externalIpAddresses': 'cru',
         'accountId': 'r',
@@ -2658,7 +2672,7 @@ def test_compose_service(admin_user_client, user_client, project_client):
     auth_check(admin_user_client.schema, 'composeService', 'r', {
         'name': 'r',
         'externalId': 'r',
-        'environmentId': 'r',
+        'stackId': 'r',
         'accountId': 'r',
         'data': 'r',
         'vip': 'r',
@@ -2677,7 +2691,7 @@ def test_compose_service(admin_user_client, user_client, project_client):
     auth_check(user_client.schema, 'composeService', 'r', {
         'name': 'r',
         'externalId': 'r',
-        'environmentId': 'r',
+        'stackId': 'r',
         'accountId': 'r',
         'vip': 'r',
         'selectorContainer': 'r',
@@ -2695,7 +2709,7 @@ def test_compose_service(admin_user_client, user_client, project_client):
     auth_check(project_client.schema, 'composeService', 'rd', {
         'name': 'r',
         'externalId': 'r',
-        'environmentId': 'r',
+        'stackId': 'r',
         'accountId': 'r',
         'vip': 'r',
         'selectorContainer': 'r',
@@ -2764,7 +2778,7 @@ def test_kubernetes_service(admin_user_client, user_client, project_client):
     auth_check(admin_user_client.schema, 'kubernetesService', 'r', {
         'name': 'r',
         'externalId': 'r',
-        'environmentId': 'r',
+        'stackId': 'r',
         'accountId': 'r',
         'data': 'r',
         'vip': 'r',
@@ -2776,7 +2790,7 @@ def test_kubernetes_service(admin_user_client, user_client, project_client):
     auth_check(user_client.schema, 'kubernetesService', 'r', {
         'name': 'r',
         'externalId': 'r',
-        'environmentId': 'r',
+        'stackId': 'r',
         'accountId': 'r',
         'vip': 'r',
         'selectorContainer': 'r',
@@ -2787,7 +2801,7 @@ def test_kubernetes_service(admin_user_client, user_client, project_client):
     auth_check(project_client.schema, 'kubernetesService', 'r', {
         'name': 'r',
         'externalId': 'r',
-        'environmentId': 'r',
+        'stackId': 'r',
         'accountId': 'r',
         'vip': 'r',
         'selectorContainer': 'r',
@@ -2934,4 +2948,40 @@ def test_backup_target_auth(admin_user_client, user_client, project_client):
     auth_check(project_client.schema, 'backupTarget', 'crd', {
         'accountId': 'r',
         'nfsConfig': 'cr',
+    })
+
+
+def test_service_log(admin_user_client, user_client, project_client):
+    auth_check(admin_user_client.schema, 'serviceLog', 'r', {
+        'accountId': 'r',
+        'data': 'r',
+        'endTime': 'r',
+        'eventType': 'r',
+        'serviceId': 'r',
+        'instanceId': 'r',
+        'transactionId': 'r',
+        'subLog': 'r',
+        'level': 'r',
+    })
+
+    auth_check(user_client.schema, 'serviceLog', 'r', {
+        'accountId': 'r',
+        'endTime': 'r',
+        'eventType': 'r',
+        'serviceId': 'r',
+        'instanceId': 'r',
+        'transactionId': 'r',
+        'subLog': 'r',
+        'level': 'r',
+    })
+
+    auth_check(project_client.schema, 'serviceLog', 'r', {
+        'accountId': 'r',
+        'endTime': 'r',
+        'eventType': 'r',
+        'serviceId': 'r',
+        'instanceId': 'r',
+        'transactionId': 'r',
+        'subLog': 'r',
+        'level': 'r',
     })

@@ -1,5 +1,6 @@
 package io.cattle.platform.servicediscovery.deployment.impl.planner;
 
+import io.cattle.platform.activity.ActivityLog;
 import io.cattle.platform.core.model.Service;
 import io.cattle.platform.servicediscovery.api.constants.ServiceDiscoveryConstants;
 import io.cattle.platform.servicediscovery.api.util.ServiceDiscoveryUtil;
@@ -25,7 +26,7 @@ public class GlobalServiceDeploymentPlanner extends ServiceDeploymentPlanner {
         for (Service service : services) {
             List<Long> hostIdsToDeployService =
                     context.allocatorService.getHostsSatisfyingHostAffinity(service.getAccountId(),
-                            ServiceDiscoveryUtil.getServiceLabels(service, context.allocatorService));
+                            ServiceDiscoveryUtil.getMergedServiceLabels(service, context.allocatorService));
             hostIds.addAll(hostIdsToDeployService);
         }
         for (DeploymentUnit unit : units) {
@@ -64,7 +65,7 @@ public class GlobalServiceDeploymentPlanner extends ServiceDeploymentPlanner {
             String hostId = unitLabels.get(ServiceDiscoveryConstants.LABEL_SERVICE_REQUESTED_HOST_ID);
             if (hostIds.contains(hostId)) {
                 watchList.add(unit);
-                unit.remove(false, ServiceDiscoveryConstants.AUDIT_LOG_REMOVE_EXTRA);
+                unit.remove(false, ServiceDiscoveryConstants.AUDIT_LOG_REMOVE_EXTRA, ActivityLog.INFO);
                 this.healthyUnits.remove(i);
             } else {
                 hostIds.add(hostId);

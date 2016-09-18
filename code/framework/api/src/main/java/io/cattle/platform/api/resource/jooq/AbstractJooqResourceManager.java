@@ -329,6 +329,19 @@ public abstract class AbstractJooqResourceManager extends AbstractObjectResource
         default:
             query.addOrderBy(sortField.asc());
         }
+
+        TableField<?, Object> idSort = JooqUtils.getTableField(getMetaDataManager(), type, ObjectMetaDataManager.ID_FIELD);
+        if (idSort == null) {
+            return;
+        }
+
+        switch (sort.getOrderEnum()) {
+        case DESC:
+            query.addOrderBy(idSort.desc());
+            break;
+        default:
+            query.addOrderBy(idSort.asc());
+        }
     }
 
     @Override
@@ -379,7 +392,7 @@ public abstract class AbstractJooqResourceManager extends AbstractObjectResource
     public boolean handleException(Throwable t, ApiRequest apiRequest) {
         if (t instanceof ProcessInstanceException) {
             Throwable t2 = ExceptionUtils.getRootCause(t);
-            if (t2 instanceof ProcessExecutionExitException && ((ProcessInstanceException) t2).getExitReason() == ExitReason.RESOURCE_BUSY) {
+            if (t2 instanceof ProcessExecutionExitException && ((ProcessExecutionExitException) t2).getExitReason() == ExitReason.RESOURCE_BUSY) {
                 log.info("Resource busy", t.getMessage());
                 throw new ClientVisibleException(ResponseCodes.CONFLICT);
             }

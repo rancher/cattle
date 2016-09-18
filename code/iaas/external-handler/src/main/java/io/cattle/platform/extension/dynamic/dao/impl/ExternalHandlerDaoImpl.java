@@ -52,6 +52,7 @@ public class ExternalHandlerDaoImpl extends AbstractJooqDao implements ExternalH
     protected List<? extends ExternalHandlerData> getExternalHandlerDataInternal(String processName) {
     	List<Field<?>> fields = new ArrayList<Field<?>>(Arrays.asList(EXTERNAL_HANDLER.fields()));
     	fields.add(EXTERNAL_HANDLER_EXTERNAL_HANDLER_PROCESS_MAP.ON_ERROR);
+        fields.add(EXTERNAL_HANDLER_EXTERNAL_HANDLER_PROCESS_MAP.EVENT_NAME);
 
         return create()
                 .select(fields)

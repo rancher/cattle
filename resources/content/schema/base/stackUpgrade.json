@@ -12,6 +12,9 @@
         },
         "environment":{
             "type": "map[string]"
+        },
+        "binding":{
+        	"type": "binding"
         }
     }
 }

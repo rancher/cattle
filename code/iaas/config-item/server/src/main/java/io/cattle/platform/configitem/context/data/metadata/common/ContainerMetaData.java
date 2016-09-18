@@ -28,6 +28,7 @@ public class ContainerMetaData {
     List<String> ports = new ArrayList<>();
     String service_name;
     String stack_name;
+    String stack_uuid;
     Map<String, String> labels = new HashMap<>();
     Long create_index;
     String host_uuid;
@@ -38,6 +39,7 @@ public class ContainerMetaData {
     String state;
     String external_id;
     String primary_mac_address;
+    Long memory;
 
 
     public ContainerMetaData() {
@@ -69,6 +71,14 @@ public class ContainerMetaData {
 
     public String getStack_name() {
         return stack_name;
+    }
+
+    public String getStack_uuid() {
+        return stack_uuid;
+    }
+
+    public void setStack_uuid(String stack_uuid) {
+        this.stack_uuid = stack_uuid;
     }
 
     public Map<String, String> getLabels() {
@@ -113,6 +123,8 @@ public class ContainerMetaData {
         this.health_state = instance.getHealthState();
         this.start_count = instance.getStartCount();
         this.state = instance.getState();
+        this.memory = DataAccessor.fieldLong(instance, "memory");
+
     }
 
     public void setService_name(String service_name) {
@@ -242,5 +254,13 @@ public class ContainerMetaData {
 
     public void setPrimary_mac_address(String mac_address) {
         this.primary_mac_address = mac_address;
+    }
+
+    public Long getMemory() {
+        return memory;
+    }
+
+    public void setMemory(Long memory) {
+        this.memory = memory;
     }
 }

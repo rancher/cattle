@@ -4,14 +4,14 @@ from netaddr import IPNetwork, IPAddress
 
 
 def _create_stack(client):
-    env = client.create_environment(name=random_str())
+    env = client.create_stack(name=random_str())
     env = client.wait_success(env)
     assert env.state == "active"
     return env
 
 
 def _create_stack_long_name(client, lname):
-    env = client.create_environment(name=lname)
+    env = client.create_stack(name=lname)
     env = client.wait_success(env)
     assert env.state == "active"
     return env
@@ -24,7 +24,7 @@ def create_env_and_svc(client, context):
     launch_config = {"imageUuid": image_uuid}
 
     service = client.create_service(name=random_str(),
-                                    environmentId=env.id,
+                                    stackId=env.id,
                                     launchConfig=launch_config)
     service = client.wait_success(service)
     assert service.state == "inactive"
@@ -42,7 +42,7 @@ def test_mix_cased_labels(client, context):
         }}
 
     service = client.create_service(name=random_str(),
-                                    environmentId=env.id,
+                                    stackId=env.id,
                                     launchConfig=launch_config)
     assert launch_config['labels'] == service.launchConfig.labels
     service = client.wait_success(service)
@@ -117,7 +117,7 @@ def test_activate_single_service(client, context, super_client):
     launch_config = {"imageUuid": image_uuid}
 
     consumed_service = client.create_service(name=random_str(),
-                                             environmentId=env.id,
+                                             stackId=env.id,
                                              launchConfig=launch_config)
     consumed_service = client.wait_success(consumed_service)
 
@@ -151,7 +151,7 @@ def test_activate_single_service(client, context, super_client):
 
     metadata = {"bar": {"foo": [{"id": 0}]}}
     svc = client.create_service(name=random_str(),
-                                environmentId=env.id,
+                                stackId=env.id,
                                 launchConfig=launch_config,
                                 metadata=metadata)
     svc = client.wait_success(svc)
@@ -245,13 +245,13 @@ def test_activate_services(client, context):
     launch_config = {"imageUuid": image_uuid}
 
     service1 = client.create_service(name=random_str(),
-                                     environmentId=env.id,
+                                     stackId=env.id,
                                      launchConfig=launch_config)
     service1 = client.wait_success(service1)
     assert service1.state == "inactive"
 
     service2 = client.create_service(name=random_str(),
-                                     environmentId=env.id,
+                                     stackId=env.id,
                                      launchConfig=launch_config)
     service2 = client.wait_success(service2)
     assert service2.state == "inactive"
@@ -300,7 +300,7 @@ def test_deactivate_remove_service(client, context):
     launch_config = {"imageUuid": image_uuid}
 
     service = client.create_service(name=random_str(),
-                                    environmentId=env.id,
+                                    stackId=env.id,
                                     launchConfig=launch_config)
     service = client.wait_success(service)
     assert service.state == "inactive"
@@ -333,13 +333,13 @@ def test_env_deactivate_services(client, context):
     launch_config = {"imageUuid": image_uuid}
 
     service1 = client.create_service(name=random_str(),
-                                     environmentId=env.id,
+                                     stackId=env.id,
                                      launchConfig=launch_config)
     service1 = client.wait_success(service1)
     assert service1.state == "inactive"
 
     service2 = client.create_service(name=random_str(),
-                                     environmentId=env.id,
+                                     stackId=env.id,
                                      launchConfig=launch_config)
     service2 = client.wait_success(service2)
     assert service2.state == "inactive"
@@ -376,16 +376,16 @@ def test_remove_inactive_service(client, context):
     launch_config = {"imageUuid": image_uuid}
 
     service1 = client.create_service(name=random_str(),
-                                     environmentId=env.id,
+                                     stackId=env.id,
                                      launchConfig=launch_config)
     service1 = client.wait_success(service1)
     assert service1.state == "inactive"
 
     client.create_service(name=random_str(),
-                          environmentId=env.id,
+                          stackId=env.id,
                           launchConfig=launch_config)
     service = client.create_service(name=random_str(),
-                                    environmentId=env.id,
+                                    stackId=env.id,
                                     launchConfig=launch_config)
     service = client.wait_success(service)
     assert service.state == "inactive"
@@ -413,14 +413,14 @@ def test_remove_inactive_service(client, context):
     _validate_compose_instance_removed(client, service, env)
 
 
-def test_remove_environment(client, context):
+def test_remove_stack(client, context):
     env = _create_stack(client)
 
     image_uuid = context.image_uuid
     launch_config = {"imageUuid": image_uuid}
 
     service = client.create_service(name=random_str(),
-                                    environmentId=env.id,
+                                    stackId=env.id,
                                     launchConfig=launch_config)
     service = client.wait_success(service)
     assert service.state == "inactive"
@@ -444,7 +444,7 @@ def test_remove_environment(client, context):
     service = client.wait_success(service)
     assert service.state == "inactive"
 
-    # remove environment
+    # remove stack
     env = client.wait_success(env.remove())
     assert env.state == "removed"
     wait_for_condition(
@@ -464,7 +464,7 @@ def test_link_volumes(client, context):
                     "name": "secondary", "labels": labels}
 
     service = client.create_service(name=random_str(),
-                                    environmentId=env.id,
+                                    stackId=env.id,
                                     launchConfig=launch_config,
                                     secondaryLaunchConfigs=[secondary_lc])
     service = client.wait_success(service)
@@ -493,7 +493,7 @@ def test_volumes_service_links_scale_one(client, context):
                     ["primary", "secondary1"]}
     service = client. \
         create_service(name="primary",
-                       environmentId=env.id,
+                       stackId=env.id,
                        launchConfig=launch_config,
                        secondaryLaunchConfigs=[sec_lc_1, sec_lc_2])
     service = client.wait_success(service)
@@ -517,6 +517,41 @@ def test_volumes_service_links_scale_one(client, context):
                                                      s2_container.id])
 
 
+def test_volumes_service_links_deactivate(client, context):
+    env = _create_stack(client)
+
+    image_uuid = context.image_uuid
+    launch_config = {"imageUuid": image_uuid,
+                     "dataVolumesFromLaunchConfigs": ["secondary1"]}
+    sec_lc_1 = {"imageUuid": image_uuid, "name": "secondary1",
+                "dataVolumesFromLaunchConfigs": ["secondary2"]}
+    sec_lc_2 = {"imageUuid": image_uuid, "name": "secondary2"}
+    service = client. \
+        create_service(name="primary",
+                       stackId=env.id,
+                       launchConfig=launch_config,
+                       secondaryLaunchConfigs=[sec_lc_1, sec_lc_2])
+    service = client.wait_success(service)
+
+    service = client.wait_success(service.activate(), 120)
+
+    assert service.state == "active"
+
+    # 2. validate instances
+    s1_container = _validate_compose_instance_start(client, service, env, "1")
+    s2_container = _validate_compose_instance_start(client, service, env,
+                                                    "1", "secondary1")
+    s3_container = _validate_compose_instance_start(client, service, env,
+                                                    "1", "secondary2")
+
+    # deactivate service and activate again
+    service = client.wait_success(service.deactivate())
+    client.wait_success(s1_container)
+    client.wait_success(s2_container)
+    client.wait_success(s3_container)
+    client.wait_success(service.activate())
+
+
 def test_volumes_service_links_scale_two(client, context):
     env = _create_stack(client)
 
@@ -525,7 +560,7 @@ def test_volumes_service_links_scale_two(client, context):
                      "dataVolumesFromLaunchConfigs": ["secondary"]}
     secondary_lc = {"imageUuid": image_uuid, "name": "secondary"}
     service = client.create_service(name=random_str(),
-                                    environmentId=env.id,
+                                    stackId=env.id,
                                     launchConfig=launch_config,
                                     scale=2,
                                     secondaryLaunchConfigs=[secondary_lc])
@@ -554,7 +589,7 @@ def test_remove_active_service(client, context):
     launch_config = {"imageUuid": image_uuid}
 
     service = client.create_service(name=random_str(),
-                                    environmentId=env.id,
+                                    stackId=env.id,
                                     launchConfig=launch_config)
     service = client.wait_success(service)
     assert service.state == "inactive"
@@ -589,14 +624,14 @@ def _wait_until_active_map_count(service, count, client):
         list_serviceExposeMap(serviceId=service.id, state='active')
 
 
-def test_remove_environment_w_active_svcs(client, context):
+def test_remove_stack_w_active_svcs(client, context):
     env = _create_stack(client)
 
     image_uuid = context.image_uuid
     launch_config = {"imageUuid": image_uuid}
 
     service = client.create_service(name=random_str(),
-                                    environmentId=env.id,
+                                    stackId=env.id,
                                     launchConfig=launch_config)
     service = client.wait_success(service)
     assert service.state == "inactive"
@@ -614,7 +649,7 @@ def test_remove_environment_w_active_svcs(client, context):
 
     _validate_compose_instance_start(client, service, env, "1")
 
-    # remove environment
+    # remove stack
     env = client.wait_success(env.remove())
     assert env.state == "removed"
     service = client.wait_success(service)
@@ -656,11 +691,12 @@ def test_validate_service_scaleup_scaledown(client, context):
     launch_config = {"imageUuid": image_uuid}
 
     service = client.create_service(name=random_str(),
-                                    environmentId=env.id,
+                                    stackId=env.id,
                                     launchConfig=launch_config,
                                     scale=2)
     service = client.wait_success(service)
     assert service.state == "inactive"
+    wait_for(lambda: client.reload(service).healthState == 'unhealthy')
 
     # scale up the inactive service
     service = client.update(service, scale=3, name=service.name)
@@ -683,6 +719,7 @@ def test_validate_service_scaleup_scaledown(client, context):
     # stop the instance2
     client.wait_success(instance21.stop())
     service = client.wait_success(service)
+    wait_for(lambda: client.reload(service).healthState == 'healthy')
 
     # rename the instance 3
     instance32 = client.update(instance31, name='newName')
@@ -735,7 +772,7 @@ def test_destroy_service_instance(client, context):
     launch_config = {"imageUuid": image_uuid}
 
     service = client.create_service(name=random_str(),
-                                    environmentId=env.id,
+                                    stackId=env.id,
                                     launchConfig=launch_config,
                                     scale=3)
     service = client.wait_success(service)
@@ -800,7 +837,7 @@ def test_service_rename(client, context):
     launch_config = {"imageUuid": image_uuid}
 
     service1 = client.create_service(name=random_str(),
-                                     environmentId=env.id,
+                                     stackId=env.id,
                                      launchConfig=launch_config,
                                      scale=2)
     service1 = client.wait_success(service1)
@@ -832,13 +869,13 @@ def test_env_rename(client, context):
     launch_config = {"imageUuid": image_uuid}
 
     service_1 = client.create_service(name=random_str(),
-                                      environmentId=env.id,
+                                      stackId=env.id,
                                       launchConfig=launch_config,
                                       scale=2)
     service_1 = client.wait_success(service_1)
 
     service_2 = client.create_service(name=random_str(),
-                                      environmentId=env.id,
+                                      stackId=env.id,
                                       launchConfig=launch_config,
                                       scale=1)
     service_2 = client.wait_success(service_2)
@@ -872,7 +909,7 @@ def test_validate_scale_down_restore_state(client, context):
     launch_config = {"imageUuid": image_uuid}
 
     service = client.create_service(name=random_str(),
-                                    environmentId=env.id,
+                                    stackId=env.id,
                                     launchConfig=launch_config,
                                     scale=3)
     service = client.wait_success(service)
@@ -892,14 +929,14 @@ def test_validate_scale_down_restore_state(client, context):
     _instance_remove(instance3, client)
 
     # wait for reconcile
-    service = client.wait_success(service)
+    service = wait_state(client, service, 'active')
 
     # scale down the service and validate that:
     # first instance is running
     # second instance is removed
     # third instance is removed
     service = client.update(service, scale=1, name=service.name)
-    client.wait_success(service, 120)
+    service = wait_state(client, service, 'active')
 
     # validate that only one service instance mapping exists
     instance_service_map = client. \
@@ -917,7 +954,7 @@ def test_validate_labels(client, context):
     launch_config1 = {"imageUuid": image_uuid, "labels": initial_labels1}
 
     service1 = client.create_service(name=service_name1,
-                                     environmentId=env.id,
+                                     stackId=env.id,
                                      launchConfig=launch_config1)
     service1 = client.wait_success(service1)
     assert service1.state == "inactive"
@@ -929,7 +966,7 @@ def test_validate_labels(client, context):
     launch_config2 = {"imageUuid": image_uuid}
 
     service2 = client.create_service(name=service_name2,
-                                     environmentId=env.id,
+                                     stackId=env.id,
                                      launchConfig=launch_config2)
     service2 = client.wait_success(service2)
     assert service2.state == "inactive"
@@ -958,6 +995,52 @@ def test_validate_labels(client, context):
     assert all(item in instance2.labels for item in result_labels_2) is True
 
 
+def test_deployment_unit_destroy_instance(super_client, new_context):
+    client = new_context.client
+    env = _create_stack(client)
+
+    image_uuid = new_context.image_uuid
+    launch_config = {"imageUuid": image_uuid,
+                     "labels": {"io.rancher.sidekicks": "secondary"}}
+    secondary_lc = {"imageUuid": image_uuid, "name": "secondary"}
+
+    assert len(client.list_host()) == 1
+
+    service = client.create_service(name=random_str(),
+                                    stackId=env.id,
+                                    launchConfig=launch_config,
+                                    secondaryLaunchConfigs=[secondary_lc])
+    service = client.wait_success(service)
+
+    # activate service1
+    service = client.wait_success(service.activate(), 120)
+    assert service.state == "active"
+    _validate_service_instance_map_count(client, service, "active", 2)
+
+    instance11 = _validate_compose_instance_start(client, service, env, "1")
+
+    # Add a host
+    host1 = new_context.host
+    assert instance11.hosts()[0].id == host1.id
+    register_simulated_host(new_context)
+
+    client.wait_success(client.create_container(imageUuid=image_uuid,
+                                                requestedHostId=host1.id))
+    client.wait_success(client.create_container(imageUuid=image_uuid,
+                                                requestedHostId=host1.id))
+    client.wait_success(client.create_container(imageUuid=image_uuid,
+                                                requestedHostId=host1.id))
+    client.wait_success(client.create_container(imageUuid=image_uuid,
+                                                requestedHostId=host1.id))
+
+    # destroy primary instance and wait for the service to reconcile
+    _instance_remove(instance11, client)
+    service = wait_state(client, service, 'active')
+    _validate_service_instance_map_count(client, service, "active", 2)
+    instance11 = _validate_compose_instance_start(client, service, env, "1")
+    assert instance11.hosts()[0].id == host1.id
+
+
 def test_sidekick_destroy_instance(client, context):
     env = _create_stack(client)
 
@@ -967,7 +1050,7 @@ def test_sidekick_destroy_instance(client, context):
     secondary_lc = {"imageUuid": image_uuid, "name": "secondary"}
 
     service = client.create_service(name=random_str(),
-                                    environmentId=env.id,
+                                    stackId=env.id,
                                     launchConfig=launch_config,
                                     secondaryLaunchConfigs=[secondary_lc])
     service = client.wait_success(service)
@@ -984,7 +1067,7 @@ def test_sidekick_destroy_instance(client, context):
 
     # destroy primary instance and wait for the service to reconcile
     _instance_remove(instance11, client)
-    service = client.wait_success(service)
+    service = wait_state(client, service, 'active')
     _validate_service_instance_map_count(client, service, "active", 2)
     instance11 = _validate_compose_instance_start(client, service, env, "1")
 
@@ -994,7 +1077,7 @@ def test_sidekick_destroy_instance(client, context):
 
     # destroy secondary instance and wait for the service to reconcile
     _instance_remove(instance12, client)
-    service = client.wait_success(service)
+    service = wait_state(client, service, 'active')
     _validate_service_instance_map_count(client, service, "active", 2)
 
     _validate_compose_instance_start(client, service, env, "1")
@@ -1012,7 +1095,7 @@ def test_sidekick_restart_instances(client, context):
     secondary_lc = {"imageUuid": image_uuid, "name": "secondary"}
 
     service = client.create_service(name=random_str(),
-                                    environmentId=env.id,
+                                    stackId=env.id,
                                     launchConfig=launch_config,
                                     scale=2,
                                     secondaryLaunchConfigs=[secondary_lc])
@@ -1034,7 +1117,7 @@ def test_sidekick_restart_instances(client, context):
     # scale should be restored
     client.wait_success(instance11.stop())
     _instance_remove(instance22, client)
-    service = client.wait_success(service)
+    service = wait_state(client, service, 'active')
     service = client.update(service, scale=2, name=service.name)
     service = client.wait_success(service, 120)
 
@@ -1054,7 +1137,7 @@ def test_sidekick_scaleup(client, context):
     secondary_lc = {"imageUuid": image_uuid, "name": "secondary"}
 
     service = client.create_service(name=random_str(),
-                                    environmentId=env.id,
+                                    stackId=env.id,
                                     launchConfig=launch_config,
                                     scale=1,
                                     secondaryLaunchConfigs=[secondary_lc])
@@ -1127,14 +1210,14 @@ def test_external_service_w_ips(client, context):
     launch_config = {"imageUuid": image_uuid}
 
     service1 = client.create_service(name=random_str(),
-                                     environmentId=env.id,
+                                     stackId=env.id,
                                      launchConfig=launch_config)
     service1 = client.wait_success(service1)
 
     # create service 2 as external
     ips = ["72.22.16.5", '192.168.0.10']
     service2 = client.create_externalService(name=random_str(),
-                                             environmentId=env.id,
+                                             stackId=env.id,
                                              launchConfig=launch_config,
                                              externalIpAddresses=ips)
     service2 = client.wait_success(service2)
@@ -1193,13 +1276,13 @@ def test_external_service_w_hostname(client, context):
     launch_config = {"imageUuid": image_uuid}
 
     service1 = client.create_service(name=random_str(),
-                                     environmentId=env.id,
+                                     stackId=env.id,
                                      launchConfig=launch_config)
     service1 = client.wait_success(service1)
 
     # create service 2 as external
     service2 = client.create_externalService(name=random_str(),
-                                             environmentId=env.id,
+                                             stackId=env.id,
                                              launchConfig=launch_config,
                                              hostname="a.com")
     service2 = client.wait_success(service2)
@@ -1246,12 +1329,20 @@ def test_service_spread_deployment(super_client, new_context):
 
     env = _create_stack(client)
     image_uuid = new_context.image_uuid
-    launch_config = {"imageUuid": image_uuid}
-
-    service = client.create_service(name=random_str(),
-                                    environmentId=env.id,
+    svc1_name = random_str()
+    launch_config = {
+        "imageUuid": image_uuid,
+        "labels": {
+            "io.rancher.scheduler.affinity:container_label_ne":
+                "io.rancher.stack_service.name=" +
+                env.name + '/' + svc1_name
+        }
+    }
+    service = client.create_service(name=svc1_name,
+                                    stackId=env.id,
                                     launchConfig=launch_config,
                                     scale=2)
+
     service = client.wait_success(service)
     assert service.state == "inactive"
 
@@ -1264,7 +1355,6 @@ def test_service_spread_deployment(super_client, new_context):
     # containers should be spread across the hosts
     instance1 = _validate_compose_instance_start(client, service, env, "1")
     instance1_host = instance1.hosts()[0].id
-
     instance2 = _validate_compose_instance_start(client, service, env, "2")
     instance2_host = instance2.hosts()[0].id
     assert instance1_host != instance2_host
@@ -1280,7 +1370,7 @@ def test_global_service(new_context):
     host1 = client.update(host1, labels=labels)
     host2 = client.update(host2, labels=labels)
 
-    # create environment and services
+    # create stack and services
     env = _create_stack(client)
     image_uuid = new_context.image_uuid
     launch_config = {
@@ -1292,7 +1382,7 @@ def test_global_service(new_context):
         }
     }
     service = client.create_service(name=random_str(),
-                                    environmentId=env.id,
+                                    stackId=env.id,
                                     launchConfig=launch_config)
     service = client.wait_success(service)
     assert service.state == "inactive"
@@ -1321,7 +1411,7 @@ def test_global_service_update_label(new_context):
     labels = {'group': 'web'}
     host1 = client.update(host1, labels=labels)
 
-    # create environment and services
+    # create stack and services
     env = _create_stack(client)
     image_uuid = new_context.image_uuid
     launch_config = {
@@ -1332,7 +1422,7 @@ def test_global_service_update_label(new_context):
         }
     }
     service = client.create_service(name=random_str(),
-                                    environmentId=env.id,
+                                    stackId=env.id,
                                     launchConfig=launch_config)
     service = client.wait_success(service)
     assert service.state == "inactive"
@@ -1369,8 +1459,7 @@ def test_global_service_update_label(new_context):
     # destroy the instance, reactivate the service and check
     # both hosts got instances
     _instance_remove(instance1, client)
-    service = client.wait_success(service.deactivate(), 120)
-    assert service.state == "inactive"
+    service = wait_state(client, service.deactivate(), 'inactive')
     service = client.wait_success(service.activate(), 120)
     assert service.state == "active"
     instance1 = _validate_compose_instance_start(client, service, env, "1")
@@ -1386,7 +1475,7 @@ def test_global_add_host(new_context):
     client = new_context.client
     host1 = new_context.host
 
-    # create environment and services
+    # create stack and services
     env = _create_stack(client)
     image_uuid = new_context.image_uuid
     launch_config = {
@@ -1396,7 +1485,7 @@ def test_global_add_host(new_context):
         }
     }
     service = client.create_service(name=random_str(),
-                                    environmentId=env.id,
+                                    stackId=env.id,
                                     launchConfig=launch_config)
     service = client.wait_success(service)
     assert service.state == "inactive"
@@ -1446,7 +1535,7 @@ def test_svc_container_reg_cred_and_image(super_client, client):
     launch_config = {"imageUuid": image_uuid}
 
     service = client.create_service(name=random_str(),
-                                    environmentId=env.id,
+                                    stackId=env.id,
                                     launchConfig=launch_config,
                                     scale=1)
     service = client.wait_success(service)
@@ -1472,7 +1561,7 @@ def test_network_from_service(client, context):
     secondary_lc = {"imageUuid": image_uuid, "name": "secondary"}
 
     service = client.create_service(name=random_str(),
-                                    environmentId=env.id,
+                                    stackId=env.id,
                                     launchConfig=launch_config,
                                     scale=2,
                                     secondaryLaunchConfigs=[secondary_lc])
@@ -1538,7 +1627,7 @@ def test_service_affinity_rules(super_client, new_context):
     }
 
     service = client.create_service(name=service_name,
-                                    environmentId=env.id,
+                                    stackId=env.id,
                                     launchConfig=launch_config,
                                     scale=3)
     service = client.wait_success(service)
@@ -1567,7 +1656,7 @@ def test_service_affinity_rules(super_client, new_context):
     }
 
     service2 = client.create_service(name=service_name2,
-                                     environmentId=env.id,
+                                     stackId=env.id,
                                      launchConfig=launch_config2,
                                      scale=3)
     service2 = client.wait_success(service2)
@@ -1611,7 +1700,7 @@ def test_affinity_auto_prepend_stack(super_client, new_context):
     }
 
     service = client.create_service(name=service_name,
-                                    environmentId=env.id,
+                                    stackId=env.id,
                                     launchConfig=launch_config,
                                     scale=3)
     service = client.wait_success(service)
@@ -1641,7 +1730,7 @@ def test_affinity_auto_prepend_stack_other_service(super_client, new_context):
     service_name2 = "service" + random_str()
 
     service1 = client.create_service(name=service_name1,
-                                     environmentId=env.id,
+                                     stackId=env.id,
                                      launchConfig={
                                          "imageUuid": image_uuid,
                                      },
@@ -1665,7 +1754,7 @@ def test_affinity_auto_prepend_stack_other_service(super_client, new_context):
     }
 
     service2 = client.create_service(name=service_name2,
-                                     environmentId=env.id,
+                                     stackId=env.id,
                                      launchConfig=launch_config,
                                      scale=2)
     service2 = client.wait_success(service2)
@@ -1720,7 +1809,7 @@ def test_affinity_auto_prepend_stack_same_service(super_client, new_context):
     }
 
     service = client.create_service(name=service_name,
-                                    environmentId=env.id,
+                                    stackId=env.id,
                                     launchConfig=launch_config,
                                     scale=2)
     service = client.wait_success(service)
@@ -1765,7 +1854,7 @@ def test_anti_affinity_sidekick(new_context):
     }
 
     service = client.create_service(name=service_name,
-                                    environmentId=env.id,
+                                    stackId=env.id,
                                     launchConfig=launch_config,
                                     scale=2,
                                     secondaryLaunchConfigs=[secondary_lc])
@@ -1804,7 +1893,7 @@ def test_host_delete_reconcile_service(super_client, new_context):
         }
     }
     service = client.create_service(name=service_name,
-                                    environmentId=env.id,
+                                    stackId=env.id,
                                     launchConfig=launch_config,
                                     scale=2)
     service = client.wait_success(service)
@@ -1864,7 +1953,7 @@ def test_export_config(client, context):
                                    "driver": "json-file"}}
     service = client. \
         create_service(name="web",
-                       environmentId=env.id,
+                       stackId=env.id,
                        launchConfig=launch_config,
                        metadata=metadata,
                        retainIp=True)
@@ -1899,7 +1988,7 @@ def test_export_config(client, context):
                                  "restartPolicy": restart_policy}
     service_nolog = client. \
         create_service(name="web-nolog",
-                       environmentId=env.id,
+                       stackId=env.id,
                        launchConfig=launch_config_without_log,
                        metadata=metadata,
                        retainIp=True)
@@ -1923,7 +2012,7 @@ def test_validate_create_only_containers(client, context):
     launch_config = {"imageUuid": image_uuid, "labels": labels}
 
     service = client.create_service(name=random_str(),
-                                    environmentId=env.id,
+                                    stackId=env.id,
                                     launchConfig=launch_config,
                                     scale=3)
     service = client.wait_success(service)
@@ -1981,7 +2070,7 @@ def test_indirect_ref_sidekick_destroy_instance(client, context):
     secondary_lc1 = {"imageUuid": image_uuid, "name": "secondary1"}
 
     service = client.create_service(name=random_str(),
-                                    environmentId=env.id,
+                                    stackId=env.id,
                                     launchConfig=launch_config,
                                     secondaryLaunchConfigs=[secondary_lc,
                                                             secondary_lc1])
@@ -2019,7 +2108,7 @@ def test_indirect_ref_sidekick_destroy_instance(client, context):
 
 
 def test_validate_hostname_override(client, context):
-    # create environment and services
+    # create stack and services
     env = _create_stack(client)
     image_uuid = context.image_uuid
     launch_config1 = {
@@ -2029,7 +2118,7 @@ def test_validate_hostname_override(client, context):
         }
     }
     service1 = client.create_service(name=random_str(),
-                                     environmentId=env.id,
+                                     stackId=env.id,
                                      launchConfig=launch_config1)
     service1 = client.wait_success(service1)
     assert service1.state == "inactive"
@@ -2050,7 +2139,7 @@ def test_validate_hostname_override(client, context):
         }
     }
     service2 = client.create_service(name=random_str(),
-                                     environmentId=env.id,
+                                     stackId=env.id,
                                      launchConfig=launch_config2)
     service2 = client.wait_success(service2)
     assert service2.state == "inactive"
@@ -2064,7 +2153,7 @@ def test_validate_hostname_override(client, context):
 
 
 def test_validate_long_hostname_override(client, context):
-    # create environment and services
+    # create stack and services
     env = _create_stack_long_name(client, "MyLongerStackNameCausingIssue")
     image_uuid = context.image_uuid
     launch_config1 = {
@@ -2075,7 +2164,7 @@ def test_validate_long_hostname_override(client, context):
     }
     first_service_name = "MyServiceNameLongerThanDNSPrefixLengthAllowed"
     service1 = client.create_service(name=first_service_name,
-                                     environmentId=env.id,
+                                     stackId=env.id,
                                      launchConfig=launch_config1)
     service1 = client.wait_success(service1)
     assert service1.state == "inactive"
@@ -2101,7 +2190,7 @@ def test_validate_long_hostname_override(client, context):
     }
     second_service_name = "SecondServiceNameLongerThanDNSPrefixLengthAllowed"
     service2 = client.create_service(name=second_service_name,
-                                     environmentId=env.id,
+                                     stackId=env.id,
                                      launchConfig=launch_config2)
     service2 = client.wait_success(service2)
     assert service2.state == "inactive"
@@ -2117,7 +2206,7 @@ def test_validate_long_hostname_override(client, context):
 
 
 def test_validate_long_hostname_with_domainname_override(client, context):
-    # create environment and services
+    # create stack and services
     env = _create_stack_long_name(client, "MySecondStackNameCausingIssue")
     image_uuid = context.image_uuid
     launch_config1 = {
@@ -2130,7 +2219,7 @@ def test_validate_long_hostname_with_domainname_override(client, context):
     first_service_name = "MyServiceNameLongerThanDNSPrefixLength" \
                          "AllowedMyServiceNameLonge"
     service1 = client.create_service(name=first_service_name,
-                                     environmentId=env.id,
+                                     stackId=env.id,
                                      launchConfig=launch_config1)
     service1 = client.wait_success(service1)
     assert service1.state == "inactive"
@@ -2157,7 +2246,7 @@ def test_validate_long_hostname_with_domainname_override(client, context):
     }
     second_service_name = "SecondServiceNameLongerThanDNSPrefixLengthAllowed"
     service2 = client.create_service(name=second_service_name,
-                                     environmentId=env.id,
+                                     stackId=env.id,
                                      launchConfig=launch_config2)
     service2 = client.wait_success(service2)
     assert service2.state == "inactive"
@@ -2179,7 +2268,7 @@ def test_vip_service(client, context):
     launch_config = {"imageUuid": image_uuid, "labels": init_labels}
 
     service = client.create_service(name=random_str(),
-                                    environmentId=env.id,
+                                    stackId=env.id,
                                     launchConfig=launch_config,
                                     assignServiceIpAddress=True)
     service = client.wait_success(service)
@@ -2194,7 +2283,7 @@ def test_vip_requested_ip(client, context):
     launch_config = {"imageUuid": image_uuid}
     vip = "169.254.65.30"
     service = client.create_service(name=random_str(),
-                                    environmentId=env.id,
+                                    stackId=env.id,
                                     launchConfig=launch_config,
                                     vip=vip)
     service = client.wait_success(service)
@@ -2210,7 +2299,7 @@ def test_validate_scaledown_updating(client, context):
     launch_config = {"imageUuid": image_uuid}
 
     service = client.create_service(name=random_str(),
-                                    environmentId=env.id,
+                                    stackId=env.id,
                                     launchConfig=launch_config,
                                     scale=3)
     service = client.wait_success(service)
@@ -2226,7 +2315,7 @@ def test_validate_scaledown_updating(client, context):
 
     def wait():
         s = client.reload(service)
-        return s.scale == 10 and s.healthState == 'degraded'
+        return s.scale == 10
     wait_for(wait)
 
     service = client.update(service, scale=1, name=service.name)
@@ -2245,7 +2334,7 @@ def test_stop_network_from_container(client, context, super_client):
     secondary_lc = {"imageUuid": image_uuid, "name": "secondary"}
 
     service = client.create_service(name=random_str(),
-                                    environmentId=env.id,
+                                    stackId=env.id,
                                     launchConfig=launch_config,
                                     scale=1,
                                     secondaryLaunchConfigs=[secondary_lc])
@@ -2299,7 +2388,7 @@ def test_remove_network_from_container(client, context, super_client):
                     "networkLaunchConfig": svc_name}
 
     service = client.create_service(name=svc_name,
-                                    environmentId=env.id,
+                                    stackId=env.id,
                                     launchConfig=launch_config,
                                     scale=1,
                                     secondaryLaunchConfigs=[secondary_lc])
@@ -2339,7 +2428,7 @@ def test_metadata(client, context):
     launch_config = {"imageUuid": image_uuid}
     metadata = {"bar": {"people": [{"id": 0}]}}
     service = client.create_service(name=random_str(),
-                                    environmentId=env.id,
+                                    stackId=env.id,
                                     launchConfig=launch_config,
                                     metadata=metadata)
     service = client.wait_success(service)
@@ -2352,6 +2441,7 @@ def test_metadata(client, context):
             return svc
         else:
             return None
+
     service = wait_for(wait_unhealthy)
     metadata = {"bar1": {"foo1": [{"id": 0}]}}
     service = client.update(service, metadata=metadata)
@@ -2359,8 +2449,8 @@ def test_metadata(client, context):
 
 
 def test_env_external_id(client):
-    env = client.create_environment(name='env-' + random_str(),
-                                    externalId='something')
+    env = client.create_stack(name='env-' + random_str(),
+                              externalId='something')
     assert env.externalId == 'something'
 
 
@@ -2384,7 +2474,7 @@ def test_sidekick_labels_merge(new_context):
                     "name": "secondary", "labels": secondary_labels}
 
     service = client.create_service(name=random_str(),
-                                    environmentId=env.id,
+                                    stackId=env.id,
                                     launchConfig=launch_config,
                                     secondaryLaunchConfigs=[secondary_lc])
     service = client.wait_success(service)
@@ -2408,7 +2498,7 @@ def test_service_restart(client, context):
     launch_config = {"imageUuid": image_uuid}
     secondary_lc = {"imageUuid": image_uuid, "name": "secondary"}
     svc = client.create_service(name=random_str(),
-                                environmentId=env.id,
+                                stackId=env.id,
                                 launchConfig=launch_config,
                                 scale=2,
                                 secondaryLaunchConfigs=[secondary_lc])
@@ -2473,7 +2563,7 @@ def test_public_endpoints(new_context):
     image_uuid = new_context.image_uuid
     launch_config = {"imageUuid": image_uuid, "ports": [str(port1) + ':6666']}
     service1 = client.create_service(name=random_str(),
-                                     environmentId=env.id,
+                                     stackId=env.id,
                                      launchConfig=launch_config,
                                      scale=2)
     service1 = client.wait_success(service1)
@@ -2482,7 +2572,7 @@ def test_public_endpoints(new_context):
     assert service1.state == "active"
     launch_config = {"imageUuid": image_uuid, "ports": [str(port2) + ':6666']}
     service2 = client.create_service(name=random_str(),
-                                     environmentId=env.id,
+                                     stackId=env.id,
                                      launchConfig=launch_config,
                                      scale=2)
     service2 = client.wait_success(service2)
@@ -2535,7 +2625,7 @@ def test_random_ports(new_context):
     image_uuid = new_context.image_uuid
     launch_config = {"imageUuid": image_uuid, "ports": ['6666', '7775']}
     svc = client.create_service(name=random_str(),
-                                environmentId=env.id,
+                                stackId=env.id,
                                 launchConfig=launch_config,
                                 scale=2)
     svc = client.wait_success(svc)
@@ -2572,7 +2662,7 @@ def test_random_ports_sidekicks(new_context):
                     "name": "secondary", "ports": ['6666']}
 
     svc = client.create_service(name=random_str(),
-                                environmentId=env.id,
+                                stackId=env.id,
                                 launchConfig=launch_config,
                                 secondaryLaunchConfigs=[secondary_lc])
     svc = client.wait_success(svc)
@@ -2599,7 +2689,7 @@ def test_random_ports_static_port(new_context):
     image_uuid = new_context.image_uuid
     launch_config = {"imageUuid": image_uuid, "ports": ['6666:7775']}
     svc = client.create_service(name=random_str(),
-                                environmentId=env.id,
+                                stackId=env.id,
                                 launchConfig=launch_config)
     svc = client.wait_success(svc)
     assert svc.state == "inactive"
@@ -2630,7 +2720,7 @@ def test_project_random_port_update_create(new_context):
     assert p.servicesPortRange == new_range
 
     svc = client.create_service(name=random_str(),
-                                environmentId=env.id,
+                                stackId=env.id,
                                 launchConfig=launch_config)
     svc = client.wait_success(svc)
     svc = client.wait_success(svc.activate())
@@ -2642,7 +2732,7 @@ def test_project_random_port_update_create(new_context):
     # try to create service with more ports
     # requested than random range can provide - should be allowed
     svc = client.create_service(name=random_str(),
-                                environmentId=env.id,
+                                stackId=env.id,
                                 launchConfig=launch_config)
     svc = client.wait_success(svc)
     assert svc.state == 'inactive'
@@ -2666,7 +2756,7 @@ def test_update_port_endpoint(new_context):
     image_uuid = new_context.image_uuid
     launch_config = {"imageUuid": image_uuid, "ports": [str(port1) + ':6666']}
     svc = client.create_service(name=random_str(),
-                                environmentId=env.id,
+                                stackId=env.id,
                                 launchConfig=launch_config)
     svc = client.wait_success(svc)
     assert svc.state == "inactive"
@@ -2718,7 +2808,7 @@ def test_ip_retain(client, context, super_client):
     launch_config = {"imageUuid": image_uuid}
 
     svc = client.create_service(name=random_str(),
-                                environmentId=env.id,
+                                stackId=env.id,
                                 launchConfig=launch_config,
                                 scale=1,
                                 retainIp=True)
@@ -2767,7 +2857,7 @@ def test_ip_retain_requested_ip(client, context, super_client):
     launch_config = {"imageUuid": image_uuid, "requestedIpAddress": req_ip}
 
     svc = client.create_service(name=random_str(),
-                                environmentId=env.id,
+                                stackId=env.id,
                                 launchConfig=launch_config,
                                 scale=1,
                                 retainIp=True)
@@ -2843,7 +2933,7 @@ def test_host_dns(client, context, super_client):
     launch_config = {"imageUuid": image_uuid, "networkMode": "host"}
 
     svc = client.create_service(name=random_str(),
-                                environmentId=env.id,
+                                stackId=env.id,
                                 launchConfig=launch_config)
     svc = client.wait_success(svc)
 
@@ -2874,7 +2964,7 @@ def test_dns_label(client, context):
                      "labels": labels}
 
     svc = client.create_service(name=random_str(),
-                                environmentId=env.id,
+                                stackId=env.id,
                                 launchConfig=launch_config)
     svc = client.wait_success(svc)
 
@@ -2904,7 +2994,7 @@ def test_dns_label_true(client, context):
                      "labels": labels}
 
     svc = client.create_service(name=random_str(),
-                                environmentId=env.id,
+                                stackId=env.id,
                                 launchConfig=launch_config)
     svc = client.wait_success(svc)
 
@@ -2936,7 +3026,7 @@ def test_dns_label_and_dns_param(client, context):
                      "dnsSearch": ["foo"]}
 
     svc = client.create_service(name=random_str(),
-                                environmentId=env.id,
+                                stackId=env.id,
                                 launchConfig=launch_config)
     svc = client.wait_success(svc)
 
@@ -2973,7 +3063,7 @@ def test_standalone_container_endpoint(new_context):
                      "ports": ['127.2.2.2:%s:%s' % (port0, '6666'),
                                '%s:%s' % (port1, '6666')]}
     svc = client.create_service(name=random_str(),
-                                environmentId=env.id,
+                                stackId=env.id,
                                 launchConfig=launch_config)
     svc = client.wait_success(svc)
     assert svc.state == "inactive"
@@ -3044,7 +3134,7 @@ def test_service_start_on_create(client, context):
     launch_config = {"imageUuid": image_uuid}
 
     svc = client.create_service(name=random_str(),
-                                environmentId=env.id,
+                                stackId=env.id,
                                 startOnCreate=True,
                                 launchConfig=launch_config)
     assert svc.startOnCreate
@@ -3063,7 +3153,7 @@ def test_validate_scaledown_order(client, context):
     secondary_lc = {"imageUuid": image_uuid, "name": "secondary"}
 
     service = client.create_service(name=random_str(),
-                                    environmentId=env.id,
+                                    stackId=env.id,
                                     launchConfig=launch_config,
                                     secondaryLaunchConfigs=[secondary_lc],
                                     scale=3)
@@ -3092,7 +3182,7 @@ def test_retain_ip_update(client, context, super_client):
     launch_config = {"imageUuid": image_uuid}
 
     svc = client.create_service(name=random_str(),
-                                environmentId=env.id,
+                                stackId=env.id,
                                 launchConfig=launch_config,
                                 scale=1)
     svc = client.wait_success(svc)

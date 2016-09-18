@@ -1,6 +1,8 @@
 package io.cattle.platform.servicediscovery.deployment;
 
 import static io.cattle.platform.core.model.tables.ServiceIndexTable.*;
+
+import io.cattle.platform.activity.ActivityLog;
 import io.cattle.platform.core.addon.InstanceHealthCheck;
 import io.cattle.platform.core.addon.InstanceHealthCheck.Strategy;
 import io.cattle.platform.core.addon.RecreateOnQuorumStrategyConfig;
@@ -39,7 +41,6 @@ public abstract class ServiceDeploymentPlanner {
     private List<DeploymentUnit> incompleteUnits = new ArrayList<>();
     protected DeploymentServiceContext context;
     protected HealthCheckActionHandler healthActionHandler = new RecreateHealthCheckActionHandler();
-    private List<DeploymentUnit> ignoreUnits = new ArrayList<>();
 
     public ServiceDeploymentPlanner(List<Service> services, List<DeploymentUnit> units,
             DeploymentServiceContext context) {
@@ -49,14 +50,20 @@ public abstract class ServiceDeploymentPlanner {
         populateDeploymentUnits(units);
     }
 
+    public String getStatus() {
+        return String.format("Created: %d, Unhealthy: %d, Bad: %d, Incomplete: %d",
+                healthyUnits.size(),
+                unhealthyUnits.size(),
+                badUnits.size(),
+                incompleteUnits.size());
+    }
+
     protected void populateDeploymentUnits(List<DeploymentUnit> units) {
         List<DeploymentUnit> healthyUnhealthyUnits = new ArrayList<>();
         if (units != null) {
             for (DeploymentUnit unit : units) {
                 if (unit.isError()) {
                     badUnits.add(unit);
-                } else if (unit.isIgnore()) {
-                    ignoreUnits.add(unit);
                 } else {
                     healthyUnhealthyUnits.add(unit);
                     if (!unit.isComplete()) {
@@ -141,7 +148,11 @@ public abstract class ServiceDeploymentPlanner {
     public List<DeploymentUnit> deploy(Map<Long, DeploymentUnitInstanceIdGenerator> svcInstanceIdGenerator) {
         List<DeploymentUnit> units = this.deployHealthyUnits();
         for (DeploymentUnit unit : units) {
-            unit.start(svcInstanceIdGenerator);
+            unit.create(svcInstanceIdGenerator);
+        }
+
+        for (DeploymentUnit unit : units) {
+            unit.start();
         }
 
         for (DeploymentUnit unit : units) {
@@ -157,7 +168,7 @@ public abstract class ServiceDeploymentPlanner {
                 || needToReconcileDeploymentImpl()
                 || ifHealthyUnitsNeedReconcile();
     }
-    
+
     private boolean ifHealthyUnitsNeedReconcile() {
         for (DeploymentUnit unit : healthyUnits) {
             if (!unit.isStarted()) {
@@ -179,7 +190,7 @@ public abstract class ServiceDeploymentPlanner {
         while (it.hasNext()) {
             DeploymentUnit next = it.next();
             watchList.add(next);
-            next.remove(false, ServiceDiscoveryConstants.AUDIT_LOG_REMOVE_BAD);
+            next.remove(false, ServiceDiscoveryConstants.AUDIT_LOG_REMOVE_BAD, ActivityLog.ERROR);
             it.remove();
         }
         for (DeploymentUnit toWatch : watchList) {
@@ -202,7 +213,7 @@ public abstract class ServiceDeploymentPlanner {
         while (it.hasNext()) {
             DeploymentUnit next = it.next();
             watchList.add(next);
-            next.remove(false, ServiceDiscoveryConstants.AUDIT_LOG_REMOVE_UNHEATLHY);
+            next.remove(false, ServiceDiscoveryConstants.AUDIT_LOG_REMOVE_UNHEATLHY, ActivityLog.INFO);
             it.remove();
         }
         for (DeploymentUnit toWatch : watchList) {

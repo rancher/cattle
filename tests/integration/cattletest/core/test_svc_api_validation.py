@@ -3,7 +3,7 @@ from cattle import ApiError
 
 
 def _create_stack(client):
-    env = client.create_environment(name=random_str())
+    env = client.create_stack(name=random_str())
     env = client.wait_success(env)
     assert env.state == "active"
     return env
@@ -16,13 +16,13 @@ def test_create_duplicated_services(client, context):
     launch_config = {"imageUuid": image_uuid}
     service_name = random_str()
     service1 = client.create_service(name=service_name,
-                                     environmentId=env.id,
+                                     stackId=env.id,
                                      launchConfig=launch_config)
     client.wait_success(service1)
 
     with pytest.raises(ApiError) as e:
         client.create_service(name=service_name,
-                              environmentId=env.id,
+                              stackId=env.id,
                               launchConfig=launch_config)
     assert e.value.error.status == 422
     assert e.value.error.code == 'NotUnique'
@@ -30,7 +30,7 @@ def test_create_duplicated_services(client, context):
 
     with pytest.raises(ApiError) as e:
         client.create_service(name=service_name.upper(),
-                              environmentId=env.id,
+                              stackId=env.id,
                               launchConfig=launch_config)
     assert e.value.error.status == 422
     assert e.value.error.code == 'NotUnique'
@@ -38,7 +38,7 @@ def test_create_duplicated_services(client, context):
 
     with pytest.raises(ApiError) as e:
         client.create_externalService(name=service_name,
-                                      environmentId=env.id,
+                                      stackId=env.id,
                                       launchConfig=launch_config,
                                       externalIpAddresses=["72.22.16.5"])
     assert e.value.error.status == 422
@@ -47,14 +47,14 @@ def test_create_duplicated_services(client, context):
 
     with pytest.raises(ApiError) as e:
         client.create_dnsService(name=service_name,
-                                 environmentId=env.id)
+                                 stackId=env.id)
     assert e.value.error.status == 422
     assert e.value.error.code == 'NotUnique'
     assert e.value.error.fieldName == 'name'
 
     # try to update the service with duplicated service name
     service = client.create_service(name=random_str(),
-                                    environmentId=env.id,
+                                    stackId=env.id,
                                     launchConfig=launch_config)
     service = client.wait_success(service)
     with pytest.raises(ApiError) as e:
@@ -66,7 +66,7 @@ def test_create_duplicated_services(client, context):
     # remove the service and try to re-use its name
     client.wait_success(service1.remove())
     client.create_service(name=service_name,
-                          environmentId=env.id,
+                          stackId=env.id,
                           launchConfig=launch_config)
 
 
@@ -76,7 +76,7 @@ def test_external_service_w_hostname(client, context):
     with pytest.raises(ApiError) as e:
         ips = ["72.22.16.5", '192.168.0.10']
         client.create_externalService(name=random_str(),
-                                      environmentId=env.id,
+                                      stackId=env.id,
                                       hostname="a.com",
                                       externalIpAddresses=ips)
     assert e.value.error.status == 422
@@ -96,7 +96,7 @@ def test_circular_refs(client, context):
 
     with pytest.raises(ApiError) as e:
         client.create_service(name="primary",
-                              environmentId=env.id,
+                              stackId=env.id,
                               launchConfig=launch_config,
                               secondaryLaunchConfigs=[secondary_lc])
     assert e.value.error.status == 422
@@ -115,7 +115,7 @@ def test_circular_refs(client, context):
 
     with pytest.raises(ApiError) as e:
         client.create_service(name="primary",
-                              environmentId=env.id,
+                              stackId=env.id,
                               launchConfig=launch_config,
                               secondaryLaunchConfigs=[s_lc1, s_lc2])
     assert e.value.error.status == 422
@@ -139,7 +139,7 @@ def test_no_circular_ref(client, context):
                      'networkLaunchConfig': 'primary'}
 
     svc = client.create_service(name="primary",
-                                environmentId=env.id,
+                                stackId=env.id,
                                 launchConfig=launch_config,
                                 secondaryLaunchConfigs=[secondary1_lc,
                                                         secondary2_lc])
@@ -158,7 +158,7 @@ def test_validate_image(client, context):
 
     with pytest.raises(ApiError) as e:
         client.create_service(name=random_str(),
-                              environmentId=env.id,
+                              stackId=env.id,
                               launchConfig=launch_config,
                               secondaryLaunchConfigs=[secondary_lc])
     assert e.value.error.status == 422
@@ -173,7 +173,7 @@ def test_validate_image(client, context):
 
     with pytest.raises(ApiError) as e:
         client.create_service(name=random_str(),
-                              environmentId=env.id,
+                              stackId=env.id,
                               launchConfig=launch_config,
                               secondaryLaunchConfigs=[secondary_lc])
     assert e.value.error.status == 422
@@ -191,7 +191,7 @@ def test_validate_port(client, context):
 
     with pytest.raises(ApiError) as e:
         client.create_service(name=random_str(),
-                              environmentId=env.id,
+                              stackId=env.id,
                               launchConfig=launch_config)
     assert e.value.error.status == 422
     assert e.value.error.code == 'PortWrongFormat'
@@ -199,7 +199,7 @@ def test_validate_port(client, context):
     launch_config = {"imageUuid": image_uuid, "ports": ["4565/invalidtcp"]}
     with pytest.raises(ApiError) as e:
         client.create_service(name=random_str(),
-                              environmentId=env.id,
+                              stackId=env.id,
                               launchConfig=launch_config)
     assert e.value.error.status == 422
     assert e.value.error.code == 'PortInvalidProtocol'
@@ -208,7 +208,7 @@ def test_validate_port(client, context):
     launch_config = {"imageUuid": image_uuid, "ports": ["42:43"]}
     with pytest.raises(ApiError) as e:
         client.create_loadBalancerService(name=random_str(),
-                                          environmentId=env.id,
+                                          stackId=env.id,
                                           launchConfig=launch_config)
     assert e.value.error.status == 422
     assert e.value.error.code == 'InvalidOption'
@@ -221,7 +221,7 @@ def test_vip_requested_ip(client, context):
     # vip out of the range - still accepted
     vip = "169.255.65.30"
     svc = client.create_service(name=random_str(),
-                                environmentId=env.id,
+                                stackId=env.id,
                                 launchConfig=launch_config,
                                 vip=vip)
     assert svc.vip == vip
@@ -234,30 +234,30 @@ def test_add_svc_to_removed_stack(client, context):
     launch_config = {"imageUuid": image_uuid}
 
     client.create_service(name=random_str(),
-                          environmentId=env.id,
+                          stackId=env.id,
                           launchConfig=launch_config)
 
     client.create_service(name=random_str(),
-                          environmentId=env.id,
+                          stackId=env.id,
                           launchConfig=launch_config)
 
     env.remove()
 
     with pytest.raises(ApiError) as e:
         client.create_service(name=random_str(),
-                              environmentId=env.id,
+                              stackId=env.id,
                               launchConfig=launch_config)
     assert e.value.error.status == 422
     assert e.value.error.code == 'InvalidState'
-    assert e.value.error.fieldName == 'environment'
+    assert e.value.error.fieldName == 'stackId'
 
     with pytest.raises(ApiError) as e:
         client.create_service(name=random_str(),
-                              environmentId=env.id,
+                              stackId=env.id,
                               launchConfig=launch_config)
     assert e.value.error.status == 422
     assert e.value.error.code == 'InvalidState'
-    assert e.value.error.fieldName == 'environment'
+    assert e.value.error.fieldName == 'stackId'
 
 
 def test_validate_launch_config_name(client, context):
@@ -266,7 +266,7 @@ def test_validate_launch_config_name(client, context):
     launch_config = {"imageUuid": image_uuid}
     svc_name = random_str()
     service = client.create_service(name=svc_name,
-                                    environmentId=env.id,
+                                    stackId=env.id,
                                     launchConfig=launch_config)
 
     client.wait_success(service)
@@ -278,7 +278,7 @@ def test_validate_launch_config_name(client, context):
 
     with pytest.raises(ApiError) as e:
         client.create_service(name=random_str(),
-                              environmentId=env.id,
+                              stackId=env.id,
                               launchConfig=launch_config,
                               secondaryLaunchConfigs=[secondary_lc])
     assert e.value.error.status == 422
@@ -291,7 +291,7 @@ def test_validate_service_token(client, context, super_client):
     launch_config = {"imageUuid": image_uuid}
     svc_name = random_str()
     service = client.create_service(name=svc_name,
-                                    environmentId=env.id,
+                                    stackId=env.id,
                                     launchConfig=launch_config)
 
     client.wait_success(service)
@@ -323,7 +323,7 @@ def test_ip_retain(client, context, super_client):
     launch_config = {"imageUuid": image_uuid}
 
     svc = client.create_service(name=random_str(),
-                                environmentId=env.id,
+                                stackId=env.id,
                                 launchConfig=launch_config,
                                 scale=1,
                                 retainIp=True)
@@ -347,7 +347,7 @@ def test_null_scale(client, context):
     launch_config = {"imageUuid": image_uuid}
 
     svc = client.create_service(name=random_str(),
-                                environmentId=env.id,
+                                stackId=env.id,
                                 launchConfig=launch_config,
                                 scale=None)
     svc = client.wait_success(svc)
@@ -363,7 +363,7 @@ def test_validate_svc_name(client, context):
     svc_name = "-" + random_str()
     with pytest.raises(ApiError) as e:
         client.create_service(name=svc_name,
-                              environmentId=env.id,
+                              stackId=env.id,
                               launchConfig=launch_config)
 
     assert e.value.error.status == 422
@@ -373,7 +373,7 @@ def test_validate_svc_name(client, context):
     svc_name = random_str() + "-"
     with pytest.raises(ApiError) as e:
         client.create_service(name=svc_name,
-                              environmentId=env.id,
+                              stackId=env.id,
                               launchConfig=launch_config)
     assert e.value.error.status == 422
     assert e.value.error.code == 'InvalidCharacters'
@@ -382,7 +382,7 @@ def test_validate_svc_name(client, context):
     svc_name = random_str() + "--end"
     with pytest.raises(ApiError) as e:
         client.create_service(name=svc_name,
-                              environmentId=env.id,
+                              stackId=env.id,
                               launchConfig=launch_config)
     assert e.value.error.status == 422
     assert e.value.error.code == 'InvalidCharacters'
@@ -392,14 +392,14 @@ def test_validate_svc_name(client, context):
                               "LinkTOOLONGtoolongtoolongtoolong"
     with pytest.raises(ApiError) as e:
         client.create_service(name=svc_name,
-                              environmentId=env.id,
+                              stackId=env.id,
                               launchConfig=launch_config)
     assert e.value.error.status == 422
     assert e.value.error.code == 'MaxLengthExceeded'
 
     # svc_name with single char
     svc = client.create_service(name='a',
-                                environmentId=env.id,
+                                stackId=env.id,
                                 launchConfig=launch_config)
     svc = client.wait_success(svc)
     assert svc.state == "inactive"
@@ -412,12 +412,12 @@ def test_setlinks_on_removed(client, context):
     launch_config = {"imageUuid": image_uuid}
 
     svc = client.create_service(name=random_str(),
-                                environmentId=env.id,
+                                stackId=env.id,
                                 launchConfig=launch_config)
     svc = client.wait_success(svc)
 
     target = client.create_service(name=random_str(),
-                                   environmentId=env.id,
+                                   stackId=env.id,
                                    launchConfig=launch_config)
     target = client.wait_success(target)
     client.wait_success(target.remove())

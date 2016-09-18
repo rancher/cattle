@@ -1,13 +1,12 @@
 package io.cattle.platform.servicediscovery.service.impl;
 
-import static io.cattle.platform.core.model.tables.StackTable.*;
 import static io.cattle.platform.core.model.tables.ServiceIndexTable.*;
 import static io.cattle.platform.core.model.tables.ServiceTable.*;
+import static io.cattle.platform.core.model.tables.StackTable.*;
 import static io.cattle.platform.core.model.tables.SubnetTable.*;
 import io.cattle.platform.allocator.service.AllocatorService;
 import io.cattle.platform.configitem.events.ConfigUpdate;
 import io.cattle.platform.configitem.model.Client;
-import io.cattle.platform.configitem.model.ItemVersion;
 import io.cattle.platform.configitem.request.ConfigUpdateRequest;
 import io.cattle.platform.configitem.version.ConfigItemStatusManager;
 import io.cattle.platform.core.addon.LoadBalancerServiceLink;
@@ -25,7 +24,6 @@ import io.cattle.platform.core.dao.InstanceDao;
 import io.cattle.platform.core.dao.LabelsDao;
 import io.cattle.platform.core.dao.NetworkDao;
 import io.cattle.platform.core.model.Account;
-import io.cattle.platform.core.model.Stack;
 import io.cattle.platform.core.model.Host;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.Label;
@@ -33,25 +31,22 @@ import io.cattle.platform.core.model.Network;
 import io.cattle.platform.core.model.Service;
 import io.cattle.platform.core.model.ServiceConsumeMap;
 import io.cattle.platform.core.model.ServiceIndex;
+import io.cattle.platform.core.model.Stack;
 import io.cattle.platform.core.model.Subnet;
 import io.cattle.platform.core.util.PortSpec;
 import io.cattle.platform.core.util.SystemLabels;
 import io.cattle.platform.deferred.util.DeferredUtils;
 import io.cattle.platform.eventing.EventService;
-import io.cattle.platform.eventing.model.Event;
-import io.cattle.platform.eventing.model.EventVO;
-import io.cattle.platform.framework.event.FrameworkEvents;
-import io.cattle.platform.framework.event.util.EventUtils;
 import io.cattle.platform.iaas.api.filter.apikey.ApiKeyFilter;
 import io.cattle.platform.json.JsonMapper;
 import io.cattle.platform.lock.LockManager;
 import io.cattle.platform.object.ObjectManager;
-import io.cattle.platform.object.meta.ObjectMetaDataManager;
 import io.cattle.platform.object.process.ObjectProcessManager;
 import io.cattle.platform.object.process.StandardProcess;
 import io.cattle.platform.object.resource.ResourceMonitor;
 import io.cattle.platform.object.resource.ResourcePredicate;
 import io.cattle.platform.object.util.DataAccessor;
+import io.cattle.platform.object.util.ObjectUtils;
 import io.cattle.platform.resource.pool.PooledResource;
 import io.cattle.platform.resource.pool.PooledResourceOptions;
 import io.cattle.platform.resource.pool.ResourcePoolManager;
@@ -190,8 +185,6 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
                 ServiceDiscoveryConstants.STATE_UPGRADING, ServiceDiscoveryConstants.STATE_ROLLINGBACK,
                 ServiceDiscoveryConstants.STATE_CANCELING_UPGRADE,
                 ServiceDiscoveryConstants.STATE_CANCELED_UPGRADE,
-                ServiceDiscoveryConstants.STATE_CANCELING_ROLLBACK,
-                ServiceDiscoveryConstants.STATE_CANCELED_ROLLBACK,
                 ServiceDiscoveryConstants.STATE_FINISHING_UPGRADE,
                 ServiceDiscoveryConstants.STATE_UPGRADED,
                 ServiceDiscoveryConstants.STATE_RESTARTING);
@@ -455,7 +448,7 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
 
     @Override
     public boolean isGlobalService(Service service) {
-        Map<String, String> serviceLabels = ServiceDiscoveryUtil.getServiceLabels(service, allocatorService);
+        Map<String, String> serviceLabels = ServiceDiscoveryUtil.getMergedServiceLabels(service, allocatorService);
         String globalService = serviceLabels.get(ServiceDiscoveryConstants.LABEL_SERVICE_GLOBAL);
         return Boolean.valueOf(globalService);
     }
@@ -490,11 +483,7 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
 
         objectManager.reload(object);
         objectManager.setFields(object, ServiceDiscoveryConstants.FIELD_PUBLIC_ENDPOINTS, newData);
-        Map<String, Object> data = new HashMap<>();
-        data.put(ServiceDiscoveryConstants.FIELD_PUBLIC_ENDPOINTS, newData);
-        data.put(ObjectMetaDataManager.ACCOUNT_FIELD, accountId);
-
-        EventUtils.triggerStateChanged(eventService, resourceId.toString(), resourceType, data);
+        publishEvent(object);
     }
 
     protected void reconcileHostEndpointsImpl(final Host host) {
@@ -576,7 +565,7 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
             Map<String, Object> fields = new HashMap<>();
             fields.put(ServiceDiscoveryConstants.FIELD_HEALTH_STATE, newHealthState);
             objectManager.setFields(stack, fields);
-            publishEvent(stack.getAccountId(), stack.getId(), stack.getKind());
+            publishEvent(stack);
         }
     }
 
@@ -634,7 +623,7 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
                 Map<String, Object> fields = new HashMap<>();
                 fields.put(ServiceDiscoveryConstants.FIELD_HEALTH_STATE, newHealthState);
                 objectManager.setFields(service, fields);
-                publishEvent(service.getAccountId(), service.getId(), service.getKind());
+                publishEvent(service);
             }
         }
     }
@@ -647,15 +636,14 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
         if (!supportedKinds.contains(service.getKind().toLowerCase())) {
             serviceHealthState = HealthcheckConstants.HEALTH_STATE_HEALTHY;
         } else {
-            List<? extends Instance> serviceInstances = exposeMapDao.listServiceManagedInstances(service
-                    .getId());
+            List<? extends Instance> serviceInstances = exposeMapDao.listServiceManagedInstances(service);
             List<String> healthyStates = Arrays.asList(HealthcheckConstants.HEALTH_STATE_HEALTHY,
                     HealthcheckConstants.HEALTH_STATE_UPDATING_HEALTHY);
             List<String> initStates = Arrays.asList(HealthcheckConstants.HEALTH_STATE_INITIALIZING,
                     HealthcheckConstants.HEALTH_STATE_REINITIALIZING);
 
             Integer scale = DataAccessor.fieldInteger(service, ServiceDiscoveryConstants.FIELD_SCALE);
-            if (scale == null || ServiceDiscoveryUtil.isNoopService(service, allocatorService)) {
+            if (scale == null || ServiceDiscoveryUtil.isNoopService(service)) {
                 scale = 0;
             }
             ScalePolicy policy = DataAccessor.field(service,
@@ -723,21 +711,8 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
         return startOnce;
     }
 
-    @Override
-    public void publishChanged(Service service) {
-        publishEvent(service.getAccountId(), service.getId(), objectManager.getType(service));
-    }
-
-    protected void publishEvent(long accountId, long resourceId, String resourceType) {
-        Map<String, Object> data = new HashMap<>();
-        data.put(ObjectMetaDataManager.ACCOUNT_FIELD, accountId);
-
-        Event event = EventVO.newEvent(FrameworkEvents.STATE_CHANGE)
-                .withData(data)
-                .withResourceType(resourceType)
-                .withResourceId(String.valueOf(resourceId));
-
-        eventService.publish(event);
+    protected void publishEvent(Object obj) {
+        ObjectUtils.publishChanged(eventService, objectManager, obj);
     }
 
     @Override
@@ -747,12 +722,13 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
     }
 
     @Override
-    public void serviceEndpointsUpdate(ConfigUpdate update) {
+    public void serviceUpdate(ConfigUpdate update) {
         if (update.getResourceId() == null) {
             return;
         }
+
         final Client client = new Client(Service.class, new Long(update.getResourceId()));
-        reconcileForService(update, client, new Runnable() {
+        itemManager.runUpdateForEvent(SERVICE_ENDPOINTS_UPDATE, update, client, new Runnable() {
             @Override
             public void run() {
                 Service service = objectManager.loadResource(Service.class, client.getResourceId());
@@ -769,7 +745,7 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
             return;
         }
         final Client client = new Client(Host.class, new Long(update.getResourceId()));
-        reconcileForHost(update, client, new Runnable() {
+        itemManager.runUpdateForEvent(HOST_ENDPOINTS_UPDATE, update, client, new Runnable() {
             @Override
             public void run() {
                 Host host = objectManager.loadResource(Host.class, client.getResourceId());
@@ -778,26 +754,6 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
                 }
             }
         });
-    }
-
-    protected void reconcileForHost(ConfigUpdate update, Client client, Runnable run) {
-        ItemVersion itemVersion = itemManager.getRequestedVersion(client, HOST_ENDPOINTS_UPDATE);
-        if (itemVersion == null) {
-            return;
-        }
-        run.run();
-        itemManager.setApplied(client, HOST_ENDPOINTS_UPDATE, itemVersion);
-        eventService.publish(EventVO.reply(update));
-    }
-
-    protected void reconcileForService(ConfigUpdate update, Client client, Runnable run) {
-        ItemVersion itemVersion = itemManager.getRequestedVersion(client, SERVICE_ENDPOINTS_UPDATE);
-        if (itemVersion == null) {
-            return;
-        }
-        run.run();
-        itemManager.setApplied(client, SERVICE_ENDPOINTS_UPDATE, itemVersion);
-        eventService.publish(EventVO.reply(update));
     }
 
     @Override

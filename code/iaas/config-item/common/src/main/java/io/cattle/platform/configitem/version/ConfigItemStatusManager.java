@@ -1,5 +1,6 @@
 package io.cattle.platform.configitem.version;
 
+import io.cattle.platform.configitem.events.ConfigUpdate;
 import io.cattle.platform.configitem.model.Client;
 import io.cattle.platform.configitem.model.ItemVersion;
 import io.cattle.platform.configitem.request.ConfigUpdateRequest;
@@ -25,5 +26,7 @@ public interface ConfigItemStatusManager {
     void waitFor(ConfigUpdateRequest request);
 
     void sync(boolean migration);
+
+    boolean runUpdateForEvent(String itemName, ConfigUpdate update, Client client, Runnable run);
 
 }

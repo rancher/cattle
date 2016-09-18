@@ -319,6 +319,11 @@ public class Tables {
 	public static final io.cattle.platform.core.model.tables.ServiceIndexTable SERVICE_INDEX = io.cattle.platform.core.model.tables.ServiceIndexTable.SERVICE_INDEX;
 
 	/**
+	 * The table cattle.service_log
+	 */
+	public static final io.cattle.platform.core.model.tables.ServiceLogTable SERVICE_LOG = io.cattle.platform.core.model.tables.ServiceLogTable.SERVICE_LOG;
+
+	/**
 	 * The table cattle.setting
 	 */
 	public static final io.cattle.platform.core.model.tables.SettingTable SETTING = io.cattle.platform.core.model.tables.SettingTable.SETTING;

@@ -22,6 +22,7 @@
     <filter-mapping>
         <filter-name>PreProxy</filter-name>
         <url-pattern>/v1/proxy/*</url-pattern>
+        <url-pattern>/v2-beta/proxy/*</url-pattern>
     </filter-mapping>
 
     <filter>

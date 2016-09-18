@@ -156,22 +156,22 @@ def test_account_purge(admin_user_client, super_client, new_context):
     c2 = client.wait_success(c2)
     assert c2.state == 'running'
 
-    # create environment and services
-    env = client.create_environment(name=random_str())
+    # create stack and services
+    env = client.create_stack(name=random_str())
     env = client.wait_success(env)
     assert env.state == "active"
 
     launch_config = {"imageUuid": image_uuid}
 
     service1 = client.create_service(name=random_str(),
-                                     environmentId=env.id,
+                                     stackId=env.id,
                                      launchConfig=launch_config)
     service1 = client.wait_success(service1)
     assert service1.state == "inactive"
 
     service2 = client.create_service(accountId=account_id,
                                      name=random_str(),
-                                     environmentId=env.id,
+                                     stackId=env.id,
                                      launchConfig=launch_config)
     service2 = client.wait_success(service2)
     assert service2.state == "inactive"

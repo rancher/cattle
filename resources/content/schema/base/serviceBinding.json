@@ -1,0 +1,13 @@
+{
+	"resourceFields": {
+		"labels": {
+			"type": "map[string]"
+		},
+		"scale": {
+			"type": "string"
+		},
+		"ports": {
+			"type": "array[string]"
+		}
+	}
+}

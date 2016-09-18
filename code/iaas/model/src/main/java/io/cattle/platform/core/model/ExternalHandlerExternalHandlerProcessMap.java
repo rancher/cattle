@@ -157,6 +157,17 @@ public interface ExternalHandlerExternalHandlerProcessMap extends java.io.Serial
 	@javax.persistence.Column(name = "on_error", length = 255)
 	public java.lang.String getOnError();
 
+	/**
+	 * Setter for <code>cattle.external_handler_external_handler_process_map.event_name</code>.
+	 */
+	public void setEventName(java.lang.String value);
+
+	/**
+	 * Getter for <code>cattle.external_handler_external_handler_process_map.event_name</code>.
+	 */
+	@javax.persistence.Column(name = "event_name", length = 255)
+	public java.lang.String getEventName();
+
 	// -------------------------------------------------------------------------
 	// FROM and INTO
 	// -------------------------------------------------------------------------

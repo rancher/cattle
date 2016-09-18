@@ -8,12 +8,13 @@ def from_context(context):
     return context.client, context.agent_client, context.host
 
 
-def test_bad_agent(super_client):
-    # Even though super_client will have permissions to create the container
-    # event, additional logic should assert that the creator is a valid agent.
-    with pytest.raises(ApiError) as e:
+def test_bad_agent(super_client, new_context):
+    _, account, agent_client = register_simulated_host(new_context,
+                                                       return_agent=True)
+
+    def post():
         external_id = random_str()
-        super_client.create_external_storage_pool_event(
+        agent_client.create_external_storage_pool_event(
             externalId=external_id,
             eventType="storagepool.create",
             hostUuids=[],
@@ -21,7 +22,24 @@ def test_bad_agent(super_client):
                 'name': 'name-%s' % external_id,
                 'externalId': external_id,
             })
+
+    # Test it works
+    post()
+
+    # Test it fails with two agents
+    super_client.wait_success(super_client.create_agent(
+        uri='test://' + random_str(),
+        accountId=account.id))
+    with pytest.raises(ApiError) as e:
+        post()
     assert e.value.error.code == 'MissingRequired'
+
+    # Test it fails with no agents
+    for agent in super_client.list_agent(accountId=account.id):
+        super_client.wait_success(agent.deactivate())
+    with pytest.raises(ApiError) as e:
+        post()
+    assert e.value.error.code == 'CantVerifyAgent'
 
 
 def test_external_host_event_miss(new_context):
@@ -137,13 +155,13 @@ def test_external_host_event_by_id(new_context):
 def test_external_dns_event(super_client, new_context):
     client, agent_client, host = from_context(new_context)
 
-    stack = client.create_environment(name=random_str())
+    stack = client.create_stack(name=random_str())
     stack = client.wait_success(stack)
     image_uuid = new_context.image_uuid
     launch_config = {"imageUuid": image_uuid}
 
     svc1 = client.create_service(name=random_str(),
-                                 environmentId=stack.id,
+                                 stackId=stack.id,
                                  launchConfig=launch_config)
     svc1 = client.wait_success(svc1)
 
@@ -213,12 +231,12 @@ def test_external_service_event_create(client, context, super_client):
     assert svc.name == svc_name
     assert svc.kind == SERVICE_KIND
     assert svc.selectorContainer == selector
-    assert svc.environmentId is not None
+    assert svc.stackId is not None
     assert svc.template == template
 
-    envs = client.list_environment(externalId=env_external_id)
+    envs = client.list_stack(externalId=env_external_id)
     assert len(envs) == 1
-    assert envs[0].id == svc.environmentId
+    assert envs[0].id == svc.stackId
 
     wait_for_condition(client, svc,
                        lambda x: x.state == 'active',
@@ -259,10 +277,10 @@ def test_external_stack_event_create(client, context, super_client):
     agent_client = context.agent_client
 
     env_external_id = random_str()
-    environment = {"name": env_external_id, "externalId": env_external_id,
-                   "kind": "environment"}
+    stack = {"name": env_external_id, "externalId": env_external_id,
+             "kind": "environment"}
 
-    env = client.create_environment(environment)
+    env = client.create_stack(stack)
     env = client.wait_success(env)
 
     service = {
@@ -271,7 +289,7 @@ def test_external_stack_event_create(client, context, super_client):
 
     event = agent_client.create_external_service_event(
         eventType='stack.remove',
-        environment=environment,
+        environment=stack,
         externalId=env_external_id,
         service=service,
     )
@@ -279,13 +297,13 @@ def test_external_stack_event_create(client, context, super_client):
     event = wait_for(lambda: event_wait(client, event))
     assert event is not None
 
-    envs = client.list_environment(externalId=env_external_id)
+    envs = client.list_stack(externalId=env_external_id)
     assert len(envs) == 1
 
     env = envs[0]
     assert env.externalId == env_external_id
-    assert env.name == environment["name"]
-    assert env.kind == "environment"
+    assert env.name == stack["name"]
+    assert env.kind == "stack"
 
     wait_for_condition(client, env,
                        lambda x: x.state == "removed",

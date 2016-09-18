@@ -30,12 +30,12 @@ def test_upgrade_relink(context, client):
     launch_config = {'imageUuid': image_uuid}
 
     source = client.create_service(name=random_str(),
-                                   environmentId=env.id,
+                                   stackId=env.id,
                                    scale=1,
                                    launchConfig=launch_config)
 
     lb = client.create_load_balancer_service(name=random_str(),
-                                             environmentId=env.id,
+                                             stackId=env.id,
                                              scale=1,
                                              launchConfig={'ports': ['80']})
 
@@ -138,7 +138,7 @@ def test_in_service_upgrade_mix(context, client, super_client):
 
 
 def test_big_scale(context, client):
-    env = client.create_environment(name=random_str())
+    env = client.create_stack(name=random_str())
     env = client.wait_success(env)
     assert env.state == 'active'
     image_uuid = context.image_uuid
@@ -146,7 +146,7 @@ def test_big_scale(context, client):
                      'networkMode': None}
 
     svc = client.create_service(name=random_str(),
-                                environmentId=env.id,
+                                stackId=env.id,
                                 scale=10,
                                 launchConfig=launch_config,
                                 intervalMillis=100)
@@ -180,14 +180,14 @@ def test_rollback_regular_upgrade(context, client, super_client):
 
 
 def _create_and_schedule_inservice_upgrade(client, context, startFirst=False):
-    env = client.create_environment(name=random_str())
+    env = client.create_stack(name=random_str())
     env = client.wait_success(env)
     assert env.state == 'active'
     image_uuid = context.image_uuid
     launch_config = {'imageUuid': image_uuid,
                      'networkMode': None}
     svc = client.create_service(name=random_str(),
-                                environmentId=env.id,
+                                stackId=env.id,
                                 scale=4,
                                 launchConfig=launch_config,
                                 image=image_uuid)
@@ -231,7 +231,7 @@ def test_cancelupgrade_finish(context, client):
     # upgrading-cancelingupgrade-canceledupgrade-finishupgrade
     svc = _create_and_schedule_inservice_upgrade(client, context)
     svc = _cancel_upgrade(client, svc)
-    svc.finishupgrade()
+    svc.continueupgrade()
 
 
 def test_upgrade_finish_cancel_rollback(context, client):
@@ -244,26 +244,6 @@ def test_upgrade_finish_cancel_rollback(context, client):
     svc = _cancel_upgrade(client, svc)
     assert svc.state == 'canceled-upgrade'
     svc = client.wait_success(svc.rollback())
-
-
-def test_cancelupgrade_rollback_cancelrollback(context, client):
-    # upgrading-cancelingupgrade-canceledupgrade-rollback
-    # -cancelingrolback-canceledrollback-remove
-    svc = _create_and_schedule_inservice_upgrade(client, context)
-    svc = _cancel_upgrade(client, svc)
-    svc = svc.rollback()
-    svc = client.wait_success(svc.cancelrollback(), DEFAULT_TIMEOUT)
-    svc.remove()
-
-
-def test_cancelupgrade_rollback_cancelrollback_finish(context, client):
-    # upgrading-cancelingupgrade-canceledupgrade-rollback
-    # -cancelingrolback-canceledrollback-finishupgrade
-    svc = _create_and_schedule_inservice_upgrade(client, context)
-    svc = _cancel_upgrade(client, svc)
-    svc = svc.rollback()
-    svc = client.wait_success(svc.cancelrollback(), DEFAULT_TIMEOUT)
-    svc.finishupgrade()
 
 
 def test_state_transition_start_first(context, client):
@@ -295,7 +275,7 @@ def test_state_transition_start_first(context, client):
 
 
 def test_in_service_upgrade_networks_from(context, client, super_client):
-    env = client.create_environment(name=random_str())
+    env = client.create_stack(name=random_str())
     env = client.wait_success(env)
     image_uuid = context.image_uuid
     launch_config = {"imageUuid": image_uuid, "networkMode": 'container',
@@ -303,7 +283,7 @@ def test_in_service_upgrade_networks_from(context, client, super_client):
     secondary1 = {"imageUuid": image_uuid, "name": "secondary1"}
     secondary2 = {"imageUuid": image_uuid, "name": "secondary2"}
     svc = client.create_service(name=random_str(),
-                                environmentId=env.id,
+                                stackId=env.id,
                                 scale=2,
                                 launchConfig=launch_config,
                                 secondaryLaunchConfigs=[secondary1,
@@ -322,7 +302,7 @@ def test_in_service_upgrade_networks_from(context, client, super_client):
 
 
 def test_in_service_upgrade_volumes_from(context, client, super_client):
-    env = client.create_environment(name=random_str())
+    env = client.create_stack(name=random_str())
     env = client.wait_success(env)
     image_uuid = context.image_uuid
     launch_config = {"imageUuid": image_uuid}
@@ -330,7 +310,7 @@ def test_in_service_upgrade_volumes_from(context, client, super_client):
                   "dataVolumesFromLaunchConfigs": ['secondary2']}
     secondary2 = {"imageUuid": image_uuid, "name": "secondary2"}
     svc = client.create_service(name=random_str(),
-                                environmentId=env.id,
+                                stackId=env.id,
                                 scale=2,
                                 launchConfig=launch_config,
                                 secondaryLaunchConfigs=[secondary1,
@@ -350,7 +330,7 @@ def test_in_service_upgrade_volumes_from(context, client, super_client):
 
 
 def _create_stack(client):
-    env = client.create_environment(name=random_str())
+    env = client.create_stack(name=random_str())
     env = client.wait_success(env)
     return env
 
@@ -360,7 +340,7 @@ def test_dns_service_upgrade(client):
     labels = {"foo": "bar"}
     launch_config = {"labels": labels}
     dns = client.create_dnsService(name=random_str(),
-                                   environmentId=env.id,
+                                   stackId=env.id,
                                    launchConfig=launch_config)
     dns = client.wait_success(dns)
     assert dns.launchConfig is not None
@@ -382,7 +362,7 @@ def test_external_service_upgrade(client):
     launch_config = {"labels": labels}
     ips = ["72.22.16.5", '192.168.0.10']
     svc = client.create_externalService(name=random_str(),
-                                        environmentId=env.id,
+                                        stackId=env.id,
                                         externalIpAddresses=ips,
                                         launchConfig=launch_config)
     svc = client.wait_success(svc)
@@ -403,7 +383,7 @@ def test_service_upgrade_no_image_selector(client):
     env = _create_stack(client)
     launch_config = {"imageUuid": "rancher/none"}
     svc1 = client.create_service(name=random_str(),
-                                 environmentId=env.id,
+                                 stackId=env.id,
                                  launchConfig=launch_config,
                                  selectorContainer="foo=barbar")
     svc1 = client.wait_success(svc1)
@@ -420,7 +400,7 @@ def test_service_upgrade_mixed_selector(client, context):
     image_uuid = context.image_uuid
     launch_config = {"imageUuid": image_uuid}
     svc2 = client.create_service(name=random_str(),
-                                 environmentId=env.id,
+                                 stackId=env.id,
                                  launchConfig=launch_config,
                                  selectorContainer="foo=barbar")
     svc2 = client.wait_success(svc2)
@@ -429,14 +409,14 @@ def test_service_upgrade_mixed_selector(client, context):
 
 
 def test_rollback_sidekicks(context, client, super_client):
-    env = client.create_environment(name=random_str())
+    env = client.create_stack(name=random_str())
     env = client.wait_success(env)
     image_uuid = context.image_uuid
     launch_config = {"imageUuid": image_uuid}
     secondary1 = {"imageUuid": image_uuid, "name": "secondary1"}
     secondary2 = {"imageUuid": image_uuid, "name": "secondary2"}
     svc = client.create_service(name=random_str(),
-                                environmentId=env.id,
+                                stackId=env.id,
                                 scale=3,
                                 launchConfig=launch_config,
                                 secondaryLaunchConfigs=[secondary1,
@@ -469,7 +449,7 @@ def test_rollback_sidekicks(context, client, super_client):
 
 
 def test_upgrade_env(client):
-    env = client.create_environment(name='env-' + random_str())
+    env = client.create_stack(name='env-' + random_str())
     env = client.wait_success(env)
     assert env.state == 'active'
 
@@ -481,7 +461,7 @@ def test_upgrade_env(client):
 
 
 def test_upgrade_rollback_env(client):
-    env = client.create_environment(name='env-' + random_str())
+    env = client.create_stack(name='env-' + random_str())
     env = client.wait_success(env)
 
     assert env.state == 'active'
@@ -608,7 +588,7 @@ def _get_upgraded_instances(super_client, launchConfig, svc):
 
 
 def _create_env_and_services(context, client, from_scale=1, to_scale=1):
-    env = client.create_environment(name=random_str())
+    env = client.create_stack(name=random_str())
     env = client.wait_success(env)
     assert env.state == 'active'
 
@@ -617,7 +597,7 @@ def _create_env_and_services(context, client, from_scale=1, to_scale=1):
                      'networkMode': None}
 
     service = client.create_service(name=random_str(),
-                                    environmentId=env.id,
+                                    stackId=env.id,
                                     scale=from_scale,
                                     launchConfig=launch_config)
     service = client.wait_success(service)
@@ -626,7 +606,7 @@ def _create_env_and_services(context, client, from_scale=1, to_scale=1):
     assert service.upgrade is None
 
     service2 = client.create_service(name=random_str(),
-                                     environmentId=env.id,
+                                     stackId=env.id,
                                      scale=to_scale,
                                      launchConfig=launch_config)
     service2 = client.wait_success(service2)
@@ -672,7 +652,7 @@ def _run_upgrade(context, client, from_scale, to_scale, **kw):
 
 
 def _create_multi_lc_svc(super_client, client, context, activate=True):
-    env = client.create_environment(name=random_str())
+    env = client.create_stack(name=random_str())
     env = client.wait_success(env)
     assert env.state == 'active'
     image_uuid = context.image_uuid
@@ -683,7 +663,7 @@ def _create_multi_lc_svc(super_client, client, context, activate=True):
     secondary_lc2 = {"imageUuid": image_uuid, "name": "secondary2"}
     secondary = [secondary_lc1, secondary_lc2]
     svc = client.create_service(name=random_str(),
-                                environmentId=env.id,
+                                stackId=env.id,
                                 scale=2,
                                 launchConfig=launch_config,
                                 secondaryLaunchConfigs=secondary)
@@ -802,8 +782,9 @@ def _validate_rollback(super_client, svc, rolledback_svc,
 
 
 def _cancel_upgrade(client, svc):
-    svc = client.wait_success(svc.cancelupgrade())
-    assert svc.state == 'canceled-upgrade'
+    svc.cancelupgrade()
+    wait_for(lambda: client.reload(svc).state == 'canceled-upgrade')
+    svc = client.reload(svc)
     strategy = svc.upgrade.inServiceStrategy
     assert strategy.previousLaunchConfig is not None
     assert strategy.previousSecondaryLaunchConfigs is not None
@@ -823,14 +804,14 @@ def _rollback(client, super_client,
 
 
 def test_rollback_id(context, client, super_client):
-    env = client.create_environment(name=random_str())
+    env = client.create_stack(name=random_str())
     env = client.wait_success(env)
     assert env.state == 'active'
     image_uuid = context.image_uuid
     launch_config = {'imageUuid': image_uuid,
                      'networkMode': None}
     svc = client.create_service(name=random_str(),
-                                environmentId=env.id,
+                                stackId=env.id,
                                 scale=1,
                                 launchConfig=launch_config,
                                 image=image_uuid)
@@ -855,7 +836,7 @@ def test_rollback_id(context, client, super_client):
 
 
 def test_in_service_upgrade_port_mapping(context, client, super_client):
-    env = client.create_environment(name=random_str())
+    env = client.create_stack(name=random_str())
     env = client.wait_success(env)
     image_uuid = context.image_uuid
     launch_config = {"imageUuid": image_uuid, 'ports': ['80', '82/tcp']}
@@ -864,7 +845,7 @@ def test_in_service_upgrade_port_mapping(context, client, super_client):
     secondary2 = {"imageUuid": image_uuid, "name": "secondary2",
                   'ports': ['100']}
     svc = client.create_service(name=random_str(),
-                                environmentId=env.id,
+                                stackId=env.id,
                                 scale=1,
                                 launchConfig=launch_config,
                                 secondaryLaunchConfigs=[secondary1,
@@ -893,14 +874,14 @@ def test_in_service_upgrade_port_mapping(context, client, super_client):
 
 
 def test_sidekick_addition(context, client):
-    env = client.create_environment(name=random_str())
+    env = client.create_stack(name=random_str())
     env = client.wait_success(env)
     image_uuid = context.image_uuid
     launch_config = {"imageUuid": image_uuid}
     secondary1 = {"imageUuid": image_uuid, "name": "secondary1"}
     secondary2 = {"imageUuid": image_uuid, "name": "secondary2"}
     svc = client.create_service(name=random_str(),
-                                environmentId=env.id,
+                                stackId=env.id,
                                 scale=1,
                                 launchConfig=launch_config,
                                 secondaryLaunchConfigs=[secondary1])
@@ -932,14 +913,14 @@ def test_sidekick_addition(context, client):
 
 
 def test_sidekick_addition_rollback(context, client):
-    env = client.create_environment(name=random_str())
+    env = client.create_stack(name=random_str())
     env = client.wait_success(env)
     image_uuid = context.image_uuid
     launch_config = {"imageUuid": image_uuid}
     secondary1 = {"imageUuid": image_uuid, "name": "secondary1"}
     secondary2 = {"imageUuid": image_uuid, "name": "secondary2"}
     svc = client.create_service(name=random_str(),
-                                environmentId=env.id,
+                                stackId=env.id,
                                 scale=2,
                                 launchConfig=launch_config,
                                 secondaryLaunchConfigs=[secondary1])
@@ -979,14 +960,14 @@ def test_sidekick_addition_rollback(context, client):
 
 
 def test_sidekick_addition_wo_primary(context, client):
-    env = client.create_environment(name=random_str())
+    env = client.create_stack(name=random_str())
     env = client.wait_success(env)
     image_uuid = context.image_uuid
     launch_config = {"imageUuid": image_uuid}
     secondary1 = {"imageUuid": image_uuid, "name": "secondary1"}
     secondary2 = {"imageUuid": image_uuid, "name": "secondary2"}
     svc = client.create_service(name=random_str(),
-                                environmentId=env.id,
+                                stackId=env.id,
                                 scale=1,
                                 launchConfig=launch_config,
                                 secondaryLaunchConfigs=[secondary1])
@@ -1018,14 +999,14 @@ def test_sidekick_addition_wo_primary(context, client):
 
 
 def test_sidekick_addition_two_sidekicks(context, client):
-    env = client.create_environment(name=random_str())
+    env = client.create_stack(name=random_str())
     env = client.wait_success(env)
     image_uuid = context.image_uuid
     launch_config = {"imageUuid": image_uuid}
     secondary1 = {"imageUuid": image_uuid, "name": "secondary1"}
     secondary2 = {"imageUuid": image_uuid, "name": "secondary2"}
     svc = client.create_service(name=random_str(),
-                                environmentId=env.id,
+                                stackId=env.id,
                                 scale=1,
                                 launchConfig=launch_config)
     svc = client.wait_success(svc)
@@ -1051,14 +1032,14 @@ def test_sidekick_addition_two_sidekicks(context, client):
 
 
 def test_sidekick_removal(context, client):
-    env = client.create_environment(name=random_str())
+    env = client.create_stack(name=random_str())
     env = client.wait_success(env)
     image_uuid = context.image_uuid
     launch_config = {"imageUuid": image_uuid}
     secondary1 = {"imageUuid": image_uuid, "name": "secondary1"}
     secondary2 = {"imageUuid": image_uuid, "name": "secondary2"}
     svc = client.create_service(name=random_str(),
-                                environmentId=env.id,
+                                stackId=env.id,
                                 scale=1,
                                 launchConfig=launch_config,
                                 secondaryLaunchConfigs=[secondary1,
@@ -1086,14 +1067,14 @@ def test_sidekick_removal(context, client):
 
 
 def test_sidekick_removal_rollback(context, client):
-    env = client.create_environment(name=random_str())
+    env = client.create_stack(name=random_str())
     env = client.wait_success(env)
     image_uuid = context.image_uuid
     launch_config = {"imageUuid": image_uuid}
     secondary1 = {"imageUuid": image_uuid, "name": "secondary1"}
     secondary2 = {"imageUuid": image_uuid, "name": "secondary2"}
     svc = client.create_service(name=random_str(),
-                                environmentId=env.id,
+                                stackId=env.id,
                                 scale=1,
                                 launchConfig=launch_config,
                                 secondaryLaunchConfigs=[secondary1,
@@ -1169,7 +1150,7 @@ def test_upgrade_global_service(new_context):
     client.wait_success(host2)
     client.wait_success(host3)
 
-    # create environment and services
+    # create stack and services
     env = _create_stack(client)
     image_uuid = new_context.image_uuid
     launch_config = {
@@ -1179,7 +1160,7 @@ def test_upgrade_global_service(new_context):
         }
     }
     service = client.create_service(name=random_str(),
-                                    environmentId=env.id,
+                                    stackId=env.id,
                                     launchConfig=launch_config)
     service = client.wait_success(service)
     assert service.state == "inactive"

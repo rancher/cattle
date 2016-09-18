@@ -1,4 +1,9 @@
 ---
+matrix:
+  API_VERSION:
+  - v1
+  - v2
+
 pipeline:
   build:
     privileged: true

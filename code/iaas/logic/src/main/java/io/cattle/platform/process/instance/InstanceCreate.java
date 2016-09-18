@@ -103,13 +103,10 @@ public class InstanceCreate extends AbstractDefaultProcessHandler {
     }
 
     protected boolean shouldStart(Instance instance) {
-        Boolean doneStart = DataAccessor.fields(instance).withKey(InstanceConstants.FIELD_START_ON_CREATE).withDefault(true).as(Boolean.class);
-
-        if (doneStart != null && !doneStart.booleanValue()) {
-            return false;
-        } else {
-            return true;
-        }
+        return DataAccessor.fields(instance)
+                .withKey(InstanceConstants.FIELD_START_ON_CREATE)
+                .withDefault(true)
+                .as(Boolean.class);
     }
 
     private void createLabels(Instance instance) {

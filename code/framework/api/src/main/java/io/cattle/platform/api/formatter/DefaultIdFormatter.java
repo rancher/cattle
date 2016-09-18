@@ -10,4 +10,9 @@ public class DefaultIdFormatter extends TypeIdFormatter implements Priority {
         return Priority.DEFAULT;
     }
 
+    @Override
+    protected TypeIdFormatter newFormatter() {
+        return new DefaultIdFormatter();
+    }
+
 }

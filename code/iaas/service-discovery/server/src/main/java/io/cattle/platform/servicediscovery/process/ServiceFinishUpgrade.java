@@ -1,9 +1,12 @@
 package io.cattle.platform.servicediscovery.process;
 
+import io.cattle.platform.activity.ActivityService;
 import io.cattle.platform.core.model.Service;
 import io.cattle.platform.engine.handler.HandlerResult;
 import io.cattle.platform.engine.process.ProcessInstance;
 import io.cattle.platform.engine.process.ProcessState;
+import io.cattle.platform.json.JsonMapper;
+import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.process.base.AbstractDefaultProcessHandler;
 import io.cattle.platform.servicediscovery.api.constants.ServiceDiscoveryConstants;
 import io.cattle.platform.servicediscovery.upgrade.UpgradeManager;
@@ -14,6 +17,10 @@ public class ServiceFinishUpgrade extends AbstractDefaultProcessHandler {
 
     @Inject
     UpgradeManager upgradeManager;
+    @Inject
+    ActivityService activityService;
+    @Inject
+    JsonMapper jsonMapper;
 
     @Override
     public String[] getProcessNames() {
@@ -22,8 +29,17 @@ public class ServiceFinishUpgrade extends AbstractDefaultProcessHandler {
 
     @Override
     public HandlerResult handle(ProcessState state, ProcessInstance process) {
-        Service service = (Service) state.getResource();
-        upgradeManager.finishUpgrade(service, true);
+        final Service service = (Service) state.getResource();
+        activityService.run(service, "service.finishupgrade", "Finishing upgrade", new Runnable() {
+            @Override
+            public void run() {
+                io.cattle.platform.core.addon.ServiceUpgrade upgrade = DataAccessor.field(service,
+                        ServiceDiscoveryConstants.FIELD_UPGRADE, jsonMapper,
+                        io.cattle.platform.core.addon.ServiceUpgrade.class);
+                upgradeManager.upgrade(service, upgrade.getStrategy());
+                upgradeManager.finishUpgrade(service, true);
+            }
+        });
 
         return null;
     }

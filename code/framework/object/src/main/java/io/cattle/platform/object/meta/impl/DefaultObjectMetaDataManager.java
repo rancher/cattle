@@ -1,7 +1,7 @@
 package io.cattle.platform.object.meta.impl;
 
-import static io.cattle.platform.object.meta.Relationship.RelationshipType.CHILD;
-import static io.cattle.platform.object.meta.Relationship.RelationshipType.REFERENCE;
+import static io.cattle.platform.object.meta.Relationship.RelationshipType.*;
+
 import io.cattle.platform.archaius.util.ArchaiusUtil;
 import io.cattle.platform.engine.process.ProcessDefinition;
 import io.cattle.platform.engine.process.StateTransition;
@@ -768,7 +768,11 @@ public class DefaultObjectMetaDataManager implements ObjectMetaDataManager, Sche
         Integer progress = DataAccessor.fieldInteger(obj, TRANSITIONING_PROGRESS_FIELD);
 
         String state = DataUtils.getState(obj);
-        if (state != null && states.contains(state)) {
+        if (TRANSITIONING_ERROR_OVERRIDE.equals(DataAccessor.fieldString(obj, TRANSITIONING_FIELD))) {
+            Map<String, Object> errorResult = new LinkedHashMap<String, Object>();
+            errorResult.put(TRANSITIONING_FIELD, TRANSITIONING_ERROR);
+            return errorResult;
+        } else if (state != null && states.contains(state)) {
             result.put(TRANSITIONING_FIELD, TRANSITIONING_YES);
             result.put(TRANSITIONING_MESSAGE_FIELD, message == null ? TRANSITIONING_MESSAGE_DEFAULT_FIELD : message);
             result.put(TRANSITIONING_PROGRESS_FIELD, progress);

@@ -69,10 +69,10 @@ public class DeploymentUnitInstanceFactoryImpl implements DeploymentUnitInstance
          * Then group all the objects
          * by the label 'io.rancher.deployment.unit'. When containers are deployed through service discovery that
          * label will be placed on them.
-         * 
+         *
          * 2. put all the containers to the deploymentUnit
          */
-        
+
         Map<String, Map<String, String>> uuidToLabels = new HashMap<>();
         Map<String, List<DeploymentUnitInstance>> uuidToInstances = new HashMap<>();
         List<DeploymentUnit> units = new ArrayList<>();
@@ -162,7 +162,7 @@ public class DeploymentUnitInstanceFactoryImpl implements DeploymentUnitInstance
     protected void collectDefaultServiceInstances(DeploymentServiceContext context,
             Map<String, Map<String, String>> uuidToLabels, Map<String, List<DeploymentUnitInstance>> uuidToInstances,
             Service service) {
-        List<? extends Instance> serviceContainers = expMapDao.listServiceManagedInstances(service.getId());
+        List<? extends Instance> serviceContainers = expMapDao.listServiceManagedInstancesAll(service);
         for (Instance serviceContainer : serviceContainers) {
             Map<String, String> instanceLabels = DataAccessor.fields(serviceContainer)
                     .withKey(InstanceConstants.FIELD_LABELS).withDefault(Collections.EMPTY_MAP).as(Map.class);
@@ -186,7 +186,7 @@ public class DeploymentUnitInstanceFactoryImpl implements DeploymentUnitInstance
         if (uuidToLabels.get(deploymentUnitUUID) == null) {
             uuidToLabels.put(deploymentUnitUUID, instanceLabels);
         }
-        
+
         List<DeploymentUnitInstance> deploymentUnitInstances = uuidToInstances.get(deploymentUnitUUID);
         if (deploymentUnitInstances == null) {
             deploymentUnitInstances = new ArrayList<>();

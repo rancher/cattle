@@ -1,9 +1,10 @@
 package io.cattle.platform.servicediscovery.deployment.impl;
 
+import io.cattle.platform.activity.ActivityLog;
+import io.cattle.platform.activity.ActivityService;
 import io.cattle.platform.allocator.service.AllocatorService;
 import io.cattle.platform.configitem.events.ConfigUpdate;
 import io.cattle.platform.configitem.model.Client;
-import io.cattle.platform.configitem.model.ItemVersion;
 import io.cattle.platform.configitem.request.ConfigUpdateRequest;
 import io.cattle.platform.configitem.version.ConfigItemStatusManager;
 import io.cattle.platform.core.addon.ScalePolicy;
@@ -13,8 +14,6 @@ import io.cattle.platform.core.model.Service;
 import io.cattle.platform.core.model.ServiceExposeMap;
 import io.cattle.platform.engine.idempotent.IdempotentRetryException;
 import io.cattle.platform.eventing.EventService;
-import io.cattle.platform.eventing.model.EventVO;
-import io.cattle.platform.iaas.api.auditing.AuditService;
 import io.cattle.platform.json.JsonMapper;
 import io.cattle.platform.lock.LockCallback;
 import io.cattle.platform.lock.LockCallbackNoReturn;
@@ -59,6 +58,8 @@ public class DeploymentManagerImpl implements DeploymentManager {
     private static final Logger log = LoggerFactory.getLogger(DeploymentManagerImpl.class);
 
     @Inject
+    ActivityService activity;
+    @Inject
     LockManager lockManager;
     @Inject
     DeploymentUnitInstanceFactory unitInstanceFactory;
@@ -85,9 +86,9 @@ public class DeploymentManagerImpl implements DeploymentManager {
     @Inject
     ServiceDao svcDao;
     @Inject
-    AuditService auditService;
-    @Inject
     IdFormatter idFrmt;
+    @Inject
+    ActivityService actvtyService;
 
     @Override
     public boolean isHealthy(Service service) {
@@ -190,7 +191,7 @@ public class DeploymentManagerImpl implements DeploymentManager {
                     desiredScale);
             incremenetScaleAndDeploy(service, checkState, services, policy);
         }
-        
+
         return false;
     }
 
@@ -246,10 +247,17 @@ public class DeploymentManagerImpl implements DeploymentManager {
         // get existing deployment units
         ServiceDeploymentPlanner planner = getPlanner(services);
 
+        if (!checkState) {
+            actvtyService.info(planner.getStatus());
+        }
+
         // don't process if there is no need to reconcile
         boolean needToReconcile = needToReconcile(services, planner);
 
         if (!needToReconcile) {
+            if (!checkState) {
+                actvtyService.info("Service already reconciled");
+            }
             return false;
         }
 
@@ -258,18 +266,23 @@ public class DeploymentManagerImpl implements DeploymentManager {
         }
 
         activateServices(service, services);
-        activateDeploymentUnits(planner);
+        activateDeploymentUnits(service, planner);
 
         // reload planner as there can be new hosts added for Global services
+        // reload services as well
+        List<Service> reloaded = new ArrayList<>();
+        for (Service svc : services) {
+            reloaded.add(objectMgr.reload(svc));
+        }
         planner = getPlanner(services);
         if (needToReconcile(services, planner)) {
-            throw new ServiceReconcileException(
-                    "Failed to do service reconcile for service [" + service.getId() + "]");
+            throw new ServiceReconcileException("Need to restart service reconcile");
         }
 
+        actvtyService.info("Service reconciled: " + planner.getStatus());
         return false;
     }
-    
+
     private ServiceDeploymentPlanner getPlanner(List<Service> services) {
         List<DeploymentUnit> units = unitInstanceFactory.collectDeploymentUnits(services,
                 new DeploymentServiceContext());
@@ -310,7 +323,7 @@ public class DeploymentManagerImpl implements DeploymentManager {
         return new ServicesSidekickLock(services);
     }
 
-    protected void activateDeploymentUnits(ServiceDeploymentPlanner planner) {
+    protected void activateDeploymentUnits(Service service, final ServiceDeploymentPlanner planner) {
         /*
          * Delete invalid units
          */
@@ -329,7 +342,12 @@ public class DeploymentManagerImpl implements DeploymentManager {
         /*
          * Activate all the units
          */
-        startUnits(planner);
+        actvtyService.run(service, "wait", "Waiting for instances to start", new Runnable() {
+            @Override
+            public void run() {
+                startUnits(planner);
+            }
+        });
 
         /*
          * Cleanup unused service indexes
@@ -396,7 +414,7 @@ public class DeploymentManagerImpl implements DeploymentManager {
                 List<DeploymentUnit> units = unitInstanceFactory.collectDeploymentUnits(
                         Arrays.asList(service), new DeploymentServiceContext());
                 for (DeploymentUnit unit : units) {
-                    unit.remove(false, ServiceDiscoveryConstants.AUDIT_LOG_REMOVE_EXTRA);
+                    unit.remove(false, ServiceDiscoveryConstants.AUDIT_LOG_REMOVE_EXTRA, ActivityLog.INFO);
                 }
             }
         });
@@ -415,30 +433,21 @@ public class DeploymentManagerImpl implements DeploymentManager {
 
     @Override
     public void serviceUpdate(ConfigUpdate update) {
-        if (update.getResourceId() == null) {
-            return;
-        }
-
         final Client client = new Client(Service.class, new Long(update.getResourceId()));
-        reconcileForClient(update, client, new Runnable() {
+        itemManager.runUpdateForEvent(RECONCILE, update, client, new Runnable() {
             @Override
             public void run() {
-                Service service = objectMgr.loadResource(Service.class, client.getResourceId());
+                final Service service = objectMgr.loadResource(Service.class, client.getResourceId());
                 if (service != null && service.getState().equalsIgnoreCase(CommonStatesConstants.ACTIVE)) {
-                    activate(service);
+                    activity.run(service, "service.trigger", "Re-evaluating state", new Runnable() {
+                        @Override
+                        public void run() {
+                            activate(service);
+                        }
+                    });
                 }
             }
         });
-    }
-
-    protected void reconcileForClient(ConfigUpdate update, Client client, Runnable run) {
-        ItemVersion itemVersion = itemManager.getRequestedVersion(client, RECONCILE);
-        if (itemVersion == null) {
-            return;
-        }
-        run.run();
-        itemManager.setApplied(client, RECONCILE, itemVersion);
-        eventService.publish(EventVO.reply(update));
     }
 
     public final class DeploymentServiceContext {
@@ -451,7 +460,7 @@ public class DeploymentManagerImpl implements DeploymentManager {
         final public AllocatorService allocatorService = allocatorSvc;
         final public JsonMapper jsonMapper = mapper;
         final public ServiceDao serviceDao = svcDao;
-        final public AuditService auditSvc = auditService;
+        final public ActivityService activityService = actvtyService;
         final public IdFormatter idFormatter = idFrmt;
     }
 }

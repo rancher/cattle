@@ -48,6 +48,7 @@ public class ServiceDiscoveryConstants {
     public static final String FIELD_CURRENT_SCALE = "currentScale";
     public static final String FIELD_HEALTH_STATE = "healthState";
     public static final String FIELD_LOCKED_SCALE = "lockedScale";
+    public static final String FIELD_STACK_ID = "stackId";
 
     public static final String ACTION_SERVICE_ACTIVATE = "activate";
     public static final String ACTION_SERVICE_CREATE = "create";
@@ -81,7 +82,6 @@ public class ServiceDiscoveryConstants {
     public static final String PROCESS_SERVICE_EXPOSE_MAP_REMOVE = "serviceexposemap.remove";
     public static final String PROCESS_SERVICE_UPGRADE = "service." + ACTION_SERVICE_UPGRADE;
     public static final String PROCESS_SERVICE_ROLLBACK = "service." + ACTION_SERVICE_ROLLBACK;
-    public static final String PROCESS_SERVICE_CANCEL_ROLLBACK = "service.cancelrollback";
     public static final String PROCESS_SERVICE_CANCEL_UPGRADE = "service.cancelupgrade";
     public static final String PROCESS_SERVICE_FINISH_UPGRADE = "service.finishupgrade";
     public static final String PROCESS_SERVICE_RESTART = "service." + ACTION_SERVICE_RESTART;
@@ -101,7 +101,6 @@ public class ServiceDiscoveryConstants {
     public static final String LABEL_SERVICE_GLOBAL = "io.rancher.scheduler.global";
     public static final String LABEL_SERVICE_REQUESTED_HOST_ID = "io.rancher.service.requested.host.id";
     public static final String LABEL_SERVICE_LAUNCH_CONFIG = "io.rancher.service.launch.config";
-    public static final String LABEL_SERVICE_ALLOACATE_SKIP_SERIALIZE = "io.rancher.service.allocate.skip.serialize";
     public static final String LABEL_SIDEKICK = "io.rancher.sidekicks";
     public static final String LABEL_LB_TARGET = "io.rancher.loadbalancer.target.";
     public static final String LABEL_OVERRIDE_HOSTNAME = "io.rancher.container.hostname_override";
@@ -118,16 +117,14 @@ public class ServiceDiscoveryConstants {
     public static final String STATE_ROLLINGBACK = "rolling-back";
     public static final String STATE_CANCELING_UPGRADE = "canceling-upgrade";
     public static final String STATE_CANCELED_UPGRADE = "canceled-upgrade";
-    public static final String STATE_CANCELING_ROLLBACK = "canceling-rollback";
-    public static final String STATE_CANCELED_ROLLBACK = "canceled-rollback";
     public static final String STATE_UPGRADED = "upgraded";
     public static final String STATE_FINISHING_UPGRADE = "finishing-upgrade";
     public static final String STATE_RESTARTING = "restarting";
 
     public static final String IMAGE_NONE = "rancher/none";
 
-    public static final String AUDIT_LOG_REMOVE_EXTRA = "Extra service instance is removed by service.reconcile";
-    public static final String AUDIT_LOG_REMOVE_UNHEATLHY = "Unhealthy service instance is removed by service.reconcile";
-    public static final String AUDIT_LOG_REMOVE_BAD = "Service instance in a bad state is removed by service.reconcile";
-    public static final String AUDIT_LOG_CREATE_EXTRA = "Extra service instance is created by service.reconcile";
+    public static final String AUDIT_LOG_REMOVE_EXTRA = "Removing extra service instance";
+    public static final String AUDIT_LOG_REMOVE_UNHEATLHY = "Removing unhealthy service instance";
+    public static final String AUDIT_LOG_REMOVE_BAD = "Removing bad service instance";
+    public static final String AUDIT_LOG_CREATE_EXTRA = "Creating extra service instance";
 }

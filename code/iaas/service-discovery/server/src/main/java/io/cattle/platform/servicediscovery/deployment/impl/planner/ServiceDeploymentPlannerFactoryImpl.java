@@ -9,7 +9,6 @@ import io.cattle.platform.servicediscovery.deployment.impl.DeploymentManagerImpl
 import io.cattle.platform.servicediscovery.deployment.impl.unit.DeploymentUnit;
 
 import java.util.List;
-import java.util.Map;
 
 
 public class ServiceDeploymentPlannerFactoryImpl implements ServiceDeploymentPlannerFactory {
@@ -37,13 +36,11 @@ public class ServiceDeploymentPlannerFactoryImpl implements ServiceDeploymentPla
     }
 
     protected boolean isGlobalDeploymentStrategy(DeploymentServiceContext context, Service service) {
-        Map<String, String> serviceLabels = ServiceDiscoveryUtil.getServiceLabels(service, context.allocatorService);
-        String globalService = serviceLabels.get(ServiceDiscoveryConstants.LABEL_SERVICE_GLOBAL);
-        return Boolean.valueOf(globalService);
+        return context.sdService.isGlobalService(service);
     }
 
     protected boolean isNoopStrategy(DeploymentServiceContext context, Service service) {
-        if (ServiceDiscoveryUtil.isNoopService(service, context.allocatorService) || isExternallyProvidedService(service)) {
+        if (ServiceDiscoveryUtil.isNoopService(service) || isExternallyProvidedService(service)) {
             return true;
         }
         return false;

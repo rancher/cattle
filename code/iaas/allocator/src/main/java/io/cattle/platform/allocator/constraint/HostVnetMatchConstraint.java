@@ -1,7 +1,6 @@
 package io.cattle.platform.allocator.constraint;
 
 import io.cattle.platform.allocator.dao.AllocatorDao;
-import io.cattle.platform.allocator.service.AllocationAttempt;
 import io.cattle.platform.allocator.service.AllocationCandidate;
 import io.cattle.platform.core.model.Host;
 import io.cattle.platform.object.ObjectManager;
@@ -30,7 +29,7 @@ public class HostVnetMatchConstraint extends HardConstraint implements Constrain
     }
 
     @Override
-    public boolean matches(AllocationAttempt attempt, AllocationCandidate candidate) {
+    public boolean matches(AllocationCandidate candidate) {
         Long subnetId = candidate.getSubnetIds().get(nicId);
         Long hostId = candidate.getHost();
 

@@ -123,6 +123,7 @@ public class ExternalDeploymentUnitInstance extends DeploymentUnitInstance {
         return;
     }
 
+    @Override
     public boolean isHealthCheckInitializing() {
         return false;
     }
@@ -138,11 +139,6 @@ public class ExternalDeploymentUnitInstance extends DeploymentUnitInstance {
     }
 
     @Override
-    public boolean isIgnore() {
-        return false;
-    }
-
-    @Override
     public List<String> getSearchDomains() {
         return null;
     }
@@ -150,5 +146,10 @@ public class ExternalDeploymentUnitInstance extends DeploymentUnitInstance {
     @Override
     public Long getCreateIndex() {
         return null;
+    }
+
+    @Override
+    public void scheduleCreate() {
+        return;
     }
 }

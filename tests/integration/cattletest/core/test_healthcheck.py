@@ -27,13 +27,13 @@ def _get_agent_client(agent):
 
 
 def test_upgrade_with_health(client, context, super_client):
-    env = client.create_environment(name='env-' + random_str())
+    env = client.create_stack(name='env-' + random_str())
 
     image_uuid = context.image_uuid
     launch_config = {"imageUuid": image_uuid}
 
     svc = client.create_service(name=random_str(),
-                                environmentId=env.id,
+                                stackId=env.id,
                                 launchConfig=launch_config,
                                 scale=1)
     svc = client.wait_success(svc)
@@ -95,52 +95,8 @@ def test_upgrade_with_health(client, context, super_client):
     wait_for(lambda: super_client.reload(svc).state == 'upgraded')
 
 
-def test_upgrade_stopped_with_health(client, context, super_client):
-    env = client.create_environment(name='env-' + random_str())
-
-    image_uuid = context.image_uuid
-    launch_config = {"imageUuid": image_uuid,
-                     'healthCheck': {
-                         'port': 80,
-                     }}
-
-    svc = client.create_service(name=random_str(),
-                                environmentId=env.id,
-                                launchConfig=launch_config,
-                                scale=1)
-    svc = client.wait_success(svc)
-    assert svc.state == "inactive"
-
-    env.activateservices()
-    svc = client.wait_success(svc, 120)
-    assert svc.state == "active"
-
-    m = super_client. \
-        list_serviceExposeMap(serviceId=svc.id, state='active', managed=True)
-
-    c = super_client.reload(m[0].instance())
-
-    # upgrade the service
-    new_launch_config = {"imageUuid": image_uuid}
-    strategy = {"launchConfig": new_launch_config,
-                "intervalMillis": 100}
-    svc.upgrade_action(inServiceStrategy=strategy)
-
-    # initial health state check should fail
-    try:
-        wait_for(lambda: super_client.reload(svc).state == 'upgraded',
-                 timeout=10)
-    except Exception:
-        pass
-
-    # stop the instance
-    super_client.wait_success(c.stop())
-
-    wait_for(lambda: super_client.reload(svc).state == 'upgraded')
-
-
 def test_rollback_with_health(client, context, super_client):
-    env = client.create_environment(name='env-' + random_str())
+    env = client.create_stack(name='env-' + random_str())
 
     image_uuid = context.image_uuid
     launch_config = {"imageUuid": image_uuid,
@@ -149,7 +105,7 @@ def test_rollback_with_health(client, context, super_client):
                      }}
 
     svc = client.create_service(name=random_str(),
-                                environmentId=env.id,
+                                stackId=env.id,
                                 launchConfig=launch_config,
                                 scale=1)
     svc = client.wait_success(svc)
@@ -170,18 +126,18 @@ def test_rollback_with_health(client, context, super_client):
     svc = super_client.reload(svc)
 
     # rollback the service
-    svc = client.wait_success(svc.cancelupgrade())
+    svc = wait_state(client, svc.cancelupgrade(), 'canceled-upgrade')
     client.wait_success(svc.rollback())
 
 
 def test_upgrade_start_first_with_health(client, context, super_client):
-    env = client.create_environment(name='env-' + random_str())
+    env = client.create_stack(name='env-' + random_str())
 
     image_uuid = context.image_uuid
     launch_config = {"imageUuid": image_uuid}
 
     svc = client.create_service(name=random_str(),
-                                environmentId=env.id,
+                                stackId=env.id,
                                 launchConfig=launch_config,
                                 scale=1)
     svc = client.wait_success(svc)
@@ -272,13 +228,13 @@ def test_health_check_create_instance(super_client, context):
 
 
 def _create_svc_w_healthcheck(client, context):
-    env = client.create_environment(name='env-' + random_str())
+    env = client.create_stack(name='env-' + random_str())
     service = client.create_service(name='test', launchConfig={
         'imageUuid': context.image_uuid,
         'healthCheck': {
             'port': 80,
         }
-    }, environmentId=env.id)
+    }, stackId=env.id)
     service = client.wait_success(client.wait_success(service).activate())
     assert service.state == 'active'
     return service
@@ -404,13 +360,13 @@ def test_health_check_create_service(super_client, context, client):
 
 
 def test_health_check_ip_retain(super_client, context, client):
-    env = client.create_environment(name='env-' + random_str())
+    env = client.create_stack(name='env-' + random_str())
     service = client.create_service(name='test', launchConfig={
         'imageUuid': context.image_uuid,
         'healthCheck': {
             'port': 80,
         }
-    }, environmentId=env.id, scale=1, retainIp=True)
+    }, stackId=env.id, scale=1, retainIp=True)
 
     service = client.wait_success(client.wait_success(service).activate())
     assert service.state == 'active'
@@ -467,13 +423,13 @@ def test_health_check_ip_retain(super_client, context, client):
 
 def test_health_state_stack(super_client, context, client):
     c = client
-    env = client.create_environment(name='env-' + random_str())
+    env = client.create_stack(name='env-' + random_str())
     service = client.create_service(name='test', launchConfig={
         'imageUuid': context.image_uuid,
         'healthCheck': {
             'port': 80,
         }
-    }, environmentId=env.id, scale=1)
+    }, stackId=env.id, scale=1)
 
     service = client.wait_success(client.wait_success(service).activate())
     assert service.state == 'active'
@@ -527,7 +483,7 @@ def test_health_state_stack(super_client, context, client):
 
 def test_health_state_start_once(super_client, context, client):
     c = client
-    env = client.create_environment(name='env-' + random_str())
+    env = client.create_stack(name='env-' + random_str())
     labels = {"io.rancher.container.start_once": "true"}
     svc = client.create_service(name='test', launchConfig={
         'imageUuid': context.image_uuid,
@@ -535,7 +491,7 @@ def test_health_state_start_once(super_client, context, client):
             'port': 80,
         },
         'labels': labels
-    }, environmentId=env.id, scale=1)
+    }, stackId=env.id, scale=1)
 
     svc = client.wait_success(client.wait_success(svc).activate())
     assert svc.state == 'active'
@@ -572,13 +528,13 @@ def test_health_state_start_once(super_client, context, client):
 
 
 def test_health_state_sidekick_start_once(super_client, context, client):
-    env = client.create_environment(name='env-' + random_str())
+    env = client.create_stack(name='env-' + random_str())
     labels = {"io.rancher.container.start_once": "true"}
     slc = {'imageUuid': context.image_uuid, 'name': "test1"}
     svc = client.create_service(name='test', launchConfig={
         'imageUuid': context.image_uuid,
         'labels': labels
-    }, environmentId=env.id, scale=1, secondaryLaunchConfigs=[slc])
+    }, stackId=env.id, scale=1, secondaryLaunchConfigs=[slc])
 
     svc = client.wait_success(client.wait_success(svc).activate())
     assert svc.state == 'active'
@@ -588,7 +544,7 @@ def test_health_state_sidekick_start_once(super_client, context, client):
 
 
 def test_health_state_selectors(context, client):
-    env = client.create_environment(name='env-' + random_str())
+    env = client.create_stack(name='env-' + random_str())
     labels = {'foo': "bar"}
     container1 = client.create_container(imageUuid=context.image_uuid,
                                          startOnCreate=True,
@@ -598,7 +554,7 @@ def test_health_state_selectors(context, client):
 
     launch_config = {"imageUuid": "rancher/none"}
     service = client.create_service(name=random_str(),
-                                    environmentId=env.id,
+                                    stackId=env.id,
                                     launchConfig=launch_config,
                                     selectorContainer="foo=bar")
     service = client.wait_success(service)
@@ -611,11 +567,11 @@ def test_health_state_selectors(context, client):
 
 
 def test_svc_health_state(context, client):
-    env = client.create_environment(name='env-' + random_str())
+    env = client.create_stack(name='env-' + random_str())
 
     launch_config = {"imageUuid": context.image_uuid}
     service = client.create_service(name=random_str(),
-                                    environmentId=env.id,
+                                    stackId=env.id,
                                     launchConfig=launch_config,
                                     scale=1)
     service = client.wait_success(service)
@@ -627,14 +583,14 @@ def test_svc_health_state(context, client):
 
 
 def test_health_check_init_timeout(super_client, context, client):
-    env = client.create_environment(name='env-' + random_str())
+    env = client.create_stack(name='env-' + random_str())
     service = client.create_service(name='test', launchConfig={
         'imageUuid': context.image_uuid,
         'healthCheck': {
             'port': 80,
             'initializingTimeout': 1,
         }
-    }, environmentId=env.id)
+    }, stackId=env.id)
     service = client.wait_success(client.wait_success(service).activate())
     assert service.state == 'active'
     h_c = service.launchConfig.healthCheck
@@ -656,14 +612,14 @@ def test_health_check_init_timeout(super_client, context, client):
 
 
 def test_health_check_reinit_timeout(super_client, context, client):
-    env = client.create_environment(name='env-' + random_str())
+    env = client.create_stack(name='env-' + random_str())
     service = client.create_service(name='test', launchConfig={
         'imageUuid': context.image_uuid,
         'healthCheck': {
             'port': 80,
             'reinitializingTimeout': 1,
         }
-    }, environmentId=env.id)
+    }, stackId=env.id)
     service = client.wait_success(client.wait_success(service).activate())
     assert service.state == 'active'
     h_c = service.launchConfig.healthCheck
@@ -701,13 +657,13 @@ def test_health_check_reinit_timeout(super_client, context, client):
 
 
 def test_health_check_bad_external_timestamp(super_client, context, client):
-    env = client.create_environment(name='env-' + random_str())
+    env = client.create_stack(name='env-' + random_str())
     service = client.create_service(name='test', launchConfig={
         'imageUuid': context.image_uuid,
         'healthCheck': {
             'port': 80,
         }
-    }, environmentId=env.id)
+    }, stackId=env.id)
 
     service = client.wait_success(client.wait_success(service).activate())
     assert service.state == 'active'
@@ -731,14 +687,14 @@ def test_health_check_bad_external_timestamp(super_client, context, client):
 
 
 def test_health_check_noop(super_client, context, client):
-    env = client.create_environment(name='env-' + random_str())
+    env = client.create_stack(name='env-' + random_str())
     svc = client.create_service(name='test', launchConfig={
         'imageUuid': context.image_uuid,
         'healthCheck': {
             'port': 80,
             'strategy': 'none'
         }
-    }, environmentId=env.id)
+    }, stackId=env.id)
     svc = client.wait_success(client.wait_success(svc).activate())
     assert svc.state == 'active'
     assert svc.launchConfig.healthCheck.strategy == 'none'
@@ -776,7 +732,7 @@ def remove_service(svc):
 
 
 def test_health_check_quorum(super_client, context, client):
-    env = client.create_environment(name='env-' + random_str())
+    env = client.create_stack(name='env-' + random_str())
     svc = client.create_service(name='test', launchConfig={
         'imageUuid': context.image_uuid,
         'healthCheck': {
@@ -784,7 +740,7 @@ def test_health_check_quorum(super_client, context, client):
             'recreateOnQuorumStrategyConfig': {"quorum": 2},
             'strategy': "recreateOnQuorum"
         }
-    }, environmentId=env.id, scale=2)
+    }, stackId=env.id, scale=2)
     svc = client.wait_success(client.wait_success(svc).activate())
     assert svc.state == 'active'
     action = svc.launchConfig.healthCheck.strategy
@@ -825,7 +781,7 @@ def test_health_check_quorum(super_client, context, client):
     # as quorum is reached
     svc = super_client.update(svc, scale=3)
     svc = super_client.wait_success(svc)
-    expose_maps = svc.serviceExposeMaps()
+    expose_maps = _wait_until_active_map_count(svc, 3, client)
     c3 = super_client.reload(expose_maps[2].instance())
     hci3 = find_one(c3.healthcheckInstances)
     hcihm3 = find_one(hci3.healthcheckInstanceHostMaps)
@@ -844,7 +800,7 @@ def test_health_check_quorum(super_client, context, client):
 
 
 def test_health_check_chk_name_quorum(super_client, context, client):
-    env = client.create_environment(name='env-' + random_str())
+    env = client.create_stack(name='env-' + random_str())
     svc = client.create_service(name='test', launchConfig={
         'imageUuid': context.image_uuid,
         'healthCheck': {
@@ -852,7 +808,7 @@ def test_health_check_chk_name_quorum(super_client, context, client):
             'recreateOnQuorumStrategyConfig': {"quorum": 2},
             'strategy': "recreateOnQuorum"
         }
-    }, environmentId=env.id, scale=1)
+    }, stackId=env.id, scale=1)
     svc = client.wait_success(client.wait_success(svc).activate())
     assert svc.state == 'active'
     action = svc.launchConfig.healthCheck.strategy
@@ -892,13 +848,13 @@ def test_health_check_chk_name_quorum(super_client, context, client):
 
 
 def test_health_check_default(super_client, context, client):
-    env = client.create_environment(name='env-' + random_str())
+    env = client.create_stack(name='env-' + random_str())
     svc = client.create_service(name='test', launchConfig={
         'imageUuid': context.image_uuid,
         'healthCheck': {
             'port': 80
         }
-    }, environmentId=env.id)
+    }, stackId=env.id)
     svc = client.wait_success(client.wait_success(svc).activate())
     assert svc.state == 'active'
 
@@ -932,13 +888,13 @@ def test_health_check_bad_agent(super_client, context, client):
     # to schedule healtcheck on
     register_simulated_host(context)
 
-    env = client.create_environment(name='env-' + random_str())
+    env = client.create_stack(name='env-' + random_str())
     service = client.create_service(name='test', launchConfig={
         'imageUuid': context.image_uuid,
         'healthCheck': {
             'port': 80,
         }
-    }, environmentId=env.id)
+    }, stackId=env.id)
 
     service = client.wait_success(client.wait_success(service).activate())
     assert service.state == 'active'
@@ -971,13 +927,13 @@ def test_health_check_reconcile(super_client, new_context):
     super_client.reload(register_simulated_host(new_context))
     client = new_context.client
 
-    env = client.create_environment(name='env-' + random_str())
+    env = client.create_stack(name='env-' + random_str())
     service = client.create_service(name='test', launchConfig={
         'imageUuid': new_context.image_uuid,
         'healthCheck': {
             'port': 80,
         }
-    }, environmentId=env.id)
+    }, stackId=env.id)
 
     service = client.wait_success(client.wait_success(service).activate())
     assert service.state == 'active'
@@ -986,7 +942,7 @@ def test_health_check_reconcile(super_client, new_context):
     multiport = client.create_service(name='manyports', launchConfig={
         'imageUuid': new_context.image_uuid,
         'ports': "5453"
-    }, environmentId=env.id, scale=2)
+    }, stackId=env.id, scale=2)
     multiport = client.wait_success(client.wait_success(multiport).activate())
     assert multiport.state == 'active'
     multiport.remove()
@@ -1053,13 +1009,13 @@ def test_health_check_all_hosts_removed_reconcile(super_client, new_context):
     super_client.reload(register_simulated_host(new_context))
     client = new_context.client
 
-    env = client.create_environment(name='env-' + random_str())
+    env = client.create_stack(name='env-' + random_str())
     service = client.create_service(name='test', launchConfig={
         'imageUuid': new_context.image_uuid,
         'healthCheck': {
             'port': 80,
         }
-    }, environmentId=env.id)
+    }, stackId=env.id)
 
     service = client.wait_success(client.wait_success(service).activate())
     assert service.state == 'active'
@@ -1068,7 +1024,7 @@ def test_health_check_all_hosts_removed_reconcile(super_client, new_context):
     multiport = client.create_service(name='manyports', launchConfig={
         'imageUuid': new_context.image_uuid,
         'ports': "54537"
-    }, environmentId=env.id, scale=2)
+    }, stackId=env.id, scale=2)
     multiport = client.wait_success(client.wait_success(multiport).activate())
     assert multiport.state == 'active'
     multiport.remove()
@@ -1135,13 +1091,13 @@ def test_hosts_removed_reconcile_when_init(super_client, new_context):
     super_client.reload(register_simulated_host(new_context))
     client = new_context.client
 
-    env = client.create_environment(name='env-' + random_str())
+    env = client.create_stack(name='env-' + random_str())
     service = client.create_service(name='test', launchConfig={
         'imageUuid': new_context.image_uuid,
         'healthCheck': {
             'port': 80,
         }
-    }, environmentId=env.id)
+    }, stackId=env.id)
 
     service = client.wait_success(client.wait_success(service).activate())
     assert service.state == 'active'
@@ -1149,7 +1105,7 @@ def test_hosts_removed_reconcile_when_init(super_client, new_context):
     multiport = client.create_service(name='manyports', launchConfig={
         'imageUuid': new_context.image_uuid,
         'ports': "54531"
-    }, environmentId=env.id, scale=2)
+    }, stackId=env.id, scale=2)
     multiport = client.wait_success(client.wait_success(multiport).activate())
     assert multiport.state == 'active'
     multiport.remove()
@@ -1203,19 +1159,19 @@ def test_health_check_host_remove(super_client, context, client):
     super_client.reload(register_simulated_host(context))
     super_client.reload(register_simulated_host(context))
 
-    env = client.create_environment(name='env-' + random_str())
+    env = client.create_stack(name='env-' + random_str())
     service = client.create_service(name='test', launchConfig={
         'imageUuid': context.image_uuid,
         'healthCheck': {
             'port': 80,
         }
-    }, environmentId=env.id)
+    }, stackId=env.id)
 
     # to trigger network agent creation on hosts
     multiport = client.create_service(name='manyports', launchConfig={
         'imageUuid': context.image_uuid,
         'ports': "5454"
-    }, environmentId=env.id, scale=3)
+    }, stackId=env.id, scale=3)
     multiport = client.wait_success(client.wait_success(multiport).activate())
     assert multiport.state == 'active'
     multiport.remove()
@@ -1260,7 +1216,7 @@ def test_health_check_host_remove(super_client, context, client):
 def test_healtcheck(new_context, super_client):
     client = new_context.client
     image_uuid = new_context.image_uuid
-    stack = client.create_environment(name='env-' + random_str())
+    stack = client.create_stack(name='env-' + random_str())
     host = register_simulated_host(new_context)
     client.wait_success(host)
 
@@ -1268,7 +1224,7 @@ def test_healtcheck(new_context, super_client):
     multiport = client.create_service(name='foo', launchConfig={
         'imageUuid': new_context.image_uuid,
         'ports': "54557"
-    }, environmentId=stack.id, scale=2)
+    }, stackId=stack.id, scale=2)
     multiport = client.wait_success(client.wait_success(multiport).activate())
     assert multiport.state == 'active'
     multiport.remove()
@@ -1280,7 +1236,7 @@ def test_healtcheck(new_context, super_client):
                     "port": 200}
     launch_config = {"imageUuid": image_uuid, "healthCheck": health_check}
     service = client.create_service(name=random_str(),
-                                    environmentId=stack.id,
+                                    stackId=stack.id,
                                     launchConfig=launch_config)
     service = client.wait_success(service)
     service = client.wait_success(service.activate(), 120)
@@ -1319,7 +1275,7 @@ def test_healtcheck(new_context, super_client):
     multiport = client.create_service(name='bar', launchConfig={
         'imageUuid': new_context.image_uuid,
         'ports': "54558"
-    }, environmentId=stack.id, scale=5)
+    }, stackId=stack.id, scale=5)
     multiport = client.wait_success(client.wait_success(multiport).activate())
     assert multiport.state == 'active'
     multiport.remove()
@@ -1343,7 +1299,7 @@ def _wait_health_host_count(super_client, health_id, count):
 
 
 def test_external_svc_healthcheck(client, context):
-    env = client.create_environment(name='env-' + random_str())
+    env = client.create_stack(name='env-' + random_str())
 
     # test that external service was set with healtcheck
     health_check = {"name": "check1", "responseTimeout": 3,
@@ -1352,7 +1308,7 @@ def test_external_svc_healthcheck(client, context):
                     "port": 200}
     ips = ["72.22.16.5", '192.168.0.10']
     service = client.create_externalService(name=random_str(),
-                                            environmentId=env.id,
+                                            stackId=env.id,
                                             externalIpAddresses=ips,
                                             healthCheck=health_check)
     service = client.wait_success(service)
@@ -1415,8 +1371,8 @@ def test_global_service_health(new_context):
     client.wait_success(host1)
     client.wait_success(host2)
 
-    # create environment and services
-    env = client.create_environment(name='env-' + random_str())
+    # create stack and services
+    env = client.create_stack(name='env-' + random_str())
     image_uuid = new_context.image_uuid
     labels = {"io.rancher.container.start_once": "true"}
     secondary_lc = {"imageUuid": image_uuid, "name": "secondary",
@@ -1428,7 +1384,7 @@ def test_global_service_health(new_context):
         }
     }
     svc = client.create_service(name=random_str(),
-                                environmentId=env.id,
+                                stackId=env.id,
                                 launchConfig=launch_config,
                                 secondaryLaunchConfigs=[secondary_lc])
     svc = client.wait_success(svc)
@@ -1472,10 +1428,10 @@ def _validate_compose_instance_start(client, service, env,
 
 def test_stack_health_state(super_client, context, client):
     c = client
-    env = client.create_environment(name='env-' + random_str())
+    env = client.create_stack(name='env-' + random_str())
     svc = client.create_service(name='test', launchConfig={
         'imageUuid': context.image_uuid
-    }, environmentId=env.id)
+    }, stackId=env.id)
     svc = client.wait_success(client.wait_success(svc).activate())
     assert svc.state == 'active'
 

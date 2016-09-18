@@ -1,5 +1,6 @@
 package io.cattle.platform.process.instance;
 
+import static io.cattle.platform.core.model.tables.InstanceHostMapTable.*;
 import io.cattle.platform.archaius.util.ArchaiusUtil;
 import io.cattle.platform.async.utils.TimeoutException;
 import io.cattle.platform.core.addon.InstanceHealthCheck;
@@ -10,6 +11,7 @@ import io.cattle.platform.core.constants.InstanceLinkConstants;
 import io.cattle.platform.core.dao.GenericMapDao;
 import io.cattle.platform.core.dao.InstanceDao;
 import io.cattle.platform.core.dao.IpAddressDao;
+import io.cattle.platform.core.dao.ServiceDao;
 import io.cattle.platform.core.model.Agent;
 import io.cattle.platform.core.model.Host;
 import io.cattle.platform.core.model.Instance;
@@ -54,6 +56,15 @@ import com.netflix.config.DynamicIntProperty;
 public class InstanceStart extends AbstractDefaultProcessHandler {
 
     private static final DynamicIntProperty COMPUTE_TRIES = ArchaiusUtil.getInt("instance.compute.tries");
+
+    private static final List<String> REMOVED_STATES = Arrays.asList(CommonStatesConstants.REMOVED, CommonStatesConstants.REMOVING,
+            CommonStatesConstants.PURGED, CommonStatesConstants.PURGING);
+
+    private static final List<String> STOPPED_STATES = Arrays.asList(InstanceConstants.STATE_STOPPED, InstanceConstants.STATE_STOPPING);
+
+    private static final List<String> START_ONCE_STATES = Arrays.asList(InstanceConstants.STATE_STOPPED, InstanceConstants.STATE_STOPPING,
+            InstanceConstants.STATE_RUNNING);
+
     private static final Logger log = LoggerFactory.getLogger(InstanceStart.class);
 
     @Inject
@@ -68,6 +79,9 @@ public class InstanceStart extends AbstractDefaultProcessHandler {
 
     @Inject
     ResourceMonitor resourceMonitor;
+
+    @Inject
+    ServiceDao serviceDao;
 
     @Override
     public HandlerResult handle(ProcessState state, ProcessInstance process) {
@@ -139,16 +153,15 @@ public class InstanceStart extends AbstractDefaultProcessHandler {
         List<Instance> waitList = new ArrayList<>();
         for (Long id : instancesIds) {
             Instance i = objectManager.loadResource(Instance.class, id);
-            List<String> removedStates = Arrays.asList(CommonStatesConstants.REMOVED, CommonStatesConstants.REMOVING,
-                    CommonStatesConstants.PURGED, CommonStatesConstants.PURGING);
-            List<String> stoppedStates = Arrays.asList(InstanceConstants.STATE_STOPPED, InstanceConstants.STATE_STOPPING);
+
             String type = networkFromId != null && networkFromId.equals(id) ? "networkFrom" : "volumeFrom";
-            if (removedStates.contains(i.getState())) {
+            if (REMOVED_STATES.contains(i.getState())) {
                 throw new ExecutionException("Dependencies readiness error", type + " instance is removed", instance.getId());
             }
-            
-            if (!isStartOnce(i) && stoppedStates.contains(i.getState())) {
-                throw new ExecutionException("Dependencies readiness error", type + " instance is not running", instance.getId());
+
+            if (!isStartOnce(i) && !serviceDao.isServiceInstance(instance) && STOPPED_STATES.contains(i.getState())) {
+                throw new ExecutionException("Dependencies readiness error", type + " instance is not running",
+                        instance.getId());
             }
             waitList.add(i);
         }
@@ -161,7 +174,14 @@ public class InstanceStart extends AbstractDefaultProcessHandler {
                     new ResourcePredicate<Instance>() {
                         @Override
                         public boolean evaluate(Instance obj) {
-                            return validateState(obj);
+                            if (isStartOnce(obj)) {
+                                return START_ONCE_STATES.contains(obj.getState());
+                            }
+
+                            InstanceHostMap ihm =
+                                    objectManager.findAny(InstanceHostMap.class, INSTANCE_HOST_MAP.INSTANCE_ID, obj.getId(), INSTANCE_HOST_MAP.STATE,
+                                            CommonStatesConstants.ACTIVE, INSTANCE_HOST_MAP.REMOVED, null);
+                            return ihm != null;
                         }
 
                         @Override
@@ -174,16 +194,6 @@ public class InstanceStart extends AbstractDefaultProcessHandler {
                 throw new ExecutionException("Dependencies readiness error", "instance is not running", instance.getId());
             }
         }
-    }
-
-    protected boolean validateState(Instance instance) {
-        List<String> validStartOnceStates = Arrays.asList(InstanceConstants.STATE_STOPPED,
-                InstanceConstants.STATE_STOPPING,
-                InstanceConstants.STATE_RUNNING);
-        if (isStartOnce(instance)) {
-            return validStartOnceStates.contains(instance.getState());
-        }
-        return instance.getState().equals(InstanceConstants.STATE_RUNNING);
     }
 
     protected boolean isStartOnce(Instance instance) {

@@ -23,6 +23,7 @@ import io.cattle.platform.object.process.ObjectProcessManager;
 import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.servicediscovery.api.constants.ServiceDiscoveryConstants;
 import io.cattle.platform.servicediscovery.api.dao.ServiceExposeMapDao;
+import io.cattle.platform.servicediscovery.api.util.ServiceDiscoveryUtil;
 import io.cattle.platform.servicediscovery.service.ServiceDiscoveryService;
 
 import java.util.ArrayList;
@@ -80,7 +81,7 @@ public class ServiceExposeMapDaoImpl extends AbstractJooqDao implements ServiceE
         if (ServiceDiscoveryConstants.PRIMARY_LAUNCH_CONFIG_NAME.equalsIgnoreCase(dnsPrefix)) {
             dnsPrefix = null;
         }
-        
+
         ServiceExposeMap map = getServiceInstanceMap(service, instance);
         if (map == null) {
             map = objectManager.create(ServiceExposeMap.class, SERVICE_EXPOSE_MAP.INSTANCE_ID, instance.getId(),
@@ -98,19 +99,39 @@ public class ServiceExposeMapDaoImpl extends AbstractJooqDao implements ServiceE
     }
 
     @Override
-    public List<? extends Instance> listServiceManagedInstances(long serviceId) {
+    public List<? extends Instance> listServiceManagedInstances(Service service) {
         return create()
                 .select(INSTANCE.fields())
                 .from(INSTANCE)
                 .join(SERVICE_EXPOSE_MAP)
                 .on(SERVICE_EXPOSE_MAP.INSTANCE_ID.eq(INSTANCE.ID)
-                        .and(SERVICE_EXPOSE_MAP.SERVICE_ID.eq(serviceId))
+                        .and(SERVICE_EXPOSE_MAP.SERVICE_ID.eq(service.getId()))
                         .and(SERVICE_EXPOSE_MAP.MANAGED.eq(true))
                         .and(SERVICE_EXPOSE_MAP.STATE.in(CommonStatesConstants.ACTIVATING,
                                 CommonStatesConstants.ACTIVE, CommonStatesConstants.REQUESTED))
                         .and(INSTANCE.STATE.notIn(CommonStatesConstants.PURGING, CommonStatesConstants.PURGED,
                                 CommonStatesConstants.REMOVED, CommonStatesConstants.REMOVING,
-                                InstanceConstants.STATE_ERROR, InstanceConstants.STATE_ERRORING)))
+                                InstanceConstants.STATE_ERROR, InstanceConstants.STATE_ERRORING))
+                        .and(SERVICE_EXPOSE_MAP.DNS_PREFIX.isNull().or(
+                                SERVICE_EXPOSE_MAP.DNS_PREFIX.in(ServiceDiscoveryUtil
+                                        .getServiceLaunchConfigNames(service)))))
+                .fetchInto(InstanceRecord.class);
+    }
+
+    @Override
+    public List<? extends Instance> listServiceManagedInstancesAll(Service service) {
+        return create()
+                .select(INSTANCE.fields())
+                .from(INSTANCE)
+                .join(SERVICE_EXPOSE_MAP)
+                .on(SERVICE_EXPOSE_MAP.INSTANCE_ID.eq(INSTANCE.ID)
+                        .and(SERVICE_EXPOSE_MAP.SERVICE_ID.eq(service.getId()))
+                        .and(SERVICE_EXPOSE_MAP.MANAGED.eq(true))
+                        .and(SERVICE_EXPOSE_MAP.STATE.in(CommonStatesConstants.ACTIVATING,
+                                CommonStatesConstants.ACTIVE, CommonStatesConstants.REQUESTED))
+                                .and(SERVICE_EXPOSE_MAP.DNS_PREFIX.isNull().or(
+                                SERVICE_EXPOSE_MAP.DNS_PREFIX.in(ServiceDiscoveryUtil
+                                        .getServiceLaunchConfigNames(service)))))
                 .fetchInto(InstanceRecord.class);
     }
 
@@ -167,7 +188,7 @@ public class ServiceExposeMapDaoImpl extends AbstractJooqDao implements ServiceE
         @SuppressWarnings("unchecked")
         List<Long> validHostIds = (List<Long>) CollectionUtils.collect(validHosts,
                 TransformerUtils.invokerTransformer("getId"));
-        
+
         List<Instance> toReturn = new ArrayList<>();
         for (Instance instance : instances) {
             Long hostId = DataAccessor.fieldLong(instance, InstanceConstants.FIELD_HOST_ID);
