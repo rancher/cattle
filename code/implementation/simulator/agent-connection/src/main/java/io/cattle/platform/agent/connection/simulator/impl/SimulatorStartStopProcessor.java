@@ -25,7 +25,6 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
@@ -75,7 +74,7 @@ public class SimulatorStartStopProcessor implements AgentSimulatorEventProcessor
         Map<String, Object> update = null;
         String externalId = (String)instance.get("externalId");
         if (externalId == null) {
-            externalId = UUID.randomUUID().toString();
+            externalId = io.cattle.platform.util.resource.UUID.randomUUID().toString();
             update = CollectionUtils.asMap("instanceHostMap", CollectionUtils.asMap("instance", CollectionUtils.asMap("externalId", externalId)));
         }
 

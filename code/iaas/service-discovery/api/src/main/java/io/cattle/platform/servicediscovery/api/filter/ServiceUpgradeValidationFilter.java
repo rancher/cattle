@@ -22,7 +22,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 
 import javax.inject.Inject;
 
@@ -89,7 +88,7 @@ public class ServiceUpgradeValidationFilter extends AbstractDefaultResourceManag
     }
 
     protected void setVersion(InServiceUpgradeStrategy upgrade) {
-        String version = UUID.randomUUID().toString();
+        String version = io.cattle.platform.util.resource.UUID.randomUUID().toString();
         if (upgrade.getSecondaryLaunchConfigs() != null) {
             for (Object launchConfigObj : upgrade.getSecondaryLaunchConfigs()) {
                 setLaunchConfigVersion(version, launchConfigObj);

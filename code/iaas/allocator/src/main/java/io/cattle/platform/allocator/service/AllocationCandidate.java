@@ -9,14 +9,13 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.UUID;
 
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 
 public class AllocationCandidate {
 
-    String id = UUID.randomUUID().toString();
+    String id = io.cattle.platform.util.resource.UUID.randomUUID().toString();
     Long host;
     String hostUuid;
     Map<Long, Long> subnetIds = new HashMap<Long, Long>();

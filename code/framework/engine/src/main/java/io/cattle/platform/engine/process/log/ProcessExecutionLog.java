@@ -1,17 +1,17 @@
 package io.cattle.platform.engine.process.log;
 
 import static io.cattle.platform.util.time.TimeUtils.*;
+
 import io.cattle.platform.engine.process.ExitReason;
 import io.cattle.platform.engine.process.ProcessStateTransition;
 import io.cattle.platform.util.type.Named;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 
 public class ProcessExecutionLog extends AbstractParentLog implements ParentLog {
 
-    String id = UUID.randomUUID().toString();
+    String id = io.cattle.platform.util.resource.UUID.randomUUID().toString();
     long startTime;
     String processName;
     Long stopTime;

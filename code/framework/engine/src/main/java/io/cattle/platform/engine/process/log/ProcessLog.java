@@ -4,11 +4,10 @@ import io.cattle.platform.engine.context.EngineContext;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 
 public class ProcessLog {
 
-    String uuid = UUID.randomUUID().toString();
+    String uuid = io.cattle.platform.util.resource.UUID.randomUUID().toString();
     List<ProcessExecutionLog> executions = new ArrayList<ProcessExecutionLog>();
 
     public ProcessExecutionLog newExecution() {
