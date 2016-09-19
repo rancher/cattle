@@ -36,7 +36,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.UUID;
 
 import javax.inject.Inject;
 
@@ -84,7 +83,7 @@ public class ComposeManagerImpl implements ComposeManager {
 
     private Instance setupLabels(Instance instance, String service, String project) {
         Map<String, Object> labels = DataAccessor.fieldMap(instance, InstanceConstants.FIELD_LABELS);
-        setIfNot(labels, ServiceDiscoveryConstants.LABEL_SERVICE_DEPLOYMENT_UNIT, UUID.randomUUID());
+        setIfNot(labels, ServiceDiscoveryConstants.LABEL_SERVICE_DEPLOYMENT_UNIT, io.cattle.platform.util.resource.UUID.randomUUID());
         setIfNot(labels, ServiceDiscoveryConstants.LABEL_SERVICE_LAUNCH_CONFIG, ServiceDiscoveryConstants.PRIMARY_LAUNCH_CONFIG_NAME);
         setIfNot(labels, ServiceDiscoveryConstants.LABEL_STACK_NAME, project);
         setIfNot(labels, ServiceDiscoveryConstants.LABEL_STACK_SERVICE_NAME, String.format("%s/%s", project, service));

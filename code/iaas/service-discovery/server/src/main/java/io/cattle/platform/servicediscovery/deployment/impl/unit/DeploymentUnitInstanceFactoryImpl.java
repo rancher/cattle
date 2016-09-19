@@ -18,7 +18,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 
 import javax.inject.Inject;
 
@@ -151,7 +150,7 @@ public class DeploymentUnitInstanceFactoryImpl implements DeploymentUnitInstance
     protected void createExternalDeploymentUnit(DeploymentServiceContext context,
             Map<String, Map<String, String>> uuidToLabels, Map<String, List<DeploymentUnitInstance>> uuidToInstances,
             Service service, String externalIp, String hostName) {
-        String uuid = UUID.randomUUID().toString();
+        String uuid = io.cattle.platform.util.resource.UUID.randomUUID().toString();
         DeploymentUnitInstance unitInstance = createDeploymentUnitInstance(context, uuid, service, null,
                 Pair.of(externalIp, hostName), null, ServiceDiscoveryConstants.PRIMARY_LAUNCH_CONFIG_NAME);
         addToDeploymentUnitList(uuidToLabels, uuidToInstances, new HashMap<String, String>(), uuid,

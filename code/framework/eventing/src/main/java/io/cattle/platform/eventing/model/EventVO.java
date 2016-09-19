@@ -1,12 +1,10 @@
 package io.cattle.platform.eventing.model;
 
 import io.cattle.platform.eventing.exception.EventExecutionException;
-import io.cattle.platform.eventing.model.Event;
 
 import java.util.Arrays;
 import java.util.Date;
 import java.util.Map;
-import java.util.UUID;
 
 import javax.xml.bind.annotation.XmlTransient;
 
@@ -25,7 +23,7 @@ public class EventVO<T> implements Event {
 
     @SuppressWarnings("unchecked")
     public EventVO() {
-        id = UUID.randomUUID().toString();
+        id = io.cattle.platform.util.resource.UUID.randomUUID().toString();
         time = new Date();
         context = MDC.getMDCAdapter().getCopyOfContextMap();
     }

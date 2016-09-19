@@ -20,7 +20,6 @@ import io.cattle.platform.util.exception.ServiceReconcileException;
 
 import java.util.Date;
 import java.util.Stack;
-import java.util.UUID;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -40,7 +39,7 @@ public class ActivityLogImpl implements ActivityLog {
         ServiceLog auditLog = newServiceLog(service);
         auditLog.setEventType(type);
         auditLog.setDescription(message);
-        auditLog.setTransactionId(UUID.randomUUID().toString());
+        auditLog.setTransactionId(io.cattle.platform.util.resource.UUID.randomUUID().toString());
         if (entries.size() > 0) {
             ServiceLog parentLog = entries.peek().auditLog;
             auditLog.setSubLog(true);

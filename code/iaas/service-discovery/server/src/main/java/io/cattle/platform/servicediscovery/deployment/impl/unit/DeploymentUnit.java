@@ -23,7 +23,6 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -86,7 +85,7 @@ public class DeploymentUnit {
      * this constructor is called to create a new unit
      */
     public DeploymentUnit(DeploymentServiceContext context, List<Service> services, Map<String, String> labels) {
-        this(context, UUID.randomUUID().toString(), services);
+        this(context, io.cattle.platform.util.resource.UUID.randomUUID().toString(), services);
         setLabels(labels);
     }
 
