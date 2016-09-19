@@ -7,6 +7,7 @@ import io.cattle.platform.engine.process.ExitReason;
 import io.cattle.platform.engine.process.ProcessInstanceException;
 import io.cattle.platform.engine.process.impl.ProcessCancelException;
 import io.cattle.platform.engine.process.impl.ProcessExecutionExitException;
+import io.cattle.platform.lock.exception.FailedToAcquireLockException;
 import io.cattle.platform.object.jooq.utils.JooqUtils;
 import io.cattle.platform.object.meta.MapRelationship;
 import io.cattle.platform.object.meta.ObjectMetaDataManager;
@@ -391,11 +392,15 @@ public abstract class AbstractJooqResourceManager extends AbstractObjectResource
     @Override
     public boolean handleException(Throwable t, ApiRequest apiRequest) {
         if (t instanceof ProcessInstanceException) {
-            Throwable t2 = ExceptionUtils.getRootCause(t);
-            if (t2 instanceof ProcessExecutionExitException && ((ProcessExecutionExitException) t2).getExitReason() == ExitReason.RESOURCE_BUSY) {
-                log.info("Resource busy", t.getMessage());
-                throw new ClientVisibleException(ResponseCodes.CONFLICT);
-            }
+            t = ExceptionUtils.getRootCause(t);
+        }
+
+        if (t instanceof ProcessExecutionExitException && ((ProcessExecutionExitException) t).getExitReason() == ExitReason.RESOURCE_BUSY) {
+            log.info("Resource busy", t.getMessage());
+            throw new ClientVisibleException(ResponseCodes.CONFLICT);
+        } else if (t instanceof FailedToAcquireLockException) {
+            log.info("Failed to lock", t.getMessage());
+            throw new ClientVisibleException(ResponseCodes.CONFLICT);
         } else if (t instanceof ProcessCancelException) {
             log.info("Process cancel", t.getMessage());
             throw new ClientVisibleException(ResponseCodes.CONFLICT);
