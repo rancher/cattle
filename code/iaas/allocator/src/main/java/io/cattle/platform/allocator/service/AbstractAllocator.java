@@ -441,6 +441,7 @@ public abstract class AbstractAllocator implements Allocator {
         for (Map.Entry<Long, Long> entry : candidate.getSubnetIds().entrySet()) {
             candidateLog.append(String.format("  %s   nic [%s] subnet [%s]\n", prefix, entry.getKey(), entry.getValue()));
         }
+        candidateLog.deleteCharAt(candidateLog.length() - 1); // Remove trailing newline
         log.info(candidateLog.toString());
     }
 
@@ -465,6 +466,7 @@ public abstract class AbstractAllocator implements Allocator {
         for (Constraint constraint : attempt.getConstraints()) {
             candidateLog.append(String.format("  [%s]   %s\n", id, constraint));
         }
+        candidateLog.deleteCharAt(candidateLog.length() - 1); // Remove trailing newline
         log.info(candidateLog.toString());
     }
 
