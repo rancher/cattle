@@ -60,9 +60,10 @@ def _validate_service_link(client, context, service_kind):
     compose_config = env.exportconfig()
     assert compose_config is not None
     document = yaml.load(compose_config.dockerComposeConfig)
-    assert len(document[service1.name]['labels']) == 1
+    svc = document['services'][service1.name]
+    assert len(svc['labels']) == 1
     labels = {"io.rancher.service.selector.link": "foo=bar"}
-    assert document[service1.name]['labels'] == labels
+    assert svc['labels'] == labels
 
 
 def test_service_add_service_link_selector(client, context):
@@ -99,9 +100,10 @@ def test_service_add_instance_selector(client, context):
     compose_config = env.exportconfig()
     assert compose_config is not None
     document = yaml.load(compose_config.dockerComposeConfig)
-    assert len(document[service.name]['labels']) == 1
+    svc = document['services'][service.name]
+    assert len(svc['labels']) == 1
     export_labels = {"io.rancher.service.selector.container": "foo=bar"}
-    assert document[service.name]['labels'] == export_labels
+    assert svc['labels'] == export_labels
 
     wait_for(
         lambda: len(client.list_serviceExposeMap(serviceId=service.id)) == 1

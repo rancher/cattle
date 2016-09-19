@@ -378,10 +378,11 @@ def test_create_svc_with_lb_config(context, client):
     assert compose_config is not None
     rancher_yml = yaml.load(compose_config.rancherComposeConfig)
     cfg = 'load_balancer_config'
-    assert cfg in rancher_yml[service.name]
-    assert 'haproxy_config' in rancher_yml[service.name][cfg]
+    svc = rancher_yml['services'][service.name]
+    assert cfg in svc
+    assert 'haproxy_config' in svc[cfg]
     del haproxy_cfg['type']
-    assert rancher_yml[service.name][cfg]["haproxy_config"] == haproxy_cfg
+    assert svc[cfg]["haproxy_config"] == haproxy_cfg
 
 
 def test_scale(new_context):
@@ -797,18 +798,19 @@ def test_export_config(client, context):
     compose_config = env1.exportconfig()
     assert compose_config is not None
     document = yaml.load(compose_config.dockerComposeConfig)
-    assert len(document[lb_service.name]['links']) == 2
-    assert len(document[lb_service.name]['external_links']) == 1
-    assert len(document[lb_service.name]['labels']) == 2
+    lb = document['services'][lb_service.name]
+    assert len(lb['links']) == 2
+    assert len(lb['external_links']) == 1
+    assert len(lb['labels']) == 2
 
     labels = {"io.rancher.loadbalancer.target.web": "a.com:90",
               "io.rancher.loadbalancer.target." +
               env2.name + "/web2": "a.com:90"}
     links = ["web:web", "web1:web1"]
     external_links = [env2.name + "/web2:web2"]
-    assert document[lb_service.name]['labels'] == labels
-    assert document[lb_service.name]['links'] == links
-    assert document[lb_service.name]['external_links'] == external_links
+    assert lb['labels'] == labels
+    assert lb['links'] == links
+    assert lb['external_links'] == external_links
 
 
 def test_lb_service_w_certificate(client, context, image_uuid):
@@ -888,9 +890,11 @@ def test_lb_service_update_certificate(client, context, image_uuid):
     docker_compose = yaml.load(compose_config.dockerComposeConfig)
     rancher_compose = yaml.load(compose_config.rancherComposeConfig)
 
-    assert docker_compose[lb_svc.name]['labels'] == labels
-    assert rancher_compose[lb_svc.name]['default_cert'] == cert3.name
-    assert rancher_compose[lb_svc.name]['certs'][0] == cert1.name
+    lb_d = docker_compose['services'][lb_svc.name]
+    lb_r = rancher_compose['services'][lb_svc.name]
+    assert lb_d['labels'] == labels
+    assert lb_r['default_cert'] == cert3.name
+    assert lb_r['certs'][0] == cert1.name
 
     # don't pass certificate ids and validate that they are still set
     lb_svc = client.update(lb_svc, name='newName')

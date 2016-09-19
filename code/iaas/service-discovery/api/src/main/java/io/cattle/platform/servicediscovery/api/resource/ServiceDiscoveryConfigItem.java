@@ -23,84 +23,100 @@ public class ServiceDiscoveryConfigItem {
      */
     // COMPOSE PARAMETERS
     private static List<ServiceDiscoveryConfigItem> supportedServiceConfigItems = new ArrayList<>();
-    public static final ServiceDiscoveryConfigItem IMAGE = new ServiceDiscoveryConfigItem(InstanceConstants.FIELD_IMAGE_UUID, "image");
-    public static final ServiceDiscoveryConfigItem COMMAND = new ServiceDiscoveryConfigItem("command", "command");
-    public static final ServiceDiscoveryConfigItem PORTS = new ServiceDiscoveryConfigItem("ports", "ports");
-    public static final ServiceDiscoveryConfigItem VOLUMES = new ServiceDiscoveryConfigItem("dataVolumes", "volumes");
+    public static final ServiceDiscoveryConfigItem IMAGE = new ServiceDiscoveryConfigItem(InstanceConstants.FIELD_IMAGE_UUID, "image", false);
+    public static final ServiceDiscoveryConfigItem COMMAND = new ServiceDiscoveryConfigItem("command", "command", false);
+    public static final ServiceDiscoveryConfigItem PORTS = new ServiceDiscoveryConfigItem("ports", "ports", false);
+    public static final ServiceDiscoveryConfigItem VOLUMES = new ServiceDiscoveryConfigItem("dataVolumes", "volumes", false);
     public static final ServiceDiscoveryConfigItem VOLUMESFROM = new ServiceDiscoveryConfigItem("dataVolumesFrom",
-            "volumes_from");
-    public static final ServiceDiscoveryConfigItem ENVIRONMENT = new ServiceDiscoveryConfigItem("environment", "environment");
-    public static final ServiceDiscoveryConfigItem DNS = new ServiceDiscoveryConfigItem("dns", "dns");
-    public static final ServiceDiscoveryConfigItem CAPADD = new ServiceDiscoveryConfigItem("capAdd", "cap_add");
-    public static final ServiceDiscoveryConfigItem CAPDROP = new ServiceDiscoveryConfigItem("capDrop", "cap_drop");
-    public static final ServiceDiscoveryConfigItem DNSSEARCH = new ServiceDiscoveryConfigItem("dnsSearch", "dns_search");
-    public static final ServiceDiscoveryConfigItem WORKINGDIR = new ServiceDiscoveryConfigItem("workingDir", "working_dir");
-    public static final ServiceDiscoveryConfigItem ENTRYPOINT = new ServiceDiscoveryConfigItem("entryPoint", "entrypoint");
-    public static final ServiceDiscoveryConfigItem USER = new ServiceDiscoveryConfigItem("user", "user");
-    public static final ServiceDiscoveryConfigItem HOSTNAME = new ServiceDiscoveryConfigItem("hostname", "hostname");
-    public static final ServiceDiscoveryConfigItem DOMAINNAME = new ServiceDiscoveryConfigItem("domainName", "domainname");
-    public static final ServiceDiscoveryConfigItem MEMLIMIT = new ServiceDiscoveryConfigItem("memory", "mem_limit");
-    public static final ServiceDiscoveryConfigItem PRIVILEGED = new ServiceDiscoveryConfigItem("privileged", "privileged");
-    public static final ServiceDiscoveryConfigItem RESTART = new ServiceDiscoveryConfigItem("restartPolicy", "restart");
-    public static final ServiceDiscoveryConfigItem STDINOPEN = new ServiceDiscoveryConfigItem("stdinOpen", "stdin_open");
-    public static final ServiceDiscoveryConfigItem TTY = new ServiceDiscoveryConfigItem("tty", "tty");
-    public static final ServiceDiscoveryConfigItem CPUSHARES = new ServiceDiscoveryConfigItem("cpuShares", "cpu_shares");
-    public static final ServiceDiscoveryConfigItem VOLUME_DRIVER = new ServiceDiscoveryConfigItem("volumeDriver", "volume_driver");
-    public static final ServiceDiscoveryConfigItem EXPOSE = new ServiceDiscoveryConfigItem("expose", "expose");
+            "volumes_from", false);
+    public static final ServiceDiscoveryConfigItem ENVIRONMENT = new ServiceDiscoveryConfigItem("environment", "environment", false);
+    public static final ServiceDiscoveryConfigItem DNS = new ServiceDiscoveryConfigItem("dns", "dns", false);
+    public static final ServiceDiscoveryConfigItem CAPADD = new ServiceDiscoveryConfigItem("capAdd", "cap_add", false);
+    public static final ServiceDiscoveryConfigItem CAPDROP = new ServiceDiscoveryConfigItem("capDrop", "cap_drop", false);
+    public static final ServiceDiscoveryConfigItem DNSSEARCH = new ServiceDiscoveryConfigItem("dnsSearch", "dns_search", false);
+    public static final ServiceDiscoveryConfigItem WORKINGDIR = new ServiceDiscoveryConfigItem("workingDir", "working_dir", false);
+    public static final ServiceDiscoveryConfigItem ENTRYPOINT = new ServiceDiscoveryConfigItem("entryPoint", "entrypoint", false);
+    public static final ServiceDiscoveryConfigItem USER = new ServiceDiscoveryConfigItem("user", "user", false);
+    public static final ServiceDiscoveryConfigItem HOSTNAME = new ServiceDiscoveryConfigItem("hostname", "hostname", false);
+    public static final ServiceDiscoveryConfigItem DOMAINNAME = new ServiceDiscoveryConfigItem("domainName", "domainname", false);
+    public static final ServiceDiscoveryConfigItem MEMLIMIT = new ServiceDiscoveryConfigItem("memory", "mem_limit", false);
+    public static final ServiceDiscoveryConfigItem PRIVILEGED = new ServiceDiscoveryConfigItem("privileged", "privileged", false);
+    public static final ServiceDiscoveryConfigItem RESTART = new ServiceDiscoveryConfigItem("restartPolicy", "restart", false);
+    public static final ServiceDiscoveryConfigItem STDINOPEN = new ServiceDiscoveryConfigItem("stdinOpen", "stdin_open", false);
+    public static final ServiceDiscoveryConfigItem TTY = new ServiceDiscoveryConfigItem("tty", "tty", false);
+    public static final ServiceDiscoveryConfigItem CPUSHARES = new ServiceDiscoveryConfigItem("cpuShares", "cpu_shares", false);
+    public static final ServiceDiscoveryConfigItem VOLUME_DRIVER = new ServiceDiscoveryConfigItem("volumeDriver", "volume_driver", false);
+    public static final ServiceDiscoveryConfigItem EXPOSE = new ServiceDiscoveryConfigItem("expose", "expose", false);
     public static final ServiceDiscoveryConfigItem EXTERNALLINKS = new ServiceDiscoveryConfigItem("instanceLinks",
-            "external_links");
+            "external_links", false);
     public static final ServiceDiscoveryConfigItem LINKS = new ServiceDiscoveryConfigItem(null,
-            "links", false, true);
+            "links", false, true, false);
     public static final ServiceDiscoveryConfigItem NETWORKMODE = new ServiceDiscoveryConfigItem(
             DockerInstanceConstants.FIELD_NETWORK_MODE,
-            "net");
-    public static final ServiceDiscoveryConfigItem CPUSET = new ServiceDiscoveryConfigItem("cpuSet", "cpuset");
+            NamedUtils.toUnderscoreSeparated(DockerInstanceConstants.FIELD_NETWORK_MODE), false);
+    public static final ServiceDiscoveryConfigItem CPUSET = new ServiceDiscoveryConfigItem("cpuSet", "cpuset", false);
 
     public static final ServiceDiscoveryConfigItem LABELS = new ServiceDiscoveryConfigItem(
-            InstanceConstants.FIELD_LABELS, InstanceConstants.FIELD_LABELS);
+            InstanceConstants.FIELD_LABELS, InstanceConstants.FIELD_LABELS, false);
     public static final ServiceDiscoveryConfigItem MEMSWAPLIMIT = new ServiceDiscoveryConfigItem(
-            DockerInstanceConstants.FIELD_MEMORY_SWAP, "memswap_limit");
-    public static final ServiceDiscoveryConfigItem PIDMODE = new ServiceDiscoveryConfigItem(DockerInstanceConstants.FIELD_PID_MODE, "pid");
+            DockerInstanceConstants.FIELD_MEMORY_SWAP, "memswap_limit", false);
+    public static final ServiceDiscoveryConfigItem PIDMODE = new ServiceDiscoveryConfigItem(DockerInstanceConstants.FIELD_PID_MODE, "pid", false);
     public static final ServiceDiscoveryConfigItem DEVICES = new ServiceDiscoveryConfigItem(
-            DockerInstanceConstants.FIELD_DEVICES, DockerInstanceConstants.FIELD_DEVICES);
+            DockerInstanceConstants.FIELD_DEVICES, DockerInstanceConstants.FIELD_DEVICES, false);
 
     // CATTLE PARAMETERS
     public static final ServiceDiscoveryConfigItem SCALE = new ServiceDiscoveryConfigItem("scale", "scale",
-            false, false);
+            false, false, false);
     public static final ServiceDiscoveryConfigItem HEALTHCHECK = new ServiceDiscoveryConfigItem(
             InstanceConstants.FIELD_HEALTH_CHECK,
             NamedUtils.toUnderscoreSeparated(InstanceConstants.FIELD_HEALTH_CHECK),
-            true, false);
+            true, false, false);
 
     public static final ServiceDiscoveryConfigItem LB_CONGFIG = new ServiceDiscoveryConfigItem(
             ServiceDiscoveryConstants.FIELD_LOAD_BALANCER_CONFIG,
             NamedUtils.toUnderscoreSeparated(ServiceDiscoveryConstants.FIELD_LOAD_BALANCER_CONFIG),
-            false, false);
+            false, false, false);
 
     public static final ServiceDiscoveryConfigItem EXTERNAL_IPS = new ServiceDiscoveryConfigItem(
             ServiceDiscoveryConstants.FIELD_EXTERNALIPS,
-            "external_ips", false, false);
+            "external_ips", false, false, false);
 
     public static final ServiceDiscoveryConfigItem DEFAULT_CERTIFICATE = new ServiceDiscoveryConfigItem(
             LoadBalancerConstants.FIELD_LB_DEFAULT_CERTIFICATE_ID,
-            "default_cert", false, false);
+            "default_cert", false, false, false);
 
     public static final ServiceDiscoveryConfigItem SERVICE_TYPE = new ServiceDiscoveryConfigItem(
             "kind",
-            "type", false, false);
+            "type", false, false, false);
 
     public static final ServiceDiscoveryConfigItem CERTIFICATES = new ServiceDiscoveryConfigItem(
             LoadBalancerConstants.FIELD_LB_CERTIFICATE_IDS,
-            "certs", false, false);
+            "certs", false, false, false);
     public static final ServiceDiscoveryConfigItem METADATA = new ServiceDiscoveryConfigItem(
             ServiceDiscoveryConstants.FIELD_METADATA,
-            ServiceDiscoveryConstants.FIELD_METADATA, false, false);
+            ServiceDiscoveryConstants.FIELD_METADATA, false, false, false);
     public static final ServiceDiscoveryConfigItem RETAIN_IP = new ServiceDiscoveryConfigItem(
             ServiceDiscoveryConstants.FIELD_SERVICE_RETAIN_IP,
-            "retain_ip", false, false);
+            "retain_ip", false, false, false);
     public static final ServiceDiscoveryConfigItem SCALE_POLICY = new ServiceDiscoveryConfigItem(
             ServiceDiscoveryConstants.FIELD_SCALE_POLICY,
-            "scale_policy", false, false);
+            "scale_policy", false, false, false);
+
+    // VOLUME parameter
+    private static List<ServiceDiscoveryConfigItem> supportedVolumeConfigItems = new ArrayList<>();
+
+    public static final ServiceDiscoveryConfigItem DRIVER = new ServiceDiscoveryConfigItem(
+            ServiceDiscoveryConstants.FIELD_VOLUME_DRIVER,
+            NamedUtils.toUnderscoreSeparated(ServiceDiscoveryConstants.FIELD_VOLUME_DRIVER), true);
+    public static final ServiceDiscoveryConfigItem DRIVER_OPTS = new ServiceDiscoveryConfigItem(
+            ServiceDiscoveryConstants.FIELD_VOLUME_DRIVER_OPTS,
+            NamedUtils.toUnderscoreSeparated(ServiceDiscoveryConstants.FIELD_VOLUME_DRIVER_OPTS), true);
+    public static final ServiceDiscoveryConfigItem EXTERNAL = new ServiceDiscoveryConfigItem(
+            ServiceDiscoveryConstants.FIELD_VOLUME_EXTERNAL,
+            NamedUtils.toUnderscoreSeparated(ServiceDiscoveryConstants.FIELD_VOLUME_EXTERNAL), true);
+    public static final ServiceDiscoveryConfigItem PER_CONTAINER = new ServiceDiscoveryConfigItem(
+            ServiceDiscoveryConstants.FIELD_VOLUME_PER_CONTAINER,
+            NamedUtils.toUnderscoreSeparated(ServiceDiscoveryConstants.FIELD_VOLUME_PER_CONTAINER), true);
 
     /**
      * Name as it appears in docker-compose file
@@ -119,21 +135,27 @@ public class ServiceDiscoveryConfigItem {
 
     private boolean isDockerComposeProperty;
 
+    private boolean isVolume;
+
     public ServiceDiscoveryConfigItem(String cattleName, String dockerName, boolean isLaunchConfigItem,
-            boolean isDockerComposeProperty) {
+            boolean isDockerComposeProperty, boolean isVolume) {
         super();
         this.cattleName = cattleName;
         this.dockerName = dockerName;
         this.isLaunchConfigItem = isLaunchConfigItem;
         this.isDockerComposeProperty = isDockerComposeProperty;
-        supportedServiceConfigItems.add(this);
+        if (isVolume) {
+            supportedVolumeConfigItems.add(this);
+        } else {
+            supportedServiceConfigItems.add(this);
+        }
     }
 
     public ServiceDiscoveryConfigItem() {
     }
 
-    public ServiceDiscoveryConfigItem(String cattleName, String dockerName) {
-        this(cattleName, dockerName, true, true);
+    public ServiceDiscoveryConfigItem(String cattleName, String dockerName, boolean isVolume) {
+        this(cattleName, dockerName, true, true, isVolume);
     }
 
     public static List<ServiceDiscoveryConfigItem> getSupportedLaunchConfigItems() {
@@ -156,23 +178,25 @@ public class ServiceDiscoveryConfigItem {
         return isDockerComposeProperty;
     }
 
-    public static ServiceDiscoveryConfigItem getServiceConfigItemByDockerName(String externalName) {
-        for (ServiceDiscoveryConfigItem serviceItem : supportedServiceConfigItems) {
-            if (serviceItem.getDockerName().equalsIgnoreCase(externalName)) {
-                return serviceItem;
-            }
-        }
-        return null;
+    public boolean isVolume() {
+        return isVolume;
     }
 
-    public static ServiceDiscoveryConfigItem getServiceConfigItemByCattleName(String internalName, Service service) {
-        for (ServiceDiscoveryConfigItem serviceItem : supportedServiceConfigItems) {
+    public static ServiceDiscoveryConfigItem getServiceConfigItemByCattleName(String internalName, Service service, boolean isVolume) {
+        List<ServiceDiscoveryConfigItem> items = new ArrayList<>();
+        if (isVolume) {
+            items = supportedVolumeConfigItems;
+        } else {
+            items = supportedServiceConfigItems;
+        }
+        for (ServiceDiscoveryConfigItem serviceItem : items) {
             if (serviceItem.getCattleName() != null && serviceItem.getCattleName().equalsIgnoreCase(internalName)) {
                 // special handling for external service hostname
-                if (service.getKind().equalsIgnoreCase(ServiceDiscoveryConstants.KIND_EXTERNAL_SERVICE)
+                if (!isVolume
+                        && service.getKind().equalsIgnoreCase(ServiceDiscoveryConstants.KIND_EXTERNAL_SERVICE)
                         && serviceItem.getCattleName().equalsIgnoreCase(HOSTNAME.cattleName)) {
                     return new ServiceDiscoveryConfigItem(serviceItem.getCattleName(), serviceItem.getDockerName(),
-                            false, false);
+                            false, false, false);
                 }
                 return serviceItem;
             }

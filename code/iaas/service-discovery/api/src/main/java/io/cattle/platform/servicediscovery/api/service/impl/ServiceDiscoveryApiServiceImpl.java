@@ -2,6 +2,7 @@ package io.cattle.platform.servicediscovery.api.service.impl;
 
 import static io.cattle.platform.core.model.tables.InstanceTable.*;
 import static io.cattle.platform.core.model.tables.ServiceTable.*;
+import static io.cattle.platform.core.model.tables.VolumeTemplateTable.*;
 import io.cattle.platform.core.addon.LoadBalancerServiceLink;
 import io.cattle.platform.core.addon.ServiceLink;
 import io.cattle.platform.core.constants.InstanceConstants;
@@ -11,12 +12,14 @@ import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.Service;
 import io.cattle.platform.core.model.ServiceConsumeMap;
 import io.cattle.platform.core.model.Stack;
+import io.cattle.platform.core.model.VolumeTemplate;
 import io.cattle.platform.docker.constants.DockerInstanceConstants;
 import io.cattle.platform.docker.constants.DockerNetworkConstants;
 import io.cattle.platform.json.JsonMapper;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.process.ObjectProcessManager;
 import io.cattle.platform.object.util.DataAccessor;
+import io.cattle.platform.object.util.DataUtils;
 import io.cattle.platform.servicediscovery.api.constants.ServiceDiscoveryConstants;
 import io.cattle.platform.servicediscovery.api.dao.ServiceConsumeMapDao;
 import io.cattle.platform.servicediscovery.api.resource.ServiceDiscoveryConfigItem;
@@ -101,19 +104,23 @@ public class ServiceDiscoveryApiServiceImpl implements ServiceDiscoveryApiServic
     }
 
     @Override
-    public Map.Entry<String, String> buildComposeConfig(List<? extends Service> services) {
-        return new SimpleEntry<>(buildDockerComposeConfig(services), buildRancherComposeConfig(services));
+    public Map.Entry<String, String> buildComposeConfig(List<? extends Service> services, Stack stack) {
+        return new SimpleEntry<>(buildDockerComposeConfig(services, stack), buildRancherComposeConfig(services));
     }
 
     @Override
-    public String buildDockerComposeConfig(List<? extends Service> services) {
-        Map<String, Object> dockerComposeData = createComposeData(services, true);
+    public String buildDockerComposeConfig(List<? extends Service> services, Stack stack) {
+        List<? extends VolumeTemplate> volumes = objectManager.find(VolumeTemplate.class, VOLUME_TEMPLATE.STACK_ID,
+                stack.getId(),
+                    VOLUME_TEMPLATE.REMOVED, null);
+                
+        Map<String, Object> dockerComposeData = createComposeData(services, true, volumes);
         return convertToYml(dockerComposeData);
     }
 
     @Override
     public String buildRancherComposeConfig(List<? extends Service> services) {
-        Map<String, Object> dockerComposeData = createComposeData(services, false);
+        Map<String, Object> dockerComposeData = createComposeData(services, false, new ArrayList<VolumeTemplate>());
         return convertToYml(dockerComposeData);
     }
 
@@ -127,8 +134,8 @@ public class ServiceDiscoveryApiServiceImpl implements ServiceDiscoveryApiServic
     }
 
     @SuppressWarnings("unchecked")
-    private Map<String, Object> createComposeData(List<? extends Service> servicesToExport, boolean forDockerCompose) {
-        Map<String, Object> data = new HashMap<String, Object>();
+    private Map<String, Object> createComposeData(List<? extends Service> servicesToExport, boolean forDockerCompose, List<? extends VolumeTemplate> volumes) {
+        Map<String, Object> servicesData = new HashMap<String, Object>();
         Collection<Long> servicesToExportIds = CollectionUtils.collect(servicesToExport,
                 TransformerUtils.invokerTransformer("getId"));
         for (Service service : servicesToExport) {
@@ -143,7 +150,7 @@ public class ServiceDiscoveryApiServiceImpl implements ServiceDiscoveryApiServic
                 formatScale(service, cattleServiceData);
                 setupServiceType(service, cattleServiceData);
                 for (String cattleService : cattleServiceData.keySet()) {
-                    translateRancherToCompose(forDockerCompose, cattleServiceData, composeServiceData, cattleService, service);
+                    translateRancherToCompose(forDockerCompose, cattleServiceData, composeServiceData, cattleService, service, false);
                 }
 
                 if (forDockerCompose) {
@@ -157,9 +164,34 @@ public class ServiceDiscoveryApiServiceImpl implements ServiceDiscoveryApiServic
                     populateLogConfig(cattleServiceData, composeServiceData);
                 }
                 if (!composeServiceData.isEmpty()) {
-                    data.put(isPrimaryConfig ? service.getName() : launchConfigName, composeServiceData);
+                    servicesData.put(isPrimaryConfig ? service.getName() : launchConfigName, composeServiceData);
                 }
             }
+        }
+
+        Map<String, Object> volumesData = new HashMap<String, Object>();
+        for (VolumeTemplate volume : volumes) {
+            Map<String, Object> cattleVolumeData = new HashMap<>();
+            cattleVolumeData.putAll(DataUtils.getFields(volume));
+            cattleVolumeData.put(ServiceDiscoveryConstants.FIELD_VOLUME_EXTERNAL, volume.getExternal());
+            cattleVolumeData.put(ServiceDiscoveryConstants.FIELD_VOLUME_DRIVER, volume.getDriver());
+            cattleVolumeData.put(ServiceDiscoveryConstants.FIELD_VOLUME_PER_CONTAINER, volume.getPerContainer());
+            Map<String, Object> composeVolumeData = new HashMap<>();
+            for (String cattleVolume : cattleVolumeData.keySet()) {
+                translateRancherToCompose(forDockerCompose, cattleVolumeData, composeVolumeData, cattleVolume,
+                        null, true);
+            }
+            if (!composeVolumeData.isEmpty()) {
+                volumesData.put(volume.getName(), composeVolumeData);
+            }
+        }
+
+        Map<String, Object> data = new HashMap<String, Object>();
+        if (!servicesData.isEmpty()) {
+            data.put("services", servicesData);
+        }
+        if (!volumesData.isEmpty()) {
+            data.put("volumes", volumesData);
         }
         return data;
     }
@@ -388,8 +420,9 @@ public class ServiceDiscoveryApiServiceImpl implements ServiceDiscoveryApiServic
     }
 
     protected void translateRancherToCompose(boolean forDockerCompose, Map<String, Object> rancherServiceData,
-            Map<String, Object> composeServiceData, String cattleName, Service service) {
-        ServiceDiscoveryConfigItem item = ServiceDiscoveryConfigItem.getServiceConfigItemByCattleName(cattleName, service);
+            Map<String, Object> composeServiceData, String cattleName, Service service, boolean isVolume) {
+        ServiceDiscoveryConfigItem item = ServiceDiscoveryConfigItem.getServiceConfigItemByCattleName(cattleName,
+                service, isVolume);
         if (item != null && item.isDockerComposeProperty() == forDockerCompose) {
             Object value = rancherServiceData.get(cattleName);
             boolean export = false;

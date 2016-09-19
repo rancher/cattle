@@ -1,6 +1,7 @@
 from common_fixtures import *  # NOQA
 from cattle import ClientApiError
 from cattle import ApiError
+import yaml
 
 
 def test_create_volume_template(client):
@@ -48,9 +49,9 @@ def test_stack_volume(client, context):
     stack = client.create_stack(name=random_str())
     stack = client.wait_success(stack)
 
-    client.create_volumeTemplate(name="foo", driver="nfs",
-                                 driverOpts=opts,
-                                 stackId=stack.id)
+    t = client.create_volumeTemplate(name="foo", driver="nfs",
+                                     driverOpts=opts,
+                                     stackId=stack.id)
 
     # create service
     image_uuid = context.image_uuid
@@ -102,6 +103,17 @@ def test_stack_volume(client, context):
     client.wait_success(svc2.remove())
     wait_for(lambda: client.reload(volume).state == 'inactive')
 
+    # test export
+    compose_config = stack.exportconfig()
+    assert compose_config is not None
+    docker_yml = yaml.load(compose_config.dockerComposeConfig)
+    assert t.name in docker_yml['volumes']
+    vol = docker_yml['volumes'][t.name]
+    assert vol['driver'] == 'nfs'
+    assert vol['driver_opts'] == opts
+    assert 'external' not in vol
+    assert 'per_container' not in vol
+
     # remove stack, validate its volume is removed
     client.wait_success(stack.remove())
     wait_for(lambda: client.reload(volume).state == 'removed')
@@ -137,16 +149,27 @@ def test_external_volume(client, context):
     client.wait_success(v)
     wait_state(client, service, 'active')
 
+    # test export
+    compose_config = stack.exportconfig()
+    assert compose_config is not None
+    docker_yml = yaml.load(compose_config.dockerComposeConfig)
+    assert t.name in docker_yml['volumes']
+    vol = docker_yml['volumes'][t.name]
+    assert vol['external'] is True
+    assert vol['driver'] == 'nfs'
+    assert vol['driver_opts'] == opts
+    assert 'per_container' not in vol
+
 
 def test_du_volume(client, context, super_client):
     opts = {'foo': 'true', 'bar': 'true'}
     stack = client.create_stack(name=random_str())
     stack = client.wait_success(stack)
 
-    client.create_volumeTemplate(name="foo", driver="nfs",
-                                 driverOpts=opts,
-                                 stackId=stack.id,
-                                 perContainer=True)
+    t = client.create_volumeTemplate(name="foo", driver="nfs",
+                                     driverOpts=opts,
+                                     stackId=stack.id,
+                                     perContainer=True)
 
     # create service
     image_uuid = context.image_uuid
@@ -217,6 +240,17 @@ def test_du_volume(client, context, super_client):
 
     wait_state(client, c21, 'removed')
     wait_state(client, v21, 'removed')
+
+    # test export
+    compose_config = stack.exportconfig()
+    assert compose_config is not None
+    docker_yml = yaml.load(compose_config.dockerComposeConfig)
+    assert t.name in docker_yml['volumes']
+    vol = docker_yml['volumes'][t.name]
+    assert vol['per_container'] is True
+    assert vol['driver'] == 'nfs'
+    assert vol['driver_opts'] == opts
+    assert 'external' not in vol
 
 
 def _validate_compose_instance_start(client, service, env,

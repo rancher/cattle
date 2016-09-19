@@ -50,8 +50,11 @@ public class ServiceDiscoveryConstants {
     public static final String FIELD_LOCKED_SCALE = "lockedScale";
     public static final String FIELD_STACK_ID = "stackId";
     public static final String FIELD_VOLUME_TEMPLATES = "volumeTemplates";
-    public static final String FIELD_DRIVER = "driver";
-    public static final String FIELD_DRIVER_OPTS = "driverOpts";
+    public static final String FIELD_VOLUME_DRIVER = "driver";
+    public static final String FIELD_VOLUME_DRIVER_OPTS = "driverOpts";
+    public static final String FIELD_VOLUME_EXTERNAL = "external";
+    public static final String FIELD_VOLUME_PER_CONTAINER = "perContainer";
+
     public static final String FIELD_INTERNAL_VOLUMES = "internalVolumes";
     public static final String FIELD_VOLUME_TEMPLATE_ID = "volumeTemplateId";
     public static final String FIELD_DEPLOYMENT_UNIT_ID = "deploymentUnitId";

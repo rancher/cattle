@@ -1990,23 +1990,25 @@ def test_export_config(client, context):
 
     assert compose_config is not None
     docker_yml = yaml.load(compose_config.dockerComposeConfig)
-    assert docker_yml[service.name]['cpuset'] == "0,1"
-    assert docker_yml[service.name]['labels'] == labels
-    assert "restart" not in docker_yml[service.name]
-    assert docker_yml[service.name]["log_driver"] == "json-file"
-    assert docker_yml[service.name]["log_opt"] is not None
-    assert docker_yml[service.name]["pid"] == "host"
-    assert docker_yml[service.name]["mem_limit"] == 1048576
-    assert docker_yml[service.name]["memswap_limit"] == 2097152
-    assert docker_yml[service.name]["devices"] is not None
+    svc = docker_yml['services'][service.name]
+    assert svc['cpuset'] == "0,1"
+    assert svc['labels'] == labels
+    assert "restart" not in svc
+    assert svc["log_driver"] == "json-file"
+    assert svc["log_opt"] is not None
+    assert svc["pid"] == "host"
+    assert svc["mem_limit"] == 1048576
+    assert svc["memswap_limit"] == 2097152
+    assert svc["devices"] is not None
 
     rancher_yml = yaml.load(compose_config.rancherComposeConfig)
-    assert 'scale' not in rancher_yml[service.name]
+    svc = rancher_yml['services'][service.name]
+    assert 'scale' not in svc
     updated = {"$$id$$$$foo$$bar$$$$": "$${HOSTNAME}"}
     metadata = {"$$bar": {"metadata": [updated]}}
-    assert rancher_yml[service.name]['metadata'] is not None
-    assert rancher_yml[service.name]['metadata'] == metadata
-    assert rancher_yml[service.name]['retain_ip'] is True
+    assert svc['metadata'] is not None
+    assert svc['metadata'] == metadata
+    assert svc['retain_ip'] is True
 
     launch_config_without_log = {"imageUuid": image_uuid,
                                  "cpuSet": "0,1", "labels": labels,
@@ -2025,8 +2027,9 @@ def test_export_config(client, context):
 
     assert compose_config is not None
     docker_yml = yaml.load(compose_config.dockerComposeConfig)
-    assert "log_driver" not in docker_yml[service_nolog.name]
-    assert "log_opt" not in docker_yml[service_nolog.name]
+    svc = docker_yml['services'][service_nolog.name]
+    assert "log_driver" not in svc
+    assert "log_opt" not in svc
 
 
 def test_validate_create_only_containers(client, context):
