@@ -396,16 +396,16 @@ public abstract class AbstractJooqResourceManager extends AbstractObjectResource
         }
 
         if (t instanceof ProcessExecutionExitException && ((ProcessExecutionExitException) t).getExitReason() == ExitReason.RESOURCE_BUSY) {
-            log.info("Resource busy", t.getMessage());
+            log.info("Resource busy : {}", t.getMessage());
             throw new ClientVisibleException(ResponseCodes.CONFLICT);
         } else if (t instanceof FailedToAcquireLockException) {
-            log.info("Failed to lock", t.getMessage());
+            log.info("Failed to lock : {}", t.getMessage());
             throw new ClientVisibleException(ResponseCodes.CONFLICT);
         } else if (t instanceof ProcessCancelException) {
-            log.info("Process cancel", t.getMessage());
+            log.info("Process cancel : {}", t.getMessage());
             throw new ClientVisibleException(ResponseCodes.CONFLICT);
         } else if (t instanceof DataAccessException) {
-            log.info("Database error", t.getMessage());
+            log.info("Database error : {}", t.getMessage());
             throw new ClientVisibleException(ResponseCodes.CONFLICT);
         }
         return super.handleException(t, apiRequest);

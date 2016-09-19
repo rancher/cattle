@@ -282,14 +282,7 @@ def _assert_removed(container):
     assert_removed_fields(container)
 
     volumes = container.volumes()
-    assert len(volumes) == 1
-
-    assert volumes[0].state == "removed"
-    assert_removed_fields(volumes[0])
-
-    volume_mappings = volumes[0].volumeStoragePoolMaps()
-    assert len(volume_mappings) == 1
-    assert volume_mappings[0].state == "inactive"
+    assert len(volumes) == 0
 
     return container
 
@@ -394,22 +387,10 @@ def test_container_purge(client, super_client, context):
     assert container.state == "purged"
 
     instance_host_mappings = super_client.reload(container).instanceHostMaps()
-    assert len(instance_host_mappings) == 1
-    assert instance_host_mappings[0].state == "removed"
-    assert instance_host_mappings[0].removed is not None
+    assert len(instance_host_mappings) == 0
 
-    volume = container.volumes()[0]
-    assert volume.state == "removed"
-
-    volume = volume.purge()
-    assert volume.state == 'purging'
-
-    volume = client.wait_transitioning(volume)
-    assert volume.state == 'purged'
-
-    pool_maps = super_client.reload(volume).volumeStoragePoolMaps()
-    assert len(pool_maps) == 1
-    assert pool_maps[0].state == 'removed'
+    volumes = container.volumes()
+    assert len(volumes) == 0
 
 
 def test_start_stop(client, context):
@@ -732,9 +713,8 @@ def test_container_request_ip(super_client, client, context):
         container = super_client.wait_success(super_client.delete(container))
         container = super_client.wait_success(container.purge())
 
-        ip = container.nics()[0].ipAddresses()[0]
-        ip = super_client.wait_success(ip)
-        assert ip.state == 'inactive'
+        nics = container.nics()
+        assert len(nics) == 0
 
 
 def test_container_network_modes(context, super_client):

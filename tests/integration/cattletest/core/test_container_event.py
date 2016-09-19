@@ -134,7 +134,7 @@ def test_container_event_remove_start(client, host, agent_cli, user_id):
     assert container.state == 'removed'
 
     containers = client.list_container(externalId=external_id)
-    assert len(containers) == 1
+    assert len(containers) == 0
 
 
 def test_container_event_destroy(client, host, agent_cli, user_id):

@@ -243,11 +243,8 @@ def test_docker_purge(docker_client):
     container = docker_client.wait_success(container.purge())
     assert container.state == 'purged'
 
-    volume = container.volumes()[0]
-    assert volume.state == 'removed'
-
-    volume = docker_client.wait_success(volume.purge())
-    assert volume.state == 'purged'
+    volumes = container.volumes()
+    assert len(volumes) == 0
 
 
 @if_docker
@@ -591,20 +588,6 @@ def test_docker_volumes(docker_client, super_client):
     c2 = docker_client.wait_success(c2.stop(remove=True, timeout=0))
 
     _check_path(foo_vol, True, docker_client, super_client)
-    _check_path(bar_vol, True, docker_client, super_client)
-
-    docker_client.wait_success(c.purge())
-    docker_client.wait_success(c2.purge())
-
-    foo_vol = wait_for_condition(
-        docker_client, foo_vol, lambda x: x.state == 'removed')
-    foo_vol = docker_client.wait_success(foo_vol.purge())
-    _check_path(foo_vol, False, docker_client, super_client)
-
-    bar_vol = wait_for_condition(
-        docker_client, bar_vol, lambda x: x.state == 'removed')
-    bar_vol = docker_client.wait_success(bar_vol.purge())
-    # Host bind mount. Wont actually delete the dir on the host.
     _check_path(bar_vol, True, docker_client, super_client)
 
 

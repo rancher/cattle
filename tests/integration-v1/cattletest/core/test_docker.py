@@ -243,11 +243,8 @@ def test_docker_purge(docker_client):
     container = docker_client.wait_success(container.purge())
     assert container.state == 'purged'
 
-    volume = container.volumes()[0]
-    assert volume.state == 'removed'
-
-    volume = docker_client.wait_success(volume.purge())
-    assert volume.state == 'purged'
+    volumes = container.volumes()
+    assert len(volumes) == 0
 
 
 @if_docker
@@ -593,20 +590,6 @@ def test_docker_volumes(docker_client, super_client):
     _check_path(foo_vol, True, docker_client, super_client)
     _check_path(bar_vol, True, docker_client, super_client)
 
-    docker_client.wait_success(c.purge())
-    docker_client.wait_success(c2.purge())
-
-    foo_vol = wait_for_condition(
-        docker_client, foo_vol, lambda x: x.state == 'removed')
-    foo_vol = docker_client.wait_success(foo_vol.purge())
-    _check_path(foo_vol, False, docker_client, super_client)
-
-    bar_vol = wait_for_condition(
-        docker_client, bar_vol, lambda x: x.state == 'removed')
-    bar_vol = docker_client.wait_success(bar_vol.purge())
-    # Host bind mount. Wont actually delete the dir on the host.
-    _check_path(bar_vol, True, docker_client, super_client)
-
 
 @if_docker
 def test_volumes_from_more_than_one_container(docker_client):
@@ -943,36 +926,6 @@ def test_service_link_emu_docker_link(super_client, docker_client):
     assert link.instanceNames == ['{}_server_1'.format(env_name)]
 
     docker_client.delete(env)
-
-
-@if_docker
-@pytest.mark.nonparallel
-def test_delete_network_agent(super_client, docker_client):
-    # Create a container so we know the network agent is in use
-    c1 = docker_client.create_container(imageUuid=TEST_IMAGE_UUID)
-    c1 = docker_client.wait_success(c1)
-    assert c1.state == 'running'
-
-    c1 = super_client.reload(c1)
-    agentNsp = None
-    for nsp in c1.nics()[0].network().networkServiceProviders():
-        if nsp.type == 'agentInstanceProvider':
-            agentNsp = nsp
-
-    assert agentNsp is not None
-    networkAgent = agentNsp.instances()[0]
-
-    assert networkAgent.state == 'running'
-    assert networkAgent.dataVolumes == \
-        ['/var/lib/rancher/etc:/var/lib/rancher/etc:ro']
-    docker_client.delete(networkAgent)
-
-    networkAgent = docker_client.wait_success(networkAgent)
-    assert networkAgent.state == 'removed'
-
-    c2 = docker_client.create_container(imageUuid=TEST_IMAGE_UUID)
-    c2 = docker_client.wait_success(c2)
-    assert c2.state == 'running'
 
 
 @if_docker

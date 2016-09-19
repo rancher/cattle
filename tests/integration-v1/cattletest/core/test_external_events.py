@@ -297,17 +297,8 @@ def test_external_stack_event_create(client, context, super_client):
     event = wait_for(lambda: event_wait(client, event))
     assert event is not None
 
-    envs = client.list_environment(externalId=env_external_id)
-    assert len(envs) == 1
-
-    env = envs[0]
-    assert env.externalId == env_external_id
-    assert env.name == environment["name"]
-    assert env.kind == "environment"
-
-    wait_for_condition(client, env,
-                       lambda x: x.state == "removed",
-                       lambda x: 'State is: ' + x.state)
+    wait_for(lambda:
+             len(client.list_environment(externalId=env_external_id)) == 0)
 
 
 def service_wait(client, external_id):

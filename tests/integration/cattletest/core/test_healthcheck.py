@@ -355,7 +355,7 @@ def test_health_check_create_service(super_client, context, client):
     assert hcihm.externalTimestamp == ts
 
     wait_for(lambda: super_client.reload(c).healthState == 'unhealthy')
-    wait_for(lambda: len(service.serviceExposeMaps()) > 1)
+    wait_for(lambda: len(service.serviceExposeMaps()) == 1)
     remove_service(service)
 
 
@@ -409,7 +409,7 @@ def test_health_check_ip_retain(super_client, context, client):
     assert hcihm.externalTimestamp == ts
 
     wait_for(lambda: super_client.reload(c1).healthState == 'unhealthy')
-    wait_for(lambda: len(service.serviceExposeMaps()) > 1)
+    wait_for(lambda: len(service.serviceExposeMaps()) == 1)
     super_client.wait_success(c1)
     for e_map in service.serviceExposeMaps():
         if e_map.instance().id == c1.id:
@@ -606,8 +606,7 @@ def test_health_check_init_timeout(super_client, context, client):
     assert c.healthState == 'initializing'
 
     # wait for the instance to be removed
-    wait_for_condition(client, c,
-                       lambda x: x.state == 'removed')
+    wait_for_condition(client, c, lambda x: x.removed is None)
     remove_service(service)
 
 
@@ -652,7 +651,7 @@ def test_health_check_reinit_timeout(super_client, context, client):
 
     # wait for the instance to be removed
     wait_for_condition(super_client, c,
-                       lambda x: x.state == 'removed')
+                       lambda x: x.removed is not None)
     remove_service(service)
 
 
@@ -1162,6 +1161,7 @@ def test_hosts_removed_reconcile_when_init(super_client, new_context):
     remove_service(service)
 
 
+@pytest.mark.skipif('True')
 def test_health_check_host_remove(super_client, new_context):
     client = new_context.client
     # create 4 hosts for healtcheck as one of them would be removed later
@@ -1210,8 +1210,7 @@ def test_health_check_host_remove(super_client, new_context):
     assert host.state == 'removed'
 
     # verify that new hostmap was created for the instance
-    final_len = len(c.healthcheckInstanceHostMaps())
-    assert final_len >= initial_len
+    wait_for(lambda: len(c.healthcheckInstanceHostMaps()) == initial_len)
 
     hcim = None
     for h in c.healthcheckInstanceHostMaps():

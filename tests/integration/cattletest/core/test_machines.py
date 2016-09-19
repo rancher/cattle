@@ -428,10 +428,6 @@ def test_host_lifecycle(super_client, machine_context, update_ping_settings):
     assert host.data.fields.reportedUuid == machine.externalId
     host.agentId == machine.agentId
 
-    agent = machine.agent()
-    assert len(agent.hosts()) == 1
-    assert len(agent.physicalHosts()) == 1
-
 
 @pytest.mark.nonparallel
 def test_machine_lifecycle(super_client, machine_context,
