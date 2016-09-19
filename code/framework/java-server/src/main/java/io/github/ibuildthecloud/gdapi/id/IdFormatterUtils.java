@@ -55,9 +55,11 @@ public class IdFormatterUtils {
         Map<Object, Object> result = new LinkedHashMap<Object, Object>();
 
         Schema fieldSchema = schemaFactory.getSchema(field.getType());
+        if (!result.containsKey("type")) {
+            result.put("type", fieldSchema.getId());
+        }
 
         for (Map.Entry<String, Field> entry : fieldSchema.getResourceFields().entrySet()) {
-
             String fieldName = entry.getKey();
             if (inputs.containsKey(fieldName)) {
                 Object subFieldValue = inputs.get(fieldName);

@@ -341,7 +341,11 @@ def test_create_svc_with_lb_config(context, client):
                  "domain": ".test.com", "indirect": "true",
                  "nocache": "true", "postonly": "true",
                  "mode": "insert"}
-    haproxy_cfg = {"defaults": "balance first", "global": "group haproxy"}
+    haproxy_cfg = {
+        'type': 'haproxyConfig',
+        "defaults": "balance first",
+        "global": "group haproxy"
+    }
     lb_config = {"name": name,
                  "lbCookieStickinessPolicy": lb_policy,
                  "haproxyConfig": haproxy_cfg}
@@ -376,6 +380,7 @@ def test_create_svc_with_lb_config(context, client):
     cfg = 'load_balancer_config'
     assert cfg in rancher_yml[service.name]
     assert 'haproxy_config' in rancher_yml[service.name][cfg]
+    del haproxy_cfg['type']
     assert rancher_yml[service.name][cfg]["haproxy_config"] == haproxy_cfg
 
 

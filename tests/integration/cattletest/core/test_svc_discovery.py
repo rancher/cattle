@@ -163,6 +163,7 @@ def test_activate_single_service(client, context, super_client):
     assert len(svc.launchConfig.environment) == 1
     assert len(svc.launchConfig.ports) == 2
     assert len(svc.launchConfig.dataVolumes) == 1
+    assert svc.launchConfig.type == 'launchConfig'
     assert svc.launchConfig.dataVolumesFrom == list([container1.id])
     assert svc.launchConfig.capAdd == caps
     assert svc.launchConfig.capDrop == caps
@@ -2717,7 +2718,8 @@ def test_project_random_port_update_create(new_context):
     p = user_client.update(new_context.project,
                            servicesPortRange=new_range)
     p = user_client.wait_success(p)
-    assert p.servicesPortRange == new_range
+    assert p.servicesPortRange.startPort == new_range['startPort']
+    assert p.servicesPortRange.endPort == new_range['endPort']
 
     svc = client.create_service(name=random_str(),
                                 stackId=env.id,
@@ -2741,7 +2743,8 @@ def test_project_random_port_update_create(new_context):
     new_range = {"startPort": 65533, "endPort": 65535}
     project = user_client.create_project(servicesPortRange=new_range)
     project = user_client.wait_success(project)
-    assert project.servicesPortRange == new_range
+    assert project.servicesPortRange.startPort == new_range['startPort']
+    assert project.servicesPortRange.endPort == new_range['endPort']
 
 
 def test_update_port_endpoint(new_context):
