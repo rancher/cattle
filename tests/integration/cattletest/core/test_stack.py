@@ -21,4 +21,5 @@ def _create_stack(client):
 
 def test_create_stack_binding(client):
     env = _create_stack(client)
+    del env.binding.__dict__['type']
     assert env.binding == binding_input

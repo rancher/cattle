@@ -2718,7 +2718,8 @@ def test_project_random_port_update_create(new_context):
     p = user_client.update(new_context.project,
                            servicesPortRange=new_range)
     p = user_client.wait_success(p)
-    assert p.servicesPortRange == new_range
+    assert p.servicesPortRange.startPort == new_range['startPort']
+    assert p.servicesPortRange.endPort == new_range['endPort']
 
     svc = client.create_service(name=random_str(),
                                 stackId=env.id,
@@ -2742,7 +2743,8 @@ def test_project_random_port_update_create(new_context):
     new_range = {"startPort": 65533, "endPort": 65535}
     project = user_client.create_project(servicesPortRange=new_range)
     project = user_client.wait_success(project)
-    assert project.servicesPortRange == new_range
+    assert project.servicesPortRange.startPort == new_range['startPort']
+    assert project.servicesPortRange.endPort == new_range['endPort']
 
 
 def test_update_port_endpoint(new_context):

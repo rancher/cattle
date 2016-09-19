@@ -876,7 +876,7 @@ def test_container_odd_fields(super_client, docker_client):
 
     assert c.state == 'running'
     assert c.pidMode is None
-    assert c.logConfig == {'driver': None, 'config': None}
+    assert c.logConfig == {'type': 'logConfig', 'driver': None, 'config': None}
 
     c = super_client.reload(c)
 
@@ -895,7 +895,7 @@ def test_container_bad_build(super_client, docker_client):
 
     assert c.state == 'running'
     assert c.pidMode is None
-    assert c.build == {'context': None, 'remote': None}
+    assert c.build == {'context': None, 'remote': None, 'type': 'dockerBuild'}
 
     c = super_client.reload(c)
 

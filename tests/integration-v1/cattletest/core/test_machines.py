@@ -470,7 +470,9 @@ def test_machine_driver_config(machine_context):
                                                  authKey=key)
     host = machine_context.client.wait_success(host)
     assert host.state == 'active'
-    assert foo_config == host.fooConfig
+    assert foo_config['fooBar'] == host.fooConfig.fooBar
+    assert foo_config['diskSize'] == host.fooConfig.diskSize
+    assert foo_config['fooBaz'] == host.fooConfig.fooBaz
     assert ca == host.authCertificateAuthority
     assert key == host.authKey
     assert host.driver == 'foo'
