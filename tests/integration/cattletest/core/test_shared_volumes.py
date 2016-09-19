@@ -167,7 +167,13 @@ def test_single_host_rw(super_client, new_context):
     assert sps[0].id == storage_pool.id
     assert v1.accessMode == 'singleHostRW'
 
-    client.wait_success(host.deactivate())
+    # Deactivate the host that c was deployed to
+    c1_host = c.hosts()[0]
+    if c1_host.uuid == host.uuid:
+        client.wait_success(host.deactivate())
+    else:
+        client.wait_success(host2.deactivate())
+
     c2 = client.create_container(imageUuid=new_context.image_uuid,
                                  dataVolumes=['%s:/test/it' % v1.name])
     c2 = client.wait_transitioning(c2)

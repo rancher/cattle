@@ -4,7 +4,6 @@ import io.cattle.platform.allocator.service.CacheManager;
 import io.cattle.platform.allocator.service.DiskInfo;
 import io.cattle.platform.allocator.service.HostInfo;
 import io.cattle.platform.allocator.service.InstanceInfo;
-import io.cattle.platform.archaius.util.ArchaiusUtil;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.util.SystemLabels;
@@ -26,21 +25,9 @@ import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.MutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 
-import com.netflix.config.DynamicLongProperty;
-
 public class AllocatorUtils {
 
     public static final Set<String> UNMANGED_STORAGE_POOLS = new HashSet<String>(Arrays.asList(new String[]{"docker", "sim"}));
-
-    public static final DynamicLongProperty DEFAULT_COMPUTE = ArchaiusUtil.getLong("instance.compute.default");
-
-    public static long getCompute(Instance instance) {
-        if (instance == null) {
-            return 0;
-        }
-
-        return instance.getCompute() == null ? DEFAULT_COMPUTE.get() : instance.getCompute();
-    }
 
     public static Map<Pair<String, Long>, DiskInfo> allocateDiskForVolumes(long hostId, Instance instance,
             ObjectManager objectManager) {

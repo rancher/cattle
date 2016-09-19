@@ -9,7 +9,6 @@ import static io.cattle.platform.core.model.tables.ServiceExposeMapTable.*;
 import static io.cattle.platform.core.model.tables.StoragePoolHostMapTable.*;
 import static io.cattle.platform.core.model.tables.StoragePoolTable.*;
 import io.cattle.platform.allocator.service.AllocationCandidate;
-import io.cattle.platform.archaius.util.ArchaiusUtil;
 import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.model.Port;
@@ -19,6 +18,7 @@ import io.cattle.platform.simple.allocator.AllocationCandidateCallback;
 import io.cattle.platform.simple.allocator.dao.QueryOptions;
 import io.cattle.platform.simple.allocator.dao.SimpleAllocatorDao;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -32,14 +32,10 @@ import javax.inject.Inject;
 import org.jooq.Condition;
 import org.jooq.Record3;
 import org.jooq.Result;
-import org.jooq.SelectSeekStep2;
+import org.jooq.SelectConditionStep;
 import org.jooq.impl.DSL;
 
-import com.netflix.config.DynamicBooleanProperty;
-
 public class SimpleAllocatorDaoImpl extends AbstractJooqDao implements SimpleAllocatorDao {
-
-    private static final DynamicBooleanProperty SPREAD = ArchaiusUtil.getBoolean("simple.allocator.spread");
 
     ObjectManager objectManager;
 
@@ -59,7 +55,7 @@ public class SimpleAllocatorDaoImpl extends AbstractJooqDao implements SimpleAll
         Map<Long, String> hostIdsToUuids = new HashMap<>();
         if (orderedHostUuids == null) {
             Result<Record3<String, Long, Long>> result = getHostQuery(orderedHostUuids, options).fetch();
-
+            Collections.shuffle(result);
             for (Record3<String, Long, Long> r : result) {
                 Long hostId = r.value2();
                 hostIdsToUuids.put(hostId, r.value1());
@@ -119,7 +115,7 @@ public class SimpleAllocatorDaoImpl extends AbstractJooqDao implements SimpleAll
                 .fetchInto(Port.class);
     }
 
-    protected SelectSeekStep2<Record3<String, Long, Long>, Long, Long> getHostQuery(List<String> orderedHostUUIDs, QueryOptions options) {
+    protected SelectConditionStep<Record3<String, Long, Long>> getHostQuery(List<String> orderedHostUUIDs, QueryOptions options) {
         return create()
                 .select(HOST.UUID, HOST.ID, STORAGE_POOL.ID)
                 .from(HOST)
@@ -135,8 +131,7 @@ public class SimpleAllocatorDaoImpl extends AbstractJooqDao implements SimpleAll
                     .and(HOST.STATE.in(CommonStatesConstants.ACTIVE, CommonStatesConstants.UPDATING_ACTIVE))
                     .and(STORAGE_POOL.STATE.eq(CommonStatesConstants.ACTIVE))
                     .and(getQueryOptionCondition(options)))
-                    .and(inHostList(orderedHostUUIDs))
-                .orderBy((SPREAD.get() ? HOST.COMPUTE_FREE.desc() : HOST.COMPUTE_FREE.asc()), HOST.ID.asc());
+                    .and(inHostList(orderedHostUUIDs));
     }
 
     protected Condition inHostList(List<String> hostUUIDs) {

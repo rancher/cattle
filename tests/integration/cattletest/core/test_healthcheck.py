@@ -1152,16 +1152,17 @@ def test_hosts_removed_reconcile_when_init(super_client, new_context):
     remove_service(service)
 
 
-def test_health_check_host_remove(super_client, context, client):
+def test_health_check_host_remove(super_client, new_context):
+    client = new_context.client
     # create 4 hosts for healtcheck as one of them would be removed later
-    super_client.reload(register_simulated_host(context))
-    super_client.reload(register_simulated_host(context))
-    super_client.reload(register_simulated_host(context))
-    super_client.reload(register_simulated_host(context))
+    super_client.reload(register_simulated_host(new_context))
+    super_client.reload(register_simulated_host(new_context))
+    super_client.reload(register_simulated_host(new_context))
+    super_client.reload(register_simulated_host(new_context))
 
     env = client.create_stack(name='env-' + random_str())
     service = client.create_service(name='test', launchConfig={
-        'imageUuid': context.image_uuid,
+        'imageUuid': new_context.image_uuid,
         'healthCheck': {
             'port': 80,
         }
@@ -1169,9 +1170,9 @@ def test_health_check_host_remove(super_client, context, client):
 
     # to trigger network agent creation on hosts
     multiport = client.create_service(name='manyports', launchConfig={
-        'imageUuid': context.image_uuid,
-        'ports': "5454"
-    }, stackId=env.id, scale=3)
+        "imageUuid": new_context.image_uuid,
+        "ports": "5454"
+    }, stackId=env.id, scale=4)
     multiport = client.wait_success(client.wait_success(multiport).activate())
     assert multiport.state == 'active'
     multiport.remove()

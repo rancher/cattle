@@ -174,29 +174,6 @@ public class AllocatorDaoImpl extends AbstractJooqDao implements AllocatorDao {
                 .fetchInto(HostRecord.class);
     }
 
-    protected void modifyCompute(long hostId, Instance instance, boolean add) {
-        Host host = objectManager.loadResource(Host.class, hostId);
-        Long computeFree = host.getComputeFree();
-
-        if ( computeFree == null ) {
-            return;
-        }
-
-        long delta = AllocatorUtils.getCompute(instance);
-        long newValue;
-        if ( add ) {
-            newValue = computeFree + delta;
-        } else {
-            newValue = computeFree - delta;
-        }
-
-        log.debug("Modifying computeFree on host [{}], {} {} {} = {}", host.getId(), computeFree,
-                add ? "+" : "-", delta, newValue);
-
-        host.setComputeFree(newValue);
-        objectManager.persist(host);
-    }
-
     protected void modifyDisk(long hostId, Instance instance, boolean add) {
         CacheManager cm = CacheManager.getCacheManagerInstance(this.objectManager);
         HostInfo hostInfo = cm.getHostInfo(hostId, false);
@@ -255,7 +232,6 @@ public class AllocatorDaoImpl extends AbstractJooqDao implements AllocatorDao {
                         INSTANCE_HOST_MAP.HOST_ID, newHost,
                         INSTANCE_HOST_MAP.INSTANCE_ID, instance.getId());
 
-                modifyCompute(newHost, instance, false);
                 modifyDisk(newHost, instance, true);
 
                 List<Volume> vols = InstanceHelpers.extractVolumesFromMounts(instance, objectManager);
@@ -333,7 +309,6 @@ public class AllocatorDaoImpl extends AbstractJooqDao implements AllocatorDao {
 
         Boolean done = data.as(Boolean.class);
         if ( done == null || ! done.booleanValue() ) {
-            modifyCompute(map.getHostId(), instance, true);
             modifyDisk(map.getHostId(), instance, false);
             data.set(true);
             objectManager.persist(map);
