@@ -45,7 +45,6 @@
                 <value>addOutputsInput</value>
                 <value>addRemoveServiceLinkInput</value>
                 <value>changeSecretInput</value>
-                <value>setLabelsInput</value>
                 <value>apiKey,parent=credential</value>
                 <value>composeConfigInput</value>
                 <value>container,parent=instance</value>

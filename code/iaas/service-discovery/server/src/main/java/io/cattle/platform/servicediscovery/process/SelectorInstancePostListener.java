@@ -49,7 +49,7 @@ public class SelectorInstancePostListener extends AbstractObjectProcessLogic imp
             if (sdService.isServiceInstance(service, instance)) {
                 continue;
             }
-            if (sdService.isSelectorContainerMatch(service.getSelectorContainer(), instance.getId())) {
+            if (sdService.isSelectorContainerMatch(service.getSelectorContainer(), instance)) {
                 lockManager.lock(new ServiceInstanceLock(service, instance), new LockCallbackNoReturn() {
                     @Override
                     public void doWithLockNoResult() {
