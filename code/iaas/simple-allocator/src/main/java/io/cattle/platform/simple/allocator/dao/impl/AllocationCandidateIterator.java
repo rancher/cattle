@@ -1,7 +1,6 @@
 package io.cattle.platform.simple.allocator.dao.impl;
 
 import io.cattle.platform.allocator.service.AllocationCandidate;
-import io.cattle.platform.core.model.Port;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.simple.allocator.AllocationCandidateCallback;
 
@@ -9,7 +8,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -25,22 +23,18 @@ public class AllocationCandidateIterator implements Iterator<AllocationCandidate
     private static final Logger log = LoggerFactory.getLogger(AllocationCandidateIterator.class);
 
     List<Long> volumeIds;
-    Iterator<Map.Entry<Long, Set<Long>>> iterator;
-    Map<Long, String> hostIdsToUuids;
-    Map<Long, List<Port>> hostIdsToUsedPorts;
+    Iterator<CandidateHostInfo> iterator;
     Stack<AllocationCandidate> candidates = new Stack<AllocationCandidate>();
     ObjectManager objectManager;
     boolean hosts;
     AllocationCandidateCallback callback;
 
-    public AllocationCandidateIterator(ObjectManager objectManager, LinkedHashMap<Long, Set<Long>> hostsAndStoragePools, Map<Long, String> hostIdsToUuids,
-            Map<Long, List<Port>> hostIdsToUsedPorts, List<Long> volumeIds, boolean hosts, AllocationCandidateCallback callback) {
+    public AllocationCandidateIterator(ObjectManager objectManager, List<CandidateHostInfo> hostInfos, List<Long> volumeIds, boolean hosts,
+            AllocationCandidateCallback callback) {
         super();
         this.objectManager = objectManager;
+        this.iterator = hostInfos.iterator();
         this.volumeIds = volumeIds;
-        this.iterator = hostsAndStoragePools.entrySet().iterator();
-        this.hostIdsToUuids = hostIdsToUuids;
-        this.hostIdsToUsedPorts = hostIdsToUsedPorts;
         this.hosts = hosts;
         this.callback = callback;
     }
@@ -56,37 +50,31 @@ public class AllocationCandidateIterator implements Iterator<AllocationCandidate
 
     protected boolean readNext() {
         if (iterator.hasNext()) {
-            Map.Entry<Long, Set<Long>>hostAndPools = iterator.next();
-            enumerate(hostAndPools.getKey(), hostAndPools.getValue());
+            CandidateHostInfo hostInfo = iterator.next();
+            enumerate(hostInfo);
         }
 
         return candidates.size() > 0;
     }
 
-    protected void enumerate(Long hostId, Set<Long> pools) {
-        log.debug("Enumerating canditates hostId [{}] pools {}", hostId, pools);
+    protected void enumerate(CandidateHostInfo hostInfo) {
+        log.debug("Enumerating canditates hostId [{}] pools {}", hostInfo.getHostId(), hostInfo.getPoolIds());
 
-        if (hostId == null) {
-            return;
-        }
-
-        Long candidateHostId = this.hosts ? hostId : null;
-        String candidateHostUuid = this.hosts ? this.hostIdsToUuids.get(hostId) : null;
-        List<Port> usedPorts =  hostIdsToUsedPorts != null ? hostIdsToUsedPorts.get(hostId) : new ArrayList<Port>();
-
+        Long candidateHostId = this.hosts ? hostInfo.getHostId() : null;
         Map<Pair<Class<?>, Long>, Object> cache = new HashMap<Pair<Class<?>, Long>, Object>();
 
         if (volumeIds.size() == 0) {
-            pushCandidate(new AllocationCandidate(objectManager, cache, candidateHostId, candidateHostUuid, usedPorts, Collections.<Long, Long> emptyMap()));
+            pushCandidate(new AllocationCandidate(objectManager, cache, candidateHostId, hostInfo.getHostUuid(), hostInfo.getUsedPorts(),
+                    Collections.<Long, Long> emptyMap()));
         }
 
-        for (List<Pair<Long, Long>> pairs : traverse(volumeIds, pools)) {
+        for (List<Pair<Long, Long>> pairs : traverse(volumeIds, hostInfo.getPoolIds())) {
             Map<Long, Long> volumeToPool = new HashMap<Long, Long>();
             for (Pair<Long, Long> pair : pairs) {
                 volumeToPool.put(pair.getLeft(), pair.getRight());
             }
 
-            pushCandidate(new AllocationCandidate(objectManager, cache, candidateHostId, candidateHostUuid, usedPorts, volumeToPool));
+            pushCandidate(new AllocationCandidate(objectManager, cache, candidateHostId, hostInfo.getHostUuid(), hostInfo.getUsedPorts(), volumeToPool));
         }
     }
 
