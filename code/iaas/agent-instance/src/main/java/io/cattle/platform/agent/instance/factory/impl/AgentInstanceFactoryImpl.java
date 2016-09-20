@@ -17,10 +17,10 @@ import io.cattle.platform.core.dao.AccountDao;
 import io.cattle.platform.core.dao.GenericResourceDao;
 import io.cattle.platform.core.dao.InstanceDao;
 import io.cattle.platform.core.model.Agent;
-import io.cattle.platform.core.model.Stack;
 import io.cattle.platform.core.model.Host;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.Service;
+import io.cattle.platform.core.model.Stack;
 import io.cattle.platform.core.util.SystemLabels;
 import io.cattle.platform.deferred.util.DeferredUtils;
 import io.cattle.platform.engine.process.impl.ProcessCancelException;
@@ -143,6 +143,9 @@ public class AgentInstanceFactoryImpl implements AgentInstanceFactory {
                 for (Service service : services) {
                     Stack stack = objectManager.loadResource(Stack.class, service.getStackId());
                     boolean isSystem = DataAccessor.fieldBool(stack, "isSystem");
+                    if (!isSystem) {
+                        isSystem = DataAccessor.fieldBool(stack, "system");
+                    }
                     if (isSystem) {
                         accountData = CollectionUtils.asMap(AccountConstants.DATA_ACT_AS_RESOURCE_ADMIN_ACCOUNT, true);
                         break;

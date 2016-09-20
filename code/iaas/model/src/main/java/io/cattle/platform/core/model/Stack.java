@@ -157,6 +157,17 @@ public interface Stack extends java.io.Serializable {
 	@javax.persistence.Column(name = "health_state", length = 128)
 	public java.lang.String getHealthState();
 
+	/**
+	 * Setter for <code>cattle.environment.folder</code>.
+	 */
+	public void setFolder(java.lang.String value);
+
+	/**
+	 * Getter for <code>cattle.environment.folder</code>.
+	 */
+	@javax.persistence.Column(name = "folder", length = 255)
+	public java.lang.String getFolder();
+
 	// -------------------------------------------------------------------------
 	// FROM and INTO
 	// -------------------------------------------------------------------------
