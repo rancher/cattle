@@ -45,7 +45,9 @@ public class ContainerLabelAffinityConstraint implements Constraint {
 
     @Override
     public String toString() {
-        return String.format("needs container with label %s%s%s", labelKey, op.getLabelSymbol(), labelValue);
+        String hard = AffinityOps.EQ.equals(op) || AffinityOps.NE.equals(op) ? "must" : "should";
+        String with = AffinityOps.EQ.equals(op) || AffinityOps.SOFT_EQ.equals(op) ? "have" : "not have";
+        return String.format("host %s %s a container with label %s=%s", hard, with, labelKey, labelValue);
     }
 
 }
