@@ -39,4 +39,6 @@ public interface InstanceDao {
     List<IpAddressToServiceIndex> getIpToIndex(Service service);
 
     List<PublicEndpoint> getPublicEndpoints(long accountId, Long serviceId, Long hostId);
+
+    List<? extends Service> findServicesNonRemovedLinksOnly(Instance instance);
 }
