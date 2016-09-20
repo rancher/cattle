@@ -46,6 +46,7 @@ import io.cattle.platform.process.common.handler.AbstractObjectProcessLogic;
 import io.cattle.platform.process.common.lock.MountVolumeLock;
 import io.cattle.platform.process.common.util.ProcessUtils;
 import io.cattle.platform.util.type.CollectionUtils;
+import io.cattle.platform.util.type.Priority;
 import io.github.ibuildthecloud.gdapi.condition.Condition;
 import io.github.ibuildthecloud.gdapi.condition.ConditionType;
 
@@ -62,7 +63,8 @@ import org.slf4j.LoggerFactory;
 
 import com.netflix.config.DynamicBooleanProperty;
 
-public class DockerPostInstanceHostMapActivate extends AbstractObjectProcessLogic implements ProcessPostListener {
+public class DockerPostInstanceHostMapActivate extends AbstractObjectProcessLogic implements ProcessPostListener,
+        Priority {
 
     public static final DynamicBooleanProperty DYNAMIC_ADD_IP = ArchaiusUtil.getBoolean("docker.compute.auto.add.host.ip");
 
@@ -335,5 +337,10 @@ public class DockerPostInstanceHostMapActivate extends AbstractObjectProcessLogi
 
     protected boolean hasPortNetworkService(long instanceId) {
         return networkDao.getNetworkService(instanceId, NetworkServiceConstants.KIND_PORT_SERVICE).size() > 0;
+    }
+
+    @Override
+    public int getPriority() {
+        return Priority.PRE;
     }
 }
