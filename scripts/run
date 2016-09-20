@@ -39,6 +39,7 @@ CMD="java
     -Dlogback.log.dir=$RUNTIME_DIR/logs/
     -Ddb.cattle.home=${RUNTIME_DIR}/db/
     -Dhost.api.proxy.mode=${CATTLE_HOST_API_PROXY_MODE:-embedded}
+    -Dallowed.user.agent.uri.prefix=sim://
     -jar target/*.war"
 
 if [ "$1" = "--background" ]; then

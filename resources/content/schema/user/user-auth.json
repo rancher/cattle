@@ -499,6 +499,7 @@
         "register.accessKey" : "r",
         "register.key":"cr",
         "register.secretKey" : "r",
+        "register.agentUriFormat" : "r",
 
         "registry": "r",
         "registry.serverAddress": "cr",

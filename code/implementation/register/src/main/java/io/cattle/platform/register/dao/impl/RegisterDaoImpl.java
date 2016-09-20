@@ -1,6 +1,8 @@
 package io.cattle.platform.register.dao.impl;
 
 import static io.cattle.platform.core.model.tables.AgentTable.*;
+
+import io.cattle.platform.archaius.util.ArchaiusUtil;
 import io.cattle.platform.core.constants.AccountConstants;
 import io.cattle.platform.core.constants.AgentConstants;
 import io.cattle.platform.core.model.Agent;
@@ -16,7 +18,13 @@ import java.util.Map;
 
 import javax.inject.Inject;
 
+import org.apache.commons.lang3.StringUtils;
+
+import com.netflix.config.DynamicStringListProperty;
+
 public class RegisterDaoImpl extends AbstractJooqDao implements RegisterDao {
+
+    private static DynamicStringListProperty ALLOWED_URIS = ArchaiusUtil.getList("allowed.user.agent.uri.prefix");
 
     ObjectManager objectManager;
 
@@ -27,6 +35,17 @@ public class RegisterDaoImpl extends AbstractJooqDao implements RegisterDao {
                 AgentConstants.DATA_AGENT_RESOURCES_ACCOUNT_ID, obj.getAccountId());
 
         String format = DataAccessor.fieldString(obj, "agentUriFormat");
+        if (format != null) {
+            boolean found = false;
+            for (String prefix : ALLOWED_URIS.get()) {
+                if (StringUtils.isNotBlank(prefix) && format.startsWith(prefix)) {
+                    found = true;
+                }
+            }
+            if (!found) {
+                format = null;
+            }
+        }
         if (format == null) {
             format = "event://%s";
         }

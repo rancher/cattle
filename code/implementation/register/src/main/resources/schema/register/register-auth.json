@@ -18,6 +18,7 @@
         "register.accessKey" : "r",
         "register.secretKey" : "r",
         "register.key" : "cr",
+        "register.agentUriFormat" : "cr",
 
         "schema" : "r",
 
