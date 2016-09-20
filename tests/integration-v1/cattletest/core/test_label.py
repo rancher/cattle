@@ -38,36 +38,6 @@ def test_edit_host_label(super_client, context):
     _assert_labels(host.hostLabels(), new_labels)
 
 
-def test_set_container_labels(client, context):
-    host = context.host
-    image_uuid = context.image_uuid
-
-    c = client.create_container(imageUuid=image_uuid,
-                                requestedHostId=host.id)
-    labels = {'role': 'web',
-              'size': '4'}
-    c.setlabels(labels=labels)
-
-    wait_for_condition(
-        client, c,
-        lambda x: len(x.instanceLabels()) == 2,
-        lambda x: 'Number of labels for container is: ' +
-                  len(x.instanceLabels()))
-
-    _assert_labels(c.instanceLabels(), labels)
-
-    new_labels = {'role': 'web+db',
-                  'nom': 'foobar'}
-    c.setlabels(labels=new_labels)
-    wait_for_condition(
-        client, c,
-        lambda x: len(x.instanceLabels()) == 2,
-        lambda x: 'Number of labels for container is: ' +
-                  len(x.instanceLabels()))
-
-    _assert_labels(c.instanceLabels(), new_labels)
-
-
 def _assert_labels(labels_list, checking_for_labels):
     labels_map = _get_labels_map(labels_list)
 

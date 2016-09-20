@@ -26,7 +26,6 @@ import io.cattle.platform.core.dao.NetworkDao;
 import io.cattle.platform.core.model.Account;
 import io.cattle.platform.core.model.Host;
 import io.cattle.platform.core.model.Instance;
-import io.cattle.platform.core.model.Label;
 import io.cattle.platform.core.model.Network;
 import io.cattle.platform.core.model.Service;
 import io.cattle.platform.core.model.ServiceConsumeMap;
@@ -424,17 +423,19 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
 
     }
 
+    @SuppressWarnings("unchecked")
     @Override
-    public boolean isSelectorContainerMatch(String selector, long instanceId) {
+    public boolean isSelectorContainerMatch(String selector, Instance instance) {
         if (StringUtils.isBlank(selector)) {
             return false;
         }
-        List<? extends Label> labels = labelsDao.getLabelsForInstance(instanceId);
-        if (labels.isEmpty()) {
+
+        Map<String, String> labels = DataAccessor.fields(instance).withKey(InstanceConstants.FIELD_LABELS).as(Map.class);
+        if (labels == null || labels.isEmpty()) {
             return false;
         }
         Map<String, String> instanceLabels = new HashMap<>();
-        for (Label label : labels) {
+        for (Map.Entry<String, String> label : labels.entrySet()) {
             instanceLabels.put(label.getKey(), label.getValue());
         }
         

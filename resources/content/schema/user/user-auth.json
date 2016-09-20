@@ -216,9 +216,6 @@
         "removeLabelInput" : "cr",
         "removeLabelInput.label" : "cr",
 
-        "setLabelsInput": "cr",
-        "setLabelsInput.labels": "cr",
-
         "hostAccess" : "r",
         "hostAccess.token" : "r",
         "hostAccess.url" : "r",

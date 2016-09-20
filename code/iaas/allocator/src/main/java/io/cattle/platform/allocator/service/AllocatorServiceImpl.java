@@ -14,7 +14,6 @@ import io.cattle.platform.core.dao.InstanceDao;
 import io.cattle.platform.core.dao.LabelsDao;
 import io.cattle.platform.core.model.Host;
 import io.cattle.platform.core.model.Instance;
-import io.cattle.platform.core.model.Label;
 import io.cattle.platform.core.model.Service;
 import io.cattle.platform.json.JsonMapper;
 import io.cattle.platform.lock.definition.LockDefinition;
@@ -292,22 +291,25 @@ public class AllocatorServiceImpl implements AllocatorService {
      * @param instance
      * @return
      */
+    @SuppressWarnings("unchecked")
     private String evaluateMacros(String valueStr, Instance instance) {
         if (valueStr.indexOf(SERVICE_NAME_MACRO) != -1 ||
                 valueStr.indexOf(STACK_NAME_MACRO) != -1 ||
                 valueStr.indexOf(PROJECT_NAME_MACRO) != -1) {
 
-            List<Label> labels = labelsDao.getLabelsForInstance(instance.getId());
+            Map<String, String> labels = DataAccessor.fields(instance).withKey(InstanceConstants.FIELD_LABELS).as(Map.class);
             String serviceLaunchConfigName = "";
             String stackName = "";
-            for (Label label: labels) {
-                if (LABEL_STACK_NAME.equals(label.getKey())) {
-                    stackName = label.getValue();
-                } else if (LABEL_STACK_SERVICE_NAME.equals(label.getKey())) {
-                    if (label.getValue() != null) {
-                        int i = label.getValue().indexOf('/');
-                        if (i != -1) {
-                            serviceLaunchConfigName = label.getValue().substring(i + 1);
+            if (labels != null && !labels.isEmpty()) {
+                for (Map.Entry<String, String> label : labels.entrySet()) {
+                    if (LABEL_STACK_NAME.equals(label.getKey())) {
+                        stackName = label.getValue();
+                    } else if (LABEL_STACK_SERVICE_NAME.equals(label.getKey())) {
+                        if (label.getValue() != null) {
+                            int i = label.getValue().indexOf('/');
+                            if (i != -1) {
+                                serviceLaunchConfigName = label.getValue().substring(i + 1);
+                            }
                         }
                     }
                 }

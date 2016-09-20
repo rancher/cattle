@@ -248,10 +248,6 @@
             "attributes": {
                 "states": [ "running", "stopped", "stopping" ]
             }
-        },
-        "setlabels": {
-            "input": "setLabelsInput",
-            "output": "container"
         }
     }
 }

@@ -142,7 +142,7 @@ public class SelectorServiceCreatePostListener extends AbstractObjectProcessLogi
         }
 
         for (final Instance instance : instances) {
-            boolean matched = sdService.isSelectorContainerMatch(service.getSelectorContainer(), instance.getId());
+            boolean matched = sdService.isSelectorContainerMatch(service.getSelectorContainer(), instance);
             if (matched && !currentMappedInstances.containsKey(instance.getId())) {
                 lockManager.lock(new ServiceInstanceLock(service, instance), new LockCallbackNoReturn() {
                     @Override

@@ -278,7 +278,6 @@
     </bean>
 
     <bean class="io.cattle.iaas.labels.service.impl.LabelsServiceImpl" />
-    <bean class="io.cattle.iaas.labels.api.SetContainerLabelsActionHandler" />
 
     <bean class="io.cattle.platform.metadata.service.impl.MetadataServiceImpl" />
     <bean class="io.cattle.platform.metadata.dao.impl.MetadataDaoImpl" />

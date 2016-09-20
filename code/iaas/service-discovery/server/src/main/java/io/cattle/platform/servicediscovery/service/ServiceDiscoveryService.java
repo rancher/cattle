@@ -33,7 +33,7 @@ public interface ServiceDiscoveryService extends AnnotatedEventListener {
 
     boolean isSelectorLinkMatch(String selector, Service targetService);
 
-    boolean isSelectorContainerMatch(String selector, long instanceId);
+    boolean isSelectorContainerMatch(String selector, Instance instance);
 
     boolean isServiceInstance(Service service, Instance instance);
 
