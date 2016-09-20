@@ -189,7 +189,7 @@ public abstract class ServiceDeploymentPlanner {
         while (it.hasNext()) {
             DeploymentUnit next = it.next();
             watchList.add(next);
-            next.remove(false, ServiceDiscoveryConstants.AUDIT_LOG_REMOVE_BAD, ActivityLog.ERROR);
+            next.remove(ServiceDiscoveryConstants.AUDIT_LOG_REMOVE_BAD, ActivityLog.ERROR);
             it.remove();
         }
         for (DeploymentUnit toWatch : watchList) {
@@ -212,7 +212,7 @@ public abstract class ServiceDeploymentPlanner {
         while (it.hasNext()) {
             DeploymentUnit next = it.next();
             watchList.add(next);
-            next.remove(false, ServiceDiscoveryConstants.AUDIT_LOG_REMOVE_UNHEATLHY, ActivityLog.INFO);
+            next.remove(ServiceDiscoveryConstants.AUDIT_LOG_REMOVE_UNHEATLHY, ActivityLog.INFO);
             it.remove();
         }
         for (DeploymentUnit toWatch : watchList) {

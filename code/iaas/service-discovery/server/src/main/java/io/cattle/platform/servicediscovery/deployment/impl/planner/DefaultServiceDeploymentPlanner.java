@@ -68,7 +68,7 @@ public class DefaultServiceDeploymentPlanner extends ServiceDeploymentPlanner {
         while (this.healthyUnits.size() > this.requestedScale) {
             DeploymentUnit toRemove = this.healthyUnits.get(i);
             watchList.add(toRemove);
-            toRemove.remove(false, ServiceDiscoveryConstants.AUDIT_LOG_REMOVE_EXTRA, ActivityLog.INFO);
+            toRemove.remove(ServiceDiscoveryConstants.AUDIT_LOG_REMOVE_EXTRA, ActivityLog.INFO);
             this.healthyUnits.remove(i);
             i--;
         }

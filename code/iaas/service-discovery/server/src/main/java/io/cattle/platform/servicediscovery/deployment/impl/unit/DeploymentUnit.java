@@ -207,7 +207,7 @@ public class DeploymentUnit {
         return true;
     }
 
-    public void remove(boolean waitForRemoval, String reason, String level) {
+    public void remove(String reason, String level) {
         /*
          * Delete all instances. This should be non-blocking (don't wait)
          */
@@ -221,10 +221,6 @@ public class DeploymentUnit {
             }
             instance.generateAuditLog(AuditEventType.delete, reason, level);
             instance.remove();
-        }
-
-        if (waitForRemoval) {
-            waitForRemoval();
         }
 
         // remove deployment unit object
