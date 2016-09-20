@@ -485,6 +485,8 @@
         "stack.outputs": "cru",
         "stack.startOnCreate": "cr",
         "stack.binding": "cru",
+        "stack.folder": "cru",
+        "stack.system": "r",
 
         "composeProject" : "r",
         "composeProject.name": "cr",

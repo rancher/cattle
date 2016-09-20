@@ -11,9 +11,9 @@ package io.cattle.platform.core.model.tables.records;
 @java.lang.SuppressWarnings({ "all", "unchecked", "rawtypes" })
 @javax.persistence.Entity
 @javax.persistence.Table(name = "environment", schema = "cattle")
-public class StackRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.platform.core.model.tables.records.StackRecord> implements io.cattle.platform.db.jooq.utils.TableRecordJaxb, org.jooq.Record13<java.lang.Long, java.lang.String, java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.util.Date, java.util.Date, java.util.Date, java.util.Map<String,Object>, java.lang.String, java.lang.String>, io.cattle.platform.core.model.Stack {
+public class StackRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.platform.core.model.tables.records.StackRecord> implements io.cattle.platform.db.jooq.utils.TableRecordJaxb, org.jooq.Record14<java.lang.Long, java.lang.String, java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.util.Date, java.util.Date, java.util.Date, java.util.Map<String,Object>, java.lang.String, java.lang.String, java.lang.String>, io.cattle.platform.core.model.Stack {
 
-	private static final long serialVersionUID = 1157199454;
+	private static final long serialVersionUID = -273002969;
 
 	/**
 	 * Setter for <code>cattle.environment.id</code>.
@@ -237,6 +237,23 @@ public class StackRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.pla
 		return (java.lang.String) getValue(12);
 	}
 
+	/**
+	 * Setter for <code>cattle.environment.folder</code>.
+	 */
+	@Override
+	public void setFolder(java.lang.String value) {
+		setValue(13, value);
+	}
+
+	/**
+	 * Getter for <code>cattle.environment.folder</code>.
+	 */
+	@javax.persistence.Column(name = "folder", length = 255)
+	@Override
+	public java.lang.String getFolder() {
+		return (java.lang.String) getValue(13);
+	}
+
 	// -------------------------------------------------------------------------
 	// Primary key information
 	// -------------------------------------------------------------------------
@@ -250,23 +267,23 @@ public class StackRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.pla
 	}
 
 	// -------------------------------------------------------------------------
-	// Record13 type implementation
+	// Record14 type implementation
 	// -------------------------------------------------------------------------
 
 	/**
 	 * {@inheritDoc}
 	 */
 	@Override
-	public org.jooq.Row13<java.lang.Long, java.lang.String, java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.util.Date, java.util.Date, java.util.Date, java.util.Map<String,Object>, java.lang.String, java.lang.String> fieldsRow() {
-		return (org.jooq.Row13) super.fieldsRow();
+	public org.jooq.Row14<java.lang.Long, java.lang.String, java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.util.Date, java.util.Date, java.util.Date, java.util.Map<String,Object>, java.lang.String, java.lang.String, java.lang.String> fieldsRow() {
+		return (org.jooq.Row14) super.fieldsRow();
 	}
 
 	/**
 	 * {@inheritDoc}
 	 */
 	@Override
-	public org.jooq.Row13<java.lang.Long, java.lang.String, java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.util.Date, java.util.Date, java.util.Date, java.util.Map<String,Object>, java.lang.String, java.lang.String> valuesRow() {
-		return (org.jooq.Row13) super.valuesRow();
+	public org.jooq.Row14<java.lang.Long, java.lang.String, java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.util.Date, java.util.Date, java.util.Date, java.util.Map<String,Object>, java.lang.String, java.lang.String, java.lang.String> valuesRow() {
+		return (org.jooq.Row14) super.valuesRow();
 	}
 
 	/**
@@ -377,6 +394,14 @@ public class StackRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.pla
 	 * {@inheritDoc}
 	 */
 	@Override
+	public org.jooq.Field<java.lang.String> field14() {
+		return io.cattle.platform.core.model.tables.StackTable.STACK.FOLDER;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
 	public java.lang.Long value1() {
 		return getId();
 	}
@@ -475,6 +500,14 @@ public class StackRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.pla
 	@Override
 	public java.lang.String value13() {
 		return getHealthState();
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public java.lang.String value14() {
+		return getFolder();
 	}
 
 	/**
@@ -598,7 +631,16 @@ public class StackRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.pla
 	 * {@inheritDoc}
 	 */
 	@Override
-	public StackRecord values(java.lang.Long value1, java.lang.String value2, java.lang.Long value3, java.lang.String value4, java.lang.String value5, java.lang.String value6, java.lang.String value7, java.util.Date value8, java.util.Date value9, java.util.Date value10, java.util.Map<String,Object> value11, java.lang.String value12, java.lang.String value13) {
+	public StackRecord value14(java.lang.String value) {
+		setFolder(value);
+		return this;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public StackRecord values(java.lang.Long value1, java.lang.String value2, java.lang.Long value3, java.lang.String value4, java.lang.String value5, java.lang.String value6, java.lang.String value7, java.util.Date value8, java.util.Date value9, java.util.Date value10, java.util.Map<String,Object> value11, java.lang.String value12, java.lang.String value13, java.lang.String value14) {
 		return this;
 	}
 
@@ -624,6 +666,7 @@ public class StackRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.pla
 		setData(from.getData());
 		setExternalId(from.getExternalId());
 		setHealthState(from.getHealthState());
+		setFolder(from.getFolder());
 	}
 
 	/**
@@ -649,7 +692,7 @@ public class StackRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.pla
 	/**
 	 * Create a detached, initialised StackRecord
 	 */
-	public StackRecord(java.lang.Long id, java.lang.String name, java.lang.Long accountId, java.lang.String kind, java.lang.String uuid, java.lang.String description, java.lang.String state, java.util.Date created, java.util.Date removed, java.util.Date removeTime, java.util.Map<String,Object> data, java.lang.String externalId, java.lang.String healthState) {
+	public StackRecord(java.lang.Long id, java.lang.String name, java.lang.Long accountId, java.lang.String kind, java.lang.String uuid, java.lang.String description, java.lang.String state, java.util.Date created, java.util.Date removed, java.util.Date removeTime, java.util.Map<String,Object> data, java.lang.String externalId, java.lang.String healthState, java.lang.String folder) {
 		super(io.cattle.platform.core.model.tables.StackTable.STACK);
 
 		setValue(0, id);
@@ -665,5 +708,6 @@ public class StackRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.pla
 		setValue(10, data);
 		setValue(11, externalId);
 		setValue(12, healthState);
+		setValue(13, folder);
 	}
 }

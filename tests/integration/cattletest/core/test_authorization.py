@@ -48,6 +48,11 @@ def project_admin_client(admin_user_client):
     return create_context(admin_user_client, create_project=False,
                           add_host=False, kind='projectadmin').user_client
 
+@pytest.fixture(scope='module')
+def owner_client(admin_user_client):
+    return create_context(admin_user_client, create_project=False,
+                          add_host=False, kind='owner').user_client
+
 
 def _clean_types(types):
     for i in ['openstackConfig',
@@ -1802,6 +1807,8 @@ def test_auth_compose_project(admin_user_client, user_client, project_client):
         'previousEnvironment': 'r',
         'healthState': 'r',
         'binding': 'r',
+        'system': 'r',
+        'folder': 'r',
     })
 
     auth_check(user_client.schema, 'composeProject', 'r', {
@@ -1814,6 +1821,8 @@ def test_auth_compose_project(admin_user_client, user_client, project_client):
         'previousEnvironment': 'r',
         'healthState': 'r',
         'binding': 'r',
+        'system': 'r',
+        'folder': 'r',
     })
 
     auth_check(project_client.schema, 'composeProject', 'crud', {
@@ -1826,6 +1835,8 @@ def test_auth_compose_project(admin_user_client, user_client, project_client):
         'previousEnvironment': 'cru',
         'healthState': 'r',
         'binding': 'cru',
+        'folder': 'cru',
+        'system': 'r',
     })
 
 
@@ -1842,6 +1853,8 @@ def test_auth_kubernetes_stack(admin_user_client, user_client, project_client):
         'previousEnvironment': 'r',
         'healthState': 'r',
         'binding': 'r',
+        'system': 'r',
+        'folder': 'r',
     })
 
     auth_check(user_client.schema, 'kubernetesStack', 'r', {
@@ -1855,6 +1868,8 @@ def test_auth_kubernetes_stack(admin_user_client, user_client, project_client):
         'previousEnvironment': 'r',
         'healthState': 'r',
         'binding': 'r',
+        'system': 'r',
+        'folder': 'r',
     })
 
     auth_check(project_client.schema, 'kubernetesStack', 'crud', {
@@ -1868,10 +1883,13 @@ def test_auth_kubernetes_stack(admin_user_client, user_client, project_client):
         'previousEnvironment': 'cru',
         'healthState': 'r',
         'binding': 'cru',
+        'system': 'r',
+        'folder': 'cru',
     })
 
 
-def test_svc_discovery_stack(admin_user_client, user_client, project_client):
+def test_svc_discovery_stack(admin_user_client, user_client, project_client,
+                             owner_client):
     auth_check(admin_user_client.schema, 'stack', 'r', {
         'name': 'r',
         'accountId': 'r',
@@ -1886,6 +1904,8 @@ def test_svc_discovery_stack(admin_user_client, user_client, project_client):
         'startOnCreate': 'r',
         'healthState': 'r',
         'binding': 'r',
+        'folder': 'r',
+        'system': 'r',
     })
 
     auth_check(user_client.schema, 'stack', 'r', {
@@ -1901,6 +1921,8 @@ def test_svc_discovery_stack(admin_user_client, user_client, project_client):
         'startOnCreate': 'r',
         'healthState': 'r',
         'binding': 'r',
+        'folder': 'r',
+        'system': 'r',
     })
 
     auth_check(project_client.schema, 'stack', 'crud', {
@@ -1916,6 +1938,25 @@ def test_svc_discovery_stack(admin_user_client, user_client, project_client):
         'startOnCreate': 'cr',
         'healthState': 'r',
         'binding': 'cru',
+        'folder': 'cru',
+        'system': 'r',
+    })
+
+    auth_check(owner_client.schema, 'stack', 'crud', {
+        'name': 'cru',
+        'accountId': 'r',
+        'dockerCompose': 'cr',
+        'rancherCompose': 'cr',
+        'environment': 'cr',
+        'externalId': 'cru',
+        'previousExternalId': 'cru',
+        'previousEnvironment': 'cru',
+        'outputs': 'cru',
+        'startOnCreate': 'cr',
+        'healthState': 'r',
+        'binding': 'cru',
+        'folder': 'cru',
+        'system': 'cr',
     })
 
 
