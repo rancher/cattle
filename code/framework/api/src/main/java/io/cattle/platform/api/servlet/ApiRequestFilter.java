@@ -207,24 +207,22 @@ public class ApiRequestFilter extends ModuleBasedFilter {
         } 
     }
     
-    private void addDefaultLanguageCookie(HttpServletRequest httpRequest, HttpServletResponse response){
-    	Cookie languageCookie = null;
-    	if(!LOCALIZATION_CHINESE.equals(LOCALIZATION))
-    		return;
-    	if(httpRequest.getCookies()!=null){
-    		for(Cookie c : httpRequest.getCookies()){
-    			if(DEFAULT_LANGUAGE.equals(c.getName()) && c.getName()!=null){
-    				languageCookie = c;
-    				break;
-    			}
-    		}
-    	}
-    	
-    	if(languageCookie == null){
-    		languageCookie = new Cookie(DEFAULT_LANGUAGE,LOCALIZATION_CHINESE);
-    		languageCookie.setPath("/");
-    		response.addCookie(languageCookie);
-    	}
+    private void addDefaultLanguageCookie(HttpServletRequest httpRequest, HttpServletResponse response) {
+        Cookie languageCookie = null;
+        if(!LOCALIZATION_CHINESE.equals(LOCALIZATION))
+            return;
+        if(httpRequest.getCookies()!=null) {
+            for(Cookie c : httpRequest.getCookies()) {
+                if(DEFAULT_LANGUAGE.equals(c.getName()) && c.getName()!=null) {
+                    languageCookie = c;
+                    break;
+                    }
+                }
+        }
+        if(languageCookie == null) {
+            languageCookie = new Cookie(DEFAULT_LANGUAGE, LOCALIZATION_CHINESE);
+            languageCookie.setPath("/");
+            response.addCookie(languageCookie);
+        }
     }
-
 }
