@@ -139,7 +139,7 @@ public class AgentInstanceFactoryImpl implements AgentInstanceFactory {
                 accountData = CollectionUtils.asMap(AccountConstants.DATA_ACT_AS_RESOURCE_ACCOUNT, true);
             } else if ("environmentAdmin".equals(labels.get(SystemLabels.LABEL_AGENT_ROLE))) {
                 // allow to set this flag only for system services
-                List<? extends Service> services = instanceDao.findServicesFor(instance);
+                List<? extends Service> services = instanceDao.findServicesNonRemovedLinksOnly(instance);
                 for (Service service : services) {
                     Stack stack = objectManager.loadResource(Stack.class, service.getStackId());
                     boolean isSystem = DataAccessor.fieldBool(stack, "isSystem");
