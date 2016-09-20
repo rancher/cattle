@@ -216,8 +216,14 @@ public abstract class ServiceDeploymentPlanner {
             next.remove(false, ServiceDiscoveryConstants.AUDIT_LOG_REMOVE_UNHEATLHY, ActivityLog.INFO);
             it.remove();
         }
-        for (DeploymentUnit toWatch : watchList) {
-            toWatch.waitForRemoval();
+    }
+
+    public void waitForRemoval() {
+        List<DeploymentUnit> waitList = new ArrayList<>();
+        waitList.addAll(this.badUnits);
+        waitList.addAll(this.unhealthyUnits);
+        for (DeploymentUnit next : waitList) {
+            next.waitForRemoval();
         }
     }
 

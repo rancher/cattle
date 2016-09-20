@@ -325,19 +325,12 @@ public class DeploymentManagerImpl implements DeploymentManager {
 
     protected void activateDeploymentUnits(Service service, final ServiceDeploymentPlanner planner) {
         /*
-         * Delete invalid units
+         * Removed bad stuff and wait for removal
          */
         planner.cleanupBadUnits();
-
-        /*
-         * Cleanup incomplete units
-         */
         planner.cleanupIncompleteUnits();
-
-        /*
-         * Delete the units that have a bad health
-         */
         planner.cleanupUnhealthyUnits();
+        planner.waitForRemoval();
 
         /*
          * Activate all the units
