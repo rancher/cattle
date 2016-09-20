@@ -65,7 +65,7 @@ download_agent()
 
 start_agent()
 {
-    local main=${CATTLE_HOME}/pyagent/apply.sh
+    local main=${CATTLE_HOME}/go-agent/apply.sh
     export AGENT_PARENT_PID=$PPID
     info Starting agent $main
     exec $main start
