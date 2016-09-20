@@ -228,7 +228,7 @@ public abstract class AbstractAllocator implements Allocator {
         List<LockDefinition> locks = allocatorService.extractAllocationLockDefinitions(origInstance);
 
         if (origInstance.getDeploymentUnitUuid() != null) {
-            locks.add(new AllocateConstraintLock("DEPLOYMENT_UNIT." + origInstance.getDeploymentUnitUuid()));
+            locks.add(new AllocateConstraintLock(AllocateConstraintLock.Type.DEPLOYMENT_UNIT, origInstance.getDeploymentUnitUuid()));
         }
 
         List<Long> instancesIds = DataAccessor.fieldLongList(origInstance, DockerInstanceConstants.FIELD_VOLUMES_FROM);
@@ -243,7 +243,8 @@ public abstract class AbstractAllocator implements Allocator {
         for (Instance i : instances) {
             List<Port> ports = objectManager.find(Port.class, PORT.INSTANCE_ID, i.getId(), PORT.REMOVED, null);
             for (Port port : ports) {
-                locks.add(new AllocateConstraintLock(String.format("PORT.%s.%s", port.getProtocol(), port.getPublicPort())));
+                locks.add(new AllocateConstraintLock(AllocateConstraintLock.Type.PORT,
+                        String.format("%s.%s", port.getProtocol(), port.getPublicPort())));
             }
         }
 
