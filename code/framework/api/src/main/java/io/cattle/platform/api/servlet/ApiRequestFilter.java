@@ -37,6 +37,9 @@ public class ApiRequestFilter extends ModuleBasedFilter {
     private static final DynamicStringListProperty IGNORE = ArchaiusUtil.getList("api.ignore.paths");
     private static final DynamicStringProperty PL_SETTING = ArchaiusUtil.getString("ui.pl");
     private static final String PL = "PL";
+    private static final String LOCALIZATION = System.getenv("CATTLE_LOCALIZATION");
+    private static final String LOCALIZATION_CHINESE = "zh-Hans-CN";
+    private static final String DEFAULT_LANGUAGE = "default-language";
 
     ApiRequestFilterDelegate delegate;
     Versions versions;
@@ -68,6 +71,8 @@ public class ApiRequestFilter extends ModuleBasedFilter {
         }
 
         addPLCookie(httpRequest, (HttpServletResponse) response);
+        
+        addDefaultLanguageCookie(httpRequest, (HttpServletResponse) response);
 
         if (isUIRequest(httpRequest, path)) {
             if (path.contains(".") || !indexFile.canServeContent()) {
@@ -200,6 +205,26 @@ public class ApiRequestFilter extends ModuleBasedFilter {
             plCookie.setPath("/");
             response.addCookie(plCookie);
         } 
+    }
+    
+    private void addDefaultLanguageCookie(HttpServletRequest httpRequest, HttpServletResponse response){
+    	Cookie languageCookie = null;
+    	if(!LOCALIZATION_CHINESE.equals(LOCALIZATION))
+    		return;
+    	if(httpRequest.getCookies()!=null){
+    		for(Cookie c : httpRequest.getCookies()){
+    			if(DEFAULT_LANGUAGE.equals(c.getName()) && c.getName()!=null){
+    				languageCookie = c;
+    				break;
+    			}
+    		}
+    	}
+    	
+    	if(languageCookie == null){
+    		languageCookie = new Cookie(DEFAULT_LANGUAGE,LOCALIZATION_CHINESE);
+    		languageCookie.setPath("/");
+    		response.addCookie(languageCookie);
+    	}
     }
 
 }
