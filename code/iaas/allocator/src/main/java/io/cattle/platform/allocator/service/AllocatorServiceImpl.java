@@ -399,14 +399,14 @@ public class AllocatorServiceImpl implements AllocatorService {
                 opStr = key.substring(ContainerLabelAffinityConstraint.LABEL_HEADER_AFFINITY_CONTAINER_LABEL.length());
                 List<AffinityConstraintDefinition> defs = extractAffinityConstraintDefinitionFromLabel(opStr, valueStr, true);
                 for (AffinityConstraintDefinition def: defs) {
-                    lockDefs.add(new AllocateConstraintLock("affinity." + def.getValue()));
+                    lockDefs.add(new AllocateConstraintLock(AllocateConstraintLock.Type.AFFINITY, def.getValue()));
                 }
 
             } else if (key.startsWith(ContainerAffinityConstraint.LABEL_HEADER_AFFINITY_CONTAINER)) {
                 opStr = key.substring(ContainerAffinityConstraint.LABEL_HEADER_AFFINITY_CONTAINER.length());
                 List<AffinityConstraintDefinition> defs = extractAffinityConstraintDefinitionFromLabel(opStr, valueStr, false);
                 for (AffinityConstraintDefinition def: defs) {
-                    lockDefs.add(new AllocateConstraintLock("affinity." + def.getValue()));
+                    lockDefs.add(new AllocateConstraintLock(AllocateConstraintLock.Type.AFFINITY, def.getValue()));
                 }
 
             }
@@ -428,14 +428,14 @@ public class AllocatorServiceImpl implements AllocatorService {
                     affinityDef = affinityDef.substring(ContainerAffinityConstraint.ENV_HEADER_AFFINITY_CONTAINER.length());
                     AffinityConstraintDefinition def = extractAffinitionConstraintDefinitionFromEnv(affinityDef);
                     if (def != null && !StringUtils.isEmpty(def.getValue())) {
-                        constraints.add(new AllocateConstraintLock("affinity." + def.getValue()));
+                        constraints.add(new AllocateConstraintLock(AllocateConstraintLock.Type.AFFINITY, def.getValue()));
                     }
 
                 } else if (affinityDef.startsWith(ContainerLabelAffinityConstraint.ENV_HEADER_AFFINITY_CONTAINER_LABEL)) {
                     affinityDef = affinityDef.substring(ContainerLabelAffinityConstraint.ENV_HEADER_AFFINITY_CONTAINER_LABEL.length());
                     AffinityConstraintDefinition def = extractAffinitionConstraintDefinitionFromEnv(affinityDef);
                     if (def != null && !StringUtils.isEmpty(def.getKey())) {
-                        constraints.add(new AllocateConstraintLock("affinity." + def.getValue()));
+                        constraints.add(new AllocateConstraintLock(AllocateConstraintLock.Type.AFFINITY, def.getValue()));
                     }
                 }
             }
