@@ -87,9 +87,24 @@ public class ServiceCreateValidationFilter extends AbstractDefaultResourceManage
         
         validateScalePolicy(service, request, false);
 
+        request = setServiceIndexStrategy(type, request);
+
         return super.create(type, request, next);
     }
     
+    public ApiRequest setServiceIndexStrategy(String type, ApiRequest request) {
+        if (!type.equalsIgnoreCase(ServiceDiscoveryConstants.KIND_SERVICE)) {
+            return request;
+        }
+        Map<String, Object> data = CollectionUtils.toMap(request.getRequestObject());
+        data.put(ServiceDiscoveryConstants.FIELD_SERVICE_INDEX_STRATEGY,
+                ServiceDiscoveryConstants.SERVICE_INDEX_DU_STRATEGY);
+
+        request.setRequestObject(data);
+
+        return request;
+    }
+
     public void validatePorts(Service service, String type, ApiRequest request) {
         List<Map<String, Object>> launchConfigs = populateLaunchConfigs(service, request);
         for (Map<String, Object> launchConfig : launchConfigs) {

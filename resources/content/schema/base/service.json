@@ -112,6 +112,11 @@
             "type": "boolean",
             "nullable": true,
             "default": false
+        },
+        "serviceIndexStrategy": {
+            "type": "string",
+            "required": false,
+            "nullable": false
         }
     },
     "resourceActions" : {

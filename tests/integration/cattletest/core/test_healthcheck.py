@@ -1259,7 +1259,10 @@ def test_healtcheck(new_context, super_client):
     # reactivate the service and
     # verify that its still has less than 3 healthchecks
     service = client.wait_success(service.deactivate(), 120)
-    service = client.wait_success(service.activate(), 120)
+
+    # wait for the service state
+    wait_state(client, service.activate(), "active")
+    service = client.reload(service)
 
     host_maps = _wait_health_host_count(super_client, health_id, 3)
     validate_container_host(host_maps)
@@ -1324,7 +1327,7 @@ def test_external_svc_healthcheck(client, context):
     compose_config = env.exportconfig()
     assert compose_config is not None
     document = yaml.load(compose_config.rancherComposeConfig)
-    assert document[service.name]['health_check'] is not None
+    assert document['services'][service.name]['health_check'] is not None
 
 
 def _update_healthy(agent, hcihm, c, super_client):
@@ -1441,3 +1444,53 @@ def test_stack_health_state(super_client, context, client):
     wait_for(lambda: super_client.reload(svc).state == 'removed')
     time.sleep(3)
     wait_for(lambda: c.reload(env).healthState == 'healthy')
+
+
+def test_du_removal(super_client, new_context):
+    host = super_client.reload(register_simulated_host(new_context))
+    super_client.wait_success(host)
+    client = new_context.client
+    c = client
+    env = client.create_stack(name='env-' + random_str())
+    svc = client.create_service(name='test', launchConfig={
+        'imageUuid': new_context.image_uuid,
+        'healthCheck': {
+            'port': 80,
+        }
+    }, stackId=env.id, scale=1)
+
+    svc = client.wait_success(client.wait_success(svc).activate())
+    assert svc.state == 'active'
+    wait_for(lambda: super_client.reload(svc).healthState == 'initializing')
+    wait_for(lambda: c.reload(env).healthState == 'initializing')
+
+    maps = _wait_until_active_map_count(svc, 1, client)
+    expose_map = maps[0]
+    c1 = super_client.reload(expose_map.instance())
+    hci = find_one(c1.healthcheckInstances)
+    hcihm = find_one(hci.healthcheckInstanceHostMaps)
+    agent = _get_agent_for_container(c1)
+    assert hcihm.healthState == 'initializing'
+    assert c1.healthState == 'initializing'
+
+    ts = int(time.time())
+    client = _get_agent_client(agent)
+    se = client.create_service_event(externalTimestamp=ts,
+                                     reportedHealth='UP',
+                                     healthcheckUuid=hcihm.uuid)
+    super_client.wait_success(se)
+    hcihm = super_client.wait_success(super_client.reload(hcihm))
+    assert hcihm.healthState == 'healthy'
+    wait_for(lambda: super_client.reload(c1).healthState == 'healthy')
+
+    se = client.create_service_event(externalTimestamp=ts,
+                                     reportedHealth='DOWN',
+                                     healthcheckUuid=hcihm.uuid)
+    super_client.wait_success(se)
+    wait_for(lambda: super_client.reload(c1).state == 'removed')
+
+    maps = _wait_until_active_map_count(svc, 1, super_client)
+    expose_map = maps[0]
+    c2 = super_client.reload(expose_map.instance())
+
+    assert c1.deploymentUnitUuid != c2.deploymentUnitUuid

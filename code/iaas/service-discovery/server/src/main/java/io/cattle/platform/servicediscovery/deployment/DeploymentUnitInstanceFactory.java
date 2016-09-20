@@ -5,7 +5,6 @@ import io.cattle.platform.servicediscovery.deployment.impl.DeploymentManagerImpl
 import io.cattle.platform.servicediscovery.deployment.impl.unit.DeploymentUnit;
 
 import java.util.List;
-import java.util.Map;
 
 public interface DeploymentUnitInstanceFactory {
 
@@ -16,17 +15,16 @@ public interface DeploymentUnitInstanceFactory {
      * @param service
      * @param instanceName
      * @param instanceObj TODO
-     * @param labels TODO
      * @param launchConfigName TODO
      * @return
      */
     public DeploymentUnitInstance createDeploymentUnitInstance(DeploymentServiceContext context, String uuid,
-            Service service, String instanceName, Object instanceObj, Map<String, String> labels, String launchConfigName);
+            Service service, String instanceName, Object instanceObj, String launchConfigName);
 
     /**
      * @param service TODO
      * @param context TODO
      * @return list of deployment units per service
      */
-    public List<DeploymentUnit> collectDeploymentUnits(List<Service> service, DeploymentServiceContext context);
+    public List<DeploymentUnit> collectDeploymentUnits(Service service, DeploymentServiceContext context);
 }

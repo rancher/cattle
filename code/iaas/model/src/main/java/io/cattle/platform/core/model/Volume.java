@@ -289,6 +289,39 @@ public interface Volume extends java.io.Serializable {
 	@javax.persistence.Column(name = "host_id", precision = 19)
 	public java.lang.Long getHostId();
 
+	/**
+	 * Setter for <code>cattle.volume.deployment_unit_id</code>.
+	 */
+	public void setDeploymentUnitId(java.lang.Long value);
+
+	/**
+	 * Getter for <code>cattle.volume.deployment_unit_id</code>.
+	 */
+	@javax.persistence.Column(name = "deployment_unit_id", precision = 19)
+	public java.lang.Long getDeploymentUnitId();
+
+	/**
+	 * Setter for <code>cattle.volume.environment_id</code>.
+	 */
+	public void setStackId(java.lang.Long value);
+
+	/**
+	 * Getter for <code>cattle.volume.environment_id</code>.
+	 */
+	@javax.persistence.Column(name = "environment_id", precision = 19)
+	public java.lang.Long getStackId();
+
+	/**
+	 * Setter for <code>cattle.volume.volume_template_id</code>.
+	 */
+	public void setVolumeTemplateId(java.lang.Long value);
+
+	/**
+	 * Getter for <code>cattle.volume.volume_template_id</code>.
+	 */
+	@javax.persistence.Column(name = "volume_template_id", precision = 19)
+	public java.lang.Long getVolumeTemplateId();
+
 	// -------------------------------------------------------------------------
 	// FROM and INTO
 	// -------------------------------------------------------------------------

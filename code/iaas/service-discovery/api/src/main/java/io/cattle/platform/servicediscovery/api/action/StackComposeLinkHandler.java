@@ -39,10 +39,10 @@ public class StackComposeLinkHandler implements LinkHandler {
 
     @Override
     public Object link(String name, Object obj, ApiRequest request) throws IOException {
-        Stack env = (Stack) obj;
-        List<? extends Service> services = objectManager.find(Service.class, SERVICE.STACK_ID, env.getId(),
+        Stack stack = (Stack) obj;
+        List<? extends Service> services = objectManager.find(Service.class, SERVICE.STACK_ID, stack.getId(),
                 SERVICE.REMOVED, null);
-        String dockerCompose = discoverySvc.buildDockerComposeConfig(services);
+        String dockerCompose = discoverySvc.buildDockerComposeConfig(services, stack);
         String rancherCompose = discoverySvc.buildRancherComposeConfig(services);
 
         if (StringUtils.isNotEmpty(dockerCompose) || StringUtils.isNotEmpty(rancherCompose)) {

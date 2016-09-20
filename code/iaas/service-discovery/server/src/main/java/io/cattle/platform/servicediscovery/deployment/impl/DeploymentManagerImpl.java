@@ -32,7 +32,7 @@ import io.cattle.platform.servicediscovery.deployment.DeploymentUnitInstanceFact
 import io.cattle.platform.servicediscovery.deployment.DeploymentUnitInstanceIdGenerator;
 import io.cattle.platform.servicediscovery.deployment.ServiceDeploymentPlanner;
 import io.cattle.platform.servicediscovery.deployment.ServiceDeploymentPlannerFactory;
-import io.cattle.platform.servicediscovery.deployment.impl.lock.ServicesSidekickLock;
+import io.cattle.platform.servicediscovery.deployment.impl.lock.ServiceLock;
 import io.cattle.platform.servicediscovery.deployment.impl.unit.DeploymentUnit;
 import io.cattle.platform.servicediscovery.deployment.impl.unit.DeploymentUnitInstanceIdGeneratorImpl;
 import io.cattle.platform.servicediscovery.service.ServiceDiscoveryService;
@@ -40,8 +40,6 @@ import io.cattle.platform.util.exception.ServiceInstanceAllocateException;
 import io.cattle.platform.util.exception.ServiceReconcileException;
 import io.github.ibuildthecloud.gdapi.id.IdFormatter;
 
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -111,36 +109,32 @@ public class DeploymentManagerImpl implements DeploymentManager {
             return false;
         }
 
-        final List<Service> services = new ArrayList<>();
-        services.add(service);
-
-        return lockManager.lock(checkState ? null : createLock(services), new LockCallback<Boolean>() {
+        return lockManager.lock(checkState ? null : createLock(service), new LockCallback<Boolean>() {
             @Override
             public Boolean doWithLock() {
                 if (!sdSvc.isActiveService(service)) {
                     return false;
                 }
-                return reconcileDeployment(service, checkState, services);
+                return reconcileDeployment(service, checkState);
             }
 
         });
     }
 
-    protected boolean reconcileDeployment(final Service service, final boolean checkState,
-            final List<Service> services) {
+    protected boolean reconcileDeployment(final Service service, final boolean checkState) {
         ScalePolicy policy = DataAccessor.field(service,
                 ServiceDiscoveryConstants.FIELD_SCALE_POLICY, mapper, ScalePolicy.class);
         boolean result = false;
         if (policy == null) {
-            result = deploy(service, checkState, services);
+            result = deploy(service, checkState);
         } else {
-            result = deployWithScaleAdjustement(service, checkState, services, policy);
+            result = deployWithScaleAdjustement(service, checkState, policy);
         }
         return result;
     }
 
     protected boolean deployWithScaleAdjustement(final Service service, final boolean checkState,
-            final List<Service> services, ScalePolicy policy) {
+            ScalePolicy policy) {
 
         Integer desiredScaleToReset = null;
         Integer desiredScaleSet = DataAccessor.fieldInteger(service,
@@ -167,18 +161,18 @@ public class DeploymentManagerImpl implements DeploymentManager {
             lockScale(service);
         }
 
-        return incremenetScaleAndDeploy(service, checkState, services, policy);
+        return incremenetScaleAndDeploy(service, checkState, policy);
     }
 
     protected boolean incremenetScaleAndDeploy(final Service service, final boolean checkState,
-            final List<Service> services, ScalePolicy policy) {
+            ScalePolicy policy) {
         Integer desiredScale = DataAccessor.fieldInteger(service,
                 ServiceDiscoveryConstants.FIELD_DESIRED_SCALE);
         try {
-            deploy(service, checkState, services);
+            deploy(service, checkState);
             lockScale(service);
         } catch (ServiceInstanceAllocateException ex) {
-            reduceScaleAndDeploy(service, checkState, services, policy);
+            reduceScaleAndDeploy(service, checkState, policy);
             return false;
         }
         if (desiredScale.intValue() < policy.getMax().intValue()) {
@@ -189,13 +183,13 @@ public class DeploymentManagerImpl implements DeploymentManager {
             desiredScale = setDesiredScaleInternal(service, newDesiredScale);
             log.info("Incremented service [{}] scale to [{}] as reconcile has succeed", service.getUuid(),
                     desiredScale);
-            incremenetScaleAndDeploy(service, checkState, services, policy);
+            incremenetScaleAndDeploy(service, checkState, policy);
         }
 
         return false;
     }
 
-    protected boolean reduceScaleAndDeploy(Service service, boolean checkState, List<Service> services, ScalePolicy policy) {
+    protected boolean reduceScaleAndDeploy(Service service, boolean checkState, ScalePolicy policy) {
         int desiredScale = DataAccessor.fieldInteger(service, ServiceDiscoveryConstants.FIELD_DESIRED_SCALE).intValue();
         int lockedScale = DataAccessor.fieldInteger(service, ServiceDiscoveryConstants.FIELD_LOCKED_SCALE).intValue();
         int minScale = policy.getMin();
@@ -215,12 +209,12 @@ public class DeploymentManagerImpl implements DeploymentManager {
             desiredScale = setDesiredScaleInternal(service, newDesiredScale);
             log.info("Decremented service [{}] scale to [{}] as reconcile has failed", service.getUuid(), desiredScale);
             try {
-                deploy(service, checkState, services);
+                deploy(service, checkState);
             } catch (ServiceInstanceAllocateException ex) {
                 if (desiredScale == minScale) {
                     throw ex;
                 }
-                reduceScaleAndDeploy(service, checkState, services, policy);
+                reduceScaleAndDeploy(service, checkState, policy);
             }
         }
         return false;
@@ -243,16 +237,16 @@ public class DeploymentManagerImpl implements DeploymentManager {
         objectMgr.setFields(service, data);
     }
 
-    protected boolean deploy(final Service service, final boolean checkState, final List<Service> services) {
+    protected boolean deploy(final Service service, final boolean checkState) {
         // get existing deployment units
-        ServiceDeploymentPlanner planner = getPlanner(services);
+        ServiceDeploymentPlanner planner = getPlanner(service);
 
         if (!checkState) {
             actvtyService.info(planner.getStatus());
         }
 
         // don't process if there is no need to reconcile
-        boolean needToReconcile = needToReconcile(services, planner);
+        boolean needToReconcile = needToReconcile(service, planner);
 
         if (!needToReconcile) {
             if (!checkState) {
@@ -265,17 +259,14 @@ public class DeploymentManagerImpl implements DeploymentManager {
             return !planner.isHealthcheckInitiailizing();
         }
 
-        activateServices(service, services);
+        activateServices(service);
         activateDeploymentUnits(service, planner);
 
         // reload planner as there can be new hosts added for Global services
         // reload services as well
-        List<Service> reloaded = new ArrayList<>();
-        for (Service svc : services) {
-            reloaded.add(objectMgr.reload(svc));
-        }
-        planner = getPlanner(services);
-        if (needToReconcile(services, planner)) {
+        Service reloaded = objectMgr.reload(service);
+        planner = getPlanner(reloaded);
+        if (needToReconcile(reloaded, planner)) {
             throw new ServiceReconcileException("Need to restart service reconcile");
         }
 
@@ -283,34 +274,30 @@ public class DeploymentManagerImpl implements DeploymentManager {
         return false;
     }
 
-    private ServiceDeploymentPlanner getPlanner(List<Service> services) {
-        List<DeploymentUnit> units = unitInstanceFactory.collectDeploymentUnits(services,
+    private ServiceDeploymentPlanner getPlanner(Service service) {
+        List<DeploymentUnit> units = unitInstanceFactory.collectDeploymentUnits(service,
                 new DeploymentServiceContext());
-        return deploymentPlannerFactory.createServiceDeploymentPlanner(services,
+        return deploymentPlannerFactory.createServiceDeploymentPlanner(service,
                 units, new DeploymentServiceContext());
     }
 
-    private boolean needToReconcile(List<Service> services, ServiceDeploymentPlanner planner) {
-        for (Service service : services) {
-            if (service.getState().equals(CommonStatesConstants.INACTIVE)) {
-                return true;
-            }
+    private boolean needToReconcile(Service service, ServiceDeploymentPlanner planner) {
+        if (service.getState().equals(CommonStatesConstants.INACTIVE)) {
+            return true;
         }
 
         return planner.needToReconcileDeployment();
     }
 
-    private void activateServices(final Service initialService, final List<Service> services) {
+    private void activateServices(final Service service) {
         /*
          * Trigger activate for all the services
          */
         try {
-            for (Service service : services) {
-                if (service.getState().equalsIgnoreCase(CommonStatesConstants.INACTIVE)) {
-                    objectProcessMgr.scheduleStandardProcess(StandardProcess.ACTIVATE, service, null);
-                } else if (service.getState().equalsIgnoreCase(CommonStatesConstants.ACTIVE)) {
-                    objectProcessMgr.scheduleStandardProcess(StandardProcess.UPDATE, service, null);
-                }
+            if (service.getState().equalsIgnoreCase(CommonStatesConstants.INACTIVE)) {
+                objectProcessMgr.scheduleStandardProcess(StandardProcess.ACTIVATE, service, null);
+            } else if (service.getState().equalsIgnoreCase(CommonStatesConstants.ACTIVE)) {
+                objectProcessMgr.scheduleStandardProcess(StandardProcess.UPDATE, service, null);
             }
         } catch (IdempotentRetryException ex) {
             // if not caught, the process will keep on spinning forever
@@ -319,8 +306,8 @@ public class DeploymentManagerImpl implements DeploymentManager {
 
     }
 
-    protected LockDefinition createLock(List<Service> services) {
-        return new ServicesSidekickLock(services);
+    protected LockDefinition createLock(Service service) {
+        return new ServiceLock(service);
     }
 
     protected void activateDeploymentUnits(Service service, final ServiceDeploymentPlanner planner) {
@@ -355,23 +342,18 @@ public class DeploymentManagerImpl implements DeploymentManager {
         planner.cleanupUnusedAndDuplicatedServiceIndexes();
     }
 
-    private Map<Long, DeploymentUnitInstanceIdGenerator> populateUsedNames(
-            List<Service> services) {
-        Map<Long, DeploymentUnitInstanceIdGenerator> generator = new HashMap<>();
-        for (Service service : services) {
-            Map<String, List<Integer>> launchConfigUsedIds = new HashMap<>();
-            for (String launchConfigName : ServiceDiscoveryUtil.getServiceLaunchConfigNames(service)) {
-                List<Integer> usedIds = sdSvc.getServiceInstanceUsedSuffixes(service, launchConfigName);
-                launchConfigUsedIds.put(launchConfigName, usedIds);
-            }
-            generator.put(service.getId(),
-                    new DeploymentUnitInstanceIdGeneratorImpl(launchConfigUsedIds));
+    private DeploymentUnitInstanceIdGenerator populateUsedNames(
+            Service service) {
+        Map<String, List<Integer>> launchConfigUsedIds = new HashMap<>();
+        for (String launchConfigName : ServiceDiscoveryUtil.getServiceLaunchConfigNames(service)) {
+            List<Integer> usedIds = sdSvc.getServiceInstanceUsedSuffixes(service, launchConfigName);
+            launchConfigUsedIds.put(launchConfigName, usedIds);
         }
-        return generator;
+        return new DeploymentUnitInstanceIdGeneratorImpl(launchConfigUsedIds);
     }
 
     protected void startUnits(ServiceDeploymentPlanner planner) {
-        Map<Long, DeploymentUnitInstanceIdGenerator> svcInstanceIdGenerator = populateUsedNames(planner.getServices());
+        DeploymentUnitInstanceIdGenerator svcInstanceIdGenerator = populateUsedNames(planner.getService());
         /*
          * Ask the planner to deploy more units/ remove extra units
          */
@@ -381,12 +363,12 @@ public class DeploymentManagerImpl implements DeploymentManager {
     @Override
     public void deactivate(final Service service) {
         // do with lock to prevent intervention to sidekick service activate
-        lockManager.lock(createLock(Arrays.asList(service)), new LockCallbackNoReturn() {
+        lockManager.lock(createLock(service), new LockCallbackNoReturn() {
             @Override
             public void doWithLockNoResult() {
                 // in deactivate, we don't care about the sidekicks, and deactivate only requested service
                 List<DeploymentUnit> units = unitInstanceFactory.collectDeploymentUnits(
-                        Arrays.asList(service), new DeploymentServiceContext());
+                        service, new DeploymentServiceContext());
                 for (DeploymentUnit unit : units) {
                     unit.stop();
                 }
@@ -397,7 +379,7 @@ public class DeploymentManagerImpl implements DeploymentManager {
     @Override
     public void remove(final Service service) {
         // do with lock to prevent intervention to sidekick service activate
-        lockManager.lock(createLock(Arrays.asList(service)), new LockCallbackNoReturn() {
+        lockManager.lock(createLock(service), new LockCallbackNoReturn() {
             @Override
             public void doWithLockNoResult() {
                 // in remove, we don't care about the sidekicks, and remove only requested service
@@ -412,9 +394,9 @@ public class DeploymentManagerImpl implements DeploymentManager {
 
             protected void deleteServiceInstances(final Service service) {
                 List<DeploymentUnit> units = unitInstanceFactory.collectDeploymentUnits(
-                        Arrays.asList(service), new DeploymentServiceContext());
+                        service, new DeploymentServiceContext());
                 for (DeploymentUnit unit : units) {
-                    unit.remove(false, ServiceDiscoveryConstants.AUDIT_LOG_REMOVE_EXTRA, ActivityLog.INFO);
+                    unit.remove(ServiceDiscoveryConstants.AUDIT_LOG_REMOVE_EXTRA, ActivityLog.INFO);
                 }
             }
         });
@@ -462,5 +444,6 @@ public class DeploymentManagerImpl implements DeploymentManager {
         final public ServiceDao serviceDao = svcDao;
         final public ActivityService activityService = actvtyService;
         final public IdFormatter idFormatter = idFrmt;
+        final public LockManager lockMgr = lockManager;
     }
 }

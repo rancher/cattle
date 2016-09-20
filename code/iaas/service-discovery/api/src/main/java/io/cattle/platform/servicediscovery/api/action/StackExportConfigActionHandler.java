@@ -37,11 +37,11 @@ public class StackExportConfigActionHandler implements ActionHandler {
         if (!(obj instanceof Stack)) {
             return null;
         }
-        Stack env = (Stack) obj;
+        Stack stack = (Stack) obj;
         List<? extends Long> serviceIds = DataAccessor.fromMap(request.getRequestObject())
                 .withKey(ServiceDiscoveryConstants.FIELD_SERVICE_IDS).asList(jsonMapper, Long.class);
 
-        List<? extends Service> services = objectManager.mappedChildren(env, Service.class);
+        List<? extends Service> services = objectManager.mappedChildren(stack, Service.class);
         List<Service> toExport = new ArrayList<>();
         for (Service service : services) {
             // export only non-removed requested services
@@ -51,7 +51,7 @@ public class StackExportConfigActionHandler implements ActionHandler {
                 }
             }
         }
-        Map.Entry<String, String> composeConfig = svcDiscoveryServer.buildComposeConfig(toExport);
+        Map.Entry<String, String> composeConfig = svcDiscoveryServer.buildComposeConfig(toExport, stack);
 
         return new ComposeConfig(composeConfig.getKey(), composeConfig.getValue());
 

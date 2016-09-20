@@ -442,6 +442,8 @@
         "volume.driver": "cr",
         "volume.driverOpts": "cr",
         "volume.accessMode": "r",
+        "volume.stackId": "cr",
+        "volume.volumeTemplateId": "cr",
         "volume.resourceActions.deactivate" : "",
 
         "loadBalancerConfig" : "r",
@@ -826,6 +828,13 @@
         "serviceLog.transactionId" : "r",
         "serviceLog.subLog" : "r",
         "serviceLog.level" : "r",
+
+        "volumeTemplate": "r",
+        "volumeTemplate.stackId" : "cr",
+        "volumeTemplate.driver" : "cr",
+        "volumeTemplate.driverOpts" : "cr",
+        "volumeTemplate.external" : "cr",
+        "volumeTemplate.perContainer" : "cr",
 
         "end" : ""
     }

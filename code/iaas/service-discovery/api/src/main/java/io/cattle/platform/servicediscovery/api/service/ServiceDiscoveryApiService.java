@@ -3,6 +3,7 @@ package io.cattle.platform.servicediscovery.api.service;
 import io.cattle.platform.core.addon.LoadBalancerServiceLink;
 import io.cattle.platform.core.addon.ServiceLink;
 import io.cattle.platform.core.model.Service;
+import io.cattle.platform.core.model.Stack;
 
 import java.util.List;
 import java.util.Map;
@@ -16,9 +17,9 @@ public interface ServiceDiscoveryApiService {
 
     List<? extends Service> listStackServices(long stackId);
 
-    Map.Entry<String, String> buildComposeConfig(List<? extends Service> services);
+    Map.Entry<String, String> buildComposeConfig(List<? extends Service> services, Stack stack);
 
-    String buildDockerComposeConfig(List<? extends Service> services);
+    String buildDockerComposeConfig(List<? extends Service> services, Stack stack);
 
     String buildRancherComposeConfig(List<? extends Service> services);
 

@@ -722,9 +722,6 @@ def test_validate_service_scaleup_scaledown(client, context):
     service = client.wait_success(service)
     wait_for(lambda: client.reload(service).healthState == 'healthy')
 
-    # rename the instance 3
-    instance32 = client.update(instance31, name='newName')
-
     # scale up the service
     # instance 2 should get started
     service = client.update(service, scale=4, name=service.name)
@@ -734,8 +731,8 @@ def test_validate_service_scaleup_scaledown(client, context):
 
     instance12 = _validate_compose_instance_start(client, service, env, "1")
     instance22 = _validate_compose_instance_start(client, service, env, "2")
-    instance32 = _validate_instance_start(service, client, instance32.name)
-    instance41 = _validate_compose_instance_start(client, service, env, "3")
+    instance32 = _validate_compose_instance_start(client, service, env, "3")
+    instance41 = _validate_compose_instance_start(client, service, env, "4")
 
     assert instance41.createIndex > instance32.createIndex
     assert instance32.createIndex > instance22.createIndex
@@ -807,12 +804,14 @@ def test_destroy_service_instance(client, context):
 
     # 3. activate the service
     service.activate()
-    service = client.wait_success(service, 120)
+    wait_state(client, service, 'active')
+    service = client.reload(service)
     assert service.state == "active"
 
     # 4. destroy instance3 and update the service's scale.
     _instance_remove(instance3, client)
-    service = client.wait_success(service)
+    wait_state(client, service, 'active')
+    service = client.reload(service)
 
     service = client.update(service, scale=4, name=service.name)
     service = client.wait_success(service, 120)
@@ -860,7 +859,7 @@ def test_service_rename(client, context):
     assert service2.name == new_name
     _validate_compose_instance_start(client, service1, env, "1")
     _validate_compose_instance_start(client, service1, env, "2")
-    _validate_compose_instance_start(client, service2, env, "1")
+    _validate_compose_instance_start(client, service2, env, "3")
 
 
 def test_env_rename(client, context):
@@ -1106,28 +1105,54 @@ def test_sidekick_restart_instances(client, context):
     service = client.wait_success(service.activate(), 120)
     assert service.state == "active"
 
-    instance11 = _validate_compose_instance_start(client, service, env, "1")
-    _validate_compose_instance_start(client, service, env, "2")
-    _validate_compose_instance_start(client, service, env, "1", "secondary")
-    instance22 = _validate_compose_instance_start(client, service,
-                                                  env, "2", "secondary")
+    i11 = _validate_compose_instance_start(client, service, env, "1")
+    i12 = _validate_compose_instance_start(client, service, env, "2")
+    i21 = _validate_compose_instance_start(client, service, env, "1",
+                                           "secondary")
+    i22 = _validate_compose_instance_start(client, service,
+                                           env, "2", "secondary")
 
     _wait_until_active_map_count(service, 4, client)
+    assert i11.deploymentUnitUuid == i21.deploymentUnitUuid
+    assert i12.deploymentUnitUuid == i22.deploymentUnitUuid
 
     # stop instance11, destroy instance12 and call update on a service1
     # scale should be restored
-    client.wait_success(instance11.stop())
-    _instance_remove(instance22, client)
+    client.wait_success(i11.stop())
+    _instance_remove(i22, client)
     service = wait_state(client, service, 'active')
     service = client.update(service, scale=2, name=service.name)
     service = client.wait_success(service, 120)
 
-    _validate_compose_instance_start(client, service, env, "1")
-    _validate_compose_instance_start(client, service, env, "2")
-    _validate_compose_instance_start(client, service, env, "1", "secondary")
-    _validate_compose_instance_start(client, service, env, "2", "secondary")
+    i11v1 = _validate_compose_instance_start(client, service, env, "1")
+    i12v1 = _validate_compose_instance_start(client, service, env, "2")
+    i21v1 = _validate_compose_instance_start(client, service, env,
+                                             "1", "secondary")
+    i22v1 = _validate_compose_instance_start(client, service, env,
+                                             "2", "secondary")
 
     _wait_until_active_map_count(service, 4, client)
+    assert i11v1.deploymentUnitUuid == i21v1.deploymentUnitUuid
+    assert i12v1.deploymentUnitUuid == i22v1.deploymentUnitUuid
+    assert i11.deploymentUnitUuid == i11v1.deploymentUnitUuid
+    assert i22.deploymentUnitUuid == i22v1.deploymentUnitUuid
+
+    # remove all instances, validate the deployment unit is preserved
+    _instance_remove(i11v1, client)
+    _instance_remove(i12v1, client)
+    _instance_remove(i21v1, client)
+    _instance_remove(i22v1, client)
+    _wait_until_active_map_count(service, 4, client)
+    i11v2 = _validate_compose_instance_start(client, service, env, "1")
+    i12v2 = _validate_compose_instance_start(client, service, env, "2")
+    i21v2 = _validate_compose_instance_start(client, service, env,
+                                             "1", "secondary")
+    i22v2 = _validate_compose_instance_start(client, service, env,
+                                             "2", "secondary")
+    assert i11v2.deploymentUnitUuid == i21v2.deploymentUnitUuid
+    assert i12v2.deploymentUnitUuid == i22v2.deploymentUnitUuid
+    assert i11v1.deploymentUnitUuid == i11v2.deploymentUnitUuid
+    assert i22v1.deploymentUnitUuid == i22v2.deploymentUnitUuid
 
 
 def test_sidekick_scaleup(client, context):
@@ -1461,8 +1486,7 @@ def test_global_service_update_label(new_context):
     # both hosts got instances
     _instance_remove(instance1, client)
     service = wait_state(client, service.deactivate(), 'inactive')
-    service = client.wait_success(service.activate(), 120)
-    assert service.state == "active"
+    service = wait_state(client, service.activate(), 'active')
     instance1 = _validate_compose_instance_start(client, service, env, "1")
     instance2 = _validate_compose_instance_start(client, service, env, "2")
 
@@ -1966,23 +1990,25 @@ def test_export_config(client, context):
 
     assert compose_config is not None
     docker_yml = yaml.load(compose_config.dockerComposeConfig)
-    assert docker_yml[service.name]['cpuset'] == "0,1"
-    assert docker_yml[service.name]['labels'] == labels
-    assert "restart" not in docker_yml[service.name]
-    assert docker_yml[service.name]["log_driver"] == "json-file"
-    assert docker_yml[service.name]["log_opt"] is not None
-    assert docker_yml[service.name]["pid"] == "host"
-    assert docker_yml[service.name]["mem_limit"] == 1048576
-    assert docker_yml[service.name]["memswap_limit"] == 2097152
-    assert docker_yml[service.name]["devices"] is not None
+    svc = docker_yml['services'][service.name]
+    assert svc['cpuset'] == "0,1"
+    assert svc['labels'] == labels
+    assert "restart" not in svc
+    assert svc["log_driver"] == "json-file"
+    assert svc["log_opt"] is not None
+    assert svc["pid"] == "host"
+    assert svc["mem_limit"] == 1048576
+    assert svc["memswap_limit"] == 2097152
+    assert svc["devices"] is not None
 
     rancher_yml = yaml.load(compose_config.rancherComposeConfig)
-    assert 'scale' not in rancher_yml[service.name]
+    svc = rancher_yml['services'][service.name]
+    assert 'scale' not in svc
     updated = {"$$id$$$$foo$$bar$$$$": "$${HOSTNAME}"}
     metadata = {"$$bar": {"metadata": [updated]}}
-    assert rancher_yml[service.name]['metadata'] is not None
-    assert rancher_yml[service.name]['metadata'] == metadata
-    assert rancher_yml[service.name]['retain_ip'] is True
+    assert svc['metadata'] is not None
+    assert svc['metadata'] == metadata
+    assert svc['retain_ip'] is True
 
     launch_config_without_log = {"imageUuid": image_uuid,
                                  "cpuSet": "0,1", "labels": labels,
@@ -2001,8 +2027,9 @@ def test_export_config(client, context):
 
     assert compose_config is not None
     docker_yml = yaml.load(compose_config.dockerComposeConfig)
-    assert "log_driver" not in docker_yml[service_nolog.name]
-    assert "log_opt" not in docker_yml[service_nolog.name]
+    svc = docker_yml['services'][service_nolog.name]
+    assert "log_driver" not in svc
+    assert "log_opt" not in svc
 
 
 def test_validate_create_only_containers(client, context):
@@ -2879,6 +2906,7 @@ def test_ip_retain_requested_ip(client, context, super_client):
     # remove instance and
     # check that c1 and c2 got the same ip
     _instance_remove(c1, client)
+    wait_state(client, svc, 'active')
     _wait_until_active_map_count(svc, 1, client)
     svc = client.wait_success(svc)
     assert svc.state == "active"

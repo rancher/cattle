@@ -49,6 +49,16 @@ public class ServiceDiscoveryConstants {
     public static final String FIELD_HEALTH_STATE = "healthState";
     public static final String FIELD_LOCKED_SCALE = "lockedScale";
     public static final String FIELD_STACK_ID = "stackId";
+    public static final String FIELD_VOLUME_TEMPLATES = "volumeTemplates";
+    public static final String FIELD_VOLUME_DRIVER = "driver";
+    public static final String FIELD_VOLUME_DRIVER_OPTS = "driverOpts";
+    public static final String FIELD_VOLUME_EXTERNAL = "external";
+    public static final String FIELD_VOLUME_PER_CONTAINER = "perContainer";
+
+    public static final String FIELD_INTERNAL_VOLUMES = "internalVolumes";
+    public static final String FIELD_VOLUME_TEMPLATE_ID = "volumeTemplateId";
+    public static final String FIELD_DEPLOYMENT_UNIT_ID = "deploymentUnitId";
+    public static final String FIELD_SERVICE_INDEX_STRATEGY = "serviceIndexStrategy";
 
     public static final String ACTION_SERVICE_ACTIVATE = "activate";
     public static final String ACTION_SERVICE_CREATE = "create";
@@ -127,4 +137,6 @@ public class ServiceDiscoveryConstants {
     public static final String AUDIT_LOG_REMOVE_UNHEATLHY = "Removing unhealthy service instance";
     public static final String AUDIT_LOG_REMOVE_BAD = "Removing bad service instance";
     public static final String AUDIT_LOG_CREATE_EXTRA = "Creating extra service instance";
+
+    public static final String SERVICE_INDEX_DU_STRATEGY = "deploymentUnitBased";
 }

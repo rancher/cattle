@@ -9,9 +9,9 @@ import java.util.List;
 
 public class NoOpServiceDeploymentPlanner extends ServiceDeploymentPlanner {
 
-    public NoOpServiceDeploymentPlanner(List<Service> services, List<DeploymentUnit> units,
+    public NoOpServiceDeploymentPlanner(Service service, List<DeploymentUnit> units,
             DeploymentServiceContext context) {
-        super(services, units, context);
+        super(service, units, context);
     }
 
     @Override
