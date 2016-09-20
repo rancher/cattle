@@ -278,11 +278,17 @@ def register_simulated_host(client_or_context, return_agent=False):
     s.wait_success(agents[0])
 
     wait_for(lambda: client.reload(host).state == 'active')
+    wait_for(lambda: _wait_for_pool(host))
 
     if return_agent:
         return host, keys[0].account(), c
     else:
         return host
+
+
+def _wait_for_pool(host):
+    pools = host.storagePools()
+    return len(pools) > 0 and pools[0].state == 'active'
 
 
 def _is_valid_super_client(client):
