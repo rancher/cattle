@@ -39,7 +39,7 @@ public class ApiRequestFilter extends ModuleBasedFilter {
     private static final String PL = "PL";
     private static final String LOCALIZATION = System.getenv("CATTLE_LOCALIZATION");
     private static final String LOCALIZATION_CHINESE = "zh-Hans-CN";
-    private static final String DEFAULT_LANGUAGE = "default-language";
+    private static final String DEFAULT_LANGUAGE = "LANG";
 
     ApiRequestFilterDelegate delegate;
     Versions versions;
