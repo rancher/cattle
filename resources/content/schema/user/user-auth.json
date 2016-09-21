@@ -670,8 +670,6 @@
         "serviceBinding" : "r",
         "serviceBinding.labels" : "cr",
         "serviceBinding.ports" : "cr",
-        "serviceBinding.scale" : "cr",
-        
 
         "serviceEvent" : "r",
         "serviceEvent.instanceId" : "r",

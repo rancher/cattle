@@ -4,11 +4,10 @@ binding_input = {
     "services":
         {
             "service_1":
-                {
-                    "labels": {"label_1": "value_1"},
-                    "ports": [],
-                    "scale": "scale_1"
-                }
+            {
+                "labels": {"label_1": "value_1"},
+                "ports": []
+            }
         }
     }
 
