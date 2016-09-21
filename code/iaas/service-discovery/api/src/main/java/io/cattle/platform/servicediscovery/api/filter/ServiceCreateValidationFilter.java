@@ -219,11 +219,11 @@ public class ServiceCreateValidationFilter extends AbstractDefaultResourceManage
         Stack env = objectManager.loadResource(Stack.class, service.getStackId());
         List<String> invalidStates = Arrays.asList(InstanceConstants.STATE_ERROR, CommonStatesConstants.REMOVED,
                 CommonStatesConstants.REMOVING);
-        if (invalidStates.contains(env.getState())) {
+        if (env == null || invalidStates.contains(env.getState())) {
             throw new ValidationErrorException(ValidationErrorCodes.INVALID_STATE, ServiceDiscoveryConstants.FIELD_STACK_ID);
         }
     }
-    
+
     protected void validateImage(ApiRequest request, Service service) {
         List<Map<String, Object>> launchConfigs = populateLaunchConfigs(service, request);
         for (Map<String, Object> launchConfig : launchConfigs) {
