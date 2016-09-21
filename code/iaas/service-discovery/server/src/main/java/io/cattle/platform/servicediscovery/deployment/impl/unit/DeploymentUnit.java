@@ -15,11 +15,14 @@ import io.cattle.platform.core.model.Volume;
 import io.cattle.platform.core.model.VolumeTemplate;
 import io.cattle.platform.core.util.SystemLabels;
 import io.cattle.platform.docker.constants.DockerInstanceConstants;
+import io.cattle.platform.engine.process.impl.ProcessCancelException;
 import io.cattle.platform.iaas.api.auditing.AuditEventType;
 import io.cattle.platform.lock.LockCallback;
+import io.cattle.platform.object.meta.ObjectMetaDataManager;
 import io.cattle.platform.object.process.StandardProcess;
 import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.object.util.TransitioningUtils;
+import io.cattle.platform.process.common.util.ProcessUtils;
 import io.cattle.platform.servicediscovery.api.constants.ServiceDiscoveryConstants;
 import io.cattle.platform.servicediscovery.api.util.ServiceDiscoveryUtil;
 import io.cattle.platform.servicediscovery.deployment.DeploymentUnitInstance;
@@ -32,6 +35,7 @@ import io.cattle.platform.util.type.CollectionUtils;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -134,7 +138,6 @@ public class DeploymentUnit {
             params.put("accountId", service.getAccountId());
             params.put(InstanceConstants.FIELD_LABELS, this.unitLabels);
             this.unit = context.objectManager.create(io.cattle.platform.core.model.DeploymentUnit.class, params);
-            context.objectProcessManager.scheduleStandardProcessAsync(StandardProcess.CREATE, this.unit, null);
         }
 
     }
@@ -223,9 +226,34 @@ public class DeploymentUnit {
             instance.remove();
         }
 
-        // remove deployment unit object
         if (unit != null) {
-            context.objectProcessManager.scheduleStandardProcessAsync(StandardProcess.REMOVE, unit, null);
+            clenaupVolumes();
+            Map<String, Object> params = new HashMap<>();
+            params.put(ObjectMetaDataManager.REMOVED_FIELD, new Date());
+            params.put(ObjectMetaDataManager.REMOVE_TIME_FIELD, new Date());
+            params.put(ObjectMetaDataManager.STATE_FIELD, CommonStatesConstants.REMOVED);
+            context.objectManager.setFields(unit, params);
+        }
+    }
+
+    public void clenaupVolumes() {
+        if (unit == null) {
+            return;
+        }
+        List<? extends Volume> volumes = context.objectManager.find(Volume.class, VOLUME.REMOVED, null,
+                VOLUME.DEPLOYMENT_UNIT_ID, unit.getId());
+        for (Volume volume : volumes) {
+            if (!(volume.getState().equals(CommonStatesConstants.REMOVED) || volume.getState().equals(
+                    CommonStatesConstants.REMOVING))) {
+                try {
+                    context.objectProcessManager.scheduleStandardProcessAsync(StandardProcess.REMOVE, volume,
+                            null);
+                } catch (ProcessCancelException e) {
+                    context.objectProcessManager.scheduleStandardProcessAsync(StandardProcess.DEACTIVATE,
+                            volume, ProcessUtils.chainInData(new HashMap<String, Object>(),
+                                    StandardProcess.DEACTIVATE.name(), InstanceConstants.PROCESS_REMOVE));
+                }
+            }
         }
     }
 
