@@ -423,7 +423,8 @@
     <bean class="io.cattle.platform.sample.data.SampleDataStartupV9" />
     <bean class="io.cattle.platform.sample.data.SampleDataStartupV10" />
     <bean class="io.cattle.platform.sample.data.SampleDataStartupV11" />
-        
+    <bean class="io.cattle.platform.sample.data.SampleDataStartupV12" />
+ 
     <!-- We are not using this at the moment, we will just disable
     <bean class="io.cattle.platform.servicediscovery.process.ServiceAgentDelegateHandler" />
     -->

@@ -146,6 +146,17 @@ public interface Account extends java.io.Serializable {
 	@javax.persistence.Column(name = "external_id_type", length = 128)
 	public java.lang.String getExternalIdType();
 
+	/**
+	 * Setter for <code>cattle.account.health_state</code>.
+	 */
+	public void setHealthState(java.lang.String value);
+
+	/**
+	 * Getter for <code>cattle.account.health_state</code>.
+	 */
+	@javax.persistence.Column(name = "health_state", length = 128)
+	public java.lang.String getHealthState();
+
 	// -------------------------------------------------------------------------
 	// FROM and INTO
 	// -------------------------------------------------------------------------

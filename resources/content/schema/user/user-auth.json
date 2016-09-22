@@ -332,6 +332,7 @@
         "project.publicDns" : "cru",
         "project.virtualMachine" : "cru",
         "project.servicesPortRange": "cru",
+        "project.healthState": "r",
 
         "projectMember" : "cr",
         "projectMember.accountId" : "",
