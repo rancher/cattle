@@ -26,6 +26,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.cloudstack.managed.context.ManagedContextRunnable;
 import org.apache.cloudstack.spring.module.web.ModuleBasedFilter;
+import org.apache.commons.lang3.StringUtils;
 
 import com.codahale.metrics.Timer;
 import com.netflix.config.DynamicStringListProperty;
@@ -37,9 +38,8 @@ public class ApiRequestFilter extends ModuleBasedFilter {
     private static final DynamicStringListProperty IGNORE = ArchaiusUtil.getList("api.ignore.paths");
     private static final DynamicStringProperty PL_SETTING = ArchaiusUtil.getString("ui.pl");
     private static final String PL = "PL";
-    private static final String LOCALIZATION = System.getenv("CATTLE_LOCALIZATION");
-    private static final String LOCALIZATION_CHINESE = "zh-Hans-CN";
-    private static final String DEFAULT_LANGUAGE = "LANG";
+    private static final String LANG = "LANG";
+    private static final DynamicStringProperty LOCALIZATION = ArchaiusUtil.getString("localization");
 
     ApiRequestFilterDelegate delegate;
     Versions versions;
@@ -209,18 +209,18 @@ public class ApiRequestFilter extends ModuleBasedFilter {
     
     private void addDefaultLanguageCookie(HttpServletRequest httpRequest, HttpServletResponse response) {
         Cookie languageCookie = null;
-        if(!LOCALIZATION_CHINESE.equals(LOCALIZATION))
+        if(!StringUtils.isNotBlank(LOCALIZATION.get()))
             return;
         if(httpRequest.getCookies()!=null) {
             for(Cookie c : httpRequest.getCookies()) {
-                if(DEFAULT_LANGUAGE.equals(c.getName()) && c.getName()!=null) {
+                if(LANG.equals(c.getName()) && c.getName()!=null) {
                     languageCookie = c;
                     break;
                     }
                 }
         }
         if(languageCookie == null) {
-            languageCookie = new Cookie(DEFAULT_LANGUAGE, LOCALIZATION_CHINESE);
+            languageCookie = new Cookie(LANG, LOCALIZATION.get());
             languageCookie.setPath("/");
             response.addCookie(languageCookie);
         }

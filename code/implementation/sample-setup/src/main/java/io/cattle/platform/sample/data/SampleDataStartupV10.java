@@ -29,9 +29,6 @@ public class SampleDataStartupV10 extends AbstractSampleData {
     Configuration configuration;
 
     private static final DynamicStringListProperty DRIVERS = ArchaiusUtil.getList("machine.drivers.default");
-    private static final String LOCALIZATION = System.getenv("CATTLE_LOCALIZATION");
-    private static final String LOCALIZATION_CHINESE = "zh-Hans-CN";
-    private static final DynamicStringListProperty DRIVERS_CN = ArchaiusUtil.getList("machine.drivers.zh.default");
 
     protected DSLContext create() {
         return new DefaultDSLContext(configuration);
@@ -58,60 +55,31 @@ public class SampleDataStartupV10 extends AbstractSampleData {
                     MachineDriverConstants.FIELD_CHECKSUM, md.getMd5checksum(),
                     MachineDriverConstants.FIELD_URL, md.getUri());
         }
-        
-        if(LOCALIZATION_CHINESE.equals(LOCALIZATION)){
-            for (String name : DRIVERS_CN.get()) {
-                if (existing.contains(name)) {
-                    continue;
-                }
 
-                List<String> values = ArchaiusUtil.getList(String.format("machine.driver.zh.%s", name)).get();
-                String activate = values.get(0);
-                String url = values.get(1);
-                String checksum = "";
-                if (values.size() > 2) {
-                    checksum = values.get(2);
-                }
-                String uuid = Long.toString((url+checksum+name).hashCode());
-                boolean activateDefault = Boolean.parseBoolean(activate);
-                boolean builtin = url.equals("local://");
-
-                createByUuid(MachineDriver.class, uuid,
-                        MACHINE_DRIVER.KIND, MachineDriverConstants.TYPE,
-                        ObjectMetaDataManager.NAME_FIELD, name,
-                        MachineDriverConstants.FIELD_BUILTIN, builtin,
-                        MachineDriverConstants.FIELD_CHECKSUM, checksum,
-                        MachineDriverConstants.FIELD_URL, url,
-                        MachineDriverConstants.FIELD_DEFAULT_ACTIVE, activateDefault,
-                        MACHINE_DRIVER.STATE, CommonStatesConstants.INACTIVE);
+        for (String name : DRIVERS.get()) {
+            if (existing.contains(name)) {
+                continue;
             }
-        }
-        else {
-            for (String name : DRIVERS.get()) {
-                if (existing.contains(name)) {
-                    continue;
-                }
 
-                List<String> values = ArchaiusUtil.getList(String.format("machine.driver.%s", name)).get();
-                String activate = values.get(0);
-                String url = values.get(1);
-                String checksum = "";
-                if (values.size() > 2) {
-                    checksum = values.get(2);
-                }
-                String uuid = Long.toString((url+checksum+name).hashCode());
-                boolean activateDefault = Boolean.parseBoolean(activate);
-                boolean builtin = url.equals("local://");
-
-                createByUuid(MachineDriver.class, uuid,
-                        MACHINE_DRIVER.KIND, MachineDriverConstants.TYPE,
-                        ObjectMetaDataManager.NAME_FIELD, name,
-                        MachineDriverConstants.FIELD_BUILTIN, builtin,
-                        MachineDriverConstants.FIELD_CHECKSUM, checksum,
-                        MachineDriverConstants.FIELD_URL, url,
-                        MachineDriverConstants.FIELD_DEFAULT_ACTIVE, activateDefault,
-                        MACHINE_DRIVER.STATE, CommonStatesConstants.INACTIVE);
+            List<String> values = ArchaiusUtil.getList(String.format("machine.driver.%s", name)).get();
+            String activate = values.get(0);
+            String url = values.get(1);
+            String checksum = "";
+            if (values.size() > 2) {
+                checksum = values.get(2);
             }
+            String uuid = Long.toString((url+checksum+name).hashCode());
+            boolean activateDefault = Boolean.parseBoolean(activate);
+            boolean builtin = url.equals("local://");
+
+            createByUuid(MachineDriver.class, uuid,
+                MACHINE_DRIVER.KIND, MachineDriverConstants.TYPE,
+                ObjectMetaDataManager.NAME_FIELD, name,
+                MachineDriverConstants.FIELD_BUILTIN, builtin,
+                MachineDriverConstants.FIELD_CHECKSUM, checksum,
+                MachineDriverConstants.FIELD_URL, url,
+                MachineDriverConstants.FIELD_DEFAULT_ACTIVE, activateDefault,
+                MACHINE_DRIVER.STATE, CommonStatesConstants.INACTIVE);
         }
     }
 
