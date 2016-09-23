@@ -763,7 +763,7 @@ def test_health_check_quorum(super_client, context, client):
     agent2 = _get_agent_for_container(c2)
     assert hcihm2.healthState == 'initializing'
     assert c2.healthState == 'initializing'
-    hcihm2 = _update_healthy(agent2, hcihm2, c2, super_client)
+    _update_healthy(agent2, hcihm2, c2, super_client)
 
     # update unheatlhy, check container is not removed
     # as quorum is not reached yet
@@ -774,22 +774,32 @@ def test_health_check_quorum(super_client, context, client):
     c1 = super_client.wait_success(c1)
     assert c1.state == 'running'
 
+    wait_for_condition(client, svc,
+                       lambda x: x.healthState == 'degraded')
+
+    # update healthy and increase the scale
     hcihm1 = _update_healthy(agent1, hcihm1, c1, super_client)
-    svc = super_client.wait_success(svc)
-    # increase the scale
-    # update unheatlhy, check container removed
-    # as quorum is reached
+    wait_state(client, svc, 'active')
+    wait_for_condition(client, svc,
+                       lambda x: x.healthState == 'healthy')
+    svc = super_client.reload(svc)
     svc = super_client.update(svc, scale=3)
     svc = super_client.wait_success(svc)
+    assert svc.scale == 3
+    assert svc.state == 'active'
+    assert len(svc.serviceExposeMaps()) == 3
     expose_maps = svc.serviceExposeMaps()
+
     c3 = super_client.reload(expose_maps[2].instance())
     hci3 = find_one(c3.healthcheckInstances)
     hcihm3 = find_one(hci3.healthcheckInstanceHostMaps)
     agent3 = _get_agent_for_container(c3)
     assert hcihm3.healthState == 'initializing'
     assert c3.healthState == 'initializing'
-    hcihm3 = _update_healthy(agent3, hcihm3, c3, super_client)
+    _update_healthy(agent3, hcihm3, c3, super_client)
 
+    # update unhealthy, check container removed
+    # as quorum is reached
     _update_unhealthy(agent1, hcihm1, c1, super_client)
     svc = super_client.wait_success(svc)
     assert svc.state == "active"
