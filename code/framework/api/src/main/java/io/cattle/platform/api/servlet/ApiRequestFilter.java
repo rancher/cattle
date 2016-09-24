@@ -26,6 +26,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.cloudstack.managed.context.ManagedContextRunnable;
 import org.apache.cloudstack.spring.module.web.ModuleBasedFilter;
+import org.apache.commons.lang3.StringUtils;
 
 import com.codahale.metrics.Timer;
 import com.netflix.config.DynamicStringListProperty;
@@ -37,6 +38,8 @@ public class ApiRequestFilter extends ModuleBasedFilter {
     private static final DynamicStringListProperty IGNORE = ArchaiusUtil.getList("api.ignore.paths");
     private static final DynamicStringProperty PL_SETTING = ArchaiusUtil.getString("ui.pl");
     private static final String PL = "PL";
+    private static final String LANG = "LANG";
+    private static final DynamicStringProperty LOCALIZATION = ArchaiusUtil.getString("localization");
 
     ApiRequestFilterDelegate delegate;
     Versions versions;
@@ -68,6 +71,8 @@ public class ApiRequestFilter extends ModuleBasedFilter {
         }
 
         addPLCookie(httpRequest, (HttpServletResponse) response);
+        
+        addDefaultLanguageCookie(httpRequest, (HttpServletResponse) response);
 
         if (isUIRequest(httpRequest, path)) {
             if (path.contains(".") || !indexFile.canServeContent()) {
@@ -201,5 +206,23 @@ public class ApiRequestFilter extends ModuleBasedFilter {
             response.addCookie(plCookie);
         } 
     }
-
+    
+    private void addDefaultLanguageCookie(HttpServletRequest httpRequest, HttpServletResponse response) {
+        Cookie languageCookie = null;
+        if(!StringUtils.isNotBlank(LOCALIZATION.get()))
+            return;
+        if(httpRequest.getCookies()!=null) {
+            for(Cookie c : httpRequest.getCookies()) {
+                if(LANG.equals(c.getName()) && c.getName()!=null) {
+                    languageCookie = c;
+                    break;
+                    }
+                }
+        }
+        if(languageCookie == null) {
+            languageCookie = new Cookie(LANG, LOCALIZATION.get());
+            languageCookie.setPath("/");
+            response.addCookie(languageCookie);
+        }
+    }
 }
