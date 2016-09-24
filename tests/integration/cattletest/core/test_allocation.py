@@ -2,41 +2,6 @@ from common_fixtures import *  # NOQA
 from test_shared_volumes import add_storage_pool
 
 
-def test_compute_free(super_client, new_context):
-    admin_client = new_context.client
-    count = 5
-    host = super_client.reload(new_context.host)
-    image_uuid = new_context.image_uuid
-    start_free = host.computeFree
-
-    assert start_free > count
-
-    containers = []
-    for _ in range(count):
-        c = admin_client.create_container(imageUuid=image_uuid,
-                                          networkMode='bridge',
-                                          requestedHostId=host.id)
-        containers.append(c)
-
-    containers = wait_all_success(super_client, containers)
-
-    host = super_client.reload(host)
-    assert host.computeFree == start_free - count
-
-    for c in containers:
-        super_client.delete(c)
-        c = super_client.wait_success(c)
-        c = super_client.wait_success(c.purge())
-
-    wait_all_success(admin_client, containers)
-    for c in containers:
-        c = super_client.reload(c)
-        wait_for(lambda: super_client.reload(c).allocationState == 'inactive')
-
-    host = super_client.reload(host)
-    assert host.computeFree == start_free
-
-
 def test_inactive_agent(super_client, new_context):
     host = super_client.reload(new_context.host)
     agent = host.agent()
@@ -53,42 +18,6 @@ def test_inactive_agent(super_client, new_context):
         'Scheduling failed: No healthy hosts with sufficient ' \
         'resources available'
     assert c.state == 'error'
-
-
-def test_spread(super_client, new_context):
-    count = 3
-
-    client = new_context.client
-    host2 = register_simulated_host(new_context.client)
-    host3 = register_simulated_host(new_context.client)
-
-    hosts = [new_context.host, host2, host3]
-    hosts = wait_all_success(super_client, hosts)
-    for h in hosts:
-        assert h.state == 'active'
-        assert h.agent().state == 'active'
-        assert len(h.agent().storagePools()) == 1
-        assert h.agent().storagePools()[0].state == 'active'
-
-    counts = []
-    for i, h in enumerate(hosts):
-        h = super_client.update(h, {
-            'computeFree': 10000000
-        })
-        counts.append(h.computeFree)
-
-    containers = []
-    for _ in range(len(hosts) * count):
-        c = client.wait_success(
-            client.create_container(imageUuid=new_context.image_uuid,
-                                    networkMode='bridge'))
-        containers.append(c)
-
-    wait_all_success(super_client, containers, timeout=60)
-
-    for i, h in enumerate(hosts):
-        h = super_client.reload(h)
-        assert counts[i] - count == h.computeFree
 
 
 def test_allocation_with_shared_storage_pool(super_client, new_context):
@@ -256,15 +185,10 @@ def test_vnet_stickiness(super_client, new_context):
     host3 = register_simulated_host(new_context.client)
     valid_hosts = [host1.id, host2.id, host3.id]
 
-    host1 = super_client.update(host1, computeFree=100000)
-    host2 = super_client.update(host2, computeFree=100000)
-    host3 = super_client.update(host3, computeFree=100000)
-    for i in [host1, host2, host3]:
-        assert i.computeFree == 100000
-
     containers = []
-    for _ in range(3):
-        c = super_client.reload(new_context.create_container())
+    for i in range(0, 3):
+        c = super_client.reload(new_context.create_container(
+            requestedHostId=valid_hosts[i]))
         containers.append(c)
 
     actual_hosts = set()

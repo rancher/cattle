@@ -1238,47 +1238,6 @@ def test_external_service_w_hostname(client, context):
     assert service2.state == "removed"
 
 
-def test_service_spread_deployment(super_client, new_context):
-    client = new_context.client
-    host1 = new_context.host
-    host2 = register_simulated_host(new_context)
-
-    super_client.update(host1, {'computeFree': 1000000})
-    super_client.update(host2, {'computeFree': 1000000})
-
-    env = _create_stack(client)
-    image_uuid = new_context.image_uuid
-    svc1_name = random_str()
-    launch_config = {
-        "imageUuid": image_uuid,
-        "labels": {
-            "io.rancher.scheduler.affinity:container_label_ne":
-                "io.rancher.stack_service.name=" +
-                env.name + '/' + svc1_name
-        }
-    }
-    service = client.create_service(name=svc1_name,
-                                    environmentId=env.id,
-                                    launchConfig=launch_config,
-                                    scale=2)
-    service = client.wait_success(service)
-    assert service.state == "inactive"
-
-    # activate services
-    env.activateservices()
-    service = client.wait_success(service, 120)
-    assert service.state == "active"
-
-    # since both hosts should have equal compute_free, the
-    # containers should be spread across the hosts
-    instance1 = _validate_compose_instance_start(client, service, env, "1")
-    instance1_host = instance1.hosts()[0].id
-
-    instance2 = _validate_compose_instance_start(client, service, env, "2")
-    instance2_host = instance2.hosts()[0].id
-    assert instance1_host != instance2_host
-
-
 def test_global_service(new_context):
     client = new_context.client
     host1 = new_context.host
@@ -1638,7 +1597,6 @@ def test_affinity_auto_prepend_stack(super_client, new_context):
 
 def test_affinity_auto_prepend_stack_other_service(super_client, new_context):
     register_simulated_host(new_context)
-    register_simulated_host(new_context)
 
     client = new_context.client
 
@@ -1667,8 +1625,7 @@ def test_affinity_auto_prepend_stack_other_service(super_client, new_context):
         "imageUuid": image_uuid,
         "labels": {
             "io.rancher.scheduler.affinity:container_label_ne":
-                "io.rancher.stack_service.name=" +
-                service_name2 + "," + service_name1
+                "io.rancher.stack_service.name=" + service_name1
         }
     }
 
@@ -1683,12 +1640,11 @@ def test_affinity_auto_prepend_stack_other_service(super_client, new_context):
     assert service2.state == "active"
 
     # check that all containers are on different hosts
-    instances = _get_instance_for_service(super_client, service2.id)
-    instances.extend(_get_instance_for_service(super_client, service1.id))
-    assert len(instances) == 3
-    assert instances[0].hosts()[0].id != instances[1].hosts()[0].id
-    assert instances[1].hosts()[0].id != instances[2].hosts()[0].id
-    assert instances[2].hosts()[0].id != instances[0].hosts()[0].id
+    svc1_instance = _get_instance_for_service(super_client, service1.id)[0]
+    svc2_instances = _get_instance_for_service(super_client, service2.id)
+    assert len(svc2_instances) == 2
+    assert svc2_instances[0].hosts()[0].id != svc1_instance.hosts()[0].id
+    assert svc2_instances[1].hosts()[0].id != svc1_instance.hosts()[0].id
 
 
 def test_affinity_auto_prepend_stack_same_service(super_client, new_context):
@@ -1803,12 +1759,13 @@ def test_host_delete_reconcile_service(super_client, new_context):
     image_uuid = new_context.image_uuid
     name = random_str()
     service_name = "service" + name
+    stack_svc_name = env.name + "/" + service_name
 
     launch_config = {
         "imageUuid": image_uuid,
         "labels": {
             "io.rancher.scheduler.affinity:container_label_soft_ne":
-                "io.rancher.service.name=" + service_name
+                "io.rancher.stack_service.name=" + stack_svc_name
         }
     }
     service = client.create_service(name=service_name,
