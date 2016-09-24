@@ -13,6 +13,13 @@
             "type" : "string",
             "nullable" : true
         },
+        "agentIpAddress": {
+            "type" : "string",
+            "nullable" : true
+        },
+        "instanceIds": {
+            "type" : "array[reference[instance]]"
+        },
         "labels": {
             "type": "map[string]",
             "create": true,

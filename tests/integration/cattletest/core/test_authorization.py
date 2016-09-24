@@ -700,7 +700,9 @@ def test_host_auth(admin_user_client, user_client, project_client):
         'hostname': 'r',
         'info': 'r',
         'labels': 'r',
-        'publicEndpoints': 'r'
+        'publicEndpoints': 'r',
+        'agentIpAddress': 'r',
+        'instanceIds': 'r',
     })
 
     auth_check(user_client.schema, 'host', 'r', {
@@ -711,7 +713,9 @@ def test_host_auth(admin_user_client, user_client, project_client):
         'hostname': 'r',
         'info': 'r',
         'labels': 'r',
-        'publicEndpoints': 'r'
+        'agentIpAddress': 'r',
+        'publicEndpoints': 'r',
+        'instanceIds': 'r',
     })
 
     auth_check(project_client.schema, 'host', 'rud', {
@@ -722,7 +726,9 @@ def test_host_auth(admin_user_client, user_client, project_client):
         'hostname': 'r',
         'info': 'r',
         'labels': 'ru',
-        'publicEndpoints': 'r'
+        'agentIpAddress': 'r',
+        'publicEndpoints': 'r',
+        'instanceIds': 'r',
     })
 
 

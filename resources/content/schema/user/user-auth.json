@@ -209,6 +209,8 @@
         "host.zoneId" : "ru",
         "host.labels" : "ru",
         "host.publicEndpoints" : "r",
+        "host.agentIpAddress" : "r",
+        "host.instanceIds" : "r",
 
         "addLabelInput" : "cr",
         "addLabelInput.key" : "cr",
