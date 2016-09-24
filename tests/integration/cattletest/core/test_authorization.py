@@ -613,6 +613,7 @@ def test_project_auth(admin_user_client, user_client, service_client,
         'virtualMachine': 'cru',
         'publicDns': 'cru',
         'servicesPortRange': 'cru',
+        'healthState': "r",
     })
 
     auth_check(user_client.schema, 'project', 'crud', {
@@ -627,6 +628,7 @@ def test_project_auth(admin_user_client, user_client, service_client,
         'virtualMachine': 'cru',
         'publicDns': 'cru',
         'servicesPortRange': 'cru',
+        'healthState': "r",
     })
 
     auth_check(project_client.schema, 'project', 'r', {
@@ -641,6 +643,7 @@ def test_project_auth(admin_user_client, user_client, service_client,
         'virtualMachine': 'r',
         'publicDns': 'r',
         'servicesPortRange': 'r',
+        'healthState': "r",
     })
 
     auth_check(service_client.schema, 'project', 'cr', {
@@ -654,6 +657,7 @@ def test_project_auth(admin_user_client, user_client, service_client,
         'servicesPortRange': 'cr',
         'swarm': 'cr',
         'uuid': 'cr',
+        'healthState': 'r',
     })
 
 

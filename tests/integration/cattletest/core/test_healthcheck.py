@@ -1417,6 +1417,9 @@ def test_global_service_health(new_context):
     client.wait_success(c2.stop())
 
     wait_for(lambda: client.reload(svc).healthState == 'healthy')
+    wait_for(lambda: client.reload(env).healthState == 'healthy')
+    wait_for(lambda: client.reload(new_context.
+                                   project).healthState == 'healthy')
 
 
 def _validate_compose_instance_start(client, service, env,
@@ -1461,7 +1464,6 @@ def test_du_removal(super_client, new_context):
     host = super_client.reload(register_simulated_host(new_context))
     super_client.wait_success(host)
     client = new_context.client
-    c = client
     env = client.create_stack(name='env-' + random_str())
     svc = client.create_service(name='test', launchConfig={
         'imageUuid': new_context.image_uuid,
@@ -1473,7 +1475,7 @@ def test_du_removal(super_client, new_context):
     svc = client.wait_success(client.wait_success(svc).activate())
     assert svc.state == 'active'
     wait_for(lambda: super_client.reload(svc).healthState == 'initializing')
-    wait_for(lambda: c.reload(env).healthState == 'initializing')
+    wait_for(lambda: client.reload(env).healthState == 'initializing')
 
     maps = _wait_until_active_map_count(svc, 1, client)
     expose_map = maps[0]
@@ -1484,6 +1486,11 @@ def test_du_removal(super_client, new_context):
     assert hcihm.healthState == 'initializing'
     assert c1.healthState == 'initializing'
 
+    wait_for(lambda: super_client.reload(svc).healthState == 'initializing')
+    wait_for(lambda: super_client.reload(env).healthState == 'initializing')
+    wait_for(lambda: client.reload(new_context.project).
+             healthState == 'initializing')
+
     ts = int(time.time())
     client = _get_agent_client(agent)
     se = client.create_service_event(externalTimestamp=ts,
@@ -1493,6 +1500,10 @@ def test_du_removal(super_client, new_context):
     hcihm = super_client.wait_success(super_client.reload(hcihm))
     assert hcihm.healthState == 'healthy'
     wait_for(lambda: super_client.reload(c1).healthState == 'healthy')
+    wait_for(lambda: super_client.reload(svc).healthState == 'healthy')
+    wait_for(lambda: super_client.reload(env).healthState == 'healthy')
+    wait_for(lambda: super_client.reload(new_context.
+                                         project).healthState == 'healthy')
 
     se = client.create_service_event(externalTimestamp=ts,
                                      reportedHealth='DOWN',

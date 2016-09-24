@@ -554,9 +554,12 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
         }
         List<Service> services = objectManager.find(Service.class, SERVICE.STACK_ID,
                 stack.getId(), SERVICE.REMOVED, null);
+
         setServiceHealthState(services);
 
         setStackHealthState(stack);
+        
+        setEnvironmentHealthState(objectManager.loadResource(Account.class, stack.getAccountId()));
     }
 
     protected void setStackHealthState(final Stack stack) {
@@ -570,10 +573,42 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
         }
     }
 
+    protected void setEnvironmentHealthState(final Account env) {
+        if (env == null) {
+            return;
+        }
+        String newHealthState = calculateEnvironmentHealthState(env);
+        String currentHealthState = objectManager.reload(env).getHealthState();
+        if (!newHealthState.equalsIgnoreCase(currentHealthState)) {
+            Map<String, Object> fields = new HashMap<>();
+            fields.put(ServiceDiscoveryConstants.FIELD_HEALTH_STATE, newHealthState);
+            objectManager.setFields(env, fields);
+            publishEvent(env);
+        }
+    }
+
     protected String calculateStackHealthState(final Stack stack) {
         List<Service> services = objectManager.find(Service.class, SERVICE.STACK_ID, stack.getId(),
                 SERVICE.REMOVED, null);
+        List<HealthChecker> hcs = new ArrayList<>();
+        for (Service svc : services) {
+            hcs.add(new ServiceHealthCheck(svc));
+        }
+        return calculateHealthState(hcs);
+    }
 
+    protected String calculateEnvironmentHealthState(final Account env) {
+        List<Stack> stacks = objectManager.find(Stack.class, STACK.ACCOUNT_ID, env.getId(),
+                STACK.REMOVED, null);
+        List<HealthChecker> hcs = new ArrayList<>();
+        for (Stack stack : stacks) {
+            hcs.add(new StackHealthCheck(stack));
+        }
+        return calculateHealthState(hcs);
+    }
+
+
+    private String calculateHealthState(List<? extends HealthChecker> hcs) {
         int init = 0;
         int healthy = 0;
         int expectedCount = 0;
@@ -583,14 +618,14 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
                 HealthcheckConstants.HEALTH_STATE_HEALTHY.toLowerCase());
         List<String> ignoreStates = Arrays.asList(CommonStatesConstants.REMOVING,
                 CommonStatesConstants.REMOVED, CommonStatesConstants.PURGED, CommonStatesConstants.PURGING);
-        for (Service service : services) {
-            String sHS = service.getHealthState() == null ? HealthcheckConstants.HEALTH_STATE_HEALTHY : service
+        for (HealthChecker hc : hcs) {
+            String sHS = hc.getHealthState() == null ? HealthcheckConstants.HEALTH_STATE_HEALTHY : hc
                     .getHealthState().toLowerCase();
-            if (ignoreStates.contains(service.getState())) {
+            if (ignoreStates.contains(hc.getState())) {
                 continue;
             }
             expectedCount++;
-            if (isActiveService(service) && healthyStates.contains(sHS)) {
+            if (hc.isActive() && healthyStates.contains(sHS)) {
                 if (sHS.equalsIgnoreCase(
                         HealthcheckConstants.SERVICE_HEALTH_STATE_STARTED_ONCE.toLowerCase())) {
                     startedOnce++;
@@ -601,19 +636,72 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
             }
         }
 
-        String stackHealthState = HealthcheckConstants.HEALTH_STATE_UNHEALTHY;
+        String finalHealthState = HealthcheckConstants.HEALTH_STATE_UNHEALTHY;
         if (expectedCount == 0) {
-            stackHealthState = HealthcheckConstants.HEALTH_STATE_HEALTHY;
+            finalHealthState = HealthcheckConstants.HEALTH_STATE_HEALTHY;
         } else if (startedOnce >= expectedCount) {
-            stackHealthState = HealthcheckConstants.SERVICE_HEALTH_STATE_STARTED_ONCE;
+            finalHealthState = HealthcheckConstants.SERVICE_HEALTH_STATE_STARTED_ONCE;
         } else if (healthy >= expectedCount) {
-            stackHealthState = HealthcheckConstants.HEALTH_STATE_HEALTHY;
+            finalHealthState = HealthcheckConstants.HEALTH_STATE_HEALTHY;
         } else if (init > 0) {
-            stackHealthState = HealthcheckConstants.HEALTH_STATE_INITIALIZING;
+            finalHealthState = HealthcheckConstants.HEALTH_STATE_INITIALIZING;
         } else if (healthy > 0) {
-            stackHealthState = HealthcheckConstants.SERVICE_HEALTH_STATE_DEGRADED;
+            finalHealthState = HealthcheckConstants.SERVICE_HEALTH_STATE_DEGRADED;
         }
-        return stackHealthState;
+        return finalHealthState;
+    }
+    
+    protected interface HealthChecker{
+        String getHealthState();
+        boolean isActive();
+        String getState();
+    }
+
+    protected class StackHealthCheck implements HealthChecker {
+        Stack stack;
+        protected StackHealthCheck(Stack stack) {
+            this.stack = stack;
+        }
+
+        @Override
+        public String getHealthState() {
+            return stack.getHealthState();
+        }
+
+        @Override
+        public boolean isActive() {
+            List<String> activeStates = Arrays.asList(CommonStatesConstants.ACTIVATING, CommonStatesConstants.ACTIVE,
+                    CommonStatesConstants.UPDATING_ACTIVE);
+            return activeStates.contains(stack.getState());
+        }
+
+        @Override
+        public String getState() {
+            return stack.getState();
+        }
+    }
+
+    protected class ServiceHealthCheck implements HealthChecker {
+        Service svc;
+
+        protected ServiceHealthCheck(Service svc) {
+            this.svc = svc;
+        }
+
+        @Override
+        public String getHealthState() {
+            return svc.getHealthState();
+        }
+
+        @Override
+        public boolean isActive() {
+            return isActiveService(svc);
+        }
+
+        @Override
+        public String getState() {
+            return svc.getState();
+        }
     }
 
     protected void setServiceHealthState(final List<? extends Service> services) {
