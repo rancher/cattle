@@ -86,6 +86,10 @@
         "serviceIndex": {
             "type": "string",
             "nullable": true
+        },
+        "serviceIds": {
+            "type": "array[reference[service]]",
+            "nullable": true
         }
     },
     "resourceActions" : {

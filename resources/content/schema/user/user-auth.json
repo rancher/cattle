@@ -130,6 +130,7 @@
         "container.deploymentUnitUuid" : "r",
         "container.version" : "r",
         "container.startCount" : "r",
+        "container.serviceIds" : "r",
 
         "containerExec" : "r",
         "containerExec.attachStdin" : "cr",

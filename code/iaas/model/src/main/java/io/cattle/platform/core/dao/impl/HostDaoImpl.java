@@ -119,7 +119,8 @@ public class HostDaoImpl extends AbstractJooqDao implements HostDao {
             .join(INSTANCE)
                 .on(INSTANCE.ID.eq(INSTANCE_HOST_MAP.INSTANCE_ID))
             .where(INSTANCE_HOST_MAP.REMOVED.isNull()
-                    .and(INSTANCE.REMOVED.isNull()))
+                    .and(INSTANCE.REMOVED.isNull())
+                    .and(INSTANCE_HOST_MAP.HOST_ID.in(hosts)))
             .fetchInto(new RecordHandler<Record2<Long, Long>>() {
                 @Override
                 public void next(Record2<Long, Long> record) {
