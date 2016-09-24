@@ -372,6 +372,7 @@
     <bean class="io.cattle.platform.iaas.api.auth.identity.AccountOutputFilter" />
     <bean class="io.cattle.platform.iaas.api.filter.account.AccountFilter" />
     <bean class="io.cattle.platform.iaas.api.filter.machinedriver.MachineDriverFilter" />
+    <bean class="io.cattle.platform.iaas.api.filter.service.ServiceMappingsOutputFilter" />
 
     <bean class="io.cattle.platform.iaas.api.object.postinit.AccountFieldPostInitHandler" />
 

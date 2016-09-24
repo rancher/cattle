@@ -14,7 +14,7 @@ import java.util.Map;
 
 import javax.inject.Inject;
 
-public class InstanceOutputFilter extends CachedOutputFilter<Map<Long,List<Object>>> {
+public class InstanceOutputFilter extends CachedOutputFilter<Map<Long, List<Object>>> {
 
     @Inject
     ServiceDao serviceDao;
@@ -34,8 +34,10 @@ public class InstanceOutputFilter extends CachedOutputFilter<Map<Long,List<Objec
     @Override
     public Resource filter(ApiRequest request, Object original, Resource converted) {
         if (original instanceof Instance) {
-            converted.getFields().put(InstanceConstants.FIELD_SERVICE_IDS,
-                    getCached(request).get(((Instance) original).getId()));
+            Map<Long, List<Object>> data = getCached(request);
+            if (data != null) {
+                converted.getFields().put(InstanceConstants.FIELD_SERVICE_IDS, data.get(((Instance) original).getId()));
+            }
         }
         return converted;
     }

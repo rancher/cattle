@@ -1,9 +1,12 @@
 package io.cattle.platform.core.dao.impl;
 
+import static io.cattle.platform.core.model.tables.InstanceTable.*;
+import static io.cattle.platform.core.model.tables.ServiceConsumeMapTable.*;
 import static io.cattle.platform.core.model.tables.ServiceExposeMapTable.*;
 import static io.cattle.platform.core.model.tables.ServiceIndexTable.*;
 import static io.cattle.platform.core.model.tables.ServiceTable.*;
 
+import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.dao.ServiceDao;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.Service;
@@ -95,4 +98,63 @@ public class ServiceDaoImpl extends AbstractJooqDao implements ServiceDao {
 
         return result;
     }
+
+    @Override
+    public Map<Long, List<Object>> getInstances(List<Long> ids, final IdFormatter idFormatter) {
+        final Map<Long, List<Object>> result = new HashMap<>();
+        create().select(SERVICE_EXPOSE_MAP.INSTANCE_ID, SERVICE_EXPOSE_MAP.SERVICE_ID)
+            .from(SERVICE_EXPOSE_MAP)
+            .join(INSTANCE)
+                .on(INSTANCE.ID.eq(SERVICE_EXPOSE_MAP.INSTANCE_ID))
+            .where(SERVICE_EXPOSE_MAP.REMOVED.isNull()
+                    .and(INSTANCE.REMOVED.isNull())
+                    .and(SERVICE_EXPOSE_MAP.SERVICE_ID.in(ids)))
+            .fetchInto(new RecordHandler<Record2<Long, Long>>() {
+                @Override
+                public void next(Record2<Long, Long> record) {
+                    Long serviceId = record.getValue(SERVICE_EXPOSE_MAP.SERVICE_ID);
+                    Long instanceId = record.getValue(SERVICE_EXPOSE_MAP.INSTANCE_ID);
+                    List<Object> list = result.get(serviceId);
+                    if (list == null) {
+                        list = new ArrayList<>();
+                        result.put(serviceId, list);
+                    }
+                    list.add(idFormatter.formatId(InstanceConstants.TYPE, instanceId));
+                }
+            });
+        return result;
+    }
+
+    @Override
+    public Map<Long, ServiceMapping> getServicesMappings(List<Long> ids, final IdFormatter idFormatter) {
+        final Map<Long, ServiceMapping> result = new HashMap<>();
+        create().select(SERVICE_CONSUME_MAP.CONSUMED_SERVICE_ID, SERVICE_CONSUME_MAP.SERVICE_ID)
+            .from(SERVICE_CONSUME_MAP)
+            .where(SERVICE_CONSUME_MAP.REMOVED.isNull()
+                    .and(SERVICE_CONSUME_MAP.SERVICE_ID.in(ids)
+                            .or(SERVICE_CONSUME_MAP.CONSUMED_SERVICE_ID.in(ids))))
+            .fetchInto(new RecordHandler<Record2<Long, Long>>() {
+                @Override
+                public void next(Record2<Long, Long> record) {
+                    Long consumed = record.getValue(SERVICE_CONSUME_MAP.CONSUMED_SERVICE_ID);
+                    Long service = record.getValue(SERVICE_CONSUME_MAP.SERVICE_ID);
+
+                    ServiceMapping mapping = result.get(service);
+                    if (mapping == null) {
+                        mapping = new ServiceMapping();
+                        result.put(service, mapping);
+                    }
+                    mapping.consumed.add(idFormatter.formatId("service", consumed));
+
+                    mapping = result.get(consumed);
+                    if (mapping == null) {
+                        mapping = new ServiceMapping();
+                        result.put(consumed, mapping);
+                    }
+                    mapping.consumedBy.add(idFormatter.formatId("service", service));
+                }
+            });
+        return result;
+    }
+
 }

@@ -541,6 +541,9 @@
         "service.resourceActions.certificate": "",
         "service.scalePolicy" : "cru",
         "service.currentScale" : "r",
+        "service.consumedServiceIds" : "r",
+        "service.consumedByServiceIds" : "r",
+        "service.instanceIds" : "r",
 
         "addRemoveServiceLinkInput" : "r",
         "addRemoveServiceLinkInput.serviceLink" : "cr",

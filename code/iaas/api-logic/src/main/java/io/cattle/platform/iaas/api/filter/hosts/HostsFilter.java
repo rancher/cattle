@@ -14,7 +14,7 @@ import java.util.Map;
 
 import javax.inject.Inject;
 
-public class HostsFilter extends CachedOutputFilter<Map<Long,List<Object>>> {
+public class HostsFilter extends CachedOutputFilter<Map<Long, List<Object>>> {
 
     @Inject
     HostDao hostDao;
@@ -34,8 +34,10 @@ public class HostsFilter extends CachedOutputFilter<Map<Long,List<Object>>> {
     @Override
     public Resource filter(ApiRequest request, Object original, Resource converted) {
         if (original instanceof Host) {
-            converted.getFields().put(HostConstants.FIELD_INSTANCE_IDS,
-                    getCached(request).get(((Host) original).getId()));
+            Map<Long, List<Object>> data = getCached(request);
+            if (data != null) {
+                converted.getFields().put(HostConstants.FIELD_INSTANCE_IDS, data.get(((Host) original).getId()));
+            }
         }
         return converted;
     }
