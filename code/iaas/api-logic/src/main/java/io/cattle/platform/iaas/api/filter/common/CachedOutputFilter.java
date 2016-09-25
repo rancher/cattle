@@ -8,21 +8,21 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-import org.apache.cloudstack.managed.threadlocal.ManagedThreadLocal;
-
 public abstract class CachedOutputFilter<T> implements ResourceOutputFilter {
-
-    private ManagedThreadLocal<T> cache = new ManagedThreadLocal<>();
 
     protected abstract T newObject(ApiRequest apiRequest);
 
     protected abstract Long getId(Object obj);
 
     protected T getCached(ApiRequest apiRequest) {
-        T cached = cache.get();
+        if (apiRequest == null) {
+            return null;
+        }
+        @SuppressWarnings("unchecked")
+        T cached = (T)apiRequest.getAttribute(this);
         if (cached == null) {
             cached = newObject(apiRequest);
-            cache.set(cached);
+            apiRequest.setAttribute(this, cached);
         }
         return cached;
     }
