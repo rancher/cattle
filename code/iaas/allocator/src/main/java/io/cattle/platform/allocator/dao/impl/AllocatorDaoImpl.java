@@ -273,6 +273,7 @@ public class AllocatorDaoImpl extends AbstractJooqDao implements AllocatorDao {
                 continue;
             }
 
+            log.info("Associating nic [{}] to subnet [{}]", nic.getId(), subnetId);
             int i = create()
                 .update(NIC)
                 .set(NIC.SUBNET_ID, subnetId)
