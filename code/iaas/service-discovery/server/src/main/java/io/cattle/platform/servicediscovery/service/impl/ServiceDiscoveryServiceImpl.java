@@ -581,7 +581,7 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
         String currentHealthState = objectManager.reload(env).getHealthState();
         if (!newHealthState.equalsIgnoreCase(currentHealthState)) {
             Map<String, Object> fields = new HashMap<>();
-            fields.put(ServiceDiscoveryConstants.FIELD_HEALTH_STATE, newHealthState);
+            fields.put(ServiceConstants.FIELD_HEALTH_STATE, newHealthState);
             objectManager.setFields(env, fields);
             publishEvent(env);
         }
