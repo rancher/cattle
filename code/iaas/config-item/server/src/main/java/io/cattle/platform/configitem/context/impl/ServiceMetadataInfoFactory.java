@@ -1,8 +1,8 @@
 package io.cattle.platform.configitem.context.impl;
 
-import static io.cattle.platform.core.model.tables.StackTable.*;
 import static io.cattle.platform.core.model.tables.ServiceConsumeMapTable.*;
 import static io.cattle.platform.core.model.tables.ServiceTable.*;
+import static io.cattle.platform.core.model.tables.StackTable.*;
 import io.cattle.platform.configitem.context.dao.MetaDataInfoDao;
 import io.cattle.platform.configitem.context.dao.MetaDataInfoDao.Version;
 import io.cattle.platform.configitem.context.data.metadata.common.ContainerMetaData;
@@ -17,15 +17,17 @@ import io.cattle.platform.configitem.context.data.metadata.version2.ServiceMetaD
 import io.cattle.platform.configitem.context.data.metadata.version2.StackMetaDataVersion2;
 import io.cattle.platform.configitem.server.model.ConfigItem;
 import io.cattle.platform.configitem.server.model.impl.ArchiveContext;
+import io.cattle.platform.core.addon.InstanceHealthCheck;
+import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.constants.ServiceConstants;
 import io.cattle.platform.core.dao.GenericMapDao;
 import io.cattle.platform.core.model.Account;
 import io.cattle.platform.core.model.Agent;
-import io.cattle.platform.core.model.Stack;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.InstanceHostMap;
 import io.cattle.platform.core.model.Service;
 import io.cattle.platform.core.model.ServiceConsumeMap;
+import io.cattle.platform.core.model.Stack;
 import io.cattle.platform.json.JsonMapper;
 import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.servicediscovery.api.dao.ServiceConsumeMapDao;
@@ -395,7 +397,19 @@ public class ServiceMetadataInfoFactory extends AbstractAgentBaseContextFactory 
         }
         Map<String, Object> metadata = DataAccessor.fields(service).withKey(ServiceConstants.FIELD_METADATA)
                 .withDefault(Collections.EMPTY_MAP).as(Map.class);
-        ServiceMetaData svcMetaData = new ServiceMetaData(service, serviceName, env, sidekicks, metadata);
+        Object hcO = null;
+        if (service.getKind().equalsIgnoreCase(ServiceConstants.KIND_EXTERNAL_SERVICE)) {
+            hcO = DataAccessor.field(service, InstanceConstants.FIELD_HEALTH_CHECK, Object.class);
+        } else {
+            hcO = ServiceDiscoveryUtil.getLaunchConfigObject(service, launchConfigName,
+                    InstanceConstants.FIELD_HEALTH_CHECK);
+        }
+
+        InstanceHealthCheck hc = null;
+        if (hcO != null) {
+            hc = jsonMapper.convertValue(hcO, InstanceHealthCheck.class);
+        }
+        ServiceMetaData svcMetaData = new ServiceMetaData(service, serviceName, env, sidekicks, metadata, hc);
         stackServices.add(svcMetaData);
     }
 

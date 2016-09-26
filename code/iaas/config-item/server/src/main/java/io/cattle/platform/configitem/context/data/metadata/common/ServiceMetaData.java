@@ -4,10 +4,11 @@ import io.cattle.platform.configitem.context.dao.MetaDataInfoDao;
 import io.cattle.platform.configitem.context.dao.MetaDataInfoDao.Version;
 import io.cattle.platform.configitem.context.data.metadata.version1.ServiceMetaDataVersion1;
 import io.cattle.platform.configitem.context.data.metadata.version2.ServiceMetaDataVersion2;
+import io.cattle.platform.core.addon.InstanceHealthCheck;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.constants.ServiceConstants;
-import io.cattle.platform.core.model.Stack;
 import io.cattle.platform.core.model.Service;
+import io.cattle.platform.core.model.Stack;
 import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.servicediscovery.api.util.ServiceDiscoveryUtil;
 
@@ -17,6 +18,74 @@ import java.util.List;
 import java.util.Map;
 
 public class ServiceMetaData {
+
+    public static class HealthCheck {
+        Integer response_timeout;
+        Integer interval;
+        Integer healthy_threshold;
+        Integer unhealthy_threshold;
+        String request_line;
+        Integer port;
+
+        public HealthCheck(InstanceHealthCheck hc) {
+            super();
+            this.response_timeout = hc.getResponseTimeout();
+            this.interval = hc.getInterval();
+            this.healthy_threshold = hc.getHealthyThreshold();
+            this.unhealthy_threshold = hc.getUnhealthyThreshold();
+            this.request_line = hc.getRequestLine();
+            this.port = hc.getPort();
+        }
+
+        public Integer getResponse_timeout() {
+            return response_timeout;
+        }
+
+        public void setResponse_timeout(Integer response_timeout) {
+            this.response_timeout = response_timeout;
+        }
+
+        public Integer getInterval() {
+            return interval;
+        }
+
+        public void setInterval(Integer interval) {
+            this.interval = interval;
+        }
+
+        public Integer getHealthy_threshold() {
+            return healthy_threshold;
+        }
+
+        public void setHealthy_threshold(Integer healthy_threshold) {
+            this.healthy_threshold = healthy_threshold;
+        }
+
+        public Integer getUnhealthy_threshold() {
+            return unhealthy_threshold;
+        }
+
+        public void setUnhealthy_threshold(Integer unhealthy_threshold) {
+            this.unhealthy_threshold = unhealthy_threshold;
+        }
+
+        public String getRequest_line() {
+            return request_line;
+        }
+
+        public void setRequest_line(String request_line) {
+            this.request_line = request_line;
+        }
+
+        public Integer getPort() {
+            return port;
+        }
+
+        public void setPort(Integer port) {
+            this.port = port;
+        }
+    }
+
     private Long serviceId;
     private boolean isPrimaryConfig;
     private String launchConfigName;
@@ -42,6 +111,7 @@ public class ServiceMetaData {
     protected String fqdn;
     protected List<String> expose = new ArrayList<>();
     protected String token;
+    protected HealthCheck health_check;
 
     protected ServiceMetaData(ServiceMetaData that) {
         this.name = that.name;
@@ -67,10 +137,11 @@ public class ServiceMetaData {
         this.launchConfigName = that.launchConfigName;
         this.stackId = that.stackId;
         this.stackUuid = that.stackUuid;
+        this.health_check = that.health_check;
     }
 
     public ServiceMetaData(Service service, String serviceName, Stack env, List<String> sidekicks,
-            Map<String, Object> metadata) {
+            Map<String, Object> metadata, InstanceHealthCheck healthCheck) {
         this.serviceId = service.getId();
         this.service = service;
         this.name = serviceName;
@@ -95,6 +166,9 @@ public class ServiceMetaData {
         Integer desiredScale = DataAccessor.fieldInteger(service, ServiceConstants.FIELD_DESIRED_SCALE);
         if (desiredScale != null) {
             this.scale = desiredScale;
+        }
+        if (healthCheck != null) {
+            this.health_check = new HealthCheck(healthCheck);
         }
     }
 
@@ -123,6 +197,14 @@ public class ServiceMetaData {
         }
     }
 
+    public HealthCheck getHealth_check() {
+        return health_check;
+    }
+
+    public void setHealth_check(HealthCheck health_check) {
+        this.health_check = health_check;
+    }
+
     public String getName() {
         return name;
     }
@@ -134,6 +216,7 @@ public class ServiceMetaData {
     public String getKind() {
         return kind;
     }
+
 
     public String getHostname() {
         return hostname;
