@@ -67,7 +67,6 @@
                 <value>subnetIpPool,parent=ipPool</value>
                 <value>virtualMachine,parent=container</value>
                 <value>loadBalancerService,parent=service</value>
-                <value>balancerService,parent=service</value>
                 <value>externalService,parent=service</value>
                 <value>dnsService,parent=service</value>
                 <value>kubernetesService,parent=service</value>
@@ -97,6 +96,8 @@
                 <value>nfsConfig</value>
                 <value>binding</value>
                 <value>serviceBinding</value>
+                <value>balancerServiceMetadata</value>
+                <value>balancerTargetMetadata</value>
             </set>
         </property>
     </bean>

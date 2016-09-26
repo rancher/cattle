@@ -36,9 +36,7 @@ public class DeploymentUnitInstanceFactoryImpl implements DeploymentUnitInstance
     @SuppressWarnings("unchecked")
     public DeploymentUnitInstance createDeploymentUnitInstance(DeploymentServiceContext context, String uuid,
             Service service, String instanceName, Object instanceObj, String launchConfigName) {
-        if (service.getKind().equalsIgnoreCase(
-                ServiceConstants.KIND_SERVICE)
-                || service.getKind().equalsIgnoreCase(ServiceConstants.KIND_BALANCER_SERVICE)) {
+        if (service.getKind().equalsIgnoreCase(ServiceConstants.KIND_SERVICE)) {
             Instance instance = null;
             if (instanceObj != null) {
                 instance = (Instance) instanceObj;
@@ -80,8 +78,7 @@ public class DeploymentUnitInstanceFactoryImpl implements DeploymentUnitInstance
         List<DeploymentUnit> units = new ArrayList<>();
 
         if (service.getKind().equalsIgnoreCase(ServiceConstants.KIND_SERVICE)
-                || service.getKind().equalsIgnoreCase(ServiceConstants.KIND_LOAD_BALANCER_SERVICE)
-                || service.getKind().equalsIgnoreCase(ServiceConstants.KIND_BALANCER_SERVICE)) {
+                || service.getKind().equalsIgnoreCase(ServiceConstants.KIND_LOAD_BALANCER_SERVICE)) {
             collectDefaultServiceInstances(context, uuidToLabels, uuidToInstances, service);
         } else if (service.getKind().equalsIgnoreCase(ServiceConstants.KIND_EXTERNAL_SERVICE)) {
             collectExternalServiceInstances(context, uuidToLabels, uuidToInstances, service);

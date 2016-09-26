@@ -16,7 +16,6 @@ import io.cattle.platform.core.model.Service;
 import io.cattle.platform.core.model.ServiceConsumeMap;
 import io.cattle.platform.core.model.Stack;
 import io.cattle.platform.core.model.VolumeTemplate;
-import io.cattle.platform.core.util.LBMetadataUtil;
 import io.cattle.platform.docker.constants.DockerInstanceConstants;
 import io.cattle.platform.docker.constants.DockerNetworkConstants;
 import io.cattle.platform.json.JsonMapper;
@@ -161,7 +160,6 @@ public class ServiceDiscoveryApiServiceImpl implements ServiceDiscoveryApiServic
                 Map<String, Object> composeServiceData = new HashMap<>();
                 excludeRancherHash(cattleServiceData);
                 formatScale(service, cattleServiceData);
-                formatMetadata(service, cattleServiceData);
                 setupServiceType(service, cattleServiceData);
                 for (String cattleService : cattleServiceData.keySet()) {
                     translateRancherToCompose(forDockerCompose, cattleServiceData, composeServiceData, cattleService, service, false);
@@ -245,19 +243,6 @@ public class ServiceDiscoveryApiServiceImpl implements ServiceDiscoveryApiServic
             if (Boolean.valueOf(globalService) == true) {
                 composeServiceData.remove(ServiceConstants.FIELD_SCALE);
             }
-        }
-    }
-
-    @SuppressWarnings("unchecked")
-    protected void formatMetadata(Service service, Map<String, Object> composeServiceData) {
-        if (!service.getKind().equalsIgnoreCase(ServiceDiscoveryConstants.KIND_BALANCER_SERVICE)) {
-            return;
-        }
-        if (composeServiceData.get(InstanceConstants.FIELD_METADATA) != null) {
-            Map<String, String> meta = ((HashMap<String, String>) composeServiceData
-                    .get(InstanceConstants.FIELD_METADATA));
-            meta.remove(LBMetadataUtil.LB_METADATA_KEY);
-            composeServiceData.put(LBMetadataUtil.LB_METADATA_KEY, meta);
         }
     }
 

@@ -1,6 +1,6 @@
 package io.cattle.platform.servicediscovery.api.filter;
 
-import static io.cattle.platform.core.model.tables.ServiceTable.SERVICE;
+import static io.cattle.platform.core.model.tables.ServiceTable.*;
 import io.cattle.platform.core.constants.ServiceConstants;
 import io.cattle.platform.core.model.Certificate;
 import io.cattle.platform.core.model.Service;
@@ -46,8 +46,7 @@ public class LoadBalancerServiceCertificateRemoveFilter extends AbstractDefaultR
         Certificate cert = objectManager.loadResource(Certificate.class, certificateId);
         List<String> serviceNames = new ArrayList<>();
         List<Service> lbServices = new ArrayList<>();
-        List<String> types = Arrays.asList(ServiceConstants.KIND_LOAD_BALANCER_SERVICE,
-                ServiceConstants.KIND_BALANCER_SERVICE);
+        List<String> types = Arrays.asList(ServiceConstants.KIND_LOAD_BALANCER_SERVICE);
         for (String type : types) {
             lbServices.addAll(objectManager.find(Service.class, SERVICE.ACCOUNT_ID, cert.getAccountId(),
                 SERVICE.REMOVED, null, SERVICE.KIND, type));

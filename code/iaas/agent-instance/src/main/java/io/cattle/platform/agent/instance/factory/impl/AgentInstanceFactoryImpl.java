@@ -8,7 +8,6 @@ import io.cattle.platform.agent.instance.dao.AgentInstanceDao;
 import io.cattle.platform.agent.instance.factory.AgentInstanceBuilder;
 import io.cattle.platform.agent.instance.factory.AgentInstanceFactory;
 import io.cattle.platform.agent.instance.factory.lock.AgentInstanceAgentCreateLock;
-import io.cattle.platform.archaius.util.ArchaiusUtil;
 import io.cattle.platform.core.constants.AccountConstants;
 import io.cattle.platform.core.constants.AgentConstants;
 import io.cattle.platform.core.constants.CommonStatesConstants;
@@ -48,12 +47,7 @@ import javax.inject.Inject;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.ObjectUtils;
 
-import com.netflix.config.DynamicStringProperty;
-
 public class AgentInstanceFactoryImpl implements AgentInstanceFactory {
-
-    private static final DynamicStringProperty DEFAULT_LB_IMAGE_UUID = ArchaiusUtil
-            .getString("lb.instance.image.uuid");
 
     @Inject
     AccountDao accountDao;
@@ -172,12 +166,14 @@ public class AgentInstanceFactoryImpl implements AgentInstanceFactory {
         .withKey("launchConfig").withDefault(Collections.EMPTY_MAP)
                 .as(Map.class);
         
-        Object imageObj = data.get(InstanceConstants.FIELD_IMAGE_UUID);
-        if (imageObj == null) {
+        Object labelsObj = data.get(InstanceConstants.FIELD_LABELS);
+        if (labelsObj == null) {
             return false;
         }
 
-        return DEFAULT_LB_IMAGE_UUID.get().equalsIgnoreCase(imageObj.toString());
+        Map<String, String> labels = (Map<String, String>) labelsObj;
+        String isBalancerService = labels.get(ServiceConstants.LABEL_BALANCER_SERVICE);
+        return Boolean.valueOf(isBalancerService);
     }
 
     @Override

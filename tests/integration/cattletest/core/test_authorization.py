@@ -205,7 +205,8 @@ def test_user_types(user_client, adds=set(), removes=set()):
         'volumeTemplate',
         'volumeActivateInput',
         'ulimit',
-        'balancerService',
+        'balancerServiceMetadata',
+        'balancerTargetMetadata',
         'portRule',
         'targetPortRule'
     }
@@ -438,7 +439,8 @@ def test_admin_types(admin_user_client, adds=set(), removes=set()):
         'volumeTemplate',
         'volumeActivateInput',
         'ulimit',
-        'balancerService',
+        'balancerServiceMetadata',
+        'balancerTargetMetadata',
         'portRule',
         'targetPortRule'
     }
@@ -1829,7 +1831,6 @@ def test_svc_discovery_service(admin_user_client, user_client, project_client,
         'instanceIds': 'r',
         'linkedServices': 'r',
         'system': 'r',
-        'portRules': 'r',
     })
 
     auth_check(user_client.schema, 'service', 'r', {
@@ -1857,7 +1858,6 @@ def test_svc_discovery_service(admin_user_client, user_client, project_client,
         'instanceIds': 'r',
         'linkedServices': 'r',
         'system': 'r',
-        'portRules': 'r',
     })
 
     auth_check(project_client.schema, 'service', 'crud', {
@@ -1885,7 +1885,6 @@ def test_svc_discovery_service(admin_user_client, user_client, project_client,
         'instanceIds': 'r',
         'linkedServices': 'r',
         'system': 'r',
-        'portRules': 'cru',
     })
 
     resource_action_check(user_client.schema, 'service', [

@@ -10,7 +10,6 @@ public class ServiceConstants {
     public static final String KIND_LOAD_BALANCER_SERVICE = "loadBalancerService";
     public static final String KIND_EXTERNAL_SERVICE = "externalService";
     public static final String KIND_DNS_SERVICE = "dnsService";
-    public static final String KIND_BALANCER_SERVICE = "balancerService";
 
     public static final String TYPE_STACK = "stack";
     public static final String FIELD_SCALE = "scale";
@@ -130,6 +129,7 @@ public class ServiceConstants {
     public static final String LABEL_OVERRIDE_HOSTNAME = "io.rancher.container.hostname_override";
     public static final String LABEL_LB_SSL_PORTS = "io.rancher.loadbalancer.ssl.ports";
     public static final String LABEL_LB_PROXY_PORTS = "io.rancher.loadbalancer.proxy-protocol.ports";
+    public static final String LABEL_BALANCER_SERVICE = "io.rancher.lb.service";
 
     public static final String LABEL_SELECTOR_CONTAINER = "io.rancher.service.selector.container";
     public static final String LABEL_SELECTOR_LINK = "io.rancher.service.selector.link";

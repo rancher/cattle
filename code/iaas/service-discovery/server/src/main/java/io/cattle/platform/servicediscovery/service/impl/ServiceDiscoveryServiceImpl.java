@@ -1,6 +1,5 @@
 package io.cattle.platform.servicediscovery.service.impl;
 
-import static io.cattle.platform.core.model.tables.CertificateTable.*;
 import static io.cattle.platform.core.model.tables.ServiceIndexTable.*;
 import static io.cattle.platform.core.model.tables.ServiceTable.*;
 import static io.cattle.platform.core.model.tables.StackTable.*;
@@ -11,9 +10,7 @@ import io.cattle.platform.configitem.events.ConfigUpdate;
 import io.cattle.platform.configitem.model.Client;
 import io.cattle.platform.configitem.request.ConfigUpdateRequest;
 import io.cattle.platform.configitem.version.ConfigItemStatusManager;
-import io.cattle.platform.core.addon.LoadBalancerCookieStickinessPolicy;
 import io.cattle.platform.core.addon.LoadBalancerServiceLink;
-import io.cattle.platform.core.addon.PortRule;
 import io.cattle.platform.core.addon.PublicEndpoint;
 import io.cattle.platform.core.addon.ScalePolicy;
 import io.cattle.platform.core.addon.ServiceLink;
@@ -29,7 +26,6 @@ import io.cattle.platform.core.dao.InstanceDao;
 import io.cattle.platform.core.dao.LabelsDao;
 import io.cattle.platform.core.dao.NetworkDao;
 import io.cattle.platform.core.model.Account;
-import io.cattle.platform.core.model.Certificate;
 import io.cattle.platform.core.model.Host;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.Network;
@@ -38,9 +34,6 @@ import io.cattle.platform.core.model.ServiceConsumeMap;
 import io.cattle.platform.core.model.ServiceIndex;
 import io.cattle.platform.core.model.Stack;
 import io.cattle.platform.core.model.Subnet;
-import io.cattle.platform.core.util.LBMetadataUtil;
-import io.cattle.platform.core.util.LBMetadataUtil.LBMetadata;
-import io.cattle.platform.core.util.LBMetadataUtil.StickinessPolicy;
 import io.cattle.platform.core.util.PortSpec;
 import io.cattle.platform.core.util.SystemLabels;
 import io.cattle.platform.deferred.util.DeferredUtils;
@@ -197,8 +190,7 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
     protected String allocateVip(Service service) {
         if (service.getKind().equalsIgnoreCase(ServiceConstants.KIND_LOAD_BALANCER_SERVICE)
                 || service.getKind().equalsIgnoreCase(ServiceConstants.KIND_SERVICE)
-                || service.getKind().equalsIgnoreCase(ServiceConstants.KIND_DNS_SERVICE)
-                || service.getKind().equalsIgnoreCase(ServiceConstants.KIND_BALANCER_SERVICE)) {
+                || service.getKind().equalsIgnoreCase(ServiceConstants.KIND_DNS_SERVICE)) {
             Subnet vipSubnet = getServiceVipSubnet(service);
             String requestedVip = service.getVip();
             return allocateIpForService(service, vipSubnet, requestedVip);
@@ -270,9 +262,7 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
         List<PortSpec> ports = new ArrayList<>();
         for (String spec : specs) {
             boolean defaultProtocol = true;
-            if (service.getKind().equalsIgnoreCase(
-                    ServiceConstants.KIND_LOAD_BALANCER_SERVICE)
-                    || service.getKind().equalsIgnoreCase(ServiceConstants.KIND_BALANCER_SERVICE)) {
+            if (service.getKind().equalsIgnoreCase(ServiceConstants.KIND_LOAD_BALANCER_SERVICE)) {
                 defaultProtocol = false;
             }
             ports.add(new PortSpec(spec, defaultProtocol));
@@ -309,9 +299,6 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
 
     @SuppressWarnings("unchecked")
     protected List<PooledResource> allocatePorts(Account env, Service service) {
-        if (service.getKind().equalsIgnoreCase(ServiceConstants.KIND_BALANCER_SERVICE)) {
-            return new ArrayList<>();
-        }
         int toAllocate = 0;
         for (String launchConfigName : ServiceDiscoveryUtil.getServiceLaunchConfigNames(service)) {
             Object ports = ServiceDiscoveryUtil.getLaunchConfigObject(service, launchConfigName,
@@ -340,12 +327,7 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
         List<PortSpec> toAllocate = new ArrayList<>();
         for (PortSpec port : ports) {
             if (port.getPublicPort() == null) {
-                if (service.getKind().equalsIgnoreCase(ServiceConstants.KIND_BALANCER_SERVICE)) {
-                    port.setPublicPort(port.getPrivatePort());
-                    newPorts.add(port.toSpec());
-                } else {
-                    toAllocate.add(port);
-                }
+                toAllocate.add(port);
             } else {
                 newPorts.add(port.toSpec());
             }
@@ -723,8 +705,7 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
         String serviceHealthState = null;
         List<String> supportedKinds = Arrays.asList(
                 ServiceConstants.KIND_SERVICE.toLowerCase(),
-                ServiceConstants.KIND_LOAD_BALANCER_SERVICE.toLowerCase(),
-                ServiceConstants.KIND_BALANCER_SERVICE.toLowerCase());
+                ServiceConstants.KIND_LOAD_BALANCER_SERVICE.toLowerCase());
         if (!supportedKinds.contains(service.getKind().toLowerCase())) {
             serviceHealthState = HealthcheckConstants.HEALTH_STATE_HEALTHY;
         } else {
@@ -862,80 +843,5 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
         request.addItem(HOST_ENDPOINTS_UPDATE);
         request.withDeferredTrigger(false);
         itemManager.updateConfig(request);
-    }
-
-    @Override
-    public void removeFromBalancerServices(Service service) {
-        List<? extends Service> balancers = objectManager.find(Service.class, SERVICE.KIND,
-                ServiceConstants.KIND_BALANCER_SERVICE, SERVICE.REMOVED, null, SERVICE.ACCOUNT_ID,
-                service.getAccountId());
-        for (Service balancer : balancers) {
-            List<? extends PortRule> portRules = DataAccessor.fields(balancer).withKey(LoadBalancerConstants.FIELD_PORT_RULES)
-                    .asList(jsonMapper, PortRule.class);
-            List<PortRule> newSet = new ArrayList<>();
-            boolean update = false;
-            for (PortRule rule : portRules) {
-                if (rule.getServiceId().equalsIgnoreCase(service.getId().toString())) {
-                    update = true;
-                    continue;
-                }
-                newSet.add(rule);
-            }
-
-            if (update) {
-                Map<String, Object> data = getDataToUpdate(service, balancer, portRules, newSet);
-                balancer = objectManager.setFields(balancer, data);
-                objectProcessManager.scheduleStandardProcessAsync(StandardProcess.UPDATE, balancer, null);
-            }
-        }
-    }
-
-
-    @SuppressWarnings("unchecked")
-    private Map<String, Object> getDataToUpdate(Service service, Service balancer, List<? extends PortRule> portRules,
-            List<PortRule> newRulesSet) {
-        Map<String, Object> data = new HashMap<>();
-        Map<Long, Service> serviceIdsToService = new HashMap<>();
-        Map<Long, Stack> stackIdsToStack = new HashMap<>();
-        Map<Long, Certificate> certIdsToCert = new HashMap<>();
-        for (Service svc : objectManager.find(Service.class, SERVICE.ACCOUNT_ID,
-                service.getAccountId(), SERVICE.REMOVED, null)) {
-            serviceIdsToService.put(svc.getId(), svc);
-        }
-
-        for (Stack stack : objectManager.find(Stack.class,
-                STACK.ACCOUNT_ID,
-                service.getAccountId(), STACK.REMOVED, null)) {
-            stackIdsToStack.put(stack.getId(), stack);
-        }
-
-        for (Certificate cert : objectManager.find(Certificate.class,
-                CERTIFICATE.ACCOUNT_ID, balancer.getAccountId(), CERTIFICATE.REMOVED, null)) {
-            certIdsToCert.put(cert.getId(), cert);
-        }
-
-        StickinessPolicy policy = null;
-        LoadBalancerCookieStickinessPolicy stickinessPolicy = DataAccessor.fields(balancer)
-                .withKey(LoadBalancerConstants.FIELD_STICKINESS_POLICY)
-                .as(jsonMapper, LoadBalancerCookieStickinessPolicy.class);
-        Long defaultCertId = DataAccessor.fieldLong(balancer,
-                LoadBalancerConstants.FIELD_LB_DEFAULT_CERTIFICATE_ID);
-        if (stickinessPolicy != null) {
-            policy = new StickinessPolicy(stickinessPolicy);
-        }
-        List<Long> certIds = DataAccessor.fieldLongList(balancer,
-                LoadBalancerConstants.FIELD_LB_DEFAULT_CERTIFICATE_ID);
-        String config = DataAccessor.fieldString(balancer, LoadBalancerConstants.FIELD_PORT_RULES);
-
-        LBMetadata lb = new LBMetadata(newRulesSet, certIds, defaultCertId, serviceIdsToService, stackIdsToStack,
-                certIdsToCert, config, policy);
-        Map<String, Object> metadata = DataAccessor.fields(balancer)
-                .withKey(ServiceConstants.FIELD_METADATA)
-                .withDefault(Collections.EMPTY_MAP).as(Map.class);
-        metadata.put(LBMetadataUtil.LB_METADATA_KEY, lb);
-
-        data.put(ServiceConstants.FIELD_METADATA, metadata);
-        data.put(LoadBalancerConstants.FIELD_PORT_RULES, newRulesSet);
-        return data;
     }
 }

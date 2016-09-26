@@ -393,7 +393,6 @@ public class DeploymentManagerImpl implements DeploymentManager {
                     objectProcessMgr.scheduleStandardProcessAsync(StandardProcess.REMOVE, unmanagedMap, null);
                 }
                 sdSvc.removeServiceMaps(service);
-                sdSvc.removeFromBalancerServices(service);
             }
 
             protected void deleteServiceInstances(final Service service) {

@@ -592,7 +592,6 @@
         "composeService.assignServiceIpAddress" : "",
         "composeService.createIndex" : "",
         "composeService.metadata" : "",
-        "composeService.portRules" : "",
         "composeService.resourceActions.deactivate" : "",
         "composeService.resourceActions.addservicelink" : "",
         "composeService.resourceActions.setservicelinks" : "",
@@ -625,7 +624,6 @@
         "service.linkedServices" : "r",
         "service.instanceIds" : "r",
         "service.system" : "r",
-        "service.portRules" : "cru",
 
         "addRemoveServiceLinkInput" : "r",
         "addRemoveServiceLinkInput.serviceLink" : "cr",
@@ -640,16 +638,13 @@
         "loadBalancerService.defaultCertificateId" : "cru",
         "loadBalancerService.createIndex" : "",
         "loadBalancerService.selectorContainer" : "",
-        "loadBalancerService.portRules" : "",
 
-        "balancerService" : "r",
-        "balancerService.certificateIds" : "cru",
-        "balancerService.defaultCertificateId" : "cru",
-        "balancerService.config" : "cru",
-        "balancerService.stickinessPolicy" : "cru",
-        "balancerService.createIndex" : "",
-        "balancerService.secondaryLaunchConfigs" : "",
-        "balancerService.selectorContainer" : "",
+        "balancerServiceMetadata" : "r",
+        "balancerServiceMetadata.certificate" : "r",
+        "balancerServiceMetadata.defaultCertificate" : "r",
+        "balancerServiceMetadata.config" : "r",
+        "balancerServiceMetadata.stickinessPolicy" : "r",
+        "balancerServiceMetadata.portRules" : "r",
 
         "portRule": "r",
         "portRule.hostname": "cr",
@@ -657,11 +652,13 @@
         "portRule.sourcePort": "cr",
         "portRule.priority": "cr",
         "portRule.protocol": "cr",
-        "portRule.serviceId": "cr",
+        "portRule.service": "cr",
         "portRule.targetPort": "cr",
         "portRule.backendName": "cr",
         "portRule.selector": "cr",
 
+        "balancerTargetMetadata" : "r",
+        "balancerTargetMetadata.portRules" : "r",
 
         "targetPortRule": "r",
         "targetPortRule.hostname": "cr",
@@ -732,7 +729,6 @@
         "externalService.assignServiceIpAddress" : "",
         "externalService.scalePolicy" : "",
         "externalService.currentScale" : "",
-        "externalService.portRules" : "",
 
         "dnsService" : "r",
         "dnsService.scale" : "",
@@ -743,7 +739,6 @@
         "dnsService.publicEndpoints" : "",
         "dnsService.scalePolicy" : "",
         "dnsService.currentScale" : "",
-        "dnsService.portRules" : "",
 
         "kubernetesService" : "r",
         "kubernetesService.assignServiceIpAddress" : "",
@@ -763,7 +758,6 @@
         "kubernetesService.startOnCreate" : "",
         "kubernetesService.scalePolicy" : "",
         "kubernetesService.currentScale" : "",
-        "kubernetesService.portRules" : "",
 
         "kubernetesStack" : "r",
         "kubernetesStack.name": "cr",

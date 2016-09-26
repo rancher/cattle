@@ -10,8 +10,6 @@ import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.servicediscovery.service.lbservice.LoadBalancerServiceLookup;
 
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
@@ -30,13 +28,8 @@ public class CertificateUpdateLoadBalancerServiceLookup implements LoadBalancerS
             return null;
         }
         Certificate cert = (Certificate) obj;
-        List<Service> lbServices = new ArrayList<>();
-        List<String> supportedTypes = Arrays.asList(ServiceConstants.KIND_LOAD_BALANCER_SERVICE,
-                ServiceConstants.KIND_BALANCER_SERVICE);
-        for (String type : supportedTypes) {
-            lbServices.addAll(objMgr.find(Service.class, SERVICE.ACCOUNT_ID, cert.getAccountId(), SERVICE.KIND,
-                    type, SERVICE.REMOVED, null));
-        }
+        List<Service> lbServices = objMgr.find(Service.class, SERVICE.ACCOUNT_ID, cert.getAccountId(), SERVICE.KIND,
+                ServiceConstants.KIND_LOAD_BALANCER_SERVICE, SERVICE.REMOVED, null);
         Iterator<Service> it = lbServices.iterator();
         while (it.hasNext()) {
             Service lbSvc = it.next();
