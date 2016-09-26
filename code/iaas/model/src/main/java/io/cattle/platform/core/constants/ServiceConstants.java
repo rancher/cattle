@@ -1,6 +1,6 @@
-package io.cattle.platform.servicediscovery.api.constants;
+package io.cattle.platform.core.constants;
 
-public class ServiceDiscoveryConstants {
+public class ServiceConstants {
 
     public static final String KIND_SERVICE = "service";
     public static final String KIND_LOAD_BALANCER_SERVICE = "loadBalancerService";

@@ -1,10 +1,10 @@
 package io.cattle.platform.servicediscovery.service.lbservice.impl;
 
+import io.cattle.platform.core.constants.ServiceConstants;
 import io.cattle.platform.core.dao.InstanceDao;
 import io.cattle.platform.core.model.Service;
 import io.cattle.platform.core.model.ServiceConsumeMap;
 import io.cattle.platform.object.ObjectManager;
-import io.cattle.platform.servicediscovery.api.constants.ServiceDiscoveryConstants;
 import io.cattle.platform.servicediscovery.api.dao.ServiceDao;
 import io.cattle.platform.servicediscovery.service.lbservice.LoadBalancerServiceLookup;
 
@@ -33,7 +33,7 @@ public class LinkChangeLoadBalancerServiceLookup implements LoadBalancerServiceL
         ServiceConsumeMap map = (ServiceConsumeMap) obj;
         List<Service> lbServices = new ArrayList<>();
         Service service = objMgr.loadResource(Service.class, map.getServiceId());
-        if (service.getKind().equalsIgnoreCase(ServiceDiscoveryConstants.KIND_LOAD_BALANCER_SERVICE)) {
+        if (service.getKind().equalsIgnoreCase(ServiceConstants.KIND_LOAD_BALANCER_SERVICE)) {
             lbServices.add(service);
         } else {
             lbServices.addAll(serviceDao.getConsumingLbServices(service.getId()));

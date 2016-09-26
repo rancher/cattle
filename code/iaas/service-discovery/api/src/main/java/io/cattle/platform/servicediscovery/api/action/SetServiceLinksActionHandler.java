@@ -4,6 +4,7 @@ import io.cattle.platform.api.action.ActionHandler;
 import io.cattle.platform.core.addon.LoadBalancerServiceLink;
 import io.cattle.platform.core.addon.ServiceLink;
 import io.cattle.platform.core.constants.CommonStatesConstants;
+import io.cattle.platform.core.constants.ServiceConstants;
 import io.cattle.platform.core.model.Service;
 import io.cattle.platform.core.model.ServiceConsumeMap;
 import io.cattle.platform.json.JsonMapper;
@@ -11,7 +12,6 @@ import io.cattle.platform.lock.LockCallbackNoReturn;
 import io.cattle.platform.lock.LockManager;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.util.DataAccessor;
-import io.cattle.platform.servicediscovery.api.constants.ServiceDiscoveryConstants;
 import io.cattle.platform.servicediscovery.api.dao.ServiceConsumeMapDao;
 import io.cattle.platform.servicediscovery.api.lock.ServiceDiscoveryServiceSetLinksLock;
 import io.cattle.platform.servicediscovery.api.service.ServiceDiscoveryApiService;
@@ -50,7 +50,7 @@ public class SetServiceLinksActionHandler implements ActionHandler {
 
     @Override
     public String getName() {
-        return ServiceDiscoveryConstants.PROCESS_SERVICE_SET_SERVICE_LINKS;
+        return ServiceConstants.PROCESS_SERVICE_SET_SERVICE_LINKS;
     }
 
     @Override
@@ -61,7 +61,7 @@ public class SetServiceLinksActionHandler implements ActionHandler {
         final Service service = (Service) obj;
 
         final boolean forLb = service.getKind()
-                .equalsIgnoreCase(ServiceDiscoveryConstants.KIND_LOAD_BALANCER_SERVICE);
+                .equalsIgnoreCase(ServiceConstants.KIND_LOAD_BALANCER_SERVICE);
         final Map<String, ServiceLink> newServiceLinks = populateNewServiceLinks(request, forLb);
 
         validateLinks(newServiceLinks);
@@ -100,11 +100,11 @@ public class SetServiceLinksActionHandler implements ActionHandler {
         List<ServiceLink> serviceLinks = new ArrayList<>();
         if (forLb) {
             serviceLinks.addAll(DataAccessor.fromMap(request.getRequestObject()).withKey(
-                    ServiceDiscoveryConstants.FIELD_SERVICE_LINKS).withDefault(Collections.EMPTY_LIST)
+                    ServiceConstants.FIELD_SERVICE_LINKS).withDefault(Collections.EMPTY_LIST)
                     .asList(jsonMapper, LoadBalancerServiceLink.class));
         } else {
             serviceLinks.addAll(DataAccessor.fromMap(request.getRequestObject()).withKey(
-                    ServiceDiscoveryConstants.FIELD_SERVICE_LINKS).withDefault(Collections.EMPTY_LIST)
+                    ServiceConstants.FIELD_SERVICE_LINKS).withDefault(Collections.EMPTY_LIST)
                     .asList(jsonMapper, ServiceLink.class));
         }
 

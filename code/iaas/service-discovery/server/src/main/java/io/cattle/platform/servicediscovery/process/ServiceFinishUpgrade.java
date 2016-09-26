@@ -1,6 +1,7 @@
 package io.cattle.platform.servicediscovery.process;
 
 import io.cattle.platform.activity.ActivityService;
+import io.cattle.platform.core.constants.ServiceConstants;
 import io.cattle.platform.core.model.Service;
 import io.cattle.platform.engine.handler.HandlerResult;
 import io.cattle.platform.engine.process.ProcessInstance;
@@ -8,7 +9,6 @@ import io.cattle.platform.engine.process.ProcessState;
 import io.cattle.platform.json.JsonMapper;
 import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.process.base.AbstractDefaultProcessHandler;
-import io.cattle.platform.servicediscovery.api.constants.ServiceDiscoveryConstants;
 import io.cattle.platform.servicediscovery.upgrade.UpgradeManager;
 
 import javax.inject.Inject;
@@ -24,7 +24,7 @@ public class ServiceFinishUpgrade extends AbstractDefaultProcessHandler {
 
     @Override
     public String[] getProcessNames() {
-        return new String[] { ServiceDiscoveryConstants.PROCESS_SERVICE_FINISH_UPGRADE };
+        return new String[] { ServiceConstants.PROCESS_SERVICE_FINISH_UPGRADE };
     }
 
     @Override
@@ -34,7 +34,7 @@ public class ServiceFinishUpgrade extends AbstractDefaultProcessHandler {
             @Override
             public void run() {
                 io.cattle.platform.core.addon.ServiceUpgrade upgrade = DataAccessor.field(service,
-                        ServiceDiscoveryConstants.FIELD_UPGRADE, jsonMapper,
+                        ServiceConstants.FIELD_UPGRADE, jsonMapper,
                         io.cattle.platform.core.addon.ServiceUpgrade.class);
                 upgradeManager.upgrade(service, upgrade.getStrategy());
                 upgradeManager.finishUpgrade(service, true);

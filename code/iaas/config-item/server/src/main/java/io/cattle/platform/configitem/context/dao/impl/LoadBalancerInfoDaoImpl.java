@@ -4,6 +4,7 @@ import io.cattle.platform.configitem.context.dao.LoadBalancerInfoDao;
 import io.cattle.platform.configitem.context.data.LoadBalancerListenerInfo;
 import io.cattle.platform.core.addon.LoadBalancerTargetInput;
 import io.cattle.platform.core.constants.InstanceConstants;
+import io.cattle.platform.core.constants.ServiceConstants;
 import io.cattle.platform.core.model.Service;
 import io.cattle.platform.core.model.ServiceConsumeMap;
 import io.cattle.platform.core.model.ServiceExposeMap;
@@ -11,7 +12,6 @@ import io.cattle.platform.core.util.LoadBalancerTargetPortSpec;
 import io.cattle.platform.core.util.PortSpec;
 import io.cattle.platform.json.JsonMapper;
 import io.cattle.platform.object.ObjectManager;
-import io.cattle.platform.servicediscovery.api.constants.ServiceDiscoveryConstants;
 import io.cattle.platform.servicediscovery.api.dao.ServiceConsumeMapDao;
 import io.cattle.platform.servicediscovery.api.dao.ServiceExposeMapDao;
 import io.cattle.platform.servicediscovery.api.util.ServiceDiscoveryUtil;
@@ -60,9 +60,9 @@ public class LoadBalancerInfoDaoImpl implements LoadBalancerInfoDao {
             }
         }
         
-        List<String> sslPorts = getLabeledPorts(launchConfigData, ServiceDiscoveryConstants.LABEL_LB_SSL_PORTS);
+        List<String> sslPorts = getLabeledPorts(launchConfigData, ServiceConstants.LABEL_LB_SSL_PORTS);
         List<String> proxyProtocolPorts = getLabeledPorts(launchConfigData,
-                ServiceDiscoveryConstants.LABEL_LB_PROXY_PORTS);
+                ServiceConstants.LABEL_LB_PROXY_PORTS);
         List<LoadBalancerListenerInfo> listenersToReturn = new ArrayList<>();
         for (String port : portDefs.keySet()) {
             PortSpec spec = new PortSpec(port);
@@ -210,7 +210,7 @@ public class LoadBalancerInfoDaoImpl implements LoadBalancerInfoDao {
 
     @Override
     public List<LoadBalancerTargetInput> getLoadBalancerTargets(Service lbService) {
-        if (!lbService.getKind().equalsIgnoreCase(ServiceDiscoveryConstants.KIND_LOAD_BALANCER_SERVICE)) {
+        if (!lbService.getKind().equalsIgnoreCase(ServiceConstants.KIND_LOAD_BALANCER_SERVICE)) {
             return new ArrayList<>();
         }
         List<LoadBalancerTargetInput> targets = new ArrayList<>();
@@ -246,7 +246,7 @@ public class LoadBalancerInfoDaoImpl implements LoadBalancerInfoDao {
     protected void findConsumedServicesImpl(long serviceId, List<Service> services) {
         Service service = objectManager.loadResource(Service.class, serviceId);
         if (sdService.isActiveService(service)) {
-            if (service.getKind().equalsIgnoreCase(ServiceDiscoveryConstants.KIND_DNS_SERVICE)) {
+            if (service.getKind().equalsIgnoreCase(ServiceConstants.KIND_DNS_SERVICE)) {
                 List<? extends ServiceConsumeMap> consumedMaps = consumeMapDao.findConsumedServices(serviceId);
                 for (ServiceConsumeMap consumedMap : consumedMaps) {
                     if (serviceId == consumedMap.getConsumedServiceId().longValue()) {

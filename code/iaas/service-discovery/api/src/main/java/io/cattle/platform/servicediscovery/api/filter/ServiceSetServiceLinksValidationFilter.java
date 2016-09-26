@@ -2,13 +2,13 @@ package io.cattle.platform.servicediscovery.api.filter;
 
 import io.cattle.platform.core.addon.LoadBalancerServiceLink;
 import io.cattle.platform.core.addon.ServiceLink;
+import io.cattle.platform.core.constants.ServiceConstants;
 import io.cattle.platform.core.model.Service;
 import io.cattle.platform.core.util.LoadBalancerTargetPortSpec;
 import io.cattle.platform.iaas.api.filter.common.AbstractDefaultResourceManagerFilter;
 import io.cattle.platform.json.JsonMapper;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.util.DataAccessor;
-import io.cattle.platform.servicediscovery.api.constants.ServiceDiscoveryConstants;
 import io.github.ibuildthecloud.gdapi.request.ApiRequest;
 import io.github.ibuildthecloud.gdapi.request.resource.ResourceManager;
 import io.github.ibuildthecloud.gdapi.validation.ValidationErrorCodes;
@@ -39,16 +39,16 @@ public class ServiceSetServiceLinksValidationFilter extends AbstractDefaultResou
 
     @Override
     public Object resourceAction(String type, ApiRequest request, ResourceManager next) {
-        if (request.getAction().equals(ServiceDiscoveryConstants.ACTION_SERVICE_SET_SERVICE_LINKS)) {
+        if (request.getAction().equals(ServiceConstants.ACTION_SERVICE_SET_SERVICE_LINKS)) {
             validateServices(Long.valueOf(request.getId()), request);
         }
 
         Service service = objectManager.loadResource(Service.class, request.getId());
         if (service.getKind()
-                .equalsIgnoreCase(ServiceDiscoveryConstants.KIND_LOAD_BALANCER_SERVICE)) {
+                .equalsIgnoreCase(ServiceConstants.KIND_LOAD_BALANCER_SERVICE)) {
             List<? extends LoadBalancerServiceLink> serviceLinks = DataAccessor.fromMap(request.getRequestObject())
                     .withKey(
-                    ServiceDiscoveryConstants.FIELD_SERVICE_LINKS).withDefault(Collections.EMPTY_LIST)
+                    ServiceConstants.FIELD_SERVICE_LINKS).withDefault(Collections.EMPTY_LIST)
                     .asList(jsonMapper, LoadBalancerServiceLink.class);
             for (LoadBalancerServiceLink link : serviceLinks) {
                 if (link.getPorts() != null) {
@@ -65,7 +65,7 @@ public class ServiceSetServiceLinksValidationFilter extends AbstractDefaultResou
 
     private void validateServices(long serviceId, ApiRequest request) {
         List<? extends ServiceLink> serviceLinks = DataAccessor.fromMap(request.getRequestObject()).withKey(
-                ServiceDiscoveryConstants.FIELD_SERVICE_LINKS).asList(jsonMapper, ServiceLink.class);
+                ServiceConstants.FIELD_SERVICE_LINKS).asList(jsonMapper, ServiceLink.class);
         List<String> serviceIdAndLinkName = new ArrayList<>();
 
         if (serviceLinks != null) {
@@ -73,13 +73,13 @@ public class ServiceSetServiceLinksValidationFilter extends AbstractDefaultResou
             for (ServiceLink serviceLink : serviceLinks) {
                 if (serviceIdAndLinkName.contains(serviceLink.getUuid())) {
                     ValidationErrorCodes.throwValidationError(ValidationErrorCodes.NOT_UNIQUE,
-                            ServiceDiscoveryConstants.FIELD_SERVICE_ID + " and link name combination");
+                            ServiceConstants.FIELD_SERVICE_ID + " and link name combination");
                 }
                 serviceIdAndLinkName.add(serviceLink.getUuid());
                 Service consumedService = objectManager.loadResource(Service.class, serviceLink.getServiceId());
                 if (service == null || consumedService == null) {
                     ValidationErrorCodes.throwValidationError(ValidationErrorCodes.INVALID_REFERENCE,
-                            ServiceDiscoveryConstants.FIELD_SERVICE_ID);
+                            ServiceConstants.FIELD_SERVICE_ID);
                 }
                 validateLinkName(serviceLink.getName());
             }

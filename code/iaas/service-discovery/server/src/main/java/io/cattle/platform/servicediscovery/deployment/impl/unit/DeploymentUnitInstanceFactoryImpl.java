@@ -2,13 +2,13 @@ package io.cattle.platform.servicediscovery.deployment.impl.unit;
 
 import static io.cattle.platform.core.model.tables.DeploymentUnitTable.*;
 import io.cattle.platform.core.constants.InstanceConstants;
+import io.cattle.platform.core.constants.ServiceConstants;
 import io.cattle.platform.core.dao.GenericMapDao;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.Service;
 import io.cattle.platform.core.model.ServiceExposeMap;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.util.DataAccessor;
-import io.cattle.platform.servicediscovery.api.constants.ServiceDiscoveryConstants;
 import io.cattle.platform.servicediscovery.api.dao.ServiceExposeMapDao;
 import io.cattle.platform.servicediscovery.deployment.DeploymentUnitInstance;
 import io.cattle.platform.servicediscovery.deployment.DeploymentUnitInstanceFactory;
@@ -36,21 +36,21 @@ public class DeploymentUnitInstanceFactoryImpl implements DeploymentUnitInstance
     @SuppressWarnings("unchecked")
     public DeploymentUnitInstance createDeploymentUnitInstance(DeploymentServiceContext context, String uuid,
             Service service, String instanceName, Object instanceObj, String launchConfigName) {
-        if (service.getKind().equalsIgnoreCase(ServiceDiscoveryConstants.KIND_SERVICE)) {
+        if (service.getKind().equalsIgnoreCase(ServiceConstants.KIND_SERVICE)) {
             Instance instance = null;
             if (instanceObj != null) {
                 instance = (Instance) instanceObj;
             }
             return new DefaultDeploymentUnitInstance(context, uuid, service,
                     instanceName, instance, launchConfigName);
-        } else if (service.getKind().equalsIgnoreCase(ServiceDiscoveryConstants.KIND_LOAD_BALANCER_SERVICE)) {
+        } else if (service.getKind().equalsIgnoreCase(ServiceConstants.KIND_LOAD_BALANCER_SERVICE)) {
             Instance instance = null;
             if (instanceObj != null) {
                 instance = (Instance) instanceObj;
             }
             return new LoadBalancerDeploymentUnitInstance(context, uuid, service,
                     instanceName, instance, launchConfigName);
-        }else if (service.getKind().equalsIgnoreCase(ServiceDiscoveryConstants.KIND_EXTERNAL_SERVICE)) {
+        }else if (service.getKind().equalsIgnoreCase(ServiceConstants.KIND_EXTERNAL_SERVICE)) {
             Pair<String, String> ipHostName = null;
             if (instanceObj != null) {
                 ipHostName = (Pair<String, String>) instanceObj;
@@ -77,10 +77,10 @@ public class DeploymentUnitInstanceFactoryImpl implements DeploymentUnitInstance
         Map<String, List<DeploymentUnitInstance>> uuidToInstances = new HashMap<>();
         List<DeploymentUnit> units = new ArrayList<>();
 
-        if (service.getKind().equalsIgnoreCase(ServiceDiscoveryConstants.KIND_SERVICE)
-                || service.getKind().equalsIgnoreCase(ServiceDiscoveryConstants.KIND_LOAD_BALANCER_SERVICE)) {
+        if (service.getKind().equalsIgnoreCase(ServiceConstants.KIND_SERVICE)
+                || service.getKind().equalsIgnoreCase(ServiceConstants.KIND_LOAD_BALANCER_SERVICE)) {
             collectDefaultServiceInstances(context, uuidToLabels, uuidToInstances, service);
-        } else if (service.getKind().equalsIgnoreCase(ServiceDiscoveryConstants.KIND_EXTERNAL_SERVICE)) {
+        } else if (service.getKind().equalsIgnoreCase(ServiceConstants.KIND_EXTERNAL_SERVICE)) {
             collectExternalServiceInstances(context, uuidToLabels, uuidToInstances, service);
         }
         for (String uuid : uuidToInstances.keySet()) {
@@ -110,7 +110,7 @@ public class DeploymentUnitInstanceFactoryImpl implements DeploymentUnitInstance
             Map<String, Map<String, String>> uuidToLabels, Map<String, List<DeploymentUnitInstance>> uuidToInstances,
             Service service) {
         String hostName = DataAccessor.fields(service)
-                .withKey(ServiceDiscoveryConstants.FIELD_HOSTNAME).as(String.class);
+                .withKey(ServiceConstants.FIELD_HOSTNAME).as(String.class);
         if (hostName != null) {
             createExternalDeploymentUnit(context, uuidToLabels, uuidToInstances, service, null, hostName);
         }
@@ -129,7 +129,7 @@ public class DeploymentUnitInstanceFactoryImpl implements DeploymentUnitInstance
             Map<String, Map<String, String>> uuidToLabels, Map<String, List<DeploymentUnitInstance>> uuidToInstances,
             Service service) {
         List<String> externalIps = DataAccessor.fields(service)
-                .withKey(ServiceDiscoveryConstants.FIELD_EXTERNALIPS).withDefault(Collections.EMPTY_LIST)
+                .withKey(ServiceConstants.FIELD_EXTERNALIPS).withDefault(Collections.EMPTY_LIST)
                 .as(List.class);
 
         if (externalIps != null) {
@@ -151,7 +151,7 @@ public class DeploymentUnitInstanceFactoryImpl implements DeploymentUnitInstance
             Service service, String externalIp, String hostName) {
         String uuid = io.cattle.platform.util.resource.UUID.randomUUID().toString();
         DeploymentUnitInstance unitInstance = createDeploymentUnitInstance(context, uuid, service, null,
-                Pair.of(externalIp, hostName), ServiceDiscoveryConstants.PRIMARY_LAUNCH_CONFIG_NAME);
+                Pair.of(externalIp, hostName), ServiceConstants.PRIMARY_LAUNCH_CONFIG_NAME);
         addToDeploymentUnitList(uuidToLabels, uuidToInstances, new HashMap<String, String>(), uuid,
                 unitInstance);
     }
@@ -165,9 +165,9 @@ public class DeploymentUnitInstanceFactoryImpl implements DeploymentUnitInstance
             Map<String, String> instanceLabels = DataAccessor.fields(serviceContainer)
                     .withKey(InstanceConstants.FIELD_LABELS).withDefault(Collections.EMPTY_MAP).as(Map.class);
             String deploymentUnitUUID = instanceLabels
-                    .get(ServiceDiscoveryConstants.LABEL_SERVICE_DEPLOYMENT_UNIT);
+                    .get(ServiceConstants.LABEL_SERVICE_DEPLOYMENT_UNIT);
             String launchConfigName = instanceLabels
-                    .get(ServiceDiscoveryConstants.LABEL_SERVICE_LAUNCH_CONFIG);
+                    .get(ServiceConstants.LABEL_SERVICE_LAUNCH_CONFIG);
 
             DeploymentUnitInstance unitInstance = createDeploymentUnitInstance(context, deploymentUnitUUID,
                     service, serviceContainer.getName(), serviceContainer, launchConfigName);

@@ -1,9 +1,9 @@
 package io.cattle.platform.servicediscovery.api.action;
 
 import io.cattle.platform.api.action.ActionHandler;
+import io.cattle.platform.core.constants.ServiceConstants;
 import io.cattle.platform.core.model.Service;
 import io.cattle.platform.iaas.api.credential.ApiKeyCertificateDownloadLinkHandler;
-import io.cattle.platform.servicediscovery.api.constants.ServiceDiscoveryConstants;
 import io.cattle.platform.servicediscovery.api.service.ServiceDiscoveryApiService;
 import io.github.ibuildthecloud.gdapi.exception.ClientVisibleException;
 import io.github.ibuildthecloud.gdapi.request.ApiRequest;
@@ -24,7 +24,7 @@ public class ServiceCertificateActionHandler implements ActionHandler {
 
     @Override
     public String getName() {
-        return ServiceDiscoveryConstants.PROCESS_SERVICE_CERTIFICATE;
+        return ServiceConstants.PROCESS_SERVICE_CERTIFICATE;
     }
 
     @Override

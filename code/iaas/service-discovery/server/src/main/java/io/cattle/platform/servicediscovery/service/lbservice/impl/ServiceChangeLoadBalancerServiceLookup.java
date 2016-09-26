@@ -1,7 +1,7 @@
 package io.cattle.platform.servicediscovery.service.lbservice.impl;
 
+import io.cattle.platform.core.constants.ServiceConstants;
 import io.cattle.platform.core.model.Service;
-import io.cattle.platform.servicediscovery.api.constants.ServiceDiscoveryConstants;
 import io.cattle.platform.servicediscovery.api.dao.ServiceDao;
 import io.cattle.platform.servicediscovery.service.lbservice.LoadBalancerServiceLookup;
 
@@ -25,10 +25,10 @@ public class ServiceChangeLoadBalancerServiceLookup implements LoadBalancerServi
         }
         Service service = (Service) obj;
         List<Service> lbServices = new ArrayList<>();
-        if (service.getKind().equalsIgnoreCase(ServiceDiscoveryConstants.KIND_LOAD_BALANCER_SERVICE)) {
+        if (service.getKind().equalsIgnoreCase(ServiceConstants.KIND_LOAD_BALANCER_SERVICE)) {
             lbServices.add(service);
-        } else if (service.getKind().equalsIgnoreCase(ServiceDiscoveryConstants.KIND_DNS_SERVICE)
-                || service.getKind().equalsIgnoreCase(ServiceDiscoveryConstants.KIND_EXTERNAL_SERVICE)) {
+        } else if (service.getKind().equalsIgnoreCase(ServiceConstants.KIND_DNS_SERVICE)
+                || service.getKind().equalsIgnoreCase(ServiceConstants.KIND_EXTERNAL_SERVICE)) {
             lbServices.addAll(svcDao.getConsumingLbServices(service.getId()));
         }
         return lbServices;

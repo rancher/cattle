@@ -2,12 +2,12 @@ package io.cattle.platform.servicediscovery.service.lbservice.impl;
 
 import static io.cattle.platform.core.model.tables.ServiceTable.*;
 import io.cattle.platform.core.constants.LoadBalancerConstants;
+import io.cattle.platform.core.constants.ServiceConstants;
 import io.cattle.platform.core.model.Certificate;
 import io.cattle.platform.core.model.Service;
 import io.cattle.platform.json.JsonMapper;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.util.DataAccessor;
-import io.cattle.platform.servicediscovery.api.constants.ServiceDiscoveryConstants;
 import io.cattle.platform.servicediscovery.service.lbservice.LoadBalancerServiceLookup;
 
 import java.util.Collections;
@@ -29,7 +29,7 @@ public class CertificateUpdateLoadBalancerServiceLookup implements LoadBalancerS
         }
         Certificate cert = (Certificate) obj;
         List<Service> lbServices = objMgr.find(Service.class, SERVICE.ACCOUNT_ID, cert.getAccountId(), SERVICE.KIND,
-                ServiceDiscoveryConstants.KIND_LOAD_BALANCER_SERVICE, SERVICE.REMOVED, null);
+                ServiceConstants.KIND_LOAD_BALANCER_SERVICE, SERVICE.REMOVED, null);
         Iterator<Service> it = lbServices.iterator();
         while (it.hasNext()) {
             Service lbSvc = it.next();

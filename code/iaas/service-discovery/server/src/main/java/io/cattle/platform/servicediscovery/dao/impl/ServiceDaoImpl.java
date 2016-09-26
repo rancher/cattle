@@ -8,6 +8,7 @@ import static io.cattle.platform.core.model.tables.ServiceExposeMapTable.SERVICE
 import static io.cattle.platform.core.model.tables.ServiceTable.SERVICE;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.constants.LoadBalancerConstants;
+import io.cattle.platform.core.constants.ServiceConstants;
 import io.cattle.platform.core.model.Certificate;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.Service;
@@ -18,7 +19,6 @@ import io.cattle.platform.db.jooq.dao.impl.AbstractJooqDao;
 import io.cattle.platform.json.JsonMapper;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.util.DataAccessor;
-import io.cattle.platform.servicediscovery.api.constants.ServiceDiscoveryConstants;
 import io.cattle.platform.servicediscovery.api.dao.ServiceConsumeMapDao;
 import io.cattle.platform.servicediscovery.api.dao.ServiceDao;
 import io.cattle.platform.servicediscovery.service.ServiceDiscoveryService;
@@ -111,9 +111,9 @@ public class ServiceDaoImpl extends AbstractJooqDao implements ServiceDao {
                 .findConsumingServices(serviceId);
         for (ServiceConsumeMap consumingServiceMap : consumingServicesMaps) {
             Service consumingService = objectManager.loadResource(Service.class, consumingServiceMap.getServiceId());
-            if (consumingService.getKind().equalsIgnoreCase(ServiceDiscoveryConstants.KIND_LOAD_BALANCER_SERVICE)) {
+            if (consumingService.getKind().equalsIgnoreCase(ServiceConstants.KIND_LOAD_BALANCER_SERVICE)) {
                 lbServices.add(consumingService);
-            } else if (consumingService.getKind().equalsIgnoreCase(ServiceDiscoveryConstants.KIND_DNS_SERVICE)) {
+            } else if (consumingService.getKind().equalsIgnoreCase(ServiceConstants.KIND_DNS_SERVICE)) {
                 if (consumingService.getId().equals(serviceId)) {
                     continue;
                 }

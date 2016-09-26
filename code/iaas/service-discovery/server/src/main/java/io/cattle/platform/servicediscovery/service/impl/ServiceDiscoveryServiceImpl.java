@@ -19,6 +19,7 @@ import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.constants.IpAddressConstants;
 import io.cattle.platform.core.constants.LoadBalancerConstants;
 import io.cattle.platform.core.constants.NetworkConstants;
+import io.cattle.platform.core.constants.ServiceConstants;
 import io.cattle.platform.core.constants.SubnetConstants;
 import io.cattle.platform.core.dao.InstanceDao;
 import io.cattle.platform.core.dao.LabelsDao;
@@ -50,7 +51,6 @@ import io.cattle.platform.resource.pool.PooledResource;
 import io.cattle.platform.resource.pool.PooledResourceOptions;
 import io.cattle.platform.resource.pool.ResourcePoolManager;
 import io.cattle.platform.resource.pool.util.ResourcePoolConstants;
-import io.cattle.platform.servicediscovery.api.constants.ServiceDiscoveryConstants;
 import io.cattle.platform.servicediscovery.api.dao.ServiceConsumeMapDao;
 import io.cattle.platform.servicediscovery.api.dao.ServiceExposeMapDao;
 import io.cattle.platform.servicediscovery.api.util.ServiceDiscoveryUtil;
@@ -140,7 +140,7 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
             if (ServiceDiscoveryUtil.isServiceGeneratedName(env, service, instance.getName())) {
                 // legacy code - to support old data where service suffix wasn't set
                 String configName = launchConfigName == null
-                        || launchConfigName.equals(ServiceDiscoveryConstants.PRIMARY_LAUNCH_CONFIG_NAME) ? ""
+                        || launchConfigName.equals(ServiceConstants.PRIMARY_LAUNCH_CONFIG_NAME) ? ""
                         : launchConfigName + "_";
                 
                 String id = instance.getName().replace(String.format("%s_%s_%s", env.getName(), service.getName(), configName), "");
@@ -161,13 +161,13 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
     public void removeServiceMaps(Service service) {
         // 1. remove all maps to the services consumed by service specified
         for (ServiceConsumeMap map : consumeMapDao.findConsumedMapsToRemove(service.getId())) {
-            objectProcessManager.scheduleProcessInstance(ServiceDiscoveryConstants.PROCESS_SERVICE_CONSUME_MAP_REMOVE,
+            objectProcessManager.scheduleProcessInstance(ServiceConstants.PROCESS_SERVICE_CONSUME_MAP_REMOVE,
                     map, null);
         }
 
         // 2. remove all maps to the services consuming service specified
         for (ServiceConsumeMap map : consumeMapDao.findConsumingMapsToRemove(service.getId())) {
-            objectProcessManager.scheduleProcessInstance(ServiceDiscoveryConstants.PROCESS_SERVICE_CONSUME_MAP_REMOVE,
+            objectProcessManager.scheduleProcessInstance(ServiceConstants.PROCESS_SERVICE_CONSUME_MAP_REMOVE,
                     map, null);
         }
     }
@@ -181,12 +181,12 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
     public List<String> getServiceActiveStates() {
         return Arrays.asList(CommonStatesConstants.ACTIVATING,
                 CommonStatesConstants.ACTIVE, CommonStatesConstants.UPDATING_ACTIVE,
-                ServiceDiscoveryConstants.STATE_UPGRADING, ServiceDiscoveryConstants.STATE_ROLLINGBACK,
-                ServiceDiscoveryConstants.STATE_CANCELING_UPGRADE,
-                ServiceDiscoveryConstants.STATE_CANCELED_UPGRADE,
-                ServiceDiscoveryConstants.STATE_FINISHING_UPGRADE,
-                ServiceDiscoveryConstants.STATE_UPGRADED,
-                ServiceDiscoveryConstants.STATE_RESTARTING);
+                ServiceConstants.STATE_UPGRADING, ServiceConstants.STATE_ROLLINGBACK,
+                ServiceConstants.STATE_CANCELING_UPGRADE,
+                ServiceConstants.STATE_CANCELED_UPGRADE,
+                ServiceConstants.STATE_FINISHING_UPGRADE,
+                ServiceConstants.STATE_UPGRADED,
+                ServiceConstants.STATE_RESTARTING);
     }
 
     @Override
@@ -210,9 +210,9 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
     }
 
     protected String allocateVip(Service service) {
-        if (service.getKind().equalsIgnoreCase(ServiceDiscoveryConstants.KIND_LOAD_BALANCER_SERVICE)
-                || service.getKind().equalsIgnoreCase(ServiceDiscoveryConstants.KIND_SERVICE)
-                || service.getKind().equalsIgnoreCase(ServiceDiscoveryConstants.KIND_DNS_SERVICE)) {
+        if (service.getKind().equalsIgnoreCase(ServiceConstants.KIND_LOAD_BALANCER_SERVICE)
+                || service.getKind().equalsIgnoreCase(ServiceConstants.KIND_SERVICE)
+                || service.getKind().equalsIgnoreCase(ServiceConstants.KIND_DNS_SERVICE)) {
             Subnet vipSubnet = getServiceVipSubnet(service);
             String requestedVip = service.getVip();
             return allocateIpForService(service, vipSubnet, requestedVip);
@@ -260,7 +260,7 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
 
     @Override
     public void setVIP(Service service) {
-        if (!(DataAccessor.fieldBool(service, ServiceDiscoveryConstants.FIELD_SET_VIP) || service.getVip() != null)) {
+        if (!(DataAccessor.fieldBool(service, ServiceConstants.FIELD_SET_VIP) || service.getVip() != null)) {
             return;
         }
         String vip = allocateVip(service);
@@ -279,7 +279,7 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
         List<PortSpec> ports = new ArrayList<>();
         for (String spec : specs) {
             boolean defaultProtocol = true;
-            if (service.getKind().equalsIgnoreCase(ServiceDiscoveryConstants.KIND_LOAD_BALANCER_SERVICE)) {
+            if (service.getKind().equalsIgnoreCase(ServiceConstants.KIND_LOAD_BALANCER_SERVICE)) {
                 defaultProtocol = false;
             }
             ports.add(new PortSpec(spec, defaultProtocol));
@@ -294,22 +294,22 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
         List<PooledResource> allocatedPorts = allocatePorts(env, service);
         // update primary launchConfig
         Map<String, Object> launchConfig = DataAccessor.fields(service)
-                .withKey(ServiceDiscoveryConstants.FIELD_LAUNCH_CONFIG).withDefault(Collections.EMPTY_MAP)
+                .withKey(ServiceConstants.FIELD_LAUNCH_CONFIG).withDefault(Collections.EMPTY_MAP)
                 .as(Map.class);
 
         setRandomPublicPorts(env, service, launchConfig, allocatedPorts);
 
         // update secondary launch configs
         List<Object> secondaryLaunchConfigs = DataAccessor.fields(service)
-                .withKey(ServiceDiscoveryConstants.FIELD_SECONDARY_LAUNCH_CONFIGS)
+                .withKey(ServiceConstants.FIELD_SECONDARY_LAUNCH_CONFIGS)
                 .withDefault(Collections.EMPTY_LIST).as(
                         List.class);
         for (Object secondaryLaunchConfig : secondaryLaunchConfigs) {
             setRandomPublicPorts(env, service, (Map<String, Object>) secondaryLaunchConfig, allocatedPorts);
         }
 
-        DataAccessor.fields(service).withKey(ServiceDiscoveryConstants.FIELD_LAUNCH_CONFIG).set(launchConfig);
-        DataAccessor.fields(service).withKey(ServiceDiscoveryConstants.FIELD_SECONDARY_LAUNCH_CONFIGS)
+        DataAccessor.fields(service).withKey(ServiceConstants.FIELD_LAUNCH_CONFIG).set(launchConfig);
+        DataAccessor.fields(service).withKey(ServiceConstants.FIELD_SECONDARY_LAUNCH_CONFIGS)
                 .set(secondaryLaunchConfigs);
         objectManager.persist(service);
     }
@@ -403,7 +403,7 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
                 ServiceConsumeMap map = consumeMapDao.findMapToRemove(service.getId(), serviceLink.getServiceId());
                 if (map != null) {
                     objectProcessManager.scheduleProcessInstanceAsync(
-                            ServiceDiscoveryConstants.PROCESS_SERVICE_CONSUME_MAP_REMOVE,
+                            ServiceConstants.PROCESS_SERVICE_CONSUME_MAP_REMOVE,
                             map, null);
                 }
             }
@@ -415,7 +415,7 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
         if (StringUtils.isBlank(selector)) {
             return false;
         }
-        Map<String, String> serviceLabels = ServiceDiscoveryUtil.getLaunchConfigLabels(targetService, ServiceDiscoveryConstants.PRIMARY_LAUNCH_CONFIG_NAME);
+        Map<String, String> serviceLabels = ServiceDiscoveryUtil.getLaunchConfigLabels(targetService, ServiceConstants.PRIMARY_LAUNCH_CONFIG_NAME);
         if (serviceLabels.isEmpty()) {
             return false;
         }
@@ -450,7 +450,7 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
     @Override
     public boolean isGlobalService(Service service) {
         Map<String, String> serviceLabels = ServiceDiscoveryUtil.getMergedServiceLabels(service, allocatorService);
-        String globalService = serviceLabels.get(ServiceDiscoveryConstants.LABEL_SERVICE_GLOBAL);
+        String globalService = serviceLabels.get(ServiceConstants.LABEL_SERVICE_GLOBAL);
         return Boolean.valueOf(globalService);
     }
 
@@ -462,7 +462,7 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
         Object reloaded = objectManager.reload(object);
         List<PublicEndpoint> oldData = new ArrayList<>();
         oldData.addAll(DataAccessor.fields(reloaded)
-                .withKey(ServiceDiscoveryConstants.FIELD_PUBLIC_ENDPOINTS)
+                .withKey(ServiceConstants.FIELD_PUBLIC_ENDPOINTS)
                 .withDefault(Collections.EMPTY_LIST)
                 .asList(jsonMapper, PublicEndpoint.class));
 
@@ -483,7 +483,7 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
         }
 
         objectManager.reload(object);
-        objectManager.setFields(object, ServiceDiscoveryConstants.FIELD_PUBLIC_ENDPOINTS, newData);
+        objectManager.setFields(object, ServiceConstants.FIELD_PUBLIC_ENDPOINTS, newData);
         publishEvent(object);
     }
 
@@ -507,7 +507,7 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
     @Override
     public void setToken(Service service) {
         String token = ApiKeyFilter.generateKeys()[1];
-        DataAccessor.fields(service).withKey(ServiceDiscoveryConstants.FIELD_TOKEN).set(token);
+        DataAccessor.fields(service).withKey(ServiceConstants.FIELD_TOKEN).set(token);
         objectManager.persist(service);
     }
 
@@ -564,7 +564,7 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
         String currentHealthState = objectManager.reload(stack).getHealthState();
         if (!newHealthState.equalsIgnoreCase(currentHealthState)) {
             Map<String, Object> fields = new HashMap<>();
-            fields.put(ServiceDiscoveryConstants.FIELD_HEALTH_STATE, newHealthState);
+            fields.put(ServiceConstants.FIELD_HEALTH_STATE, newHealthState);
             objectManager.setFields(stack, fields);
             publishEvent(stack);
         }
@@ -622,7 +622,7 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
             String currentHealthState = objectManager.reload(service).getHealthState();
             if (!newHealthState.equalsIgnoreCase(currentHealthState)) {
                 Map<String, Object> fields = new HashMap<>();
-                fields.put(ServiceDiscoveryConstants.FIELD_HEALTH_STATE, newHealthState);
+                fields.put(ServiceConstants.FIELD_HEALTH_STATE, newHealthState);
                 objectManager.setFields(service, fields);
                 publishEvent(service);
             }
@@ -632,8 +632,8 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
     protected String calculateServiceHealthState(Service service) {
         String serviceHealthState = null;
         List<String> supportedKinds = Arrays.asList(
-                ServiceDiscoveryConstants.KIND_SERVICE.toLowerCase(),
-                ServiceDiscoveryConstants.KIND_LOAD_BALANCER_SERVICE.toLowerCase());
+                ServiceConstants.KIND_SERVICE.toLowerCase(),
+                ServiceConstants.KIND_LOAD_BALANCER_SERVICE.toLowerCase());
         if (!supportedKinds.contains(service.getKind().toLowerCase())) {
             serviceHealthState = HealthcheckConstants.HEALTH_STATE_HEALTHY;
         } else {
@@ -643,12 +643,12 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
             List<String> initStates = Arrays.asList(HealthcheckConstants.HEALTH_STATE_INITIALIZING,
                     HealthcheckConstants.HEALTH_STATE_REINITIALIZING);
 
-            Integer scale = DataAccessor.fieldInteger(service, ServiceDiscoveryConstants.FIELD_SCALE);
+            Integer scale = DataAccessor.fieldInteger(service, ServiceConstants.FIELD_SCALE);
             if (scale == null || ServiceDiscoveryUtil.isNoopService(service)) {
                 scale = 0;
             }
             ScalePolicy policy = DataAccessor.field(service,
-                    ServiceDiscoveryConstants.FIELD_SCALE_POLICY, jsonMapper, ScalePolicy.class);
+                    ServiceConstants.FIELD_SCALE_POLICY, jsonMapper, ScalePolicy.class);
             if (policy != null) {
                 scale = policy.getMin();
             }
@@ -719,7 +719,7 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
     @Override
     public boolean isScalePolicyService(Service service) {
         return DataAccessor.field(service,
-                ServiceDiscoveryConstants.FIELD_SCALE_POLICY, jsonMapper, ScalePolicy.class) != null;
+                ServiceConstants.FIELD_SCALE_POLICY, jsonMapper, ScalePolicy.class) != null;
     }
 
     @Override

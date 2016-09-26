@@ -1,11 +1,11 @@
 package io.cattle.platform.servicediscovery.api.filter;
 
 import static io.cattle.platform.core.model.tables.ServiceTable.SERVICE;
+import io.cattle.platform.core.constants.ServiceConstants;
 import io.cattle.platform.core.model.Certificate;
 import io.cattle.platform.core.model.Service;
 import io.cattle.platform.iaas.api.filter.common.AbstractDefaultResourceManagerFilter;
 import io.cattle.platform.object.ObjectManager;
-import io.cattle.platform.servicediscovery.api.constants.ServiceDiscoveryConstants;
 import io.cattle.platform.servicediscovery.api.dao.ServiceDao;
 import io.github.ibuildthecloud.gdapi.exception.ClientVisibleException;
 import io.github.ibuildthecloud.gdapi.request.ApiRequest;
@@ -45,7 +45,7 @@ public class LoadBalancerServiceCertificateRemoveFilter extends AbstractDefaultR
         Certificate cert = objectManager.loadResource(Certificate.class, certificateId);
         List<String> serviceNames = new ArrayList<>();
         List<? extends Service> lbServices = objectManager.find(Service.class, SERVICE.ACCOUNT_ID, cert.getAccountId(),
-                SERVICE.REMOVED, null, SERVICE.KIND, ServiceDiscoveryConstants.KIND_LOAD_BALANCER_SERVICE);
+                SERVICE.REMOVED, null, SERVICE.KIND, ServiceConstants.KIND_LOAD_BALANCER_SERVICE);
         for (Service lbService : lbServices) {
             List<Long> certIds = (List<Long>) CollectionUtils.collect(
                     svcDao.getLoadBalancerServiceCertificates(lbService),

@@ -19,6 +19,7 @@ import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.HealthcheckConstants;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.constants.IpAddressConstants;
+import io.cattle.platform.core.constants.ServiceConstants;
 import io.cattle.platform.core.dao.NetworkDao;
 import io.cattle.platform.core.model.Stack;
 import io.cattle.platform.core.model.Instance;
@@ -44,7 +45,6 @@ import io.cattle.platform.db.jooq.dao.impl.AbstractJooqDao;
 import io.cattle.platform.db.jooq.mapper.MultiRecordMapper;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.util.DataUtils;
-import io.cattle.platform.servicediscovery.api.constants.ServiceDiscoveryConstants;
 import io.cattle.platform.servicediscovery.api.util.ServiceDiscoveryDnsUtil;
 
 import java.util.ArrayList;
@@ -164,10 +164,10 @@ public class DnsInfoDaoImpl extends AbstractJooqDao implements DnsInfoDao {
         Condition condition = null;
         if (forDefault) {
             // all services records
-            condition = (clientService.KIND.ne(ServiceDiscoveryConstants.KIND_DNS_SERVICE)
+            condition = (clientService.KIND.ne(ServiceConstants.KIND_DNS_SERVICE)
                     .and(targetService.ID.eq(clientService.ID))
                     .and(serviceConsumeMap.ID.isNull()))
-                    .or((clientService.KIND.eq(ServiceDiscoveryConstants.KIND_DNS_SERVICE)
+                    .or((clientService.KIND.eq(ServiceConstants.KIND_DNS_SERVICE)
                             .and(serviceConsumeMap.ID.isNotNull()
                     .and(serviceConsumeMap.REMOVED.isNull())
                     .and(serviceConsumeMap.STATE.in(CommonStatesConstants.ACTIVATING,
@@ -234,7 +234,7 @@ public class DnsInfoDaoImpl extends AbstractJooqDao implements DnsInfoDao {
             String aliasName = null;
             boolean isAliasService = false;
             if (serviceData.getConsumeMap() != null) {
-                if (clientService.getKind().equalsIgnoreCase(ServiceDiscoveryConstants.KIND_DNS_SERVICE)) {
+                if (clientService.getKind().equalsIgnoreCase(ServiceConstants.KIND_DNS_SERVICE)) {
                     aliasName = ServiceDiscoveryDnsUtil.getFqdn(serviceData.getClientStack(),
                             serviceData.getClientService(), serviceData.getClientService().getName());
                     isAliasService = true;
@@ -303,7 +303,7 @@ public class DnsInfoDaoImpl extends AbstractJooqDao implements DnsInfoDao {
             Map<Long, List<ServiceInstanceData>> servicesTargetInstances,
             Map<Long, List<ServiceDnsEntryData>> clientServiceIdToServiceData, Service targetService) {
         List<ServiceInstanceData> targetInstancesData = new ArrayList<>();
-        if (targetService.getKind().equalsIgnoreCase(ServiceDiscoveryConstants.KIND_DNS_SERVICE)) {
+        if (targetService.getKind().equalsIgnoreCase(ServiceConstants.KIND_DNS_SERVICE)) {
             List<ServiceDnsEntryData> behindAlias = clientServiceIdToServiceData.get(targetService.getId());
             if (behindAlias != null) {
                 for (ServiceDnsEntryData behindAliasEntry : behindAlias) {
@@ -395,7 +395,7 @@ public class DnsInfoDaoImpl extends AbstractJooqDao implements DnsInfoDao {
         // b) for k8s services
         Map<String, Object> data = new HashMap<>();
         data.putAll(DataUtils.getFields(service));
-        Object vipObj = data.get(ServiceDiscoveryConstants.FIELD_SET_VIP);
+        Object vipObj = data.get(ServiceConstants.FIELD_SET_VIP);
         boolean setVip = vipObj != null && Boolean.valueOf(vipObj.toString());
         if (setVip
                 || service.getKind().equalsIgnoreCase("kubernetesservice")) {
@@ -412,7 +412,7 @@ public class DnsInfoDaoImpl extends AbstractJooqDao implements DnsInfoDao {
 
         if (isSource
                 && serviceInstanceData.getService().getKind()
-                        .equalsIgnoreCase(ServiceDiscoveryConstants.KIND_SERVICE)) {
+                        .equalsIgnoreCase(ServiceConstants.KIND_SERVICE)) {
             if (ipAddr != null) {
                 ip = ipAddr.getAddress();
             }

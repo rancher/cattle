@@ -7,6 +7,7 @@ import static io.cattle.platform.core.model.tables.ServiceExposeMapTable.*;
 import static io.cattle.platform.core.model.tables.ServiceTable.*;
 import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.InstanceConstants;
+import io.cattle.platform.core.constants.ServiceConstants;
 import io.cattle.platform.core.dao.GenericMapDao;
 import io.cattle.platform.core.model.Host;
 import io.cattle.platform.core.model.Instance;
@@ -21,7 +22,6 @@ import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.jooq.utils.JooqUtils;
 import io.cattle.platform.object.process.ObjectProcessManager;
 import io.cattle.platform.object.util.DataAccessor;
-import io.cattle.platform.servicediscovery.api.constants.ServiceDiscoveryConstants;
 import io.cattle.platform.servicediscovery.api.dao.ServiceExposeMapDao;
 import io.cattle.platform.servicediscovery.api.util.ServiceDiscoveryUtil;
 import io.cattle.platform.servicediscovery.service.ServiceDiscoveryService;
@@ -77,8 +77,8 @@ public class ServiceExposeMapDaoImpl extends AbstractJooqDao implements ServiceE
         Map<String, String> instanceLabels = DataAccessor.fields(instance)
                 .withKey(InstanceConstants.FIELD_LABELS).withDefault(Collections.EMPTY_MAP).as(Map.class);
         String dnsPrefix = instanceLabels
-                .get(ServiceDiscoveryConstants.LABEL_SERVICE_LAUNCH_CONFIG);
-        if (ServiceDiscoveryConstants.PRIMARY_LAUNCH_CONFIG_NAME.equalsIgnoreCase(dnsPrefix)) {
+                .get(ServiceConstants.LABEL_SERVICE_LAUNCH_CONFIG);
+        if (ServiceConstants.PRIMARY_LAUNCH_CONFIG_NAME.equalsIgnoreCase(dnsPrefix)) {
             dnsPrefix = null;
         }
 
@@ -157,7 +157,7 @@ public class ServiceExposeMapDaoImpl extends AbstractJooqDao implements ServiceE
     public List<? extends Instance> listServiceManagedInstances(Service service, String launchConfigName) {
         Condition condition = null;
         if (launchConfigName == null || launchConfigName.equals(service.getName())
-                || launchConfigName.equals(ServiceDiscoveryConstants.PRIMARY_LAUNCH_CONFIG_NAME)) {
+                || launchConfigName.equals(ServiceConstants.PRIMARY_LAUNCH_CONFIG_NAME)) {
             condition = SERVICE_EXPOSE_MAP.DNS_PREFIX.isNull();
         } else {
             condition = SERVICE_EXPOSE_MAP.DNS_PREFIX.eq(launchConfigName);
@@ -345,7 +345,7 @@ public class ServiceExposeMapDaoImpl extends AbstractJooqDao implements ServiceE
     public List<? extends Instance> getInstancesToUpgrade(Service service, String launchConfigName, String toVersion) {
         Condition condition = null;
         if (launchConfigName == null || launchConfigName.equals(service.getName())
-                || launchConfigName.equals(ServiceDiscoveryConstants.PRIMARY_LAUNCH_CONFIG_NAME)) {
+                || launchConfigName.equals(ServiceConstants.PRIMARY_LAUNCH_CONFIG_NAME)) {
             condition = SERVICE_EXPOSE_MAP.DNS_PREFIX.isNull();
         } else {
             condition = SERVICE_EXPOSE_MAP.DNS_PREFIX.eq(launchConfigName);
@@ -372,7 +372,7 @@ public class ServiceExposeMapDaoImpl extends AbstractJooqDao implements ServiceE
             String toVersion, boolean managed) {
         Condition condition1 = null;
         if (launchConfigName == null || launchConfigName.equals(service.getName())
-                || launchConfigName.equals(ServiceDiscoveryConstants.PRIMARY_LAUNCH_CONFIG_NAME)) {
+                || launchConfigName.equals(ServiceConstants.PRIMARY_LAUNCH_CONFIG_NAME)) {
             condition1 = SERVICE_EXPOSE_MAP.DNS_PREFIX.isNull();
         } else {
             condition1 = SERVICE_EXPOSE_MAP.DNS_PREFIX.eq(launchConfigName);
@@ -404,7 +404,7 @@ public class ServiceExposeMapDaoImpl extends AbstractJooqDao implements ServiceE
     public List<? extends Instance> getInstancesToCleanup(Service service, String launchConfigName, String toVersion) {
         Condition condition = null;
         if (launchConfigName == null || launchConfigName.equals(service.getName())
-                || launchConfigName.equals(ServiceDiscoveryConstants.PRIMARY_LAUNCH_CONFIG_NAME)) {
+                || launchConfigName.equals(ServiceConstants.PRIMARY_LAUNCH_CONFIG_NAME)) {
             condition = SERVICE_EXPOSE_MAP.DNS_PREFIX.isNull();
         } else {
             condition = SERVICE_EXPOSE_MAP.DNS_PREFIX.eq(launchConfigName);

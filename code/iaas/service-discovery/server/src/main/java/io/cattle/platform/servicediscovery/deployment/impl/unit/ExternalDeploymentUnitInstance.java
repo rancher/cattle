@@ -1,6 +1,7 @@
 package io.cattle.platform.servicediscovery.deployment.impl.unit;
 
 import io.cattle.platform.core.constants.CommonStatesConstants;
+import io.cattle.platform.core.constants.ServiceConstants;
 import io.cattle.platform.core.model.Service;
 import io.cattle.platform.core.model.ServiceExposeMap;
 import io.cattle.platform.core.model.ServiceIndex;
@@ -8,7 +9,6 @@ import io.cattle.platform.deferred.util.DeferredUtils;
 import io.cattle.platform.object.process.StandardProcess;
 import io.cattle.platform.object.resource.ResourcePredicate;
 import io.cattle.platform.object.util.DataAccessor;
-import io.cattle.platform.servicediscovery.api.constants.ServiceDiscoveryConstants;
 import io.cattle.platform.servicediscovery.deployment.DeploymentUnitInstance;
 import io.cattle.platform.servicediscovery.deployment.impl.DeploymentManagerImpl.DeploymentServiceContext;
 
@@ -31,14 +31,14 @@ public class ExternalDeploymentUnitInstance extends DeploymentUnitInstance {
             this.ipAddress = ipAddress;
             this.exposeMap = context.exposeMapDao.getServiceIpExposeMap(service, ipAddress);
             this.serviceExternalIps = DataAccessor.fields(service)
-                    .withKey(ServiceDiscoveryConstants.FIELD_EXTERNALIPS).withDefault(Collections.EMPTY_LIST)
+                    .withKey(ServiceConstants.FIELD_EXTERNALIPS).withDefault(Collections.EMPTY_LIST)
                     .as(List.class);
 
         } else {
             this.hostName = hostName;
             this.exposeMap = context.exposeMapDao.getServiceHostnameExposeMap(service, hostName);
             this.serviceHostName = DataAccessor.fields(service)
-                    .withKey(ServiceDiscoveryConstants.FIELD_HOSTNAME).as(String.class);
+                    .withKey(ServiceConstants.FIELD_HOSTNAME).as(String.class);
         }
     }
 

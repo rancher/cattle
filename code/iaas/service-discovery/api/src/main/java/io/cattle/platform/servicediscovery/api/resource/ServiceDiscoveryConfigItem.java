@@ -2,9 +2,9 @@ package io.cattle.platform.servicediscovery.api.resource;
 
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.constants.LoadBalancerConstants;
+import io.cattle.platform.core.constants.ServiceConstants;
 import io.cattle.platform.core.model.Service;
 import io.cattle.platform.docker.constants.DockerInstanceConstants;
-import io.cattle.platform.servicediscovery.api.constants.ServiceDiscoveryConstants;
 import io.cattle.platform.util.type.NamedUtils;
 
 import java.util.ArrayList;
@@ -73,12 +73,12 @@ public class ServiceDiscoveryConfigItem {
             true, false, false);
 
     public static final ServiceDiscoveryConfigItem LB_CONGFIG = new ServiceDiscoveryConfigItem(
-            ServiceDiscoveryConstants.FIELD_LOAD_BALANCER_CONFIG,
-            NamedUtils.toUnderscoreSeparated(ServiceDiscoveryConstants.FIELD_LOAD_BALANCER_CONFIG),
+            ServiceConstants.FIELD_LOAD_BALANCER_CONFIG,
+            NamedUtils.toUnderscoreSeparated(ServiceConstants.FIELD_LOAD_BALANCER_CONFIG),
             false, false, false);
 
     public static final ServiceDiscoveryConfigItem EXTERNAL_IPS = new ServiceDiscoveryConfigItem(
-            ServiceDiscoveryConstants.FIELD_EXTERNALIPS,
+            ServiceConstants.FIELD_EXTERNALIPS,
             "external_ips", false, false, false);
 
     public static final ServiceDiscoveryConfigItem DEFAULT_CERTIFICATE = new ServiceDiscoveryConfigItem(
@@ -93,30 +93,30 @@ public class ServiceDiscoveryConfigItem {
             LoadBalancerConstants.FIELD_LB_CERTIFICATE_IDS,
             "certs", false, false, false);
     public static final ServiceDiscoveryConfigItem METADATA = new ServiceDiscoveryConfigItem(
-            ServiceDiscoveryConstants.FIELD_METADATA,
-            ServiceDiscoveryConstants.FIELD_METADATA, false, false, false);
+            ServiceConstants.FIELD_METADATA,
+            ServiceConstants.FIELD_METADATA, false, false, false);
     public static final ServiceDiscoveryConfigItem RETAIN_IP = new ServiceDiscoveryConfigItem(
-            ServiceDiscoveryConstants.FIELD_SERVICE_RETAIN_IP,
+            ServiceConstants.FIELD_SERVICE_RETAIN_IP,
             "retain_ip", false, false, false);
     public static final ServiceDiscoveryConfigItem SCALE_POLICY = new ServiceDiscoveryConfigItem(
-            ServiceDiscoveryConstants.FIELD_SCALE_POLICY,
+            ServiceConstants.FIELD_SCALE_POLICY,
             "scale_policy", false, false, false);
 
     // VOLUME parameter
     private static List<ServiceDiscoveryConfigItem> supportedVolumeConfigItems = new ArrayList<>();
 
     public static final ServiceDiscoveryConfigItem DRIVER = new ServiceDiscoveryConfigItem(
-            ServiceDiscoveryConstants.FIELD_VOLUME_DRIVER,
-            NamedUtils.toUnderscoreSeparated(ServiceDiscoveryConstants.FIELD_VOLUME_DRIVER), true);
+            ServiceConstants.FIELD_VOLUME_DRIVER,
+            NamedUtils.toUnderscoreSeparated(ServiceConstants.FIELD_VOLUME_DRIVER), true);
     public static final ServiceDiscoveryConfigItem DRIVER_OPTS = new ServiceDiscoveryConfigItem(
-            ServiceDiscoveryConstants.FIELD_VOLUME_DRIVER_OPTS,
-            NamedUtils.toUnderscoreSeparated(ServiceDiscoveryConstants.FIELD_VOLUME_DRIVER_OPTS), true);
+            ServiceConstants.FIELD_VOLUME_DRIVER_OPTS,
+            NamedUtils.toUnderscoreSeparated(ServiceConstants.FIELD_VOLUME_DRIVER_OPTS), true);
     public static final ServiceDiscoveryConfigItem EXTERNAL = new ServiceDiscoveryConfigItem(
-            ServiceDiscoveryConstants.FIELD_VOLUME_EXTERNAL,
-            NamedUtils.toUnderscoreSeparated(ServiceDiscoveryConstants.FIELD_VOLUME_EXTERNAL), true);
+            ServiceConstants.FIELD_VOLUME_EXTERNAL,
+            NamedUtils.toUnderscoreSeparated(ServiceConstants.FIELD_VOLUME_EXTERNAL), true);
     public static final ServiceDiscoveryConfigItem PER_CONTAINER = new ServiceDiscoveryConfigItem(
-            ServiceDiscoveryConstants.FIELD_VOLUME_PER_CONTAINER,
-            NamedUtils.toUnderscoreSeparated(ServiceDiscoveryConstants.FIELD_VOLUME_PER_CONTAINER), true);
+            ServiceConstants.FIELD_VOLUME_PER_CONTAINER,
+            NamedUtils.toUnderscoreSeparated(ServiceConstants.FIELD_VOLUME_PER_CONTAINER), true);
 
     /**
      * Name as it appears in docker-compose file
@@ -193,7 +193,7 @@ public class ServiceDiscoveryConfigItem {
             if (serviceItem.getCattleName() != null && serviceItem.getCattleName().equalsIgnoreCase(internalName)) {
                 // special handling for external service hostname
                 if (!isVolume
-                        && service.getKind().equalsIgnoreCase(ServiceDiscoveryConstants.KIND_EXTERNAL_SERVICE)
+                        && service.getKind().equalsIgnoreCase(ServiceConstants.KIND_EXTERNAL_SERVICE)
                         && serviceItem.getCattleName().equalsIgnoreCase(HOSTNAME.cattleName)) {
                     return new ServiceDiscoveryConfigItem(serviceItem.getCattleName(), serviceItem.getDockerName(),
                             false, false, false);

@@ -1,8 +1,8 @@
 package io.cattle.platform.servicediscovery.deployment.impl.planner;
 
 import io.cattle.platform.activity.ActivityLog;
+import io.cattle.platform.core.constants.ServiceConstants;
 import io.cattle.platform.core.model.Service;
-import io.cattle.platform.servicediscovery.api.constants.ServiceDiscoveryConstants;
 import io.cattle.platform.servicediscovery.api.util.ServiceDiscoveryUtil;
 import io.cattle.platform.servicediscovery.deployment.ServiceDeploymentPlanner;
 import io.cattle.platform.servicediscovery.deployment.impl.DeploymentManagerImpl.DeploymentServiceContext;
@@ -29,7 +29,7 @@ public class GlobalServiceDeploymentPlanner extends ServiceDeploymentPlanner {
         hostIds.addAll(hostIdsToDeployService);
         for (DeploymentUnit unit : units) {
             Map<String, String> unitLabels = unit.getLabels();
-            String hostId = unitLabels.get(ServiceDiscoveryConstants.LABEL_SERVICE_REQUESTED_HOST_ID);
+            String hostId = unitLabels.get(ServiceConstants.LABEL_SERVICE_REQUESTED_HOST_ID);
             hostToUnits.put(Long.valueOf(hostId), unit);
         }
     }
@@ -60,10 +60,10 @@ public class GlobalServiceDeploymentPlanner extends ServiceDeploymentPlanner {
         for (int i = 0; i < this.healthyUnits.size(); i++) {
             DeploymentUnit unit = this.healthyUnits.get(i);
             Map<String, String> unitLabels = unit.getLabels();
-            String hostId = unitLabels.get(ServiceDiscoveryConstants.LABEL_SERVICE_REQUESTED_HOST_ID);
+            String hostId = unitLabels.get(ServiceConstants.LABEL_SERVICE_REQUESTED_HOST_ID);
             if (hostIds.contains(hostId)) {
                 watchList.add(unit);
-                unit.remove(ServiceDiscoveryConstants.AUDIT_LOG_REMOVE_EXTRA, ActivityLog.INFO);
+                unit.remove(ServiceConstants.AUDIT_LOG_REMOVE_EXTRA, ActivityLog.INFO);
                 this.healthyUnits.remove(i);
             } else {
                 hostIds.add(hostId);
@@ -79,7 +79,7 @@ public class GlobalServiceDeploymentPlanner extends ServiceDeploymentPlanner {
         for (Long hostId : hostIds) {
             if (!hostToUnits.containsKey(hostId)) {
                 Map<String, String> labels = new HashMap<>();
-                labels.put(ServiceDiscoveryConstants.LABEL_SERVICE_REQUESTED_HOST_ID, hostId.toString());
+                labels.put(ServiceConstants.LABEL_SERVICE_REQUESTED_HOST_ID, hostId.toString());
                 DeploymentUnit unit = new DeploymentUnit(context, service, labels);
                 hostToUnits.put(hostId, unit);
                 healthyUnits.add(unit);

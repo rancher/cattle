@@ -2,13 +2,13 @@ package io.cattle.platform.servicediscovery.process;
 
 import io.cattle.platform.core.constants.HealthcheckConstants;
 import io.cattle.platform.core.constants.InstanceConstants;
+import io.cattle.platform.core.constants.ServiceConstants;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.Service;
 import io.cattle.platform.engine.handler.HandlerResult;
 import io.cattle.platform.engine.process.ProcessInstance;
 import io.cattle.platform.engine.process.ProcessState;
 import io.cattle.platform.process.common.handler.AbstractObjectProcessHandler;
-import io.cattle.platform.servicediscovery.api.constants.ServiceDiscoveryConstants;
 import io.cattle.platform.servicediscovery.deployment.DeploymentManager;
 import io.cattle.platform.servicediscovery.service.ServiceLookup;
 
@@ -30,7 +30,7 @@ public class ServicesReconcileTrigger extends AbstractObjectProcessHandler {
     public String[] getProcessNames() {
         return new String[] { HealthcheckConstants.PROCESS_UPDATE_HEALTHY,
                 HealthcheckConstants.PROCESS_UPDATE_UNHEALTHY, InstanceConstants.PROCESS_STOP,
-                InstanceConstants.PROCESS_REMOVE, ServiceDiscoveryConstants.PROCESS_SERVICE_UPDATE };
+                InstanceConstants.PROCESS_REMOVE, ServiceConstants.PROCESS_SERVICE_UPDATE };
     }
 
     @Override

@@ -2,10 +2,10 @@ package io.cattle.platform.servicediscovery.api.action;
 
 import io.cattle.platform.api.action.ActionHandler;
 import io.cattle.platform.core.addon.ServiceLink;
+import io.cattle.platform.core.constants.ServiceConstants;
 import io.cattle.platform.core.model.Service;
 import io.cattle.platform.json.JsonMapper;
 import io.cattle.platform.object.util.DataAccessor;
-import io.cattle.platform.servicediscovery.api.constants.ServiceDiscoveryConstants;
 import io.cattle.platform.servicediscovery.api.service.ServiceDiscoveryApiService;
 import io.github.ibuildthecloud.gdapi.request.ApiRequest;
 
@@ -23,7 +23,7 @@ public class RemoveServiceLinkActionHandler implements ActionHandler {
 
     @Override
     public String getName() {
-        return ServiceDiscoveryConstants.PROCESS_SERVICE_REMOVE_SERVICE_LINK;
+        return ServiceConstants.PROCESS_SERVICE_REMOVE_SERVICE_LINK;
     }
 
     @Override
@@ -33,7 +33,7 @@ public class RemoveServiceLinkActionHandler implements ActionHandler {
         }
         Service service = (Service) obj;
         ServiceLink serviceLink = DataAccessor.fromMap(request.getRequestObject()).withKey(
-                ServiceDiscoveryConstants.FIELD_SERVICE_LINK).as(jsonMapper, ServiceLink.class);
+                ServiceConstants.FIELD_SERVICE_LINK).as(jsonMapper, ServiceLink.class);
 
         sdService.removeServiceLink(service, serviceLink);
 

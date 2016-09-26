@@ -1,11 +1,11 @@
 package io.cattle.platform.servicediscovery.process;
 
+import io.cattle.platform.core.constants.ServiceConstants;
 import io.cattle.platform.core.model.ServiceIndex;
 import io.cattle.platform.engine.handler.HandlerResult;
 import io.cattle.platform.engine.process.ProcessInstance;
 import io.cattle.platform.engine.process.ProcessState;
 import io.cattle.platform.process.common.handler.AbstractObjectProcessHandler;
-import io.cattle.platform.servicediscovery.api.constants.ServiceDiscoveryConstants;
 import io.cattle.platform.servicediscovery.service.ServiceDiscoveryService;
 
 import javax.inject.Inject;
@@ -19,7 +19,7 @@ public class ServiceSuffixRemove extends AbstractObjectProcessHandler {
 
     @Override
     public String[] getProcessNames() {
-        return new String[] { ServiceDiscoveryConstants.PROCESS_SERVICE_INDEX_REMOVE };
+        return new String[] { ServiceConstants.PROCESS_SERVICE_INDEX_REMOVE };
     }
 
     @Override
