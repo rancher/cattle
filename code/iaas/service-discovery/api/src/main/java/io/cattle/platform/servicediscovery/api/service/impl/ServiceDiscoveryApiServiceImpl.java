@@ -7,6 +7,7 @@ import io.cattle.platform.core.addon.LoadBalancerServiceLink;
 import io.cattle.platform.core.addon.ServiceLink;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.constants.LoadBalancerConstants;
+import io.cattle.platform.core.constants.ServiceConstants;
 import io.cattle.platform.core.dao.DataDao;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.Service;
@@ -20,7 +21,6 @@ import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.process.ObjectProcessManager;
 import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.object.util.DataUtils;
-import io.cattle.platform.servicediscovery.api.constants.ServiceDiscoveryConstants;
 import io.cattle.platform.servicediscovery.api.dao.ServiceConsumeMapDao;
 import io.cattle.platform.servicediscovery.api.resource.ServiceDiscoveryConfigItem;
 import io.cattle.platform.servicediscovery.api.service.RancherConfigToComposeFormatter;
@@ -83,14 +83,14 @@ public class ServiceDiscoveryApiServiceImpl implements ServiceDiscoveryApiServic
         ServiceConsumeMap map = consumeMapDao.findMapToRemove(service.getId(), serviceLink.getServiceId());
 
         if (map != null) {
-            objectProcessManager.scheduleProcessInstance(ServiceDiscoveryConstants.PROCESS_SERVICE_CONSUME_MAP_REMOVE,
+            objectProcessManager.scheduleProcessInstance(ServiceConstants.PROCESS_SERVICE_CONSUME_MAP_REMOVE,
                     map, null);
         }
     }
 
     @Override
     public void addLoadBalancerServiceLink(Service service, LoadBalancerServiceLink serviceLink) {
-        if (!service.getKind().equalsIgnoreCase(ServiceDiscoveryConstants.KIND_LOAD_BALANCER_SERVICE)) {
+        if (!service.getKind().equalsIgnoreCase(ServiceConstants.KIND_LOAD_BALANCER_SERVICE)) {
             return;
         }
 
@@ -142,7 +142,7 @@ public class ServiceDiscoveryApiServiceImpl implements ServiceDiscoveryApiServic
             List<String> launchConfigNames = ServiceDiscoveryUtil.getServiceLaunchConfigNames(service);
             for (String launchConfigName : launchConfigNames) {
                 boolean isPrimaryConfig = launchConfigName
-                        .equals(ServiceDiscoveryConstants.PRIMARY_LAUNCH_CONFIG_NAME);
+                        .equals(ServiceConstants.PRIMARY_LAUNCH_CONFIG_NAME);
                 Map<String, Object> cattleServiceData = ServiceDiscoveryUtil.getLaunchConfigWithServiceDataAsMap(
                         service, launchConfigName);
                 Map<String, Object> composeServiceData = new HashMap<>();
@@ -173,9 +173,9 @@ public class ServiceDiscoveryApiServiceImpl implements ServiceDiscoveryApiServic
         for (VolumeTemplate volume : volumes) {
             Map<String, Object> cattleVolumeData = new HashMap<>();
             cattleVolumeData.putAll(DataUtils.getFields(volume));
-            cattleVolumeData.put(ServiceDiscoveryConstants.FIELD_VOLUME_EXTERNAL, volume.getExternal());
-            cattleVolumeData.put(ServiceDiscoveryConstants.FIELD_VOLUME_DRIVER, volume.getDriver());
-            cattleVolumeData.put(ServiceDiscoveryConstants.FIELD_VOLUME_PER_CONTAINER, volume.getPerContainer());
+            cattleVolumeData.put(ServiceConstants.FIELD_VOLUME_EXTERNAL, volume.getExternal());
+            cattleVolumeData.put(ServiceConstants.FIELD_VOLUME_DRIVER, volume.getDriver());
+            cattleVolumeData.put(ServiceConstants.FIELD_VOLUME_PER_CONTAINER, volume.getPerContainer());
             Map<String, Object> composeVolumeData = new HashMap<>();
             for (String cattleVolume : cattleVolumeData.keySet()) {
                 translateRancherToCompose(forDockerCompose, cattleVolumeData, composeVolumeData, cattleVolume,
@@ -201,9 +201,9 @@ public class ServiceDiscoveryApiServiceImpl implements ServiceDiscoveryApiServic
         if (composeServiceData.get(InstanceConstants.FIELD_LABELS) != null) {
             Map<String, String> labels = new HashMap<>();
             labels.putAll((HashMap<String, String>) composeServiceData.get(InstanceConstants.FIELD_LABELS));
-            String serviceHash = labels.get(ServiceDiscoveryConstants.LABEL_SERVICE_HASH);
+            String serviceHash = labels.get(ServiceConstants.LABEL_SERVICE_HASH);
             if (serviceHash != null) {
-                labels.remove(ServiceDiscoveryConstants.LABEL_SERVICE_HASH);
+                labels.remove(ServiceConstants.LABEL_SERVICE_HASH);
                 composeServiceData.put(InstanceConstants.FIELD_LABELS, labels);
             }
         }
@@ -211,9 +211,9 @@ public class ServiceDiscoveryApiServiceImpl implements ServiceDiscoveryApiServic
         if (composeServiceData.get(InstanceConstants.FIELD_METADATA) != null) {
             Map<String, String> metadata = new HashMap<>();
             metadata.putAll((HashMap<String, String>) composeServiceData.get(InstanceConstants.FIELD_METADATA));
-            String serviceHash = metadata.get(ServiceDiscoveryConstants.LABEL_SERVICE_HASH);
+            String serviceHash = metadata.get(ServiceConstants.LABEL_SERVICE_HASH);
             if (serviceHash != null) {
-                metadata.remove(ServiceDiscoveryConstants.LABEL_SERVICE_HASH);
+                metadata.remove(ServiceConstants.LABEL_SERVICE_HASH);
                 composeServiceData.put(InstanceConstants.FIELD_METADATA, metadata);
             }
         }
@@ -224,9 +224,9 @@ public class ServiceDiscoveryApiServiceImpl implements ServiceDiscoveryApiServic
     protected void formatScale(Service service, Map<String, Object> composeServiceData) {
         if (composeServiceData.get(InstanceConstants.FIELD_LABELS) != null) {
             Map<String, String> labels = ((HashMap<String, String>) composeServiceData.get(InstanceConstants.FIELD_LABELS));
-            String globalService = labels.get(ServiceDiscoveryConstants.LABEL_SERVICE_GLOBAL);
+            String globalService = labels.get(ServiceConstants.LABEL_SERVICE_GLOBAL);
             if (Boolean.valueOf(globalService) == true) {
-                composeServiceData.remove(ServiceDiscoveryConstants.FIELD_SCALE);
+                composeServiceData.remove(ServiceConstants.FIELD_SCALE);
             }
         }
     }
@@ -243,7 +243,7 @@ public class ServiceDiscoveryApiServiceImpl implements ServiceDiscoveryApiServic
 
     @SuppressWarnings("unchecked")
     private void populateLogConfig(Map<String, Object> cattleServiceData, Map<String, Object> composeServiceData) {
-        Object value = cattleServiceData.get(ServiceDiscoveryConstants.FIELD_LOG_CONFIG);
+        Object value = cattleServiceData.get(ServiceConstants.FIELD_LOG_CONFIG);
         if (value instanceof Map) {
             if (!((Map<?, ?>) value).isEmpty()) {
                 Map<String, Object> map = (Map<String, Object>)value;
@@ -264,7 +264,7 @@ public class ServiceDiscoveryApiServiceImpl implements ServiceDiscoveryApiServic
     @SuppressWarnings("unchecked")
     protected void populateLoadBalancerServiceLabels(Service service,
             String launchConfigName, Map<String, Object> composeServiceData) {
-        if (!service.getKind().equalsIgnoreCase(ServiceDiscoveryConstants.KIND_LOAD_BALANCER_SERVICE)) {
+        if (!service.getKind().equalsIgnoreCase(ServiceConstants.KIND_LOAD_BALANCER_SERVICE)) {
             return;
         }
 
@@ -284,7 +284,7 @@ public class ServiceDiscoveryApiServiceImpl implements ServiceDiscoveryApiServic
                         consumedService.getStackId());
                 consumedServiceName = env.getName() + "/" + consumedServiceName;
             }
-            String labelName = ServiceDiscoveryConstants.LABEL_LB_TARGET + consumedServiceName;
+            String labelName = ServiceConstants.LABEL_LB_TARGET + consumedServiceName;
             StringBuilder bldr = new StringBuilder();
             for (String port : ports) {
                 bldr.append(port).append(",");
@@ -313,10 +313,10 @@ public class ServiceDiscoveryApiServiceImpl implements ServiceDiscoveryApiServic
             labels.putAll((HashMap<String, String>) composeServiceData.get(InstanceConstants.FIELD_LABELS));
         }
         if (selectorLink != null) {
-            labels.put(ServiceDiscoveryConstants.LABEL_SELECTOR_LINK, selectorLink);
+            labels.put(ServiceConstants.LABEL_SELECTOR_LINK, selectorLink);
         }
         if (selectorContainer != null) {
-            labels.put(ServiceDiscoveryConstants.LABEL_SELECTOR_CONTAINER, selectorContainer);
+            labels.put(ServiceConstants.LABEL_SELECTOR_CONTAINER, selectorContainer);
         }
 
         if (!labels.isEmpty()) {
@@ -328,7 +328,7 @@ public class ServiceDiscoveryApiServiceImpl implements ServiceDiscoveryApiServic
     protected void populateSidekickLabels(Service service, Map<String, Object> composeServiceData, boolean isPrimary) {
         List<? extends String> configs = ServiceDiscoveryUtil
                 .getServiceLaunchConfigNames(service);
-        configs.remove(ServiceDiscoveryConstants.PRIMARY_LAUNCH_CONFIG_NAME);
+        configs.remove(ServiceConstants.PRIMARY_LAUNCH_CONFIG_NAME);
         StringBuilder sidekicks = new StringBuilder();
         for (String config : configs) {
             sidekicks.append(config).append(",");
@@ -336,11 +336,11 @@ public class ServiceDiscoveryApiServiceImpl implements ServiceDiscoveryApiServic
         Map<String, String> labels = new HashMap<>();
         if (composeServiceData.get(InstanceConstants.FIELD_LABELS) != null) {
             labels.putAll((HashMap<String, String>) composeServiceData.get(InstanceConstants.FIELD_LABELS));
-            labels.remove(ServiceDiscoveryConstants.LABEL_SIDEKICK);
+            labels.remove(ServiceConstants.LABEL_SIDEKICK);
         }
         if (!sidekicks.toString().isEmpty() && isPrimary) {
             String sidekicksFinal = sidekicks.toString().substring(0, sidekicks.length() - 1);
-            labels.put(ServiceDiscoveryConstants.LABEL_SIDEKICK, sidekicksFinal);
+            labels.put(ServiceConstants.LABEL_SIDEKICK, sidekicksFinal);
         }
 
         if (!labels.isEmpty()) {
@@ -380,11 +380,11 @@ public class ServiceDiscoveryApiServiceImpl implements ServiceDiscoveryApiServic
 
     private void addExtraComposeParameters(Service service,
             String launchConfigName, Map<String, Object> composeServiceData) {
-        if (service.getKind().equalsIgnoreCase(ServiceDiscoveryConstants.KIND_DNS_SERVICE)) {
+        if (service.getKind().equalsIgnoreCase(ServiceConstants.KIND_DNS_SERVICE)) {
             composeServiceData.put(ServiceDiscoveryConfigItem.IMAGE.getDockerName(), "rancher/dns-service");
-        } else if (service.getKind().equalsIgnoreCase(ServiceDiscoveryConstants.KIND_LOAD_BALANCER_SERVICE)) {
+        } else if (service.getKind().equalsIgnoreCase(ServiceConstants.KIND_LOAD_BALANCER_SERVICE)) {
             composeServiceData.put(ServiceDiscoveryConfigItem.IMAGE.getDockerName(), "rancher/load-balancer-service");
-        } else if (service.getKind().equalsIgnoreCase(ServiceDiscoveryConstants.KIND_EXTERNAL_SERVICE)) {
+        } else if (service.getKind().equalsIgnoreCase(ServiceConstants.KIND_EXTERNAL_SERVICE)) {
             composeServiceData.put(ServiceDiscoveryConfigItem.IMAGE.getDockerName(), "rancher/external-service");
         }
     }
@@ -407,7 +407,7 @@ public class ServiceDiscoveryApiServiceImpl implements ServiceDiscoveryApiServic
                             DockerNetworkConstants.NETWORK_MODE_CONTAINER + ":" + instanceName);
                 } else {
                     Object networkLaunchConfig = serviceData
-                            .get(ServiceDiscoveryConstants.FIELD_NETWORK_LAUNCH_CONFIG);
+                            .get(ServiceConstants.FIELD_NETWORK_LAUNCH_CONFIG);
                     if (networkLaunchConfig != null) {
                         composeServiceData.put(ServiceDiscoveryConfigItem.NETWORKMODE.getDockerName(),
                                 DockerNetworkConstants.NETWORK_MODE_CONTAINER + ":" + networkLaunchConfig);
@@ -468,7 +468,7 @@ public class ServiceDiscoveryApiServiceImpl implements ServiceDiscoveryApiServic
         List<String> launchConfigNames = new ArrayList<>();
         Map<String, Object> launchConfigData = ServiceDiscoveryUtil.getLaunchConfigDataAsMap(service, launchConfigName);
         Object dataVolumesLaunchConfigs = launchConfigData.get(
-                ServiceDiscoveryConstants.FIELD_DATA_VOLUMES_LAUNCH_CONFIG);
+                ServiceConstants.FIELD_DATA_VOLUMES_LAUNCH_CONFIG);
 
         if (dataVolumesLaunchConfigs != null) {
             launchConfigNames.addAll((List<String>) dataVolumesLaunchConfigs);
@@ -521,7 +521,7 @@ public class ServiceDiscoveryApiServiceImpl implements ServiceDiscoveryApiServic
 
     protected String generateService(Service service, Stack stack) throws Exception {
         @SuppressWarnings("unchecked")
-        Map<String, Object> metadata = DataAccessor.fields(service).withKey(ServiceDiscoveryConstants.FIELD_METADATA)
+        Map<String, Object> metadata = DataAccessor.fields(service).withKey(ServiceConstants.FIELD_METADATA)
                 .withDefault(Collections.EMPTY_MAP).as(Map.class);
 
         String serviceName = service.getName();

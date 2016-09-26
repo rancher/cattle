@@ -14,6 +14,7 @@ import io.cattle.platform.core.addon.LoadBalancerCookieStickinessPolicy;
 import io.cattle.platform.core.addon.LoadBalancerTargetInput;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.constants.LoadBalancerConstants;
+import io.cattle.platform.core.constants.ServiceConstants;
 import io.cattle.platform.core.dao.InstanceDao;
 import io.cattle.platform.core.dao.IpAddressDao;
 import io.cattle.platform.core.model.Agent;
@@ -24,7 +25,6 @@ import io.cattle.platform.core.model.Service;
 import io.cattle.platform.core.util.LoadBalancerTargetPortSpec;
 import io.cattle.platform.json.JsonMapper;
 import io.cattle.platform.object.util.DataAccessor;
-import io.cattle.platform.servicediscovery.api.constants.ServiceDiscoveryConstants;
 import io.cattle.platform.servicediscovery.api.dao.ServiceDao;
 import io.cattle.platform.servicediscovery.api.dao.ServiceExposeMapDao;
 import io.cattle.platform.servicediscovery.api.util.ServiceDiscoveryUtil;
@@ -84,7 +84,7 @@ public class LoadBalancerInfoFactory extends AbstractAgentBaseContextFactory {
         LoadBalancerCookieStickinessPolicy lbPolicy = null;
         HaproxyConfig customConfig = null;
         
-        Object config = DataAccessor.field(lbService, ServiceDiscoveryConstants.FIELD_LOAD_BALANCER_CONFIG,
+        Object config = DataAccessor.field(lbService, ServiceConstants.FIELD_LOAD_BALANCER_CONFIG,
                 Object.class);
         Map<String, Object> data = CollectionUtils.toMap(config);
         if (config != null) {
@@ -95,7 +95,7 @@ public class LoadBalancerInfoFactory extends AbstractAgentBaseContextFactory {
         }
 
         Object healthCheck = ServiceDiscoveryUtil.getLaunchConfigObject(lbService,
-                ServiceDiscoveryConstants.PRIMARY_LAUNCH_CONFIG_NAME, InstanceConstants.FIELD_HEALTH_CHECK);
+                ServiceConstants.PRIMARY_LAUNCH_CONFIG_NAME, InstanceConstants.FIELD_HEALTH_CHECK);
         InstanceHealthCheck lbHealthCheck = null;
         if (healthCheck != null) {
             lbHealthCheck = jsonMapper.convertValue(healthCheck, InstanceHealthCheck.class);
@@ -283,7 +283,7 @@ public class LoadBalancerInfoFactory extends AbstractAgentBaseContextFactory {
                 healthCheck = svcToHC.get(target.getService().getId());
                 if (healthCheck == null) {
                     Object hC = ServiceDiscoveryUtil.getLaunchConfigObject(target.getService(),
-                            ServiceDiscoveryConstants.PRIMARY_LAUNCH_CONFIG_NAME, InstanceConstants.FIELD_HEALTH_CHECK);
+                            ServiceConstants.PRIMARY_LAUNCH_CONFIG_NAME, InstanceConstants.FIELD_HEALTH_CHECK);
                     if (hC != null) {
                         healthCheck = jsonMapper.convertValue(hC, InstanceHealthCheck.class);
                         svcToHC.put(target.getService().getId(), healthCheck);

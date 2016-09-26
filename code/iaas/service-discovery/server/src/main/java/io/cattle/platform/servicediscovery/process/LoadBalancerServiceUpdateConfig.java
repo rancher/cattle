@@ -5,6 +5,7 @@ import io.cattle.platform.configitem.request.ConfigUpdateRequest;
 import io.cattle.platform.configitem.request.util.ConfigUpdateRequestUtils;
 import io.cattle.platform.configitem.version.ConfigItemStatusManager;
 import io.cattle.platform.core.constants.InstanceConstants;
+import io.cattle.platform.core.constants.ServiceConstants;
 import io.cattle.platform.core.dao.InstanceDao;
 import io.cattle.platform.core.model.Agent;
 import io.cattle.platform.core.model.Instance;
@@ -16,7 +17,6 @@ import io.cattle.platform.engine.process.ProcessState;
 import io.cattle.platform.json.JsonMapper;
 import io.cattle.platform.object.resource.ResourceMonitor;
 import io.cattle.platform.process.common.handler.AbstractObjectProcessLogic;
-import io.cattle.platform.servicediscovery.api.constants.ServiceDiscoveryConstants;
 import io.cattle.platform.servicediscovery.service.ServiceDiscoveryService;
 import io.cattle.platform.servicediscovery.service.lbservice.LoadBalancerServiceLookup;
 import io.cattle.platform.util.type.Priority;
@@ -58,14 +58,14 @@ public class LoadBalancerServiceUpdateConfig extends AbstractObjectProcessLogic 
                 InstanceConstants.PROCESS_START,
                 InstanceConstants.PROCESS_STOP,
                 InstanceConstants.PROCESS_RESTART,
-                ServiceDiscoveryConstants.PROCESS_SERVICE_CONSUME_MAP_CREATE,
-                ServiceDiscoveryConstants.PROCESS_SERVICE_CONSUME_MAP_REMOVE,
-                ServiceDiscoveryConstants.PROCESS_SERVICE_CONSUME_MAP_UPDATE,
-                ServiceDiscoveryConstants.PROCESS_SERVICE_UPDATE,
-                ServiceDiscoveryConstants.PROCESS_SERVICE_ACTIVATE,
-                ServiceDiscoveryConstants.PROCESS_SERVICE_DEACTIVATE,
-                ServiceDiscoveryConstants.PROCESS_SERVICE_EXPOSE_MAP_CREATE,
-                ServiceDiscoveryConstants.PROCESS_SERVICE_EXPOSE_MAP_REMOVE,
+                ServiceConstants.PROCESS_SERVICE_CONSUME_MAP_CREATE,
+                ServiceConstants.PROCESS_SERVICE_CONSUME_MAP_REMOVE,
+                ServiceConstants.PROCESS_SERVICE_CONSUME_MAP_UPDATE,
+                ServiceConstants.PROCESS_SERVICE_UPDATE,
+                ServiceConstants.PROCESS_SERVICE_ACTIVATE,
+                ServiceConstants.PROCESS_SERVICE_DEACTIVATE,
+                ServiceConstants.PROCESS_SERVICE_EXPOSE_MAP_CREATE,
+                ServiceConstants.PROCESS_SERVICE_EXPOSE_MAP_REMOVE,
                 "certificate.update"
         };
     }

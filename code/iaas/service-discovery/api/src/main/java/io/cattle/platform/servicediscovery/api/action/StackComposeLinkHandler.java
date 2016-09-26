@@ -2,10 +2,10 @@ package io.cattle.platform.servicediscovery.api.action;
 
 import static io.cattle.platform.core.model.tables.ServiceTable.SERVICE;
 import io.cattle.platform.api.link.LinkHandler;
+import io.cattle.platform.core.constants.ServiceConstants;
 import io.cattle.platform.core.model.Stack;
 import io.cattle.platform.core.model.Service;
 import io.cattle.platform.object.ObjectManager;
-import io.cattle.platform.servicediscovery.api.constants.ServiceDiscoveryConstants;
 import io.cattle.platform.servicediscovery.api.service.ServiceDiscoveryApiService;
 import io.github.ibuildthecloud.gdapi.request.ApiRequest;
 
@@ -34,7 +34,7 @@ public class StackComposeLinkHandler implements LinkHandler {
 
     @Override
     public boolean handles(String type, String id, String link, ApiRequest request) {
-        return ServiceDiscoveryConstants.LINK_COMPOSE_CONFIG.equalsIgnoreCase(link);
+        return ServiceConstants.LINK_COMPOSE_CONFIG.equalsIgnoreCase(link);
     }
 
     @Override

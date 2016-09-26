@@ -1,13 +1,13 @@
 package io.cattle.platform.systemstack.listener;
 
 import static io.cattle.platform.core.model.tables.StackTable.*;
-
 import io.cattle.platform.archaius.util.ArchaiusUtil;
 import io.cattle.platform.configitem.events.ConfigUpdate;
 import io.cattle.platform.configitem.model.Client;
 import io.cattle.platform.configitem.model.ItemVersion;
 import io.cattle.platform.configitem.version.ConfigItemStatusManager;
 import io.cattle.platform.core.constants.CommonStatesConstants;
+import io.cattle.platform.core.constants.ServiceConstants;
 import io.cattle.platform.core.dao.GenericResourceDao;
 import io.cattle.platform.core.dao.HostDao;
 import io.cattle.platform.core.model.Account;
@@ -26,7 +26,6 @@ import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.process.ObjectProcessManager;
 import io.cattle.platform.object.process.StandardProcess;
 import io.cattle.platform.object.util.DataAccessor;
-import io.cattle.platform.servicediscovery.api.constants.ServiceDiscoveryConstants;
 import io.cattle.platform.systemstack.listener.external.api.catalog.Template;
 import io.cattle.platform.systemstack.lock.SystemStackLock;
 import io.cattle.platform.systemstack.process.SystemStackTrigger;
@@ -182,9 +181,9 @@ public class SystemStackUpdate extends AbstractJooqDao implements AnnotatedEvent
                 (Object)STACK.NAME, StringUtils.capitalize(stack),
                 STACK.ACCOUNT_ID, account.getId(),
                 STACK.EXTERNAL_ID, getExternalId(stack, version, true),
-                ServiceDiscoveryConstants.STACK_FIELD_DOCKER_COMPOSE, compose,
-                ServiceDiscoveryConstants.STACK_FIELD_RANCHER_COMPOSE, rancherCompose,
-                ServiceDiscoveryConstants.STACK_FIELD_START_ON_CREATE, true);
+                ServiceConstants.STACK_FIELD_DOCKER_COMPOSE, compose,
+                ServiceConstants.STACK_FIELD_RANCHER_COMPOSE, rancherCompose,
+                ServiceConstants.STACK_FIELD_START_ON_CREATE, true);
 
         Map<String, Object> props = objectManager.convertToPropertiesFor(Stack.class, data);
         props.put("isSystem", true);

@@ -9,6 +9,7 @@ import io.cattle.platform.core.addon.LoadBalancerServiceLink;
 import io.cattle.platform.core.addon.ServiceLink;
 import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.LoadBalancerConstants;
+import io.cattle.platform.core.constants.ServiceConstants;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.InstanceLink;
 import io.cattle.platform.core.model.Service;
@@ -24,7 +25,6 @@ import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.process.ObjectProcessManager;
 import io.cattle.platform.object.process.StandardProcess;
 import io.cattle.platform.object.util.DataUtils;
-import io.cattle.platform.servicediscovery.api.constants.ServiceDiscoveryConstants;
 import io.cattle.platform.servicediscovery.api.dao.ServiceConsumeMapDao;
 import io.cattle.platform.servicediscovery.deployment.impl.lock.ServiceLinkLock;
 import io.cattle.platform.util.type.CollectionUtils;
@@ -210,7 +210,7 @@ public class ServiceConsumeMapDaoImpl extends AbstractJooqDao implements Service
                     properties));
         } else {
             if (service.getKind()
-                    .equalsIgnoreCase(ServiceDiscoveryConstants.KIND_LOAD_BALANCER_SERVICE)) {
+                    .equalsIgnoreCase(ServiceConstants.KIND_LOAD_BALANCER_SERVICE)) {
                 LoadBalancerServiceLink newLbServiceLink = (LoadBalancerServiceLink) serviceLink;
                 List<? extends String> newPorts = newLbServiceLink.getPorts() != null ? newLbServiceLink.getPorts()
                         : new ArrayList<String>();
@@ -221,7 +221,7 @@ public class ServiceConsumeMapDaoImpl extends AbstractJooqDao implements Service
         }
 
         if (map.getState().equalsIgnoreCase(CommonStatesConstants.REQUESTED)) {
-            objectProcessManager.scheduleProcessInstance(ServiceDiscoveryConstants.PROCESS_SERVICE_CONSUME_MAP_CREATE,
+            objectProcessManager.scheduleProcessInstance(ServiceConstants.PROCESS_SERVICE_CONSUME_MAP_CREATE,
                     map, null);
         }
 

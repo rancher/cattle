@@ -2,6 +2,7 @@ package io.cattle.platform.servicediscovery.process;
 
 import io.cattle.platform.activity.ActivityService;
 import io.cattle.platform.core.constants.CommonStatesConstants;
+import io.cattle.platform.core.constants.ServiceConstants;
 import io.cattle.platform.core.model.Service;
 import io.cattle.platform.engine.handler.HandlerResult;
 import io.cattle.platform.engine.process.ProcessInstance;
@@ -10,7 +11,6 @@ import io.cattle.platform.iaas.api.auditing.AuditService;
 import io.cattle.platform.object.resource.ResourceMonitor;
 import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.process.common.handler.AbstractObjectProcessHandler;
-import io.cattle.platform.servicediscovery.api.constants.ServiceDiscoveryConstants;
 import io.cattle.platform.servicediscovery.api.dao.ServiceExposeMapDao;
 import io.cattle.platform.servicediscovery.deployment.DeploymentManager;
 import io.cattle.platform.servicediscovery.service.ServiceDiscoveryService;
@@ -53,8 +53,8 @@ public class ServiceUpdateActivate extends AbstractObjectProcessHandler {
 
     @Override
     public String[] getProcessNames() {
-        return new String[] { ServiceDiscoveryConstants.PROCESS_SERVICE_ACTIVATE,
-                ServiceDiscoveryConstants.PROCESS_SERVICE_UPDATE };
+        return new String[] { ServiceConstants.PROCESS_SERVICE_ACTIVATE,
+                ServiceConstants.PROCESS_SERVICE_UPDATE };
     }
 
     @Override
@@ -62,7 +62,7 @@ public class ServiceUpdateActivate extends AbstractObjectProcessHandler {
         final Service service = (Service) state.getResource();
 
         // on inactive service update, do nothing
-        if (process.getName().equalsIgnoreCase(ServiceDiscoveryConstants.PROCESS_SERVICE_UPDATE)
+        if (process.getName().equalsIgnoreCase(ServiceConstants.PROCESS_SERVICE_UPDATE)
                 && service.getState().equalsIgnoreCase(CommonStatesConstants.UPDATING_INACTIVE)) {
             return null;
         }
@@ -75,7 +75,7 @@ public class ServiceUpdateActivate extends AbstractObjectProcessHandler {
         });
 
         objectManager.reload(state.getResource());
-        return new HandlerResult(ServiceDiscoveryConstants.FIELD_CURRENT_SCALE, exposeDao.getCurrentScale(service.getId()));
+        return new HandlerResult(ServiceConstants.FIELD_CURRENT_SCALE, exposeDao.getCurrentScale(service.getId()));
     }
 
     protected String getMessage(String name) {
@@ -93,7 +93,7 @@ public class ServiceUpdateActivate extends AbstractObjectProcessHandler {
     @SuppressWarnings("unchecked")
     protected void waitForConsumedServicesActivate(ProcessState state) {
         List<Integer> consumedServicesIds = DataAccessor.fromMap(state.getData())
-                .withKey(ServiceDiscoveryConstants.FIELD_WAIT_FOR_CONSUMED_SERVICES_IDS)
+                .withKey(ServiceConstants.FIELD_WAIT_FOR_CONSUMED_SERVICES_IDS)
                 .withDefault(Collections.EMPTY_LIST).as(List.class);
 
         for (Integer consumedServiceId : consumedServicesIds) {

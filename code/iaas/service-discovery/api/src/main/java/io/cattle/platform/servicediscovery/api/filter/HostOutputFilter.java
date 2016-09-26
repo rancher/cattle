@@ -1,10 +1,10 @@
 package io.cattle.platform.servicediscovery.api.filter;
 
 import io.cattle.platform.core.addon.PublicEndpoint;
+import io.cattle.platform.core.constants.ServiceConstants;
 import io.cattle.platform.core.model.Host;
 import io.cattle.platform.json.JsonMapper;
 import io.cattle.platform.object.util.DataAccessor;
-import io.cattle.platform.servicediscovery.api.constants.ServiceDiscoveryConstants;
 import io.github.ibuildthecloud.gdapi.model.Resource;
 import io.github.ibuildthecloud.gdapi.request.ApiRequest;
 import io.github.ibuildthecloud.gdapi.response.ResourceOutputFilter;
@@ -29,14 +29,14 @@ public class HostOutputFilter implements ResourceOutputFilter {
 
     public Resource convertPublicEndpointsField(Object original, Resource converted) {
         List<? extends PublicEndpoint> endpoints = DataAccessor.fields(original)
-                .withKey(ServiceDiscoveryConstants.FIELD_PUBLIC_ENDPOINTS).withDefault(Collections.EMPTY_LIST)
+                .withKey(ServiceConstants.FIELD_PUBLIC_ENDPOINTS).withDefault(Collections.EMPTY_LIST)
                 .asList(jsonMapper, PublicEndpoint.class);
 
         if (endpoints.isEmpty()) {
             return converted;
         }
 
-        converted.getFields().put(ServiceDiscoveryConstants.FIELD_PUBLIC_ENDPOINTS,
+        converted.getFields().put(ServiceConstants.FIELD_PUBLIC_ENDPOINTS,
                 ServiceOutputFilter.getConvertedEndpoints(endpoints));
         return converted;
     }

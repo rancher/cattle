@@ -2,11 +2,11 @@ package io.cattle.platform.servicediscovery.api.action;
 
 import io.cattle.platform.api.action.ActionHandler;
 import io.cattle.platform.core.constants.CommonStatesConstants;
+import io.cattle.platform.core.constants.ServiceConstants;
 import io.cattle.platform.core.model.Stack;
 import io.cattle.platform.core.model.Service;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.process.ObjectProcessManager;
-import io.cattle.platform.servicediscovery.api.constants.ServiceDiscoveryConstants;
 import io.github.ibuildthecloud.gdapi.exception.ValidationErrorException;
 import io.github.ibuildthecloud.gdapi.request.ApiRequest;
 import io.github.ibuildthecloud.gdapi.validation.ValidationErrorCodes;
@@ -29,7 +29,7 @@ public class StackDeactivateServicesActionHandler implements ActionHandler {
 
     @Override
     public String getName() {
-        return ServiceDiscoveryConstants.PROCESS_STACK_DEACTIVATE_SERVICES;
+        return ServiceConstants.PROCESS_STACK_DEACTIVATE_SERVICES;
     }
 
     @Override
@@ -48,12 +48,12 @@ public class StackDeactivateServicesActionHandler implements ActionHandler {
     private void deactivateServices(List<? extends Service> services) {
         List<String> validStates = Arrays.asList(CommonStatesConstants.ACTIVE, CommonStatesConstants.ACTIVATING,
                 CommonStatesConstants.UPDATING_ACTIVE, CommonStatesConstants.UPDATING_INACTIVE,
-                ServiceDiscoveryConstants.STATE_RESTARTING);
+                ServiceConstants.STATE_RESTARTING);
         List<String> statesToSkip = Arrays.asList(CommonStatesConstants.REMOVED, CommonStatesConstants.REMOVING,
                 CommonStatesConstants.INACTIVE, CommonStatesConstants.DEACTIVATING);
         for (Service service : services) {
             if (validStates.contains(service.getState())) {
-                    objectProcessManager.scheduleProcessInstance(ServiceDiscoveryConstants.PROCESS_SERVICE_DEACTIVATE,
+                    objectProcessManager.scheduleProcessInstance(ServiceConstants.PROCESS_SERVICE_DEACTIVATE,
                             service, null);
             } else if (statesToSkip.contains(service.getState())) {
                 continue;

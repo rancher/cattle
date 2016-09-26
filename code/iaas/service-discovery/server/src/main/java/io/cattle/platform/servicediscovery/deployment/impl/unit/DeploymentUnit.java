@@ -6,6 +6,7 @@ import static io.cattle.platform.core.model.tables.VolumeTable.*;
 import static io.cattle.platform.core.model.tables.VolumeTemplateTable.*;
 import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.InstanceConstants;
+import io.cattle.platform.core.constants.ServiceConstants;
 import io.cattle.platform.core.constants.VolumeConstants;
 import io.cattle.platform.core.model.Host;
 import io.cattle.platform.core.model.Instance;
@@ -23,7 +24,6 @@ import io.cattle.platform.object.process.StandardProcess;
 import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.object.util.TransitioningUtils;
 import io.cattle.platform.process.common.util.ProcessUtils;
-import io.cattle.platform.servicediscovery.api.constants.ServiceDiscoveryConstants;
 import io.cattle.platform.servicediscovery.api.util.ServiceDiscoveryUtil;
 import io.cattle.platform.servicediscovery.deployment.DeploymentUnitInstance;
 import io.cattle.platform.servicediscovery.deployment.DeploymentUnitInstanceIdGenerator;
@@ -47,9 +47,9 @@ public class DeploymentUnit {
     public static class SidekickType {
         public static List<SidekickType> supportedTypes = new ArrayList<>();
         public static final SidekickType DATA = new SidekickType(DockerInstanceConstants.FIELD_VOLUMES_FROM,
-                ServiceDiscoveryConstants.FIELD_DATA_VOLUMES_LAUNCH_CONFIG, true);
+                ServiceConstants.FIELD_DATA_VOLUMES_LAUNCH_CONFIG, true);
         public static final SidekickType NETWORK = new SidekickType(DockerInstanceConstants.FIELD_NETWORK_CONTAINER_ID,
-                ServiceDiscoveryConstants.FIELD_NETWORK_LAUNCH_CONFIG, false);
+                ServiceConstants.FIELD_NETWORK_LAUNCH_CONFIG, false);
         public String launchConfigFieldName;
         public String launchConfigType;
         public boolean isList;
@@ -73,7 +73,7 @@ public class DeploymentUnit {
     io.cattle.platform.core.model.DeploymentUnit unit;
 
     private static List<String> supportedUnitLabels = Arrays
-            .asList(ServiceDiscoveryConstants.LABEL_SERVICE_REQUESTED_HOST_ID);
+            .asList(ServiceConstants.LABEL_SERVICE_REQUESTED_HOST_ID);
 
     /*
      * This constructor is called to add existing unit
@@ -128,12 +128,12 @@ public class DeploymentUnit {
         this(context, io.cattle.platform.util.resource.UUID.randomUUID().toString(), service);
         setLabels(labels);
 
-        if (StringUtils.equalsIgnoreCase(ServiceDiscoveryConstants.SERVICE_INDEX_DU_STRATEGY,
-                DataAccessor.fieldString(service, ServiceDiscoveryConstants.FIELD_SERVICE_INDEX_STRATEGY))) {
+        if (StringUtils.equalsIgnoreCase(ServiceConstants.SERVICE_INDEX_DU_STRATEGY,
+                DataAccessor.fieldString(service, ServiceConstants.FIELD_SERVICE_INDEX_STRATEGY))) {
             Map<String, Object> params = new HashMap<>();
             // create deploymentunit
             params.put("uuid", this.uuid);
-            params.put(ServiceDiscoveryConstants.FIELD_SERVICE_ID, service.getId());
+            params.put(ServiceConstants.FIELD_SERVICE_ID, service.getId());
             params.put(InstanceConstants.FIELD_SERVICE_INSTANCE_SERVICE_INDEX, getServiceIndex());
             params.put("accountId", service.getAccountId());
             params.put(InstanceConstants.FIELD_LABELS, this.unitLabels);
@@ -403,12 +403,12 @@ public class DeploymentUnit {
     private Volume createVolume(Service service, VolumeTemplate template, String name) {
         Map<String, Object> params = new HashMap<>();
         if (template.getPerContainer()) {
-            params.put(ServiceDiscoveryConstants.FIELD_DEPLOYMENT_UNIT_ID, unit.getId());
+            params.put(ServiceConstants.FIELD_DEPLOYMENT_UNIT_ID, unit.getId());
         }
         params.put("name", name);
         params.put("accountId", service.getAccountId());
-        params.put(ServiceDiscoveryConstants.FIELD_STACK_ID, service.getStackId());
-        params.put(ServiceDiscoveryConstants.FIELD_VOLUME_TEMPLATE_ID, template.getId());
+        params.put(ServiceConstants.FIELD_STACK_ID, service.getStackId());
+        params.put(ServiceConstants.FIELD_VOLUME_TEMPLATE_ID, template.getId());
         params.put(VolumeConstants.FIELD_VOLUME_DRIVER_OPTS,
                 DataAccessor.fieldMap(template, VolumeConstants.FIELD_VOLUME_DRIVER_OPTS));
         params.put(VolumeConstants.FIELD_VOLUME_DRIVER, template.getDriver());
@@ -466,7 +466,7 @@ public class DeploymentUnit {
             for (String sidekickLaunchConfigName : sidekicksLaunchConfigNames) {
                 // check if the service is present in the service map (it can be referenced, but removed already)
                 if (sidekickLaunchConfigName.toString().equalsIgnoreCase(service.getName())) {
-                    sidekickLaunchConfigName = ServiceDiscoveryConstants.PRIMARY_LAUNCH_CONFIG_NAME;
+                    sidekickLaunchConfigName = ServiceConstants.PRIMARY_LAUNCH_CONFIG_NAME;
                 }
                 DeploymentUnitInstance sidekickUnitInstance = launchConfigToInstance.get(sidekickLaunchConfigName
                         .toString());
@@ -523,7 +523,7 @@ public class DeploymentUnit {
         if (volumesFromInstanceIds != null && !volumesFromInstanceIds.isEmpty()) {
             deployParams.put(DockerInstanceConstants.FIELD_VOLUMES_FROM, volumesFromInstanceIds);
         }
-        Object hostId = instanceLabels.get(ServiceDiscoveryConstants.LABEL_SERVICE_REQUESTED_HOST_ID);
+        Object hostId = instanceLabels.get(ServiceConstants.LABEL_SERVICE_REQUESTED_HOST_ID);
         if (hostId != null) {
             deployParams.put(InstanceConstants.FIELD_REQUESTED_HOST_ID, hostId);
         }
@@ -533,11 +533,11 @@ public class DeploymentUnit {
         }
 
         deployParams.put(InstanceConstants.FIELD_DEPLOYMENT_UNIT_UUID, this.uuid);
-        deployParams.put(ServiceDiscoveryConstants.FIELD_VERSION, ServiceDiscoveryUtil.getLaunchConfigObject(
-                instance.getService(), instance.getLaunchConfigName(), ServiceDiscoveryConstants.FIELD_VERSION));
+        deployParams.put(ServiceConstants.FIELD_VERSION, ServiceDiscoveryUtil.getLaunchConfigObject(
+                instance.getService(), instance.getLaunchConfigName(), ServiceConstants.FIELD_VERSION));
         addDns(instance, deployParams);
 
-        deployParams.put(ServiceDiscoveryConstants.FIELD_INTERNAL_VOLUMES, namedVolumes);
+        deployParams.put(ServiceConstants.FIELD_INTERNAL_VOLUMES, namedVolumes);
         deployParams.put(InstanceConstants.FIELD_DATA_VOLUME_MOUNTS, internalVolumes);
 
         return deployParams;
@@ -562,28 +562,28 @@ public class DeploymentUnit {
     protected Map<String, String> getLabels(DeploymentUnitInstance instance) {
         Map<String, String> labels = new HashMap<>();
         String serviceName = instance.getService().getName();
-        if (!ServiceDiscoveryConstants.PRIMARY_LAUNCH_CONFIG_NAME.equals(instance.getLaunchConfigName())) {
+        if (!ServiceConstants.PRIMARY_LAUNCH_CONFIG_NAME.equals(instance.getLaunchConfigName())) {
             serviceName = serviceName + '/' + instance.getLaunchConfigName();
         }
         String envName = context.objectManager.loadResource(Stack.class, instance.getService().getStackId())
                 .getName();
-        labels.put(ServiceDiscoveryConstants.LABEL_STACK_NAME, envName);
-        labels.put(ServiceDiscoveryConstants.LABEL_STACK_SERVICE_NAME, envName + "/" + serviceName);
+        labels.put(ServiceConstants.LABEL_STACK_NAME, envName);
+        labels.put(ServiceConstants.LABEL_STACK_SERVICE_NAME, envName + "/" + serviceName);
 
         // LEGACY: keeping backwards compatibility with 'project'
-        labels.put(ServiceDiscoveryConstants.LABEL_PROJECT_NAME, envName);
-        labels.put(ServiceDiscoveryConstants.LABEL_PROJECT_SERVICE_NAME, envName + "/" + serviceName);
+        labels.put(ServiceConstants.LABEL_PROJECT_NAME, envName);
+        labels.put(ServiceConstants.LABEL_PROJECT_SERVICE_NAME, envName + "/" + serviceName);
 
         /*
          * Put label 'io.rancher.deployment.unit=this.uuid' on each one. This way
          * we can reference a set of containers later.
          */
-        labels.put(ServiceDiscoveryConstants.LABEL_SERVICE_DEPLOYMENT_UNIT, uuid);
+        labels.put(ServiceConstants.LABEL_SERVICE_DEPLOYMENT_UNIT, uuid);
 
         /*
          * Put label with launch config name
          */
-        labels.put(ServiceDiscoveryConstants.LABEL_SERVICE_LAUNCH_CONFIG, instance.getLaunchConfigName());
+        labels.put(ServiceConstants.LABEL_SERVICE_LAUNCH_CONFIG, instance.getLaunchConfigName());
 
         labels.putAll(this.unitLabels);
 
@@ -678,7 +678,7 @@ public class DeploymentUnit {
         List<String> toReturn = new ArrayList<>();
         for (String name : configNames) {
             if (name.equalsIgnoreCase(service.getName())) {
-                toReturn.add(ServiceDiscoveryConstants.PRIMARY_LAUNCH_CONFIG_NAME);
+                toReturn.add(ServiceConstants.PRIMARY_LAUNCH_CONFIG_NAME);
             } else {
                 toReturn.add(name);
             }

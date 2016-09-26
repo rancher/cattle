@@ -9,6 +9,7 @@ import io.cattle.platform.configitem.request.ConfigUpdateRequest;
 import io.cattle.platform.configitem.version.ConfigItemStatusManager;
 import io.cattle.platform.core.addon.ScalePolicy;
 import io.cattle.platform.core.constants.CommonStatesConstants;
+import io.cattle.platform.core.constants.ServiceConstants;
 import io.cattle.platform.core.dao.ServiceDao;
 import io.cattle.platform.core.model.Service;
 import io.cattle.platform.core.model.ServiceExposeMap;
@@ -24,7 +25,6 @@ import io.cattle.platform.object.process.ObjectProcessManager;
 import io.cattle.platform.object.process.StandardProcess;
 import io.cattle.platform.object.resource.ResourceMonitor;
 import io.cattle.platform.object.util.DataAccessor;
-import io.cattle.platform.servicediscovery.api.constants.ServiceDiscoveryConstants;
 import io.cattle.platform.servicediscovery.api.dao.ServiceExposeMapDao;
 import io.cattle.platform.servicediscovery.api.util.ServiceDiscoveryUtil;
 import io.cattle.platform.servicediscovery.deployment.DeploymentManager;
@@ -123,7 +123,7 @@ public class DeploymentManagerImpl implements DeploymentManager {
 
     protected boolean reconcileDeployment(final Service service, final boolean checkState) {
         ScalePolicy policy = DataAccessor.field(service,
-                ServiceDiscoveryConstants.FIELD_SCALE_POLICY, mapper, ScalePolicy.class);
+                ServiceConstants.FIELD_SCALE_POLICY, mapper, ScalePolicy.class);
         boolean result = false;
         if (policy == null) {
             result = deploy(service, checkState);
@@ -138,7 +138,7 @@ public class DeploymentManagerImpl implements DeploymentManager {
 
         Integer desiredScaleToReset = null;
         Integer desiredScaleSet = DataAccessor.fieldInteger(service,
-                ServiceDiscoveryConstants.FIELD_DESIRED_SCALE);
+                ServiceConstants.FIELD_DESIRED_SCALE);
         if (desiredScaleSet == null) {
             desiredScaleToReset = policy.getMin();
         } else if (desiredScaleSet.intValue() > policy.getMax().intValue()) {
@@ -147,7 +147,7 @@ public class DeploymentManagerImpl implements DeploymentManager {
 
         boolean initLockScale = false;
         if (DataAccessor.fieldInteger(service,
-                ServiceDiscoveryConstants.FIELD_LOCKED_SCALE) == null) {
+                ServiceConstants.FIELD_LOCKED_SCALE) == null) {
             initLockScale = true;
         }
 
@@ -167,7 +167,7 @@ public class DeploymentManagerImpl implements DeploymentManager {
     protected boolean incremenetScaleAndDeploy(final Service service, final boolean checkState,
             ScalePolicy policy) {
         Integer desiredScale = DataAccessor.fieldInteger(service,
-                ServiceDiscoveryConstants.FIELD_DESIRED_SCALE);
+                ServiceConstants.FIELD_DESIRED_SCALE);
         try {
             deploy(service, checkState);
             lockScale(service);
@@ -190,8 +190,8 @@ public class DeploymentManagerImpl implements DeploymentManager {
     }
 
     protected boolean reduceScaleAndDeploy(Service service, boolean checkState, ScalePolicy policy) {
-        int desiredScale = DataAccessor.fieldInteger(service, ServiceDiscoveryConstants.FIELD_DESIRED_SCALE).intValue();
-        int lockedScale = DataAccessor.fieldInteger(service, ServiceDiscoveryConstants.FIELD_LOCKED_SCALE).intValue();
+        int desiredScale = DataAccessor.fieldInteger(service, ServiceConstants.FIELD_DESIRED_SCALE).intValue();
+        int lockedScale = DataAccessor.fieldInteger(service, ServiceConstants.FIELD_LOCKED_SCALE).intValue();
         int minScale = policy.getMin();
         // account for the fact that scale policy can be updated
         if (lockedScale > policy.getMin().intValue()) {
@@ -223,17 +223,17 @@ public class DeploymentManagerImpl implements DeploymentManager {
     protected Integer setDesiredScaleInternal(Service service, Integer newScale) {
         service = objectMgr.reload(service);
         Map<String, Object> data = new HashMap<>();
-        data.put(ServiceDiscoveryConstants.FIELD_DESIRED_SCALE, newScale);
+        data.put(ServiceConstants.FIELD_DESIRED_SCALE, newScale);
         objectMgr.setFields(service, data);
         return newScale;
     }
 
     protected void lockScale(Service service) {
         Integer desiredScale = DataAccessor.fieldInteger(service,
-                ServiceDiscoveryConstants.FIELD_DESIRED_SCALE);
+                ServiceConstants.FIELD_DESIRED_SCALE);
         service = objectMgr.reload(service);
         Map<String, Object> data = new HashMap<>();
-        data.put(ServiceDiscoveryConstants.FIELD_LOCKED_SCALE, desiredScale);
+        data.put(ServiceConstants.FIELD_LOCKED_SCALE, desiredScale);
         objectMgr.setFields(service, data);
     }
 
@@ -396,7 +396,7 @@ public class DeploymentManagerImpl implements DeploymentManager {
                 List<DeploymentUnit> units = unitInstanceFactory.collectDeploymentUnits(
                         service, new DeploymentServiceContext());
                 for (DeploymentUnit unit : units) {
-                    unit.remove(ServiceDiscoveryConstants.AUDIT_LOG_REMOVE_EXTRA, ActivityLog.INFO);
+                    unit.remove(ServiceConstants.AUDIT_LOG_REMOVE_EXTRA, ActivityLog.INFO);
                 }
             }
         });

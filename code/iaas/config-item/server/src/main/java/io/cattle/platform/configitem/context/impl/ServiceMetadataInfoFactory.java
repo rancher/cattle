@@ -17,6 +17,7 @@ import io.cattle.platform.configitem.context.data.metadata.version2.ServiceMetaD
 import io.cattle.platform.configitem.context.data.metadata.version2.StackMetaDataVersion2;
 import io.cattle.platform.configitem.server.model.ConfigItem;
 import io.cattle.platform.configitem.server.model.impl.ArchiveContext;
+import io.cattle.platform.core.constants.ServiceConstants;
 import io.cattle.platform.core.dao.GenericMapDao;
 import io.cattle.platform.core.model.Account;
 import io.cattle.platform.core.model.Agent;
@@ -27,7 +28,6 @@ import io.cattle.platform.core.model.Service;
 import io.cattle.platform.core.model.ServiceConsumeMap;
 import io.cattle.platform.json.JsonMapper;
 import io.cattle.platform.object.util.DataAccessor;
-import io.cattle.platform.servicediscovery.api.constants.ServiceDiscoveryConstants;
 import io.cattle.platform.servicediscovery.api.dao.ServiceConsumeMapDao;
 import io.cattle.platform.servicediscovery.api.util.ServiceDiscoveryUtil;
 
@@ -201,7 +201,7 @@ public class ServiceMetadataInfoFactory extends AbstractAgentBaseContextFactory 
             if (containerMD.getServiceId() != null) {
                 String configName = containerMD.getDnsPrefix();
                 if (configName == null) {
-                    configName = ServiceDiscoveryConstants.PRIMARY_LAUNCH_CONFIG_NAME;
+                    configName = ServiceConstants.PRIMARY_LAUNCH_CONFIG_NAME;
                 }
                 Map<String, ServiceMetaData> svcsData = serviceIdToServiceLaunchConfigs.get(containerMD.getServiceId());
                 if (svcsData != null) {
@@ -271,7 +271,7 @@ public class ServiceMetadataInfoFactory extends AbstractAgentBaseContextFactory 
             if (containerMD.getServiceId() != null) {
                 String configName = containerMD.getDnsPrefix();
                 if (configName == null) {
-                    configName = ServiceDiscoveryConstants.PRIMARY_LAUNCH_CONFIG_NAME;
+                    configName = ServiceConstants.PRIMARY_LAUNCH_CONFIG_NAME;
                 }
                 Map<String, ServiceMetaData> svcsData = serviceIdToServiceLaunchConfigs.get(containerMD.getServiceId());
                 if (svcsData != null) {
@@ -330,7 +330,7 @@ public class ServiceMetadataInfoFactory extends AbstractAgentBaseContextFactory 
                     launchConfigToSvcMap = new HashMap<>();
                 }
                 if (stackServiceMD.isPrimaryConfig()) {
-                    launchConfigToSvcMap.put(ServiceDiscoveryConstants.PRIMARY_LAUNCH_CONFIG_NAME, stackServiceMD);
+                    launchConfigToSvcMap.put(ServiceConstants.PRIMARY_LAUNCH_CONFIG_NAME, stackServiceMD);
                 } else {
                     launchConfigToSvcMap.put(stackServiceMD.getName(), stackServiceMD);
                 }
@@ -372,7 +372,7 @@ public class ServiceMetadataInfoFactory extends AbstractAgentBaseContextFactory 
         idToService.put(service.getId(), service);
         List<String> launchConfigNames = ServiceDiscoveryUtil.getServiceLaunchConfigNames(service);
         if (launchConfigNames.isEmpty()) {
-            launchConfigNames.add(ServiceDiscoveryConstants.PRIMARY_LAUNCH_CONFIG_NAME);
+            launchConfigNames.add(ServiceConstants.PRIMARY_LAUNCH_CONFIG_NAME);
         }
         for (String launchConfigName : launchConfigNames) {
             getLaunchConfigInfo(account, env, stackServices, idToService, service, launchConfigNames,
@@ -385,7 +385,7 @@ public class ServiceMetadataInfoFactory extends AbstractAgentBaseContextFactory 
             List<ServiceMetaData> stackServices, Map<Long, Service> idToService, Service service,
             List<String> launchConfigNames, String launchConfigName) {
         boolean isPrimaryConfig = launchConfigName
-                .equalsIgnoreCase(ServiceDiscoveryConstants.PRIMARY_LAUNCH_CONFIG_NAME);
+                .equalsIgnoreCase(ServiceConstants.PRIMARY_LAUNCH_CONFIG_NAME);
         String serviceName = isPrimaryConfig ? service.getName()
                 : launchConfigName;
         List<String> sidekicks = new ArrayList<>();
@@ -393,7 +393,7 @@ public class ServiceMetadataInfoFactory extends AbstractAgentBaseContextFactory 
         if (isPrimaryConfig) {
             getSidekicksInfo(service, sidekicks, launchConfigNames);
         }
-        Map<String, Object> metadata = DataAccessor.fields(service).withKey(ServiceDiscoveryConstants.FIELD_METADATA)
+        Map<String, Object> metadata = DataAccessor.fields(service).withKey(ServiceConstants.FIELD_METADATA)
                 .withDefault(Collections.EMPTY_MAP).as(Map.class);
         ServiceMetaData svcMetaData = new ServiceMetaData(service, serviceName, env, sidekicks, metadata);
         stackServices.add(svcMetaData);
@@ -401,7 +401,7 @@ public class ServiceMetadataInfoFactory extends AbstractAgentBaseContextFactory 
 
     protected void getSidekicksInfo(Service service, List<String> sidekicks, List<String> launchConfigNames) {
         for (String launchConfigName : launchConfigNames) {
-            if (!launchConfigName.equalsIgnoreCase(ServiceDiscoveryConstants.PRIMARY_LAUNCH_CONFIG_NAME)) {
+            if (!launchConfigName.equalsIgnoreCase(ServiceConstants.PRIMARY_LAUNCH_CONFIG_NAME)) {
                 sidekicks.add(launchConfigName);
             }
         }

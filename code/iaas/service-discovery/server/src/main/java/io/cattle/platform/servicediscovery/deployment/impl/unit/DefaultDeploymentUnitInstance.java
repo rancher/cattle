@@ -6,6 +6,7 @@ import io.cattle.platform.async.utils.TimeoutException;
 import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.HealthcheckConstants;
 import io.cattle.platform.core.constants.InstanceConstants;
+import io.cattle.platform.core.constants.ServiceConstants;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.InstanceHostMap;
 import io.cattle.platform.core.model.Service;
@@ -22,7 +23,6 @@ import io.cattle.platform.object.resource.ResourcePredicate;
 import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.object.util.TransitioningUtils;
 import io.cattle.platform.process.common.util.ProcessUtils;
-import io.cattle.platform.servicediscovery.api.constants.ServiceDiscoveryConstants;
 import io.cattle.platform.servicediscovery.api.resource.ServiceDiscoveryConfigItem;
 import io.cattle.platform.servicediscovery.api.util.ServiceDiscoveryDnsUtil;
 import io.cattle.platform.servicediscovery.api.util.ServiceDiscoveryUtil;
@@ -122,14 +122,14 @@ public class DefaultDeploymentUnitInstance extends DeploymentUnitInstance implem
             if (launchConfigData.get(InstanceConstants.FIELD_DATA_VOLUMES) != null) {
                 List<String> dataVolumes = new ArrayList<>();
                 dataVolumes.addAll((List<String>) launchConfigData.get(InstanceConstants.FIELD_DATA_VOLUMES));
-                if (deployParams.get(ServiceDiscoveryConstants.FIELD_INTERNAL_VOLUMES) != null) {
+                if (deployParams.get(ServiceConstants.FIELD_INTERNAL_VOLUMES) != null) {
                     for (String namedVolume : (List<String>) deployParams
-                            .get(ServiceDiscoveryConstants.FIELD_INTERNAL_VOLUMES)) {
+                            .get(ServiceConstants.FIELD_INTERNAL_VOLUMES)) {
                         dataVolumes.remove(namedVolume);
                     }
                     launchConfigData.put(InstanceConstants.FIELD_DATA_VOLUMES, dataVolumes);
                 }
-                launchConfigData.remove(ServiceDiscoveryConstants.FIELD_INTERNAL_VOLUMES);
+                launchConfigData.remove(ServiceConstants.FIELD_INTERNAL_VOLUMES);
             }
 
             Pair<Instance, ServiceExposeMap> instanceMapPair = context.exposeMapDao.createServiceInstance(launchConfigData,
@@ -137,7 +137,7 @@ public class DefaultDeploymentUnitInstance extends DeploymentUnitInstance implem
             this.instance = instanceMapPair.getLeft();
             this.exposeMap = instanceMapPair.getRight();
             this.generateAuditLog(AuditEventType.create,
-                    ServiceDiscoveryConstants.AUDIT_LOG_CREATE_EXTRA, ActivityLog.INFO);
+                    ServiceConstants.AUDIT_LOG_CREATE_EXTRA, ActivityLog.INFO);
         }
 
         this.instance = context.objectManager.reload(this.instance);
@@ -153,7 +153,7 @@ public class DefaultDeploymentUnitInstance extends DeploymentUnitInstance implem
         Object labels = launchConfigData.get(InstanceConstants.FIELD_LABELS);
         if (labels != null) {
             String overrideHostName = ((Map<String, String>) labels)
-                    .get(ServiceDiscoveryConstants.LABEL_OVERRIDE_HOSTNAME);
+                    .get(ServiceConstants.LABEL_OVERRIDE_HOSTNAME);
             if (StringUtils.equalsIgnoreCase(overrideHostName, "container_name")) {
                 String domainName = (String) launchConfigData.get(DockerInstanceConstants.FIELD_DOMAIN_NAME);
                 String overrideName = getOverrideHostName(domainName, this.instanceName);
@@ -329,7 +329,7 @@ public class DefaultDeploymentUnitInstance extends DeploymentUnitInstance implem
         ServiceIndex serviceIndexObj = context.serviceDao.createServiceIndex(service, launchConfigName, serviceIndex);
 
         // allocate ip address if not set
-        if (DataAccessor.fieldBool(service, ServiceDiscoveryConstants.FIELD_SERVICE_RETAIN_IP)) {
+        if (DataAccessor.fieldBool(service, ServiceConstants.FIELD_SERVICE_RETAIN_IP)) {
             Object requestedIpObj = ServiceDiscoveryUtil.getLaunchConfigObject(service, launchConfigName,
                     InstanceConstants.FIELD_REQUESTED_IP_ADDRESS);
             String requestedIp = null;

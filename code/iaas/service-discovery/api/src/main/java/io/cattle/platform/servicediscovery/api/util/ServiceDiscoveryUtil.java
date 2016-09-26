@@ -3,6 +3,7 @@ package io.cattle.platform.servicediscovery.api.util;
 import io.cattle.platform.allocator.service.AllocatorService;
 import io.cattle.platform.core.addon.InServiceUpgradeStrategy;
 import io.cattle.platform.core.constants.InstanceConstants;
+import io.cattle.platform.core.constants.ServiceConstants;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.Service;
 import io.cattle.platform.core.model.ServiceConsumeMap;
@@ -12,7 +13,6 @@ import io.cattle.platform.core.util.PortSpec;
 import io.cattle.platform.object.meta.ObjectMetaDataManager;
 import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.object.util.DataUtils;
-import io.cattle.platform.servicediscovery.api.constants.ServiceDiscoveryConstants;
 import io.cattle.platform.servicediscovery.api.resource.ServiceDiscoveryConfigItem;
 import io.cattle.platform.util.type.CollectionUtils;
 
@@ -39,11 +39,11 @@ public class ServiceDiscoveryUtil {
         List<String> launchConfigNames = new ArrayList<>();
 
         // put the primary config in
-        launchConfigNames.add(ServiceDiscoveryConstants.PRIMARY_LAUNCH_CONFIG_NAME);
+        launchConfigNames.add(ServiceConstants.PRIMARY_LAUNCH_CONFIG_NAME);
 
         // put the secondary configs in
         Object secondaryLaunchConfigs = originalData
-                .get(ServiceDiscoveryConstants.FIELD_SECONDARY_LAUNCH_CONFIGS);
+                .get(ServiceConstants.FIELD_SECONDARY_LAUNCH_CONFIGS);
         if (secondaryLaunchConfigs != null) {
             for (Map<String, Object> secondaryLaunchConfig : (List<Map<String, Object>>) secondaryLaunchConfigs) {
                 launchConfigNames.add(String.valueOf(secondaryLaunchConfig.get("name")));
@@ -60,15 +60,15 @@ public class ServiceDiscoveryUtil {
 
         // 2) remove launchConfig/secondaryConfig data
         Object launchConfig = data
-                .get(ServiceDiscoveryConstants.FIELD_LAUNCH_CONFIG);
+                .get(ServiceConstants.FIELD_LAUNCH_CONFIG);
         if (launchConfig != null) {
-            data.remove(ServiceDiscoveryConstants.FIELD_LAUNCH_CONFIG);
+            data.remove(ServiceConstants.FIELD_LAUNCH_CONFIG);
         }
 
         Object secondaryLaunchConfigs = data
-                .get(ServiceDiscoveryConstants.FIELD_SECONDARY_LAUNCH_CONFIGS);
+                .get(ServiceConstants.FIELD_SECONDARY_LAUNCH_CONFIGS);
         if (secondaryLaunchConfigs != null) {
-            data.remove(ServiceDiscoveryConstants.FIELD_SECONDARY_LAUNCH_CONFIGS);
+            data.remove(ServiceConstants.FIELD_SECONDARY_LAUNCH_CONFIGS);
         }
         // 3) populate launch config data
         data.putAll(getLaunchConfigDataAsMap(service, launchConfigName));
@@ -83,13 +83,13 @@ public class ServiceDiscoveryUtil {
         Map<String, Map<Object, Object>> launchConfigsWithNames = new HashMap<>();
 
         // put the primary config in
-        launchConfigsWithNames.put(ServiceDiscoveryConstants.PRIMARY_LAUNCH_CONFIG_NAME,
+        launchConfigsWithNames.put(ServiceConstants.PRIMARY_LAUNCH_CONFIG_NAME,
                 CollectionUtils.toMap(originalData
-                        .get(ServiceDiscoveryConstants.FIELD_LAUNCH_CONFIG)));
+                        .get(ServiceConstants.FIELD_LAUNCH_CONFIG)));
 
         // put the secondary configs in
         Object secondaryLaunchConfigs = originalData
-                .get(ServiceDiscoveryConstants.FIELD_SECONDARY_LAUNCH_CONFIGS);
+                .get(ServiceConstants.FIELD_SECONDARY_LAUNCH_CONFIGS);
         if (secondaryLaunchConfigs != null) {
             for (Map<String, Object> secondaryLaunchConfig : (List<Map<String, Object>>) secondaryLaunchConfigs) {
                 launchConfigsWithNames.put(String.valueOf(secondaryLaunchConfig.get("name")),
@@ -118,7 +118,7 @@ public class ServiceDiscoveryUtil {
     @SuppressWarnings("unchecked")
     public static Map<String, String> getLaunchConfigLabels(Service service, String launchConfigName) {
         if (launchConfigName == null) {
-            launchConfigName = ServiceDiscoveryConstants.PRIMARY_LAUNCH_CONFIG_NAME;
+            launchConfigName = ServiceConstants.PRIMARY_LAUNCH_CONFIG_NAME;
         }
         Map<String, Object> data = getLaunchConfigDataAsMap(service, launchConfigName);
         Object labels = data.get(InstanceConstants.FIELD_LABELS);
@@ -131,16 +131,16 @@ public class ServiceDiscoveryUtil {
     @SuppressWarnings("unchecked")
     public static Map<String, Object> getLaunchConfigDataAsMap(Service service, String launchConfigName) {
         if (launchConfigName == null) {
-            launchConfigName = ServiceDiscoveryConstants.PRIMARY_LAUNCH_CONFIG_NAME;
+            launchConfigName = ServiceConstants.PRIMARY_LAUNCH_CONFIG_NAME;
         }
         Map<String, Object> launchConfigData = new HashMap<>();
-        if (launchConfigName.equalsIgnoreCase(ServiceDiscoveryConstants.PRIMARY_LAUNCH_CONFIG_NAME)) {
+        if (launchConfigName.equalsIgnoreCase(ServiceConstants.PRIMARY_LAUNCH_CONFIG_NAME)) {
             launchConfigData = DataAccessor.fields(service)
-                    .withKey(ServiceDiscoveryConstants.FIELD_LAUNCH_CONFIG).withDefault(Collections.EMPTY_MAP)
+                    .withKey(ServiceConstants.FIELD_LAUNCH_CONFIG).withDefault(Collections.EMPTY_MAP)
                     .as(Map.class);
         } else {
             List<Map<String, Object>> secondaryLaunchConfigs = DataAccessor.fields(service)
-                    .withKey(ServiceDiscoveryConstants.FIELD_SECONDARY_LAUNCH_CONFIGS)
+                    .withKey(ServiceConstants.FIELD_SECONDARY_LAUNCH_CONFIGS)
                     .withDefault(Collections.EMPTY_LIST).as(
                             List.class);
             for (Map<String, Object> secondaryLaunchConfig : secondaryLaunchConfigs) {
@@ -172,7 +172,7 @@ public class ServiceDiscoveryUtil {
     public static String generateServiceInstanceName(Stack env, Service service, String launchConfigName,
             int finalOrder) {
         String configName = launchConfigName == null
-                || launchConfigName.equals(ServiceDiscoveryConstants.PRIMARY_LAUNCH_CONFIG_NAME) ? ""
+                || launchConfigName.equals(ServiceConstants.PRIMARY_LAUNCH_CONFIG_NAME) ? ""
                 : launchConfigName + "_";
         String name = String.format("%s_%s_%s%d", env.getName(), service.getName(), configName, finalOrder);
         return name;
@@ -274,11 +274,11 @@ public class ServiceDiscoveryUtil {
 
     public static boolean isNoopService(Service service) {
         Object imageUUID = ServiceDiscoveryUtil.getLaunchConfigDataAsMap(service,
-                ServiceDiscoveryConstants.PRIMARY_LAUNCH_CONFIG_NAME).get(
+                ServiceConstants.PRIMARY_LAUNCH_CONFIG_NAME).get(
                 InstanceConstants.FIELD_IMAGE_UUID);
         return service.getSelectorContainer() != null
                 && (imageUUID == null || imageUUID.toString().toLowerCase()
-                        .contains(ServiceDiscoveryConstants.IMAGE_NONE));
+                        .contains(ServiceConstants.IMAGE_NONE));
     }
 
     public static void upgradeServiceConfigs(Service service, InServiceUpgradeStrategy strategy, boolean rollback) {
@@ -311,7 +311,7 @@ public class ServiceDiscoveryUtil {
             }
         }
 
-        DataAccessor.fields(service).withKey(ServiceDiscoveryConstants.FIELD_SECONDARY_LAUNCH_CONFIGS)
+        DataAccessor.fields(service).withKey(ServiceConstants.FIELD_SECONDARY_LAUNCH_CONFIGS)
                 .set(newLaunchConfigs);
     }
 
@@ -325,7 +325,7 @@ public class ServiceDiscoveryUtil {
             Map<String, Object> oldLaunchConfig = (Map<String, Object>) strategy.getPreviousLaunchConfig();
             preserveOldRandomPorts(service, newLaunchConfig, oldLaunchConfig);
         }
-        DataAccessor.fields(service).withKey(ServiceDiscoveryConstants.FIELD_LAUNCH_CONFIG)
+        DataAccessor.fields(service).withKey(ServiceConstants.FIELD_LAUNCH_CONFIG)
                 .set(newLaunchConfig);
     }
 
@@ -364,7 +364,7 @@ public class ServiceDiscoveryUtil {
         Map<Integer, PortSpec> portMap = new LinkedHashMap<Integer, PortSpec>();
         for (String spec : specs) {
             boolean defaultProtocol = true;
-            if (service.getKind().equalsIgnoreCase(ServiceDiscoveryConstants.KIND_LOAD_BALANCER_SERVICE)) {
+            if (service.getKind().equalsIgnoreCase(ServiceConstants.KIND_LOAD_BALANCER_SERVICE)) {
                 defaultProtocol = false;
             }
             PortSpec portSpec = new PortSpec(spec, defaultProtocol);

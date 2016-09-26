@@ -1,10 +1,10 @@
 package io.cattle.platform.servicediscovery.api.action;
 
 import io.cattle.platform.api.action.ActionHandler;
+import io.cattle.platform.core.constants.ServiceConstants;
 import io.cattle.platform.core.model.Stack;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.util.DataAccessor;
-import io.cattle.platform.servicediscovery.api.constants.ServiceDiscoveryConstants;
 import io.cattle.platform.util.type.CollectionUtils;
 import io.github.ibuildthecloud.gdapi.request.ApiRequest;
 
@@ -22,7 +22,7 @@ public class AddOutputsActionHandler implements ActionHandler {
 
     @Override
     public String getName() {
-        return ServiceDiscoveryConstants.TYPE_STACK + "." + ServiceDiscoveryConstants.ACTION_ADD_OUTPUTS;
+        return ServiceConstants.TYPE_STACK + "." + ServiceConstants.ACTION_ADD_OUTPUTS;
     }
 
     @Override
@@ -31,9 +31,9 @@ public class AddOutputsActionHandler implements ActionHandler {
             return null;
         }
         Stack env = (Stack)obj;
-        Map<String, Object> updates = new HashMap<>(DataAccessor.fieldMap(env, ServiceDiscoveryConstants.FIELD_OUTPUTS));
-        updates.putAll(CollectionUtils.<String, Object>toMap(CollectionUtils.toMap(request.getRequestObject()).get(ServiceDiscoveryConstants.FIELD_OUTPUTS)));
-        objectManager.setFields(obj, ServiceDiscoveryConstants.FIELD_OUTPUTS, updates);
+        Map<String, Object> updates = new HashMap<>(DataAccessor.fieldMap(env, ServiceConstants.FIELD_OUTPUTS));
+        updates.putAll(CollectionUtils.<String, Object>toMap(CollectionUtils.toMap(request.getRequestObject()).get(ServiceConstants.FIELD_OUTPUTS)));
+        objectManager.setFields(obj, ServiceConstants.FIELD_OUTPUTS, updates);
         return objectManager.reload(env);
     }
 }

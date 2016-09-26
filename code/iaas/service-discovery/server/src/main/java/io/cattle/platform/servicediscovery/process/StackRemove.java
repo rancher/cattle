@@ -1,6 +1,7 @@
 package io.cattle.platform.servicediscovery.process;
 
 import static io.cattle.platform.core.model.tables.ServiceTable.*;
+import io.cattle.platform.core.constants.ServiceConstants;
 import io.cattle.platform.core.model.Stack;
 import io.cattle.platform.core.model.Service;
 import io.cattle.platform.engine.handler.HandlerResult;
@@ -9,7 +10,6 @@ import io.cattle.platform.engine.process.ProcessState;
 import io.cattle.platform.object.process.StandardProcess;
 import io.cattle.platform.object.resource.ResourceMonitor;
 import io.cattle.platform.process.common.handler.AbstractObjectProcessHandler;
-import io.cattle.platform.servicediscovery.api.constants.ServiceDiscoveryConstants;
 import io.cattle.platform.servicediscovery.service.ServiceDiscoveryService;
 
 import java.util.List;
@@ -28,7 +28,7 @@ public class StackRemove extends AbstractObjectProcessHandler {
 
     @Override
     public String[] getProcessNames() {
-        return new String[] { ServiceDiscoveryConstants.PROCESS_STACK_REMOVE };
+        return new String[] { ServiceConstants.PROCESS_STACK_REMOVE };
     }
 
     @Override

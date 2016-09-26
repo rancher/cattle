@@ -1,5 +1,6 @@
 package io.cattle.platform.servicediscovery.process;
 
+import io.cattle.platform.core.constants.ServiceConstants;
 import io.cattle.platform.core.dao.InstanceDao;
 import io.cattle.platform.core.dao.NetworkDao;
 import io.cattle.platform.core.dao.impl.InstanceDaoImpl.IpAddressToServiceIndex;
@@ -12,7 +13,6 @@ import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.process.common.handler.AbstractObjectProcessLogic;
 import io.cattle.platform.resource.pool.PooledResourceOptions;
 import io.cattle.platform.resource.pool.ResourcePoolManager;
-import io.cattle.platform.servicediscovery.api.constants.ServiceDiscoveryConstants;
 import io.cattle.platform.servicediscovery.service.ServiceDiscoveryService;
 import io.cattle.platform.util.type.CollectionUtils;
 import io.cattle.platform.util.type.Priority;
@@ -39,7 +39,7 @@ public class ServiceUpdatePreListener extends AbstractObjectProcessLogic impleme
 
     @Override
     public String[] getProcessNames() {
-        return new String[] { ServiceDiscoveryConstants.PROCESS_SERVICE_UPDATE };
+        return new String[] { ServiceConstants.PROCESS_SERVICE_UPDATE };
     }
 
     @Override
@@ -49,11 +49,11 @@ public class ServiceUpdatePreListener extends AbstractObjectProcessLogic impleme
         Boolean oldRetainIp = false;
         if (data.get("old") != null) {
             Map<String, Object> old = CollectionUtils.toMap(data.get("old"));
-            if (old.get(ServiceDiscoveryConstants.FIELD_SERVICE_RETAIN_IP) != null) {
-                oldRetainIp = (Boolean) old.get(ServiceDiscoveryConstants.FIELD_SERVICE_RETAIN_IP);
+            if (old.get(ServiceConstants.FIELD_SERVICE_RETAIN_IP) != null) {
+                oldRetainIp = (Boolean) old.get(ServiceConstants.FIELD_SERVICE_RETAIN_IP);
             }
         }
-        Boolean newRetainIp = DataAccessor.fieldBoolean(service, ServiceDiscoveryConstants.FIELD_SERVICE_RETAIN_IP);
+        Boolean newRetainIp = DataAccessor.fieldBoolean(service, ServiceConstants.FIELD_SERVICE_RETAIN_IP);
 
         boolean update = false;
         if (newRetainIp.booleanValue() && !oldRetainIp.booleanValue()) {

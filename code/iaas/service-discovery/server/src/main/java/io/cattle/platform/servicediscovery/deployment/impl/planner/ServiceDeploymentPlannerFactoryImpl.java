@@ -1,7 +1,7 @@
 package io.cattle.platform.servicediscovery.deployment.impl.planner;
 
+import io.cattle.platform.core.constants.ServiceConstants;
 import io.cattle.platform.core.model.Service;
-import io.cattle.platform.servicediscovery.api.constants.ServiceDiscoveryConstants;
 import io.cattle.platform.servicediscovery.api.util.ServiceDiscoveryUtil;
 import io.cattle.platform.servicediscovery.deployment.ServiceDeploymentPlanner;
 import io.cattle.platform.servicediscovery.deployment.ServiceDeploymentPlannerFactory;
@@ -24,8 +24,8 @@ public class ServiceDeploymentPlannerFactoryImpl implements ServiceDeploymentPla
         boolean isGlobalDeploymentStrategy = isGlobalDeploymentStrategy(context, service);
         boolean isSelectorOnlyStrategy = isNoopStrategy(context, service);
         if (isSelectorOnlyStrategy
-                || service.getKind().equalsIgnoreCase(ServiceDiscoveryConstants.KIND_EXTERNAL_SERVICE)
-                || service.getKind().equalsIgnoreCase(ServiceDiscoveryConstants.KIND_DNS_SERVICE)) {
+                || service.getKind().equalsIgnoreCase(ServiceConstants.KIND_EXTERNAL_SERVICE)
+                || service.getKind().equalsIgnoreCase(ServiceConstants.KIND_DNS_SERVICE)) {
             return new NoOpServiceDeploymentPlanner(service, units, context);
         } else if (isGlobalDeploymentStrategy) {
             return new GlobalServiceDeploymentPlanner(service, units, context);
@@ -46,10 +46,10 @@ public class ServiceDeploymentPlannerFactoryImpl implements ServiceDeploymentPla
     }
 
     protected boolean isExternallyProvidedService(Service service) {
-        if (service.getKind().equalsIgnoreCase(ServiceDiscoveryConstants.KIND_DNS_SERVICE)
-                || service.getKind().equalsIgnoreCase(ServiceDiscoveryConstants.KIND_EXTERNAL_SERVICE)
-                || service.getKind().equalsIgnoreCase(ServiceDiscoveryConstants.KIND_LOAD_BALANCER_SERVICE)
-                || service.getKind().equalsIgnoreCase(ServiceDiscoveryConstants.KIND_SERVICE)) {
+        if (service.getKind().equalsIgnoreCase(ServiceConstants.KIND_DNS_SERVICE)
+                || service.getKind().equalsIgnoreCase(ServiceConstants.KIND_EXTERNAL_SERVICE)
+                || service.getKind().equalsIgnoreCase(ServiceConstants.KIND_LOAD_BALANCER_SERVICE)
+                || service.getKind().equalsIgnoreCase(ServiceConstants.KIND_SERVICE)) {
             return false;
         }
         return true;

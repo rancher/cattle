@@ -5,10 +5,10 @@ import io.cattle.platform.configitem.context.dao.MetaDataInfoDao.Version;
 import io.cattle.platform.configitem.context.data.metadata.version1.ServiceMetaDataVersion1;
 import io.cattle.platform.configitem.context.data.metadata.version2.ServiceMetaDataVersion2;
 import io.cattle.platform.core.constants.InstanceConstants;
+import io.cattle.platform.core.constants.ServiceConstants;
 import io.cattle.platform.core.model.Stack;
 import io.cattle.platform.core.model.Service;
 import io.cattle.platform.object.util.DataAccessor;
-import io.cattle.platform.servicediscovery.api.constants.ServiceDiscoveryConstants;
 import io.cattle.platform.servicediscovery.api.util.ServiceDiscoveryUtil;
 
 import java.util.ArrayList;
@@ -82,7 +82,7 @@ public class ServiceMetaData {
         this.sidekicks = sidekicks;
         this.vip = service.getVip();
         this.isPrimaryConfig = service.getName().equalsIgnoreCase(serviceName);
-        String launchConfigName = this.isPrimaryConfig ? ServiceDiscoveryConstants.PRIMARY_LAUNCH_CONFIG_NAME
+        String launchConfigName = this.isPrimaryConfig ? ServiceConstants.PRIMARY_LAUNCH_CONFIG_NAME
                 : serviceName;
         this.launchConfigName = launchConfigName;
         this.labels = ServiceDiscoveryUtil.getLaunchConfigLabels(service, launchConfigName);
@@ -90,9 +90,9 @@ public class ServiceMetaData {
         populatePortsInfo(service, launchConfigName);
         this.create_index = service.getCreateIndex();
         this.metadata = metadata;
-        this.scale = DataAccessor.fieldInteger(service, ServiceDiscoveryConstants.FIELD_SCALE);
-        this.fqdn = DataAccessor.fieldString(service, ServiceDiscoveryConstants.FIELD_FQDN);
-        Integer desiredScale = DataAccessor.fieldInteger(service, ServiceDiscoveryConstants.FIELD_DESIRED_SCALE);
+        this.scale = DataAccessor.fieldInteger(service, ServiceConstants.FIELD_SCALE);
+        this.fqdn = DataAccessor.fieldString(service, ServiceConstants.FIELD_FQDN);
+        Integer desiredScale = DataAccessor.fieldInteger(service, ServiceConstants.FIELD_DESIRED_SCALE);
         if (desiredScale != null) {
             this.scale = desiredScale;
         }
@@ -114,11 +114,11 @@ public class ServiceMetaData {
 
     @SuppressWarnings("unchecked")
     protected void populateExternalServiceInfo(Service service) {
-        if (kind.equalsIgnoreCase(ServiceDiscoveryConstants.KIND_EXTERNAL_SERVICE)) {
+        if (kind.equalsIgnoreCase(ServiceConstants.KIND_EXTERNAL_SERVICE)) {
             this.hostname = DataAccessor.fields(service)
-                    .withKey(ServiceDiscoveryConstants.FIELD_HOSTNAME).as(String.class);
+                    .withKey(ServiceConstants.FIELD_HOSTNAME).as(String.class);
             external_ips.addAll(DataAccessor.fields(service)
-                    .withKey(ServiceDiscoveryConstants.FIELD_EXTERNALIPS).withDefault(Collections.EMPTY_LIST)
+                    .withKey(ServiceConstants.FIELD_EXTERNALIPS).withDefault(Collections.EMPTY_LIST)
                     .as(List.class));
         }
     }

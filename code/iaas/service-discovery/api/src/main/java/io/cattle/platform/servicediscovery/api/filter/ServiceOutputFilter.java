@@ -2,12 +2,12 @@ package io.cattle.platform.servicediscovery.api.filter;
 
 import io.cattle.platform.core.addon.PublicEndpoint;
 import io.cattle.platform.core.addon.ToServiceUpgradeStrategy;
+import io.cattle.platform.core.constants.ServiceConstants;
 import io.cattle.platform.core.model.Host;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.Service;
 import io.cattle.platform.json.JsonMapper;
 import io.cattle.platform.object.util.DataAccessor;
-import io.cattle.platform.servicediscovery.api.constants.ServiceDiscoveryConstants;
 import io.github.ibuildthecloud.gdapi.context.ApiContext;
 import io.github.ibuildthecloud.gdapi.id.IdFormatter;
 import io.github.ibuildthecloud.gdapi.model.Resource;
@@ -36,14 +36,14 @@ public class ServiceOutputFilter implements ResourceOutputFilter {
 
     public Resource convertPublicEndpointsField(Object original, Resource converted) {
         List<? extends PublicEndpoint> endpoints = DataAccessor.fields(original)
-                .withKey(ServiceDiscoveryConstants.FIELD_PUBLIC_ENDPOINTS).withDefault(Collections.EMPTY_LIST)
+                .withKey(ServiceConstants.FIELD_PUBLIC_ENDPOINTS).withDefault(Collections.EMPTY_LIST)
                 .asList(jsonMapper, PublicEndpoint.class);
 
         if (endpoints.isEmpty()) {
             return converted;
         }
 
-        converted.getFields().put(ServiceDiscoveryConstants.FIELD_PUBLIC_ENDPOINTS, getConvertedEndpoints(endpoints));
+        converted.getFields().put(ServiceConstants.FIELD_PUBLIC_ENDPOINTS, getConvertedEndpoints(endpoints));
         return converted;
     }
 
@@ -77,7 +77,7 @@ public class ServiceOutputFilter implements ResourceOutputFilter {
             return converted;
         }
         io.cattle.platform.core.addon.ServiceUpgrade upgrade = DataAccessor.field(original,
-                ServiceDiscoveryConstants.FIELD_UPGRADE, jsonMapper,
+                ServiceConstants.FIELD_UPGRADE, jsonMapper,
                 io.cattle.platform.core.addon.ServiceUpgrade.class);
 
         if (upgrade == null || upgrade.getToServiceStrategy() == null) {
@@ -92,13 +92,13 @@ public class ServiceOutputFilter implements ResourceOutputFilter {
         IdFormatter formatter = ApiContext.getContext().getIdFormatter();
         toServiceStrategy.setToServiceId(formatter.formatId(type, toServiceStrategy.getToServiceId()).toString());
         upgrade.setToServiceStrategy(toServiceStrategy);
-        converted.getFields().put(ServiceDiscoveryConstants.FIELD_UPGRADE, upgrade);
+        converted.getFields().put(ServiceConstants.FIELD_UPGRADE, upgrade);
         return converted;
     }
 
     @Override
     public String[] getTypes() {
-        return new String[]{ServiceDiscoveryConstants.KIND_SERVICE};
+        return new String[]{ServiceConstants.KIND_SERVICE};
     }
 
     @Override

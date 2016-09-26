@@ -6,10 +6,10 @@ import io.cattle.platform.core.addon.InstanceHealthCheck;
 import io.cattle.platform.core.addon.InstanceHealthCheck.Strategy;
 import io.cattle.platform.core.addon.RecreateOnQuorumStrategyConfig;
 import io.cattle.platform.core.constants.InstanceConstants;
+import io.cattle.platform.core.constants.ServiceConstants;
 import io.cattle.platform.core.model.Service;
 import io.cattle.platform.core.model.ServiceIndex;
 import io.cattle.platform.object.process.StandardProcess;
-import io.cattle.platform.servicediscovery.api.constants.ServiceDiscoveryConstants;
 import io.cattle.platform.servicediscovery.api.util.ServiceDiscoveryUtil;
 import io.cattle.platform.servicediscovery.deployment.impl.DeploymentManagerImpl.DeploymentServiceContext;
 import io.cattle.platform.servicediscovery.deployment.impl.healthaction.HealthCheckActionHandler;
@@ -79,7 +79,7 @@ public abstract class ServiceDeploymentPlanner {
 
     protected void setHealthCheckAction(Service service, DeploymentServiceContext context) {
         Object healthCheckObj = ServiceDiscoveryUtil.getLaunchConfigObject(service,
-                ServiceDiscoveryConstants.PRIMARY_LAUNCH_CONFIG_NAME, InstanceConstants.FIELD_HEALTH_CHECK);
+                ServiceConstants.PRIMARY_LAUNCH_CONFIG_NAME, InstanceConstants.FIELD_HEALTH_CHECK);
         if (healthCheckObj != null) {
             InstanceHealthCheck healthCheck = context.jsonMapper.convertValue(healthCheckObj,
                     InstanceHealthCheck.class);
@@ -189,7 +189,7 @@ public abstract class ServiceDeploymentPlanner {
         while (it.hasNext()) {
             DeploymentUnit next = it.next();
             watchList.add(next);
-            next.remove(ServiceDiscoveryConstants.AUDIT_LOG_REMOVE_BAD, ActivityLog.ERROR);
+            next.remove(ServiceConstants.AUDIT_LOG_REMOVE_BAD, ActivityLog.ERROR);
             it.remove();
         }
         for (DeploymentUnit toWatch : watchList) {
@@ -212,7 +212,7 @@ public abstract class ServiceDeploymentPlanner {
         while (it.hasNext()) {
             DeploymentUnit next = it.next();
             watchList.add(next);
-            next.remove(ServiceDiscoveryConstants.AUDIT_LOG_REMOVE_UNHEATLHY, ActivityLog.INFO);
+            next.remove(ServiceConstants.AUDIT_LOG_REMOVE_UNHEATLHY, ActivityLog.INFO);
             it.remove();
         }
         for (DeploymentUnit toWatch : watchList) {

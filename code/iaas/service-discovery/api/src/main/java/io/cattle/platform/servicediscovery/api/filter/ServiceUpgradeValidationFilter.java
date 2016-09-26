@@ -4,12 +4,12 @@ import io.cattle.platform.core.addon.InServiceUpgradeStrategy;
 import io.cattle.platform.core.addon.ServiceUpgrade;
 import io.cattle.platform.core.addon.ServiceUpgradeStrategy;
 import io.cattle.platform.core.constants.InstanceConstants;
+import io.cattle.platform.core.constants.ServiceConstants;
 import io.cattle.platform.core.model.Service;
 import io.cattle.platform.iaas.api.filter.common.AbstractDefaultResourceManagerFilter;
 import io.cattle.platform.json.JsonMapper;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.util.DataAccessor;
-import io.cattle.platform.servicediscovery.api.constants.ServiceDiscoveryConstants;
 import io.cattle.platform.servicediscovery.api.util.ServiceDiscoveryUtil;
 import io.cattle.platform.util.type.CollectionUtils;
 import io.github.ibuildthecloud.gdapi.request.ApiRequest;
@@ -48,7 +48,7 @@ public class ServiceUpgradeValidationFilter extends AbstractDefaultResourceManag
 
     @Override
     public Object resourceAction(String type, ApiRequest request, ResourceManager next) {
-        if (request.getAction().equals(ServiceDiscoveryConstants.ACTION_SERVICE_UPGRADE)) {
+        if (request.getAction().equals(ServiceConstants.ACTION_SERVICE_UPGRADE)) {
             Service service = objectManager.loadResource(Service.class, request.getId());
             ServiceUpgrade upgrade = jsonMapper.convertValue(request.getRequestObject(),
                     ServiceUpgrade.class);
@@ -72,10 +72,10 @@ public class ServiceUpgradeValidationFilter extends AbstractDefaultResourceManag
             InServiceUpgradeStrategy inServiceStrategy = (InServiceUpgradeStrategy) strategy;
             inServiceStrategy = finalizeUpgradeStrategy(service, inServiceStrategy);
             
-            Object launchConfig = DataAccessor.field(service, ServiceDiscoveryConstants.FIELD_LAUNCH_CONFIG,
+            Object launchConfig = DataAccessor.field(service, ServiceConstants.FIELD_LAUNCH_CONFIG,
                     Object.class);
             List<Object> secondaryLaunchConfigs = DataAccessor.fields(service)
-                    .withKey(ServiceDiscoveryConstants.FIELD_SECONDARY_LAUNCH_CONFIGS)
+                    .withKey(ServiceConstants.FIELD_SECONDARY_LAUNCH_CONFIGS)
                     .withDefault(Collections.EMPTY_LIST).as(
                             List.class);
             inServiceStrategy.setPreviousLaunchConfig(launchConfig);
@@ -102,7 +102,7 @@ public class ServiceUpgradeValidationFilter extends AbstractDefaultResourceManag
     @SuppressWarnings("unchecked")
     protected void setLaunchConfigVersion(String version, Object launchConfigObj) {
         Map<String, Object> launchConfig = (Map<String, Object>) launchConfigObj;
-        launchConfig.put(ServiceDiscoveryConstants.FIELD_VERSION, version);
+        launchConfig.put(ServiceConstants.FIELD_VERSION, version);
     }
 
     protected InServiceUpgradeStrategy finalizeUpgradeStrategy(Service service, InServiceUpgradeStrategy strategy) {
@@ -111,11 +111,11 @@ public class ServiceUpgradeValidationFilter extends AbstractDefaultResourceManag
                     "LaunchConfig/secondaryLaunchConfigs need to be specified for inService strategy");
         }
 
-        if (DataAccessor.fieldBool(service, ServiceDiscoveryConstants.FIELD_SERVICE_RETAIN_IP)) {
+        if (DataAccessor.fieldBool(service, ServiceConstants.FIELD_SERVICE_RETAIN_IP)) {
             if (strategy.getStartFirst()) {
                 ValidationErrorCodes.throwValidationError(ValidationErrorCodes.INVALID_OPTION,
                         "StartFirst option can't be used for service with "
-                                + ServiceDiscoveryConstants.FIELD_SERVICE_RETAIN_IP + " field set");
+                                + ServiceConstants.FIELD_SERVICE_RETAIN_IP + " field set");
             }
         }
 
@@ -172,7 +172,7 @@ public class ServiceUpgradeValidationFilter extends AbstractDefaultResourceManag
                 continue;
             }
             if (service.getSelectorContainer() == null
-                    && StringUtils.equalsIgnoreCase(ServiceDiscoveryConstants.IMAGE_NONE, imageUuid.toString())) {
+                    && StringUtils.equalsIgnoreCase(ServiceConstants.IMAGE_NONE, imageUuid.toString())) {
                 it.remove();
             }
         }
@@ -214,8 +214,8 @@ public class ServiceUpgradeValidationFilter extends AbstractDefaultResourceManag
 
     protected Map<String, Map<Object, Object>> getExistingLaunchConfigs(Service service) {
         Map<String, Map<Object, Object>> serviceLCs = ServiceDiscoveryUtil.getServiceLaunchConfigsWithNames(service);
-        Map<Object, Object> primaryLC = serviceLCs.get(ServiceDiscoveryConstants.PRIMARY_LAUNCH_CONFIG_NAME);
-        serviceLCs.remove(ServiceDiscoveryConstants.PRIMARY_LAUNCH_CONFIG_NAME);
+        Map<Object, Object> primaryLC = serviceLCs.get(ServiceConstants.PRIMARY_LAUNCH_CONFIG_NAME);
+        serviceLCs.remove(ServiceConstants.PRIMARY_LAUNCH_CONFIG_NAME);
         serviceLCs.put(service.getName(), primaryLC);
         return serviceLCs;
     }
@@ -232,12 +232,12 @@ public class ServiceUpgradeValidationFilter extends AbstractDefaultResourceManag
             Map<Object, Object> serviceLC = serviceLCs.get(serviceLCName);
             List<String> refs = new ArrayList<>();
             Object networkFromLaunchConfig = serviceLC
-                    .get(ServiceDiscoveryConstants.FIELD_NETWORK_LAUNCH_CONFIG);
+                    .get(ServiceConstants.FIELD_NETWORK_LAUNCH_CONFIG);
             if (networkFromLaunchConfig != null) {
                 refs.add((String) networkFromLaunchConfig);
             }
             Object volumesFromLaunchConfigs = serviceLC
-                    .get(ServiceDiscoveryConstants.FIELD_DATA_VOLUMES_LAUNCH_CONFIG);
+                    .get(ServiceConstants.FIELD_DATA_VOLUMES_LAUNCH_CONFIG);
             if (volumesFromLaunchConfigs != null) {
                 refs.addAll((List<String>) volumesFromLaunchConfigs);
             }

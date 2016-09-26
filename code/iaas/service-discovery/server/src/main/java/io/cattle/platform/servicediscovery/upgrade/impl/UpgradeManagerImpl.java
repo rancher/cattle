@@ -11,6 +11,7 @@ import io.cattle.platform.core.addon.ToServiceUpgradeStrategy;
 import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.HealthcheckConstants;
 import io.cattle.platform.core.constants.InstanceConstants;
+import io.cattle.platform.core.constants.ServiceConstants;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.Service;
 import io.cattle.platform.core.model.ServiceExposeMap;
@@ -27,7 +28,6 @@ import io.cattle.platform.object.resource.ResourceMonitor;
 import io.cattle.platform.object.resource.ResourcePredicate;
 import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.process.common.util.ProcessUtils;
-import io.cattle.platform.servicediscovery.api.constants.ServiceDiscoveryConstants;
 import io.cattle.platform.servicediscovery.api.dao.ServiceExposeMapDao;
 import io.cattle.platform.servicediscovery.deployment.DeploymentManager;
 import io.cattle.platform.servicediscovery.deployment.impl.lock.ServiceLock;
@@ -51,9 +51,9 @@ import org.apache.commons.lang3.tuple.Pair;
 public class UpgradeManagerImpl implements UpgradeManager {
 
     private static final Set<String> UPGRADE_STATES = new HashSet<>(Arrays.asList(
-            ServiceDiscoveryConstants.STATE_RESTARTING,
-            ServiceDiscoveryConstants.STATE_UPGRADING,
-            ServiceDiscoveryConstants.STATE_ROLLINGBACK));
+            ServiceConstants.STATE_RESTARTING,
+            ServiceConstants.STATE_UPGRADING,
+            ServiceConstants.STATE_ROLLINGBACK));
 
     private enum Type {
         ToUpgrade,
@@ -133,8 +133,8 @@ public class UpgradeManagerImpl implements UpgradeManager {
 
     protected boolean preseveDeploymentUnit(Service service, InServiceUpgradeStrategy strategy) {
         boolean isServiceIndexDUStrategy = StringUtils.equalsIgnoreCase(
-                ServiceDiscoveryConstants.SERVICE_INDEX_DU_STRATEGY,
-                DataAccessor.fieldString(service, ServiceDiscoveryConstants.FIELD_SERVICE_INDEX_STRATEGY));
+                ServiceConstants.SERVICE_INDEX_DU_STRATEGY,
+                DataAccessor.fieldString(service, ServiceConstants.FIELD_SERVICE_INDEX_STRATEGY));
         return isServiceIndexDUStrategy || strategy.isFullUpgrade();
     }
 
@@ -289,7 +289,7 @@ public class UpgradeManagerImpl implements UpgradeManager {
         // get all instances of the service
         List<? extends Instance> instances = exposeMapDao.listServiceManagedInstances(service);
         List<Instance> toRestart = new ArrayList<>();
-        ServiceRestart svcRestart = DataAccessor.field(service, ServiceDiscoveryConstants.FIELD_RESTART,
+        ServiceRestart svcRestart = DataAccessor.field(service, ServiceConstants.FIELD_RESTART,
                 jsonMapper, ServiceRestart.class);
         RollingRestartStrategy strategy = svcRestart.getRollingRestartStrategy();
         Map<Long, Long> instanceToStartCount = strategy.getInstanceToStartCount();
@@ -392,8 +392,8 @@ public class UpgradeManagerImpl implements UpgradeManager {
     protected Service reload(Service service) {
         service = objectManager.reload(service);
 
-        List<String> states = Arrays.asList(ServiceDiscoveryConstants.STATE_UPGRADING,
-                ServiceDiscoveryConstants.STATE_ROLLINGBACK, ServiceDiscoveryConstants.STATE_RESTARTING);
+        List<String> states = Arrays.asList(ServiceConstants.STATE_UPGRADING,
+                ServiceConstants.STATE_ROLLINGBACK, ServiceConstants.STATE_RESTARTING);
         if (!states.contains(service.getState())) {
             throw new ProcessExecutionExitException(ExitReason.STATE_CHANGED);
         }
@@ -454,13 +454,13 @@ public class UpgradeManagerImpl implements UpgradeManager {
 
         long newScale = Math.max(0, getScale(service) + delta);
 
-        service = objectManager.setFields(service, ServiceDiscoveryConstants.FIELD_SCALE, newScale);
+        service = objectManager.setFields(service, ServiceConstants.FIELD_SCALE, newScale);
         deploymentMgr.activate(service);
         return objectManager.reload(service);
     }
 
     protected int getScale(Service service) {
-        Integer i = DataAccessor.fieldInteger(service, ServiceDiscoveryConstants.FIELD_SCALE);
+        Integer i = DataAccessor.fieldInteger(service, ServiceConstants.FIELD_SCALE);
         return i == null ? 0 : i;
     }
 

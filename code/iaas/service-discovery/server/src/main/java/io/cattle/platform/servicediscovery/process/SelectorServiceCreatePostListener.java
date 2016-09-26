@@ -6,6 +6,7 @@ import static io.cattle.platform.core.model.tables.ServiceTable.SERVICE;
 import io.cattle.platform.core.addon.LoadBalancerServiceLink;
 import io.cattle.platform.core.addon.ServiceLink;
 import io.cattle.platform.core.constants.CommonStatesConstants;
+import io.cattle.platform.core.constants.ServiceConstants;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.Service;
 import io.cattle.platform.core.model.ServiceExposeMap;
@@ -17,7 +18,6 @@ import io.cattle.platform.lock.LockCallbackNoReturn;
 import io.cattle.platform.lock.LockManager;
 import io.cattle.platform.object.process.StandardProcess;
 import io.cattle.platform.process.common.handler.AbstractObjectProcessLogic;
-import io.cattle.platform.servicediscovery.api.constants.ServiceDiscoveryConstants;
 import io.cattle.platform.servicediscovery.api.dao.ServiceConsumeMapDao;
 import io.cattle.platform.servicediscovery.api.dao.ServiceExposeMapDao;
 import io.cattle.platform.servicediscovery.deployment.impl.lock.ServiceInstanceLock;
@@ -50,7 +50,7 @@ public class SelectorServiceCreatePostListener extends AbstractObjectProcessLogi
 
     @Override
     public String[] getProcessNames() {
-        return new String[] { ServiceDiscoveryConstants.PROCESS_SERVICE_CREATE, ServiceDiscoveryConstants.PROCESS_SERVICE_UPDATE };
+        return new String[] { ServiceConstants.PROCESS_SERVICE_CREATE, ServiceConstants.PROCESS_SERVICE_UPDATE };
     }
 
     @Override
@@ -60,7 +60,7 @@ public class SelectorServiceCreatePostListener extends AbstractObjectProcessLogi
         registerServiceLinks(service);
         registerInstances(service);
 
-        if (process.getName().equalsIgnoreCase(ServiceDiscoveryConstants.PROCESS_SERVICE_UPDATE)) {
+        if (process.getName().equalsIgnoreCase(ServiceConstants.PROCESS_SERVICE_UPDATE)) {
             cleanupOldSelectorLinks(state, service);
         }
 
@@ -74,8 +74,8 @@ public class SelectorServiceCreatePostListener extends AbstractObjectProcessLogi
         Object oldObj = state.getData().get("old");
         if (oldObj != null) {
             Map<String, Object> old = (Map<String, Object>) oldObj;
-            if (old.containsKey(ServiceDiscoveryConstants.FIELD_SELECTOR_LINK)) {
-                oldSelectorLink = old.get(ServiceDiscoveryConstants.FIELD_SELECTOR_LINK).toString();
+            if (old.containsKey(ServiceConstants.FIELD_SELECTOR_LINK)) {
+                oldSelectorLink = old.get(ServiceConstants.FIELD_SELECTOR_LINK).toString();
             }
         }
         if (!StringUtils.isEmpty(oldSelectorLink) && !oldSelectorLink.equalsIgnoreCase(selectorLink)) {
@@ -113,7 +113,7 @@ public class SelectorServiceCreatePostListener extends AbstractObjectProcessLogi
 
     protected void removeServiceLink(Service service, Service targetService) {
         ServiceLink link = null;
-        if (service.getKind().equalsIgnoreCase(ServiceDiscoveryConstants.KIND_LOAD_BALANCER_SERVICE)) {
+        if (service.getKind().equalsIgnoreCase(ServiceConstants.KIND_LOAD_BALANCER_SERVICE)) {
             link = new LoadBalancerServiceLink(targetService.getId(), null, new ArrayList<String>());
         } else {
             link = new ServiceLink(targetService.getId(), null);
@@ -123,7 +123,7 @@ public class SelectorServiceCreatePostListener extends AbstractObjectProcessLogi
 
     protected void addServiceLink(Service service, Service targetService) {
         ServiceLink link = null;
-        if (service.getKind().equalsIgnoreCase(ServiceDiscoveryConstants.KIND_LOAD_BALANCER_SERVICE)) {
+        if (service.getKind().equalsIgnoreCase(ServiceConstants.KIND_LOAD_BALANCER_SERVICE)) {
             link = new LoadBalancerServiceLink(targetService.getId(), null, new ArrayList<String>());
         } else {
             link = new ServiceLink(targetService.getId(), null);

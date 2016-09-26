@@ -1,9 +1,9 @@
 package io.cattle.platform.servicediscovery.deployment.impl.planner;
 
 import io.cattle.platform.activity.ActivityLog;
+import io.cattle.platform.core.constants.ServiceConstants;
 import io.cattle.platform.core.model.Service;
 import io.cattle.platform.object.util.DataAccessor;
-import io.cattle.platform.servicediscovery.api.constants.ServiceDiscoveryConstants;
 import io.cattle.platform.servicediscovery.deployment.ServiceDeploymentPlanner;
 import io.cattle.platform.servicediscovery.deployment.impl.DeploymentManagerImpl.DeploymentServiceContext;
 import io.cattle.platform.servicediscovery.deployment.impl.unit.DeploymentUnit;
@@ -23,12 +23,12 @@ public class DefaultServiceDeploymentPlanner extends ServiceDeploymentPlanner {
         int scale;
         // internal desired scale populated by scale policy driven deployment
         Integer scaleInternal = DataAccessor.fieldInteger(service,
-                ServiceDiscoveryConstants.FIELD_DESIRED_SCALE);
+                ServiceConstants.FIELD_DESIRED_SCALE);
         if (scaleInternal != null) {
             scale = scaleInternal;
         } else {
             scale = DataAccessor.fieldInteger(service,
-                    ServiceDiscoveryConstants.FIELD_SCALE);
+                    ServiceConstants.FIELD_SCALE);
         }
 
         if (scale > this.requestedScale) {
@@ -68,7 +68,7 @@ public class DefaultServiceDeploymentPlanner extends ServiceDeploymentPlanner {
         while (this.healthyUnits.size() > this.requestedScale) {
             DeploymentUnit toRemove = this.healthyUnits.get(i);
             watchList.add(toRemove);
-            toRemove.remove(ServiceDiscoveryConstants.AUDIT_LOG_REMOVE_EXTRA, ActivityLog.INFO);
+            toRemove.remove(ServiceConstants.AUDIT_LOG_REMOVE_EXTRA, ActivityLog.INFO);
             this.healthyUnits.remove(i);
             i--;
         }

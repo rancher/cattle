@@ -2,9 +2,9 @@ package io.cattle.platform.docker.service.impl;
 
 import static io.cattle.platform.core.model.tables.StackTable.*;
 import static io.cattle.platform.core.model.tables.ServiceTable.*;
-
 import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.InstanceConstants;
+import io.cattle.platform.core.constants.ServiceConstants;
 import io.cattle.platform.core.dao.GenericResourceDao;
 import io.cattle.platform.core.model.Stack;
 import io.cattle.platform.core.model.Instance;
@@ -25,7 +25,6 @@ import io.cattle.platform.object.meta.ObjectMetaDataManager;
 import io.cattle.platform.object.process.ObjectProcessManager;
 import io.cattle.platform.object.process.StandardProcess;
 import io.cattle.platform.object.util.DataAccessor;
-import io.cattle.platform.servicediscovery.api.constants.ServiceDiscoveryConstants;
 import io.cattle.platform.servicediscovery.api.dao.ServiceExposeMapDao;
 import io.cattle.platform.servicediscovery.deployment.impl.unit.DefaultDeploymentUnitInstance;
 import io.github.ibuildthecloud.gdapi.condition.Condition;
@@ -83,10 +82,10 @@ public class ComposeManagerImpl implements ComposeManager {
 
     private Instance setupLabels(Instance instance, String service, String project) {
         Map<String, Object> labels = DataAccessor.fieldMap(instance, InstanceConstants.FIELD_LABELS);
-        setIfNot(labels, ServiceDiscoveryConstants.LABEL_SERVICE_DEPLOYMENT_UNIT, io.cattle.platform.util.resource.UUID.randomUUID());
-        setIfNot(labels, ServiceDiscoveryConstants.LABEL_SERVICE_LAUNCH_CONFIG, ServiceDiscoveryConstants.PRIMARY_LAUNCH_CONFIG_NAME);
-        setIfNot(labels, ServiceDiscoveryConstants.LABEL_STACK_NAME, project);
-        setIfNot(labels, ServiceDiscoveryConstants.LABEL_STACK_SERVICE_NAME, String.format("%s/%s", project, service));
+        setIfNot(labels, ServiceConstants.LABEL_SERVICE_DEPLOYMENT_UNIT, io.cattle.platform.util.resource.UUID.randomUUID());
+        setIfNot(labels, ServiceConstants.LABEL_SERVICE_LAUNCH_CONFIG, ServiceConstants.PRIMARY_LAUNCH_CONFIG_NAME);
+        setIfNot(labels, ServiceConstants.LABEL_STACK_NAME, project);
+        setIfNot(labels, ServiceConstants.LABEL_STACK_SERVICE_NAME, String.format("%s/%s", project, service));
         DataAccessor.setField(instance, InstanceConstants.FIELD_LABELS, labels);
 
         return objectManager.persist(instance);
@@ -124,8 +123,8 @@ public class ComposeManagerImpl implements ComposeManager {
                 SERVICE.ACCOUNT_ID, instance.getAccountId(),
                 SERVICE.STACK_ID, stack.getId(),
                 SERVICE.SELECTOR_CONTAINER, String.format("%s=%s, %s=%s", PROJECT_LABEL, project, SERVICE_LABEL, service),
-                ServiceDiscoveryConstants.FIELD_START_ON_CREATE, true,
-                ServiceDiscoveryConstants.FIELD_LAUNCH_CONFIG, instanceData,
+                ServiceConstants.FIELD_START_ON_CREATE, true,
+                ServiceConstants.FIELD_LAUNCH_CONFIG, instanceData,
                 SERVICE.KIND, "composeService");
     }
 
