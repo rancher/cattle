@@ -456,7 +456,6 @@ public abstract class AbstractAllocator implements Allocator {
             }
             candidateLog.append(String.format("  [%s] instance [%s]\n", id, instanceIds));
         }
-
         for (Map.Entry<Volume, Set<StoragePool>> entry : attempt.getPools().entrySet()) {
             long volumeId = entry.getKey().getId();
             candidateLog.append(String.format("  [%s] volume [%s]\n", id, volumeId));
