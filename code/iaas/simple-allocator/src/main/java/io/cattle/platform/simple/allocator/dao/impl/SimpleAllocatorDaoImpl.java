@@ -12,17 +12,19 @@ import io.cattle.platform.allocator.service.AllocationCandidate;
 import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.model.Port;
+import io.cattle.platform.core.model.tables.records.PortRecord;
 import io.cattle.platform.db.jooq.dao.impl.AbstractJooqDao;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.simple.allocator.AllocationCandidateCallback;
 import io.cattle.platform.simple.allocator.dao.QueryOptions;
 import io.cattle.platform.simple.allocator.dao.SimpleAllocatorDao;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -30,12 +32,20 @@ import java.util.Set;
 import javax.inject.Inject;
 
 import org.jooq.Condition;
+import org.jooq.Field;
+import org.jooq.Record;
 import org.jooq.Record3;
 import org.jooq.Result;
 import org.jooq.SelectConditionStep;
 import org.jooq.impl.DSL;
 
 public class SimpleAllocatorDaoImpl extends AbstractJooqDao implements SimpleAllocatorDao {
+
+    private static final List<Field<?>> hostAndPortFields;
+    static {
+       hostAndPortFields = new ArrayList<Field<?>>(Arrays.asList(PORT.fields()));
+       hostAndPortFields.add(INSTANCE_HOST_MAP.HOST_ID);
+    }
 
     ObjectManager objectManager;
 
@@ -51,24 +61,26 @@ public class SimpleAllocatorDaoImpl extends AbstractJooqDao implements SimpleAll
 
     protected Iterator<AllocationCandidate> iteratorHosts(List<String> orderedHostUuids, List<Long> volumes, QueryOptions options, boolean hosts,
             AllocationCandidateCallback callback) {
-        LinkedHashMap<Long, Set<Long>>orderedResults = new LinkedHashMap<>();
-        Map<Long, String> hostIdsToUuids = new HashMap<>();
+        List<CandidateHostInfo> hostInfos = new ArrayList<>();
+        Set<Long> hostIds = new HashSet<>();
         if (orderedHostUuids == null) {
-            Result<Record3<String, Long, Long>> result = getHostQuery(orderedHostUuids, options).fetch();
+            Result<Record3<String, Long, Long>> result = getHostQuery(null, options).fetch();
             Collections.shuffle(result);
+
+            Map<Long, CandidateHostInfo> infoMap = new HashMap<>();
             for (Record3<String, Long, Long> r : result) {
                 Long hostId = r.value2();
-                hostIdsToUuids.put(hostId, r.value1());
-                Set<Long> poolIDs = orderedResults.get(hostId); 
-                if (poolIDs == null) {
-                    poolIDs = new HashSet<Long>();
-                    orderedResults.put(hostId, poolIDs);
+                hostIds.add(hostId);
+                CandidateHostInfo hostInfo = infoMap.get(hostId);
+                if (hostInfo == null) {
+                    hostInfo = new CandidateHostInfo(hostId, r.value1());
+                    infoMap.put(hostId, hostInfo);
+                    hostInfos.add(hostInfo);
                 }
-                poolIDs.add(r.value3());
+                hostInfo.getPoolIds().add(r.value3());
             }
         } else {
             Map<String, Result<Record3<String, Long, Long>>> result = getHostQuery(orderedHostUuids, options).fetchGroups(HOST.UUID);
-
             for (String uuid : orderedHostUuids) {
                 Result<Record3<String, Long, Long>>val = result.get(uuid);
                 if (val != null) {
@@ -81,24 +93,25 @@ public class SimpleAllocatorDaoImpl extends AbstractJooqDao implements SimpleAll
                             hostId = r.value2();
                         }
                     }
-                    hostIdsToUuids.put(hostId, uuid);
-                    orderedResults.put(hostId, poolIds);
+
+                    CandidateHostInfo hostInfo = new CandidateHostInfo(hostId, uuid);
+                    hostInfo.getPoolIds().addAll(poolIds);
+                    hostInfos.add(hostInfo);
+                    hostIds.add(hostId);
                 }
             }
         }
 
-        Map<Long, List<Port>> hostIdsToUsedPorts = new HashMap<>();
-        for (Long hostId : hostIdsToUuids.keySet()) {
-            List<Port> ports = getUsedPortsForHostExcludingInstance(hostId);
-            hostIdsToUsedPorts.put(hostId, ports);
+        if (options.isIncludeUsedPorts()) {
+            updateHostsWithUsedPorts(hostIds, hostInfos);
         }
 
-        return new AllocationCandidateIterator(objectManager, orderedResults, hostIdsToUuids, hostIdsToUsedPorts, volumes, hosts, callback);
+        return new AllocationCandidateIterator(objectManager, hostInfos, volumes, hosts, callback);
     }
 
-    private List<Port> getUsedPortsForHostExcludingInstance(long hostId) {
-        return create()
-                .select(PORT.fields())
+    private void updateHostsWithUsedPorts(Set<Long> hostIds, List<CandidateHostInfo> hostInfos) {
+        Map<Long, Result<Record>> results = create()
+                .select(hostAndPortFields)
                     .from(PORT)
                     .join(INSTANCE_HOST_MAP)
                         .on(PORT.INSTANCE_ID.eq(INSTANCE_HOST_MAP.INSTANCE_ID))
@@ -106,13 +119,28 @@ public class SimpleAllocatorDaoImpl extends AbstractJooqDao implements SimpleAll
                         .on(INSTANCE_HOST_MAP.INSTANCE_ID.eq(INSTANCE.ID))
                 .leftOuterJoin(SERVICE_EXPOSE_MAP)
                 .on(SERVICE_EXPOSE_MAP.INSTANCE_ID.eq(INSTANCE.ID))
-                    .where(INSTANCE_HOST_MAP.HOST_ID.eq(hostId)
+                    .where(INSTANCE_HOST_MAP.HOST_ID.in(hostIds)
                         .and(INSTANCE.REMOVED.isNull())
                         .and(INSTANCE.STATE.in(InstanceConstants.STATE_STARTING, InstanceConstants.STATE_RESTARTING, InstanceConstants.STATE_RUNNING))
                         .and(INSTANCE_HOST_MAP.REMOVED.isNull())
                         .and(PORT.REMOVED.isNull())
                         .and(SERVICE_EXPOSE_MAP.UPGRADE.eq(false).or(SERVICE_EXPOSE_MAP.UPGRADE.isNull())))
-                .fetchInto(Port.class);
+                .fetchGroups(INSTANCE_HOST_MAP.HOST_ID);
+
+        Map<Long, List<Port>> hostToPorts = new HashMap<>();
+        for (Map.Entry<Long, Result<Record>> entry : results.entrySet()) {
+            List<Port> ports = new ArrayList<>();
+            hostToPorts.put(entry.getKey(), ports);
+            for (Record rec : entry.getValue()) {
+                PortRecord port = rec.into(PortRecord.class);
+                ports.add(port);
+            }
+        }
+
+        for (CandidateHostInfo hostInfo : hostInfos) {
+            List<Port> ports = hostToPorts.get(hostInfo.getHostId()) != null ? hostToPorts.get(hostInfo.getHostId()) : new ArrayList<Port>();
+            hostInfo.setUsedPorts(ports);
+        }
     }
 
     protected SelectConditionStep<Record3<String, Long, Long>> getHostQuery(List<String> orderedHostUUIDs, QueryOptions options) {
