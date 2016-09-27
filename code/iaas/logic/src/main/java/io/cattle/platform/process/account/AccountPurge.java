@@ -36,6 +36,22 @@ public class AccountPurge extends AbstractDefaultProcessHandler {
     public HandlerResult handle(ProcessState state, ProcessInstance process) {
         Account account = (Account) state.getResource();
 
+        for (Agent agent : getObjectManager().children(account, Agent.class)) {
+            if (agent.getRemoved() != null) {
+                continue;
+            }
+            deactivateThenRemove(agent, state.getData());
+        }
+
+        for (Host host : getObjectManager().children(account, Host.class)) {
+            try {
+                deactivateThenRemove(host, state.getData());
+            } catch (ProcessCancelException e) {
+                // ignore
+            }
+            purge(host, null);
+        }
+
         for (Certificate cert : getObjectManager().children(account, Certificate.class)) {
             if (cert.getRemoved() != null) {
                 continue;
@@ -70,28 +86,12 @@ public class AccountPurge extends AbstractDefaultProcessHandler {
             }
         }
 
-        for (Host host : getObjectManager().children(account, Host.class)) {
-            try {
-                deactivateThenRemove(host, state.getData());
-            } catch (ProcessCancelException e) {
-                // ignore
-            }
-            purge(host, null);
-        }
-
         for (PhysicalHost host : getObjectManager().children(account, PhysicalHost.class)) {
             try {
                 getObjectProcessManager().executeStandardProcess(StandardProcess.REMOVE, host, null);
             } catch (ProcessCancelException e) {
                 // ignore
             }
-        }
-
-        for (Agent agent : getObjectManager().children(account, Agent.class)) {
-            if (agent.getRemoved() != null) {
-                continue;
-            }
-            deactivateThenRemove(agent, state.getData());
         }
 
         accountDao.deleteProjectMemberEntries(account);
