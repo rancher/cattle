@@ -13,7 +13,7 @@ package io.cattle.platform.core.model.tables.records;
 @javax.persistence.Table(name = "volume", schema = "cattle")
 public class VolumeRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.platform.core.model.tables.records.VolumeRecord> implements io.cattle.platform.db.jooq.utils.TableRecordJaxb, io.cattle.platform.core.model.Volume {
 
-	private static final long serialVersionUID = -980428431;
+	private static final long serialVersionUID = 932148755;
 
 	/**
 	 * Setter for <code>cattle.volume.id</code>.
@@ -492,6 +492,23 @@ public class VolumeRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.pl
 		return (java.lang.Long) getValue(27);
 	}
 
+	/**
+	 * Setter for <code>cattle.volume.size_mb</code>.
+	 */
+	@Override
+	public void setSizeMb(java.lang.Long value) {
+		setValue(28, value);
+	}
+
+	/**
+	 * Getter for <code>cattle.volume.size_mb</code>.
+	 */
+	@javax.persistence.Column(name = "size_mb", precision = 19)
+	@Override
+	public java.lang.Long getSizeMb() {
+		return (java.lang.Long) getValue(28);
+	}
+
 	// -------------------------------------------------------------------------
 	// Primary key information
 	// -------------------------------------------------------------------------
@@ -541,6 +558,7 @@ public class VolumeRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.pl
 		setDeploymentUnitId(from.getDeploymentUnitId());
 		setStackId(from.getStackId());
 		setVolumeTemplateId(from.getVolumeTemplateId());
+		setSizeMb(from.getSizeMb());
 	}
 
 	/**
@@ -566,7 +584,7 @@ public class VolumeRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.pl
 	/**
 	 * Create a detached, initialised VolumeRecord
 	 */
-	public VolumeRecord(java.lang.Long id, java.lang.String name, java.lang.Long accountId, java.lang.String kind, java.lang.String uuid, java.lang.String description, java.lang.String state, java.util.Date created, java.util.Date removed, java.util.Date removeTime, java.util.Map<String,Object> data, java.lang.Long physicalSizeMb, java.lang.Long virtualSizeMb, java.lang.Integer deviceNumber, java.lang.String format, java.lang.String allocationState, java.lang.String attachedState, java.lang.Long instanceId, java.lang.Long imageId, java.lang.Long offeringId, java.lang.Long zoneId, java.lang.String uri, java.lang.String externalId, java.lang.String accessMode, java.lang.Long hostId, java.lang.Long deploymentUnitId, java.lang.Long environmentId, java.lang.Long volumeTemplateId) {
+	public VolumeRecord(java.lang.Long id, java.lang.String name, java.lang.Long accountId, java.lang.String kind, java.lang.String uuid, java.lang.String description, java.lang.String state, java.util.Date created, java.util.Date removed, java.util.Date removeTime, java.util.Map<String,Object> data, java.lang.Long physicalSizeMb, java.lang.Long virtualSizeMb, java.lang.Integer deviceNumber, java.lang.String format, java.lang.String allocationState, java.lang.String attachedState, java.lang.Long instanceId, java.lang.Long imageId, java.lang.Long offeringId, java.lang.Long zoneId, java.lang.String uri, java.lang.String externalId, java.lang.String accessMode, java.lang.Long hostId, java.lang.Long deploymentUnitId, java.lang.Long environmentId, java.lang.Long volumeTemplateId, java.lang.Long sizeMb) {
 		super(io.cattle.platform.core.model.tables.VolumeTable.VOLUME);
 
 		setValue(0, id);
@@ -597,5 +615,6 @@ public class VolumeRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.pl
 		setValue(25, deploymentUnitId);
 		setValue(26, environmentId);
 		setValue(27, volumeTemplateId);
+		setValue(28, sizeMb);
 	}
 }

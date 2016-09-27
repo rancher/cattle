@@ -44,6 +44,7 @@
         "registryCredential": "crud",
         "registry": "crud",
         "restartPolicy" : "cr",
+        "storagePool" : "ru",
         "serviceUpgrade" : "cr",
         "serviceRestart" : "cr",
         "secondaryLaunchConfig" : "cru",

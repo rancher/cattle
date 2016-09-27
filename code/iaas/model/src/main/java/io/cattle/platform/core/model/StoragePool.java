@@ -223,6 +223,17 @@ public interface StoragePool extends java.io.Serializable {
 	@javax.persistence.Column(name = "volume_access_mode", length = 255)
 	public java.lang.String getVolumeAccessMode();
 
+	/**
+	 * Setter for <code>cattle.storage_pool.size_mb</code>.
+	 */
+	public void setSizeMb(java.lang.Long value);
+
+	/**
+	 * Getter for <code>cattle.storage_pool.size_mb</code>.
+	 */
+	@javax.persistence.Column(name = "size_mb", precision = 19)
+	public java.lang.Long getSizeMb();
+
 	// -------------------------------------------------------------------------
 	// FROM and INTO
 	// -------------------------------------------------------------------------

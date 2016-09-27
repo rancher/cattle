@@ -776,6 +776,7 @@ def test_storagepool_auth(admin_user_client, user_client, project_client):
         'volumeAccessMode': 'r',
         'blockDevicePath': 'r',
         'volumeCapabilities': 'r',
+        'sizeMb': 'r',
     })
 
     auth_check(user_client.schema, 'storagePool', 'r', {
@@ -786,9 +787,10 @@ def test_storagepool_auth(admin_user_client, user_client, project_client):
         'volumeAccessMode': 'r',
         'blockDevicePath': 'r',
         'volumeCapabilities': 'r',
+        'sizeMb': 'r',
     })
 
-    auth_check(project_client.schema, 'storagePool', 'r', {
+    auth_check(project_client.schema, 'storagePool', 'ru', {
         'accountId': 'r',
         'externalId': 'r',
         'name': 'r',
@@ -796,6 +798,7 @@ def test_storagepool_auth(admin_user_client, user_client, project_client):
         'volumeAccessMode': 'r',
         'blockDevicePath': 'r',
         'volumeCapabilities': 'r',
+        'sizeMb': 'ru',
     })
 
 
@@ -825,6 +828,7 @@ def test_volume_auth(admin_user_client, user_client, project_client):
         'accessMode': 'r',
         'stackId': 'r',
         'volumeTemplateId': 'r',
+        'sizeMb': 'r',
     })
 
     auth_check(user_client.schema, 'volume', 'r', {
@@ -850,6 +854,7 @@ def test_volume_auth(admin_user_client, user_client, project_client):
         'accessMode': 'r',
         'stackId': 'r',
         'volumeTemplateId': 'r',
+        'sizeMb': 'r',
     })
 
     auth_check(project_client.schema, 'volume', 'crd', {
@@ -875,6 +880,7 @@ def test_volume_auth(admin_user_client, user_client, project_client):
         'accessMode': 'r',
         'stackId': 'cr',
         'volumeTemplateId': 'cr',
+        'sizeMb': 'cr',
     })
 
 
@@ -1561,6 +1567,7 @@ def test_registry(admin_user_client, user_client, project_client):
         'volumeAccessMode': 'r',
         'blockDevicePath': 'r',
         'volumeCapabilities': 'r',
+        'sizeMb': 'r',
     })
 
     auth_check(user_client.schema, 'registry', 'r', {
@@ -1571,6 +1578,7 @@ def test_registry(admin_user_client, user_client, project_client):
         'volumeAccessMode': 'r',
         'blockDevicePath': 'r',
         'volumeCapabilities': 'r',
+        'sizeMb': 'r',
     })
 
     auth_check(project_client.schema, 'registry', 'crud', {
@@ -1581,6 +1589,7 @@ def test_registry(admin_user_client, user_client, project_client):
         'volumeAccessMode': 'r',
         'blockDevicePath': 'r',
         'volumeCapabilities': 'r',
+        'sizeMb': 'ru',
     })
 
 

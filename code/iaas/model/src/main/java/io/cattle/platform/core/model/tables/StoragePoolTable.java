@@ -11,7 +11,7 @@ package io.cattle.platform.core.model.tables;
 @java.lang.SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class StoragePoolTable extends org.jooq.impl.TableImpl<io.cattle.platform.core.model.tables.records.StoragePoolRecord> {
 
-	private static final long serialVersionUID = -1562204034;
+	private static final long serialVersionUID = 1998263936;
 
 	/**
 	 * The singleton instance of <code>cattle.storage_pool</code>
@@ -120,6 +120,11 @@ public class StoragePoolTable extends org.jooq.impl.TableImpl<io.cattle.platform
 	 * The column <code>cattle.storage_pool.volume_access_mode</code>.
 	 */
 	public final org.jooq.TableField<io.cattle.platform.core.model.tables.records.StoragePoolRecord, java.lang.String> VOLUME_ACCESS_MODE = createField("volume_access_mode", org.jooq.impl.SQLDataType.VARCHAR.length(255), this, "");
+
+	/**
+	 * The column <code>cattle.storage_pool.size_mb</code>.
+	 */
+	public final org.jooq.TableField<io.cattle.platform.core.model.tables.records.StoragePoolRecord, java.lang.Long> SIZE_MB = createField("size_mb", org.jooq.impl.SQLDataType.BIGINT, this, "");
 
 	/**
 	 * Create a <code>cattle.storage_pool</code> table reference
