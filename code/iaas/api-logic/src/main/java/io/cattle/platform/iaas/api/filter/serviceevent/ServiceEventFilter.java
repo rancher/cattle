@@ -2,10 +2,10 @@ package io.cattle.platform.iaas.api.filter.serviceevent;
 
 
 import io.cattle.platform.api.auth.Policy;
-
 import io.cattle.platform.api.utils.ApiUtils;
 import io.cattle.platform.core.constants.AgentConstants;
 import io.cattle.platform.core.dao.AgentDao;
+import io.cattle.platform.core.dao.ServiceDao;
 import io.cattle.platform.core.model.Agent;
 import io.cattle.platform.core.model.HealthcheckInstance;
 import io.cattle.platform.core.model.HealthcheckInstanceHostMap;
@@ -31,6 +31,9 @@ public class ServiceEventFilter extends AbstractDefaultResourceManagerFilter {
     @Inject
     AgentDao agentDao;
 
+    @Inject
+    ServiceDao serviceDao;
+
     @Override
     public Class<?>[] getTypeClasses() {
         return new Class<?>[] { ServiceEvent.class };
@@ -55,8 +58,14 @@ public class ServiceEventFilter extends AbstractDefaultResourceManagerFilter {
             throw new ClientVisibleException(ResponseCodes.FORBIDDEN, VERIFY_AGENT);
         }
 
-        HealthcheckInstanceHostMap healthcheckInstanceHostMap = objectManager.findOne(HealthcheckInstanceHostMap.class,
-                ObjectMetaDataManager.UUID_FIELD, event.getHealthcheckUuid().split("_")[0]);
+        HealthcheckInstanceHostMap healthcheckInstanceHostMap = null;
+        String[] splitted = event.getHealthcheckUuid().split("_");
+        if (splitted.length > 2) {
+            healthcheckInstanceHostMap = serviceDao.getHealthCheckInstanceUUID(splitted[0], splitted[1]);
+        } else {
+            healthcheckInstanceHostMap = objectManager.findOne(HealthcheckInstanceHostMap.class,
+                    ObjectMetaDataManager.UUID_FIELD, splitted[0]);
+        }
 
         if (healthcheckInstanceHostMap == null) {
             throw new ClientVisibleException(ResponseCodes.FORBIDDEN, VERIFY_AGENT);

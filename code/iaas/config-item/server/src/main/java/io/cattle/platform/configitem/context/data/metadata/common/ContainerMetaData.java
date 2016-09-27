@@ -16,7 +16,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.collections.IteratorUtils;
 import org.apache.commons.lang3.StringUtils;
+
+import com.google.common.base.Splitter;
 
 public class ContainerMetaData {
     private Long serviceId;
@@ -49,6 +52,10 @@ public class ContainerMetaData {
     String network_uuid;
     String network_from_container_uuid;
     Boolean system;
+    List<String> dns = new ArrayList<>();
+    List<String> dns_search = new ArrayList<>();
+    // list of hostUUID
+    List<String> health_check_hosts = new ArrayList<>();
 
     public ContainerMetaData(ContainerMetaData that) {
         this.name = that.name;
@@ -78,8 +85,9 @@ public class ContainerMetaData {
         this.network_from_container_uuid = that.network_from_container_uuid;
         this.system = that.system;
         this.instance = that.instance;
+        this.dns = that.dns;
+        this.dns_search = that.dns_search;
     }
-
 
     public ContainerMetaData() {
     }
@@ -131,10 +139,10 @@ public class ContainerMetaData {
 
 
     @SuppressWarnings("unchecked")
-    public void setInstanceAndHostMetadata(Instance instance, HostMetaData hostMetaData) {
-        this.instanceId = instance.getId();
-        this.instance = instance;
+    public void setInstanceAndHostMetadata(Instance instance, HostMetaData hostMetaData, List<String> healthcheckHosts) {
         this.hostMetaData = hostMetaData;
+    this.instance = instance;
+        this.instanceId = instance.getId();
         this.name = instance.getName();
         this.uuid = instance.getUuid();
         this.external_id = instance.getExternalId();
@@ -170,6 +178,17 @@ public class ContainerMetaData {
         this.state = instance.getState();
         this.memory_reservation = instance.getMemoryReservation();
         this.milli_cpu_reservation = instance.getMilliCpuReservation();
+        if (instance.getDnsInternal() != null) {
+            this.dns = IteratorUtils.toList(Splitter.on(",").omitEmptyStrings().trimResults()
+                    .split(instance.getDnsInternal()).iterator());
+        }
+        if (instance.getDnsSearchInternal() != null) {
+            this.dns_search = IteratorUtils.toList(Splitter.on(",").omitEmptyStrings().trimResults()
+                    .split(instance.getDnsSearchInternal()).iterator());
+        }
+        if (healthcheckHosts != null) {
+            this.health_check_hosts = healthcheckHosts;
+        }
     }
 
     public void setService_name(String service_name) {
@@ -358,4 +377,27 @@ public class ContainerMetaData {
         return instance;
     }
 
+    public List<String> getDns() {
+        return dns;
+    }
+
+    public void setDns(List<String> dns) {
+        this.dns = dns;
+    }
+
+    public List<String> getDns_search() {
+        return dns_search;
+    }
+
+    public void setDns_search(List<String> dns_search) {
+        this.dns_search = dns_search;
+    }
+
+    public List<String> getHealth_check_hosts() {
+        return health_check_hosts;
+    }
+
+    public void setHealth_check_hosts(List<String> health_check_hosts) {
+        this.health_check_hosts = health_check_hosts;
+    }
 }

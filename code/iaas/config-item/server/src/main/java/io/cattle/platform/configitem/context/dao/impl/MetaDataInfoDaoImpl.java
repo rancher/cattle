@@ -1,5 +1,6 @@
 package io.cattle.platform.configitem.context.dao.impl;
 
+import static io.cattle.platform.core.model.tables.HealthcheckInstanceHostMapTable.*;
 import static io.cattle.platform.core.model.tables.HostIpAddressMapTable.*;
 import static io.cattle.platform.core.model.tables.HostTable.*;
 import static io.cattle.platform.core.model.tables.InstanceHostMapTable.*;
@@ -9,7 +10,6 @@ import static io.cattle.platform.core.model.tables.IpAddressTable.*;
 import static io.cattle.platform.core.model.tables.NetworkTable.*;
 import static io.cattle.platform.core.model.tables.NicTable.*;
 import static io.cattle.platform.core.model.tables.ServiceExposeMapTable.*;
-import io.cattle.platform.configitem.context.dao.DnsInfoDao;
 import io.cattle.platform.configitem.context.dao.MetaDataInfoDao;
 import io.cattle.platform.configitem.context.data.metadata.common.ContainerMetaData;
 import io.cattle.platform.configitem.context.data.metadata.common.HostMetaData;
@@ -19,6 +19,7 @@ import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.constants.IpAddressConstants;
 import io.cattle.platform.core.constants.ServiceConstants;
 import io.cattle.platform.core.dao.InstanceDao;
+import io.cattle.platform.core.model.HealthcheckInstanceHostMap;
 import io.cattle.platform.core.model.Host;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.IpAddress;
@@ -33,6 +34,7 @@ import io.cattle.platform.core.model.tables.NicTable;
 import io.cattle.platform.core.model.tables.ServiceExposeMapTable;
 import io.cattle.platform.db.jooq.dao.impl.AbstractJooqDao;
 import io.cattle.platform.db.jooq.mapper.MultiRecordMapper;
+import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.util.DataAccessor;
 
 import java.util.ArrayList;
@@ -49,13 +51,13 @@ import org.jooq.RecordHandler;
 public class MetaDataInfoDaoImpl extends AbstractJooqDao implements MetaDataInfoDao {
 
     @Inject
-    DnsInfoDao dnsInfoDao;
-    @Inject
     InstanceDao instanceDao;
+    @Inject
+    ObjectManager objMgr;
 
     private void populateContainerData(final Map<Long, IpAddress> instanceIdToHostIpMap,
             final Map<Long, HostMetaData> hostIdToHostMetadata, List<Object> input, ContainerMetaData data,
-            Map<Long, String> instanceIdToUUID) {
+            Map<Long, String> instanceIdToUUID, Map<Long, List<HealthcheckInstanceHostMap>> instanceIdToHealthCheckers) {
         Instance instance = (Instance) input.get(0);
         instance.setData(instanceDao.getCacheInstanceData(instance.getId()));
 
@@ -69,7 +71,17 @@ public class MetaDataInfoDaoImpl extends AbstractJooqDao implements MetaDataInfo
 
         if (host != null) {
             HostMetaData hostMetaData = hostIdToHostMetadata.get(host.getId());
-            data.setInstanceAndHostMetadata(instance, hostMetaData);
+            List<String> healthCheckers = new ArrayList<>();
+            if (instanceIdToHealthCheckers.get(instance.getId()) != null) {
+                for (HealthcheckInstanceHostMap hostMap : instanceIdToHealthCheckers.get(instance.getId())) {
+                    HostMetaData h = hostIdToHostMetadata.get(hostMap.getHostId());
+                    if (h == null) {
+                        continue;
+                    }
+                    healthCheckers.add(h.getUuid());
+                }
+            }
+            data.setInstanceAndHostMetadata(instance, hostMetaData, healthCheckers);
         }
 
         data.setExposeMap(serviceMap);
@@ -109,11 +121,10 @@ public class MetaDataInfoDaoImpl extends AbstractJooqDao implements MetaDataInfo
 
     @Override
     public List<ContainerMetaData> getNetworkFromContainersData(long accountId,
-            final Map<Long, String> instanceIdToUUID) {
-
-        final Map<Long, IpAddress> instanceIdToHostIpMap = dnsInfoDao
-                .getInstanceWithHostNetworkingToIpMap(accountId);
-        final Map<Long, HostMetaData> hostIdToHostMetadata = getHostIdToHostMetadata(accountId);
+            final Map<Long, String> instanceIdToUUID,
+            final Map<Long, List<HealthcheckInstanceHostMap>> instanceIdToHealthCheckers,
+            final Map<Long, IpAddress> instanceIdToHostIpMap,
+            final Map<Long, HostMetaData> hostIdToHostMetadata) {
 
         MultiRecordMapper<ContainerMetaData> mapper = new MultiRecordMapper<ContainerMetaData>() {
             @Override
@@ -121,7 +132,7 @@ public class MetaDataInfoDaoImpl extends AbstractJooqDao implements MetaDataInfo
                 ContainerMetaData data = new ContainerMetaData();
 
                 populateContainerData(instanceIdToHostIpMap, hostIdToHostMetadata, input, data,
-                        instanceIdToUUID);
+                        instanceIdToUUID, instanceIdToHealthCheckers);
 
                 return data;
             }
@@ -158,25 +169,24 @@ public class MetaDataInfoDaoImpl extends AbstractJooqDao implements MetaDataInfo
     }
 
     @Override
-    public List<ContainerMetaData> getManagedContainersData(long accountId) {
-
-        final Map<Long, IpAddress> instanceIdToHostIpMap = dnsInfoDao
-                .getInstanceWithHostNetworkingToIpMap(accountId);
-        final Map<Long, HostMetaData> hostIdToHostMetadata = getHostIdToHostMetadata(accountId);
+    public List<ContainerMetaData> getManagedContainersData(long accountId,
+            final Map<Long, List<HealthcheckInstanceHostMap>> instanceIdToHealthCheckers,
+            final Map<Long, IpAddress> instanceIdToHostIpMap, final Map<Long, HostMetaData> hostIdToHostMetadata) {
 
         MultiRecordMapper<ContainerMetaData> mapper = new MultiRecordMapper<ContainerMetaData>() {
             @Override
             protected ContainerMetaData map(List<Object> input) {
                 ContainerMetaData data = new ContainerMetaData();
                 populateContainerData(instanceIdToHostIpMap, hostIdToHostMetadata, input, data,
-                        new HashMap<Long, String>());
+                        new HashMap<Long, String>(), instanceIdToHealthCheckers);
 
                 return data;
             }
         };
 
-        InstanceTable instance = mapper.add(INSTANCE, INSTANCE.UUID, INSTANCE.NAME, INSTANCE.CREATE_INDEX, INSTANCE.HEALTH_STATE,
-                INSTANCE.START_COUNT, INSTANCE.STATE, INSTANCE.EXTERNAL_ID, INSTANCE.MEMORY_RESERVATION, INSTANCE.MILLI_CPU_RESERVATION);
+        InstanceTable instance = mapper.add(INSTANCE, INSTANCE.UUID, INSTANCE.NAME, INSTANCE.CREATE_INDEX,
+                INSTANCE.HEALTH_STATE, INSTANCE.START_COUNT, INSTANCE.STATE, INSTANCE.EXTERNAL_ID,
+                INSTANCE.DNS_INTERNAL, INSTANCE.DNS_SEARCH_INTERNAL, INSTANCE.MEMORY_RESERVATION, INSTANCE.MILLI_CPU_RESERVATION);
         ServiceExposeMapTable exposeMap = mapper.add(SERVICE_EXPOSE_MAP, SERVICE_EXPOSE_MAP.SERVICE_ID,
                 SERVICE_EXPOSE_MAP.DNS_PREFIX, SERVICE_EXPOSE_MAP.UPGRADE);
         HostTable host = mapper.add(HOST, HOST.ID);
@@ -247,6 +257,23 @@ public class MetaDataInfoDaoImpl extends AbstractJooqDao implements MetaDataInfo
             toReturn.put(host.getHostId(), host);
         }
         return toReturn;
+    }
+
+    @Override
+    public Map<Long, List<HealthcheckInstanceHostMap>> getInstanceIdToHealthCheckers(long accountId) {
+        Map<Long, List<HealthcheckInstanceHostMap>> instanceIdToHealthCheckers = new HashMap<>();
+        List<? extends HealthcheckInstanceHostMap> hostMaps = objMgr.find(HealthcheckInstanceHostMap.class,
+                HEALTHCHECK_INSTANCE_HOST_MAP.ACCOUNT_ID, accountId, HEALTHCHECK_INSTANCE_HOST_MAP.REMOVED, null);
+        for (HealthcheckInstanceHostMap hostMap : hostMaps) {
+            List<HealthcheckInstanceHostMap> instanceHostMaps = instanceIdToHealthCheckers
+                    .get(hostMap.getInstanceId());
+            if (instanceHostMaps == null) {
+                instanceHostMaps = new ArrayList<>();
+            }
+            instanceHostMaps.add(hostMap);
+            instanceIdToHealthCheckers.put(hostMap.getInstanceId(), instanceHostMaps);
+        }
+        return instanceIdToHealthCheckers;
     }
 
     protected List<HostMetaData> getAllInstanceHostMetaData(long accountId) {

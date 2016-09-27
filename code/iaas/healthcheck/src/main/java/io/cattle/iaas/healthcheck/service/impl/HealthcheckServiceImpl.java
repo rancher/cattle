@@ -1,15 +1,12 @@
 package io.cattle.iaas.healthcheck.service.impl;
 
-import static io.cattle.platform.core.constants.HealthcheckConstants.HEALTH_STATE_HEALTHY;
-import static io.cattle.platform.core.constants.HealthcheckConstants.HEALTH_STATE_UNHEALTHY;
-import static io.cattle.platform.core.model.tables.HealthcheckInstanceHostMapTable.HEALTHCHECK_INSTANCE_HOST_MAP;
-import static io.cattle.platform.core.model.tables.HealthcheckInstanceTable.HEALTHCHECK_INSTANCE;
+import static io.cattle.platform.core.constants.HealthcheckConstants.*;
+import static io.cattle.platform.core.model.tables.HealthcheckInstanceHostMapTable.*;
+import static io.cattle.platform.core.model.tables.HealthcheckInstanceTable.*;
 import io.cattle.iaas.healthcheck.service.HealthcheckService;
 import io.cattle.platform.allocator.dao.AllocatorDao;
 import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.HealthcheckConstants;
-import io.cattle.platform.core.constants.NetworkConstants;
-import io.cattle.platform.core.constants.NetworkServiceConstants;
 import io.cattle.platform.core.dao.GenericMapDao;
 import io.cattle.platform.core.dao.GenericResourceDao;
 import io.cattle.platform.core.dao.HostDao;
@@ -19,7 +16,6 @@ import io.cattle.platform.core.model.HealthcheckInstanceHostMap;
 import io.cattle.platform.core.model.Host;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.InstanceHostMap;
-import io.cattle.platform.core.model.Network;
 import io.cattle.platform.lock.LockCallbackNoReturn;
 import io.cattle.platform.lock.LockManager;
 import io.cattle.platform.object.ObjectManager;
@@ -261,7 +257,7 @@ public class HealthcheckServiceImpl implements HealthcheckService {
         List<? extends HealthcheckInstanceHostMap> existingHostMaps = mapDao.findNonRemoved(
                 HealthcheckInstanceHostMap.class,
                 HealthcheckInstance.class, healthInstance.getId());
-        List<? extends Host> availableActiveHosts = getActiveHostsProvidingHealthChecks(healthInstance);
+        List<? extends Host> availableActiveHosts = allocatorDao.getActiveHosts(healthInstance.getAccountId());
         
         List<Long> availableActiveHostIds = (List<Long>) CollectionUtils.collect(availableActiveHosts,
                 TransformerUtils.invokerTransformer("getId"));
@@ -301,21 +297,6 @@ public class HealthcheckServiceImpl implements HealthcheckService {
         int returnedNumber = requiredNumber > availableActiveHostIds.size() ? availableActiveHostIds.size() : requiredNumber;
 
         return availableActiveHostIds.subList(0, returnedNumber);
-    }
-
-    protected List<? extends Host> getActiveHostsProvidingHealthChecks(HealthcheckInstance healthInstance) {
-        List<? extends Host> availableActiveHosts = allocatorDao.getActiveHosts(healthInstance.getAccountId());
-        
-        Iterator<? extends Host> it = availableActiveHosts.iterator();
-        while (it.hasNext()) {
-            Host host = it.next();
-            Network ntwk = ntwkDao.getNetworkForObject(host, NetworkConstants.KIND_HOSTONLY);
-            if (hostDao.isServiceSupportedOnHost(host.getId(), ntwk.getId(), NetworkServiceConstants.KIND_HEALTH_CHECK)) {
-                continue;
-            }
-            it.remove();
-        }
-        return availableActiveHosts;
     }
 
     private Long getInstanceHostId(HealthcheckInstanceType type, long instanceId) {

@@ -1,3 +1,0 @@
-<#if config??>
-${config}
-</#if>

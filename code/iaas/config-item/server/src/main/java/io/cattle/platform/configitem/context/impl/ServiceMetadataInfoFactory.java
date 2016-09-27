@@ -24,10 +24,13 @@ import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.constants.ServiceConstants;
 import io.cattle.platform.core.dao.GenericMapDao;
 import io.cattle.platform.core.dao.LoadBalancerInfoDao;
+import io.cattle.platform.core.dao.NetworkDao;
 import io.cattle.platform.core.model.Account;
 import io.cattle.platform.core.model.Agent;
+import io.cattle.platform.core.model.HealthcheckInstanceHostMap;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.InstanceHostMap;
+import io.cattle.platform.core.model.IpAddress;
 import io.cattle.platform.core.model.Service;
 import io.cattle.platform.core.model.ServiceConsumeMap;
 import io.cattle.platform.core.model.Stack;
@@ -68,6 +71,9 @@ public class ServiceMetadataInfoFactory extends AbstractAgentBaseContextFactory 
     @Inject
     LoadBalancerInfoDao lbInfoDao;
 
+    @Inject
+    NetworkDao networkDao;
+
     @Override
     protected void populateContext(Agent agent, Instance instance, ConfigItem item, ArchiveContext context) {
         if (instance == null) {
@@ -80,12 +86,19 @@ public class ServiceMetadataInfoFactory extends AbstractAgentBaseContextFactory 
             return;
         }
         long agentHostId = hostMap.getHostId();
-        List<ContainerMetaData> containersMD = metaDataInfoDao.getManagedContainersData(account.getId());
+        Map<Long, List<HealthcheckInstanceHostMap>> instanceIdToHealthcheckers = metaDataInfoDao
+                .getInstanceIdToHealthCheckers(account.getId());
+        final Map<Long, IpAddress> instanceIdToHostIpMap = networkDao
+                .getInstanceWithHostNetworkingToIpMap(account.getId());
+        Map<Long, HostMetaData> hostIdToHost = metaDataInfoDao.getHostIdToHostMetadata(account.getId());
+        List<ContainerMetaData> containersMD = metaDataInfoDao.getManagedContainersData(account.getId(),
+                instanceIdToHealthcheckers, instanceIdToHostIpMap, hostIdToHost);
         Map<Long, String> instanceIdToUuid = new HashMap<>();
         for (ContainerMetaData containerMd : containersMD) {
             instanceIdToUuid.put(containerMd.getInstanceId(), containerMd.getUuid());
         }
-        containersMD.addAll(metaDataInfoDao.getNetworkFromContainersData(account.getId(), instanceIdToUuid));
+        containersMD.addAll(metaDataInfoDao.getNetworkFromContainersData(account.getId(), instanceIdToUuid,
+                instanceIdToHealthcheckers, instanceIdToHostIpMap, hostIdToHost));
         Map<String, StackMetaData> stackNameToStack = new HashMap<>();
         Map<Long, Map<String, ServiceMetaData>> serviceIdToServiceLaunchConfigs = new HashMap<>();
         List<? extends Service> allSvcs = objectManager.find(Service.class, SERVICE.ACCOUNT_ID,

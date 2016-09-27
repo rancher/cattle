@@ -2,6 +2,8 @@ package io.cattle.iaas.healthcheck.process;
 
 import io.cattle.iaas.healthcheck.service.HealthcheckService;
 import io.cattle.platform.core.constants.HealthcheckConstants;
+import io.cattle.platform.core.dao.ServiceDao;
+import io.cattle.platform.core.model.HealthcheckInstanceHostMap;
 import io.cattle.platform.core.model.ServiceEvent;
 import io.cattle.platform.engine.handler.HandlerResult;
 import io.cattle.platform.engine.handler.ProcessHandler;
@@ -16,6 +18,9 @@ public class ServiceEventCreate extends AbstractObjectProcessHandler implements 
 
     @Inject
     HealthcheckService healthcheckService;
+
+    @Inject
+    ServiceDao serviceDao;
 
     @Override
     public String[] getProcessNames() {
@@ -38,8 +43,22 @@ public class ServiceEventCreate extends AbstractObjectProcessHandler implements 
             return null;
         }
 
-        healthcheckService.updateHealthcheck(event.getHealthcheckUuid().split("_")[0], event.getExternalTimestamp(),
-                getHealthState(event.getReportedHealth()));
+        String[] splitted = event.getHealthcheckUuid().split("_");
+        // find host map uuid
+        HealthcheckInstanceHostMap hostMap = null;
+        String uuid = null;
+        if (splitted.length > 2) {
+            hostMap = serviceDao.getHealthCheckInstanceUUID(splitted[0], splitted[1]);
+            if (hostMap != null) {
+                uuid = hostMap.getUuid();
+            }
+        } else {
+            uuid = splitted[0];
+        }
+        if (uuid != null) {
+            healthcheckService.updateHealthcheck(uuid, event.getExternalTimestamp(),
+                    getHealthState(event.getReportedHealth()));
+        }
 
         return null;
     }

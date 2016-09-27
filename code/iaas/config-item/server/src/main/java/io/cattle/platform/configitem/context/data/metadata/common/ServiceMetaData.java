@@ -12,10 +12,12 @@ import io.cattle.platform.core.model.Service;
 import io.cattle.platform.core.model.Stack;
 import io.cattle.platform.core.util.LBMetadataUtil.LBConfigMetadataStyle;
 import io.cattle.platform.object.util.DataAccessor;
+import io.cattle.platform.object.util.DataUtils;
 import io.cattle.platform.servicediscovery.api.util.ServiceDiscoveryUtil;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -116,6 +118,7 @@ public class ServiceMetaData {
     protected HealthCheck health_check;
     protected Boolean system;
     protected LBConfigMetadataStyle lb_config;
+    protected String primary_service_name;
 
     protected ServiceMetaData(ServiceMetaData that) {
         this.serviceId = that.serviceId;
@@ -146,6 +149,7 @@ public class ServiceMetaData {
         this.health_check = that.health_check;
         this.system = that.system;
         this.lb_config = that.lb_config;
+        this.primary_service_name = that.primary_service_name;
     }
 
     public ServiceMetaData(Service service, String serviceName, Stack env, List<String> sidekicks,
@@ -159,7 +163,7 @@ public class ServiceMetaData {
         this.stackUuid = env.getUuid();
         this.kind = service.getKind();
         this.sidekicks = sidekicks;
-        this.vip = service.getVip();
+        this.vip = getVip(service);
         this.isPrimaryConfig = service.getName().equalsIgnoreCase(serviceName);
         String launchConfigName = this.isPrimaryConfig ? ServiceConstants.PRIMARY_LAUNCH_CONFIG_NAME
                 : serviceName;
@@ -180,6 +184,24 @@ public class ServiceMetaData {
         this.system = service.getSystem();
         this.metadata = DataAccessor.fieldMap(service, ServiceConstants.FIELD_METADATA);
         this.lb_config = lbConfig;
+        this.primary_service_name = service.getName();
+    }
+
+    public static String getVip(Service service) {
+        String vip = service.getVip();
+        // indicator that its pre-upgraded setup that had vip set for every service by default
+        // vip will be set only
+        // a) field_set_vip is set via API
+        // b) for k8s services
+        Map<String, Object> data = new HashMap<>();
+        data.putAll(DataUtils.getFields(service));
+        Object vipObj = data.get(ServiceConstants.FIELD_SET_VIP);
+        boolean setVip = vipObj != null && Boolean.valueOf(vipObj.toString());
+        if (setVip
+                || service.getKind().equalsIgnoreCase("kubernetesservice")) {
+            return vip;
+        }
+        return null;
     }
 
     @SuppressWarnings("unchecked")
@@ -402,4 +424,11 @@ public class ServiceMetaData {
         this.lb_config = lb_config;
     }
     
+    public String getPrimary_service_name() {
+        return primary_service_name;
+    }
+
+    public void setPrimary_service_name(String primary_service_name) {
+        this.primary_service_name = primary_service_name;
+    }
 }

@@ -1,6 +1,8 @@
 package io.cattle.platform.core.dao.impl;
 
 import static io.cattle.platform.core.model.tables.CertificateTable.*;
+import static io.cattle.platform.core.model.tables.HealthcheckInstanceHostMapTable.*;
+import static io.cattle.platform.core.model.tables.HostTable.*;
 import static io.cattle.platform.core.model.tables.InstanceTable.*;
 import static io.cattle.platform.core.model.tables.ServiceConsumeMapTable.*;
 import static io.cattle.platform.core.model.tables.ServiceExposeMapTable.*;
@@ -11,10 +13,15 @@ import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.constants.LoadBalancerConstants;
 import io.cattle.platform.core.dao.ServiceDao;
 import io.cattle.platform.core.model.Certificate;
+import io.cattle.platform.core.model.HealthcheckInstanceHostMap;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.Service;
 import io.cattle.platform.core.model.ServiceIndex;
+import io.cattle.platform.core.model.tables.HealthcheckInstanceHostMapTable;
+import io.cattle.platform.core.model.tables.HostTable;
+import io.cattle.platform.core.model.tables.InstanceTable;
 import io.cattle.platform.db.jooq.dao.impl.AbstractJooqDao;
+import io.cattle.platform.db.jooq.mapper.MultiRecordMapper;
 import io.cattle.platform.json.JsonMapper;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.util.DataAccessor;
@@ -199,4 +206,34 @@ public class ServiceDaoImpl extends AbstractJooqDao implements ServiceDao {
         return certs.get(0);
     }
 
+    public HealthcheckInstanceHostMap getHealthCheckInstanceUUID(String hostUUID, String instanceUUID) {
+        MultiRecordMapper<HealthcheckInstanceHostMap> mapper = new MultiRecordMapper<HealthcheckInstanceHostMap>() {
+            @Override
+            protected HealthcheckInstanceHostMap map(List<Object> input) {
+                if (input.get(0) != null) {
+                    return (HealthcheckInstanceHostMap) input.get(0);
+                }
+                return null;
+            }
+        };
+
+        HealthcheckInstanceHostMapTable hostMap = mapper.add(HEALTHCHECK_INSTANCE_HOST_MAP);
+        InstanceTable instance = mapper.add(INSTANCE, INSTANCE.UUID, INSTANCE.ID);
+        HostTable host = mapper.add(HOST, HOST.UUID, HOST.ID);
+        List<HealthcheckInstanceHostMap> maps = create()
+                .select(mapper.fields())
+                .from(hostMap)
+                .join(instance)
+                .on(instance.ID.eq(hostMap.INSTANCE_ID))
+                .join(host)
+                .on(host.ID.eq(hostMap.HOST_ID))
+                .where(host.UUID.eq(hostUUID))
+                .and(instance.UUID.eq(instanceUUID))
+                .fetch().map(mapper);
+        
+        if (maps.size() == 0) {
+            return null;
+        }
+        return maps.get(0);
+    }
 }

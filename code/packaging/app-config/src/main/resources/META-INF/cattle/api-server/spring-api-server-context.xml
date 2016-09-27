@@ -107,7 +107,6 @@
     <bean class="io.cattle.platform.framework.encryption.request.handler.TransformationHandler" />
 
     <bean class="io.cattle.platform.configitem.context.dao.impl.NetworkInfoDaoImpl" />
-    <bean class="io.cattle.platform.configitem.context.dao.impl.DnsInfoDaoImpl" />
     <bean class="io.cattle.platform.configitem.context.dao.impl.MetaDataInfoDaoImpl" />
 
     <bean class="io.cattle.platform.configitem.server.impl.ConfigItemServerImpl" />
@@ -167,9 +166,6 @@
     <bean class="io.cattle.platform.configitem.server.agentinclude.impl.AgentIncludeMapImpl" />
 
     <context:component-scan base-package="io.cattle.platform.configitem.context.impl" />
-    
-    <bean class="io.cattle.platform.configitem.context.dao.impl.HealthcheckInfoDaoImpl" />
-
 
     <bean class="io.cattle.platform.docker.api.ExecActionHandler" />
     <bean class="io.cattle.platform.docker.api.ContainerLogsActionHandler" />
