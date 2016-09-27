@@ -4,6 +4,7 @@ import io.cattle.platform.agent.AgentLocator;
 import io.cattle.platform.agent.RemoteAgent;
 import io.cattle.platform.agent.instance.dao.AgentInstanceDao;
 import io.cattle.platform.allocator.constraint.Constraint;
+import io.cattle.platform.allocator.constraint.PortsConstraint;
 import io.cattle.platform.allocator.constraint.ValidHostsConstraint;
 import io.cattle.platform.allocator.dao.AllocatorDao;
 import io.cattle.platform.allocator.service.AbstractAllocator;
@@ -78,6 +79,10 @@ public class SimpleAllocator extends AbstractAllocator implements Allocator, Nam
         for (Constraint constraint : attempt.getConstraints()) {
             if (constraint instanceof ValidHostsConstraint) {
                 options.getHosts().addAll(((ValidHostsConstraint)constraint).getHosts());
+            }
+
+            if (constraint instanceof PortsConstraint) {
+                options.setIncludeUsedPorts(true);
             }
         }
 
