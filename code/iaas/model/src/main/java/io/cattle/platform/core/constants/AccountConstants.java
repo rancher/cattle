@@ -21,6 +21,7 @@ public class AccountConstants {
     public static final String SERVICE_KIND = "service";
     public static final String USER_KIND = "user";
     public static final String ADMIN_KIND = "admin";
+    public static final String SUPER_ADMIN_KIND = "superadmin";
     public static final String PROJECT_KIND = "project";
     public static final String FIELD_PORT_RANGE = "servicesPortRange";
 

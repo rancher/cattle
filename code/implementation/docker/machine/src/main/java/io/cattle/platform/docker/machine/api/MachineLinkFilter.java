@@ -1,6 +1,8 @@
 package io.cattle.platform.docker.machine.api;
 
-import static io.cattle.platform.docker.machine.constants.MachineConstants.*;
+import static io.cattle.platform.core.constants.MachineConstants.*;
+
+import io.cattle.platform.core.model.Host;
 import io.cattle.platform.core.model.PhysicalHost;
 import io.cattle.platform.object.util.DataUtils;
 import io.github.ibuildthecloud.gdapi.context.ApiContext;
@@ -10,18 +12,21 @@ import io.github.ibuildthecloud.gdapi.model.Schema;
 import io.github.ibuildthecloud.gdapi.request.ApiRequest;
 import io.github.ibuildthecloud.gdapi.response.ResourceOutputFilter;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 public class MachineLinkFilter implements ResourceOutputFilter {
 
     @Override
     public Resource filter(ApiRequest request, Object original, Resource converted) {
-        if (original instanceof PhysicalHost) {
-            PhysicalHost host = (PhysicalHost) original;
-            if (StringUtils.isNotEmpty((String) DataUtils.getFields(host).get(EXTRACTED_CONFIG_FIELD))
-                    && canAccessConfig()) {
-                converted.getLinks().put(CONFIG_LINK, ApiContext.getUrlBuilder().resourceLink(converted, CONFIG_LINK));
+        boolean add = false;
+        if (original instanceof PhysicalHost || original instanceof Host) {
+            if (StringUtils.isNotEmpty((String) DataUtils.getFields(original).get(EXTRACTED_CONFIG_FIELD))) {
+                add = canAccessConfig();
             }
+        }
+
+        if (add) {
+            converted.getLinks().put(CONFIG_LINK, ApiContext.getUrlBuilder().resourceLink(converted, CONFIG_LINK));
         }
 
         return converted;
@@ -29,13 +34,13 @@ public class MachineLinkFilter implements ResourceOutputFilter {
 
     public static boolean canAccessConfig() {
         SchemaFactory schemaFactory = ApiContext.getSchemaFactory();
-        Schema machineSchema = schemaFactory == null ? null :schemaFactory.getSchema(MACHINE_KIND);
+        Schema machineSchema = schemaFactory == null ? null :schemaFactory.getSchema(KIND_MACHINE);
         return machineSchema != null && machineSchema.getCollectionMethods().contains(Schema.Method.POST.toString());
     }
 
     @Override
     public String[] getTypes() {
-        return new String[] { MACHINE_KIND };
+        return new String[] { KIND_MACHINE };
     }
 
     @Override

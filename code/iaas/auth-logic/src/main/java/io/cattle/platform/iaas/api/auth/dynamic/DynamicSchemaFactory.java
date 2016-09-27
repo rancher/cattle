@@ -12,24 +12,35 @@ import io.github.ibuildthecloud.gdapi.model.impl.SchemaImpl;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
 
+import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.google.common.cache.Cache;
 
 public class DynamicSchemaFactory extends AbstractSchemaFactory implements SchemaFactory {
 
     private static final Logger log = LoggerFactory.getLogger(DynamicSchemaFactory.class);
 
+    Cache<Pair<Long, String>, List<Schema>> schemasListCache;
+    Cache<DynamicSchemaDao.CacheKey, Schema> schemaCache;
     long accountId;
     SchemaFactory factory;
     DynamicSchemaDao dynamicSchemaDao;
     JsonMapper jsonMapper;
     String role;
 
-    public DynamicSchemaFactory(long accountId, SchemaFactory factory, DynamicSchemaDao dynamicSchemaDao, JsonMapper jsonMapper, String role) {
+    public DynamicSchemaFactory(long accountId, SchemaFactory factory, DynamicSchemaDao dynamicSchemaDao, JsonMapper jsonMapper, String role,
+            Cache<Pair<Long, String>, List<Schema>> schemasListCache, Cache<DynamicSchemaDao.CacheKey, Schema> schemaCache) {
+        this.schemaCache = schemaCache;
+        this.schemasListCache = schemasListCache;
         this.accountId = accountId;
         this.factory = factory;
         this.dynamicSchemaDao = dynamicSchemaDao;
@@ -44,23 +55,33 @@ public class DynamicSchemaFactory extends AbstractSchemaFactory implements Schem
 
     @Override
     public List<Schema> listSchemas() {
-        Map<String, Schema> schemas = new TreeMap<String, Schema>();
-        for (Schema s : factory.listSchemas()) {
-            schemas.put(s.getId(), s);
+        try {
+            return this.schemasListCache.get(Pair.of(accountId, role), new Callable<List<Schema>>() {
+                @Override
+                public List<Schema> call() throws Exception {
+                    Map<String, Schema> schemas = new TreeMap<String, Schema>();
+                    for (Schema s : factory.listSchemas()) {
+                        schemas.put(s.getId(), s);
+                    }
+
+                    List<? extends DynamicSchema> dynamic = dynamicSchemaDao.getSchemas(accountId, role);
+
+                    for (DynamicSchema dynamicSchema : dynamic) {
+                        Schema schema = convert(dynamicSchema);
+                        if (schema != null) {
+                            schemas.put(schema.getId(), schema);
+                        }
+                    }
+
+                    List<Schema> result = new ArrayList<>(schemas.size());
+                    result.addAll(schemas.values());
+                    return result;
+                }
+            });
+        } catch (ExecutionException e) {
+            log.error("Failed to construct dynamic schema list for [{}]", accountId, e);
+            return Collections.emptyList();
         }
-
-        List<? extends DynamicSchema> dynamic = dynamicSchemaDao.getSchemas(accountId, role);
-
-        for (DynamicSchema dynamicSchema : dynamic) {
-            Schema schema = safeConvert(dynamicSchema);
-            if (schema != null) {
-                schemas.put(schema.getId(), schema);
-            }
-        }
-
-        List<Schema> result = new ArrayList<>(schemas.size());
-        result.addAll(schemas.values());
-        return result;
     }
 
     @Override
@@ -69,26 +90,27 @@ public class DynamicSchemaFactory extends AbstractSchemaFactory implements Schem
     }
 
     @Override
-    public Schema getSchema(String type) {
+    public Schema getSchema(final String type) {
         if (type == null) {
             return null;
         }
-        if (type.contains("machine") || type.toLowerCase().contains("config")) {
-            DynamicSchema dynamicSchema = dynamicSchemaDao.getSchema(type, accountId, role);
+        if (type.contains("host") || type.contains("machine") || type.toLowerCase().contains("config")) {
+            final DynamicSchema dynamicSchema = dynamicSchemaDao.getSchema(type, accountId, role);
             if (dynamicSchema != null) {
-                return safeConvert(dynamicSchema);
+                try {
+                    return schemaCache.get(new DynamicSchemaDao.CacheKey(type, accountId, role), new Callable<Schema>() {
+                        @Override
+                        public Schema call() throws Exception {
+                            return convert(dynamicSchema);
+                        }
+                    });
+                } catch (ExecutionException e) {
+                    log.error("Failed to construct dynamic schema for [{}]", dynamicSchema.getId(), e);
+                    return null;
+                }
             }
         }
         return factory.getSchema(type);
-    }
-
-    protected Schema safeConvert(DynamicSchema dynamicSchema) {
-        try {
-            return convert(dynamicSchema);
-        } catch (IOException e) {
-            log.error("Failed to construct dynamic schema for [{}]", dynamicSchema.getId(), e);
-            return null;
-        }
     }
 
     private Schema convert(DynamicSchema dynamicSchema) throws IOException {
@@ -115,6 +137,10 @@ public class DynamicSchemaFactory extends AbstractSchemaFactory implements Schem
         mergedSchema.setParent(dynamicSchema.getParent());
         mergedSchema.setCollectionMethods(newSchema.getCollectionMethods());
         mergedSchema.setResourceMethods(newSchema.getResourceMethods());
+
+        if (mergedSchema.getParent().equals(mergedSchema.getId())) {
+            mergedSchema.setParent(parentSchema.getParent());
+        }
 
         Map<String, Field> existingFields = mergedSchema.getResourceFields();
         for (Map.Entry<String, Field> entry : newSchema.getResourceFields().entrySet()) {

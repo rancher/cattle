@@ -17,10 +17,14 @@ public class HostConstants {
     public static final String FIELD_HOSTNAME = "hostname";
     public static final String FIELD_IP_ADDRESS = "agentIpAddress";
     public static final String FIELD_INSTANCE_IDS = "instanceIds";
+    public static final String FIELD_AGENT_ID = "agentId";
 
     public static final String PROCESS_REMOVE = "host.remove";
     public static final String PROCESS_CREATE = "host.create";
     public static final String PROCESS_UPDATE = "host.update";
     public static final String PROCESS_ACTIVATE = "host.activate";
+    public static final String PROCESS_PROVISION = "host.provision";
+
+    public static final String STATE_PROVISIONING = "provisioning";
 
 }

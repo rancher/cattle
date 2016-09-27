@@ -44,6 +44,10 @@ public class TransitioningUtils {
         return ObjectUtils.toString(getTransitioningErrorData(obj).get(TRANSITIONING_MESSAGE_FIELD), null);
     }
 
+    public static String getTransitioningMessage(Object obj) {
+        return DataAccessor.fieldString(obj, TRANSITIONING_MESSAGE_FIELD);
+    }
+
     public static Map<String, Object> getTransitioningData(String message, String internalMessage) {
         Map<String, Object> data = new HashMap<String, Object>();
 

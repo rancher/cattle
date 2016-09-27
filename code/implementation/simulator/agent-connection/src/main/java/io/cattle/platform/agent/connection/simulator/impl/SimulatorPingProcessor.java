@@ -76,8 +76,9 @@ public class SimulatorPingProcessor implements AgentSimulatorEventProcessor {
     protected void addResources(Ping pong, Agent agent) {
         List<Map<String, Object>> resources = pong.getData().getResources();
 
-        String physicalHostUuid = DataAccessor.fromDataFieldOf(agent).withScope(AgentConnectionSimulator.class).withKey("externalId").as(jsonMapper,
+        String externalId = DataAccessor.fromDataFieldOf(agent).withScope(AgentConnectionSimulator.class).withKey("externalId").as(jsonMapper,
                 String.class);
+        String physicalHostUuid = externalId;
 
         if (StringUtils.isEmpty(physicalHostUuid)) {
             physicalHostUuid = agent.getUuid() + "-physical-host";
@@ -98,6 +99,9 @@ public class SimulatorPingProcessor implements AgentSimulatorEventProcessor {
 
         for (long i = 0; i < hosts; i++) {
             String hostUuid = agent.getUuid() + "-" + i;
+            if (i == 0 && StringUtils.isNotBlank(externalId)) {
+                hostUuid = externalId;
+            }
 
             Map<String, Object> host = new HashMap<String, Object>();
             host.put(ObjectMetaDataManager.UUID_FIELD, hostUuid);

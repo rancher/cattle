@@ -344,7 +344,8 @@ def remove_schemas(service_client, schemas):  # NOQA
 
 
 def cleanup(service_client, schemas):  # NOQA
-    remove_schemas(service_client, ['fooConfig', 'barConfig', 'machine'])
+    remove_schemas(service_client, ['fooConfig', 'barConfig', 'machine',
+                                    'host'])
     for schema in schemas:
         service_client.wait_success(
             service_client.create_dynamic_schema(schema))
@@ -358,7 +359,8 @@ def machine_context(admin_user_client, service_client,  # NOQA
     origMachineSchemas = service_client.list_dynamic_schema(name='machine')
     request.addfinalizer(
         lambda: cleanup(service_client, origMachineSchemas))
-    remove_schemas(service_client, ['fooConfig', 'barConfig', 'machine'])
+    remove_schemas(service_client, ['fooConfig', 'barConfig', 'machine',
+                                    'host'])
     service_client.wait_success(service_client.create_dynamic_schema(
                                 name='fooConfig',
                                 parent='baseMachineConfig',
@@ -386,17 +388,57 @@ def machine_context(admin_user_client, service_client,  # NOQA
                                 parent='physicalHost',
                                 definition=MACHINE_READ_ONLY_DEFINITION,
                                 roles=['readonly', 'agent']))
+    service_client.wait_success(service_client.create_dynamic_schema(
+        name='host',
+        parent='host',
+        definition=MACHINE_DEFINITION,
+        roles=['project', 'owner', 'member']))
+    service_client.wait_success(service_client.create_dynamic_schema(
+        name='host',
+        parent='host',
+        definition=SUPER_MACHINE_DEFINITION,
+        roles=['superadmin', 'admin']))
+    service_client.wait_success(service_client.create_dynamic_schema(
+                                name='host',
+                                parent='host',
+                                definition=MACHINE_READ_ONLY_DEFINITION,
+                                roles=['readonly', 'agent']))
     super_client.reload_schema()
     ctx.client.reload_schema()
     return ctx
 
 
 @pytest.mark.nonparallel
-def test_machine_lifecycle(super_client, machine_context,
-                           update_ping_settings):
+def test_host_lifecycle(super_client, machine_context, update_ping_settings):
+    client = machine_context.client
     name = random_str()
-    machine = machine_context.client.create_machine(name=name,
-                                                    fooConfig={})
+    host = client.create_host(name=name, fooConfig={})
+    host = wait_for_condition(client, host,
+                              lambda x: x.physicalHostId is not None)
+    machine = host.physicalHost()
+    test_machine_lifecycle(super_client, machine_context, update_ping_settings,
+                           machine=machine)
+    host = client.wait_success(host)
+    assert host.state == 'active'
+    host = super_client.reload(host)
+    machine = super_client.reload(machine)
+
+    assert host.name == name
+    assert machine.name == name
+    assert host.data.fields.reportedUuid == machine.externalId
+    host.agentId == machine.agentId
+
+    agent = machine.agent()
+    assert len(agent.hosts()) == 1
+    assert len(agent.physicalHosts()) == 1
+
+
+@pytest.mark.nonparallel
+def test_machine_lifecycle(super_client, machine_context,
+                           update_ping_settings, machine=None):
+    if machine is None:
+        machine = machine_context.client.create_machine(name=random_str(),
+                                                        fooConfig={})
 
     machine = machine_context.client.wait_success(machine)
     assert machine.state == 'active'

@@ -43,6 +43,11 @@
         "name": {
             "type": "string",
             "nullable": true
+        },
+        "schemaVersion": {
+            "type": "string",
+            "nullable": false,
+            "default": ""
         }
     }
 }

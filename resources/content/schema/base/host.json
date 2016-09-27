@@ -20,6 +20,9 @@
         "instanceIds": {
             "type" : "array[reference[instance]]"
         },
+        "reportedUuid": {
+            "type" : "string"
+        },
         "labels": {
             "type": "map[string]",
             "create": true,

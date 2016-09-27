@@ -327,7 +327,6 @@
     <process:defaultProcesses resourceType="agentgroup" />
     <process:defaultProcesses resourceType="credentialInstanceMap" />
     <process:defaultProcesses resourceType="genericObject" />
-    <process:defaultProcesses resourceType="host" />
     <process:defaultProcesses resourceType="hostIpAddressMap" />
     <process:defaultProcesses resourceType="hostVnetMap" />
     <process:defaultProcesses resourceType="image" />
@@ -352,6 +351,12 @@
     <process:defaultProcesses resourceType="zone" />
     <process:defaultProcesses resourceType="serviceIndex" />
     <process:defaultProcesses resourceType="volumeTemplate" />
+
+    <!-- Host -->
+    <process:defaultProcesses resourceType="host" />
+    <process:process name="host.provision" resourceType="host" start="creating" transitioning="provisioning" done="inactive" />
+    <process:process name="host.error" resourceType="host" start="provisioning" transitioning="erroring" done="error" />
+    <process:process name="host.remove" resourceType="host" start="erroring,error,requested,inactive,activating,deactivating,registering,updating-active,updating-inactive" transitioning="removing" done="removed" />
 
     <!-- IP Address -->
     <process:defaultProcesses resourceType="ipAddress" />
