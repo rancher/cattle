@@ -1,13 +1,16 @@
 package io.cattle.platform.core.dao.impl;
 
-import static io.cattle.platform.core.model.tables.HostIpAddressMapTable.HOST_IP_ADDRESS_MAP;
-import static io.cattle.platform.core.model.tables.HostTable.HOST;
-import static io.cattle.platform.core.model.tables.InstanceHostMapTable.INSTANCE_HOST_MAP;
-import static io.cattle.platform.core.model.tables.IpAddressTable.IP_ADDRESS;
-import static io.cattle.platform.core.model.tables.NetworkServiceProviderTable.NETWORK_SERVICE_PROVIDER;
-import static io.cattle.platform.core.model.tables.NetworkServiceTable.NETWORK_SERVICE;
-import static io.cattle.platform.core.model.tables.NicTable.NIC;
+import static io.cattle.platform.core.model.tables.HostIpAddressMapTable.*;
+import static io.cattle.platform.core.model.tables.HostTable.*;
+import static io.cattle.platform.core.model.tables.InstanceHostMapTable.*;
+import static io.cattle.platform.core.model.tables.InstanceTable.*;
+import static io.cattle.platform.core.model.tables.IpAddressTable.*;
+import static io.cattle.platform.core.model.tables.NetworkServiceProviderTable.*;
+import static io.cattle.platform.core.model.tables.NetworkServiceTable.*;
+import static io.cattle.platform.core.model.tables.NicTable.*;
+
 import io.cattle.platform.core.constants.CommonStatesConstants;
+import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.constants.NetworkServiceProviderConstants;
 import io.cattle.platform.core.dao.HostDao;
 import io.cattle.platform.core.model.Host;
@@ -16,10 +19,17 @@ import io.cattle.platform.core.model.tables.records.HostRecord;
 import io.cattle.platform.core.model.tables.records.IpAddressRecord;
 import io.cattle.platform.db.jooq.dao.impl.AbstractJooqDao;
 import io.cattle.platform.object.ObjectManager;
+import io.github.ibuildthecloud.gdapi.id.IdFormatter;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.inject.Inject;
+
+import org.jooq.Record2;
+import org.jooq.RecordHandler;
 
 public class HostDaoImpl extends AbstractJooqDao implements HostDao {
 
@@ -99,5 +109,32 @@ public class HostDaoImpl extends AbstractJooqDao implements HostDao {
             return false;
         }
         return true;
+    }
+
+    @Override
+    public Map<Long, List<Object>> getInstancesPerHost(List<Long> hosts, final IdFormatter idFormatter) {
+        final Map<Long, List<Object>> result = new HashMap<>();
+        create().select(INSTANCE_HOST_MAP.INSTANCE_ID, INSTANCE_HOST_MAP.HOST_ID)
+            .from(INSTANCE_HOST_MAP)
+            .join(INSTANCE)
+                .on(INSTANCE.ID.eq(INSTANCE_HOST_MAP.INSTANCE_ID))
+            .where(INSTANCE_HOST_MAP.REMOVED.isNull()
+                    .and(INSTANCE.REMOVED.isNull())
+                    .and(INSTANCE_HOST_MAP.HOST_ID.in(hosts)))
+            .fetchInto(new RecordHandler<Record2<Long, Long>>() {
+                @Override
+                public void next(Record2<Long, Long> record) {
+                    Long hostId = record.getValue(INSTANCE_HOST_MAP.HOST_ID);
+                    Long instanceId = record.getValue(INSTANCE_HOST_MAP.INSTANCE_ID);
+                    List<Object> list = result.get(hostId);
+                    if (list == null) {
+                        list = new ArrayList<>();
+                        result.put(hostId, list);
+                    }
+                    list.add(idFormatter.formatId(InstanceConstants.TYPE, instanceId));
+                }
+            });
+
+        return result;
     }
 }

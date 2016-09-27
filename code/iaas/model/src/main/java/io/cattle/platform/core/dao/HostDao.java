@@ -2,8 +2,10 @@ package io.cattle.platform.core.dao;
 
 import io.cattle.platform.core.model.Host;
 import io.cattle.platform.core.model.IpAddress;
+import io.github.ibuildthecloud.gdapi.id.IdFormatter;
 
 import java.util.List;
+import java.util.Map;
 
 public interface HostDao {
 
@@ -16,4 +18,6 @@ public interface HostDao {
     IpAddress getIpAddressForHost(Long hostId);
 
     boolean isServiceSupportedOnHost(long hostId, long networkId, String serviceKind);
+
+    Map<Long, List<Object>> getInstancesPerHost(List<Long> hosts, IdFormatter idFormatter);
 }

@@ -44,6 +44,7 @@ import javax.inject.Inject;
 
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.jooq.exception.DataChangedException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -184,6 +185,10 @@ public class AgentResourcesMonitor implements AnnotatedEventListener {
                 if (!address.equalsIgnoreCase(ip.getAddress())) {
                     ipAddressDao.updateIpAddress(ip, address);
                 }
+                String currentIp = DataAccessor.fieldString(host, HostConstants.FIELD_IP_ADDRESS);
+                if (!ObjectUtils.equals(currentIp, ip.getAddress())) {
+                    objectManager.setFields(host, HostConstants.FIELD_IP_ADDRESS, ip.getAddress());
+                }
             }
         }
     }
@@ -230,14 +235,21 @@ public class AgentResourcesMonitor implements AnnotatedEventListener {
                     if (orchestrate) {
                         resourceDao.updateAndSchedule(host, updateFields);
                     } else {
-                        objectManager.setFields(host, updateFields);
-                        updateFields.put(ObjectMetaDataManager.ACCOUNT_FIELD, host.getAccountId());
-                        // send host update event
-                        Event event = EventVO.newEvent(FrameworkEvents.STATE_CHANGE)
-                                .withData(updateFields)
-                                .withResourceType(HostConstants.TYPE)
-                                .withResourceId(host.getId().toString());
-                        eventService.publish(event);
+                        try {
+                            objectManager.setFields(host, updateFields);
+                            updateFields.put(ObjectMetaDataManager.ACCOUNT_FIELD, host.getAccountId());
+                            // send host update event
+                            Event event = EventVO.newEvent(FrameworkEvents.STATE_CHANGE)
+                                    .withData(updateFields)
+                                    .withResourceType(HostConstants.TYPE)
+                                    .withResourceId(host.getId().toString());
+                            eventService.publish(event);
+                        } catch (DataChangedException e) {
+                            /*
+                             * Various reasons why this might conflict with other processes, but here
+                             * we can safely igore it.
+                             */
+                        }
                     }
                 }
             } else {

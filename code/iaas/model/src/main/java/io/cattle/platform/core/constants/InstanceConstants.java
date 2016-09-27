@@ -52,6 +52,7 @@ public class InstanceConstants {
     public static final String FIELD_DNS_INTERNAL = "dnsInternal";
     public static final String FIELD_DNS_SEARCH_INTERNAL = "dnsSearchInternal";
     public static final String FIELD_LOG_CONFIG = "logConfig";
+    public static final String FIELD_SERVICE_IDS = "serviceIds";
 
     public static final String PROCESS_DATA_NO_OP = "containerNoOpEvent";
 

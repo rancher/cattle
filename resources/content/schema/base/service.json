@@ -117,6 +117,18 @@
             "type": "string",
             "required": false,
             "nullable": false
+        },
+        "consumedServiceIds": {
+            "type": "array[reference[service]]",
+            "nullable": true
+        },
+        "consumedByServiceIds": {
+            "type": "array[reference[service]]",
+            "nullable": true
+        },
+        "instanceIds": {
+            "type": "array[reference[instance]]",
+            "nullable": true
         }
     },
     "resourceActions" : {
