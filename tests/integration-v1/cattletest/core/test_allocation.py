@@ -86,14 +86,8 @@ def test_host_vnet_association(super_client, new_context):
     account = new_context.project
     image_uuid = new_context.image_uuid
     host1 = new_context.host
-    host2 = register_simulated_host(new_context.client)
-    host3 = register_simulated_host(new_context.client)
-
-    host1 = super_client.update(host1, computeFree=100000)
-    host2 = super_client.update(host2, computeFree=100000)
-    host3 = super_client.update(host3, computeFree=100000)
-    for i in [host1, host2, host3]:
-        assert i.computeFree == 100000
+    register_simulated_host(new_context.client)
+    register_simulated_host(new_context.client)
 
     network = super_client.create_network(accountId=account.id)
     vnet = super_client.create_vnet(accountId=account.id,
@@ -137,12 +131,6 @@ def test_host_vnet_association(super_client, new_context):
     vnet_map1 = super_client.wait_success(vnet_map1)
     assert vnet_map1.state == 'active'
 
-    vnet_map2 = super_client.create_host_vnet_map(accountId=account.id,
-                                                  hostId=host2.id,
-                                                  vnetId=vnet.id)
-    vnet_map2 = super_client.wait_success(vnet_map2)
-    assert vnet_map2.state == 'active'
-
     hosts = set()
     for _ in range(3):
         vm = super_client.create_virtual_machine(accountId=account.id,
@@ -160,9 +148,8 @@ def test_host_vnet_association(super_client, new_context):
         assert vm.state == 'running'
         hosts.add(vm.hosts()[0].id)
 
-    assert len(hosts) == 2
+    assert len(hosts) == 1
     assert host1.id in hosts
-    assert host2.id in hosts
 
 
 def test_allocation_stay_associated_to_host(super_client, context):
