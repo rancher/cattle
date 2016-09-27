@@ -1,6 +1,10 @@
 package io.cattle.platform.docker.machine.api.filter;
 
-import static io.cattle.platform.docker.machine.constants.MachineConstants.*;
+import static io.cattle.platform.core.constants.MachineConstants.*;
+
+import io.cattle.platform.core.constants.AccountConstants;
+import io.cattle.platform.core.constants.HostConstants;
+import io.cattle.platform.core.model.Host;
 import io.cattle.platform.iaas.api.filter.common.AbstractDefaultResourceManagerFilter;
 import io.cattle.platform.util.type.CollectionUtils;
 import io.github.ibuildthecloud.gdapi.exception.ClientVisibleException;
@@ -17,12 +21,23 @@ public class MachineValidationFilter extends AbstractDefaultResourceManagerFilte
     private static final String DRIVER_CONFIG_EXACTLY_ONE_REQUIRED = "DriverConfigExactlyOneRequired";
 
     @Override
+    public Class<?>[] getTypeClasses() {
+        return new Class<?>[] {Host.class};
+    }
+
+    @Override
     public String[] getTypes() {
-        return new String[] { MACHINE_KIND };
+        return new String[] { KIND_MACHINE };
     }
 
     @Override
     public Object create(String type, ApiRequest request, ResourceManager next) {
+        // Don't validate hosts for v1 API
+        if (HostConstants.TYPE.equals(type) && ("v1".equals(request.getVersion()) ||
+                AccountConstants.SUPER_ADMIN_KIND.equals(request.getSchemaFactory().getId()))) {
+            return super.create(type, request, next);
+        }
+
         Map<String, Object> data = CollectionUtils.toMap(request.getRequestObject());
         boolean alreadyFound = false;
 

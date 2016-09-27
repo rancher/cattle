@@ -2,6 +2,7 @@ package io.cattle.platform.core.dao;
 
 import io.cattle.platform.core.model.Host;
 import io.cattle.platform.core.model.IpAddress;
+import io.cattle.platform.core.model.PhysicalHost;
 import io.github.ibuildthecloud.gdapi.id.IdFormatter;
 
 import java.util.List;
@@ -20,4 +21,8 @@ public interface HostDao {
     boolean isServiceSupportedOnHost(long hostId, long networkId, String serviceKind);
 
     Map<Long, List<Object>> getInstancesPerHost(List<Long> hosts, IdFormatter idFormatter);
+
+    PhysicalHost createMachineForHost(Host host);
+
+    Map<Long, PhysicalHost> getPhysicalHostsForHosts(List<Long> hosts);
 }

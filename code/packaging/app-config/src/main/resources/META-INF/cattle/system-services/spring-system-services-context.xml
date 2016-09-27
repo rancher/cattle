@@ -139,6 +139,12 @@
 
     <bean class="io.cattle.platform.core.cache.DBCacheManager" />
 
+    <tx:advice id="HostDaoImplAdvice" transaction-manager="CoreTransactionManager">
+        <tx:attributes>
+            <tx:method name="createMachineForHost" />
+        </tx:attributes>
+    </tx:advice>
+
     <tx:advice id="GenericResourceDaoImplAdvice" transaction-manager="CoreTransactionManager">
         <tx:attributes>
             <tx:method name="createAndSchedule" />
@@ -177,6 +183,8 @@
             pointcut="execution(* io.cattle.platform.core.dao.StoragePoolDao.*(..))" />
         <aop:advisor advice-ref="VolumeDaoImplAdvice"
             pointcut="execution(* io.cattle.platform.core.dao.VolumeDao.*(..))" />
+        <aop:advisor advice-ref="HostDaoImplAdvice"
+            pointcut="execution(* io.cattle.platform.core.dao.HostDao.*(..))" />
     </aop:config>
 
     <bean class="io.cattle.platform.core.cleanup.TableCleanUp"/>

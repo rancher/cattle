@@ -152,11 +152,13 @@ def test_host_agent_state(super_client, new_context):
     agent = super_client.wait_success(agent)
     assert agent.state == 'active'
 
-    agent = super_client.wait_success(agent.deactivate())
     host = new_context.client.reload(new_context.host)
-
     assert host.state == 'active'
+
+    agent = super_client.wait_success(agent.deactivate())
+    host = super_client.reload(host)
     assert agent.state == 'inactive'
+    assert host.state == 'inactive'
     assert agent.state == host.agentState
 
     agent = super_client.wait_success(agent.activate())

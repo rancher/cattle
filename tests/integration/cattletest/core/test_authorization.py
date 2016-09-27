@@ -2848,6 +2848,7 @@ def test_machine_driver(admin_user_client, user_client, project_client,
         'defaultActive': 'r',
         'builtin': 'cr',
         'activateOnCreate': 'cr',
+        'schemaVersion': 'cru',
     })
 
     auth_check(user_client.schema, 'machineDriver', 'r', {

@@ -14,6 +14,7 @@
         "machine.labels": "cru",
         "machine.extractedConfig": "ru",
         "machineDriver.name": "cru",
+        "machineDriver.schemaVersion": "cru",
         "machineDriver.resourceActions\\..*": "c",
         "machineDriver.resourceActions.create": "",
         "project": "cr",
