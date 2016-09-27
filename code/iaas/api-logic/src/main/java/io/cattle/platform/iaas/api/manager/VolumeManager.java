@@ -9,6 +9,7 @@ import io.cattle.platform.core.model.VolumeStoragePoolMap;
 import io.cattle.platform.object.meta.ObjectMetaDataManager;
 import io.cattle.platform.object.util.ObjectUtils;
 
+import java.util.List;
 import java.util.Map;
 
 import javax.inject.Inject;
@@ -45,8 +46,9 @@ public class VolumeManager extends AbstractJooqResourceManager {
         if (!VolumeConstants.LOCAL_DRIVER.equals(driver)) {
             Object aId = ObjectUtils.getAccountId(v);
             if (aId != null) {
-                StoragePool sp = storagePoolDao.findStoragePoolByDriverName((Long)aId, driver);
-                if (sp != null) {
+                List<? extends StoragePool> pools = storagePoolDao.findStoragePoolByDriverName((Long)aId, driver);
+                if (pools.size() > 0) {
+                    StoragePool sp = pools.get(0);
                     VolumeStoragePoolMap vspm = getObjectManager().newRecord(VolumeStoragePoolMap.class);
                     vspm.setStoragePoolId(sp.getId());
                     Long volumeId = (Long)ObjectUtils.getId(v);

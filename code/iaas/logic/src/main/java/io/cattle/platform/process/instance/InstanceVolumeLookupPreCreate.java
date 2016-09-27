@@ -71,7 +71,10 @@ public class InstanceVolumeLookupPreCreate extends AbstractObjectProcessLogic im
         String volumeDriver = DataAccessor.fieldString(instance, InstanceConstants.FIELD_VOLUME_DRIVER);
         StoragePool sp = null;
         if (StringUtils.isNotEmpty(volumeDriver) && !VolumeConstants.LOCAL_DRIVER.equals(volumeDriver)) {
-            sp = storagePoolDao.findStoragePoolByDriverName(instance.getAccountId(), volumeDriver);
+            List<? extends StoragePool> pools = storagePoolDao.findStoragePoolByDriverName(instance.getAccountId(), volumeDriver);
+            if (pools.size() > 0) {
+                sp = pools.get(0);
+            }
         }
 
         Map<Object, Object> data = new HashMap<>();

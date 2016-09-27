@@ -13,7 +13,7 @@ public interface StoragePoolDao {
 
     StoragePool mapNewPool(Host host, Map<String, Object> properties);
 
-    StoragePool findStoragePoolByDriverName(Long accountId, String driverName);
+    List<? extends StoragePool> findStoragePoolByDriverName(Long accountId, String driverName);
 
     List<? extends StoragePoolHostMap> findMapsToRemove(Long id);
 

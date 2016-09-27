@@ -41,10 +41,11 @@ public class VolumePreCreate extends AbstractObjectProcessLogic implements Proce
             return null;
         }
 
-        StoragePool sp = storagePoolDao.findStoragePoolByDriverName(v.getAccountId(), driver);
-        if (sp == null) {
+        List<? extends StoragePool> pools = storagePoolDao.findStoragePoolByDriverName(v.getAccountId(), driver);
+        if (pools.size() == 0) {
             return null;
         }
+        StoragePool sp = pools.get(0);
 
         Map<String, Object> data = new HashMap<>();
         List<String> volumeCap = DataAccessor.fieldStringList(sp, StoragePoolConstants.FIELD_VOLUME_CAPABILITIES);
