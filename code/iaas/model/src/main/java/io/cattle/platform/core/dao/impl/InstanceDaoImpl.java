@@ -249,6 +249,20 @@ public class InstanceDaoImpl extends AbstractJooqDao implements InstanceDao {
     }
 
     @Override
+    public List<? extends Instance> findUnallocatedInstanceByDeploymentUnitUuid(long accountId, String deploymentUnitUuid) {
+        return create().select(INSTANCE.fields())
+                .from(INSTANCE)
+                .leftOuterJoin(INSTANCE_HOST_MAP)
+                    .on(INSTANCE_HOST_MAP.INSTANCE_ID.eq(INSTANCE.ID))
+                .where(
+                        INSTANCE.REMOVED.isNull()
+                        .and(INSTANCE_HOST_MAP.ID.isNull())
+                        .and(INSTANCE.DEPLOYMENT_UNIT_UUID.eq(deploymentUnitUuid))
+                        .and(INSTANCE.ALLOCATION_STATE.eq(CommonStatesConstants.INACTIVE)))
+                .fetchInto(InstanceRecord.class);
+    }
+
+    @Override
     public List<? extends Host> findHosts(long accountId, long instanceId) {
         return create().select(HOST.fields())
                 .from(INSTANCE)

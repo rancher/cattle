@@ -47,6 +47,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import javax.inject.Inject;
 import javax.inject.Named;
 
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -65,6 +66,8 @@ public class InstanceStart extends AbstractDefaultProcessHandler {
     private static final List<String> START_ONCE_STATES = Arrays.asList(InstanceConstants.STATE_STOPPED, InstanceConstants.STATE_STOPPING,
             InstanceConstants.STATE_RUNNING);
 
+    private static final List<String> UNALLOCATED_WAIT_STATES = Arrays.asList(CommonStatesConstants.REQUESTED, CommonStatesConstants.CREATING);
+    
     private static final Logger log = LoggerFactory.getLogger(InstanceStart.class);
 
     @Inject
@@ -95,8 +98,11 @@ public class InstanceStart extends AbstractDefaultProcessHandler {
         try {
             try {
                 progress.checkPoint("Waiting for dependencies");
-                // wait till volumesFrom/networksFrom containers start up
+                // wait until volumesFrom/networksFrom containers start up
                 waitForDependenciesStart(instance);
+
+                ///wait until all containers in deployment unit are starting
+                waitForDeploymentUnit(instance);
 
                 progress.checkPoint("Scheduling");
                 allocate(instance);
@@ -142,6 +148,45 @@ public class InstanceStart extends AbstractDefaultProcessHandler {
         instanceDao.clearCacheInstanceData(instance.getId());
 
         return result;
+    }
+
+    protected void waitForDeploymentUnit(Instance instance) {
+        // Wait until all instances in the deployment unit are out of the creating state (to ensure all of instnace.create has ran)
+        if(StringUtils.isEmpty(instance.getDeploymentUnitUuid())) {
+            return;
+        }
+
+        List<? extends Instance> duInstances =
+                instanceDao.findUnallocatedInstanceByDeploymentUnitUuid(instance.getAccountId(), instance.getDeploymentUnitUuid());
+
+        List<Instance> waitList = new ArrayList<>();
+        for (Instance i : duInstances) {
+            if (UNALLOCATED_WAIT_STATES.contains(i.getState())) {
+                waitList.add(i);
+            }
+        }
+
+        //timeout is 30 seconds
+        Long timeout =  30000L;
+        for (Instance wait : waitList) {
+            try {
+                resourceMonitor.waitFor(wait, timeout,
+                    new ResourcePredicate<Instance>() {
+                        @Override
+                        public boolean evaluate(Instance obj) {
+                            return !UNALLOCATED_WAIT_STATES.contains(obj.getState());
+                        }
+
+                        @Override
+                        public String getMessage() {
+                            return "starting state";
+                        }
+                    }
+                );
+            } catch (TimeoutException e) {
+                throw new ExecutionException("Dependencies readiness error", "instance hasn't goten passed creating state", instance.getId());
+            }
+        }
     }
 
     protected void waitForDependenciesStart(Instance instance) {

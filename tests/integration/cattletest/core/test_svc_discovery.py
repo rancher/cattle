@@ -1578,6 +1578,49 @@ def test_network_from_service(client, context):
     assert s22_container.networkMode == 'managed'
 
 
+def test_sidekick_network_from(client, context):
+    # This test is intended to exercise a race condition that can happen when
+    # you have a deployment unit with a network from relationship.
+    # Unfortunately, the bug is a race condition, so this test passing is not
+    # necessarily proof that the bug has been fixed. To reproduce consistently,
+    # you can add a Thread.sleep(500) to InstanceCreate, right before a nic is
+    # created for the instance (currently in createNics()).
+    env = _create_stack(client)
+
+    image_uuid = context.image_uuid
+
+    launch_config = {
+        "imageUuid": image_uuid,
+        "labels": {
+            "io.rancher.sidekicks": "secondary"
+        }
+    }
+    secondary_lc = {
+        "imageUuid": image_uuid,
+        "name": "secondary",
+        "networkMode": "container",
+        "networkLaunchConfig": "primary"
+    }
+
+    service = client.create_service(name='primary',
+                                    stackId=env.id,
+                                    launchConfig=launch_config,
+                                    scale=1,
+                                    secondaryLaunchConfigs=[secondary_lc])
+    service = client.wait_success(service)
+    service = client.wait_success(service.activate(), 120)
+    assert service.state == "active"
+
+    primary = _validate_compose_instance_start(client, service, env, "1")
+    secondary = _validate_compose_instance_start(client, service,
+                                                 env, "1", "secondary")
+
+    assert primary.networkMode == 'managed'
+    assert secondary.networkMode == 'container'
+    assert primary.primaryIpAddress.startswith('10.42')
+    assert secondary.networkContainerId == primary.id
+
+
 def _wait_compose_instance_start(client, service, env, number):
     def wait_instance_state(service):
         instances = client. \

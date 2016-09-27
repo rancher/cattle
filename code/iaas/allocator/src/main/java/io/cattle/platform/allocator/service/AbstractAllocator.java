@@ -463,6 +463,11 @@ public abstract class AbstractAllocator implements Allocator {
                 candidateLog.append(String.format("  [%s] pool [%s]\n", id, pool.getId()));
             }
         }
+
+        for (Nic nic : attempt.getNics()) {
+            candidateLog.append(String.format("  [%s] nic [%s]\n", id, nic.getId()));
+        }
+
         candidateLog.append(String.format("  [%s] constraints:\n", id));
         for (Constraint constraint : attempt.getConstraints()) {
             candidateLog.append(String.format("  [%s]   %s\n", id, constraint));
