@@ -43,10 +43,7 @@ public class ResourceOutputFilterManagerImpl implements ResourceOutputFilterMana
             }
 
             for (Class<?> clz : filter.getTypeClasses()) {
-                String type = baseSchemaFactory.getSchemaName(clz);
-                if (type != null) {
-                    types.add(type);
-                }
+                types.addAll(baseSchemaFactory.getSchemaNames(clz));
             }
 
             for (String type : types) {
