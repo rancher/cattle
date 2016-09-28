@@ -109,7 +109,7 @@ public class DeploymentUnit {
         }
     }
 
-    public Integer getServiceIndex() {
+    public Integer generateServiceIndex() {
         List<? extends io.cattle.platform.core.model.DeploymentUnit> dus = context.objectManager.find(
                 io.cattle.platform.core.model.DeploymentUnit.class,
                 DEPLOYMENT_UNIT.ACCOUNT_ID,
@@ -134,7 +134,7 @@ public class DeploymentUnit {
             // create deploymentunit
             params.put("uuid", this.uuid);
             params.put(ServiceConstants.FIELD_SERVICE_ID, service.getId());
-            params.put(InstanceConstants.FIELD_SERVICE_INSTANCE_SERVICE_INDEX, getServiceIndex());
+            params.put(InstanceConstants.FIELD_SERVICE_INSTANCE_SERVICE_INDEX, generateServiceIndex());
             params.put("accountId", service.getAccountId());
             params.put(InstanceConstants.FIELD_LABELS, this.unitLabels);
             this.unit = context.objectManager.create(io.cattle.platform.core.model.DeploymentUnit.class, params);
@@ -366,7 +366,7 @@ public class DeploymentUnit {
         } else {
             String name = "";
             if (template.getPerContainer()) {
-                name = uuid + "_" + volumeNamePostfix;
+                name = stack.getName() + "_" + volumeNamePostfix + "_" + this.unit.getServiceIndex() + "_" + uuid;
                 volume = context.objectManager
                         .findOne(Volume.class, VOLUME.ACCOUNT_ID, service.getAccountId(),
                                 VOLUME.REMOVED, null, VOLUME.VOLUME_TEMPLATE_ID, template.getId(), VOLUME.STACK_ID,
