@@ -397,22 +397,20 @@ def _validate_add_service_link(service,
 
 def _validate_remove_service_link(service,
                                   consumedService, client, link_name=None):
-    if link_name is None:
-        service_maps = client. \
-            list_serviceConsumeMap(serviceId=service.id,
-                                   consumedServiceId=consumedService.id)
-    else:
-        service_maps = client. \
-            list_serviceConsumeMap(serviceId=service.id,
-                                   consumedServiceId=consumedService.id,
-                                   name=link_name)
+    def check():
+        if link_name is None:
+            service_maps = client. \
+                list_serviceConsumeMap(serviceId=service.id,
+                                       consumedServiceId=consumedService.id)
+        else:
+            service_maps = client. \
+                list_serviceConsumeMap(serviceId=service.id,
+                                       consumedServiceId=consumedService.id,
+                                       name=link_name)
 
-    assert len(service_maps) == 1
+        return len(service_maps) == 0
 
-    service_map = service_maps[0]
-    wait_for_condition(
-        client, service_map, _resource_is_removed,
-        lambda x: 'State is: ' + x.state)
+    wait_for(check)
 
 
 def _resource_is_active(resource):

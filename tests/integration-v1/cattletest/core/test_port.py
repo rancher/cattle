@@ -160,23 +160,7 @@ def test_container_port_purge(new_context):
 
     c = client.wait_success(c.purge())
     assert c.state == 'purged'
-
-    count = 0
-    assert len(c.ports_link()) == 3
-
-    for port in c.ports_link():
-        assert port.state == 'removed'
-        assert port.privateIpAddressId is None
-        assert port.publicIpAddressId is None
-        if port.privatePort == 80:
-            count += 1
-            assert port.publicPort is None
-        elif port.privatePort == 81:
-            count += 1
-            assert port.publicPort == 8081
-        elif port.privatePort == 82:
-            count += 1
-            assert port.publicPort == 8082
+    assert len(c.ports_link()) == 0
 
 
 def test_port_validation(client, context):

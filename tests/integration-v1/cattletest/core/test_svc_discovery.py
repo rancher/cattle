@@ -73,19 +73,23 @@ def test_env_set_outputs(client, context):
     service, env = create_env_and_svc(client, context)
     assert env.outputs is None
 
-    env = env.addoutputs(outputs={
-        'foo': 'bar',
-        'foo2': 'bar2',
-    })
+    def func():
+        return env.addoutputs(outputs={
+            'foo': 'bar',
+            'foo2': 'bar2',
+        })
+    env = retry(func)
 
     assert env.outputs == {'foo': 'bar', 'foo2': 'bar2'}
     env = client.reload(env)
     assert env.outputs == {'foo': 'bar', 'foo2': 'bar2'}
     assert env.state == 'active'
 
-    env = env.addoutputs(outputs={
-        'foo3': 'bar3',
-    })
+    def func():
+        return env.addoutputs(outputs={
+            'foo3': 'bar3',
+        })
+    env = retry(func)
     assert env.outputs == {'foo': 'bar', 'foo2': 'bar2', 'foo3': 'bar3'}
 
 
@@ -274,13 +278,10 @@ def _validate_instance_stopped(service, client, env):
 
 
 def _validate_compose_instance_removed(client, service, env, number="1"):
-    instances = client. \
-        list_container(name=env.name + "_" + service.name + "_" + number)
-    assert len(instances) == 1
-    instance = instances[0]
-    wait_for_condition(
-        client, instance, _resource_is_removed,
-        lambda x: 'State is: ' + x.state)
+    def check():
+        return client. \
+            list_container(name=env.name + "_" + service.name + "_" + number)
+    wait_for(lambda: len(check()) == 0)
 
 
 def _validate_instance_removed(client, name):
@@ -409,7 +410,7 @@ def test_remove_inactive_service(client, context):
 
     # remove service
     service = client.wait_success(service.remove())
-    assert service.state == "removed"
+    assert service.removed is not None
     _validate_compose_instance_removed(client, service, env)
 
 
@@ -446,7 +447,7 @@ def test_remove_environment(client, context):
 
     # remove environment
     env = client.wait_success(env.remove())
-    assert env.state == "removed"
+    assert env.removed is not None
     wait_for_condition(
         client, service, _resource_is_removed,
         lambda x: 'State is: ' + x.state)
@@ -574,7 +575,7 @@ def test_remove_active_service(client, context):
 
     # remove service
     service = client.wait_success(service.remove(), 120)
-    assert service.state == "removed"
+    assert service.removed is not None
     _validate_compose_instance_removed(client, service, env)
 
 
@@ -616,7 +617,7 @@ def test_remove_environment_w_active_svcs(client, context):
 
     # remove environment
     env = client.wait_success(env.remove())
-    assert env.state == "removed"
+    assert env.removed is not None
     service = client.wait_success(service)
     _validate_compose_instance_removed(client, service, env)
 
@@ -726,7 +727,7 @@ def test_validate_service_scaleup_scaledown(client, context):
 def _instance_remove(instance, client):
     instance = client.wait_success(client.delete(instance))
     wait_for_condition(client, instance,
-                       lambda x: x.state == 'removed')
+                       lambda x: x.removed is not None)
     return client.reload(instance)
 
 
@@ -740,13 +741,11 @@ def test_destroy_service_instance(client, context):
                                     environmentId=env.id,
                                     launchConfig=launch_config,
                                     scale=3)
-    service = client.wait_success(service)
-    assert service.state == "inactive"
+    service = wait_state(client, service, 'inactive')
 
     # activate service
     service.activate()
-    service = client.wait_success(service, 120)
-    assert service.state == "active"
+    service = wait_state(client, service, 'active')
 
     instance1 = _validate_compose_instance_start(client, service, env, "1")
     instance2 = _validate_compose_instance_start(client, service, env, "2")
@@ -757,28 +756,27 @@ def test_destroy_service_instance(client, context):
 
     instance_service_map = client. \
         list_serviceExposeMap(serviceId=service.id, instanceId=instance2.id)
-    assert len(instance_service_map) == 1
-    wait_for_condition(
-        client, instance_service_map[0], _resource_is_removed,
-        lambda x: 'State is: ' + x.state)
+    assert len(instance_service_map) == 0
 
     service = client.wait_success(service)
 
     # 2. deactivate the service
     service.deactivate()
-    service = client.wait_success(service, 120)
-    assert service.state == "inactive"
+    service = wait_state(client, service, 'inactive')
 
     # 3. activate the service
     service.activate()
-    service = client.wait_success(service, 120)
+    service = wait_state(client, service, 'active')
+    service = client.reload(service)
     assert service.state == "active"
 
     # 4. destroy instance3 and update the service's scale.
     _instance_remove(instance3, client)
-    service = client.wait_success(service)
+    service = wait_state(client, service, 'active')
+    service = client.reload(service)
 
-    service = client.update(service, scale=4, name=service.name)
+    service = retry(lambda:
+                    client.update(service, scale=4, name=service.name))
     service = client.wait_success(service, 120)
     _validate_service_instance_map_count(client, service, "active", 4)
 
@@ -789,10 +787,7 @@ def test_destroy_service_instance(client, context):
     assert instance1.state == 'purged'
     instance_service_map = client. \
         list_serviceExposeMap(serviceId=service.id, instanceId=instance1.id)
-    assert len(instance_service_map) == 1
-    wait_for_condition(
-        client, instance_service_map[0], _resource_is_removed,
-        lambda x: 'State is: ' + x.state)
+    assert len(instance_service_map) == 0
 
 
 def test_service_rename(client, context):
@@ -1003,8 +998,7 @@ def test_sidekick_destroy_instance(client, context):
     _validate_compose_instance_start(client, service, env, "1", "secondary")
 
     # validate that the primary instance was recreated
-    instance11 = client.reload(instance11)
-    assert instance11.state == 'removed'
+    wait_for_condition(client, instance11, lambda x: x.removed is not None)
 
 
 def test_sidekick_restart_instances(client, context):
@@ -1085,6 +1079,15 @@ def test_sidekick_scaleup(client, context):
     assert len(instance_service_map1) == 4
 
 
+def _validate_service_ip_map_removed(client, service, ip):
+    def wait_for_map_count(service):
+        m = client. \
+            list_serviceExposeMap(serviceId=service.id, ipAddress=ip)
+        return len(m) == 0
+
+    wait_for_condition(client, service, wait_for_map_count)
+
+
 def _validate_service_ip_map(client, service, ip, state):
     def wait_for_map_count(service):
         m = client. \
@@ -1109,6 +1112,16 @@ def _validate_service_instance_map_count(client, service, state, count):
 
     return client. \
         list_serviceExposeMap(serviceId=service.id, state=state)
+
+
+def _validate_service_hostname_map_removed(super_client, service, host_name):
+    def wait_for_map_count(service):
+        m = super_client. \
+            list_serviceExposeMap(serviceId=service.id)
+        m = [x for x in m if x.hostName == host_name]
+        return len(m) == 0
+
+    wait_for_condition(super_client, service, wait_for_map_count)
 
 
 def _validate_service_hostname_map(client, service, host_name, state):
@@ -1155,8 +1168,8 @@ def test_external_service_w_ips(client, context):
     # deactivate external service
     service2 = client.wait_success(service2.deactivate())
     assert service2.state == "inactive"
-    _validate_service_ip_map(client, service2, "72.22.16.5", "removed")
-    _validate_service_ip_map(client, service2, "192.168.0.10", "removed")
+    _validate_service_ip_map_removed(client, service2, "72.22.16.5")
+    _validate_service_ip_map_removed(client, service2, "192.168.0.10")
 
     # activate external service again
     service2 = client.wait_success(service2.activate())
@@ -1179,16 +1192,14 @@ def test_external_service_w_ips(client, context):
     service2 = client.wait_success(service2, 120)
     assert len(service2.externalIpAddresses) == 2
     _validate_service_ip_map(client, service2, "72.22.16.5", "active")
-    _validate_service_ip_map(client, service2, "192.168.0.10", "removed")
-    _validate_service_ip_map(client, service2, "10.1.1.1", "removed")
     _validate_service_ip_map(client, service2, "50.255.37.17", "active")
 
     # remove external service
     service2 = client.wait_success(service2.remove())
-    assert service2.state == "removed"
+    assert service2.removed is not None
 
 
-def test_external_service_w_hostname(client, context):
+def test_external_service_w_hostname(super_client, client, context):
     env = _create_stack(client)
     # create service1 as a regular service
     image_uuid = context.image_uuid
@@ -1219,7 +1230,7 @@ def test_external_service_w_hostname(client, context):
     # deactivate external service
     service2 = client.wait_success(service2.deactivate())
     assert service2.state == "inactive"
-    _validate_service_hostname_map(client, service2, "a.com", "removed")
+    _validate_service_hostname_map_removed(super_client, service2, "a.com")
 
     # activate external service again
     service2 = client.wait_success(service2.activate())
@@ -1231,11 +1242,11 @@ def test_external_service_w_hostname(client, context):
     service2 = client.wait_success(service2, 120)
     assert service2.hostname == "b.com"
     _validate_service_hostname_map(client, service2, "b.com", "active")
-    _validate_service_hostname_map(client, service2, "a.com", "removed")
+    _validate_service_hostname_map_removed(super_client, service2, "a.com")
 
     # remove external service
     service2 = client.wait_success(service2.remove())
-    assert service2.state == "removed"
+    assert service2.removed is not None
 
 
 def test_global_service(new_context):
@@ -1338,8 +1349,7 @@ def test_global_service_update_label(new_context):
     # both hosts got instances
     _instance_remove(instance1, client)
     service = wait_state(client, service.deactivate(), 'inactive')
-    service = client.wait_success(service.activate(), 120)
-    assert service.state == "active"
+    service = wait_state(client, service.activate(), 'active')
     instance1 = _validate_compose_instance_start(client, service, env, "1")
     instance2 = _validate_compose_instance_start(client, service, env, "2")
 
@@ -1981,9 +1991,9 @@ def test_indirect_ref_sidekick_destroy_instance(client, context):
     _wait_until_active_map_count(service, 3, client)
     # validate that the primary and secondary instances got recreated
     instance11 = client.reload(instance11)
-    assert instance11.state == 'removed'
+    assert instance11.removed is not None
     instance12 = client.reload(instance12)
-    assert instance12.state == 'removed'
+    assert instance12.removed is not None
 
 
 def test_validate_hostname_override(client, context):
@@ -2356,7 +2366,7 @@ def test_sidekick_labels_merge(new_context):
                                     launchConfig=launch_config,
                                     secondaryLaunchConfigs=[secondary_lc])
     service = client.wait_success(service)
-    service = client.wait_success(service.activate(), 120)
+    service = wait_state(client, service.activate(), 'active')
     primary = _validate_compose_instance_start(client, service, env, "1")
     secondary = _validate_compose_instance_start(client, service, env, "1",
                                                  "secondary")
@@ -2756,6 +2766,7 @@ def test_ip_retain_requested_ip(client, context, super_client):
     # remove instance and
     # check that c1 and c2 got the same ip
     _instance_remove(c1, client)
+    svc = wait_state(client, svc, 'active')
     _wait_until_active_map_count(svc, 1, client)
     svc = client.wait_success(svc)
     assert svc.state == "active"
@@ -2790,7 +2801,7 @@ def _resource_is_active(resource):
 
 
 def _resource_is_removed(resource):
-    return resource.state == 'removed'
+    return resource.removed is not None
 
 
 def _wait_for_compose_instance_start(client, service, env,

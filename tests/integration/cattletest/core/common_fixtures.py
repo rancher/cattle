@@ -407,7 +407,7 @@ def assert_removed_fields(obj):
     assert obj.removed is not None
     assert obj.removeTime is not None
 
-    assert obj.removeTimeTS > obj.removedTS
+    assert obj.removeTimeTS == obj.removedTS
 
 
 def assert_restored_fields(obj):
@@ -706,3 +706,12 @@ def auth_header(client):
 def auth_header_map(client):
     b = base64.encodestring(client._access_key + ':' + client._secret_key)
     return {'Authorization': 'Basic {}'.format(b.replace('\n', ''))}
+
+
+def retry(func, tries=3):
+    for i in range(tries):
+        try:
+            return func()
+        except:
+            if i == (tries - 1):
+                raise

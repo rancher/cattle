@@ -36,7 +36,7 @@ def test_subnet_ip_pool_create_delete(super_client):
 
     assert ip_pool.state == 'removed'
     assert subnet.state == 'removed'
-    assert len(ip_pool.subnets()) == 1
+    assert len(ip_pool.subnets()) == 0
 
 
 def test_ip_pool_acquire(super_client):
@@ -124,10 +124,7 @@ def test_ip_pool_associate(super_client, ip_pool):
     assert assoc.state == 'removed'
 
     assocs = ip_address.ipAssociations()
-    assert len(assocs) == 1
-
-    assert assocs[0].state == 'removed'
-    assert assocs[0].removed is not None
+    assert len(assocs) == 0
 
 
 def test_virtual_machine_with_public_ip(super_client, new_context, ip_pool):
@@ -165,12 +162,19 @@ def test_virtual_machine_with_public_ip(super_client, new_context, ip_pool):
     assert assoc.state == 'active'
 
     vm = super_client.wait_success(vm.purge())
-    nic = super_client.wait_success(vm.nics()[0])
-    nic = super_client.wait_success(nic.purge())
+    nics = vm.nics()
+    assert len(nics) == 0
 
     child_ip = super_client.wait_success(super_client.reload(child_ip))
     public_ip = super_client.wait_success(super_client.reload(public_ip))
     assoc = super_client.wait_success(super_client.reload(assocs[0]))
+
+    if child_ip.state == 'active':
+        child_ip = super_client.wait_success(child_ip.deactivate())
+        child_ip = super_client.wait_success(child_ip.remove())
+    if public_ip.state == 'active':
+        public_ip = super_client.wait_success(public_ip.deactivate())
+        public_ip = super_client.wait_success(public_ip.remove())
 
     assert child_ip.state == 'removed'
     assert public_ip.state == 'associated'

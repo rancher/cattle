@@ -105,11 +105,8 @@ def test_host_purge(super_client, new_context):
     c1 = super_client.wait_success(c1.purge())
     assert c1.state == 'purged'
 
-    volume = super_client.wait_success(c1.volumes()[0])
-    assert volume.state == 'removed'
-
-    volume = super_client.wait_success(volume.purge())
-    assert volume.state == 'purged'
+    volumes = c1.volumes()
+    assert len(volumes) == 0
 
 
 def test_host_container_actions_inactive(new_context):

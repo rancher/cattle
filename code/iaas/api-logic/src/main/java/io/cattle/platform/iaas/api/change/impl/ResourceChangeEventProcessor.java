@@ -1,8 +1,11 @@
 package io.cattle.platform.iaas.api.change.impl;
 
 import io.cattle.platform.api.pubsub.subscribe.ApiPubSubEventPostProcessor;
+import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.eventing.model.EventVO;
 import io.cattle.platform.iaas.event.IaasEvents;
+import io.cattle.platform.object.meta.ObjectMetaDataManager;
+import io.cattle.platform.object.util.DataAccessor;
 import io.github.ibuildthecloud.gdapi.context.ApiContext;
 import io.github.ibuildthecloud.gdapi.exception.ClientVisibleException;
 import io.github.ibuildthecloud.gdapi.json.JsonMapper;
@@ -23,22 +26,22 @@ public class ResourceChangeEventProcessor implements ApiPubSubEventPostProcessor
     JsonMapper jsonMapper;
 
     @Override
-    public void processEvent(EventVO<Object> event) {
+    public boolean processEvent(EventVO<Object> event) {
         if (event.getName() == null || !event.getName().startsWith(IaasEvents.RESOURCE_CHANGE)) {
-            return;
+            return true;
         }
 
         String type = event.getResourceType();
         String id = event.getResourceId();
 
         if (type == null || id == null) {
-            return;
+            return false;
         }
 
         ResourceManager rm = locator.getResourceManagerByType(type);
 
         if (rm == null) {
-            return;
+            return false;
         }
 
         try {
@@ -47,12 +50,18 @@ public class ResourceChangeEventProcessor implements ApiPubSubEventPostProcessor
             Object obj = rm.getById(type, id, new ListOptions(request));
 
             if (obj == null) {
-                return;
+                return false;
             }
 
             Resource resource = rm.convertResponse(obj, request);
             if (resource == null) {
-                return;
+                return false;
+            }
+
+            Object removed = resource.getFields().get(ObjectMetaDataManager.REMOVED_FIELD);
+            String state = DataAccessor.fromMap(resource.getFields()).withKey(ObjectMetaDataManager.STATE_FIELD).as(String.class);
+            if (removed != null && !CommonStatesConstants.REMOVED.equals(state)) {
+                return false;
             }
 
             Map<String, Object> data = new HashMap<String, Object>();
@@ -67,6 +76,8 @@ public class ResourceChangeEventProcessor implements ApiPubSubEventPostProcessor
             event.setData(data);
         } catch (ClientVisibleException e) {
         }
+
+        return true;
     }
 
     public ResourceManagerLocator getLocator() {

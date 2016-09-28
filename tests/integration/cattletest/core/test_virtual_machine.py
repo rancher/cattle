@@ -372,16 +372,7 @@ def test_virtual_machine_remove_subnet(super_client, context, subnet):
     vm = super_client.wait_success(vm.stop(remove=True))
 
     assert vm.state == 'removed'
-
-    assert len(vm.nics()) == 1
-    assert len(vm.nics()[0].ipAddresses()) == 1
-
-    nic = vm.nics()[0]
-    ip_address = nic.ipAddresses()[0]
-
-    assert ip_address.state == 'active'
-    assert ip_address.address.startswith('10.42')
-    assert nic.state == 'removed'
+    assert len(vm.nics()) == 0
 
 
 def test_virtual_machine_purge_subnet(super_client, context, subnet):
@@ -402,83 +393,7 @@ def test_virtual_machine_purge_subnet(super_client, context, subnet):
 
     assert vm.state == 'removed'
 
-    assert len(vm.nics()) == 1
-    assert len(vm.nics()[0].ipAddresses()) == 1
-
-    nic = vm.nics()[0]
-    ip_address = nic.ipAddresses()[0]
-
-    assert ip_address.state == 'active'
-    assert ip_address.address.startswith('10.42')
-    assert nic.state == 'removed'
-
-    vm = super_client.wait_success(vm.purge())
-    assert vm.state == 'purged'
-
-    nics = vm.nics()
-    assert len(nics) == 1
-
-    nic = nics[0]
-    assert nic.state == 'removed'
-    assert nic.macAddress is not None
-
-    nic = super_client.wait_success(nic.purge())
-    assert nic.state == 'purged'
-    assert nic.macAddress is None
-
-    assert len(nic.ipAddressNicMaps()) == 1
-    assert nic.ipAddressNicMaps()[0].state == 'removed'
-    assert len(nic.ipAddresses()) == 0
-
-    ip_address = super_client.reload(ip_address)
-    assert ip_address.state == 'removed'
-    assert ip_address.address is not None
-    addresses = super_client.list_resource_pool(poolType='subnet',
-                                                poolId=subnet_plain_id)
-    assert vm.primaryIpAddress not in [x.item for x in addresses]
-
-
-def test_virtual_machine_restore_subnet(super_client, context, subnet):
-    subnet_plain_id = get_plain_id(super_client, subnet)
-    vm = _create_virtual_machine(super_client, context,
-                                 subnetIds=[subnet.id])
-    vm = super_client.wait_success(vm)
-    assert vm.state == 'running'
-
-    addresses = super_client.list_resource_pool(poolType='subnet',
-                                                poolId=subnet_plain_id)
-
-    assert vm.primaryIpAddress in [x.item for x in addresses]
-    vm = super_client.wait_success(vm.stop())
-    assert vm.state == 'stopped'
-
-    vm = super_client.wait_success(super_client.delete(vm))
-    assert vm.state == 'removed'
-
-    assert vm.state == 'removed'
-    nic = vm.nics()[0]
-    ip_address = nic.ipAddresses()[0]
-    address = ip_address.address
-    assert ip_address.address.startswith('10.42')
-
-    vm = vm.restore()
-    assert vm.state == 'restoring'
-
-    vm = super_client.wait_success(vm)
-    assert vm.state == 'stopped'
-
-    assert len(vm.nics()) == 1
-    nic = vm.nics()[0]
-    assert nic.state == 'inactive'
-
-    assert len(nic.ipAddresses()) == 1
-    ip_address = nic.ipAddresses()[0]
-    assert ip_address.state == 'active'
-
-    vm = super_client.wait_success(vm.start())
-
-    assert vm.state == 'running'
-    assert vm.nics()[0].ipAddresses()[0].address == address
+    assert len(vm.nics()) == 0
 
 
 def test_virtual_machine_console(super_client, context):

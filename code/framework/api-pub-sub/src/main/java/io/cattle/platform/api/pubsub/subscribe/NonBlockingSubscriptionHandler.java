@@ -72,7 +72,9 @@ public abstract class NonBlockingSubscriptionHandler implements SubscriptionHand
                     EventVO<Object> modified = new EventVO<Object>(event);
 
                     ApiRequest request = new ApiRequest(apiRequest);
-                    postProcess(modified, idFormatter, request, policy);
+                    if (!postProcess(modified, idFormatter, request, policy)) {
+                        return;
+                    }
                     obfuscateIds(modified, idFormatter);
 
                     write(modified, writer, writeLock, strip);
@@ -86,7 +88,7 @@ public abstract class NonBlockingSubscriptionHandler implements SubscriptionHand
         return subscribe(eventNames, listener, writer, disconnect, writeLock, strip) != null;
     }
 
-    protected void postProcess(EventVO<Object> event, IdFormatter idFormatter, ApiRequest request, Object policy) {
+    protected boolean postProcess(EventVO<Object> event, IdFormatter idFormatter, ApiRequest request, Object policy) {
         try {
             ApiContext context = ApiContext.newContext();
             context.setApiRequest(request);
@@ -94,11 +96,15 @@ public abstract class NonBlockingSubscriptionHandler implements SubscriptionHand
             context.setPolicy(policy);
 
             for (ApiPubSubEventPostProcessor processor : eventProcessors) {
-                processor.processEvent(event);
+                if (!processor.processEvent(event)) {
+                    return false;
+                }
             }
         } finally {
             ApiContext.remove();
         }
+
+        return true;
     }
 
     protected void obfuscateIds(EventVO<?> event, IdFormatter idFormatter) {
