@@ -3,17 +3,6 @@ package io.cattle.platform.core.dao.impl;
 import static io.cattle.platform.core.model.tables.DynamicSchemaRoleTable.*;
 import static io.cattle.platform.core.model.tables.DynamicSchemaTable.*;
 
-import io.cattle.platform.core.addon.DynamicSchemaWithRole;
-import io.cattle.platform.core.cache.DBCacheManager;
-import io.cattle.platform.core.constants.CommonStatesConstants;
-import io.cattle.platform.core.dao.DynamicSchemaDao;
-import io.cattle.platform.core.model.DynamicSchema;
-import io.cattle.platform.core.model.tables.records.DynamicSchemaRecord;
-import io.cattle.platform.core.model.tables.records.DynamicSchemaRoleRecord;
-import io.cattle.platform.db.jooq.dao.impl.AbstractJooqDao;
-import io.cattle.platform.util.type.CollectionUtils;
-import io.github.ibuildthecloud.gdapi.util.TypeUtils;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -35,6 +24,17 @@ import org.slf4j.LoggerFactory;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
+
+import io.cattle.platform.core.addon.DynamicSchemaWithRole;
+import io.cattle.platform.core.cache.DBCacheManager;
+import io.cattle.platform.core.constants.CommonStatesConstants;
+import io.cattle.platform.core.dao.DynamicSchemaDao;
+import io.cattle.platform.core.model.DynamicSchema;
+import io.cattle.platform.core.model.tables.records.DynamicSchemaRecord;
+import io.cattle.platform.core.model.tables.records.DynamicSchemaRoleRecord;
+import io.cattle.platform.db.jooq.dao.impl.AbstractJooqDao;
+import io.cattle.platform.util.type.CollectionUtils;
+import io.github.ibuildthecloud.gdapi.util.TypeUtils;
 
 public class DynamicSchemaDaoImpl extends AbstractJooqDao implements DynamicSchemaDao {
 
@@ -61,7 +61,7 @@ public class DynamicSchemaDaoImpl extends AbstractJooqDao implements DynamicSche
                 .build(new CacheLoader<CacheKey, DynamicSchema>() {
                     @Override
                     public DynamicSchema load(CacheKey key) throws Exception {
-                        return getSchemaInternal(key.type, key.accountId, key.role);
+                        return getSchemaInternal(key.name, key.accountId, key.role);
                     }
                 });
 
@@ -237,4 +237,57 @@ public class DynamicSchemaDaoImpl extends AbstractJooqDao implements DynamicSche
 
     }
 
+    class CacheKey {
+        String name;
+        long accountId;
+        String role;
+
+        public CacheKey(String name, long accountId, String role) {
+            super();
+            this.name = name;
+            this.accountId = accountId;
+            this.role = role;
+        }
+
+        @Override
+        public int hashCode() {
+            final int prime = 31;
+            int result = 1;
+            result = prime * result + getOuterType().hashCode();
+            result = prime * result + (int) (accountId ^ (accountId >>> 32));
+            result = prime * result + ((name == null) ? 0 : name.hashCode());
+            result = prime * result + ((role == null) ? 0 : role.hashCode());
+            return result;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (this == obj)
+                return true;
+            if (obj == null)
+                return false;
+            if (getClass() != obj.getClass())
+                return false;
+            CacheKey other = (CacheKey) obj;
+            if (!getOuterType().equals(other.getOuterType()))
+                return false;
+            if (accountId != other.accountId)
+                return false;
+            if (name == null) {
+                if (other.name != null)
+                    return false;
+            } else if (!name.equals(other.name))
+                return false;
+            if (role == null) {
+                if (other.role != null)
+                    return false;
+            } else if (!role.equals(other.role))
+                return false;
+            return true;
+        }
+
+        private DynamicSchemaDaoImpl getOuterType() {
+            return DynamicSchemaDaoImpl.this;
+        }
+    }
 }
