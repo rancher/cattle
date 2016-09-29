@@ -53,6 +53,7 @@ public class ResourceChangeEventProcessor implements ApiPubSubEventPostProcessor
                 return false;
             }
 
+            request.setResponseObject(obj);
             Resource resource = rm.convertResponse(obj, request);
             if (resource == null) {
                 return false;
