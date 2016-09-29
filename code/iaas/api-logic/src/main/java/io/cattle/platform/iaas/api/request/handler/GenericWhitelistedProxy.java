@@ -41,6 +41,7 @@ import org.apache.http.HttpResponse;
 import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.ResponseHandler;
+import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.fluent.Executor;
 import org.apache.http.client.fluent.Request;
 import org.apache.http.client.fluent.Response;
@@ -67,6 +68,7 @@ public class GenericWhitelistedProxy extends AbstractResponseGenerator {
 
     public static final String ALLOWED_HOST = GenericWhitelistedProxy.class.getName() + "allowed.host";
     public static final String SET_HOST_CURRENT_HOST = GenericWhitelistedProxy.class.getName() + "set_host_current_host";
+    public static final String REDIRECTS = GenericWhitelistedProxy.class.getName() + "redirects";
 
     private static final DynamicBooleanProperty ALLOW_PROXY = ArchaiusUtil.getBoolean("api.proxy.allow");
     private static final DynamicStringListProperty PROXY_WHITELIST = ArchaiusUtil.getList("api.proxy.whitelist");
@@ -77,6 +79,7 @@ public class GenericWhitelistedProxy extends AbstractResponseGenerator {
             HTTP.TRANSFER_ENCODING.toLowerCase(), HTTP.CONTENT_LEN.toLowerCase(), API_AUTH.toLowerCase()));
 
     private static final Executor EXECUTOR;
+    private static final Executor NO_REDIRECT_EXECUTOR;
 
     static {
         LayeredConnectionSocketFactory ssl = null;
@@ -106,7 +109,13 @@ public class GenericWhitelistedProxy extends AbstractResponseGenerator {
                 .setConnectionManager(cm)
                 .setRoutePlanner(new SystemDefaultRoutePlanner(ProxySelector.getDefault()))
                 .build();
+        HttpClient noRdhttpClient = HttpClientBuilder.create()
+                .setConnectionManager(cm)
+                .setDefaultRequestConfig(RequestConfig.copy(RequestConfig.DEFAULT).setRedirectsEnabled(false).build())
+                .setRoutePlanner(new SystemDefaultRoutePlanner(ProxySelector.getDefault()))
+                .build();
         EXECUTOR = Executor.newInstance(httpClient);
+        NO_REDIRECT_EXECUTOR = Executor.newInstance(noRdhttpClient);
     }
 
     Cache<String, Boolean> allowCache = CacheBuilder.newBuilder()
@@ -158,6 +167,7 @@ public class GenericWhitelistedProxy extends AbstractResponseGenerator {
 
         HttpServletRequest servletRequest = request.getServletContext().getRequest();
         boolean setCurrentHost = Boolean.TRUE.equals(servletRequest.getAttribute(SET_HOST_CURRENT_HOST));
+        boolean redirects = !Boolean.FALSE.equals(servletRequest.getAttribute(REDIRECTS));
 
         String redirect = servletRequest.getRequestURI();
         redirect = StringUtils.substringAfter(redirect, "/proxy/");
@@ -251,7 +261,7 @@ public class GenericWhitelistedProxy extends AbstractResponseGenerator {
             temp.body(entity);
         }
 
-        Response res = EXECUTOR.execute(temp);
+        Response res = redirects ? EXECUTOR.execute(temp) : NO_REDIRECT_EXECUTOR.execute(temp);
 
         res.handleResponse(new ResponseHandler<Object>() {
             @Override
