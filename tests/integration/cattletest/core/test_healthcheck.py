@@ -902,23 +902,26 @@ def test_health_check_bad_agent(super_client, context, client):
         'imageUuid': context.image_uuid,
         'healthCheck': {
             'port': 80,
+        },
+        "labels": {
+            'io.rancher.scheduler.global': 'true'
         }
     }, stackId=env.id)
 
     service = client.wait_success(client.wait_success(service).activate())
     assert service.state == 'active'
 
-    maps = _wait_until_active_map_count(service, 1, client)
+    maps = _wait_until_active_map_count(service, 3, client)
     expose_map = maps[0]
     container = super_client.reload(expose_map.instance())
     hci = find_one(container.healthcheckInstances)
     hcihm = None
+    wait_for(lambda: len(hci.healthcheckInstanceHostMaps()) > 1)
     for h in hci.healthcheckInstanceHostMaps():
         if h.hostId != host2.id:
             hcihm = h
             break
-
-    assert hcihm.hostId != host2.id
+    assert hcihm is not None
     agent_client = _get_agent_client(host2.agent())
 
     assert hcihm.healthState == 'initializing'
@@ -1161,7 +1164,6 @@ def test_hosts_removed_reconcile_when_init(super_client, new_context):
     remove_service(service)
 
 
-@pytest.mark.skipif('True')
 def test_health_check_host_remove(super_client, new_context):
     client = new_context.client
     # create 4 hosts for healtcheck as one of them would be removed later
@@ -1175,22 +1177,15 @@ def test_health_check_host_remove(super_client, new_context):
         'imageUuid': new_context.image_uuid,
         'healthCheck': {
             'port': 80,
+        }, "labels": {
+            'io.rancher.scheduler.global': 'true'
         }
     }, stackId=env.id)
-
-    # to trigger network agent creation on hosts
-    multiport = client.create_service(name='manyports', launchConfig={
-        "imageUuid": new_context.image_uuid,
-        "ports": "5454"
-    }, stackId=env.id, scale=4)
-    multiport = client.wait_success(client.wait_success(multiport).activate())
-    assert multiport.state == 'active'
-    multiport.remove()
 
     service = client.wait_success(client.wait_success(service).activate())
     assert service.state == 'active'
 
-    maps = _wait_until_active_map_count(service, 1, client)
+    maps = _wait_until_active_map_count(service, 5, client)
     expose_map = maps[0]
     c = super_client.reload(expose_map.instance())
     initial_len = len(c.healthcheckInstanceHostMaps())
