@@ -490,6 +490,7 @@
         "stack.binding": "cru",
         "stack.folder": "cru",
         "stack.system": "r",
+        "stack.serviceIds": "r",
 
         "composeProject" : "r",
         "composeProject.name": "cr",

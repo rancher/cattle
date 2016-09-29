@@ -1837,6 +1837,7 @@ def test_auth_compose_project(admin_user_client, user_client, project_client):
         'binding': 'r',
         'system': 'r',
         'folder': 'r',
+        'serviceIds': 'r',
     })
 
     auth_check(user_client.schema, 'composeProject', 'r', {
@@ -1851,6 +1852,7 @@ def test_auth_compose_project(admin_user_client, user_client, project_client):
         'binding': 'r',
         'system': 'r',
         'folder': 'r',
+        'serviceIds': 'r',
     })
 
     auth_check(project_client.schema, 'composeProject', 'crud', {
@@ -1865,6 +1867,7 @@ def test_auth_compose_project(admin_user_client, user_client, project_client):
         'binding': 'cru',
         'folder': 'cru',
         'system': 'r',
+        'serviceIds': 'r',
     })
 
 
@@ -1883,6 +1886,7 @@ def test_auth_kubernetes_stack(admin_user_client, user_client, project_client):
         'binding': 'r',
         'system': 'r',
         'folder': 'r',
+        'serviceIds': 'r',
     })
 
     auth_check(user_client.schema, 'kubernetesStack', 'r', {
@@ -1898,6 +1902,7 @@ def test_auth_kubernetes_stack(admin_user_client, user_client, project_client):
         'binding': 'r',
         'system': 'r',
         'folder': 'r',
+        'serviceIds': 'r',
     })
 
     auth_check(project_client.schema, 'kubernetesStack', 'crud', {
@@ -1913,6 +1918,7 @@ def test_auth_kubernetes_stack(admin_user_client, user_client, project_client):
         'binding': 'cru',
         'system': 'r',
         'folder': 'cru',
+        'serviceIds': 'r',
     })
 
 
@@ -1934,6 +1940,7 @@ def test_svc_discovery_stack(admin_user_client, user_client, project_client,
         'binding': 'r',
         'folder': 'r',
         'system': 'r',
+        'serviceIds': 'r',
     })
 
     auth_check(user_client.schema, 'stack', 'r', {
@@ -1951,6 +1958,7 @@ def test_svc_discovery_stack(admin_user_client, user_client, project_client,
         'binding': 'r',
         'folder': 'r',
         'system': 'r',
+        'serviceIds': 'r',
     })
 
     auth_check(project_client.schema, 'stack', 'crud', {
@@ -1968,6 +1976,7 @@ def test_svc_discovery_stack(admin_user_client, user_client, project_client,
         'binding': 'cru',
         'folder': 'cru',
         'system': 'r',
+        'serviceIds': 'r',
     })
 
     auth_check(owner_client.schema, 'stack', 'crud', {
@@ -1985,6 +1994,7 @@ def test_svc_discovery_stack(admin_user_client, user_client, project_client,
         'binding': 'cru',
         'folder': 'cru',
         'system': 'cr',
+        'serviceIds': 'r',
     })
 
 
