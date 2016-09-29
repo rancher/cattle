@@ -193,10 +193,12 @@ def test_du_volume(client, context, super_client):
 
     c11 = super_client.reload(c11)
 
-    volumes = client.list_volume(name=c11.deploymentUnitUuid + "_foo")
+    du = c11.deploymentUnitUuid
+    name = stack.name + "_foo_1_" + du
+    volumes = client.list_volume(name=name)
     assert len(volumes) == 1
     v11 = volumes[0]
-    assert v11.name == c11.deploymentUnitUuid + "_foo"
+    assert v11.name == name
     assert v11.driver == 'nfs'
     assert v11.driverOpts == opts
 
@@ -210,11 +212,13 @@ def test_du_volume(client, context, super_client):
 
     c12 = super_client.reload(c12)
 
-    volumes = client.list_volume(name=c12.deploymentUnitUuid + "_foo")
+    du = c12.deploymentUnitUuid
+    name = stack.name + "_foo_1_" + du
+    volumes = client.list_volume(name=name)
     assert len(volumes) == 1
     v12 = volumes[0]
     assert v12.id == v11.id
-    assert v12.name == c12.deploymentUnitUuid + "_foo"
+    assert v12.name == name
     assert v12.driver == 'nfs'
     assert v12.driverOpts == opts
 
@@ -226,11 +230,13 @@ def test_du_volume(client, context, super_client):
         assert value is not None
 
     c21 = super_client.reload(c21)
-    volumes = client.list_volume(name=c21.deploymentUnitUuid + "_foo")
+    du = c21.deploymentUnitUuid
+    name = stack.name + "_foo_2_" + du
+    volumes = client.list_volume(name=name)
     assert len(volumes) == 1
     v21 = volumes[0]
     assert v21.id != v11.id
-    assert v21.name == c21.deploymentUnitUuid + "_foo"
+    assert v21.name == name
     assert v21.driver == 'nfs'
     assert v21.driverOpts == opts
 
@@ -306,10 +312,12 @@ def test_upgrade_du_volume(client, context, super_client):
 
     c11 = super_client.reload(c11)
 
-    volumes = client.list_volume(name=c11.deploymentUnitUuid + "_foo")
+    du = c11.deploymentUnitUuid
+    name = stack.name + "_foo_1_" + du
+    volumes = client.list_volume(name=name)
     assert len(volumes) == 1
     v11 = volumes[0]
-    assert v11.name == c11.deploymentUnitUuid + "_foo"
+    assert v11.name == name
     assert v11.driver == 'nfs'
     assert v11.driverOpts == opts
 
@@ -331,13 +339,15 @@ def test_upgrade_du_volume(client, context, super_client):
 
     c12 = super_client.reload(c12)
 
-    volumes = client.list_volume(name=c12.deploymentUnitUuid + "_foo")
+    du = c12.deploymentUnitUuid
+    name = stack.name + "_foo_1_" + du
+    volumes = client.list_volume(name=name)
     assert len(volumes) == 1
     v12 = volumes[0]
     assert v11.id == v12.id
 
     client.wait_success(svc.finishupgrade())
-    volumes = client.list_volume(name=c12.deploymentUnitUuid + "_foo")
+    volumes = client.list_volume(name=name)
     assert len(volumes) == 1
     v12 = volumes[0]
     assert v11.id == v12.id
