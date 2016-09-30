@@ -35,6 +35,7 @@
         "loadBalancerService" : "crud",
         "logConfig" : "cr",
         "machine": "crd",
+        "machineDriver.resourceActions\\..*": "",
         "port" : "ru",
         "project" : "r",
         "projectMember" : "r",
