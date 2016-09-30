@@ -23,6 +23,7 @@ import io.cattle.platform.eventing.util.EventUtils;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.util.type.CollectionUtils;
 import io.cattle.platform.util.type.InitializationTask;
+
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -226,20 +227,25 @@ public class ConfigUpdatePublisher extends NoExceptionRunnable implements Initia
             }
             log.info("\t\tUpdate [{}:{}] {}", update.getResourceType(), update.getResourceId(), items);
         }
-        ListenableFuture<? extends Event> future = call(client, new ConfigUpdate(update, updateItems));
-        Futures.addCallback(future, new FutureCallback<Event>() {
-            @Override
-            public void onSuccess(Event result) {
-                item.response = result;
-                requests.add(item);
-            }
+        try {
+            ListenableFuture<? extends Event> future = call(client, new ConfigUpdate(update, updateItems));
+            Futures.addCallback(future, new FutureCallback<Event>() {
+                @Override
+                public void onSuccess(Event result) {
+                    item.response = result;
+                    requests.add(item);
+                }
 
-            @Override
-            public void onFailure(Throwable t) {
-                item.t = t;
-                requests.add(item);
-            }
-        });
+                @Override
+                public void onFailure(Throwable t) {
+                    item.t = t;
+                    requests.add(item);
+                }
+            });
+        } catch (Throwable t) {
+            item.t = t;
+            requests.add(item);
+        }
         if (log.isTraceEnabled()) {
             log.info("\t=== Publish Sent ===");
         }
