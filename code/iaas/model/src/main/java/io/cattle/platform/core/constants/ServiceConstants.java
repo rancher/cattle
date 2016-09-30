@@ -17,6 +17,7 @@ public class ServiceConstants {
     public static final String FIELD_LOG_CONFIG = "logConfig";
     public static final String FIELD_LOAD_BALANCER_CONFIG = "loadBalancerConfig";
     public static final String FIELD_EXTERNALIPS = "externalIpAddresses";
+    public static final String FIELD_LINKED_SERVICES = "linkedServices";
     public static final String FIELD_SERVICE_LINKS = "serviceLinks";
     public static final String FIELD_SERVICE_LINK_NAME = "name";
     public static final String FIELD_NETWORK_LAUNCH_CONFIG = "networkLaunchConfig";
@@ -55,6 +56,7 @@ public class ServiceConstants {
     public static final String FIELD_VOLUME_DRIVER_OPTS = "driverOpts";
     public static final String FIELD_VOLUME_EXTERNAL = "external";
     public static final String FIELD_VOLUME_PER_CONTAINER = "perContainer";
+    public static final String FIELD_INSTANCE_IDS = "instanceIds";
 
     public static final String FIELD_INTERNAL_VOLUMES = "internalVolumes";
     public static final String FIELD_VOLUME_TEMPLATE_ID = "volumeTemplateId";

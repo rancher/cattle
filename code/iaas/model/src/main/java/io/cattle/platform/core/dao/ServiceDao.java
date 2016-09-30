@@ -5,7 +5,6 @@ import io.cattle.platform.core.model.Service;
 import io.cattle.platform.core.model.ServiceIndex;
 import io.github.ibuildthecloud.gdapi.id.IdFormatter;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -22,10 +21,22 @@ public interface ServiceDao {
 
     Map<Long, List<Object>> getInstances(List<Long> ids, IdFormatter idFormatter);
 
-    Map<Long, ServiceMapping> getServicesMappings(List<Long> ids, IdFormatter idFormatter);
+    Map<Long, List<ServiceLink>> getServiceLinks(List<Long> ids);
 
-    class ServiceMapping {
-        public List<Object> consumed = new ArrayList<>();
-        public List<Object> consumedBy = new ArrayList<>();
+    class ServiceLink {
+        public String linkName;
+        public String serviceName;
+        public Long serviceId;
+        public Long stackId;
+        public String stackName;
+
+        public ServiceLink(String linkName, String serviceName, Long serviceId, Long stackId, String stackName) {
+            super();
+            this.linkName = linkName;
+            this.serviceName = serviceName;
+            this.serviceId = serviceId;
+            this.stackId = stackId;
+            this.stackName = stackName;
+        }
     }
 }
