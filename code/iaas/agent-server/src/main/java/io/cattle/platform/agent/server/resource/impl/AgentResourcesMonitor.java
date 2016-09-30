@@ -207,20 +207,22 @@ public class AgentResourcesMonitor implements AnnotatedEventListener {
                 Map<Object, Object> updates = new HashMap<>();
                 Host host = hosts.get(uuid);
 
-                /* Add create labels and assign the agent ID */
-                if (physicalHostId.equals(host.getPhysicalHostId()) && host.getAgentId() == null) {
-                    PhysicalHost physicalHost = objectManager.loadResource(PhysicalHost.class, physicalHostId);
-                    /* Copy createLabels to labels */
-                    Map<String, Object> labels = CollectionUtils.toMap(data.get(HostConstants.FIELD_LABELS));
-                    labels.putAll(CollectionUtils.<String, Object>toMap(data.get(HostConstants.FIELD_CREATE_LABELS)));
+                if (physicalHostId != null) {
+                    /* Add create labels and assign the agent ID */
+                    if (physicalHostId.equals(host.getPhysicalHostId()) && host.getAgentId() == null) {
+                        PhysicalHost physicalHost = objectManager.loadResource(PhysicalHost.class, physicalHostId);
+                        /* Copy createLabels to labels */
+                        Map<String, Object> labels = CollectionUtils.toMap(data.get(HostConstants.FIELD_LABELS));
+                        labels.putAll(CollectionUtils.<String, Object>toMap(data.get(HostConstants.FIELD_CREATE_LABELS)));
 
-                    updates.putAll(createData(agent, uuid, data));
-                    updates.put(HostConstants.FIELD_LABELS, labels);
-                    updates.put(HostConstants.FIELD_AGENT_ID, physicalHost.getAgentId());
-                }
+                        updates.putAll(createData(agent, uuid, data));
+                        updates.put(HostConstants.FIELD_LABELS, labels);
+                        updates.put(HostConstants.FIELD_AGENT_ID, physicalHost.getAgentId());
+                    }
 
-                if (physicalHostId != null && !physicalHostId.equals(host.getPhysicalHostId())) {
-                    updates.put(HOST.PHYSICAL_HOST_ID, physicalHostId);
+                    if (!physicalHostId.equals(host.getPhysicalHostId())) {
+                        updates.put(HOST.PHYSICAL_HOST_ID, physicalHostId);
+                    }
                 }
 
                 for (String key : UPDATABLE_HOST_FIELDS) {
