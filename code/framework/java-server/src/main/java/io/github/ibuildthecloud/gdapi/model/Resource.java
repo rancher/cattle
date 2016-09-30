@@ -13,6 +13,8 @@ public interface Resource extends ApiStandardType {
 
     String getId();
 
+    String getBaseType();
+
     String getType();
 
     Map<String, URL> getLinks();
@@ -23,4 +25,3 @@ public interface Resource extends ApiStandardType {
     Map<String, Object> getFields();
 
 }
-     
