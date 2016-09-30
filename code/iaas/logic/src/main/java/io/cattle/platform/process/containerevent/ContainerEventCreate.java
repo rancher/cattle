@@ -7,10 +7,10 @@ import static io.cattle.platform.core.constants.NetworkConstants.*;
 import static io.cattle.platform.core.model.tables.HostTable.*;
 import static io.cattle.platform.docker.constants.DockerInstanceConstants.*;
 import static io.cattle.platform.docker.constants.DockerNetworkConstants.*;
-
 import io.cattle.platform.agent.AgentLocator;
 import io.cattle.platform.agent.RemoteAgent;
 import io.cattle.platform.archaius.util.ArchaiusUtil;
+import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.dao.AccountDao;
 import io.cattle.platform.core.dao.InstanceDao;
@@ -100,7 +100,8 @@ public class ContainerEventCreate extends AbstractDefaultProcessHandler {
         final ContainerEvent event = (ContainerEvent)state.getResource();
 
         Host host = objectManager.findOne(Host.class, HOST.ID, event.getHostId());
-        if (host == null || host.getRemoved() != null) {
+        if (host == null || host.getRemoved() != null
+                || host.getState().equalsIgnoreCase(CommonStatesConstants.REMOVING)) {
             log.info("Host [{}] is unavailable. Not processing container event [{}].", event.getHostId(), event.getId());
             return null;
         }
