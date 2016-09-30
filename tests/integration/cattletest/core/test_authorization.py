@@ -776,6 +776,7 @@ def test_storagepool_auth(admin_user_client, user_client, project_client):
         'volumeAccessMode': 'r',
         'blockDevicePath': 'r',
         'volumeCapabilities': 'r',
+        'sizeMb': 'r',
     })
 
     auth_check(user_client.schema, 'storagePool', 'r', {
@@ -786,9 +787,10 @@ def test_storagepool_auth(admin_user_client, user_client, project_client):
         'volumeAccessMode': 'r',
         'blockDevicePath': 'r',
         'volumeCapabilities': 'r',
+        'sizeMb': 'r',
     })
 
-    auth_check(project_client.schema, 'storagePool', 'r', {
+    auth_check(project_client.schema, 'storagePool', 'ru', {
         'accountId': 'r',
         'externalId': 'r',
         'name': 'r',
@@ -796,6 +798,7 @@ def test_storagepool_auth(admin_user_client, user_client, project_client):
         'volumeAccessMode': 'r',
         'blockDevicePath': 'r',
         'volumeCapabilities': 'r',
+        'sizeMb': 'ru',
     })
 
 
@@ -825,6 +828,7 @@ def test_volume_auth(admin_user_client, user_client, project_client):
         'accessMode': 'r',
         'stackId': 'r',
         'volumeTemplateId': 'r',
+        'sizeMb': 'r',
     })
 
     auth_check(user_client.schema, 'volume', 'r', {
@@ -850,6 +854,7 @@ def test_volume_auth(admin_user_client, user_client, project_client):
         'accessMode': 'r',
         'stackId': 'r',
         'volumeTemplateId': 'r',
+        'sizeMb': 'r',
     })
 
     auth_check(project_client.schema, 'volume', 'crd', {
@@ -875,6 +880,7 @@ def test_volume_auth(admin_user_client, user_client, project_client):
         'accessMode': 'r',
         'stackId': 'cr',
         'volumeTemplateId': 'cr',
+        'sizeMb': 'cr',
     })
 
 
@@ -912,6 +918,7 @@ def test_container_auth(admin_user_client, user_client, project_client):
         'instanceLinks': 'r',
         'lxcConf': 'r',
         'memory': 'r',
+        'memoryReservation': 'r',
         'memorySwap': 'r',
         'networkIds': 'r',
         'networkMode': 'r',
@@ -979,6 +986,7 @@ def test_container_auth(admin_user_client, user_client, project_client):
         'instanceLinks': 'r',
         'lxcConf': 'r',
         'memory': 'r',
+        'memoryReservation': 'r',
         'memorySwap': 'r',
         'networkIds': 'r',
         'networkMode': 'r',
@@ -1044,6 +1052,7 @@ def test_container_auth(admin_user_client, user_client, project_client):
         'instanceLinks': 'cr',
         'lxcConf': 'cr',
         'memory': 'cr',
+        'memoryReservation': 'cr',
         'memorySwap': 'cr',
         'networkIds': 'cr',
         'networkMode': 'cr',
@@ -1561,6 +1570,7 @@ def test_registry(admin_user_client, user_client, project_client):
         'volumeAccessMode': 'r',
         'blockDevicePath': 'r',
         'volumeCapabilities': 'r',
+        'sizeMb': 'r',
     })
 
     auth_check(user_client.schema, 'registry', 'r', {
@@ -1571,6 +1581,7 @@ def test_registry(admin_user_client, user_client, project_client):
         'volumeAccessMode': 'r',
         'blockDevicePath': 'r',
         'volumeCapabilities': 'r',
+        'sizeMb': 'r',
     })
 
     auth_check(project_client.schema, 'registry', 'crud', {
@@ -1581,6 +1592,7 @@ def test_registry(admin_user_client, user_client, project_client):
         'volumeAccessMode': 'r',
         'blockDevicePath': 'r',
         'volumeCapabilities': 'r',
+        'sizeMb': 'ru',
     })
 
 
@@ -2602,6 +2614,7 @@ def test_virtual_machine(admin_user_client, user_client, project_client):
         'imageUuid': 'r',
         'instanceLinks': 'r',
         'memory': 'r',
+        'memoryReservation': 'r',
         'memorySwap': 'r',
         'networkIds': 'r',
         'networkMode': 'r',
@@ -2654,6 +2667,7 @@ def test_virtual_machine(admin_user_client, user_client, project_client):
         'imageUuid': 'r',
         'instanceLinks': 'r',
         'memory': 'r',
+        'memoryReservation': 'r',
         'memorySwap': 'r',
         'networkIds': 'r',
         'networkMode': 'r',
@@ -2704,6 +2718,7 @@ def test_virtual_machine(admin_user_client, user_client, project_client):
         'imageUuid': 'cr',
         'instanceLinks': 'cr',
         'memory': 'cr',
+        'memoryReservation': 'cr',
         'memorySwap': 'cr',
         'networkIds': 'cr',
         'networkMode': 'cr',

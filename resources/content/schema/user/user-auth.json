@@ -100,6 +100,7 @@
         "container.instanceLinks" : "cr",
         "container.lxcConf" : "cr",
         "container.logConfig" : "cr",
+        "container.memoryReservation" : "cr",
         "container.memory" : "cr",
         "container.memorySwap" : "cr",
         "container.networkIds" : "cr",
@@ -364,6 +365,7 @@
         "register.secretKey" : "r",
 
         "registry": "r",
+        "registry.name": "cru",
         "registry.serverAddress": "cr",
 
         "registryCredential": "r",
@@ -401,11 +403,13 @@
         "statsAccess.url" : "r",
 
         "storagePool": "r",
+        "storagePool.name": "r",
         "storagePool.externalId": "r",
         "storagePool.driverName": "r",
         "storagePool.volumeAccessMode": "r",
         "storagePool.blockDevicePath": "r",
         "storagePool.volumeCapabilities": "r",
+        "storagePool.sizeMb": "ru",
 
         "subscribe" : "",
         "subscribe.eventNames" : "cr",
@@ -443,6 +447,7 @@
         "volume.driver": "cr",
         "volume.driverOpts": "cr",
         "volume.accessMode": "r",
+        "volume.sizeMb": "cr",
         "volume.stackId": "cr",
         "volume.volumeTemplateId": "cr",
         "volume.resourceActions.deactivate" : "",

@@ -149,6 +149,10 @@
             "type": "int",
             "nullable": true
         },
+        "memoryReservation": {
+            "type": "int",
+            "nullable": true
+        },
         "cpuSet": {
             "type": "string",
             "nullable": true

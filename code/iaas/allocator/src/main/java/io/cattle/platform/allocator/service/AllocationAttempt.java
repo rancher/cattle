@@ -33,7 +33,7 @@ public class AllocationAttempt {
 
     Long requestedHostId;
 
-    Set<Long> volumeIds;
+    Set<Volume> volumes;
 
     Map<Volume, Set<StoragePool>> pools;
     Map<Long, Set<Long>> poolIds;
@@ -59,11 +59,10 @@ public class AllocationAttempt {
         this.pools = pools;
         this.nics = nics;
         this.subnets = subnets == null ? Collections.<Nic, Subnet> emptyMap() : subnets;
+        this.volumes = volumes == null ? new HashSet<Volume>(): volumes;
 
-        this.volumeIds = new HashSet<Long>(volumes.size());
         this.poolIds = new HashMap<Long, Set<Long>>();
         for (Volume v : volumes) {
-            this.volumeIds.add(v.getId());
             Set<StoragePool> storagePools = pools.get(v);
 
             if (storagePools != null) {
@@ -173,12 +172,8 @@ public class AllocationAttempt {
         this.matchedCandidate = matchedCandidate;
     }
 
-    public Set<Long> getVolumeIds() {
-        return volumeIds;
-    }
-
-    public void setVolumeIds(Set<Long> volumeId) {
-        this.volumeIds = volumeId;
+    public Set<Volume> getVolumes() {
+        return volumes;
     }
 
     public Map<Long, Set<Long>> getPoolIds() {

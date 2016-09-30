@@ -25,7 +25,5 @@ public class SystemLabels {
     public static final String LABEL_VM_MEMORY = "io.rancher.vm.memory";
     public static final String LABEL_VM_VCPU = "io.rancher.vm.vcpu";
 
-    public static final String LABEL_SCHEDULER_DISKSIZE_PREFIX = "io.rancher.resource.disksize.";
-
     // TODO - move "rancher.io" labels from other parts of the code, here
 }

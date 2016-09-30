@@ -11,7 +11,6 @@ public class DockerInstanceConstants {
     public static final String FIELD_VOLUMES_FROM = "dataVolumesFrom";
     public static final String FIELD_DOMAIN_NAME = "domainName";
     public static final String FIELD_USER = "user";
-    public static final String FIELD_MEMORY = "memory";
     public static final String FIELD_MEMORY_SWAP = "memorySwap";
     public static final String FIELD_NETWORK_MODE = "networkMode";
     public static final String FIELD_NETWORK_CONTAINER_ID = "networkContainerId";
