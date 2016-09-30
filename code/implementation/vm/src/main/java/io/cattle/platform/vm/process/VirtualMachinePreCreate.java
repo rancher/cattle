@@ -151,10 +151,10 @@ public class VirtualMachinePreCreate extends AbstractObjectProcessLogic implemen
                 if (localDriver == null) {
                     localDriver = volumeDriver;
                 }
-                StoragePool storagePool = storagePoolDao.findStoragePoolByDriverName(instance.getAccountId(), localDriver);
+                List<? extends StoragePool> pools = storagePoolDao.findStoragePoolByDriverName(instance.getAccountId(), localDriver);
                 String blockDevPath = null;
-                if (storagePool != null) {
-                    blockDevPath = DataAccessor.fieldString(storagePool, StoragePoolConstants.FIELD_BLOCK_DEVICE_PATH);
+                if (pools.size() > 0) {
+                    blockDevPath = DataAccessor.fieldString(pools.get(0), StoragePoolConstants.FIELD_BLOCK_DEVICE_PATH);
                 }
 
                 if (volumes.size() == 0) {

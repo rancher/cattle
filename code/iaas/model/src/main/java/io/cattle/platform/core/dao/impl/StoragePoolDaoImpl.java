@@ -8,6 +8,7 @@ import io.cattle.platform.core.dao.StoragePoolDao;
 import io.cattle.platform.core.model.Host;
 import io.cattle.platform.core.model.StoragePool;
 import io.cattle.platform.core.model.StoragePoolHostMap;
+import io.cattle.platform.core.model.tables.records.StoragePoolRecord;
 import io.cattle.platform.db.jooq.dao.impl.AbstractJooqDao;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.process.ObjectProcessManager;
@@ -49,12 +50,12 @@ public class StoragePoolDaoImpl extends AbstractJooqDao implements StoragePoolDa
     }
 
     @Override
-    public StoragePool findStoragePoolByDriverName(Long accountId, String driverName) {
+    public List<? extends StoragePool> findStoragePoolByDriverName(Long accountId, String driverName) {
         return create().selectFrom(STORAGE_POOL)
             .where(STORAGE_POOL.ACCOUNT_ID.eq(accountId))
             .and((STORAGE_POOL.REMOVED.isNull().or(STORAGE_POOL.STATE.eq(CommonStatesConstants.REMOVING))))
             .and(STORAGE_POOL.DRIVER_NAME.eq(driverName))
-            .fetchAny();
+            .fetchInto(StoragePoolRecord.class);
     }
 
     @Override

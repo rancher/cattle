@@ -85,6 +85,7 @@ public class ExternalEventCreate extends AbstractDefaultProcessHandler {
         return null;
     }
 
+    // TODO We don't use this logic. Consider completely removing it.
     protected void handleVolumeEvent(final ExternalEvent event, ProcessState state, ProcessInstance process) {
         //new DockerStoragePoolVolumeCreateLock(storagePool, dVol.getUri())
         Object driver = CollectionUtils.getNestedValue(DataUtils.getFields(event), FIELD_VOLUME, VolumeConstants.FIELD_VOLUME_DRIVER);
@@ -94,11 +95,12 @@ public class ExternalEventCreate extends AbstractDefaultProcessHandler {
             return;
         }
         String driverName = driver.toString();
-        final StoragePool storagePool = storagePoolDao.findStoragePoolByDriverName(event.getAccountId(), driverName);
-        if (storagePool == null) {
+        List<? extends StoragePool> pools = storagePoolDao.findStoragePoolByDriverName(event.getAccountId(), driverName);
+        if (pools.size() == 0) {
             log.warn("Unknown storage pool. Returning. Driver name: {}", driverName);
             return;
         }
+        final StoragePool storagePool = pools.get(0);
 
         lockManager.lock(new DockerStoragePoolVolumeCreateLock(storagePool, event.getExternalId()), new LockCallbackNoReturn() {
             @Override
@@ -155,7 +157,8 @@ public class ExternalEventCreate extends AbstractDefaultProcessHandler {
                     return;
                 }
                 String driverName = driver.toString();
-                StoragePool storagePool = storagePoolDao.findStoragePoolByDriverName(event.getAccountId(), driverName);
+                List<? extends StoragePool> pools = storagePoolDao.findStoragePoolByDriverName(event.getAccountId(), driverName);
+                StoragePool storagePool = pools.size() > 0 ? pools.get(0) : null;
                 Map<String, Object> spData = CollectionUtils.toMap(DataUtils.getFields(event).get(FIELD_STORAGE_POOL));
                 if (spData.isEmpty()) {
                     log.warn("Null or empty storagePool for externalStoragePoolEvent: {}. StoragePool: {}", event, spData);

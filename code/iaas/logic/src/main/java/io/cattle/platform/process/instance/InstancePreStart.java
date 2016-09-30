@@ -42,10 +42,12 @@ public class InstancePreStart extends AbstractObjectProcessLogic implements Proc
         for (final Volume v : volumes) {
             String driver = DataAccessor.fieldString(v, VolumeConstants.FIELD_VOLUME_DRIVER);
             if (StringUtils.isNotEmpty(driver) && !VolumeConstants.LOCAL_DRIVER.equals(driver)) {
-                StoragePool sp = storagePoolDao.findStoragePoolByDriverName(v.getAccountId(), driver);
-                if (sp == null) {
+                List<? extends StoragePool> pools = storagePoolDao.findStoragePoolByDriverName(v.getAccountId(), driver);
+                if (pools.size() == 0) {
                     continue;
                 }
+                StoragePool sp = pools.get(0);
+
                 final String accessMode = sp.getVolumeAccessMode();
                 if (StringUtils.isNotEmpty(accessMode) && StringUtils.isEmpty(v.getAccessMode()) && !accessMode.equals(v.getAccessMode())) {
                     lockManager.lock(new InstanceVolumeAccessModeLock(v.getId()), new LockCallbackNoReturn() {
