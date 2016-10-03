@@ -152,6 +152,12 @@ public class WrappedResource extends ResourceImpl implements Resource {
     }
 
     @Override
+    public String getBaseType() {
+        String parent = schema.getParent();
+        return parent == null ? getType() : parent;
+    }
+
+    @Override
     public Map<String, Object> getFields() {
         return fields;
     }

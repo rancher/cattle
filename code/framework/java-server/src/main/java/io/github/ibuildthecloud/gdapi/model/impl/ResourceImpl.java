@@ -36,6 +36,11 @@ public class ResourceImpl implements Resource {
     }
 
     @Override
+    public String getBaseType() {
+        return getType();
+    }
+
+    @Override
     public Map<String, URL> getLinks() {
         if (!links.containsKey(UrlBuilder.SELF)) {
             URL self = ApiContext.getUrlBuilder().resourceReferenceLink(this);

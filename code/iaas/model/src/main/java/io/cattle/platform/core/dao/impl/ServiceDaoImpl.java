@@ -5,6 +5,7 @@ import static io.cattle.platform.core.model.tables.ServiceConsumeMapTable.*;
 import static io.cattle.platform.core.model.tables.ServiceExposeMapTable.*;
 import static io.cattle.platform.core.model.tables.ServiceIndexTable.*;
 import static io.cattle.platform.core.model.tables.ServiceTable.*;
+import static io.cattle.platform.core.model.tables.StackTable.*;
 
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.dao.ServiceDao;
@@ -24,6 +25,7 @@ import javax.inject.Inject;
 
 import org.jooq.Record;
 import org.jooq.Record2;
+import org.jooq.Record6;
 import org.jooq.RecordHandler;
 
 public class ServiceDaoImpl extends AbstractJooqDao implements ServiceDao {
@@ -126,32 +128,31 @@ public class ServiceDaoImpl extends AbstractJooqDao implements ServiceDao {
     }
 
     @Override
-    public Map<Long, ServiceMapping> getServicesMappings(List<Long> ids, final IdFormatter idFormatter) {
-        final Map<Long, ServiceMapping> result = new HashMap<>();
-        create().select(SERVICE_CONSUME_MAP.CONSUMED_SERVICE_ID, SERVICE_CONSUME_MAP.SERVICE_ID)
+    public Map<Long, List<ServiceLink>> getServiceLinks(List<Long> ids) {
+        final Map<Long, List<ServiceLink>> result = new HashMap<>();
+        create().select(SERVICE_CONSUME_MAP.NAME, SERVICE_CONSUME_MAP.SERVICE_ID, SERVICE.ID,
+                SERVICE.NAME, STACK.ID, STACK.NAME)
             .from(SERVICE_CONSUME_MAP)
-            .where(SERVICE_CONSUME_MAP.REMOVED.isNull()
-                    .and(SERVICE_CONSUME_MAP.SERVICE_ID.in(ids)
-                            .or(SERVICE_CONSUME_MAP.CONSUMED_SERVICE_ID.in(ids))))
-            .fetchInto(new RecordHandler<Record2<Long, Long>>() {
+            .join(SERVICE)
+                .on(SERVICE.ID.eq(SERVICE_CONSUME_MAP.CONSUMED_SERVICE_ID))
+            .join(STACK)
+                .on(STACK.ID.eq(SERVICE.STACK_ID))
+            .where(SERVICE_CONSUME_MAP.SERVICE_ID.in(ids))
+            .fetchInto(new RecordHandler<Record6<String, Long, Long, String, Long, String>>(){
                 @Override
-                public void next(Record2<Long, Long> record) {
-                    Long consumed = record.getValue(SERVICE_CONSUME_MAP.CONSUMED_SERVICE_ID);
-                    Long service = record.getValue(SERVICE_CONSUME_MAP.SERVICE_ID);
-
-                    ServiceMapping mapping = result.get(service);
-                    if (mapping == null) {
-                        mapping = new ServiceMapping();
-                        result.put(service, mapping);
+                public void next(Record6<String, Long, Long, String, Long, String> record) {
+                    Long serviceId = record.getValue(SERVICE_CONSUME_MAP.SERVICE_ID);
+                    List<ServiceLink> links = result.get(serviceId);
+                    if (links == null) {
+                        links = new ArrayList<>();
+                        result.put(serviceId, links);
                     }
-                    mapping.consumed.add(idFormatter.formatId("service", consumed));
-
-                    mapping = result.get(consumed);
-                    if (mapping == null) {
-                        mapping = new ServiceMapping();
-                        result.put(consumed, mapping);
-                    }
-                    mapping.consumedBy.add(idFormatter.formatId("service", service));
+                    links.add(new ServiceLink(
+                            record.getValue(SERVICE_CONSUME_MAP.NAME),
+                            record.getValue(SERVICE.NAME),
+                            record.getValue(SERVICE.ID),
+                            record.getValue(STACK.ID),
+                            record.getValue(STACK.NAME)));
                 }
             });
         return result;

@@ -38,12 +38,17 @@ public class ResourceOutputFilterManagerImpl implements ResourceOutputFilterMana
         for (ResourceOutputFilter filter : outputFilters) {
             Set<String> types = new HashSet<String>();
 
-            for (String type : filter.getTypes()) {
+            String[] typeStrings = filter.getTypes();
+            for (String type : typeStrings) {
                 types.add(type);
             }
 
             for (Class<?> clz : filter.getTypeClasses()) {
-                types.addAll(baseSchemaFactory.getSchemaNames(clz));
+                if (typeStrings.length == 0) {
+                    types.addAll(baseSchemaFactory.getSchemaNames(clz));
+                } else {
+                    types.add(baseSchemaFactory.getSchemaName(clz));
+                }
             }
 
             for (String type : types) {

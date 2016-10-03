@@ -2,6 +2,8 @@ package io.cattle.platform.docker.machine.api;
 
 import static io.cattle.platform.core.constants.MachineConstants.*;
 
+import io.cattle.platform.core.constants.HostConstants;
+import io.cattle.platform.core.constants.MachineConstants;
 import io.cattle.platform.core.model.Host;
 import io.cattle.platform.core.model.PhysicalHost;
 import io.cattle.platform.object.util.DataUtils;
@@ -23,6 +25,9 @@ public class MachineLinkFilter implements ResourceOutputFilter {
             if (StringUtils.isNotEmpty((String) DataUtils.getFields(original).get(EXTRACTED_CONFIG_FIELD))) {
                 add = canAccessConfig();
             }
+            if (!add && original instanceof Host && StringUtils.isNotEmpty((String) converted.getFields().get(MachineConstants.FIELD_DRIVER))) {
+                add = canAccessConfig();
+            }
         }
 
         if (add) {
@@ -40,7 +45,7 @@ public class MachineLinkFilter implements ResourceOutputFilter {
 
     @Override
     public String[] getTypes() {
-        return new String[] { KIND_MACHINE };
+        return new String[] { KIND_MACHINE, HostConstants.TYPE };
     }
 
     @Override

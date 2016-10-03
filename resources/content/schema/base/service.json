@@ -118,12 +118,8 @@
             "required": false,
             "nullable": false
         },
-        "consumedServiceIds": {
-            "type": "array[reference[service]]",
-            "nullable": true
-        },
-        "consumedByServiceIds": {
-            "type": "array[reference[service]]",
+        "linkedServices": {
+            "type": "map[reference[service]]",
             "nullable": true
         },
         "instanceIds": {

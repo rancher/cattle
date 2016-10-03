@@ -1695,8 +1695,7 @@ def test_svc_discovery_service(admin_user_client, user_client, project_client,
         'scalePolicy': 'r',
         'currentScale': 'r',
         'instanceIds': 'r',
-        'consumedServiceIds': 'r',
-        'consumedByServiceIds': 'r',
+        'linkedServices': 'r',
     })
 
     auth_check(user_client.schema, 'service', 'r', {
@@ -1722,8 +1721,7 @@ def test_svc_discovery_service(admin_user_client, user_client, project_client,
         'scalePolicy': 'r',
         'currentScale': 'r',
         'instanceIds': 'r',
-        'consumedServiceIds': 'r',
-        'consumedByServiceIds': 'r',
+        'linkedServices': 'r',
     })
 
     auth_check(project_client.schema, 'service', 'crud', {
@@ -1749,8 +1747,7 @@ def test_svc_discovery_service(admin_user_client, user_client, project_client,
         'scalePolicy': 'cru',
         'currentScale': 'r',
         'instanceIds': 'r',
-        'consumedServiceIds': 'r',
-        'consumedByServiceIds': 'r',
+        'linkedServices': 'r',
     })
 
     resource_action_check(user_client.schema, 'service', [
@@ -2024,8 +2021,7 @@ def test_svc_discovery_lb_service(admin_user_client, user_client,
         'scalePolicy': 'r',
         'currentScale': 'r',
         'instanceIds': 'r',
-        'consumedServiceIds': 'r',
-        'consumedByServiceIds': 'r',
+        'linkedServices': 'r',
     })
 
     auth_check(user_client.schema, 'loadBalancerService', 'r', {
@@ -2051,8 +2047,7 @@ def test_svc_discovery_lb_service(admin_user_client, user_client,
         'scalePolicy': 'r',
         'currentScale': 'r',
         'instanceIds': 'r',
-        'consumedServiceIds': 'r',
-        'consumedByServiceIds': 'r',
+        'linkedServices': 'r',
     })
 
     auth_check(project_client.schema, 'loadBalancerService', 'crud', {
@@ -2078,8 +2073,7 @@ def test_svc_discovery_lb_service(admin_user_client, user_client,
         'scalePolicy': 'cru',
         'currentScale': 'r',
         'instanceIds': 'r',
-        'consumedServiceIds': 'r',
-        'consumedByServiceIds': 'r',
+        'linkedServices': 'r',
     })
 
 
@@ -2283,8 +2277,7 @@ def test_svc_discovery_external_service(admin_user_client, user_client,
         'healthState': 'r',
         'startOnCreate': 'r',
         'instanceIds': 'r',
-        'consumedServiceIds': 'r',
-        'consumedByServiceIds': 'r',
+        'linkedServices': 'r',
     })
 
     auth_check(user_client.schema, 'externalService', 'r', {
@@ -2302,8 +2295,7 @@ def test_svc_discovery_external_service(admin_user_client, user_client,
         'healthState': 'r',
         'startOnCreate': 'r',
         'instanceIds': 'r',
-        'consumedServiceIds': 'r',
-        'consumedByServiceIds': 'r',
+        'linkedServices': 'r',
     })
 
     auth_check(project_client.schema, 'externalService', 'crud', {
@@ -2321,8 +2313,7 @@ def test_svc_discovery_external_service(admin_user_client, user_client,
         'healthState': 'r',
         'startOnCreate': 'cr',
         'instanceIds': 'r',
-        'consumedServiceIds': 'r',
-        'consumedByServiceIds': 'r',
+        'linkedServices': 'r',
     })
 
 
@@ -2787,8 +2778,7 @@ def test_compose_service(admin_user_client, user_client, project_client):
         'scalePolicy': 'r',
         'currentScale': 'r',
         'instanceIds': 'r',
-        'consumedServiceIds': 'r',
-        'consumedByServiceIds': 'r',
+        'linkedServices': 'r',
     })
 
     auth_check(user_client.schema, 'composeService', 'r', {
@@ -2808,8 +2798,7 @@ def test_compose_service(admin_user_client, user_client, project_client):
         'scalePolicy': 'r',
         'currentScale': 'r',
         'instanceIds': 'r',
-        'consumedServiceIds': 'r',
-        'consumedByServiceIds': 'r',
+        'linkedServices': 'r',
     })
 
     auth_check(project_client.schema, 'composeService', 'rd', {
@@ -2829,8 +2818,7 @@ def test_compose_service(admin_user_client, user_client, project_client):
         'scalePolicy': 'r',
         'currentScale': 'r',
         'instanceIds': 'r',
-        'consumedServiceIds': 'r',
-        'consumedByServiceIds': 'r',
+        'linkedServices': 'r',
     })
 
 
@@ -2896,8 +2884,7 @@ def test_kubernetes_service(admin_user_client, user_client, project_client):
         'template': 'r',
         'healthState': 'r',
         'instanceIds': 'r',
-        'consumedServiceIds': 'r',
-        'consumedByServiceIds': 'r',
+        'linkedServices': 'r',
     })
 
     auth_check(user_client.schema, 'kubernetesService', 'r', {
@@ -2910,8 +2897,7 @@ def test_kubernetes_service(admin_user_client, user_client, project_client):
         'template': 'r',
         'healthState': 'r',
         'instanceIds': 'r',
-        'consumedServiceIds': 'r',
-        'consumedByServiceIds': 'r',
+        'linkedServices': 'r',
     })
 
     auth_check(project_client.schema, 'kubernetesService', 'r', {
@@ -2924,8 +2910,7 @@ def test_kubernetes_service(admin_user_client, user_client, project_client):
         'template': 'r',
         'healthState': 'r',
         'instanceIds': 'r',
-        'consumedServiceIds': 'r',
-        'consumedByServiceIds': 'r',
+        'linkedServices': 'r',
     })
 
 
