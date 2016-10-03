@@ -128,17 +128,6 @@ public class ExternalEventCreate extends AbstractDefaultProcessHandler {
                         }
                     }
                     break;
-                case ExternalEventConstants.TYPE_VOLUME_DELETE:
-                    // TODO Re-enable delete when we figure out how to properly delete volumes
-                    // if (volume != null) {
-                    // try {
-                    // objectProcessManager.scheduleStandardProcess(StandardProcess.DEACTIVATE, volume,
-                    // ProcessUtils.chainInData(new HashMap<String, Object>(), PROC_VOL_DEACTIVATE, PROC_VOL_REMOVE));
-                    // } catch (ProcessCancelException e) {
-                    // log.info("Deactivate and remove process cancelled for volume {}. ProcessCancelException message: {}", volume, e.getMessage());
-                    // }
-                    // }
-                    break;
                 default:
                     log.error("Unknown event type: {} for event {}", event.getEventType(), event);
                     return;
