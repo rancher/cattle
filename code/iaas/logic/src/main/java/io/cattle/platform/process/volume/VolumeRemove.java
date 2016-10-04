@@ -16,7 +16,7 @@ import javax.inject.Inject;
 import javax.inject.Named;
 
 @Named
-public class VolumePurge extends AbstractDefaultProcessHandler {
+public class VolumeRemove extends AbstractDefaultProcessHandler {
 
     GenericMapDao mapDao;
 

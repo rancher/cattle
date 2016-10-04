@@ -1,44 +1,28 @@
 from common_fixtures import *  # NOQA
 
+compose = '''
+test:
+    image: nginx
+'''
 
-def test_project_update(new_context):
+
+def test_project_orc(new_context):
     client = new_context.client
-    user_client = new_context.user_client
-    assert new_context.project.swarm is False
+    owner_client = new_context.owner_client
+    project = new_context.project
 
-    stacks = client.list_stack()
-    assert len(stacks) == 0
+    assert project.orchestration == 'cattle'
+    assert not project.virtualMachine
 
-    p = user_client.update(new_context.project, swarm=True)
-    assert p.state == 'updating-active'
+    owner_client.create_stack(name=random_str(),
+                              dockerCompose=compose,
+                              system=True,
+                              externalId='catalog://infra:infra*k8s:1.4.0')
+    owner_client.create_stack(name=random_str(),
+                              dockerCompose=compose,
+                              system=True,
+                              externalId='catalog://infra:infra*'
+                                         'virtualMachine:1.4.0')
 
-    p = user_client.wait_success(p)
-    assert p.state == 'active'
-    assert p.swarm
-
-    def get_stack():
-        stacks = client.list_stack()
-        if len(stacks) > 0:
-            return stacks[0]
-
-    stack = wait_for(get_stack)
-    stack = client.wait_success(stack)
-    assert stack.name == 'Swarm'
-    assert stack.externalId == 'system://swarm'
-    assert stack.dockerCompose is not None
-    assert stack.startOnCreate
-
-    p = user_client.update(new_context.project, swarm=False)
-    assert p.state == 'updating-active'
-    p = user_client.wait_success(p)
-    assert p.state == 'active'
-    assert not p.swarm
-
-    def get_no_stack():
-        stacks = client.list_stack(removed_null=True)
-        if len(stacks) > 0:
-            assert stacks[0].externalId == 'system://swarm'
-        else:
-            return True
-
-    wait_for(get_no_stack)
+    wait_for_condition(client, project, lambda x: x.orchestration ==
+                       'kubernetes' and x.virtualMachine)

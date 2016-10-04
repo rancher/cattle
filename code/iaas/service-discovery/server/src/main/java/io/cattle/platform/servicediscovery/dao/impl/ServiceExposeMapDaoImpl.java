@@ -5,6 +5,7 @@ import static io.cattle.platform.core.model.tables.InstanceHostMapTable.*;
 import static io.cattle.platform.core.model.tables.InstanceTable.*;
 import static io.cattle.platform.core.model.tables.ServiceExposeMapTable.*;
 import static io.cattle.platform.core.model.tables.ServiceTable.*;
+
 import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.constants.ServiceConstants;
@@ -65,6 +66,7 @@ public class ServiceExposeMapDaoImpl extends AbstractJooqDao implements ServiceE
         record.setCreateIndex((record.getCreateIndex() == null ? 0 : record.getCreateIndex()) + 1);
         record.update();
         properties.put(InstanceConstants.FIELD_CREATE_INDEX, record.getCreateIndex());
+        properties.put(ServiceConstants.FIELD_SYSTEM, DataAccessor.fieldBool(service, ServiceConstants.FIELD_SYSTEM));
         final Instance instance = objectManager.create(Instance.class, properties);
         ServiceExposeMap exposeMap = createServiceInstanceMap(service, instance, true);
 

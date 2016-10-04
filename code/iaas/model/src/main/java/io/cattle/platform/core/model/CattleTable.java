@@ -11,7 +11,7 @@ package io.cattle.platform.core.model;
 @java.lang.SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class CattleTable extends org.jooq.impl.SchemaImpl {
 
-	private static final long serialVersionUID = 207728954;
+	private static final long serialVersionUID = -809513618;
 
 	/**
 	 * The singleton instance of <code>cattle</code>
@@ -80,6 +80,7 @@ public class CattleTable extends org.jooq.impl.SchemaImpl {
 			io.cattle.platform.core.model.tables.MachineDriverTable.MACHINE_DRIVER,
 			io.cattle.platform.core.model.tables.MountTable.MOUNT,
 			io.cattle.platform.core.model.tables.NetworkTable.NETWORK,
+			io.cattle.platform.core.model.tables.NetworkDriverTable.NETWORK_DRIVER,
 			io.cattle.platform.core.model.tables.NetworkServiceTable.NETWORK_SERVICE,
 			io.cattle.platform.core.model.tables.NetworkServiceProviderTable.NETWORK_SERVICE_PROVIDER,
 			io.cattle.platform.core.model.tables.NetworkServiceProviderInstanceMapTable.NETWORK_SERVICE_PROVIDER_INSTANCE_MAP,
@@ -99,6 +100,7 @@ public class CattleTable extends org.jooq.impl.SchemaImpl {
 			io.cattle.platform.core.model.tables.ServiceLogTable.SERVICE_LOG,
 			io.cattle.platform.core.model.tables.SettingTable.SETTING,
 			io.cattle.platform.core.model.tables.SnapshotTable.SNAPSHOT,
+			io.cattle.platform.core.model.tables.StorageDriverTable.STORAGE_DRIVER,
 			io.cattle.platform.core.model.tables.StoragePoolTable.STORAGE_POOL,
 			io.cattle.platform.core.model.tables.StoragePoolHostMapTable.STORAGE_POOL_HOST_MAP,
 			io.cattle.platform.core.model.tables.SubnetTable.SUBNET,

@@ -26,7 +26,7 @@ def test_volume_create_state(client, context):
     name = random_str()
     c = client.create_volume(name=name, driver='local')
     c = client.wait_success(c)
-    assert c.state == 'requested'
+    assert c.state == 'inactive'
 
     assert c.uri == 'local:///%s' % name
 
@@ -40,7 +40,6 @@ def test_volume_create_without_driver_name(client, context):
         client.create_volume(name=name)
     assert e.value.error.status == 422
     assert e.value.error.code == 'MissingRequired'
-    assert e.value.error.fieldName == 'driver'
 
 
 def test_volume_create_with_opts(client, context):
@@ -49,7 +48,7 @@ def test_volume_create_with_opts(client, context):
                              driver='local',
                              driverOpts={'size': '1G'})
     c = client.wait_success(c)
-    assert c.state == 'requested'
+    assert c.state == 'inactive'
 
     assert c.uri == 'local:///%s' % name
 
@@ -62,12 +61,12 @@ def test_create_container_with_volume(new_context, super_client):
     name1 = random_str()
     v1 = client.create_volume(name=name1, driver='local')
     v1 = client.wait_success(v1)
-    assert v1.state == 'requested'
+    assert v1.state == 'inactive'
 
     name2 = random_str()
     v2 = client.create_volume(name=name2, driver='local')
     v2 = client.wait_success(v2)
-    assert v2.state == 'requested'
+    assert v2.state == 'inactive'
 
     dataVolumeMounts = {'/var/lib/docker/mntpt1': v1.id,
                         '/var/lib/docker/mntpt2': v2.id}
@@ -158,8 +157,8 @@ def test_instance_volume_cleanup_strategy(new_context, super_client):
     c = client.wait_success(c.stop())
     c = client.wait_success(c.remove())
     client.wait_success(c.purge())
-    wait_for_condition(client, vol, lambda x: x.state == 'inactive')
-    wait_for_condition(client, unnamed_vol, lambda x: x.state == 'removed')
+    wait_for_condition(client, vol, lambda x: x.state == 'detached')
+    wait_for_condition(client, unnamed_vol, lambda x: x.state is not None)
 
     # Assert explicit 'unnamed' strategy
     c, vol, unnamed_vol = create_resources(
@@ -168,8 +167,8 @@ def test_instance_volume_cleanup_strategy(new_context, super_client):
     c = client.wait_success(c.stop())
     c = client.wait_success(c.remove())
     client.wait_success(c.purge())
-    wait_for_condition(client, vol, lambda x: x.state == 'inactive')
-    wait_for_condition(client, unnamed_vol, lambda x: x.state == 'removed')
+    wait_for_condition(client, vol, lambda x: x.state == 'detached')
+    wait_for_condition(client, unnamed_vol, lambda x: x.state is not None)
 
     # Assert 'none' strategy
     c, vol, unnamed_vol = create_resources(
@@ -178,8 +177,8 @@ def test_instance_volume_cleanup_strategy(new_context, super_client):
     c = client.wait_success(c.stop())
     c = client.wait_success(c.remove())
     client.wait_success(c.purge())
-    wait_for_condition(client, vol, lambda x: x.state == 'inactive')
-    wait_for_condition(client, unnamed_vol, lambda x: x.state == 'inactive')
+    wait_for_condition(client, vol, lambda x: x.state == 'detached')
+    wait_for_condition(client, unnamed_vol, lambda x: x.state == 'detached')
 
     # Assert 'all' strategy
     c, vol, unnamed_vol = create_resources(
@@ -188,8 +187,8 @@ def test_instance_volume_cleanup_strategy(new_context, super_client):
     c = client.wait_success(c.stop())
     c = client.wait_success(c.remove())
     client.wait_success(c.purge())
-    wait_for_condition(client, vol, lambda x: x.state == 'removed')
-    wait_for_condition(client, unnamed_vol, lambda x: x.state == 'removed')
+    wait_for_condition(client, vol, lambda x: x.state is not None)
+    wait_for_condition(client, unnamed_vol, lambda x: x.state is not None)
 
     # Assert invalid value for label is rejected
     with pytest.raises(ApiError):
@@ -251,39 +250,6 @@ def test_volume_remove_on_purge(new_context, super_client):
     purge_instance_and_check_volume_state(c, vols, 'active', client)
     purge_instance_and_check_volume_state(c2, vols, 'removed', client)
 
-    # Vol associated with same container twice (because of restore)
-    dvms, vols = create_volume_and_dvm(client, 2)
-    c = create_container_and_mount(client, dvms, new_context,
-                                   super_client, vols)
-    c2 = create_container_and_mount(client, dvms, new_context,
-                                    super_client, vols)
-    c2 = client.wait_success(c2.stop())
-    c2 = client.wait_success(c2.remove())
-    c2 = client.wait_success(c2.restore())
-    c2 = client.wait_success(c2.start())
-    create_mount(vols[0], c2, client, super_client)
-    create_mount(vols[1], c2, client, super_client)
-
-    purge_instance_and_check_volume_state(c, vols, 'active', client)
-    purge_instance_and_check_volume_state(c2, vols, 'removed', client)
-
-    # 1 volume is associated with an active container and shouldn't be
-    # removed
-    dvms, vols = create_volume_and_dvm(client, 2)
-    c = create_container_and_mount(client, dvms, new_context,
-                                   super_client, vols)
-    dvms = {'/path': vols[1].id}
-    v2 = vols.pop()
-    c2_vols = [v2]
-    c2 = create_container_and_mount(client, dvms, new_context,
-                                    super_client, c2_vols)
-
-    # Since vol[1] was popped, this is asserting only vols[0] gets removed
-    purge_instance_and_check_volume_state(c, vols, 'removed', client)
-    v2 = client.wait_success(v2)
-    assert v2.state == 'active'
-    purge_instance_and_check_volume_state(c2, c2_vols, 'removed', client)
-
 
 def test_volume_mounting_and_delete(new_context, super_client):
     client = new_context.client
@@ -316,7 +282,7 @@ def test_volume_mounting_and_delete(new_context, super_client):
     # the volume is deactivated
     c = client.wait_success(c.stop())
     c = client.wait_success(c.remove())
-    v1 = wait_for_condition(client, v1, lambda x: x.state == 'inactive')
+    v1 = wait_for_condition(client, v1, lambda x: x.state == 'detached')
     check_mount_count(client, c, 0)
 
     # Mount to new container to assert volume goes back to active
@@ -350,11 +316,11 @@ def test_volume_mounting_and_delete(new_context, super_client):
     c3 = client.wait_success(c3.stop())
     c3 = client.wait_success(c3.remove())
     check_mount_count(client, c3, 0)
-    v1 = wait_for_condition(client, v1, lambda x: x.state == 'inactive')
+    v1 = wait_for_condition(client, v1, lambda x: x.state == 'detached')
     check_mount_count(client, v1, 0)
 
     v1 = client.wait_success(v1.remove())
-    assert v1.state == 'removed'
+    assert v1.state is not None
 
 
 def test_volume_storage_pool_purge(new_context, super_client):
@@ -379,8 +345,8 @@ def test_volume_storage_pool_purge(new_context, super_client):
     host = client.wait_success(host.remove())
     client.wait_success(host.purge())
 
-    wait_for_condition(client, sp, lambda x: x.state == 'removed')
-    wait_for_condition(client, v1, lambda x: x.state == 'inactive')
+    wait_for_condition(client, sp, lambda x: x.state is not None)
+    wait_for_condition(client, v1, lambda x: x.state == 'detached')
 
     register_simulated_host(new_context)
 

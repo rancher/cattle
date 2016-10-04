@@ -330,7 +330,7 @@ def test_container_stop(client, super_client, context):
     container = super_client.reload(container)
     root_volume = container.volumes()[0]
     assert_fields(root_volume, {
-        "state": "inactive"
+        "state": "detached"
     })
 
     image = root_volume.image()
@@ -417,31 +417,6 @@ def test_container_delete_while_running(client, super_client, context):
     container = client.wait_success(container)
     _assert_removed(super_client.reload(container))
     return container
-
-
-def test_container_restore(client, super_client, context):
-    container = test_container_remove(client, super_client, context)
-
-    assert container.state == "removed"
-
-    container = container.restore()
-
-    assert container.state == "restoring"
-
-    container = client.wait_success(container)
-
-    assert container.state == "stopped"
-    assert_restored_fields(super_client.reload(container))
-
-    volumes = container.volumes()
-    assert len(volumes) == 1
-
-    assert volumes[0].state == "inactive"
-    assert_restored_fields(super_client.reload(volumes[0]))
-
-    volume_mappings = super_client.reload(volumes[0]).volumeStoragePoolMaps()
-    assert len(volume_mappings) == 1
-    assert volume_mappings[0].state == "inactive"
 
 
 def test_container_purge(client, super_client, context):

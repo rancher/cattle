@@ -27,9 +27,10 @@ def subnet(network):
 def test_virtual_machine_case_sensitivity(super_client, client, context):
     name = random_str()
     volume = client.create_volume(name='R' + name, driver='local')
+    volume = client.wait_success(volume)
 
     assert volume.name == 'R' + name
-    assert volume.state == 'requested'
+    assert volume.state == 'inactive'
 
     disks = [
         {

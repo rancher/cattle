@@ -1,6 +1,7 @@
 package io.cattle.platform.systemstack.listener;
 
 import static io.cattle.platform.core.model.tables.StackTable.*;
+
 import io.cattle.platform.core.model.Stack;
 import io.cattle.platform.engine.handler.HandlerResult;
 import io.cattle.platform.engine.handler.ProcessPostListener;
@@ -19,10 +20,10 @@ import java.util.Map;
 
 public class SystemStackRemovePostHandler extends AbstractObjectProcessLogic implements ProcessPostListener,
         Priority {
-    
+
     private static final Map<String, List<String>> STACKS_TO_CLEANUP = new HashMap<>();
     static {
-        STACKS_TO_CLEANUP.put(SystemStackUpdate.KUBERNETES_STACK,
+        STACKS_TO_CLEANUP.put(SystemStackUpdate.KUBERNETES,
                 Arrays.asList("kubernetes://", "kubernetes-loadbalancers://", "kubernetes-ingress-lbs://"));
     }
 
@@ -37,7 +38,7 @@ public class SystemStackRemovePostHandler extends AbstractObjectProcessLogic imp
         if (systemStack.getExternalId() == null) {
             return null;
         }
-        
+
         String systemStackType = SystemStackUpdate.getStackTypeFromExternalId(systemStack.getExternalId());
         if (systemStackType == null) {
             return null;

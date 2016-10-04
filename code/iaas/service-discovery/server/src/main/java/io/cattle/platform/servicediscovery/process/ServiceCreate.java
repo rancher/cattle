@@ -3,6 +3,7 @@ package io.cattle.platform.servicediscovery.process;
 import io.cattle.platform.core.constants.ServiceConstants;
 import io.cattle.platform.core.dao.NetworkDao;
 import io.cattle.platform.core.model.Service;
+import io.cattle.platform.core.model.Stack;
 import io.cattle.platform.engine.handler.HandlerResult;
 import io.cattle.platform.engine.process.ProcessInstance;
 import io.cattle.platform.engine.process.ProcessState;
@@ -41,6 +42,9 @@ public class ServiceCreate extends AbstractObjectProcessHandler {
             return new HandlerResult().withShouldContinue(true).withChainProcessName(ServiceConstants.PROCESS_SERVICE_ACTIVATE);
         }
 
-        return null;
+        Stack stack = objectManager.loadResource(Stack.class, service.getStackId());
+        boolean system = DataAccessor.fieldBool(stack, ServiceConstants.FIELD_SYSTEM);
+
+        return new HandlerResult(ServiceConstants.FIELD_SYSTEM, system);
     }
 }

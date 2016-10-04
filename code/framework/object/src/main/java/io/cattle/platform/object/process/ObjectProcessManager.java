@@ -29,4 +29,8 @@ public interface ObjectProcessManager {
 
     void scheduleStandardProcessAsync(StandardProcess process, Object resource, Map<String, Object> data);
 
+    String getProcessName(Object resource, StandardProcess process);
+
+    void scheduleStandardChainedProcessAsync(StandardProcess from, StandardProcess to, Object resource, Map<String, Object> data);
+
 }

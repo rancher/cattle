@@ -90,6 +90,11 @@
         "serviceIds": {
             "type": "array[reference[service]]",
             "nullable": true
+        },
+        "system": {
+            "type": "boolean",
+            "nullable": false,
+            "default": false
         }
     },
     "resourceActions" : {

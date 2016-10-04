@@ -374,6 +374,7 @@
     <bean class="io.cattle.platform.iaas.api.filter.account.AccountFilter" />
     <bean class="io.cattle.platform.iaas.api.filter.machinedriver.MachineDriverFilter" />
     <bean class="io.cattle.platform.iaas.api.filter.service.ServiceMappingsOutputFilter" />
+    <bean class="io.cattle.platform.servicediscovery.api.filter.ServiceStackStorageDriverFilter" />
 
     <bean class="io.cattle.platform.iaas.api.object.postinit.AccountFieldPostInitHandler" />
 
@@ -602,4 +603,5 @@
 
     <bean class="io.cattle.platform.iaas.api.volume.VolumeRevertRestoreActionOutputFilter" />
     <bean class="io.cattle.platform.iaas.api.volume.VolumeRevertRestoreValidationFilter" />
+    <bean class="io.cattle.platform.iaas.api.volume.VolumeCreateValidationFilter" />
 </beans>

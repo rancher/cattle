@@ -11,7 +11,7 @@ package io.cattle.platform.core.model.tables;
 @java.lang.SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class StackTable extends org.jooq.impl.TableImpl<io.cattle.platform.core.model.tables.records.StackRecord> {
 
-	private static final long serialVersionUID = -435244254;
+	private static final long serialVersionUID = -429480975;
 
 	/**
 	 * The singleton instance of <code>cattle.environment</code>
@@ -94,7 +94,7 @@ public class StackTable extends org.jooq.impl.TableImpl<io.cattle.platform.core.
 	/**
 	 * The column <code>cattle.environment.folder</code>.
 	 */
-	public final org.jooq.TableField<io.cattle.platform.core.model.tables.records.StackRecord, java.lang.String> FOLDER = createField("folder", org.jooq.impl.SQLDataType.VARCHAR.length(255), this, "");
+	public final org.jooq.TableField<io.cattle.platform.core.model.tables.records.StackRecord, java.lang.String> GROUP = createField("folder", org.jooq.impl.SQLDataType.VARCHAR.length(255), this, "");
 
 	/**
 	 * Create a <code>cattle.environment</code> table reference

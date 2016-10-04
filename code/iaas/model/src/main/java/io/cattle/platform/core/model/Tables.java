@@ -244,6 +244,11 @@ public class Tables {
 	public static final io.cattle.platform.core.model.tables.NetworkTable NETWORK = io.cattle.platform.core.model.tables.NetworkTable.NETWORK;
 
 	/**
+	 * The table cattle.network_driver
+	 */
+	public static final io.cattle.platform.core.model.tables.NetworkDriverTable NETWORK_DRIVER = io.cattle.platform.core.model.tables.NetworkDriverTable.NETWORK_DRIVER;
+
+	/**
 	 * The table cattle.network_service
 	 */
 	public static final io.cattle.platform.core.model.tables.NetworkServiceTable NETWORK_SERVICE = io.cattle.platform.core.model.tables.NetworkServiceTable.NETWORK_SERVICE;
@@ -337,6 +342,11 @@ public class Tables {
 	 * The table cattle.snapshot
 	 */
 	public static final io.cattle.platform.core.model.tables.SnapshotTable SNAPSHOT = io.cattle.platform.core.model.tables.SnapshotTable.SNAPSHOT;
+
+	/**
+	 * The table cattle.storage_driver
+	 */
+	public static final io.cattle.platform.core.model.tables.StorageDriverTable STORAGE_DRIVER = io.cattle.platform.core.model.tables.StorageDriverTable.STORAGE_DRIVER;
 
 	/**
 	 * The table cattle.storage_pool

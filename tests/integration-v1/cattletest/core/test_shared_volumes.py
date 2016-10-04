@@ -66,7 +66,8 @@ def test_single_instance_rw_preexisting_volume(super_client, new_context):
     name = 'exists-%s' % random_str()
     sp_name = 'storage-%s' % random_str()
     volume = client.create_volume(name=name, driver=sp_name)
-    assert volume.state == 'requested'
+    volume = client.wait_success(volume)
+    assert volume.state == 'inactive'
     disks = [
         {
             'name': name,
@@ -446,7 +447,7 @@ def test_volume_create_failed_allocation(new_context):
 
     v1 = client.wait_success(client.create_volume(name=random_str(),
                                                   driver=sp_name))
-    assert v1.state == 'requested'
+    assert v1.state == 'inactive'
 
     # Will fail because new_host is not in the storage_pool that v1 belongs to
     new_host = register_simulated_host(new_context)
@@ -463,7 +464,7 @@ def test_volume_create_failed_allocation(new_context):
     sp2 = add_storage_pool(new_context, [new_host.uuid])
     v2 = client.create_volume(name=random_str(), driver=sp2.name)
     v2 = client.wait_success(v2)
-    assert v1.state == 'requested'
+    assert v1.state == 'inactive'
     data_volume_mounts['/con/path2'] = v2.id
     with pytest.raises(ClientApiError) as e:
         c = client.create_container(imageUuid=new_context.image_uuid,

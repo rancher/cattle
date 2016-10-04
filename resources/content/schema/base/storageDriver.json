@@ -1,0 +1,29 @@
+{
+    "resourceFields": {
+        "volumeAccessMode": {
+            "type": "enum",
+            "options": [
+                "singleHostRW",
+                "singleInstanceRW",
+                "multiHostRW"
+            ],
+            "default": "multiHostRW"
+        },
+        "volumeCapabilities": {
+            "type": "array[string]",
+            "nullable": true
+        },
+        "blockDevicePath": {
+            "type": "string",
+            "nullable": true
+        },
+        "scope": {
+            "type": "enum",
+            "options": [
+                "local",
+                "environment",
+                "custom"
+            ]
+        }
+    }
+}

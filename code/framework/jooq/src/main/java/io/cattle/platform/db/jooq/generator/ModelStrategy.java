@@ -16,6 +16,8 @@ public class ModelStrategy extends DefaultGeneratorStrategy {
         switch (result) {
         case "setEnvironmentId":
             return "setStackId";
+        case "setFolder":
+            return "setGroup";
         }
         return result;
     }
@@ -26,6 +28,8 @@ public class ModelStrategy extends DefaultGeneratorStrategy {
         switch (result) {
         case "getEnvironmentId":
             return "getStackId";
+        case "getFolder":
+            return "getGroup";
         }
         return result;
     }
@@ -38,6 +42,8 @@ public class ModelStrategy extends DefaultGeneratorStrategy {
             return "STACK";
         case "ENVIRONMENT_ID":
             return "STACK_ID";
+        case "FOLDER":
+            return "GROUP";
         }
         return result;
     }
