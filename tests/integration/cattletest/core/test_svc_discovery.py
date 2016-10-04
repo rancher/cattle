@@ -2000,6 +2000,8 @@ def test_export_config(client, context):
 
     assert compose_config is not None
     docker_yml = yaml.load(compose_config.dockerComposeConfig)
+    assert "version" in docker_yml
+    assert docker_yml["version"] == "2"
     svc = docker_yml['services'][service.name]
     assert svc['cpuset'] == "0,1"
     assert svc['labels'] == labels

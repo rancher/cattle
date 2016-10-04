@@ -115,13 +115,13 @@ public class ServiceDiscoveryApiServiceImpl implements ServiceDiscoveryApiServic
                     VOLUME_TEMPLATE.REMOVED, null);
                 
         Map<String, Object> dockerComposeData = createComposeData(services, true, volumes);
-        return convertToYml(dockerComposeData);
+        return "version: '2'\n" + convertToYml(dockerComposeData);
     }
 
     @Override
     public String buildRancherComposeConfig(List<? extends Service> services) {
         Map<String, Object> dockerComposeData = createComposeData(services, false, new ArrayList<VolumeTemplate>());
-        return convertToYml(dockerComposeData);
+        return "version: '2'\n" + convertToYml(dockerComposeData);
     }
 
     private String convertToYml(Map<String, Object> dockerComposeData) {
