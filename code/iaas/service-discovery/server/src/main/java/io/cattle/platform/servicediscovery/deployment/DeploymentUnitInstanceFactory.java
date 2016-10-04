@@ -10,20 +10,20 @@ public interface DeploymentUnitInstanceFactory {
 
     /**
      * Creates deployment unit instance based on the service, its type and instanceName
-     * @param context TODO
+     * @param context
      * @param uuid
      * @param service
      * @param instanceName
-     * @param instanceObj TODO
-     * @param launchConfigName TODO
+     * @param instanceObj
+     * @param launchConfigName
      * @return
      */
     public DeploymentUnitInstance createDeploymentUnitInstance(DeploymentServiceContext context, String uuid,
             Service service, String instanceName, Object instanceObj, String launchConfigName);
 
     /**
-     * @param service TODO
-     * @param context TODO
+     * @param service
+     * @param context
      * @return list of deployment units per service
      */
     public List<DeploymentUnit> collectDeploymentUnits(Service service, DeploymentServiceContext context);

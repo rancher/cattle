@@ -29,7 +29,7 @@ public class LabelsServiceImpl implements LabelsService {
     @Override
     public Label getOrCreateLabel(long accountId, String key, String value,
             String type) {
-        // best effort for not duplicating; TODO: Handle this better
+        // best effort for not duplicating
         Label label = objectManager.findAny(Label.class,
                 LABEL.KEY, key,
                 LABEL.VALUE, value,
@@ -53,7 +53,7 @@ public class LabelsServiceImpl implements LabelsService {
             String key, String value) {
         Label label = getOrCreateLabel(accountId, key, value, LabelConstants.CONTAINER_TYPE);
 
-        // check link doesn't exist first.  TODO: Handle this better
+        // check link doesn't exist first.
         InstanceLabelMap mapping = objectManager.findAny(InstanceLabelMap.class,
                 INSTANCE_LABEL_MAP.LABEL_ID, label.getId(),
                 INSTANCE_LABEL_MAP.INSTANCE_ID, instanceId,
@@ -78,7 +78,7 @@ public class LabelsServiceImpl implements LabelsService {
 
         // link label to host
 
-        // check link doesn't exist first.  TODO: Handle this better
+        // check link doesn't exist first.
         HostLabelMap mapping = objectManager.findAny(HostLabelMap.class,
                 HOST_LABEL_MAP.LABEL_ID, label.getId(),
                 HOST_LABEL_MAP.HOST_ID, hostId,
