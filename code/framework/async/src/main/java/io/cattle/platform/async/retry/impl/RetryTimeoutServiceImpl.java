@@ -22,11 +22,6 @@ public class RetryTimeoutServiceImpl implements RetryTimeoutService {
     ExecutorService executorService;
 
     @Override
-    public Object timeout(Future<?> future, long timeout) {
-        return submit(new Retry(0, timeout, future, null));
-    }
-
-    @Override
     public Object submit(Retry retry) {
         return queue(retry);
     }

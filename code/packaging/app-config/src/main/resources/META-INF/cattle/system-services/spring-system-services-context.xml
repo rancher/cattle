@@ -362,8 +362,6 @@
         <property name="changeMonitors" value="#{extensionManager.list('state.change.monitor')}" />
     </bean>
 
-    <bean class="io.cattle.platform.engine.server.impl.EventingDispatcher" />
-
     <bean class="io.cattle.platform.object.process.impl.DefaultObjectProcessManager" />
     <bean class="io.cattle.platform.process.monitor.EventNotificationChangeMonitor" />
 
