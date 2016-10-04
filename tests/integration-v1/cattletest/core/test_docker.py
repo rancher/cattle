@@ -660,14 +660,14 @@ def test_container_fields(docker_client, super_client):
     assert set(actual_dns) == set(['8.8.8.8', '1.2.3.4', 'rancher.internal'])
     assert c.data['dockerInspect']['HostConfig']['Privileged']
     assert c.data['dockerInspect']['Config']['Domainname'] == "rancher.io"
-    assert c.data['dockerInspect']['Config']['Memory'] == 12000000
+    assert c.data['dockerInspect']['HostConfig']['Memory'] == 12000000
     # assert c.data['dockerInspect']['Config']['MemorySwap'] == 16000000
-    assert c.data['dockerInspect']['Config']['Cpuset'] == "0,1"
+    assert c.data['dockerInspect']['HostConfig']['CpusetCpus'] == "0,1"
     assert c.data['dockerInspect']['Config']['Tty']
     assert c.data['dockerInspect']['Config']['OpenStdin']
     actual_entry_point = set(c.data['dockerInspect']['Config']['Entrypoint'])
     assert actual_entry_point == set(["/bin/sh", "-c"])
-    assert c.data['dockerInspect']['Config']['CpuShares'] == 400
+    assert c.data['dockerInspect']['HostConfig']['CpuShares'] == 400
     act_restart_pol = c.data['dockerInspect']['HostConfig']['RestartPolicy']
     assert act_restart_pol['MaximumRetryCount'] == 2
     assert act_restart_pol['Name'] == "on-failure"
