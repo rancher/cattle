@@ -49,7 +49,7 @@ def test_create_container_with_registry_credential(client, context):
     assert container is not None
     assert container.registryCredentialId == reg_cred.id
     assert container.startOnCreate is False
-    assert container.imageUuid == uuid
+    assert container.imageUuid == uuid+":latest"
 
 
 @if_docker

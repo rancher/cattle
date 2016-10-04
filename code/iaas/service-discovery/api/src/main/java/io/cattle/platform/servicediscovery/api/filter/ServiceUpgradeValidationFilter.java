@@ -11,6 +11,8 @@ import io.cattle.platform.json.JsonMapper;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.servicediscovery.api.util.ServiceDiscoveryUtil;
+import io.cattle.platform.storage.api.filter.ExternalTemplateInstanceFilter;
+import io.cattle.platform.storage.service.StorageService;
 import io.cattle.platform.util.type.CollectionUtils;
 import io.github.ibuildthecloud.gdapi.request.ApiRequest;
 import io.github.ibuildthecloud.gdapi.request.resource.ResourceManager;
@@ -35,6 +37,9 @@ public class ServiceUpgradeValidationFilter extends AbstractDefaultResourceManag
 
     @Inject
     JsonMapper jsonMapper;
+
+    @Inject
+    StorageService storageService;
 
     @Override
     public Class<?>[] getTypeClasses() {
@@ -105,6 +110,7 @@ public class ServiceUpgradeValidationFilter extends AbstractDefaultResourceManag
         launchConfig.put(ServiceConstants.FIELD_VERSION, version);
     }
 
+    @SuppressWarnings("unchecked")
     protected InServiceUpgradeStrategy finalizeUpgradeStrategy(Service service, InServiceUpgradeStrategy strategy) {
         if (strategy.getLaunchConfig() == null && strategy.getSecondaryLaunchConfigs() == null) {
             ValidationErrorCodes.throwValidationError(ValidationErrorCodes.INVALID_OPTION,
@@ -171,10 +177,22 @@ public class ServiceUpgradeValidationFilter extends AbstractDefaultResourceManag
             if (imageUuid == null) {
                 continue;
             }
+
             if (service.getSelectorContainer() == null
                     && StringUtils.equalsIgnoreCase(ServiceConstants.IMAGE_NONE, imageUuid.toString())) {
                 it.remove();
             }
+            else {
+                String fullImageName = ExternalTemplateInstanceFilter.getImageUuid(imageUuid.toString(), storageService);
+                ((Map<String, Object>) lc).put(InstanceConstants.FIELD_IMAGE_UUID, fullImageName);
+            }
+        }
+
+        Map<String, Object> mapped = CollectionUtils.toMap(finalizedPrimary);
+        Object imageUuid = mapped.get(InstanceConstants.FIELD_IMAGE_UUID);
+        if (imageUuid != null && !imageUuid.toString().equalsIgnoreCase(ServiceConstants.IMAGE_NONE)) {
+            String fullImageName = ExternalTemplateInstanceFilter.getImageUuid(imageUuid.toString(), storageService);
+            ((Map<String, Object>) finalizedPrimary).put(InstanceConstants.FIELD_IMAGE_UUID, fullImageName);
         }
 
         strategy.setLaunchConfig(finalizedPrimary);
@@ -188,7 +206,7 @@ public class ServiceUpgradeValidationFilter extends AbstractDefaultResourceManag
             Map<String, Map<Object, Object>> lCsToUpdateInitial) {
         Map<String, Map<Object, Object>> lCsToUpdateFinal = new HashMap<>();
         for (String lcNameToUpdate : lCsToUpdateInitial.keySet()) {
-            finalizeLCNamesToUpdate(serviceLCs, lCsToUpdateFinal, 
+            finalizeLCNamesToUpdate(serviceLCs, lCsToUpdateFinal,
                     Pair.of(lcNameToUpdate, lCsToUpdateInitial.get(lcNameToUpdate)));
         }
         return lCsToUpdateFinal;

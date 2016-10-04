@@ -11,7 +11,7 @@ public class DockerImage {
     String id, repository, namespace, tag, server, serverAddress;
     private static final DynamicStringProperty INDEX_URL = ArchaiusUtil.getString("docker.index.url");
     private static final DynamicStringProperty INDEX_SERVER = ArchaiusUtil.getString("docker.index.server");
-    private static final String KIND_PREFIX = "docker:";
+    public static final String KIND_PREFIX = "docker:";
 
     public DockerImage(String id, String server, String namespace, String repository, String tag) {
         super();
