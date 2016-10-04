@@ -885,7 +885,7 @@ def test_health_check_default(super_client, context, client):
     assert len(svc.serviceExposeMaps()) >= 1
     c1 = super_client.wait_success(c1)
     wait_for_condition(client, c1,
-                       lambda x: x.state == 'removed')
+                       lambda x: x.removed is not None)
     remove_service(svc)
 
 
