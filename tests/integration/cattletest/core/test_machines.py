@@ -481,15 +481,16 @@ def test_machine_lifecycle(super_client, machine_context,
     physical_hosts = host.physicalHost()
     assert physical_hosts.id == machine.id
 
+    agent = super_client.reload(machine).agent()
     machine = machine_context.client.wait_success(machine.remove())
     assert machine.state == 'removed'
 
-    agent = super_client.wait_success(super_client.reload(machine).agent())
-    assert agent.state == 'removed'
+    agent = super_client.wait_success(agent)
+    assert agent.removed is not None
 
     host = machine_context.client.wait_success(machine_context
                                                .client.reload(host))
-    assert host.state == 'removed'
+    assert host.removed is not None
 
 
 @pytest.mark.nonparallel
