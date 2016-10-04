@@ -3,6 +3,7 @@ package io.cattle.platform.servicediscovery.api.service.impl;
 import static io.cattle.platform.core.model.tables.InstanceTable.*;
 import static io.cattle.platform.core.model.tables.ServiceTable.*;
 import static io.cattle.platform.core.model.tables.VolumeTemplateTable.*;
+import static io.cattle.platform.servicediscovery.api.util.ServiceDiscoveryDnsUtil.RANCHER_NAMESPACE;
 import io.cattle.platform.core.addon.LoadBalancerServiceLink;
 import io.cattle.platform.core.addon.ServiceLink;
 import io.cattle.platform.core.constants.InstanceConstants;
@@ -531,7 +532,7 @@ public class ServiceDiscoveryApiServiceImpl implements ServiceDiscoveryApiServic
 
         sans.add(serviceName.toLowerCase());
         sans.add(String.format("%s.%s", serviceName, stack.getName()).toLowerCase());
-
+        sans.add(String.format("%s.%s.%s", serviceName, stack.getName(), RANCHER_NAMESPACE).toLowerCase());
 
         CertSet certSet = keyProvider.generateCertificate(serviceName, sans.toArray(new String[sans.size()]));
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
