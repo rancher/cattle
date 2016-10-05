@@ -3,12 +3,12 @@ package io.cattle.platform.iaas.api.auth.integration.local;
 import io.cattle.platform.core.util.SettingsUtils;
 import io.cattle.platform.iaas.api.auth.SecurityConstants;
 import io.cattle.platform.iaas.api.auth.dao.PasswordDao;
+import io.cattle.platform.json.JsonMapper;
 import io.cattle.platform.util.type.CollectionUtils;
 import io.github.ibuildthecloud.gdapi.factory.SchemaFactory;
 import io.github.ibuildthecloud.gdapi.model.ListOptions;
 import io.github.ibuildthecloud.gdapi.request.ApiRequest;
 import io.github.ibuildthecloud.gdapi.request.resource.impl.AbstractNoOpResourceManager;
-
 import java.util.Map;
 
 import javax.inject.Inject;
@@ -22,6 +22,9 @@ public class LocalAuthConfigManager extends AbstractNoOpResourceManager {
 
     @Inject
     SettingsUtils settingsUtils;
+
+    @Inject
+    JsonMapper jsonMapper;
 
     @Override
     public Class<?>[] getTypeClasses() {
@@ -48,6 +51,7 @@ public class LocalAuthConfigManager extends AbstractNoOpResourceManager {
         } else {
             settingsUtils.changeSetting(SecurityConstants.SECURITY_SETTING, enabled);
             if (StringUtils.isNotBlank(username)) {
+                LocalAuthPasswordValidator.validatePassword(password, jsonMapper);
                 passwordDao.verifyUsernamePassword(username, password, name);
             }
         }
