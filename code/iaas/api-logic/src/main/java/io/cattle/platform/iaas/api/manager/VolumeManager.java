@@ -41,7 +41,7 @@ public class VolumeManager extends AbstractJooqResourceManager {
             properties.put(VolumeConstants.FIELD_DEVICE_NUM, -1);
         }
 
-        T v = getObjectManager().create(clz, properties);
+        T v = super.createAndScheduleObject(clz, properties);
 
         if (!VolumeConstants.LOCAL_DRIVER.equals(driver)) {
             Object aId = ObjectUtils.getAccountId(v);

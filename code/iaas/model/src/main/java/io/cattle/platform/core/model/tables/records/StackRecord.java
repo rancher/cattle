@@ -13,7 +13,7 @@ package io.cattle.platform.core.model.tables.records;
 @javax.persistence.Table(name = "environment", schema = "cattle")
 public class StackRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.platform.core.model.tables.records.StackRecord> implements io.cattle.platform.db.jooq.utils.TableRecordJaxb, org.jooq.Record14<java.lang.Long, java.lang.String, java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.util.Date, java.util.Date, java.util.Date, java.util.Map<String,Object>, java.lang.String, java.lang.String, java.lang.String>, io.cattle.platform.core.model.Stack {
 
-	private static final long serialVersionUID = -273002969;
+	private static final long serialVersionUID = 2122781944;
 
 	/**
 	 * Setter for <code>cattle.environment.id</code>.
@@ -241,7 +241,7 @@ public class StackRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.pla
 	 * Setter for <code>cattle.environment.folder</code>.
 	 */
 	@Override
-	public void setFolder(java.lang.String value) {
+	public void setGroup(java.lang.String value) {
 		setValue(13, value);
 	}
 
@@ -250,7 +250,7 @@ public class StackRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.pla
 	 */
 	@javax.persistence.Column(name = "folder", length = 255)
 	@Override
-	public java.lang.String getFolder() {
+	public java.lang.String getGroup() {
 		return (java.lang.String) getValue(13);
 	}
 
@@ -395,7 +395,7 @@ public class StackRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.pla
 	 */
 	@Override
 	public org.jooq.Field<java.lang.String> field14() {
-		return io.cattle.platform.core.model.tables.StackTable.STACK.FOLDER;
+		return io.cattle.platform.core.model.tables.StackTable.STACK.GROUP;
 	}
 
 	/**
@@ -507,7 +507,7 @@ public class StackRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.pla
 	 */
 	@Override
 	public java.lang.String value14() {
-		return getFolder();
+		return getGroup();
 	}
 
 	/**
@@ -632,7 +632,7 @@ public class StackRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.pla
 	 */
 	@Override
 	public StackRecord value14(java.lang.String value) {
-		setFolder(value);
+		setGroup(value);
 		return this;
 	}
 
@@ -666,7 +666,7 @@ public class StackRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.pla
 		setData(from.getData());
 		setExternalId(from.getExternalId());
 		setHealthState(from.getHealthState());
-		setFolder(from.getFolder());
+		setGroup(from.getGroup());
 	}
 
 	/**

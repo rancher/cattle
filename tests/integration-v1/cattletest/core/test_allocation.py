@@ -41,7 +41,7 @@ def test_allocation_with_shared_storage_pool(super_client, new_context):
     # Create a volume with a driver that points to a storage pool
     v1 = client.create_volume(name=random_str(), driver=sp_name)
     v1 = client.wait_success(v1)
-    assert v1.state == 'requested'
+    assert v1.state == 'inactive'
 
     data_volume_mounts = {'/con/path': v1.id}
 

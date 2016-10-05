@@ -238,7 +238,7 @@ def test_docker_purge(docker_client):
     docker_client.delete(container)
 
     container = docker_client.wait_success(container)
-    assert container.state == 'removed'
+    assert container.removed is not None
 
     container = docker_client.wait_success(container.purge())
     assert container.state == 'purged'
@@ -471,43 +471,6 @@ def test_no_port_override(docker_client, super_client):
 
 
 @if_docker
-def test_volume_restore(docker_client, super_client):
-    data_volume = '/tmp/%s:/foo' % random_str()
-    c = docker_client.create_container(imageUuid=TEST_IMAGE_UUID,
-                                       dataVolumes=[data_volume])
-    c = docker_client.wait_success(c)
-
-    mounts = c.mounts()
-    assert len(mounts) == 1
-    v = mounts[0].volume()
-    v = docker_client.wait_success(v)
-
-    c = docker_client.wait_success(c.stop())
-    c = docker_client.wait_success(c.remove())
-    assert c.state == 'removed'
-
-    v = wait_for_condition(docker_client, v, lambda x: x.state == 'inactive')
-    docker_client.wait_success(v.remove())
-
-    c = docker_client.create_container(imageUuid=TEST_IMAGE_UUID,
-                                       dataVolumes=[data_volume])
-    c = docker_client.wait_success(c)
-    assert c.state == 'running'
-
-    mounts = check_mounts(docker_client, c, 1)
-    vol = mounts[0].volume()
-    if vol.id != v.id:
-        v = docker_client.reload(v)
-        print '\n\nVolume %s does not equal %s.\nContainer: %s\n\n' % (vol, v,
-                                                                       c)
-        assert vol.id == v.id
-
-    c = docker_client.wait_success(c.stop())
-    c = docker_client.wait_success(c.remove())
-    docker_client.wait_success(c.purge())
-
-
-@if_docker
 def test_docker_volumes(docker_client, super_client):
     def reload(x):
         return super_client.reload(x)
@@ -726,26 +689,26 @@ def volume_cleanup_setup(docker_client, uuid, strategy=None):
 def test_cleanup_volume_strategy(docker_client):
     c, named_vol, unnamed_vol = volume_cleanup_setup(docker_client,
                                                      TEST_IMAGE_UUID)
-    assert docker_client.wait_success(named_vol).state == 'inactive'
-    assert docker_client.wait_success(unnamed_vol).state == 'removed'
+    assert docker_client.wait_success(named_vol).state == 'detached'
+    assert docker_client.wait_success(unnamed_vol).removed is not None
 
     c, named_vol, unnamed_vol = volume_cleanup_setup(docker_client,
                                                      TEST_IMAGE_UUID,
                                                      strategy='unnamed')
-    assert docker_client.wait_success(named_vol).state == 'inactive'
-    assert docker_client.wait_success(unnamed_vol).state == 'removed'
+    assert docker_client.wait_success(named_vol).state == 'detached'
+    assert docker_client.wait_success(unnamed_vol).removed is not None
 
     c, named_vol, unnamed_vol = volume_cleanup_setup(docker_client,
                                                      TEST_IMAGE_UUID,
                                                      strategy='none')
-    assert docker_client.wait_success(named_vol).state == 'inactive'
-    assert docker_client.wait_success(unnamed_vol).state == 'inactive'
+    assert docker_client.wait_success(named_vol).state == 'detached'
+    assert docker_client.wait_success(unnamed_vol).state == 'detached'
 
     c, named_vol, unnamed_vol = volume_cleanup_setup(docker_client,
                                                      TEST_IMAGE_UUID,
                                                      strategy='all')
-    assert docker_client.wait_success(named_vol).state == 'removed'
-    assert docker_client.wait_success(unnamed_vol).state == 'removed'
+    assert docker_client.wait_success(named_vol).removed is not None
+    assert docker_client.wait_success(unnamed_vol).removed is not None
 
 
 @if_docker
@@ -774,21 +737,8 @@ def test_docker_mount_life_cycle(docker_client):
     wait_for_condition(docker_client, v3, lambda x: x.state == 'active',
                        lambda x: 'state is %s' % x)
 
-    c = docker_client.wait_success(c.stop(remove=True, timeout=0))
-
-    c = docker_client.wait_success(c.restore())
+    c = docker_client.wait_success(c.stop(timeout=0))
     assert c.state == 'stopped'
-    check_mounts(docker_client, c, 0)
-    wait_for_condition(docker_client, v1, lambda x: x.state == 'inactive',
-                       lambda x: 'state is %s' % x)
-    wait_for_condition(docker_client, v2, lambda x: x.state == 'inactive',
-                       lambda x: 'state is %s' % x)
-    wait_for_condition(docker_client, v3, lambda x: x.state == 'inactive',
-                       lambda x: 'state is %s' % x)
-
-    c = docker_client.wait_success(c.start())
-    assert c.state == 'running'
-    check_mounts(docker_client, c, 3)
     wait_for_condition(docker_client, v1, lambda x: x.state == 'active',
                        lambda x: 'state is %s' % x)
     wait_for_condition(docker_client, v2, lambda x: x.state == 'active',
@@ -796,17 +746,11 @@ def test_docker_mount_life_cycle(docker_client):
     wait_for_condition(docker_client, v3, lambda x: x.state == 'active',
                        lambda x: 'state is %s' % x)
 
-    c = docker_client.wait_success(c.stop(remove=True, timeout=0))
+    c = docker_client.wait_success(c.remove())
     check_mounts(docker_client, c, 0)
-    assert docker_client.wait_success(v1).state == 'inactive'
-    assert docker_client.wait_success(v2).state == 'inactive'
-    assert docker_client.wait_success(v3).state == 'inactive'
-    wait_for_condition(docker_client, v1, lambda x: x.state == 'inactive',
-                       lambda x: 'state is %s' % x)
-    wait_for_condition(docker_client, v2, lambda x: x.state == 'inactive',
-                       lambda x: 'state is %s' % x)
-    wait_for_condition(docker_client, v3, lambda x: x.state == 'inactive',
-                       lambda x: 'state is %s' % x)
+    assert docker_client.wait_success(v1).state == 'detached'
+    assert docker_client.wait_success(v2).state == 'detached'
+    assert docker_client.wait_success(v3).state == 'detached'
 
 
 @if_docker

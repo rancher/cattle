@@ -16,6 +16,7 @@ public class AccountConstants {
     private static final DynamicStringProperty ENV_PORT_RANGE = ArchaiusUtil
             .getString("environment.services.port.range");
 
+    public static final String TYPE = "account";
     public static final String REGISTERED_AGENT_KIND = "registeredAgent";
     public static final String AGENT_KIND = "agent";
     public static final String SERVICE_KIND = "service";
@@ -33,6 +34,8 @@ public class AccountConstants {
 
     public static final String FIELD_DEFAULT_NETWORK_ID = "defaultNetworkId";
     public static final String FIELD_ALLOW_SYSTEM_ROLE = "allowSystemRole";
+    public static final String FIELD_VIRTUAL_MACHINE = "virtualMachine";
+    public static final String FIELD_ORCHESTRATION = "orchestration";
 
     public static final String DATA_ACT_AS_RESOURCE_ACCOUNT = "actAsResourceAccount";
 

@@ -118,6 +118,7 @@
         "container.startOnCreate" : "cr",
         "container.stdinOpen" : "cr",
         "container.subnetIds" : "cr",
+        "container.system" : "r",
         "container.tty" : "cr",
         "container.user" : "cr",
         "container.systemContainer" : "r",
@@ -300,6 +301,16 @@
 
         "network" : "r",
 
+        "networkDriver" : "r",
+        "networkDriver.serviceId" : "r",
+
+        "storageDriver" : "r",
+        "storageDriver.serviceId" : "r",
+        "storageDriver.volumeAccessMode" : "r",
+        "storageDriver.scope" : "r",
+        "storageDriver.volumeCapabilities" : "r",
+        "storageDriver.blockDevicePath" : "r",
+
         "nfsConfig" : "r",
         "nfsConfig.name" : "cr",
         "nfsConfig.server" : "cr",
@@ -329,10 +340,7 @@
         "project.description" : "cru",
         "project.kind" : "r",
         "project.members" : "cr",
-        "project.swarm" : "cru",
-        "project.kubernetes" : "cru",
-        "project.mesos" : "cru",
-        "project.publicDns" : "cru",
+        "project.orchestration" : "r",
         "project.virtualMachine" : "cru",
         "project.servicesPortRange": "cru",
         "project.healthState": "r",
@@ -365,6 +373,7 @@
 
         "registry": "r",
         "registry.serverAddress": "cr",
+        "registry.storageDriverId": "",
 
         "registryCredential": "r",
         "registryCredential.publicValue": "cru",
@@ -406,6 +415,7 @@
         "storagePool.volumeAccessMode": "r",
         "storagePool.blockDevicePath": "r",
         "storagePool.volumeCapabilities": "r",
+        "storagePool.storageDriverId": "r",
 
         "subscribe" : "",
         "subscribe.eventNames" : "cr",
@@ -441,11 +451,17 @@
         "volume.isHostPath" : "r",
         "volume.uri" : "r",
         "volume.driver": "cr",
-        "volume.driverOpts": "cr",
+        "volume.driverOpts": "cru",
         "volume.accessMode": "r",
         "volume.stackId": "cr",
         "volume.volumeTemplateId": "cr",
+        "volume.hostId": "cru",
+        "volume.storageDriverId": "cr",
         "volume.resourceActions.deactivate" : "",
+        "volume.resourceActions.activate" : "",
+
+        "volumeActivateInput" : "r",
+        "volumeActivateInput.hostId" : "cr",
 
         "loadBalancerConfig" : "r",
         "loadBalancerConfig.lbCookieStickinessPolicy" : "cru",
@@ -488,7 +504,7 @@
         "stack.outputs": "cru",
         "stack.startOnCreate": "cr",
         "stack.binding": "cru",
-        "stack.folder": "cru",
+        "stack.group": "cru",
         "stack.system": "r",
         "stack.serviceIds": "r",
 
@@ -544,6 +560,7 @@
         "service.currentScale" : "r",
         "service.linkedServices" : "r",
         "service.instanceIds" : "r",
+        "service.system" : "r",
 
         "addRemoveServiceLinkInput" : "r",
         "addRemoveServiceLinkInput.serviceLink" : "cr",

@@ -223,6 +223,17 @@ public interface StoragePool extends java.io.Serializable {
 	@javax.persistence.Column(name = "volume_access_mode", length = 255)
 	public java.lang.String getVolumeAccessMode();
 
+	/**
+	 * Setter for <code>cattle.storage_pool.storage_driver_id</code>.
+	 */
+	public void setStorageDriverId(java.lang.Long value);
+
+	/**
+	 * Getter for <code>cattle.storage_pool.storage_driver_id</code>.
+	 */
+	@javax.persistence.Column(name = "storage_driver_id", precision = 19)
+	public java.lang.Long getStorageDriverId();
+
 	// -------------------------------------------------------------------------
 	// FROM and INTO
 	// -------------------------------------------------------------------------

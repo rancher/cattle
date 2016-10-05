@@ -403,11 +403,13 @@
 
     <!-- Volume -->
     <process:defaultProcesses resourceType="volume" exclude="volume.activate"/>
-    <process:process name="volume.activate" resourceType="volume" start="inactive,registering" transitioning="activating" done="active" />
+    <process:process name="volume.activate" resourceType="volume" start="inactive,registering,detached" transitioning="activating" done="active" />
     <process:process name="volume.allocate" resourceType="volume" stateField="allocationState" start="inactive" transitioning="activating" done="active" />
     <process:process name="volume.deallocate" resourceType="volume" stateField="allocationState" start="activating,active" transitioning="deactivating" done="inactive" />
+    <process:process name="volume.deactivate" resourceType="volume" start="registering,creating,active,activating,updating-active,updating-inactive" transitioning="deactivating" done="deactivating=detached,activating=inactive" />
     <process:process name="volume.reverttosnapshot" resourceType="volume" start="active,inactive" transitioning="active=reverting-active,inactive=reverting-inactive" done="reverting-active=active,reverting-inactive=inactive" />
     <process:process name="volume.restorefrombackup" resourceType="volume" start="active,inactive" transitioning="active=restoring-active,inactive=restoring-inactive" done="restoring-active=active,restoring-inactive=inactive" />
+    <process:process name="volume.remove" resourceType="volume" start="requested,inactive,detached,deactivating,registering,updating-active,updating-inactive" transitioning="removing" done="removed" />
 
     <!-- Snapshot -->
     <process:process name="snapshot.create" resourceType="snapshot" start="requested" transitioning="creating" done="created" />
@@ -420,6 +422,20 @@
     <!-- Backup target-->
     <process:process name="backuptarget.create" resourceType="backupTarget" start="requested" transitioning="creating" done="created" />
     <process:process name="backuptarget.remove" resourceType="backupTarget" start="creating,created" transitioning="removing" done="removed" />
+
+    <!-- Network Driver -->
+    <process:process name="networkdriver.create" resourceType="networkDriver" start="requested" transitioning="creating" done="active" />
+    <process:process name="networkdriver.activate" resourceType="networkDriver" start="requested,inactive" transitioning="activating" done="active" />
+    <process:process name="networkdriver.deactivate" resourceType="networkDriver" start="activating,active" transitioning="deactivating" done="inactive" />
+    <process:process name="networkdriver.remove" resourceType="networkDriver" start="requested,creating,inactive,active" transitioning="removing" done="removed" />
+    <process:process name="networkdriver.update" resourceType="networkDriver" start="active,inactive" transitioning="updating" done="active" />
+
+    <!-- Storage Driver -->
+    <process:process name="storagedriver.create" resourceType="storageDriver" start="requested" transitioning="creating" done="active" />
+    <process:process name="storagedriver.activate" resourceType="storageDriver" start="requested,inactive" transitioning="activating" done="active" />
+    <process:process name="storagedriver.deactivate" resourceType="storageDriver" start="activating,active" transitioning="deactivating" done="inactive" />
+    <process:process name="storagedriver.remove" resourceType="storageDriver" start="requested,creating,inactive,active" transitioning="removing" done="removed" />
+    <process:process name="storagedriver.update" resourceType="storageDriver" start="active,inactive" transitioning="updating" done="active" />
 
     <!-- Mount -->
     <process:process name="mount.create" resourceType="mount" start="requested" transitioning="activating" done="active" />
@@ -443,7 +459,6 @@
     <process:process name="stack.rollback" resourceType="stack" start="upgrading,upgraded,canceled-upgrade" transitioning="rolling-back" done="active" />
     <process:process name="stack.finishupgrade" resourceType="stack" start="upgraded" transitioning="finishing-upgrade" done="active" />
 
-    
     <!-- Service Discovery Service -->
     <process:process name="service.create" resourceType="service" start="requested" transitioning="registering" done="inactive" />
     <process:process name="service.activate" resourceType="service" start="inactive,restarting" transitioning="activating" done="active" />    

@@ -4,6 +4,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.lang3.StringUtils;
+
 public class NamedUtils {
 
     public static <T extends Named> Map<String, T> createMapByName(List<T> items) {
@@ -29,6 +31,18 @@ public class NamedUtils {
             return name;
         }
         return name.replaceAll("([a-z])([A-Z])", "$1.$2").toLowerCase();
+    }
+
+    public static String toCamelCase(String name) {
+        StringBuilder buf = new StringBuilder();
+        for (String part : name.split("_")) {
+            if (buf.length() == 0) {
+                buf.append(part);
+            } else {
+                buf.append(StringUtils.capitalize(part));
+            }
+        }
+        return buf.toString();
     }
 
     public static String toUnderscoreSeparated(String name) {

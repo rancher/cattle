@@ -141,6 +141,7 @@ def test_user_types(user_client, adds=set(), removes=set()):
         'machineDriver',
         'mount',
         'network',
+        'networkDriver',
         'password',
         'physicalHost',
         'port',
@@ -164,6 +165,7 @@ def test_user_types(user_client, adds=set(), removes=set()):
         'snapshot',
         'snapshotBackupInput',
         'statsAccess',
+        'storageDriver',
         'storagePool',
         'typeDocumentation',
         'userPreference',
@@ -199,6 +201,7 @@ def test_user_types(user_client, adds=set(), removes=set()):
         'binding',
         'serviceBinding',
         'volumeTemplate',
+        'volumeActivateInput',
     }
     types.update(adds)
     types.difference_update(removes)
@@ -358,6 +361,7 @@ def test_admin_types(admin_user_client, adds=set(), removes=set()):
         'machineDriver',
         'mount',
         'network',
+        'networkDriver',
         'openldapconfig',
         'password',
         'physicalHost',
@@ -389,6 +393,7 @@ def test_admin_types(admin_user_client, adds=set(), removes=set()):
         'snapshotBackupInput',
         'stateTransition',
         'statsAccess',
+        'storageDriver',
         'storagePool',
         'task',
         'taskInstance',
@@ -424,6 +429,7 @@ def test_admin_types(admin_user_client, adds=set(), removes=set()):
         'binding',
         'serviceBinding',
         'volumeTemplate',
+        'volumeActivateInput',
     }
     types.update(adds)
     types.difference_update(removes)
@@ -607,13 +613,10 @@ def test_project_auth(admin_user_client, user_client, service_client,
         'uuid': 'cr',
         'data': 'r',
         'members': 'cr',
-        'swarm': 'cru',
-        'kubernetes': 'cru',
-        'mesos': 'cru',
         'virtualMachine': 'cru',
-        'publicDns': 'cru',
         'servicesPortRange': 'cru',
         'healthState': "r",
+        'orchestration': 'r',
     })
 
     auth_check(user_client.schema, 'project', 'crud', {
@@ -622,13 +625,10 @@ def test_project_auth(admin_user_client, user_client, service_client,
         'name': 'cru',
         'uuid': 'r',
         'members': 'cr',
-        'swarm': 'cru',
-        'kubernetes': 'cru',
-        'mesos': 'cru',
         'virtualMachine': 'cru',
-        'publicDns': 'cru',
         'servicesPortRange': 'cru',
         'healthState': "r",
+        'orchestration': 'r',
     })
 
     auth_check(project_client.schema, 'project', 'r', {
@@ -637,27 +637,21 @@ def test_project_auth(admin_user_client, user_client, service_client,
         'name': 'r',
         'uuid': 'r',
         'members': 'r',
-        'swarm': 'r',
-        'kubernetes': 'r',
-        'mesos': 'r',
         'virtualMachine': 'r',
-        'publicDns': 'r',
         'servicesPortRange': 'r',
         'healthState': "r",
+        'orchestration': 'r',
     })
 
     auth_check(service_client.schema, 'project', 'cr', {
         'allowSystemRole': 'cr',
         'data': 'r',
-        'kubernetes': 'cr',
-        'mesos': 'cr',
         'virtualMachine': 'cr',
         'members': 'cr',
-        'publicDns': 'cr',
         'servicesPortRange': 'cr',
-        'swarm': 'cr',
         'uuid': 'cr',
         'healthState': 'r',
+        'orchestration': 'r',
     })
 
 
@@ -776,6 +770,7 @@ def test_storagepool_auth(admin_user_client, user_client, project_client):
         'volumeAccessMode': 'r',
         'blockDevicePath': 'r',
         'volumeCapabilities': 'r',
+        'storageDriverId': 'r',
     })
 
     auth_check(user_client.schema, 'storagePool', 'r', {
@@ -786,6 +781,7 @@ def test_storagepool_auth(admin_user_client, user_client, project_client):
         'volumeAccessMode': 'r',
         'blockDevicePath': 'r',
         'volumeCapabilities': 'r',
+        'storageDriverId': 'r',
     })
 
     auth_check(project_client.schema, 'storagePool', 'r', {
@@ -796,6 +792,7 @@ def test_storagepool_auth(admin_user_client, user_client, project_client):
         'volumeAccessMode': 'r',
         'blockDevicePath': 'r',
         'volumeCapabilities': 'r',
+        'storageDriverId': 'r',
     })
 
 
@@ -825,6 +822,8 @@ def test_volume_auth(admin_user_client, user_client, project_client):
         'accessMode': 'r',
         'stackId': 'r',
         'volumeTemplateId': 'r',
+        'storageDriverId': 'r',
+        'hostId': 'r',
     })
 
     auth_check(user_client.schema, 'volume', 'r', {
@@ -850,12 +849,14 @@ def test_volume_auth(admin_user_client, user_client, project_client):
         'accessMode': 'r',
         'stackId': 'r',
         'volumeTemplateId': 'r',
+        'storageDriverId': 'r',
+        'hostId': 'r',
     })
 
-    auth_check(project_client.schema, 'volume', 'crd', {
+    auth_check(project_client.schema, 'volume', 'crud', {
         'accountId': 'r',
         'created': 'r',
-        'description': 'cr',
+        'description': 'cru',
         'externalId': 'r',
         'id': 'r',
         'imageId': 'r',
@@ -867,7 +868,7 @@ def test_volume_auth(admin_user_client, user_client, project_client):
         'uri': 'r',
         'uuid': 'r',
         'driver': 'cr',
-        'driverOpts': 'cr',
+        'driverOpts': 'cru',
         'transitioning': 'r',
         'transitioningMessage': 'r',
         'transitioningProgress': 'r',
@@ -875,6 +876,8 @@ def test_volume_auth(admin_user_client, user_client, project_client):
         'accessMode': 'r',
         'stackId': 'cr',
         'volumeTemplateId': 'cr',
+        'storageDriverId': 'cr',
+        'hostId': 'cru',
     })
 
 
@@ -946,7 +949,8 @@ def test_container_auth(admin_user_client, user_client, project_client):
         'createIndex': 'r',
         'deploymentUnitUuid': 'r',
         'version': 'r',
-        'startCount': 'r'
+        'startCount': 'r',
+        'system': 'r',
     })
 
     auth_check(user_client.schema, 'container', 'r', {
@@ -1011,6 +1015,7 @@ def test_container_auth(admin_user_client, user_client, project_client):
         'createIndex': 'r',
         'deploymentUnitUuid': 'r',
         'version': 'r',
+        'system': 'r',
         'startCount': 'r'
     })
 
@@ -1076,6 +1081,7 @@ def test_container_auth(admin_user_client, user_client, project_client):
         'createIndex': 'r',
         'deploymentUnitUuid': 'r',
         'version': 'r',
+        'system': 'r',
         'startCount': 'r'
     })
 
@@ -1696,6 +1702,7 @@ def test_svc_discovery_service(admin_user_client, user_client, project_client,
         'currentScale': 'r',
         'instanceIds': 'r',
         'linkedServices': 'r',
+        'system': 'r',
     })
 
     auth_check(user_client.schema, 'service', 'r', {
@@ -1722,6 +1729,7 @@ def test_svc_discovery_service(admin_user_client, user_client, project_client,
         'currentScale': 'r',
         'instanceIds': 'r',
         'linkedServices': 'r',
+        'system': 'r',
     })
 
     auth_check(project_client.schema, 'service', 'crud', {
@@ -1748,6 +1756,7 @@ def test_svc_discovery_service(admin_user_client, user_client, project_client,
         'currentScale': 'r',
         'instanceIds': 'r',
         'linkedServices': 'r',
+        'system': 'r',
     })
 
     resource_action_check(user_client.schema, 'service', [
@@ -1833,7 +1842,7 @@ def test_auth_compose_project(admin_user_client, user_client, project_client):
         'healthState': 'r',
         'binding': 'r',
         'system': 'r',
-        'folder': 'r',
+        'group': 'r',
         'serviceIds': 'r',
     })
 
@@ -1848,7 +1857,7 @@ def test_auth_compose_project(admin_user_client, user_client, project_client):
         'healthState': 'r',
         'binding': 'r',
         'system': 'r',
-        'folder': 'r',
+        'group': 'r',
         'serviceIds': 'r',
     })
 
@@ -1862,7 +1871,7 @@ def test_auth_compose_project(admin_user_client, user_client, project_client):
         'previousEnvironment': 'cru',
         'healthState': 'r',
         'binding': 'cru',
-        'folder': 'cru',
+        'group': 'cru',
         'system': 'r',
         'serviceIds': 'r',
     })
@@ -1882,7 +1891,7 @@ def test_auth_kubernetes_stack(admin_user_client, user_client, project_client):
         'healthState': 'r',
         'binding': 'r',
         'system': 'r',
-        'folder': 'r',
+        'group': 'r',
         'serviceIds': 'r',
     })
 
@@ -1898,7 +1907,7 @@ def test_auth_kubernetes_stack(admin_user_client, user_client, project_client):
         'healthState': 'r',
         'binding': 'r',
         'system': 'r',
-        'folder': 'r',
+        'group': 'r',
         'serviceIds': 'r',
     })
 
@@ -1914,7 +1923,7 @@ def test_auth_kubernetes_stack(admin_user_client, user_client, project_client):
         'healthState': 'r',
         'binding': 'cru',
         'system': 'r',
-        'folder': 'cru',
+        'group': 'cru',
         'serviceIds': 'r',
     })
 
@@ -1935,7 +1944,7 @@ def test_svc_discovery_stack(admin_user_client, user_client, project_client,
         'startOnCreate': 'r',
         'healthState': 'r',
         'binding': 'r',
-        'folder': 'r',
+        'group': 'r',
         'system': 'r',
         'serviceIds': 'r',
     })
@@ -1953,7 +1962,7 @@ def test_svc_discovery_stack(admin_user_client, user_client, project_client,
         'startOnCreate': 'r',
         'healthState': 'r',
         'binding': 'r',
-        'folder': 'r',
+        'group': 'r',
         'system': 'r',
         'serviceIds': 'r',
     })
@@ -1971,7 +1980,7 @@ def test_svc_discovery_stack(admin_user_client, user_client, project_client,
         'startOnCreate': 'cr',
         'healthState': 'r',
         'binding': 'cru',
-        'folder': 'cru',
+        'group': 'cru',
         'system': 'r',
         'serviceIds': 'r',
     })
@@ -1989,7 +1998,7 @@ def test_svc_discovery_stack(admin_user_client, user_client, project_client,
         'startOnCreate': 'cr',
         'healthState': 'r',
         'binding': 'cru',
-        'folder': 'cru',
+        'group': 'cru',
         'system': 'cr',
         'serviceIds': 'r',
     })
@@ -2022,6 +2031,7 @@ def test_svc_discovery_lb_service(admin_user_client, user_client,
         'currentScale': 'r',
         'instanceIds': 'r',
         'linkedServices': 'r',
+        'system': 'r',
     })
 
     auth_check(user_client.schema, 'loadBalancerService', 'r', {
@@ -2048,6 +2058,7 @@ def test_svc_discovery_lb_service(admin_user_client, user_client,
         'currentScale': 'r',
         'instanceIds': 'r',
         'linkedServices': 'r',
+        'system': 'r',
     })
 
     auth_check(project_client.schema, 'loadBalancerService', 'crud', {
@@ -2074,6 +2085,7 @@ def test_svc_discovery_lb_service(admin_user_client, user_client,
         'currentScale': 'r',
         'instanceIds': 'r',
         'linkedServices': 'r',
+        'system': 'r',
     })
 
 
@@ -2278,6 +2290,7 @@ def test_svc_discovery_external_service(admin_user_client, user_client,
         'startOnCreate': 'r',
         'instanceIds': 'r',
         'linkedServices': 'r',
+        'system': 'r',
     })
 
     auth_check(user_client.schema, 'externalService', 'r', {
@@ -2296,6 +2309,7 @@ def test_svc_discovery_external_service(admin_user_client, user_client,
         'startOnCreate': 'r',
         'instanceIds': 'r',
         'linkedServices': 'r',
+        'system': 'r',
     })
 
     auth_check(project_client.schema, 'externalService', 'crud', {
@@ -2314,6 +2328,7 @@ def test_svc_discovery_external_service(admin_user_client, user_client,
         'startOnCreate': 'cr',
         'instanceIds': 'r',
         'linkedServices': 'r',
+        'system': 'r',
     })
 
 
@@ -2624,6 +2639,7 @@ def test_virtual_machine(admin_user_client, user_client, project_client):
         'memoryMb': 'r',
         'disks': 'r',
         'serviceIds': 'r',
+        'system': 'r',
     })
 
     auth_check(user_client.schema, 'virtualMachine', 'r', {
@@ -2674,6 +2690,7 @@ def test_virtual_machine(admin_user_client, user_client, project_client):
         'memoryMb': 'r',
         'disks': 'r',
         'serviceIds': 'r',
+        'system': 'r',
     })
 
     auth_check(project_client.schema, 'virtualMachine', 'crud', {
@@ -2724,6 +2741,7 @@ def test_virtual_machine(admin_user_client, user_client, project_client):
         'memoryMb': 'cr',
         'disks': 'cr',
         'serviceIds': 'r',
+        'system': 'r',
     })
 
 
@@ -2779,6 +2797,7 @@ def test_compose_service(admin_user_client, user_client, project_client):
         'currentScale': 'r',
         'instanceIds': 'r',
         'linkedServices': 'r',
+        'system': 'r',
     })
 
     auth_check(user_client.schema, 'composeService', 'r', {
@@ -2799,6 +2818,7 @@ def test_compose_service(admin_user_client, user_client, project_client):
         'currentScale': 'r',
         'instanceIds': 'r',
         'linkedServices': 'r',
+        'system': 'r',
     })
 
     auth_check(project_client.schema, 'composeService', 'rd', {
@@ -2819,6 +2839,7 @@ def test_compose_service(admin_user_client, user_client, project_client):
         'currentScale': 'r',
         'instanceIds': 'r',
         'linkedServices': 'r',
+        'system': 'r',
     })
 
 
@@ -2885,6 +2906,7 @@ def test_kubernetes_service(admin_user_client, user_client, project_client):
         'healthState': 'r',
         'instanceIds': 'r',
         'linkedServices': 'r',
+        'system': 'r',
     })
 
     auth_check(user_client.schema, 'kubernetesService', 'r', {
@@ -2898,6 +2920,7 @@ def test_kubernetes_service(admin_user_client, user_client, project_client):
         'healthState': 'r',
         'instanceIds': 'r',
         'linkedServices': 'r',
+        'system': 'r',
     })
 
     auth_check(project_client.schema, 'kubernetesService', 'r', {
@@ -2911,6 +2934,7 @@ def test_kubernetes_service(admin_user_client, user_client, project_client):
         'healthState': 'r',
         'instanceIds': 'r',
         'linkedServices': 'r',
+        'system': 'r',
     })
 
 
@@ -3088,4 +3112,52 @@ def test_service_log(admin_user_client, user_client, project_client):
         'transactionId': 'r',
         'subLog': 'r',
         'level': 'r',
+    })
+
+
+def test_storage_driver_auth(admin_user_client, user_client, project_client):
+    auth_check(admin_user_client.schema, 'storageDriver', 'r', {
+        'accountId': 'r',
+        'serviceId': 'r',
+        'volumeAccessMode': 'r',
+        'blockDevicePath': 'r',
+        'volumeCapabilities': 'r',
+        'scope': 'r',
+        'data': 'r',
+    })
+
+    auth_check(user_client.schema, 'storageDriver', 'r', {
+        'accountId': 'r',
+        'serviceId': 'r',
+        'volumeAccessMode': 'r',
+        'blockDevicePath': 'r',
+        'volumeCapabilities': 'r',
+        'scope': 'r',
+    })
+
+    auth_check(project_client.schema, 'storageDriver', 'r', {
+        'accountId': 'r',
+        'serviceId': 'r',
+        'volumeAccessMode': 'r',
+        'blockDevicePath': 'r',
+        'volumeCapabilities': 'r',
+        'scope': 'r',
+    })
+
+
+def test_network_driver_auth(admin_user_client, user_client, project_client):
+    auth_check(admin_user_client.schema, 'networkDriver', 'r', {
+        'accountId': 'r',
+        'serviceId': 'r',
+        'data': 'r',
+    })
+
+    auth_check(user_client.schema, 'networkDriver', 'r', {
+        'accountId': 'r',
+        'serviceId': 'r',
+    })
+
+    auth_check(project_client.schema, 'networkDriver', 'r', {
+        'accountId': 'r',
+        'serviceId': 'r',
     })

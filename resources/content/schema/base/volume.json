@@ -8,9 +8,12 @@
             "type": "boolean",
             "default": false
         },
+        "storageDriverId": {
+            "type": "reference[storageDriver]",
+            "nullable": false
+        },
         "driver": {
-            "type": "string",
-            "required": true
+            "type": "string"
         },
         "driverOpts": {
             "type": "map[string]",
@@ -19,6 +22,13 @@
         "capabilities" : {
             "type" : "array[string]",
             "nullable" : true
+        },
+        "hostId" : {
+            "type" : "reference[host]",
+            "nullable" : true,
+            "attributes" : {
+                "scheduleUpdate" : true
+            }
         }
     },
     "resourceActions": {

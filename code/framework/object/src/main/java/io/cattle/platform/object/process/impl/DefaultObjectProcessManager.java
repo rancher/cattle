@@ -1,17 +1,20 @@
 package io.cattle.platform.object.process.impl;
 
 import io.cattle.platform.deferred.util.DeferredUtils;
+import io.cattle.platform.engine.handler.ProcessLogic;
 import io.cattle.platform.engine.manager.ProcessManager;
 import io.cattle.platform.engine.process.ExitReason;
 import io.cattle.platform.engine.process.LaunchConfiguration;
 import io.cattle.platform.engine.process.Predicate;
 import io.cattle.platform.engine.process.ProcessInstance;
+import io.cattle.platform.engine.process.impl.ProcessCancelException;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.process.ObjectProcessManager;
 import io.cattle.platform.object.process.StandardProcess;
 import io.cattle.platform.object.util.ObjectLaunchConfigurationUtils;
 import io.github.ibuildthecloud.gdapi.factory.SchemaFactory;
 
+import java.util.HashMap;
 import java.util.Map;
 
 import javax.inject.Inject;
@@ -52,7 +55,8 @@ public class DefaultObjectProcessManager implements ObjectProcessManager {
         scheduleProcessInstance(processName, resource, data, null);
     }
 
-    protected String getProcessName(Object resource, StandardProcess process) {
+    @Override
+    public String getProcessName(Object resource, StandardProcess process) {
         String type = objectManager.getType(resource);
         return getStandardProcessName(process, type);
     }
@@ -127,4 +131,22 @@ public class DefaultObjectProcessManager implements ObjectProcessManager {
             }
         });
     }
+
+    @Override
+    public void scheduleStandardChainedProcessAsync(StandardProcess from, StandardProcess to, Object resource, Map<String, Object> data) {
+        String fromProcess = getProcessName(resource, from);
+        String toProcess = getProcessName(resource, to);
+
+        Map<String, Object> newData = new HashMap<>();
+        if (data != null) {
+            newData.putAll(data);
+        }
+        newData.put(fromProcess + ProcessLogic.CHAIN_PROCESS, toProcess);
+        try {
+            scheduleStandardProcessAsync(from, resource, newData);
+        } catch (ProcessCancelException e) {
+            scheduleStandardProcessAsync(to, resource, data);
+        }
+    }
+
 }

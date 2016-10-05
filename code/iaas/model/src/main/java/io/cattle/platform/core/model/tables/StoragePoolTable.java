@@ -11,7 +11,7 @@ package io.cattle.platform.core.model.tables;
 @java.lang.SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class StoragePoolTable extends org.jooq.impl.TableImpl<io.cattle.platform.core.model.tables.records.StoragePoolRecord> {
 
-	private static final long serialVersionUID = -1562204034;
+	private static final long serialVersionUID = 645893858;
 
 	/**
 	 * The singleton instance of <code>cattle.storage_pool</code>
@@ -122,6 +122,11 @@ public class StoragePoolTable extends org.jooq.impl.TableImpl<io.cattle.platform
 	public final org.jooq.TableField<io.cattle.platform.core.model.tables.records.StoragePoolRecord, java.lang.String> VOLUME_ACCESS_MODE = createField("volume_access_mode", org.jooq.impl.SQLDataType.VARCHAR.length(255), this, "");
 
 	/**
+	 * The column <code>cattle.storage_pool.storage_driver_id</code>.
+	 */
+	public final org.jooq.TableField<io.cattle.platform.core.model.tables.records.StoragePoolRecord, java.lang.Long> STORAGE_DRIVER_ID = createField("storage_driver_id", org.jooq.impl.SQLDataType.BIGINT, this, "");
+
+	/**
 	 * Create a <code>cattle.storage_pool</code> table reference
 	 */
 	public StoragePoolTable() {
@@ -172,7 +177,7 @@ public class StoragePoolTable extends org.jooq.impl.TableImpl<io.cattle.platform
 	 */
 	@Override
 	public java.util.List<org.jooq.ForeignKey<io.cattle.platform.core.model.tables.records.StoragePoolRecord, ?>> getReferences() {
-		return java.util.Arrays.<org.jooq.ForeignKey<io.cattle.platform.core.model.tables.records.StoragePoolRecord, ?>>asList(io.cattle.platform.core.model.Keys.FK_STORAGE_POOL__ACCOUNT_ID, io.cattle.platform.core.model.Keys.FK_STORAGE_POOL__AGENT_ID, io.cattle.platform.core.model.Keys.FK_STORAGE_POOL__ZONE_ID);
+		return java.util.Arrays.<org.jooq.ForeignKey<io.cattle.platform.core.model.tables.records.StoragePoolRecord, ?>>asList(io.cattle.platform.core.model.Keys.FK_STORAGE_POOL__ACCOUNT_ID, io.cattle.platform.core.model.Keys.FK_STORAGE_POOL__AGENT_ID, io.cattle.platform.core.model.Keys.FK_STORAGE_POOL__ZONE_ID, io.cattle.platform.core.model.Keys.FK_STORAGE_DRIVER__ID);
 	}
 
 	/**

@@ -32,7 +32,7 @@ public class MountCreate extends AbstractDefaultProcessHandler {
                 && !CommonStatesConstants.RESTORING.equals(volume.getState())) {
             if (CommonStatesConstants.REQUESTED.equals(volume.getState()) || CommonStatesConstants.REGISTERING.equals(volume.getState())) {
                 objectProcessManager.scheduleStandardProcess(StandardProcess.CREATE, volume,
-                        ProcessUtils.chainInData(state.getData(), VolumeConstants.PROCESS_CREATED, VolumeConstants.PROCESS_ACTIVATE));
+                        ProcessUtils.chainInData(state.getData(), VolumeConstants.PROCESS_CREATE, VolumeConstants.PROCESS_ACTIVATE));
             } else {
                 objectProcessManager.scheduleStandardProcess(StandardProcess.ACTIVATE, volume, state.getData());
             }

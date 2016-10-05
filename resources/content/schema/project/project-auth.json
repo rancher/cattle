@@ -36,6 +36,8 @@
         "logConfig" : "cr",
         "machine": "crd",
         "machineDriver.resourceActions\\..*": "",
+        "networkDriver": "r",
+        "storageDriver": "r",
         "port" : "ru",
         "project" : "r",
         "projectMember" : "r",
@@ -58,7 +60,7 @@
         "subscribe" : "cr",
         "subscribe.eventNames" : "cr",
         "userPreference": "",
-        "volume" : "crd",
+        "volume" : "crud",
         "virtualMachine" : "crud",
         "virtualMachineDisk" : "cr",
         "typeDocumentation" : "r",
@@ -74,6 +76,7 @@
         "binding" : "cru",
         "serviceBinding" : "cru",
         "volumeTemplate" : "cr",
+        "volumeActivateInput" : "cr",
         "end" : ""
     }
 }

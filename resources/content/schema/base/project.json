@@ -53,29 +53,10 @@
       "type": "array[projectMember]",
       "nullable": "true"
     },
-    "swarm": {
-      "type": "boolean",
+    "orchestration": {
+      "type": "string",
       "nullable": false,
-      "default": false,
-      "attributes" : {
-        "scheduleUpdate" : true
-      }
-    },
-    "kubernetes": {
-      "type": "boolean",
-      "nullable": false,
-      "default": false,
-      "attributes" : {
-        "scheduleUpdate" : true
-      }
-    },
-    "mesos": {
-      "type": "boolean",
-      "nullable": false,
-      "default": false,
-      "attributes" : {
-        "scheduleUpdate" : true
-      }
+      "default": "cattle"
 	},
     "virtualMachine": {
       "type": "boolean",
@@ -85,14 +66,6 @@
         "scheduleUpdate" : true
       }
 	},
-    "publicDns": {
-      "type": "boolean",
-      "nullable": false,
-      "default": false,
-      "attributes" : {
-        "scheduleUpdate" : true
-      }
-    },
     "servicesPortRange": {
         "type" : "servicesPortRange",
         "nullable" : true,

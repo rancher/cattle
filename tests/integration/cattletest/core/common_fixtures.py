@@ -15,9 +15,14 @@ _SUPER_CLIENT = None
 
 
 @pytest.fixture(scope='session')
-def cattle_url():
+def cattle_url(project_id=None):
     default_url = 'http://localhost:8080/v1/schemas'
-    return os.environ.get('CATTLE_URL', default_url).replace('/v1', '/v2-beta')
+    url = os.environ.get('CATTLE_URL', default_url).replace('/v1', '/v2-beta')
+    if project_id is None:
+        return url
+    if url.endswith('/schemas'):
+        url = url[:len(url)-8]
+    return '{}/projects/{}/schemas'.format(url, project_id)
 
 
 @pytest.fixture(scope='function')
@@ -81,7 +86,8 @@ def random_str():
 
 class Context(object):
     def __init__(self, account=None, project=None, user_client=None,
-                 client=None, host=None, agent_client=None, agent=None):
+                 client=None, host=None, agent_client=None, agent=None,
+                 owner_client=None):
         self.account = account
         self.project = project
         self.agent = agent
@@ -92,6 +98,7 @@ class Context(object):
         self.image_uuid = 'sim:{}'.format(random_str())
         self.nsp = self._get_nsp()
         self.host_ip = self._get_host_ip()
+        self.owner_client = owner_client
 
     def _get_nsp(self):
         if self.client is None:
@@ -174,6 +181,7 @@ def create_context(admin_user_client, create_project=False, add_host=False,
     key = admin_user_client.create_api_key(accountId=account.id)
     admin_user_client.wait_success(key)
     user_client = api_client(key.publicValue, key.secretValue)
+
     try:
         account = user_client.reload(account)
     except KeyError:
@@ -184,6 +192,7 @@ def create_context(admin_user_client, create_project=False, add_host=False,
     project_client = None
     agent_client = None
     agent = None
+    owner_client = None
 
     if create_project:
         project = user_client.create_project(name=project_name, members=[{
@@ -198,6 +207,8 @@ def create_context(admin_user_client, create_project=False, add_host=False,
         project_client = api_client(project_key.publicValue,
                                     project_key.secretValue)
         project = project_client.reload(project)
+        owner_client = api_client(key.publicValue, key.secretValue,
+                                  project_id=project.id)
 
     if create_project and add_host:
         host, agent, agent_client = \
@@ -207,7 +218,8 @@ def create_context(admin_user_client, create_project=False, add_host=False,
 
     return Context(account=account, project=project, user_client=user_client,
                    client=project_client, host=host,
-                   agent_client=agent_client, agent=agent)
+                   agent_client=agent_client, agent=agent,
+                   owner_client=owner_client)
 
 
 def cleanup_context(admin_user_client, context):
@@ -667,8 +679,8 @@ def wait_setting_active(api_client, setting, timeout=45):
     return setting
 
 
-def api_client(access_key, secret_key):
-    return cattle.from_env(url=cattle_url(),
+def api_client(access_key, secret_key, project_id=None):
+    return cattle.from_env(url=cattle_url(project_id),
                            cache=False,
                            access_key=access_key,
                            secret_key=secret_key)

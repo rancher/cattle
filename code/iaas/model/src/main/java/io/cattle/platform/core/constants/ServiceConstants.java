@@ -51,6 +51,8 @@ public class ServiceConstants {
     public static final String FIELD_HEALTH_STATE = "healthState";
     public static final String FIELD_LOCKED_SCALE = "lockedScale";
     public static final String FIELD_STACK_ID = "stackId";
+    public static final String FIELD_SYSTEM = "system";
+    public static final String FIELD_VOLUME_TEMPLATES = "volumeTemplates";
     public static final String FIELD_VOLUME_DRIVER = "driver";
     public static final String FIELD_VOLUME_DRIVER_OPTS = "driverOpts";
     public static final String FIELD_VOLUME_EXTERNAL = "external";
@@ -67,6 +69,7 @@ public class ServiceConstants {
     public static final String ACTION_SERVICE_ADD_SERVICE_LINK = "addservicelink";
     public static final String ACTION_SERVICE_REMOVE_SERVICE_LINK = "removeservicelink";
     public static final String ACTION_STACK_ACTIVATE_SERVICES = "activateservices";
+    public static final String ACTION_STACK_DEACTIVATE_SERVICES = "deactivateservices";
     public static final String ACTION_SERVICE_SET_SERVICE_LINKS = "setservicelinks";
     public static final String ACTION_SERVICE_UPGRADE = "upgrade";
     public static final String ACTION_SERVICE_ROLLBACK = "rollback";
@@ -77,7 +80,7 @@ public class ServiceConstants {
     public static final String PROCESS_SERVICE_ACTIVATE = "service." + ACTION_SERVICE_ACTIVATE;
     public static final String PROCESS_SERVICE_CREATE = "service." + ACTION_SERVICE_CREATE;
     public static final String PROCESS_STACK_ACTIVATE_SERVICES = "stack." + ACTION_STACK_ACTIVATE_SERVICES;
-    public static final String PROCESS_STACK_DEACTIVATE_SERVICES = "stack.deactivateservices";
+    public static final String PROCESS_STACK_DEACTIVATE_SERVICES = "stack." + ACTION_STACK_DEACTIVATE_SERVICES;
     public static final String PROCESS_STACK_UPDATE = "stack.update";
     public static final String PROCESS_STACK_REMOVE = "stack.remove";
     public static final String PROCESS_SERVICE_DEACTIVATE = "service.deactivate";
