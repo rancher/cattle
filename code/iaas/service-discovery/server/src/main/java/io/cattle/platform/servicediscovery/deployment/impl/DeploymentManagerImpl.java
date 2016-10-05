@@ -10,6 +10,7 @@ import io.cattle.platform.configitem.version.ConfigItemStatusManager;
 import io.cattle.platform.core.addon.ScalePolicy;
 import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.ServiceConstants;
+import io.cattle.platform.core.dao.GenericResourceDao;
 import io.cattle.platform.core.dao.ServiceDao;
 import io.cattle.platform.core.model.Service;
 import io.cattle.platform.core.model.ServiceExposeMap;
@@ -87,6 +88,8 @@ public class DeploymentManagerImpl implements DeploymentManager {
     IdFormatter idFrmt;
     @Inject
     ActivityService actvtyService;
+    @Inject
+    GenericResourceDao rscDao;
 
     @Override
     public boolean isHealthy(Service service) {
@@ -445,5 +448,6 @@ public class DeploymentManagerImpl implements DeploymentManager {
         final public ActivityService activityService = actvtyService;
         final public IdFormatter idFormatter = idFrmt;
         final public LockManager lockMgr = lockManager;
+        final public GenericResourceDao resourceDao = rscDao;
     }
 }
