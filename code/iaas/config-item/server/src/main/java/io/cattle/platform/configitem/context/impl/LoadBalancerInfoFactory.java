@@ -109,9 +109,6 @@ public class LoadBalancerInfoFactory extends AbstractAgentBaseContextFactory {
         Map<Long, IpAddress> nicIdToIp = ipAddressDao.getNicIdToPrimaryIpAddress(instance.getAccountId());
         List<LoadBalancerTargetsInfo> targetsInfo = populateTargetsInfo(lbService, listeners, instanceIdtoInstance,
                 instanceIdtoNic, nicIdToIp);
-        if (targetsInfo.isEmpty()) {
-            return;
-        }
 
         Map<String, List<LoadBalancerTargetsInfo>> listenerToTargetMap = assignTargetsToListeners(listeners,
                 targetsInfo);
