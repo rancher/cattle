@@ -11,7 +11,7 @@ package io.cattle.platform.core.model.tables;
 @java.lang.SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class VolumeTable extends org.jooq.impl.TableImpl<io.cattle.platform.core.model.tables.records.VolumeRecord> {
 
-	private static final long serialVersionUID = -1244612748;
+	private static final long serialVersionUID = 1017773517;
 
 	/**
 	 * The singleton instance of <code>cattle.volume</code>
@@ -222,7 +222,7 @@ public class VolumeTable extends org.jooq.impl.TableImpl<io.cattle.platform.core
 	 */
 	@Override
 	public java.util.List<org.jooq.ForeignKey<io.cattle.platform.core.model.tables.records.VolumeRecord, ?>> getReferences() {
-		return java.util.Arrays.<org.jooq.ForeignKey<io.cattle.platform.core.model.tables.records.VolumeRecord, ?>>asList(io.cattle.platform.core.model.Keys.FK_VOLUME__ACCOUNT_ID, io.cattle.platform.core.model.Keys.FK_VOLUME__INSTANCE_ID, io.cattle.platform.core.model.Keys.FK_VOLUME__IMAGE_ID, io.cattle.platform.core.model.Keys.FK_VOLUME__OFFERING_ID, io.cattle.platform.core.model.Keys.FK_VOLUME__ZONE_ID, io.cattle.platform.core.model.Keys.FK_VOLUME__HOST_ID, io.cattle.platform.core.model.Keys.FK_VOLUME__DEPLOYMENT_UNIT_ID, io.cattle.platform.core.model.Keys.FK_VOLUME__ENVIRONMENT_ID, io.cattle.platform.core.model.Keys.FK_VOLUME__VOLUME_TEMPLATE_ID, io.cattle.platform.core.model.Keys.VOLUME_IBFK_1);
+		return java.util.Arrays.<org.jooq.ForeignKey<io.cattle.platform.core.model.tables.records.VolumeRecord, ?>>asList(io.cattle.platform.core.model.Keys.FK_VOLUME__ACCOUNT_ID, io.cattle.platform.core.model.Keys.FK_VOLUME__INSTANCE_ID, io.cattle.platform.core.model.Keys.FK_VOLUME__IMAGE_ID, io.cattle.platform.core.model.Keys.FK_VOLUME__OFFERING_ID, io.cattle.platform.core.model.Keys.FK_VOLUME__ZONE_ID, io.cattle.platform.core.model.Keys.FK_VOLUME__HOST_ID, io.cattle.platform.core.model.Keys.FK_VOLUME__DEPLOYMENT_UNIT_ID, io.cattle.platform.core.model.Keys.FK_VOLUME__ENVIRONMENT_ID, io.cattle.platform.core.model.Keys.FK_VOLUME__VOLUME_TEMPLATE_ID, io.cattle.platform.core.model.Keys.FK_VOLUME__STORAGE_DRIVER_ID);
 	}
 
 	/**
