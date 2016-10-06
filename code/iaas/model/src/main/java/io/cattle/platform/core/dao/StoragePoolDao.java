@@ -3,6 +3,7 @@ package io.cattle.platform.core.dao;
 import io.cattle.platform.core.model.Host;
 import io.cattle.platform.core.model.StoragePool;
 import io.cattle.platform.core.model.StoragePoolHostMap;
+import io.github.ibuildthecloud.gdapi.id.IdFormatter;
 
 import java.util.List;
 import java.util.Map;
@@ -30,5 +31,7 @@ public interface StoragePoolDao {
     List<Long> findVolumesInUseByServiceDriver(Long serviceId);
 
     StoragePool associateVolumeToPool(Long volumeId, Long storageDriverId, Long hostId);
+
+    Map<Long, List<Object>> findHostsForPools(List<Long> ids, IdFormatter idFormatter);
 
 }

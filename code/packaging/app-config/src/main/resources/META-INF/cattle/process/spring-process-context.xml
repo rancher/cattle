@@ -354,7 +354,8 @@
 
     <!-- Host -->
     <process:defaultProcesses resourceType="host" />
-    <process:process name="host.provision" resourceType="host" start="creating" transitioning="provisioning" done="inactive" />
+    <process:process name="host.activate" resourceType="host" start="inactive,registering,provisioned" transitioning="activating" done="active" />
+    <process:process name="host.provision" resourceType="host" start="inactive" transitioning="provisioning" done="provisioned" />
     <process:process name="host.error" resourceType="host" start="provisioning" transitioning="erroring" done="error" />
     <process:process name="host.remove" resourceType="host" start="erroring,error,requested,inactive,activating,deactivating,registering,updating-active,updating-inactive" transitioning="removing" done="removed" />
 

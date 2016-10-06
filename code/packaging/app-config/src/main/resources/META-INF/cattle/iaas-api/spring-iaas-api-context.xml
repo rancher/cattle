@@ -359,6 +359,7 @@
     <bean class="io.cattle.platform.iaas.api.credential.SshKeyOutputFilter" />
     <bean class="io.cattle.platform.iaas.api.credential.ApiKeyOutputFilter" />
     <bean class="io.cattle.platform.iaas.api.filter.hosts.HostsFilter" />
+    <bean class="io.cattle.platform.iaas.api.filter.storagepool.StoragePoolOutputFilter" />
     <bean class="io.cattle.platform.iaas.api.filter.instance.InstanceOutputFilter" />
     <bean class="io.cattle.platform.iaas.api.filter.containerevent.ContainerEventFilter" />
     <bean class="io.cattle.platform.iaas.api.filter.externalevent.ExternalEventFilter" />

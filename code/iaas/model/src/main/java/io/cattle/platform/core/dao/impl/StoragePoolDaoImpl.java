@@ -8,6 +8,7 @@ import static io.cattle.platform.core.model.tables.VolumeStoragePoolMapTable.*;
 import static io.cattle.platform.core.model.tables.VolumeTable.*;
 
 import io.cattle.platform.core.constants.CommonStatesConstants;
+import io.cattle.platform.core.constants.HostConstants;
 import io.cattle.platform.core.dao.GenericMapDao;
 import io.cattle.platform.core.dao.GenericResourceDao;
 import io.cattle.platform.core.dao.StoragePoolDao;
@@ -20,13 +21,18 @@ import io.cattle.platform.core.model.tables.records.StoragePoolRecord;
 import io.cattle.platform.db.jooq.dao.impl.AbstractJooqDao;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.process.ObjectProcessManager;
+import io.github.ibuildthecloud.gdapi.id.IdFormatter;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import javax.inject.Inject;
 
 import org.jooq.Record;
+import org.jooq.Record2;
+import org.jooq.RecordHandler;
 
 public class StoragePoolDaoImpl extends AbstractJooqDao implements StoragePoolDao {
 
@@ -171,6 +177,30 @@ public class StoragePoolDaoImpl extends AbstractJooqDao implements StoragePoolDa
         }
 
         return storagePool;
+    }
+
+    @Override
+    public Map<Long, List<Object>> findHostsForPools(List<Long> ids, final IdFormatter idFormatter) {
+        final Map<Long, List<Object>> result = new HashMap<>();
+
+        create().select(STORAGE_POOL_HOST_MAP.STORAGE_POOL_ID, STORAGE_POOL_HOST_MAP.HOST_ID)
+            .from(STORAGE_POOL_HOST_MAP)
+            .where(STORAGE_POOL_HOST_MAP.REMOVED.isNull()
+                    .and(STORAGE_POOL_HOST_MAP.HOST_ID.in(ids)))
+            .fetchInto(new RecordHandler<Record2<Long, Long>>() {
+                @Override
+                public void next(Record2<Long, Long> record) {
+                    Long hostId = record.getValue(STORAGE_POOL_HOST_MAP.HOST_ID);
+                    Long storagePoolId = record.getValue(STORAGE_POOL_HOST_MAP.STORAGE_POOL_ID);
+                    List<Object> pools = result.get(storagePoolId);
+                    if (pools == null) {
+                        pools = new ArrayList<>();
+                        result.put(storagePoolId, pools);
+                    }
+                    pools.add(idFormatter.formatId(HostConstants.TYPE, hostId));
+                }
+            });
+        return result;
     }
 
 }

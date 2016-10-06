@@ -32,7 +32,7 @@ public class DynamicSchemaAuthorizationProvider implements AuthorizationProvider
     @Inject
     AuthDao authDao;
 
-    Cache<DynamicSchemaFactory.CacheKey, Schema> schemaCache = CacheBuilder.newBuilder().expireAfterWrite(15, TimeUnit.MINUTES).build();
+    Cache<String, Schema> schemaCache = CacheBuilder.newBuilder().expireAfterWrite(15, TimeUnit.MINUTES).build();
 
     @Override
     public SchemaFactory getSchemaFactory(Account account, Policy policy, ApiRequest request) {
