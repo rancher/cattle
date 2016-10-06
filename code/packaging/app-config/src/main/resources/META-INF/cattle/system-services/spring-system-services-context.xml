@@ -466,6 +466,7 @@
     <bean class="io.cattle.platform.servicediscovery.process.StackHealthStateUpdate" />
     <bean class="io.cattle.platform.servicediscovery.process.StackHealthStateUpdateTrigger" />
     <bean class="io.cattle.platform.servicediscovery.process.StackRemovePostListener" />
+    <bean class="io.cattle.platform.servicediscovery.process.LoadBalancerServiceUpdateConfigPostListener" />
 
     <bean class="io.cattle.platform.servicediscovery.dao.impl.ServiceConsumeMapDaoImpl" />
     <bean class="io.cattle.platform.servicediscovery.dao.impl.ServiceExposeMapDaoImpl">
