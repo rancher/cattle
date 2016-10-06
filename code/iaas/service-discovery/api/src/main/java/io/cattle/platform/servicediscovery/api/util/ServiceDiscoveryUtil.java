@@ -17,19 +17,38 @@ import io.cattle.platform.servicediscovery.api.resource.ServiceDiscoveryConfigIt
 import io.cattle.platform.util.type.CollectionUtils;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.lang3.StringUtils;
+
 public class ServiceDiscoveryUtil {
+
+    public static final List<String> SERVICE_INSTANCE_NAME_DIVIDORS = Arrays.asList("-", "_");
+
     public static String getInstanceName(Instance instance) {
         if (instance != null && instance.getRemoved() == null) {
             return instance.getUuid();
         } else {
             return null;
         }
+    }
+
+    public static String getServiceSuffixFromInstanceName(String instanceName) {
+        for (String divider : SERVICE_INSTANCE_NAME_DIVIDORS) {
+            if (!instanceName.contains(divider)) {
+                continue;
+            }
+            String serviceSuffix = instanceName.substring(instanceName.lastIndexOf(divider) + 1);
+            if (!StringUtils.isEmpty(serviceSuffix) && serviceSuffix.matches("\\d+")) {
+                return serviceSuffix;
+            }
+        }
+        return "";
     }
 
     @SuppressWarnings("unchecked")
@@ -173,13 +192,18 @@ public class ServiceDiscoveryUtil {
             int finalOrder) {
         String configName = launchConfigName == null
                 || launchConfigName.equals(ServiceConstants.PRIMARY_LAUNCH_CONFIG_NAME) ? ""
-                : launchConfigName + "_";
-        String name = String.format("%s_%s_%s%d", env.getName(), service.getName(), configName, finalOrder);
+                : launchConfigName + "-";
+        String name = String.format("%s-%s-%s%d", env.getName(), service.getName(), configName, finalOrder);
         return name;
     }
 
     public static boolean isServiceGeneratedName(Stack env, Service service, String instanceName) {
-        return instanceName.startsWith(String.format("%s_%s", env.getName(), service.getName()));
+        for (String divider : SERVICE_INSTANCE_NAME_DIVIDORS) {
+            if (instanceName.startsWith(String.format("%s%s%s", env.getName(), divider, service.getName()))) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public static String getGeneratedServiceIndex(Stack env, Service service,
@@ -190,7 +214,7 @@ public class ServiceDiscoveryUtil {
         }
         Integer charAt = instanceName.length()-1;
         for (int i = instanceName.length() - 1; i > 0; i--) {
-            if (instanceName.charAt(i) == '_') {
+            if (instanceName.charAt(i) == '-' || instanceName.charAt(i) == '_') {
                 break;
             }
             charAt = i;

@@ -139,22 +139,11 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
         for (Instance instance : serviceInstances) {
             if (ServiceDiscoveryUtil.isServiceGeneratedName(env, service, instance.getName())) {
                 // legacy code - to support old data where service suffix wasn't set
-                String configName = launchConfigName == null
-                        || launchConfigName.equals(ServiceConstants.PRIMARY_LAUNCH_CONFIG_NAME) ? ""
-                        : launchConfigName + "_";
-                
-                String id = instance.getName().replace(String.format("%s_%s_%s", env.getName(), service.getName(), configName), "");
-                if (id.matches("\\d+")) {
-                    usedSuffixes.add(Integer.valueOf(id));
-                }
+                usedSuffixes.add(Integer.valueOf(ServiceDiscoveryUtil.getServiceSuffixFromInstanceName(instance
+                        .getName())));
             }
         }
         return usedSuffixes;
-    }
-
-    protected String getLoadBalancerName(Service service) {
-        Stack env = objectManager.findOne(Stack.class, STACK.ID, service.getStackId());
-        return String.format("%s_%s", env.getName(), service.getName());
     }
 
     @Override

@@ -282,7 +282,7 @@ def test_activate_single_service(client, context,
         lambda x: 'State is: ' + x.state)
 
     instances = client. \
-        list_container(name=env.name + "_" + service.name + "_" + "1")
+        list_container(name=env.name + "-" + service.name + "-" + "1")
     assert len(instances) == 1
     container = instances[0]
     assert container.imageUuid == image_uuid
@@ -343,7 +343,7 @@ def test_activate_services(client, context):
 
 def _validate_instance_stopped(service, client, env):
     instances = client. \
-        list_container(name=env.name + "_" + service.name + "_" + "1")
+        list_container(name=env.name + "-" + service.name + "-" + "1")
     assert len(instances) == 1
     instance = instances[0]
     wait_for_condition(
@@ -354,7 +354,7 @@ def _validate_instance_stopped(service, client, env):
 def _validate_compose_instance_removed(client, service, env, number="1"):
     def check():
         return client. \
-            list_container(name=env.name + "_" + service.name + "_" + number)
+            list_container(name=env.name + "-" + service.name + "-" + number)
     wait_for(lambda: len(check()) == 0)
 
 
@@ -733,9 +733,9 @@ def test_remove_stack_w_active_svcs(client, context):
 
 def _validate_compose_instance_start(client, service, env,
                                      number, launch_config_name=None):
-    cn = launch_config_name + "_" if \
+    cn = launch_config_name + "-" if \
         launch_config_name is not None else ""
-    name = env.name + "_" + service.name + "_" + cn + number
+    name = env.name + "-" + service.name + "-" + cn + number
 
     def wait_for_map_count(service):
         instances = client. \
@@ -1506,7 +1506,7 @@ def test_global_service_update_label(new_context):
 
     # verify 2nd instance isn't running
     assert len(client.list_container(
-        name=env.name + "_" + service.name + "_2")) == 0
+        name=env.name + "-" + service.name + "-2")) == 0
 
     # update host2 with label group=web
     host2 = client.wait_success(client.update(host2, labels=labels))
@@ -1515,7 +1515,7 @@ def test_global_service_update_label(new_context):
     # wait for 2nd instance to start up
     wait_for(
         lambda: len(client.list_container(
-            name=env.name + "_" + service.name + "_2",
+            name=env.name + "-" + service.name + "-2",
             state="running")) > 0
     )
     instance2 = _validate_compose_instance_start(client, service, env, "2")
@@ -1573,7 +1573,7 @@ def test_global_add_host(new_context):
     # wait for 2nd instance to start up
     wait_for(
         lambda: len(client.list_container(
-            name=env.name + "_" + service.name + "_2",
+            name=env.name + "-" + service.name + "-2",
             state="running")) > 0
     )
     instance2 = _validate_compose_instance_start(client,
@@ -1615,7 +1615,7 @@ def test_svc_container_reg_cred_and_image(super_client, client):
     service.activate()
     service = client.wait_success(service, 120)
     instances = client. \
-        list_container(name=env.name + "_" + service.name + "_" + "1")
+        list_container(name=env.name + "-" + service.name + "-" + "1")
     assert len(instances) == 1
     container = instances[0]
     container = super_client.wait_success(container)
@@ -1713,7 +1713,7 @@ def test_sidekick_network_from(client, context):
 def _wait_compose_instance_start(client, service, env, number):
     def wait_instance_state(service):
         instances = client. \
-            list_container(name=env.name + "_" + service.name + "_" + number,
+            list_container(name=env.name + "-" + service.name + "-" + number,
                            state="running")
         return len(instances) >= 1
 
@@ -2033,11 +2033,11 @@ def test_host_delete_reconcile_service(super_client, new_context):
     # on host1.
     wait_for(
         lambda: len(client.list_container(
-            name=env.name + "_" + service.name + "_2",
+            name=env.name + "-" + service.name + "-2",
             state="running")) > 0
     )
     instance2 = client.list_container(
-        name=env.name + "_" + service.name + "_2",
+        name=env.name + "-" + service.name + "-2",
         state="running")[0]
     instance2_host = instance2.hosts()[0]
     assert instance1_host.id == instance2_host.id
@@ -2294,8 +2294,8 @@ def test_validate_long_hostname_override(client, context):
 
     # validate the host was overriden with truncated
     # instancename - length should be 64
-    trunc_name = "MyLongerStackNameCausingIssue_" \
-                 "MyServiceNameLongerThanDNSPrefix_1"
+    trunc_name = "MyLongerStackNameCausingIssue-" \
+                 "MyServiceNameLongerThanDNSPrefix-1"
     assert instance1.hostname == trunc_name
 
     # use case 2 - validate that even passed hostname
@@ -2319,8 +2319,8 @@ def test_validate_long_hostname_override(client, context):
     instance2 = _validate_compose_instance_start(client, service2, env, "1")
 
     # validate the host was overriden with instancename
-    trunc_name2 = "MyLongerStackNameCausingIssue_" \
-                  "SecondServiceNameLongerThanDNSPr_1"
+    trunc_name2 = "MyLongerStackNameCausingIssue-" \
+                  "SecondServiceNameLongerThanDNSPr-1"
     assert instance2.hostname == trunc_name2
 
 
@@ -2349,8 +2349,8 @@ def test_validate_long_hostname_with_domainname_override(client, context):
 
     # validate the host was overriden with truncated
     # instancename - length should be 64
-    trunc_name = "MySecondStackNameCausingIssue_" \
-                 "MyServiceNameLongerTh_1"
+    trunc_name = "MySecondStackNameCausingIssue-" \
+                 "MyServiceNameLongerTh-1"
     assert instance1.hostname == trunc_name
 
     # use case 2 - validate that even passed hostname
@@ -2375,8 +2375,8 @@ def test_validate_long_hostname_with_domainname_override(client, context):
     instance2 = _validate_compose_instance_start(client, service2, env, "1")
 
     # validate the host was overriden with instancename
-    trunc_name2 = "MySecondStackNameCausingIssue_" \
-                  "SecondServiceNameLong_1"
+    trunc_name2 = "MySecondStackNameCausingIssue-" \
+                  "SecondServiceNameLong-1"
     assert instance2.hostname == trunc_name2
 
 
@@ -3037,9 +3037,9 @@ def _resource_is_removed(resource):
 
 def _wait_for_compose_instance_start(client, service, env,
                                      number, launch_config_name=None):
-    cn = launch_config_name + "_" if \
+    cn = launch_config_name + "-" if \
         launch_config_name is not None else ""
-    name = env.name + "_" + service.name + "_" + cn + number
+    name = env.name + "-" + service.name + "-" + cn + number
 
     wait_for(
         lambda: len(client.list_container(name=name, state='running')) > 0
@@ -3071,7 +3071,7 @@ def test_host_dns(client, context, super_client):
         lambda x: 'State is: ' + x.state)
 
     instances = client. \
-        list_container(name=env.name + "_" + service.name + "_" + "1")
+        list_container(name=env.name + "-" + service.name + "-" + "1")
     assert len(instances) == 1
     c = instances[0]
     assert c.dns is None or len(c.dns) == 0
@@ -3101,7 +3101,7 @@ def test_dns_label(client, context):
         lambda x: 'State is: ' + x.state)
 
     instances = client. \
-        list_container(name=env.name + "_" + service.name + "_" + "1")
+        list_container(name=env.name + "-" + service.name + "-" + "1")
     assert len(instances) == 1
     c = instances[0]
     assert c.dns is None or len(c.dns) == 0
@@ -3131,7 +3131,7 @@ def test_dns_label_true(client, context):
         lambda x: 'State is: ' + x.state)
 
     instances = client. \
-        list_container(name=env.name + "_" + service.name + "_" + "1")
+        list_container(name=env.name + "-" + service.name + "-" + "1")
     assert len(instances) == 1
     c = instances[0]
     assert c.dns is not None and len(c.dns) > 0
@@ -3163,7 +3163,7 @@ def test_dns_label_and_dns_param(client, context):
         lambda x: 'State is: ' + x.state)
 
     instances = client. \
-        list_container(name=env.name + "_" + service.name + "_" + "1")
+        list_container(name=env.name + "-" + service.name + "-" + "1")
     assert len(instances) == 1
     c = instances[0]
     assert c.dns == ["1.1.1.1"]

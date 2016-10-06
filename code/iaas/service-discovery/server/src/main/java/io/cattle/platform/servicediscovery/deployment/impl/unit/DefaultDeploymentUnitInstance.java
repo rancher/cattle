@@ -172,12 +172,14 @@ public class DefaultDeploymentUnitInstance extends DeploymentUnitInstance implem
     private String getOverrideHostName(String domainName, String instanceName) {
         String overrideName = instanceName;
         if (instanceName != null && instanceName.length() > 64) {
-            String serviceNumber = instanceName.substring(instanceName.lastIndexOf("_"));
-            int truncateIndex = 64 - serviceNumber.length();
+            // legacy code - to support old data where service suffix object wasn't created
+            String serviceSuffix = ServiceDiscoveryUtil.getServiceSuffixFromInstanceName(instanceName);
+            String serviceSuffixWDivider = instanceName.substring(instanceName.lastIndexOf(serviceSuffix) - 1);
+            int truncateIndex = 64 - serviceSuffixWDivider.length();
             if (domainName != null) {
                 truncateIndex = truncateIndex - domainName.length() - 1;
             }
-            overrideName = instanceName.substring(0, truncateIndex) + serviceNumber;
+            overrideName = instanceName.substring(0, truncateIndex) + serviceSuffixWDivider;
         }
         return overrideName;
     }
