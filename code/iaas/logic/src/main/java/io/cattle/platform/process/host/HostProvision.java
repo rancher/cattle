@@ -1,6 +1,7 @@
 package io.cattle.platform.process.host;
 
 import io.cattle.platform.core.constants.CommonStatesConstants;
+import io.cattle.platform.core.constants.MachineConstants;
 import io.cattle.platform.core.model.Host;
 import io.cattle.platform.core.model.PhysicalHost;
 import io.cattle.platform.deferred.util.DeferredUtils;
@@ -36,7 +37,7 @@ public class HostProvision extends AbstractDefaultProcessHandler {
             return null;
         }
 
-        physicalHost = resourceMonitor.waitFor(physicalHost, new ResourcePredicate<PhysicalHost>() {
+        physicalHost = resourceMonitor.waitFor(physicalHost, 5 * 60000, new ResourcePredicate<PhysicalHost>() {
             @Override
             public boolean evaluate(final PhysicalHost obj) {
                 boolean transitioning = objectMetaDataManager.isTransitioningState(obj.getClass(),
@@ -46,11 +47,11 @@ public class HostProvision extends AbstractDefaultProcessHandler {
                 }
 
                 String message = TransitioningUtils.getTransitioningMessage(obj);
-                objectManager.setFields(obj, ObjectMetaDataManager.TRANSITIONING_MESSAGE_FIELD, message);
+                objectManager.setFields(host, ObjectMetaDataManager.TRANSITIONING_MESSAGE_FIELD, message);
                 DeferredUtils.nest(new Runnable() {
                     @Override
                     public void run() {
-                        ObjectUtils.publishChanged(eventService, objectManager, obj);
+                        ObjectUtils.publishChanged(eventService, objectManager, host);
                     }
                 });
 
@@ -63,7 +64,7 @@ public class HostProvision extends AbstractDefaultProcessHandler {
             }
         });
 
-        if (!CommonStatesConstants.ACTIVE.equals(physicalHost)) {
+        if (!CommonStatesConstants.ACTIVE.equals(physicalHost.getState())) {
             objectProcessManager.scheduleStandardProcess(StandardProcess.ERROR, host, null);
             String message = TransitioningUtils.getTransitioningMessage(physicalHost);
             ExecutionException e = new ExecutionException(message);
@@ -71,7 +72,21 @@ public class HostProvision extends AbstractDefaultProcessHandler {
             throw e;
         }
 
-        return null;
+        resourceMonitor.waitFor(host, 5 * 60000, new ResourcePredicate<Host>() {
+            @Override
+            public boolean evaluate(Host obj) {
+                return obj.getAgentId() != null;
+            }
+
+            @Override
+            public String getMessage() {
+                return "agent to check in";
+            }
+        });
+
+        return new HandlerResult(
+                MachineConstants.FIELD_DRIVER, physicalHost.getDriver()
+                ).withChainProcessName(objectProcessManager.getProcessName(host, StandardProcess.ACTIVATE));
     }
 
 }

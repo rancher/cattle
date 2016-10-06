@@ -187,7 +187,10 @@ public class AgentResourcesMonitor implements AnnotatedEventListener {
                 }
                 String currentIp = DataAccessor.fieldString(host, HostConstants.FIELD_IP_ADDRESS);
                 if (!ObjectUtils.equals(currentIp, ip.getAddress())) {
-                    objectManager.setFields(host, HostConstants.FIELD_IP_ADDRESS, ip.getAddress());
+                    try {
+                        objectManager.setFields(host, HostConstants.FIELD_IP_ADDRESS, ip.getAddress());
+                    } catch (DataChangedException e) {
+                    }
                 }
             }
         }
@@ -202,6 +205,18 @@ public class AgentResourcesMonitor implements AnnotatedEventListener {
             String physicalHostUuid = ObjectUtils.toString(data.get(HostConstants.FIELD_PHYSICAL_HOST_UUID), null);
             Long physicalHostId = getPhysicalHost(agent, physicalHostUuid, new HashMap<String, Object>());
             boolean orchestrate = false;
+
+            if (!hosts.containsKey(uuid) && physicalHostId != null) {
+                Host host = objectManager.findAny(Host.class,
+                        HOST.PHYSICAL_HOST_ID, physicalHostId,
+                        HOST.REMOVED, null);
+                if (host != null) {
+                    String reported = DataAccessor.fieldString(host, HostConstants.FIELD_REPORTED_UUID);
+                    if (uuid.equals(reported)) {
+                        hosts.put(reported, host);
+                    }
+                }
+            }
 
             if (hosts.containsKey(uuid)) {
                 Map<Object, Object> updates = new HashMap<>();
@@ -247,7 +262,7 @@ public class AgentResourcesMonitor implements AnnotatedEventListener {
                 if (updates.size() > 0) {
                     objectManager.reload(host);
                     Map<String, Object> updateFields = objectManager.convertToPropertiesFor(host, updates);
-                    if (orchestrate) {
+                    if (orchestrate && !HostConstants.STATE_PROVISIONING.equals(host.getState())) {
                         resourceDao.updateAndSchedule(host, updateFields);
                     } else {
                         try {

@@ -38,7 +38,7 @@ public class HostCreateToProvision extends AbstractObjectProcessLogic implements
         Host host = (Host)state.getResource();
         String driver = getDriver(host);
         if (StringUtils.isBlank(driver)) {
-            return null;
+            return new HandlerResult().withChainProcessName(HostConstants.PROCESS_ACTIVATE);
         }
 
         PhysicalHost phyHost = objectManager.loadResource(PhysicalHost.class, host.getPhysicalHostId());

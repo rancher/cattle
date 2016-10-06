@@ -419,11 +419,10 @@ def test_host_lifecycle(super_client, machine_context, update_ping_settings):
     test_machine_lifecycle(super_client, machine_context, update_ping_settings,
                            machine=machine)
     host = client.wait_success(host)
-    assert host.state == 'active'
+    assert host.state == 'removed'
     host = super_client.reload(host)
     machine = super_client.reload(machine)
 
-    assert host.name == name
     assert machine.name == name
     assert host.data.fields.reportedUuid == machine.externalId
     host.agentId == machine.agentId
