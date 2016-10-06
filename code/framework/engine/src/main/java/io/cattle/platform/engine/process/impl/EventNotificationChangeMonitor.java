@@ -19,9 +19,17 @@ public class EventNotificationChangeMonitor implements StateChangeMonitor {
         Map<String, Object> data = CollectionUtils.asMap("previousState", previousState, "state", newState);
         addData(data, schedule, previousState, newState, record, state, context);
 
-        Event event = EventVO.newEvent(FrameworkEvents.STATE_CHANGE).withData(data).withResourceType(record.getResourceType()).withResourceId(
-                record.getResourceId());
+        Event event = makeEvent(record.getResourceType(), record.getResourceId()).withData(data);
 
+        publish(schedule, event, context);
+    }
+
+    protected EventVO<Object> makeEvent(String resourceType, String resourceId) {
+        return EventVO.newEvent(FrameworkEvents.STATE_CHANGE).withResourceType(resourceType).withResourceId(resourceId);
+
+    }
+
+    protected void publish(boolean schedule, Event event, ProcessServiceContext context) {
         if (schedule) {
             DeferredUtils.deferPublish(context.getEventService(), event);
         } else {
