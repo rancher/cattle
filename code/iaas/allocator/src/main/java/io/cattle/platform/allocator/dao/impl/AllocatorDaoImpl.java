@@ -14,12 +14,12 @@ import static io.cattle.platform.core.model.tables.MountTable.*;
 import static io.cattle.platform.core.model.tables.NicTable.*;
 import static io.cattle.platform.core.model.tables.PortTable.*;
 import static io.cattle.platform.core.model.tables.ServiceExposeMapTable.*;
+import static io.cattle.platform.core.model.tables.StorageDriverTable.*;
 import static io.cattle.platform.core.model.tables.StoragePoolHostMapTable.*;
 import static io.cattle.platform.core.model.tables.StoragePoolTable.*;
 import static io.cattle.platform.core.model.tables.SubnetVnetMapTable.*;
 import static io.cattle.platform.core.model.tables.VnetTable.*;
 import static io.cattle.platform.core.model.tables.VolumeStoragePoolMapTable.*;
-import static io.cattle.platform.core.model.tables.VolumeTable.*;
 import io.cattle.platform.allocator.dao.AllocatorDao;
 import io.cattle.platform.allocator.exception.FailedToAllocate;
 import io.cattle.platform.allocator.service.AllocationAttempt;
@@ -28,6 +28,7 @@ import io.cattle.platform.allocator.util.AllocatorUtils;
 import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.HealthcheckConstants;
 import io.cattle.platform.core.constants.InstanceConstants;
+import io.cattle.platform.core.constants.StorageDriverConstants;
 import io.cattle.platform.core.constants.VolumeConstants;
 import io.cattle.platform.core.dao.GenericMapDao;
 import io.cattle.platform.core.model.Host;
@@ -35,20 +36,22 @@ import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.InstanceHostMap;
 import io.cattle.platform.core.model.Nic;
 import io.cattle.platform.core.model.Port;
+import io.cattle.platform.core.model.StorageDriver;
 import io.cattle.platform.core.model.StoragePool;
 import io.cattle.platform.core.model.Volume;
 import io.cattle.platform.core.model.VolumeStoragePoolMap;
 import io.cattle.platform.core.model.tables.records.HostRecord;
 import io.cattle.platform.core.model.tables.records.InstanceRecord;
 import io.cattle.platform.core.model.tables.records.StoragePoolRecord;
-import io.cattle.platform.core.util.InstanceHelpers;
 import io.cattle.platform.db.jooq.dao.impl.AbstractJooqDao;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.util.DataAccessor;
+import io.github.ibuildthecloud.gdapi.condition.ConditionType;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -177,14 +180,9 @@ public class AllocatorDaoImpl extends AbstractJooqDao implements AllocatorDao {
                 objectManager.create(InstanceHostMap.class,
                         INSTANCE_HOST_MAP.HOST_ID, newHost,
                         INSTANCE_HOST_MAP.INSTANCE_ID, instance.getId());
-
-                List<Volume> vols = InstanceHelpers.extractVolumesFromMounts(instance, objectManager);
-                for (Volume v : vols) {
-                    if (VolumeConstants.ACCESS_MODE_SINGLE_HOST_RW.equals(v.getAccessMode())) {
-                        objectManager.setFields(v, VOLUME.HOST_ID, newHost);
-                    }
-                }
             }
+
+            updateVolumeHostInfo(attempt, candidate, newHost);
         }
 
         Map<Long, Set<Long>> existingPools = attempt.getPoolIds();
@@ -233,6 +231,40 @@ public class AllocatorDaoImpl extends AbstractJooqDao implements AllocatorDao {
         return true;
     }
 
+    void updateVolumeHostInfo(AllocationAttempt attempt, AllocationCandidate candidate, Long newHost) {
+        List<Object> storageDriverIds = new ArrayList<>();
+        for (Volume v : attempt.getVolumes()) {
+            if (v.getStorageDriverId() != null) {
+                storageDriverIds.add(v.getStorageDriverId());
+            }
+        }
+
+        Map<Object, Object> criteria = new HashMap<Object, Object>();
+        criteria.put(STORAGE_DRIVER.REMOVED, new io.github.ibuildthecloud.gdapi.condition.Condition(ConditionType.NULL));
+        criteria.put(STORAGE_DRIVER.ID, new io.github.ibuildthecloud.gdapi.condition.Condition(ConditionType.IN, storageDriverIds));
+        List<StorageDriver> drivers = getObjectManager().find(StorageDriver.class, criteria);
+        Map<Long, StorageDriver> storageDrivers = new HashMap<>();
+        for (StorageDriver d : drivers) {
+            storageDrivers.put(d.getId(), d);
+        }
+
+        for (Volume v : attempt.getVolumes()) {
+            boolean persist = false;
+            StorageDriver d = v.getStorageDriverId() != null ? storageDrivers.get(v.getStorageDriverId()) : null;
+            if (d != null && StorageDriverConstants.SCOPE_LOCAL.equals(DataAccessor.fieldString(d, StorageDriverConstants.FIELD_SCOPE))) {
+                persist = true;
+                getAllocatedHostUuidProp(v).set(candidate.getHostUuid());
+            }
+            if (VolumeConstants.ACCESS_MODE_SINGLE_HOST_RW.equals(v.getAccessMode())) {
+                persist = true;
+                v.setHostId(newHost);
+            }
+            if (persist) {
+                objectManager.persist(v);
+            }
+        }
+    }
+
     protected boolean isEmtpy(Map<Long,Set<Long>> set) {
         for ( Set<Long> value : set.values() ) {
             if ( value.size() > 0 ) {
@@ -247,11 +279,7 @@ public class AllocatorDaoImpl extends AbstractJooqDao implements AllocatorDao {
     public void releaseAllocation(Instance instance,  InstanceHostMap map) {
         //Reload for persisting
         map = objectManager.loadResource(InstanceHostMap.class, map.getId());
-
-        DataAccessor data = DataAccessor.fromDataFieldOf(map)
-                                    .withScope(AllocatorDao.class)
-                                    .withKey("deallocated");
-
+        DataAccessor data = getDeallocatedProp(map);
         Boolean done = data.as(Boolean.class);
         if ( done == null || ! done.booleanValue() ) {
             data.set(true);
@@ -261,7 +289,37 @@ public class AllocatorDaoImpl extends AbstractJooqDao implements AllocatorDao {
 
     @Override
     public void releaseAllocation(Volume volume) {
-        // Nothing to do?
+        //Reload for persisting
+        volume = objectManager.reload(volume);
+        DataAccessor data = getDeallocatedProp(volume);
+        Boolean done = data.as(Boolean.class);
+        if ( done == null || ! done.booleanValue() ) {
+            data.set(true);
+            objectManager.persist(volume);
+        }
+    }
+
+    @Override
+    public boolean isAllocationReleased(Object resource) {
+        DataAccessor done = getDeallocatedProp(resource);
+        return done.as(Boolean.class);
+    }
+
+    private DataAccessor getDeallocatedProp(Object resource) {
+        return DataAccessor.fromDataFieldOf(resource)
+                .withScope(AllocatorDao.class)
+                .withKey("deallocated");
+    }
+
+    @Override
+    public String getAllocatedHostUuid(Volume volume) {
+        return getAllocatedHostUuidProp(volume).as(String.class);
+    }
+
+    protected DataAccessor getAllocatedHostUuidProp(Volume v) {
+        return DataAccessor.fromDataFieldOf(v)
+        .withScope(AllocatorDao.class)
+        .withKey("allocatedHostUuid");
     }
 
     @Override

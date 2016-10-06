@@ -1,20 +1,29 @@
 package io.cattle.platform.iaas.api.volume;
 
+import static io.cattle.platform.core.model.tables.StorageDriverTable.*;
+import io.cattle.platform.api.auth.Policy;
+import io.cattle.platform.core.constants.StorageDriverConstants;
 import io.cattle.platform.core.constants.VolumeConstants;
+import io.cattle.platform.core.model.StorageDriver;
 import io.cattle.platform.core.model.Volume;
 import io.cattle.platform.iaas.api.filter.common.AbstractDefaultResourceManagerFilter;
 import io.cattle.platform.object.ObjectManager;
+import io.cattle.platform.object.meta.ObjectMetaDataManager;
 import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.util.type.CollectionUtils;
+import io.github.ibuildthecloud.gdapi.context.ApiContext;
 import io.github.ibuildthecloud.gdapi.exception.ClientVisibleException;
 import io.github.ibuildthecloud.gdapi.request.ApiRequest;
 import io.github.ibuildthecloud.gdapi.request.resource.ResourceManager;
 import io.github.ibuildthecloud.gdapi.util.ResponseCodes;
 import io.github.ibuildthecloud.gdapi.validation.ValidationErrorCodes;
 
+import java.util.HashSet;
 import java.util.Map;
 
 import javax.inject.Inject;
+
+import org.apache.commons.lang3.StringUtils;
 
 public class VolumeCreateValidationFilter extends AbstractDefaultResourceManagerFilter {
 
@@ -40,13 +49,26 @@ public class VolumeCreateValidationFilter extends AbstractDefaultResourceManager
         Volume volume = request.proxyRequestObject(Volume.class);
 
         if (volume.getSizeMb() != null) {
-            // TODOCAJ Once drivers are merged, update this filter to check to see if the driver supports size.
-            String driver = DataAccessor.fieldString(volume, VolumeConstants.FIELD_VOLUME_DRIVER);
-            if (driver != null && !VolumeConstants.LOCAL_DRIVER.equals(driver)) {
-                throw new ClientVisibleException(ResponseCodes.UNPROCESSABLE_ENTITY, ValidationErrorCodes.INVALID_OPTION,
-                        String.format("Driver %s does not support size property.", driver), null);
+            Object d = data.get(VolumeConstants.FIELD_VOLUME_DRIVER);
+            String driver = d != null ? d.toString() : null;
+            Long driverId = volume.getStorageDriverId();
+            StorageDriver storageDriver = objectManager.loadResource(StorageDriver.class, driverId);
 
+            if (storageDriver == null && StringUtils.isNotBlank(driver)) {
+                long accountId = ((Policy) ApiContext.getContext().getPolicy()).getAccountId();
+                storageDriver = objectManager.findAny(StorageDriver.class,
+                        STORAGE_DRIVER.ACCOUNT_ID, accountId,
+                        STORAGE_DRIVER.REMOVED, null,
+                        STORAGE_DRIVER.NAME, driver);
             }
+
+            if (storageDriver == null
+                    || !new HashSet<String>(DataAccessor.fieldStringList(storageDriver, ObjectMetaDataManager.CAPABILITIES_FIELD))
+                            .contains(StorageDriverConstants.CAPABILITY_SCHEDULE_SIZE)) {
+                throw new ClientVisibleException(ResponseCodes.UNPROCESSABLE_ENTITY, ValidationErrorCodes.INVALID_OPTION,
+                        String.format("Volume driver %s does not support specifying a size.", driver), null);
+            }
+
         }
         
         return super.create(type, request, next);

@@ -54,4 +54,8 @@ public interface AllocatorDao {
     Map<String, List<InstanceHostMap>> getInstanceHostMapsWithHostUuid(long instanceId);
 
     List<Instance> getUnmappedDeploymentUnitInstances(String deploymentUnitUuid);
+
+    boolean isAllocationReleased(Object resource);
+
+    String getAllocatedHostUuid(Volume volume);
  }
