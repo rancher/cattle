@@ -24,6 +24,7 @@ import io.cattle.platform.object.process.StandardProcess;
 import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.object.util.TransitioningUtils;
 import io.cattle.platform.process.common.util.ProcessUtils;
+import io.cattle.platform.process.externalevent.ExternalEventConstants;
 import io.cattle.platform.servicediscovery.api.util.ServiceDiscoveryUtil;
 import io.cattle.platform.servicediscovery.deployment.DeploymentUnitInstance;
 import io.cattle.platform.servicediscovery.deployment.DeploymentUnitInstanceIdGenerator;
@@ -251,7 +252,8 @@ public class DeploymentUnit {
                 } catch (ProcessCancelException e) {
                     context.objectProcessManager.scheduleStandardProcessAsync(StandardProcess.DEACTIVATE,
                             volume, ProcessUtils.chainInData(new HashMap<String, Object>(),
-                                    StandardProcess.DEACTIVATE.name(), InstanceConstants.PROCESS_REMOVE));
+                                            ExternalEventConstants.PROC_VOL_DEACTIVATE,
+                                            ExternalEventConstants.PROC_VOL_REMOVE));
                 }
             }
         }
@@ -364,36 +366,32 @@ public class DeploymentUnit {
             }
             return;
         } else {
-            String name = "";
             if (template.getPerContainer()) {
-                name = stack.getName() + "_" + volumeNamePostfix + "_" + this.unit.getServiceIndex() + "_" + uuid;
+                String name = stack.getName() + "_" + volumeNamePostfix + "_" + this.unit.getServiceIndex() + "_"
+                        + uuid;
                 volume = context.objectManager
                         .findOne(Volume.class, VOLUME.ACCOUNT_ID, service.getAccountId(),
                                 VOLUME.REMOVED, null, VOLUME.VOLUME_TEMPLATE_ID, template.getId(), VOLUME.STACK_ID,
                                 stack.getId(), VOLUME.NAME, name, VOLUME.DEPLOYMENT_UNIT_ID, unit.getId());
-            } else {
-                name = stack.getName() + "_" + volumeNamePostfix;
-                volume = context.objectManager
-                        .findOne(Volume.class, VOLUME.ACCOUNT_ID, service.getAccountId(),
-                                VOLUME.REMOVED, null, VOLUME.VOLUME_TEMPLATE_ID, template.getId(), VOLUME.STACK_ID,
-                                stack.getId(), VOLUME.NAME, name);
-            }
-
-            final String vName = new String(name);
-            if (volume == null) {
-                if (!template.getPerContainer()) {
-                    volume = context.lockMgr.lock(new StackVolumeLock(stack), new LockCallback<Volume>() {
-                        @Override
-                        public Volume doWithLock() {
-                            return createVolume(service, template, new String(vName));
-                        }
-                    });
-                } else {
-                    volume = createVolume(service, template, vName);
+                if (volume == null) {
+                    volume = createVolume(service, template, name);
                 }
-            }
-            if (volume.getState().equalsIgnoreCase(CommonStatesConstants.REQUESTED)) {
-                context.objectProcessManager.scheduleStandardProcessAsync(StandardProcess.CREATE, volume, null);
+            } else {
+                final String name = stack.getName() + "_" + volumeNamePostfix;
+                volume = context.lockMgr.lock(new StackVolumeLock(stack, name), new LockCallback<Volume>() {
+                    @Override
+                    public Volume doWithLock() {
+                        Volume existing = context.objectManager
+                                .findOne(Volume.class, VOLUME.ACCOUNT_ID, service.getAccountId(),
+                                        VOLUME.REMOVED, null, VOLUME.VOLUME_TEMPLATE_ID, template.getId(),
+                                        VOLUME.STACK_ID,
+                                        stack.getId(), VOLUME.NAME, name);
+                        if (existing != null) {
+                            return existing;
+                        }
+                        return createVolume(service, template, new String(name));
+                    }
+                });
             }
         }
         volumeMounts.put(volumePath, volume.getId());
@@ -412,7 +410,7 @@ public class DeploymentUnit {
         params.put(VolumeConstants.FIELD_VOLUME_DRIVER_OPTS,
                 DataAccessor.fieldMap(template, VolumeConstants.FIELD_VOLUME_DRIVER_OPTS));
         params.put(VolumeConstants.FIELD_VOLUME_DRIVER, template.getDriver());
-        return context.objectManager.create(Volume.class, params);
+        return context.resourceDao.createAndSchedule(Volume.class, params);
     }
 
     @SuppressWarnings("unchecked")

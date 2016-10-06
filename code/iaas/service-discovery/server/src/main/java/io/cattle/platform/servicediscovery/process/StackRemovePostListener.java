@@ -3,7 +3,6 @@ package io.cattle.platform.servicediscovery.process;
 import static io.cattle.platform.core.model.tables.VolumeTable.*;
 import static io.cattle.platform.core.model.tables.VolumeTemplateTable.*;
 import io.cattle.platform.core.constants.CommonStatesConstants;
-import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.model.Stack;
 import io.cattle.platform.core.model.Volume;
 import io.cattle.platform.core.model.VolumeTemplate;
@@ -15,6 +14,7 @@ import io.cattle.platform.engine.process.impl.ProcessCancelException;
 import io.cattle.platform.object.process.StandardProcess;
 import io.cattle.platform.process.common.handler.AbstractObjectProcessLogic;
 import io.cattle.platform.process.common.util.ProcessUtils;
+import io.cattle.platform.process.externalevent.ExternalEventConstants;
 import io.cattle.platform.util.type.Priority;
 
 import java.util.HashMap;
@@ -58,7 +58,8 @@ public class StackRemovePostListener extends AbstractObjectProcessLogic implemen
                 } catch (ProcessCancelException e) {
                     objectProcessManager.scheduleStandardProcessAsync(StandardProcess.DEACTIVATE,
                             volume, ProcessUtils.chainInData(new HashMap<String, Object>(),
-                                    StandardProcess.DEACTIVATE.name(), InstanceConstants.PROCESS_REMOVE));
+                                            ExternalEventConstants.PROC_VOL_DEACTIVATE,
+                                            ExternalEventConstants.PROC_VOL_REMOVE));
                 }
             }
         }

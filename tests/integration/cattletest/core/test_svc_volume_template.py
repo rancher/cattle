@@ -115,6 +115,9 @@ def test_stack_volume(client, context):
     assert 'per_container' not in vol
 
     # remove stack, validate its volume is removed
+    # activate volume
+    volume.activate()
+    wait_for(lambda: client.reload(volume).state == 'active')
     client.wait_success(stack.remove())
     wait_for(lambda: client.reload(volume).state == 'removed')
 
