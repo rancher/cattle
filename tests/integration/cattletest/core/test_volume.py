@@ -34,6 +34,13 @@ def test_volume_create_state(client, context):
     assert volume.state == 'removed'
 
 
+def test_volume_create_size_validation(client, context):
+    with pytest.raises(ApiError) as e:
+        client.create_volume(name='foo', driver='foo', sizeMb=111)
+    assert e.value.error.status == 422
+    assert e.value.error.code == 'InvalidOption'
+
+
 def test_volume_create_without_driver_name(client, context):
     name = random_str()
     with pytest.raises(ApiError) as e:
