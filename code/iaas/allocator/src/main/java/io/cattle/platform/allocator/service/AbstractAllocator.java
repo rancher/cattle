@@ -132,9 +132,7 @@ public abstract class AbstractAllocator implements Allocator {
 
     protected abstract void releaseAllocation(Instance instance);
 
-    protected void releaseAllocation(Volume volume) {
-        allocatorDao.releaseAllocation(volume);
-    }
+    protected abstract void releaseAllocation(Volume volume);
 
     protected List<Instance> getInstancesToAllocate(Instance instance) {
         if (instance.getDeploymentUnitUuid() != null) {

@@ -6,7 +6,6 @@ import io.cattle.platform.agent.instance.dao.AgentInstanceDao;
 import io.cattle.platform.allocator.constraint.Constraint;
 import io.cattle.platform.allocator.constraint.PortsConstraint;
 import io.cattle.platform.allocator.constraint.ValidHostsConstraint;
-import io.cattle.platform.allocator.dao.AllocatorDao;
 import io.cattle.platform.allocator.exception.FailedToAllocate;
 import io.cattle.platform.allocator.service.AbstractAllocator;
 import io.cattle.platform.allocator.service.AllocationAttempt;
@@ -23,6 +22,7 @@ import io.cattle.platform.eventing.model.Event;
 import io.cattle.platform.eventing.model.EventVO;
 import io.cattle.platform.lock.definition.LockDefinition;
 import io.cattle.platform.object.util.DataAccessor;
+import io.cattle.platform.object.util.ObjectUtils;
 import io.cattle.platform.simple.allocator.dao.QueryOptions;
 import io.cattle.platform.simple.allocator.dao.SimpleAllocatorDao;
 import io.cattle.platform.simple.allocator.network.NetworkAllocationCandidates;
@@ -36,6 +36,8 @@ import java.util.List;
 import java.util.Map;
 
 import javax.inject.Inject;
+
+import org.apache.commons.lang3.StringUtils;
 
 public class SimpleAllocator extends AbstractAllocator implements Allocator, Named {
 
@@ -105,19 +107,23 @@ public class SimpleAllocator extends AbstractAllocator implements Allocator, Nam
 
     @Override
     protected void releaseAllocation(Instance instance) {
-        // This is kind of strange logic to remove deallocatefor every instance host map, but in truth there will be only one ihm
+        // This is kind of strange logic to remove deallocate for every instance host map, but in truth there will be only one ihm
         Map<String, List<InstanceHostMap>> maps = allocatorDao.getInstanceHostMapsWithHostUuid(instance.getId());
         for (Map.Entry<String, List<InstanceHostMap>> entry : maps.entrySet()) {
             for (InstanceHostMap map : entry.getValue()) {
-                DataAccessor data = DataAccessor.fromDataFieldOf(map)
-                                        .withScope(AllocatorDao.class)
-                                        .withKey("deallocated");
-                Boolean done = data.as(Boolean.class);
-                if (done == null || !done.booleanValue()) {
+                if (!allocatorDao.isAllocationReleased(map)) {
                     allocatorDao.releaseAllocation(instance, map);
                     callExternalSchedulerToRelease(instance, entry.getKey());
                 }
             }
+        }
+    }
+
+    @Override
+    protected void releaseAllocation(Volume volume) {
+        if (!allocatorDao.isAllocationReleased(volume)) {
+            allocatorDao.releaseAllocation(volume);
+            callExternalSchedulerToRelease(volume);
         }
     }
 
@@ -135,7 +141,7 @@ public class SimpleAllocator extends AbstractAllocator implements Allocator, Nam
     void callExternalSchedulerToReserve(AllocationAttempt attempt, AllocationCandidate candidate) {
         Long agentId = getAgentResource(attempt.getAccountId(), attempt.getInstances());
         if (agentId != null) {
-            EventVO<Map<String, Object>> schedulerEvent = buildExternalSchedulerEvent(SCHEDULER_RESERVE_EVENT, attempt);
+            EventVO<Map<String, Object>> schedulerEvent = buildEvent(SCHEDULER_RESERVE_EVENT, attempt);
             if (schedulerEvent != null) {
                 Map<String, Object> reqData = CollectionUtils.toMap(schedulerEvent.getData().get(SCHEDULER_REQUEST_DATA_NAME));
                 reqData.put(HOST_ID, candidate.getHostUuid());
@@ -153,7 +159,24 @@ public class SimpleAllocator extends AbstractAllocator implements Allocator, Nam
     void callExternalSchedulerToRelease(Instance instance, String hostUuid) {
         Long agentId = getAgentResource(instance);
         if (agentId != null) {
-            EventVO<Map<String, Object>> schedulerEvent = buildExternalSchedulerReleaseEvent(instance);
+            EventVO<Map<String, Object>> schedulerEvent = buildReleaseEvent(instance);
+            if (schedulerEvent != null) {
+                Map<String, Object> reqData = CollectionUtils.toMap(schedulerEvent.getData().get(SCHEDULER_REQUEST_DATA_NAME));
+                reqData.put(HOST_ID, hostUuid);
+                RemoteAgent agent = agentLocator.lookupAgent(agentId);
+                agent.callSync(schedulerEvent);
+            }
+        }
+    }
+
+    void callExternalSchedulerToRelease(Volume volume) {
+        String hostUuid = allocatorDao.getAllocatedHostUuid(volume);
+        if (StringUtils.isEmpty(hostUuid)) {
+            return;
+        }
+        Long agentId = getAgentResource(volume);
+        if (agentId != null) {
+            EventVO<Map<String, Object>> schedulerEvent = buildReleaseEvent(volume);
             if (schedulerEvent != null) {
                 Map<String, Object> reqData = CollectionUtils.toMap(schedulerEvent.getData().get(SCHEDULER_REQUEST_DATA_NAME));
                 reqData.put(HOST_ID, hostUuid);
@@ -168,7 +191,7 @@ public class SimpleAllocator extends AbstractAllocator implements Allocator, Nam
         List<String> hosts = null;
         Long agentId = getAgentResource(attempt.getAccountId(), attempt.getInstances());
         if (agentId != null) {
-            EventVO<Map<String, Object>> schedulerEvent = buildExternalSchedulerEvent(SCHEDULER_PRIORITIZE_EVENT, attempt);
+            EventVO<Map<String, Object>> schedulerEvent = buildEvent(SCHEDULER_PRIORITIZE_EVENT, attempt);
 
             if (schedulerEvent != null) {
                 RemoteAgent agent = agentLocator.lookupAgent(agentId);
@@ -188,9 +211,14 @@ public class SimpleAllocator extends AbstractAllocator implements Allocator, Nam
         return  (List<ResourceRequest>)((Map<String, Object>)schedulerEvent.getData().get(SCHEDULER_REQUEST_DATA_NAME)).get(RESOURCE_REQUESTS);
     }
 
-    EventVO<Map<String, Object>> buildExternalSchedulerReleaseEvent(Instance instance) {
+    EventVO<Map<String, Object>> buildReleaseEvent(Object resource) {
         List<ResourceRequest> resourceRequests = new ArrayList<>();
-        addInstanceResourceRequests(resourceRequests, instance);
+        if (resource instanceof Instance) {
+            addInstanceResourceRequests(resourceRequests, (Instance)resource);
+        } else if (resource instanceof Volume) {
+            addVolueResourceRequests(resourceRequests, (Volume)resource);
+        }
+
         if (resourceRequests.isEmpty()) {
             return null;
         }
@@ -198,7 +226,7 @@ public class SimpleAllocator extends AbstractAllocator implements Allocator, Nam
         return newEvent(SCHEDULER_RELEASE_EVENT, resourceRequests);
     }
 
-    EventVO<Map<String, Object>> buildExternalSchedulerEvent(String eventName, AllocationAttempt attempt) {
+    EventVO<Map<String, Object>> buildEvent(String eventName, AllocationAttempt attempt) {
         List<ResourceRequest> resourceRequests = gatherResourceRequests(attempt);
         if (resourceRequests.isEmpty()) {
             return null;
@@ -222,7 +250,20 @@ public class SimpleAllocator extends AbstractAllocator implements Allocator, Nam
         for (Instance instance : attempt.getInstances()) {
             addInstanceResourceRequests(requests, instance);
         }
+
+        addVolueResourceRequests(requests, attempt.getVolumes().toArray(new Volume[attempt.getVolumes().size()]));
         return requests;
+    }
+
+    private void addVolueResourceRequests(List<ResourceRequest> requests, Volume... volumes) {
+        for (Volume v : volumes) {
+            if (v.getSizeMb() != null) {
+                ResourceRequest rr = new ResourceRequest();
+                rr.setAmount(v.getSizeMb());
+                rr.setResource("storageSize");
+                requests.add(rr);
+            }
+        }
     }
 
     @SuppressWarnings("unchecked")
@@ -253,13 +294,16 @@ public class SimpleAllocator extends AbstractAllocator implements Allocator, Nam
         return agentId;
     }
 
-    private Long getAgentResource(Instance instance) {
-        List<Long> agentIds = agentInstanceDao.getAgentProvider(SystemLabels.LABEL_AGENT_SERVICE_SCHEDULING_PROVIDER, instance.getAccountId());
-        Long agentId = agentIds.size() == 0 ? null : agentIds.get(0);
-        if (agentIds.contains(instance.getAgentId())) {
+    private Long getAgentResource(Object resource) {
+        Long accountId = (Long)ObjectUtils.getAccountId(resource);
+        List<Long> agentIds = agentInstanceDao.getAgentProvider(SystemLabels.LABEL_AGENT_SERVICE_SCHEDULING_PROVIDER, accountId);
+
+        // If the resource being allocated is a scheduling provider agent, return null so that we don't try to send the container to the scheduler.
+        Long resourceAgentId = (Long)ObjectUtils.getPropertyIgnoreErrors(resource, "agentId");
+        if (resourceAgentId != null && agentIds.contains(resourceAgentId)) {
             return null;
         }
-        return agentId;
+        return agentIds.size() == 0 ? null : agentIds.get(0);
     }
 
     protected AllocationCandidateCallback getCallback(AllocationAttempt attempt) {
