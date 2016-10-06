@@ -7,14 +7,17 @@ import io.cattle.platform.allocator.constraint.Constraint;
 import io.cattle.platform.allocator.constraint.PortsConstraint;
 import io.cattle.platform.allocator.constraint.ValidHostsConstraint;
 import io.cattle.platform.allocator.dao.AllocatorDao;
+import io.cattle.platform.allocator.exception.FailedToAllocate;
 import io.cattle.platform.allocator.service.AbstractAllocator;
 import io.cattle.platform.allocator.service.AllocationAttempt;
 import io.cattle.platform.allocator.service.AllocationCandidate;
 import io.cattle.platform.allocator.service.AllocationRequest;
 import io.cattle.platform.allocator.service.Allocator;
+import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.dao.GenericMapDao;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.InstanceHostMap;
+import io.cattle.platform.core.model.Volume;
 import io.cattle.platform.core.util.SystemLabels;
 import io.cattle.platform.eventing.model.Event;
 import io.cattle.platform.eventing.model.EventVO;
@@ -70,7 +73,10 @@ public class SimpleAllocator extends AbstractAllocator implements Allocator, Nam
 
     @Override
     protected Iterator<AllocationCandidate> getCandidates(AllocationAttempt attempt) {
-        List<Long> volumeIds = new ArrayList<Long>(attempt.getVolumeIds());
+        List<Long> volumeIds = new ArrayList<Long>();
+        for (Volume v : attempt.getVolumes()) {
+            volumeIds.add(v.getId());
+        }
 
         QueryOptions options = new QueryOptions();
 
@@ -129,8 +135,7 @@ public class SimpleAllocator extends AbstractAllocator implements Allocator, Nam
     void callExternalSchedulerToReserve(AllocationAttempt attempt, AllocationCandidate candidate) {
         Long agentId = getAgentResource(attempt.getAccountId(), attempt.getInstances());
         if (agentId != null) {
-            EventVO<Map<String, Object>> schedulerEvent = buildExternalSchedulerEvent(SCHEDULER_RESERVE_EVENT, (Instance[])attempt.getInstances().toArray());
-            ;
+            EventVO<Map<String, Object>> schedulerEvent = buildExternalSchedulerEvent(SCHEDULER_RESERVE_EVENT, attempt);
             if (schedulerEvent != null) {
                 Map<String, Object> reqData = CollectionUtils.toMap(schedulerEvent.getData().get(SCHEDULER_REQUEST_DATA_NAME));
                 reqData.put(HOST_ID, candidate.getHostUuid());
@@ -148,7 +153,7 @@ public class SimpleAllocator extends AbstractAllocator implements Allocator, Nam
     void callExternalSchedulerToRelease(Instance instance, String hostUuid) {
         Long agentId = getAgentResource(instance);
         if (agentId != null) {
-            EventVO<Map<String, Object>> schedulerEvent = buildExternalSchedulerEvent(SCHEDULER_RELEASE_EVENT, instance);
+            EventVO<Map<String, Object>> schedulerEvent = buildExternalSchedulerReleaseEvent(instance);
             if (schedulerEvent != null) {
                 Map<String, Object> reqData = CollectionUtils.toMap(schedulerEvent.getData().get(SCHEDULER_REQUEST_DATA_NAME));
                 reqData.put(HOST_ID, hostUuid);
@@ -163,22 +168,46 @@ public class SimpleAllocator extends AbstractAllocator implements Allocator, Nam
         List<String> hosts = null;
         Long agentId = getAgentResource(attempt.getAccountId(), attempt.getInstances());
         if (agentId != null) {
-            EventVO<Map<String, Object>> schedulerEvent = buildExternalSchedulerEvent(SCHEDULER_PRIORITIZE_EVENT, (Instance[])attempt.getInstances().toArray());
+            EventVO<Map<String, Object>> schedulerEvent = buildExternalSchedulerEvent(SCHEDULER_PRIORITIZE_EVENT, attempt);
 
             if (schedulerEvent != null) {
                 RemoteAgent agent = agentLocator.lookupAgent(agentId);
                 Event eventResult = agent.callSync(schedulerEvent);
                 hosts = (List<String>)CollectionUtils.getNestedValue(eventResult.getData(), SCHEDULER_PRIORITIZE_RESPONSE);
+
+                if (hosts.isEmpty()) {
+                    throw new FailedToAllocate(String.format("No healthy hosts meet the resource constraints: %s", extractResourceRequests(schedulerEvent)));
+                }
             }
         }
         return hosts;
     }
 
-    EventVO<Map<String, Object>> buildExternalSchedulerEvent(String eventName, Instance... instances) {
-        List<ResourceRequest> resourceRequests = gatherResourceRequests(instances);
-        if (resourceRequests == null || resourceRequests.isEmpty()) {
+    @SuppressWarnings("unchecked")
+    private List<ResourceRequest> extractResourceRequests(EventVO<Map<String, Object>> schedulerEvent) {
+        return  (List<ResourceRequest>)((Map<String, Object>)schedulerEvent.getData().get(SCHEDULER_REQUEST_DATA_NAME)).get(RESOURCE_REQUESTS);
+    }
+
+    EventVO<Map<String, Object>> buildExternalSchedulerReleaseEvent(Instance instance) {
+        List<ResourceRequest> resourceRequests = new ArrayList<>();
+        addInstanceResourceRequests(resourceRequests, instance);
+        if (resourceRequests.isEmpty()) {
             return null;
         }
+
+        return newEvent(SCHEDULER_RELEASE_EVENT, resourceRequests);
+    }
+
+    EventVO<Map<String, Object>> buildExternalSchedulerEvent(String eventName, AllocationAttempt attempt) {
+        List<ResourceRequest> resourceRequests = gatherResourceRequests(attempt);
+        if (resourceRequests.isEmpty()) {
+            return null;
+        }
+
+        return newEvent(eventName, resourceRequests);
+    }
+
+    EventVO<Map<String, Object>> newEvent(String eventName, List<ResourceRequest> resourceRequests) {
         Map<String, Object> eventData = new HashMap<String, Object>();
         Map<String, Object> reqData = new HashMap<>();
         reqData.put(RESOURCE_REQUESTS, resourceRequests);
@@ -188,23 +217,29 @@ public class SimpleAllocator extends AbstractAllocator implements Allocator, Nam
         return schedulerEvent;
     }
 
-    private List<ResourceRequest> gatherResourceRequests(Instance[] instances) {
+    private List<ResourceRequest> gatherResourceRequests(AllocationAttempt attempt) {
         List<ResourceRequest> requests = new ArrayList<>();
-        long memory = 0l;
-        for (Instance instance : instances) {
-            Long instMemory = DataAccessor.fieldLong(instance, "memory");
-            if (instMemory != null) {
-                memory += instMemory;
-            }
+        for (Instance instance : attempt.getInstances()) {
+            addInstanceResourceRequests(requests, instance);
         }
-        if (memory > 0l) {
+        return requests;
+    }
+
+    @SuppressWarnings("unchecked")
+    private void addInstanceResourceRequests(List<ResourceRequest> requests, Instance instance) {
+        // Memory hard limit
+        Long memory = DataAccessor.fieldLong(instance, InstanceConstants.FIELD_MEMORY);
+        if (memory != null && memory > 0) {
             ResourceRequest rr = new ResourceRequest();
             rr.setAmount(memory);
-            rr.setResource("memory");
+            rr.setResource(InstanceConstants.FIELD_MEMORY);
             requests.add(rr);
         }
 
-        return requests;
+        Map<String, String> labels = DataAccessor.fields(instance).withKey(InstanceConstants.FIELD_LABELS).as(Map.class);
+        if (labels == null) {
+            return;
+        }
     }
 
     private Long getAgentResource(Long accountId, List<Instance> instances) {

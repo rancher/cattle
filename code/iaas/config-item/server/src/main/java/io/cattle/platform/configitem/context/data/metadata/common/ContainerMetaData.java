@@ -125,7 +125,7 @@ public class ContainerMetaData {
         this.health_state = instance.getHealthState();
         this.start_count = instance.getStartCount();
         this.state = instance.getState();
-        this.memory = DataAccessor.fieldLong(instance, "memory");
+        this.memory = DataAccessor.fieldLong(instance, InstanceConstants.FIELD_MEMORY);
 
     }
 

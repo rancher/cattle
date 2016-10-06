@@ -17,4 +17,8 @@ public class ResourceRequest {
     public void setAmount(Long amount) {
         this.amount = amount;
     }
+
+    public String toString() {
+        return String.format("Resource: %s, amount: %s", resource, amount);
+    }
 }

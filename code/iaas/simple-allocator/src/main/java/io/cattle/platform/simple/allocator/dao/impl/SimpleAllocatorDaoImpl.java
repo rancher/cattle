@@ -176,10 +176,6 @@ public class SimpleAllocatorDaoImpl extends AbstractJooqDao implements SimpleAll
             condition = append(condition, HOST.ID.in(options.getHosts()));
         }
 
-        if ( options.getCompute() != null ) {
-            condition = append(condition, HOST.COMPUTE_FREE.ge(options.getCompute()));
-        }
-
         if ( options.getKind() != null ) {
             condition = append(condition,
                     HOST.KIND.eq(options.getKind()).and(STORAGE_POOL.KIND.eq(options.getKind())));

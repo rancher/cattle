@@ -20,6 +20,7 @@ public class HostMetaData {
     String uuid;
     String hostname;
     Long memory;
+    Long local_storage_mb;
 
     public String getAgent_ip() {
         return agent_ip;
@@ -49,6 +50,7 @@ public class HostMetaData {
                 .withDefault(Collections.EMPTY_MAP).as(Map.class);
         this.hostId = host.getId();
         this.uuid = host.getUuid();
+        this.local_storage_mb = host.getLocalStorageMb();
         Object obj = CollectionUtils.getNestedValue(DataAccessor.fieldMap(host, "info"), "memoryInfo", "memTotal");
         if (obj != null && obj instanceof Number) {
             this.memory = ((Number)obj).longValue() * 1024 * 1024;
@@ -98,5 +100,13 @@ public class HostMetaData {
 
     public void setMemory(Long memory) {
         this.memory = memory;
+    }
+
+    public Long getLocal_storage_mb() {
+        return local_storage_mb;
+    }
+
+    public void setLocal_storage_mb(Long localStorageMb) {
+        this.local_storage_mb = localStorageMb;
     }
 }
