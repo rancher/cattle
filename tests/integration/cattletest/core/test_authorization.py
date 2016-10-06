@@ -771,6 +771,7 @@ def test_storagepool_auth(admin_user_client, user_client, project_client):
         'blockDevicePath': 'r',
         'volumeCapabilities': 'r',
         'storageDriverId': 'r',
+        'hostIds': 'r',
     })
 
     auth_check(user_client.schema, 'storagePool', 'r', {
@@ -782,6 +783,7 @@ def test_storagepool_auth(admin_user_client, user_client, project_client):
         'blockDevicePath': 'r',
         'volumeCapabilities': 'r',
         'storageDriverId': 'r',
+        'hostIds': 'r',
     })
 
     auth_check(project_client.schema, 'storagePool', 'r', {
@@ -793,6 +795,7 @@ def test_storagepool_auth(admin_user_client, user_client, project_client):
         'blockDevicePath': 'r',
         'volumeCapabilities': 'r',
         'storageDriverId': 'r',
+        'hostIds': 'r',
     })
 
 

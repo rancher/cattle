@@ -7,7 +7,6 @@ import io.cattle.platform.core.dao.HostDao;
 import io.cattle.platform.core.model.Host;
 import io.cattle.platform.core.model.PhysicalHost;
 import io.cattle.platform.iaas.api.filter.common.CachedOutputFilter;
-import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.meta.ObjectMetaDataManager;
 import io.cattle.platform.object.util.DataUtils;
 import io.cattle.platform.util.type.Priority;
@@ -26,8 +25,6 @@ public class HostsFilter extends CachedOutputFilter<HostsFilter.Data> implements
 
     @Inject
     HostDao hostDao;
-    @Inject
-    ObjectManager objectManager;
 
     @Override
     public Class<?>[] getTypeClasses() {
