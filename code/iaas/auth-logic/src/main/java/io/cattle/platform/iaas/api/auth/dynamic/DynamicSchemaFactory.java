@@ -28,7 +28,7 @@ public class DynamicSchemaFactory extends AbstractSchemaFactory implements Schem
     private static final Logger log = LoggerFactory.getLogger(DynamicSchemaFactory.class);
     private static final Schema NULL = new SchemaImpl();
 
-    Cache<CacheKey, Schema> schemaCache;
+    Cache<String, Schema> schemaCache;
     long accountId;
     SchemaFactory factory;
     DynamicSchemaDao dynamicSchemaDao;
@@ -36,7 +36,7 @@ public class DynamicSchemaFactory extends AbstractSchemaFactory implements Schem
     String role;
 
     public DynamicSchemaFactory(long accountId, SchemaFactory factory, DynamicSchemaDao dynamicSchemaDao, JsonMapper jsonMapper, String role,
-            Cache<CacheKey, Schema> schemaCache) {
+            Cache<String, Schema> schemaCache) {
         this.accountId = accountId;
         this.factory = factory;
         this.dynamicSchemaDao = dynamicSchemaDao;
@@ -92,7 +92,7 @@ public class DynamicSchemaFactory extends AbstractSchemaFactory implements Schem
 
     protected Schema safeConvert(final DynamicSchema dynamicSchema) {
         try {
-            Schema schema = schemaCache.get(new CacheKey(factory.getId(), dynamicSchema), new Callable<Schema>() {
+            Schema schema = schemaCache.get(factory.getId() + "/" + dynamicSchema.getId(), new Callable<Schema>() {
                 @Override
                 public Schema call() throws Exception {
                     Schema schema = convert(dynamicSchema);
@@ -167,45 +167,4 @@ public class DynamicSchemaFactory extends AbstractSchemaFactory implements Schem
         throw new UnsupportedOperationException();
     }
 
-    public static class CacheKey {
-        String schemaId;
-        DynamicSchema dynamicSchema;
-
-        public CacheKey(String schemaId, DynamicSchema dynamicSchema) {
-            super();
-            this.schemaId = schemaId;
-            this.dynamicSchema = dynamicSchema;
-        }
-
-        @Override
-        public int hashCode() {
-            final int prime = 31;
-            int result = 1;
-            result = prime * result + ((dynamicSchema == null) ? 0 : dynamicSchema.hashCode());
-            result = prime * result + ((schemaId == null) ? 0 : schemaId.hashCode());
-            return result;
-        }
-
-        @Override
-        public boolean equals(Object obj) {
-            if (this == obj)
-                return true;
-            if (obj == null)
-                return false;
-            if (getClass() != obj.getClass())
-                return false;
-            CacheKey other = (CacheKey) obj;
-            if (dynamicSchema == null) {
-                if (other.dynamicSchema != null)
-                    return false;
-            } else if (!dynamicSchema.equals(other.dynamicSchema))
-                return false;
-            if (schemaId == null) {
-                if (other.schemaId != null)
-                    return false;
-            } else if (!schemaId.equals(other.schemaId))
-                return false;
-            return true;
-        }
-    }
 }
