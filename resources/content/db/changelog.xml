@@ -102,4 +102,5 @@
     <include file="db/core-095.xml"/>
     <include file="db/core-096.xml"/>
     <include file="db/core-097.xml"/>
+    <include file="db/core-098.xml"/>
 </databaseChangeLog>
