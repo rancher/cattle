@@ -754,9 +754,9 @@ def test_destroy_service_instance(client, context):
     # 1. stop and remove the instance2. Validate the mapping is gone
     _instance_remove(instance2, client)
 
-    instance_service_map = client. \
-        list_serviceExposeMap(serviceId=service.id, instanceId=instance2.id)
-    assert len(instance_service_map) == 0
+    wait_for(lambda: len(client.
+                         list_serviceExposeMap(serviceId=service.id,
+                                               instanceId=instance2.id)) == 0)
 
     service = client.wait_success(service)
 
@@ -785,9 +785,9 @@ def test_destroy_service_instance(client, context):
     instance1 = _instance_remove(instance1, client)
     instance1 = client.wait_success(instance1.purge())
     assert instance1.state == 'purged'
-    instance_service_map = client. \
-        list_serviceExposeMap(serviceId=service.id, instanceId=instance1.id)
-    assert len(instance_service_map) == 0
+    wait_for(lambda: len(client.
+                         list_serviceExposeMap(serviceId=service.id,
+                                               instanceId=instance1.id)) == 0)
 
 
 def test_service_rename(client, context):
