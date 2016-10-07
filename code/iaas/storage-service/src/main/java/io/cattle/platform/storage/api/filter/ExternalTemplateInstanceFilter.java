@@ -77,9 +77,20 @@ public class ExternalTemplateInstanceFilter extends AbstractResourceManagerFilte
         if (dockerImage == null) {
             return;
         }
-        String userProvidedRegistry = dockerImage.getServer();
+
+        String server = dockerImage.getServer();
+        String qualifiedName = dockerImage.getQualifiedName();
         String whitelist = WHITELIST_REGISTRIES.get();
         String defaultRegistry = DEFAULT_REGISTRY.get();
+        String userProvidedRegistry = dockerImage.getServer();
+
+        if (!qualifiedName.startsWith(server)) {
+            if(!StringUtils.isBlank(defaultRegistry)) {
+                userProvidedRegistry = defaultRegistry;
+            }
+        }
+
+
         String[] whitelistRegistries;
         if (specified(whitelist)) {
             whitelistRegistries = WHITELIST_REGISTRIES.get().split(",");
