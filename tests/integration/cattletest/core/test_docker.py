@@ -600,6 +600,7 @@ def test_container_fields(docker_client, super_client):
                                        domainName="rancher.io",
                                        memory=12000000,
                                        memorySwap=16000000,
+                                       memoryReservation=4194304,
                                        cpuSet="0,1",
                                        stdinOpen=True,
                                        tty=True,
@@ -624,6 +625,8 @@ def test_container_fields(docker_client, super_client):
     assert c.data['dockerInspect']['HostConfig']['Privileged']
     assert c.data['dockerInspect']['Config']['Domainname'] == "rancher.io"
     assert c.data['dockerInspect']['HostConfig']['Memory'] == 12000000
+    assert c.data['dockerInspect']['HostConfig'][
+               'MemoryReservation'] == 4194304
     # assert c.data['dockerInspect']['Config']['MemorySwap'] == 16000000
     assert c.data['dockerInspect']['HostConfig']['CpusetCpus'] == "0,1"
     assert c.data['dockerInspect']['Config']['Tty']
@@ -639,6 +642,31 @@ def test_container_fields(docker_client, super_client):
     assert actual_devices[0]['CgroupPermissions'] == "rw"
     assert actual_devices[0]['PathOnHost'] == "/dev/null"
     assert actual_devices[0]['PathInContainer'] == "/dev/xnull"
+
+
+@if_docker
+def test_container_milli_cpu_reservation(docker_client, super_client):
+    test_name = 'container_test'
+    image_uuid = 'docker:ibuildthecloud/helloworld'
+
+    c = docker_client.create_container(name=test_name,
+                                       imageUuid=image_uuid,
+                                       stdinOpen=True,
+                                       tty=True,
+                                       command=["true"],
+                                       entryPoint=["/bin/sh", "-c"],
+                                       milliCpuReservation=2000,
+                                       cpuShares=400)
+
+    c = super_client.wait_success(c)
+
+    wait_for(lambda: super_client.reload(c).data['dockerInspect'] is not None)
+    wait_for(lambda: super_client.
+             reload(c).data['dockerInspect']['HostConfig'] is not None)
+
+    # milliCpuReservation will take precedence over cpuShares and be converted
+    # to a value that is (milliCpuShares / 1000) * 1024
+    assert c.data['dockerInspect']['HostConfig']['CpuShares'] == 2048
 
 
 def get_mounts(resource):
