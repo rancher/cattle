@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog" xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.1.xsd http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+    <changeSet author="Rancher Labs" id="1475017154185-1">
+        <addColumn tableName="host">
+            <column name="local_storage_mb" type="BIGINT"/>
+        </addColumn>
+    </changeSet>
+    <changeSet author="Rancher Labs" id="1475017154185-2">
+        <addColumn tableName="host">
+            <column name="memory" type="BIGINT"/>
+        </addColumn>
+    </changeSet>
+    <changeSet author="Rancher Labs" id="1475017154185-3">
+        <addColumn tableName="instance">
+            <column name="memory_reservation" type="BIGINT"/>
+        </addColumn>
+    </changeSet>
+    <changeSet author="Rancher Labs" id="1475017154185-4">
+        <addColumn tableName="host">
+            <column name="milli_cpu" type="BIGINT"/>
+        </addColumn>
+    </changeSet>
+    <changeSet author="Rancher Labs" id="1475017154185-5">
+        <addColumn tableName="instance">
+            <column name="milli_cpu_reservation" type="BIGINT"/>
+        </addColumn>
+    </changeSet>
+    <changeSet author="Rancher Labs" id="1475017154185-6">
+        <addColumn tableName="volume">
+            <column name="size_mb" type="BIGINT"/>
+        </addColumn>
+    </changeSet>
+</databaseChangeLog>

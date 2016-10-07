@@ -432,6 +432,28 @@ public interface Instance extends java.io.Serializable {
 	@javax.persistence.Column(name = "dns_search_internal", length = 255)
 	public java.lang.String getDnsSearchInternal();
 
+	/**
+	 * Setter for <code>cattle.instance.memory_reservation</code>.
+	 */
+	public void setMemoryReservation(java.lang.Long value);
+
+	/**
+	 * Getter for <code>cattle.instance.memory_reservation</code>.
+	 */
+	@javax.persistence.Column(name = "memory_reservation", precision = 19)
+	public java.lang.Long getMemoryReservation();
+
+	/**
+	 * Setter for <code>cattle.instance.milli_cpu_reservation</code>.
+	 */
+	public void setMilliCpuReservation(java.lang.Long value);
+
+	/**
+	 * Getter for <code>cattle.instance.milli_cpu_reservation</code>.
+	 */
+	@javax.persistence.Column(name = "milli_cpu_reservation", precision = 19)
+	public java.lang.Long getMilliCpuReservation();
+
 	// -------------------------------------------------------------------------
 	// FROM and INTO
 	// -------------------------------------------------------------------------

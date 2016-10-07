@@ -223,6 +223,39 @@ public interface Host extends java.io.Serializable {
 	@javax.persistence.Column(name = "agent_state", length = 128)
 	public java.lang.String getAgentState();
 
+	/**
+	 * Setter for <code>cattle.host.local_storage_mb</code>.
+	 */
+	public void setLocalStorageMb(java.lang.Long value);
+
+	/**
+	 * Getter for <code>cattle.host.local_storage_mb</code>.
+	 */
+	@javax.persistence.Column(name = "local_storage_mb", precision = 19)
+	public java.lang.Long getLocalStorageMb();
+
+	/**
+	 * Setter for <code>cattle.host.memory</code>.
+	 */
+	public void setMemory(java.lang.Long value);
+
+	/**
+	 * Getter for <code>cattle.host.memory</code>.
+	 */
+	@javax.persistence.Column(name = "memory", precision = 19)
+	public java.lang.Long getMemory();
+
+	/**
+	 * Setter for <code>cattle.host.milli_cpu</code>.
+	 */
+	public void setMilliCpu(java.lang.Long value);
+
+	/**
+	 * Getter for <code>cattle.host.milli_cpu</code>.
+	 */
+	@javax.persistence.Column(name = "milli_cpu", precision = 19)
+	public java.lang.Long getMilliCpu();
+
 	// -------------------------------------------------------------------------
 	// FROM and INTO
 	// -------------------------------------------------------------------------
