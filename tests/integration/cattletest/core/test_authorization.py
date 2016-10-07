@@ -697,6 +697,9 @@ def test_host_auth(admin_user_client, user_client, project_client):
         'publicEndpoints': 'r',
         'agentIpAddress': 'r',
         'instanceIds': 'r',
+        'localStorageMb': 'r',
+        'memory': 'r',
+        'milliCpu': 'r',
     })
 
     auth_check(user_client.schema, 'host', 'r', {
@@ -710,6 +713,9 @@ def test_host_auth(admin_user_client, user_client, project_client):
         'agentIpAddress': 'r',
         'publicEndpoints': 'r',
         'instanceIds': 'r',
+        'localStorageMb': 'r',
+        'memory': 'r',
+        'milliCpu': 'r',
     })
 
     auth_check(project_client.schema, 'host', 'rud', {
@@ -723,6 +729,9 @@ def test_host_auth(admin_user_client, user_client, project_client):
         'agentIpAddress': 'r',
         'publicEndpoints': 'r',
         'instanceIds': 'r',
+        'localStorageMb': 'ru',
+        'memory': 'ru',
+        'milliCpu': 'ru',
     })
 
 
@@ -827,6 +836,7 @@ def test_volume_auth(admin_user_client, user_client, project_client):
         'volumeTemplateId': 'r',
         'storageDriverId': 'r',
         'hostId': 'r',
+        'sizeMb': 'r',
     })
 
     auth_check(user_client.schema, 'volume', 'r', {
@@ -854,6 +864,7 @@ def test_volume_auth(admin_user_client, user_client, project_client):
         'volumeTemplateId': 'r',
         'storageDriverId': 'r',
         'hostId': 'r',
+        'sizeMb': 'r',
     })
 
     auth_check(project_client.schema, 'volume', 'crud', {
@@ -881,6 +892,7 @@ def test_volume_auth(admin_user_client, user_client, project_client):
         'volumeTemplateId': 'cr',
         'storageDriverId': 'cr',
         'hostId': 'cru',
+        'sizeMb': 'cr',
     })
 
 
@@ -918,7 +930,9 @@ def test_container_auth(admin_user_client, user_client, project_client):
         'instanceLinks': 'r',
         'lxcConf': 'r',
         'memory': 'r',
+        'memoryReservation': 'r',
         'memorySwap': 'r',
+        'milliCpuReservation': 'r',
         'networkIds': 'r',
         'networkMode': 'r',
         'networkContainerId': 'r',
@@ -986,7 +1000,9 @@ def test_container_auth(admin_user_client, user_client, project_client):
         'instanceLinks': 'r',
         'lxcConf': 'r',
         'memory': 'r',
+        'memoryReservation': 'r',
         'memorySwap': 'r',
+        'milliCpuReservation': 'r',
         'networkIds': 'r',
         'networkMode': 'r',
         'networkContainerId': 'r',
@@ -1052,7 +1068,9 @@ def test_container_auth(admin_user_client, user_client, project_client):
         'instanceLinks': 'cr',
         'lxcConf': 'cr',
         'memory': 'cr',
+        'memoryReservation': 'cr',
         'memorySwap': 'cr',
+        'milliCpuReservation': 'cr',
         'networkIds': 'cr',
         'networkMode': 'cr',
         'networkContainerId': 'cr',
@@ -2611,7 +2629,9 @@ def test_virtual_machine(admin_user_client, user_client, project_client):
         'imageUuid': 'r',
         'instanceLinks': 'r',
         'memory': 'r',
+        'memoryReservation': 'r',
         'memorySwap': 'r',
+        'milliCpuReservation': 'r',
         'networkIds': 'r',
         'networkMode': 'r',
         'ports': 'r',
@@ -2664,7 +2684,9 @@ def test_virtual_machine(admin_user_client, user_client, project_client):
         'imageUuid': 'r',
         'instanceLinks': 'r',
         'memory': 'r',
+        'memoryReservation': 'r',
         'memorySwap': 'r',
+        'milliCpuReservation': 'r',
         'networkIds': 'r',
         'networkMode': 'r',
         'ports': 'r',
@@ -2715,7 +2737,9 @@ def test_virtual_machine(admin_user_client, user_client, project_client):
         'imageUuid': 'cr',
         'instanceLinks': 'cr',
         'memory': 'cr',
+        'memoryReservation': 'cr',
         'memorySwap': 'cr',
+        'milliCpuReservation': 'cr',
         'networkIds': 'cr',
         'networkMode': 'cr',
         'ports': 'cr',
