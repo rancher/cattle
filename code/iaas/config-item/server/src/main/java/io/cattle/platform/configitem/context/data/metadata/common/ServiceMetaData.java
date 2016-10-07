@@ -144,9 +144,13 @@ public class ServiceMetaData {
             Map<String, Object> metadata, InstanceHealthCheck healthCheck) {
         this.serviceId = service.getId();
         this.service = service;
-        this.name = serviceName;
+        if (serviceName != null) {
+            this.name = serviceName.toLowerCase();
+        }
         this.uuid = service.getUuid();
-        this.stack_name = env.getName();
+        if (env.getName() != null) {
+            this.stack_name = env.getName().toLowerCase();
+        }
         this.stackId = env.getId();
         this.stackUuid = env.getUuid();
         this.kind = service.getKind();
