@@ -314,21 +314,19 @@ public abstract class AbstractJooqResourceManager extends AbstractObjectResource
     }
 
     protected void addSort(SchemaFactory schemaFactory, String type, Sort sort, SelectQuery<?> query) {
-        if (sort == null) {
-            return;
-        }
+        if (sort != null) {
+            TableField<?, Object> sortField = JooqUtils.getTableField(getMetaDataManager(), type, sort.getName());
+            if (sortField == null) {
+                return;
+            }
 
-        TableField<?, Object> sortField = JooqUtils.getTableField(getMetaDataManager(), type, sort.getName());
-        if (sortField == null) {
-            return;
-        }
-
-        switch (sort.getOrderEnum()) {
-        case DESC:
-            query.addOrderBy(sortField.desc());
-            break;
-        default:
-            query.addOrderBy(sortField.asc());
+            switch (sort.getOrderEnum()) {
+                case DESC:
+                    query.addOrderBy(sortField.desc());
+                    break;
+                default:
+                    query.addOrderBy(sortField.asc());
+            }
         }
 
         TableField<?, Object> idSort = JooqUtils.getTableField(getMetaDataManager(), type, ObjectMetaDataManager.ID_FIELD);
@@ -336,11 +334,16 @@ public abstract class AbstractJooqResourceManager extends AbstractObjectResource
             return;
         }
 
-        switch (sort.getOrderEnum()) {
-        case DESC:
-            query.addOrderBy(idSort.desc());
-            break;
-        default:
+        if (sort != null) {
+            switch (sort.getOrderEnum()) {
+                case DESC:
+                    query.addOrderBy(idSort.desc());
+                    break;
+                default:
+                    query.addOrderBy(idSort.asc());
+            }
+        }
+        else {
             query.addOrderBy(idSort.asc());
         }
     }
