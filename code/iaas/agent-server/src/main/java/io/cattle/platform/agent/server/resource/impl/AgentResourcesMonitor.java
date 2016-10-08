@@ -2,7 +2,6 @@ package io.cattle.platform.agent.server.resource.impl;
 
 import static io.cattle.platform.core.model.tables.HostTable.*;
 import static io.cattle.platform.core.model.tables.PhysicalHostTable.*;
-
 import io.cattle.platform.agent.server.ping.dao.PingDao;
 import io.cattle.platform.archaius.util.ArchaiusUtil;
 import io.cattle.platform.core.constants.AgentConstants;
@@ -259,8 +258,29 @@ public class AgentResourcesMonitor implements AnnotatedEventListener {
                     }
                 }
 
+                if (host.getMemory() == null) {
+                    Long memory = DataAccessor.fromMap(data).withKey(HostConstants.FIELD_MEMORY).as(Long.class);
+                    if (memory != null) {
+                        updates.put(HostConstants.FIELD_MEMORY, memory);
+                    }
+                }
+
+                if (host.getMilliCpu() == null) {
+                    Long cpu = DataAccessor.fromMap(data).withKey(HostConstants.FIELD_MILLI_CPU).as(Long.class);
+                    if (cpu != null) {
+                        updates.put(HostConstants.FIELD_MILLI_CPU, cpu);
+                    }
+                }
+
+                if (host.getLocalStorageMb() == null) {
+                    Long storage = DataAccessor.fromMap(data).withKey(HostConstants.FIELD_LOCAL_STORAGE_MB).as(Long.class);
+                    if (storage != null) {
+                        updates.put(HostConstants.FIELD_LOCAL_STORAGE_MB, storage);
+                    }
+                }
+
                 if (updates.size() > 0) {
-                    objectManager.reload(host);
+                    host = objectManager.reload(host);
                     Map<String, Object> updateFields = objectManager.convertToPropertiesFor(host, updates);
                     if (orchestrate && !HostConstants.STATE_PROVISIONING.equals(host.getState())) {
                         resourceDao.updateAndSchedule(host, updateFields);

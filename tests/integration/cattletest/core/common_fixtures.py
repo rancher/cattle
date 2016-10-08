@@ -711,7 +711,11 @@ def get_plain_members(members):
 
 
 def auth_header(client):
-    b = base64.encodestring(client._access_key + ':' + client._secret_key)
+    return auth_header_from_keys(client._access_key, client._secret_key)
+
+
+def auth_header_from_keys(access_key, secret_key):
+    b = base64.encodestring(access_key + ':' + secret_key)
     return ['Authorization: Basic {}'.format(b.replace('\n', ''))]
 
 
