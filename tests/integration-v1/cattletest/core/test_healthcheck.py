@@ -808,7 +808,7 @@ def test_health_check_quorum(super_client, context, client):
     assert svc.state == "active"
     assert len(svc.serviceExposeMaps()) >= 3
     wait_for_condition(client, c1,
-                       lambda x: x.state == 'removed')
+                       lambda x: x.removed is not None)
     remove_service(svc)
 
 
