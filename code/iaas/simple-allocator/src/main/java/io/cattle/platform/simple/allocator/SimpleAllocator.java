@@ -12,7 +12,6 @@ import io.cattle.platform.allocator.service.AllocationAttempt;
 import io.cattle.platform.allocator.service.AllocationCandidate;
 import io.cattle.platform.allocator.service.AllocationRequest;
 import io.cattle.platform.allocator.service.Allocator;
-import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.dao.GenericMapDao;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.InstanceHostMap;
@@ -21,7 +20,6 @@ import io.cattle.platform.core.util.SystemLabels;
 import io.cattle.platform.eventing.model.Event;
 import io.cattle.platform.eventing.model.EventVO;
 import io.cattle.platform.lock.definition.LockDefinition;
-import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.object.util.ObjectUtils;
 import io.cattle.platform.simple.allocator.dao.QueryOptions;
 import io.cattle.platform.simple.allocator.dao.SimpleAllocatorDao;
@@ -49,6 +47,9 @@ public class SimpleAllocator extends AbstractAllocator implements Allocator, Nam
     private static final String SCHEDULER_RESERVE_EVENT = "scheduler.reserve";
     private static final String SCHEDULER_RELEASE_EVENT = "scheduler.release";
     private static final String SCHEDULER_PRIORITIZE_RESPONSE = "prioritizedCandidates";
+    private static final String MEMORY_RESERVATION = "memoryReservation";
+    private static final String CPU_RESERVATION = "cpuReservation";
+    private static final String STORAGE_SIZE = "storageSize";
 
     String name = getClass().getSimpleName();
 
@@ -260,26 +261,25 @@ public class SimpleAllocator extends AbstractAllocator implements Allocator, Nam
             if (v.getSizeMb() != null) {
                 ResourceRequest rr = new ResourceRequest();
                 rr.setAmount(v.getSizeMb());
-                rr.setResource("storageSize");
+                rr.setResource(STORAGE_SIZE);
                 requests.add(rr);
             }
         }
     }
 
-    @SuppressWarnings("unchecked")
     private void addInstanceResourceRequests(List<ResourceRequest> requests, Instance instance) {
-        // Memory hard limit
-        Long memory = DataAccessor.fieldLong(instance, InstanceConstants.FIELD_MEMORY);
-        if (memory != null && memory > 0) {
+        if (instance.getMemoryReservation() != null && instance.getMemoryReservation() > 0) {
             ResourceRequest rr = new ResourceRequest();
-            rr.setAmount(memory);
-            rr.setResource(InstanceConstants.FIELD_MEMORY);
+            rr.setAmount(instance.getMemoryReservation());
+            rr.setResource(MEMORY_RESERVATION);
             requests.add(rr);
         }
 
-        Map<String, String> labels = DataAccessor.fields(instance).withKey(InstanceConstants.FIELD_LABELS).as(Map.class);
-        if (labels == null) {
-            return;
+        if (instance.getMilliCpuReservation() != null && instance.getMilliCpuReservation() > 0) {
+            ResourceRequest rr = new ResourceRequest();
+            rr.setAmount(instance.getMilliCpuReservation());
+            rr.setResource(CPU_RESERVATION);
+            requests.add(rr);
         }
     }
 

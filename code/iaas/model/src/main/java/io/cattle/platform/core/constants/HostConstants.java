@@ -18,6 +18,9 @@ public class HostConstants {
     public static final String FIELD_IP_ADDRESS = "agentIpAddress";
     public static final String FIELD_INSTANCE_IDS = "instanceIds";
     public static final String FIELD_AGENT_ID = "agentId";
+    public static final String FIELD_MEMORY = "memory";
+    public static final String FIELD_MILLI_CPU = "milliCpu";
+    public static final String FIELD_LOCAL_STORAGE_MB = "localStorageMb";
 
     public static final String PROCESS_REMOVE = "host.remove";
     public static final String PROCESS_CREATE = "host.create";
