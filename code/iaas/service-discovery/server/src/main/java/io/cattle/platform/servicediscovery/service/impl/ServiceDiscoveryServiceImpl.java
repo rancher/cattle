@@ -231,8 +231,13 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
             }
         });
 
+        vipSubnet = waitForSubnetCreation(vipSubnet);
+        return vipSubnet;
+    }
+
+    public Subnet waitForSubnetCreation(Subnet subnet) {
         // wait for subnet to become active so the ip range is populated
-        vipSubnet = resourceMonitor.waitFor(vipSubnet,
+        subnet = resourceMonitor.waitFor(subnet,
                 new ResourcePredicate<Subnet>() {
                     @Override
                     public boolean evaluate(Subnet obj) {
@@ -244,7 +249,7 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
                         return "active state";
                     }
                 });
-        return vipSubnet;
+        return subnet;
     }
 
     @Override
@@ -514,6 +519,7 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
             Network ntwk = ntwkDao.getNetworkForObject(serviceIndex, NetworkConstants.KIND_HOSTONLY);
             if (ntwk != null) {
                 Subnet subnet = ntwkDao.addManagedNetworkSubnet(ntwk);
+                subnet = waitForSubnetCreation(subnet);
                 String ipAddress = allocateIpForService(serviceIndex, subnet, requestedIp);
                 setServiceIndexIp(serviceIndex, ipAddress);
             }
