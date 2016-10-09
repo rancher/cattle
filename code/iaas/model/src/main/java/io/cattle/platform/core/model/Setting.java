@@ -44,7 +44,7 @@ public interface Setting extends java.io.Serializable {
 	/**
 	 * Getter for <code>cattle.setting.value</code>.
 	 */
-	@javax.persistence.Column(name = "value", length = 16777215)
+	@javax.persistence.Column(name = "value", nullable = false, length = 1024)
 	public java.lang.String getValue();
 
 	// -------------------------------------------------------------------------
