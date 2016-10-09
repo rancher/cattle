@@ -3,8 +3,11 @@
     <property name="mediumtext" value="TEXT" dbms="postgresql" />
     <property name="mediumtext" value="MEDIUMTEXT" />
     <changeSet author="alena (generated)" id="dump1">
+        <!-- there are two valid checksums here because jooq is not great at being consistent -->
+        <validCheckSum>7:febec10df502e081c0390d0ad0fb07dc</validCheckSum>
+        <validCheckSum>7:fc43ea0245b75b43b80ef2e3f3803bdb</validCheckSum>
         <addColumn tableName="service_expose_map">
-            <column defaultValueNumeric="1" name="managed" type="BIT">
+            <column defaultValueBoolean="1" defaultValueNumeric="1" name="managed" type="BIT">
                 <constraints nullable="false"/>
             </column>
         </addColumn>

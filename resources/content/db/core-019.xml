@@ -1,12 +1,13 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.1.xsd">
     <changeSet author="cjellick (generated)" id="1417022638612-1">
+        <validCheckSum>7:5c570f2a64735c390a95435026a8b879</validCheckSum>
         <createTable tableName="mount">
             <column autoIncrement="true" name="id" type="BIGINT(19)">
                 <constraints primaryKey="true"/>
             </column>
             <column name="name" type="VARCHAR(255)"/>
-            <column name="account_id" type="BIGINT(19)"/>
+            <column name="account_id" type="BIGINT"/>
             <column name="kind" type="VARCHAR(255)">
                 <constraints nullable="false"/>
             </column>
@@ -21,8 +22,8 @@
             <column name="removed" type="datetime"/>
             <column name="remove_time" type="datetime"/>
             <column name="data" type="TEXT"/>
-            <column name="volume_id" type="BIGINT(19)"/>
-            <column name="instance_id" type="BIGINT(19)"/>
+            <column name="volume_id" type="BIGINT"/>
+            <column name="instance_id" type="BIGINT"/>
             <column name="permissions" type="VARCHAR(128)"/>
             <column name="path" type="VARCHAR(512)"/>
         </createTable>

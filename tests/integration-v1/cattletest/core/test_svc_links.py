@@ -39,7 +39,7 @@ def test_service_add_remove_service_link(client, context):
     service1 = service1.addservicelink(serviceLink=service_link)
     service_maps = client. \
         list_serviceConsumeMap(serviceId=service1.id,
-                               consumedServiceId=service2.id, name='mylink')
+                               consumedServiceId=service2.id, name='myLink')
     assert len(service_maps) == 1
 
 

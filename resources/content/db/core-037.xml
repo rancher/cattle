@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.1.xsd">
+    <property name="mediumtext" value="TEXT" dbms="postgresql" />
+    <property name="mediumtext" value="MEDIUMTEXT" />
     <changeSet author="wizardofmath (generated)" id="dump1">
         <createTable tableName="user_preference">
             <column autoIncrement="true" name="id" type="BIGINT">
@@ -21,7 +23,7 @@
             <column name="removed" type="datetime"/>
             <column name="remove_time" type="datetime"/>
             <column name="data" type="TEXT"/>
-            <column name="value" type="MEDIUMTEXT">
+            <column name="value" type="${mediumtext}">
                 <constraints nullable="false"/>
             </column>
         </createTable>

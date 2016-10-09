@@ -176,6 +176,10 @@
             <artifactId>mariadb-java-client</artifactId>
         </dependency>
         <dependency>
+            <groupId>org.postgresql</groupId>
+            <artifactId>postgresql</artifactId>
+        </dependency>
+        <dependency>
             <groupId>io.cattle</groupId>
             <artifactId>cattle-iaas-service-discovery-server</artifactId>
             <version>${project.version}</version>
@@ -206,23 +210,4 @@
             <version>${project.version}</version>
         </dependency>
     </dependencies>
-    <profiles>
-        <profile>
-            <!-- We don't package PostgreSQL driver by default because it doesn't support
-                 Java 6 and if it exists on a Java 6 system it can cause all JDBC drivers to not be
-                 loaded -->
-            <id>postgres</id>
-            <activation>
-                <property>
-                    <name>postgres</name>
-                </property>
-            </activation>
-            <dependencies>
-                <dependency>
-                    <groupId>org.postgresql</groupId>
-                    <artifactId>postgresql</artifactId>
-                </dependency>
-            </dependencies>
-        </profile>
-    </profiles>
 </project>
