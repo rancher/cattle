@@ -74,6 +74,8 @@ public class ServiceDiscoveryApiServiceImpl implements ServiceDiscoveryApiServic
     @Inject
     DataDao dataDao;
 
+    private final static String COMPOSE_PREFIX = "version: '2'\r\n";
+    
     @Override
     public void addServiceLink(Service service, ServiceLink serviceLink) {
         consumeMapDao.createServiceLink(service, serviceLink);
@@ -116,13 +118,21 @@ public class ServiceDiscoveryApiServiceImpl implements ServiceDiscoveryApiServic
                     VOLUME_TEMPLATE.REMOVED, null);
                 
         Map<String, Object> dockerComposeData = createComposeData(services, true, volumes);
-        return "version: '2'\n" + convertToYml(dockerComposeData);
+        if (dockerComposeData.isEmpty()) {
+            return COMPOSE_PREFIX;
+        } else {
+            return COMPOSE_PREFIX + convertToYml(dockerComposeData);
+        }
     }
 
     @Override
     public String buildRancherComposeConfig(List<? extends Service> services) {
         Map<String, Object> dockerComposeData = createComposeData(services, false, new ArrayList<VolumeTemplate>());
-        return "version: '2'\n" + convertToYml(dockerComposeData);
+        if (dockerComposeData.isEmpty()) {
+            return COMPOSE_PREFIX;
+        } else {
+            return COMPOSE_PREFIX + convertToYml(dockerComposeData);
+        }
     }
 
     private String convertToYml(Map<String, Object> dockerComposeData) {
