@@ -13,7 +13,7 @@ package io.cattle.platform.core.model.tables.records;
 @javax.persistence.Table(name = "setting", schema = "cattle")
 public class SettingRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.platform.core.model.tables.records.SettingRecord> implements io.cattle.platform.db.jooq.utils.TableRecordJaxb, org.jooq.Record3<java.lang.Long, java.lang.String, java.lang.String>, io.cattle.platform.core.model.Setting {
 
-	private static final long serialVersionUID = 1461494748;
+	private static final long serialVersionUID = -2095057452;
 
 	/**
 	 * Setter for <code>cattle.setting.id</code>.
@@ -61,7 +61,7 @@ public class SettingRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.p
 	/**
 	 * Getter for <code>cattle.setting.value</code>.
 	 */
-	@javax.persistence.Column(name = "value", nullable = false, length = 1024)
+	@javax.persistence.Column(name = "value", length = 16777215)
 	@Override
 	public java.lang.String getValue() {
 		return (java.lang.String) getValue(2);
