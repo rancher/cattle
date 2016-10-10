@@ -9,9 +9,6 @@ declare -A RESULTS=( [h2]=0 [mysql]=0 [pgsql]=0 )
 export RUNTIME_DIR_CLEAN=true
 export CATTLE_LOGBACK_ROOT_LEVEL=error
 
-# Uncomment this if you're impatient
-#export CATTLE_IDEMPOTENT_CHECKS=false
-
 echo Launching Docker
 if grep -q overlay /proc/filesystems; then
     GRAPH=overlay
