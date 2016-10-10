@@ -4,6 +4,7 @@ import static io.cattle.platform.core.model.tables.ServiceIndexTable.*;
 import static io.cattle.platform.core.model.tables.ServiceTable.*;
 import static io.cattle.platform.core.model.tables.StackTable.*;
 import static io.cattle.platform.core.model.tables.SubnetTable.*;
+
 import io.cattle.platform.allocator.service.AllocatorService;
 import io.cattle.platform.configitem.events.ConfigUpdate;
 import io.cattle.platform.configitem.model.Client;
@@ -118,19 +119,7 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
     @Inject
     ConfigItemStatusManager itemManager;
 
-    protected long getServiceNetworkId(Service service) {
-        Network network = ntwkDao.getNetworkForObject(service, NetworkConstants.KIND_HOSTONLY);
-        if (network == null) {
-            throw new RuntimeException(
-                    "Unable to find a network to activate a service " + service.getId());
-        }
-        long networkId = network.getId();
-        return networkId;
-    }
-
-
     @Override
-
     public List<Integer> getServiceInstanceUsedSuffixes(Service service, String launchConfigName) {
         Stack env = objectManager.findOne(Stack.class, STACK.ID, service.getStackId());
         // get all existing instances to check if the name is in use by the instance of the same service
@@ -338,7 +327,7 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
                 newPorts.add(port.toSpec());
             }
         }
-        
+
         for (PortSpec port : toAllocate) {
             if (!allocatedPorts.isEmpty()) {
                 port.setPublicPort(new Integer(allocatedPorts.get(0).getName()));
@@ -427,7 +416,7 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
         for (Map.Entry<String, String> label : labels.entrySet()) {
             instanceLabels.put(label.getKey(), label.getValue());
         }
-        
+
         return SelectorUtils.isSelectorMatch(selector, instanceLabels);
     }
 
@@ -547,7 +536,7 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
         setServiceHealthState(services);
 
         setStackHealthState(stack);
-        
+
         setEnvironmentHealthState(objectManager.loadResource(Account.class, stack.getAccountId()));
     }
 
@@ -639,7 +628,7 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
         }
         return finalHealthState;
     }
-    
+
     protected interface HealthChecker{
         String getHealthState();
         boolean isActive();
