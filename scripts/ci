@@ -155,7 +155,7 @@ do
 
             set_up_agent
             set +e
-            ./test -- -n $threads -v $@ || test_failed $DB
+            DEBUG=true ./test -- -n $threads -v $@ || test_failed $DB
             set -e
             ;;
 

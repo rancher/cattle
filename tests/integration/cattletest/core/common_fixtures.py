@@ -8,11 +8,17 @@ import inspect
 from datetime import datetime, timedelta
 import requests
 import fcntl
+import logging
 
 NOT_NONE = object()
 DEFAULT_TIMEOUT = 300
 cattle.DEFAULT_TIMEOUT = 300
 _SUPER_CLIENT = None
+
+
+@pytest.fixture(scope='session', autouse=os.environ.get('DEBUG'))
+def log():
+    logging.basicConfig(level=logging.DEBUG)
 
 
 @pytest.fixture(scope='session')
