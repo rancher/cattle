@@ -39,7 +39,7 @@ public abstract class AbstractArchiveBasedConfigItem extends AbstractResourceRoo
         req.setContentType("application/octet-stream");
 
         OutputStream os = req.getOutputStream();
-        GZIPOutputStream gzos = new GZIPOutputStream(os);
+        GZIPOutputStream gzos = new GZIPOutputStream(os, 8192);
         TarArchiveOutputStream taos = null;
 
         try {

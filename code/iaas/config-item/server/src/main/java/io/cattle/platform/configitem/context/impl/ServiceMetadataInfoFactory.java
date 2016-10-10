@@ -4,6 +4,8 @@ import static io.cattle.platform.core.model.tables.InstanceHostMapTable.*;
 import static io.cattle.platform.core.model.tables.ServiceConsumeMapTable.*;
 import static io.cattle.platform.core.model.tables.ServiceTable.*;
 import static io.cattle.platform.core.model.tables.StackTable.*;
+import io.cattle.platform.configitem.context.dao.LoadBalancerInfoDao;
+
 import io.cattle.platform.configitem.context.dao.MetaDataInfoDao;
 import io.cattle.platform.configitem.context.dao.MetaDataInfoDao.Version;
 import io.cattle.platform.configitem.context.data.metadata.common.ContainerMetaData;
@@ -40,6 +42,8 @@ import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.servicediscovery.api.dao.ServiceConsumeMapDao;
 import io.cattle.platform.servicediscovery.api.util.ServiceDiscoveryUtil;
 
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -76,8 +80,21 @@ public class ServiceMetadataInfoFactory extends AbstractAgentBaseContextFactory 
 
     @Override
     protected void populateContext(Agent agent, Instance instance, ConfigItem item, ArchiveContext context) {
+        Map<String, Object> dataWithVersionTag = generateData(instance, context.getVersion());
+        context.getData().put("data", generateYml(dataWithVersionTag));
+    }
+
+    public void writeMetadata(Instance instance, String itemVersion, OutputStream os) {
+        Map<String, Object> dataWithVersionTag = generateData(instance, itemVersion);
+        Yaml yaml = getYaml();
+        yaml.dump(dataWithVersionTag, new OutputStreamWriter(os));
+    }
+
+    protected Map<String, Object> generateData(Instance instance, String itemVersion) {
+        Map<String, Object> dataWithVersionTag = new HashMap<>();
+
         if (instance == null) {
-            return;
+            return dataWithVersionTag;
         }
         Account account = objectManager.loadResource(Account.class, instance.getAccountId());
         InstanceHostMap hostMap = objectManager.findAny(InstanceHostMap.class, INSTANCE_HOST_MAP.INSTANCE_ID,
@@ -109,7 +126,6 @@ public class ServiceMetadataInfoFactory extends AbstractAgentBaseContextFactory 
 
         populateStacksServicesInfo(account, stackNameToStack, serviceIdToServiceLaunchConfigs, allSvcs);
 
-        Map<String, Object> dataWithVersionTag = new HashMap<>();
         Map<String, Object> versionToData = new HashMap<>();
         for (MetaDataInfoDao.Version version : MetaDataInfoDao.Version.values()) {
             Object data = versionToData.get(version.getValue());
@@ -120,7 +136,8 @@ public class ServiceMetadataInfoFactory extends AbstractAgentBaseContextFactory 
             }
             dataWithVersionTag.put(version.getTag(), data);
         }
-        context.getData().put("data", generateYml(dataWithVersionTag));
+
+        return dataWithVersionTag;
     }
 
     protected Map<Long, List<ServiceConsumeMap>> getServiceIdToServiceLinks(Account account) {
@@ -147,7 +164,7 @@ public class ServiceMetadataInfoFactory extends AbstractAgentBaseContextFactory 
         return svcIdsToSvc;
     }
 
-    protected String generateYml(Map<String, Object> dataWithVersion) {
+    protected Yaml getYaml() {
         DumperOptions options = new DumperOptions();
         options.setDefaultFlowStyle(DumperOptions.FlowStyle.BLOCK);
         Representer representer = new Representer();
@@ -158,6 +175,11 @@ public class ServiceMetadataInfoFactory extends AbstractAgentBaseContextFactory 
         representer.addClassTag(StackMetaDataVersion1.class, Tag.MAP);
         representer.addClassTag(StackMetaDataVersion2.class, Tag.MAP);
         Yaml yaml = new Yaml(representer, options);
+        return yaml;
+    }
+
+    protected String generateYml(Map<String, Object> dataWithVersion) {
+        Yaml yaml = getYaml();
         String yamlStr = yaml.dump(dataWithVersion);
         return yamlStr;
     }
@@ -201,7 +223,7 @@ public class ServiceMetadataInfoFactory extends AbstractAgentBaseContextFactory 
         List<NetworkMetaData> networks = metaDataInfoDao.getNetworksMetaData(accountId);
         
         // 7. full data combined of (n) self sections and default one
-        Map<String, Object> fullData = getFullMetaData(context, containersMD, stackNameToStack,
+        Map<String, Object> fullData = getFullMetaData(itemVersion, containersMD, stackNameToStack,
                 serviceIdToServiceLaunchConfigs, selfMD, hostsMD, selfHostMD.size() == 0 ? null : selfHostMD.get(0), networks);
 
         return fullData;
@@ -226,7 +248,7 @@ public class ServiceMetadataInfoFactory extends AbstractAgentBaseContextFactory 
 
         Map<String, Object> fullData = new HashMap<>();
         fullData.putAll(selfMD);
-        fullData.put("default", new DefaultMetaData(context.getVersion(), containersMD, servicesMD,
+        fullData.put("default", new DefaultMetaData(itemVersion, containersMD, servicesMD,
                 stacksMD, hostsMD, selfHostMD, networks));
         return fullData;
     }

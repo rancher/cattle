@@ -117,6 +117,7 @@
     <extension:discover class="io.cattle.platform.configitem.server.model.ConfigItemFactory" />
     <extension:discover class="io.cattle.platform.configitem.context.ConfigItemContextFactory" />
 
+    <bean class="io.cattle.platform.configitem.server.model.impl.MetadataConfigItemFactory" />
     <bean class="io.cattle.platform.configitem.server.model.impl.GenericConfigItemFactory" >
         <property name="root" value="config-content" />
         <property name="devRelativePath" value="../../../content/config-content" />

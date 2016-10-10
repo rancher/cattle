@@ -11,6 +11,7 @@ import static io.cattle.platform.core.model.tables.NetworkServiceProviderInstanc
 import static io.cattle.platform.core.model.tables.NetworkServiceProviderTable.*;
 import static io.cattle.platform.core.model.tables.NetworkServiceTable.*;
 import static io.cattle.platform.core.model.tables.NicTable.*;
+
 import io.cattle.platform.agent.instance.dao.AgentInstanceDao;
 import io.cattle.platform.agent.instance.service.NetworkServiceInfo;
 import io.cattle.platform.core.constants.CommonStatesConstants;
@@ -232,6 +233,22 @@ public class AgentInstanceDaoImpl extends AbstractJooqDao implements AgentInstan
                         .and(INSTANCE.STATE.eq(InstanceConstants.STATE_RUNNING))
                         .and(INSTANCE.HEALTH_STATE.in(HealthcheckConstants.HEALTH_STATE_HEALTHY,
                                 HealthcheckConstants.HEALTH_STATE_UPDATING_HEALTHY)))
+                .orderBy(INSTANCE.AGENT_ID.asc())
+                .fetch().intoArray(INSTANCE.AGENT_ID));
+    }
+
+    @Override
+    public List<Long> getAgentProviderIgnoreHealth(String providedServiceLabel, long accountId) {
+        return Arrays.asList(create().select(INSTANCE.AGENT_ID)
+                .from(INSTANCE)
+                .join(INSTANCE_LABEL_MAP)
+                    .on(INSTANCE_LABEL_MAP.INSTANCE_ID.eq(INSTANCE.ID))
+                .join(LABEL)
+                    .on(LABEL.ID.eq(INSTANCE_LABEL_MAP.LABEL_ID).and(LABEL.KEY.eq(providedServiceLabel)))
+                .where(INSTANCE.ACCOUNT_ID.eq(accountId)
+                    .and(INSTANCE.AGENT_ID.isNotNull())
+                        .and(INSTANCE.SYSTEM.isTrue())
+                        .and(INSTANCE.STATE.in(InstanceConstants.STATE_RUNNING, InstanceConstants.STATE_STARTING)))
                 .orderBy(INSTANCE.AGENT_ID.asc())
                 .fetch().intoArray(INSTANCE.AGENT_ID));
     }

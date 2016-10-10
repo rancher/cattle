@@ -15,6 +15,7 @@ public class SystemLabels {
      * Indicates an instance runs an agent that provides the labels provider service
      */
     public static final String LABEL_AGENT_SERVICE_LABELS_PROVIDER = "io.rancher.container.agent_service.labels_provider";
+    public static final String LABEL_AGENT_SERVICE_METADATA = "io.rancher.container.agent_service.metadata";
     public static final String LABEL_AGENT_SERVICE_COMPOSE_PROVIDER = "io.rancher.container.agent_service.docker_compose";
     public static final String LABEL_AGENT_SERVICE_SCHEDULING_PROVIDER = "io.rancher.container.agent_service.scheduling";
 
