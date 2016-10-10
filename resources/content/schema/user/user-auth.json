@@ -205,7 +205,7 @@
         "host.agentState" : "r",
         "host.agentId" : "r",
         "host.computeTotal" : "r",
-        "host.hostname" : "r",
+        "host.hostname" : "cr",
         "host.info" : "r",
         "host.physicalHostId" : "r",
         "host.zoneId" : "ru",

@@ -26,6 +26,7 @@ import io.cattle.platform.core.model.tables.records.PhysicalHostRecord;
 import io.cattle.platform.db.jooq.dao.impl.AbstractJooqDao;
 import io.cattle.platform.deferred.util.DeferredUtils;
 import io.cattle.platform.object.ObjectManager;
+import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.object.util.DataUtils;
 import io.github.ibuildthecloud.gdapi.id.IdFormatter;
 
@@ -155,7 +156,7 @@ public class HostDaoImpl extends AbstractJooqDao implements HostDao {
         String uuid = UUID.randomUUID().toString();
         final Map<Object, Object> data = new HashMap<Object, Object>(DataUtils.getFields(host));
         data.put(PHYSICAL_HOST.KIND, MachineConstants.KIND_MACHINE);
-        data.put(PHYSICAL_HOST.NAME, host.getName());
+        data.put(PHYSICAL_HOST.NAME, DataAccessor.fieldString(host, HostConstants.FIELD_HOSTNAME));
         data.put(PHYSICAL_HOST.DESCRIPTION, host.getDescription());
         data.put(PHYSICAL_HOST.ACCOUNT_ID, host.getAccountId());
         data.put(PHYSICAL_HOST.EXTERNAL_ID, uuid);
