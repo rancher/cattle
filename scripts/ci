@@ -3,6 +3,10 @@ set -e
 
 cd $(dirname $0)
 
+
+echo "CAJCAJC"
+md5sum $(which websocket-proxy)
+echo "CAJCAJC"
 # An environment is a db and test plan
 declare -A ENVIRONMENTS=${ENVIRONMENTS:-( [h2]=lite [mysql]=full [pgsql]=full )}
 declare -A RESULTS=( [h2]=0 [mysql]=0 [pgsql]=0 )
