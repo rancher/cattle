@@ -40,11 +40,14 @@ public class ServiceDiscoveryConfigItem {
     public static final ServiceDiscoveryConfigItem HOSTNAME = new ServiceDiscoveryConfigItem("hostname", "hostname", false);
     public static final ServiceDiscoveryConfigItem DOMAINNAME = new ServiceDiscoveryConfigItem("domainName", "domainname", false);
     public static final ServiceDiscoveryConfigItem MEMLIMIT = new ServiceDiscoveryConfigItem("memory", "mem_limit", false);
+    public static final ServiceDiscoveryConfigItem MEMRESERVATION = new ServiceDiscoveryConfigItem("memoryReservation", "memory_reservation", false);
     public static final ServiceDiscoveryConfigItem PRIVILEGED = new ServiceDiscoveryConfigItem("privileged", "privileged", false);
     public static final ServiceDiscoveryConfigItem RESTART = new ServiceDiscoveryConfigItem("restartPolicy", "restart", false);
     public static final ServiceDiscoveryConfigItem STDINOPEN = new ServiceDiscoveryConfigItem("stdinOpen", "stdin_open", false);
     public static final ServiceDiscoveryConfigItem TTY = new ServiceDiscoveryConfigItem("tty", "tty", false);
     public static final ServiceDiscoveryConfigItem CPUSHARES = new ServiceDiscoveryConfigItem("cpuShares", "cpu_shares", false);
+    public static final ServiceDiscoveryConfigItem MILLICPURESERVATION = new ServiceDiscoveryConfigItem("milliCpuReservation", "milli_cpu_reservation", true,
+            false, false);
     public static final ServiceDiscoveryConfigItem VOLUME_DRIVER = new ServiceDiscoveryConfigItem("volumeDriver", "volume_driver", false);
     public static final ServiceDiscoveryConfigItem EXPOSE = new ServiceDiscoveryConfigItem("expose", "expose", false);
     public static final ServiceDiscoveryConfigItem EXTERNALLINKS = new ServiceDiscoveryConfigItem("instanceLinks",

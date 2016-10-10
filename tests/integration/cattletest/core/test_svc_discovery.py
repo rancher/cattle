@@ -2062,6 +2062,8 @@ def test_export_config(client, context):
                      "pidMode": "host",
                      "memory": 1048576,
                      "memorySwap": 2097152,
+                     "memoryReservation": 4194304,
+                     "milliCpuReservation": 1000,
                      "devices": ["/dev/sdc:/dev/xsdc:rwm"],
                      "logConfig": {"config": {"labels": "foo"},
                                    "driver": "json-file"}}
@@ -2090,6 +2092,7 @@ def test_export_config(client, context):
     assert svc["pid"] == "host"
     assert svc["mem_limit"] == 1048576
     assert svc["memswap_limit"] == 2097152
+    assert svc["memory_reservation"] == 4194304
     assert svc["devices"] is not None
 
     rancher_yml = yaml.load(compose_config.rancherComposeConfig)
@@ -2100,6 +2103,7 @@ def test_export_config(client, context):
     assert svc['metadata'] is not None
     assert svc['metadata'] == metadata
     assert svc['retain_ip'] is True
+    assert svc["milli_cpu_reservation"] == 1000
 
     launch_config_without_log = {"imageUuid": image_uuid,
                                  "cpuSet": "0,1", "labels": labels,
