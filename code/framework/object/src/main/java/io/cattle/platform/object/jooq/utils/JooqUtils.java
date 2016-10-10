@@ -1,14 +1,10 @@
 package io.cattle.platform.object.jooq.utils;
 
-import io.cattle.platform.object.meta.ObjectMetaDataManager;
-import io.github.ibuildthecloud.gdapi.condition.Condition;
-import io.github.ibuildthecloud.gdapi.factory.SchemaFactory;
-import io.github.ibuildthecloud.gdapi.model.Schema;
-
 import java.util.List;
 import java.util.Map;
 
 import org.jooq.DSLContext;
+import org.jooq.ForeignKey;
 import org.jooq.Table;
 import org.jooq.TableField;
 import org.jooq.TableRecord;
@@ -16,6 +12,11 @@ import org.jooq.UniqueKey;
 import org.jooq.UpdatableRecord;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import io.cattle.platform.object.meta.ObjectMetaDataManager;
+import io.github.ibuildthecloud.gdapi.condition.Condition;
+import io.github.ibuildthecloud.gdapi.factory.SchemaFactory;
+import io.github.ibuildthecloud.gdapi.model.Schema;
 
 public class JooqUtils {
 
@@ -156,6 +157,24 @@ public class JooqUtils {
         } else {
             return null;
         }
+    }
+
+    /**
+     * Determines if a table's primary key is referenced at all by other tables.
+     * 
+     * @param table
+     * @param others
+     * @return
+     */
+    public static boolean isReferencedBy(Table<?> table, List<Table<?>> others) {
+      for (Table<?> other : others) {
+        for (ForeignKey<?, ?> key : other.getReferences()) {
+          if (key.getKey().getTable().equals(table)) {
+            return true;
+          }
+        }
+      }
+      return false;
     }
 
     protected static org.jooq.Condition listToCondition(TableField<?, Object> field, List<?> list) {
