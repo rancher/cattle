@@ -6,7 +6,7 @@ import requests
 from test_healthcheck import _get_agent_client, _get_agent_for_container  # NOQA
 from cattle import ClientApiError
 
-SUB = '/subscribe?eventNames=scheduler.prioritize' \
+SUB = '?eventNames=scheduler.prioritize' \
       '&eventNames=scheduler.reserve&eventNames=scheduler.release'
 
 
@@ -150,14 +150,15 @@ def mock_scheduler(new_context, super_client):
     access_key = creds[0].publicValue
     secret_key = creds[0].secretValue
 
-    subscribe_url = cattle_url().replace('http', 'ws') + SUB
+    url = new_context.client.schema.types['subscribe'].links['collection']
+    subscribe_url = url.replace('http', 'ws') + SUB
     print '\n\n\n\nCAJ %s\n\n\n\n' % subscribe_url
     ws = websocket.create_connection(subscribe_url,
                                      header=auth_header_from_keys(access_key,
                                                                   secret_key))
 
-    scheduler = MockScheduler(ws, cattle_url() + '/publish',
-                              (access_key, secret_key))
+    publish_url = url.replace('subscribe', 'publish')
+    scheduler = MockScheduler(ws, publish_url, (access_key, secret_key))
     scheduler.new_context = new_context
 
     return scheduler
