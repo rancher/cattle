@@ -154,8 +154,12 @@ do
 
             ./wait-for-hosts
 
+            echo "------------------CAJ-----------"
+            ps -ef
+            echo "------------------CAJ-----------"
+
             set +e
-            ./test -e py27 -- -m nonparallel && ./test -- -m "'not nonparallel'" -n $threads -v || test_failed $DB
+            ./test -- -m "'not nonparallel'" -n $threads -v -k test_resource_based_scheduler || test_failed $DB
             set -e
 
             ;;

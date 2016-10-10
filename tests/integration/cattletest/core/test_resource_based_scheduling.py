@@ -151,6 +151,7 @@ def mock_scheduler(new_context, super_client):
     secret_key = creds[0].secretValue
 
     subscribe_url = cattle_url().replace('http', 'ws') + SUB
+    print '\n\n\n\nCAJ %s\n\n\n\n' % subscribe_url
     ws = websocket.create_connection(subscribe_url,
                                      header=auth_header_from_keys(access_key,
                                                                   secret_key))
