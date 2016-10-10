@@ -1,6 +1,8 @@
 package io.cattle.platform.process.host;
 
+import io.cattle.platform.async.utils.ResourceTimeoutException;
 import io.cattle.platform.core.constants.CommonStatesConstants;
+import io.cattle.platform.core.constants.HostConstants;
 import io.cattle.platform.core.constants.MachineConstants;
 import io.cattle.platform.core.model.Host;
 import io.cattle.platform.core.model.PhysicalHost;
@@ -44,6 +46,11 @@ public class HostProvision extends AbstractDefaultProcessHandler {
                         obj.getState());
                 if (!transitioning) {
                     return true;
+                }
+
+                objectManager.reload(host);
+                if (!host.getState().equals(HostConstants.STATE_PROVISIONING)) {
+                    throw new ResourceTimeoutException(host, "provisioning canceled");
                 }
 
                 String message = TransitioningUtils.getTransitioningMessage(obj);
