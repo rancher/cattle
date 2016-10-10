@@ -902,13 +902,16 @@ def test_health_check_bad_agent(super_client, context, client):
         'imageUuid': context.image_uuid,
         'healthCheck': {
             'port': 80,
+        },
+        "labels": {
+            'io.rancher.scheduler.global': 'true'
         }
     }, environmentId=env.id)
 
     service = client.wait_success(client.wait_success(service).activate())
     assert service.state == 'active'
 
-    maps = _wait_until_active_map_count(service, 1, client)
+    maps = _wait_until_active_map_count(service, 3, client)
     expose_map = maps[0]
     container = super_client.reload(expose_map.instance())
     hci = find_one(container.healthcheckInstances)
