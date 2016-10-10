@@ -22,4 +22,5 @@ public class StorageDriverConstants {
             SCOPE_ENVIRONMENT
             ));
 
+    public static final String CAPABILITY_SCHEDULE_SIZE = "schedule.size";
 }

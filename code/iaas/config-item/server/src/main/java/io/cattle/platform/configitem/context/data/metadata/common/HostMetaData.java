@@ -3,7 +3,6 @@ package io.cattle.platform.configitem.context.data.metadata.common;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.model.Host;
 import io.cattle.platform.object.util.DataAccessor;
-import io.cattle.platform.util.type.CollectionUtils;
 
 import java.util.Collections;
 import java.util.Map;
@@ -19,7 +18,9 @@ public class HostMetaData {
     Long hostId;
     String uuid;
     String hostname;
+    Long milli_cpu;
     Long memory;
+    Long local_storage_mb;
 
     public String getAgent_ip() {
         return agent_ip;
@@ -49,10 +50,10 @@ public class HostMetaData {
                 .withDefault(Collections.EMPTY_MAP).as(Map.class);
         this.hostId = host.getId();
         this.uuid = host.getUuid();
-        Object obj = CollectionUtils.getNestedValue(DataAccessor.fieldMap(host, "info"), "memoryInfo", "memTotal");
-        if (obj != null && obj instanceof Number) {
-            this.memory = ((Number)obj).longValue() * 1024 * 1024;
-        }
+
+        this.local_storage_mb = host.getLocalStorageMb();
+        this.memory = host.getMemory();
+        this.milli_cpu = host.getMilliCpu();
     }
 
     @JsonIgnore
@@ -92,11 +93,27 @@ public class HostMetaData {
         this.hostname = hostname;
     }
 
+    public Long getMilli_cpu() {
+        return milli_cpu;
+    }
+
+    public void setMilli_cpu(Long milliCpu) {
+        this.milli_cpu = milliCpu;
+    }
+
     public Long getMemory() {
         return memory;
     }
 
     public void setMemory(Long memory) {
         this.memory = memory;
+    }
+
+    public Long getLocal_storage_mb() {
+        return local_storage_mb;
+    }
+
+    public void setLocal_storage_mb(Long localStorageMb) {
+        this.local_storage_mb = localStorageMb;
     }
 }

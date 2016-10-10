@@ -333,6 +333,17 @@ public interface Volume extends java.io.Serializable {
 	@javax.persistence.Column(name = "storage_driver_id", precision = 19)
 	public java.lang.Long getStorageDriverId();
 
+	/**
+	 * Setter for <code>cattle.volume.size_mb</code>.
+	 */
+	public void setSizeMb(java.lang.Long value);
+
+	/**
+	 * Getter for <code>cattle.volume.size_mb</code>.
+	 */
+	@javax.persistence.Column(name = "size_mb", precision = 19)
+	public java.lang.Long getSizeMb();
+
 	// -------------------------------------------------------------------------
 	// FROM and INTO
 	// -------------------------------------------------------------------------

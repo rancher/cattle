@@ -6,8 +6,12 @@ import io.cattle.platform.core.model.StorageDriver;
 import io.cattle.platform.engine.handler.HandlerResult;
 import io.cattle.platform.engine.process.ProcessInstance;
 import io.cattle.platform.engine.process.ProcessState;
+import io.cattle.platform.object.meta.ObjectMetaDataManager;
 import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.process.base.AbstractDefaultProcessHandler;
+
+import java.util.HashSet;
+import java.util.List;
 
 import javax.inject.Named;
 
@@ -26,8 +30,16 @@ public class StorageDriverActivate extends AbstractDefaultProcessHandler {
             accessMode = VolumeConstants.DEFAULT_ACCESS_MODE;
         }
 
+        List<String> capabilities = DataAccessor.fieldStringList(storageDriver, ObjectMetaDataManager.CAPABILITIES_FIELD);
+        if (StorageDriverConstants.SCOPE_LOCAL.equals(scope)) {
+            if(!new HashSet<String>(capabilities).contains(StorageDriverConstants.CAPABILITY_SCHEDULE_SIZE)) {
+                capabilities.add(StorageDriverConstants.CAPABILITY_SCHEDULE_SIZE);
+            }
+        }
+
         return new HandlerResult(StorageDriverConstants.FIELD_SCOPE, scope,
-                StorageDriverConstants.FIELD_VOLUME_ACCESS_MODE, accessMode);
+                StorageDriverConstants.FIELD_VOLUME_ACCESS_MODE, accessMode,
+                ObjectMetaDataManager.CAPABILITIES_FIELD, capabilities);
     }
 
 }

@@ -11,7 +11,7 @@ package io.cattle.platform.core.model.tables;
 @java.lang.SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class VolumeTable extends org.jooq.impl.TableImpl<io.cattle.platform.core.model.tables.records.VolumeRecord> {
 
-	private static final long serialVersionUID = 1017773517;
+	private static final long serialVersionUID = 1517735052;
 
 	/**
 	 * The singleton instance of <code>cattle.volume</code>
@@ -170,6 +170,11 @@ public class VolumeTable extends org.jooq.impl.TableImpl<io.cattle.platform.core
 	 * The column <code>cattle.volume.storage_driver_id</code>.
 	 */
 	public final org.jooq.TableField<io.cattle.platform.core.model.tables.records.VolumeRecord, java.lang.Long> STORAGE_DRIVER_ID = createField("storage_driver_id", org.jooq.impl.SQLDataType.BIGINT, this, "");
+
+	/**
+	 * The column <code>cattle.volume.size_mb</code>.
+	 */
+	public final org.jooq.TableField<io.cattle.platform.core.model.tables.records.VolumeRecord, java.lang.Long> SIZE_MB = createField("size_mb", org.jooq.impl.SQLDataType.BIGINT, this, "");
 
 	/**
 	 * Create a <code>cattle.volume</code> table reference

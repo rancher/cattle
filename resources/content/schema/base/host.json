@@ -37,6 +37,21 @@
             "type": "array[publicEndpoint]",
             "required": false,
             "nullable": true
+        },
+        "localStorageMb": {
+            "attributes" : {
+                "scheduleUpdate" : true
+            }
+        },
+        "memory": {
+            "attributes" : {
+                "scheduleUpdate" : true
+            }
+        },
+        "milliCpu": {
+            "attributes" : {
+                "scheduleUpdate" : true
+            }
         }
     }
 }

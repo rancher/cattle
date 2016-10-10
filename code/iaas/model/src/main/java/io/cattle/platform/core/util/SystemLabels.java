@@ -24,6 +24,4 @@ public class SystemLabels {
     public static final String LABEL_VM_OS_METADATA = "io.rancher.vm.os_metadata";
     public static final String LABEL_VM_MEMORY = "io.rancher.vm.memory";
     public static final String LABEL_VM_VCPU = "io.rancher.vm.vcpu";
-
-    public static final String LABEL_SCHEDULER_DISKSIZE_PREFIX = "io.rancher.resource.disksize.";
 }

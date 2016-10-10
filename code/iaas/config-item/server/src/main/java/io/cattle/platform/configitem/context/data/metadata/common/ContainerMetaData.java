@@ -39,7 +39,8 @@ public class ContainerMetaData {
     String state;
     String external_id;
     String primary_mac_address;
-    Long memory;
+    Long memory_reservation;
+    Long milli_cpu_reservation;
 
 
     public ContainerMetaData() {
@@ -125,8 +126,7 @@ public class ContainerMetaData {
         this.health_state = instance.getHealthState();
         this.start_count = instance.getStartCount();
         this.state = instance.getState();
-        this.memory = DataAccessor.fieldLong(instance, "memory");
-
+        this.memory_reservation = instance.getMemoryReservation();
     }
 
     public void setService_name(String service_name) {
@@ -258,11 +258,19 @@ public class ContainerMetaData {
         this.primary_mac_address = mac_address;
     }
 
-    public Long getMemory() {
-        return memory;
+    public Long getMemory_reservation() {
+        return memory_reservation;
     }
 
-    public void setMemory(Long memory) {
-        this.memory = memory;
+    public void setMemory_reservation(Long memory) {
+        this.memory_reservation = memory;
+    }
+
+    public Long getMilli_cpu_reservation() {
+        return milli_cpu_reservation;
+    }
+
+    public void setMilli_cpu_reservation(Long milli_cpu_reservation) {
+        this.milli_cpu_reservation = milli_cpu_reservation;
     }
 }

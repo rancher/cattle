@@ -11,7 +11,7 @@ package io.cattle.platform.core.model.tables;
 @java.lang.SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class HostTable extends org.jooq.impl.TableImpl<io.cattle.platform.core.model.tables.records.HostRecord> {
 
-	private static final long serialVersionUID = -1758951054;
+	private static final long serialVersionUID = 1984637748;
 
 	/**
 	 * The singleton instance of <code>cattle.host</code>
@@ -120,6 +120,21 @@ public class HostTable extends org.jooq.impl.TableImpl<io.cattle.platform.core.m
 	 * The column <code>cattle.host.agent_state</code>.
 	 */
 	public final org.jooq.TableField<io.cattle.platform.core.model.tables.records.HostRecord, java.lang.String> AGENT_STATE = createField("agent_state", org.jooq.impl.SQLDataType.VARCHAR.length(128), this, "");
+
+	/**
+	 * The column <code>cattle.host.local_storage_mb</code>.
+	 */
+	public final org.jooq.TableField<io.cattle.platform.core.model.tables.records.HostRecord, java.lang.Long> LOCAL_STORAGE_MB = createField("local_storage_mb", org.jooq.impl.SQLDataType.BIGINT, this, "");
+
+	/**
+	 * The column <code>cattle.host.memory</code>.
+	 */
+	public final org.jooq.TableField<io.cattle.platform.core.model.tables.records.HostRecord, java.lang.Long> MEMORY = createField("memory", org.jooq.impl.SQLDataType.BIGINT, this, "");
+
+	/**
+	 * The column <code>cattle.host.milli_cpu</code>.
+	 */
+	public final org.jooq.TableField<io.cattle.platform.core.model.tables.records.HostRecord, java.lang.Long> MILLI_CPU = createField("milli_cpu", org.jooq.impl.SQLDataType.BIGINT, this, "");
 
 	/**
 	 * Create a <code>cattle.host</code> table reference

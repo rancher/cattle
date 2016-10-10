@@ -11,7 +11,7 @@ package io.cattle.platform.core.model.tables;
 @java.lang.SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class InstanceTable extends org.jooq.impl.TableImpl<io.cattle.platform.core.model.tables.records.InstanceRecord> {
 
-	private static final long serialVersionUID = -1628770085;
+	private static final long serialVersionUID = -1070075028;
 
 	/**
 	 * The singleton instance of <code>cattle.instance</code>
@@ -215,6 +215,16 @@ public class InstanceTable extends org.jooq.impl.TableImpl<io.cattle.platform.co
 	 * The column <code>cattle.instance.dns_search_internal</code>.
 	 */
 	public final org.jooq.TableField<io.cattle.platform.core.model.tables.records.InstanceRecord, java.lang.String> DNS_SEARCH_INTERNAL = createField("dns_search_internal", org.jooq.impl.SQLDataType.VARCHAR.length(255), this, "");
+
+	/**
+	 * The column <code>cattle.instance.memory_reservation</code>.
+	 */
+	public final org.jooq.TableField<io.cattle.platform.core.model.tables.records.InstanceRecord, java.lang.Long> MEMORY_RESERVATION = createField("memory_reservation", org.jooq.impl.SQLDataType.BIGINT, this, "");
+
+	/**
+	 * The column <code>cattle.instance.milli_cpu_reservation</code>.
+	 */
+	public final org.jooq.TableField<io.cattle.platform.core.model.tables.records.InstanceRecord, java.lang.Long> MILLI_CPU_RESERVATION = createField("milli_cpu_reservation", org.jooq.impl.SQLDataType.BIGINT, this, "");
 
 	/**
 	 * Create a <code>cattle.instance</code> table reference

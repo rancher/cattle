@@ -106,7 +106,7 @@ public class StorageServiceImpl implements StorageService {
     }
 
     protected void setupPoolsWithLock(StorageDriver storageDriver) {
-        boolean localScope = StorageDriverConstants.SCOPE_LOCAL.equals(DataAccessor.fieldString(storageDriver, StorageDriverConstants.SCOPE_ENVIRONMENT));
+        boolean localScope = StorageDriverConstants.SCOPE_LOCAL.equals(DataAccessor.fieldString(storageDriver, StorageDriverConstants.FIELD_SCOPE));
         StoragePool globalPool = objectManager.findAny(StoragePool.class,
                 STORAGE_POOL.STORAGE_DRIVER_ID, storageDriver.getId(),
                 STORAGE_POOL.REMOVED, null);
