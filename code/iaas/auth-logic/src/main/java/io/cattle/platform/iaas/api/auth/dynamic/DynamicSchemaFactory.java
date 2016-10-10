@@ -140,6 +140,7 @@ public class DynamicSchemaFactory extends AbstractSchemaFactory implements Schem
             Field oldField = existingFields.put(entry.getKey(), entry.getValue());
             if (oldField instanceof FieldImpl) {
                 ((FieldImpl)entry.getValue()).setReadMethod(((FieldImpl) oldField).getReadMethod());
+                ((FieldImpl)entry.getValue()).setAttributes(oldField.getAttributes());
             }
         }
 
