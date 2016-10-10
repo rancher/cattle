@@ -93,7 +93,9 @@ public class ContainerMetaData {
     @SuppressWarnings("unchecked")
     public void setInstanceAndHostMetadata(Instance instance, HostMetaData hostMetaData) {
         this.hostMetaData = hostMetaData;
-        this.name = instance.getName();
+        if (instance.getName() != null) {
+            this.name = instance.getName().toLowerCase();
+        }
         this.uuid = instance.getUuid();
         this.external_id = instance.getExternalId();
         Map<String, String> labels = DataAccessor.fields(instance).withKey(InstanceConstants.FIELD_LABELS)

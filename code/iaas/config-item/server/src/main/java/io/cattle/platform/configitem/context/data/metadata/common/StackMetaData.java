@@ -20,7 +20,9 @@ public class StackMetaData {
     protected List<ServiceMetaData> services = new ArrayList<>();
 
     public StackMetaData(Stack stack, Account account) {
-        this.name = stack.getName();
+        if (stack.getName() != null) {
+            this.name = stack.getName().toLowerCase();
+        }
         this.uuid = stack.getUuid();
         this.environment_name = account.getName();
         this.id = stack.getId();
