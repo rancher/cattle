@@ -168,7 +168,7 @@ public class MetaDataInfoDaoImpl extends AbstractJooqDao implements MetaDataInfo
         Map<Long, HostMetaData> toReturn = new HashMap<>();
         List<HostMetaData> hosts = getAllInstanceHostMetaData(accountId);
         for (HostMetaData host : hosts) {
-            toReturn.put(host.getHostId(), host);
+            toReturn.put(host.getHost_id(), host);
         }
         return toReturn;
     }

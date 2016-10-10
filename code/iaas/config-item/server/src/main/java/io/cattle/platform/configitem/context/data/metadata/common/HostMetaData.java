@@ -15,7 +15,7 @@ public class HostMetaData {
     String agent_ip;
     String name;
     Map<String, String> labels;
-    Long hostId;
+    Long host_id;
     String uuid;
     String hostname;
     Long milli_cpu;
@@ -48,7 +48,7 @@ public class HostMetaData {
         this.labels = (Map<String, String>) DataAccessor.fields(host)
                 .withKey(InstanceConstants.FIELD_LABELS)
                 .withDefault(Collections.EMPTY_MAP).as(Map.class);
-        this.hostId = host.getId();
+        this.host_id = host.getId();
         this.uuid = host.getUuid();
 
         this.local_storage_mb = host.getLocalStorageMb();
@@ -57,8 +57,8 @@ public class HostMetaData {
     }
 
     @JsonIgnore
-    public Long getHostId() {
-        return hostId;
+    public Long getHost_id() {
+        return host_id;
     }
 
     public String getUuid() {
@@ -77,8 +77,8 @@ public class HostMetaData {
         this.labels = labels;
     }
 
-    public void setHostId(Long hostId) {
-        this.hostId = hostId;
+    public void setHost_id(Long hostId) {
+        this.host_id = hostId;
     }
 
     public void setUuid(String uuid) {

@@ -351,7 +351,7 @@ public class ServiceMetadataInfoFactory extends AbstractAgentBaseContextFactory 
             return;
         }
 
-        if (containerMD.getHostMetaData().getHostId().equals(hostId)) {
+        if (containerMD.getHostMetaData().getHost_id().equals(hostId)) {
             self.put(containerMD.getPrimary_ip(), new SelfMetaData(containerMD, serviceMD,
                     stackMD, containerMD.getHostMetaData(), version));
         }
