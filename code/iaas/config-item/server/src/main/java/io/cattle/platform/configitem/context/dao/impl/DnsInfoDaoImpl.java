@@ -132,8 +132,7 @@ public class DnsInfoDaoImpl extends AbstractJooqDao implements DnsInfoDao {
                         .and(targetNic.REMOVED.isNull())
                         .and(instanceLink.REMOVED.isNull())
                         .and(instanceLink.SERVICE_CONSUME_MAP_ID.isNull())
-                        .and(targetInstance.STATE.in(InstanceConstants.STATE_RUNNING,
-                                InstanceConstants.STATE_STARTING))
+                        .and(targetInstance.STATE.in(InstanceConstants.STATE_RUNNING))
                         .and(targetInstance.HEALTH_STATE.isNull().or(
                                 targetInstance.HEALTH_STATE.eq(HealthcheckConstants.HEALTH_STATE_HEALTHY))))
                 .fetch().map(mapper);
@@ -460,7 +459,7 @@ public class DnsInfoDaoImpl extends AbstractJooqDao implements DnsInfoDao {
             existingData.add(data);
             returnData.put(data.getService().getId(), existingData);
         }
-
+        
         // parse the health check
         Map<Long, List<ServiceInstanceData>> returnDataFiltered = new HashMap<>();
         if (client) {
@@ -475,8 +474,7 @@ public class DnsInfoDaoImpl extends AbstractJooqDao implements DnsInfoDao {
                         boolean isHealthy = instance.getInstance().getHealthState() == null
                                 || instance.getInstance().getHealthState()
                                         .equalsIgnoreCase(HealthcheckConstants.HEALTH_STATE_HEALTHY);
-                        boolean isRunning = Arrays.asList(InstanceConstants.STATE_RUNNING,
-                                InstanceConstants.STATE_STARTING).contains(instance.getInstance().getState());
+                        boolean isRunning = Arrays.asList(InstanceConstants.STATE_RUNNING).contains(instance.getInstance().getState());
                         if (isRunning && isHealthy) {
                             filteredInstances.add(instance);
                         } else if (i == originalInstances.size() - 1 && filteredInstances.size() == 0) {
