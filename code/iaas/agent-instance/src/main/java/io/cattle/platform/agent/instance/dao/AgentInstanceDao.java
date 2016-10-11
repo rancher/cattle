@@ -1,7 +1,6 @@
 package io.cattle.platform.agent.instance.dao;
 
 import io.cattle.platform.core.model.Agent;
-import io.cattle.platform.core.model.Credential;
 import io.cattle.platform.core.model.Instance;
 
 import java.util.List;
@@ -12,7 +11,7 @@ public interface AgentInstanceDao {
 
     Instance getInstanceByAgent(Agent agent);
 
-    List<? extends Credential> getActivateCredentials(Agent agent);
+    boolean areAllCredentialsActive(Agent agent);
 
     List<Long> getAgentProvider(String providedServiceLabel, long accountId);
 

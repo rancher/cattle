@@ -91,7 +91,14 @@ public class BasicAuthImpl implements AccountLookup, Priority {
         }
 
         if (shouldSwitch) {
-            Agent agent = objectManager.findAny(Agent.class, AGENT.ACCOUNT_ID, account.getId());
+            Long agentOwnerId = DataAccessor.fromDataFieldOf(account).withKey(AccountConstants.DATA_AGENT_OWNER_ID).as(Long.class);
+            Agent agent = null;
+            if (agentOwnerId != null) {
+                agent = objectManager.findAny(Agent.class, AGENT.ID, agentOwnerId);
+            } else {
+                agent = objectManager.findAny(Agent.class, AGENT.ACCOUNT_ID, account.getId()); 
+            }
+
             if (agent != null) {
                 Long resourceAccId = DataAccessor.fromDataFieldOf(agent)
                         .withKey(AgentConstants.DATA_AGENT_RESOURCES_ACCOUNT_ID)

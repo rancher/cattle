@@ -11,8 +11,11 @@ public class AgentConstants {
     public static final String STATE_RECONNECTED = "reconnected";
     public static final String ID_REF = "agentId";
 
+    public static final String FIELD_ACCOUNT_ID = "accountId";
+    public static final String FIELD_AUTHORIZED_ROLE_ACCOUNTS = "authorizedRoleAccountIds";
+    
     public static final String DATA_AGENT_RESOURCES_ACCOUNT_ID = "agentResourcesAccountId";
-    public static final String DATA_ACCOUNT_DATA = "accountData";
+    public static final String DATA_REQUESTED_ROLES = "requestedRoles";
 
     public static final String PROCESS_ACTIVATE = "agent.activate";
     public static final String PROCESS_RECONNECT = "agent.reconnect";
