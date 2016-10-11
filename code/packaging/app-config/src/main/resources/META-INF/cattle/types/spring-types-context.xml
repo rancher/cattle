@@ -22,6 +22,8 @@
         <property name="suffix" value="Record" />
     </bean>
 
+    <bean class="io.cattle.platform.schema.processor.AuthSchemaAdditionsPostProcessor" />
+
     <extension:discover class="io.github.ibuildthecloud.gdapi.factory.impl.SchemaPostProcessor" />
 
 </beans>

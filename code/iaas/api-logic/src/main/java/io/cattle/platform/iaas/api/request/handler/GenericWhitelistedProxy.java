@@ -89,6 +89,9 @@ public class GenericWhitelistedProxy extends AbstractResponseGenerator {
     private static final Executor EXECUTOR;
     private static final Executor NO_REDIRECT_EXECUTOR;
 
+    private List<String> allowedPaths;
+    private boolean noAuthProxy = false;
+
     static {
         LayeredConnectionSocketFactory ssl = null;
         try {
@@ -214,6 +217,22 @@ public class GenericWhitelistedProxy extends AbstractResponseGenerator {
             throw new ClientVisibleException(ResponseCodes.FORBIDDEN);
         }
 
+        boolean matchesAllowedPath = false;
+
+        if(isNoAuthProxy()) {
+            if (uri.getPath() != null && allowedPaths != null) {
+                for(String path : allowedPaths) {
+                    if(uri.getPath().startsWith(path)) {
+                        matchesAllowedPath = true;
+                    }
+                }
+
+            }
+            if(!matchesAllowedPath){
+                return;
+            }
+        }
+
         Request temp;
         String method = servletRequest.getMethod();
         if (servletRequest instanceof ProxyPreFilter.Request) {
@@ -336,4 +355,19 @@ public class GenericWhitelistedProxy extends AbstractResponseGenerator {
         return false;
     }
 
+    public List<String> getAllowedPaths() {
+        return allowedPaths;
+    }
+
+    public void setAllowedPaths(List<String> allowedPaths) {
+        this.allowedPaths = allowedPaths;
+    }
+
+    public boolean isNoAuthProxy() {
+        return noAuthProxy;
+    }
+
+    public void setNoAuthProxy(String noAuthProxy) {
+        this.noAuthProxy = Boolean.parseBoolean(noAuthProxy);
+    }
 }

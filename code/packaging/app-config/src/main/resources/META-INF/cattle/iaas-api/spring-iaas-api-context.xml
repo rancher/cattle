@@ -519,8 +519,17 @@
 	
     <bean id="TokenAccountLookup" class="io.cattle.platform.iaas.api.auth.integration.internal.rancher.TokenAccountLookup" />
 
+    <bean id="NoAuthenticationProxy" class="io.cattle.platform.iaas.api.request.handler.GenericWhitelistedProxy" >
+        <property name="noAuthProxy" value="true"/>
+        <property name="allowedPaths">
+           <list>
+               <value>/v1-auth/saml/</value>
+           </list>
+        </property>
+    </bean>
 
-    <bean class="io.cattle.platform.iaas.api.request.handler.GenericWhitelistedProxy" />
+    <bean class="io.cattle.platform.iaas.api.request.handler.GenericWhitelistedProxy"/>
+
 
     <bean class="io.cattle.platform.iaas.api.auth.integration.ldap.ad.ADIdentityProvider" >
         <property name="executorService" ref="CoreExecutorService" />
