@@ -454,6 +454,17 @@ public interface Instance extends java.io.Serializable {
 	@javax.persistence.Column(name = "milli_cpu_reservation", precision = 19)
 	public java.lang.Long getMilliCpuReservation();
 
+	/**
+	 * Setter for <code>cattle.instance.system</code>.
+	 */
+	public void setSystem(java.lang.Boolean value);
+
+	/**
+	 * Getter for <code>cattle.instance.system</code>.
+	 */
+	@javax.persistence.Column(name = "system", nullable = false, precision = 1)
+	public java.lang.Boolean getSystem();
+
 	// -------------------------------------------------------------------------
 	// FROM and INTO
 	// -------------------------------------------------------------------------

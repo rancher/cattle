@@ -10,7 +10,6 @@ import io.cattle.platform.engine.handler.ProcessPostListener;
 import io.cattle.platform.engine.handler.ProcessPreListener;
 import io.cattle.platform.engine.process.ProcessInstance;
 import io.cattle.platform.engine.process.ProcessState;
-import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.process.common.handler.AbstractObjectProcessLogic;
 
 import javax.inject.Inject;
@@ -31,7 +30,7 @@ public class SystemStackTrigger extends AbstractObjectProcessLogic implements Pr
     @Override
     public HandlerResult handle(ProcessState state, ProcessInstance process) {
         Stack stack = (Stack)state.getResource();
-        if (!DataAccessor.fieldBool(stack, ServiceConstants.FIELD_SYSTEM)) {
+        if (!ServiceConstants.isSystem(stack)) {
             return null;
         }
 

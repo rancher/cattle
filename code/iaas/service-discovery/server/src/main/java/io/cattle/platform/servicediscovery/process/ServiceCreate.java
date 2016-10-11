@@ -38,12 +38,13 @@ public class ServiceCreate extends AbstractObjectProcessHandler {
         sdService.setPorts(service);
         sdService.setToken(service);
 
-        if (DataAccessor.fieldBool(service, ServiceConstants.FIELD_START_ON_CREATE)) {
-            return new HandlerResult().withShouldContinue(true).withChainProcessName(ServiceConstants.PROCESS_SERVICE_ACTIVATE);
-        }
-
         Stack stack = objectManager.loadResource(Stack.class, service.getStackId());
-        boolean system = DataAccessor.fieldBool(stack, ServiceConstants.FIELD_SYSTEM);
+        boolean system = ServiceConstants.isSystem(stack);
+
+        if (DataAccessor.fieldBool(service, ServiceConstants.FIELD_START_ON_CREATE)) {
+            return new HandlerResult(ServiceConstants.FIELD_SYSTEM, system).withShouldContinue(true)
+                    .withChainProcessName(ServiceConstants.PROCESS_SERVICE_ACTIVATE);
+        }
 
         return new HandlerResult(ServiceConstants.FIELD_SYSTEM, system);
     }

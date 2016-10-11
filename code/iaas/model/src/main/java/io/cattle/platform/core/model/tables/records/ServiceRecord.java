@@ -11,9 +11,9 @@ package io.cattle.platform.core.model.tables.records;
 @java.lang.SuppressWarnings({ "all", "unchecked", "rawtypes" })
 @javax.persistence.Entity
 @javax.persistence.Table(name = "service", schema = "cattle")
-public class ServiceRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.platform.core.model.tables.records.ServiceRecord> implements io.cattle.platform.db.jooq.utils.TableRecordJaxb, org.jooq.Record18<java.lang.Long, java.lang.String, java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.util.Date, java.util.Date, java.util.Date, java.util.Map<String,Object>, java.lang.Long, java.lang.String, java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String>, io.cattle.platform.core.model.Service {
+public class ServiceRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.platform.core.model.tables.records.ServiceRecord> implements io.cattle.platform.db.jooq.utils.TableRecordJaxb, org.jooq.Record19<java.lang.Long, java.lang.String, java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.util.Date, java.util.Date, java.util.Date, java.util.Map<String,Object>, java.lang.Long, java.lang.String, java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.Boolean>, io.cattle.platform.core.model.Service {
 
-	private static final long serialVersionUID = -646295153;
+	private static final long serialVersionUID = 796088707;
 
 	/**
 	 * Setter for <code>cattle.service.id</code>.
@@ -322,6 +322,23 @@ public class ServiceRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.p
 		return (java.lang.String) getValue(17);
 	}
 
+	/**
+	 * Setter for <code>cattle.service.system</code>.
+	 */
+	@Override
+	public void setSystem(java.lang.Boolean value) {
+		setValue(18, value);
+	}
+
+	/**
+	 * Getter for <code>cattle.service.system</code>.
+	 */
+	@javax.persistence.Column(name = "system", nullable = false, precision = 1)
+	@Override
+	public java.lang.Boolean getSystem() {
+		return (java.lang.Boolean) getValue(18);
+	}
+
 	// -------------------------------------------------------------------------
 	// Primary key information
 	// -------------------------------------------------------------------------
@@ -335,23 +352,23 @@ public class ServiceRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.p
 	}
 
 	// -------------------------------------------------------------------------
-	// Record18 type implementation
+	// Record19 type implementation
 	// -------------------------------------------------------------------------
 
 	/**
 	 * {@inheritDoc}
 	 */
 	@Override
-	public org.jooq.Row18<java.lang.Long, java.lang.String, java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.util.Date, java.util.Date, java.util.Date, java.util.Map<String,Object>, java.lang.Long, java.lang.String, java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String> fieldsRow() {
-		return (org.jooq.Row18) super.fieldsRow();
+	public org.jooq.Row19<java.lang.Long, java.lang.String, java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.util.Date, java.util.Date, java.util.Date, java.util.Map<String,Object>, java.lang.Long, java.lang.String, java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.Boolean> fieldsRow() {
+		return (org.jooq.Row19) super.fieldsRow();
 	}
 
 	/**
 	 * {@inheritDoc}
 	 */
 	@Override
-	public org.jooq.Row18<java.lang.Long, java.lang.String, java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.util.Date, java.util.Date, java.util.Date, java.util.Map<String,Object>, java.lang.Long, java.lang.String, java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String> valuesRow() {
-		return (org.jooq.Row18) super.valuesRow();
+	public org.jooq.Row19<java.lang.Long, java.lang.String, java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.util.Date, java.util.Date, java.util.Date, java.util.Map<String,Object>, java.lang.Long, java.lang.String, java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.Boolean> valuesRow() {
+		return (org.jooq.Row19) super.valuesRow();
 	}
 
 	/**
@@ -502,6 +519,14 @@ public class ServiceRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.p
 	 * {@inheritDoc}
 	 */
 	@Override
+	public org.jooq.Field<java.lang.Boolean> field19() {
+		return io.cattle.platform.core.model.tables.ServiceTable.SERVICE.SYSTEM;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
 	public java.lang.Long value1() {
 		return getId();
 	}
@@ -640,6 +665,14 @@ public class ServiceRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.p
 	@Override
 	public java.lang.String value18() {
 		return getHealthState();
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public java.lang.Boolean value19() {
+		return getSystem();
 	}
 
 	/**
@@ -808,7 +841,16 @@ public class ServiceRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.p
 	 * {@inheritDoc}
 	 */
 	@Override
-	public ServiceRecord values(java.lang.Long value1, java.lang.String value2, java.lang.Long value3, java.lang.String value4, java.lang.String value5, java.lang.String value6, java.lang.String value7, java.util.Date value8, java.util.Date value9, java.util.Date value10, java.util.Map<String,Object> value11, java.lang.Long value12, java.lang.String value13, java.lang.Long value14, java.lang.String value15, java.lang.String value16, java.lang.String value17, java.lang.String value18) {
+	public ServiceRecord value19(java.lang.Boolean value) {
+		setSystem(value);
+		return this;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public ServiceRecord values(java.lang.Long value1, java.lang.String value2, java.lang.Long value3, java.lang.String value4, java.lang.String value5, java.lang.String value6, java.lang.String value7, java.util.Date value8, java.util.Date value9, java.util.Date value10, java.util.Map<String,Object> value11, java.lang.Long value12, java.lang.String value13, java.lang.Long value14, java.lang.String value15, java.lang.String value16, java.lang.String value17, java.lang.String value18, java.lang.Boolean value19) {
 		return this;
 	}
 
@@ -839,6 +881,7 @@ public class ServiceRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.p
 		setSelectorContainer(from.getSelectorContainer());
 		setExternalId(from.getExternalId());
 		setHealthState(from.getHealthState());
+		setSystem(from.getSystem());
 	}
 
 	/**
@@ -864,7 +907,7 @@ public class ServiceRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.p
 	/**
 	 * Create a detached, initialised ServiceRecord
 	 */
-	public ServiceRecord(java.lang.Long id, java.lang.String name, java.lang.Long accountId, java.lang.String kind, java.lang.String uuid, java.lang.String description, java.lang.String state, java.util.Date created, java.util.Date removed, java.util.Date removeTime, java.util.Map<String,Object> data, java.lang.Long environmentId, java.lang.String vip, java.lang.Long createIndex, java.lang.String selectorLink, java.lang.String selectorContainer, java.lang.String externalId, java.lang.String healthState) {
+	public ServiceRecord(java.lang.Long id, java.lang.String name, java.lang.Long accountId, java.lang.String kind, java.lang.String uuid, java.lang.String description, java.lang.String state, java.util.Date created, java.util.Date removed, java.util.Date removeTime, java.util.Map<String,Object> data, java.lang.Long environmentId, java.lang.String vip, java.lang.Long createIndex, java.lang.String selectorLink, java.lang.String selectorContainer, java.lang.String externalId, java.lang.String healthState, java.lang.Boolean system) {
 		super(io.cattle.platform.core.model.tables.ServiceTable.SERVICE);
 
 		setValue(0, id);
@@ -885,5 +928,6 @@ public class ServiceRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.p
 		setValue(15, selectorContainer);
 		setValue(16, externalId);
 		setValue(17, healthState);
+		setValue(18, system);
 	}
 }

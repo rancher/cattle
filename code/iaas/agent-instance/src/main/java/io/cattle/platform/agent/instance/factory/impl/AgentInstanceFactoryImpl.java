@@ -13,6 +13,7 @@ import io.cattle.platform.core.constants.AccountConstants;
 import io.cattle.platform.core.constants.AgentConstants;
 import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.InstanceConstants;
+import io.cattle.platform.core.constants.ServiceConstants;
 import io.cattle.platform.core.dao.AccountDao;
 import io.cattle.platform.core.dao.GenericResourceDao;
 import io.cattle.platform.core.dao.InstanceDao;
@@ -142,11 +143,7 @@ public class AgentInstanceFactoryImpl implements AgentInstanceFactory {
                 List<? extends Service> services = instanceDao.findServicesNonRemovedLinksOnly(instance);
                 for (Service service : services) {
                     Stack stack = objectManager.loadResource(Stack.class, service.getStackId());
-                    boolean isSystem = DataAccessor.fieldBool(stack, "isSystem");
-                    if (!isSystem) {
-                        isSystem = DataAccessor.fieldBool(stack, "system");
-                    }
-                    if (isSystem) {
+                    if (ServiceConstants.isSystem(stack)) {
                         accountData = CollectionUtils.asMap(AccountConstants.DATA_ACT_AS_RESOURCE_ADMIN_ACCOUNT, true);
                         break;
                     }

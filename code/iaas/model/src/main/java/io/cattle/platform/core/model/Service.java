@@ -212,6 +212,17 @@ public interface Service extends java.io.Serializable {
 	@javax.persistence.Column(name = "health_state", length = 128)
 	public java.lang.String getHealthState();
 
+	/**
+	 * Setter for <code>cattle.service.system</code>.
+	 */
+	public void setSystem(java.lang.Boolean value);
+
+	/**
+	 * Getter for <code>cattle.service.system</code>.
+	 */
+	@javax.persistence.Column(name = "system", nullable = false, precision = 1)
+	public java.lang.Boolean getSystem();
+
 	// -------------------------------------------------------------------------
 	// FROM and INTO
 	// -------------------------------------------------------------------------
