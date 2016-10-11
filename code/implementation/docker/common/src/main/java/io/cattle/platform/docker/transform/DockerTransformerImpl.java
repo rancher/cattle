@@ -43,6 +43,7 @@ import com.github.dockerjava.api.model.VolumeBind;
 public class DockerTransformerImpl implements DockerTransformer {
 
     private static final String HOST_CONFIG = "HostConfig";
+    private static final String CONFIG = "Config";
     private static final String IMAGE_PREFIX = "docker:";
     private static final String IMAGE_KIND_PATTERN = "^(sim|docker):.*";
     private static final String READ_WRITE = "rw";
@@ -176,6 +177,8 @@ public class DockerTransformerImpl implements DockerTransformer {
             setCommand(instance, containerConfig.getCmd());
             setListField(instance, FIELD_ENTRY_POINT, containerConfig.getEntrypoint());
             setField(instance, FIELD_VOLUME_DRIVER, fromInspect, "Config", "VolumeDriver");
+            setField(instance, FIELD_STOP_SIGNAL, fromInspect, CONFIG, "StopSignal");
+            setHealthConfig(fromInspect, instance);
         }
 
         if (containerConfig != null && hostConfig != null) {
@@ -194,6 +197,23 @@ public class DockerTransformerImpl implements DockerTransformer {
             setRestartPolicy(instance, hostConfig.getRestartPolicy());
             setDevices(instance, hostConfig.getDevices());
             setMemoryReservation(fromInspect, instance);
+            setField(instance, FIELD_BLKIO_WEIGHT, fromInspect, HOST_CONFIG, "BlkioWeight");
+            setField(instance, FIELD_CGROUP_PARENT, fromInspect, HOST_CONFIG, "CgroupParent");
+            setField(instance, FIELD_CPU_PERIOD, fromInspect, HOST_CONFIG, "CpuPeriod");
+            setField(instance, FIELD_CPU_QUOTA, fromInspect, HOST_CONFIG, "CpuQuota");
+            setField(instance, FIELD_CPUSET_MEMS, fromInspect, HOST_CONFIG, "CpusetMems");
+            setField(instance, FIELD_DNS_OPT, fromInspect, HOST_CONFIG, "DnsOptions");
+            setField(instance, FIELD_GROUP_ADD, fromInspect, HOST_CONFIG, "GroupAdd");
+            setField(instance, FIELD_KERNEL_MEMORY, fromInspect, HOST_CONFIG, "KernelMemory");
+            setField(instance, FIELD_MEMORY_SWAPPINESS, fromInspect, HOST_CONFIG, "MemorySwappiness");
+            setField(instance, FIELD_OOMKILL_DISABLE, fromInspect, HOST_CONFIG, "OomKillDisable");
+            setField(instance, FIELD_SHM_SIZE, fromInspect, HOST_CONFIG, "ShmSize");
+            setField(instance, FIELD_TMPFS, fromInspect, HOST_CONFIG, "Tmpfs");
+            setField(instance, FIELD_UTS, fromInspect, HOST_CONFIG, "UTSMode");
+            setField(instance, FIELD_IPC_MODE, fromInspect, HOST_CONFIG, "IpcMode");
+            setField(instance, FIELD_SYSCTLS, fromInspect, HOST_CONFIG, "Sysctls");
+            setField(instance, FIELD_OOM_SCORE_ADJ, fromInspect, HOST_CONFIG, "OomScoreAdj");
+            setField(instance, FIELD_ULIMITS, fromInspect, HOST_CONFIG, "Ulimits");
         }
 
         setBlkioDeviceOptionss(instance, fromInspect);
@@ -217,6 +237,25 @@ public class DockerTransformerImpl implements DockerTransformer {
         Object memRes = CollectionUtils.getNestedValue(fromInspect, HOST_CONFIG, "MemoryReservation");
         if (memRes != null && memRes instanceof Number) {
             instance.setMemoryReservation(((Number)memRes).longValue());
+        }
+    }
+    
+    void setHealthConfig(Map<String, Object> fromInspect, Instance instance) {
+        Object healthCmd = CollectionUtils.getNestedValue(fromInspect, CONFIG, "Healthcheck", "Test");
+        Object healthInterval = CollectionUtils.getNestedValue(fromInspect, CONFIG, "Healthcheck", "Interval");
+        Object healthTimeout = CollectionUtils.getNestedValue(fromInspect, CONFIG, "Healthcheck", "Timeout");
+        Object healthRetries = CollectionUtils.getNestedValue(fromInspect, CONFIG, "Healthcheck", "Retries");
+        if (healthCmd != null) {
+            setField(instance, "healthCmd", healthCmd);
+        }
+        if (healthInterval != null) {
+            setField(instance, "healthInterval", healthInterval);
+        }
+        if (healthTimeout != null) {
+            setField(instance, "healthTimeout", healthTimeout);
+        }
+        if (healthTimeout != null) {
+            setField(instance, "healthRetries", healthRetries);
         }
     }
 

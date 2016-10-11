@@ -239,7 +239,147 @@
          "startCount" : {
             "type" : "int",
             "nullable" : true
-        }
+        },
+         "blkioWeight" : {
+            "type" : "int",
+            "nullable" : true
+        },
+         "cgroup" : {
+         	"type" : "string",
+            "nullable" : true
+        },
+         "cgroupParent" : {
+            "type" : "string",
+            "nullable" : true
+        },
+         "usernsMode" : {
+         	"type" : "string",
+            "nullable" : true
+        },
+         "pidsLimit" : {
+         	"type" : "int",
+            "nullable" : true
+        },
+         "diskQuota" : {
+         	"type" : "int",
+            "nullable" : true
+        },
+         "cpuCount" : {
+         	"type" : "int",
+            "nullable" : true
+        },
+         "cpuPercent" : {
+         	"type" : "int",
+            "nullable" : true
+        },
+         "ioMaximumIOps" : {
+         	"type" : "int",
+            "nullable" : true
+        },
+         "ioMaximumBandwidth" : {
+         	"type" : "int",
+            "nullable" : true
+        },
+         "cpuPeriod" : {
+            "type" : "int",
+            "nullable" : true
+        },
+         "cpuQuota" : {
+         	"type" : "int",
+            "nullable" : true
+        },
+         "cpuSetMems" : {
+            "type" : "string",
+            "nullable" : true
+        },
+         "dnsOpt" : {
+            "type" : "array[string]",
+            "nullable" : true
+        },
+         "groupAdd" : {
+            "type" : "array[string]",
+            "nullable" : true
+        },
+         "isolation" : {
+            "type" : "string",
+            "nullable" : true
+        },
+         "kernelMemory" : {
+         	"type" : "int",
+            "nullable" : true
+        },
+         "memorySwappiness" : {
+         	"type" : "int",
+            "nullable" : true
+        },
+         "oomKillDisable" : {
+         	"type" : "boolean",
+            "nullable" : true
+        },
+         "shmSize" : {
+         	"type" : "int",
+            "nullable" : true
+        },
+         "tmpfs" : {
+         	"type" : "map[string]",
+            "nullable" : true
+        },
+         "uts" : {
+         	"type" : "string",
+            "nullable" : true
+        },
+         "ipcMode" : {
+         	"type" : "string",
+            "nullable" : true
+        },
+         "stopSignal" : {
+         	"type" : "string",
+            "nullable" : true
+        },
+         "sysctls" : {
+         	"type" : "map[string]",
+            "nullable" : true
+        },
+         "storageOpt" : {
+         	"type" : "map[string]",
+         	"nullable" : true
+        },
+         "oomScoreAdj" : {
+         	"type" : "int",
+            "nullable" : true
+        },
+         "ulimits" : {
+         	"type" : "array[ulimit]",
+            "nullable" : true
+        },
+         "ip" : {
+            "type" : "string",
+            "nullable" : true
+        },
+         "ip6" : {
+            "type" : "string",
+            "nullable" : true
+        },
+         "netAlias" : {
+         	"type" : "array[string]",
+            "nullable" : true
+        },
+         "healthCmd" : {
+         	"type" : "array[string]",
+            "nullable" : true
+        },
+         "healthInterval" : {
+          	"type" : "int",
+            "nullable" : true
+        }, 
+         "healthTimeout" : {
+         	"type" : "int",
+            "nullable" : true
+        },
+         "healthRetries" : {
+         	"type" : "int",
+            "nullable" : true
+        }   
     },
     "resourceActions": {
         "logs": {

@@ -10,6 +10,9 @@ TEST_IMAGE_UUID = 'docker:' + TEST_IMAGE
 if_docker = pytest.mark.skipif("os.environ.get('DOCKER_TEST') == 'false'",
                                reason='DOCKER_TEST is not set')
 
+if_docker_1_12 = pytest.mark.skipif("os.environ.get('DOCKER_VERSION') != '1.12.1'",
+                                    reason='Docker version is not 1.12.1')
+
 
 @pytest.fixture(scope='session')
 def docker_client(super_client):
@@ -642,6 +645,95 @@ def test_container_fields(docker_client, super_client):
     assert actual_devices[0]['CgroupPermissions'] == "rw"
     assert actual_devices[0]['PathOnHost'] == "/dev/null"
     assert actual_devices[0]['PathInContainer'] == "/dev/xnull"
+
+@if_docker
+def test_docker_newfields(docker_client, super_client):
+    test_name = 'container_field_test'
+    image_uuid = 'docker:ibuildthecloud/helloworld'
+    privileged = True
+    blkioWeight = 100
+    cpuPeriod = 100000
+    cpuQuota = 50000
+    cpuSetMems = "0"
+    kernelMemory = 10000000
+    memory = 10000000
+    groupAdd = ['root']
+    memorySwappiness = 50
+    oomScoreAdj = 500
+    shmSize = 67108864
+    tmpfs = {"/run": "rw,noexec,nosuid,size=65536k"}
+    uts = "host"
+    ipcMode = "host"
+    stopSignal = "SIGTERM"
+    ulimits = [{"name": "cpu", "hard": 100000, "soft": 100000}]
+    c = docker_client.create_container(name=test_name,
+                                       imageUuid=image_uuid,
+                                       privileged=privileged,
+                                       blkioWeight=blkioWeight,
+                                       cpuPeriod=cpuPeriod,
+                                       cpuQuota=cpuQuota,
+                                       cpuSetMems=cpuSetMems,
+                                       kernelMemory=kernelMemory,
+                                       groupAdd=groupAdd,
+                                       memory=memory,
+                                       memorySwappiness=memorySwappiness,
+                                       oomScoreAdj=oomScoreAdj,
+                                       shmSize=shmSize,
+                                       tmpfs=tmpfs,
+                                       uts=uts,
+                                       ipcMode=ipcMode,
+                                       stopSignal=stopSignal,
+                                       ulimits=ulimits)
+    c = super_client.wait_success(c)
+
+    wait_for(lambda: super_client.reload(c).data['dockerInspect'] is not None)
+    wait_for(lambda: super_client.
+             reload(c).data['dockerInspect']['HostConfig'] is not None)
+    assert c.data['dockerInspect']['HostConfig']['BlkioWeight'] == 100
+    assert c.data['dockerInspect']['HostConfig']['CpuPeriod'] == 100000
+    assert c.data['dockerInspect']['HostConfig']['CpuQuota'] == 50000
+    assert c.data['dockerInspect']['HostConfig']['CpusetMems'] == "0"
+    assert c.data['dockerInspect']['HostConfig']['KernelMemory'] == 10000000
+    assert c.data['dockerInspect']['HostConfig']['Memory'] == 10000000
+    assert c.data['dockerInspect']['HostConfig']['MemorySwappiness'] == 50
+    assert c.data['dockerInspect']['HostConfig']['GroupAdd'] == ['root']
+    assert not c.data['dockerInspect']['HostConfig']['OomKillDisable']
+    assert c.data['dockerInspect']['HostConfig']['OomScoreAdj'] == 500
+    assert c.data['dockerInspect']['HostConfig']['ShmSize'] == 67108864
+    assert c.data['dockerInspect']['HostConfig']['Tmpfs'] == {"/run": "rw,noexec,nosuid,size=65536k"}
+    assert c.data['dockerInspect']['HostConfig']['UTSMode'] == 'host'
+    assert c.data['dockerInspect']['HostConfig']['IpcMode'] == 'host'
+    assert c.data['dockerInspect']['HostConfig']['Ulimits'] == [{"Name": "cpu", "Hard": 100000, "Soft": 100000}]
+    assert c.data['dockerInspect']['Config']['StopSignal'] == 'SIGTERM'
+
+
+@if_docker_1_12
+def test_docker_extra_newfields(docker_client, super_client):
+    test_name = 'container_field_test'
+    image_uuid = 'docker:ibuildthecloud/helloworld'
+    sysctls = {"net.ipv4.ip_forward": "1"}
+
+    healthCmd = ["ls"]
+    healthInterval = 5
+    healthRetries = 3
+    healthTimeout = 60
+    c = docker_client.create_container(name=test_name,
+                                       imageUuid=image_uuid,
+                                       sysctls=sysctls,
+                                       healthCmd=healthCmd,
+                                       healthTimeout=healthTimeout,
+                                       healthRetries=healthRetries,
+                                       healthInterval=healthInterval)
+    c = super_client.wait_success(c)
+
+    wait_for(lambda: super_client.reload(c).data['dockerInspect'] is not None)
+    wait_for(lambda: super_client.
+             reload(c).data['dockerInspect']['HostConfig'] is not None)
+    assert c.data['dockerInspect']['HostConfig']['Sysctls'] == {"net.ipv4.ip_forward": "1"}
+    assert c.data['dockerInspect']['Config']['Healthcheck']['Test'] == ['ls']
+    assert c.data['dockerInspect']['Config']['Healthcheck']['Interval'] == 5000000000
+    assert c.data['dockerInspect']['Config']['Healthcheck']['Timeout'] == 60000000000
+    assert c.data['dockerInspect']['Config']['Healthcheck']['Retries'] == 3
 
 
 @if_docker
