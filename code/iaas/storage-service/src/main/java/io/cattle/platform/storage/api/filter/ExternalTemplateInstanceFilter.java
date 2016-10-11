@@ -20,6 +20,7 @@ import javax.inject.Inject;
 
 import org.apache.commons.lang3.StringUtils;
 
+import com.netflix.config.DynamicStringListProperty;
 import com.netflix.config.DynamicStringProperty;
 
 public class ExternalTemplateInstanceFilter extends AbstractResourceManagerFilter {
@@ -29,7 +30,7 @@ public class ExternalTemplateInstanceFilter extends AbstractResourceManagerFilte
     StorageService storageService;
 
     public static final DynamicStringProperty DEFAULT_REGISTRY = ArchaiusUtil.getString("registry.default");
-    public static final DynamicStringProperty WHITELIST_REGISTRIES = ArchaiusUtil.getString("registry.whitelist");
+    public static final DynamicStringListProperty WHITELIST_REGISTRIES = ArchaiusUtil.getList("registry.whitelist");
     @Override
     public Object create(String type, ApiRequest request, ResourceManager next) {
         Map<String, Object> data = CollectionUtils.toMap(request.getRequestObject());
@@ -54,10 +55,13 @@ public class ExternalTemplateInstanceFilter extends AbstractResourceManagerFilte
         }
 
         String fullImageName = dockerImage.getFullName();
-        String server = dockerImage.getServer();
-        if (!fullImageName.startsWith(server)) {
+        String registry = dockerImage.getServer();
+        if (!fullImageName.startsWith(registry)) {
             String defaultRegistry = DEFAULT_REGISTRY.get();
-            if (!StringUtils.isBlank(defaultRegistry) && !StringUtils.isEmpty(defaultRegistry)) {
+            if (image.contains(registry)) {
+                fullImageName = registry + "/" + fullImageName;
+            }
+            else if (!StringUtils.isBlank(defaultRegistry) && !StringUtils.isEmpty(defaultRegistry)) {
                 fullImageName = defaultRegistry + "/" + fullImageName;
             }
         }
@@ -78,50 +82,32 @@ public class ExternalTemplateInstanceFilter extends AbstractResourceManagerFilte
             return;
         }
 
-        String server = dockerImage.getServer();
-        String qualifiedName = dockerImage.getQualifiedName();
-        String whitelist = WHITELIST_REGISTRIES.get();
+        String registry = dockerImage.getServer();
+        List<String> whitelistRegistries = WHITELIST_REGISTRIES.get();
         String defaultRegistry = DEFAULT_REGISTRY.get();
         String userProvidedRegistry = dockerImage.getServer();
 
-        if (!qualifiedName.startsWith(server)) {
+        if (!image.contains(registry)) {
             if(!StringUtils.isBlank(defaultRegistry)) {
                 userProvidedRegistry = defaultRegistry;
             }
         }
 
 
-        String[] whitelistRegistries;
-        if (specified(whitelist)) {
-            whitelistRegistries = WHITELIST_REGISTRIES.get().split(",");
+        if (whitelistRegistries.size() > 0) {
             if (!StringUtils.isEmpty(userProvidedRegistry) && !StringUtils.isBlank(userProvidedRegistry)) {
-                if (!contains(whitelistRegistries, userProvidedRegistry)) {
+                if (!whitelistRegistries.contains(userProvidedRegistry)) {
                     throw new ValidationErrorException(ValidationErrorCodes.INVALID_OPTION, InstanceConstants.FIELD_IMAGE_UUID);
                 }
             }
             else {
                 if (!StringUtils.isEmpty(defaultRegistry) && !StringUtils.isBlank(defaultRegistry)) {
-                    if (!contains(whitelistRegistries, defaultRegistry)) {
+                    if (!whitelistRegistries.contains(defaultRegistry)) {
                         throw new ValidationErrorException(ValidationErrorCodes.INVALID_OPTION, InstanceConstants.FIELD_IMAGE_UUID);
                     }
                 }
             }
         }
-    }
-
-    public static boolean contains(String[] arr, String target) {
-        for(String str: arr){
-            if(str.equals(target))
-                return true;
-        }
-        return false;
-    }
-
-    public static boolean specified(String registry) {
-        if (registry != null && !registry.isEmpty() && !registry.trim().isEmpty()) {
-            return true;
-        }
-        return false;
     }
 
     @Override
