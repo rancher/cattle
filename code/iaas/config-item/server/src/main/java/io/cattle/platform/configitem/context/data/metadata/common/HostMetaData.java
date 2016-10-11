@@ -1,5 +1,7 @@
 package io.cattle.platform.configitem.context.data.metadata.common;
 
+import io.cattle.platform.configitem.context.dao.MetaDataInfoDao;
+import io.cattle.platform.configitem.context.dao.MetaDataInfoDao.Version;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.model.Host;
 import io.cattle.platform.object.util.DataAccessor;
@@ -9,13 +11,12 @@ import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-
 public class HostMetaData {
     String agent_ip;
     String name;
     Map<String, String> labels;
     Long hostId;
+    
     String uuid;
     String hostname;
     Long milli_cpu;
@@ -35,7 +36,6 @@ public class HostMetaData {
     }
 
     public HostMetaData() {
-
     }
 
     @SuppressWarnings("unchecked")
@@ -48,15 +48,25 @@ public class HostMetaData {
         this.labels = (Map<String, String>) DataAccessor.fields(host)
                 .withKey(InstanceConstants.FIELD_LABELS)
                 .withDefault(Collections.EMPTY_MAP).as(Map.class);
-        this.hostId = host.getId();
         this.uuid = host.getUuid();
-
+        this.hostId = host.getId();
         this.local_storage_mb = host.getLocalStorageMb();
         this.memory = host.getMemory();
         this.milli_cpu = host.getMilliCpu();
     }
 
-    @JsonIgnore
+    public HostMetaData(HostMetaData that) {
+        this.agent_ip = that.agent_ip;
+        this.name = that.name;
+        this.hostname = that.hostname;
+        this.labels = that.labels;
+        this.uuid = that.uuid;
+        this.hostId = that.hostId;
+        this.local_storage_mb = that.local_storage_mb;
+        this.memory = that.memory;
+        this.milli_cpu = that.milli_cpu;
+    }
+
     public Long getHostId() {
         return hostId;
     }
@@ -75,10 +85,6 @@ public class HostMetaData {
 
     public void setLabels(Map<String, String> labels) {
         this.labels = labels;
-    }
-
-    public void setHostId(Long hostId) {
-        this.hostId = hostId;
     }
 
     public void setUuid(String uuid) {
@@ -115,5 +121,13 @@ public class HostMetaData {
 
     public void setLocal_storage_mb(Long localStorageMb) {
         this.local_storage_mb = localStorageMb;
+    }
+
+    public static HostMetaData getHostMetaData(HostMetaData data, Version version) {
+        if (version == MetaDataInfoDao.Version.version1 || version == MetaDataInfoDao.Version.version2) {
+            return new HostMetaDataVersion1and2(data);
+        } else {
+            return new HostMetaData(data);
+        }
     }
 }

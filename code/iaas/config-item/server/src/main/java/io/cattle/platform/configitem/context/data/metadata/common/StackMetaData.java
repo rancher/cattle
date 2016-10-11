@@ -4,6 +4,7 @@ import io.cattle.platform.configitem.context.dao.MetaDataInfoDao;
 import io.cattle.platform.configitem.context.dao.MetaDataInfoDao.Version;
 import io.cattle.platform.configitem.context.data.metadata.version1.StackMetaDataVersion1;
 import io.cattle.platform.configitem.context.data.metadata.version2.StackMetaDataVersion2;
+import io.cattle.platform.configitem.context.data.metadata.version2.StackMetaDataVersion3;
 import io.cattle.platform.core.model.Account;
 import io.cattle.platform.core.model.Stack;
 
@@ -20,9 +21,7 @@ public class StackMetaData {
     protected List<ServiceMetaData> services = new ArrayList<>();
 
     public StackMetaData(Stack stack, Account account) {
-        if (stack.getName() != null) {
-            this.name = stack.getName().toLowerCase();
-        }
+        this.name = stack.getName();
         this.uuid = stack.getUuid();
         this.environment_name = account.getName();
         this.id = stack.getId();
@@ -81,8 +80,10 @@ public class StackMetaData {
     public static StackMetaData getStackMetaData(StackMetaData stackData, Version version) {
         if (version == MetaDataInfoDao.Version.version1) {
             return new StackMetaDataVersion1(stackData);
-        } else {
+        } else if (version == MetaDataInfoDao.Version.version2) {
             return new StackMetaDataVersion2(stackData);
+        } else {
+            return new StackMetaDataVersion3(stackData);
         }
     }
 }

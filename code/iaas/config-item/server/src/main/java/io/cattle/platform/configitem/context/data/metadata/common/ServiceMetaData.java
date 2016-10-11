@@ -4,6 +4,7 @@ import io.cattle.platform.configitem.context.dao.MetaDataInfoDao;
 import io.cattle.platform.configitem.context.dao.MetaDataInfoDao.Version;
 import io.cattle.platform.configitem.context.data.metadata.version1.ServiceMetaDataVersion1;
 import io.cattle.platform.configitem.context.data.metadata.version2.ServiceMetaDataVersion2;
+import io.cattle.platform.configitem.context.data.metadata.version2.ServiceMetaDataVersion3;
 import io.cattle.platform.core.addon.InstanceHealthCheck;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.constants.ServiceConstants;
@@ -144,13 +145,9 @@ public class ServiceMetaData {
             Map<String, Object> metadata, InstanceHealthCheck healthCheck) {
         this.serviceId = service.getId();
         this.service = service;
-        if (serviceName != null) {
-            this.name = serviceName.toLowerCase();
-        }
+        this.name = serviceName;
         this.uuid = service.getUuid();
-        if (env.getName() != null) {
-            this.stack_name = env.getName().toLowerCase();
-        }
+        this.stack_name = env.getName();
         this.stackId = env.getId();
         this.stackUuid = env.getUuid();
         this.kind = service.getKind();
@@ -365,8 +362,10 @@ public class ServiceMetaData {
     public static ServiceMetaData getServiceMetaData(ServiceMetaData serviceData, Version version) {
         if (version == MetaDataInfoDao.Version.version1) {
             return new ServiceMetaDataVersion1(serviceData);
-        } else {
+        } else if (version == MetaDataInfoDao.Version.version2) {
             return new ServiceMetaDataVersion2(serviceData);
+        } else {
+            return new ServiceMetaDataVersion3(serviceData);
         }
     }
 
