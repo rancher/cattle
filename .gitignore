@@ -35,3 +35,4 @@ tests/integration*/MANIFEST
 *.swp
 *~
 
+code/packaging/app/.existing

@@ -53,8 +53,8 @@ def test_activate_services_fail(super_client, new_context):
 
     # as we have only 2 hosts available,
     # service's final scale should be 2
-    svc = client.wait_success(svc.activate())
-    assert svc.state == "active"
+    svc = wait_state(client, svc.activate(), 'active')
+    wait_for(lambda: super_client.reload(svc).currentScale >= 1)
     wait_for(lambda: super_client.reload(svc).currentScale >= 1)
 
 

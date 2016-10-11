@@ -79,6 +79,7 @@ def test_env_set_outputs(client, context):
             'foo': 'bar',
             'foo2': 'bar2',
         })
+
     env = retry(func)
 
     assert env.outputs == {'foo': 'bar', 'foo2': 'bar2'}
@@ -90,6 +91,7 @@ def test_env_set_outputs(client, context):
         return env.addoutputs(outputs={
             'foo3': 'bar3',
         })
+
     env = retry(func)
     assert env.outputs == {'foo': 'bar', 'foo2': 'bar2', 'foo3': 'bar3'}
 
@@ -104,7 +106,7 @@ def test_registries(super_client, client, context,
 
     default_value = 'sim:localhost.localdomain:5000'
     whitelist_value = 'sim:localhost.localdomain:5000,index.docker.io'
-    whitelist_value = whitelist_value+',sim:rancher,docker.io'
+    whitelist_value = whitelist_value + ',sim:rancher,docker.io'
     default_registry = admin_user_client.update(default_registry,
                                                 value=default_value)
     whitelist_registries = admin_user_client.update(whitelist_registries,
@@ -355,6 +357,7 @@ def _validate_compose_instance_removed(client, service, env, number="1"):
     def check():
         return client. \
             list_container(name=env.name + "-" + service.name + "-" + number)
+
     wait_for(lambda: len(check()) == 0)
 
 
@@ -861,10 +864,9 @@ def test_destroy_service_instance(client, context):
 
     # 1. stop and remove the instance2. Validate the mapping is gone
     _instance_remove(instance2, client)
-
-    instance_service_map = client. \
-        list_serviceExposeMap(serviceId=service.id, instanceId=instance2.id)
-    assert len(instance_service_map) == 0
+    wait_for(lambda: len(client.
+                         list_serviceExposeMap(serviceId=service.id,
+                                               instanceId=instance2.id)) == 0)
 
     service = client.wait_success(service)
 
@@ -892,9 +894,9 @@ def test_destroy_service_instance(client, context):
     instance1 = _instance_remove(instance1, client)
     instance1 = client.wait_success(instance1.purge())
     assert instance1.state == 'purged'
-    instance_service_map = client. \
-        list_serviceExposeMap(serviceId=service.id, instanceId=instance1.id)
-    assert len(instance_service_map) == 0
+    wait_for(lambda: len(client.
+                         list_serviceExposeMap(serviceId=service.id,
+                                               instanceId=instance1.id)) == 0)
 
 
 def test_service_rename(client, context):
@@ -1590,7 +1592,7 @@ def test_svc_container_reg_cred_and_image(super_client, client):
     whitelist_registries = super_client.by_id_setting(id)
 
     server = 'server{0}.io'.format(random_num())
-    whitelist_value = 'index.docker.io,'+server
+    whitelist_value = 'index.docker.io,' + server
     whitelist_registries = super_client.update(whitelist_registries,
                                                value=whitelist_value)
     registry = client.create_registry(serverAddress=server,
@@ -2439,6 +2441,7 @@ def test_validate_scaledown_updating(client, context):
     def wait():
         s = client.reload(service)
         return s.scale == 10
+
     wait_for(wait)
 
     service = client.update(service, scale=1, name=service.name)

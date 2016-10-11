@@ -789,7 +789,11 @@ def test_health_check_quorum(super_client, context, client):
     assert len(svc.serviceExposeMaps()) == 3
     expose_maps = svc.serviceExposeMaps()
 
-    c3 = super_client.reload(expose_maps[2].instance())
+    for m in expose_maps:
+        if m.instance().id == c1.id or m.instance().id == c2.id:
+            continue
+        c3 = m.instance()
+    c3 = super_client.reload(c3)
     hci3 = find_one(c3.healthcheckInstances)
     hcihm3 = find_one(hci3.healthcheckInstanceHostMaps)
     agent3 = _get_agent_for_container(c3)
