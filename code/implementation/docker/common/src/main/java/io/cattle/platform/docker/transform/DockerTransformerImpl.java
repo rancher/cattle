@@ -193,6 +193,7 @@ public class DockerTransformerImpl implements DockerTransformer {
             setCapField(instance, FIELD_CAP_DROP, hostConfig.getCapDrop());
             setRestartPolicy(instance, hostConfig.getRestartPolicy());
             setDevices(instance, hostConfig.getDevices());
+            setMemoryReservation(fromInspect, instance);
         }
 
         setBlkioDeviceOptionss(instance, fromInspect);
@@ -210,6 +211,13 @@ public class DockerTransformerImpl implements DockerTransformer {
 
         // Currently not implemented: VolumesFrom, Links,
         // Consider: AttachStdin, AttachStdout, AttachStderr, StdinOnce,
+    }
+
+    void setMemoryReservation(Map<String, Object> fromInspect, Instance instance) {
+        Object memRes = CollectionUtils.getNestedValue(fromInspect, HOST_CONFIG, "MemoryReservation");
+        if (memRes != null && memRes instanceof Number) {
+            instance.setMemoryReservation(((Number)memRes).longValue());
+        }
     }
 
     @SuppressWarnings({ "rawtypes", "unchecked" })
