@@ -127,6 +127,7 @@ public class ContainerMetaData {
         this.start_count = instance.getStartCount();
         this.state = instance.getState();
         this.memory_reservation = instance.getMemoryReservation();
+        this.milli_cpu_reservation = instance.getMilliCpuReservation();
     }
 
     public void setService_name(String service_name) {
