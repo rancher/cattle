@@ -1,5 +1,9 @@
 package io.cattle.platform.core.constants;
 
+import io.cattle.platform.core.model.Service;
+import io.cattle.platform.core.model.Stack;
+import io.cattle.platform.object.util.DataAccessor;
+
 public class ServiceConstants {
 
     public static final String KIND_SERVICE = "service";
@@ -144,4 +148,12 @@ public class ServiceConstants {
     public static final String AUDIT_LOG_CREATE_EXTRA = "Creating extra service instance";
 
     public static final String SERVICE_INDEX_DU_STRATEGY = "deploymentUnitBased";
+
+    public static boolean isSystem(Stack stack) {
+        return stack.getSystem() || DataAccessor.fieldBool(stack, FIELD_SYSTEM)|| DataAccessor.fieldBool(stack, "isSystem");
+    }
+
+    public static boolean isSystem(Service service) {
+        return service.getSystem() || DataAccessor.fieldBool(service, FIELD_SYSTEM);
+    }
 }

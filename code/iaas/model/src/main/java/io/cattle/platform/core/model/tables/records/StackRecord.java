@@ -11,9 +11,9 @@ package io.cattle.platform.core.model.tables.records;
 @java.lang.SuppressWarnings({ "all", "unchecked", "rawtypes" })
 @javax.persistence.Entity
 @javax.persistence.Table(name = "environment", schema = "cattle")
-public class StackRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.platform.core.model.tables.records.StackRecord> implements io.cattle.platform.db.jooq.utils.TableRecordJaxb, org.jooq.Record14<java.lang.Long, java.lang.String, java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.util.Date, java.util.Date, java.util.Date, java.util.Map<String,Object>, java.lang.String, java.lang.String, java.lang.String>, io.cattle.platform.core.model.Stack {
+public class StackRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.platform.core.model.tables.records.StackRecord> implements io.cattle.platform.db.jooq.utils.TableRecordJaxb, org.jooq.Record15<java.lang.Long, java.lang.String, java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.util.Date, java.util.Date, java.util.Date, java.util.Map<String,Object>, java.lang.String, java.lang.String, java.lang.String, java.lang.Boolean>, io.cattle.platform.core.model.Stack {
 
-	private static final long serialVersionUID = 2122781944;
+	private static final long serialVersionUID = -2097717329;
 
 	/**
 	 * Setter for <code>cattle.environment.id</code>.
@@ -254,6 +254,23 @@ public class StackRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.pla
 		return (java.lang.String) getValue(13);
 	}
 
+	/**
+	 * Setter for <code>cattle.environment.system</code>.
+	 */
+	@Override
+	public void setSystem(java.lang.Boolean value) {
+		setValue(14, value);
+	}
+
+	/**
+	 * Getter for <code>cattle.environment.system</code>.
+	 */
+	@javax.persistence.Column(name = "system", nullable = false, precision = 1)
+	@Override
+	public java.lang.Boolean getSystem() {
+		return (java.lang.Boolean) getValue(14);
+	}
+
 	// -------------------------------------------------------------------------
 	// Primary key information
 	// -------------------------------------------------------------------------
@@ -267,23 +284,23 @@ public class StackRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.pla
 	}
 
 	// -------------------------------------------------------------------------
-	// Record14 type implementation
+	// Record15 type implementation
 	// -------------------------------------------------------------------------
 
 	/**
 	 * {@inheritDoc}
 	 */
 	@Override
-	public org.jooq.Row14<java.lang.Long, java.lang.String, java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.util.Date, java.util.Date, java.util.Date, java.util.Map<String,Object>, java.lang.String, java.lang.String, java.lang.String> fieldsRow() {
-		return (org.jooq.Row14) super.fieldsRow();
+	public org.jooq.Row15<java.lang.Long, java.lang.String, java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.util.Date, java.util.Date, java.util.Date, java.util.Map<String,Object>, java.lang.String, java.lang.String, java.lang.String, java.lang.Boolean> fieldsRow() {
+		return (org.jooq.Row15) super.fieldsRow();
 	}
 
 	/**
 	 * {@inheritDoc}
 	 */
 	@Override
-	public org.jooq.Row14<java.lang.Long, java.lang.String, java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.util.Date, java.util.Date, java.util.Date, java.util.Map<String,Object>, java.lang.String, java.lang.String, java.lang.String> valuesRow() {
-		return (org.jooq.Row14) super.valuesRow();
+	public org.jooq.Row15<java.lang.Long, java.lang.String, java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.util.Date, java.util.Date, java.util.Date, java.util.Map<String,Object>, java.lang.String, java.lang.String, java.lang.String, java.lang.Boolean> valuesRow() {
+		return (org.jooq.Row15) super.valuesRow();
 	}
 
 	/**
@@ -402,6 +419,14 @@ public class StackRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.pla
 	 * {@inheritDoc}
 	 */
 	@Override
+	public org.jooq.Field<java.lang.Boolean> field15() {
+		return io.cattle.platform.core.model.tables.StackTable.STACK.SYSTEM;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
 	public java.lang.Long value1() {
 		return getId();
 	}
@@ -508,6 +533,14 @@ public class StackRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.pla
 	@Override
 	public java.lang.String value14() {
 		return getGroup();
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public java.lang.Boolean value15() {
+		return getSystem();
 	}
 
 	/**
@@ -640,7 +673,16 @@ public class StackRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.pla
 	 * {@inheritDoc}
 	 */
 	@Override
-	public StackRecord values(java.lang.Long value1, java.lang.String value2, java.lang.Long value3, java.lang.String value4, java.lang.String value5, java.lang.String value6, java.lang.String value7, java.util.Date value8, java.util.Date value9, java.util.Date value10, java.util.Map<String,Object> value11, java.lang.String value12, java.lang.String value13, java.lang.String value14) {
+	public StackRecord value15(java.lang.Boolean value) {
+		setSystem(value);
+		return this;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public StackRecord values(java.lang.Long value1, java.lang.String value2, java.lang.Long value3, java.lang.String value4, java.lang.String value5, java.lang.String value6, java.lang.String value7, java.util.Date value8, java.util.Date value9, java.util.Date value10, java.util.Map<String,Object> value11, java.lang.String value12, java.lang.String value13, java.lang.String value14, java.lang.Boolean value15) {
 		return this;
 	}
 
@@ -667,6 +709,7 @@ public class StackRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.pla
 		setExternalId(from.getExternalId());
 		setHealthState(from.getHealthState());
 		setGroup(from.getGroup());
+		setSystem(from.getSystem());
 	}
 
 	/**
@@ -692,7 +735,7 @@ public class StackRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.pla
 	/**
 	 * Create a detached, initialised StackRecord
 	 */
-	public StackRecord(java.lang.Long id, java.lang.String name, java.lang.Long accountId, java.lang.String kind, java.lang.String uuid, java.lang.String description, java.lang.String state, java.util.Date created, java.util.Date removed, java.util.Date removeTime, java.util.Map<String,Object> data, java.lang.String externalId, java.lang.String healthState, java.lang.String folder) {
+	public StackRecord(java.lang.Long id, java.lang.String name, java.lang.Long accountId, java.lang.String kind, java.lang.String uuid, java.lang.String description, java.lang.String state, java.util.Date created, java.util.Date removed, java.util.Date removeTime, java.util.Map<String,Object> data, java.lang.String externalId, java.lang.String healthState, java.lang.String folder, java.lang.Boolean system) {
 		super(io.cattle.platform.core.model.tables.StackTable.STACK);
 
 		setValue(0, id);
@@ -709,5 +752,6 @@ public class StackRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.pla
 		setValue(11, externalId);
 		setValue(12, healthState);
 		setValue(13, folder);
+		setValue(14, system);
 	}
 }

@@ -87,7 +87,7 @@ public class SystemStackUpdate extends AbstractJooqDao implements AnnotatedEvent
         String orchestration = "cattle";
         Set<String> installedOrcs = new HashSet<>();
         for (Stack stack : stacks) {
-            if (!DataAccessor.fieldBool(stack, ServiceConstants.FIELD_SYSTEM)) {
+            if (!ServiceConstants.isSystem(stack)) {
                 continue;
             }
 

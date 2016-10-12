@@ -1,6 +1,6 @@
 {
     "authorize" : {
-        "stack.system": "cr",
+        "stack.system": "cru",
         "end" : ""
     }
 }

@@ -66,7 +66,7 @@ public class ServiceExposeMapDaoImpl extends AbstractJooqDao implements ServiceE
         record.setCreateIndex((record.getCreateIndex() == null ? 0 : record.getCreateIndex()) + 1);
         record.update();
         properties.put(InstanceConstants.FIELD_CREATE_INDEX, record.getCreateIndex());
-        properties.put(ServiceConstants.FIELD_SYSTEM, DataAccessor.fieldBool(service, ServiceConstants.FIELD_SYSTEM));
+        properties.put(ServiceConstants.FIELD_SYSTEM, ServiceConstants.isSystem(service));
         final Instance instance = objectManager.create(Instance.class, properties);
         ServiceExposeMap exposeMap = createServiceInstanceMap(service, instance, true);
 
