@@ -10,7 +10,8 @@ public interface MetaDataInfoDao {
     public enum Version {
         version1("2015-07-25", "2015-07-25"),
         version2("2015-12-19", "2015-12-19"),
-        latestVersion("latest", "2015-12-19");
+        version3("2016-07-29", "2016-07-29"),
+        latestVersion("latest", "2016-07-29");
 
         String tag;
         String value;

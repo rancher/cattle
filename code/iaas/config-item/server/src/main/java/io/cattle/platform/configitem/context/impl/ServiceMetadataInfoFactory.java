@@ -1,9 +1,9 @@
 package io.cattle.platform.configitem.context.impl;
 
+import static io.cattle.platform.core.model.tables.InstanceHostMapTable.*;
 import static io.cattle.platform.core.model.tables.ServiceConsumeMapTable.*;
 import static io.cattle.platform.core.model.tables.ServiceTable.*;
 import static io.cattle.platform.core.model.tables.StackTable.*;
-import static io.cattle.platform.core.model.tables.InstanceHostMapTable.*;
 import io.cattle.platform.configitem.context.dao.MetaDataInfoDao;
 import io.cattle.platform.configitem.context.dao.MetaDataInfoDao.Version;
 import io.cattle.platform.configitem.context.data.metadata.common.ContainerMetaData;
@@ -146,8 +146,9 @@ public class ServiceMetadataInfoFactory extends AbstractAgentBaseContextFactory 
 
         // 1. generate containers metadata
         Map<Long, Map<String, List<ContainerMetaData>>> serviceIdToLaunchConfigToContainer = new HashMap<>();
-        containersMD = populateContainersData(containersMD, stackNameToStack, serviceIdToServiceLaunchConfigs,
-                serviceIdToLaunchConfigToContainer);
+        containersMD = populateContainersData(containersMD, stackNameToStack,
+                serviceIdToServiceLaunchConfigs,
+                serviceIdToLaunchConfigToContainer, version);
 
         // 2. generate service metadata based on version + add generated containers to service
         serviceIdToServiceLaunchConfigs = applyVersionToService(serviceIdToServiceLaunchConfigs,
@@ -163,16 +164,26 @@ public class ServiceMetadataInfoFactory extends AbstractAgentBaseContextFactory 
                 agentHostId);
 
         // 5. get host meta data
-        Map<Long, HostMetaData> hostIdToHost = metaDataInfoDao.getHostIdToHostMetadata(accountId);
-        List<HostMetaData> hostsMD = new ArrayList<>(hostIdToHost.values());
-        List<HostMetaData> selfHostMD = metaDataInfoDao.getInstanceHostMetaData(accountId,
-                agentInstanceId);
+        List<HostMetaData> hostsMD = new ArrayList<>();
+        for (HostMetaData data : metaDataInfoDao.getHostIdToHostMetadata(accountId).values()) {
+            hostsMD.add(applyVersionToHost(data, version));
+        }
+
+        List<HostMetaData> selfHostMD = new ArrayList<>();
+        for (HostMetaData data : metaDataInfoDao.getInstanceHostMetaData(accountId,
+                agentInstanceId)) {
+            selfHostMD.add(applyVersionToHost(data, version));
+        }
 
         // 6. full data combined of (n) self sections and default one
         Map<String, Object> fullData = getFullMetaData(context, containersMD, stackNameToStack,
                 serviceIdToServiceLaunchConfigs, selfMD, hostsMD, selfHostMD.size() == 0 ? null : selfHostMD.get(0));
 
         return fullData;
+    }
+
+    protected HostMetaData applyVersionToHost(HostMetaData data, Version version) {
+        return HostMetaData.getHostMetaData(data, version);
     }
 
     protected Map<String, Object> getFullMetaData(ArchiveContext context, List<ContainerMetaData> containersMD,
@@ -271,7 +282,7 @@ public class ServiceMetadataInfoFactory extends AbstractAgentBaseContextFactory 
 
     protected List<ContainerMetaData> populateContainersData(List<ContainerMetaData> containersMD, Map<String, StackMetaData> stackNameToStack,
             Map<Long, Map<String, ServiceMetaData>> serviceIdToServiceLaunchConfigs,
-            Map<Long, Map<String, List<ContainerMetaData>>> serviceIdToLaunchConfigToContainer) {
+            Map<Long, Map<String, List<ContainerMetaData>>> serviceIdToLaunchConfigToContainer, Version version) {
         List<ContainerMetaData> newData = new ArrayList<>();
         for (ContainerMetaData containerMD : containersMD) {
             if (containerMD.getServiceId() != null) {
@@ -304,7 +315,7 @@ public class ServiceMetadataInfoFactory extends AbstractAgentBaseContextFactory 
                     serviceIdToLaunchConfigToContainer.put(containerMD.getServiceId(), launchConfigToContainer);
                 }
             }
-            newData.add(containerMD);
+            newData.add(ContainerMetaData.getContainerMetaData(containerMD, version));
         }
         return newData;
     }

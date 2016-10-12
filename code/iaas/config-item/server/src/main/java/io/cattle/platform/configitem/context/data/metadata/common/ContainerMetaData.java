@@ -1,5 +1,8 @@
 package io.cattle.platform.configitem.context.data.metadata.common;
 
+import io.cattle.platform.configitem.context.dao.MetaDataInfoDao;
+import io.cattle.platform.configitem.context.dao.MetaDataInfoDao.Version;
+import io.cattle.platform.configitem.context.data.metadata.version2.ContainerMetaDataVersion3;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.Nic;
@@ -20,14 +23,14 @@ public class ContainerMetaData {
     private HostMetaData hostMetaData;
     private String dnsPrefix;
 
-    String name;
+    protected String name;
     String uuid;
     String primary_ip;
     List<String> ips = new ArrayList<>();
     // host:public:private
     List<String> ports = new ArrayList<>();
-    String service_name;
-    String stack_name;
+    protected String service_name;
+    protected String stack_name;
     String stack_uuid;
     Map<String, String> labels = new HashMap<>();
     Long create_index;
@@ -41,6 +44,28 @@ public class ContainerMetaData {
     String primary_mac_address;
     Long memory_reservation;
     Long milli_cpu_reservation;
+
+    public ContainerMetaData(ContainerMetaData that) {
+        this.name = that.name;
+        this.primary_ip = that.primary_ip;
+        this.ips = that.ips;
+        this.ports = that.ports;
+        this.service_name = that.service_name;
+        this.stack_name = that.stack_name;
+        this.stack_uuid = that.stack_uuid;
+        this.labels = that.labels;
+        this.create_index = that.create_index;
+        this.host_uuid = that.host_uuid;
+        this.hostname = that.hostname;
+        this.health_state = that.health_state;
+        this.start_count = that.start_count;
+        this.service_index = that.service_index;
+        this.state = that.state;
+        this.external_id = that.external_id;
+        this.primary_mac_address = that.primary_mac_address;
+        this.memory_reservation = that.memory_reservation;
+        this.milli_cpu_reservation = that.milli_cpu_reservation;
+    }
 
 
     public ContainerMetaData() {
@@ -91,12 +116,11 @@ public class ContainerMetaData {
         this.ips.add(primary_ip);
     }
 
+
     @SuppressWarnings("unchecked")
     public void setInstanceAndHostMetadata(Instance instance, HostMetaData hostMetaData) {
         this.hostMetaData = hostMetaData;
-        if (instance.getName() != null) {
-            this.name = instance.getName().toLowerCase();
-        }
+        this.name = instance.getName();
         this.uuid = instance.getUuid();
         this.external_id = instance.getExternalId();
         Map<String, String> labels = DataAccessor.fields(instance).withKey(InstanceConstants.FIELD_LABELS)
@@ -273,5 +297,13 @@ public class ContainerMetaData {
 
     public void setMilli_cpu_reservation(Long milli_cpu_reservation) {
         this.milli_cpu_reservation = milli_cpu_reservation;
+    }
+
+    public static ContainerMetaData getContainerMetaData(ContainerMetaData data, Version version) {
+        if (version == MetaDataInfoDao.Version.version1 || version == MetaDataInfoDao.Version.version2) {
+            return new ContainerMetaData(data);
+        } else {
+            return new ContainerMetaDataVersion3(data);
+        }
     }
 }
