@@ -2002,7 +2002,7 @@ def test_svc_discovery_stack(admin_user_client, user_client, project_client,
         'healthState': 'r',
         'binding': 'cru',
         'group': 'cru',
-        'system': 'cr',
+        'system': 'cru',
         'serviceIds': 'r',
     })
 

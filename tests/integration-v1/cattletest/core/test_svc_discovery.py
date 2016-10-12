@@ -632,6 +632,7 @@ def _validate_compose_instance_start(client, service, env,
         instances = client. \
             list_container(name=name,
                            state="running")
+        assert len(instances) <= 1
         return len(instances) == 1
 
     wait_for(lambda: wait_for_condition(client, service,
