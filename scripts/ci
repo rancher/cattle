@@ -9,9 +9,6 @@ declare -A RESULTS=( [h2]=0 [mysql]=0 [pgsql]=0 )
 export RUNTIME_DIR_CLEAN=true
 export CATTLE_LOGBACK_ROOT_LEVEL=error
 
-# Uncomment this if you're impatient
-#export CATTLE_IDEMPOTENT_CHECKS=false
-
 echo Launching Docker
 if grep -q overlay /proc/filesystems; then
     GRAPH=overlay
@@ -55,7 +52,7 @@ run()
     echo
 }
 
-gist ()
+gist()
 {
     local result=0
     printf "\n\e[1;35mRESULTS\e[0m\n"
@@ -74,14 +71,24 @@ gist ()
     exit $result
 }
 
+set_up_agent() {
+    # Wait for completion now to ensure that images are pulled
+    ./test-warm
+
+    AGENT_IMAGE=$(grep bootstrap.required.image ../resources/content/cattle-global.properties | cut -f2 -d=)
+    docker run --rm -v /var/run/docker.sock:/var/run/docker.sock ${AGENT_IMAGE} http://localhost:8081 >/tmp/register.log &
+
+    ./wait-for-hosts
+}
+
 tear_down() {
-    echo "Shutting down agent..."
+    echo Shutting down agent...
     set +e
     docker stop $(docker ps -q) &>> /dev/null
     docker rm -fv $(docker ps -a -q) &>> /dev/null
     set -e
 
-    echo "Shutting down server..."
+    echo Shutting down server...
     pkill java
     case $DB in
         mysql ) service mysql stop ;;
@@ -89,7 +96,7 @@ tear_down() {
     esac
 }
 
-test_failed ()
+test_failed()
 {
     cat /tmp/run.log
     ((RESULTS[$1]++))
@@ -99,6 +106,11 @@ test_failed ()
 ./test-warm >/dev/null &
 
 CI=true MAVEN_ARGS='-B -q' run ./build
+
+threads=$(($(nproc) + 1))
+if [ $threads -gt 8 ]; then
+    threads=8
+fi
 
 for DB in "${!ENVIRONMENTS[@]}"
 do
@@ -129,7 +141,7 @@ do
 
         * )
 
-            echo "Unknown database specified."
+            echo Unknown database specified.
             exit 1
 
     esac
@@ -139,25 +151,20 @@ do
     # Test Environment
     case ${ENVIRONMENTS[$DB]} in
 
+        debug )
+
+            set_up_agent
+            set +e
+            DEBUG=true ./test -- -n $threads -v $@ || test_failed $DB
+            set -e
+            ;;
+
         full )
 
-            threads=$(($(nproc) + 1))
-            if [ $threads -gt 8 ]; then
-                threads=8
-            fi
-
-            # Wait for completion now to ensure that images are pulled
-            ./test-warm
-
-            AGENT_IMAGE=$(grep bootstrap.required.image ../resources/content/cattle-global.properties | cut -f2 -d=)
-            docker run --rm -v /var/run/docker.sock:/var/run/docker.sock ${AGENT_IMAGE} http://localhost:8081 >/tmp/register.log &
-
-            ./wait-for-hosts
-
+            set_up_agent
             set +e
             ./test -e py27 -- -m nonparallel && ./test -- -m "'not nonparallel'" -n $threads -v || test_failed $DB
             set -e
-
             ;;
 
         lite )
@@ -169,7 +176,7 @@ do
 
         * )
 
-            echo "Unknown test plan specified."
+            echo Unknown test plan specified.
             exit 1
 
     esac

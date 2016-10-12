@@ -7,11 +7,18 @@ import time
 import inspect
 from datetime import datetime, timedelta
 import requests
+import fcntl
+import logging
 
 NOT_NONE = object()
 DEFAULT_TIMEOUT = 300
 cattle.DEFAULT_TIMEOUT = 300
 _SUPER_CLIENT = None
+
+
+@pytest.fixture(scope='session', autouse=os.environ.get('DEBUG'))
+def log():
+    logging.basicConfig(level=logging.DEBUG)
 
 
 @pytest.fixture(scope='session')
@@ -317,6 +324,9 @@ def _get_super_client(request):
     if _SUPER_CLIENT is not None:
         return _SUPER_CLIENT
 
+    l = open('/tmp/cattle-api.lock', 'w')
+    fcntl.flock(l, fcntl.LOCK_EX)
+
     client = cattle.from_env(url=cattle_url(),
                              cache=False,
                              access_key='superadmin',
@@ -327,6 +337,7 @@ def _get_super_client(request):
         if request is not None:
             request.addfinalizer(
                 lambda: delete_sim_instances(client))
+        fcntl.flock(l, fcntl.LOCK_UN)
         return client
 
     super_admin = find_one(client.list_account, name='superadmin')
@@ -347,6 +358,8 @@ def _get_super_client(request):
                                      publicValue='superadmin',
                                      secretValue='superadminpass')
         client.wait_success(cred)
+
+    fcntl.flock(l, fcntl.LOCK_UN)
 
     client = cattle.from_env(url=cattle_url(),
                              cache=False,
