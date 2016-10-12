@@ -1,5 +1,10 @@
 package io.cattle.platform.object.jooq.utils;
 
+import io.cattle.platform.object.meta.ObjectMetaDataManager;
+import io.github.ibuildthecloud.gdapi.condition.Condition;
+import io.github.ibuildthecloud.gdapi.factory.SchemaFactory;
+import io.github.ibuildthecloud.gdapi.model.Schema;
+
 import java.util.List;
 import java.util.Map;
 
@@ -12,11 +17,6 @@ import org.jooq.UniqueKey;
 import org.jooq.UpdatableRecord;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import io.cattle.platform.object.meta.ObjectMetaDataManager;
-import io.github.ibuildthecloud.gdapi.condition.Condition;
-import io.github.ibuildthecloud.gdapi.factory.SchemaFactory;
-import io.github.ibuildthecloud.gdapi.model.Schema;
 
 public class JooqUtils {
 
