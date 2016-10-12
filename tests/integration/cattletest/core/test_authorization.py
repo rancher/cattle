@@ -329,7 +329,6 @@ def test_admin_types(admin_user_client, adds=set(), removes=set()):
         'externalDnsEvent',
         'externalHostEvent',
         'fieldDocumentation',
-        'githubconfig',
         'azureadconfig',
         'haConfig',
         'haConfigInput',
@@ -466,30 +465,13 @@ def test_token_auth(token_client):
         'jwt': 'r',
         'code': 'cr',
         'user': 'r',
-        'clientId': 'r',
         'security': 'r',
         'userType': 'r',
         'accountId': 'r',
-        'hostname': 'r',
-        'scheme': 'r',
         'userIdentity': 'r',
         'authProvider': 'r',
+        'redirectUrl': 'r',
         'enabled': 'r'
-    })
-
-
-def test_github_auth(admin_user_client, user_client, project_client):
-    assert 'githubconfig' not in user_client.schema.types
-    assert 'githubconfig' not in project_client.schema.types
-
-    auth_check(admin_user_client.schema, 'githubconfig', 'cru', {
-        'enabled': 'cr',
-        'allowedIdentities': 'cr',
-        'clientId': 'cr',
-        'clientSecret': 'cro',
-        'accessMode': 'cr',
-        'hostname': 'cr',
-        'scheme': 'cr'
     })
 
 

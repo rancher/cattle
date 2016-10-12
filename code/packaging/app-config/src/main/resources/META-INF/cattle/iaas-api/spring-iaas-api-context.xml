@@ -496,8 +496,6 @@
         <property name="authorizationProviders" value="#{extensionManager.list('authorization.provider')}" />
     </bean>
 
-    <bean class="io.cattle.platform.iaas.api.auth.integration.github.GithubTokenCreator" />
-
         <bean class="io.cattle.platform.iaas.api.auth.dao.impl.AuthDaoImpl" />
     <bean class="io.cattle.platform.iaas.api.auth.dao.impl.PasswordDaoImpl" />
 
@@ -515,13 +513,12 @@
     </bean>
 
 
-    <bean class="io.cattle.platform.iaas.api.auth.integration.github.GithubTokenUtil"/>
-    <bean class="io.cattle.platform.iaas.api.auth.integration.github.resource.GithubClient"/>
-    <bean class="io.cattle.platform.iaas.api.auth.integration.github.GithubConfigManager" />
+    <bean class="io.cattle.platform.iaas.api.auth.integration.external.ExternalServiceAuthProvider" />
+    <bean class="io.cattle.platform.iaas.api.auth.integration.external.ExternalServiceTokenUtil" />
 
 	
     <bean id="TokenAccountLookup" class="io.cattle.platform.iaas.api.auth.integration.internal.rancher.TokenAccountLookup" />
-    <bean class="io.cattle.platform.iaas.api.auth.integration.github.GithubIdentityProvider"/>
+
 
     <bean class="io.cattle.platform.iaas.api.request.handler.GenericWhitelistedProxy" />
 

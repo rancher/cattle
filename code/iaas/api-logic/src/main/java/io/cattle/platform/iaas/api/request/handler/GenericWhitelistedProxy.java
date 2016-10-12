@@ -23,10 +23,12 @@ import java.net.URL;
 import java.net.URLDecoder;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
@@ -38,6 +40,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
+import org.apache.http.NameValuePair;
 import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.ResponseHandler;
@@ -53,10 +56,12 @@ import org.apache.http.conn.socket.LayeredConnectionSocketFactory;
 import org.apache.http.conn.socket.PlainConnectionSocketFactory;
 import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
 import org.apache.http.conn.ssl.SSLInitializationException;
+import org.apache.http.entity.ContentType;
 import org.apache.http.entity.InputStreamEntity;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 import org.apache.http.impl.conn.SystemDefaultRoutePlanner;
+import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.protocol.HTTP;
 
 import com.google.common.cache.Cache;
@@ -64,11 +69,13 @@ import com.google.common.cache.CacheBuilder;
 import com.netflix.config.DynamicBooleanProperty;
 import com.netflix.config.DynamicStringListProperty;
 
+
 public class GenericWhitelistedProxy extends AbstractResponseGenerator {
 
     public static final String ALLOWED_HOST = GenericWhitelistedProxy.class.getName() + "allowed.host";
     public static final String SET_HOST_CURRENT_HOST = GenericWhitelistedProxy.class.getName() + "set_host_current_host";
     public static final String REDIRECTS = GenericWhitelistedProxy.class.getName() + "redirects";
+    public static final String PARSE_FORM = GenericWhitelistedProxy.class.getName() + "parseform";
 
     private static final DynamicBooleanProperty ALLOW_PROXY = ArchaiusUtil.getBoolean("api.proxy.allow");
     private static final DynamicStringListProperty PROXY_WHITELIST = ArchaiusUtil.getList("api.proxy.whitelist");
@@ -77,6 +84,7 @@ public class GenericWhitelistedProxy extends AbstractResponseGenerator {
     private static final String API_AUTH = "X-API-AUTH-HEADER";
     private static final Set<String> BAD_HEADERS = new HashSet<>(Arrays.asList(HTTP.TARGET_HOST.toLowerCase(), "authorization",
             HTTP.TRANSFER_ENCODING.toLowerCase(), HTTP.CONTENT_LEN.toLowerCase(), API_AUTH.toLowerCase()));
+    private static final String AUTH_ACCESS_TOKEN = "access_token";
 
     private static final Executor EXECUTOR;
     private static final Executor NO_REDIRECT_EXECUTOR;
@@ -109,11 +117,13 @@ public class GenericWhitelistedProxy extends AbstractResponseGenerator {
                 .setConnectionManager(cm)
                 .setRoutePlanner(new SystemDefaultRoutePlanner(ProxySelector.getDefault()))
                 .build();
+
         HttpClient noRdhttpClient = HttpClientBuilder.create()
                 .setConnectionManager(cm)
                 .setDefaultRequestConfig(RequestConfig.copy(RequestConfig.DEFAULT).setRedirectsEnabled(false).build())
                 .setRoutePlanner(new SystemDefaultRoutePlanner(ProxySelector.getDefault()))
                 .build();
+
         EXECUTOR = Executor.newInstance(httpClient);
         NO_REDIRECT_EXECUTOR = Executor.newInstance(noRdhttpClient);
     }
@@ -168,6 +178,7 @@ public class GenericWhitelistedProxy extends AbstractResponseGenerator {
         HttpServletRequest servletRequest = request.getServletContext().getRequest();
         boolean setCurrentHost = Boolean.TRUE.equals(servletRequest.getAttribute(SET_HOST_CURRENT_HOST));
         boolean redirects = !Boolean.FALSE.equals(servletRequest.getAttribute(REDIRECTS));
+        boolean parseForm = Boolean.TRUE.equals(servletRequest.getAttribute(PARSE_FORM));
 
         String redirect = servletRequest.getRequestURI();
         redirect = StringUtils.substringAfter(redirect, "/proxy/");
@@ -235,11 +246,17 @@ public class GenericWhitelistedProxy extends AbstractResponseGenerator {
             temp.addHeader(FORWARD_PROTO, "https");
         }
 
+        boolean isFormContent = false;
         for (String headerName : (List<String>)Collections.list(servletRequest.getHeaderNames())) {
             if (BAD_HEADERS.contains(headerName.toLowerCase())) {
                 continue;
             }
             for (String headerVal : (List<String>)Collections.list(servletRequest.getHeaders(headerName))) {
+                if(parseForm && HTTP.CONTENT_TYPE.equalsIgnoreCase(headerName.toLowerCase())){
+                    if(ContentType.APPLICATION_FORM_URLENCODED.getMimeType().equalsIgnoreCase(headerVal.toLowerCase())) {
+                        isFormContent = true;
+                    }
+                }
                 temp.addHeader(headerName, StringUtils.removeStart(headerVal, "rancher:"));
             }
         }
@@ -247,6 +264,15 @@ public class GenericWhitelistedProxy extends AbstractResponseGenerator {
         String authHeader = servletRequest.getHeader(API_AUTH);
         if (authHeader != null) {
             temp.addHeader("Authorization", authHeader);
+        } else {
+            if (uri.getPath() != null && uri.getPath().startsWith("/v1-auth/")) {
+                //set the auth service access token
+                String externalAccessToken = (String) request.getAttribute(AUTH_ACCESS_TOKEN);
+                if(!StringUtils.isBlank(externalAccessToken)) {
+                    String bearerToken = " Bearer "+ externalAccessToken;
+                    temp.addHeader("Authorization", bearerToken);
+                }
+            }
         }
 
         if (setCurrentHost) {
@@ -256,9 +282,21 @@ public class GenericWhitelistedProxy extends AbstractResponseGenerator {
         }
 
         if ("POST".equals(method) || "PUT".equals(method)) {
-            int length = servletRequest.getContentLength();
-            InputStreamEntity entity = new InputStreamEntity(request.getInputStream(), length);
-            temp.body(entity);
+            if(isFormContent) {
+                Map<String, String[]> map = servletRequest.getParameterMap();
+                List<NameValuePair> nameValuePairs = new ArrayList<NameValuePair>();
+                for (String name : map.keySet()) {
+                  String[] array = map.get(name);
+                  for (int i = 0; i < array.length; i++) {
+                    nameValuePairs.add(new BasicNameValuePair(name, array[i]));
+                  }
+                }
+                temp.bodyForm(nameValuePairs);
+            } else {
+                int length = servletRequest.getContentLength();
+                InputStreamEntity entity = new InputStreamEntity(request.getInputStream(), length);
+                temp.body(entity);
+            }
         }
 
         Response res = redirects ? EXECUTOR.execute(temp) : NO_REDIRECT_EXECUTOR.execute(temp);

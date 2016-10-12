@@ -5,6 +5,7 @@ import io.cattle.platform.api.auth.Policy;
 import io.cattle.platform.core.constants.IdentityConstants;
 import io.cattle.platform.core.model.ProjectMember;
 import io.cattle.platform.iaas.api.auth.integration.IdentityNotFoundException;
+import io.cattle.platform.iaas.api.auth.integration.external.ExternalServiceAuthProvider;
 import io.cattle.platform.iaas.api.auth.integration.interfaces.IdentityProvider;
 import io.cattle.platform.util.exception.ExceptionUtils;
 import io.github.ibuildthecloud.gdapi.condition.Condition;
@@ -14,7 +15,6 @@ import io.github.ibuildthecloud.gdapi.factory.SchemaFactory;
 import io.github.ibuildthecloud.gdapi.model.ListOptions;
 import io.github.ibuildthecloud.gdapi.request.resource.impl.AbstractNoOpResourceManager;
 import io.github.ibuildthecloud.gdapi.util.ResponseCodes;
-
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -28,7 +28,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 
 import javax.inject.Inject;
-
 import org.apache.cloudstack.managed.context.ManagedContext;
 import org.apache.cloudstack.managed.context.impl.DefaultManagedContext;
 import org.apache.commons.logging.Log;
@@ -41,6 +40,9 @@ public class IdentityManager extends AbstractNoOpResourceManager {
     private Map<String, IdentityProvider> identityProviders;
 
     ExecutorService executorService;
+
+    @Inject
+    ExternalServiceAuthProvider externalAuthProvider;
 
     @Override
     public Class<?>[] getTypeClasses() {
@@ -127,10 +129,18 @@ public class IdentityManager extends AbstractNoOpResourceManager {
             return null;
         }
         Identity identity = null;
+        boolean scopeMatch = false;
+
         for (IdentityProvider identityProvider : identityProviders.values()) {
             if (identityProvider.scopes().contains(split[0]) && identityProvider.isConfigured()) {
+                scopeMatch = true;
                 identity = identityProvider.getIdentity(split[1], split[0]);
                 break;
+            }
+        }
+        if(!scopeMatch && identity == null) {
+            if(externalAuthProvider.isConfigured()) {
+                identity = externalAuthProvider.getIdentity(split[1], split[0]);
             }
         }
         return identity;
@@ -142,6 +152,9 @@ public class IdentityManager extends AbstractNoOpResourceManager {
             if (identityProvider.isConfigured()) {
                 identities.addAll(identityProvider.searchIdentities(name, exactMatch));
             }
+        }
+        if(externalAuthProvider.isConfigured()) {
+            identities.addAll(externalAuthProvider.searchIdentities(name, exactMatch));
         }
         return new ArrayList<>(identities);
     }
@@ -161,10 +174,18 @@ public class IdentityManager extends AbstractNoOpResourceManager {
 
     public Identity untransform(Identity identity, boolean error) {
         Identity newIdentity = null;
+        boolean scopeMatch = false;
         for (IdentityProvider identityProvider : identityProviders.values()) {
             if (identityProvider.scopes().contains(identity.getExternalIdType()) && identityProvider.isConfigured()) {
+                scopeMatch = true;
                 newIdentity = identityProvider.untransform(identity);
                 break;
+            }
+        }
+        if (!scopeMatch) {
+            //get from external auth service
+            if (externalAuthProvider.isConfigured()) {
+                newIdentity = externalAuthProvider.untransform(identity);
             }
         }
         if (error && newIdentity == null) {
@@ -188,13 +209,21 @@ public class IdentityManager extends AbstractNoOpResourceManager {
 
     public Identity projectMemberToIdentity(Identity identity) {
         Identity newIdentity = null;
+        boolean scopeMatch = false;
         for (IdentityProvider identityProvider : identityProviders.values()) {
             if (identityProvider.scopes().contains(identity.getExternalIdType()) && identityProvider.isConfigured()) {
+                scopeMatch = true;
                 newIdentity = identityProvider.transform(identity);
                 if (newIdentity == null) {
                     throw new IdentityNotFoundException(identity);
                 }
                 break;
+            }
+        }
+        if (!scopeMatch) {
+            //get from external auth service
+            if (externalAuthProvider.isConfigured()) {
+                newIdentity = externalAuthProvider.transform(identity);
             }
         }
         if (newIdentity == null){

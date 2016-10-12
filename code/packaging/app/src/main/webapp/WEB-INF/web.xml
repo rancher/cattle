@@ -14,15 +14,13 @@
     <filter>
         <filter-name>PreProxy</filter-name>
         <filter-class>io.cattle.platform.iaas.api.servlet.filter.ProxyPreFilter</filter-class>
-        <init-param>
-            <param-name>proxy</param-name>
-            <param-value>http://localhost:8088</param-value>
-        </init-param>
     </filter>
     <filter-mapping>
         <filter-name>PreProxy</filter-name>
         <url-pattern>/v1/proxy/*</url-pattern>
         <url-pattern>/v2-beta/proxy/*</url-pattern>
+        <dispatcher>REQUEST</dispatcher>
+        <dispatcher>FORWARD</dispatcher>
     </filter-mapping>
 
     <filter>
@@ -49,6 +47,27 @@
     <filter-mapping>
         <filter-name>Telemetry</filter-name>
         <url-pattern>/v1-telemetry/*</url-pattern>
+    </filter-mapping>
+
+    <filter>
+        <filter-name>AuthService</filter-name>
+        <filter-class>io.cattle.platform.iaas.api.servlet.filter.ProxyFilter</filter-class>
+        <init-param>
+            <param-name>proxy</param-name>
+            <param-value>http://localhost:8090</param-value>
+        </init-param>
+        <init-param>
+            <param-name>redirects</param-name>
+            <param-value>false</param-value>
+        </init-param>
+        <init-param>
+            <param-name>parseform</param-name>
+            <param-value>true</param-value>
+        </init-param>
+    </filter>
+    <filter-mapping>
+        <filter-name>AuthService</filter-name>
+        <url-pattern>/v1-auth/*</url-pattern>
     </filter-mapping>
 
     <filter>

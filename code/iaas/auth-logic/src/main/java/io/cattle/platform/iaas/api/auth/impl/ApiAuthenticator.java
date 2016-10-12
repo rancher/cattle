@@ -6,6 +6,7 @@ import io.cattle.platform.core.constants.AccountConstants;
 import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.ProjectConstants;
 import io.cattle.platform.core.model.Account;
+import io.cattle.platform.iaas.api.auth.integration.external.ExternalServiceAuthProvider;
 import io.cattle.platform.iaas.api.auth.integration.interfaces.IdentityProvider;
 import io.cattle.platform.iaas.api.auth.SecurityConstants;
 import io.cattle.platform.iaas.api.auth.dao.AuthDao;
@@ -45,6 +46,9 @@ public class ApiAuthenticator extends AbstractApiRequestHandler {
 
     @Inject
     TransformationService transformationService;
+
+    @Inject
+    ExternalServiceAuthProvider externalAuthProvider;
 
     @Override
     public void handle(ApiRequest request) throws IOException {
@@ -159,10 +163,10 @@ public class ApiAuthenticator extends AbstractApiRequestHandler {
 
     private Set<Identity> getIdentities(Account account) {
         Set<Identity> identities = new HashSet<>();
-
         for (IdentityProvider identityProvider : identityProviders) {
-            identities.addAll(identityProvider.getIdentities(account));
+           identities.addAll(identityProvider.getIdentities(account));
         }
+        identities.addAll(externalAuthProvider.getIdentities(account));
         identities.remove(null);
         return identities;
     }

@@ -3,7 +3,6 @@ package io.cattle.platform.iaas.api.auth.identity;
 import io.cattle.platform.api.auth.Identity;
 import io.cattle.platform.iaas.api.auth.SecurityConstants;
 import io.cattle.platform.iaas.api.auth.AbstractTokenUtil;
-import io.cattle.platform.iaas.api.auth.integration.github.GithubConstants;
 import io.github.ibuildthecloud.gdapi.annotation.Field;
 import io.github.ibuildthecloud.gdapi.annotation.Type;
 
@@ -23,6 +22,7 @@ public class Token {
     private  Identity userIdentity;
     private  boolean enabled = security;
     private  List<Identity> identities;
+    private  String redirectUrl;
 
     public Token(String jwt, String accountId, Identity userIdentity, List<Identity> identities, String userType) {
         this.jwt = jwt;
@@ -57,33 +57,18 @@ public class Token {
     }
 
     @Field(nullable = true)
-    public String getClientId() {
-        return GithubConstants.CONFIG.equalsIgnoreCase(SecurityConstants.AUTH_PROVIDER.get())
-                ? GithubConstants.GITHUB_CLIENT_ID.get() : null;
-    }
-
-    @Field(nullable = true)
     public String getUserType() {
         return userType;
+    }
+
+    public void setUserType(String userType) {
+        this.userType = userType;
     }
 
     @Field(nullable = true)
     public String getAccountId() {
         return accountId;
     }
-
-    @Field(nullable = true)
-    public String getHostname() {
-        return GithubConstants.CONFIG.equalsIgnoreCase(SecurityConstants.AUTH_PROVIDER.get())
-                ? GithubConstants.GITHUB_HOSTNAME.get() : null;
-    }
-
-    @Field(nullable = true)
-    public String getScheme() {
-        return GithubConstants.CONFIG.equalsIgnoreCase(SecurityConstants.AUTH_PROVIDER.get())
-                ? GithubConstants.SCHEME.get() : null;
-    }
-
 
     @Field(nullable = true, required = true)
     public String getCode() {
@@ -120,5 +105,14 @@ public class Token {
 
     public void setJwt(String jwt) {
         this.jwt = jwt;
+    }
+
+    @Field(nullable = true)
+    public String getRedirectUrl() {
+        return redirectUrl;
+    }
+
+    public void setRedirectUrl(String redirectUrl) {
+        this.redirectUrl = redirectUrl;
     }
 }
