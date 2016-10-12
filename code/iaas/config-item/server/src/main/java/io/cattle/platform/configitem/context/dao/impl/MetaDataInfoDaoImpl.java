@@ -133,27 +133,22 @@ public class MetaDataInfoDaoImpl extends AbstractJooqDao implements MetaDataInfo
     }
 
     @Override
-    public List<String> getPrimaryIpsOnInstanceHost(final Instance instance) {
+    public List<String> getPrimaryIpsOnInstanceHost(final long hostId) {
         final List<String> ips = new ArrayList<>();
-        NicTable networkInstanceNic = NIC.as("client_nic");
-        NicTable userInstanceNic = NIC.as("target_nic");
         create().select(IP_ADDRESS.ADDRESS)
                 .from(IP_ADDRESS)
                 .join(IP_ADDRESS_NIC_MAP)
-                .on(IP_ADDRESS_NIC_MAP.IP_ADDRESS_ID.eq(IP_ADDRESS.ID))
-                .join(userInstanceNic)
-                .on(userInstanceNic.ID.eq(IP_ADDRESS_NIC_MAP.NIC_ID))
-                .join(networkInstanceNic)
-                .on(networkInstanceNic.VNET_ID.eq(userInstanceNic.VNET_ID))
-                .where(networkInstanceNic.INSTANCE_ID.eq(instance.getId())
-                        .and(networkInstanceNic.VNET_ID.isNotNull())
-                        .and(networkInstanceNic.REMOVED.isNull())
-                        .and(userInstanceNic.ID.ne(networkInstanceNic.ID))
-                        .and(userInstanceNic.REMOVED.isNull())
-                        .and(networkInstanceNic.REMOVED.isNull())
-                        .and(IP_ADDRESS.REMOVED.isNull())
-                        .and(IP_ADDRESS.ROLE.eq(IpAddressConstants.ROLE_PRIMARY))
-                )
+                        .on(IP_ADDRESS.ID.eq(IP_ADDRESS_NIC_MAP.IP_ADDRESS_ID))
+                        .join(NIC)
+                        .on(NIC.ID.eq(IP_ADDRESS_NIC_MAP.NIC_ID))
+                        .join(INSTANCE_HOST_MAP)
+                        .on(INSTANCE_HOST_MAP.INSTANCE_ID.eq(NIC.INSTANCE_ID))
+                        .where(INSTANCE_HOST_MAP.HOST_ID.eq(hostId)
+                                .and(NIC.REMOVED.isNull())
+                                .and(IP_ADDRESS_NIC_MAP.REMOVED.isNull())
+                                .and(IP_ADDRESS.REMOVED.isNull())
+                                .and(IP_ADDRESS.ROLE.eq(IpAddressConstants.ROLE_PRIMARY))
+                        )
                 .fetchInto(new RecordHandler<Record1<String>>() {
                     @Override
                     public void next(Record1<String> record) {
@@ -202,7 +197,7 @@ public class MetaDataInfoDaoImpl extends AbstractJooqDao implements MetaDataInfo
     }
 
     @Override
-    public List<HostMetaData> getInstanceHostMetaData(long accountId, Instance instance) {
+    public List<HostMetaData> getInstanceHostMetaData(long accountId, long instanceId) {
         MultiRecordMapper<HostMetaData> mapper = new MultiRecordMapper<HostMetaData>() {
             @Override
             protected HostMetaData map(List<Object> input) {
@@ -227,7 +222,7 @@ public class MetaDataInfoDaoImpl extends AbstractJooqDao implements MetaDataInfo
                 .on(host.ID.eq(INSTANCE_HOST_MAP.HOST_ID))
                 .where(host.REMOVED.isNull())
                 .and(host.STATE.notIn(CommonStatesConstants.REMOVING, CommonStatesConstants.REMOVED))
-                .and(INSTANCE_HOST_MAP.INSTANCE_ID.eq(instance.getId()))
+                .and(INSTANCE_HOST_MAP.INSTANCE_ID.eq(instanceId))
                 .and(hostIpAddress.REMOVED.isNull())
                 .and(host.ACCOUNT_ID.eq(accountId))
                 .fetch().map(mapper);
