@@ -77,10 +77,10 @@ public abstract class AbstractJooqResourceManager extends AbstractObjectResource
             return null;
 
         SelectQuery<?> query = create().selectQuery();
+        addSort(schemaFactory, type, sort, query);
         MultiTableMapper mapper = addTables(schemaFactory, query, type, table, criteria, include, pagination, joins);
         addJoins(query, joins);
         addConditions(schemaFactory, query, type, table, criteria);
-        addSort(schemaFactory, type, sort, query);
         addLimit(schemaFactory, type, pagination, query);
 
         List<?> result = mapper == null ? query.fetch() : query.fetchInto(mapper);
@@ -205,7 +205,7 @@ public abstract class AbstractJooqResourceManager extends AbstractObjectResource
                 if (rel.getRelationshipType() == RelationshipType.MAP) {
                     addMappingJoins(query, toTable, schemaFactory, type, table, toTable.getName(), (MapRelationship) rel);
                 } else {
-                    query.addJoin(toTable, JoinType.LEFT_OUTER_JOIN, getJoinCondition(schemaFactory, type, table, toTable.getName(), rel));
+                    addJoin(query, toTable, schemaFactory, type, table, toTable.getName(), rel);
                 }
             }
         }
@@ -236,9 +236,11 @@ public abstract class AbstractJooqResourceManager extends AbstractObjectResource
 
         cond = fieldFrom.eq(fieldTo.getTable().asTable(asName).field(fieldTo.getName()));
         query.addJoin(toTable, JoinType.LEFT_OUTER_JOIN, cond);
+        query.addOrderBy(fieldTo.getTable().asTable(asName).field(fieldTo.getName()).asc());
     }
 
-    protected org.jooq.Condition getJoinCondition(SchemaFactory schemaFactory, String fromType, Table<?> from, String asName, Relationship rel) {
+    protected void addJoin(SelectQuery<?> query, Table<?> toTable, SchemaFactory schemaFactory, String fromType, Table<?> from, String asName,
+                                 Relationship rel) {
         TableField<?, Object> fieldFrom = null;
         TableField<?, Object> fieldTo = null;
 
@@ -259,7 +261,8 @@ public abstract class AbstractJooqResourceManager extends AbstractObjectResource
             throw new IllegalStateException("Failed to construction join query for [" + fromType + "] [" + from + "] [" + rel + "]");
         }
 
-        return fieldFrom.eq(fieldTo.getTable().as(asName).field(fieldTo.getName()));
+        query.addJoin(toTable, JoinType.LEFT_OUTER_JOIN, fieldFrom.eq(fieldTo.getTable().as(asName).field(fieldTo.getName())));
+        query.addOrderBy(fieldTo.getTable().as(asName).field(ObjectMetaDataManager.ID_FIELD).asc());
     }
 
     protected void addConditions(SchemaFactory schemaFactory, SelectQuery<?> query, String type, Table<?> table, Map<Object, Object> criteria) {
@@ -314,21 +317,19 @@ public abstract class AbstractJooqResourceManager extends AbstractObjectResource
     }
 
     protected void addSort(SchemaFactory schemaFactory, String type, Sort sort, SelectQuery<?> query) {
-        if (sort == null) {
-            return;
-        }
+        if (sort != null) {
+            TableField<?, Object> sortField = JooqUtils.getTableField(getMetaDataManager(), type, sort.getName());
+            if (sortField == null) {
+                return;
+            }
 
-        TableField<?, Object> sortField = JooqUtils.getTableField(getMetaDataManager(), type, sort.getName());
-        if (sortField == null) {
-            return;
-        }
-
-        switch (sort.getOrderEnum()) {
-        case DESC:
-            query.addOrderBy(sortField.desc());
-            break;
-        default:
-            query.addOrderBy(sortField.asc());
+            switch (sort.getOrderEnum()) {
+                case DESC:
+                    query.addOrderBy(sortField.desc());
+                    break;
+                default:
+                    query.addOrderBy(sortField.asc());
+            }
         }
 
         TableField<?, Object> idSort = JooqUtils.getTableField(getMetaDataManager(), type, ObjectMetaDataManager.ID_FIELD);
@@ -336,11 +337,16 @@ public abstract class AbstractJooqResourceManager extends AbstractObjectResource
             return;
         }
 
-        switch (sort.getOrderEnum()) {
-        case DESC:
-            query.addOrderBy(idSort.desc());
-            break;
-        default:
+        if (sort != null) {
+            switch (sort.getOrderEnum()) {
+                case DESC:
+                    query.addOrderBy(idSort.desc());
+                    break;
+                default:
+                    query.addOrderBy(idSort.asc());
+            }
+        }
+        else {
             query.addOrderBy(idSort.asc());
         }
     }

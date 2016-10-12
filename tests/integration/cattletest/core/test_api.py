@@ -19,6 +19,23 @@ def test_agent_unique(super_client):
         pass
 
 
+def test_list_sort(super_client, context):
+    name = random_str()
+    containers = []
+    for i in range(2):
+        c = context.create_container_no_success(name=name, startOnCreate=False)
+        containers.append(c)
+
+    r = super_client.list_container(name=name)
+    for i in range(len(r)):
+        assert containers[i].id == r[i].id
+
+    r = super_client.list_container(name=name, sort='created', order='desc')
+    containers.reverse()
+    for i in range(len(r)):
+        assert containers[i].id == r[i].id
+
+
 def test_pagination(context):
     client = context.client
     name = random_str()
@@ -145,6 +162,29 @@ def test_include_left_join(super_client, context):
                            include='instanceHostMaps')
 
     assert container.id == c.id
+
+
+def test_include_left_join_sort(super_client, context):
+    client = context.client
+    name = random_str()
+    containers = []
+    for i in range(2):
+        c = client.create_container(imageUuid=context.image_uuid, name=name)
+        containers.append(c)
+
+    for c in containers:
+        client.wait_success(c)
+
+    r = super_client.list_container(name=name, include='instanceHostMaps',
+                                    sort='created', order='asc')
+    for i in range(len(r)):
+        assert containers[i].id == r[i].id
+
+    r = super_client.list_container(name=name, include='instanceHostMaps',
+                                    sort='created', order='desc')
+    containers.reverse()
+    for i in range(len(r)):
+        assert containers[i].id == r[i].id
 
 
 def test_include(super_client, context):
