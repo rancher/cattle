@@ -11,7 +11,7 @@ package io.cattle.platform.core.model.tables;
 @java.lang.SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class SettingTable extends org.jooq.impl.TableImpl<io.cattle.platform.core.model.tables.records.SettingRecord> {
 
-	private static final long serialVersionUID = -1553846835;
+	private static final long serialVersionUID = -1623047745;
 
 	/**
 	 * The singleton instance of <code>cattle.setting</code>
@@ -39,7 +39,7 @@ public class SettingTable extends org.jooq.impl.TableImpl<io.cattle.platform.cor
 	/**
 	 * The column <code>cattle.setting.value</code>.
 	 */
-	public final org.jooq.TableField<io.cattle.platform.core.model.tables.records.SettingRecord, java.lang.String> VALUE = createField("value", org.jooq.impl.SQLDataType.VARCHAR.length(1024).nullable(false), this, "");
+	public final org.jooq.TableField<io.cattle.platform.core.model.tables.records.SettingRecord, java.lang.String> VALUE = createField("value", org.jooq.impl.SQLDataType.CLOB.length(16777215).nullable(false), this, "");
 
 	/**
 	 * Create a <code>cattle.setting</code> table reference
