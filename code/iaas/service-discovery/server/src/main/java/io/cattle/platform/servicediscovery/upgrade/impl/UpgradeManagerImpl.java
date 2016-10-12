@@ -1,5 +1,6 @@
 package io.cattle.platform.servicediscovery.upgrade.impl;
 
+import static io.cattle.platform.core.model.tables.ServiceExposeMapTable.*;
 import io.cattle.platform.activity.ActivityLog;
 import io.cattle.platform.activity.ActivityService;
 import io.cattle.platform.async.utils.TimeoutException;
@@ -17,7 +18,6 @@ import io.cattle.platform.core.model.Service;
 import io.cattle.platform.core.model.ServiceExposeMap;
 import io.cattle.platform.engine.process.ExitReason;
 import io.cattle.platform.engine.process.impl.ProcessCancelException;
-import static io.cattle.platform.core.model.tables.ServiceExposeMapTable.*;
 import io.cattle.platform.engine.process.impl.ProcessExecutionExitException;
 import io.cattle.platform.json.JsonMapper;
 import io.cattle.platform.lock.LockCallbackNoReturn;
@@ -37,11 +37,9 @@ import io.cattle.platform.servicediscovery.upgrade.UpgradeManager;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import javax.inject.Inject;
 
@@ -49,11 +47,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 
 public class UpgradeManagerImpl implements UpgradeManager {
-
-    private static final Set<String> UPGRADE_STATES = new HashSet<>(Arrays.asList(
-            ServiceConstants.STATE_RESTARTING,
-            ServiceConstants.STATE_UPGRADING,
-            ServiceConstants.STATE_ROLLINGBACK));
 
     private enum Type {
         ToUpgrade,
@@ -109,7 +102,8 @@ public class UpgradeManagerImpl implements UpgradeManager {
             Map<String, List<Instance>> deploymentUnitInstancesToUpgrade = formDeploymentUnitsForUpgrade(service,
                     Type.ToUpgrade, isUpgrade, strategy);
 
-            Map<String, List<Instance>> deploymentUnitInstancesUpgradedUnmanaged = formDeploymentUnitsForUpgrade(service,
+            Map<String, List<Instance>> deploymentUnitInstancesUpgradedUnmanaged = formDeploymentUnitsForUpgrade(
+                    service,
                     Type.UpgradedUnmanaged, isUpgrade, strategy);
 
             Map<String, List<Instance>> deploymentUnitInstancesToCleanup = formDeploymentUnitsForUpgrade(service,
@@ -125,7 +119,6 @@ public class UpgradeManagerImpl implements UpgradeManager {
                 return true;
             }
             return false;
-
         } catch (TimeoutException e) {
             return false;
         }
@@ -152,7 +145,7 @@ public class UpgradeManagerImpl implements UpgradeManager {
                 // wait for healthy only for upgrade
                 // should be skipped for rollback
                 if (isUpgrade) {
-                    waitForHealthyState(service);
+                    waitForHealthyState(service, ServiceConstants.STATE_UPGRADING);
                     deploymentMgr.activate(service);
                 }
                 // mark for upgrade
@@ -161,6 +154,9 @@ public class UpgradeManagerImpl implements UpgradeManager {
                 if (startFirst) {
                     // 1. reconcile to start new instances
                     activate(service);
+                    if (isUpgrade) {
+                        waitForHealthyState(service, ServiceConstants.STATE_UPGRADING);
+                    }
                     // 2. stop instances
                     stopInstances(service, deploymentUnitInstancesToCleanup);
                 } else {
@@ -169,9 +165,6 @@ public class UpgradeManagerImpl implements UpgradeManager {
                     stopInstances(service, deploymentUnitInstancesToCleanup);
                     // 2. wait for reconcile (new instances will be started along)
                     activate(service);
-                }
-                if (isUpgrade) {
-                    waitForHealthyState(service);
                 }
             }
 
@@ -326,7 +319,7 @@ public class UpgradeManagerImpl implements UpgradeManager {
             updateLinks(service, toServiceStrategy);
         }
         while (!doUpgrade(service, strategy)) {
-            sleep(service, strategy);
+            sleep(service, strategy, ServiceConstants.STATE_UPGRADING);
         }
     }
 
@@ -337,7 +330,7 @@ public class UpgradeManagerImpl implements UpgradeManager {
             return;
         }
         while (!doInServiceUpgrade(service, (InServiceUpgradeStrategy) strategy, false)) {
-            sleep(service, strategy);
+            sleep(service, strategy, ServiceConstants.STATE_ROLLINGBACK);
         }
     }
 
@@ -360,41 +353,43 @@ public class UpgradeManagerImpl implements UpgradeManager {
                 strategy.getToServiceId()));
     }
 
-    protected void sleep(final Service service, ServiceUpgradeStrategy strategy) {
+    protected void sleep(final Service service, ServiceUpgradeStrategy strategy, final String currentProcess) {
         final long interval = strategy.getIntervalMillis();
 
         activityService.run(service, "sleep", String.format("Sleeping for %d seconds", interval/1000), new Runnable() {
             @Override
             public void run() {
                 for (int i = 0;; i++) {
-                    final long sleepTime = Math.max(0, Math.min(SLEEP, interval - i * SLEEP));
-                    if (sleepTime == 0) {
-                        break;
-                    } else {
-                        try {
-                            Thread.sleep(sleepTime);
-                        } catch (InterruptedException e) {
-                            throw new RuntimeException(e);
-                        }
-                    }
-                    assertUpgradingRestarting(service);
+                            final long sleepTime = Math.max(0, Math.min(SLEEP, interval - i * SLEEP));
+                            if (sleepTime == 0) {
+                                break;
+                            } else {
+                                try {
+                                    Thread.sleep(sleepTime);
+                                } catch (InterruptedException e) {
+                                    throw new RuntimeException(e);
+                                }
+                            }
+                            stateCheck(service, currentProcess);
                 }
             }
         });
     }
 
-    protected void assertUpgradingRestarting(Service service) {
-        if (!UPGRADE_STATES.contains(reload(service).getState())) {
-            throw new TimeoutException("Canceling");
-        }
-    }
-
-    protected Service reload(Service service) {
+    protected Service stateCheck(Service service, String currentProcess) {
         service = objectManager.reload(service);
 
         List<String> states = Arrays.asList(ServiceConstants.STATE_UPGRADING,
                 ServiceConstants.STATE_ROLLINGBACK, ServiceConstants.STATE_RESTARTING);
         if (!states.contains(service.getState())) {
+            throw new ProcessExecutionExitException(ExitReason.STATE_CHANGED);
+        }
+
+        if (StringUtils.equals(currentProcess, ServiceConstants.STATE_RESTARTING)) {
+            return service;
+        }
+        // rollback should cancel upgarde, and vice versa
+        if (!StringUtils.equals(currentProcess, service.getState())) {
             throw new ProcessExecutionExitException(ExitReason.STATE_CHANGED);
         }
 
@@ -411,7 +406,6 @@ public class UpgradeManagerImpl implements UpgradeManager {
         if (toService == null || toService.getRemoved() != null) {
             return true;
         }
-
         try {
             deploymentMgr.activate(toService);
             if (!deploymentMgr.isHealthy(toService)) {
@@ -442,7 +436,6 @@ public class UpgradeManagerImpl implements UpgradeManager {
 
             return getScale(fromService) == 0 && getScale(toService) == finalScale;
         } catch (TimeoutException e) {
-
             return false;
         }
     }
@@ -475,7 +468,7 @@ public class UpgradeManagerImpl implements UpgradeManager {
         }
     }
 
-    protected void waitForHealthyState(final Service service) {
+    protected void waitForHealthyState(final Service service, final String currentProcess) {
         activityService.run(service, "wait", "Waiting for all instances to be healthy", new Runnable() {
             @Override
             public void run() {
@@ -491,7 +484,7 @@ public class UpgradeManagerImpl implements UpgradeManager {
                                         boolean healthy = instance.getHealthState() == null
                                                 || healthyStates.contains(obj.getHealthState());
                                         if (!healthy) {
-                                            assertUpgradingRestarting(service);
+                                            stateCheck(service, currentProcess);
                                         }
                                         return healthy;
                                     }
@@ -536,7 +529,7 @@ public class UpgradeManagerImpl implements UpgradeManager {
     public void restart(Service service, RollingRestartStrategy strategy) {
         Map<String, List<Instance>> toRestart = formDeploymentUnitsForRestart(service);
         while (!doRestart(service, strategy, toRestart)) {
-            sleep(service, strategy);
+            sleep(service, strategy, ServiceConstants.STATE_RESTARTING);
         }
     }
 
@@ -562,7 +555,6 @@ public class UpgradeManagerImpl implements UpgradeManager {
                 return true;
             }
             return false;
-
         } catch (TimeoutException e) {
             return false;
         }
@@ -578,7 +570,7 @@ public class UpgradeManagerImpl implements UpgradeManager {
             @Override
             public void doWithLockNoResult() {
                 // 1. Wait for the service instances to become healthy
-                waitForHealthyState(service);
+                waitForHealthyState(service, ServiceConstants.STATE_RESTARTING);
                 // 2. stop instances
                 stopInstances(service, deploymentUnitsToStop);
                 // 3. wait for reconcile (instances will be restarted along)

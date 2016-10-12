@@ -172,7 +172,7 @@ def test_rollback_regular_upgrade(context, client, super_client):
                              toServiceId=service2.id,
                              finalScale=4)
     time.sleep(1)
-    svc = client.wait_success(svc.cancelupgrade())
+    svc = wait_state(client, svc.cancelupgrade(), 'canceled-upgrade')
     assert svc.state == 'canceled-upgrade'
     svc = client.wait_success(svc.rollback(), DEFAULT_TIMEOUT)
     assert svc.state == 'active'
