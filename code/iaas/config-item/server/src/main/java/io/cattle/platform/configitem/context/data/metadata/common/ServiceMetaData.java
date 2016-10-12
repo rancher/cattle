@@ -115,6 +115,13 @@ public class ServiceMetaData {
     protected HealthCheck health_check;
 
     protected ServiceMetaData(ServiceMetaData that) {
+        this.serviceId = that.serviceId;
+        this.isPrimaryConfig = that.isPrimaryConfig;
+        this.launchConfigName = that.launchConfigName;
+        this.stackId = that.stackId;
+        this.stackUuid = that.stackUuid;
+        this.service = that.service;
+
         this.name = that.name;
         this.uuid = that.uuid;
         this.stack_name = that.stack_name;
@@ -132,12 +139,7 @@ public class ServiceMetaData {
         this.scale = that.scale;
         this.fqdn = that.fqdn;
         this.expose = that.expose;
-        this.serviceId = that.serviceId;
-        this.service = that.service;
-        this.isPrimaryConfig = that.isPrimaryConfig;
-        this.launchConfigName = that.launchConfigName;
-        this.stackId = that.stackId;
-        this.stackUuid = that.stackUuid;
+        this.token = that.token;
         this.health_check = that.health_check;
     }
 
