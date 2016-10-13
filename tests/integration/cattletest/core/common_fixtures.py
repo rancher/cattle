@@ -432,7 +432,7 @@ def assert_removed_fields(obj):
     assert obj.removed is not None
     assert obj.removeTime is not None
 
-    assert obj.removeTimeTS == obj.removedTS
+    assert obj.removeTimeTS >= obj.removedTS
 
 
 def assert_restored_fields(obj):

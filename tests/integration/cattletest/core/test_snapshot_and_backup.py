@@ -167,6 +167,7 @@ def take_snapshot(vol, client):
 
 def enable_snapshot(volume, super_client):
     # In a real-world scenario, a volume gets the snapshot
+    volume = super_client.wait_transitioning(volume)
     v = super_client.wait_success(
         super_client.update(volume, capabilities=['snapshot']))
     assert v.capabilities == ['snapshot']

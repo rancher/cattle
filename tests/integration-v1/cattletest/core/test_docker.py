@@ -18,6 +18,9 @@ def docker_client(super_client):
         key = super_client.create_api_key(accountId=host.accountId)
         super_client.wait_success(key)
 
+        wait_for(lambda: host.agent().state == 'active')
+        wait_for(lambda: len(host.storagePools()) > 0 and
+                 host.storagePools()[0].state == 'active')
         return api_client(key.publicValue, key.secretValue)
 
     raise Exception('Failed to find docker host, please register one')

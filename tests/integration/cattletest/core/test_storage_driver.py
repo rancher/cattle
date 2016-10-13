@@ -27,6 +27,7 @@ def storage_driver_context(new_context, super_client):
                               })
     s = client.wait_success(s)
     assert s.state == 'active'
+    wait_for(lambda: len(s.storageDrivers()) == 1)
     driver = find_one(s.storageDrivers)
     return Context(new_context, driver)
 
