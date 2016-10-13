@@ -47,6 +47,7 @@ public class ContainerMetaData {
 
     public ContainerMetaData(ContainerMetaData that) {
         this.name = that.name;
+        this.uuid = that.uuid;
         this.primary_ip = that.primary_ip;
         this.ips = that.ips;
         this.ports = that.ports;
@@ -65,6 +66,9 @@ public class ContainerMetaData {
         this.primary_mac_address = that.primary_mac_address;
         this.memory_reservation = that.memory_reservation;
         this.milli_cpu_reservation = that.milli_cpu_reservation;
+        this.serviceId = that.serviceId;
+        this.hostMetaData = that.hostMetaData;
+        this.dnsPrefix = that.dnsPrefix;
     }
 
 
