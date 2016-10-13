@@ -3,7 +3,6 @@ package io.cattle.platform.configitem.context.data.metadata.version2;
 import io.cattle.platform.configitem.context.data.metadata.common.ContainerMetaData;
 
 public class ContainerMetaDataVersion3 extends ContainerMetaData {
-
     public ContainerMetaDataVersion3(ContainerMetaData data) {
         super(data);
         if (this.name != null) {

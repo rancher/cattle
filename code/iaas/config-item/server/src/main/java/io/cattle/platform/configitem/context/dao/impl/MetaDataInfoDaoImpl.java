@@ -6,24 +6,29 @@ import static io.cattle.platform.core.model.tables.InstanceHostMapTable.*;
 import static io.cattle.platform.core.model.tables.InstanceTable.*;
 import static io.cattle.platform.core.model.tables.IpAddressNicMapTable.*;
 import static io.cattle.platform.core.model.tables.IpAddressTable.*;
+import static io.cattle.platform.core.model.tables.NetworkTable.*;
 import static io.cattle.platform.core.model.tables.NicTable.*;
 import static io.cattle.platform.core.model.tables.ServiceExposeMapTable.*;
 import io.cattle.platform.configitem.context.dao.DnsInfoDao;
 import io.cattle.platform.configitem.context.dao.MetaDataInfoDao;
 import io.cattle.platform.configitem.context.data.metadata.common.ContainerMetaData;
 import io.cattle.platform.configitem.context.data.metadata.common.HostMetaData;
+import io.cattle.platform.configitem.context.data.metadata.common.NetworkMetaData;
 import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.constants.IpAddressConstants;
+import io.cattle.platform.core.constants.ServiceConstants;
 import io.cattle.platform.core.dao.InstanceDao;
 import io.cattle.platform.core.model.Host;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.IpAddress;
+import io.cattle.platform.core.model.Network;
 import io.cattle.platform.core.model.Nic;
 import io.cattle.platform.core.model.ServiceExposeMap;
 import io.cattle.platform.core.model.tables.HostTable;
 import io.cattle.platform.core.model.tables.InstanceTable;
 import io.cattle.platform.core.model.tables.IpAddressTable;
+import io.cattle.platform.core.model.tables.NetworkTable;
 import io.cattle.platform.core.model.tables.NicTable;
 import io.cattle.platform.core.model.tables.ServiceExposeMapTable;
 import io.cattle.platform.db.jooq.dao.impl.AbstractJooqDao;
@@ -95,6 +100,12 @@ public class MetaDataInfoDaoImpl extends AbstractJooqDao implements MetaDataInfo
                     data.setNicInformation(nic);
                 }
 
+                Network ntwk = null;
+                if (input.get(5) != null) {
+                    ntwk = (Network) input.get(5);
+                    data.setNetwork_uuid(ntwk.getUuid());
+                }
+
                 return data;
             }
         };
@@ -106,6 +117,7 @@ public class MetaDataInfoDaoImpl extends AbstractJooqDao implements MetaDataInfo
         HostTable host = mapper.add(HOST, HOST.ID);
         IpAddressTable instanceIpAddress = mapper.add(IP_ADDRESS, IP_ADDRESS.ADDRESS);
         NicTable nic = mapper.add(NIC, NIC.ID, NIC.INSTANCE_ID, NIC.MAC_ADDRESS);
+        NetworkTable ntwk = mapper.add(NETWORK, NETWORK.UUID);
         return create()
                 .select(mapper.fields())
                 .from(instance)
@@ -121,11 +133,14 @@ public class MetaDataInfoDaoImpl extends AbstractJooqDao implements MetaDataInfo
                 .on(IP_ADDRESS_NIC_MAP.NIC_ID.eq(nic.ID))
                 .join(instanceIpAddress)
                 .on(instanceIpAddress.ID.eq(IP_ADDRESS_NIC_MAP.IP_ADDRESS_ID))
+                .join(ntwk)
+                .on(nic.NETWORK_ID.eq(ntwk.ID))
                 .where(instance.ACCOUNT_ID.eq(accountId))
                 .and(instance.REMOVED.isNull())
                 .and(instance.STATE.notIn(CommonStatesConstants.REMOVING, CommonStatesConstants.REMOVED))
                 .and(exposeMap.REMOVED.isNull())
                 .and(instanceIpAddress.ROLE.eq(IpAddressConstants.ROLE_PRIMARY))
+                .and(ntwk.REMOVED.isNull())
                 .and((host.REMOVED.isNull()))
                 .and(exposeMap.STATE.isNull().or(
                         exposeMap.STATE.notIn(CommonStatesConstants.REMOVING, CommonStatesConstants.REMOVED)))
@@ -229,4 +244,24 @@ public class MetaDataInfoDaoImpl extends AbstractJooqDao implements MetaDataInfo
                 .fetch().map(mapper);
     }
 
+    @Override
+    public List<NetworkMetaData> getNetworksMetaData(long accountId) {
+        MultiRecordMapper<NetworkMetaData> mapper = new MultiRecordMapper<NetworkMetaData>() {
+            @Override
+            protected NetworkMetaData map(List<Object> input) {
+                Network ntwk = (Network) input.get(0);
+                Map<String, Object> meta = DataAccessor.fieldMap(ntwk, ServiceConstants.FIELD_METADATA);
+                NetworkMetaData data = new NetworkMetaData(ntwk.getName(), ntwk.getUuid(), meta);
+                return data;
+            }
+        };
+
+        NetworkTable ntwk = mapper.add(NETWORK, NETWORK.NAME, NETWORK.UUID, NETWORK.DATA);
+        return create()
+                .select(mapper.fields())
+                .from(ntwk)
+                .where(ntwk.REMOVED.isNull())
+                .and(ntwk.ACCOUNT_ID.eq(accountId))
+                .fetch().map(mapper);
+    }
 }
