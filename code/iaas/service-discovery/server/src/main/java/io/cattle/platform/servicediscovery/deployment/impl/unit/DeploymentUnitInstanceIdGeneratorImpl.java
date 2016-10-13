@@ -31,6 +31,7 @@ public class DeploymentUnitInstanceIdGeneratorImpl implements DeploymentUnitInst
     }
 
     public static Integer generateNewId(List<Integer> usedIds) {
+        Collections.sort(usedIds);
         Integer idToReturn = null;
         if (usedIds.size() == 0) {
             idToReturn = 1;
