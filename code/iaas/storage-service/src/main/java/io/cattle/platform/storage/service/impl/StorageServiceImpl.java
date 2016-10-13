@@ -96,7 +96,7 @@ public class StorageServiceImpl implements StorageService {
     protected Map<String, Object> getStoragePoolProperties(StorageDriver storageDriver) {
         return objectManager.convertToPropertiesFor(StoragePool.class, CollectionUtils.asMap((Object)
                 STORAGE_POOL.ACCOUNT_ID, storageDriver.getAccountId(),
-                STORAGE_POOL.NAME, storageDriver.getName() + " Pool",
+                STORAGE_POOL.NAME, storageDriver.getName(),
                 STORAGE_POOL.DRIVER_NAME, storageDriver.getName(),
                 STORAGE_POOL.STORAGE_DRIVER_ID, storageDriver.getId(),
                 STORAGE_POOL.VOLUME_ACCESS_MODE,
@@ -127,7 +127,7 @@ public class StorageServiceImpl implements StorageService {
                 } else {
                     objectManager.create(StoragePoolHostMap.class,
                             STORAGE_POOL_HOST_MAP.HOST_ID, hostId,
-                            STORAGE_POOL_HOST_MAP.STORAGE_POOL_ID, storagePoolId);
+                            STORAGE_POOL_HOST_MAP.STORAGE_POOL_ID, globalPool.getId());
                 }
             }
         }

@@ -31,7 +31,7 @@ def test_volume_create_state(client, context):
     assert c.uri == 'local:///%s' % name
 
     volume = client.wait_success(client.delete(c))
-    assert volume.state == 'removed'
+    assert volume.removed is not None
 
 
 def test_volume_create_size_validation(client, context):
@@ -60,7 +60,7 @@ def test_volume_create_with_opts(client, context):
     assert c.uri == 'local:///%s' % name
 
     volume = client.wait_success(client.delete(c))
-    assert volume.state == 'removed'
+    assert volume.removed is not None
 
 
 def test_create_container_with_volume(new_context, super_client):
@@ -165,7 +165,7 @@ def test_instance_volume_cleanup_strategy(new_context, super_client):
     c = client.wait_success(c.remove())
     client.wait_success(c.purge())
     wait_for_condition(client, vol, lambda x: x.state == 'detached')
-    wait_for_condition(client, unnamed_vol, lambda x: x.state is not None)
+    wait_for_condition(client, unnamed_vol, lambda x: x.removed is not None)
 
     # Assert explicit 'unnamed' strategy
     c, vol, unnamed_vol = create_resources(
@@ -175,7 +175,7 @@ def test_instance_volume_cleanup_strategy(new_context, super_client):
     c = client.wait_success(c.remove())
     client.wait_success(c.purge())
     wait_for_condition(client, vol, lambda x: x.state == 'detached')
-    wait_for_condition(client, unnamed_vol, lambda x: x.state is not None)
+    wait_for_condition(client, unnamed_vol, lambda x: x.removed is not None)
 
     # Assert 'none' strategy
     c, vol, unnamed_vol = create_resources(
@@ -194,8 +194,8 @@ def test_instance_volume_cleanup_strategy(new_context, super_client):
     c = client.wait_success(c.stop())
     c = client.wait_success(c.remove())
     client.wait_success(c.purge())
-    wait_for_condition(client, vol, lambda x: x.state is not None)
-    wait_for_condition(client, unnamed_vol, lambda x: x.state is not None)
+    wait_for_condition(client, vol, lambda x: x.removed is not None)
+    wait_for_condition(client, unnamed_vol, lambda x: x.removed is not None)
 
     # Assert invalid value for label is rejected
     with pytest.raises(ApiError):
@@ -327,7 +327,7 @@ def test_volume_mounting_and_delete(new_context, super_client):
     check_mount_count(client, v1, 0)
 
     v1 = client.wait_success(v1.remove())
-    assert v1.state is not None
+    assert v1.removed is not None
 
 
 def test_volume_storage_pool_purge(new_context, super_client):
@@ -352,7 +352,7 @@ def test_volume_storage_pool_purge(new_context, super_client):
     host = client.wait_success(host.remove())
     client.wait_success(host.purge())
 
-    wait_for_condition(client, sp, lambda x: x.state is not None)
+    wait_for_condition(client, sp, lambda x: x.removed is not None)
     wait_for_condition(client, v1, lambda x: x.state == 'detached')
 
     register_simulated_host(new_context)

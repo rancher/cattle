@@ -111,7 +111,7 @@ public class SystemStackUpdate extends AbstractJooqDao implements AnnotatedEvent
             }
         }
 
-        boolean oldVm = DataAccessor.fieldBool(account, AccountConstants.FIELD_ORCHESTRATION);
+        boolean oldVm = DataAccessor.fieldBool(account, AccountConstants.FIELD_VIRTUAL_MACHINE);
         String oldOrch = DataAccessor.fieldString(account, AccountConstants.FIELD_ORCHESTRATION);
         if (oldVm != virtualMachine || !ObjectUtils.equals(oldOrch, orchestration)) {
             objectManager.setFields(account,

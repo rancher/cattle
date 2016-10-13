@@ -72,7 +72,7 @@ public class ServiceStackStorageDriverFilter extends AbstractDefaultResourceMana
             stringIds.add(idF.formatId(VolumeConstants.TYPE, volumeId));
         }
         throw new ClientVisibleException(ResponseCodes.CONFLICT, "DRIVER_IN_USE", "Driver from service is in use by volumes",
-                ids.toString());
+                stringIds.toString());
     }
 
     @Override

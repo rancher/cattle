@@ -2,6 +2,7 @@ package io.cattle.platform.systemstack.process;
 
 import io.cattle.platform.configitem.request.ConfigUpdateRequest;
 import io.cattle.platform.configitem.version.ConfigItemStatusManager;
+import io.cattle.platform.core.constants.AccountConstants;
 import io.cattle.platform.core.constants.ServiceConstants;
 import io.cattle.platform.core.model.Account;
 import io.cattle.platform.core.model.Stack;
@@ -10,6 +11,7 @@ import io.cattle.platform.engine.handler.ProcessPostListener;
 import io.cattle.platform.engine.handler.ProcessPreListener;
 import io.cattle.platform.engine.process.ProcessInstance;
 import io.cattle.platform.engine.process.ProcessState;
+import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.process.common.handler.AbstractObjectProcessLogic;
 
 import javax.inject.Inject;
@@ -31,7 +33,10 @@ public class SystemStackTrigger extends AbstractObjectProcessLogic implements Pr
     public HandlerResult handle(ProcessState state, ProcessInstance process) {
         Stack stack = (Stack)state.getResource();
         if (!ServiceConstants.isSystem(stack)) {
-            return null;
+            Account account = objectManager.loadResource(Account.class, stack.getAccountId());
+            if (DataAccessor.fieldString(account, AccountConstants.FIELD_ORCHESTRATION) != null) {
+                return null;
+            }
         }
 
         ConfigUpdateRequest request = ConfigUpdateRequest.forResource(Account.class, stack.getAccountId());
