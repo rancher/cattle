@@ -133,13 +133,9 @@ def test_deleting_registry_deletes_credentials(client):
 
 def test_container_image_and_registry_credential(client,
                                                  super_client):
-    id = 'registry.whitelist'
-    whitelist_registries = super_client.by_id_setting(id)
 
     server = 'server{0}.io'.format(random_num())
-    whitelist_value = 'index.docker.io,docker.io,sim:rancher,'+server
-    whitelist_registries = super_client.update(whitelist_registries,
-                                               value=whitelist_value)
+
     registry = client.create_registry(serverAddress=server,
                                       name=random_str())
     registry = client.wait_success(registry)
