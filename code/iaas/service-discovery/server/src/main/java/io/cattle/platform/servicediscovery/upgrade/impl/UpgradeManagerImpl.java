@@ -3,7 +3,6 @@ package io.cattle.platform.servicediscovery.upgrade.impl;
 import static io.cattle.platform.core.model.tables.ServiceExposeMapTable.*;
 import io.cattle.platform.activity.ActivityLog;
 import io.cattle.platform.activity.ActivityService;
-import io.cattle.platform.async.utils.TimeoutException;
 import io.cattle.platform.core.addon.InServiceUpgradeStrategy;
 import io.cattle.platform.core.addon.RollingRestartStrategy;
 import io.cattle.platform.core.addon.ServiceRestart;
@@ -95,33 +94,29 @@ public class UpgradeManagerImpl implements UpgradeManager {
     }
 
     public boolean doInServiceUpgrade(Service service, InServiceUpgradeStrategy strategy, boolean isUpgrade) {
-        try {
-            long batchSize = strategy.getBatchSize();
-            boolean startFirst = strategy.getStartFirst();
+        long batchSize = strategy.getBatchSize();
+        boolean startFirst = strategy.getStartFirst();
 
-            Map<String, List<Instance>> deploymentUnitInstancesToUpgrade = formDeploymentUnitsForUpgrade(service,
-                    Type.ToUpgrade, isUpgrade, strategy);
+        Map<String, List<Instance>> deploymentUnitInstancesToUpgrade = formDeploymentUnitsForUpgrade(service,
+                Type.ToUpgrade, isUpgrade, strategy);
 
-            Map<String, List<Instance>> deploymentUnitInstancesUpgradedUnmanaged = formDeploymentUnitsForUpgrade(
-                    service,
-                    Type.UpgradedUnmanaged, isUpgrade, strategy);
+        Map<String, List<Instance>> deploymentUnitInstancesUpgradedUnmanaged = formDeploymentUnitsForUpgrade(
+                service,
+                Type.UpgradedUnmanaged, isUpgrade, strategy);
 
-            Map<String, List<Instance>> deploymentUnitInstancesToCleanup = formDeploymentUnitsForUpgrade(service,
-                    Type.ToCleanup, isUpgrade, strategy);
+        Map<String, List<Instance>> deploymentUnitInstancesToCleanup = formDeploymentUnitsForUpgrade(service,
+                Type.ToCleanup, isUpgrade, strategy);
 
-            // upgrade deployment units
-            upgradeDeploymentUnits(service, deploymentUnitInstancesToUpgrade, deploymentUnitInstancesUpgradedUnmanaged,
-                    deploymentUnitInstancesToCleanup,
-                    batchSize, startFirst, preseveDeploymentUnit(service, strategy), isUpgrade);
+        // upgrade deployment units
+        upgradeDeploymentUnits(service, deploymentUnitInstancesToUpgrade, deploymentUnitInstancesUpgradedUnmanaged,
+                deploymentUnitInstancesToCleanup,
+                batchSize, startFirst, preseveDeploymentUnit(service, strategy), isUpgrade);
 
-            // check if empty
-            if (deploymentUnitInstancesToUpgrade.isEmpty()) {
-                return true;
-            }
-            return false;
-        } catch (TimeoutException e) {
-            return false;
+        // check if empty
+        if (deploymentUnitInstancesToUpgrade.isEmpty()) {
+            return true;
         }
+        return false;
     }
 
     protected boolean preseveDeploymentUnit(Service service, InServiceUpgradeStrategy strategy) {
@@ -406,38 +401,34 @@ public class UpgradeManagerImpl implements UpgradeManager {
         if (toService == null || toService.getRemoved() != null) {
             return true;
         }
-        try {
-            deploymentMgr.activate(toService);
-            if (!deploymentMgr.isHealthy(toService)) {
-                return false;
-            }
-
-            deploymentMgr.activate(fromService);
-
-            fromService = objectManager.reload(fromService);
-            toService = objectManager.reload(toService);
-
-            long batchSize = strategy.getBatchSize();
-            long finalScale = strategy.getFinalScale();
-
-            long toScale = getScale(toService);
-            long totalScale = getScale(fromService) + toScale;
-
-            if (totalScale > finalScale) {
-                fromService = changeScale(fromService, 0 - Math.min(batchSize, totalScale - finalScale));
-            } else if (toScale < finalScale) {
-                long max = Math.min(batchSize, finalScale - toScale);
-                toService = changeScale(toService, Math.min(max, finalScale + batchSize - totalScale));
-            }
-
-            if (getScale(fromService) == 0 && getScale(toService) != finalScale) {
-                changeScale(toService, finalScale - getScale(toService));
-            }
-
-            return getScale(fromService) == 0 && getScale(toService) == finalScale;
-        } catch (TimeoutException e) {
+        deploymentMgr.activate(toService);
+        if (!deploymentMgr.isHealthy(toService)) {
             return false;
         }
+
+        deploymentMgr.activate(fromService);
+
+        fromService = objectManager.reload(fromService);
+        toService = objectManager.reload(toService);
+
+        long batchSize = strategy.getBatchSize();
+        long finalScale = strategy.getFinalScale();
+
+        long toScale = getScale(toService);
+        long totalScale = getScale(fromService) + toScale;
+
+        if (totalScale > finalScale) {
+            fromService = changeScale(fromService, 0 - Math.min(batchSize, totalScale - finalScale));
+        } else if (toScale < finalScale) {
+            long max = Math.min(batchSize, finalScale - toScale);
+            toService = changeScale(toService, Math.min(max, finalScale + batchSize - totalScale));
+        }
+
+        if (getScale(fromService) == 0 && getScale(toService) != finalScale) {
+            changeScale(toService, finalScale - getScale(toService));
+        }
+
+        return getScale(fromService) == 0 && getScale(toService) == finalScale;
     }
 
     protected Service changeScale(Service service, long delta) {
@@ -535,29 +526,25 @@ public class UpgradeManagerImpl implements UpgradeManager {
 
     public boolean doRestart(Service service, RollingRestartStrategy strategy,
             Map<String, List<Instance>> toRestart) {
-        try {
-            long batchSize = strategy.getBatchSize();
-            final Map<String, List<Instance>> restartBatch = new HashMap<>();
-            long i = 0;
-            Iterator<Map.Entry<String, List<Instance>>> it = toRestart.entrySet()
-                    .iterator();
-            while (it.hasNext() && i < batchSize) {
-                Map.Entry<String, List<Instance>> instances = it.next();
-                String deploymentUnitUUID = instances.getKey();
-                restartBatch.put(deploymentUnitUUID, instances.getValue());
-                it.remove();
-                i++;
-            }
-
-            restartDeploymentUnits(service, restartBatch);
-
-            if (toRestart.isEmpty()) {
-                return true;
-            }
-            return false;
-        } catch (TimeoutException e) {
-            return false;
+        long batchSize = strategy.getBatchSize();
+        final Map<String, List<Instance>> restartBatch = new HashMap<>();
+        long i = 0;
+        Iterator<Map.Entry<String, List<Instance>>> it = toRestart.entrySet()
+                .iterator();
+        while (it.hasNext() && i < batchSize) {
+            Map.Entry<String, List<Instance>> instances = it.next();
+            String deploymentUnitUUID = instances.getKey();
+            restartBatch.put(deploymentUnitUUID, instances.getValue());
+            it.remove();
+            i++;
         }
+
+        restartDeploymentUnits(service, restartBatch);
+
+        if (toRestart.isEmpty()) {
+            return true;
+        }
+        return false;
     }
 
     protected void restartDeploymentUnits(final Service service,
