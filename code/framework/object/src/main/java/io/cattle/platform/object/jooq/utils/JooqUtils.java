@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.jooq.DSLContext;
+import org.jooq.ForeignKey;
 import org.jooq.Table;
 import org.jooq.TableField;
 import org.jooq.TableRecord;
@@ -156,6 +157,24 @@ public class JooqUtils {
         } else {
             return null;
         }
+    }
+
+    /**
+     * Determines if a table's primary key is referenced at all by other tables.
+     * 
+     * @param table
+     * @param others
+     * @return
+     */
+    public static boolean isReferencedBy(Table<?> table, List<Table<?>> others) {
+      for (Table<?> other : others) {
+        for (ForeignKey<?, ?> key : other.getReferences()) {
+          if (key.getKey().getTable().equals(table)) {
+            return true;
+          }
+        }
+      }
+      return false;
     }
 
     protected static org.jooq.Condition listToCondition(TableField<?, Object> field, List<?> list) {
