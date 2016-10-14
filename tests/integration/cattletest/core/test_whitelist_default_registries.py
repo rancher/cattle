@@ -189,3 +189,4 @@ def test_registries(super_client, client, context,
 
     default_registry = admin_user_client.update(default_registry,
                                                 value='')
+    wait_setting_active(admin_user_client, default_registry)

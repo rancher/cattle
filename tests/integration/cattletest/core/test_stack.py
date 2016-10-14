@@ -21,4 +21,7 @@ def _create_stack(client):
 def test_create_stack_binding(client):
     env = _create_stack(client)
     del env.binding.__dict__['type']
-    assert env.binding == binding_input
+    assert env.binding is not None
+    assert "service_1" in env.binding.services
+    assert env.binding.services.service_1.labels == {"label_1": "value_1"}
+    assert env.binding.services.service_1.ports == []

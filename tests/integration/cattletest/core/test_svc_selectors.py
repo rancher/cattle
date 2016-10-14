@@ -147,12 +147,6 @@ def test_service_mixed_selector_based_wo_image(client, context, super_client):
     env = _create_stack(client)
     image_uuid = context.image_uuid
 
-    id = 'registry.whitelist'
-    whitelist_registries = super_client.by_id_setting(id)
-    whitelist_value = 'index.docker.io,docker.io,sim:rancher'
-    whitelist_registries = super_client.update(whitelist_registries,
-                                               value=whitelist_value)
-
     labels = {'foo': "barbar"}
     container1 = client.create_container(imageUuid=image_uuid,
                                          startOnCreate=True,
