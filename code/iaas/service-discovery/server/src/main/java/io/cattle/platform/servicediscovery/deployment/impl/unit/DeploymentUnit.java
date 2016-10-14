@@ -358,8 +358,8 @@ public class DeploymentUnit {
         Volume volume = null;
         if (template.getExternal()) {
             // external volume should exist, otherwise fail
-            volume = context.objectManager.findOne(Volume.class, VOLUME.ACCOUNT_ID, service.getAccountId(),
-                    VOLUME.REMOVED, null, VOLUME.VOLUME_TEMPLATE_ID, template.getId(), VOLUME.STACK_ID, stack.getId());
+            volume = context.objectManager.findAny(Volume.class, VOLUME.ACCOUNT_ID, service.getAccountId(),
+                    VOLUME.REMOVED, null, VOLUME.NAME, template.getName());
             if (volume == null) {
                 throw new ServiceInstanceAllocateException("Failed to locate volume for instance of deployment unit ["
                         + uuid + "]", null, null);
