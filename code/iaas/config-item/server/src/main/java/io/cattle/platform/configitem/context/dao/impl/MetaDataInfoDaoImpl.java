@@ -144,7 +144,7 @@ public class MetaDataInfoDaoImpl extends AbstractJooqDao implements MetaDataInfo
                 .and((host.REMOVED.isNull()))
                 .and(exposeMap.STATE.isNull().or(
                         exposeMap.STATE.notIn(CommonStatesConstants.REMOVING, CommonStatesConstants.REMOVED)))
-                .and(exposeMap.UPGRADE.eq(false))
+                .and(exposeMap.UPGRADE.isNull().or(exposeMap.UPGRADE.eq(false)))
                 .fetch().map(mapper);
     }
 
