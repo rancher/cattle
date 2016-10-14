@@ -9,6 +9,7 @@ import io.cattle.platform.configitem.context.dao.MetaDataInfoDao.Version;
 import io.cattle.platform.configitem.context.data.metadata.common.ContainerMetaData;
 import io.cattle.platform.configitem.context.data.metadata.common.DefaultMetaData;
 import io.cattle.platform.configitem.context.data.metadata.common.HostMetaData;
+import io.cattle.platform.configitem.context.data.metadata.common.NetworkMetaData;
 import io.cattle.platform.configitem.context.data.metadata.common.SelfMetaData;
 import io.cattle.platform.configitem.context.data.metadata.common.ServiceMetaData;
 import io.cattle.platform.configitem.context.data.metadata.common.StackMetaData;
@@ -174,10 +175,12 @@ public class ServiceMetadataInfoFactory extends AbstractAgentBaseContextFactory 
                 agentInstanceId)) {
             selfHostMD.add(applyVersionToHost(data, version));
         }
-
-        // 6. full data combined of (n) self sections and default one
+        // 6. get networksMetadata
+        List<NetworkMetaData> networks = metaDataInfoDao.getNetworksMetaData(accountId);
+        
+        // 7. full data combined of (n) self sections and default one
         Map<String, Object> fullData = getFullMetaData(context, containersMD, stackNameToStack,
-                serviceIdToServiceLaunchConfigs, selfMD, hostsMD, selfHostMD.size() == 0 ? null : selfHostMD.get(0));
+                serviceIdToServiceLaunchConfigs, selfMD, hostsMD, selfHostMD.size() == 0 ? null : selfHostMD.get(0), networks);
 
         return fullData;
     }
@@ -189,7 +192,7 @@ public class ServiceMetadataInfoFactory extends AbstractAgentBaseContextFactory 
     protected Map<String, Object> getFullMetaData(ArchiveContext context, List<ContainerMetaData> containersMD,
             Map<String, StackMetaData> stackNameToStack,
             Map<Long, Map<String, ServiceMetaData>> serviceIdToServiceLaunchConfigs, Map<String, SelfMetaData> selfMD,
-            List<HostMetaData> hostsMD, HostMetaData selfHostMD) {
+            List<HostMetaData> hostsMD, HostMetaData selfHostMD, List<NetworkMetaData> networks) {
         List<StackMetaData> stacksMD = new ArrayList<>();
         for (StackMetaData stack : stackNameToStack.values()) {
             stacksMD.add(stack);
@@ -202,7 +205,7 @@ public class ServiceMetadataInfoFactory extends AbstractAgentBaseContextFactory 
         Map<String, Object> fullData = new HashMap<>();
         fullData.putAll(selfMD);
         fullData.put("default", new DefaultMetaData(context.getVersion(), containersMD, servicesMD,
-                stacksMD, hostsMD, selfHostMD));
+                stacksMD, hostsMD, selfHostMD, networks));
         return fullData;
     }
 

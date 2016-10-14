@@ -44,6 +44,7 @@ public class ContainerMetaData {
     String primary_mac_address;
     Long memory_reservation;
     Long milli_cpu_reservation;
+    String network_uuid;
 
     public ContainerMetaData(ContainerMetaData that) {
         this.name = that.name;
@@ -69,6 +70,7 @@ public class ContainerMetaData {
         this.serviceId = that.serviceId;
         this.hostMetaData = that.hostMetaData;
         this.dnsPrefix = that.dnsPrefix;
+        this.network_uuid = that.network_uuid;
     }
 
 
@@ -309,5 +311,13 @@ public class ContainerMetaData {
         } else {
             return new ContainerMetaDataVersion3(data);
         }
+    }
+
+    public String getNetwork_uuid() {
+        return network_uuid;
+    }
+
+    public void setNetwork_uuid(String network_uuid) {
+        this.network_uuid = network_uuid;
     }
 }

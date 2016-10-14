@@ -25,17 +25,19 @@ public class DefaultMetaData {
     List<ServiceMetaData> services;
     List<StackMetaData> stacks;
     List<HostMetaData> hosts;
+    List<NetworkMetaData> networks;
     Self self;
 
     public DefaultMetaData(String version, List<ContainerMetaData> containers,
             List<ServiceMetaData> services,
-            List<StackMetaData> stacks, List<HostMetaData> hosts, HostMetaData host) {
+            List<StackMetaData> stacks, List<HostMetaData> hosts, HostMetaData host, List<NetworkMetaData> networks) {
         super();
         this.version = version;
         this.containers = containers;
         this.services = services;
         this.stacks = stacks;
         this.hosts = hosts;
+        this.networks = networks;
         this.self = new Self(host);
     }
 
@@ -86,4 +88,13 @@ public class DefaultMetaData {
     public void setVersion(String version) {
         this.version = version;
     }
+
+    public List<NetworkMetaData> getNetworks() {
+        return networks;
+    }
+
+    public void setNetworks(List<NetworkMetaData> networks) {
+        this.networks = networks;
+    }
+
 }

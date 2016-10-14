@@ -2,6 +2,7 @@ package io.cattle.platform.configitem.context.dao;
 
 import io.cattle.platform.configitem.context.data.metadata.common.ContainerMetaData;
 import io.cattle.platform.configitem.context.data.metadata.common.HostMetaData;
+import io.cattle.platform.configitem.context.data.metadata.common.NetworkMetaData;
 
 import java.util.List;
 import java.util.Map;
@@ -45,4 +46,6 @@ public interface MetaDataInfoDao {
     Map<Long, HostMetaData> getHostIdToHostMetadata(long accountId);
 
     List<HostMetaData> getInstanceHostMetaData(long accountId, long instanceId);
+
+    List<NetworkMetaData> getNetworksMetaData(long accountId);
 }
