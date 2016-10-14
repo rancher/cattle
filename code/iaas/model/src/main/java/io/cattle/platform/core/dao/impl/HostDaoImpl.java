@@ -69,7 +69,7 @@ public class HostDaoImpl extends AbstractJooqDao implements HostDao {
 
     @Override
     public IpAddress getIpAddressForHost(Long hostId) {
-        return create()
+        List<? extends IpAddress> result = create()
             .select(IP_ADDRESS.fields())
                 .from(IP_ADDRESS)
                 .join(HOST_IP_ADDRESS_MAP)
@@ -77,7 +77,8 @@ public class HostDaoImpl extends AbstractJooqDao implements HostDao {
                 .where(HOST_IP_ADDRESS_MAP.HOST_ID.eq(hostId)
                     .and(HOST_IP_ADDRESS_MAP.REMOVED.isNull())
                     .and(IP_ADDRESS.REMOVED.isNull()))
-            .fetchOneInto(IpAddressRecord.class);
+            .fetchInto(IpAddressRecord.class);
+        return result.size() == 0 ? null : result.get(0);
     }
 
     @Override
