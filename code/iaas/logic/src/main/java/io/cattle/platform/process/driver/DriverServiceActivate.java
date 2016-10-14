@@ -2,6 +2,7 @@ package io.cattle.platform.process.driver;
 
 import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.InstanceConstants;
+import io.cattle.platform.core.constants.ServiceConstants;
 import io.cattle.platform.core.dao.GenericResourceDao;
 import io.cattle.platform.core.model.Service;
 import io.cattle.platform.core.model.Stack;
@@ -68,7 +69,7 @@ public class DriverServiceActivate extends AbstractProcessLogic implements Proce
             if (stack == null) {
                 continue;
             }
-            if (DataAccessor.fieldBool(stack, "system")) {
+            if (ServiceConstants.isSystem(stack)) {
                 lockManager.lock(new DriverLock(service, driverKey), new LockCallbackNoReturn() {
                     @Override
                     public void doWithLockNoResult() {
