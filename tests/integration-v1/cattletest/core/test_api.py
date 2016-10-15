@@ -130,7 +130,28 @@ def test_pagination_include(super_client, client, context):
                     if m.instanceId in container_ids and \
                        m.instanceId not in maps_from_include:
                         maps_from_include.append(m.instanceId)
+                        for c in containers:
+                            if c.id == m.instanceId:
+                                client.wait_success(c.stop())
 
+        try:
+            r = r.next()
+        except AttributeError:
+            break
+
+    assert len(maps) == len(maps_from_include)
+
+    del maps_from_include[:]
+    r = super_client.list_host(include='instances', limit=2)
+
+    while True:
+        for h in r:
+            if h.id == host.id:
+                for c in h.instances:
+                    if c.id in container_ids and \
+                       c.id not in maps_from_include:
+                        maps_from_include.append(c.id)
+                        client.wait_success(c.start())
         try:
             r = r.next()
         except AttributeError:
