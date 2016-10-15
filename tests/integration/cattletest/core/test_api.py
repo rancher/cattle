@@ -144,8 +144,9 @@ def test_pagination_include(super_client, client, context):
             if h.id == host.id:
                 assert len(h.instanceHostMaps) <= 2
                 for m in h.instanceHostMaps:
-                    if m.instanceId in container_ids:
-                        maps_from_include.append(m)
+                    if m.instanceId in container_ids and \
+                       m.instanceId not in maps_from_include:
+                        maps_from_include.append(m.instanceId)
 
         try:
             r = r.next()
