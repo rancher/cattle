@@ -1,23 +1,19 @@
 package io.cattle.platform.servicediscovery.deployment.impl.unit;
 
-import io.cattle.platform.archaius.util.ArchaiusUtil;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.Service;
 import io.cattle.platform.core.util.PortSpec;
-import io.cattle.platform.core.util.SystemLabels;
 import io.cattle.platform.servicediscovery.deployment.impl.DeploymentManagerImpl.DeploymentServiceContext;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import com.netflix.config.DynamicStringProperty;
-
+/*
+ * Need this class as LB service ports are being processed differently
+ */
 public class LoadBalancerDeploymentUnitInstance extends DefaultDeploymentUnitInstance {
-    private static final DynamicStringProperty DEFAULT_LB_IMAGE_UUID = ArchaiusUtil
-            .getString("agent.instance.image.uuid");
 
     public LoadBalancerDeploymentUnitInstance(DeploymentServiceContext context, String uuid,
             Service service, String instanceName, Instance instance, String launchConfigName) {
@@ -26,31 +22,8 @@ public class LoadBalancerDeploymentUnitInstance extends DefaultDeploymentUnitIns
 
     protected Map<String, Object> populateLaunchConfigData(Map<String, Object> deployParams) {
         Map<String, Object> launchConfigData = super.populateLaunchConfigData(deployParams);
-        setLabels(launchConfigData);
-        setSystemContainer(launchConfigData);
         setPorts(launchConfigData);
         return launchConfigData;
-    }
-
-    protected void setSystemContainer(Map<String, Object> launchConfigData) {
-        launchConfigData.put(InstanceConstants.FIELD_PRIVILEGED, true);
-        launchConfigData.put(InstanceConstants.FIELD_SYSTEM_CONTAINER, InstanceConstants.SYSTEM_CONTAINER_LB_AGENT);
-    }
-
-    @SuppressWarnings("unchecked")
-    protected void setLabels(Map<String, Object> launchConfigData) {
-        Object labels = launchConfigData.get(InstanceConstants.FIELD_LABELS);
-        if (labels == null) {
-            labels = new HashMap<String, String>();
-        }
-        ((HashMap<String, String>) labels)
-                .put(SystemLabels.LABEL_AGENT_ROLE, InstanceConstants.SYSTEM_CONTAINER_LB_AGENT);
-        ((HashMap<String, String>) labels).put(SystemLabels.LABEL_AGENT_CREATE, "true");
-        ((HashMap<String, String>) labels).put(SystemLabels.LABEL_AGENT_URI_PREFIX, "delegate");
-        launchConfigData.put(InstanceConstants.FIELD_LABELS, labels);
-        if (launchConfigData.get(InstanceConstants.FIELD_IMAGE_UUID) == null) {
-            launchConfigData.put(InstanceConstants.FIELD_IMAGE_UUID, DEFAULT_LB_IMAGE_UUID.get());
-        }
     }
 
     @SuppressWarnings("unchecked")
@@ -72,10 +45,5 @@ public class LoadBalancerDeploymentUnitInstance extends DefaultDeploymentUnitIns
             }
             launchConfigData.put(InstanceConstants.FIELD_PORTS, newPorts);
         }
-    }
-
-    @Override
-    public List<String> getSearchDomains() {
-       return null;
     }
 }

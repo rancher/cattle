@@ -148,32 +148,6 @@ public class LoadBalancerInfoDaoImpl implements LoadBalancerInfoDao {
         return sslPorts;
     }
 
-    @Override
-    public List<LoadBalancerTargetPortSpec> getLoadBalancerTargetPorts(LoadBalancerTargetInput target,
-            List<? extends LoadBalancerListenerInfo> listeners) {
-        List<LoadBalancerTargetPortSpec> portSpecsInitial = new ArrayList<>();
-        Map<Integer, LoadBalancerListenerInfo> lbSourcePorts = new HashMap<>();
-        for (LoadBalancerListenerInfo listener : listeners) {
-            lbSourcePorts.put(listener.getSourcePort(), listener);
-        }
-
-        List<Integer> targetSourcePorts = new ArrayList<>();
-
-        List<? extends String> portsData = target.getPorts();
-        if (portsData != null && !portsData.isEmpty()) {
-            for (String portData : portsData) {
-                portSpecsInitial.add(new LoadBalancerTargetPortSpec(portData));
-            }
-        }
-
-        List<LoadBalancerTargetPortSpec> portSpecsToReturn = completePortSpecs(portSpecsInitial, listeners,
-                lbSourcePorts, targetSourcePorts);
-
-        addMissingPortSpecs(lbSourcePorts, targetSourcePorts, portSpecsToReturn);
-
-        return portSpecsToReturn;
-    }
-
     protected void addMissingPortSpecs(Map<Integer, LoadBalancerListenerInfo> lbSourcePorts,
             List<Integer> targetSourcePorts, List<LoadBalancerTargetPortSpec> completePortSpecs) {
         // create port specs for missing load balancer source ports

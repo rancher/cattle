@@ -64,7 +64,7 @@ def test_deactivate_then_activate_lb_svc(super_client, new_context):
     _validate_svc_instance_map_count(client, service, "active", 2)
 
     # 3. activate service again
-    service = client.wait_success(service.activate())
+    service = wait_state(client, service.activate(), 'active')
     assert service.state == 'active'
     _validate_svc_instance_map_count(client, service, "active", 2)
 
@@ -135,23 +135,17 @@ def test_targets(super_client, client, context):
     # before web service is activated
     service_link = {"serviceId": web_service.id, "ports": ["a.com:90"]}
     lb_svc = lb_svc.addservicelink(serviceLink=service_link)
-    maps = _validate_svc_instance_map_count(client, lb_svc, "active", 1)
-    lb_instance = _wait_for_instance_start(super_client, maps[0].instanceId)
-    agent_id = lb_instance.agentId
-    item_before = _get_config_item(super_client, agent_id)
+    _validate_svc_instance_map_count(client, lb_svc, "active", 1)
 
     # activate web service
     web_service = client.wait_success(web_service.activate(), 120)
     assert web_service.state == "active"
     db_service = client.wait_success(db_service.activate(), 120)
     assert db_service.state == "active"
-    _validate_config_item_update(super_client, item_before, agent_id)
 
     # bind db and lb services after service is activated
-    item_before = _get_config_item(super_client, agent_id)
     service_link = {"serviceId": db_service.id, "ports": ["a.com:90"]}
     lb_svc.addservicelink(serviceLink=service_link)
-    _validate_config_item_update(super_client, item_before, agent_id)
 
     _validate_add_service_link(client, lb_svc, db_service,
                                ports=["a.com:90"])
@@ -159,10 +153,8 @@ def test_targets(super_client, client, context):
                                ports=["a.com:90"])
 
     # remove link and make sure that the target map is gone
-    item_before = _get_config_item(super_client, agent_id)
     service_link = {"serviceId": db_service.id, "ports": ["a.com:90"]}
     lb_svc.removeservicelink(serviceLink=service_link)
-    _validate_config_item_update(super_client, item_before, agent_id)
 
 
 def test_restart_stack(client, context):
@@ -244,20 +236,6 @@ def test_internal_lb(client, context):
     assert lb_svc.state == 'active'
 
 
-def _validate_config_item_update(super_client, bf, agent_id):
-    wait_for(
-        lambda: find_one(super_client.list_config_item_status,
-                         agentId=agent_id,
-                         name='haproxy').requestedVersion > bf.requestedVersion
-    )
-
-
-def _get_config_item(super_client, agent_id):
-    return find_one(super_client.list_config_item_status,
-                    agentId=agent_id,
-                    name='haproxy')
-
-
 def test_target_ips(super_client, client, context):
     host = context.host
     user_account_id = host.accountId
@@ -308,26 +286,18 @@ def test_target_ips(super_client, client, context):
     db_service = client.wait_success(db_service.activate(), 120)
     assert db_service.state == "active"
 
-    maps = _validate_svc_instance_map_count(client, lb_svc, "active", 1)
-    lb_instance = _wait_for_instance_start(super_client, maps[0].instanceId)
-    agent_id = lb_instance.agentId
-    item_before = _get_config_item(super_client, agent_id)
+    _validate_svc_instance_map_count(client, lb_svc, "active", 1)
 
     # bind db and lb services after service is activated
     service_link = {"serviceId": db_service.id, "ports": ["a.com:90"]}
     lb_svc.addservicelink(serviceLink=service_link)
-    _validate_config_item_update(super_client, item_before, agent_id)
 
     # remove link and make sure that the db targets are gone
-    item_before = _get_config_item(super_client, agent_id)
     service_link = {"serviceId": db_service.id, "ports": ["a.com:90"]}
     lb_svc.removeservicelink(serviceLink=service_link)
-    _validate_config_item_update(super_client, item_before, agent_id)
 
     # remove web service and validate that the web targets are gone
-    item_before = _get_config_item(super_client, agent_id)
     client.wait_success(web_service.remove())
-    _validate_config_item_update(super_client, item_before, agent_id)
 
 
 def test_create_svc_with_lb_config(context, client):
@@ -519,10 +489,7 @@ def test_inactive_lb(super_client, client, context):
     # activate lb service
     lb_service = client.wait_success(lb_service.activate(), 120)
     assert lb_service.state == "active"
-    maps = _validate_svc_instance_map_count(client, lb_service, "active", 1)
-    lb_instance = _wait_for_instance_start(super_client, maps[0].instanceId)
-    agent_id = lb_instance.agentId
-    item_before = _get_config_item(super_client, agent_id)
+    _validate_svc_instance_map_count(client, lb_service, "active", 1)
 
     # deactivate lb service, and remove service link
     lb_service = client.wait_success(lb_service.deactivate(), 120)
@@ -531,7 +498,6 @@ def test_inactive_lb(super_client, client, context):
     lb_service = lb_service.removeservicelink(serviceLink=service_link)
     lb_service = client.wait_success(lb_service.activate(), 120)
     assert lb_service.state == "active"
-    _validate_config_item_update(super_client, item_before, agent_id)
 
 
 def test_destroy_svc_instance(super_client, context, client, image_uuid):
@@ -1182,13 +1148,10 @@ def test_cert_update(client, image_uuid, super_client):
     lb_svc = client.wait_success(lb_svc.activate())
 
     maps = _validate_svc_instance_map_count(client, lb_svc, "active", 1)
-    lb_instance = _wait_for_instance_start(super_client, maps[0].instanceId)
-    agent_id = lb_instance.agentId
-    item_before = _get_config_item(super_client, agent_id)
+    _wait_for_instance_start(super_client, maps[0].instanceId)
 
     # update cert and validate that config item was updated
     c = _read_cert("san_domain_com.crt")
     k = _read_cert("san_domain_com.key")
     cert2 = client.update(cert1, cert=c, key=k)
     client.wait_success(cert2, 120)
-    _validate_config_item_update(super_client, item_before, agent_id)

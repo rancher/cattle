@@ -308,17 +308,13 @@ def test_lb_service_add_instance_selector(super_client, client, context):
     lb_service = client.wait_success(lb_service.activate(), 120)
     assert lb_service.state == "active"
     maps = _validate_svc_instance_map_count(client, lb_service, "active", 1)
-    lb_instance = _wait_for_instance_start(super_client, maps[0].instanceId)
-    agent_id = lb_instance.agentId
+    _wait_for_instance_start(super_client, maps[0].instanceId)
 
-    item_before = _get_config_item(super_client, agent_id)
     service_link = {"serviceId": service.id}
     lb_service = lb_service.addservicelink(serviceLink=service_link)
-    _validate_config_item_update(super_client, item_before, agent_id)
 
     # use case #2 - instance having selector's label,
     # is added after service with selector creation
-    item_before = _get_config_item(super_client, agent_id)
     container2 = client.create_container(imageUuid=image_uuid,
                                          startOnCreate=True,
                                          labels=labels)
@@ -327,7 +323,6 @@ def test_lb_service_add_instance_selector(super_client, client, context):
     wait_for(
         lambda: len(client.list_serviceExposeMap(serviceId=service.id)) == 2
     )
-    _validate_config_item_update(super_client, item_before, agent_id)
 
 
 def test_svc_invalid_selector(client):
@@ -473,20 +468,6 @@ def _resource_is_active(resource):
 
 def _resource_is_removed(resource):
     return resource.state == 'removed'
-
-
-def _validate_config_item_update(super_client, bf, agent_id):
-    wait_for(
-        lambda: find_one(super_client.list_config_item_status,
-                         agentId=agent_id,
-                         name='haproxy').requestedVersion > bf.requestedVersion
-    )
-
-
-def _get_config_item(super_client, agent_id):
-    return find_one(super_client.list_config_item_status,
-                    agentId=agent_id,
-                    name='haproxy')
 
 
 def _validate_svc_instance_map_count(client, service,
