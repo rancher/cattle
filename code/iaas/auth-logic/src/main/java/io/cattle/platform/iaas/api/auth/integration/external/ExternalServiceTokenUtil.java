@@ -42,6 +42,11 @@ public class ExternalServiceTokenUtil extends AbstractTokenUtil {
         return ServiceAuthConstants.USER_TYPE.get();
     }
 
+
+    public String identitySeparator() {
+        return ServiceAuthConstants.IDENTITY_SEPARATOR.get();
+    }
+
     @Override
     public boolean createAccount() {
         return true;
@@ -52,7 +57,7 @@ public class ExternalServiceTokenUtil extends AbstractTokenUtil {
         if (idList == null || idList.isEmpty()) {
             return false;
         }
-        List<String> whitelistedValues = fromCommaSeparatedString(ServiceAuthConstants.ALLOWED_IDENTITIES.get());
+        List<String> whitelistedValues = fromSeparatedString(ServiceAuthConstants.ALLOWED_IDENTITIES.get(), identitySeparator());
 
         for (String id : idList) {
             for (String whiteId: whitelistedValues){
@@ -64,12 +69,12 @@ public class ExternalServiceTokenUtil extends AbstractTokenUtil {
         return false;
     }
 
-    public List<String> fromCommaSeparatedString(String string) {
-        if (StringUtils.isEmpty(string)) {
+    public List<String> fromSeparatedString(String identities, String identitySeparator) {
+        if (StringUtils.isEmpty(identities)) {
             return new ArrayList<>();
         }
         List<String> strings = new ArrayList<>();
-        String[] splitted = string.split(",");
+        String[] splitted = identities.split(identitySeparator);
         for (String aSplitted : splitted) {
             String element = aSplitted.trim();
             strings.add(element);

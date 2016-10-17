@@ -279,19 +279,6 @@ public class ExternalServiceAuthProvider {
         return tokenUtil.getIdentities();
     }
 
-    public List<Identity> savedIdentities() {
-        List<String> ids = tokenUtil.fromCommaSeparatedString(ServiceAuthConstants.ALLOWED_IDENTITIES.get());
-        List<Identity> identities = new ArrayList<>();
-        if (ids.isEmpty()) {
-            return identities;
-        }
-        for(String id: ids){
-            String[] split = id.split(":", 2);
-            identities.add(getIdentity(split[1], split[0]));
-        }
-        return identities;
-    }
-
     public boolean isConfigured() {
         if (SecurityConstants.AUTH_PROVIDER.get() != null
                 && !SecurityConstants.NO_PROVIDER.equalsIgnoreCase(SecurityConstants.AUTH_PROVIDER.get())

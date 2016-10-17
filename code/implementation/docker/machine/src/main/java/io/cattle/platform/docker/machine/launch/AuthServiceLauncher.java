@@ -1,8 +1,13 @@
 package io.cattle.platform.docker.machine.launch;
 
+import static io.cattle.platform.core.model.tables.SettingTable.*;
 import io.cattle.platform.archaius.util.ArchaiusUtil;
 import io.cattle.platform.core.model.Credential;
+import io.cattle.platform.core.model.Setting;
+import io.cattle.platform.iaas.api.auth.SecurityConstants;
+import io.cattle.platform.iaas.api.auth.integration.external.ServiceAuthConstants;
 import io.cattle.platform.lock.definition.LockDefinition;
+import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.server.context.ServerContext;
 import io.cattle.platform.server.context.ServerContext.BaseProtocol;
 import io.cattle.platform.service.launcher.GenericServiceLauncher;
@@ -10,16 +15,23 @@ import io.cattle.platform.ssh.common.SshKeyGen;
 import io.cattle.platform.token.impl.RSAKeyProvider;
 import io.cattle.platform.token.impl.RSAPrivateKeyHolder;
 import io.cattle.platform.util.type.InitializationTask;
+import io.github.ibuildthecloud.gdapi.condition.Condition;
+import io.github.ibuildthecloud.gdapi.condition.ConditionType;
 
+import java.io.IOException;
 import java.security.PublicKey;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 import javax.inject.Inject;
 
+import org.apache.http.client.fluent.Request;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.netflix.config.DynamicBooleanProperty;
+import com.netflix.config.DynamicPropertyFactory;
 import com.netflix.config.DynamicStringProperty;
 
 
@@ -27,10 +39,17 @@ public class AuthServiceLauncher extends GenericServiceLauncher implements Initi
     @Inject
     RSAKeyProvider keyProvider;
 
+    @Inject
+    ObjectManager objectManager;
+
     private static final Logger log = LoggerFactory.getLogger(AuthServiceLauncher.class);
 
     private static final DynamicStringProperty AUTH_SERVICE_BINARY = ArchaiusUtil.getString("auth.service.executable");
     private static final DynamicBooleanProperty LAUNCH_AUTH_SERVICE = ArchaiusUtil.getBoolean("auth.service.execute");
+
+    public static final DynamicStringProperty SECURITY_SETTING = ArchaiusUtil.getString("api.security.enabled");
+    public static final DynamicStringProperty EXTERNAL_AUTH_PROVIDER_SETTING = ArchaiusUtil.getString("api.auth.external.provider.configured");
+    public static final DynamicStringProperty NO_IDENTITY_LOOKUP_SETTING = ArchaiusUtil.getString("api.auth.external.provider.no.identity.lookup");
 
     @Override
     protected boolean shouldRun() {
@@ -91,6 +110,44 @@ public class AuthServiceLauncher extends GenericServiceLauncher implements Initi
         } catch (Exception e) {
             log.error("getPrivateKey: Failed to write PEM", e);
             return null;
+        }
+    }
+
+    @Override
+    protected List<DynamicStringProperty> getReloadSettings() {
+        List<DynamicStringProperty> list = new ArrayList<DynamicStringProperty>();
+        list.add(SecurityConstants.AUTH_PROVIDER);
+        list.add(SecurityConstants.AUTH_ENABLER_SETTING);
+        list.add(SECURITY_SETTING);
+        list.add(ServiceAuthConstants.ACCESS_MODE);
+        list.add(ServiceAuthConstants.ALLOWED_IDENTITIES);
+        list.add(EXTERNAL_AUTH_PROVIDER_SETTING);
+        list.add(NO_IDENTITY_LOOKUP_SETTING);
+        list.add(ServiceAuthConstants.USER_TYPE);
+        list.add(ServiceAuthConstants.IDENTITY_SEPARATOR);
+
+        //read Db settings name starting with "api.auth" to add additional provider specific settings
+        List<Setting> settings = objectManager.find(Setting.class,
+                SETTING.NAME, new Condition(ConditionType.LIKE, "api.auth%"));
+
+        for (Setting setting : settings) {
+            list.add(DynamicPropertyFactory.getInstance().getStringProperty(setting.getName(), null));
+        }
+
+        return list;
+    }
+
+    @Override
+    public void reload() {
+        if (!shouldRun()) {
+            return;
+        }
+
+        try {
+            StringBuilder authUrl = new StringBuilder(ServiceAuthConstants.AUTH_SERVICE_URL.get());
+            Request.Post(authUrl+"/reload").execute();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
     }
 

@@ -17,6 +17,7 @@ public class ServiceAuthConstants {
     public static final String ACCESSMODE_SETTING = "api.auth.access.mode";
     public static final String ALLOWED_IDENTITIES_SETTING = "api.auth.allowed.identities";
     public static final String USERTYPE_SETTING = "api.auth.user.type";
+    public static final String IDENTITY_SEPARATOR_SETTING = "api.auth.external.provider.identity.separator";
     public static final String EXTERNAL_AUTH_PROVIDER_SETTING = "api.auth.external.provider.configured";
     public static final String JWT_CREATION_FAILED = "FailedToMakeJWT";
     public static final String NO_IDENTITY_LOOKUP_SETTING = "api.auth.external.provider.no.identity.lookup";
@@ -24,6 +25,7 @@ public class ServiceAuthConstants {
     public static final DynamicStringProperty ACCESS_MODE = ArchaiusUtil.getString(ACCESSMODE_SETTING);
     public static final DynamicStringProperty ALLOWED_IDENTITIES = ArchaiusUtil.getString(ALLOWED_IDENTITIES_SETTING);
     public static final DynamicStringProperty USER_TYPE = ArchaiusUtil.getString(USERTYPE_SETTING);
+    public static final DynamicStringProperty IDENTITY_SEPARATOR = ArchaiusUtil.getString(IDENTITY_SEPARATOR_SETTING);
     public static final DynamicBooleanProperty IS_EXTERNAL_AUTH_PROVIDER = ArchaiusUtil.getBoolean(EXTERNAL_AUTH_PROVIDER_SETTING);
     public static final DynamicBooleanProperty NO_IDENTITY_LOOKUP_SUPPORTED = ArchaiusUtil.getBoolean(NO_IDENTITY_LOOKUP_SETTING);
 

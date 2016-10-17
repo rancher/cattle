@@ -39,5 +39,10 @@
             <scope>provided</scope>
             <optional>true</optional>
         </dependency>
+        <dependency>
+            <groupId>io.cattle</groupId>
+            <artifactId>cattle-iaas-auth-logic</artifactId>
+            <version>${project.version}</version>
+        </dependency>
     </dependencies>
 </project>

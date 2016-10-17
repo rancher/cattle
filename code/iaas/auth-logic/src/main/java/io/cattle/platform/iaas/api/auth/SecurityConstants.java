@@ -30,6 +30,7 @@ public class SecurityConstants {
     public static final DynamicLongProperty TOKEN_EXPIRY_MILLIS = ArchaiusUtil.getLong("api.auth.jwt.token.expiry");
     public static final String HAS_LOGGED_IN = "hasLoggedIn";
     public static final String AUTH_ENABLER = "api.auth.enabler";
+    public static final DynamicStringProperty AUTH_ENABLER_SETTING = ArchaiusUtil.getString(AUTH_ENABLER);
     public static final List<String> INTERNAL_AUTH_PROVIDERS = Collections.unmodifiableList(
             Arrays.asList(new String[] {AzureConstants.CONFIG, ADConstants.CONFIG, OpenLDAPConstants.CONFIG, LocalAuthConstants.CONFIG}));
 }
