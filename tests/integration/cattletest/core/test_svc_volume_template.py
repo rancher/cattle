@@ -409,3 +409,13 @@ def test_prev_version_service(client, context, super_client):
     assert "foo:/bar" in c11.dataVolumes
     assert len(super_client.list_deploymentUnit(
         uuid=c11.deploymentUnitUuid)) == 0
+
+
+def test_no_scope(client):
+    opts = {'foo': 'true', 'bar': 'true'}
+
+    # negative test case
+    with pytest.raises(ApiError) as e:
+        client.create_volumeTemplate(name="foo", driver="nfs",
+                                     driverOpts=opts)
+    assert e.value.error.status == 422

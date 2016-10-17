@@ -30,10 +30,24 @@ public class VolumeTemplateCreateValidationFilter extends AbstractDefaultResourc
     public Object create(String type, ApiRequest request, ResourceManager next) {
         VolumeTemplate template = request.proxyRequestObject(VolumeTemplate.class);
         
+        validateNameUniqueness(template);
+        validateScope(template);
+
+        return super.create(type, request, next);
+    }
+
+    private void validateNameUniqueness(VolumeTemplate template) {
         if (objectManager.find(VolumeTemplate.class, VOLUME_TEMPLATE.REMOVED, null, VOLUME_TEMPLATE.STACK_ID,
                 template.getStackId(), VOLUME_TEMPLATE.NAME, template.getName()).size() > 0) {
             throw new ValidationErrorException(ValidationErrorCodes.NOT_UNIQUE, "name");
         }
-        return super.create(type, request, next);
+    }
+
+    private void validateScope(VolumeTemplate template) {
+        if (!(Boolean.TRUE.equals(template.getPerContainer()) || Boolean.TRUE.equals(template.getExternal()) || template
+                .getStackId() != null)) {
+            throw new ValidationErrorException(ValidationErrorCodes.INVALID_OPTION,
+                    "Scope is not set on the volume. Should either be per container, external or per stack");
+        }
     }
 }
