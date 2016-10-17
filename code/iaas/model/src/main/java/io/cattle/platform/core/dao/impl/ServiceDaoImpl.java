@@ -7,6 +7,7 @@ import static io.cattle.platform.core.model.tables.ServiceIndexTable.*;
 import static io.cattle.platform.core.model.tables.ServiceTable.*;
 import static io.cattle.platform.core.model.tables.StackTable.*;
 
+import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.dao.ServiceDao;
 import io.cattle.platform.core.model.Instance;
@@ -110,7 +111,8 @@ public class ServiceDaoImpl extends AbstractJooqDao implements ServiceDao {
                 .on(INSTANCE.ID.eq(SERVICE_EXPOSE_MAP.INSTANCE_ID))
             .where(SERVICE_EXPOSE_MAP.REMOVED.isNull()
                     .and(INSTANCE.REMOVED.isNull())
-                    .and(SERVICE_EXPOSE_MAP.SERVICE_ID.in(ids)))
+                    .and(SERVICE_EXPOSE_MAP.SERVICE_ID.in(ids))
+                    .and(SERVICE_EXPOSE_MAP.STATE.eq(CommonStatesConstants.ACTIVE)))
             .fetchInto(new RecordHandler<Record2<Long, Long>>() {
                 @Override
                 public void next(Record2<Long, Long> record) {
@@ -137,7 +139,8 @@ public class ServiceDaoImpl extends AbstractJooqDao implements ServiceDao {
                 .on(SERVICE.ID.eq(SERVICE_CONSUME_MAP.CONSUMED_SERVICE_ID))
             .join(STACK)
                 .on(STACK.ID.eq(SERVICE.STACK_ID))
-            .where(SERVICE_CONSUME_MAP.SERVICE_ID.in(ids))
+            .where(SERVICE_CONSUME_MAP.SERVICE_ID.in(ids)
+                    .and(SERVICE_CONSUME_MAP.STATE.eq(CommonStatesConstants.ACTIVE)))
             .fetchInto(new RecordHandler<Record6<String, Long, Long, String, Long, String>>(){
                 @Override
                 public void next(Record6<String, Long, Long, String, Long, String> record) {
