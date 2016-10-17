@@ -33,6 +33,7 @@
                 <value>io.cattle.platform.core.addon.HaConfigInput</value>
                 <value>io.cattle.platform.core.addon.BlkioDeviceOption</value>
                 <value>io.cattle.platform.core.addon.ScalePolicy</value>
+                <value>io.cattle.platform.core.addon.Ulimit</value>
             </set>
         </property>
     </bean>

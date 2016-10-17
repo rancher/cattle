@@ -34,6 +34,25 @@ public class DockerInstanceConstants {
     public static final String FIELD_EXTRA_HOSTS = "extraHosts";
     public static final String FIELD_READ_ONLY = "readOnly";
     public static final String FIELD_BLKIO_DEVICE_OPTIONS = "blkioDeviceOptions";
+    public static final String FIELD_BLKIO_WEIGHT = "blkioWeight";
+    public static final String FIELD_CGROUP_PARENT = "cgroupParent";
+    public static final String FIELD_CPU_PERIOD = "cpuPeriod";
+    public static final String FIELD_CPU_QUOTA = "cpuQuota";
+    public static final String FIELD_CPUSET_MEMS = "cpuSetMems";
+    public static final String FIELD_DNS_OPT = "dnsOpt";
+    public static final String FIELD_GROUP_ADD = "groupAdd";
+    public static final String FIELD_KERNEL_MEMORY = "kernelMemory";
+    public static final String FIELD_MEMORY_SWAPPINESS = "memorySwappiness";
+    public static final String FIELD_OOMKILL_DISABLE = "oomKillDisable";
+    public static final String FIELD_SHM_SIZE = "shmSize";
+    public static final String FIELD_TMPFS = "tmpfs";
+    public static final String FIELD_UTS = "uts";
+    public static final String FIELD_IPC_MODE = "ipcMode";
+    public static final String FIELD_STOP_SIGNAL = "stopSignal";
+    public static final String FIELD_SYSCTLS = "sysctls";
+    public static final String FIELD_STORAGE_OPT = "storageOpt";
+    public static final String FIELD_OOM_SCORE_ADJ = "oomScoreAdj";
+    public static final String FIELD_ULIMITS = "ulimits";
 
     public static final String EVENT_FIELD_VOLUMES_FROM = "dataVolumesFromContainers";
     public static final String EVENT_FIELD_VOLUMES_FROM_DVM = "volumesFromDataVolumeMounts";
