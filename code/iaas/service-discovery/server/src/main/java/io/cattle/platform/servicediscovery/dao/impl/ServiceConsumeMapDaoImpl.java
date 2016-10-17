@@ -95,7 +95,9 @@ public class ServiceConsumeMapDaoImpl extends AbstractJooqDao implements Service
                 .selectFrom(SERVICE_CONSUME_MAP)
                 .where(
                         SERVICE_CONSUME_MAP.SERVICE_ID.eq(serviceId)
-                                .and(SERVICE_CONSUME_MAP.REMOVED.isNull())).fetchInto(ServiceConsumeMapRecord.class);
+                                .and(SERVICE_CONSUME_MAP.REMOVED.isNull())
+                                .and(SERVICE_CONSUME_MAP.STATE.notIn(CommonStatesConstants.REMOVING)))
+                .fetchInto(ServiceConsumeMapRecord.class);
     }
 
     @Override
