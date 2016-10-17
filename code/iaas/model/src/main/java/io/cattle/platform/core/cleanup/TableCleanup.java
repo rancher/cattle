@@ -1,5 +1,6 @@
 package io.cattle.platform.core.cleanup;
 
+import io.cattle.platform.archaius.util.ArchaiusUtil;
 import io.cattle.platform.core.model.tables.*;
 import io.cattle.platform.db.jooq.dao.impl.AbstractJooqDao;
 import io.cattle.platform.object.jooq.utils.JooqUtils;
@@ -19,7 +20,6 @@ import org.slf4j.LoggerFactory;
 
 import com.netflix.config.DynamicIntProperty;
 import com.netflix.config.DynamicLongProperty;
-import com.netflix.config.DynamicPropertyFactory;
 
 /**
  * Programmatically delete purged database rows after they reach a configurable age.
@@ -29,33 +29,17 @@ import com.netflix.config.DynamicPropertyFactory;
  */
 public class TableCleanup extends AbstractJooqDao {
 
+    public static final Long SECOND_MILLIS = 1000L;
+
     private static final Logger log = LoggerFactory.getLogger(TableCleanup.class);
 
-    public static final DynamicIntProperty QUERY_LIMIT_ROWS = 
-            DynamicPropertyFactory.getInstance().getIntProperty("cleanup.query_limit.rows", 100);
+    public static final DynamicIntProperty QUERY_LIMIT_ROWS = ArchaiusUtil.getInt("cleanup.query_limit.rows");
+    public static final DynamicLongProperty MAIN_TABLES_AGE_LIMIT_SECONDS = ArchaiusUtil.getLong("main_tables.purge.after.seconds");
+    public static final DynamicLongProperty PROCESS_INSTANCE_AGE_LIMIT_SECONDS = ArchaiusUtil.getLong("process_instance.purge.after.seconds");
+    public static final DynamicLongProperty EVENT_AGE_LIMIT_SECONDS = ArchaiusUtil.getLong("events.purge.after.seconds");
+    public static final DynamicLongProperty AUDIT_LOG_AGE_LIMIT_SECONDS = ArchaiusUtil.getLong("audit_log.purge.after.seconds");
+    public static final DynamicLongProperty SERVICE_LOG_AGE_LIMIT_SECONDS = ArchaiusUtil.getLong("service_log.purge.after.seconds");
     
-    public static final DynamicLongProperty DEFAULT_AGE_LIMIT_HOURS =
-            DynamicPropertyFactory.getInstance().getLongProperty("cleanup.age_limit.hours", 168);
-    
-    public static final DynamicLongProperty PROCESS_INSTANCE_AGE_LIMIT_SECONDS =
-            DynamicPropertyFactory.getInstance().getLongProperty(
-                    "process_instance.purge.after.seconds", DEFAULT_AGE_LIMIT_HOURS.get());
-
-    public static final DynamicLongProperty EVENT_AGE_LIMIT_SECONDS =
-            DynamicPropertyFactory.getInstance().getLongProperty(
-                    "events.purge.after.seconds", DEFAULT_AGE_LIMIT_HOURS.get());
-
-    public static final DynamicLongProperty AUDIT_LOG_AGE_LIMIT_SECONDS =
-            DynamicPropertyFactory.getInstance().getLongProperty(
-                    "audit_log.purge.after.seconds", DEFAULT_AGE_LIMIT_HOURS.get());
-
-    public static final DynamicLongProperty SERVICE_LOG_AGE_LIMIT_SECONDS =
-            DynamicPropertyFactory.getInstance().getLongProperty(
-                    "service_log.purge.after.seconds", DEFAULT_AGE_LIMIT_HOURS.get());
-    
-    public static final Long SECOND_MILLIS = 1000L;
-    public static final Long HOUR_MILLIS = 60 * 60 * SECOND_MILLIS;
-
     private List<CleanableTable> processInstanceTables;
     private List<CleanableTable> eventTables;
     private List<CleanableTable> auditLogTables;
@@ -85,7 +69,7 @@ public class TableCleanup extends AbstractJooqDao {
         Date serviceLogCutoff = new Date(current - SERVICE_LOG_AGE_LIMIT_SECONDS.get() * SECOND_MILLIS);
         cleanup("service_log", serviceLogTables, serviceLogCutoff);
         
-        Date otherCutoff = new Date(current - DEFAULT_AGE_LIMIT_HOURS.getValue() * HOUR_MILLIS);
+        Date otherCutoff = new Date(current - MAIN_TABLES_AGE_LIMIT_SECONDS.getValue() * SECOND_MILLIS);
         cleanup("other", otherTables, otherCutoff);
     }
 
