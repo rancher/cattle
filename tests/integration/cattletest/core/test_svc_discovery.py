@@ -698,7 +698,7 @@ def test_validate_service_scaleup_scaledown(client, context):
     image_uuid = context.image_uuid
     launch_config = {"imageUuid": image_uuid}
 
-    service = client.create_service(name=random_str(),
+    service = client.create_service(name="scaleup",
                                     stackId=env.id,
                                     launchConfig=launch_config,
                                     scale=2)

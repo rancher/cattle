@@ -101,7 +101,6 @@ public class ServiceConstants {
     public static final String PROCESS_SERVICE_EXPOSE_MAP_REMOVE = "serviceexposemap.remove";
     public static final String PROCESS_SERVICE_UPGRADE = "service." + ACTION_SERVICE_UPGRADE;
     public static final String PROCESS_SERVICE_ROLLBACK = "service." + ACTION_SERVICE_ROLLBACK;
-    public static final String PROCESS_SERVICE_CANCEL_UPGRADE = "service.cancelupgrade";
     public static final String PROCESS_SERVICE_FINISH_UPGRADE = "service.finishupgrade";
     public static final String PROCESS_SERVICE_RESTART = "service." + ACTION_SERVICE_RESTART;
     public static final String PROCESS_SERVICE_INDEX_REMOVE = "serviceindex.remove";
