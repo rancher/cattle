@@ -25,6 +25,8 @@ target
 tests/integration*/.idea/
 tests/integration*/.tox/
 tests/integration*/MANIFEST
+tests/integration-v1/.cache/
+tests/integration/.cache/
 .venv
 .idea
 *.iml
