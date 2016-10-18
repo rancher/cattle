@@ -114,8 +114,11 @@ public class AgentActivate extends AbstractDefaultProcessHandler {
                 }
             }
         }
-
-        return new HandlerResult();
+        HandlerResult result = new HandlerResult();
+        if (process.getName().equalsIgnoreCase(AgentConstants.PROCESS_RECONNECT)) {
+            result.shouldDelegate(true);
+        }
+        return result;
     }
 
     @Override

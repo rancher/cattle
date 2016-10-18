@@ -443,7 +443,9 @@ public class ConfigItemStatusDaoImpl extends AbstractJooqDao implements ConfigIt
                 .leftOuterJoin(INSTANCE)
                 .on(INSTANCE.AGENT_ID.eq(AGENT.ID))
                 .where(CONFIG_ITEM_STATUS.REQUESTED_VERSION.ne(CONFIG_ITEM_STATUS.APPLIED_VERSION)
-                        .and(AGENT.STATE.in(CommonStatesConstants.ACTIVE, CommonStatesConstants.ACTIVATING, AgentConstants.STATE_RECONNECTING))
+                        .and(AGENT.STATE.in(CommonStatesConstants.ACTIVE, CommonStatesConstants.ACTIVATING,
+                                AgentConstants.STATE_RECONNECTING, AgentConstants.STATE_FINISHING_RECONNECT,
+                                AgentConstants.STATE_RECONNECTED))
                         .and(INSTANCE.STATE.isNull().or(INSTANCE.STATE.eq(InstanceConstants.STATE_RUNNING))))
                 .orderBy(AGENT.AGENT_GROUP_ID.asc(), AGENT.ID.asc())
                 .limit(BATCH_SIZE.get())
@@ -474,7 +476,9 @@ public class ConfigItemStatusDaoImpl extends AbstractJooqDao implements ConfigIt
                 .on(INSTANCE.AGENT_ID.eq(AGENT.ID))
                 .where(CONFIG_ITEM_STATUS.SOURCE_VERSION.isNotNull()
                         .and(CONFIG_ITEM_STATUS.SOURCE_VERSION.ne(CONFIG_ITEM.SOURCE_VERSION))
-                        .and(AGENT.STATE.in(CommonStatesConstants.ACTIVE, CommonStatesConstants.ACTIVATING, AgentConstants.STATE_RECONNECTING))
+                        .and(AGENT.STATE.in(CommonStatesConstants.ACTIVE, CommonStatesConstants.ACTIVATING,
+                                AgentConstants.STATE_RECONNECTING, AgentConstants.STATE_FINISHING_RECONNECT,
+                                AgentConstants.STATE_RECONNECTED))
                         .and(INSTANCE.STATE.isNull().or(INSTANCE.STATE.eq(InstanceConstants.STATE_RUNNING))))
                 .orderBy(AGENT.AGENT_GROUP_ID.asc(), AGENT.ID.asc())
                 .limit(BATCH_SIZE.get())

@@ -25,6 +25,7 @@ import io.cattle.platform.allocator.exception.FailedToAllocate;
 import io.cattle.platform.allocator.service.AllocationAttempt;
 import io.cattle.platform.allocator.service.AllocationCandidate;
 import io.cattle.platform.allocator.util.AllocatorUtils;
+import io.cattle.platform.core.constants.AgentConstants;
 import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.HealthcheckConstants;
 import io.cattle.platform.core.constants.InstanceConstants;
@@ -495,7 +496,9 @@ public class AllocatorDaoImpl extends AbstractJooqDao implements AllocatorDao {
                 .leftOuterJoin(AGENT)
                     .on(AGENT.ID.eq(HOST.AGENT_ID))
                 .where(
-                    AGENT.ID.isNull().or(AGENT.STATE.eq(CommonStatesConstants.ACTIVE))
+                        AGENT.ID.isNull()
+                                .or(AGENT.STATE.in(CommonStatesConstants.ACTIVE,
+                                        AgentConstants.STATE_FINISHING_RECONNECT, AgentConstants.STATE_RECONNECTED))
                 .and(HOST.REMOVED.isNull())
                 .and(HOST.ACCOUNT_ID.eq(accountId))
                 .and(HOST.STATE.in(CommonStatesConstants.ACTIVE, CommonStatesConstants.UPDATING_ACTIVE)))

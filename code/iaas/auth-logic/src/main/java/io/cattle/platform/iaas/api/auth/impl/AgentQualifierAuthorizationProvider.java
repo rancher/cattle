@@ -44,7 +44,9 @@ public class AgentQualifierAuthorizationProvider implements AuthorizationProvide
             CommonStatesConstants.ACTIVE,
             AgentConstants.STATE_RECONNECTING,
             AgentConstants.STATE_DISCONNECTED,
-            AgentConstants.STATE_DISCONNECTING
+            AgentConstants.STATE_DISCONNECTING,
+            AgentConstants.STATE_FINISHING_RECONNECT,
+            AgentConstants.STATE_RECONNECTED
     ));
     private static final Set<String> DISCONNECTED = new HashSet<String>(Arrays.asList(
             AgentConstants.STATE_DISCONNECTED,
