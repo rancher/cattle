@@ -30,6 +30,7 @@ public class VolumeCreateUpdate extends AbstractObjectProcessHandler {
         Volume volume = (Volume) state.getResource();
         String driver = DataAccessor.fieldString(volume, VolumeConstants.FIELD_VOLUME_DRIVER);
         Long driverId = volume.getStorageDriverId();
+        Integer deviceNum = volume.getDeviceNumber();
         StorageDriver storageDriver = objectManager.loadResource(StorageDriver.class, driverId);
 
         if (storageDriver == null && StringUtils.isNotBlank(driver)) {
@@ -42,9 +43,11 @@ public class VolumeCreateUpdate extends AbstractObjectProcessHandler {
         if (storageDriver != null) {
             driver = storageDriver.getName();
             driverId = storageDriver.getId();
+            deviceNum = -1;
         }
 
         HandlerResult result = new HandlerResult(VolumeConstants.FIELD_VOLUME_DRIVER, driver,
+                VOLUME.DEVICE_NUMBER, deviceNum,
                 VOLUME.STORAGE_DRIVER_ID, driverId);
 
         Long hostId = volume.getHostId();

@@ -9,13 +9,13 @@ import io.cattle.platform.core.model.Volume;
 import io.cattle.platform.core.model.VolumeStoragePoolMap;
 import io.cattle.platform.engine.process.ProcessInstance;
 import io.cattle.platform.engine.process.ProcessState;
-import io.cattle.platform.process.common.handler.AgentBasedProcessHandler;
+import io.cattle.platform.process.instance.IgnoreReconnectionAgentHandler;
 
 import java.util.List;
 
 import javax.inject.Inject;
 
-public class MountRemove extends AgentBasedProcessHandler {
+public class MountRemove extends IgnoreReconnectionAgentHandler {
 
     @Inject
     GenericMapDao mapDao;

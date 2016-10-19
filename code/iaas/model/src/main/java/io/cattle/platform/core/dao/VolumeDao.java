@@ -8,6 +8,8 @@ import java.util.Map;
 import java.util.Set;
 
 public interface VolumeDao {
+    Volume createVolumeForDriver(long accountId, String name, String volumeName);
+
     Volume findVolumeByExternalId(Long storagePoolId, String externalId);
 
     void createVolumeInStoragePool(Map<String, Object> volumeData, String volumeName, StoragePool storagePool);

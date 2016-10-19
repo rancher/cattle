@@ -116,7 +116,8 @@ public class StoragePoolDaoImpl extends AbstractJooqDao implements StoragePoolDa
 
     @Override
     public Map<Long, Long> findStoragePoolHostsByDriver(Long accountId, Long storageDriverId) {
-        return create().select(HOST.ID, STORAGE_POOL.ID)
+        final Map<Long, Long> result = new HashMap<>();
+        create().select(HOST.ID, STORAGE_POOL.ID)
             .from(HOST)
             .leftOuterJoin(STORAGE_POOL_HOST_MAP)
                 .on(STORAGE_POOL_HOST_MAP.HOST_ID.eq(HOST.ID))
@@ -127,7 +128,17 @@ public class StoragePoolDaoImpl extends AbstractJooqDao implements StoragePoolDa
                 .and(STORAGE_POOL_HOST_MAP.REMOVED.isNull())
                 .and(HOST.ACCOUNT_ID.eq(accountId))
                 .and(HOST.REMOVED.isNull()))
-            .fetch().intoMap(HOST.ID, STORAGE_POOL.ID);
+            .fetchInto(new RecordHandler<Record2<Long, Long>>() {
+                @Override
+                public void next(Record2<Long, Long> record) {
+                    Long hostId = record.getValue(HOST.ID);
+                    Long storagePoolId = record.getValue(STORAGE_POOL.ID);
+                    if (!result.containsKey(hostId) || storagePoolId != null) {
+                        result.put(hostId, storagePoolId);
+                    }
+                }
+            });
+        return result;
     }
 
     @Override

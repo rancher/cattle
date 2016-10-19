@@ -1,6 +1,7 @@
 package io.cattle.platform.process.instance;
 
 import static io.cattle.platform.core.model.tables.VolumeTable.*;
+
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.constants.VolumeConstants;
 import io.cattle.platform.core.dao.StoragePoolDao;
@@ -104,8 +105,7 @@ public class InstanceVolumeLookupPreCreate extends AbstractObjectProcessLogic im
                         ex.setResources(state.getResource());
                         throw ex;
                     } else if (sp != null) {
-                        Volume newVol = objectManager.create(Volume.class, VOLUME.NAME, volName, VOLUME.ACCOUNT_ID, instance.getAccountId(),
-                                VolumeConstants.FIELD_VOLUME_DRIVER, volumeDriver);
+                        Volume newVol = volumeDao.createVolumeForDriver(instance.getAccountId(), volName, volumeDriver);
                         dataVolumeMounts.put(parts[1], newVol.getId());
                     }
                 }

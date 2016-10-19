@@ -1,7 +1,6 @@
 {
     "resourceFields": {
         "name": {
-            "unique": true,
             "required": true
         },
         "isHostPath": {
