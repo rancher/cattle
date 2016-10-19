@@ -76,7 +76,12 @@ public class ServiceMetadataInfoFactory extends AbstractAgentBaseContextFactory 
             return;
         }
         long agentHostId = hostMap.getHostId();
-        List<ContainerMetaData> containersMD = metaDataInfoDao.getContainersData(account.getId());
+        List<ContainerMetaData> containersMD = metaDataInfoDao.getManagedContainersData(account.getId());
+        Map<Long, String> instanceIdToUuid = new HashMap<>();
+        for (ContainerMetaData containerMd : containersMD) {
+            instanceIdToUuid.put(containerMd.getInstanceId(), containerMd.getUuid());
+        }
+        containersMD.addAll(metaDataInfoDao.getNetworkFromContainersData(account.getId(), instanceIdToUuid));
         Map<String, StackMetaData> stackNameToStack = new HashMap<>();
         Map<Long, Map<String, ServiceMetaData>> serviceIdToServiceLaunchConfigs = new HashMap<>();
         List<? extends Service> allSvcs = objectManager.find(Service.class, SERVICE.ACCOUNT_ID,

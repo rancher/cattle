@@ -22,6 +22,7 @@ public class ContainerMetaData {
     private Long serviceId;
     private HostMetaData hostMetaData;
     private String dnsPrefix;
+    private Long instanceId;
 
     protected String name;
     String uuid;
@@ -45,6 +46,7 @@ public class ContainerMetaData {
     Long memory_reservation;
     Long milli_cpu_reservation;
     String network_uuid;
+    String network_from_container_uuid;
 
     public ContainerMetaData(ContainerMetaData that) {
         this.name = that.name;
@@ -71,6 +73,7 @@ public class ContainerMetaData {
         this.hostMetaData = that.hostMetaData;
         this.dnsPrefix = that.dnsPrefix;
         this.network_uuid = that.network_uuid;
+        this.network_from_container_uuid = that.network_from_container_uuid;
     }
 
 
@@ -125,6 +128,7 @@ public class ContainerMetaData {
 
     @SuppressWarnings("unchecked")
     public void setInstanceAndHostMetadata(Instance instance, HostMetaData hostMetaData) {
+        this.instanceId = instance.getId();
         this.hostMetaData = hostMetaData;
         this.name = instance.getName();
         this.uuid = instance.getUuid();
@@ -320,4 +324,18 @@ public class ContainerMetaData {
     public void setNetwork_uuid(String network_uuid) {
         this.network_uuid = network_uuid;
     }
+
+    public Long getInstanceId() {
+        return instanceId;
+    }
+
+
+    public String getNetwork_from_container_uuid() {
+        return network_from_container_uuid;
+    }
+
+    public void setNetwork_from_container_uuid(String network_from_container_uuid) {
+        this.network_from_container_uuid = network_from_container_uuid;
+    }
+
 }
