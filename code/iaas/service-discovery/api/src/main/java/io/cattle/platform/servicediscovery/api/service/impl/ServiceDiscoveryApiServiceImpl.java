@@ -257,17 +257,20 @@ public class ServiceDiscoveryApiServiceImpl implements ServiceDiscoveryApiServic
         Object value = cattleServiceData.get(ServiceConstants.FIELD_LOG_CONFIG);
         if (value instanceof Map) {
             if (!((Map<?, ?>) value).isEmpty()) {
+                Map<String, Object> logConfig = new HashMap<>();
                 Map<String, Object> map = (Map<String, Object>)value;
                 Iterator<String> it = map.keySet().iterator();
                 while (it.hasNext()) {
                     String key = it.next();
                     if (key.equalsIgnoreCase("config") && map.get(key) != null) {
-                        if (map.get(key) instanceof java.util.Map && !((Map<?, ?>)map.get(key)).isEmpty())
-                            composeServiceData.put("log_opt", map.get(key));
+                        if (map.get(key) instanceof java.util.Map && !((Map<?, ?>)map.get(key)).isEmpty()) {
+                            logConfig.put("options", map.get(key));
+                        }
                     } else if (key.equalsIgnoreCase("driver") && map.get(key) != null && map.get(key) != "") {
-                        composeServiceData.put("log_driver", map.get(key));
+                        logConfig.put("driver", map.get(key));
                     }
                 }
+                composeServiceData.put("logging", logConfig);
             }
         }
     }
