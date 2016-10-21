@@ -10,7 +10,8 @@ TEST_IMAGE_UUID = 'docker:' + TEST_IMAGE
 if_docker = pytest.mark.skipif("os.environ.get('DOCKER_TEST') == 'false'",
                                reason='DOCKER_TEST is not set')
 
-if_docker_1_12 = pytest.mark.skipif("os.environ.get('DOCKER_VERSION') != '1.12.1'",
+os_environ = "os.environ.get('DOCKER_VERSION') != '1.12.1'"
+if_docker_1_12 = pytest.mark.skipif(os_environ,
                                     reason='Docker version is not 1.12.1')
 
 
@@ -649,6 +650,7 @@ def test_container_fields(docker_client, super_client):
     assert actual_devices[0]['PathOnHost'] == "/dev/null"
     assert actual_devices[0]['PathInContainer'] == "/dev/xnull"
 
+
 @if_docker
 def test_docker_newfields(docker_client, super_client):
     test_name = 'container_field_test'
@@ -703,10 +705,12 @@ def test_docker_newfields(docker_client, super_client):
     assert not c.data['dockerInspect']['HostConfig']['OomKillDisable']
     assert c.data['dockerInspect']['HostConfig']['OomScoreAdj'] == 500
     assert c.data['dockerInspect']['HostConfig']['ShmSize'] == 67108864
-    assert c.data['dockerInspect']['HostConfig']['Tmpfs'] == {"/run": "rw,noexec,nosuid,size=65536k"}
+    run_args = "rw,noexec,nosuid,size=65536k"
+    assert c.data['dockerInspect']['HostConfig']['Tmpfs'] == {"/run": run_args}
     assert c.data['dockerInspect']['HostConfig']['UTSMode'] == 'host'
     assert c.data['dockerInspect']['HostConfig']['IpcMode'] == 'host'
-    assert c.data['dockerInspect']['HostConfig']['Ulimits'] == [{"Name": "cpu", "Hard": 100000, "Soft": 100000}]
+    host_limits = {"Name": "cpu", "Hard": 100000, "Soft": 100000}
+    assert c.data['dockerInspect']['HostConfig']['Ulimits'] == [host_limits]
     assert c.data['dockerInspect']['Config']['StopSignal'] == 'SIGTERM'
 
 
@@ -732,10 +736,13 @@ def test_docker_extra_newfields(docker_client, super_client):
     wait_for(lambda: super_client.reload(c).data['dockerInspect'] is not None)
     wait_for(lambda: super_client.
              reload(c).data['dockerInspect']['HostConfig'] is not None)
-    assert c.data['dockerInspect']['HostConfig']['Sysctls'] == {"net.ipv4.ip_forward": "1"}
+    host_sysctls = {"net.ipv4.ip_forward": "1"}
+    assert c.data['dockerInspect']['HostConfig']['Sysctls'] == host_sysctls
     assert c.data['dockerInspect']['Config']['Healthcheck']['Test'] == ['ls']
-    assert c.data['dockerInspect']['Config']['Healthcheck']['Interval'] == 5000000000
-    assert c.data['dockerInspect']['Config']['Healthcheck']['Timeout'] == 60000000000
+    h_interval = c.data['dockerInspect']['Config']['Healthcheck']['Interval']
+    assert h_interval == 5000000000
+    h_timeout = c.data['dockerInspect']['Config']['Healthcheck']['Timeout']
+    assert h_timeout == 60000000000
     assert c.data['dockerInspect']['Config']['Healthcheck']['Retries'] == 3
 
 

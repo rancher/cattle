@@ -5,11 +5,13 @@ import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.storage.service.StorageService;
 import io.cattle.platform.util.type.CollectionUtils;
+import io.github.ibuildthecloud.gdapi.exception.ClientVisibleException;
 import io.github.ibuildthecloud.gdapi.exception.ValidationErrorException;
 import io.github.ibuildthecloud.gdapi.factory.SchemaFactory;
 import io.github.ibuildthecloud.gdapi.request.ApiRequest;
 import io.github.ibuildthecloud.gdapi.request.resource.AbstractResourceManagerFilter;
 import io.github.ibuildthecloud.gdapi.request.resource.ResourceManager;
+import io.github.ibuildthecloud.gdapi.util.ResponseCodes;
 import io.github.ibuildthecloud.gdapi.validation.ValidationErrorCodes;
 import io.cattle.platform.docker.client.DockerImage;
 
@@ -97,13 +99,15 @@ public class ExternalTemplateInstanceFilter extends AbstractResourceManagerFilte
         if (whitelistRegistries.size() > 0) {
             if (!StringUtils.isEmpty(userProvidedRegistry) && !StringUtils.isBlank(userProvidedRegistry)) {
                 if (!whitelistRegistries.contains(userProvidedRegistry)) {
-                    throw new ValidationErrorException(ValidationErrorCodes.INVALID_OPTION, InstanceConstants.FIELD_IMAGE_UUID);
+                    throw new ClientVisibleException(ResponseCodes.UNPROCESSABLE_ENTITY, ValidationErrorCodes.INVALID_OPTION,
+                            "The provided registry is not whitelisted", null);
                 }
             }
             else {
                 if (!StringUtils.isEmpty(defaultRegistry) && !StringUtils.isBlank(defaultRegistry)) {
                     if (!whitelistRegistries.contains(defaultRegistry)) {
-                        throw new ValidationErrorException(ValidationErrorCodes.INVALID_OPTION, InstanceConstants.FIELD_IMAGE_UUID);
+                        throw new ClientVisibleException(ResponseCodes.UNPROCESSABLE_ENTITY, ValidationErrorCodes.INVALID_OPTION,
+                                "The default registry is not whitelisted", null);
                     }
                 }
             }
