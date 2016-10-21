@@ -1,7 +1,6 @@
 package io.cattle.platform.systemstack.listener;
 
 import static io.cattle.platform.core.model.tables.StackTable.*;
-
 import io.cattle.platform.core.model.Stack;
 import io.cattle.platform.engine.handler.HandlerResult;
 import io.cattle.platform.engine.handler.ProcessPostListener;
@@ -14,17 +13,19 @@ import io.cattle.platform.util.type.Priority;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
 public class SystemStackRemovePostHandler extends AbstractObjectProcessLogic implements ProcessPostListener,
         Priority {
 
-    private static final Map<String, List<String>> STACKS_TO_CLEANUP = new HashMap<>();
+    private static final Map<String, List<String>> STACKS_TO_CLEANUP_EXTERNAL_ID = new HashMap<>();
+    private static final Map<String, List<String>> STACKS_TO_CLEANUP_KIND = new HashMap<>();
     static {
-        STACKS_TO_CLEANUP.put(SystemStackUpdate.KUBERNETES,
+        STACKS_TO_CLEANUP_EXTERNAL_ID.put(SystemStackUpdate.KUBERNETES,
                 Arrays.asList("kubernetes://", "kubernetes-loadbalancers://", "kubernetes-ingress-lbs://"));
+        STACKS_TO_CLEANUP_KIND.put(SystemStackUpdate.KUBERNETES,
+                Arrays.asList("kubernetesStack"));
     }
 
     @Override
@@ -54,21 +55,27 @@ public class SystemStackRemovePostHandler extends AbstractObjectProcessLogic imp
         List<Stack> all = objectManager.find(Stack.class, STACK.ACCOUNT_ID,
                 systemStack.getAccountId(),
                 STACK.REMOVED, null);
+        if (all.isEmpty()) {
+            return new ArrayList<>();
+        }
         List<Stack> toCleanup = new ArrayList<>();
-        List<String> stackPrefixes = STACKS_TO_CLEANUP.get(systemStackType);
-        if (stackPrefixes != null) {
-            for (String prefix : stackPrefixes) {
-                Iterator<Stack> it = all.iterator();
-                while (it.hasNext()) {
-                    Stack stack = it.next();
-                    if (stack.getExternalId() == null) {
-                        it.remove();
-                        continue;
-                    }
+        List<String> stackExternalIdPrefixes = STACKS_TO_CLEANUP_EXTERNAL_ID.get(systemStackType);
+        for (Stack stack : all) {
+            boolean removeByExternalId = false;
+            if (stack.getExternalId() != null && stackExternalIdPrefixes != null) {
+                for (String prefix : stackExternalIdPrefixes) {
                     if (stack.getExternalId().startsWith(prefix)) {
                         toCleanup.add(stack);
-                        it.remove();
+                        removeByExternalId = true;
+                        break;
                     }
+                }
+                if (removeByExternalId) {
+                    continue;
+                }
+                if (STACKS_TO_CLEANUP_KIND.get(systemStackType) != null
+                        && STACKS_TO_CLEANUP_KIND.get(systemStackType).contains(stack.getKind())) {
+                    toCleanup.add(stack);
                 }
             }
         }
