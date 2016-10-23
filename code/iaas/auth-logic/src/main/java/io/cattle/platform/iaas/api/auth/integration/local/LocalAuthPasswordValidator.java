@@ -43,10 +43,11 @@ public class LocalAuthPasswordValidator {
         }
 
         try {
-            response =  Request.Post(authValidateUrl).bodyString(jsonString, ContentType.APPLICATION_JSON).execute().returnResponse();
+            Request request = Request.Post(authValidateUrl).bodyString(jsonString, ContentType.APPLICATION_JSON);
+            response =  request.connectTimeout(5000).socketTimeout(5000).execute().returnResponse();
         } catch (IOException e) {
             log.error("Error sending POST request", e);
-            throw new ClientVisibleException(ResponseCodes.BAD_REQUEST, "Error sending POST request");
+            throw new ClientVisibleException(ResponseCodes.INTERNAL_SERVER_ERROR, "Error sending POST request");
         }
 
         code = response.getStatusLine().getStatusCode();
