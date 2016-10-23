@@ -341,7 +341,7 @@ def test_container_event_image_and_reg_cred(client, host, agent_cli, user_id,
     container = super_client.wait_success(container)
     assert container.registryCredentialId == registry_credential.id
     image = container.image()
-    assert image.name == name
+    assert image.name == "rancher/authorized:latest"
     assert image.registryCredentialId == registry_credential.id
 
 

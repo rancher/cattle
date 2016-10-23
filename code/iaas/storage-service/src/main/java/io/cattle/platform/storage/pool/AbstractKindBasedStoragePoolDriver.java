@@ -17,9 +17,6 @@ public abstract class AbstractKindBasedStoragePoolDriver implements StoragePoolD
 
     @Override
     public boolean populateImage(String uuid, Image image){
-        if (!uuid.startsWith(kindPrefix))
-            return false;
-
         return populateImageInternal(uuid, image);
     }
 
