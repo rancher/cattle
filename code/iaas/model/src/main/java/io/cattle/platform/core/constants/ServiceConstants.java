@@ -19,6 +19,9 @@ public class ServiceConstants {
     public static final String FIELD_UPGRADE = "upgrade";
     public static final String FIELD_LAUNCH_CONFIG = "launchConfig";
     public static final String FIELD_LOG_CONFIG = "logConfig";
+    public static final String FIELD_TMPFS= "tmpfs";
+    public static final String FIELD_ULIMITS = "ulimits";
+    public static final String FIELD_BLKIOOPTIONS = "blkioDeviceOptions";
     public static final String FIELD_LOAD_BALANCER_CONFIG = "loadBalancerConfig";
     public static final String FIELD_EXTERNALIPS = "externalIpAddresses";
     public static final String FIELD_LINKED_SERVICES = "linkedServices";
