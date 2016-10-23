@@ -36,6 +36,15 @@ def turn_on_off_local_auth(request, admin_user_client):
     request.addfinalizer(fin)
 
 
+@pytest.fixture()
+def reset_validate_url(admin_user_client):
+    yield
+    id = 'api.auth.local.validate.url'
+    validation_url = admin_user_client.by_id_setting(id)
+    validation_url = admin_user_client.update(validation_url, value='')
+    wait_setting_active(admin_user_client, validation_url)
+
+
 def make_user_and_client(admin_user_client, name_base='user ',
                          username=None, password=None):
     if username is None:
@@ -457,3 +466,66 @@ def test_passwords_non_alpha_numeric_characters(admin_user_client):
         admin_user_client.delete(key)
         key = admin_user_client.wait_success(key)
         key.purge()
+
+
+@pytest.mark.nonparallel
+def test_url_response_positive(admin_user_client, cattle_url,
+                               reset_validate_url):
+    id = 'api.auth.local.validate.url'
+    # Using v1/scripts/api.crt since it's not under auth control
+    # and will always return 200 as required by the test
+    url = cattle_url.split('v2-beta', 1)[0] + 'v1/scripts/api.crt'
+    validation_url = admin_user_client.by_id_setting(id)
+    validation_url = admin_user_client.update(validation_url, value=url)
+    wait_setting_active(admin_user_client, validation_url)
+
+    client, account, username, password =\
+        make_user_and_client(admin_user_client)
+
+    credential = client.list_password()
+
+    assert len(credential) == 1
+    assert credential[0].publicValue == username
+
+    newPass = random_str()
+    credential[0].changesecret(oldSecret=password, newSecret=newPass)
+    client, account, username, password =\
+        make_user_and_client(admin_user_client)
+
+
+@pytest.mark.nonparallel
+def test_url_response_negative(admin_user_client, cattle_url,
+                               reset_validate_url):
+    id = 'api.auth.local.validate.url'
+    validation_url = admin_user_client.by_id_setting(id)
+    validation_url = admin_user_client.update(validation_url, value=cattle_url)
+    wait_setting_active(admin_user_client, validation_url)
+
+    response = requests.post(validation_url.value)
+
+    with pytest.raises(ApiError) as e:
+        client, account, username, password =\
+            make_user_and_client(admin_user_client)
+    assert e.value.error.status == response.status_code
+
+    validation_url = admin_user_client.update(validation_url, value='')
+    wait_setting_active(admin_user_client, validation_url)
+
+    client, account, username, password =\
+        make_user_and_client(admin_user_client)
+
+    credential = client.list_password()
+
+    assert len(credential) == 1
+    assert credential[0].publicValue == username
+
+    newPass = random_str()
+    credential[0].changesecret(oldSecret=password, newSecret=newPass)
+
+    validation_url = admin_user_client.update(validation_url, value=cattle_url)
+    wait_setting_active(admin_user_client, validation_url)
+
+    with pytest.raises(ApiError) as e:
+        client, account, username, password =\
+            make_user_and_client(admin_user_client)
+    assert e.value.error.status == response.status_code
