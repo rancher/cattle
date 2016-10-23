@@ -4,6 +4,7 @@ import static io.cattle.platform.core.model.tables.InstanceTable.*;
 import static io.cattle.platform.core.model.tables.ServiceTable.*;
 import static io.cattle.platform.core.model.tables.VolumeTemplateTable.*;
 import static io.cattle.platform.servicediscovery.api.util.ServiceDiscoveryDnsUtil.RANCHER_NAMESPACE;
+
 import io.cattle.platform.core.addon.LoadBalancerServiceLink;
 import io.cattle.platform.core.addon.ServiceLink;
 import io.cattle.platform.core.constants.InstanceConstants;
@@ -173,6 +174,9 @@ public class ServiceDiscoveryApiServiceImpl implements ServiceDiscoveryApiServic
                     populateLoadBalancerServiceLabels(service, launchConfigName, composeServiceData);
                     populateSelectorServiceLabels(service, launchConfigName, composeServiceData);
                     populateLogConfig(cattleServiceData, composeServiceData);
+                    populateTmpfs(cattleServiceData, composeServiceData);
+                    populateUlimit(cattleServiceData, composeServiceData);
+                    populateBlkioOptions(cattleServiceData, composeServiceData);
                 }
                 if (!composeServiceData.isEmpty()) {
                     servicesData.put(isPrimaryConfig ? service.getName() : launchConfigName, composeServiceData);
@@ -268,6 +272,99 @@ public class ServiceDiscoveryApiServiceImpl implements ServiceDiscoveryApiServic
                         composeServiceData.put("log_driver", map.get(key));
                     }
                 }
+            }
+        }
+    }
+    
+    @SuppressWarnings("unchecked")
+    private void populateTmpfs(Map<String, Object> cattleServiceData, Map<String, Object> composeServiceData) {
+        Object value = cattleServiceData.get(ServiceConstants.FIELD_TMPFS);
+        if (value instanceof Map) {
+            if (!((Map<?, ?>) value).isEmpty()) {
+                Map<String, Object> map = (Map<String, Object>)value;
+                Iterator<String> it = map.keySet().iterator();
+                ArrayList<String> list = new ArrayList<>();
+                while (it.hasNext()) {
+                    String key = it.next();
+                    String option = "";
+                    if (map.get(key) != null) {
+                        option = map.get(key).toString();
+                    }
+                    list.add(key + ":" + option);
+                }
+                composeServiceData.put("tmpfs", list);
+            }
+        }
+    }
+    
+    @SuppressWarnings("unchecked")
+    private void populateUlimit(Map<String, Object> cattleServiceData, Map<String, Object> composeServiceData) {
+        Object value = cattleServiceData.get(ServiceConstants.FIELD_ULIMITS);
+        if (value instanceof List<?>) {
+            if (!((List<?>) value).isEmpty()) {
+                List<Object> list = (List<Object>) value;
+                Map<String, Object> ulimits = new HashMap<>();
+                for (Object ulimit: list) {
+                    // if there is one limit set(must be soft), parse it as map[string]string. If not, parse it as nested map
+                    if (ulimit instanceof Map) {
+                        Map<String, Object> ulimitMap = (Map<String, Object>) ulimit;
+                        // name can not be null
+                        if (ulimitMap.get("name").toString() != null) {
+                            if (ulimitMap.get("soft") != null && ulimitMap.get("hard") == null) {
+                                ulimits.put(ulimitMap.get("name").toString(), ulimitMap.get("soft"));
+                            }
+                            else if (ulimitMap.get("soft") != null && ulimitMap.get("hard") != null) {
+                                Map<String, Object> nestedMap = new HashMap<>();
+                                nestedMap.put("hard", ulimitMap.get("hard"));
+                                nestedMap.put("soft", ulimitMap.get("soft"));
+                                ulimits.put(ulimitMap.get("name").toString(), nestedMap);
+                            }
+                        }
+                    }
+                   
+                }
+                composeServiceData.put("ulimits", ulimits);
+            }
+        }
+    }
+    
+    @SuppressWarnings("unchecked")
+    private void populateBlkioOptions(Map<String, Object> cattleServiceData, Map<String, Object> composeServiceData) {
+        Object value = cattleServiceData.get(ServiceConstants.FIELD_BLKIOOPTIONS);
+        if (value instanceof Map) {
+            if (!((Map<?, ?>) value).isEmpty()) {
+                Map<String, Object> options = (Map<String, Object>) value;
+                Map<String, Object> deviceWeight = new HashMap<>();
+                Map<String, Object> deviceReadBps = new HashMap<>();
+                Map<String, Object> deviceReadIops = new HashMap<>();
+                Map<String, Object> deviceWriteBps = new HashMap<>();
+                Map<String, Object> deviceWriteIops = new HashMap<>();
+                for (String key: options.keySet()) {
+                    Object option = options.get(key);
+                    if (option instanceof Map) {
+                        Map<String, Object> optionMap = (Map<String, Object>) option;
+                        if (optionMap.get("readIops") != null) {
+                            deviceReadIops.put(key, optionMap.get("readIops"));
+                        }
+                        if (optionMap.get("writeIops") != null) {
+                            deviceWriteIops.put(key, optionMap.get("writeIops"));
+                        }
+                        if (optionMap.get("readBps") != null) {
+                            deviceReadBps.put(key, optionMap.get("readBps"));
+                        }
+                        if (optionMap.get("writeBps") != null) {
+                            deviceWriteBps.put(key, optionMap.get("writeBps"));
+                        }
+                        if (optionMap.get("weight") != null) {
+                            deviceWeight.put(key, optionMap.get("weight"));
+                        }
+                    }
+                }
+                composeServiceData.put("blkio_weight_device", deviceWeight);
+                composeServiceData.put("device_read_bps", deviceReadBps);
+                composeServiceData.put("device_read_iops", deviceReadIops);
+                composeServiceData.put("device_write_bps", deviceWriteBps);
+                composeServiceData.put("device_write_iops", deviceWriteIops);
             }
         }
     }

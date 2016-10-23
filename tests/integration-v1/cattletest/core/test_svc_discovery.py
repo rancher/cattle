@@ -1835,9 +1835,46 @@ def test_export_config(client, context):
                      "pidMode": "host",
                      "memory": 1048576,
                      "memorySwap": 2097152,
+                     "memoryReservation": 4194304,
+                     "milliCpuReservation": 1000,
                      "devices": ["/dev/sdc:/dev/xsdc:rwm"],
                      "logConfig": {"config": {"labels": "foo"},
-                                   "driver": "json-file"}}
+                                   "driver": "json-file"},
+                     "blkioWeight": 100,
+                     "cpuPeriod": 10000,
+                     "cpuQuota": 20000,
+                     "memorySwappiness": 50,
+                     "oomScoreAdj": 500,
+                     "shmSize": 67108864,
+                     "uts": "host",
+                     "ipcMode": "host",
+                     "stopSignal": "SIGTERM",
+                     "groupAdd": "root",
+                     "cgroup": "mygroup",
+                     "cgroupParent": "parent",
+                     "extraHosts": ["host1", "host2"],
+                     "securityOpt": ["sopt1", 'sopt2'],
+                     "readOnly": True,
+                     "oomKillDisable": True,
+                     "isolation": "hyper-v",
+                     "dnsOpt": ["opt"],
+                     "dnsSearch": ["192.168.1.1"],
+                     "cpuShares": 100,
+                     "blkioDeviceOptions": {
+                         '/dev/sda': {
+                             'readIops': 1000,
+                             'writeIops': 2000,
+                         },
+                         '/dev/null': {
+                             'readBps': 3000,
+                             'writeBps': 3000,
+                             'weight': 3000,
+                         }
+                     },
+                     "tmpfs": {"/run": "rw"},
+                     "ulimits": [{"name": "cpu", "soft": 1234, "hard": 1234},
+                                 {"name": "nporc", "soft": 1234}]
+                     }
     service = client. \
         create_service(name="web",
                        environmentId=env.id,
@@ -1861,7 +1898,35 @@ def test_export_config(client, context):
     assert svc["pid"] == "host"
     assert svc["mem_limit"] == 1048576
     assert svc["memswap_limit"] == 2097152
+    assert svc["mem_reservation"] == 4194304
     assert svc["devices"] is not None
+    assert svc["blkio_weight"] == 100
+    assert svc["cpu_period"] == 10000
+    assert svc["cpu_quota"] == 20000
+    assert svc["mem_swappiness"] == 50
+    assert svc["oom_score_adj"] == 500
+    assert svc["shm_size"] == 67108864
+    assert svc["uts"] == "host"
+    assert svc["ipc_mode"] == "host"
+    assert svc["stop_signal"] == "SIGTERM"
+    assert svc["cgroup"] == "mygroup"
+    assert svc["cgroup_parent"] == "parent"
+    assert svc["extra_hosts"] == ["host1", "host2"]
+    assert svc["security_opt"] == ["sopt1", "sopt2"]
+    assert svc["read_only"]
+    assert svc["oom_kill_disable"]
+    assert svc["isolation"] == "hyper-v"
+    assert svc["dns_opt"] == ["opt"]
+    assert svc["dns_search"] == ["192.168.1.1"]
+    assert svc["cpu_shares"] == 100
+    assert svc["device_read_iops"] == {"/dev/sda": 1000}
+    assert svc["device_write_iops"] == {"/dev/sda": 2000}
+    assert svc["device_read_bps"] == {"/dev/null": 3000}
+    assert svc["device_write_bps"] == {"/dev/null": 3000}
+    assert svc["blkio_weight_device"] == {"/dev/null": 3000}
+    assert svc["tmpfs"] == ["/run:rw"]
+    assert svc["ulimits"] == {"cpu": {"hard": 1234, "soft": 1234},
+                              "nporc": 1234}
 
     rancher_yml = yaml.load(compose_config.rancherComposeConfig)
     svc = rancher_yml['services'][service.name]
@@ -1871,6 +1936,7 @@ def test_export_config(client, context):
     assert svc['metadata'] is not None
     assert svc['metadata'] == metadata
     assert svc['retain_ip'] is True
+    assert svc["milli_cpu_reservation"] == 1000
 
     launch_config_without_log = {"imageUuid": image_uuid,
                                  "cpuSet": "0,1", "labels": labels,
