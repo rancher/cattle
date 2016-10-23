@@ -67,6 +67,8 @@ public class ServiceConstants {
     public static final String FIELD_VOLUME_EXTERNAL = "external";
     public static final String FIELD_VOLUME_PER_CONTAINER = "perContainer";
     public static final String FIELD_INSTANCE_IDS = "instanceIds";
+    public static final String FIELD_LB_CONFIG = "lbConfig";
+    public static final String FIELD_PORT_RULES = "portRules";
 
     public static final String FIELD_INTERNAL_VOLUMES = "internalVolumes";
     public static final String FIELD_VOLUME_TEMPLATE_ID = "volumeTemplateId";
@@ -129,7 +131,6 @@ public class ServiceConstants {
     public static final String LABEL_OVERRIDE_HOSTNAME = "io.rancher.container.hostname_override";
     public static final String LABEL_LB_SSL_PORTS = "io.rancher.loadbalancer.ssl.ports";
     public static final String LABEL_LB_PROXY_PORTS = "io.rancher.loadbalancer.proxy-protocol.ports";
-    public static final String LABEL_BALANCER_SERVICE = "io.rancher.lb.service";
 
     public static final String LABEL_SELECTOR_CONTAINER = "io.rancher.service.selector.container";
     public static final String LABEL_SELECTOR_LINK = "io.rancher.service.selector.link";

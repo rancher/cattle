@@ -205,8 +205,8 @@ def test_user_types(user_client, adds=set(), removes=set()):
         'volumeTemplate',
         'volumeActivateInput',
         'ulimit',
-        'balancerServiceMetadata',
-        'balancerTargetMetadata',
+        'balancerServiceConfig',
+        'balancerTargetConfig',
         'portRule',
         'targetPortRule'
     }
@@ -439,8 +439,8 @@ def test_admin_types(admin_user_client, adds=set(), removes=set()):
         'volumeTemplate',
         'volumeActivateInput',
         'ulimit',
-        'balancerServiceMetadata',
-        'balancerTargetMetadata',
+        'balancerServiceConfig',
+        'balancerTargetConfig',
         'portRule',
         'targetPortRule'
     }
@@ -2160,6 +2160,7 @@ def test_svc_discovery_lb_service(admin_user_client, user_client,
         'instanceIds': 'r',
         'linkedServices': 'r',
         'system': 'r',
+        'lbConfig': 'r',
     })
 
     auth_check(user_client.schema, 'loadBalancerService', 'r', {
@@ -2187,6 +2188,7 @@ def test_svc_discovery_lb_service(admin_user_client, user_client,
         'instanceIds': 'r',
         'linkedServices': 'r',
         'system': 'r',
+        'lbConfig': 'r',
     })
 
     auth_check(project_client.schema, 'loadBalancerService', 'crud', {
@@ -2214,6 +2216,7 @@ def test_svc_discovery_lb_service(admin_user_client, user_client,
         'instanceIds': 'r',
         'linkedServices': 'r',
         'system': 'r',
+        'lbConfig': 'cru',
     })
 
 

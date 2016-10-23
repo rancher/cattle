@@ -11,7 +11,7 @@ public class PortRule {
     Integer sourcePort;
     Integer priority;
     Protocol protocol;
-    String service;
+    String serviceId;
     Integer targetPort;
     String backendName;
     String selector;
@@ -29,7 +29,7 @@ public class PortRule {
     }
 
     public PortRule(String hostname, String path, Integer sourcePort, Integer priority, Protocol protocol,
-            String service,
+            String serviceId,
             Integer targetPort, String backendName, String selector) {
         super();
         this.hostname = hostname;
@@ -37,7 +37,7 @@ public class PortRule {
         this.sourcePort = sourcePort;
         this.priority = priority;
         this.protocol = protocol;
-        this.service = service;
+        this.serviceId = serviceId;
         this.targetPort = targetPort;
         this.backendName = backendName;
         this.selector = selector;
@@ -88,12 +88,13 @@ public class PortRule {
         this.protocol = protocol;
     }
 
+    @Field(typeString = "reference[service]")
     public String getServiceId() {
-        return service;
+        return serviceId;
     }
 
-    public void setService(String service) {
-        this.service = service;
+    public void setServiceId(String serviceId) {
+        this.serviceId = serviceId;
     }
 
     @Field(min = 1, max = 65535)

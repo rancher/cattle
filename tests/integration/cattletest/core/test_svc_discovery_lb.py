@@ -7,15 +7,10 @@ RESOURCE_DIR = os.path.join(os.path.dirname(os.path.realpath(__file__)),
                             'resources/certs')
 
 
-@pytest.fixture(scope='module')
-def image_uuid(context):
-    return context.image_uuid
-
-
-def test_create_env_and_svc(client, image_uuid):
+def test_create_env_and_svc(client, context):
     env = _create_stack(client)
 
-    launch_config = {"imageUuid": image_uuid}
+    launch_config = {"imageUuid": context.lb_v1_image_uuid}
 
     # create service
     service = client. \
@@ -27,11 +22,11 @@ def test_create_env_and_svc(client, image_uuid):
     assert service.launchConfig.healthCheck is not None
 
 
-def test_activate_lb_svc(super_client, context, client, image_uuid):
+def test_activate_lb_svc(context, client):
     context.host
     env = _create_stack(client)
     ports = ['8189:8189', '910:1001']
-    launch_config = {"imageUuid": image_uuid,
+    launch_config = {"imageUuid": context.lb_v1_image_uuid,
                      "ports": ports}
 
     svc = client. \
@@ -49,7 +44,7 @@ def test_activate_lb_svc(super_client, context, client, image_uuid):
     _validate_svc_instance_map_count(client, svc, "active", 1)
 
 
-def test_deactivate_then_activate_lb_svc(super_client, new_context):
+def test_deactivate_then_activate_lb_svc(new_context):
     client = new_context.client
     host1, host2, service, env = _activate_svc_w_scale_two(new_context,
                                                            random_str())
@@ -103,7 +98,7 @@ def test_targets(super_client, client, context):
     env = _create_stack(client)
 
     # create web, db lb services
-    image_uuid = context.image_uuid
+    image_uuid = context.lb_v1_image_uuid
     launch_config = {"imageUuid": image_uuid}
     web_service = client. \
         create_service(name=random_str() + "web",
@@ -159,7 +154,7 @@ def test_restart_stack(client, context):
     env = _create_stack(client)
 
     # create lb and web services
-    image_uuid = context.image_uuid
+    image_uuid = context.lb_v1_image_uuid
     launch_config = {"imageUuid": image_uuid}
     web_svc = client. \
         create_service(name=random_str() + "web",
@@ -220,7 +215,7 @@ def _resource_is_stopped(resource):
 def test_internal_lb(client, context):
     env = _create_stack(client)
 
-    image_uuid = context.image_uuid
+    image_uuid = context.lb_v1_image_uuid
 
     lb_launch_config = {"imageUuid": image_uuid,
                         "expose": [8051]}
@@ -240,7 +235,7 @@ def test_target_ips(super_client, client, context):
     env = _create_stack(client)
 
     # create web, db lb services
-    image_uuid = context.image_uuid
+    image_uuid = context.lb_v1_image_uuid
     launch_config = {"imageUuid": image_uuid}
     web_ips = ["72.22.16.5", '72.22.16.6']
     web_service = client. \
@@ -300,7 +295,7 @@ def test_create_svc_with_lb_config(context, client):
     name = random_str()
     env = _create_stack(client)
 
-    image_uuid = context.image_uuid
+    image_uuid = context.lb_v1_image_uuid
     launch_config = {"imageUuid": image_uuid}
 
     lb_policy = {"name": "policy2", "cookie": "cookie1",
@@ -355,7 +350,7 @@ def test_scale(new_context):
     client = new_context.client
     register_simulated_host(new_context)
     env = _create_stack(client)
-    image_uuid = new_context.image_uuid
+    image_uuid = new_context.lb_v1_image_uuid
     launch_config = {"imageUuid": image_uuid,
                      "ports": [8281, '909:1001']}
     cert1 = _create_cert(client)
@@ -405,7 +400,7 @@ def test_labels(super_client, client, context):
     # plus lb_svc label were set
     service_name = random_str()
     initial_labels = {'affinity': "container==B", '!affinity': "container==C"}
-    image_uuid = context.image_uuid
+    image_uuid = context.lb_v1_image_uuid
     launch_config = {"imageUuid": image_uuid,
                      "ports": [8010, '913:913'], "labels": initial_labels}
 
@@ -450,11 +445,11 @@ def test_labels(super_client, client, context):
                for item in result_labels.items()) is True
 
 
-def test_inactive_lb(super_client, client, context):
+def test_inactive_lb(client, context):
     env = _create_stack(client)
 
     # create and activate web service
-    image_uuid = context.image_uuid
+    image_uuid = context.lb_v1_image_uuid
     launch_config = {"imageUuid": image_uuid}
     web_service = client. \
         create_service(name=random_str() + "web",
@@ -496,10 +491,10 @@ def test_inactive_lb(super_client, client, context):
     assert lb_service.state == "active"
 
 
-def test_destroy_svc_instance(super_client, context, client, image_uuid):
+def test_destroy_svc_instance(super_client, context, client):
     env = _create_stack(client)
 
-    launch_config = {"imageUuid": image_uuid,
+    launch_config = {"imageUuid": context.lb_v1_image_uuid,
                      "ports": [95, '94:94']}
 
     service = client. \
@@ -524,7 +519,7 @@ def test_destroy_svc_instance(super_client, context, client, image_uuid):
 def test_set_service_links(client, context):
     env1 = _create_stack(client)
 
-    image_uuid = context.image_uuid
+    image_uuid = context.lb_v1_image_uuid
     launch_config = {"imageUuid": image_uuid}
 
     lb_service = client.create_loadBalancerService(name="lb",
@@ -583,7 +578,7 @@ def test_set_service_links(client, context):
 def test_modify_link(client, context):
     env = _create_stack(client)
 
-    image_uuid = context.image_uuid
+    image_uuid = context.lb_v1_image_uuid
     launch_config = {"imageUuid": image_uuid}
 
     lb_service = client.create_loadBalancerService(name="lb",
@@ -625,7 +620,7 @@ def _create_service(client, env, launch_config, name=None):
 def test_create_links(client, context):
     env = _create_stack(client)
 
-    image_uuid = context.image_uuid
+    image_uuid = context.lb_v1_image_uuid
     launch_config = {"imageUuid": image_uuid}
 
     lb_service = client.create_loadBalancerService(name="lb",
@@ -731,7 +726,7 @@ def test_export_config(client, context):
 
     env2 = _create_stack(client)
 
-    image_uuid = context.image_uuid
+    image_uuid = context.lb_v1_image_uuid
     launch_config = {"imageUuid": image_uuid}
     web_service = _create_service(client, env1, launch_config, "web")
 
@@ -762,7 +757,6 @@ def test_export_config(client, context):
     lb = document['services'][lb_service.name]
     assert len(lb['links']) == 2
     assert len(lb['external_links']) == 1
-    assert len(lb['labels']) == 2
 
     labels = {"io.rancher.loadbalancer.target.web": "a.com:90",
               "io.rancher.loadbalancer.target." +
@@ -770,18 +764,18 @@ def test_export_config(client, context):
     links = ["web1:web1", "web:web"]
     external_links = [env2.name + "/web2:web2"]
     lb = document['services'][lb_service.name]
-    assert lb['labels'] == labels
+    assert all(item in lb['labels'].items() for item in labels.items())
     lb['links'].sort()
     assert lb['links'] == links
     assert lb['external_links'] == external_links
 
 
-def test_lb_service_w_certificate(client, context, image_uuid):
+def test_lb_service_w_certificate(client, context):
     env = _create_stack(client)
     cert1 = _create_cert(client)
     cert2 = _create_cert(client)
     labels = {'io.rancher.loadbalancer.ssl.ports': "1765,1767"}
-    launch_config = {"imageUuid": image_uuid,
+    launch_config = {"imageUuid": context.lb_v1_image_uuid,
                      "ports": ['1765:1766', '1767:1768'],
                      "labels": labels}
 
@@ -811,14 +805,14 @@ def test_lb_service_w_certificate(client, context, image_uuid):
     assert cert2.state == 'removed'
 
 
-def test_lb_service_update_certificate(client, context, image_uuid):
+def test_lb_service_update_certificate(client, context):
     cert1 = _create_cert(client)
     cert2 = _create_cert(client)
     labels = {'io.rancher.loadbalancer.ssl.ports': "1769,1771"}
 
     env = _create_stack(client)
 
-    launch_config = {"imageUuid": image_uuid,
+    launch_config = {"imageUuid": context.lb_v1_image_uuid,
                      "ports": ['1769:1770', '1771:1772'],
                      "labels": labels}
 
@@ -855,7 +849,7 @@ def test_lb_service_update_certificate(client, context, image_uuid):
 
     lb_r = rancher_compose['services'][lb_svc.name]
     lb_d = docker_compose['services'][lb_svc.name]
-    assert lb_d['labels'] == labels
+    assert all(item in lb_d['labels'].items() for item in labels.items())
     assert lb_r['default_cert'] == cert3.name
     assert lb_r['certs'][0] == cert1.name
 
@@ -883,7 +877,7 @@ def test_lb_service_update_certificate(client, context, image_uuid):
     assert lb_svc.certificateIds is None
 
 
-def test_lb_with_certs_service_update(new_context, image_uuid):
+def test_lb_with_certs_service_update(new_context):
     client = new_context.client
     new_context.host
     register_simulated_host(new_context)
@@ -895,7 +889,7 @@ def test_lb_with_certs_service_update(new_context, image_uuid):
     env = client.wait_success(env)
     assert env.state == "active"
 
-    launch_config = {"imageUuid": image_uuid,
+    launch_config = {"imageUuid": new_context.lb_v1_image_uuid,
                      "ports": ['1792', '1793'],
                      "labels": labels}
 
@@ -923,14 +917,14 @@ def test_lb_with_certs_service_update(new_context, image_uuid):
     assert service.certificateIds == [cert1.id, cert2.id]
 
 
-def test_cert_in_use(client, context, image_uuid):
+def test_cert_in_use(client, context):
     env = client.create_stack(name=random_str())
     env = client.wait_success(env)
     assert env.state == "active"
     cert1 = _create_cert(client)
     cert2 = _create_cert(client)
     labels = {'io.rancher.loadbalancer.ssl.ports': "1765,1767"}
-    launch_config = {"imageUuid": image_uuid,
+    launch_config = {"imageUuid": context.lb_v1_image_uuid,
                      "ports": ['1765:1766', '1767:1768'],
                      "labels": labels}
 
@@ -965,7 +959,7 @@ def test_cert_in_use(client, context, image_uuid):
 
 def test_concurrent_acitvate_setlinks(client, context):
     env1 = _create_stack(client)
-    image_uuid = context.image_uuid
+    image_uuid = context.lb_v1_image_uuid
     launch_config = {"imageUuid": image_uuid}
     svc = _create_service(client, env1, launch_config, "web")
 
@@ -1018,7 +1012,7 @@ def _activate_svc_w_scale_two(new_context, random_str):
     host1 = new_context.host
     host2 = register_simulated_host(new_context)
     env = _create_stack(client)
-    launch_config = {"imageUuid": new_context.image_uuid,
+    launch_config = {"imageUuid": new_context.lb_v1_image_uuid,
                      "ports": [8481, '909:1001']}
     service = client. \
         create_loadBalancerService(name=random_str,
@@ -1104,12 +1098,12 @@ def _create_stack(client):
     return env
 
 
-def test_bind_to_ip(super_client, context, client, image_uuid):
+def test_bind_to_ip(context, client):
     context.host
     env = _create_stack(client)
     port0 = 731
     ports = ['127.2.2.2:%s:%s' % (port0, '6666')]
-    launch_config = {"imageUuid": image_uuid,
+    launch_config = {"imageUuid": "sim:rancher/load-balancer-service",
                      "ports": ports}
 
     svc = client. \
@@ -1128,11 +1122,11 @@ def test_bind_to_ip(super_client, context, client, image_uuid):
     assert c.ports == ['127.2.2.2:%s:%s/tcp' % (port0, port0)]
 
 
-def test_cert_update(client, image_uuid, super_client):
+def test_cert_update(client, context):
     env = client.create_stack(name=random_str())
     env = client.wait_success(env)
 
-    lb_launch_config = {"imageUuid": image_uuid,
+    lb_launch_config = {"imageUuid": context.lb_v1_image_uuid,
                         "ports": ['11451:1311']}
     cert1 = _create_cert(client)
     lb_svc = client. \

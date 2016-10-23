@@ -24,4 +24,5 @@ public interface ServiceDiscoveryApiService {
     String buildRancherComposeConfig(List<? extends Service> services);
 
     String getServiceCertificate(Service service);
+
 }

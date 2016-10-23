@@ -171,9 +171,7 @@ public class AgentInstanceFactoryImpl implements AgentInstanceFactory {
             return false;
         }
 
-        Map<String, String> labels = (Map<String, String>) labelsObj;
-        String isBalancerService = labels.get(ServiceConstants.LABEL_BALANCER_SERVICE);
-        return Boolean.valueOf(isBalancerService);
+        return Boolean.valueOf(service.getKind().equalsIgnoreCase(ServiceConstants.KIND_LOAD_BALANCER_SERVICE));
     }
 
     @Override

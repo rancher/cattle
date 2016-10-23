@@ -10,6 +10,7 @@ import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.constants.ServiceConstants;
 import io.cattle.platform.core.model.Service;
 import io.cattle.platform.core.model.Stack;
+import io.cattle.platform.core.util.LBMetadataUtil.LBMetadata;
 import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.servicediscovery.api.util.ServiceDiscoveryUtil;
 
@@ -114,6 +115,7 @@ public class ServiceMetaData {
     protected String token;
     protected HealthCheck health_check;
     protected Boolean system;
+    protected LBMetadata lb_config;
 
     protected ServiceMetaData(ServiceMetaData that) {
         this.serviceId = that.serviceId;
@@ -143,10 +145,11 @@ public class ServiceMetaData {
         this.token = that.token;
         this.health_check = that.health_check;
         this.system = that.system;
+        this.lb_config = that.lb_config;
     }
 
     public ServiceMetaData(Service service, String serviceName, Stack env, List<String> sidekicks,
-            Map<String, Object> metadata, InstanceHealthCheck healthCheck) {
+            InstanceHealthCheck healthCheck, LBMetadata lbConfig) {
         this.serviceId = service.getId();
         this.service = service;
         this.name = serviceName;
@@ -165,7 +168,6 @@ public class ServiceMetaData {
         populateExternalServiceInfo(service);
         populatePortsInfo(service, launchConfigName);
         this.create_index = service.getCreateIndex();
-        this.metadata = metadata;
         this.scale = DataAccessor.fieldInteger(service, ServiceConstants.FIELD_SCALE);
         this.fqdn = DataAccessor.fieldString(service, ServiceConstants.FIELD_FQDN);
         Integer desiredScale = DataAccessor.fieldInteger(service, ServiceConstants.FIELD_DESIRED_SCALE);
@@ -176,6 +178,8 @@ public class ServiceMetaData {
             this.health_check = new HealthCheck(healthCheck);
         }
         this.system = service.getSystem();
+        this.metadata = DataAccessor.fieldMap(service, ServiceConstants.FIELD_METADATA);
+        this.lb_config = lbConfig;
     }
 
     @SuppressWarnings("unchecked")
@@ -388,6 +392,14 @@ public class ServiceMetaData {
 
     public void setSystem(Boolean system) {
         this.system = system;
+    }
+
+    public LBMetadata getLb_config() {
+        return lb_config;
+    }
+
+    public void setLb_config(LBMetadata lb_config) {
+        this.lb_config = lb_config;
     }
     
 }

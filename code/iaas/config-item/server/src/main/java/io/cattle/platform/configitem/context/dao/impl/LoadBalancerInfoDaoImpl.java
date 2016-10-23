@@ -5,6 +5,7 @@ import static io.cattle.platform.core.model.tables.ServiceTable.*;
 import static io.cattle.platform.core.model.tables.StackTable.*;
 import io.cattle.platform.configitem.context.dao.LoadBalancerInfoDao;
 import io.cattle.platform.configitem.context.data.LoadBalancerListenerInfo;
+import io.cattle.platform.core.addon.BalancerServiceConfig;
 import io.cattle.platform.core.addon.HaproxyConfig;
 import io.cattle.platform.core.addon.LoadBalancerCookieStickinessPolicy;
 import io.cattle.platform.core.addon.LoadBalancerTargetInput;
@@ -17,9 +18,7 @@ import io.cattle.platform.core.model.Service;
 import io.cattle.platform.core.model.ServiceConsumeMap;
 import io.cattle.platform.core.model.ServiceExposeMap;
 import io.cattle.platform.core.model.Stack;
-import io.cattle.platform.core.util.LBMetadataUtil;
 import io.cattle.platform.core.util.LBMetadataUtil.LBMetadata;
-import io.cattle.platform.core.util.LBMetadataUtil.StickinessPolicy;
 import io.cattle.platform.core.util.LoadBalancerTargetPortSpec;
 import io.cattle.platform.core.util.PortSpec;
 import io.cattle.platform.json.JsonMapper;
@@ -287,20 +286,43 @@ public class LoadBalancerInfoDaoImpl implements LoadBalancerInfoDao {
     }
 
     @Override
-    public Map<String, Object> processLBMetadata(Service lbService, LoadBalancerInfoDao lbInfoDao,
-            Map<String, Object> meta) {
-        if (!lbService.getKind().equalsIgnoreCase(ServiceConstants.KIND_LOAD_BALANCER_SERVICE)) {
-            return meta;
+    public LBMetadata processLBConfig(Service lbService, LoadBalancerInfoDao lbInfoDao) {
+        // lb config can be set for lb and regular service (when it joins LB via selectors)
+        // metadata gets set for both.
+        Map<Long, Service> serviceIdsToService = new HashMap<>();
+        Map<Long, Stack> stackIdsToStack = new HashMap<>();
+        Map<Long, Certificate> certIdsToCert = new HashMap<>();
+        for (Service service : objectManager.find(Service.class, SERVICE.ACCOUNT_ID,
+                lbService.getAccountId(), SERVICE.REMOVED, null)) {
+            serviceIdsToService.put(service.getId(), service);
         }
 
-        if (meta.get(LBMetadataUtil.LB_METADATA_KEY) != null) {
-            return meta;
+        for (Stack stack : objectManager.find(Stack.class,
+                STACK.ACCOUNT_ID,
+                lbService.getAccountId(), STACK.REMOVED, null)) {
+            stackIdsToStack.put(stack.getId(), stack);
+        }
+
+        for (Certificate cert : objectManager.find(Certificate.class,
+                CERTIFICATE.ACCOUNT_ID, lbService.getAccountId(), CERTIFICATE.REMOVED, null)) {
+            certIdsToCert.put(cert.getId(), cert);
+        }
+        BalancerServiceConfig lbConfig = DataAccessor.field(lbService, ServiceConstants.FIELD_LB_CONFIG, jsonMapper,
+                BalancerServiceConfig.class);
+        if (lbConfig != null) {
+            return new LBMetadata(lbConfig.getPortRules(), lbConfig.getCertificateIds(),
+                    lbConfig.getDefaultCertificateId(),
+                    lbConfig.getConfig(), lbConfig.getStickinessPolicy(), serviceIdsToService,
+                    stackIdsToStack, certIdsToCert);
+        }
+        if (!ServiceConstants.KIND_LOAD_BALANCER_SERVICE.equalsIgnoreCase(lbService.getKind())) {
+            return null;
         }
 
         // the logic below is to support legacy APIs by programming all the rules to metadata
         List<? extends LoadBalancerListenerInfo> listeners = lbInfoDao.getListeners(lbService);
         if (listeners.isEmpty()) {
-            return meta;
+            return null;
         }
         // map listeners by sourcePort
         Map<Integer, LoadBalancerListenerInfo> portToListener = new HashMap<>();
@@ -364,42 +386,18 @@ public class LoadBalancerInfoDaoImpl implements LoadBalancerInfoDao {
             }
         }
 
-        Map<String, Object> metaToReturn = new HashMap<>();
-        metaToReturn.putAll(meta);
-
         List<Long> certs = getLoadBalancerCertIds(lbService);
         Long defaultCert = getLoadBalancerDefaultCertId(lbService);
-        Map<Long, Service> serviceIdsToService = new HashMap<>();
-        Map<Long, Stack> stackIdsToStack = new HashMap<>();
-        Map<Long, Certificate> certIdsToCert = new HashMap<>();
-        for (Service service : objectManager.find(Service.class, SERVICE.ACCOUNT_ID,
-                lbService.getAccountId(), SERVICE.REMOVED, null)) {
-            serviceIdsToService.put(service.getId(), service);
-        }
-        
-        for (Stack stack : objectManager.find(Stack.class,
-                STACK.ACCOUNT_ID,
-                lbService.getAccountId(), STACK.REMOVED, null)) {
-            stackIdsToStack.put(stack.getId(), stack);
-        }
-        
-        for (Certificate cert : objectManager.find(Certificate.class,
-                CERTIFICATE.ACCOUNT_ID, lbService.getAccountId(), CERTIFICATE.REMOVED, null)) {
-            certIdsToCert.put(cert.getId(), cert);
-        }
 
         
         Object configObj = DataAccessor.field(lbService, ServiceConstants.FIELD_LOAD_BALANCER_CONFIG,
                 Object.class);
         Map<String, Object> data = CollectionUtils.toMap(configObj);
         String config = null;
-        StickinessPolicy policy = null;
+        LoadBalancerCookieStickinessPolicy policy = null;
         if (configObj != null) {
-            LoadBalancerCookieStickinessPolicy lbPolicy = jsonMapper.convertValue(data.get(LoadBalancerConstants.FIELD_LB_COOKIE_POLICY),
+            policy = jsonMapper.convertValue(data.get(LoadBalancerConstants.FIELD_LB_COOKIE_POLICY),
                     LoadBalancerCookieStickinessPolicy.class);
-            if (lbPolicy != null) {
-                policy = new StickinessPolicy(lbPolicy);
-            }
             HaproxyConfig customConfig = jsonMapper.convertValue(data.get(LoadBalancerConstants.FIELD_HAPROXY_CONFIG),
                     HaproxyConfig.class);
             if (customConfig != null) {
@@ -412,10 +410,9 @@ public class LoadBalancerInfoDaoImpl implements LoadBalancerInfoDao {
             }
         }
         
-        LBMetadata lb = new LBMetadata(rules, certs, defaultCert, serviceIdsToService, stackIdsToStack, certIdsToCert,
-                config, policy);
-        metaToReturn.put(LBMetadataUtil.LB_METADATA_KEY, lb);
-        return metaToReturn;
+        LBMetadata lb = new LBMetadata(rules, certs, defaultCert, config, policy, serviceIdsToService,
+                stackIdsToStack, certIdsToCert);
+        return lb;
     }
 
     private static String getUuid(PortRule rule) {

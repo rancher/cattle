@@ -29,7 +29,8 @@
              "attributes" : {
                 "scheduleUpdate" : true
             }
-        }, "stickinessPolicy":{
+        },
+         "stickinessPolicy":{
             "type": "loadBalancerCookieStickinessPolicy",
             "nullable": true,
             "attributes" : {

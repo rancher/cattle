@@ -90,6 +90,7 @@ class Context(object):
         self.client = client
         self.host = host
         self.image_uuid = 'sim:{}'.format(random_str())
+        self.lb_v1_image_uuid = 'sim:rancher/load-balancer-service'
         self.nsp = self._get_nsp()
         self.host_ip = self._get_host_ip()
 

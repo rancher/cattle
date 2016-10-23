@@ -1,12 +1,16 @@
 package io.cattle.platform.servicediscovery.api.filter;
 
 import static io.cattle.platform.core.model.tables.ServiceTable.*;
+import io.cattle.platform.core.addon.BalancerServiceConfig;
 import io.cattle.platform.core.constants.ServiceConstants;
 import io.cattle.platform.core.model.Certificate;
 import io.cattle.platform.core.model.Service;
 import io.cattle.platform.iaas.api.filter.common.AbstractDefaultResourceManagerFilter;
+import io.cattle.platform.json.JsonMapper;
 import io.cattle.platform.object.ObjectManager;
+import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.servicediscovery.api.dao.ServiceDao;
+import io.cattle.platform.servicediscovery.api.util.ServiceDiscoveryUtil;
 import io.github.ibuildthecloud.gdapi.exception.ClientVisibleException;
 import io.github.ibuildthecloud.gdapi.request.ApiRequest;
 import io.github.ibuildthecloud.gdapi.request.resource.ResourceManager;
@@ -14,7 +18,6 @@ import io.github.ibuildthecloud.gdapi.util.ResponseCodes;
 import io.github.ibuildthecloud.gdapi.validation.ValidationErrorCodes;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import javax.inject.Inject;
@@ -28,6 +31,8 @@ public class LoadBalancerServiceCertificateRemoveFilter extends AbstractDefaultR
     ObjectManager objectManager;
     @Inject
     ServiceDao svcDao;
+    @Inject
+    JsonMapper jsonMapper;
 
     @Override
     public Class<?>[] getTypeClasses() {
@@ -45,23 +50,41 @@ public class LoadBalancerServiceCertificateRemoveFilter extends AbstractDefaultR
     protected void validateIfCertificateInUse(String certificateId) {
         Certificate cert = objectManager.loadResource(Certificate.class, certificateId);
         List<String> serviceNames = new ArrayList<>();
-        List<Service> lbServices = new ArrayList<>();
-        List<String> types = Arrays.asList(ServiceConstants.KIND_LOAD_BALANCER_SERVICE);
-        for (String type : types) {
-            lbServices.addAll(objectManager.find(Service.class, SERVICE.ACCOUNT_ID, cert.getAccountId(),
-                SERVICE.REMOVED, null, SERVICE.KIND, type));
-        }
+        List<Service> lbServices = objectManager.find(Service.class, SERVICE.ACCOUNT_ID, cert.getAccountId(),
+                SERVICE.REMOVED, null, SERVICE.KIND, ServiceConstants.KIND_LOAD_BALANCER_SERVICE);
         for (Service lbService : lbServices) {
-            List<Long> certIds = (List<Long>) CollectionUtils.collect(
-                    svcDao.getLoadBalancerServiceCertificates(lbService),
-                    TransformerUtils.invokerTransformer("getId"));
-            Certificate defaultCert = svcDao.getLoadBalancerServiceDefaultCertificate(lbService);
-            if (defaultCert != null) {
-                certIds.add(defaultCert.getId());
+            if (ServiceDiscoveryUtil.isV1LB(lbService.getKind(),
+                    ServiceDiscoveryUtil.getLaunchConfigDataAsMap(lbService, null))) {
+                List<Long> certIds = (List<Long>) CollectionUtils.collect(
+                        svcDao.getLoadBalancerServiceCertificates(lbService),
+                        TransformerUtils.invokerTransformer("getId"));
+                Certificate defaultCert = svcDao.getLoadBalancerServiceDefaultCertificate(lbService);
+                if (defaultCert != null) {
+                    certIds.add(defaultCert.getId());
+                }
+                if (certIds.contains(cert.getId())) {
+                    serviceNames.add(lbService.getName());
+                }
+            } else {
+                // get from lb config
+                BalancerServiceConfig lbConfig = DataAccessor.field(lbService, ServiceConstants.FIELD_LB_CONFIG,
+                        jsonMapper,
+                        BalancerServiceConfig.class);
+                if (lbConfig == null) {
+                    continue;
+                }
+                List<Long> certIds = new ArrayList<>();
+                if (lbConfig.getCertificateIds() != null) {
+                    certIds.addAll(certIds);
+                }
+                if (lbConfig.getDefaultCertificateId() != null) {
+                    certIds.add(lbConfig.getDefaultCertificateId());
+                }
+                if (certIds.contains(cert.getId())) {
+                    serviceNames.add(lbService.getName());
+                }
             }
-            if (certIds.contains(cert.getId())) {
-                serviceNames.add(lbService.getName());
-            }
+
         }
         if (!serviceNames.isEmpty()) {
             String serviceNameStr = StringUtils.join(serviceNames, ",");

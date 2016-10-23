@@ -142,6 +142,10 @@ public class ServiceDiscoveryConfigItem {
     public static final ServiceDiscoveryConfigItem SCALE_POLICY = new ServiceDiscoveryConfigItem(
             ServiceConstants.FIELD_SCALE_POLICY, "scale_policy", false, false, false);
 
+    public static final ServiceDiscoveryConfigItem LB_CONFIG = new ServiceDiscoveryConfigItem(
+            ServiceConstants.FIELD_LB_CONFIG,
+            NamedUtils.toUnderscoreSeparated(ServiceConstants.FIELD_LB_CONFIG), false, false, false);
+
     // VOLUME parameter
     private static List<ServiceDiscoveryConfigItem> supportedVolumeConfigItems = new ArrayList<>();
 

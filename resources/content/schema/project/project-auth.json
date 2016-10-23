@@ -81,7 +81,8 @@
         "ulimit" : "cr",
         "portRule": "cr",
         "targetPortRule": "cr",
-        "balancerServiceMetadata" : "r",
+        "balancerServiceConfig" : "cr",
+        "balancerServiceTargetConfig" : "cr",
         "end" : ""
     }
 }

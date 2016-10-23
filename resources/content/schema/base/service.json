@@ -131,6 +131,13 @@
             "required": false,
             "nullable": false,
             "default": false
+        },
+        "lbConfig": {
+            "type" : "balancerTargetConfig",
+            "nullable": true,
+             "attributes" : {
+                "scheduleUpdate" : true
+            }
         }
     },
     "resourceActions" : {

@@ -15,9 +15,7 @@ import java.util.Map;
  * this class it to support haproxy legacy API format
  */
 public class LBMetadataUtil {
-    
-    public static final String LB_METADATA_KEY = "lb";
-    
+
     public static class MetadataPortRule {
         public Integer source_port;
         public String protocol;
@@ -31,10 +29,14 @@ public class LBMetadataUtil {
 
         public MetadataPortRule(PortRule portRule, Service service, Stack stack) {
             this.source_port = portRule.getSourcePort();
-            this.protocol = portRule.getProtocol().name();
+            if (portRule.getProtocol() != null) {
+                this.protocol = portRule.getProtocol().name();
+            }
             this.path = portRule.getPath();
             this.hostname = portRule.getHostname();
-            this.service = formatServiceName(service.getName(), stack.getName());
+            if (service != null && stack != null) {
+                this.service = formatServiceName(service.getName(), stack.getName());
+            }
             this.target_port = portRule.getTargetPort();
             this.backend_name = portRule.getBackendName();
             this.priority = portRule.getPriority();
@@ -122,94 +124,20 @@ public class LBMetadataUtil {
         }
     }
 
-    public static class StickinessPolicy {
-        String name;
-        String cookie;
-        String domain;
-        Boolean indirect;
-        Boolean nocache;
-        Boolean postonly;
-        String mode;
-
-        public StickinessPolicy(LoadBalancerCookieStickinessPolicy policy) {
-            super();
-            this.name = policy.getName();
-            this.cookie = policy.getCookie();
-            this.domain = policy.getDomain();
-            this.indirect = policy.getIndirect();
-            this.nocache = policy.getNocache();
-            this.postonly = policy.getPostonly();
-            this.mode = policy.getMode().name();
-        }
-
-        public String getName() {
-            return name;
-        }
-
-        public void setName(String name) {
-            this.name = name;
-        }
-
-        public String getCookie() {
-            return cookie;
-        }
-
-        public void setCookie(String cookie) {
-            this.cookie = cookie;
-        }
-
-        public String getDomain() {
-            return domain;
-        }
-
-        public void setDomain(String domain) {
-            this.domain = domain;
-        }
-
-        public Boolean getIndirect() {
-            return indirect;
-        }
-
-        public void setIndirect(Boolean indirect) {
-            this.indirect = indirect;
-        }
-
-        public Boolean getNocache() {
-            return nocache;
-        }
-
-        public void setNocache(Boolean nocache) {
-            this.nocache = nocache;
-        }
-
-        public Boolean getPostonly() {
-            return postonly;
-        }
-
-        public void setPostonly(Boolean postonly) {
-            this.postonly = postonly;
-        }
-
-        public String getMode() {
-            return mode;
-        }
-
-        public void setMode(String mode) {
-            this.mode = mode;
-        }
-
-    }
-
     public static class LBMetadata {
         public List<String> certs = new ArrayList<>();
         public String default_cert;
         public List<MetadataPortRule> port_rules = new ArrayList<>();
         public String config;
-        public StickinessPolicy stickiness_policy;
+        public LoadBalancerCookieStickinessPolicy stickiness_policy;
+
+        public LBMetadata() {
+            super();
+        }
 
         public LBMetadata(List<? extends PortRule> portRules, List<Long> certIds, Long defaultCertId,
-                Map<Long, Service> services, Map<Long, Stack> stacks, Map<Long, Certificate> certificates,
-                String config, StickinessPolicy stickinessPolicy) {
+                String config, LoadBalancerCookieStickinessPolicy stickinessPolicy, Map<Long, Service> services,
+                Map<Long, Stack> stacks, Map<Long, Certificate> certificates) {
             super();
             if (certIds != null) {
                 for (Long certId : certIds) {
@@ -226,9 +154,13 @@ public class LBMetadataUtil {
                 }
             }
             for (PortRule portRule : portRules) {
-                Long svcId = Long.valueOf(portRule.getServiceId());
-                this.port_rules.add(new MetadataPortRule(portRule, services.get(svcId),
-                        stacks.get(services.get(svcId).getStackId())));
+                if (portRule.getServiceId() != null) {
+                    Long svcId = Long.valueOf(portRule.getServiceId());
+                    this.port_rules.add(new MetadataPortRule(portRule, services.get(svcId),
+                            stacks.get(services.get(svcId).getStackId())));
+                } else {
+                    this.port_rules.add(new MetadataPortRule(portRule, null, null));
+                }
             }
             this.config = config;
             this.stickiness_policy = stickinessPolicy;
@@ -273,11 +205,11 @@ public class LBMetadataUtil {
             this.config = config;
         }
 
-        public StickinessPolicy getStickiness_policy() {
+        public LoadBalancerCookieStickinessPolicy getStickiness_policy() {
             return stickiness_policy;
         }
 
-        public void setStickiness_policy(StickinessPolicy stickiness_policy) {
+        public void setStickiness_policy(LoadBalancerCookieStickinessPolicy stickiness_policy) {
             this.stickiness_policy = stickiness_policy;
         }
 

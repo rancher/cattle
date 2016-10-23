@@ -3,6 +3,7 @@ package io.cattle.platform.servicediscovery.api.filter;
 import static io.cattle.platform.core.model.tables.ServiceTable.*;
 import io.cattle.platform.archaius.util.ArchaiusUtil;
 import io.cattle.platform.core.addon.InstanceHealthCheck;
+import io.cattle.platform.core.addon.PortRule;
 import io.cattle.platform.core.addon.ScalePolicy;
 import io.cattle.platform.core.constants.AgentConstants;
 import io.cattle.platform.core.constants.CommonStatesConstants;
@@ -30,7 +31,6 @@ import io.github.ibuildthecloud.gdapi.validation.ValidationErrorCodes;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -38,6 +38,8 @@ import java.util.Map;
 import java.util.Set;
 
 import javax.inject.Inject;
+
+import org.apache.commons.lang3.StringUtils;
 
 import com.netflix.config.DynamicStringProperty;
 
@@ -92,11 +94,43 @@ public class ServiceCreateValidationFilter extends AbstractDefaultResourceManage
 
         request = setServiceIndexStrategy(type, request);
 
-        request = setLBServiceEnvVars(service, request);
+        request = setLBServiceEnvVars(type, service, request);
+        
+        validateLbConfig(request, type);
 
         return super.create(type, request, next);
     }
     
+    @SuppressWarnings("unchecked")
+    public void validateLbConfig(ApiRequest request, String type) {
+        // add lb information to the metadata
+        if (!type.equalsIgnoreCase(ServiceConstants.KIND_LOAD_BALANCER_SERVICE)) {
+            return;
+        }
+        Map<String, Object> lbConfig = DataUtils.getFieldFromRequest(request, ServiceConstants.FIELD_LB_CONFIG,
+                Map.class);
+        if (lbConfig != null && lbConfig.containsKey(ServiceConstants.FIELD_PORT_RULES)) {
+            List<PortRule> portRules = jsonMapper.convertCollectionValue(
+                    lbConfig.get(ServiceConstants.FIELD_PORT_RULES), List.class, PortRule.class);
+            for (PortRule rule : portRules) {
+                // either serviceId or selector are required
+                boolean emptySelector = StringUtils.isEmpty(rule.getSelector());
+                boolean emptyService = StringUtils.isEmpty(rule.getServiceId());
+                if (emptySelector && emptyService) {
+                    throw new ValidationErrorException(ValidationErrorCodes.MISSING_REQUIRED, "serviceId");
+                }
+                if (!emptySelector && !emptyService) {
+                    throw new ValidationErrorException(ValidationErrorCodes.INVALID_OPTION,
+                            "Can't specify both selector and serviceId");
+                }
+
+                if (!emptyService && rule.getTargetPort() == null) {
+                    throw new ValidationErrorException(ValidationErrorCodes.MISSING_REQUIRED, "targetPort");
+                }
+            }
+        }
+    }
+
     public ApiRequest setServiceIndexStrategy(String type, ApiRequest request) {
         if (!type.equalsIgnoreCase(ServiceConstants.KIND_SERVICE)) {
             return request;
@@ -110,29 +144,24 @@ public class ServiceCreateValidationFilter extends AbstractDefaultResourceManage
     }
 
     @SuppressWarnings("unchecked")
-    public ApiRequest setLBServiceEnvVars(Service lbService, ApiRequest request) {
-        Map<String, Object> data = CollectionUtils.toMap(request.getRequestObject());
+    public ApiRequest setLBServiceEnvVars(String type, Service lbService, ApiRequest request) {
+        if (!ServiceConstants.KIND_LOAD_BALANCER_SERVICE.equalsIgnoreCase(type)) {
+            return request;
+        }
 
-        // set environment variables here
-        Map<String, Object> launchConfig = null;
+        Map<String, Object> data = CollectionUtils.toMap(request.getRequestObject());
         if (data.get(ServiceConstants.FIELD_LAUNCH_CONFIG) == null) {
             return request;
         }
 
-        launchConfig = DataAccessor.fields(lbService)
-                .withKey(ServiceConstants.FIELD_LAUNCH_CONFIG).withDefault(Collections.EMPTY_MAP)
-                    .as(Map.class);
+        Map<String, Object> launchConfig = (Map<String, Object>) data.get(ServiceConstants.FIELD_LAUNCH_CONFIG);
 
+        Map<String, String> labels = new HashMap<>();
         Object labelsObj = launchConfig.get(InstanceConstants.FIELD_LABELS);
-        if (labelsObj == null) {
-            return request;
+        if (labelsObj != null) {
+            labels = (Map<String, String>) labelsObj;
         }
 
-        Map<String, String> labels = (Map<String, String>) labelsObj;
-        String isBalancerService = labels.get(ServiceConstants.LABEL_BALANCER_SERVICE);
-        if (Boolean.valueOf(isBalancerService) != true) {
-            return request;
-        }
         labels.put(SystemLabels.LABEL_AGENT_ROLE, AgentConstants.ENVIRONMENT_ADMIN_ROLE);
         labels.put(SystemLabels.LABEL_AGENT_CREATE, "true");
         launchConfig.put(InstanceConstants.FIELD_LABELS, labels);
@@ -149,7 +178,7 @@ public class ServiceCreateValidationFilter extends AbstractDefaultResourceManage
                 for (Object port : ports) {
                     /* This will parse the PortSpec and throw an error */
                     PortSpec portSpec = new PortSpec(port.toString());
-                    if ((type.equals(ServiceConstants.KIND_LOAD_BALANCER_SERVICE))
+                    if ((ServiceDiscoveryUtil.isV1LB(type, launchConfig))
                             && portSpec.getPublicPort() != null
                             && portSpec.getPublicPort().equals(LB_HEALTH_CHECK_PORT)) {
                         throw new ValidationErrorException(ValidationErrorCodes.INVALID_OPTION,
@@ -322,6 +351,7 @@ public class ServiceCreateValidationFilter extends AbstractDefaultResourceManage
 
         validateLaunchConfigs(service, request);
         validateSelector(request);
+        validateLbConfig(request, type);
         validateScalePolicy(service, request, true);
         return super.update(type, id, request, next);
     }

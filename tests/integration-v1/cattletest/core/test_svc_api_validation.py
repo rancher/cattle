@@ -184,7 +184,7 @@ def test_validate_image(client, context):
 def test_validate_port(client, context):
     env = _create_stack(client)
 
-    image_uuid = context.image_uuid
+    image_uuid = context.lb_v1_image_uuid
 
     # test invalid format
     launch_config = {"imageUuid": image_uuid, "ports": ["4565tcp"]}
