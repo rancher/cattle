@@ -98,7 +98,9 @@ public class OpenLDAPIdentityProvider extends LDAPIdentityProvider implements Id
                 return identities;
             }
             Identity user = attributesToIdentity(dn);
-            identities.add(user);
+            if (user != null) {
+                identities.add(user);
+            }
             if (memberOf != null) {// null if this user belongs to no group at all
                 for (int i = 0; i < memberOf.size(); i++) {
                     identities.addAll(resultsToIdentities(searchLdap("(&(" + getConstantsConfig().getUserMemberAttribute() +

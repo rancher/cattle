@@ -143,7 +143,10 @@ public abstract class LDAPIdentityProvider implements IdentityProvider{
                 SearchResult result = results.next();
                 log.trace("LDAPIdentityProvider SearchResult: " + result);
                 LdapName dn = new LdapName(result.getNameInNamespace());
-                identities.add(attributesToIdentity(dn));
+                Identity identityObj = attributesToIdentity(dn);
+                if (identityObj != null) {
+                    identities.add(identityObj);
+                }
             }
         } catch (NamingException e) {
             //Ldap Referrals are causing this.

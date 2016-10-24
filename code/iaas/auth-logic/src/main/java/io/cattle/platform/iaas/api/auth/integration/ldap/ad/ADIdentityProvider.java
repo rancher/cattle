@@ -144,7 +144,9 @@ public class ADIdentityProvider extends LDAPIdentityProvider implements Identity
             throw new UserLoginFailureException(e);
         }
         Identity user = attributesToIdentity(userName);
-        identities.add(user);
+        if (user != null) {
+            identities.add(user);
+        }
         if (memberOf != null) {// null if this user belongs to no group at all
             for (int i = 0; i < memberOf.size(); i++) {
                 final int finalI = i;
@@ -160,7 +162,9 @@ public class ADIdentityProvider extends LDAPIdentityProvider implements Identity
                                 throw new ClientVisibleException(ResponseCodes.INTERNAL_SERVER_ERROR, "LdapDown",
                                         e.getMessage(), null);
                             }
-                            identities.add(identity);
+                            if (identity != null) {
+                                identities.add(identity);
+                            }
                             return identity;
                         } catch (NamingException e) {
                             logger.error("Failed to get a group", e);
