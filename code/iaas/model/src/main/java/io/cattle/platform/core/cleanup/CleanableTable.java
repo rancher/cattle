@@ -21,6 +21,9 @@ public class CleanableTable {
     public final Field<Long> idField;
     public final Field<Date> removeField;
     
+    private Integer rowsDeleted = 0;
+    private Integer rowsSkipped = 0;
+    
     private CleanableTable(Table<?> table) {
         this.table = table;
         this.idField = getIdField(table);
@@ -47,6 +50,27 @@ public class CleanableTable {
             }
         }
         return null;
+    }
+    
+    public void clearRowCounts() {
+        rowsDeleted = 0;
+        rowsSkipped = 0;
+    }
+    
+    public Integer getRowsDeleted() {
+        return rowsDeleted;
+    }
+    
+    public void addRowsDeleted(Integer rowsDeleted) {
+        this.rowsDeleted += rowsDeleted;
+    }
+    
+    public Integer getRowsSkipped() {
+        return rowsSkipped;
+    }
+    
+    public void addRowsSkipped(Integer rowsSkipped) {
+        this.rowsSkipped += rowsSkipped;
     }
     
     @Override
