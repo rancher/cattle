@@ -39,7 +39,7 @@ public interface MetaDataInfoDao {
         }
     }
 
-    List<ContainerMetaData> getContainersData(long accountId);
+    List<ContainerMetaData> getManagedContainersData(long accountId);
 
     List<String> getPrimaryIpsOnInstanceHost(long hostId);
 
@@ -48,4 +48,7 @@ public interface MetaDataInfoDao {
     List<HostMetaData> getInstanceHostMetaData(long accountId, long instanceId);
 
     List<NetworkMetaData> getNetworksMetaData(long accountId);
+
+    List<ContainerMetaData> getNetworkFromContainersData(long accountId,
+            Map<Long, String> instanceIdToUUID);
 }

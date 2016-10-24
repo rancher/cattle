@@ -53,8 +53,63 @@ public class MetaDataInfoDaoImpl extends AbstractJooqDao implements MetaDataInfo
     @Inject
     InstanceDao instanceDao;
 
+    private void populateContainerData(final Map<Long, IpAddress> instanceIdToHostIpMap,
+            final Map<Long, HostMetaData> hostIdToHostMetadata, List<Object> input, ContainerMetaData data,
+            Map<Long, String> instanceIdToUUID) {
+        Instance instance = (Instance) input.get(0);
+        instance.setData(instanceDao.getCacheInstanceData(instance.getId()));
+
+        ServiceExposeMap serviceMap = input.get(1) != null ? (ServiceExposeMap) input.get(1) : null;
+        String serviceIndex = DataAccessor.fieldString(instance,
+                InstanceConstants.FIELD_SERVICE_INSTANCE_SERVICE_INDEX);
+        Host host = null;
+        if (input.get(2) != null) {
+            host = (Host) input.get(2);
+        }
+
+        if (host != null) {
+            HostMetaData hostMetaData = hostIdToHostMetadata.get(host.getId());
+            data.setInstanceAndHostMetadata(instance, hostMetaData);
+        }
+
+        data.setExposeMap(serviceMap);
+        data.setService_index(serviceIndex);
+
+        String primaryIp = null;
+
+        if (input.size() > 3) {
+            if (input.get(3) != null) {
+                primaryIp = ((IpAddress) input.get(3)).getAddress();
+            }
+
+            if (instanceIdToHostIpMap != null && instanceIdToHostIpMap.containsKey(instance.getId())) {
+                data.setIp(instanceIdToHostIpMap.get(instance.getId()).getAddress());
+            } else {
+                data.setIp(primaryIp);
+            }
+            Nic nic = null;
+            if (input.get(4) != null) {
+                nic = (Nic) input.get(4);
+                data.setNicInformation(nic);
+            }
+
+            Network ntwk = null;
+            if (input.get(5) != null) {
+                ntwk = (Network) input.get(5);
+                data.setNetwork_uuid(ntwk.getUuid());
+            }
+        }
+        if (instance.getNetworkContainerId() != null) {
+            String parentInstanceUUID = instanceIdToUUID.get(instance.getNetworkContainerId());
+            if (parentInstanceUUID != null) {
+                data.setNetwork_from_container_uuid(parentInstanceUUID);
+            }
+        }
+    }
+
     @Override
-    public List<ContainerMetaData> getContainersData(long accountId) {
+    public List<ContainerMetaData> getNetworkFromContainersData(long accountId,
+            final Map<Long, String> instanceIdToUUID) {
 
         final Map<Long, IpAddress> instanceIdToHostIpMap = dnsInfoDao
                 .getInstanceWithHostNetworkingToIpMap(accountId);
@@ -65,46 +120,55 @@ public class MetaDataInfoDaoImpl extends AbstractJooqDao implements MetaDataInfo
             protected ContainerMetaData map(List<Object> input) {
                 ContainerMetaData data = new ContainerMetaData();
 
-                Instance instance = (Instance) input.get(0);
-                instance.setData(instanceDao.getCacheInstanceData(instance.getId()));
+                populateContainerData(instanceIdToHostIpMap, hostIdToHostMetadata, input, data,
+                        instanceIdToUUID);
 
-                ServiceExposeMap serviceMap = input.get(1) != null ? (ServiceExposeMap) input.get(1) : null;
-                String serviceIndex = DataAccessor.fieldString(instance,
-                        InstanceConstants.FIELD_SERVICE_INSTANCE_SERVICE_INDEX);
-                Host host = null;
-                if (input.get(2) != null) {
-                    host = (Host) input.get(2);
-                }
-                String primaryIp = null;
-                if (input.get(3) != null) {
-                    primaryIp = ((IpAddress) input.get(3)).getAddress();
-                }
+                return data;
+            }
+        };
 
-                if (instanceIdToHostIpMap != null && instanceIdToHostIpMap.containsKey(instance.getId())) {
-                    data.setIp(instanceIdToHostIpMap.get(instance.getId()).getAddress());
-                } else {
-                    data.setIp(primaryIp);
-                }
+        InstanceTable instance = mapper.add(INSTANCE, INSTANCE.UUID, INSTANCE.NAME, INSTANCE.CREATE_INDEX,
+                INSTANCE.HEALTH_STATE,
+                INSTANCE.START_COUNT, INSTANCE.STATE, INSTANCE.EXTERNAL_ID, INSTANCE.MEMORY_RESERVATION,
+                INSTANCE.MILLI_CPU_RESERVATION,
+                INSTANCE.NETWORK_CONTAINER_ID);
+        ServiceExposeMapTable exposeMap = mapper.add(SERVICE_EXPOSE_MAP, SERVICE_EXPOSE_MAP.SERVICE_ID,
+                SERVICE_EXPOSE_MAP.DNS_PREFIX, SERVICE_EXPOSE_MAP.UPGRADE);
+        HostTable host = mapper.add(HOST, HOST.ID);
+        return create()
+                .select(mapper.fields())
+                .from(instance)
+                .join(INSTANCE_HOST_MAP)
+                .on(instance.ID.eq(INSTANCE_HOST_MAP.INSTANCE_ID))
+                .join(host)
+                .on(host.ID.eq(INSTANCE_HOST_MAP.HOST_ID))
+                .join(exposeMap, JoinType.LEFT_OUTER_JOIN)
+                .on(exposeMap.INSTANCE_ID.eq(instance.ID))
+                .where(instance.ACCOUNT_ID.eq(accountId))
+                .and(instance.REMOVED.isNull())
+                .and(instance.STATE.notIn(CommonStatesConstants.REMOVING, CommonStatesConstants.REMOVED))
+                .and(instance.NETWORK_CONTAINER_ID.isNotNull())
+                .and(exposeMap.REMOVED.isNull())
+                .and((host.REMOVED.isNull()))
+                .and(exposeMap.STATE.isNull().or(
+                        exposeMap.STATE.notIn(CommonStatesConstants.REMOVING, CommonStatesConstants.REMOVED)))
+                .and(exposeMap.UPGRADE.isNull().or(exposeMap.UPGRADE.eq(false)))
+                .fetch().map(mapper);
+    }
 
-                if (host != null) {
-                    HostMetaData hostMetaData = hostIdToHostMetadata.get(host.getId());
-                    data.setInstanceAndHostMetadata(instance, hostMetaData);
-                }
+    @Override
+    public List<ContainerMetaData> getManagedContainersData(long accountId) {
 
-                data.setExposeMap(serviceMap);
-                data.setService_index(serviceIndex);
+        final Map<Long, IpAddress> instanceIdToHostIpMap = dnsInfoDao
+                .getInstanceWithHostNetworkingToIpMap(accountId);
+        final Map<Long, HostMetaData> hostIdToHostMetadata = getHostIdToHostMetadata(accountId);
 
-                Nic nic = null;
-                if (input.get(4) != null) {
-                    nic = (Nic) input.get(4);
-                    data.setNicInformation(nic);
-                }
-
-                Network ntwk = null;
-                if (input.get(5) != null) {
-                    ntwk = (Network) input.get(5);
-                    data.setNetwork_uuid(ntwk.getUuid());
-                }
+        MultiRecordMapper<ContainerMetaData> mapper = new MultiRecordMapper<ContainerMetaData>() {
+            @Override
+            protected ContainerMetaData map(List<Object> input) {
+                ContainerMetaData data = new ContainerMetaData();
+                populateContainerData(instanceIdToHostIpMap, hostIdToHostMetadata, input, data,
+                        new HashMap<Long, String>());
 
                 return data;
             }
