@@ -2,18 +2,23 @@ package io.cattle.platform.core.dao.impl;
 
 import static io.cattle.platform.core.model.tables.InstanceTable.*;
 import static io.cattle.platform.core.model.tables.MountTable.*;
+import static io.cattle.platform.core.model.tables.StorageDriverTable.*;
 import static io.cattle.platform.core.model.tables.StoragePoolTable.*;
 import static io.cattle.platform.core.model.tables.VolumeStoragePoolMapTable.*;
 import static io.cattle.platform.core.model.tables.VolumeTable.*;
+
 import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.InstanceConstants;
+import io.cattle.platform.core.constants.VolumeConstants;
 import io.cattle.platform.core.dao.GenericResourceDao;
 import io.cattle.platform.core.dao.VolumeDao;
+import io.cattle.platform.core.model.StorageDriver;
 import io.cattle.platform.core.model.StoragePool;
 import io.cattle.platform.core.model.Volume;
 import io.cattle.platform.core.model.VolumeStoragePoolMap;
 import io.cattle.platform.core.model.tables.records.VolumeRecord;
 import io.cattle.platform.db.jooq.dao.impl.AbstractJooqDao;
+import io.cattle.platform.deferred.util.DeferredUtils;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.process.ObjectProcessManager;
 
@@ -23,6 +28,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.Callable;
 
 import javax.inject.Inject;
 
@@ -52,7 +58,7 @@ public class VolumeDaoImpl extends AbstractJooqDao implements VolumeDao {
             .where(VOLUME.EXTERNAL_ID.eq(externalId)
             .and((VOLUME.REMOVED.isNull().or(VOLUME.STATE.eq(CommonStatesConstants.REMOVING)))))
             .fetchAny();
-        
+
         return record == null ? null : record.into(VolumeRecord.class);
     }
 
@@ -153,5 +159,23 @@ public class VolumeDaoImpl extends AbstractJooqDao implements VolumeDao {
         Integer inUseCount = (Integer)result.getValue(0, 0);
 
         return inUseCount > 0;
+    }
+
+    @Override
+    public Volume createVolumeForDriver(final long accountId, final String volumeName, final String driverName) {
+        StorageDriver driver = objectManager.findAny(StorageDriver.class,
+                STORAGE_DRIVER.NAME, driverName,
+                STORAGE_DRIVER.ACCOUNT_ID, accountId);
+        final Long driverId = driver == null ? null : driver.getId();
+        return DeferredUtils.nest(new Callable<Volume>() {
+            @Override
+            public Volume call() throws Exception {
+                return resourceDao.createAndSchedule(Volume.class,
+                        VOLUME.NAME, volumeName,
+                        VOLUME.ACCOUNT_ID, accountId,
+                        VOLUME.STORAGE_DRIVER_ID, driverId,
+                        VolumeConstants.FIELD_VOLUME_DRIVER, driverName);
+            }
+        });
     }
 }

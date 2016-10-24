@@ -60,18 +60,6 @@
         </property>
     </bean>
 
-    <bean class="io.cattle.platform.process.instance.IgnoreReconnectionAgentHandler"
-        p:name="VolumeStoragePoolMapDeactivate"
-        p:commandName="storage.volume.deactivate"
-        p:agentResourceRelationship="storagePool"
-        p:dataTypeClass="io.cattle.platform.core.model.VolumeStoragePoolMap"
-        p:processNames="volumestoragepoolmap.deactivate"
-        p:shortCircuitIfAgentRemoved="true" >
-        <property name="priority">
-            <util:constant static-field="io.cattle.platform.util.type.Priority.DEFAULT"/>
-        </property>
-    </bean>
-
     <bean class="io.cattle.platform.process.common.handler.AgentBasedProcessHandler"
         p:name="VolumeStoragePoolMapRemove"
         p:commandName="storage.volume.remove"

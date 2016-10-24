@@ -103,7 +103,7 @@ public class ResourceMonitorImpl implements ResourceMonitor, AnnotatedEventListe
             }
         }
 
-        throw new ResourceTimeoutException(obj, "Timeout: " + predicate.getMessage() + " [" + printKey + "]");
+        throw new ResourceTimeoutException(obj, "Waiting: " + predicate.getMessage() + " [" + printKey + "]");
     }
 
     @Override

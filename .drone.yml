@@ -4,7 +4,7 @@ matrix:
   - v1
   - v2
   ENVIRONMENTS:
-  - ( [h2]=lite [mysql]=full )
+  - ( [mysql]=full [h2]=lite )
   - ( [pgsql]=full )
 
 pipeline:
