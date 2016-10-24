@@ -366,30 +366,45 @@ public class DeploymentUnit {
             }
             return;
         } else {
+            final String postfix = io.cattle.platform.util.resource.UUID.randomUUID().toString();
             if (template.getPerContainer()) {
                 String name = stack.getName() + "_" + volumeNamePostfix + "_" + this.unit.getServiceIndex() + "_"
-                        + uuid;
-                volume = context.objectManager
-                        .findOne(Volume.class, VOLUME.ACCOUNT_ID, service.getAccountId(),
+                        + uuid + "_";
+                // append 5 random chars
+                List<? extends Volume> volumes = context.objectManager
+                        .find(Volume.class, VOLUME.ACCOUNT_ID, service.getAccountId(),
                                 VOLUME.REMOVED, null, VOLUME.VOLUME_TEMPLATE_ID, template.getId(), VOLUME.STACK_ID,
-                                stack.getId(), VOLUME.NAME, name, VOLUME.DEPLOYMENT_UNIT_ID, unit.getId());
+                                stack.getId(), VOLUME.DEPLOYMENT_UNIT_ID, unit.getId());
+                for (Volume vol : volumes) {
+                    if (vol.getName().startsWith(name)) {
+                        volume = vol;
+                        break;
+                    }
+                }
                 if (volume == null) {
-                    volume = createVolume(service, template, name);
+                    volume = createVolume(service, template, name + postfix.substring(0, 5));
                 }
             } else {
-                final String name = stack.getName() + "_" + volumeNamePostfix;
+                final String name = stack.getName() + "_" + volumeNamePostfix + "_";
                 volume = context.lockMgr.lock(new StackVolumeLock(stack, name), new LockCallback<Volume>() {
                     @Override
                     public Volume doWithLock() {
-                        Volume existing = context.objectManager
-                                .findOne(Volume.class, VOLUME.ACCOUNT_ID, service.getAccountId(),
+                        Volume existing = null;
+                        List<? extends Volume> volumes = context.objectManager
+                                .find(Volume.class, VOLUME.ACCOUNT_ID, service.getAccountId(),
                                         VOLUME.REMOVED, null, VOLUME.VOLUME_TEMPLATE_ID, template.getId(),
                                         VOLUME.STACK_ID,
-                                        stack.getId(), VOLUME.NAME, name);
+                                        stack.getId());
+                        for (Volume vol : volumes) {
+                            if (vol.getName().startsWith(name)) {
+                                existing = vol;
+                                break;
+                            }
+                        }
                         if (existing != null) {
                             return existing;
                         }
-                        return createVolume(service, template, new String(name));
+                        return createVolume(service, template, new String(name + postfix.substring(0, 5)));
                     }
                 });
             }
