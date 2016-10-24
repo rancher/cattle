@@ -1893,8 +1893,9 @@ def test_export_config(client, context):
     assert svc['cpuset'] == "0,1"
     assert svc['labels'] == labels
     assert "restart" not in svc
-    assert svc["log_driver"] == "json-file"
-    assert svc["log_opt"] is not None
+    assert svc["logging"] is not None
+    assert svc["logging"]["driver"] == "json-file"
+    assert svc["logging"]["options"] is not None
     assert svc["pid"] == "host"
     assert svc["mem_limit"] == 1048576
     assert svc["memswap_limit"] == 2097152
@@ -1956,8 +1957,7 @@ def test_export_config(client, context):
     assert compose_config is not None
     docker_yml = yaml.load(compose_config.dockerComposeConfig)
     svc = docker_yml['services'][service_nolog.name]
-    assert "log_driver" not in svc
-    assert "log_opt" not in svc
+    assert "logging" not in svc
 
 
 def test_validate_create_only_containers(client, context):
