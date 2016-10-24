@@ -363,7 +363,7 @@ public abstract class AbstractTokenUtil implements TokenUtil {
     @Override
     public Identity getUser(Set<Identity> identities) {
         for (Identity identity: identities){
-            if (identity.getExternalIdType().equalsIgnoreCase(userType())){
+            if (identity != null && identity.getExternalIdType().equalsIgnoreCase(userType())){
                 return identity;
             }
         }
