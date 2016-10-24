@@ -1,7 +1,9 @@
 package io.cattle.platform.servicediscovery.deployment.impl.planner;
 
+import static io.cattle.platform.core.model.tables.StackTable.*;
 import io.cattle.platform.core.constants.ServiceConstants;
 import io.cattle.platform.core.model.Service;
+import io.cattle.platform.core.model.Stack;
 import io.cattle.platform.servicediscovery.api.util.ServiceDiscoveryUtil;
 import io.cattle.platform.servicediscovery.deployment.ServiceDeploymentPlanner;
 import io.cattle.platform.servicediscovery.deployment.ServiceDeploymentPlannerFactory;
@@ -20,17 +22,18 @@ public class ServiceDeploymentPlannerFactoryImpl implements ServiceDeploymentPla
         if (service == null) {
             return null;
         }
+        Stack stack = context.objectManager.findOne(Stack.class, STACK.ID, service.getStackId());
 
         boolean isGlobalDeploymentStrategy = isGlobalDeploymentStrategy(context, service);
         boolean isSelectorOnlyStrategy = isNoopStrategy(context, service);
         if (isSelectorOnlyStrategy
                 || service.getKind().equalsIgnoreCase(ServiceConstants.KIND_EXTERNAL_SERVICE)
                 || service.getKind().equalsIgnoreCase(ServiceConstants.KIND_DNS_SERVICE)) {
-            return new NoOpServiceDeploymentPlanner(service, units, context);
+            return new NoOpServiceDeploymentPlanner(service, stack, units, context);
         } else if (isGlobalDeploymentStrategy) {
-            return new GlobalServiceDeploymentPlanner(service, units, context);
+            return new GlobalServiceDeploymentPlanner(service, stack, units, context);
         } else {
-            return new DefaultServiceDeploymentPlanner(service, units, context);
+            return new DefaultServiceDeploymentPlanner(service, stack, units, context);
         }
     }
 

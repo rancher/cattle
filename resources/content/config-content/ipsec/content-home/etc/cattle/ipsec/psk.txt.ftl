@@ -1,1 +1,3 @@
+<#if ipsecKey??>
 ${ipsecKey}
+</#if>

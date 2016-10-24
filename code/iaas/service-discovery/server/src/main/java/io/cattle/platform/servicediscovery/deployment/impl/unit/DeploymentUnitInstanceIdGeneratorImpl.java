@@ -2,6 +2,7 @@ package io.cattle.platform.servicediscovery.deployment.impl.unit;
 
 import io.cattle.platform.servicediscovery.deployment.DeploymentUnitInstanceIdGenerator;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -9,9 +10,11 @@ import java.util.Map;
 
 public class DeploymentUnitInstanceIdGeneratorImpl implements DeploymentUnitInstanceIdGenerator {
     Map<String, List<Integer>> launchConfigUsedIds = new HashMap<>();
+    List<Integer> usedIds = new ArrayList<>();
 
-    public DeploymentUnitInstanceIdGeneratorImpl(Map<String, List<Integer>> launchConfigUsedIds) {
+    public DeploymentUnitInstanceIdGeneratorImpl(Map<String, List<Integer>> launchConfigUsedIds, List<Integer> usedIds) {
         this.launchConfigUsedIds = launchConfigUsedIds;
+        this.usedIds = usedIds;
     }
     
     @Override
@@ -30,7 +33,16 @@ public class DeploymentUnitInstanceIdGeneratorImpl implements DeploymentUnitInst
         return generateNewId(usedIds);
     }
 
-    public static Integer generateNewId(List<Integer> usedIds) {
+    @Override
+    public synchronized Integer getNextAvailableId() {
+        Collections.sort(usedIds);
+        Integer newId = generateNewId(usedIds);
+        usedIds.add(newId);
+        Collections.sort(usedIds);
+        return newId;
+    }
+
+    public Integer generateNewId(List<Integer> usedIds) {
         Collections.sort(usedIds);
         Integer idToReturn = null;
         if (usedIds.size() == 0) {

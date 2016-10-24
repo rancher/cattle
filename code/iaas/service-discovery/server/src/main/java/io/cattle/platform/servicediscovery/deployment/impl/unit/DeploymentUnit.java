@@ -1,7 +1,5 @@
 package io.cattle.platform.servicediscovery.deployment.impl.unit;
 
-import static io.cattle.platform.core.model.tables.DeploymentUnitTable.*;
-import static io.cattle.platform.core.model.tables.StackTable.*;
 import static io.cattle.platform.core.model.tables.VolumeTable.*;
 import static io.cattle.platform.core.model.tables.VolumeTemplateTable.*;
 import io.cattle.platform.core.constants.CommonStatesConstants;
@@ -80,23 +78,23 @@ public class DeploymentUnit {
      * This constructor is called to add existing unit
      */
     public DeploymentUnit(DeploymentServiceContext context, String uuid,
-            Service service, List<DeploymentUnitInstance> deploymentUnitInstances, Map<String, String> labels) {
-        this(context, uuid, service);
+            Service service, List<DeploymentUnitInstance> deploymentUnitInstances, Map<String, String> labels,
+            Stack stack,
+            Map<String, io.cattle.platform.core.model.DeploymentUnit> uuidToUnit) {
+        this(context, uuid, service, stack, uuidToUnit.get(uuid));
         for (DeploymentUnitInstance instance : deploymentUnitInstances) {
             addDeploymentInstance(instance.getLaunchConfigName(), instance);
         }
         setLabels(labels);
     }
 
-    protected DeploymentUnit(DeploymentServiceContext context, String uuid, Service service) {
+    protected DeploymentUnit(DeploymentServiceContext context, String uuid, Service service, Stack stack,
+            io.cattle.platform.core.model.DeploymentUnit unit) {
         this.context = context;
         this.service = service;
         this.uuid = uuid;
-        this.unit = context.objectManager.findOne(io.cattle.platform.core.model.DeploymentUnit.class,
-                DEPLOYMENT_UNIT.ACCOUNT_ID,
-                service.getAccountId(), DEPLOYMENT_UNIT.REMOVED, null, DEPLOYMENT_UNIT.SERVICE_ID, service.getId(),
-                DEPLOYMENT_UNIT.UUID, uuid);
-        this.stack = context.objectManager.findOne(Stack.class, STACK.ID, service.getStackId());
+        this.unit = unit;
+        this.stack = stack;
         this.launchConfigNames = ServiceDiscoveryUtil.getServiceLaunchConfigNames(service);
         for (String launchConfigName : launchConfigNames) {
             for (String sidekick : getSidekickRefs(service, launchConfigName)) {
@@ -110,23 +108,13 @@ public class DeploymentUnit {
         }
     }
 
-    public Integer generateServiceIndex() {
-        List<? extends io.cattle.platform.core.model.DeploymentUnit> dus = context.objectManager.find(
-                io.cattle.platform.core.model.DeploymentUnit.class,
-                DEPLOYMENT_UNIT.ACCOUNT_ID,
-                service.getAccountId(), DEPLOYMENT_UNIT.REMOVED, null, DEPLOYMENT_UNIT.SERVICE_ID, service.getId());
-        List<Integer> indexes = new ArrayList<>();
-        for (io.cattle.platform.core.model.DeploymentUnit du : dus) {
-            indexes.add(Integer.valueOf(du.getServiceIndex()));
-        }
-        return DeploymentUnitInstanceIdGeneratorImpl.generateNewId(indexes);
-    }
 
     /*
      * this constructor is called to create a new unit
      */
-    public DeploymentUnit(DeploymentServiceContext context, Service service, Map<String, String> labels) {
-        this(context, io.cattle.platform.util.resource.UUID.randomUUID().toString(), service);
+    public DeploymentUnit(DeploymentServiceContext context, Service service, Map<String, String> labels,
+            DeploymentUnitInstanceIdGenerator svcInstanceIdGenerator, Stack stack) {
+        this(context, io.cattle.platform.util.resource.UUID.randomUUID().toString(), service, stack, null);
         setLabels(labels);
 
         if (StringUtils.equalsIgnoreCase(ServiceConstants.SERVICE_INDEX_DU_STRATEGY,
@@ -135,7 +123,8 @@ public class DeploymentUnit {
             // create deploymentunit
             params.put("uuid", this.uuid);
             params.put(ServiceConstants.FIELD_SERVICE_ID, service.getId());
-            params.put(InstanceConstants.FIELD_SERVICE_INSTANCE_SERVICE_INDEX, generateServiceIndex());
+            params.put(InstanceConstants.FIELD_SERVICE_INSTANCE_SERVICE_INDEX,
+                    svcInstanceIdGenerator.getNextAvailableId());
             params.put("accountId", service.getAccountId());
             params.put(InstanceConstants.FIELD_LABELS, this.unitLabels);
             this.unit = context.objectManager.create(io.cattle.platform.core.model.DeploymentUnit.class, params);
@@ -578,8 +567,7 @@ public class DeploymentUnit {
         if (!ServiceConstants.PRIMARY_LAUNCH_CONFIG_NAME.equals(instance.getLaunchConfigName())) {
             serviceName = serviceName + '/' + instance.getLaunchConfigName();
         }
-        String envName = context.objectManager.loadResource(Stack.class, instance.getService().getStackId())
-                .getName();
+        String envName = stack.getName();
         labels.put(ServiceConstants.LABEL_STACK_NAME, envName);
         labels.put(ServiceConstants.LABEL_STACK_SERVICE_NAME, envName + "/" + serviceName);
 

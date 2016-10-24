@@ -9,6 +9,7 @@ import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.constants.ServiceConstants;
 import io.cattle.platform.core.model.Service;
 import io.cattle.platform.core.model.ServiceIndex;
+import io.cattle.platform.core.model.Stack;
 import io.cattle.platform.object.process.StandardProcess;
 import io.cattle.platform.servicediscovery.api.util.ServiceDiscoveryUtil;
 import io.cattle.platform.servicediscovery.deployment.impl.DeploymentManagerImpl.DeploymentServiceContext;
@@ -36,6 +37,7 @@ import java.util.Map;
 public abstract class ServiceDeploymentPlanner {
 
     protected Service service;
+    protected Stack stack;
     protected List<DeploymentUnit> healthyUnits = new ArrayList<>();
     private List<DeploymentUnit> unhealthyUnits = new ArrayList<>();
     private List<DeploymentUnit> badUnits = new ArrayList<>();
@@ -44,9 +46,10 @@ public abstract class ServiceDeploymentPlanner {
     protected HealthCheckActionHandler healthActionHandler = new RecreateHealthCheckActionHandler();
 
     public ServiceDeploymentPlanner(Service service, List<DeploymentUnit> units,
-            DeploymentServiceContext context) {
+            DeploymentServiceContext context, Stack stack) {
         this.service = service;
         this.context = context;
+        this.stack = stack;
         setHealthCheckAction(service, context);
         populateDeploymentUnits(units);
     }
@@ -138,7 +141,7 @@ public abstract class ServiceDeploymentPlanner {
     }
 
     public List<DeploymentUnit> deploy(DeploymentUnitInstanceIdGenerator svcInstanceIdGenerator) {
-        List<DeploymentUnit> units = this.deployHealthyUnits();
+        List<DeploymentUnit> units = this.deployHealthyUnits(svcInstanceIdGenerator);
         // sort based on create index
         Collections.sort(units, new Comparator<DeploymentUnit>() {
             @Override
@@ -160,7 +163,7 @@ public abstract class ServiceDeploymentPlanner {
         return units;
     }
 
-    protected abstract List<DeploymentUnit> deployHealthyUnits();
+    protected abstract List<DeploymentUnit> deployHealthyUnits(DeploymentUnitInstanceIdGenerator svcInstanceIdGenerator);
 
     public boolean needToReconcileDeployment() {
         return unhealthyUnits.size() > 0 || badUnits.size() > 0 || incompleteUnits.size() > 0

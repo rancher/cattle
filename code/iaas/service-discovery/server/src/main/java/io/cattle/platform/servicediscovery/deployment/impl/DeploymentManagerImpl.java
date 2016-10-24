@@ -1,5 +1,6 @@
 package io.cattle.platform.servicediscovery.deployment.impl;
 
+import static io.cattle.platform.core.model.tables.DeploymentUnitTable.*;
 import io.cattle.platform.activity.ActivityLog;
 import io.cattle.platform.activity.ActivityService;
 import io.cattle.platform.allocator.service.AllocatorService;
@@ -41,6 +42,7 @@ import io.cattle.platform.util.exception.ServiceInstanceAllocateException;
 import io.cattle.platform.util.exception.ServiceReconcileException;
 import io.github.ibuildthecloud.gdapi.id.IdFormatter;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -347,12 +349,22 @@ public class DeploymentManagerImpl implements DeploymentManager {
 
     private DeploymentUnitInstanceIdGenerator populateUsedNames(
             Service service) {
+        // to support old style
         Map<String, List<Integer>> launchConfigUsedIds = new HashMap<>();
         for (String launchConfigName : ServiceDiscoveryUtil.getServiceLaunchConfigNames(service)) {
             List<Integer> usedIds = sdSvc.getServiceInstanceUsedSuffixes(service, launchConfigName);
             launchConfigUsedIds.put(launchConfigName, usedIds);
         }
-        return new DeploymentUnitInstanceIdGeneratorImpl(launchConfigUsedIds);
+        // to support new style
+        List<? extends io.cattle.platform.core.model.DeploymentUnit> dus = objectMgr.find(
+                io.cattle.platform.core.model.DeploymentUnit.class,
+                DEPLOYMENT_UNIT.ACCOUNT_ID,
+                service.getAccountId(), DEPLOYMENT_UNIT.REMOVED, null, DEPLOYMENT_UNIT.SERVICE_ID, service.getId());
+        List<Integer> usedIndexes = new ArrayList<>();
+        for (io.cattle.platform.core.model.DeploymentUnit du : dus) {
+            usedIndexes.add(Integer.valueOf(du.getServiceIndex()));
+        }
+        return new DeploymentUnitInstanceIdGeneratorImpl(launchConfigUsedIds, usedIndexes);
     }
 
     protected void startUnits(ServiceDeploymentPlanner planner) {

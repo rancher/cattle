@@ -3,7 +3,9 @@ package io.cattle.platform.servicediscovery.deployment.impl.planner;
 import io.cattle.platform.activity.ActivityLog;
 import io.cattle.platform.core.constants.ServiceConstants;
 import io.cattle.platform.core.model.Service;
+import io.cattle.platform.core.model.Stack;
 import io.cattle.platform.servicediscovery.api.util.ServiceDiscoveryUtil;
+import io.cattle.platform.servicediscovery.deployment.DeploymentUnitInstanceIdGenerator;
 import io.cattle.platform.servicediscovery.deployment.ServiceDeploymentPlanner;
 import io.cattle.platform.servicediscovery.deployment.impl.DeploymentManagerImpl.DeploymentServiceContext;
 import io.cattle.platform.servicediscovery.deployment.impl.unit.DeploymentUnit;
@@ -19,9 +21,9 @@ public class GlobalServiceDeploymentPlanner extends ServiceDeploymentPlanner {
     List<Long> hostIds = new ArrayList<>();
     Map<Long, DeploymentUnit> hostToUnits = new HashMap<>();
 
-    public GlobalServiceDeploymentPlanner(Service service, List<DeploymentUnit> units,
-            DeploymentServiceContext context) {
-        super(service, units, context);
+    public GlobalServiceDeploymentPlanner(Service service, Stack stack,
+            List<DeploymentUnit> units, DeploymentServiceContext context) {
+        super(service, units, context, stack);
         // TODO: Do we really need to iterate or is there just one service that we're dealing with here?
         List<Long> hostIdsToDeployService =
                 context.allocatorService.getHostsSatisfyingHostAffinity(service.getAccountId(),
@@ -35,10 +37,10 @@ public class GlobalServiceDeploymentPlanner extends ServiceDeploymentPlanner {
     }
 
     @Override
-    public List<DeploymentUnit> deployHealthyUnits() {
+    public List<DeploymentUnit> deployHealthyUnits(DeploymentUnitInstanceIdGenerator svcInstanceIdGenerator) {
         // add missing units
         if (needToReconcileDeploymentImpl()) {
-            addMissingUnits();
+            addMissingUnits(svcInstanceIdGenerator);
         }
         // remove extra units
         removeExtraUnits();
@@ -75,12 +77,12 @@ public class GlobalServiceDeploymentPlanner extends ServiceDeploymentPlanner {
         }
     }
 
-    private void addMissingUnits() {
+    private void addMissingUnits(DeploymentUnitInstanceIdGenerator svcInstanceIdGenerator) {
         for (Long hostId : hostIds) {
             if (!hostToUnits.containsKey(hostId)) {
                 Map<String, String> labels = new HashMap<>();
                 labels.put(ServiceConstants.LABEL_SERVICE_REQUESTED_HOST_ID, hostId.toString());
-                DeploymentUnit unit = new DeploymentUnit(context, service, labels);
+                DeploymentUnit unit = new DeploymentUnit(context, service, labels, svcInstanceIdGenerator, stack);
                 hostToUnits.put(hostId, unit);
                 healthyUnits.add(unit);
             }
