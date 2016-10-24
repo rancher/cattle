@@ -181,6 +181,8 @@
         "openldapconfig.userMemberAttribute" : "cr",
         "openldapconfig.groupMemberMappingAttribute" : "cr",
         "openldapconfig.connectionTimeout" : "cr",
+        "openldapconfig.groupDNField" : "cr",
+        "openldapconfig.groupMemberUserAttribute" : "cr",
 
         "password.accountId" : "cr",
 

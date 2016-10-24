@@ -20,6 +20,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
+
 import javax.inject.Inject;
 import javax.naming.InvalidNameException;
 import javax.naming.NamingException;
@@ -77,12 +78,18 @@ public class OpenLDAPIdentityProvider extends LDAPIdentityProvider implements Id
 
     private Set<Identity> getIdentities(LdapName dn) {
         Set<Identity> identities = new HashSet<>();
-        Attributes userAttributes;
+        Attributes userAttributes, opAttributes = null;
         LdapContext context = getServiceContext();
         try {
             userAttributes = context.getAttributes(dn);
             if (!hasPermission(userAttributes)){
                 throw new ClientVisibleException(ResponseCodes.UNAUTHORIZED);
+            }
+            try {
+                String[] operationalAttrList = {"1.1", "+", "*"};
+                opAttributes = context.getAttributes(dn, operationalAttrList);
+            } catch (NamingException e) {
+                logger.error("Exception trying to get operational attributes", e);
             }
         } catch (NamingException e) {
             throw new ClientVisibleException(ResponseCodes.UNAUTHORIZED);
@@ -92,6 +99,9 @@ public class OpenLDAPIdentityProvider extends LDAPIdentityProvider implements Id
             }
         }
         Attribute memberOf = userAttributes.get(getConstantsConfig().getUserMemberAttribute());
+        if(memberOf == null) {
+            memberOf = opAttributes.get(getConstantsConfig().getUserMemberAttribute());
+        }
         try {
             if (!isType(userAttributes, getConstantsConfig().getUserObjectClass()))
             {
@@ -103,15 +113,19 @@ public class OpenLDAPIdentityProvider extends LDAPIdentityProvider implements Id
             }
             if (memberOf != null) {// null if this user belongs to no group at all
                 for (int i = 0; i < memberOf.size(); i++) {
-                    identities.addAll(resultsToIdentities(searchLdap("(&(" + getConstantsConfig().getUserMemberAttribute() +
+                    identities.addAll(resultsToIdentities(searchLdap("(&(" + getConstantsConfig().getGroupDNField() +
                             '=' + memberOf.get(i).toString() + ")(" + getConstantsConfig().objectClass() + '=' +
                             getConstantsConfig().getGroupObjectClass() + "))")));
-
                 }
             }
-            if (user != null && StringUtils.isNotBlank(user.getLogin())){
+
+            Attribute groupMemberUserAttribute = userAttributes.get(getConstantsConfig().getGroupMemberUserAttribute());
+            if(groupMemberUserAttribute == null) {
+                groupMemberUserAttribute = opAttributes.get(getConstantsConfig().getGroupMemberUserAttribute());
+            }
+            if (groupMemberUserAttribute != null && StringUtils.isNotBlank(groupMemberUserAttribute.toString())){
                 String query = "(&(" + getConstantsConfig().getGroupMemberMappingAttribute()
-                        + '=' + user.getLogin()
+                        + '=' + groupMemberUserAttribute.toString()
                         + ")(" + getConstantsConfig().objectClass() + '='
                         + getConstantsConfig().getGroupObjectClass() + "))";
                 identities.addAll(resultsToIdentities(searchLdap(query)));

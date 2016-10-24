@@ -152,4 +152,14 @@ public class OpenLDAPConstantsConfig extends OpenLDAPConfigurable implements LDA
     public List<Identity> getAllowedIdentities() {
         return new ArrayList<>();
     }
+
+    @Override
+    public String getGroupDNField() {
+        return OpenLDAPConstants.GROUP_DN_FIELD.get();
+    }
+
+    @Override
+    public String getGroupMemberUserAttribute() {
+        return OpenLDAPConstants.GROUP_MEMBER_USER_ATTRIBUTE.get();
+    }
 }

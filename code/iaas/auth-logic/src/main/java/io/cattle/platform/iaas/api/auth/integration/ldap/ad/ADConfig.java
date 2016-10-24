@@ -30,6 +30,8 @@ public class ADConfig implements Configurable, LDAPConfig {
     private final String groupSearchField;
     private final String groupObjectClass;
     private final String groupNameField;
+    private final String groupDNField;
+    private final String groupMemberUserAttribute;
     private final long connectionTimeout;
     private List<Identity> allowedIdentities;
 
@@ -37,7 +39,8 @@ public class ADConfig implements Configurable, LDAPConfig {
                     Boolean enabled, String accessMode, String serviceAccountUsername,
                     String serviceAccountPassword, Boolean tls, String userSearchField, String userLoginField,
                     String userObjectClass, String userNameField, String userEnabledAttribute, String groupSearchField,
-                    String groupObjectClass, String groupNameField, long connectionTimeout, List<Identity> allowedIdentities) {
+                    String groupObjectClass, String groupNameField, long connectionTimeout, 
+                    List<Identity> allowedIdentities, String groupDNField, String groupMemberUserAttribute) {
         this.server = server;
         this.port = port;
         this.userDisabledBitMask = userDisabledBitMask;
@@ -58,6 +61,8 @@ public class ADConfig implements Configurable, LDAPConfig {
         this.groupNameField = groupNameField;
         this.connectionTimeout = connectionTimeout;
         this.allowedIdentities = allowedIdentities;
+        this.groupDNField = groupDNField;
+        this.groupMemberUserAttribute = groupMemberUserAttribute;
     }
 
     @Field(required = true, nullable = false, minLength = 1)
@@ -193,5 +198,17 @@ public class ADConfig implements Configurable, LDAPConfig {
     @Field(nullable = true)
     public List<Identity> getAllowedIdentities() {
         return allowedIdentities;
+    }
+
+    @Override
+    @Field(nullable = false, required = false, defaultValue = "distinguishedName")
+    public String getGroupDNField() {
+        return groupDNField;
+    }
+
+    @Override
+    @Field(nullable = false, required = false, defaultValue = "distinguishedName")
+    public String getGroupMemberUserAttribute() {
+        return groupMemberUserAttribute;
     }
 }

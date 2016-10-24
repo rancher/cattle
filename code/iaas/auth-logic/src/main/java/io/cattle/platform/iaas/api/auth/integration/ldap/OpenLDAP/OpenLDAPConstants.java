@@ -45,6 +45,8 @@ public class OpenLDAPConstants {
     public static final String GROUP_USER_MAPPING_ATTRIBUTE_SETTING = SETTING_BASE + "group.member.mapping.attribute";
     public static final String TLS_SETTING = SETTING_BASE + "tls";
     public static final String TIMEOUT_SETTING = SETTING_BASE + "connection.timeout";
+    public static final String GROUP_DN_FIELD_SETTING = SETTING_BASE + "group.dn.field";
+    public static final String GROUP_MEMBER_USER_ATTRIBUTE_SETTING = SETTING_BASE + "group.member.user.attribute";
 
 
     public static final Set<String> SCOPES = Collections.unmodifiableSet(
@@ -85,4 +87,6 @@ public class OpenLDAPConstants {
 
     public static final DynamicStringProperty USER_MEMBER_ATTRIBUTE = ArchaiusUtil.getString(USER_MEMBER_ATTRIBUTE_SETTING);
     public static final DynamicLongProperty CONNECTION_TIMEOUT = ArchaiusUtil.getLong(TIMEOUT_SETTING);
+    public static final DynamicStringProperty GROUP_DN_FIELD = ArchaiusUtil.getString(GROUP_DN_FIELD_SETTING);
+    public static final DynamicStringProperty GROUP_MEMBER_USER_ATTRIBUTE = ArchaiusUtil.getString(GROUP_MEMBER_USER_ATTRIBUTE_SETTING);
 }

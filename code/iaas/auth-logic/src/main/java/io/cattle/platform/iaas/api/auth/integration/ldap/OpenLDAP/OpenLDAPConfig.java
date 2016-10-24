@@ -30,17 +30,19 @@ public class OpenLDAPConfig implements Configurable, LDAPConfig {
     private final String groupSearchField;
     private final String groupObjectClass;
     private final String groupNameField;
+    private final String groupDNField;
     private final String userMemberAttribute;
     private final String groupMemberMappingAttribute;
     private final long connectionTimeout;
+    private final String groupMemberUserAttribute;
 
     public OpenLDAPConfig(String server, Integer port, Integer userDisabledBitMask, String loginDomain, String domain,
                           Boolean enabled, String accessMode, String serviceAccountUsername,
                           String serviceAccountPassword, Boolean tls, String userSearchField, String userLoginField,
-                          String userObjectClass, String userNameField, String userEnabledAttribute, String
-                                  groupSearchField,
-                          String groupObjectClass, String groupNameField, String userMemberAttribute, String
-                                  groupMemberMappingAttribute, long connectionTimeout) {
+                          String userObjectClass, String userNameField, String userEnabledAttribute, 
+                          String groupSearchField, String groupObjectClass, String groupNameField, 
+                          String userMemberAttribute, String groupMemberMappingAttribute, 
+                          long connectionTimeout, String groupDNField, String groupMemberUserAttribute) {
         this.server = server;
         this.port = port;
         this.userDisabledBitMask = userDisabledBitMask;
@@ -62,6 +64,8 @@ public class OpenLDAPConfig implements Configurable, LDAPConfig {
         this.userMemberAttribute = userMemberAttribute;
         this.groupMemberMappingAttribute = groupMemberMappingAttribute;
         this.connectionTimeout = connectionTimeout;
+        this.groupDNField = groupDNField;
+        this.groupMemberUserAttribute = groupMemberUserAttribute;
     }
 
     @Field(required = true, nullable = false, minLength = 1)
@@ -164,7 +168,7 @@ public class OpenLDAPConfig implements Configurable, LDAPConfig {
         return groupNameField;
     }
 
-    @Field(nullable = false, required = true, defaultValue = "gidNumber")
+    @Field(nullable = false, required = true, defaultValue = "memberOf")
     public String getUserMemberAttribute() {
         return userMemberAttribute;
     }
@@ -182,5 +186,17 @@ public class OpenLDAPConfig implements Configurable, LDAPConfig {
     @Override
     public List<Identity> getAllowedIdentities() {
         return new ArrayList<>();
+    }
+    
+    @Override
+    @Field(nullable = false, required = false, defaultValue = "distinguishedName")
+    public String getGroupDNField() {
+        return groupDNField;
+    }
+
+    @Override
+    @Field(nullable = false, required = false, defaultValue = "uid")
+    public String getGroupMemberUserAttribute() {
+        return groupMemberUserAttribute;
     }
 }
