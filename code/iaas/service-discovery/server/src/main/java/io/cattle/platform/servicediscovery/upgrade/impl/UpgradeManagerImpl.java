@@ -114,6 +114,7 @@ public class UpgradeManagerImpl implements UpgradeManager {
 
         // check if empty
         if (deploymentUnitInstancesToUpgrade.isEmpty()) {
+            deploymentMgr.activate(service);
             return true;
         }
         return false;
@@ -140,8 +141,8 @@ public class UpgradeManagerImpl implements UpgradeManager {
                 // wait for healthy only for upgrade
                 // should be skipped for rollback
                 if (isUpgrade) {
-                    waitForHealthyState(service, ServiceConstants.STATE_UPGRADING);
                     deploymentMgr.activate(service);
+                    waitForHealthyState(service, ServiceConstants.STATE_UPGRADING);
                 }
                 // mark for upgrade
                 markForUpgrade(batchSize);
