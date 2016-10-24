@@ -151,6 +151,8 @@ public class ServiceConstants {
 
     public static final String SERVICE_INDEX_DU_STRATEGY = "deploymentUnitBased";
 
+    public static final String PROCESS_DATA_SERVICE_RECONCILE = "reconcileState";
+
     public static boolean isSystem(Stack stack) {
         return stack.getSystem() || DataAccessor.fieldBool(stack, FIELD_SYSTEM)|| DataAccessor.fieldBool(stack, "isSystem");
     }

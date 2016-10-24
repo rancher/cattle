@@ -100,14 +100,16 @@ public class DefaultDeploymentUnitInstance extends DeploymentUnitInstance implem
     }
 
     public static void removeInstance(Instance instance, ObjectProcessManager objectProcessManager) {
+        HashMap<String, Object> data = new HashMap<String, Object>();
+        data.put(ServiceConstants.PROCESS_DATA_SERVICE_RECONCILE, true);
         if (!(instance.getState().equals(CommonStatesConstants.REMOVED) || instance.getState().equals(
                 CommonStatesConstants.REMOVING))) {
             try {
                 objectProcessManager.scheduleStandardProcessAsync(StandardProcess.REMOVE, instance,
-                        null);
+                        data);
             } catch (ProcessCancelException e) {
                 objectProcessManager.scheduleProcessInstanceAsync(InstanceConstants.PROCESS_STOP,
-                        instance, ProcessUtils.chainInData(new HashMap<String, Object>(),
+                        instance, ProcessUtils.chainInData(data,
                                 InstanceConstants.PROCESS_STOP, InstanceConstants.PROCESS_REMOVE));
             }
         }

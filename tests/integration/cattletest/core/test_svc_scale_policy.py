@@ -167,7 +167,7 @@ def test_service_affinity_rules_w_policy(super_client, new_context):
     svc = client.wait_success(svc)
     assert svc.state == "inactive"
 
-    svc = client.wait_success(svc.activate(), 120)
+    svc = wait_state(client, svc.activate(), 'active')
     assert svc.state == "active"
 
     assert svc.currentScale == 1
@@ -187,7 +187,7 @@ def test_service_affinity_rules_w_policy(super_client, new_context):
     # deactivate and remove host
     host = client.wait_success(host.deactivate())
     client.wait_success(host.remove())
-    # make sure that the serivce gets stcuk in activa
+    # make sure that the service gets stuck in activating state
     wait_for(lambda: client.reload(svc).state == 'updating-active')
     # shouldn't become active at this point
     try:

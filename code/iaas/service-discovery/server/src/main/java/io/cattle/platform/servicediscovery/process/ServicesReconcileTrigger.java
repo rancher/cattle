@@ -40,7 +40,8 @@ public class ServicesReconcileTrigger extends AbstractObjectProcessHandler {
             services.add((Service) state.getResource());
         } else {
             if (state.getResource() instanceof Instance) {
-                if (state.getData().containsKey("errorState")) {
+                if (state.getData().containsKey(InstanceConstants.PROCESS_DATA_ERROR)
+                        || state.getData().containsKey(ServiceConstants.PROCESS_DATA_SERVICE_RECONCILE)) {
                     return null;
                 }
             }

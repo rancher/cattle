@@ -321,8 +321,10 @@ public class InstanceStart extends AbstractDefaultProcessHandler {
         String chainProcess = InstanceConstants.SYSTEM_CONTAINER_NETWORK_AGENT.equalsIgnoreCase(instance
                 .getSystemContainer()) ? InstanceConstants.PROCESS_REMOVE : InstanceConstants.PROCESS_ERROR;
         if (InstanceCreate.isCreateStart(state) && !ContainerEventCreate.isNativeDockerStart(state) ) {
+            HashMap<String, Object> data = new HashMap<String, Object>();
+            data.put(InstanceConstants.PROCESS_DATA_ERROR, true);
             getObjectProcessManager().scheduleProcessInstance(InstanceConstants.PROCESS_STOP, instance,
-                    ProcessUtils.chainInData(new HashMap<String, Object>(), InstanceConstants.PROCESS_STOP,
+                    ProcessUtils.chainInData(data, InstanceConstants.PROCESS_STOP,
                             chainProcess));
         } else {
             getObjectProcessManager().scheduleProcessInstance(InstanceConstants.PROCESS_STOP, instance, null);

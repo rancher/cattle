@@ -423,7 +423,9 @@ public class DeploymentManagerImpl implements DeploymentManager {
             @Override
             public void run() {
                 final Service service = objectMgr.loadResource(Service.class, client.getResourceId());
-                if (service != null && service.getState().equalsIgnoreCase(CommonStatesConstants.ACTIVE)) {
+                if (service != null
+                        && (service.getState().equalsIgnoreCase(CommonStatesConstants.ACTIVE) || service.getState()
+                                .equalsIgnoreCase(CommonStatesConstants.UPDATING_ACTIVE))) {
                     activity.run(service, "service.trigger", "Re-evaluating state", new Runnable() {
                         @Override
                         public void run() {

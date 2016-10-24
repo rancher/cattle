@@ -58,6 +58,8 @@ public class InstanceConstants {
 
     public static final String PROCESS_DATA_NO_OP = "containerNoOpEvent";
 
+    public static final String PROCESS_DATA_ERROR = "errorState";
+
     public static final String REMOVE_OPTION = "remove";
 
     public static final String PROCESS_CREATE = "instance.create";
