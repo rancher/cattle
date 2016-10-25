@@ -34,7 +34,8 @@ public class ServicesReconcilePostTrigger extends AbstractObjectProcessLogic imp
                 HostConstants.PROCESS_ACTIVATE,
                 LabelConstants.PROCESS_HOSTLABELMAP_CREATE,
                 LabelConstants.PROCESS_HOSTLABELMAP_REMOVE,
-                AgentConstants.PROCESS_RECONNECT
+                AgentConstants.PROCESS_RECONNECT,
+                AgentConstants.PROCESS_FINISH_RECONNECT
         };
     }
 

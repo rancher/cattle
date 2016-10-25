@@ -354,12 +354,13 @@
 
     <!-- Agent -->
     <process:defaultProcesses resourceType="agent" exclude="agent.deactivate,agent.remove" />
-    <process:process name="agent.remove" resourceType="agent" start="disconnecting,disconnected,requested,inactive,registering,updating-active,updating-inactive"
+    <process:process name="agent.remove" resourceType="agent" start="disconnecting,disconnected,requested,inactive,registering,updating-active,updating-inactive,reconnected,finishing-reconnect"
                                             transitioning="removing" done="removed" />
-    <process:process name="agent.deactivate" resourceType="agent" start="disconnecting,disconnected,active,activating,reconnecting,updating-active,updating-inactive"
+    <process:process name="agent.deactivate" resourceType="agent" start="disconnecting,disconnected,active,activating,reconnecting,updating-active,updating-inactive,reconnected,finishing-reconnect"
                                             transitioning="deactivating" done="inactive" />
-    <process:process name="agent.reconnect" resourceType="agent" start="disconnecting,disconnected,active,activating" transitioning="reconnecting" done="active" />
-    <process:process name="agent.disconnect" resourceType="agent" start="reconnecting,active" transitioning="disconnecting" done="disconnected" />
+    <process:process name="agent.reconnect" resourceType="agent" start="disconnecting,disconnected,active,activating" transitioning="reconnecting" done="reconnected" delegate="agent.finishreconnect" />
+    <process:process name="agent.finishreconnect" resourceType="agent" start="reconnected,reconnecting" transitioning="finishing-reconnect" done="active" />
+    <process:process name="agent.disconnect" resourceType="agent" start="reconnecting,active,reconnected,finishing-reconnect" transitioning="disconnecting" done="disconnected" />
 
 
     <!-- Credential -->

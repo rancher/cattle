@@ -26,7 +26,6 @@ public class ActivateByDefault extends AbstractObjectProcessLogic implements Pro
         } else if (DataAccessor.fieldBool(state.getResource(), "activateOnCreate")) {
             result.shouldDelegate(true);
         }
-
         return result;
     }
 
