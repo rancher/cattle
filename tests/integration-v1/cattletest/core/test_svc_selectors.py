@@ -11,12 +11,6 @@ def _create_service(client, env, image_uuid, service_kind):
                                         environmentId=env.id,
                                         launchConfig=launch_config)
 
-    elif service_kind == "loadBalancerService":
-        launch_config = {"labels": labels}
-        service = client.create_loadBalancerService(name=random_str(),
-                                                    environmentId=env.id,
-                                                    launchConfig=launch_config)
-
     elif service_kind == "dnsService":
         launch_config = {"labels": labels}
         service = client.create_dnsService(name=random_str(),
@@ -69,7 +63,6 @@ def _validate_service_link(client, context, service_kind):
 
 
 def test_service_add_service_link_selector(client, context):
-    _validate_service_link(client, context, "loadBalancerService")
     _validate_service_link(client, context, "service")
     _validate_service_link(client, context, "dnsService")
     _validate_service_link(client, context, "externalService")
@@ -268,63 +261,6 @@ def test_service_mixed_selector_based_w_image(client, context):
     assert container1.state == "running"
     container2 = client.reload(container2)
     assert container2.state == "running"
-
-
-def test_lb_service_add_instance_selector(super_client, client, context):
-    env = _create_stack(client)
-
-    image_uuid = context.image_uuid
-
-    # use case #1 - instance having selector's label,
-    # is present when service with selector is created
-    labels = {'foo32': "bar"}
-    container1 = client.create_container(imageUuid=image_uuid,
-                                         startOnCreate=True,
-                                         labels=labels)
-    container1 = client.wait_success(container1)
-    assert container1.state == "running"
-
-    launch_config = {"imageUuid": "rancher/none"}
-    service = client.create_service(name=random_str(),
-                                    environmentId=env.id,
-                                    launchConfig=launch_config,
-                                    selectorContainer="foo32=bar")
-    service = client.wait_success(service)
-    assert service.selectorContainer == "foo32=bar"
-    service = client.wait_success(service.activate(), 120)
-    assert service.state == "active"
-
-    wait_for(
-        lambda: len(client.list_serviceExposeMap(serviceId=service.id)) == 1
-    )
-
-    # register service to lb service
-    launch_config = {"imageUuid": image_uuid,
-                     "ports": [567, '568:569'],
-                     "expose": [9999, '9998:9997']}
-    lb_service = client.create_loadBalancerService(name=random_str(),
-                                                   environmentId=env.id,
-                                                   launchConfig=launch_config)
-    lb_service = client.wait_success(lb_service)
-    assert lb_service.state == "inactive"
-    lb_service = client.wait_success(lb_service.activate(), 120)
-    assert lb_service.state == "active"
-    maps = _validate_svc_instance_map_count(client, lb_service, "active", 1)
-    _wait_for_instance_start(super_client, maps[0].instanceId)
-
-    service_link = {"serviceId": service.id}
-    lb_service = lb_service.addservicelink(serviceLink=service_link)
-
-    # use case #2 - instance having selector's label,
-    # is added after service with selector creation
-    container2 = client.create_container(imageUuid=image_uuid,
-                                         startOnCreate=True,
-                                         labels=labels)
-    container2 = client.wait_success(container2)
-    assert container2.state == "running"
-    wait_for(
-        lambda: len(client.list_serviceExposeMap(serviceId=service.id)) == 2
-    )
 
 
 def test_svc_invalid_selector(client):

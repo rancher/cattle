@@ -291,7 +291,7 @@ def test_activate_balancer(client, image_uuid):
     lb_svc = client.wait_success(lb_svc)
     assert lb_svc.state == "inactive"
     assert lb_svc.launchConfig.healthCheck is not None
-    assert lb_svc.launchConfig.ports == ["8289:8289"]
+    assert lb_svc.launchConfig.ports == ["8289:8289/tcp"]
 
     # activate service
     lb_svc = client.wait_success(lb_svc.activate())
@@ -301,7 +301,7 @@ def test_activate_balancer(client, image_uuid):
     assert len(maps) == 1
     expose_map = maps[0]
     c = client.reload(expose_map.instance())
-    assert c.ports == ["8289:8289"]
+    assert c.ports == ["8289:8289/tcp"]
     assert c.imageUuid is not None
 
 

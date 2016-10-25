@@ -31,7 +31,7 @@ import io.cattle.platform.core.model.InstanceHostMap;
 import io.cattle.platform.core.model.Service;
 import io.cattle.platform.core.model.ServiceConsumeMap;
 import io.cattle.platform.core.model.Stack;
-import io.cattle.platform.core.util.LBMetadataUtil.LBMetadata;
+import io.cattle.platform.core.util.LBMetadataUtil.LBConfigMetadataStyle;
 import io.cattle.platform.json.JsonMapper;
 import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.servicediscovery.api.dao.ServiceConsumeMapDao;
@@ -422,7 +422,7 @@ public class ServiceMetadataInfoFactory extends AbstractAgentBaseContextFactory 
             getSidekicksInfo(service, sidekicks, launchConfigNames);
         }
 
-        LBMetadata lbConfig = lbInfoDao.processLBConfig(service, lbInfoDao);
+        LBConfigMetadataStyle lbConfig = lbInfoDao.generateLBConfigMetadataStyle(service);
         Object hcO = null;
         if (service.getKind().equalsIgnoreCase(ServiceConstants.KIND_EXTERNAL_SERVICE)) {
             hcO = DataAccessor.field(service, InstanceConstants.FIELD_HEALTH_CHECK, Object.class);

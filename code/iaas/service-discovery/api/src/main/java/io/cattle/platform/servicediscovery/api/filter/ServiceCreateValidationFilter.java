@@ -11,7 +11,6 @@ import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.constants.ServiceConstants;
 import io.cattle.platform.core.model.Service;
 import io.cattle.platform.core.model.Stack;
-import io.cattle.platform.core.util.PortSpec;
 import io.cattle.platform.core.util.SystemLabels;
 import io.cattle.platform.iaas.api.filter.common.AbstractDefaultResourceManagerFilter;
 import io.cattle.platform.json.JsonMapper;
@@ -170,20 +169,25 @@ public class ServiceCreateValidationFilter extends AbstractDefaultResourceManage
         return request;
     }
 
+    @SuppressWarnings("unchecked")
     public void validatePorts(Service service, String type, ApiRequest request) {
-        List<Map<String, Object>> launchConfigs = populateLaunchConfigs(service, request);
-        for (Map<String, Object> launchConfig : launchConfigs) {
-            if (launchConfig.get(InstanceConstants.FIELD_PORTS) != null) {
-                List<?> ports = (List<?>) launchConfig.get(InstanceConstants.FIELD_PORTS);
-                for (Object port : ports) {
-                    /* This will parse the PortSpec and throw an error */
-                    PortSpec portSpec = new PortSpec(port.toString());
-                    if ((ServiceDiscoveryUtil.isV1LB(type, launchConfig))
-                            && portSpec.getPublicPort() != null
-                            && portSpec.getPublicPort().equals(LB_HEALTH_CHECK_PORT)) {
-                        throw new ValidationErrorException(ValidationErrorCodes.INVALID_OPTION,
-                                "Port " + LB_HEALTH_CHECK_PORT + " is reserved for service health check");
-                    }
+        if (!type.equalsIgnoreCase(ServiceConstants.KIND_LOAD_BALANCER_SERVICE)) {
+            return;
+        }
+        Map<String, Object> lbConfig = DataUtils.getFieldFromRequest(request, ServiceConstants.FIELD_LB_CONFIG,
+                Map.class);
+        if (lbConfig == null) {
+            return;
+        }
+
+        if (lbConfig != null && lbConfig.containsKey(ServiceConstants.FIELD_PORT_RULES)) {
+            List<PortRule> portRules = jsonMapper.convertCollectionValue(
+                    lbConfig.get(ServiceConstants.FIELD_PORT_RULES), List.class, PortRule.class);
+            for (PortRule portRule : portRules) {
+                // fixme check ports from port map
+                if (portRule.getSourcePort() != null && portRule.getSourcePort().equals(LB_HEALTH_CHECK_PORT)) {
+                    throw new ValidationErrorException(ValidationErrorCodes.INVALID_OPTION,
+                            "Port " + LB_HEALTH_CHECK_PORT + " is reserved for service health check");
                 }
             }
         }
@@ -353,6 +357,8 @@ public class ServiceCreateValidationFilter extends AbstractDefaultResourceManage
         validateSelector(request);
         validateLbConfig(request, type);
         validateScalePolicy(service, request, true);
+        validatePorts(service, type, request);
+
         return super.update(type, id, request, next);
     }
 

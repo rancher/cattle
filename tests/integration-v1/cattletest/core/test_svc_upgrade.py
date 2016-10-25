@@ -48,7 +48,6 @@ def test_upgrade_relink(context, client):
     service_link = {
         "serviceId": service.id,
         "name": "link1",
-        "ports": ["a.com:1234"],
     }
 
     source.setservicelinks(serviceLinks=[service_link])
@@ -79,9 +78,6 @@ def test_upgrade_relink(context, client):
 
     links = client.list_service_consume_map(serviceId=lb.id)
     assert len(links) == 2
-
-    for link in links:
-        assert link.ports == ["a.com:1234"]
 
 
 def test_in_service_upgrade_primary(context, client, super_client):

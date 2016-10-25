@@ -2,14 +2,24 @@ package io.cattle.platform.core.addon;
 
 import java.util.List;
 
-public class BalancerServiceConfig {
+public class LbConfig {
     String config;
     List<PortRule> portRules;
     List<Long> certificateIds;
     Long defaultCertificateId;
     LoadBalancerCookieStickinessPolicy stickinessPolicy;
 
-    public BalancerServiceConfig() {
+    public LbConfig(String config, List<PortRule> portRules, List<Long> certificateIds, Long defaultCertificateId,
+            LoadBalancerCookieStickinessPolicy stickinessPolicy) {
+        super();
+        this.config = config;
+        this.portRules = portRules;
+        this.certificateIds = certificateIds;
+        this.defaultCertificateId = defaultCertificateId;
+        this.stickinessPolicy = stickinessPolicy;
+    }
+
+    public LbConfig() {
     }
 
     public String getConfig() {

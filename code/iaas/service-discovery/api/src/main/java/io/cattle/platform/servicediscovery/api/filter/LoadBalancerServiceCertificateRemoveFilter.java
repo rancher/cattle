@@ -1,7 +1,7 @@
 package io.cattle.platform.servicediscovery.api.filter;
 
 import static io.cattle.platform.core.model.tables.ServiceTable.*;
-import io.cattle.platform.core.addon.BalancerServiceConfig;
+import io.cattle.platform.core.addon.LbConfig;
 import io.cattle.platform.core.constants.ServiceConstants;
 import io.cattle.platform.core.model.Certificate;
 import io.cattle.platform.core.model.Service;
@@ -10,7 +10,7 @@ import io.cattle.platform.json.JsonMapper;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.servicediscovery.api.dao.ServiceDao;
-import io.cattle.platform.servicediscovery.api.util.ServiceDiscoveryUtil;
+import io.cattle.platform.servicediscovery.api.service.ServiceDiscoveryApiService;
 import io.github.ibuildthecloud.gdapi.exception.ClientVisibleException;
 import io.github.ibuildthecloud.gdapi.request.ApiRequest;
 import io.github.ibuildthecloud.gdapi.request.resource.ResourceManager;
@@ -33,6 +33,8 @@ public class LoadBalancerServiceCertificateRemoveFilter extends AbstractDefaultR
     ServiceDao svcDao;
     @Inject
     JsonMapper jsonMapper;
+    @Inject
+    ServiceDiscoveryApiService sdService;
 
     @Override
     public Class<?>[] getTypeClasses() {
@@ -53,8 +55,7 @@ public class LoadBalancerServiceCertificateRemoveFilter extends AbstractDefaultR
         List<Service> lbServices = objectManager.find(Service.class, SERVICE.ACCOUNT_ID, cert.getAccountId(),
                 SERVICE.REMOVED, null, SERVICE.KIND, ServiceConstants.KIND_LOAD_BALANCER_SERVICE);
         for (Service lbService : lbServices) {
-            if (ServiceDiscoveryUtil.isV1LB(lbService.getKind(),
-                    ServiceDiscoveryUtil.getLaunchConfigDataAsMap(lbService, null))) {
+            if (sdService.isV1LB(lbService)) {
                 List<Long> certIds = (List<Long>) CollectionUtils.collect(
                         svcDao.getLoadBalancerServiceCertificates(lbService),
                         TransformerUtils.invokerTransformer("getId"));
@@ -67,9 +68,9 @@ public class LoadBalancerServiceCertificateRemoveFilter extends AbstractDefaultR
                 }
             } else {
                 // get from lb config
-                BalancerServiceConfig lbConfig = DataAccessor.field(lbService, ServiceConstants.FIELD_LB_CONFIG,
+                LbConfig lbConfig = DataAccessor.field(lbService, ServiceConstants.FIELD_LB_CONFIG,
                         jsonMapper,
-                        BalancerServiceConfig.class);
+                        LbConfig.class);
                 if (lbConfig == null) {
                     continue;
                 }

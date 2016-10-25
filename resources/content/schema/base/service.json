@@ -133,7 +133,7 @@
             "default": false
         },
         "lbConfig": {
-            "type" : "balancerTargetConfig",
+            "type" : "lbTargetConfig",
             "nullable": true,
              "attributes" : {
                 "scheduleUpdate" : true

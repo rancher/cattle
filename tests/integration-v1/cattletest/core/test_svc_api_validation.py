@@ -181,39 +181,6 @@ def test_validate_image(client, context):
     assert e.value.error.fieldName == 'imageUuid'
 
 
-def test_validate_port(client, context):
-    env = _create_stack(client)
-
-    image_uuid = context.lb_v1_image_uuid
-
-    # test invalid format
-    launch_config = {"imageUuid": image_uuid, "ports": ["4565tcp"]}
-
-    with pytest.raises(ApiError) as e:
-        client.create_service(name=random_str(),
-                              environmentId=env.id,
-                              launchConfig=launch_config)
-    assert e.value.error.status == 422
-    assert e.value.error.code == 'PortWrongFormat'
-
-    launch_config = {"imageUuid": image_uuid, "ports": ["4565/invalidtcp"]}
-    with pytest.raises(ApiError) as e:
-        client.create_service(name=random_str(),
-                              environmentId=env.id,
-                              launchConfig=launch_config)
-    assert e.value.error.status == 422
-    assert e.value.error.code == 'PortInvalidProtocol'
-
-    # test reserved port
-    launch_config = {"imageUuid": image_uuid, "ports": ["42:43"]}
-    with pytest.raises(ApiError) as e:
-        client.create_loadBalancerService(name=random_str(),
-                                          environmentId=env.id,
-                                          launchConfig=launch_config)
-    assert e.value.error.status == 422
-    assert e.value.error.code == 'InvalidOption'
-
-
 def test_vip_requested_ip(client, context):
     env = _create_stack(client)
     image_uuid = context.image_uuid

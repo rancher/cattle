@@ -1,9 +1,0 @@
-{
-    "collectionMethods" : [],
-    "resourceFields": {
-        "serviceLinks": {
-            "type": "array[loadBalancerServiceLink]",
-            "nullable": true
-        }
-    }
-}

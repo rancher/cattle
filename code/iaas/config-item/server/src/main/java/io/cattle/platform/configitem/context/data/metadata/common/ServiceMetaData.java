@@ -10,7 +10,7 @@ import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.constants.ServiceConstants;
 import io.cattle.platform.core.model.Service;
 import io.cattle.platform.core.model.Stack;
-import io.cattle.platform.core.util.LBMetadataUtil.LBMetadata;
+import io.cattle.platform.core.util.LBMetadataUtil.LBConfigMetadataStyle;
 import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.servicediscovery.api.util.ServiceDiscoveryUtil;
 
@@ -115,7 +115,7 @@ public class ServiceMetaData {
     protected String token;
     protected HealthCheck health_check;
     protected Boolean system;
-    protected LBMetadata lb_config;
+    protected LBConfigMetadataStyle lb_config;
 
     protected ServiceMetaData(ServiceMetaData that) {
         this.serviceId = that.serviceId;
@@ -149,7 +149,7 @@ public class ServiceMetaData {
     }
 
     public ServiceMetaData(Service service, String serviceName, Stack env, List<String> sidekicks,
-            InstanceHealthCheck healthCheck, LBMetadata lbConfig) {
+            InstanceHealthCheck healthCheck, LBConfigMetadataStyle lbConfig) {
         this.serviceId = service.getId();
         this.service = service;
         this.name = serviceName;
@@ -394,11 +394,11 @@ public class ServiceMetaData {
         this.system = system;
     }
 
-    public LBMetadata getLb_config() {
+    public LBConfigMetadataStyle getLb_config() {
         return lb_config;
     }
 
-    public void setLb_config(LBMetadata lb_config) {
+    public void setLb_config(LBConfigMetadataStyle lb_config) {
         this.lb_config = lb_config;
     }
     

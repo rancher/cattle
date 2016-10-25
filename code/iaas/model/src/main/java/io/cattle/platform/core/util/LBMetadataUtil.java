@@ -124,18 +124,18 @@ public class LBMetadataUtil {
         }
     }
 
-    public static class LBMetadata {
+    public static class LBConfigMetadataStyle {
         public List<String> certs = new ArrayList<>();
         public String default_cert;
         public List<MetadataPortRule> port_rules = new ArrayList<>();
         public String config;
         public LoadBalancerCookieStickinessPolicy stickiness_policy;
 
-        public LBMetadata() {
+        public LBConfigMetadataStyle() {
             super();
         }
 
-        public LBMetadata(List<? extends PortRule> portRules, List<Long> certIds, Long defaultCertId,
+        public LBConfigMetadataStyle(List<? extends PortRule> portRules, List<Long> certIds, Long defaultCertId,
                 String config, LoadBalancerCookieStickinessPolicy stickinessPolicy, Map<Long, Service> services,
                 Map<Long, Stack> stacks, Map<Long, Certificate> certificates) {
             super();
@@ -166,7 +166,7 @@ public class LBMetadataUtil {
             this.stickiness_policy = stickinessPolicy;
         }
 
-        public LBMetadata(List<? extends TargetPortRule> portRules, String serviceName, String stackName) {
+        public LBConfigMetadataStyle(List<? extends TargetPortRule> portRules, String serviceName, String stackName) {
             super();
             for (TargetPortRule portRule : portRules) {
                 this.port_rules.add(new MetadataPortRule(portRule, serviceName, stackName));

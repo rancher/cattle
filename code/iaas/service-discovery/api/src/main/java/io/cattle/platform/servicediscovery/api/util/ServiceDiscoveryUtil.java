@@ -10,7 +10,6 @@ import io.cattle.platform.core.model.ServiceConsumeMap;
 import io.cattle.platform.core.model.ServiceExposeMap;
 import io.cattle.platform.core.model.Stack;
 import io.cattle.platform.core.util.PortSpec;
-import io.cattle.platform.docker.client.DockerImage;
 import io.cattle.platform.object.meta.ObjectMetaDataManager;
 import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.object.util.DataUtils;
@@ -398,30 +397,10 @@ public class ServiceDiscoveryUtil {
         List<String> specs = (List<String>) launchConfigData.get(InstanceConstants.FIELD_PORTS);
         Map<Integer, PortSpec> portMap = new LinkedHashMap<Integer, PortSpec>();
         for (String spec : specs) {
-            boolean defaultProtocol = true;
-            if (service.getKind().equalsIgnoreCase(ServiceConstants.KIND_LOAD_BALANCER_SERVICE)) {
-                defaultProtocol = false;
-            }
-            PortSpec portSpec = new PortSpec(spec, defaultProtocol);
+            PortSpec portSpec = new PortSpec(spec, true);
             portMap.put(new Integer(portSpec.getPrivatePort()), portSpec);
 
         }
         return portMap;
-    }
-
-    public static boolean isV1LB(String kind, Map<String, Object> launchConfig) {
-        if (!kind.equalsIgnoreCase(ServiceConstants.KIND_LOAD_BALANCER_SERVICE)) {
-            return false;
-        }
-        Object imageObj = launchConfig.get(InstanceConstants.FIELD_IMAGE_UUID);
-        if (imageObj != null) {
-            DockerImage dockerImage = DockerImage.parse(imageObj.toString());
-            if (dockerImage.getServer().endsWith(":rancher")
-                    && dockerImage.getRepository().equalsIgnoreCase("load-balancer-service")) {
-                return true;
-            }
-            return false;
-        }
-        return true;
     }
 }

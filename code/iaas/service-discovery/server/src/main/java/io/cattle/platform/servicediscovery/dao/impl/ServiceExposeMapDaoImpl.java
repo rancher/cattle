@@ -5,7 +5,6 @@ import static io.cattle.platform.core.model.tables.InstanceHostMapTable.*;
 import static io.cattle.platform.core.model.tables.InstanceTable.*;
 import static io.cattle.platform.core.model.tables.ServiceExposeMapTable.*;
 import static io.cattle.platform.core.model.tables.ServiceTable.*;
-
 import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.constants.ServiceConstants;
@@ -256,19 +255,6 @@ public class ServiceExposeMapDaoImpl extends AbstractJooqDao implements ServiceE
                         .and(SERVICE_EXPOSE_MAP.STATE.notIn(CommonStatesConstants.REMOVED,
                                 CommonStatesConstants.REMOVING))
                         .and(SERVICE_EXPOSE_MAP.IP_ADDRESS.isNotNull()))
-                .fetchInto(ServiceExposeMapRecord.class);
-    }
-
-    @Override
-    public List<? extends ServiceExposeMap> getNonRemovedServiceInstanceMaps(long serviceId) {
-        return create()
-                .select(SERVICE_EXPOSE_MAP.fields())
-                .from(SERVICE_EXPOSE_MAP)
-                .where(SERVICE_EXPOSE_MAP.SERVICE_ID.eq(serviceId))
-                .and(SERVICE_EXPOSE_MAP.REMOVED.isNull()
-                        .and(SERVICE_EXPOSE_MAP.STATE.notIn(CommonStatesConstants.REMOVED,
-                                CommonStatesConstants.REMOVING))
-                        .and(SERVICE_EXPOSE_MAP.INSTANCE_ID.isNotNull()))
                 .fetchInto(ServiceExposeMapRecord.class);
     }
 

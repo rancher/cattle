@@ -1,18 +1,14 @@
 package io.cattle.platform.configitem.context.dao;
 
-import io.cattle.platform.configitem.context.data.LoadBalancerListenerInfo;
-import io.cattle.platform.core.addon.LoadBalancerTargetInput;
+import io.cattle.platform.core.addon.LbConfig;
 import io.cattle.platform.core.model.Service;
-import io.cattle.platform.core.util.LBMetadataUtil.LBMetadata;
-
-import java.util.List;
+import io.cattle.platform.core.util.LBMetadataUtil.LBConfigMetadataStyle;
 
 public interface LoadBalancerInfoDao {
-    List<LoadBalancerListenerInfo> getListeners(Service lbService);
 
-    List<LoadBalancerTargetInput> getLoadBalancerTargets(Service lbService);
+    LBConfigMetadataStyle generateLBConfigMetadataStyle(Service lbService);
 
-    LBMetadata processLBConfig(Service lbService, LoadBalancerInfoDao lbInfoDao);
+    // this method will be used for the v1->v2 upgrade
+    LbConfig generateLBConfig(Service lbService);
 
-    List<LoadBalancerTargetInput> getLoadBalancerTargetsV2(Service lbService);
 }

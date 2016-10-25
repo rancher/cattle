@@ -5,10 +5,8 @@ import static io.cattle.platform.core.model.tables.InstanceTable.*;
 import static io.cattle.platform.core.model.tables.ServiceConsumeMapTable.*;
 import static io.cattle.platform.core.model.tables.ServiceExposeMapTable.*;
 import static io.cattle.platform.core.model.tables.ServiceTable.*;
-import io.cattle.platform.core.addon.LoadBalancerServiceLink;
 import io.cattle.platform.core.addon.ServiceLink;
 import io.cattle.platform.core.constants.CommonStatesConstants;
-import io.cattle.platform.core.constants.LoadBalancerConstants;
 import io.cattle.platform.core.constants.ServiceConstants;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.InstanceLink;
@@ -24,7 +22,6 @@ import io.cattle.platform.lock.LockManager;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.process.ObjectProcessManager;
 import io.cattle.platform.object.process.StandardProcess;
-import io.cattle.platform.object.util.DataUtils;
 import io.cattle.platform.servicediscovery.api.dao.ServiceConsumeMapDao;
 import io.cattle.platform.servicediscovery.deployment.impl.lock.ServiceLinkLock;
 import io.cattle.platform.util.type.CollectionUtils;
@@ -203,23 +200,8 @@ public class ServiceConsumeMapDaoImpl extends AbstractJooqDao implements Service
                     SERVICE_CONSUME_MAP.ACCOUNT_ID, service.getAccountId(),
                     SERVICE_CONSUME_MAP.NAME, serviceLink.getName());
 
-            if (serviceLink instanceof LoadBalancerServiceLink) {
-                  properties.put(LoadBalancerConstants.FIELD_LB_TARGET_PORTS,
-                          ((LoadBalancerServiceLink) serviceLink).getPorts());
-            }
-
             map = objectManager.create(ServiceConsumeMap.class, objectManager.convertToPropertiesFor(ServiceConsumeMap.class,
                     properties));
-        } else {
-            if (service.getKind()
-                    .equalsIgnoreCase(ServiceConstants.KIND_LOAD_BALANCER_SERVICE)) {
-                LoadBalancerServiceLink newLbServiceLink = (LoadBalancerServiceLink) serviceLink;
-                List<? extends String> newPorts = newLbServiceLink.getPorts() != null ? newLbServiceLink.getPorts()
-                        : new ArrayList<String>();
-                DataUtils.getWritableFields(map).put(LoadBalancerConstants.FIELD_LB_TARGET_PORTS, newPorts);
-                objectManager.persist(map);
-                update = true;
-            }
         }
 
         if (map.getState().equalsIgnoreCase(CommonStatesConstants.REQUESTED)) {

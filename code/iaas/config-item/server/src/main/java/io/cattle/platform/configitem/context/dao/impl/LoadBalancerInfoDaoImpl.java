@@ -5,8 +5,8 @@ import static io.cattle.platform.core.model.tables.ServiceTable.*;
 import static io.cattle.platform.core.model.tables.StackTable.*;
 import io.cattle.platform.configitem.context.dao.LoadBalancerInfoDao;
 import io.cattle.platform.configitem.context.data.LoadBalancerListenerInfo;
-import io.cattle.platform.core.addon.BalancerServiceConfig;
 import io.cattle.platform.core.addon.HaproxyConfig;
+import io.cattle.platform.core.addon.LbConfig;
 import io.cattle.platform.core.addon.LoadBalancerCookieStickinessPolicy;
 import io.cattle.platform.core.addon.LoadBalancerTargetInput;
 import io.cattle.platform.core.addon.PortRule;
@@ -16,9 +16,8 @@ import io.cattle.platform.core.constants.ServiceConstants;
 import io.cattle.platform.core.model.Certificate;
 import io.cattle.platform.core.model.Service;
 import io.cattle.platform.core.model.ServiceConsumeMap;
-import io.cattle.platform.core.model.ServiceExposeMap;
 import io.cattle.platform.core.model.Stack;
-import io.cattle.platform.core.util.LBMetadataUtil.LBMetadata;
+import io.cattle.platform.core.util.LBMetadataUtil.LBConfigMetadataStyle;
 import io.cattle.platform.core.util.LoadBalancerTargetPortSpec;
 import io.cattle.platform.core.util.PortSpec;
 import io.cattle.platform.json.JsonMapper;
@@ -26,7 +25,6 @@ import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.servicediscovery.api.dao.ServiceConsumeMapDao;
 import io.cattle.platform.servicediscovery.api.dao.ServiceDao;
-import io.cattle.platform.servicediscovery.api.dao.ServiceExposeMapDao;
 import io.cattle.platform.servicediscovery.api.util.ServiceDiscoveryUtil;
 import io.cattle.platform.servicediscovery.service.ServiceDiscoveryService;
 import io.cattle.platform.util.type.CollectionUtils;
@@ -48,9 +46,6 @@ public class LoadBalancerInfoDaoImpl implements LoadBalancerInfoDao {
     ObjectManager objectManager;
 
     @Inject
-    ServiceExposeMapDao exposeMapDao;
-
-    @Inject
     JsonMapper jsonMapper;
 
     @Inject
@@ -59,9 +54,8 @@ public class LoadBalancerInfoDaoImpl implements LoadBalancerInfoDao {
     @Inject
     ServiceDao svcDao;
 
-    @Override
     @SuppressWarnings("unchecked")
-    public List<LoadBalancerListenerInfo> getListeners(Service lbService) {
+    protected List<LoadBalancerListenerInfo> getListeners(Service lbService) {
         Map<Integer, LoadBalancerListenerInfo> listeners = new HashMap<>();
         Map<String, Object> launchConfigData = ServiceDiscoveryUtil.getLaunchConfigDataAsMap(lbService, null);
         // 1. create listeners
@@ -125,8 +119,8 @@ public class LoadBalancerInfoDaoImpl implements LoadBalancerInfoDao {
                     sourceProtocol = "https";
                 }
             }
-            listenersToReturn.add(new LoadBalancerListenerInfo(lbService, privatePort, sourcePort,
-                    sourceProtocol, targetPort, proxyProtocolPorts.contains(privatePort.toString())));
+            listenersToReturn.add(new LoadBalancerListenerInfo(privatePort, sourcePort, sourceProtocol,
+                    targetPort, proxyProtocolPorts.contains(privatePort.toString())));
         }
         return listenersToReturn;
     }
@@ -147,57 +141,7 @@ public class LoadBalancerInfoDaoImpl implements LoadBalancerInfoDao {
         return sslPorts;
     }
 
-    protected void addMissingPortSpecs(Map<Integer, LoadBalancerListenerInfo> lbSourcePorts,
-            List<Integer> targetSourcePorts, List<LoadBalancerTargetPortSpec> completePortSpecs) {
-        // create port specs for missing load balancer source ports
-        for (Integer lbSourcePort : lbSourcePorts.keySet()) {
-            if (!targetSourcePorts.contains(lbSourcePort)) {
-                LoadBalancerListenerInfo listener = lbSourcePorts.get(lbSourcePort);
-                completePortSpecs
-                        .add(new LoadBalancerTargetPortSpec(listener.getTargetPort(), listener.getSourcePort()));
-            }
-        }
-    }
-
-    protected List<LoadBalancerTargetPortSpec> completePortSpecs(List<LoadBalancerTargetPortSpec> portSpecsInitial,
-            List<? extends LoadBalancerListenerInfo> listeners, Map<Integer, LoadBalancerListenerInfo> lbSourcePorts,
-            List<Integer> targetSourcePorts) {
-        // complete missing source ports for port specs
-        List<LoadBalancerTargetPortSpec> portSpecsWithSourcePorts = new ArrayList<>();
-        for (LoadBalancerTargetPortSpec portSpec : portSpecsInitial) {
-            if (portSpec.getSourcePort() == null) {
-                for (LoadBalancerListenerInfo listener : listeners) {
-                    LoadBalancerTargetPortSpec newSpec = new LoadBalancerTargetPortSpec(portSpec);
-                    newSpec.setSourcePort(listener.getSourcePort());
-                    portSpecsWithSourcePorts.add(newSpec);
-                    // register the fact that the source port is defined on the target
-                    targetSourcePorts.add(newSpec.getSourcePort());
-                }
-            } else {
-                portSpecsWithSourcePorts.add(portSpec);
-                // register the fact that the source port is defined on the target
-                targetSourcePorts.add(portSpec.getSourcePort());
-            }
-        }
-
-        // complete missing target ports
-        List<LoadBalancerTargetPortSpec> completePortSpecs = new ArrayList<>();
-        for (LoadBalancerTargetPortSpec spec : portSpecsWithSourcePorts) {
-            if (spec.getPort() == null) {
-                LoadBalancerListenerInfo listener = lbSourcePorts.get(spec.getSourcePort());
-                if (listener != null) {
-                    spec.setPort(listener.getTargetPort());
-                    completePortSpecs.add(spec);
-                }
-            } else {
-                completePortSpecs.add(spec);
-            }
-        }
-        return completePortSpecs;
-    }
-
-    @Override
-    public List<LoadBalancerTargetInput> getLoadBalancerTargetsV2(Service lbService) {
+    protected List<LoadBalancerTargetInput> getLoadBalancerTargetsV2(Service lbService) {
         if (!lbService.getKind().equalsIgnoreCase(ServiceConstants.KIND_LOAD_BALANCER_SERVICE)) {
             return new ArrayList<>();
         }
@@ -211,62 +155,10 @@ public class LoadBalancerInfoDaoImpl implements LoadBalancerInfoDao {
             }
 
             for (Service consumedService : consumedServices) {
-                targets.add(new LoadBalancerTargetInput(consumedService, null, lbLink, jsonMapper));
+                targets.add(new LoadBalancerTargetInput(consumedService, lbLink, jsonMapper));
             }
         }
         return targets;
-    }
-
-    @Override
-    public List<LoadBalancerTargetInput> getLoadBalancerTargets(Service lbService) {
-        if (!lbService.getKind().equalsIgnoreCase(ServiceConstants.KIND_LOAD_BALANCER_SERVICE)) {
-            return new ArrayList<>();
-        }
-        List<LoadBalancerTargetInput> targets = new ArrayList<>();
-        List<? extends ServiceConsumeMap> lbLinks = consumeMapDao.findConsumedServices(lbService.getId());
-        for (ServiceConsumeMap lbLink : lbLinks) {
-            List<Service> consumedServices = new ArrayList<>();
-            findConsumedServicesImpl(lbLink.getConsumedServiceId(), consumedServices);
-            for (Service consumedService : consumedServices) {
-                List<? extends ServiceExposeMap> exposeIpMaps = exposeMapDao.getNonRemovedServiceIpMaps(consumedService
-                        .getId());
-                for (ServiceExposeMap exposeIpMap : exposeIpMaps) {
-                    addToTarget(targets, lbLink, exposeIpMap, consumedService);
-                }
-                List<? extends ServiceExposeMap> exposeInstanceMaps = exposeMapDao
-                        .getNonRemovedServiceInstanceMaps(consumedService
-                                .getId());
-                for (ServiceExposeMap exposeInstanceMap : exposeInstanceMaps) {
-                    addToTarget(targets, lbLink, exposeInstanceMap, consumedService);
-                }
-            }
-        }
-
-        return targets;
-    }
-
-    protected void addToTarget(List<LoadBalancerTargetInput> targets, ServiceConsumeMap lbLink,
-            ServiceExposeMap exposeMap, Service service) {
-        if (exposeMap.getDnsPrefix() == null) {
-            targets.add(new LoadBalancerTargetInput(service, exposeMap, lbLink, jsonMapper));
-        }
-    }
-
-    protected void findConsumedServicesImpl(long serviceId, List<Service> services) {
-        Service service = objectManager.loadResource(Service.class, serviceId);
-        if (sdService.isActiveService(service)) {
-            if (service.getKind().equalsIgnoreCase(ServiceConstants.KIND_DNS_SERVICE)) {
-                List<? extends ServiceConsumeMap> consumedMaps = consumeMapDao.findConsumedServices(serviceId);
-                for (ServiceConsumeMap consumedMap : consumedMaps) {
-                    if (serviceId == consumedMap.getConsumedServiceId().longValue()) {
-                        continue;
-                    }
-                    findConsumedServicesImpl(consumedMap.getConsumedServiceId(), services);
-                }
-            } else {
-                services.add(service);
-            }
-        }
     }
 
     protected List<Long> getLoadBalancerCertIds(Service lbService) {
@@ -286,7 +178,10 @@ public class LoadBalancerInfoDaoImpl implements LoadBalancerInfoDao {
     }
 
     @Override
-    public LBMetadata processLBConfig(Service lbService, LoadBalancerInfoDao lbInfoDao) {
+    public LBConfigMetadataStyle generateLBConfigMetadataStyle(Service lbService) {
+        if (!ServiceConstants.KIND_LOAD_BALANCER_SERVICE.equalsIgnoreCase(lbService.getKind())) {
+            return null;
+        }
         // lb config can be set for lb and regular service (when it joins LB via selectors)
         // metadata gets set for both.
         Map<Long, Service> serviceIdsToService = new HashMap<>();
@@ -307,20 +202,34 @@ public class LoadBalancerInfoDaoImpl implements LoadBalancerInfoDao {
                 CERTIFICATE.ACCOUNT_ID, lbService.getAccountId(), CERTIFICATE.REMOVED, null)) {
             certIdsToCert.put(cert.getId(), cert);
         }
-        BalancerServiceConfig lbConfig = DataAccessor.field(lbService, ServiceConstants.FIELD_LB_CONFIG, jsonMapper,
-                BalancerServiceConfig.class);
+        LbConfig lbConfig = DataAccessor.field(lbService, ServiceConstants.FIELD_LB_CONFIG, jsonMapper,
+                LbConfig.class);
         if (lbConfig != null) {
-            return new LBMetadata(lbConfig.getPortRules(), lbConfig.getCertificateIds(),
+            return new LBConfigMetadataStyle(lbConfig.getPortRules(), lbConfig.getCertificateIds(),
                     lbConfig.getDefaultCertificateId(),
                     lbConfig.getConfig(), lbConfig.getStickinessPolicy(), serviceIdsToService,
                     stackIdsToStack, certIdsToCert);
         }
+        return null;
+    }
+
+    private static String getUuid(PortRule rule) {
+        return String.format("%s_%s_%s_%s", rule.getSourcePort(), rule.getServiceId(), rule.getHostname(), rule.getPath());
+    }
+
+    @Override
+    public LbConfig generateLBConfig(Service lbService) {
         if (!ServiceConstants.KIND_LOAD_BALANCER_SERVICE.equalsIgnoreCase(lbService.getKind())) {
             return null;
         }
+        LbConfig lbConfig = DataAccessor.field(lbService, ServiceConstants.FIELD_LB_CONFIG, jsonMapper,
+                LbConfig.class);
+        if (lbConfig != null) {
+            return lbConfig;
+        }
 
-        // the logic below is to support legacy APIs by programming all the rules to metadata
-        List<? extends LoadBalancerListenerInfo> listeners = lbInfoDao.getListeners(lbService);
+        // generate lb config // the logic below is to support legacy APIs by programming all the rules to metadata
+        List<? extends LoadBalancerListenerInfo> listeners = getListeners(lbService);
         if (listeners.isEmpty()) {
             return null;
         }
@@ -333,7 +242,7 @@ public class LoadBalancerInfoDaoImpl implements LoadBalancerInfoDao {
         }
 
         // get targets
-        List<? extends LoadBalancerTargetInput> targets = lbInfoDao.getLoadBalancerTargetsV2(lbService);
+        List<? extends LoadBalancerTargetInput> targets = getLoadBalancerTargetsV2(lbService);
         List<PortRule> rules = new ArrayList<>();
         List<String> registeredRules = new ArrayList<>();
         for (LoadBalancerTargetInput target : targets) {
@@ -389,7 +298,6 @@ public class LoadBalancerInfoDaoImpl implements LoadBalancerInfoDao {
         List<Long> certs = getLoadBalancerCertIds(lbService);
         Long defaultCert = getLoadBalancerDefaultCertId(lbService);
 
-        
         Object configObj = DataAccessor.field(lbService, ServiceConstants.FIELD_LOAD_BALANCER_CONFIG,
                 Object.class);
         Map<String, Object> data = CollectionUtils.toMap(configObj);
@@ -410,14 +318,8 @@ public class LoadBalancerInfoDaoImpl implements LoadBalancerInfoDao {
             }
         }
         
-        LBMetadata lb = new LBMetadata(rules, certs, defaultCert, config, policy, serviceIdsToService,
-                stackIdsToStack, certIdsToCert);
-        return lb;
+        return new LbConfig(config, rules, certs, defaultCert,
+                policy);
     }
-
-    private static String getUuid(PortRule rule) {
-        return String.format("%s_%s_%s_%s", rule.getSourcePort(), rule.getServiceId(), rule.getHostname(), rule.getPath());
-    }
-
 
 }

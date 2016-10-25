@@ -1,10 +1,8 @@
 package io.cattle.platform.servicediscovery.api.filter;
 
-import io.cattle.platform.core.addon.LoadBalancerServiceLink;
 import io.cattle.platform.core.addon.ServiceLink;
 import io.cattle.platform.core.constants.ServiceConstants;
 import io.cattle.platform.core.model.Service;
-import io.cattle.platform.core.util.LoadBalancerTargetPortSpec;
 import io.cattle.platform.iaas.api.filter.common.AbstractDefaultResourceManagerFilter;
 import io.cattle.platform.json.JsonMapper;
 import io.cattle.platform.object.ObjectManager;
@@ -14,7 +12,6 @@ import io.github.ibuildthecloud.gdapi.request.resource.ResourceManager;
 import io.github.ibuildthecloud.gdapi.validation.ValidationErrorCodes;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 import javax.inject.Inject;
@@ -41,23 +38,6 @@ public class ServiceSetServiceLinksValidationFilter extends AbstractDefaultResou
     public Object resourceAction(String type, ApiRequest request, ResourceManager next) {
         if (request.getAction().equals(ServiceConstants.ACTION_SERVICE_SET_SERVICE_LINKS)) {
             validateServices(Long.valueOf(request.getId()), request);
-        }
-
-        Service service = objectManager.loadResource(Service.class, request.getId());
-        if (service.getKind()
-                .equalsIgnoreCase(ServiceConstants.KIND_LOAD_BALANCER_SERVICE)) {
-            List<? extends LoadBalancerServiceLink> serviceLinks = DataAccessor.fromMap(request.getRequestObject())
-                    .withKey(
-                    ServiceConstants.FIELD_SERVICE_LINKS).withDefault(Collections.EMPTY_LIST)
-                    .asList(jsonMapper, LoadBalancerServiceLink.class);
-            for (LoadBalancerServiceLink link : serviceLinks) {
-                if (link.getPorts() != null) {
-                    for (String port : link.getPorts()) {
-                        // to validate the spec
-                        new LoadBalancerTargetPortSpec(port);
-                    }
-                }
-            }
         }
 
         return super.resourceAction(type, request, next);

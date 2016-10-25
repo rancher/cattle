@@ -36,21 +36,15 @@ public class DeploymentUnitInstanceFactoryImpl implements DeploymentUnitInstance
     @SuppressWarnings("unchecked")
     public DeploymentUnitInstance createDeploymentUnitInstance(DeploymentServiceContext context, String uuid,
             Service service, String instanceName, Object instanceObj, String launchConfigName) {
-        if (service.getKind().equalsIgnoreCase(ServiceConstants.KIND_SERVICE)) {
+        if (service.getKind().equalsIgnoreCase(ServiceConstants.KIND_SERVICE)
+                || service.getKind().equalsIgnoreCase(ServiceConstants.KIND_LOAD_BALANCER_SERVICE)) {
             Instance instance = null;
             if (instanceObj != null) {
                 instance = (Instance) instanceObj;
             }
             return new DefaultDeploymentUnitInstance(context, uuid, service,
                     instanceName, instance, launchConfigName);
-        } else if (service.getKind().equalsIgnoreCase(ServiceConstants.KIND_LOAD_BALANCER_SERVICE)) {
-            Instance instance = null;
-            if (instanceObj != null) {
-                instance = (Instance) instanceObj;
-            }
-            return new LoadBalancerDeploymentUnitInstance(context, uuid, service,
-                    instanceName, instance, launchConfigName);
-        }else if (service.getKind().equalsIgnoreCase(ServiceConstants.KIND_EXTERNAL_SERVICE)) {
+        } else if (service.getKind().equalsIgnoreCase(ServiceConstants.KIND_EXTERNAL_SERVICE)) {
             Pair<String, String> ipHostName = null;
             if (instanceObj != null) {
                 ipHostName = (Pair<String, String>) instanceObj;

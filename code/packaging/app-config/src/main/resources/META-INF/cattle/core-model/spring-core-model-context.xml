@@ -13,7 +13,6 @@
                 <value>io.cattle.platform.core.addon.LogConfig</value>
                 <value>io.cattle.platform.core.addon.RestartPolicy</value>
                 <value>io.cattle.platform.core.addon.LoadBalancerCookieStickinessPolicy</value>
-                <value>io.cattle.platform.core.addon.LoadBalancerAppCookieStickinessPolicy</value>
                 <value>io.cattle.platform.extension.dynamic.api.addon.ExternalHandlerProcessConfig</value>
                 <value>io.cattle.platform.core.addon.ComposeConfig</value>
                 <value>io.cattle.platform.core.addon.InstanceHealthCheck</value>
@@ -72,9 +71,6 @@
                 <value>kubernetesService,parent=service</value>
                 <value>launchConfig,parent=container</value>
                 <value>secondaryLaunchConfig,parent=launchConfig</value>
-                <value>addRemoveLoadBalancerServiceLinkInput</value>
-                <value>setLoadBalancerServiceLinksInput</value>
-                <value>loadBalancerServiceLink,parent=serviceLink</value>
                 <value>pullTask,parent=genericObject</value>
                 <value>externalVolumeEvent,parent=externalEvent</value>
                 <value>externalStoragePoolEvent,parent=externalEvent</value>
@@ -96,8 +92,8 @@
                 <value>nfsConfig</value>
                 <value>binding</value>
                 <value>serviceBinding</value>
-                <value>balancerServiceConfig</value>
-                <value>balancerTargetConfig</value>
+                <value>lbConfig</value>
+                <value>lbTargetConfig</value>
             </set>
         </property>
     </bean>
