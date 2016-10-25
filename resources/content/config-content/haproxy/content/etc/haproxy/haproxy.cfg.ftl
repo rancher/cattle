@@ -92,6 +92,17 @@ backend ${listener.uuid}_${backend.uuid}_backend
         </#list>
          <#if listener.sourceProtocol == "https">
         http-request add-header X-Forwarded-Proto https if { ssl_fc }
+	acl secured_cookie res.hdr(Set-Cookie),lower -m sub secure
+	acl xfo_exists res.hdr_cnt(X-Frame-Options) gt 0
+        acl xxp_exists res.hdr_cnt(X-XSS-Protection) gt 0
+        acl xcto_exists res.hdr_cnt(X-Content-Type-Options) gt 0
+        acl csp_exists res.hdr_cnt(Content-Security-Policy) gt 0
+        rspirep ^(set-cookie:.*) \1;\ Secure if https !secured_cookie
+	http-response set-header Strict-Transport-Security "max-age=16000000; includeSubDomains;"
+	http-response set-header X-XSS-Protection "1; mode=block" if ! xxp_exists
+        http-response set-header X-Frame-Options "SAMEORIGIN" if ! xfo_exists
+        http-response set-header X-Content-Type-Options "nosniff" if ! xcto_exists
+        http-response set-header Content-Security-Policy "upgrade-insecure-requests" if ! csp_exists
         </#if>
         http-request add-header X-Forwarded-Port %[dst_port]
         
