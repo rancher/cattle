@@ -1,6 +1,7 @@
 package io.cattle.platform.register.process;
 
 import static io.cattle.platform.core.model.tables.GenericObjectTable.*;
+
 import io.cattle.platform.core.model.GenericObject;
 import io.cattle.platform.engine.handler.HandlerResult;
 import io.cattle.platform.engine.handler.ProcessPostListener;
@@ -23,9 +24,11 @@ public class RegisterTokenAgentRemove extends AbstractObjectProcessLogic impleme
                 .withKey(RegisterConstants.AGENT_DATA_REGISTRATION_KEY).as(String.class);
 
         if (key != null) {
-            GenericObject obj = objectManager.findAny(GenericObject.class,
-                    GENERIC_OBJECT.KEY, key);
-            deactivateThenScheduleRemove(obj, state.getData());
+            for (GenericObject obj : objectManager.find(GenericObject.class,
+                    GENERIC_OBJECT.KEY, key,
+                    GENERIC_OBJECT.REMOVED, null)) {
+                deactivateThenScheduleRemove(obj, state.getData());
+            }
         }
 
         return null;

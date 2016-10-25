@@ -17,7 +17,8 @@ public class RegisterOutputFilter implements ResourceOutputFilter {
             return converted;
         }
 
-        Object key = RequestUtils.makeSingularIfCan(request.getRequestParams().get(GenericObjectConstants.FIELD_KEY));
+        Object key = request == null ? null :
+            RequestUtils.makeSingularIfCan(request.getRequestParams().get(GenericObjectConstants.FIELD_KEY));
 
         if (!CommonStatesConstants.ACTIVE.equals(((GenericObject) original).getState()) ||
                 key == null || !key.equals(((GenericObject) original).getKey())) {
