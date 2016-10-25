@@ -72,7 +72,7 @@ public class InstancePurge extends AbstractDefaultProcessHandler {
                     ((StringUtils.length(v.getName()) != 64 || !StringUtils.isAlphanumeric(v.getName()))) && !StringUtils.startsWith(v.getName(), "/")) {
                 continue;
             }
-            if (CommonStatesConstants.ACTIVE.equals(v.getState())) {
+            if (CommonStatesConstants.ACTIVE.equals(v.getState()) || CommonStatesConstants.ACTIVATING.equals(v.getState())) {
                 objectProcessManager.scheduleStandardProcess(StandardProcess.DEACTIVATE, v,
                         ProcessUtils.chainInData(state.getData(), VolumeConstants.PROCESS_DEACTIVATE, VolumeConstants.PROCESS_REMOVE));
             } else {
