@@ -82,7 +82,6 @@ public class ConfigContentManager extends AbstractNoOpResourceManager {
                 throw new ClientVisibleException(ResponseCodes.NOT_FOUND);
             }
         } catch (IOException e) {
-            log.error("Failed to download [{}] for agent [{}]", id, agentId, e);
             throw new IllegalStateException("Failed to download [" + id + "] for agent [" + agentId + "]", e);
         }
 
