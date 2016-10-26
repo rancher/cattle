@@ -39,7 +39,8 @@ public class StackDaoImpl extends AbstractJooqDao implements StackDao {
             final Map<Long, List<Object>> result = new HashMap<>();
             create().select(SERVICE.ID, SERVICE.STACK_ID)
                 .from(SERVICE)
-                .where(SERVICE.STACK_ID.in(ids))
+                .where(SERVICE.STACK_ID.in(ids)
+                        .and(SERVICE.REMOVED.isNull()))
                 .fetchInto(new RecordHandler<Record2<Long, Long>>() {
                     @Override
                     public void next(Record2<Long, Long> record) {
