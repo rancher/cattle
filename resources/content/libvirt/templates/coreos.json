@@ -1,7 +1,0 @@
-{
-    "name" : "CoreOS Stable 367.1.0",
-    "description" : "Default user: core",
-    "uuid" : "coreos-stable-367.1.0",
-    "url" : "http://stable.release.core-os.net/amd64-usr/367.1.0/coreos_production_openstack_image.img.bz2",
-    "checksum" : "3230e2fb585c2a689547723f75da478386f98aea"
-}

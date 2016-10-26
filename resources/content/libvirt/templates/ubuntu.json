@@ -1,7 +1,0 @@
-{
-    "name" : "Ubuntu 14.04 20140607.1",
-    "description" : "Default user: ubuntu",
-    "uuid" : "ubuntu-14.04",
-    "url" : "http://cloud-images.ubuntu.com/releases/14.04/release-20140607.1/ubuntu-14.04-server-cloudimg-amd64-disk1.img",
-    "checksum" : "d58b7774bb988b3dc8d39507238ff9d00eaf6f70"
-}

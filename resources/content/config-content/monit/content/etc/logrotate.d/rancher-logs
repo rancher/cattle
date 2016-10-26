@@ -1,8 +1,0 @@
-/var/log/rancher-*.log {
-        daily
-        missingok
-        rotate 7
-        compress
-        notifempty
-        copytruncate
-}
