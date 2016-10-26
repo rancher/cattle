@@ -30,6 +30,7 @@ import io.cattle.platform.object.meta.ObjectMetaDataManager;
 import io.cattle.platform.object.process.StandardProcess;
 import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.object.util.DataUtils;
+import io.cattle.platform.object.util.ObjectUtils;
 import io.cattle.platform.process.base.AbstractDefaultProcessHandler;
 import io.cattle.platform.util.type.CollectionUtils;
 
@@ -142,7 +143,7 @@ public class ExternalEventCreate extends AbstractDefaultProcessHandler {
             public void doWithLockNoResult() {
                 Object driver = CollectionUtils.getNestedValue(DataUtils.getFields(event), FIELD_STORAGE_POOL, FIELD_DRIVER_NAME);
                 if (driver == null) {
-                    log.warn("Driver not specified. Returning. Event: {}", event);
+                    log.warn("Driver not specified. Returning. Event: {}", ObjectUtils.toStringWrapper(event));
                     return;
                 }
                 String driverName = driver.toString();

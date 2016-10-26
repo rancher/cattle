@@ -107,7 +107,6 @@
                 <module>code/implementation/eventing-redis</module>
                 <module>code/implementation/extension-api</module>
                 <module>code/implementation/host-api</module>
-                <module>code/implementation/host-only-network</module>
                 <module>code/implementation/host-stats</module>
                 <module>code/implementation/register</module>
                 <module>code/implementation/sample-setup</module>

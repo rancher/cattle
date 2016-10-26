@@ -8,8 +8,6 @@ public class IpAddressConstants {
 
     public static final String STATE_ASSOCIATED = "associated";
 
-    public static final String KIND_POOLED_IP_ADDRESS = "pooledIpAddress";
-
     public static final String ROLE_PRIMARY = "primary";
     public static final String ROLE_SECONDARY = "secondary";
     public static final String ROLE_PUBLIC = "public";
@@ -23,9 +21,5 @@ public class IpAddressConstants {
 
     public static final String DATA_IP_ADDRESS_ID = "ipAddressId";
 
-    public static final String OPTION_RELEASE_ON_CHILD_PURGE = "releaseOnChildPurge";
-
-    public static final String PROCESS_IP_DISASSOCIATE = "ipaddress.disassociate";
-    public static final String PROCESS_IP_ASSOCIATE = "ipaddress.associate";
     public static final String PROCESS_IP_UPDATE = "ipaddress.update";
 }

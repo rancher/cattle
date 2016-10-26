@@ -1,5 +1,25 @@
 {
     "resourceFields": {
+        "dns": {
+            "type" : "array[string]"
+        },
+        "dnsSearch": {
+            "type" : "array[string]"
+        },
+        "metadata": {
+            "type" : "map[json]"
+        },
+        "subnets": {
+            "type" : "array[subnet]"
+        },
+        "hostPorts": {
+            "type" : "boolean"
+        },
+        "networkDriverId": {
+            "type" : "reference[networkDriver]",
+            "nullable": false,
+            "required": true
+        },
         "macPrefix": {
             "type" : "string"
         }

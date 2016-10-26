@@ -69,6 +69,15 @@ public class DataAccessor {
         return result;
     }
 
+    public static List<String> appendToFieldStringList(Object obj, String key, String value) {
+        List<String> list = fieldStringList(obj, key);
+        if (!list.contains(value)) {
+            list.add(value);
+        }
+        DataAccessor.setField(obj, key, list);
+        return list;
+    }
+
     public static Long fieldLong(Object obj, String key) {
         return fields(obj).withKey(key).as(Long.class);
     }

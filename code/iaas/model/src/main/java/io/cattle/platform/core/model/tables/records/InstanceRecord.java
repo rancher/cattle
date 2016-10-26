@@ -13,7 +13,7 @@ package io.cattle.platform.core.model.tables.records;
 @javax.persistence.Table(name = "instance", schema = "cattle")
 public class InstanceRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.platform.core.model.tables.records.InstanceRecord> implements io.cattle.platform.db.jooq.utils.TableRecordJaxb, io.cattle.platform.core.model.Instance {
 
-	private static final long serialVersionUID = -1118035079;
+	private static final long serialVersionUID = -889875245;
 
 	/**
 	 * Setter for <code>cattle.instance.id</code>.
@@ -272,28 +272,11 @@ public class InstanceRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.
 	}
 
 	/**
-	 * Setter for <code>cattle.instance.offering_id</code>.
-	 */
-	@Override
-	public void setOfferingId(java.lang.Long value) {
-		setValue(15, value);
-	}
-
-	/**
-	 * Getter for <code>cattle.instance.offering_id</code>.
-	 */
-	@javax.persistence.Column(name = "offering_id", precision = 19)
-	@Override
-	public java.lang.Long getOfferingId() {
-		return (java.lang.Long) getValue(15);
-	}
-
-	/**
 	 * Setter for <code>cattle.instance.hostname</code>.
 	 */
 	@Override
 	public void setHostname(java.lang.String value) {
-		setValue(16, value);
+		setValue(15, value);
 	}
 
 	/**
@@ -302,7 +285,7 @@ public class InstanceRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.
 	@javax.persistence.Column(name = "hostname", length = 255)
 	@Override
 	public java.lang.String getHostname() {
-		return (java.lang.String) getValue(16);
+		return (java.lang.String) getValue(15);
 	}
 
 	/**
@@ -310,7 +293,7 @@ public class InstanceRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.
 	 */
 	@Override
 	public void setZoneId(java.lang.Long value) {
-		setValue(17, value);
+		setValue(16, value);
 	}
 
 	/**
@@ -319,7 +302,7 @@ public class InstanceRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.
 	@javax.persistence.Column(name = "zone_id", precision = 19)
 	@Override
 	public java.lang.Long getZoneId() {
-		return (java.lang.Long) getValue(17);
+		return (java.lang.Long) getValue(16);
 	}
 
 	/**
@@ -327,7 +310,7 @@ public class InstanceRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.
 	 */
 	@Override
 	public void setInstanceTriggeredStop(java.lang.String value) {
-		setValue(18, value);
+		setValue(17, value);
 	}
 
 	/**
@@ -336,7 +319,7 @@ public class InstanceRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.
 	@javax.persistence.Column(name = "instance_triggered_stop", length = 128)
 	@Override
 	public java.lang.String getInstanceTriggeredStop() {
-		return (java.lang.String) getValue(18);
+		return (java.lang.String) getValue(17);
 	}
 
 	/**
@@ -344,7 +327,7 @@ public class InstanceRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.
 	 */
 	@Override
 	public void setAgentId(java.lang.Long value) {
-		setValue(19, value);
+		setValue(18, value);
 	}
 
 	/**
@@ -353,7 +336,7 @@ public class InstanceRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.
 	@javax.persistence.Column(name = "agent_id", precision = 19)
 	@Override
 	public java.lang.Long getAgentId() {
-		return (java.lang.Long) getValue(19);
+		return (java.lang.Long) getValue(18);
 	}
 
 	/**
@@ -361,7 +344,7 @@ public class InstanceRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.
 	 */
 	@Override
 	public void setDomain(java.lang.String value) {
-		setValue(20, value);
+		setValue(19, value);
 	}
 
 	/**
@@ -370,7 +353,7 @@ public class InstanceRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.
 	@javax.persistence.Column(name = "domain", length = 128)
 	@Override
 	public java.lang.String getDomain() {
-		return (java.lang.String) getValue(20);
+		return (java.lang.String) getValue(19);
 	}
 
 	/**
@@ -378,7 +361,7 @@ public class InstanceRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.
 	 */
 	@Override
 	public void setFirstRunning(java.util.Date value) {
-		setValue(21, value);
+		setValue(20, value);
 	}
 
 	/**
@@ -387,7 +370,7 @@ public class InstanceRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.
 	@javax.persistence.Column(name = "first_running")
 	@Override
 	public java.util.Date getFirstRunning() {
-		return (java.util.Date) getValue(21);
+		return (java.util.Date) getValue(20);
 	}
 
 	/**
@@ -395,7 +378,7 @@ public class InstanceRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.
 	 */
 	@Override
 	public void setToken(java.lang.String value) {
-		setValue(22, value);
+		setValue(21, value);
 	}
 
 	/**
@@ -404,7 +387,7 @@ public class InstanceRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.
 	@javax.persistence.Column(name = "token", length = 255)
 	@Override
 	public java.lang.String getToken() {
-		return (java.lang.String) getValue(22);
+		return (java.lang.String) getValue(21);
 	}
 
 	/**
@@ -412,7 +395,7 @@ public class InstanceRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.
 	 */
 	@Override
 	public void setUserdata(java.lang.String value) {
-		setValue(23, value);
+		setValue(22, value);
 	}
 
 	/**
@@ -421,24 +404,7 @@ public class InstanceRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.
 	@javax.persistence.Column(name = "userdata", length = 65535)
 	@Override
 	public java.lang.String getUserdata() {
-		return (java.lang.String) getValue(23);
-	}
-
-	/**
-	 * Setter for <code>cattle.instance.system_container</code>.
-	 */
-	@Override
-	public void setSystemContainer(java.lang.String value) {
-		setValue(24, value);
-	}
-
-	/**
-	 * Getter for <code>cattle.instance.system_container</code>.
-	 */
-	@javax.persistence.Column(name = "system_container", length = 128)
-	@Override
-	public java.lang.String getSystemContainer() {
-		return (java.lang.String) getValue(24);
+		return (java.lang.String) getValue(22);
 	}
 
 	/**
@@ -446,7 +412,7 @@ public class InstanceRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.
 	 */
 	@Override
 	public void setRegistryCredentialId(java.lang.Long value) {
-		setValue(25, value);
+		setValue(23, value);
 	}
 
 	/**
@@ -455,7 +421,7 @@ public class InstanceRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.
 	@javax.persistence.Column(name = "registry_credential_id", precision = 19)
 	@Override
 	public java.lang.Long getRegistryCredentialId() {
-		return (java.lang.Long) getValue(25);
+		return (java.lang.Long) getValue(23);
 	}
 
 	/**
@@ -463,7 +429,7 @@ public class InstanceRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.
 	 */
 	@Override
 	public void setExternalId(java.lang.String value) {
-		setValue(26, value);
+		setValue(24, value);
 	}
 
 	/**
@@ -472,7 +438,7 @@ public class InstanceRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.
 	@javax.persistence.Column(name = "external_id", length = 128)
 	@Override
 	public java.lang.String getExternalId() {
-		return (java.lang.String) getValue(26);
+		return (java.lang.String) getValue(24);
 	}
 
 	/**
@@ -480,7 +446,7 @@ public class InstanceRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.
 	 */
 	@Override
 	public void setNativeContainer(java.lang.Boolean value) {
-		setValue(27, value);
+		setValue(25, value);
 	}
 
 	/**
@@ -489,7 +455,7 @@ public class InstanceRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.
 	@javax.persistence.Column(name = "native_container", nullable = false, precision = 1)
 	@Override
 	public java.lang.Boolean getNativeContainer() {
-		return (java.lang.Boolean) getValue(27);
+		return (java.lang.Boolean) getValue(25);
 	}
 
 	/**
@@ -497,7 +463,7 @@ public class InstanceRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.
 	 */
 	@Override
 	public void setNetworkContainerId(java.lang.Long value) {
-		setValue(28, value);
+		setValue(26, value);
 	}
 
 	/**
@@ -506,7 +472,7 @@ public class InstanceRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.
 	@javax.persistence.Column(name = "network_container_id", precision = 19)
 	@Override
 	public java.lang.Long getNetworkContainerId() {
-		return (java.lang.Long) getValue(28);
+		return (java.lang.Long) getValue(26);
 	}
 
 	/**
@@ -514,7 +480,7 @@ public class InstanceRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.
 	 */
 	@Override
 	public void setHealthState(java.lang.String value) {
-		setValue(29, value);
+		setValue(27, value);
 	}
 
 	/**
@@ -523,7 +489,7 @@ public class InstanceRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.
 	@javax.persistence.Column(name = "health_state", length = 128)
 	@Override
 	public java.lang.String getHealthState() {
-		return (java.lang.String) getValue(29);
+		return (java.lang.String) getValue(27);
 	}
 
 	/**
@@ -531,7 +497,7 @@ public class InstanceRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.
 	 */
 	@Override
 	public void setStartCount(java.lang.Long value) {
-		setValue(30, value);
+		setValue(28, value);
 	}
 
 	/**
@@ -540,7 +506,7 @@ public class InstanceRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.
 	@javax.persistence.Column(name = "start_count", precision = 19)
 	@Override
 	public java.lang.Long getStartCount() {
-		return (java.lang.Long) getValue(30);
+		return (java.lang.Long) getValue(28);
 	}
 
 	/**
@@ -548,7 +514,7 @@ public class InstanceRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.
 	 */
 	@Override
 	public void setCreateIndex(java.lang.Long value) {
-		setValue(31, value);
+		setValue(29, value);
 	}
 
 	/**
@@ -557,7 +523,7 @@ public class InstanceRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.
 	@javax.persistence.Column(name = "create_index", precision = 19)
 	@Override
 	public java.lang.Long getCreateIndex() {
-		return (java.lang.Long) getValue(31);
+		return (java.lang.Long) getValue(29);
 	}
 
 	/**
@@ -565,7 +531,7 @@ public class InstanceRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.
 	 */
 	@Override
 	public void setDeploymentUnitUuid(java.lang.String value) {
-		setValue(32, value);
+		setValue(30, value);
 	}
 
 	/**
@@ -574,7 +540,7 @@ public class InstanceRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.
 	@javax.persistence.Column(name = "deployment_unit_uuid", length = 128)
 	@Override
 	public java.lang.String getDeploymentUnitUuid() {
-		return (java.lang.String) getValue(32);
+		return (java.lang.String) getValue(30);
 	}
 
 	/**
@@ -582,7 +548,7 @@ public class InstanceRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.
 	 */
 	@Override
 	public void setVersion(java.lang.String value) {
-		setValue(33, value);
+		setValue(31, value);
 	}
 
 	/**
@@ -591,7 +557,7 @@ public class InstanceRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.
 	@javax.persistence.Column(name = "version", length = 255)
 	@Override
 	public java.lang.String getVersion() {
-		return (java.lang.String) getValue(33);
+		return (java.lang.String) getValue(31);
 	}
 
 	/**
@@ -599,7 +565,7 @@ public class InstanceRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.
 	 */
 	@Override
 	public void setHealthUpdated(java.util.Date value) {
-		setValue(34, value);
+		setValue(32, value);
 	}
 
 	/**
@@ -608,7 +574,7 @@ public class InstanceRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.
 	@javax.persistence.Column(name = "health_updated")
 	@Override
 	public java.util.Date getHealthUpdated() {
-		return (java.util.Date) getValue(34);
+		return (java.util.Date) getValue(32);
 	}
 
 	/**
@@ -616,7 +582,7 @@ public class InstanceRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.
 	 */
 	@Override
 	public void setServiceIndexId(java.lang.Long value) {
-		setValue(35, value);
+		setValue(33, value);
 	}
 
 	/**
@@ -625,7 +591,7 @@ public class InstanceRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.
 	@javax.persistence.Column(name = "service_index_id", precision = 19)
 	@Override
 	public java.lang.Long getServiceIndexId() {
-		return (java.lang.Long) getValue(35);
+		return (java.lang.Long) getValue(33);
 	}
 
 	/**
@@ -633,7 +599,7 @@ public class InstanceRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.
 	 */
 	@Override
 	public void setDnsInternal(java.lang.String value) {
-		setValue(36, value);
+		setValue(34, value);
 	}
 
 	/**
@@ -642,7 +608,7 @@ public class InstanceRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.
 	@javax.persistence.Column(name = "dns_internal", length = 255)
 	@Override
 	public java.lang.String getDnsInternal() {
-		return (java.lang.String) getValue(36);
+		return (java.lang.String) getValue(34);
 	}
 
 	/**
@@ -650,7 +616,7 @@ public class InstanceRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.
 	 */
 	@Override
 	public void setDnsSearchInternal(java.lang.String value) {
-		setValue(37, value);
+		setValue(35, value);
 	}
 
 	/**
@@ -659,7 +625,7 @@ public class InstanceRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.
 	@javax.persistence.Column(name = "dns_search_internal", length = 255)
 	@Override
 	public java.lang.String getDnsSearchInternal() {
-		return (java.lang.String) getValue(37);
+		return (java.lang.String) getValue(35);
 	}
 
 	/**
@@ -667,7 +633,7 @@ public class InstanceRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.
 	 */
 	@Override
 	public void setMemoryReservation(java.lang.Long value) {
-		setValue(38, value);
+		setValue(36, value);
 	}
 
 	/**
@@ -676,7 +642,7 @@ public class InstanceRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.
 	@javax.persistence.Column(name = "memory_reservation", precision = 19)
 	@Override
 	public java.lang.Long getMemoryReservation() {
-		return (java.lang.Long) getValue(38);
+		return (java.lang.Long) getValue(36);
 	}
 
 	/**
@@ -684,7 +650,7 @@ public class InstanceRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.
 	 */
 	@Override
 	public void setMilliCpuReservation(java.lang.Long value) {
-		setValue(39, value);
+		setValue(37, value);
 	}
 
 	/**
@@ -693,7 +659,7 @@ public class InstanceRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.
 	@javax.persistence.Column(name = "milli_cpu_reservation", precision = 19)
 	@Override
 	public java.lang.Long getMilliCpuReservation() {
-		return (java.lang.Long) getValue(39);
+		return (java.lang.Long) getValue(37);
 	}
 
 	/**
@@ -701,7 +667,7 @@ public class InstanceRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.
 	 */
 	@Override
 	public void setSystem(java.lang.Boolean value) {
-		setValue(40, value);
+		setValue(38, value);
 	}
 
 	/**
@@ -710,7 +676,7 @@ public class InstanceRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.
 	@javax.persistence.Column(name = "system", nullable = false, precision = 1)
 	@Override
 	public java.lang.Boolean getSystem() {
-		return (java.lang.Boolean) getValue(40);
+		return (java.lang.Boolean) getValue(38);
 	}
 
 	// -------------------------------------------------------------------------
@@ -749,7 +715,6 @@ public class InstanceRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.
 		setCompute(from.getCompute());
 		setMemoryMb(from.getMemoryMb());
 		setImageId(from.getImageId());
-		setOfferingId(from.getOfferingId());
 		setHostname(from.getHostname());
 		setZoneId(from.getZoneId());
 		setInstanceTriggeredStop(from.getInstanceTriggeredStop());
@@ -758,7 +723,6 @@ public class InstanceRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.
 		setFirstRunning(from.getFirstRunning());
 		setToken(from.getToken());
 		setUserdata(from.getUserdata());
-		setSystemContainer(from.getSystemContainer());
 		setRegistryCredentialId(from.getRegistryCredentialId());
 		setExternalId(from.getExternalId());
 		setNativeContainer(from.getNativeContainer());
@@ -800,7 +764,7 @@ public class InstanceRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.
 	/**
 	 * Create a detached, initialised InstanceRecord
 	 */
-	public InstanceRecord(java.lang.Long id, java.lang.String name, java.lang.Long accountId, java.lang.String kind, java.lang.String uuid, java.lang.String description, java.lang.String state, java.util.Date created, java.util.Date removed, java.util.Date removeTime, java.util.Map<String,Object> data, java.lang.String allocationState, java.lang.Long compute, java.lang.Long memoryMb, java.lang.Long imageId, java.lang.Long offeringId, java.lang.String hostname, java.lang.Long zoneId, java.lang.String instanceTriggeredStop, java.lang.Long agentId, java.lang.String domain, java.util.Date firstRunning, java.lang.String token, java.lang.String userdata, java.lang.String systemContainer, java.lang.Long registryCredentialId, java.lang.String externalId, java.lang.Boolean nativeContainer, java.lang.Long networkContainerId, java.lang.String healthState, java.lang.Long startCount, java.lang.Long createIndex, java.lang.String deploymentUnitUuid, java.lang.String version, java.util.Date healthUpdated, java.lang.Long serviceIndexId, java.lang.String dnsInternal, java.lang.String dnsSearchInternal, java.lang.Long memoryReservation, java.lang.Long milliCpuReservation, java.lang.Boolean system) {
+	public InstanceRecord(java.lang.Long id, java.lang.String name, java.lang.Long accountId, java.lang.String kind, java.lang.String uuid, java.lang.String description, java.lang.String state, java.util.Date created, java.util.Date removed, java.util.Date removeTime, java.util.Map<String,Object> data, java.lang.String allocationState, java.lang.Long compute, java.lang.Long memoryMb, java.lang.Long imageId, java.lang.String hostname, java.lang.Long zoneId, java.lang.String instanceTriggeredStop, java.lang.Long agentId, java.lang.String domain, java.util.Date firstRunning, java.lang.String token, java.lang.String userdata, java.lang.Long registryCredentialId, java.lang.String externalId, java.lang.Boolean nativeContainer, java.lang.Long networkContainerId, java.lang.String healthState, java.lang.Long startCount, java.lang.Long createIndex, java.lang.String deploymentUnitUuid, java.lang.String version, java.util.Date healthUpdated, java.lang.Long serviceIndexId, java.lang.String dnsInternal, java.lang.String dnsSearchInternal, java.lang.Long memoryReservation, java.lang.Long milliCpuReservation, java.lang.Boolean system) {
 		super(io.cattle.platform.core.model.tables.InstanceTable.INSTANCE);
 
 		setValue(0, id);
@@ -818,31 +782,29 @@ public class InstanceRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.
 		setValue(12, compute);
 		setValue(13, memoryMb);
 		setValue(14, imageId);
-		setValue(15, offeringId);
-		setValue(16, hostname);
-		setValue(17, zoneId);
-		setValue(18, instanceTriggeredStop);
-		setValue(19, agentId);
-		setValue(20, domain);
-		setValue(21, firstRunning);
-		setValue(22, token);
-		setValue(23, userdata);
-		setValue(24, systemContainer);
-		setValue(25, registryCredentialId);
-		setValue(26, externalId);
-		setValue(27, nativeContainer);
-		setValue(28, networkContainerId);
-		setValue(29, healthState);
-		setValue(30, startCount);
-		setValue(31, createIndex);
-		setValue(32, deploymentUnitUuid);
-		setValue(33, version);
-		setValue(34, healthUpdated);
-		setValue(35, serviceIndexId);
-		setValue(36, dnsInternal);
-		setValue(37, dnsSearchInternal);
-		setValue(38, memoryReservation);
-		setValue(39, milliCpuReservation);
-		setValue(40, system);
+		setValue(15, hostname);
+		setValue(16, zoneId);
+		setValue(17, instanceTriggeredStop);
+		setValue(18, agentId);
+		setValue(19, domain);
+		setValue(20, firstRunning);
+		setValue(21, token);
+		setValue(22, userdata);
+		setValue(23, registryCredentialId);
+		setValue(24, externalId);
+		setValue(25, nativeContainer);
+		setValue(26, networkContainerId);
+		setValue(27, healthState);
+		setValue(28, startCount);
+		setValue(29, createIndex);
+		setValue(30, deploymentUnitUuid);
+		setValue(31, version);
+		setValue(32, healthUpdated);
+		setValue(33, serviceIndexId);
+		setValue(34, dnsInternal);
+		setValue(35, dnsSearchInternal);
+		setValue(36, memoryReservation);
+		setValue(37, milliCpuReservation);
+		setValue(38, system);
 	}
 }

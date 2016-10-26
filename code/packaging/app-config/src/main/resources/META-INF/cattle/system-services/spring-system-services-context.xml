@@ -15,48 +15,6 @@
     <bean class="io.cattle.platform.agent.instance.dao.impl.AgentInstanceDaoImpl" />
     <bean id="AgentInstanceFactory" class="io.cattle.platform.agent.instance.factory.impl.AgentInstanceFactoryImpl" />
     <bean class="io.cattle.platform.agent.instance.serialization.AgentInstanceAuthObjectPostProcessor" />
-    <bean class="io.cattle.platform.agent.instance.service.impl.AgentInstanceManagerImpl" >
-        <property name="nicLookups" value="#{extensionManager.list('instance.nic.lookup')}" />
-    </bean>
-
-    <bean class="io.cattle.platform.agent.instance.service.impl.InstanceHostMapNicLookup" />
-    <bean class="io.cattle.platform.agent.instance.service.impl.InstanceLinkNicLookup" />
-    <bean class="io.cattle.platform.agent.instance.service.impl.HostIpAddressMapNicLookup" />
-    <bean class="io.cattle.platform.agent.instance.service.impl.PortNicLookup" />
-    <bean class="io.cattle.platform.agent.instance.service.impl.IpAddressNicLookup" />
-    <bean class="io.cattle.platform.agent.instance.service.impl.IpAssociationNicLookup" />
-    <bean class="io.cattle.platform.agent.instance.service.impl.ServiceExposeMapCreateNicLookup" />
-    <bean class="io.cattle.platform.agent.instance.service.impl.ServiceConsumeMapCreateNicLookup" />
-    <bean class="io.cattle.platform.agent.instance.service.impl.ServiceNicLookup" />
-    <bean class="io.cattle.platform.agent.instance.service.impl.HostCreateRemoveNicLookup" />
-    <bean class="io.cattle.platform.agent.instance.service.impl.HealthcheckInstanceHostMapNicLookup" />
-    <bean class="io.cattle.platform.agent.instance.service.impl.NicPerVnetNicLookup" />
-    <bean class="io.cattle.platform.agent.instance.service.impl.ContainerNicLookup" />
-    <bean class="io.cattle.platform.agent.instance.service.impl.AccountRenameNicLookup" />
-
-    <bean id="AgentInstanceTypes" class="io.cattle.platform.object.meta.TypeSet" >
-        <property name="typeNames">
-            <list>
-                <value>agentInstanceProvider,parent=networkServiceProvider</value>
-                <value>dhcpService,parent=networkService</value>
-                <value>ipsecTunnelService,parent=networkService</value>
-                <value>linkService,parent=networkService</value>
-                <value>portService,parent=networkService</value>
-                <value>metadataService,parent=networkService</value>
-                <value>gatewayService,parent=networkService</value>
-                <value>hostNatGatewayService,parent=networkService</value>
-            </list>
-        </property>
-    </bean>
-
-    <bean class="io.cattle.platform.agent.instance.process.AgentInstanceInstanceCreate" />
-    <bean class="io.cattle.platform.agent.instance.process.AgentInstanceInstanceStart" />
-    <bean class="io.cattle.platform.agent.instance.process.AgentInstanceInstanceRemove" />
-    <bean class="io.cattle.platform.agent.instance.process.AgentInstanceNicActivate" />
-    <bean class="io.cattle.platform.agent.instance.process.AgentInstancePostNicActivate" />
-    <bean class="io.cattle.platform.agent.instance.process.AgentInstancePreInstanceHostMapActivate" />
-    <bean class="io.cattle.platform.agent.instance.process.AgentInstanceApplyItems" />
-    <bean class="io.cattle.platform.agent.instance.process.AgentInstanceHostServicesApplyItems" />
 
     <tx:advice id="AgentInstanceDaoAdvice" transaction-manager="CoreTransactionManager">
         <tx:attributes>
@@ -68,12 +26,7 @@
         <aop:advisor advice-ref="AgentInstanceDaoAdvice" pointcut="execution(* io.cattle.platform.agent.instance.dao.AgentInstanceDao.*(..))" />
     </aop:config>
 
-    <extension:discover class="io.cattle.platform.agent.instance.service.InstanceNicLookup" />
-
     <bean class="io.cattle.platform.agent.instance.link.process.AgentInstanceLinkActivate" />
-    <bean class="io.cattle.platform.agent.instance.ipsec.process.AgentInstanceIpsecNetworkServiceCreate" />
-    <bean class="io.cattle.platform.agent.instance.ipsec.process.AgentInstanceIpsecNicActivate" />
-    <bean class="io.cattle.platform.agent.instance.ipsec.process.AgentInstanceIpsecNicDeactivate" />
 
     <bean id="AgentLocator" class="io.cattle.platform.agent.impl.AgentLocatorImpl" />
 
@@ -132,7 +85,6 @@
     <bean class="io.cattle.platform.core.dao.impl.NicDaoImpl" />
     <bean class="io.cattle.platform.core.dao.impl.NetworkDaoImpl" />
     <bean class="io.cattle.platform.core.dao.impl.StoragePoolDaoImpl" />
-    <bean class="io.cattle.platform.core.dao.impl.VnetDaoImpl" />
     <bean class="io.cattle.platform.core.dao.impl.LabelsDaoImpl" />
     <bean class="io.cattle.platform.core.dao.impl.HostDaoImpl" />
     <bean class="io.cattle.platform.core.dao.impl.VolumeDaoImpl" />
@@ -250,11 +202,9 @@
 
 	<bean class="io.cattle.iaas.healthcheck.service.impl.AgentHealthcheckHostLookup" />
 	<bean class="io.cattle.iaas.healthcheck.service.impl.HostHealthcheckHostLookup" />
-	<bean class="io.cattle.iaas.healthcheck.service.impl.ProviderInstanceMapHealthcheckHostLookup" />
 
 	<bean class="io.cattle.iaas.healthcheck.service.impl.AgentHealthcheckInstancesLookup" />
 	<bean class="io.cattle.iaas.healthcheck.service.impl.HostMapHealthcheckInstancesLookup" />
-	<bean class="io.cattle.iaas.healthcheck.service.impl.ProviderInstanceMapHealthcheckInstancesLookup" />
 	
 	<bean class="io.cattle.iaas.healthcheck.service.impl.HealthcheckCleanupMonitorImpl" />
 
@@ -289,7 +239,6 @@
 
     <bean class="io.cattle.platform.metadata.service.impl.MetadataServiceImpl" />
     <bean class="io.cattle.platform.metadata.dao.impl.MetadataDaoImpl" />
-    <bean class="io.cattle.platform.metadata.serializer.MetadataInstanceSerializer" />
 
     <bean id="DefaultObjectMetaDataManager" class="io.cattle.platform.object.meta.impl.DefaultObjectMetaDataManager" >
         <property name="typeSets" value="#{extensionManager.list('type.set')}" />
@@ -431,6 +380,9 @@
     <bean class="io.cattle.platform.sample.data.SampleDataStartupV11" />
     <bean class="io.cattle.platform.sample.data.SampleDataStartupV12" />
  
+    <bean class="io.cattle.platform.agent.instance.process.AgentInstanceInstanceCreate" />
+    <bean class="io.cattle.platform.agent.instance.process.AgentInstanceInstanceRemove" />
+
     <!-- We are not using this at the moment, we will just disable
     <bean class="io.cattle.platform.servicediscovery.process.ServiceAgentDelegateHandler" />
     -->
@@ -555,5 +507,6 @@
     <bean class="io.cattle.platform.docker.service.impl.ComposeManagerImpl" />
 
     <bean class="io.cattle.platform.service.launcher.ServiceAccountCreateStartup" />
+    <bean class="io.cattle.platform.network.impl.NetworkServiceImpl" />
 
 </beans>

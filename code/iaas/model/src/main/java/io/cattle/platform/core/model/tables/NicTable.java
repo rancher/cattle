@@ -11,7 +11,7 @@ package io.cattle.platform.core.model.tables;
 @java.lang.SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class NicTable extends org.jooq.impl.TableImpl<io.cattle.platform.core.model.tables.records.NicRecord> {
 
-	private static final long serialVersionUID = -239236646;
+	private static final long serialVersionUID = -1793324452;
 
 	/**
 	 * The singleton instance of <code>cattle.nic</code>
@@ -92,16 +92,6 @@ public class NicTable extends org.jooq.impl.TableImpl<io.cattle.platform.core.mo
 	public final org.jooq.TableField<io.cattle.platform.core.model.tables.records.NicRecord, java.lang.Long> NETWORK_ID = createField("network_id", org.jooq.impl.SQLDataType.BIGINT, this, "");
 
 	/**
-	 * The column <code>cattle.nic.subnet_id</code>.
-	 */
-	public final org.jooq.TableField<io.cattle.platform.core.model.tables.records.NicRecord, java.lang.Long> SUBNET_ID = createField("subnet_id", org.jooq.impl.SQLDataType.BIGINT, this, "");
-
-	/**
-	 * The column <code>cattle.nic.vnet_id</code>.
-	 */
-	public final org.jooq.TableField<io.cattle.platform.core.model.tables.records.NicRecord, java.lang.Long> VNET_ID = createField("vnet_id", org.jooq.impl.SQLDataType.BIGINT, this, "");
-
-	/**
 	 * The column <code>cattle.nic.device_number</code>.
 	 */
 	public final org.jooq.TableField<io.cattle.platform.core.model.tables.records.NicRecord, java.lang.Integer> DEVICE_NUMBER = createField("device_number", org.jooq.impl.SQLDataType.INTEGER, this, "");
@@ -162,7 +152,7 @@ public class NicTable extends org.jooq.impl.TableImpl<io.cattle.platform.core.mo
 	 */
 	@Override
 	public java.util.List<org.jooq.ForeignKey<io.cattle.platform.core.model.tables.records.NicRecord, ?>> getReferences() {
-		return java.util.Arrays.<org.jooq.ForeignKey<io.cattle.platform.core.model.tables.records.NicRecord, ?>>asList(io.cattle.platform.core.model.Keys.FK_NIC__ACCOUNT_ID, io.cattle.platform.core.model.Keys.FK_NIC__INSTANCE_ID, io.cattle.platform.core.model.Keys.FK_NIC__NETWORK_ID, io.cattle.platform.core.model.Keys.FK_NIC__SUBNET_ID, io.cattle.platform.core.model.Keys.FK_NIC__VNET_ID);
+		return java.util.Arrays.<org.jooq.ForeignKey<io.cattle.platform.core.model.tables.records.NicRecord, ?>>asList(io.cattle.platform.core.model.Keys.FK_NIC__ACCOUNT_ID, io.cattle.platform.core.model.Keys.FK_NIC__INSTANCE_ID, io.cattle.platform.core.model.Keys.FK_NIC__NETWORK_ID);
 	}
 
 	/**

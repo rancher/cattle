@@ -8,6 +8,7 @@ import static io.cattle.platform.core.model.tables.PortTable.*;
 import static io.cattle.platform.core.model.tables.ServiceExposeMapTable.*;
 import static io.cattle.platform.core.model.tables.StoragePoolHostMapTable.*;
 import static io.cattle.platform.core.model.tables.StoragePoolTable.*;
+
 import io.cattle.platform.allocator.service.AllocationCandidate;
 import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.InstanceConstants;
@@ -15,7 +16,6 @@ import io.cattle.platform.core.model.Port;
 import io.cattle.platform.core.model.tables.records.PortRecord;
 import io.cattle.platform.db.jooq.dao.impl.AbstractJooqDao;
 import io.cattle.platform.object.ObjectManager;
-import io.cattle.platform.simple.allocator.AllocationCandidateCallback;
 import io.cattle.platform.simple.allocator.dao.QueryOptions;
 import io.cattle.platform.simple.allocator.dao.SimpleAllocatorDao;
 
@@ -51,16 +51,15 @@ public class SimpleAllocatorDaoImpl extends AbstractJooqDao implements SimpleAll
 
     @Override
     public Iterator<AllocationCandidate> iteratorPools(List<Long> volumes, QueryOptions options) {
-        return iteratorHosts(null, volumes, options, false, null);
+        return iteratorHosts(null, volumes, options, false);
     }
 
     @Override
-    public Iterator<AllocationCandidate> iteratorHosts(List<String> orderedHostUUIDs, List<Long> volumes, QueryOptions options, AllocationCandidateCallback callback) {
-        return iteratorHosts(orderedHostUUIDs, volumes, options, true, callback);
+    public Iterator<AllocationCandidate> iteratorHosts(List<String> orderedHostUUIDs, List<Long> volumes, QueryOptions options) {
+        return iteratorHosts(orderedHostUUIDs, volumes, options, true);
     }
 
-    protected Iterator<AllocationCandidate> iteratorHosts(List<String> orderedHostUuids, List<Long> volumes, QueryOptions options, boolean hosts,
-            AllocationCandidateCallback callback) {
+    protected Iterator<AllocationCandidate> iteratorHosts(List<String> orderedHostUuids, List<Long> volumes, QueryOptions options, boolean hosts) {
         List<CandidateHostInfo> hostInfos = new ArrayList<>();
         Set<Long> hostIds = new HashSet<>();
         if (orderedHostUuids == null) {
@@ -106,7 +105,7 @@ public class SimpleAllocatorDaoImpl extends AbstractJooqDao implements SimpleAll
             updateHostsWithUsedPorts(hostIds, hostInfos);
         }
 
-        return new AllocationCandidateIterator(objectManager, hostInfos, volumes, hosts, callback);
+        return new AllocationCandidateIterator(objectManager, hostInfos, volumes, hosts);
     }
 
     private void updateHostsWithUsedPorts(Set<Long> hostIds, List<CandidateHostInfo> hostInfos) {

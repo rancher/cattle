@@ -10,6 +10,7 @@ import static io.cattle.platform.core.model.tables.IpAddressTable.*;
 import static io.cattle.platform.core.model.tables.NetworkTable.*;
 import static io.cattle.platform.core.model.tables.NicTable.*;
 import static io.cattle.platform.core.model.tables.ServiceExposeMapTable.*;
+
 import io.cattle.platform.configitem.context.dao.MetaDataInfoDao;
 import io.cattle.platform.configitem.context.data.metadata.common.ContainerMetaData;
 import io.cattle.platform.configitem.context.data.metadata.common.HostMetaData;
@@ -44,6 +45,7 @@ import java.util.Map;
 
 import javax.inject.Inject;
 
+import org.apache.commons.lang3.StringUtils;
 import org.jooq.JoinType;
 import org.jooq.Record1;
 import org.jooq.RecordHandler;
@@ -243,7 +245,9 @@ public class MetaDataInfoDaoImpl extends AbstractJooqDao implements MetaDataInfo
                 .fetchInto(new RecordHandler<Record1<String>>() {
                     @Override
                     public void next(Record1<String> record) {
-                        ips.add(record.value1());
+                        if (StringUtils.isNotBlank(record.value1())) {
+                            ips.add(record.value1());
+                        }
                     }
                 });
         return ips;

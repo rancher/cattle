@@ -4,12 +4,24 @@ import io.cattle.platform.core.model.Service;
 import io.cattle.platform.core.model.Stack;
 import io.cattle.platform.object.util.DataAccessor;
 
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
+
 public class ServiceConstants {
 
     public static final String KIND_SERVICE = "service";
     public static final String KIND_LOAD_BALANCER_SERVICE = "loadBalancerService";
     public static final String KIND_EXTERNAL_SERVICE = "externalService";
     public static final String KIND_DNS_SERVICE = "dnsService";
+    public static final String KIND_STORAGE_DRIVER_SERVICE = "storageDriverService";
+    public static final String KIND_NETWORK_DRIVER_SERVICE = "networkDriverService";
+    public static final Set<String> SERVICE_LIKE = new HashSet<>(Arrays.asList(
+            KIND_SERVICE,
+            KIND_LOAD_BALANCER_SERVICE,
+            KIND_STORAGE_DRIVER_SERVICE,
+            KIND_NETWORK_DRIVER_SERVICE
+        ));
 
     public static final String TYPE_STACK = "stack";
     public static final String FIELD_SCALE = "scale";

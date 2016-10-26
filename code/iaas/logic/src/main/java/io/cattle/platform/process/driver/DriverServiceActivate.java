@@ -1,7 +1,6 @@
 package io.cattle.platform.process.driver;
 
 import io.cattle.platform.core.constants.CommonStatesConstants;
-import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.constants.ServiceConstants;
 import io.cattle.platform.core.dao.GenericResourceDao;
 import io.cattle.platform.core.model.Service;
@@ -22,7 +21,6 @@ import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.object.util.ObjectUtils;
 import io.cattle.platform.process.lock.DriverLock;
 import io.cattle.platform.util.type.CollectionUtils;
-import io.cattle.platform.util.type.NamedUtils;
 
 import java.util.Collections;
 import java.util.Map;
@@ -33,7 +31,7 @@ import javax.inject.Named;
 @Named
 public class DriverServiceActivate extends AbstractProcessLogic implements ProcessPreListener {
 
-    public static String[] DRIVERS = new String[]{"network_driver", "storage_driver"};
+    public static String[] DRIVERS = new String[]{"networkDriver", "storageDriver"};
 
     @Inject
     JsonMapper jsonMapper;
@@ -48,19 +46,16 @@ public class DriverServiceActivate extends AbstractProcessLogic implements Proce
 
     @Override
     public String[] getProcessNames() {
-        return new String[]{"service.create"};
+        return new String[]{"service.create", "service.update", "service.activate"};
     }
 
     @Override
     public HandlerResult handle(ProcessState state, ProcessInstance process) {
         final Service service = (Service)state.getResource();
-        @SuppressWarnings("unchecked")
-        final Map<String, Object> metadata = DataAccessor.fields(service).withKey(InstanceConstants.FIELD_METADATA)
-            .withDefault(Collections.EMPTY_MAP).as(Map.class);
 
         for (final String driverKey : DRIVERS) {
             @SuppressWarnings("unchecked")
-            final Map<String, Object> driverMap = DataAccessor.fromMap(metadata).withKey(driverKey)
+            final Map<String, Object> driverMap = DataAccessor.fields(service).withKey(driverKey)
                     .withDefault(Collections.EMPTY_MAP).as(Map.class);
             if (driverMap.size() == 0) {
                 continue;
@@ -83,8 +78,7 @@ public class DriverServiceActivate extends AbstractProcessLogic implements Proce
     }
 
     protected Object findDriver(String driverKey, Service service, Map<String, Object> fields) {
-        String driverType = NamedUtils.toCamelCase(driverKey);
-        Class<?> driverClass = objectManager.getSchemaFactory().getSchemaClass(driverType);
+        Class<?> driverClass = objectManager.getSchemaFactory().getSchemaClass(driverKey);
         return objectManager.findAny(driverClass,
                 "serviceId", service.getId(),
                 ObjectMetaDataManager.REMOVED_FIELD, null);
@@ -96,7 +90,7 @@ public class DriverServiceActivate extends AbstractProcessLogic implements Proce
             driver = createDriver(driverKey, service, fields);
         }
         if (!CommonStatesConstants.ACTIVE.equals(ObjectUtils.getState(driver))) {
-            processManager.scheduleStandardProcess(StandardProcess.ACTIVATE, driver, null);
+            processManager.scheduleStandardProcessAsync(StandardProcess.ACTIVATE, driver, null);
         }
     }
 
@@ -105,8 +99,7 @@ public class DriverServiceActivate extends AbstractProcessLogic implements Proce
     }
 
     private Object createDriver(String driverKey, Service service, Map<String, Object> fields) {
-        String driverType = NamedUtils.toCamelCase(driverKey);
-        Class<?> driverClass = objectManager.getSchemaFactory().getSchemaClass(driverType);
+        Class<?> driverClass = objectManager.getSchemaFactory().getSchemaClass(driverKey);
 
         String name = getString(fields, ObjectMetaDataManager.NAME_FIELD);
         if (name == null) {

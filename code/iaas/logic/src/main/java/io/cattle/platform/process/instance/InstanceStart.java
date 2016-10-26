@@ -1,6 +1,7 @@
 package io.cattle.platform.process.instance;
 
 import static io.cattle.platform.core.model.tables.InstanceHostMapTable.*;
+
 import io.cattle.platform.archaius.util.ArchaiusUtil;
 import io.cattle.platform.async.utils.TimeoutException;
 import io.cattle.platform.core.addon.InstanceHealthCheck;
@@ -67,7 +68,7 @@ public class InstanceStart extends AbstractDefaultProcessHandler {
             InstanceConstants.STATE_RUNNING);
 
     private static final List<String> UNALLOCATED_WAIT_STATES = Arrays.asList(CommonStatesConstants.REQUESTED, CommonStatesConstants.CREATING);
-    
+
     private static final Logger log = LoggerFactory.getLogger(InstanceStart.class);
 
     @Inject
@@ -93,10 +94,13 @@ public class InstanceStart extends AbstractDefaultProcessHandler {
         Map<String, Object> resultData = new ConcurrentHashMap<String, Object>();
         HandlerResult result = new HandlerResult(resultData);
 
-        progress.init(state, 1, 4, 5, 80, 5, 5);
+        progress.init(state, 16, 16, 16, 16, 20, 16);
 
         try {
             try {
+                progress.checkPoint("Networking");
+                network(instance, state);
+
                 progress.checkPoint("Waiting for dependencies");
                 // wait until volumesFrom/networksFrom containers start up
                 waitForDependenciesStart(instance);
@@ -106,12 +110,9 @@ public class InstanceStart extends AbstractDefaultProcessHandler {
 
                 progress.checkPoint("Scheduling");
                 allocate(instance);
+                activatePorts(instance, state);
 
                 instanceDao.clearCacheInstanceData(instance.getId());
-
-                progress.checkPoint("Networking");
-                network(instance, state);
-                activatePorts(instance, state);
 
                 progress.checkPoint("Storage");
                 storage(instance, state);
@@ -300,11 +301,6 @@ public class InstanceStart extends AbstractDefaultProcessHandler {
         if (address != null) {
             resultData.put(InstanceConstants.FIELD_PRIMARY_IP_ADDRESS, address);
         }
-
-        IpAddress assoc = ipAddressDao.getPrimaryAssociatedIpAddress(ip);
-        if (assoc != null) {
-            resultData.put(InstanceConstants.FIELD_PRIMARY_ASSOCIATED_IP_ADDRESS, assoc.getAddress());
-        }
     }
 
     protected int getMaxComputeTries(Instance instance) {
@@ -318,14 +314,12 @@ public class InstanceStart extends AbstractDefaultProcessHandler {
     }
 
     protected HandlerResult handleStartError(ProcessState state, Instance instance, ExecutionException e) {
-        String chainProcess = InstanceConstants.SYSTEM_CONTAINER_NETWORK_AGENT.equalsIgnoreCase(instance
-                .getSystemContainer()) ? InstanceConstants.PROCESS_REMOVE : InstanceConstants.PROCESS_ERROR;
         if (InstanceCreate.isCreateStart(state) && !ContainerEventCreate.isNativeDockerStart(state) ) {
             HashMap<String, Object> data = new HashMap<String, Object>();
             data.put(InstanceConstants.PROCESS_DATA_ERROR, true);
             getObjectProcessManager().scheduleProcessInstance(InstanceConstants.PROCESS_STOP, instance,
-                    ProcessUtils.chainInData(data, InstanceConstants.PROCESS_STOP,
-                            chainProcess));
+                    ProcessUtils.chainInData(new HashMap<String, Object>(), InstanceConstants.PROCESS_STOP,
+                            InstanceConstants.PROCESS_ERROR));
         } else {
             getObjectProcessManager().scheduleProcessInstance(InstanceConstants.PROCESS_STOP, instance, null);
         }

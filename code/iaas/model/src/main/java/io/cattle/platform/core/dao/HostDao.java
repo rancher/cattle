@@ -18,8 +18,6 @@ public interface HostDao {
 
     IpAddress getIpAddressForHost(Long hostId);
 
-    boolean isServiceSupportedOnHost(long hostId, long networkId, String serviceKind);
-
     Map<Long, List<Object>> getInstancesPerHost(List<Long> hosts, IdFormatter idFormatter);
 
     PhysicalHost createMachineForHost(Host host);

@@ -32,10 +32,6 @@ public interface AllocatorDao {
 
     boolean isVolumeInstanceImageKind(long volumeId, String kind);
 
-    List<Long> getHostsForSubnet(long subnetId, Long vnetId);
-
-    List<Long> getPhysicalHostsForSubnet(long subnetId, Long vnetId);
-
     List<Port> getUsedPortsForHostExcludingInstance(long hostId, long instanceId);
 
     // key -> [value,mapping.state]

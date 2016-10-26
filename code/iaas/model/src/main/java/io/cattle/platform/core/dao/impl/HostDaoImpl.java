@@ -5,16 +5,12 @@ import static io.cattle.platform.core.model.tables.HostTable.*;
 import static io.cattle.platform.core.model.tables.InstanceHostMapTable.*;
 import static io.cattle.platform.core.model.tables.InstanceTable.*;
 import static io.cattle.platform.core.model.tables.IpAddressTable.*;
-import static io.cattle.platform.core.model.tables.NetworkServiceProviderTable.*;
-import static io.cattle.platform.core.model.tables.NetworkServiceTable.*;
-import static io.cattle.platform.core.model.tables.NicTable.*;
 import static io.cattle.platform.core.model.tables.PhysicalHostTable.*;
 
 import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.HostConstants;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.constants.MachineConstants;
-import io.cattle.platform.core.constants.NetworkServiceProviderConstants;
 import io.cattle.platform.core.dao.GenericResourceDao;
 import io.cattle.platform.core.dao.HostDao;
 import io.cattle.platform.core.model.Host;
@@ -28,19 +24,20 @@ import io.cattle.platform.deferred.util.DeferredUtils;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.object.util.DataUtils;
+import io.cattle.platform.util.resource.UUID;
 import io.github.ibuildthecloud.gdapi.id.IdFormatter;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 import java.util.concurrent.Callable;
 
 import javax.inject.Inject;
 
 import org.jooq.Record2;
 import org.jooq.RecordHandler;
+
 
 public class HostDaoImpl extends AbstractJooqDao implements HostDao {
 
@@ -97,32 +94,6 @@ public class HostDaoImpl extends AbstractJooqDao implements HostDao {
         }
         return hosts.get(0);
 
-    }
-
-    @Override
-    public boolean isServiceSupportedOnHost(long hostId, long networkId, String serviceKind) {
-        List<Long> ids = create()
-                .select(NETWORK_SERVICE_PROVIDER.ID)
-                .from(NETWORK_SERVICE_PROVIDER)
-                .join(NETWORK_SERVICE)
-                .on(NETWORK_SERVICE_PROVIDER.NETWORK_ID.eq(NETWORK_SERVICE.NETWORK_ID))
-                .join(NIC)
-                .on(NIC.NETWORK_ID.eq(NETWORK_SERVICE.NETWORK_ID))
-                .join(INSTANCE_HOST_MAP)
-                .on(INSTANCE_HOST_MAP.INSTANCE_ID.eq(NIC.INSTANCE_ID))
-                .where(INSTANCE_HOST_MAP.HOST_ID.eq(hostId)
-                        .and(NETWORK_SERVICE.NETWORK_ID.eq(networkId))
-                        .and(NETWORK_SERVICE.KIND.eq(serviceKind))
-                        .and(NETWORK_SERVICE_PROVIDER.KIND.eq(NetworkServiceProviderConstants.KIND_AGENT_INSTANCE))
-                        .and(NETWORK_SERVICE.REMOVED.isNull())
-                        .and(INSTANCE_HOST_MAP.REMOVED.isNull())
-                        .and(NIC.REMOVED.isNull()))
-                .fetchInto(Long.class);
-
-        if (ids.isEmpty()) {
-            return false;
-        }
-        return true;
     }
 
     @Override

@@ -36,6 +36,7 @@
         "machine": "crd",
         "machineDriver.resourceActions\\..*": "",
         "networkDriver": "r",
+        "network": "crud",
         "storageDriver": "r",
         "port" : "ru",
         "project" : "r",
@@ -81,6 +82,8 @@
         "targetPortRule": "cr",
         "lbConfig" : "cr",
         "balancerServiceTargetConfig" : "cr",
+        "networkDriverService" : "crud",
+        "storageDriverService" : "crud",
         "end" : ""
     }
 }

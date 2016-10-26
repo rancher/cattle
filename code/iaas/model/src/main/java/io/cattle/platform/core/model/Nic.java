@@ -158,28 +158,6 @@ public interface Nic extends java.io.Serializable {
 	public java.lang.Long getNetworkId();
 
 	/**
-	 * Setter for <code>cattle.nic.subnet_id</code>.
-	 */
-	public void setSubnetId(java.lang.Long value);
-
-	/**
-	 * Getter for <code>cattle.nic.subnet_id</code>.
-	 */
-	@javax.persistence.Column(name = "subnet_id", precision = 19)
-	public java.lang.Long getSubnetId();
-
-	/**
-	 * Setter for <code>cattle.nic.vnet_id</code>.
-	 */
-	public void setVnetId(java.lang.Long value);
-
-	/**
-	 * Getter for <code>cattle.nic.vnet_id</code>.
-	 */
-	@javax.persistence.Column(name = "vnet_id", precision = 19)
-	public java.lang.Long getVnetId();
-
-	/**
 	 * Setter for <code>cattle.nic.device_number</code>.
 	 */
 	public void setDeviceNumber(java.lang.Integer value);

@@ -158,17 +158,6 @@ public interface Agent extends java.io.Serializable {
 	public java.lang.Boolean getManagedConfig();
 
 	/**
-	 * Setter for <code>cattle.agent.agent_group_id</code>.
-	 */
-	public void setAgentGroupId(java.lang.Long value);
-
-	/**
-	 * Getter for <code>cattle.agent.agent_group_id</code>.
-	 */
-	@javax.persistence.Column(name = "agent_group_id", precision = 19)
-	public java.lang.Long getAgentGroupId();
-
-	/**
 	 * Setter for <code>cattle.agent.zone_id</code>.
 	 */
 	public void setZoneId(java.lang.Long value);

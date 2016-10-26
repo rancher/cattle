@@ -3,9 +3,7 @@ package io.cattle.platform.agent.instance.factory.impl;
 import io.cattle.platform.agent.instance.factory.AgentInstanceBuilder;
 import io.cattle.platform.archaius.util.ArchaiusUtil;
 import io.cattle.platform.core.constants.InstanceConstants;
-import io.cattle.platform.core.constants.NetworkServiceProviderConstants;
 import io.cattle.platform.core.model.Instance;
-import io.cattle.platform.core.model.NetworkServiceProvider;
 import io.cattle.platform.core.util.SystemLabels;
 import io.cattle.platform.object.util.DataAccessor;
 
@@ -23,12 +21,9 @@ public class AgentInstanceBuilderImpl implements AgentInstanceBuilder {
     Long vnetId;
     Long accountId;
     Long zoneId;
-    Long agentGroupId;
     Long resourceAccountId;
-    NetworkServiceProvider networkServiceProvider;
     String imageUuid;
     String name = DEFAULT_NAME.get();
-    String instanceTriggeredStop = InstanceConstants.ON_STOP_RESTART;
     boolean accountOwned = true;
     boolean managedConfig = false;
     boolean privileged = false;
@@ -36,7 +31,6 @@ public class AgentInstanceBuilderImpl implements AgentInstanceBuilder {
     AgentInstanceFactoryImpl factory;
     String uri;
     Map<String, Object> params = new HashMap<>();
-    String systemContainerType;
 
     public AgentInstanceBuilderImpl(AgentInstanceFactoryImpl factory) {
         super();
@@ -59,12 +53,6 @@ public class AgentInstanceBuilderImpl implements AgentInstanceBuilder {
     }
 
     @Override
-    public AgentInstanceBuilderImpl forVnetId(long vnetId) {
-        this.vnetId = vnetId;
-        return this;
-    }
-
-    @Override
     public AgentInstanceBuilder withImageUuid(String uuid) {
         this.imageUuid = uuid;
         return this;
@@ -73,18 +61,6 @@ public class AgentInstanceBuilderImpl implements AgentInstanceBuilder {
     @Override
     public AgentInstanceBuilder withInstanceKind(String kind) {
         this.instanceKind = kind;
-        return this;
-    }
-
-    @Override
-    public AgentInstanceBuilder withManagedConfig(boolean managedConfig) {
-        this.managedConfig = managedConfig;
-        return this;
-    }
-
-    @Override
-    public AgentInstanceBuilder withInstanceTriggeredStop(String instanceTriggeredStop) {
-        this.instanceTriggeredStop = instanceTriggeredStop;
         return this;
     }
 
@@ -108,22 +84,9 @@ public class AgentInstanceBuilderImpl implements AgentInstanceBuilder {
     }
 
     @Override
-    public AgentInstanceBuilder withNetworkServiceProvider(NetworkServiceProvider networkServiceProvider) {
-        this.networkServiceProvider = networkServiceProvider;
-        withImageUuid(DataAccessor.fields(networkServiceProvider).withKey(NetworkServiceProviderConstants.FIELD_AGENT_INSTANCE_IMAGE_UUID).withDefault(
-                getImageUuid()).as(String.class));
-
-        withAccountOwned(DataAccessor.fields(networkServiceProvider).withKey(NetworkServiceProviderConstants.FIELD_AGENT_ACCOUNT_OWNED).withDefault(
-                isAccountOwned()).as(Boolean.class));
-
-        return this;
-    }
-
-    @Override
     public AgentInstanceBuilder withInstance(Instance instance) {
         withAccountId(instance.getAccountId());
         withZoneId(instance.getZoneId());
-        withAgentGroupId(factory.getAgentGroupId(instance));
 
         return this;
     }
@@ -137,12 +100,6 @@ public class AgentInstanceBuilderImpl implements AgentInstanceBuilder {
     @Override
     public AgentInstanceBuilder withZoneId(Long zoneId) {
         this.zoneId = zoneId;
-        return this;
-    }
-
-    @Override
-    public AgentInstanceBuilder withAgentGroupId(Long agentGroupId) {
-        this.agentGroupId = agentGroupId;
         return this;
     }
 
@@ -166,10 +123,6 @@ public class AgentInstanceBuilderImpl implements AgentInstanceBuilder {
         return zoneId;
     }
 
-    public Long getAgentGroupId() {
-        return agentGroupId;
-    }
-
     public boolean isAccountOwned() {
         return accountOwned;
     }
@@ -186,24 +139,12 @@ public class AgentInstanceBuilderImpl implements AgentInstanceBuilder {
         return managedConfig;
     }
 
-    public NetworkServiceProvider getNetworkServiceProvider() {
-        return networkServiceProvider;
-    }
-
     public boolean isPrivileged() {
         return privileged;
     }
 
     public void setPrivileged(boolean privileged) {
         this.privileged = privileged;
-    }
-
-    public String getInstanceTriggeredStop() {
-        return instanceTriggeredStop;
-    }
-
-    public void setInstanceTriggeredStop(String instanceTriggeredStop) {
-        this.instanceTriggeredStop = instanceTriggeredStop;
     }
 
     public String getName() {
@@ -236,16 +177,6 @@ public class AgentInstanceBuilderImpl implements AgentInstanceBuilder {
 
     public Map<String, Object> getAccountData() {
         return accountData;
-    }
-
-    @Override
-    public AgentInstanceBuilder withSystemContainerType(String systemContainerType) {
-        this.systemContainerType = systemContainerType;
-        return this;
-    }
-
-    public String getSystemContainerType() {
-        return systemContainerType;
     }
 
     public Long getResourceAccountId() {

@@ -3,10 +3,11 @@ package io.cattle.platform.docker.process.instancehostmap;
 import static io.cattle.platform.core.model.tables.IpAddressTable.*;
 import static io.cattle.platform.core.model.tables.MountTable.*;
 import static io.cattle.platform.docker.constants.DockerInstanceConstants.*;
+
 import io.cattle.iaas.labels.service.LabelsService;
 import io.cattle.platform.archaius.util.ArchaiusUtil;
 import io.cattle.platform.core.constants.CommonStatesConstants;
-import io.cattle.platform.core.constants.NetworkServiceConstants;
+import io.cattle.platform.core.constants.IpAddressConstants;
 import io.cattle.platform.core.constants.PortConstants;
 import io.cattle.platform.core.constants.VolumeConstants;
 import io.cattle.platform.core.dao.GenericMapDao;
@@ -259,7 +260,9 @@ public class DockerPostInstanceHostMapActivate extends AbstractObjectProcessLogi
         IpAddress dockerIpAddress = dockerDao.getDockerIp(dockerIp, instance);
 
         if (dockerIpAddress == null) {
-            dockerIpAddress = ipAddressDao.mapNewIpAddress(nic, IP_ADDRESS.SUBNET_ID, null, IP_ADDRESS.KIND, DockerIpAddressConstants.KIND_DOCKER,
+            dockerIpAddress = ipAddressDao.mapNewIpAddress(nic,
+                    IP_ADDRESS.KIND, DockerIpAddressConstants.KIND_DOCKER,
+                    IP_ADDRESS.ROLE, IpAddressConstants.ROLE_PRIMARY,
                     IP_ADDRESS.ADDRESS, dockerIp);
         }
 
@@ -313,11 +316,10 @@ public class DockerPostInstanceHostMapActivate extends AbstractObjectProcessLogi
             } else {
                 String bindAddress = DataAccessor.fields(port).withKey(PortConstants.FIELD_BIND_ADDR).as(String.class);
                 boolean bindAddressNull = bindAddress == null;
-                if (!hasPortNetworkService(instance.getId())
-                        && (!ObjectUtils.equals(port.getPublicPort(), spec.getPublicPort())
+                if (!ObjectUtils.equals(port.getPublicPort(), spec.getPublicPort())
                         || !ObjectUtils.equals(port.getPrivateIpAddressId(), privateIpAddressId)
                         || (bindAddressNull && !ObjectUtils.equals(port.getPublicIpAddressId(), publicIpAddressId))
-                        || (!bindAddressNull && !bindAddress.equals(spec.getIpAddress())))){
+                        || (!bindAddressNull && !bindAddress.equals(spec.getIpAddress()))){
                     port.setPublicPort(spec.getPublicPort());
                     port.setPrivateIpAddressId(privateIpAddressId);
                     if (StringUtils.isNotEmpty(spec.getIpAddress()) && !"0.0.0.0".equals(spec.getIpAddress())) {
@@ -333,10 +335,6 @@ public class DockerPostInstanceHostMapActivate extends AbstractObjectProcessLogi
         for (Port port : getObjectManager().children(instance, Port.class)) {
             createIgnoreCancel(port, null);
         }
-    }
-
-    protected boolean hasPortNetworkService(long instanceId) {
-        return networkDao.getNetworkService(instanceId, NetworkServiceConstants.KIND_PORT_SERVICE).size() > 0;
     }
 
     @Override

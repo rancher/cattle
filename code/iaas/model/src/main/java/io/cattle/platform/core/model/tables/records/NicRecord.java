@@ -11,9 +11,9 @@ package io.cattle.platform.core.model.tables.records;
 @java.lang.SuppressWarnings({ "all", "unchecked", "rawtypes" })
 @javax.persistence.Entity
 @javax.persistence.Table(name = "nic", schema = "cattle")
-public class NicRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.platform.core.model.tables.records.NicRecord> implements io.cattle.platform.db.jooq.utils.TableRecordJaxb, org.jooq.Record17<java.lang.Long, java.lang.String, java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.util.Date, java.util.Date, java.util.Date, java.util.Map<String,Object>, java.lang.Long, java.lang.Long, java.lang.Long, java.lang.Long, java.lang.Integer, java.lang.String>, io.cattle.platform.core.model.Nic {
+public class NicRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.platform.core.model.tables.records.NicRecord> implements io.cattle.platform.db.jooq.utils.TableRecordJaxb, org.jooq.Record15<java.lang.Long, java.lang.String, java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.util.Date, java.util.Date, java.util.Date, java.util.Map<String,Object>, java.lang.Long, java.lang.Long, java.lang.Integer, java.lang.String>, io.cattle.platform.core.model.Nic {
 
-	private static final long serialVersionUID = -108800418;
+	private static final long serialVersionUID = 1908128445;
 
 	/**
 	 * Setter for <code>cattle.nic.id</code>.
@@ -238,45 +238,11 @@ public class NicRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.platf
 	}
 
 	/**
-	 * Setter for <code>cattle.nic.subnet_id</code>.
-	 */
-	@Override
-	public void setSubnetId(java.lang.Long value) {
-		setValue(13, value);
-	}
-
-	/**
-	 * Getter for <code>cattle.nic.subnet_id</code>.
-	 */
-	@javax.persistence.Column(name = "subnet_id", precision = 19)
-	@Override
-	public java.lang.Long getSubnetId() {
-		return (java.lang.Long) getValue(13);
-	}
-
-	/**
-	 * Setter for <code>cattle.nic.vnet_id</code>.
-	 */
-	@Override
-	public void setVnetId(java.lang.Long value) {
-		setValue(14, value);
-	}
-
-	/**
-	 * Getter for <code>cattle.nic.vnet_id</code>.
-	 */
-	@javax.persistence.Column(name = "vnet_id", precision = 19)
-	@Override
-	public java.lang.Long getVnetId() {
-		return (java.lang.Long) getValue(14);
-	}
-
-	/**
 	 * Setter for <code>cattle.nic.device_number</code>.
 	 */
 	@Override
 	public void setDeviceNumber(java.lang.Integer value) {
-		setValue(15, value);
+		setValue(13, value);
 	}
 
 	/**
@@ -285,7 +251,7 @@ public class NicRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.platf
 	@javax.persistence.Column(name = "device_number", precision = 10)
 	@Override
 	public java.lang.Integer getDeviceNumber() {
-		return (java.lang.Integer) getValue(15);
+		return (java.lang.Integer) getValue(13);
 	}
 
 	/**
@@ -293,7 +259,7 @@ public class NicRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.platf
 	 */
 	@Override
 	public void setMacAddress(java.lang.String value) {
-		setValue(16, value);
+		setValue(14, value);
 	}
 
 	/**
@@ -302,7 +268,7 @@ public class NicRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.platf
 	@javax.persistence.Column(name = "mac_address", length = 128)
 	@Override
 	public java.lang.String getMacAddress() {
-		return (java.lang.String) getValue(16);
+		return (java.lang.String) getValue(14);
 	}
 
 	// -------------------------------------------------------------------------
@@ -318,23 +284,23 @@ public class NicRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.platf
 	}
 
 	// -------------------------------------------------------------------------
-	// Record17 type implementation
+	// Record15 type implementation
 	// -------------------------------------------------------------------------
 
 	/**
 	 * {@inheritDoc}
 	 */
 	@Override
-	public org.jooq.Row17<java.lang.Long, java.lang.String, java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.util.Date, java.util.Date, java.util.Date, java.util.Map<String,Object>, java.lang.Long, java.lang.Long, java.lang.Long, java.lang.Long, java.lang.Integer, java.lang.String> fieldsRow() {
-		return (org.jooq.Row17) super.fieldsRow();
+	public org.jooq.Row15<java.lang.Long, java.lang.String, java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.util.Date, java.util.Date, java.util.Date, java.util.Map<String,Object>, java.lang.Long, java.lang.Long, java.lang.Integer, java.lang.String> fieldsRow() {
+		return (org.jooq.Row15) super.fieldsRow();
 	}
 
 	/**
 	 * {@inheritDoc}
 	 */
 	@Override
-	public org.jooq.Row17<java.lang.Long, java.lang.String, java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.util.Date, java.util.Date, java.util.Date, java.util.Map<String,Object>, java.lang.Long, java.lang.Long, java.lang.Long, java.lang.Long, java.lang.Integer, java.lang.String> valuesRow() {
-		return (org.jooq.Row17) super.valuesRow();
+	public org.jooq.Row15<java.lang.Long, java.lang.String, java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.util.Date, java.util.Date, java.util.Date, java.util.Map<String,Object>, java.lang.Long, java.lang.Long, java.lang.Integer, java.lang.String> valuesRow() {
+		return (org.jooq.Row15) super.valuesRow();
 	}
 
 	/**
@@ -445,23 +411,7 @@ public class NicRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.platf
 	 * {@inheritDoc}
 	 */
 	@Override
-	public org.jooq.Field<java.lang.Long> field14() {
-		return io.cattle.platform.core.model.tables.NicTable.NIC.SUBNET_ID;
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public org.jooq.Field<java.lang.Long> field15() {
-		return io.cattle.platform.core.model.tables.NicTable.NIC.VNET_ID;
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public org.jooq.Field<java.lang.Integer> field16() {
+	public org.jooq.Field<java.lang.Integer> field14() {
 		return io.cattle.platform.core.model.tables.NicTable.NIC.DEVICE_NUMBER;
 	}
 
@@ -469,7 +419,7 @@ public class NicRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.platf
 	 * {@inheritDoc}
 	 */
 	@Override
-	public org.jooq.Field<java.lang.String> field17() {
+	public org.jooq.Field<java.lang.String> field15() {
 		return io.cattle.platform.core.model.tables.NicTable.NIC.MAC_ADDRESS;
 	}
 
@@ -581,23 +531,7 @@ public class NicRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.platf
 	 * {@inheritDoc}
 	 */
 	@Override
-	public java.lang.Long value14() {
-		return getSubnetId();
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public java.lang.Long value15() {
-		return getVnetId();
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public java.lang.Integer value16() {
+	public java.lang.Integer value14() {
 		return getDeviceNumber();
 	}
 
@@ -605,7 +539,7 @@ public class NicRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.platf
 	 * {@inheritDoc}
 	 */
 	@Override
-	public java.lang.String value17() {
+	public java.lang.String value15() {
 		return getMacAddress();
 	}
 
@@ -730,25 +664,7 @@ public class NicRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.platf
 	 * {@inheritDoc}
 	 */
 	@Override
-	public NicRecord value14(java.lang.Long value) {
-		setSubnetId(value);
-		return this;
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public NicRecord value15(java.lang.Long value) {
-		setVnetId(value);
-		return this;
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public NicRecord value16(java.lang.Integer value) {
+	public NicRecord value14(java.lang.Integer value) {
 		setDeviceNumber(value);
 		return this;
 	}
@@ -757,7 +673,7 @@ public class NicRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.platf
 	 * {@inheritDoc}
 	 */
 	@Override
-	public NicRecord value17(java.lang.String value) {
+	public NicRecord value15(java.lang.String value) {
 		setMacAddress(value);
 		return this;
 	}
@@ -766,7 +682,7 @@ public class NicRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.platf
 	 * {@inheritDoc}
 	 */
 	@Override
-	public NicRecord values(java.lang.Long value1, java.lang.String value2, java.lang.Long value3, java.lang.String value4, java.lang.String value5, java.lang.String value6, java.lang.String value7, java.util.Date value8, java.util.Date value9, java.util.Date value10, java.util.Map<String,Object> value11, java.lang.Long value12, java.lang.Long value13, java.lang.Long value14, java.lang.Long value15, java.lang.Integer value16, java.lang.String value17) {
+	public NicRecord values(java.lang.Long value1, java.lang.String value2, java.lang.Long value3, java.lang.String value4, java.lang.String value5, java.lang.String value6, java.lang.String value7, java.util.Date value8, java.util.Date value9, java.util.Date value10, java.util.Map<String,Object> value11, java.lang.Long value12, java.lang.Long value13, java.lang.Integer value14, java.lang.String value15) {
 		return this;
 	}
 
@@ -792,8 +708,6 @@ public class NicRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.platf
 		setData(from.getData());
 		setInstanceId(from.getInstanceId());
 		setNetworkId(from.getNetworkId());
-		setSubnetId(from.getSubnetId());
-		setVnetId(from.getVnetId());
 		setDeviceNumber(from.getDeviceNumber());
 		setMacAddress(from.getMacAddress());
 	}
@@ -821,7 +735,7 @@ public class NicRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.platf
 	/**
 	 * Create a detached, initialised NicRecord
 	 */
-	public NicRecord(java.lang.Long id, java.lang.String name, java.lang.Long accountId, java.lang.String kind, java.lang.String uuid, java.lang.String description, java.lang.String state, java.util.Date created, java.util.Date removed, java.util.Date removeTime, java.util.Map<String,Object> data, java.lang.Long instanceId, java.lang.Long networkId, java.lang.Long subnetId, java.lang.Long vnetId, java.lang.Integer deviceNumber, java.lang.String macAddress) {
+	public NicRecord(java.lang.Long id, java.lang.String name, java.lang.Long accountId, java.lang.String kind, java.lang.String uuid, java.lang.String description, java.lang.String state, java.util.Date created, java.util.Date removed, java.util.Date removeTime, java.util.Map<String,Object> data, java.lang.Long instanceId, java.lang.Long networkId, java.lang.Integer deviceNumber, java.lang.String macAddress) {
 		super(io.cattle.platform.core.model.tables.NicTable.NIC);
 
 		setValue(0, id);
@@ -837,9 +751,7 @@ public class NicRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.platf
 		setValue(10, data);
 		setValue(11, instanceId);
 		setValue(12, networkId);
-		setValue(13, subnetId);
-		setValue(14, vnetId);
-		setValue(15, deviceNumber);
-		setValue(16, macAddress);
+		setValue(13, deviceNumber);
+		setValue(14, macAddress);
 	}
 }

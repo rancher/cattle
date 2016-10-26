@@ -37,7 +37,7 @@
 
             <includeExcludeColumns>true</includeExcludeColumns>
 
-            <excludes>.*load_balancer.*|cattle.machine_driver.account_id|.*snapshot_storage_pool_map.*</excludes>
+            <excludes>.*load_balancer.*|.*machine_driver.account_id|.*snapshot_storage_pool_map.*|.*vnet.*|.*network_service.*|.*instance.system_container.*|.*agent_group.*|.*offering.*|.*ip_association.*|.*ip_pool.*|.*nic.subnet_id.*</excludes>
 
             <unsignedTypes>false</unsignedTypes>
 

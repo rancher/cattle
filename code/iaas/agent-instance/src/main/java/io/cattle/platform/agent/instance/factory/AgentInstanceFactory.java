@@ -5,8 +5,6 @@ import io.cattle.platform.core.model.Instance;
 
 public interface AgentInstanceFactory {
 
-    AgentInstanceBuilder newBuilder();
-
     Agent createAgent(Instance instance);
 
     void deleteAgent(Instance instance);

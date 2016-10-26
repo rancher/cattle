@@ -1,19 +1,16 @@
 package io.cattle.platform.metadata.service.impl;
 
 import static io.cattle.platform.util.type.CollectionUtils.*;
+
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.constants.IpAddressConstants;
 import io.cattle.platform.core.constants.NetworkConstants;
-import io.cattle.platform.core.constants.NetworkServiceConstants;
-import io.cattle.platform.core.model.Agent;
 import io.cattle.platform.core.model.Credential;
 import io.cattle.platform.core.model.Image;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.IpAddress;
 import io.cattle.platform.core.model.Network;
-import io.cattle.platform.core.model.NetworkService;
 import io.cattle.platform.core.model.Nic;
-import io.cattle.platform.core.model.Offering;
 import io.cattle.platform.core.model.Subnet;
 import io.cattle.platform.core.model.Volume;
 import io.cattle.platform.core.model.Zone;
@@ -21,7 +18,6 @@ import io.cattle.platform.core.util.HostnameGenerator;
 import io.cattle.platform.json.JsonMapper;
 import io.cattle.platform.metadata.dao.MetadataDao;
 import io.cattle.platform.metadata.data.MetadataEntry;
-import io.cattle.platform.metadata.data.MetadataRedirectData;
 import io.cattle.platform.metadata.service.MetadataService;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.util.DataAccessor;
@@ -41,28 +37,12 @@ import org.apache.commons.lang3.StringUtils;
 
 public class MetadataServiceImpl implements MetadataService {
 
-    // private static final Logger log =
-    // LoggerFactory.getLogger(MetadataServiceImpl.class);
-
+    @Inject
     ObjectManager objectManager;
+    @Inject
     MetadataDao metadataDao;
+    @Inject
     JsonMapper jsonMapper;
-
-    @Override
-    public boolean isAttachMetadata(Instance instance) {
-        for (NetworkService service : metadataDao.getMetadataServices(instance)) {
-            if (DataAccessor.fieldBool(service, NetworkServiceConstants.FIELD_CONFIG_DRIVE)) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    @Override
-    public Map<String, Object> getMetadata(Instance agentInstance, IdFormatter idFormatter) {
-        return getMetaData(idFormatter, metadataDao.getMetadata(agentInstance));
-    }
 
     @Override
     public Map<String, Object> getOsMetadata(Instance instance, Map<String, Object> metadata) {
@@ -122,7 +102,6 @@ public class MetadataServiceImpl implements MetadataService {
             Instance instance = entry.getInstance();
             Nic nic = entry.getNic();
             IpAddress localIp = entry.getLocalIp();
-            IpAddress publicIp = entry.getPublicIp();
             Credential credential = entry.getCredential();
             Network network = entry.getNetwork();
             Subnet subnet = entry.getSubnet();
@@ -137,7 +116,7 @@ public class MetadataServiceImpl implements MetadataService {
 
             populateCredential(instanceMetadata, credential);
             populateNic(idFormatter, instanceMetadata, nic, network);
-            populateIps(idFormatter, primaryIps, instanceMetadata, instance, nic, network, subnet, localIp, publicIp);
+            populateIps(idFormatter, primaryIps, instanceMetadata, instance, nic, network, subnet, localIp);
             populateVolume(instanceMetadata, instance, volume);
 
             userData.put(instance.getId(), instance.getUserdata());
@@ -184,7 +163,7 @@ public class MetadataServiceImpl implements MetadataService {
     }
 
     protected void populateIps(IdFormatter idFormatter, Map<Long, String> primaryIps, Map<String, Object> instanceMetadata, Instance instance, Nic nic,
-            Network network, Subnet subnet, IpAddress localIp, IpAddress publicIp) {
+            Network network, Subnet subnet, IpAddress localIp) {
 
         boolean firstNic = (org.apache.commons.lang3.ObjectUtils.equals(nic.getDeviceNumber(), 0));
         boolean primaryIp = localIp == null ? firstNic : IpAddressConstants.ROLE_PRIMARY.equals(localIp.getRole());
@@ -193,7 +172,6 @@ public class MetadataServiceImpl implements MetadataService {
         String addressKey = localIpAddress == null ? nic.getMacAddress() : localIpAddress;
 
         String localHostname = HostnameGenerator.lookup(true, instance, addressKey, network);
-        String publicHostname = publicIp == null ? null : HostnameGenerator.lookup(false, instance, publicIp.getAddress(), network);
 
         if (firstNic && primaryIp) {
             instanceMetadata.put("hostname", localHostname);
@@ -221,22 +199,6 @@ public class MetadataServiceImpl implements MetadataService {
             setIfTrueOrNull(primaryIp, instanceMetadata, "local-ipv4", localIpAddress);
             if (localIp != null && localIp.getSubnetId() != null && subnet != null && StringUtils.isNotBlank(subnet.getGateway())) {
                 setIfTrueOrNull(primaryIp, instanceMetadata, "local-ipv4-gateway", subnet.getGateway());
-            }
-        }
-
-        if (publicIp != null) {
-            if (localIpAddress != null) {
-                setNestedValue(nicData, localIpAddress, "ipv4-associations", publicIp.getAddress());
-            }
-
-            if (publicHostname != null) {
-                append(nicData, "public-hostname", publicHostname);
-                append(nicData, "public-ipv4s", publicIp.getAddress());
-
-                if (firstNic) {
-                    setIfTrueOrNull(primaryIp, instanceMetadata, "public-hostname", publicHostname);
-                    setIfTrueOrNull(primaryIp, instanceMetadata, "public-ipv4", publicIp.getAddress());
-                }
             }
         }
 
@@ -372,13 +334,6 @@ public class MetadataServiceImpl implements MetadataService {
     }
 
     protected String getInstanceType(Instance instance) {
-        Offering offering = metadataDao.getInstanceOffering(instance);
-        String name = offering == null ? null : offering.getName();
-
-        if (name != null) {
-            return name;
-        }
-
         Long mem = instance.getMemoryMb();
         if (mem == null) {
             mem = 64L;
@@ -416,37 +371,5 @@ public class MetadataServiceImpl implements MetadataService {
 
         String type = objectManager.getType(obj);
         return idFormatter.formatId(type, ObjectUtils.getId(obj)).toString();
-    }
-
-    public JsonMapper getJsonMapper() {
-        return jsonMapper;
-    }
-
-    @Inject
-    public void setJsonMapper(JsonMapper jsonMapper) {
-        this.jsonMapper = jsonMapper;
-    }
-
-    @Override
-    public List<MetadataRedirectData> getMetadataRedirects(Agent agent) {
-        return metadataDao.getMetadataRedirects(agent);
-    }
-
-    public MetadataDao getMetadataDao() {
-        return metadataDao;
-    }
-
-    @Inject
-    public void setMetadataDao(MetadataDao metadataDao) {
-        this.metadataDao = metadataDao;
-    }
-
-    public ObjectManager getObjectManager() {
-        return objectManager;
-    }
-
-    @Inject
-    public void setObjectManager(ObjectManager objectManager) {
-        this.objectManager = objectManager;
     }
 }

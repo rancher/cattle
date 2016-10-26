@@ -1,6 +1,7 @@
 package io.cattle.platform.core.dao.impl;
 
 import static io.cattle.platform.core.model.tables.NicTable.*;
+
 import io.cattle.platform.core.dao.NicDao;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.Nic;

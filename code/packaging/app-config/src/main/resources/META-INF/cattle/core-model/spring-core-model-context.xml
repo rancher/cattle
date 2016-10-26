@@ -63,8 +63,9 @@
                 <value>setProjectMembersInput</value>
                 <value>setServiceLinksInput</value>
                 <value>sshKey,parent=credential</value>
-                <value>subnetIpPool,parent=ipPool</value>
                 <value>virtualMachine,parent=container</value>
+                <value>storageDriverService,parent=service</value>
+                <value>networkDriverService,parent=service</value>
                 <value>loadBalancerService,parent=service</value>
                 <value>externalService,parent=service</value>
                 <value>dnsService,parent=service</value>
@@ -94,6 +95,9 @@
                 <value>serviceBinding</value>
                 <value>lbConfig</value>
                 <value>lbTargetConfig</value>
+                <value>balancerServiceConfig</value>
+                <value>balancerTargetConfig</value>
+                <value>defaultNetwork,parent=network</value>
             </set>
         </property>
     </bean>

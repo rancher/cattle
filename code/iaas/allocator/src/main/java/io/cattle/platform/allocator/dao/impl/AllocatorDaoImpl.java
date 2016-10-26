@@ -3,7 +3,6 @@ package io.cattle.platform.allocator.dao.impl;
 import static io.cattle.platform.core.model.tables.AgentTable.*;
 import static io.cattle.platform.core.model.tables.HostLabelMapTable.*;
 import static io.cattle.platform.core.model.tables.HostTable.*;
-import static io.cattle.platform.core.model.tables.HostVnetMapTable.*;
 import static io.cattle.platform.core.model.tables.ImageStoragePoolMapTable.*;
 import static io.cattle.platform.core.model.tables.ImageTable.*;
 import static io.cattle.platform.core.model.tables.InstanceHostMapTable.*;
@@ -11,15 +10,13 @@ import static io.cattle.platform.core.model.tables.InstanceLabelMapTable.*;
 import static io.cattle.platform.core.model.tables.InstanceTable.*;
 import static io.cattle.platform.core.model.tables.LabelTable.*;
 import static io.cattle.platform.core.model.tables.MountTable.*;
-import static io.cattle.platform.core.model.tables.NicTable.*;
 import static io.cattle.platform.core.model.tables.PortTable.*;
 import static io.cattle.platform.core.model.tables.ServiceExposeMapTable.*;
 import static io.cattle.platform.core.model.tables.StorageDriverTable.*;
 import static io.cattle.platform.core.model.tables.StoragePoolHostMapTable.*;
 import static io.cattle.platform.core.model.tables.StoragePoolTable.*;
-import static io.cattle.platform.core.model.tables.SubnetVnetMapTable.*;
-import static io.cattle.platform.core.model.tables.VnetTable.*;
 import static io.cattle.platform.core.model.tables.VolumeStoragePoolMapTable.*;
+
 import io.cattle.platform.allocator.dao.AllocatorDao;
 import io.cattle.platform.allocator.exception.FailedToAllocate;
 import io.cattle.platform.allocator.service.AllocationAttempt;
@@ -35,7 +32,6 @@ import io.cattle.platform.core.dao.GenericMapDao;
 import io.cattle.platform.core.model.Host;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.InstanceHostMap;
-import io.cattle.platform.core.model.Nic;
 import io.cattle.platform.core.model.Port;
 import io.cattle.platform.core.model.StorageDriver;
 import io.cattle.platform.core.model.StoragePool;
@@ -65,7 +61,6 @@ import org.jooq.Record;
 import org.jooq.Record3;
 import org.jooq.RecordHandler;
 import org.jooq.exception.InvalidResultException;
-import org.jooq.impl.DSL;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -208,26 +203,6 @@ public class AllocatorDaoImpl extends AbstractJooqDao implements AllocatorDao {
             }
         }
 
-        for (Nic nic : attempt.getNics()) {
-            Long subnetId = candidate.getSubnetIds().get(nic.getId());
-
-            if (subnetId == null || (nic.getSubnetId() != null && subnetId.longValue() == nic.getSubnetId())) {
-                continue;
-            }
-
-            log.info("Associating nic [{}] to subnet [{}]", nic.getId(), subnetId);
-            int i = create()
-                .update(NIC)
-                .set(NIC.SUBNET_ID, subnetId)
-                .where(NIC.ID.eq(nic.getId()))
-                .execute();
-
-            if (i != 1) {
-                throw new IllegalStateException("Expected to update nic id ["
-                            + nic.getId() + "] with subnet [" + subnetId + "] but update [" + i + "] rows");
-            }
-        }
-
         return true;
     }
 
@@ -341,21 +316,6 @@ public class AllocatorDaoImpl extends AbstractJooqDao implements AllocatorDao {
     }
 
     @Override
-    public List<Long> getHostsForSubnet(long subnetId, Long vnetId) {
-        return create()
-            .select(HOST_VNET_MAP.HOST_ID)
-            .from(SUBNET_VNET_MAP)
-            .join(VNET)
-                .on(VNET.ID.eq(SUBNET_VNET_MAP.VNET_ID))
-            .join(HOST_VNET_MAP)
-                .on(HOST_VNET_MAP.VNET_ID.eq(VNET.ID))
-            .where(SUBNET_VNET_MAP.SUBNET_ID.eq(subnetId)
-                    .and(vnetCondition(vnetId))
-                    .and(HOST_VNET_MAP.STATE.eq(CommonStatesConstants.ACTIVE)))
-            .fetch(HOST_VNET_MAP.HOST_ID);
-    }
-
-    @Override
     public List<Long> getInstancesWithVolumeMounted(long volumeId, long currentInstanceId) {
         return create()
                 .select(INSTANCE.ID)
@@ -386,31 +346,6 @@ public class AllocatorDaoImpl extends AbstractJooqDao implements AllocatorDao {
                     .and(INSTANCE_HOST_MAP.STATE.notIn(IHM_STATES))
                     .and((INSTANCE.HEALTH_STATE.isNull().or(INSTANCE.HEALTH_STATE.eq(HealthcheckConstants.HEALTH_STATE_HEALTHY)))))
                 .fetch().size() > 0;
-    }
-    @Override
-    public List<Long> getPhysicalHostsForSubnet(long subnetId, Long vnetId) {
-        return create()
-            .select(HOST.PHYSICAL_HOST_ID)
-            .from(SUBNET_VNET_MAP)
-            .join(VNET)
-                .on(VNET.ID.eq(SUBNET_VNET_MAP.VNET_ID))
-            .join(HOST_VNET_MAP)
-                .on(HOST_VNET_MAP.VNET_ID.eq(VNET.ID))
-            .join(HOST)
-                .on(HOST.ID.eq(HOST_VNET_MAP.HOST_ID))
-            .where(SUBNET_VNET_MAP.SUBNET_ID.eq(subnetId)
-                    .and(HOST_VNET_MAP.STATE.eq(CommonStatesConstants.ACTIVE))
-                    .and(vnetCondition(vnetId))
-                    .and(HOST.PHYSICAL_HOST_ID.isNotNull()))
-            .fetchInto(Long.class);
-    }
-
-    protected Condition vnetCondition(Long vnetId) {
-        if ( vnetId == null ) {
-            return DSL.trueCondition();
-        }
-
-        return VNET.ID.eq(vnetId);
     }
 
     public ObjectManager getObjectManager() {
@@ -532,6 +467,7 @@ public class AllocatorDaoImpl extends AbstractJooqDao implements AllocatorDao {
 
     }
 
+    @Override
     public List<Instance> getUnmappedDeploymentUnitInstances(String deploymentUnitUuid) {
         List<? extends Instance> instanceRecords = create()
                 .select(INSTANCE.fields())

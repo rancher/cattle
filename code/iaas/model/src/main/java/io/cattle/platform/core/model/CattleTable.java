@@ -11,7 +11,7 @@ package io.cattle.platform.core.model;
 @java.lang.SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class CattleTable extends org.jooq.impl.SchemaImpl {
 
-	private static final long serialVersionUID = 2115083233;
+	private static final long serialVersionUID = -1887032911;
 
 	/**
 	 * The singleton instance of <code>cattle</code>
@@ -36,7 +36,6 @@ public class CattleTable extends org.jooq.impl.SchemaImpl {
 		return java.util.Arrays.<org.jooq.Table<?>>asList(
 			io.cattle.platform.core.model.tables.AccountTable.ACCOUNT,
 			io.cattle.platform.core.model.tables.AgentTable.AGENT,
-			io.cattle.platform.core.model.tables.AgentGroupTable.AGENT_GROUP,
 			io.cattle.platform.core.model.tables.AuditLogTable.AUDIT_LOG,
 			io.cattle.platform.core.model.tables.AuthTokenTable.AUTH_TOKEN,
 			io.cattle.platform.core.model.tables.BackupTable.BACKUP,
@@ -65,7 +64,6 @@ public class CattleTable extends org.jooq.impl.SchemaImpl {
 			io.cattle.platform.core.model.tables.HostTable.HOST,
 			io.cattle.platform.core.model.tables.HostIpAddressMapTable.HOST_IP_ADDRESS_MAP,
 			io.cattle.platform.core.model.tables.HostLabelMapTable.HOST_LABEL_MAP,
-			io.cattle.platform.core.model.tables.HostVnetMapTable.HOST_VNET_MAP,
 			io.cattle.platform.core.model.tables.ImageTable.IMAGE,
 			io.cattle.platform.core.model.tables.ImageStoragePoolMapTable.IMAGE_STORAGE_POOL_MAP,
 			io.cattle.platform.core.model.tables.InstanceTable.INSTANCE,
@@ -74,18 +72,12 @@ public class CattleTable extends org.jooq.impl.SchemaImpl {
 			io.cattle.platform.core.model.tables.InstanceLinkTable.INSTANCE_LINK,
 			io.cattle.platform.core.model.tables.IpAddressTable.IP_ADDRESS,
 			io.cattle.platform.core.model.tables.IpAddressNicMapTable.IP_ADDRESS_NIC_MAP,
-			io.cattle.platform.core.model.tables.IpAssociationTable.IP_ASSOCIATION,
-			io.cattle.platform.core.model.tables.IpPoolTable.IP_POOL,
 			io.cattle.platform.core.model.tables.LabelTable.LABEL,
 			io.cattle.platform.core.model.tables.MachineDriverTable.MACHINE_DRIVER,
 			io.cattle.platform.core.model.tables.MountTable.MOUNT,
 			io.cattle.platform.core.model.tables.NetworkTable.NETWORK,
 			io.cattle.platform.core.model.tables.NetworkDriverTable.NETWORK_DRIVER,
-			io.cattle.platform.core.model.tables.NetworkServiceTable.NETWORK_SERVICE,
-			io.cattle.platform.core.model.tables.NetworkServiceProviderTable.NETWORK_SERVICE_PROVIDER,
-			io.cattle.platform.core.model.tables.NetworkServiceProviderInstanceMapTable.NETWORK_SERVICE_PROVIDER_INSTANCE_MAP,
 			io.cattle.platform.core.model.tables.NicTable.NIC,
-			io.cattle.platform.core.model.tables.OfferingTable.OFFERING,
 			io.cattle.platform.core.model.tables.PhysicalHostTable.PHYSICAL_HOST,
 			io.cattle.platform.core.model.tables.PortTable.PORT,
 			io.cattle.platform.core.model.tables.ProcessExecutionTable.PROCESS_EXECUTION,
@@ -105,11 +97,9 @@ public class CattleTable extends org.jooq.impl.SchemaImpl {
 			io.cattle.platform.core.model.tables.StoragePoolTable.STORAGE_POOL,
 			io.cattle.platform.core.model.tables.StoragePoolHostMapTable.STORAGE_POOL_HOST_MAP,
 			io.cattle.platform.core.model.tables.SubnetTable.SUBNET,
-			io.cattle.platform.core.model.tables.SubnetVnetMapTable.SUBNET_VNET_MAP,
 			io.cattle.platform.core.model.tables.TaskTable.TASK,
 			io.cattle.platform.core.model.tables.TaskInstanceTable.TASK_INSTANCE,
 			io.cattle.platform.core.model.tables.UserPreferenceTable.USER_PREFERENCE,
-			io.cattle.platform.core.model.tables.VnetTable.VNET,
 			io.cattle.platform.core.model.tables.VolumeTable.VOLUME,
 			io.cattle.platform.core.model.tables.VolumeStoragePoolMapTable.VOLUME_STORAGE_POOL_MAP,
 			io.cattle.platform.core.model.tables.VolumeTemplateTable.VOLUME_TEMPLATE,

@@ -106,7 +106,6 @@
 
     <bean class="io.cattle.platform.framework.encryption.request.handler.TransformationHandler" />
 
-    <bean class="io.cattle.platform.configitem.context.dao.impl.NetworkInfoDaoImpl" />
     <bean class="io.cattle.platform.configitem.context.dao.impl.MetaDataInfoDaoImpl" />
 
     <bean class="io.cattle.platform.configitem.server.impl.ConfigItemServerImpl" />
@@ -117,6 +116,7 @@
     <extension:discover class="io.cattle.platform.configitem.server.model.ConfigItemFactory" />
     <extension:discover class="io.cattle.platform.configitem.context.ConfigItemContextFactory" />
 
+    <bean class="io.cattle.platform.configitem.server.model.impl.PSKConfigItemFactory" />
     <bean class="io.cattle.platform.configitem.server.model.impl.MetadataConfigItemFactory" />
     <bean class="io.cattle.platform.configitem.server.model.impl.GenericConfigItemFactory" >
         <property name="root" value="config-content" />
@@ -229,7 +229,6 @@
 
     <bean class="io.cattle.platform.iaas.api.credential.SshKeyPemDownloadLinkHandler" />
     <bean class="io.cattle.platform.iaas.api.credential.ApiKeyCertificateDownloadLinkHandler" />
-    <bean class="io.cattle.platform.iaas.api.ippool.IpPoolAcquireActionHandler" />
     <bean class="io.cattle.platform.docker.machine.api.MachineConfigLinkHandler" />
 
        <bean class="io.cattle.platform.iaas.api.auth.integration.local.ChangeSecretActionHandler" />

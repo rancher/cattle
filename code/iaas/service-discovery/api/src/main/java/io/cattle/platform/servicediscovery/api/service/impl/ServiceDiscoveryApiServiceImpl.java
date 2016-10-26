@@ -5,6 +5,7 @@ import static io.cattle.platform.core.model.tables.InstanceTable.*;
 import static io.cattle.platform.core.model.tables.ServiceTable.*;
 import static io.cattle.platform.core.model.tables.StackTable.*;
 import static io.cattle.platform.core.model.tables.VolumeTemplateTable.*;
+
 import io.cattle.platform.core.addon.LbConfig;
 import io.cattle.platform.core.addon.ServiceLink;
 import io.cattle.platform.core.constants.InstanceConstants;
@@ -20,7 +21,6 @@ import io.cattle.platform.core.model.Stack;
 import io.cattle.platform.core.model.VolumeTemplate;
 import io.cattle.platform.core.util.LBMetadataUtil.LBConfigMetadataStyle;
 import io.cattle.platform.docker.constants.DockerInstanceConstants;
-import io.cattle.platform.docker.constants.DockerNetworkConstants;
 import io.cattle.platform.json.JsonMapper;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.process.ObjectProcessManager;
@@ -545,7 +545,7 @@ public class ServiceDiscoveryApiServiceImpl implements ServiceDiscoveryApiServic
             String launchConfigName, Map<String, Object> composeServiceData) {
         Object networkMode = composeServiceData.get(ServiceDiscoveryConfigItem.NETWORKMODE.getDockerName());
         if (networkMode != null) {
-            if (networkMode.equals(DockerNetworkConstants.NETWORK_MODE_CONTAINER)) {
+            if (networkMode.equals(NetworkConstants.NETWORK_MODE_CONTAINER)) {
                 Map<String, Object> serviceData = ServiceDiscoveryUtil.getLaunchConfigDataAsMap(service,
                         launchConfigName);
                 // network mode can be passed by container, or by service name, so check both
@@ -556,16 +556,16 @@ public class ServiceDiscoveryApiServiceImpl implements ServiceDiscoveryApiServic
                     Instance instance = objectManager.loadResource(Instance.class, targetContainerId.longValue());
                     String instanceName = ServiceDiscoveryUtil.getInstanceName(instance);
                     composeServiceData.put(ServiceDiscoveryConfigItem.NETWORKMODE.getDockerName(),
-                            DockerNetworkConstants.NETWORK_MODE_CONTAINER + ":" + instanceName);
+                            NetworkConstants.NETWORK_MODE_CONTAINER + ":" + instanceName);
                 } else {
                     Object networkLaunchConfig = serviceData
                             .get(ServiceConstants.FIELD_NETWORK_LAUNCH_CONFIG);
                     if (networkLaunchConfig != null) {
                         composeServiceData.put(ServiceDiscoveryConfigItem.NETWORKMODE.getDockerName(),
-                                DockerNetworkConstants.NETWORK_MODE_CONTAINER + ":" + networkLaunchConfig);
+                                NetworkConstants.NETWORK_MODE_CONTAINER + ":" + networkLaunchConfig);
                     }
                 }
-            } else if (networkMode.equals(DockerNetworkConstants.NETWORK_MODE_MANAGED)) {
+            } else if (networkMode.equals(NetworkConstants.NETWORK_MODE_MANAGED)) {
                 composeServiceData.remove(ServiceDiscoveryConfigItem.NETWORKMODE.getDockerName());
             }
         }

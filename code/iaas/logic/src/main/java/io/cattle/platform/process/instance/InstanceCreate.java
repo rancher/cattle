@@ -1,25 +1,18 @@
 package io.cattle.platform.process.instance;
 
 import static io.cattle.platform.core.model.tables.CredentialInstanceMapTable.*;
-import static io.cattle.platform.core.model.tables.NetworkTable.*;
 import static io.cattle.platform.core.model.tables.NicTable.*;
 import static io.cattle.platform.core.model.tables.VolumeTable.*;
 
 import io.cattle.iaas.labels.service.LabelsService;
 import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.InstanceConstants;
-import io.cattle.platform.core.constants.NetworkConstants;
 import io.cattle.platform.core.dao.GenericResourceDao;
 import io.cattle.platform.core.dao.LabelsDao;
 import io.cattle.platform.core.model.CredentialInstanceMap;
 import io.cattle.platform.core.model.Instance;
-import io.cattle.platform.core.model.Network;
 import io.cattle.platform.core.model.Nic;
-import io.cattle.platform.core.model.Subnet;
-import io.cattle.platform.core.model.Vnet;
 import io.cattle.platform.core.model.Volume;
-import io.cattle.platform.core.util.SystemLabels;
-import io.cattle.platform.docker.constants.DockerNetworkConstants;
 import io.cattle.platform.engine.handler.HandlerResult;
 import io.cattle.platform.engine.process.ProcessInstance;
 import io.cattle.platform.engine.process.ProcessState;
@@ -159,42 +152,14 @@ public class InstanceCreate extends AbstractDefaultProcessHandler {
 
     protected Set<Long> createNics(Instance instance, List<Nic> nics, Map<String, Object> data) {
         List<Long> networkIds = populateNetworks(instance);
-        List<Long> subnetIds = DataUtils.getFieldList(instance.getData(), InstanceConstants.FIELD_SUBNET_IDS, Long.class);
-        List<Long> vnetIds = DataUtils.getFieldList(instance.getData(), InstanceConstants.FIELD_VNET_IDS, Long.class);
-        return createNicsFromIds(instance, nics, data, networkIds, subnetIds, vnetIds);
+        return createNicsFromIds(instance, nics, data, networkIds);
     }
 
-    @SuppressWarnings("unchecked")
     protected List<Long> populateNetworks(Instance instance) {
-        List<Long> networkIds = DataUtils.getFieldList(instance.getData(), InstanceConstants.FIELD_NETWORK_IDS,
-                Long.class);
-        Map<String, String> instanceLabels = DataAccessor.fields(instance).withKey(InstanceConstants.FIELD_LABELS)
-                .withDefault(Collections.EMPTY_MAP).as(Map.class);
-
-        String dnsLabel = instanceLabels.get(SystemLabels.LABEL_USE_RANCHER_DNS);
-        if (networkIds == null || dnsLabel == null || !dnsLabel.equals("true")) {
-            return networkIds;
-        }
-        Network hostNetwork = null;
-        Network managedNetwork = null;
-        for (Long networkId : networkIds) {
-            Network network = objectManager.loadResource(Network.class, networkId);
-            if (network.getKind().equalsIgnoreCase(DockerNetworkConstants.KIND_DOCKER_HOST)) {
-                hostNetwork = network;
-            } else if (network.getKind().equalsIgnoreCase(NetworkConstants.KIND_HOSTONLY)) {
-                managedNetwork = network;
-            }
-        }
-        if (hostNetwork != null && managedNetwork == null) {
-            managedNetwork = objectManager.findOne(Network.class, NETWORK.ACCOUNT_ID, instance.getAccountId(),
-                    NETWORK.KIND, NetworkConstants.KIND_HOSTONLY, NETWORK.REMOVED, null);
-            networkIds.add(managedNetwork.getId());
-        }
-        return networkIds;
+        return DataUtils.getFieldList(instance.getData(), InstanceConstants.FIELD_NETWORK_IDS, Long.class);
     }
 
-    protected Set<Long> createNicsFromIds(Instance instance, List<Nic> nics, Map<String, Object> data, List<Long> networkIds, List<Long> subnetIds,
-            List<Long> vnetIds) {
+    protected Set<Long> createNicsFromIds(Instance instance, List<Nic> nics, Map<String, Object> data, List<Long> networkIds) {
         Set<Long> nicIds = new TreeSet<Long>();
 
         int deviceId = 0;
@@ -218,66 +183,6 @@ public class InstanceCreate extends AbstractDefaultProcessHandler {
                 if (newNic == null) {
                     newNic = objectManager.create(Nic.class, NIC.ACCOUNT_ID, instance.getAccountId(), NIC.NETWORK_ID, createId, NIC.INSTANCE_ID, instance
                             .getId(), NIC.DEVICE_NUMBER, deviceId);
-                }
-
-                deviceId++;
-
-                processManager.executeStandardProcess(StandardProcess.CREATE, newNic, data);
-                nicIds.add(newNic.getId());
-            }
-        }
-
-        if (subnetIds != null) {
-            for (int i = 0; i < subnetIds.size(); i++) {
-                Number createId = subnetIds.get(i);
-                Subnet subnet = objectManager.loadResource(Subnet.class, createId.toString());
-
-                if (subnet == null) {
-                    return null;
-                }
-
-                Nic newNic = null;
-                for (Nic nic : nics) {
-                    if (nic.getSubnetId() == createId.longValue()) {
-                        newNic = nic;
-                        break;
-                    }
-                }
-
-                if (newNic == null) {
-                    newNic = objectManager.create(Nic.class, NIC.ACCOUNT_ID, instance.getAccountId(), NIC.NETWORK_ID, subnet.getNetworkId(), NIC.SUBNET_ID,
-                            createId, NIC.INSTANCE_ID, instance.getId(), NIC.DEVICE_NUMBER, deviceId);
-
-                }
-
-                deviceId++;
-
-                processManager.executeStandardProcess(StandardProcess.CREATE, newNic, data);
-                nicIds.add(newNic.getId());
-            }
-        }
-
-        if (vnetIds != null) {
-            for (int i = 0; i < vnetIds.size(); i++) {
-                Number createId = vnetIds.get(i);
-                Vnet vnet = objectManager.loadResource(Vnet.class, createId.toString());
-
-                if (vnet == null) {
-                    return null;
-                }
-
-                Nic newNic = null;
-                for (Nic nic : nics) {
-                    if (nic.getVnetId() != null && nic.getVnetId() == createId.longValue()) {
-                        newNic = nic;
-                        break;
-                    }
-                }
-
-                if (newNic == null) {
-                    newNic = objectManager.create(Nic.class, NIC.ACCOUNT_ID, instance.getAccountId(), NIC.NETWORK_ID, vnet.getNetworkId(), NIC.VNET_ID,
-                            createId, NIC.INSTANCE_ID, instance.getId(), NIC.DEVICE_NUMBER, deviceId);
-
                 }
 
                 deviceId++;

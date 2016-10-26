@@ -35,8 +35,7 @@
             "default" : "stop",
             "options" : [
                 "stop",
-                "remove",
-                "restart"
+                "remove"
             ]
         },
         "ports": {
@@ -44,20 +43,7 @@
             "create": true,
             "nullable": true
         },
-        "subnetIds" : {
-            "type" : "array[reference[subnet]]",
-            "nullable" : true,
-            "includeInList" : false
-        },
-        "vnetIds" : {
-            "type" : "array[reference[vnet]]",
-            "nullable" : true,
-            "includeInList" : false
-        },
         "primaryIpAddress" : {
-            "type" : "string"
-        },
-        "primaryAssociatedIpAddress" : {
             "type" : "string"
         },
         "startOnCreate" : {
@@ -69,10 +55,6 @@
             "type" : "string",
             "nullable": true,
             "create" : true
-        },
-        "systemContainer" : {
-            "type": "enum",
-            "options": [ "NetworkAgent", "LoadBalancerAgent"]
         },
         "expose": {
             "type": "array[string]",

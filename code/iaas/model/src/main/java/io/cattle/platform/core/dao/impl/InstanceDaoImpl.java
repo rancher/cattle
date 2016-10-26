@@ -1,6 +1,5 @@
 package io.cattle.platform.core.dao.impl;
 
-import static io.cattle.platform.core.model.tables.StackTable.*;
 import static io.cattle.platform.core.model.tables.HostTable.*;
 import static io.cattle.platform.core.model.tables.InstanceHostMapTable.*;
 import static io.cattle.platform.core.model.tables.InstanceTable.*;
@@ -11,7 +10,9 @@ import static io.cattle.platform.core.model.tables.PortTable.*;
 import static io.cattle.platform.core.model.tables.ServiceExposeMapTable.*;
 import static io.cattle.platform.core.model.tables.ServiceIndexTable.*;
 import static io.cattle.platform.core.model.tables.ServiceTable.*;
+import static io.cattle.platform.core.model.tables.StackTable.*;
 import static io.cattle.platform.core.model.tables.SubnetTable.*;
+
 import io.cattle.platform.core.addon.PublicEndpoint;
 import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.InstanceConstants;
@@ -32,7 +33,6 @@ import io.cattle.platform.core.model.Subnet;
 import io.cattle.platform.core.model.tables.HostTable;
 import io.cattle.platform.core.model.tables.InstanceTable;
 import io.cattle.platform.core.model.tables.IpAddressTable;
-import io.cattle.platform.core.model.tables.NicTable;
 import io.cattle.platform.core.model.tables.PortTable;
 import io.cattle.platform.core.model.tables.ServiceExposeMapTable;
 import io.cattle.platform.core.model.tables.ServiceIndexTable;
@@ -372,7 +372,7 @@ public class InstanceDaoImpl extends AbstractJooqDao implements InstanceDao {
                 .and(condition)
                 .fetch().map(mapper);
     }
-    
+
     @Override
     public List<IpAddressToServiceIndex> getIpToIndex(Service service) {
         MultiRecordMapper<IpAddressToServiceIndex> mapper = new MultiRecordMapper<IpAddressToServiceIndex>() {
@@ -390,32 +390,29 @@ public class InstanceDaoImpl extends AbstractJooqDao implements InstanceDao {
         IpAddressTable ipAddress = mapper.add(IP_ADDRESS);
         SubnetTable subnet = mapper.add(SUBNET);
         ServiceExposeMapTable exposeMap = mapper.add(SERVICE_EXPOSE_MAP, SERVICE_EXPOSE_MAP.REMOVED);
-        NicTable nic = mapper.add(NIC, NIC.DEVICE_NUMBER, NIC.INSTANCE_ID, NIC.REMOVED, NIC.SUBNET_ID);
-        InstanceTable instance = mapper.add(INSTANCE, INSTANCE.SERVICE_INDEX_ID, INSTANCE.REMOVED, INSTANCE.ID);
-
 
         return create()
                 .select(mapper.fields())
-                .from(instance)
+                .from(INSTANCE)
                 .join(exposeMap)
-                .on(exposeMap.INSTANCE_ID.eq(instance.ID))
-                .join(nic)
-                .on(nic.INSTANCE_ID.eq(exposeMap.INSTANCE_ID))
+                    .on(exposeMap.INSTANCE_ID.eq(INSTANCE.ID))
+                .join(NIC)
+                    .on(NIC.INSTANCE_ID.eq(exposeMap.INSTANCE_ID))
                 .join(IP_ADDRESS_NIC_MAP)
-                .on(IP_ADDRESS_NIC_MAP.NIC_ID.eq(nic.ID))
+                    .on(IP_ADDRESS_NIC_MAP.NIC_ID.eq(NIC.ID))
                 .join(ipAddress)
-                .on(IP_ADDRESS_NIC_MAP.IP_ADDRESS_ID.eq(ipAddress.ID))
+                    .on(IP_ADDRESS_NIC_MAP.IP_ADDRESS_ID.eq(ipAddress.ID))
                 .join(serviceIndex)
-                .on(serviceIndex.ID.eq(instance.SERVICE_INDEX_ID))
+                    .on(serviceIndex.ID.eq(INSTANCE.SERVICE_INDEX_ID))
                 .join(subnet)
-                .on(nic.SUBNET_ID.eq(subnet.ID))
+                    .on(ipAddress.SUBNET_ID.eq(subnet.ID))
                 .where(exposeMap.SERVICE_ID.eq(service.getId()))
-                .and(exposeMap.REMOVED.isNull())
-                .and(nic.REMOVED.isNull())
-                .and(ipAddress.REMOVED.isNull())
-                .and(ipAddress.ADDRESS.isNotNull())
-                .and(instance.REMOVED.isNull())
-                .and(ipAddress.ROLE.eq(IpAddressConstants.ROLE_PRIMARY))
+                    .and(exposeMap.REMOVED.isNull())
+                    .and(NIC.REMOVED.isNull())
+                    .and(ipAddress.REMOVED.isNull())
+                    .and(ipAddress.ADDRESS.isNotNull())
+                    .and(INSTANCE.REMOVED.isNull())
+                    .and(ipAddress.ROLE.eq(IpAddressConstants.ROLE_PRIMARY))
                 .fetch().map(mapper);
     }
 }

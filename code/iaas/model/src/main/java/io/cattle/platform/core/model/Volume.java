@@ -224,17 +224,6 @@ public interface Volume extends java.io.Serializable {
 	public java.lang.Long getImageId();
 
 	/**
-	 * Setter for <code>cattle.volume.offering_id</code>.
-	 */
-	public void setOfferingId(java.lang.Long value);
-
-	/**
-	 * Getter for <code>cattle.volume.offering_id</code>.
-	 */
-	@javax.persistence.Column(name = "offering_id", precision = 19)
-	public java.lang.Long getOfferingId();
-
-	/**
 	 * Setter for <code>cattle.volume.zone_id</code>.
 	 */
 	public void setZoneId(java.lang.Long value);

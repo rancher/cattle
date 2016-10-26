@@ -11,7 +11,7 @@ package io.cattle.platform.core.model.tables;
 @java.lang.SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class SubnetTable extends org.jooq.impl.TableImpl<io.cattle.platform.core.model.tables.records.SubnetRecord> {
 
-	private static final long serialVersionUID = -1269129534;
+	private static final long serialVersionUID = 557550159;
 
 	/**
 	 * The singleton instance of <code>cattle.subnet</code>
@@ -117,11 +117,6 @@ public class SubnetTable extends org.jooq.impl.TableImpl<io.cattle.platform.core
 	public final org.jooq.TableField<io.cattle.platform.core.model.tables.records.SubnetRecord, java.lang.Boolean> IS_PUBLIC = createField("is_public", org.jooq.impl.SQLDataType.BIT.nullable(false).defaulted(true), this, "");
 
 	/**
-	 * The column <code>cattle.subnet.ip_pool_id</code>.
-	 */
-	public final org.jooq.TableField<io.cattle.platform.core.model.tables.records.SubnetRecord, java.lang.Long> IP_POOL_ID = createField("ip_pool_id", org.jooq.impl.SQLDataType.BIGINT, this, "");
-
-	/**
 	 * Create a <code>cattle.subnet</code> table reference
 	 */
 	public SubnetTable() {
@@ -172,7 +167,7 @@ public class SubnetTable extends org.jooq.impl.TableImpl<io.cattle.platform.core
 	 */
 	@Override
 	public java.util.List<org.jooq.ForeignKey<io.cattle.platform.core.model.tables.records.SubnetRecord, ?>> getReferences() {
-		return java.util.Arrays.<org.jooq.ForeignKey<io.cattle.platform.core.model.tables.records.SubnetRecord, ?>>asList(io.cattle.platform.core.model.Keys.FK_SUBNET__ACCOUNT_ID, io.cattle.platform.core.model.Keys.FK_SUBNET__NETWORK_ID, io.cattle.platform.core.model.Keys.FK_SUBNET__POOL_ID);
+		return java.util.Arrays.<org.jooq.ForeignKey<io.cattle.platform.core.model.tables.records.SubnetRecord, ?>>asList(io.cattle.platform.core.model.Keys.FK_SUBNET__ACCOUNT_ID, io.cattle.platform.core.model.Keys.FK_SUBNET__NETWORK_ID);
 	}
 
 	/**

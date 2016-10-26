@@ -2,8 +2,8 @@ package io.cattle.platform.vm.process;
 
 import static io.cattle.platform.core.model.tables.InstanceTable.*;
 import static io.cattle.platform.core.model.tables.VolumeTable.*;
+
 import io.cattle.platform.core.addon.VirtualMachineDisk;
-import io.cattle.platform.core.constants.ContainerEventConstants;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.constants.StoragePoolConstants;
 import io.cattle.platform.core.constants.VolumeConstants;
@@ -73,7 +73,7 @@ public class VirtualMachinePreCreate extends AbstractObjectProcessLogic implemen
         Map<String, Object> labels = DataAccessor.fieldMap(instance, InstanceConstants.FIELD_LABELS);
 
         labels.put("io.rancher.scheduler.affinity:host_label_soft", "kvm=true");
-        labels.put(ContainerEventConstants.LABEL_RANCHER_NETWORK, "true");
+        labels.put(SystemLabels.LABEL_RANCHER_NETWORK, "true");
         labels.put(SystemLabels.LABEL_VM, "true");
         long mem = 512L;
         if (instance.getMemoryMb() == null) {
