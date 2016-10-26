@@ -251,6 +251,8 @@
 
         "task" : "r",
 
+        "projectTemplate.isPublic" : "cru",
+
         "end" : ""
     }
 }

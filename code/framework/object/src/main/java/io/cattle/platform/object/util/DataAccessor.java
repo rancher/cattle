@@ -73,6 +73,14 @@ public class DataAccessor {
         return fields(obj).withKey(key).as(Long.class);
     }
 
+    public static <T> List<T> fieldObjectList(Object obj, String name, Class<T> clz, JsonMapper jsonMapper) {
+        Object field = DataAccessor.field(obj, name, Object.class);
+        if (field == null) {
+            return Collections.emptyList();
+        }
+        return jsonMapper.convertCollectionValue(field, ArrayList.class, clz);
+    }
+
     public static List<Long> fieldLongList(Object obj, String key) {
         List<Long> result = new ArrayList<Long>();
         Object list = fields(obj).withKey(key).getForWrite();

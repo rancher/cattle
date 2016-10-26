@@ -2125,8 +2125,6 @@ def test_malform_export_config(client, context):
     # cpuCet
     # global vs scale
     image_uuid = context.image_uuid
-    labels = {'io.rancher.scheduler.global': 'true',
-              'io.rancher.service.hash': '088b54be-2b79-99e30b3a1a24'}
     metadata = {"io.rancher.service.hash": "088b54be-2b79-99e30b3a1a24",
                 "$bar": {"metadata": [{"$id$$foo$bar$$": "${HOSTNAME}"}]}}
     launch_config = {"imageUuid": image_uuid,

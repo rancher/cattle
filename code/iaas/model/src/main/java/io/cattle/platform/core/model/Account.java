@@ -157,6 +157,17 @@ public interface Account extends java.io.Serializable {
 	@javax.persistence.Column(name = "health_state", length = 128)
 	public java.lang.String getHealthState();
 
+	/**
+	 * Setter for <code>cattle.account.project_template_id</code>.
+	 */
+	public void setProjectTemplateId(java.lang.Long value);
+
+	/**
+	 * Getter for <code>cattle.account.project_template_id</code>.
+	 */
+	@javax.persistence.Column(name = "project_template_id", precision = 19)
+	public java.lang.Long getProjectTemplateId();
+
 	// -------------------------------------------------------------------------
 	// FROM and INTO
 	// -------------------------------------------------------------------------

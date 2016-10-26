@@ -93,6 +93,7 @@ def test_user_types(user_client, adds=set(), removes=set()):
         'backup',
         'backupTarget',
         'baseMachineConfig',
+        'catalogTemplate',
         'certificate',
         'changeSecretInput',
         'composeService',
@@ -147,6 +148,7 @@ def test_user_types(user_client, adds=set(), removes=set()):
         'port',
         'project',
         'projectMember',
+        'projectTemplate',
         'pullTask',
         'register',
         'registrationToken',
@@ -297,6 +299,7 @@ def test_admin_types(admin_user_client, adds=set(), removes=set()):
         'backup',
         'backupTarget',
         'baseMachineConfig',
+        'catalogTemplate',
         'certificate',
         'changeSecretInput',
         'composeConfig',
@@ -371,6 +374,7 @@ def test_admin_types(admin_user_client, adds=set(), removes=set()):
         'processInstance',
         'project',
         'projectMember',
+        'projectTemplate',
         'publish',
         'pullTask',
         'register',
@@ -602,6 +606,7 @@ def test_project_auth(admin_user_client, user_client, service_client,
         'virtualMachine': 'cru',
         'servicesPortRange': 'cru',
         'healthState': "r",
+        'projectTemplateId': 'cr',
         'orchestration': 'r',
     })
 
@@ -614,6 +619,7 @@ def test_project_auth(admin_user_client, user_client, service_client,
         'virtualMachine': 'cru',
         'servicesPortRange': 'cru',
         'healthState': "r",
+        'projectTemplateId': 'cr',
         'orchestration': 'r',
     })
 
@@ -626,6 +632,7 @@ def test_project_auth(admin_user_client, user_client, service_client,
         'virtualMachine': 'r',
         'servicesPortRange': 'r',
         'healthState': "r",
+        'projectTemplateId': 'r',
         'orchestration': 'r',
     })
 
@@ -637,6 +644,7 @@ def test_project_auth(admin_user_client, user_client, service_client,
         'servicesPortRange': 'cr',
         'uuid': 'cr',
         'healthState': 'r',
+        'projectTemplateId': 'cr',
         'orchestration': 'r',
     })
 

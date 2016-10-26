@@ -103,7 +103,7 @@ def test_create_storage_driver_create_delete(new_context, super_client):
 
     sds = client.list_storage_driver(serviceId=s.id,
                                      name=driver_name)
-    assert len(sds) == 0
+    assert len(sds) == 1
 
     s = client.wait_success(s.activate())
     assert s.state == 'active'

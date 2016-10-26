@@ -1,2 +1,3 @@
     <property name="mediumtext" value="TEXT" dbms="postgresql" />
     <property name="mediumtext" value="MEDIUMTEXT" />
+    <property name="mediumtext" value="varchar" dbms="H2" />
