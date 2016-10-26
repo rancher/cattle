@@ -202,7 +202,11 @@ def test_user_types(user_client, adds=set(), removes=set()):
         'lbTargetConfig',
         'portRule',
         'targetPortRule',
-        'loadBalancerCookieStickinessPolicy'
+        'loadBalancerCookieStickinessPolicy',
+        'subnet',
+        'storageDriverService',
+        'networkDriverService',
+        'defaultNetwork',
     }
     types.update(adds)
     types.difference_update(removes)
@@ -314,6 +318,7 @@ def test_admin_types(admin_user_client, adds=set(), removes=set()):
         'credential',
         'databasechangelog',
         'databasechangeloglock',
+        'defaultNetwork',
         'dnsService',
         'stack',
         'stackUpgrade',
@@ -360,6 +365,7 @@ def test_admin_types(admin_user_client, adds=set(), removes=set()):
         'mount',
         'network',
         'networkDriver',
+        'networkDriverService',
         'openldapconfig',
         'password',
         'physicalHost',
@@ -393,7 +399,9 @@ def test_admin_types(admin_user_client, adds=set(), removes=set()):
         'stateTransition',
         'statsAccess',
         'storageDriver',
+        'storageDriverService',
         'storagePool',
+        'subnet',
         'task',
         'taskInstance',
         'typeDocumentation',
@@ -940,7 +948,6 @@ def test_container_auth(admin_user_client, user_client, project_client):
         'token': 'r',
         'tty': 'r',
         'user': 'r',
-        'systemContainer': 'r',
         'nativeContainer': 'r',
         'externalId': 'r',
         'labels': 'r',
@@ -993,6 +1000,7 @@ def test_container_auth(admin_user_client, user_client, project_client):
         'healthInterval': 'r',
         'healthTimeout': 'r',
         'healthRetries': 'r',
+        'instanceTriggeredStop': 'r',
     })
 
     auth_check(user_client.schema, 'container', 'r', {
@@ -1043,7 +1051,6 @@ def test_container_auth(admin_user_client, user_client, project_client):
         'stdinOpen': 'r',
         'tty': 'r',
         'user': 'r',
-        'systemContainer': 'r',
         'nativeContainer': 'r',
         'externalId': 'r',
         'labels': 'r',
@@ -1096,6 +1103,7 @@ def test_container_auth(admin_user_client, user_client, project_client):
         'healthInterval': 'r',
         'healthTimeout': 'r',
         'healthRetries': 'r',
+        'instanceTriggeredStop': 'r',
     })
 
     auth_check(project_client.schema, 'container', 'crud', {
@@ -1146,7 +1154,6 @@ def test_container_auth(admin_user_client, user_client, project_client):
         'stdinOpen': 'cr',
         'tty': 'cr',
         'user': 'cr',
-        'systemContainer': 'r',
         'nativeContainer': 'r',
         'externalId': 'r',
         'labels': 'cr',
@@ -1199,6 +1206,7 @@ def test_container_auth(admin_user_client, user_client, project_client):
         'healthInterval': 'cr',
         'healthTimeout': 'cr',
         'healthRetries': 'cr',
+        'instanceTriggeredStop': 'cr',
     })
 
     auth_check(project_client.schema, 'dockerBuild', 'cr', {
@@ -2735,7 +2743,6 @@ def test_virtual_machine(admin_user_client, user_client, project_client):
         'restartPolicy': 'r',
         'startOnCreate': 'r',
         'token': 'r',
-        'systemContainer': 'r',
         'nativeContainer': 'r',
         'externalId': 'r',
         'labels': 'r',
@@ -2791,6 +2798,7 @@ def test_virtual_machine(admin_user_client, user_client, project_client):
         'healthInterval': 'r',
         'healthTimeout': 'r',
         'healthRetries': 'r',
+        'instanceTriggeredStop': 'r',
     })
 
     auth_check(user_client.schema, 'virtualMachine', 'r', {
@@ -2823,7 +2831,6 @@ def test_virtual_machine(admin_user_client, user_client, project_client):
         'requestedHostId': 'r',
         'restartPolicy': 'r',
         'startOnCreate': 'r',
-        'systemContainer': 'r',
         'nativeContainer': 'r',
         'externalId': 'r',
         'labels': 'r',
@@ -2879,6 +2886,7 @@ def test_virtual_machine(admin_user_client, user_client, project_client):
         'healthInterval': 'r',
         'healthTimeout': 'r',
         'healthRetries': 'r',
+        'instanceTriggeredStop': 'r',
     })
 
     auth_check(project_client.schema, 'virtualMachine', 'crud', {
@@ -2911,7 +2919,6 @@ def test_virtual_machine(admin_user_client, user_client, project_client):
         'requestedHostId': 'cr',
         'restartPolicy': 'cr',
         'startOnCreate': 'cr',
-        'systemContainer': 'r',
         'nativeContainer': 'r',
         'externalId': 'r',
         'labels': 'cr',
@@ -2967,6 +2974,7 @@ def test_virtual_machine(admin_user_client, user_client, project_client):
         'healthInterval': 'cr',
         'healthTimeout': 'cr',
         'healthRetries': 'cr',
+        'instanceTriggeredStop': 'cr',
     })
 
 
@@ -3375,14 +3383,23 @@ def test_network_driver_auth(admin_user_client, user_client, project_client):
         'accountId': 'r',
         'serviceId': 'r',
         'data': 'r',
+        'cniConfig': 'r',
+        'networkMetadata': 'r',
+        'defaultNetwork': 'r',
     })
 
     auth_check(user_client.schema, 'networkDriver', 'r', {
         'accountId': 'r',
         'serviceId': 'r',
+        'cniConfig': 'r',
+        'networkMetadata': 'r',
+        'defaultNetwork': 'r',
     })
 
     auth_check(project_client.schema, 'networkDriver', 'r', {
         'accountId': 'r',
         'serviceId': 'r',
+        'cniConfig': 'r',
+        'networkMetadata': 'r',
+        'defaultNetwork': 'r',
     })
