@@ -26,4 +26,5 @@ db_exists=$(mysql -uroot -e 'SHOW DATABASES LIKE "cattle";'|wc -l)
 if [ $db_exists -eq 0 ]; then
     echo "Setting up Database"
     mysql < ../resources/content/db/mysql/create_db_and_user_dev.sql
+    mysql cattle < ../resources/content/db/mysql/mysql-dump.sql
 fi

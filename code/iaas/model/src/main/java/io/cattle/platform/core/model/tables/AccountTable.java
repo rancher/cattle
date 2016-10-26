@@ -11,7 +11,7 @@ package io.cattle.platform.core.model.tables;
 @java.lang.SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class AccountTable extends org.jooq.impl.TableImpl<io.cattle.platform.core.model.tables.records.AccountRecord> {
 
-	private static final long serialVersionUID = -1259963873;
+	private static final long serialVersionUID = 1194299142;
 
 	/**
 	 * The singleton instance of <code>cattle.account</code>
@@ -152,7 +152,7 @@ public class AccountTable extends org.jooq.impl.TableImpl<io.cattle.platform.cor
 	 */
 	@Override
 	public java.util.List<org.jooq.ForeignKey<io.cattle.platform.core.model.tables.records.AccountRecord, ?>> getReferences() {
-		return java.util.Arrays.<org.jooq.ForeignKey<io.cattle.platform.core.model.tables.records.AccountRecord, ?>>asList(io.cattle.platform.core.model.Keys.FK_ACCOUNT__PROJECT_TEMPLATE_ID, io.cattle.platform.core.model.Keys.FK_ACCOUNT__DEFAULT_NETWORK_ID);
+		return java.util.Arrays.<org.jooq.ForeignKey<io.cattle.platform.core.model.tables.records.AccountRecord, ?>>asList(io.cattle.platform.core.model.Keys.FK_ACCOUNT__PROJECT_TEMPLATE_ID);
 	}
 
 	/**

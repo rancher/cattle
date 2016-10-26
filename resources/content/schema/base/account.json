@@ -6,6 +6,10 @@
         "identity": {
             "type": "reference[identity]"
         },
+        "defaultNetworkId": {
+            "type" : "reference[network]",
+            "nullable" : true
+        },
         "name": {
              "attributes" : {
                 "scheduleUpdate" : true
