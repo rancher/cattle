@@ -17,6 +17,7 @@ import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.InstanceHostMap;
 import io.cattle.platform.core.model.Volume;
 import io.cattle.platform.core.util.SystemLabels;
+import io.cattle.platform.eventing.exception.EventExecutionException;
 import io.cattle.platform.eventing.model.Event;
 import io.cattle.platform.eventing.model.EventVO;
 import io.cattle.platform.lock.definition.LockDefinition;
@@ -36,8 +37,12 @@ import java.util.Map;
 import javax.inject.Inject;
 
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class SimpleAllocator extends AbstractAllocator implements Allocator, Named {
+
+    private static final Logger log = LoggerFactory.getLogger(SimpleAllocator.class);
 
     private static final String FORCE_RESERVE = "force";
     private static final String HOST_ID = "hostID";
@@ -152,7 +157,7 @@ public class SimpleAllocator extends AbstractAllocator implements Allocator, Nam
                 }
 
                 RemoteAgent agent = agentLocator.lookupAgent(agentId);
-                agent.callSync(schedulerEvent);
+                callScheduler("Error reserving resources: %s", schedulerEvent, agent);
             }
         }
     }
@@ -165,7 +170,7 @@ public class SimpleAllocator extends AbstractAllocator implements Allocator, Nam
                 Map<String, Object> reqData = CollectionUtils.toMap(schedulerEvent.getData().get(SCHEDULER_REQUEST_DATA_NAME));
                 reqData.put(HOST_ID, hostUuid);
                 RemoteAgent agent = agentLocator.lookupAgent(agentId);
-                agent.callSync(schedulerEvent);
+                callScheduler("Error releasing resources: %s", schedulerEvent, agent);
             }
         }
     }
@@ -182,7 +187,7 @@ public class SimpleAllocator extends AbstractAllocator implements Allocator, Nam
                 Map<String, Object> reqData = CollectionUtils.toMap(schedulerEvent.getData().get(SCHEDULER_REQUEST_DATA_NAME));
                 reqData.put(HOST_ID, hostUuid);
                 RemoteAgent agent = agentLocator.lookupAgent(agentId);
-                agent.callSync(schedulerEvent);
+                callScheduler("Error releasing resources: %s", schedulerEvent, agent);
             }
         }
     }
@@ -196,7 +201,8 @@ public class SimpleAllocator extends AbstractAllocator implements Allocator, Nam
 
             if (schedulerEvent != null) {
                 RemoteAgent agent = agentLocator.lookupAgent(agentId);
-                Event eventResult = agent.callSync(schedulerEvent);
+                Event eventResult = callScheduler("Error getting hosts for resources: %s", schedulerEvent, agent);
+
                 hosts = (List<String>)CollectionUtils.getNestedValue(eventResult.getData(), SCHEDULER_PRIORITIZE_RESPONSE);
 
                 if (hosts.isEmpty()) {
@@ -205,6 +211,15 @@ public class SimpleAllocator extends AbstractAllocator implements Allocator, Nam
             }
         }
         return hosts;
+    }
+
+    Event callScheduler(String message, EventVO<Map<String, Object>> schedulerEvent, RemoteAgent agent) {
+        try {
+            return agent.callSync(schedulerEvent);
+        } catch (EventExecutionException e) {
+            log.error("External scheduler replied with an error: {}", e.getMessage());
+            throw new FailedToAllocate(String.format(message, extractResourceRequests(schedulerEvent)), e);
+        }
     }
 
     @SuppressWarnings("unchecked")
