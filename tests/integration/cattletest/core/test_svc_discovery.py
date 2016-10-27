@@ -2065,7 +2065,7 @@ def test_export_config(client, context):
     assert svc["oom_score_adj"] == 500
     assert svc["shm_size"] == 67108864
     assert svc["uts"] == "host"
-    assert svc["ipc_mode"] == "host"
+    assert svc["ipc"] == "host"
     assert svc["stop_signal"] == "SIGTERM"
     assert svc["group_add"] == ["root"]
     assert svc["cgroup"] == "mygroup"
@@ -2116,6 +2116,46 @@ def test_export_config(client, context):
     docker_yml = yaml.load(compose_config.dockerComposeConfig)
     svc = docker_yml['services'][service_nolog.name]
     assert "logging" not in svc
+
+
+def test_malform_export_config(client, context):
+    env = _create_stack(client)
+
+    # test:
+    # cpuCet
+    # global vs scale
+    image_uuid = context.image_uuid
+    labels = {'io.rancher.scheduler.global': 'true',
+              'io.rancher.service.hash': '088b54be-2b79-99e30b3a1a24'}
+    metadata = {"io.rancher.service.hash": "088b54be-2b79-99e30b3a1a24",
+                "$bar": {"metadata": [{"$id$$foo$bar$$": "${HOSTNAME}"}]}}
+    launch_config = {"imageUuid": image_uuid,
+                     "blkioDeviceOptions": {
+                         '/dev/sda': {
+                             'readIops': 1000,
+                             'writeIops': 2000,
+                         },
+                     }}
+    service = client. \
+        create_service(name="web",
+                       stackId=env.id,
+                       launchConfig=launch_config,
+                       metadata=metadata,
+                       retainIp=True)
+
+    service = client.wait_success(service)
+
+    compose_config = env.exportconfig()
+
+    assert compose_config is not None
+    docker_yml = yaml.load(compose_config.dockerComposeConfig)
+    svc = docker_yml['services'][service.name]
+    assert svc["device_write_iops"] == {"/dev/sda": 2000}
+    assert "device_read_bps" not in svc
+    assert "device_write_bps" not in svc
+    assert "blkio_weight_device" not in svc
+    assert "uts" not in svc
+    assert "ipc" not in svc
 
 
 def test_validate_create_only_containers(client, context):

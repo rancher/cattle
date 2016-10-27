@@ -86,7 +86,7 @@ public class ServiceDiscoveryConfigItem {
             "stop_signal", false);
     public static final ServiceDiscoveryConfigItem OOMSCOREADJ = new ServiceDiscoveryConfigItem("oomScoreAdj",
             "oom_score_adj", false);
-    public static final ServiceDiscoveryConfigItem IPCMODE = new ServiceDiscoveryConfigItem("ipcMode", "ipc_mode",
+    public static final ServiceDiscoveryConfigItem IPCMODE = new ServiceDiscoveryConfigItem("ipcMode", "ipc",
             false);
     public static final ServiceDiscoveryConfigItem ISOLATION = new ServiceDiscoveryConfigItem("isolation", "isolation",
             false);
