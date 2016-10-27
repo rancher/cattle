@@ -113,6 +113,7 @@ public class ServiceMetaData {
     protected List<String> expose = new ArrayList<>();
     protected String token;
     protected HealthCheck health_check;
+    protected Boolean system;
 
     protected ServiceMetaData(ServiceMetaData that) {
         this.serviceId = that.serviceId;
@@ -141,6 +142,7 @@ public class ServiceMetaData {
         this.expose = that.expose;
         this.token = that.token;
         this.health_check = that.health_check;
+        this.system = that.system;
     }
 
     public ServiceMetaData(Service service, String serviceName, Stack env, List<String> sidekicks,
@@ -173,6 +175,7 @@ public class ServiceMetaData {
         if (healthCheck != null) {
             this.health_check = new HealthCheck(healthCheck);
         }
+        this.system = service.getSystem();
     }
 
     @SuppressWarnings("unchecked")
@@ -379,5 +382,12 @@ public class ServiceMetaData {
         this.stackUuid = stackUuid;
     }
 
+    public Boolean getSystem() {
+        return system;
+    }
+
+    public void setSystem(Boolean system) {
+        this.system = system;
+    }
     
 }

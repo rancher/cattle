@@ -131,7 +131,8 @@ public class MetaDataInfoDaoImpl extends AbstractJooqDao implements MetaDataInfo
                 INSTANCE.HEALTH_STATE,
                 INSTANCE.START_COUNT, INSTANCE.STATE, INSTANCE.EXTERNAL_ID, INSTANCE.MEMORY_RESERVATION,
                 INSTANCE.MILLI_CPU_RESERVATION,
-                INSTANCE.NETWORK_CONTAINER_ID);
+                INSTANCE.NETWORK_CONTAINER_ID,
+                INSTANCE.SYSTEM);
         ServiceExposeMapTable exposeMap = mapper.add(SERVICE_EXPOSE_MAP, SERVICE_EXPOSE_MAP.SERVICE_ID,
                 SERVICE_EXPOSE_MAP.DNS_PREFIX, SERVICE_EXPOSE_MAP.UPGRADE);
         HostTable host = mapper.add(HOST, HOST.ID);
