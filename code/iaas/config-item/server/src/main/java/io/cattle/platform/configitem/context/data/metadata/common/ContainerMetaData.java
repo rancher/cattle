@@ -140,20 +140,12 @@ public class ContainerMetaData {
                 .withKey(InstanceConstants.FIELD_PORTS).withDefault(Collections.EMPTY_LIST)
                 .as(List.class);
         this.hostname = instance.getHostname();
-        if (hostMetaData != null) {
-            this.host_uuid = hostMetaData.getUuid();
-            String hostIp = hostMetaData.agent_ip;
-            if (hostIp == null) {
-                ports.addAll(portsObj);
+        for (String portObj : portsObj) {
+            PortSpec port = new PortSpec(portObj);
+            if (StringUtils.isEmpty(port.getIpAddress())) {
+                ports.add("0.0.0.0:" + portObj);
             } else {
-                for (String portObj : portsObj) {
-                    PortSpec port = new PortSpec(portObj);
-                    if (StringUtils.isEmpty(port.getIpAddress())) {
-                        ports.add(hostIp + ":" + portObj);
-                    } else {
-                        ports.add(portObj);
-                    }
-                }
+                ports.add(portObj);
             }
         }
         this.create_index = instance.getCreateIndex();
