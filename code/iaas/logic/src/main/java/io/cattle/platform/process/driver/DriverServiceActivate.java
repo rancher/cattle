@@ -48,7 +48,7 @@ public class DriverServiceActivate extends AbstractProcessLogic implements Proce
 
     @Override
     public String[] getProcessNames() {
-        return new String[]{"service.activate"};
+        return new String[]{"service.create"};
     }
 
     @Override

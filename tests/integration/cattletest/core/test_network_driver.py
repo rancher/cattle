@@ -19,7 +19,7 @@ def test_create_network_driver_create_delete(client, super_client):
 
     nds = client.list_network_driver(serviceId=s.id,
                                      name=driver_name)
-    assert len(nds) == 0
+    assert len(nds) == 1
 
     s = client.wait_success(s.activate())
     assert s.state == 'active'

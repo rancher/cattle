@@ -432,6 +432,10 @@
     <process:process name="mount.deactivate" resourceType="mount" start="requested,active,activating" transitioning="deactivating" done="inactive" />
     <process:process name="mount.remove" resourceType="mount" start="inactive,deactivating" transitioning="removing" done="removed" />
 
+    <!-- ProjectTemplate -->
+    <process:process name="projecttemplate.create" resourceType="projectTemplate" start="requested" transitioning="activating" done="active" />
+    <process:process name="projecttemplate.remove" resourceType="projectTemplate" start="requested,activating,active" transitioning="removing" done="removed" />
+
     <!-- Physical Host -->  
     <process:process name="physicalhost.create" resourceType="physicalHost" start="requested" transitioning="creating" done="created" delegate="physicalhost.bootstrap" />
     <process:process name="physicalhost.bootstrap" resourceType="physicalHost" start="created,creating" transitioning="bootstrapping" done="active" />

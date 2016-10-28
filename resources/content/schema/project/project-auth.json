@@ -41,6 +41,7 @@
         "port" : "ru",
         "project" : "r",
         "projectMember" : "r",
+        "projectTemplate" : "r",
         "pullTask" : "cr",
         "register": "cr",
         "registrationToken" : "cr",

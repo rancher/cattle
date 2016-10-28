@@ -299,6 +299,11 @@ public class Tables {
 	public static final io.cattle.platform.core.model.tables.ProjectMemberTable PROJECT_MEMBER = io.cattle.platform.core.model.tables.ProjectMemberTable.PROJECT_MEMBER;
 
 	/**
+	 * The table cattle.project_template
+	 */
+	public static final io.cattle.platform.core.model.tables.ProjectTemplateTable PROJECT_TEMPLATE = io.cattle.platform.core.model.tables.ProjectTemplateTable.PROJECT_TEMPLATE;
+
+	/**
 	 * The table cattle.resource_pool
 	 */
 	public static final io.cattle.platform.core.model.tables.ResourcePoolTable RESOURCE_POOL = io.cattle.platform.core.model.tables.ResourcePoolTable.RESOURCE_POOL;

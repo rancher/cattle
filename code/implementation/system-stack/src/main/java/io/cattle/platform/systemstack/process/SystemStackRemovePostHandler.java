@@ -1,4 +1,4 @@
-package io.cattle.platform.systemstack.listener;
+package io.cattle.platform.systemstack.process;
 
 import static io.cattle.platform.core.model.tables.StackTable.*;
 import io.cattle.platform.core.model.Stack;
@@ -8,6 +8,7 @@ import io.cattle.platform.engine.process.ProcessInstance;
 import io.cattle.platform.engine.process.ProcessState;
 import io.cattle.platform.object.process.StandardProcess;
 import io.cattle.platform.process.common.handler.AbstractObjectProcessLogic;
+import io.cattle.platform.systemstack.listener.SystemStackUpdate;
 import io.cattle.platform.util.type.Priority;
 
 import java.util.ArrayList;

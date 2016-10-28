@@ -25,6 +25,9 @@ public class AccountConstants {
     public static final String SUPER_ADMIN_KIND = "superadmin";
     public static final String PROJECT_KIND = "project";
     public static final String FIELD_PORT_RANGE = "servicesPortRange";
+    public static final String FIELD_CREATED_STACKS = "createdStackIds";
+    public static final String FIELD_STARTED_STACKS = "startedStackIds";
+
 
     public static final String ACCOUNT_ID = ConstantsUtils.property(Account.class, "accountId");
     public static final String SYSTEM_UUID = "system";

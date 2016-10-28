@@ -5,6 +5,7 @@ import io.cattle.platform.configitem.version.ConfigItemStatusManager;
 import io.cattle.platform.core.constants.AccountConstants;
 import io.cattle.platform.core.constants.ServiceConstants;
 import io.cattle.platform.core.model.Account;
+import io.cattle.platform.core.model.Host;
 import io.cattle.platform.core.model.Stack;
 import io.cattle.platform.engine.handler.HandlerResult;
 import io.cattle.platform.engine.handler.ProcessPostListener;
@@ -25,25 +26,35 @@ public class SystemStackTrigger extends AbstractObjectProcessLogic implements Pr
     @Override
     public String[] getProcessNames() {
         return new String[]{
-            "stack.*",
+            "stack.*", "host.*"
         };
     }
 
     @Override
     public HandlerResult handle(ProcessState state, ProcessInstance process) {
-        Stack stack = (Stack)state.getResource();
-        if (!ServiceConstants.isSystem(stack)) {
-            Account account = objectManager.loadResource(Account.class, stack.getAccountId());
-            if (DataAccessor.fieldString(account, AccountConstants.FIELD_ORCHESTRATION) != null) {
-                return null;
+        Object resource = state.getResource();
+
+        if (resource instanceof Stack) {
+            Stack stack = (Stack)resource;
+            if (!ServiceConstants.isSystem(stack)) {
+                Account account = objectManager.loadResource(Account.class, stack.getAccountId());
+                if (DataAccessor.fieldString(account, AccountConstants.FIELD_ORCHESTRATION) != null) {
+                    return null;
+                }
             }
+            trigger(stack.getAccountId());
+        } else if (resource instanceof Host) {
+            trigger(((Host) resource).getAccountId());
         }
 
-        ConfigUpdateRequest request = ConfigUpdateRequest.forResource(Account.class, stack.getAccountId());
+        return null;
+    }
+
+    protected void trigger(Long accountId) {
+        ConfigUpdateRequest request = ConfigUpdateRequest.forResource(Account.class, accountId);
         request.addItem(STACKS);
         request.withDeferredTrigger(true);
         itemManager.updateConfig(request);
-        return null;
     }
 
 }

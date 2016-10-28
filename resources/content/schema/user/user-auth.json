@@ -205,6 +205,16 @@
         "serviceProxy.token":"r",
         "serviceProxy.url":"r",
 
+        "catalogTemplate" : "r",
+        "catalogTemplate.name" : "cr",
+        "catalogTemplate.description" : "cr",
+        "catalogTemplate.templateId" : "cr",
+        "catalogTemplate.templateVersionId" : "cr",
+        "catalogTemplate.dockerCompose" : "cr",
+        "catalogTemplate.rancherCompose" : "cr",
+        "catalogTemplate.answers" : "cr",
+        "catalogTemplate.binding" : "cr",
+
         "credential" : "r",
         "credential.publicValue" : "r",
         "credential.secretValue" : "r",
@@ -389,7 +399,11 @@
         "project.orchestration" : "r",
         "project.virtualMachine" : "cru",
         "project.servicesPortRange": "cru",
+        "project.projectTemplateId": "cr",
         "project.healthState": "r",
+
+        "projectTemplate" : "crud",
+        "projectTemplate.stacks" : "cru",
 
         "projectMember" : "cr",
         "projectMember.accountId" : "",

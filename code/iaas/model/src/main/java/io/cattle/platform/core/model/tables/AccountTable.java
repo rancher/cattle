@@ -11,7 +11,7 @@ package io.cattle.platform.core.model.tables;
 @java.lang.SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class AccountTable extends org.jooq.impl.TableImpl<io.cattle.platform.core.model.tables.records.AccountRecord> {
 
-	private static final long serialVersionUID = -798592220;
+	private static final long serialVersionUID = -1783485410;
 
 	/**
 	 * The singleton instance of <code>cattle.account</code>
@@ -92,6 +92,11 @@ public class AccountTable extends org.jooq.impl.TableImpl<io.cattle.platform.cor
 	public final org.jooq.TableField<io.cattle.platform.core.model.tables.records.AccountRecord, java.lang.String> HEALTH_STATE = createField("health_state", org.jooq.impl.SQLDataType.VARCHAR.length(128), this, "");
 
 	/**
+	 * The column <code>cattle.account.project_template_id</code>.
+	 */
+	public final org.jooq.TableField<io.cattle.platform.core.model.tables.records.AccountRecord, java.lang.Long> PROJECT_TEMPLATE_ID = createField("project_template_id", org.jooq.impl.SQLDataType.BIGINT, this, "");
+
+	/**
 	 * Create a <code>cattle.account</code> table reference
 	 */
 	public AccountTable() {
@@ -135,6 +140,14 @@ public class AccountTable extends org.jooq.impl.TableImpl<io.cattle.platform.cor
 	@Override
 	public java.util.List<org.jooq.UniqueKey<io.cattle.platform.core.model.tables.records.AccountRecord>> getKeys() {
 		return java.util.Arrays.<org.jooq.UniqueKey<io.cattle.platform.core.model.tables.records.AccountRecord>>asList(io.cattle.platform.core.model.Keys.KEY_ACCOUNT_PRIMARY, io.cattle.platform.core.model.Keys.KEY_ACCOUNT_IDX_ACCOUNT_UUID);
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public java.util.List<org.jooq.ForeignKey<io.cattle.platform.core.model.tables.records.AccountRecord, ?>> getReferences() {
+		return java.util.Arrays.<org.jooq.ForeignKey<io.cattle.platform.core.model.tables.records.AccountRecord, ?>>asList(io.cattle.platform.core.model.Keys.FK_ACCOUNT__PROJECT_TEMPLATE_ID);
 	}
 
 	/**

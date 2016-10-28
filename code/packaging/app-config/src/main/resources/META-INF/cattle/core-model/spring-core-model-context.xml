@@ -34,6 +34,7 @@
                 <value>io.cattle.platform.core.addon.BlkioDeviceOption</value>
                 <value>io.cattle.platform.core.addon.ScalePolicy</value>
                 <value>io.cattle.platform.core.addon.Ulimit</value>
+                <value>io.cattle.platform.core.addon.CatalogTemplate</value>
             </set>
         </property>
     </bean>

@@ -368,6 +368,12 @@ public abstract class AbstractJooqResourceManager extends AbstractObjectResource
                 return;
             }
 
+            ApiRequest request = ApiContext.getContext().getApiRequest();
+            // Only allow is_public logic for GET methods
+            if (request == null || !"GET".equals(request.getMethod())) {
+                return;
+            }
+
             criteria.remove(ObjectMetaDataManager.ACCOUNT_FIELD);
             Condition accountCondition = null;
             if (accountValue instanceof io.github.ibuildthecloud.gdapi.condition.Condition) {
