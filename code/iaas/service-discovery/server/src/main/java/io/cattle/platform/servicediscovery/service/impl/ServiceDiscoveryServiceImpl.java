@@ -4,13 +4,13 @@ import static io.cattle.platform.core.model.tables.ServiceIndexTable.*;
 import static io.cattle.platform.core.model.tables.ServiceTable.*;
 import static io.cattle.platform.core.model.tables.StackTable.*;
 import static io.cattle.platform.core.model.tables.SubnetTable.*;
-
 import io.cattle.platform.allocator.service.AllocatorService;
 import io.cattle.platform.configitem.events.ConfigUpdate;
 import io.cattle.platform.configitem.model.Client;
 import io.cattle.platform.configitem.request.ConfigUpdateRequest;
 import io.cattle.platform.configitem.version.ConfigItemStatusManager;
-import io.cattle.platform.core.addon.LoadBalancerServiceLink;
+import io.cattle.platform.core.addon.LbConfig;
+import io.cattle.platform.core.addon.PortRule;
 import io.cattle.platform.core.addon.PublicEndpoint;
 import io.cattle.platform.core.addon.ScalePolicy;
 import io.cattle.platform.core.addon.ServiceLink;
@@ -18,7 +18,6 @@ import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.HealthcheckConstants;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.constants.IpAddressConstants;
-import io.cattle.platform.core.constants.LoadBalancerConstants;
 import io.cattle.platform.core.constants.NetworkConstants;
 import io.cattle.platform.core.constants.ServiceConstants;
 import io.cattle.platform.core.constants.SubnetConstants;
@@ -172,13 +171,7 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
         List<ServiceLink> linksToCreate = new ArrayList<>();
 
         for (ServiceConsumeMap map : consumeMapDao.findConsumingServices(fromService.getId())) {
-            ServiceLink link;
-            List<String> ports = DataAccessor.fieldStringList(map, LoadBalancerConstants.FIELD_LB_TARGET_PORTS);
-            if (ports == null) {
-                link = new ServiceLink(toService.getId(), map.getName());
-            } else {
-                link = new LoadBalancerServiceLink(toService.getId(), map.getName(), ports);
-            }
+            ServiceLink link = new ServiceLink(toService.getId(), map.getName());
 
             link.setConsumingServiceId(map.getServiceId());
             linksToCreate.add(link);
@@ -261,11 +254,7 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
         List<String> specs = (List<String>) launchConfigData.get(InstanceConstants.FIELD_PORTS);
         List<PortSpec> ports = new ArrayList<>();
         for (String spec : specs) {
-            boolean defaultProtocol = true;
-            if (service.getKind().equalsIgnoreCase(ServiceConstants.KIND_LOAD_BALANCER_SERVICE)) {
-                defaultProtocol = false;
-            }
-            ports.add(new PortSpec(spec, defaultProtocol));
+            ports.add(new PortSpec(spec, true));
         }
         return ports;
     }
@@ -327,7 +316,14 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
         List<PortSpec> toAllocate = new ArrayList<>();
         for (PortSpec port : ports) {
             if (port.getPublicPort() == null) {
-                toAllocate.add(port);
+                if (service.getKind().equalsIgnoreCase(ServiceConstants.KIND_LOAD_BALANCER_SERVICE)) {
+                    if (port.getPublicPort() == null) {
+                        port.setPublicPort(port.getPrivatePort());
+                    }
+                    newPorts.add(port.toSpec());
+                } else {
+                    toAllocate.add(port);
+                }
             } else {
                 newPorts.add(port.toSpec());
             }
@@ -843,5 +839,39 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
         request.addItem(HOST_ENDPOINTS_UPDATE);
         request.withDeferredTrigger(false);
         itemManager.updateConfig(request);
+    }
+
+    @Override
+    public void removeFromLoadBalancerServices(Service service) {
+        List<? extends Service> balancers = objectManager.find(Service.class, SERVICE.KIND,
+                ServiceConstants.KIND_LOAD_BALANCER_SERVICE, SERVICE.REMOVED, null, SERVICE.ACCOUNT_ID,
+                service.getAccountId());
+        for (Service balancer : balancers) {
+            LbConfig lbConfig = DataAccessor.field(balancer, ServiceConstants.FIELD_LB_CONFIG,
+                    jsonMapper, LbConfig.class);
+            if (lbConfig == null || lbConfig.getPortRules() == null) {
+                continue;
+            }
+            List<PortRule> newSet = new ArrayList<>();
+            boolean update = false;
+            for (PortRule rule : lbConfig.getPortRules()) {
+                if (rule.getServiceId() == null) {
+                    continue;
+                }
+                if (rule.getServiceId().equalsIgnoreCase(service.getId().toString())) {
+                    update = true;
+                    continue;
+                }
+                newSet.add(rule);
+            }
+
+            if (update) {
+                lbConfig.setPortRules(newSet);
+                Map<String, Object> data = new HashMap<>();
+                data.put(ServiceConstants.FIELD_LB_CONFIG, lbConfig);
+                balancer = objectManager.setFields(balancer, data);
+                objectProcessManager.scheduleStandardProcessAsync(StandardProcess.UPDATE, balancer, null);
+            }
+        }
     }
 }

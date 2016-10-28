@@ -131,6 +131,13 @@
             "required": false,
             "nullable": false,
             "default": false
+        },
+        "lbConfig": {
+            "type" : "lbTargetConfig",
+            "nullable": true,
+             "attributes" : {
+                "scheduleUpdate" : true
+            }
         }
     },
     "resourceActions" : {

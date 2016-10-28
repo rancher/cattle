@@ -11,12 +11,6 @@ def _create_service(client, env, image_uuid, service_kind):
                                         environmentId=env.id,
                                         launchConfig=launch_config)
 
-    elif service_kind == "loadBalancerService":
-        launch_config = {"labels": labels}
-        service = client.create_loadBalancerService(name=random_str(),
-                                                    environmentId=env.id,
-                                                    launchConfig=launch_config)
-
     elif service_kind == "dnsService":
         launch_config = {"labels": labels}
         service = client.create_dnsService(name=random_str(),
@@ -41,7 +35,8 @@ def _validate_service_link(client, context, service_kind):
     # is present when service with selector is created
     labels, service = _create_service(client, env, image_uuid, service_kind)
     service = client.wait_success(service)
-    assert service.launchConfig.labels == labels
+    assert all(item in service.launchConfig.labels.items()
+               for item in labels.items())
     launch_config = {"imageUuid": image_uuid}
     service1 = client.create_service(name=random_str(),
                                      environmentId=env.id,
@@ -54,7 +49,8 @@ def _validate_service_link(client, context, service_kind):
     # is added after service with selector creation
     labels, service2 = _create_service(client, env, image_uuid, service_kind)
     service2 = client.wait_success(service2)
-    assert service2.launchConfig.labels == labels
+    assert all(item in service2.launchConfig.labels.items()
+               for item in labels.items())
     _validate_add_service_link(service1, service2, client)
 
     compose_config = env.exportconfig()
@@ -67,7 +63,6 @@ def _validate_service_link(client, context, service_kind):
 
 
 def test_service_add_service_link_selector(client, context):
-    _validate_service_link(client, context, "loadBalancerService")
     _validate_service_link(client, context, "service")
     _validate_service_link(client, context, "dnsService")
     _validate_service_link(client, context, "externalService")
@@ -268,68 +263,6 @@ def test_service_mixed_selector_based_w_image(client, context):
     assert container2.state == "running"
 
 
-def test_lb_service_add_instance_selector(super_client, client, context):
-    env = _create_stack(client)
-
-    image_uuid = context.image_uuid
-
-    # use case #1 - instance having selector's label,
-    # is present when service with selector is created
-    labels = {'foo32': "bar"}
-    container1 = client.create_container(imageUuid=image_uuid,
-                                         startOnCreate=True,
-                                         labels=labels)
-    container1 = client.wait_success(container1)
-    assert container1.state == "running"
-
-    launch_config = {"imageUuid": "rancher/none"}
-    service = client.create_service(name=random_str(),
-                                    environmentId=env.id,
-                                    launchConfig=launch_config,
-                                    selectorContainer="foo32=bar")
-    service = client.wait_success(service)
-    assert service.selectorContainer == "foo32=bar"
-    service = client.wait_success(service.activate(), 120)
-    assert service.state == "active"
-
-    wait_for(
-        lambda: len(client.list_serviceExposeMap(serviceId=service.id)) == 1
-    )
-
-    # register service to lb service
-    launch_config = {"imageUuid": image_uuid,
-                     "ports": [567, '568:569'],
-                     "expose": [9999, '9998:9997']}
-    lb_service = client.create_loadBalancerService(name=random_str(),
-                                                   environmentId=env.id,
-                                                   launchConfig=launch_config)
-    lb_service = client.wait_success(lb_service)
-    assert lb_service.state == "inactive"
-    lb_service = client.wait_success(lb_service.activate(), 120)
-    assert lb_service.state == "active"
-    maps = _validate_svc_instance_map_count(client, lb_service, "active", 1)
-    lb_instance = _wait_for_instance_start(super_client, maps[0].instanceId)
-    agent_id = lb_instance.agentId
-
-    item_before = _get_config_item(super_client, agent_id)
-    service_link = {"serviceId": service.id}
-    lb_service = lb_service.addservicelink(serviceLink=service_link)
-    _validate_config_item_update(super_client, item_before, agent_id)
-
-    # use case #2 - instance having selector's label,
-    # is added after service with selector creation
-    item_before = _get_config_item(super_client, agent_id)
-    container2 = client.create_container(imageUuid=image_uuid,
-                                         startOnCreate=True,
-                                         labels=labels)
-    container2 = client.wait_success(container2)
-    assert container2.state == "running"
-    wait_for(
-        lambda: len(client.list_serviceExposeMap(serviceId=service.id)) == 2
-    )
-    _validate_config_item_update(super_client, item_before, agent_id)
-
-
 def test_svc_invalid_selector(client):
     env = _create_stack(client)
     launch_config = {"imageUuid": "rancher/none"}
@@ -473,20 +406,6 @@ def _resource_is_active(resource):
 
 def _resource_is_removed(resource):
     return resource.state == 'removed'
-
-
-def _validate_config_item_update(super_client, bf, agent_id):
-    wait_for(
-        lambda: find_one(super_client.list_config_item_status,
-                         agentId=agent_id,
-                         name='haproxy').requestedVersion > bf.requestedVersion
-    )
-
-
-def _get_config_item(super_client, agent_id):
-    return find_one(super_client.list_config_item_status,
-                    agentId=agent_id,
-                    name='haproxy')
 
 
 def _validate_svc_instance_map_count(client, service,

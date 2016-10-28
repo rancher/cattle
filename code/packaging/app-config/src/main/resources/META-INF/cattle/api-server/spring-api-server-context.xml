@@ -109,7 +109,6 @@
     <bean class="io.cattle.platform.configitem.context.dao.impl.NetworkInfoDaoImpl" />
     <bean class="io.cattle.platform.configitem.context.dao.impl.DnsInfoDaoImpl" />
     <bean class="io.cattle.platform.configitem.context.dao.impl.MetaDataInfoDaoImpl" />
-    <bean class="io.cattle.platform.configitem.context.dao.impl.LoadBalancerInfoDaoImpl" />
 
     <bean class="io.cattle.platform.configitem.server.impl.ConfigItemServerImpl" />
     <bean class="io.cattle.platform.configitem.registry.impl.ConfigItemRegistryImpl" >

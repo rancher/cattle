@@ -3,29 +3,29 @@ package io.cattle.platform.servicediscovery.api.filter;
 import static io.cattle.platform.core.model.tables.ServiceTable.*;
 import io.cattle.platform.archaius.util.ArchaiusUtil;
 import io.cattle.platform.core.addon.InstanceHealthCheck;
+import io.cattle.platform.core.addon.PortRule;
 import io.cattle.platform.core.addon.ScalePolicy;
+import io.cattle.platform.core.constants.AgentConstants;
 import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.constants.ServiceConstants;
-import io.cattle.platform.core.dao.NetworkDao;
-import io.cattle.platform.core.model.Stack;
 import io.cattle.platform.core.model.Service;
-import io.cattle.platform.core.util.PortSpec;
+import io.cattle.platform.core.model.Stack;
+import io.cattle.platform.core.util.SystemLabels;
 import io.cattle.platform.iaas.api.filter.common.AbstractDefaultResourceManagerFilter;
 import io.cattle.platform.json.JsonMapper;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.object.util.DataUtils;
-import io.cattle.platform.servicediscovery.api.dao.ServiceExposeMapDao;
 import io.cattle.platform.servicediscovery.api.util.ServiceDiscoveryUtil;
 import io.cattle.platform.servicediscovery.api.util.selector.SelectorUtils;
+import io.cattle.platform.storage.api.filter.ExternalTemplateInstanceFilter;
 import io.cattle.platform.storage.service.StorageService;
 import io.cattle.platform.util.type.CollectionUtils;
 import io.github.ibuildthecloud.gdapi.exception.ValidationErrorException;
 import io.github.ibuildthecloud.gdapi.request.ApiRequest;
 import io.github.ibuildthecloud.gdapi.request.resource.ResourceManager;
 import io.github.ibuildthecloud.gdapi.validation.ValidationErrorCodes;
-import io.cattle.platform.storage.api.filter.ExternalTemplateInstanceFilter;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -38,12 +38,11 @@ import java.util.Set;
 
 import javax.inject.Inject;
 
+import org.apache.commons.lang3.StringUtils;
+
 import com.netflix.config.DynamicStringProperty;
 
 public class ServiceCreateValidationFilter extends AbstractDefaultResourceManagerFilter {
-
-    @Inject
-    ServiceExposeMapDao exposeMapDao;
 
     @Inject
     ObjectManager objectManager;
@@ -52,11 +51,8 @@ public class ServiceCreateValidationFilter extends AbstractDefaultResourceManage
     StorageService storageService;
 
     @Inject
-    NetworkDao ntwkDao;
-
-    @Inject
     JsonMapper jsonMapper;
-    
+
     private static final int LB_HEALTH_CHECK_PORT = 42;
     public static final DynamicStringProperty DEFAULT_REGISTRY = ArchaiusUtil.getString("registry.default");
     public static final DynamicStringProperty WHITELIST_REGISTRIES = ArchaiusUtil.getString("registry.whitelist");
@@ -68,7 +64,9 @@ public class ServiceCreateValidationFilter extends AbstractDefaultResourceManage
 
     @Override
     public String[] getTypes() {
-        return new String[] { "service", "loadBalancerService", "externalService", "dnsService" };
+        return new String[] { ServiceConstants.KIND_SERVICE,
+                ServiceConstants.KIND_LOAD_BALANCER_SERVICE,
+                ServiceConstants.KIND_EXTERNAL_SERVICE, ServiceConstants.KIND_DNS_SERVICE };
     }
 
     @Override
@@ -95,9 +93,43 @@ public class ServiceCreateValidationFilter extends AbstractDefaultResourceManage
 
         request = setServiceIndexStrategy(type, request);
 
+        request = setLBServiceEnvVars(type, service, request);
+        
+        validateLbConfig(request, type);
+
         return super.create(type, request, next);
     }
     
+    @SuppressWarnings("unchecked")
+    public void validateLbConfig(ApiRequest request, String type) {
+        // add lb information to the metadata
+        if (!type.equalsIgnoreCase(ServiceConstants.KIND_LOAD_BALANCER_SERVICE)) {
+            return;
+        }
+        Map<String, Object> lbConfig = DataUtils.getFieldFromRequest(request, ServiceConstants.FIELD_LB_CONFIG,
+                Map.class);
+        if (lbConfig != null && lbConfig.containsKey(ServiceConstants.FIELD_PORT_RULES)) {
+            List<PortRule> portRules = jsonMapper.convertCollectionValue(
+                    lbConfig.get(ServiceConstants.FIELD_PORT_RULES), List.class, PortRule.class);
+            for (PortRule rule : portRules) {
+                // either serviceId or selector are required
+                boolean emptySelector = StringUtils.isEmpty(rule.getSelector());
+                boolean emptyService = StringUtils.isEmpty(rule.getServiceId());
+                if (emptySelector && emptyService) {
+                    throw new ValidationErrorException(ValidationErrorCodes.MISSING_REQUIRED, "serviceId");
+                }
+                if (!emptySelector && !emptyService) {
+                    throw new ValidationErrorException(ValidationErrorCodes.INVALID_OPTION,
+                            "Can't specify both selector and serviceId");
+                }
+
+                if (!emptyService && rule.getTargetPort() == null) {
+                    throw new ValidationErrorException(ValidationErrorCodes.MISSING_REQUIRED, "targetPort");
+                }
+            }
+        }
+    }
+
     public ApiRequest setServiceIndexStrategy(String type, ApiRequest request) {
         if (!type.equalsIgnoreCase(ServiceConstants.KIND_SERVICE)) {
             return request;
@@ -107,23 +139,55 @@ public class ServiceCreateValidationFilter extends AbstractDefaultResourceManage
                 ServiceConstants.SERVICE_INDEX_DU_STRATEGY);
 
         request.setRequestObject(data);
-
         return request;
     }
 
+    @SuppressWarnings("unchecked")
+    public ApiRequest setLBServiceEnvVars(String type, Service lbService, ApiRequest request) {
+        if (!ServiceConstants.KIND_LOAD_BALANCER_SERVICE.equalsIgnoreCase(type)) {
+            return request;
+        }
+
+        Map<String, Object> data = CollectionUtils.toMap(request.getRequestObject());
+        if (data.get(ServiceConstants.FIELD_LAUNCH_CONFIG) == null) {
+            return request;
+        }
+
+        Map<String, Object> launchConfig = (Map<String, Object>) data.get(ServiceConstants.FIELD_LAUNCH_CONFIG);
+
+        Map<String, String> labels = new HashMap<>();
+        Object labelsObj = launchConfig.get(InstanceConstants.FIELD_LABELS);
+        if (labelsObj != null) {
+            labels = (Map<String, String>) labelsObj;
+        }
+
+        labels.put(SystemLabels.LABEL_AGENT_ROLE, AgentConstants.ENVIRONMENT_ADMIN_ROLE);
+        labels.put(SystemLabels.LABEL_AGENT_CREATE, "true");
+        launchConfig.put(InstanceConstants.FIELD_LABELS, labels);
+        data.put(ServiceConstants.FIELD_LAUNCH_CONFIG, launchConfig);
+        request.setRequestObject(data);
+        return request;
+    }
+
+    @SuppressWarnings("unchecked")
     public void validatePorts(Service service, String type, ApiRequest request) {
-        List<Map<String, Object>> launchConfigs = populateLaunchConfigs(service, request);
-        for (Map<String, Object> launchConfig : launchConfigs) {
-            if (launchConfig.get(InstanceConstants.FIELD_PORTS) != null) {
-                List<?> ports = (List<?>) launchConfig.get(InstanceConstants.FIELD_PORTS);
-                for (Object port : ports) {
-                    /* This will parse the PortSpec and throw an error */
-                    PortSpec portSpec = new PortSpec(port.toString());
-                    if (type.equals("loadBalancerService") && portSpec.getPublicPort() != null
-                            && portSpec.getPublicPort().equals(LB_HEALTH_CHECK_PORT)) {
-                        throw new ValidationErrorException(ValidationErrorCodes.INVALID_OPTION,
-                                "Port " + LB_HEALTH_CHECK_PORT + " is reserved for loadBalancerService health check");
-                    }
+        if (!type.equalsIgnoreCase(ServiceConstants.KIND_LOAD_BALANCER_SERVICE)) {
+            return;
+        }
+        Map<String, Object> lbConfig = DataUtils.getFieldFromRequest(request, ServiceConstants.FIELD_LB_CONFIG,
+                Map.class);
+        if (lbConfig == null) {
+            return;
+        }
+
+        if (lbConfig != null && lbConfig.containsKey(ServiceConstants.FIELD_PORT_RULES)) {
+            List<PortRule> portRules = jsonMapper.convertCollectionValue(
+                    lbConfig.get(ServiceConstants.FIELD_PORT_RULES), List.class, PortRule.class);
+            for (PortRule portRule : portRules) {
+                // fixme check ports from port map
+                if (portRule.getSourcePort() != null && portRule.getSourcePort().equals(LB_HEALTH_CHECK_PORT)) {
+                    throw new ValidationErrorException(ValidationErrorCodes.INVALID_OPTION,
+                            "Port " + LB_HEALTH_CHECK_PORT + " is reserved for service health check");
                 }
             }
         }
@@ -169,12 +233,12 @@ public class ServiceCreateValidationFilter extends AbstractDefaultResourceManage
             return request;
         }
         Map<String, Object> data = CollectionUtils.toMap(request.getRequestObject());
-        
+        Integer healthCheckPort = LB_HEALTH_CHECK_PORT;
         if (data.get(ServiceConstants.FIELD_LAUNCH_CONFIG) != null) {
             Map<String, Object> launchConfig = (Map<String, Object>)data.get(ServiceConstants.FIELD_LAUNCH_CONFIG);
             if (launchConfig.get(InstanceConstants.FIELD_HEALTH_CHECK) == null) {
                 InstanceHealthCheck healthCheck = new InstanceHealthCheck();
-                healthCheck.setPort(LB_HEALTH_CHECK_PORT);
+                healthCheck.setPort(healthCheckPort);
                 healthCheck.setInterval(2000);
                 healthCheck.setHealthyThreshold(2);
                 healthCheck.setUnhealthyThreshold(3);
@@ -291,7 +355,9 @@ public class ServiceCreateValidationFilter extends AbstractDefaultResourceManage
 
         validateLaunchConfigs(service, request);
         validateSelector(request);
+        validateLbConfig(request, type);
         validateScalePolicy(service, request, true);
+        validatePorts(service, type, request);
 
         return super.update(type, id, request, next);
     }

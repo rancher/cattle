@@ -93,7 +93,7 @@ public class UpgradeManagerImpl implements UpgradeManager {
         objectManager.persist(map);
     }
 
-    public boolean doInServiceUpgrade(Service service, InServiceUpgradeStrategy strategy, boolean isUpgrade) {
+    public boolean doInServiceUpgrade(Service service, InServiceUpgradeStrategy strategy, boolean isUpgrade, String currentProcess) {
         long batchSize = strategy.getBatchSize();
         boolean startFirst = strategy.getStartFirst();
 
@@ -110,7 +110,7 @@ public class UpgradeManagerImpl implements UpgradeManager {
         // upgrade deployment units
         upgradeDeploymentUnits(service, deploymentUnitInstancesToUpgrade, deploymentUnitInstancesUpgradedUnmanaged,
                 deploymentUnitInstancesToCleanup,
-                batchSize, startFirst, preseveDeploymentUnit(service, strategy), isUpgrade);
+                batchSize, startFirst, preseveDeploymentUnit(service, strategy), isUpgrade, currentProcess);
 
         // check if empty
         if (deploymentUnitInstancesToUpgrade.isEmpty()) {
@@ -124,7 +124,7 @@ public class UpgradeManagerImpl implements UpgradeManager {
         boolean isServiceIndexDUStrategy = StringUtils.equalsIgnoreCase(
                 ServiceConstants.SERVICE_INDEX_DU_STRATEGY,
                 DataAccessor.fieldString(service, ServiceConstants.FIELD_SERVICE_INDEX_STRATEGY));
-        return isServiceIndexDUStrategy || strategy.isFullUpgrade();
+        return isServiceIndexDUStrategy || !strategy.isFullUpgrade();
     }
 
     protected void upgradeDeploymentUnits(final Service service,
@@ -132,7 +132,8 @@ public class UpgradeManagerImpl implements UpgradeManager {
             final Map<String, List<Instance>> deploymentUnitInstancesUpgradedUnmanaged,
             final Map<String, List<Instance>> deploymentUnitInstancesToCleanup,
             final long batchSize,
-            final boolean startFirst, final boolean preseveDeploymentUnit, final boolean isUpgrade) {
+            final boolean startFirst, final boolean preseveDeploymentUnit, final boolean isUpgrade,
+            final String currentProcess) {
         // hold the lock so service.reconcile triggered by config.update
         // (in turn triggered by instance.remove) won't interfere
         lockManager.lock(new ServiceLock(service), new LockCallbackNoReturn() {
@@ -151,7 +152,7 @@ public class UpgradeManagerImpl implements UpgradeManager {
                     // 1. reconcile to start new instances
                     activate(service);
                     if (isUpgrade) {
-                        waitForHealthyState(service, ServiceConstants.STATE_UPGRADING);
+                        waitForHealthyState(service, currentProcess);
                     }
                     // 2. stop instances
                     stopInstances(service, deploymentUnitInstancesToCleanup);
@@ -192,7 +193,9 @@ public class UpgradeManagerImpl implements UpgradeManager {
             protected void markForRollback(String deploymentUnitUUIDToRollback) {
                 List<Instance> instances = new ArrayList<>();
                 if (preseveDeploymentUnit) {
-                    // for full upgrade, we don't care what deployment unit needs to be rolled back
+                    instances = deploymentUnitInstancesUpgradedUnmanaged.get(deploymentUnitUUIDToRollback);
+                } else {
+                    // when preserveDeploymentunit == false, we don't care what deployment unit needs to be rolled back
                     String toExtract = null;
                     for (String key : deploymentUnitInstancesUpgradedUnmanaged.keySet()) {
                         if (toExtract != null) {
@@ -202,9 +205,6 @@ public class UpgradeManagerImpl implements UpgradeManager {
                     }
                     instances = deploymentUnitInstancesUpgradedUnmanaged.get(toExtract);
                     deploymentUnitInstancesUpgradedUnmanaged.remove(toExtract);
-                } else {
-                    // for partial upgrade, rollback a specific deployment unit
-                    instances = deploymentUnitInstancesUpgradedUnmanaged.get(deploymentUnitUUIDToRollback);
                 }
                 if (instances != null) {
                     for (Instance instance : instances) {
@@ -305,7 +305,7 @@ public class UpgradeManagerImpl implements UpgradeManager {
     }
 
     @Override
-    public void upgrade(Service service, io.cattle.platform.core.addon.ServiceUpgradeStrategy strategy) {
+    public void upgrade(Service service, io.cattle.platform.core.addon.ServiceUpgradeStrategy strategy, String currentProcess) {
         if (strategy instanceof ToServiceUpgradeStrategy) {
             ToServiceUpgradeStrategy toServiceStrategy = (ToServiceUpgradeStrategy) strategy;
             Service toService = objectManager.loadResource(Service.class, toServiceStrategy.getToServiceId());
@@ -314,8 +314,8 @@ public class UpgradeManagerImpl implements UpgradeManager {
             }
             updateLinks(service, toServiceStrategy);
         }
-        while (!doUpgrade(service, strategy)) {
-            sleep(service, strategy, ServiceConstants.STATE_UPGRADING);
+        while (!doUpgrade(service, strategy, currentProcess)) {
+            sleep(service, strategy, currentProcess);
         }
     }
 
@@ -325,18 +325,20 @@ public class UpgradeManagerImpl implements UpgradeManager {
         if (strategy instanceof ToServiceUpgradeStrategy) {
             return;
         }
-        while (!doInServiceUpgrade(service, (InServiceUpgradeStrategy) strategy, false)) {
+        while (!doInServiceUpgrade(service, (InServiceUpgradeStrategy) strategy, false,
+                ServiceConstants.STATE_ROLLINGBACK)) {
             sleep(service, strategy, ServiceConstants.STATE_ROLLINGBACK);
         }
     }
 
-    public boolean doUpgrade(Service service, io.cattle.platform.core.addon.ServiceUpgradeStrategy strategy) {
+    public boolean doUpgrade(Service service, io.cattle.platform.core.addon.ServiceUpgradeStrategy strategy,
+            String currentProcess) {
         if (strategy instanceof InServiceUpgradeStrategy) {
             InServiceUpgradeStrategy inService = (InServiceUpgradeStrategy) strategy;
-            return doInServiceUpgrade(service, inService, true);
+            return doInServiceUpgrade(service, inService, true, currentProcess);
         } else {
             ToServiceUpgradeStrategy toService = (ToServiceUpgradeStrategy) strategy;
-            return doToServiceUpgrade(service, toService);
+            return doToServiceUpgrade(service, toService, currentProcess);
         }
     }
 
@@ -376,7 +378,8 @@ public class UpgradeManagerImpl implements UpgradeManager {
         service = objectManager.reload(service);
 
         List<String> states = Arrays.asList(ServiceConstants.STATE_UPGRADING,
-                ServiceConstants.STATE_ROLLINGBACK, ServiceConstants.STATE_RESTARTING);
+                ServiceConstants.STATE_ROLLINGBACK, ServiceConstants.STATE_RESTARTING,
+                ServiceConstants.STATE_FINISHING_UPGRADE);
         if (!states.contains(service.getState())) {
             throw new ProcessExecutionExitException(ExitReason.STATE_CHANGED);
         }
@@ -397,7 +400,7 @@ public class UpgradeManagerImpl implements UpgradeManager {
      * @param strategy
      * @return true if the upgrade is done
      */
-    protected boolean doToServiceUpgrade(Service fromService, ToServiceUpgradeStrategy strategy) {
+    protected boolean doToServiceUpgrade(Service fromService, ToServiceUpgradeStrategy strategy, String currentProcess) {
         Service toService = objectManager.loadResource(Service.class, strategy.getToServiceId());
         if (toService == null || toService.getRemoved() != null) {
             return true;

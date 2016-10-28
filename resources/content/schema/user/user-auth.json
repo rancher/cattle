@@ -526,23 +526,6 @@
         "volumeActivateInput" : "r",
         "volumeActivateInput.hostId" : "cr",
 
-        "loadBalancerConfig" : "r",
-        "loadBalancerConfig.lbCookieStickinessPolicy" : "cru",
-        "loadBalancerConfig.serviceId" : "r",
-        "loadBalancerConfig.haproxyConfig" : "cru",
-
-        "haproxyConfig" : "r",
-        "haproxyConfig.global" : "cru",
-        "haproxyConfig.defaults" : "cru",
-
-        "loadBalancerAppCookieStickinessPolicy" : "r",
-        "loadBalancerAppCookieStickinessPolicy.cookie" : "cru",
-        "loadBalancerAppCookieStickinessPolicy.maxLength" : "cru",
-        "loadBalancerAppCookieStickinessPolicy.prefix" : "cru",
-        "loadBalancerAppCookieStickinessPolicy.requestLearn" : "cru",
-        "loadBalancerAppCookieStickinessPolicy.timeout" : "cru",
-        "loadBalancerAppCookieStickinessPolicy.mode" : "cru",
-
         "loadBalancerCookieStickinessPolicy" : "r",
         "loadBalancerCookieStickinessPolicy.cookie" : "cru",
         "loadBalancerCookieStickinessPolicy.domain" : "cru",
@@ -599,6 +582,7 @@
         "composeService.resourceActions.restart" : "",
         "composeService.resourceActions.update" : "",
         "composeService.resourceActions.upgrade" : "",
+        "composeService.lbConfig" : "",
 
         "service" : "r",
         "service.externalId" : "cr",
@@ -624,6 +608,7 @@
         "service.linkedServices" : "r",
         "service.instanceIds" : "r",
         "service.system" : "r",
+        "service.lbConfig" : "cru",
 
         "addRemoveServiceLinkInput" : "r",
         "addRemoveServiceLinkInput.serviceLink" : "cr",
@@ -632,12 +617,37 @@
         "setServiceLinksInput.serviceLinks" : "cr",
 
         "loadBalancerService" : "r",
-        "loadBalancerService.loadBalancerConfig" : "cru",
         "loadBalancerService.secondaryLaunchConfigs" : "",
-        "loadBalancerService.certificateIds" : "cru",
-        "loadBalancerService.defaultCertificateId" : "cru",
         "loadBalancerService.createIndex" : "",
         "loadBalancerService.selectorContainer" : "",
+        "loadBalancerService.lbConfig" : "cru",
+
+        "lbConfig" : "r",
+        "lbConfig.certificateIds" : "cr",
+        "lbConfig.defaultCertificateId" : "cr",
+        "lbConfig.config" : "cr",
+        "lbConfig.stickinessPolicy" : "cr",
+        "lbConfig.portRules" : "cr",
+
+        "portRule": "r",
+        "portRule.hostname": "cr",
+        "portRule.path": "cr",
+        "portRule.sourcePort": "cr",
+        "portRule.priority": "cr",
+        "portRule.protocol": "cr",
+        "portRule.serviceId": "cr",
+        "portRule.targetPort": "cr",
+        "portRule.backendName": "cr",
+        "portRule.selector": "cr",
+
+        "lbTargetConfig" : "r",
+        "lbTargetConfig.portRules" : "cru",
+
+        "targetPortRule": "r",
+        "targetPortRule.hostname": "cr",
+        "targetPortRule.path": "cr",
+        "targetPortRule.targetPort": "cr",
+        "targetPortRule.backendName": "cr",
 
         "snapshot" : "r",
         "snapshot.volumeId" : "r",
@@ -702,6 +712,7 @@
         "externalService.assignServiceIpAddress" : "",
         "externalService.scalePolicy" : "",
         "externalService.currentScale" : "",
+        "externalService.lbConfig" : "",
 
         "dnsService" : "r",
         "dnsService.scale" : "",
@@ -712,6 +723,7 @@
         "dnsService.publicEndpoints" : "",
         "dnsService.scalePolicy" : "",
         "dnsService.currentScale" : "",
+        "dnsService.lbConfig" : "",
 
         "kubernetesService" : "r",
         "kubernetesService.assignServiceIpAddress" : "",
@@ -731,6 +743,7 @@
         "kubernetesService.startOnCreate" : "",
         "kubernetesService.scalePolicy" : "",
         "kubernetesService.currentScale" : "",
+        "kubernetesService.lbConfig" : "",
 
         "kubernetesStack" : "r",
         "kubernetesStack.name": "cr",
@@ -795,18 +808,8 @@
         "serviceLink.serviceId" : "cr",
         "serviceLink.name" : "cr",
 
-        "addRemoveLoadBalancerServiceLinkInput" : "r",
-        "addRemoveLoadBalancerServiceLinkInput.serviceLink" : "cr",
-
         "addOutputsInput" : "r",
         "addOutputsInput.outputs" : "cr",
-
-        "setLoadBalancerServiceLinksInput" : "r",
-        "setLoadBalancerServiceLinksInput.serviceLinks" : "cr",
-
-        "loadBalancerServiceLink" : "cr",
-        "loadBalancerServiceLink.ports" : "cr",
-        "loadBalancerServiceLink.name" : "",
 
         "serviceRestart" : "r",
         "serviceRestart.rollingRestartStrategy" : "cr",

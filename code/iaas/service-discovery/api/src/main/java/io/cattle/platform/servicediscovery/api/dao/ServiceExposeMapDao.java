@@ -38,8 +38,6 @@ public interface ServiceExposeMapDao {
 
     List<? extends ServiceExposeMap> getNonRemovedServiceIpMaps(long serviceId);
 
-    List<? extends ServiceExposeMap> getNonRemovedServiceInstanceMaps(long serviceId);
-
     List<? extends ServiceExposeMap> getNonRemovedServiceHostnameMaps(long serviceId);
 
     List<? extends ServiceExposeMap> getUnmanagedServiceInstanceMapsToRemove(long serviceId);

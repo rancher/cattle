@@ -1,21 +1,24 @@
 package io.cattle.platform.servicediscovery.api.service.impl;
 
+import static io.cattle.platform.core.model.tables.CertificateTable.*;
 import static io.cattle.platform.core.model.tables.InstanceTable.*;
 import static io.cattle.platform.core.model.tables.ServiceTable.*;
+import static io.cattle.platform.core.model.tables.StackTable.*;
 import static io.cattle.platform.core.model.tables.VolumeTemplateTable.*;
-import static io.cattle.platform.servicediscovery.api.util.ServiceDiscoveryDnsUtil.RANCHER_NAMESPACE;
-
-import io.cattle.platform.core.addon.LoadBalancerServiceLink;
+import static io.cattle.platform.servicediscovery.api.util.ServiceDiscoveryDnsUtil.*;
+import io.cattle.platform.core.addon.LbConfig;
 import io.cattle.platform.core.addon.ServiceLink;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.constants.LoadBalancerConstants;
 import io.cattle.platform.core.constants.ServiceConstants;
 import io.cattle.platform.core.dao.DataDao;
+import io.cattle.platform.core.model.Certificate;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.Service;
 import io.cattle.platform.core.model.ServiceConsumeMap;
 import io.cattle.platform.core.model.Stack;
 import io.cattle.platform.core.model.VolumeTemplate;
+import io.cattle.platform.core.util.LBMetadataUtil.LBConfigMetadataStyle;
 import io.cattle.platform.docker.constants.DockerInstanceConstants;
 import io.cattle.platform.docker.constants.DockerNetworkConstants;
 import io.cattle.platform.json.JsonMapper;
@@ -51,6 +54,8 @@ import org.apache.commons.collections.TransformerUtils;
 import org.yaml.snakeyaml.DumperOptions;
 import org.yaml.snakeyaml.DumperOptions.LineBreak;
 import org.yaml.snakeyaml.Yaml;
+import org.yaml.snakeyaml.nodes.Tag;
+import org.yaml.snakeyaml.representer.Representer;
 
 @Named
 public class ServiceDiscoveryApiServiceImpl implements ServiceDiscoveryApiService {
@@ -93,15 +98,6 @@ public class ServiceDiscoveryApiServiceImpl implements ServiceDiscoveryApiServic
     }
 
     @Override
-    public void addLoadBalancerServiceLink(Service service, LoadBalancerServiceLink serviceLink) {
-        if (!service.getKind().equalsIgnoreCase(ServiceConstants.KIND_LOAD_BALANCER_SERVICE)) {
-            return;
-        }
-
-        consumeMapDao.createServiceLink(service, serviceLink);
-    }
-
-    @Override
     public List<? extends Service> listStackServices(long stackId) {
         return objectManager.find(Service.class, SERVICE.STACK_ID, stackId, SERVICE.REMOVED,
                 null);
@@ -140,7 +136,9 @@ public class ServiceDiscoveryApiServiceImpl implements ServiceDiscoveryApiServic
         DumperOptions options = new DumperOptions();
         options.setDefaultFlowStyle(DumperOptions.FlowStyle.BLOCK);
         options.setLineBreak(LineBreak.WIN);
-        Yaml yaml = new Yaml(options);
+        Representer representer = new Representer();
+        representer.addClassTag(LBConfigMetadataStyle.class, Tag.MAP);
+        Yaml yaml = new Yaml(representer, options);
         String yamlStr = yaml.dump(dockerComposeData);
         return yamlStr.replaceAll("[$]", "\\$\\$");
     }
@@ -160,6 +158,7 @@ public class ServiceDiscoveryApiServiceImpl implements ServiceDiscoveryApiServic
                 Map<String, Object> composeServiceData = new HashMap<>();
                 excludeRancherHash(cattleServiceData);
                 formatScale(service, cattleServiceData);
+                formatLBConfig(service, cattleServiceData);
                 setupServiceType(service, cattleServiceData);
                 for (String cattleService : cattleServiceData.keySet()) {
                     translateRancherToCompose(forDockerCompose, cattleServiceData, composeServiceData, cattleService, service, false);
@@ -243,6 +242,36 @@ public class ServiceDiscoveryApiServiceImpl implements ServiceDiscoveryApiServic
             if (Boolean.valueOf(globalService) == true) {
                 composeServiceData.remove(ServiceConstants.FIELD_SCALE);
             }
+        }
+    }
+
+    protected void formatLBConfig(Service service, Map<String, Object> composeServiceData) {
+        if (composeServiceData.get(ServiceConstants.FIELD_LB_CONFIG) != null) {
+            LbConfig lbConfig = DataAccessor.field(service, ServiceConstants.FIELD_LB_CONFIG, jsonMapper,
+                    LbConfig.class);
+            Map<Long, Service> serviceIdsToService = new HashMap<>();
+            Map<Long, Stack> stackIdsToStack = new HashMap<>();
+            Map<Long, Certificate> certIdsToCert = new HashMap<>();
+            for (Service svc : objectManager.find(Service.class, SERVICE.ACCOUNT_ID,
+                    service.getAccountId(), SERVICE.REMOVED, null)) {
+                serviceIdsToService.put(svc.getId(), svc);
+            }
+
+            for (Stack stack : objectManager.find(Stack.class,
+                    STACK.ACCOUNT_ID,
+                    service.getAccountId(), STACK.REMOVED, null)) {
+                stackIdsToStack.put(stack.getId(), stack);
+            }
+
+            for (Certificate cert : objectManager.find(Certificate.class,
+                    CERTIFICATE.ACCOUNT_ID, service.getAccountId(), CERTIFICATE.REMOVED, null)) {
+                certIdsToCert.put(cert.getId(), cert);
+            }
+            composeServiceData.put(ServiceConstants.FIELD_LB_CONFIG,
+                    new LBConfigMetadataStyle(lbConfig.getPortRules(), lbConfig.getCertificateIds(),
+                            lbConfig.getDefaultCertificateId(),
+                            lbConfig.getConfig(), lbConfig.getStickinessPolicy(), serviceIdsToService,
+                            stackIdsToStack, certIdsToCert));
         }
     }
 
@@ -385,7 +414,8 @@ public class ServiceDiscoveryApiServiceImpl implements ServiceDiscoveryApiServic
     @SuppressWarnings("unchecked")
     protected void populateLoadBalancerServiceLabels(Service service,
             String launchConfigName, Map<String, Object> composeServiceData) {
-        if (!service.getKind().equalsIgnoreCase(ServiceConstants.KIND_LOAD_BALANCER_SERVICE)) {
+        // to support lb V1 export format
+        if (!isV1LB(service)) {
             return;
         }
 
@@ -503,8 +533,9 @@ public class ServiceDiscoveryApiServiceImpl implements ServiceDiscoveryApiServic
             String launchConfigName, Map<String, Object> composeServiceData) {
         if (service.getKind().equalsIgnoreCase(ServiceConstants.KIND_DNS_SERVICE)) {
             composeServiceData.put(ServiceDiscoveryConfigItem.IMAGE.getDockerName(), "rancher/dns-service");
-        } else if (service.getKind().equalsIgnoreCase(ServiceConstants.KIND_LOAD_BALANCER_SERVICE)) {
-            composeServiceData.put(ServiceDiscoveryConfigItem.IMAGE.getDockerName(), "rancher/load-balancer-service");
+        } else if (isV1LB(service)) {
+                composeServiceData.put(ServiceDiscoveryConfigItem.IMAGE.getDockerName(),
+                        "rancher/load-balancer-service");
         } else if (service.getKind().equalsIgnoreCase(ServiceConstants.KIND_EXTERNAL_SERVICE)) {
             composeServiceData.put(ServiceDiscoveryConfigItem.IMAGE.getDockerName(), "rancher/external-service");
         }
@@ -660,4 +691,15 @@ public class ServiceDiscoveryApiServiceImpl implements ServiceDiscoveryApiServic
 
         return Base64.encodeBase64String(baos.toByteArray());
     }
+
+    @Override
+    public boolean isV1LB(Service service) {
+        if (!service.getKind().equalsIgnoreCase(ServiceConstants.KIND_LOAD_BALANCER_SERVICE)) {
+            return false;
+        }
+        LbConfig lbConfig = DataAccessor.field(service, ServiceConstants.FIELD_LB_CONFIG, jsonMapper,
+                LbConfig.class);
+        return lbConfig == null;
+    }
+
 }

@@ -19,6 +19,20 @@ public class InServiceUpgradeStrategy extends ServiceUpgradeStrategy {
     List<Object> previousSecondaryLaunchConfigs;
     boolean startFirst;
 
+    public InServiceUpgradeStrategy() {
+    }
+
+    public InServiceUpgradeStrategy(Object launchConfig, List<Object> secondaryLaunchConfigs,
+            Object previousLaunchConfig, List<Object> previousSecondaryLaunchConfigs, boolean startFirst,
+            Long intervalMillis, Long batchSize) {
+        super(intervalMillis, batchSize);
+        this.launchConfig = launchConfig;
+        this.secondaryLaunchConfigs = secondaryLaunchConfigs;
+        this.previousLaunchConfig = previousLaunchConfig;
+        this.previousSecondaryLaunchConfigs = previousSecondaryLaunchConfigs;
+        this.startFirst = startFirst;
+    }
+
     public Object getLaunchConfig() {
         return launchConfig;
     }

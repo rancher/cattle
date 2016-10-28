@@ -1,5 +1,6 @@
 package io.cattle.platform.core.dao;
 
+import io.cattle.platform.core.model.Certificate;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.Service;
 import io.cattle.platform.core.model.ServiceIndex;
@@ -39,4 +40,8 @@ public interface ServiceDao {
             this.stackName = stackName;
         }
     }
+
+    List<Certificate> getLoadBalancerServiceCertificates(Service lbService);
+
+    Certificate getLoadBalancerServiceDefaultCertificate(Service lbService);
 }

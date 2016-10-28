@@ -71,4 +71,6 @@ public interface ServiceDiscoveryService extends AnnotatedEventListener {
 
     void reconcileHostEndpoints(Host host);
 
+    void removeFromLoadBalancerServices(Service service);
+
 }

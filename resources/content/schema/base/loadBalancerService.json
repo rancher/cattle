@@ -1,42 +1,12 @@
 {
     "resourceFields": {
-        "loadBalancerConfig": {
-            "type" : "loadBalancerConfig",
+        "lbConfig": {
+            "type" : "lbConfig",
             "nullable": true,
              "attributes" : {
                 "scheduleUpdate" : true
-            }
-        },
-        "certificateIds":{
-            "type": "array[reference[certificate]]",
-            "required": false,
-            "nullable": true,
-             "attributes" : {
-                "scheduleUpdate" : true
-            }
-        },
-        "defaultCertificateId":{
-            "type": "reference[certificate]",
-            "required": false,
-            "nullable": true,
-             "attributes" : {
-                "scheduleUpdate" : true
-            }
-        }
-    },
-    "resourceActions" : {
-        "addservicelink" : {
-            "input" : "addRemoveLoadBalancerServiceLinkInput",
-            "output" : "service"
-
-        },
-        "removeservicelink" : {
-            "input" : "addRemoveLoadBalancerServiceLinkInput",
-            "output" : "service"
-        },
-        "setservicelinks" : {
-            "input" : "setLoadBalancerServiceLinksInput",
-            "output" : "service"
+            },
+            "required": true
         }
     }
 }

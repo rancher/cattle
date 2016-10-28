@@ -30,7 +30,6 @@
         "kubernetesStackUpgrade" : "cr",
         "launchConfig" : "cru",
         "loadBalancerAppCookieStickinessPolicy" : "cru",
-        "loadBalancerConfig" : "crud",
         "loadBalancerCookieStickinessPolicy" : "cru",
         "loadBalancerService" : "crud",
         "logConfig" : "cr",
@@ -70,7 +69,6 @@
         "inServiceUpgradeStrategy" : "cr",
         "toServiceUpgradeStrategy" : "cr",
         "publicEndpoint" : "r",
-        "haproxyConfig" : "cru",
         "rollingRestartStrategy" : "cr",
         "servicesPortRange" : "cru",
         "recreateOnQuorumStrategyConfig" : "cr",
@@ -79,6 +77,10 @@
         "volumeTemplate" : "cr",
         "volumeActivateInput" : "cr",
         "ulimit" : "cr",
+        "portRule": "cr",
+        "targetPortRule": "cr",
+        "lbConfig" : "cr",
+        "balancerServiceTargetConfig" : "cr",
         "end" : ""
     }
 }

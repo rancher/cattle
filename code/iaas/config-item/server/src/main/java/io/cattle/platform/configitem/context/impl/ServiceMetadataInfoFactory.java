@@ -23,6 +23,7 @@ import io.cattle.platform.core.addon.InstanceHealthCheck;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.constants.ServiceConstants;
 import io.cattle.platform.core.dao.GenericMapDao;
+import io.cattle.platform.core.dao.LoadBalancerInfoDao;
 import io.cattle.platform.core.model.Account;
 import io.cattle.platform.core.model.Agent;
 import io.cattle.platform.core.model.Instance;
@@ -30,13 +31,13 @@ import io.cattle.platform.core.model.InstanceHostMap;
 import io.cattle.platform.core.model.Service;
 import io.cattle.platform.core.model.ServiceConsumeMap;
 import io.cattle.platform.core.model.Stack;
+import io.cattle.platform.core.util.LBMetadataUtil.LBConfigMetadataStyle;
 import io.cattle.platform.json.JsonMapper;
 import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.servicediscovery.api.dao.ServiceConsumeMapDao;
 import io.cattle.platform.servicediscovery.api.util.ServiceDiscoveryUtil;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -63,6 +64,9 @@ public class ServiceMetadataInfoFactory extends AbstractAgentBaseContextFactory 
 
     @Inject
     JsonMapper jsonMapper;
+
+    @Inject
+    LoadBalancerInfoDao lbInfoDao;
 
     @Override
     protected void populateContext(Agent agent, Instance instance, ConfigItem item, ArchiveContext context) {
@@ -405,7 +409,6 @@ public class ServiceMetadataInfoFactory extends AbstractAgentBaseContextFactory 
         }
     }
 
-    @SuppressWarnings("unchecked")
     protected void getLaunchConfigInfo(Account account, Stack env,
             List<ServiceMetaData> stackServices, Map<Long, Service> idToService, Service service,
             List<String> launchConfigNames, String launchConfigName) {
@@ -418,8 +421,8 @@ public class ServiceMetadataInfoFactory extends AbstractAgentBaseContextFactory 
         if (isPrimaryConfig) {
             getSidekicksInfo(service, sidekicks, launchConfigNames);
         }
-        Map<String, Object> metadata = DataAccessor.fields(service).withKey(ServiceConstants.FIELD_METADATA)
-                .withDefault(Collections.EMPTY_MAP).as(Map.class);
+
+        LBConfigMetadataStyle lbConfig = lbInfoDao.generateLBConfigMetadataStyle(service);
         Object hcO = null;
         if (service.getKind().equalsIgnoreCase(ServiceConstants.KIND_EXTERNAL_SERVICE)) {
             hcO = DataAccessor.field(service, InstanceConstants.FIELD_HEALTH_CHECK, Object.class);
@@ -432,7 +435,7 @@ public class ServiceMetadataInfoFactory extends AbstractAgentBaseContextFactory 
         if (hcO != null) {
             hc = jsonMapper.convertValue(hcO, InstanceHealthCheck.class);
         }
-        ServiceMetaData svcMetaData = new ServiceMetaData(service, serviceName, env, sidekicks, metadata, hc);
+        ServiceMetaData svcMetaData = new ServiceMetaData(service, serviceName, env, sidekicks, hc, lbConfig);
         stackServices.add(svcMetaData);
     }
 

@@ -133,9 +133,6 @@ def test_user_types(user_client, adds=set(), removes=set()):
         'kubernetesStack',
         'kubernetesStackUpgrade',
         'label',
-        'loadBalancerAppCookieStickinessPolicy',
-        'loadBalancerConfig',
-        'loadBalancerCookieStickinessPolicy',
         'loadBalancerService',
         'logConfig',
         'machine',
@@ -180,9 +177,6 @@ def test_user_types(user_client, adds=set(), removes=set()):
         'dockerBuild',
         'secondaryLaunchConfig',
         'serviceLink',
-        'loadBalancerServiceLink',
-        'addRemoveLoadBalancerServiceLinkInput',
-        'setLoadBalancerServiceLinksInput',
         'serviceUpgrade',
         'serviceUpgradeStrategy',
         'toServiceUpgradeStrategy',
@@ -190,7 +184,6 @@ def test_user_types(user_client, adds=set(), removes=set()):
         'virtualMachine',
         'virtualMachineDisk',
         'publicEndpoint',
-        'haproxyConfig',
         'serviceRestart',
         'rollingRestartStrategy',
         'servicesPortRange',
@@ -205,6 +198,11 @@ def test_user_types(user_client, adds=set(), removes=set()):
         'volumeTemplate',
         'volumeActivateInput',
         'ulimit',
+        'lbConfig',
+        'lbTargetConfig',
+        'portRule',
+        'targetPortRule',
+        'loadBalancerCookieStickinessPolicy'
     }
     types.update(adds)
     types.difference_update(removes)
@@ -354,9 +352,6 @@ def test_admin_types(admin_user_client, adds=set(), removes=set()):
         'kubernetesStackUpgrade',
         'label',
         'ldapconfig',
-        'loadBalancerAppCookieStickinessPolicy',
-        'loadBalancerConfig',
-        'loadBalancerCookieStickinessPolicy',
         'loadBalancerService',
         'localAuthConfig',
         'logConfig',
@@ -413,14 +408,10 @@ def test_admin_types(admin_user_client, adds=set(), removes=set()):
         'dockerBuild',
         'secondaryLaunchConfig',
         'serviceLink',
-        'loadBalancerServiceLink',
-        'addRemoveLoadBalancerServiceLinkInput',
-        'setLoadBalancerServiceLinksInput',
         'serviceUpgradeStrategy',
         'toServiceUpgradeStrategy',
         'inServiceUpgradeStrategy',
         'publicEndpoint',
-        'haproxyConfig',
         'serviceRestart',
         'rollingRestartStrategy',
         'servicesPortRange',
@@ -435,6 +426,11 @@ def test_admin_types(admin_user_client, adds=set(), removes=set()):
         'volumeTemplate',
         'volumeActivateInput',
         'ulimit',
+        'lbConfig',
+        'lbTargetConfig',
+        'portRule',
+        'targetPortRule',
+        'loadBalancerCookieStickinessPolicy'
     }
     types.update(adds)
     types.difference_update(removes)
@@ -1625,6 +1621,7 @@ def test_account_resource_auth(admin_user_client):
         'remove',
         'purge',
         'create',
+        'upgrade'
     ])
 
 
@@ -1823,6 +1820,7 @@ def test_svc_discovery_service(admin_user_client, user_client, project_client,
         'instanceIds': 'r',
         'linkedServices': 'r',
         'system': 'r',
+        'lbConfig': 'r',
     })
 
     auth_check(user_client.schema, 'service', 'r', {
@@ -1850,6 +1848,7 @@ def test_svc_discovery_service(admin_user_client, user_client, project_client,
         'instanceIds': 'r',
         'linkedServices': 'r',
         'system': 'r',
+        'lbConfig': 'r',
     })
 
     auth_check(project_client.schema, 'service', 'crud', {
@@ -1877,6 +1876,7 @@ def test_svc_discovery_service(admin_user_client, user_client, project_client,
         'instanceIds': 'r',
         'linkedServices': 'r',
         'system': 'r',
+        'lbConfig': 'cru',
     })
 
     resource_action_check(user_client.schema, 'service', [
@@ -2135,10 +2135,7 @@ def test_svc_discovery_lb_service(admin_user_client, user_client,
         'accountId': 'r',
         'data': 'r',
         'upgrade': 'r',
-        'loadBalancerConfig': 'r',
         'vip': 'r',
-        'defaultCertificateId': 'r',
-        'certificateIds': 'r',
         'metadata': 'r',
         'selectorLink': 'r',
         'fqdn': 'r',
@@ -2152,6 +2149,7 @@ def test_svc_discovery_lb_service(admin_user_client, user_client,
         'instanceIds': 'r',
         'linkedServices': 'r',
         'system': 'r',
+        'lbConfig': 'r',
     })
 
     auth_check(user_client.schema, 'loadBalancerService', 'r', {
@@ -2162,10 +2160,7 @@ def test_svc_discovery_lb_service(admin_user_client, user_client,
         'launchConfig': 'r',
         'accountId': 'r',
         'upgrade': 'r',
-        'loadBalancerConfig': 'r',
         'vip': 'r',
-        'defaultCertificateId': 'r',
-        'certificateIds': 'r',
         'metadata': 'r',
         'selectorLink': 'r',
         'fqdn': 'r',
@@ -2179,6 +2174,7 @@ def test_svc_discovery_lb_service(admin_user_client, user_client,
         'instanceIds': 'r',
         'linkedServices': 'r',
         'system': 'r',
+        'lbConfig': 'r',
     })
 
     auth_check(project_client.schema, 'loadBalancerService', 'crud', {
@@ -2189,10 +2185,7 @@ def test_svc_discovery_lb_service(admin_user_client, user_client,
         'launchConfig': 'cr',
         'accountId': 'r',
         'upgrade': 'r',
-        'loadBalancerConfig': 'cru',
         'vip': 'cr',
-        'defaultCertificateId': 'cru',
-        'certificateIds': 'cru',
         'metadata': 'cru',
         'selectorLink': 'cru',
         'fqdn': 'r',
@@ -2206,6 +2199,7 @@ def test_svc_discovery_lb_service(admin_user_client, user_client,
         'instanceIds': 'r',
         'linkedServices': 'r',
         'system': 'r',
+        'lbConfig': 'cru',
     })
 
 

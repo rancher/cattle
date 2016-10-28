@@ -11,7 +11,6 @@ public abstract class SelectorConstraint<T> {
         NOOP("");
 
         String selectorSymbol;
-        boolean isList;
 
         private Op(String selectorSymbol) {
             this.selectorSymbol = selectorSymbol;

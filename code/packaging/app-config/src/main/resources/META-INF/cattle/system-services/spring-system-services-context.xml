@@ -138,6 +138,7 @@
     <bean class="io.cattle.platform.core.dao.impl.VolumeDaoImpl" />
     <bean class="io.cattle.platform.core.dao.impl.ServiceDaoImpl" />
     <bean class="io.cattle.platform.core.dao.impl.StackDaoImpl" />
+    <bean class="io.cattle.platform.core.dao.impl.LoadBalancerInfoDaoImpl" />
 
     <bean class="io.cattle.platform.core.cache.DBCacheManager" />
 
@@ -458,12 +459,10 @@
     <bean class="io.cattle.platform.servicediscovery.process.ServicesReconcileTrigger" />
     <bean class="io.cattle.platform.servicediscovery.process.ServiceLinkActivateHandler" />
     <bean class="io.cattle.platform.servicediscovery.process.ServiceLinkPreInstanceStateHandler" />
-    <bean class="io.cattle.platform.servicediscovery.process.LoadBalancerServiceUpdateConfig" />
-    <bean class="io.cattle.platform.servicediscovery.process.LoadBalancerInstanceStart" />
+
     <bean class="io.cattle.platform.servicediscovery.process.StackHealthStateUpdate" />
     <bean class="io.cattle.platform.servicediscovery.process.StackHealthStateUpdateTrigger" />
     <bean class="io.cattle.platform.servicediscovery.process.StackRemovePostListener" />
-    <bean class="io.cattle.platform.servicediscovery.process.LoadBalancerServiceUpdateConfigPostListener" />
 
     <bean class="io.cattle.platform.servicediscovery.dao.impl.ServiceConsumeMapDaoImpl" />
     <bean class="io.cattle.platform.servicediscovery.dao.impl.ServiceExposeMapDaoImpl">
@@ -477,12 +476,6 @@
     <bean class="io.cattle.platform.servicediscovery.service.impl.HostServiceLookup" />
     <bean class="io.cattle.platform.servicediscovery.service.impl.InstanceServiceLookup" />
     <bean class="io.cattle.platform.servicediscovery.service.impl.AgentServiceLookup" />
-    
-    <bean class="io.cattle.platform.servicediscovery.service.lbservice.impl.InstanceChangeLoadBalancerServiceLookup" />
-    <bean class="io.cattle.platform.servicediscovery.service.lbservice.impl.LinkChangeLoadBalancerServiceLookup" />
-    <bean class="io.cattle.platform.servicediscovery.service.lbservice.impl.ServiceChangeLoadBalancerServiceLookup" />
-    <bean class="io.cattle.platform.servicediscovery.service.lbservice.impl.ServiceExposeMapChangeLoadBalancerServiceLookup" />
-    <bean class="io.cattle.platform.servicediscovery.service.lbservice.impl.CertificateUpdateLoadBalancerServiceLookup" />
     
     <bean class="io.cattle.platform.servicediscovery.deployment.impl.DeploymentManagerImpl" />
     <bean class="io.cattle.platform.servicediscovery.deployment.impl.unit.DeploymentUnitInstanceFactoryImpl" />

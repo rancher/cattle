@@ -67,6 +67,8 @@ public class ServiceConstants {
     public static final String FIELD_VOLUME_EXTERNAL = "external";
     public static final String FIELD_VOLUME_PER_CONTAINER = "perContainer";
     public static final String FIELD_INSTANCE_IDS = "instanceIds";
+    public static final String FIELD_LB_CONFIG = "lbConfig";
+    public static final String FIELD_PORT_RULES = "portRules";
 
     public static final String FIELD_INTERNAL_VOLUMES = "internalVolumes";
     public static final String FIELD_VOLUME_TEMPLATE_ID = "volumeTemplateId";

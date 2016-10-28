@@ -34,33 +34,32 @@ def test_upgrade_relink(context, client):
                                    scale=1,
                                    launchConfig=launch_config)
 
-    lb = client.create_load_balancer_service(name=random_str(),
-                                             stackId=env.id,
-                                             scale=1,
-                                             launchConfig={'ports': ['80']})
+    target = client.create_service(name=random_str(),
+                                   stackId=env.id,
+                                   scale=1,
+                                   launchConfig=launch_config)
 
     source = client.wait_success(client.wait_success(source).activate())
     assert source.state == 'active'
 
-    lb = client.wait_success(client.wait_success(lb).activate())
-    assert lb.state == 'active'
+    target = client.wait_success(client.wait_success(target).activate())
+    assert target.state == 'active'
 
     service_link = {
         "serviceId": service.id,
         "name": "link1",
-        "ports": ["a.com:1234"],
     }
 
     source.setservicelinks(serviceLinks=[service_link])
-    lb.setservicelinks(serviceLinks=[service_link])
+    target.setservicelinks(serviceLinks=[service_link])
 
     source = client.wait_success(source)
     assert source.state == 'active'
-    lb = client.wait_success(lb)
-    assert lb.state == 'active'
+    target = client.wait_success(target)
+    assert target.state == 'active'
 
     assert len(source.consumedservices()) == 1
-    assert len(lb.consumedservices()) == 1
+    assert len(target.consumedservices()) == 1
     assert len(service.consumedbyservices()) == 2
     assert len(service2.consumedbyservices()) == 0
 
@@ -73,15 +72,12 @@ def test_upgrade_relink(context, client):
     assert service.state == 'upgraded'
 
     assert len(source.consumedservices()) == 2
-    assert len(lb.consumedservices()) == 2
+    assert len(target.consumedservices()) == 2
     assert len(service.consumedbyservices()) == 2
     assert len(service2.consumedbyservices()) == 2
 
-    links = client.list_service_consume_map(serviceId=lb.id)
+    links = client.list_service_consume_map(serviceId=target.id)
     assert len(links) == 2
-
-    for link in links:
-        assert link.ports == ["a.com:1234"]
 
 
 def test_in_service_upgrade_primary(context, client, super_client):

@@ -1,9 +1,8 @@
 package io.cattle.platform.servicediscovery.process;
 
 
-import static io.cattle.platform.core.model.tables.InstanceTable.INSTANCE;
-import static io.cattle.platform.core.model.tables.ServiceTable.SERVICE;
-import io.cattle.platform.core.addon.LoadBalancerServiceLink;
+import static io.cattle.platform.core.model.tables.InstanceTable.*;
+import static io.cattle.platform.core.model.tables.ServiceTable.*;
 import io.cattle.platform.core.addon.ServiceLink;
 import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.ServiceConstants;
@@ -24,7 +23,6 @@ import io.cattle.platform.servicediscovery.deployment.impl.lock.ServiceInstanceL
 import io.cattle.platform.servicediscovery.service.ServiceDiscoveryService;
 import io.cattle.platform.util.type.Priority;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -112,22 +110,12 @@ public class SelectorServiceCreatePostListener extends AbstractObjectProcessLogi
 
 
     protected void removeServiceLink(Service service, Service targetService) {
-        ServiceLink link = null;
-        if (service.getKind().equalsIgnoreCase(ServiceConstants.KIND_LOAD_BALANCER_SERVICE)) {
-            link = new LoadBalancerServiceLink(targetService.getId(), null, new ArrayList<String>());
-        } else {
-            link = new ServiceLink(targetService.getId(), null);
-        }
+        ServiceLink link = new ServiceLink(targetService.getId(), null);
         sdService.removeServiceLink(service, link);
     }
 
     protected void addServiceLink(Service service, Service targetService) {
-        ServiceLink link = null;
-        if (service.getKind().equalsIgnoreCase(ServiceConstants.KIND_LOAD_BALANCER_SERVICE)) {
-            link = new LoadBalancerServiceLink(targetService.getId(), null, new ArrayList<String>());
-        } else {
-            link = new ServiceLink(targetService.getId(), null);
-        }
+        ServiceLink link = new ServiceLink(targetService.getId(), null);
         sdService.addServiceLink(service, link);
     }
 

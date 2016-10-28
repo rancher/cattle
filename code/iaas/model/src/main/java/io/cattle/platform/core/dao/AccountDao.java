@@ -18,4 +18,6 @@ public interface AccountDao {
     Account getAdminAccountExclude(long accountId);
 
     Account getAccountById(Long id);
+
+    boolean isActiveAccount(Account account);
 }

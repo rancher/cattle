@@ -3,7 +3,6 @@ package io.cattle.platform.iaas.api.auth.dao.impl;
 import static io.cattle.platform.core.model.tables.AccountTable.*;
 import static io.cattle.platform.core.model.tables.CredentialTable.*;
 import static io.cattle.platform.core.model.tables.ProjectMemberTable.*;
-
 import io.cattle.platform.api.auth.Identity;
 import io.cattle.platform.api.auth.Policy;
 import io.cattle.platform.archaius.util.ArchaiusUtil;
@@ -11,6 +10,7 @@ import io.cattle.platform.core.constants.AccountConstants;
 import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.CredentialConstants;
 import io.cattle.platform.core.constants.ProjectConstants;
+import io.cattle.platform.core.dao.AccountDao;
 import io.cattle.platform.core.dao.GenericResourceDao;
 import io.cattle.platform.core.model.Account;
 import io.cattle.platform.core.model.Credential;
@@ -19,9 +19,9 @@ import io.cattle.platform.core.model.tables.records.AccountRecord;
 import io.cattle.platform.core.model.tables.records.ProjectMemberRecord;
 import io.cattle.platform.db.jooq.dao.impl.AbstractJooqDao;
 import io.cattle.platform.iaas.api.auth.SecurityConstants;
-import io.cattle.platform.iaas.api.auth.projects.ProjectLock;
 import io.cattle.platform.iaas.api.auth.dao.AuthDao;
 import io.cattle.platform.iaas.api.auth.projects.Member;
+import io.cattle.platform.iaas.api.auth.projects.ProjectLock;
 import io.cattle.platform.lock.LockCallback;
 import io.cattle.platform.lock.LockManager;
 import io.cattle.platform.object.ObjectManager;
@@ -40,6 +40,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
 import javax.inject.Inject;
 
 import org.apache.commons.lang3.StringUtils;
@@ -62,6 +63,9 @@ public class AuthDaoImpl extends AbstractJooqDao implements AuthDao {
     ObjectProcessManager objectProcessManager;
     @Inject
     LockManager lockManager;
+    @Inject
+    AccountDao accountDao;
+
     private DynamicStringListProperty SUPPORTED_TYPES = ArchaiusUtil.getList("account.by.key.credential.types");
 
     @Override
@@ -254,7 +258,7 @@ public class AuthDaoImpl extends AbstractJooqDao implements AuthDao {
     public Identity getIdentity(Long id, IdFormatter idFormatter) {
         Account account = getAccountById(id);
         if (account == null || account.getKind().equalsIgnoreCase(ProjectConstants.TYPE) ||
-                !CommonStatesConstants.ACTIVE.equalsIgnoreCase(account.getState())) {
+                !accountDao.isActiveAccount(account)) {
             return null;
         }
         Credential credential = create()

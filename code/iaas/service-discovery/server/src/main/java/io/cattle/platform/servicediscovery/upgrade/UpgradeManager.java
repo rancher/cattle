@@ -6,7 +6,7 @@ import io.cattle.platform.core.model.Service;
 
 public interface UpgradeManager {
 
-    void upgrade(Service service, ServiceUpgradeStrategy strategy);
+    void upgrade(Service service, ServiceUpgradeStrategy strategy, String currentProcess);
 
     void rollback(Service service, ServiceUpgradeStrategy strategy);
 

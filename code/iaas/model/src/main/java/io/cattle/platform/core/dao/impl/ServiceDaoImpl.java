@@ -1,22 +1,27 @@
 package io.cattle.platform.core.dao.impl;
 
+import static io.cattle.platform.core.model.tables.CertificateTable.*;
 import static io.cattle.platform.core.model.tables.InstanceTable.*;
 import static io.cattle.platform.core.model.tables.ServiceConsumeMapTable.*;
 import static io.cattle.platform.core.model.tables.ServiceExposeMapTable.*;
 import static io.cattle.platform.core.model.tables.ServiceIndexTable.*;
 import static io.cattle.platform.core.model.tables.ServiceTable.*;
 import static io.cattle.platform.core.model.tables.StackTable.*;
-
 import io.cattle.platform.core.constants.InstanceConstants;
+import io.cattle.platform.core.constants.LoadBalancerConstants;
 import io.cattle.platform.core.dao.ServiceDao;
+import io.cattle.platform.core.model.Certificate;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.Service;
 import io.cattle.platform.core.model.ServiceIndex;
 import io.cattle.platform.db.jooq.dao.impl.AbstractJooqDao;
+import io.cattle.platform.json.JsonMapper;
 import io.cattle.platform.object.ObjectManager;
+import io.cattle.platform.object.util.DataAccessor;
 import io.github.ibuildthecloud.gdapi.id.IdFormatter;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -32,6 +37,8 @@ public class ServiceDaoImpl extends AbstractJooqDao implements ServiceDao {
 
     @Inject
     ObjectManager objectManager;
+    @Inject
+    JsonMapper jsonMapper;
 
     @Override
     public Service getServiceByExternalId(Long accountId, String externalId) {
@@ -158,6 +165,38 @@ public class ServiceDaoImpl extends AbstractJooqDao implements ServiceDao {
                 }
             });
         return result;
+    }
+
+    @Override
+    public List<Certificate> getLoadBalancerServiceCertificates(Service lbService) {
+        List<? extends Long> certIds = DataAccessor.fields(lbService)
+                .withKey(LoadBalancerConstants.FIELD_LB_CERTIFICATE_IDS).withDefault(Collections.EMPTY_LIST)
+                .asList(jsonMapper, Long.class);
+        Long defaultCertId = DataAccessor.fieldLong(lbService, LoadBalancerConstants.FIELD_LB_DEFAULT_CERTIFICATE_ID);
+        List<Long> allCertIds = new ArrayList<>();
+        allCertIds.addAll(certIds);
+        allCertIds.add(defaultCertId);
+        return create()
+                .select(CERTIFICATE.fields())
+                .from(CERTIFICATE)
+                .where(CERTIFICATE.REMOVED.isNull())
+                .and(CERTIFICATE.ID.in(allCertIds))
+                .fetchInto(Certificate.class);
+    }
+
+    @Override
+    public Certificate getLoadBalancerServiceDefaultCertificate(Service lbService) {
+        Long defaultCertId = DataAccessor.fieldLong(lbService, LoadBalancerConstants.FIELD_LB_DEFAULT_CERTIFICATE_ID);
+        List<? extends Certificate> certs = create()
+                .select(CERTIFICATE.fields())
+                .from(CERTIFICATE)
+                .where(CERTIFICATE.REMOVED.isNull())
+                .and(CERTIFICATE.ID.eq(defaultCertId))
+                .fetchInto(Certificate.class);
+        if (certs.isEmpty()) {
+            return null;
+        }
+        return certs.get(0);
     }
 
 }

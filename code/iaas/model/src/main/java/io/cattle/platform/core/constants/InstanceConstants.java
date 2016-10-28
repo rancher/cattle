@@ -8,6 +8,7 @@ public class InstanceConstants {
 
     public static final String SYSTEM_CONTAINER_NETWORK_AGENT = "NetworkAgent";
     public static final String SYSTEM_CONTAINER_LB_AGENT = "LoadBalancerAgent";
+    public static final String SYSTEM_CONTAINER_BALANCER_AGENT = "BalancerAgent";
     public static final String SYSTEM_CONTAINER_CLUSTER_AGENT = "ClusterAgent";
 
     public static final String TYPE = "instance";

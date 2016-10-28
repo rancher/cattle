@@ -1,6 +1,7 @@
 package io.cattle.platform.service.account;
 
 import io.cattle.platform.core.constants.AccountConstants;
+import io.cattle.platform.core.constants.AgentConstants;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.model.Account;
 import io.cattle.platform.core.model.Credential;
@@ -45,7 +46,7 @@ public class SystemRoleObjectPostProcessor implements ObjectTypeSerializerPostPr
         boolean setCreds = false;
         Instance instance = (Instance) obj;
         Object value = DataAccessor.fieldMap(instance, InstanceConstants.FIELD_LABELS).get(SystemLabels.LABEL_AGENT_ROLE);
-        if ("system".equals(value)) {
+        if (AgentConstants.SYSTEM_ROLE.equals(value)) {
             Account account = objectManager.loadResource(Account.class, instance.getAccountId());
             if (DataAccessor.fieldBool(account, AccountConstants.FIELD_ALLOW_SYSTEM_ROLE)) {
                 setCreds = true;

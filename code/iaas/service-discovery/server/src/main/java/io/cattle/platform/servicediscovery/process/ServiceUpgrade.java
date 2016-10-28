@@ -34,7 +34,7 @@ public class ServiceUpgrade extends AbstractDefaultProcessHandler {
         activityService.run(service, "service.upgrade", "Upgrading service", new Runnable() {
             @Override
             public void run() {
-                upgradeManager.upgrade(service, upgrade.getStrategy());
+                upgradeManager.upgrade(service, upgrade.getStrategy(), ServiceConstants.STATE_UPGRADING);
             }
         });
 

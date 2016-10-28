@@ -1,6 +1,5 @@
 package io.cattle.platform.servicediscovery.api.service;
 
-import io.cattle.platform.core.addon.LoadBalancerServiceLink;
 import io.cattle.platform.core.addon.ServiceLink;
 import io.cattle.platform.core.model.Service;
 import io.cattle.platform.core.model.Stack;
@@ -13,8 +12,6 @@ public interface ServiceDiscoveryApiService {
 
     void removeServiceLink(Service service, ServiceLink serviceLink);
 
-    void addLoadBalancerServiceLink(Service service, LoadBalancerServiceLink serviceLink);
-
     List<? extends Service> listStackServices(long stackId);
 
     Map.Entry<String, String> buildComposeConfig(List<? extends Service> services, Stack stack);
@@ -24,4 +21,6 @@ public interface ServiceDiscoveryApiService {
     String buildRancherComposeConfig(List<? extends Service> services);
 
     String getServiceCertificate(Service service);
+
+    boolean isV1LB(Service service);
 }
