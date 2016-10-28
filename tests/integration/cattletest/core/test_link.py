@@ -170,7 +170,7 @@ def test_link_remove_restore(client, context):
     c = client.wait_success(c.purge())
     link = client.reload(link)
     assert c.state == 'purged'
-    assert link.state == 'removed'
+    assert link.removed is not None
 
 
 def test_null_links(context):
