@@ -6,23 +6,23 @@ ENV DAPPER_SOURCE /usr/src/cattle
 ENV DAPPER_OUTPUT dist
 WORKDIR ${DAPPER_SOURCE}
 
-# MySQL
-ENV MYSQL_VERSION 5.5
-ENV MYSQL_HOST 127.0.0.1
-ENV MYSQL_TCP_PORT 13306
-
-# Postgres
-ENV PGSQL_VERSION 9.6
-ENV PGPASSWORD cattle
-ENV PGUSER cattle
-ENV PGDATABASE cattle
-
 # Install Java and Python
 RUN apt-get update && \
     apt-get install -y --no-install-recommends openjdk-7-jdk maven python-pip  && \
     # Hack to work around overlay issue && \
     pip uninstall -y py >/dev/null >/dev/null 2>&1 || true && \
     pip install --upgrade pip==6.0.3 tox==1.8.1 virtualenv==12.0.4
+
+# Install MySQL
+RUN DEBIAN_FRONTEND=noninteractive apt-get -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confold" install -y mysql-server
+
+# Install Postgres
+ENV PGSQL_VERSION 9.6
+RUN echo "deb http://apt.postgresql.org/pub/repos/apt/ $(lsb_release -cs)-pgdg main" > /etc/apt/sources.list.d/pgdg.list && \
+    apt-get install -y wget && \
+    wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | apt-key add - && \
+    apt-get update && \
+    DEBIAN_FRONTEND=noninteractive apt-get install -y postgresql-${PGSQL_VERSION}
 
 # Build Tools
 ENV BUILD_TOOLS_VERSION 0.3.1
@@ -32,6 +32,18 @@ RUN mkdir /tmp/build-tools && \
     curl -sSL -o build-tools.tar.gz https://github.com/rancherio/build-tools/archive/v${BUILD_TOOLS_VERSION}.tar.gz && \
     tar -xzvf build-tools.tar.gz && cp ./build-tools-${BUILD_TOOLS_VERSION}/bin/* /usr/local/bin && \
     rm -rf /tmp/build-tools
+
+# Setup MySQL
+ENV CATTLE_DB_CATTLE_MYSQL_PORT 13306
+RUN sed -i  -e "0,/3306/! {0,/3306/ s/3306/${CATTLE_DB_CATTLE_MYSQL_PORT}/}" \
+    -e 's/^#\(max_connections.*\)/\1/;s/100$/1000/' \
+    -e '/^log_error.*$/a innodb_flush_log_at_trx_commit = 0' \
+    -e '/^max_connections.*$/a sql_mode = ONLY_FULL_GROUP_BY' /etc/mysql/my.cnf
+
+# Setup Postgres
+RUN sed -i -e 's/^#\(max_connections.*\)/\1/;s/\<100\>/1000/' \
+    -e 's/^#\(fsync.*\)/\1/;s/\<on\>/off/' /etc/postgresql/${PGSQL_VERSION}/main/postgresql.conf && \
+    sed -i -e 's/^#\(local.*\)/\1/;s/\<peer\>/trust/' /etc/postgresql/${PGSQL_VERSION}/main/pg_hba.conf
 
 # Cache Maven stuff
 RUN apt-get install -y git && \

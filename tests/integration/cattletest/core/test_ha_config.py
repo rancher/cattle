@@ -18,7 +18,7 @@ def test_ha_config(admin_user_client):
     ha_config = find_one(admin_user_client.list_ha_config)
     assert not ha_config.enabled
 
-    assert ha_config.dbHost in ['localhost', '127.0.0.1']
+    assert ha_config.dbHost == 'localhost'
     assert ha_config.dbSize > 0
 
 
