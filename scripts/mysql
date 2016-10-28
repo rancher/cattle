@@ -1,0 +1,29 @@
+#!/bin/bash
+set -e
+
+cd $(dirname $0)
+
+service mysql start
+
+set +e
+for ((i=0;i<60;i++))
+do
+    if mysqladmin status 2> /dev/null; then
+        break
+    else
+        sleep 1
+    fi
+done
+set -e
+
+if [ "$1" = "--clean" ]; then
+    echo "Cleaning Database"
+    mysql -e 'DROP DATABASE IF EXISTS cattle; DROP DATABASE IF EXISTS cattle_base;'
+fi
+
+# If the for loop times out... something went wrong and this will fail
+db_exists=$(mysql -uroot -e 'SHOW DATABASES LIKE "cattle";'|wc -l)
+if [ $db_exists -eq 0 ]; then
+    echo "Setting up Database"
+    mysql < ../resources/content/db/mysql/create_db_and_user_dev.sql
+fi
