@@ -25,7 +25,9 @@ public class DockerImage {
     public static DockerImage parse(String uuid) {
         // if we encounter an error we will just return the raw string and
         // default registry
-        uuid = StringUtils.removeStart(uuid, KIND_PREFIX);
+        if (uuid.startsWith("docker:docker")) {
+            uuid = uuid.substring(7);
+        }
         String[] subMatches = findAllSubMatches(uuid, Regexp.REFERENCEREGEXP);
         if (subMatches.length == 0) {
             if (uuid == "") {
