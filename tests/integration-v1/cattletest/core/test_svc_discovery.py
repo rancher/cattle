@@ -1908,7 +1908,7 @@ def test_export_config(client, context):
     assert svc["oom_score_adj"] == 500
     assert svc["shm_size"] == 67108864
     assert svc["uts"] == "host"
-    assert svc["ipc_mode"] == "host"
+    assert svc["ipc"] == "host"
     assert svc["stop_signal"] == "SIGTERM"
     assert svc["cgroup"] == "mygroup"
     assert svc["cgroup_parent"] == "parent"
