@@ -466,6 +466,8 @@
     <process:process name="service.finishupgrade" resourceType="service" start="upgraded" transitioning="finishing-upgrade" done="active" />
     <process:process name="service.restart" resourceType="service" start="active" transitioning="restarting" done="active" />
 
+    <process:process name="account.upgrade" resourceType="account" start="active" transitioning="upgrading" done="active" />
+
     <!-- Service Discovery Service/Instance map -->
     <process:process name="serviceexposemap.create" resourceType="serviceExposeMap" start="requested" transitioning="activating" done="active" />
     <process:process name="serviceexposemap.remove" resourceType="serviceExposeMap" start="active,activating, requested" transitioning="removing" done="removed" />

@@ -9,6 +9,16 @@ public class ServiceUpgradeStrategy {
     Long intervalMillis;
     Long batchSize;
 
+    public ServiceUpgradeStrategy(Long intervalMillis, Long batchSize) {
+        super();
+        this.intervalMillis = intervalMillis;
+        this.batchSize = batchSize;
+    }
+
+    public ServiceUpgradeStrategy() {
+        super();
+    }
+
     @Field(nullable = false, defaultValue = "2000", min = 100)
     public Long getIntervalMillis() {
         return intervalMillis;

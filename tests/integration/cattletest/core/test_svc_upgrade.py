@@ -864,9 +864,9 @@ def test_in_service_upgrade_port_mapping(context, client, super_client):
     assert u_svc.launchConfig.ports == svc.launchConfig.ports
 
     assert u_svc.secondaryLaunchConfigs[0].ports \
-           == svc.secondaryLaunchConfigs[0].ports
+        == svc.secondaryLaunchConfigs[0].ports
     assert u_svc.secondaryLaunchConfigs[1].ports \
-           == svc.secondaryLaunchConfigs[1].ports
+        == svc.secondaryLaunchConfigs[1].ports
 
 
 def test_sidekick_addition(context, client):

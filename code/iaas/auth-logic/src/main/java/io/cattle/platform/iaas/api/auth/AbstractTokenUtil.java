@@ -2,8 +2,8 @@ package io.cattle.platform.iaas.api.auth;
 
 import io.cattle.platform.api.auth.Identity;
 import io.cattle.platform.core.constants.AccountConstants;
-import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.ProjectConstants;
+import io.cattle.platform.core.dao.AccountDao;
 import io.cattle.platform.core.model.Account;
 import io.cattle.platform.core.model.AuthToken;
 import io.cattle.platform.core.util.SettingsUtils;
@@ -72,6 +72,9 @@ public abstract class AbstractTokenUtil implements TokenUtil {
     @Inject
     SettingsUtils settingsUtils;
 
+    @Inject
+    AccountDao accountDao;
+
     @Override
     public Account getAccountFromJWT() {
         Map<String, Object> jsonData = getJsonData();
@@ -83,7 +86,7 @@ public abstract class AbstractTokenUtil implements TokenUtil {
             return null;
         }
         Account account = authDao.getAccountByExternalId(accountId, userType());
-        if (account != null && !StringUtils.equals(CommonStatesConstants.ACTIVE, account.getState())) {
+        if (account != null && !accountDao.isActiveAccount(account)) {
             throw new ClientVisibleException(ResponseCodes.UNAUTHORIZED);
         }
         return account;
@@ -290,7 +293,7 @@ public abstract class AbstractTokenUtil implements TokenUtil {
             if (account == null) {
                 account = authDao.getAccountByExternalId(user.getExternalId(), user.getExternalIdType());
             }
-            if (account != null && !StringUtils.equals(CommonStatesConstants.ACTIVE, account.getState())) {
+            if (account != null && !accountDao.isActiveAccount(account)) {
                 throw new ClientVisibleException(ResponseCodes.UNAUTHORIZED);
             }
             if (account == null && createAccount()) {

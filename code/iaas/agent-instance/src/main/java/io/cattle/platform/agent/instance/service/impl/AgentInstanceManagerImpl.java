@@ -6,8 +6,8 @@ import io.cattle.platform.agent.instance.service.AgentInstanceManager;
 import io.cattle.platform.agent.instance.service.InstanceNicLookup;
 import io.cattle.platform.agent.instance.service.NetworkServiceInfo;
 import io.cattle.platform.core.constants.AgentConstants;
-import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.InstanceConstants;
+import io.cattle.platform.core.dao.AccountDao;
 import io.cattle.platform.core.dao.GenericResourceDao;
 import io.cattle.platform.core.model.Account;
 import io.cattle.platform.core.model.Agent;
@@ -41,6 +41,8 @@ public class AgentInstanceManagerImpl implements AgentInstanceManager {
     GenericResourceDao genericResourceDao;
     ResourceMonitor resourceMonitor;
     List<InstanceNicLookup> nicLookups;
+    @Inject
+    AccountDao accountDao;
 
     @Override
     public Map<NetworkServiceProvider, Instance> getAgentInstances(Nic nic) {
@@ -63,8 +65,7 @@ public class AgentInstanceManagerImpl implements AgentInstanceManager {
         }
 
         Account account = objectManager.loadResource(Account.class, instance.getAccountId());
-        List<String> goodStates = Arrays.asList(CommonStatesConstants.ACTIVATING, CommonStatesConstants.ACTIVE);
-        if (account == null || !goodStates.contains(account.getState())) {
+        if (account == null || !accountDao.isActiveAccount(account)) {
             return result;
         }
 

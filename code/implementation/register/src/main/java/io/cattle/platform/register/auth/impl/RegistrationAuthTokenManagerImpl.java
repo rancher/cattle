@@ -1,6 +1,6 @@
 package io.cattle.platform.register.auth.impl;
 
-import io.cattle.platform.core.constants.CommonStatesConstants;
+import io.cattle.platform.core.dao.AccountDao;
 import io.cattle.platform.core.model.Account;
 import io.cattle.platform.core.model.Credential;
 import io.cattle.platform.object.ObjectManager;
@@ -16,6 +16,8 @@ public class RegistrationAuthTokenManagerImpl implements RegistrationAuthTokenMa
 
     RegistrationTokenAuthDao authDao;
     ObjectManager objectManager;
+    @Inject
+    AccountDao accountDao;
 
     @Override
     public Account validateToken(String password) {
@@ -53,7 +55,7 @@ public class RegistrationAuthTokenManagerImpl implements RegistrationAuthTokenMa
 
         Account account = objectManager.loadResource(Account.class, cred.getAccountId());
 
-        if (account == null || !account.getState().equals(CommonStatesConstants.ACTIVE) || account.getRemoved() != null) {
+        if (account == null || !accountDao.isActiveAccount(account) || account.getRemoved() != null) {
             return null;
         }
 

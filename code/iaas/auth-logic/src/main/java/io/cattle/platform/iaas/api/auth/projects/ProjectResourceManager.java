@@ -4,8 +4,8 @@ import io.cattle.platform.api.auth.Identity;
 import io.cattle.platform.api.auth.Policy;
 import io.cattle.platform.api.resource.AbstractObjectResourceManager;
 import io.cattle.platform.core.constants.AccountConstants;
-import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.ProjectConstants;
+import io.cattle.platform.core.dao.AccountDao;
 import io.cattle.platform.core.dao.GenericResourceDao;
 import io.cattle.platform.core.model.Account;
 import io.cattle.platform.core.model.ProjectMember;
@@ -55,9 +55,10 @@ public class ProjectResourceManager extends AbstractObjectResourceManager {
     ObjectManager objectManager;
     @Inject
     ObjectProcessManager objectProcessManager;
-
     @Inject
     ProjectMemberResourceManager projectMemberResourceManager;
+    @Inject
+    AccountDao accountDao;
 
     @Override
     public String[] getTypes() {
@@ -117,7 +118,7 @@ public class ProjectResourceManager extends AbstractObjectResourceManager {
         }
         boolean isOwner = authDao.isProjectOwner(project.getId(), policy.getAccountId(), policy.isOption(Policy.AUTHORIZED_FOR_ALL_ACCOUNTS), policy
                 .getIdentities());
-        if (!project.getState().equalsIgnoreCase(CommonStatesConstants.ACTIVE) && !isOwner) {
+        if (!accountDao.isActiveAccount(project) && !isOwner) {
             return null;
         }
         if (isOwner) {

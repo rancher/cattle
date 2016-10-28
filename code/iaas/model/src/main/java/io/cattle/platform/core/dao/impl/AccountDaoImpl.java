@@ -3,15 +3,16 @@ package io.cattle.platform.core.dao.impl;
 import static io.cattle.platform.core.model.tables.AccountTable.*;
 import static io.cattle.platform.core.model.tables.CredentialTable.*;
 import static io.cattle.platform.core.model.tables.ProjectMemberTable.*;
-
 import io.cattle.platform.core.constants.AccountConstants;
 import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.CredentialConstants;
 import io.cattle.platform.core.constants.ProjectConstants;
+import io.cattle.platform.core.constants.ServiceConstants;
 import io.cattle.platform.core.dao.AccountDao;
 import io.cattle.platform.core.model.Account;
 import io.cattle.platform.core.model.Credential;
 
+import java.util.Arrays;
 import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
@@ -90,5 +91,12 @@ public class AccountDaoImpl extends AbstractCoreDao implements AccountDao {
                                 .and(ACCOUNT.STATE.ne(CommonStatesConstants.PURGED))
                                 .and(ACCOUNT.REMOVED.isNull())
                 ).fetchOne();
+    }
+
+    @Override
+    public boolean isActiveAccount(Account account) {
+        List<String> goodStates = Arrays.asList(CommonStatesConstants.ACTIVATING, CommonStatesConstants.ACTIVE,
+                ServiceConstants.STATE_UPGRADING);
+        return goodStates.contains(account.getState());
     }
 }

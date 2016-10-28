@@ -3,15 +3,15 @@ package io.cattle.platform.iaas.api.auth.impl;
 import io.cattle.platform.api.auth.Identity;
 import io.cattle.platform.api.auth.Policy;
 import io.cattle.platform.core.constants.AccountConstants;
-import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.ProjectConstants;
+import io.cattle.platform.core.dao.AccountDao;
 import io.cattle.platform.core.model.Account;
-import io.cattle.platform.iaas.api.auth.integration.external.ExternalServiceAuthProvider;
-import io.cattle.platform.iaas.api.auth.integration.interfaces.IdentityProvider;
+import io.cattle.platform.iaas.api.auth.AuthorizationProvider;
 import io.cattle.platform.iaas.api.auth.SecurityConstants;
 import io.cattle.platform.iaas.api.auth.dao.AuthDao;
+import io.cattle.platform.iaas.api.auth.integration.external.ExternalServiceAuthProvider;
 import io.cattle.platform.iaas.api.auth.integration.interfaces.AccountLookup;
-import io.cattle.platform.iaas.api.auth.AuthorizationProvider;
+import io.cattle.platform.iaas.api.auth.integration.interfaces.IdentityProvider;
 import io.cattle.platform.object.ObjectManager;
 import io.github.ibuildthecloud.gdapi.context.ApiContext;
 import io.github.ibuildthecloud.gdapi.exception.ClientVisibleException;
@@ -25,6 +25,7 @@ import java.io.IOException;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+
 import javax.inject.Inject;
 
 import org.apache.commons.lang3.StringUtils;
@@ -50,6 +51,9 @@ public class ApiAuthenticator extends AbstractApiRequestHandler {
     @Inject
     ExternalServiceAuthProvider externalAuthProvider;
 
+    @Inject
+    AccountDao accountDao;
+
     @Override
     public void handle(ApiRequest request) throws IOException {
         if (ApiContext.getContext().getPolicy() != null) {
@@ -61,7 +65,7 @@ public class ApiAuthenticator extends AbstractApiRequestHandler {
 
         Account authenticatedAsAccount = getAccount(request);
         if (authenticatedAsAccount == null ||
-                !StringUtils.equals(CommonStatesConstants.ACTIVE, authenticatedAsAccount.getState())) {
+                !accountDao.isActiveAccount(authenticatedAsAccount)) {
             throw new ClientVisibleException(ResponseCodes.UNAUTHORIZED);
         }
 
@@ -210,7 +214,7 @@ public class ApiAuthenticator extends AbstractApiRequestHandler {
         }
         try {
             project = authDao.getAccountById(new Long(parsedProjectId));
-            if (project == null || !project.getState().equalsIgnoreCase(CommonStatesConstants.ACTIVE)){
+            if (project == null || !accountDao.isActiveAccount(project)) {
                 throw new ClientVisibleException(ResponseCodes.FORBIDDEN);
             }
             if (authenticatedAsAccount.getId().equals(project.getId())) {
