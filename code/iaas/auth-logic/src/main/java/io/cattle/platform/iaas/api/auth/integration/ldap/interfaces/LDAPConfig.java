@@ -50,4 +50,8 @@ public interface LDAPConfig {
 
     List<Identity> getAllowedIdentities();
 
+    String getGroupDNField();
+
+    String getGroupMemberUserAttribute();
+
 }

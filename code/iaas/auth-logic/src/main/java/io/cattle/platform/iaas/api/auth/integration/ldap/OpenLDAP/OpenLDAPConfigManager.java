@@ -122,10 +122,19 @@ public class OpenLDAPConfigManager extends AbstractNoOpResourceManager {
         if (config.getGroupMemberMappingAttribute() != null){
             groupMemberMappingAttribute = config.getGroupMemberMappingAttribute();
         }
+        String groupDNField = currentConfig.getGroupDNField();
+        if (config.getGroupDNField() != null){
+            groupDNField = config.getGroupDNField();
+        }
+        String groupMemberUserAttribute = currentConfig.getGroupMemberUserAttribute();
+        if (config.getGroupMemberUserAttribute() != null){
+            groupMemberUserAttribute = config.getGroupMemberUserAttribute();
+        }
+
         return new OpenLDAPConfig(server, port, userEnabledMaskBit, loginDomain, domain, enabled, accessMode,
                 serviceAccountUsername, serviceAccountPassword, tls, userSearchField, userLoginField, userObjectClass,
                 userNameField, userEnabledAttribute, groupSearchField, groupObjectClass, groupNameField, userMemberAttribute,
-                groupMemberMappingAttribute, config.getConnectionTimeout());
+                groupMemberMappingAttribute, config.getConnectionTimeout(), groupDNField, groupMemberUserAttribute);
     }
 
     @Override
@@ -151,10 +160,13 @@ public class OpenLDAPConfigManager extends AbstractNoOpResourceManager {
         String userObjectClass = OpenLDAPConstants.USER_OBJECT_CLASS.get();
         String userSearchField = OpenLDAPConstants.USER_SEARCH_FIELD.get();
         long connectionTimeout = OpenLDAPConstants.CONNECTION_TIMEOUT.get();
+        String groupDNField = OpenLDAPConstants.GROUP_DN_FIELD.get();
+        String groupMemberUserAttribute = OpenLDAPConstants.GROUP_MEMBER_USER_ATTRIBUTE.get();
+
         return new OpenLDAPConfig(server, port, userEnabledMaskBit, loginDomain, domain, enabled, accessMode,
                 serviceAccountUsername, serviceAccountPassword, tls, userSearchField, userLoginField, userObjectClass,
                 userNameField, userEnabledAttribute, groupSearchField, groupObjectClass, groupNameField, userMemberAttribute,
-                groupMemberMappingAttribute, connectionTimeout);
+                groupMemberMappingAttribute, connectionTimeout, groupDNField, groupMemberUserAttribute);
     }
 
     public OpenLDAPConfig updateCurrentConfig(LDAPConstants config) {
@@ -178,6 +190,8 @@ public class OpenLDAPConfigManager extends AbstractNoOpResourceManager {
         settingsUtils.changeSetting(OpenLDAPConstants.USER_OBJECT_CLASS_SETTING, config.getUserObjectClass());
         settingsUtils.changeSetting(OpenLDAPConstants.USER_SEARCH_FIELD_SETTING, config.getUserSearchField());
         settingsUtils.changeSetting(OpenLDAPConstants.TIMEOUT_SETTING, config.getConnectionTimeout());
+        settingsUtils.changeSetting(OpenLDAPConstants.GROUP_DN_FIELD_SETTING, config.getGroupDNField());
+        settingsUtils.changeSetting(OpenLDAPConstants.GROUP_MEMBER_USER_ATTRIBUTE_SETTING, config.getGroupMemberUserAttribute());
         settingsUtils.changeSetting(SecurityConstants.SECURITY_SETTING, config.getEnabled());
         if (config.getEnabled() != null){
             settingsUtils.changeSetting(SecurityConstants.AUTH_PROVIDER_SETTING, OpenLDAPConstants.CONFIG);

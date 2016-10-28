@@ -43,6 +43,8 @@ public class ADConstants {
     public static final String TLS_SETTING = SETTING_BASE + "tls";
     public static final String TIMEOUT_SETTING = SETTING_BASE + "connection.timeout";
     public static final String ALLOWED_IDENTITIES_SETTING = SETTING_BASE + "allowed.identities";
+    public static final String GROUP_DN_FIELD_SETTING = SETTING_BASE + "group.dn.field";
+    public static final String GROUP_MEMBER_USER_ATTRIBUTE_SETTING = SETTING_BASE + "group.member.user.attribute";
 
     public static final Set<String> SCOPES = Collections.unmodifiableSet(
             new HashSet<>(Arrays.asList(
@@ -82,6 +84,8 @@ public class ADConstants {
     public static final DynamicStringProperty GROUP_OBJECT_CLASS = ArchaiusUtil.getString(GROUP_OBJECT_CLASS_SETTING);
 
     public static final DynamicLongProperty CONNECTION_TIMEOUT = ArchaiusUtil.getLong(TIMEOUT_SETTING);
+    public static final DynamicStringProperty GROUP_DN_FIELD = ArchaiusUtil.getString(GROUP_DN_FIELD_SETTING);
+    public static final DynamicStringProperty GROUP_MEMBER_USER_ATTRIBUTE = ArchaiusUtil.getString(GROUP_MEMBER_USER_ATTRIBUTE_SETTING);
 
     public static final String CONFIG_DOMAIN = "domain";
     public static final String CONFIG_ALLOWED_IDENTITIES = "allowedIdentities";
@@ -102,4 +106,7 @@ public class ADConstants {
     public static final String CONFIG_USER_SEARCH_FIELD = "userSearchField";
     public static final String CONFIG_TIMEOUT = "connectionTimeout";
     public static final String CONFIG_SECURITY = "enabled";
+    public static final String CONFIG_GROUP_DN_FIELD = "groupDNField";
+    public static final String CONFIG_GROUP_MEMBER_USER_ATTRIBUTE = "groupMemberUserAttribute";
+
 }

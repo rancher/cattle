@@ -152,4 +152,14 @@ public class ADConstantsConfig extends ADConfigurable implements LDAPConstants{
     public List<Identity> getAllowedIdentities() {
         return new ArrayList<>();
     }
+
+    @Override
+    public String getGroupDNField() {
+        return ADConstants.GROUP_DN_FIELD.get();
+    }
+
+    @Override
+    public String getGroupMemberUserAttribute() {
+        return ADConstants.GROUP_MEMBER_USER_ATTRIBUTE.get();
+    }
 }

@@ -12,6 +12,7 @@ import io.github.ibuildthecloud.gdapi.factory.SchemaFactory;
 import io.github.ibuildthecloud.gdapi.model.ListOptions;
 import io.github.ibuildthecloud.gdapi.request.ApiRequest;
 import io.github.ibuildthecloud.gdapi.request.resource.impl.AbstractNoOpResourceManager;
+
 import java.util.List;
 import java.util.Map;
 
@@ -131,10 +132,21 @@ public class ADConfigManager extends AbstractNoOpResourceManager {
                 && (AbstractTokenUtil.isRestrictedAccess(accessModeInConfig) || AbstractTokenUtil.isRequiredAccess(accessModeInConfig))) {
             identities = adIdentityProvider.getIdentities((List<Map<String, String>>) config.get(ADConstants.CONFIG_ALLOWED_IDENTITIES));
         }
+
+        String groupDNField = currentConfig.getGroupDNField();
+        if (config.get(ADConstants.CONFIG_GROUP_DN_FIELD) != null){
+            groupDNField = (String)config.get(ADConstants.CONFIG_GROUP_DN_FIELD);
+        }
+
+        String groupMemberUserAttribute = currentConfig.getGroupMemberUserAttribute();
+        if (config.get(ADConstants.CONFIG_GROUP_MEMBER_USER_ATTRIBUTE) != null){
+            groupMemberUserAttribute = (String)config.get(ADConstants.CONFIG_GROUP_MEMBER_USER_ATTRIBUTE);
+        }
+
         return new ADConfig(server, port, userEnabledMaskBit, loginDomain, domain, enabled, accessMode,
                 serviceAccountUsername, serviceAccountPassword, tls, userSearchField, userLoginField,
                 userObjectClass, userNameField, userEnabledAttribute, groupSearchField, groupObjectClass, groupNameField,
-                (Long)config.get(ADConstants.CONFIG_TIMEOUT), identities);
+                (Long)config.get(ADConstants.CONFIG_TIMEOUT), identities, groupDNField, groupMemberUserAttribute);
     }
 
     @Override
@@ -160,10 +172,13 @@ public class ADConfigManager extends AbstractNoOpResourceManager {
         String groupNameField = ADConstants.GROUP_NAME_FIELD.get();
         long connectionTimeout = ADConstants.CONNECTION_TIMEOUT.get();
         List<Identity> identities = adIdentityProvider.savedIdentities();
+        String groupDNField = ADConstants.GROUP_DN_FIELD.get();
+        String groupMemberUserAttribute = ADConstants.GROUP_MEMBER_USER_ATTRIBUTE.get();
+
         return new ADConfig(server, port, userEnabledMaskBit, loginDomain, domain, enabled, accessMode,
                 serviceAccountUsername, serviceAccountPassword, tls, userSearchField, userLoginField, userObjectClass,
                 userNameField, userEnabledAttribute, groupSearchField, groupObjectClass, groupNameField,
-                connectionTimeout, identities);
+                connectionTimeout, identities, groupDNField, groupMemberUserAttribute);
     }
 
     public ADConfig updateCurrentConfig(Map<String, Object> config) {
