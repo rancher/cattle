@@ -111,6 +111,7 @@ public class ExternalServiceAuthProvider {
         }
     }
 
+    @SuppressWarnings("unchecked")
     public Token refreshToken(String accessToken) {
         //get the token from the auth service
         StringBuilder authUrl = new StringBuilder(ServiceAuthConstants.AUTH_SERVICE_URL.get());
