@@ -363,11 +363,21 @@ public class ServiceDiscoveryApiServiceImpl implements ServiceDiscoveryApiServic
                         }
                     }
                 }
-                composeServiceData.put("blkio_weight_device", deviceWeight);
-                composeServiceData.put("device_read_bps", deviceReadBps);
-                composeServiceData.put("device_read_iops", deviceReadIops);
-                composeServiceData.put("device_write_bps", deviceWriteBps);
-                composeServiceData.put("device_write_iops", deviceWriteIops);
+                if (!deviceWeight.isEmpty()) {
+                    composeServiceData.put("blkio_weight_device", deviceWeight);
+                }
+                if (!deviceReadBps.isEmpty()) {
+                    composeServiceData.put("device_read_bps", deviceReadBps);
+                }
+                if (!deviceReadIops.isEmpty()) {
+                    composeServiceData.put("device_read_iops", deviceReadIops);
+                }
+                if (!deviceWriteBps.isEmpty()) {
+                    composeServiceData.put("device_write_bps", deviceWriteBps);
+                }
+                if (!deviceWriteIops.isEmpty()) {
+                    composeServiceData.put("device_write_iops", deviceWriteIops);
+                }
             }
         }
     }

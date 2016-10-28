@@ -157,6 +157,16 @@ public class ServiceDiscoveryUtil {
             launchConfigData = DataAccessor.fields(service)
                     .withKey(ServiceConstants.FIELD_LAUNCH_CONFIG).withDefault(Collections.EMPTY_MAP)
                     .as(Map.class);
+            // if the value is empty, do not export
+            ArrayList<String> deletedKeys = new ArrayList<>();
+            for (String key: launchConfigData.keySet()) {
+                if (launchConfigData.get(key) == null) {
+                    deletedKeys.add(key);
+                }
+            }
+            for (String key: deletedKeys) {
+                launchConfigData.remove(key);
+            }
         } else {
             List<Map<String, Object>> secondaryLaunchConfigs = DataAccessor.fields(service)
                     .withKey(ServiceConstants.FIELD_SECONDARY_LAUNCH_CONFIGS)
