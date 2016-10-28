@@ -47,6 +47,7 @@ public class ContainerMetaData {
     Long milli_cpu_reservation;
     String network_uuid;
     String network_from_container_uuid;
+    Boolean system;
 
     public ContainerMetaData(ContainerMetaData that) {
         this.name = that.name;
@@ -74,6 +75,7 @@ public class ContainerMetaData {
         this.dnsPrefix = that.dnsPrefix;
         this.network_uuid = that.network_uuid;
         this.network_from_container_uuid = that.network_from_container_uuid;
+        this.system = that.system;
     }
 
 
@@ -133,6 +135,7 @@ public class ContainerMetaData {
         this.name = instance.getName();
         this.uuid = instance.getUuid();
         this.external_id = instance.getExternalId();
+        this.system = instance.getSystem();
         Map<String, String> labels = DataAccessor.fields(instance).withKey(InstanceConstants.FIELD_LABELS)
                 .withDefault(Collections.EMPTY_MAP).as(Map.class);
         this.labels = labels;
@@ -328,6 +331,14 @@ public class ContainerMetaData {
 
     public void setNetwork_from_container_uuid(String network_from_container_uuid) {
         this.network_from_container_uuid = network_from_container_uuid;
+    }
+
+    public Boolean getSystem() {
+        return system;
+    }
+
+    public void setSystem(Boolean system) {
+        this.system = system;
     }
 
 }
