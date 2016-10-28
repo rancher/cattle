@@ -41,6 +41,7 @@ public class AccountConstants {
     public static final String FIELD_ORCHESTRATION = "orchestration";
 
     public static final String DATA_ACT_AS_RESOURCE_ACCOUNT = "actAsResourceAccount";
+    public static final String DATA_AGENT_OWNER_ID = "agentOwnerId";
 
     public static final String DATA_ACT_AS_RESOURCE_ADMIN_ACCOUNT = "actAsResourceAdminAccount";
 

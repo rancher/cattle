@@ -73,6 +73,41 @@ def test_agent_create_for_env_role(context, super_client):
     assert 'POST' in agent_client.schema.types['container'].collectionMethods
 
 
+def test_agent_create_for_multi_roles(context, super_client):
+    c = context.create_container(labels={
+        'io.rancher.container.create_agent': 'true',
+        'io.rancher.container.agent.role': 'agent,environment'
+    })
+
+    c = super_client.reload(c)
+    agent = super_client.wait_success(c.agent())
+
+    # Assert that the primary account has "agent" privileges
+    assert agent.state == 'active'
+    primary_account = agent.account()
+    cred = agent.account().credentials()[0]
+    assert cred.publicValue is not None
+    assert cred.secretValue is not None
+    agent_client = api_client(cred.publicValue, cred.secretValue)
+    assert 'container' not in agent_client.schema.types
+
+    # Assert that the secondary account has "environment" privileges
+    assert len(agent.authorizedRoleAccountIds) == 1
+    account = super_client.by_id("account", agent.authorizedRoleAccountIds[0])
+    assert account.kind == 'agent'
+    cred = account.credentials()[0]
+    assert cred.publicValue is not None
+    assert cred.secretValue is not None
+    agent_client = api_client(cred.publicValue, cred.secretValue)
+    assert 'POST' in agent_client.schema.types['container'].collectionMethods
+
+    agent = super_client.wait_success(agent.deactivate())
+    agent = super_client.wait_success(agent.remove())
+    assert agent.removed is not None
+    wait_for(lambda: super_client.reload(account).state == 'removed')
+    wait_for(lambda: super_client.reload(primary_account).state == 'removed')
+
+
 def test_agent_create_for_not_env_role(context, super_client):
     c = context.create_container(labels={
         'io.rancher.container.create_agent': 'true',

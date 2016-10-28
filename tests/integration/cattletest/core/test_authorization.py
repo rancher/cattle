@@ -1489,6 +1489,7 @@ def test_agent_auth(admin_user_client, user_client, project_client):
         'uri': 'r',
         'accountId': 'r',
         'data': 'r',
+        'authorizedRoleAccountIds': 'r',
     })
 
 

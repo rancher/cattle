@@ -15,6 +15,7 @@ import java.io.UnsupportedEncodingException;
 import java.util.Map;
 
 import org.apache.commons.codec.binary.Base64;
+import org.apache.commons.lang3.StringUtils;
 
 import com.netflix.config.DynamicStringListProperty;
 
@@ -37,20 +38,45 @@ public class AgentUtils {
         return ping;
     }
 
+    public static Map<String, Object> getAccountScopedAuth(Account account, ObjectManager objectManager, String scope) {
+        if (account == null) {
+            return null;
+        }
+
+        return AgentUtils.getAgentAuth(account, objectManager, scope);
+    }
     public static Map<String, Object> getAgentAuth(Agent agent, ObjectManager objectManager) {
         Account account = objectManager.loadResource(Account.class, agent.getAccountId());
         if (account == null) {
             return null;
         }
 
+        return AgentUtils.getAgentAuth(account, objectManager, null);
+    }
+
+    private static Map<String, Object> getAgentAuth(Account account, ObjectManager objectManager, String accountType) {
         for (Credential cred : objectManager.children(account, Credential.class)) {
             if (CredentialConstants.KIND_AGENT_API_KEY.equals(cred.getKind()) && CommonStatesConstants.ACTIVE.equals(cred.getState())) {
                 try {
                     String auth = "Basic " + Base64.encodeBase64String((cred.getPublicValue() + ":" + cred.getSecretValue()).getBytes("UTF-8"));
 
-                    return CollectionUtils.asMap("CATTLE_AGENT_INSTANCE_AUTH", auth,
-                            "CATTLE_ACCESS_KEY", cred.getPublicValue(),
-                            "CATTLE_SECRET_KEY", cred.getSecretValue());
+                    String ak = null;
+                    String sk = null;
+                    String authKey = null;
+                    if (StringUtils.isNotBlank(accountType)) {
+                        accountType = accountType.toUpperCase();
+                        ak = String.format("CATTLE_%s_ACCESS_KEY", accountType);
+                        sk = String.format("CATTLE_%s_SECRET_KEY", accountType);
+                        authKey = String.format("CATTLE_AGENT_INSTANCE_%s_AUTH", accountType);
+                    } else {
+                        ak = "CATTLE_ACCESS_KEY";
+                        sk = "CATTLE_SECRET_KEY";
+                        authKey = "CATTLE_AGENT_INSTANCE_AUTH";
+                    }
+
+                    return CollectionUtils.asMap(authKey, auth,
+                            ak, cred.getPublicValue(),
+                            sk, cred.getSecretValue());
                 } catch (UnsupportedEncodingException e) {
                 }
             }
