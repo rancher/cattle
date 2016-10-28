@@ -143,6 +143,9 @@ public class ContainerMetaData {
                 .withKey(InstanceConstants.FIELD_PORTS).withDefault(Collections.EMPTY_LIST)
                 .as(List.class);
         this.hostname = instance.getHostname();
+        if (hostMetaData != null) {
+            this.host_uuid = hostMetaData.getUuid();
+        }
         for (String portObj : portsObj) {
             PortSpec port = new PortSpec(portObj);
             if (StringUtils.isEmpty(port.getIpAddress())) {
