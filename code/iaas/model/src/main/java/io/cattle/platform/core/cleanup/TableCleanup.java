@@ -11,6 +11,7 @@ import java.util.Date;
 import java.util.List;
 
 import org.jooq.Field;
+import org.jooq.ForeignKey;
 import org.jooq.Record1;
 import org.jooq.Result;
 import org.jooq.ResultQuery;
@@ -73,43 +74,117 @@ public class TableCleanup extends AbstractJooqDao {
         cleanup("other", otherTables, otherCutoff);
     }
 
+    @SuppressWarnings("unchecked")
     private void cleanup(String name, List<CleanableTable> tables, Date cutoffTime) {
-        log.info("Cleanup {} tables started (cutoff={})", name, cutoffTime);
-        
-        for (CleanableTable cleanableTable : tables) {
-            Table<?> table = cleanableTable.table;
-            Field<Long> id = cleanableTable.idField;
-            Field<Date> remove = cleanableTable.removeField;
+        for (CleanableTable table : tables) {
+            Field<Long> id = table.idField;
+            Field<Date> remove = table.removeField;
             
             ResultQuery<Record1<Long>> ids = create()
                     .select(id)
-                    .from(table)
+                    .from(table.table)
                     .where(remove.lt(cutoffTime))
                     .limit(QUERY_LIMIT_ROWS.getValue());
 
-            int deletedRows = 0;
+            table.clearRowCounts();
             Result<Record1<Long>> toDelete;
+            List<Long> idsToFix = new ArrayList<>();
             while ((toDelete = ids.fetch()).size() > 0) {
                 List<Long> idsToDelete = new ArrayList<>();
 
                 for (Record1<Long> record : toDelete) {
-                    idsToDelete.add(record.value1());
+                    if (!idsToFix.contains(record.value1())) {
+                        idsToDelete.add(record.value1());                        
+                    }
+                }
+                
+                if (idsToDelete.size() == 0) {
+                    break;
+                }
+                
+                for (ForeignKey<?, ?> key : getReferencesFrom(table, tables)) {
+                    Table<?> referencingTable = key.getTable();
+                    if (key.getFields().size() > 1) {
+                        log.error("Composite foreign key filtering unsupported");
+                    }
+                    Field<Long> foreignKeyField = (Field<Long>) key.getFields().get(0);
+                    
+                    ResultQuery<Record1<Long>> filterIds = create()
+                        .selectDistinct(foreignKeyField)
+                        .from(referencingTable)
+                        .where(foreignKeyField.in(idsToDelete));
+                    
+                    Result<Record1<Long>> toFilter = filterIds.fetch();
+                    if (toFilter.size() > 0) {
+                        for (Record1<Long> record : toFilter) {
+                            if (idsToDelete.remove(record.value1())) {
+                                idsToFix.add(record.value1());
+                            }
+                        }
+                    }
                 }
                 
                 try {
-                    deletedRows += create()
-                            .delete(table)
+                    table.addRowsDeleted(create()
+                            .delete(table.table)
                             .where(id.in(idsToDelete))
-                            .execute();
+                            .execute());
                     
                 } catch (org.jooq.exception.DataAccessException e) {
                     log.error(e.getMessage());
                     break;
                 }
             }
-            log.info("Deleted " + deletedRows + " rows from " + table);
+            if (idsToFix.size() > 0) {
+                table.addRowsSkipped(idsToFix.size());
+                if (log.isDebugEnabled()) {
+                    log.debug("Skipped {} where id in {}", table.table, idsToFix);
+                }
+            }
         }
-        log.info("Cleanup {} tables completed", name);
+        StringBuffer buffDeleted = new StringBuffer("[Rows Deleted] ");
+        StringBuffer buffSkipped = new StringBuffer("[Rows Skipped] ");
+        boolean deletedActivity = false;
+        boolean skippedActivity = false;
+        for (CleanableTable table : tables) {
+            if (table.getRowsDeleted() > 0) {
+                buffDeleted.append(table.table.getName())
+                    .append("=")
+                    .append(table.getRowsDeleted())
+                    .append(" ");
+                deletedActivity = true;
+            }
+            if (table.getRowsSkipped() > 0) {
+                buffSkipped.append(table.table.getName())
+                    .append("=")
+                    .append(table.getRowsSkipped())
+                    .append(" ");
+                skippedActivity = true;
+            }
+        }
+
+        log.info("Cleanup {} tables [cutoff={}]", name, cutoffTime);
+        if (deletedActivity) {
+            log.info(buffDeleted.toString());
+        }
+        if (skippedActivity) {
+            log.warn(buffSkipped.toString());
+        }
+    }
+
+    /**
+     * Returns a list of foreign keys referencing a table
+     * 
+     * @param table
+     * @param others
+     * @return
+     */
+    public static List<ForeignKey<?, ?>> getReferencesFrom(CleanableTable table, List<CleanableTable> others) {
+        List<ForeignKey<?, ?>> keys = new ArrayList<ForeignKey<?, ?>>();
+        for (CleanableTable other : others) {
+            keys.addAll(table.table.getReferencesFrom(other.table));
+        }
+        return keys;
     }
 
     /**
@@ -234,6 +309,9 @@ public class TableCleanup extends AbstractJooqDao {
                 CleanableTable.from(ResourcePoolTable.RESOURCE_POOL),
                 CleanableTable.from(ServiceTable.SERVICE),
                 CleanableTable.from(ServiceConsumeMapTable.SERVICE_CONSUME_MAP),
+                // we let users clean this table up with a different cutoffTime but it references healthcheck_instance so we
+                // have to re-clean it with the same cutoffTime as the main tables to best-effort prevent FK violations...
+                CleanableTable.from(ServiceEventTable.SERVICE_EVENT),
                 CleanableTable.from(ServiceExposeMapTable.SERVICE_EXPOSE_MAP),
                 CleanableTable.from(ServiceIndexTable.SERVICE_INDEX),
                 CleanableTable.from(ServiceLogTable.SERVICE_LOG),
@@ -249,6 +327,13 @@ public class TableCleanup extends AbstractJooqDao {
                 CleanableTable.from(VolumeTable.VOLUME),
                 CleanableTable.from(VolumeStoragePoolMapTable.VOLUME_STORAGE_POOL_MAP),
                 CleanableTable.from(ZoneTable.ZONE));
+        /* The most offending tables never set remove_time
+        service_event
+        external_handler_external_handler_process_map
+        instance_label_map
+        mount
+        instance_link
+        */
         return sortByReferences(tables);
     }
 
