@@ -22,7 +22,7 @@ public class LBMetadataUtil {
         public String path;
         public String hostname;
         public String service;
-        public int target_port;
+        public Integer target_port;
         public Integer priority = 0;
         public String backend_name;
         public String selector;

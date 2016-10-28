@@ -31,14 +31,13 @@ def test_validate_balancer_svc_fields(client, image_uuid):
     path = "bar"
     port = 32
     priority = 10
-    protocol = "http"
     service_id = svc.id
     target_port = 42
     backend_name = "myBackend"
     config = "global maxconn 20"
     port_rule = {"hostname": hostname,
                  "path": path, "sourcePort": port, "priority": priority,
-                 "protocol": protocol, "serviceId": service_id,
+                 "serviceId": service_id,
                  "targetPort": target_port,
                  "backendName": backend_name}
     port_rules = [port_rule]
@@ -76,7 +75,7 @@ def test_validate_balancer_svc_fields(client, image_uuid):
     assert rule.path == path
     assert rule.sourcePort == port
     assert rule.priority == priority
-    assert rule.protocol == protocol
+    assert rule.protocol == "http"
     assert rule.serviceId is not None
     assert rule.targetPort == target_port
     assert rule.backendName == backend_name
@@ -103,7 +102,7 @@ def test_validate_balancer_svc_fields(client, image_uuid):
     assert rule["path"] == path
     assert rule["source_port"] == port
     assert rule["priority"] == priority
-    assert rule["protocol"] == protocol
+    assert rule["protocol"] == "http"
     assert rule["service"] == env.name + "/" + svc.name
     assert rule["target_port"] == target_port
     assert rule["backend_name"] == backend_name
@@ -183,22 +182,6 @@ def test_validation_create_balancer(client, image_uuid):
     assert e.value.error.status == 422
     assert e.value.error.code == 'MissingRequired'
     assert e.value.error.fieldName == "sourcePort"
-
-    with pytest.raises(ApiError) as e:
-        port_rule = {"sourcePort": 94, "serviceId": service_id,
-                     "targetPort": target_port}
-        port_rules = [port_rule]
-        lb_config = {"portRules": port_rules}
-
-        client. \
-            create_loadBalancerService(name=random_str(),
-                                       stackId=env.id,
-                                       launchConfig=launch_config,
-                                       lbConfig=lb_config)
-
-    assert e.value.error.status == 422
-    assert e.value.error.code == 'MissingRequired'
-    assert e.value.error.fieldName == "protocol"
 
     with pytest.raises(ApiError) as e:
         port_rule = {"sourcePort": 94, "protocol": "tcp"}

@@ -34,10 +34,10 @@ def test_upgrade_relink(context, client):
                                    scale=1,
                                    launchConfig=launch_config)
 
-    lb = client.create_load_balancer_service(name=random_str(),
-                                             environmentId=env.id,
-                                             scale=1,
-                                             launchConfig={'ports': ['80']})
+    lb = client.create_service(name=random_str(),
+                               environmentId=env.id,
+                               scale=1,
+                               launchConfig=launch_config)
 
     source = client.wait_success(client.wait_success(source).activate())
     assert source.state == 'active'

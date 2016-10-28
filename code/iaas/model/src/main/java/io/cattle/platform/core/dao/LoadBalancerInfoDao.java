@@ -1,4 +1,4 @@
-package io.cattle.platform.configitem.context.dao;
+package io.cattle.platform.core.dao;
 
 import io.cattle.platform.core.addon.LbConfig;
 import io.cattle.platform.core.model.Service;

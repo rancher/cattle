@@ -79,7 +79,7 @@ public class PortRule {
         this.priority = priority;
     }
 
-    @Field(required = true)
+    @Field(defaultValue = "http")
     public Protocol getProtocol() {
         return protocol;
     }

@@ -13,9 +13,15 @@ def _create_service(client, env, image_uuid, service_kind):
 
     elif service_kind == "loadBalancerService":
         launch_config = {"labels": labels}
+        port_rule = {"hostname": "foo.com",
+                     "path": "/bar", "sourcePort": 100,
+                     "selector": "foo=bar"}
+        port_rules = [port_rule]
+        lb_config = {"portRules": port_rules}
         service = client.create_loadBalancerService(name=random_str(),
                                                     stackId=env.id,
-                                                    launchConfig=launch_config)
+                                                    launchConfig=launch_config,
+                                                    lbConfig=lb_config)
 
     elif service_kind == "dnsService":
         launch_config = {"labels": labels}
@@ -300,9 +306,15 @@ def test_lb_service_add_instance_selector(super_client, client, context):
     launch_config = {"imageUuid": image_uuid,
                      "ports": [567, '568:569'],
                      "expose": [9999, '9998:9997']}
+    port_rule = {"hostname": "foo.com",
+                 "path": "/bar", "sourcePort": 100,
+                 "selector": "foo=bar"}
+    port_rules = [port_rule]
+    lb_config = {"portRules": port_rules}
     lb_service = client.create_loadBalancerService(name=random_str(),
                                                    stackId=env.id,
-                                                   launchConfig=launch_config)
+                                                   launchConfig=launch_config,
+                                                   lbConfig=lb_config)
     lb_service = client.wait_success(lb_service)
     assert lb_service.state == "inactive"
     lb_service = client.wait_success(lb_service.activate(), 120)
@@ -459,6 +471,7 @@ def _validate_remove_service_link(service,
                                    consumedServiceId=consumedService.id)
 
         return len(service_maps) == 0
+
     wait_for(check)
 
 

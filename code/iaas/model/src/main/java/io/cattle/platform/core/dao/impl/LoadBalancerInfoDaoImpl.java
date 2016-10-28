@@ -1,18 +1,20 @@
-package io.cattle.platform.configitem.context.dao.impl;
+package io.cattle.platform.core.dao.impl;
 
 import static io.cattle.platform.core.model.tables.CertificateTable.*;
+import static io.cattle.platform.core.model.tables.ServiceConsumeMapTable.*;
 import static io.cattle.platform.core.model.tables.ServiceTable.*;
 import static io.cattle.platform.core.model.tables.StackTable.*;
-import io.cattle.platform.configitem.context.dao.LoadBalancerInfoDao;
-import io.cattle.platform.configitem.context.data.LoadBalancerListenerInfo;
 import io.cattle.platform.core.addon.HaproxyConfig;
 import io.cattle.platform.core.addon.LbConfig;
 import io.cattle.platform.core.addon.LoadBalancerCookieStickinessPolicy;
 import io.cattle.platform.core.addon.LoadBalancerTargetInput;
 import io.cattle.platform.core.addon.PortRule;
+import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.constants.LoadBalancerConstants;
 import io.cattle.platform.core.constants.ServiceConstants;
+import io.cattle.platform.core.dao.LoadBalancerInfoDao;
+import io.cattle.platform.core.dao.ServiceDao;
 import io.cattle.platform.core.model.Certificate;
 import io.cattle.platform.core.model.Service;
 import io.cattle.platform.core.model.ServiceConsumeMap;
@@ -23,13 +25,10 @@ import io.cattle.platform.core.util.PortSpec;
 import io.cattle.platform.json.JsonMapper;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.util.DataAccessor;
-import io.cattle.platform.servicediscovery.api.dao.ServiceConsumeMapDao;
-import io.cattle.platform.servicediscovery.api.dao.ServiceDao;
-import io.cattle.platform.servicediscovery.api.util.ServiceDiscoveryUtil;
-import io.cattle.platform.servicediscovery.service.ServiceDiscoveryService;
 import io.cattle.platform.util.type.CollectionUtils;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -40,16 +39,10 @@ import org.apache.commons.lang3.StringUtils;
 
 public class LoadBalancerInfoDaoImpl implements LoadBalancerInfoDao {
     @Inject
-    ServiceConsumeMapDao consumeMapDao;
-
-    @Inject
     ObjectManager objectManager;
 
     @Inject
     JsonMapper jsonMapper;
-
-    @Inject
-    ServiceDiscoveryService sdService;
 
     @Inject
     ServiceDao svcDao;
@@ -57,24 +50,26 @@ public class LoadBalancerInfoDaoImpl implements LoadBalancerInfoDao {
     @SuppressWarnings("unchecked")
     protected List<LoadBalancerListenerInfo> getListeners(Service lbService) {
         Map<Integer, LoadBalancerListenerInfo> listeners = new HashMap<>();
-        Map<String, Object> launchConfigData = ServiceDiscoveryUtil.getLaunchConfigDataAsMap(lbService, null);
+        Map<String, Object> launchConfig = DataAccessor.fields(lbService)
+                .withKey(ServiceConstants.FIELD_LAUNCH_CONFIG).withDefault(Collections.EMPTY_MAP)
+                .as(Map.class);
         // 1. create listeners
         Map<String, Boolean> portDefs = new HashMap<>();
 
-        if (launchConfigData.get(InstanceConstants.FIELD_PORTS) != null) {
-            for (String port : (List<String>) launchConfigData.get(InstanceConstants.FIELD_PORTS)) {
+        if (launchConfig.get(InstanceConstants.FIELD_PORTS) != null) {
+            for (String port : (List<String>) launchConfig.get(InstanceConstants.FIELD_PORTS)) {
                 portDefs.put(port, true);
             }
         }
 
-        if (launchConfigData.get(InstanceConstants.FIELD_EXPOSE) != null) {
-            for (String port : (List<String>) launchConfigData.get(InstanceConstants.FIELD_EXPOSE)) {
+        if (launchConfig.get(InstanceConstants.FIELD_EXPOSE) != null) {
+            for (String port : (List<String>) launchConfig.get(InstanceConstants.FIELD_EXPOSE)) {
                 portDefs.put(port, false);
             }
         }
         
-        List<String> sslPorts = getLabeledPorts(launchConfigData, ServiceConstants.LABEL_LB_SSL_PORTS);
-        List<String> proxyProtocolPorts = getLabeledPorts(launchConfigData,
+        List<String> sslPorts = getLabeledPorts(launchConfig, ServiceConstants.LABEL_LB_SSL_PORTS);
+        List<String> proxyProtocolPorts = getLabeledPorts(launchConfig,
                 ServiceConstants.LABEL_LB_PROXY_PORTS);
         List<LoadBalancerListenerInfo> listenersToReturn = new ArrayList<>();
         for (String port : portDefs.keySet()) {
@@ -146,14 +141,15 @@ public class LoadBalancerInfoDaoImpl implements LoadBalancerInfoDao {
             return new ArrayList<>();
         }
         List<LoadBalancerTargetInput> targets = new ArrayList<>();
-        List<? extends ServiceConsumeMap> lbLinks = consumeMapDao.findConsumedServices(lbService.getId());
+        List<? extends ServiceConsumeMap> lbLinks = objectManager.find(ServiceConsumeMap.class,
+                SERVICE_CONSUME_MAP.REMOVED, null, SERVICE_CONSUME_MAP.SERVICE_ID, lbService.getId());
         for (ServiceConsumeMap lbLink : lbLinks) {
+            if (lbLink.getState().equals(CommonStatesConstants.REMOVING)) {
+                continue;
+            }
             List<Service> consumedServices = new ArrayList<>();
             Service svc = objectManager.loadResource(Service.class, lbLink.getConsumedServiceId());
-            if (sdService.isActiveService(svc)) {
-                consumedServices.add(svc);
-            }
-
+            consumedServices.add(svc);
             for (Service consumedService : consumedServices) {
                 targets.add(new LoadBalancerTargetInput(consumedService, lbLink, jsonMapper));
             }
@@ -303,6 +299,7 @@ public class LoadBalancerInfoDaoImpl implements LoadBalancerInfoDao {
         Map<String, Object> data = CollectionUtils.toMap(configObj);
         String config = null;
         LoadBalancerCookieStickinessPolicy policy = null;
+        // global/default sections
         if (configObj != null) {
             policy = jsonMapper.convertValue(data.get(LoadBalancerConstants.FIELD_LB_COOKIE_POLICY),
                     LoadBalancerCookieStickinessPolicy.class);
@@ -317,9 +314,51 @@ public class LoadBalancerInfoDaoImpl implements LoadBalancerInfoDao {
                 }
             }
         }
-        
+        // proxy port for listeners
+        for (Integer port : portToListener.keySet()) {
+            if (portToListener.get(port).isProxyPort()) {
+                config = String.format("%sfrontend %s\naccept-proxy\n", config, port.toString());
+            }
+        }
+
         return new LbConfig(config, rules, certs, defaultCert,
                 policy);
+    }
+
+    public static class LoadBalancerListenerInfo {
+        Integer privatePort;
+        Integer sourcePort;
+        Integer targetPort;
+        String sourceProtocol;
+        boolean proxyPort;
+
+        public LoadBalancerListenerInfo(Integer privatePort, Integer sourcePort, String protocol, Integer targetPort,
+                boolean proxyPort) {
+            super();
+            this.privatePort = privatePort;
+            this.sourcePort = sourcePort;
+            this.sourceProtocol = protocol;
+            this.targetPort = targetPort;
+            this.proxyPort = proxyPort;
+        }
+
+        // LEGACY code to support the case when private port is not defined
+        public Integer getSourcePort() {
+            return this.privatePort != null ? this.privatePort : this.sourcePort;
+        }
+
+        public Integer getTargetPort() {
+            return targetPort;
+        }
+
+        public String getSourceProtocol() {
+            return sourceProtocol;
+        }
+
+        public boolean isProxyPort() {
+            return proxyPort;
+        }
+
     }
 
 }

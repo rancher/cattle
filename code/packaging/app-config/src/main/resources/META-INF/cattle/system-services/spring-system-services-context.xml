@@ -138,6 +138,7 @@
     <bean class="io.cattle.platform.core.dao.impl.VolumeDaoImpl" />
     <bean class="io.cattle.platform.core.dao.impl.ServiceDaoImpl" />
     <bean class="io.cattle.platform.core.dao.impl.StackDaoImpl" />
+    <bean class="io.cattle.platform.core.dao.impl.LoadBalancerInfoDaoImpl" />
 
     <bean class="io.cattle.platform.core.cache.DBCacheManager" />
 
