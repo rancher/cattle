@@ -153,15 +153,18 @@ public class LBMetadataUtil {
                     this.default_cert = defaultCert.getName();
                 }
             }
-            for (PortRule portRule : portRules) {
-                if (portRule.getServiceId() != null) {
-                    Long svcId = Long.valueOf(portRule.getServiceId());
-                    this.port_rules.add(new MetadataPortRule(portRule, services.get(svcId),
-                            stacks.get(services.get(svcId).getStackId())));
-                } else {
-                    this.port_rules.add(new MetadataPortRule(portRule, null, null));
+            if (portRules != null) {
+                for (PortRule portRule : portRules) {
+                    if (portRule.getServiceId() != null) {
+                        Long svcId = Long.valueOf(portRule.getServiceId());
+                        this.port_rules.add(new MetadataPortRule(portRule, services.get(svcId),
+                                stacks.get(services.get(svcId).getStackId())));
+                    } else {
+                        this.port_rules.add(new MetadataPortRule(portRule, null, null));
+                    }
                 }
             }
+
             this.config = config;
             this.stickiness_policy = stickinessPolicy;
         }
