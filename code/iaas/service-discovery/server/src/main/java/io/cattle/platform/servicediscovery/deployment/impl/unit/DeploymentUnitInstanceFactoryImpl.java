@@ -1,12 +1,14 @@
 package io.cattle.platform.servicediscovery.deployment.impl.unit;
 
 import static io.cattle.platform.core.model.tables.DeploymentUnitTable.*;
+import static io.cattle.platform.core.model.tables.StackTable.*;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.constants.ServiceConstants;
 import io.cattle.platform.core.dao.GenericMapDao;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.Service;
 import io.cattle.platform.core.model.ServiceExposeMap;
+import io.cattle.platform.core.model.Stack;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.servicediscovery.api.dao.ServiceExposeMapDao;
@@ -70,16 +72,18 @@ public class DeploymentUnitInstanceFactoryImpl implements DeploymentUnitInstance
         Map<String, Map<String, String>> uuidToLabels = new HashMap<>();
         Map<String, List<DeploymentUnitInstance>> uuidToInstances = new HashMap<>();
         List<DeploymentUnit> units = new ArrayList<>();
+        Map<String, io.cattle.platform.core.model.DeploymentUnit> uuidToExistingDU = new HashMap<>();
 
         if (service.getKind().equalsIgnoreCase(ServiceConstants.KIND_SERVICE)
                 || service.getKind().equalsIgnoreCase(ServiceConstants.KIND_LOAD_BALANCER_SERVICE)) {
-            collectDefaultServiceInstances(context, uuidToLabels, uuidToInstances, service);
+            collectDefaultServiceInstances(context, uuidToLabels, uuidToInstances, service, uuidToExistingDU);
         } else if (service.getKind().equalsIgnoreCase(ServiceConstants.KIND_EXTERNAL_SERVICE)) {
-            collectExternalServiceInstances(context, uuidToLabels, uuidToInstances, service);
+            collectExternalServiceInstances(context, uuidToLabels, uuidToInstances, service, uuidToExistingDU);
         }
+        Stack stack = context.objectManager.findOne(Stack.class, STACK.ID, service.getStackId());
         for (String uuid : uuidToInstances.keySet()) {
             DeploymentUnit unit = new DeploymentUnit(context, uuid, service, uuidToInstances.get(uuid),
-                    uuidToLabels.get(uuid));
+                    uuidToLabels.get(uuid), stack, uuidToExistingDU);
             units.add(unit);
         }
 
@@ -89,7 +93,7 @@ public class DeploymentUnitInstanceFactoryImpl implements DeploymentUnitInstance
 
     protected void collectExternalServiceInstances(DeploymentServiceContext context,
             Map<String, Map<String, String>> uuidToLabels, Map<String, List<DeploymentUnitInstance>> uuidToInstances,
-            Service service) {
+            Service service, Map<String, io.cattle.platform.core.model.DeploymentUnit> uuidToExistingDU) {
 
         // 1. request deployment units for ips defined on the service
         createExternalUnitsForIps(context, uuidToLabels, uuidToInstances, service);
@@ -153,7 +157,7 @@ public class DeploymentUnitInstanceFactoryImpl implements DeploymentUnitInstance
     @SuppressWarnings("unchecked")
     protected void collectDefaultServiceInstances(DeploymentServiceContext context,
             Map<String, Map<String, String>> uuidToLabels, Map<String, List<DeploymentUnitInstance>> uuidToInstances,
-            Service service) {
+            Service service, Map<String, io.cattle.platform.core.model.DeploymentUnit> uuidToExistingDU) {
         List<? extends Instance> serviceContainers = expMapDao.listServiceManagedInstancesAll(service);
         for (Instance serviceContainer : serviceContainers) {
             Map<String, String> instanceLabels = DataAccessor.fields(serviceContainer)
@@ -184,8 +188,8 @@ public class DeploymentUnitInstanceFactoryImpl implements DeploymentUnitInstance
                 }
                 addToDeploymentUnitList(uuidToLabels, uuidToInstances, labels, unit.getUuid(),
                         null);
-
             }
+            uuidToExistingDU.put(unit.getUuid(), unit);
         }
     }
 

@@ -3,7 +3,9 @@ package io.cattle.platform.servicediscovery.deployment.impl.planner;
 import io.cattle.platform.activity.ActivityLog;
 import io.cattle.platform.core.constants.ServiceConstants;
 import io.cattle.platform.core.model.Service;
+import io.cattle.platform.core.model.Stack;
 import io.cattle.platform.object.util.DataAccessor;
+import io.cattle.platform.servicediscovery.deployment.DeploymentUnitInstanceIdGenerator;
 import io.cattle.platform.servicediscovery.deployment.ServiceDeploymentPlanner;
 import io.cattle.platform.servicediscovery.deployment.impl.DeploymentManagerImpl.DeploymentServiceContext;
 import io.cattle.platform.servicediscovery.deployment.impl.unit.DeploymentUnit;
@@ -17,9 +19,9 @@ public class DefaultServiceDeploymentPlanner extends ServiceDeploymentPlanner {
 
     protected Integer requestedScale = 0;
 
-    public DefaultServiceDeploymentPlanner(Service service, List<DeploymentUnit> units,
-            DeploymentServiceContext context) {
-        super(service, units, context);
+    public DefaultServiceDeploymentPlanner(Service service, Stack stack,
+            List<DeploymentUnit> units, DeploymentServiceContext context) {
+        super(service, units, context, stack);
         int scale;
         // internal desired scale populated by scale policy driven deployment
         Integer scaleInternal = DataAccessor.fieldInteger(service,
@@ -37,9 +39,9 @@ public class DefaultServiceDeploymentPlanner extends ServiceDeploymentPlanner {
     }
 
     @Override
-    public List<DeploymentUnit> deployHealthyUnits() {
+    public List<DeploymentUnit> deployHealthyUnits(DeploymentUnitInstanceIdGenerator svcInstanceIdGenerator) {
         if (this.healthyUnits.size() < requestedScale) {
-            addMissingUnits();
+            addMissingUnits(svcInstanceIdGenerator);
         } else if (healthyUnits.size() > requestedScale) {
             removeExtraUnits();
         }
@@ -47,9 +49,9 @@ public class DefaultServiceDeploymentPlanner extends ServiceDeploymentPlanner {
         return healthyUnits;
     }
 
-    private void addMissingUnits() {
+    private void addMissingUnits(DeploymentUnitInstanceIdGenerator svcInstanceIdGenerator) {
         while (this.healthyUnits.size() < this.requestedScale) {
-            DeploymentUnit unit = new DeploymentUnit(context, service, null);
+            DeploymentUnit unit = new DeploymentUnit(context, service, null, svcInstanceIdGenerator, stack);
             this.healthyUnits.add(unit);
         }
     }

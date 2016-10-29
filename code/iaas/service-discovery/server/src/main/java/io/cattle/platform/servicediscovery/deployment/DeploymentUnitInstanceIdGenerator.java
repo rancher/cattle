@@ -4,4 +4,5 @@ public interface DeploymentUnitInstanceIdGenerator {
 
     Integer getNextAvailableId(String launchConfigName);
 
+    Integer getNextAvailableId();
 }
