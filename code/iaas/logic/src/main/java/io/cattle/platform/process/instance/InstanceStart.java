@@ -224,6 +224,10 @@ public class InstanceStart extends AbstractDefaultProcessHandler {
                                 return START_ONCE_STATES.contains(obj.getState());
                             }
 
+                            if (obj.getRemoved() != null) {
+                                throw new TimeoutException("Instance is removed");
+                            }
+
                             InstanceHostMap ihm =
                                     objectManager.findAny(InstanceHostMap.class, INSTANCE_HOST_MAP.INSTANCE_ID, obj.getId(), INSTANCE_HOST_MAP.STATE,
                                             CommonStatesConstants.ACTIVE, INSTANCE_HOST_MAP.REMOVED, null);
