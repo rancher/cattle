@@ -23,7 +23,7 @@ public class VolumeRemove extends IgnoreReconnectionAgentHandler {
     GenericMapDao mapDao;
 
     public VolumeRemove() {
-        setProcessNames(new String[] { VolumeConstants.PROCESS_CREATE });
+        setProcessNames(new String[] { VolumeConstants.PROCESS_REMOVE });
     }
 
     @Override
