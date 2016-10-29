@@ -169,9 +169,7 @@ def test_rollback_regular_upgrade(context, client, super_client):
                              finalScale=4)
     time.sleep(1)
     svc = wait_state(client, svc.cancelupgrade(), 'canceled-upgrade')
-    assert svc.state == 'canceled-upgrade'
-    svc = client.wait_success(svc.rollback(), DEFAULT_TIMEOUT)
-    assert svc.state == 'active'
+    svc = wait_state(client, svc.rollback(), 'active')
     _wait_for_map_count(super_client, svc)
 
 

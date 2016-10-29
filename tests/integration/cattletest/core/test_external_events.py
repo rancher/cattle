@@ -103,7 +103,7 @@ def test_external_host_event_hit(new_context):
 
     assert event.state == 'created'
     assert host.state == 'purged'
-    assert c.state == 'removed'
+    assert c.removed is not None
 
 
 def test_external_host_event_no_delete(new_context):

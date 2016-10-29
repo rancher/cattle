@@ -2253,10 +2253,8 @@ def test_indirect_ref_sidekick_destroy_instance(client, context):
 
     _wait_until_active_map_count(service, 3, client)
     # validate that the primary and secondary instances got recreated
-    instance11 = client.reload(instance11)
-    assert instance11.removed is not None
-    instance12 = client.reload(instance12)
-    assert instance12.removed is not None
+    wait_for_condition(client, instance11, lambda x: x.removed is not None)
+    wait_for_condition(client, instance12, lambda x: x.removed is not None)
 
 
 def test_validate_hostname_override(client, context):

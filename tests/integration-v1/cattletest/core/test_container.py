@@ -422,136 +422,6 @@ def test_container_storage_fail(super_client, context):
     _assert_error(super_client.reload(container))
 
 
-def test_create_with_vnet(super_client, new_context):
-    network = new_context.nsp.network()
-    subnet1 = network.subnets()[0]
-    vnet = create_and_activate(super_client, 'vnet',
-                               accountId=new_context.project.id,
-                               networkId=network.id,
-                               uri='dummy:///')
-
-    create_and_activate(super_client, 'subnetVnetMap',
-                        accountId=new_context.project.id,
-                        vnetId=vnet.id,
-                        subnetId=subnet1.id)
-
-    create_and_activate(super_client, 'hostVnetMap',
-                        accountId=new_context.project.id,
-                        vnetId=vnet.id,
-                        hostId=new_context.host.id)
-
-    c = new_context.super_create_container(networkMode=None,
-                                           vnetIds=[vnet.id])
-    c = super_client.wait_success(c)
-    assert c.state == 'running'
-    assert 'vnetIds' not in c
-
-    nics = c.nics()
-    assert len(nics) == 1
-
-    nic = nics[0]
-
-    assert nic.deviceNumber == 0
-    assert nic.subnetId == subnet1.id
-    assert nic.vnetId == vnet.id
-
-
-def test_create_with_vnet2(super_client, new_context):
-    network = create_and_activate(super_client, 'network',
-                                  accountId=new_context.project.id)
-
-    create_and_activate(super_client, 'subnet',
-                        accountId=new_context.project.id,
-                        networkId=network.id,
-                        networkAddress='192.168.0.0')
-    subnet2 = create_and_activate(super_client, 'subnet',
-                                  accountId=new_context.project.id,
-                                  networkId=network.id,
-                                  networkAddress='192.168.1.0')
-
-    vnet = create_and_activate(super_client, 'vnet',
-                               accountId=new_context.project.id,
-                               networkId=network.id,
-                               uri='dummy:///')
-
-    create_and_activate(super_client, 'subnetVnetMap',
-                        vnetId=vnet.id,
-                        subnetId=subnet2.id)
-
-    c = new_context.super_create_container(networkMode=None,
-                                           vnetIds=[vnet.id])
-    c = super_client.wait_success(c)
-    assert c.state == 'running'
-    assert 'vnetIds' not in c
-
-    nics = c.nics()
-    assert len(nics) == 1
-
-    nic = nics[0]
-
-    assert nic.deviceNumber == 0
-    assert nic.vnetId == vnet.id
-    assert nic.subnetId == subnet2.id
-
-
-def test_create_with_vnet_multiple_nics(super_client, new_context):
-    network = create_and_activate(super_client, 'network',
-                                  accountId=new_context.project.id)
-
-    subnet1 = create_and_activate(super_client, 'subnet',
-                                  accountId=new_context.project.id,
-                                  networkId=network.id,
-                                  networkAddress='192.168.0.0')
-    subnet2 = create_and_activate(super_client, 'subnet',
-                                  accountId=new_context.project.id,
-                                  networkId=network.id,
-                                  networkAddress='192.168.1.0')
-
-    vnet = create_and_activate(super_client, 'vnet',
-                               accountId=new_context.project.id,
-                               networkId=network.id,
-                               uri='dummy:///')
-
-    vnet2 = create_and_activate(super_client, 'vnet',
-                                accountId=new_context.project.id,
-                                networkId=network.id,
-                                uri='dummy:///')
-
-    create_and_activate(super_client, 'subnetVnetMap',
-                        accountId=new_context.project.id,
-                        vnetId=vnet.id,
-                        subnetId=subnet2.id)
-
-    create_and_activate(super_client, 'subnetVnetMap',
-                        accountId=new_context.project.id,
-                        vnetId=vnet2.id,
-                        subnetId=subnet1.id)
-
-    c = new_context.super_create_container(networkMode=None,
-                                           vnetIds=[vnet.id, vnet2.id])
-    c = super_client.wait_success(c)
-    assert c.state == 'running'
-    assert 'vnetIds' not in c
-
-    nics = c.nics()
-    assert len(nics) == 2
-
-    device_numbers = set([n.deviceNumber for n in nics])
-    assert len(device_numbers) == 2
-    assert 0 in device_numbers
-    assert 1 in device_numbers
-
-    for nic in nics:
-        assert nic.state == 'active'
-
-        if nic.deviceNumber == 0:
-            nic.subnetId == subnet2.id
-            nic.vnetId == vnet.id
-        elif nic.deviceNumber == 1:
-            nic.subnetId == subnet1.id
-            nic.vnetId == vnet2.id
-
-
 def test_container_restart_policy(super_client, client):
     for c in [super_client, client]:
         restart_policy = c.schema.types['restartPolicy']
@@ -705,7 +575,7 @@ def test_container_network_modes(context, super_client):
 
     for i in [('host', 'dockerHost'), ('none', 'dockerNone'),
               ('container', 'dockerContainer'), ('bridge', 'dockerBridge'),
-              ('managed', 'hostOnlyNetwork')]:
+              ('managed', 'network')]:
         args = {
             'networkMode': i[0]
         }
@@ -735,11 +605,8 @@ def test_container_network_host_mode_w_dsn(context, super_client):
     c = context.create_container(networkMode='host', labels=labels)
     c = super_client.wait_success(c)
     assert c.state == 'running'
-    assert len(c.nics()) == 2
-
-    networks = [c.nics()[0].network().kind, c.nics()[1].network().kind]
-    assert "dockerHost" in networks
-    assert "hostOnlyNetwork" in networks
+    assert len(c.nics()) == 1
+    assert c.nics()[0].network().kind == 'dockerHost'
 
 
 def test_container_request_ip_from_label(new_context):
@@ -759,18 +626,3 @@ def test_container_request_ip_from_label(new_context):
 
     c = new_context.create_container(labels=labels)
     assert c.primaryIpAddress != '10.42.42.42'
-
-
-def test_container_start_item_unique(client, super_client, context):
-    c = context.create_container()
-
-    pi = find_one(process_instances, super_client, c, type='instance')
-
-    updates = pi.data['io.cattle.platform.configitem.request.'
-                      'ConfigUpdateRequest']
-
-    for update in updates.values():
-        seen = set()
-        for item in update.items:
-            assert item.name not in seen
-            seen.add(item.name)

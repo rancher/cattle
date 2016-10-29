@@ -672,8 +672,17 @@ def volume_cleanup_setup(docker_client, uuid, strategy=None):
                        lambda x: 'state is %s' % x)
     named_vol = v1 if v1.name == vol_name else v2
     unnamed_vol = v1 if v1.name != vol_name else v2
+
+    def purged(c):
+        c = docker_client.reload(c)
+        if c.state == 'purged':
+            return True
+        try:
+            c.purge()
+        except:
+            pass
     c = docker_client.wait_success(c.stop(remove=True, timeout=0))
-    c = docker_client.wait_success(c.purge())
+    wait_for(lambda: purged(c))
     check_mounts(docker_client, c, 0)
     return c, named_vol, unnamed_vol
 
@@ -777,7 +786,6 @@ def test_docker_labels(docker_client):
         'io.rancher.testlabel.fromapi': 'yes',
         'io.rancher.container.uuid': c.uuid,
         'io.rancher.container.name': c.name,
-        'io.rancher.container.ip': c.primaryIpAddress + '/16',
     }
     assert actual_labels == expected_labels
 
@@ -854,11 +862,6 @@ def test_service_link_emu_docker_link(super_client, docker_client):
 
     target_instance = find_one(server.instances)
 
-    assert len(link.ports) == 1
-    assert link.ports[0].privatePort == 8080
-    assert link.ports[0].publicPort == 8080
-    assert link.ports[0].protocol == 'tcp'
-    assert link.ports[0].ipAddress is not None
     assert link.targetInstanceId == target_instance.id
     assert link.instanceNames == ['{}-server-1'.format(env_name)]
 

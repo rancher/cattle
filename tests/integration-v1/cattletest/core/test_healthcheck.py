@@ -16,7 +16,7 @@ def _get_agent_for_container(context, container):
 
     if agent is None:
         client = context.client
-        env = client.create_stack(name='env-' + random_str())
+        env = client.create_environment(name='env-' + random_str())
         svc = client.create_service(name='agentglobal' + random_str(),
                                     launchConfig={
             'imageUuid': context.image_uuid,
@@ -728,7 +728,7 @@ def test_health_check_noop(super_client, context, client):
     c = super_client.reload(expose_map.instance())
     hci = find_one(c.healthcheckInstances)
     hcihm = find_one(hci.healthcheckInstanceHostMaps)
-    agent = _get_agent_for_container(context)
+    agent = _get_agent_for_container(context, c)
 
     assert hcihm.healthState == 'initializing'
     assert c.healthState == 'initializing'

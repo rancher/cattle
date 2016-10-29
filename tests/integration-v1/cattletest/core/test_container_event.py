@@ -256,7 +256,26 @@ def test_requested_ip_address(super_client, client, host, agent_cli, user_id):
                                         agent_cli, user_id, inspect=inspect)
     container = super_client.reload(container)
     assert container['data']['fields']['requestedIpAddress'] == '10.42.0.240'
-    assert container.nics()[0].network().kind == 'hostOnlyNetwork'
+    assert container.nics()[0].network().kind == 'dockerBridge'
+    assert container.primaryIpAddress is None
+
+
+def test_requested_ip_address_with_managed(super_client, client, host,
+                                           agent_cli, user_id):
+    external_id = random_str()
+    inspect = new_inspect(external_id)
+    inspect['NetworkSettings'] = {'IPAddress': '10.42.0.240'}
+    inspect['Config'] = {
+        'Labels': {
+            'io.rancher.container.network': 'true'
+        }
+    }
+    container = create_native_container(client, host, external_id,
+                                        agent_cli, user_id, inspect=inspect)
+    container = super_client.reload(container)
+    assert container['data']['fields']['requestedIpAddress'] == '10.42.0.240'
+    assert container.nics()[0].network().kind == 'network'
+    assert container.primaryIpAddress == '10.42.0.240'
 
 
 def test_container_event_net_none(client, host, agent_cli, user_id):
