@@ -89,10 +89,14 @@ public class InServiceUpgradeStrategy extends ServiceUpgradeStrategy {
             boolean previous) {
         List<Object> lcs = new ArrayList<>();
         if (previous) {
-            lcs.addAll(this.getPreviousSecondaryLaunchConfigs());
+            if (this.getPreviousSecondaryLaunchConfigs() != null) {
+                lcs.addAll(this.getPreviousSecondaryLaunchConfigs());
+            }
             lcs.add(this.getPreviousLaunchConfig());
         } else {
-            lcs.addAll(this.getSecondaryLaunchConfigs());
+            if (this.getSecondaryLaunchConfigs() != null) {
+                lcs.addAll(this.getSecondaryLaunchConfigs());
+            }
             lcs.add(this.getLaunchConfig());
         }
         Map<String, Pair<String, Map<String, Object>>> lcNames = new HashMap<>();
