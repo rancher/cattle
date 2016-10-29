@@ -77,7 +77,9 @@ def test_pagination(context):
     assert len(collected) == 4
 
 
-def test_pagination_include(super_client, client, context):
+def test_pagination_include(super_client, new_context):
+    context = new_context
+    client = new_context.client
     host = context.host
     name = random_str()
     container_ids = []
@@ -137,7 +139,8 @@ def test_pagination_include(super_client, client, context):
     assert len(maps) == 5
 
     maps_from_include = []
-    r = super_client.list_host(include='instanceHostMaps', limit=2)
+    r = super_client.list_host(include='instanceHostMaps', limit=2,
+                               accountId=host.accountId)
 
     while True:
         for h in r:
@@ -159,7 +162,8 @@ def test_pagination_include(super_client, client, context):
     assert len(maps) == len(maps_from_include)
 
     del maps_from_include[:]
-    r = super_client.list_host(include='instances', limit=2)
+    r = super_client.list_host(include='instances', limit=2,
+                               accountId=host.accountId)
 
     while True:
         for h in r:
