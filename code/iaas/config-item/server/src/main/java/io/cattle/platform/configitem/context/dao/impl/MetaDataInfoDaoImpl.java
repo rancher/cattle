@@ -18,6 +18,7 @@ import io.cattle.platform.configitem.context.data.metadata.common.NetworkMetaDat
 import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.constants.IpAddressConstants;
+import io.cattle.platform.core.constants.NetworkConstants;
 import io.cattle.platform.core.constants.ServiceConstants;
 import io.cattle.platform.core.dao.InstanceDao;
 import io.cattle.platform.core.model.HealthcheckInstanceHostMap;
@@ -347,7 +348,7 @@ public class MetaDataInfoDaoImpl extends AbstractJooqDao implements MetaDataInfo
             protected NetworkMetaData map(List<Object> input) {
                 Network ntwk = (Network) input.get(0);
                 Map<String, Object> meta = DataAccessor.fieldMap(ntwk, ServiceConstants.FIELD_METADATA);
-                NetworkMetaData data = new NetworkMetaData(ntwk.getName(), ntwk.getUuid(), meta);
+                NetworkMetaData data = new NetworkMetaData(ntwk.getName(), ntwk.getUuid(), DataAccessor.fieldBool(ntwk, NetworkConstants.FIELD_HOST_PORTS), meta);
                 return data;
             }
         };
