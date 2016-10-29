@@ -244,10 +244,6 @@
             "type" : "int",
             "nullable" : true
         },
-         "cgroup" : {
-         	"type" : "string",
-            "nullable" : true
-        },
          "cgroupParent" : {
             "type" : "string",
             "nullable" : true
