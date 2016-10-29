@@ -4,6 +4,7 @@ import static io.cattle.platform.core.model.tables.ServiceIndexTable.*;
 import static io.cattle.platform.core.model.tables.ServiceTable.*;
 import static io.cattle.platform.core.model.tables.StackTable.*;
 import static io.cattle.platform.core.model.tables.SubnetTable.*;
+
 import io.cattle.platform.allocator.service.AllocatorService;
 import io.cattle.platform.configitem.events.ConfigUpdate;
 import io.cattle.platform.configitem.model.Client;
@@ -40,6 +41,7 @@ import io.cattle.platform.eventing.EventService;
 import io.cattle.platform.iaas.api.filter.apikey.ApiKeyFilter;
 import io.cattle.platform.json.JsonMapper;
 import io.cattle.platform.lock.LockManager;
+import io.cattle.platform.network.IPAssignment;
 import io.cattle.platform.network.NetworkService;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.process.ObjectProcessManager;
@@ -506,8 +508,10 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
             // TODO: NETWORK_MODE_MANAGED shouldn't be hardcoded, the networkMode should come from the launchConfig
             Network ntwk = networkService.resolveNetwork(serviceIndex.getAccountId(), NetworkConstants.NETWORK_MODE_MANAGED);
             if (networkService.shouldAssignIpAddress(ntwk)) {
-                String ipAddress = networkService.assignIpAddress(ntwk, serviceIndex, requestedIp);
-                setServiceIndexIp(serviceIndex, ipAddress);
+                IPAssignment assignment = networkService.assignIpAddress(ntwk, serviceIndex, requestedIp);
+                if (assignment != null) {
+                    setServiceIndexIp(serviceIndex, assignment.getIpAddress());
+                }
             }
         }
     }

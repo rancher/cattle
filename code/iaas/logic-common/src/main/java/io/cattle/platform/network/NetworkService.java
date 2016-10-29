@@ -11,7 +11,7 @@ public interface NetworkService {
 
     boolean shouldAssignIpAddress(Network network);
 
-    String assignIpAddress(Network network, Object owner, String requestedIp);
+    IPAssignment assignIpAddress(Network network, Object owner, String requestedIp);
 
     void releaseIpAddress(Network network, Object owner);
 

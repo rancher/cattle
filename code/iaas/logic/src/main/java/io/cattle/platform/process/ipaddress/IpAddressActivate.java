@@ -11,6 +11,7 @@ import io.cattle.platform.core.model.Nic;
 import io.cattle.platform.engine.handler.HandlerResult;
 import io.cattle.platform.engine.process.ProcessInstance;
 import io.cattle.platform.engine.process.ProcessState;
+import io.cattle.platform.network.IPAssignment;
 import io.cattle.platform.network.NetworkService;
 import io.cattle.platform.object.process.StandardProcess;
 import io.cattle.platform.object.util.DataAccessor;
@@ -39,22 +40,32 @@ public class IpAddressActivate extends AbstractDefaultProcessHandler {
             return null;
         }
 
-        String ip = allocateIp(ipAddress, network);
+        String assignedIp = ipAddress.getAddress();
+        Long subnetId = ipAddress.getSubnetId();
+
+        IPAssignment assignment = allocateIp(ipAddress, network);
+        if (assignment != null) {
+            assignedIp = assignment.getIpAddress();
+            if (assignment.getSubnet() != null) {
+                subnetId = assignment.getSubnet().getId();
+            }
+        }
 
         return new HandlerResult(
-                IP_ADDRESS.ADDRESS, ip,
-                IP_ADDRESS.NAME, StringUtils.isBlank(ipAddress.getName()) ? ip : ipAddress.getName());
+                IP_ADDRESS.ADDRESS, assignedIp,
+                IP_ADDRESS.SUBNET_ID, subnetId,
+                IP_ADDRESS.NAME, StringUtils.isBlank(ipAddress.getName()) ? assignedIp : ipAddress.getName());
     }
 
-    protected String allocateIp(IpAddress ipAddress, Network network) {
+    protected IPAssignment allocateIp(IpAddress ipAddress, Network network) {
         Instance instance = getInstanceForPrimaryIp(ipAddress);
-        String ip = null;
+        IPAssignment ip = null;
         String requestedIp = null;
         if (instance != null) {
             String allocatedIpAddress = DataAccessor
                     .fieldString(instance, InstanceConstants.FIELD_ALLOCATED_IP_ADDRESS);
             if (allocatedIpAddress != null) {
-                ip = allocatedIpAddress;
+                ip = new IPAssignment(allocatedIpAddress, null);
             }
             requestedIp = DataAccessor.fieldString(instance, InstanceConstants.FIELD_REQUESTED_IP_ADDRESS);
         }

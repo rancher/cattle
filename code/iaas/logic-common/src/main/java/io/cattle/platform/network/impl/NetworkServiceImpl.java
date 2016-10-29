@@ -9,6 +9,7 @@ import io.cattle.platform.core.model.Subnet;
 import io.cattle.platform.core.util.SystemLabels;
 import io.cattle.platform.docker.constants.DockerInstanceConstants;
 import io.cattle.platform.json.JsonMapper;
+import io.cattle.platform.network.IPAssignment;
 import io.cattle.platform.network.NetworkService;
 import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.object.util.DataUtils;
@@ -72,7 +73,7 @@ public class NetworkServiceImpl implements NetworkService {
     }
 
     @Override
-    public String assignIpAddress(Network network, Object owner, String requestedIp) {
+    public IPAssignment assignIpAddress(Network network, Object owner, String requestedIp) {
         if (network == null) {
             return null;
         }
@@ -83,7 +84,7 @@ public class NetworkServiceImpl implements NetworkService {
             }
             PooledResource resource = poolManager.allocateOneResource(subnet, owner, options);
             if (resource != null) {
-                return resource.getName();
+                return new IPAssignment(resource.getName(), subnet);
             }
         }
         return null;
