@@ -75,13 +75,13 @@ install_mysql_cmd_aliases()
 {
     cat >/usr/local/bin/mysql <<EOF
 [ -t 0 ] && tty=-it
-docker run \$tty --rm --link ci-mysql:mysql mysql:$MYSQL_VERSION mysql -h mysql "\$@"
+docker run \$tty --rm -e MYSQL_HOST -e MYSQL_TCP_PORT --net=host mysql:$MYSQL_VERSION mysql -P $MYSQL_TCP_PORT "\$@"
 EOF
     chmod +x /usr/local/bin/mysql
 
     cat >/usr/local/bin/mysqldump <<EOF
 [ -t 0 ] && tty=-it
-docker run \$tty --rm --link ci-mysql:mysql mysql:$MYSQL_VERSION mysqldump -h mysql "\$@"
+docker run \$tty --rm -e MYSQL_HOST -e MYSQL_TCP_PORT --net=host mysql:$MYSQL_VERSION mysqldump -h $MYSQL_HOST -P MYSQL_TCP_PORT "\$@"
 EOF
     chmod +x /usr/local/bin/mysqldump
 }
@@ -90,13 +90,13 @@ install_pgsql_cmd_aliases()
 {
     cat >/usr/local/bin/psql <<EOF
 [ -t 0 ] && tty=-it
-docker run \$tty --rm -e PGDATABASE -e PGHOST=pg -e PGUSER -e PGPASSWORD  --link ci-pgsql:pg postgres:$PGSQL_VERSION psql "\$@"
+docker run \$tty --rm -e PGDATABASE -e PGHOST -e PGUSER -e PGPASSWORD  --net=host postgres:$PGSQL_VERSION psql "\$@"
 EOF
     chmod +x /usr/local/bin/psql
 
     cat >/usr/local/bin/pg_dump <<EOF
 [ -t 0 ] && tty=-it
-docker run \$tty --rm -e PGDATABASE -e PGHOST=pg -e PGUSER -e PGPASSWORD --link ci-pgsql:pg postgres:$PGSQL_VERSION pg_dump "\$@"
+docker run \$tty --rm -e PGDATABASE -e PGHOST -e PGUSER -e PGPASSWORD --net=host postgres:$PGSQL_VERSION pg_dump "\$@"
 EOF
     chmod +x /usr/local/bin/pg_dump
 }
@@ -163,7 +163,7 @@ do
             : ${CATTLE_DB_CATTLE_MYSQL_HOST:=$MYSQL_HOST}
             export CATTLE_DB_CATTLE_MYSQL_HOST
             export CATTLE_DB_CATTLE_MYSQL_PORT
-            docker run --name ci-$DB -p $CATTLE_DB_CATTLE_MYSQL_PORT:3306 \
+            docker run --net=host --name ci-$DB \
                 -e MYSQL_DATABASE=cattle \
                 -e MYSQL_USER=cattle \
                 -e MYSQL_PASSWORD=cattle \
@@ -172,6 +172,7 @@ do
                 -d mysql:$MYSQL_VERSION \
                 --innodb-flush-log-at-trx-commit=0 \
                 --max-connections=1000 \
+                --port=$MYSQL_TCP_PORT \
                 --sql-mode=ONLY_FULL_GROUP_BY
             install_mysql_cmd_aliases
             ;;
@@ -179,7 +180,7 @@ do
         pgsql )
 
             export CATTLE_DB_CATTLE_DATABASE=postgres
-            docker run --name ci-$DB -p 5432:5432 \
+            docker run --net=host --name ci-$DB \
                 -e POSTGRES_USER=$PGUSER \
                 -e POSTGRES_PASSWORD=$PGPASSWORD \
                 -d postgres:$PGSQL_VERSION \
