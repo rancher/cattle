@@ -48,7 +48,7 @@ public class CSRFCookieHandler extends AbstractApiRequestHandler {
         }
 
         if (csrf == null) {
-            byte[] bytes = new byte[16];
+            byte[] bytes = new byte[5];
             RANDOM.nextBytes(bytes);
             StringBuilder sb = new StringBuilder();
             for (byte b : bytes) {
