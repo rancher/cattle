@@ -3,8 +3,33 @@ from cattle import ApiError
 import yaml
 
 
-def _get_agent_for_container(container):
+def _get_agent_for_container(context, container):
     agent = None
+    for map in container.hosts()[0].instanceHostMaps():
+        try:
+            c = map.instance()
+        except Exception:
+            continue
+        if c.agentId is not None:
+            agent = c.agent()
+            break
+
+    if agent is None:
+        client = context.client
+        env = client.create_stack(name='env-' + random_str())
+        svc = client.create_service(name='agentglobal' + random_str(),
+                                    launchConfig={
+            'imageUuid': context.image_uuid,
+            'healthCheck': {
+                'port': 80,
+            }, "labels": {
+                'io.rancher.scheduler.global': 'true',
+                'io.rancher.container.create_agent': 'true'
+            }
+        }, stackId=env.id)
+        svc = wait_state(client, svc, 'inactive')
+        client.wait_success(svc.activate())
+
     for map in container.hosts()[0].instanceHostMaps():
         try:
             c = map.instance()
@@ -77,7 +102,7 @@ def test_upgrade_with_health(client, context, super_client):
 
     hci = find_one(c.healthcheckInstances)
     hcihm = find_one(hci.healthcheckInstanceHostMaps)
-    agent = _get_agent_for_container(c)
+    agent = _get_agent_for_container(context, c)
 
     assert hcihm.healthState == 'initializing'
     assert c.healthState == 'initializing'
@@ -183,7 +208,7 @@ def test_upgrade_start_first_with_health(client, context, super_client):
 
     hci = find_one(c.healthcheckInstances)
     hcihm = find_one(hci.healthcheckInstanceHostMaps)
-    agent = _get_agent_for_container(c)
+    agent = _get_agent_for_container(context, c)
 
     assert hcihm.healthState == 'initializing'
     assert c.healthState == 'initializing'
@@ -204,7 +229,7 @@ def test_health_check_create_instance(super_client, context):
     c = super_client.reload(c)
     hci = find_one(c.healthcheckInstances)
     hcihm = find_one(hci.healthcheckInstanceHostMaps)
-    agent = _get_agent_for_container(c)
+    agent = _get_agent_for_container(context, c)
 
     assert hcihm.healthState == 'initializing'
 
@@ -248,7 +273,7 @@ def test_health_check_create_service(super_client, context, client):
     c = super_client.reload(expose_map.instance())
     hci = find_one(c.healthcheckInstances)
     hcihm = find_one(hci.healthcheckInstanceHostMaps)
-    agent = _get_agent_for_container(c)
+    agent = _get_agent_for_container(context, c)
 
     assert hcihm.healthState == 'initializing'
     assert c.healthState == 'initializing'
@@ -377,7 +402,7 @@ def test_health_check_ip_retain(super_client, context, client):
     ip1 = c1.primaryIpAddress
     hci = find_one(c1.healthcheckInstances)
     hcihm = find_one(hci.healthcheckInstanceHostMaps)
-    agent = _get_agent_for_container(c1)
+    agent = _get_agent_for_container(context, c1)
 
     assert hcihm.healthState == 'initializing'
     assert c1.healthState == 'initializing'
@@ -442,7 +467,7 @@ def test_health_state_stack(super_client, context, client):
     c1 = super_client.reload(expose_map.instance())
     hci = find_one(c1.healthcheckInstances)
     hcihm = find_one(hci.healthcheckInstanceHostMaps)
-    agent = _get_agent_for_container(c1)
+    agent = _get_agent_for_container(context, c1)
     assert hcihm.healthState == 'initializing'
     assert c1.healthState == 'initializing'
 
@@ -503,7 +528,7 @@ def test_health_state_start_once(super_client, context, client):
     c1 = super_client.reload(expose_map.instance())
     hci = find_one(c1.healthcheckInstances)
     hcihm = find_one(hci.healthcheckInstanceHostMaps)
-    agent = _get_agent_for_container(c1)
+    agent = _get_agent_for_container(context, c1)
     assert hcihm.healthState == 'initializing'
     assert c1.healthState == 'initializing'
 
@@ -629,7 +654,7 @@ def test_health_check_reinit_timeout(super_client, context, client):
     c = super_client.reload(expose_map.instance())
     hci = find_one(c.healthcheckInstances)
     hcihm = find_one(hci.healthcheckInstanceHostMaps)
-    agent = _get_agent_for_container(c)
+    agent = _get_agent_for_container(context, c)
 
     assert hcihm.healthState == 'initializing'
     assert c.healthState == 'initializing'
@@ -672,7 +697,7 @@ def test_health_check_bad_external_timestamp(super_client, context, client):
     container = super_client.reload(expose_map.instance())
     hci = find_one(container.healthcheckInstances)
     hcihm = find_one(hci.healthcheckInstanceHostMaps)
-    agent = _get_agent_for_container(container)
+    agent = _get_agent_for_container(context, container)
     agent_client = _get_agent_client(agent)
 
     assert hcihm.healthState == 'initializing'
@@ -703,7 +728,7 @@ def test_health_check_noop(super_client, context, client):
     c = super_client.reload(expose_map.instance())
     hci = find_one(c.healthcheckInstances)
     hcihm = find_one(hci.healthcheckInstanceHostMaps)
-    agent = _get_agent_for_container(c)
+    agent = _get_agent_for_container(context)
 
     assert hcihm.healthState == 'initializing'
     assert c.healthState == 'initializing'
@@ -751,7 +776,7 @@ def test_health_check_quorum(super_client, context, client):
     c1 = super_client.reload(expose_maps[0].instance())
     hci1 = find_one(c1.healthcheckInstances)
     hcihm1 = find_one(hci1.healthcheckInstanceHostMaps)
-    agent1 = _get_agent_for_container(c1)
+    agent1 = _get_agent_for_container(context, c1)
     assert hcihm1.healthState == 'initializing'
     assert c1.healthState == 'initializing'
     hcihm1 = _update_healthy(agent1, hcihm1, c1, super_client)
@@ -759,7 +784,7 @@ def test_health_check_quorum(super_client, context, client):
     c2 = super_client.reload(expose_maps[1].instance())
     hci2 = find_one(c2.healthcheckInstances)
     hcihm2 = find_one(hci2.healthcheckInstanceHostMaps)
-    agent2 = _get_agent_for_container(c2)
+    agent2 = _get_agent_for_container(context, c2)
     assert hcihm2.healthState == 'initializing'
     assert c2.healthState == 'initializing'
     _update_healthy(agent2, hcihm2, c2, super_client)
@@ -796,7 +821,7 @@ def test_health_check_quorum(super_client, context, client):
     c3 = super_client.reload(c3)
     hci3 = find_one(c3.healthcheckInstances)
     hcihm3 = find_one(hci3.healthcheckInstanceHostMaps)
-    agent3 = _get_agent_for_container(c3)
+    agent3 = _get_agent_for_container(context, c3)
     assert hcihm3.healthState == 'initializing'
     assert c3.healthState == 'initializing'
     _update_healthy(agent3, hcihm3, c3, super_client)
@@ -833,7 +858,7 @@ def test_health_check_chk_name_quorum(super_client, context, client):
     c1 = super_client.reload(expose_maps[0].instance())
     hci1 = find_one(c1.healthcheckInstances)
     hcihm1 = find_one(hci1.healthcheckInstanceHostMaps)
-    agent1 = _get_agent_for_container(c1)
+    agent1 = _get_agent_for_container(context, c1)
     assert hcihm1.healthState == 'initializing'
     assert c1.healthState == 'initializing'
     hcihm1 = _update_healthy(agent1, hcihm1, c1, super_client)
@@ -875,7 +900,7 @@ def test_health_check_default(super_client, context, client):
     c1 = super_client.reload(expose_maps[0].instance())
     hci = find_one(c1.healthcheckInstances)
     hcihm = find_one(hci.healthcheckInstanceHostMaps)
-    agent = _get_agent_for_container(c1)
+    agent = _get_agent_for_container(context, c1)
 
     assert hcihm.healthState == 'initializing'
     assert c1.healthState == 'initializing'
@@ -973,7 +998,7 @@ def test_health_check_reconcile(super_client, new_context):
     assert len(hosts) == 1
     host2 = hosts[0]
 
-    agent = _get_agent_for_container(c)
+    agent = _get_agent_for_container(new_context, c)
 
     assert hcihm1.healthState == 'initializing'
     assert hcihm2.healthState == 'initializing'
@@ -1042,7 +1067,7 @@ def test_health_check_all_hosts_removed_reconcile(super_client, new_context):
     assert len(hosts) == 1
     host1 = hosts[0]
 
-    agent = _get_agent_for_container(c)
+    agent = _get_agent_for_container(new_context, c)
 
     assert hcihm1.healthState == 'initializing'
     assert c.healthState == 'initializing'
