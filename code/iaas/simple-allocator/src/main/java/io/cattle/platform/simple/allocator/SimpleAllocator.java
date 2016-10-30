@@ -52,6 +52,7 @@ public class SimpleAllocator extends AbstractAllocator implements Allocator, Nam
     private static final String SCHEDULER_RESERVE_EVENT = "scheduler.reserve";
     private static final String SCHEDULER_RELEASE_EVENT = "scheduler.release";
     private static final String SCHEDULER_PRIORITIZE_RESPONSE = "prioritizedCandidates";
+    private static final String INSTANCE_RESERVATION = "instanceReservation";
     private static final String MEMORY_RESERVATION = "memoryReservation";
     private static final String CPU_RESERVATION = "cpuReservation";
     private static final String STORAGE_SIZE = "storageSize";
@@ -232,7 +233,7 @@ public class SimpleAllocator extends AbstractAllocator implements Allocator, Nam
         if (resource instanceof Instance) {
             addInstanceResourceRequests(resourceRequests, (Instance)resource);
         } else if (resource instanceof Volume) {
-            addVolueResourceRequests(resourceRequests, (Volume)resource);
+            addVolumeResourceRequests(resourceRequests, (Volume)resource);
         }
 
         if (resourceRequests.isEmpty()) {
@@ -267,11 +268,11 @@ public class SimpleAllocator extends AbstractAllocator implements Allocator, Nam
             addInstanceResourceRequests(requests, instance);
         }
 
-        addVolueResourceRequests(requests, attempt.getVolumes().toArray(new Volume[attempt.getVolumes().size()]));
+        addVolumeResourceRequests(requests, attempt.getVolumes().toArray(new Volume[attempt.getVolumes().size()]));
         return requests;
     }
 
-    private void addVolueResourceRequests(List<ResourceRequest> requests, Volume... volumes) {
+    private void addVolumeResourceRequests(List<ResourceRequest> requests, Volume... volumes) {
         for (Volume v : volumes) {
             if (v.getSizeMb() != null) {
                 ResourceRequest rr = new ResourceRequest();
@@ -296,6 +297,11 @@ public class SimpleAllocator extends AbstractAllocator implements Allocator, Nam
             rr.setResource(CPU_RESERVATION);
             requests.add(rr);
         }
+
+        ResourceRequest r = new ResourceRequest();
+        r.setAmount(1l);
+        r.setResource(INSTANCE_RESERVATION);
+        requests.add(r);
     }
 
     private Long getAgentResource(Long accountId, List<Instance> instances) {
