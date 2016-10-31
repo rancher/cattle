@@ -11,7 +11,7 @@ package io.cattle.platform.core.model.tables;
 @java.lang.SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class ProjectTemplateTable extends org.jooq.impl.TableImpl<io.cattle.platform.core.model.tables.records.ProjectTemplateRecord> {
 
-	private static final long serialVersionUID = -522757887;
+	private static final long serialVersionUID = 1746148331;
 
 	/**
 	 * The singleton instance of <code>cattle.project_template</code>
@@ -85,6 +85,11 @@ public class ProjectTemplateTable extends org.jooq.impl.TableImpl<io.cattle.plat
 	 * The column <code>cattle.project_template.is_public</code>.
 	 */
 	public final org.jooq.TableField<io.cattle.platform.core.model.tables.records.ProjectTemplateRecord, java.lang.Boolean> IS_PUBLIC = createField("is_public", org.jooq.impl.SQLDataType.BIT.nullable(false).defaulted(true), this, "");
+
+	/**
+	 * The column <code>cattle.project_template.external_id</code>.
+	 */
+	public final org.jooq.TableField<io.cattle.platform.core.model.tables.records.ProjectTemplateRecord, java.lang.String> EXTERNAL_ID = createField("external_id", org.jooq.impl.SQLDataType.VARCHAR.length(255), this, "");
 
 	/**
 	 * Create a <code>cattle.project_template</code> table reference

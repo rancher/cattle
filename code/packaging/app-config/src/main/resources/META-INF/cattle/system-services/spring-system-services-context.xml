@@ -491,6 +491,7 @@
     <bean class="io.cattle.platform.systemstack.process.SystemStackRemovePostHandler" />
     <bean class="io.cattle.platform.systemstack.process.SystemStackAccountCreate" />
     <bean class="io.cattle.platform.systemstack.catalog.impl.CatalogServiceImpl" />
+    <bean class="io.cattle.platform.systemstack.service.ProjectTemplateService" />
 
     <bean class="io.cattle.platform.task.impl.TaskManagerImpl" >
         <property name="tasks" value="#{extensionManager.list('task')}" />

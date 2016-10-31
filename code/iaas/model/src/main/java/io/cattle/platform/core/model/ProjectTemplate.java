@@ -146,6 +146,17 @@ public interface ProjectTemplate extends java.io.Serializable {
 	@javax.persistence.Column(name = "is_public", nullable = false, precision = 1)
 	public java.lang.Boolean getIsPublic();
 
+	/**
+	 * Setter for <code>cattle.project_template.external_id</code>.
+	 */
+	public void setExternalId(java.lang.String value);
+
+	/**
+	 * Getter for <code>cattle.project_template.external_id</code>.
+	 */
+	@javax.persistence.Column(name = "external_id", length = 255)
+	public java.lang.String getExternalId();
+
 	// -------------------------------------------------------------------------
 	// FROM and INTO
 	// -------------------------------------------------------------------------

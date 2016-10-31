@@ -414,6 +414,7 @@
 
         "projectTemplate" : "crud",
         "projectTemplate.stacks" : "cru",
+        "projectTemplate.externalId" : "cru",
 
         "projectMember" : "cr",
         "projectMember.accountId" : "",

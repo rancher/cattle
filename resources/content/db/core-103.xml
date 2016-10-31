@@ -8,9 +8,19 @@
     <changeSet author="darren (generated)" id="dump4">
         <addForeignKeyConstraint baseColumnNames="network_driver_id" baseTableName="network" constraintName="fk_network__network_driver_id" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="network_driver"/>
     </changeSet>
-    <changeSet author="darren (generated)" id="dump1">
+    <changeSet author="darren (generated)" id="dump5">
         <addColumn tableName="account">
             <column name="default_network_id" type="BIGINT"/>
         </addColumn>
+    </changeSet>
+    <changeSet author="darren (generated)" id="dump6">
+        <addColumn tableName="project_template">
+            <column name="external_id" type="VARCHAR(255)"/>
+        </addColumn>
+    </changeSet>
+    <changeSet author="darren (generated)" id="dump7">
+        <createIndex indexName="idx_project_template_external_id" tableName="project_template" unique="false">
+            <column name="external_id"/>
+        </createIndex>
     </changeSet>
 </databaseChangeLog>
