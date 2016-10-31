@@ -23,13 +23,14 @@ public class ContainerMetaData {
     private HostMetaData hostMetaData;
     private String dnsPrefix;
     private Long instanceId;
+    Instance instance;
 
     protected String name;
     String uuid;
     String primary_ip;
     List<String> ips = new ArrayList<>();
     // host:public:private
-    List<String> ports = new ArrayList<>();
+    protected List<String> ports = new ArrayList<>();
     protected String service_name;
     protected String stack_name;
     String stack_uuid;
@@ -76,6 +77,7 @@ public class ContainerMetaData {
         this.network_uuid = that.network_uuid;
         this.network_from_container_uuid = that.network_from_container_uuid;
         this.system = that.system;
+        this.instance = that.instance;
     }
 
 
@@ -131,6 +133,7 @@ public class ContainerMetaData {
     @SuppressWarnings("unchecked")
     public void setInstanceAndHostMetadata(Instance instance, HostMetaData hostMetaData) {
         this.instanceId = instance.getId();
+        this.instance = instance;
         this.hostMetaData = hostMetaData;
         this.name = instance.getName();
         this.uuid = instance.getUuid();
@@ -145,14 +148,21 @@ public class ContainerMetaData {
         this.hostname = instance.getHostname();
         if (hostMetaData != null) {
             this.host_uuid = hostMetaData.getUuid();
-        }
-        for (String portObj : portsObj) {
-            PortSpec port = new PortSpec(portObj);
-            if (StringUtils.isEmpty(port.getIpAddress())) {
-                ports.add("0.0.0.0:" + portObj);
+            String hostIp = hostMetaData.agent_ip;
+            List<String> newPorts = new ArrayList<>();
+            if (hostIp == null) {
+                newPorts.addAll(portsObj);
             } else {
-                ports.add(portObj);
+                for (String portObj : portsObj) {
+                    PortSpec port = new PortSpec(portObj);
+                    if (StringUtils.isEmpty(port.getIpAddress())) {
+                        newPorts.add(hostIp + ":" + portObj);
+                    } else {
+                        newPorts.add(portObj);
+                    }
+                }
             }
+            this.ports = newPorts;
         }
         this.create_index = instance.getCreateIndex();
         this.health_state = instance.getHealthState();
@@ -342,6 +352,10 @@ public class ContainerMetaData {
 
     public void setSystem(Boolean system) {
         this.system = system;
+    }
+
+    public Instance getInstance() {
+        return instance;
     }
 
 }
