@@ -10,7 +10,7 @@ SUB = '?eventNames=scheduler.prioritize' \
       '&eventNames=scheduler.reserve&eventNames=scheduler.release'
 
 
-def test_resource_based_scheduler(mock_scheduler, super_client):
+def test_resource_based_scheduler(new_context, super_client):
     """
     This tests cattle's side of the 'external resource-based scheduler.
     It creates a mock external scheduler that subscribes and responds to
@@ -26,46 +26,61 @@ def test_resource_based_scheduler(mock_scheduler, super_client):
     mock scheduler is expensive and we only want to do it once.
 
     """
-    new_context = mock_scheduler.new_context
 
     host1 = new_context.host
     host2 = register_simulated_host(new_context)
     host3 = register_simulated_host(new_context)
 
+    mock_scheduler = mock_sched(new_context, super_client)
     image = new_context.image_uuid
     client = new_context.client
 
-    # Straight-forward memory scheduling
-    do_scheduling_test({'imageUuid': image, 'memoryReservation': 500000},
+    # No explicit resrequested, but an instanceReservation is still made
+    do_scheduling_test({'imageUuid': image, 'networkMode': 'host'},
                        client, mock_scheduler,
                        [host2, host3, host1], host2,
-                       [{'resource': 'memoryReservation', 'amount': 500000}])
+                       [{'resource': 'instanceReservation', 'amount': 1}])
+
+    # Straight-forward memory scheduling
+    do_scheduling_test({'imageUuid': image, 'memoryReservation': 500000,
+                        'networkMode': 'host'},
+                       client, mock_scheduler,
+                       [host2, host3, host1], host2,
+                       [{'resource': 'memoryReservation', 'amount': 500000},
+                        {'resource': 'instanceReservation', 'amount': 1}])
 
     # Straight-forward cpu scheduling
-    do_scheduling_test({'imageUuid': image, 'milliCpuReservation': 500},
+    do_scheduling_test({'imageUuid': image, 'milliCpuReservation': 500,
+                        'networkMode': 'host'},
                        client, mock_scheduler,
                        [host3], host3,
-                       [{'resource': 'cpuReservation', 'amount': 500}])
+                       [{'resource': 'cpuReservation', 'amount': 500},
+                        {'resource': 'instanceReservation', 'amount': 1}])
 
     # Two resources are requested
     do_scheduling_test({'imageUuid': image, 'memoryReservation': 5000000,
-                        'milliCpuReservation': 500},
+                        'milliCpuReservation': 500, 'networkMode': 'host'},
                        client, mock_scheduler,
                        [host1, host2, host3], host1,
                        [{'resource': 'memoryReservation', 'amount': 5000000},
-                        {'resource': 'cpuReservation', 'amount': 500}])
+                        {'resource': 'cpuReservation', 'amount': 500},
+                        {'resource': 'instanceReservation', 'amount': 1}])
 
     # deactivate the host that the scheduler returns as #1 and the second
     # one in the list should get chosen
     host2 = client.wait_success(host2.deactivate())
-    do_scheduling_test({'imageUuid': image, 'milliCpuReservation': 500},
+    do_scheduling_test({'imageUuid': image, 'milliCpuReservation': 500,
+                        'networkMode': 'host'},
                        client, mock_scheduler,
                        [host2, host3, host1], host3,
-                       [{'resource': 'cpuReservation', 'amount': 500}])
+                       [{'resource': 'cpuReservation', 'amount': 500},
+                        {'resource': 'instanceReservation', 'amount': 1}])
 
-    do_no_hosts_match_test({'imageUuid': image, 'milliCpuReservation': 500},
+    do_no_hosts_match_test({'imageUuid': image, 'milliCpuReservation': 500,
+                            'networkMode': 'host'},
                            client, mock_scheduler,
-                           [{'resource': 'cpuReservation', 'amount': 500}])
+                           [{'resource': 'cpuReservation', 'amount': 500},
+                            {'resource': 'instanceReservation', 'amount': 1}])
 
 
 def do_scheduling_test(container_kw, client, mock_scheduler, hosts,
@@ -124,8 +139,7 @@ def resource_reqs(event):
     return event['data']['schedulerRequest']['resourceRequests']
 
 
-@pytest.fixture()
-def mock_scheduler(new_context, super_client):
+def mock_sched(new_context, super_client):
     labels = {
         'io.rancher.container.create_agent': 'true',
         'io.rancher.container.agent_service.scheduling': 'true',
