@@ -189,13 +189,13 @@ public class OpenLDAPConfig implements Configurable, LDAPConfig {
     }
     
     @Override
-    @Field(nullable = false, required = false, defaultValue = "distinguishedName")
+    @Field(nullable = false, required = false, defaultValue = "entryDN")
     public String getGroupDNField() {
         return groupDNField;
     }
 
     @Override
-    @Field(nullable = false, required = false, defaultValue = "uid")
+    @Field(nullable = false, required = false, defaultValue = "entryDN")
     public String getGroupMemberUserAttribute() {
         return groupMemberUserAttribute;
     }
