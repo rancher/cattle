@@ -47,12 +47,6 @@ def test_docker_create_only(docker_client, super_client):
         assert len(image_mapping) == 0
 
         assert not image.isPublic
-        assert image.name == '{}'.format(image.data.dockerImage.fullName,
-                                         image.data.dockerImage.id)
-        assert image.name == TEST_IMAGE_LATEST
-        assert image.data.dockerImage.repository == 'helloworld'
-        assert image.data.dockerImage.namespace == 'ibuildthecloud'
-        assert image.data.dockerImage.tag == 'latest'
     finally:
         if container is not None:
             docker_client.delete(container)
@@ -82,14 +76,6 @@ def test_docker_create_only_from_sha(docker_client, super_client):
         assert len(image_mapping) == 0
 
         assert not image.isPublic
-        assert image.name == '{}'.format(image.data.dockerImage.fullName,
-                                         image.data.dockerImage.id)
-        assert image.name == image_name
-        assert image.data.dockerImage.repository == 'true'
-        assert image.data.dockerImage.namespace == 'tianon'
-        assert image.data.dockerImage.tag == 'sha256:662fc60808e6d5628a090e' \
-                                             '39b4bcae694add28a626031cc8891' \
-                                             '09c2cf2af5d73'
     finally:
         if container is not None:
             docker_client.delete(container)

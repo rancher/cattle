@@ -71,6 +71,9 @@ public class ExternalTemplateInstanceFilter extends AbstractResourceManagerFilte
         if (image.startsWith(DockerImage.KIND_PREFIX)) {
             fullImageName = DockerImage.KIND_PREFIX + fullImageName;
         }
+        if (image.startsWith(DockerImage.SIM_PREFIX) && !fullImageName.startsWith(DockerImage.SIM_PREFIX)) {
+            fullImageName = DockerImage.SIM_PREFIX + fullImageName;
+        }
         if (!storageService.isValidUUID(fullImageName.toString())) {
             throw new ValidationErrorException(ValidationErrorCodes.INVALID_REFERENCE, InstanceConstants.FIELD_IMAGE_UUID);
         }
