@@ -49,7 +49,7 @@ def test_create_container_with_registry_credential(client, context):
     assert container is not None
     assert container.registryCredentialId == reg_cred.id
     assert container.startOnCreate is False
-    assert container.imageUuid == uuid+":latest"
+    assert container.imageUuid == uuid
 
 
 @if_docker
@@ -151,7 +151,7 @@ def test_container_image_and_registry_credential(client,
     container = super_client.wait_success(container)
     assert container.registryCredentialId == registry_credential.id
     image = container.image()
-    assert image.name == name
+    assert image.name == "rancher/authorized:latest"
     assert image.registryCredentialId == registry_credential.id
 
 

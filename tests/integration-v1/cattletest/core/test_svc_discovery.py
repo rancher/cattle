@@ -1437,7 +1437,7 @@ def test_svc_container_reg_cred_and_image(super_client, client):
     container = super_client.wait_success(container)
     assert container.registryCredentialId == registry_credential.id
     image = container.image()
-    assert image.name == name
+    assert image.name == "rancher/authorized:latest"
     assert image.registryCredentialId == registry_credential.id
 
 

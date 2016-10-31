@@ -151,7 +151,7 @@ def test_service_mixed_selector_based_wo_image(client, context):
     container1 = client.wait_success(container1)
     assert container1.state == "running"
 
-    launch_config = {"imageUuid": "sim:rancher/none:latest"}
+    launch_config = {"imageUuid": "rancher/none:latest"}
     service = client.create_service(name=random_str(),
                                     environmentId=env.id,
                                     launchConfig=launch_config,

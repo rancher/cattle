@@ -51,12 +51,6 @@ def test_docker_create_only(docker_client, super_client):
         assert len(image_mapping) == 0
 
         assert not image.isPublic
-        assert image.name == '{}'.format(image.data.dockerImage.fullName,
-                                         image.data.dockerImage.id)
-        assert image.name == TEST_IMAGE_LATEST
-        assert image.data.dockerImage.repository == 'helloworld'
-        assert image.data.dockerImage.namespace == 'ibuildthecloud'
-        assert image.data.dockerImage.tag == 'latest'
     finally:
         if container is not None:
             docker_client.delete(container)
@@ -86,14 +80,6 @@ def test_docker_create_only_from_sha(docker_client, super_client):
         assert len(image_mapping) == 0
 
         assert not image.isPublic
-        assert image.name == '{}'.format(image.data.dockerImage.fullName,
-                                         image.data.dockerImage.id)
-        assert image.name == image_name
-        assert image.data.dockerImage.repository == 'true'
-        assert image.data.dockerImage.namespace == 'tianon'
-        assert image.data.dockerImage.tag == 'sha256:662fc60808e6d5628a090e' \
-                                             '39b4bcae694add28a626031cc8891' \
-                                             '09c2cf2af5d73'
     finally:
         if container is not None:
             docker_client.delete(container)
@@ -633,7 +619,7 @@ def test_container_fields(docker_client, super_client):
     assert c.data['dockerInspect']['Config']['Domainname'] == "rancher.io"
     assert c.data['dockerInspect']['HostConfig']['Memory'] == 12000000
     assert c.data['dockerInspect']['HostConfig'][
-               'MemoryReservation'] == 4194304
+        'MemoryReservation'] == 4194304
     # assert c.data['dockerInspect']['Config']['MemorySwap'] == 16000000
     assert c.data['dockerInspect']['HostConfig']['CpusetCpus'] == "0,1"
     assert c.data['dockerInspect']['Config']['Tty']
