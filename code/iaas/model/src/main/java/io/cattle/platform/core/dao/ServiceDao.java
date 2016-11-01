@@ -1,6 +1,7 @@
 package io.cattle.platform.core.dao;
 
 import io.cattle.platform.core.model.Certificate;
+import io.cattle.platform.core.model.HealthcheckInstanceHostMap;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.Service;
 import io.cattle.platform.core.model.ServiceIndex;
@@ -44,4 +45,6 @@ public interface ServiceDao {
     List<Certificate> getLoadBalancerServiceCertificates(Service lbService);
 
     Certificate getLoadBalancerServiceDefaultCertificate(Service lbService);
+
+    HealthcheckInstanceHostMap getHealthCheckInstanceUUID(String hostUUID, String instanceUUID);
 }

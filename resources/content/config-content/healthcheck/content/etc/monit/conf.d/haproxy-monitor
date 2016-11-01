@@ -1,3 +1,0 @@
-check process haproxy-monitor matching "host-api"
-   start program = "/etc/init.d/haproxy-monitor start"
-   stop  program = "/etc/init.d/haproxy-monitor stop"

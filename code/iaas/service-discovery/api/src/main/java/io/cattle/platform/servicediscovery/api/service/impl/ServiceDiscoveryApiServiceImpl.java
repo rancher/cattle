@@ -5,11 +5,11 @@ import static io.cattle.platform.core.model.tables.InstanceTable.*;
 import static io.cattle.platform.core.model.tables.ServiceTable.*;
 import static io.cattle.platform.core.model.tables.StackTable.*;
 import static io.cattle.platform.core.model.tables.VolumeTemplateTable.*;
-import static io.cattle.platform.servicediscovery.api.util.ServiceDiscoveryDnsUtil.*;
 import io.cattle.platform.core.addon.LbConfig;
 import io.cattle.platform.core.addon.ServiceLink;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.constants.LoadBalancerConstants;
+import io.cattle.platform.core.constants.NetworkConstants;
 import io.cattle.platform.core.constants.ServiceConstants;
 import io.cattle.platform.core.dao.DataDao;
 import io.cattle.platform.core.model.Certificate;
@@ -683,7 +683,8 @@ public class ServiceDiscoveryApiServiceImpl implements ServiceDiscoveryApiServic
 
         sans.add(serviceName.toLowerCase());
         sans.add(String.format("%s.%s", serviceName, stack.getName()).toLowerCase());
-        sans.add(String.format("%s.%s.%s", serviceName, stack.getName(), RANCHER_NAMESPACE).toLowerCase());
+        sans.add(String.format("%s.%s.%s", serviceName, stack.getName(), NetworkConstants.INTERNAL_DNS_SEARCH_DOMAIN)
+                .toLowerCase());
 
         CertSet certSet = keyProvider.generateCertificate(serviceName, sans.toArray(new String[sans.size()]));
         ByteArrayOutputStream baos = new ByteArrayOutputStream();

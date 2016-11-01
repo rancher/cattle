@@ -2,8 +2,9 @@ package io.cattle.platform.core.dao.impl;
 
 
 
+import static io.cattle.platform.core.model.tables.HostIpAddressMapTable.*;
 import static io.cattle.platform.core.model.tables.InstanceHostMapTable.*;
-import static io.cattle.platform.core.model.tables.InstanceTable.*;
+import static io.cattle.platform.core.model.tables.IpAddressTable.*;
 import static io.cattle.platform.core.model.tables.NetworkServiceProviderInstanceMapTable.*;
 import static io.cattle.platform.core.model.tables.NetworkServiceProviderTable.*;
 import static io.cattle.platform.core.model.tables.NetworkServiceTable.*;
@@ -11,24 +12,24 @@ import static io.cattle.platform.core.model.tables.NetworkTable.*;
 import static io.cattle.platform.core.model.tables.NicTable.*;
 import static io.cattle.platform.core.model.tables.SubnetTable.*;
 import io.cattle.platform.archaius.util.ArchaiusUtil;
-import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.constants.NetworkServiceProviderConstants;
 import io.cattle.platform.core.constants.SubnetConstants;
 import io.cattle.platform.core.dao.AccountDao;
 import io.cattle.platform.core.dao.GenericResourceDao;
 import io.cattle.platform.core.dao.NetworkDao;
-import io.cattle.platform.core.model.Instance;
+import io.cattle.platform.core.model.InstanceHostMap;
+import io.cattle.platform.core.model.IpAddress;
 import io.cattle.platform.core.model.Network;
 import io.cattle.platform.core.model.NetworkService;
 import io.cattle.platform.core.model.NetworkServiceProvider;
-import io.cattle.platform.core.model.NetworkServiceProviderInstanceMap;
 import io.cattle.platform.core.model.Nic;
 import io.cattle.platform.core.model.Subnet;
-import io.cattle.platform.core.model.tables.records.InstanceRecord;
+import io.cattle.platform.core.model.tables.InstanceHostMapTable;
+import io.cattle.platform.core.model.tables.IpAddressTable;
 import io.cattle.platform.core.model.tables.records.NetworkRecord;
-import io.cattle.platform.core.model.tables.records.NetworkServiceProviderRecord;
 import io.cattle.platform.core.model.tables.records.NetworkServiceRecord;
 import io.cattle.platform.db.jooq.dao.impl.AbstractJooqDao;
+import io.cattle.platform.db.jooq.mapper.MultiRecordMapper;
 import io.cattle.platform.lock.LockCallback;
 import io.cattle.platform.lock.LockManager;
 import io.cattle.platform.object.ObjectManager;
@@ -38,6 +39,7 @@ import io.cattle.platform.object.util.ObjectUtils;
 import io.cattle.platform.util.net.NetUtils;
 import io.cattle.platform.util.type.CollectionUtils;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -162,75 +164,6 @@ public class NetworkDaoImpl extends AbstractJooqDao implements NetworkDao {
     }
 
     @Override
-    public void registerNspInstance(String providerKind, Instance instance, List<String> services) {
-        Network network = getInstancePrimaryNetwork(instance);
-        NetworkServiceProvider provider = getNetworkServiceProviderForInstance(network, providerKind, services,
-                instance);
-        if (provider == null) {
-            // create provider on demand
-            provider = createNsp(network, services, providerKind);
-        }
-        resourceDao.createAndSchedule(NetworkServiceProviderInstanceMap.class,
-                    NETWORK_SERVICE_PROVIDER_INSTANCE_MAP.INSTANCE_ID, instance.getId(),
-                    NETWORK_SERVICE_PROVIDER_INSTANCE_MAP.NETWORK_SERVICE_PROVIDER_ID, provider.getId());
-    }
-
-    protected Network getInstancePrimaryNetwork(Instance instance) {
-        Nic primaryNic = getPrimaryNic(instance.getId());
-        return objectManager.loadResource(Network.class, primaryNic.getNetworkId());
-    }
-
-    @Override
-    public List<NetworkServiceProviderInstanceMap> findNspInstanceMaps(Instance instance) {
-        return objectManager.find(NetworkServiceProviderInstanceMap.class,
-                NETWORK_SERVICE_PROVIDER_INSTANCE_MAP.INSTANCE_ID, instance.getId(),
-                NETWORK_SERVICE_PROVIDER_INSTANCE_MAP.REMOVED, null);
-    }
-
-    protected NetworkServiceProvider getNetworkServiceProviderForInstance(Network network, String providerKind,
-            List<String> services, Instance instance) {
-        return getNetworkServiceProvider(providerKind, network.getId(), services);
-    }
-
-    protected NetworkServiceProvider getNetworkServiceProvider(String providerKind, long networkId,
-            List<String> services) {
-        List<? extends NetworkServiceProvider> providers = create()
-                .select(NETWORK_SERVICE_PROVIDER.fields())
-                .from(NETWORK_SERVICE_PROVIDER)
-                .join(NETWORK_SERVICE)
-                .on(NETWORK_SERVICE_PROVIDER.ID.eq(NETWORK_SERVICE.NETWORK_SERVICE_PROVIDER_ID))
-                .where(NETWORK_SERVICE.NETWORK_ID.eq(networkId)
-                        .and(NETWORK_SERVICE.KIND.in(services))
-                        .and(NETWORK_SERVICE_PROVIDER.KIND.eq(providerKind)))
-                .fetchInto(NetworkServiceProviderRecord.class);
-        
-        return providers.isEmpty() ? null : providers.get(0);
-    }
-
-    @Override
-    public Instance getServiceProviderInstanceOnHostForNetwork(long networkId, String serviceKind, long hostId) {
-        List<? extends Instance> instances = create()
-                .select(INSTANCE.fields())
-                .from(INSTANCE)
-                .join(NETWORK_SERVICE_PROVIDER_INSTANCE_MAP)
-                .on(NETWORK_SERVICE_PROVIDER_INSTANCE_MAP.INSTANCE_ID.eq(INSTANCE.ID))
-                .join(NETWORK_SERVICE)
-                .on(NETWORK_SERVICE.NETWORK_SERVICE_PROVIDER_ID
-                        .eq(NETWORK_SERVICE_PROVIDER_INSTANCE_MAP.NETWORK_SERVICE_PROVIDER_ID))
-                .join(INSTANCE_HOST_MAP)
-                .on(INSTANCE_HOST_MAP.INSTANCE_ID.eq(INSTANCE.ID))
-                .where(NETWORK_SERVICE.NETWORK_ID.eq(networkId)
-                        .and(NETWORK_SERVICE.KIND.eq(serviceKind))
-                        .and(INSTANCE_HOST_MAP.HOST_ID.eq(hostId))
-                        .and(INSTANCE.STATE.in(InstanceConstants.STATE_STARTING, InstanceConstants.STATE_RESTARTING,
-                                InstanceConstants.STATE_RUNNING))
-                        .and(NETWORK_SERVICE_PROVIDER_INSTANCE_MAP.REMOVED.isNull()))
-                .fetchInto(InstanceRecord.class);
-
-        return instances.isEmpty() ? null : instances.get(0);
-    }
-
-    @Override
     public Subnet addManagedNetworkSubnet(Network network) {
         List<Subnet> subnets = objectManager.children(network, Subnet.class);
         if (subnets.size() > 0) {
@@ -267,8 +200,6 @@ public class NetworkDaoImpl extends AbstractJooqDao implements NetworkDao {
             }
         });
     }
-
-
 
     protected NetworkServiceProvider addNsp(Network network, String providerKind) {
         List<NetworkServiceProvider> nsps = objectManager.children(network, NetworkServiceProvider.class);
@@ -326,29 +257,69 @@ public class NetworkDaoImpl extends AbstractJooqDao implements NetworkDao {
     }
 
     @Override
-    public Instance getServiceProviderInstanceOnHost(String serviceKind, long hostId) {
-        List<? extends Instance> instances = create()
-                .select(INSTANCE.fields())
-                .from(INSTANCE)
-                .join(NETWORK_SERVICE_PROVIDER_INSTANCE_MAP)
-                .on(NETWORK_SERVICE_PROVIDER_INSTANCE_MAP.INSTANCE_ID.eq(INSTANCE.ID))
-                .join(NETWORK_SERVICE)
-                .on(NETWORK_SERVICE.NETWORK_SERVICE_PROVIDER_ID
-                        .eq(NETWORK_SERVICE_PROVIDER_INSTANCE_MAP.NETWORK_SERVICE_PROVIDER_ID))
-                .join(INSTANCE_HOST_MAP)
-                .on(INSTANCE_HOST_MAP.INSTANCE_ID.eq(INSTANCE.ID))
-                .where(NETWORK_SERVICE.KIND.eq(serviceKind)
-                        .and(INSTANCE_HOST_MAP.HOST_ID.eq(hostId))
-                        .and(INSTANCE.STATE.in(InstanceConstants.STATE_STARTING, InstanceConstants.STATE_RESTARTING,
-                                InstanceConstants.STATE_RUNNING))
-                        .and(NETWORK_SERVICE_PROVIDER_INSTANCE_MAP.REMOVED.isNull()))
-                .fetchInto(InstanceRecord.class);
+    public Map<Long, IpAddress> getInstanceWithHostNetworkingToIpMap(long accountId) {
+        List<HostInstanceIpData> data = getHostContainerIpData(accountId);
+        Map<Long, IpAddress> instanceIdToHostIpMap = new HashMap<>();
+        for (HostInstanceIpData entry : data) {
+            instanceIdToHostIpMap.put(entry.getInstanceHostMap().getInstanceId(), entry.getIpAddress());
+        }
 
-        return instances.isEmpty() ? null : instances.get(0);
+        return instanceIdToHostIpMap;
     }
 
-    @Override
-    public String getVIPSubnetCidr() {
-        return DOCKER_VIP_SUBNET_CIDR.get().get(0);
+    protected List<HostInstanceIpData> getHostContainerIpData(long accountId) {
+        Network hostNtwk = objectManager.findAny(Network.class, NETWORK.ACCOUNT_ID, accountId, NETWORK.REMOVED, null,
+                NETWORK.KIND, "dockerHost");
+        if (hostNtwk == null) {
+            return new ArrayList<HostInstanceIpData>();
+        }
+        MultiRecordMapper<HostInstanceIpData> mapper = new MultiRecordMapper<HostInstanceIpData>() {
+            @Override
+            protected HostInstanceIpData map(List<Object> input) {
+                HostInstanceIpData data = new HostInstanceIpData();
+                data.setIpAddress((IpAddress) input.get(0));
+                data.setInstanceHostMap((InstanceHostMap) input.get(1));
+                return data;
+            }
+        };
+
+        IpAddressTable ipAddress = mapper.add(IP_ADDRESS);
+        InstanceHostMapTable instanceHostMap = mapper.add(INSTANCE_HOST_MAP);
+        return create()
+                .select(mapper.fields())
+                .from(HOST_IP_ADDRESS_MAP)
+                .join(instanceHostMap)
+                .on(HOST_IP_ADDRESS_MAP.HOST_ID.eq(instanceHostMap.HOST_ID))
+                .join(NIC)
+                .on(NIC.INSTANCE_ID.eq(instanceHostMap.INSTANCE_ID))
+                .join(ipAddress)
+                .on(HOST_IP_ADDRESS_MAP.IP_ADDRESS_ID.eq(ipAddress.ID))
+                .where(instanceHostMap.REMOVED.isNull())
+                .and(NIC.REMOVED.isNull())
+                .and(HOST_IP_ADDRESS_MAP.REMOVED.isNull())
+                .and(ipAddress.REMOVED.isNull())
+                .and(NIC.NETWORK_ID.eq(hostNtwk.getId()))
+                .fetch().map(mapper);
+    }
+
+    public class HostInstanceIpData {
+        InstanceHostMap instanceHostMap;
+        IpAddress ipAddress;
+
+        public IpAddress getIpAddress() {
+            return ipAddress;
+        }
+
+        public void setIpAddress(IpAddress ipAddress) {
+            this.ipAddress = ipAddress;
+        }
+
+        public InstanceHostMap getInstanceHostMap() {
+            return instanceHostMap;
+        }
+
+        public void setInstanceHostMap(InstanceHostMap instanceHostMap) {
+            this.instanceHostMap = instanceHostMap;
+        }
     }
 }

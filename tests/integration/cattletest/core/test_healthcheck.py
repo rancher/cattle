@@ -941,6 +941,7 @@ def test_health_check_bad_agent(super_client, context, client):
 
 def test_health_check_reconcile(super_client, new_context):
     super_client.reload(register_simulated_host(new_context))
+    super_client.reload(register_simulated_host(new_context))
     client = new_context.client
 
     env = client.create_stack(name='env-' + random_str())
@@ -953,15 +954,6 @@ def test_health_check_reconcile(super_client, new_context):
 
     service = client.wait_success(client.wait_success(service).activate())
     assert service.state == 'active'
-
-    # to trigger network-agent creation on host
-    multiport = client.create_service(name='manyports', launchConfig={
-        'imageUuid': new_context.image_uuid,
-        'ports': "5453"
-    }, stackId=env.id, scale=2)
-    multiport = client.wait_success(client.wait_success(multiport).activate())
-    assert multiport.state == 'active'
-    multiport.remove()
 
     maps = _wait_until_active_map_count(service, 1, client)
     expose_map = maps[0]
@@ -1036,20 +1028,11 @@ def test_health_check_all_hosts_removed_reconcile(super_client, new_context):
     service = client.wait_success(client.wait_success(service).activate())
     assert service.state == 'active'
 
-    # to trigger network agent creation on hosts
-    multiport = client.create_service(name='manyports', launchConfig={
-        'imageUuid': new_context.image_uuid,
-        'ports': "54537"
-    }, stackId=env.id, scale=2)
-    multiport = client.wait_success(client.wait_success(multiport).activate())
-    assert multiport.state == 'active'
-    multiport.remove()
-
     maps = _wait_until_active_map_count(service, 1, client)
     expose_map = maps[0]
     c = super_client.reload(expose_map.instance())
     initial_len = len(c.healthcheckInstanceHostMaps())
-    assert initial_len == 2
+    assert initial_len == 1
 
     for h in c.healthcheckInstanceHostMaps():
         assert h.healthState == c.healthState
@@ -1059,15 +1042,9 @@ def test_health_check_all_hosts_removed_reconcile(super_client, new_context):
     assert len(hosts) == 1
     host1 = hosts[0]
 
-    hcihm2 = c.healthcheckInstanceHostMaps()[1]
-    hosts = super_client.list_host(uuid=hcihm2.host().uuid)
-    assert len(hosts) == 1
-    host2 = hosts[0]
-
     agent = _get_agent_for_container(c)
 
     assert hcihm1.healthState == 'initializing'
-    assert hcihm2.healthState == 'initializing'
     assert c.healthState == 'initializing'
 
     ts = int(time.time())
@@ -1076,23 +1053,15 @@ def test_health_check_all_hosts_removed_reconcile(super_client, new_context):
                                      reportedHealth='UP',
                                      healthcheckUuid=hcihm1.uuid)
     super_client.wait_success(se)
-    hcihm1 = super_client.wait_success(super_client.reload(hcihm1))
-    se = client.create_service_event(externalTimestamp=ts,
-                                     reportedHealth='UP',
-                                     healthcheckUuid=hcihm2.uuid)
-    super_client.wait_success(se)
-    super_client.wait_success(super_client.reload(hcihm2))
+    super_client.wait_success(super_client.reload(hcihm1))
     wait_for(lambda: super_client.reload(c).healthState == 'healthy')
 
-    # remove both hosts
+    # remove health checker host
     host1 = super_client.wait_success(host1.deactivate())
     host1 = super_client.wait_success(super_client.delete(host1))
     assert host1.state == 'removed'
-    host2 = super_client.wait_success(host2.deactivate())
-    host2 = super_client.wait_success(super_client.delete(host2))
-    assert host2.state == 'removed'
 
-    # instance should remain as healthy as there are no reporters at this point
+    # instance should stay as healthy
     try:
         wait_for(lambda: super_client.reload(c).healthState == 'unhealthy',
                  timeout=5)
@@ -1117,20 +1086,12 @@ def test_hosts_removed_reconcile_when_init(super_client, new_context):
 
     service = client.wait_success(client.wait_success(service).activate())
     assert service.state == 'active'
-    # to trigger network agent creation on hosts
-    multiport = client.create_service(name='manyports', launchConfig={
-        'imageUuid': new_context.image_uuid,
-        'ports': "54531"
-    }, stackId=env.id, scale=2)
-    multiport = client.wait_success(client.wait_success(multiport).activate())
-    assert multiport.state == 'active'
-    multiport.remove()
 
     maps = _wait_until_active_map_count(service, 1, client)
     expose_map = maps[0]
     c = super_client.reload(expose_map.instance())
     initial_len = len(c.healthcheckInstanceHostMaps())
-    assert initial_len == 2
+    assert initial_len == 1
 
     for h in c.healthcheckInstanceHostMaps():
         assert h.healthState == c.healthState
@@ -1140,22 +1101,13 @@ def test_hosts_removed_reconcile_when_init(super_client, new_context):
     assert len(hosts) == 1
     host1 = hosts[0]
 
-    hcihm2 = c.healthcheckInstanceHostMaps()[1]
-    hosts = super_client.list_host(uuid=hcihm2.host().uuid)
-    assert len(hosts) == 1
-    host2 = hosts[0]
-
     assert hcihm1.healthState == 'initializing'
-    assert hcihm2.healthState == 'initializing'
     assert c.healthState == 'initializing'
 
-    # remove both hosts
+    # remove the healthchecking host
     host1 = super_client.wait_success(host1.deactivate())
     host1 = super_client.wait_success(super_client.delete(host1))
     assert host1.state == 'removed'
-    host2 = super_client.wait_success(host2.deactivate())
-    host2 = super_client.wait_success(super_client.delete(host2))
-    assert host2.state == 'removed'
 
     # instance should remain as healthy as there are no reporters at this point
     try:
