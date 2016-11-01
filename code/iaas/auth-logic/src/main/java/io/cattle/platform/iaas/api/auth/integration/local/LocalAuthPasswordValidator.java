@@ -16,11 +16,13 @@ import org.apache.http.entity.ContentType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.netflix.config.DynamicIntProperty;
 import com.netflix.config.DynamicStringProperty;
 
 public class LocalAuthPasswordValidator {
 
     public static final DynamicStringProperty AUTH_VALIDATE_URL = ArchaiusUtil.getString("api.auth.local.validate.url");
+    public static final DynamicIntProperty AUTH_VALIDATE_TIMEOUT = ArchaiusUtil.getInt("api.auth.local.validate.timeout.milliseconds");
 
     final static Logger log = LoggerFactory.getLogger(LocalAuthPasswordValidator.class);
 
@@ -43,8 +45,9 @@ public class LocalAuthPasswordValidator {
         }
 
         try {
+            int timeout = AUTH_VALIDATE_TIMEOUT.get();
             Request request = Request.Post(authValidateUrl).bodyString(jsonString, ContentType.APPLICATION_JSON);
-            response =  request.connectTimeout(5000).socketTimeout(5000).execute().returnResponse();
+            response =  request.connectTimeout(timeout).socketTimeout(timeout).execute().returnResponse();
         } catch (IOException e) {
             log.error("Error sending POST request", e);
             throw new ClientVisibleException(ResponseCodes.INTERNAL_SERVER_ERROR, "Error sending POST request");
