@@ -19,13 +19,13 @@ public class DockerStoragePoolDriver extends AbstractKindBasedStoragePoolDriver 
 
     @Override
     protected boolean populateImageInternal(String uuid, Image image) {
-        DockerImage dockerImage = DockerImage.parse(stripKindPrefix(uuid));
+        DockerImage dockerImage = DockerImage.parse(uuid);
 
         if (dockerImage == null) {
             return false;
         }
 
-        image.setName(dockerImage.getFullName());
+        image.setName(dockerImage.getServer() + "/" + dockerImage.getFullName());
 
         Map<String, Object> data = image.getData();
         if (data == null) {

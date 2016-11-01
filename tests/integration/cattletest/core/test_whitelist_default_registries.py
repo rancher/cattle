@@ -68,8 +68,9 @@ def test_container_registry_default(super_client, client, context,
 
     # case 2: whitelist and default both set to different values
     default_value = 'sim:localhost.localdomain:5000'
-    whitelist_value = 'sim:localhost.localdomain:5000,index.docker.io'
-    whitelist_value = whitelist_value+',sim:rancher,docker.io'
+    whitelist_value = 'sim:localhost.localdomain:5000,'\
+                      'localhost.localdomain:5000, index.docker.io'
+    whitelist_value = whitelist_value + ',sim:rancher,docker.io'
     default_registry = admin_user_client.update(default_registry,
                                                 value=default_value)
     wait_setting_active(admin_user_client, default_registry)
@@ -77,7 +78,7 @@ def test_container_registry_default(super_client, client, context,
                                                     value=whitelist_value)
     wait_setting_active(admin_user_client, whitelist_registries)
 
-    uuid = "sim:v2"
+    uuid = "sim:ubuntu:v2"
     # passes, because no default provided so localhost.localdomain:5000
     # gets prepended and that's whitelisted
     container = client.create_container(imageUuid=uuid,
@@ -88,7 +89,7 @@ def test_container_registry_default(super_client, client, context,
     assert_fields(container, {
         "type": "container",
         "state": "stopped",
-        "imageUuid": "sim:localhost.localdomain:5000/sim:v2",
+        "imageUuid": "sim:localhost.localdomain:5000/ubuntu:v2",
         "firstRunning": None,
     })
 
@@ -128,7 +129,8 @@ def test_registries(super_client, client, context,
     whitelist_registries = admin_user_client.by_id_setting(id)
 
     default_value = 'sim:localhost.localdomain:5000'
-    whitelist_value = 'sim:localhost.localdomain:5000,index.docker.io'
+    whitelist_value = 'sim:localhost.localdomain:5000, ' \
+                      'localhost.localdomain:5000, index.docker.io'
     whitelist_value = whitelist_value + ',sim:rancher,docker.io'
     default_registry = admin_user_client.update(default_registry,
                                                 value=default_value)
@@ -140,7 +142,7 @@ def test_registries(super_client, client, context,
 
     env = _create_stack(client)
 
-    uuid = "sim:namespace/ubuntu:{}".format(random_num())
+    uuid = "sim:registry.com/repo/ubuntu:{}".format(random_num())
     lc_registry = {"imageUuid": uuid}
     with pytest.raises(ApiError) as e:
         service = client.create_service(name=random_str(),
@@ -174,7 +176,7 @@ def test_registries(super_client, client, context,
 
     uuid1 = "ubuntu:v1"
     lc_registry = {"imageUuid": uuid1}
-    launch_config_upgrade = {"imageUuid": "sim:registry/ubuntu:v1"}
+    launch_config_upgrade = {"imageUuid": "sim:registry.com/ubuntu:v1"}
     service = client.create_service(name=random_str(),
                                     stackId=env.id,
                                     launchConfig=lc_registry,
