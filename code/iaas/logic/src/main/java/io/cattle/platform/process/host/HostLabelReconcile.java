@@ -22,7 +22,7 @@ import javax.inject.Inject;
 import javax.inject.Named;
 
 @Named
-public class HostCreateUpdate extends AbstractObjectProcessHandler implements Priority {
+public class HostLabelReconcile extends AbstractObjectProcessHandler implements Priority {
 
     @Inject
     GenericMapDao mapDao;
@@ -35,7 +35,7 @@ public class HostCreateUpdate extends AbstractObjectProcessHandler implements Pr
 
     @Override
     public String[] getProcessNames() {
-        return new String[] { HostConstants.PROCESS_CREATE, HostConstants.PROCESS_UPDATE };
+        return new String[] { HostConstants.PROCESS_ACTIVATE, HostConstants.PROCESS_UPDATE };
     }
 
     @Override
