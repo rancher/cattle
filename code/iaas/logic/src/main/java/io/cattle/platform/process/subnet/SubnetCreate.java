@@ -1,6 +1,7 @@
 package io.cattle.platform.process.subnet;
 
 import static io.cattle.platform.core.model.tables.SubnetTable.*;
+
 import io.cattle.platform.core.dao.GenericMapDao;
 import io.cattle.platform.core.model.Subnet;
 import io.cattle.platform.engine.handler.HandlerResult;
@@ -24,10 +25,24 @@ public class SubnetCreate extends AbstractDefaultProcessHandler {
         Subnet subnet = (Subnet) state.getResource();
 
         String networkAddress = subnet.getNetworkAddress();
-        int cidrSize = subnet.getCidrSize();
+        Integer cidrSize = subnet.getCidrSize();
         String gateway = subnet.getGateway();
         String startAddress = subnet.getStartAddress();
         String endAddress = subnet.getEndAddress();
+
+        if (networkAddress == null) {
+            networkAddress = "10.44.0.0/16";
+        }
+
+        if (networkAddress.contains("/")) {
+            String[] parts = networkAddress.split("/", 2);
+            networkAddress = parts[0];
+            try {
+                cidrSize = Integer.parseInt(parts[1]);
+            } catch (NumberFormatException nfe) {
+                cidrSize = 24;
+            }
+        }
 
         if (gateway == null) {
             gateway = NetUtils.getDefaultGateway(networkAddress, cidrSize);
@@ -41,7 +56,12 @@ public class SubnetCreate extends AbstractDefaultProcessHandler {
             endAddress = NetUtils.getDefaultEndAddress(networkAddress, cidrSize);
         }
 
-        return new HandlerResult(SUBNET.GATEWAY, gateway, SUBNET.START_ADDRESS, startAddress, SUBNET.END_ADDRESS, endAddress);
+        return new HandlerResult(
+                SUBNET.NETWORK_ADDRESS, networkAddress,
+                SUBNET.CIDR_SIZE, cidrSize,
+                SUBNET.GATEWAY, gateway,
+                SUBNET.START_ADDRESS, startAddress,
+                SUBNET.END_ADDRESS, endAddress);
     }
 
     public JsonMapper getJsonMapper() {

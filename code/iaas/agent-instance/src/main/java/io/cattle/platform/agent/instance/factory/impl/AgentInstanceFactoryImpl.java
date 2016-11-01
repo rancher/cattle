@@ -3,9 +3,7 @@ package io.cattle.platform.agent.instance.factory.impl;
 import static io.cattle.platform.core.model.tables.AgentTable.*;
 import static io.cattle.platform.core.model.tables.InstanceTable.*;
 import io.cattle.platform.agent.AgentLocator;
-import io.cattle.platform.agent.RemoteAgent;
 import io.cattle.platform.agent.instance.dao.AgentInstanceDao;
-import io.cattle.platform.agent.instance.factory.AgentInstanceBuilder;
 import io.cattle.platform.agent.instance.factory.AgentInstanceFactory;
 import io.cattle.platform.agent.instance.factory.lock.AgentInstanceAgentCreateLock;
 import io.cattle.platform.archaius.util.ArchaiusUtil;
@@ -18,7 +16,6 @@ import io.cattle.platform.core.dao.AccountDao;
 import io.cattle.platform.core.dao.GenericResourceDao;
 import io.cattle.platform.core.dao.InstanceDao;
 import io.cattle.platform.core.model.Agent;
-import io.cattle.platform.core.model.Host;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.Service;
 import io.cattle.platform.core.model.Stack;
@@ -73,23 +70,6 @@ public class AgentInstanceFactoryImpl implements AgentInstanceFactory {
     @Inject
     InstanceDao instanceDao;
 
-    @Override
-    public AgentInstanceBuilder newBuilder() {
-        return new AgentInstanceBuilderImpl(this);
-    }
-
-    public Long getAgentGroupId(Instance instance) {
-        for (Host host : objectManager.mappedChildren(instance, Host.class)) {
-            RemoteAgent remoteAgent = agentLocator.lookupAgent(host);
-            if (remoteAgent != null) {
-                Agent agent = objectManager.loadResource(Agent.class, remoteAgent.getAgentId());
-                return agent.getAgentGroupId();
-            }
-        }
-
-        return null;
-    }
-
     protected Instance build(AgentInstanceBuilderImpl builder) {
         Agent agent = getAgent(builder);
 
@@ -117,10 +97,7 @@ public class AgentInstanceFactoryImpl implements AgentInstanceFactory {
         properties.put(INSTANCE.NAME, builder.getName());
         properties.put(INSTANCE.ZONE_ID, agent.getZoneId());
         properties.put(INSTANCE.KIND, builder.getInstanceKind());
-        properties.put(INSTANCE.SYSTEM_CONTAINER, builder.getSystemContainerType());
-        properties.put(InstanceConstants.FIELD_INSTANCE_TRIGGERED_STOP, builder.getInstanceTriggeredStop());
         properties.put(InstanceConstants.FIELD_PRIVILEGED, builder.isPrivileged());
-        properties.put(InstanceConstants.FIELD_VNET_IDS, getVnetIds(agent, builder));
         properties.put(InstanceConstants.FIELD_NETWORK_IDS, getNetworkIds(agent, builder));
         properties.putAll(builder.getParams());
         addAdditionalProperties(properties, agent, builder);
@@ -129,11 +106,6 @@ public class AgentInstanceFactoryImpl implements AgentInstanceFactory {
     }
 
     protected void addAdditionalProperties(Map<Object, Object> properties, Agent agent, AgentInstanceBuilderImpl builder) {
-    }
-
-    protected Object getVnetIds(Agent agent, AgentInstanceBuilderImpl builder) {
-        Long vnetId = builder.getVnetId();
-        return vnetId == null ? null : new Long[] { builder.getVnetId() };
     }
 
     @Override
@@ -238,7 +210,7 @@ public class AgentInstanceFactoryImpl implements AgentInstanceFactory {
                     instance = DeferredUtils.nest(new Callable<Instance>() {
                         @Override
                         public Instance call() throws Exception {
-                            return factoryDao.createInstanceForProvider(builder.getNetworkServiceProvider(), properties);
+                            return resourceDao.createAndSchedule(Instance.class, properties);
                         }
                     });
                 }
@@ -269,7 +241,6 @@ public class AgentInstanceFactoryImpl implements AgentInstanceFactory {
                                     AGENT.DATA, data,
                                     AGENT.URI, uri,
                                     AGENT.MANAGED_CONFIG, builder.isManagedConfig(),
-                                    AGENT.AGENT_GROUP_ID, builder.getAgentGroupId(),
                                     AGENT.ZONE_ID, builder.getZoneId());
                         }
                     });
@@ -289,13 +260,7 @@ public class AgentInstanceFactoryImpl implements AgentInstanceFactory {
     }
 
     protected String getUri(AgentInstanceBuilderImpl builder) {
-        if (builder.getUri() != null) {
-            return builder.getUri();
-        }
-
-        Long networkServiceProviderId = builder.getNetworkServiceProvider() == null ? null : builder.getNetworkServiceProvider().getId();
-
-        return String.format("delegate:///?vnetId=%d&networkServiceProviderId=%d", builder.getVnetId(), networkServiceProviderId);
+        return builder.getUri();
     }
 
     @SuppressWarnings("unchecked")

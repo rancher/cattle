@@ -3,7 +3,7 @@ package io.cattle.platform.ha.monitor.impl;
 import static io.cattle.platform.core.constants.ContainerEventConstants.*;
 import static io.cattle.platform.core.constants.HostConstants.*;
 import static io.cattle.platform.core.constants.InstanceConstants.*;
-import static io.cattle.platform.process.instance.InstanceProcessOptions.*;
+
 import io.cattle.platform.agent.AgentLocator;
 import io.cattle.platform.agent.RemoteAgent;
 import io.cattle.platform.archaius.util.ArchaiusUtil;
@@ -14,10 +14,6 @@ import io.cattle.platform.core.model.Agent;
 import io.cattle.platform.core.model.ContainerEvent;
 import io.cattle.platform.core.model.Host;
 import io.cattle.platform.core.model.Instance;
-import io.cattle.platform.engine.process.Predicate;
-import io.cattle.platform.engine.process.ProcessDefinition;
-import io.cattle.platform.engine.process.ProcessInstance;
-import io.cattle.platform.engine.process.ProcessState;
 import io.cattle.platform.eventing.model.Event;
 import io.cattle.platform.framework.event.Ping;
 import io.cattle.platform.framework.event.data.PingData;
@@ -32,15 +28,12 @@ import io.cattle.platform.object.process.ObjectProcessManager;
 import io.cattle.platform.object.process.StandardProcess;
 import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.object.util.DataUtils;
-import io.cattle.platform.process.instance.InstanceProcessOptions;
 import io.cattle.platform.util.type.CollectionUtils;
 
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 import javax.inject.Inject;
@@ -146,22 +139,14 @@ public class PingInstancesMonitorImpl implements PingInstancesMonitor {
             boolean checkOnly) {
         Map<String, ReportedInstance> needsSynced = new HashMap<String, ReportedInstance>();
         Map<String, String> syncActions = new HashMap<String, String>();
-        Set<String> needsHaRestart = new HashSet<String>();
 
-        determineSyncActions(knownInstances, reportedInstances, needsSynced, syncActions, needsHaRestart, checkOnly);
-
-        for (String uuid : needsHaRestart) {
-            restart(uuid);
-        }
+        determineSyncActions(knownInstances, reportedInstances, needsSynced, syncActions, checkOnly);
 
         for (Map.Entry<String, ReportedInstance> syncEntry : needsSynced.entrySet()) {
             ReportedInstance ri = syncEntry.getValue();
             String syncAction = syncActions.get(syncEntry.getKey());
             if (EVENT_INSTANCE_FORCE_STOP.equals(syncAction)) {
                 forceStop(ri.getExternalId(), agentId);
-            } else if (HA_RESTART.equals(syncAction)) {
-                String uuid = ri.getInstance().getUuid();
-                restart(uuid);
             } else {
                 scheduleContainerEvent(agentAccountId, hostId, ri, syncAction);
             }
@@ -169,7 +154,7 @@ public class PingInstancesMonitorImpl implements PingInstancesMonitor {
     }
 
     void determineSyncActions(Map<String, KnownInstance> knownInstances, ReportedInstances reportedInstances, Map<String, ReportedInstance> needsSynced,
-            Map<String, String> syncActions, Set<String> needsHaRestart, boolean checkOnly) {
+            Map<String, String> syncActions, boolean checkOnly) {
         Map<String, KnownInstance> inRancher = new HashMap<String, KnownInstance>(knownInstances);
         Map<String, ReportedInstance> onHost = new HashMap<String, ReportedInstance>(reportedInstances.byExternalId);
         for (Map.Entry<String, ReportedInstance> reported : reportedInstances.byUuid.entrySet()) {
@@ -199,13 +184,6 @@ public class PingInstancesMonitorImpl implements PingInstancesMonitor {
         // Anything left in onHost is on the host, but not in rancher.
         for (Map.Entry<String, ReportedInstance> create : onHost.entrySet()) {
             ReportedInstance ri = create.getValue();
-            if (StringUtils.isNotEmpty(ri.getSystemContainer())) {
-                // Unknown system container. Force stop.
-                if (!STATE_STOPPED.equals(ri.getState())) {
-                    addSyncAction(needsSynced, syncActions, ri, EVENT_INSTANCE_FORCE_STOP, checkOnly);
-                }
-                continue;
-            }
             addSyncAction(needsSynced, syncActions, ri, EVENT_START, checkOnly);
         }
 
@@ -218,29 +196,14 @@ public class PingInstancesMonitorImpl implements PingInstancesMonitor {
                     || (STATE_STOPPED.equals(ki.getState()) && StringUtils.isEmpty(ki.getExternalId())))
                 continue;
 
-            if (StringUtils.isNotEmpty(ki.getSystemContainer()) || StringUtils.isEmpty(ki.getExternalId()) || hasInstanceTriggeredStopConfigured(ki)) {
-                // System container, not enough info to perform no-op action, or has an instance triggered stop policy. Schedule potential restart.
-                // This is the one place we can't use addSyncAction, since we don't have (and can't construct) a ReportedInstance.
-                if (!STATE_STOPPED.equals(ki.getState())) {
-                    if (checkOnly) {
-                        throw new ContainersOutOfSync();
-                    }
-                    needsHaRestart.add(ki.getUuid());
-                }
-            } else {
-                ReportedInstance ri = new ReportedInstance();
-                ri.setExternalId(ki.getExternalId());
-                ri.setUuid(ki.getUuid());
-                Object imageUuid = CollectionUtils.getNestedValue(ki.getData(), DataUtils.FIELDS, FIELD_IMAGE_UUID);
-                String image = imageUuid != null ? imageUuid.toString() : null;
-                ri.setImage(image);
-                addSyncAction(needsSynced, syncActions, ri, EVENT_DESTROY, checkOnly);
-            }
+            ReportedInstance ri = new ReportedInstance();
+            ri.setExternalId(ki.getExternalId());
+            ri.setUuid(ki.getUuid());
+            Object imageUuid = CollectionUtils.getNestedValue(ki.getData(), DataUtils.FIELDS, FIELD_IMAGE_UUID);
+            String image = imageUuid != null ? imageUuid.toString() : null;
+            ri.setImage(image);
+            addSyncAction(needsSynced, syncActions, ri, EVENT_DESTROY, checkOnly);
         }
-    }
-
-    boolean hasInstanceTriggeredStopConfigured(KnownInstance ki) {
-        return StringUtils.isNotEmpty(ki.getInstanceTriggeredStop()) && !ON_STOP_STOP.equals(ki.getInstanceTriggeredStop());
     }
 
     void removeAndDetermineSyncAction(Map<String, ReportedInstance> needsSynced, Map<String, String> syncActions, boolean checkOnly,
@@ -257,8 +220,6 @@ public class PingInstancesMonitorImpl implements PingInstancesMonitor {
         if (objectMetaDataManager.isTransitioningState(Instance.class, ki.getState()) || StringUtils.equals(ki.getState(), ri.getState()))
             return;
 
-        boolean sysCon = StringUtils.isNotEmpty(ki.getSystemContainer()) || StringUtils.isNotEmpty(ri.getSystemContainer());
-
         if (STATE_RUNNING.equals(ri.getState())) {
             // Container is running on host but not in Rancher. Take action
             if (ki.getRemoved() != null) {
@@ -266,18 +227,14 @@ public class PingInstancesMonitorImpl implements PingInstancesMonitor {
                 addSyncAction(needsSynced, syncActions, ri, EVENT_INSTANCE_FORCE_STOP, checkOnly);
             } else if (STATE_STOPPED.equals(ki.getState())) {
                 // For system containers, rancher is source of truth, stop it. For user containers, do a no-op start to sync state.
-                String doAction = sysCon ? EVENT_INSTANCE_FORCE_STOP : EVENT_START;
-                addSyncAction(needsSynced, syncActions, ri, doAction, checkOnly);
+                addSyncAction(needsSynced, syncActions, ri, EVENT_START, checkOnly);
             } else {
                 log.warn(UKNOWN_OUT_OF_SYNC_WARNING, ki.getUuid(), ri.getExternalId(), ki.getState(), ri.getState());
             }
         } else if (STATE_RUNNING.equals(ki.getState())) {
             if (STATE_STOPPED.equals(ri.getState())) {
                 // Container is running in Rancher, but is not running on host.
-                // For system containers or containers with a instance triggered stop action, schedule HA_RESTART (stop and possible start based
-                // on triggeredInstanceStop field). For user containers, a no-op stop to sync up.
-                String doAction = sysCon || hasInstanceTriggeredStopConfigured(ki) ? HA_RESTART : EVENT_STOP;
-                addSyncAction(needsSynced, syncActions, ri, doAction, checkOnly);
+                addSyncAction(needsSynced, syncActions, ri, EVENT_STOP, checkOnly);
             } else {
                 log.warn(UKNOWN_OUT_OF_SYNC_WARNING, ki.getUuid(), ri.getExternalId(), ki.getState(), ri.getState());
             }
@@ -318,21 +275,6 @@ public class PingInstancesMonitorImpl implements PingInstancesMonitor {
         agent.publish(event);
     }
 
-    protected void restart(final String uuid) {
-        Instance instance = objectManager.findOne(Instance.class, ObjectMetaDataManager.UUID_FIELD, uuid);
-        Map<String, Object> data = new HashMap<String, Object>();
-        DataAccessor.fromMap(data).withScope(InstanceProcessOptions.class).withKey(HA_RESTART).set(true);
-
-        processManager.scheduleProcessInstance(PROCESS_RESTART, instance, data, new Predicate() {
-            @Override
-            public boolean evaluate(ProcessState state, ProcessInstance processInstance, ProcessDefinition definition) {
-
-                Instance instance = objectManager.findOne(Instance.class, ObjectMetaDataManager.UUID_FIELD, uuid);
-                return STATE_RUNNING.equals(instance.getState());
-            }
-        });
-    }
-
     protected ReportedInstances getInstances(Ping ping) {
         PingData data = ping.getData();
 
@@ -357,10 +299,8 @@ public class PingInstancesMonitorImpl implements PingInstancesMonitor {
                 continue;
 
             ReportedInstance ri = new ReportedInstance(resource);
-            if (!StringUtils.equals("rancher-agent", ri.getSystemContainer())) {
-                reportedInstances.byUuid.put(ri.getUuid(), ri);
-                reportedInstances.byExternalId.put(ri.getExternalId(), ri);
-            }
+            reportedInstances.byUuid.put(ri.getUuid(), ri);
+            reportedInstances.byExternalId.put(ri.getExternalId(), ri);
         }
 
         return reportedInstances;

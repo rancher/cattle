@@ -11,7 +11,7 @@ package io.cattle.platform.core.model.tables;
 @java.lang.SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class NetworkTable extends org.jooq.impl.TableImpl<io.cattle.platform.core.model.tables.records.NetworkRecord> {
 
-	private static final long serialVersionUID = -890109673;
+	private static final long serialVersionUID = -639639857;
 
 	/**
 	 * The singleton instance of <code>cattle.network</code>
@@ -92,6 +92,11 @@ public class NetworkTable extends org.jooq.impl.TableImpl<io.cattle.platform.cor
 	public final org.jooq.TableField<io.cattle.platform.core.model.tables.records.NetworkRecord, java.lang.String> DOMAIN = createField("domain", org.jooq.impl.SQLDataType.VARCHAR.length(128), this, "");
 
 	/**
+	 * The column <code>cattle.network.network_driver_id</code>.
+	 */
+	public final org.jooq.TableField<io.cattle.platform.core.model.tables.records.NetworkRecord, java.lang.Long> NETWORK_DRIVER_ID = createField("network_driver_id", org.jooq.impl.SQLDataType.BIGINT, this, "");
+
+	/**
 	 * Create a <code>cattle.network</code> table reference
 	 */
 	public NetworkTable() {
@@ -142,7 +147,7 @@ public class NetworkTable extends org.jooq.impl.TableImpl<io.cattle.platform.cor
 	 */
 	@Override
 	public java.util.List<org.jooq.ForeignKey<io.cattle.platform.core.model.tables.records.NetworkRecord, ?>> getReferences() {
-		return java.util.Arrays.<org.jooq.ForeignKey<io.cattle.platform.core.model.tables.records.NetworkRecord, ?>>asList(io.cattle.platform.core.model.Keys.FK_NETWORK__ACCOUNT_ID);
+		return java.util.Arrays.<org.jooq.ForeignKey<io.cattle.platform.core.model.tables.records.NetworkRecord, ?>>asList(io.cattle.platform.core.model.Keys.FK_NETWORK__ACCOUNT_ID, io.cattle.platform.core.model.Keys.FK_NETWORK__NETWORK_DRIVER_ID);
 	}
 
 	/**

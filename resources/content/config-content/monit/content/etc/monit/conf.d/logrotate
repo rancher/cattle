@@ -1,4 +1,0 @@
-check program logrotate with path /etc/cron.daily/logrotate 
-  with timeout 1800 seconds
-  every 17280 cycles
-  if status == 0 then exec /bin/true

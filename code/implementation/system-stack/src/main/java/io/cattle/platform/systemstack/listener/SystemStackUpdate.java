@@ -229,6 +229,7 @@ public class SystemStackUpdate extends AbstractJooqDao implements AnnotatedEvent
             createdStackIds.add(stack.getId());
         }
 
+        objectManager.reload(account);
         objectManager.setFields(account, AccountConstants.FIELD_CREATED_STACKS, createdStackIds);
         return createdStackIds;
     }

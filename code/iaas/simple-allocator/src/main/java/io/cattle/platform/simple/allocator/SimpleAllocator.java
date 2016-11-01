@@ -24,7 +24,6 @@ import io.cattle.platform.lock.definition.LockDefinition;
 import io.cattle.platform.object.util.ObjectUtils;
 import io.cattle.platform.simple.allocator.dao.QueryOptions;
 import io.cattle.platform.simple.allocator.dao.SimpleAllocatorDao;
-import io.cattle.platform.simple.allocator.network.NetworkAllocationCandidates;
 import io.cattle.platform.util.type.CollectionUtils;
 import io.cattle.platform.util.type.Named;
 
@@ -108,7 +107,7 @@ public class SimpleAllocator extends AbstractAllocator implements Allocator, Nam
             if (attempt.getRequestedHostId() == null) {
                 orderedHostUUIDs = callExternalSchedulerForHosts(attempt);
             }
-            return simpleAllocatorDao.iteratorHosts(orderedHostUUIDs, volumeIds, options, getCallback(attempt));
+            return simpleAllocatorDao.iteratorHosts(orderedHostUUIDs, volumeIds, options);
         }
     }
 
@@ -325,14 +324,6 @@ public class SimpleAllocator extends AbstractAllocator implements Allocator, Nam
             return null;
         }
         return agentIds.size() == 0 ? null : agentIds.get(0);
-    }
-
-    protected AllocationCandidateCallback getCallback(AllocationAttempt attempt) {
-        if (!attempt.isInstanceAllocation()) {
-            return null;
-        }
-
-        return new NetworkAllocationCandidates(objectManager, attempt);
     }
 
     @Override

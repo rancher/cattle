@@ -157,6 +157,17 @@ public interface Network extends java.io.Serializable {
 	@javax.persistence.Column(name = "domain", length = 128)
 	public java.lang.String getDomain();
 
+	/**
+	 * Setter for <code>cattle.network.network_driver_id</code>.
+	 */
+	public void setNetworkDriverId(java.lang.Long value);
+
+	/**
+	 * Getter for <code>cattle.network.network_driver_id</code>.
+	 */
+	@javax.persistence.Column(name = "network_driver_id", precision = 19)
+	public java.lang.Long getNetworkDriverId();
+
 	// -------------------------------------------------------------------------
 	// FROM and INTO
 	// -------------------------------------------------------------------------

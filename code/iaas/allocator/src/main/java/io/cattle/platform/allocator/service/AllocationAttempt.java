@@ -2,13 +2,10 @@ package io.cattle.platform.allocator.service;
 
 import io.cattle.platform.allocator.constraint.Constraint;
 import io.cattle.platform.core.model.Instance;
-import io.cattle.platform.core.model.Nic;
 import io.cattle.platform.core.model.StoragePool;
-import io.cattle.platform.core.model.Subnet;
 import io.cattle.platform.core.model.Volume;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -38,18 +35,12 @@ public class AllocationAttempt {
     Map<Volume, Set<StoragePool>> pools;
     Map<Long, Set<Long>> poolIds;
 
-    Set<Nic> nics;
-    Set<Long> nicIds;
-
-    Map<Nic, Subnet> subnets;
-    Map<Long, Long> subnetIds;
-
     List<Constraint> constraints = new ArrayList<Constraint>();
     List<AllocationCandidate> candidates = new ArrayList<AllocationCandidate>();
     AllocationCandidate matchedCandidate;
 
     public AllocationAttempt(AllocationType type, long accountId, List<Instance> instances, Long hostId, Long requestedHostId, Set<Volume> volumes,
-            Map<Volume, Set<StoragePool>> pools, Set<Nic> nics, Map<Nic, Subnet> subnets) {
+            Map<Volume, Set<StoragePool>> pools) {
         super();
         this.type = type;
         this.accountId = accountId;
@@ -57,8 +48,6 @@ public class AllocationAttempt {
         this.hostId = hostId;
         this.requestedHostId = requestedHostId;
         this.pools = pools;
-        this.nics = nics;
-        this.subnets = subnets == null ? Collections.<Nic, Subnet> emptyMap() : subnets;
         this.volumes = volumes == null ? new HashSet<Volume>(): volumes;
 
         this.poolIds = new HashMap<Long, Set<Long>>();
@@ -71,23 +60,6 @@ public class AllocationAttempt {
                     poolIds.add(pool.getId());
                 }
                 this.poolIds.put(v.getId(), poolIds);
-            }
-        }
-
-        if (nics == null) {
-            this.nics = Collections.emptySet();
-            this.nicIds = Collections.emptySet();
-            this.subnetIds = Collections.emptyMap();
-        } else {
-            this.nicIds = new HashSet<Long>(subnets.size());
-            this.subnetIds = new HashMap<Long, Long>();
-            for (Nic n : nics) {
-                this.nicIds.add(n.getId());
-
-                Subnet subnet = this.subnets.get(n);
-                if (subnet != null) {
-                    this.subnetIds.put(n.getId(), subnet.getId());
-                }
             }
         }
     }
@@ -184,35 +156,4 @@ public class AllocationAttempt {
         this.poolIds = poolIds;
     }
 
-    public Set<Nic> getNics() {
-        return nics;
-    }
-
-    public void setNics(Set<Nic> nics) {
-        this.nics = nics;
-    }
-
-    public Set<Long> getNicIds() {
-        return nicIds;
-    }
-
-    public void setNicIds(Set<Long> nicIds) {
-        this.nicIds = nicIds;
-    }
-
-    public Map<Nic, Subnet> getSubnets() {
-        return subnets;
-    }
-
-    public void setSubnets(Map<Nic, Subnet> subnets) {
-        this.subnets = subnets;
-    }
-
-    public Map<Long, Long> getSubnetIds() {
-        return subnetIds;
-    }
-
-    public void setSubnetIds(Map<Long, Long> subnetIds) {
-        this.subnetIds = subnetIds;
-    }
 }

@@ -11,9 +11,9 @@ package io.cattle.platform.core.model.tables.records;
 @java.lang.SuppressWarnings({ "all", "unchecked", "rawtypes" })
 @javax.persistence.Entity
 @javax.persistence.Table(name = "subnet", schema = "cattle")
-public class SubnetRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.platform.core.model.tables.records.SubnetRecord> implements io.cattle.platform.db.jooq.utils.TableRecordJaxb, org.jooq.Record19<java.lang.Long, java.lang.String, java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.util.Date, java.util.Date, java.util.Date, java.util.Map<String,Object>, java.lang.String, java.lang.Integer, java.lang.String, java.lang.String, java.lang.String, java.lang.Long, java.lang.Boolean, java.lang.Long>, io.cattle.platform.core.model.Subnet {
+public class SubnetRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.platform.core.model.tables.records.SubnetRecord> implements io.cattle.platform.db.jooq.utils.TableRecordJaxb, org.jooq.Record18<java.lang.Long, java.lang.String, java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.util.Date, java.util.Date, java.util.Date, java.util.Map<String,Object>, java.lang.String, java.lang.Integer, java.lang.String, java.lang.String, java.lang.String, java.lang.Long, java.lang.Boolean>, io.cattle.platform.core.model.Subnet {
 
-	private static final long serialVersionUID = 588048803;
+	private static final long serialVersionUID = 1938296565;
 
 	/**
 	 * Setter for <code>cattle.subnet.id</code>.
@@ -322,23 +322,6 @@ public class SubnetRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.pl
 		return (java.lang.Boolean) getValue(17);
 	}
 
-	/**
-	 * Setter for <code>cattle.subnet.ip_pool_id</code>.
-	 */
-	@Override
-	public void setIpPoolId(java.lang.Long value) {
-		setValue(18, value);
-	}
-
-	/**
-	 * Getter for <code>cattle.subnet.ip_pool_id</code>.
-	 */
-	@javax.persistence.Column(name = "ip_pool_id", precision = 19)
-	@Override
-	public java.lang.Long getIpPoolId() {
-		return (java.lang.Long) getValue(18);
-	}
-
 	// -------------------------------------------------------------------------
 	// Primary key information
 	// -------------------------------------------------------------------------
@@ -352,23 +335,23 @@ public class SubnetRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.pl
 	}
 
 	// -------------------------------------------------------------------------
-	// Record19 type implementation
+	// Record18 type implementation
 	// -------------------------------------------------------------------------
 
 	/**
 	 * {@inheritDoc}
 	 */
 	@Override
-	public org.jooq.Row19<java.lang.Long, java.lang.String, java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.util.Date, java.util.Date, java.util.Date, java.util.Map<String,Object>, java.lang.String, java.lang.Integer, java.lang.String, java.lang.String, java.lang.String, java.lang.Long, java.lang.Boolean, java.lang.Long> fieldsRow() {
-		return (org.jooq.Row19) super.fieldsRow();
+	public org.jooq.Row18<java.lang.Long, java.lang.String, java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.util.Date, java.util.Date, java.util.Date, java.util.Map<String,Object>, java.lang.String, java.lang.Integer, java.lang.String, java.lang.String, java.lang.String, java.lang.Long, java.lang.Boolean> fieldsRow() {
+		return (org.jooq.Row18) super.fieldsRow();
 	}
 
 	/**
 	 * {@inheritDoc}
 	 */
 	@Override
-	public org.jooq.Row19<java.lang.Long, java.lang.String, java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.util.Date, java.util.Date, java.util.Date, java.util.Map<String,Object>, java.lang.String, java.lang.Integer, java.lang.String, java.lang.String, java.lang.String, java.lang.Long, java.lang.Boolean, java.lang.Long> valuesRow() {
-		return (org.jooq.Row19) super.valuesRow();
+	public org.jooq.Row18<java.lang.Long, java.lang.String, java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.util.Date, java.util.Date, java.util.Date, java.util.Map<String,Object>, java.lang.String, java.lang.Integer, java.lang.String, java.lang.String, java.lang.String, java.lang.Long, java.lang.Boolean> valuesRow() {
+		return (org.jooq.Row18) super.valuesRow();
 	}
 
 	/**
@@ -519,14 +502,6 @@ public class SubnetRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.pl
 	 * {@inheritDoc}
 	 */
 	@Override
-	public org.jooq.Field<java.lang.Long> field19() {
-		return io.cattle.platform.core.model.tables.SubnetTable.SUBNET.IP_POOL_ID;
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
 	public java.lang.Long value1() {
 		return getId();
 	}
@@ -665,14 +640,6 @@ public class SubnetRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.pl
 	@Override
 	public java.lang.Boolean value18() {
 		return getIsPublic();
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public java.lang.Long value19() {
-		return getIpPoolId();
 	}
 
 	/**
@@ -841,16 +808,7 @@ public class SubnetRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.pl
 	 * {@inheritDoc}
 	 */
 	@Override
-	public SubnetRecord value19(java.lang.Long value) {
-		setIpPoolId(value);
-		return this;
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public SubnetRecord values(java.lang.Long value1, java.lang.String value2, java.lang.Long value3, java.lang.String value4, java.lang.String value5, java.lang.String value6, java.lang.String value7, java.util.Date value8, java.util.Date value9, java.util.Date value10, java.util.Map<String,Object> value11, java.lang.String value12, java.lang.Integer value13, java.lang.String value14, java.lang.String value15, java.lang.String value16, java.lang.Long value17, java.lang.Boolean value18, java.lang.Long value19) {
+	public SubnetRecord values(java.lang.Long value1, java.lang.String value2, java.lang.Long value3, java.lang.String value4, java.lang.String value5, java.lang.String value6, java.lang.String value7, java.util.Date value8, java.util.Date value9, java.util.Date value10, java.util.Map<String,Object> value11, java.lang.String value12, java.lang.Integer value13, java.lang.String value14, java.lang.String value15, java.lang.String value16, java.lang.Long value17, java.lang.Boolean value18) {
 		return this;
 	}
 
@@ -881,7 +839,6 @@ public class SubnetRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.pl
 		setGateway(from.getGateway());
 		setNetworkId(from.getNetworkId());
 		setIsPublic(from.getIsPublic());
-		setIpPoolId(from.getIpPoolId());
 	}
 
 	/**
@@ -907,7 +864,7 @@ public class SubnetRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.pl
 	/**
 	 * Create a detached, initialised SubnetRecord
 	 */
-	public SubnetRecord(java.lang.Long id, java.lang.String name, java.lang.Long accountId, java.lang.String kind, java.lang.String uuid, java.lang.String description, java.lang.String state, java.util.Date created, java.util.Date removed, java.util.Date removeTime, java.util.Map<String,Object> data, java.lang.String networkAddress, java.lang.Integer cidrSize, java.lang.String startAddress, java.lang.String endAddress, java.lang.String gateway, java.lang.Long networkId, java.lang.Boolean isPublic, java.lang.Long ipPoolId) {
+	public SubnetRecord(java.lang.Long id, java.lang.String name, java.lang.Long accountId, java.lang.String kind, java.lang.String uuid, java.lang.String description, java.lang.String state, java.util.Date created, java.util.Date removed, java.util.Date removeTime, java.util.Map<String,Object> data, java.lang.String networkAddress, java.lang.Integer cidrSize, java.lang.String startAddress, java.lang.String endAddress, java.lang.String gateway, java.lang.Long networkId, java.lang.Boolean isPublic) {
 		super(io.cattle.platform.core.model.tables.SubnetTable.SUBNET);
 
 		setValue(0, id);
@@ -928,6 +885,5 @@ public class SubnetRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.pl
 		setValue(15, gateway);
 		setValue(16, networkId);
 		setValue(17, isPublic);
-		setValue(18, ipPoolId);
 	}
 }

@@ -82,28 +82,19 @@ def test_host_purge(super_client, new_context):
 
     host = super_client.wait_success(host.deactivate())
     host = super_client.wait_success(super_client.delete(host))
-    assert host.state == 'removed'
     assert host.removed is not None
 
     agent = super_client.wait_success(host.agent())
     wait_for(lambda: super_client.reload(agent).state == 'removed')
 
-    host = super_client.wait_success(host.purge())
-    assert host.state == 'purged'
-
     phy_host = super_client.wait_success(phy_host)
-    assert phy_host.state == 'removed'
+    assert phy_host.removed is not None
 
     c1 = super_client.wait_success(c1)
     assert c1.removed is not None
-    assert c1.state == 'removed'
 
     c2 = super_client.wait_success(c2)
     assert c2.removed is not None
-    assert c2.state == 'removed'
-
-    c1 = super_client.wait_success(c1.purge())
-    assert c1.state == 'purged'
 
     volumes = c1.volumes()
     assert len(volumes) == 0
@@ -177,7 +168,7 @@ def test_host_remove(super_client, new_context):
     phy_host = host.physicalHost()
     key = find_one(super_client.list_register, key=agent.data.registrationKey)
     instances = host.instances()
-    assert len(instances) == 2
+    assert len(instances) == 1
 
     assert container.state == 'running'
     assert host.state == 'active'
@@ -192,29 +183,29 @@ def test_host_remove(super_client, new_context):
     assert host.state == 'inactive'
 
     host = client.wait_success(client.delete(host))
-    assert host.state == 'removed'
+    assert host.removed is not None
 
     agent = super_client.wait_success(agent)
-    wait_for(lambda: super_client.reload(agent).state == 'removed')
+    wait_for(lambda: super_client.reload(agent).removed is not None)
 
     pool = super_client.wait_success(pool)
-    assert pool.state == 'removed'
+    assert pool.removed is not None
 
     phy_host = super_client.wait_success(phy_host)
-    assert phy_host.state == 'removed'
+    assert phy_host.removed is not None
 
     key = super_client.wait_success(key)
-    assert key.state == 'removed'
+    assert key.removed is not None
 
     agent_account = super_client.wait_success(agent_account)
-    assert agent_account.state == 'removed'
+    assert agent_account.removed is not None
 
     container = super_client.wait_success(container)
-    assert container.state == 'removed'
+    assert container.removed is not None
 
     for c in instances:
         c = super_client.wait_success(c)
-        assert c.state == 'removed'
+        assert c.removed is not None
 
 
 def test_host_dockersocket(context, client):

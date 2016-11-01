@@ -1,7 +1,65 @@
 package io.cattle.platform.core.cleanup;
 
 import io.cattle.platform.archaius.util.ArchaiusUtil;
-import io.cattle.platform.core.model.tables.*;
+import io.cattle.platform.core.model.tables.AccountTable;
+import io.cattle.platform.core.model.tables.AgentTable;
+import io.cattle.platform.core.model.tables.AuditLogTable;
+import io.cattle.platform.core.model.tables.AuthTokenTable;
+import io.cattle.platform.core.model.tables.BackupTable;
+import io.cattle.platform.core.model.tables.BackupTargetTable;
+import io.cattle.platform.core.model.tables.CertificateTable;
+import io.cattle.platform.core.model.tables.ClusterHostMapTable;
+import io.cattle.platform.core.model.tables.ConfigItemStatusTable;
+import io.cattle.platform.core.model.tables.ContainerEventTable;
+import io.cattle.platform.core.model.tables.CredentialInstanceMapTable;
+import io.cattle.platform.core.model.tables.CredentialTable;
+import io.cattle.platform.core.model.tables.DeploymentUnitTable;
+import io.cattle.platform.core.model.tables.DynamicSchemaTable;
+import io.cattle.platform.core.model.tables.ExternalEventTable;
+import io.cattle.platform.core.model.tables.ExternalHandlerExternalHandlerProcessMapTable;
+import io.cattle.platform.core.model.tables.ExternalHandlerProcessTable;
+import io.cattle.platform.core.model.tables.ExternalHandlerTable;
+import io.cattle.platform.core.model.tables.GenericObjectTable;
+import io.cattle.platform.core.model.tables.HealthcheckInstanceHostMapTable;
+import io.cattle.platform.core.model.tables.HealthcheckInstanceTable;
+import io.cattle.platform.core.model.tables.HostIpAddressMapTable;
+import io.cattle.platform.core.model.tables.HostLabelMapTable;
+import io.cattle.platform.core.model.tables.HostTable;
+import io.cattle.platform.core.model.tables.ImageStoragePoolMapTable;
+import io.cattle.platform.core.model.tables.ImageTable;
+import io.cattle.platform.core.model.tables.InstanceHostMapTable;
+import io.cattle.platform.core.model.tables.InstanceLabelMapTable;
+import io.cattle.platform.core.model.tables.InstanceLinkTable;
+import io.cattle.platform.core.model.tables.InstanceTable;
+import io.cattle.platform.core.model.tables.IpAddressNicMapTable;
+import io.cattle.platform.core.model.tables.IpAddressTable;
+import io.cattle.platform.core.model.tables.LabelTable;
+import io.cattle.platform.core.model.tables.MachineDriverTable;
+import io.cattle.platform.core.model.tables.MountTable;
+import io.cattle.platform.core.model.tables.NetworkTable;
+import io.cattle.platform.core.model.tables.NicTable;
+import io.cattle.platform.core.model.tables.PhysicalHostTable;
+import io.cattle.platform.core.model.tables.PortTable;
+import io.cattle.platform.core.model.tables.ProcessExecutionTable;
+import io.cattle.platform.core.model.tables.ProcessInstanceTable;
+import io.cattle.platform.core.model.tables.ProjectMemberTable;
+import io.cattle.platform.core.model.tables.ResourcePoolTable;
+import io.cattle.platform.core.model.tables.ServiceConsumeMapTable;
+import io.cattle.platform.core.model.tables.ServiceEventTable;
+import io.cattle.platform.core.model.tables.ServiceExposeMapTable;
+import io.cattle.platform.core.model.tables.ServiceIndexTable;
+import io.cattle.platform.core.model.tables.ServiceLogTable;
+import io.cattle.platform.core.model.tables.ServiceTable;
+import io.cattle.platform.core.model.tables.SnapshotTable;
+import io.cattle.platform.core.model.tables.StackTable;
+import io.cattle.platform.core.model.tables.StoragePoolHostMapTable;
+import io.cattle.platform.core.model.tables.StoragePoolTable;
+import io.cattle.platform.core.model.tables.SubnetTable;
+import io.cattle.platform.core.model.tables.TaskInstanceTable;
+import io.cattle.platform.core.model.tables.UserPreferenceTable;
+import io.cattle.platform.core.model.tables.VolumeStoragePoolMapTable;
+import io.cattle.platform.core.model.tables.VolumeTable;
+import io.cattle.platform.core.model.tables.ZoneTable;
 import io.cattle.platform.db.jooq.dao.impl.AbstractJooqDao;
 import io.cattle.platform.object.jooq.utils.JooqUtils;
 
@@ -24,7 +82,7 @@ import com.netflix.config.DynamicLongProperty;
 
 /**
  * Programmatically delete purged database rows after they reach a configurable age.
- * 
+ *
  * @author joliver
  *
  */
@@ -40,7 +98,7 @@ public class TableCleanup extends AbstractJooqDao {
     public static final DynamicLongProperty EVENT_AGE_LIMIT_SECONDS = ArchaiusUtil.getLong("events.purge.after.seconds");
     public static final DynamicLongProperty AUDIT_LOG_AGE_LIMIT_SECONDS = ArchaiusUtil.getLong("audit_log.purge.after.seconds");
     public static final DynamicLongProperty SERVICE_LOG_AGE_LIMIT_SECONDS = ArchaiusUtil.getLong("service_log.purge.after.seconds");
-    
+
     private List<CleanableTable> processInstanceTables;
     private List<CleanableTable> eventTables;
     private List<CleanableTable> auditLogTables;
@@ -57,19 +115,19 @@ public class TableCleanup extends AbstractJooqDao {
 
     public void cleanup() {
         long current = new Date().getTime();
-        
+
         Date processInstanceCutoff = new Date(current - PROCESS_INSTANCE_AGE_LIMIT_SECONDS.get() * SECOND_MILLIS);
         cleanup("process_instance", processInstanceTables, processInstanceCutoff);
-        
+
         Date eventTableCutoff = new Date(current - EVENT_AGE_LIMIT_SECONDS.get() * SECOND_MILLIS);
         cleanup("event", eventTables, eventTableCutoff);
-        
+
         Date auditLogCutoff = new Date(current - AUDIT_LOG_AGE_LIMIT_SECONDS.get() * SECOND_MILLIS);
         cleanup("audit_log", auditLogTables, auditLogCutoff);
-        
+
         Date serviceLogCutoff = new Date(current - SERVICE_LOG_AGE_LIMIT_SECONDS.get() * SECOND_MILLIS);
         cleanup("service_log", serviceLogTables, serviceLogCutoff);
-        
+
         Date otherCutoff = new Date(current - MAIN_TABLES_AGE_LIMIT_SECONDS.getValue() * SECOND_MILLIS);
         cleanup("other", otherTables, otherCutoff);
     }
@@ -79,7 +137,7 @@ public class TableCleanup extends AbstractJooqDao {
         for (CleanableTable table : tables) {
             Field<Long> id = table.idField;
             Field<Date> remove = table.removeField;
-            
+
             ResultQuery<Record1<Long>> ids = create()
                     .select(id)
                     .from(table.table)
@@ -94,26 +152,26 @@ public class TableCleanup extends AbstractJooqDao {
 
                 for (Record1<Long> record : toDelete) {
                     if (!idsToFix.contains(record.value1())) {
-                        idsToDelete.add(record.value1());                        
+                        idsToDelete.add(record.value1());
                     }
                 }
-                
+
                 if (idsToDelete.size() == 0) {
                     break;
                 }
-                
+
                 for (ForeignKey<?, ?> key : getReferencesFrom(table, tables)) {
                     Table<?> referencingTable = key.getTable();
                     if (key.getFields().size() > 1) {
                         log.error("Composite foreign key filtering unsupported");
                     }
                     Field<Long> foreignKeyField = (Field<Long>) key.getFields().get(0);
-                    
+
                     ResultQuery<Record1<Long>> filterIds = create()
                         .selectDistinct(foreignKeyField)
                         .from(referencingTable)
                         .where(foreignKeyField.in(idsToDelete));
-                    
+
                     Result<Record1<Long>> toFilter = filterIds.fetch();
                     if (toFilter.size() > 0) {
                         for (Record1<Long> record : toFilter) {
@@ -123,13 +181,13 @@ public class TableCleanup extends AbstractJooqDao {
                         }
                     }
                 }
-                
+
                 try {
                     table.addRowsDeleted(create()
                             .delete(table.table)
                             .where(id.in(idsToDelete))
                             .execute());
-                    
+
                 } catch (org.jooq.exception.DataAccessException e) {
                     log.error(e.getMessage());
                     break;
@@ -174,7 +232,7 @@ public class TableCleanup extends AbstractJooqDao {
 
     /**
      * Returns a list of foreign keys referencing a table
-     * 
+     *
      * @param table
      * @param others
      * @return
@@ -190,7 +248,7 @@ public class TableCleanup extends AbstractJooqDao {
     /**
      * Sorts a list of tables by their primary key references such that tables may be cleaned in an order
      * that doesn't violate any key constraints.
-     * 
+     *
      * @param tables The list of tables to sort
      */
     public static List<CleanableTable> sortByReferences(List<CleanableTable> tables) {
@@ -217,17 +275,17 @@ public class TableCleanup extends AbstractJooqDao {
                 tableCount = unsorted.size();
             }
         }
-        
+
         if (log.isDebugEnabled()) {
             log.debug("Table cleanup plan:");
             for (CleanableTable table : sorted) {
                 log.debug(table.toString());
             }
         }
-        
+
         return sorted;
     }
-    
+
     private static List<Table<?>> stripContext(List<CleanableTable> cleanableTables) {
         List<Table<?>> tables = new ArrayList<Table<?>>();
         for (CleanableTable cleanableTable : cleanableTables) {
@@ -262,7 +320,6 @@ public class TableCleanup extends AbstractJooqDao {
         List<CleanableTable> tables = Arrays.asList(
                 CleanableTable.from(AccountTable.ACCOUNT),
                 CleanableTable.from(AgentTable.AGENT),
-                CleanableTable.from(AgentGroupTable.AGENT_GROUP),
                 CleanableTable.from(AuthTokenTable.AUTH_TOKEN),
                 CleanableTable.from(BackupTable.BACKUP),
                 CleanableTable.from(BackupTargetTable.BACKUP_TARGET),
@@ -283,7 +340,6 @@ public class TableCleanup extends AbstractJooqDao {
                 CleanableTable.from(HostTable.HOST),
                 CleanableTable.from(HostIpAddressMapTable.HOST_IP_ADDRESS_MAP),
                 CleanableTable.from(HostLabelMapTable.HOST_LABEL_MAP),
-                CleanableTable.from(HostVnetMapTable.HOST_VNET_MAP),
                 CleanableTable.from(ImageTable.IMAGE),
                 CleanableTable.from(ImageStoragePoolMapTable.IMAGE_STORAGE_POOL_MAP),
                 CleanableTable.from(InstanceTable.INSTANCE),
@@ -292,17 +348,11 @@ public class TableCleanup extends AbstractJooqDao {
                 CleanableTable.from(InstanceLinkTable.INSTANCE_LINK),
                 CleanableTable.from(IpAddressTable.IP_ADDRESS),
                 CleanableTable.from(IpAddressNicMapTable.IP_ADDRESS_NIC_MAP),
-                CleanableTable.from(IpAssociationTable.IP_ASSOCIATION),
-                CleanableTable.from(IpPoolTable.IP_POOL),
                 CleanableTable.from(LabelTable.LABEL),
                 CleanableTable.from(MachineDriverTable.MACHINE_DRIVER),
                 CleanableTable.from(MountTable.MOUNT),
                 CleanableTable.from(NetworkTable.NETWORK),
-                CleanableTable.from(NetworkServiceTable.NETWORK_SERVICE),
-                CleanableTable.from(NetworkServiceProviderTable.NETWORK_SERVICE_PROVIDER),
-                CleanableTable.from(NetworkServiceProviderInstanceMapTable.NETWORK_SERVICE_PROVIDER_INSTANCE_MAP),
                 CleanableTable.from(NicTable.NIC),
-                CleanableTable.from(OfferingTable.OFFERING),
                 CleanableTable.from(PhysicalHostTable.PHYSICAL_HOST),
                 CleanableTable.from(PortTable.PORT),
                 CleanableTable.from(ProjectMemberTable.PROJECT_MEMBER),
@@ -320,10 +370,8 @@ public class TableCleanup extends AbstractJooqDao {
                 CleanableTable.from(StoragePoolTable.STORAGE_POOL),
                 CleanableTable.from(StoragePoolHostMapTable.STORAGE_POOL_HOST_MAP),
                 CleanableTable.from(SubnetTable.SUBNET),
-                CleanableTable.from(SubnetVnetMapTable.SUBNET_VNET_MAP),
                 CleanableTable.from(TaskInstanceTable.TASK_INSTANCE),
                 CleanableTable.from(UserPreferenceTable.USER_PREFERENCE),
-                CleanableTable.from(VnetTable.VNET),
                 CleanableTable.from(VolumeTable.VOLUME),
                 CleanableTable.from(VolumeStoragePoolMapTable.VOLUME_STORAGE_POOL_MAP),
                 CleanableTable.from(ZoneTable.ZONE));

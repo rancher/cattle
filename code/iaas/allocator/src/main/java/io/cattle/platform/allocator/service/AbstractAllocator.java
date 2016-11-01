@@ -2,6 +2,7 @@ package io.cattle.platform.allocator.service;
 
 import static io.cattle.platform.core.model.tables.InstanceHostMapTable.*;
 import static io.cattle.platform.core.model.tables.PortTable.*;
+
 import io.cattle.platform.allocator.constraint.AllocationConstraintsProvider;
 import io.cattle.platform.allocator.constraint.Constraint;
 import io.cattle.platform.allocator.dao.AllocatorDao;
@@ -16,10 +17,8 @@ import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.model.Host;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.InstanceHostMap;
-import io.cattle.platform.core.model.Nic;
 import io.cattle.platform.core.model.Port;
 import io.cattle.platform.core.model.StoragePool;
-import io.cattle.platform.core.model.Subnet;
 import io.cattle.platform.core.model.Volume;
 import io.cattle.platform.core.util.InstanceHelpers;
 import io.cattle.platform.docker.constants.DockerInstanceConstants;
@@ -185,8 +184,6 @@ public abstract class AbstractAllocator implements Allocator {
 
         Set<Volume> volumes = new HashSet<Volume>();
         Map<Volume, Set<StoragePool>> pools = new HashMap<Volume, Set<StoragePool>>();
-        Set<Nic> nics = new HashSet<Nic>();
-        Map<Nic, Subnet> subnets = new HashMap<Nic, Subnet>();
         Long requestedHostId = null;
 
         for (Instance instance : instances) {
@@ -204,22 +201,13 @@ public abstract class AbstractAllocator implements Allocator {
                             instance.getId(), requestedHostId, rhid));
                 }
             }
-
-            nics.addAll(objectManager.children(instance, Nic.class));
-            for (Nic n : nics) {
-                Subnet subnet = objectManager.loadResource(Subnet.class, n.getSubnetId());
-                if (subnet != null) {
-                    subnets.put(n, subnet);
-                }
-            }
         }
 
         for (Volume v : volumes) {
             pools.put(v, new HashSet<StoragePool>(allocatorDao.getAssociatedPools(v)));
         }
 
-        doAllocate(request, new AllocationAttempt(AllocationType.INSTANCE, origInstance.getAccountId(), instances, hostId, requestedHostId, volumes, pools,
-                nics, subnets));
+        doAllocate(request, new AllocationAttempt(AllocationType.INSTANCE, origInstance.getAccountId(), instances, hostId, requestedHostId, volumes, pools));
     }
 
     protected LockDefinition getInstanceLockDef(Instance origInstance, List<Instance> instances) {
@@ -271,7 +259,7 @@ public abstract class AbstractAllocator implements Allocator {
         Set<StoragePool> associatedPools = new HashSet<StoragePool>(allocatorDao.getAssociatedPools(volume));
         pools.put(volume, associatedPools);
 
-        AllocationAttempt attempt = new AllocationAttempt(AllocationType.VOLUME, volume.getAccountId(), null, null, null, volumes, pools, null, null);
+        AllocationAttempt attempt = new AllocationAttempt(AllocationType.VOLUME, volume.getAccountId(), null, null, null, volumes, pools);
 
         doAllocate(request, attempt);
     }
@@ -460,10 +448,6 @@ public abstract class AbstractAllocator implements Allocator {
             for (StoragePool pool : entry.getValue()) {
                 candidateLog.append(String.format("  [%s] pool [%s]\n", id, pool.getId()));
             }
-        }
-
-        for (Nic nic : attempt.getNics()) {
-            candidateLog.append(String.format("  [%s] nic [%s]\n", id, nic.getId()));
         }
 
         candidateLog.append(String.format("  [%s] constraints:\n", id));

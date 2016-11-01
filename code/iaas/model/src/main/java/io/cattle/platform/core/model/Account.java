@@ -168,6 +168,17 @@ public interface Account extends java.io.Serializable {
 	@javax.persistence.Column(name = "project_template_id", precision = 19)
 	public java.lang.Long getProjectTemplateId();
 
+	/**
+	 * Setter for <code>cattle.account.default_network_id</code>.
+	 */
+	public void setDefaultNetworkId(java.lang.Long value);
+
+	/**
+	 * Getter for <code>cattle.account.default_network_id</code>.
+	 */
+	@javax.persistence.Column(name = "default_network_id", precision = 19)
+	public java.lang.Long getDefaultNetworkId();
+
 	// -------------------------------------------------------------------------
 	// FROM and INTO
 	// -------------------------------------------------------------------------

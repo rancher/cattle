@@ -88,4 +88,9 @@ public class ServiceStackStorageDriverFilter extends AbstractDefaultResourceMana
         return new Class<?>[]{Service.class, Stack.class};
     }
 
+    @Override
+    public String[] getTypes() {
+        return new String[] { ServiceConstants.KIND_STORAGE_DRIVER_SERVICE };
+    }
+
 }

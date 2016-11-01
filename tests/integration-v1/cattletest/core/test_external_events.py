@@ -85,9 +85,10 @@ def test_external_host_event_hit(new_context):
     c = new_context.create_container()
 
     client = new_context.client
-    host = client.update(new_context.host, labels={
+    host = client.wait_success(new_context.host)
+    host = client.update(host, labels={
         'foo': 'bar'
-    }, deleteHost=True)
+    })
     host = client.wait_success(host)
     assert host.labels == {'foo': 'bar'}
 
@@ -102,7 +103,7 @@ def test_external_host_event_hit(new_context):
 
     assert event.state == 'created'
     assert host.state == 'purged'
-    assert c.state == 'removed'
+    assert c.removed is not None
 
 
 def test_external_host_event_no_delete(new_context):

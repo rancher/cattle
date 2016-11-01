@@ -6,11 +6,13 @@ import io.cattle.platform.archaius.util.ArchaiusUtil;
 import io.cattle.platform.core.addon.CatalogTemplate;
 import io.cattle.platform.core.constants.ServiceConstants;
 import io.cattle.platform.core.dao.GenericResourceDao;
+import io.cattle.platform.core.model.ProjectTemplate;
 import io.cattle.platform.core.model.Stack;
 import io.cattle.platform.json.JsonMapper;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.systemstack.catalog.CatalogService;
 import io.cattle.platform.systemstack.model.Template;
+import io.cattle.platform.systemstack.model.TemplateCollection;
 import io.cattle.platform.util.type.CollectionUtils;
 
 import java.io.IOException;
@@ -26,6 +28,7 @@ import org.apache.http.HttpResponse;
 import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.ResponseHandler;
 import org.apache.http.client.fluent.Request;
+import org.yaml.snakeyaml.Yaml;
 
 import com.netflix.config.DynamicBooleanProperty;
 import com.netflix.config.DynamicStringProperty;
@@ -67,6 +70,13 @@ public class CatalogServiceImpl implements CatalogService {
         return DigestUtils.md5Hex(template.getDockerCompose() + template.getRancherCompose());
     }
 
+    protected void appendVersionCheck(StringBuilder catalogTemplateUrl) {
+        String minVersion = CATALOG_RESOURCE_VERSION.get();
+        if (StringUtils.isNotBlank(minVersion)) {
+            catalogTemplateUrl.append("?minimumRancherVersion_lte=").append(minVersion);
+        }
+    }
+
     private String resolveUsingCatalog(CatalogTemplate catalogTemplate) throws IOException {
         if (!LAUNCH_CATALOG.get()) {
             return null;
@@ -77,10 +87,7 @@ public class CatalogServiceImpl implements CatalogService {
 
         StringBuilder catalogTemplateUrl = new StringBuilder(CATALOG_RESOURCE_URL.get());
         catalogTemplateUrl.append(catalogTemplate.getTemplateId());
-        String minVersion = CATALOG_RESOURCE_VERSION.get();
-        if (StringUtils.isNotBlank(minVersion)) {
-            catalogTemplateUrl.append("?minimumRancherVersion_lte=").append(minVersion);
-        }
+        appendVersionCheck(catalogTemplateUrl);
 
         //get the latest version from the catalog template
         Template template = getTemplate(catalogTemplateUrl.toString());
@@ -141,7 +148,6 @@ public class CatalogServiceImpl implements CatalogService {
             }
         }
 
-
         Map<Object, Object> data = CollectionUtils.asMap(
                 (Object)STACK.EXTERNAL_ID, externalId,
                 STACK.ACCOUNT_ID, accountId,
@@ -153,6 +159,58 @@ public class CatalogServiceImpl implements CatalogService {
                 ServiceConstants.STACK_FIELD_ENVIRONMENT, catalogTemplate.getAnswers(),
                 ServiceConstants.STACK_FIELD_BINDING, catalogTemplate.getBinding());
         return resourceDao.createAndSchedule(Stack.class, objectManager.convertToPropertiesFor(Stack.class, data));
+    }
+
+    @Override
+    public Map<String, Map<Object, Object>> getTemplates(List<ProjectTemplate> installed) throws IOException {
+        Map<String, Map<Object, Object>> result = new HashMap<>();
+
+        StringBuilder catalogTemplateUrl = new StringBuilder(CATALOG_RESOURCE_URL.get());
+        appendVersionCheck(catalogTemplateUrl);
+        if (catalogTemplateUrl.toString().contains("?")) {
+            catalogTemplateUrl.append("&");
+        } else {
+            catalogTemplateUrl.append("?");
+        }
+        catalogTemplateUrl.append("templateBase_eq=project");
+
+        TemplateCollection collection = Request.Get(catalogTemplateUrl.toString()).execute().handleResponse(new ResponseHandler<TemplateCollection>() {
+            @Override
+            public TemplateCollection handleResponse(HttpResponse response) throws ClientProtocolException, IOException {
+                if (response.getStatusLine().getStatusCode() != 200) {
+                    return null;
+                }
+                return jsonMapper.readValue(response.getEntity().getContent(), TemplateCollection.class);
+            }
+        });
+
+        Yaml yaml = new Yaml();
+        if (collection.getData() != null) {
+            for (Template template : collection.getData()) {
+                if (template.getVersionLinks() == null) {
+                    continue;
+                }
+                String url = template.getVersionLinks().get(template.getDefaultVersion());
+                if (url == null) {
+                    continue;
+                }
+
+                template = getTemplate(url);
+                if (template == null || template.getFiles() == null) {
+                    continue;
+                }
+                String file = template.getFiles().get("project.yml");
+                if (file == null) {
+                    continue;
+                }
+
+                @SuppressWarnings("unchecked")
+                Map<Object, Object> project = yaml.loadAs(file, Map.class);
+                result.put("catalog://" + template.getId(), project);
+            }
+        }
+
+        return result;
     }
 
 }

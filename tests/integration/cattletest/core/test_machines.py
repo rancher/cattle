@@ -655,3 +655,5 @@ def test_config_link_readonly(admin_user_client, super_client, request,
     assert 'config' in host.links
     host = user2_client.reload(host)
     assert 'config' not in host.links
+
+    super_client.update(host, extractedConfig='')

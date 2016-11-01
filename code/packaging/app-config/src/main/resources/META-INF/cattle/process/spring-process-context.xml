@@ -316,7 +316,6 @@
     <process:defaultProcesses resourceType="credentialInstanceMap" />
     <process:defaultProcesses resourceType="genericObject" />
     <process:defaultProcesses resourceType="hostIpAddressMap" />
-    <process:defaultProcesses resourceType="hostVnetMap" />
     <process:defaultProcesses resourceType="image" />
     <process:defaultProcesses resourceType="imageStoragePoolMap" />
     <process:defaultProcesses resourceType="instanceHostMap" />
@@ -325,16 +324,11 @@
     <process:defaultProcesses resourceType="ipAssociation" />
     <process:defaultProcesses resourceType="ipPool" />
     <process:defaultProcesses resourceType="network" />
-    <process:defaultProcesses resourceType="networkService" />
-    <process:defaultProcesses resourceType="networkServiceProvider" />
-    <process:defaultProcesses resourceType="networkServiceProviderInstanceMap" />
     <process:defaultProcesses resourceType="nic" />
     <process:defaultProcesses resourceType="port" />
     <process:defaultProcesses resourceType="projectMember" />
     <process:defaultProcesses resourceType="storagePool" />
     <process:defaultProcesses resourceType="subnet" />
-    <process:defaultProcesses resourceType="subnetVnetMap" />
-    <process:defaultProcesses resourceType="vnet" />
     <process:defaultProcesses resourceType="volumeStoragePoolMap" />
     <process:defaultProcesses resourceType="zone" />
     <process:defaultProcesses resourceType="serviceIndex" />
@@ -573,22 +567,6 @@
     <process:defaultProcesses resourceType="externalHandlerExternalHandlerProcessMap" />
 
     <bean class="io.cattle.platform.extension.dynamic.process.ExternalHandlerActivate" />
-
-
-    <bean class="io.cattle.platform.networking.host.process.HostOnlyNicActivate" />
-    <bean class="io.cattle.platform.networking.host.dao.impl.HostOnlyDaoImpl" />
-
-    <tx:advice id="HostOnlyAdvice" transaction-manager="CoreTransactionManager">
-        <tx:attributes>
-            <tx:method name="createVnetForHost" />
-        </tx:attributes>
-    </tx:advice>
-
-    <aop:config>
-        <aop:advisor advice-ref="HostOnlyAdvice" pointcut="execution(* io.cattle.platform.networking.host.dao.HostOnlyDao.*(..))" />
-    </aop:config>
-
-    <bean class="io.cattle.platform.metadata.process.MetadataAttachProcessHandler" />
 
     <extension:discover class="io.cattle.platform.engine.process.ProcessDefinition" />
 

@@ -612,9 +612,13 @@ def test_container_fields(docker_client, super_client):
     assert set(c.data['dockerInspect']['HostConfig']['CapAdd']) == set(caps)
     assert set(c.data['dockerInspect']['HostConfig']['CapDrop']) == set(caps)
     actual_dns = c.data['dockerInspect']['HostConfig']['Dns']
-    assert set(actual_dns) == set(['8.8.8.8', '1.2.3.4', '169.254.169.250'])
+    # TODO: when networking is back
+    # assert set(actual_dns) == set(['8.8.8.8', '1.2.3.4', '169.254.169.250'])
+    assert set(actual_dns) == set(['8.8.8.8', '1.2.3.4'])
     actual_dns = c.data['dockerInspect']['HostConfig']['DnsSearch']
-    assert set(actual_dns) == set(['8.8.8.8', '1.2.3.4', 'rancher.internal'])
+    # TODO: when networking is back
+    # assert set(actual_dns) == set(['8.8.8.8', '1.2.3.4', 'rancher.internal'])
+    assert set(actual_dns) == set(['8.8.8.8', '1.2.3.4'])
     assert c.data['dockerInspect']['HostConfig']['Privileged']
     assert c.data['dockerInspect']['Config']['Domainname'] == "rancher.io"
     assert c.data['dockerInspect']['HostConfig']['Memory'] == 12000000
@@ -900,7 +904,6 @@ def test_docker_labels(docker_client):
         'io.rancher.testlabel.fromapi': 'yes',
         'io.rancher.container.uuid': c.uuid,
         'io.rancher.container.name': c.name,
-        'io.rancher.container.ip': c.primaryIpAddress + '/16',
     }
     assert actual_labels == expected_labels
 
@@ -977,11 +980,6 @@ def test_service_link_emu_docker_link(super_client, docker_client):
 
     target_instance = find_one(server.instances)
 
-    assert len(link.ports) == 1
-    assert link.ports[0].privatePort == 8080
-    assert link.ports[0].publicPort == 8080
-    assert link.ports[0].protocol == 'tcp'
-    assert link.ports[0].ipAddress is not None
     assert link.targetInstanceId == target_instance.id
     assert link.instanceNames == ['{}-server-1'.format(env_name)]
 

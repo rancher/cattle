@@ -9,7 +9,6 @@ import io.cattle.platform.engine.process.ProcessState;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.process.ObjectProcessManager;
 import io.cattle.platform.object.process.StandardProcess;
-import io.cattle.platform.util.type.NamedUtils;
 
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -30,8 +29,7 @@ public class DriverServiceRemove extends AbstractProcessLogic implements Process
     @Override
     public HandlerResult handle(ProcessState state, ProcessInstance process) {
         for (String driverKey : DriverServiceActivate.DRIVERS) {
-            String driverType = NamedUtils.toCamelCase(driverKey);
-            Class<?> driverClass = objectManager.getSchemaFactory().getSchemaClass(driverType);
+            Class<?> driverClass = objectManager.getSchemaFactory().getSchemaClass(driverKey);
 
             Service service = (Service)state.getResource();
             for (Object driver : objectManager.children(service, driverClass)) {

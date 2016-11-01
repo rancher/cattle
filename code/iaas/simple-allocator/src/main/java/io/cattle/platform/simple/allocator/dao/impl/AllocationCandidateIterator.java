@@ -2,7 +2,6 @@ package io.cattle.platform.simple.allocator.dao.impl;
 
 import io.cattle.platform.allocator.service.AllocationCandidate;
 import io.cattle.platform.object.ObjectManager;
-import io.cattle.platform.simple.allocator.AllocationCandidateCallback;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -27,16 +26,13 @@ public class AllocationCandidateIterator implements Iterator<AllocationCandidate
     Stack<AllocationCandidate> candidates = new Stack<AllocationCandidate>();
     ObjectManager objectManager;
     boolean hosts;
-    AllocationCandidateCallback callback;
 
-    public AllocationCandidateIterator(ObjectManager objectManager, List<CandidateHostInfo> hostInfos, List<Long> volumeIds, boolean hosts,
-            AllocationCandidateCallback callback) {
+    public AllocationCandidateIterator(ObjectManager objectManager, List<CandidateHostInfo> hostInfos, List<Long> volumeIds, boolean hosts) {
         super();
         this.objectManager = objectManager;
         this.iterator = hostInfos.iterator();
         this.volumeIds = volumeIds;
         this.hosts = hosts;
-        this.callback = callback;
     }
 
     @Override
@@ -79,13 +75,7 @@ public class AllocationCandidateIterator implements Iterator<AllocationCandidate
     }
 
     protected void pushCandidate(AllocationCandidate candidate) {
-        if (callback == null) {
-            candidates.push(candidate);
-        } else {
-            for (AllocationCandidate c : callback.withCandidate(candidate)) {
-                candidates.push(c);
-            }
-        }
+        candidates.push(candidate);
     }
 
     public static <L, R> List<List<Pair<L, R>>> traverse(List<L> lefts, Set<R> rights) {

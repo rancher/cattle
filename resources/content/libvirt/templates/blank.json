@@ -1,6 +1,0 @@
-{
-    "name" : "Blank (iPXE boot)",
-    "uuid" : "blank",
-    "url" : "https://github.com/rancherio/cattle/raw/master/code/agent/src/agents/pyagent/tests/libvirt/blank40g.qcow2.bz2",
-    "checksum" : "0407bc6fe3f18ed8aeb7a169e877a255140a4507"
-}

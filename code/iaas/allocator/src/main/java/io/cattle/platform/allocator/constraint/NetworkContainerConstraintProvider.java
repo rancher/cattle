@@ -2,9 +2,9 @@ package io.cattle.platform.allocator.constraint;
 
 import io.cattle.platform.allocator.service.AllocationAttempt;
 import io.cattle.platform.allocator.service.AllocationLog;
+import io.cattle.platform.core.constants.NetworkConstants;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.docker.constants.DockerInstanceConstants;
-import io.cattle.platform.docker.constants.DockerNetworkConstants;
 import io.cattle.platform.json.JsonMapper;
 import io.cattle.platform.object.util.DataAccessor;
 
@@ -27,7 +27,7 @@ public class NetworkContainerConstraintProvider extends CollocationChecker imple
 
         for (Instance instance : attempt.getInstances()) {
             String networkMode = DataAccessor.fields(instance).withKey(DockerInstanceConstants.FIELD_NETWORK_MODE).as(String.class);
-            if (DockerNetworkConstants.NETWORK_MODE_CONTAINER.equals(networkMode) && instance.getNetworkContainerId() != null) {
+            if (NetworkConstants.NETWORK_MODE_CONTAINER.equals(networkMode) && instance.getNetworkContainerId() != null) {
                 Long containerId = instance.getNetworkContainerId();
                 Set<Long> containerIds = new HashSet<Long>();
                 containerIds.add(containerId);

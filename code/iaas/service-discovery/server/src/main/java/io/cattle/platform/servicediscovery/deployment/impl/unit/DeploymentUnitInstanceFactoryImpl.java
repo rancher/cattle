@@ -38,8 +38,7 @@ public class DeploymentUnitInstanceFactoryImpl implements DeploymentUnitInstance
     @SuppressWarnings("unchecked")
     public DeploymentUnitInstance createDeploymentUnitInstance(DeploymentServiceContext context, String uuid,
             Service service, String instanceName, Object instanceObj, String launchConfigName) {
-        if (service.getKind().equalsIgnoreCase(ServiceConstants.KIND_SERVICE)
-                || service.getKind().equalsIgnoreCase(ServiceConstants.KIND_LOAD_BALANCER_SERVICE)) {
+        if (ServiceConstants.SERVICE_LIKE.contains(service.getKind())) {
             Instance instance = null;
             if (instanceObj != null) {
                 instance = (Instance) instanceObj;
@@ -74,8 +73,7 @@ public class DeploymentUnitInstanceFactoryImpl implements DeploymentUnitInstance
         List<DeploymentUnit> units = new ArrayList<>();
         Map<String, io.cattle.platform.core.model.DeploymentUnit> uuidToExistingDU = new HashMap<>();
 
-        if (service.getKind().equalsIgnoreCase(ServiceConstants.KIND_SERVICE)
-                || service.getKind().equalsIgnoreCase(ServiceConstants.KIND_LOAD_BALANCER_SERVICE)) {
+        if (ServiceConstants.SERVICE_LIKE.contains(service.getKind())) {
             collectDefaultServiceInstances(context, uuidToLabels, uuidToInstances, service, uuidToExistingDU);
         } else if (service.getKind().equalsIgnoreCase(ServiceConstants.KIND_EXTERNAL_SERVICE)) {
             collectExternalServiceInstances(context, uuidToLabels, uuidToInstances, service, uuidToExistingDU);

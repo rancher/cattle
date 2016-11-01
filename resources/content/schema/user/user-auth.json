@@ -97,6 +97,7 @@
         "container.healthState" : "r",
         "container.hostname" : "cr",
         "container.imageUuid" : "cr",
+        "container.instanceTriggeredStop" : "cr",
         "container.instanceLinks" : "cr",
         "container.lxcConf" : "cr",
         "container.logConfig" : "cr",
@@ -356,9 +357,18 @@
         "mount.volumeId" : "r",
 
         "network" : "r",
+        "network.metadata": "cru",
+        "network.subnets": "cr",
+        "network.networkDriverId": "cr",
+        "network.dns": "cr",
+        "network.dnsSearch": "cr",
+        "network.hostPorts": "cr",
 
         "networkDriver" : "r",
+        "networkDriver.defaultNetwork" : "cr",
         "networkDriver.serviceId" : "r",
+        "networkDriver.cniConfig" : "cr",
+        "networkDriver.networkMetadata" : "cr",
 
         "storageDriver" : "r",
         "storageDriver.serviceId" : "r",
@@ -404,6 +414,7 @@
 
         "projectTemplate" : "crud",
         "projectTemplate.stacks" : "cru",
+        "projectTemplate.externalId" : "cru",
 
         "projectMember" : "cr",
         "projectMember.accountId" : "",
@@ -920,6 +931,23 @@
         "volumeTemplate.driverOpts" : "cr",
         "volumeTemplate.external" : "cr",
         "volumeTemplate.perContainer" : "cr",
+
+        "networkDriverService" : "r",
+        "networkDriverService.networkDriver" : "cru",
+
+        "storageDriverService" : "r",
+        "storageDriverService.storageDriver" : "cru",
+
+        "defaultNetwork" : "r",
+        "defaultNetwork.networkDriverId" : "",
+
+        "subnet" : "r",
+        "subnet.networkId": "r",
+        "subnet.networkAddress": "cr",
+        "subnet.cidrSize": "cr",
+        "subnet.endAddress": "cr",
+        "subnet.startAddress": "cr",
+        "subnet.gateway": "cr",
 
         "end" : ""
     }

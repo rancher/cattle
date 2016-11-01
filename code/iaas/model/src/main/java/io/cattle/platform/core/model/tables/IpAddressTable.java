@@ -11,7 +11,7 @@ package io.cattle.platform.core.model.tables;
 @java.lang.SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class IpAddressTable extends org.jooq.impl.TableImpl<io.cattle.platform.core.model.tables.records.IpAddressRecord> {
 
-	private static final long serialVersionUID = -1937163817;
+	private static final long serialVersionUID = -80132278;
 
 	/**
 	 * The singleton instance of <code>cattle.ip_address</code>
@@ -112,11 +112,6 @@ public class IpAddressTable extends org.jooq.impl.TableImpl<io.cattle.platform.c
 	public final org.jooq.TableField<io.cattle.platform.core.model.tables.records.IpAddressRecord, java.lang.String> HOSTNAME = createField("hostname", org.jooq.impl.SQLDataType.VARCHAR.length(255), this, "");
 
 	/**
-	 * The column <code>cattle.ip_address.ip_pool_id</code>.
-	 */
-	public final org.jooq.TableField<io.cattle.platform.core.model.tables.records.IpAddressRecord, java.lang.Long> IP_POOL_ID = createField("ip_pool_id", org.jooq.impl.SQLDataType.BIGINT, this, "");
-
-	/**
 	 * Create a <code>cattle.ip_address</code> table reference
 	 */
 	public IpAddressTable() {
@@ -167,7 +162,7 @@ public class IpAddressTable extends org.jooq.impl.TableImpl<io.cattle.platform.c
 	 */
 	@Override
 	public java.util.List<org.jooq.ForeignKey<io.cattle.platform.core.model.tables.records.IpAddressRecord, ?>> getReferences() {
-		return java.util.Arrays.<org.jooq.ForeignKey<io.cattle.platform.core.model.tables.records.IpAddressRecord, ?>>asList(io.cattle.platform.core.model.Keys.FK_IP_ADDRESS__ACCOUNT_ID, io.cattle.platform.core.model.Keys.FK_IP_ADDRESS__SUBNET_ID, io.cattle.platform.core.model.Keys.FK_IP_ADDRESS__NETWORK_ID, io.cattle.platform.core.model.Keys.FK_IP_ADDRESS__IP_POOL_ID);
+		return java.util.Arrays.<org.jooq.ForeignKey<io.cattle.platform.core.model.tables.records.IpAddressRecord, ?>>asList(io.cattle.platform.core.model.Keys.FK_IP_ADDRESS__ACCOUNT_ID, io.cattle.platform.core.model.Keys.FK_IP_ADDRESS__SUBNET_ID, io.cattle.platform.core.model.Keys.FK_IP_ADDRESS__NETWORK_ID);
 	}
 
 	/**

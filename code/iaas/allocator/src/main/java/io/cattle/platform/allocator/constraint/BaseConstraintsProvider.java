@@ -9,10 +9,7 @@ import io.cattle.platform.core.dao.GenericMapDao;
 import io.cattle.platform.core.dao.StoragePoolDao;
 import io.cattle.platform.core.model.Host;
 import io.cattle.platform.core.model.Instance;
-import io.cattle.platform.core.model.Nic;
 import io.cattle.platform.core.model.StoragePool;
-import io.cattle.platform.core.model.Subnet;
-import io.cattle.platform.core.model.Vnet;
 import io.cattle.platform.core.model.Volume;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.util.DataAccessor;
@@ -47,36 +44,10 @@ public class BaseConstraintsProvider implements AllocationConstraintsProvider, P
         List<Constraint> constraints = attempt.getConstraints();
         addLogConstraints(attempt, log);
         addComputeConstraints(attempt, constraints);
-        addNetworkConstraints(attempt, constraints);
         addStorageConstraints(attempt, constraints);
     }
 
     protected void addLogConstraints(AllocationAttempt attempt, AllocationLog log) {
-    }
-
-    protected void addNetworkConstraints(AllocationAttempt attempt, List<Constraint> constraints) {
-        for (Nic nic : attempt.getNics()) {
-            Long vnetId = nic.getVnetId();
-            Long subnetId = nic.getSubnetId();
-
-            ValidSubnetsConstraint constraint = new ValidSubnetsConstraint(nic.getId());
-            if (subnetId != null) {
-                constraint.addSubnet(subnetId);
-            }
-
-            if (vnetId != null) {
-                Vnet vnet = objectManager.loadResource(Vnet.class, vnetId);
-                if (vnet != null) {
-                    for (Subnet subnet : objectManager.mappedChildren(vnet, Subnet.class)) {
-                        constraint.addSubnet(subnet.getId());
-                    }
-                }
-            }
-
-            if (constraint.getSubnets().size() > 0) {
-                constraints.add(constraint);
-            }
-        }
     }
 
     protected void addComputeConstraints(AllocationAttempt attempt, List<Constraint> constraints) {

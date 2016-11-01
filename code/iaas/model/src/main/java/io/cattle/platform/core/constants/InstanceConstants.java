@@ -21,18 +21,14 @@ public class InstanceConstants {
     public static final String FIELD_IMAGE_UUID = "imageUuid";
     public static final String FIELD_INSTANCE_LINKS = "instanceLinks";
     public static final String FIELD_INSTANCE_TRIGGERED_STOP = "instanceTriggeredStop";
-    public static final String FIELD_PUBLIC_IP_ADDRESS_POOL_ID = "publicIpAddressPoolId";
     public static final String FIELD_NETWORK_IDS = "networkIds";
     public static final String FIELD_PORTS = "ports";
     public static final String FIELD_PRIMARY_IP_ADDRESS = "primaryIpAddress";
-    public static final String FIELD_PRIMARY_ASSOCIATED_IP_ADDRESS = "primaryAssociatedIpAddress";
     public static final String FIELD_PRIVILEGED = "privileged";
     public static final String FIELD_REQUESTED_HOST_ID = "requestedHostId";
     public static final String FIELD_REQUESTED_IP_ADDRESS = "requestedIpAddress";
-    public static final String FIELD_SUBNET_IDS = "subnetIds";
     public static final String FIELD_START_ON_CREATE = "startOnCreate";
     public static final String FIELD_VCPU = "vcpu";
-    public static final String FIELD_VNET_IDS = "vnetIds";
     public static final String FIELD_LABELS = "labels";
     public static final String FIELD_HEALTH_CHECK = "healthCheck";
     public static final String FIELD_EXPOSE = "expose";
@@ -85,8 +81,6 @@ public class InstanceConstants {
     public static final String STATE_ERRORING = "erroring";
     public static final String STATE_ERROR = "error";
 
-    public static final String ON_STOP_STOP = "stop";
-    public static final String ON_STOP_RESTART = "restart";
     public static final String ON_STOP_REMOVE = "remove";
 
     public static final String EVENT_INSTANCE_FORCE_STOP = "compute.instance.force.stop";

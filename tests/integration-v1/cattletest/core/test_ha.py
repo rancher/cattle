@@ -73,71 +73,8 @@ def test_container_discovery(super_client, new_context):
     wait_for(running_callback)
 
 
-def test_container_ha_stop(super_client, new_context):
-    c = new_context.super_create_container(instanceTriggeredStop='stop',
-                                           systemContainer='NetworkAgent',
-                                           imageUuid=new_context.image_uuid,
-                                           data={'simForgetImmediately': True})
-
-    def do_ping():
-        ping = one(super_client.list_task, name='agent.ping')
-        ping.execute()
-
-    def callback():
-        processes = process_instances(super_client, c, type='instance')
-        if 'instance.stop' not in _process_names(processes):
-            do_ping()
-            return None
-        return processes
-
-    processes = wait_for(callback,
-                         fail_handler=lambda: proc_err(c, super_client))
-
-    wait_for_condition(super_client, c,
-                       lambda x: x.state == 'stopped',
-                       lambda x: 'State is: ' + x.state)
-
-    assert _process_names(processes) == {'instance.create',
-                                         'instance.restart',
-                                         'instance.stop'}
-
-
-def test_container_ha_restart(super_client, new_context):
-    c = new_context.super_create_container(instanceTriggeredStop='restart',
-                                           systemContainer='NetworkAgent',
-                                           imageUuid=new_context.image_uuid,
-                                           data={'simForgetImmediately': True})
-    c = super_client.wait_success(c)
-
-    def do_ping():
-        ping = one(super_client.list_task, name='agent.ping')
-        ping.execute()
-
-    def callback():
-        processes = process_instances(super_client, c, type='instance')
-        if 'instance.start' not in _process_names(processes):
-            do_ping()
-            return None
-        return processes
-
-    processes = wait_for(callback,
-                         fail_handler=lambda: proc_err(c, super_client))
-
-    wait_for_condition(super_client, c,
-                       lambda x: x.state == 'running',
-                       lambda x: 'State is: ' + x.state)
-
-    assert _process_names(processes) == {'instance.create',
-                                         'instance.restart',
-                                         'instance.stop',
-                                         'instance.start'}
-
-    super_client.delete(c)
-
-
 def test_container_ha_remove(super_client, new_context):
     c = new_context.super_create_container(instanceTriggeredStop='remove',
-                                           systemContainer='NetworkAgent',
                                            imageUuid=new_context.image_uuid,
                                            data={'simForgetImmediately': True})
     c = super_client.wait_success(c)
@@ -157,11 +94,10 @@ def test_container_ha_remove(super_client, new_context):
                          fail_handler=lambda: proc_err(c, super_client))
 
     wait_for_condition(super_client, c,
-                       lambda x: x.state == 'removed',
+                       lambda x: x.removed is not None,
                        lambda x: 'State is: ' + x.state)
 
     assert _process_names(processes) == {'instance.create',
-                                         'instance.restart',
                                          'instance.stop',
                                          'instance.remove'}
 

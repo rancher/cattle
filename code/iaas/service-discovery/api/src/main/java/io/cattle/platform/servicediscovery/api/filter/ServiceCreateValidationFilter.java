@@ -66,13 +66,14 @@ public class ServiceCreateValidationFilter extends AbstractDefaultResourceManage
     public String[] getTypes() {
         return new String[] { ServiceConstants.KIND_SERVICE,
                 ServiceConstants.KIND_LOAD_BALANCER_SERVICE,
-                ServiceConstants.KIND_EXTERNAL_SERVICE, ServiceConstants.KIND_DNS_SERVICE };
+                ServiceConstants.KIND_EXTERNAL_SERVICE, ServiceConstants.KIND_DNS_SERVICE,
+                ServiceConstants.KIND_NETWORK_DRIVER_SERVICE, ServiceConstants.KIND_STORAGE_DRIVER_SERVICE};
     }
 
     @Override
     public Object create(String type, ApiRequest request, ResourceManager next) {
         Service service = request.proxyRequestObject(Service.class);
-        
+
         validateStack(service);
 
         validateSelector(request);

@@ -1,16 +1,13 @@
 package io.cattle.platform.process.instance;
 
-import static io.cattle.platform.core.constants.ContainerEventConstants.*;
-import static io.cattle.platform.docker.constants.DockerInstanceConstants.*;
-
 import io.cattle.platform.core.addon.LogConfig;
 import io.cattle.platform.core.constants.AgentConstants;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.constants.NetworkConstants;
 import io.cattle.platform.core.model.Instance;
+import io.cattle.platform.core.model.Network;
 import io.cattle.platform.core.util.SystemLabels;
 import io.cattle.platform.docker.constants.DockerInstanceConstants;
-import io.cattle.platform.docker.constants.DockerNetworkConstants;
 import io.cattle.platform.engine.handler.HandlerResult;
 import io.cattle.platform.engine.handler.ProcessPreListener;
 import io.cattle.platform.engine.process.ProcessInstance;
@@ -21,7 +18,6 @@ import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.process.common.handler.AbstractObjectProcessLogic;
 import io.cattle.platform.util.type.Priority;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -29,7 +25,6 @@ import java.util.Map;
 import javax.inject.Inject;
 import javax.inject.Named;
 
-import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 
@@ -53,16 +48,8 @@ public class InstancePreCreate extends AbstractObjectProcessLogic implements Pro
         }
         Map<String, Object> labels = DataAccessor.fieldMap(instance, InstanceConstants.FIELD_LABELS);
         Map<Object, Object> data = new HashMap<>();
-        if (labels.containsKey(SystemLabels.LABEL_AGENT_CREATE)
-                && labels.get(SystemLabels.LABEL_AGENT_CREATE).equals("true")) {
-            List<String> dataVolumes = new ArrayList<>(DataAccessor.fieldStringList(instance, InstanceConstants.FIELD_DATA_VOLUMES));
-            if (!dataVolumes.contains(AgentConstants.AGENT_INSTANCE_BIND_MOUNT)) {
-                dataVolumes.add(AgentConstants.AGENT_INSTANCE_BIND_MOUNT);
-            }
-            data.put(InstanceConstants.FIELD_DATA_VOLUMES, dataVolumes);
-        }
+        setAgentVolumes(instance, labels, data);
         setName(instance, labels, data);
-        setNetworkMode(instance, labels, data);
         setDns(instance, labels, data);
         setLogConfig(instance, data);
 
@@ -76,19 +63,23 @@ public class InstancePreCreate extends AbstractObjectProcessLogic implements Pro
         return ObjectUtils.toString(obj, null);
     }
 
-    protected void setNetworkMode(Instance instance, Map<String, Object> labels, Map<Object, Object> data) {
-        if (BooleanUtils.toBoolean(toString(labels.get(LABEL_RANCHER_NETWORK)))) {
-            data.put(FIELD_NETWORK_MODE, DockerNetworkConstants.NETWORK_MODE_MANAGED);
-        }
-    }
-
     protected void setName(Instance instance, Map<String, Object> labels, Map<Object, Object> data) {
-        String name = toString(labels.get(LABEL_DISPLAY_NAME));
+        String name = toString(labels.get(SystemLabels.LABEL_DISPLAY_NAME));
         if (StringUtils.isBlank(name)) {
             return;
         }
 
         data.put(ObjectMetaDataManager.NAME_FIELD, name.replaceFirst("/", ""));
+    }
+
+    protected void setAgentVolumes(Instance instance, Map<String, Object> labels, Map<Object, Object> data) {
+        if (!"true".equals(labels.get(SystemLabels.LABEL_AGENT_CREATE))) {
+            return;
+        }
+
+        List<String> dataVolumes = DataAccessor.appendToFieldStringList(instance, InstanceConstants.FIELD_DATA_VOLUMES,
+            AgentConstants.AGENT_INSTANCE_BIND_MOUNT);
+        data.put(InstanceConstants.FIELD_DATA_VOLUMES, dataVolumes);
     }
 
     protected void setLogConfig(Instance instance, Map<Object, Object> data) {
@@ -100,39 +91,32 @@ public class InstancePreCreate extends AbstractObjectProcessLogic implements Pro
         }
     }
 
-    protected boolean isRancherNetwork(Instance instance, Map<Object, Object> data) {
-        String networkMode = DataAccessor.fromMap(data).withKey(FIELD_NETWORK_MODE).as(String.class);
-        if (networkMode == null) {
-            networkMode = DataAccessor.fields(instance).withKey(DockerInstanceConstants.FIELD_NETWORK_MODE)
-                    .as(String.class);
-        }
-
-        return DockerNetworkConstants.NETWORK_MODE_MANAGED.equals(networkMode);
-    }
-
     protected void setDns(Instance instance, Map<String, Object> labels, Map<Object, Object> data) {
-        if (StringUtils.equalsIgnoreCase(instance.getSystemContainer(),
-                InstanceConstants.SYSTEM_CONTAINER_NETWORK_AGENT)) {
+        if (!InstanceConstants.KIND_CONTAINER.equals(instance.getKind())) {
             return;
         }
-        if (InstanceConstants.KIND_CONTAINER.equals(instance.getKind())) {
-            boolean addDns = DataAccessor.fromMap(labels).withKey(SystemLabels.LABEL_USE_RANCHER_DNS).withDefault(true).as(Boolean.class);
-            if (addDns) {
-                if (isRancherNetwork(instance, data)) {
-                    List<String> dns = new ArrayList<>(DataAccessor.fieldStringList(instance, DockerInstanceConstants.FIELD_DNS));
-                    if (!dns.contains(NetworkConstants.INTERNAL_DNS_IP)) {
-                        dns.add(NetworkConstants.INTERNAL_DNS_IP);
-                    }
-                    data.put(DockerInstanceConstants.FIELD_DNS, dns);
-                    data.put(InstanceConstants.FIELD_DNS_INTERNAL, Joiner.on(",").join(dns));
-                }
 
-                List<String> dnsSearch = new ArrayList<>(DataAccessor.fieldStringList(instance, DockerInstanceConstants.FIELD_DNS_SEARCH));
-                if (!dnsSearch.contains(NetworkConstants.INTERNAL_DNS_SEARCH_DOMAIN)) {
-                    dnsSearch.add(NetworkConstants.INTERNAL_DNS_SEARCH_DOMAIN);
-                }
-                data.put(DockerInstanceConstants.FIELD_DNS_SEARCH, dnsSearch);
-                data.put(InstanceConstants.FIELD_DNS_SEARCH_INTERNAL, Joiner.on(",").join(dnsSearch));
+        boolean addDns = DataAccessor.fromMap(labels).withKey(SystemLabels.LABEL_USE_RANCHER_DNS).withDefault(true).as(Boolean.class);
+        if (!addDns) {
+            return;
+        }
+
+        List<Long> networkIds = DataAccessor.fieldLongList(instance, InstanceConstants.FIELD_NETWORK_IDS);
+        if (networkIds == null || networkIds.size() == 0) {
+            return;
+        }
+
+        for (Long networkId : networkIds) {
+            Network network = objectManager.loadResource(Network.class, networkId);
+            for (String dns : DataAccessor.fieldStringList(network, NetworkConstants.FIELD_DNS)) {
+                List<String> dnsList = DataAccessor.appendToFieldStringList(instance, DockerInstanceConstants.FIELD_DNS, dns);
+                data.put(DockerInstanceConstants.FIELD_DNS, dnsList);
+                data.put(InstanceConstants.FIELD_DNS_INTERNAL, Joiner.on(",").join(dnsList));
+            }
+            for (String dnsSearch : DataAccessor.fieldStringList(network, NetworkConstants.FIELD_DNS_SEARCH)) {
+                List<String> dnsSearchList = DataAccessor.appendToFieldStringList(instance, DockerInstanceConstants.FIELD_DNS_SEARCH, dnsSearch);
+                data.put(DockerInstanceConstants.FIELD_DNS_SEARCH, dnsSearchList);
+                data.put(InstanceConstants.FIELD_DNS_SEARCH_INTERNAL, Joiner.on(",").join(dnsSearchList));
             }
         }
     }

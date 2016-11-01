@@ -212,17 +212,6 @@ public interface Subnet extends java.io.Serializable {
 	@javax.persistence.Column(name = "is_public", nullable = false, precision = 1)
 	public java.lang.Boolean getIsPublic();
 
-	/**
-	 * Setter for <code>cattle.subnet.ip_pool_id</code>.
-	 */
-	public void setIpPoolId(java.lang.Long value);
-
-	/**
-	 * Getter for <code>cattle.subnet.ip_pool_id</code>.
-	 */
-	@javax.persistence.Column(name = "ip_pool_id", precision = 19)
-	public java.lang.Long getIpPoolId();
-
 	// -------------------------------------------------------------------------
 	// FROM and INTO
 	// -------------------------------------------------------------------------

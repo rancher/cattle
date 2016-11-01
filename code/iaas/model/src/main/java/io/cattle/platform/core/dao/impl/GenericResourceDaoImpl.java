@@ -1,14 +1,14 @@
 package io.cattle.platform.core.dao.impl;
 
-import java.util.Map;
-
-import javax.inject.Inject;
-
 import io.cattle.platform.core.dao.GenericResourceDao;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.process.ObjectProcessManager;
 import io.cattle.platform.object.process.StandardProcess;
 import io.cattle.platform.util.type.CollectionUtils;
+
+import java.util.Map;
+
+import javax.inject.Inject;
 
 public class GenericResourceDaoImpl implements GenericResourceDao {
 
@@ -27,6 +27,13 @@ public class GenericResourceDaoImpl implements GenericResourceDao {
     public <T> T createAndSchedule(Class<T> clz, Object key, Object... values) {
         Map<Object,Object> properties = CollectionUtils.asMap(key, values);
         return createAndSchedule(clz, objectManager.convertToPropertiesFor(clz, properties));
+    }
+
+    @Override
+    public <T> T createAndSchedule(T obj, Map<String, Object> processData) {
+        obj = objectManager.create(obj);
+        processManager.scheduleStandardProcess(StandardProcess.CREATE, obj, processData);
+        return objectManager.reload(obj);
     }
 
     @Override

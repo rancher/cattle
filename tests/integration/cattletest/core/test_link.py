@@ -10,36 +10,7 @@ def test_link_instance_stop_start(super_client, client, context):
         'target2_link': target2.id})
 
     assert c.state == 'running'
-
-    ports = set()
-
-    for link in c.instanceLinks():
-        for port in super_client.reload(link).data.fields.ports:
-            ports.add('{}:{}'.format(port.publicPort, port.privatePort))
-
-    assert len(ports) > 0
-
-    new_ports = set()
-    c = client.wait_success(c.stop())
-    assert c.state == 'stopped'
-
-    for link in super_client.reload(c).instanceLinks():
-        assert len(link.data.fields.ports) == 2
-        for port in link.data.fields.ports:
-            new_ports.add('{}:{}'.format(port.publicPort, port.privatePort))
-
-    assert ports == new_ports
-
-    new_ports = set()
-    c = client.wait_success(c.start())
-    assert c.state == 'running'
-
-    for link in super_client.reload(c).instanceLinks():
-        assert len(link.data.fields.ports) == 2
-        for port in link.data.fields.ports:
-            new_ports.add('{}:{}'.format(port.publicPort, port.privatePort))
-
-    assert ports == new_ports
+    assert len(c.instanceLinks()) > 0
 
 
 def _find_agent_instance_ip(nsp, source):
@@ -72,39 +43,6 @@ def test_link_create(client, super_client, context):
     links = c.instanceLinks()
     names = set([x.linkName for x in links])
     assert names == set(['target1_link', 'target2_link'])
-
-    for link in links:
-        link = super_client.reload(link)
-        assert link.state == 'active'
-        assert link.instanceId == c.id
-        ip_address = _find_agent_instance_ip(context.nsp,
-                                             super_client.reload(c))
-
-        if link.linkName == 'target1_link':
-            assert link.targetInstanceId == target1.id
-            assert len(link.data.fields.ports) == 2
-            for port in link.data.fields.ports:
-                assert port.ipAddress == ip_address
-                assert port.publicPort is not None
-                if port.privatePort == 180:
-                    assert port.protocol == 'tcp'
-                elif port.privatePort == 122:
-                    assert port.protocol == 'udp'
-                else:
-                    assert False
-
-        if link.linkName == 'target2_link':
-            assert link.targetInstanceId == target2.id
-            assert len(link.data.fields.ports) == 2
-            for port in link.data.fields.ports:
-                assert port.ipAddress == ip_address
-                assert port.publicPort is not None
-                if port.privatePort == 280:
-                    assert port.protocol == 'tcp'
-                elif port.privatePort == 222:
-                    assert port.protocol == 'udp'
-                else:
-                    assert False
 
 
 def test_link_update(client, context):

@@ -256,7 +256,26 @@ def test_requested_ip_address(super_client, client, host, agent_cli, user_id):
                                         agent_cli, user_id, inspect=inspect)
     container = super_client.reload(container)
     assert container['data']['fields']['requestedIpAddress'] == '10.42.0.240'
-    assert container.nics()[0].network().kind == 'hostOnlyNetwork'
+    assert container.nics()[0].network().kind == 'dockerBridge'
+    assert container.primaryIpAddress is None
+
+
+def test_requested_ip_address_with_managed(super_client, client, host,
+                                           agent_cli, user_id):
+    external_id = random_str()
+    inspect = new_inspect(external_id)
+    inspect['NetworkSettings'] = {'IPAddress': '10.42.0.240'}
+    inspect['Config'] = {
+        'Labels': {
+            'io.rancher.container.network': 'true'
+        }
+    }
+    container = create_native_container(client, host, external_id,
+                                        agent_cli, user_id, inspect=inspect)
+    container = super_client.reload(container)
+    assert container['data']['fields']['requestedIpAddress'] == '10.42.0.240'
+    assert container.nics()[0].network().kind == 'network'
+    assert container.primaryIpAddress == '10.42.0.240'
 
 
 def test_container_event_net_none(client, host, agent_cli, user_id):
@@ -343,25 +362,6 @@ def test_container_event_image_and_reg_cred(client, host, agent_cli, user_id,
     image = container.image()
     assert image.name == name
     assert image.registryCredentialId == registry_credential.id
-
-
-def test_system_container(client, host, agent_cli, user_id):
-    # System containers are ignored by rancher
-
-    external_id = random_str()
-
-    con_inspect = new_inspect(external_id)
-
-    con_inspect['Config']['Labels'] = {
-        'io.rancher.container.system': 'rancher-agent'}
-    create_event(host, external_id, agent_cli, client, user_id,
-                 'start', con_inspect, image='sim:foo/bar:latest')
-
-    # Create this container as a way to wait for an instance to be successfully
-    # created, so that we know that we can check for the previous containers
-    create_native_container(client, host, random_str(), agent_cli, user_id)
-    containers = client.list_container(externalId=external_id)
-    assert len(containers) == 0
 
 
 def create_native_container(client, host, external_id, user_agent_cli,

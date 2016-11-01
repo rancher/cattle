@@ -13,19 +13,17 @@ public class MetadataEntry {
     Instance instance;
     Nic nic;
     IpAddress localIp;
-    IpAddress publicIp;
     Volume volume;
     Credential credential;
     Network network;
     Subnet subnet;
 
-    public MetadataEntry(Instance instance, Nic nic, IpAddress localIp, IpAddress publicIp, Volume volume, Credential credential,
+    public MetadataEntry(Instance instance, Nic nic, IpAddress localIp, Volume volume, Credential credential,
             Network network, Subnet subnet) {
         super();
         this.instance = instance;
         this.nic = nic;
         this.localIp = localIp;
-        this.publicIp = publicIp;
         this.volume = volume;
         this.credential = credential;
         this.network = network;
@@ -54,14 +52,6 @@ public class MetadataEntry {
 
     public void setLocalIp(IpAddress localIp) {
         this.localIp = localIp;
-    }
-
-    public IpAddress getPublicIp() {
-        return publicIp;
-    }
-
-    public void setPublicIp(IpAddress publicIp) {
-        this.publicIp = publicIp;
     }
 
     public Volume getVolume() {

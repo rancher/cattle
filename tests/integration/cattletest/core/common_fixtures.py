@@ -11,8 +11,8 @@ import fcntl
 import logging
 
 NOT_NONE = object()
-DEFAULT_TIMEOUT = 300
-cattle.DEFAULT_TIMEOUT = 300
+DEFAULT_TIMEOUT = 150
+cattle.DEFAULT_TIMEOUT = 150
 _SUPER_CLIENT = None
 
 
@@ -104,21 +104,8 @@ class Context(object):
         self.host = host
         self.image_uuid = 'sim:{}'.format(random_str())
         self.lb_v1_image_uuid = 'sim:rancher/load-balancer-service'
-        self.nsp = self._get_nsp()
         self.host_ip = self._get_host_ip()
         self.owner_client = owner_client
-
-    def _get_nsp(self):
-        if self.client is None:
-            return None
-
-        networks = filter(lambda x: x.kind == 'hostOnlyNetwork' and
-                          x.accountId == self.project.id,
-                          self.client.list_network(kind='hostOnlyNetwork'))
-        assert len(networks) == 1
-        nsps = super_client(None).reload(networks[0]).networkServiceProviders()
-        assert len(nsps) == 1
-        return nsps[0]
 
     def _get_host_ip(self):
         if self.host is None:
@@ -217,6 +204,7 @@ def create_context(admin_user_client, create_project=False, add_host=False,
         project = project_client.reload(project)
         owner_client = api_client(key.publicValue, key.secretValue,
                                   project_id=project.id)
+        _create_network_driver(owner_client)
 
     if create_project and add_host:
         host, agent, agent_client = \
@@ -228,6 +216,40 @@ def create_context(admin_user_client, create_project=False, add_host=False,
                    client=project_client, host=host,
                    agent_client=agent_client, agent=agent,
                    owner_client=owner_client)
+
+
+def _create_network_driver(client):
+    driver_name = 'default-test-driver'
+    stack = client.create_stack(name=driver_name, system=True)
+    s = client.create_network_driver_service(
+        name=driver_name,
+        startOnCreate=True,
+        stackId=stack.id,
+        selectorContainer='none',
+        networkDriver={
+            'name': driver_name,
+            'defaultNetwork': {
+                'subnets': [
+                    {
+                        'networkAddress': '10.42.0.0/16'
+                    }
+                ],
+                'dns': ['169.254.169.250'],
+                'dnsSearch': ['rancher.internal'],
+            },
+            'cniConf': {},
+        })
+
+    s = client.wait_success(s)
+    assert s.state == 'active'
+
+    nd = find_one(client.list_network_driver, serviceId=s.id, name=driver_name)
+    nd = client.wait_success(nd)
+    assert nd.state == 'active'
+
+    network = find_one(nd.networks)
+    network = client.wait_success(network)
+    assert network.state == 'active'
 
 
 def cleanup_context(admin_user_client, context):

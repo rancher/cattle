@@ -17,16 +17,16 @@ def storage_driver_context(new_context, super_client):
     stack = client.wait_success(stack)
     assert stack.state == 'active'
 
-    s = client.create_service(name=random_str(),
-                              startOnCreate=True,
-                              stackId=stack.id,
-                              metadata={
-                                  'storage_driver': {
-                                      'foo': 'bar'
-                                  }
-                              })
+    s = client.create_storage_driver_service(
+        name=random_str(),
+        startOnCreate=True,
+        stackId=stack.id,
+        storageDriver={
+            'foo': 'bar'
+        })
     s = client.wait_success(s)
     assert s.state == 'active'
+    assert s.kind == 'storageDriverService'
     wait_for(lambda: len(s.storageDrivers()) == 1)
     driver = find_one(s.storageDrivers)
     return Context(new_context, driver)
@@ -40,14 +40,13 @@ def test_storage_driver_in_use(new_context, super_client):
     stack = client.wait_success(stack)
     assert stack.state == 'active'
 
-    s = client.create_service(name=random_str(),
-                              startOnCreate=True,
-                              stackId=stack.id,
-                              metadata={
-                                  'storage_driver': {
-                                      'foo': 'bar'
-                                  }
-                              })
+    s = client.create_storage_driver_service(
+        name=random_str(),
+        startOnCreate=True,
+        stackId=stack.id,
+        storageDriver={
+            'foo': 'bar'
+        })
     s = client.wait_success(s)
     assert s.state == 'active'
 
@@ -85,18 +84,17 @@ def test_create_storage_driver_create_delete(new_context, super_client):
     driver_name = 'test' + random_str()
     stack = client.create_stack(name=random_str())
     super_client.update(stack, system=True)
-    s = client.create_service(name=random_str(),
-                              stackId=stack.id,
-                              metadata={
-                                  'storage_driver': {
-                                      'name': driver_name,
-                                      'volumeAccessMode': driver_name,
-                                      'blockDevicePath': 'some path',
-                                      'volumeCapabilities': [
-                                          'superAwesome',
-                                      ],
-                                  }
-                              })
+    s = client.create_storage_driver_service(
+        name=random_str(),
+        stackId=stack.id,
+        storageDriver={
+            'name': driver_name,
+            'volumeAccessMode': driver_name,
+            'blockDevicePath': 'some path',
+            'volumeCapabilities': [
+                'superAwesome',
+            ],
+        })
 
     s = client.wait_success(s)
     assert s.state == 'inactive'

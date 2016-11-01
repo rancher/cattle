@@ -24,11 +24,6 @@ public class Tables {
 	public static final io.cattle.platform.core.model.tables.AgentTable AGENT = io.cattle.platform.core.model.tables.AgentTable.AGENT;
 
 	/**
-	 * The table cattle.agent_group
-	 */
-	public static final io.cattle.platform.core.model.tables.AgentGroupTable AGENT_GROUP = io.cattle.platform.core.model.tables.AgentGroupTable.AGENT_GROUP;
-
-	/**
 	 * The table cattle.audit_log
 	 */
 	public static final io.cattle.platform.core.model.tables.AuditLogTable AUDIT_LOG = io.cattle.platform.core.model.tables.AuditLogTable.AUDIT_LOG;
@@ -169,11 +164,6 @@ public class Tables {
 	public static final io.cattle.platform.core.model.tables.HostLabelMapTable HOST_LABEL_MAP = io.cattle.platform.core.model.tables.HostLabelMapTable.HOST_LABEL_MAP;
 
 	/**
-	 * The table cattle.host_vnet_map
-	 */
-	public static final io.cattle.platform.core.model.tables.HostVnetMapTable HOST_VNET_MAP = io.cattle.platform.core.model.tables.HostVnetMapTable.HOST_VNET_MAP;
-
-	/**
 	 * The table cattle.image
 	 */
 	public static final io.cattle.platform.core.model.tables.ImageTable IMAGE = io.cattle.platform.core.model.tables.ImageTable.IMAGE;
@@ -214,16 +204,6 @@ public class Tables {
 	public static final io.cattle.platform.core.model.tables.IpAddressNicMapTable IP_ADDRESS_NIC_MAP = io.cattle.platform.core.model.tables.IpAddressNicMapTable.IP_ADDRESS_NIC_MAP;
 
 	/**
-	 * The table cattle.ip_association
-	 */
-	public static final io.cattle.platform.core.model.tables.IpAssociationTable IP_ASSOCIATION = io.cattle.platform.core.model.tables.IpAssociationTable.IP_ASSOCIATION;
-
-	/**
-	 * The table cattle.ip_pool
-	 */
-	public static final io.cattle.platform.core.model.tables.IpPoolTable IP_POOL = io.cattle.platform.core.model.tables.IpPoolTable.IP_POOL;
-
-	/**
 	 * The table cattle.label
 	 */
 	public static final io.cattle.platform.core.model.tables.LabelTable LABEL = io.cattle.platform.core.model.tables.LabelTable.LABEL;
@@ -249,29 +229,9 @@ public class Tables {
 	public static final io.cattle.platform.core.model.tables.NetworkDriverTable NETWORK_DRIVER = io.cattle.platform.core.model.tables.NetworkDriverTable.NETWORK_DRIVER;
 
 	/**
-	 * The table cattle.network_service
-	 */
-	public static final io.cattle.platform.core.model.tables.NetworkServiceTable NETWORK_SERVICE = io.cattle.platform.core.model.tables.NetworkServiceTable.NETWORK_SERVICE;
-
-	/**
-	 * The table cattle.network_service_provider
-	 */
-	public static final io.cattle.platform.core.model.tables.NetworkServiceProviderTable NETWORK_SERVICE_PROVIDER = io.cattle.platform.core.model.tables.NetworkServiceProviderTable.NETWORK_SERVICE_PROVIDER;
-
-	/**
-	 * The table cattle.network_service_provider_instance_map
-	 */
-	public static final io.cattle.platform.core.model.tables.NetworkServiceProviderInstanceMapTable NETWORK_SERVICE_PROVIDER_INSTANCE_MAP = io.cattle.platform.core.model.tables.NetworkServiceProviderInstanceMapTable.NETWORK_SERVICE_PROVIDER_INSTANCE_MAP;
-
-	/**
 	 * The table cattle.nic
 	 */
 	public static final io.cattle.platform.core.model.tables.NicTable NIC = io.cattle.platform.core.model.tables.NicTable.NIC;
-
-	/**
-	 * The table cattle.offering
-	 */
-	public static final io.cattle.platform.core.model.tables.OfferingTable OFFERING = io.cattle.platform.core.model.tables.OfferingTable.OFFERING;
 
 	/**
 	 * The table cattle.physical_host
@@ -369,11 +329,6 @@ public class Tables {
 	public static final io.cattle.platform.core.model.tables.SubnetTable SUBNET = io.cattle.platform.core.model.tables.SubnetTable.SUBNET;
 
 	/**
-	 * The table cattle.subnet_vnet_map
-	 */
-	public static final io.cattle.platform.core.model.tables.SubnetVnetMapTable SUBNET_VNET_MAP = io.cattle.platform.core.model.tables.SubnetVnetMapTable.SUBNET_VNET_MAP;
-
-	/**
 	 * The table cattle.task
 	 */
 	public static final io.cattle.platform.core.model.tables.TaskTable TASK = io.cattle.platform.core.model.tables.TaskTable.TASK;
@@ -387,11 +342,6 @@ public class Tables {
 	 * The table cattle.user_preference
 	 */
 	public static final io.cattle.platform.core.model.tables.UserPreferenceTable USER_PREFERENCE = io.cattle.platform.core.model.tables.UserPreferenceTable.USER_PREFERENCE;
-
-	/**
-	 * The table cattle.vnet
-	 */
-	public static final io.cattle.platform.core.model.tables.VnetTable VNET = io.cattle.platform.core.model.tables.VnetTable.VNET;
 
 	/**
 	 * The table cattle.volume

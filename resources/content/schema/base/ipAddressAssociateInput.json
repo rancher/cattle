@@ -1,9 +1,0 @@
-{
-    "collectionMethods" : [],
-    "resourceFields" : {
-        "ipAddressId" : {
-            "type": "reference[ipAddress]",
-            "create": true
-        }
-    }
-}

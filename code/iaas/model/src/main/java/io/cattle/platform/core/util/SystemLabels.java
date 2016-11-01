@@ -10,11 +10,18 @@ public class SystemLabels {
     public static final String LABEL_VOLUME_CLEANUP_STRATEGY = "io.rancher.container.volume_cleanup_strategy";
     public static final String LABEL_CONTAINER_NAMESPACE = "io.rancher.container.namespace";
     public static final String LABEL_SERVICE_CONTAINER_START_ONCE = "io.rancher.container.start_once";
+    public static final String LABEL_CNI_NETWORK = "io.rancher.cni.network";
+    public static final String LABEL_RANCHER_UUID = "io.rancher.container.uuid";
+    public static final String LABEL_RANCHER_NETWORK = "io.rancher.container.network";
+    public static final String LABEL_DISPLAY_NAME = "io.rancher.container.display_name";
+
 
     /**
      * Indicates an instance runs an agent that provides the labels provider service
      */
     public static final String LABEL_AGENT_SERVICE_LABELS_PROVIDER = "io.rancher.container.agent_service.labels_provider";
+    public static final String LABEL_AGENT_SERVICE_METADATA = "io.rancher.container.agent_service.metadata";
+    public static final String LABEL_AGENT_SERVICE_IPSEC = "io.rancher.container.agent_service.ipsec";
     public static final String LABEL_AGENT_SERVICE_COMPOSE_PROVIDER = "io.rancher.container.agent_service.docker_compose";
     public static final String LABEL_AGENT_SERVICE_SCHEDULING_PROVIDER = "io.rancher.container.agent_service.scheduling";
 

@@ -71,11 +71,16 @@ public class DeferredUtils {
     }
 
     public static void runDeferred() {
-        for (Runnable runnable : TL.get()) {
-            try {
-                runnable.run();
-            } catch (Throwable t) {
-                log.error("Failed to run deferred action", t);
+        while (TL.get().size() > 0) {
+            List<Runnable> toRun = TL.get();
+            TL.remove();
+
+            for (Runnable runnable : toRun) {
+                try {
+                    runnable.run();
+                } catch (Throwable t) {
+                    log.error("Failed to run deferred action", t);
+                }
             }
         }
     }

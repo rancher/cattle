@@ -1,3 +1,0 @@
-<#if ipsecKey??>
-${ipsecKey}
-</#if>

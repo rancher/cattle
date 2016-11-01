@@ -176,13 +176,13 @@ def test_service_affinity_rules_w_policy(super_client, new_context):
     host = register_simulated_host(new_context)
 
     # wait for service instances to be 2
-    wait_for(lambda: super_client.reload(svc).currentScale >= 2)
+    wait_for(lambda: len(super_client.reload(svc).instanceIds) >= 2)
 
     # add extra host 2
     register_simulated_host(new_context)
 
     # wait for service instances to be 3
-    wait_for(lambda: super_client.reload(svc).currentScale >= 3)
+    wait_for(lambda: len(super_client.reload(svc).instanceIds) >= 3)
 
     # deactivate and remove host
     host = client.wait_success(host.deactivate())

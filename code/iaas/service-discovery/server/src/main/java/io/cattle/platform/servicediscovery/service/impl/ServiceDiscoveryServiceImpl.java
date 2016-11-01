@@ -4,6 +4,7 @@ import static io.cattle.platform.core.model.tables.ServiceIndexTable.*;
 import static io.cattle.platform.core.model.tables.ServiceTable.*;
 import static io.cattle.platform.core.model.tables.StackTable.*;
 import static io.cattle.platform.core.model.tables.SubnetTable.*;
+
 import io.cattle.platform.allocator.service.AllocatorService;
 import io.cattle.platform.configitem.events.ConfigUpdate;
 import io.cattle.platform.configitem.model.Client;
@@ -40,6 +41,8 @@ import io.cattle.platform.eventing.EventService;
 import io.cattle.platform.iaas.api.filter.apikey.ApiKeyFilter;
 import io.cattle.platform.json.JsonMapper;
 import io.cattle.platform.lock.LockManager;
+import io.cattle.platform.network.IPAssignment;
+import io.cattle.platform.network.NetworkService;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.process.ObjectProcessManager;
 import io.cattle.platform.object.process.StandardProcess;
@@ -118,6 +121,9 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
     @Inject
     ConfigItemStatusManager itemManager;
 
+    @Inject
+    NetworkService networkService;
+
     @Override
     public List<Integer> getServiceInstanceUsedSuffixes(Service service, String launchConfigName) {
         Stack env = objectManager.findOne(Stack.class, STACK.ID, service.getStackId());
@@ -181,9 +187,7 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
     }
 
     protected String allocateVip(Service service) {
-        if (service.getKind().equalsIgnoreCase(ServiceConstants.KIND_LOAD_BALANCER_SERVICE)
-                || service.getKind().equalsIgnoreCase(ServiceConstants.KIND_SERVICE)
-                || service.getKind().equalsIgnoreCase(ServiceConstants.KIND_DNS_SERVICE)) {
+        if (ServiceConstants.SERVICE_LIKE.contains(service.getKind())) {
             Subnet vipSubnet = getServiceVipSubnet(service);
             String requestedVip = service.getVip();
             return allocateIpForService(service, vipSubnet, requestedVip);
@@ -501,12 +505,13 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
     @Override
     public void allocateIpToServiceIndex(ServiceIndex serviceIndex, String requestedIp) {
         if (StringUtils.isEmpty(serviceIndex.getAddress())) {
-            Network ntwk = ntwkDao.getNetworkForObject(serviceIndex, NetworkConstants.KIND_HOSTONLY);
-            if (ntwk != null) {
-                Subnet subnet = ntwkDao.addManagedNetworkSubnet(ntwk);
-                subnet = waitForSubnetCreation(subnet);
-                String ipAddress = allocateIpForService(serviceIndex, subnet, requestedIp);
-                setServiceIndexIp(serviceIndex, ipAddress);
+            // TODO: NETWORK_MODE_MANAGED shouldn't be hardcoded, the networkMode should come from the launchConfig
+            Network ntwk = networkService.resolveNetwork(serviceIndex.getAccountId(), NetworkConstants.NETWORK_MODE_MANAGED);
+            if (networkService.shouldAssignIpAddress(ntwk)) {
+                IPAssignment assignment = networkService.assignIpAddress(ntwk, serviceIndex, requestedIp);
+                if (assignment != null) {
+                    setServiceIndexIp(serviceIndex, assignment.getIpAddress());
+                }
             }
         }
     }
@@ -519,11 +524,9 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
     @Override
     public void releaseIpFromServiceIndex(ServiceIndex serviceIndex) {
         if (!StringUtils.isEmpty(serviceIndex.getAddress())) {
-            Network ntwk = ntwkDao.getNetworkForObject(serviceIndex, NetworkConstants.KIND_HOSTONLY);
-            if (ntwk != null) {
-                Subnet subnet = ntwkDao.addManagedNetworkSubnet(ntwk);
-                poolManager.releaseResource(subnet, serviceIndex);
-            }
+            // TODO: NETWORK_MODE_MANAGED shouldn't be hardcoded, the networkMode should come from the launchConfig
+            Network ntwk = networkService.resolveNetwork(serviceIndex.getAccountId(), NetworkConstants.NETWORK_MODE_MANAGED);
+            networkService.releaseIpAddress(ntwk, serviceIndex);
         }
     }
 

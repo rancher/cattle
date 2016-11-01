@@ -82,139 +82,12 @@ def test_allocate_to_host_with_pool(new_context, super_client):
         'Scheduling failed: valid host(s) [')
 
 
-def test_host_vnet_association(super_client, new_context):
-    account = new_context.project
-    image_uuid = new_context.image_uuid
-    host1 = new_context.host
-    register_simulated_host(new_context.client)
-    register_simulated_host(new_context.client)
-
-    network = super_client.create_network(accountId=account.id)
-    vnet = super_client.create_vnet(accountId=account.id,
-                                    networkId=network.id,
-                                    uri='sim://')
-    vnet = super_client.wait_success(vnet)
-
-    assert vnet.state == 'active'
-
-    subnet1 = super_client.create_subnet(accountId=account.id,
-                                         networkAddress='192.168.0.0',
-                                         cidrSize='16',
-                                         networkId=network.id,
-                                         startAddress='192.168.0.3',
-                                         endAddress='192.168.0.5')
-    subnet1 = super_client.wait_success(subnet1)
-
-    subnet2 = super_client.create_subnet(accountId=account.id,
-                                         networkAddress='192.168.2.0',
-                                         cidrSize='16',
-                                         networkId=network.id,
-                                         startAddress='192.168.2.3',
-                                         endAddress='192.168.3.5')
-    subnet2 = super_client.wait_success(subnet2)
-
-    subnet_map1 = super_client.create_subnet_vnet_map(accountId=account.id,
-                                                      subnetId=subnet1.id,
-                                                      vnetId=vnet.id)
-    subnet_map1 = super_client.wait_success(subnet_map1)
-    assert subnet_map1.state == 'active'
-
-    subnet_map2 = super_client.create_subnet_vnet_map(accountId=account.id,
-                                                      subnetId=subnet2.id,
-                                                      vnetId=vnet.id)
-    subnet_map2 = super_client.wait_success(subnet_map2)
-    assert subnet_map2.state == 'active'
-
-    vnet_map1 = super_client.create_host_vnet_map(accountId=account.id,
-                                                  hostId=host1.id,
-                                                  vnetId=vnet.id)
-    vnet_map1 = super_client.wait_success(vnet_map1)
-    assert vnet_map1.state == 'active'
-
-    hosts = set()
-    for _ in range(3):
-        vm = super_client.create_virtual_machine(accountId=account.id,
-                                                 subnetIds=[subnet1.id],
-                                                 imageUuid=image_uuid)
-        vm = super_client.wait_success(vm)
-        assert vm.state == 'running'
-        hosts.add(vm.hosts()[0].id)
-
-    for _ in range(3):
-        vm = super_client.create_virtual_machine(accountId=account.id,
-                                                 subnetIds=[subnet2.id],
-                                                 imageUuid=image_uuid)
-        vm = super_client.wait_success(vm)
-        assert vm.state == 'running'
-        hosts.add(vm.hosts()[0].id)
-
-    assert len(hosts) == 1
-    assert host1.id in hosts
-
-
 def test_allocation_stay_associated_to_host(super_client, context):
     c = context.create_container()
     c = context.client.wait_success(c.stop())
     assert c.state == 'stopped'
 
     assert len(c.hosts()) == 1
-
-
-def test_vnet_stickiness(super_client, new_context):
-    account_id = new_context.project.id
-    network = super_client.list_network(accountId=account_id,
-                                        kind='hostOnlyNetwork')[0]
-    subnet = super_client.list_subnet(accountId=account_id)[0]
-
-    image_uuid = new_context.image_uuid
-    host1 = new_context.host
-    host2 = register_simulated_host(new_context.client)
-    host3 = register_simulated_host(new_context.client)
-    valid_hosts = [host1.id, host2.id, host3.id]
-
-    containers = []
-    for i in range(0, 3):
-        c = super_client.reload(new_context.create_container(
-            requestedHostId=valid_hosts[i]))
-        containers.append(c)
-
-    actual_hosts = set()
-    for i in containers:
-        assert i.state == 'running'
-        actual_hosts.add(i.hosts()[0].id)
-
-    assert actual_hosts == set(valid_hosts)
-    assert len(network.vnets()) == 3
-    assert len(subnet.vnets()) == 3
-    c1_host_id = c.hosts()[0].id
-    c1_nic = c.nics()[0]
-
-    for _ in range(3):
-        c = super_client.create_container(accountId=account_id,
-                                          imageUuid=image_uuid,
-                                          vnetIds=[c1_nic.vnetId])
-        c = super_client.wait_success(c)
-
-        assert c.hosts()[0].id == c1_host_id
-        nic = c.nics()[0]
-
-        assert nic.subnetId == c1_nic.subnetId
-        assert nic.vnetId == c1_nic.vnetId
-        assert nic.networkId == c1_nic.networkId
-
-    for _ in range(3):
-        c = super_client.create_container(accountId=account_id,
-                                          imageUuid=image_uuid,
-                                          networkIds=[network.id],
-                                          vnetIds=[c1_nic.vnetId])
-        c = super_client.wait_success(c)
-
-        assert c.hosts()[0].id == c1_host_id
-        nic = c.nics()[0]
-
-        assert nic.subnetId == c1_nic.subnetId
-        assert nic.vnetId == c1_nic.vnetId
-        assert nic.networkId == c1_nic.networkId
 
 
 def test_port_constraint(new_context):
@@ -313,6 +186,7 @@ def test_conflicting_ports_in_deployment_unit(new_context):
     svc = svc.activate()
     c = _wait_for_compose_instance_error(client, svc, env)
     assert 'Port 5555/tcp requested more than once.' in c.transitioningMessage
+    env.remove()
 
 
 def test_simultaneous_port_allocation(new_context):

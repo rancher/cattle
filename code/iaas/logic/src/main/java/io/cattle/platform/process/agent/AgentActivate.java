@@ -68,7 +68,7 @@ public class AgentActivate extends AbstractDefaultProcessHandler {
         Instance instance = objectManager.findAny(Instance.class, INSTANCE.AGENT_ID, agent.getId());
 
         /* Don't ping non-system container agent instances */
-        if (instance != null && instance.getSystemContainer() == null) {
+        if (instance != null) {
             return null;
         }
 

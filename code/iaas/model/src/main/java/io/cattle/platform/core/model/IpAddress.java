@@ -201,17 +201,6 @@ public interface IpAddress extends java.io.Serializable {
 	@javax.persistence.Column(name = "hostname", length = 255)
 	public java.lang.String getHostname();
 
-	/**
-	 * Setter for <code>cattle.ip_address.ip_pool_id</code>.
-	 */
-	public void setIpPoolId(java.lang.Long value);
-
-	/**
-	 * Getter for <code>cattle.ip_address.ip_pool_id</code>.
-	 */
-	@javax.persistence.Column(name = "ip_pool_id", precision = 19)
-	public java.lang.Long getIpPoolId();
-
 	// -------------------------------------------------------------------------
 	// FROM and INTO
 	// -------------------------------------------------------------------------

@@ -150,7 +150,7 @@ def mock_sched(new_context, super_client):
     c = super_client.reload(c)
     hci = find_one(c.healthcheckInstances)
     hcihm = find_one(hci.healthcheckInstanceHostMaps)
-    agent = _get_agent_for_container(c)
+    agent = _get_agent_for_container(new_context, c)
     a_client = _get_agent_client(agent)
     a_client.create_service_event(externalTimestamp=int(time.time()),
                                   reportedHealth='UP',

@@ -1,14 +1,7 @@
 {
     "resourceFields": {
         "networkMode": {
-            "type": "enum",
-            "options": [
-                "none",
-                "bridge",
-                "host",
-                "managed",
-                "container"
-            ],
+            "type": "string",
             "default": "managed",
             "nullable": true
         },

@@ -4,10 +4,11 @@ import static io.cattle.platform.core.model.tables.AccountTable.*;
 import static io.cattle.platform.core.model.tables.AgentTable.*;
 import static io.cattle.platform.core.model.tables.ConfigItemStatusTable.*;
 import static io.cattle.platform.core.model.tables.ConfigItemTable.*;
-import static io.cattle.platform.core.model.tables.StackTable.*;
+import static io.cattle.platform.core.model.tables.HostTable.*;
 import static io.cattle.platform.core.model.tables.InstanceTable.*;
 import static io.cattle.platform.core.model.tables.ServiceTable.*;
-import static io.cattle.platform.core.model.tables.HostTable.*;
+import static io.cattle.platform.core.model.tables.StackTable.*;
+
 import io.cattle.platform.archaius.util.ArchaiusUtil;
 import io.cattle.platform.configitem.events.ConfigUpdated;
 import io.cattle.platform.configitem.model.Client;
@@ -23,9 +24,9 @@ import io.cattle.platform.core.model.Account;
 import io.cattle.platform.core.model.Agent;
 import io.cattle.platform.core.model.ConfigItem;
 import io.cattle.platform.core.model.ConfigItemStatus;
-import io.cattle.platform.core.model.Stack;
 import io.cattle.platform.core.model.Host;
 import io.cattle.platform.core.model.Service;
+import io.cattle.platform.core.model.Stack;
 import io.cattle.platform.core.model.tables.records.ConfigItemStatusRecord;
 import io.cattle.platform.db.jooq.dao.impl.AbstractJooqDao;
 import io.cattle.platform.deferred.util.DeferredUtils;
@@ -447,7 +448,7 @@ public class ConfigItemStatusDaoImpl extends AbstractJooqDao implements ConfigIt
                                 AgentConstants.STATE_RECONNECTING, AgentConstants.STATE_FINISHING_RECONNECT,
                                 AgentConstants.STATE_RECONNECTED))
                         .and(INSTANCE.STATE.isNull().or(INSTANCE.STATE.eq(InstanceConstants.STATE_RUNNING))))
-                .orderBy(AGENT.AGENT_GROUP_ID.asc(), AGENT.ID.asc())
+                .orderBy(AGENT.ID.asc())
                 .limit(BATCH_SIZE.get())
                 .fetchInto(ConfigItemStatusRecord.class);
     }
@@ -480,7 +481,7 @@ public class ConfigItemStatusDaoImpl extends AbstractJooqDao implements ConfigIt
                                 AgentConstants.STATE_RECONNECTING, AgentConstants.STATE_FINISHING_RECONNECT,
                                 AgentConstants.STATE_RECONNECTED))
                         .and(INSTANCE.STATE.isNull().or(INSTANCE.STATE.eq(InstanceConstants.STATE_RUNNING))))
-                .orderBy(AGENT.AGENT_GROUP_ID.asc(), AGENT.ID.asc())
+                .orderBy(AGENT.ID.asc())
                 .limit(BATCH_SIZE.get())
                 .fetchInto(ConfigItemStatusRecord.class);
     }

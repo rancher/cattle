@@ -3,23 +3,23 @@ package io.cattle.platform.process.containerevent;
 import static io.cattle.platform.core.constants.CommonStatesConstants.*;
 import static io.cattle.platform.core.constants.ContainerEventConstants.*;
 import static io.cattle.platform.core.constants.InstanceConstants.*;
-import static io.cattle.platform.core.constants.NetworkConstants.*;
 import static io.cattle.platform.core.model.tables.HostTable.*;
+import static io.cattle.platform.core.util.SystemLabels.*;
 import static io.cattle.platform.docker.constants.DockerInstanceConstants.*;
-import static io.cattle.platform.docker.constants.DockerNetworkConstants.*;
+
 import io.cattle.platform.agent.AgentLocator;
 import io.cattle.platform.agent.RemoteAgent;
 import io.cattle.platform.archaius.util.ArchaiusUtil;
 import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.InstanceConstants;
+import io.cattle.platform.core.constants.NetworkConstants;
 import io.cattle.platform.core.dao.AccountDao;
+import io.cattle.platform.core.dao.GenericResourceDao;
 import io.cattle.platform.core.dao.InstanceDao;
 import io.cattle.platform.core.dao.NetworkDao;
 import io.cattle.platform.core.model.ContainerEvent;
 import io.cattle.platform.core.model.Host;
 import io.cattle.platform.core.model.Instance;
-import io.cattle.platform.core.model.Network;
-import io.cattle.platform.core.model.Subnet;
 import io.cattle.platform.core.util.SystemLabels;
 import io.cattle.platform.engine.handler.HandlerResult;
 import io.cattle.platform.engine.process.ProcessInstance;
@@ -36,7 +36,6 @@ import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.object.util.DataUtils;
 import io.cattle.platform.process.base.AbstractDefaultProcessHandler;
 import io.cattle.platform.storage.service.StorageService;
-import io.cattle.platform.util.net.NetUtils;
 import io.cattle.platform.util.type.CollectionUtils;
 
 import java.util.HashMap;
@@ -91,6 +90,9 @@ public class ContainerEventCreate extends AbstractDefaultProcessHandler {
     @Inject
     AgentLocator agentLocator;
 
+    @Inject
+    GenericResourceDao resourceDao;
+
     @Override
     public HandlerResult handle(ProcessState state, ProcessInstance process) {
         if (!MANAGE_NONRANCHER_CONTAINERS.get()) {
@@ -113,11 +115,6 @@ public class ContainerEventCreate extends AbstractDefaultProcessHandler {
                 Map<String, Object> inspect = getInspect(event, data);
                 String rancherUuid = getRancherUuidLabel(inspect, data);
                 Instance instance = instanceDao.getInstanceByUuidOrExternalId(event.getAccountId(), rancherUuid, event.getExternalId());
-                if ((instance != null && StringUtils.isNotEmpty(instance.getSystemContainer()))
-                        || StringUtils.isNotEmpty(getLabel(LABEL_RANCHER_SYSTEM_CONTAINER, inspect, data))) {
-                    // System containers are not managed by container events
-                    return null;
-                }
 
                 try {
                     String status = event.getExternalStatus();
@@ -188,15 +185,16 @@ public class ContainerEventCreate extends AbstractDefaultProcessHandler {
         setImage(event, instance);
         setHost(event, instance);
         setVolumeCleanupStrategy(inspect, data, instance);
+        setLabels(inspect, data, instance);
 
+        resourceDao.createAndSchedule(instance, makeData());
+    }
+
+    private void setLabels(Map<String, Object> inspect, Map<String, Object> data, Instance instance) {
         Map<String, Object> labels = DataAccessor.fieldMap(instance, InstanceConstants.FIELD_LABELS);
         labels.putAll(getLabels(inspect, data));
         DataAccessor.setField(instance, InstanceConstants.FIELD_LABELS, labels);
-
-        instance = objectManager.create(instance);
-        objectProcessManager.scheduleProcessInstance(PROCESS_CREATE, instance, makeData());
     }
-
 
     private void setVolumeCleanupStrategy(Map<String, Object> inspect, Map<String, Object> data, Instance instance) {
         String existingLabel = getLabel(SystemLabels.LABEL_VOLUME_CLEANUP_STRATEGY, null, inspect, data);
@@ -261,7 +259,7 @@ public class ContainerEventCreate extends AbstractDefaultProcessHandler {
 
     void setName(Map<String, Object> inspect, Map<String, Object> data, Instance instance) {
         String name = DataAccessor.fromMap(data).withKey(CONTAINER_EVENT_SYNC_NAME).as(String.class);
-        if (StringUtils.isEmpty(name))
+        if (StringUtils.isBlank(name))
             name = DataAccessor.fromMap(inspect).withKey(INSPECT_NAME).as(String.class);
 
         if (name != null)
@@ -270,25 +268,26 @@ public class ContainerEventCreate extends AbstractDefaultProcessHandler {
     }
 
     void setNetwork(Map<String, Object> inspect, Map<String, Object> data, Instance instance) {
+        String inspectNetMode = getInspectNetworkMode(inspect);
         String networkMode = checkNoneNetwork(inspect);
 
         if (networkMode == null) {
-            String inspectNetMode = getInspectNetworkMode(inspect);
-            networkMode = checkHostNetwork(inspectNetMode);
-
-            if (networkMode == null)
-                networkMode = checkContainerNetwork(inspectNetMode, instance, data);
-
-            if (networkMode == null)
-                networkMode = checkBridgeOrManagedNetwork(inspectNetMode, inspect, data, instance);
+            networkMode = checkBlankNetwork(inspect);
+        }
+        if (networkMode == null) {
+            networkMode = checkContainerNetwork(inspectNetMode, instance, data);
         }
 
         if (networkMode == null) {
-            log.warn("Could not determine network mode for container [externalId: {}]. Using none networking.", instance.getExternalId());
-            networkMode = NETWORK_MODE_NONE;
+            networkMode = inspectNetMode;
         }
 
         DataAccessor.fields(instance).withKey(FIELD_NETWORK_MODE).set(networkMode);
+
+        String ip = getDockerIp(inspect);
+        if (StringUtils.isNotEmpty(ip)) {
+            DataAccessor.fields(instance).withKey(FIELD_REQUESTED_IP_ADDRESS).set(ip);
+        }
     }
 
     private String getInspectNetworkMode(Map<String, Object> inspect) {
@@ -300,24 +299,25 @@ public class ContainerEventCreate extends AbstractDefaultProcessHandler {
     private String checkNoneNetwork(Map<String, Object> inspect) {
         Object netDisabledObj = CollectionUtils.getNestedValue(inspect, "Config", "NetworkDisabled");
         if (Boolean.TRUE.equals(netDisabledObj)) {
-            return NETWORK_MODE_NONE;
+            return NetworkConstants.NETWORK_MODE_NONE;
         }
         return null;
     }
 
-    private String checkHostNetwork(String inspectNetMode) {
-        if (NETWORK_MODE_HOST.equals(inspectNetMode)) {
-            return inspectNetMode;
+    private String checkBlankNetwork(Map<String, Object> inspect) {
+        String inspectNm = getInspectNetworkMode(inspect);
+        if (StringUtils.isBlank(inspectNm)) {
+            return NetworkConstants.NETWORK_MODE_BRIDGE;
         }
         return null;
     }
 
     /*
-     * If mode is container, will attempt to look up the corresponding container in rancher. If it is found, will also ahve the side effect of setting
+     * If mode is container, will attempt to look up the corresponding container in rancher. If it is found, will also have the side effect of setting
      * networkContainerId on the instance.
      */
     private String checkContainerNetwork(String inspectNetMode, Instance instance, Map<String, Object> data) {
-        if (!StringUtils.startsWith(inspectNetMode, NETWORK_MODE_CONTAINER))
+        if (!StringUtils.startsWith(inspectNetMode, NetworkConstants.NETWORK_MODE_CONTAINER))
             return null;
 
         String[] parts = StringUtils.split(inspectNetMode, ":", 2);
@@ -336,46 +336,14 @@ public class ContainerEventCreate extends AbstractDefaultProcessHandler {
 
             if (netFromInstance != null) {
                 DataAccessor.fields(instance).withKey(FIELD_NETWORK_CONTAINER_ID).set(netFromInstance.getId());
-                return NETWORK_MODE_CONTAINER;
+                return NetworkConstants.NETWORK_MODE_CONTAINER;
             }
         }
 
         log.warn("Problem configuring container networking for container [externalId: {}]. Could not find target container: [{}].", instance.getExternalId(),
                 targetContainer);
 
-        return null;
-    }
-
-    /*
-     * If mode is bridge, will check to see if managed networking or native docker bridge networking should be configured. Can have the side effect of setting
-     * the requestedIp field on the instance, if it is appropriate to do so.
-     */
-    private String checkBridgeOrManagedNetwork(String inspectNetMode, Map<String, Object> inspect, Map<String, Object> data, Instance instance) {
-        if (!NETWORK_MODE_BRIDGE.equals(inspectNetMode) && StringUtils.isNotEmpty(inspectNetMode) && !NETWORK_MODE_DEFAULT.equals(inspectNetMode))
-            return null;
-
-        String ip = getDockerIp(inspect);
-        if (StringUtils.isNotEmpty(ip) && isIpInNetwork(ip, networkDao.getNetworkForObject(instance, KIND_HOSTONLY))) {
-            DataAccessor.fields(instance).withKey(FIELD_REQUESTED_IP_ADDRESS).set(ip);
-            return NETWORK_MODE_MANAGED;
-        }
-
-        return NETWORK_MODE_BRIDGE;
-    }
-
-    boolean isIpInNetwork(String ipAddress, Network network) {
-        for (Subnet subnet : objectManager.children(network, Subnet.class)) {
-            if (subnet.getRemoved() == null) {
-                String startIp = NetUtils.getDefaultStartAddress(subnet.getNetworkAddress(), subnet.getCidrSize());
-                long start = NetUtils.ip2Long(startIp);
-                String endIp = NetUtils.getDefaultEndAddress(subnet.getNetworkAddress(), subnet.getCidrSize());
-                long end = NetUtils.ip2Long(endIp);
-                long ip = NetUtils.ip2Long(ipAddress);
-                if (start <= ip && ip <= end)
-                    return true;
-            }
-        }
-        return false;
+        return NetworkConstants.NETWORK_MODE_NONE;
     }
 
     String getDockerIp(Map<String, Object> inspect) {

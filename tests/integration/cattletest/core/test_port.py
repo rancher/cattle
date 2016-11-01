@@ -179,19 +179,6 @@ def test_ports_service(super_client, new_context):
     agent = super_client.reload(c).hosts()[0].agent()
     assert agent is not None
 
-    items = [x.name for x in agent.configItemStatuses()]
-
-    assert 'host-iptables' in items
-    assert 'host-routes' in items
-
-    item = None
-    for x in agent.configItemStatuses():
-        if x.name == 'host-iptables':
-            item = x
-            break
-
-    assert item is not None
-
     port = c.ports_link()[0]
 
     assert port.publicPort is None
@@ -202,9 +189,6 @@ def test_ports_service(super_client, new_context):
 
     port = client.wait_success(port)
     assert port.state == 'active'
-
-    new_item = super_client.reload(item)
-    assert new_item.requestedVersion > item.requestedVersion
 
 
 def test_ports_overlapping(new_context):

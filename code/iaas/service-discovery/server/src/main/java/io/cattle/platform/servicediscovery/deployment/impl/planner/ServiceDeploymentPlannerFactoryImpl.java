@@ -51,8 +51,7 @@ public class ServiceDeploymentPlannerFactoryImpl implements ServiceDeploymentPla
     protected boolean isExternallyProvidedService(Service service) {
         if (service.getKind().equalsIgnoreCase(ServiceConstants.KIND_DNS_SERVICE)
                 || service.getKind().equalsIgnoreCase(ServiceConstants.KIND_EXTERNAL_SERVICE)
-                || service.getKind().equalsIgnoreCase(ServiceConstants.KIND_LOAD_BALANCER_SERVICE)
-                || service.getKind().equalsIgnoreCase(ServiceConstants.KIND_SERVICE)) {
+                || ServiceConstants.SERVICE_LIKE.contains(service.getKind())) {
             return false;
         }
         return true;

@@ -70,7 +70,7 @@ def test_account_new_data(admin_user_client, super_client):
     account = admin_user_client.wait_success(account)
 
     assert account.state == 'active'
-    assert super_client.reload(account).defaultNetworkId is not None
+    assert super_client.reload(account).defaultNetworkId is None
 
     networks = super_client.list_network(accountId=account.id)
 
@@ -81,47 +81,13 @@ def test_account_new_data(admin_user_client, super_client):
         by_kind[networks[i].kind] = network
         assert network.state == 'active'
 
-    assert len(networks) == 5
-    assert len(by_kind) == 5
+    assert len(networks) == 4
+    assert len(by_kind) == 4
 
     assert 'dockerHost' in by_kind
     assert 'dockerNone' in by_kind
     assert 'dockerBridge' in by_kind
-    assert 'hostOnlyNetwork' in by_kind
     assert 'dockerContainer' in by_kind
-
-    network = by_kind['hostOnlyNetwork']
-
-    assert network.id == super_client.reload(account).defaultNetworkId
-
-    subnet = super_client.wait_success(find_one(network.subnets))
-
-    assert subnet.state == 'active'
-    assert subnet.networkAddress == '10.42.0.0'
-    assert subnet.cidrSize == 16
-    assert subnet.gateway == '10.42.0.1'
-    assert subnet.startAddress == '10.42.0.2'
-    assert subnet.endAddress == '10.42.255.250'
-
-    nsp = find_one(network.networkServiceProviders)
-    nsp = super_client.wait_success(nsp)
-
-    assert nsp.state == 'active'
-    assert nsp.kind == 'agentInstanceProvider'
-
-    service_by_kind = {}
-    for service in nsp.networkServices():
-        service = super_client.wait_success(service)
-        service_by_kind[service.kind] = service
-
-    assert len(nsp.networkServices()) == 6
-    assert len(service_by_kind) == 6
-    assert 'dnsService' in service_by_kind
-    assert 'linkService' in service_by_kind
-    assert 'ipsecTunnelService' in service_by_kind
-    assert 'portService' in service_by_kind
-    assert 'hostNatGatewayService' in service_by_kind
-    assert 'healthCheckService' in service_by_kind
 
 
 def test_account_context_create(new_context):
@@ -185,7 +151,6 @@ def test_account_purge(admin_user_client, super_client, new_context):
     account = super_client.reload(account)
     account = super_client.wait_success(account.deactivate())
     account = super_client.wait_success(account.remove())
-    assert account.state == 'removed'
     assert account.removed is not None
 
     account = super_client.wait_success(account.purge())
@@ -213,14 +178,9 @@ def test_account_purge(admin_user_client, super_client, new_context):
     volumes = c1.volumes()
     assert len(volumes) == 0
 
-    service1 = super_client.wait_success(service1)
-    assert service1.state == 'removed'
-
-    service2 = super_client.wait_success(service2)
-    assert service2.state == 'removed'
-
-    env = admin_user_client.wait_success(env)
-    assert env.state == 'removed'
+    wait_state(super_client, service1, 'removed')
+    wait_state(super_client, service2, 'removed')
+    wait_state(super_client, env, 'removed')
 
 
 def test_user_account_cant_create_account(admin_user_client):

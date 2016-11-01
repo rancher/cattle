@@ -1,6 +1,7 @@
 package io.cattle.platform.systemstack.process;
 
 import io.cattle.platform.core.model.Account;
+import io.cattle.platform.deferred.util.DeferredUtils;
 import io.cattle.platform.engine.handler.HandlerResult;
 import io.cattle.platform.engine.handler.ProcessPostListener;
 import io.cattle.platform.engine.process.ProcessInstance;
@@ -25,17 +26,16 @@ public class SystemStackAccountCreate extends AbstractObjectProcessLogic impleme
 
     @Override
     public HandlerResult handle(ProcessState state, ProcessInstance process) {
-        try {
-            return handleInternal(state, process);
-        } catch (IOException e) {
-            throw new IllegalStateException("Failed to call catalog service: " + e.getMessage(), e);
-        }
-    }
-
-    public HandlerResult handleInternal(ProcessState state, ProcessInstance process) throws IOException {
-        Account account = (Account)state.getResource();
-        update.createStacks(account);
+        final Account account = (Account)state.getResource();
+        DeferredUtils.defer(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    update.createStacks(account);
+                } catch (IOException e) {
+                }
+            }
+        });
         return null;
     }
-
 }

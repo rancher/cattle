@@ -18,6 +18,8 @@ import io.cattle.platform.util.type.Priority;
 import javax.inject.Inject;
 import javax.inject.Named;
 
+import org.apache.commons.lang3.StringUtils;
+
 @Named
 public class MacAddressNetworkActivate extends AbstractObjectProcessLogic implements ProcessPreListener, Priority {
 
@@ -29,7 +31,7 @@ public class MacAddressNetworkActivate extends AbstractObjectProcessLogic implem
 
         String field = DataAccessor.field(network, NetworkConstants.FIELD_MAC_PREFIX, String.class);
 
-        if (field == null) {
+        if (StringUtils.isBlank(field)) {
             PooledResource mac = resourcePoolManager.allocateOneResource(ResourcePoolManager.GLOBAL, network, new PooledResourceOptions()
                     .withQualifier(ResourcePoolConstants.MAC_PREFIX));
             if (mac == null) {

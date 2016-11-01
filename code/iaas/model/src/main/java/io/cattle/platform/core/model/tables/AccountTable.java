@@ -11,7 +11,7 @@ package io.cattle.platform.core.model.tables;
 @java.lang.SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class AccountTable extends org.jooq.impl.TableImpl<io.cattle.platform.core.model.tables.records.AccountRecord> {
 
-	private static final long serialVersionUID = -1783485410;
+	private static final long serialVersionUID = 1194299142;
 
 	/**
 	 * The singleton instance of <code>cattle.account</code>
@@ -95,6 +95,11 @@ public class AccountTable extends org.jooq.impl.TableImpl<io.cattle.platform.cor
 	 * The column <code>cattle.account.project_template_id</code>.
 	 */
 	public final org.jooq.TableField<io.cattle.platform.core.model.tables.records.AccountRecord, java.lang.Long> PROJECT_TEMPLATE_ID = createField("project_template_id", org.jooq.impl.SQLDataType.BIGINT, this, "");
+
+	/**
+	 * The column <code>cattle.account.default_network_id</code>.
+	 */
+	public final org.jooq.TableField<io.cattle.platform.core.model.tables.records.AccountRecord, java.lang.Long> DEFAULT_NETWORK_ID = createField("default_network_id", org.jooq.impl.SQLDataType.BIGINT, this, "");
 
 	/**
 	 * Create a <code>cattle.account</code> table reference
