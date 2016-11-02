@@ -3,7 +3,6 @@ package io.cattle.platform.network.impl;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.constants.NetworkConstants;
 import io.cattle.platform.core.dao.NetworkDao;
-import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.Network;
 import io.cattle.platform.core.model.Subnet;
 import io.cattle.platform.core.util.SystemLabels;
@@ -11,12 +10,11 @@ import io.cattle.platform.docker.constants.DockerInstanceConstants;
 import io.cattle.platform.json.JsonMapper;
 import io.cattle.platform.network.IPAssignment;
 import io.cattle.platform.network.NetworkService;
-import io.cattle.platform.object.util.DataAccessor;
-import io.cattle.platform.object.util.DataUtils;
 import io.cattle.platform.object.util.ObjectUtils;
 import io.cattle.platform.resource.pool.PooledResource;
 import io.cattle.platform.resource.pool.PooledResourceOptions;
 import io.cattle.platform.resource.pool.ResourcePoolManager;
+import io.cattle.platform.util.type.CollectionUtils;
 
 import java.util.HashMap;
 import java.util.List;
@@ -102,8 +100,8 @@ public class NetworkServiceImpl implements NetworkService {
     }
 
     @Override
-    public String getNetworkMode(Instance instance) {
-        Map<String, Object> labels = DataAccessor.fieldMap(instance, InstanceConstants.FIELD_LABELS);
+    public String getNetworkMode(Map<String, Object> instanceData) {
+        Map<String, Object> labels = CollectionUtils.toMap(instanceData.get(InstanceConstants.FIELD_LABELS));
         String mode = ObjectUtils.toString(labels.get(SystemLabels.LABEL_CNI_NETWORK));
 
         if (mode == null && "true".equals(labels.get(SystemLabels.LABEL_RANCHER_NETWORK))) {
@@ -111,9 +109,8 @@ public class NetworkServiceImpl implements NetworkService {
         }
 
         if (mode == null) {
-            Map<String, Object> fields = DataUtils.getFields(instance);
-            if (fields.containsKey(DockerInstanceConstants.FIELD_NETWORK_MODE)) {
-                mode = DataAccessor.fieldString(instance, DockerInstanceConstants.FIELD_NETWORK_MODE);
+            if (instanceData.containsKey(DockerInstanceConstants.FIELD_NETWORK_MODE)) {
+                mode = String.valueOf(instanceData.get(DockerInstanceConstants.FIELD_NETWORK_MODE));
             } else {
                 mode = NetworkConstants.NETWORK_MODE_MANAGED;
             }

@@ -347,7 +347,7 @@ public class DefaultDeploymentUnitInstance extends DeploymentUnitInstance implem
                     requestedIp = ((Map<String, String>) labels).get(SystemLabels.LABEL_REQUESTED_IP);
                 }
             }
-            context.sdService.allocateIpToServiceIndex(serviceIndexObj, requestedIp);
+            context.sdService.allocateIpToServiceIndex(service, serviceIndexObj, requestedIp);
         }
 
         return serviceIndexObj;

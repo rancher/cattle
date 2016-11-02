@@ -4,7 +4,6 @@ import static io.cattle.platform.core.model.tables.ServiceIndexTable.*;
 import static io.cattle.platform.core.model.tables.ServiceTable.*;
 import static io.cattle.platform.core.model.tables.StackTable.*;
 import static io.cattle.platform.core.model.tables.SubnetTable.*;
-
 import io.cattle.platform.allocator.service.AllocatorService;
 import io.cattle.platform.configitem.events.ConfigUpdate;
 import io.cattle.platform.configitem.model.Client;
@@ -503,10 +502,15 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
     }
 
     @Override
-    public void allocateIpToServiceIndex(ServiceIndex serviceIndex, String requestedIp) {
+    public void allocateIpToServiceIndex(Service service, ServiceIndex serviceIndex, String requestedIp) {
         if (StringUtils.isEmpty(serviceIndex.getAddress())) {
-            // TODO: NETWORK_MODE_MANAGED shouldn't be hardcoded, the networkMode should come from the launchConfig
-            Network ntwk = networkService.resolveNetwork(serviceIndex.getAccountId(), NetworkConstants.NETWORK_MODE_MANAGED);
+            String ntwkMode = networkService.getNetworkMode(DataAccessor
+                    .fieldMap(service, ServiceConstants.FIELD_LAUNCH_CONFIG));
+            if (ntwkMode == null) {
+                return;
+            }
+
+            Network ntwk = networkService.resolveNetwork(serviceIndex.getAccountId(), ntwkMode.toString());
             if (networkService.shouldAssignIpAddress(ntwk)) {
                 IPAssignment assignment = networkService.assignIpAddress(ntwk, serviceIndex, requestedIp);
                 if (assignment != null) {

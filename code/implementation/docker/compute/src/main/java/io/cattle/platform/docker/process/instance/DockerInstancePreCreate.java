@@ -14,6 +14,7 @@ import io.cattle.platform.engine.process.ProcessState;
 import io.cattle.platform.network.NetworkService;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.util.DataAccessor;
+import io.cattle.platform.object.util.DataUtils;
 import io.cattle.platform.process.common.handler.AbstractObjectProcessLogic;
 import io.cattle.platform.util.type.Priority;
 
@@ -51,7 +52,7 @@ public class DockerInstancePreCreate extends AbstractObjectProcessLogic implemen
 
         Map<Object, Object> data = new HashMap<>();
 
-        String mode = networkService.getNetworkMode(instance);
+        String mode = networkService.getNetworkMode(DataUtils.getFields(instance));
         data.put(DockerInstanceConstants.FIELD_NETWORK_MODE, mode);
 
         Network network = networkService.resolveNetwork(instance.getAccountId(), mode);
