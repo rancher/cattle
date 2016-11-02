@@ -64,7 +64,7 @@ public class DriverServiceActivate extends AbstractProcessLogic implements Proce
             if (stack == null) {
                 continue;
             }
-            if (ServiceConstants.isSystem(stack)) {
+            if (stack.getSystem() != null && stack.getSystem()) {
                 lockManager.lock(new DriverLock(service, driverKey), new LockCallbackNoReturn() {
                     @Override
                     public void doWithLockNoResult() {
