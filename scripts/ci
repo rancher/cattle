@@ -74,12 +74,14 @@ gist()
 install_mysql_cmd_aliases()
 {
     cat >/usr/local/bin/mysql <<EOF
+#!/bin/sh
 [ -t 0 ] && tty=-it
 docker run \$tty --rm -e MYSQL_HOST -e MYSQL_TCP_PORT --net=host mysql:$MYSQL_VERSION mysql -P $MYSQL_TCP_PORT "\$@"
 EOF
     chmod +x /usr/local/bin/mysql
 
     cat >/usr/local/bin/mysqldump <<EOF
+#!/bin/sh
 [ -t 0 ] && tty=-it
 docker run \$tty --rm -e MYSQL_HOST -e MYSQL_TCP_PORT --net=host mysql:$MYSQL_VERSION mysqldump -h $MYSQL_HOST -P MYSQL_TCP_PORT "\$@"
 EOF
@@ -89,12 +91,14 @@ EOF
 install_pgsql_cmd_aliases()
 {
     cat >/usr/local/bin/psql <<EOF
+#!/bin/sh
 [ -t 0 ] && tty=-it
 docker run \$tty --rm -e PGDATABASE -e PGHOST -e PGUSER -e PGPASSWORD  --net=host postgres:$PGSQL_VERSION psql "\$@"
 EOF
     chmod +x /usr/local/bin/psql
 
     cat >/usr/local/bin/pg_dump <<EOF
+#!/bin/sh
 [ -t 0 ] && tty=-it
 docker run \$tty --rm -e PGDATABASE -e PGHOST -e PGUSER -e PGPASSWORD --net=host postgres:$PGSQL_VERSION pg_dump "\$@"
 EOF
