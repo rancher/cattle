@@ -1850,7 +1850,6 @@ def test_export_config(client, context):
                      "ipcMode": "host",
                      "stopSignal": "SIGTERM",
                      "groupAdd": "root",
-                     "cgroup": "mygroup",
                      "cgroupParent": "parent",
                      "extraHosts": ["host1", "host2"],
                      "securityOpt": ["sopt1", 'sopt2'],
@@ -1910,7 +1909,6 @@ def test_export_config(client, context):
     assert svc["uts"] == "host"
     assert svc["ipc"] == "host"
     assert svc["stop_signal"] == "SIGTERM"
-    assert svc["cgroup"] == "mygroup"
     assert svc["cgroup_parent"] == "parent"
     assert svc["extra_hosts"] == ["host1", "host2"]
     assert svc["security_opt"] == ["sopt1", "sopt2"]

@@ -136,7 +136,6 @@
         "container.startCount" : "r",
         "container.serviceIds" : "r",
         "container.blkioWeight" : "cr",
-        "container.cgroup" : "cr",
         "container.usernsMode" : "cr",
         "container.pidsLimit" : "cr",
         "container.diskQuota" : "cr",

@@ -62,7 +62,6 @@ public class ServiceDiscoveryConfigItem {
             false);
     public static final ServiceDiscoveryConfigItem BLKIOWEIGHT = new ServiceDiscoveryConfigItem("blkioWeight",
             "blkio_weight", false);
-    public static final ServiceDiscoveryConfigItem CGROUP = new ServiceDiscoveryConfigItem("cgroup", "cgroup", false);
     public static final ServiceDiscoveryConfigItem CGROUPPARENT = new ServiceDiscoveryConfigItem("cgroupParent",
             "cgroup_parent", false);
     public static final ServiceDiscoveryConfigItem CPUPERIOD = new ServiceDiscoveryConfigItem("cpuPeriod", "cpu_period",

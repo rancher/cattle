@@ -2005,7 +2005,6 @@ def test_export_config(client, context):
                      "ipcMode": "host",
                      "stopSignal": "SIGTERM",
                      "groupAdd": "root",
-                     "cgroup": "mygroup",
                      "cgroupParent": "parent",
                      "extraHosts": ["host1", "host2"],
                      "securityOpt": ["sopt1", 'sopt2'],
@@ -2068,7 +2067,6 @@ def test_export_config(client, context):
     assert svc["ipc"] == "host"
     assert svc["stop_signal"] == "SIGTERM"
     assert svc["group_add"] == ["root"]
-    assert svc["cgroup"] == "mygroup"
     assert svc["cgroup_parent"] == "parent"
     assert svc["extra_hosts"] == ["host1", "host2"]
     assert svc["security_opt"] == ["sopt1", "sopt2"]
@@ -2133,7 +2131,10 @@ def test_malform_export_config(client, context):
                              'readIops': 1000,
                              'writeIops': 2000,
                          },
-                     }}
+                     },
+                     "logConfig": {"config": {"labels": "foo"}},
+                     "tmpfs": {"/run": ""}
+                     }
     service = client. \
         create_service(name="web",
                        stackId=env.id,
@@ -2149,11 +2150,13 @@ def test_malform_export_config(client, context):
     docker_yml = yaml.load(compose_config.dockerComposeConfig)
     svc = docker_yml['services'][service.name]
     assert svc["device_write_iops"] == {"/dev/sda": 2000}
+    assert svc["tmpfs"] == ["/run"]
     assert "device_read_bps" not in svc
     assert "device_write_bps" not in svc
     assert "blkio_weight_device" not in svc
     assert "uts" not in svc
     assert "ipc" not in svc
+    assert "logging" not in svc
 
 
 def test_validate_create_only_containers(client, context):

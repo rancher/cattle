@@ -303,7 +303,9 @@ public class ServiceDiscoveryApiServiceImpl implements ServiceDiscoveryApiServic
                         logConfig.put("driver", map.get(key));
                     }
                 }
-                composeServiceData.put("logging", logConfig);
+                if (!logConfig.isEmpty() && logConfig.get("driver") != null) {
+                    composeServiceData.put("logging", logConfig);
+                }
             }
         }
     }
@@ -322,7 +324,11 @@ public class ServiceDiscoveryApiServiceImpl implements ServiceDiscoveryApiServic
                     if (map.get(key) != null) {
                         option = map.get(key).toString();
                     }
-                    list.add(key + ":" + option);
+                    if (option.isEmpty()) {
+                        list.add(key);
+                    } else {
+                        list.add(key + ":" + option);
+                    }
                 }
                 composeServiceData.put("tmpfs", list);
             }
