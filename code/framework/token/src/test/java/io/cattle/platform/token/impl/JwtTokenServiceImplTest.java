@@ -18,7 +18,6 @@ import java.security.spec.RSAPublicKeySpec;
 import java.util.Date;
 import java.util.Map;
 
-import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -33,7 +32,6 @@ public class JwtTokenServiceImplTest {
 
     @Before
     public void setUp() {
-        Security.addProvider(new BouncyCastleProvider());
         impl = new JwtTokenServiceImpl();
         impl.setKeyProvider(new RSAKeyProvider() {
 
