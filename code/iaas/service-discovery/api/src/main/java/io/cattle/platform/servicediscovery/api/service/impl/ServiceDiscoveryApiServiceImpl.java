@@ -54,6 +54,8 @@ import org.apache.commons.collections.TransformerUtils;
 import org.yaml.snakeyaml.DumperOptions;
 import org.yaml.snakeyaml.DumperOptions.LineBreak;
 import org.yaml.snakeyaml.Yaml;
+import org.yaml.snakeyaml.introspector.Property;
+import org.yaml.snakeyaml.nodes.NodeTuple;
 import org.yaml.snakeyaml.nodes.Tag;
 import org.yaml.snakeyaml.representer.Representer;
 
@@ -136,11 +138,25 @@ public class ServiceDiscoveryApiServiceImpl implements ServiceDiscoveryApiServic
         DumperOptions options = new DumperOptions();
         options.setDefaultFlowStyle(DumperOptions.FlowStyle.BLOCK);
         options.setLineBreak(LineBreak.WIN);
-        Representer representer = new Representer();
+        Representer representer = new SkipNullRepresenter();
         representer.addClassTag(LBConfigMetadataStyle.class, Tag.MAP);
+        
         Yaml yaml = new Yaml(representer, options);
         String yamlStr = yaml.dump(dockerComposeData);
         return yamlStr.replaceAll("[$]", "\\$\\$");
+    }
+
+    private class SkipNullRepresenter extends Representer {
+        @Override
+        protected NodeTuple representJavaBeanProperty(Object javaBean, Property property,
+                Object propertyValue, Tag customTag) {
+            if (propertyValue == null) {
+                return null;
+            } else {
+                return super
+                        .representJavaBeanProperty(javaBean, property, propertyValue, customTag);
+            }
+        }
     }
 
     @SuppressWarnings("unchecked")
