@@ -1,5 +1,4 @@
 from common_fixtures import *  # NOQA
-import time
 import websocket
 import json
 import requests
@@ -147,17 +146,10 @@ def mock_sched(new_context, super_client):
     c = new_context.create_container(name='scheduler-agent',
                                      healthCheck={'port': 80},
                                      labels=labels)
-    c = super_client.reload(c)
-    hci = find_one(c.healthcheckInstances)
-    hcihm = find_one(hci.healthcheckInstanceHostMaps)
-    agent = _get_agent_for_container(new_context, c)
-    a_client = _get_agent_client(agent)
-    a_client.create_service_event(externalTimestamp=int(time.time()),
-                                  reportedHealth='UP',
-                                  healthcheckUuid=hcihm.uuid)
-    wait_for(lambda: super_client.reload(c).healthState == 'healthy')
+    super_client.update(c, healthState='healthy')
 
     # Get agent credentials
+    c = super_client.reload(c)
     agent = c.agent()
     account = agent.account()
     creds = filter(lambda x: x.kind == 'agentApiKey', account.credentials())
