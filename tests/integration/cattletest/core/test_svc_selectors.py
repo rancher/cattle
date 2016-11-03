@@ -50,10 +50,17 @@ def _validate_service_link(client, context, service_kind):
     assert all(item in service.launchConfig.labels.items()
                for item in labels.items())
     launch_config = {"imageUuid": image_uuid}
-    service1 = client.create_service(name=random_str(),
-                                     stackId=env.id,
-                                     launchConfig=launch_config,
-                                     selectorLink="foo=bar")
+    if service_kind == 'loadBalancerService':
+        service1 = client.create_service(name=random_str(),
+                                         stackId=env.id,
+                                         launchConfig=launch_config,
+                                         selectorLink="foo=bar",
+                                         lbConfig={})
+    else:
+        service1 = client.create_service(name=random_str(),
+                                         stackId=env.id,
+                                         launchConfig=launch_config,
+                                         selectorLink="foo=bar")
     service1 = client.wait_success(service1)
     assert service1.selectorLink == "foo=bar"
     _validate_add_service_link(service1, service, client)
