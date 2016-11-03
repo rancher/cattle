@@ -208,16 +208,16 @@ def create_container_and_mount(client, data_volume_mounts, new_context,
     return c
 
 
-def purge_instance_and_check_volume_state(c, vols, state, client):
+def purge_instance_and_check_volume_state(c, vols, s, client):
     c = client.wait_success(c.stop())
     c = client.wait_success(c.remove())
     client.wait_success(c.purge())
     for vol in vols:
         wait_for_condition(client, vol,
-                           lambda x: (state == 'removed' and
-                                      x.removed is None) or x.state == state,
+                           lambda x: (s == 'removed' and
+                                      x.removed is not None) or x.state == s,
                            lambda x: 'State: %s. Expected: %s' % (
-                               x.state, state))
+                               x.state, s))
 
 
 def create_volume_and_dvm(client, count):
