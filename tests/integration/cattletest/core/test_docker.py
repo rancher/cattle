@@ -1,5 +1,6 @@
 import re
 import uuid as py_uuid
+from cattle import ApiError
 from common_fixtures import *  # NOQA
 from test_volume import VOLUME_CLEANUP_LABEL
 
@@ -233,11 +234,21 @@ def test_docker_purge(docker_client):
     container = docker_client.wait_success(container)
     assert container.removed is not None
 
-    container = docker_client.wait_success(container.purge())
-    assert container.state == 'purged'
+    safe_purge(container, docker_client)
 
     volumes = container.volumes()
     assert len(volumes) == 0
+
+
+def safe_purge(c, docker_client):
+    try:
+        c.purge()
+    except ApiError:
+        # It's possible for the container to already have been purged
+        pass
+    c = docker_client.wait_success(c)
+    assert c.state == 'purged'
+    return c
 
 
 @if_docker
@@ -800,7 +811,8 @@ def volume_cleanup_setup(docker_client, uuid, strategy=None):
     named_vol = v1 if v1.name == vol_name else v2
     unnamed_vol = v1 if v1.name != vol_name else v2
     c = docker_client.wait_success(c.stop(remove=True, timeout=0))
-    c = docker_client.wait_success(c.purge())
+
+    safe_purge(c, docker_client)
     check_mounts(docker_client, c, 0)
     return c, named_vol, unnamed_vol
 
