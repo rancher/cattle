@@ -128,7 +128,6 @@ def test_user_types(user_client, adds=set(), removes=set()):
         'instanceLink',
         'instanceStop',
         'ipAddress',
-        'ipAddressAssociateInput',
         'kubernetesService',
         'kubernetesStack',
         'kubernetesStackUpgrade',
@@ -351,7 +350,6 @@ def test_admin_types(admin_user_client, adds=set(), removes=set()):
         'instanceLink',
         'instanceStop',
         'ipAddress',
-        'ipAddressAssociateInput',
         'kubernetesService',
         'kubernetesStack',
         'kubernetesStackUpgrade',
@@ -612,6 +610,7 @@ def test_project_auth(admin_user_client, user_client, service_client,
         'healthState': "r",
         'projectTemplateId': 'cr',
         'orchestration': 'r',
+        'defaultNetworkId': 'ru'
     })
 
     auth_check(user_client.schema, 'project', 'crud', {
@@ -625,6 +624,7 @@ def test_project_auth(admin_user_client, user_client, service_client,
         'healthState': "r",
         'projectTemplateId': 'cr',
         'orchestration': 'r',
+        'defaultNetworkId': 'ru'
     })
 
     auth_check(project_client.schema, 'project', 'r', {
@@ -638,6 +638,7 @@ def test_project_auth(admin_user_client, user_client, service_client,
         'healthState': "r",
         'projectTemplateId': 'r',
         'orchestration': 'r',
+        'defaultNetworkId': 'r'
     })
 
     auth_check(service_client.schema, 'project', 'cr', {
@@ -650,6 +651,7 @@ def test_project_auth(admin_user_client, user_client, service_client,
         'healthState': 'r',
         'projectTemplateId': 'cr',
         'orchestration': 'r',
+        'defaultNetworkId': 'r'
     })
 
 
@@ -1000,6 +1002,7 @@ def test_container_auth(admin_user_client, user_client, project_client):
         'healthTimeout': 'r',
         'healthRetries': 'r',
         'instanceTriggeredStop': 'r',
+        'primaryNetworkId': 'r',
     })
 
     auth_check(user_client.schema, 'container', 'r', {
@@ -1102,6 +1105,7 @@ def test_container_auth(admin_user_client, user_client, project_client):
         'healthTimeout': 'r',
         'healthRetries': 'r',
         'instanceTriggeredStop': 'r',
+        'primaryNetworkId': 'r',
     })
 
     auth_check(project_client.schema, 'container', 'crud', {
@@ -1204,6 +1208,7 @@ def test_container_auth(admin_user_client, user_client, project_client):
         'healthTimeout': 'cr',
         'healthRetries': 'cr',
         'instanceTriggeredStop': 'cr',
+        'primaryNetworkId': 'r',
     })
 
     auth_check(project_client.schema, 'dockerBuild', 'cr', {
@@ -2795,6 +2800,7 @@ def test_virtual_machine(admin_user_client, user_client, project_client):
         'healthTimeout': 'r',
         'healthRetries': 'r',
         'instanceTriggeredStop': 'r',
+        'primaryNetworkId': 'r',
     })
 
     auth_check(user_client.schema, 'virtualMachine', 'r', {
@@ -2882,6 +2888,7 @@ def test_virtual_machine(admin_user_client, user_client, project_client):
         'healthTimeout': 'r',
         'healthRetries': 'r',
         'instanceTriggeredStop': 'r',
+        'primaryNetworkId': 'r',
     })
 
     auth_check(project_client.schema, 'virtualMachine', 'crud', {
@@ -2969,6 +2976,7 @@ def test_virtual_machine(admin_user_client, user_client, project_client):
         'healthTimeout': 'cr',
         'healthRetries': 'cr',
         'instanceTriggeredStop': 'cr',
+        'primaryNetworkId': 'r',
     })
 
 

@@ -381,6 +381,14 @@ def test_start_stop(client, context):
         assert container.state == 'running'
 
 
+def test_container_primary_network_id(client, context):
+    c = context.create_container()
+    c = client.wait_success(c)
+
+    assert c.networkMode == 'managed'
+    assert c.primaryNetworkId is not None
+
+
 def test_container_image_required(client):
     try:
         client.create_container()

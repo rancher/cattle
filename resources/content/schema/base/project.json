@@ -41,6 +41,9 @@
       "attributes" : {
         "capability" : "owner"
       }
+    },
+    "defaultNetworkId" : {
+      "type" : "reference[network]"
     }
   },
   "resourceFields": {

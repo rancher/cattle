@@ -111,6 +111,7 @@
         "container.pidMode" : "cr",
         "container.ports" : "cr",
         "container.primaryIpAddress" : "r",
+        "container.primaryNetworkId" : "r",
         "container.privileged" : "cr",
         "container.publishAllPorts": "cr",
         "container.registryCredentialId" : "cr",
@@ -400,6 +401,7 @@
         "port.bindAddress" : "r",
 
         "project" : "crud",
+        "project.defaultNetworkId" : "ru",
         "project.externalId" : "",
         "project.externalIdType" : "",
         "project.description" : "cru",
