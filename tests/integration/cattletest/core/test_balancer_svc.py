@@ -90,11 +90,11 @@ def test_validate_balancer_svc_fields(client, image_uuid):
     compose_config = env.exportconfig()
 
     assert compose_config is not None
-    docker_yml = yaml.load(compose_config.rancherComposeConfig)
-    assert 'metadata' not in docker_yml['services'][lb_svc.name]
+    docker_yml = yaml.load(compose_config.dockerComposeConfig)
     y = yaml.load(compose_config.rancherComposeConfig)
     assert "lb_config" in y['services'][lb_svc.name]
     lb = y['services'][lb_svc.name]["lb_config"]
+    assert 'metadata' not in y['services'][lb_svc.name]
     assert lb is not None
     assert len(lb["port_rules"]) == 1
     rule = lb["port_rules"][0]
@@ -116,6 +116,7 @@ def test_validate_balancer_svc_fields(client, image_uuid):
     assert lb["stickiness_policy"]["nocache"] is True
     assert lb["stickiness_policy"]["postonly"] is True
     assert lb["stickiness_policy"]["mode"] == "insert"
+    assert "links" not in docker_yml['services'][lb_svc.name]
 
     # try to remove certificate
     with pytest.raises(ApiError) as e:
@@ -287,6 +288,33 @@ def test_activate_balancer(client, image_uuid):
     assert c.ports == ["8289:8289/tcp"]
     assert c.imageUuid is not None
 
+    # validate service link got created for the target service
+    _validate_add_service_link(lb_svc, svc, client)
+
+    # update ports rules to the new service, validate links update
+    svc1 = client. \
+        create_service(name=random_str(),
+                       stackId=env.id,
+                       launchConfig=launch_config)
+
+    svc1 = client.wait_success(svc1)
+    port_rule = {"hostname": hostname,
+                 "path": path, "sourcePort": port, "priority": priority,
+                 "protocol": protocol, "serviceId": svc1.id,
+                 "targetPort": target_port,
+                 "backendName": backend_name}
+    port_rules = [port_rule]
+    lb_config = {"portRules": port_rules}
+    lb_svc = client.update(lb_svc, lbConfig=lb_config)
+    lb_svc = client.wait_success(lb_svc)
+    assert len(lb_svc.lbConfig.portRules) == 1
+    _validate_add_service_link(lb_svc, svc1, client)
+    _validate_remove_service_link(lb_svc, svc, client)
+
+    # remove svc1, validate the link is gone
+    client.wait_success(svc1.remove())
+    _validate_remove_service_link(lb_svc, svc1, client)
+
 
 def test_validate_svc_fields(client, image_uuid):
     env = _create_stack(client)
@@ -418,6 +446,78 @@ def test_svc_remove(client, image_uuid):
         return len(lb.lbConfig.portRules) == 1
 
     wait_for(lambda: wait_for_condition(client, lb_svc, wait_for_port_count))
+
+
+def test_service_selector(client, image_uuid):
+    env = _create_stack(client)
+
+    labels = {'foo': "bar"}
+    launch_config = {"imageUuid": image_uuid, "labels": labels}
+
+    svc = client. \
+        create_service(name=random_str(),
+                       stackId=env.id,
+                       launchConfig=launch_config)
+
+    svc = client.wait_success(svc)
+
+    lb_launch_config = {"ports": [8289],
+                        "imageUuid": image_uuid}
+    hostname = "foo"
+    path = "bar"
+    port = 32
+    port_rule = {"hostname": hostname,
+                 "path": path, "sourcePort": port,
+                 "selector": "foo=bar"}
+    port_rules = [port_rule]
+
+    lb_config = {"portRules": port_rules}
+
+    # create service
+    lb_svc = client. \
+        create_loadBalancerService(name=random_str(),
+                                   stackId=env.id,
+                                   launchConfig=lb_launch_config,
+                                   lbConfig=lb_config)
+    lb_svc = client.wait_success(lb_svc)
+
+    # validate service link got created for the target service
+    _validate_add_service_link(lb_svc, svc, client)
+
+    # update service, validate link is done
+    port_rule = {"hostname": hostname,
+                 "path": path, "sourcePort": port,
+                 "selector": "foo=bar1"}
+    port_rules = [port_rule]
+
+    lb_config = {"portRules": port_rules}
+    lb_svc = client.update(lb_svc, lbConfig=lb_config)
+    lb_svc = client.wait_success(lb_svc)
+    _validate_remove_service_link(lb_svc, svc, client)
+
+    # update service back, validate link is back
+    port_rule = {"hostname": hostname,
+                 "path": path, "sourcePort": port,
+                 "selector": "foo=bar"}
+    port_rules = [port_rule]
+
+    lb_config = {"portRules": port_rules}
+    lb_svc = client.update(lb_svc, lbConfig=lb_config)
+    lb_svc = client.wait_success(lb_svc)
+    _validate_add_service_link(lb_svc, svc, client)
+
+    # remove service, validate link is gone
+    client.wait_success(svc.remove())
+    _validate_remove_service_link(lb_svc, svc, client)
+
+    # add service back, make sure the link is recreated
+    svc = client. \
+        create_service(name=random_str(),
+                       stackId=env.id,
+                       launchConfig=launch_config)
+
+    svc = client.wait_success(svc)
+    _validate_add_service_link(lb_svc, svc, client)
 
 
 def test_svc_update_readd_rule(client, image_uuid):
@@ -578,3 +678,51 @@ def _wait_until_active_map_count(service, count, client):
     wait_for_condition(client, service, wait_for_map_count)
     return client. \
         list_serviceExposeMap(serviceId=service.id, state='active')
+
+
+def _validate_add_service_link(service,
+                               consumedService, client, link_name=None):
+    if link_name is None:
+        service_maps = client. \
+            list_serviceConsumeMap(serviceId=service.id,
+                                   consumedServiceId=consumedService.id)
+    else:
+        service_maps = client. \
+            list_serviceConsumeMap(serviceId=service.id,
+                                   consumedServiceId=consumedService.id,
+                                   name=link_name)
+
+    assert len(service_maps) == 1
+    if link_name is not None:
+        assert service_maps[0].name is not None
+
+    service_map = service_maps[0]
+    wait_for_condition(
+        client, service_map, _resource_is_active,
+        lambda x: 'State is: ' + x.state)
+
+
+def _validate_remove_service_link(service,
+                                  consumedService, client, link_name=None):
+    def check():
+        if link_name is None:
+            service_maps = client. \
+                list_serviceConsumeMap(serviceId=service.id,
+                                       consumedServiceId=consumedService.id)
+        else:
+            service_maps = client. \
+                list_serviceConsumeMap(serviceId=service.id,
+                                       consumedServiceId=consumedService.id,
+                                       name=link_name)
+
+        return len(service_maps) == 0
+
+    wait_for(check)
+
+
+def _resource_is_active(resource):
+    return resource.state == 'active'
+
+
+def _resource_is_removed(resource):
+    return resource.state == 'removed'
