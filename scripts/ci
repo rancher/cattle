@@ -135,12 +135,12 @@ test_failed()
 # Background to start the Docker pulls
 ./test-warm >/dev/null &
 
-CI=true MAVEN_ARGS='-B -q' run ./build
-
 threads=$(($(nproc) + 1))
 if [ $threads -gt 8 ]; then
     threads=8
 fi
+
+CI=true MAVEN_ARGS="-B -q -T $threads" run ./build
 
 for DB in "${!ENVIRONMENTS[@]}"
 do
