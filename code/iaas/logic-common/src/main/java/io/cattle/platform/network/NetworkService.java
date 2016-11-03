@@ -1,11 +1,12 @@
 package io.cattle.platform.network;
 
-import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.Network;
+
+import java.util.Map;
 
 public interface NetworkService {
 
-    String getNetworkMode(Instance instance);
+    String getNetworkMode(Map<String, Object> instanceData);
 
     Network resolveNetwork(long accountId, String networkName);
 

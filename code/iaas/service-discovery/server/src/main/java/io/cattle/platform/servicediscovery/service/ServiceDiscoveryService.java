@@ -51,7 +51,7 @@ public interface ServiceDiscoveryService extends AnnotatedEventListener {
 
     String allocateIpForService(Object owner, Subnet subnet, String requestedIp);
 
-    void allocateIpToServiceIndex(ServiceIndex serviceIndex, String requestedIp);
+    void allocateIpToServiceIndex(Service service, ServiceIndex serviceIndex, String requestedIp);
 
     void releaseIpFromServiceIndex(ServiceIndex serviceIndex);
     
