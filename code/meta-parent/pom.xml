@@ -47,7 +47,7 @@
         </developer>
     </developers>
     <properties>
-        <jetty.version>9.2.11.v20150529</jetty.version>
+        <jetty.version>9.4.0.RC1</jetty.version>
         <jooq.version>3.3.0</jooq.version>
         <jackson.version>2.5.3</jackson.version>
         <spring.version>4.3.2.RELEASE</spring.version>
