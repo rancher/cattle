@@ -76,7 +76,9 @@ public class NicActivate extends AbstractDefaultProcessHandler {
         IpAddress ipAddress = ipAddressDao.getPrimaryIpAddress(nic);
 
         if (ipAddress == null && networkService.shouldAssignIpAddress(network)) {
-            ipAddress = ipAddressDao.mapNewIpAddress(nic, IP_ADDRESS.ROLE, IpAddressConstants.ROLE_PRIMARY);
+            ipAddress = ipAddressDao.mapNewIpAddress(nic,
+                    IP_ADDRESS.ROLE, IpAddressConstants.ROLE_PRIMARY,
+                    IP_ADDRESS.NETWORK_ID, nic.getNetworkId());
         }
 
         for (IpAddressNicMap map : mapDao.findNonRemoved(IpAddressNicMap.class, Nic.class, nic.getId())) {

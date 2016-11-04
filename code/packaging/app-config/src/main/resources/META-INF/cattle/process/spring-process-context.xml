@@ -538,7 +538,6 @@
     <bean class="io.cattle.platform.docker.process.instancehostmap.DockerPostInstanceHostMapActivate" />
     <bean class="io.cattle.platform.docker.process.serializer.DockerContainerSerializer" />
     <bean class="io.cattle.platform.service.account.SystemRoleObjectPostProcessor" />
-    <bean class="io.cattle.platform.docker.process.nic.DockerNicDeactivate" />
     <bean class="io.cattle.platform.docker.process.ipaddress.DockerIpAddressDeactivate" />
     <bean class="io.cattle.platform.docker.process.instancehostmap.DockerComposeInstanceHostMapActivate" />
     <bean class="io.cattle.platform.docker.process.instance.DockerComposeServiceCleanup" />
