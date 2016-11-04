@@ -132,7 +132,7 @@
             <dependency>
                 <groupId>org.codehaus.janino</groupId>
                 <artifactId>janino</artifactId>
-                <version>2.6.1</version>
+                <version>3.0.6</version>
             </dependency>
             <dependency>
                 <groupId>fr.xebia.management</groupId>
