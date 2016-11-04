@@ -70,7 +70,7 @@ public class PortRule {
         this.sourcePort = port;
     }
 
-    @Field(min = 1)
+    @Field(min = 1, nullable = true)
     public Integer getPriority() {
         return priority;
     }
@@ -88,7 +88,7 @@ public class PortRule {
         this.protocol = protocol;
     }
 
-    @Field(typeString = "reference[service]")
+    @Field(typeString = "reference[service]", nullable = true)
     public String getServiceId() {
         return serviceId;
     }
@@ -97,7 +97,7 @@ public class PortRule {
         this.serviceId = serviceId;
     }
 
-    @Field(min = 1, max = 65535)
+    @Field(min = 1, max = 65535, nullable = true)
     public Integer getTargetPort() {
         return targetPort;
     }
