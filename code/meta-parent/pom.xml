@@ -1,5 +1,5 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-<!-- 
+<!--
   Why does this parent pom exist and not just have the root as the parent?  The reason is because
   of IDEs.  You want to have all the poms open in your IDE so that you can quickly change things, but
   if the root directory is the parent, you have to open the root directory in your IDE.  This means
@@ -48,7 +48,7 @@
     </developers>
     <properties>
         <jetty.version>9.4.0.RC1</jetty.version>
-        <jooq.version>3.3.0</jooq.version>
+        <jooq.version>3.8.5</jooq.version>
         <jackson.version>2.5.3</jackson.version>
         <spring.version>4.3.2.RELEASE</spring.version>
         <metrics.version>3.0.1</metrics.version>

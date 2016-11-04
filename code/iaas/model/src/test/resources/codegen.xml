@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<configuration xmlns="http://www.jooq.org/xsd/jooq-codegen-3.2.0.xsd">
+<configuration xmlns="http://www.jooq.org/xsd/jooq-codegen-3.8.0.xsd">
     <!-- Configure the database connection here -->
     <jdbc>
         <driver>org.drizzle.jdbc.DrizzleDriver</driver>
@@ -64,7 +64,8 @@
         </database>
 
         <target>
-            <!-- The destination package of your generated classes (within 
+            <encoding>UTF-8</encoding>
+            <!-- The destination package of your generated classes (within
                 the destination directory) -->
             <packageName>io.cattle.platform.core.model</packageName>
 
