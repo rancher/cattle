@@ -58,4 +58,12 @@ public interface MetaDataInfoDao {
             Map<Long, IpAddress> instanceIdToHostIpMap, Map<Long, HostMetaData> hostIdToHostMetadata);
 
     Map<Long, List<HealthcheckInstanceHostMap>> getInstanceIdToHealthCheckers(long accountId);
+
+    /*
+     * this method is to handle new format
+     * when host records don't have ip address assigned to them
+     */
+    List<ContainerMetaData> getHostContainersData(long accountId,
+            Map<Long, List<HealthcheckInstanceHostMap>> instanceIdToHealthCheckers,
+            Map<Long, IpAddress> instanceIdToHostIpMap, Map<Long, HostMetaData> hostIdToHostMetadata);
 }
