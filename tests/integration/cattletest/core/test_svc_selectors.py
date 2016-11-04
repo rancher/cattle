@@ -12,7 +12,7 @@ def _create_service(client, env, image_uuid, service_kind):
                                         launchConfig=launch_config)
 
     elif service_kind == "loadBalancerService":
-        launch_config = {"labels": labels}
+        launch_config = {"imageUuid": image_uuid, "labels": labels}
         port_rule = {"hostname": "foo.com",
                      "path": "/bar", "sourcePort": 100,
                      "selector": "foo=bar"}
