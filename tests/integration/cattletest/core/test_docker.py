@@ -98,7 +98,7 @@ def test_docker_create_with_start(docker_client, super_client):
 
         assert container.state == 'running'
 
-        assert container.data.dockerContainer.Image == TEST_IMAGE_LATEST
+        assert container.data.dockerContainer.Image == TEST_IMAGE
 
         assert len(container.volumes()) == 1
 
@@ -132,7 +132,7 @@ def test_docker_build(docker_client, super_client):
         # This builds tianon/true which just dies
         assert container.state == 'running' or container.state == 'stopped'
         assert container.transitioning == 'no'
-        assert container.data.dockerContainer.Image == uuid + ':latest'
+        assert container.data.dockerContainer.Image == uuid
     finally:
         if container is not None:
             docker_client.delete(container)
@@ -145,7 +145,7 @@ def test_docker_create_with_start_using_docker_io(docker_client, super_client):
     container = docker_client.create_container(imageUuid=uuid)
     container = super_client.wait_success(container)
     assert container.state == 'running'
-    assert container.data.dockerContainer.Image == image + ':latest'
+    assert container.data.dockerContainer.Image == image
     if container is not None:
         docker_client.delete(container)
 
@@ -957,7 +957,7 @@ def test_container_bad_build(super_client, docker_client):
 
     c = super_client.reload(c)
 
-    assert c.data.dockerInspect.Config.Image == TEST_IMAGE_LATEST
+    assert c.data.dockerInspect.Config.Image == TEST_IMAGE
 
 
 @if_docker
