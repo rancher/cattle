@@ -215,16 +215,27 @@ def create_container_and_mount(client, data_volume_mounts, new_context,
     return c
 
 
-def purge_instance_and_check_volume_state(c, vols, state, client):
+def purge_instance_and_check_volume_state(c, vols, client, state=None):
     c = client.wait_success(c.stop())
     c = client.wait_success(c.remove())
     client.wait_success(c.purge())
+
+    def check(obj):
+        if state is not None:
+            return obj.state == state
+        else:
+            return obj.removed is not None
+
+    def report(obj):
+        if state is not None:
+            return 'State: %s. Expected: %s' % (obj.state, state)
+        else:
+            return 'Removed is None'
+
     for vol in vols:
         wait_for_condition(client, vol,
-                           lambda x: (state == 'removed' and
-                                      x.removed is None) or x.state == state,
-                           lambda x: 'State: %s. Expected: %s' % (
-                               x.state, state))
+                           lambda x: check(x),
+                           lambda x: report(x))
 
 
 def create_volume_and_dvm(client, count):
@@ -246,7 +257,7 @@ def test_volume_remove_on_purge(new_context, super_client):
     dvms, vols = create_volume_and_dvm(client, 2)
     c = create_container_and_mount(client, dvms, new_context,
                                    super_client, vols)
-    purge_instance_and_check_volume_state(c, vols, 'removed', client)
+    purge_instance_and_check_volume_state(c, vols, client)
 
     # Vol associated with multiple containers
     dvms, vols = create_volume_and_dvm(client, 2)
@@ -254,8 +265,8 @@ def test_volume_remove_on_purge(new_context, super_client):
                                    super_client, vols)
     c2 = create_container_and_mount(client, dvms, new_context,
                                     super_client, vols)
-    purge_instance_and_check_volume_state(c, vols, 'active', client)
-    purge_instance_and_check_volume_state(c2, vols, 'removed', client)
+    purge_instance_and_check_volume_state(c, vols, client, state='active')
+    purge_instance_and_check_volume_state(c2, vols, client)
 
 
 def test_volume_mounting_and_delete(new_context, super_client):
