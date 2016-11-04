@@ -158,7 +158,7 @@ def test_docker_command(docker_client, super_client):
 
     try:
         container = super_client.wait_success(container)
-        assert container.data.dockerContainer.Command == 'sleep 42'
+        assert container.data.dockerInspect.Config.Cmd == ['sleep', '42']
     finally:
         if container is not None:
             docker_client.delete(container)
@@ -173,7 +173,8 @@ def test_docker_command_args(docker_client, super_client):
 
     try:
         container = super_client.wait_success(container)
-        assert container.data.dockerContainer.Command == 'sleep 1 2 3'
+        assert container.data.dockerInspect.Config.Cmd == ['sleep', '1', '2',
+                                                           '3']
     finally:
         if container is not None:
             docker_client.delete(container)

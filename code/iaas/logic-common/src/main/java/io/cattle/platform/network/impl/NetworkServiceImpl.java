@@ -110,7 +110,7 @@ public class NetworkServiceImpl implements NetworkService {
 
         if (mode == null) {
             if (instanceData.containsKey(DockerInstanceConstants.FIELD_NETWORK_MODE)) {
-                mode = String.valueOf(instanceData.get(DockerInstanceConstants.FIELD_NETWORK_MODE));
+                mode = ObjectUtils.toString(instanceData.get(DockerInstanceConstants.FIELD_NETWORK_MODE));
             } else {
                 mode = NetworkConstants.NETWORK_MODE_MANAGED;
             }
