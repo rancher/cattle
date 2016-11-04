@@ -2,6 +2,7 @@ package io.cattle.platform.agent.connection.simulator.impl;
 
 import io.cattle.platform.agent.connection.simulator.AgentConnectionSimulator;
 import io.cattle.platform.agent.connection.simulator.AgentSimulatorEventProcessor;
+import io.cattle.platform.core.constants.HostConstants;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.model.Agent;
 import io.cattle.platform.eventing.model.Event;
@@ -108,6 +109,24 @@ public class SimulatorPingProcessor implements AgentSimulatorEventProcessor {
             host.put(ObjectMetaDataManager.KIND_FIELD, "sim");
             host.put(ObjectMetaDataManager.TYPE_FIELD, "host");
             host.put(ObjectMetaDataManager.NAME_FIELD, "testhost-" + io.cattle.platform.util.resource.UUID.randomUUID());
+
+            Long cpu = DataAccessor.fromDataFieldOf(agent).withScope(AgentConnectionSimulator.class)
+                    .withKey(HostConstants.FIELD_MILLI_CPU).as(jsonMapper, Long.class);
+            if (cpu != null) {
+                host.put(HostConstants.FIELD_MILLI_CPU, cpu);
+            }
+
+            Long mem = DataAccessor.fromDataFieldOf(agent).withScope(AgentConnectionSimulator.class)
+                    .withKey(HostConstants.FIELD_MEMORY).as(jsonMapper, Long.class);
+            if (mem != null) {
+                host.put(HostConstants.FIELD_MEMORY, mem);
+            }
+
+            Long storage = DataAccessor.fromDataFieldOf(agent).withScope(AgentConnectionSimulator.class)
+                    .withKey(HostConstants.FIELD_LOCAL_STORAGE_MB).as(jsonMapper, Long.class);
+            if (storage != null) {
+                host.put(HostConstants.FIELD_LOCAL_STORAGE_MB, storage);
+            }
 
             if (addPhysicalHost) {
                 host.put("physicalHostUuid", physicalHostUuid);

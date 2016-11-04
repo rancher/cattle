@@ -406,21 +406,53 @@ def machine_context(admin_user_client, service_client,  # NOQA
 
 
 @pytest.mark.nonparallel
+def test_host_resource_field_overrides(super_client, machine_context,
+                                       update_ping_settings):
+    client = machine_context.client
+    name = random_str()
+    host = client.create_host(hostname=name, fooConfig={}, milliCpu=1200,
+                              memory=2200, localStorageMb=3200)
+    agent, host, machine = register_host_through_agent(client, host,
+                                                       machine_context,
+                                                       super_client)
+    assert host.milliCpu == 1200
+    assert host.memory == 2200
+    assert host.localStorageMb == 3200
+
+
+@pytest.mark.nonparallel
 def test_host_lifecycle(super_client, machine_context, update_ping_settings):
     client = machine_context.client
     name = random_str()
     host = client.create_host(hostname=name, fooConfig={})
+    agent, host, machine = register_host_through_agent(client, host,
+                                                       machine_context,
+                                                       super_client)
+    assert host.physicalHostId == machine.id
+    assert host.agentId == agent.id
+    assert host.agentId == machine.agentId
+    assert host.data.fields.reportedUuid == machine.externalId
+    assert host.milliCpu == 1000
+    assert host.memory == 2000
+    assert host.localStorageMb == 3000
+    assert machine.name == name
+
+    host = machine_context.client.wait_success(host.deactivate())
+    host = machine_context.client.wait_success(host.remove())
+    assert host.state == 'removed'
+    machine = machine_context.client.wait_success(machine)
+    assert machine.state == 'removed'
+
+
+def register_host_through_agent(client, host, machine_context, super_client):
     host = wait_for_condition(client, host,
                               lambda x: x.physicalHostId is not None)
     machine = host.physicalHost()
     machine = machine_context.client.wait_success(machine)
-
     assert machine.state == 'active'
     assert machine.fooConfig is not None
-
     external_id = super_client.reload(machine).externalId
     assert external_id is not None
-
     # Create an agent with the externalId specified. The agent simulator will
     # mimic how the go-machine-service would use this external_id to bootstrap
     # an agent onto the physical host with the proper PHYSICAL_HOST_UUID set.
@@ -433,53 +465,39 @@ def test_host_lifecycle(super_client, machine_context, update_ping_settings):
     account_id = get_plain_id(super_client, machine_context.project)
     data[scope]['agentResourcesAccountId'] = account_id
     data['agentResourcesAccountId'] = account_id
-
+    # Set host resource fields
+    data[scope]['milliCpu'] = 1000
+    data[scope]['memory'] = 2000
+    data[scope]['localStorageMb'] = 3000
     agent = super_client.create_agent(uri=uri, data=data)
     agent = super_client.wait_success(agent)
-
     wait_for(lambda: len(agent.hosts()) == 1)
     hosts = agent.hosts()
-
     assert len(hosts) == 1
     host = hosts[0].physicalHost()
     assert host.kind == 'machine'
     assert machine.accountId == host.accountId
     assert machine.uuid == host.uuid
-
     # Need to force a ping because they cause physical hosts to be created
     # under non-machine use cases. Ensures the machine isnt overridden
     ping = one(super_client.list_task, name='agent.ping')
     ping.execute()
     time.sleep(.1)  # The ping needs time to execute
-
     agent = super_client.reload(agent)
     hosts = agent.hosts()
     assert len(hosts) == 1
     host = hosts[0]
     physical_hosts = host.physicalHost()
     assert physical_hosts.id == machine.id
-
     machine = machine_context.client.wait_success(machine)
     host = machine_context.client.wait_success(host)
-
     agent = super_client.wait_success(agent)
     assert agent.state == 'active'
-
     host = machine_context.client.wait_success(machine_context
                                                .client.reload(host))
     host = super_client.reload(host)
     machine = super_client.reload(machine)
-    assert host.physicalHostId == machine.id
-    assert host.agentId == agent.id
-    assert host.agentId == machine.agentId
-    assert host.data.fields.reportedUuid == machine.externalId
-    assert machine.name == name
-
-    host = machine_context.client.wait_success(host.deactivate())
-    host = machine_context.client.wait_success(host.remove())
-    assert host.state == 'removed'
-    machine = machine_context.client.wait_success(machine)
-    assert machine.state == 'removed'
+    return agent, host, machine
 
 
 @pytest.mark.nonparallel
