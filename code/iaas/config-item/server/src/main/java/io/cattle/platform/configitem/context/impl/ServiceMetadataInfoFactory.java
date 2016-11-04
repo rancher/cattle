@@ -311,6 +311,8 @@ public class ServiceMetadataInfoFactory extends AbstractAgentBaseContextFactory 
                     containerMD.setStack_name(svcData.getStack_name());
                     containerMD.setStack_uuid(svcData.getStackUuid());
                     containerMD.setService_name(svcData.getName());
+                    // apply version to a container here
+                    containerMD = ContainerMetaData.getContainerMetaData(containerMD, version);
 
                     Map<String, List<ContainerMetaData>> launchConfigToContainer = serviceIdToLaunchConfigToContainer
                             .get(containerMD.getServiceId());
@@ -327,7 +329,7 @@ public class ServiceMetadataInfoFactory extends AbstractAgentBaseContextFactory 
                     serviceIdToLaunchConfigToContainer.put(containerMD.getServiceId(), launchConfigToContainer);
                 }
             }
-            newData.add(ContainerMetaData.getContainerMetaData(containerMD, version));
+            newData.add(containerMD);
         }
         return newData;
     }
