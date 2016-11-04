@@ -144,6 +144,12 @@ public class ServiceDiscoveryConfigItem {
     public static final ServiceDiscoveryConfigItem LB_CONFIG = new ServiceDiscoveryConfigItem(
             ServiceConstants.FIELD_LB_CONFIG,
             NamedUtils.toUnderscoreSeparated(ServiceConstants.FIELD_LB_CONFIG), false, false, false);
+    public static final ServiceDiscoveryConfigItem NETWORK_DRIVER = new ServiceDiscoveryConfigItem(
+            ServiceConstants.FIELD_NETWORK_DRIVER,
+            NamedUtils.toUnderscoreSeparated(ServiceConstants.FIELD_NETWORK_DRIVER), false, false, false);
+    public static final ServiceDiscoveryConfigItem STORAGE_DRIVER = new ServiceDiscoveryConfigItem(
+            ServiceConstants.FIELD_STORAGE_DRIVER,
+            NamedUtils.toUnderscoreSeparated(ServiceConstants.FIELD_STORAGE_DRIVER), false, false, false);
 
     // VOLUME parameter
     private static List<ServiceDiscoveryConfigItem> supportedVolumeConfigItems = new ArrayList<>();

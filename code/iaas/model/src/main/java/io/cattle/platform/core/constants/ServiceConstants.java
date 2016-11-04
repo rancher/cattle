@@ -80,6 +80,8 @@ public class ServiceConstants {
     public static final String FIELD_VOLUME_PER_CONTAINER = "perContainer";
     public static final String FIELD_INSTANCE_IDS = "instanceIds";
     public static final String FIELD_LB_CONFIG = "lbConfig";
+    public static final String FIELD_STORAGE_DRIVER = "storageDriver";
+    public static final String FIELD_NETWORK_DRIVER = "networkDriver";
     public static final String FIELD_PORT_RULES = "portRules";
 
     public static final String FIELD_INTERNAL_VOLUMES = "internalVolumes";
