@@ -266,9 +266,9 @@
         "host.publicEndpoints" : "r",
         "host.agentIpAddress" : "r",
         "host.instanceIds" : "r",
-        "host.localStorageMb" : "ru",
-        "host.memory" : "ru",
-        "host.milliCpu" : "ru",
+        "host.localStorageMb" : "cru",
+        "host.memory" : "cru",
+        "host.milliCpu" : "cru",
 
         "addLabelInput" : "cr",
         "addLabelInput.key" : "cr",

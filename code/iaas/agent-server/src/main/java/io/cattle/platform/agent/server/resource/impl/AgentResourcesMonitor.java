@@ -263,6 +263,8 @@ public class AgentResourcesMonitor implements AnnotatedEventListener {
                     if (memory != null) {
                         updates.put(HostConstants.FIELD_MEMORY, memory);
                     }
+                } else {
+                    updates.remove(HostConstants.FIELD_MEMORY);
                 }
 
                 if (host.getMilliCpu() == null) {
@@ -270,6 +272,8 @@ public class AgentResourcesMonitor implements AnnotatedEventListener {
                     if (cpu != null) {
                         updates.put(HostConstants.FIELD_MILLI_CPU, cpu);
                     }
+                } else {
+                    updates.remove(HostConstants.FIELD_MILLI_CPU);
                 }
 
                 if (host.getLocalStorageMb() == null) {
@@ -277,6 +281,8 @@ public class AgentResourcesMonitor implements AnnotatedEventListener {
                     if (storage != null) {
                         updates.put(HostConstants.FIELD_LOCAL_STORAGE_MB, storage);
                     }
+                } else {
+                    updates.remove(HostConstants.FIELD_LOCAL_STORAGE_MB);
                 }
 
                 if (updates.size() > 0) {
