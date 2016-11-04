@@ -48,7 +48,11 @@ public class ServiceUpgradeValidationFilter extends AbstractDefaultResourceManag
 
     @Override
     public String[] getTypes() {
-        return new String[] { "service", "dnsService", "externalService", "loadBalancerService" };
+        List<String> supportedTypes = new ArrayList<>();
+        supportedTypes.addAll(ServiceConstants.SERVICE_LIKE);
+        supportedTypes.add(ServiceConstants.KIND_DNS_SERVICE);
+        supportedTypes.add(ServiceConstants.KIND_EXTERNAL_SERVICE);
+        return supportedTypes.toArray(new String[supportedTypes.size()]);
     }
 
     @Override
