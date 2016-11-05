@@ -105,7 +105,11 @@ def do_scheduling_test(container_kw, client, mock_scheduler, hosts,
     assert c.state == 'running'
     c = client.wait_success(c.stop())
     c = client.wait_success(c.remove())
-    c.purge()
+    try:
+        # may have already purged
+        c.purge()
+    except:
+        pass
 
     event = mock_scheduler.get_next_event()
     assert event['name'] == 'scheduler.release'

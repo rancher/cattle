@@ -9,7 +9,8 @@ docker_client
 @if_docker
 def test_stats_container(docker_client, cattle_url):
     uuid = TEST_IMAGE_UUID
-    container = docker_client.create_container(imageUuid=uuid)
+    container = docker_client.create_container(imageUuid=uuid,
+                                               networkMode='bridge')
     container = docker_client.wait_success(container)
 
     assert len(container.hosts()) == 1
