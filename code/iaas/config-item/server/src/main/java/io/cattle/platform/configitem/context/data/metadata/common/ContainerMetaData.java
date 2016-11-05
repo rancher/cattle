@@ -84,9 +84,11 @@ public class ContainerMetaData {
         this.network_uuid = that.network_uuid;
         this.network_from_container_uuid = that.network_from_container_uuid;
         this.system = that.system;
+        this.instanceId = that.instanceId;
         this.instance = that.instance;
         this.dns = that.dns;
         this.dns_search = that.dns_search;
+        this.health_check_hosts = that.health_check_hosts;
     }
 
     public ContainerMetaData() {
