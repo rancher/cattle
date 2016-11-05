@@ -248,7 +248,7 @@ public class DockerPostInstanceHostMapActivate extends AbstractObjectProcessLogi
     }
 
     protected IpAddress processDockerIp(Instance instance, Nic nic, IpAddress primaryIp, String dockerIp) {
-        if (primaryIp != null) {
+        if (primaryIp != null && !DockerIpAddressConstants.KIND_DOCKER.equals(primaryIp.getKind())) {
             return primaryIp;
         }
 
@@ -256,17 +256,16 @@ public class DockerPostInstanceHostMapActivate extends AbstractObjectProcessLogi
             return null;
         }
 
-        primaryIp = ipAddressDao.mapNewIpAddress(nic,
-                IP_ADDRESS.KIND, DockerIpAddressConstants.KIND_DOCKER,
-                IP_ADDRESS.ROLE, IpAddressConstants.ROLE_PRIMARY,
-                IP_ADDRESS.ADDRESS, dockerIp);
-
-        if (primaryIp.getKind().equals(DockerIpAddressConstants.KIND_DOCKER)) {
-            if (!dockerIp.equals(primaryIp.getAddress())) {
-                getObjectManager().setFields(primaryIp, IP_ADDRESS.ADDRESS, dockerIp);
-            }
-            createThenActivate(primaryIp, null);
+        if (primaryIp == null) {
+            primaryIp = ipAddressDao.mapNewIpAddress(nic,
+                    IP_ADDRESS.KIND, DockerIpAddressConstants.KIND_DOCKER,
+                    IP_ADDRESS.ROLE, IpAddressConstants.ROLE_PRIMARY,
+                    IP_ADDRESS.ADDRESS, dockerIp);
+        } else if (!dockerIp.equals(primaryIp.getAddress())) {
+            getObjectManager().setFields(primaryIp, IP_ADDRESS.ADDRESS, dockerIp);
         }
+
+        createThenActivate(primaryIp, null);
 
         return primaryIp;
     }

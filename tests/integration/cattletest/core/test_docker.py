@@ -35,6 +35,7 @@ def docker_client(super_client):
 def test_docker_create_only(docker_client, super_client):
     uuid = TEST_IMAGE_UUID
     container = docker_client.create_container(imageUuid=uuid,
+                                               networkMode='bridge',
                                                startOnCreate=False)
     try:
         container = docker_client.wait_success(container)
@@ -64,6 +65,7 @@ def test_docker_create_only_from_sha(docker_client, super_client):
     uuid = 'docker:' + image_name
     container = docker_client.create_container(name='test-sha256',
                                                imageUuid=uuid,
+                                               networkMode='bridge',
                                                startOnCreate=False)
     try:
         container = docker_client.wait_success(container)
@@ -89,7 +91,8 @@ def test_docker_create_only_from_sha(docker_client, super_client):
 @if_docker
 def test_docker_create_with_start(docker_client, super_client):
     uuid = TEST_IMAGE_UUID
-    container = docker_client.create_container(imageUuid=uuid)
+    container = docker_client.create_container(imageUuid=uuid,
+                                               networkMode='bridge')
 
     try:
         assert container.state == 'creating'
@@ -121,6 +124,7 @@ def test_docker_build(docker_client, super_client):
     uuid = 'image-' + random_str()
     url = 'https://github.com/rancherio/tiny-build/raw/master/build.tar'
     container = docker_client.create_container(imageUuid='docker:' + uuid,
+                                               networkMode='bridge',
                                                build={
                                                    'context': url,
                                                })
@@ -142,7 +146,8 @@ def test_docker_build(docker_client, super_client):
 def test_docker_create_with_start_using_docker_io(docker_client, super_client):
     image = 'docker.io/' + TEST_IMAGE
     uuid = 'docker:' + image
-    container = docker_client.create_container(imageUuid=uuid)
+    container = docker_client.create_container(imageUuid=uuid,
+                                               networkMode='bridge')
     container = super_client.wait_success(container)
     assert container.state == 'running'
     assert container.data.dockerContainer.Image == image
@@ -154,6 +159,7 @@ def test_docker_create_with_start_using_docker_io(docker_client, super_client):
 def test_docker_command(docker_client, super_client):
     uuid = TEST_IMAGE_UUID
     container = docker_client.create_container(imageUuid=uuid,
+                                               networkMode='bridge',
                                                command=['sleep', '42'])
 
     try:
@@ -168,6 +174,7 @@ def test_docker_command(docker_client, super_client):
 def test_docker_command_args(docker_client, super_client):
     uuid = TEST_IMAGE_UUID
     container = docker_client.create_container(imageUuid=uuid,
+                                               networkMode='bridge',
                                                command=['sleep', '1', '2',
                                                         '3'])
 
@@ -182,7 +189,8 @@ def test_docker_command_args(docker_client, super_client):
 
 @if_docker
 def test_short_lived_container(docker_client, super_client):
-    container = docker_client.create_container(imageUuid="docker:tianon/true")
+    container = docker_client.create_container(imageUuid="docker:tianon/true",
+                                               networkMode='bridge')
     container = wait_for_condition(
         docker_client, container,
         lambda x: x.state == 'stopped',
@@ -195,7 +203,8 @@ def test_short_lived_container(docker_client, super_client):
 @if_docker
 def test_docker_stop(docker_client):
     uuid = TEST_IMAGE_UUID
-    container = docker_client.create_container(imageUuid=uuid)
+    container = docker_client.create_container(imageUuid=uuid,
+                                               networkMode='bridge')
 
     assert container.state == 'creating'
 
@@ -216,7 +225,8 @@ def test_docker_stop(docker_client):
 @if_docker
 def test_docker_purge(docker_client):
     uuid = TEST_IMAGE_UUID
-    container = docker_client.create_container(imageUuid=uuid)
+    container = docker_client.create_container(imageUuid=uuid,
+                                               networkMode='bridge')
 
     assert container.state == 'creating'
 
@@ -244,7 +254,7 @@ def test_docker_purge(docker_client):
 def safe_purge(c, docker_client):
     try:
         c.purge()
-    except ApiError:
+    except (ApiError, AttributeError):
         # It's possible for the container to already have been purged
         pass
     c = docker_client.wait_success(c)
@@ -255,7 +265,8 @@ def safe_purge(c, docker_client):
 @if_docker
 def test_docker_image_format(docker_client, super_client):
     uuid = TEST_IMAGE_UUID
-    container = docker_client.create_container(imageUuid=uuid)
+    container = docker_client.create_container(imageUuid=uuid,
+                                               networkMode='bridge')
 
     try:
         container = docker_client.wait_success(container)
@@ -295,7 +306,8 @@ def test_docker_ports_from_container_publish_all(docker_client):
 @if_docker
 def test_docker_ports_from_container_no_publish(docker_client):
     uuid = TEST_IMAGE_UUID
-    c = docker_client.create_container(imageUuid=uuid)
+    c = docker_client.create_container(imageUuid=uuid,
+                                       networkMode='bridge')
 
     c = docker_client.wait_success(c)
 
@@ -355,8 +367,6 @@ def test_docker_ports_from_container(docker_client, super_client):
     c = docker_client.wait_success(c.start())
     assert c.state == 'running'
 
-    network = super_client.reload(c).nics()[0].network()
-
     count = 0
     ip = None
     privateIp = None
@@ -366,8 +376,6 @@ def test_docker_ports_from_container(docker_client, super_client):
         privateIp = port.privateIpAddress()
 
         assert privateIp.kind == 'docker'
-        assert privateIp.networkId == network.id
-        assert privateIp.network() is not None
         assert _(privateIp).subnetId is None
 
         assert port.publicPort is not None
@@ -427,6 +435,7 @@ def test_docker_ports_from_container(docker_client, super_client):
 @if_docker
 def test_docker_bind_address(docker_client, super_client):
     c = docker_client.create_container(name='bindAddrTest',
+                                       networkMode='bridge',
                                        imageUuid=TEST_IMAGE_UUID,
                                        ports=['127.0.0.1:89:8999'])
     c = docker_client.wait_success(c)
@@ -437,6 +446,7 @@ def test_docker_bind_address(docker_client, super_client):
     assert bindings['8999/tcp'] == [{'HostIp': '127.0.0.1', 'HostPort': '89'}]
 
     c = docker_client.create_container(name='bindAddrTest2',
+                                       networkMode='bridge',
                                        imageUuid=TEST_IMAGE_UUID,
                                        ports=['127.2.2.2:89:8999'])
     c = docker_client.wait_success(c)
@@ -446,6 +456,7 @@ def test_docker_bind_address(docker_client, super_client):
     assert bindings['8999/tcp'] == [{'HostIp': '127.2.2.2', 'HostPort': '89'}]
 
     c = docker_client.create_container(name='bindAddrTest3',
+                                       networkMode='bridge',
                                        imageUuid=TEST_IMAGE_UUID,
                                        ports=['127.2.2.2:89:8999'])
     c = docker_client.wait_transitioning(c)
@@ -458,6 +469,7 @@ def test_docker_bind_address(docker_client, super_client):
 @if_docker
 def test_no_port_override(docker_client, super_client):
     c = docker_client.create_container(imageUuid=TEST_IMAGE_UUID,
+                                       networkMode='bridge',
                                        ports=['8083:8080'])
 
     try:
@@ -488,6 +500,7 @@ def test_docker_volumes(docker_client, super_client):
     bar_bind_mount = '%s:/bar' % bar_host_path
 
     c = docker_client.create_container(imageUuid=uuid,
+                                       networkMode='bridge',
                                        startOnCreate=False,
                                        dataVolumes=['/foo',
                                                     bar_bind_mount])
@@ -534,6 +547,7 @@ def test_docker_volumes(docker_client, super_client):
     assert bar_host_path in bar_vol.uri
 
     c2 = docker_client.create_container(name="volumes_from_test",
+                                        networkMode='bridge',
                                         imageUuid=uuid,
                                         startOnCreate=False,
                                         dataVolumesFrom=[c.id])
@@ -562,14 +576,17 @@ def test_docker_volumes(docker_client, super_client):
 @if_docker
 def test_volumes_from_more_than_one_container(docker_client):
     c = docker_client.create_container(imageUuid=TEST_IMAGE_UUID,
+                                       networkMode='bridge',
                                        dataVolumes=['/foo'])
     docker_client.wait_success(c)
 
     c2 = docker_client.create_container(imageUuid=TEST_IMAGE_UUID,
+                                        networkMode='bridge',
                                         dataVolumes=['/bar'])
     docker_client.wait_success(c2)
 
     c3 = docker_client.create_container(imageUuid=TEST_IMAGE_UUID,
+                                        networkMode='bridge',
                                         dataVolumesFrom=[c.id, c2.id])
     c3 = docker_client.wait_success(c3)
 
@@ -596,6 +613,7 @@ def test_container_fields(docker_client, super_client):
     restart_policy = {"maximumRetryCount": 2, "name": "on-failure"}
 
     c = docker_client.create_container(name=test_name,
+                                       networkMode='bridge',
                                        imageUuid=image_uuid,
                                        capAdd=caps,
                                        capDrop=caps,
@@ -690,6 +708,7 @@ def test_docker_newfields(docker_client, super_client):
                                        uts=uts,
                                        ipcMode=ipcMode,
                                        stopSignal=stopSignal,
+                                       networkMode='bridge',
                                        ulimits=ulimits)
     c = super_client.wait_success(c)
 
@@ -759,6 +778,7 @@ def test_container_milli_cpu_reservation(docker_client, super_client):
                                        tty=True,
                                        command=["true"],
                                        entryPoint=["/bin/sh", "-c"],
+                                       networkMode='bridge',
                                        milliCpuReservation=2000,
                                        cpuShares=400)
 
@@ -795,6 +815,7 @@ def volume_cleanup_setup(docker_client, uuid, strategy=None):
     vol_name = random_str()
     c = docker_client.create_container(name="volume_cleanup_test",
                                        imageUuid=uuid,
+                                       networkMode='bridge',
                                        dataVolumes=['/tmp/foo',
                                                     '%s:/foo' % vol_name],
                                        labels=labels)
@@ -854,6 +875,7 @@ def test_docker_mount_life_cycle(docker_client):
 
     c = docker_client.create_container(imageUuid=uuid,
                                        startOnCreate=False,
+                                       networkMode='bridge',
                                        dataVolumes=['%s:/foo' % random_str(),
                                                     bar_bind_mount])
 
@@ -895,6 +917,7 @@ def test_docker_labels(docker_client):
 
     c = docker_client.create_container(name="labels_test",
                                        imageUuid=image_uuid,
+                                       networkMode='bridge',
                                        labels={'io.rancher.testlabel.'
                                                'fromapi': 'yes'})
     c = docker_client.wait_success(c)
@@ -927,6 +950,7 @@ def test_docker_labels(docker_client):
 def test_container_odd_fields(super_client, docker_client):
     c = docker_client.create_container(pidMode=None,
                                        imageUuid=TEST_IMAGE_UUID,
+                                       networkMode='bridge',
                                        logConfig={
                                            'driver': None,
                                            'config': None,
@@ -946,6 +970,7 @@ def test_container_odd_fields(super_client, docker_client):
 @if_docker
 def test_container_bad_build(super_client, docker_client):
     c = docker_client.create_container(imageUuid=TEST_IMAGE_UUID,
+                                       networkMode='bridge',
                                        build={
                                            'context': None,
                                            'remote': None
@@ -969,10 +994,12 @@ def test_service_link_emu_docker_link(super_client, docker_client):
     assert env.state == "active"
 
     server = docker_client.create_service(name='server', launchConfig={
+        'networkMode': 'bridge',
         'imageUuid': TEST_IMAGE_UUID
     }, stackId=env.id)
 
     service = docker_client.create_service(name='client', launchConfig={
+        'networkMode': 'bridge',
         'imageUuid': TEST_IMAGE_UUID
     }, stackId=env.id)
 
@@ -1007,6 +1034,7 @@ def test_service_links_with_no_ports(docker_client):
 
     server = docker_client.create_service(name='server', launchConfig={
         'imageUuid': TEST_IMAGE_UUID,
+        'networkMode': 'bridge',
         'stdinOpen': True,
         'tty': True,
     }, stackId=env.id)
@@ -1015,6 +1043,7 @@ def test_service_links_with_no_ports(docker_client):
 
     service = docker_client.create_service(name='client', launchConfig={
         'imageUuid': TEST_IMAGE_UUID,
+        'networkMode': 'bridge',
         'stdinOpen': True,
         'tty': True,
     }, stackId=env.id)

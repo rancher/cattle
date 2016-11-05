@@ -97,9 +97,9 @@ def test_container_ha_remove(super_client, new_context):
                        lambda x: x.removed is not None,
                        lambda x: 'State is: ' + x.state)
 
-    assert _process_names(processes) == {'instance.create',
-                                         'instance.stop',
-                                         'instance.remove'}
+    p = _process_names(processes)
+    assert 'instance.create' in p
+    assert 'instance.remove' in p
 
 
 def process_executions(cli, id=None):

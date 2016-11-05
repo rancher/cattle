@@ -24,7 +24,8 @@ def _get_container_logs_ip(host):
 @if_docker
 def test_logs_container(docker_client, cattle_url):
     uuid = TEST_IMAGE_UUID
-    container = docker_client.create_container(imageUuid=uuid)
+    container = docker_client.create_container(imageUuid=uuid,
+                                               networkMode='bridge')
     container = docker_client.wait_success(container)
 
     assert len(container.hosts()) == 1
