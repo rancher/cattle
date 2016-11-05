@@ -210,7 +210,7 @@
             <dependency>
                 <groupId>com.google.guava</groupId>
                 <artifactId>guava</artifactId>
-                <version>15.0</version>
+                <version>20.0</version>
             </dependency>
             <dependency>
                 <groupId>net.logstash.logback</groupId>
