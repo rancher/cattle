@@ -5,7 +5,6 @@ import static io.cattle.platform.core.model.tables.MountTable.*;
 import static io.cattle.platform.docker.constants.DockerInstanceConstants.*;
 
 import io.cattle.iaas.labels.service.LabelsService;
-import io.cattle.platform.archaius.util.ArchaiusUtil;
 import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.IpAddressConstants;
 import io.cattle.platform.core.constants.PortConstants;
@@ -16,7 +15,6 @@ import io.cattle.platform.core.dao.IpAddressDao;
 import io.cattle.platform.core.dao.NetworkDao;
 import io.cattle.platform.core.dao.NicDao;
 import io.cattle.platform.core.model.Host;
-import io.cattle.platform.core.model.HostIpAddressMap;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.InstanceHostMap;
 import io.cattle.platform.core.model.IpAddress;
@@ -62,12 +60,8 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.netflix.config.DynamicBooleanProperty;
-
 public class DockerPostInstanceHostMapActivate extends AbstractObjectProcessLogic implements ProcessPostListener,
         Priority {
-
-    public static final DynamicBooleanProperty DYNAMIC_ADD_IP = ArchaiusUtil.getBoolean("docker.compute.auto.add.host.ip");
 
     private static final Logger log = LoggerFactory.getLogger(DockerPostInstanceHostMapActivate.class);
 
@@ -107,15 +101,16 @@ public class DockerPostInstanceHostMapActivate extends AbstractObjectProcessLogi
         String dockerIp = DockerProcessUtils.getDockerIp(instance);
         Nic nic = nicDao.getPrimaryNic(instance);
 
-        IpAddress ipAddress = hostDao.getIpAddressForHost(host.getId());
+        IpAddress hostIpAddress = hostDao.getIpAddressForHost(host.getId());
+        IpAddress primaryIp = ipAddressDao.getInstancePrimaryIp(instance);
         List<String> ports = DataAccessor.fields(instance).withKey(DockerInstanceConstants.FIELD_DOCKER_PORTS).as(jsonMapper, List.class);
 
         if (dockerIp != null) {
-            processDockerIp(instance, nic, dockerIp);
+            primaryIp = processDockerIp(instance, nic, primaryIp, dockerIp);
         }
 
-        if (ipAddress != null && ports != null) {
-            processPorts(ipAddress, ports, instance, nic, host);
+        if (hostIpAddress != null && ports != null) {
+            processPorts(primaryIp, hostIpAddress, ports, instance, nic, host);
         }
 
         processVolumes(instance, host, state);
@@ -252,40 +247,32 @@ public class DockerPostInstanceHostMapActivate extends AbstractObjectProcessLogi
         });
     }
 
-    protected void processDockerIp(Instance instance, Nic nic, String dockerIp) {
-        if (nic == null) {
-            return;
+    protected IpAddress processDockerIp(Instance instance, Nic nic, IpAddress primaryIp, String dockerIp) {
+        if (primaryIp != null) {
+            return primaryIp;
         }
 
-        IpAddress dockerIpAddress = dockerDao.getDockerIp(dockerIp, instance);
-
-        if (dockerIpAddress == null) {
-            dockerIpAddress = ipAddressDao.mapNewIpAddress(nic,
-                    IP_ADDRESS.KIND, DockerIpAddressConstants.KIND_DOCKER,
-                    IP_ADDRESS.ROLE, IpAddressConstants.ROLE_PRIMARY,
-                    IP_ADDRESS.ADDRESS, dockerIp);
+        if (nic == null || StringUtils.isBlank(dockerIp)) {
+            return null;
         }
 
-        if (dockerIpAddress.getKind().equals(DockerIpAddressConstants.KIND_DOCKER)) {
-            if (!dockerIp.equals(dockerIpAddress.getAddress())) {
-                getObjectManager().setFields(dockerIpAddress, IP_ADDRESS.ADDRESS, dockerIp);
+        primaryIp = ipAddressDao.mapNewIpAddress(nic,
+                IP_ADDRESS.KIND, DockerIpAddressConstants.KIND_DOCKER,
+                IP_ADDRESS.ROLE, IpAddressConstants.ROLE_PRIMARY,
+                IP_ADDRESS.ADDRESS, dockerIp);
+
+        if (primaryIp.getKind().equals(DockerIpAddressConstants.KIND_DOCKER)) {
+            if (!dockerIp.equals(primaryIp.getAddress())) {
+                getObjectManager().setFields(primaryIp, IP_ADDRESS.ADDRESS, dockerIp);
             }
-            createThenActivate(dockerIpAddress, null);
+            createThenActivate(primaryIp, null);
         }
+
+        return primaryIp;
     }
 
-    protected void processPorts(IpAddress ipAddress, List<String> ports, Instance instance, Nic nic, final Host host) {
-        IpAddress dockerIpAddress = dockerDao.getDockerIp(DockerProcessUtils.getDockerIp(instance), instance);
-        Long privateIpAddressId = dockerIpAddress == null ? null : dockerIpAddress.getId();
-
-        if (DYNAMIC_ADD_IP.get()) {
-            createThenActivate(ipAddress, null);
-            for (HostIpAddressMap map : getObjectManager().children(ipAddress, HostIpAddressMap.class)) {
-                if (map.getHostId().longValue() == host.getId()) {
-                    createThenActivate(map, null);
-                }
-            }
-        }
+    protected void processPorts(IpAddress primaryIp, IpAddress ipAddress, List<String> ports, Instance instance, Nic nic, final Host host) {
+        Long privateIpAddressId = primaryIp == null ? null : primaryIp.getId();
 
         Map<Integer, Port> existing = new HashMap<Integer, Port>();
         for (Port port : getObjectManager().children(instance, Port.class)) {

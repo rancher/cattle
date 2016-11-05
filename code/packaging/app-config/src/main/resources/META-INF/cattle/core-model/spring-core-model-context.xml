@@ -55,7 +55,6 @@
                 <value>instanceConsole</value>
                 <value>instanceConsoleInput</value>
                 <value>instanceStop</value>
-                <value>ipAddressAssociateInput</value>
                 <value>project,parent=account</value>
                 <value>password,parent=credential</value>
                 <value>registry,parent=storagePool</value>

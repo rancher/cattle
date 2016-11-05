@@ -62,17 +62,17 @@ def test_container_remove(client, context):
 
     c = client.delete(c)
     c = client.wait_success(c)
-    assert c.state == 'removed'
+    assert c.removed is not None
 
     wait_for(lambda: client.reload(map).state != 'active')
     map = client.wait_success(map)
-    assert map.state == 'removed'
+    assert map.removed is not None
 
     s = client.wait_success(s)
     env = client.wait_success(env)
 
-    assert s.state == 'removed'
-    assert env.state == 'removed'
+    assert s.removed is not None
+    assert env.removed is not None
 
 
 def test_container_two_remove(client, context):

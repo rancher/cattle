@@ -1,7 +1,7 @@
 import base64
 import json
 
-from cattle import ApiError
+from cattle import ApiError, ClientApiError
 from common_fixtures import *  # NOQA
 from datetime import timedelta
 import time
@@ -204,6 +204,12 @@ def test_container_first_running(client, context):
     c = client.wait_success(c.restart())
     assert c.state == 'running'
     assert c.firstRunning == first
+
+
+def test_container_no_net(client, context):
+    with pytest.raises(ClientApiError) as e:
+        context.create_container(networkMode='foo')
+    assert e.value.message == 'Failed to find network for networkMode foo'
 
 
 def test_container_restart(client, super_client, context):

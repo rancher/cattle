@@ -361,4 +361,60 @@ public class MetaDataInfoDaoImpl extends AbstractJooqDao implements MetaDataInfo
                 .and(ntwk.ACCOUNT_ID.eq(accountId))
                 .fetch().map(mapper);
     }
+
+    @Override
+    public List<ContainerMetaData> getHostContainersData(long accountId,
+            final Map<Long, List<HealthcheckInstanceHostMap>> instanceIdToHealthCheckers,
+            final Map<Long, IpAddress> instanceIdToHostIpMap, final Map<Long, HostMetaData> hostIdToHostMetadata) {
+
+        MultiRecordMapper<ContainerMetaData> mapper = new MultiRecordMapper<ContainerMetaData>() {
+            @Override
+            protected ContainerMetaData map(List<Object> input) {
+                ContainerMetaData data = new ContainerMetaData();
+                populateContainerData(instanceIdToHostIpMap, hostIdToHostMetadata, input, data,
+                        new HashMap<Long, String>(), instanceIdToHealthCheckers);
+
+                return data;
+            }
+        };
+
+        InstanceTable instance = mapper.add(INSTANCE, INSTANCE.UUID, INSTANCE.NAME, INSTANCE.CREATE_INDEX,
+                INSTANCE.HEALTH_STATE, INSTANCE.START_COUNT, INSTANCE.STATE, INSTANCE.EXTERNAL_ID,
+                INSTANCE.DNS_INTERNAL, INSTANCE.DNS_SEARCH_INTERNAL, INSTANCE.MEMORY_RESERVATION,
+                INSTANCE.MILLI_CPU_RESERVATION);
+        ServiceExposeMapTable exposeMap = mapper.add(SERVICE_EXPOSE_MAP, SERVICE_EXPOSE_MAP.SERVICE_ID,
+                SERVICE_EXPOSE_MAP.DNS_PREFIX, SERVICE_EXPOSE_MAP.UPGRADE);
+        HostTable host = mapper.add(HOST, HOST.ID);
+        IpAddressTable instanceIpAddress = mapper.add(IP_ADDRESS, IP_ADDRESS.ADDRESS);
+        NicTable nic = mapper.add(NIC, NIC.ID, NIC.INSTANCE_ID, NIC.MAC_ADDRESS);
+        NetworkTable ntwk = mapper.add(NETWORK, NETWORK.UUID);
+        return create()
+                .select(mapper.fields())
+                .from(instance)
+                .join(INSTANCE_HOST_MAP)
+                .on(instance.ID.eq(INSTANCE_HOST_MAP.INSTANCE_ID))
+                .join(host)
+                .on(host.ID.eq(INSTANCE_HOST_MAP.HOST_ID))
+                .join(exposeMap, JoinType.LEFT_OUTER_JOIN)
+                .on(exposeMap.INSTANCE_ID.eq(instance.ID))
+                .join(nic)
+                .on(nic.INSTANCE_ID.eq(INSTANCE_HOST_MAP.INSTANCE_ID))
+                .join(IP_ADDRESS_NIC_MAP, JoinType.LEFT_OUTER_JOIN)
+                .on(IP_ADDRESS_NIC_MAP.NIC_ID.eq(nic.ID))
+                .join(instanceIpAddress, JoinType.LEFT_OUTER_JOIN)
+                .on(instanceIpAddress.ID.eq(IP_ADDRESS_NIC_MAP.IP_ADDRESS_ID))
+                .join(ntwk)
+                .on(nic.NETWORK_ID.eq(ntwk.ID))
+                .where(instance.ACCOUNT_ID.eq(accountId))
+                .and(instance.REMOVED.isNull())
+                .and(instance.STATE.notIn(CommonStatesConstants.REMOVING, CommonStatesConstants.REMOVED))
+                .and(exposeMap.REMOVED.isNull())
+                .and(instanceIpAddress.ID.isNull())
+                .and(ntwk.REMOVED.isNull())
+                .and((host.REMOVED.isNull()))
+                .and(exposeMap.STATE.isNull().or(
+                        exposeMap.STATE.notIn(CommonStatesConstants.REMOVING, CommonStatesConstants.REMOVED)))
+                .and(exposeMap.UPGRADE.isNull().or(exposeMap.UPGRADE.eq(false)))
+                .fetch().map(mapper);
+    }
 }

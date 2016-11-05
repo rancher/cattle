@@ -100,8 +100,7 @@ public class IpAddressDaoImpl extends AbstractJooqDao implements IpAddressDao {
         }
 
         Map<Object,Object> inputProperties = key == null ? Collections.emptyMap() : CollectionUtils.asMap(key, values);
-        Map<Object,Object> properties = CollectionUtils.asMap((Object)IP_ADDRESS.ACCOUNT_ID, nic.getAccountId(),
-                IP_ADDRESS.NETWORK_ID, nic.getNetworkId());
+        Map<Object,Object> properties = CollectionUtils.asMap((Object)IP_ADDRESS.ACCOUNT_ID, nic.getAccountId());
 
         properties.putAll(inputProperties);
         IpAddress ipAddress = objectManager.create(IpAddress.class, objectManager.convertToPropertiesFor(IpAddress.class, properties));

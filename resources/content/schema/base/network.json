@@ -13,7 +13,9 @@
             "type" : "array[subnet]"
         },
         "hostPorts": {
-            "type" : "boolean"
+            "type" : "boolean",
+            "default" : "true",
+            "nullable": false
         },
         "networkDriverId": {
             "type" : "reference[networkDriver]",

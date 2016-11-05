@@ -33,4 +33,6 @@ def test_project_from_template(new_context, super_client):
     assert proj.state == 'active'
 
     proj = super_client.reload(proj)
+    proj = wait_for_condition(super_client, proj,
+                              lambda x: x.createdStackIds is not None)
     assert len(proj.createdStackIds) == 1 or len(proj.createdStackIds) == 2
