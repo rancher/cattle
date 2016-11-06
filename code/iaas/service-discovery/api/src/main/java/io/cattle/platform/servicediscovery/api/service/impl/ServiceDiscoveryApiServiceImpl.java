@@ -5,7 +5,6 @@ import static io.cattle.platform.core.model.tables.InstanceTable.*;
 import static io.cattle.platform.core.model.tables.ServiceTable.*;
 import static io.cattle.platform.core.model.tables.StackTable.*;
 import static io.cattle.platform.core.model.tables.VolumeTemplateTable.*;
-
 import io.cattle.platform.core.addon.LbConfig;
 import io.cattle.platform.core.addon.ServiceLink;
 import io.cattle.platform.core.constants.InstanceConstants;
@@ -51,6 +50,7 @@ import javax.inject.Named;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.TransformerUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.yaml.snakeyaml.DumperOptions;
 import org.yaml.snakeyaml.DumperOptions.LineBreak;
 import org.yaml.snakeyaml.Yaml;
@@ -532,7 +532,10 @@ public class ServiceDiscoveryApiServiceImpl implements ServiceDiscoveryApiServic
             Service consumedService = objectManager.findOne(Service.class, SERVICE.ID,
                     consumedServiceMap.getConsumedServiceId());
 
-            String linkName = consumedService.getName() + ":" + (consumedServiceMap.getName() != null ? consumedServiceMap.getName() : consumedService
+            String linkName = consumedService.getName()
+                    + ":"
+                    + (!StringUtils.isEmpty(consumedServiceMap.getName()) ? consumedServiceMap.getName()
+                            : consumedService
                     .getName());
             if (servicesToExportIds.contains(consumedServiceMap.getConsumedServiceId())) {
                 serviceLinksWithNames.add(linkName);
