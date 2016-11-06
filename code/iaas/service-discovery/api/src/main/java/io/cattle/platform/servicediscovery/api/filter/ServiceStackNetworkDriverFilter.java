@@ -27,6 +27,8 @@ import java.util.Set;
 
 import javax.inject.Inject;
 
+import org.apache.commons.lang3.StringUtils;
+
 public class ServiceStackNetworkDriverFilter extends AbstractDefaultResourceManagerFilter {
 
     private static final Set<String> ACTIONS = new HashSet<>(Arrays.asList(
@@ -72,7 +74,7 @@ public class ServiceStackNetworkDriverFilter extends AbstractDefaultResourceMana
             stringIds.add(idF.formatId(InstanceConstants.TYPE, instanceId));
         }
         throw new ClientVisibleException(ResponseCodes.CONFLICT, "DRIVER_IN_USE", "Driver from service is in use by instances",
-                ids.toString());
+                StringUtils.join(stringIds, ","));
     }
 
     @Override

@@ -376,6 +376,7 @@
     <bean class="io.cattle.platform.iaas.api.filter.machinedriver.MachineDriverFilter" />
     <bean class="io.cattle.platform.iaas.api.filter.service.ServiceMappingsOutputFilter" />
     <bean class="io.cattle.platform.servicediscovery.api.filter.ServiceStackStorageDriverFilter" />
+    <bean class="io.cattle.platform.servicediscovery.api.filter.ServiceStackNetworkDriverFilter" />
 
     <bean class="io.cattle.platform.iaas.api.object.postinit.AccountFieldPostInitHandler" />
 
