@@ -27,6 +27,8 @@ import java.util.Set;
 
 import javax.inject.Inject;
 
+import org.apache.commons.lang3.StringUtils;
+
 public class ServiceStackStorageDriverFilter extends AbstractDefaultResourceManagerFilter {
 
     private static final Set<String> ACTIONS = new HashSet<>(Arrays.asList(
@@ -72,7 +74,7 @@ public class ServiceStackStorageDriverFilter extends AbstractDefaultResourceMana
             stringIds.add(idF.formatId(VolumeConstants.TYPE, volumeId));
         }
         throw new ClientVisibleException(ResponseCodes.CONFLICT, "DRIVER_IN_USE", "Driver from service is in use by volumes",
-                stringIds.toString());
+                StringUtils.join(stringIds, ","));
     }
 
     @Override

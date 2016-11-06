@@ -96,6 +96,10 @@ public class SystemStackUpdate extends AbstractJooqDao implements AnnotatedEvent
     }
 
     protected void startStacks(Account account) throws IOException {
+        if (account.getRemoved() != null) {
+            return;
+        }
+
         List<Long> createdStackIds = DataAccessor.fieldLongList(account, AccountConstants.FIELD_CREATED_STACKS);
         List<Long> startedStackIds = DataAccessor.fieldLongList(account, AccountConstants.FIELD_STARTED_STACKS);
         if (!startedStackIds.isEmpty() || createdStackIds.isEmpty()) {

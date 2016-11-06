@@ -2,11 +2,11 @@ package io.cattle.platform.core.dao.impl;
 
 import static io.cattle.platform.core.model.tables.HostIpAddressMapTable.*;
 import static io.cattle.platform.core.model.tables.InstanceHostMapTable.*;
-import static io.cattle.platform.core.model.tables.InstanceTable.*;
 import static io.cattle.platform.core.model.tables.IpAddressTable.*;
 import static io.cattle.platform.core.model.tables.NetworkDriverTable.*;
 import static io.cattle.platform.core.model.tables.NetworkTable.*;
 import static io.cattle.platform.core.model.tables.NicTable.*;
+import static io.cattle.platform.core.model.tables.ServiceExposeMapTable.*;
 import static io.cattle.platform.core.model.tables.SubnetTable.*;
 
 import io.cattle.platform.archaius.util.ArchaiusUtil;
@@ -193,13 +193,22 @@ public class NetworkDaoImpl extends AbstractJooqDao implements NetworkDao {
 
     @Override
     public List<Long> findInstancesInUseByServiceDriver(Long serviceId) {
-        return create().select(INSTANCE.ID)
+        Long[] ignore = create()
+            .select(SERVICE_EXPOSE_MAP.INSTANCE_ID)
+            .from(SERVICE_EXPOSE_MAP)
+            .where(SERVICE_EXPOSE_MAP.SERVICE_ID.eq(serviceId)
+                    .and(SERVICE_EXPOSE_MAP.REMOVED.isNull()))
+            .fetch().intoArray(SERVICE_EXPOSE_MAP.INSTANCE_ID);
+
+        return create().select(NIC.INSTANCE_ID)
             .from(NIC)
             .join(NETWORK)
                 .on(NIC.NETWORK_ID.eq(NETWORK.ID))
             .join(NETWORK_DRIVER)
                 .on(NETWORK_DRIVER.ID.eq(NETWORK.NETWORK_DRIVER_ID))
-            .where(NETWORK_DRIVER.SERVICE_ID.eq(serviceId))
+            .where(NETWORK_DRIVER.SERVICE_ID.eq(serviceId)
+                    .and(NIC.REMOVED.isNull())
+                    .and(NIC.INSTANCE_ID.notIn(ignore)))
             .fetchInto(Long.class);
     }
 
