@@ -352,10 +352,10 @@ def test_validate_svc_fields(client, image_uuid):
     assert rule["hostname"] == hostname
     assert rule["path"] == path
     assert rule["target_port"] == target_port
-    assert rule["source_port"] is None
-    assert rule["priority"] is None
-    assert rule["protocol"] is None
-    assert rule["service"] is None
+    assert "source_port" not in rule
+    assert "priority" not in rule
+    assert "protocol" not in rule
+    assert "service" not in rule
 
 
 def test_svc_remove(client, image_uuid):
