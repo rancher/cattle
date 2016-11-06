@@ -50,7 +50,7 @@ public class SystemStackTrigger extends AbstractObjectProcessLogic implements Pr
         return null;
     }
 
-    protected void trigger(Long accountId) {
+    public void trigger(Long accountId) {
         ConfigUpdateRequest request = ConfigUpdateRequest.forResource(Account.class, accountId);
         request.addItem(STACKS);
         request.withDeferredTrigger(true);

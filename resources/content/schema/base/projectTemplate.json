@@ -2,6 +2,10 @@
 	"resourceFields": {
 		"stacks": {
 			"type": "array[catalogTemplate]"
+		},
+		"name": {
+			"type": "string",
+			"unique": true
 		}
 	}
 }
