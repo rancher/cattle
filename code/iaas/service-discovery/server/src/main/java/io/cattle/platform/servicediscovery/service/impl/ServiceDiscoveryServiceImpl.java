@@ -30,6 +30,7 @@ import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.Network;
 import io.cattle.platform.core.model.Service;
 import io.cattle.platform.core.model.ServiceConsumeMap;
+import io.cattle.platform.core.model.ServiceExposeMap;
 import io.cattle.platform.core.model.ServiceIndex;
 import io.cattle.platform.core.model.Stack;
 import io.cattle.platform.core.model.Subnet;
@@ -426,7 +427,8 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
 
     @Override
     public boolean isServiceInstance(Service service, Instance instance) {
-        return exposeMapDao.getServiceInstanceMap(service, instance) != null;
+        ServiceExposeMap map = exposeMapDao.getServiceInstanceMap(service, instance);
+        return map != null && !map.getState().equalsIgnoreCase(CommonStatesConstants.REMOVING);
     }
 
     @Override
