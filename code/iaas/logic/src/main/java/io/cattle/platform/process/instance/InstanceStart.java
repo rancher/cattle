@@ -322,7 +322,7 @@ public class InstanceStart extends AbstractDefaultProcessHandler {
             HashMap<String, Object> data = new HashMap<String, Object>();
             data.put(InstanceConstants.PROCESS_DATA_ERROR, true);
             getObjectProcessManager().scheduleProcessInstance(InstanceConstants.PROCESS_STOP, instance,
-                    ProcessUtils.chainInData(new HashMap<String, Object>(), InstanceConstants.PROCESS_STOP,
+                    ProcessUtils.chainInData(data, InstanceConstants.PROCESS_STOP,
                             InstanceConstants.PROCESS_ERROR));
         } else {
             getObjectProcessManager().scheduleProcessInstance(InstanceConstants.PROCESS_STOP, instance, null);
