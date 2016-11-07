@@ -217,12 +217,17 @@ def test_container_restart(client, super_client, context):
 
     _assert_running(super_client.reload(container))
 
+    ip = container.primaryIpAddress
+    assert ip is not None
+
     container = context.client.wait_success(container)
     container = container.restart()
 
     assert container.state == 'restarting'
     container = client.wait_success(container)
     _assert_running(super_client.reload(container))
+
+    assert ip == container.primaryIpAddress
 
 
 def test_container_stop(client, super_client, context):
