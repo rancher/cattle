@@ -112,6 +112,11 @@ public class DockerTransformerImpl implements DockerTransformer {
             } else {
                 externalId = name;
             }
+
+            if ("rancher-cni".equals(name)) {
+                continue;
+            }
+
             boolean isBindMount = (dr == null);
             // TODO When we implement proper volume deletion in py-agent, we can change this so that if the driver is explicitly, local, we don't
             // use 'file://'
