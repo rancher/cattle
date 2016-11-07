@@ -1,4 +1,4 @@
-FROM ubuntu:14.04.3
+FROM azul/zulu-openjdk:8u72
 
 ENV DAPPER_ENV API_VERSION ENVIRONMENTS
 ENV DAPPER_RUN_ARGS --privileged
@@ -18,9 +18,17 @@ ENV PGPASSWORD cattle
 ENV PGUSER cattle
 ENV PGDATABASE cattle
 
-# Install Java and Python
+# In Zulu these two JAR files are built directly from OpenJDK source,
+# and result in a local_policy JAR limited to 128-bit max cipher lengths, and a
+# US_export_policy set no restriction (very large keys, ie. precise value is
+# 2^32-1 or 0x7FFFFFFF).
+#
+# Make US export policy local policy
+RUN cp /usr/lib/jvm/zulu-8-amd64/jre/lib/security/US_export_policy.jar /usr/lib/jvm/zulu-8-amd64/jre/lib/security/local_policy.jar
+
+# Install Python
 RUN apt-get update && \
-    apt-get install -y --no-install-recommends openjdk-7-jdk maven python-pip  && \
+    apt-get install -y --no-install-recommends python-pip python-pkg-resources && \
     # Hack to work around overlay issue && \
     pip uninstall -y py >/dev/null >/dev/null 2>&1 || true && \
     pip install --upgrade pip==6.0.3 tox==1.8.1 virtualenv==12.0.4
@@ -34,16 +42,23 @@ RUN mkdir /tmp/build-tools && \
     tar -xzvf build-tools.tar.gz && cp ./build-tools-${BUILD_TOOLS_VERSION}/bin/* /usr/local/bin && \
     rm -rf /tmp/build-tools
 
+# Install Maven
+RUN curl -o /tmp/apache-maven-3.3.9-bin.tar.gz -sL -f http://www-eu.apache.org/dist/maven/maven-3/3.3.9/binaries/apache-maven-3.3.9-bin.tar.gz && \
+    tar -xzf /tmp/apache-maven-3.3.9-bin.tar.gz -C /opt && \
+    rm /tmp/apache-maven-3.3.9-bin.tar.gz
+ENV PATH $PATH:/opt/apache-maven-3.3.9/bin
+
 # Cache Maven stuff
-RUN apt-get install -y git && \
-    cd /tmp && \
-    git clone https://github.com/rancher/cattle.git && \
-    cd cattle && \
-    git checkout v0.160.0 && \
-    mvn package && \
-    ./scripts/checkstyle && \
-    cd .. && \
-    rm -rf cattle
+RUN apt-get install -y git
+# && \
+#    cd /tmp && \
+#    git clone https://github.com/rancher/cattle.git && \
+#    cd cattle && \
+#    git checkout v0.160.0 && \
+#    mvn package && \
+#    ./scripts/checkstyle && \
+#    cd .. && \
+#    rm -rf cattle
 
 # Install Docker
 RUN apt-get install -y iptables && \
