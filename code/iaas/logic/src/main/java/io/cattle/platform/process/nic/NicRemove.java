@@ -4,7 +4,6 @@ import io.cattle.platform.core.dao.GenericMapDao;
 import io.cattle.platform.core.model.IpAddress;
 import io.cattle.platform.core.model.IpAddressNicMap;
 import io.cattle.platform.core.model.Nic;
-import io.cattle.platform.docker.constants.DockerIpAddressConstants;
 import io.cattle.platform.engine.handler.HandlerResult;
 import io.cattle.platform.engine.process.ProcessInstance;
 import io.cattle.platform.engine.process.ProcessState;
@@ -14,7 +13,7 @@ import javax.inject.Inject;
 import javax.inject.Named;
 
 @Named
-public class NicDeactivate extends AbstractDefaultProcessHandler {
+public class NicRemove extends AbstractDefaultProcessHandler {
 
     @Inject
     GenericMapDao mapDao;
@@ -26,10 +25,9 @@ public class NicDeactivate extends AbstractDefaultProcessHandler {
 
         for (IpAddressNicMap map : mapDao.findToRemove(IpAddressNicMap.class, Nic.class, nic.getId())) {
             IpAddress ipAddress = getObjectManager().loadResource(IpAddress.class, map.getIpAddressId());
-            if (DockerIpAddressConstants.KIND_DOCKER.equals(ipAddress.getKind())) {
-                /* Deactivate Docker IPs on stop */
-                deactivate(ipAddress, state.getData());
-            }
+
+            /* Deactivate to release the IP address */
+            deactivate(ipAddress, state.getData());
         }
 
         return null;
