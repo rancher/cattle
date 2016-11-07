@@ -10,7 +10,6 @@ import io.cattle.platform.allocator.exception.FailedToAllocate;
 import io.cattle.platform.allocator.service.AbstractAllocator;
 import io.cattle.platform.allocator.service.AllocationAttempt;
 import io.cattle.platform.allocator.service.AllocationCandidate;
-import io.cattle.platform.allocator.service.AllocationRequest;
 import io.cattle.platform.allocator.service.Allocator;
 import io.cattle.platform.core.dao.GenericMapDao;
 import io.cattle.platform.core.model.Instance;
@@ -20,7 +19,6 @@ import io.cattle.platform.core.util.SystemLabels;
 import io.cattle.platform.eventing.exception.EventExecutionException;
 import io.cattle.platform.eventing.model.Event;
 import io.cattle.platform.eventing.model.EventVO;
-import io.cattle.platform.lock.definition.LockDefinition;
 import io.cattle.platform.object.util.ObjectUtils;
 import io.cattle.platform.simple.allocator.dao.QueryOptions;
 import io.cattle.platform.simple.allocator.dao.SimpleAllocatorDao;
@@ -69,15 +67,6 @@ public class SimpleAllocator extends AbstractAllocator implements Allocator, Nam
 
     @Inject
     GenericMapDao mapDao;
-
-    @Override
-    protected LockDefinition getAllocationLock(AllocationRequest request, AllocationAttempt attempt) {
-        if (attempt != null) {
-            return new AccountAllocatorLock(attempt.getAccountId());
-        }
-
-        return new SimpleAllocatorLock();
-    }
 
     @Override
     protected Iterator<AllocationCandidate> getCandidates(AllocationAttempt attempt) {
