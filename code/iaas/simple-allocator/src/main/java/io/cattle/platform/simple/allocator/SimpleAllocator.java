@@ -239,7 +239,7 @@ public class SimpleAllocator extends AbstractAllocator implements Allocator, Nam
             return null;
         }
 
-        return newEvent(SCHEDULER_RELEASE_EVENT, resourceRequests);
+        return newEvent(SCHEDULER_RELEASE_EVENT, resourceRequests, resource.getClass().getSimpleName(), ObjectUtils.getId(resource));
     }
 
     EventVO<Map<String, Object>> buildEvent(String eventName, AllocationAttempt attempt) {
@@ -248,16 +248,17 @@ public class SimpleAllocator extends AbstractAllocator implements Allocator, Nam
             return null;
         }
 
-        return newEvent(eventName, resourceRequests);
+        return newEvent(eventName, resourceRequests, "instance", attempt.getInstances().get(0).getId());
     }
 
-    EventVO<Map<String, Object>> newEvent(String eventName, List<ResourceRequest> resourceRequests) {
+    EventVO<Map<String, Object>> newEvent(String eventName, List<ResourceRequest> resourceRequests, String resourceType, Object resourceId) {
         Map<String, Object> eventData = new HashMap<String, Object>();
         Map<String, Object> reqData = new HashMap<>();
         reqData.put(RESOURCE_REQUESTS, resourceRequests);
         eventData.put(SCHEDULER_REQUEST_DATA_NAME, reqData);
         EventVO<Map<String, Object>> schedulerEvent = EventVO.<Map<String, Object>> newEvent(eventName).withData(eventData);
-        schedulerEvent.setResourceType(SCHEDULER_REQUEST_DATA_NAME);
+        schedulerEvent.setResourceType(resourceType);
+        schedulerEvent.setResourceId(resourceId.toString());
         return schedulerEvent;
     }
 
