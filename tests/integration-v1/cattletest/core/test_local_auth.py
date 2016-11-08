@@ -1,4 +1,4 @@
-from common_fixtures import *  # NOQA
+from common import *  # NOQA
 from gdapi import ApiError
 from requests.auth import AuthBase
 import requests

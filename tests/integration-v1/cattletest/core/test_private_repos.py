@@ -1,4 +1,4 @@
-from common_fixtures import *  # NOQA
+from common import *  # NOQA
 from gdapi import ApiError
 
 TEST_IMAGE = 'ibuildthecloud/helloworld'

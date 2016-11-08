@@ -1,4 +1,4 @@
-from common_fixtures import *  # NOQA
+from common import *  # NOQA
 import time
 from cattle import ApiError
 from test_volume import VOLUME_CLEANUP_LABEL

@@ -1,5 +1,5 @@
 from cattle import ApiError
-from common_fixtures import *  # NOQA
+from common import *  # NOQA
 
 
 def test_agent_unique(super_client):

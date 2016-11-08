@@ -1,4 +1,4 @@
-from common_fixtures import *  # NOQA
+from common import *  # NOQA
 
 
 def test_container_port_create_start(super_client, new_context):

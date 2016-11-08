@@ -1,4 +1,4 @@
-from common_fixtures import *  # NOQA
+from common import *  # NOQA
 
 
 def test_settings_create_delete(admin_user_client, random_str):

@@ -1,4 +1,4 @@
-from common_fixtures import *  # NOQA
+from common import *  # NOQA
 
 
 def test_host_deactivate(super_client, new_context):
@@ -206,15 +206,14 @@ def test_host_remove(super_client, new_context):
         assert c.removed is not None
 
 
-def test_host_dockersocket(context, client):
-    host = client.reload(context.host)
+def test_host_dockersocket(new_context):
+    client = new_context.client
+    host = client.reload(new_context.host)
     dockersocket = host.dockersocket()
     assert dockersocket.token.index('.') > 0
     assert '/v1/dockersocket/' in dockersocket.url
 
-
-def test_host_dockersocket_inactive(context, client):
-    host = client.wait_success(context.host.deactivate())
+    host = client.wait_success(host.deactivate())
     dockersocket = host.dockersocket()
     assert dockersocket.token.index('.') > 0
     assert '/v1/dockersocket/' in dockersocket.url

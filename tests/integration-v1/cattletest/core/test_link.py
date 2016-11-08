@@ -1,6 +1,3 @@
-from common_fixtures import *  # NOQA
-
-
 def test_link_instance_stop_start(super_client, client, context):
     target1 = context.create_container(ports=['180', '122/udp'])
     target2 = context.create_container(ports=['280', '222/udp'])

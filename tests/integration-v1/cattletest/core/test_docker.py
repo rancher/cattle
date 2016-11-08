@@ -1,6 +1,6 @@
 import re
 import uuid as py_uuid
-from common_fixtures import *  # NOQA
+from common import *  # NOQA
 from test_volume import VOLUME_CLEANUP_LABEL
 
 TEST_IMAGE = 'ibuildthecloud/helloworld'

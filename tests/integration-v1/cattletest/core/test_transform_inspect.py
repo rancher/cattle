@@ -1,4 +1,4 @@
-from common_fixtures import *  # NOQA
+from common import *  # NOQA
 import requests
 from requests.auth import HTTPBasicAuth
 import urlparse

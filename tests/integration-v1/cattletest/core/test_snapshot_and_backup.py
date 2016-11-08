@@ -1,4 +1,4 @@
-from common_fixtures import *  # NOQA
+from common import *  # NOQA
 from cattle import ApiError
 from test_volume import create_mount
 

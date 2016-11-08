@@ -1,12 +1,12 @@
 import base64
 import cattle
 import os
-import pytest
 import random
 import time
 import inspect
 from datetime import datetime, timedelta
 import requests
+import pytest
 
 NOT_NONE = object()
 DEFAULT_TIMEOUT = 150
@@ -14,74 +14,9 @@ cattle.DEFAULT_TIMEOUT = 150
 _SUPER_CLIENT = None
 
 
-@pytest.fixture(scope='session')
-def cattle_url(project_id=None):
-    default_url = 'http://localhost:8080/v1/schemas'
-    url = os.environ.get('CATTLE_URL', default_url)
-    if project_id is None:
-        return url
-    if url.endswith('/schemas'):
-        url = url[:len(url)-8]
-    return '{}/projects/{}/schemas'.format(url, project_id)
-
-
-@pytest.fixture(scope='function')
-def new_context(admin_user_client, request):
-    ctx = create_context(admin_user_client, create_project=True,
-                         add_host=True)
-    request.addfinalizer(lambda: cleanup_context(admin_user_client, ctx))
-    return ctx
-
-
-@pytest.fixture(scope='session')
-def context(admin_user_client, request):
-    return new_context(admin_user_client, request)
-
-
-@pytest.fixture(scope='session')
-def client(context):
-    return context.client
-
-
-@pytest.fixture(scope='session')
-def system_account(super_client):
-    return super_client.list_account(kind='system', uuid='system')[0]
-
-
-@pytest.fixture(scope='session')
-def super_account(super_client):
-    return super_client.list_account(kind='superadmin', uuid='superadmin')[0]
-
-
-@pytest.fixture(scope='session')
-def admin_user_client(super_client):
-    admin_account = super_client.list_account(kind='admin', uuid='admin')[0]
-    key = super_client.create_api_key(accountId=admin_account.id)
-    super_client.wait_success(key)
-
-    client = api_client(key.publicValue, key.secretValue)
-    init(client)
-    return client
-
-
-@pytest.fixture(scope='session')
-def super_client(request):
-    return _get_super_client(request)
-
-
-def init(admin_user_client):
-    kv = {
-        'task.process.replay.schedule': '2',
-        'task.config.item.migration.schedule': '5',
-        'task.config.item.source.version.sync.schedule': '5',
-    }
-    for k, v in kv.items():
-        admin_user_client.create_setting(name=k, value=v)
-
-
 @pytest.fixture
-def random_str():
-    return 'random-{0}-{1}'.format(random_num(), int(time.time()))
+def test_it():
+    pass
 
 
 class Context(object):
@@ -145,6 +80,14 @@ class Context(object):
         obj = self.client.wait_success(obj)
         assert obj.state == state
         return obj
+
+
+def new_context(admin_user_client, request):
+    ctx = create_context(admin_user_client, create_project=True,
+                         add_host=True)
+    request.addfinalizer(
+        lambda: cleanup_context(admin_user_client, ctx))
+    return ctx
 
 
 def create_context(admin_user_client, create_project=False, add_host=False,
@@ -325,66 +268,6 @@ def register_simulated_host(client_or_context, return_agent=False):
 def _wait_for_pool(host):
     pools = host.storagePools()
     return len(pools) > 0 and pools[0].state == 'active'
-
-
-def _is_valid_super_client(client):
-    try:
-        # stupid test
-        return 'zone' in client.schema.types
-    except:
-        return False
-
-
-def _get_super_client(request):
-    global _SUPER_CLIENT
-
-    if _SUPER_CLIENT is not None:
-        return _SUPER_CLIENT
-
-    client = cattle.from_env(url=cattle_url(),
-                             cache=False,
-                             access_key='superadmin',
-                             secret_key='superadminpass')
-
-    if _is_valid_super_client(client):
-        _SUPER_CLIENT = client
-        if request is not None:
-            request.addfinalizer(
-                lambda: delete_sim_instances(client))
-        return client
-
-    super_admin = find_one(client.list_account, name='superadmin')
-    super_admin = activate_resource(client, super_admin)
-
-    creds = client.list_api_key(_role='superadmin',
-                                accountId=super_admin.id)
-
-    cred = None
-    for i in creds:
-        if i.removed is None:
-            cred = i
-            break
-
-    if cred is None:
-        cred = client.create_api_key(_role='superadmin',
-                                     accountId=super_admin.id,
-                                     publicValue='superadmin',
-                                     secretValue='superadminpass')
-        client.wait_success(cred)
-
-    client = cattle.from_env(url=cattle_url(),
-                             cache=False,
-                             access_key=cred.publicValue,
-                             secret_key=cred.secretValue)
-
-    assert _is_valid_super_client(client)
-    _SUPER_CLIENT = client
-
-    if request is not None:
-        request.addfinalizer(
-            lambda: delete_sim_instances(client))
-
-    return client
 
 
 def activate_resource(client, obj):
@@ -751,3 +634,81 @@ def retry(func, tries=3):
         except:
             if i == (tries - 1):
                 raise
+
+
+def cattle_url(project_id=None):
+    default_url = 'http://localhost:8080/v1/schemas'
+    url = os.environ.get('CATTLE_URL', default_url)
+    if project_id is None:
+        return url
+    if url.endswith('/schemas'):
+        url = url[:len(url)-8]
+    return '{}/projects/{}/schemas'.format(url, project_id)
+
+
+def random_str():
+    return 'random-{0}-{1}'.format(random_num(), int(time.time()))
+
+
+def super_client(request):
+    return _get_super_client(request)
+
+
+def _get_super_client(request):
+    global _SUPER_CLIENT
+
+    if _SUPER_CLIENT is not None:
+        return _SUPER_CLIENT
+
+    client = cattle.from_env(url=cattle_url(),
+                             cache=False,
+                             access_key='superadmin',
+                             secret_key='superadminpass')
+
+    if _is_valid_super_client(client):
+        _SUPER_CLIENT = client
+        if request is not None:
+            request.addfinalizer(
+                lambda: delete_sim_instances(client))
+        return client
+
+    super_admin = find_one(client.list_account, name='superadmin')
+    super_admin = activate_resource(client, super_admin)
+
+    creds = client.list_api_key(_role='superadmin',
+                                accountId=super_admin.id)
+
+    cred = None
+    for i in creds:
+        if i.removed is None:
+            cred = i
+            break
+
+    if cred is None:
+        cred = client.create_api_key(_role='superadmin',
+                                     accountId=super_admin.id,
+                                     publicValue='superadmin',
+                                     secretValue='superadminpass')
+        client.wait_success(cred)
+
+    client = cattle.from_env(url=cattle_url(),
+                             cache=False,
+                             access_key=cred.publicValue,
+                             secret_key=cred.secretValue)
+
+    assert _is_valid_super_client(client)
+    _SUPER_CLIENT = client
+
+    if request is not None:
+        request.addfinalizer(
+            lambda: delete_sim_instances(client))
+
+    return client
+
+
+def _is_valid_super_client(client):
+    try:
+        # stupid test
+        return 'zone' in client.schema.types
+    except:
+        return False

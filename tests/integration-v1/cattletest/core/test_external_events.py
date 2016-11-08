@@ -1,4 +1,4 @@
-from common_fixtures import *  # NOQA
+from common import *  # NOQA
 from cattle import ApiError
 
 SERVICE_KIND = 'kubernetesService'

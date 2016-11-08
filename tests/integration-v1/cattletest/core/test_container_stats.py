@@ -1,4 +1,4 @@
-from common_fixtures import *  # NOQA
+from common import *  # NOQA
 from test_docker import docker_client, TEST_IMAGE_UUID, if_docker
 
 import jwt
