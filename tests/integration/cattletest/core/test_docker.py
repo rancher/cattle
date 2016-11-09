@@ -1086,6 +1086,7 @@ def test_blkio_device_options(super_client, docker_client):
 
 def _check_path(volume, should_exist, client, super_client):
     path = _path_to_volume(volume)
+    print 'Checking path [%s] for volume [%s].' % (path, volume)
     c = client. \
         create_container(name="volume_check",
                          imageUuid="docker:ranchertest/volume-test:v0.1.0",
