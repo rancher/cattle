@@ -135,7 +135,7 @@ public class ServiceMetadataInfoFactory extends AbstractAgentBaseContextFactory 
             Object data = versionToData.get(version.getValue());
             if (data == null) {
                 data = getFullMetaData(itemVersion, containersMD, stackNameToStack, serviceIdToServiceLaunchConfigs, version,
-                        svcIdsToSvc, svcIdToSvcLinks, agentHostId, account.getId(), instance.getId());
+                        svcIdsToSvc, svcIdToSvcLinks, agentHostId, account, instance.getId());
                 versionToData.put(version.getValue(), data);
             }
             dataWithVersionTag.put(version.getTag(), data);
@@ -191,7 +191,7 @@ public class ServiceMetadataInfoFactory extends AbstractAgentBaseContextFactory 
     protected Map<String, Object> getFullMetaData(String itemVersion, List<ContainerMetaData> containersMD,
             Map<String, StackMetaData> stackNameToStack, Map<Long, Map<String, ServiceMetaData>> serviceIdToServiceLaunchConfigs,
             Version version, Map<Long, Service> svcIdsToSvc,
-            Map<Long, List<ServiceConsumeMap>> svcIdToSvcLinks, long agentHostId, long accountId, long agentInstanceId) {
+            Map<Long, List<ServiceConsumeMap>> svcIdToSvcLinks, long agentHostId, Account account, long agentInstanceId) {
 
         // 1. generate containers metadata
         Map<Long, Map<String, List<ContainerMetaData>>> serviceIdToLaunchConfigToContainer = new HashMap<>();
@@ -214,18 +214,18 @@ public class ServiceMetadataInfoFactory extends AbstractAgentBaseContextFactory 
 
         // 5. get host meta data
         List<HostMetaData> hostsMD = new ArrayList<>();
-        for (HostMetaData data : metaDataInfoDao.getHostIdToHostMetadata(accountId).values()) {
+        for (HostMetaData data : metaDataInfoDao.getHostIdToHostMetadata(account.getId()).values()) {
             hostsMD.add(applyVersionToHost(data, version));
         }
 
         List<HostMetaData> selfHostMD = new ArrayList<>();
-        for (HostMetaData data : metaDataInfoDao.getInstanceHostMetaData(accountId,
+        for (HostMetaData data : metaDataInfoDao.getInstanceHostMetaData(account.getId(),
                 agentInstanceId)) {
             selfHostMD.add(applyVersionToHost(data, version));
         }
         // 6. get networksMetadata
-        List<NetworkMetaData> networks = metaDataInfoDao.getNetworksMetaData(accountId);
-        
+        List<NetworkMetaData> networks = metaDataInfoDao.getNetworksMetaData(account);
+
         // 7. full data combined of (n) self sections and default one
         Map<String, Object> fullData = getFullMetaData(itemVersion, containersMD, stackNameToStack,
                 serviceIdToServiceLaunchConfigs, selfMD, hostsMD, selfHostMD.size() == 0 ? null : selfHostMD.get(0), networks);

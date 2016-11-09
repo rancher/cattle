@@ -21,6 +21,7 @@ import io.cattle.platform.core.constants.IpAddressConstants;
 import io.cattle.platform.core.constants.NetworkConstants;
 import io.cattle.platform.core.constants.ServiceConstants;
 import io.cattle.platform.core.dao.InstanceDao;
+import io.cattle.platform.core.model.Account;
 import io.cattle.platform.core.model.HealthcheckInstanceHostMap;
 import io.cattle.platform.core.model.Host;
 import io.cattle.platform.core.model.Instance;
@@ -342,23 +343,25 @@ public class MetaDataInfoDaoImpl extends AbstractJooqDao implements MetaDataInfo
     }
 
     @Override
-    public List<NetworkMetaData> getNetworksMetaData(long accountId) {
+    public List<NetworkMetaData> getNetworksMetaData(final Account account) {
         MultiRecordMapper<NetworkMetaData> mapper = new MultiRecordMapper<NetworkMetaData>() {
             @Override
             protected NetworkMetaData map(List<Object> input) {
                 Network ntwk = (Network) input.get(0);
                 Map<String, Object> meta = DataAccessor.fieldMap(ntwk, ServiceConstants.FIELD_METADATA);
-                NetworkMetaData data = new NetworkMetaData(ntwk.getName(), ntwk.getUuid(), DataAccessor.fieldBool(ntwk, NetworkConstants.FIELD_HOST_PORTS), meta);
+                boolean isDefault = account.getDefaultNetworkId() == null ? null : account.getDefaultNetworkId().equals(ntwk.getId());
+                NetworkMetaData data = new NetworkMetaData(ntwk.getName(), ntwk.getUuid(),
+                        DataAccessor.fieldBool(ntwk, NetworkConstants.FIELD_HOST_PORTS), meta, isDefault);
                 return data;
             }
         };
 
-        NetworkTable ntwk = mapper.add(NETWORK, NETWORK.NAME, NETWORK.UUID, NETWORK.DATA);
+        NetworkTable ntwk = mapper.add(NETWORK, NETWORK.ID, NETWORK.NAME, NETWORK.UUID, NETWORK.DATA);
         return create()
                 .select(mapper.fields())
                 .from(ntwk)
                 .where(ntwk.REMOVED.isNull())
-                .and(ntwk.ACCOUNT_ID.eq(accountId))
+                .and(ntwk.ACCOUNT_ID.eq(account.getId()))
                 .fetch().map(mapper);
     }
 
