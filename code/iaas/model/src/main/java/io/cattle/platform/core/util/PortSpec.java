@@ -1,6 +1,8 @@
 package io.cattle.platform.core.util;
 
+import io.cattle.platform.core.constants.PortConstants;
 import io.cattle.platform.core.model.Port;
+import io.cattle.platform.object.util.DataAccessor;
 import io.github.ibuildthecloud.gdapi.exception.ClientVisibleException;
 import io.github.ibuildthecloud.gdapi.util.ResponseCodes;
 
@@ -29,14 +31,14 @@ public class PortSpec {
     public PortSpec() {
     }
 
-    public PortSpec(String ipAddress, int publicPort, Port port) {
-        this.ipAddress = ipAddress;
-        this.publicPort = publicPort;
+    public PortSpec(Port port) {
+        this.ipAddress = DataAccessor.fieldString(port, PortConstants.FIELD_BIND_ADDR);
+        this.publicPort = port.getPublicPort();
         this.privatePort = port.getPrivatePort();
         this.protocol = port.getProtocol();
     }
 
-    public PortSpec(String spec, boolean defaultProtocol) {
+    public PortSpec(String spec) {
         // format: ip:hostPort:containerPort | ip::containerPort | hostPort:containerPort | containerPort
 
         // Check for an IP address
@@ -73,13 +75,11 @@ public class PortSpec {
             throw new ClientVisibleException(ResponseCodes.UNPROCESSABLE_ENTITY, INVALID_PUBLIC_PORT);
         }
 
-        if (defaultProtocol) {
-            if (protocol == null) {
-                protocol = "tcp";
-            } else {
-                if (!PROTOCOLS.contains(protocol)) {
-                    throw new ClientVisibleException(ResponseCodes.UNPROCESSABLE_ENTITY, INVALID_PROTOCOL);
-                }
+        if (protocol == null) {
+            protocol = "tcp";
+        } else {
+            if (!PROTOCOLS.contains(protocol)) {
+                throw new ClientVisibleException(ResponseCodes.UNPROCESSABLE_ENTITY, INVALID_PROTOCOL);
             }
         }
 
@@ -87,10 +87,6 @@ public class PortSpec {
         this.publicPort = publicPort;
         this.privatePort = privatePort;
         this.protocol = protocol;
-    }
-
-    public PortSpec(String spec) {
-        this(spec, true);
     }
 
     public Integer getPublicPort() {

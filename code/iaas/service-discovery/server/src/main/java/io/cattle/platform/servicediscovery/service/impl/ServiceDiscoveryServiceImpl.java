@@ -4,6 +4,7 @@ import static io.cattle.platform.core.model.tables.ServiceIndexTable.*;
 import static io.cattle.platform.core.model.tables.ServiceTable.*;
 import static io.cattle.platform.core.model.tables.StackTable.*;
 import static io.cattle.platform.core.model.tables.SubnetTable.*;
+
 import io.cattle.platform.allocator.service.AllocatorService;
 import io.cattle.platform.configitem.events.ConfigUpdate;
 import io.cattle.platform.configitem.model.Client;
@@ -258,7 +259,7 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
         List<String> specs = (List<String>) launchConfigData.get(InstanceConstants.FIELD_PORTS);
         List<PortSpec> ports = new ArrayList<>();
         for (String spec : specs) {
-            ports.add(new PortSpec(spec, true));
+            ports.add(new PortSpec(spec));
         }
         return ports;
     }

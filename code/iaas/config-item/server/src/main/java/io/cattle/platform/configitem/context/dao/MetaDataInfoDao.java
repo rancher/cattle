@@ -3,6 +3,7 @@ package io.cattle.platform.configitem.context.dao;
 import io.cattle.platform.configitem.context.data.metadata.common.ContainerMetaData;
 import io.cattle.platform.configitem.context.data.metadata.common.HostMetaData;
 import io.cattle.platform.configitem.context.data.metadata.common.NetworkMetaData;
+import io.cattle.platform.core.model.Account;
 import io.cattle.platform.core.model.HealthcheckInstanceHostMap;
 import io.cattle.platform.core.model.IpAddress;
 
@@ -51,7 +52,7 @@ public interface MetaDataInfoDao {
 
     List<HostMetaData> getInstanceHostMetaData(long accountId, long instanceId);
 
-    List<NetworkMetaData> getNetworksMetaData(long accountId);
+    List<NetworkMetaData> getNetworksMetaData(Account account);
 
     List<ContainerMetaData> getNetworkFromContainersData(long accountId,
             Map<Long, String> instanceIdToUUID, Map<Long, List<HealthcheckInstanceHostMap>> instanceIdToHealthCheckers,

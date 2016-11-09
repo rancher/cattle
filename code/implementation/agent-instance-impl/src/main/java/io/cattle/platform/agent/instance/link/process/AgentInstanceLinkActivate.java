@@ -5,6 +5,8 @@ import io.cattle.platform.async.utils.TimeoutException;
 import io.cattle.platform.core.constants.InstanceLinkConstants;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.InstanceLink;
+import io.cattle.platform.core.model.Port;
+import io.cattle.platform.core.util.PortSpec;
 import io.cattle.platform.engine.handler.HandlerResult;
 import io.cattle.platform.engine.process.ProcessInstance;
 import io.cattle.platform.engine.process.ProcessState;
@@ -12,6 +14,9 @@ import io.cattle.platform.object.resource.ResourceMonitor;
 import io.cattle.platform.object.resource.ResourcePredicate;
 import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.process.common.handler.AbstractObjectProcessHandler;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.inject.Inject;
 
@@ -59,6 +64,18 @@ public class AgentInstanceLinkActivate extends AbstractObjectProcessHandler {
              */
         }
 
-        return new HandlerResult().withShouldContinue(true);
+        List<Port> ports = children(targetInstance, Port.class);
+
+        if (ports.size() == 0) {
+            return null;
+        }
+
+        List<PortSpec> result = new ArrayList<PortSpec>();
+
+        for (Port port : ports) {
+            result.add(new PortSpec(port));
+        }
+
+        return new HandlerResult(InstanceLinkConstants.FIELD_PORTS, result).withShouldContinue(true);
     }
 }
