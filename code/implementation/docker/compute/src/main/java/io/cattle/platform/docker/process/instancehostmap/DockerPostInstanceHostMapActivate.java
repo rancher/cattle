@@ -306,7 +306,9 @@ public class DockerPostInstanceHostMapActivate extends AbstractObjectProcessLogi
                         || !ObjectUtils.equals(port.getPrivateIpAddressId(), privateIpAddressId)
                         || (bindAddressNull && !ObjectUtils.equals(port.getPublicIpAddressId(), publicIpAddressId))
                         || (!bindAddressNull && !bindAddress.equals(spec.getIpAddress()))){
-                    port.setPublicPort(spec.getPublicPort());
+                    if (spec.getPublicPort() != null) {
+                        port.setPublicPort(spec.getPublicPort());
+                    }
                     port.setPrivateIpAddressId(privateIpAddressId);
                     if (StringUtils.isNotEmpty(spec.getIpAddress()) && !"0.0.0.0".equals(spec.getIpAddress())) {
                         DataAccessor.fields(port).withKey(PortConstants.FIELD_BIND_ADDR).set(spec.getIpAddress());

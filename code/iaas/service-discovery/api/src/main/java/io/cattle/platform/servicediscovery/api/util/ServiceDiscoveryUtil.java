@@ -397,7 +397,7 @@ public class ServiceDiscoveryUtil {
         List<String> specs = (List<String>) launchConfigData.get(InstanceConstants.FIELD_PORTS);
         Map<Integer, PortSpec> portMap = new LinkedHashMap<Integer, PortSpec>();
         for (String spec : specs) {
-            PortSpec portSpec = new PortSpec(spec, true);
+            PortSpec portSpec = new PortSpec(spec);
             portMap.put(new Integer(portSpec.getPrivatePort()), portSpec);
 
         }
