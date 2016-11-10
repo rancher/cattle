@@ -1,4 +1,4 @@
-from common_fixtures import *  # NOQA
+from common import *  # NOQA
 
 DEFAULT_TIMEOUT = 120
 
@@ -573,8 +573,9 @@ def _get_upgraded_instances(super_client, launchConfig, svc):
         list_container(state='running',
                        accountId=svc.accountId)
     for instance in instances:
-        if c_name in \
-                instance.name and instance.version == launchConfig.version:
+        if instance.name is not None and \
+                        c_name in instance.name and \
+                        instance.version == launchConfig.version:
             labels = {'foo': "bar"}
             assert all(item in instance.labels for item in labels) is True
             match.append(instance)
@@ -743,7 +744,7 @@ def _validate_upgrade(super_client, svc, upgraded_svc,
 
 
 def _validate_rollback(super_client, svc, rolledback_svc,
-                       primary='0', secondary1='0', secondary2='0'):
+                       primary=0, secondary1=0, secondary2=0):
     # validate number of upgraded instances first
     _validate_upgraded_instances_count(super_client,
                                        svc,

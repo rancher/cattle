@@ -1,4 +1,4 @@
-from common_fixtures import *  # NOQA
+from common import *  # NOQA
 import time
 
 
@@ -33,9 +33,9 @@ def test_agent_create(super_client):
     assert creds[0].secretValue is not None
 
 
-def test_agent_create_for_container(context, super_client):
-    client = context.client
-    c = context.create_container(labels={
+def test_agent_create_for_container(new_context, super_client):
+    client = new_context.client
+    c = new_context.create_container(labels={
         'io.rancher.container.create_agent': 'true'
     })
 
@@ -55,8 +55,8 @@ def test_agent_create_for_container(context, super_client):
     assert agent.state == 'removed'
 
 
-def test_agent_create_for_env_role(context, super_client):
-    c = context.create_container(labels={
+def test_agent_create_for_env_role(new_context, super_client):
+    c = new_context.create_container(labels={
         'io.rancher.container.create_agent': 'true',
         'io.rancher.container.agent.role': 'environment'
     })
@@ -73,8 +73,8 @@ def test_agent_create_for_env_role(context, super_client):
     assert 'POST' in agent_client.schema.types['container'].collectionMethods
 
 
-def test_agent_create_for_not_env_role(context, super_client):
-    c = context.create_container(labels={
+def test_agent_create_for_not_env_role(new_context, super_client):
+    c = new_context.create_container(labels={
         'io.rancher.container.create_agent': 'true',
         'io.rancher.container.agent.role': 'user'
     })

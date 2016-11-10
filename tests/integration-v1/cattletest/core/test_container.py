@@ -1,8 +1,7 @@
-import base64
 import json
 
 from cattle import ApiError
-from common_fixtures import *  # NOQA
+from common import *  # NOQA
 from datetime import timedelta
 import time
 

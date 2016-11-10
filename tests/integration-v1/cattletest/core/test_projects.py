@@ -1,4 +1,5 @@
-from common_fixtures import *  # NOQA
+from cattle import ClientApiError
+from common import *  # NOQA
 from copy import deepcopy
 from gdapi import ApiError
 
@@ -461,11 +462,11 @@ def test_restricted_members(admin_user_client):
     with pytest.raises(ApiError) as e:
         user2_client.delete(hosts[0])
     assert e.value.error.status == 405
+    with pytest.raises(ClientApiError) as e:
+        user2_client.list_registration_token()
+    assert 'registrationToken' in e.value.message
     with pytest.raises(AttributeError) as e:
-        client.list_registration_token()
-    assert 'list_registration_token' in e.value.message
-    with pytest.raises(AttributeError) as e:
-        client.create_registration_token()
+        user2_client.create_registration_token()
     assert 'create_registration_token' in e.value.message
 
 

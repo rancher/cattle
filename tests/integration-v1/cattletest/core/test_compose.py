@@ -1,4 +1,4 @@
-from common_fixtures import *  # NOQA
+from common import *  # NOQA
 
 
 SERVICE = 'com.docker.compose.service'

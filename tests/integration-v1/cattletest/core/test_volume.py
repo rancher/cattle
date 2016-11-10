@@ -1,7 +1,7 @@
 from random import choice
 from string import hexdigits
 
-from common_fixtures import *  # NOQA
+from common import *  # NOQA
 from gdapi import ApiError
 from gdapi import ClientApiError
 

@@ -1,4 +1,4 @@
-from common_fixtures import *  # NOQA
+from common import *  # NOQA
 
 
 def _clean_hostlabelmaps_for_host(client, host):

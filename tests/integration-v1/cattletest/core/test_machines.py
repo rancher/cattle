@@ -1,4 +1,4 @@
-from common_fixtures import *  # NOQA
+from common import *  # NOQA
 from cattle import ApiError
 from test_physical_host import disable_go_machine_service  # NOQA
 from copy import deepcopy
@@ -516,9 +516,8 @@ def test_bar_config_machine(machine_context):
 
 
 @pytest.mark.nonparallel
-def test_config_link_readonly(admin_user_client, super_client, request,
-                              machine_context):
-    user2_context = new_context(admin_user_client, request)
+def test_config_link_readonly(super_client, machine_context, new_context):
+    user2_context = new_context
 
     project = machine_context.user_client.reload(machine_context.project)
 

@@ -1,4 +1,4 @@
-from common_fixtures import *  # NOQA
+from common import *  # NOQA
 from test_shared_volumes import add_storage_pool
 
 

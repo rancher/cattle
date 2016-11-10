@@ -1,4 +1,4 @@
-from common_fixtures import *  # NOQA
+from common import *  # NOQA
 from gdapi import ApiError
 from test_authorization import user_client  # NOQA
 from test_authorization import service_client  # NOQA

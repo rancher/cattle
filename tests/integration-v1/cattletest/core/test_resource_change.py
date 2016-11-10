@@ -2,7 +2,7 @@ from threading import Thread
 
 from websocket import create_connection
 
-from common_fixtures import *  # NOQA
+from common import *  # NOQA
 
 SUB_OPTIONS = '?include=hosts&include=instances&include=instanceLinks' \
               '&include=ipAddresses&eventNames=resource.change'
