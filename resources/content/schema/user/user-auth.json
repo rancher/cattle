@@ -633,6 +633,7 @@
         "loadBalancerService.createIndex" : "",
         "loadBalancerService.selectorContainer" : "",
         "loadBalancerService.lbConfig" : "cru",
+        "loadBalancerService.launchConfig" : "cru",
 
         "lbConfig" : "r",
         "lbConfig.certificateIds" : "cr",
@@ -812,6 +813,7 @@
         "launchConfig.disks" : "cr",
         "launchConfig.requestedIpAddress": "cr",
         "launchConfig.resourceActions.logs" : "",
+        "launchConfig.ports" : "cru",
 
         "secondaryLaunchConfig" : "cr",
         "secondaryLaunchConfig.name" : "cr",

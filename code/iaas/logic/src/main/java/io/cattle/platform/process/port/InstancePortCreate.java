@@ -16,6 +16,7 @@ import io.cattle.platform.object.util.DataUtils;
 import io.cattle.platform.process.common.handler.AbstractObjectProcessLogic;
 import io.cattle.platform.util.type.Priority;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -29,7 +30,7 @@ public class InstancePortCreate extends AbstractObjectProcessLogic implements Pr
 
     @Override
     public String[] getProcessNames() {
-        return new String[] { "instance.create" };
+        return new String[] { "instance.create", "instance.update" };
     }
 
     @Override
@@ -42,15 +43,17 @@ public class InstancePortCreate extends AbstractObjectProcessLogic implements Pr
             return null;
         }
 
-        Map<String, Port> ports = new HashMap<>();
+        Map<String, Port> existingPorts = new HashMap<>();
         for (Port port : objectManager.children(instance, Port.class)) {
-            ports.put(toKey(port), port);
+            existingPorts.put(toKey(port), port);
         }
-
+        
+        Map<String, Port> toRetain = new HashMap<>();
         for (String port : portDefs) {
             PortSpec spec = new PortSpec(port);
 
-            if (ports.containsKey(toKey(spec))) {
+            if (existingPorts.containsKey(toKey(spec))) {
+                toRetain.put(toKey(spec), existingPorts.get(toKey(spec)));
                 continue;
             }
 
@@ -65,11 +68,27 @@ public class InstancePortCreate extends AbstractObjectProcessLogic implements Pr
                 DataAccessor.fields(portObj).withKey(PortConstants.FIELD_BIND_ADDR).set(spec.getIpAddress());
             }
             portObj = objectManager.create(portObj);
-            ports.put(toKey(portObj), portObj);
+            toRetain.put(toKey(portObj), portObj);
         }
 
-        for (Port port : ports.values()) {
-            getObjectProcessManager().executeStandardProcess(StandardProcess.CREATE, port, state.getData());
+        for (Port port : toRetain.values()) {
+            if (process.getName().equalsIgnoreCase("instance.create")) {
+                // port gets activated as a part of instance start
+                getObjectProcessManager().executeStandardProcess(StandardProcess.CREATE, port, state.getData());
+            } else {
+                createThenActivate(port, state.getData());
+            }
+        }
+
+        // remove extra ports
+        List<Port> toRemove = new ArrayList<>();
+        for (String existing : existingPorts.keySet()) {
+            if (!toRetain.containsKey(existing)) {
+                toRemove.add(existingPorts.get(existing));
+            }
+        }
+        for (Port port : toRemove) {
+            deactivateThenRemove(port, new HashMap<String, Object>());
         }
 
         return null;

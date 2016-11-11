@@ -185,7 +185,6 @@ public class ServiceCreateValidationFilter extends AbstractDefaultResourceManage
             List<PortRule> portRules = jsonMapper.convertCollectionValue(
                     lbConfig.get(ServiceConstants.FIELD_PORT_RULES), List.class, PortRule.class);
             for (PortRule portRule : portRules) {
-                // fixme check ports from port map
                 if (portRule.getSourcePort() != null && portRule.getSourcePort().equals(LB_HEALTH_CHECK_PORT)) {
                     throw new ValidationErrorException(ValidationErrorCodes.INVALID_OPTION,
                             "Port " + LB_HEALTH_CHECK_PORT + " is reserved for service health check");

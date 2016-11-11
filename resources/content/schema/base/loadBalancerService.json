@@ -7,6 +7,14 @@
                 "scheduleUpdate" : true
             },
             "required": true
+        },
+        "launchConfig": {
+            "type" : "launchConfig",
+            "nullable": true,
+             "attributes" : {
+                "scheduleUpdate" : true
+            },
+            "required": true
         }
     }
 }
