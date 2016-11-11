@@ -50,7 +50,6 @@ import com.netflix.config.DynamicStringProperty;
 public class AgentInstanceFactoryImpl implements AgentInstanceFactory {
     private static final DynamicStringProperty LB_IMAGE_UUID = ArchaiusUtil.getString("lb.instance.image.uuid");
 
-
     @Inject
     AccountDao accountDao;
     @Inject
@@ -143,7 +142,12 @@ public class AgentInstanceFactoryImpl implements AgentInstanceFactory {
             return false;
         }
 
-        return LB_IMAGE_UUID.get().equalsIgnoreCase(imageObj.toString());
+        // remove the tag from the default image (assuming that it is always tagged)
+        String defaultImageUuid = LB_IMAGE_UUID.get().toLowerCase();
+        String[] splitted = defaultImageUuid.split(":");
+        String formattedDefault = String.format("%s:%s", splitted[0], splitted[1]);
+
+        return imageObj.toString().startsWith(formattedDefault);
     }
 
     @Override
