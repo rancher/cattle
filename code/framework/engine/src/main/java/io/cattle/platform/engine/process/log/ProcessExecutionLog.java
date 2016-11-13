@@ -23,11 +23,6 @@ public class ProcessExecutionLog extends AbstractParentLog implements ParentLog 
     List<ProcessLogicExecutionLog> processHandlerExecutions = new ArrayList<ProcessLogicExecutionLog>();
     ExceptionLog exception;
 
-    // List<ProcessLogicExecutionLog> handlerExecutions = new
-    // ArrayList<ProcessLogicExecutionLog>();
-    // List<ProcessExecutionLog> executions = new
-    // ArrayList<ProcessExecutionLog>();
-
     ExitReason exitReason;
 
     public ExitReason exit(ExitReason reason) {

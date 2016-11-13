@@ -6,6 +6,10 @@ import io.cattle.platform.eventing.model.Event;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+
+import javax.inject.Inject;
+import javax.inject.Named;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -16,9 +20,12 @@ public class InMemoryEventService extends AbstractThreadPoolingEventService {
 
     private static final Logger log = LoggerFactory.getLogger(InMemoryEventService.class);
 
+    @Inject @Named("EventExecutorService")
+    ExecutorService executorService;
+
     @Override
     protected boolean doPublish(final String name, final Event event, final String eventString) throws IOException {
-        getDefaultExecutor().execute(new Runnable() {
+        executorService.execute(new Runnable() {
             @Override
             public void run() {
                 /*

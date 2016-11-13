@@ -1,6 +1,7 @@
 package io.cattle.platform.engine.manager.impl;
 
 import static io.cattle.platform.engine.process.ExitReason.*;
+
 import io.cattle.platform.archaius.util.ArchaiusUtil;
 import io.cattle.platform.engine.context.EngineContext;
 import io.cattle.platform.engine.manager.ProcessManager;
@@ -125,7 +126,12 @@ public class DefaultProcessManager implements ProcessManager, InitializationTask
 
     @Override
     public List<Long> pendingTasks() {
-        return processRecordDao.pendingTasks(null, null);
+        return processRecordDao.pendingTasks(null, null, false);
+    }
+
+    @Override
+    public List<Long> pendingPriorityTasks() {
+        return processRecordDao.pendingTasks(null, null, true);
     }
 
     @Override
@@ -135,7 +141,7 @@ public class DefaultProcessManager implements ProcessManager, InitializationTask
             return null;
         }
 
-        List<Long> next = processRecordDao.pendingTasks(record.getResourceType(), record.getResourceId());
+        List<Long> next = processRecordDao.pendingTasks(record.getResourceType(), record.getResourceId(), false);
         return next.size() == 0 ? null : next.get(0);
     }
 

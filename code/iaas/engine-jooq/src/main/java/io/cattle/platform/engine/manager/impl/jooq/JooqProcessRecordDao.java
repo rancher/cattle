@@ -23,48 +23,42 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
 import javax.inject.Inject;
 
 import org.apache.commons.lang3.EnumUtils;
 import org.apache.commons.lang3.ObjectUtils;
 import org.jooq.Condition;
-import org.jooq.Record3;
+import org.jooq.Record4;
 import org.jooq.RecordHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.netflix.config.DynamicIntProperty;
-
 public class JooqProcessRecordDao extends AbstractJooqDao implements ProcessRecordDao {
-
-    private static DynamicIntProperty PROCESS_REPLAY_BATCH = ArchaiusUtil.getInt("process.replay.batch.size");
 
     private static final Logger log = LoggerFactory.getLogger(JooqProcessRecordDao.class);
 
     JsonMapper jsonMapper;
 
     @Override
-    public List<Long> pendingTasks(String resourceType, String resourceId) {
+    public List<Long> pendingTasks(String resourceType, String resourceId, final boolean priority) {
         final List<Long> result = new ArrayList<Long>();
-        /*
-         * I know I should and can do this unique logic in SQL, but I couldn't
-         * figure out a simple way to do it in HSQLDB. So if you're reading this
-         * and can find a query that does this across all the supported DB,
-         * please let someone know. Here's what I wanted to do select
-         * min(PROCESS_INSTANCE.ID) from PROCESS_INSTANCE where
-         * PROCESS_INSTANCE.END_TIME is null group by
-         * PROCESS_INSTANCE.RESOURCE_TYPE, PROCESS_INSTANCE.RESOURCE_ID order by
-         * PROCESS_INSTANCE.START_TIME asc limit 10000 offset 0 But you can't
-         * order by something that is not in the group by. So how do I get a
-         * unique pair of resource_type, resource_id, but still order by id or
-         * start_time
-         */
         final Set<String> seen = new HashSet<String>();
-        create().select(PROCESS_INSTANCE.ID, PROCESS_INSTANCE.RESOURCE_TYPE, PROCESS_INSTANCE.RESOURCE_ID).from(PROCESS_INSTANCE).where(
-                processCondition(resourceType, resourceId)).orderBy(PROCESS_INSTANCE.PRIORITY.desc(), PROCESS_INSTANCE.ID.asc()).limit(
-                PROCESS_REPLAY_BATCH.get()).fetchInto(new RecordHandler<Record3<Long, String, String>>() {
+        create()
+            .select(PROCESS_INSTANCE.ID, PROCESS_INSTANCE.RESOURCE_TYPE, PROCESS_INSTANCE.RESOURCE_ID,
+                    PROCESS_INSTANCE.PRIORITY)
+            .from(PROCESS_INSTANCE)
+                .where(processCondition(resourceType, resourceId))
+                    .and(PROCESS_INSTANCE.RUN_AFTER.isNull()
+                            .or(PROCESS_INSTANCE.RUN_AFTER.le(new Date())))
+                .orderBy(PROCESS_INSTANCE.ID.asc(),
+                        PROCESS_INSTANCE.PRIORITY.desc())
+                .fetchInto(new RecordHandler<Record4<Long, String, String, Integer>>() {
             @Override
-            public void next(Record3<Long, String, String> record) {
+            public void next(Record4<Long, String, String, Integer> record) {
+                if (priority && (record.value4() == null || record.value4() <= 0L)) {
+                    return;
+                }
                 String resource = String.format("%s:%s", record.value2(), record.value3());
                 if (seen.contains(resource)) {
                     return;
@@ -105,6 +99,8 @@ public class JooqProcessRecordDao extends AbstractJooqDao implements ProcessReco
         result.setPhase(EnumUtils.getEnum(ProcessPhase.class, record.getPhase()));
         result.setStartProcessServerId(record.getStartProcessServerId());
         result.setRunningProcessServerId(record.getRunningProcessServerId());
+        result.setExecutionCount(record.getExecutionCount());
+        result.setRunAfter(record.getRunAfter());
 
         result.setResourceType(record.getResourceType());
         result.setResourceId(record.getResourceId());
@@ -129,7 +125,10 @@ public class JooqProcessRecordDao extends AbstractJooqDao implements ProcessReco
 
     @Override
     public void update(ProcessRecord record, boolean schedule) {
-        ProcessInstanceRecord pi = create().selectFrom(PROCESS_INSTANCE).where(PROCESS_INSTANCE.ID.eq(record.getId())).fetchOne();
+        ProcessInstanceRecord pi = create()
+                .selectFrom(PROCESS_INSTANCE)
+                .where(PROCESS_INSTANCE.ID.eq(record.getId()))
+                .fetchOne();
 
         if (pi == null) {
             throw new IllegalStateException("Failed to find process instance for [" + record.getId() + "]");
@@ -139,13 +138,8 @@ public class JooqProcessRecordDao extends AbstractJooqDao implements ProcessReco
 
         pi.update();
 
-        /*
-         * TODO: This is really a hack. For some reason if you persist the
-         * process execution in schedule, the API thread will deadlock with a
-         * process server thread in H2. Need to retest removing this. This may
-         * have been fixed by some changes in the queries in the process server.
-         */
         if (schedule) {
+            // For schedule we don't need to persist a processLog
             return;
         }
 
@@ -155,27 +149,20 @@ public class JooqProcessRecordDao extends AbstractJooqDao implements ProcessReco
             String uuid = processLog.getUuid();
             Map<String, Object> log = convertToMap(record, processLog);
 
-            int result = create().update(PROCESS_EXECUTION).set(PROCESS_EXECUTION.LOG, log).where(PROCESS_EXECUTION.UUID.eq(uuid)).execute();
+            int result = create()
+                    .update(PROCESS_EXECUTION)
+                        .set(PROCESS_EXECUTION.LOG, log)
+                    .where(PROCESS_EXECUTION.UUID.eq(uuid))
+                    .execute();
 
             if (result == 0) {
-                create().insertInto(PROCESS_EXECUTION, PROCESS_EXECUTION.PROCESS_INSTANCE_ID, PROCESS_EXECUTION.UUID,
-                        PROCESS_EXECUTION.LOG, PROCESS_EXECUTION.CREATED)
-                        .values(record.getId(), uuid, log, new Timestamp(System.currentTimeMillis())).execute();
+                create()
+                    .insertInto(PROCESS_EXECUTION, PROCESS_EXECUTION.PROCESS_INSTANCE_ID, PROCESS_EXECUTION.UUID,
+                            PROCESS_EXECUTION.LOG, PROCESS_EXECUTION.CREATED)
+                    .values(record.getId(), uuid, log, new Timestamp(System.currentTimeMillis()))
+                    .execute();
             }
         }
-    }
-
-    @Override
-    public int getNumPreviousExecutions(long processInstanceId) {
-        return create().selectCount().from(PROCESS_EXECUTION).where(PROCESS_EXECUTION.PROCESS_INSTANCE_ID.eq(processInstanceId)).fetchOne(0, int.class);
-    }
-
-    @SuppressWarnings({ "unchecked", "rawtypes" })
-    @Override
-    public long getLastExecutionTimestamp(long processInstanceId) {
-        Map<String, Object> log = create().select(PROCESS_EXECUTION.LOG).from(PROCESS_EXECUTION)
-                .where(PROCESS_EXECUTION.PROCESS_INSTANCE_ID.eq(processInstanceId)).orderBy(PROCESS_EXECUTION.ID.desc()).limit(1).fetchOne(0, Map.class);
-        return (long)((Map)((List)log.get("executions")).get(0)).get("startTime");
     }
 
     protected void merge(ProcessInstanceRecord pi, ProcessRecord record) {
@@ -186,6 +173,8 @@ public class JooqProcessRecordDao extends AbstractJooqDao implements ProcessReco
         pi.setPhase(ObjectUtils.toString(record.getPhase(), null));
         pi.setStartProcessServerId(record.getStartProcessServerId());
         pi.setRunningProcessServerId(record.getRunningProcessServerId());
+        pi.setExecutionCount(record.getExecutionCount());
+        pi.setRunAfter(record.getRunAfter());
 
         pi.setResourceType(record.getResourceType());
         pi.setResourceId(record.getResourceId());
@@ -194,6 +183,10 @@ public class JooqProcessRecordDao extends AbstractJooqDao implements ProcessReco
 
         int priority = ArchaiusUtil.getInt("process." + record.getProcessName() + ".priority").get();
         pi.setPriority(priority);
+
+        if (ExitReason.RETRY_EXCEPTION == record.getExitReason()) {
+            pi.setRunAfter(null);
+        }
     }
 
     protected Timestamp toTimestamp(Date date) {

@@ -1333,6 +1333,8 @@ def test_process_instance_auth(admin_user_client, user_client, project_client):
         'result': 'r',
         'runningProcessServerId': 'r',
         'startProcessServerId': 'r',
+        'executionCount': 'r',
+        'runAfter': 'r',
         'startTime': 'r',
         'data': 'r',
     })

@@ -8,7 +8,7 @@ public enum ExitReason {
     STATE_CHANGED,
     DONE(SUCCESS),
     DELEGATE(false, false, false, null),
-    SERVER_TERMINATED, SCHEDULED(false, false, false, null),
+    SCHEDULED(false, false, false, null),
     PROCESS_ALREADY_IN_PROGRESS(false, false, false, null),
     RESOURCE_BUSY(false, false, false, null),
     RETRY_EXCEPTION(true),

@@ -37,7 +37,7 @@
     <extension:discover class="io.cattle.platform.api.pubsub.subscribe.SubscriptionHandler" />
 
     <bean id="JettyWebSocketSubcriptionHandler" class="io.cattle.platform.api.pubsub.subscribe.jetty.JettyWebSocketSubcriptionHandler" >
-        <property name="executorService" ref="CoreExecutorService" />
+        <property name="executorService" ref="EventExecutorService" />
         <property name="eventProcessors" value="#{extensionManager.list('api.pub.sub.event.post.processor')}" />
     </bean>
 

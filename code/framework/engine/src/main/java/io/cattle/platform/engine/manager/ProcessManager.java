@@ -24,4 +24,6 @@ public interface ProcessManager {
 
     ProcessDefinition getProcessDefinition(String name);
 
+    List<Long> pendingPriorityTasks();
+
 }

@@ -11,9 +11,9 @@ package io.cattle.platform.core.model.tables.records;
 @java.lang.SuppressWarnings({ "all", "unchecked", "rawtypes" })
 @javax.persistence.Entity
 @javax.persistence.Table(name = "process_instance", schema = "cattle")
-public class ProcessInstanceRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.platform.core.model.tables.records.ProcessInstanceRecord> implements io.cattle.platform.db.jooq.utils.TableRecordJaxb, org.jooq.Record13<java.lang.Long, java.util.Date, java.util.Date, java.util.Map<String,Object>, java.lang.Integer, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String>, io.cattle.platform.core.model.ProcessInstance {
+public class ProcessInstanceRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.platform.core.model.tables.records.ProcessInstanceRecord> implements io.cattle.platform.db.jooq.utils.TableRecordJaxb, org.jooq.Record15<java.lang.Long, java.util.Date, java.util.Date, java.util.Map<String,Object>, java.lang.Integer, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.Long, java.util.Date>, io.cattle.platform.core.model.ProcessInstance {
 
-	private static final long serialVersionUID = 2046731068;
+	private static final long serialVersionUID = -1833904593;
 
 	/**
 	 * Setter for <code>cattle.process_instance.id</code>.
@@ -237,6 +237,40 @@ public class ProcessInstanceRecord extends org.jooq.impl.UpdatableRecordImpl<io.
 		return (java.lang.String) getValue(12);
 	}
 
+	/**
+	 * Setter for <code>cattle.process_instance.execution_count</code>.
+	 */
+	@Override
+	public void setExecutionCount(java.lang.Long value) {
+		setValue(13, value);
+	}
+
+	/**
+	 * Getter for <code>cattle.process_instance.execution_count</code>.
+	 */
+	@javax.persistence.Column(name = "execution_count", nullable = false, precision = 19)
+	@Override
+	public java.lang.Long getExecutionCount() {
+		return (java.lang.Long) getValue(13);
+	}
+
+	/**
+	 * Setter for <code>cattle.process_instance.run_after</code>.
+	 */
+	@Override
+	public void setRunAfter(java.util.Date value) {
+		setValue(14, value);
+	}
+
+	/**
+	 * Getter for <code>cattle.process_instance.run_after</code>.
+	 */
+	@javax.persistence.Column(name = "run_after")
+	@Override
+	public java.util.Date getRunAfter() {
+		return (java.util.Date) getValue(14);
+	}
+
 	// -------------------------------------------------------------------------
 	// Primary key information
 	// -------------------------------------------------------------------------
@@ -250,23 +284,23 @@ public class ProcessInstanceRecord extends org.jooq.impl.UpdatableRecordImpl<io.
 	}
 
 	// -------------------------------------------------------------------------
-	// Record13 type implementation
+	// Record15 type implementation
 	// -------------------------------------------------------------------------
 
 	/**
 	 * {@inheritDoc}
 	 */
 	@Override
-	public org.jooq.Row13<java.lang.Long, java.util.Date, java.util.Date, java.util.Map<String,Object>, java.lang.Integer, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String> fieldsRow() {
-		return (org.jooq.Row13) super.fieldsRow();
+	public org.jooq.Row15<java.lang.Long, java.util.Date, java.util.Date, java.util.Map<String,Object>, java.lang.Integer, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.Long, java.util.Date> fieldsRow() {
+		return (org.jooq.Row15) super.fieldsRow();
 	}
 
 	/**
 	 * {@inheritDoc}
 	 */
 	@Override
-	public org.jooq.Row13<java.lang.Long, java.util.Date, java.util.Date, java.util.Map<String,Object>, java.lang.Integer, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String> valuesRow() {
-		return (org.jooq.Row13) super.valuesRow();
+	public org.jooq.Row15<java.lang.Long, java.util.Date, java.util.Date, java.util.Map<String,Object>, java.lang.Integer, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.Long, java.util.Date> valuesRow() {
+		return (org.jooq.Row15) super.valuesRow();
 	}
 
 	/**
@@ -377,6 +411,22 @@ public class ProcessInstanceRecord extends org.jooq.impl.UpdatableRecordImpl<io.
 	 * {@inheritDoc}
 	 */
 	@Override
+	public org.jooq.Field<java.lang.Long> field14() {
+		return io.cattle.platform.core.model.tables.ProcessInstanceTable.PROCESS_INSTANCE.EXECUTION_COUNT;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public org.jooq.Field<java.util.Date> field15() {
+		return io.cattle.platform.core.model.tables.ProcessInstanceTable.PROCESS_INSTANCE.RUN_AFTER;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
 	public java.lang.Long value1() {
 		return getId();
 	}
@@ -475,6 +525,22 @@ public class ProcessInstanceRecord extends org.jooq.impl.UpdatableRecordImpl<io.
 	@Override
 	public java.lang.String value13() {
 		return getRunningProcessServerId();
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public java.lang.Long value14() {
+		return getExecutionCount();
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public java.util.Date value15() {
+		return getRunAfter();
 	}
 
 	/**
@@ -598,7 +664,25 @@ public class ProcessInstanceRecord extends org.jooq.impl.UpdatableRecordImpl<io.
 	 * {@inheritDoc}
 	 */
 	@Override
-	public ProcessInstanceRecord values(java.lang.Long value1, java.util.Date value2, java.util.Date value3, java.util.Map<String,Object> value4, java.lang.Integer value5, java.lang.String value6, java.lang.String value7, java.lang.String value8, java.lang.String value9, java.lang.String value10, java.lang.String value11, java.lang.String value12, java.lang.String value13) {
+	public ProcessInstanceRecord value14(java.lang.Long value) {
+		setExecutionCount(value);
+		return this;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public ProcessInstanceRecord value15(java.util.Date value) {
+		setRunAfter(value);
+		return this;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public ProcessInstanceRecord values(java.lang.Long value1, java.util.Date value2, java.util.Date value3, java.util.Map<String,Object> value4, java.lang.Integer value5, java.lang.String value6, java.lang.String value7, java.lang.String value8, java.lang.String value9, java.lang.String value10, java.lang.String value11, java.lang.String value12, java.lang.String value13, java.lang.Long value14, java.util.Date value15) {
 		return this;
 	}
 
@@ -624,6 +708,8 @@ public class ProcessInstanceRecord extends org.jooq.impl.UpdatableRecordImpl<io.
 		setPhase(from.getPhase());
 		setStartProcessServerId(from.getStartProcessServerId());
 		setRunningProcessServerId(from.getRunningProcessServerId());
+		setExecutionCount(from.getExecutionCount());
+		setRunAfter(from.getRunAfter());
 	}
 
 	/**
@@ -649,7 +735,7 @@ public class ProcessInstanceRecord extends org.jooq.impl.UpdatableRecordImpl<io.
 	/**
 	 * Create a detached, initialised ProcessInstanceRecord
 	 */
-	public ProcessInstanceRecord(java.lang.Long id, java.util.Date startTime, java.util.Date endTime, java.util.Map<String,Object> data, java.lang.Integer priority, java.lang.String processName, java.lang.String resourceType, java.lang.String resourceId, java.lang.String result, java.lang.String exitReason, java.lang.String phase, java.lang.String startProcessServerId, java.lang.String runningProcessServerId) {
+	public ProcessInstanceRecord(java.lang.Long id, java.util.Date startTime, java.util.Date endTime, java.util.Map<String,Object> data, java.lang.Integer priority, java.lang.String processName, java.lang.String resourceType, java.lang.String resourceId, java.lang.String result, java.lang.String exitReason, java.lang.String phase, java.lang.String startProcessServerId, java.lang.String runningProcessServerId, java.lang.Long executionCount, java.util.Date runAfter) {
 		super(io.cattle.platform.core.model.tables.ProcessInstanceTable.PROCESS_INSTANCE);
 
 		setValue(0, id);
@@ -665,5 +751,7 @@ public class ProcessInstanceRecord extends org.jooq.impl.UpdatableRecordImpl<io.
 		setValue(10, phase);
 		setValue(11, startProcessServerId);
 		setValue(12, runningProcessServerId);
+		setValue(13, executionCount);
+		setValue(14, runAfter);
 	}
 }

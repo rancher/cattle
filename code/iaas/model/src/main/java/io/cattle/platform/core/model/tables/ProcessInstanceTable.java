@@ -11,7 +11,7 @@ package io.cattle.platform.core.model.tables;
 @java.lang.SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class ProcessInstanceTable extends org.jooq.impl.TableImpl<io.cattle.platform.core.model.tables.records.ProcessInstanceRecord> {
 
-	private static final long serialVersionUID = 1805637404;
+	private static final long serialVersionUID = -1613251006;
 
 	/**
 	 * The singleton instance of <code>cattle.process_instance</code>
@@ -90,6 +90,16 @@ public class ProcessInstanceTable extends org.jooq.impl.TableImpl<io.cattle.plat
 	 * The column <code>cattle.process_instance.running_process_server_id</code>.
 	 */
 	public final org.jooq.TableField<io.cattle.platform.core.model.tables.records.ProcessInstanceRecord, java.lang.String> RUNNING_PROCESS_SERVER_ID = createField("running_process_server_id", org.jooq.impl.SQLDataType.VARCHAR.length(128), this, "");
+
+	/**
+	 * The column <code>cattle.process_instance.execution_count</code>.
+	 */
+	public final org.jooq.TableField<io.cattle.platform.core.model.tables.records.ProcessInstanceRecord, java.lang.Long> EXECUTION_COUNT = createField("execution_count", org.jooq.impl.SQLDataType.BIGINT.nullable(false).defaulted(true), this, "");
+
+	/**
+	 * The column <code>cattle.process_instance.run_after</code>.
+	 */
+	public final org.jooq.TableField<io.cattle.platform.core.model.tables.records.ProcessInstanceRecord, java.util.Date> RUN_AFTER = createField("run_after", org.jooq.impl.SQLDataType.TIMESTAMP.asConvertedDataType(new io.cattle.platform.db.jooq.converter.DateConverter()), this, "");
 
 	/**
 	 * Create a <code>cattle.process_instance</code> table reference

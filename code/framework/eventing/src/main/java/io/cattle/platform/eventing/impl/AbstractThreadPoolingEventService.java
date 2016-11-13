@@ -20,6 +20,9 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.RejectedExecutionException;
 
+import javax.inject.Inject;
+import javax.inject.Named;
+
 import org.apache.cloudstack.managed.context.ManagedContextRunnable;
 import org.apache.cloudstack.managed.context.NoExceptionRunnable;
 import org.slf4j.Logger;
@@ -32,6 +35,8 @@ public abstract class AbstractThreadPoolingEventService extends AbstractEventSer
 
     private static final Logger log = LoggerFactory.getLogger(AbstractThreadPoolingEventService.class);
 
+    @Inject @Named("CoreExecutorService")
+    ExecutorService runExecutorService;
     String threadCountSetting = "eventing.pool.%s.count";
     String defaultPoolName = EventHandler.DEFAULT_POOL_KEY;
     List<NamedExecutorService> namedExecutorServiceList;
@@ -163,7 +168,7 @@ public abstract class AbstractThreadPoolingEventService extends AbstractEventSer
     }
 
     protected Executor getDefaultExecutor() {
-        return executorService;
+        return runExecutorService;
     }
 
     @Override
@@ -201,4 +206,5 @@ public abstract class AbstractThreadPoolingEventService extends AbstractEventSer
     public void setNamedExecutorServiceList(List<NamedExecutorService> namedExecutorServiceList) {
         this.namedExecutorServiceList = namedExecutorServiceList;
     }
+
 }

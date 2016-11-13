@@ -212,6 +212,8 @@
         "processInstance.runningProcessServerId" : "r",
         "processInstance.startProcessServerId" : "r",
         "processInstance.startTime" : "r",
+        "processInstance.runAfter" : "r",
+        "processInstance.executionCount" : "r",
 
         "project.identity" : "",
         "project.allowSystemRole": "cru",

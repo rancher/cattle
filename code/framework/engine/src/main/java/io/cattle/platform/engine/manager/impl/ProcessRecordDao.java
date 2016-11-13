@@ -8,11 +8,8 @@ public interface ProcessRecordDao {
 
     void update(ProcessRecord record, boolean schedule);
 
-    List<Long> pendingTasks(String resourceType, String resourceId);
+    List<Long> pendingTasks(String resourceType, String resourceId, boolean priority);
 
     ProcessRecord getRecord(Long id);
 
-    int getNumPreviousExecutions(long processInstanceId);
-
-    long getLastExecutionTimestamp(long processInstanceId);
 }

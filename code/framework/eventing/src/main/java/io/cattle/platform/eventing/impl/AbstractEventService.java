@@ -58,7 +58,7 @@ public abstract class AbstractEventService implements EventService {
     private static final Object SUBSCRIPTION_LOCK = new Object();
 
     RetryTimeoutService timeoutService;
-    ExecutorService executorService;
+    private ExecutorService executorService;
     Map<String, List<EventListener>> eventToListeners = new HashMap<String, List<EventListener>>();
     Map<EventListener, Set<String>> listenerToEvents = new HashMap<EventListener, Set<String>>();
     JsonMapper jsonMapper;
