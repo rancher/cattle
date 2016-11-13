@@ -43,6 +43,7 @@ import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
@@ -73,6 +74,10 @@ public class PingInstancesMonitorImpl implements PingInstancesMonitor {
     ObjectManager objectManager;
     @Inject
     ObjectProcessManager processManager;
+    Cache<String, Boolean> scheduled = CacheBuilder.newBuilder()
+            .expireAfterWrite(15, TimeUnit.MINUTES)
+            .build();
+
 
     LoadingCache<Long, Map<String, KnownInstance>> instanceCache = CacheBuilder.newBuilder().expireAfterWrite(CACHE_TIME.get(), TimeUnit.MILLISECONDS)
             .build(new CacheLoader<Long, Map<String, KnownInstance>>() {
@@ -252,6 +257,13 @@ public class PingInstancesMonitorImpl implements PingInstancesMonitor {
     void scheduleContainerEvent(Long agentId, Long hostId, ReportedInstance ri, String event) {
         if (StringUtils.isEmpty(ri.getImage()) || StringUtils.isEmpty(ri.getExternalId()) || StringUtils.isEmpty(ri.getUuid())) {
             log.error("Not enough information to schedule container event: [" + ri.toString() + "].");
+            return;
+        }
+
+        if (scheduled.getIfPresent(ri.getExternalId()) == null) {
+            scheduled.put(ri.getExternalId(), true);
+        } else {
+            // Create container events only so often.
             return;
         }
         ContainerEvent ce = objectManager.newRecord(ContainerEvent.class);
