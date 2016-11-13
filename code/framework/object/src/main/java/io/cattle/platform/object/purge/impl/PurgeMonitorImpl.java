@@ -1,5 +1,6 @@
 package io.cattle.platform.object.purge.impl;
 
+import io.cattle.platform.deferred.util.DeferredUtils;
 import io.cattle.platform.engine.manager.ProcessManager;
 import io.cattle.platform.engine.manager.ProcessNotFoundException;
 import io.cattle.platform.engine.process.ProcessDefinition;
@@ -45,6 +46,17 @@ public class PurgeMonitorImpl implements PurgeMonitor, Task {
 
     @Override
     public void run() {
+        DeferredUtils.nest(new Runnable() {
+            @Override
+            public void run() {
+                runInternal();
+                /* We only want purged to be ran as part of replay */
+                DeferredUtils.resetDeferred();
+            }
+        });
+    }
+
+    public void runInternal() {
         for (String type : findPurgableTypes()) {
             Class<?> schemaClass = schemaFactory.getSchemaClass(type);
             if (schemaClass == null) {
