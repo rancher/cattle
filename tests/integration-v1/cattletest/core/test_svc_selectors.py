@@ -68,7 +68,9 @@ def test_service_add_service_link_selector(client, context):
     _validate_service_link(client, context, "externalService")
 
 
-def test_service_add_instance_selector(client, context):
+def test_service_add_instance_selector(new_context):
+    client = new_context.client
+    context = new_context
     env = _create_stack(client)
 
     image_uuid = context.image_uuid
