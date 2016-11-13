@@ -14,9 +14,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.cloudstack.managed.threadlocal.ManagedThreadLocal;
+
 public class ApiContext {
 
-    private static final ThreadLocal<ApiContext> TL = new ThreadLocal<ApiContext>();
+    private static final ThreadLocal<ApiContext> TL = new ManagedThreadLocal<ApiContext>();
 
     ApiRequest apiRequest;
     IdFormatter idFormatter = new IdentityFormatter();
