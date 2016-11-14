@@ -5,6 +5,7 @@ import static io.cattle.platform.docker.constants.DockerInstanceConstants.*;
 
 import io.cattle.platform.core.addon.BlkioDeviceOption;
 import io.cattle.platform.core.addon.LogConfig;
+import io.cattle.platform.core.addon.Ulimit;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.constants.NetworkConstants;
 import io.cattle.platform.core.constants.VolumeConstants;
@@ -219,10 +220,11 @@ public class DockerTransformerImpl implements DockerTransformer {
             setField(instance, FIELD_IPC_MODE, fromInspect, HOST_CONFIG, "IpcMode");
             setField(instance, FIELD_SYSCTLS, fromInspect, HOST_CONFIG, "Sysctls");
             setField(instance, FIELD_OOM_SCORE_ADJ, fromInspect, HOST_CONFIG, "OomScoreAdj");
-            setField(instance, FIELD_ULIMITS, fromInspect, HOST_CONFIG, "Ulimits");
+            setField(instance, FIELD_ISOLATION, fromInspect, HOST_CONFIG, "Isolation");
         }
 
         setBlkioDeviceOptionss(instance, fromInspect);
+        setUlimit(instance, fromInspect);
         setNetworkMode(instance, containerConfig, hostConfig);
         setField(instance, FIELD_SECURITY_OPT, fromInspect, HOST_CONFIG, "SecurityOpt");
         setField(instance, FIELD_PID_MODE, fromInspect, HOST_CONFIG, "PidMode");
@@ -387,6 +389,40 @@ public class DockerTransformerImpl implements DockerTransformer {
         }
 
         setField(instance, FIELD_LOG_CONFIG, logConfig);
+    }
+    
+    @SuppressWarnings("unchecked")
+    void setUlimit(Instance instance, Map<String, Object> fromInspect) {
+        Object ulimits = CollectionUtils.getNestedValue(fromInspect, HOST_CONFIG, "Ulimits");
+
+        if (ulimits == null) {
+            return;
+        }
+
+        List<Ulimit> ret = new ArrayList<>();
+        if (ulimits instanceof List) {
+            for (Object ulimit : (List<Object>) ulimits) {
+                if (ulimit instanceof Map) {
+                    Ulimit l = new Ulimit();
+                    Map<String, Object> temp = (Map<String, Object>) ulimit;
+                    if (temp.get("Name") instanceof String) {
+                        l.setName(temp.get("Name").toString());
+                    }
+                    if (temp.get("Hard") instanceof Number) {
+                        l.setHard(((Number) temp.get("Hard")).intValue());
+                    }
+                    if (temp.get("Soft") instanceof Integer) {
+                        l.setSoft(((Number) temp.get("Soft")).intValue());
+                    }
+                    if (!l.getName().isEmpty()) {
+                        ret.add(l);
+                    }
+                }
+            }
+        }
+        if (!ret.isEmpty()) {
+            setField(instance, FIELD_ULIMITS, ret);
+        }
     }
 
     @Override

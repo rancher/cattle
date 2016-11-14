@@ -53,6 +53,7 @@ public class DockerInstanceConstants {
     public static final String FIELD_STORAGE_OPT = "storageOpt";
     public static final String FIELD_OOM_SCORE_ADJ = "oomScoreAdj";
     public static final String FIELD_ULIMITS = "ulimits";
+    public static final String FIELD_ISOLATION = "isolation";
 
     public static final String EVENT_FIELD_VOLUMES_FROM = "dataVolumesFromContainers";
     public static final String EVENT_FIELD_VOLUMES_FROM_DVM = "volumesFromDataVolumeMounts";
