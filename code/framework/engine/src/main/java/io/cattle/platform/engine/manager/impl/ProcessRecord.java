@@ -19,6 +19,7 @@ public class ProcessRecord extends LaunchConfiguration {
     ProcessPhase phase = ProcessPhase.REQUESTED;
     String startProcessServerId;
     String runningProcessServerId;
+    long executionCount = 0;
 
     public ProcessRecord() {
     }
@@ -104,6 +105,14 @@ public class ProcessRecord extends LaunchConfiguration {
 
     public void setResult(ProcessResult result) {
         this.result = result;
+    }
+
+    public long getExecutionCount() {
+        return executionCount;
+    }
+
+    public void setExecutionCount(long executionCount) {
+        this.executionCount = executionCount;
     }
 
 }

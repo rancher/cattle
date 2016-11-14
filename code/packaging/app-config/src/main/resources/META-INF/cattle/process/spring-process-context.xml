@@ -303,7 +303,7 @@
 
         <process:process name="agent.create" resourceType="agent" start="requested" transitioning="registering" done="inactive" delegate="agent.activate" />
         <process:process name="agent.activate" resourceType="agent" start="inactive,registering" transitioning="activating" done="active" />
-        <process:process name="agent.deactivate" resourceType="agent" start="active,activating,updating-active,updating-inactive" transitioning="deactivating" done="inactive" delegate="agent.remove" />
+        <process:process name="agent.deactivate" resourceType="agent" start="requested,active,activating,updating-active,updating-inactive" transitioning="deactivating" done="inactive" delegate="agent.remove" />
         <process:process name="agent.remove" resourceType="agent" start="requested,inactive,activating,deactivating,registering,updating-active,updating-inactive" transitioning="removing" done="removed" />
         <process:process name="agent.purge" resourceType="agent" start="removed" transitioning="purging" done="purged" />
         <process:process name="agent.update" resourceType="agent" start="inactive,active" transitioning="inactive=updating-inactive,active=updating-active" done="updating-inactive=inactive,updating-active=active" />

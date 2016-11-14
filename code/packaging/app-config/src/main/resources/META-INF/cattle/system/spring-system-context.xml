@@ -79,46 +79,38 @@
 
     <context:mbean-export />
 
-    <management:executor-service 
-        id="ProcessExecutorService"
+    <management:executor-service
+        id="PriorityProcessExecutorService"
         keep-alive="120"
-        pool-size="0-25"
-        queue-capacity="0"
+        pool-size="10-20"
+        queue-capacity="100"
         />
 
     <management:executor-service
-        id="ProcessExecutorServiceReplay"
-        keep-alive="120"
-        pool-size="25"
+        id="ProcessExecutorService"
+        keep-alive="1200"
+        pool-size="16-20"
         queue-capacity="1000"
-        rejection-policy="CALLER_RUNS"
+        rejection-policy="DISCARD"
         />
 
     <management:executor-service 
         id="CoreExecutorService"
         keep-alive="120"
-        pool-size="50"
+        pool-size="5-25"
+        queue-capacity="0"
         />
 
-    <management:executor-service
-        id="ReplyExecutorService"
+    <!--  This is for very short lived tasks, no blocking -->
+    <management:executor-service 
+        id="EventExecutorService"
         keep-alive="120"
-        pool-size="10"
+        pool-size="5"
         />
-
-    <bean class="io.cattle.platform.util.concurrent.NamedExecutorService" >
-        <property name="name" value="core" />
-        <property name="executorService" ref="CoreExecutorService" />
-    </bean>
 
     <bean class="io.cattle.platform.util.concurrent.NamedExecutorService" >
         <property name="name" value="process" />
         <property name="executorService" ref="ProcessExecutorService" />
-    </bean>
-
-    <bean class="io.cattle.platform.util.concurrent.NamedExecutorService" >
-        <property name="name" value="reply" />
-        <property name="executorService" ref="ReplyExecutorService" />
     </bean>
 
     <bean id="CoreListeningExecutorService" class="com.google.common.util.concurrent.MoreExecutors" factory-method="listeningDecorator" >

@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog" xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.1.xsd">
+    <changeSet author="darren (generated)" id="dump1">
+        <addColumn tableName="process_instance">
+            <column defaultValue="0" name="execution_count" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+        </addColumn>
+    </changeSet>
+    <changeSet author="darren (generated)" id="dump7">
+        <addColumn tableName="process_instance">
+            <column name="run_after" type="DATETIME"/>
+        </addColumn>
+    </changeSet>
+    <changeSet author="darren (generated)" id="dump8">
+        <createIndex indexName="idx_process_instance_run_after" tableName="process_instance" unique="false">
+            <column name="run_after"/>
+        </createIndex>
+    </changeSet>
+</databaseChangeLog>

@@ -5,4 +5,4 @@ export CATTLE_IDEMPOTENT_CHECKS=false
 cd $(dirname $0)/..
 git reset --hard HEAD
 git clean -dxf
-exec ./scripts/ci
+exec ./scripts/ci "$@"

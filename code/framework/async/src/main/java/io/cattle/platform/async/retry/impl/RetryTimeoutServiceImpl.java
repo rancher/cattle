@@ -35,36 +35,36 @@ public class RetryTimeoutServiceImpl implements RetryTimeoutService {
                 retry.setKeepalive(false);
                 queue(retry);
             } else {
-                executorService.execute(new Runnable() {
-                    @Override
-                    public void run() {
-                        retry.increment();
+                retry.increment();
 
-                        if (retry.getRetryCount() >= retry.getRetries()) {
-                            Future<?> future = retry.getFuture();
-                            if (future instanceof SettableFuture) {
-                                ((SettableFuture<?>) future).setException(new TimeoutException());
-                            } else {
-                                future.cancel(true);
-                            }
-                        } else {
-                            queue(retry);
-                            final Runnable run = retry.getRunnable();
-                            if (run != null) {
-                                new NoExceptionRunnable() {
-                                    @Override
-                                    protected void doRun() throws Exception {
-                                        try {
-                                            run.run();
-                                        } catch (CancelRetryException e) {
-                                            completed(retry);
-                                        }
-                                    }
-                                }.run();
-                            }
-                        }
+                if (retry.getRetryCount() >= retry.getRetries()) {
+                    Future<?> future = retry.getFuture();
+                    if (future instanceof SettableFuture) {
+                        ((SettableFuture<?>) future).setException(new TimeoutException());
+                    } else {
+                        future.cancel(true);
                     }
-                });
+                } else {
+                    executorService.execute(new Runnable() {
+                        @Override
+                        public void run() {
+                                queue(retry);
+                                final Runnable run = retry.getRunnable();
+                                if (run != null) {
+                                    new NoExceptionRunnable() {
+                                        @Override
+                                        protected void doRun() throws Exception {
+                                            try {
+                                                run.run();
+                                            } catch (CancelRetryException e) {
+                                                completed(retry);
+                                            }
+                                        }
+                                    }.run();
+                                }
+                        }
+                    });
+                }
             }
 
             delayed = retryQueue.poll();

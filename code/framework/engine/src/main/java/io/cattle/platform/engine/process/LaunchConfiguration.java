@@ -1,5 +1,6 @@
 package io.cattle.platform.engine.process;
 
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -11,6 +12,7 @@ public class LaunchConfiguration {
     Map<String, Object> data;
     Predicate predicate;
     ProcessState parentProcessState;
+    Date runAfter;
 
     public LaunchConfiguration() {
     }
@@ -33,6 +35,7 @@ public class LaunchConfiguration {
         this.data = config.getData();
         this.predicate = config.getPredicate();
         this.parentProcessState = config.getParentProcessState();
+        this.runAfter = config.getRunAfter();
     }
 
     public String getResourceType() {
@@ -86,6 +89,14 @@ public class LaunchConfiguration {
 
     public void setParentProcessState(ProcessState parentProcessState) {
         this.parentProcessState = parentProcessState;
+    }
+
+    public Date getRunAfter() {
+        return runAfter;
+    }
+
+    public void setRunAfter(Date runAfter) {
+        this.runAfter = runAfter;
     }
 
 }

@@ -62,7 +62,7 @@ def test_link_update(client, context):
     assert link.state == 'active'
 
 
-def test_link_remove_restore(client, context):
+def test_link_remove(client, context):
     target1 = context.create_container()
 
     c = client.create_container(imageUuid=context.image_uuid,
@@ -91,21 +91,6 @@ def test_link_remove_restore(client, context):
     link = client.reload(link)
     assert c.state == 'removed'
     assert link.state == 'inactive'
-
-    c = client.wait_success(c.restore())
-    link = client.reload(link)
-    assert c.state == 'stopped'
-    assert link.state == 'inactive'
-
-    c = client.wait_success(client.delete(c))
-    link = client.reload(link)
-    assert c.state == 'removed'
-    assert link.state == 'inactive'
-
-    c = client.wait_success(c.purge())
-    link = client.reload(link)
-    assert c.state == 'purged'
-    assert link.state == 'removed'
 
 
 def test_null_links(context):

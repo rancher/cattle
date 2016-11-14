@@ -157,6 +157,28 @@ public interface ProcessInstance extends java.io.Serializable {
 	@javax.persistence.Column(name = "running_process_server_id", length = 128)
 	public java.lang.String getRunningProcessServerId();
 
+	/**
+	 * Setter for <code>cattle.process_instance.execution_count</code>.
+	 */
+	public void setExecutionCount(java.lang.Long value);
+
+	/**
+	 * Getter for <code>cattle.process_instance.execution_count</code>.
+	 */
+	@javax.persistence.Column(name = "execution_count", nullable = false, precision = 19)
+	public java.lang.Long getExecutionCount();
+
+	/**
+	 * Setter for <code>cattle.process_instance.run_after</code>.
+	 */
+	public void setRunAfter(java.util.Date value);
+
+	/**
+	 * Getter for <code>cattle.process_instance.run_after</code>.
+	 */
+	@javax.persistence.Column(name = "run_after")
+	public java.util.Date getRunAfter();
+
 	// -------------------------------------------------------------------------
 	// FROM and INTO
 	// -------------------------------------------------------------------------

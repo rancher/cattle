@@ -11,6 +11,7 @@ import io.cattle.platform.process.common.handler.AbstractObjectProcessLogic;
 import io.cattle.platform.util.type.Priority;
 
 import java.util.Date;
+import java.util.Random;
 
 import javax.inject.Named;
 
@@ -23,6 +24,7 @@ public class SetRemovedFields extends AbstractObjectProcessLogic implements Proc
 
     private static final String REMOVE_DELAY_FORMAT = "object.%s.remove.time.delay.seconds";
     private static final DynamicLongProperty DEFAULT_REMOVE_DELAY = ArchaiusUtil.getLong("object.remove.time.delay.seconds");
+    private static final Random RANDOM = new Random();
 
     @Override
     public HandlerResult handle(ProcessState state, ProcessInstance process) {
@@ -57,7 +59,14 @@ public class SetRemovedFields extends AbstractObjectProcessLogic implements Proc
             delay = Long.parseLong(delayString);
         }
 
-        return System.currentTimeMillis() + delay * 1000;
+        delay *= 1000;
+
+        if (delay < 0) {
+            float f = RANDOM.nextFloat() * delay;
+            delay = Math.abs((int)f);
+        }
+
+        return System.currentTimeMillis() + delay;
     }
 
     @Override

@@ -3,7 +3,7 @@
     xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.2.xsd">
 
     <bean id="EventService" class="io.cattle.platform.redis.RedisEventingService" >
-        <property name="executorService" ref="CoreExecutorService" />
+        <property name="executorService" ref="EventExecutorService" />
         <property name="namedExecutorServiceList" value="#{extensionManager.list('named.executor.service')}" />
     </bean>
 

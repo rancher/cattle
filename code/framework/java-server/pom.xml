@@ -44,5 +44,10 @@
             <groupId>com.fasterxml.jackson.module</groupId>
             <artifactId>jackson-module-jaxb-annotations</artifactId>
         </dependency>
+        <dependency>
+            <groupId>io.cattle</groupId>
+            <artifactId>cattle-framework-managed-context</artifactId>
+            <version>${project.version}</version>
+        </dependency>
     </dependencies>
 </project>

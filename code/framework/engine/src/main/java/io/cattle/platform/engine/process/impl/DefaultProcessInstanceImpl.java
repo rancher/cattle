@@ -2,6 +2,8 @@ package io.cattle.platform.engine.process.impl;
 
 import static io.cattle.platform.engine.process.ExitReason.*;
 import static io.cattle.platform.util.time.TimeUtils.*;
+
+import io.cattle.platform.archaius.util.ArchaiusUtil;
 import io.cattle.platform.async.utils.TimeoutException;
 import io.cattle.platform.deferred.util.DeferredUtils;
 import io.cattle.platform.engine.context.EngineContext;
@@ -54,7 +56,11 @@ import java.util.Stack;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.netflix.config.DynamicLongProperty;
+
 public class DefaultProcessInstanceImpl implements ProcessInstance {
+    private static final DynamicLongProperty RETRY_MAX_WAIT = ArchaiusUtil.getLong("process.retry_max_wait.millis");
+    private static final DynamicLongProperty RETRY_RUNNING_DELAY = ArchaiusUtil.getLong("process.running_delay.millis");
 
     private static final Logger log = LoggerFactory.getLogger(DefaultProcessInstanceImpl.class);
 
@@ -120,14 +126,6 @@ public class DefaultProcessInstanceImpl implements ProcessInstance {
         }
     }
 
-    protected void lookForCrashes() {
-        for (ProcessExecutionLog exec : processLog.getExecutions()) {
-            if (exec.getExitReason() == null) {
-                exec.setExitReason(SERVER_TERMINATED);
-            }
-        }
-    }
-
     protected void openLog(EngineContext engineContext) {
         if (processLog == null) {
             ParentLog parentLog = engineContext.peekLog();
@@ -137,8 +135,6 @@ public class DefaultProcessInstanceImpl implements ProcessInstance {
                 processLog = parentLog.newChildLog();
             }
         }
-
-        lookForCrashes();
 
         execution = processLog.newExecution();
         execution.setProcessId(record.getId());
@@ -271,6 +267,26 @@ public class DefaultProcessInstanceImpl implements ProcessInstance {
         }
     }
 
+    protected void incrementExecutionCountAndRunAfter() {
+        long count = record.getExecutionCount();
+        count += 1;
+
+        record.setExecutionCount(count);
+        record.setRunAfter(new Date(System.currentTimeMillis() + RETRY_RUNNING_DELAY.get()));
+        record.setRunningProcessServerId(EngineContext.getProcessServerId());
+    }
+
+    protected void setNextRunAfter() {
+        Long count = record.getExecutionCount();
+        if (count == 0) {
+            count = 1L;
+        }
+
+        long wait = Math.min(RETRY_MAX_WAIT.get(), Math.abs(15000L + (long)Math.pow(2, count-1) * 1000));
+        record.setRunAfter(new Date(System.currentTimeMillis() + wait));
+        record.setRunningProcessServerId(null);
+    }
+
     protected void runWithProcessLock() {
         String previousState = null;
         boolean success = false;
@@ -300,8 +316,10 @@ public class DefaultProcessInstanceImpl implements ProcessInstance {
 
             if (instanceContext.getPhase() == ProcessPhase.REQUESTED) {
                 instanceContext.setPhase(ProcessPhase.STARTED);
-                getProcessManager().persistState(this, schedule);
             }
+
+            incrementExecutionCountAndRunAfter();
+            getProcessManager().persistState(this, schedule);
 
             previousState = state.getState();
 
@@ -315,6 +333,9 @@ public class DefaultProcessInstanceImpl implements ProcessInstance {
                 throw new ProcessExecutionExitException(ExitReason.CHAIN);
             }
         } finally {
+            if (!schedule) {
+                setNextRunAfter();
+            }
             if (!success && !EngineContext.isNestedExecution()) {
                 /*
                  * This is not so obvious why we do this. If a process fails it
@@ -505,6 +526,9 @@ public class DefaultProcessInstanceImpl implements ProcessInstance {
         if (finalReason == null) {
             record.setRunningProcessServerId(EngineContext.getProcessServerId());
         } else {
+            if (finalReason == ExitReason.RETRY_EXCEPTION) {
+                record.setRunAfter(null);
+            }
             record.setRunningProcessServerId(null);
             if (finalReason.isTerminating() && execution != null && execution.getStopTime() != null) {
                 record.setEndTime(new Date(execution.getStopTime()));
