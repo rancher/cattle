@@ -15,12 +15,6 @@ import java.util.List;
 import java.util.Map;
 
 
-/**
- * TODO: Since the majority of the system references DeploymentUnitInstance and not InstanceUnit
- * and majority of the functions in DeploymentUnitInstance are abstract, we should really just combine
- * DeploymentUnitInstance and InstanceUnit into one interface and possibly have an
- * AbstractDeploymentUnitInstance class that provides some of the implementation.
- */
 public abstract class DeploymentUnitInstance {
     protected String uuid;
     protected DeploymentServiceContext context;

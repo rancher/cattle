@@ -8,6 +8,7 @@ import io.cattle.platform.configitem.context.data.metadata.version2.ServiceMetaD
 import io.cattle.platform.core.addon.InstanceHealthCheck;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.constants.ServiceConstants;
+import io.cattle.platform.core.model.Account;
 import io.cattle.platform.core.model.Service;
 import io.cattle.platform.core.model.Stack;
 import io.cattle.platform.core.util.LBMetadataUtil.LBConfigMetadataStyle;
@@ -119,6 +120,7 @@ public class ServiceMetaData {
     protected Boolean system;
     protected LBConfigMetadataStyle lb_config;
     protected String primary_service_name;
+    protected String environment_uuid;
 
     protected ServiceMetaData(ServiceMetaData that) {
         this.serviceId = that.serviceId;
@@ -150,10 +152,11 @@ public class ServiceMetaData {
         this.system = that.system;
         this.lb_config = that.lb_config;
         this.primary_service_name = that.primary_service_name;
+        this.environment_uuid = that.environment_uuid;
     }
 
     public ServiceMetaData(Service service, String serviceName, Stack env, List<String> sidekicks,
-            InstanceHealthCheck healthCheck, LBConfigMetadataStyle lbConfig) {
+            InstanceHealthCheck healthCheck, LBConfigMetadataStyle lbConfig, Account account) {
         this.serviceId = service.getId();
         this.service = service;
         this.name = serviceName;
@@ -185,6 +188,7 @@ public class ServiceMetaData {
         this.metadata = DataAccessor.fieldMap(service, ServiceConstants.FIELD_METADATA);
         this.lb_config = lbConfig;
         this.primary_service_name = service.getName();
+        this.environment_uuid = account.getUuid();
     }
 
     public static String getVip(Service service) {
@@ -430,5 +434,13 @@ public class ServiceMetaData {
 
     public void setPrimary_service_name(String primary_service_name) {
         this.primary_service_name = primary_service_name;
+    }
+
+    public String getEnvironment_uuid() {
+        return environment_uuid;
+    }
+
+    public void setEnvironment_uuid(String environment_uuid) {
+        this.environment_uuid = environment_uuid;
     }
 }

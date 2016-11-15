@@ -24,7 +24,6 @@ public class GlobalServiceDeploymentPlanner extends ServiceDeploymentPlanner {
     public GlobalServiceDeploymentPlanner(Service service, Stack stack,
             List<DeploymentUnit> units, DeploymentServiceContext context) {
         super(service, units, context, stack);
-        // TODO: Do we really need to iterate or is there just one service that we're dealing with here?
         List<Long> hostIdsToDeployService =
                 context.allocatorService.getHostsSatisfyingHostAffinity(service.getAccountId(),
                         ServiceDiscoveryUtil.getMergedServiceLabels(service, context.allocatorService));

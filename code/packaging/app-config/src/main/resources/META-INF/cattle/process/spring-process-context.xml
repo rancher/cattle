@@ -315,6 +315,7 @@
     <process:defaultProcesses resourceType="zone" />
     <process:defaultProcesses resourceType="serviceIndex" />
     <process:defaultProcesses resourceType="volumeTemplate" />
+    <process:defaultProcesses resourceType="accountLink" />
 
     <!-- Host -->
     <process:defaultProcesses resourceType="host" />

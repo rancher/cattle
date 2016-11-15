@@ -2,7 +2,6 @@ package io.cattle.platform.servicediscovery.process;
 
 
 import static io.cattle.platform.core.model.tables.InstanceTable.*;
-import static io.cattle.platform.core.model.tables.ServiceTable.*;
 import io.cattle.platform.core.addon.ServiceLink;
 import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.ServiceConstants;
@@ -57,7 +56,7 @@ public class SelectorServiceCreatePostListener extends AbstractObjectProcessLogi
     public HandlerResult handle(ProcessState state, ProcessInstance process) {
         Service service = (Service)state.getResource();
 
-        registerServiceLinks(service);
+        sdService.registerServiceLinks(service);
         registerInstances(service);
 
         if (process.getName().equalsIgnoreCase(ServiceConstants.PROCESS_SERVICE_UPDATE)) {
@@ -83,23 +82,7 @@ public class SelectorServiceCreatePostListener extends AbstractObjectProcessLogi
         }
     }
 
-    protected void registerServiceLinks(Service service) {
-        List<Service> services = objectManager.find(Service.class, SERVICE.ACCOUNT_ID, service.getAccountId(),
-                SERVICE.REMOVED, null);
 
-        for (Service targetService : services) {
-            // skip itself
-            if (targetService.getId().equals(service.getId())) {
-                continue;
-            }
-            if (sdService.isSelectorLinkMatch(service.getSelectorLink(), targetService)) {
-                addServiceLink(service, targetService);
-            }
-            if (sdService.isSelectorLinkMatch(targetService.getSelectorLink(), service)) {
-                addServiceLink(targetService, service);
-            }
-        }
-    }
 
     protected void deregisterOldServiceLinks(Service service, String selectorLink) {
         List<? extends Service> targetServices = consumeMapDao.findLinkedServices(service.getId());
@@ -114,11 +97,6 @@ public class SelectorServiceCreatePostListener extends AbstractObjectProcessLogi
     protected void removeServiceLink(Service service, Service targetService) {
         ServiceLink link = new ServiceLink(targetService.getId(), null);
         sdService.removeServiceLink(service, link);
-    }
-
-    protected void addServiceLink(Service service, Service targetService) {
-        ServiceLink link = new ServiceLink(targetService.getId(), null);
-        sdService.addServiceLink(service, link);
     }
 
     protected void registerInstances(final Service service) {

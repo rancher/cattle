@@ -26,10 +26,15 @@ import io.cattle.platform.servicediscovery.deployment.impl.lock.ServiceLinkLock;
 import io.cattle.platform.util.type.CollectionUtils;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import javax.inject.Inject;
+
+import org.jooq.Record2;
+import org.jooq.RecordHandler;
 
 public class ServiceConsumeMapDaoImpl extends AbstractJooqDao implements ServiceConsumeMapDao {
 
@@ -269,5 +274,49 @@ public class ServiceConsumeMapDaoImpl extends AbstractJooqDao implements Service
                 .where(
                         SERVICE_CONSUME_MAP.SERVICE_ID.eq(serviceId)
                                 .and(SERVICE_CONSUME_MAP.REMOVED.isNull())).fetchInto(Service.class);
+    }
+
+    @Override
+    public Map<Long, Long> findConsumedServicesIdsToStackIdsFromOtherAccounts(long accountId) {
+        final Map<Long, Long> result = new HashMap<>();
+        create().select(SERVICE.ID, SERVICE.STACK_ID)
+        .from(SERVICE)
+        .join(SERVICE_CONSUME_MAP)
+        .on(SERVICE_CONSUME_MAP.CONSUMED_SERVICE_ID.eq(SERVICE.ID))
+        .where(SERVICE_CONSUME_MAP.ACCOUNT_ID.eq(accountId)
+                        .and(SERVICE_CONSUME_MAP.REMOVED.isNull())
+                        .and(SERVICE.REMOVED.isNull())
+                        .and(SERVICE.ACCOUNT_ID.ne(accountId)))
+                .fetchInto(new RecordHandler<Record2<Long, Long>>() {
+                    @Override
+                    public void next(Record2<Long, Long> record) {
+                        Long serviceId = record.getValue(SERVICE.ID);
+                        Long stackId = record.getValue(SERVICE.STACK_ID);
+                        result.put(serviceId, stackId);
+                    }
+                });
+        return result;
+    }
+
+    @Override
+    public Map<Long, Long> findConsumedByServicesIdsToStackIdsFromOtherAccounts(long accountId) {
+        List<Long> serviceIds =  Arrays.asList(create().select(SERVICE_CONSUME_MAP.SERVICE_ID)
+                .from(SERVICE_CONSUME_MAP)
+                .join(SERVICE)
+                .on(SERVICE.ID.eq(SERVICE_CONSUME_MAP.CONSUMED_SERVICE_ID))
+                .where(SERVICE.ACCOUNT_ID.eq(accountId)
+                        .and(SERVICE_CONSUME_MAP.REMOVED.isNull())
+                        .and(SERVICE.REMOVED.isNull())
+                        .and(SERVICE_CONSUME_MAP.ACCOUNT_ID.ne(accountId)))
+                .fetch().intoArray(SERVICE_CONSUME_MAP.SERVICE_ID));
+        
+        Map<Long, Long> result = create().select(SERVICE.ID, SERVICE.STACK_ID)
+                .from(SERVICE)
+                .where(SERVICE.ID.in(serviceIds)
+                        .and(SERVICE.REMOVED.isNull()))
+                .fetch().intoMap(SERVICE.ID, SERVICE.STACK_ID);
+
+
+        return result;
     }
 }

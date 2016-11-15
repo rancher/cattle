@@ -411,6 +411,8 @@
     <bean class="io.cattle.platform.servicediscovery.process.HostIpUpdatePostListener" />
     <bean class="io.cattle.platform.servicediscovery.process.ServiceUpdatePreListener" />
     <bean class="io.cattle.platform.servicediscovery.process.LoadBalancerServiceUpdatePostListener" />
+    <bean class="io.cattle.platform.servicediscovery.process.AccountLinkCreate" />
+    <bean class="io.cattle.platform.servicediscovery.process.AccountLinkRemove" />
 
     <bean class="io.cattle.platform.servicediscovery.process.StackRemove" />
     <bean class="io.cattle.platform.servicediscovery.process.ServiceDiscoveryInstanceRemovePreListener" />

@@ -4,6 +4,7 @@ import io.cattle.platform.agent.instance.dao.AgentInstanceDao;
 import io.cattle.platform.agent.instance.service.AgentMetadataService;
 import io.cattle.platform.archaius.util.ArchaiusUtil;
 import io.cattle.platform.configitem.version.ConfigItemStatusManager;
+import io.cattle.platform.core.dao.AccountDao;
 import io.cattle.platform.core.model.HostIpAddressMap;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.InstanceHostMap;
@@ -18,6 +19,7 @@ import io.cattle.platform.engine.process.ProcessState;
 import io.cattle.platform.object.util.ObjectUtils;
 import io.cattle.platform.process.common.handler.AbstractObjectProcessLogic;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.inject.Inject;
@@ -40,6 +42,8 @@ public class MetadataProcessHandler extends AbstractObjectProcessLogic implement
     ConfigItemStatusManager statusManager;
     @Inject
     AgentMetadataService agentMetadata;
+    @Inject
+    AccountDao accountDao;
 
     @Override
     public String[] getProcessNames() {
@@ -55,8 +59,12 @@ public class MetadataProcessHandler extends AbstractObjectProcessLogic implement
             log.error("Failed to find account id for {}:{}", ObjectUtils.getKind(obj), ObjectUtils.getId(obj));
             return null;
         }
-
-        agentMetadata.updateMetadata((Long)accountId);
+        List<Long> accountIds = new ArrayList<>();
+        accountIds.add((Long) accountId);
+        accountIds.addAll(accountDao.getLinkedAccounts((Long) accountId));
+        for (long id : accountIds) {
+            agentMetadata.updateMetadata(id);
+        }
 
         return null;
     }

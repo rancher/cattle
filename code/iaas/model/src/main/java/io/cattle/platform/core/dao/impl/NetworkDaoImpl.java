@@ -1,15 +1,12 @@
 package io.cattle.platform.core.dao.impl;
 
 import static io.cattle.platform.core.model.tables.AccountTable.*;
-import static io.cattle.platform.core.model.tables.HostIpAddressMapTable.*;
-import static io.cattle.platform.core.model.tables.InstanceHostMapTable.*;
 import static io.cattle.platform.core.model.tables.IpAddressTable.*;
 import static io.cattle.platform.core.model.tables.NetworkDriverTable.*;
 import static io.cattle.platform.core.model.tables.NetworkTable.*;
 import static io.cattle.platform.core.model.tables.NicTable.*;
 import static io.cattle.platform.core.model.tables.ServiceExposeMapTable.*;
 import static io.cattle.platform.core.model.tables.SubnetTable.*;
-
 import io.cattle.platform.archaius.util.ArchaiusUtil;
 import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.PortConstants;
@@ -19,18 +16,13 @@ import io.cattle.platform.core.dao.GenericResourceDao;
 import io.cattle.platform.core.dao.NetworkDao;
 import io.cattle.platform.core.model.Account;
 import io.cattle.platform.core.model.Instance;
-import io.cattle.platform.core.model.InstanceHostMap;
-import io.cattle.platform.core.model.IpAddress;
 import io.cattle.platform.core.model.Network;
 import io.cattle.platform.core.model.Nic;
 import io.cattle.platform.core.model.Port;
 import io.cattle.platform.core.model.Subnet;
-import io.cattle.platform.core.model.tables.InstanceHostMapTable;
-import io.cattle.platform.core.model.tables.IpAddressTable;
 import io.cattle.platform.core.model.tables.records.NetworkRecord;
 import io.cattle.platform.core.util.PortSpec;
 import io.cattle.platform.db.jooq.dao.impl.AbstractJooqDao;
-import io.cattle.platform.db.jooq.mapper.MultiRecordMapper;
 import io.cattle.platform.lock.LockCallback;
 import io.cattle.platform.lock.LockManager;
 import io.cattle.platform.object.ObjectManager;
@@ -38,7 +30,6 @@ import io.cattle.platform.object.process.ObjectProcessManager;
 import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.util.net.NetUtils;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -121,72 +112,6 @@ public class NetworkDaoImpl extends AbstractJooqDao implements NetworkDao {
         });
     }
 
-    @Override
-    public Map<Long, IpAddress> getInstanceWithHostNetworkingToIpMap(long accountId) {
-        List<HostInstanceIpData> data = getHostContainerIpData(accountId);
-        Map<Long, IpAddress> instanceIdToHostIpMap = new HashMap<>();
-        for (HostInstanceIpData entry : data) {
-            instanceIdToHostIpMap.put(entry.getInstanceHostMap().getInstanceId(), entry.getIpAddress());
-        }
-
-        return instanceIdToHostIpMap;
-    }
-
-    protected List<HostInstanceIpData> getHostContainerIpData(long accountId) {
-        Network hostNtwk = objectManager.findAny(Network.class, NETWORK.ACCOUNT_ID, accountId, NETWORK.REMOVED, null,
-                NETWORK.KIND, "dockerHost");
-        if (hostNtwk == null) {
-            return new ArrayList<HostInstanceIpData>();
-        }
-        MultiRecordMapper<HostInstanceIpData> mapper = new MultiRecordMapper<HostInstanceIpData>() {
-            @Override
-            protected HostInstanceIpData map(List<Object> input) {
-                HostInstanceIpData data = new HostInstanceIpData();
-                data.setIpAddress((IpAddress) input.get(0));
-                data.setInstanceHostMap((InstanceHostMap) input.get(1));
-                return data;
-            }
-        };
-
-        IpAddressTable ipAddress = mapper.add(IP_ADDRESS);
-        InstanceHostMapTable instanceHostMap = mapper.add(INSTANCE_HOST_MAP);
-        return create()
-                .select(mapper.fields())
-                .from(HOST_IP_ADDRESS_MAP)
-                .join(instanceHostMap)
-                .on(HOST_IP_ADDRESS_MAP.HOST_ID.eq(instanceHostMap.HOST_ID))
-                .join(NIC)
-                .on(NIC.INSTANCE_ID.eq(instanceHostMap.INSTANCE_ID))
-                .join(ipAddress)
-                .on(HOST_IP_ADDRESS_MAP.IP_ADDRESS_ID.eq(ipAddress.ID))
-                .where(instanceHostMap.REMOVED.isNull())
-                .and(NIC.REMOVED.isNull())
-                .and(HOST_IP_ADDRESS_MAP.REMOVED.isNull())
-                .and(ipAddress.REMOVED.isNull())
-                .and(NIC.NETWORK_ID.eq(hostNtwk.getId()))
-                .fetch().map(mapper);
-    }
-
-    public class HostInstanceIpData {
-        InstanceHostMap instanceHostMap;
-        IpAddress ipAddress;
-
-        public IpAddress getIpAddress() {
-            return ipAddress;
-        }
-
-        public void setIpAddress(IpAddress ipAddress) {
-            this.ipAddress = ipAddress;
-        }
-
-        public InstanceHostMap getInstanceHostMap() {
-            return instanceHostMap;
-        }
-
-        public void setInstanceHostMap(InstanceHostMap instanceHostMap) {
-            this.instanceHostMap = instanceHostMap;
-        }
-    }
 
     @Override
     public Network getDefaultNetwork(Long accountId) {

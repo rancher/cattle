@@ -20,6 +20,12 @@
         },
         "startedStackIds": {
             "type": "array[reference[stack]]"
+        },
+        "accountLinks": {
+            "type": "array[reference[account]]",
+            "attributes" : {
+                "scheduleUpdate" : true
+            }
         }
     }
 }

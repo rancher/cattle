@@ -14,6 +14,7 @@
         "account.uuid" : "cr",
         "account.projectId" : "r",
         "account.identity" : "r",
+        "account.accountLinks" : "cru",
 
         "clusterMembership": "r",
         "clusterMembership\\..*": "r",

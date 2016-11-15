@@ -181,7 +181,7 @@ def test_account_purge(admin_user_client, super_client, new_context):
     wait_state(super_client, env, 'removed')
 
 
-def test_user_account_cant_create_account(admin_user_client):
+def test_user_account_cant_create_account(admin_user_client, super_client):
     account = admin_user_client.create_account(name=random_str(),
                                                kind='user')
     account = admin_user_client.wait_success(account)
@@ -192,3 +192,20 @@ def test_user_account_cant_create_account(admin_user_client):
     with pytest.raises(AttributeError) as e:
         client.create_account()
     assert 'create_account' in e.value.message
+
+
+def test_account_links(admin_user_client):
+    a1 = admin_user_client.create_account()
+    a2 = admin_user_client.create_account()
+    a3 = admin_user_client.create_account(accountLinks=[a1.id, a2.id])
+    assert a3.accountLinks is not None
+    assert len(a3.accountLinks) == 2
+    a3 = admin_user_client.wait_success(a3)
+
+    a3 = admin_user_client.update(a3, accountLinks=[a1.id])
+    assert a3.accountLinks is not None
+    assert len(a3.accountLinks) == 1
+
+    a1 = admin_user_client.wait_success(a1.deactivate())
+    admin_user_client.wait_success(a1.remove())
+    wait_for(lambda: len(admin_user_client.reload(a3).accountLinks) == 0)

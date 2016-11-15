@@ -286,7 +286,6 @@ public class ServiceCreateValidationFilter extends AbstractDefaultResourceManage
     @SuppressWarnings("unchecked")
     protected ApiRequest validateAndSetImage(ApiRequest request, Service service, String type) {
         Map<String, Object> data = CollectionUtils.toMap(request.getRequestObject());
-        boolean imageSet = false;
         if (data.get(ServiceConstants.FIELD_LAUNCH_CONFIG) != null) {
             Map<String, Object> launchConfig = (Map<String, Object>)data.get(ServiceConstants.FIELD_LAUNCH_CONFIG);
             if (launchConfig.get(InstanceConstants.FIELD_IMAGE_UUID) != null) {
@@ -295,13 +294,8 @@ public class ServiceCreateValidationFilter extends AbstractDefaultResourceManage
                     String fullImageName = ExternalTemplateInstanceFilter.getImageUuid(imageUuid.toString(), storageService);
                     launchConfig.put(InstanceConstants.FIELD_IMAGE_UUID, fullImageName);
                     data.put(ServiceConstants.FIELD_LAUNCH_CONFIG, launchConfig);
-                    imageSet = true;
                 }
             }
-        }
-
-        if (!imageSet && type.equalsIgnoreCase(ServiceConstants.KIND_LOAD_BALANCER_SERVICE)) {
-            throw new ValidationErrorException(ValidationErrorCodes.MISSING_REQUIRED, "imageUuid");
         }
 
         List<Object> modifiedSlcs = new ArrayList<>();

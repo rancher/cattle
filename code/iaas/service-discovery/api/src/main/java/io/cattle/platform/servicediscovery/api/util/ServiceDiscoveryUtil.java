@@ -314,9 +314,20 @@ public class ServiceDiscoveryUtil {
         Object imageUUID = ServiceDiscoveryUtil.getLaunchConfigDataAsMap(service,
                 ServiceConstants.PRIMARY_LAUNCH_CONFIG_NAME).get(
                 InstanceConstants.FIELD_IMAGE_UUID);
-        return service.getSelectorContainer() != null
+        boolean noopRegular = service.getSelectorContainer() != null
                 && (imageUUID == null || imageUUID.toString().toLowerCase()
                         .contains(ServiceConstants.IMAGE_NONE));
+
+        return noopRegular || isNoopLBService(service);
+    }
+
+    public static boolean isNoopLBService(Service service) {
+        Object imageUUID = ServiceDiscoveryUtil.getLaunchConfigDataAsMap(service,
+                ServiceConstants.PRIMARY_LAUNCH_CONFIG_NAME).get(
+                InstanceConstants.FIELD_IMAGE_UUID);
+        return service.getKind().equalsIgnoreCase(ServiceConstants.KIND_LOAD_BALANCER_SERVICE)
+                && imageUUID != null && imageUUID.toString().toLowerCase()
+                        .contains(ServiceConstants.IMAGE_NONE);
     }
 
     public static void upgradeServiceConfigs(Service service, InServiceUpgradeStrategy strategy, boolean rollback) {
@@ -416,9 +427,11 @@ public class ServiceDiscoveryUtil {
         if (labelsObj != null) {
             labels = (Map<String, String>) labelsObj;
         }
+        if (!labels.containsKey(SystemLabels.LABEL_AGENT_ROLE)) {
+            labels.put(SystemLabels.LABEL_AGENT_ROLE, AgentConstants.ENVIRONMENT_ADMIN_ROLE);
+            labels.put(SystemLabels.LABEL_AGENT_CREATE, "true");
+        }
 
-        labels.put(SystemLabels.LABEL_AGENT_ROLE, AgentConstants.ENVIRONMENT_ADMIN_ROLE);
-        labels.put(SystemLabels.LABEL_AGENT_CREATE, "true");
         launchConfig.put(InstanceConstants.FIELD_LABELS, labels);
 
         // set health check
