@@ -1,6 +1,7 @@
 package io.cattle.platform.servicediscovery.process;
 
 import io.cattle.platform.core.constants.ServiceConstants;
+import io.cattle.platform.core.model.Service;
 import io.cattle.platform.core.model.ServiceIndex;
 import io.cattle.platform.engine.handler.HandlerResult;
 import io.cattle.platform.engine.process.ProcessInstance;
@@ -26,7 +27,13 @@ public class ServiceSuffixRemove extends AbstractObjectProcessHandler {
     public HandlerResult handle(ProcessState state, ProcessInstance process) {
         ServiceIndex serviceIndex = (ServiceIndex) state.getResource();
 
-        sdService.releaseIpFromServiceIndex(serviceIndex);
+        Service service = objectManager.loadResource(Service.class, serviceIndex.getServiceId());
+
+        if (service == null) {
+            return null;
+        }
+
+        sdService.releaseIpFromServiceIndex(service, serviceIndex);
 
         return null;
     }

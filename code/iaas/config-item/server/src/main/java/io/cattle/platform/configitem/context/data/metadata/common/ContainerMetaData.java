@@ -4,6 +4,7 @@ import io.cattle.platform.configitem.context.dao.MetaDataInfoDao;
 import io.cattle.platform.configitem.context.dao.MetaDataInfoDao.Version;
 import io.cattle.platform.configitem.context.data.metadata.version2.ContainerMetaDataVersion3;
 import io.cattle.platform.core.constants.InstanceConstants;
+import io.cattle.platform.core.model.Account;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.Nic;
 import io.cattle.platform.core.model.ServiceExposeMap;
@@ -27,6 +28,7 @@ public class ContainerMetaData {
     private String dnsPrefix;
     private Long instanceId;
     Instance instance;
+    private boolean isHostNetworking;
 
     protected String name;
     String uuid;
@@ -56,6 +58,7 @@ public class ContainerMetaData {
     List<String> dns_search = new ArrayList<>();
     // list of hostUUID
     List<String> health_check_hosts = new ArrayList<>();
+    protected String environment_uuid;
 
     // container links where key is linkName, value is instanceUUID
     Map<String, String> links = new HashMap<>();
@@ -93,6 +96,8 @@ public class ContainerMetaData {
         this.dns_search = that.dns_search;
         this.health_check_hosts = that.health_check_hosts;
         this.links = that.links;
+        this.environment_uuid = that.environment_uuid;
+        this.isHostNetworking = that.isHostNetworking;
     }
 
     public ContainerMetaData() {
@@ -145,7 +150,8 @@ public class ContainerMetaData {
 
 
     @SuppressWarnings("unchecked")
-    public void setInstanceAndHostMetadata(Instance instance, HostMetaData hostMetaData, List<String> healthcheckHosts) {
+    public void setInstanceAndHostMetadata(Instance instance, HostMetaData hostMetaData, List<String> healthcheckHosts,
+            Account account, boolean isHostNetworking) {
         this.hostMetaData = hostMetaData;
     this.instance = instance;
         this.instanceId = instance.getId();
@@ -195,6 +201,8 @@ public class ContainerMetaData {
         if (healthcheckHosts != null) {
             this.health_check_hosts = healthcheckHosts;
         }
+        this.environment_uuid = account.getUuid();
+        this.isHostNetworking = isHostNetworking;
     }
 
     public void setService_name(String service_name) {
@@ -413,5 +421,16 @@ public class ContainerMetaData {
 
     public void setLinks(Map<String, String> links) {
         this.links = links;
+    }
+    public String getEnvironment_uuid() {
+        return environment_uuid;
+    }
+
+    public void setEnvironment_uuid(String environment_uuid) {
+        this.environment_uuid = environment_uuid;
+    }
+
+    public boolean isHostNetworking() {
+        return isHostNetworking;
     }
 }

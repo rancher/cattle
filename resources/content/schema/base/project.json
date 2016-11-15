@@ -46,6 +46,9 @@
       "attributes" : {
         "capability" : "owner"
       }
+    },
+    "defaultNetworkId" : {
+      "type" : "reference[network]"
     }
   },
   "resourceFields": {
@@ -77,6 +80,12 @@
         "attributes" : {
         "scheduleUpdate" : true
       }
+    },
+    "projectLinks": {
+        "type": "array[reference[project]]",
+        "attributes" : {
+            "scheduleUpdate" : true
+        }
     }
   }
 }

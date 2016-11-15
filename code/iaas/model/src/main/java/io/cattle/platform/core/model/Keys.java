@@ -19,6 +19,7 @@ public class Keys {
 	// -------------------------------------------------------------------------
 
 	public static final org.jooq.Identity<io.cattle.platform.core.model.tables.records.AccountRecord, java.lang.Long> IDENTITY_ACCOUNT = Identities0.IDENTITY_ACCOUNT;
+	public static final org.jooq.Identity<io.cattle.platform.core.model.tables.records.AccountLinkRecord, java.lang.Long> IDENTITY_ACCOUNT_LINK = Identities0.IDENTITY_ACCOUNT_LINK;
 	public static final org.jooq.Identity<io.cattle.platform.core.model.tables.records.AgentRecord, java.lang.Long> IDENTITY_AGENT = Identities0.IDENTITY_AGENT;
 	public static final org.jooq.Identity<io.cattle.platform.core.model.tables.records.AuditLogRecord, java.lang.Long> IDENTITY_AUDIT_LOG = Identities0.IDENTITY_AUDIT_LOG;
 	public static final org.jooq.Identity<io.cattle.platform.core.model.tables.records.AuthTokenRecord, java.lang.Long> IDENTITY_AUTH_TOKEN = Identities0.IDENTITY_AUTH_TOKEN;
@@ -94,6 +95,8 @@ public class Keys {
 
 	public static final org.jooq.UniqueKey<io.cattle.platform.core.model.tables.records.AccountRecord> KEY_ACCOUNT_PRIMARY = UniqueKeys0.KEY_ACCOUNT_PRIMARY;
 	public static final org.jooq.UniqueKey<io.cattle.platform.core.model.tables.records.AccountRecord> KEY_ACCOUNT_IDX_ACCOUNT_UUID = UniqueKeys0.KEY_ACCOUNT_IDX_ACCOUNT_UUID;
+	public static final org.jooq.UniqueKey<io.cattle.platform.core.model.tables.records.AccountLinkRecord> KEY_ACCOUNT_LINK_PRIMARY = UniqueKeys0.KEY_ACCOUNT_LINK_PRIMARY;
+	public static final org.jooq.UniqueKey<io.cattle.platform.core.model.tables.records.AccountLinkRecord> KEY_ACCOUNT_LINK_IDX_ACCOUNT_LINK_UUID = UniqueKeys0.KEY_ACCOUNT_LINK_IDX_ACCOUNT_LINK_UUID;
 	public static final org.jooq.UniqueKey<io.cattle.platform.core.model.tables.records.AgentRecord> KEY_AGENT_PRIMARY = UniqueKeys0.KEY_AGENT_PRIMARY;
 	public static final org.jooq.UniqueKey<io.cattle.platform.core.model.tables.records.AgentRecord> KEY_AGENT_IDX_AGENT_UUID = UniqueKeys0.KEY_AGENT_IDX_AGENT_UUID;
 	public static final org.jooq.UniqueKey<io.cattle.platform.core.model.tables.records.AuditLogRecord> KEY_AUDIT_LOG_PRIMARY = UniqueKeys0.KEY_AUDIT_LOG_PRIMARY;
@@ -232,6 +235,8 @@ public class Keys {
 	// -------------------------------------------------------------------------
 
 	public static final org.jooq.ForeignKey<io.cattle.platform.core.model.tables.records.AccountRecord, io.cattle.platform.core.model.tables.records.ProjectTemplateRecord> FK_ACCOUNT__PROJECT_TEMPLATE_ID = ForeignKeys0.FK_ACCOUNT__PROJECT_TEMPLATE_ID;
+	public static final org.jooq.ForeignKey<io.cattle.platform.core.model.tables.records.AccountLinkRecord, io.cattle.platform.core.model.tables.records.AccountRecord> FK_ACCOUNT_LINK__ACCOUNT_ID = ForeignKeys0.FK_ACCOUNT_LINK__ACCOUNT_ID;
+	public static final org.jooq.ForeignKey<io.cattle.platform.core.model.tables.records.AccountLinkRecord, io.cattle.platform.core.model.tables.records.AccountRecord> FK_ACCOUNT_LINK__LINKED_ACCOUNT_ID = ForeignKeys0.FK_ACCOUNT_LINK__LINKED_ACCOUNT_ID;
 	public static final org.jooq.ForeignKey<io.cattle.platform.core.model.tables.records.AgentRecord, io.cattle.platform.core.model.tables.records.AccountRecord> FK_AGENT__ACCOUNT_ID = ForeignKeys0.FK_AGENT__ACCOUNT_ID;
 	public static final org.jooq.ForeignKey<io.cattle.platform.core.model.tables.records.AgentRecord, io.cattle.platform.core.model.tables.records.ZoneRecord> FK_AGENT__ZONE_ID = ForeignKeys0.FK_AGENT__ZONE_ID;
 	public static final org.jooq.ForeignKey<io.cattle.platform.core.model.tables.records.AuditLogRecord, io.cattle.platform.core.model.tables.records.AccountRecord> FK_AUDIT_LOG__ACCOUNT_ID = ForeignKeys0.FK_AUDIT_LOG__ACCOUNT_ID;
@@ -382,6 +387,7 @@ public class Keys {
 
 	private static class Identities0 extends org.jooq.impl.AbstractKeys {
 		public static org.jooq.Identity<io.cattle.platform.core.model.tables.records.AccountRecord, java.lang.Long> IDENTITY_ACCOUNT = createIdentity(io.cattle.platform.core.model.tables.AccountTable.ACCOUNT, io.cattle.platform.core.model.tables.AccountTable.ACCOUNT.ID);
+		public static org.jooq.Identity<io.cattle.platform.core.model.tables.records.AccountLinkRecord, java.lang.Long> IDENTITY_ACCOUNT_LINK = createIdentity(io.cattle.platform.core.model.tables.AccountLinkTable.ACCOUNT_LINK, io.cattle.platform.core.model.tables.AccountLinkTable.ACCOUNT_LINK.ID);
 		public static org.jooq.Identity<io.cattle.platform.core.model.tables.records.AgentRecord, java.lang.Long> IDENTITY_AGENT = createIdentity(io.cattle.platform.core.model.tables.AgentTable.AGENT, io.cattle.platform.core.model.tables.AgentTable.AGENT.ID);
 		public static org.jooq.Identity<io.cattle.platform.core.model.tables.records.AuditLogRecord, java.lang.Long> IDENTITY_AUDIT_LOG = createIdentity(io.cattle.platform.core.model.tables.AuditLogTable.AUDIT_LOG, io.cattle.platform.core.model.tables.AuditLogTable.AUDIT_LOG.ID);
 		public static org.jooq.Identity<io.cattle.platform.core.model.tables.records.AuthTokenRecord, java.lang.Long> IDENTITY_AUTH_TOKEN = createIdentity(io.cattle.platform.core.model.tables.AuthTokenTable.AUTH_TOKEN, io.cattle.platform.core.model.tables.AuthTokenTable.AUTH_TOKEN.ID);
@@ -455,6 +461,8 @@ public class Keys {
 	private static class UniqueKeys0 extends org.jooq.impl.AbstractKeys {
 		public static final org.jooq.UniqueKey<io.cattle.platform.core.model.tables.records.AccountRecord> KEY_ACCOUNT_PRIMARY = createUniqueKey(io.cattle.platform.core.model.tables.AccountTable.ACCOUNT, io.cattle.platform.core.model.tables.AccountTable.ACCOUNT.ID);
 		public static final org.jooq.UniqueKey<io.cattle.platform.core.model.tables.records.AccountRecord> KEY_ACCOUNT_IDX_ACCOUNT_UUID = createUniqueKey(io.cattle.platform.core.model.tables.AccountTable.ACCOUNT, io.cattle.platform.core.model.tables.AccountTable.ACCOUNT.UUID);
+		public static final org.jooq.UniqueKey<io.cattle.platform.core.model.tables.records.AccountLinkRecord> KEY_ACCOUNT_LINK_PRIMARY = createUniqueKey(io.cattle.platform.core.model.tables.AccountLinkTable.ACCOUNT_LINK, io.cattle.platform.core.model.tables.AccountLinkTable.ACCOUNT_LINK.ID);
+		public static final org.jooq.UniqueKey<io.cattle.platform.core.model.tables.records.AccountLinkRecord> KEY_ACCOUNT_LINK_IDX_ACCOUNT_LINK_UUID = createUniqueKey(io.cattle.platform.core.model.tables.AccountLinkTable.ACCOUNT_LINK, io.cattle.platform.core.model.tables.AccountLinkTable.ACCOUNT_LINK.UUID);
 		public static final org.jooq.UniqueKey<io.cattle.platform.core.model.tables.records.AgentRecord> KEY_AGENT_PRIMARY = createUniqueKey(io.cattle.platform.core.model.tables.AgentTable.AGENT, io.cattle.platform.core.model.tables.AgentTable.AGENT.ID);
 		public static final org.jooq.UniqueKey<io.cattle.platform.core.model.tables.records.AgentRecord> KEY_AGENT_IDX_AGENT_UUID = createUniqueKey(io.cattle.platform.core.model.tables.AgentTable.AGENT, io.cattle.platform.core.model.tables.AgentTable.AGENT.UUID);
 		public static final org.jooq.UniqueKey<io.cattle.platform.core.model.tables.records.AuditLogRecord> KEY_AUDIT_LOG_PRIMARY = createUniqueKey(io.cattle.platform.core.model.tables.AuditLogTable.AUDIT_LOG, io.cattle.platform.core.model.tables.AuditLogTable.AUDIT_LOG.ID);
@@ -591,6 +599,8 @@ public class Keys {
 
 	private static class ForeignKeys0 extends org.jooq.impl.AbstractKeys {
 		public static final org.jooq.ForeignKey<io.cattle.platform.core.model.tables.records.AccountRecord, io.cattle.platform.core.model.tables.records.ProjectTemplateRecord> FK_ACCOUNT__PROJECT_TEMPLATE_ID = createForeignKey(io.cattle.platform.core.model.Keys.KEY_PROJECT_TEMPLATE_PRIMARY, io.cattle.platform.core.model.tables.AccountTable.ACCOUNT, io.cattle.platform.core.model.tables.AccountTable.ACCOUNT.PROJECT_TEMPLATE_ID);
+		public static final org.jooq.ForeignKey<io.cattle.platform.core.model.tables.records.AccountLinkRecord, io.cattle.platform.core.model.tables.records.AccountRecord> FK_ACCOUNT_LINK__ACCOUNT_ID = createForeignKey(io.cattle.platform.core.model.Keys.KEY_ACCOUNT_PRIMARY, io.cattle.platform.core.model.tables.AccountLinkTable.ACCOUNT_LINK, io.cattle.platform.core.model.tables.AccountLinkTable.ACCOUNT_LINK.ACCOUNT_ID);
+		public static final org.jooq.ForeignKey<io.cattle.platform.core.model.tables.records.AccountLinkRecord, io.cattle.platform.core.model.tables.records.AccountRecord> FK_ACCOUNT_LINK__LINKED_ACCOUNT_ID = createForeignKey(io.cattle.platform.core.model.Keys.KEY_ACCOUNT_PRIMARY, io.cattle.platform.core.model.tables.AccountLinkTable.ACCOUNT_LINK, io.cattle.platform.core.model.tables.AccountLinkTable.ACCOUNT_LINK.LINKED_ACCOUNT_ID);
 		public static final org.jooq.ForeignKey<io.cattle.platform.core.model.tables.records.AgentRecord, io.cattle.platform.core.model.tables.records.AccountRecord> FK_AGENT__ACCOUNT_ID = createForeignKey(io.cattle.platform.core.model.Keys.KEY_ACCOUNT_PRIMARY, io.cattle.platform.core.model.tables.AgentTable.AGENT, io.cattle.platform.core.model.tables.AgentTable.AGENT.ACCOUNT_ID);
 		public static final org.jooq.ForeignKey<io.cattle.platform.core.model.tables.records.AgentRecord, io.cattle.platform.core.model.tables.records.ZoneRecord> FK_AGENT__ZONE_ID = createForeignKey(io.cattle.platform.core.model.Keys.KEY_ZONE_PRIMARY, io.cattle.platform.core.model.tables.AgentTable.AGENT, io.cattle.platform.core.model.tables.AgentTable.AGENT.ZONE_ID);
 		public static final org.jooq.ForeignKey<io.cattle.platform.core.model.tables.records.AuditLogRecord, io.cattle.platform.core.model.tables.records.AccountRecord> FK_AUDIT_LOG__ACCOUNT_ID = createForeignKey(io.cattle.platform.core.model.Keys.KEY_ACCOUNT_PRIMARY, io.cattle.platform.core.model.tables.AuditLogTable.AUDIT_LOG, io.cattle.platform.core.model.tables.AuditLogTable.AUDIT_LOG.ACCOUNT_ID);

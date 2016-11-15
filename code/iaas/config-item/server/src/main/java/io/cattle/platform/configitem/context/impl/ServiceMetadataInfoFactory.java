@@ -1,5 +1,7 @@
 package io.cattle.platform.configitem.context.impl;
 
+import static io.cattle.platform.core.model.tables.AccountLinkTable.*;
+import static io.cattle.platform.core.model.tables.AccountTable.*;
 import static io.cattle.platform.core.model.tables.InstanceHostMapTable.*;
 import static io.cattle.platform.core.model.tables.ServiceConsumeMapTable.*;
 import static io.cattle.platform.core.model.tables.ServiceTable.*;
@@ -9,6 +11,7 @@ import io.cattle.platform.configitem.context.dao.MetaDataInfoDao.Version;
 import io.cattle.platform.configitem.context.data.metadata.common.ContainerMetaData;
 import io.cattle.platform.configitem.context.data.metadata.common.DefaultMetaData;
 import io.cattle.platform.configitem.context.data.metadata.common.HostMetaData;
+import io.cattle.platform.configitem.context.data.metadata.common.MetaHelperInfo;
 import io.cattle.platform.configitem.context.data.metadata.common.NetworkMetaData;
 import io.cattle.platform.configitem.context.data.metadata.common.SelfMetaData;
 import io.cattle.platform.configitem.context.data.metadata.common.ServiceMetaData;
@@ -29,11 +32,10 @@ import io.cattle.platform.core.dao.GenericMapDao;
 import io.cattle.platform.core.dao.LoadBalancerInfoDao;
 import io.cattle.platform.core.dao.NetworkDao;
 import io.cattle.platform.core.model.Account;
+import io.cattle.platform.core.model.AccountLink;
 import io.cattle.platform.core.model.Agent;
-import io.cattle.platform.core.model.HealthcheckInstanceHostMap;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.InstanceHostMap;
-import io.cattle.platform.core.model.IpAddress;
 import io.cattle.platform.core.model.Service;
 import io.cattle.platform.core.model.ServiceConsumeMap;
 import io.cattle.platform.core.model.Stack;
@@ -43,13 +45,17 @@ import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.servicediscovery.api.dao.ServiceConsumeMapDao;
 import io.cattle.platform.servicediscovery.api.util.ServiceDiscoveryUtil;
 import io.cattle.platform.util.exception.ExceptionUtils;
+import io.github.ibuildthecloud.gdapi.condition.Condition;
+import io.github.ibuildthecloud.gdapi.condition.ConditionType;
 
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -110,48 +116,33 @@ public class ServiceMetadataInfoFactory extends AbstractAgentBaseContextFactory 
         if (instance == null) {
             return dataWithVersionTag;
         }
-        Account account = objectManager.loadResource(Account.class, instance.getAccountId());
+
         InstanceHostMap hostMap = objectManager.findAny(InstanceHostMap.class, INSTANCE_HOST_MAP.INSTANCE_ID,
                 instance.getId());
         if (hostMap == null) {
             return dataWithVersionTag;
         }
-        long agentHostId = hostMap.getHostId();
-        Map<Long, List<HealthcheckInstanceHostMap>> instanceIdToHealthcheckers = metaDataInfoDao
-                .getInstanceIdToHealthCheckers(account.getId());
-        final Map<Long, IpAddress> instanceIdToHostIpMap = networkDao
-                .getInstanceWithHostNetworkingToIpMap(account.getId());
-        Map<Long, HostMetaData> hostIdToHost = metaDataInfoDao.getHostIdToHostMetadata(account.getId());
-        List<ContainerMetaData> containersMD = metaDataInfoDao.getManagedContainersData(account.getId(),
-                instanceIdToHealthcheckers, instanceIdToHostIpMap, hostIdToHost,
-                metaDataInfoDao.getContainerIdToContainerLink(instance.getAccountId()));
-        Map<Long, String> instanceIdToUuid = new HashMap<>();
-        for (ContainerMetaData containerMd : containersMD) {
-            instanceIdToUuid.put(containerMd.getInstanceId(), containerMd.getUuid());
-        }
-        // add networkFrom containers
-        containersMD.addAll(metaDataInfoDao.getNetworkFromContainersData(account.getId(), instanceIdToUuid,
-                instanceIdToHealthcheckers, instanceIdToHostIpMap, hostIdToHost));
-        // add host level containers
-        containersMD.addAll(metaDataInfoDao.getHostContainersData(account.getId(),
-                instanceIdToHealthcheckers, instanceIdToHostIpMap, hostIdToHost));
+
+        MetaHelperInfo helperInfo = fetchHelperData(objectManager.loadResource(Account.class, instance.getAccountId()));
+
+        List<ContainerMetaData> containersMD = fetchContainersMetadata(helperInfo);
 
         Map<String, StackMetaData> stackNameToStack = new HashMap<>();
         Map<Long, Map<String, ServiceMetaData>> serviceIdToServiceLaunchConfigs = new HashMap<>();
-        List<? extends Service> allSvcs = objectManager.find(Service.class, SERVICE.ACCOUNT_ID,
-                account.getId(), SERVICE.REMOVED, null);
+
+        List<? extends Service> allSvcs = getAllServices(helperInfo);
 
         Map<Long, Service> svcIdsToSvc = getServiceIdToService(allSvcs);
-        Map<Long, List<ServiceConsumeMap>> svcIdToSvcLinks = getServiceIdToServiceLinks(account);
+        Map<Long, List<ServiceConsumeMap>> svcIdToSvcLinks = getServiceIdToServiceLinks(helperInfo);
+        populateStacksServicesInfo(helperInfo, stackNameToStack, serviceIdToServiceLaunchConfigs, allSvcs);
 
-        populateStacksServicesInfo(account, stackNameToStack, serviceIdToServiceLaunchConfigs, allSvcs);
-
+        long agentHostId = hostMap.getHostId();
         Map<String, Object> versionToData = new HashMap<>();
         for (MetaDataInfoDao.Version version : MetaDataInfoDao.Version.values()) {
             Object data = versionToData.get(version.getValue());
             if (data == null) {
                 data = getFullMetaData(itemVersion, containersMD, stackNameToStack, serviceIdToServiceLaunchConfigs, version,
-                        svcIdsToSvc, svcIdToSvcLinks, agentHostId, account, instance.getId());
+                        svcIdsToSvc, svcIdToSvcLinks, agentHostId, helperInfo);
                 versionToData.put(version.getValue(), data);
             }
             dataWithVersionTag.put(version.getTag(), data);
@@ -160,10 +151,91 @@ public class ServiceMetadataInfoFactory extends AbstractAgentBaseContextFactory 
         return dataWithVersionTag;
     }
 
-    protected Map<Long, List<ServiceConsumeMap>> getServiceIdToServiceLinks(Account account) {
-        List<? extends ServiceConsumeMap> allSvcLinks = objectManager.find(ServiceConsumeMap.class,
+    protected List<Service> getAllServices(MetaHelperInfo helperInfo) {
+        List<Service> services = objectManager.find(Service.class, SERVICE.ACCOUNT_ID,
+                helperInfo.getAccount().getId(), SERVICE.REMOVED, null);
+        if (!helperInfo.getOtherAccountsServicesIds().isEmpty()) {
+            List<Object> servicesIds = new ArrayList<>();
+            servicesIds.addAll(helperInfo.getOtherAccountsServicesIds());
+            services.addAll(objectManager.find(Service.class, SERVICE.ID,
+                    new Condition(ConditionType.IN, servicesIds), SERVICE.REMOVED, null));
+        }
+        return services;
+    }
+
+    private MetaHelperInfo fetchHelperData(Account account) {
+        Map<Long, Account> accounts = new HashMap<>();
+        Set<Long> linkedServicesIds = new HashSet<>();
+        Set<Long> linkedStackIds = new HashSet<>();
+        List<? extends Account> allAccounts = objectManager.find(Account.class, ACCOUNT.REMOVED, new Condition(
+                ConditionType.NULL));
+        Map<Long, Account> allAccountsMap = new HashMap<>();
+        for (Account a : allAccounts) {
+            allAccountsMap.put(a.getId(), a);
+        }
+        // fetch accounts/services that are linked TO your account
+        accounts.put(account.getId(), account);
+        List<? extends AccountLink> accountLinks = objectManager.find(AccountLink.class, ACCOUNT_LINK.ACCOUNT_ID,
+                account.getId(), ACCOUNT_LINK.REMOVED, null);
+        for (AccountLink accountLink : accountLinks) {
+            Long accountId = accountLink.getLinkedAccountId();
+            accounts.put(accountId, allAccountsMap.get(accountId));
+        }
+        
+        // fetch accounts/services that your account is linked TO
+        accountLinks = objectManager.find(AccountLink.class, ACCOUNT_LINK.LINKED_ACCOUNT_ID,
+                account.getId(), ACCOUNT_LINK.REMOVED, null);
+        for (AccountLink accountLink : accountLinks) {
+            Long accountId = accountLink.getAccountId();
+            accounts.put(accountId, allAccountsMap.get(accountId));
+        }
+
+        // fetch services linked both ways
+        Map<Long, Long> map1 = consumeMapDao.findConsumedServicesIdsToStackIdsFromOtherAccounts(account.getId());
+        Map<Long, Long> map2 = consumeMapDao.findConsumedByServicesIdsToStackIdsFromOtherAccounts(account.getId());
+        linkedServicesIds.addAll(map1.keySet());
+        linkedStackIds.addAll(map1.values());
+        linkedServicesIds.addAll(map2.keySet());
+        linkedStackIds.addAll(map2.values());
+
+        return new MetaHelperInfo(account, accounts, linkedServicesIds, linkedStackIds,
+                metaDataInfoDao);
+    }
+
+    private List<ContainerMetaData> fetchContainersMetadata(MetaHelperInfo helperInfo) {
+        List<ContainerMetaData> containersMD = metaDataInfoDao.getManagedContainersData(helperInfo,
+                metaDataInfoDao.getContainerIdToContainerLink(helperInfo.getAccount().getId()));
+        Map<Long, String> instanceIdToUuid = new HashMap<>();
+        for (ContainerMetaData containerMd : containersMD) {
+            instanceIdToUuid.put(containerMd.getInstanceId(), containerMd.getUuid());
+        }
+        // add networkFrom containers
+        containersMD.addAll(metaDataInfoDao.getNetworkFromContainersData(instanceIdToUuid,
+                helperInfo));
+        // add host level containers
+        containersMD.addAll(metaDataInfoDao.getHostContainersData(helperInfo));
+        return containersMD;
+    }
+
+    protected List<? extends ServiceConsumeMap> getServiceLinks(MetaHelperInfo helperInfo) {
+        List<ServiceConsumeMap> allSvcLinks = objectManager.find(ServiceConsumeMap.class,
                 SERVICE_CONSUME_MAP.ACCOUNT_ID,
-                account.getId(), SERVICE_CONSUME_MAP.REMOVED, null);
+                helperInfo.getAccount().getId(), SERVICE_CONSUME_MAP.REMOVED, null);
+
+        if (!helperInfo.getOtherAccountsServicesIds().isEmpty()) {
+            List<Object> servicesIds = new ArrayList<>();
+            servicesIds.addAll(helperInfo.getOtherAccountsServicesIds());
+            allSvcLinks.addAll(objectManager.find(ServiceConsumeMap.class,
+                    SERVICE_CONSUME_MAP.SERVICE_ID,
+                    new Condition(ConditionType.IN, servicesIds),
+                    SERVICE_CONSUME_MAP.REMOVED, null));
+        }
+
+        return allSvcLinks;
+    }
+
+    protected Map<Long, List<ServiceConsumeMap>> getServiceIdToServiceLinks(MetaHelperInfo helperInfo) {
+        List<? extends ServiceConsumeMap> allSvcLinks = getServiceLinks(helperInfo);
         Map<Long, List<ServiceConsumeMap>> svcIdToconsumedSvcs = new HashMap<>();
         for (ServiceConsumeMap link : allSvcLinks) {
             List<ServiceConsumeMap> links = svcIdToconsumedSvcs.get(link.getServiceId());
@@ -210,7 +282,8 @@ public class ServiceMetadataInfoFactory extends AbstractAgentBaseContextFactory 
     protected Map<String, Object> getFullMetaData(String itemVersion, List<ContainerMetaData> containersMD,
             Map<String, StackMetaData> stackNameToStack, Map<Long, Map<String, ServiceMetaData>> serviceIdToServiceLaunchConfigs,
             Version version, Map<Long, Service> svcIdsToSvc,
-            Map<Long, List<ServiceConsumeMap>> svcIdToSvcLinks, long agentHostId, Account account, long agentInstanceId) {
+            Map<Long, List<ServiceConsumeMap>> svcIdToSvcLinks, long agentHostId,
+            MetaHelperInfo helperInfo) {
 
         // 1. generate containers metadata
         Map<Long, Map<String, List<ContainerMetaData>>> serviceIdToLaunchConfigToContainer = new HashMap<>();
@@ -233,21 +306,17 @@ public class ServiceMetadataInfoFactory extends AbstractAgentBaseContextFactory 
 
         // 5. get host meta data
         List<HostMetaData> hostsMD = new ArrayList<>();
-        for (HostMetaData data : metaDataInfoDao.getHostIdToHostMetadata(account.getId()).values()) {
+        for (HostMetaData data : helperInfo.getHostIdToHostMetadata().values()) {
             hostsMD.add(applyVersionToHost(data, version));
         }
 
-        List<HostMetaData> selfHostMD = new ArrayList<>();
-        for (HostMetaData data : metaDataInfoDao.getInstanceHostMetaData(account.getId(),
-                agentInstanceId)) {
-            selfHostMD.add(applyVersionToHost(data, version));
-        }
+        HostMetaData selfHostMD = helperInfo.getHostIdToHostMetadata().get(agentHostId);
         // 6. get networksMetadata
-        List<NetworkMetaData> networks = metaDataInfoDao.getNetworksMetaData(account);
+        List<NetworkMetaData> networks = metaDataInfoDao.getNetworksMetaData(helperInfo);
 
         // 7. full data combined of (n) self sections and default one
         Map<String, Object> fullData = getFullMetaData(itemVersion, containersMD, stackNameToStack,
-                serviceIdToServiceLaunchConfigs, selfMD, hostsMD, selfHostMD.size() == 0 ? null : selfHostMD.get(0), networks);
+                serviceIdToServiceLaunchConfigs, selfMD, hostsMD, selfHostMD, networks);
 
         return fullData;
     }
@@ -395,10 +464,22 @@ public class ServiceMetadataInfoFactory extends AbstractAgentBaseContextFactory 
         return newData;
     }
 
-    protected void populateStacksServicesInfo(Account account, Map<String, StackMetaData> stacksMD,
+    protected List<? extends Stack> getStacks(MetaHelperInfo helperInfo) {
+        List<Stack> stacks = objectManager.find(Stack.class, STACK.ACCOUNT_ID,
+                helperInfo.getAccount().getId(), STACK.REMOVED, null);
+        if (!helperInfo.getOtherAccountsStackIds().isEmpty()) {
+            List<Object> stackIds = new ArrayList<>();
+            stackIds.addAll(helperInfo.getOtherAccountsStackIds());
+            stacks.addAll(objectManager.find(Stack.class, STACK.ID,
+                    new Condition(ConditionType.IN, stackIds), STACK.REMOVED, null));
+        }
+
+        return stacks;
+    }
+
+    protected void populateStacksServicesInfo(MetaHelperInfo helperInfo, Map<String, StackMetaData> stacksMD,
             Map<Long, Map<String, ServiceMetaData>> servicesMD, List<? extends Service> allSvcs) {
-        List<? extends Stack> envs = objectManager.find(Stack.class, STACK.ACCOUNT_ID,
-                account.getId(), STACK.REMOVED, null);
+        List<? extends Stack> stacks = getStacks(helperInfo);
         Map<Long, List<Service>> envIdToService = new HashMap<>();
         for (Service svc : allSvcs) {
             List<Service> envSvcs = envIdToService.get(svc.getStackId());
@@ -408,13 +489,13 @@ public class ServiceMetadataInfoFactory extends AbstractAgentBaseContextFactory 
             envSvcs.add(svc);
             envIdToService.put(svc.getStackId(), envSvcs);
         }
-        for (Stack env : envs) {
-            StackMetaData stackMetaData = new StackMetaData(env, account);
-            List<Service> services = envIdToService.get(env.getId());
+        for (Stack stack : stacks) {
+            StackMetaData stackMetaData = new StackMetaData(stack, helperInfo.getAccounts().get(stack.getAccountId()));
+            List<Service> services = envIdToService.get(stack.getId());
             if (services == null) {
                 services = new ArrayList<>();
             }
-            List<ServiceMetaData> stackServicesMD = getServicesInfo(env, account, services);
+            List<ServiceMetaData> stackServicesMD = getServicesInfo(stack, services, helperInfo.getAccounts());
             stacksMD.put(stackMetaData.getName(), stackMetaData);
             for (ServiceMetaData stackServiceMD : stackServicesMD) {
                 Map<String, ServiceMetaData> launchConfigToSvcMap = servicesMD.get(stackServiceMD.getServiceId());
@@ -448,33 +529,32 @@ public class ServiceMetadataInfoFactory extends AbstractAgentBaseContextFactory 
     }
 
 
-    protected List<ServiceMetaData> getServicesInfo(Stack env, Account account, List<Service> services) {
+    protected List<ServiceMetaData> getServicesInfo(Stack env, List<Service> services, Map<Long, Account> accounts) {
         List<ServiceMetaData> stackServicesMD = new ArrayList<>();
         Map<Long, Service> idToService = new HashMap<>();
         for (Service service : services) {
             List<ContainerMetaData> serviceContainersMD = new ArrayList<>();
-            getServiceInfo(account, serviceContainersMD, env, stackServicesMD, idToService, service);
+            getServiceInfo(serviceContainersMD, env, stackServicesMD, idToService, service, accounts);
         }
         return stackServicesMD;
     }
 
-    protected void getServiceInfo(Account account, List<ContainerMetaData> serviceContainersMD,
-            Stack env, List<ServiceMetaData> stackServices, Map<Long, Service> idToService,
-            Service service) {
+    protected void getServiceInfo(List<ContainerMetaData> serviceContainersMD, Stack env,
+            List<ServiceMetaData> stackServices, Map<Long, Service> idToService, Service service,
+            Map<Long, Account> accounts) {
         idToService.put(service.getId(), service);
         List<String> launchConfigNames = ServiceDiscoveryUtil.getServiceLaunchConfigNames(service);
         if (launchConfigNames.isEmpty()) {
             launchConfigNames.add(ServiceConstants.PRIMARY_LAUNCH_CONFIG_NAME);
         }
         for (String launchConfigName : launchConfigNames) {
-            getLaunchConfigInfo(account, env, stackServices, idToService, service, launchConfigNames,
-                    launchConfigName);
+            getLaunchConfigInfo(env, stackServices, idToService, service, launchConfigNames, launchConfigName, accounts);
         }
     }
 
-    protected void getLaunchConfigInfo(Account account, Stack env,
-            List<ServiceMetaData> stackServices, Map<Long, Service> idToService, Service service,
-            List<String> launchConfigNames, String launchConfigName) {
+    protected void getLaunchConfigInfo(Stack env, List<ServiceMetaData> stackServices,
+            Map<Long, Service> idToService, Service service, List<String> launchConfigNames,
+            String launchConfigName, Map<Long, Account> accounts) {
         boolean isPrimaryConfig = launchConfigName
                 .equalsIgnoreCase(ServiceConstants.PRIMARY_LAUNCH_CONFIG_NAME);
         String serviceName = isPrimaryConfig ? service.getName()
@@ -498,7 +578,8 @@ public class ServiceMetadataInfoFactory extends AbstractAgentBaseContextFactory 
         if (hcO != null) {
             hc = jsonMapper.convertValue(hcO, InstanceHealthCheck.class);
         }
-        ServiceMetaData svcMetaData = new ServiceMetaData(service, serviceName, env, sidekicks, hc, lbConfig);
+        ServiceMetaData svcMetaData = new ServiceMetaData(service, serviceName, env, sidekicks, hc, lbConfig,
+                accounts.get(env.getAccountId()));
         stackServices.add(svcMetaData);
     }
 
@@ -538,13 +619,5 @@ public class ServiceMetadataInfoFactory extends AbstractAgentBaseContextFactory 
         serviceMD.setLinks(links);
     }
 
-    protected long getNetworkInstanceHostId(Instance instance) {
-        List<? extends InstanceHostMap> maps = mapDao.findNonRemoved(InstanceHostMap.class, Instance.class,
-                instance.getId());
-        if (!maps.isEmpty()) {
-            return maps.get(0).getHostId();
-        }
-        return 0;
-    }
 
 }

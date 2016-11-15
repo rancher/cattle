@@ -51,7 +51,7 @@ public interface ServiceDiscoveryService extends AnnotatedEventListener {
 
     void allocateIpToServiceIndex(Service service, ServiceIndex serviceIndex, String requestedIp);
 
-    void releaseIpFromServiceIndex(ServiceIndex serviceIndex);
+    void releaseIpFromServiceIndex(Service service, ServiceIndex serviceIndex);
     
     void updateHealthState(Stack stack);
 
@@ -70,5 +70,7 @@ public interface ServiceDiscoveryService extends AnnotatedEventListener {
     void reconcileHostEndpoints(Host host);
 
     void removeFromLoadBalancerServices(Service service);
+
+    void registerServiceLinks(Service service);
 
 }

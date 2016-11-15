@@ -518,3 +518,63 @@ def test_validate_export_cross_stack(client, image_uuid):
     assert len(lb["port_rules"]) == 1
     rule = lb["port_rules"][0]
     assert rule["service"] == env1.name + "/" + svc.name
+
+
+def test_lb_noop(client, image_uuid):
+    env = _create_stack(client)
+
+    launch_config = {"imageUuid": image_uuid}
+    svc1 = client. \
+        create_service(name=random_str(),
+                       stackId=env.id,
+                       launchConfig=launch_config)
+
+    svc1 = client.wait_success(svc1)
+
+    hostname = "foo"
+    path = "bar"
+    port = 32
+    priority = 10
+    protocol = "http"
+    target_port = 42
+    backend_name = "myBackend"
+    config = "global maxconn 20"
+    port_rule1 = {"hostname": hostname,
+                  "path": path, "sourcePort": port, "priority": priority,
+                  "protocol": protocol, "serviceId": svc1.id,
+                  "targetPort": target_port,
+                  "backendName": backend_name}
+    port_rules = [port_rule1]
+    lb_config = {"portRules": port_rules,
+                 "config": config}
+
+    # create balancer
+    launch_config = {"imageUuid": "rancher/none"}
+    lb_svc = client. \
+        create_loadBalancerService(name=random_str(),
+                                   stackId=env.id,
+                                   launchConfig=launch_config,
+                                   lbConfig=lb_config)
+    lb_svc = client.wait_success(lb_svc)
+    assert lb_svc.state == "inactive"
+    assert len(lb_svc.lbConfig.portRules) == 1
+
+    client.wait_success(lb_svc.activate())
+    # no instances should be created
+    _wait_until_active_map_count(lb_svc, 0, client)
+
+    # try updating endpoints, should pass
+    public_e = {"ipAddress": "10.1.1.1", "port": "100"}
+    lb_svc = client.update(lb_svc, publicEndpoints=[public_e])
+    assert len(lb_svc.publicEndpoints) == 1
+
+
+def _wait_until_active_map_count(service, count, client):
+    def wait_for_map_count(service):
+        m = client. \
+            list_serviceExposeMap(serviceId=service.id, state='active')
+        return len(m) == count
+
+    wait_for_condition(client, service, wait_for_map_count)
+    return client. \
+        list_serviceExposeMap(serviceId=service.id, state='active')

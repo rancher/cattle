@@ -44,25 +44,26 @@ public class EventNotificationChangeMonitor extends io.cattle.platform.engine.pr
 
         Object obj = state.getResource();
         if (obj instanceof Service) {
-            accountId = sendChange(Stack.class, accountId, ((Service) obj).getStackId(), schedule, context);
+            sendChange(Stack.class, accountId, ((Service) obj).getStackId(), schedule, context);
         } else if (obj instanceof ServiceConsumeMap) {
-            accountId = sendChange(Service.class, accountId, ((ServiceConsumeMap) obj).getServiceId(), schedule, context);
-            accountId = sendChange(Service.class, accountId, ((ServiceConsumeMap) obj).getConsumedServiceId(), schedule, context);
+            sendChange(Service.class, accountId, ((ServiceConsumeMap) obj).getServiceId(), schedule, context);
+            // accountId is null to handle cross environment service links case
+            sendChange(Service.class, null, ((ServiceConsumeMap) obj).getConsumedServiceId(), schedule, context);
         } else if (obj instanceof ServiceExposeMap) {
-            accountId = sendChange(Service.class, accountId, ((ServiceExposeMap) obj).getServiceId(), schedule, context);
-            accountId = sendChange(Instance.class, accountId, ((ServiceExposeMap) obj).getInstanceId(), schedule, context);
+            sendChange(Service.class, accountId, ((ServiceExposeMap) obj).getServiceId(), schedule, context);
+            sendChange(Instance.class, accountId, ((ServiceExposeMap) obj).getInstanceId(), schedule, context);
         } else if (obj instanceof InstanceHostMap) {
-            accountId = sendChange(Host.class, accountId, ((InstanceHostMap) obj).getHostId(), schedule, context);
-            accountId = sendChange(Instance.class, accountId, ((InstanceHostMap) obj).getInstanceId(), schedule, context);
+            sendChange(Host.class, accountId, ((InstanceHostMap) obj).getHostId(), schedule, context);
+            sendChange(Instance.class, accountId, ((InstanceHostMap) obj).getInstanceId(), schedule, context);
         } else if (obj instanceof StoragePoolHostMap) {
-            accountId = sendChange(StoragePool.class, accountId, ((StoragePoolHostMap) obj).getStoragePoolId(), schedule, context);
-            accountId = sendChange(Host.class, accountId, ((StoragePoolHostMap) obj).getHostId(), schedule, context);
+            sendChange(StoragePool.class, accountId, ((StoragePoolHostMap) obj).getStoragePoolId(), schedule, context);
+            sendChange(Host.class, accountId, ((StoragePoolHostMap) obj).getHostId(), schedule, context);
         } else if (obj instanceof VolumeStoragePoolMap) {
-            accountId = sendChange(StoragePool.class, accountId, ((VolumeStoragePoolMap) obj).getStoragePoolId(), schedule, context);
-            accountId = sendChange(Volume.class, accountId, ((VolumeStoragePoolMap) obj).getVolumeId(), schedule, context);
+            sendChange(StoragePool.class, accountId, ((VolumeStoragePoolMap) obj).getStoragePoolId(), schedule, context);
+            sendChange(Volume.class, accountId, ((VolumeStoragePoolMap) obj).getVolumeId(), schedule, context);
         } else if (obj instanceof Mount) {
-            accountId = sendChange(Instance.class, accountId, ((Mount) obj).getInstanceId(), schedule, context);
-            accountId = sendChange(Volume.class, accountId, ((Mount) obj).getVolumeId(), schedule, context);
+            sendChange(Instance.class, accountId, ((Mount) obj).getInstanceId(), schedule, context);
+            sendChange(Volume.class, accountId, ((Mount) obj).getVolumeId(), schedule, context);
         }
     }
 

@@ -1,5 +1,6 @@
 package io.cattle.platform.servicediscovery.service.impl;
 
+import static io.cattle.platform.core.model.tables.AccountLinkTable.*;
 import static io.cattle.platform.core.model.tables.ServiceIndexTable.*;
 import static io.cattle.platform.core.model.tables.ServiceTable.*;
 import static io.cattle.platform.core.model.tables.StackTable.*;
@@ -18,13 +19,13 @@ import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.HealthcheckConstants;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.constants.IpAddressConstants;
-import io.cattle.platform.core.constants.NetworkConstants;
 import io.cattle.platform.core.constants.ServiceConstants;
 import io.cattle.platform.core.constants.SubnetConstants;
 import io.cattle.platform.core.dao.InstanceDao;
 import io.cattle.platform.core.dao.LabelsDao;
 import io.cattle.platform.core.dao.NetworkDao;
 import io.cattle.platform.core.model.Account;
+import io.cattle.platform.core.model.AccountLink;
 import io.cattle.platform.core.model.Host;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.Network;
@@ -476,7 +477,7 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
     protected void reconcileServiceEndpointsImpl(final Service service) {
         final List<PublicEndpoint> newData = instanceDao.getPublicEndpoints(service.getAccountId(), service.getId(),
                 null);
-        if (service != null && service.getRemoved() == null) {
+        if (service != null && service.getRemoved() == null && !ServiceDiscoveryUtil.isNoopLBService(service)) {
             updateObjectEndPoints(service, service.getKind(), service.getId(), service.getAccountId(), newData);
         }
     }
@@ -521,10 +522,14 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
     }
 
     @Override
-    public void releaseIpFromServiceIndex(ServiceIndex serviceIndex) {
+    public void releaseIpFromServiceIndex(Service service, ServiceIndex serviceIndex) {
         if (!StringUtils.isEmpty(serviceIndex.getAddress())) {
-            // TODO: NETWORK_MODE_MANAGED shouldn't be hardcoded, the networkMode should come from the launchConfig
-            Network ntwk = networkService.resolveNetwork(serviceIndex.getAccountId(), NetworkConstants.NETWORK_MODE_MANAGED);
+            String ntwkMode = networkService.getNetworkMode(DataAccessor
+                    .fieldMap(service, ServiceConstants.FIELD_LAUNCH_CONFIG));
+            if (ntwkMode == null) {
+                return;
+            }
+            Network ntwk = networkService.resolveNetwork(serviceIndex.getAccountId(), ntwkMode);
             networkService.releaseIpAddress(ntwk, serviceIndex);
         }
     }
@@ -875,5 +880,73 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
                 objectProcessManager.scheduleStandardProcessAsync(StandardProcess.UPDATE, balancer, null);
             }
         }
+    }
+
+    @Override
+    public void registerServiceLinks(Service service) {
+        registerTargetServices(service);
+        registerAsTargetService(service);
+    }
+
+    private void registerAsTargetService(Service targetService) {
+
+        List<Long> accountIds = new ArrayList<>();
+        accountIds.add(targetService.getAccountId());
+        List<? extends AccountLink> linkedToAccounts = objectManager.find(AccountLink.class,
+                ACCOUNT_LINK.LINKED_ACCOUNT_ID, targetService.getAccountId(),
+                ACCOUNT_LINK.REMOVED, null);
+
+        // add all accounts that are linked to service's account
+        for (AccountLink linkedToAccount : linkedToAccounts) {
+            accountIds.add(linkedToAccount.getAccountId());
+        }
+
+        List<Service> services = new ArrayList<>();
+        for (Long accountId : accountIds) {
+            services.addAll(objectManager.find(Service.class, SERVICE.ACCOUNT_ID, accountId,
+                    SERVICE.REMOVED, null));
+        }
+        for (Service service : services) {
+            // skip itself
+            if (targetService.getId().equals(service.getId())) {
+                continue;
+            }
+            if (isSelectorLinkMatch(service.getSelectorLink(), targetService)) {
+                addServiceLink(service, targetService);
+            }
+        }
+    }
+
+    private void registerTargetServices(Service service) {
+        List<Long> targetAccountIds = new ArrayList<>();
+        targetAccountIds.add(service.getAccountId());
+        // add all accounts that are linked to service's account
+        List<? extends AccountLink> linkedAccounts = objectManager.find(AccountLink.class,
+                ACCOUNT_LINK.ACCOUNT_ID, service.getAccountId(),
+                ACCOUNT_LINK.REMOVED, null);
+        for (AccountLink linkedAccount : linkedAccounts) {
+            targetAccountIds.add(linkedAccount.getLinkedAccountId());
+        }
+
+        List<Service> targetServices = new ArrayList<>();
+        for (Long accountId : targetAccountIds) {
+            targetServices.addAll(objectManager.find(Service.class, SERVICE.ACCOUNT_ID, accountId,
+                    SERVICE.REMOVED, null));
+        }
+
+        for (Service targetService : targetServices) {
+            // skip itself
+            if (targetService.getId().equals(service.getId())) {
+                continue;
+            }
+            if (isSelectorLinkMatch(service.getSelectorLink(), targetService)) {
+                addServiceLink(service, targetService);
+            }
+        }
+    }
+
+    protected void addServiceLink(Service service, Service targetService) {
+        ServiceLink link = new ServiceLink(targetService.getId(), null);
+        addServiceLink(service, link);
     }
 }

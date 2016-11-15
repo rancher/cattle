@@ -2,15 +2,17 @@ package io.cattle.platform.configitem.context.dao;
 
 import io.cattle.platform.configitem.context.data.metadata.common.ContainerMetaData;
 import io.cattle.platform.configitem.context.data.metadata.common.HostMetaData;
+import io.cattle.platform.configitem.context.data.metadata.common.MetaHelperInfo;
 import io.cattle.platform.configitem.context.data.metadata.common.NetworkMetaData;
 import io.cattle.platform.core.model.Account;
 import io.cattle.platform.core.model.HealthcheckInstanceHostMap;
-import io.cattle.platform.core.model.IpAddress;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 public interface MetaDataInfoDao {
+
     public enum Version {
         version1("2015-07-25", "2015-07-25"),
         version2("2015-12-19", "2015-12-19"),
@@ -42,32 +44,23 @@ public interface MetaDataInfoDao {
         }
     }
 
-    List<ContainerMetaData> getManagedContainersData(long accountId,
-            Map<Long, List<HealthcheckInstanceHostMap>> instanceIdToHealthCheckers,
-            Map<Long, IpAddress> instanceIdToHostIpMap, Map<Long, HostMetaData> hostIdToHostMetadata,
+    // get containers data
+    List<ContainerMetaData> getManagedContainersData(MetaHelperInfo helperInfo,
             Map<Long, Map<String, String>> containerIdToContainerLink);
 
+    List<ContainerMetaData> getNetworkFromContainersData(Map<Long, String> instanceIdToUUID, MetaHelperInfo helperInfo);
+
+    List<ContainerMetaData> getHostContainersData(MetaHelperInfo helperInfo);
+
+    // helper data
     List<String> getPrimaryIpsOnInstanceHost(long hostId);
 
-    Map<Long, HostMetaData> getHostIdToHostMetadata(long accountId);
+    Map<Long, List<HealthcheckInstanceHostMap>> getInstanceIdToHealthCheckers(Account account);
 
-    List<HostMetaData> getInstanceHostMetaData(long accountId, long instanceId);
+    Map<Long, HostMetaData> getHostIdToHostMetadata(Account account, Map<Long, Account> accounts,
+            Set<Long> linkedServicesIds);
 
-    List<NetworkMetaData> getNetworksMetaData(Account account);
-
-    List<ContainerMetaData> getNetworkFromContainersData(long accountId,
-            Map<Long, String> instanceIdToUUID, Map<Long, List<HealthcheckInstanceHostMap>> instanceIdToHealthCheckers,
-            Map<Long, IpAddress> instanceIdToHostIpMap, Map<Long, HostMetaData> hostIdToHostMetadata);
-
-    Map<Long, List<HealthcheckInstanceHostMap>> getInstanceIdToHealthCheckers(long accountId);
-
-    /*
-     * this method is to handle new format
-     * when host records don't have ip address assigned to them
-     */
-    List<ContainerMetaData> getHostContainersData(long accountId,
-            Map<Long, List<HealthcheckInstanceHostMap>> instanceIdToHealthCheckers,
-            Map<Long, IpAddress> instanceIdToHostIpMap, Map<Long, HostMetaData> hostIdToHostMetadata);
+    List<NetworkMetaData> getNetworksMetaData(MetaHelperInfo helperInfo);
 
     Map<Long, Map<String, String>> getContainerIdToContainerLink(long accountId);
 }

@@ -456,13 +456,18 @@ def test_update_link_selector(client, context):
     _validate_remove_service_link(svc, s1, client)
 
 
-def _validate_add_service_link(service,
-                               consumedService, client):
+def _validate_add_service_link(s, c, client, timeout=None):
+    exp1 = len(client.list_serviceConsumeMap(serviceId=s.id,
+                                             consumedServiceId=c.id)) == 1
+    exp2 = len(client.list_serviceConsumeMap(serviceId=s.id,
+                                             consumedServiceId=c.id)) == 1
+    if timeout:
+        wait_for(lambda: exp1, timeout)
+    else:
+        wait_for(lambda: exp2)
     service_maps = client. \
-        list_serviceConsumeMap(serviceId=service.id,
-                               consumedServiceId=consumedService.id)
-
-    assert len(service_maps) == 1
+        list_serviceConsumeMap(serviceId=s.id,
+                               consumedServiceId=c.id)
 
     service_map = service_maps[0]
     wait_for_condition(
@@ -510,3 +515,62 @@ def _wait_for_instance_start(super_client, id):
         lambda: len(super_client.by_id('container', id)) > 0
     )
     return super_client.by_id('container', id)
+
+
+def test_cross_account_selector(admin_user_client, super_client, context):
+    a2 = admin_user_client.create_account(kind='project')
+    a2 = admin_user_client.wait_success(a2)
+    a3 = admin_user_client.create_account(kind='project')
+    a3 = admin_user_client.wait_success(a3)
+    a1 = admin_user_client.create_project(projectLinks=[a2.id])
+    a1 = admin_user_client.wait_success(a1)
+    assert a1.projectLinks is not None
+    a1 = admin_user_client.wait_success(a1)
+
+    image_uuid = context.image_uuid
+
+    env1 = super_client.create_stack(name=random_str(), accountId=a1.id)
+    env1 = super_client.wait_success(env1)
+    launch_config = {"imageUuid": image_uuid}
+    svc1 = super_client.create_service(name=random_str(),
+                                       stackId=env1.id,
+                                       launchConfig=launch_config,
+                                       selectorLink="foo=bar",
+                                       accountId=a1.id)
+
+    svc1 = super_client.wait_success(svc1)
+
+    env2 = super_client.create_stack(name=random_str(), accountId=a2.id)
+    env2 = super_client.wait_success(env2)
+    labels = {'foo': "bar"}
+    launch_config = {"imageUuid": image_uuid, "labels": labels}
+    svc2 = super_client.create_service(name=random_str(),
+                                       stackId=env2.id,
+                                       launchConfig=launch_config,
+                                       accountId=a2.id)
+
+    svc2 = super_client.wait_success(svc2)
+    assert svc1.accountId != svc2.accountId
+
+    _validate_add_service_link(svc1, svc2, super_client)
+
+    env3 = super_client.create_stack(name=random_str(), accountId=a3.id)
+    env3 = super_client.wait_success(env3)
+    labels = {'foo': "bar"}
+    launch_config = {"imageUuid": image_uuid, "labels": labels}
+    svc3 = super_client.create_service(name=random_str(),
+                                       stackId=env3.id,
+                                       launchConfig=launch_config,
+                                       accountId=a3.id)
+    svc3 = super_client.wait_success(svc3)
+    assert svc3.accountId != svc2.accountId
+
+    try:
+        _validate_add_service_link(svc1, svc3, super_client, timeout=5)
+    except Exception:
+        pass
+
+    # reconcile service links on account links updates
+    admin_user_client.update(a1, projectLinks=[a3.id])
+    _validate_remove_service_link(svc1, svc2, super_client)
+    _validate_add_service_link(svc1, svc3, super_client)

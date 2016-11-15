@@ -7,6 +7,7 @@ import io.cattle.platform.core.model.Service;
 import io.cattle.platform.core.model.ServiceConsumeMap;
 
 import java.util.List;
+import java.util.Map;
 
 public interface ServiceConsumeMapDao {
 
@@ -64,4 +65,8 @@ public interface ServiceConsumeMapDao {
     List<ServiceConsumeMap> createServiceLinks(List<ServiceLink> serviceLink);
 
     List<? extends Service> findLinkedServices(long serviceId);
+
+    Map<Long, Long> findConsumedServicesIdsToStackIdsFromOtherAccounts(long accountId);
+
+    Map<Long, Long> findConsumedByServicesIdsToStackIdsFromOtherAccounts(long accountId);
 }

@@ -1,7 +1,6 @@
 package io.cattle.platform.core.dao;
 
 import io.cattle.platform.core.model.Instance;
-import io.cattle.platform.core.model.IpAddress;
 import io.cattle.platform.core.model.Network;
 import io.cattle.platform.core.model.Nic;
 import io.cattle.platform.core.model.Port;
@@ -21,8 +20,6 @@ public interface NetworkDao {
     Network getNetworkByName(long accountId, String name);
 
     Subnet addVIPSubnet(long accountId);
-
-    Map<Long, IpAddress> getInstanceWithHostNetworkingToIpMap(long accountId);
 
     Network getDefaultNetwork(Long accountId);
 

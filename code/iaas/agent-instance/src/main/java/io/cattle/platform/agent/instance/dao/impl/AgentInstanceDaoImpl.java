@@ -87,7 +87,7 @@ public class AgentInstanceDaoImpl extends AbstractJooqDao implements AgentInstan
                 .join(LABEL)
                     .on(LABEL.ID.eq(INSTANCE_LABEL_MAP.LABEL_ID).and(LABEL.KEY.eq(providedServiceLabel)))
                 .where(INSTANCE.ACCOUNT_ID.eq(accountId)
-                    .and(INSTANCE.AGENT_ID.isNotNull())
+                        .and(INSTANCE.AGENT_ID.isNotNull())
                         .and(INSTANCE.SYSTEM.isTrue())
                         .and(INSTANCE.STATE.in(InstanceConstants.STATE_RUNNING, InstanceConstants.STATE_STARTING)))
                 .orderBy(INSTANCE.AGENT_ID.asc())
