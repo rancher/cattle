@@ -9,6 +9,7 @@ import static io.cattle.platform.core.model.tables.ServiceExposeMapTable.*;
 import static io.cattle.platform.core.model.tables.ServiceIndexTable.*;
 import static io.cattle.platform.core.model.tables.ServiceTable.*;
 import static io.cattle.platform.core.model.tables.StackTable.*;
+import io.cattle.platform.core.addon.HealthcheckState;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.constants.LoadBalancerConstants;
 import io.cattle.platform.core.dao.ServiceDao;
@@ -37,6 +38,7 @@ import javax.inject.Inject;
 
 import org.jooq.Record;
 import org.jooq.Record2;
+import org.jooq.Record3;
 import org.jooq.Record6;
 import org.jooq.RecordHandler;
 
@@ -236,4 +238,37 @@ public class ServiceDaoImpl extends AbstractJooqDao implements ServiceDao {
         }
         return maps.get(0);
     }
+
+
+    @Override
+    public Map<Long, List<HealthcheckState>> getHealthcheckStatesForInstances(List<Long> ids,
+            final IdFormatter idFormatter) {
+        final Map<Long, List<HealthcheckState>> result = new HashMap<>();
+        create().select(HEALTHCHECK_INSTANCE_HOST_MAP.INSTANCE_ID, HEALTHCHECK_INSTANCE_HOST_MAP.HOST_ID,
+                HEALTHCHECK_INSTANCE_HOST_MAP.HEALTH_STATE)
+                .from(HEALTHCHECK_INSTANCE_HOST_MAP)
+                .join(HOST)
+                .on(HOST.ID.eq(HEALTHCHECK_INSTANCE_HOST_MAP.HOST_ID))
+                .where(HEALTHCHECK_INSTANCE_HOST_MAP.REMOVED.isNull()
+                        .and(HOST.REMOVED.isNull())
+                        .and(HEALTHCHECK_INSTANCE_HOST_MAP.INSTANCE_ID.in(ids)))
+                .fetchInto(new RecordHandler<Record3<Long, Long, String>>() {
+                    @Override
+                    public void next(Record3<Long, Long, String> record) {
+                        Long instanceId = record.getValue(HEALTHCHECK_INSTANCE_HOST_MAP.INSTANCE_ID);
+                        Long hostId = record.getValue(HEALTHCHECK_INSTANCE_HOST_MAP.HOST_ID);
+                        String healthState = record.getValue(HEALTHCHECK_INSTANCE_HOST_MAP.HEALTH_STATE);
+                        List<HealthcheckState> list = result.get(instanceId);
+                        if (list == null) {
+                            list = new ArrayList<>();
+                            result.put(instanceId, list);
+                        }
+                        HealthcheckState state = new HealthcheckState(idFormatter.formatId("host", hostId).toString(), healthState);
+                        list.add(state);
+                    }
+                });
+
+        return result;
+    }
+
 }
