@@ -165,7 +165,8 @@ public class VolumeDaoImpl extends AbstractJooqDao implements VolumeDao {
     public Volume createVolumeForDriver(final long accountId, final String volumeName, final String driverName) {
         StorageDriver driver = objectManager.findAny(StorageDriver.class,
                 STORAGE_DRIVER.NAME, driverName,
-                STORAGE_DRIVER.ACCOUNT_ID, accountId);
+                STORAGE_DRIVER.ACCOUNT_ID, accountId,
+                STORAGE_DRIVER.REMOVED, null);
         final Long driverId = driver == null ? null : driver.getId();
         return DeferredUtils.nest(new Callable<Volume>() {
             @Override
