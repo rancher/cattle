@@ -40,7 +40,8 @@ public class HealthCheckReconcilePostTrigger extends AbstractObjectProcessLogic 
 
     @Override
     public String[] getProcessNames() {
-        return new String[] { AgentConstants.PROCESS_RECONNECT, "networkserviceproviderinstancemap.create",
+        return new String[] { AgentConstants.PROCESS_RECONNECT, AgentConstants.PROCESS_FINISH_RECONNECT,
+                "networkserviceproviderinstancemap.create",
                 "healthcheckinstancehostmap.remove" };
     }
 
