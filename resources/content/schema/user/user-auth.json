@@ -309,6 +309,11 @@
         "instance" : "r",
         "instance.externalId": "r",
         "instance.hostId": "r",
+        "instance.healthcheckStates": "r",
+
+        "healthcheckState" : "r",
+        "healthcheckState.hostId" : "r",
+        "healthcheckState.healthState" : "r",
 
         "instanceStop" : "r",
         "instanceStop.remove" : "cr",

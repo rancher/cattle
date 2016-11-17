@@ -80,6 +80,9 @@
         },
         "mounts": {
             "type": "array[mount]"
+        },
+        "healthcheckStates": {
+            "type": "array[healthcheckState]"
         }
     },
     "resourceActions" : {

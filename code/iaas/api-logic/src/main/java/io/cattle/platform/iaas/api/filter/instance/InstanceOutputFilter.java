@@ -1,5 +1,6 @@
 package io.cattle.platform.iaas.api.filter.instance;
 
+import io.cattle.platform.core.addon.HealthcheckState;
 import io.cattle.platform.core.addon.MountEntry;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.constants.NetworkConstants;
@@ -21,7 +22,6 @@ import java.util.Map;
 import javax.inject.Inject;
 
 public class InstanceOutputFilter extends CachedOutputFilter<Map<Long, Map<String, Object>>> {
-
     @Inject
     ServiceDao serviceDao;
     @Inject
@@ -82,6 +82,17 @@ public class InstanceOutputFilter extends CachedOutputFilter<Map<Long, Map<Strin
             }
             fields.put(InstanceConstants.FIELD_MOUNTS, entry.getValue());
         }
+        
+        for (Map.Entry<Long, List<HealthcheckState>> entry : serviceDao.getHealthcheckStatesForInstances(ids, idF)
+                .entrySet()) {
+            Map<String, Object> fields = result.get(entry.getKey());
+            if (fields == null) {
+                fields = new HashMap<>();
+                result.put(entry.getKey(), fields);
+            }
+            fields.put(InstanceConstants.FIELD_HEALTHCHECK_STATES, entry.getValue());
+            
+        }
 
         return result;
     }
@@ -93,5 +104,4 @@ public class InstanceOutputFilter extends CachedOutputFilter<Map<Long, Map<Strin
         }
         return null;
     }
-
 }

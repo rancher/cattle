@@ -1461,6 +1461,11 @@ def test_du_removal(super_client, new_context):
     assert hcihm.healthState == 'initializing'
     assert c1.healthState == 'initializing'
 
+    assert c1.healthcheckStates is not None
+    assert len(c1.healthcheckStates) == 1
+    assert c1.healthcheckStates[0].healthState == 'initializing'
+    assert c1.healthcheckStates[0].hostId == hcihm.hostId
+
     wait_for(lambda: super_client.reload(svc).healthState == 'initializing')
     wait_for(lambda: super_client.reload(env).healthState == 'initializing')
     wait_for(lambda: client.reload(new_context.project).
