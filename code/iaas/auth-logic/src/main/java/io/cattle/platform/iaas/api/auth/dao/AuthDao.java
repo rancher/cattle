@@ -60,7 +60,7 @@ public interface AuthDao {
 
     Account getAccountByLogin(String publicValue, String secretValue, TransformationService transformationService);
 
-    String getRole(Account account, Policy policy);
+    String getRole(Account account, Policy policy, Policy authenticatedAsPolicy);
 
     Account getAccountByAccessKey(String accessKey);
 }

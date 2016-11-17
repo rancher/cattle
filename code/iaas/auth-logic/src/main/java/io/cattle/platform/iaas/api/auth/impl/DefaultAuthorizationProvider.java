@@ -4,6 +4,7 @@ import io.cattle.platform.api.auth.Identity;
 import io.cattle.platform.api.auth.Policy;
 import io.cattle.platform.api.pubsub.util.SubscriptionUtils;
 import io.cattle.platform.api.pubsub.util.SubscriptionUtils.SubscriptionStyle;
+import io.cattle.platform.core.dao.AccountDao;
 import io.cattle.platform.core.model.Account;
 import io.cattle.platform.iaas.api.auth.AchaiusPolicyOptionsFactory;
 import io.cattle.platform.iaas.api.auth.AuthorizationProvider;
@@ -38,6 +39,9 @@ public class DefaultAuthorizationProvider implements AuthorizationProvider, Init
     @Inject
     AuthDao authDao;
 
+    @Inject
+    AccountDao accountDao;
+
     @Override
     public SchemaFactory getSchemaFactory(Account account, Policy policy, ApiRequest request) {
         Object name = request.getAttribute(ACCOUNT_SCHEMA_FACTORY_NAME);
@@ -54,7 +58,9 @@ public class DefaultAuthorizationProvider implements AuthorizationProvider, Init
                 return schemaFactory;
             }
         }
-        return getByName(request, authDao.getRole(account, policy));
+        Account authenticatedAsAccount = accountDao.getAccountById(policy.getAuthenticatedAsAccountId());
+        Policy authenticatedAsPolicy = getPolicy(authenticatedAsAccount, authenticatedAsAccount, policy.getIdentities(), request);
+        return getByName(request, authDao.getRole(account, policy, authenticatedAsPolicy));
     }
 
     protected SchemaFactory getByName(ApiRequest request, String name) {
@@ -87,7 +93,9 @@ public class DefaultAuthorizationProvider implements AuthorizationProvider, Init
                 return name.toString();
             }
         }
-        String role = authDao.getRole(account, policy);
+        Account authenticatedAsAccount = accountDao.getAccountById(policy.getAuthenticatedAsAccountId());
+        Policy authenticatedAsPolicy = getPolicy(authenticatedAsAccount, authenticatedAsAccount, policy.getIdentities(), request);
+        String role = authDao.getRole(account, policy, authenticatedAsPolicy);
         SchemaFactory schemaFactory = schemaFactories.get(role);
         if (schemaFactory != null) {
             return role;

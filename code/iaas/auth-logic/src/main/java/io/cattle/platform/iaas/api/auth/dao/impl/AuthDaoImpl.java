@@ -134,9 +134,14 @@ public class AuthDaoImpl extends AbstractJooqDao implements AuthDao {
     }
 
     @Override
-    public String getRole(Account account, Policy policy) {
+    public String getRole(Account account, Policy policy, Policy authenticatedAsPolicy) {
         List<? extends ProjectMember> projectMembers;
         if (account != null && account.getKind().equalsIgnoreCase(ProjectConstants.TYPE)) {
+            //check if authenticated as admin, if yes the role is assigned to be of "owner"
+            boolean isAdmin = authenticatedAsPolicy.isOption(Policy.AUTHORIZED_FOR_ALL_ACCOUNTS);
+            if (isAdmin) {
+                return ProjectConstants.OWNER;
+            }
             projectMembers = getProjectMembersByIdentity(account.getId(), policy.getIdentities());
             if (projectMembers == null || projectMembers.size() == 0) {
                 return account.getKind();
