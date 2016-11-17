@@ -13,7 +13,7 @@ def test_register_create(client, super_client):
     key = random_str()
 
     r = client.create_register(key=key)
-    assert r.state == 'registering'
+    assert r.state == 'activating'
 
     r = client.wait_success(r)
     assert r.state == 'active'

@@ -527,6 +527,7 @@
         <property name="allowedPaths">
            <list>
                <value>/v1-auth/saml/</value>
+               <value>/v1-webhooks-receiver</value>
            </list>
         </property>
     </bean>

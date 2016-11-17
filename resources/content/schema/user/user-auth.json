@@ -802,6 +802,11 @@
         "serviceBinding" : "r",
         "serviceBinding.labels" : "cr",
         "serviceBinding.ports" : "cr",
+        
+        "genericObject" : "r",
+        "genericObject.kind" : "cr",
+        "genericObject.name" : "cr",
+        "genericObject.key" : "cr",
 
         "serviceEvent" : "r",
         "serviceEvent.instanceId" : "r",

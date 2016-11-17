@@ -254,7 +254,9 @@
         "task" : "r",
 
         "projectTemplate.isPublic" : "cru",
-
+        
+        "genericObject" : "crd",
+		
         "end" : ""
     }
 }

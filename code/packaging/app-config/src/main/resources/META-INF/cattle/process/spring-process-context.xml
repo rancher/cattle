@@ -315,7 +315,8 @@
     <process:defaultProcesses resourceType="account" />
     <process:defaultProcesses resourceType="agentgroup" />
     <process:defaultProcesses resourceType="credentialInstanceMap" />
-    <process:defaultProcesses resourceType="genericObject" />
+    <process:process name="genericobject.create" resourceType="genericObject" start="requested" transitioning="activating" done="active" />
+    <process:process name="genericobject.remove" resourceType="genericObject" start="requested,active,activating" transitioning="removing" done="removed" />
     <process:defaultProcesses resourceType="hostIpAddressMap" />
     <process:defaultProcesses resourceType="image" />
     <process:defaultProcesses resourceType="imageStoragePoolMap" />
@@ -562,6 +563,7 @@
     <bean class="io.cattle.platform.docker.machine.launch.TelemetryLauncher" />
     <bean class="io.cattle.platform.docker.machine.launch.AuthServiceLauncher" />
     <bean class="io.cattle.platform.docker.machine.launch.TraefikLauncher" />
+    <bean class="io.cattle.platform.docker.machine.launch.WebhookServiceLauncher" />
     
     <process:defaultProcesses resourceType="externalHandler" />
     <process:defaultProcesses resourceType="externalHandlerProcess" />
