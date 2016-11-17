@@ -401,6 +401,7 @@
     <bean class="io.cattle.platform.servicediscovery.process.ServiceSuffixRemove" />
     <bean class="io.cattle.platform.servicediscovery.process.HostIpUpdatePostListener" />
     <bean class="io.cattle.platform.servicediscovery.process.ServiceUpdatePreListener" />
+    <bean class="io.cattle.platform.servicediscovery.process.LoadBalancerServiceUpdatePostListener" />
 
     <bean class="io.cattle.platform.servicediscovery.process.StackRemove" />
     <bean class="io.cattle.platform.servicediscovery.process.ServiceDiscoveryInstanceRemovePreListener" />

@@ -21,7 +21,6 @@ import io.cattle.platform.lock.LockCallback;
 import io.cattle.platform.lock.LockManager;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.process.ObjectProcessManager;
-import io.cattle.platform.object.process.StandardProcess;
 import io.cattle.platform.servicediscovery.api.dao.ServiceConsumeMapDao;
 import io.cattle.platform.servicediscovery.deployment.impl.lock.ServiceLinkLock;
 import io.cattle.platform.util.type.CollectionUtils;
@@ -192,7 +191,6 @@ public class ServiceConsumeMapDaoImpl extends AbstractJooqDao implements Service
         ServiceConsumeMap map = findNonRemovedMap(service.getId(), serviceLink.getServiceId(),
                 serviceLink.getName());
 
-        boolean update = false;
         if (map == null) {
             Map<Object,Object> properties = CollectionUtils.asMap(
                     (Object)SERVICE_CONSUME_MAP.SERVICE_ID,
@@ -207,10 +205,6 @@ public class ServiceConsumeMapDaoImpl extends AbstractJooqDao implements Service
         if (map.getState().equalsIgnoreCase(CommonStatesConstants.REQUESTED)) {
             objectProcessManager.scheduleProcessInstance(ServiceConstants.PROCESS_SERVICE_CONSUME_MAP_CREATE,
                     map, null);
-        }
-
-        if (update) {
-            objectProcessManager.scheduleStandardProcess(StandardProcess.UPDATE, map, null);
         }
 
         return map;

@@ -11,5 +11,4 @@ public class PortConstants {
     public static final String PROCESS_PORT_ACTIVATE = "port.activate";
     public static final String PROCESS_PORT_DEACTIVATE = "port.deactivate";
     public static final String PROCESS_PORT_UPDATE = "port.update";
-
 }

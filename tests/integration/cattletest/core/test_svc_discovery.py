@@ -3371,3 +3371,72 @@ def test_retain_ip_update(client, context, super_client):
     ip2 = c2.primaryIpAddress
     assert c1.id != c2.id
     assert ip1 == ip2
+
+
+def test_svc_ports_update(client, context):
+    env = _create_stack(client)
+
+    image_uuid = context.image_uuid
+    launch_config = {"imageUuid": image_uuid, "ports": ['8681:8681']}
+
+    service = client.create_service(name=random_str(),
+                                    stackId=env.id,
+                                    launchConfig=launch_config)
+    service = client.wait_success(service)
+    assert service.state == "inactive"
+
+    # activate service
+    env.activateservices()
+    service = client.wait_success(service)
+    assert service.state == "active"
+
+    new_launch_config = {"imageUuid": image_uuid, "ports": ['8682:8682']}
+
+    # regular service should fail port updates
+    service = client.update(service, launchConfig=new_launch_config)
+    assert service.launchConfig.ports == ['8681:8681/tcp']
+
+    lb_config = {}
+
+    # same test for lb service
+    launch_config = {"imageUuid": image_uuid, "ports": ['8683:8683']}
+    lbSvc = client. \
+        create_loadBalancerService(name=random_str(),
+                                   stackId=env.id,
+                                   launchConfig=launch_config,
+                                   lbConfig=lb_config)
+    lbSvc = client.wait_success(lbSvc)
+    assert lbSvc.state == "inactive"
+
+    # activate service
+    lbSvc = client.wait_success(lbSvc.activate())
+    assert service.state == "active"
+    instances = _get_instance_for_service(client, lbSvc.id)
+
+    assert len(instances) == 1
+    instance = instances[0]
+    assert instance.ports == ['8683:8683/tcp']
+    wait_for(
+        lambda: client.reload(lbSvc).publicEndpoints is not None and len(
+            client.reload(lbSvc).publicEndpoints) == 1)
+    endpoints = client.reload(lbSvc).publicEndpoints
+    ep = endpoints[0]
+    assert ep.port == 8683
+
+    new_launch_config = {"imageUuid": image_uuid, "ports": ['8684']}
+
+    lbSvc = client.update(lbSvc, launchConfig=new_launch_config)
+    lbSvc = client.wait_success(lbSvc)
+    assert lbSvc.launchConfig.ports == ['8684:8684/tcp']
+    instances = _get_instance_for_service(client, lbSvc.id)
+
+    assert len(instances) == 1
+    instance = instances[0]
+    assert instance.ports == ['8684:8684/tcp']
+
+    wait_for(
+        lambda: client.reload(lbSvc).publicEndpoints is not None and len(
+            client.reload(lbSvc).publicEndpoints) == 1)
+    endpoints = client.reload(lbSvc).publicEndpoints
+    ep = endpoints[0]
+    assert ep.port == 8684
