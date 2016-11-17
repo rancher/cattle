@@ -612,6 +612,7 @@ def test_project_auth(admin_user_client, user_client, service_client,
         'healthState': "r",
         'projectTemplateId': 'cr',
         'orchestration': 'r',
+        'version': 'r',
         'defaultNetworkId': 'ru'
     })
 
@@ -626,6 +627,7 @@ def test_project_auth(admin_user_client, user_client, service_client,
         'healthState': "r",
         'projectTemplateId': 'cr',
         'orchestration': 'r',
+        'version': 'r',
         'defaultNetworkId': 'ru'
     })
 
@@ -640,6 +642,7 @@ def test_project_auth(admin_user_client, user_client, service_client,
         'healthState': "r",
         'projectTemplateId': 'r',
         'orchestration': 'r',
+        'version': 'r',
         'defaultNetworkId': 'r'
     })
 
@@ -653,6 +656,7 @@ def test_project_auth(admin_user_client, user_client, service_client,
         'healthState': 'r',
         'projectTemplateId': 'cr',
         'orchestration': 'r',
+        'version': 'r',
         'defaultNetworkId': 'r'
     })
 
