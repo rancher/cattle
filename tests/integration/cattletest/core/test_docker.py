@@ -514,7 +514,7 @@ def test_docker_volumes(docker_client, super_client):
     volumes = c.volumes()
     assert len(volumes) == 1
 
-    mounts = c.mounts()
+    mounts = c.mounts_link()
     assert len(mounts) == 2
     foo_mount, bar_mount = None, None
     foo_vol, bar_vol = None, None
@@ -556,7 +556,7 @@ def test_docker_volumes(docker_client, super_client):
     assert set(c2.dataVolumesFrom) == set([c.id])
 
     c2 = super_client.wait_success(c2.start())
-    c2_mounts = c2.mounts()
+    c2_mounts = c2.mounts_link()
     assert len(c2_mounts) == 2
 
     for mount in c2_mounts:
@@ -590,7 +590,7 @@ def test_volumes_from_more_than_one_container(docker_client):
                                         dataVolumesFrom=[c.id, c2.id])
     c3 = docker_client.wait_success(c3)
 
-    mounts = c3.mounts()
+    mounts = c3.mounts_link()
     assert len(mounts) == 2
     paths = ['/foo', '/bar']
     for m in mounts:
@@ -794,7 +794,7 @@ def test_container_milli_cpu_reservation(docker_client, super_client):
 
 
 def get_mounts(resource):
-    return [x for x in resource.mounts() if x.state != 'inactive']
+    return [x for x in resource.mounts_link() if x.state != 'inactive']
 
 
 def check_mounts(client, resource, count):

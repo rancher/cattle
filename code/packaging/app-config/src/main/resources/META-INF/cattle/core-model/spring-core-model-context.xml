@@ -36,6 +36,7 @@
                 <value>io.cattle.platform.core.addon.CatalogTemplate</value>
                 <value>io.cattle.platform.core.addon.PortRule</value>
                 <value>io.cattle.platform.core.addon.TargetPortRule</value>
+                <value>io.cattle.platform.core.addon.MountEntry</value>
             </set>
         </property>
     </bean>

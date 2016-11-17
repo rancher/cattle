@@ -498,7 +498,7 @@ def test_docker_volumes(docker_client, super_client):
     volumes = c.volumes()
     assert len(volumes) == 1
 
-    mounts = c.mounts()
+    mounts = docker_client.reload(c).mounts()
     assert len(mounts) == 2
     foo_mount, bar_mount = None, None
     foo_vol, bar_vol = None, None
@@ -540,7 +540,7 @@ def test_docker_volumes(docker_client, super_client):
     assert set(c2.dataVolumesFrom) == set([c.id])
 
     c2 = super_client.wait_success(c2.start())
-    c2_mounts = c2.mounts()
+    c2_mounts = docker_client.reload(c2).mounts()
     assert len(c2_mounts) == 2
 
     for mount in c2_mounts:
