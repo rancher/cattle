@@ -20,6 +20,9 @@
         },
         "startedStackIds": {
             "type": "array[reference[stack]]"
+        },
+        "version": {
+            "type": "string"
         }
     }
 }

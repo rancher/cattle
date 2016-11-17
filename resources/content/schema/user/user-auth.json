@@ -17,6 +17,8 @@
         ".*\\.uuid" : "r",
 
         "account": "r",
+        "account.version": "r",
+
         "portRange": "cru",
 
         "apiKey" : "crud",

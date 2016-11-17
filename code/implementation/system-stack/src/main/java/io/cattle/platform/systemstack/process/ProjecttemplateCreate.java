@@ -2,12 +2,14 @@ package io.cattle.platform.systemstack.process;
 
 import static io.cattle.platform.core.model.tables.AccountTable.*;
 
+import io.cattle.platform.core.constants.AccountConstants;
 import io.cattle.platform.core.model.Account;
 import io.cattle.platform.core.model.ProjectTemplate;
 import io.cattle.platform.engine.handler.HandlerResult;
 import io.cattle.platform.engine.process.ProcessInstance;
 import io.cattle.platform.engine.process.ProcessState;
 import io.cattle.platform.object.meta.ObjectMetaDataManager;
+import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.process.base.AbstractDefaultProcessHandler;
 import io.cattle.platform.systemstack.catalog.CatalogService;
 
@@ -33,6 +35,10 @@ public class ProjecttemplateCreate extends AbstractDefaultProcessHandler {
             return null;
         }
 
+        if (!AccountConstants.ACCOUNT_VERSION.get().equals(DataAccessor.fieldString(defaultProject,
+                AccountConstants.FIELD_VERSION))) {
+            return null;
+        }
 
         Long projectTemplateId = defaultProject.getProjectTemplateId();
         if (projectTemplateId == null) {

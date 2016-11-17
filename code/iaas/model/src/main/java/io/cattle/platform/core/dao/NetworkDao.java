@@ -33,4 +33,6 @@ public interface NetworkDao {
     void updateInstancePorts(Instance instance, List<String> newPortDefs, List<Port> toCreate,
             List<Port> toRemove, Map<String, Port> toRetain);
 
+    void migrateToNetwork(Network network);
+
 }

@@ -1,9 +1,11 @@
 package io.cattle.platform.process.driver;
 
 import static io.cattle.platform.core.model.tables.ServiceTable.*;
+
 import io.cattle.platform.archaius.util.ArchaiusUtil;
 import io.cattle.platform.core.addon.InServiceUpgradeStrategy;
 import io.cattle.platform.core.addon.LbConfig;
+import io.cattle.platform.core.constants.AccountConstants;
 import io.cattle.platform.core.constants.AgentConstants;
 import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.InstanceConstants;
@@ -55,9 +57,12 @@ public class EnvironmentUpgrade extends AbstractObjectProcessHandler {
 
     @Override
     public HandlerResult handle(ProcessState state, ProcessInstance process) {
+        HandlerResult result = new HandlerResult(AccountConstants.FIELD_VERSION, AccountConstants.ACCOUNT_VERSION.get());
         Account env = (Account) state.getResource();
-        upgradeServices(env);
-        return null;
+        if (AccountConstants.PROJECT_KIND.equals(env.getKind())) {
+            upgradeServices(env);
+        }
+        return result;
     }
 
     @SuppressWarnings("unchecked")
