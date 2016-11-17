@@ -74,7 +74,7 @@ public class PingInstancesMonitorImpl implements PingInstancesMonitor {
     ObjectManager objectManager;
     @Inject
     ObjectProcessManager processManager;
-    Cache<String, Boolean> scheduled = CacheBuilder.newBuilder()
+    Cache<String, String> scheduled = CacheBuilder.newBuilder()
             .expireAfterWrite(15, TimeUnit.MINUTES)
             .build();
 
@@ -260,11 +260,11 @@ public class PingInstancesMonitorImpl implements PingInstancesMonitor {
             return;
         }
 
-        if (scheduled.getIfPresent(ri.getExternalId()) == null) {
-            scheduled.put(ri.getExternalId(), true);
-        } else {
+        if (event.equals(scheduled.getIfPresent(ri.getExternalId()))) {
             // Create container events only so often.
             return;
+        } else {
+            scheduled.put(ri.getExternalId(), event);
         }
         ContainerEvent ce = objectManager.newRecord(ContainerEvent.class);
         ce.setAccountId(agentId);
