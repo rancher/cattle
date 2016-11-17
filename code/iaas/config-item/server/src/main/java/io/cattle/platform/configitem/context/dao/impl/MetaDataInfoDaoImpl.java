@@ -10,7 +10,6 @@ import static io.cattle.platform.core.model.tables.IpAddressTable.*;
 import static io.cattle.platform.core.model.tables.NetworkTable.*;
 import static io.cattle.platform.core.model.tables.NicTable.*;
 import static io.cattle.platform.core.model.tables.ServiceExposeMapTable.*;
-
 import io.cattle.platform.configitem.context.dao.MetaDataInfoDao;
 import io.cattle.platform.configitem.context.data.metadata.common.ContainerMetaData;
 import io.cattle.platform.configitem.context.data.metadata.common.HostMetaData;
@@ -391,6 +390,11 @@ public class MetaDataInfoDaoImpl extends AbstractJooqDao implements MetaDataInfo
         IpAddressTable instanceIpAddress = mapper.add(IP_ADDRESS, IP_ADDRESS.ADDRESS);
         NicTable nic = mapper.add(NIC, NIC.ID, NIC.INSTANCE_ID, NIC.MAC_ADDRESS);
         NetworkTable ntwk = mapper.add(NETWORK, NETWORK.UUID);
+        Network hostNtwk = objMgr.findAny(Network.class, NETWORK.ACCOUNT_ID, accountId, NETWORK.REMOVED, null,
+                NETWORK.KIND, "dockerHost");
+        if (hostNtwk == null) {
+            return new ArrayList<ContainerMetaData>();
+        }
         return create()
                 .select(mapper.fields())
                 .from(instance)
@@ -414,6 +418,7 @@ public class MetaDataInfoDaoImpl extends AbstractJooqDao implements MetaDataInfo
                 .and(exposeMap.REMOVED.isNull())
                 .and(instanceIpAddress.ID.isNull())
                 .and(ntwk.REMOVED.isNull())
+                .and(ntwk.ID.eq(hostNtwk.getId()))
                 .and((host.REMOVED.isNull()))
                 .and(exposeMap.STATE.isNull().or(
                         exposeMap.STATE.notIn(CommonStatesConstants.REMOVING, CommonStatesConstants.REMOVED)))
