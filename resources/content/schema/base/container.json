@@ -378,6 +378,9 @@
          "healthRetries" : {
          	"type" : "int",
             "nullable" : true
+        },
+        "mounts" : {
+            "type" : "array[mountEntry]"
         }   
     },
     "resourceActions": {

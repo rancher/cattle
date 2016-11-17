@@ -1,7 +1,9 @@
 package io.cattle.platform.core.dao;
 
+import io.cattle.platform.core.addon.MountEntry;
 import io.cattle.platform.core.model.StoragePool;
 import io.cattle.platform.core.model.Volume;
+import io.github.ibuildthecloud.gdapi.id.IdFormatter;
 
 import java.util.List;
 import java.util.Map;
@@ -19,4 +21,9 @@ public interface VolumeDao {
     Set<? extends Volume> findNonremovedVolumesWithNoOtherMounts(long instanceId);
 
     boolean isVolumeInUseByRunningInstance(long volumeId);
+
+    Map<Long, List<MountEntry>> getMountsForInstances(List<Long> ids, IdFormatter idF);
+
+    Map<Long, List<MountEntry>> getMountsForVolumes(List<Long> ids, IdFormatter idF);
+
 }

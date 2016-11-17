@@ -7,6 +7,7 @@ import static io.cattle.platform.core.model.tables.StoragePoolTable.*;
 import static io.cattle.platform.core.model.tables.VolumeStoragePoolMapTable.*;
 import static io.cattle.platform.core.model.tables.VolumeTable.*;
 
+import io.cattle.platform.core.addon.MountEntry;
 import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.constants.VolumeConstants;
@@ -21,7 +22,9 @@ import io.cattle.platform.db.jooq.dao.impl.AbstractJooqDao;
 import io.cattle.platform.deferred.util.DeferredUtils;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.process.ObjectProcessManager;
+import io.github.ibuildthecloud.gdapi.id.IdFormatter;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -34,6 +37,8 @@ import javax.inject.Inject;
 
 import org.jooq.Record;
 import org.jooq.Record1;
+import org.jooq.Record6;
+import org.jooq.RecordHandler;
 import org.jooq.Result;
 
 public class VolumeDaoImpl extends AbstractJooqDao implements VolumeDao {
@@ -178,5 +183,78 @@ public class VolumeDaoImpl extends AbstractJooqDao implements VolumeDao {
                         VolumeConstants.FIELD_VOLUME_DRIVER, driverName);
             }
         });
+    }
+
+    @Override
+    public Map<Long, List<MountEntry>> getMountsForInstances(List<Long> ids, final IdFormatter idF) {
+        final Map<Long, List<MountEntry>> result = new HashMap<>();
+        create().select(INSTANCE.NAME, VOLUME.NAME, VOLUME.ID, MOUNT.PERMISSIONS, MOUNT.PATH, MOUNT.INSTANCE_ID)
+            .from(MOUNT)
+            .join(VOLUME)
+                .on(VOLUME.ID.eq(MOUNT.VOLUME_ID))
+            .join(INSTANCE)
+                .on(INSTANCE.ID.eq(MOUNT.INSTANCE_ID))
+            .where(MOUNT.REMOVED.isNull()
+                    .and(VOLUME.REMOVED.isNull())
+                    .and(MOUNT.INSTANCE_ID.in(ids)))
+            .fetchInto(new RecordHandler<Record6<String, String, Long, String, String, Long>>() {
+                @Override
+                public void next(Record6<String, String, Long, String, String, Long> record) {
+                    Long instanceId = record.getValue(MOUNT.INSTANCE_ID);
+                    List<MountEntry> entries = result.get(instanceId);
+                    if (entries == null) {
+                        entries = new ArrayList<>();
+                        result.put(instanceId, entries);
+                    }
+
+                    MountEntry mount = new MountEntry();
+                    mount.setInstanceName(record.getValue(INSTANCE.NAME));
+                    mount.setInstanceId(idF.formatId(InstanceConstants.TYPE, instanceId));
+                    mount.setPath(record.getValue(MOUNT.PATH));
+                    mount.setPermission(record.getValue(MOUNT.PERMISSIONS));
+                    mount.setVolumeId(idF.formatId(VolumeConstants.TYPE, record.getValue(VOLUME.ID)));
+                    mount.setVolumeName(record.getValue(VOLUME.NAME));
+                    entries.add(mount);
+                }
+            });
+
+        return result;
+    }
+
+    @Override
+    public Map<Long, List<MountEntry>> getMountsForVolumes(List<Long> ids, final IdFormatter idF) {
+        final Map<Long, List<MountEntry>> result = new HashMap<>();
+        create().select(VOLUME.NAME, MOUNT.PERMISSIONS, MOUNT.PATH, MOUNT.INSTANCE_ID, MOUNT.VOLUME_ID, INSTANCE.NAME)
+            .from(MOUNT)
+            .join(INSTANCE)
+                .on(INSTANCE.ID.eq(MOUNT.INSTANCE_ID))
+            .join(VOLUME)
+                .on(VOLUME.ID.eq(MOUNT.VOLUME_ID))
+            .where(INSTANCE.REMOVED.isNull()
+                    .and(VOLUME.REMOVED.isNull())
+                    .and(MOUNT.VOLUME_ID.in(ids)))
+            .fetchInto(new RecordHandler<Record6<String, String, String, Long, Long, String>>() {
+                @Override
+                public void next(Record6<String, String, String, Long, Long, String> record) {
+                    Long volumeId = record.getValue(MOUNT.VOLUME_ID);
+                    List<MountEntry> entries = result.get(volumeId);
+                    if (entries == null) {
+                        entries = new ArrayList<>();
+                        result.put(volumeId, entries);
+                    }
+
+                    MountEntry mount = new MountEntry();
+                    mount.setInstanceName(record.getValue(INSTANCE.NAME));
+                    mount.setInstanceId(idF.formatId(InstanceConstants.TYPE, record.getValue(MOUNT.INSTANCE_ID)));
+                    mount.setPath(record.getValue(MOUNT.PATH));
+                    mount.setPermission(record.getValue(MOUNT.PERMISSIONS));
+                    mount.setVolumeId(idF.formatId(VolumeConstants.TYPE, volumeId));
+                    mount.setVolumeName(record.getValue(VOLUME.NAME));
+
+                    entries.add(mount);
+                }
+            });
+
+        return result;
     }
 }

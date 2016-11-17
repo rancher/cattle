@@ -101,6 +101,7 @@
         "container.instanceLinks" : "cr",
         "container.lxcConf" : "cr",
         "container.logConfig" : "cr",
+        "container.mounts" : "r",
         "container.memory" : "cr",
         "container.memoryReservation" : "cr",
         "container.memorySwap" : "cr",
@@ -356,6 +357,14 @@
         "mount.permissions" : "r",
         "mount.volumeId" : "r",
 
+        "mountEntry" : "r",
+        "mountEntry.volumeName" : "r",
+        "mountEntry.instanceName" : "r",
+        "mountEntry.instanceId" : "r",
+        "mountEntry.path" : "r",
+        "mountEntry.permissions" : "r",
+        "mountEntry.volumeId" : "r",
+
         "network" : "r",
         "network.metadata": "cru",
         "network.subnets": "cr",
@@ -518,6 +527,7 @@
         "userPreference.value" : "crud",
 
         "volume" : "r",
+        "volume.mounts": "r",
         "volume.externalId": "r",
         "volume.name": "cr",
         "volume.imageId" : "r",

@@ -384,7 +384,7 @@ def create_mount(volume, container, client, super_client):
 
 def check_mount_count(client, resource, count):
     wait_for_condition(client, resource, lambda x: len(
-        [i for i in resource.mounts() if i.state != 'inactive']) == count)
+        [i for i in resource.mounts_link() if i.state != 'inactive']) == count)
 
 
 def random_vol_name():

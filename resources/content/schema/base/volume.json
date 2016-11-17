@@ -22,6 +22,9 @@
             "type" : "array[string]",
             "nullable" : true
         },
+        "mounts" : {
+            "type" : "array[mountEntry]"
+        },
         "hostId" : {
             "type" : "reference[host]",
             "nullable" : true,
