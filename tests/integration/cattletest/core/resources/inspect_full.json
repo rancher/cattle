@@ -112,7 +112,15 @@
                 "tag": "value"
             }
         },
-        "VolumesFrom": null
+        "VolumesFrom": null,
+        "Ulimits": [
+            {
+                "Name": "cpu",
+                "Hard": 1024,
+                "Soft": 1024
+            }
+        ],
+        "Isolation": "default"
     },
     "HostnamePath": "/mnt/sda1/var/lib/docker/containers/f13e0c667453e85c0409022127f750abe4ea4e517a970b22cff523def62acc28/hostname",
     "HostsPath": "/mnt/sda1/var/lib/docker/containers/f13e0c667453e85c0409022127f750abe4ea4e517a970b22cff523def62acc28/hosts",

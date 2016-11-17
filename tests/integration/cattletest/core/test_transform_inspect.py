@@ -173,6 +173,14 @@ def test_transform_inspect_full(transform_url, client, super_client):
     assert container['pidMode'] == 'host'
     assert container['extraHosts'] == ['host:1.1.1.1', 'host:2.2.2.2']
     assert container['readOnly']
+    assert container['ulimits'] == [
+        {
+            'name': 'cpu',
+            'hard': 1024,
+            'soft': 1024
+        }
+    ]
+    assert container['isolation'] == 'default'
 
     # Load with admin so that we can see the data field
     response = requests.post(transform_url, inspect,
