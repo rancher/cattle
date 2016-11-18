@@ -231,6 +231,7 @@ public class ServiceDaoImpl extends AbstractJooqDao implements ServiceDao {
                 .on(host.ID.eq(hostMap.HOST_ID))
                 .where(host.UUID.eq(hostUUID))
                 .and(instance.UUID.eq(instanceUUID))
+                .and(hostMap.REMOVED.isNull())
                 .fetch().map(mapper);
         
         if (maps.size() == 0) {
