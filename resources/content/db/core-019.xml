@@ -29,8 +29,10 @@
         </createTable>
     </changeSet>
     <changeSet author="cjellick (generated)" id="1417022638612-2">
+        <validCheckSum>7:a3107202cfc7f63e580fa5aa209b4e46</validCheckSum>
+        <validCheckSum>7:f9e0ece9b4f94045b47a4895ad7e1c36</validCheckSum>
         <addColumn tableName="volume">
-            <column name="uri" type="VARCHAR(512)"/>
+            <column name="uri" type="VARCHAR(255)"/>
         </addColumn>
     </changeSet>
     <changeSet author="cjellick (generated)" id="1417022638612-3">
