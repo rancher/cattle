@@ -148,9 +148,13 @@ public class ResourceMonitorImpl implements ResourceMonitor, AnnotatedEventListe
 
     @Override
     public <T> T waitForNotTransitioning(T obj) {
+        return waitForNotTransitioning(obj, DEFAULT_WAIT.get());
+    }
+    @Override
+    public <T> T waitForNotTransitioning(T obj, long wait) {
         final String type = ObjectUtils.getKind(obj);
         final String state = ObjectUtils.getState(obj);
-        return waitFor(obj, new ResourcePredicate<T>() {
+        return waitFor(obj, wait, new ResourcePredicate<T>() {
             @Override
             public boolean evaluate(T obj) {
                 return !objectMetaDataManger.isTransitioningState(obj.getClass(), (ObjectUtils.getState(obj)));

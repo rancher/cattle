@@ -49,7 +49,8 @@ public class DefaultNetworkProcess extends AbstractObjectProcessHandler {
         Long defaultNetworkId = account.getDefaultNetworkId();
         Long newDefaultNetworkId = null;
         for (Network network : networkDao.getActiveNetworks(account.getId())) {
-            if (network.getKind().startsWith(NetworkConstants.PREFIX_KIND_DOCKER)) {
+            if (network.getKind().startsWith(NetworkConstants.PREFIX_KIND_DOCKER) ||
+                    network.getKind().equals("hostOnlyNetwork")) {
                 continue;
             }
 

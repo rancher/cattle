@@ -10,7 +10,6 @@ import static io.cattle.platform.docker.constants.DockerInstanceConstants.*;
 import io.cattle.platform.agent.AgentLocator;
 import io.cattle.platform.agent.RemoteAgent;
 import io.cattle.platform.archaius.util.ArchaiusUtil;
-import io.cattle.platform.async.utils.ResourceTimeoutException;
 import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.constants.NetworkConstants;
@@ -32,6 +31,7 @@ import io.cattle.platform.eventing.model.EventVO;
 import io.cattle.platform.lock.LockCallback;
 import io.cattle.platform.lock.LockManager;
 import io.cattle.platform.object.process.StandardProcess;
+import io.cattle.platform.object.resource.ResourceMonitor;
 import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.object.util.DataUtils;
 import io.cattle.platform.process.base.AbstractDefaultProcessHandler;
@@ -85,6 +85,9 @@ public class ContainerEventCreate extends AbstractDefaultProcessHandler {
     LockManager lockManager;
 
     @Inject
+    ResourceMonitor resourceMonitor;
+
+    @Inject
     AgentLocator agentLocator;
 
     @Inject
@@ -130,7 +133,8 @@ public class ContainerEventCreate extends AbstractDefaultProcessHandler {
                             return null;
 
                         if (STATE_STOPPING.equals(state)) {
-                            throw new ResourceTimeoutException(instance, "Waiting for container to stop");
+                            // handle docker restarts
+                            instance = resourceMonitor.waitForNotTransitioning(instance, 3000L);
                         }
 
                         objectProcessManager.scheduleProcessInstance(PROCESS_START, instance, makeData());
@@ -149,7 +153,8 @@ public class ContainerEventCreate extends AbstractDefaultProcessHandler {
                         } catch (ProcessCancelException e) {
                             if (STATE_STOPPING.equals(state)) {
                                 // handle docker forced stop and remove
-                                throw new ResourceTimeoutException(instance, "Waiting for container to stop");
+                                instance = resourceMonitor.waitForNotTransitioning(instance, 3000L);
+                                objectProcessManager.scheduleStandardProcess(StandardProcess.REMOVE, instance, data);
                             } else {
                                 data.put(REMOVE_OPTION, true);
                                 objectProcessManager.scheduleProcessInstance(PROCESS_STOP, instance, data);

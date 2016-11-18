@@ -1,4 +1,3 @@
-
 <beans xmlns="http://www.springframework.org/schema/beans"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xmlns:aop="http://www.springframework.org/schema/aop"
@@ -94,6 +93,12 @@
 
     <bean class="io.cattle.platform.core.cache.DBCacheManager" />
 
+    <tx:advice id="NetworkDaoImplAdvice" transaction-manager="CoreTransactionManager">
+        <tx:attributes>
+            <tx:method name="migrateToNetwork" />
+        </tx:attributes>
+    </tx:advice>
+
     <tx:advice id="HostDaoImplAdvice" transaction-manager="CoreTransactionManager">
         <tx:attributes>
             <tx:method name="createMachineForHost" />
@@ -140,6 +145,8 @@
             pointcut="execution(* io.cattle.platform.core.dao.VolumeDao.*(..))" />
         <aop:advisor advice-ref="HostDaoImplAdvice"
             pointcut="execution(* io.cattle.platform.core.dao.HostDao.*(..))" />
+        <aop:advisor advice-ref="NetworkDaoImplAdvice"
+            pointcut="execution(* io.cattle.platform.core.dao.NetworkDao.*(..))" />
     </aop:config>
 
 
@@ -491,6 +498,7 @@
     <bean class="io.cattle.platform.systemstack.catalog.impl.CatalogServiceImpl" />
     <bean class="io.cattle.platform.systemstack.service.ProjectTemplateService" />
     <bean class="io.cattle.platform.systemstack.process.ProjecttemplateCreate" />
+    <bean class="io.cattle.platform.systemstack.process.EnvironmentUpgrade" />
 
     <bean class="io.cattle.platform.task.impl.TaskManagerImpl" >
         <property name="tasks" value="#{extensionManager.list('task')}" />

@@ -1,5 +1,6 @@
 package io.cattle.platform.core.dao.impl;
 
+import static io.cattle.platform.core.model.tables.AccountTable.*;
 import static io.cattle.platform.core.model.tables.HostIpAddressMapTable.*;
 import static io.cattle.platform.core.model.tables.InstanceHostMapTable.*;
 import static io.cattle.platform.core.model.tables.IpAddressTable.*;
@@ -8,6 +9,7 @@ import static io.cattle.platform.core.model.tables.NetworkTable.*;
 import static io.cattle.platform.core.model.tables.NicTable.*;
 import static io.cattle.platform.core.model.tables.ServiceExposeMapTable.*;
 import static io.cattle.platform.core.model.tables.SubnetTable.*;
+
 import io.cattle.platform.archaius.util.ArchaiusUtil;
 import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.PortConstants;
@@ -277,6 +279,37 @@ public class NetworkDaoImpl extends AbstractJooqDao implements NetworkDao {
 
     protected String toKey(Port port) {
         return String.format("%d:%d/%s", port.getPublicPort(), port.getPrivatePort(), port.getProtocol());
+    }
+
+    @Override
+    public void migrateToNetwork(Network network) {
+        Network hostOnly = objectManager.findAny(Network.class,
+                NETWORK.ACCOUNT_ID, network.getAccountId(),
+                NETWORK.KIND, "hostOnlyNetwork");
+
+        if (hostOnly != null) {
+            create()
+                .update(SUBNET)
+                .set(SUBNET.NETWORK_ID, network.getId())
+                .where(SUBNET.NETWORK_ID.eq(hostOnly.getId()))
+                .execute();
+            create()
+                .update(IP_ADDRESS)
+                .set(IP_ADDRESS.NETWORK_ID, network.getId())
+                .where(IP_ADDRESS.NETWORK_ID.eq(hostOnly.getId()))
+                .execute();
+            create()
+                .update(NIC)
+                .set(NIC.NETWORK_ID, network.getId())
+                .where(NIC.NETWORK_ID.eq(hostOnly.getId()))
+                .execute();
+        }
+
+        create()
+            .update(ACCOUNT)
+            .set(ACCOUNT.DEFAULT_NETWORK_ID, network.getId())
+            .where(ACCOUNT.ID.eq(network.getAccountId()))
+            .execute();
     }
 
 }
