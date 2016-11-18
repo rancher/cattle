@@ -13,7 +13,7 @@ package io.cattle.platform.core.model.tables.records;
 @javax.persistence.Table(name = "volume", schema = "cattle")
 public class VolumeRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.platform.core.model.tables.records.VolumeRecord> implements io.cattle.platform.db.jooq.utils.TableRecordJaxb, io.cattle.platform.core.model.Volume {
 
-	private static final long serialVersionUID = 983309391;
+	private static final long serialVersionUID = -705639029;
 
 	/**
 	 * Setter for <code>cattle.volume.id</code>.
@@ -367,7 +367,7 @@ public class VolumeRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.pl
 	/**
 	 * Getter for <code>cattle.volume.uri</code>.
 	 */
-	@javax.persistence.Column(name = "uri", length = 512)
+	@javax.persistence.Column(name = "uri", length = 255)
 	@Override
 	public java.lang.String getUri() {
 		return (java.lang.String) getValue(20);
