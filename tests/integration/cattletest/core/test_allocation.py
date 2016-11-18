@@ -215,10 +215,13 @@ def test_simultaneous_port_allocation(new_context):
 
 def _wait_for_compose_instance_error(client, service, env):
     name = env.name + "-" + service.name + "%"
-    wait_for(
-        lambda: len(client.list_container(name_like=name, state='error')) > 0
-    )
-    return client.list_container(name_like=name, state='error')[0]
+
+    def check():
+        containers = client.list_container(name_like=name, state='error')
+        if len(containers) > 0:
+            return containers[0]
+    container = wait_for(check)
+    return container
 
 
 def test_request_host_override(new_context):

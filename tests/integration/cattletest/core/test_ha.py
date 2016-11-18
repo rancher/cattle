@@ -94,7 +94,8 @@ def test_container_ha_remove(super_client, new_context):
                          fail_handler=lambda: proc_err(c, super_client))
 
     wait_for_condition(super_client, c,
-                       lambda x: x.removed is not None,
+                       lambda
+                       x: x.removed is not None or x.state == 'removing',
                        lambda x: 'State is: ' + x.state)
 
     p = _process_names(processes)
