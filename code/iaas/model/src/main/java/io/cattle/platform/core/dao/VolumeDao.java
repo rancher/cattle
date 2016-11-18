@@ -26,4 +26,6 @@ public interface VolumeDao {
 
     Map<Long, List<MountEntry>> getMountsForVolumes(List<Long> ids, IdFormatter idF);
 
+    List<? extends Volume> identifyUnmappedVolumes(long accountId, Set<Long> volumeIds);
+
 }

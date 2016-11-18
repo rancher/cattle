@@ -1,7 +1,6 @@
 package io.cattle.platform.core.util;
 
 import static io.cattle.platform.core.model.tables.VolumeTable.*;
-
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.Volume;
@@ -15,6 +14,19 @@ import java.util.List;
 import java.util.Map;
 
 public class InstanceHelpers {
+
+    public static List<Long> extractVolumeIdsFromMounts(Instance instance) {
+        List<Long> volumeIds = new ArrayList<>();
+        Map<String, Object> dataVolumeMounts = DataAccessor.fieldMap(instance, InstanceConstants.FIELD_DATA_VOLUME_MOUNTS);
+        if (dataVolumeMounts != null) {
+            for (Map.Entry<String, Object> entry : dataVolumeMounts.entrySet()) {
+                if (entry.getValue() instanceof Number) {
+                    volumeIds.add(((Number)entry.getValue()).longValue());
+                }
+            }
+        }
+        return volumeIds;
+    }
 
     public static List<Volume> extractVolumesFromMounts(Instance instance, ObjectManager objectManager) {
         List<Volume> volumes = new ArrayList<Volume>();

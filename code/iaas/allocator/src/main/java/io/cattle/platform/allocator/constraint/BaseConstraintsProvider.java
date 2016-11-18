@@ -75,9 +75,10 @@ public class BaseConstraintsProvider implements AllocationConstraintsProvider, P
                 storagePoolToHostConstraint(constraints, pool);
             }
 
+            boolean restrictToUnmanagedPool = false;
             if (!alreadyMappedToPool) {
                 String driver = DataAccessor.fieldString(volume, VolumeConstants.FIELD_VOLUME_DRIVER);
-                boolean restrictToUnmanagedPool = true;
+                restrictToUnmanagedPool = true;
                 if (StringUtils.isNotEmpty(driver) && !VolumeConstants.LOCAL_DRIVER.equals(driver)) {
                     List<? extends StoragePool> pools = storagePoolDao.findStoragePoolByDriverName(volume.getAccountId(), driver);
                     if (pools.size() > 0) {
@@ -88,10 +89,6 @@ public class BaseConstraintsProvider implements AllocationConstraintsProvider, P
                         storagePoolToHostConstraint(constraints, pool);
                         restrictToUnmanagedPool = false;
                     }
-                }
-
-                if (restrictToUnmanagedPool) {
-                    constraints.add(new UnmanagedStoragePoolKindConstraint(volume));
                 }
 
                 Instance instance = objectManager.loadResource(Instance.class, volume.getInstanceId());
@@ -109,7 +106,7 @@ public class BaseConstraintsProvider implements AllocationConstraintsProvider, P
                 constraints.add(new VolumeValidStoragePoolConstraint(volume, alreadyMappedToPool, storagePoolIds));
             }
 
-            if (volume.getImageId() != null) {
+            if (restrictToUnmanagedPool || volume.getImageId() != null) {
                 constraints.add(new UnmanagedStoragePoolKindConstraint(volume));
             }
         }

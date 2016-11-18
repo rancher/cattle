@@ -2,7 +2,6 @@ package io.cattle.platform.allocator.service;
 
 import static io.cattle.platform.core.model.tables.InstanceHostMapTable.*;
 import static io.cattle.platform.core.model.tables.PortTable.*;
-
 import io.cattle.platform.allocator.constraint.AllocationConstraintsProvider;
 import io.cattle.platform.allocator.constraint.Constraint;
 import io.cattle.platform.allocator.dao.AllocatorDao;
@@ -14,6 +13,7 @@ import io.cattle.platform.allocator.service.AllocationAttempt.AllocationType;
 import io.cattle.platform.allocator.service.AllocationRequest.Type;
 import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.InstanceConstants;
+import io.cattle.platform.core.dao.VolumeDao;
 import io.cattle.platform.core.model.Host;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.InstanceHostMap;
@@ -65,7 +65,10 @@ public abstract class AbstractAllocator implements Allocator {
     protected ObjectManager objectManager;
     @Inject
     protected ObjectProcessManager processManager;
-    @Inject AllocatorService allocatorService;
+    @Inject
+    AllocatorService allocatorService;
+    @Inject
+    VolumeDao volumeDao;
     protected List<AllocationConstraintsProvider> allocationConstraintProviders;
 
     @Override
@@ -146,8 +149,12 @@ public abstract class AbstractAllocator implements Allocator {
     protected void allocateInstance(final AllocationRequest request) {
         final Instance origInstance = objectManager.loadResource(Instance.class, request.getResourceId());
         final List<Instance> instances = getInstancesToAllocate(origInstance);
+        final Set<Long> volumeIds = new HashSet<>();
+        for (Instance instance : instances) {
+            volumeIds.addAll(InstanceHelpers.extractVolumeIdsFromMounts(instance));
+        }
 
-        LockDefinition lock = getInstanceLockDef(origInstance, instances);
+        LockDefinition lock = getInstanceLockDef(origInstance, instances, volumeIds);
         if (lock != null) {
             Context c = allocateLockTimer.time();
             try {
@@ -210,7 +217,7 @@ public abstract class AbstractAllocator implements Allocator {
         doAllocate(request, new AllocationAttempt(AllocationType.INSTANCE, origInstance.getAccountId(), instances, hostId, requestedHostId, volumes, pools));
     }
 
-    protected LockDefinition getInstanceLockDef(Instance origInstance, List<Instance> instances) {
+    protected LockDefinition getInstanceLockDef(Instance origInstance, List<Instance> instances, Set<Long> volumeIds) {
         List<LockDefinition> locks = allocatorService.extractAllocationLockDefinitions(origInstance);
 
         if (origInstance.getDeploymentUnitUuid() != null) {
@@ -232,6 +239,11 @@ public abstract class AbstractAllocator implements Allocator {
                 locks.add(new AllocateConstraintLock(AllocateConstraintLock.Type.PORT,
                         String.format("%s.%s", port.getProtocol(), port.getPublicPort())));
             }
+        }
+
+        List<? extends Volume> volsToLock = volumeDao.identifyUnmappedVolumes(origInstance.getAccountId(), volumeIds);
+        for (Volume v : volsToLock) {
+                locks.add(new AllocateConstraintLock(AllocateConstraintLock.Type.VOLUME, v.getId().toString()));
         }
 
         return locks.size() > 0 ? new AllocationBlockingMultiLock(locks) : null;

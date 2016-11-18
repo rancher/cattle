@@ -112,6 +112,21 @@ public class VolumeDaoImpl extends AbstractJooqDao implements VolumeDao {
         return volumes;
     }
 
+    @Override
+    public List<? extends Volume> identifyUnmappedVolumes(long accountId, Set<Long> volumeIds) {
+        List<VolumeRecord> volumes = create()
+            .selectDistinct(VOLUME.fields())
+            .from(VOLUME)
+            .leftOuterJoin(VOLUME_STORAGE_POOL_MAP)
+                .on(VOLUME_STORAGE_POOL_MAP.VOLUME_ID.eq(VOLUME.ID))
+            .where(VOLUME.ID.in(volumeIds)
+                .and((VOLUME.REMOVED.isNull())))
+                .and(VOLUME.ACCOUNT_ID.eq(accountId))
+                .and(VOLUME_STORAGE_POOL_MAP.ID.isNull())
+            .fetchInto(VolumeRecord.class);
+        return volumes;
+    }
+
     public static final List<String> INELLIGIBLE_STATES = Arrays.asList(CommonStatesConstants.ACTIVE, CommonStatesConstants.ACTIVATING,
             CommonStatesConstants.REQUESTED);
 
