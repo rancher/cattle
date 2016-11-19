@@ -9,7 +9,8 @@ import io.cattle.platform.engine.handler.HandlerResult;
 import io.cattle.platform.engine.process.ProcessInstance;
 import io.cattle.platform.engine.process.ProcessState;
 import io.cattle.platform.object.meta.ObjectMetaDataManager;
-import io.cattle.platform.object.util.DataAccessor;
+import io.cattle.platform.object.resource.ResourceMonitor;
+import io.cattle.platform.object.resource.ResourcePredicate;
 import io.cattle.platform.process.base.AbstractDefaultProcessHandler;
 import io.cattle.platform.systemstack.catalog.CatalogService;
 
@@ -19,6 +20,8 @@ public class ProjecttemplateCreate extends AbstractDefaultProcessHandler {
 
     @Inject
     SystemStackTrigger systemStackTrigger;
+    @Inject
+    ResourceMonitor resourceMonitor;
 
     @Override
     public HandlerResult handle(ProcessState state, ProcessInstance process) {
@@ -28,15 +31,24 @@ public class ProjecttemplateCreate extends AbstractDefaultProcessHandler {
             return null;
         }
 
-        Account defaultProject = objectManager.findAny(Account.class,
-                ObjectMetaDataManager.UUID_FIELD, "adminProject",
-                ObjectMetaDataManager.REMOVED_FIELD, null);
-        if (defaultProject == null || defaultProject.getProjectTemplateId() != null) {
+        resourceMonitor.waitFor(template, new ResourcePredicate<ProjectTemplate>() {
+            @Override
+            public boolean evaluate(ProjectTemplate obj) {
+                return getDefaultProject() != null;
+            }
+
+            @Override
+            public String getMessage() {
+                return "waiting for defaultProject";
+            }
+        });
+
+        Account defaultProject = getDefaultProject();
+        if (defaultProject.getProjectTemplateId() != null) {
             return null;
         }
 
-        if (!AccountConstants.ACCOUNT_VERSION.get().equals(DataAccessor.fieldString(defaultProject,
-                AccountConstants.FIELD_VERSION))) {
+        if (!AccountConstants.ACCOUNT_VERSION.get().equals(defaultProject.getVersion())) {
             return null;
         }
 
@@ -50,6 +62,11 @@ public class ProjecttemplateCreate extends AbstractDefaultProcessHandler {
                 ACCOUNT.PROJECT_TEMPLATE_ID, projectTemplateId);
 
         return null;
+    }
+
+    protected Account getDefaultProject() {
+        return objectManager.findAny(Account.class,
+                ObjectMetaDataManager.UUID_FIELD, "adminProject");
     }
 
 }

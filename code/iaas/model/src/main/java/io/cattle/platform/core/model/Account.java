@@ -179,6 +179,17 @@ public interface Account extends java.io.Serializable {
 	@javax.persistence.Column(name = "default_network_id", precision = 19)
 	public java.lang.Long getDefaultNetworkId();
 
+	/**
+	 * Setter for <code>cattle.account.version</code>.
+	 */
+	public void setVersion(java.lang.String value);
+
+	/**
+	 * Getter for <code>cattle.account.version</code>.
+	 */
+	@javax.persistence.Column(name = "version", length = 128)
+	public java.lang.String getVersion();
+
 	// -------------------------------------------------------------------------
 	// FROM and INTO
 	// -------------------------------------------------------------------------

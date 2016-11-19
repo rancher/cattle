@@ -11,6 +11,10 @@
         "volumeCapabilities" : {
             "type" : "array[string]",
             "nullable" : true
+        },
+        "volumeIds" : {
+            "type" : "array[reference[volume]]",
+            "nullable": true
         }
     }
 }

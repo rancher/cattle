@@ -34,4 +34,6 @@ public interface StoragePoolDao {
 
     Map<Long, List<Object>> findHostsForPools(List<Long> ids, IdFormatter idFormatter);
 
+    Map<Long, List<Object>> findVolumesForPools(List<Long> ids, IdFormatter idFormatter);
+
 }

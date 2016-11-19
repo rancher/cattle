@@ -14,4 +14,6 @@ public class StoragePoolConstants {
 
     public static final String FIELD_HOST_IDS = "hostIds";
 
+    public static final String FIELD_VOLUME_IDS = "volumeIds";
+
 }
