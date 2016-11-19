@@ -157,8 +157,16 @@ public class LBMetadataUtil {
                 for (PortRule portRule : portRules) {
                     if (portRule.getServiceId() != null) {
                         Long svcId = Long.valueOf(portRule.getServiceId());
-                        this.port_rules.add(new MetadataPortRule(portRule, services.get(svcId),
-                                stacks.get(services.get(svcId).getStackId())));
+                        Service service = services.get(svcId);
+                        if (service == null) {
+                            continue;
+                        }
+                        Stack stack = stacks.get(service.getStackId());
+                        if (stack == null) {
+                            continue;
+                        }
+                        this.port_rules.add(new MetadataPortRule(portRule, service,
+                                stack));
                     } else {
                         this.port_rules.add(new MetadataPortRule(portRule, null, null));
                     }
