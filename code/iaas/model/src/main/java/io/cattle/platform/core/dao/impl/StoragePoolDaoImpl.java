@@ -9,6 +9,7 @@ import static io.cattle.platform.core.model.tables.VolumeTable.*;
 
 import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.HostConstants;
+import io.cattle.platform.core.constants.VolumeConstants;
 import io.cattle.platform.core.dao.GenericMapDao;
 import io.cattle.platform.core.dao.GenericResourceDao;
 import io.cattle.platform.core.dao.StoragePoolDao;
@@ -235,7 +236,7 @@ public class StoragePoolDaoImpl extends AbstractJooqDao implements StoragePoolDa
                         pools = new ArrayList<>();
                         result.put(storagePoolId, pools);
                     }
-                    pools.add(idFormatter.formatId(HostConstants.TYPE, volumeId));
+                    pools.add(idFormatter.formatId(VolumeConstants.TYPE, volumeId));
                 }
             });
         return result;
