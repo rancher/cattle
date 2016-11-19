@@ -383,6 +383,7 @@
     <bean class="io.cattle.platform.sample.data.SampleDataStartupV10" />
     <bean class="io.cattle.platform.sample.data.SampleDataStartupV11" />
     <bean class="io.cattle.platform.sample.data.SampleDataStartupV12" />
+    <bean class="io.cattle.platform.sample.data.SampleDataStartupV13" />
  
     <bean class="io.cattle.platform.agent.instance.process.AgentInstanceInstanceCreate" />
     <bean class="io.cattle.platform.agent.instance.process.AgentInstanceInstanceRemove" />
