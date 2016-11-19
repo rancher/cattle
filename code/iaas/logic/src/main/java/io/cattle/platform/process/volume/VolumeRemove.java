@@ -55,7 +55,7 @@ public class VolumeRemove extends IgnoreReconnectionAgentHandler {
 
         for (VolumeStoragePoolMap map : mapDao.findToRemove(VolumeStoragePoolMap.class, Volume.class, volume.getId())) {
             maps = true;
-            deactivateThenRemove(map, null);
+            deactivateThenScheduleRemove(map, null);
         }
 
         for (Mount mount : mapDao.findToRemove(Mount.class, Volume.class, volume.getId())) {
