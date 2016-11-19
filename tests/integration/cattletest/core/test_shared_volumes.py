@@ -137,6 +137,25 @@ def _create_virtual_machine(client, context, **kw):
     return client.create_virtual_machine(**args)
 
 
+def test_anonymous_volume_in_pool(super_client, new_context):
+    client, agent_client, host = from_context(new_context)
+    sp_name = 'storage-%s' % random_str()
+    host_uuids = [host.uuid]
+
+    create_sp_event(client, agent_client, new_context, sp_name, sp_name,
+                    SP_CREATE, host_uuids, sp_name)
+    storage_pool = wait_for(lambda: sp_wait(client, sp_name))
+    assert storage_pool.state == 'active'
+
+    c = client.create_container(imageUuid=new_context.image_uuid,
+                                dataVolumes=['/foo', '/bar:ro'],
+                                volumeDriver=sp_name)
+    c = client.wait_success(c)
+    assert c.state == 'running'
+    assert len(c.dataVolumeMounts) == 2
+    assert set(c.dataVolumeMounts.keys()) == {'/foo', '/bar:ro'}
+
+
 def test_single_host_rw(super_client, new_context):
     client, agent_client, host = from_context(new_context)
     sp_name = 'storage-%s' % random_str()
