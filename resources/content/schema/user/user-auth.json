@@ -463,6 +463,7 @@
         "registry.serverAddress": "cr",
         "registry.storageDriverId": "",
         "registry.hostIds": "",
+        "registry.volumeIds": "",
 
         "registryCredential": "r",
         "registryCredential.publicValue": "cru",
@@ -506,6 +507,7 @@
         "storagePool.volumeCapabilities": "r",
         "storagePool.storageDriverId": "r",
         "storagePool.hostIds": "r",
+        "storagePool.volumeIds": "r",
 
         "subscribe" : "",
         "subscribe.eventNames" : "cr",

@@ -197,7 +197,7 @@ public class StoragePoolDaoImpl extends AbstractJooqDao implements StoragePoolDa
         create().select(STORAGE_POOL_HOST_MAP.STORAGE_POOL_ID, STORAGE_POOL_HOST_MAP.HOST_ID)
             .from(STORAGE_POOL_HOST_MAP)
             .where(STORAGE_POOL_HOST_MAP.REMOVED.isNull()
-                    .and(STORAGE_POOL_HOST_MAP.HOST_ID.in(ids)))
+                    .and(STORAGE_POOL_HOST_MAP.STORAGE_POOL_ID.in(ids)))
             .fetchInto(new RecordHandler<Record2<Long, Long>>() {
                 @Override
                 public void next(Record2<Long, Long> record) {
@@ -209,6 +209,33 @@ public class StoragePoolDaoImpl extends AbstractJooqDao implements StoragePoolDa
                         result.put(storagePoolId, pools);
                     }
                     pools.add(idFormatter.formatId(HostConstants.TYPE, hostId));
+                }
+            });
+        return result;
+    }
+
+    @Override
+    public Map<Long, List<Object>> findVolumesForPools(List<Long> ids, final IdFormatter idFormatter) {
+        final Map<Long, List<Object>> result = new HashMap<>();
+
+        create().select(VOLUME_STORAGE_POOL_MAP.STORAGE_POOL_ID, VOLUME_STORAGE_POOL_MAP.VOLUME_ID)
+            .from(VOLUME_STORAGE_POOL_MAP)
+            .join(STORAGE_POOL)
+                .on(STORAGE_POOL.ID.eq(VOLUME_STORAGE_POOL_MAP.STORAGE_POOL_ID))
+            .where(VOLUME_STORAGE_POOL_MAP.REMOVED.isNull()
+                    .and(STORAGE_POOL.KIND.ne("docker"))
+                    .and(VOLUME_STORAGE_POOL_MAP.STORAGE_POOL_ID.in(ids)))
+            .fetchInto(new RecordHandler<Record2<Long, Long>>() {
+                @Override
+                public void next(Record2<Long, Long> record) {
+                    Long volumeId = record.getValue(VOLUME_STORAGE_POOL_MAP.VOLUME_ID);
+                    Long storagePoolId = record.getValue(VOLUME_STORAGE_POOL_MAP.STORAGE_POOL_ID);
+                    List<Object> pools = result.get(storagePoolId);
+                    if (pools == null) {
+                        pools = new ArrayList<>();
+                        result.put(storagePoolId, pools);
+                    }
+                    pools.add(idFormatter.formatId(HostConstants.TYPE, volumeId));
                 }
             });
         return result;
