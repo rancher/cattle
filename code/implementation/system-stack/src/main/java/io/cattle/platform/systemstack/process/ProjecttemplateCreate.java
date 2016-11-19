@@ -35,8 +35,7 @@ public class ProjecttemplateCreate extends AbstractDefaultProcessHandler {
             return null;
         }
 
-        if (!AccountConstants.ACCOUNT_VERSION.get().equals(DataAccessor.fieldString(defaultProject,
-                AccountConstants.FIELD_VERSION))) {
+        if (!AccountConstants.ACCOUNT_VERSION.get().equals(defaultProject.getVersion())) {
             return null;
         }
 

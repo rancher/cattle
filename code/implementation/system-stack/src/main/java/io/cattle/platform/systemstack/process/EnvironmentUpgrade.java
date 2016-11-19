@@ -17,7 +17,6 @@ import io.cattle.platform.engine.process.ProcessState;
 import io.cattle.platform.object.meta.ObjectMetaDataManager;
 import io.cattle.platform.object.resource.ResourceMonitor;
 import io.cattle.platform.object.resource.ResourcePredicate;
-import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.object.util.DataUtils;
 import io.cattle.platform.process.common.handler.AbstractObjectProcessLogic;
 import io.cattle.platform.systemstack.catalog.CatalogService;
@@ -47,7 +46,7 @@ public class EnvironmentUpgrade extends AbstractObjectProcessLogic implements Pr
             return null;
         }
 
-        String version = DataAccessor.fieldString(env, AccountConstants.FIELD_VERSION);
+        String version = env.getVersion();
         if (AccountConstants.ACCOUNT_VERSION.get().equals(version)) {
             return null;
         }
