@@ -1,7 +1,6 @@
 package io.cattle.platform.process.instance;
 
 import static io.cattle.platform.core.model.tables.VolumeTable.*;
-
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.constants.VolumeConstants;
 import io.cattle.platform.core.dao.StoragePoolDao;
@@ -26,6 +25,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -85,30 +85,52 @@ public class InstanceVolumeLookupPreCreate extends AbstractObjectProcessLogic im
         data.put(InstanceConstants.FIELD_DATA_VOLUMES, newDataVolumes);
         data.put(InstanceConstants.FIELD_DATA_VOLUME_MOUNTS, dataVolumeMounts);
         for (String v : dataVolumes) {
-            if (!v.startsWith("/")) {
-                String[] parts = v.split(":", 2);
-                if (parts.length > 1) {
-                    String volName = parts[0];
-                    List<? extends Volume> volumes = volumeDao.findSharedOrUnmappedVolumes(instance.getAccountId(), volName);
-                    if (volumes.isEmpty() && affinities.contains(volName)) {
-                        // Any volumes found here will be mapped to local (docker, sim) pools
-                        volumes = objectManager.find(Volume.class, VOLUME.ACCOUNT_ID, instance.getAccountId(), VOLUME.NAME, volName,
-                                VOLUME.REMOVED, null);
-                    }
+            String volName = null;
+            String volPath = null;
+            String[] parts = v.split(":", 2);
+             if (parts.length == 2 && !parts[0].startsWith("/") && parts[1].startsWith("/")) {
+                // named volume
+                 volName = parts[0];
+                 volPath = parts[1];
+            } else if (parts.length == 2 && parts[0].startsWith("/") && !parts[1].startsWith("/")) {
+                // anonymous volume with mount permissions
+                volName = UUID.randomUUID().toString();
+                volPath = parts[0] + ":" + parts[1];
+                v = volName + ":" + volPath;
+            } else if (parts.length == 1 && parts[0].startsWith("/")) {
+                // anonymous volume
+                volName = UUID.randomUUID().toString();
+                volPath = parts[0];
+                v = volName + ":" + volPath;
+            } else {
+                newDataVolumes.add(v);
+                continue;
+            }
 
-                    if (volumes.size() == 1) {
-                        dataVolumeMounts.put(parts[1], volumes.get(0).getId());
-                    } else if (volumes.size() > 1) {
-                        objectProcessManager.scheduleProcessInstance(InstanceConstants.PROCESS_REMOVE, instance, null);
-                        ExecutionException ex = new ExecutionException(String.format("Could not process named volume %s. More than one volume "
-                                + "with that name exists.", volName));
-                        ex.setResources(state.getResource());
-                        throw ex;
-                    } else if (sp != null) {
-                        Volume newVol = volumeDao.createVolumeForDriver(instance.getAccountId(), volName, volumeDriver);
-                        dataVolumeMounts.put(parts[1], newVol.getId());
-                    }
+            boolean createVol = true;
+            if (volName != null) {
+                List<? extends Volume> volumes = volumeDao.findSharedOrUnmappedVolumes(instance.getAccountId(), volName);
+                if (volumes.isEmpty() && affinities.contains(volName)) {
+                    // Any volumes found here will be mapped to local (docker, sim) pools
+                    volumes = objectManager.find(Volume.class, VOLUME.ACCOUNT_ID, instance.getAccountId(), VOLUME.NAME, volName, VOLUME.REMOVED, null);
                 }
+
+                if (volumes.size() == 1) {
+                    dataVolumeMounts.put(volPath, volumes.get(0).getId());
+                    createVol = false;
+                } else if (volumes.size() > 1) {
+                    objectProcessManager.scheduleProcessInstance(InstanceConstants.PROCESS_REMOVE, instance, null);
+                    ExecutionException ex =
+                            new ExecutionException(
+                                    String.format("Could not process named volume %s. More than one volume " + "with that name exists.", volName));
+                    ex.setResources(state.getResource());
+                    throw ex;
+                }
+            }
+
+            if (createVol && sp != null) {
+                Volume newVol = volumeDao.createVolumeForDriver(instance.getAccountId(), volName, volumeDriver);
+                dataVolumeMounts.put(volPath, newVol.getId());
             }
             newDataVolumes.add(v);
         }
