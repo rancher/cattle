@@ -168,9 +168,8 @@ public class ExternalServiceAuthProvider {
             response = temp.execute().returnResponse();
             int statusCode = response.getStatusLine().getStatusCode();
             if(statusCode >= 300) {
-                log.error("Got error from Auth service. statusCode: {}", statusCode);
-                throw new ClientVisibleException(ResponseCodes.SERVICE_UNAVAILABLE, ServiceAuthConstants.AUTH_ERROR,
-                        "Error Response from Auth service", "Status code from Auth Service: " + Integer.toString(statusCode));
+                log.error("searchIdentities: Got error from Auth service. statusCode: {}", statusCode);
+                return identities;
             }
             Map<String, Object> jsonData = jsonMapper.readValue(response.getEntity().getContent());
             List<?> identityList = CollectionUtils.toList(jsonData.get("data"));
@@ -224,9 +223,8 @@ public class ExternalServiceAuthProvider {
             response = temp.execute().returnResponse();
             int statusCode = response.getStatusLine().getStatusCode();
             if(statusCode >= 300) {
-                log.error("Got error from Auth service. statusCode: {}", statusCode);
-                throw new ClientVisibleException(ResponseCodes.SERVICE_UNAVAILABLE, ServiceAuthConstants.AUTH_ERROR,
-                        "Error Response from Auth service", "Status code from Auth Service: " + Integer.toString(statusCode));
+                log.error("getIdentity: Got error from Auth service. statusCode: {}", statusCode);
+                return null;
             }
             Map<String, Object> jsonData = jsonMapper.readValue(response.getEntity().getContent());
             return tokenUtil.jsonToIdentity(jsonData);
