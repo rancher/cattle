@@ -7,6 +7,7 @@ import io.cattle.platform.core.constants.AccountConstants;
 import io.cattle.platform.core.constants.AgentConstants;
 import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.ProjectConstants;
+import io.cattle.platform.core.constants.ServiceConstants;
 import io.cattle.platform.core.model.Account;
 import io.cattle.platform.core.model.Agent;
 import io.cattle.platform.iaas.api.auth.SecurityConstants;
@@ -15,10 +16,14 @@ import io.cattle.platform.iaas.api.auth.integration.interfaces.AccountLookup;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.util.type.Priority;
+import io.github.ibuildthecloud.gdapi.condition.Condition;
+import io.github.ibuildthecloud.gdapi.condition.ConditionType;
 import io.github.ibuildthecloud.gdapi.context.ApiContext;
 import io.github.ibuildthecloud.gdapi.request.ApiRequest;
 
 import java.io.UnsupportedEncodingException;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.inject.Inject;
 import javax.servlet.http.HttpServletResponse;
@@ -92,9 +97,12 @@ public class BasicAuthImpl implements AccountLookup, Priority {
                         .withKey(AgentConstants.DATA_AGENT_RESOURCES_ACCOUNT_ID)
                         .as(Long.class);
                 if (resourceAccId != null) {
+                    List<Object> activeStates = new ArrayList<>();
+                    activeStates.add(CommonStatesConstants.ACTIVE);
+                    activeStates.add(ServiceConstants.STATE_UPGRADING);
                     Account resourceAccount = objectManager.findAny(Account.class,
                             ACCOUNT.ID, resourceAccId,
-                            ACCOUNT.STATE, CommonStatesConstants.ACTIVE);
+                            ACCOUNT.STATE, new Condition(ConditionType.IN, activeStates));
                     if (resourceAccount == null) {
                         return null;
                     }
