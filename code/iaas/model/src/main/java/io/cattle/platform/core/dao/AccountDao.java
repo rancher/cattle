@@ -20,4 +20,6 @@ public interface AccountDao {
     Account getAccountById(Long id);
 
     boolean isActiveAccount(Account account);
+
+    List<String> getAccountActiveStates();
 }

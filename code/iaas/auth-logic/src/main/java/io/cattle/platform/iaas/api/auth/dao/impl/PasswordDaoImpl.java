@@ -2,11 +2,11 @@ package io.cattle.platform.iaas.api.auth.dao.impl;
 
 import static io.cattle.platform.core.model.tables.AccountTable.*;
 import static io.cattle.platform.core.model.tables.CredentialTable.*;
-
 import io.cattle.platform.api.auth.Policy;
 import io.cattle.platform.core.constants.AccountConstants;
 import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.CredentialConstants;
+import io.cattle.platform.core.dao.AccountDao;
 import io.cattle.platform.core.dao.GenericResourceDao;
 import io.cattle.platform.core.model.Account;
 import io.cattle.platform.core.model.Credential;
@@ -26,6 +26,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
 import javax.inject.Inject;
 
 import org.apache.commons.lang3.StringUtils;
@@ -38,6 +39,8 @@ public class PasswordDaoImpl extends AbstractJooqDao implements PasswordDao {
     GenericResourceDao resourceDao;
     @Inject
     TransformationService transformationService;
+    @Inject
+    AccountDao accountDao;
 
     @Override
     public Credential changePassword(Credential password, ChangePassword changePassword, Policy policy) {
@@ -69,7 +72,7 @@ public class PasswordDaoImpl extends AbstractJooqDao implements PasswordDao {
 
         account = create()
                 .selectFrom(ACCOUNT)
-                .where(ACCOUNT.STATE.eq(CommonStatesConstants.ACTIVE)
+                .where(ACCOUNT.STATE.in(accountDao.getAccountActiveStates())
                         .and(ACCOUNT.KIND.eq(AccountConstants.ADMIN_KIND)))
                 .orderBy(ACCOUNT.ID.asc()).limit(1).fetchOne();
 
