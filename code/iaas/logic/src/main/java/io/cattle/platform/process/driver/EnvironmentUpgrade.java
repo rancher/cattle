@@ -82,7 +82,7 @@ public class EnvironmentUpgrade extends AbstractObjectProcessHandler {
                 continue;
             } else {
                 List<String> validUpgradeStates = Arrays.asList(CommonStatesConstants.ACTIVE,
-                        CommonStatesConstants.INACTIVE);
+                        CommonStatesConstants.INACTIVE, CommonStatesConstants.UPDATING_ACTIVE);
                 if (validUpgradeStates.contains(lbService.getState())) {
                     // 1. set lbconfig/new launch config on the service
                     InServiceUpgradeStrategy strategy = getUpgradeStrategy(lbService);
