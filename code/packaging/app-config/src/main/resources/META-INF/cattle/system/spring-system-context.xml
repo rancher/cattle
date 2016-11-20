@@ -87,6 +87,12 @@
         />
 
     <management:executor-service
+        id="AllocatorExecutorService"
+        keep-alive="120"
+        pool-size="5"
+        />
+
+    <management:executor-service
         id="ProcessExecutorService"
         keep-alive="1200"
         pool-size="16-20"
@@ -97,8 +103,7 @@
     <management:executor-service 
         id="CoreExecutorService"
         keep-alive="120"
-        pool-size="5-25"
-        queue-capacity="0"
+        pool-size="15"
         />
 
     <!--  This is for very short lived tasks, no blocking -->
@@ -111,6 +116,11 @@
     <bean class="io.cattle.platform.util.concurrent.NamedExecutorService" >
         <property name="name" value="process" />
         <property name="executorService" ref="ProcessExecutorService" />
+    </bean>
+
+    <bean class="io.cattle.platform.util.concurrent.NamedExecutorService" >
+        <property name="name" value="allocator" />
+        <property name="executorService" ref="AllocatorExecutorService" />
     </bean>
 
     <bean id="CoreListeningExecutorService" class="com.google.common.util.concurrent.MoreExecutors" factory-method="listeningDecorator" >

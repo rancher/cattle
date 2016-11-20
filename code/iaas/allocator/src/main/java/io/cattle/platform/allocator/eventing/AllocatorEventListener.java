@@ -6,16 +6,16 @@ import io.cattle.platform.eventing.model.Event;
 
 public interface AllocatorEventListener extends AnnotatedEventListener {
 
-    @EventHandler
+    @EventHandler(poolKey="allocator")
     void instanceAllocate(Event event);
 
-    @EventHandler
+    @EventHandler(poolKey="allocator")
     void volumeAllocate(Event event);
 
-    @EventHandler
+    @EventHandler(poolKey="allocator")
     void instanceDeallocate(Event event);
 
-    @EventHandler
+    @EventHandler(poolKey="allocator")
     void volumeDeallocate(Event event);
 
 }
