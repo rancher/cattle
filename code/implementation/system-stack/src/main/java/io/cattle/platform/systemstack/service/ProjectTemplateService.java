@@ -91,7 +91,7 @@ public class ProjectTemplateService implements InitializationTask, Task {
 
     protected void reload() throws IOException, InterruptedException {
         try {
-            lockManager.lock(new ProjectTemplateLoadLock(), new LockCallbackWithException<Object, Exception>() {
+            lockManager.tryLock(new ProjectTemplateLoadLock(), new LockCallbackWithException<Object, Exception>() {
                 @Override
                 public Object doWithLock() throws Exception {
                     reloadWithLock();
