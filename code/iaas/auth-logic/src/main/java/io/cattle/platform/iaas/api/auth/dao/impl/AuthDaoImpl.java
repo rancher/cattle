@@ -72,7 +72,7 @@ public class AuthDaoImpl extends AbstractJooqDao implements AuthDao {
     public Account getAdminAccount() {
         return create()
                 .selectFrom(ACCOUNT)
-                .where(ACCOUNT.STATE.eq(CommonStatesConstants.ACTIVE)
+                .where(ACCOUNT.STATE.in(getActiveStates())
                         .and(ACCOUNT.KIND.eq(AccountConstants.ADMIN_KIND)))
                 .orderBy(ACCOUNT.ID.asc()).limit(1).fetchOne();
     }
@@ -84,7 +84,7 @@ public class AuthDaoImpl extends AbstractJooqDao implements AuthDao {
                 .from(ACCOUNT)
                 .join(CREDENTIAL)
                 .on(CREDENTIAL.ACCOUNT_ID.eq(ACCOUNT.ID))
-                .where(ACCOUNT.STATE.eq(CommonStatesConstants.ACTIVE)
+                .where(ACCOUNT.STATE.in(getActiveStates())
                         .and(CREDENTIAL.STATE.eq(CommonStatesConstants.ACTIVE))
                         .and(CREDENTIAL.PUBLIC_VALUE.contains(username))
                         .and(CREDENTIAL.KIND.eq(CredentialConstants.KIND_PASSWORD)))
@@ -100,7 +100,7 @@ public class AuthDaoImpl extends AbstractJooqDao implements AuthDao {
                     .join(CREDENTIAL)
                     .on(CREDENTIAL.ACCOUNT_ID.eq(ACCOUNT.ID))
                     .where(
-                            ACCOUNT.STATE.eq(CommonStatesConstants.ACTIVE)
+                            ACCOUNT.STATE.in(getActiveStates())
                                     .and(CREDENTIAL.STATE.eq(CommonStatesConstants.ACTIVE))
                                     .and(CREDENTIAL.PUBLIC_VALUE.eq(username)))
                     .and(CREDENTIAL.KIND.eq(CredentialConstants.KIND_PASSWORD))
@@ -126,7 +126,7 @@ public class AuthDaoImpl extends AbstractJooqDao implements AuthDao {
         if (secretIsCorrect) {
             return create()
                     .selectFrom(ACCOUNT).where(ACCOUNT.ID.eq(credential.getAccountId())
-                            .and(ACCOUNT.STATE.eq(CommonStatesConstants.ACTIVE)))
+                            .and(ACCOUNT.STATE.in(getActiveStates())))
                     .fetchOneInto(AccountRecord.class);
         } else {
             return null;
@@ -194,7 +194,7 @@ public class AuthDaoImpl extends AbstractJooqDao implements AuthDao {
                         CREDENTIAL.STATE.eq(CommonStatesConstants.ACTIVE)
                                 .and(CREDENTIAL.PUBLIC_VALUE.eq(accessKey))
                                 .and(CREDENTIAL.KIND.eq(CredentialConstants.KIND_API_KEY))
-                                .and(ACCOUNT.STATE.eq(CommonStatesConstants.ACTIVE)))
+                                .and(ACCOUNT.STATE.in(getActiveStates())))
                 .fetchOneInto(AccountRecord.class);
     }
 
@@ -214,7 +214,7 @@ public class AuthDaoImpl extends AbstractJooqDao implements AuthDao {
             if (transformationService.compare(secretKey, credential.getSecretValue())) {
                 return create()
                         .selectFrom(ACCOUNT).where(ACCOUNT.ID.eq(credential.getAccountId())
-                                .and(ACCOUNT.STATE.eq(CommonStatesConstants.ACTIVE)))
+                                .and(ACCOUNT.STATE.in(getActiveStates())))
                         .fetchOneInto(AccountRecord.class);
             }
             else {
@@ -291,12 +291,16 @@ public class AuthDaoImpl extends AbstractJooqDao implements AuthDao {
                 properties));
     }
 
+    protected List<String> getActiveStates() {
+        return accountDao.getAccountActiveStates();
+    }
+
     @Override
     public Account getAccountByUuid(String uuid) {
         return create()
                 .selectFrom(ACCOUNT)
                 .where(ACCOUNT.UUID.eq(uuid)
-                        .and(ACCOUNT.STATE.eq(CommonStatesConstants.ACTIVE)))
+                        .and(ACCOUNT.STATE.in(getActiveStates())))
                 .orderBy(ACCOUNT.ID.asc()).limit(1).fetchOne();
     }
 

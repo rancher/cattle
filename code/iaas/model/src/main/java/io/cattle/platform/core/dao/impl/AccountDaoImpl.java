@@ -75,7 +75,7 @@ public class AccountDaoImpl extends AbstractCoreDao implements AccountDao {
     public Account getAdminAccountExclude(long accountId) {
         return create()
                 .selectFrom(ACCOUNT)
-                .where(ACCOUNT.STATE.eq(CommonStatesConstants.ACTIVE)
+                .where(ACCOUNT.STATE.in(getAccountActiveStates())
                         .and(ACCOUNT.KIND.eq(AccountConstants.ADMIN_KIND))
                         .and(ACCOUNT.ID.ne(accountId)))
                 .orderBy(ACCOUNT.ID.asc()).limit(1).fetchOne();
@@ -98,5 +98,10 @@ public class AccountDaoImpl extends AbstractCoreDao implements AccountDao {
         List<String> goodStates = Arrays.asList(CommonStatesConstants.ACTIVATING, CommonStatesConstants.ACTIVE,
                 ServiceConstants.STATE_UPGRADING);
         return goodStates.contains(account.getState());
+    }
+
+    @Override
+    public List<String> getAccountActiveStates() {
+        return Arrays.asList(CommonStatesConstants.ACTIVE, ServiceConstants.STATE_UPGRADING);
     }
 }
