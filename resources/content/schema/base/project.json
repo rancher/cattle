@@ -22,6 +22,11 @@
         "capability" : "owner"
       }
     },
+    "upgrade" : {
+      "attributes" : {
+        "capability" : "owner"
+      }
+    },
     "delete" : {
       "attributes" : {
         "capability" : "owner"
