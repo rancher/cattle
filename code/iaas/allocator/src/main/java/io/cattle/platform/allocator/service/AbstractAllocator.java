@@ -95,19 +95,10 @@ public abstract class AbstractAllocator implements Allocator {
             public void doWithLockNoResult() {
                 Context c = deallocateTimer.time();
                 try {
-                    acquireLockAndDeallocate(request);
+                    runDeallocation(request);
                 } finally {
                     c.stop();
                 }
-            }
-        });
-    }
-
-    protected void acquireLockAndDeallocate(final AllocationRequest request) {
-        lockManager.lock(getAllocationLock(request, null), new LockCallbackNoReturn() {
-            @Override
-            public void doWithLockNoResult() {
-                runDeallocation(request);
             }
         });
     }
@@ -419,8 +410,6 @@ public abstract class AbstractAllocator implements Allocator {
     }
 
     protected abstract boolean recordCandidate(AllocationAttempt attempt, AllocationCandidate candidate);
-
-    protected abstract LockDefinition getAllocationLock(AllocationRequest request, AllocationAttempt attempt);
 
     protected AllocationLog getLog(AllocationRequest request) {
         return new AllocationLog();
