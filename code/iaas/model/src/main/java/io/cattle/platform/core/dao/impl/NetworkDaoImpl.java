@@ -240,6 +240,9 @@ public class NetworkDaoImpl extends AbstractJooqDao implements NetworkDao {
 
         Map<String, Port> existingPorts = new HashMap<>();
         for (Port port : objectManager.children(instance, Port.class)) {
+            if (port.getRemoved() != null || port.getState().equalsIgnoreCase(CommonStatesConstants.REMOVING)) {
+                continue;
+            }
             existingPorts.put(toKey(port), port);
         }
 
