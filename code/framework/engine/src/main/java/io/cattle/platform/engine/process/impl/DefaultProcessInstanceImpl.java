@@ -282,7 +282,7 @@ public class DefaultProcessInstanceImpl implements ProcessInstance {
             count = 1L;
         }
 
-        long wait = Math.min(RETRY_MAX_WAIT.get(), Math.abs(5000L + (long)Math.pow(2, count-1) * 100));
+        long wait = Math.min(RETRY_MAX_WAIT.get(), Math.abs(15000L + (long)Math.pow(2, count-1) * 100));
         record.setRunAfter(new Date(System.currentTimeMillis() + wait));
         record.setRunningProcessServerId(null);
     }

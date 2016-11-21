@@ -686,7 +686,7 @@ public class ServiceDiscoveryApiServiceImpl implements ServiceDiscoveryApiServic
             return null;
         }
 
-        String key = String.format("service.%d.cert", service.getId());
+        String key = String.format("service.v2.%d.cert", service.getId());
 
         return dataDao.getOrCreate(key, false, new Callable<String>() {
             @Override

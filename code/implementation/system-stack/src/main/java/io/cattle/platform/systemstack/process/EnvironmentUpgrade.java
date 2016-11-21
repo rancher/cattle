@@ -137,6 +137,7 @@ public class EnvironmentUpgrade extends AbstractObjectProcessLogic implements Pr
 
     protected Network findIpSecNetwork(Account account) {
         return objectManager.findAny(Network.class,
+                ObjectMetaDataManager.ACCOUNT_FIELD, account.getId(),
                 ObjectMetaDataManager.KIND_FIELD, NetworkConstants.KIND_CNI,
                 ObjectMetaDataManager.REMOVED_FIELD, null);
     }

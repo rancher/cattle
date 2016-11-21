@@ -82,6 +82,10 @@ public class HostProvision extends AbstractDefaultProcessHandler {
         resourceMonitor.waitFor(host, 5 * 60000, new ResourcePredicate<Host>() {
             @Override
             public boolean evaluate(Host obj) {
+                if (!host.getState().equals(HostConstants.STATE_PROVISIONING)) {
+                    throw new ResourceTimeoutException(host, "provisioning canceled");
+                }
+
                 return obj.getAgentId() != null;
             }
 
