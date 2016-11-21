@@ -135,9 +135,21 @@ public class ExternalServiceAuthProvider {
             Map<String, Object> jsonData = jsonMapper.readValue(response.getEntity().getContent());
 
             String encryptedToken = (String)jsonData.get(ServiceAuthConstants.JWT_KEY);
-            Map<String, Object> decryptedToken = tokenService.getJsonPayload(encryptedToken, true);
-            Token token = tokenUtil.createToken((Set<Identity>)decryptedToken.get("identities"), null);
+            Map<String, Object> decryptedToken = tokenService.getJsonPayload(encryptedToken, false);
+            String newAccessToken = (String)decryptedToken.get("access_token");
+            ApiRequest request = ApiContext.getContext().getApiRequest();
+            request.setAttribute(ServiceAuthConstants.ACCESS_TOKEN, newAccessToken);
 
+            List<?> identityList = CollectionUtils.toList(jsonData.get("identities"));
+            Set<Identity> identities = new HashSet<>();
+            if (identityList != null && !identityList.isEmpty())
+            {
+                for(Object identity : identityList) {
+                    Map<String, Object> jsonIdentity = CollectionUtils.toMap(identity);
+                    identities.add(tokenUtil.jsonToIdentity(jsonIdentity));
+                }
+            }
+            Token token = tokenUtil.createToken(identities, null);
             return token;
         } catch(HttpHostConnectException ex) {
             log.error("Auth Service not reachable at [{}]", ServiceAuthConstants.AUTH_SERVICE_URL);
@@ -259,6 +271,7 @@ public class ExternalServiceAuthProvider {
                         jwt = ProjectConstants.AUTH_TYPE + token.getJwt();
                         authToken = authTokenDao.createToken(token.getJwt(), token.getAuthProvider(), account.getId());
                         jwt = authToken.getKey();
+                        accessToken = (String) DataAccessor.fields(account).withKey(ServiceAuthConstants.ACCESS_TOKEN).get();
                     }
                 } catch (ClientVisibleException e) {
                         log.error("Got error from Auth service.error", e);
