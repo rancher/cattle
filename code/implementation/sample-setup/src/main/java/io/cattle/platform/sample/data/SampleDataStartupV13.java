@@ -14,6 +14,23 @@ import java.util.List;
 
 public class SampleDataStartupV13 extends AbstractSampleData {
 
+    private static final String[] COMMUNITY_STACKS = new String[] {
+                "bind9",
+                "cloudflare",
+                "dnsimple",
+                "dnsupdate-rfc2136",
+                "pointhq",
+                "powerdns-external-dns"
+    };
+
+    private static final String[] LIBRARY_STACKS = new String[] {
+        "kubernetes",
+        "k8s",
+        "mesos",
+        "swarm",
+        "route53"
+    };
+
     @Override
     protected String getName() {
         return "sampleDataVersion13";
@@ -22,7 +39,8 @@ public class SampleDataStartupV13 extends AbstractSampleData {
     @Override
     protected void populatedData(Account system, List<Object> toCreate) {
         updateSetting();
-        updateStackExternalIds();
+        migrateLibraryStacks();
+        migrateCommunityStacks();
     }
 
     protected void updateSetting() {
@@ -44,11 +62,12 @@ public class SampleDataStartupV13 extends AbstractSampleData {
         }
     }
 
-    protected void updateStackExternalIds() {
-        for (String orc : new String[] {"kubernetes", "k8s", "mesos", "swarm"}) {
+    protected void migrateLibraryStacks() {
+        for (String orc : LIBRARY_STACKS) {
             String fromLike = String.format("%%catalog://library:%s:%%", orc);
-            for (Stack stack : objectManager.find(Stack.class, STACK.EXTERNAL_ID,
-                    new Condition(ConditionType.LIKE, fromLike), STACK.REMOVED, null)) {
+            for (Stack stack : objectManager.find(Stack.class,
+                    STACK.EXTERNAL_ID, new Condition(ConditionType.LIKE, fromLike),
+                    STACK.REMOVED, null)) {
                 String[] parts = stack.getExternalId().split(":");
                 String toOrc = orc;
                 if (orc.equals("kubernetes")) {
@@ -60,6 +79,20 @@ public class SampleDataStartupV13 extends AbstractSampleData {
                     to = "catalog://library:infra*k8s:8";
                 }
 
+                stack.setExternalId(to);
+                objectManager.persist(stack);
+            }
+        }
+    }
+
+    protected void migrateCommunityStacks() {
+        for (String orc : COMMUNITY_STACKS) {
+            String fromLike = String.format("%%catalog://community:%s:%%", orc);
+            for (Stack stack : objectManager.find(Stack.class,
+                    STACK.EXTERNAL_ID, new Condition(ConditionType.LIKE, fromLike),
+                    STACK.REMOVED, null)) {
+                String[] parts = stack.getExternalId().split(":");
+                String to = String.format("catalog://community:infra*%s:%s", orc, parts[parts.length-1]);
                 stack.setExternalId(to);
                 objectManager.persist(stack);
             }
