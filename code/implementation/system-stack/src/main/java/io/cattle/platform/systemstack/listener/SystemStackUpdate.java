@@ -3,6 +3,8 @@ package io.cattle.platform.systemstack.listener;
 import static io.cattle.platform.core.model.tables.ServiceTable.*;
 import static io.cattle.platform.core.model.tables.StackTable.*;
 
+import io.cattle.platform.archaius.util.ArchaiusUtil;
+import io.cattle.platform.async.utils.TimeoutException;
 import io.cattle.platform.configitem.events.ConfigUpdate;
 import io.cattle.platform.configitem.model.Client;
 import io.cattle.platform.configitem.version.ConfigItemStatusManager;
@@ -13,6 +15,7 @@ import io.cattle.platform.core.constants.ProjectTemplateConstants;
 import io.cattle.platform.core.constants.ServiceConstants;
 import io.cattle.platform.core.dao.HostDao;
 import io.cattle.platform.core.model.Account;
+import io.cattle.platform.core.model.ExternalHandler;
 import io.cattle.platform.core.model.ProjectTemplate;
 import io.cattle.platform.core.model.Service;
 import io.cattle.platform.core.model.Stack;
@@ -23,6 +26,7 @@ import io.cattle.platform.eventing.annotation.EventHandler;
 import io.cattle.platform.eventing.lock.EventLock;
 import io.cattle.platform.json.JsonMapper;
 import io.cattle.platform.object.ObjectManager;
+import io.cattle.platform.object.meta.ObjectMetaDataManager;
 import io.cattle.platform.object.process.ObjectProcessManager;
 import io.cattle.platform.object.process.StandardProcess;
 import io.cattle.platform.object.resource.ResourceMonitor;
@@ -45,8 +49,16 @@ import javax.inject.Inject;
 
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.netflix.config.DynamicBooleanProperty;
 
 public class SystemStackUpdate extends AbstractJooqDao implements AnnotatedEventListener {
+
+    private static final DynamicBooleanProperty LAUNCH_COMPOSE_EXECUTOR = ArchaiusUtil.getBoolean("compose.executor.execute");
+
+    private static final Logger log = LoggerFactory.getLogger(SystemStackUpdate.class);
 
     public static final String KUBERNETES = "k8s";
     public static final String SWARM = "swarm";
@@ -219,6 +231,7 @@ public class SystemStackUpdate extends AbstractJooqDao implements AnnotatedEvent
         Map<String, CatalogTemplate> templatesById = catalogService.resolvedExternalIds(templates);
         createdStackIds = new ArrayList<>();
 
+        boolean executorRunning = false;
         for (Map.Entry<String, CatalogTemplate> entry : templatesById.entrySet()) {
             String externalId = entry.getKey();
             Stack stack = objectManager.findAny(Stack.class,
@@ -227,6 +240,7 @@ public class SystemStackUpdate extends AbstractJooqDao implements AnnotatedEvent
                     STACK.REMOVED, null);
 
             if (stack == null) {
+                executorRunning = waitForExecutor(executorRunning);
                 stack = catalogService.deploy(account.getId(), entry.getValue());
             }
 
@@ -236,6 +250,34 @@ public class SystemStackUpdate extends AbstractJooqDao implements AnnotatedEvent
         objectManager.reload(account);
         objectManager.setFields(account, AccountConstants.FIELD_CREATED_STACKS, createdStackIds);
         return createdStackIds;
+    }
+
+    private synchronized boolean waitForExecutor(boolean executorRunning) {
+        if (!LAUNCH_COMPOSE_EXECUTOR.get()) {
+            return true;
+        }
+
+        if (executorRunning) {
+            return executorRunning;
+        }
+
+        for (int i = 0; i < 120; i++) {
+            ExternalHandler handler = objectManager.findAny(ExternalHandler.class,
+                    ObjectMetaDataManager.NAME_FIELD, "rancher-compose-executor",
+                    ObjectMetaDataManager.STATE_FIELD, CommonStatesConstants.ACTIVE);
+            if (handler != null) {
+                return true;
+            }
+            log.info("Waiting for rancher-compose-executor");
+
+            try {
+                Thread.sleep(2000);
+            } catch (InterruptedException e) {
+                throw new IllegalStateException(e);
+            }
+        }
+
+        throw new TimeoutException("Failed to find rancher-compose-executor");
     }
 
 }
