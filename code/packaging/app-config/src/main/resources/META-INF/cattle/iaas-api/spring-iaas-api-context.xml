@@ -352,6 +352,7 @@
     <bean class="io.cattle.platform.iaas.api.filter.apikey.ApiKeyFilter" />
     <bean class="io.cattle.platform.iaas.api.filter.compat.CompatibilityOutputFilter" />
     <bean class="io.cattle.platform.iaas.api.filter.agent.AgentFilter" />
+    <bean class="io.cattle.platform.iaas.api.filter.instance.InstanceAgentValidationFilter" />
     <bean class="io.cattle.platform.iaas.api.filter.instance.InstanceImageValidationFilter" />
     <bean class="io.cattle.platform.iaas.api.filter.instance.InstancePortsValidationFilter" />
     <bean class="io.cattle.platform.iaas.api.filter.instance.InstanceVolumeCleanupStrategyValidationFilter" />
