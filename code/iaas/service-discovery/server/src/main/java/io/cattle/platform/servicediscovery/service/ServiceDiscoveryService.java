@@ -35,8 +35,6 @@ public interface ServiceDiscoveryService extends AnnotatedEventListener {
 
     boolean isSelectorContainerMatch(String selector, Instance instance);
 
-    boolean isServiceInstance(Service service, Instance instance);
-
     List<String> getServiceActiveStates();
 
     boolean isGlobalService(Service service);

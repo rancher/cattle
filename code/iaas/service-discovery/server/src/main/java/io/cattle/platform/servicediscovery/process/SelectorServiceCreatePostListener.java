@@ -31,6 +31,8 @@ import javax.inject.Inject;
 
 import org.apache.commons.lang3.StringUtils;
 
+import com.google.common.base.Strings;
+
 public class SelectorServiceCreatePostListener extends AbstractObjectProcessLogic implements ProcessPostListener,
         Priority {
 
@@ -120,6 +122,9 @@ public class SelectorServiceCreatePostListener extends AbstractObjectProcessLogi
     }
 
     protected void registerInstances(final Service service) {
+        if (Strings.isNullOrEmpty(service.getSelectorContainer())) {
+            return;
+        }
         List<Instance> instances = objectManager.find(Instance.class, INSTANCE.ACCOUNT_ID, service.getAccountId(),
                 INSTANCE.REMOVED, null);
 
