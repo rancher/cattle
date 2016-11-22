@@ -3,6 +3,7 @@ package io.cattle.platform.process.monitor;
 import io.cattle.platform.core.model.Host;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.InstanceHostMap;
+import io.cattle.platform.core.model.Mount;
 import io.cattle.platform.core.model.Service;
 import io.cattle.platform.core.model.ServiceConsumeMap;
 import io.cattle.platform.core.model.ServiceExposeMap;
@@ -59,9 +60,9 @@ public class EventNotificationChangeMonitor extends io.cattle.platform.engine.pr
         } else if (obj instanceof VolumeStoragePoolMap) {
             accountId = sendChange(StoragePool.class, accountId, ((VolumeStoragePoolMap) obj).getStoragePoolId(), schedule, context);
             accountId = sendChange(Volume.class, accountId, ((VolumeStoragePoolMap) obj).getVolumeId(), schedule, context);
-        } else if (obj instanceof StoragePoolHostMap) {
-            accountId = sendChange(StoragePool.class, accountId, ((StoragePoolHostMap) obj).getStoragePoolId(), schedule, context);
-            accountId = sendChange(Host.class, accountId, ((StoragePoolHostMap) obj).getHostId(), schedule, context);
+        } else if (obj instanceof Mount) {
+            accountId = sendChange(Instance.class, accountId, ((Mount) obj).getInstanceId(), schedule, context);
+            accountId = sendChange(Volume.class, accountId, ((Mount) obj).getVolumeId(), schedule, context);
         }
     }
 

@@ -1,10 +1,9 @@
 package io.cattle.platform.process.metadata;
 
 import io.cattle.platform.agent.instance.dao.AgentInstanceDao;
+import io.cattle.platform.agent.instance.service.AgentMetadataService;
 import io.cattle.platform.archaius.util.ArchaiusUtil;
-import io.cattle.platform.configitem.request.ConfigUpdateRequest;
 import io.cattle.platform.configitem.version.ConfigItemStatusManager;
-import io.cattle.platform.core.model.Agent;
 import io.cattle.platform.core.model.HostIpAddressMap;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.InstanceHostMap;
@@ -12,7 +11,6 @@ import io.cattle.platform.core.model.IpAddress;
 import io.cattle.platform.core.model.Service;
 import io.cattle.platform.core.model.ServiceConsumeMap;
 import io.cattle.platform.core.model.ServiceExposeMap;
-import io.cattle.platform.core.util.SystemLabels;
 import io.cattle.platform.engine.handler.HandlerResult;
 import io.cattle.platform.engine.handler.ProcessPostListener;
 import io.cattle.platform.engine.process.ProcessInstance;
@@ -40,6 +38,8 @@ public class MetadataProcessHandler extends AbstractObjectProcessLogic implement
     AgentInstanceDao agentInstanceDao;
     @Inject
     ConfigItemStatusManager statusManager;
+    @Inject
+    AgentMetadataService agentMetadata;
 
     @Override
     public String[] getProcessNames() {
@@ -56,12 +56,7 @@ public class MetadataProcessHandler extends AbstractObjectProcessLogic implement
             return null;
         }
 
-        List<Long> agentIds = agentInstanceDao.getAgentProviderIgnoreHealth(SystemLabels.LABEL_AGENT_SERVICE_METADATA, (Long)accountId);
-        for (long agentId : agentIds) {
-            ConfigUpdateRequest request = ConfigUpdateRequest.forResource(Agent.class, agentId);
-            request.addItem("metadata-answers");
-            statusManager.updateConfig(request);
-        }
+        agentMetadata.updateMetadata((Long)accountId);
 
         return null;
     }

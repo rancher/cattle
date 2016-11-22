@@ -25,7 +25,8 @@ def test_host_deactivate_two_hosts(super_client, new_context):
     assert agent.state == 'active'
 
     # Create another host using the same agent
-    other_host = super_client.create_host(agentId=agent.id)
+    other_host = super_client.create_host(hostname='test',
+                                          agentId=agent.id)
     other_host = super_client.wait_success(other_host)
     assert other_host.state == 'active'
     assert other_host.agentId == agent.id

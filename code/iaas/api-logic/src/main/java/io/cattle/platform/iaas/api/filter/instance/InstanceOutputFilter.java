@@ -10,11 +10,13 @@ import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.iaas.api.filter.common.CachedOutputFilter;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.util.DataAccessor;
+import io.cattle.platform.util.type.CollectionUtils;
 import io.github.ibuildthecloud.gdapi.context.ApiContext;
 import io.github.ibuildthecloud.gdapi.id.IdFormatter;
 import io.github.ibuildthecloud.gdapi.model.Resource;
 import io.github.ibuildthecloud.gdapi.request.ApiRequest;
 
+import java.net.URL;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -59,6 +61,17 @@ public class InstanceOutputFilter extends CachedOutputFilter<Map<Long, Map<Strin
             converted.getFields().put(InstanceConstants.FIELD_PRIMARY_NETWORK_ID, idF.formatId(NetworkConstants.KIND_NETWORK, networkIds.get(0)));
         }
 
+        Map<String, Object> labels = CollectionUtils.toMap(converted.getFields().get(InstanceConstants.FIELD_LABELS));
+        if ("rancher-agent".equals(labels.get("io.rancher.container.system"))) {
+            Map<String, URL> actions = converted.getActions();
+            if (actions != null) {
+                actions.remove("remove");
+                actions.remove("stop");
+                actions.remove("start");
+                actions.remove("restart");
+            }
+        }
+
         return converted;
     }
 
@@ -82,7 +95,7 @@ public class InstanceOutputFilter extends CachedOutputFilter<Map<Long, Map<Strin
             }
             fields.put(InstanceConstants.FIELD_MOUNTS, entry.getValue());
         }
-        
+
         for (Map.Entry<Long, List<HealthcheckState>> entry : serviceDao.getHealthcheckStatesForInstances(ids, idF)
                 .entrySet()) {
             Map<String, Object> fields = result.get(entry.getKey());
@@ -91,7 +104,7 @@ public class InstanceOutputFilter extends CachedOutputFilter<Map<Long, Map<Strin
                 result.put(entry.getKey(), fields);
             }
             fields.put(InstanceConstants.FIELD_HEALTHCHECK_STATES, entry.getValue());
-            
+
         }
 
         return result;

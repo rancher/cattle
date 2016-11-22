@@ -2,6 +2,8 @@ package io.cattle.platform.agent.server.resource.impl;
 
 import static io.cattle.platform.core.model.tables.HostTable.*;
 import static io.cattle.platform.core.model.tables.PhysicalHostTable.*;
+
+import io.cattle.platform.agent.instance.service.AgentMetadataService;
 import io.cattle.platform.agent.server.ping.dao.PingDao;
 import io.cattle.platform.archaius.util.ArchaiusUtil;
 import io.cattle.platform.core.constants.AgentConstants;
@@ -77,6 +79,8 @@ public class AgentResourcesMonitor implements AnnotatedEventListener {
     ObjectManager objectManager;
     @Inject
     LockManager lockManager;
+    @Inject
+    AgentMetadataService agentMetadataService;
     @Inject
     EventService eventService;
     Cache<String, Boolean> resourceCache;
@@ -180,19 +184,36 @@ public class AgentResourcesMonitor implements AnnotatedEventListener {
             if (ips.size() == 0) {
                 ipAddressDao.assignAndActivateNewAddress(host, address);
             } else {
+                boolean publish = false;
                 IpAddress ip = ips.get(0);
                 if (!address.equalsIgnoreCase(ip.getAddress())) {
+                    publish = true;
                     ipAddressDao.updateIpAddress(ip, address);
                 }
                 String currentIp = DataAccessor.fieldString(host, HostConstants.FIELD_IP_ADDRESS);
                 if (!ObjectUtils.equals(currentIp, ip.getAddress())) {
                     try {
                         objectManager.setFields(host, HostConstants.FIELD_IP_ADDRESS, ip.getAddress());
+                        publish = true;
                     } catch (DataChangedException e) {
                     }
                 }
+                if (publish) {
+                    publishChanged(host);
+                    agentMetadataService.updateMetadata(host.getAccountId());
+                }
             }
         }
+    }
+
+    protected void publishChanged(Host host)  {
+        Map<String, Object> eventData = CollectionUtils.asMap(ObjectMetaDataManager.ACCOUNT_FIELD, host.getAccountId());
+        // send host update event
+        Event event = EventVO.newEvent(FrameworkEvents.STATE_CHANGE)
+                .withData(eventData)
+                .withResourceType(HostConstants.TYPE)
+                .withResourceId(host.getId().toString());
+        eventService.publish(event);
     }
 
     protected Map<String, Host> setHosts(Agent agent, AgentResources resources) {
@@ -293,17 +314,11 @@ public class AgentResourcesMonitor implements AnnotatedEventListener {
                     } else {
                         try {
                             objectManager.setFields(host, updateFields);
-                            updateFields.put(ObjectMetaDataManager.ACCOUNT_FIELD, host.getAccountId());
-                            // send host update event
-                            Event event = EventVO.newEvent(FrameworkEvents.STATE_CHANGE)
-                                    .withData(updateFields)
-                                    .withResourceType(HostConstants.TYPE)
-                                    .withResourceId(host.getId().toString());
-                            eventService.publish(event);
+                            publishChanged(host);
                         } catch (DataChangedException e) {
                             /*
                              * Various reasons why this might conflict with other processes, but here
-                             * we can safely igore it.
+                             * we can safely ignore it.
                              */
                         }
                     }
