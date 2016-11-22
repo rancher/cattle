@@ -17,6 +17,8 @@ import java.util.Map;
 
 import javax.inject.Inject;
 
+import com.google.common.base.Strings;
+
 public class ServiceMappingsOutputFilter extends CachedOutputFilter<Map<Long, ServiceMappingsOutputFilter.ServiceInfo>> {
 
     @Inject
@@ -56,7 +58,7 @@ public class ServiceMappingsOutputFilter extends CachedOutputFilter<Map<Long, Se
             if (info.serviceLinks != null) {
                 for (ServiceLink link : info.serviceLinks) {
                     String name = link.linkName;
-                    if (name == null) {
+                    if (Strings.isNullOrEmpty(name)) {
                         if (link.stackId.equals(service.getStackId())) {
                             name = link.serviceName;
                         } else {
