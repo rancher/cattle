@@ -546,24 +546,24 @@ def test_container_request_ip(super_client, client, context):
                                             startOnCreate=False)
         container = super_client.wait_success(container)
         assert container.state == 'stopped'
-        container.data.fields['requestedIpAddress'] = '1.1.1.1'
+        container.data.fields['requestedIpAddress'] = '10.42.33.33'
 
         container = super_client.update(container, data=container.data)
         container = super_client.wait_success(container.start())
 
-        assert container.primaryIpAddress == '1.1.1.1'
+        assert container.primaryIpAddress == '10.42.33.33'
 
         # Try second time and should fail because it is used
         container2 = client.create_container(imageUuid=context.image_uuid,
                                              startOnCreate=False)
         container2 = super_client.wait_success(container2)
         assert container2.state == 'stopped'
-        container2.data.fields['requestedIpAddress'] = '1.1.1.1'
+        container2.data.fields['requestedIpAddress'] = '10.42.33.33'
 
         container2 = super_client.update(container2, data=container2.data)
         container2 = super_client.wait_success(container2.start())
 
-        assert container2.primaryIpAddress != '1.1.1.1'
+        assert container2.primaryIpAddress != '10.42.33.33'
 
         # Release 1.1.1.1
         container = super_client.wait_success(super_client.delete(container))

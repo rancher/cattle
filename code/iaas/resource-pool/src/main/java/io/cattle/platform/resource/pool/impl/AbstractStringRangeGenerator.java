@@ -37,10 +37,15 @@ public abstract class AbstractStringRangeGenerator implements PooledResourceItem
         return next;
     }
 
+    @Override
+    public boolean isInPool(String resource) {
+        long r = fromString(resource);
+        return min <= r && r <= max;
+    }
+
     protected abstract long fromString(String value);
 
     protected abstract String toString(long value);
-
     @Override
     public void remove() {
         throw new UnsupportedOperationException();

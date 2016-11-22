@@ -192,6 +192,9 @@ public class ContainerEventCreate extends AbstractDefaultProcessHandler {
 
     private void setLabels(Map<String, Object> inspect, Map<String, Object> data, Instance instance) {
         Map<String, Object> labels = DataAccessor.fieldMap(instance, InstanceConstants.FIELD_LABELS);
+        if ("true".equals(labels.get(SystemLabels.LABEL_RANCHER_NETWORK))) {
+            labels.put(SystemLabels.LABEL_CNI_NETWORK, NetworkConstants.NETWORK_MODE_MANAGED);
+        }
         labels.putAll(getLabels(inspect, data));
         DataAccessor.setField(instance, InstanceConstants.FIELD_LABELS, labels);
     }
