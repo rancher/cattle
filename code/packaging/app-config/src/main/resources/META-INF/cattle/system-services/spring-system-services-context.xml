@@ -518,4 +518,5 @@
     <bean class="io.cattle.platform.service.launcher.ServiceAccountCreateStartup" />
     <bean class="io.cattle.platform.network.impl.NetworkServiceImpl" />
 
+    <bean class="io.cattle.platform.agent.instance.service.AgentMetadataService" />
 </beans>
