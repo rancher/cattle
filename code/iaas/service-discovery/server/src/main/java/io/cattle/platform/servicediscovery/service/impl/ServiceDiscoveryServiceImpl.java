@@ -4,7 +4,6 @@ import static io.cattle.platform.core.model.tables.ServiceIndexTable.*;
 import static io.cattle.platform.core.model.tables.ServiceTable.*;
 import static io.cattle.platform.core.model.tables.StackTable.*;
 import static io.cattle.platform.core.model.tables.SubnetTable.*;
-
 import io.cattle.platform.allocator.service.AllocatorService;
 import io.cattle.platform.configitem.events.ConfigUpdate;
 import io.cattle.platform.configitem.model.Client;
@@ -31,7 +30,6 @@ import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.Network;
 import io.cattle.platform.core.model.Service;
 import io.cattle.platform.core.model.ServiceConsumeMap;
-import io.cattle.platform.core.model.ServiceExposeMap;
 import io.cattle.platform.core.model.ServiceIndex;
 import io.cattle.platform.core.model.Stack;
 import io.cattle.platform.core.model.Subnet;
@@ -424,12 +422,6 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
         }
 
         return SelectorUtils.isSelectorMatch(selector, instanceLabels);
-    }
-
-    @Override
-    public boolean isServiceInstance(Service service, Instance instance) {
-        ServiceExposeMap map = exposeMapDao.getServiceInstanceMap(service, instance);
-        return map != null && !map.getState().equalsIgnoreCase(CommonStatesConstants.REMOVING);
     }
 
     @Override
