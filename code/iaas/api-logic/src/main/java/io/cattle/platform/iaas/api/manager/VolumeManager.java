@@ -6,6 +6,7 @@ import io.cattle.platform.core.dao.StoragePoolDao;
 import io.cattle.platform.core.model.StoragePool;
 import io.cattle.platform.core.model.Volume;
 import io.cattle.platform.core.model.VolumeStoragePoolMap;
+import io.cattle.platform.eventing.EventService;
 import io.cattle.platform.object.meta.ObjectMetaDataManager;
 import io.cattle.platform.object.util.ObjectUtils;
 
@@ -20,6 +21,8 @@ public class VolumeManager extends AbstractJooqResourceManager {
 
     @Inject
     StoragePoolDao storagePoolDao;
+    @Inject
+    EventService eventService;
 
     @Override
     public String[] getTypes() {
@@ -54,6 +57,7 @@ public class VolumeManager extends AbstractJooqResourceManager {
                     Long volumeId = (Long)ObjectUtils.getId(v);
                     vspm.setVolumeId(volumeId);
                     getObjectManager().create(vspm);
+                    ObjectUtils.publishChanged(eventService, getObjectManager(), sp);
                 }
             }
         }
