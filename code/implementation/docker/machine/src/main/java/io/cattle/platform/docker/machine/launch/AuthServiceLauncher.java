@@ -1,6 +1,7 @@
 package io.cattle.platform.docker.machine.launch;
 
 import static io.cattle.platform.core.model.tables.SettingTable.*;
+
 import io.cattle.platform.archaius.util.ArchaiusUtil;
 import io.cattle.platform.core.model.Credential;
 import io.cattle.platform.core.model.Setting;
@@ -147,7 +148,7 @@ public class AuthServiceLauncher extends GenericServiceLauncher implements Initi
             StringBuilder authUrl = new StringBuilder(ServiceAuthConstants.AUTH_SERVICE_URL.get());
             Request.Post(authUrl+"/reload").execute();
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            log.info("Failed to reload auth service: {}", e.getMessage());
         }
     }
 
