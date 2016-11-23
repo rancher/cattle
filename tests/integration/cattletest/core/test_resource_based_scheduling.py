@@ -77,7 +77,7 @@ def test_resource_based_scheduler(new_context, super_client):
 
     do_no_hosts_match_test({'imageUuid': image, 'milliCpuReservation': 500,
                             'networkMode': 'host'},
-                           client, mock_scheduler,
+                           client, mock_scheduler, [host1],
                            [{'resource': 'cpuReservation', 'amount': 500},
                             {'resource': 'instanceReservation', 'amount': 1}])
 
@@ -86,20 +86,29 @@ def do_scheduling_test(container_kw, client, mock_scheduler, hosts,
                        expected_host, expected_resource_requests):
     c = client.create_container(**container_kw)
 
-    event = mock_scheduler.get_next_event()
-    assert event['name'] == 'scheduler.prioritize'
-    assert resource_reqs(event) == expected_resource_requests
+    event = None
     host_uuids = [host.uuid for host in hosts]
     data = {'prioritizedCandidates': host_uuids}
-    mock_scheduler.publish(event, data)
 
-    event = mock_scheduler.get_next_event()
-    assert event['name'] == 'scheduler.reserve'
-
-    assert host_id(event) == expected_host.uuid
-
+    # Iterate through and respond to events until we get one for the container
+    # being tested. Looking for the prioritize event.
+    while True:
+        event = mock_scheduler.get_next_event()
+        mock_scheduler.publish(event, data)
+        if event['resourceId'] == c.id:
+            break
+    assert event['name'] == 'scheduler.prioritize'
     assert resource_reqs(event) == expected_resource_requests
-    mock_scheduler.publish(event, {})
+
+    # Looking for reserve event.
+    while True:
+        event = mock_scheduler.get_next_event()
+        mock_scheduler.publish(event, data)
+        if event['resourceId'] == c.id:
+            break
+    assert event['name'] == 'scheduler.reserve'
+    assert host_id(event) == expected_host.uuid
+    assert resource_reqs(event) == expected_resource_requests
 
     c = client.wait_success(c)
     assert c.state == 'running'
@@ -111,22 +120,40 @@ def do_scheduling_test(container_kw, client, mock_scheduler, hosts,
     except:
         pass
 
-    event = mock_scheduler.get_next_event()
+    # Looking for release event
+    while True:
+        event = mock_scheduler.get_next_event()
+        mock_scheduler.publish(event, data)
+        # Look away now
+        if event['resourceId'].split('iir')[1] == c.id.split('i')[1]:
+            break
+
     assert event['name'] == 'scheduler.release'
     assert host_id(event) == expected_host.uuid
     assert resource_reqs(event) == expected_resource_requests
 
 
-def do_no_hosts_match_test(container_kw, client, mock_scheduler,
+def do_no_hosts_match_test(container_kw, client, mock_scheduler, hosts,
                            expected_resource_requests):
     c = client.create_container(**container_kw)
 
-    event = mock_scheduler.get_next_event()
+    matched = {'prioritizedCandidates': hosts}
+    # Point of this test is to send back no host for the container under test
+    not_matched = {'prioritizedCandidates': []}
+    done = False
+    event = None
+    while True:
+        event = mock_scheduler.get_next_event()
+        if event['resourceId'] == c.id:
+            data = not_matched
+            done = True
+        else:
+            data = matched
+        mock_scheduler.publish(event, data)
+        if done:
+            break
     assert event['name'] == 'scheduler.prioritize'
     assert resource_reqs(event) == expected_resource_requests
-    # Return empty candidate list
-    data = {'prioritizedCandidates': []}
-    mock_scheduler.publish(event, data)
 
     with pytest.raises(ClientApiError) as e:
         client.wait_success(c)
