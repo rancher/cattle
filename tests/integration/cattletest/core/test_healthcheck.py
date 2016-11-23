@@ -1494,3 +1494,67 @@ def test_du_removal(super_client, new_context):
     c2 = super_client.reload(expose_map.instance())
 
     assert c1.deploymentUnitUuid != c2.deploymentUnitUuid
+
+
+def test_balancer_svc_upgrade(client, context, super_client):
+    env = client.create_stack(name='env-' + random_str())
+    image_uuid = context.image_uuid
+
+    launch_config = {"imageUuid": image_uuid}
+    lb_svc = client. \
+        create_loadBalancerService(name=random_str(),
+                                   stackId=env.id,
+                                   launchConfig=launch_config,
+                                   lbConfig={})
+
+    lb_svc = client.wait_success(lb_svc)
+
+    lb_svc = client.wait_success(lb_svc.activate())
+
+    assert len(lb_svc.launchConfig.labels) == 2
+    assert lb_svc.launchConfig.healthCheck is not None
+
+    launch_config = {"imageUuid": image_uuid,
+                     'labels': {'foo': 'bar'}}
+    strategy = {"launchConfig": launch_config,
+                "intervalMillis": 100}
+    lb_svc.upgrade_action(inServiceStrategy=strategy)
+
+    m = super_client. \
+        list_serviceExposeMap(serviceId=lb_svc.id,
+                              state='active', managed=True)
+
+    def wait_for_map_count(service):
+        m = super_client. \
+            list_serviceExposeMap(serviceId=service.id, state='active')
+        return len(m) == 2
+
+    def wait_for_managed_map_count(service):
+        m = super_client. \
+            list_serviceExposeMap(serviceId=service.id, state='active',
+                                  managed=True)
+        return len(m) == 1
+
+    wait_for_condition(client, lb_svc, wait_for_map_count)
+    wait_for_condition(client, lb_svc, wait_for_managed_map_count)
+
+    m = super_client. \
+        list_serviceExposeMap(serviceId=lb_svc.id,
+                              state='active', managed=True)
+
+    c = super_client.reload(m[0].instance())
+
+    wait_for(lambda: super_client.reload(c).state == 'running')
+
+    c = super_client.reload(m[0].instance())
+
+    hci = find_one(c.healthcheckInstances)
+    hcihm = find_one(hci.healthcheckInstanceHostMaps)
+    agent = _get_agent_for_container(context, c)
+    assert hcihm.healthState == 'initializing'
+    assert c.healthState == 'initializing'
+    _update_healthy(agent, hcihm, c, super_client)
+
+    lb_svc = client.wait_success(lb_svc)
+    assert lb_svc.launchConfig.healthCheck is not None
+    assert len(lb_svc.launchConfig.labels) == 3

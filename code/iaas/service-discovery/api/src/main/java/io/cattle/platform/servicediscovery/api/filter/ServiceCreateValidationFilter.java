@@ -2,16 +2,13 @@ package io.cattle.platform.servicediscovery.api.filter;
 
 import static io.cattle.platform.core.model.tables.ServiceTable.*;
 import io.cattle.platform.archaius.util.ArchaiusUtil;
-import io.cattle.platform.core.addon.InstanceHealthCheck;
 import io.cattle.platform.core.addon.PortRule;
 import io.cattle.platform.core.addon.ScalePolicy;
-import io.cattle.platform.core.constants.AgentConstants;
 import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.constants.ServiceConstants;
 import io.cattle.platform.core.model.Service;
 import io.cattle.platform.core.model.Stack;
-import io.cattle.platform.core.util.SystemLabels;
 import io.cattle.platform.iaas.api.filter.common.AbstractDefaultResourceManagerFilter;
 import io.cattle.platform.json.JsonMapper;
 import io.cattle.platform.object.ObjectManager;
@@ -53,9 +50,9 @@ public class ServiceCreateValidationFilter extends AbstractDefaultResourceManage
     @Inject
     JsonMapper jsonMapper;
 
-    private static final int LB_HEALTH_CHECK_PORT = 42;
     public static final DynamicStringProperty DEFAULT_REGISTRY = ArchaiusUtil.getString("registry.default");
     public static final DynamicStringProperty WHITELIST_REGISTRIES = ArchaiusUtil.getString("registry.whitelist");
+    private static final int LB_HEALTH_CHECK_PORT = 42;
 
     @Override
     public Class<?>[] getTypeClasses() {
@@ -87,14 +84,12 @@ public class ServiceCreateValidationFilter extends AbstractDefaultResourceManage
         request = validateAndSetImage(request, service, type);
 
         validatePorts(service, type, request);
-
-        request = setHealthCheck(type, request);
         
         validateScalePolicy(service, request, false);
 
         request = setServiceIndexStrategy(type, request);
 
-        request = setLBServiceEnvVars(type, service, request);
+        request = setLBServiceEnvVarsAndHealthcheck(type, service, request);
         
         validateLbConfig(request, type);
 
@@ -144,7 +139,7 @@ public class ServiceCreateValidationFilter extends AbstractDefaultResourceManage
     }
 
     @SuppressWarnings("unchecked")
-    public ApiRequest setLBServiceEnvVars(String type, Service lbService, ApiRequest request) {
+    public ApiRequest setLBServiceEnvVarsAndHealthcheck(String type, Service lbService, ApiRequest request) {
         if (!ServiceConstants.KIND_LOAD_BALANCER_SERVICE.equalsIgnoreCase(type)) {
             return request;
         }
@@ -154,17 +149,9 @@ public class ServiceCreateValidationFilter extends AbstractDefaultResourceManage
             return request;
         }
 
-        Map<String, Object> launchConfig = (Map<String, Object>) data.get(ServiceConstants.FIELD_LAUNCH_CONFIG);
+        Map<Object, Object> launchConfig = (Map<Object, Object>) data.get(ServiceConstants.FIELD_LAUNCH_CONFIG);
 
-        Map<String, String> labels = new HashMap<>();
-        Object labelsObj = launchConfig.get(InstanceConstants.FIELD_LABELS);
-        if (labelsObj != null) {
-            labels = (Map<String, String>) labelsObj;
-        }
-
-        labels.put(SystemLabels.LABEL_AGENT_ROLE, AgentConstants.ENVIRONMENT_ADMIN_ROLE);
-        labels.put(SystemLabels.LABEL_AGENT_CREATE, "true");
-        launchConfig.put(InstanceConstants.FIELD_LABELS, labels);
+        ServiceDiscoveryUtil.injectBalancerLabelsAndHealthcheck(launchConfig);
         data.put(ServiceConstants.FIELD_LAUNCH_CONFIG, launchConfig);
         request.setRequestObject(data);
         return request;
@@ -224,31 +211,6 @@ public class ServiceCreateValidationFilter extends AbstractDefaultResourceManage
             throw new ValidationErrorException(ValidationErrorCodes.MAX_LIMIT_EXCEEDED,
                     "Min scale can't exceed scale");
         }
-    }
-
-
-    @SuppressWarnings("unchecked")
-    public ApiRequest setHealthCheck(String type, ApiRequest request) {
-        if (!type.equalsIgnoreCase(ServiceConstants.KIND_LOAD_BALANCER_SERVICE)) {
-            return request;
-        }
-        Map<String, Object> data = CollectionUtils.toMap(request.getRequestObject());
-        Integer healthCheckPort = LB_HEALTH_CHECK_PORT;
-        if (data.get(ServiceConstants.FIELD_LAUNCH_CONFIG) != null) {
-            Map<String, Object> launchConfig = (Map<String, Object>)data.get(ServiceConstants.FIELD_LAUNCH_CONFIG);
-            if (launchConfig.get(InstanceConstants.FIELD_HEALTH_CHECK) == null) {
-                InstanceHealthCheck healthCheck = new InstanceHealthCheck();
-                healthCheck.setPort(healthCheckPort);
-                healthCheck.setInterval(2000);
-                healthCheck.setHealthyThreshold(2);
-                healthCheck.setUnhealthyThreshold(3);
-                healthCheck.setResponseTimeout(2000);
-                launchConfig.put(InstanceConstants.FIELD_HEALTH_CHECK, healthCheck);
-                data.put(ServiceConstants.FIELD_LAUNCH_CONFIG, launchConfig);
-                request.setRequestObject(data);
-            }
-        }
-        return request;
     }
 
     protected void validateSelector(ApiRequest request) {

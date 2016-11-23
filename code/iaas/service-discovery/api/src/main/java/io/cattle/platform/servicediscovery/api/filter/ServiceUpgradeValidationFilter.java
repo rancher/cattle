@@ -129,6 +129,14 @@ public class ServiceUpgradeValidationFilter extends AbstractDefaultResourceManag
             }
         }
 
+        if (service.getKind().equalsIgnoreCase(ServiceConstants.KIND_LOAD_BALANCER_SERVICE)) {
+            if (strategy.getLaunchConfig() == null) {
+                ValidationErrorCodes.throwValidationError(ValidationErrorCodes.INVALID_OPTION,
+                        "LaunchConfig is required for load balancer service");
+            }
+            ServiceDiscoveryUtil.injectBalancerLabelsAndHealthcheck((Map<Object, Object>) strategy.getLaunchConfig());
+        }
+
         Map<String, Map<Object, Object>> serviceLCs = getExistingLaunchConfigs(service);
         Map<String, Map<Object, Object>> lCsToUpdateInitial = getLaunchConfigsToUpdateInitial(service, strategy,
                 serviceLCs);
@@ -136,6 +144,7 @@ public class ServiceUpgradeValidationFilter extends AbstractDefaultResourceManag
                 lCsToUpdateInitial);
 
         for (String name : lCsToUpdateFinal.keySet()) {
+
             if (!lCsToUpdateInitial.containsKey(name)) {
                 Object launchConfig = lCsToUpdateFinal.get(name);
                 if (name.equalsIgnoreCase(service.getName())) {
