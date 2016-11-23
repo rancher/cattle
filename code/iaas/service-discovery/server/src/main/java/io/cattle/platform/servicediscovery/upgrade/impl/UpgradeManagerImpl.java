@@ -110,7 +110,7 @@ public class UpgradeManagerImpl implements UpgradeManager {
         // upgrade deployment units
         upgradeDeploymentUnits(service, deploymentUnitInstancesToUpgrade, deploymentUnitInstancesUpgradedUnmanaged,
                 deploymentUnitInstancesToCleanup,
-                batchSize, startFirst, preseveDeploymentUnit(service, strategy), isUpgrade, currentProcess);
+                batchSize, startFirst, preseveDeploymentUnit(service, strategy), isUpgrade, currentProcess, strategy);
 
         // check if empty
         if (deploymentUnitInstancesToUpgrade.isEmpty()) {
@@ -133,7 +133,7 @@ public class UpgradeManagerImpl implements UpgradeManager {
             final Map<String, List<Instance>> deploymentUnitInstancesToCleanup,
             final long batchSize,
             final boolean startFirst, final boolean preseveDeploymentUnit, final boolean isUpgrade,
-            final String currentProcess) {
+            final String currentProcess, final InServiceUpgradeStrategy strategy) {
         // hold the lock so service.reconcile triggered by config.update
         // (in turn triggered by instance.remove) won't interfere
         lockManager.lock(new ServiceLock(service), new LockCallbackNoReturn() {
@@ -143,7 +143,7 @@ public class UpgradeManagerImpl implements UpgradeManager {
                 // should be skipped for rollback
                 if (isUpgrade) {
                     deploymentMgr.activate(service);
-                    waitForHealthyState(service, ServiceConstants.STATE_UPGRADING);
+                    waitForHealthyState(service, ServiceConstants.STATE_UPGRADING, strategy);
                 }
                 // mark for upgrade
                 markForUpgrade(batchSize);
@@ -152,7 +152,7 @@ public class UpgradeManagerImpl implements UpgradeManager {
                     // 1. reconcile to start new instances
                     activate(service);
                     if (isUpgrade) {
-                        waitForHealthyState(service, currentProcess);
+                        waitForHealthyState(service, currentProcess, strategy);
                     }
                     // 2. stop instances
                     stopInstances(service, deploymentUnitInstancesToCleanup);
@@ -463,14 +463,15 @@ public class UpgradeManagerImpl implements UpgradeManager {
         }
     }
 
-    protected void waitForHealthyState(final Service service, final String currentProcess) {
+    protected void waitForHealthyState(final Service service, final String currentProcess,
+            final InServiceUpgradeStrategy strategy) {
         activityService.run(service, "wait", "Waiting for all instances to be healthy", new Runnable() {
             @Override
             public void run() {
-                List<? extends Instance> serviceInstances = exposeMapDao.listServiceManagedInstances(service);
                 final List<String> healthyStates = Arrays.asList(HealthcheckConstants.HEALTH_STATE_HEALTHY,
                         HealthcheckConstants.HEALTH_STATE_UPDATING_HEALTHY);
-                for (final Instance instance : serviceInstances) {
+                List<? extends Instance> instancesToCheck = getInstancesToCheckForHealth(service, strategy);
+                for (final Instance instance : instancesToCheck) {
                     if (instance.getState().equalsIgnoreCase(InstanceConstants.STATE_RUNNING)) {
                         resourceMntr.waitFor(instance,
                                 new ResourcePredicate<Instance>() {
@@ -493,6 +494,37 @@ public class UpgradeManagerImpl implements UpgradeManager {
                 }
             }
         });
+    }
+
+    private List<? extends Instance> getInstancesToCheckForHealth(Service service,
+            InServiceUpgradeStrategy strategy) {
+        if (strategy == null) {
+            return exposeMapDao.listServiceManagedInstances(service);
+        }
+
+        Map<String, String> lcToCurrentV = getLaunchConfigToCurrentVersion(service, strategy);
+        List<Instance> filtered = new ArrayList<>();
+        // only check upgraded instances for health
+        for (String lc : lcToCurrentV.keySet()) {
+            List<? extends Instance> instances = exposeMapDao.listServiceManagedInstances(service, lc);
+            for (Instance instance : instances) {
+                if (instance.getVersion() != null &&
+                        instance.getVersion().equalsIgnoreCase(lcToCurrentV.get(lc))) {
+                    filtered.add(instance);
+                }
+            }
+        }
+        return filtered;
+    }
+
+    private Map<String, String> getLaunchConfigToCurrentVersion(Service service, InServiceUpgradeStrategy strategy) {
+        Map<String, String> lcToV = new HashMap<>();
+        Map<String, Pair<String, Map<String, Object>>> vToC = strategy.getNameToVersionToConfig(service.getName(),
+                false);
+        for (String lc : vToC.keySet()) {
+            lcToV.put(lc, vToC.get(lc).getLeft());
+        }
+        return lcToV;
     }
 
     public void cleanupUpgradedInstances(Service service) {
@@ -561,7 +593,7 @@ public class UpgradeManagerImpl implements UpgradeManager {
             @Override
             public void doWithLockNoResult() {
                 // 1. Wait for the service instances to become healthy
-                waitForHealthyState(service, ServiceConstants.STATE_RESTARTING);
+                waitForHealthyState(service, ServiceConstants.STATE_RESTARTING, null);
                 // 2. stop instances
                 stopInstances(service, deploymentUnitsToStop);
                 // 3. wait for reconcile (instances will be restarted along)
