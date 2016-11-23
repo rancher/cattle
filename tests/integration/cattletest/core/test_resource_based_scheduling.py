@@ -125,9 +125,10 @@ def do_scheduling_test(container_kw, client, mock_scheduler, hosts,
         event = mock_scheduler.get_next_event()
         mock_scheduler.publish(event, data)
         # Look away now
-        if event['resourceId'].split('iir')[1] == c.id.split('i')[1]:
+        res_id = event['resourceId']
+        res_id = res_id.split('iir')[1] if 'iir' in res_id else res_id
+        if res_id == c.id.split('i')[1]:
             break
-
     assert event['name'] == 'scheduler.release'
     assert host_id(event) == expected_host.uuid
     assert resource_reqs(event) == expected_resource_requests
