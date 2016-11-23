@@ -192,7 +192,7 @@ public class InstanceStart extends AbstractDefaultProcessHandler {
 
     protected void waitForDependenciesStart(Instance instance) {
         List<Long> instancesIds = DataAccessor.fieldLongList(instance, DockerInstanceConstants.FIELD_VOLUMES_FROM);
-        Long networkFromId = DataAccessor.fieldLong(instance, DockerInstanceConstants.FIELD_NETWORK_CONTAINER_ID);
+        Long networkFromId = instance.getNetworkContainerId();
         if (networkFromId != null) {
             instancesIds.add(networkFromId);
         }
