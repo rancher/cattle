@@ -152,7 +152,7 @@ public class ResourcePoolManagerImpl implements ResourcePoolManager {
             if (tryItem == null) {
                 item = generator.next();
             } else {
-                item = tryItem;
+                item = generator.isInPool(tryItem) ? tryItem : generator.next();
                 tryItem = null;
             }
             Map<Object, Object> newKeys = new HashMap<Object, Object>(keys);
