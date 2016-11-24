@@ -41,6 +41,7 @@ public class SampleDataStartupV13 extends AbstractSampleData {
         updateSetting();
         migrateLibraryStacks();
         migrateCommunityStacks();
+        migrateMesos();
     }
 
     protected void updateSetting() {
@@ -59,6 +60,15 @@ public class SampleDataStartupV13 extends AbstractSampleData {
             setting.setValue(value);
             objectManager.persist(setting);
             ArchaiusUtil.refresh();
+        }
+    }
+
+    protected void migrateMesos() {
+        for (Stack stack : objectManager.find(Stack.class,
+                STACK.EXTERNAL_ID, "system://mesos",
+                STACK.REMOVED, null)) {
+            stack.setExternalId("catalog://library:infra*mesos:0");
+            objectManager.persist(stack);
         }
     }
 
