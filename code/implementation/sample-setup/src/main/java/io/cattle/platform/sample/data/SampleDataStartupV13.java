@@ -67,7 +67,7 @@ public class SampleDataStartupV13 extends AbstractSampleData {
         for (Stack stack : objectManager.find(Stack.class,
                 STACK.EXTERNAL_ID, "system://mesos",
                 STACK.REMOVED, null)) {
-            stack.setExternalId("catalog://library:infra*mesos:0");
+            stack.setExternalId("catalog://community:infra*mesos:0");
             objectManager.persist(stack);
         }
     }
