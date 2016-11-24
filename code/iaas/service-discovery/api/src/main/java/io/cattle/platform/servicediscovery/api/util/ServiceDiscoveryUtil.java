@@ -2,6 +2,8 @@ package io.cattle.platform.servicediscovery.api.util;
 
 import io.cattle.platform.allocator.service.AllocatorService;
 import io.cattle.platform.core.addon.InServiceUpgradeStrategy;
+import io.cattle.platform.core.addon.InstanceHealthCheck;
+import io.cattle.platform.core.constants.AgentConstants;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.constants.ServiceConstants;
 import io.cattle.platform.core.model.Instance;
@@ -10,6 +12,7 @@ import io.cattle.platform.core.model.ServiceConsumeMap;
 import io.cattle.platform.core.model.ServiceExposeMap;
 import io.cattle.platform.core.model.Stack;
 import io.cattle.platform.core.util.PortSpec;
+import io.cattle.platform.core.util.SystemLabels;
 import io.cattle.platform.object.meta.ObjectMetaDataManager;
 import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.object.util.DataUtils;
@@ -29,6 +32,7 @@ import org.apache.commons.lang3.StringUtils;
 public class ServiceDiscoveryUtil {
 
     public static final List<String> SERVICE_INSTANCE_NAME_DIVIDORS = Arrays.asList("-", "_");
+    private static final int LB_HEALTH_CHECK_PORT = 42;
 
     public static String getInstanceName(Instance instance) {
         if (instance != null && instance.getRemoved() == null) {
@@ -402,5 +406,31 @@ public class ServiceDiscoveryUtil {
 
         }
         return portMap;
+    }
+
+    @SuppressWarnings("unchecked")
+    public static void injectBalancerLabelsAndHealthcheck(Map<Object, Object> launchConfig) {
+        Map<String, String> labels = new HashMap<>();
+        // set labels
+        Object labelsObj = launchConfig.get(InstanceConstants.FIELD_LABELS);
+        if (labelsObj != null) {
+            labels = (Map<String, String>) labelsObj;
+        }
+
+        labels.put(SystemLabels.LABEL_AGENT_ROLE, AgentConstants.ENVIRONMENT_ADMIN_ROLE);
+        labels.put(SystemLabels.LABEL_AGENT_CREATE, "true");
+        launchConfig.put(InstanceConstants.FIELD_LABELS, labels);
+
+        // set health check
+        if (launchConfig.get(InstanceConstants.FIELD_HEALTH_CHECK) == null) {
+            Integer healthCheckPort = LB_HEALTH_CHECK_PORT;
+            InstanceHealthCheck healthCheck = new InstanceHealthCheck();
+            healthCheck.setPort(healthCheckPort);
+            healthCheck.setInterval(2000);
+            healthCheck.setHealthyThreshold(2);
+            healthCheck.setUnhealthyThreshold(3);
+            healthCheck.setResponseTimeout(2000);
+            launchConfig.put(InstanceConstants.FIELD_HEALTH_CHECK, healthCheck);
+        }
     }
 }
