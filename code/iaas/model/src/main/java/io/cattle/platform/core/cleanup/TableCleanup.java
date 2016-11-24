@@ -1,6 +1,15 @@
 package io.cattle.platform.core.cleanup;
 
+import static io.cattle.platform.core.model.tables.ExternalHandlerExternalHandlerProcessMapTable.*;
+import static io.cattle.platform.core.model.tables.ExternalHandlerTable.*;
+import static io.cattle.platform.core.model.tables.HostLabelMapTable.*;
+import static io.cattle.platform.core.model.tables.HostTable.*;
+import static io.cattle.platform.core.model.tables.InstanceLabelMapTable.*;
+import static io.cattle.platform.core.model.tables.InstanceTable.*;
+import static io.cattle.platform.core.model.tables.LabelTable.*;
+import static io.cattle.platform.core.model.tables.ServiceEventTable.*;
 import io.cattle.platform.archaius.util.ArchaiusUtil;
+import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.model.tables.AccountTable;
 import io.cattle.platform.core.model.tables.AgentTable;
 import io.cattle.platform.core.model.tables.AuditLogTable;
@@ -16,19 +25,16 @@ import io.cattle.platform.core.model.tables.CredentialTable;
 import io.cattle.platform.core.model.tables.DeploymentUnitTable;
 import io.cattle.platform.core.model.tables.DynamicSchemaTable;
 import io.cattle.platform.core.model.tables.ExternalEventTable;
-import io.cattle.platform.core.model.tables.ExternalHandlerExternalHandlerProcessMapTable;
 import io.cattle.platform.core.model.tables.ExternalHandlerProcessTable;
 import io.cattle.platform.core.model.tables.ExternalHandlerTable;
 import io.cattle.platform.core.model.tables.GenericObjectTable;
 import io.cattle.platform.core.model.tables.HealthcheckInstanceHostMapTable;
 import io.cattle.platform.core.model.tables.HealthcheckInstanceTable;
 import io.cattle.platform.core.model.tables.HostIpAddressMapTable;
-import io.cattle.platform.core.model.tables.HostLabelMapTable;
 import io.cattle.platform.core.model.tables.HostTable;
 import io.cattle.platform.core.model.tables.ImageStoragePoolMapTable;
 import io.cattle.platform.core.model.tables.ImageTable;
 import io.cattle.platform.core.model.tables.InstanceHostMapTable;
-import io.cattle.platform.core.model.tables.InstanceLabelMapTable;
 import io.cattle.platform.core.model.tables.InstanceLinkTable;
 import io.cattle.platform.core.model.tables.InstanceTable;
 import io.cattle.platform.core.model.tables.IpAddressNicMapTable;
@@ -45,7 +51,6 @@ import io.cattle.platform.core.model.tables.ProcessInstanceTable;
 import io.cattle.platform.core.model.tables.ProjectMemberTable;
 import io.cattle.platform.core.model.tables.ResourcePoolTable;
 import io.cattle.platform.core.model.tables.ServiceConsumeMapTable;
-import io.cattle.platform.core.model.tables.ServiceEventTable;
 import io.cattle.platform.core.model.tables.ServiceExposeMapTable;
 import io.cattle.platform.core.model.tables.ServiceIndexTable;
 import io.cattle.platform.core.model.tables.ServiceLogTable;
@@ -116,10 +121,15 @@ public class TableCleanup extends AbstractJooqDao {
     public void cleanup() {
         long current = new Date().getTime();
 
+        Date otherCutoff = new Date(current - MAIN_TABLES_AGE_LIMIT_SECONDS.getValue() * SECOND_MILLIS);
+        cleanupLabelTables(otherCutoff);
+        cleanupExternalHandlerExternalHandlerProcessMapTables(otherCutoff);
+
         Date processInstanceCutoff = new Date(current - PROCESS_INSTANCE_AGE_LIMIT_SECONDS.get() * SECOND_MILLIS);
         cleanup("process_instance", processInstanceTables, processInstanceCutoff);
 
         Date eventTableCutoff = new Date(current - EVENT_AGE_LIMIT_SECONDS.get() * SECOND_MILLIS);
+        cleanupServiceEventTable(eventTableCutoff);
         cleanup("event", eventTables, eventTableCutoff);
 
         Date auditLogCutoff = new Date(current - AUDIT_LOG_AGE_LIMIT_SECONDS.get() * SECOND_MILLIS);
@@ -128,8 +138,90 @@ public class TableCleanup extends AbstractJooqDao {
         Date serviceLogCutoff = new Date(current - SERVICE_LOG_AGE_LIMIT_SECONDS.get() * SECOND_MILLIS);
         cleanup("service_log", serviceLogTables, serviceLogCutoff);
 
-        Date otherCutoff = new Date(current - MAIN_TABLES_AGE_LIMIT_SECONDS.getValue() * SECOND_MILLIS);
         cleanup("other", otherTables, otherCutoff);
+    }
+
+    private void cleanupServiceEventTable(Date cutoff) {
+        int rowsDeleted = create().delete(SERVICE_EVENT)
+        .where(SERVICE_EVENT.CREATED.lt(cutoff)
+        .and(SERVICE_EVENT.STATE.eq(CommonStatesConstants.CREATED))).execute();
+        if (rowsDeleted > 0) {
+            log.info("[Rows Deleted] service_event={}", rowsDeleted);
+        }
+    }
+
+    private void cleanupExternalHandlerExternalHandlerProcessMapTables(Date cutoff) {
+        List<Long> ids = create()
+                .select(EXTERNAL_HANDLER_EXTERNAL_HANDLER_PROCESS_MAP.ID)
+                .from(EXTERNAL_HANDLER_EXTERNAL_HANDLER_PROCESS_MAP)
+                .join(EXTERNAL_HANDLER)
+                    .on(EXTERNAL_HANDLER_EXTERNAL_HANDLER_PROCESS_MAP.EXTERNAL_HANDLER_ID.eq(EXTERNAL_HANDLER.ID))
+                .where(EXTERNAL_HANDLER.REMOVED.lt(cutoff))
+                .limit(QUERY_LIMIT_ROWS.getValue()).fetch().into(Long.class);
+
+        if (ids.size() > 0) {
+            int rowsDeleted = create().delete(EXTERNAL_HANDLER_EXTERNAL_HANDLER_PROCESS_MAP)
+            .where(EXTERNAL_HANDLER_EXTERNAL_HANDLER_PROCESS_MAP.ID.in(ids)).execute();
+            log.info("[Rows Deleted] external_handler_external_handler_process_map={}", rowsDeleted);
+        }
+    }
+
+    private void cleanupLabelTables(Date cutoff) {
+        List<Long> ilmIds = create()
+                .select(INSTANCE_LABEL_MAP.ID)
+                .from(INSTANCE_LABEL_MAP)
+                .join(INSTANCE).on(INSTANCE_LABEL_MAP.INSTANCE_ID.eq(INSTANCE.ID))
+                .where(INSTANCE.REMOVED.lt(cutoff))
+                .limit(QUERY_LIMIT_ROWS.getValue()).fetch().into(Long.class);
+
+        int ilmRowsDeleted = 0;
+        if (ilmIds.size() > 0) {
+            ilmRowsDeleted = create().delete(INSTANCE_LABEL_MAP)
+            .where(INSTANCE_LABEL_MAP.ID.in(ilmIds)).execute();
+        }
+
+        List<Long> hlmIds = create()
+                .select(HOST_LABEL_MAP.ID)
+                .from(HOST_LABEL_MAP)
+                .join(HOST).on(HOST_LABEL_MAP.HOST_ID.eq(HOST.ID))
+                .where(HOST.REMOVED.lt(cutoff))
+                .limit(QUERY_LIMIT_ROWS.getValue()).fetch().into(Long.class);
+
+        int hlmRowsDeleted = 0;
+        if (hlmIds.size() > 0) {
+            hlmRowsDeleted = create().delete(HOST_LABEL_MAP)
+            .where(HOST_LABEL_MAP.ID.in(hlmIds)).execute();
+        }
+
+        List<Long> labelIds = create()
+                .select(LABEL.ID)
+                .from(LABEL)
+                .leftOuterJoin(INSTANCE_LABEL_MAP).on(LABEL.ID.eq(INSTANCE_LABEL_MAP.LABEL_ID))
+                .leftOuterJoin(HOST_LABEL_MAP).on(LABEL.ID.eq(HOST_LABEL_MAP.LABEL_ID))
+                .where(INSTANCE_LABEL_MAP.ID.isNull())
+                .and(HOST_LABEL_MAP.ID.isNull())
+                .and(LABEL.CREATED.lt(cutoff))
+                .limit(QUERY_LIMIT_ROWS.getValue()).fetch().into(Long.class);
+
+        int labelRowsDeleted = 0;
+        if (labelIds.size() > 0) {
+            labelRowsDeleted = create().delete(LABEL)
+            .where(LABEL.ID.in(labelIds)).execute();
+        }
+
+        StringBuilder lg = new StringBuilder("[Rows Deleted] ");
+        if (ilmRowsDeleted > 0) {
+            lg.append("instance_label_map=").append(ilmRowsDeleted);
+        }
+        if (hlmRowsDeleted > 0) {
+            lg.append("host_label_map=").append(hlmRowsDeleted);
+        }
+        if (labelRowsDeleted > 0) {
+            lg.append(" label=").append(labelRowsDeleted);
+        }
+        if (ilmRowsDeleted > 0 || labelRowsDeleted > 0 || hlmRowsDeleted > 0) {
+            log.info(lg.toString());
+        }
     }
 
     @SuppressWarnings("unchecked")
@@ -303,8 +395,7 @@ public class TableCleanup extends AbstractJooqDao {
 
     private static List<CleanableTable> getEventTables() {
         List<CleanableTable> tables = Arrays.asList(
-                CleanableTable.from(ContainerEventTable.CONTAINER_EVENT),
-                CleanableTable.from(ServiceEventTable.SERVICE_EVENT));
+                CleanableTable.from(ContainerEventTable.CONTAINER_EVENT));
         return sortByReferences(tables);
     }
 
@@ -332,19 +423,16 @@ public class TableCleanup extends AbstractJooqDao {
                 CleanableTable.from(DynamicSchemaTable.DYNAMIC_SCHEMA),
                 CleanableTable.from(ExternalEventTable.EXTERNAL_EVENT),
                 CleanableTable.from(ExternalHandlerTable.EXTERNAL_HANDLER),
-                CleanableTable.from(ExternalHandlerExternalHandlerProcessMapTable.EXTERNAL_HANDLER_EXTERNAL_HANDLER_PROCESS_MAP),
                 CleanableTable.from(ExternalHandlerProcessTable.EXTERNAL_HANDLER_PROCESS),
                 CleanableTable.from(GenericObjectTable.GENERIC_OBJECT),
                 CleanableTable.from(HealthcheckInstanceTable.HEALTHCHECK_INSTANCE),
                 CleanableTable.from(HealthcheckInstanceHostMapTable.HEALTHCHECK_INSTANCE_HOST_MAP),
                 CleanableTable.from(HostTable.HOST),
                 CleanableTable.from(HostIpAddressMapTable.HOST_IP_ADDRESS_MAP),
-                CleanableTable.from(HostLabelMapTable.HOST_LABEL_MAP),
                 CleanableTable.from(ImageTable.IMAGE),
                 CleanableTable.from(ImageStoragePoolMapTable.IMAGE_STORAGE_POOL_MAP),
                 CleanableTable.from(InstanceTable.INSTANCE),
                 CleanableTable.from(InstanceHostMapTable.INSTANCE_HOST_MAP),
-                CleanableTable.from(InstanceLabelMapTable.INSTANCE_LABEL_MAP),
                 CleanableTable.from(InstanceLinkTable.INSTANCE_LINK),
                 CleanableTable.from(IpAddressTable.IP_ADDRESS),
                 CleanableTable.from(IpAddressNicMapTable.IP_ADDRESS_NIC_MAP),
@@ -359,9 +447,6 @@ public class TableCleanup extends AbstractJooqDao {
                 CleanableTable.from(ResourcePoolTable.RESOURCE_POOL),
                 CleanableTable.from(ServiceTable.SERVICE),
                 CleanableTable.from(ServiceConsumeMapTable.SERVICE_CONSUME_MAP),
-                // we let users clean this table up with a different cutoffTime but it references healthcheck_instance so we
-                // have to re-clean it with the same cutoffTime as the main tables to best-effort prevent FK violations...
-                CleanableTable.from(ServiceEventTable.SERVICE_EVENT),
                 CleanableTable.from(ServiceExposeMapTable.SERVICE_EXPOSE_MAP),
                 CleanableTable.from(ServiceIndexTable.SERVICE_INDEX),
                 CleanableTable.from(ServiceLogTable.SERVICE_LOG),
