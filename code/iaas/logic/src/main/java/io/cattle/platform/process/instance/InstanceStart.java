@@ -185,7 +185,7 @@ public class InstanceStart extends AbstractDefaultProcessHandler {
                     }
                 );
             } catch (TimeoutException e) {
-                throw new ExecutionException("Dependencies readiness error", "instance hasn't goten passed creating state", instance.getId());
+                throw new ExecutionException("Dependencies readiness error", "instance hasn't gotten passed creating state", instance.getId());
             }
         }
     }
