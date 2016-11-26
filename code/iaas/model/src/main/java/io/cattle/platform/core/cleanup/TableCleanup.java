@@ -25,16 +25,19 @@ import io.cattle.platform.core.model.tables.CredentialTable;
 import io.cattle.platform.core.model.tables.DeploymentUnitTable;
 import io.cattle.platform.core.model.tables.DynamicSchemaTable;
 import io.cattle.platform.core.model.tables.ExternalEventTable;
+import io.cattle.platform.core.model.tables.ExternalHandlerExternalHandlerProcessMapTable;
 import io.cattle.platform.core.model.tables.ExternalHandlerProcessTable;
 import io.cattle.platform.core.model.tables.ExternalHandlerTable;
 import io.cattle.platform.core.model.tables.GenericObjectTable;
 import io.cattle.platform.core.model.tables.HealthcheckInstanceHostMapTable;
 import io.cattle.platform.core.model.tables.HealthcheckInstanceTable;
 import io.cattle.platform.core.model.tables.HostIpAddressMapTable;
+import io.cattle.platform.core.model.tables.HostLabelMapTable;
 import io.cattle.platform.core.model.tables.HostTable;
 import io.cattle.platform.core.model.tables.ImageStoragePoolMapTable;
 import io.cattle.platform.core.model.tables.ImageTable;
 import io.cattle.platform.core.model.tables.InstanceHostMapTable;
+import io.cattle.platform.core.model.tables.InstanceLabelMapTable;
 import io.cattle.platform.core.model.tables.InstanceLinkTable;
 import io.cattle.platform.core.model.tables.InstanceTable;
 import io.cattle.platform.core.model.tables.IpAddressNicMapTable;
@@ -51,6 +54,7 @@ import io.cattle.platform.core.model.tables.ProcessInstanceTable;
 import io.cattle.platform.core.model.tables.ProjectMemberTable;
 import io.cattle.platform.core.model.tables.ResourcePoolTable;
 import io.cattle.platform.core.model.tables.ServiceConsumeMapTable;
+import io.cattle.platform.core.model.tables.ServiceEventTable;
 import io.cattle.platform.core.model.tables.ServiceExposeMapTable;
 import io.cattle.platform.core.model.tables.ServiceIndexTable;
 import io.cattle.platform.core.model.tables.ServiceLogTable;
@@ -142,58 +146,74 @@ public class TableCleanup extends AbstractJooqDao {
     }
 
     private void cleanupServiceEventTable(Date cutoff) {
-        int rowsDeleted = create().delete(SERVICE_EVENT)
-        .where(SERVICE_EVENT.CREATED.lt(cutoff)
-        .and(SERVICE_EVENT.STATE.eq(CommonStatesConstants.CREATED))).execute();
+        ResultQuery<Record1<Long>> ids = create()
+                .select(SERVICE_EVENT.ID)
+                .from(SERVICE_EVENT)
+                .where(SERVICE_EVENT.CREATED.lt(cutoff))
+                .and(SERVICE_EVENT.STATE.eq(CommonStatesConstants.CREATED))
+                .limit(QUERY_LIMIT_ROWS.getValue());
+
+        List<Long> toDelete = null;
+        int rowsDeleted = 0;
+        while ((toDelete = ids.fetch().into(Long.class)).size() > 0) {
+            rowsDeleted += create().delete(SERVICE_EVENT)
+            .where(SERVICE_EVENT.ID.in(toDelete)).execute();
+        }
+
         if (rowsDeleted > 0) {
             log.info("[Rows Deleted] service_event={}", rowsDeleted);
         }
     }
 
     private void cleanupExternalHandlerExternalHandlerProcessMapTables(Date cutoff) {
-        List<Long> ids = create()
+        ResultQuery<Record1<Long>> ids = create()
                 .select(EXTERNAL_HANDLER_EXTERNAL_HANDLER_PROCESS_MAP.ID)
                 .from(EXTERNAL_HANDLER_EXTERNAL_HANDLER_PROCESS_MAP)
                 .join(EXTERNAL_HANDLER)
                     .on(EXTERNAL_HANDLER_EXTERNAL_HANDLER_PROCESS_MAP.EXTERNAL_HANDLER_ID.eq(EXTERNAL_HANDLER.ID))
                 .where(EXTERNAL_HANDLER.REMOVED.lt(cutoff))
-                .limit(QUERY_LIMIT_ROWS.getValue()).fetch().into(Long.class);
+                .limit(QUERY_LIMIT_ROWS.getValue());
 
-        if (ids.size() > 0) {
-            int rowsDeleted = create().delete(EXTERNAL_HANDLER_EXTERNAL_HANDLER_PROCESS_MAP)
-            .where(EXTERNAL_HANDLER_EXTERNAL_HANDLER_PROCESS_MAP.ID.in(ids)).execute();
+        List<Long> toDelete = null;
+        int rowsDeleted = 0;
+        while ((toDelete = ids.fetch().into(Long.class)).size() > 0) {
+            rowsDeleted += create().delete(EXTERNAL_HANDLER_EXTERNAL_HANDLER_PROCESS_MAP)
+            .where(EXTERNAL_HANDLER_EXTERNAL_HANDLER_PROCESS_MAP.ID.in(toDelete)).execute();
+        }
+
+        if (rowsDeleted > 0) {
             log.info("[Rows Deleted] external_handler_external_handler_process_map={}", rowsDeleted);
         }
     }
 
     private void cleanupLabelTables(Date cutoff) {
-        List<Long> ilmIds = create()
+        ResultQuery<Record1<Long>> ids = create()
                 .select(INSTANCE_LABEL_MAP.ID)
                 .from(INSTANCE_LABEL_MAP)
                 .join(INSTANCE).on(INSTANCE_LABEL_MAP.INSTANCE_ID.eq(INSTANCE.ID))
                 .where(INSTANCE.REMOVED.lt(cutoff))
-                .limit(QUERY_LIMIT_ROWS.getValue()).fetch().into(Long.class);
-
+                .limit(QUERY_LIMIT_ROWS.getValue());
+        List<Long> toDelete = null;
         int ilmRowsDeleted = 0;
-        if (ilmIds.size() > 0) {
-            ilmRowsDeleted = create().delete(INSTANCE_LABEL_MAP)
-            .where(INSTANCE_LABEL_MAP.ID.in(ilmIds)).execute();
+        while ((toDelete = ids.fetch().into(Long.class)).size() > 0) {
+            ilmRowsDeleted += create().delete(INSTANCE_LABEL_MAP)
+            .where(INSTANCE_LABEL_MAP.ID.in(toDelete)).execute();
         }
 
-        List<Long> hlmIds = create()
+        ids = create()
                 .select(HOST_LABEL_MAP.ID)
                 .from(HOST_LABEL_MAP)
                 .join(HOST).on(HOST_LABEL_MAP.HOST_ID.eq(HOST.ID))
                 .where(HOST.REMOVED.lt(cutoff))
-                .limit(QUERY_LIMIT_ROWS.getValue()).fetch().into(Long.class);
+                .limit(QUERY_LIMIT_ROWS.getValue());
 
         int hlmRowsDeleted = 0;
-        if (hlmIds.size() > 0) {
-            hlmRowsDeleted = create().delete(HOST_LABEL_MAP)
-            .where(HOST_LABEL_MAP.ID.in(hlmIds)).execute();
+        while ((toDelete = ids.fetch().into(Long.class)).size() > 0) {
+            hlmRowsDeleted += create().delete(HOST_LABEL_MAP)
+            .where(HOST_LABEL_MAP.ID.in(toDelete)).execute();
         }
 
-        List<Long> labelIds = create()
+        ids = create()
                 .select(LABEL.ID)
                 .from(LABEL)
                 .leftOuterJoin(INSTANCE_LABEL_MAP).on(LABEL.ID.eq(INSTANCE_LABEL_MAP.LABEL_ID))
@@ -201,12 +221,12 @@ public class TableCleanup extends AbstractJooqDao {
                 .where(INSTANCE_LABEL_MAP.ID.isNull())
                 .and(HOST_LABEL_MAP.ID.isNull())
                 .and(LABEL.CREATED.lt(cutoff))
-                .limit(QUERY_LIMIT_ROWS.getValue()).fetch().into(Long.class);
+                .limit(QUERY_LIMIT_ROWS.getValue());
 
         int labelRowsDeleted = 0;
-        if (labelIds.size() > 0) {
-            labelRowsDeleted = create().delete(LABEL)
-            .where(LABEL.ID.in(labelIds)).execute();
+        while ((toDelete = ids.fetch().into(Long.class)).size() > 0) {
+            labelRowsDeleted += create().delete(LABEL)
+            .where(LABEL.ID.in(toDelete)).execute();
         }
 
         StringBuilder lg = new StringBuilder("[Rows Deleted] ");
@@ -252,7 +272,8 @@ public class TableCleanup extends AbstractJooqDao {
                     break;
                 }
 
-                for (ForeignKey<?, ?> key : getReferencesFrom(table, tables)) {
+                List<ForeignKey<?, ?>> keys = getReferencesFrom(table, tables);
+                for (ForeignKey<?, ?> key : keys) {
                     Table<?> referencingTable = key.getTable();
                     if (key.getFields().size() > 1) {
                         log.error("Composite foreign key filtering unsupported");
@@ -287,9 +308,7 @@ public class TableCleanup extends AbstractJooqDao {
             }
             if (idsToFix.size() > 0) {
                 table.addRowsSkipped(idsToFix.size());
-                if (log.isDebugEnabled()) {
-                    log.debug("Skipped {} where id in {}", table.table, idsToFix);
-                }
+                log.debug("Skipped {} where id in {}", table.table, idsToFix);
             }
         }
         StringBuffer buffDeleted = new StringBuffer("[Rows Deleted] ");
@@ -459,6 +478,12 @@ public class TableCleanup extends AbstractJooqDao {
                 CleanableTable.from(UserPreferenceTable.USER_PREFERENCE),
                 CleanableTable.from(VolumeTable.VOLUME),
                 CleanableTable.from(VolumeStoragePoolMapTable.VOLUME_STORAGE_POOL_MAP),
+                // These tables are cleaned through specialized logic but we need to keep them in the "other" list so that they
+                // are picked up for foreign key references.
+                CleanableTable.from(ExternalHandlerExternalHandlerProcessMapTable.EXTERNAL_HANDLER_EXTERNAL_HANDLER_PROCESS_MAP),
+                CleanableTable.from(HostLabelMapTable.HOST_LABEL_MAP),
+                CleanableTable.from(InstanceLabelMapTable.INSTANCE_LABEL_MAP),
+                CleanableTable.from(ServiceEventTable.SERVICE_EVENT),
                 CleanableTable.from(ZoneTable.ZONE));
         /* The most offending tables never set remove_time
         service_event
