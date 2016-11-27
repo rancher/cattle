@@ -6,6 +6,8 @@ import io.cattle.platform.lock.provider.impl.StandardLock;
 
 import javax.inject.Inject;
 
+import org.apache.commons.lang3.StringUtils;
+
 import com.hazelcast.core.HazelcastInstance;
 
 public class HazelcastLockProvider extends AbstractStandardLockProvider {
@@ -23,8 +25,13 @@ public class HazelcastLockProvider extends AbstractStandardLockProvider {
 
     @Override
     protected void destroyLock(StandardLock lock) {
-        // TODO: GC locks....
-        // ((ILock)lock.getLock()).destroy();
+        ILock ilock = (ILock)lock.getLock();
+        if (StringUtils.containsAny(lock.getLockDefinition().getLockId(), "0123456789")) {
+            if (ilock.tryLock()) {
+                ilock.unlock();
+                ilock.destroy();
+            }
+        }
     }
 
     public HazelcastInstance getHazelcast() {

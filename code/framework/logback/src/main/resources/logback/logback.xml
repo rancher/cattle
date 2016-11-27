@@ -158,10 +158,6 @@
         <level value="${otherLevel}" />
     </logger>
 
-    <logger name="com.hazelcast">
-        <level value="DEBUG" />
-    </logger>
-
     <logger name="io.cattle">
         <level value="${rootLevel}" />
     </logger>

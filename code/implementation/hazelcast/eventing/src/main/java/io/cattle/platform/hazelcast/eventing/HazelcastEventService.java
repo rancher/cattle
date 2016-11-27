@@ -9,6 +9,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import javax.inject.Inject;
 
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -79,8 +80,9 @@ public class HazelcastEventService extends AbstractThreadPoolingEventService {
         if (id != null) {
             ITopic<String> topic = hazelcast.getTopic(eventName);
             topic.removeMessageListener(id);
-            // TODO GC topics....
-            // topic.destroy();
+            if (StringUtils.containsAny(eventName, "0123456789")) {
+                topic.destroy();
+            }
         }
     }
 
