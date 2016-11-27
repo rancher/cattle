@@ -9,13 +9,13 @@ import javax.inject.Inject;
 import org.apache.commons.lang3.StringUtils;
 
 import com.hazelcast.core.HazelcastInstance;
+import com.hazelcast.core.ILock;
 
 public class HazelcastLockProvider extends AbstractStandardLockProvider {
 
     HazelcastInstance hazelcast;
 
     public HazelcastLockProvider() {
-        setReferenceCountLocks(false);
     }
 
     @Override

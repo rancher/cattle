@@ -7,6 +7,8 @@
         <bean id="Hazelcast" factory-method="newInstance" factory-bean="HazelcastFactory" />
         <bean id="HazelcastFactory" class="io.cattle.platform.hazelcast.factory.HazelcastFactory" />
         <bean class="io.cattle.platform.hazelcast.dao.impl.HazelcastDaoImpl" />
+        <bean class="io.cattle.platform.hazelcast.membership.DBDiscoveryFactory" />
+        <bean class="io.cattle.platform.hazelcast.membership.dao.impl.ClusterMembershipDAOImpl" />
     </beans>
 
     <beans profile="hazelcast.config.custom" >

@@ -13,10 +13,6 @@
             <artifactId>hazelcast</artifactId>
         </dependency>
         <dependency>
-            <groupId>com.hazelcast</groupId>
-            <artifactId>hazelcast-cloud</artifactId>
-        </dependency>
-        <dependency>
             <groupId>io.cattle</groupId>
             <artifactId>cattle-framework-archaius</artifactId>
             <version>${project.version}</version>
