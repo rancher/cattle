@@ -2,6 +2,7 @@ package io.cattle.host.api.proxy.launch;
 
 import static io.cattle.platform.server.context.ServerContext.*;
 
+import io.cattle.platform.archaius.util.ArchaiusUtil;
 import io.cattle.platform.core.model.Credential;
 import io.cattle.platform.host.service.HostApiService;
 import io.cattle.platform.service.launcher.ServiceAccountCreateStartup;
@@ -24,8 +25,11 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.netflix.config.DynamicBooleanProperty;
+
 public class ProxyLauncher extends NoExceptionRunnable implements InitializationTask, Runnable {
 
+    private static final DynamicBooleanProperty TRAEFIK_LAUNCH = ArchaiusUtil.getBoolean("traefik.execute");
     private static final int WAIT = 2000;
     private static final Logger log = LoggerFactory.getLogger(ProxyLauncher.class);
 
@@ -146,8 +150,13 @@ public class ProxyLauncher extends NoExceptionRunnable implements Initialization
     private String getProxyPort() {
         // To match the functionality in the Jetty Main class, need to get value this way as opposed
         // to using ArchaiusUtils
-        String port = System.getenv("CATTLE_HTTP_PORT");
-        return port == null ? System.getProperty("cattle.http.port", "8080") : port;
+        if (TRAEFIK_LAUNCH.get()) {
+            String port = System.getenv("CATTLE_HTTP_WSP_PORT");
+            return port == null ? System.getProperty("cattle.http.wsp.port", "8082") : port;
+        } else {
+            String port = System.getenv("CATTLE_HTTP_PORT");
+            return port == null ? System.getProperty("cattle.http.port", "8080") : port;
+        }
     }
 
     private String getProxyProtocolHttpsPorts() {

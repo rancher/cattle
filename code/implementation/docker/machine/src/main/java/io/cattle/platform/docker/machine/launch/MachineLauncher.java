@@ -2,14 +2,16 @@ package io.cattle.platform.docker.machine.launch;
 
 import io.cattle.platform.archaius.util.ArchaiusUtil;
 import io.cattle.platform.core.model.Credential;
+import io.cattle.platform.hazelcast.membership.ClusterService;
 import io.cattle.platform.lock.definition.LockDefinition;
 import io.cattle.platform.server.context.ServerContext;
 import io.cattle.platform.server.context.ServerContext.BaseProtocol;
 import io.cattle.platform.service.launcher.GenericServiceLauncher;
-import io.cattle.platform.service.launcher.LauncherLockDefinitions;
 import io.cattle.platform.util.type.InitializationTask;
 
 import java.util.Map;
+
+import javax.inject.Inject;
 
 import com.netflix.config.DynamicBooleanProperty;
 import com.netflix.config.DynamicStringProperty;
@@ -19,9 +21,12 @@ public class MachineLauncher extends GenericServiceLauncher implements Initializ
     private static final DynamicStringProperty MACHINE_BINARY = ArchaiusUtil.getString("machine.service.executable");
     private static final DynamicBooleanProperty LAUNCH_MACHINE = ArchaiusUtil.getBoolean("machine.execute");
 
+    @Inject
+    ClusterService clusterService;
+
     @Override
     protected boolean shouldRun() {
-        return LAUNCH_MACHINE.get();
+        return LAUNCH_MACHINE.get() && clusterService.isMaster();
     }
 
     @Override
@@ -39,7 +44,7 @@ public class MachineLauncher extends GenericServiceLauncher implements Initializ
 
     @Override
     protected LockDefinition getLock() {
-        return LauncherLockDefinitions.MachineLauncherLock();
+        return null;
     }
 
     @Override
