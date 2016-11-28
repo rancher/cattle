@@ -1547,13 +1547,13 @@ def test_balancer_svc_upgrade(client, context, super_client):
     wait_for(lambda: super_client.reload(c).state == 'running')
 
     c = super_client.reload(m[0].instance())
+    assert c.healthState == 'initializing'
 
     hci = find_one(c.healthcheckInstances)
-    hcihm = find_one(hci.healthcheckInstanceHostMaps)
-    agent = _get_agent_for_container(context, c)
-    assert hcihm.healthState == 'initializing'
-    assert c.healthState == 'initializing'
-    _update_healthy(agent, hcihm, c, super_client)
+    for hcihm in hci.healthcheckInstanceHostMaps():
+        agent = _get_agent_for_container(context, c)
+        assert hcihm.healthState == 'initializing'
+        _update_healthy(agent, hcihm, c, super_client)
 
     lb_svc = client.wait_success(lb_svc)
     assert lb_svc.launchConfig.healthCheck is not None
