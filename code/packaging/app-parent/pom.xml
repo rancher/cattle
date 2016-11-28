@@ -36,7 +36,12 @@
         </dependency>
         <dependency>
             <groupId>io.cattle</groupId>
-            <artifactId>cattle-eventing-redis</artifactId>
+            <artifactId>cattle-hazelcast-eventing</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.cattle</groupId>
+            <artifactId>cattle-hazelcast-lock</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>

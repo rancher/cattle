@@ -54,6 +54,11 @@ public class Tables {
 	public static final io.cattle.platform.core.model.tables.ClusterHostMapTable CLUSTER_HOST_MAP = io.cattle.platform.core.model.tables.ClusterHostMapTable.CLUSTER_HOST_MAP;
 
 	/**
+	 * The table cattle.cluster_membership
+	 */
+	public static final io.cattle.platform.core.model.tables.ClusterMembershipTable CLUSTER_MEMBERSHIP = io.cattle.platform.core.model.tables.ClusterMembershipTable.CLUSTER_MEMBERSHIP;
+
+	/**
 	 * The table cattle.config_item
 	 */
 	public static final io.cattle.platform.core.model.tables.ConfigItemTable CONFIG_ITEM = io.cattle.platform.core.model.tables.ConfigItemTable.CONFIG_ITEM;

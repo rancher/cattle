@@ -1,0 +1,13 @@
+#!/bin/bash
+
+cd $(dirname $0)
+docker run --name cattle-db \
+    -e MYSQL_DATABASE=cattle \
+    -e MYSQL_USER=cattle \
+    -e MYSQL_PASSWORD=cattle \
+    -e MYSQL_ALLOW_EMPTY_PASSWORD=yes \
+    -v $(pwd)/mysql-dump.sql:/docker-entrypoint-initdb.d/mysql-dump.sql \
+    -d mysql:5.5 \
+    --innodb-flush-log-at-trx-commit=0 \
+    --max-connections=1000 \
+    --sql-mode=ONLY_FULL_GROUP_BY

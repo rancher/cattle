@@ -52,6 +52,7 @@
         <jackson.version>2.5.3</jackson.version>
         <spring.version>4.3.2.RELEASE</spring.version>
         <metrics.version>3.0.1</metrics.version>
+        <hazelcast.version>3.7.1</hazelcast.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.version>${project.version}</project.version>
     </properties>
@@ -135,6 +136,16 @@
                 <version>2.6.1</version>
             </dependency>
             <dependency>
+                <groupId>com.hazelcast</groupId>
+                <artifactId>hazelcast</artifactId>
+                <version>${hazelcast.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.hazelcast</groupId>
+                <artifactId>hazelcast-client</artifactId>
+                <version>${hazelcast.version}</version>
+            </dependency>
+            <dependency>
                 <groupId>fr.xebia.management</groupId>
                 <artifactId>xebia-management-extras</artifactId>
                 <version>1.2.3</version>
@@ -196,11 +207,6 @@
                 <groupId>com.codahale.metrics</groupId>
                 <artifactId>metrics-servlets</artifactId>
                 <version>${metrics.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>redis.clients</groupId>
-                <artifactId>jedis</artifactId>
-                <version>2.4.1</version>
             </dependency>
             <dependency>
                 <groupId>org.aspectj</groupId>

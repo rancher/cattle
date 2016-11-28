@@ -519,4 +519,9 @@
     <bean class="io.cattle.platform.network.impl.NetworkServiceImpl" />
 
     <bean class="io.cattle.platform.agent.instance.service.AgentMetadataService" />
+
+    <bean class="io.cattle.platform.hazelcast.membership.DBDiscovery" />
+
+    <bean class="io.cattle.platform.process.containerevent.ContainerEventCreate" />
+
 </beans>

@@ -1,11 +1,16 @@
 package io.cattle.platform.sample.data;
 
+import static io.cattle.platform.core.model.tables.ProcessInstanceTable.*;
 import static io.cattle.platform.core.model.tables.SettingTable.*;
 import static io.cattle.platform.core.model.tables.StackTable.*;
+
 import io.cattle.platform.archaius.util.ArchaiusUtil;
 import io.cattle.platform.core.model.Account;
+import io.cattle.platform.core.model.ProcessInstance;
 import io.cattle.platform.core.model.Setting;
 import io.cattle.platform.core.model.Stack;
+import io.cattle.platform.object.meta.ObjectMetaDataManager;
+import io.cattle.platform.object.process.StandardProcess;
 import io.github.ibuildthecloud.gdapi.condition.Condition;
 import io.github.ibuildthecloud.gdapi.condition.ConditionType;
 
@@ -31,6 +36,17 @@ public class SampleDataStartupV13 extends AbstractSampleData {
         "route53"
     };
 
+    private static final String[] STACK_PROCESSES = new String[] {
+            ".cancelupgrade",
+            ".create",
+            ".error",
+            ".finishupgrade",
+            ".remove",
+            ".rollback",
+            ".update",
+            ".upgrade",
+    };
+
     @Override
     protected String getName() {
         return "sampleDataVersion13";
@@ -42,6 +58,9 @@ public class SampleDataStartupV13 extends AbstractSampleData {
         migrateLibraryStacks();
         migrateCommunityStacks();
         migrateMesos();
+
+        deleteHAEnv();
+        migrateProcesses();
     }
 
     protected void updateSetting() {
@@ -125,6 +144,27 @@ public class SampleDataStartupV13 extends AbstractSampleData {
                 String to = String.format("catalog://community:infra*%s:%s", orc, parts[parts.length-1]);
                 stack.setExternalId(to);
                 objectManager.persist(stack);
+            }
+        }
+    }
+
+    protected void deleteHAEnv() {
+        for (Account account : objectManager.find(Account.class,
+                ObjectMetaDataManager.UUID_FIELD, new Condition(ConditionType.LIKE, "system-ha-%"),
+                ObjectMetaDataManager.REMOVED_FIELD, null)) {
+            processManager.scheduleStandardChainedProcessAsync(StandardProcess.DEACTIVATE, StandardProcess.REMOVE,
+                    account, null);
+        }
+    }
+
+    protected void migrateProcesses() {
+        for (String process : STACK_PROCESSES) {
+            for (ProcessInstance pi : objectManager.find(ProcessInstance.class,
+                    PROCESS_INSTANCE.PROCESS_NAME, "environment" + process,
+                    PROCESS_INSTANCE.END_TIME, null)) {
+                pi.setProcessName("stack" + process);
+                pi.setResourceType("stack");
+                objectManager.persist(pi);
             }
         }
     }

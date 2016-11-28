@@ -28,6 +28,7 @@ import io.cattle.platform.object.process.ObjectProcessManager;
 import io.cattle.platform.object.process.StandardProcess;
 import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.object.util.DataUtils;
+import io.cattle.platform.process.containerevent.ContainerEventCreate;
 import io.cattle.platform.util.type.CollectionUtils;
 
 import java.util.Arrays;
@@ -43,7 +44,6 @@ import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
@@ -74,9 +74,8 @@ public class PingInstancesMonitorImpl implements PingInstancesMonitor {
     ObjectManager objectManager;
     @Inject
     ObjectProcessManager processManager;
-    Cache<String, String> scheduled = CacheBuilder.newBuilder()
-            .expireAfterWrite(15, TimeUnit.MINUTES)
-            .build();
+    @Inject
+    ContainerEventCreate containerEventCreate;
 
 
     LoadingCache<Long, Map<String, KnownInstance>> instanceCache = CacheBuilder.newBuilder().expireAfterWrite(CACHE_TIME.get(), TimeUnit.MILLISECONDS)
@@ -260,12 +259,11 @@ public class PingInstancesMonitorImpl implements PingInstancesMonitor {
             return;
         }
 
-        if (event.equals(scheduled.getIfPresent(ri.getExternalId()))) {
+        if (containerEventCreate.checkOrRecordScheduled(ri.getExternalId(), event)) {
             // Create container events only so often.
             return;
-        } else {
-            scheduled.put(ri.getExternalId(), event);
         }
+
         ContainerEvent ce = objectManager.newRecord(ContainerEvent.class);
         ce.setAccountId(agentId);
         ce.setExternalFrom(ri.getImage());

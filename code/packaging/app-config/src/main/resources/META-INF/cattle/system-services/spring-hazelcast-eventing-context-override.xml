@@ -1,0 +1,10 @@
+<beans profile="hazelcast.eventing" xmlns="http://www.springframework.org/schema/beans"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.2.xsd" >
+
+    <bean id="EventService" class="io.cattle.platform.hazelcast.eventing.HazelcastEventService" >
+        <property name="executorService" ref="CoreExecutorService" />
+        <property name="namedExecutorServiceList" value="#{extensionManager.list('named.executor.service')}" />
+    </bean>
+
+</beans>

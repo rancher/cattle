@@ -560,6 +560,7 @@
     <bean class="io.cattle.platform.docker.machine.launch.CatalogLauncher" />
     <bean class="io.cattle.platform.docker.machine.launch.TelemetryLauncher" />
     <bean class="io.cattle.platform.docker.machine.launch.AuthServiceLauncher" />
+    <bean class="io.cattle.platform.docker.machine.launch.TraefikLauncher" />
     
     <process:defaultProcesses resourceType="externalHandler" />
     <process:defaultProcesses resourceType="externalHandlerProcess" />

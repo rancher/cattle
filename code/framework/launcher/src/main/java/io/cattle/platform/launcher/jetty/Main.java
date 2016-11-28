@@ -138,6 +138,7 @@ public class Main {
                 context.setWar(contextRoot.toExternalForm());
             }
 
+            context.setParentLoaderPriority(true);
             context.setClassLoader(new WebAppClassLoader(Main.class.getClassLoader(), context));
             context.setContextPath("/");
 
