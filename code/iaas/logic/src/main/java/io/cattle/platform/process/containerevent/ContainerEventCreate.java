@@ -41,17 +41,18 @@ import io.cattle.platform.util.type.CollectionUtils;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 import javax.inject.Inject;
-import javax.inject.Named;
 
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
 import com.netflix.config.DynamicBooleanProperty;
 
-@Named
 public class ContainerEventCreate extends AbstractDefaultProcessHandler {
 
     public static final String AGENT_ID = "agentId";
@@ -93,8 +94,30 @@ public class ContainerEventCreate extends AbstractDefaultProcessHandler {
     @Inject
     GenericResourceDao resourceDao;
 
+    Cache<String, String> scheduled = CacheBuilder.newBuilder()
+            .expireAfterWrite(15, TimeUnit.MINUTES)
+            .build();
+
+    public boolean checkOrRecordScheduled(String id, String event) {
+        if (event.equals(scheduled.getIfPresent(id))) {
+            // Create container events only so often.
+            return true;
+        }
+        scheduled.put(id, event);
+        return false;
+    }
+
     @Override
     public HandlerResult handle(ProcessState state, ProcessInstance process) {
+        HandlerResult result = handleInternal(state, process);
+        String externalId = ((ContainerEvent)state.getResource()).getExternalId();
+        if (StringUtils.isNotBlank(externalId)) {
+            scheduled.invalidate(((ContainerEvent)state.getResource()).getExternalId());
+        }
+        return result;
+    }
+
+    protected HandlerResult handleInternal(ProcessState state, ProcessInstance process) {
         if (!MANAGE_NONRANCHER_CONTAINERS.get()) {
             return null;
         }

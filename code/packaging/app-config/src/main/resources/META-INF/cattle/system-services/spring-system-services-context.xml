@@ -522,4 +522,6 @@
 
     <bean class="io.cattle.platform.hazelcast.membership.DBDiscovery" />
 
+    <bean class="io.cattle.platform.process.containerevent.ContainerEventCreate" />
+
 </beans>
