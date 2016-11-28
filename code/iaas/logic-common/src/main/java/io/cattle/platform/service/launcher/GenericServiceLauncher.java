@@ -79,11 +79,10 @@ public abstract class GenericServiceLauncher extends NoExceptionRunnable impleme
                 }
             }
         }
-        ProcessEngineUtils.HA_ENABLED.addCallback(cb);
     }
 
     public void reload() {
-        processDestroy();    
+        processDestroy();
     }
 
     @Override
