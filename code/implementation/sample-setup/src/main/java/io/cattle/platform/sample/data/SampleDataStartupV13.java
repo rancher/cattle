@@ -2,7 +2,6 @@ package io.cattle.platform.sample.data;
 
 import static io.cattle.platform.core.model.tables.SettingTable.*;
 import static io.cattle.platform.core.model.tables.StackTable.*;
-
 import io.cattle.platform.archaius.util.ArchaiusUtil;
 import io.cattle.platform.core.model.Account;
 import io.cattle.platform.core.model.Setting;
@@ -11,6 +10,7 @@ import io.github.ibuildthecloud.gdapi.condition.Condition;
 import io.github.ibuildthecloud.gdapi.condition.ConditionType;
 
 import java.util.List;
+
 
 public class SampleDataStartupV13 extends AbstractSampleData {
 
@@ -59,6 +59,26 @@ public class SampleDataStartupV13 extends AbstractSampleData {
                             "https://git.rancher.io/community-catalog.git");
             setting.setValue(value);
             objectManager.persist(setting);
+            ArchaiusUtil.refresh();
+        }
+
+        setting = objectManager.findAny(Setting.class,
+                SETTING.NAME, "api.auth.ldap.openldap.group.dn.field");
+        if (setting == null) {
+            Setting ldapSetting = objectManager.newRecord(Setting.class);
+            ldapSetting.setName("api.auth.ldap.openldap.group.dn.field");
+            ldapSetting.setValue("entryDN");
+            ldapSetting = objectManager.create(ldapSetting);
+            ArchaiusUtil.refresh();
+        }
+
+        setting = objectManager.findAny(Setting.class,
+                SETTING.NAME, "api.auth.ldap.openldap.group.member.user.attribute");
+        if (setting == null) {
+            Setting secondLdapSetting = objectManager.newRecord(Setting.class);
+            secondLdapSetting.setName("api.auth.ldap.openldap.group.member.user.attribute");
+            secondLdapSetting.setValue("entryDN");
+            secondLdapSetting = objectManager.create(secondLdapSetting);
             ArchaiusUtil.refresh();
         }
     }
