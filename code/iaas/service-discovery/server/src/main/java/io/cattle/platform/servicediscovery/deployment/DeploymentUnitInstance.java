@@ -57,6 +57,8 @@ public abstract class DeploymentUnitInstance {
 
     protected abstract void removeUnitInstance();
 
+    public abstract boolean isTransitioning();
+
     public abstract void stop();
 
     protected DeploymentUnitInstance(DeploymentServiceContext context, String uuid, Service service,

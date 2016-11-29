@@ -2,10 +2,12 @@ package io.cattle.platform.servicediscovery.deployment.impl.unit;
 
 import static io.cattle.platform.core.model.tables.VolumeTable.*;
 import static io.cattle.platform.core.model.tables.VolumeTemplateTable.*;
+import io.cattle.platform.core.constants.AgentConstants;
 import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.constants.ServiceConstants;
 import io.cattle.platform.core.constants.VolumeConstants;
+import io.cattle.platform.core.model.Agent;
 import io.cattle.platform.core.model.Host;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.Service;
@@ -172,32 +174,50 @@ public class DeploymentUnit {
         return false;
     }
 
-    private boolean isHostActive() {
+    private Host getDeploymentUnitHost() {
         for (DeploymentUnitInstance deployUnitInstance : getDeploymentUnitInstances()) {
             if (!(deployUnitInstance instanceof InstanceUnit)) {
                 // external deployment units do not have instances
-                return true;
+                return null;
             }
 
-            Instance instance = ((InstanceUnit)deployUnitInstance).getInstance();
+            Instance instance = ((InstanceUnit) deployUnitInstance).getInstance();
             if (instance != null && instance.getId() != null) {
-                // TODO: Performance-wise, this is really bad!  Especially, since we already
+                // TODO: Performance-wise, this is really bad! Especially, since we already
                 // know what host is going down from the host trigger.
 
                 // Check whether this instance has been deployed and if so, what is the state of the
                 // host?
                 Host host = context.exposeMapDao.getHostForInstance(instance.getId());
                 if (host != null) {
-                    if (CommonStatesConstants.REMOVING.equals(host.getState()) ||
-                            CommonStatesConstants.REMOVED.equals(host.getState()) ||
-                            CommonStatesConstants.PURGING.equals(host.getState()) ||
-                            CommonStatesConstants.PURGED.equals(host.getState())) {
-                        return false;
-                    }
+                    return host;
                 }
             }
         }
-        return true;
+        return null;
+    }
+
+    private boolean isRemovedHost(Host host) {
+        if (host == null) {
+            return false;
+        }
+        return CommonStatesConstants.REMOVING.equals(host.getState()) ||
+                    CommonStatesConstants.REMOVED.equals(host.getState()) ||
+                    CommonStatesConstants.PURGING.equals(host.getState()) ||
+                    CommonStatesConstants.PURGED.equals(host.getState());
+    }
+
+    private boolean isAgentDisconnected(Host host) {
+        if (host == null) {
+            return false;
+        }
+        Agent agent = context.objectManager.loadResource(Agent.class, host.getAgentId());
+        if (agent != null && (AgentConstants.STATE_RECONNECTING.equals(agent.getState()) ||
+                AgentConstants.STATE_DISCONNECTED.equals(agent.getState()) || AgentConstants.STATE_DISCONNECTING
+                    .equals(agent.getState()))) {
+            return true;
+        }
+        return false;
     }
 
     public void remove(String reason, String level) {
@@ -511,8 +531,29 @@ public class DeploymentUnit {
                 return true;
             }
         }
-        if (!isHostActive()) {
+
+        // unhealthy when host is removed
+        Host host = getDeploymentUnitHost();
+        if (host == null) {
+            return false;
+        }
+        if (isRemovedHost(host)) {
             return true;
+        }
+
+        // unhealthy when in transitioning state on inactive host
+        if (isTransitioning() && isAgentDisconnected(host)) {
+            return true;
+        }
+
+        return false;
+    }
+
+    protected boolean isTransitioning() {
+        for (DeploymentUnitInstance instance : getDeploymentUnitInstances()) {
+            if (instance.isTransitioning()) {
+                return true;
+            }
         }
         return false;
     }
