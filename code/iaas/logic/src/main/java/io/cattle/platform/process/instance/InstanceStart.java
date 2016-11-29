@@ -98,9 +98,6 @@ public class InstanceStart extends AbstractDefaultProcessHandler {
 
         try {
             try {
-                progress.checkPoint("Networking");
-                network(instance, state);
-
                 progress.checkPoint("Waiting for dependencies");
                 // wait until volumesFrom/networksFrom containers start up
                 waitForDependenciesStart(instance);
@@ -111,6 +108,10 @@ public class InstanceStart extends AbstractDefaultProcessHandler {
 
                 progress.checkPoint("Scheduling");
                 allocate(instance);
+
+                progress.checkPoint("Networking");
+                network(instance, state);
+
                 activatePorts(instance, state);
 
                 instanceDao.clearCacheInstanceData(instance.getId());
@@ -122,15 +123,19 @@ public class InstanceStart extends AbstractDefaultProcessHandler {
                 return handleStartError(state, instance, e);
             }
 
-            try {
-                progress.checkPoint("Starting");
-                compute(instance, state);
-            } catch (ExecutionException e) {
-                log.error("Failed to {} for instance [{}]", progress.getCurrentCheckpoint(), instance.getId());
-                if (incrementComputeTry(state) >= getMaxComputeTries(instance)) {
-                    return handleStartError(state, instance, e);
+            progress.checkPoint("Starting");
+            while (true) {
+                try {
+                    compute(instance, state);
+                    break;
+                } catch (ExecutionException e) {
+                    int tryCount = incrementComputeTry(state);
+                    int maxCount = getMaxComputeTries(instance);
+                    log.error("Failed [{}/{}] to {} for instance [{}]", tryCount, maxCount, progress.getCurrentCheckpoint(), instance.getId());
+                    if (tryCount >= maxCount) {
+                        return handleStartError(state, instance, e);
+                    }
                 }
-                throw e;
             }
         } catch (TimeoutException e) {
             handleReconnecting(state, instance);
