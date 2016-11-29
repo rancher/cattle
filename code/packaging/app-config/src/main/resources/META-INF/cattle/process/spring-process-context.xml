@@ -61,7 +61,7 @@
         </property>
     </bean>
 
-    <bean class="io.cattle.platform.process.common.handler.AgentBasedProcessHandler"
+    <bean class="io.cattle.platform.process.volume.VolumeStoragePoolMapRemove"
         p:name="VolumeStoragePoolMapRemove"
         p:commandName="storage.volume.remove"
         p:agentResourceRelationship="storagePool"
