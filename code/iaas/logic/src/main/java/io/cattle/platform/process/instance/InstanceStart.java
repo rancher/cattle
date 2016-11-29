@@ -105,8 +105,9 @@ public class InstanceStart extends AbstractDefaultProcessHandler {
                 // wait until volumesFrom/networksFrom containers start up
                 waitForDependenciesStart(instance);
 
+                progress.checkPoint("Waiting for deployment unit instances to create");
                 ///wait until all containers in deployment unit are starting
-                waitForDeploymentUnit(instance);
+                waitForDeploymentUnitCreate(instance);
 
                 progress.checkPoint("Scheduling");
                 allocate(instance);
@@ -151,7 +152,7 @@ public class InstanceStart extends AbstractDefaultProcessHandler {
         return result;
     }
 
-    protected void waitForDeploymentUnit(Instance instance) {
+    protected void waitForDeploymentUnitCreate(Instance instance) {
         // Wait until all instances in the deployment unit are out of the creating state (to ensure all of instnace.create has ran)
         if(StringUtils.isEmpty(instance.getDeploymentUnitUuid())) {
             return;
