@@ -38,7 +38,7 @@ public abstract class AbstractObjectProcessLogic extends AbstractProcessLogic {
     protected ExitReason deactivateThenRemove(Object obj, Map<String, Object> data) {
         Object state = ObjectUtils.getPropertyIgnoreErrors(obj, ObjectMetaDataManager.STATE_FIELD);
 
-        if (CommonStatesConstants.PURGED.equals(state)) {
+        if (CommonStatesConstants.PURGED.equals(state) || CommonStatesConstants.PURGING.equals(state)) {
             return null;
         }
 
@@ -57,7 +57,7 @@ public abstract class AbstractObjectProcessLogic extends AbstractProcessLogic {
     protected ExitReason deactivateThenScheduleRemove(Object obj, Map<String, Object> data) {
         Object state = ObjectUtils.getPropertyIgnoreErrors(obj, ObjectMetaDataManager.STATE_FIELD);
 
-        if (CommonStatesConstants.PURGED.equals(state)) {
+        if (CommonStatesConstants.PURGED.equals(state) || CommonStatesConstants.PURGING.equals(state)) {
             return null;
         }
 
@@ -106,7 +106,7 @@ public abstract class AbstractObjectProcessLogic extends AbstractProcessLogic {
         } catch (ProcessCancelException e) {
             Object state = ObjectUtils.getPropertyIgnoreErrors(obj, ObjectMetaDataManager.STATE_FIELD);
 
-            if (CommonStatesConstants.PURGED.equals(state)) {
+            if (CommonStatesConstants.PURGED.equals(state) || CommonStatesConstants.PURGING.equals(state)) {
                 return null;
             }
 
