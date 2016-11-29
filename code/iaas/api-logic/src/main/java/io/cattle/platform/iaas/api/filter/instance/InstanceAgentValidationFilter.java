@@ -33,12 +33,13 @@ public class InstanceAgentValidationFilter extends AbstractDefaultResourceManage
     @Override
     public Object delete(String type, String id, ApiRequest request, ResourceManager next) {
         Object instance = objectManager.loadResource(type, id);
-        if (instance == null) {
+        if (instance == null || !(instance instanceof Instance)) {
             return super.delete(type, id, request, next);
         }
 
         Map<String, Object> labels = DataAccessor.fieldMap(instance, InstanceConstants.FIELD_LABELS);
-        if ("rancher-agent".equals(labels.get("io.rancher.container.system"))) {
+        if ("rancher-agent".equals(labels.get("io.rancher.container.system")) &&
+                "rancher-agent".equals(((Instance)instance).getName())) {
             throw new ClientVisibleException(ResponseCodes.UNPROCESSABLE_ENTITY, ValidationErrorCodes.ACTION_NOT_AVAILABLE,
                     "Can not delete rancher-agent", null);
         }

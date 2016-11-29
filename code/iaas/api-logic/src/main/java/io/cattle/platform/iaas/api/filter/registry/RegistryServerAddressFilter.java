@@ -16,6 +16,7 @@ import io.github.ibuildthecloud.gdapi.util.ResponseCodes;
 
 import java.util.List;
 import java.util.Map;
+
 import javax.inject.Inject;
 
 public class RegistryServerAddressFilter extends AbstractDefaultResourceManagerFilter {
@@ -30,7 +31,8 @@ public class RegistryServerAddressFilter extends AbstractDefaultResourceManagerF
         long accountId = ((Policy) ApiContext.getContext().getPolicy()).getAccountId();
         List<StoragePool> registries = objectManager.find(StoragePool.class,
                 ObjectMetaDataManager.KIND_FIELD, StoragePoolConstants.KIND_REGISTRY,
-                ObjectMetaDataManager.ACCOUNT_FIELD, accountId);
+                ObjectMetaDataManager.ACCOUNT_FIELD, accountId,
+                ObjectMetaDataManager.REMOVED_FIELD, null);
         for (StoragePool registry: registries){
             if (!CommonStatesConstants.PURGED.equalsIgnoreCase(registry.getState())) {
                 if (serverAddress.equalsIgnoreCase(

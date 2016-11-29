@@ -9,6 +9,7 @@ import io.cattle.platform.core.dao.VolumeDao;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.iaas.api.filter.common.CachedOutputFilter;
 import io.cattle.platform.object.ObjectManager;
+import io.cattle.platform.object.meta.ObjectMetaDataManager;
 import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.util.type.CollectionUtils;
 import io.github.ibuildthecloud.gdapi.context.ApiContext;
@@ -62,7 +63,8 @@ public class InstanceOutputFilter extends CachedOutputFilter<Map<Long, Map<Strin
         }
 
         Map<String, Object> labels = CollectionUtils.toMap(converted.getFields().get(InstanceConstants.FIELD_LABELS));
-        if ("rancher-agent".equals(labels.get("io.rancher.container.system"))) {
+        if ("rancher-agent".equals(labels.get("io.rancher.container.system")) &&
+                "rancher-agent".equals(converted.getFields().get(ObjectMetaDataManager.NAME_FIELD))) {
             Map<String, URL> actions = converted.getActions();
             if (actions != null) {
                 actions.remove("remove");

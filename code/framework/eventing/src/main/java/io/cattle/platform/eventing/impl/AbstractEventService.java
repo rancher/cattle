@@ -52,8 +52,8 @@ public abstract class AbstractEventService implements EventService {
     private static final Logger EVENT_LOG_IN = LoggerFactory.getLogger("EventLogIn");
     private static final Logger EVENT_LOG_OUT = LoggerFactory.getLogger("EventLogOut");
 
-    private static final DynamicIntProperty DEFAULT_RETRIES = ArchaiusUtil.getInt("eventing.retry");
-    private static final DynamicLongProperty DEFAULT_TIMEOUT = ArchaiusUtil.getLong("eventing.timeout.millis");
+    public static final DynamicIntProperty DEFAULT_RETRIES = ArchaiusUtil.getInt("eventing.retry");
+    public static final DynamicLongProperty DEFAULT_TIMEOUT = ArchaiusUtil.getLong("eventing.timeout.millis");
 
     private static final Object SUBSCRIPTION_LOCK = new Object();
 

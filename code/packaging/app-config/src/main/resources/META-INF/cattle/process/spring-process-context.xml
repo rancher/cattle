@@ -54,6 +54,7 @@
         p:commandName="storage.volume.activate"
         p:agentResourceRelationship="storagePool"
         p:dataTypeClass="io.cattle.platform.core.model.VolumeStoragePoolMap"
+        p:shortCircuitIfAgentRemoved="true"
         p:processNames="volumestoragepoolmap.activate" >
         <property name="priority">
             <util:constant static-field="io.cattle.platform.util.type.Priority.DEFAULT"/>

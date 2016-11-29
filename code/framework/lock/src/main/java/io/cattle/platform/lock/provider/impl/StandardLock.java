@@ -20,6 +20,7 @@ public class StandardLock implements Lock {
     volatile long referenceCount = 0;
     volatile Thread owner = null;
     long ownerCount = 0;
+    boolean acquired = false;
 
     public StandardLock(LockDefinition lockDefinition, java.util.concurrent.locks.Lock lock) {
         this.lockDefinition = lockDefinition;
@@ -42,6 +43,10 @@ public class StandardLock implements Lock {
         return result;
     }
 
+    public boolean wasAcquired() {
+        return acquired;
+    }
+
     @Override
     public void lock() throws FailedToAcquireLockException {
         log.trace("Lock Attempt [{}], timeout [{}]", lockDefinition, timeout);
@@ -60,6 +65,7 @@ public class StandardLock implements Lock {
     }
 
     protected void incrementOwner() {
+        acquired = true;
         ownerCount++;
         if (owner == null) {
             log.trace("Lock [{}] acquiring ownernship count [{}]", lockDefinition, ownerCount);

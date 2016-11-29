@@ -42,6 +42,7 @@ import io.cattle.platform.json.JsonMapper;
 import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.servicediscovery.api.dao.ServiceConsumeMapDao;
 import io.cattle.platform.servicediscovery.api.util.ServiceDiscoveryUtil;
+import io.cattle.platform.util.exception.ExceptionUtils;
 
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
@@ -60,6 +61,13 @@ import org.yaml.snakeyaml.representer.Representer;
 
 @Named
 public class ServiceMetadataInfoFactory extends AbstractAgentBaseContextFactory {
+
+    private static final ThreadLocal<Yaml> TL = new ThreadLocal<Yaml>(){
+        @Override
+        protected Yaml initialValue() {
+            return getYaml();
+        }
+    };
 
     @Inject
     ServiceConsumeMapDao consumeMapDao;
@@ -87,8 +95,13 @@ public class ServiceMetadataInfoFactory extends AbstractAgentBaseContextFactory 
 
     public void writeMetadata(Instance instance, String itemVersion, OutputStream os) {
         Map<String, Object> dataWithVersionTag = generateData(instance, itemVersion);
-        Yaml yaml = getYaml();
-        yaml.dump(dataWithVersionTag, new OutputStreamWriter(os));
+        try {
+            Yaml yaml = TL.get();
+            yaml.dump(dataWithVersionTag, new OutputStreamWriter(os));
+        } catch (Throwable t) {
+            TL.remove();
+            ExceptionUtils.rethrowExpectedRuntime(t);
+        }
     }
 
     protected Map<String, Object> generateData(Instance instance, String itemVersion) {
@@ -170,7 +183,7 @@ public class ServiceMetadataInfoFactory extends AbstractAgentBaseContextFactory 
         return svcIdsToSvc;
     }
 
-    protected Yaml getYaml() {
+    private static Yaml getYaml() {
         DumperOptions options = new DumperOptions();
         options.setDefaultFlowStyle(DumperOptions.FlowStyle.BLOCK);
         Representer representer = new Representer();
