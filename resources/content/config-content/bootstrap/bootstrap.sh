@@ -35,6 +35,9 @@ CONF=(/etc/cattle/agent/bootstrap.conf
 CONTENT_URL=/configcontent/configscripts
 INSTALL_ITEMS="configscripts pyagent"
 REQUIRED_IMAGE=
+DETECTED_CATTLE_AGENT_IP=
+
+export CATTLE_AGENT_IP=${CATTLE_AGENT_IP:-${DETECTED_CATTLE_AGENT_IP}}
 
 cleanup()
 {

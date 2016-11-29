@@ -18,7 +18,7 @@ public class BootstrapScriptsHandler implements ScriptsHandler {
             return false;
         }
 
-        byte[] content = BootstrapScript.getBootStrapSource();
+        byte[] content = BootstrapScript.getBootStrapSource(request);
         IOUtils.copy(new ByteArrayInputStream(content), request.getServletContext().getResponse().getOutputStream());
 
         return true;
