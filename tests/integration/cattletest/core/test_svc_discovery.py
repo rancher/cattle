@@ -1,6 +1,7 @@
 from common_fixtures import *  # NOQA
 import yaml
 from netaddr import IPNetwork, IPAddress
+from cattle import ApiError
 
 
 def _create_stack(client):
@@ -3440,3 +3441,34 @@ def test_svc_ports_update(client, context):
     endpoints = client.reload(lbSvc).publicEndpoints
     ep = endpoints[0]
     assert ep.port == 8684
+
+
+def test_upgrade_scale_to_global(client, context, super_client):
+    env = _create_stack(client)
+
+    image_uuid = context.image_uuid
+    launch_config = {"imageUuid": image_uuid}
+
+    svc = client.create_service(name=random_str(),
+                                stackId=env.id,
+                                launchConfig=launch_config,
+                                scale=2,
+                                retainIp=True)
+    svc = client.wait_success(svc)
+    assert svc.state == "inactive"
+
+    env.activateservices()
+    svc = client.wait_success(svc, 120)
+    assert svc.state == "active"
+
+    _wait_for_compose_instance_start(client, svc, env, "1")
+
+    # try to upgrade the service
+    with pytest.raises(ApiError) as e:
+        labels = {'io.rancher.scheduler.global': 'true'}
+        launch_config = {"imageUuid": image_uuid, "labels": labels}
+        strategy = {"launchConfig": launch_config,
+                    "intervalMillis": 100}
+        svc.upgrade_action(inServiceStrategy=strategy)
+    assert e.value.error.status == 422
+    assert e.value.error.code == 'InvalidOption'
