@@ -2,7 +2,6 @@ package io.cattle.platform.agent.impl;
 
 import io.cattle.platform.agent.AgentRequest;
 import io.cattle.platform.agent.RemoteAgent;
-import io.cattle.platform.archaius.util.ArchaiusUtil;
 import io.cattle.platform.async.utils.AsyncUtils;
 import io.cattle.platform.async.utils.TimeoutException;
 import io.cattle.platform.core.model.Agent;
@@ -10,6 +9,7 @@ import io.cattle.platform.eventing.EventCallOptions;
 import io.cattle.platform.eventing.EventService;
 import io.cattle.platform.eventing.exception.AgentRemovedException;
 import io.cattle.platform.eventing.exception.EventExecutionException;
+import io.cattle.platform.eventing.impl.AbstractEventService;
 import io.cattle.platform.eventing.model.Event;
 import io.cattle.platform.eventing.model.EventVO;
 import io.cattle.platform.json.JsonMapper;
@@ -20,13 +20,9 @@ import java.util.HashSet;
 import java.util.Set;
 
 import com.google.common.util.concurrent.ListenableFuture;
-import com.netflix.config.DynamicIntProperty;
-import com.netflix.config.DynamicLongProperty;
 
 public class RemoteAgentImpl implements RemoteAgent {
 
-    private static final DynamicLongProperty AGENT_DEFAULT_TIMEOUT = ArchaiusUtil.getLong("agent.timeout.millis");
-    private static final DynamicIntProperty AGENT_RETRIES = ArchaiusUtil.getInt("agent.retries");
     private static final Set<String> FRIENDLY_REPLY = new HashSet<>(Arrays.asList("compute.instance.activate"));
 
     JsonMapper jsonMapper;
@@ -59,7 +55,7 @@ public class RemoteAgentImpl implements RemoteAgent {
 
     @Override
     public <T extends Event> T callSync(Event event, Class<T> reply, long timeout) {
-        return callSync(event, reply, new EventCallOptions(AGENT_RETRIES.get(), timeout));
+        return callSync(event, reply, new EventCallOptions(AbstractEventService.DEFAULT_RETRIES.get(), timeout));
     }
 
     @Override
@@ -90,7 +86,7 @@ public class RemoteAgentImpl implements RemoteAgent {
 
     @Override
     public <T extends Event> ListenableFuture<T> call(final Event event, final Class<T> reply, long timeout) {
-        return call(event, reply, new EventCallOptions(AGENT_RETRIES.get(), timeout));
+        return call(event, reply, new EventCallOptions(AbstractEventService.DEFAULT_RETRIES.get(), timeout));
     }
 
     @Override
@@ -127,7 +123,7 @@ public class RemoteAgentImpl implements RemoteAgent {
 
     @Override
     public Event callSync(Event event) {
-        return callSync(event, AGENT_DEFAULT_TIMEOUT.get());
+        return callSync(event, AbstractEventService.DEFAULT_TIMEOUT.get());
     }
 
     @Override
@@ -142,7 +138,7 @@ public class RemoteAgentImpl implements RemoteAgent {
 
     @Override
     public ListenableFuture<? extends Event> call(Event event) {
-        return call(event, AGENT_DEFAULT_TIMEOUT.get());
+        return call(event, AbstractEventService.DEFAULT_TIMEOUT.get());
     }
 
     @Override
@@ -157,12 +153,12 @@ public class RemoteAgentImpl implements RemoteAgent {
 
     @Override
     public <T extends Event> T callSync(Event event, Class<T> reply) {
-        return callSync(event, reply, AGENT_DEFAULT_TIMEOUT.get());
+        return callSync(event, reply, AbstractEventService.DEFAULT_TIMEOUT.get());
     }
 
     @Override
     public <T extends Event> ListenableFuture<T> call(Event event, Class<T> reply) {
-        return call(event, reply, AGENT_DEFAULT_TIMEOUT.get());
+        return call(event, reply, AbstractEventService.DEFAULT_TIMEOUT.get());
     }
 
 }
