@@ -417,7 +417,7 @@
         "port.bindAddress" : "r",
 
         "project" : "crud",
-        "project.defaultNetworkId" : "ru",
+        "project.defaultNetworkId" : "r",
         "project.externalId" : "",
         "project.externalIdType" : "",
         "project.description" : "cru",
