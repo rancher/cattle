@@ -613,7 +613,7 @@ def test_project_auth(admin_user_client, user_client, service_client,
         'projectTemplateId': 'cr',
         'orchestration': 'r',
         'version': 'r',
-        'defaultNetworkId': 'ru'
+        'defaultNetworkId': 'r'
     })
 
     auth_check(user_client.schema, 'project', 'crud', {
@@ -628,7 +628,7 @@ def test_project_auth(admin_user_client, user_client, service_client,
         'projectTemplateId': 'cr',
         'orchestration': 'r',
         'version': 'r',
-        'defaultNetworkId': 'ru'
+        'defaultNetworkId': 'r'
     })
 
     auth_check(project_client.schema, 'project', 'r', {
