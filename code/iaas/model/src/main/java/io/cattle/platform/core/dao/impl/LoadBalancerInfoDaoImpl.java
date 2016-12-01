@@ -279,7 +279,8 @@ public class LoadBalancerInfoDaoImpl implements LoadBalancerInfoDao {
                 if (svcs.contains(target.getService().getId())) {
                     continue;
                 }
-                PortRule portRule = new PortRule("", "", sourcePort, 0, PortRule.Protocol.valueOf(portToListener.get(
+                PortRule portRule = new PortRule("", "", sourcePort, null, PortRule.Protocol.valueOf(portToListener
+                        .get(
                         sourcePort)
                         .getSourceProtocol()), String.valueOf(target.getService().getId()),
                         portToListener.get(sourcePort).getTargetPort(), null, null);
