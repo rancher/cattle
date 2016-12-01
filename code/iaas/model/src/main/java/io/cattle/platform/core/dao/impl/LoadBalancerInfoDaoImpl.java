@@ -261,7 +261,7 @@ public class LoadBalancerInfoDaoImpl implements LoadBalancerInfoDao {
                     String path = portSpec.getPath().equalsIgnoreCase("default") ? "" : portSpec.getPath();
                     String hostname = portSpec.getDomain().equalsIgnoreCase("default") ? "" : portSpec.getDomain();
                     Integer targetPort = portSpec.getPort() != null ? portSpec.getPort() : listener.getTargetPort();
-                    PortRule portRule = new PortRule(hostname, path, listener.getSourcePort(), 0,
+                    PortRule portRule = new PortRule(hostname, path, listener.getSourcePort(), null,
                             PortRule.Protocol.valueOf(listener.getSourceProtocol()), String.valueOf(target.getService()
                                     .getId()),
                             targetPort, null, null);
