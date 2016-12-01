@@ -5,16 +5,21 @@ import static io.cattle.platform.core.model.tables.SettingTable.*;
 import static io.cattle.platform.core.model.tables.StackTable.*;
 
 import io.cattle.platform.archaius.util.ArchaiusUtil;
+import io.cattle.platform.core.constants.MachineConstants;
 import io.cattle.platform.core.model.Account;
+import io.cattle.platform.core.model.PhysicalHost;
 import io.cattle.platform.core.model.ProcessInstance;
 import io.cattle.platform.core.model.Setting;
 import io.cattle.platform.core.model.Stack;
 import io.cattle.platform.object.meta.ObjectMetaDataManager;
 import io.cattle.platform.object.process.StandardProcess;
+import io.cattle.platform.object.util.DataAccessor;
 import io.github.ibuildthecloud.gdapi.condition.Condition;
 import io.github.ibuildthecloud.gdapi.condition.ConditionType;
 
+import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 
 
 public class SampleDataStartupV13 extends AbstractSampleData {
@@ -47,6 +52,9 @@ public class SampleDataStartupV13 extends AbstractSampleData {
             ".upgrade",
     };
 
+    private static final String EC2_CONFIG = "amazonec2Config";
+    private static final String SECURITY_GROUP = "securityGroup";
+
     @Override
     protected String getName() {
         return "sampleDataVersion13";
@@ -61,6 +69,24 @@ public class SampleDataStartupV13 extends AbstractSampleData {
 
         deleteHAEnv();
         migrateProcesses();
+        migrateHosts();
+    }
+
+    protected void migrateHosts() {
+        for (PhysicalHost physicalHost : objectManager.find(PhysicalHost.class,
+                ObjectMetaDataManager.REMOVED_FIELD, null,
+                ObjectMetaDataManager.KIND_FIELD, MachineConstants.KIND_MACHINE)) {
+            Map<String, Object> data = DataAccessor.fieldMap(physicalHost, EC2_CONFIG);
+            if (data != null && data.containsKey(SECURITY_GROUP)) {
+                Object value = data.get(SECURITY_GROUP);
+                if (value instanceof String) {
+                    List<Object> o = Arrays.asList(value);
+                    data.put(SECURITY_GROUP, o);
+                    DataAccessor.setField(physicalHost, EC2_CONFIG, data);
+                    objectManager.persist(physicalHost);
+                }
+            }
+        }
     }
 
     protected void updateSetting() {
