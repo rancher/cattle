@@ -62,6 +62,8 @@ public class InstanceStart extends AbstractDefaultProcessHandler {
     private static final List<String> REMOVED_STATES = Arrays.asList(CommonStatesConstants.REMOVED, CommonStatesConstants.REMOVING,
             CommonStatesConstants.PURGED, CommonStatesConstants.PURGING);
 
+    private static final List<String> ERROR_STATES = Arrays.asList(InstanceConstants.STATE_ERROR, InstanceConstants.STATE_ERRORING);
+
     private static final List<String> STOPPED_STATES = Arrays.asList(InstanceConstants.STATE_STOPPED, InstanceConstants.STATE_STOPPING);
 
     private static final List<String> START_ONCE_STATES = Arrays.asList(InstanceConstants.STATE_STOPPED, InstanceConstants.STATE_STOPPING,
@@ -219,19 +221,23 @@ public class InstanceStart extends AbstractDefaultProcessHandler {
         }
 
         //timeout is 2 mins
-        Long timeout =  120000L;
+        Long timeout =  30000L;
         for (Instance wait : waitList) {
             try {
                 resourceMonitor.waitFor(wait, timeout,
                     new ResourcePredicate<Instance>() {
                         @Override
                         public boolean evaluate(Instance obj) {
-                            if (isStartOnce(obj)) {
-                                return START_ONCE_STATES.contains(obj.getState());
-                            }
-
                             if (obj.getRemoved() != null) {
                                 throw new TimeoutException("Instance is removed");
+                            }
+
+                            if (ERROR_STATES.contains(obj.getState())) {
+                                throw new TimeoutException("Instance encountered an error");
+                            }
+
+                            if (isStartOnce(obj)) {
+                                return START_ONCE_STATES.contains(obj.getState());
                             }
 
                             InstanceHostMap ihm =
@@ -242,7 +248,7 @@ public class InstanceStart extends AbstractDefaultProcessHandler {
 
                         @Override
                         public String getMessage() {
-                            return "running state";
+                            return "created state";
                         }
                     }
                 );
