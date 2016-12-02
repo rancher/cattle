@@ -225,13 +225,6 @@ public class DefaultDeploymentUnitInstance extends DeploymentUnitInstance implem
     }
 
     @Override
-    public void waitForNotTransitioning() {
-        if (this.instance != null) {
-            this.instance = context.resourceMonitor.waitForNotTransitioning(this.instance);
-        }
-    }
-
-    @Override
     public Instance getInstance() {
         return instance;
     }

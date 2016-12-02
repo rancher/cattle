@@ -112,8 +112,6 @@ public abstract class DeploymentUnitInstance {
         return service;
     }
 
-    public abstract void waitForNotTransitioning();
-
     public abstract void waitForAllocate();
 
     public abstract boolean isHealthCheckInitializing();
