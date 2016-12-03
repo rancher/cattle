@@ -5,12 +5,12 @@ import io.cattle.platform.lock.definition.AbstractLockDefinition;
 
 public class AllocateResourceLock extends AbstractLockDefinition {
 
-    public AllocateResourceLock(AllocationRequest.Type type, Long resourceId) {
-        super("ALLOCATE.RESOURCE." + type + "." + resourceId);
+    public AllocateResourceLock(Long resourceId) {
+        super("ALLOCATE.RESOURCE.INSTANCE." + resourceId);
     }
 
     public AllocateResourceLock(AllocationRequest request) {
-        this(request.getType(), request.getResourceId());
+        this(request.getResourceId());
     }
 
 }

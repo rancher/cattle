@@ -6,7 +6,7 @@ import io.cattle.platform.core.model.VolumeStoragePoolMap;
 import io.cattle.platform.engine.handler.HandlerResult;
 import io.cattle.platform.engine.process.ProcessInstance;
 import io.cattle.platform.engine.process.ProcessState;
-import io.cattle.platform.process.common.handler.EventBasedProcessHandler;
+import io.cattle.platform.process.base.AbstractDefaultProcessHandler;
 import io.cattle.platform.util.type.CollectionUtils;
 
 import java.util.HashMap;
@@ -18,16 +18,13 @@ import javax.inject.Inject;
 import javax.inject.Named;
 
 @Named
-public class VolumeAllocate extends EventBasedProcessHandler {
+public class VolumeAllocate extends AbstractDefaultProcessHandler {
 
     GenericMapDao mapDao;
 
-    public VolumeAllocate() {
-        setPriority(DEFAULT);
-    }
-
     @Override
-    protected HandlerResult postEvent(ProcessState state, ProcessInstance process, Map<Object, Object> result) {
+    public HandlerResult handle(ProcessState state, ProcessInstance process) {
+        Map<String, Object> result = new HashMap<String, Object>();
         Map<String, Set<Long>> allocationData = new HashMap<String, Set<Long>>();
         result.put("_allocationData", allocationData);
 

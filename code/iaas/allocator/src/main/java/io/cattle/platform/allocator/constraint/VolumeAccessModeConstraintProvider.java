@@ -28,10 +28,6 @@ public class VolumeAccessModeConstraintProvider implements AllocationConstraints
 
     @Override
     public void appendConstraints(AllocationAttempt attempt, AllocationLog log, List<Constraint> constraints) {
-        if (!attempt.isInstanceAllocation()) {
-            return;
-        }
-
         for (Instance instance : attempt.getInstances()) {
             List<Volume> volumes = InstanceHelpers.extractVolumesFromMounts(instance, objectManager);
             for (Volume v : volumes) {

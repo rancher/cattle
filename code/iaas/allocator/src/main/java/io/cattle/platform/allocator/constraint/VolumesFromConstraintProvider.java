@@ -20,10 +20,6 @@ public class VolumesFromConstraintProvider extends CollocationChecker implements
 
     @Override
     public void appendConstraints(AllocationAttempt attempt, AllocationLog log, List<Constraint> constraints) {
-        if (!attempt.isInstanceAllocation()) {
-            return;
-        }
-
         for (Instance instance : attempt.getInstances()) {
             @SuppressWarnings("unchecked")
             Set<Integer> intDataVolumesFrom = DataAccessor.fields(instance).withKey(DockerInstanceConstants.FIELD_VOLUMES_FROM).as(jsonMapper, Set.class);

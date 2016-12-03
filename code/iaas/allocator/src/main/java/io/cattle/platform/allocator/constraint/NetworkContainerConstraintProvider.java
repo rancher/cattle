@@ -21,10 +21,6 @@ public class NetworkContainerConstraintProvider extends CollocationChecker imple
 
     @Override
     public void appendConstraints(AllocationAttempt attempt, AllocationLog log, List<Constraint> constraints) {
-        if (!attempt.isInstanceAllocation()) {
-            return;
-        }
-
         for (Instance instance : attempt.getInstances()) {
             String networkMode = DataAccessor.fields(instance).withKey(DockerInstanceConstants.FIELD_NETWORK_MODE).as(String.class);
             if (NetworkConstants.NETWORK_MODE_CONTAINER.equals(networkMode) && instance.getNetworkContainerId() != null) {

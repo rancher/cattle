@@ -50,16 +50,7 @@ public class SimpleAllocatorDaoImpl extends AbstractJooqDao implements SimpleAll
     ObjectManager objectManager;
 
     @Override
-    public Iterator<AllocationCandidate> iteratorPools(List<Long> volumes, QueryOptions options) {
-        return iteratorHosts(null, volumes, options, false);
-    }
-
-    @Override
-    public Iterator<AllocationCandidate> iteratorHosts(List<String> orderedHostUUIDs, List<Long> volumes, QueryOptions options) {
-        return iteratorHosts(orderedHostUUIDs, volumes, options, true);
-    }
-
-    protected Iterator<AllocationCandidate> iteratorHosts(List<String> orderedHostUuids, List<Long> volumes, QueryOptions options, boolean hosts) {
+    public Iterator<AllocationCandidate> iteratorHosts(List<String> orderedHostUuids, List<Long> volumes, QueryOptions options) {
         List<CandidateHostInfo> hostInfos = new ArrayList<>();
         Set<Long> hostIds = new HashSet<>();
         if (orderedHostUuids == null) {
@@ -105,7 +96,7 @@ public class SimpleAllocatorDaoImpl extends AbstractJooqDao implements SimpleAll
             updateHostsWithUsedPorts(hostIds, hostInfos);
         }
 
-        return new AllocationCandidateIterator(objectManager, hostInfos, volumes, hosts);
+        return new AllocationCandidateIterator(objectManager, hostInfos, volumes);
     }
 
     private void updateHostsWithUsedPorts(Set<Long> hostIds, List<CandidateHostInfo> hostInfos) {
@@ -153,12 +144,7 @@ public class SimpleAllocatorDaoImpl extends AbstractJooqDao implements SimpleAll
                     .on(STORAGE_POOL.ID.eq(STORAGE_POOL_HOST_MAP.STORAGE_POOL_ID))
                 .leftOuterJoin(AGENT)
                     .on(AGENT.ID.eq(HOST.AGENT_ID))
-                .where(
-                    AGENT.ID.isNull().or(AGENT.STATE.eq(CommonStatesConstants.ACTIVE))
-                    .and(HOST.STATE.in(CommonStatesConstants.ACTIVE, CommonStatesConstants.UPDATING_ACTIVE))
-                    .and(STORAGE_POOL.STATE.eq(CommonStatesConstants.ACTIVE))
-                    .and(getQueryOptionCondition(options)))
-                    .and(inHostList(orderedHostUUIDs));
+                .where(getQueryOptionCondition(options, orderedHostUUIDs));
     }
 
     protected Condition inHostList(List<String> hostUUIDs) {
@@ -168,8 +154,22 @@ public class SimpleAllocatorDaoImpl extends AbstractJooqDao implements SimpleAll
         return HOST.UUID.in(hostUUIDs);
     }
 
-    protected Condition getQueryOptionCondition(QueryOptions options) {
+    protected Condition getQueryOptionCondition(QueryOptions options, List<String> orderedHostUUIDs) {
         Condition condition = null;
+
+        if (options.getAccountId() != null) {
+            condition = append(condition, HOST.ACCOUNT_ID.eq(options.getAccountId()));
+        }
+
+        if (options.getRequestedHostId() != null) {
+            condition = append(condition, HOST.ID.eq(options.getRequestedHostId()));
+            return condition;
+        }
+
+        condition = append(condition, AGENT.ID.isNull().or(AGENT.STATE.eq(CommonStatesConstants.ACTIVE))
+        .and(HOST.STATE.in(CommonStatesConstants.ACTIVE, CommonStatesConstants.UPDATING_ACTIVE))
+        .and(STORAGE_POOL.STATE.eq(CommonStatesConstants.ACTIVE))
+        .and(inHostList(orderedHostUUIDs)));
 
         if ( options.getHosts().size() > 0 ) {
             condition = append(condition, HOST.ID.in(options.getHosts()));
@@ -178,10 +178,6 @@ public class SimpleAllocatorDaoImpl extends AbstractJooqDao implements SimpleAll
         if ( options.getKind() != null ) {
             condition = append(condition,
                     HOST.KIND.eq(options.getKind()).and(STORAGE_POOL.KIND.eq(options.getKind())));
-        }
-
-        if (options.getAccountId() != null) {
-            condition = append(condition, HOST.ACCOUNT_ID.eq(options.getAccountId()));
         }
 
         return condition == null ? DSL.trueCondition() : condition;

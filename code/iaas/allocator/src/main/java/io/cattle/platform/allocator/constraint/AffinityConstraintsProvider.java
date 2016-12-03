@@ -31,10 +31,6 @@ public class AffinityConstraintsProvider implements AllocationConstraintsProvide
     @SuppressWarnings("rawtypes")
     @Override
     public void appendConstraints(AllocationAttempt attempt, AllocationLog log, List<Constraint> constraints) {
-        if (!attempt.isInstanceAllocation()) {
-            return;
-        }
-
         for (Instance instance : attempt.getInstances()) {
             Map env = DataAccessor.fields(instance).withKey(InstanceConstants.FIELD_ENVIRONMENT).as(jsonMapper, Map.class);
             // TODO: hack for now. assuming all affinity:constraint specs are just found in the key

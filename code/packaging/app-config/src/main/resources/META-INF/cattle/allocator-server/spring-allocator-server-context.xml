@@ -27,21 +27,4 @@
     <bean class="io.cattle.platform.allocator.constraint.NetworkContainerConstraintProvider" />
     <bean class="io.cattle.platform.allocator.constraint.VolumeAccessModeConstraintProvider" />
 
-    <tx:advice id="AllocatorAdvice" transaction-manager="CoreTransactionManager">
-        <tx:attributes>
-            <tx:method name="recordCandidate" />
-            <tx:method name="releaseAllocation" />
-        </tx:attributes>
-    </tx:advice>
-
-    <aop:config>
-        <aop:advisor advice-ref="AllocatorAdvice" pointcut="execution(* io.cattle.platform.allocator.dao.AllocatorDao.*(..))" />
-    </aop:config>
-
-    <bean class="io.cattle.platform.simple.allocator.dao.impl.SimpleAllocatorDaoImpl" />
-
-    <bean class="io.cattle.platform.simple.allocator.SimpleAllocator" >
-        <property name="allocationConstraintProviders" value="#{extensionManager.list('allocation.constraints.provider')}" />
-    </bean>
-
 </beans>

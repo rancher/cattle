@@ -111,14 +111,12 @@ public class BaseConstraintsProvider implements AllocationConstraintsProvider, P
             }
         }
 
-        if (attempt.isInstanceAllocation()) {
-            for (Instance instance : attempt.getInstances()) {
-                String driver = DataAccessor.fieldString(instance, InstanceConstants.FIELD_VOLUME_DRIVER);
-                if (StringUtils.isNotEmpty(driver) && !VolumeConstants.LOCAL_DRIVER.equals(driver)) {
-                    List<? extends StoragePool> pools = storagePoolDao.findStoragePoolByDriverName(instance.getAccountId(), driver);
-                    if (pools.size() > 0) {
-                        storagePoolToHostConstraint(constraints, pools.get(0));
-                    }
+        for (Instance instance : attempt.getInstances()) {
+            String driver = DataAccessor.fieldString(instance, InstanceConstants.FIELD_VOLUME_DRIVER);
+            if (StringUtils.isNotEmpty(driver) && !VolumeConstants.LOCAL_DRIVER.equals(driver)) {
+                List<? extends StoragePool> pools = storagePoolDao.findStoragePoolByDriverName(instance.getAccountId(), driver);
+                if (pools.size() > 0) {
+                    storagePoolToHostConstraint(constraints, pools.get(0));
                 }
             }
         }

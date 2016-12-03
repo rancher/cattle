@@ -13,14 +13,7 @@ import java.util.Map;
 import java.util.Set;
 
 public class AllocationAttempt {
-
-    public enum AllocationType {
-        INSTANCE, VOLUME
-    }
-
     String id = io.cattle.platform.util.resource.UUID.randomUUID().toString();
-
-    AllocationType type;
 
     Long accountId;
 
@@ -39,10 +32,9 @@ public class AllocationAttempt {
     List<AllocationCandidate> candidates = new ArrayList<AllocationCandidate>();
     AllocationCandidate matchedCandidate;
 
-    public AllocationAttempt(AllocationType type, long accountId, List<Instance> instances, Long hostId, Long requestedHostId, Set<Volume> volumes,
+    public AllocationAttempt(long accountId, List<Instance> instances, Long hostId, Long requestedHostId, Set<Volume> volumes,
             Map<Volume, Set<StoragePool>> pools) {
         super();
-        this.type = type;
         this.accountId = accountId;
         this.instances = instances;
         this.hostId = hostId;
@@ -64,24 +56,12 @@ public class AllocationAttempt {
         }
     }
 
-    public boolean isInstanceAllocation() {
-        return AllocationType.INSTANCE.equals(type);
-    }
-
     public String getId() {
         return id;
     }
 
     public void setId(String id) {
         this.id = id;
-    }
-
-    public AllocationType getType() {
-        return type;
-    }
-
-    public void setType(AllocationType type) {
-        this.type = type;
     }
 
     public Long getAccountId() {

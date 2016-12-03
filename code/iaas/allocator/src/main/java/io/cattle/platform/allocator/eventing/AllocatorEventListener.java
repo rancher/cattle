@@ -10,12 +10,5 @@ public interface AllocatorEventListener extends AnnotatedEventListener {
     void instanceAllocate(Event event);
 
     @EventHandler(poolKey="allocator")
-    void volumeAllocate(Event event);
-
-    @EventHandler(poolKey="allocator")
     void instanceDeallocate(Event event);
-
-    @EventHandler(poolKey="allocator")
-    void volumeDeallocate(Event event);
-
 }

@@ -4,27 +4,13 @@ import io.cattle.platform.eventing.model.Event;
 
 public class AllocationRequest {
 
-    public enum Type {
-        INSTANCE, VOLUME;
-    }
-
-    Type type;
     Event event;
     long resourceId;
 
     public AllocationRequest(Event event) {
         super();
         this.event = event;
-        if (event.getName().startsWith("instance")) {
-            this.type = Type.INSTANCE;
-        } else if (event.getName().startsWith("volume")) {
-            this.type = Type.VOLUME;
-        }
         this.resourceId = Long.parseLong(event.getResourceId());
-    }
-
-    public Type getType() {
-        return type;
     }
 
     public Event getEvent() {
@@ -33,10 +19,6 @@ public class AllocationRequest {
 
     public long getResourceId() {
         return resourceId;
-    }
-
-    public void setType(Type type) {
-        this.type = type;
     }
 
     public void setEvent(Event event) {
@@ -49,7 +31,7 @@ public class AllocationRequest {
 
     @Override
     public String toString() {
-        return "AllocationRequest [type=" + type + ", resource=" + resourceId + "]";
+        return "AllocationRequest [type=instance, resource=" + resourceId + "]";
     }
 
 }

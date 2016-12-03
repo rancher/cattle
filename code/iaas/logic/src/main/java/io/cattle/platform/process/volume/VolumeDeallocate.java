@@ -6,39 +6,34 @@ import io.cattle.platform.core.model.VolumeStoragePoolMap;
 import io.cattle.platform.engine.handler.HandlerResult;
 import io.cattle.platform.engine.process.ProcessInstance;
 import io.cattle.platform.engine.process.ProcessState;
-import io.cattle.platform.process.common.handler.EventBasedProcessHandler;
+import io.cattle.platform.process.base.AbstractDefaultProcessHandler;
+import io.cattle.platform.simple.allocator.VolumeDeallocator;
 
+import java.util.HashMap;
 import java.util.Map;
 
 import javax.inject.Inject;
 import javax.inject.Named;
 
 @Named
-public class VolumeDeallocate extends EventBasedProcessHandler {
+public class VolumeDeallocate extends AbstractDefaultProcessHandler {
 
+    @Inject
     GenericMapDao mapDao;
-
-    public VolumeDeallocate() {
-        setPriority(DEFAULT);
-    }
+    @Inject
+    protected VolumeDeallocator deallocator;
 
     @Override
-    protected HandlerResult postEvent(ProcessState state, ProcessInstance process, Map<Object, Object> result) {
+    public HandlerResult handle(ProcessState state, ProcessInstance process) {
+        Map<String, Object> result = new HashMap<String, Object>();
         Volume volume = (Volume) state.getResource();
+
+        deallocator.releaseAllocation(volume);
 
         for (VolumeStoragePoolMap map : mapDao.findToRemove(VolumeStoragePoolMap.class, Volume.class, volume.getId())) {
             deactivateThenScheduleRemove(map, state.getData());
         }
 
         return new HandlerResult(result);
-    }
-
-    public GenericMapDao getMapDao() {
-        return mapDao;
-    }
-
-    @Inject
-    public void setMapDao(GenericMapDao mapDao) {
-        this.mapDao = mapDao;
     }
 }
