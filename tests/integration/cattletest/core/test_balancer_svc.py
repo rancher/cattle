@@ -103,7 +103,7 @@ def test_validate_balancer_svc_fields(client, image_uuid):
     assert rule["source_port"] == port
     assert rule["priority"] == priority
     assert rule["protocol"] == "http"
-    assert rule["service"] == env.name + "/" + svc.name
+    assert rule["service"] == svc.name
     assert rule["target_port"] == target_port
     assert rule["backend_name"] == backend_name
     assert lb["default_cert"] == cert1.name
@@ -472,3 +472,49 @@ def test_svc_update_readd_rule(client, image_uuid):
     launch_config = {"imageUuid": image_uuid, "ports": ["45677:45677"]}
     lb_svc = client.update(lb_svc, launchConfig=launch_config)
     client.wait_success(lb_svc)
+
+
+def test_validate_export_cross_stack(client, image_uuid):
+    env1 = _create_stack(client)
+
+    launch_config = {"imageUuid": image_uuid}
+
+    svc = client. \
+        create_service(name=random_str(),
+                       stackId=env1.id,
+                       launchConfig=launch_config)
+
+    svc = client.wait_success(svc)
+
+    hostname = "foo"
+    path = "bar"
+    port = 32
+    service_id = svc.id
+    target_port = 42
+    port_rule = {"hostname": hostname,
+                 "path": path, "sourcePort": port,
+                 "serviceId": service_id,
+                 "targetPort": target_port}
+
+    lb_config = {"portRules": [port_rule]}
+
+    # create service
+    env2 = _create_stack(client)
+    lb_svc = client. \
+        create_loadBalancerService(name=random_str(),
+                                   stackId=env2.id,
+                                   launchConfig=launch_config,
+                                   lbConfig=lb_config)
+    lb_svc = client.wait_success(lb_svc)
+
+    compose_config = env2.exportconfig()
+    assert compose_config is not None
+    docker_yml = yaml.load(compose_config.rancherComposeConfig)
+    assert 'metadata' not in docker_yml['services'][lb_svc.name]
+    y = yaml.load(compose_config.rancherComposeConfig)
+    assert "lb_config" in y['services'][lb_svc.name]
+    lb = y['services'][lb_svc.name]["lb_config"]
+    assert lb is not None
+    assert len(lb["port_rules"]) == 1
+    rule = lb["port_rules"][0]
+    assert rule["service"] == env1.name + "/" + svc.name
