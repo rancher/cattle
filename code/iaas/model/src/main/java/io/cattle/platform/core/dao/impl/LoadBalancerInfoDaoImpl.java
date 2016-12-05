@@ -298,7 +298,7 @@ public class LoadBalancerInfoDaoImpl implements LoadBalancerInfoDao {
         Object configObj = DataAccessor.field(lbService, ServiceConstants.FIELD_LOAD_BALANCER_CONFIG,
                 Object.class);
         Map<String, Object> data = CollectionUtils.toMap(configObj);
-        String config = null;
+        String config = "";
         LoadBalancerCookieStickinessPolicy policy = null;
         // global/default sections
         if (configObj != null) {
