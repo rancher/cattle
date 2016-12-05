@@ -3,6 +3,7 @@ package io.cattle.platform.process.instance;
 import static io.cattle.platform.core.model.tables.InstanceHostMapTable.*;
 
 import io.cattle.platform.archaius.util.ArchaiusUtil;
+import io.cattle.platform.async.utils.ResourceTimeoutException;
 import io.cattle.platform.async.utils.TimeoutException;
 import io.cattle.platform.core.addon.InstanceHealthCheck;
 import io.cattle.platform.core.constants.AgentConstants;
@@ -107,7 +108,15 @@ public class InstanceStart extends AbstractDefaultProcessHandler {
                 progress.checkPoint("Waiting for deployment unit instances to create");
                 ///wait until all containers in deployment unit are starting
                 waitForDeploymentUnitCreate(instance);
+            } catch (ExecutionException e) {
+                log.error("Failed [{} {}] for instance [{}]", e.getMessage(), e.getTransitioningMessage(), instance.getId());
+                if (serviceDao.isServiceInstance(instance)) {
+                    throw new ResourceTimeoutException(instance, e.getMessage());
+                }
+                return handleStartError(state, instance, e);
+            }
 
+            try {
                 progress.checkPoint("Scheduling");
                 allocate(instance);
 
@@ -175,8 +184,8 @@ public class InstanceStart extends AbstractDefaultProcessHandler {
             }
         }
 
-        //timeout is 30 seconds
-        Long timeout =  30000L;
+        //timeout is 15 seconds
+        Long timeout = 15000L;
         for (Instance wait : waitList) {
             try {
                 resourceMonitor.waitFor(wait, timeout,
@@ -220,8 +229,8 @@ public class InstanceStart extends AbstractDefaultProcessHandler {
             waitList.add(i);
         }
 
-        //timeout is 2 mins
-        Long timeout =  30000L;
+        //timeout is 30 seconds
+        Long timeout = 30000L;
         for (Instance wait : waitList) {
             try {
                 resourceMonitor.waitFor(wait, timeout,
