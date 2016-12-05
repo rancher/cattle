@@ -31,7 +31,8 @@ def turn_on_off_local_auth(request, admin_user_client):
         admin_user_client.create_localAuthConfig(enabled=None,
                                                  username=username,
                                                  password=password)
-        assert from_env().valid()
+        # Proves auth is off because keys are invalid and would be reject
+        assert from_env(access_key='bad_key', secret_key='bad_key2').valid()
 
     request.addfinalizer(fin)
 
