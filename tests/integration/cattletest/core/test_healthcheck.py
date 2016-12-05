@@ -613,13 +613,13 @@ def test_health_check_init_timeout(super_client, context, client):
         'imageUuid': context.image_uuid,
         'healthCheck': {
             'port': 80,
-            'initializingTimeout': 1,
+            'initializingTimeout': 2000,
         }
     }, stackId=env.id)
     service = client.wait_success(client.wait_success(service).activate())
     assert service.state == 'active'
     h_c = service.launchConfig.healthCheck
-    assert h_c.initializingTimeout == 1
+    assert h_c.initializingTimeout == 2000
 
     maps = _wait_until_active_map_count(service, 1, client)
     expose_map = maps[0]
