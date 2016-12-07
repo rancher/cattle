@@ -14,7 +14,6 @@
         },
         "hostPorts": {
             "type" : "boolean",
-            "default" : "true",
             "nullable": false
         },
         "networkDriverId": {
