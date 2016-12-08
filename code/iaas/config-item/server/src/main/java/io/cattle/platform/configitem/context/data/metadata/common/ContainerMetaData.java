@@ -57,6 +57,9 @@ public class ContainerMetaData {
     // list of hostUUID
     List<String> health_check_hosts = new ArrayList<>();
 
+    // container links where key is linkName, value is instanceUUID
+    Map<String, String> links = new HashMap<>();
+
     public ContainerMetaData(ContainerMetaData that) {
         this.name = that.name;
         this.uuid = that.uuid;
@@ -89,6 +92,7 @@ public class ContainerMetaData {
         this.dns = that.dns;
         this.dns_search = that.dns_search;
         this.health_check_hosts = that.health_check_hosts;
+        this.links = that.links;
     }
 
     public ContainerMetaData() {
@@ -401,5 +405,13 @@ public class ContainerMetaData {
 
     public void setHealth_check_hosts(List<String> health_check_hosts) {
         this.health_check_hosts = health_check_hosts;
+    }
+
+    public Map<String, String> getLinks() {
+        return links;
+    }
+
+    public void setLinks(Map<String, String> links) {
+        this.links = links;
     }
 }

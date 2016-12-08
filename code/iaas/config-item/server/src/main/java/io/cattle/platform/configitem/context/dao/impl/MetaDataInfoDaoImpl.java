@@ -4,6 +4,7 @@ import static io.cattle.platform.core.model.tables.HealthcheckInstanceHostMapTab
 import static io.cattle.platform.core.model.tables.HostIpAddressMapTable.*;
 import static io.cattle.platform.core.model.tables.HostTable.*;
 import static io.cattle.platform.core.model.tables.InstanceHostMapTable.*;
+import static io.cattle.platform.core.model.tables.InstanceLinkTable.*;
 import static io.cattle.platform.core.model.tables.InstanceTable.*;
 import static io.cattle.platform.core.model.tables.IpAddressNicMapTable.*;
 import static io.cattle.platform.core.model.tables.IpAddressTable.*;
@@ -49,6 +50,7 @@ import javax.inject.Inject;
 import org.apache.commons.lang3.StringUtils;
 import org.jooq.JoinType;
 import org.jooq.Record1;
+import org.jooq.Record3;
 import org.jooq.RecordHandler;
 
 public class MetaDataInfoDaoImpl extends AbstractJooqDao implements MetaDataInfoDao {
@@ -60,7 +62,8 @@ public class MetaDataInfoDaoImpl extends AbstractJooqDao implements MetaDataInfo
 
     private void populateContainerData(final Map<Long, IpAddress> instanceIdToHostIpMap,
             final Map<Long, HostMetaData> hostIdToHostMetadata, List<Object> input, ContainerMetaData data,
-            Map<Long, String> instanceIdToUUID, Map<Long, List<HealthcheckInstanceHostMap>> instanceIdToHealthCheckers) {
+            Map<Long, String> instanceIdToUUID, Map<Long, List<HealthcheckInstanceHostMap>> instanceIdToHealthCheckers,
+            Map<Long, Map<String, String>> containerIdToContainerLink) {
         Instance instance = (Instance) input.get(0);
         instance.setData(instanceDao.getCacheInstanceData(instance.getId()));
 
@@ -120,6 +123,10 @@ public class MetaDataInfoDaoImpl extends AbstractJooqDao implements MetaDataInfo
                 data.setNetwork_from_container_uuid(parentInstanceUUID);
             }
         }
+
+        if (containerIdToContainerLink != null) {
+            data.setLinks(containerIdToContainerLink.get(instance.getId()));
+        }
     }
 
     @Override
@@ -135,7 +142,7 @@ public class MetaDataInfoDaoImpl extends AbstractJooqDao implements MetaDataInfo
                 ContainerMetaData data = new ContainerMetaData();
 
                 populateContainerData(instanceIdToHostIpMap, hostIdToHostMetadata, input, data,
-                        instanceIdToUUID, instanceIdToHealthCheckers);
+                        instanceIdToUUID, instanceIdToHealthCheckers, null);
 
                 return data;
             }
@@ -174,14 +181,15 @@ public class MetaDataInfoDaoImpl extends AbstractJooqDao implements MetaDataInfo
     @Override
     public List<ContainerMetaData> getManagedContainersData(long accountId,
             final Map<Long, List<HealthcheckInstanceHostMap>> instanceIdToHealthCheckers,
-            final Map<Long, IpAddress> instanceIdToHostIpMap, final Map<Long, HostMetaData> hostIdToHostMetadata) {
+            final Map<Long, IpAddress> instanceIdToHostIpMap, final Map<Long, HostMetaData> hostIdToHostMetadata,
+            final Map<Long, Map<String, String>> containerIdToContainerLink) {
 
         MultiRecordMapper<ContainerMetaData> mapper = new MultiRecordMapper<ContainerMetaData>() {
             @Override
             protected ContainerMetaData map(List<Object> input) {
                 ContainerMetaData data = new ContainerMetaData();
                 populateContainerData(instanceIdToHostIpMap, hostIdToHostMetadata, input, data,
-                        new HashMap<Long, String>(), instanceIdToHealthCheckers);
+                        new HashMap<Long, String>(), instanceIdToHealthCheckers, containerIdToContainerLink);
 
                 return data;
             }
@@ -374,7 +382,7 @@ public class MetaDataInfoDaoImpl extends AbstractJooqDao implements MetaDataInfo
             protected ContainerMetaData map(List<Object> input) {
                 ContainerMetaData data = new ContainerMetaData();
                 populateContainerData(instanceIdToHostIpMap, hostIdToHostMetadata, input, data,
-                        new HashMap<Long, String>(), instanceIdToHealthCheckers);
+                        new HashMap<Long, String>(), instanceIdToHealthCheckers, null);
 
                 return data;
             }
@@ -424,5 +432,33 @@ public class MetaDataInfoDaoImpl extends AbstractJooqDao implements MetaDataInfo
                         exposeMap.STATE.notIn(CommonStatesConstants.REMOVING, CommonStatesConstants.REMOVED)))
                 .and(exposeMap.UPGRADE.isNull().or(exposeMap.UPGRADE.eq(false)))
                 .fetch().map(mapper);
+    }
+
+    @Override
+    public Map<Long, Map<String, String>> getContainerIdToContainerLink(long accountId) {
+        final Map<Long, Map<String, String>> result = new HashMap<>();
+        create().select(INSTANCE_LINK.INSTANCE_ID, INSTANCE.UUID, INSTANCE_LINK.LINK_NAME)
+                .from(INSTANCE_LINK)
+                .join(INSTANCE)
+                .on(INSTANCE.ID.eq(INSTANCE_LINK.TARGET_INSTANCE_ID))
+                .where(INSTANCE.REMOVED.isNull()
+                        .and(INSTANCE_LINK.REMOVED.isNull())
+                        .and(INSTANCE.ACCOUNT_ID.eq(accountId)))
+                .fetchInto(new RecordHandler<Record3<Long, String, String>>() {
+                    @Override
+                    public void next(Record3<Long, String, String> record) {
+                        Long instanceId = record.getValue(INSTANCE_LINK.INSTANCE_ID);
+                        String targetInstanceUUID = record.getValue(INSTANCE.UUID);
+                        String linkName = record.getValue(INSTANCE_LINK.LINK_NAME);
+                        Map<String, String> linkMap = result.get(instanceId);
+                        if (linkMap == null) {
+                            linkMap = new HashMap<>();
+                        }
+                        linkMap.put(linkName, targetInstanceUUID);
+                        result.put(instanceId, linkMap);
+                    }
+                });
+
+        return result;
     }
 }

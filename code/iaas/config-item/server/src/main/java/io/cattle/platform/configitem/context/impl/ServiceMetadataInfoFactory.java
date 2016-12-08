@@ -123,7 +123,8 @@ public class ServiceMetadataInfoFactory extends AbstractAgentBaseContextFactory 
                 .getInstanceWithHostNetworkingToIpMap(account.getId());
         Map<Long, HostMetaData> hostIdToHost = metaDataInfoDao.getHostIdToHostMetadata(account.getId());
         List<ContainerMetaData> containersMD = metaDataInfoDao.getManagedContainersData(account.getId(),
-                instanceIdToHealthcheckers, instanceIdToHostIpMap, hostIdToHost);
+                instanceIdToHealthcheckers, instanceIdToHostIpMap, hostIdToHost,
+                metaDataInfoDao.getContainerIdToContainerLink(instance.getAccountId()));
         Map<Long, String> instanceIdToUuid = new HashMap<>();
         for (ContainerMetaData containerMd : containersMD) {
             instanceIdToUuid.put(containerMd.getInstanceId(), containerMd.getUuid());
