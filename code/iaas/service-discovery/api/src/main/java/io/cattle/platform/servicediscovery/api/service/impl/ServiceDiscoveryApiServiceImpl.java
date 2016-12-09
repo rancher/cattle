@@ -287,7 +287,7 @@ public class ServiceDiscoveryApiServiceImpl implements ServiceDiscoveryApiServic
                     new LBConfigMetadataStyle(lbConfig.getPortRules(), lbConfig.getCertificateIds(),
                             lbConfig.getDefaultCertificateId(),
                             lbConfig.getConfig(), lbConfig.getStickinessPolicy(), serviceIdsToService,
-                            stackIdsToStack, certIdsToCert));
+                            stackIdsToStack, certIdsToCert, service.getStackId(), true));
         }
     }
 

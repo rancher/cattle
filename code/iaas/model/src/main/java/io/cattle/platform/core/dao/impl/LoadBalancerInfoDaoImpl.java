@@ -204,7 +204,7 @@ public class LoadBalancerInfoDaoImpl implements LoadBalancerInfoDao {
             return new LBConfigMetadataStyle(lbConfig.getPortRules(), lbConfig.getCertificateIds(),
                     lbConfig.getDefaultCertificateId(),
                     lbConfig.getConfig(), lbConfig.getStickinessPolicy(), serviceIdsToService,
-                    stackIdsToStack, certIdsToCert);
+                    stackIdsToStack, certIdsToCert, lbService.getStackId(), false);
         }
         return null;
     }

@@ -2,7 +2,6 @@ package io.cattle.platform.core.util;
 
 import io.cattle.platform.core.addon.LoadBalancerCookieStickinessPolicy;
 import io.cattle.platform.core.addon.PortRule;
-import io.cattle.platform.core.addon.TargetPortRule;
 import io.cattle.platform.core.model.Certificate;
 import io.cattle.platform.core.model.Service;
 import io.cattle.platform.core.model.Stack;
@@ -10,6 +9,8 @@ import io.cattle.platform.core.model.Stack;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+
+import org.apache.commons.lang3.StringUtils;
 
 /*
  * this class it to support haproxy legacy API format
@@ -34,21 +35,17 @@ public class LBMetadataUtil {
             }
             this.path = portRule.getPath();
             this.hostname = portRule.getHostname();
-            if (service != null && stack != null) {
-                this.service = formatServiceName(service.getName(), stack.getName());
+            if (service != null) {
+                if (stack != null) {
+                    this.service = formatServiceName(service.getName(), stack.getName());
+                } else {
+                    this.service = service.getName();
+                }
             }
             this.target_port = portRule.getTargetPort();
             this.backend_name = portRule.getBackendName();
             this.priority = portRule.getPriority();
             this.selector = portRule.getSelector();
-        }
-
-        public MetadataPortRule(TargetPortRule portRule, String serviceName, String stackName) {
-            this.path = portRule.getPath();
-            this.hostname = portRule.getHostname();
-            this.target_port = portRule.getTargetPort();
-            this.service = formatServiceName(serviceName, stackName);
-            this.backend_name = portRule.getBackendName();
         }
 
         public String getSelector() {
@@ -137,7 +134,7 @@ public class LBMetadataUtil {
 
         public LBConfigMetadataStyle(List<? extends PortRule> portRules, List<Long> certIds, Long defaultCertId,
                 String config, LoadBalancerCookieStickinessPolicy stickinessPolicy, Map<Long, Service> services,
-                Map<Long, Stack> stacks, Map<Long, Certificate> certificates) {
+                Map<Long, Stack> stacks, Map<Long, Certificate> certificates, Long serviceStackId, boolean dropStackName) {
             super();
             if (certIds != null) {
                 for (Long certId : certIds) {
@@ -157,16 +154,21 @@ public class LBMetadataUtil {
                 for (PortRule portRule : portRules) {
                     if (portRule.getServiceId() != null) {
                         Long svcId = Long.valueOf(portRule.getServiceId());
-                        Service service = services.get(svcId);
-                        if (service == null) {
+                        Service targetService = services.get(svcId);
+                        if (targetService == null) {
                             continue;
                         }
-                        Stack stack = stacks.get(service.getStackId());
-                        if (stack == null) {
+                        Stack targetStack = stacks.get(targetService.getStackId());
+                        if (targetStack == null) {
                             continue;
                         }
-                        this.port_rules.add(new MetadataPortRule(portRule, service,
-                                stack));
+                        if (dropStackName && targetStack.getId().equals(serviceStackId)) {
+                            this.port_rules.add(new MetadataPortRule(portRule, targetService,
+                                    null));
+                        } else {
+                            this.port_rules.add(new MetadataPortRule(portRule, targetService,
+                                    targetStack));
+                        }
                     } else {
                         this.port_rules.add(new MetadataPortRule(portRule, null, null));
                     }
@@ -175,13 +177,6 @@ public class LBMetadataUtil {
 
             this.config = config;
             this.stickiness_policy = stickinessPolicy;
-        }
-
-        public LBConfigMetadataStyle(List<? extends TargetPortRule> portRules, String serviceName, String stackName) {
-            super();
-            for (TargetPortRule portRule : portRules) {
-                this.port_rules.add(new MetadataPortRule(portRule, serviceName, stackName));
-            }
         }
 
         public List<String> getCerts() {
@@ -227,6 +222,9 @@ public class LBMetadataUtil {
     }
 
     private static String formatServiceName(String serviceName, String stackName) {
+        if (StringUtils.isEmpty(stackName)) {
+            return serviceName;
+        }
         return String.format("%s/%s", stackName, serviceName);
     }
 }
