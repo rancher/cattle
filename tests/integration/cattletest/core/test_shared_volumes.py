@@ -416,48 +416,6 @@ def create_and_map_volume(client, context):
     return name, v
 
 
-def test_volume_affinity(new_context):
-    # When looking up named volumes for scheduling purposes, local volumes
-    # should not be ignored if the volume affinity label is present
-    client = new_context.client
-    n1, v1 = create_and_map_volume(client, new_context)
-    n2, v2 = create_and_map_volume(client, new_context)
-    n3, v3 = create_and_map_volume(client, new_context)
-    n4 = random_str()
-    v4 = client.create_volume(name=n4, driver='local')
-
-    c = client.create_container(imageUuid=new_context.image_uuid,
-                                labels={'io.rancher.scheduler.affinity:'
-                                        'volumes': ','.join([n1, n3])},
-                                dataVolumes=['%s:/p/n1' % n1,
-                                             '%s:/p/n2' % n2,
-                                             '%s:/p/n3' % n3,
-                                             '%s:/p/n4' % n4])
-    c = client.wait_success(c)
-    assert c.state == 'running'
-
-    # v1 is mapped, local driver, has affinity, should be found
-    # v2 is mapped, local driver, no affinity, should not be found
-    # v3 is mapped, random driver, has affinity, should be found
-    # v4 is unmapped, no affinity, should be found
-    assert len(c.dataVolumeMounts) == 3
-    assert c.dataVolumeMounts['/p/n1'] == v1.id
-    assert c.dataVolumeMounts['/p/n3'] == v3.id
-    assert c.dataVolumeMounts['/p/n4'] == v4.id
-
-    # Should fail to schedule because volume affinity conflicts with host
-    new_host = register_simulated_host(new_context)
-    with pytest.raises(ClientApiError) as e:
-        c = client.create_container(imageUuid=new_context.image_uuid,
-                                    volumeDriver='local',
-                                    requestedHostId=new_host.id,
-                                    labels={'io.rancher.scheduler.'
-                                            'affinity:volumes': n1},
-                                    dataVolumes=['%s:/foo' % n1])
-        client.wait_success(c)
-    assert e.value.message.startswith('Scheduling failed: valid host')
-
-
 def test_volume_create_failed_allocation(new_context):
     client, agent_client, host = from_context(new_context)
     storage_pool = add_storage_pool(new_context)
@@ -476,7 +434,7 @@ def test_volume_create_failed_allocation(new_context):
                                     requestedHostId=new_host.id,
                                     dataVolumeMounts=data_volume_mounts)
         client.wait_success(c)
-    assert e.value.message.startswith('Scheduling failed: valid host')
+    assert 'must have exactly these pool' in e.value.message
 
     # Put two volumes from mutually exclusive storage pools onto a container
     # and it should fail to find placement

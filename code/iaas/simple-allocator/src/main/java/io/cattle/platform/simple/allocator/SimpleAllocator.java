@@ -37,7 +37,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class SimpleAllocator extends AbstractAllocator implements Allocator, Named {
+public class SimpleAllocator extends AbstractAllocator implements Allocator, Named, VolumeDeallocator {
 
     private static final Logger log = LoggerFactory.getLogger(SimpleAllocator.class);
 
@@ -79,6 +79,8 @@ public class SimpleAllocator extends AbstractAllocator implements Allocator, Nam
 
         options.setAccountId(attempt.getAccountId());
 
+        options.setRequestedHostId(attempt.getRequestedHostId());
+
         for (Constraint constraint : attempt.getConstraints()) {
             if (constraint instanceof ValidHostsConstraint) {
                 options.getHosts().addAll(((ValidHostsConstraint)constraint).getHosts());
@@ -89,15 +91,12 @@ public class SimpleAllocator extends AbstractAllocator implements Allocator, Nam
             }
         }
 
-        if (!attempt.isInstanceAllocation()) {
-            return simpleAllocatorDao.iteratorPools(volumeIds, options);
-        } else {
-            List<String> orderedHostUUIDs = null;
-            if (attempt.getRequestedHostId() == null) {
-                orderedHostUUIDs = callExternalSchedulerForHosts(attempt);
-            }
-            return simpleAllocatorDao.iteratorHosts(orderedHostUUIDs, volumeIds, options);
+
+        List<String> orderedHostUUIDs = null;
+        if (attempt.getRequestedHostId() == null) {
+            orderedHostUUIDs = callExternalSchedulerForHosts(attempt);
         }
+        return simpleAllocatorDao.iteratorHosts(orderedHostUUIDs, volumeIds, options);
     }
 
     @Override
@@ -115,7 +114,7 @@ public class SimpleAllocator extends AbstractAllocator implements Allocator, Nam
     }
 
     @Override
-    protected void releaseAllocation(Volume volume) {
+    public void releaseAllocation(Volume volume) {
         if (!allocatorDao.isAllocationReleased(volume)) {
             allocatorDao.releaseAllocation(volume);
             callExternalSchedulerToRelease(volume);
@@ -124,11 +123,9 @@ public class SimpleAllocator extends AbstractAllocator implements Allocator, Nam
 
     @Override
     protected boolean recordCandidate(AllocationAttempt attempt, AllocationCandidate candidate) {
-        if (attempt.isInstanceAllocation()) {
-            Long newHost = candidate.getHost();
-            if (newHost != null) {
-                callExternalSchedulerToReserve(attempt, candidate);
-            }
+        Long newHost = candidate.getHost();
+        if (newHost != null) {
+            callExternalSchedulerToReserve(attempt, candidate);
         }
         return allocatorDao.recordCandidate(attempt, candidate);
     }

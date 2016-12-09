@@ -126,14 +126,15 @@ def test_host_create_container_inactive(new_context):
     assert c.transitioning == 'error'
 
 
-def test_host_create_container_requested_inactive(super_client, new_context):
+def test_host_create_container_requested_inactive(new_context):
     client = new_context.client
     host = new_context.host
     host = client.wait_success(host.deactivate())
     assert host.state == 'inactive'
 
-    c = new_context.create_container_no_success(requestedHostId=host.id)
-    wait_for(lambda: super_client.reload(c).transitioning == 'error')
+    c = new_context.create_container(requestedHostId=host.id)
+    c = client.wait_success(c)
+    assert c.state == 'running'
 
 
 def test_host_agent_state(super_client, new_context):

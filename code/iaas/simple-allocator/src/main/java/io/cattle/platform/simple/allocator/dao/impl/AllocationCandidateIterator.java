@@ -25,14 +25,12 @@ public class AllocationCandidateIterator implements Iterator<AllocationCandidate
     Iterator<CandidateHostInfo> iterator;
     Stack<AllocationCandidate> candidates = new Stack<AllocationCandidate>();
     ObjectManager objectManager;
-    boolean hosts;
 
-    public AllocationCandidateIterator(ObjectManager objectManager, List<CandidateHostInfo> hostInfos, List<Long> volumeIds, boolean hosts) {
+    public AllocationCandidateIterator(ObjectManager objectManager, List<CandidateHostInfo> hostInfos, List<Long> volumeIds) {
         super();
         this.objectManager = objectManager;
         this.iterator = hostInfos.iterator();
         this.volumeIds = volumeIds;
-        this.hosts = hosts;
     }
 
     @Override
@@ -56,7 +54,7 @@ public class AllocationCandidateIterator implements Iterator<AllocationCandidate
     protected void enumerate(CandidateHostInfo hostInfo) {
         log.debug("Enumerating canditates hostId [{}] pools {}", hostInfo.getHostId(), hostInfo.getPoolIds());
 
-        Long candidateHostId = this.hosts ? hostInfo.getHostId() : null;
+        Long candidateHostId = hostInfo.getHostId();
         Map<Pair<Class<?>, Long>, Object> cache = new HashMap<Pair<Class<?>, Long>, Object>();
 
         if (volumeIds.size() == 0) {

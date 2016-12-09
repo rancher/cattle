@@ -25,9 +25,6 @@ public class PortsConstraintProvider implements AllocationConstraintsProvider {
 
     @Override
     public void appendConstraints(AllocationAttempt attempt, AllocationLog log, List<Constraint> constraints) {
-        if (!attempt.isInstanceAllocation()) {
-            return;
-        }
         Set<String> duplicatePorts = new HashSet<String>();
         boolean checkForDupes = attempt.getInstances().size() > 1;
         for (Instance instance : attempt.getInstances()) {

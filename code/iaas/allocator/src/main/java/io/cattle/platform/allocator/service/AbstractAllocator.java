@@ -9,8 +9,6 @@ import io.cattle.platform.allocator.exception.FailedToAllocate;
 import io.cattle.platform.allocator.lock.AllocateConstraintLock;
 import io.cattle.platform.allocator.lock.AllocateResourceLock;
 import io.cattle.platform.allocator.lock.AllocationBlockingMultiLock;
-import io.cattle.platform.allocator.service.AllocationAttempt.AllocationType;
-import io.cattle.platform.allocator.service.AllocationRequest.Type;
 import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.dao.VolumeDao;
@@ -76,14 +74,7 @@ public abstract class AbstractAllocator implements Allocator {
         lockManager.lock(new AllocateResourceLock(request), new LockCallbackNoReturn() {
             @Override
             public void doWithLockNoResult() {
-                switch (request.getType()) {
-                case INSTANCE:
-                    allocateInstance(request);
-                    break;
-                case VOLUME:
-                    allocateVolume(request);
-                    break;
-                }
+                allocateInstance(request);
             }
         });
     }
@@ -104,14 +95,7 @@ public abstract class AbstractAllocator implements Allocator {
     }
 
     protected void runDeallocation(final AllocationRequest request) {
-        switch (request.getType()) {
-        case INSTANCE:
-            deallocateInstance(request);
-            break;
-        case VOLUME:
-            deallocateVolume(request);
-            break;
-        }
+        deallocateInstance(request);
     }
 
     protected void deallocateInstance(final AllocationRequest request) {
@@ -124,8 +108,6 @@ public abstract class AbstractAllocator implements Allocator {
     }
 
     protected abstract void releaseAllocation(Instance instance);
-
-    protected abstract void releaseAllocation(Volume volume);
 
     protected List<Instance> getInstancesToAllocate(Instance instance) {
         if (instance.getDeploymentUnitUuid() != null) {
@@ -205,7 +187,7 @@ public abstract class AbstractAllocator implements Allocator {
             pools.put(v, new HashSet<StoragePool>(allocatorDao.getAssociatedPools(v)));
         }
 
-        doAllocate(request, new AllocationAttempt(AllocationType.INSTANCE, origInstance.getAccountId(), instances, hostId, requestedHostId, volumes, pools));
+        doAllocate(request, new AllocationAttempt(origInstance.getAccountId(), instances, hostId, requestedHostId, volumes, pools));
     }
 
     protected LockDefinition getInstanceLockDef(Instance origInstance, List<Instance> instances, Set<Long> volumeIds) {
@@ -221,7 +203,7 @@ public abstract class AbstractAllocator implements Allocator {
             instancesIds.add(networkFromId);
         }
         for (Long id : instancesIds) {
-            locks.add(new AllocateResourceLock(Type.INSTANCE, id));
+            locks.add(new AllocateResourceLock(id));
         }
 
         for (Instance i : instances) {
@@ -238,33 +220,6 @@ public abstract class AbstractAllocator implements Allocator {
         }
 
         return locks.size() > 0 ? new AllocationBlockingMultiLock(locks) : null;
-    }
-
-    protected void deallocateVolume(AllocationRequest request) {
-        final Volume volume = objectManager.loadResource(Volume.class, request.getResourceId());
-        if (assertDeallocated(request.getResourceId(), volume.getAllocationState(), "Volume")) {
-            return;
-        }
-
-        releaseAllocation(volume);
-    }
-
-    protected void allocateVolume(AllocationRequest request) {
-        Volume volume = objectManager.loadResource(Volume.class, request.getResourceId());
-        if(assertAllocated(request.getResourceId(), volume.getAllocationState(), "Volume", true)) {
-            return;
-        }
-
-        Set<Volume> volumes = new HashSet<Volume>();
-        volumes.add(volume);
-
-        Map<Volume, Set<StoragePool>> pools = new HashMap<Volume, Set<StoragePool>>();
-        Set<StoragePool> associatedPools = new HashSet<StoragePool>(allocatorDao.getAssociatedPools(volume));
-        pools.put(volume, associatedPools);
-
-        AllocationAttempt attempt = new AllocationAttempt(AllocationType.VOLUME, volume.getAccountId(), null, null, null, volumes, pools);
-
-        doAllocate(request, attempt);
     }
 
     protected void doAllocate(final AllocationRequest request, final AllocationAttempt attempt) {
@@ -344,10 +299,6 @@ public abstract class AbstractAllocator implements Allocator {
                 lg.append(String.format("  %s   candidate result  [%s]", prefix, good));
                 log.info(lg.toString());
                 if (good) {
-                    if (candidate.getHost() != null && request.getType() == Type.VOLUME) {
-                        throw new IllegalStateException("Attempting to allocate hosts during a volume allocation");
-                    }
-
                     if (recordCandidate(attempt, candidate)) {
                         attempt.setMatchedCandidate(candidate);
                         return failedConstraints;
