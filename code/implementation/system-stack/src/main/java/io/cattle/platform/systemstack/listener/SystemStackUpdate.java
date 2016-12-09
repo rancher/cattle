@@ -63,11 +63,13 @@ public class SystemStackUpdate extends AbstractJooqDao implements AnnotatedEvent
     public static final String KUBERNETES = "k8s";
     public static final String SWARM = "swarm";
     public static final String MESOS = "mesos";
+    public static final String WINDOWS = "windows";
     public static final String VIRTUAL_MACHINE = "virtualMachine";
     public static final List<String> ORC_PRIORITY = Arrays.asList(
             KUBERNETES,
             SWARM,
-            MESOS
+            MESOS,
+            WINDOWS
             );
     public static final Set<String> ORCS = new HashSet<>(ORC_PRIORITY);
 
