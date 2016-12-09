@@ -1988,6 +1988,7 @@ def test_export_config(client, context):
     launch_config = {"imageUuid": image_uuid,
                      "cpuSet": "0,1", "labels": labels,
                      "restartPolicy": restart_policy,
+                     "startOnCreate": True,
                      "pidMode": "host",
                      "memory": 1048576,
                      "memorySwap": 2097152,
@@ -2035,7 +2036,8 @@ def test_export_config(client, context):
                        stackId=env.id,
                        launchConfig=launch_config,
                        metadata=metadata,
-                       retainIp=True)
+                       retainIp=True
+                       )
 
     service = client.wait_success(service)
 
@@ -2093,6 +2095,7 @@ def test_export_config(client, context):
     metadata = {"$$bar": {"metadata": [updated]}}
     assert svc['metadata'] is not None
     assert svc['metadata'] == metadata
+    assert svc['start_on_create']
     assert svc['retain_ip'] is True
     assert svc["milli_cpu_reservation"] == 1000
 

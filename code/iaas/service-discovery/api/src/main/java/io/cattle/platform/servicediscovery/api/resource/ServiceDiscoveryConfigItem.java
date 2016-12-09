@@ -115,6 +115,8 @@ public class ServiceDiscoveryConfigItem {
     // CATTLE PARAMETERS
     public static final ServiceDiscoveryConfigItem SCALE = new ServiceDiscoveryConfigItem("scale", "scale", false,
             false, false);
+    public static final ServiceDiscoveryConfigItem STARTONCREATE = new ServiceDiscoveryConfigItem(ServiceConstants.FIELD_START_ON_CREATE, 
+            NamedUtils.toUnderscoreSeparated(ServiceConstants.FIELD_START_ON_CREATE), true, false, false);
     public static final ServiceDiscoveryConfigItem HEALTHCHECK = new ServiceDiscoveryConfigItem(
             InstanceConstants.FIELD_HEALTH_CHECK,
             NamedUtils.toUnderscoreSeparated(InstanceConstants.FIELD_HEALTH_CHECK), true, false, false);
