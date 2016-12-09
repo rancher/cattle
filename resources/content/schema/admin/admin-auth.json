@@ -14,7 +14,6 @@
         "account.uuid" : "cr",
         "account.projectId" : "r",
         "account.identity" : "r",
-        "account.accountLinks" : "cru",
 
         "clusterMembership": "r",
         "clusterMembership\\..*": "r",
@@ -221,6 +220,7 @@
 
         "project.identity" : "",
         "project.allowSystemRole": "cru",
+        "project.projectLinks" : "cru",
 
         "publish": "cr",
         "publish.data": "cr",

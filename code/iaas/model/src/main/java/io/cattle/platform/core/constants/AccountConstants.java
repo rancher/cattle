@@ -28,7 +28,7 @@ public class AccountConstants {
     public static final String FIELD_CREATED_STACKS = "createdStackIds";
     public static final String FIELD_STARTED_STACKS = "startedStackIds";
     public static final String FIELD_VERSION = "version";
-    public static final String FIELD_ACCOUNT_LINKS = "accountLinks";
+    public static final String FIELD_ACCOUNT_LINKS = "projectLinks";
 
     public static final DynamicStringProperty ACCOUNT_VERSION = ArchaiusUtil.getString("account.version");
     public static final String ACCOUNT_ID = ConstantsUtils.property(Account.class, "accountId");

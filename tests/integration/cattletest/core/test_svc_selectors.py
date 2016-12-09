@@ -518,11 +518,13 @@ def _wait_for_instance_start(super_client, id):
 
 
 def test_cross_account_selector(admin_user_client, super_client, context):
-    a2 = admin_user_client.create_account()
+    a2 = admin_user_client.create_account(kind='project')
     a2 = admin_user_client.wait_success(a2)
-    a3 = admin_user_client.create_account()
+    a3 = admin_user_client.create_account(kind='project')
     a3 = admin_user_client.wait_success(a3)
-    a1 = admin_user_client.create_account(accountLinks=[a2.id])
+    a1 = admin_user_client.create_project(projectLinks=[a2.id])
+    a1 = admin_user_client.wait_success(a1)
+    assert a1.projectLinks is not None
     a1 = admin_user_client.wait_success(a1)
 
     image_uuid = context.image_uuid
@@ -569,6 +571,6 @@ def test_cross_account_selector(admin_user_client, super_client, context):
         pass
 
     # reconcile service links on account links updates
-    admin_user_client.update(a1, accountLinks=[a3.id])
+    admin_user_client.update(a1, projectLinks=[a3.id])
     _validate_remove_service_link(svc1, svc2, super_client)
     _validate_add_service_link(svc1, svc3, super_client)

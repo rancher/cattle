@@ -80,6 +80,12 @@
         "attributes" : {
         "scheduleUpdate" : true
       }
+    },
+    "projectLinks": {
+        "type": "array[reference[project]]",
+        "attributes" : {
+            "scheduleUpdate" : true
+        }
     }
   }
 }
