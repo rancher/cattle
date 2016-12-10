@@ -36,6 +36,29 @@
         <url-pattern>/v1-catalog/*</url-pattern>
     </filter-mapping>
 
+	<filter>
+        <filter-name>WebhookService</filter-name>
+        <filter-class>io.cattle.platform.iaas.api.servlet.filter.ProxyFilter</filter-class>
+        <init-param>
+            <param-name>proxy</param-name>
+            <param-value>http://localhost:8085</param-value>
+        </init-param>
+        <init-param>
+            <param-name>redirects</param-name>
+            <param-value>false</param-value>
+        </init-param>
+        <init-param>
+            <param-name>parseform</param-name>
+            <param-value>true</param-value>
+        </init-param>
+    </filter>
+    <filter-mapping>
+        <filter-name>WebhookService</filter-name>
+        <url-pattern>/v1-webhooks-generate/*</url-pattern>
+        <filter-name>WebhookService</filter-name>
+        <url-pattern>/v1-webhooks-receiver</url-pattern>
+    </filter-mapping>
+
     <filter>
         <filter-name>Telemetry</filter-name>
         <filter-class>io.cattle.platform.iaas.api.servlet.filter.ProxyFilter</filter-class>

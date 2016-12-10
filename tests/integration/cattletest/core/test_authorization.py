@@ -207,6 +207,7 @@ def test_user_types(user_client, adds=set(), removes=set()):
         'storageDriverService',
         'networkDriverService',
         'defaultNetwork',
+        'genericObject',
     }
     types.update(adds)
     types.difference_update(removes)
@@ -438,7 +439,8 @@ def test_admin_types(admin_user_client, adds=set(), removes=set()):
         'lbTargetConfig',
         'portRule',
         'targetPortRule',
-        'loadBalancerCookieStickinessPolicy'
+        'loadBalancerCookieStickinessPolicy',
+        'genericObject'
     }
     types.update(adds)
     types.difference_update(removes)
@@ -2484,6 +2486,7 @@ def test_pull_task(admin_user_client, user_client, project_client):
         'mode': 'r',
         'image': 'r',
         'status': 'r',
+        'key': 'r',
     })
 
     auth_check(user_client.schema, 'pullTask', 'r', {
@@ -2492,6 +2495,7 @@ def test_pull_task(admin_user_client, user_client, project_client):
         'mode': 'r',
         'image': 'r',
         'status': 'r',
+        'key': 'r',
     })
 
     auth_check(project_client.schema, 'pullTask', 'cr', {
@@ -2500,6 +2504,32 @@ def test_pull_task(admin_user_client, user_client, project_client):
         'mode': 'cr',
         'image': 'cr',
         'status': 'r',
+        'kind': 'cr',
+        'key': 'cr',
+    })
+
+
+def test_generic_object(admin_user_client, user_client, project_client):
+    auth_check(admin_user_client.schema, 'genericObject', 'crd', {
+        'name': 'cr',
+        'kind': 'cr',
+        'key': 'cr',
+        'accountId': 'r',
+        'data': 'r',
+    })
+
+    auth_check(user_client.schema, 'genericObject', 'r', {
+        'name': 'r',
+        'kind': 'r',
+        'key': 'r',
+        'accountId': 'r',
+    })
+
+    auth_check(project_client.schema, 'genericObject', 'crd', {
+        'name': 'cr',
+        'kind': 'cr',
+        'key': 'cr',
+        'accountId': 'r',
     })
 
 

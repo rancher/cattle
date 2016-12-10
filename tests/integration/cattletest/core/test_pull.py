@@ -13,7 +13,7 @@ def test_pull(new_context):
 
     task = client.create_pull_task(image='fake')
 
-    assert task.state == 'registering'
+    assert task.state == 'activating'
     task = client.wait_success(task)
 
     assert task.state == 'active'
