@@ -366,7 +366,7 @@ public class ServiceMetadataInfoFactory extends AbstractAgentBaseContextFactory 
                         continue;
                     }
                     containerMD.setStack_name(svcData.getStack_name());
-                    containerMD.setStack_uuid(svcData.getStackUuid());
+                    containerMD.setStack_uuid(svcData.getStack_uuid());
                     containerMD.setService_name(svcData.getName());
                     // apply version to a container (for service containers)
                     containerMD = ContainerMetaData.getContainerMetaData(containerMD, version);
