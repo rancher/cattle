@@ -15,7 +15,7 @@ public interface DeploymentManager extends AnnotatedEventListener {
 
     void remove(Service service);
 
-    @EventHandler
+    @EventHandler(poolKey="process")
     void serviceUpdate(ConfigUpdate update);
 
     void reconcileServices(Collection<? extends Service> services);
