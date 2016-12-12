@@ -395,3 +395,18 @@ def test_setlinks_on_removed(client, context):
             setservicelinks(serviceLinks=[link])
     assert e.value.error.status == 422
     assert e.value.error.code == 'InvalidReference'
+
+
+def test_invalid_ports(client, context):
+    env = _create_stack(client)
+
+    launch_config = {"imageUuid": context.image_uuid,
+                     "ports": [":45677"]}
+
+    with pytest.raises(ApiError) as e:
+        client. \
+            create_service(name=random_str(),
+                           stackId=env.id,
+                           launchConfig=launch_config)
+    assert e.value.error.status == 422
+    assert e.value.error.code == 'PortWrongFormat'
