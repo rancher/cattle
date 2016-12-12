@@ -9,6 +9,7 @@ import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.constants.ServiceConstants;
 import io.cattle.platform.core.model.Service;
 import io.cattle.platform.core.model.Stack;
+import io.cattle.platform.core.util.PortSpec;
 import io.cattle.platform.iaas.api.filter.common.AbstractDefaultResourceManagerFilter;
 import io.cattle.platform.json.JsonMapper;
 import io.cattle.platform.object.ObjectManager;
@@ -157,8 +158,34 @@ public class ServiceCreateValidationFilter extends AbstractDefaultResourceManage
         return request;
     }
 
-    @SuppressWarnings("unchecked")
     public void validatePorts(Service service, String type, ApiRequest request) {
+        validateLBPortRules(type, request);
+        validatePorts(request);
+    }
+
+    @SuppressWarnings("unchecked")
+    private void validatePorts(ApiRequest request) {
+        Map<String, Object> data = CollectionUtils.toMap(request.getRequestObject());
+        if (data.get(ServiceConstants.FIELD_LAUNCH_CONFIG) == null) {
+            return;
+        }
+        Map<String, Object> lc = (Map<String, Object>) data.get(ServiceConstants.FIELD_LAUNCH_CONFIG);
+        List<String> ports = jsonMapper.convertCollectionValue(
+                lc.get(InstanceConstants.FIELD_PORTS), List.class, String.class);
+        if (ports != null) {
+            for (Object port : ports) {
+                if (port == null) {
+                    throw new ValidationErrorException(ValidationErrorCodes.MISSING_REQUIRED,
+                            InstanceConstants.FIELD_PORTS);
+                }
+                /* This will parse the PortSpec and throw an error */
+                new PortSpec(port.toString());
+            }
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    private void validateLBPortRules(String type, ApiRequest request) {
         if (!type.equalsIgnoreCase(ServiceConstants.KIND_LOAD_BALANCER_SERVICE)) {
             return;
         }
