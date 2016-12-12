@@ -94,12 +94,12 @@ public class ServiceMetaData {
     private boolean isPrimaryConfig;
     private String launchConfigName;
     private Long stackId;
-    private String stackUuid;
     private Service service;
     
     protected String name;
     protected String uuid;
     protected String stack_name;
+    private String stack_uuid;
     protected String kind;
     protected String hostname;
     protected String vip;
@@ -125,7 +125,7 @@ public class ServiceMetaData {
         this.isPrimaryConfig = that.isPrimaryConfig;
         this.launchConfigName = that.launchConfigName;
         this.stackId = that.stackId;
-        this.stackUuid = that.stackUuid;
+        this.stack_uuid = that.stack_uuid;
         this.service = that.service;
 
         this.name = that.name;
@@ -160,7 +160,7 @@ public class ServiceMetaData {
         this.uuid = service.getUuid();
         this.stack_name = env.getName();
         this.stackId = env.getId();
-        this.stackUuid = env.getUuid();
+        this.stack_uuid = env.getUuid();
         this.kind = service.getKind();
         this.sidekicks = sidekicks;
         this.vip = getVip(service);
@@ -400,12 +400,12 @@ public class ServiceMetaData {
         }
     }
 
-    public String getStackUuid() {
-        return stackUuid;
+    public String getStack_uuid() {
+        return stack_uuid;
     }
 
-    public void setStackUuid(String stackUuid) {
-        this.stackUuid = stackUuid;
+    public void setStack_uuid(String stack_uuid) {
+        this.stack_uuid = stack_uuid;
     }
 
     public Boolean getSystem() {
