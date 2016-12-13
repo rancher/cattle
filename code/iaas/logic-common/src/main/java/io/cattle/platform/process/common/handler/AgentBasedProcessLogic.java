@@ -28,6 +28,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+
 import javax.inject.Inject;
 
 import org.apache.commons.lang3.StringUtils;
@@ -87,11 +88,11 @@ public class AgentBasedProcessLogic extends AbstractObjectProcessLogic implement
         Object agentResource = getAgentResource(state, process, dataResource);
 
         if (eventResource == null) {
-            throw new IllegalStateException("Event resource is null");
+            return null;
         }
 
         if (dataResource == null) {
-            throw new IllegalStateException("Data resource is null");
+            return null;
         }
 
         RemoteAgent agent = agentLocator.lookupAgent(agentResource);
