@@ -34,9 +34,12 @@ import org.jooq.RecordHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.netflix.config.DynamicIntProperty;
+
 public class JooqProcessRecordDao extends AbstractJooqDao implements ProcessRecordDao {
 
     private static final Logger log = LoggerFactory.getLogger(JooqProcessRecordDao.class);
+    private static final DynamicIntProperty BATCH = ArchaiusUtil.getInt("process.replay.batch.size");
 
     JsonMapper jsonMapper;
 
@@ -53,6 +56,7 @@ public class JooqProcessRecordDao extends AbstractJooqDao implements ProcessReco
                             .or(PROCESS_INSTANCE.RUN_AFTER.le(new Date())))
                 .orderBy(PROCESS_INSTANCE.ID.asc(),
                         PROCESS_INSTANCE.PRIORITY.desc())
+                .limit(BATCH.get())
                 .fetchInto(new RecordHandler<Record4<Long, String, String, Integer>>() {
             @Override
             public void next(Record4<Long, String, String, Integer> record) {
