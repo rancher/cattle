@@ -1,7 +1,6 @@
 package io.cattle.platform.token.impl;
 
 import static org.junit.Assert.*;
-
 import io.cattle.platform.token.CertSet;
 import io.cattle.platform.token.TokenException;
 
@@ -9,7 +8,6 @@ import java.math.BigInteger;
 import java.security.KeyFactory;
 import java.security.NoSuchAlgorithmException;
 import java.security.PublicKey;
-import java.security.Security;
 import java.security.interfaces.RSAPrivateKey;
 import java.security.spec.EncodedKeySpec;
 import java.security.spec.InvalidKeySpecException;
