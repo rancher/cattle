@@ -304,6 +304,7 @@ def test_admin_types(admin_user_client, adds=set(), removes=set()):
         'catalogTemplate',
         'certificate',
         'changeSecretInput',
+        'clusterMembership',
         'composeConfig',
         'composeConfigInput',
         'composeProject',

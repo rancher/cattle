@@ -15,6 +15,9 @@
         "account.projectId" : "r",
         "account.identity" : "r",
 
+        "clusterMembership": "r",
+        "clusterMembership\\..*": "r",
+
         "haConfigInput" : "cr",
         "haConfigInput.clusterSize" : "cr",
         "haConfigInput.httpEnabled" : "cr",
