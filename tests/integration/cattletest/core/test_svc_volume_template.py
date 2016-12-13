@@ -414,3 +414,49 @@ def test_no_scope(client):
         client.create_volumeTemplate(name="foo", driver="nfs",
                                      driverOpts=opts)
     assert e.value.error.status == 422
+
+
+def test_v1_v2_mix_export(client, context):
+    opts = {'foo': 'true', 'bar': 'true'}
+    stack = client.create_stack(name=random_str())
+    stack = client.wait_success(stack)
+
+    t = client.create_volumeTemplate(name="foo", driver="nfs",
+                                     driverOpts=opts,
+                                     stackId=stack.id,
+                                     external=True)
+
+    image_uuid = context.image_uuid
+    data_volumes = ["foo:/bar", "bar:/foo", "baz"]
+    launch_config = {"imageUuid": image_uuid,
+                     "dataVolumes": data_volumes, "volumeDriver": "nfs"}
+    svc = client.create_service(name=random_str(),
+                                stackId=stack.id,
+                                launchConfig=launch_config,
+                                scale=1)
+    svc = client.wait_success(svc)
+    assert svc.state == "inactive"
+
+    # test export
+    compose_config = stack.exportconfig()
+    assert compose_config is not None
+    docker_yml = yaml.load(compose_config.dockerComposeConfig)
+    volumes = docker_yml['volumes']
+    assert len(volumes) == 2
+
+    # check volumeTemplate volume
+    assert t.name in volumes
+    vol = volumes[t.name]
+    assert vol['external'] is True
+    assert vol['driver'] == 'nfs'
+    assert vol['driver_opts'] == opts
+    assert 'per_container' not in vol
+
+    # check v1 style named volume
+    assert 'bar' in volumes
+    vol = volumes["bar"]
+    assert vol['external'] is True
+    assert vol['driver'] == 'nfs'
+    assert 'per_container' not in vol
+
+    assert 'volume_driver' not in docker_yml["services"][svc.name]

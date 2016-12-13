@@ -164,6 +164,7 @@ public class ServiceDiscoveryApiServiceImpl implements ServiceDiscoveryApiServic
         Map<String, Object> servicesData = new HashMap<String, Object>();
         Collection<Long> servicesToExportIds = CollectionUtils.collect(servicesToExport,
                 TransformerUtils.invokerTransformer("getId"));
+        Map<String, Object> volumesData = new HashMap<String, Object>();
         for (Service service : servicesToExport) {
             List<String> launchConfigNames = ServiceDiscoveryUtil.getServiceLaunchConfigNames(service);
             for (String launchConfigName : launchConfigNames) {
@@ -192,6 +193,7 @@ public class ServiceDiscoveryApiServiceImpl implements ServiceDiscoveryApiServic
                     populateTmpfs(cattleServiceData, composeServiceData);
                     populateUlimit(cattleServiceData, composeServiceData);
                     populateBlkioOptions(cattleServiceData, composeServiceData);
+                    translateV1VolumesToV2(cattleServiceData, composeServiceData, volumesData);
                 }
                 if (!composeServiceData.isEmpty()) {
                     servicesData.put(isPrimaryConfig ? service.getName() : launchConfigName, composeServiceData);
@@ -199,7 +201,7 @@ public class ServiceDiscoveryApiServiceImpl implements ServiceDiscoveryApiServic
             }
         }
 
-        Map<String, Object> volumesData = new HashMap<String, Object>();
+
         for (VolumeTemplate volume : volumes) {
             Map<String, Object> cattleVolumeData = new HashMap<>();
             cattleVolumeData.putAll(DataUtils.getFields(volume));
@@ -302,17 +304,58 @@ public class ServiceDiscoveryApiServiceImpl implements ServiceDiscoveryApiServic
     }
 
     @SuppressWarnings("unchecked")
+    private void translateV1VolumesToV2(Map<String, Object> cattleServiceData,
+            Map<String, Object> composeServiceData, Map<String, Object> volumesData) {
+        // volume driver presence defines the v1 format for the volumes
+        String volumeDriver = String.valueOf(cattleServiceData.get(ServiceDiscoveryConfigItem.VOLUME_DRIVER
+                .getCattleName()));
+        if (StringUtils.isEmpty(volumeDriver)) {
+            return;
+        }
+        composeServiceData.remove(ServiceDiscoveryConfigItem.VOLUME_DRIVER
+                .getDockerName());
+        Object dataVolumes = cattleServiceData.get(InstanceConstants.FIELD_DATA_VOLUMES);
+        if (dataVolumes == null) {
+            return;
+        }
+
+        for (String dataVolume : (List<String>) dataVolumes) {
+            String[] splitted = dataVolume.split(":");
+            if (splitted.length < 2) {
+                // only process named volumes
+                continue;
+            }
+            String dataVolumeName = splitted[0];
+            if (volumesData.containsKey(dataVolumeName)) {
+                // either defined by volumeTemplate, or external volume is already created for it
+                continue;
+            }
+            Map<String, Object> cattleVolumeData = new HashMap<>();
+            cattleVolumeData.put(ServiceConstants.FIELD_VOLUME_EXTERNAL, true);
+            cattleVolumeData.put(ServiceConstants.FIELD_VOLUME_DRIVER, volumeDriver);
+            Map<String, Object> composeVolumeData = new HashMap<>();
+            for (String cattleVolume : cattleVolumeData.keySet()) {
+                translateRancherToCompose(true, cattleVolumeData, composeVolumeData, cattleVolume,
+                        null, true);
+            }
+            if (!composeVolumeData.isEmpty()) {
+                volumesData.put(dataVolumeName, composeVolumeData);
+            }
+        }
+    }
+    
+    @SuppressWarnings("unchecked")
     private void populateLogConfig(Map<String, Object> cattleServiceData, Map<String, Object> composeServiceData) {
         Object value = cattleServiceData.get(ServiceConstants.FIELD_LOG_CONFIG);
         if (value instanceof Map) {
             if (!((Map<?, ?>) value).isEmpty()) {
                 Map<String, Object> logConfig = new HashMap<>();
-                Map<String, Object> map = (Map<String, Object>)value;
+                Map<String, Object> map = (Map<String, Object>) value;
                 Iterator<String> it = map.keySet().iterator();
                 while (it.hasNext()) {
                     String key = it.next();
                     if (key.equalsIgnoreCase("config") && map.get(key) != null) {
-                        if (map.get(key) instanceof java.util.Map && !((Map<?, ?>)map.get(key)).isEmpty()) {
+                        if (map.get(key) instanceof java.util.Map && !((Map<?, ?>) map.get(key)).isEmpty()) {
                             logConfig.put("options", map.get(key));
                         }
                     } else if (key.equalsIgnoreCase("driver") && map.get(key) != null && map.get(key) != "") {
@@ -325,7 +368,7 @@ public class ServiceDiscoveryApiServiceImpl implements ServiceDiscoveryApiServic
             }
         }
     }
-    
+
     @SuppressWarnings("unchecked")
     private void populateTmpfs(Map<String, Object> cattleServiceData, Map<String, Object> composeServiceData) {
         Object value = cattleServiceData.get(ServiceConstants.FIELD_TMPFS);
