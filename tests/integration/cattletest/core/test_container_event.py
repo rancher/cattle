@@ -56,7 +56,7 @@ def test_volume_cleanup_strategy_label(client, host, agent_cli, user_id):
     external_id = random_str()
     container = create_native_container(client, host, external_id,
                                         agent_cli, user_id)
-    assert container.labels[VOLUME_CLEANUP_LABEL] == 'none'
+    assert VOLUME_CLEANUP_LABEL not in container.labels
 
     external_id = random_str()
     inspect = {'Config': {'Labels': {VOLUME_CLEANUP_LABEL: 'all'}}}

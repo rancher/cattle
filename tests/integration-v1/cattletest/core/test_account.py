@@ -158,11 +158,9 @@ def test_account_purge(admin_user_client, super_client, new_context):
 
     host = super_client.wait_success(host)
     assert host.removed is not None
-    assert host.state == 'purged'
 
     host2 = super_client.wait_success(host2)
     assert host2.removed is not None
-    assert host2.state == 'purged'
 
     c1 = super_client.wait_success(c1)
     assert c1.removed is not None
