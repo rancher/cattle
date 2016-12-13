@@ -175,7 +175,9 @@ public class LoadBalancerInfoDaoImpl implements LoadBalancerInfoDao {
 
     @Override
     public LBConfigMetadataStyle generateLBConfigMetadataStyle(Service lbService) {
-        if (!ServiceConstants.KIND_LOAD_BALANCER_SERVICE.equalsIgnoreCase(lbService.getKind())) {
+        LbConfig lbConfig = DataAccessor.field(lbService, ServiceConstants.FIELD_LB_CONFIG, jsonMapper,
+                LbConfig.class);
+        if (lbConfig == null) {
             return null;
         }
         // lb config can be set for lb and regular service (when it joins LB via selectors)
@@ -198,15 +200,11 @@ public class LoadBalancerInfoDaoImpl implements LoadBalancerInfoDao {
                 CERTIFICATE.ACCOUNT_ID, lbService.getAccountId(), CERTIFICATE.REMOVED, null)) {
             certIdsToCert.put(cert.getId(), cert);
         }
-        LbConfig lbConfig = DataAccessor.field(lbService, ServiceConstants.FIELD_LB_CONFIG, jsonMapper,
-                LbConfig.class);
-        if (lbConfig != null) {
-            return new LBConfigMetadataStyle(lbConfig.getPortRules(), lbConfig.getCertificateIds(),
-                    lbConfig.getDefaultCertificateId(),
-                    lbConfig.getConfig(), lbConfig.getStickinessPolicy(), serviceIdsToService,
-                    stackIdsToStack, certIdsToCert, lbService.getStackId(), false);
-        }
-        return null;
+
+        return new LBConfigMetadataStyle(lbConfig.getPortRules(), lbConfig.getCertificateIds(),
+                lbConfig.getDefaultCertificateId(),
+                lbConfig.getConfig(), lbConfig.getStickinessPolicy(), serviceIdsToService,
+                stackIdsToStack, certIdsToCert, lbService.getStackId(), false);
     }
 
     private static String getUuid(PortRule rule) {
