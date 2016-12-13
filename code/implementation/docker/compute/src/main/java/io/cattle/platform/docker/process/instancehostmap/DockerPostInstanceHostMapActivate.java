@@ -217,7 +217,7 @@ public class DockerPostInstanceHostMapActivate extends AbstractObjectProcessLogi
             @Override
             public Volume doWithLock() {
                 Volume volume = dockerDao.createDockerVolumeInPool(instance.getAccountId(), dVol.getName(), dVol.getUri(), dVol.getExternalId(),
-                        dVol.getDriver(), storagePool, dVol.isBindMount());
+                        dVol.getDriver(), storagePool, dVol.isBindMount(), instance.getNativeContainer());
                 return volume;
             }
         });

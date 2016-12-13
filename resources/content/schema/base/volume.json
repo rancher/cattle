@@ -7,6 +7,10 @@
             "type": "boolean",
             "default": false
         },
+        "isNative": {
+            "type": "boolean",
+            "default": false
+        },
         "storageDriverId": {
             "type": "reference[storageDriver]",
             "nullable": false
