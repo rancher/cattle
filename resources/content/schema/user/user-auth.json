@@ -803,10 +803,13 @@
         "serviceBinding.labels" : "cr",
         "serviceBinding.ports" : "cr",
         
-        "genericObject" : "r",
-        "genericObject.kind" : "cr",
-        "genericObject.name" : "cr",
-        "genericObject.key" : "cr",
+        "webhook" : "r",
+        "webhook.name" : "cr",
+        "webhook.key" : "cr",
+        "webhook.kind" : "cr",
+        "webhook.url" : "cr",
+        "webhook.driver" : "cr",
+        "webhook.config" : "cr",
 
         "serviceEvent" : "r",
         "serviceEvent.instanceId" : "r",

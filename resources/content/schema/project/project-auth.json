@@ -84,7 +84,7 @@
         "balancerServiceTargetConfig" : "cr",
         "networkDriverService" : "crud",
         "storageDriverService" : "crud",
-        "genericObject" : "crd",
+        "webhook" : "crd",
         "end" : ""
     }
 }

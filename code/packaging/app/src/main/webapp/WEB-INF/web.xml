@@ -53,8 +53,8 @@
         </init-param>
     </filter>
     <filter-mapping>
-        <filter-name>WebhookService</filter-name>
-        <url-pattern>/v1-webhooks-generate/*</url-pattern>
+    	<filter-name>WebhookService</filter-name>
+        <url-pattern>/v1-webhooks/*</url-pattern>
         <filter-name>WebhookService</filter-name>
         <url-pattern>/v1-webhooks-receiver</url-pattern>
     </filter-mapping>
