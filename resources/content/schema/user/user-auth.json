@@ -966,6 +966,7 @@
         "storageDriverService.storageDriver" : "cru",
 
         "defaultNetwork" : "r",
+        "defaultNetwork.kind" : "cr",
         "defaultNetwork.networkDriverId" : "",
 
         "subnet" : "r",
