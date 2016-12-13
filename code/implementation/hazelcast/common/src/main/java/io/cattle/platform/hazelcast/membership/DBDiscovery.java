@@ -10,7 +10,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.OutputStream;
+import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -270,7 +270,7 @@ public class DBDiscovery extends NoExceptionRunnable implements DiscoveryStrateg
     }
 
     @Override
-    public synchronized boolean waitReady() {
+    public boolean waitReady() {
         while (!isReady()) {
             try {
                 this.wait();
@@ -282,7 +282,7 @@ public class DBDiscovery extends NoExceptionRunnable implements DiscoveryStrateg
         return true;
     }
 
-    protected boolean isReady() {
+    protected synchronized boolean isReady() {
         if (isMaster()) {
             return true;
         }
@@ -310,9 +310,9 @@ public class DBDiscovery extends NoExceptionRunnable implements DiscoveryStrateg
         if (master.isClustered()) {
             String[] parts = master.getConfig().getAdvertiseAddress().split(":");
             try (
-                Socket socket = new Socket(parts[0], Integer.parseInt(parts[1]));
-                OutputStream os = socket.getOutputStream();
+                Socket socket = new Socket();
             ) {
+                socket.connect(new InetSocketAddress(parts[0], Integer.parseInt(parts[1])), 5000);
                 log.info("Connection test to master");
             } catch (IOException e) {
                 log.error("Failed to connect to master at {}", master.getAdvertiseAddress());
