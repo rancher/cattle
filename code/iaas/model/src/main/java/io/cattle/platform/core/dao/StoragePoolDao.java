@@ -10,6 +10,10 @@ import java.util.Map;
 
 public interface StoragePoolDao {
 
+    List<? extends StoragePool> findBadPools(int limit);
+
+    List<? extends StoragePoolHostMap> findBadPoolMapss(int limit);
+
     List<? extends StoragePool> findExternalActivePools();
 
     StoragePool mapNewPool(Host host, Map<String, Object> properties);
@@ -35,5 +39,7 @@ public interface StoragePoolDao {
     Map<Long, List<Object>> findHostsForPools(List<Long> ids, IdFormatter idFormatter);
 
     Map<Long, List<Object>> findVolumesForPools(List<Long> ids, IdFormatter idFormatter);
+
+    List<? extends StoragePool> findBadDockerPools(int count);
 
 }

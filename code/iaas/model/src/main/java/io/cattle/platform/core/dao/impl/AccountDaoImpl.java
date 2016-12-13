@@ -2,7 +2,10 @@ package io.cattle.platform.core.dao.impl;
 
 import static io.cattle.platform.core.model.tables.AccountTable.*;
 import static io.cattle.platform.core.model.tables.CredentialTable.*;
+import static io.cattle.platform.core.model.tables.GenericObjectTable.*;
 import static io.cattle.platform.core.model.tables.ProjectMemberTable.*;
+import static io.cattle.platform.core.model.tables.UserPreferenceTable.*;
+
 import io.cattle.platform.core.constants.AccountConstants;
 import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.CredentialConstants;
@@ -11,6 +14,12 @@ import io.cattle.platform.core.constants.ServiceConstants;
 import io.cattle.platform.core.dao.AccountDao;
 import io.cattle.platform.core.model.Account;
 import io.cattle.platform.core.model.Credential;
+import io.cattle.platform.core.model.GenericObject;
+import io.cattle.platform.core.model.ProjectMember;
+import io.cattle.platform.core.model.UserPreference;
+import io.cattle.platform.core.model.tables.records.GenericObjectRecord;
+import io.cattle.platform.core.model.tables.records.ProjectMemberRecord;
+import io.cattle.platform.core.model.tables.records.UserPreferenceRecord;
 
 import java.util.Arrays;
 import java.util.List;
@@ -69,6 +78,9 @@ public class AccountDaoImpl extends AbstractCoreDao implements AccountDao {
                             .and(PROJECT_MEMBER.EXTERNAL_ID_TYPE.eq(account.getExternalIdType())))
                     .execute();
         }
+        create().delete(PROJECT_MEMBER)
+            .where(PROJECT_MEMBER.PROJECT_ID.eq(account.getId()))
+            .execute();
     }
 
     @Override
@@ -104,4 +116,44 @@ public class AccountDaoImpl extends AbstractCoreDao implements AccountDao {
     public List<String> getAccountActiveStates() {
         return Arrays.asList(CommonStatesConstants.ACTIVE, ServiceConstants.STATE_UPGRADING);
     }
+
+    @Override
+    public List<? extends GenericObject> findBadGO(int count) {
+        return create().select(GENERIC_OBJECT.fields())
+                .from(GENERIC_OBJECT)
+                .join(ACCOUNT)
+                    .on(ACCOUNT.ID.eq(GENERIC_OBJECT.ACCOUNT_ID))
+                .where(GENERIC_OBJECT.REMOVED.isNull()
+                        .and(ACCOUNT.STATE.eq(CommonStatesConstants.PURGED))
+                        .and(GENERIC_OBJECT.STATE.notIn(CommonStatesConstants.REMOVING, CommonStatesConstants.DEACTIVATING)))
+                .limit(count)
+                .fetchInto(GenericObjectRecord.class);
+    }
+
+    @Override
+    public List<? extends UserPreference> findBadUserPreference(int count) {
+        return create().select(USER_PREFERENCE.fields())
+                .from(USER_PREFERENCE)
+                .join(ACCOUNT)
+                    .on(ACCOUNT.ID.eq(USER_PREFERENCE.ACCOUNT_ID))
+                .where(USER_PREFERENCE.REMOVED.isNull()
+                        .and(ACCOUNT.STATE.eq(CommonStatesConstants.PURGED))
+                        .and(USER_PREFERENCE.STATE.notIn(CommonStatesConstants.REMOVING, CommonStatesConstants.DEACTIVATING)))
+                .limit(count)
+                .fetchInto(UserPreferenceRecord.class);
+    }
+
+    @Override
+    public List<? extends ProjectMember> findBadProjectMembers(int count) {
+        return create().select(PROJECT_MEMBER.fields())
+                .from(PROJECT_MEMBER)
+                .join(ACCOUNT)
+                    .on(ACCOUNT.ID.eq(PROJECT_MEMBER.PROJECT_ID))
+                .where(ACCOUNT.STATE.eq(CommonStatesConstants.PURGED)
+                        .and(PROJECT_MEMBER.REMOVED.isNull())
+                        .and(PROJECT_MEMBER.STATE.notIn(CommonStatesConstants.DEACTIVATING, CommonStatesConstants.REMOVING)))
+                .limit(count)
+                .fetchInto(ProjectMemberRecord.class);
+    }
+
 }

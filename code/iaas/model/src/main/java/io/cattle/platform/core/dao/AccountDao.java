@@ -2,6 +2,9 @@ package io.cattle.platform.core.dao;
 
 import io.cattle.platform.core.model.Account;
 import io.cattle.platform.core.model.Credential;
+import io.cattle.platform.core.model.GenericObject;
+import io.cattle.platform.core.model.ProjectMember;
+import io.cattle.platform.core.model.UserPreference;
 
 import java.util.List;
 
@@ -9,7 +12,11 @@ public interface AccountDao {
 
     Account getSystemAccount();
 
+    List<? extends UserPreference> findBadUserPreference(int limit);
+
     List<? extends Credential> getApiKeys(Account account, String kind, boolean requireActive);
+
+    List<? extends GenericObject> findBadGO(int limit);
 
     Account findByUuid(String uuid);
 
@@ -22,4 +29,6 @@ public interface AccountDao {
     boolean isActiveAccount(Account account);
 
     List<String> getAccountActiveStates();
+
+    List<? extends ProjectMember> findBadProjectMembers(int i);
 }

@@ -48,6 +48,10 @@ public class InstancePurge extends AbstractDefaultProcessHandler {
             deactivateThenRemove(link, state.getData());
         }
 
+        for (InstanceLink link : getObjectManager().children(instance, InstanceLink.class, InstanceLinkConstants.FIELD_TARGET_INSTANCE_ID)) {
+            objectManager.setFields(link, InstanceLinkConstants.FIELD_TARGET_INSTANCE_ID, (Object)null);
+        }
+
         deleteVolumes(instance, state);
 
         deallocate(instance, null);

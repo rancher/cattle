@@ -8,6 +8,8 @@ public class VolumeConstants {
 
     public static final String TYPE = "volume";
 
+    public static final String STATE_DETACHED = "detached";
+
     public static final String REMOVE_OPTION = "remove";
 
     public static final String FILE_PREFIX = "file";
@@ -23,6 +25,10 @@ public class VolumeConstants {
     public static final String FIELD_URI = "uri";
 
     public static final String FIELD_DEVICE_NUM = "deviceNumber";
+
+    public static final String FIELD_DOCKER_IS_HOST_PATH = "isHostPath";
+
+    public static final String FIELD_DOCKER_IS_NATIVE = "isNative";
 
     public static final String LOCAL_DRIVER = "local";
 

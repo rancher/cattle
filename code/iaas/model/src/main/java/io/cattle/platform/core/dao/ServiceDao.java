@@ -2,6 +2,7 @@ package io.cattle.platform.core.dao;
 
 import io.cattle.platform.core.addon.HealthcheckState;
 import io.cattle.platform.core.model.Certificate;
+import io.cattle.platform.core.model.HealthcheckInstance;
 import io.cattle.platform.core.model.HealthcheckInstanceHostMap;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.Service;
@@ -50,4 +51,6 @@ public interface ServiceDao {
     HealthcheckInstanceHostMap getHealthCheckInstanceUUID(String hostUUID, String instanceUUID);
 
     Map<Long, List<HealthcheckState>> getHealthcheckStatesForInstances(List<Long> ids, IdFormatter idFormatter);
+
+    List<? extends HealthcheckInstance> findBadHealthcheckInstance(int limit);
 }
