@@ -23,9 +23,11 @@ public class LoadBalancerCookieStickinessPolicy {
         prefix;
     }
 
+    @Field(required = false, nullable = true)
     public String getName() {
         return name;
     }
+
 
     public void setName(String name) {
         this.name = name;
