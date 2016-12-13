@@ -99,7 +99,7 @@ public abstract class AbstractObjectProcessLogic extends AbstractProcessLogic {
     protected ExitReason remove(Object obj, Map<String, Object> data) {
         if (CommonStatesConstants.ACTIVE.equals(ObjectUtils.getState(obj)) ||
                 CommonStatesConstants.DEACTIVATING.equals(ObjectUtils.getState(obj))) {
-            return getObjectProcessManager().executeStandardProcess(StandardProcess.DEACTIVATE, obj, data);
+            getObjectProcessManager().executeStandardProcess(StandardProcess.DEACTIVATE, obj, data);
         }
         try {
             return getObjectProcessManager().executeStandardProcess(StandardProcess.REMOVE, obj, data);
