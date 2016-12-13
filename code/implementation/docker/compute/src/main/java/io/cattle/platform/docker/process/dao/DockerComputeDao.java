@@ -8,5 +8,5 @@ public interface DockerComputeDao {
     Volume getDockerVolumeInPool(String volumeUri, String externalId, StoragePool storagePool);
 
     Volume createDockerVolumeInPool(Long accountId, String name, String volumeUri, String externalId, String driver, StoragePool storagePool,
-            boolean isHostPath);
+            boolean isHostPath, boolean isNative);
 }
