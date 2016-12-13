@@ -210,7 +210,7 @@ def test_limit(super_client):
     assert result.pagination.limit == 105
 
     result = super_client.list_container(limit=10005)
-    assert result.pagination.limit == 10000
+    assert result.pagination.limit == 3000
 
 
 def test_schema_boolean_default(client):
