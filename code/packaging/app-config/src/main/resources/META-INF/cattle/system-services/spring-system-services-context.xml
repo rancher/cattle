@@ -48,13 +48,13 @@
 
     <task:scheduled-tasks scheduler="CoreTaskScheduler">
         <task:scheduled ref="RetryTimeoutService" method="retry" fixed-delay="1000" />
-        <task:scheduled ref="DatabaseCleanupService" method="cleanup" fixed-rate="3600000" />
     </task:scheduled-tasks>
 
     <bean id="RetryTimeoutService" class="io.cattle.platform.async.retry.impl.RetryTimeoutServiceImpl" >
         <property name="executorService" ref="EventExecutorService" />
     </bean>
 	<bean id="DatabaseCleanupService" class="io.cattle.platform.core.cleanup.TableCleanup" />
+	<bean id="BadDataClean" class="io.cattle.platform.core.cleanup.BadDataCleanup" />
 	
        <bean class="io.cattle.platform.framework.encryption.impl.Sha256Hasher" />
        <bean class="io.cattle.platform.framework.encryption.impl.Aes256Encrypter" />

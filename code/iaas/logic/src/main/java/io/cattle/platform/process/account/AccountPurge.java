@@ -7,18 +7,25 @@ import io.cattle.platform.core.model.Account;
 import io.cattle.platform.core.model.Agent;
 import io.cattle.platform.core.model.Certificate;
 import io.cattle.platform.core.model.Credential;
-import io.cattle.platform.core.model.Stack;
+import io.cattle.platform.core.model.GenericObject;
 import io.cattle.platform.core.model.Host;
 import io.cattle.platform.core.model.Instance;
+import io.cattle.platform.core.model.Network;
 import io.cattle.platform.core.model.PhysicalHost;
+import io.cattle.platform.core.model.Stack;
+import io.cattle.platform.core.model.StoragePool;
+import io.cattle.platform.core.model.UserPreference;
+import io.cattle.platform.core.model.Volume;
 import io.cattle.platform.engine.handler.HandlerResult;
 import io.cattle.platform.engine.process.ProcessInstance;
 import io.cattle.platform.engine.process.ProcessState;
 import io.cattle.platform.engine.process.impl.ProcessCancelException;
+import io.cattle.platform.object.meta.ObjectMetaDataManager;
 import io.cattle.platform.object.process.StandardProcess;
 import io.cattle.platform.process.base.AbstractDefaultProcessHandler;
 import io.cattle.platform.util.type.CollectionUtils;
 
+import java.util.List;
 import java.util.Map;
 
 import javax.inject.Inject;
@@ -36,14 +43,14 @@ public class AccountPurge extends AbstractDefaultProcessHandler {
     public HandlerResult handle(ProcessState state, ProcessInstance process) {
         Account account = (Account) state.getResource();
 
-        for (Agent agent : getObjectManager().children(account, Agent.class)) {
+        for (Agent agent : list(account, Agent.class)) {
             if (agent.getRemoved() != null) {
                 continue;
             }
             deactivateThenRemove(agent, state.getData());
         }
 
-        for (Host host : getObjectManager().children(account, Host.class)) {
+        for (Host host : list(account, Host.class)) {
             try {
                 deactivateThenRemove(host, state.getData());
             } catch (ProcessCancelException e) {
@@ -52,7 +59,7 @@ public class AccountPurge extends AbstractDefaultProcessHandler {
             purge(host, null);
         }
 
-        for (Certificate cert : getObjectManager().children(account, Certificate.class)) {
+        for (Certificate cert : list(account, Certificate.class)) {
             if (cert.getRemoved() != null) {
                 continue;
             }
@@ -60,7 +67,7 @@ public class AccountPurge extends AbstractDefaultProcessHandler {
             deactivateThenRemove(cert, state.getData());
         }
 
-        for (Credential cred : getObjectManager().children(account, Credential.class)) {
+        for (Credential cred : list(account, Credential.class)) {
             if (cred.getRemoved() != null) {
                 continue;
             }
@@ -68,7 +75,7 @@ public class AccountPurge extends AbstractDefaultProcessHandler {
             deactivateThenRemove(cred, state.getData());
         }
 
-        for (Stack env : getObjectManager().children(account, Stack.class)) {
+        for (Stack env : list(account, Stack.class)) {
             if (env.getRemoved() != null) {
                 continue;
             }
@@ -86,7 +93,7 @@ public class AccountPurge extends AbstractDefaultProcessHandler {
             }
         }
 
-        for (PhysicalHost host : getObjectManager().children(account, PhysicalHost.class)) {
+        for (PhysicalHost host : list(account, PhysicalHost.class)) {
             try {
                 getObjectProcessManager().executeStandardProcess(StandardProcess.REMOVE, host, null);
             } catch (ProcessCancelException e) {
@@ -94,9 +101,55 @@ public class AccountPurge extends AbstractDefaultProcessHandler {
             }
         }
 
+        for (StoragePool pool : list(account, StoragePool.class)) {
+            if (pool.getRemoved() != null) {
+                continue;
+            }
+
+            deactivateThenRemove(pool, state.getData());
+        }
+
+        for (Volume volume : list(account, Volume.class)) {
+            if (volume.getRemoved() != null) {
+                continue;
+            }
+
+            deactivateThenRemove(volume, state.getData());
+        }
+
+        for (Network network : list(account, Network.class)) {
+            if (network.getRemoved() != null) {
+                continue;
+            }
+
+            deactivateThenRemove(network, state.getData());
+        }
+
+        for (GenericObject gobject : list(account, GenericObject.class)) {
+            if (gobject.getRemoved() != null) {
+                continue;
+            }
+
+            deactivateThenRemove(gobject, state.getData());
+        }
+
+        for (UserPreference userPreference : list(account, UserPreference.class)) {
+            if (userPreference.getRemoved() != null) {
+                continue;
+            }
+
+            deactivateThenRemove(userPreference, state.getData());
+        }
+
         accountDao.deleteProjectMemberEntries(account);
 
         return null;
+    }
+
+    protected <T> List<T> list(Account account, Class<T> type) {
+        return objectManager.find(type,
+                ObjectMetaDataManager.REMOVED_FIELD, null,
+                ObjectMetaDataManager.ACCOUNT_FIELD, account.getId());
     }
 
     protected void deleteAgentAccount(Long agentId, Map<String, Object> data) {

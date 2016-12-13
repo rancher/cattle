@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog" xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.1.xsd http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+    <property name="mediumtext" value="TEXT" dbms="postgresql" />
+    <property name="mediumtext" value="MEDIUMTEXT" />
+    <changeSet dbms="mysql" author="darren (generated)" id="dump1">
+        <sql>
+DELETE FROM host_vnet_map;
+UPDATE nic SET nic.vnet_id = NULL WHERE nic.vnet_id IS NOT NULL;
+DELETE FROM subnet_vnet_map;
+DELETE FROM vnet;
+DELETE FROM network_service_provider_instance_map;
+DELETE FROM network_service;
+DELETE FROM network_service_provider;
+        </sql>
+    </changeSet>
+</databaseChangeLog>

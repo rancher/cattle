@@ -5,6 +5,9 @@ import io.cattle.platform.core.dao.impl.InstanceDaoImpl.IpAddressToServiceIndex;
 import io.cattle.platform.core.model.Account;
 import io.cattle.platform.core.model.Host;
 import io.cattle.platform.core.model.Instance;
+import io.cattle.platform.core.model.InstanceHostMap;
+import io.cattle.platform.core.model.InstanceLink;
+import io.cattle.platform.core.model.Nic;
 import io.cattle.platform.core.model.Service;
 
 import java.util.List;
@@ -13,6 +16,14 @@ import java.util.Map;
 public interface InstanceDao {
 
     List<? extends Instance> getNonRemovedInstanceOn(Long hostId);
+
+    List<? extends Instance> findBadInstances(int count);
+
+    List<? extends InstanceHostMap> findBadInstanceHostMaps(int count);
+
+    List<? extends InstanceLink> findBadInstanceLinks(int count);
+
+    List<? extends Nic> findBadNics(int count);
 
     Instance getInstanceByUuidOrExternalId(Long accountId, String uuid, String externalId);
 

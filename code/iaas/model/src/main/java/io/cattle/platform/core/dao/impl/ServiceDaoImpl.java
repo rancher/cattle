@@ -2,6 +2,7 @@ package io.cattle.platform.core.dao.impl;
 
 import static io.cattle.platform.core.model.tables.CertificateTable.*;
 import static io.cattle.platform.core.model.tables.HealthcheckInstanceHostMapTable.*;
+import static io.cattle.platform.core.model.tables.HealthcheckInstanceTable.*;
 import static io.cattle.platform.core.model.tables.HostTable.*;
 import static io.cattle.platform.core.model.tables.InstanceTable.*;
 import static io.cattle.platform.core.model.tables.ServiceConsumeMapTable.*;
@@ -9,11 +10,14 @@ import static io.cattle.platform.core.model.tables.ServiceExposeMapTable.*;
 import static io.cattle.platform.core.model.tables.ServiceIndexTable.*;
 import static io.cattle.platform.core.model.tables.ServiceTable.*;
 import static io.cattle.platform.core.model.tables.StackTable.*;
+
 import io.cattle.platform.core.addon.HealthcheckState;
+import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.constants.LoadBalancerConstants;
 import io.cattle.platform.core.dao.ServiceDao;
 import io.cattle.platform.core.model.Certificate;
+import io.cattle.platform.core.model.HealthcheckInstance;
 import io.cattle.platform.core.model.HealthcheckInstanceHostMap;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.Service;
@@ -21,6 +25,7 @@ import io.cattle.platform.core.model.ServiceIndex;
 import io.cattle.platform.core.model.tables.HealthcheckInstanceHostMapTable;
 import io.cattle.platform.core.model.tables.HostTable;
 import io.cattle.platform.core.model.tables.InstanceTable;
+import io.cattle.platform.core.model.tables.records.HealthcheckInstanceRecord;
 import io.cattle.platform.db.jooq.dao.impl.AbstractJooqDao;
 import io.cattle.platform.db.jooq.mapper.MultiRecordMapper;
 import io.cattle.platform.json.JsonMapper;
@@ -208,6 +213,7 @@ public class ServiceDaoImpl extends AbstractJooqDao implements ServiceDao {
         return certs.get(0);
     }
 
+    @Override
     public HealthcheckInstanceHostMap getHealthCheckInstanceUUID(String hostUUID, String instanceUUID) {
         MultiRecordMapper<HealthcheckInstanceHostMap> mapper = new MultiRecordMapper<HealthcheckInstanceHostMap>() {
             @Override
@@ -233,7 +239,7 @@ public class ServiceDaoImpl extends AbstractJooqDao implements ServiceDao {
                 .and(instance.UUID.eq(instanceUUID))
                 .and(hostMap.REMOVED.isNull())
                 .fetch().map(mapper);
-        
+
         if (maps.size() == 0) {
             return null;
         }
@@ -270,6 +276,21 @@ public class ServiceDaoImpl extends AbstractJooqDao implements ServiceDao {
                 });
 
         return result;
+    }
+
+    @Override
+    public List<? extends HealthcheckInstance> findBadHealthcheckInstance(int limit) {
+        return create()
+                .select(HEALTHCHECK_INSTANCE.fields())
+                .from(HEALTHCHECK_INSTANCE)
+                .join(INSTANCE)
+                    .on(INSTANCE.ID.eq(HEALTHCHECK_INSTANCE.INSTANCE_ID))
+                .where(INSTANCE.STATE.eq(CommonStatesConstants.PURGED)
+                        .and(HEALTHCHECK_INSTANCE.REMOVED.isNull())
+                        .and(HEALTHCHECK_INSTANCE.STATE.notIn(CommonStatesConstants.DEACTIVATING,
+                                CommonStatesConstants.REMOVING)))
+                .limit(limit)
+                .fetchInto(HealthcheckInstanceRecord.class);
     }
 
 }
