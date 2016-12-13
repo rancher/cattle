@@ -315,4 +315,17 @@ public class NetworkDaoImpl extends AbstractJooqDao implements NetworkDao {
             .execute();
     }
 
+    @Override
+    public List<? extends Network> findBadNetworks(int count) {
+        return create().select(NETWORK.fields())
+                .from(NETWORK)
+                .join(ACCOUNT)
+                    .on(ACCOUNT.ID.eq(NETWORK.ACCOUNT_ID))
+                .where(NETWORK.REMOVED.isNull()
+                        .and(ACCOUNT.STATE.eq(CommonStatesConstants.PURGED))
+                        .and(NETWORK.STATE.notIn(CommonStatesConstants.REMOVING)))
+                .limit(count)
+                .fetchInto(NetworkRecord.class);
+    }
+
 }

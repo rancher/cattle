@@ -1,5 +1,7 @@
 package io.cattle.platform.core.dao.impl;
 
+import static io.cattle.platform.core.model.tables.AccountTable.*;
+import static io.cattle.platform.core.model.tables.ImageTable.*;
 import static io.cattle.platform.core.model.tables.InstanceTable.*;
 import static io.cattle.platform.core.model.tables.MountTable.*;
 import static io.cattle.platform.core.model.tables.StorageDriverTable.*;
@@ -13,11 +15,16 @@ import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.constants.VolumeConstants;
 import io.cattle.platform.core.dao.GenericResourceDao;
 import io.cattle.platform.core.dao.VolumeDao;
+import io.cattle.platform.core.model.Image;
+import io.cattle.platform.core.model.Mount;
 import io.cattle.platform.core.model.StorageDriver;
 import io.cattle.platform.core.model.StoragePool;
 import io.cattle.platform.core.model.Volume;
 import io.cattle.platform.core.model.VolumeStoragePoolMap;
+import io.cattle.platform.core.model.tables.records.ImageRecord;
+import io.cattle.platform.core.model.tables.records.MountRecord;
 import io.cattle.platform.core.model.tables.records.VolumeRecord;
+import io.cattle.platform.core.model.tables.records.VolumeStoragePoolMapRecord;
 import io.cattle.platform.db.jooq.dao.impl.AbstractJooqDao;
 import io.cattle.platform.deferred.util.DeferredUtils;
 import io.cattle.platform.object.ObjectManager;
@@ -271,5 +278,85 @@ public class VolumeDaoImpl extends AbstractJooqDao implements VolumeDao {
             });
 
         return result;
+    }
+
+    @Override
+    public List<? extends Volume> findNonRemovedVolumesOnPool(Long storagePoolId) {
+        return create().select(VOLUME.fields())
+                .from(VOLUME)
+                .join(VOLUME_STORAGE_POOL_MAP)
+                    .on(VOLUME_STORAGE_POOL_MAP.VOLUME_ID.eq(VOLUME.ID))
+                .join(STORAGE_POOL)
+                    .on(STORAGE_POOL.ID.eq(VOLUME_STORAGE_POOL_MAP.STORAGE_POOL_ID))
+                .where(VOLUME.REMOVED.isNull()
+                        .and(STORAGE_POOL.REMOVED.isNotNull()))
+                .fetchInto(VolumeRecord.class);
+    }
+
+    @Override
+    public List<? extends Volume> findBadVolumes(int count) {
+        return create().select(VOLUME.fields())
+                .from(VOLUME)
+                .join(ACCOUNT)
+                    .on(ACCOUNT.ID.eq(VOLUME.ACCOUNT_ID))
+                .where(VOLUME.REMOVED.isNull()
+                        .and(ACCOUNT.REMOVED.isNotNull())
+                        .and(VOLUME.STATE.notIn(CommonStatesConstants.DEACTIVATING, CommonStatesConstants.REMOVING)))
+                .limit(count)
+                .fetchInto(VolumeRecord.class);
+    }
+
+    @Override
+    public List<? extends Volume> findBadNativeVolumes(int count) {
+        return create().select(VOLUME.fields())
+                .from(VOLUME)
+                .join(MOUNT)
+                    .on(MOUNT.VOLUME_ID.eq(VOLUME.ID))
+                .join(INSTANCE)
+                    .on(MOUNT.INSTANCE_ID.eq(INSTANCE.ID))
+                .where(INSTANCE.REMOVED.isNotNull()
+                        .and(VOLUME.STATE.eq(CommonStatesConstants.INACTIVE))
+                        .and(INSTANCE.NATIVE_CONTAINER.isTrue()))
+                .limit(count)
+                .fetchInto(VolumeRecord.class);
+    }
+
+    @Override
+    public List<? extends Image> findBadImages(int count) {
+        return create().select(IMAGE.fields())
+                .from(IMAGE)
+                .leftOuterJoin(INSTANCE)
+                    .on(IMAGE.ID.eq(INSTANCE.IMAGE_ID))
+                .where((INSTANCE.STATE.eq(CommonStatesConstants.PURGED).or(INSTANCE.ID.isNull()))
+                        .and(IMAGE.REMOVED.isNull())
+                        .and(IMAGE.STATE.notIn(CommonStatesConstants.DEACTIVATING, CommonStatesConstants.REMOVING)))
+                .limit(count)
+                .fetchInto(ImageRecord.class);
+    }
+
+    @Override
+    public List<? extends Mount> findBadMounts(int count) {
+        return create().select(MOUNT.fields())
+                .from(MOUNT)
+                .join(VOLUME)
+                    .on(VOLUME.ID.eq(MOUNT.VOLUME_ID))
+                .where(VOLUME.STATE.eq(CommonStatesConstants.PURGED)
+                        .and(MOUNT.REMOVED.isNull())
+                        .and(MOUNT.STATE.notIn(CommonStatesConstants.DEACTIVATING, CommonStatesConstants.REMOVING)))
+                .limit(count)
+                .fetchInto(MountRecord.class);
+    }
+
+    @Override
+    public List<? extends VolumeStoragePoolMap> findBandVolumeStoragePoolMap(int count) {
+        return create().select(VOLUME_STORAGE_POOL_MAP.fields())
+                .from(VOLUME_STORAGE_POOL_MAP)
+                .join(VOLUME)
+                    .on(VOLUME.ID.eq(VOLUME_STORAGE_POOL_MAP.VOLUME_ID))
+                .where(VOLUME.STATE.eq(CommonStatesConstants.PURGED)
+                        .and(VOLUME_STORAGE_POOL_MAP.REMOVED.isNull())
+                        .and(VOLUME_STORAGE_POOL_MAP.STATE.notIn(CommonStatesConstants.DEACTIVATING)))
+                .limit(count)
+                .fetchInto(VolumeStoragePoolMapRecord.class);
     }
 }

@@ -5,6 +5,7 @@ import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.IpAddress;
 import io.cattle.platform.core.model.Nic;
 
+import java.util.List;
 import java.util.Map;
 
 public interface IpAddressDao {
@@ -20,5 +21,7 @@ public interface IpAddressDao {
     IpAddress getInstancePrimaryIp(Instance instance);
 
     Map<Long, IpAddress> getNicIdToPrimaryIpAddress(long accountId);
+
+    List<? extends IpAddress> findBadHostIpAddress(int count);
 
 }

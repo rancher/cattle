@@ -12,6 +12,8 @@ import java.util.Map;
 
 public interface NetworkDao {
 
+    List<? extends Network> findBadNetworks(int limit);
+
     Nic getPrimaryNic(long instanceId);
 
     Network getNetworkByKind(long accountId, String kind);

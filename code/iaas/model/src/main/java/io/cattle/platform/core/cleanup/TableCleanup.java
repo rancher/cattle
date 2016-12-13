@@ -8,6 +8,7 @@ import static io.cattle.platform.core.model.tables.InstanceLabelMapTable.*;
 import static io.cattle.platform.core.model.tables.InstanceTable.*;
 import static io.cattle.platform.core.model.tables.LabelTable.*;
 import static io.cattle.platform.core.model.tables.ServiceEventTable.*;
+
 import io.cattle.platform.archaius.util.ArchaiusUtil;
 import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.model.tables.AccountTable;
@@ -71,6 +72,7 @@ import io.cattle.platform.core.model.tables.VolumeTable;
 import io.cattle.platform.core.model.tables.ZoneTable;
 import io.cattle.platform.db.jooq.dao.impl.AbstractJooqDao;
 import io.cattle.platform.object.jooq.utils.JooqUtils;
+import io.cattle.platform.task.Task;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -91,11 +93,8 @@ import com.netflix.config.DynamicLongProperty;
 
 /**
  * Programmatically delete purged database rows after they reach a configurable age.
- *
- * @author joliver
- *
  */
-public class TableCleanup extends AbstractJooqDao {
+public class TableCleanup extends AbstractJooqDao implements Task {
 
     public static final Long SECOND_MILLIS = 1000L;
 
@@ -122,7 +121,8 @@ public class TableCleanup extends AbstractJooqDao {
         this.otherTables = getOtherTables();
     }
 
-    public void cleanup() {
+    @Override
+    public void run() {
         long current = new Date().getTime();
 
         Date otherCutoff = new Date(current - MAIN_TABLES_AGE_LIMIT_SECONDS.getValue() * SECOND_MILLIS);
@@ -308,7 +308,7 @@ public class TableCleanup extends AbstractJooqDao {
             }
             if (idsToFix.size() > 0) {
                 table.addRowsSkipped(idsToFix.size());
-                log.debug("Skipped {} where id in {}", table.table, idsToFix);
+                log.error("Skipped {} where id in {}", table.table, idsToFix);
             }
         }
         StringBuffer buffDeleted = new StringBuffer("[Rows Deleted] ");
@@ -337,7 +337,7 @@ public class TableCleanup extends AbstractJooqDao {
             log.info(buffDeleted.toString());
         }
         if (skippedActivity) {
-            log.warn(buffSkipped.toString());
+            log.info(buffSkipped.toString());
         }
     }
 
@@ -423,7 +423,7 @@ public class TableCleanup extends AbstractJooqDao {
     }
 
     private static List<CleanableTable> getServiceLogTables() {
-        return Arrays.asList(CleanableTable.from(ServiceLogTable.SERVICE_LOG));
+        return Arrays.asList(CleanableTable.from(ServiceLogTable.SERVICE_LOG, ServiceLogTable.SERVICE_LOG.CREATED));
     }
 
     private static List<CleanableTable> getOtherTables() {
@@ -468,7 +468,6 @@ public class TableCleanup extends AbstractJooqDao {
                 CleanableTable.from(ServiceConsumeMapTable.SERVICE_CONSUME_MAP),
                 CleanableTable.from(ServiceExposeMapTable.SERVICE_EXPOSE_MAP),
                 CleanableTable.from(ServiceIndexTable.SERVICE_INDEX),
-                CleanableTable.from(ServiceLogTable.SERVICE_LOG),
                 CleanableTable.from(SnapshotTable.SNAPSHOT),
                 CleanableTable.from(StackTable.STACK),
                 CleanableTable.from(StoragePoolTable.STORAGE_POOL),
@@ -493,6 +492,11 @@ public class TableCleanup extends AbstractJooqDao {
         instance_link
         */
         return sortByReferences(tables);
+    }
+
+    @Override
+    public String getName() {
+        return "table.cleanup";
     }
 
 }

@@ -2,6 +2,7 @@ package io.cattle.platform.core.dao.impl;
 
 import static io.cattle.platform.core.model.tables.HostTable.*;
 import static io.cattle.platform.core.model.tables.InstanceHostMapTable.*;
+import static io.cattle.platform.core.model.tables.InstanceLinkTable.*;
 import static io.cattle.platform.core.model.tables.InstanceTable.*;
 import static io.cattle.platform.core.model.tables.IpAddressNicMapTable.*;
 import static io.cattle.platform.core.model.tables.IpAddressTable.*;
@@ -24,7 +25,10 @@ import io.cattle.platform.core.dao.NetworkDao;
 import io.cattle.platform.core.model.Account;
 import io.cattle.platform.core.model.Host;
 import io.cattle.platform.core.model.Instance;
+import io.cattle.platform.core.model.InstanceHostMap;
+import io.cattle.platform.core.model.InstanceLink;
 import io.cattle.platform.core.model.IpAddress;
+import io.cattle.platform.core.model.Nic;
 import io.cattle.platform.core.model.Port;
 import io.cattle.platform.core.model.Service;
 import io.cattle.platform.core.model.ServiceExposeMap;
@@ -38,7 +42,10 @@ import io.cattle.platform.core.model.tables.ServiceExposeMapTable;
 import io.cattle.platform.core.model.tables.ServiceIndexTable;
 import io.cattle.platform.core.model.tables.SubnetTable;
 import io.cattle.platform.core.model.tables.records.HostRecord;
+import io.cattle.platform.core.model.tables.records.InstanceHostMapRecord;
+import io.cattle.platform.core.model.tables.records.InstanceLinkRecord;
 import io.cattle.platform.core.model.tables.records.InstanceRecord;
+import io.cattle.platform.core.model.tables.records.NicRecord;
 import io.cattle.platform.core.model.tables.records.ServiceRecord;
 import io.cattle.platform.db.jooq.dao.impl.AbstractJooqDao;
 import io.cattle.platform.db.jooq.mapper.MultiRecordMapper;
@@ -414,5 +421,55 @@ public class InstanceDaoImpl extends AbstractJooqDao implements InstanceDao {
                     .and(INSTANCE.REMOVED.isNull())
                     .and(ipAddress.ROLE.eq(IpAddressConstants.ROLE_PRIMARY))
                 .fetch().map(mapper);
+    }
+
+    @Override
+    public List<? extends Instance> findBadInstances(int count) {
+        return create().select(INSTANCE.fields())
+            .from(INSTANCE)
+            .join(INSTANCE_HOST_MAP)
+                .on(INSTANCE_HOST_MAP.INSTANCE_ID.eq(INSTANCE.ID))
+            .join(HOST)
+                .on(INSTANCE_HOST_MAP.HOST_ID.eq(HOST.ID))
+            .where(HOST.REMOVED.isNotNull().and(INSTANCE.REMOVED.isNull())
+                    .and(INSTANCE.STATE.notIn(InstanceConstants.STATE_STOPPING, CommonStatesConstants.REMOVING)))
+            .limit(count)
+            .fetchInto(InstanceRecord.class);
+    }
+
+    @Override
+    public List<? extends InstanceHostMap> findBadInstanceHostMaps(int count) {
+        return create().select(INSTANCE_HOST_MAP.fields())
+            .from(INSTANCE_HOST_MAP)
+            .join(INSTANCE)
+                .on(INSTANCE_HOST_MAP.INSTANCE_ID.eq(INSTANCE.ID))
+            .where(INSTANCE_HOST_MAP.REMOVED.isNull()
+                    .and(INSTANCE.STATE.eq(CommonStatesConstants.PURGED))
+                    .and(INSTANCE_HOST_MAP.STATE.notIn(CommonStatesConstants.DEACTIVATING, CommonStatesConstants.REMOVING)))
+            .limit(count)
+            .fetchInto(InstanceHostMapRecord.class);
+    }
+
+    @Override
+    public List<? extends Nic> findBadNics(int count) {
+        return create().select(NIC.fields())
+                .from(NIC)
+                .join(INSTANCE)
+                    .on(INSTANCE.ID.eq(NIC.INSTANCE_ID))
+                .where(NIC.REMOVED.isNull().and(INSTANCE.STATE.eq(CommonStatesConstants.PURGED))
+                        .and(NIC.STATE.notIn(CommonStatesConstants.DEACTIVATING, CommonStatesConstants.REMOVING)))
+                .limit(count)
+                .fetchInto(NicRecord.class);
+    }
+
+    @Override
+    public List<? extends InstanceLink> findBadInstanceLinks(int count) {
+        return create().select(INSTANCE_LINK.fields())
+                .from(INSTANCE_LINK)
+                .join(INSTANCE)
+                    .on(INSTANCE.ID.eq(INSTANCE_LINK.TARGET_INSTANCE_ID))
+                .where(INSTANCE.STATE.eq(CommonStatesConstants.PURGED))
+                .limit(count)
+                .fetchInto(InstanceLinkRecord.class);
     }
 }

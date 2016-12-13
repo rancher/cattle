@@ -207,7 +207,6 @@ public class ContainerEventCreate extends AbstractDefaultProcessHandler {
         setNetwork(inspect, data, instance);
         setImage(event, instance);
         setHost(event, instance);
-        setVolumeCleanupStrategy(inspect, data, instance);
         setLabels(inspect, data, instance);
 
         resourceDao.createAndSchedule(instance, makeData());
@@ -220,15 +219,6 @@ public class ContainerEventCreate extends AbstractDefaultProcessHandler {
         }
         labels.putAll(getLabels(inspect, data));
         DataAccessor.setField(instance, InstanceConstants.FIELD_LABELS, labels);
-    }
-
-    private void setVolumeCleanupStrategy(Map<String, Object> inspect, Map<String, Object> data, Instance instance) {
-        String existingLabel = getLabel(SystemLabels.LABEL_VOLUME_CLEANUP_STRATEGY, null, inspect, data);
-        if (existingLabel == null) {
-            Map<String, Object> labels = DataAccessor.fieldMap(instance, InstanceConstants.FIELD_LABELS);
-            labels.put(SystemLabels.LABEL_VOLUME_CLEANUP_STRATEGY, VOLUME_CLEANUP_STRATEGY_NONE);
-            DataAccessor.fields(instance).withKey(FIELD_LABELS).set(labels);
-        }
     }
 
     private Map<String, Object> getInspect(ContainerEvent event, Map<String, Object> data) {

@@ -48,6 +48,10 @@ public class InstancePurge extends AbstractDefaultProcessHandler {
             deactivateThenRemove(link, state.getData());
         }
 
+        for (InstanceLink link : getObjectManager().children(instance, InstanceLink.class, InstanceLinkConstants.FIELD_TARGET_INSTANCE_ID)) {
+            objectManager.setFields(link, InstanceLinkConstants.FIELD_TARGET_INSTANCE_ID, (Object)null);
+        }
+
         deleteVolumes(instance, state);
 
         deallocate(instance, null);
@@ -61,14 +65,15 @@ public class InstancePurge extends AbstractDefaultProcessHandler {
         Object b = DataAccessor.fieldMap(instance, FIELD_LABELS).get(SystemLabels.LABEL_VOLUME_CLEANUP_STRATEGY);
         String behavior = b != null ? b.toString() : VOLUME_CLEANUP_STRATEGY_UNNAMED;
 
-        if (VOLUME_CLEANUP_STRATEGY_NONE.equals(behavior)
-                || (!VOLUME_CLEANUP_STRATEGY_UNNAMED.equals(behavior) && !VOLUME_CLEANUP_STRATEGY_ALL.equals(behavior))) {
-            return;
-        }
-
         Set<? extends Volume> volumes = volumeDao.findNonremovedVolumesWithNoOtherMounts(instance.getId());
         for (Volume v : volumes) {
-            if (VOLUME_CLEANUP_STRATEGY_UNNAMED.equals(behavior) &&
+            String volumeBehavior = migrateVolume(instance, v, behavior);
+            if (VOLUME_CLEANUP_STRATEGY_NONE.equals(volumeBehavior)
+                    || (!VOLUME_CLEANUP_STRATEGY_UNNAMED.equals(volumeBehavior) && !VOLUME_CLEANUP_STRATEGY_ALL.equals(volumeBehavior))) {
+                continue;
+            }
+
+            if (VOLUME_CLEANUP_STRATEGY_UNNAMED.equals(volumeBehavior) &&
                     ((StringUtils.length(v.getName()) != 64 || !StringUtils.isAlphanumeric(v.getName()))) && !StringUtils.startsWith(v.getName(), "/")) {
                 continue;
             }
@@ -80,5 +85,27 @@ public class InstancePurge extends AbstractDefaultProcessHandler {
                 objectProcessManager.scheduleStandardProcess(StandardProcess.REMOVE, v, state.getData());
             }
         }
+    }
+
+    /*
+     * Deal with logic where we would set cleanup strategy to none for back populated containers.  Now
+     * we do this with a native flag on the volume so we know not to send an event.
+     */
+    private String migrateVolume(Instance instance, Volume volume, String behavior) {
+        if (!VOLUME_CLEANUP_STRATEGY_NONE.equals(behavior) || !instance.getNativeContainer()) {
+            return behavior;
+        }
+
+        if (volume.getUri() == null || !volume.getUri().startsWith(VolumeConstants.FILE_PREFIX)) {
+            return behavior;
+        }
+
+        behavior = VOLUME_CLEANUP_STRATEGY_UNNAMED;
+
+        if (!DataAccessor.fieldBool(volume, VolumeConstants.FIELD_DOCKER_IS_NATIVE)) {
+            objectManager.setFields(volume, VolumeConstants.FIELD_DOCKER_IS_NATIVE, true);
+        }
+
+        return behavior;
     }
 }

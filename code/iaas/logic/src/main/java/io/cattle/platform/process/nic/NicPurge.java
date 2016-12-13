@@ -1,6 +1,7 @@
 package io.cattle.platform.process.nic;
 
 import static io.cattle.platform.core.model.tables.NicTable.*;
+
 import io.cattle.platform.core.dao.GenericMapDao;
 import io.cattle.platform.core.model.IpAddress;
 import io.cattle.platform.core.model.IpAddressNicMap;
@@ -32,7 +33,6 @@ public class NicPurge extends AbstractDefaultProcessHandler {
             IpAddress ipAddress = getObjectManager().loadResource(IpAddress.class, map.getIpAddressId());
 
             deactivateThenRemove(ipAddress, state.getData());
-            deactivateThenRemove(map, state.getData());
         }
 
         if (network != null) {

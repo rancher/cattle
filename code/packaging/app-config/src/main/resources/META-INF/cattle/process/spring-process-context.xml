@@ -38,18 +38,6 @@
     </bean>
 
     <bean class="io.cattle.platform.process.common.handler.AgentBasedProcessHandler"
-        p:name="ImageStoragePoolMapDeactivate"
-        p:commandName="storage.image.deactivate"
-        p:agentResourceRelationship="storagePool"
-        p:dataTypeClass="io.cattle.platform.core.model.ImageStoragePoolMap"
-        p:processNames="imagestoragepoolmap.deactivate"
-        p:processDataKeys="containerNoOpEvent" >
-        <property name="priority">
-            <util:constant static-field="io.cattle.platform.util.type.Priority.DEFAULT"/>
-        </property>
-    </bean>
-
-    <bean class="io.cattle.platform.process.common.handler.AgentBasedProcessHandler"
         p:name="VolumeStoragePoolMapActivate"
         p:commandName="storage.volume.activate"
         p:agentResourceRelationship="storagePool"
@@ -61,7 +49,7 @@
         </property>
     </bean>
 
-    <bean class="io.cattle.platform.process.common.handler.AgentBasedProcessHandler"
+    <bean class="io.cattle.platform.process.volume.VolumeStoragePoolMapRemove"
         p:name="VolumeStoragePoolMapRemove"
         p:commandName="storage.volume.remove"
         p:agentResourceRelationship="storagePool"

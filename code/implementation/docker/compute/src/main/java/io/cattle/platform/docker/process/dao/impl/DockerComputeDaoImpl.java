@@ -2,7 +2,6 @@ package io.cattle.platform.docker.process.dao.impl;
 
 import static io.cattle.platform.core.model.tables.VolumeStoragePoolMapTable.*;
 import static io.cattle.platform.core.model.tables.VolumeTable.*;
-import static io.cattle.platform.docker.constants.DockerVolumeConstants.*;
 
 import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.VolumeConstants;
@@ -59,7 +58,7 @@ public class DockerComputeDaoImpl extends AbstractJooqDao implements DockerCompu
 
     @Override
     public Volume createDockerVolumeInPool(Long accountId, String name, String volumeUri, String externalId, String driver, StoragePool storagePool,
-            boolean isHostPath) {
+            boolean isHostPath, boolean isNative) {
         Volume volume = getDockerVolumeInPool(volumeUri, externalId, storagePool);
         if (volume != null) {
             return volume;
@@ -74,7 +73,8 @@ public class DockerComputeDaoImpl extends AbstractJooqDao implements DockerCompu
                 VOLUME.URI, volumeUri,
                 VOLUME.EXTERNAL_ID, externalId);
 
-        DataAccessor.fields(volume).withKey(FIELD_DOCKER_IS_HOST_PATH).set(isHostPath);
+        DataAccessor.fields(volume).withKey(VolumeConstants.FIELD_DOCKER_IS_NATIVE).set(isNative);
+        DataAccessor.fields(volume).withKey(VolumeConstants.FIELD_DOCKER_IS_HOST_PATH).set(isHostPath);
         DataAccessor.fields(volume).withKey(VolumeConstants.FIELD_VOLUME_DRIVER).set(driver);
 
         objectManager.persist(volume);
