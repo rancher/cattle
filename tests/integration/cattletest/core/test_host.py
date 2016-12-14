@@ -85,7 +85,8 @@ def test_host_purge(super_client, new_context):
     host = super_client.wait_success(super_client.delete(host))
     assert host.removed is not None
 
-    agent = super_client.wait_success(host.agent())
+    agent = super_client.by_id_agent(host.agentId)
+    agent = super_client.wait_success(agent)
     wait_for(lambda: super_client.reload(agent).state == 'removed')
 
     phy_host = super_client.wait_success(phy_host)
