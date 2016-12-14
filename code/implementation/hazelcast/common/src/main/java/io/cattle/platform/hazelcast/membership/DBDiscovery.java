@@ -273,7 +273,9 @@ public class DBDiscovery extends NoExceptionRunnable implements DiscoveryStrateg
     public boolean waitReady() {
         while (!isReady()) {
             try {
-                this.wait();
+                synchronized (this) {
+                    this.wait();
+                }
             } catch (InterruptedException e) {
                 throw new IllegalStateException(e);
             }
