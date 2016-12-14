@@ -46,6 +46,7 @@ import io.cattle.platform.core.model.tables.IpAddressTable;
 import io.cattle.platform.core.model.tables.LabelTable;
 import io.cattle.platform.core.model.tables.MachineDriverTable;
 import io.cattle.platform.core.model.tables.MountTable;
+import io.cattle.platform.core.model.tables.NetworkDriverTable;
 import io.cattle.platform.core.model.tables.NetworkTable;
 import io.cattle.platform.core.model.tables.NicTable;
 import io.cattle.platform.core.model.tables.PhysicalHostTable;
@@ -62,6 +63,7 @@ import io.cattle.platform.core.model.tables.ServiceLogTable;
 import io.cattle.platform.core.model.tables.ServiceTable;
 import io.cattle.platform.core.model.tables.SnapshotTable;
 import io.cattle.platform.core.model.tables.StackTable;
+import io.cattle.platform.core.model.tables.StorageDriverTable;
 import io.cattle.platform.core.model.tables.StoragePoolHostMapTable;
 import io.cattle.platform.core.model.tables.StoragePoolTable;
 import io.cattle.platform.core.model.tables.SubnetTable;
@@ -459,6 +461,7 @@ public class TableCleanup extends AbstractJooqDao implements Task {
                 CleanableTable.from(MachineDriverTable.MACHINE_DRIVER),
                 CleanableTable.from(MountTable.MOUNT),
                 CleanableTable.from(NetworkTable.NETWORK),
+                CleanableTable.from(NetworkDriverTable.NETWORK_DRIVER),
                 CleanableTable.from(NicTable.NIC),
                 CleanableTable.from(PhysicalHostTable.PHYSICAL_HOST),
                 CleanableTable.from(PortTable.PORT),
@@ -470,6 +473,7 @@ public class TableCleanup extends AbstractJooqDao implements Task {
                 CleanableTable.from(ServiceIndexTable.SERVICE_INDEX),
                 CleanableTable.from(SnapshotTable.SNAPSHOT),
                 CleanableTable.from(StackTable.STACK),
+                CleanableTable.from(StorageDriverTable.STORAGE_DRIVER),
                 CleanableTable.from(StoragePoolTable.STORAGE_POOL),
                 CleanableTable.from(StoragePoolHostMapTable.STORAGE_POOL_HOST_MAP),
                 CleanableTable.from(SubnetTable.SUBNET),

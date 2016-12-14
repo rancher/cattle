@@ -113,6 +113,7 @@ public class ProcessInstanceDispatcherImpl implements ProcessInstanceDispatcher 
                     .getMessage());
         } catch (ProcessCancelException e) {
             CANCELED.inc();
+            runRemaining = true;
             log.debug("Process canceled [{}:{}] on [{}] : {}", instance.getName(), processId, instance.getResourceId(), e.getMessage());
         } catch (Throwable e) {
             if (e instanceof LoggableException) {

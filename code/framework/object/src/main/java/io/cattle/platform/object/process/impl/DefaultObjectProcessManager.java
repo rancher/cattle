@@ -143,9 +143,9 @@ public class DefaultObjectProcessManager implements ObjectProcessManager {
         }
         newData.put(fromProcess + ProcessLogic.CHAIN_PROCESS, toProcess);
         try {
-            scheduleStandardProcessAsync(from, resource, newData);
-        } catch (ProcessCancelException e) {
             scheduleStandardProcessAsync(to, resource, data);
+        } catch (ProcessCancelException e) {
+            scheduleStandardProcessAsync(from, resource, newData);
         }
     }
 

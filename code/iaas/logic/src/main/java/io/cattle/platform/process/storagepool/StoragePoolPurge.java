@@ -43,7 +43,7 @@ public class StoragePoolPurge extends AbstractDefaultProcessHandler {
         }
 
         for (StoragePoolHostMap map : objectManager.children(registry, StoragePoolHostMap.class)) {
-            deactivate(map, null);
+            deactivateThenRemove(map, null);
         }
 
         return null;
