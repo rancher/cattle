@@ -10,9 +10,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 public class ResourceStatesDefinition {
 
     public static final String DEFAULT_STATE_FIELD = "state";
+    private static final Logger log = LoggerFactory.getLogger(ResourceStatesDefinition.class);
 
     String stateField = DEFAULT_STATE_FIELD;
     Set<String> startStates = new HashSet<String>();
@@ -69,8 +73,10 @@ public class ResourceStatesDefinition {
             return doneStatesMap.get(null);
         }
 
-        if (newState == null)
-            throw new IllegalStateException("Failed to find state to transition from [" + currentState + "] to \"done\"");
+        if (newState == null) {
+            log.error("Failed to find state to transition from [{}] to \"done\"", currentState);
+            return null;
+        }
 
         return newState;
     }
