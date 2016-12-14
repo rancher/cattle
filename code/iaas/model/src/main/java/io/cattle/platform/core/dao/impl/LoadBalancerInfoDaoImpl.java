@@ -109,7 +109,7 @@ public class LoadBalancerInfoDaoImpl implements LoadBalancerInfoDao {
             String sourceProtocol = protocol;
             if (sslPorts.contains(privatePort.toString())) {
                 if (protocol.equals("tcp")) {
-                    sourceProtocol = "ssl";
+                    sourceProtocol = "tls";
                 } else {
                     sourceProtocol = "https";
                 }
