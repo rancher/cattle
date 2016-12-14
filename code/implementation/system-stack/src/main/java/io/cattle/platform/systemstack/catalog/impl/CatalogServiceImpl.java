@@ -28,6 +28,7 @@ import org.apache.http.HttpResponse;
 import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.ResponseHandler;
 import org.apache.http.client.fluent.Request;
+import org.apache.http.client.fluent.Response;
 import org.yaml.snakeyaml.Yaml;
 
 import com.netflix.config.DynamicBooleanProperty;
@@ -47,6 +48,8 @@ public class CatalogServiceImpl implements CatalogService {
 
     @Inject
     ObjectManager objectManager;
+
+    boolean firstCall = true;
 
     @Override
     public Map<String, CatalogTemplate> resolvedExternalIds(List<CatalogTemplate> templates) throws IOException {
@@ -163,6 +166,19 @@ public class CatalogServiceImpl implements CatalogService {
 
     @Override
     public Map<String, Map<Object, Object>> getTemplates(List<ProjectTemplate> installed) throws IOException {
+        if (firstCall) {
+            String url = CATALOG_RESOURCE_URL.get();
+            if (url.endsWith("/")) {
+                url = url.substring(0, url.length()-1);
+            }
+            Response resp = Request.Post(String.format("%s?refresh&action=refresh", url)).execute();
+            int status = resp.returnResponse().getStatusLine().getStatusCode();
+            if (status >= 400) {
+                throw new IOException("Failed to reload got [" + status + "]");
+            }
+            firstCall = false;
+        }
+
         Map<String, Map<Object, Object>> result = new HashMap<>();
 
         StringBuilder catalogTemplateUrl = new StringBuilder(CATALOG_RESOURCE_URL.get());
