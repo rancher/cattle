@@ -117,6 +117,7 @@ public class BadDataCleanup extends AbstractJooqDao implements Task {
         }
 
         removeAll(volumeDao.findBadImages(LIMIT.get()));
+        removeAll(volumeDao.findBadImageStoragePoolMaps(LIMIT.get()));
     }
 
     protected void removeAll(Collection<?> objects) {

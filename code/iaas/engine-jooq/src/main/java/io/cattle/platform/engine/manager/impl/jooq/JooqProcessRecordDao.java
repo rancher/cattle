@@ -54,8 +54,6 @@ public class JooqProcessRecordDao extends AbstractJooqDao implements ProcessReco
                 .where(processCondition(resourceType, resourceId))
                     .and(PROCESS_INSTANCE.RUN_AFTER.isNull()
                             .or(PROCESS_INSTANCE.RUN_AFTER.le(new Date())))
-                .orderBy(PROCESS_INSTANCE.ID.asc(),
-                        PROCESS_INSTANCE.PRIORITY.desc())
                 .limit(BATCH.get())
                 .fetchInto(new RecordHandler<Record4<Long, String, String, Integer>>() {
             @Override
