@@ -427,7 +427,7 @@ def test_v1_v2_mix_export(client, context):
                                      external=True)
 
     image_uuid = context.image_uuid
-    data_volumes = ["foo:/bar", "bar:/foo", "baz"]
+    data_volumes = ["foo:/bar", "bar:/foo", "baz", "/bar:/foo"]
     launch_config = {"imageUuid": image_uuid,
                      "dataVolumes": data_volumes, "volumeDriver": "nfs"}
     svc = client.create_service(name=random_str(),

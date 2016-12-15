@@ -34,6 +34,8 @@ import io.cattle.platform.token.CertSet;
 import io.cattle.platform.token.impl.RSAKeyProvider;
 
 import java.io.ByteArrayOutputStream;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -326,6 +328,11 @@ public class ServiceDiscoveryApiServiceImpl implements ServiceDiscoveryApiServic
                 continue;
             }
             String dataVolumeName = splitted[0];
+            // skip bind mounts
+            Path p = Paths.get(dataVolumeName); 
+            if (p.isAbsolute()) {
+                continue;
+            }
             if (volumesData.containsKey(dataVolumeName)) {
                 // either defined by volumeTemplate, or external volume is already created for it
                 continue;
