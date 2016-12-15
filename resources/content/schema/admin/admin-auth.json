@@ -258,7 +258,7 @@
 
         "projectTemplate.isPublic" : "cru",
         
-        "genericObject" : "crd",
+        "webhook" : "crd",
 		
         "end" : ""
     }
