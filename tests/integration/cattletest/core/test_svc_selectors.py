@@ -158,7 +158,7 @@ def _create_stack(client):
     return env
 
 
-def test_service_mixed_selector_based_wo_image(client, context, super_client):
+def test_service_mixed_selector_based_wo_image(client, context):
     env = _create_stack(client)
     image_uuid = context.image_uuid
 
@@ -169,7 +169,7 @@ def test_service_mixed_selector_based_wo_image(client, context, super_client):
     container1 = client.wait_success(container1)
     assert container1.state == "running"
 
-    launch_config = {"imageUuid": "sim:rancher/none:latest"}
+    launch_config = {"imageUuid": "rancher/none"}
     service = client.create_service(name=random_str(),
                                     stackId=env.id,
                                     launchConfig=launch_config,
