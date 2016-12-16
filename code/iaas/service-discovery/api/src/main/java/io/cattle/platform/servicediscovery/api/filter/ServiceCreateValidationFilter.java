@@ -291,7 +291,7 @@ public class ServiceCreateValidationFilter extends AbstractDefaultResourceManage
             Map<String, Object> launchConfig = (Map<String, Object>)data.get(ServiceConstants.FIELD_LAUNCH_CONFIG);
             if (launchConfig.get(InstanceConstants.FIELD_IMAGE_UUID) != null) {
                 Object imageUuid = launchConfig.get(InstanceConstants.FIELD_IMAGE_UUID);
-                if (!ServiceDiscoveryUtil.isNoopImage(imageUuid)) {
+                if (imageUuid != null && !imageUuid.toString().equalsIgnoreCase(ServiceConstants.IMAGE_NONE)) {
                     String fullImageName = ExternalTemplateInstanceFilter.getImageUuid(imageUuid.toString(), storageService);
                     launchConfig.put(InstanceConstants.FIELD_IMAGE_UUID, fullImageName);
                     data.put(ServiceConstants.FIELD_LAUNCH_CONFIG, launchConfig);
@@ -311,7 +311,7 @@ public class ServiceCreateValidationFilter extends AbstractDefaultResourceManage
                 Map<String, Object> slc = (Map<String, Object>) slcObj;
                 if (slc.get(InstanceConstants.FIELD_IMAGE_UUID) != null) {
                     Object imageUuid = slc.get(InstanceConstants.FIELD_IMAGE_UUID);
-                    if (imageUuid != null && !ServiceDiscoveryUtil.isNoopImage(imageUuid.toString())) {
+                    if (imageUuid != null && !imageUuid.toString().equalsIgnoreCase(ServiceConstants.IMAGE_NONE)) {
                         String fullImageName = ExternalTemplateInstanceFilter.getImageUuid(imageUuid.toString(), storageService);
                         slc.put(InstanceConstants.FIELD_IMAGE_UUID, fullImageName);
                     }

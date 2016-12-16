@@ -196,7 +196,7 @@ public class ServiceUpgradeValidationFilter extends AbstractDefaultResourceManag
             }
 
             if (service.getSelectorContainer() == null
-                    && ServiceDiscoveryUtil.isNoopImage(imageUuid)) {
+                    && StringUtils.equalsIgnoreCase(ServiceConstants.IMAGE_NONE, imageUuid.toString())) {
                 it.remove();
             }
             else {

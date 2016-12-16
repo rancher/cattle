@@ -315,11 +315,9 @@ public class ServiceDiscoveryUtil {
         Object imageUUID = ServiceDiscoveryUtil.getLaunchConfigDataAsMap(service,
                 ServiceConstants.PRIMARY_LAUNCH_CONFIG_NAME).get(
                 InstanceConstants.FIELD_IMAGE_UUID);
-        return isNoopImage(imageUUID);
-    }
-
-    public static boolean isNoopImage(Object imageUUID) {
-        return imageUUID == null || ServiceConstants.IMAGE_NONE.equals(imageUUID);
+        return service.getSelectorContainer() != null
+                && (imageUUID == null || imageUUID.toString().toLowerCase()
+                        .contains(ServiceConstants.IMAGE_NONE));
     }
 
     public static void upgradeServiceConfigs(Service service, InServiceUpgradeStrategy strategy, boolean rollback) {
