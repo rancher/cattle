@@ -44,7 +44,8 @@ public interface MetaDataInfoDao {
 
     List<ContainerMetaData> getManagedContainersData(long accountId,
             Map<Long, List<HealthcheckInstanceHostMap>> instanceIdToHealthCheckers,
-            Map<Long, IpAddress> instanceIdToHostIpMap, Map<Long, HostMetaData> hostIdToHostMetadata);
+            Map<Long, IpAddress> instanceIdToHostIpMap, Map<Long, HostMetaData> hostIdToHostMetadata,
+            Map<Long, Map<String, String>> containerIdToContainerLink);
 
     List<String> getPrimaryIpsOnInstanceHost(long hostId);
 
@@ -67,4 +68,6 @@ public interface MetaDataInfoDao {
     List<ContainerMetaData> getHostContainersData(long accountId,
             Map<Long, List<HealthcheckInstanceHostMap>> instanceIdToHealthCheckers,
             Map<Long, IpAddress> instanceIdToHostIpMap, Map<Long, HostMetaData> hostIdToHostMetadata);
+
+    Map<Long, Map<String, String>> getContainerIdToContainerLink(long accountId);
 }
