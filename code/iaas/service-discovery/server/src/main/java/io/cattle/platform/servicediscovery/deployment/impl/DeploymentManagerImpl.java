@@ -23,6 +23,7 @@ import io.cattle.platform.lock.LockCallbackNoReturn;
 import io.cattle.platform.lock.LockManager;
 import io.cattle.platform.lock.definition.LockDefinition;
 import io.cattle.platform.object.ObjectManager;
+import io.cattle.platform.object.meta.ObjectMetaDataManager;
 import io.cattle.platform.object.process.ObjectProcessManager;
 import io.cattle.platform.object.process.StandardProcess;
 import io.cattle.platform.object.resource.ResourceMonitor;
@@ -92,6 +93,8 @@ public class DeploymentManagerImpl implements DeploymentManager {
     ActivityService actvtyService;
     @Inject
     GenericResourceDao rscDao;
+    @Inject
+    ObjectMetaDataManager objMetaDataMgr;
 
     @Override
     public boolean isHealthy(Service service) {
@@ -464,5 +467,6 @@ public class DeploymentManagerImpl implements DeploymentManager {
         final public IdFormatter idFormatter = idFrmt;
         final public LockManager lockMgr = lockManager;
         final public GenericResourceDao resourceDao = rscDao;
+        final public ObjectMetaDataManager objectMetaDataManager = objMetaDataMgr;
     }
 }

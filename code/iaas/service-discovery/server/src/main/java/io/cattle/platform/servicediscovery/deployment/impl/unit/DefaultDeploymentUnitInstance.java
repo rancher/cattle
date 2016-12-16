@@ -266,7 +266,6 @@ public class DefaultDeploymentUnitInstance extends DeploymentUnitInstance implem
 
     @Override
     public void waitForAllocate() {
-
         try {
             if (this.instance != null) {
                 if (context.objectManager.find(InstanceHostMap.class, INSTANCE_HOST_MAP.INSTANCE_ID,
@@ -378,6 +377,14 @@ public class DefaultDeploymentUnitInstance extends DeploymentUnitInstance implem
             context.objectProcessManager.scheduleStandardProcessAsync(StandardProcess.CREATE, exposeMap,
                     null);
         }
+    }
+
+    @Override
+    public boolean isTransitioning() {
+        if (this.instance == null) {
+            return false;
+        }
+        return context.objectMetaDataManager.isTransitioningState(Instance.class, this.instance.getState());
     }
 }
 

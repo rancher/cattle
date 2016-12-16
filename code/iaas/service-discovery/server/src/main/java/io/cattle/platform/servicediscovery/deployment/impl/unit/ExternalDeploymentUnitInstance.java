@@ -152,4 +152,9 @@ public class ExternalDeploymentUnitInstance extends DeploymentUnitInstance {
     public void scheduleCreate() {
         return;
     }
+
+    @Override
+    public boolean isTransitioning() {
+        return false;
+    }
 }
