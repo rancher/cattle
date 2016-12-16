@@ -90,21 +90,26 @@ def test_in_service_upgrade_primary(context, client, super_client):
 
 
 def test_in_service_upgrade_inactive(context, client, super_client):
+    lc = {'labels': {'foo': "bar"}, 'imageUuid': context.image_uuid}
     env, svc, up_svc = _insvc_upgrade(context,
                                       client, super_client, True,
                                       activate=False,
-                                      launchConfig={'labels': {'foo': "bar"}},
+                                      launchConfig=lc,
                                       startFirst=True)
     _validate_upgrade(super_client, svc, up_svc, primary='1',
                       secondary1='0', secondary2='0')
 
 
 def test_in_service_upgrade_all(context, client, super_client):
-    secondary = [{'name': "secondary1", 'labels': {'foo': "bar"}},
-                 {'name': "secondary2", 'labels': {'foo': "bar"}}]
+    image_uuid = context.image_uuid
+    secondary = [{'name': "secondary1", 'labels': {'foo': "bar"},
+                  'imageUuid': image_uuid},
+                 {'name': "secondary2", 'labels': {'foo': "bar"},
+                  'imageUuid': image_uuid}]
+    lc = {'labels': {'foo': "bar"}, 'imageUuid': image_uuid}
     env, svc, up_svc = _insvc_upgrade(context, client,
                                       super_client, True,
-                                      launchConfig={'labels': {'foo': "bar"}},
+                                      launchConfig=lc,
                                       secondaryLaunchConfigs=secondary,
                                       batchSize=3,
                                       intervalMillis=100)
@@ -113,7 +118,8 @@ def test_in_service_upgrade_all(context, client, super_client):
 
 
 def test_in_service_upgrade_one_secondary(context, client, super_client):
-    secondary = [{'name': "secondary1", 'labels': {'foo': "bar"}}]
+    secondary = [{'name': "secondary1", 'labels': {'foo': "bar"},
+                  'imageUuid': context.image_uuid}]
     env, svc, upgraded_svc = _insvc_upgrade(context, client,
                                             super_client, True,
                                             secondaryLaunchConfigs=secondary,
@@ -124,7 +130,8 @@ def test_in_service_upgrade_one_secondary(context, client, super_client):
 
 
 def test_in_service_upgrade_mix(context, client, super_client):
-    secondary = [{'name': "secondary1", 'labels': {'foo': "bar"}}]
+    secondary = [{'name': "secondary1", 'labels': {'foo': "bar"},
+                  'imageUuid': context.image_uuid}]
     env, svc, up_svc = _insvc_upgrade(context, client, super_client, True,
                                       launchConfig={'labels': {'foo': "bar"}},
                                       secondaryLaunchConfigs=secondary,

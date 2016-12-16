@@ -5,6 +5,7 @@ import io.cattle.platform.core.constants.ServiceConstants;
 import io.cattle.platform.core.model.Service;
 import io.cattle.platform.iaas.api.filter.common.AbstractDefaultResourceManagerFilter;
 import io.cattle.platform.object.ObjectManager;
+import io.cattle.platform.servicediscovery.api.util.ServiceDiscoveryUtil;
 import io.cattle.platform.util.type.CollectionUtils;
 import io.github.ibuildthecloud.gdapi.exception.ValidationErrorException;
 import io.github.ibuildthecloud.gdapi.request.ApiRequest;
@@ -48,8 +49,8 @@ public class SelectorServiceCreateValidationFilter extends AbstractDefaultResour
 
     protected void validateImage(Map<String, Object> primaryLaunchConfig, boolean isSelector) {
         if (!isSelector && primaryLaunchConfig != null) {
-            Object image = primaryLaunchConfig.get(InstanceConstants.FIELD_IMAGE_UUID);
-            if (image == null || image.toString().equalsIgnoreCase(ServiceConstants.IMAGE_NONE)) {
+            Object imageUuid = primaryLaunchConfig.get(InstanceConstants.FIELD_IMAGE_UUID);
+            if (ServiceDiscoveryUtil.isNoopImage(imageUuid)) {
                 throw new ValidationErrorException(ValidationErrorCodes.INVALID_OPTION,
                         "Image is required when " + ServiceConstants.FIELD_SELECTOR_CONTAINER
                                 + " is not passed in");
