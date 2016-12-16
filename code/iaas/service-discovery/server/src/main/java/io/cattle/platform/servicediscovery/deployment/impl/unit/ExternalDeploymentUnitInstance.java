@@ -112,13 +112,6 @@ public class ExternalDeploymentUnitInstance extends DeploymentUnitInstance {
     }
 
     @Override
-    public void waitForNotTransitioning() {
-        if (this.exposeMap != null) {
-            this.exposeMap = context.resourceMonitor.waitForNotTransitioning(this.exposeMap);
-        }
-    }
-
-    @Override
     public void waitForAllocate() {
         return;
     }
