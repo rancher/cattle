@@ -83,7 +83,10 @@ public class ServiceUpgradeValidationFilter extends AbstractDefaultResourceManag
             
             Object launchConfig = DataAccessor.field(service, ServiceConstants.FIELD_LAUNCH_CONFIG,
                     Object.class);
-            validateScaleSwitch(inServiceStrategy, launchConfig);
+            Object newLaunchConfig = inServiceStrategy.getLaunchConfig();
+            if (newLaunchConfig != null) {
+                ServiceDiscoveryUtil.validateScaleSwitch(newLaunchConfig, launchConfig);
+            }
             List<Object> secondaryLaunchConfigs = DataAccessor.fields(service)
                     .withKey(ServiceConstants.FIELD_SECONDARY_LAUNCH_CONFIGS)
                     .withDefault(Collections.EMPTY_LIST).as(
@@ -95,29 +98,6 @@ public class ServiceUpgradeValidationFilter extends AbstractDefaultResourceManag
             ServiceDiscoveryUtil.upgradeServiceConfigs(service, inServiceStrategy, false);
         }
         objectManager.persist(service);
-    }
-
-    @SuppressWarnings("unchecked")
-    private void validateScaleSwitch(InServiceUpgradeStrategy inServiceStrategy, Object currentLaunchConfig) {
-        if (inServiceStrategy.getLaunchConfig() != null
-                && isGlobalService((Map<Object, Object>) currentLaunchConfig) != isGlobalService((Map<Object, Object>) inServiceStrategy
-                .getLaunchConfig())) {
-            ValidationErrorCodes.throwValidationError(ValidationErrorCodes.INVALID_OPTION,
-                    "Switching from global scale to fixed (and vice versa) is not allowed");
-        }
-    }
-
-    @SuppressWarnings("unchecked")
-    protected boolean isGlobalService(Map<Object, Object> launchConfig) {
-        // set labels
-        Object labelsObj = launchConfig.get(InstanceConstants.FIELD_LABELS);
-        if (labelsObj == null) {
-            return false;
-
-        }
-        Map<String, String> labels = (Map<String, String>) labelsObj;
-        String globalService = labels.get(ServiceConstants.LABEL_SERVICE_GLOBAL);
-        return Boolean.valueOf(globalService);
     }
 
     protected void setVersion(InServiceUpgradeStrategy upgrade) {

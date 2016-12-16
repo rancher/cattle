@@ -364,6 +364,24 @@ public class ServiceCreateValidationFilter extends AbstractDefaultResourceManage
         List<Map<String, Object>> launchConfigs = populateLaunchConfigs(service, request);
         validateLaunchConfigNames(service, serviceName, launchConfigs);
         validateLaunchConfigsCircularRefs(service, serviceName, launchConfigs);
+        validateLaunchConfigScale(service, request);
+    }
+
+    protected void validateLaunchConfigScale(Service service, ApiRequest request) {
+        Map<String, Object> data = CollectionUtils.toMap(request.getRequestObject());
+        Object newLaunchConfig = data.get(ServiceConstants.FIELD_LAUNCH_CONFIG);
+        if (newLaunchConfig == null) {
+            return;
+        }
+
+        Object launchConfig = DataAccessor.field(service, ServiceConstants.FIELD_LAUNCH_CONFIG,
+                Object.class);
+
+        if (launchConfig == null) {
+            return;
+        }
+
+        ServiceDiscoveryUtil.validateScaleSwitch(newLaunchConfig, launchConfig);
     }
 
 

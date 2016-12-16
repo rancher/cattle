@@ -18,6 +18,7 @@ import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.object.util.DataUtils;
 import io.cattle.platform.servicediscovery.api.resource.ServiceDiscoveryConfigItem;
 import io.cattle.platform.util.type.CollectionUtils;
+import io.github.ibuildthecloud.gdapi.validation.ValidationErrorCodes;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -434,5 +435,26 @@ public class ServiceDiscoveryUtil {
             healthCheck.setResponseTimeout(2000);
             launchConfig.put(InstanceConstants.FIELD_HEALTH_CHECK, healthCheck);
         }
+    }
+
+    @SuppressWarnings("unchecked")
+    public static void validateScaleSwitch(Object newLaunchConfig, Object currentLaunchConfig) {
+        if (isGlobalService((Map<Object, Object>) currentLaunchConfig) != isGlobalService((Map<Object, Object>) newLaunchConfig)) {
+            ValidationErrorCodes.throwValidationError(ValidationErrorCodes.INVALID_OPTION,
+                    "Switching from global scale to fixed (and vice versa)");
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    protected static boolean isGlobalService(Map<Object, Object> launchConfig) {
+        // set labels
+        Object labelsObj = launchConfig.get(InstanceConstants.FIELD_LABELS);
+        if (labelsObj == null) {
+            return false;
+
+        }
+        Map<String, String> labels = (Map<String, String>) labelsObj;
+        String globalService = labels.get(ServiceConstants.LABEL_SERVICE_GLOBAL);
+        return Boolean.valueOf(globalService);
     }
 }
