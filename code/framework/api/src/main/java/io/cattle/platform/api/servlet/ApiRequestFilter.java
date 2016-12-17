@@ -39,7 +39,9 @@ public class ApiRequestFilter extends ModuleBasedFilter {
     private static final DynamicStringProperty PL_SETTING = ArchaiusUtil.getString("ui.pl");
     private static final String PL = "PL";
     private static final String LANG = "LANG";
+    private static final String VERSION = "X-Rancher-Version";
     private static final DynamicStringProperty LOCALIZATION = ArchaiusUtil.getString("localization");
+    private static final DynamicStringProperty SERVER_VERSION = ArchaiusUtil.getString("rancher.server.version");
 
     ApiRequestFilterDelegate delegate;
     Versions versions;
@@ -71,8 +73,8 @@ public class ApiRequestFilter extends ModuleBasedFilter {
         }
 
         addPLCookie(httpRequest, (HttpServletResponse) response);
-        
         addDefaultLanguageCookie(httpRequest, (HttpServletResponse) response);
+        addVersionHeader(httpRequest, (HttpServletResponse) response);
 
         if (isUIRequest(httpRequest, path)) {
             if (path.contains(".") || !indexFile.canServeContent()) {
@@ -109,6 +111,10 @@ public class ApiRequestFilter extends ModuleBasedFilter {
             ExceptionUtils.rethrow(t, ServletException.class);
             ExceptionUtils.rethrowExpectedRuntime(t);
         }
+    }
+
+    protected void addVersionHeader(HttpServletRequest httpRequest, HttpServletResponse response) {
+        response.setHeader(VERSION, SERVER_VERSION.get());
     }
 
     protected void done(ApiContext context, long start, boolean success) {
