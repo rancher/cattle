@@ -54,7 +54,7 @@ public class ParseCollectionAttributes extends AbstractApiRequestHandler {
         }
 
         if (links.size() > 0) {
-            request.setInclude(new Include(links));
+            request.setInclude(new Include(links.subList(0, 1)));
         }
     }
 
