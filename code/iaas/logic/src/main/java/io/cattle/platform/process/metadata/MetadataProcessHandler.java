@@ -4,6 +4,7 @@ import io.cattle.platform.agent.instance.dao.AgentInstanceDao;
 import io.cattle.platform.agent.instance.service.AgentMetadataService;
 import io.cattle.platform.archaius.util.ArchaiusUtil;
 import io.cattle.platform.configitem.version.ConfigItemStatusManager;
+import io.cattle.platform.core.model.Account;
 import io.cattle.platform.core.model.HostIpAddressMap;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.InstanceHostMap;
@@ -50,7 +51,13 @@ public class MetadataProcessHandler extends AbstractObjectProcessLogic implement
     @Override
     public HandlerResult handle(ProcessState state, ProcessInstance process) {
         Object obj = getAccountObject(state.getResource());
-        Object accountId = ObjectUtils.getAccountId(obj);
+        Object accountId;
+        if (obj instanceof Account) {
+            accountId = ObjectUtils.getId(obj);
+        } else {
+            accountId = ObjectUtils.getAccountId(obj);
+        }
+
         if (!(accountId instanceof Long)) {
             log.error("Failed to find account id for {}:{}", ObjectUtils.getKind(obj), ObjectUtils.getId(obj));
             return null;
