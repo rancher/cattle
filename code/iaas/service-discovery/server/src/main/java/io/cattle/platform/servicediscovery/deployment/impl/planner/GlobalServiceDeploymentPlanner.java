@@ -58,17 +58,17 @@ public class GlobalServiceDeploymentPlanner extends ServiceDeploymentPlanner {
             }
         });
 
-        List<String> hostIds = new ArrayList<>();
+        List<String> fulfilledHostIds = new ArrayList<>();
         for (int i = 0; i < this.healthyUnits.size(); i++) {
             DeploymentUnit unit = this.healthyUnits.get(i);
             Map<String, String> unitLabels = unit.getLabels();
             String hostId = unitLabels.get(ServiceConstants.LABEL_SERVICE_REQUESTED_HOST_ID);
-            if (hostIds.contains(hostId)) {
+            if (fulfilledHostIds.contains(hostId) || !hostIds.contains(Long.valueOf(hostId))) {
                 watchList.add(unit);
                 unit.remove(ServiceConstants.AUDIT_LOG_REMOVE_EXTRA, ActivityLog.INFO);
                 this.healthyUnits.remove(i);
             } else {
-                hostIds.add(hostId);
+                fulfilledHostIds.add(hostId);
             }
         }
 
