@@ -1,0 +1,64 @@
+#!/bin/bash
+
+export CATTLE_DB_CATTLE_MYSQL_HOST=localhost
+export CATTLE_DB_CATTLE_MYSQL_PORT=3306
+export CATTLE_DB_CATTLE_USERNAME=cattle
+export CATTLE_DB_CATTLE_PASSWORD=cattle
+export CATTLE_DB_CATTLE_MYSQL_NAME=cattle
+
+usage()
+{
+    cat << EOF
+Usage: docker run rancher/cleanup-1-1 [options]
+
+Options:
+   --db-host               IP or hostname of MySQL server
+   --db-port               port of MySQL server (default: 3306)
+   --db-user               username for MySQL login (default: cattle)
+   --db-pass               password for MySQL login (default: cattle)
+   --db-name               MySQL database name to use (default: cattle)
+EOF
+    exit 0
+}
+
+if [ "$#" = 0 ]; then
+    usage
+fi
+
+while [ "$#" -gt 0 ]; do
+    case $1 in
+        --help)
+            usage
+            ;;
+        -h)
+            usage
+            ;;
+        --db-host)
+            shift 1
+            export CATTLE_DB_CATTLE_MYSQL_HOST=$1
+            ;;
+        --db-port)
+            shift 1
+            export CATTLE_DB_CATTLE_MYSQL_PORT=$1
+            ;;
+        --db-user)
+            shift 1
+            export CATTLE_DB_CATTLE_USERNAME=$1
+            ;;
+        --db-pass)
+            shift 1
+            export CATTLE_DB_CATTLE_PASSWORD=$1
+            ;;
+        --db-name)
+            shift 1
+            export CATTLE_DB_CATTLE_MYSQL_NAME=$1
+            ;;
+        *)
+            break
+            ;;
+    esac
+
+    shift 1
+done
+
+exec ./mvnw -o -q exec:java -pl code/iaas/model -Dexec.mainClass=io.cattle.platform.core.cleanup.Main

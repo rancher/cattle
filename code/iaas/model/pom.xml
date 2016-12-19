@@ -9,6 +9,12 @@
     </parent>
     <dependencies>
         <dependency>
+            <groupId>org.mariadb.jdbc</groupId>
+            <artifactId>mariadb-java-client</artifactId>
+            <scope>compile</scope>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
             <groupId>org.drizzle.jdbc</groupId>
             <artifactId>drizzle-jdbc</artifactId>
             <scope>test</scope>

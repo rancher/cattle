@@ -46,7 +46,6 @@ import io.cattle.platform.core.model.tables.IpAddressTable;
 import io.cattle.platform.core.model.tables.LabelTable;
 import io.cattle.platform.core.model.tables.MachineDriverTable;
 import io.cattle.platform.core.model.tables.MountTable;
-import io.cattle.platform.core.model.tables.NetworkDriverTable;
 import io.cattle.platform.core.model.tables.NetworkTable;
 import io.cattle.platform.core.model.tables.NicTable;
 import io.cattle.platform.core.model.tables.PhysicalHostTable;
@@ -63,7 +62,6 @@ import io.cattle.platform.core.model.tables.ServiceLogTable;
 import io.cattle.platform.core.model.tables.ServiceTable;
 import io.cattle.platform.core.model.tables.SnapshotTable;
 import io.cattle.platform.core.model.tables.StackTable;
-import io.cattle.platform.core.model.tables.StorageDriverTable;
 import io.cattle.platform.core.model.tables.StoragePoolHostMapTable;
 import io.cattle.platform.core.model.tables.StoragePoolTable;
 import io.cattle.platform.core.model.tables.SubnetTable;
@@ -125,26 +123,33 @@ public class TableCleanup extends AbstractJooqDao implements Task {
 
     @Override
     public void run() {
+        runWithCount();
+    }
+
+    public int runWithCount() {
         long current = new Date().getTime();
+        int deleted = 0;
 
         Date otherCutoff = new Date(current - MAIN_TABLES_AGE_LIMIT_SECONDS.getValue() * SECOND_MILLIS);
-        cleanupLabelTables(otherCutoff);
-        cleanupExternalHandlerExternalHandlerProcessMapTables(otherCutoff);
+        deleted += cleanupLabelTables(otherCutoff);
+        deleted += cleanupExternalHandlerExternalHandlerProcessMapTables(otherCutoff);
 
         Date processInstanceCutoff = new Date(current - PROCESS_INSTANCE_AGE_LIMIT_SECONDS.get() * SECOND_MILLIS);
-        cleanup("process_instance", processInstanceTables, processInstanceCutoff);
+        deleted += cleanup("process_instance", processInstanceTables, processInstanceCutoff);
 
         Date eventTableCutoff = new Date(current - EVENT_AGE_LIMIT_SECONDS.get() * SECOND_MILLIS);
         cleanupServiceEventTable(eventTableCutoff);
-        cleanup("event", eventTables, eventTableCutoff);
+        deleted += cleanup("event", eventTables, eventTableCutoff);
 
         Date auditLogCutoff = new Date(current - AUDIT_LOG_AGE_LIMIT_SECONDS.get() * SECOND_MILLIS);
-        cleanup("audit_log", auditLogTables, auditLogCutoff);
+        deleted += cleanup("audit_log", auditLogTables, auditLogCutoff);
 
         Date serviceLogCutoff = new Date(current - SERVICE_LOG_AGE_LIMIT_SECONDS.get() * SECOND_MILLIS);
-        cleanup("service_log", serviceLogTables, serviceLogCutoff);
+        deleted += cleanup("service_log", serviceLogTables, serviceLogCutoff);
 
-        cleanup("other", otherTables, otherCutoff);
+        deleted += cleanup("other", otherTables, otherCutoff);
+
+        return deleted;
     }
 
     private void cleanupServiceEventTable(Date cutoff) {
@@ -160,6 +165,7 @@ public class TableCleanup extends AbstractJooqDao implements Task {
         while ((toDelete = ids.fetch().into(Long.class)).size() > 0) {
             rowsDeleted += create().delete(SERVICE_EVENT)
             .where(SERVICE_EVENT.ID.in(toDelete)).execute();
+            System.out.println(new Date() + " service_event: " + rowsDeleted);
         }
 
         if (rowsDeleted > 0) {
@@ -167,7 +173,7 @@ public class TableCleanup extends AbstractJooqDao implements Task {
         }
     }
 
-    private void cleanupExternalHandlerExternalHandlerProcessMapTables(Date cutoff) {
+    private int cleanupExternalHandlerExternalHandlerProcessMapTables(Date cutoff) {
         ResultQuery<Record1<Long>> ids = create()
                 .select(EXTERNAL_HANDLER_EXTERNAL_HANDLER_PROCESS_MAP.ID)
                 .from(EXTERNAL_HANDLER_EXTERNAL_HANDLER_PROCESS_MAP)
@@ -181,14 +187,17 @@ public class TableCleanup extends AbstractJooqDao implements Task {
         while ((toDelete = ids.fetch().into(Long.class)).size() > 0) {
             rowsDeleted += create().delete(EXTERNAL_HANDLER_EXTERNAL_HANDLER_PROCESS_MAP)
             .where(EXTERNAL_HANDLER_EXTERNAL_HANDLER_PROCESS_MAP.ID.in(toDelete)).execute();
+            System.out.println(new Date() + " external_handler_external_handler_process_map: " + rowsDeleted);
         }
 
         if (rowsDeleted > 0) {
             log.info("[Rows Deleted] external_handler_external_handler_process_map={}", rowsDeleted);
         }
+
+        return rowsDeleted;
     }
 
-    private void cleanupLabelTables(Date cutoff) {
+    private int cleanupLabelTables(Date cutoff) {
         ResultQuery<Record1<Long>> ids = create()
                 .select(INSTANCE_LABEL_MAP.ID)
                 .from(INSTANCE_LABEL_MAP)
@@ -200,6 +209,7 @@ public class TableCleanup extends AbstractJooqDao implements Task {
         while ((toDelete = ids.fetch().into(Long.class)).size() > 0) {
             ilmRowsDeleted += create().delete(INSTANCE_LABEL_MAP)
             .where(INSTANCE_LABEL_MAP.ID.in(toDelete)).execute();
+            System.out.println(new Date() + " instance_label_map: " + ilmRowsDeleted);
         }
 
         ids = create()
@@ -213,6 +223,7 @@ public class TableCleanup extends AbstractJooqDao implements Task {
         while ((toDelete = ids.fetch().into(Long.class)).size() > 0) {
             hlmRowsDeleted += create().delete(HOST_LABEL_MAP)
             .where(HOST_LABEL_MAP.ID.in(toDelete)).execute();
+            System.out.println(new Date() + " host_label_map: " + hlmRowsDeleted);
         }
 
         ids = create()
@@ -229,6 +240,7 @@ public class TableCleanup extends AbstractJooqDao implements Task {
         while ((toDelete = ids.fetch().into(Long.class)).size() > 0) {
             labelRowsDeleted += create().delete(LABEL)
             .where(LABEL.ID.in(toDelete)).execute();
+            System.out.println(new Date() + " label: " + labelRowsDeleted);
         }
 
         StringBuilder lg = new StringBuilder("[Rows Deleted] ");
@@ -244,10 +256,12 @@ public class TableCleanup extends AbstractJooqDao implements Task {
         if (ilmRowsDeleted > 0 || labelRowsDeleted > 0 || hlmRowsDeleted > 0) {
             log.info(lg.toString());
         }
+
+        return ilmRowsDeleted + hlmRowsDeleted + labelRowsDeleted;
     }
 
     @SuppressWarnings("unchecked")
-    private void cleanup(String name, List<CleanableTable> tables, Date cutoffTime) {
+    private int cleanup(String name, List<CleanableTable> tables, Date cutoffTime) {
         for (CleanableTable table : tables) {
             Field<Long> id = table.idField;
             Field<Date> remove = table.removeField;
@@ -302,7 +316,7 @@ public class TableCleanup extends AbstractJooqDao implements Task {
                             .delete(table.table)
                             .where(id.in(idsToDelete))
                             .execute());
-
+                    System.out.println(new Date() + " " + table.table.getName() + ": " + table.getRowsDeleted());
                 } catch (org.jooq.exception.DataAccessException e) {
                     log.error(e.getMessage());
                     break;
@@ -317,6 +331,7 @@ public class TableCleanup extends AbstractJooqDao implements Task {
         StringBuffer buffSkipped = new StringBuffer("[Rows Skipped] ");
         boolean deletedActivity = false;
         boolean skippedActivity = false;
+        int deleted = 0;
         for (CleanableTable table : tables) {
             if (table.getRowsDeleted() > 0) {
                 buffDeleted.append(table.table.getName())
@@ -324,6 +339,7 @@ public class TableCleanup extends AbstractJooqDao implements Task {
                     .append(table.getRowsDeleted())
                     .append(" ");
                 deletedActivity = true;
+                deleted += table.getRowsDeleted();
             }
             if (table.getRowsSkipped() > 0) {
                 buffSkipped.append(table.table.getName())
@@ -341,6 +357,8 @@ public class TableCleanup extends AbstractJooqDao implements Task {
         if (skippedActivity) {
             log.info(buffSkipped.toString());
         }
+
+        return deleted;
     }
 
     /**
@@ -461,7 +479,6 @@ public class TableCleanup extends AbstractJooqDao implements Task {
                 CleanableTable.from(MachineDriverTable.MACHINE_DRIVER),
                 CleanableTable.from(MountTable.MOUNT),
                 CleanableTable.from(NetworkTable.NETWORK),
-                CleanableTable.from(NetworkDriverTable.NETWORK_DRIVER),
                 CleanableTable.from(NicTable.NIC),
                 CleanableTable.from(PhysicalHostTable.PHYSICAL_HOST),
                 CleanableTable.from(PortTable.PORT),
@@ -473,7 +490,6 @@ public class TableCleanup extends AbstractJooqDao implements Task {
                 CleanableTable.from(ServiceIndexTable.SERVICE_INDEX),
                 CleanableTable.from(SnapshotTable.SNAPSHOT),
                 CleanableTable.from(StackTable.STACK),
-                CleanableTable.from(StorageDriverTable.STORAGE_DRIVER),
                 CleanableTable.from(StoragePoolTable.STORAGE_POOL),
                 CleanableTable.from(StoragePoolHostMapTable.STORAGE_POOL_HOST_MAP),
                 CleanableTable.from(SubnetTable.SUBNET),

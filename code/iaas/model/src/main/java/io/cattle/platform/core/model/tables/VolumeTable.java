@@ -222,7 +222,7 @@ public class VolumeTable extends org.jooq.impl.TableImpl<io.cattle.platform.core
 	 */
 	@Override
 	public java.util.List<org.jooq.ForeignKey<io.cattle.platform.core.model.tables.records.VolumeRecord, ?>> getReferences() {
-		return java.util.Arrays.<org.jooq.ForeignKey<io.cattle.platform.core.model.tables.records.VolumeRecord, ?>>asList(io.cattle.platform.core.model.Keys.FK_VOLUME__ACCOUNT_ID, io.cattle.platform.core.model.Keys.FK_VOLUME__INSTANCE_ID, io.cattle.platform.core.model.Keys.FK_VOLUME__IMAGE_ID, io.cattle.platform.core.model.Keys.FK_VOLUME__ZONE_ID, io.cattle.platform.core.model.Keys.FK_VOLUME__HOST_ID, io.cattle.platform.core.model.Keys.FK_VOLUME__DEPLOYMENT_UNIT_ID, io.cattle.platform.core.model.Keys.FK_VOLUME__ENVIRONMENT_ID, io.cattle.platform.core.model.Keys.FK_VOLUME__VOLUME_TEMPLATE_ID, io.cattle.platform.core.model.Keys.FK_VOLUME__STORAGE_DRIVER_ID);
+		return java.util.Arrays.<org.jooq.ForeignKey<io.cattle.platform.core.model.tables.records.VolumeRecord, ?>>asList(io.cattle.platform.core.model.Keys.FK_VOLUME__ACCOUNT_ID, io.cattle.platform.core.model.Keys.FK_VOLUME__INSTANCE_ID, io.cattle.platform.core.model.Keys.FK_VOLUME__IMAGE_ID, io.cattle.platform.core.model.Keys.FK_VOLUME__ZONE_ID, io.cattle.platform.core.model.Keys.FK_VOLUME__HOST_ID, io.cattle.platform.core.model.Keys.FK_VOLUME__DEPLOYMENT_UNIT_ID, io.cattle.platform.core.model.Keys.FK_VOLUME__VOLUME_TEMPLATE_ID, io.cattle.platform.core.model.Keys.FK_VOLUME__STORAGE_DRIVER_ID);
 	}
 
 	/**
