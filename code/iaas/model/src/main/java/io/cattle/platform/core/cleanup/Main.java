@@ -117,6 +117,7 @@ public class Main {
         runUp("UPDATE instance_link JOIN instance ON instance_link.target_instance_id = instance.id SET instance_link.target_instance_id = NULL WHERE instance.removed IS NOT NULL AND instance_link.removed IS NULL", conn);
         runUp("DELETE project_member FROM project_member JOIN account ON project_member.project_id = account.id WHERE account.removed IS NOT NULL", conn);
         runUp("DELETE network_service_provider_instance_map FROM network_service_provider_instance_map JOIN instance ON instance.id = network_service_provider_instance_map.instance_id WHERE instance.state = 'purged'", conn);
+        runUp("DELETE instance_label_map FROM instance_label_map JOIN instance ON instance.id = instance_label_map.instance_id WHERE instance.state = 'purged'", conn);
 
         int count = 0;
         while ((count = cleanup.runWithCount()) > 0) {

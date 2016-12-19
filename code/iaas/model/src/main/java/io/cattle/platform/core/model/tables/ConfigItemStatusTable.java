@@ -147,7 +147,7 @@ public class ConfigItemStatusTable extends org.jooq.impl.TableImpl<io.cattle.pla
 	 */
 	@Override
 	public java.util.List<org.jooq.ForeignKey<io.cattle.platform.core.model.tables.records.ConfigItemStatusRecord, ?>> getReferences() {
-		return java.util.Arrays.<org.jooq.ForeignKey<io.cattle.platform.core.model.tables.records.ConfigItemStatusRecord, ?>>asList(io.cattle.platform.core.model.Keys.FK_CONFIG_ITEM__NAME, io.cattle.platform.core.model.Keys.FK_CONFIG_ITEM__AGENT_ID, io.cattle.platform.core.model.Keys.FK_CONFIG_ITEM__ACCOUNT_ID, io.cattle.platform.core.model.Keys.FK_CONFIG_ITEM__SERVICE_ID, io.cattle.platform.core.model.Keys.FK_CONFIG_ITEM__ENVIRONMENT_ID, io.cattle.platform.core.model.Keys.FK_CONFIG_ITEM__HOST_ID);
+		return java.util.Arrays.<org.jooq.ForeignKey<io.cattle.platform.core.model.tables.records.ConfigItemStatusRecord, ?>>asList(io.cattle.platform.core.model.Keys.FK_CONFIG_ITEM__NAME, io.cattle.platform.core.model.Keys.FK_CONFIG_ITEM__AGENT_ID, io.cattle.platform.core.model.Keys.FK_CONFIG_ITEM__ACCOUNT_ID, io.cattle.platform.core.model.Keys.FK_CONFIG_ITEM__SERVICE_ID, io.cattle.platform.core.model.Keys.FK_CONFIG_ITEM__ENVIRONMENT_ID);
 	}
 
 	/**

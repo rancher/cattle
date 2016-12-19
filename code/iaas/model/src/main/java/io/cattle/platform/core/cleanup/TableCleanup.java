@@ -23,7 +23,6 @@ import io.cattle.platform.core.model.tables.ConfigItemStatusTable;
 import io.cattle.platform.core.model.tables.ContainerEventTable;
 import io.cattle.platform.core.model.tables.CredentialInstanceMapTable;
 import io.cattle.platform.core.model.tables.CredentialTable;
-import io.cattle.platform.core.model.tables.DeploymentUnitTable;
 import io.cattle.platform.core.model.tables.DynamicSchemaTable;
 import io.cattle.platform.core.model.tables.ExternalEventTable;
 import io.cattle.platform.core.model.tables.ExternalHandlerExternalHandlerProcessMapTable;
@@ -143,9 +142,6 @@ public class TableCleanup extends AbstractJooqDao implements Task {
 
         Date auditLogCutoff = new Date(current - AUDIT_LOG_AGE_LIMIT_SECONDS.get() * SECOND_MILLIS);
         deleted += cleanup("audit_log", auditLogTables, auditLogCutoff);
-
-        Date serviceLogCutoff = new Date(current - SERVICE_LOG_AGE_LIMIT_SECONDS.get() * SECOND_MILLIS);
-        deleted += cleanup("service_log", serviceLogTables, serviceLogCutoff);
 
         deleted += cleanup("other", otherTables, otherCutoff);
 
@@ -458,7 +454,6 @@ public class TableCleanup extends AbstractJooqDao implements Task {
                 CleanableTable.from(ConfigItemStatusTable.CONFIG_ITEM_STATUS),
                 CleanableTable.from(CredentialTable.CREDENTIAL),
                 CleanableTable.from(CredentialInstanceMapTable.CREDENTIAL_INSTANCE_MAP),
-                CleanableTable.from(DeploymentUnitTable.DEPLOYMENT_UNIT),
                 CleanableTable.from(DynamicSchemaTable.DYNAMIC_SCHEMA),
                 CleanableTable.from(ExternalEventTable.EXTERNAL_EVENT),
                 CleanableTable.from(ExternalHandlerTable.EXTERNAL_HANDLER),
