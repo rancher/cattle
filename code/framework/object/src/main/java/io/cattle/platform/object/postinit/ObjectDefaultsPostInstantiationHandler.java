@@ -10,8 +10,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import javax.inject.Inject;
-
 import org.apache.commons.beanutils.BeanUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -58,15 +56,10 @@ public class ObjectDefaultsPostInstantiationHandler implements ObjectPostInstant
         }
     }
 
-    @Override
-    public void stop() {
-    }
-
     public List<ObjectDefaultsProvider> getDefaultProviders() {
         return defaultProviders;
     }
 
-    @Inject
     public void setDefaultProviders(List<ObjectDefaultsProvider> defaultProviders) {
         this.defaultProviders = defaultProviders;
     }

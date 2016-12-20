@@ -204,7 +204,6 @@ public abstract class NonBlockingSubscriptionHandler implements SubscriptionHand
         return executorService;
     }
 
-    @Inject
     public void setExecutorService(ExecutorService executorService) {
         this.executorService = executorService;
     }

@@ -1,7 +1,8 @@
 package io.cattle.iaas.healthcheck.process;
 
-import static io.cattle.platform.core.model.tables.HealthcheckInstanceHostMapTable.HEALTHCHECK_INSTANCE_HOST_MAP;
-import static io.cattle.platform.core.model.tables.HealthcheckInstanceTable.HEALTHCHECK_INSTANCE;
+import static io.cattle.platform.core.model.tables.HealthcheckInstanceHostMapTable.*;
+import static io.cattle.platform.core.model.tables.HealthcheckInstanceTable.*;
+
 import io.cattle.iaas.healthcheck.service.HealthcheckService;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.model.HealthcheckInstance;
@@ -19,7 +20,9 @@ import io.cattle.platform.util.type.Priority;
 import java.util.List;
 
 import javax.inject.Inject;
+import javax.inject.Named;
 
+@Named
 public class InstanceRemovePostHandler extends AbstractObjectProcessLogic implements ProcessPostListener, Priority {
     @Inject
     ServiceDao serviceDao;

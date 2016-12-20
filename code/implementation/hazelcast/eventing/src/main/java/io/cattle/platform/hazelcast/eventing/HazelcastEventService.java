@@ -2,6 +2,7 @@ package io.cattle.platform.hazelcast.eventing;
 
 import io.cattle.platform.eventing.impl.AbstractThreadPoolingEventService;
 import io.cattle.platform.eventing.model.Event;
+import io.cattle.platform.util.type.Named;
 
 import java.io.IOException;
 import java.util.Map;
@@ -18,7 +19,7 @@ import com.hazelcast.core.ITopic;
 import com.hazelcast.core.Message;
 import com.hazelcast.core.MessageListener;
 
-public class HazelcastEventService extends AbstractThreadPoolingEventService {
+public class HazelcastEventService extends AbstractThreadPoolingEventService implements Named {
 
     private static final Logger log = LoggerFactory.getLogger(HazelcastEventService.class);
 
@@ -96,6 +97,11 @@ public class HazelcastEventService extends AbstractThreadPoolingEventService {
     @Inject
     public void setHazelcast(HazelcastInstance hazelcast) {
         this.hazelcast = hazelcast;
+    }
+
+    @Override
+    public String getName() {
+        return "EventService";
     }
 
 }

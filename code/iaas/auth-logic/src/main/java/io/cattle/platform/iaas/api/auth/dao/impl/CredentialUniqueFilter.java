@@ -14,6 +14,7 @@ import io.github.ibuildthecloud.gdapi.request.resource.ResourceManager;
 import io.github.ibuildthecloud.gdapi.validation.ValidationErrorCodes;
 
 import java.util.List;
+
 import javax.inject.Inject;
 
 import org.apache.commons.lang3.StringUtils;
@@ -65,10 +66,8 @@ public class CredentialUniqueFilter extends AbstractResourceManagerFilter {
         return schemaFactory;
     }
 
-    @Inject
     public void setSchemaFactory(SchemaFactory schemaFactory) {
         this.schemaFactory = schemaFactory;
     }
-
 
 }

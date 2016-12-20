@@ -3,6 +3,7 @@ package io.cattle.platform.servicediscovery.process;
 
 import static io.cattle.platform.core.model.tables.InstanceTable.*;
 import static io.cattle.platform.core.model.tables.ServiceTable.*;
+
 import io.cattle.platform.core.addon.ServiceLink;
 import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.ServiceConstants;
@@ -28,11 +29,13 @@ import java.util.List;
 import java.util.Map;
 
 import javax.inject.Inject;
+import javax.inject.Named;
 
 import org.apache.commons.lang3.StringUtils;
 
 import com.google.common.base.Strings;
 
+@Named
 public class SelectorServiceCreatePostListener extends AbstractObjectProcessLogic implements ProcessPostListener,
         Priority {
 

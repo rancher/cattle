@@ -1,10 +1,9 @@
 package io.cattle.platform.process.common.spring;
 
-import io.cattle.platform.archaius.util.ArchaiusUtil;
-
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -15,7 +14,15 @@ import org.w3c.dom.Element;
 
 public class DefaultProcessesParser extends ProcessParser {
 
-    private static final String PROP_PREFIX = "generic.resource.process.";
+    private static final List<String> PROPS = Arrays.asList(new String[] {
+            "%s.create;requested;registering;inactive;%s.activate",
+            "%s.activate;inactive,registering;activating;active",
+            "%s.deactivate;requested,registering,active,activating,updating-active,updating-inactive;deactivating;inactive",
+            "%s.remove;requested,inactive,registering,updating-active,updating-inactive;removing;removed",
+            "%s.purge;removed;purging;purged",
+            "%s.update;inactive,active;inactive=updating-inactive,active=updating-active;updating-inactive=inactive,updating-active=active",
+            "%s.restore;removed;restoring;inactive"
+    });
 
     @Override
     public BeanDefinition parse(Element element, ParserContext parserContext) {
@@ -32,16 +39,15 @@ public class DefaultProcessesParser extends ProcessParser {
         }
 
         BeanDefinition last = null;
-        for (int i = 0; true; i++) {
-            String value = ArchaiusUtil.getString(PROP_PREFIX + i).get();
+        for (String value : PROPS) {
             if (StringUtils.isBlank(value)) {
                 break;
             }
 
             String[] parts = value.trim().split(";");
-            if (parts.length != 4 && parts.length != 5) {
-                throw new IllegalStateException(PROP_PREFIX + i + " must be in the format name;start;transitioning;done;delegate(optional)");
-            }
+//            if (parts.length != 4 && parts.length != 5) {
+//                throw new IllegalStateException(PROP_PREFIX + i + " must be in the format name;start;transitioning;done;delegate(optional)");
+//            }
 
             String name = String.format(parts[0], resourceType).toLowerCase();
             if (processRenames.containsKey(name)) {

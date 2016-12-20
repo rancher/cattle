@@ -9,6 +9,7 @@ import java.util.Date;
 import java.util.Map;
 
 import javax.inject.Inject;
+import javax.inject.Named;
 
 import org.apache.commons.beanutils.BeanUtils;
 
@@ -57,6 +58,7 @@ public class SpecialFieldsPostInstantiationHandler implements ObjectPostInstanti
     }
 
     @Inject
+    @Named("CoreSchemaFactory")
     public void setSchemaFactory(SchemaFactory schemaFactory) {
         this.schemaFactory = schemaFactory;
     }

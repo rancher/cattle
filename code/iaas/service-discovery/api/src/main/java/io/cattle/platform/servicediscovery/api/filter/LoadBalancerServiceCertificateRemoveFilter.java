@@ -1,6 +1,7 @@
 package io.cattle.platform.servicediscovery.api.filter;
 
 import static io.cattle.platform.core.model.tables.ServiceTable.*;
+
 import io.cattle.platform.core.addon.LbConfig;
 import io.cattle.platform.core.constants.ServiceConstants;
 import io.cattle.platform.core.dao.ServiceDao;
@@ -21,11 +22,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 import javax.inject.Inject;
+import javax.inject.Named;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.TransformerUtils;
 import org.apache.commons.lang.StringUtils;
 
+@Named
 public class LoadBalancerServiceCertificateRemoveFilter extends AbstractDefaultResourceManagerFilter {
     @Inject
     ObjectManager objectManager;

@@ -16,7 +16,9 @@ import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.process.common.handler.AbstractObjectProcessLogic;
 
 import javax.inject.Inject;
+import javax.inject.Named;
 
+@Named
 public class SystemStackTrigger extends AbstractObjectProcessLogic implements ProcessPostListener, ProcessPreListener {
     public static final String STACKS = "system-stacks";
 

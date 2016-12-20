@@ -94,10 +94,6 @@ public class AnnotatedListenerRegistration implements InitializationTask {
         return result;
     }
 
-    @Override
-    public void stop() {
-    }
-
     public List<AnnotatedEventListener> getListeners() {
         return listeners;
     }

@@ -26,10 +26,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.inject.Named;
+
 import org.apache.commons.lang3.StringUtils;
 import org.jooq.Record;
 import org.jooq.Record1;
 
+@Named
 public class AgentDaoImpl extends AbstractCoreDao implements AgentDao {
 
     @Override

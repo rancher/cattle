@@ -1,6 +1,7 @@
 package io.cattle.platform.servicediscovery.api.filter;
 
 import static io.cattle.platform.core.model.tables.VolumeTemplateTable.*;
+
 import io.cattle.platform.core.model.VolumeTemplate;
 import io.cattle.platform.iaas.api.filter.common.AbstractDefaultResourceManagerFilter;
 import io.cattle.platform.object.ObjectManager;
@@ -10,7 +11,9 @@ import io.github.ibuildthecloud.gdapi.request.resource.ResourceManager;
 import io.github.ibuildthecloud.gdapi.validation.ValidationErrorCodes;
 
 import javax.inject.Inject;
+import javax.inject.Named;
 
+@Named
 public class VolumeTemplateCreateValidationFilter extends AbstractDefaultResourceManagerFilter {
 
     @Override
@@ -29,7 +32,7 @@ public class VolumeTemplateCreateValidationFilter extends AbstractDefaultResourc
     @Override
     public Object create(String type, ApiRequest request, ResourceManager next) {
         VolumeTemplate template = request.proxyRequestObject(VolumeTemplate.class);
-        
+
         validateNameUniqueness(template);
         validateScope(template);
 

@@ -24,10 +24,13 @@ import io.cattle.platform.core.model.tables.records.UserPreferenceRecord;
 import java.util.Arrays;
 import java.util.List;
 
+import javax.inject.Named;
+
 import org.apache.commons.lang3.StringUtils;
 import org.jooq.Condition;
 import org.jooq.impl.DSL;
 
+@Named
 public class AccountDaoImpl extends AbstractCoreDao implements AccountDao {
 
     @Override

@@ -17,7 +17,9 @@ import java.util.HashMap;
 import java.util.Map;
 
 import javax.inject.Inject;
+import javax.inject.Named;
 
+@Named
 public class ServiceAddRemoveLinkServiceValidationFilter extends AbstractDefaultResourceManagerFilter {
 
     @Inject

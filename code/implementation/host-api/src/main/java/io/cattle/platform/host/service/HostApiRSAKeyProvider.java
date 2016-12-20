@@ -48,10 +48,6 @@ public class HostApiRSAKeyProvider implements RSAKeyProvider, InitializationTask
         }
     }
 
-    @Override
-    public void stop() {
-    }
-
     protected KeyPair getKeyPair() {
         String encoded = dataDao.getOrCreate(KEY, false, new Callable<String>() {
             @Override

@@ -60,7 +60,6 @@ public class ProxyLauncher extends NoExceptionRunnable implements Initialization
         }
     }
 
-    @Override
     public void stop() {
         if (future != null) {
             future.cancel(true);

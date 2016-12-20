@@ -49,6 +49,11 @@ public class JsonDefaultsProvider implements ObjectDefaultsProvider, Initializat
                 if (is != null) {
                     @SuppressWarnings("unchecked")
                     Map<String, Object> defaults = jsonMapper.readValue(is, Map.class);
+                    Map<String, Object> existing = this.defaults.get(clz);
+                    if (existing != null) {
+                        existing.putAll(defaults);
+                        defaults = existing;
+                    }
                     this.defaults.put(clz, defaults);
                 }
             } catch (IOException e) {
@@ -57,10 +62,6 @@ public class JsonDefaultsProvider implements ObjectDefaultsProvider, Initializat
                 IOUtils.closeQuietly(is);
             }
         }
-    }
-
-    @Override
-    public void stop() {
     }
 
     protected InputStream jsonFile(String prefix, Schema schema) {
@@ -76,7 +77,6 @@ public class JsonDefaultsProvider implements ObjectDefaultsProvider, Initializat
         return schemaFactory;
     }
 
-    @Inject
     public void setSchemaFactory(SchemaFactory schemaFactory) {
         this.schemaFactory = schemaFactory;
     }
@@ -85,7 +85,6 @@ public class JsonDefaultsProvider implements ObjectDefaultsProvider, Initializat
         return defaultPath;
     }
 
-    @Inject
     public void setDefaultPath(String defaultPath) {
         this.defaultPath = defaultPath;
     }
@@ -94,7 +93,6 @@ public class JsonDefaultsProvider implements ObjectDefaultsProvider, Initializat
         return defaultOverridePath;
     }
 
-    @Inject
     public void setDefaultOverridePath(String defaultOverridePath) {
         this.defaultOverridePath = defaultOverridePath;
     }

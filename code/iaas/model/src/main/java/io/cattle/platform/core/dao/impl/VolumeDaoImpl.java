@@ -44,6 +44,7 @@ import java.util.Set;
 import java.util.concurrent.Callable;
 
 import javax.inject.Inject;
+import javax.inject.Named;
 
 import org.jooq.Record;
 import org.jooq.Record1;
@@ -51,6 +52,7 @@ import org.jooq.Record6;
 import org.jooq.RecordHandler;
 import org.jooq.Result;
 
+@Named
 public class VolumeDaoImpl extends AbstractJooqDao implements VolumeDao {
     private static final Set<String> LOCAL_POOL_KINDS = new HashSet<String>(Arrays.asList(new String[]{"docker", "sim"}));
 

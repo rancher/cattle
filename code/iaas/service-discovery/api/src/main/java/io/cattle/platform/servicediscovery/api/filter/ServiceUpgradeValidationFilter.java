@@ -26,10 +26,12 @@ import java.util.List;
 import java.util.Map;
 
 import javax.inject.Inject;
+import javax.inject.Named;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 
+@Named
 public class ServiceUpgradeValidationFilter extends AbstractDefaultResourceManagerFilter {
 
     @Inject
@@ -80,7 +82,7 @@ public class ServiceUpgradeValidationFilter extends AbstractDefaultResourceManag
         if (strategy instanceof InServiceUpgradeStrategy) {
             InServiceUpgradeStrategy inServiceStrategy = (InServiceUpgradeStrategy) strategy;
             inServiceStrategy = finalizeUpgradeStrategy(service, inServiceStrategy);
-            
+
             Object launchConfig = DataAccessor.field(service, ServiceConstants.FIELD_LAUNCH_CONFIG,
                     Object.class);
             Object newLaunchConfig = inServiceStrategy.getLaunchConfig();

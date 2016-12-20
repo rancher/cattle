@@ -1,9 +1,11 @@
 package io.cattle.platform.api.resource.jooq;
 
-public class DefaultJooqResourceManager extends AbstractJooqResourceManager {
+import io.github.ibuildthecloud.gdapi.request.resource.ResourceManagerLocator;
+import io.github.ibuildthecloud.gdapi.request.resource.impl.ResourceManagerLocatorImpl;
 
-    // private static final Logger log =
-    // LoggerFactory.getLogger(DefaultJooqResourceManager.class);
+import javax.inject.Inject;
+
+public class DefaultJooqResourceManager extends AbstractJooqResourceManager {
 
     @Override
     public String[] getTypes() {
@@ -13,6 +15,15 @@ public class DefaultJooqResourceManager extends AbstractJooqResourceManager {
     @Override
     public Class<?>[] getTypeClasses() {
         return new Class<?>[0];
+    }
+
+    @Override
+    @Inject
+    public void setLocator(ResourceManagerLocator locator) {
+        super.setLocator(locator);
+        if (locator instanceof ResourceManagerLocatorImpl) {
+            ((ResourceManagerLocatorImpl) locator).setDefaultResourceManager(this);
+        }
     }
 
 }

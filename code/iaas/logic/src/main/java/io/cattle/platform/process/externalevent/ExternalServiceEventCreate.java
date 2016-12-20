@@ -1,13 +1,14 @@
 package io.cattle.platform.process.externalevent;
 
 import static io.cattle.platform.process.externalevent.ExternalEventConstants.*;
+
 import io.cattle.platform.core.constants.CommonStatesConstants;
-import io.cattle.platform.core.dao.StackDao;
 import io.cattle.platform.core.dao.GenericResourceDao;
 import io.cattle.platform.core.dao.ServiceDao;
-import io.cattle.platform.core.model.Stack;
+import io.cattle.platform.core.dao.StackDao;
 import io.cattle.platform.core.model.ExternalEvent;
 import io.cattle.platform.core.model.Service;
+import io.cattle.platform.core.model.Stack;
 import io.cattle.platform.deferred.util.DeferredUtils;
 import io.cattle.platform.engine.handler.HandlerResult;
 import io.cattle.platform.engine.process.ProcessInstance;
@@ -51,6 +52,7 @@ public class ExternalServiceEventCreate extends AbstractDefaultProcessHandler {
     @Inject
     LockManager lockManager;
     @Inject
+    @Named("CoreSchemaFactory")
     SchemaFactory schemaFactory;
     @Inject
     StackDao stackDao;
@@ -199,7 +201,7 @@ public class ExternalServiceEventCreate extends AbstractDefaultProcessHandler {
             objectProcessManager.scheduleStandardProcess(StandardProcess.REMOVE, svc, null);
         }
     }
-    
+
     void deleteStack(ExternalEvent event, Map<String, Object> stackData) {
         Stack env = stackDao.getStackByExternalId(event.getAccountId(), event.getExternalId());
         if (env != null) {

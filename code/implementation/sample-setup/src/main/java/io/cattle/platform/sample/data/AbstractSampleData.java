@@ -1,6 +1,7 @@
 package io.cattle.platform.sample.data;
 
-import static io.cattle.platform.core.model.tables.DataTable.DATA;
+import static io.cattle.platform.core.model.tables.DataTable.*;
+
 import io.cattle.platform.archaius.util.ArchaiusUtil;
 import io.cattle.platform.core.dao.AccountDao;
 import io.cattle.platform.core.model.Account;
@@ -102,10 +103,6 @@ public abstract class AbstractSampleData implements InitializationTask {
         }
 
         return objectManager.create(type, properties);
-    }
-
-    @Override
-    public void stop() {
     }
 
     public ObjectManager getObjectManager() {

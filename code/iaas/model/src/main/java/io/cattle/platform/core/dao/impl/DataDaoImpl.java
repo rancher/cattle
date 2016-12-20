@@ -1,10 +1,6 @@
 package io.cattle.platform.core.dao.impl;
 
-import java.util.concurrent.Callable;
-
 import static io.cattle.platform.core.model.tables.DataTable.*;
-
-import javax.inject.Inject;
 
 import io.cattle.platform.core.dao.DataDao;
 import io.cattle.platform.core.model.Data;
@@ -14,6 +10,12 @@ import io.cattle.platform.lock.LockManager;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.util.exception.ExceptionUtils;
 
+import java.util.concurrent.Callable;
+
+import javax.inject.Inject;
+import javax.inject.Named;
+
+@Named
 public class DataDaoImpl extends AbstractJooqDao implements DataDao {
 
     LockManager lockManager;

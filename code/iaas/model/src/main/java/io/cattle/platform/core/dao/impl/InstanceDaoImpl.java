@@ -61,6 +61,7 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 import javax.inject.Inject;
+import javax.inject.Named;
 
 import org.apache.commons.lang3.StringUtils;
 import org.jooq.Condition;
@@ -69,6 +70,7 @@ import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 
+@Named
 public class InstanceDaoImpl extends AbstractJooqDao implements InstanceDao {
     @Inject
     GenericMapDao mapDao;

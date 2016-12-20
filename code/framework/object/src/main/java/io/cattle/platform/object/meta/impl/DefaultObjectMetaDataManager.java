@@ -18,6 +18,7 @@ import io.cattle.platform.util.type.InitializationTask;
 import io.cattle.platform.util.type.Priority;
 import io.github.ibuildthecloud.gdapi.condition.ConditionType;
 import io.github.ibuildthecloud.gdapi.factory.SchemaFactory;
+import io.github.ibuildthecloud.gdapi.factory.impl.SchemaFactoryImpl;
 import io.github.ibuildthecloud.gdapi.factory.impl.SchemaPostProcessor;
 import io.github.ibuildthecloud.gdapi.model.Action;
 import io.github.ibuildthecloud.gdapi.model.Field;
@@ -45,7 +46,9 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.WeakHashMap;
 
+import javax.annotation.PostConstruct;
 import javax.inject.Inject;
+import javax.inject.Named;
 import javax.persistence.Column;
 
 import org.apache.commons.beanutils.PropertyUtils;
@@ -57,7 +60,7 @@ import org.jooq.TableField;
 
 import com.google.common.collect.Lists;
 
-public class DefaultObjectMetaDataManager implements ObjectMetaDataManager, SchemaPostProcessor, InitializationTask, Priority {
+public class DefaultObjectMetaDataManager implements ObjectMetaDataManager, InitializationTask, Priority {
 
     SchemaFactory schemaFactory;
     List<TypeSet> typeSets;
@@ -73,6 +76,23 @@ public class DefaultObjectMetaDataManager implements ObjectMetaDataManager, Sche
     Map<String, Map<String, ActionDefinition>> actionDefinitions = new HashMap<String, Map<String, ActionDefinition>>();
     Map<FieldCacheKey, TableField<?, ?>> tableFields = new HashMap<FieldCacheKey, TableField<?, ?>>();
 
+    @PostConstruct
+    public void init() {
+        if (schemaFactory instanceof SchemaFactoryImpl) {
+            ((SchemaFactoryImpl) schemaFactory).getPostProcessors().add(0, new SchemaPostProcessor() {
+                @Override
+                public SchemaImpl postProcessRegister(SchemaImpl schema, SchemaFactory factory) {
+                    return DefaultObjectMetaDataManager.this.postProcessRegister(schema, factory);
+                }
+
+                @Override
+                public SchemaImpl postProcess(SchemaImpl schema, SchemaFactory factory) {
+                    return DefaultObjectMetaDataManager.this.postProcess(schema, factory);
+                }
+            });
+        }
+    }
+
     @Override
     public void start() {
         List<Schema> schemas = registerTypes();
@@ -81,10 +101,6 @@ public class DefaultObjectMetaDataManager implements ObjectMetaDataManager, Sche
         registerStates();
         registerRelationships();
         parseSchemas(schemas);
-    }
-
-    @Override
-    public void stop() {
     }
 
     protected void registerActions() {
@@ -298,13 +314,13 @@ public class DefaultObjectMetaDataManager implements ObjectMetaDataManager, Sche
         List<Schema> schemas = new ArrayList<Schema>();
 
         for (TypeSet typeSet : typeSets) {
-            for (String name : typeSet.getTypeNames()) {
-                Schema schema = schemaFactory.registerSchema(name);
+            for (Class<?> type : typeSet.getTypeClasses()) {
+                Schema schema = schemaFactory.registerSchema(type);
                 if (schema != null)
                     schemas.add(schema);
             }
-            for (Class<?> type : typeSet.getTypeClasses()) {
-                Schema schema = schemaFactory.registerSchema(type);
+            for (String name : typeSet.getTypeNames()) {
+                Schema schema = schemaFactory.registerSchema(name);
                 if (schema != null)
                     schemas.add(schema);
             }
@@ -458,7 +474,6 @@ public class DefaultObjectMetaDataManager implements ObjectMetaDataManager, Sche
         throw new IllegalArgumentException("Failed to find bean property for table field [" + field + "] on [" + clz + "]");
     }
 
-    @Override
     public SchemaImpl postProcessRegister(SchemaImpl schema, SchemaFactory factory) {
         return schema;
     }
@@ -525,7 +540,6 @@ public class DefaultObjectMetaDataManager implements ObjectMetaDataManager, Sche
         schema.getResourceFields().put(name, newField);
     }
 
-    @Override
     public SchemaImpl postProcess(SchemaImpl schema, SchemaFactory factory) {
         addStates(schema, factory);
         addActions(schema, factory);
@@ -816,6 +830,7 @@ public class DefaultObjectMetaDataManager implements ObjectMetaDataManager, Sche
     }
 
     @Inject
+    @Named("CoreSchemaFactory")
     public void setSchemaFactory(SchemaFactory schemaFactory) {
         this.schemaFactory = schemaFactory;
     }
@@ -826,7 +841,7 @@ public class DefaultObjectMetaDataManager implements ObjectMetaDataManager, Sche
 
     @Inject
     public void setTypeSets(List<TypeSet> typeSets) {
-        this.typeSets = typeSets;
+        this.typeSets = CollectionUtils.orderList(TypeSet.class, typeSets);
     }
 
     public List<ProcessDefinition> getProcessDefinitions() {

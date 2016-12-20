@@ -6,8 +6,6 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.inject.Inject;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeansException;
@@ -68,7 +66,6 @@ public class SpringUrlListFactory implements FactoryBean<List<URL>>, Application
         return resources;
     }
 
-    @Inject
     public void setResources(List<String> resources) {
         this.resources = resources;
     }

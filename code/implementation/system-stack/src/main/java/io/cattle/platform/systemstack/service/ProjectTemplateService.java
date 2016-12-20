@@ -148,10 +148,6 @@ public class ProjectTemplateService implements InitializationTask, Task {
     }
 
     @Override
-    public void stop() {
-    }
-
-    @Override
     public String getName() {
         return "project.template.reload";
     }

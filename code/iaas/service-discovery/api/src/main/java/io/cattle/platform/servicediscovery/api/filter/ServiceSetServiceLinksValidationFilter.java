@@ -15,7 +15,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 import javax.inject.Inject;
+import javax.inject.Named;
 
+@Named
 public class ServiceSetServiceLinksValidationFilter extends AbstractDefaultResourceManagerFilter {
 
     @Inject

@@ -3,6 +3,17 @@ package io.cattle.platform.core.dao.impl;
 import static io.cattle.platform.core.model.tables.DynamicSchemaRoleTable.*;
 import static io.cattle.platform.core.model.tables.DynamicSchemaTable.*;
 
+import io.cattle.platform.core.addon.DynamicSchemaWithRole;
+import io.cattle.platform.core.cache.DBCacheManager;
+import io.cattle.platform.core.constants.CommonStatesConstants;
+import io.cattle.platform.core.dao.DynamicSchemaDao;
+import io.cattle.platform.core.model.DynamicSchema;
+import io.cattle.platform.core.model.tables.records.DynamicSchemaRecord;
+import io.cattle.platform.core.model.tables.records.DynamicSchemaRoleRecord;
+import io.cattle.platform.db.jooq.dao.impl.AbstractJooqDao;
+import io.cattle.platform.util.type.CollectionUtils;
+import io.github.ibuildthecloud.gdapi.util.TypeUtils;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -11,6 +22,7 @@ import java.util.concurrent.TimeUnit;
 
 import javax.annotation.PostConstruct;
 import javax.inject.Inject;
+import javax.inject.Named;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
@@ -25,17 +37,7 @@ import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 
-import io.cattle.platform.core.addon.DynamicSchemaWithRole;
-import io.cattle.platform.core.cache.DBCacheManager;
-import io.cattle.platform.core.constants.CommonStatesConstants;
-import io.cattle.platform.core.dao.DynamicSchemaDao;
-import io.cattle.platform.core.model.DynamicSchema;
-import io.cattle.platform.core.model.tables.records.DynamicSchemaRecord;
-import io.cattle.platform.core.model.tables.records.DynamicSchemaRoleRecord;
-import io.cattle.platform.db.jooq.dao.impl.AbstractJooqDao;
-import io.cattle.platform.util.type.CollectionUtils;
-import io.github.ibuildthecloud.gdapi.util.TypeUtils;
-
+@Named
 public class DynamicSchemaDaoImpl extends AbstractJooqDao implements DynamicSchemaDao {
 
     private static final Logger log = LoggerFactory.getLogger(DynamicSchemaDaoImpl.class);

@@ -500,10 +500,6 @@ public abstract class AbstractObjectResourceManager extends AbstractBaseResource
     }
 
     @Override
-    public void stop() {
-    }
-
-    @Override
     protected Object collectionActionInternal(Object resources, ApiRequest request) {
         return null;
     }

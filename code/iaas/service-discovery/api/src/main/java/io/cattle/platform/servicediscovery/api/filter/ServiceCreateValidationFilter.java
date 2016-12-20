@@ -1,6 +1,7 @@
 package io.cattle.platform.servicediscovery.api.filter;
 
 import static io.cattle.platform.core.model.tables.ServiceTable.*;
+
 import io.cattle.platform.archaius.util.ArchaiusUtil;
 import io.cattle.platform.core.addon.PortRule;
 import io.cattle.platform.core.addon.ScalePolicy;
@@ -35,11 +36,13 @@ import java.util.Map;
 import java.util.Set;
 
 import javax.inject.Inject;
+import javax.inject.Named;
 
 import org.apache.commons.lang3.StringUtils;
 
 import com.netflix.config.DynamicStringProperty;
 
+@Named
 public class ServiceCreateValidationFilter extends AbstractDefaultResourceManagerFilter {
 
     @Inject
@@ -85,18 +88,18 @@ public class ServiceCreateValidationFilter extends AbstractDefaultResourceManage
         request = validateAndSetImage(request, service, type);
 
         validatePorts(service, type, request);
-        
+
         validateScalePolicy(service, request, false);
 
         request = setServiceIndexStrategy(type, request);
 
         request = setLBServiceEnvVarsAndHealthcheck(type, service, request);
-        
+
         validateLbConfig(request, type);
 
         return super.create(type, request, next);
     }
-    
+
     @SuppressWarnings("unchecked")
     public void validateLbConfig(ApiRequest request, String type) {
         // add lb information to the metadata
@@ -206,7 +209,7 @@ public class ServiceCreateValidationFilter extends AbstractDefaultResourceManage
             }
         }
     }
-    
+
     protected void validateScalePolicy(Service service, ApiRequest request, boolean forUpdate) {
         Integer scale = DataUtils.getFieldFromRequest(request,
                 ServiceConstants.FIELD_SCALE,
@@ -327,10 +330,10 @@ public class ServiceCreateValidationFilter extends AbstractDefaultResourceManage
     }
 
     protected void validateIpsHostName(ApiRequest request) {
-        
+
         List<?> externalIps = DataUtils.getFieldFromRequest(request, ServiceConstants.FIELD_EXTERNALIPS,
                 List.class);
-        
+
         String hostName = DataUtils.getFieldFromRequest(request, ServiceConstants.FIELD_HOSTNAME,
                 String.class);
 
@@ -343,7 +346,7 @@ public class ServiceCreateValidationFilter extends AbstractDefaultResourceManage
                             + ServiceConstants.FIELD_HOSTNAME + " are mutually exclusive");
         }
     }
-    
+
     @Override
     public Object update(String type, String id, ApiRequest request, ResourceManager next) {
         Service service = objectManager.loadResource(Service.class, id);
@@ -390,7 +393,7 @@ public class ServiceCreateValidationFilter extends AbstractDefaultResourceManage
         Map<String, Object> data = CollectionUtils.toMap(request.getRequestObject());
         List<Map<String, Object>> allLaunchConfigs = new ArrayList<>();
         Object primaryLaunchConfig = data.get(ServiceConstants.FIELD_LAUNCH_CONFIG);
-                
+
         if (primaryLaunchConfig != null) {
             // remove the name from launchConfig
             String primaryName = ((Map<String, String>) primaryLaunchConfig).get("name");
@@ -402,7 +405,7 @@ public class ServiceCreateValidationFilter extends AbstractDefaultResourceManage
 
         Object secondaryLaunchConfigs = data
                 .get(ServiceConstants.FIELD_SECONDARY_LAUNCH_CONFIGS);
-                
+
         if (secondaryLaunchConfigs != null) {
             allLaunchConfigs.addAll((List<Map<String, Object>>) secondaryLaunchConfigs);
         }

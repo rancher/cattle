@@ -271,7 +271,7 @@ public class JooqObjectManager extends AbstractObjectManager {
         }
 
         recordObject.attach(getConfiguration());
-        return (List<T>) recordObject.fetchChildren((ForeignKey) foreignKey);
+        return recordObject.fetchChildren((ForeignKey) foreignKey);
     }
 
     @Override
@@ -480,7 +480,6 @@ public class JooqObjectManager extends AbstractObjectManager {
         return lockingConfiguration;
     }
 
-    @Inject
     public void setLockingConfiguration(Configuration lockingConfiguration) {
         this.lockingConfiguration = lockingConfiguration;
     }

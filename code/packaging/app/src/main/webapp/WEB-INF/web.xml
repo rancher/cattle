@@ -3,12 +3,28 @@
     xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_3_1.xsd"
     version="3.1" metadata-complete="true" >
 
-	<listener>
-		<listener-class>io.cattle.platform.context.WebContextLoaderListener</listener-class>
-	</listener>
+    <context-param>
+        <param-name>contextClass</param-name>
+        <param-value>
+            org.springframework.web.context.support.AnnotationConfigWebApplicationContext
+        </param-value>
+    </context-param>
+
+    <context-param>
+        <param-name>contextConfigLocation</param-name>
+        <param-value>io.cattle.platform.app.AppConfig</param-value>
+    </context-param>
+
+   <listener>
+        <listener-class>org.springframework.web.context.ContextLoaderListener</listener-class>
+    </listener>
 
     <listener>
         <listener-class>com.ryantenney.metrics.spring.servlets.MetricsServletsContextListener</listener-class>
+    </listener>
+
+   <listener>
+        <listener-class>io.cattle.platform.spring.web.StartupListener</listener-class>
     </listener>
 
     <filter>

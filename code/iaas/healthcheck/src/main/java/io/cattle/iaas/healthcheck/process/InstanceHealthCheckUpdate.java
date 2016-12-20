@@ -1,6 +1,7 @@
 package io.cattle.iaas.healthcheck.process;
 
-import static io.cattle.platform.core.model.tables.InstanceTable.INSTANCE;
+import static io.cattle.platform.core.model.tables.InstanceTable.*;
+
 import io.cattle.platform.core.constants.HealthcheckConstants;
 import io.cattle.platform.engine.handler.HandlerResult;
 import io.cattle.platform.engine.handler.ProcessPostListener;
@@ -10,6 +11,9 @@ import io.cattle.platform.process.common.handler.AbstractObjectProcessLogic;
 
 import java.util.Date;
 
+import javax.inject.Named;
+
+@Named
 public class InstanceHealthCheckUpdate extends AbstractObjectProcessLogic implements ProcessPostListener {
 
     @Override

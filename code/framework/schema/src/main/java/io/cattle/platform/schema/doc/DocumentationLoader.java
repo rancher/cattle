@@ -43,7 +43,6 @@ public class DocumentationLoader {
         return resources;
     }
 
-    @Inject
     public void setResources(List<URL> resources) {
         this.resources = resources;
     }

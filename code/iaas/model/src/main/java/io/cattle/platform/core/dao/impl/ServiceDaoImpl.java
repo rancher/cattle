@@ -40,6 +40,7 @@ import java.util.List;
 import java.util.Map;
 
 import javax.inject.Inject;
+import javax.inject.Named;
 
 import org.jooq.Record;
 import org.jooq.Record2;
@@ -47,6 +48,7 @@ import org.jooq.Record3;
 import org.jooq.Record6;
 import org.jooq.RecordHandler;
 
+@Named
 public class ServiceDaoImpl extends AbstractJooqDao implements ServiceDao {
 
     @Inject

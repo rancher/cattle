@@ -198,10 +198,6 @@ public class DefaultProcessManager implements ProcessManager, InitializationTask
         }, EXECUTION_DELAY.get(), EXECUTION_DELAY.get(), TimeUnit.MILLISECONDS);
     }
 
-    @Override
-    public void stop() {
-    }
-
     public ProcessRecordDao getProcessRecordDao() {
         return processRecordDao;
     }

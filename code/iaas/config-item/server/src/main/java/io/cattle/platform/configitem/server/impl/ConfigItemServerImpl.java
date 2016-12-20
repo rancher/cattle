@@ -103,10 +103,6 @@ public class ConfigItemServerImpl implements ConfigItemServer, InitializationTas
     }
 
     @Override
-    public void stop() {
-    }
-
-    @Override
     public void syncSourceVersion() {
         syncSourceVersion(false);
     }

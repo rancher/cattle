@@ -1,6 +1,7 @@
 package io.cattle.platform.register.process;
 
 import static io.cattle.platform.core.model.tables.CredentialTable.*;
+
 import io.cattle.platform.archaius.util.ArchaiusUtil;
 import io.cattle.platform.core.dao.GenericResourceDao;
 import io.cattle.platform.core.model.Account;
@@ -13,9 +14,11 @@ import io.cattle.platform.process.common.handler.AbstractObjectProcessLogic;
 import io.cattle.platform.register.util.RegisterConstants;
 
 import javax.inject.Inject;
+import javax.inject.Named;
 
 import com.netflix.config.DynamicStringListProperty;
 
+@Named
 public class RegisterTokenAccountCreate extends AbstractObjectProcessLogic implements ProcessPostListener {
 
     public static final DynamicStringListProperty ACCOUNT_KINDS = ArchaiusUtil.getList("process.account.create.register.token.account.kinds");

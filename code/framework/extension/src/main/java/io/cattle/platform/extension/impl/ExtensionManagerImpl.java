@@ -104,10 +104,6 @@ public class ExtensionManagerImpl implements ExtensionManager, InitializationTas
         return list;
     }
 
-    public synchronized void addObject(String key, Class<?> clz, Object obj) {
-        addObject(key, clz, obj, NamedUtils.getName(obj));
-    }
-
     public synchronized void addObject(String key, Class<?> clz, Object obj, String name) {
         Class<?> existing = keyToType.get(key);
         if (existing == null) {
@@ -173,10 +169,6 @@ public class ExtensionManagerImpl implements ExtensionManager, InitializationTas
     public void reset() {
         started = false;
         start();
-    }
-
-    @Override
-    public synchronized void stop() {
     }
 
     protected synchronized List<Object> getList(String key) {

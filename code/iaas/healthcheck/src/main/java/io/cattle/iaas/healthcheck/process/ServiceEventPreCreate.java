@@ -10,6 +10,9 @@ import io.cattle.platform.object.meta.ObjectMetaDataManager;
 import io.cattle.platform.process.common.handler.AbstractObjectProcessLogic;
 import io.cattle.platform.util.type.Priority;
 
+import javax.inject.Named;
+
+@Named
 public class ServiceEventPreCreate extends AbstractObjectProcessLogic implements ProcessPreListener, Priority {
 
     @Override

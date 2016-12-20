@@ -1,6 +1,7 @@
 package io.cattle.platform.docker.machine.launch;
 
 import static io.cattle.platform.core.model.tables.MachineDriverTable.*;
+
 import io.cattle.platform.archaius.util.ArchaiusUtil;
 import io.cattle.platform.core.model.MachineDriver;
 import io.cattle.platform.core.model.tables.records.MachineDriverRecord;
@@ -85,11 +86,11 @@ public class MachineDriverLoader implements InitializationTask {
                 } finally {
                     IOUtils.closeQuietly(in);
                 }
-                
+
                 if (dc.getDrivers() == null || dc.getDrivers().isEmpty()) {
                     return;
                 }
-                
+
                 List<MachineDriver> driverList = objectManager.find(MachineDriver.class, MACHINE_DRIVER.REMOVED, (Object)null);
                 Map<String, MachineDriver> existingDrivers = new HashMap<>();
                 for (MachineDriver d : driverList) {
@@ -119,10 +120,6 @@ public class MachineDriverLoader implements InitializationTask {
         });
     }
 
-    @Override
-    public void stop() {
-        // Nothing to stop
-    }
 }
 
 class DriverConfig {

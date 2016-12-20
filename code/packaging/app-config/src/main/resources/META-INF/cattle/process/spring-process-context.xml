@@ -17,12 +17,9 @@
 
     <context:component-scan base-package="io.cattle.platform.process" />
 
-    <bean class="io.cattle.platform.process.progress.ProcessProgressImpl" />
     <bean class="io.cattle.platform.process.common.handler.AgentBasedProcessHandler" />
     <bean class="io.cattle.platform.process.common.handler.EventBasedProcessHandler" />
-    <bean class="io.cattle.platform.process.agent.AgentHostStateUpdate" >
-        <property name="processDefinitions" value="#{extensionManager.list('process.definition')}" />
-    </bean>
+    <bean class="io.cattle.platform.process.agent.AgentHostStateUpdate" />
 
     <bean class="io.cattle.platform.process.common.handler.AgentBasedProcessHandler"
         p:reportProgress="true"
@@ -465,7 +462,7 @@
     <process:process name="healthcheckinstance.create" resourceType="healthcheckInstance" start="requested" transitioning="activating" done="active" />
     <process:process name="healthcheckinstance.remove" resourceType="healthcheckInstance" start="active,activating" transitioning="removing" done="removed" />
     
-    <!-- Instnace Healthcheck/Host map -->
+    <!-- Instance Healthcheck/Host map -->
     <process:process name="healthcheckinstancehostmap.create" resourceType="healthcheckInstanceHostMap" start="requested" transitioning="activating" done="active" />
     <process:process name="healthcheckinstancehostmap.remove" resourceType="healthcheckInstanceHostMap" start="active,activating" transitioning="removing" done="removed" />
 
@@ -558,8 +555,6 @@
     <process:defaultProcesses resourceType="externalHandlerExternalHandlerProcessMap" />
 
     <bean class="io.cattle.platform.extension.dynamic.process.ExternalHandlerActivate" />
-
-    <extension:discover class="io.cattle.platform.engine.process.ProcessDefinition" />
 
     <bean class="io.cattle.platform.vm.process.VirtualMachineMetadata" />
     <bean class="io.cattle.platform.vm.process.VirtualMachinePreCreate" />

@@ -19,6 +19,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
+import javax.annotation.PostConstruct;
 import javax.inject.Inject;
 import javax.inject.Named;
 
@@ -35,16 +36,17 @@ public class FileSchemaFactory extends AbstractSchemaFactory implements Initiali
     Map<String, Class<?>> schemaClasses = new HashMap<>();
     List<Schema> schemas = new ArrayList<>();
     boolean init;
-    
+
+    @Override
     public synchronized void start() {
         if (init) {
             return;
         }
-        
+
         if (schemaFactory instanceof SubSchemaFactory) {
             ((SubSchemaFactory) schemaFactory).init();
         }
-        
+
         ClassLoader cl = Thread.currentThread().getContextClassLoader();
         try(InputStream is = cl.getResourceAsStream(file)) {
             ObjectInputStream ois = new ObjectInputStream(is);
@@ -66,14 +68,17 @@ public class FileSchemaFactory extends AbstractSchemaFactory implements Initiali
         } catch (ClassNotFoundException e) {
             throw new IllegalStateException(e);
         }
-        
+
+        init = true;
+    }
+
+    @PostConstruct
+    protected void init() {
         if (this.id == null) {
             this.id = "v1-" + StringUtils.substringAfterLast(file, "/").split("[.]")[0];
         }
-        
-        init = true;
     }
-    
+
     protected void copyAccessors(Schema schema) {
         SchemaFactory parentSchemaFactory = schemaFactory;
         Class<?> clz =  parentSchemaFactory.getSchemaClass(schema.getId());
@@ -82,7 +87,7 @@ public class FileSchemaFactory extends AbstractSchemaFactory implements Initiali
         }
 
         schemaClasses.put(schema.getId().toLowerCase(), clz);
-        
+
         Schema parentSchema = parentSchemaFactory.getSchema(clz);
         for (Map.Entry<String, Field> entry : schema.getResourceFields().entrySet()) {
             ((FieldImpl) entry.getValue()).setName(entry.getKey());
@@ -92,10 +97,6 @@ public class FileSchemaFactory extends AbstractSchemaFactory implements Initiali
             }
             ((FieldImpl) entry.getValue()).setReadMethod(((FieldImpl) parentField).getReadMethod());
         }
-    }
-    
-    public String getName() {
-        return getId();
     }
 
     public String getFile() {
@@ -123,7 +124,7 @@ public class FileSchemaFactory extends AbstractSchemaFactory implements Initiali
         }
         return schemaMap.get(type.toLowerCase());
     }
-    
+
     @Override
     public Schema getSchema(Class<?> clz) {
         Schema s = schemaFactory.getSchema(clz);
@@ -156,10 +157,6 @@ public class FileSchemaFactory extends AbstractSchemaFactory implements Initiali
 
     public void setSchemaFactory(SchemaFactory schemaFactory) {
         this.schemaFactory = schemaFactory;
-    }
-
-    @Override
-    public void stop() {
     }
 
 }

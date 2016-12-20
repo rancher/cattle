@@ -83,6 +83,10 @@ public abstract class AbstractObjectManager implements ObjectManager {
     }
 
     protected <T> T callLifeCycleHandlers(LifeCycleEvent event, T instance, Class<T> clz, Map<String, Object> properties) {
+        if (lifeCycleHandlers == null) {
+            return instance;
+        }
+
         for (ObjectLifeCycleHandler handler : lifeCycleHandlers) {
             instance = handler.onEvent(event, instance, clz, properties);
         }
@@ -221,7 +225,6 @@ public abstract class AbstractObjectManager implements ObjectManager {
         return schemaFactory;
     }
 
-    @Inject
     public void setSchemaFactory(SchemaFactory schemaFactory) {
         this.schemaFactory = schemaFactory;
     }
@@ -232,14 +235,13 @@ public abstract class AbstractObjectManager implements ObjectManager {
 
     @Inject
     public void setPostInitHandlers(List<ObjectPostInstantiationHandler> postInitHandlers) {
-        this.postInitHandlers = postInitHandlers;
+        this.postInitHandlers = CollectionUtils.orderList(ObjectPostInstantiationHandler.class, postInitHandlers);
     }
 
     public List<ObjectLifeCycleHandler> getLifeCycleHandlers() {
         return lifeCycleHandlers;
     }
 
-    @Inject
     public void setLifeCycleHandlers(List<ObjectLifeCycleHandler> lifeCycleHandlers) {
         this.lifeCycleHandlers = lifeCycleHandlers;
     }

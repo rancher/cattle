@@ -13,7 +13,9 @@ import io.cattle.platform.engine.process.ProcessState;
 import io.cattle.platform.process.common.handler.AbstractObjectProcessLogic;
 
 import javax.inject.Inject;
+import javax.inject.Named;
 
+@Named
 public class AgentInstanceInstanceCreate extends AbstractObjectProcessLogic implements ProcessPreListener {
 
     @Inject

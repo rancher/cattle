@@ -4,6 +4,7 @@ import static io.cattle.platform.core.model.tables.CertificateTable.*;
 import static io.cattle.platform.core.model.tables.ServiceConsumeMapTable.*;
 import static io.cattle.platform.core.model.tables.ServiceTable.*;
 import static io.cattle.platform.core.model.tables.StackTable.*;
+
 import io.cattle.platform.core.addon.HaproxyConfig;
 import io.cattle.platform.core.addon.LbConfig;
 import io.cattle.platform.core.addon.LoadBalancerCookieStickinessPolicy;
@@ -34,9 +35,11 @@ import java.util.List;
 import java.util.Map;
 
 import javax.inject.Inject;
+import javax.inject.Named;
 
 import org.apache.commons.lang3.StringUtils;
 
+@Named
 public class LoadBalancerInfoDaoImpl implements LoadBalancerInfoDao {
     @Inject
     ObjectManager objectManager;
@@ -67,7 +70,7 @@ public class LoadBalancerInfoDaoImpl implements LoadBalancerInfoDao {
                 portDefs.put(port, false);
             }
         }
-        
+
         List<String> sslPorts = getLabeledPorts(launchConfig, ServiceConstants.LABEL_LB_SSL_PORTS);
         List<String> proxyProtocolPorts = getLabeledPorts(launchConfig,
                 ServiceConstants.LABEL_LB_PROXY_PORTS);
@@ -105,7 +108,7 @@ public class LoadBalancerInfoDaoImpl implements LoadBalancerInfoDao {
                     privatePort = spec.getPublicPort();
                 }
             }
-            
+
             String sourceProtocol = protocol;
             if (sslPorts.contains(privatePort.toString())) {
                 if (protocol.equals("tcp")) {

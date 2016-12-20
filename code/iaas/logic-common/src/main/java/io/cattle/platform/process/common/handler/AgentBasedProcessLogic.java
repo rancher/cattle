@@ -338,10 +338,6 @@ public class AgentBasedProcessLogic extends AbstractObjectProcessLogic implement
         serializer = buildSerializer(dataType);
     }
 
-    @Override
-    public void stop() {
-    }
-
     public String getConfigPrefix() {
         return configPrefix;
     }

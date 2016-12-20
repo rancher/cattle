@@ -1,25 +1,31 @@
 package io.cattle.platform.iaas.api.auth.integration.internal.rancher;
 
 import io.cattle.platform.core.model.Account;
-import io.cattle.platform.iaas.api.auth.SecurityConstants;
 import io.cattle.platform.iaas.api.auth.AbstractTokenUtil;
+import io.cattle.platform.iaas.api.auth.SecurityConstants;
 import io.cattle.platform.iaas.api.auth.integration.external.ExternalServiceTokenUtil;
-import io.cattle.platform.iaas.api.auth.integration.interfaces.TokenUtil;
 import io.cattle.platform.iaas.api.auth.integration.interfaces.AccountLookup;
+import io.cattle.platform.iaas.api.auth.integration.interfaces.TokenUtil;
+import io.cattle.platform.util.type.NamedUtils;
 import io.cattle.platform.util.type.Priority;
 import io.github.ibuildthecloud.gdapi.exception.ClientVisibleException;
 import io.github.ibuildthecloud.gdapi.request.ApiRequest;
 import io.github.ibuildthecloud.gdapi.util.ResponseCodes;
 
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
+import javax.annotation.PostConstruct;
 import javax.inject.Inject;
 
 import org.apache.commons.lang3.StringUtils;
 
 public class TokenAuthLookup implements AccountLookup, Priority {
 
-    Map<String, TokenUtil> tokenUtilsMap;
+    Map<String, TokenUtil> tokenUtilsMap = new HashMap<String, TokenUtil>();
+    @Inject
+    List<TokenUtil> tokenUtils;
 
     @Inject
     ExternalServiceTokenUtil externalTokenUtil;
@@ -27,6 +33,13 @@ public class TokenAuthLookup implements AccountLookup, Priority {
     @Override
     public int getPriority() {
         return Priority.PRE;
+    }
+
+    @PostConstruct
+    public void init() {
+        for (TokenUtil tu : tokenUtils) {
+            tokenUtilsMap.put(NamedUtils.getName(tu), tu);
+        }
     }
 
     @Override
@@ -78,12 +91,4 @@ public class TokenAuthLookup implements AccountLookup, Priority {
                 && !SecurityConstants.NO_PROVIDER.equalsIgnoreCase(SecurityConstants.AUTH_PROVIDER.get());
     }
 
-    public Map<String, TokenUtil> getTokenUtilsMap() {
-        return tokenUtilsMap;
-    }
-
-    @Inject
-    public void setTokenUtilsMap(Map<String, TokenUtil> tokenUtilsMap) {
-        this.tokenUtilsMap = tokenUtilsMap;
-    }
 }

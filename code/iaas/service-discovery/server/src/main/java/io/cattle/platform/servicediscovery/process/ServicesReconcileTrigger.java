@@ -17,7 +17,9 @@ import java.util.Collection;
 import java.util.List;
 
 import javax.inject.Inject;
+import javax.inject.Named;
 
+@Named
 public class ServicesReconcileTrigger extends AbstractObjectProcessHandler {
 
     @Inject

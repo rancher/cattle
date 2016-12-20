@@ -14,7 +14,9 @@ import io.github.ibuildthecloud.gdapi.validation.ValidationErrorCodes;
 import java.util.Map;
 
 import javax.inject.Inject;
+import javax.inject.Named;
 
+@Named
 public class SelectorServiceCreateValidationFilter extends AbstractDefaultResourceManagerFilter {
     @Inject
     ObjectManager objManager;

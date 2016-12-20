@@ -23,6 +23,7 @@ public class AgentRemove extends AbstractObjectProcessHandler {
     private static final Logger log = LoggerFactory.getLogger(AgentRemove.class);
 
     @Inject
+    @Named("CoreSchemaFactory")
     SchemaFactory schemaFactory;
 
     @Override

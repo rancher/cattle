@@ -10,8 +10,6 @@ import java.util.concurrent.DelayQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 
-import javax.inject.Inject;
-
 import org.apache.cloudstack.managed.context.NoExceptionRunnable;
 
 import com.google.common.util.concurrent.SettableFuture;
@@ -86,7 +84,6 @@ public class RetryTimeoutServiceImpl implements RetryTimeoutService {
         return executorService;
     }
 
-    @Inject
     public void setExecutorService(ExecutorService executorService) {
         this.executorService = executorService;
     }

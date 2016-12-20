@@ -44,12 +44,14 @@ import java.util.List;
 import java.util.Map;
 
 import javax.inject.Inject;
+import javax.inject.Named;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 
 import com.netflix.config.DynamicStringListProperty;
 
+@Named
 public class NetworkDaoImpl extends AbstractJooqDao implements NetworkDao {
     DynamicStringListProperty DOCKER_VIP_SUBNET_CIDR = ArchaiusUtil.getList("docker.vip.subnet.cidr");
 

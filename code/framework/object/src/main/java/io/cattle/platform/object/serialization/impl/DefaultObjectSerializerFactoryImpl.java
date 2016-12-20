@@ -45,10 +45,6 @@ public class DefaultObjectSerializerFactoryImpl implements ObjectSerializerFacto
         }
     }
 
-    @Override
-    public void stop() {
-    }
-
     protected Action parseAction(String type, String expression) {
         /* Should use antlr if this gets too complicated */
         Context c = new Context();

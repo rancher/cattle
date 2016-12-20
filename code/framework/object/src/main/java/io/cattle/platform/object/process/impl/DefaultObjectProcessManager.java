@@ -90,7 +90,6 @@ public class DefaultObjectProcessManager implements ObjectProcessManager {
         return schemaFactory;
     }
 
-    @Inject
     public void setSchemaFactory(SchemaFactory schemaFactory) {
         this.schemaFactory = schemaFactory;
     }

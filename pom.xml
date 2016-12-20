@@ -81,7 +81,6 @@
                 <module>code/iaas/ssh-common</module>
                 <module>code/iaas/simple-allocator</module>
                 <module>code/iaas/storage-service</module>
-                <module>code/iaas/system</module>
                 <module>code/iaas/task-jooq</module>
                 <module>code/iaas/service-discovery/server</module>
                 <module>code/iaas/service-discovery/api</module>
@@ -119,7 +118,6 @@
                 <module>code/implementation/vm</module>
                 <module>code/packaging/app</module>
                 <module>code/packaging/app-config</module>
-                <module>code/packaging/app-parent</module>
                 <module>code/packaging/dev</module>
                 <module>code/packaging/meta</module>
             </modules>

@@ -1,5 +1,6 @@
 package io.github.ibuildthecloud.gdapi.servlet;
 
+import io.cattle.platform.util.type.CollectionUtils;
 import io.github.ibuildthecloud.gdapi.context.ApiContext;
 import io.github.ibuildthecloud.gdapi.factory.SchemaFactory;
 import io.github.ibuildthecloud.gdapi.id.IdFormatter;
@@ -165,7 +166,7 @@ public class ApiRequestFilterDelegate {
 
     @Inject
     public void setHandlers(List<ApiRequestHandler> handlers) {
-        this.handlers = handlers;
+        this.handlers = CollectionUtils.orderList(ApiRequestHandler.class, handlers);
     }
 
     public IdFormatter getIdFormatter() {
