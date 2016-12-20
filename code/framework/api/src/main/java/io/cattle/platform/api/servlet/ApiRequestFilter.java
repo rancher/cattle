@@ -2,6 +2,7 @@ package io.cattle.platform.api.servlet;
 
 import io.cattle.platform.archaius.util.ArchaiusUtil;
 import io.cattle.platform.metrics.util.MetricsUtil;
+import io.cattle.platform.spring.web.SpringFilter;
 import io.cattle.platform.util.exception.ExceptionUtils;
 import io.github.ibuildthecloud.gdapi.context.ApiContext;
 import io.github.ibuildthecloud.gdapi.request.ApiRequest;
@@ -25,16 +26,14 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.cloudstack.managed.context.ManagedContextRunnable;
-import org.apache.cloudstack.spring.module.web.ModuleBasedFilter;
 import org.apache.commons.lang3.StringUtils;
 
 import com.codahale.metrics.Timer;
 import com.netflix.config.DynamicStringListProperty;
 import com.netflix.config.DynamicStringProperty;
 
-public class ApiRequestFilter extends ModuleBasedFilter {
+public class ApiRequestFilter extends SpringFilter {
 
-    private static final String DEFAULT_MODULE = "api-server";
     private static final DynamicStringListProperty IGNORE = ArchaiusUtil.getList("api.ignore.paths");
     private static final DynamicStringProperty PL_SETTING = ArchaiusUtil.getString("ui.pl");
     private static final String PL = "PL";
@@ -144,12 +143,6 @@ public class ApiRequestFilter extends ModuleBasedFilter {
         }
     }
 
-    @Override
-    protected String getModule(FilterConfig filterConfig) {
-        String result = super.getModule(filterConfig);
-        return result == null ? DEFAULT_MODULE : result;
-    }
-
     protected boolean isUIRequest(HttpServletRequest request, String path) {
         path = path.replaceAll("//+", "/");
 
@@ -210,9 +203,9 @@ public class ApiRequestFilter extends ModuleBasedFilter {
             plCookie = new Cookie(PL, PL_SETTING.getValue());
             plCookie.setPath("/");
             response.addCookie(plCookie);
-        } 
+        }
     }
-    
+
     private void addDefaultLanguageCookie(HttpServletRequest httpRequest, HttpServletResponse response) {
         Cookie languageCookie = null;
         if(!StringUtils.isNotBlank(LOCALIZATION.get()))

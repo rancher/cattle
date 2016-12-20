@@ -1,6 +1,7 @@
 package io.cattle.platform.process.agent;
 
 import static io.cattle.platform.core.model.tables.HostTable.*;
+
 import io.cattle.platform.core.constants.HostConstants;
 import io.cattle.platform.core.model.Agent;
 import io.cattle.platform.core.model.Host;
@@ -24,6 +25,7 @@ import java.util.List;
 import java.util.Map;
 
 import javax.inject.Inject;
+import javax.inject.Named;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -33,6 +35,7 @@ public class AgentHostStateUpdate extends AbstractObjectProcessPrePostListener i
     private static final Logger log = LoggerFactory.getLogger(AgentHostStateUpdate.class);
 
     @Inject
+    @Named("CoreSchemaFactory")
     SchemaFactory schemaFactory;
 
     @Inject
@@ -111,10 +114,6 @@ public class AgentHostStateUpdate extends AbstractObjectProcessPrePostListener i
     }
 
     @Override
-    public void stop() {
-    }
-
-    @Override
     public int getPriority() {
         return Integer.MAX_VALUE;
     }
@@ -123,6 +122,7 @@ public class AgentHostStateUpdate extends AbstractObjectProcessPrePostListener i
         return processDefinitions;
     }
 
+    @Inject
     public void setProcessDefinitions(List<ProcessDefinition> processDefinitions) {
         this.processDefinitions = processDefinitions;
     }

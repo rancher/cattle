@@ -7,6 +7,9 @@ import io.github.ibuildthecloud.gdapi.model.Resource;
 import io.github.ibuildthecloud.gdapi.request.ApiRequest;
 import io.github.ibuildthecloud.gdapi.response.ResourceOutputFilter;
 
+import javax.inject.Named;
+
+@Named
 public class ServiceDiscoveryStackOutputFilter implements ResourceOutputFilter {
     @Override
     public Resource filter(ApiRequest request, Object original, Resource converted) {

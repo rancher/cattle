@@ -4,6 +4,4 @@ public interface InitializationTask {
 
     public void start();
 
-    public void stop();
-
 }

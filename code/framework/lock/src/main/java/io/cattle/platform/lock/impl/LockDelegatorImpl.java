@@ -70,7 +70,6 @@ public class LockDelegatorImpl implements LockDelegator, InitializationTask {
         });
     }
 
-    @Override
     public void stop() {
         shutdown = true;
     }
@@ -178,7 +177,6 @@ public class LockDelegatorImpl implements LockDelegator, InitializationTask {
         return executorService;
     }
 
-    @Inject
     public void setExecutorService(ExecutorService executorService) {
         this.executorService = executorService;
     }

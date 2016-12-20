@@ -421,7 +421,6 @@ public class ConfigUpdatePublisher extends NoExceptionRunnable implements Initia
         executorService.scheduleWithFixedDelay(this, 0, 2, TimeUnit.SECONDS);
     }
 
-    @Override
     public void stop() {
         running = false;
         requests.add(new WorkItem(true));

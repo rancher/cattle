@@ -1,0 +1,525 @@
+<beans xmlns="http://www.springframework.org/schema/beans"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:context="http://www.springframework.org/schema/context"
+    xmlns:metrics="http://www.ryantenney.com/schema/metrics"
+    xmlns:task="http://www.springframework.org/schema/task"
+    xmlns:management="http://www.xebia.fr/schema/xebia-management-extras"
+    xmlns:aop="http://www.springframework.org/schema/aop"
+    xmlns:tx="http://www.springframework.org/schema/tx"
+    xsi:schemaLocation="
+        http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-3.2.xsd
+        http://www.springframework.org/schema/task http://www.springframework.org/schema/task/spring-task-3.2.xsd
+		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.2.xsd
+        http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.2.xsd
+        http://www.xebia.fr/schema/xebia-management-extras http://www.xebia.fr/schema/management/xebia-management-extras.xsd
+        http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx.xsd
+        http://www.ryantenney.com/schema/metrics http://www.ryantenney.com/schema/metrics/metrics-3.0.xsd">
+
+    <metrics:annotation-driven 
+        metric-registry="MetricsRegistry"
+        health-check-registry="HealthCheckRegistry"/>
+
+    <task:scheduler id="CoreTaskScheduler" pool-size="2" />
+
+    <context:mbean-export />
+
+    <management:executor-service
+        id="PriorityProcessExecutorService"
+        keep-alive="120"
+        pool-size="10-20"
+        queue-capacity="100"
+        />
+
+    <management:executor-service
+        id="AllocatorExecutorService"
+        keep-alive="120"
+        pool-size="5"
+        />
+
+    <management:executor-service
+        id="ProcessExecutorService"
+        keep-alive="1200"
+        pool-size="16-20"
+        queue-capacity="1000"
+        rejection-policy="DISCARD"
+        />
+
+    <management:executor-service 
+        id="CoreExecutorService"
+        keep-alive="120"
+        pool-size="15"
+        />
+
+    <!--  This is for very short lived tasks, no blocking -->
+    <management:executor-service 
+        id="EventExecutorService"
+        keep-alive="120"
+        pool-size="5"
+        />
+
+    <tx:advice id="AgentInstanceDaoAdvice" transaction-manager="CoreTransactionManager">
+        <tx:attributes>
+            <tx:method name="createInstanceForProvider" />
+        </tx:attributes>
+    </tx:advice>
+
+    <aop:config>
+        <aop:advisor advice-ref="AgentInstanceDaoAdvice" pointcut="execution(* io.cattle.platform.agent.instance.dao.AgentInstanceDao.*(..))" />
+    </aop:config>
+
+    <task:scheduled-tasks scheduler="CoreTaskScheduler">
+        <task:scheduled ref="RetryTimeoutService" method="retry" fixed-delay="1000" />
+    </task:scheduled-tasks>
+    <tx:advice id="NetworkDaoImplAdvice" transaction-manager="CoreTransactionManager">
+        <tx:attributes>
+            <tx:method name="migrateToNetwork" />
+        </tx:attributes>
+    </tx:advice>
+
+    <tx:advice id="HostDaoImplAdvice" transaction-manager="CoreTransactionManager">
+        <tx:attributes>
+            <tx:method name="createMachineForHost" />
+        </tx:attributes>
+    </tx:advice>
+
+    <tx:advice id="GenericResourceDaoImplAdvice" transaction-manager="CoreTransactionManager">
+        <tx:attributes>
+            <tx:method name="createAndSchedule" />
+            <tx:method name="updateAndSchedule" />
+        </tx:attributes>
+    </tx:advice>
+
+    <tx:advice id="IpAddressDaoImplAdvice" transaction-manager="CoreTransactionManager">
+        <tx:attributes>
+            <tx:method name="mapNewIpAddress" />
+            <tx:method name="assignNewAddress" />
+            <tx:method name="assignAndActivateNewAddress" />
+            <tx:method name="updateIpAddress" />
+        </tx:attributes>
+    </tx:advice>
+
+    <tx:advice id="StoragePoolDaoImplAdvice" transaction-manager="CoreTransactionManager">
+        <tx:attributes>
+            <tx:method name="mapNewPool" />
+            <tx:method name="createStoragePoolHostMap" />
+        </tx:attributes>
+    </tx:advice>
+
+    <tx:advice id="VolumeDaoImplAdvice" transaction-manager="CoreTransactionManager">
+        <tx:attributes>
+            <tx:method name="createVolumeInStoragePool" />
+        </tx:attributes>
+    </tx:advice>
+
+    <aop:config>
+        <aop:advisor advice-ref="GenericResourceDaoImplAdvice"
+            pointcut="execution(* io.cattle.platform.core.dao.GenericResourceDao.*(..))" />
+        <aop:advisor advice-ref="IpAddressDaoImplAdvice"
+            pointcut="execution(* io.cattle.platform.core.dao.IpAddressDao.*(..))" />
+        <aop:advisor advice-ref="StoragePoolDaoImplAdvice"
+            pointcut="execution(* io.cattle.platform.core.dao.StoragePoolDao.*(..))" />
+        <aop:advisor advice-ref="VolumeDaoImplAdvice"
+            pointcut="execution(* io.cattle.platform.core.dao.VolumeDao.*(..))" />
+        <aop:advisor advice-ref="HostDaoImplAdvice"
+            pointcut="execution(* io.cattle.platform.core.dao.HostDao.*(..))" />
+        <aop:advisor advice-ref="NetworkDaoImplAdvice"
+            pointcut="execution(* io.cattle.platform.core.dao.NetworkDao.*(..))" />
+    </aop:config>
+     
+    <tx:advice id="DockerStorageAdvice" transaction-manager="CoreTransactionManager">
+        <tx:attributes>
+            <tx:method name="createExternalStoragePool" />
+            <tx:method name="createImageForInstance" />
+        </tx:attributes>
+    </tx:advice>
+
+    <aop:config>
+        <aop:advisor advice-ref="DockerStorageAdvice" pointcut="execution(* io.cattle.platform.docker.storage.dao.DockerStorageDao.*(..))" />
+    </aop:config>
+
+        <tx:advice id="TransactionDelegateAdvice" transaction-manager="CoreTransactionManager">
+        <tx:attributes>
+            <tx:method name="doInTransaction" />
+        </tx:attributes>
+    </tx:advice>
+
+    <aop:config>
+        <aop:advisor advice-ref="TransactionDelegateAdvice" pointcut="execution(* io.cattle.platform.object.impl.TransactionDelegate.*(..))" />
+    </aop:config>
+     
+         <tx:advice id="RegisterAdvice" transaction-manager="CoreTransactionManager">
+        <tx:attributes>
+            <tx:method name="createAgentForRegistration" />
+        </tx:attributes>
+    </tx:advice>
+
+    <aop:config>
+        <aop:advisor advice-ref="RegisterAdvice" pointcut="execution(* io.cattle.platform.register.dao.RegisterDao.*(..))" />
+    </aop:config>
+
+    <tx:advice id="ServiceMapDaoImplAdvice" transaction-manager="CoreTransactionManager">
+        <tx:attributes>
+            <tx:method name="createServiceInstance" />
+            <tx:method name="createServiceLink" />
+            <tx:method name="createServiceLinks" />
+        </tx:attributes>
+    </tx:advice>
+
+    <aop:config>
+        <aop:advisor advice-ref="ServiceMapDaoImplAdvice" pointcut="execution(* io.cattle.platform.servicediscovery.api.dao.ServiceExposeMapDao.*(..))" />
+        <aop:advisor advice-ref="ServiceMapDaoImplAdvice" pointcut="execution(* io.cattle.platform.servicediscovery.api.dao.ServiceConsumeMapDao.*(..))" />
+    </aop:config>
+
+    <tx:advice id="ImageDaoAdvice" transaction-manager="CoreTransactionManager">
+        <tx:attributes>
+            <tx:method name="persistAndAssociateImage" propagation="REQUIRES_NEW" />
+        </tx:attributes>
+    </tx:advice>
+
+    <aop:config>
+        <aop:advisor advice-ref="ImageDaoAdvice" pointcut="execution(* io.cattle.platform.storage.service.dao.ImageDao.*(..))" />
+    </aop:config>
+    
+    
+    <tx:advice id="AllocatorAdvice" transaction-manager="CoreTransactionManager">
+        <tx:attributes>
+            <tx:method name="recordCandidate" />
+            <tx:method name="releaseAllocation" />
+        </tx:attributes>
+    </tx:advice>
+
+    <aop:config>
+        <aop:advisor advice-ref="AllocatorAdvice" pointcut="execution(* io.cattle.platform.allocator.dao.AllocatorDao.*(..))" />
+    </aop:config>
+
+   <bean class="io.cattle.platform.api.schema.ObjectBasedSubSchemaFactory" depends-on="CoreSchemaFactory" >
+        <property name="id" value="superadmin" />
+        <property name="schemaFactory" ref="CoreSchemaFactory" />
+        <property name="postProcessors">
+            <list>
+                <bean class="io.cattle.platform.schema.processor.AuthOverlayPostProcessor" >
+                    <property name="resources" >
+                        <bean class="io.cattle.platform.spring.resource.SpringUrlListFactory" >
+                            <property name="resources">
+                                <list>
+                                    <value>classpath:schema/super-admin/super-admin-auth.json</value>
+                                    <value>classpath*:schema/super-admin/super-admin-auth.json.d/**/*.json</value>
+                                </list>
+                            </property>
+                        </bean>
+                    </property>
+                </bean>
+            </list>
+        </property>
+    </bean>
+
+    <bean id="AdminSchema" class="io.cattle.platform.api.schema.ObjectBasedSubSchemaFactory" depends-on="CoreSchemaFactory" >
+        <property name="id" value="admin" />
+        <property name="schemaFactory" ref="CoreSchemaFactory" />
+        <property name="postProcessors">
+            <list>
+                <bean class="io.cattle.platform.schema.processor.JsonFileOverlayPostProcessor" >
+                    <property name="path" value="schema/admin" />
+                </bean>
+                <bean class="io.cattle.platform.schema.processor.AuthOverlayPostProcessor" >
+                    <property name="resources" >
+                        <bean class="io.cattle.platform.spring.resource.SpringUrlListFactory" >
+                            <property name="resources">
+                                <list>
+                                    <value>classpath:schema/user/user-auth.json</value>
+                                    <value>classpath*:schema/user/user-auth.json.d/**/*.json</value>
+                                    <value>classpath:schema/admin/admin-auth.json</value>
+                                    <value>classpath*:schema/admin/admin-auth.json.d/**/*.json</value>
+                                </list>
+                            </property>
+                        </bean>
+                    </property>
+                </bean>
+            </list>
+        </property>
+    </bean>
+
+    <bean id="ServiceSchema" class="io.cattle.platform.api.schema.ObjectBasedSubSchemaFactory" depends-on="CoreSchemaFactory" >
+        <property name="id" value="service" />
+        <property name="schemaFactory" ref="CoreSchemaFactory" />
+        <property name="postProcessors">
+            <list>
+                <bean class="io.cattle.platform.schema.processor.JsonFileOverlayPostProcessor" >
+                    <property name="path" value="schema/service" />
+                </bean>
+                <bean class="io.cattle.platform.schema.processor.AuthOverlayPostProcessor" >
+                    <property name="resources" >
+                        <bean class="io.cattle.platform.spring.resource.SpringUrlListFactory" >
+                            <property name="resources">
+                                <list>
+                                    <value>classpath:schema/user/user-auth.json</value>
+                                    <value>classpath*:schema/user/user-auth.json.d/**/*.json</value>
+                                    <value>classpath:schema/admin/admin-auth.json</value>
+                                    <value>classpath*:schema/admin/admin-auth.json.d/**/*.json</value>
+                                    <value>classpath:schema/project/project-auth.json</value>
+                                    <value>classpath*:schema/project/project-auth.json.d/**/*.json</value>
+                                    <value>classpath:schema/service/service-auth.json</value>
+                                    <value>classpath*:schema/service/service-auth.json.d/**/*.json</value>
+                                </list>
+                            </property>
+                        </bean>
+                    </property>
+                </bean>
+            </list>
+        </property>
+    </bean>
+
+    <bean id="Token" class="io.cattle.platform.api.schema.ObjectBasedSubSchemaFactory" depends-on="CoreSchemaFactory" >
+        <property name="id" value="token" />
+        <property name="schemaFactory" ref="CoreSchemaFactory" />
+        <property name="postProcessors">
+            <list>
+                <bean class="io.cattle.platform.schema.processor.JsonFileOverlayPostProcessor" >
+                    <property name="path" value="schema/token" />
+                </bean>
+                <bean class="io.cattle.platform.schema.processor.AuthOverlayPostProcessor" >
+                    <property name="resources" >
+                        <bean class="io.cattle.platform.spring.resource.SpringUrlListFactory" >
+                            <property name="resources">
+                                <list>
+                                    <value>classpath:schema/token/token-auth.json</value>
+                                    <value>classpath*:schema/token/token-auth.json.d/**/*.json</value>
+                                </list>
+                            </property>
+                        </bean>
+                    </property>
+                </bean>
+            </list>
+        </property>
+    </bean>
+
+    <bean id="ReadOnlySchema" class="io.cattle.platform.api.schema.ObjectBasedSubSchemaFactory" depends-on="CoreSchemaFactory" >
+        <property name="id" value="readonly" />
+        <property name="schemaFactory" ref="Project" />
+        <property name="postProcessors">
+            <list>
+                <bean class="io.cattle.platform.schema.processor.NotWritablePostProcessor" />
+                <bean class="io.cattle.platform.schema.processor.AuthOverlayPostProcessor" >
+                    <property name="resources" >
+                        <bean class="io.cattle.platform.spring.resource.SpringUrlListFactory" >
+                            <property name="resources">
+                                <list>
+                                    <value>classpath:schema/read-user/read-user.json</value>
+                                    <value>classpath*:schema/read-user/read-user.json.d/**/*.json</value>
+                                </list>
+                            </property>
+                        </bean>
+                    </property>
+                </bean>
+            </list>
+        </property>
+    </bean>
+
+    <bean id="OwnerSchema" class="io.cattle.platform.api.schema.ObjectBasedSubSchemaFactory" depends-on="CoreSchemaFactory" >
+        <property name="id" value="owner" />
+        <property name="schemaFactory" ref="Project" />
+        <property name="postProcessors">
+            <list>
+                <bean class="io.cattle.platform.schema.processor.AuthOverlayPostProcessor" >
+                    <property name="resources" >
+                        <bean class="io.cattle.platform.spring.resource.SpringUrlListFactory" >
+                            <property name="resources">
+                                <list>
+                                    <value>classpath:schema/owner/owner-auth.json</value>
+                                </list>
+                            </property>
+                        </bean>
+                    </property>
+                </bean>
+            </list>
+        </property>
+    </bean>
+
+    <bean id="MemberSchema" class="io.cattle.platform.api.schema.ObjectBasedSubSchemaFactory" depends-on="CoreSchemaFactory" >
+        <property name="id" value="member" />
+        <property name="schemaFactory" ref="Project" />
+    </bean>
+    <bean id="Restricted" class="io.cattle.platform.api.schema.ObjectBasedSubSchemaFactory" depends-on="CoreSchemaFactory" >
+        <property name="id" value="restricted" />
+        <property name="schemaFactory" ref="Project" />
+        <property name="postProcessors">
+            <list>
+                <bean class="io.cattle.platform.schema.processor.AuthOverlayPostProcessor" >
+                    <property name="resources" >
+                        <bean class="io.cattle.platform.spring.resource.SpringUrlListFactory" >
+                            <property name="resources">
+                                <list>
+                                    <value>classpath:schema/restricted-user/restricted-user.json</value>
+                                    <value>classpath*:schema/restricted-user/restricted-user.json.d/**/*.json</value>
+                                </list>
+                            </property>
+                        </bean>
+                    </property>
+                </bean>
+            </list>
+        </property>
+    </bean>
+
+    <bean id="ReadAdminSchema" class="io.cattle.platform.api.schema.ObjectBasedSubSchemaFactory" depends-on="CoreSchemaFactory" >
+        <property name="id" value="readAdmin" />
+        <property name="schemaFactory" ref="AdminSchema" />
+        <property name="postProcessors">
+            <list>
+                <bean class="io.cattle.platform.schema.processor.NotWritablePostProcessor" />
+                <bean class="io.cattle.platform.schema.processor.JsonFileOverlayPostProcessor" >
+                    <property name="path" value="schema/read-admin" />
+                    <property name="whiteList" value="false" />
+                    <property name="explicitByDefault" value="false" />
+                </bean>
+            </list>
+        </property>
+    </bean>
+
+    <bean id="User" class="io.cattle.platform.api.schema.ObjectBasedSubSchemaFactory" depends-on="CoreSchemaFactory" >
+        <property name="id" value="user" />
+        <property name="schemaFactory" ref="CoreSchemaFactory" />
+        <property name="postProcessors">
+            <list>
+                <bean class="io.cattle.platform.schema.processor.JsonFileOverlayPostProcessor" >
+                    <property name="path" value="schema/user" />
+                </bean>
+                <bean class="io.cattle.platform.schema.processor.AuthOverlayPostProcessor" >
+                    <property name="resources" >
+                        <bean class="io.cattle.platform.spring.resource.SpringUrlListFactory" >
+                            <property name="resources">
+                                <list>
+                                    <value>classpath:schema/user/user-auth.json</value>
+                                    <value>classpath*:schema/user/user-auth.json.d/**/*.json</value>
+                                </list>
+                            </property>
+                        </bean>
+                    </property>
+                </bean>
+            </list>
+        </property>
+    </bean>
+
+    <bean id="Project" class="io.cattle.platform.api.schema.ObjectBasedSubSchemaFactory" depends-on="CoreSchemaFactory" >
+        <property name="id" value="project" />
+        <property name="schemaFactory" ref="CoreSchemaFactory" />
+        <property name="postProcessors">
+            <list>
+                <bean class="io.cattle.platform.schema.processor.JsonFileOverlayPostProcessor" >
+                    <property name="path" value="schema/project" />
+                </bean>
+                <bean class="io.cattle.platform.schema.processor.AuthOverlayPostProcessor" >
+                    <property name="resources" >
+                        <bean class="io.cattle.platform.spring.resource.SpringUrlListFactory" >
+                            <property name="resources">
+                                <list>
+                                    <value>classpath:schema/user/user-auth.json</value>
+                                    <value>classpath*:schema/user/user-auth.json.d/**/*.json</value>
+                                    <value>classpath:schema/project/project-auth.json</value>
+                                    <value>classpath*:schema/project/project-auth.json.d/**/*.json</value>
+                                </list>
+                            </property>
+                        </bean>
+                    </property>
+                </bean>
+            </list>
+        </property>
+    </bean>
+
+     <bean id="ProjectAdmin" class="io.cattle.platform.api.schema.ObjectBasedSubSchemaFactory" depends-on="CoreSchemaFactory" >
+        <property name="id" value="projectadmin" />
+        <property name="schemaFactory" ref="CoreSchemaFactory" />
+        <property name="postProcessors">
+            <list>
+                <bean class="io.cattle.platform.schema.processor.JsonFileOverlayPostProcessor" >
+                    <property name="path" value="schema/projectadmin" />
+                </bean>
+                <bean class="io.cattle.platform.schema.processor.AuthOverlayPostProcessor" >
+                    <property name="resources" >
+                        <bean class="io.cattle.platform.spring.resource.SpringUrlListFactory" >
+                            <property name="resources">
+                                <list>
+                                    <value>classpath:schema/user/user-auth.json</value>
+                                    <value>classpath*:schema/user/user-auth.json.d/**/*.json</value>
+                                    <value>classpath:schema/project/project-auth.json</value>
+                                    <value>classpath*:schema/project/project-auth.json.d/**/*.json</value>
+                                    <value>classpath:schema/projectadmin/projectadmin-auth.json</value>
+                                    <value>classpath*:schema/projectadmin/projectadmin-auth.json.d/**/*.json</value>
+                                </list>
+                            </property>
+                        </bean>
+                    </property>
+                </bean>
+            </list>
+        </property>
+    </bean>
+
+    <bean class="io.cattle.platform.api.schema.ObjectBasedSubSchemaFactory" depends-on="CoreSchemaFactory" >
+        <property name="id" value="agentRegister" />
+        <property name="schemaFactory" ref="CoreSchemaFactory" />
+        <property name="postProcessors">
+            <list>
+                <bean class="io.cattle.platform.schema.processor.NotWritablePostProcessor" />
+                <bean class="io.cattle.platform.schema.processor.JsonFileOverlayPostProcessor" >
+                    <property name="path" value="schema/agent-register" />
+                    <property name="whiteList" value="true" />
+                    <property name="explicitByDefault" value="true" />
+                </bean>
+            </list>
+        </property>
+    </bean>
+
+    <bean class="io.cattle.platform.api.schema.ObjectBasedSubSchemaFactory" depends-on="CoreSchemaFactory" >
+        <property name="id" value="agent" />
+        <property name="schemaFactory" ref="CoreSchemaFactory" />
+        <property name="postProcessors">
+            <list>
+                <bean class="io.cattle.platform.schema.processor.NotWritablePostProcessor" />
+                <bean class="io.cattle.platform.schema.processor.JsonFileOverlayPostProcessor" >
+                    <property name="path" value="schema/agent" />
+                    <property name="whiteList" value="true" />
+                    <property name="explicitByDefault" value="true" />
+                </bean>
+            </list>
+        </property>
+    </bean>
+    
+    <bean id="RegisterSchema" class="io.cattle.platform.api.schema.ObjectBasedSubSchemaFactory" depends-on="CoreSchemaFactory" >
+        <property name="id" value="register" />
+        <property name="schemaFactory" ref="AdminSchema" />
+        <property name="postProcessors">
+            <list>
+                <bean class="io.cattle.platform.schema.processor.JsonFileOverlayPostProcessor" >
+                    <property name="path" value="schema/register" />
+                </bean>
+                <bean class="io.cattle.platform.schema.processor.AuthOverlayPostProcessor" >
+                    <property name="resources" >
+                        <bean class="io.cattle.platform.spring.resource.SpringUrlListFactory" >
+                            <property name="resources">
+                                <list>
+                                    <value>classpath:schema/register/register-auth.json</value>
+                                    <value>classpath*:schema/register/register-auth.json.d/** /*.json</value>
+                                </list>
+                            </property>
+                        </bean>
+                    </property>
+                </bean>
+            </list>
+        </property>
+    </bean>
+    
+    <tx:advice id="ApiDelegateAdvice" transaction-manager="CoreTransactionManager">
+        <tx:attributes>
+            <!--
+                Don't do read only transaction because it will keep a DB connection open for the
+                entire web request, which is not good for /publish and /subscribe
+                <tx:method name="read" isolation="READ_COMMITTED" read-only="true" />
+            -->
+            <tx:method name="write" />
+        </tx:attributes>
+    </tx:advice>
+
+    <aop:config>
+        <aop:advisor advice-ref="ApiDelegateAdvice" pointcut="execution(* io.github.ibuildthecloud.gdapi.request.handler.write.ReadWriteApiDelegate.*(..))" />
+    </aop:config>
+    
+</beans>

@@ -439,7 +439,6 @@ public abstract class AbstractEventService implements EventService {
         return executorService;
     }
 
-    @Inject
     public void setExecutorService(ExecutorService executorService) {
         this.executorService = executorService;
     }

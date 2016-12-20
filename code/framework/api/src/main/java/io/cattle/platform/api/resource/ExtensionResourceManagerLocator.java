@@ -10,8 +10,4 @@ public class ExtensionResourceManagerLocator extends ResourceManagerLocatorImpl 
         init();
     }
 
-    @Override
-    public void stop() {
-    }
-
 }

@@ -1,6 +1,7 @@
 package io.cattle.platform.servicediscovery.process;
 
-import static io.cattle.platform.core.model.tables.InstanceTable.INSTANCE;
+import static io.cattle.platform.core.model.tables.InstanceTable.*;
+
 import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.dao.NetworkDao;
@@ -16,7 +17,9 @@ import java.util.Arrays;
 import java.util.List;
 
 import javax.inject.Inject;
+import javax.inject.Named;
 
+@Named
 public class NetworkFromInstanceStop extends AbstractObjectProcessHandler {
 
     @Inject
@@ -38,7 +41,7 @@ public class NetworkFromInstanceStop extends AbstractObjectProcessHandler {
         if (instance.getDeploymentUnitUuid() == null) {
             return null;
         }
-        
+
         List<Instance> dependants = objectManager.find(Instance.class, INSTANCE.REMOVED, null,
                 INSTANCE.DEPLOYMENT_UNIT_UUID, instance.getDeploymentUnitUuid(), INSTANCE.NETWORK_CONTAINER_ID,
                 instance.getId());

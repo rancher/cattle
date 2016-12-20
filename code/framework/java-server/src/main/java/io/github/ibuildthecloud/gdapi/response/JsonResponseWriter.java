@@ -18,8 +18,6 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.util.List;
 
-import javax.inject.Inject;
-
 public class JsonResponseWriter extends AbstractApiRequestHandler {
 
     JsonMapper jsonMapper;
@@ -118,7 +116,6 @@ public class JsonResponseWriter extends AbstractApiRequestHandler {
         return jsonMapper;
     }
 
-    @Inject
     public void setJsonMapper(JsonMapper jsonMapper) {
         this.jsonMapper = jsonMapper;
     }

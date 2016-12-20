@@ -4,8 +4,6 @@ import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.inject.Inject;
-
 import org.jooq.Schema;
 import org.jooq.Table;
 
@@ -42,7 +40,6 @@ public class SchemaRecordTypeListGenerator {
         return schemaClass;
     }
 
-    @Inject
     public void setSchemaClass(Class<? extends Schema> schemaClass) {
         this.schemaClass = schemaClass;
     }

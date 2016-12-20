@@ -5,7 +5,6 @@ import io.cattle.platform.archaius.util.ArchaiusUtil;
 import java.util.List;
 
 import javax.annotation.PostConstruct;
-import javax.inject.Inject;
 import javax.sql.DataSource;
 
 import org.jooq.ConnectionProvider;
@@ -74,7 +73,6 @@ public class Configuration extends DefaultConfiguration {
         return name;
     }
 
-    @Inject
     public void setName(String name) {
         this.name = name;
     }

@@ -15,6 +15,7 @@ import io.github.ibuildthecloud.gdapi.factory.SchemaFactory;
 import io.github.ibuildthecloud.gdapi.model.ListOptions;
 import io.github.ibuildthecloud.gdapi.request.resource.impl.AbstractNoOpResourceManager;
 import io.github.ibuildthecloud.gdapi.util.ResponseCodes;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -28,6 +29,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 
 import javax.inject.Inject;
+
 import org.apache.cloudstack.managed.context.ManagedContext;
 import org.apache.cloudstack.managed.context.impl.DefaultManagedContext;
 import org.apache.commons.logging.Log;
@@ -202,7 +204,6 @@ public class IdentityManager extends AbstractNoOpResourceManager {
         this.identityProviders = identityProviders;
     }
 
-    @Inject
     public void setExecutorService(ExecutorService executorService) {
         this.executorService = executorService;
     }

@@ -12,7 +12,9 @@ import io.cattle.platform.systemstack.listener.SystemStackUpdate;
 import java.io.IOException;
 
 import javax.inject.Inject;
+import javax.inject.Named;
 
+@Named
 public class SystemStackAccountCreate extends AbstractObjectProcessLogic implements ProcessPostListener {
 
 

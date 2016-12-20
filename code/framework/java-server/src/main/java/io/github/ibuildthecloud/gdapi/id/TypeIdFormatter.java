@@ -9,8 +9,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.WeakHashMap;
 
-import javax.inject.Inject;
-
 public class TypeIdFormatter implements IdFormatter {
 
     private Map<String, String> typeCache = Collections.synchronizedMap(new WeakHashMap<String, String>());
@@ -120,7 +118,6 @@ public class TypeIdFormatter implements IdFormatter {
         return schemaFactory;
     }
 
-    @Inject
     public void setSchemaFactory(SchemaFactory schemaFactory) {
         this.schemaFactory = schemaFactory;
     }

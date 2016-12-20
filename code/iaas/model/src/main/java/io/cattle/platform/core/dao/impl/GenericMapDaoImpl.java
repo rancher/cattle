@@ -11,11 +11,13 @@ import java.util.List;
 import java.util.Map;
 
 import javax.inject.Inject;
+import javax.inject.Named;
 
 import org.jooq.Table;
 import org.jooq.TableField;
 import org.jooq.UpdatableRecord;
 
+@Named
 public class GenericMapDaoImpl extends AbstractCoreDao implements GenericMapDao {
 
     SchemaFactory schemaFactory;
@@ -150,6 +152,7 @@ public class GenericMapDaoImpl extends AbstractCoreDao implements GenericMapDao 
     }
 
     @Inject
+    @Named("CoreSchemaFactory")
     public void setSchemaFactory(SchemaFactory schemaFactory) {
         this.schemaFactory = schemaFactory;
     }

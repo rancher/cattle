@@ -2,12 +2,16 @@ package io.cattle.platform.core.dao.impl;
 
 import static io.cattle.platform.core.model.tables.HostLabelMapTable.*;
 import static io.cattle.platform.core.model.tables.LabelTable.*;
+
 import io.cattle.platform.core.dao.LabelsDao;
 import io.cattle.platform.core.model.Label;
 import io.cattle.platform.db.jooq.dao.impl.AbstractJooqDao;
 
 import java.util.List;
 
+import javax.inject.Named;
+
+@Named
 public class LabelsDaoImpl extends AbstractJooqDao implements LabelsDao {
 
     @Override

@@ -11,6 +11,9 @@ import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.process.common.handler.AbstractObjectProcessLogic;
 import io.cattle.platform.register.util.RegisterConstants;
 
+import javax.inject.Named;
+
+@Named
 public class RegisterTokenAgentRemove extends AbstractObjectProcessLogic implements ProcessPostListener {
 
     @Override

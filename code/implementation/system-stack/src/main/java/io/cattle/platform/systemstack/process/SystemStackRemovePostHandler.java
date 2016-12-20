@@ -1,6 +1,7 @@
 package io.cattle.platform.systemstack.process;
 
 import static io.cattle.platform.core.model.tables.StackTable.*;
+
 import io.cattle.platform.core.model.Stack;
 import io.cattle.platform.engine.handler.HandlerResult;
 import io.cattle.platform.engine.handler.ProcessPostListener;
@@ -17,6 +18,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.inject.Named;
+
+@Named
 public class SystemStackRemovePostHandler extends AbstractObjectProcessLogic implements ProcessPostListener,
         Priority {
 

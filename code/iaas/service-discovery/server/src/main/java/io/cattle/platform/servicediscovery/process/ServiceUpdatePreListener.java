@@ -21,10 +21,12 @@ import java.util.List;
 import java.util.Map;
 
 import javax.inject.Inject;
+import javax.inject.Named;
 
 /*
  * This code takes care of updating retainIp address field
  */
+@Named
 public class ServiceUpdatePreListener extends AbstractObjectProcessLogic implements ProcessPreListener,
         Priority {
 

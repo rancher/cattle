@@ -12,7 +12,9 @@ import io.cattle.platform.process.base.AbstractDefaultProcessHandler;
 import io.cattle.platform.servicediscovery.upgrade.UpgradeManager;
 
 import javax.inject.Inject;
+import javax.inject.Named;
 
+@Named
 public class ServiceRollback extends AbstractDefaultProcessHandler {
 
     @Inject

@@ -13,7 +13,9 @@ import io.cattle.platform.process.common.handler.AbstractObjectProcessHandler;
 import io.cattle.platform.util.type.Priority;
 
 import javax.inject.Inject;
+import javax.inject.Named;
 
+@Named
 public class ServiceEventCreate extends AbstractObjectProcessHandler implements ProcessHandler, Priority {
 
     @Inject

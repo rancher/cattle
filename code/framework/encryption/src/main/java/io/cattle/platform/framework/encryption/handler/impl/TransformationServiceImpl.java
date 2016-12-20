@@ -7,8 +7,6 @@ import io.github.ibuildthecloud.gdapi.util.TransformationService;
 
 import java.util.Map;
 
-import javax.inject.Inject;
-
 import org.apache.commons.lang3.StringUtils;
 
 public class TransformationServiceImpl implements TransformationService {
@@ -54,7 +52,6 @@ public class TransformationServiceImpl implements TransformationService {
         return untransformInternal(valueSplit[0], valueSplit[1]);
     }
 
-    @Inject
     @Override
     public void setTransformers(Map<String, Transformer> transformers) {
         this.transformers = transformers;

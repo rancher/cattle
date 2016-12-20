@@ -123,7 +123,6 @@ public class TaskManagerImpl implements TaskManager, InitializationTask, Runnabl
         }
     }
 
-    @Override
     public void stop() {
         for (ScheduledFuture<?> future : futures.values()) {
             future.cancel(false);

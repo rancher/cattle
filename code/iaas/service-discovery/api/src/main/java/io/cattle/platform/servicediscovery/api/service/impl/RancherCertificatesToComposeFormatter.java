@@ -10,7 +10,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 import javax.inject.Inject;
+import javax.inject.Named;
 
+@Named
 public class RancherCertificatesToComposeFormatter extends AbstractJooqDao
         implements RancherConfigToComposeFormatter {
 
@@ -34,7 +36,7 @@ public class RancherCertificatesToComposeFormatter extends AbstractJooqDao
             return null;
         }
     }
-    
+
     private String getCertName(Integer certId) {
         return objManager.loadResource(Certificate.class, certId.longValue()).getName();
     }

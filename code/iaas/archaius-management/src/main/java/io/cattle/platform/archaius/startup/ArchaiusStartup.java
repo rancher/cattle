@@ -5,7 +5,6 @@ import io.cattle.platform.archaius.sources.LazyJDBCSource;
 import io.cattle.platform.archaius.util.ArchaiusUtil;
 import io.cattle.platform.datasource.DataSourceFactory;
 import io.cattle.platform.extension.impl.ExtensionManagerImpl;
-import io.cattle.platform.util.type.InitializationTask;
 
 import java.util.HashMap;
 import java.util.List;
@@ -24,7 +23,7 @@ import com.netflix.config.DynamicConfiguration;
 import com.netflix.config.DynamicPropertyFactory;
 import com.netflix.config.sources.JDBCConfigurationSource;
 
-public class ArchaiusStartup implements InitializationTask {
+public class ArchaiusStartup {
 
     public static final String CONFIG_KEY = "config";
     public static final String DB_CONFIG = "DatabaseConfig";
@@ -40,9 +39,14 @@ public class ArchaiusStartup implements InitializationTask {
     String keyColumnName = "name";
     String valueColumnName = "value";
     List<RefreshableFixedDelayPollingScheduler> schedulers;
+    boolean init = false;
 
     @PostConstruct
     public void init() {
+        if (init) {
+            return;
+        }
+
         if (GLOBAL_DEFAULT == null) {
             throw new IllegalStateException("setGlobalDefaults() must be set before init() is called");
         }
@@ -52,6 +56,8 @@ public class ArchaiusStartup implements InitializationTask {
         baseConfig.addConfiguration(new MapConfiguration(GLOBAL_DEFAULT));
 
         DynamicPropertyFactory.initWithConfigurationSource(baseConfig);
+
+        init = true;
     }
 
     protected Map<String, Object> getOverride() {
@@ -61,7 +67,6 @@ public class ArchaiusStartup implements InitializationTask {
         return override;
     }
 
-    @Override
     public void start() {
         load(false);
         extensionManager.reset();
@@ -105,10 +110,6 @@ public class ArchaiusStartup implements InitializationTask {
 
             source.setSource(new JDBCConfigurationSource(configDataSource, query, keyColumnName, valueColumnName));
         }
-    }
-
-    @Override
-    public void stop() {
     }
 
     public ExtensionManagerImpl getExtensionManager() {

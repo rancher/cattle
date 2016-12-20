@@ -57,6 +57,7 @@ public class PullTaskCreate extends AbstractGenericObjectProcessLogic implements
     @Inject
     ProcessProgress progress;
 
+    @Inject
     List<ImageCredentialLookup> imageCredentialLookups;
 
     @Inject
@@ -210,18 +211,6 @@ public class PullTaskCreate extends AbstractGenericObjectProcessLogic implements
     @Override
     public void start() {
         serializer = serializerFactory.compile(CredentialConstants.TYPE, EXPR.get());
-    }
-
-    @Override
-    public void stop() {
-    }
-
-    public List<ImageCredentialLookup> getImageCredentialLookups() {
-        return imageCredentialLookups;
-    }
-
-    public void setImageCredentialLookups(List<ImageCredentialLookup> imageCredentialLookups) {
-        this.imageCredentialLookups = imageCredentialLookups;
     }
 
 }

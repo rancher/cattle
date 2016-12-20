@@ -179,10 +179,6 @@ public abstract class AbstractThreadPoolingEventService extends AbstractEventSer
         }
     }
 
-    @Override
-    public void stop() {
-    }
-
     public String getThreadCountSetting() {
         return threadCountSetting;
     }
@@ -203,6 +199,7 @@ public abstract class AbstractThreadPoolingEventService extends AbstractEventSer
         return namedExecutorServiceList;
     }
 
+    @Inject
     public void setNamedExecutorServiceList(List<NamedExecutorService> namedExecutorServiceList) {
         this.namedExecutorServiceList = namedExecutorServiceList;
     }

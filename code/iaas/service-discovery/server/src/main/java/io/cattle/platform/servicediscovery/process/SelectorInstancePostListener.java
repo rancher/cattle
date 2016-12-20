@@ -1,6 +1,7 @@
 package io.cattle.platform.servicediscovery.process;
 
 import static io.cattle.platform.core.model.tables.ServiceTable.*;
+
 import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.model.Instance;
@@ -24,7 +25,9 @@ import io.github.ibuildthecloud.gdapi.condition.ConditionType;
 import java.util.List;
 
 import javax.inject.Inject;
+import javax.inject.Named;
 
+@Named
 public class SelectorInstancePostListener extends AbstractObjectProcessLogic implements ProcessPostListener,
         Priority {
     @Inject

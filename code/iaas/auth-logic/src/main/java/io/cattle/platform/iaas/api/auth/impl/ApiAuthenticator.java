@@ -13,6 +13,7 @@ import io.cattle.platform.iaas.api.auth.integration.external.ExternalServiceAuth
 import io.cattle.platform.iaas.api.auth.integration.interfaces.AccountLookup;
 import io.cattle.platform.iaas.api.auth.integration.interfaces.IdentityProvider;
 import io.cattle.platform.object.ObjectManager;
+import io.cattle.platform.util.type.CollectionUtils;
 import io.github.ibuildthecloud.gdapi.context.ApiContext;
 import io.github.ibuildthecloud.gdapi.exception.ClientVisibleException;
 import io.github.ibuildthecloud.gdapi.factory.SchemaFactory;
@@ -246,7 +247,7 @@ public class ApiAuthenticator extends AbstractApiRequestHandler {
 
     @Inject
     public void setAuthorizationProviders(List<AuthorizationProvider> authorizationProviders) {
-        this.authorizationProviders = authorizationProviders;
+        this.authorizationProviders = CollectionUtils.orderList(AuthorizationProvider.class, authorizationProviders);
     }
 
     public List<AccountLookup> getAccountLookups() {
@@ -255,7 +256,7 @@ public class ApiAuthenticator extends AbstractApiRequestHandler {
 
     @Inject
     public void setAccountLookups(List<AccountLookup> accountLookups) {
-        this.accountLookups = accountLookups;
+        this.accountLookups = CollectionUtils.orderList(AccountLookup.class, accountLookups);
     }
 
     public List<IdentityProvider> getIdentityProviders() {
@@ -264,7 +265,7 @@ public class ApiAuthenticator extends AbstractApiRequestHandler {
 
     @Inject
     public void setIdentityProviders(List<IdentityProvider> identityProviders) {
-        this.identityProviders = identityProviders;
+        this.identityProviders = CollectionUtils.orderList(IdentityProvider.class, identityProviders);
     }
 
 }

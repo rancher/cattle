@@ -10,8 +10,6 @@ import io.github.ibuildthecloud.gdapi.request.handler.ApiRequestHandler;
 
 import java.io.IOException;
 
-import javax.inject.Inject;
-
 public class IdFormatterRequestHandler extends AbstractApiRequestHandler implements ApiRequestHandler {
 
     IdentityFormatter plainFormatter;
@@ -31,7 +29,6 @@ public class IdFormatterRequestHandler extends AbstractApiRequestHandler impleme
         return plainFormatter;
     }
 
-    @Inject
     public void setPlainFormatter(IdentityFormatter plainFormatter) {
         this.plainFormatter = plainFormatter;
     }

@@ -23,6 +23,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
 import javax.inject.Inject;
 
 public class AgentIncludeConfigItemFactoryImpl implements ConfigItemFactory {
@@ -128,7 +129,6 @@ public class AgentIncludeConfigItemFactoryImpl implements ConfigItemFactory {
         return fileRoot;
     }
 
-    @Inject
     public void setFileRoot(String fileRoot) {
         this.fileRoot = fileRoot;
     }

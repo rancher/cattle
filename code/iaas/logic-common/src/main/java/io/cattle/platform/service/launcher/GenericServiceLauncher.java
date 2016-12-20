@@ -85,7 +85,6 @@ public abstract class GenericServiceLauncher extends NoExceptionRunnable impleme
         processDestroy();
     }
 
-    @Override
     public void stop() {
         if (future != null) {
             future.cancel(true);

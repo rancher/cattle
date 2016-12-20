@@ -1,12 +1,13 @@
 package io.github.ibuildthecloud.gdapi.factory.impl;
 
+import io.cattle.platform.util.type.Named;
 import io.github.ibuildthecloud.gdapi.factory.SchemaFactory;
 import io.github.ibuildthecloud.gdapi.model.Schema;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public abstract class AbstractSchemaFactory implements SchemaFactory {
+public abstract class AbstractSchemaFactory implements SchemaFactory, Named {
 
     @Override
     public String getSchemaName(Class<?> clz) {
@@ -98,6 +99,11 @@ public abstract class AbstractSchemaFactory implements SchemaFactory {
         }
 
         return schema.getId();
+    }
+
+    @Override
+    public String getName() {
+        return "SchemaFactory:" + getId();
     }
 
 }

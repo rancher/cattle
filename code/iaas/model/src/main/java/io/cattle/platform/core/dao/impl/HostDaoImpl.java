@@ -34,11 +34,13 @@ import java.util.Map;
 import java.util.concurrent.Callable;
 
 import javax.inject.Inject;
+import javax.inject.Named;
 
 import org.jooq.Record2;
 import org.jooq.RecordHandler;
 
 
+@Named
 public class HostDaoImpl extends AbstractJooqDao implements HostDao {
 
     @Inject

@@ -3,6 +3,9 @@ package io.cattle.platform.servicediscovery.api.service.impl;
 import io.cattle.platform.servicediscovery.api.resource.ServiceDiscoveryConfigItem;
 import io.cattle.platform.servicediscovery.api.service.RancherConfigToComposeFormatter;
 
+import javax.inject.Named;
+
+@Named
 public class RancherImageToComposeFormatter implements RancherConfigToComposeFormatter {
     private static final String IMAGE_PREFIX = "docker:";
 

@@ -7,8 +7,11 @@ import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.dao.CertificateDao;
 import io.cattle.platform.db.jooq.dao.impl.AbstractJooqDao;
 
+import javax.inject.Named;
+
 import org.jooq.Record1;
 
+@Named
 public class CertificateDaoImpl extends AbstractJooqDao implements CertificateDao {
 
     @Override

@@ -16,7 +16,7 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.util.concurrent.SettableFuture;
 
-public class InMemoryEventService extends AbstractThreadPoolingEventService {
+public class InMemoryEventService extends AbstractThreadPoolingEventService implements io.cattle.platform.util.type.Named {
 
     private static final Logger log = LoggerFactory.getLogger(InMemoryEventService.class);
 
@@ -56,6 +56,11 @@ public class InMemoryEventService extends AbstractThreadPoolingEventService {
 
     @Override
     protected void disconnect() {
+    }
+
+    @Override
+    public String getName() {
+        return "EventService";
     }
 
 }

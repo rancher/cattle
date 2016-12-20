@@ -26,6 +26,7 @@ import java.util.Map;
 import java.util.Set;
 
 import javax.inject.Inject;
+import javax.inject.Named;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -35,6 +36,7 @@ import com.netflix.config.DynamicLongProperty;
 public class RemoveMonitorImpl implements RemoveMonitor, Task {
 
     @Inject
+    @Named("CoreSchemaFactory")
     SchemaFactory schemaFactory;
 
     @Inject

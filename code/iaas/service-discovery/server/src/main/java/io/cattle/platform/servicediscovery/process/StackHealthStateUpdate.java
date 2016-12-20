@@ -24,7 +24,9 @@ import java.io.IOException;
 import java.util.concurrent.Callable;
 
 import javax.inject.Inject;
+import javax.inject.Named;
 
+@Named
 public class StackHealthStateUpdate implements AnnotatedEventListener {
 
     @Inject

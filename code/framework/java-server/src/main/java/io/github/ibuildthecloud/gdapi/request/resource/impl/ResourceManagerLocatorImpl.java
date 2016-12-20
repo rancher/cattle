@@ -116,7 +116,6 @@ public class ResourceManagerLocatorImpl extends AbstractResourceManagerLocatorIm
         return schemaFactory;
     }
 
-    @Inject
     public void setSchemaFactory(SchemaFactory schemaFactory) {
         this.schemaFactory = schemaFactory;
     }

@@ -1,6 +1,7 @@
 package io.cattle.platform.servicediscovery.process;
 
-import static io.cattle.platform.core.model.tables.InstanceLinkTable.INSTANCE_LINK;
+import static io.cattle.platform.core.model.tables.InstanceLinkTable.*;
+
 import io.cattle.platform.core.constants.InstanceLinkConstants;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.InstanceLink;
@@ -16,9 +17,11 @@ import io.cattle.platform.servicediscovery.api.dao.ServiceConsumeMapDao;
 import java.util.List;
 
 import javax.inject.Inject;
+import javax.inject.Named;
 
 import org.jooq.tools.StringUtils;
 
+@Named
 public class ServiceLinkActivateHandler extends AbstractObjectProcessHandler implements ProcessPreListener {
 
     @Inject

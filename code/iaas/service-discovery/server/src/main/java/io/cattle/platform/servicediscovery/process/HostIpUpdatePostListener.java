@@ -14,7 +14,9 @@ import io.cattle.platform.servicediscovery.service.ServiceDiscoveryService;
 import io.cattle.platform.util.type.Priority;
 
 import javax.inject.Inject;
+import javax.inject.Named;
 
+@Named
 public class HostIpUpdatePostListener extends AbstractObjectProcessLogic implements ProcessPostListener, Priority {
     @Inject
     InstanceDao instanceDao;
@@ -39,7 +41,7 @@ public class HostIpUpdatePostListener extends AbstractObjectProcessLogic impleme
         if (host == null) {
             return null;
         }
-       
+
         sdService.reconcileHostEndpoints(host);
 
         return null;

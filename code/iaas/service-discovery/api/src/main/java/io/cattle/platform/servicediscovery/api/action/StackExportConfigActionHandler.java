@@ -4,8 +4,8 @@ import io.cattle.platform.api.action.ActionHandler;
 import io.cattle.platform.core.addon.ComposeConfig;
 import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.ServiceConstants;
-import io.cattle.platform.core.model.Stack;
 import io.cattle.platform.core.model.Service;
+import io.cattle.platform.core.model.Stack;
 import io.cattle.platform.json.JsonMapper;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.util.DataAccessor;
@@ -17,7 +17,9 @@ import java.util.List;
 import java.util.Map;
 
 import javax.inject.Inject;
+import javax.inject.Named;
 
+@Named
 public class StackExportConfigActionHandler implements ActionHandler {
     @Inject
     ObjectManager objectManager;

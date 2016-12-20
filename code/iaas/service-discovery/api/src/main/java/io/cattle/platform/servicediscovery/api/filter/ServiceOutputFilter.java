@@ -12,7 +12,9 @@ import io.github.ibuildthecloud.gdapi.request.ApiRequest;
 import io.github.ibuildthecloud.gdapi.response.ResourceOutputFilter;
 
 import javax.inject.Inject;
+import javax.inject.Named;
 
+@Named
 public class ServiceOutputFilter implements ResourceOutputFilter {
 
     @Inject

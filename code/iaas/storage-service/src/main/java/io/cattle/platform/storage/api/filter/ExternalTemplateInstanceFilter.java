@@ -3,6 +3,7 @@ package io.cattle.platform.storage.api.filter;
 import io.cattle.platform.archaius.util.ArchaiusUtil;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.model.Instance;
+import io.cattle.platform.docker.client.DockerImage;
 import io.cattle.platform.storage.service.StorageService;
 import io.cattle.platform.util.type.CollectionUtils;
 import io.github.ibuildthecloud.gdapi.exception.ClientVisibleException;
@@ -13,7 +14,6 @@ import io.github.ibuildthecloud.gdapi.request.resource.AbstractResourceManagerFi
 import io.github.ibuildthecloud.gdapi.request.resource.ResourceManager;
 import io.github.ibuildthecloud.gdapi.util.ResponseCodes;
 import io.github.ibuildthecloud.gdapi.validation.ValidationErrorCodes;
-import io.cattle.platform.docker.client.DockerImage;
 
 import java.util.List;
 import java.util.Map;
@@ -127,7 +127,6 @@ public class ExternalTemplateInstanceFilter extends AbstractResourceManagerFilte
         return schemaFactory;
     }
 
-    @Inject
     public void setSchemaFactory(SchemaFactory schemaFactory) {
         this.schemaFactory = schemaFactory;
     }

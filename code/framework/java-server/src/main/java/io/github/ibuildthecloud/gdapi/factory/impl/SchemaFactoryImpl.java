@@ -1,5 +1,6 @@
 package io.github.ibuildthecloud.gdapi.factory.impl;
 
+import io.cattle.platform.util.type.CollectionUtils;
 import io.github.ibuildthecloud.gdapi.annotation.Actions;
 import io.github.ibuildthecloud.gdapi.factory.SchemaFactory;
 import io.github.ibuildthecloud.gdapi.model.Action;
@@ -23,9 +24,9 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
-import java.util.UUID;
 
 import javax.annotation.PostConstruct;
+import javax.inject.Inject;
 
 import org.apache.commons.beanutils.PropertyUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -36,7 +37,7 @@ public class SchemaFactoryImpl extends AbstractSchemaFactory implements SchemaFa
     final io.github.ibuildthecloud.gdapi.annotation.Field defaultField;
     final io.github.ibuildthecloud.gdapi.annotation.Type defaultType;
 
-    String id = UUID.randomUUID().toString();
+    String id = "base";
     boolean includeDefaultTypes = true, writableByDefault = false;
     Map<String, SchemaImpl> schemasByName = new TreeMap<String, SchemaImpl>();
     Map<Class<?>, SchemaImpl> schemasByClass = new HashMap<Class<?>, SchemaImpl>();
@@ -674,8 +675,9 @@ public class SchemaFactoryImpl extends AbstractSchemaFactory implements SchemaFa
         return postProcessors;
     }
 
+    @Inject
     public void setPostProcessors(List<SchemaPostProcessor> postProcessors) {
-        this.postProcessors = postProcessors;
+        this.postProcessors = CollectionUtils.orderList(SchemaPostProcessor.class, postProcessors);
     }
 
     public List<String> getTypeNames() {

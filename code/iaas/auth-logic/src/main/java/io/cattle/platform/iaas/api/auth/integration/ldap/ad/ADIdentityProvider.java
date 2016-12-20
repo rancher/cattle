@@ -1,6 +1,7 @@
 package io.cattle.platform.iaas.api.auth.integration.ldap.ad;
 
 import static javax.naming.directory.SearchControls.*;
+
 import io.cattle.platform.api.auth.Identity;
 import io.cattle.platform.core.constants.IdentityConstants;
 import io.cattle.platform.core.model.Account;
@@ -245,7 +246,6 @@ public class ADIdentityProvider extends LDAPIdentityProvider implements Identity
         }
     }
 
-    @Inject
     public void setExecutorService(ExecutorService executorService) {
         this.executorService = executorService;
     }
@@ -259,10 +259,12 @@ public class ADIdentityProvider extends LDAPIdentityProvider implements Identity
         return contextPool;
     }
 
+    @Override
     public void setContextPool(GenericObjectPool<LdapContext> contextPool) {
         this.contextPool = contextPool;
     }
 
+    @Override
     public LDAPConstants getConstantsConfig() {
         return adConfig;
     }
@@ -282,6 +284,7 @@ public class ADIdentityProvider extends LDAPIdentityProvider implements Identity
         return getConstantsConfig().providerType();
     }
 
+    @Override
     protected AbstractTokenUtil getTokenUtils() {
         return adTokenUtils;
     }

@@ -5,7 +5,9 @@ import io.cattle.platform.servicediscovery.api.resource.ServiceDiscoveryConfigIt
 import io.cattle.platform.servicediscovery.api.service.RancherConfigToComposeFormatter;
 
 import javax.inject.Inject;
+import javax.inject.Named;
 
+@Named
 public class RancherRestartToComposeFormatter implements RancherConfigToComposeFormatter {
     @Inject
     JsonMapper jsonMapper;

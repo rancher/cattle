@@ -15,7 +15,9 @@ import io.cattle.platform.process.base.AbstractDefaultProcessHandler;
 import io.cattle.platform.systemstack.catalog.CatalogService;
 
 import javax.inject.Inject;
+import javax.inject.Named;
 
+@Named
 public class ProjecttemplateCreate extends AbstractDefaultProcessHandler {
 
     @Inject

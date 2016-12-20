@@ -13,7 +13,9 @@ import io.github.ibuildthecloud.gdapi.request.ApiRequest;
 import io.github.ibuildthecloud.gdapi.request.resource.ResourceManager;
 
 import javax.inject.Inject;
+import javax.inject.Named;
 
+@Named
 public class ServiceRollbackValidationFilter extends AbstractDefaultResourceManagerFilter {
 
     @Inject

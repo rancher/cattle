@@ -1,10 +1,11 @@
 package io.cattle.platform.servicediscovery.api.action;
 
-import static io.cattle.platform.core.model.tables.ServiceTable.SERVICE;
+import static io.cattle.platform.core.model.tables.ServiceTable.*;
+
 import io.cattle.platform.api.link.LinkHandler;
 import io.cattle.platform.core.constants.ServiceConstants;
-import io.cattle.platform.core.model.Stack;
 import io.cattle.platform.core.model.Service;
+import io.cattle.platform.core.model.Stack;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.servicediscovery.api.service.ServiceDiscoveryApiService;
 import io.github.ibuildthecloud.gdapi.request.ApiRequest;
@@ -16,10 +17,12 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
 import javax.inject.Inject;
+import javax.inject.Named;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang.StringUtils;
 
+@Named
 public class StackComposeLinkHandler implements LinkHandler {
     @Inject
     ServiceDiscoveryApiService discoverySvc;

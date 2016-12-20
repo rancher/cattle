@@ -31,10 +31,6 @@ public class ConfigItemRegistryImpl implements ConfigItemRegistry, Initializatio
         }
     }
 
-    @Override
-    public void stop() {
-    }
-
     public boolean register(ConfigItemFactory type) {
         try {
             for (ConfigItem item : type.getConfigItems()) {

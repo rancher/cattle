@@ -182,7 +182,6 @@ public class OpenLDAPIdentityProvider extends LDAPIdentityProvider implements Id
         return openLDAPUtils;
     }
 
-    @Inject
     public void setExecutorService(ExecutorService executorService) {
         this.executorService = executorService;
     }
@@ -201,6 +200,7 @@ public class OpenLDAPIdentityProvider extends LDAPIdentityProvider implements Id
         return getConstantsConfig().providerType();
     }
 
+    @Override
     protected void notConfigured() {
         throw new ClientVisibleException(ResponseCodes.SERVICE_UNAVAILABLE,
                 "NotConfigured", "Ldap is not configured", null);

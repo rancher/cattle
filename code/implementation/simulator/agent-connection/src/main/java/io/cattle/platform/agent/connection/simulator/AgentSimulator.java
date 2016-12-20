@@ -24,9 +24,9 @@ import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 
 public class AgentSimulator implements AnnotatedEventListener {
-   
+
     private static final Simulator NULL_SIMULATOR = new NullSimulator();
-    
+
     @Inject
     JsonMapper jsonMapper;
     @Inject
@@ -45,7 +45,7 @@ public class AgentSimulator implements AnnotatedEventListener {
             return makeSimulator(agentId);
         }
     });
-    
+
     @EventHandler
     public void agentRequest(SimulatorRequest agentRequest) {
         Simulator simulator = cache.getUnchecked(agentRequest.getResourceId());
@@ -58,13 +58,13 @@ public class AgentSimulator implements AnnotatedEventListener {
         EventUtils.copyTransitioning(resp, reply);
         eventService.publish(reply);
     }
-    
+
     protected Simulator makeSimulator(String agentId) {
         Agent agent = objectManager.loadResource(Agent.class, agentId);
         if (agent == null) {
             return NULL_SIMULATOR;
         }
-        
+
         String uri = agent.getUri();
         if (uri == null) {
             return NULL_SIMULATOR;
@@ -73,7 +73,7 @@ public class AgentSimulator implements AnnotatedEventListener {
         if (uri.startsWith("sim://")) {
             return new AgentConnectionSimulator(objectManager, agent, processors);
         }
-        
+
         Map<String, Object> instanceData = new LinkedHashMap<>();
         Agent hostAgent = agentLocator.getAgentForDelegate(Long.parseLong(agentId), instanceData);
         if (hostAgent == null) {
@@ -92,6 +92,7 @@ public class AgentSimulator implements AnnotatedEventListener {
         return processors;
     }
 
+    @Inject
     public void setProcessors(List<AgentSimulatorEventProcessor> processors) {
         this.processors = processors;
     }

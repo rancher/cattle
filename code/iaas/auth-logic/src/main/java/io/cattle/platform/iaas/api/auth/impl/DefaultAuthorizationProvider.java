@@ -20,6 +20,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
 import javax.inject.Inject;
 
 import org.slf4j.Logger;
@@ -160,10 +161,6 @@ public class DefaultAuthorizationProvider implements AuthorizationProvider, Init
             }
             schemaFactories.put(factory.getId(), factory);
         }
-    }
-
-    @Override
-    public void stop() {
     }
 
     @Override

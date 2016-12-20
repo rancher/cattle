@@ -19,8 +19,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import javax.inject.Inject;
-
 import com.netflix.config.DynamicBooleanProperty;
 
 public class SubSchemaFactory extends AbstractSchemaFactory implements SchemaFactory {
@@ -179,7 +177,6 @@ public class SubSchemaFactory extends AbstractSchemaFactory implements SchemaFac
         this.id = id;
     }
 
-    @Inject
     public void setSchemaFactory(SchemaFactory schemaFactory) {
         this.schemaFactory = schemaFactory;
     }

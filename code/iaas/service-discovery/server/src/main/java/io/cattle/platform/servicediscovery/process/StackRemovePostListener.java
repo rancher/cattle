@@ -2,6 +2,7 @@ package io.cattle.platform.servicediscovery.process;
 
 import static io.cattle.platform.core.model.tables.VolumeTable.*;
 import static io.cattle.platform.core.model.tables.VolumeTemplateTable.*;
+
 import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.model.Stack;
 import io.cattle.platform.core.model.Volume;
@@ -20,6 +21,9 @@ import io.cattle.platform.util.type.Priority;
 import java.util.HashMap;
 import java.util.List;
 
+import javax.inject.Named;
+
+@Named
 public class StackRemovePostListener extends AbstractObjectProcessLogic implements ProcessPostListener,
         Priority {
 

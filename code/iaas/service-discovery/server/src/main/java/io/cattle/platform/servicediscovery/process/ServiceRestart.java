@@ -11,7 +11,9 @@ import io.cattle.platform.process.base.AbstractDefaultProcessHandler;
 import io.cattle.platform.servicediscovery.upgrade.UpgradeManager;
 
 import javax.inject.Inject;
+import javax.inject.Named;
 
+@Named
 public class ServiceRestart extends AbstractDefaultProcessHandler {
 
     @Inject
@@ -32,6 +34,7 @@ public class ServiceRestart extends AbstractDefaultProcessHandler {
         objectManager.setFields(service, ServiceConstants.FIELD_RESTART, restart);
 
         activityService.run(service, "service.restart", "Restarting service", new Runnable() {
+            @Override
             public void run() {
                 upgradeManager.restart(service, restart.getRollingRestartStrategy());
             }

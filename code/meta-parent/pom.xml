@@ -28,12 +28,6 @@
         <tag>HEAD</tag>
     </scm>
     <distributionManagement>
-        <!--
-        <snapshotRepository>
-            <id>ossrh</id>
-            <url>https://oss.sonatype.org/content/repositories/snapshots</url>
-        </snapshotRepository>
-        -->
         <repository>
             <id>local-m2</id>
             <url>file:./.m2/</url>

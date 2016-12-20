@@ -1,95 +1,82 @@
 package io.cattle.platform.extension.spring;
 
+import io.cattle.platform.engine.handler.ProcessHandler;
+import io.cattle.platform.engine.handler.ProcessLogic;
+import io.cattle.platform.engine.handler.ProcessPostListener;
+import io.cattle.platform.engine.handler.ProcessPreListener;
 import io.cattle.platform.extension.impl.ExtensionManagerImpl;
 import io.cattle.platform.util.type.NamedUtils;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import javax.annotation.PostConstruct;
 import javax.inject.Inject;
 
-import org.springframework.beans.BeansException;
-import org.springframework.beans.factory.config.BeanPostProcessor;
+public class ExtensionDiscovery {
 
-public class ExtensionDiscovery implements BeanPostProcessor {
-
+    @Inject
     ExtensionManagerImpl extensionManager;
-    Class<?> typeClass;
-    String key;
-    String[] keys;
+    @Inject
+    List<ProcessHandler> processHandlers;
+    @Inject
+    List<ProcessPreListener> processPreListeners;
+    @Inject
+    List<ProcessPostListener> processPostListeners;
 
-    @Override
-    public Object postProcessBeforeInitialization(Object bean, String beanName) throws BeansException {
-        if (typeClass.isAssignableFrom(bean.getClass())) {
-            String name = getName(bean, beanName);
-            if (name != null && !isInner(beanName)) {
-                for (String key : getKeys(bean)) {
-                    extensionManager.addObject(key, typeClass, bean, name);
-                }
-            }
-        }
-
-        return bean;
-    }
-
-    /*
-     * This tries to guess if this is an inner bean. This logic is flawed
-     */
-    protected boolean isInner(String beanName) {
-        String[] parts = beanName.split("#");
-        return parts.length == 2 && parts[1].length() > 2;
-    }
-
-    protected String getName(Object obj, String beanName) {
-        if (beanName != null && beanName.length() > 0 && Character.isUpperCase(beanName.charAt(0))) {
-            return beanName;
-        }
-
-        return NamedUtils.getName(obj);
-    }
-
-    protected String[] getKeys(Object obj) {
-        return keys;
+    private static final Map<Class<?>, String> SUFFIXES = new HashMap<Class<?>, String>();
+    static {
+        SUFFIXES.put(ProcessHandler.class, ".handlers");
+        SUFFIXES.put(ProcessPreListener.class, ".pre.listeners");
+        SUFFIXES.put(ProcessPostListener.class, ".post.listeners");
     }
 
     @PostConstruct
     public void init() {
-        if (key == null && typeClass != null) {
-            key = NamedUtils.toDotSeparated(typeClass.getSimpleName());
+        for (ProcessHandler handler : processHandlers) {
+            process(handler, ProcessHandler.class);
         }
-
-        if (key != null) {
-            keys = new String[] { key };
+        for (ProcessPreListener handler : processPreListeners) {
+            process(handler, ProcessPreListener.class);
         }
+        for (ProcessPostListener handler : processPostListeners) {
+            process(handler, ProcessPostListener.class);
+        }
+        extensionManager.reset();
     }
 
-    @Override
-    public Object postProcessAfterInitialization(Object bean, String beanName) throws BeansException {
+    protected String[] getKeys(Object obj, Class<?> typeClz) {
+        if (obj instanceof ProcessLogic) {
+            String[] names = ((ProcessLogic) obj).getProcessNames();
+            String[] result = new String[names.length];
+
+            for (int i = 0; i < result.length; i++) {
+                String suffix = SUFFIXES.get(typeClz);
+
+                if (suffix == null) {
+                    throw new IllegalArgumentException("Object is not an instance of ProcessHandler, " + "ProcessPreListener, or ProcessPostListener, got ["
+                            + obj.getClass() + "]");
+                }
+
+                result[i] = "process." + names[i].toLowerCase() + suffix;
+            }
+
+            return result;
+        }
+
+        return new String[0];
+    }
+
+    public Object process(Object bean, Class<?> typeClass) {
+        String name = NamedUtils.getName(bean);
+        if (name != null) {
+            for (String key : getKeys(bean, typeClass)) {
+                extensionManager.addObject(key, typeClass, bean, name);
+            }
+        }
+
         return bean;
-    }
-
-    public ExtensionManagerImpl getExtensionManager() {
-        return extensionManager;
-    }
-
-    @Inject
-    public void setExtensionManager(ExtensionManagerImpl extensionManager) {
-        this.extensionManager = extensionManager;
-    }
-
-    public Class<?> getTypeClass() {
-        return typeClass;
-    }
-
-    @Inject
-    public void setTypeClass(Class<?> typeClass) {
-        this.typeClass = typeClass;
-    }
-
-    public String getKey() {
-        return key;
-    }
-
-    public void setKey(String key) {
-        this.key = key;
     }
 
 }
