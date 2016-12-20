@@ -316,10 +316,12 @@
     <process:defaultProcesses resourceType="projectMember" />
     <process:defaultProcesses resourceType="storagePool" />
     <process:defaultProcesses resourceType="subnet" />
-    <process:defaultProcesses resourceType="volumeStoragePoolMap" />
     <process:defaultProcesses resourceType="zone" />
     <process:defaultProcesses resourceType="serviceIndex" />
     <process:defaultProcesses resourceType="volumeTemplate" />
+
+    <!-- Volume Storage Pool Map -->
+    <process:defaultProcesses resourceType="volumeStoragePoolMap" exclude="volumestoragepoolmap.purge"/>
 
     <!-- Host -->
     <process:defaultProcesses resourceType="host" />
