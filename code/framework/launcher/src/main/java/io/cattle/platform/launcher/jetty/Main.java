@@ -20,6 +20,7 @@ import org.eclipse.jetty.server.HttpConfiguration;
 import org.eclipse.jetty.server.HttpConnectionFactory;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.ServerConnector;
+import org.eclipse.jetty.server.handler.gzip.GzipHandler;
 import org.eclipse.jetty.util.log.Log;
 import org.eclipse.jetty.webapp.WebAppClassLoader;
 import org.eclipse.jetty.webapp.WebAppContext;
@@ -111,6 +112,18 @@ public class Main {
 
             WebAppContext context = new WebAppContext();
             context.setThrowUnavailableOnStartupException(true);
+            GzipHandler gzip = new GzipHandler();
+            gzip.setIncludedMimeTypes(
+                    "application/javascript",
+                    "application/json",
+                    "application/xhtml+xml",
+                    "image/svg+xml",
+                    "text/css",
+                    "text/html",
+                    "text/plain",
+                    "text/xml"
+            );
+            context.setGzipHandler(gzip);
 
             File webXmlFile = findFile(WEB_XML);
 

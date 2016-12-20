@@ -6,6 +6,7 @@ import io.github.ibuildthecloud.gdapi.request.ApiRequest;
 
 import java.io.IOException;
 
+import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -22,6 +23,12 @@ public class JettyWebSocketSubcriptionHandler extends NonBlockingSubscriptionHan
         HttpServletResponse resp = apiRequest.getServletContext().getResponse();
         final WebSocketMessageWriter messageWriter = new WebSocketMessageWriter();
         WebSocketServerFactory factory = new WebSocketServerFactory();
+        try {
+            factory.init(req.getServletContext());
+        }
+        catch (ServletException e) {
+            throw new IOException(e);
+        }
         factory.getPolicy().setAsyncWriteTimeout(1000);
         factory.setCreator(new WebSocketCreator() {
             @Override
