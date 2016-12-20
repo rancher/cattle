@@ -47,7 +47,6 @@ public class EventNotificationChangeMonitor extends io.cattle.platform.engine.pr
             sendChange(Stack.class, accountId, ((Service) obj).getStackId(), schedule, context);
         } else if (obj instanceof ServiceConsumeMap) {
             sendChange(Service.class, accountId, ((ServiceConsumeMap) obj).getServiceId(), schedule, context);
-            sendChange(Service.class, accountId, ((ServiceConsumeMap) obj).getConsumedServiceId(), schedule, context);
         } else if (obj instanceof ServiceExposeMap) {
             sendChange(Service.class, accountId, ((ServiceExposeMap) obj).getServiceId(), schedule, context);
             sendChange(Instance.class, accountId, ((ServiceExposeMap) obj).getInstanceId(), schedule, context);
