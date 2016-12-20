@@ -453,6 +453,9 @@
         "pullTask.mode": "cr",
         "pullTask.image": "cr",
         "pullTask.status": "r",
+        "pullTask.kind": "r",
+        "pullTask.key": "",
+        "pullTask.resourceData": "",
 
         "register": "r",
         "register.accessKey" : "r",
@@ -803,13 +806,11 @@
         "serviceBinding.labels" : "cr",
         "serviceBinding.ports" : "cr",
         
-        "webhook" : "r",
-        "webhook.name" : "cr",
-        "webhook.key" : "cr",
-        "webhook.kind" : "cr",
-        "webhook.url" : "cr",
-        "webhook.driver" : "cr",
-        "webhook.config" : "cr",
+        "genericObject" : "r",
+        "genericObject.name" : "cr",
+        "genericObject.key" : "cr",
+        "genericObject.kind" : "cr",
+        "genericObject.resourceData" : "cr",
 
         "serviceEvent" : "r",
         "serviceEvent.instanceId" : "r",
