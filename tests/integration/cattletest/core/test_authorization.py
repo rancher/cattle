@@ -207,7 +207,7 @@ def test_user_types(user_client, adds=set(), removes=set()):
         'storageDriverService',
         'networkDriverService',
         'defaultNetwork',
-        'webhook',
+        'genericObject',
     }
     types.update(adds)
     types.difference_update(removes)
@@ -441,7 +441,7 @@ def test_admin_types(admin_user_client, adds=set(), removes=set()):
         'portRule',
         'targetPortRule',
         'loadBalancerCookieStickinessPolicy',
-        'webhook'
+        'genericObject',
     }
     types.update(adds)
     types.difference_update(removes)
@@ -2507,36 +2507,30 @@ def test_pull_task(admin_user_client, user_client, project_client):
     })
 
 
-def test_webhook(admin_user_client, user_client, project_client):
-    auth_check(admin_user_client.schema, 'webhook', 'crd', {
+def test_generic_object(admin_user_client, user_client, project_client):
+    auth_check(admin_user_client.schema, 'genericObject', 'crd', {
         'name': 'cr',
         'kind': 'cr',
         'key': 'cr',
         'accountId': 'r',
         'data': 'r',
-        'url': 'cr',
-        'driver': 'cr',
-        'config': 'cr'
+        'resourceData': 'cr'
     })
 
-    auth_check(user_client.schema, 'webhook', 'r', {
+    auth_check(user_client.schema, 'genericObject', 'r', {
         'name': 'r',
         'kind': 'r',
         'key': 'r',
         'accountId': 'r',
-        'url': 'r',
-        'driver': 'r',
-        'config': 'r'
+        'resourceData': 'r'
     })
 
-    auth_check(project_client.schema, 'webhook', 'crd', {
+    auth_check(project_client.schema, 'genericObject', 'crd', {
         'name': 'cr',
         'kind': 'cr',
         'key': 'cr',
         'accountId': 'r',
-        'url': 'cr',
-        'driver': 'cr',
-        'config': 'cr'
+        'resourceData': 'cr'
     })
 
 
