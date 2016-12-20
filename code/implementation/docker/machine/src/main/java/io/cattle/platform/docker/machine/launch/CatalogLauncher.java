@@ -106,25 +106,31 @@ public class CatalogLauncher extends GenericServiceLauncher implements Initializ
 
         String catUrl = CATALOG_URL.get();
         ConfigFileFields configCatalogEntries = new ConfigFileFields();
-        FileOutputStream fos;
-        if(catUrl.startsWith("{")) {
-            configCatalogEntries = jsonMapper.readValue(catUrl, ConfigFileFields.class);
-            fos = new FileOutputStream(configFile.getAbsoluteFile());
-            jsonMapper.writeValue(fos, configCatalogEntries);
-        }
-        else {
-            String []catalogs = catUrl.split(",");
-            Map<String, CatalogEntry> catalogEntryMap = new HashMap<String, CatalogEntry>();
-            for (String catalog: catalogs) {
-                CatalogEntry entry = new CatalogEntry();
-                String[]splitted = catalog.split("=");
-                entry.setUrl(splitted[1]);
-                entry.setBranch("master");
-                catalogEntryMap.put(splitted[0], entry);
+        FileOutputStream fos = null;
+        try {
+            if (catUrl.startsWith("{")) {
+                configCatalogEntries = jsonMapper.readValue(catUrl, ConfigFileFields.class);
+                fos = new FileOutputStream(configFile.getAbsoluteFile());
+                jsonMapper.writeValue(fos, configCatalogEntries);
             }
-            configCatalogEntries.setCatalogs(catalogEntryMap);
-            fos = new FileOutputStream(configFile.getAbsoluteFile());
-            jsonMapper.writeValue(fos, configCatalogEntries);
+            else {
+                String[] catalogs = catUrl.split(",");
+                Map<String, CatalogEntry> catalogEntryMap = new HashMap<String, CatalogEntry>();
+                for (String catalog : catalogs) {
+                    CatalogEntry entry = new CatalogEntry();
+                    String[] splitted = catalog.split("=");
+                    entry.setUrl(splitted[1]);
+                    entry.setBranch("master");
+                    catalogEntryMap.put(splitted[0], entry);
+                }
+                configCatalogEntries.setCatalogs(catalogEntryMap);
+                fos = new FileOutputStream(configFile.getAbsoluteFile());
+                jsonMapper.writeValue(fos, configCatalogEntries);
+            }
+        } finally {
+            if (fos != null) {
+                fos.close();
+            }
         }
     }
 

@@ -1,66 +1,38 @@
 package io.cattle.platform.configitem.context.dao;
 
-import io.cattle.platform.configitem.context.data.metadata.common.ContainerMetaData;
 import io.cattle.platform.configitem.context.data.metadata.common.HostMetaData;
 import io.cattle.platform.configitem.context.data.metadata.common.MetaHelperInfo;
-import io.cattle.platform.configitem.context.data.metadata.common.NetworkMetaData;
 import io.cattle.platform.core.model.Account;
 import io.cattle.platform.core.model.HealthcheckInstanceHostMap;
 
+import java.io.OutputStream;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 public interface MetaDataInfoDao {
+    // data that is being streamed
+    void fetchContainers(MetaHelperInfo helperInfo, OutputStream os);
 
-    public enum Version {
-        version1("2015-07-25", "2015-07-25"),
-        version2("2015-12-19", "2015-12-19"),
-        version3("2016-07-29", "2016-07-29"),
-        latestVersion("latest", "2016-07-29");
+    void fetchNetworks(MetaHelperInfo helperInfo, OutputStream os);
 
-        String tag;
-        String value;
+    void fetchContainerLinks(MetaHelperInfo helperInfo, OutputStream os);
+    
+    void fetchHosts(MetaHelperInfo helperInfo, OutputStream os);
 
-        private Version(String tag, String value) {
-            this.tag = tag;
-            this.value = value;
-        }
+    void fetchSelf(MetaHelperInfo helperInfo, String version, OutputStream os);
 
-        public String getTag() {
-            return this.tag;
-        }
+    void fetchServices(MetaHelperInfo helperInfo, OutputStream os);
 
-        public String getValue() {
-            return value;
-        }
+    void fetchStacks(MetaHelperInfo helperInfo, OutputStream os);
 
-        public void setValue(String value) {
-            this.value = value;
-        }
-
-        public void setTag(String tag) {
-            this.tag = tag;
-        }
-    }
-
-    // get containers data
-    List<ContainerMetaData> getManagedContainersData(MetaHelperInfo helperInfo,
-            Map<Long, Map<String, String>> containerIdToContainerLink);
-
-    List<ContainerMetaData> getNetworkFromContainersData(Map<Long, String> instanceIdToUUID, MetaHelperInfo helperInfo);
-
-    List<ContainerMetaData> getHostContainersData(MetaHelperInfo helperInfo);
-
+    void fetchServiceLinks(MetaHelperInfo helperInfo, OutputStream os);
+    
+    void fetchServiceContainerLinks(MetaHelperInfo helperInfo, OutputStream os);
     // helper data
-    List<String> getPrimaryIpsOnInstanceHost(long hostId);
 
     Map<Long, List<HealthcheckInstanceHostMap>> getInstanceIdToHealthCheckers(Account account);
 
     Map<Long, HostMetaData> getHostIdToHostMetadata(Account account, Map<Long, Account> accounts,
-            Set<Long> linkedServicesIds);
-
-    List<NetworkMetaData> getNetworksMetaData(MetaHelperInfo helperInfo);
-
-    Map<Long, Map<String, String>> getContainerIdToContainerLink(long accountId);
+            Set<Long> linkedServicesIds, long agentHostId);
 }

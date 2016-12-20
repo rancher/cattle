@@ -1,7 +1,5 @@
 package io.cattle.platform.configitem.context.data.metadata.common;
 
-import io.cattle.platform.configitem.context.dao.MetaDataInfoDao;
-import io.cattle.platform.configitem.context.dao.MetaDataInfoDao.Version;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.model.Account;
 import io.cattle.platform.core.model.Host;
@@ -17,13 +15,15 @@ public class HostMetaData {
     String name;
     Map<String, String> labels;
     Long hostId;
-    
     String uuid;
     String hostname;
     Long milli_cpu;
     Long memory;
     Long local_storage_mb;
-    protected String environment_uuid;
+    String environment_uuid;
+
+    // helper field needed by metadata service to process object
+    String metadata_kind;
 
     public String getAgent_ip() {
         return agent_ip;
@@ -56,23 +56,15 @@ public class HostMetaData {
         this.memory = host.getMemory();
         this.milli_cpu = host.getMilliCpu();
         this.environment_uuid = account.getUuid();
-    }
-
-    public HostMetaData(HostMetaData that) {
-        this.agent_ip = that.agent_ip;
-        this.name = that.name;
-        this.hostname = that.hostname;
-        this.labels = that.labels;
-        this.uuid = that.uuid;
-        this.hostId = that.hostId;
-        this.local_storage_mb = that.local_storage_mb;
-        this.memory = that.memory;
-        this.milli_cpu = that.milli_cpu;
-        this.environment_uuid = that.environment_uuid;
+        this.metadata_kind = "host";
     }
 
     public Long getHostId() {
         return hostId;
+    }
+
+    public void setHostId(Long hostId) {
+        this.hostId = hostId;
     }
 
     public String getUuid() {
@@ -127,19 +119,19 @@ public class HostMetaData {
         this.local_storage_mb = localStorageMb;
     }
 
-    public static HostMetaData getHostMetaData(HostMetaData data, Version version) {
-        if (version == MetaDataInfoDao.Version.version1 || version == MetaDataInfoDao.Version.version2) {
-            return new HostMetaDataVersion1and2(data);
-        } else {
-            return new HostMetaData(data);
-        }
-    }
-
     public String getEnvironment_uuid() {
         return environment_uuid;
     }
 
     public void setEnvironment_uuid(String environment_uuid) {
         this.environment_uuid = environment_uuid;
+    }
+
+    public String getMetadata_kind() {
+        return metadata_kind;
+    }
+
+    public void setMetadata_kind(String metadata_kind) {
+        this.metadata_kind = metadata_kind;
     }
 }

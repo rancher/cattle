@@ -38,5 +38,4 @@ public interface JsonMapper {
 
     @SuppressWarnings("rawtypes")
     <T> T convertCollectionValue(Object fromValue, Class<? extends Collection> collectionClass, Class<?> elementsClass);
-
 }

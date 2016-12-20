@@ -10,6 +10,9 @@ public class NetworkMetaData {
     protected Map<String, Object> metadata;
     String default_policy_action;
     Object policy;
+    
+ // helper field needed by metadata service to process object
+    String metadata_kind;
 
     public NetworkMetaData(String name, String uuid, boolean is_default, boolean host_ports,
             Map<String, Object> metadata, String defaultPolicyAction, Object policy) {
@@ -21,6 +24,7 @@ public class NetworkMetaData {
         this.metadata = metadata;
         this.default_policy_action = defaultPolicyAction;
         this.policy = policy;
+        this.metadata_kind = "network";
     }
 
     public String getName() {
@@ -47,11 +51,11 @@ public class NetworkMetaData {
         this.metadata = metadata;
     }
 
-    public boolean isHost_ports() {
+    public Boolean isHost_ports() {
         return host_ports;
     }
 
-    public void setHost_ports(boolean host_ports) {
+    public void setHost_ports(Boolean host_ports) {
         this.host_ports = host_ports;
     }
 
@@ -79,4 +83,11 @@ public class NetworkMetaData {
         this.policy = policy;
     }
 
+    public String getMetadata_kind() {
+        return metadata_kind;
+    }
+
+    public void setMetadata_kind(String metadata_kind) {
+        this.metadata_kind = metadata_kind;
+    }
 }
