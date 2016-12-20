@@ -323,8 +323,28 @@ public class DeploymentUnit {
     }
 
     public void waitForStart(){
-        for (DeploymentUnitInstance instance : getDeploymentUnitInstances()) {
+        // sort based on dependencies
+        List<String> sortedLCs = new ArrayList<>();
+        for (String lc : launchConfigToInstance.keySet()) {
+            sortSidekicks(sortedLCs, lc);
+        }
+
+        List<DeploymentUnitInstance> sortedInstances = new ArrayList<>();
+        for (String lc : sortedLCs) {
+            sortedInstances.add(launchConfigToInstance.get(lc));
+        }
+        for (DeploymentUnitInstance instance : sortedInstances) {
             instance.waitForStart();
+        }
+    }
+
+    protected void sortSidekicks(List<String> sorted, String lc) {
+        List<String> sidekicks = getSidekickRefs(service, lc);
+        for (String sidekick : sidekicks) {
+            sortSidekicks(sorted, sidekick);
+        }
+        if (!sorted.contains(lc)) {
+            sorted.add(lc);
         }
     }
 
@@ -728,4 +748,5 @@ public class DeploymentUnit {
 
         return toReturn;
     }
+
 }
