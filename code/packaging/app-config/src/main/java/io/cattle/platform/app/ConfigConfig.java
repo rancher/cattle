@@ -105,7 +105,9 @@ public class ConfigConfig {
 
         for (String config : DEFAULTS) {
             try (InputStream is = cl.getResourceAsStream(config)) {
-                props.load(is);
+                if (is != null) {
+                    props.load(is);
+                }
             }
         }
 
