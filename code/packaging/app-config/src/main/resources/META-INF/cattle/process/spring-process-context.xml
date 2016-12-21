@@ -503,7 +503,7 @@
 
     <!-- Storage Pool Host Map -->
     <process:process name="storagepoolhostmap.create" resourceType="storagePoolHostMap" start="requested" transitioning="activating" done="active" />
-    <process:process name="storagepoolhostmap.remove" resourceType="storagePoolHostMap" start="active,activating" transitioning="removing" done="removed" />
+    <process:process name="storagepoolhostmap.remove" resourceType="storagePoolHostMap" start="requested,active,activating" transitioning="removing" done="removed" />
 
     <!-- Machine driver-->
     <process:process name="machinedriver.create" resourceType="machineDriver" start="requested" transitioning="registering" done="inactive" delegate="machinedriver.activate" />
