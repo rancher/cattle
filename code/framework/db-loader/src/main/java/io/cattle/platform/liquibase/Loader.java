@@ -14,6 +14,8 @@ import liquibase.integration.spring.SpringLiquibase;
 import org.jooq.Configuration;
 import org.jooq.SQLDialect;
 import org.jooq.impl.DSL;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.netflix.config.DynamicStringProperty;
 
@@ -25,6 +27,7 @@ public class Loader extends SpringLiquibase {
     private static final String LOCK_OPTION = "liquibase.databaseChangeLogLockTableName";
 
     private static final DynamicStringProperty RELEASE_LOCK = ArchaiusUtil.getString("db.release.change.lock");
+    private static final Logger log = LoggerFactory.getLogger("ConsoleStatus");
 
     Configuration configuration;
     String lockTable = "DATABASECHANGELOGLOCK";
@@ -59,7 +62,9 @@ public class Loader extends SpringLiquibase {
                 // ignore errors
             }
 
+            log.info("Starting DB migration");
             super.afterPropertiesSet();
+            log.info("DB migration done");
         } finally {
             if (oldLogTable == null) {
                 System.clearProperty(LOG_OPTION);

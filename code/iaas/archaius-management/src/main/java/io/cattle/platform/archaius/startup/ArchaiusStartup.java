@@ -17,6 +17,8 @@ import javax.sql.DataSource;
 
 import org.apache.commons.configuration.AbstractConfiguration;
 import org.apache.commons.configuration.MapConfiguration;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.netflix.config.ConcurrentCompositeConfiguration;
 import com.netflix.config.DynamicConfiguration;
@@ -29,6 +31,7 @@ public class ArchaiusStartup {
     public static final String DB_CONFIG = "DatabaseConfig";
 
     private static Properties GLOBAL_DEFAULT = null;
+    private static final Logger log = LoggerFactory.getLogger("ConsoleStatus");
 
     ExtensionManagerImpl extensionManager;
     ConcurrentCompositeConfiguration baseConfig;
@@ -68,6 +71,7 @@ public class ArchaiusStartup {
     }
 
     public void start() {
+        log.info("Loading configuration");
         load(false);
         extensionManager.reset();
         load(true);

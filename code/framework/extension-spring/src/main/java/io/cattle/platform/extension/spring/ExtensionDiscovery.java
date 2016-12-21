@@ -14,7 +14,12 @@ import java.util.Map;
 import javax.annotation.PostConstruct;
 import javax.inject.Inject;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 public class ExtensionDiscovery {
+
+    private static final Logger log = LoggerFactory.getLogger("ConsoleStatus");
 
     @Inject
     ExtensionManagerImpl extensionManager;
@@ -34,6 +39,8 @@ public class ExtensionDiscovery {
 
     @PostConstruct
     public void init() {
+        log.info("Loading processes");
+
         for (ProcessHandler handler : processHandlers) {
             process(handler, ProcessHandler.class);
         }

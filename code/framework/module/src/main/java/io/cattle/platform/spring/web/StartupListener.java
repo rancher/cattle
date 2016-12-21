@@ -25,7 +25,7 @@ import com.netflix.config.DynamicStringListProperty;
 public class StartupListener implements ServletContextListener {
 
     private static DynamicStringListProperty START_ORDER = ArchaiusUtil.getList("startup.priority");
-    private static final Logger log = LoggerFactory.getLogger(StartupListener.class);
+    private static final Logger log = LoggerFactory.getLogger("ConsoleStatus");
 
     @Inject
     List<InitializationTask> tasks;
