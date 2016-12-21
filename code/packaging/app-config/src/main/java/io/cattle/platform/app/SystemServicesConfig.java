@@ -14,8 +14,6 @@ import io.cattle.platform.agent.instance.factory.impl.AgentInstanceFactoryImpl;
 import io.cattle.platform.agent.instance.link.process.AgentInstanceLinkActivate;
 import io.cattle.platform.agent.instance.serialization.AgentInstanceAuthObjectPostProcessor;
 import io.cattle.platform.agent.instance.service.AgentMetadataService;
-import io.cattle.platform.allocator.dao.impl.AllocatorDaoImpl;
-import io.cattle.platform.allocator.service.AllocatorServiceImpl;
 import io.cattle.platform.api.formatter.DefaultIdFormatter;
 import io.cattle.platform.async.retry.RetryTimeoutService;
 import io.cattle.platform.async.retry.impl.RetryTimeoutServiceImpl;
@@ -699,18 +697,8 @@ public class SystemServicesConfig {
     }
 
     @Bean
-    AllocatorServiceImpl AllocatorServiceImpl() {
-        return new AllocatorServiceImpl();
-    }
-
-    @Bean
     ProcessProgressImpl ProcessProgressImpl() {
         return new ProcessProgressImpl();
-    }
-
-    @Bean
-    AllocatorDaoImpl AllocatorDaoImpl() {
-        return new AllocatorDaoImpl();
     }
 
     @Bean

@@ -20,14 +20,11 @@ import io.cattle.platform.host.stats.api.StatsAccess;
 import io.cattle.platform.host.stats.api.StatsOutputFilter;
 import io.cattle.platform.iaas.api.auditing.AuditLogOutPutFilter;
 import io.cattle.platform.iaas.api.auditing.AuditLogsRequestHandler;
-import io.cattle.platform.iaas.api.auditing.AuditServiceImpl;
 import io.cattle.platform.iaas.api.auditing.ResourceIdInputFilter;
 import io.cattle.platform.iaas.api.auditing.ResourceIdOutputFilter;
-import io.cattle.platform.iaas.api.auditing.dao.impl.AuditLogDaoImpl;
 import io.cattle.platform.iaas.api.auth.AchaiusPolicyOptionsFactory;
 import io.cattle.platform.iaas.api.auth.dao.impl.AuthDaoImpl;
 import io.cattle.platform.iaas.api.auth.dao.impl.AuthTokenDaoImpl;
-import io.cattle.platform.iaas.api.auth.dao.impl.PasswordDaoImpl;
 import io.cattle.platform.iaas.api.auth.dynamic.DynamicSchemaAuthorizationProvider;
 import io.cattle.platform.iaas.api.auth.identity.AccountOutputFilter;
 import io.cattle.platform.iaas.api.auth.identity.IdentityManager;
@@ -184,16 +181,6 @@ public class IaasApiConfig {
     @Bean
     AuditLogsRequestHandler AuditLogsRequestHandler() {
         return new AuditLogsRequestHandler();
-    }
-
-    @Bean
-    AuditLogDaoImpl AuditLogDaoImpl() {
-        return new AuditLogDaoImpl();
-    }
-
-    @Bean
-    AuditServiceImpl AuditServiceImpl() {
-        return new AuditServiceImpl();
     }
 
     @Bean
@@ -667,11 +654,6 @@ public class IaasApiConfig {
     @Bean
     AuthDaoImpl AuthDaoImpl() {
         return new AuthDaoImpl();
-    }
-
-    @Bean
-    PasswordDaoImpl PasswordDaoImpl() {
-        return new PasswordDaoImpl();
     }
 
     @Bean

@@ -1,6 +1,5 @@
 package io.cattle.platform.app;
 
-import io.cattle.platform.allocator.service.AllocatorServiceImpl;
 import io.cattle.platform.api.auth.Identity;
 import io.cattle.platform.api.html.ConfigBasedHtmlTemplate;
 import io.cattle.platform.api.parser.ApiRequestParser;
@@ -483,11 +482,6 @@ public class ApiServerConfig {
     @Bean
     AccountDeactivateActionHandler AccountDeactivateActionHandler() {
         return new AccountDeactivateActionHandler();
-    }
-
-    @Bean
-    AllocatorServiceImpl AllocatorServiceImpl() {
-        return new AllocatorServiceImpl();
     }
 
     @Bean
