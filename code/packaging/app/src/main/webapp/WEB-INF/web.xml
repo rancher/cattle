@@ -70,9 +70,8 @@
     </filter>
     <filter-mapping>
     	<filter-name>WebhookService</filter-name>
-        <url-pattern>/v1-webhooks/receivers/*</url-pattern>
+        <url-pattern>/v1-webhooks/*</url-pattern>
         <filter-name>WebhookService</filter-name>
-        <url-pattern>/v1-webhooks/endpoint</url-pattern>
     </filter-mapping>
 
     <filter>
