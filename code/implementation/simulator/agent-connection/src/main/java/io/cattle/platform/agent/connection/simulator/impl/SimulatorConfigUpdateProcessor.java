@@ -75,6 +75,10 @@ public class SimulatorConfigUpdateProcessor implements AgentSimulatorEventProces
     }
 
     protected void downloadAndPost(String auth, String url, ConfigUpdateItem item) throws IOException {
+        if (item.getName().equals("metadata-answers") || item.getName().equals("psk")) {
+            return;
+        }
+
         String contentUrl = (url + "/configcontent/" + item.getName()).toLowerCase();
         URLConnection urlConnection = getConnection(contentUrl, auth);
 

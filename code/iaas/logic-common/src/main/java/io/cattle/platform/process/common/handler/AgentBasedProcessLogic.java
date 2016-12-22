@@ -3,6 +3,8 @@ package io.cattle.platform.process.common.handler;
 import io.cattle.platform.agent.AgentLocator;
 import io.cattle.platform.agent.RemoteAgent;
 import io.cattle.platform.archaius.util.ArchaiusUtil;
+import io.cattle.platform.async.utils.TimeoutException;
+import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.engine.handler.HandlerResult;
 import io.cattle.platform.engine.process.ProcessInstance;
 import io.cattle.platform.engine.process.ProcessState;
@@ -19,6 +21,7 @@ import io.cattle.platform.object.util.ObjectUtils;
 import io.cattle.platform.process.common.util.ProcessUtils;
 import io.cattle.platform.process.progress.ProcessProgress;
 import io.cattle.platform.process.progress.ProcessProgressInstance;
+import io.cattle.platform.util.exception.ExecutionException;
 import io.cattle.platform.util.type.CollectionUtils;
 import io.cattle.platform.util.type.InitializationTask;
 import io.cattle.platform.util.type.Priority;
@@ -46,6 +49,7 @@ public class AgentBasedProcessLogic extends AbstractObjectProcessLogic implement
 
     boolean reportProgress = false;
     boolean shouldContinue;
+    boolean sendNoOp;
     String errorChainProcess;
     String configPrefix = "event.data.";
     String dataType;
@@ -55,8 +59,10 @@ public class AgentBasedProcessLogic extends AbstractObjectProcessLogic implement
     String agentResourceRelationship;
     String dataResourceRelationship;
     String eventResourceRelationship;
+    Integer eventRetry;
 
     boolean shortCircuitIfAgentRemoved;
+    boolean timeoutIsError;
     List<String> processDataKeys = new ArrayList<>();
 
     String expression;
@@ -123,12 +129,18 @@ public class AgentBasedProcessLogic extends AbstractObjectProcessLogic implement
         ObjectSerializer serializer = getObjectSerializer(dataResource);
         Map<String, Object> data = serializer == null ? null : serializer.serialize(dataResource);
 
+        boolean shortCircuit = false;
         Map<String, Object> processData = new HashMap<String, Object>();
         for (String key : processDataKeys) {
             Object value = state.getData().get(key);
             if (value != null) {
+                shortCircuit = InstanceConstants.PROCESS_DATA_NO_OP.equals(key) && Boolean.TRUE.equals(value);
                 processData.put(key, value);
             }
+        }
+
+        if (sendNoOp) {
+            shortCircuit = false;
         }
 
         if (processData.size() > 0) {
@@ -143,6 +155,7 @@ public class AgentBasedProcessLogic extends AbstractObjectProcessLogic implement
         preProcessEvent(event, state, process, eventResource, dataResource, agentResource);
 
         EventCallOptions options = new EventCallOptions();
+        options.setRetry(eventRetry);
         final ProcessProgressInstance progressInstance = progress.get();
 
         if (reportProgress && progressInstance != null) {
@@ -164,10 +177,20 @@ public class AgentBasedProcessLogic extends AbstractObjectProcessLogic implement
 
         Event reply;
         try {
-            reply = callSync(agent, event, options);
+            if (shortCircuit) {
+                reply = EventVO.reply(event);
+            } else {
+                reply = callSync(agent, event, options);
+            }
         } catch (AgentRemovedException e) {
             if (shortCircuitIfAgentRemoved) {
                 return null;
+            } else {
+                throw e;
+            }
+        } catch (TimeoutException e) {
+            if (timeoutIsError) {
+                throw new ExecutionException(e);
             } else {
                 throw e;
             }
@@ -467,6 +490,30 @@ public class AgentBasedProcessLogic extends AbstractObjectProcessLogic implement
 
     public void setErrorChainProcess(String errorChainProcess) {
         this.errorChainProcess = errorChainProcess;
+    }
+
+    public boolean isTimeoutIsError() {
+        return timeoutIsError;
+    }
+
+    public void setTimeoutIsError(boolean timeoutIsError) {
+        this.timeoutIsError = timeoutIsError;
+    }
+
+    public Integer getEventRetry() {
+        return eventRetry;
+    }
+
+    public void setEventRetry(Integer eventRetry) {
+        this.eventRetry = eventRetry;
+    }
+
+    public boolean isSendNoOp() {
+        return sendNoOp;
+    }
+
+    public void setSendNoOp(boolean sendNoOp) {
+        this.sendNoOp = sendNoOp;
     }
 
 }

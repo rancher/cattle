@@ -1,0 +1,55 @@
+package io.cattle.platform.core.dao.impl;
+
+import static io.cattle.platform.core.model.tables.ContainerEventTable.*;
+
+import io.cattle.platform.archaius.util.ArchaiusUtil;
+import io.cattle.platform.core.constants.CommonStatesConstants;
+import io.cattle.platform.core.dao.ContainerEventDao;
+import io.cattle.platform.core.dao.GenericResourceDao;
+import io.cattle.platform.core.model.ContainerEvent;
+import io.cattle.platform.db.jooq.dao.impl.AbstractJooqDao;
+import io.cattle.platform.deferred.util.DeferredUtils;
+
+import java.util.Map;
+
+import javax.inject.Inject;
+import javax.inject.Named;
+
+import com.netflix.config.DynamicIntProperty;
+
+@Named
+public class ContainerEventDaoImpl extends AbstractJooqDao implements ContainerEventDao {
+
+    private static final DynamicIntProperty MAX_EVENTS = ArchaiusUtil.getInt("container.event.max.size");
+
+    @Inject
+    GenericResourceDao resourceDao;
+
+    @Override
+    public boolean canCreate(Long hostId) {
+        int count = create().select(CONTAINER_EVENT.HOST_ID)
+            .from(CONTAINER_EVENT)
+            .where(CONTAINER_EVENT.HOST_ID.eq(hostId)
+                    .and(CONTAINER_EVENT.STATE.notEqual(CommonStatesConstants.CREATED)))
+            .fetchCount();
+        return count < MAX_EVENTS.get();
+    }
+
+    @Override
+    public boolean createContainerEvent(final ContainerEvent event, final Map<String, Object> data) {
+        Long hostId = event.getHostId();
+        if (hostId != null && !canCreate(hostId)) {
+            return false;
+        }
+
+        DeferredUtils.defer(new Runnable() {
+            @Override
+            public void run() {
+                resourceDao.createAndSchedule(event, data);
+            }
+        });
+
+        return true;
+    }
+
+}
