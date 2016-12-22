@@ -84,7 +84,6 @@ public class ApiRequestFilterDelegate {
                 }
                 apiRequest.setSchemaFactory(defaultFactory);
                 schemaUrl = ApiContext.getUrlBuilder().resourceCollection(Schema.class);
-                apiRequest.setVersion(null);
             } else {
                 schemaUrl = ApiContext.getUrlBuilder().resourceCollection(Schema.class);
             }

@@ -708,7 +708,7 @@ public class IaasApiConfig {
 
     @Bean
     GenericWhitelistedProxy NoAuthenticationProxy() {
-        GenericWhitelistedProxy proxy = new GenericWhitelistedProxy();
+        GenericWhitelistedProxy proxy = new GenericWhitelistedProxy("NoAuthenticationProxy");
         proxy.setNoAuthProxy("true");
         proxy.setAllowedPaths(Arrays.asList(
                 "/v1-auth/saml",
@@ -718,7 +718,7 @@ public class IaasApiConfig {
 
     @Bean
     GenericWhitelistedProxy GenericWhitelistedProxy() {
-        return new GenericWhitelistedProxy();
+        return new GenericWhitelistedProxy("GenericWhitelistedProxy");
     }
 
     @Bean
