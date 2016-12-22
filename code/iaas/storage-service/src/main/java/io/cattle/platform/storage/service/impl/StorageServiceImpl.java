@@ -125,7 +125,7 @@ public class StorageServiceImpl implements StorageService {
                 if (globalPool == null) {
                     globalPool = storagePoolDao.mapNewPool(hostId, getStoragePoolProperties(storageDriver));
                 } else {
-                    objectManager.create(StoragePoolHostMap.class,
+                    genericResourceDao.createAndSchedule(StoragePoolHostMap.class,
                             STORAGE_POOL_HOST_MAP.HOST_ID, hostId,
                             STORAGE_POOL_HOST_MAP.STORAGE_POOL_ID, globalPool.getId());
                 }
