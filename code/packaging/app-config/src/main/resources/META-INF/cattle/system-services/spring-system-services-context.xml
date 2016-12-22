@@ -75,6 +75,7 @@
     <bean class="io.cattle.platform.core.dao.impl.AccountDaoImpl" />
     <bean class="io.cattle.platform.core.dao.impl.AgentDaoImpl" />
     <bean class="io.cattle.platform.core.dao.impl.CertificateDaoImpl" />
+    <bean class="io.cattle.platform.core.dao.impl.ContainerEventDaoImpl" />
     <bean class="io.cattle.platform.core.dao.impl.DataDaoImpl" />
     <bean class="io.cattle.platform.core.dao.impl.DynamicSchemaDaoImpl" />
     <bean class="io.cattle.platform.core.dao.impl.GenericMapDaoImpl" />
