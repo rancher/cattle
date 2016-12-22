@@ -60,7 +60,7 @@ public class ContainerEventFilter extends AbstractDefaultResourceManagerFilter {
             throw new ValidationErrorException(ValidationErrorCodes.INVALID_REFERENCE, HOST_PARAM);
         }
 
-        if (!containerEventDao.canCreate(host.getId())) {
+        if (!containerEventDao.canCreate(host.getId(), event.getExternalStatus())) {
             log.info("Dropping container event from agent for host [{}]", host.getId());
             throw new ClientVisibleException(ResponseCodes.CONFLICT, TOO_MANY);
         }
