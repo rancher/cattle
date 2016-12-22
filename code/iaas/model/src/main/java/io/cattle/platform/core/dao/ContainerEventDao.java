@@ -8,6 +8,6 @@ public interface ContainerEventDao {
 
     public boolean createContainerEvent(ContainerEvent event, Map<String, Object> data);
 
-    boolean canCreate(Long hostId);
+    boolean canCreate(Long hostId, String event);
 
 }

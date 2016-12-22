@@ -4,6 +4,7 @@ import static io.cattle.platform.core.model.tables.ContainerEventTable.*;
 
 import io.cattle.platform.archaius.util.ArchaiusUtil;
 import io.cattle.platform.core.constants.CommonStatesConstants;
+import io.cattle.platform.core.constants.ContainerEventConstants;
 import io.cattle.platform.core.dao.ContainerEventDao;
 import io.cattle.platform.core.dao.GenericResourceDao;
 import io.cattle.platform.core.model.ContainerEvent;
@@ -26,7 +27,11 @@ public class ContainerEventDaoImpl extends AbstractJooqDao implements ContainerE
     GenericResourceDao resourceDao;
 
     @Override
-    public boolean canCreate(Long hostId) {
+    public boolean canCreate(Long hostId, String event) {
+        if (!ContainerEventConstants.EVENT_START.equals(event)) {
+            return true;
+        }
+
         int count = create().select(CONTAINER_EVENT.HOST_ID)
             .from(CONTAINER_EVENT)
             .where(CONTAINER_EVENT.HOST_ID.eq(hostId)
@@ -38,7 +43,7 @@ public class ContainerEventDaoImpl extends AbstractJooqDao implements ContainerE
     @Override
     public boolean createContainerEvent(final ContainerEvent event, final Map<String, Object> data) {
         Long hostId = event.getHostId();
-        if (hostId != null && !canCreate(hostId)) {
+        if (hostId != null && !canCreate(hostId, event.getExternalStatus())) {
             return false;
         }
 

@@ -108,6 +108,10 @@ public class ContainerEventCreate extends AbstractDefaultProcessHandler {
         return false;
     }
 
+    public void invalidate(String id) {
+        scheduled.invalidate(id);
+    }
+
     @Override
     public HandlerResult handle(ProcessState state, ProcessInstance process) {
         HandlerResult result = null;
