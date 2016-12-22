@@ -95,7 +95,7 @@
     <management:executor-service
         id="ProcessExecutorService"
         keep-alive="1200"
-        pool-size="16-20"
+        pool-size="50"
         queue-capacity="1000"
         rejection-policy="DISCARD"
         />

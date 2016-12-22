@@ -413,6 +413,10 @@ public abstract class AbstractJooqResourceManager extends AbstractObjectResource
         if (t instanceof ProcessExecutionExitException && ((ProcessExecutionExitException) t).getExitReason() == ExitReason.RESOURCE_BUSY) {
             log.info("Resource busy : {}", t.getMessage());
             throw new ClientVisibleException(ResponseCodes.CONFLICT);
+        } else if (t instanceof ProcessExecutionExitException &&
+                ((ProcessExecutionExitException) t).getExitReason() == ExitReason.PROCESS_ALREADY_IN_PROGRESS) {
+            log.info("Process in progress : {}", t.getMessage());
+            throw new ClientVisibleException(ResponseCodes.CONFLICT);
         } else if (t instanceof FailedToAcquireLockException) {
             log.info("Failed to lock : {}", t.getMessage());
             throw new ClientVisibleException(ResponseCodes.CONFLICT);
