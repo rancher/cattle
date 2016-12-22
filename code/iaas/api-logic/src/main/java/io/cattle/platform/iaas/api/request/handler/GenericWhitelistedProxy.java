@@ -7,6 +7,7 @@ import io.cattle.platform.iaas.api.servlet.filter.ProxyPreFilter;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.meta.ObjectMetaDataManager;
 import io.cattle.platform.object.util.DataAccessor;
+import io.cattle.platform.util.type.Named;
 import io.github.ibuildthecloud.gdapi.condition.Condition;
 import io.github.ibuildthecloud.gdapi.condition.ConditionType;
 import io.github.ibuildthecloud.gdapi.exception.ClientVisibleException;
@@ -70,7 +71,7 @@ import com.netflix.config.DynamicBooleanProperty;
 import com.netflix.config.DynamicStringListProperty;
 
 
-public class GenericWhitelistedProxy extends AbstractResponseGenerator {
+public class GenericWhitelistedProxy extends AbstractResponseGenerator implements Named {
 
     public static final String ALLOWED_HOST = GenericWhitelistedProxy.class.getName() + "allowed.host";
     public static final String SET_HOST_CURRENT_HOST = GenericWhitelistedProxy.class.getName() + "set_host_current_host";
@@ -91,6 +92,7 @@ public class GenericWhitelistedProxy extends AbstractResponseGenerator {
 
     private List<String> allowedPaths;
     private boolean noAuthProxy = false;
+    private String name;
 
     static {
         LayeredConnectionSocketFactory ssl = null;
@@ -138,6 +140,11 @@ public class GenericWhitelistedProxy extends AbstractResponseGenerator {
 
     @Inject
     ObjectManager objectManager;
+
+    public GenericWhitelistedProxy(String name) {
+        super();
+        this.name = name;
+    }
 
     protected boolean isAllowed(HttpServletRequest servletRequest, String host) {
         boolean allowHost = Boolean.TRUE.equals(servletRequest.getAttribute(ALLOWED_HOST));
@@ -369,5 +376,14 @@ public class GenericWhitelistedProxy extends AbstractResponseGenerator {
 
     public void setNoAuthProxy(String noAuthProxy) {
         this.noAuthProxy = Boolean.parseBoolean(noAuthProxy);
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    @Override
+    public String getName() {
+        return name;
     }
 }
