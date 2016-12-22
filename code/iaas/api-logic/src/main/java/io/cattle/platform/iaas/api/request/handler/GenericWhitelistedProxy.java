@@ -178,7 +178,7 @@ public class GenericWhitelistedProxy extends AbstractResponseGenerator implement
     @SuppressWarnings("unchecked")
     @Override
     protected void generate(final ApiRequest request) throws IOException {
-        if (request.getVersion() == null || !ALLOW_PROXY.get())
+        if (!ALLOW_PROXY.get())
             return;
 
         if (!"proxy".equals(request.getType())) {
