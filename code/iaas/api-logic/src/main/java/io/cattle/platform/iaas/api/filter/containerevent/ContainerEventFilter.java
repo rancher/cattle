@@ -3,6 +3,7 @@ package io.cattle.platform.iaas.api.filter.containerevent;
 import io.cattle.platform.api.auth.Policy;
 import io.cattle.platform.api.utils.ApiUtils;
 import io.cattle.platform.core.dao.AgentDao;
+import io.cattle.platform.core.dao.ContainerEventDao;
 import io.cattle.platform.core.model.Agent;
 import io.cattle.platform.core.model.ContainerEvent;
 import io.cattle.platform.core.model.Host;
@@ -19,13 +20,21 @@ import java.util.Map;
 
 import javax.inject.Inject;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 public class ContainerEventFilter extends AbstractDefaultResourceManagerFilter {
 
     public static final String HOST_PARAM = "hostId";
     public static final String VERIFY_AGENT = "CantVerifyAgent";
+    public static final String TOO_MANY = "TooManyContainerEvents";
+    private static final Logger log = LoggerFactory.getLogger(ContainerEventFilter.class);
 
     @Inject
     AgentDao agentDao;
+
+    @Inject
+    ContainerEventDao containerEventDao;
 
     @Inject
     ObjectManager objectManager;
@@ -49,6 +58,11 @@ public class ContainerEventFilter extends AbstractDefaultResourceManagerFilter {
         Host host = hosts.get(event.getReportedHostUuid());
         if ( host == null ) {
             throw new ValidationErrorException(ValidationErrorCodes.INVALID_REFERENCE, HOST_PARAM);
+        }
+
+        if (!containerEventDao.canCreate(host.getId())) {
+            log.info("Dropping container event from agent for host [{}]", host.getId());
+            throw new ClientVisibleException(ResponseCodes.CONFLICT, TOO_MANY);
         }
 
         event.setHostId(host.getId());

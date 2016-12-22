@@ -10,6 +10,7 @@ import static io.cattle.platform.docker.constants.DockerInstanceConstants.*;
 import io.cattle.platform.agent.AgentLocator;
 import io.cattle.platform.agent.RemoteAgent;
 import io.cattle.platform.archaius.util.ArchaiusUtil;
+import io.cattle.platform.async.utils.TimeoutException;
 import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.constants.NetworkConstants;
@@ -109,7 +110,12 @@ public class ContainerEventCreate extends AbstractDefaultProcessHandler {
 
     @Override
     public HandlerResult handle(ProcessState state, ProcessInstance process) {
-        HandlerResult result = handleInternal(state, process);
+        HandlerResult result = null;
+        try {
+            result = handleInternal(state, process);
+        } catch (TimeoutException e) {
+            // ignore;
+        }
         String externalId = ((ContainerEvent)state.getResource()).getExternalId();
         if (StringUtils.isNotBlank(externalId)) {
             scheduled.invalidate(((ContainerEvent)state.getResource()).getExternalId());
@@ -135,14 +141,14 @@ public class ContainerEventCreate extends AbstractDefaultProcessHandler {
         HandlerResult result = lockManager.lock(new ContainerEventInstanceLock(event.getAccountId(), event.getExternalId()), new LockCallback<HandlerResult>() {
             @Override
             public HandlerResult doWithLock() {
-                Map<String, Object> inspect = getInspect(event, data);
+                Map<String, Object> inspect = getInspect(event, data, false);
                 String rancherUuid = getRancherUuidLabel(inspect, data);
                 Instance instance = instanceDao.getInstanceByUuidOrExternalId(event.getAccountId(), rancherUuid, event.getExternalId());
 
                 try {
                     String status = event.getExternalStatus();
                     if (status.equals(EVENT_START) && instance == null) {
-                        scheduleInstance(event, instance, inspect, data);
+                        scheduleInstance(event, instance, data);
                         return null;
                     }
 
@@ -194,7 +200,8 @@ public class ContainerEventCreate extends AbstractDefaultProcessHandler {
         return result;
     }
 
-    void scheduleInstance(ContainerEvent event, Instance instance, Map<String, Object> inspect, Map<String, Object> data) {
+    void scheduleInstance(ContainerEvent event, Instance instance, Map<String, Object> data) {
+        Map<String, Object> inspect = getInspect(event, data, true);
         final Long accountId = event.getAccountId();
         final String externalId = event.getExternalId();
 
@@ -221,9 +228,9 @@ public class ContainerEventCreate extends AbstractDefaultProcessHandler {
         DataAccessor.setField(instance, InstanceConstants.FIELD_LABELS, labels);
     }
 
-    private Map<String, Object> getInspect(ContainerEvent event, Map<String, Object> data) {
+    private Map<String, Object> getInspect(ContainerEvent event, Map<String, Object> data, boolean remote) {
         Object inspectObj = DataUtils.getFields(event).get(FIELD_DOCKER_INSPECT);
-        if (inspectObj == null) {
+        if (inspectObj == null && remote) {
             Event inspectEvent = newInspectEvent(null, event.getExternalId());
             inspectObj = callAgentForInspect(data, inspectEvent);
         }
@@ -410,19 +417,24 @@ public class ContainerEventCreate extends AbstractDefaultProcessHandler {
 
         Map<String, Object> config = CollectionUtils.toMap(inspect.get(INSPECT_CONFIG));
 
-        Map<String, String> labels = CollectionUtils.toMap(config.get(INSPECT_LABELS));
-        label = labels.get(labelKey);
-        if (StringUtils.isNotEmpty(label))
-            return label;
+        if (config != null) {
+            Map<String, String> labels = CollectionUtils.toMap(config.get(INSPECT_LABELS));
+            label = labels.get(labelKey);
+            if (StringUtils.isNotEmpty(label))
+                return label;
+        }
 
         if (envVarPrefix == null)
             return null;
 
-        List<String> envVars = (List<String>)CollectionUtils.toList(config.get(INSPECT_ENV));
-        for (String envVar : envVars) {
-            if (envVar.startsWith(envVarPrefix))
-                return envVar.substring(envVarPrefix.length());
+        if (config != null) {
+            List<String> envVars = (List<String>)CollectionUtils.toList(config.get(INSPECT_ENV));
+            for (String envVar : envVars) {
+                if (envVar.startsWith(envVarPrefix))
+                    return envVar.substring(envVarPrefix.length());
+            }
         }
+
         return null;
     }
 }

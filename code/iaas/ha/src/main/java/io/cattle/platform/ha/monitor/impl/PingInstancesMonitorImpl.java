@@ -10,6 +10,7 @@ import io.cattle.platform.archaius.util.ArchaiusUtil;
 import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.dao.AgentDao;
+import io.cattle.platform.core.dao.ContainerEventDao;
 import io.cattle.platform.core.model.Agent;
 import io.cattle.platform.core.model.ContainerEvent;
 import io.cattle.platform.core.model.Host;
@@ -25,7 +26,6 @@ import io.cattle.platform.lock.LockDelegator;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.meta.ObjectMetaDataManager;
 import io.cattle.platform.object.process.ObjectProcessManager;
-import io.cattle.platform.object.process.StandardProcess;
 import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.object.util.DataUtils;
 import io.cattle.platform.process.containerevent.ContainerEventCreate;
@@ -76,6 +76,8 @@ public class PingInstancesMonitorImpl implements PingInstancesMonitor {
     ObjectProcessManager processManager;
     @Inject
     ContainerEventCreate containerEventCreate;
+    @Inject
+    ContainerEventDao containerEventDao;
 
 
     LoadingCache<Long, Map<String, KnownInstance>> instanceCache = CacheBuilder.newBuilder().expireAfterWrite(CACHE_TIME.get(), TimeUnit.MILLISECONDS)
@@ -275,8 +277,9 @@ public class PingInstancesMonitorImpl implements PingInstancesMonitor {
         Map<String, Object> data = new HashMap<String, Object>();
         data.put(CONTAINER_EVENT_SYNC_NAME, ri.getUuid());
         data.put(CONTAINER_EVENT_SYNC_LABELS, ri.getLabels());
-        ce = objectManager.create(ce);
-        processManager.scheduleStandardProcess(StandardProcess.CREATE, ce, data);
+        if (!containerEventDao.createContainerEvent(ce, data)) {
+            log.info("Dropping container event for host [{}]", hostId);
+        }
     }
 
     protected void forceStop(final String containerId, Long agentId) {
