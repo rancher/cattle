@@ -436,7 +436,8 @@ public class AllocatorDaoImpl extends AbstractJooqDao implements AllocatorDao {
                                         AgentConstants.STATE_FINISHING_RECONNECT, AgentConstants.STATE_RECONNECTED))
                 .and(HOST.REMOVED.isNull())
                 .and(HOST.ACCOUNT_ID.eq(accountId))
-                .and(HOST.STATE.in(CommonStatesConstants.ACTIVE, CommonStatesConstants.UPDATING_ACTIVE)))
+                                .and(HOST.STATE.in(CommonStatesConstants.ACTIVATING, CommonStatesConstants.ACTIVE,
+                                        CommonStatesConstants.UPDATING_ACTIVE)))
                 .fetchInto(Host.class);
     }
 
