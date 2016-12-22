@@ -67,6 +67,9 @@ public abstract class LabelsProviderProcessHandler extends AgentBasedProcessLogi
         if (labels.size() == 0) {
             labels = CollectionUtils.toMap(CollectionUtils.getNestedValue(reply.getData(),
                     "instanceHostMap", "instance", "+data", "+fields", "+labels"));
+        } else {
+            CollectionUtils.setNestedValue(CollectionUtils.toMap(reply.getData()), labels,
+                    "instanceHostMap", "instance", "+data", "+fields", "+labels");
         }
 
         Instance instance = getInstance(state);

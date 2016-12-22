@@ -278,6 +278,7 @@ public class PingInstancesMonitorImpl implements PingInstancesMonitor {
         data.put(CONTAINER_EVENT_SYNC_NAME, ri.getUuid());
         data.put(CONTAINER_EVENT_SYNC_LABELS, ri.getLabels());
         if (!containerEventDao.createContainerEvent(ce, data)) {
+            containerEventCreate.invalidate(ri.getExternalId());
             log.info("Dropping container event for host [{}]", hostId);
         }
     }
