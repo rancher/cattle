@@ -83,7 +83,7 @@ public class HaConfigManager extends AbstractNoOpResourceManager {
         data.put("enabled", HA_ENABLED.get());
         data.put("clusterSize", HA_CLUSTER_SIZE.get());
 
-        if ("localhost".equals(host)) {
+        if ("localhost".equals(host) || "127.0.0.1".equals(host)) {
             try {
                 data.put("dbSize", dbSize());
             } catch (NumberFormatException | IOException e) {
