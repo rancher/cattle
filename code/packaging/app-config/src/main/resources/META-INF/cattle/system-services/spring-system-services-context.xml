@@ -437,6 +437,7 @@
     <bean class="io.cattle.platform.servicediscovery.service.impl.HostServiceLookup" />
     <bean class="io.cattle.platform.servicediscovery.service.impl.InstanceServiceLookup" />
     <bean class="io.cattle.platform.servicediscovery.service.impl.AgentServiceLookup" />
+    <bean class="io.cattle.platform.servicediscovery.service.impl.SkipServiceLookup" />
     
     <bean class="io.cattle.platform.servicediscovery.deployment.impl.DeploymentManagerImpl" />
     <bean class="io.cattle.platform.servicediscovery.deployment.impl.unit.DeploymentUnitInstanceFactoryImpl" />

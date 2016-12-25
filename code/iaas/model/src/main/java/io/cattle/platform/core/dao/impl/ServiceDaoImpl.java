@@ -26,6 +26,7 @@ import io.cattle.platform.core.model.tables.HealthcheckInstanceHostMapTable;
 import io.cattle.platform.core.model.tables.HostTable;
 import io.cattle.platform.core.model.tables.InstanceTable;
 import io.cattle.platform.core.model.tables.records.HealthcheckInstanceRecord;
+import io.cattle.platform.core.model.tables.records.ServiceRecord;
 import io.cattle.platform.db.jooq.dao.impl.AbstractJooqDao;
 import io.cattle.platform.db.jooq.mapper.MultiRecordMapper;
 import io.cattle.platform.json.JsonMapper;
@@ -291,6 +292,17 @@ public class ServiceDaoImpl extends AbstractJooqDao implements ServiceDao {
                                 CommonStatesConstants.REMOVING)))
                 .limit(limit)
                 .fetchInto(HealthcheckInstanceRecord.class);
+    }
+
+    @Override
+    public List<? extends Service> getSkipServices(long accountId) {
+        return create()
+                .select(SERVICE.fields())
+                .from(SERVICE)
+                .where(SERVICE.ACCOUNT_ID.eq(accountId)
+                        .and(SERVICE.REMOVED.isNull())
+                        .and(SERVICE.SKIP.isTrue()))
+                .fetchInto(ServiceRecord.class);
     }
 
 }

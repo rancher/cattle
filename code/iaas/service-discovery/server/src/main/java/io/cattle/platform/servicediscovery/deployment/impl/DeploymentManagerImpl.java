@@ -1,6 +1,8 @@
 package io.cattle.platform.servicediscovery.deployment.impl;
 
 import static io.cattle.platform.core.model.tables.DeploymentUnitTable.*;
+import static io.cattle.platform.core.model.tables.ServiceTable.*;
+
 import io.cattle.platform.activity.ActivityLog;
 import io.cattle.platform.activity.ActivityService;
 import io.cattle.platform.allocator.service.AllocatorService;
@@ -12,6 +14,7 @@ import io.cattle.platform.core.addon.ScalePolicy;
 import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.ServiceConstants;
 import io.cattle.platform.core.dao.GenericResourceDao;
+import io.cattle.platform.core.dao.HostDao;
 import io.cattle.platform.core.dao.ServiceDao;
 import io.cattle.platform.core.model.Service;
 import io.cattle.platform.core.model.ServiceExposeMap;
@@ -92,6 +95,8 @@ public class DeploymentManagerImpl implements DeploymentManager {
     ActivityService actvtyService;
     @Inject
     GenericResourceDao rscDao;
+    @Inject
+    HostDao hostDao;
 
     @Override
     public boolean isHealthy(Service service) {
@@ -120,6 +125,12 @@ public class DeploymentManagerImpl implements DeploymentManager {
                 if (!sdSvc.isActiveService(service)) {
                     return false;
                 }
+                if (!hostDao.hasActiveHosts(service.getAccountId())) {
+                    objectMgr.setFields(service, SERVICE.SKIP, true);
+                    return false;
+                }
+
+                objectMgr.setFields(service, SERVICE.SKIP, false);
                 return reconcileDeployment(service, checkState);
             }
 

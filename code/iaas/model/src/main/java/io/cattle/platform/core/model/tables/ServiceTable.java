@@ -11,7 +11,7 @@ package io.cattle.platform.core.model.tables;
 @java.lang.SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class ServiceTable extends org.jooq.impl.TableImpl<io.cattle.platform.core.model.tables.records.ServiceRecord> {
 
-	private static final long serialVersionUID = -481042203;
+	private static final long serialVersionUID = -616219560;
 
 	/**
 	 * The singleton instance of <code>cattle.service</code>
@@ -120,6 +120,11 @@ public class ServiceTable extends org.jooq.impl.TableImpl<io.cattle.platform.cor
 	 * The column <code>cattle.service.system</code>.
 	 */
 	public final org.jooq.TableField<io.cattle.platform.core.model.tables.records.ServiceRecord, java.lang.Boolean> SYSTEM = createField("system", org.jooq.impl.SQLDataType.BIT.nullable(false).defaulted(true), this, "");
+
+	/**
+	 * The column <code>cattle.service.skip</code>.
+	 */
+	public final org.jooq.TableField<io.cattle.platform.core.model.tables.records.ServiceRecord, java.lang.Boolean> SKIP = createField("skip", org.jooq.impl.SQLDataType.BIT.nullable(false).defaulted(true), this, "");
 
 	/**
 	 * Create a <code>cattle.service</code> table reference

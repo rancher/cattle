@@ -1,5 +1,6 @@
 package io.cattle.platform.core.dao.impl;
 
+import static io.cattle.platform.core.model.tables.AgentTable.*;
 import static io.cattle.platform.core.model.tables.HostIpAddressMapTable.*;
 import static io.cattle.platform.core.model.tables.HostTable.*;
 import static io.cattle.platform.core.model.tables.InstanceHostMapTable.*;
@@ -7,6 +8,7 @@ import static io.cattle.platform.core.model.tables.InstanceTable.*;
 import static io.cattle.platform.core.model.tables.IpAddressTable.*;
 import static io.cattle.platform.core.model.tables.PhysicalHostTable.*;
 
+import io.cattle.platform.core.constants.AgentConstants;
 import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.HostConstants;
 import io.cattle.platform.core.constants.InstanceConstants;
@@ -56,12 +58,16 @@ public class HostDaoImpl extends AbstractJooqDao implements HostDao {
     }
 
     @Override
-    public List<? extends Host> getActiveHosts(Long accountId) {
+    public boolean hasActiveHosts(Long accountId) {
         return create()
-            .selectFrom(HOST)
+            .select(HOST.ID.count())
+            .from(HOST)
+            .join(AGENT)
+                .on(AGENT.ID.eq(HOST.AGENT_ID))
             .where(HOST.ACCOUNT_ID.eq(accountId)
-            .and(HOST.STATE.in(CommonStatesConstants.ACTIVATING, CommonStatesConstants.ACTIVE)))
-            .fetch();
+            .and(HOST.STATE.in(CommonStatesConstants.ACTIVATING, CommonStatesConstants.ACTIVE)
+                    .and(AGENT.STATE.in(CommonStatesConstants.ACTIVATING, CommonStatesConstants.ACTIVE, AgentConstants.STATE_FINISHING_RECONNECT))))
+            .fetchOneInto(Integer.class) > 0;
     }
 
     @Override

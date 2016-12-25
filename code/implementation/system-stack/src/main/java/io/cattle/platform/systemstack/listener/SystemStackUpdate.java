@@ -118,7 +118,7 @@ public class SystemStackUpdate extends AbstractJooqDao implements AnnotatedEvent
             return;
         }
 
-        if (hostDao.getActiveHosts(account.getId()).size() == 0) {
+        if (!hostDao.hasActiveHosts(account.getId())) {
             return;
         }
 
