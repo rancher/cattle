@@ -115,6 +115,7 @@ import io.cattle.platform.servicediscovery.service.impl.GlobalHostActivateServic
 import io.cattle.platform.servicediscovery.service.impl.HostServiceLookup;
 import io.cattle.platform.servicediscovery.service.impl.InstanceServiceLookup;
 import io.cattle.platform.servicediscovery.service.impl.ServiceDiscoveryServiceImpl;
+import io.cattle.platform.servicediscovery.service.impl.SkipServiceLookup;
 import io.cattle.platform.servicediscovery.upgrade.impl.UpgradeManagerImpl;
 import io.cattle.platform.spring.resource.SpringUrlListFactory;
 import io.cattle.platform.storage.ImageCredentialLookup;
@@ -669,6 +670,11 @@ public class SystemServicesConfig {
     @Bean
     InstanceServiceLookup InstanceServiceLookup() {
         return new InstanceServiceLookup();
+    }
+
+    @Bean
+    SkipServiceLookup SkipServiceLookup() {
+        return new SkipServiceLookup();
     }
 
     @Bean

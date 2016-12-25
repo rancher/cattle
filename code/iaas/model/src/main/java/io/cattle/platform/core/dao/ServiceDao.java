@@ -53,4 +53,6 @@ public interface ServiceDao {
     Map<Long, List<HealthcheckState>> getHealthcheckStatesForInstances(List<Long> ids, IdFormatter idFormatter);
 
     List<? extends HealthcheckInstance> findBadHealthcheckInstance(int limit);
+
+    List<? extends Service> getSkipServices(long accountId);
 }
