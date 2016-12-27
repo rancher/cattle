@@ -71,6 +71,36 @@ gist()
     exit $result
 }
 
+install_mysql_cmd_aliases()
+{
+    cat >/usr/local/bin/mysql <<EOF
+[ -t 0 ] && tty=-it
+docker run \$tty --rm -e MYSQL_HOST -e MYSQL_TCP_PORT --net=host mysql:$MYSQL_VERSION mysql -P $MYSQL_TCP_PORT "\$@"
+EOF
+    chmod +x /usr/local/bin/mysql
+
+    cat >/usr/local/bin/mysqldump <<EOF
+[ -t 0 ] && tty=-it
+docker run \$tty --rm -e MYSQL_HOST -e MYSQL_TCP_PORT --net=host mysql:$MYSQL_VERSION mysqldump -h $MYSQL_HOST -P MYSQL_TCP_PORT "\$@"
+EOF
+    chmod +x /usr/local/bin/mysqldump
+}
+
+install_pgsql_cmd_aliases()
+{
+    cat >/usr/local/bin/psql <<EOF
+[ -t 0 ] && tty=-it
+docker run \$tty --rm -e PGDATABASE -e PGHOST -e PGUSER -e PGPASSWORD  --net=host postgres:$PGSQL_VERSION psql "\$@"
+EOF
+    chmod +x /usr/local/bin/psql
+
+    cat >/usr/local/bin/pg_dump <<EOF
+[ -t 0 ] && tty=-it
+docker run \$tty --rm -e PGDATABASE -e PGHOST -e PGUSER -e PGPASSWORD --net=host postgres:$PGSQL_VERSION pg_dump "\$@"
+EOF
+    chmod +x /usr/local/bin/pg_dump
+}
+
 set_up_agent() {
     # Wait for completion now to ensure that images are pulled
     ./test-warm
@@ -84,16 +114,12 @@ set_up_agent() {
 tear_down() {
     echo Shutting down agent...
     set +e
-    docker stop $(docker ps -q) &>> /dev/null
-    docker rm -fv $(docker ps -a -q) &>> /dev/null
+    docker stop $(docker ps -q --filter=name=r) &>> /dev/null
+    docker rm -fv $(docker ps -a -q --filter=name=r) &>> /dev/null
     set -e
 
     echo Shutting down server...
     pkill java
-    case $DB in
-        mysql ) service mysql stop ;;
-        pgsql ) service postgresql stop ;;
-    esac
 }
 
 test_failed()
@@ -120,6 +146,11 @@ do
     export RUNTIME_DIR=$(pwd)/../runtime/ci-$DB/
 
     # Bootstrap Database
+    set +e
+    docker stop ci-$DB &>> /dev/null
+    docker rm ci-$DB &>> /dev/null
+    set -e
+
     case $DB in
 
         h2 )
@@ -128,15 +159,34 @@ do
         mysql )
 
             export CATTLE_DB_CATTLE_DATABASE=mysql
-            : ${CATTLE_DB_CATTLE_MYSQL_PORT:=13306}
+            : ${CATTLE_DB_CATTLE_MYSQL_PORT:=$MYSQL_TCP_PORT}
+            : ${CATTLE_DB_CATTLE_MYSQL_HOST:=$MYSQL_HOST}
+            export CATTLE_DB_CATTLE_MYSQL_HOST
             export CATTLE_DB_CATTLE_MYSQL_PORT
-            run ./mysql --clean
+            docker run --net=host --name ci-$DB \
+                -e MYSQL_DATABASE=cattle \
+                -e MYSQL_USER=cattle \
+                -e MYSQL_PASSWORD=cattle \
+                -e MYSQL_ALLOW_EMPTY_PASSWORD=yes \
+                -v $(pwd)/../resources/content/db/mysql/mysql-dump.sql:/docker-entrypoint-initdb.d/mysql-dump.sql \
+                -d mysql:$MYSQL_VERSION \
+                --innodb-flush-log-at-trx-commit=0 \
+                --max-connections=1000 \
+                --port=$MYSQL_TCP_PORT \
+                --sql-mode=ONLY_FULL_GROUP_BY
+            install_mysql_cmd_aliases
             ;;
 
         pgsql )
 
             export CATTLE_DB_CATTLE_DATABASE=postgres
-            run ./pgsql --clean
+            docker run --net=host --name ci-$DB \
+                -e POSTGRES_USER=$PGUSER \
+                -e POSTGRES_PASSWORD=$PGPASSWORD \
+                -d postgres:$PGSQL_VERSION \
+                -c max_connections=1000 \
+                -c fsync=off
+            install_pgsql_cmd_aliases
             ;;
 
         * )
