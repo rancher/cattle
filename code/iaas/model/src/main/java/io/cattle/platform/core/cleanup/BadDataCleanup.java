@@ -58,7 +58,7 @@ public class BadDataCleanup extends AbstractJooqDao implements Task {
     @Inject
     ServiceDao serviceDao;
     @Inject
-    @Named("PriorityProcessExecutorService")
+    @Named("CoreExecutorService")
     ExecutorService executorService;
 
     @Override
