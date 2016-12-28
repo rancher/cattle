@@ -223,6 +223,17 @@ public interface Service extends java.io.Serializable {
 	@javax.persistence.Column(name = "system", nullable = false, precision = 1)
 	public java.lang.Boolean getSystem();
 
+	/**
+	 * Setter for <code>cattle.service.skip</code>.
+	 */
+	public void setSkip(java.lang.Boolean value);
+
+	/**
+	 * Getter for <code>cattle.service.skip</code>.
+	 */
+	@javax.persistence.Column(name = "skip", nullable = false, precision = 1)
+	public java.lang.Boolean getSkip();
+
 	// -------------------------------------------------------------------------
 	// FROM and INTO
 	// -------------------------------------------------------------------------

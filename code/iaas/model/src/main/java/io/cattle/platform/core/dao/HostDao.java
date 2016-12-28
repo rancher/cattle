@@ -12,7 +12,7 @@ public interface HostDao {
 
     List<? extends Host> getHosts(Long accountId, List<String> uuids);
 
-    List<? extends Host> getActiveHosts(Long accountId);
+    boolean hasActiveHosts(Long accountId);
 
     Host getHostForIpAddress(long ipAddressId);
 
