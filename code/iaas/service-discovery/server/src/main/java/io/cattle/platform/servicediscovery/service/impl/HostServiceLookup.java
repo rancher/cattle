@@ -34,17 +34,6 @@ public class HostServiceLookup implements ServiceLookup {
         List<Service> services = new ArrayList<>();
         // add all services on host
         services.addAll(svcDao.getServicesOnHost(host.getId()));
-
-        // add all services with scale policy
-        List<? extends Service> allServices = objMgr.find(Service.class, SERVICE.ACCOUNT_ID, host.getAccountId(),
-                SERVICE.REMOVED, null);
-        for (Service service : allServices) {
-            if (sdService.isScalePolicyService(service)) {
-                services.add(service);
-            }
-        }
-
         return services;
     }
-
 }

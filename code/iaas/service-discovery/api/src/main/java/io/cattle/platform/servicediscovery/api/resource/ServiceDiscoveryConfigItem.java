@@ -140,8 +140,6 @@ public class ServiceDiscoveryConfigItem {
             ServiceConstants.FIELD_METADATA, ServiceConstants.FIELD_METADATA, false, false, false);
     public static final ServiceDiscoveryConfigItem RETAIN_IP = new ServiceDiscoveryConfigItem(
             ServiceConstants.FIELD_SERVICE_RETAIN_IP, "retain_ip", false, false, false);
-    public static final ServiceDiscoveryConfigItem SCALE_POLICY = new ServiceDiscoveryConfigItem(
-            ServiceConstants.FIELD_SCALE_POLICY, "scale_policy", false, false, false);
 
     public static final ServiceDiscoveryConfigItem LB_CONFIG = new ServiceDiscoveryConfigItem(
             ServiceConstants.FIELD_LB_CONFIG,

@@ -637,7 +637,6 @@
         "service.healthState": "r",
         "service.startOnCreate": "cr",
         "service.resourceActions.certificate": "",
-        "service.scalePolicy" : "cru",
         "service.currentScale" : "r",
         "service.linkedServices" : "r",
         "service.instanceIds" : "r",
@@ -745,7 +744,6 @@
         "externalService.resourceActions.setservicelinks" : "",
         "externalService.retainIp" : "",
         "externalService.assignServiceIpAddress" : "",
-        "externalService.scalePolicy" : "",
         "externalService.currentScale" : "",
         "externalService.lbConfig" : "",
 
@@ -756,7 +754,6 @@
         "dnsService.createIndex" : "",
         "dnsService.selectorContainer" : "",
         "dnsService.publicEndpoints" : "",
-        "dnsService.scalePolicy" : "",
         "dnsService.currentScale" : "",
         "dnsService.lbConfig" : "",
 
@@ -776,7 +773,6 @@
         "kubernetesService.upgrade" : "",
         "kubernetesService.vip" : "r",
         "kubernetesService.startOnCreate" : "",
-        "kubernetesService.scalePolicy" : "",
         "kubernetesService.currentScale" : "",
         "kubernetesService.lbConfig" : "",
 
@@ -938,11 +934,6 @@
         "healthcheckInstanceHostMap.instanceId" : "r",
         "healthcheckInstanceHostMap.hostId" : "r",
         "healthcheckInstanceHostMap.healthState" : "r",
-
-        "scalePolicy" : "r",
-        "scalePolicy.min" : "cr",
-        "scalePolicy.max" : "cr",
-        "scalePolicy.increment" : "cr",
 
         "serviceLog" : "r",
         "serviceLog.accountId" : "r",
