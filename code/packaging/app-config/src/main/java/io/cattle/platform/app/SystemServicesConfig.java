@@ -59,6 +59,7 @@ import io.cattle.platform.host.service.impl.HostApiServiceImpl;
 import io.cattle.platform.iaas.api.auditing.AuditServiceImpl;
 import io.cattle.platform.iaas.api.auditing.dao.impl.AuditLogDaoImpl;
 import io.cattle.platform.jmx.JmxPublisherFactory;
+import io.cattle.platform.liquibase.Loader;
 import io.cattle.platform.lock.impl.LockDelegatorImpl;
 import io.cattle.platform.lock.impl.LockManagerImpl;
 import io.cattle.platform.lock.provider.impl.InMemoryLockProvider;
@@ -822,7 +823,7 @@ public class SystemServicesConfig {
     }
 
     @Bean
-    DBDiscovery DBDiscovery() {
+    DBDiscovery DBDiscovery(Loader loader) {
         return new DBDiscovery();
     }
 
