@@ -220,6 +220,7 @@
 
         "project.identity" : "",
         "project.allowSystemRole": "cru",
+        "project.projectLinks" : "cru",
 
         "publish": "cr",
         "publish.data": "cr",

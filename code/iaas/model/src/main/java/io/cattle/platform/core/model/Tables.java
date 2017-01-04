@@ -19,6 +19,11 @@ public class Tables {
 	public static final io.cattle.platform.core.model.tables.AccountTable ACCOUNT = io.cattle.platform.core.model.tables.AccountTable.ACCOUNT;
 
 	/**
+	 * The table cattle.account_link
+	 */
+	public static final io.cattle.platform.core.model.tables.AccountLinkTable ACCOUNT_LINK = io.cattle.platform.core.model.tables.AccountLinkTable.ACCOUNT_LINK;
+
+	/**
 	 * The table cattle.agent
 	 */
 	public static final io.cattle.platform.core.model.tables.AgentTable AGENT = io.cattle.platform.core.model.tables.AgentTable.AGENT;

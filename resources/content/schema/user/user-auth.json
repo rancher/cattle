@@ -631,7 +631,7 @@
         "service.selectorLink" : "cru",
         "service.selectorContainer" : "cru",
         "service.fqdn" : "r",
-        "service.publicEndpoints" : "r",
+        "service.publicEndpoints" : "cru",
         "service.retainIp" : "cru",
         "service.assignServiceIpAddress" : "cr",
         "service.healthState": "r",
@@ -886,12 +886,12 @@
 
         "stack.healthState": "r",
 
-        "publicEndpoint" : "r",
-        "publicEndpoint.ipAddress" : "r",
-        "publicEndpoint.port" : "r",
-        "publicEndpoint.serviceId" : "r",
-        "publicEndpoint.instanceId" : "r",
-        "publicEndpoint.hostId" : "r",
+        "publicEndpoint" : "cr",
+        "publicEndpoint.ipAddress" : "cr",
+        "publicEndpoint.port" : "cr",
+        "publicEndpoint.serviceId" : "cr",
+        "publicEndpoint.instanceId" : "cr",
+        "publicEndpoint.hostId" : "cr",
 
         "virtualMachine" : "r",
         "virtualMachine.imageUuid" : "cr",

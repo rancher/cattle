@@ -3,6 +3,7 @@ package io.cattle.platform.configitem.context.data.metadata.common;
 import io.cattle.platform.configitem.context.dao.MetaDataInfoDao;
 import io.cattle.platform.configitem.context.dao.MetaDataInfoDao.Version;
 import io.cattle.platform.core.constants.InstanceConstants;
+import io.cattle.platform.core.model.Account;
 import io.cattle.platform.core.model.Host;
 import io.cattle.platform.object.util.DataAccessor;
 
@@ -22,6 +23,7 @@ public class HostMetaData {
     Long milli_cpu;
     Long memory;
     Long local_storage_mb;
+    protected String environment_uuid;
 
     public String getAgent_ip() {
         return agent_ip;
@@ -39,7 +41,7 @@ public class HostMetaData {
     }
 
     @SuppressWarnings("unchecked")
-    public HostMetaData(String agent_ip, Host host) {
+    public HostMetaData(String agent_ip, Host host, Account account) {
         super();
         this.agent_ip = agent_ip;
         String hostname = DataAccessor.fieldString(host, "hostname");
@@ -53,6 +55,7 @@ public class HostMetaData {
         this.local_storage_mb = host.getLocalStorageMb();
         this.memory = host.getMemory();
         this.milli_cpu = host.getMilliCpu();
+        this.environment_uuid = account.getUuid();
     }
 
     public HostMetaData(HostMetaData that) {
@@ -65,6 +68,7 @@ public class HostMetaData {
         this.local_storage_mb = that.local_storage_mb;
         this.memory = that.memory;
         this.milli_cpu = that.milli_cpu;
+        this.environment_uuid = that.environment_uuid;
     }
 
     public Long getHostId() {
@@ -129,5 +133,13 @@ public class HostMetaData {
         } else {
             return new HostMetaData(data);
         }
+    }
+
+    public String getEnvironment_uuid() {
+        return environment_uuid;
+    }
+
+    public void setEnvironment_uuid(String environment_uuid) {
+        this.environment_uuid = environment_uuid;
     }
 }

@@ -181,7 +181,7 @@ def test_account_purge(admin_user_client, super_client, new_context):
     wait_state(super_client, env, 'removed')
 
 
-def test_user_account_cant_create_account(admin_user_client):
+def test_user_account_cant_create_account(admin_user_client, super_client):
     account = admin_user_client.create_account(name=random_str(),
                                                kind='user')
     account = admin_user_client.wait_success(account)

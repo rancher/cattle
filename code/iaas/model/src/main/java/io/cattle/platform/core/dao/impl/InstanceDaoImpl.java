@@ -13,15 +13,12 @@ import static io.cattle.platform.core.model.tables.ServiceIndexTable.*;
 import static io.cattle.platform.core.model.tables.ServiceTable.*;
 import static io.cattle.platform.core.model.tables.StackTable.*;
 import static io.cattle.platform.core.model.tables.SubnetTable.*;
-
 import io.cattle.platform.core.addon.PublicEndpoint;
 import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.constants.IpAddressConstants;
 import io.cattle.platform.core.constants.PortConstants;
-import io.cattle.platform.core.dao.GenericMapDao;
 import io.cattle.platform.core.dao.InstanceDao;
-import io.cattle.platform.core.dao.NetworkDao;
 import io.cattle.platform.core.model.Account;
 import io.cattle.platform.core.model.Host;
 import io.cattle.platform.core.model.Instance;
@@ -73,11 +70,7 @@ import com.google.common.cache.LoadingCache;
 @Named
 public class InstanceDaoImpl extends AbstractJooqDao implements InstanceDao {
     @Inject
-    GenericMapDao mapDao;
-    @Inject
     ObjectManager objectManager;
-    @Inject
-    NetworkDao ntwkDao;
 
     public static class IpAddressToServiceIndex {
         ServiceIndex index;

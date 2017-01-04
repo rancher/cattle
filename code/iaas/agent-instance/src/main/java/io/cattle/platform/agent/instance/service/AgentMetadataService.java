@@ -18,7 +18,8 @@ public class AgentMetadataService {
     ConfigItemStatusManager statusManager;
 
     public void updateMetadata(Long accountId) {
-        List<Long> agentIds = agentInstanceDao.getAgentProviderIgnoreHealth(SystemLabels.LABEL_AGENT_SERVICE_METADATA, accountId);
+        List<Long> agentIds = agentInstanceDao.getAgentProviderIgnoreHealth(SystemLabels.LABEL_AGENT_SERVICE_METADATA,
+                accountId);
         for (long agentId : agentIds) {
             ConfigUpdateRequest request = ConfigUpdateRequest.forResource(Agent.class, agentId);
             request.addItem("metadata-answers");
