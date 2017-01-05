@@ -304,13 +304,13 @@ public class TableCleanup extends AbstractJooqDao implements Task {
                             .execute());
 
                 } catch (org.jooq.exception.DataAccessException e) {
-                    log.error(e.getMessage());
+                    log.info(e.getMessage());
                     break;
                 }
             }
             if (idsToFix.size() > 0) {
                 table.addRowsSkipped(idsToFix.size());
-                log.error("Skipped {} where id in {}", table.table, idsToFix);
+                log.info("Skipped {} where id in {}", table.table, idsToFix);
             }
         }
         StringBuffer buffDeleted = new StringBuffer("[Rows Deleted] ");
