@@ -6,7 +6,7 @@ import io.cattle.platform.eventing.model.Event;
 
 public interface ProcessEventListener extends AnnotatedEventListener {
 
-    @EventHandler(name = EngineEvents.PROCESS_EXECUTE, poolKey = "process")
+    @EventHandler(name = EngineEvents.PROCESS_EXECUTE)
     void processExecute(Event event);
 
 }

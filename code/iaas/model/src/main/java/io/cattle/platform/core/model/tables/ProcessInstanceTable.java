@@ -11,7 +11,7 @@ package io.cattle.platform.core.model.tables;
 @java.lang.SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class ProcessInstanceTable extends org.jooq.impl.TableImpl<io.cattle.platform.core.model.tables.records.ProcessInstanceRecord> {
 
-	private static final long serialVersionUID = -1613251006;
+	private static final long serialVersionUID = 1986272135;
 
 	/**
 	 * The singleton instance of <code>cattle.process_instance</code>
@@ -102,6 +102,11 @@ public class ProcessInstanceTable extends org.jooq.impl.TableImpl<io.cattle.plat
 	public final org.jooq.TableField<io.cattle.platform.core.model.tables.records.ProcessInstanceRecord, java.util.Date> RUN_AFTER = createField("run_after", org.jooq.impl.SQLDataType.TIMESTAMP.asConvertedDataType(new io.cattle.platform.db.jooq.converter.DateConverter()), this, "");
 
 	/**
+	 * The column <code>cattle.process_instance.account_id</code>.
+	 */
+	public final org.jooq.TableField<io.cattle.platform.core.model.tables.records.ProcessInstanceRecord, java.lang.Long> ACCOUNT_ID = createField("account_id", org.jooq.impl.SQLDataType.BIGINT, this, "");
+
+	/**
 	 * Create a <code>cattle.process_instance</code> table reference
 	 */
 	public ProcessInstanceTable() {
@@ -145,6 +150,14 @@ public class ProcessInstanceTable extends org.jooq.impl.TableImpl<io.cattle.plat
 	@Override
 	public java.util.List<org.jooq.UniqueKey<io.cattle.platform.core.model.tables.records.ProcessInstanceRecord>> getKeys() {
 		return java.util.Arrays.<org.jooq.UniqueKey<io.cattle.platform.core.model.tables.records.ProcessInstanceRecord>>asList(io.cattle.platform.core.model.Keys.KEY_PROCESS_INSTANCE_PRIMARY);
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public java.util.List<org.jooq.ForeignKey<io.cattle.platform.core.model.tables.records.ProcessInstanceRecord, ?>> getReferences() {
+		return java.util.Arrays.<org.jooq.ForeignKey<io.cattle.platform.core.model.tables.records.ProcessInstanceRecord, ?>>asList(io.cattle.platform.core.model.Keys.FK_PROCESS_INSTANCE__ACCOUNT_ID);
 	}
 
 	/**

@@ -73,13 +73,14 @@ public class DefaultProcessInstanceImpl implements ProcessInstance {
     ProcessExecutionLog execution;
     ExitReason finalReason;
     String chainProcess;
+    Date exceptionRunAfter;
 
     volatile boolean inLogic = false;
     boolean executed = false;
     boolean schedule = false;
 
     public DefaultProcessInstanceImpl(ProcessServiceContext context, ProcessRecord record, ProcessDefinition processDefinition, ProcessState state,
-            boolean schedule) {
+            boolean schedule, boolean replay) {
         super();
         this.schedule = schedule;
         this.context = context;
@@ -87,6 +88,7 @@ public class DefaultProcessInstanceImpl implements ProcessInstance {
         this.instanceContext.setProcessDefinition(processDefinition);
         this.instanceContext.setState(state);
         this.instanceContext.setPhase(record.getPhase());
+        this.instanceContext.setReplay(replay);
         this.record = record;
 
         this.processLog = record.getProcessLog();
@@ -261,10 +263,15 @@ public class DefaultProcessInstanceImpl implements ProcessInstance {
             throw new ProcessExecutionExitException(ALREADY_DONE);
         }
 
-        if (instanceContext.getState().shouldCancel(record)) {
+        if (shouldCancel()) {
             throw new ProcessCancelException("State [" + instanceContext.getState().getState() + "] is not valid for process [" +
                     getName() + ":" + getId() + "] on resource [" + getResourceId() + "]");
         }
+    }
+
+    protected boolean shouldCancel() {
+        return instanceContext.getState().shouldCancel(record) ||
+            (instanceContext.isReplay() && !instanceContext.getState().isTransitioning() && instanceContext.getState().isStart(record));
     }
 
     protected void incrementExecutionCountAndRunAfter() {
@@ -284,6 +291,9 @@ public class DefaultProcessInstanceImpl implements ProcessInstance {
 
         long wait = Math.min(RETRY_MAX_WAIT.get(), Math.abs(15000L + (long)Math.pow(2, count-1) * 100));
         record.setRunAfter(new Date(System.currentTimeMillis() + wait));
+        if (exceptionRunAfter != null && exceptionRunAfter.after(record.getRunAfter())) {
+            record.setRunAfter(exceptionRunAfter);
+        }
         record.setRunningProcessServerId(null);
     }
 
@@ -310,7 +320,7 @@ public class DefaultProcessInstanceImpl implements ProcessInstance {
                 previousState = setTransitioning();
             }
 
-            if (schedule) {
+            if (schedule && hasLogic()) {
                 runScheduled();
             }
 
@@ -332,6 +342,9 @@ public class DefaultProcessInstanceImpl implements ProcessInstance {
             if (chain) {
                 throw new ProcessExecutionExitException(ExitReason.CHAIN);
             }
+        } catch (ProcessDelayException e) {
+            exceptionRunAfter = e.getRunAfter();
+            throw e;
         } finally {
             if (!schedule) {
                 setNextRunAfter();
@@ -484,6 +497,12 @@ public class DefaultProcessInstanceImpl implements ProcessInstance {
         }
     }
 
+    protected boolean hasLogic() {
+        return !instanceContext.getProcessDefinition().getPreProcessListeners().isEmpty() ||
+            !instanceContext.getProcessDefinition().getProcessHandlers().isEmpty() ||
+            !instanceContext.getProcessDefinition().getPostProcessListeners().isEmpty();
+    }
+
     protected void runLogic() {
         inLogic = true;
         boolean shouldDelegate = false;
@@ -554,7 +573,8 @@ public class DefaultProcessInstanceImpl implements ProcessInstance {
 
     protected void scheduleChain(final String chainProcess) {
         final ProcessState state = instanceContext.getState();
-        final LaunchConfiguration config = new LaunchConfiguration(chainProcess, record.getResourceType(), record.getResourceId(), state.getData());
+        final LaunchConfiguration config = new LaunchConfiguration(chainProcess, record.getResourceType(), record.getResourceId(), record.getAccountId(),
+                record.getPriority(), state.getData());
         config.setParentProcessState(state);
 
         ExecutionExceptionHandler handler = this.context.getExceptionHandler();

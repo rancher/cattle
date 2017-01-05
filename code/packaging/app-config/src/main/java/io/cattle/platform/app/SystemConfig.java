@@ -3,17 +3,19 @@ package io.cattle.platform.app;
 import io.cattle.platform.datasource.DataSourceFactory;
 import io.cattle.platform.datasource.JMXDataSourceFactoryImpl;
 import io.cattle.platform.db.jooq.logging.LoggerListener;
-import io.cattle.platform.extension.impl.EMUtils;
 import io.cattle.platform.extension.impl.ExtensionManagerImpl;
 import io.cattle.platform.json.JacksonJsonMapper;
 import io.cattle.platform.liquibase.JarInJarServiceLocator;
 import io.cattle.platform.liquibase.Loader;
+import io.cattle.platform.spring.resource.SpringConfigurableExecutorService;
 import io.cattle.platform.spring.resource.SpringResourceLoader;
 import io.cattle.platform.util.concurrent.NamedExecutorService;
 
 import java.util.Arrays;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.ThreadPoolExecutor;
 
+import javax.management.MalformedObjectNameException;
 import javax.sql.DataSource;
 
 import org.jooq.conf.Settings;
@@ -121,11 +123,19 @@ public class SystemConfig {
     }
 
     @Bean
-    NamedExecutorService process(ExtensionManagerImpl em,  @Qualifier("ProcessExecutorService") ExecutorService es) {
+    NamedExecutorService process(ExtensionManagerImpl em,  @Qualifier("ProcessEventExecutorService") ExecutorService es) {
         NamedExecutorService nes = new NamedExecutorService();
         nes.setName("process");
         nes.setExecutorService(es);
-        return EMUtils.add(em, NamedExecutorService.class, nes, "process");
+        return nes;
+    }
+
+    @Bean
+    NamedExecutorService blockingprocess(ExtensionManagerImpl em,  @Qualifier("ProcessBlockingExecutorService") ExecutorService es) {
+        NamedExecutorService nes = new NamedExecutorService();
+        nes.setName("blockingprocess");
+        nes.setExecutorService(es);
+        return nes;
     }
 
     @Bean
@@ -133,7 +143,7 @@ public class SystemConfig {
         NamedExecutorService nes = new NamedExecutorService();
         nes.setName("allocator");
         nes.setExecutorService(es);
-        return EMUtils.add(em, NamedExecutorService.class, nes, "allocator");
+        return nes;
     }
 
     @Bean
@@ -148,4 +158,41 @@ public class SystemConfig {
         return sefb;
     }
 
+    @Bean
+    SpringConfigurableExecutorService ProcessEventExecutorService() throws MalformedObjectNameException {
+        return SpringConfigurableExecutorService.byName("ProcessEventExecutorService");
+    }
+
+    @Bean
+    SpringConfigurableExecutorService AllocatorExecutorService() throws MalformedObjectNameException {
+        return SpringConfigurableExecutorService.byName("AllocatorExecutorService");
+    }
+
+    @Bean
+    SpringConfigurableExecutorService ProcessNonBlockingExecutorService() throws MalformedObjectNameException {
+        return SpringConfigurableExecutorService.byName("ProcessNonBlockingExecutorService", new ThreadPoolExecutor.DiscardPolicy());
+    }
+
+    @Bean
+    SpringConfigurableExecutorService ProcessBlockingExecutorService() throws MalformedObjectNameException {
+        return SpringConfigurableExecutorService.byName("ProcessBlockingExecutorService", new ThreadPoolExecutor.DiscardPolicy());
+    }
+
+    @Bean
+    SpringConfigurableExecutorService ProcessPriorityExecutorService() throws MalformedObjectNameException {
+        return SpringConfigurableExecutorService.byName("ProcessPriorityExecutorService");
+    }
+
+    @Bean
+    SpringConfigurableExecutorService CoreExecutorService() throws MalformedObjectNameException {
+        return SpringConfigurableExecutorService.byName("CoreExecutorService");
+    }
+
+    @Bean
+    SpringConfigurableExecutorService EventExecutorService() throws MalformedObjectNameException {
+        /*
+         * This is for very short lived tasks, no blocking
+         */
+        return SpringConfigurableExecutorService.byName("EventExecutorService");
+    }
 }

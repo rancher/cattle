@@ -39,6 +39,7 @@ public abstract class AbstractThreadPoolingEventService extends AbstractEventSer
     ExecutorService runExecutorService;
     String threadCountSetting = "eventing.pool.%s.count";
     String defaultPoolName = EventHandler.DEFAULT_POOL_KEY;
+    @Inject
     List<NamedExecutorService> namedExecutorServiceList;
     Map<String, ExecutorService> executorServices;
     Map<String, Counter> dropped = new ConcurrentHashMap<String, Counter>();
@@ -193,15 +194,6 @@ public abstract class AbstractThreadPoolingEventService extends AbstractEventSer
 
     public void setDefaultPoolName(String defaultPoolName) {
         this.defaultPoolName = defaultPoolName;
-    }
-
-    public List<NamedExecutorService> getNamedExecutorServiceList() {
-        return namedExecutorServiceList;
-    }
-
-    @Inject
-    public void setNamedExecutorServiceList(List<NamedExecutorService> namedExecutorServiceList) {
-        this.namedExecutorServiceList = namedExecutorServiceList;
     }
 
 }

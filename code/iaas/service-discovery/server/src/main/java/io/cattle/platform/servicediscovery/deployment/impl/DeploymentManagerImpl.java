@@ -6,6 +6,7 @@ import static io.cattle.platform.core.model.tables.ServiceTable.*;
 import io.cattle.platform.activity.ActivityLog;
 import io.cattle.platform.activity.ActivityService;
 import io.cattle.platform.allocator.service.AllocatorService;
+import io.cattle.platform.archaius.util.ArchaiusUtil;
 import io.cattle.platform.configitem.events.ConfigUpdate;
 import io.cattle.platform.configitem.model.Client;
 import io.cattle.platform.configitem.request.ConfigUpdateRequest;
@@ -19,6 +20,7 @@ import io.cattle.platform.core.dao.ServiceDao;
 import io.cattle.platform.core.model.Service;
 import io.cattle.platform.core.model.ServiceExposeMap;
 import io.cattle.platform.engine.idempotent.IdempotentRetryException;
+import io.cattle.platform.engine.process.impl.ProcessDelayException;
 import io.cattle.platform.eventing.EventService;
 import io.cattle.platform.json.JsonMapper;
 import io.cattle.platform.lock.LockCallback;
@@ -48,6 +50,7 @@ import io.github.ibuildthecloud.gdapi.id.IdFormatter;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -57,10 +60,16 @@ import javax.inject.Inject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.netflix.config.DynamicIntProperty;
+
 public class DeploymentManagerImpl implements DeploymentManager {
 
     private static final String RECONCILE = "reconcile";
     private static final Logger log = LoggerFactory.getLogger(DeploymentManagerImpl.class);
+
+    private static final DynamicIntProperty EXECUTION_MAX = ArchaiusUtil.getInt("service.execution.credits");
+    private static final DynamicIntProperty EXECUTION_PERIOD = ArchaiusUtil.getInt("service.execution.period.seconds");
+    private static final DynamicIntProperty EXECUTION_DELAY = ArchaiusUtil.getInt("service.execution.delay.seconds");
 
     @Inject
     ActivityService activity;
@@ -103,12 +112,12 @@ public class DeploymentManagerImpl implements DeploymentManager {
 
     @Override
     public boolean isHealthy(Service service) {
-        return !activate(service, true);
+        return !activate(service, true, false);
     }
 
     @Override
     public void activate(final Service service) {
-        activate(service, false);
+        activate(service, false, false);
     }
 
     /**
@@ -116,7 +125,7 @@ public class DeploymentManagerImpl implements DeploymentManager {
      * @param checkState
      * @return true if this service needs to be reconciled
      */
-    protected boolean activate(final Service service, final boolean checkState) {
+    protected boolean activate(final Service service, final boolean checkState, final boolean scheduleOnly) {
         // return immediately if inactive
         if (service == null || !sdSvc.isActiveService(service)) {
             return false;
@@ -134,18 +143,18 @@ public class DeploymentManagerImpl implements DeploymentManager {
                 }
 
                 objectMgr.setFields(service, SERVICE.SKIP, false);
-                return reconcileDeployment(service, checkState);
+                return reconcileDeployment(service, checkState, scheduleOnly);
             }
 
         });
     }
 
-    protected boolean reconcileDeployment(final Service service, final boolean checkState) {
+    protected boolean reconcileDeployment(final Service service, final boolean checkState, boolean scheduleOnly) {
         ScalePolicy policy = DataAccessor.field(service,
                 ServiceConstants.FIELD_SCALE_POLICY, mapper, ScalePolicy.class);
         boolean result = false;
         if (policy == null) {
-            result = deploy(service, checkState);
+            result = deploy(service, checkState, scheduleOnly);
         } else {
             result = deployWithScaleAdjustement(service, checkState, policy);
         }
@@ -188,7 +197,7 @@ public class DeploymentManagerImpl implements DeploymentManager {
         Integer desiredScale = DataAccessor.fieldInteger(service,
                 ServiceConstants.FIELD_DESIRED_SCALE);
         try {
-            deploy(service, checkState);
+            deploy(service, checkState, false);
             lockScale(service);
         } catch (ServiceInstanceAllocateException ex) {
             reduceScaleAndDeploy(service, checkState, policy);
@@ -228,7 +237,7 @@ public class DeploymentManagerImpl implements DeploymentManager {
             desiredScale = setDesiredScaleInternal(service, newDesiredScale);
             log.info("Decremented service [{}] scale to [{}] as reconcile has failed", service.getUuid(), desiredScale);
             try {
-                deploy(service, checkState);
+                deploy(service, checkState, false);
             } catch (ServiceInstanceAllocateException ex) {
                 if (desiredScale == minScale) {
                     throw ex;
@@ -256,7 +265,7 @@ public class DeploymentManagerImpl implements DeploymentManager {
         objectMgr.setFields(service, data);
     }
 
-    protected boolean deploy(final Service service, final boolean checkState) {
+    protected boolean deploy(final Service service, final boolean checkState, boolean scheduleOnly) {
         // get existing deployment units
         ServiceDeploymentPlanner planner = getPlanner(service);
 
@@ -278,7 +287,13 @@ public class DeploymentManagerImpl implements DeploymentManager {
             return !planner.isHealthcheckInitiailizing();
         }
 
+
         activateServices(service);
+        if (scheduleOnly) {
+            return false;
+        }
+
+        incrementExecutionCount(service);
         activateDeploymentUnits(service, planner);
 
         // reload planner as there can be new hosts added for Global services
@@ -291,6 +306,37 @@ public class DeploymentManagerImpl implements DeploymentManager {
 
         actvtyService.info("Service reconciled: " + planner.getStatus());
         return false;
+    }
+
+    private void incrementExecutionCount(Service service) {
+        objectMgr.reload(service);
+        Integer count = DataAccessor.fieldInteger(service, ServiceConstants.FIELD_EXECUTION_COUNT);
+        if (count == null) {
+            count = 0;
+        }
+
+        count = count + 1;
+
+        Date start = DataAccessor.fieldDate(service, ServiceConstants.FIELD_EXECUTION_PERIOD_START);
+        if (start == null) {
+            start = new Date();
+        }
+
+        Date end = new Date(start.getTime() + EXECUTION_PERIOD.get()*1000);
+        Date now = new Date();
+
+        try {
+            if (now.after(end)) {
+                count = 1;
+                start = now;
+            } else if (count > EXECUTION_MAX.get()) {
+                throw new ProcessDelayException(new Date(System.currentTimeMillis() + EXECUTION_DELAY.get()*1000));
+            }
+        } finally {
+            objectMgr.setFields(service,
+                    ServiceConstants.FIELD_EXECUTION_COUNT, count,
+                    ServiceConstants.FIELD_EXECUTION_PERIOD_START, start);
+        }
     }
 
     private ServiceDeploymentPlanner getPlanner(Service service) {
@@ -456,7 +502,7 @@ public class DeploymentManagerImpl implements DeploymentManager {
                     activity.run(service, "service.trigger", "Re-evaluating state", new Runnable() {
                         @Override
                         public void run() {
-                            activate(service);
+                            activate(service, false, true);
                         }
                     });
                 }

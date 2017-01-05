@@ -1,9 +1,11 @@
 package io.cattle.platform.engine.server;
 
+import io.cattle.platform.engine.process.ProcessInstance;
+
 public interface ProcessServer {
 
     void runOutstandingJobs();
 
-    Long getRemainingTasks(long processId);
+    Long getNextTask(ProcessInstance instance);
 
 }

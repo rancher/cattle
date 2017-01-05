@@ -83,6 +83,8 @@ public class ServiceConstants {
     public static final String FIELD_STORAGE_DRIVER = "storageDriver";
     public static final String FIELD_NETWORK_DRIVER = "networkDriver";
     public static final String FIELD_PORT_RULES = "portRules";
+    public static final String FIELD_EXECUTION_COUNT = "executionCount";
+    public static final String FIELD_EXECUTION_PERIOD_START = "executionPeriodStart";
 
     public static final String FIELD_INTERNAL_VOLUMES = "internalVolumes";
     public static final String FIELD_VOLUME_TEMPLATE_ID = "volumeTemplateId";

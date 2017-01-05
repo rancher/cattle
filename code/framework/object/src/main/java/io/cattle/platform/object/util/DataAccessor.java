@@ -7,6 +7,7 @@ import io.cattle.platform.util.type.UnmodifiableMap;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -121,6 +122,16 @@ public class DataAccessor {
 
     public static boolean fieldBool(Object obj, String key) {
         return fields(obj).withKey(key).withDefault(false).as(Boolean.class);
+    }
+
+    public static Date fieldDate(Object obj, String key) {
+        Object val = fields(obj).withKey(key).get();
+        if (val instanceof Date) {
+            return (Date)val;
+        } else if (val instanceof Number) {
+            return new Date(((Number) val).longValue());
+        }
+        return null;
     }
 
     public static <T> T field(Object obj, String name, JsonMapper mapper, Class<T> type) {

@@ -89,9 +89,12 @@ import io.cattle.platform.iaas.api.filter.volume.VolumeOutputFilter;
 import io.cattle.platform.iaas.api.manager.DataManager;
 import io.cattle.platform.iaas.api.manager.HaConfigManager;
 import io.cattle.platform.iaas.api.manager.InstanceManager;
+import io.cattle.platform.iaas.api.manager.ProcessPoolManager;
+import io.cattle.platform.iaas.api.manager.ProcessSummaryManager;
 import io.cattle.platform.iaas.api.manager.ServiceManager;
 import io.cattle.platform.iaas.api.manager.VolumeManager;
 import io.cattle.platform.iaas.api.object.postinit.AccountFieldPostInitHandler;
+import io.cattle.platform.iaas.api.process.ProcessInstanceReplayHandler;
 import io.cattle.platform.iaas.api.request.handler.ConfigurableRequestOptionsParser;
 import io.cattle.platform.iaas.api.request.handler.GenericWhitelistedProxy;
 import io.cattle.platform.iaas.api.request.handler.IdFormatterRequestHandler;
@@ -247,6 +250,11 @@ public class IaasApiConfig {
     }
 
     @Bean
+    ProcessSummaryManager ProcessSummaryManager() {
+        return new ProcessSummaryManager();
+    }
+
+    @Bean
     HaConfigManager HaConfigManager(@Qualifier("FreemarkerConfig") freemarker.template.Configuration config) {
         HaConfigManager haConfig = new HaConfigManager();
         haConfig.setConfiguration(config);
@@ -261,6 +269,11 @@ public class IaasApiConfig {
     @Bean
     InstanceManager InstanceManager() {
         return new InstanceManager();
+    }
+
+    @Bean
+    ProcessPoolManager ProcessPoolManager() {
+        return new ProcessPoolManager();
     }
 
     @Bean
@@ -366,6 +379,11 @@ public class IaasApiConfig {
     @Bean
     StackOutputFilter StackOutputFilter() {
         return new StackOutputFilter();
+    }
+
+    @Bean
+    ProcessInstanceReplayHandler ProcessInstanceReplayHandler() {
+        return new ProcessInstanceReplayHandler();
     }
 
     @Bean

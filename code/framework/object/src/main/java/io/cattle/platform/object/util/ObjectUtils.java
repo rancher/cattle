@@ -32,6 +32,10 @@ public class ObjectUtils {
         return getPropertyIgnoreErrors(obj, ObjectMetaDataManager.ACCOUNT_FIELD);
     }
 
+    public static boolean isSystem(Object obj) {
+        return Boolean.TRUE.equals(getPropertyIgnoreErrors(obj, ObjectMetaDataManager.SYSTEM_FIELD));
+    }
+
     public static Object getId(Object obj) {
         return getPropertyIgnoreErrors(obj, ObjectMetaDataManager.ID_FIELD);
     }
