@@ -121,6 +121,7 @@ public class ServiceMetaData {
     protected LBConfigMetadataStyle lb_config;
     protected String primary_service_name;
     protected String environment_uuid;
+    String state;
 
     protected ServiceMetaData(ServiceMetaData that) {
         this.serviceId = that.serviceId;
@@ -153,6 +154,7 @@ public class ServiceMetaData {
         this.lb_config = that.lb_config;
         this.primary_service_name = that.primary_service_name;
         this.environment_uuid = that.environment_uuid;
+        this.state = that.state;
     }
 
     public ServiceMetaData(Service service, String serviceName, Stack env, List<String> sidekicks,
@@ -189,6 +191,7 @@ public class ServiceMetaData {
         this.lb_config = lbConfig;
         this.primary_service_name = service.getName();
         this.environment_uuid = account.getUuid();
+        this.state = service.getState();
     }
 
     public static String getVip(Service service) {
@@ -442,5 +445,13 @@ public class ServiceMetaData {
 
     public void setEnvironment_uuid(String environment_uuid) {
         this.environment_uuid = environment_uuid;
+    }
+
+    public String getState() {
+        return state;
+    }
+
+    public void setState(String state) {
+        this.state = state;
     }
 }
