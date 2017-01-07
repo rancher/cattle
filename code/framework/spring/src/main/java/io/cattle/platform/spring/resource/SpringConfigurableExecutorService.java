@@ -48,7 +48,7 @@ public class SpringConfigurableExecutorService extends SpringJmxEnabledThreadPoo
         int size = queueSize.get();
         if (size > 0) {
             if (priorityQueue.get()) {
-                workQueue = new PriorityBlockingQueue<>(size);
+                workQueue = new BoundedQueue<>(size);
             } else {
                 workQueue = new LinkedBlockingQueue<>(size);
 
@@ -86,6 +86,31 @@ public class SpringConfigurableExecutorService extends SpringJmxEnabledThreadPoo
         });
 
         return es;
+    }
+
+    public static class BoundedQueue<E> extends PriorityBlockingQueue<E> {
+        private static final long serialVersionUID = 8385439019119907779L;
+
+        int capacity;
+
+        public BoundedQueue(int capacity) {
+            super();
+            this.capacity = capacity;
+        }
+
+        @Override
+        public boolean offer(E e) {
+            // Fuzzy, but good enough
+            if (size() > capacity) {
+                return false;
+            }
+            return super.offer(e);
+        }
+
+        @Override
+        public int remainingCapacity() {
+            return capacity - size();
+        }
     }
 
     @Override

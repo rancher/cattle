@@ -38,6 +38,8 @@ public class ProcessPoolManager extends AbstractNoOpResourceManager {
             pool.setMinPoolSize(executor.getCorePoolSize());
             pool.setMaxPoolSize(executor.getMaximumPoolSize());
             pool.setCompletedTasks(executor.getCompletedTaskCount());
+            pool.setQueueSize(executor.getQueue().size());
+            pool.setQueueRemainingCapacity(executor.getQueue().remainingCapacity());
             try {
                 Object obj = PropertyUtils.getProperty(executor, "rejectedExecutionCount");
                 if (obj instanceof Number) {

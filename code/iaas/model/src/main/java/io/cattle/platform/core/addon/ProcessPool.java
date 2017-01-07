@@ -3,7 +3,7 @@ package io.cattle.platform.core.addon;
 public class ProcessPool {
 
     String name;
-    int activeTasks, poolSize, maxPoolSize, minPoolSize, queueSize, queueCapacity;
+    int activeTasks, poolSize, maxPoolSize, minPoolSize, queueSize, queueRemainingCapacity;
     long completedTasks, rejectedTasks;
 
     public String getName() {
@@ -54,14 +54,6 @@ public class ProcessPool {
         this.queueSize = queueSize;
     }
 
-    public int getQueueCapacity() {
-        return queueCapacity;
-    }
-
-    public void setQueueCapacity(int queueCapacity) {
-        this.queueCapacity = queueCapacity;
-    }
-
     public long getCompletedTasks() {
         return completedTasks;
     }
@@ -76,6 +68,14 @@ public class ProcessPool {
 
     public void setRejectedTasks(long rejectedTasks) {
         this.rejectedTasks = rejectedTasks;
+    }
+
+    public int getQueueRemainingCapacity() {
+        return queueRemainingCapacity;
+    }
+
+    public void setQueueRemainingCapacity(int queueRemainingCapacity) {
+        this.queueRemainingCapacity = queueRemainingCapacity;
     }
 
 }
