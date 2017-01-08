@@ -132,7 +132,9 @@ import io.github.ibuildthecloud.gdapi.request.handler.SchemasHandler;
 import io.github.ibuildthecloud.gdapi.request.handler.VersionHandler;
 import io.github.ibuildthecloud.gdapi.request.handler.VersionsHandler;
 import io.github.ibuildthecloud.gdapi.request.handler.write.DefaultReadWriteApiDelegate;
+import io.github.ibuildthecloud.gdapi.request.handler.write.ReadWriteApiDelegate;
 import io.github.ibuildthecloud.gdapi.request.handler.write.ReadWriteApiHandler;
+import io.github.ibuildthecloud.gdapi.request.resource.ResourceManagerLocator;
 import io.github.ibuildthecloud.gdapi.response.HtmlResponseWriter;
 import io.github.ibuildthecloud.gdapi.response.JsonResponseWriter;
 import io.github.ibuildthecloud.gdapi.response.ResponseObjectConverter;
@@ -511,11 +513,17 @@ public class IaasApiConfig {
     }
 
     @Bean
-    ReadWriteApiHandler ResourceManagerRequestHandler(ExtensionManagerImpl em, ResourceManagerRequestHandler rmRequestHandler) {
+    ReadWriteApiDelegate DefaultReadWriteApiDelegate() {
+        return new DefaultReadWriteApiDelegate();
+    }
+
+    @Bean
+    ReadWriteApiHandler ResourceManagerRequestHandler(ExtensionManagerImpl em, ReadWriteApiDelegate delegate, ResourceManagerLocator locator) {
+        ResourceManagerRequestHandler inner = new ResourceManagerRequestHandler();
+        inner.setResourceManagerLocator(locator);
         ReadWriteApiHandler handler = EMUtils.add(em, ApiRequestHandler.class, new ReadWriteApiHandler());
-        DefaultReadWriteApiDelegate delegate = new DefaultReadWriteApiDelegate();
         delegate.setHandlers(Arrays.<ApiRequestHandler>asList(
-                rmRequestHandler
+                inner
                 ));
         handler.setDelegate(delegate);
         return handler;

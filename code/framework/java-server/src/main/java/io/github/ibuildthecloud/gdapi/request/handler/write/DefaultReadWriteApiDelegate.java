@@ -6,7 +6,6 @@ import io.github.ibuildthecloud.gdapi.request.handler.ApiRequestHandler;
 import java.io.IOException;
 import java.util.List;
 
-import javax.inject.Inject;
 import javax.servlet.ServletException;
 
 public class DefaultReadWriteApiDelegate implements ReadWriteApiDelegate {
@@ -33,7 +32,7 @@ public class DefaultReadWriteApiDelegate implements ReadWriteApiDelegate {
         return handlers;
     }
 
-    @Inject
+    @Override
     public void setHandlers(List<ApiRequestHandler> handlers) {
         this.handlers = handlers;
     }
