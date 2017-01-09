@@ -5,6 +5,10 @@
         "registrationToken": "",
 
         "container.resourceActions.logs": "c",
+        "instance.environment": "",
+        "container.environment": "",
+        "launchConfig.environment": "",
+        "secondaryLaunchConfig.environment": "",
 
         "end" : ""
     }
