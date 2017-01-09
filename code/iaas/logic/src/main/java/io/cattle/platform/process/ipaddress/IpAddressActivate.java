@@ -18,7 +18,7 @@ import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.process.base.AbstractDefaultProcessHandler;
 import io.cattle.platform.resource.pool.PooledResourceOptions;
 import io.cattle.platform.resource.pool.ResourcePoolManager;
-import io.cattle.platform.util.exception.ExecutionException;
+import io.cattle.platform.util.exception.ResourceExhaustionException;
 
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -74,7 +74,7 @@ public class IpAddressActivate extends AbstractDefaultProcessHandler {
             ip = networkService.assignIpAddress(network, ipAddress, requestedIp);
             if (ip == null) {
                 objectProcessManager.scheduleStandardProcess(StandardProcess.DEACTIVATE, ipAddress, null);
-                throw new ExecutionException("IP allocation error", "Failed to allocate IP from subnet", ipAddress);
+                throw new ResourceExhaustionException("IP allocation error", "Failed to allocate IP from subnet", ipAddress);
             }
         }
 

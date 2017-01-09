@@ -56,6 +56,9 @@ public class AgentSimulator implements AnnotatedEventListener {
         }
         EventVO<?> reply = EventVO.reply(agentRequest).withData(resp);
         EventUtils.copyTransitioning(resp, reply);
+        if (reply.getName() == null) {
+            return;
+        }
         eventService.publish(reply);
     }
 

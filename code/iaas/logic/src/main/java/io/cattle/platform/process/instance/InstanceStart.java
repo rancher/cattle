@@ -37,6 +37,7 @@ import io.cattle.platform.process.common.util.ProcessUtils;
 import io.cattle.platform.process.containerevent.ContainerEventCreate;
 import io.cattle.platform.process.progress.ProcessProgress;
 import io.cattle.platform.util.exception.ExecutionException;
+import io.cattle.platform.util.exception.ResourceExhaustionException;
 import io.cattle.platform.util.type.CollectionUtils;
 
 import java.util.ArrayList;
@@ -119,7 +120,12 @@ public class InstanceStart extends AbstractDefaultProcessHandler {
             try {
                 progress.checkPoint("Scheduling");
                 allocate(instance);
+            } catch (ExecutionException e) {
+                log.info("Failed to {} for instance [{}]", progress.getCurrentCheckpoint(), instance.getId());
+                return handleStartError(state, instance, e);
+            }
 
+            try {
                 progress.checkPoint("Networking");
                 network(instance, state);
 
@@ -129,6 +135,9 @@ public class InstanceStart extends AbstractDefaultProcessHandler {
 
                 progress.checkPoint("Storage");
                 storage(instance, state);
+            } catch (ResourceExhaustionException e) {
+                log.info("Failed to {} for instance [{}]", progress.getCurrentCheckpoint(), instance.getId());
+                return handleStartError(state, instance, e);
             } catch (ExecutionException e) {
                 log.error("Failed to {} for instance [{}]", progress.getCurrentCheckpoint(), instance.getId());
                 return handleStartError(state, instance, e);

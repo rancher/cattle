@@ -57,11 +57,7 @@ public class SimulatorConfigUpdateProcessor implements AgentSimulatorEventProces
         }
 
         for (ConfigUpdateItem item : update.getData().getItems()) {
-            try {
-                downloadAndPost(auth, update.getData().getConfigUrl(), item);
-            } catch (IOException e) {
-                throw new IllegalStateException("Failed to download [" + item.getName() + "]", e);
-            }
+            downloadAndPost(auth, update.getData().getConfigUrl(), item);
         }
 
         return EventVO.reply(event);
