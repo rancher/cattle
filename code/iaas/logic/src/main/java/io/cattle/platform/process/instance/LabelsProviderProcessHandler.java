@@ -34,7 +34,7 @@ public abstract class LabelsProviderProcessHandler extends AgentBasedProcessLogi
         Long accountId = instance.getAccountId();
         List<Long> agentIds = agentInstanceDao.getAgentProvider(SystemLabels.LABEL_AGENT_SERVICE_LABELS_PROVIDER, accountId);
         Long agentId = agentIds.size() == 0 ? null : agentIds.get(0);
-        if ((instance instanceof Instance) && agentIds.contains(instance.getAgentId())) {
+        if ((instance instanceof Instance) && (agentIds.contains(instance.getAgentId()) || instance.getSystem())) {
             return null;
         }
         return agentId;

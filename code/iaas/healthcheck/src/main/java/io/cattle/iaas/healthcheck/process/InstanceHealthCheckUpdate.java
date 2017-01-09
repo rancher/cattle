@@ -24,7 +24,14 @@ public class InstanceHealthCheckUpdate extends AbstractObjectProcessLogic implem
 
     @Override
     public HandlerResult handle(ProcessState state, ProcessInstance process) {
-        return new HandlerResult(INSTANCE.HEALTH_UPDATED, new Date());
+        Object now = state.getData().get("now");
+        Long nowLong = System.currentTimeMillis();
+        if (now instanceof Number) {
+            nowLong = ((Number) now).longValue();
+        } else {
+            state.getData().put("now", nowLong);
+        }
+        return new HandlerResult(INSTANCE.HEALTH_UPDATED, new Date(nowLong));
     }
 }
 

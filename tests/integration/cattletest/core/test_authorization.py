@@ -442,6 +442,8 @@ def test_admin_types(admin_user_client, adds=set(), removes=set()):
         'targetPortRule',
         'loadBalancerCookieStickinessPolicy',
         'genericObject',
+        'processPool',
+        'processSummary',
     }
     types.update(adds)
     types.difference_update(removes)
@@ -1357,6 +1359,7 @@ def test_process_instance_auth(admin_user_client, user_client, project_client):
         'runAfter': 'r',
         'startTime': 'r',
         'data': 'r',
+        'accountId': 'r',
     })
 
 

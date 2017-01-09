@@ -23,40 +23,6 @@
 
     <context:mbean-export />
 
-    <management:executor-service
-        id="PriorityProcessExecutorService"
-        keep-alive="120"
-        pool-size="10-20"
-        queue-capacity="100"
-        />
-
-    <management:executor-service
-        id="AllocatorExecutorService"
-        keep-alive="120"
-        pool-size="5"
-        />
-
-    <management:executor-service
-        id="ProcessExecutorService"
-        keep-alive="1200"
-        pool-size="50"
-        queue-capacity="1000"
-        rejection-policy="DISCARD"
-        />
-
-    <management:executor-service 
-        id="CoreExecutorService"
-        keep-alive="120"
-        pool-size="15"
-        />
-
-    <!--  This is for very short lived tasks, no blocking -->
-    <management:executor-service 
-        id="EventExecutorService"
-        keep-alive="120"
-        pool-size="5"
-        />
-
     <tx:advice id="AgentInstanceDaoAdvice" transaction-manager="CoreTransactionManager">
         <tx:attributes>
             <tx:method name="createInstanceForProvider" />

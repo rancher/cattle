@@ -1,7 +1,6 @@
 package io.cattle.platform.engine.process;
 
 import java.util.Date;
-import java.util.HashMap;
 import java.util.Map;
 
 public class LaunchConfiguration {
@@ -9,6 +8,8 @@ public class LaunchConfiguration {
     String processName;
     String resourceType;
     String resourceId;
+    Object accountId;
+    Integer priority;
     Map<String, Object> data;
     Predicate predicate;
     ProcessState parentProcessState;
@@ -17,15 +18,13 @@ public class LaunchConfiguration {
     public LaunchConfiguration() {
     }
 
-    public LaunchConfiguration(String processName, String resourceType, String resourceId) {
-        this(processName, resourceType, resourceId, new HashMap<String, Object>());
-    }
-
-    public LaunchConfiguration(String processName, String resourceType, String resourceId, Map<String, Object> data) {
+    public LaunchConfiguration(String processName, String resourceType, String resourceId, Object accountId, Integer priority, Map<String, Object> data) {
         this.processName = processName;
         this.resourceType = resourceType;
         this.resourceId = resourceId;
+        this.accountId = accountId;
         this.data = data;
+        this.priority = priority;
     }
 
     public LaunchConfiguration(LaunchConfiguration config) {
@@ -36,6 +35,8 @@ public class LaunchConfiguration {
         this.predicate = config.getPredicate();
         this.parentProcessState = config.getParentProcessState();
         this.runAfter = config.getRunAfter();
+        this.accountId = config.getAccountId();
+        this.priority = config.getPriority();
     }
 
     public String getResourceType() {
@@ -72,7 +73,9 @@ public class LaunchConfiguration {
 
     @Override
     public String toString() {
-        return "LaunchConfiguration [processName=" + processName + ", resourceType=" + resourceType + ", resourceId=" + resourceId + ", data=" + data + "]";
+        return "LaunchConfiguration [processName=" + processName + ", resourceType=" + resourceType + ", resourceId=" + resourceId + ", accountId=" + accountId
+                + ", priority=" + priority + ", data=" + data + ", runAfter=" + runAfter + ", predicate=" + predicate + ", parentProcessState="
+                + parentProcessState + "]";
     }
 
     public Predicate getPredicate() {
@@ -97,6 +100,22 @@ public class LaunchConfiguration {
 
     public void setRunAfter(Date runAfter) {
         this.runAfter = runAfter;
+    }
+
+    public Object getAccountId() {
+        return accountId;
+    }
+
+    public void setAccountId(Object accountId) {
+        this.accountId = accountId;
+    }
+
+    public Integer getPriority() {
+        return priority;
+    }
+
+    public void setPriority(Integer priority) {
+        this.priority = priority;
     }
 
 }

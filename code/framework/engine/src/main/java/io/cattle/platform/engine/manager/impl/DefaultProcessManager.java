@@ -15,6 +15,7 @@ import io.cattle.platform.engine.process.ProcessServiceContext;
 import io.cattle.platform.engine.process.ProcessState;
 import io.cattle.platform.engine.process.StateChangeMonitor;
 import io.cattle.platform.engine.process.impl.DefaultProcessInstanceImpl;
+import io.cattle.platform.engine.server.ProcessInstanceReference;
 import io.cattle.platform.eventing.EventService;
 import io.cattle.platform.lock.LockManager;
 import io.cattle.platform.util.concurrent.DelayedObject;
@@ -39,24 +40,31 @@ public class DefaultProcessManager implements ProcessManager, InitializationTask
 
     private static final DynamicLongProperty EXECUTION_DELAY = ArchaiusUtil.getLong("process.log.save.interval.ms");
 
+    @Inject
     ProcessRecordDao processRecordDao;
+    @Inject
     List<ProcessDefinition> definitionList;
     Map<String, ProcessDefinition> definitions = new HashMap<String, ProcessDefinition>();
+    @Inject
     LockManager lockManager;
     DelayQueue<DelayedObject<WeakReference<ProcessInstance>>> toPersist = new DelayQueue<DelayedObject<WeakReference<ProcessInstance>>>();
+    @Inject
     ScheduledExecutorService executor;
+    @Inject
     EventService eventService;
+    @Inject
     ExecutionExceptionHandler exceptionHandler;
+    @Inject
     List<StateChangeMonitor> changeMonitors;
 
     @Override
     public ProcessInstance createProcessInstance(LaunchConfiguration config) {
-        return createProcessInstance(new ProcessRecord(config, null, null), false);
+        return createProcessInstance(new ProcessRecord(config, null, null), false, false);
     }
 
     @Override
     public void scheduleProcessInstance(LaunchConfiguration config) {
-        ProcessInstance pi = createProcessInstance(new ProcessRecord(config, null, null), true);
+        ProcessInstance pi = createProcessInstance(new ProcessRecord(config, null, null), true, false);
         try {
             pi.execute();
         } catch (ProcessInstanceException e) {
@@ -68,7 +76,7 @@ public class DefaultProcessManager implements ProcessManager, InitializationTask
         }
     }
 
-    protected ProcessInstance createProcessInstance(ProcessRecord record, boolean schedule) {
+    protected ProcessInstance createProcessInstance(ProcessRecord record, boolean schedule, boolean replay) {
         if (record == null)
             return null;
 
@@ -85,7 +93,7 @@ public class DefaultProcessManager implements ProcessManager, InitializationTask
             record = processRecordDao.insert(record);
 
         ProcessServiceContext context = new ProcessServiceContext(lockManager, eventService, this, exceptionHandler, changeMonitors);
-        DefaultProcessInstanceImpl process = new DefaultProcessInstanceImpl(context, record, processDef, state, schedule);
+        DefaultProcessInstanceImpl process = new DefaultProcessInstanceImpl(context, record, processDef, state, schedule, replay);
 
         if (record.getId() != null)
             queue(process);
@@ -125,24 +133,22 @@ public class DefaultProcessManager implements ProcessManager, InitializationTask
     }
 
     @Override
-    public List<Long> pendingTasks() {
-        return processRecordDao.pendingTasks(null, null, false);
+    public List<ProcessInstanceReference> pendingTasks() {
+        return processRecordDao.pendingTasks();
     }
 
-    @Override
-    public List<Long> pendingPriorityTasks() {
-        return processRecordDao.pendingTasks(null, null, true);
-    }
 
     @Override
-    public Long getRemainingTask(long processId) {
-        ProcessRecord record = processRecordDao.getRecord(processId);
+    public Long getRemainingTask(ProcessInstance instance) {
+        if (!(instance instanceof DefaultProcessInstanceImpl)) {
+            return null;
+        }
+        ProcessRecord record = ((DefaultProcessInstanceImpl)instance).getProcessRecord();
         if (record == null) {
             return null;
         }
 
-        List<Long> next = processRecordDao.pendingTasks(record.getResourceType(), record.getResourceId(), false);
-        return next.size() == 0 ? null : next.get(0);
+        return processRecordDao.nextTask(record.getResourceType(), record.getResourceId());
     }
 
     @Override
@@ -151,7 +157,7 @@ public class DefaultProcessManager implements ProcessManager, InitializationTask
         if (record == null) {
             throw new ProcessNotFoundException("Failed to find ProcessRecord for [" + id + "]");
         }
-        return createProcessInstance(record, false);
+        return createProcessInstance(record, false, true);
     }
 
     protected void persistInProgress() throws InterruptedException {
@@ -198,67 +204,9 @@ public class DefaultProcessManager implements ProcessManager, InitializationTask
         }, EXECUTION_DELAY.get(), EXECUTION_DELAY.get(), TimeUnit.MILLISECONDS);
     }
 
-    public ProcessRecordDao getProcessRecordDao() {
-        return processRecordDao;
-    }
-
-    @Inject
-    public void setProcessRecordDao(ProcessRecordDao processRecordDao) {
-        this.processRecordDao = processRecordDao;
-    }
-
-    public LockManager getLockManager() {
-        return lockManager;
-    }
-
-    @Inject
-    public void setLockManager(LockManager lockManager) {
-        this.lockManager = lockManager;
-    }
-
-    public ScheduledExecutorService getExecutor() {
-        return executor;
-    }
-
-    @Inject
-    public void setExecutor(ScheduledExecutorService executor) {
-        this.executor = executor;
-    }
-
-    public List<ProcessDefinition> getDefinitionList() {
-        return definitionList;
-    }
-
-    @Inject
-    public void setDefinitionList(List<ProcessDefinition> definitionList) {
-        this.definitionList = definitionList;
-    }
-
-    public EventService getEventService() {
-        return eventService;
-    }
-
-    @Inject
-    public void setEventService(EventService eventService) {
-        this.eventService = eventService;
-    }
-
-    public ExecutionExceptionHandler getExceptionHandler() {
-        return exceptionHandler;
-    }
-
-    @Inject
-    public void setExceptionHandler(ExecutionExceptionHandler exceptionHandler) {
-        this.exceptionHandler = exceptionHandler;
-    }
-
-    public List<StateChangeMonitor> getChangeMonitors() {
-        return changeMonitors;
-    }
-
-    @Inject
-    public void setChangeMonitors(List<StateChangeMonitor> changeMonitors) {
-        this.changeMonitors = changeMonitors;
+    @Override
+    public ProcessInstanceReference loadReference(Long id) {
+        return processRecordDao.loadReference(id);
     }
 
 }

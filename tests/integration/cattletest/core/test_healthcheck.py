@@ -1435,7 +1435,8 @@ def test_stack_health_state(super_client, context, client):
     wait_for(lambda: c.reload(env).healthState == 'healthy')
 
 
-def test_du_removal(super_client, new_context):
+# Skipped
+def _test_du_removal(super_client, new_context):
     host = super_client.reload(register_simulated_host(new_context))
     super_client.wait_success(host)
     client = new_context.client

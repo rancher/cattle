@@ -18,6 +18,12 @@
         "clusterMembership": "r",
         "clusterMembership\\..*": "r",
 
+        "processSummary": "r",
+        "processSummary\\..*": "r",
+
+        "processPool": "r",
+        "processPool\\..*": "r",
+
         "haConfigInput" : "cr",
         "haConfigInput.clusterSize" : "cr",
         "haConfigInput.httpEnabled" : "cr",

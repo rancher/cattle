@@ -89,9 +89,12 @@ import io.cattle.platform.iaas.api.filter.volume.VolumeOutputFilter;
 import io.cattle.platform.iaas.api.manager.DataManager;
 import io.cattle.platform.iaas.api.manager.HaConfigManager;
 import io.cattle.platform.iaas.api.manager.InstanceManager;
+import io.cattle.platform.iaas.api.manager.ProcessPoolManager;
+import io.cattle.platform.iaas.api.manager.ProcessSummaryManager;
 import io.cattle.platform.iaas.api.manager.ServiceManager;
 import io.cattle.platform.iaas.api.manager.VolumeManager;
 import io.cattle.platform.iaas.api.object.postinit.AccountFieldPostInitHandler;
+import io.cattle.platform.iaas.api.process.ProcessInstanceReplayHandler;
 import io.cattle.platform.iaas.api.request.handler.ConfigurableRequestOptionsParser;
 import io.cattle.platform.iaas.api.request.handler.GenericWhitelistedProxy;
 import io.cattle.platform.iaas.api.request.handler.IdFormatterRequestHandler;
@@ -132,7 +135,9 @@ import io.github.ibuildthecloud.gdapi.request.handler.SchemasHandler;
 import io.github.ibuildthecloud.gdapi.request.handler.VersionHandler;
 import io.github.ibuildthecloud.gdapi.request.handler.VersionsHandler;
 import io.github.ibuildthecloud.gdapi.request.handler.write.DefaultReadWriteApiDelegate;
+import io.github.ibuildthecloud.gdapi.request.handler.write.ReadWriteApiDelegate;
 import io.github.ibuildthecloud.gdapi.request.handler.write.ReadWriteApiHandler;
+import io.github.ibuildthecloud.gdapi.request.resource.ResourceManagerLocator;
 import io.github.ibuildthecloud.gdapi.response.HtmlResponseWriter;
 import io.github.ibuildthecloud.gdapi.response.JsonResponseWriter;
 import io.github.ibuildthecloud.gdapi.response.ResponseObjectConverter;
@@ -247,6 +252,11 @@ public class IaasApiConfig {
     }
 
     @Bean
+    ProcessSummaryManager ProcessSummaryManager() {
+        return new ProcessSummaryManager();
+    }
+
+    @Bean
     HaConfigManager HaConfigManager(@Qualifier("FreemarkerConfig") freemarker.template.Configuration config) {
         HaConfigManager haConfig = new HaConfigManager();
         haConfig.setConfiguration(config);
@@ -261,6 +271,11 @@ public class IaasApiConfig {
     @Bean
     InstanceManager InstanceManager() {
         return new InstanceManager();
+    }
+
+    @Bean
+    ProcessPoolManager ProcessPoolManager() {
+        return new ProcessPoolManager();
     }
 
     @Bean
@@ -366,6 +381,11 @@ public class IaasApiConfig {
     @Bean
     StackOutputFilter StackOutputFilter() {
         return new StackOutputFilter();
+    }
+
+    @Bean
+    ProcessInstanceReplayHandler ProcessInstanceReplayHandler() {
+        return new ProcessInstanceReplayHandler();
     }
 
     @Bean
@@ -511,11 +531,17 @@ public class IaasApiConfig {
     }
 
     @Bean
-    ReadWriteApiHandler ResourceManagerRequestHandler(ExtensionManagerImpl em, ResourceManagerRequestHandler rmRequestHandler) {
+    ReadWriteApiDelegate DefaultReadWriteApiDelegate() {
+        return new DefaultReadWriteApiDelegate();
+    }
+
+    @Bean
+    ReadWriteApiHandler ResourceManagerRequestHandler(ExtensionManagerImpl em, ReadWriteApiDelegate delegate, ResourceManagerLocator locator) {
+        ResourceManagerRequestHandler inner = new ResourceManagerRequestHandler();
+        inner.setResourceManagerLocator(locator);
         ReadWriteApiHandler handler = EMUtils.add(em, ApiRequestHandler.class, new ReadWriteApiHandler());
-        DefaultReadWriteApiDelegate delegate = new DefaultReadWriteApiDelegate();
         delegate.setHandlers(Arrays.<ApiRequestHandler>asList(
-                rmRequestHandler
+                inner
                 ));
         handler.setDelegate(delegate);
         return handler;

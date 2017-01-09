@@ -18,7 +18,6 @@ public class SkipServiceLookup implements ServiceLookup {
     @Inject
     ServiceDao serviceDao;
 
-
     @Override
     public Collection<? extends Service> getServices(Object obj) {
         Long accountId = null;

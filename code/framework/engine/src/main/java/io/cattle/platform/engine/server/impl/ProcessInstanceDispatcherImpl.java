@@ -1,5 +1,6 @@
 package io.cattle.platform.engine.server.impl;
 
+import io.cattle.platform.archaius.util.ArchaiusUtil;
 import io.cattle.platform.async.utils.TimeoutException;
 import io.cattle.platform.engine.manager.ProcessManager;
 import io.cattle.platform.engine.manager.ProcessNotFoundException;
@@ -10,8 +11,10 @@ import io.cattle.platform.engine.process.ProcessInstanceException;
 import io.cattle.platform.engine.process.impl.ProcessCancelException;
 import io.cattle.platform.engine.process.util.ProcessEngineUtils;
 import io.cattle.platform.engine.server.ProcessInstanceDispatcher;
+import io.cattle.platform.engine.server.ProcessInstanceExecutor;
+import io.cattle.platform.engine.server.ProcessInstanceReference;
 import io.cattle.platform.engine.server.ProcessServer;
-import io.cattle.platform.lock.LockCallbackNoReturn;
+import io.cattle.platform.lock.LockCallback;
 import io.cattle.platform.lock.LockManager;
 import io.cattle.platform.metrics.util.MetricsUtil;
 import io.cattle.platform.util.exception.ExceptionUtils;
@@ -26,13 +29,12 @@ import javax.annotation.PostConstruct;
 import javax.inject.Inject;
 import javax.inject.Named;
 
-import org.apache.cloudstack.managed.context.NoExceptionRunnable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.codahale.metrics.Counter;
 
-public class ProcessInstanceDispatcherImpl implements ProcessInstanceDispatcher {
+public class ProcessInstanceDispatcherImpl implements ProcessInstanceDispatcher, ProcessInstanceExecutor {
     private static final Logger log = LoggerFactory.getLogger(ProcessInstanceDispatcherImpl.class);
 
     private static Counter EVENT = MetricsUtil.getRegistry().counter("process_execution.event");
@@ -42,9 +44,13 @@ public class ProcessInstanceDispatcherImpl implements ProcessInstanceDispatcher 
     private static Counter EXCEPTION = MetricsUtil.getRegistry().counter("process_execution.unknown_exception");
     private static Counter TIMEOUT = MetricsUtil.getRegistry().counter("process_execution.timeout");
 
-    @Inject @Named("ProcessExecutorService")
-    ExecutorService executor;
-    @Inject @Named("PriorityProcessExecutorService")
+    @Inject @Named("ProcessEventExecutorService")
+    ExecutorService eventExecutor;
+    @Inject @Named("ProcessBlockingExecutorService")
+    ExecutorService blockingExecutor;
+    @Inject @Named("ProcessNonBlockingExecutorService")
+    ExecutorService nonBlockingExecutor;
+    @Inject @Named("ProcessPriorityExecutorService")
     ExecutorService priorityExecutor;
     @Inject
     ProcessRecordDao processRecordDao;
@@ -57,38 +63,61 @@ public class ProcessInstanceDispatcherImpl implements ProcessInstanceDispatcher 
     Map<ExitReason, Counter> counters = new HashMap<ExitReason, Counter>();
 
     @Override
-    public void execute(final Long id, boolean priority) {
+    public void dispatch(ProcessInstanceReference ref) {
         if (!ProcessEngineUtils.enabled()) {
             return;
         }
 
-        Runnable run = new NoExceptionRunnable() {
-            @Override
-            protected void doRun() throws Exception {
-                lockManager.tryLock(new ProcessDispatchLock(id), new LockCallbackNoReturn() {
-                    @Override
-                    public void doWithLockNoResult() {
-                        processExecuteWithLock(id);
-                    }
-                });
-            }
-        };
+        ref.setExecutor(this);
 
         boolean submitted = false;
-        if (priority) {
+        if (ref.isEvent()) {
             try {
-                priorityExecutor.execute(run);
+                eventExecutor.execute(ref);
                 submitted = true;
             } catch (RejectedExecutionException e) {
                 //
             }
         }
         if (!submitted) {
-            executor.execute(run);
+            if (isBlocking(ref)) {
+                if (ref.getPriority() >= 1000) {
+                    try {
+                        priorityExecutor.execute(ref);
+                    } catch (RejectedExecutionException e) {
+                        blockingExecutor.execute(ref);
+                    }
+                } else {
+                    blockingExecutor.execute(ref);
+                }
+            } else {
+                nonBlockingExecutor.execute(ref);
+            }
         }
     }
 
-    public void processExecuteWithLock(long processId) {
+    protected boolean isBlocking(ProcessInstanceReference ref) {
+        if (ArchaiusUtil.getBoolean("process." + ref.getName().split("[.]")[0] + ".blocking").get()) {
+            return true;
+        }
+        return ArchaiusUtil.getBoolean("process." + ref.getName() + ".blocking").get();
+    }
+
+    @Override
+    public void execute(final long processId) {
+        Long nextId = processId;
+        while (nextId != null) {
+            final long currentId = nextId;
+            nextId = lockManager.tryLock(new ProcessDispatchLock(processId), new LockCallback<Long>() {
+                @Override
+                public Long doWithLock() {
+                    return processExecuteWithLock(currentId);
+                }
+            });
+        }
+    }
+
+    public Long processExecuteWithLock(long processId) {
         EVENT.inc();
 
         boolean runRemaining = false;
@@ -136,11 +165,10 @@ public class ProcessInstanceDispatcherImpl implements ProcessInstanceDispatcher 
         }
 
         if (runRemaining) {
-            Long nextId = processServer.getRemainingTasks(processId);
-            if (nextId != null) {
-                processExecuteWithLock(nextId);
-            }
+            return processServer.getNextTask(instance);
         }
+
+        return null;
     }
 
     @PostConstruct

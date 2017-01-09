@@ -10,6 +10,7 @@ public class ProcessInstanceContext {
     ProcessDefinition processDefinition;
     ProcessState state;
     LockDefinition processLock;
+    boolean replay;
 
     public ProcessDefinition getProcessDefinition() {
         return processDefinition;
@@ -41,6 +42,14 @@ public class ProcessInstanceContext {
 
     public void setProcessLock(LockDefinition processLock) {
         this.processLock = processLock;
+    }
+
+    public boolean isReplay() {
+        return replay;
+    }
+
+    public void setReplay(boolean replay) {
+        this.replay = replay;
     }
 
 }

@@ -11,6 +11,8 @@ import io.cattle.platform.core.addon.LoadBalancerCookieStickinessPolicy;
 import io.cattle.platform.core.addon.LogConfig;
 import io.cattle.platform.core.addon.MountEntry;
 import io.cattle.platform.core.addon.PortRule;
+import io.cattle.platform.core.addon.ProcessPool;
+import io.cattle.platform.core.addon.ProcessSummary;
 import io.cattle.platform.core.addon.PublicEndpoint;
 import io.cattle.platform.core.addon.RecreateOnQuorumStrategyConfig;
 import io.cattle.platform.core.addon.RestartPolicy;
@@ -77,7 +79,9 @@ public class CoreModelConfig {
                 CatalogTemplate.class,
                 PortRule.class,
                 TargetPortRule.class,
-                MountEntry.class
+                MountEntry.class,
+                ProcessSummary.class,
+                ProcessPool.class
                 ));
         return typeSet;
     }

@@ -138,6 +138,12 @@
              "attributes" : {
                 "scheduleUpdate" : true
             }
+        },
+        "executionCount": {
+            "type": "int"
+        },
+        "executionPeriodStart": {
+            "type": "date"
         }
     },
     "resourceActions" : {

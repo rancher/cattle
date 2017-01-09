@@ -3,16 +3,19 @@ package io.cattle.platform.engine.manager;
 import io.cattle.platform.engine.process.LaunchConfiguration;
 import io.cattle.platform.engine.process.ProcessDefinition;
 import io.cattle.platform.engine.process.ProcessInstance;
+import io.cattle.platform.engine.server.ProcessInstanceReference;
 
 import java.util.List;
 
 public interface ProcessManager {
 
-    List<Long> pendingTasks();
+    List<ProcessInstanceReference> pendingTasks();
 
-    Long getRemainingTask(long processId);
+    Long getRemainingTask(ProcessInstance instance);
 
     ProcessInstance loadProcess(Long id);
+
+    ProcessInstanceReference loadReference(Long id);
 
     ProcessInstance createProcessInstance(LaunchConfiguration config);
 
@@ -23,7 +26,5 @@ public interface ProcessManager {
     ProcessDefinition getProcessDelegate(ProcessDefinition def);
 
     ProcessDefinition getProcessDefinition(String name);
-
-    List<Long> pendingPriorityTasks();
 
 }

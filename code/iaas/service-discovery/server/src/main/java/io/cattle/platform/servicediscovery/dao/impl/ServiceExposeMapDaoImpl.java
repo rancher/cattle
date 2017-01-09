@@ -324,7 +324,8 @@ public class ServiceExposeMapDaoImpl extends AbstractJooqDao implements ServiceE
                         .and(SERVICE_EXPOSE_MAP.REMOVED.isNull())
                         .and(SERVICE_EXPOSE_MAP.MANAGED.eq(false))
                         .and(SERVICE_EXPOSE_MAP.UPGRADE.eq(false))
-                        .and(SERVICE_EXPOSE_MAP.STATE.notIn(CommonStatesConstants.REMOVED,
+                        .and(SERVICE_EXPOSE_MAP.STATE.notIn(CommonStatesConstants.REQUESTED,
+                                CommonStatesConstants.REMOVED,
                                 CommonStatesConstants.REMOVING)))
                 .fetchInto(ServiceExposeMapRecord.class);
     }

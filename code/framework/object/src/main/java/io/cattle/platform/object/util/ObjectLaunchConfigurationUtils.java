@@ -1,5 +1,6 @@
 package io.cattle.platform.object.util;
 
+import io.cattle.platform.archaius.util.ArchaiusUtil;
 import io.cattle.platform.engine.process.LaunchConfiguration;
 import io.cattle.platform.object.meta.ObjectMetaDataManager;
 import io.github.ibuildthecloud.gdapi.factory.SchemaFactory;
@@ -30,25 +31,17 @@ public class ObjectLaunchConfigurationUtils {
             throw new IllegalStateException("Object [" + resource + "] has a null ID");
         }
 
-        return new LaunchConfiguration(processName, schema.getId(), id.toString(), data == null ? new HashMap<String, Object>() : data);
-    }
-
-    public static LaunchConfiguration createConfig(SchemaFactory factory, String processName, Object resource) {
-        return createConfig(factory, processName, resource, new HashMap<String, Object>());
-    }
-
-    public static LaunchConfiguration createConfig(SchemaFactory factory, String processName, Object resource, String key, Object... value) {
-        Map<String, Object> data = new HashMap<String, Object>();
-
-        if (value.length == 0 || (value.length % 2 == 0)) {
-            throw new IllegalArgumentException("Invalid number of arguments, you must pass key1, value1, key2, value2, etc");
+        int priority = ArchaiusUtil.getInt("process." + processName.split("[.]")[0] + ".priority").get();
+        if (priority == 0) {
+            priority = ArchaiusUtil.getInt("process." + processName + ".priority").get();
         }
 
-        data.put(key, value[0]);
-        for (int i = 1; i + 1 < value.length; i += 1) {
-            data.put(value[i].toString(), value[i + 1]);
+        if (ObjectUtils.isSystem(resource)) {
+            priority += 1000;
         }
 
-        return createConfig(factory, processName, resource, data);
+        return new LaunchConfiguration(processName, schema.getId(), id.toString(), ObjectUtils.getAccountId(resource), priority <= 0 ? null : priority,
+                data == null ? new HashMap<String, Object>() : data);
     }
+
 }

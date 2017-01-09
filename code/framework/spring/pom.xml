@@ -9,6 +9,10 @@
     </parent>
     <dependencies>
         <dependency>
+            <groupId>fr.xebia.management</groupId>
+            <artifactId>xebia-management-extras</artifactId>
+        </dependency>
+        <dependency>
             <groupId>io.cattle</groupId>
             <artifactId>cattle-framework-utils</artifactId>
             <version>${project.version}</version>
