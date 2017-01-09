@@ -1,5 +1,6 @@
 package io.cattle.platform.process.account;
 
+import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.dao.AccountDao;
 import io.cattle.platform.core.dao.InstanceDao;
@@ -24,6 +25,8 @@ import io.cattle.platform.object.meta.ObjectMetaDataManager;
 import io.cattle.platform.object.process.StandardProcess;
 import io.cattle.platform.process.base.AbstractDefaultProcessHandler;
 import io.cattle.platform.util.type.CollectionUtils;
+import io.github.ibuildthecloud.gdapi.condition.Condition;
+import io.github.ibuildthecloud.gdapi.condition.ConditionType;
 
 import java.util.List;
 import java.util.Map;
@@ -50,7 +53,7 @@ public class AccountPurge extends AbstractDefaultProcessHandler {
             deactivateThenRemove(agent, state.getData());
         }
 
-        for (Host host : list(account, Host.class)) {
+        for (Host host : hostList(account, Host.class)) {
             try {
                 deactivateThenRemove(host, state.getData());
             } catch (ProcessCancelException e) {
@@ -149,6 +152,12 @@ public class AccountPurge extends AbstractDefaultProcessHandler {
     protected <T> List<T> list(Account account, Class<T> type) {
         return objectManager.find(type,
                 ObjectMetaDataManager.REMOVED_FIELD, null,
+                ObjectMetaDataManager.ACCOUNT_FIELD, account.getId());
+    }
+
+    protected <T> List<T> hostList(Account account, Class<T> type) {
+        return objectManager.find(type,
+                ObjectMetaDataManager.STATE_FIELD, new Condition(ConditionType.NE, CommonStatesConstants.PURGED),
                 ObjectMetaDataManager.ACCOUNT_FIELD, account.getId());
     }
 
