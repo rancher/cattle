@@ -179,10 +179,6 @@ public class ServiceMetaData {
         this.create_index = service.getCreateIndex();
         this.scale = DataAccessor.fieldInteger(service, ServiceConstants.FIELD_SCALE);
         this.fqdn = DataAccessor.fieldString(service, ServiceConstants.FIELD_FQDN);
-        Integer desiredScale = DataAccessor.fieldInteger(service, ServiceConstants.FIELD_DESIRED_SCALE);
-        if (desiredScale != null) {
-            this.scale = desiredScale;
-        }
         if (healthCheck != null) {
             this.health_check = new HealthCheck(healthCheck);
         }

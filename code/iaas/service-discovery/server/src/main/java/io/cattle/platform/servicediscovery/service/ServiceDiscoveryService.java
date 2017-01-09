@@ -55,8 +55,6 @@ public interface ServiceDiscoveryService extends AnnotatedEventListener {
     
     void updateHealthState(Stack stack);
 
-    boolean isScalePolicyService(Service service);
-
     void setServiceIndexIp(ServiceIndex serviceIndex, String ipAddress);
 
     @EventHandler

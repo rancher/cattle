@@ -66,11 +66,8 @@ public class ServiceConstants {
     public static final String STACK_FIELD_ENVIRONMENT = "environment";
     public static final String STACK_FIELD_BINDING = "binding";
     public static final String FIELD_SET_VIP = "assignServiceIpAddress";
-    public static final String FIELD_SCALE_POLICY = "scalePolicy";
-    public static final String FIELD_DESIRED_SCALE = "desiredScale";
     public static final String FIELD_CURRENT_SCALE = "currentScale";
     public static final String FIELD_HEALTH_STATE = "healthState";
-    public static final String FIELD_LOCKED_SCALE = "lockedScale";
     public static final String FIELD_STACK_ID = "stackId";
     public static final String FIELD_SYSTEM = "system";
     public static final String FIELD_VOLUME_TEMPLATES = "volumeTemplates";

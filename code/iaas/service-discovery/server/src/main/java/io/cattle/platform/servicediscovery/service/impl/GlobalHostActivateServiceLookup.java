@@ -50,7 +50,7 @@ public class GlobalHostActivateServiceLookup implements ServiceLookup {
         List<Service> activeGlobalServices = new ArrayList<Service>();
         for (Service service : services) {
             Map<String, String> serviceLabels = ServiceDiscoveryUtil.getMergedServiceLabels(service, allocatorSvc);
-            if ((sdSvc.isGlobalService(service) || sdSvc.isScalePolicyService(service)) &&
+            if ((sdSvc.isGlobalService(service)) &&
                     allocatorSvc.hostChangesAffectsHostAffinityRules(host.getId(), serviceLabels)) {
                 activeGlobalServices.add(service);
             }

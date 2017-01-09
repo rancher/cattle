@@ -15,7 +15,6 @@ import io.cattle.platform.core.addon.PublicEndpoint;
 import io.cattle.platform.core.addon.RecreateOnQuorumStrategyConfig;
 import io.cattle.platform.core.addon.RestartPolicy;
 import io.cattle.platform.core.addon.RollingRestartStrategy;
-import io.cattle.platform.core.addon.ScalePolicy;
 import io.cattle.platform.core.addon.ServiceLink;
 import io.cattle.platform.core.addon.ServiceRestart;
 import io.cattle.platform.core.addon.ServiceUpgrade;
@@ -72,7 +71,6 @@ public class CoreModelConfig {
                 RecreateOnQuorumStrategyConfig.class,
                 HaConfigInput.class,
                 BlkioDeviceOption.class,
-                ScalePolicy.class,
                 Ulimit.class,
                 CatalogTemplate.class,
                 PortRule.class,
