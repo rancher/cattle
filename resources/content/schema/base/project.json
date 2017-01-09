@@ -85,7 +85,8 @@
         "type": "array[reference[project]]",
         "attributes" : {
             "scheduleUpdate" : true
-        }
+        },
+        "nullable": true
     }
   }
 }
