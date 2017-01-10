@@ -6,7 +6,6 @@ import static io.cattle.platform.core.constants.InstanceConstants.*;
 import static io.cattle.platform.core.model.tables.HostTable.*;
 import static io.cattle.platform.core.util.SystemLabels.*;
 import static io.cattle.platform.docker.constants.DockerInstanceConstants.*;
-
 import io.cattle.platform.agent.AgentLocator;
 import io.cattle.platform.agent.RemoteAgent;
 import io.cattle.platform.archaius.util.ArchaiusUtil;
