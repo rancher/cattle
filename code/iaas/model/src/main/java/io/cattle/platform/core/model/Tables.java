@@ -204,6 +204,11 @@ public class Tables {
 	public static final io.cattle.platform.core.model.tables.InstanceLinkTable INSTANCE_LINK = io.cattle.platform.core.model.tables.InstanceLinkTable.INSTANCE_LINK;
 
 	/**
+	 * The table cattle.instance_revision
+	 */
+	public static final io.cattle.platform.core.model.tables.InstanceRevisionTable INSTANCE_REVISION = io.cattle.platform.core.model.tables.InstanceRevisionTable.INSTANCE_REVISION;
+
+	/**
 	 * The table cattle.ip_address
 	 */
 	public static final io.cattle.platform.core.model.tables.IpAddressTable IP_ADDRESS = io.cattle.platform.core.model.tables.IpAddressTable.IP_ADDRESS;
@@ -317,6 +322,11 @@ public class Tables {
 	 * The table cattle.service_log
 	 */
 	public static final io.cattle.platform.core.model.tables.ServiceLogTable SERVICE_LOG = io.cattle.platform.core.model.tables.ServiceLogTable.SERVICE_LOG;
+
+	/**
+	 * The table cattle.service_revision
+	 */
+	public static final io.cattle.platform.core.model.tables.ServiceRevisionTable SERVICE_REVISION = io.cattle.platform.core.model.tables.ServiceRevisionTable.SERVICE_REVISION;
 
 	/**
 	 * The table cattle.setting

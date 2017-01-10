@@ -15,6 +15,7 @@ public class PortRule {
     Integer targetPort;
     String backendName;
     String selector;
+    String instanceId;
     
     public enum Protocol {
         http,
@@ -30,7 +31,7 @@ public class PortRule {
 
     public PortRule(String hostname, String path, Integer sourcePort, Integer priority, Protocol protocol,
             String serviceId,
-            Integer targetPort, String backendName, String selector) {
+            Integer targetPort, String backendName, String selector, String instanceId) {
         super();
         this.hostname = hostname;
         this.path = path;
@@ -41,6 +42,7 @@ public class PortRule {
         this.targetPort = targetPort;
         this.backendName = backendName;
         this.selector = selector;
+        this.instanceId = instanceId;
     }
 
     @Field(nullable = true)
@@ -122,6 +124,15 @@ public class PortRule {
 
     public void setSelector(String selector) {
         this.selector = selector;
+    }
+
+    @Field(typeString = "reference[instance]", nullable = true)
+    public String getInstanceId() {
+        return instanceId;
+    }
+
+    public void setInstanceId(String instanceId) {
+        this.instanceId = instanceId;
     }
 
 }
