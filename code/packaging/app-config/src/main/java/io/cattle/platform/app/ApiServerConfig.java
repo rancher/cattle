@@ -70,6 +70,7 @@ import io.cattle.platform.iaas.api.auth.integration.ldap.ad.ADConfig;
 import io.cattle.platform.iaas.api.auth.integration.local.ChangeSecretActionHandler;
 import io.cattle.platform.iaas.api.auth.integration.local.LocalAuthConfig;
 import io.cattle.platform.iaas.api.auth.projects.Member;
+import io.cattle.platform.iaas.api.container.ContainerUpgradeActionHandler;
 import io.cattle.platform.iaas.api.credential.ApiKeyCertificateDownloadLinkHandler;
 import io.cattle.platform.iaas.api.credential.SshKeyPemDownloadLinkHandler;
 import io.cattle.platform.iaas.api.host.HostEvacuateActionHandler;
@@ -106,10 +107,11 @@ import org.springframework.context.annotation.Configuration;
 @SuppressWarnings("deprecation")
 @Configuration
 @ComponentScans({
-    @ComponentScan("io.cattle.platform.configitem.context.impl"),
-    @ComponentScan("io.cattle.platform.servicediscovery.api.filter"),
-    @ComponentScan("io.cattle.platform.servicediscovery.api.action"),
-    @ComponentScan("io.cattle.platform.servicediscovery.api.service.impl")
+        @ComponentScan("io.cattle.platform.configitem.context.impl"),
+        @ComponentScan("io.cattle.platform.servicediscovery.api.filter"),
+        @ComponentScan("io.cattle.platform.servicediscovery.api.action"),
+        @ComponentScan("io.cattle.platform.servicediscovery.api.service.impl"),
+        @ComponentScan("io.cattle.platform.servicediscovery.api.export")
 })
 public class ApiServerConfig {
 
@@ -506,6 +508,11 @@ public class ApiServerConfig {
     @Bean
     HostEvacuateActionHandler HostEvacuateActionHandler() {
         return new HostEvacuateActionHandler();
+    }
+
+    @Bean
+    ContainerUpgradeActionHandler ContainerUpgradeActionHandler() {
+        return new ContainerUpgradeActionHandler();
     }
 
     @Bean
