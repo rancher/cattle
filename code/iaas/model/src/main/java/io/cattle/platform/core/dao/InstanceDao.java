@@ -3,10 +3,12 @@ package io.cattle.platform.core.dao;
 import io.cattle.platform.core.addon.PublicEndpoint;
 import io.cattle.platform.core.dao.impl.InstanceDaoImpl.IpAddressToServiceIndex;
 import io.cattle.platform.core.model.Account;
+import io.cattle.platform.core.model.GenericObject;
 import io.cattle.platform.core.model.Host;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.InstanceHostMap;
 import io.cattle.platform.core.model.InstanceLink;
+import io.cattle.platform.core.model.InstanceRevision;
 import io.cattle.platform.core.model.Nic;
 import io.cattle.platform.core.model.Service;
 
@@ -33,9 +35,7 @@ public interface InstanceDao {
      */
     List<? extends Service> findServicesFor(Instance instance);
 
-    List<? extends Instance> listNonRemovedInstances(Account account, boolean forService);
-
-    List<? extends Instance> findInstancesFor(Service service);
+    List<? extends Instance> listNonRemovedNonStackInstances(Account account);
 
     List<? extends Instance> findInstanceByServiceName(long accountId, String serviceName);
 
@@ -54,4 +54,12 @@ public interface InstanceDao {
     List<PublicEndpoint> getPublicEndpoints(long accountId, Long serviceId, Long hostId);
 
     List<? extends Service> findServicesNonRemovedLinksOnly(Instance instance);
+
+    InstanceRevision createRevision(Instance instance, Map<String, Object> config, boolean isInitial);
+
+    void cleanupRevisions(Instance instance);
+
+    Map<String, Object> getRevisionConfig(Instance instance);
+
+    List<GenericObject> getImagePullTasks(long accountId, List<String> images, Map<String, String> labels);
 }

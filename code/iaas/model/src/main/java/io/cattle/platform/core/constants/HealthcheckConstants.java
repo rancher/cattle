@@ -19,8 +19,17 @@ public class HealthcheckConstants {
     public static final String PROCESS_UPDATE_REINITIALIZING = "instance.updatereinitializing";
 
     public static boolean isInit(String state) {
-        return state != null && state.equalsIgnoreCase(HEALTH_STATE_INITIALIZING)
-                || state.equalsIgnoreCase(HEALTH_STATE_REINITIALIZING);
+        return state != null && (state.equalsIgnoreCase(HEALTH_STATE_INITIALIZING)
+                || state.equalsIgnoreCase(HEALTH_STATE_REINITIALIZING));
     }
 
+    public static boolean isUnhealthy(String state) {
+        return state != null && (state.equalsIgnoreCase(HEALTH_STATE_UNHEALTHY)
+                || state.equalsIgnoreCase(HEALTH_STATE_UPDATING_UNHEALTHY));
+    }
+
+    public static boolean isHealthy(String state) {
+        return state == null || state.equalsIgnoreCase(HEALTH_STATE_HEALTHY)
+                || state.equalsIgnoreCase(HEALTH_STATE_UPDATING_HEALTHY);
+    }
 }

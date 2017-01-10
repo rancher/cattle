@@ -1,15 +1,11 @@
 package io.cattle.platform.process.instance;
 
-import static io.cattle.platform.core.constants.InstanceConstants.FIELD_LABELS;
-import static io.cattle.platform.core.constants.InstanceConstants.VOLUME_CLEANUP_STRATEGY_ALL;
-import static io.cattle.platform.core.constants.InstanceConstants.VOLUME_CLEANUP_STRATEGY_NONE;
-import static io.cattle.platform.core.constants.InstanceConstants.VOLUME_CLEANUP_STRATEGY_UNNAMED;
+import static io.cattle.platform.core.constants.InstanceConstants.*;
 import static io.cattle.platform.core.model.tables.MountTable.*;
 
 import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.InstanceLinkConstants;
 import io.cattle.platform.core.constants.VolumeConstants;
-import io.cattle.platform.core.dao.GenericMapDao;
 import io.cattle.platform.core.dao.VolumeDao;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.InstanceLink;
@@ -42,9 +38,6 @@ import org.apache.commons.lang3.StringUtils;
 @Named
 public class InstanceRemove extends AbstractDefaultProcessHandler {
 
-    InstanceStop instanceStop;
-    GenericMapDao mapDao;
-    
     @Inject
     VolumeDao volumeDao;
 
@@ -52,12 +45,12 @@ public class InstanceRemove extends AbstractDefaultProcessHandler {
     public HandlerResult handle(ProcessState state, ProcessInstance process) {
         final Instance instance = (Instance)state.getResource();
 
-        Map<String, Object> result = new HashMap<String, Object>();
+        Map<String, Object> result = new HashMap<>();
 
         network(instance, state.getData());
 
         storage(instance, state.getData());
-        
+
         for (Port port : getObjectManager().children(instance, Port.class)) {
             deactivateThenRemove(port, state.getData());
         }
@@ -79,6 +72,7 @@ public class InstanceRemove extends AbstractDefaultProcessHandler {
         return new HandlerResult(result);
     }
 
+
     protected void storage(Instance instance, Map<String, Object> data) {
         List<Volume> volumes = getObjectManager().children(instance, Volume.class);
 
@@ -90,7 +84,7 @@ public class InstanceRemove extends AbstractDefaultProcessHandler {
             }
         }
 
-        Map<Object, Object> criteria = new HashMap<Object, Object>();
+        Map<Object, Object> criteria = new HashMap<>();
         criteria.put(MOUNT.REMOVED, new Condition(ConditionType.NULL));
         criteria.put(MOUNT.STATE, new Condition(ConditionType.NOTIN, MountDeactivate.MOUNT_STATES));
         criteria.put(MOUNT.INSTANCE_ID, instance.getId());
@@ -99,7 +93,7 @@ public class InstanceRemove extends AbstractDefaultProcessHandler {
             objectProcessManager.scheduleStandardProcess(StandardProcess.DEACTIVATE, mount, data);
         }
     }
-    
+
     private void deleteVolumes(Instance instance, ProcessState state) {
         Object b = DataAccessor.fieldMap(instance, FIELD_LABELS).get(SystemLabels.LABEL_VOLUME_CLEANUP_STRATEGY);
         String behavior = b != null ? b.toString() : VOLUME_CLEANUP_STRATEGY_UNNAMED;
@@ -154,23 +148,4 @@ public class InstanceRemove extends AbstractDefaultProcessHandler {
             remove(nic, data);
         }
     }
-
-    public InstanceStop getInstanceStop() {
-        return instanceStop;
-    }
-
-    @Inject
-    public void setInstanceStop(InstanceStop instanceStop) {
-        this.instanceStop = instanceStop;
-    }
-
-    public GenericMapDao getMapDao() {
-        return mapDao;
-    }
-
-    @Inject
-    public void setMapDao(GenericMapDao mapDao) {
-        this.mapDao = mapDao;
-    }
-
 }

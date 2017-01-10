@@ -351,7 +351,8 @@ def test_actions_based_on_state(context):
     c = context.create_container()
     assert set(c.actions.keys()) == set(['migrate', 'restart', 'stop',
                                          'update', 'execute', 'logs',
-                                         'proxy'])
+                                         'proxy', 'converttoservice',
+                                         'upgrade'])
 
 
 def test_include_user_not_auth_map(client):

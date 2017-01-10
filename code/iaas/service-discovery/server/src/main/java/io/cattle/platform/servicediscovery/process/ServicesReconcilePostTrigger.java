@@ -10,8 +10,8 @@ import io.cattle.platform.engine.handler.ProcessPostListener;
 import io.cattle.platform.engine.process.ProcessInstance;
 import io.cattle.platform.engine.process.ProcessState;
 import io.cattle.platform.process.common.handler.AbstractObjectProcessLogic;
-import io.cattle.platform.servicediscovery.deployment.DeploymentManager;
-import io.cattle.platform.servicediscovery.service.ServiceLookup;
+import io.cattle.platform.servicediscovery.service.DeploymentManager;
+import io.cattle.platform.servicediscovery.service.lookups.ServiceLookup;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -31,11 +31,9 @@ public class ServicesReconcilePostTrigger extends AbstractObjectProcessLogic imp
     @Override
     public String[] getProcessNames() {
         return new String[] {
-                HostConstants.PROCESS_REMOVE,
                 HostConstants.PROCESS_ACTIVATE,
                 LabelConstants.PROCESS_HOSTLABELMAP_CREATE,
                 LabelConstants.PROCESS_HOSTLABELMAP_REMOVE,
-                AgentConstants.PROCESS_RECONNECT,
                 AgentConstants.PROCESS_FINISH_RECONNECT,
                 ExternalEventConstants.PROCESS_EXTERNAL_EVENT_CREATE
         };
