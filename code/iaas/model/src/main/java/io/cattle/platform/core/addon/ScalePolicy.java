@@ -4,6 +4,9 @@ import io.github.ibuildthecloud.gdapi.annotation.Field;
 import io.github.ibuildthecloud.gdapi.annotation.Type;
 
 @Type(list=false)
+/*
+ * Remove this class after db migration for scale policy service to new global min/max/interval scale
+ */
 public class ScalePolicy {
     Integer increment;
     Integer min;

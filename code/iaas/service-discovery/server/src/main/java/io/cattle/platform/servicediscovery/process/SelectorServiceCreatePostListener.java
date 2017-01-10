@@ -6,6 +6,8 @@ import static io.cattle.platform.core.model.tables.InstanceTable.*;
 import io.cattle.platform.core.addon.ServiceLink;
 import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.ServiceConstants;
+import io.cattle.platform.core.dao.ServiceConsumeMapDao;
+import io.cattle.platform.core.dao.ServiceExposeMapDao;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.Service;
 import io.cattle.platform.core.model.ServiceExposeMap;
@@ -17,8 +19,6 @@ import io.cattle.platform.lock.LockCallbackNoReturn;
 import io.cattle.platform.lock.LockManager;
 import io.cattle.platform.object.process.StandardProcess;
 import io.cattle.platform.process.common.handler.AbstractObjectProcessLogic;
-import io.cattle.platform.servicediscovery.api.dao.ServiceConsumeMapDao;
-import io.cattle.platform.servicediscovery.api.dao.ServiceExposeMapDao;
 import io.cattle.platform.servicediscovery.deployment.impl.lock.ServiceInstanceLock;
 import io.cattle.platform.servicediscovery.service.ServiceDiscoveryService;
 import io.cattle.platform.util.type.Priority;
@@ -122,7 +122,8 @@ public class SelectorServiceCreatePostListener extends AbstractObjectProcessLogi
                 lockManager.lock(new ServiceInstanceLock(service, instance), new LockCallbackNoReturn() {
                     @Override
                     public void doWithLockNoResult() {
-                        ServiceExposeMap exposeMap = exposeMapDao.createServiceInstanceMap(service, instance, false);
+                        ServiceExposeMap exposeMap = exposeMapDao.createServiceInstanceMap(service, instance,
+                                false);
                         if (exposeMap.getState().equalsIgnoreCase(CommonStatesConstants.REQUESTED)) {
                             objectProcessManager.scheduleStandardProcessAsync(StandardProcess.CREATE, exposeMap,
                                     null);

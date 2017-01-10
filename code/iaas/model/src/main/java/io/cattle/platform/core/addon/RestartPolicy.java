@@ -7,6 +7,7 @@ public class RestartPolicy {
 
     public static String RESTART_NEVER = "no";
     public static String RESTART_ALWAYS = "always";
+    public static String RESTART_ON_FAILURE = "on-failure";
 
     String name;
     int maximumRetryCount;

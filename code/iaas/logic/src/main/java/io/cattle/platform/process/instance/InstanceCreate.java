@@ -3,11 +3,11 @@ package io.cattle.platform.process.instance;
 import static io.cattle.platform.core.model.tables.CredentialInstanceMapTable.*;
 import static io.cattle.platform.core.model.tables.NicTable.*;
 import static io.cattle.platform.core.model.tables.VolumeTable.*;
-
 import io.cattle.iaas.labels.service.LabelsService;
 import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.dao.GenericResourceDao;
+import io.cattle.platform.core.dao.InstanceDao;
 import io.cattle.platform.core.dao.LabelsDao;
 import io.cattle.platform.core.model.CredentialInstanceMap;
 import io.cattle.platform.core.model.Instance;
@@ -39,16 +39,16 @@ public class InstanceCreate extends AbstractDefaultProcessHandler {
 
     @Inject
     LabelsService labelsService;
-
     @Inject
     GenericResourceDao resourceDao;
     @Inject
     JsonMapper jsonMapper;
     @Inject
     ObjectProcessManager processManager;
-
     @Inject
     LabelsDao labelsDao;
+    @Inject
+    InstanceDao instanceDao;
 
     @Override
     public HandlerResult handle(ProcessState state, ProcessInstance process) {
@@ -64,11 +64,11 @@ public class InstanceCreate extends AbstractDefaultProcessHandler {
         Set<Long> volumesIds = createVolumes(instance, volumes, state.getData());
         Set<Long> nicIds = createNics(instance, nics, state.getData());
 
+        createLabels(instance);
+
         HandlerResult result = new HandlerResult("_volumeIds", volumesIds, "_nicIds", nicIds, "_creds", creds, InstanceConstants.FIELD_DATA_VOLUMES,
                 dataVolumes);
         result.shouldDelegate(shouldStart(instance));
-
-        createLabels(instance);
 
         return result;
     }
