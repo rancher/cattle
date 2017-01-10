@@ -6,6 +6,7 @@ import io.cattle.iaas.healthcheck.service.impl.HealthcheckCleanupMonitorImpl;
 import io.cattle.iaas.healthcheck.service.impl.HealthcheckServiceImpl;
 import io.cattle.iaas.healthcheck.service.impl.HostHealthcheckHostLookup;
 import io.cattle.iaas.healthcheck.service.impl.HostMapHealthcheckInstancesLookup;
+import io.cattle.iaas.healthcheck.service.impl.UpgradeCleanupMonitorImpl;
 import io.cattle.iaas.labels.service.impl.LabelsServiceImpl;
 import io.cattle.platform.activity.ActivityService;
 import io.cattle.platform.agent.impl.AgentLocatorImpl;
@@ -23,6 +24,8 @@ import io.cattle.platform.configitem.version.impl.ConfigUpdatePublisher;
 import io.cattle.platform.core.cache.DBCacheManager;
 import io.cattle.platform.core.cleanup.BadDataCleanup;
 import io.cattle.platform.core.cleanup.TableCleanup;
+import io.cattle.platform.core.dao.impl.ServiceConsumeMapDaoImpl;
+import io.cattle.platform.core.dao.impl.ServiceExposeMapDaoImpl;
 import io.cattle.platform.docker.process.dao.impl.ComposeDaoImpl;
 import io.cattle.platform.docker.service.impl.ComposeManagerImpl;
 import io.cattle.platform.docker.storage.DockerImageCredentialLookup;
@@ -102,6 +105,7 @@ import io.cattle.platform.sample.data.SampleDataStartupV11;
 import io.cattle.platform.sample.data.SampleDataStartupV12;
 import io.cattle.platform.sample.data.SampleDataStartupV13;
 import io.cattle.platform.sample.data.SampleDataStartupV14;
+import io.cattle.platform.sample.data.SampleDataStartupV15;
 import io.cattle.platform.sample.data.SampleDataStartupV3;
 import io.cattle.platform.sample.data.SampleDataStartupV5;
 import io.cattle.platform.sample.data.SampleDataStartupV6;
@@ -109,18 +113,18 @@ import io.cattle.platform.sample.data.SampleDataStartupV7;
 import io.cattle.platform.sample.data.SampleDataStartupV8;
 import io.cattle.platform.sample.data.SampleDataStartupV9;
 import io.cattle.platform.service.launcher.ServiceAccountCreateStartup;
-import io.cattle.platform.servicediscovery.dao.impl.ServiceConsumeMapDaoImpl;
-import io.cattle.platform.servicediscovery.dao.impl.ServiceDaoImpl;
-import io.cattle.platform.servicediscovery.dao.impl.ServiceExposeMapDaoImpl;
-import io.cattle.platform.servicediscovery.deployment.impl.DeploymentManagerImpl;
-import io.cattle.platform.servicediscovery.deployment.impl.planner.ServiceDeploymentPlannerFactoryImpl;
-import io.cattle.platform.servicediscovery.deployment.impl.unit.DeploymentUnitInstanceFactoryImpl;
-import io.cattle.platform.servicediscovery.service.impl.AgentServiceLookup;
-import io.cattle.platform.servicediscovery.service.impl.GlobalHostActivateServiceLookup;
-import io.cattle.platform.servicediscovery.service.impl.HostServiceLookup;
-import io.cattle.platform.servicediscovery.service.impl.InstanceServiceLookup;
+import io.cattle.platform.servicediscovery.deployment.impl.manager.DeploymentUnitManagerImpl;
+import io.cattle.platform.servicediscovery.deployment.lookups.AgentServiceDeploymentUnitLookup;
+import io.cattle.platform.servicediscovery.deployment.lookups.HostServiceDeploymentUnitLookup;
+import io.cattle.platform.servicediscovery.deployment.lookups.InstanceDeploymentUnitLookup;
+import io.cattle.platform.servicediscovery.service.impl.DeploymentManagerImpl;
 import io.cattle.platform.servicediscovery.service.impl.ServiceDiscoveryServiceImpl;
-import io.cattle.platform.servicediscovery.service.impl.SkipServiceLookup;
+import io.cattle.platform.servicediscovery.service.lookups.AgentServiceLookup;
+import io.cattle.platform.servicediscovery.service.lookups.DeploymentUnitServiceLookup;
+import io.cattle.platform.servicediscovery.service.lookups.GlobalHostActivateServiceLookup;
+import io.cattle.platform.servicediscovery.service.lookups.HostServiceLookup;
+import io.cattle.platform.servicediscovery.service.lookups.InstanceServiceLookup;
+import io.cattle.platform.servicediscovery.service.lookups.SkipServiceLookup;
 import io.cattle.platform.servicediscovery.upgrade.impl.UpgradeManagerImpl;
 import io.cattle.platform.spring.resource.SpringUrlListFactory;
 import io.cattle.platform.storage.ImageCredentialLookup;
@@ -356,6 +360,11 @@ public class SystemServicesConfig {
     @Bean
     HealthcheckCleanupMonitorImpl healthcheckCleanupMonitorImpl() {
         return new HealthcheckCleanupMonitorImpl();
+    }
+
+    @Bean
+    UpgradeCleanupMonitorImpl upgradeCleanupMonitorImpl() {
+        return new UpgradeCleanupMonitorImpl();
     }
 
     @Bean
@@ -652,20 +661,21 @@ public class SystemServicesConfig {
     }
 
     @Bean
+    SampleDataStartupV15 SampleDataStartupV15() {
+        return new SampleDataStartupV15();
+    }
+
+    @Bean
     ServiceConsumeMapDaoImpl ServiceConsumeMapDaoImpl() {
         return new ServiceConsumeMapDaoImpl();
     }
 
     @Bean
-    ServiceExposeMapDaoImpl ServiceExposeMapDaoImpl(@Qualifier("LockingJooqConfiguration") io.cattle.platform.db.jooq.config.Configuration config) {
-        io.cattle.platform.servicediscovery.dao.impl.ServiceExposeMapDaoImpl dao = new ServiceExposeMapDaoImpl();
+    ServiceExposeMapDaoImpl ServiceExposeMapDaoImpl(
+            @Qualifier("LockingJooqConfiguration") io.cattle.platform.db.jooq.config.Configuration config) {
+        io.cattle.platform.core.dao.impl.ServiceExposeMapDaoImpl dao = new ServiceExposeMapDaoImpl();
         dao.setLockingConfiguration(config);
         return dao;
-    }
-
-    @Bean
-    ServiceDaoImpl ServiceDaoImpl() {
-        return new ServiceDaoImpl();
     }
 
     @Bean
@@ -681,6 +691,11 @@ public class SystemServicesConfig {
     @Bean
     HostServiceLookup HostServiceLookup() {
         return new HostServiceLookup();
+    }
+
+    @Bean
+    DeploymentUnitServiceLookup DeploymentUnitServiceLookup() {
+        return new DeploymentUnitServiceLookup();
     }
 
     @Bean
@@ -704,13 +719,8 @@ public class SystemServicesConfig {
     }
 
     @Bean
-    DeploymentUnitInstanceFactoryImpl DeploymentUnitInstanceFactoryImpl() {
-        return new DeploymentUnitInstanceFactoryImpl();
-    }
-
-    @Bean
-    ServiceDeploymentPlannerFactoryImpl ServiceDeploymentPlannerFactoryImpl() {
-        return new ServiceDeploymentPlannerFactoryImpl();
+    DeploymentUnitManagerImpl DeploymentUnitManagerImpl() {
+        return new DeploymentUnitManagerImpl();
     }
 
     @Bean
@@ -855,5 +865,20 @@ public class SystemServicesConfig {
     @Bean
     SecretsService SecretsService() {
         return new SecretsServiceImpl();
+    }
+
+    @Bean
+    AgentServiceDeploymentUnitLookup AgentServiceDeploymentUnitLookup() {
+        return new AgentServiceDeploymentUnitLookup();
+    }
+
+    @Bean
+    HostServiceDeploymentUnitLookup HostServiceDeploymentUnitLookup() {
+        return new HostServiceDeploymentUnitLookup();
+    }
+
+    @Bean
+    InstanceDeploymentUnitLookup InstanceServiceDeploymentUnitLookup() {
+        return new InstanceDeploymentUnitLookup();
     }
 }

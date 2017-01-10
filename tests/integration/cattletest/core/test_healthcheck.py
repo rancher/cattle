@@ -151,7 +151,7 @@ def test_rollback_with_health(client, context, super_client):
     svc = super_client.reload(svc)
 
     # rollback the service
-    svc = wait_state(client, svc.cancelupgrade(), 'canceled-upgrade')
+    svc = wait_state(client, svc.pause(), 'paused')
     client.wait_success(svc.rollback())
 
 
@@ -319,7 +319,7 @@ def test_health_check_create_service(super_client, context, client):
     wait_for(lambda: super_client.reload(c).healthState == 'healthy')
 
     # restart the instance
-    c = super_client.wait_success(c.stop())
+    c = super_client.wait_success(c.stop(stopSource='external'))
     wait_for(lambda: super_client.reload(c).state == 'running')
     wait_for(lambda: super_client.reload(c).healthState == 'reinitializing')
 
@@ -670,7 +670,7 @@ def test_health_check_reinit_timeout(super_client, context, client):
     wait_for(lambda: super_client.reload(c).healthState == 'healthy')
 
     # restart the instance
-    c = super_client.wait_success(c.stop())
+    c = super_client.wait_success(c.restart())
     wait_for(lambda: super_client.reload(c).state == 'running')
     wait_for(lambda: super_client.reload(c).healthState == 'reinitializing')
 
@@ -1628,3 +1628,200 @@ def test_balancer_svc_upgrade(client, context, super_client):
     lb_svc = client.wait_success(lb_svc)
     assert lb_svc.launchConfig.healthCheck is not None
     assert len(lb_svc.launchConfig.labels) == 3
+
+
+def test_standalone_health_check_recreate(super_client, new_context):
+    c1 = new_context.create_container(name='healthcheck-' + random_str(),
+                                      healthCheck={'port': 80})
+
+    assert c1.healthCheck.port == 80
+
+    c1 = super_client.reload(c1)
+    hci = find_one(c1.healthcheckInstances)
+    hcihm = find_one(hci.healthcheckInstanceHostMaps)
+    agent = _get_agent_for_container(new_context, c1)
+    assert hcihm.healthState == 'initializing'
+
+    _update_healthy(agent, hcihm, c1, super_client)
+
+    # update unheatlhy and make sure the container was recreated
+    _update_unhealthy(agent, hcihm, c1, super_client)
+    c1 = wait_state(super_client, c1, "removed")
+
+    wait_for(lambda: len(super_client.list_container(name=c1.name,
+                                                     state="running")) == 1)
+    c2 = super_client.list_container(name=c1.name, state="running")[0]
+    assert c1.name == c2.name
+    assert c1.kind == c2.kind
+    assert c2.healthState == "initializing"
+    assert c1.deploymentUnitUuid == c2.deploymentUnitUuid
+
+    # update the replacement, and make sure it was recreated again
+    hci = find_one(c2.healthcheckInstances)
+    hcihm = find_one(hci.healthcheckInstanceHostMaps)
+    agent = _get_agent_for_container(new_context, c2)
+    assert hcihm.healthState == 'initializing'
+    _update_healthy(agent, hcihm, c2, super_client)
+    _update_unhealthy(agent, hcihm, c2, super_client)
+    c2 = wait_state(super_client, c2, "removed")
+
+    wait_for(lambda: len(super_client.list_container(name=c1.name,
+                                                     state="running")) == 1)
+    c3 = super_client.list_container(name=c1.name, state="running")[0]
+    assert c3.name == c2.name
+    assert c3.kind == c2.kind
+    assert c3.healthState == "initializing"
+    assert c3.deploymentUnitUuid == c2.deploymentUnitUuid
+
+    # remove the instance, and validate that it is not recreated
+    c3 = super_client.wait_success(c3.stop())
+    super_client.wait_success(c3.remove())
+    wait_for(lambda: len(super_client.list_container(name=c3.name)) == 0)
+
+
+def test_standalone_health_check_noop(super_client, new_context):
+    c1 = new_context.create_container(name='healthcheck-' + random_str(),
+                                      healthCheck={'port': 80,
+                                                   'strategy': 'none'})
+
+    assert c1.healthCheck.port == 80
+
+    c1 = super_client.reload(c1)
+    hci = find_one(c1.healthcheckInstances)
+    hcihm = find_one(hci.healthcheckInstanceHostMaps)
+    agent = _get_agent_for_container(new_context, c1)
+    assert hcihm.healthState == 'initializing'
+
+    _update_healthy(agent, hcihm, c1, super_client)
+
+    # update unheatlhy and make sure the container was NOT recreated
+    _update_unhealthy(agent, hcihm, c1, super_client)
+    try:
+        wait_for(lambda: super_client.reload(c1).state == 'removed',
+                 timeout=10)
+    except Exception:
+        pass
+
+
+def test_standalone_container_lb_replacement(super_client, new_context):
+    client = new_context.client
+    c1 = new_context.create_container(name=random_str(),
+                                      healthCheck={'port': 80})
+    c1 = super_client.reload(c1)
+    hci = find_one(c1.healthcheckInstances)
+    hcihm = find_one(hci.healthcheckInstanceHostMaps)
+    agent = _get_agent_for_container(new_context, c1)
+    assert hcihm.healthState == 'initializing'
+
+    _update_healthy(agent, hcihm, c1, super_client)
+
+    env = client.create_stack(name='env-' + random_str())
+    launch_config = {"imageUuid": new_context.image_uuid}
+    hostname = "foo"
+    path = "bar"
+    port = 32
+    priority = 10
+    protocol = "http"
+    target_port = 42
+    backend_name = "myBackend"
+    config = "global maxconn 20"
+    port_rule1 = {"hostname": hostname,
+                  "path": path, "sourcePort": port, "priority": priority,
+                  "protocol": protocol, "instanceId": c1.id,
+                  "targetPort": target_port,
+                  "backendName": backend_name}
+    port_rules = [port_rule1]
+    lb_config = {"portRules": port_rules,
+                 "config": config}
+
+    # create balancer
+    lb_svc = client. \
+        create_loadBalancerService(name=random_str(),
+                                   stackId=env.id,
+                                   launchConfig=launch_config,
+                                   lbConfig=lb_config)
+    lb_svc = client.wait_success(lb_svc)
+    assert lb_svc.state == "inactive"
+    assert len(lb_svc.lbConfig.portRules) == 1
+    assert lb_svc.lbConfig.portRules[0].instanceId == c1.id
+
+    # update container to unhealthy, verify it got recreated
+    # and lb got a replacement assigned
+    _update_unhealthy(agent, hcihm, c1, super_client)
+    c1 = wait_state(super_client, c1, "removed")
+
+    wait_for(lambda: len(super_client.list_container(name=c1.name,
+                                                     state="running")) == 1)
+    c2 = super_client.list_container(name=c1.name, state="running")[0]
+    assert c1.name == c2.name
+    assert c1.kind == c2.kind
+
+    wait_for(lambda: len(super_client.reload(lb_svc).lbConfig.portRules) == 1)
+    wait_for(lambda: super_client.reload(lb_svc).
+             lbConfig.portRules[0].instanceId == c2.id)
+
+
+def test_unheatlhy_du_volume(new_context, super_client):
+    client = new_context.client
+    image_uuid = new_context.image_uuid
+    opts = {'foo': 'true', 'bar': 'true'}
+    stack = client.create_stack(name=random_str())
+    stack = client.wait_success(stack)
+
+    client.create_volumeTemplate(name="foo", driver="nfs",
+                                 driverOpts=opts,
+                                 stackId=stack.id,
+                                 perContainer=True)
+
+    # create service
+    launch_config = {"imageUuid": image_uuid, "dataVolumes": "foo:/bar",
+                     "healthCheck": {'port': 80}}
+    svc = client.create_service(name=random_str(),
+                                stackId=stack.id,
+                                launchConfig=launch_config,
+                                scale=1)
+    svc = client.wait_success(svc)
+    client.wait_success(svc.activate())
+
+    c1 = _validate_compose_instance_start(client, svc, stack, "1")
+    path_to_mount = c1.dataVolumeMounts
+    assert len(path_to_mount) == 1
+    for key, value in path_to_mount.iteritems():
+        assert key == '/bar'
+        assert value is not None
+
+    c1 = super_client.reload(c1)
+
+    du1 = c1.deploymentUnitUuid
+    name = stack.name + "_foo_1_" + du1
+    volumes = client.list_volume(name_like=name + "_%")
+    assert len(volumes) == 1
+    v1 = volumes[0]
+    assert v1.driver == 'nfs'
+    assert v1.driverOpts == opts
+
+    # update unhealthy, validate instance got recreated and du was preserved
+    c1 = super_client.reload(c1)
+    hci = find_one(c1.healthcheckInstances)
+    hcihm = find_one(hci.healthcheckInstanceHostMaps)
+    agent = _get_agent_for_container(new_context, c1)
+    assert hcihm.healthState == 'initializing'
+
+    _update_healthy(agent, hcihm, c1, super_client)
+    _update_unhealthy(agent, hcihm, c1, super_client)
+
+    wait_for_condition(client, c1,
+                       lambda x: x.removed is not None)
+
+    c2 = _validate_compose_instance_start(client, svc, stack, "1")
+    assert c1.id != c2.id
+
+    du2 = c2.deploymentUnitUuid
+    assert du1 == du2
+    name = stack.name + "_foo_1_" + du2
+    volumes = client.list_volume(name_like=name + "_%")
+    assert len(volumes) == 1
+    v2 = volumes[0]
+    assert v1.id == v2.id
+    assert v2.driver == 'nfs'
+    assert v2.driverOpts == opts

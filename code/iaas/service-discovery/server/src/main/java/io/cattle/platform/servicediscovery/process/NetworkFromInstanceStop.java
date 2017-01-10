@@ -43,7 +43,7 @@ public class NetworkFromInstanceStop extends AbstractObjectProcessHandler {
         }
 
         List<Instance> dependants = objectManager.find(Instance.class, INSTANCE.REMOVED, null,
-                INSTANCE.DEPLOYMENT_UNIT_UUID, instance.getDeploymentUnitUuid(), INSTANCE.NETWORK_CONTAINER_ID,
+                INSTANCE.DEPLOYMENT_UNIT_ID, instance.getDeploymentUnitId(), INSTANCE.NETWORK_CONTAINER_ID,
                 instance.getId());
         if (dependants.isEmpty()) {
             return null;

@@ -10,12 +10,6 @@ import java.util.Map;
 public interface AllocationHelper {
 
     /**
-     * Add labels from 'srcMap' to 'destMap'.  If key already exists in destMap, either
-     * overwrite or merge depending on whether the key is an affinity rule or not
-     */
-    void mergeLabels(Map<String, String> srcMap, Map<String, String> destMap);
-
-    /**
      * This address various usability issues allowing users to provide shorthand versions of the service
      * name
      */
