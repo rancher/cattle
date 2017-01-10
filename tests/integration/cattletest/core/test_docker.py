@@ -913,7 +913,7 @@ def test_docker_mount_life_cycle(docker_client):
 
 
 @if_docker
-def test_docker_labels(docker_client):
+def test_docker_labels(docker_client, super_client):
     # 1.8 broke this behavior where labels would come from the images
     # one day maybe they will bring it back.
     # image_uuid = 'docker:ranchertest/labelled:v0.1.0'
@@ -938,12 +938,15 @@ def test_docker_labels(docker_client):
     for l in labels:
         actual_labels[l.key] = l.value
 
+    sc = super_client.reload(c)
+    mac_address = sc.nics()[0].macAddress
     expected_labels = {
         # 'io.rancher.testlabel': 'value1',
         # 'io.rancher.testlabel.space': 'value 1',
         'io.rancher.testlabel.fromapi': 'yes',
         'io.rancher.container.uuid': c.uuid,
         'io.rancher.container.name': c.name,
+        'io.rancher.container.mac_address': mac_address,
     }
     assert actual_labels == expected_labels
 
