@@ -212,6 +212,17 @@ public interface ServiceExposeMap extends java.io.Serializable {
 	@javax.persistence.Column(name = "upgrade", nullable = false, precision = 1)
 	public java.lang.Boolean getUpgrade();
 
+	/**
+	 * Setter for <code>cattle.service_expose_map.upgrade_time</code>.
+	 */
+	public void setUpgradeTime(java.util.Date value);
+
+	/**
+	 * Getter for <code>cattle.service_expose_map.upgrade_time</code>.
+	 */
+	@javax.persistence.Column(name = "upgrade_time")
+	public java.util.Date getUpgradeTime();
+
 	// -------------------------------------------------------------------------
 	// FROM and INTO
 	// -------------------------------------------------------------------------

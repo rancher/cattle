@@ -1,0 +1,10 @@
+{
+    "resourceFields": {
+        "configs": {
+            "type": "map[launchConfig]",
+            "create": true,
+            "required": false,
+            "nullable": true
+        }
+    }
+}

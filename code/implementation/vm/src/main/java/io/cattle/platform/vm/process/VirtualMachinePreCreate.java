@@ -2,7 +2,6 @@ package io.cattle.platform.vm.process;
 
 import static io.cattle.platform.core.model.tables.InstanceTable.*;
 import static io.cattle.platform.core.model.tables.VolumeTable.*;
-
 import io.cattle.platform.core.addon.VirtualMachineDisk;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.constants.StoragePoolConstants;
@@ -59,7 +58,7 @@ public class VirtualMachinePreCreate extends AbstractObjectProcessLogic implemen
 
     @Override
     public String[] getProcessNames() {
-        return new String[] { "instance.create" };
+        return new String[] { InstanceConstants.PROCESS_CREATE };
     }
 
     @Override
