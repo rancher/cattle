@@ -150,8 +150,8 @@
         <aop:advisor advice-ref="DockerStorageAdvice" pointcut="execution(* io.cattle.platform.docker.storage.dao.DockerStorageDao.*(..))" />
         <aop:advisor advice-ref="TransactionDelegateAdvice" pointcut="execution(* io.cattle.platform.object.impl.TransactionDelegate.*(..))" />
         <aop:advisor advice-ref="RegisterAdvice" pointcut="execution(* io.cattle.platform.register.dao.RegisterDao.*(..))" />
-        <aop:advisor advice-ref="ServiceMapDaoImplAdvice" pointcut="execution(* io.cattle.platform.servicediscovery.api.dao.ServiceExposeMapDao.*(..))" />
-        <aop:advisor advice-ref="ServiceMapDaoImplAdvice" pointcut="execution(* io.cattle.platform.servicediscovery.api.dao.ServiceConsumeMapDao.*(..))" />
+        <aop:advisor advice-ref="ServiceMapDaoImplAdvice" pointcut="execution(* io.cattle.platform.core.dao.ServiceExposeMapDao.*(..))" />
+        <aop:advisor advice-ref="ServiceMapDaoImplAdvice" pointcut="execution(* io.cattle.platform.core.dao.ServiceConsumeMapDao.*(..))" />
         <aop:advisor advice-ref="ImageDaoAdvice" pointcut="execution(* io.cattle.platform.storage.service.dao.ImageDao.*(..))" />
         <aop:advisor advice-ref="AllocatorAdvice" pointcut="execution(* io.cattle.platform.allocator.dao.AllocatorDao.*(..))" />
         <aop:advisor advice-ref="ApiDelegateAdvice" pointcut="execution(* io.github.ibuildthecloud.gdapi.request.handler.write.ReadWriteApiDelegate.*(..))" />

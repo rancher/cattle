@@ -11,9 +11,9 @@ package io.cattle.platform.core.model.tables.records;
 @java.lang.SuppressWarnings({ "all", "unchecked", "rawtypes" })
 @javax.persistence.Entity
 @javax.persistence.Table(name = "service_log", schema = "cattle")
-public class ServiceLogRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.platform.core.model.tables.records.ServiceLogRecord> implements io.cattle.platform.db.jooq.utils.TableRecordJaxb, org.jooq.Record13<java.lang.Long, java.lang.Long, java.lang.String, java.lang.String, java.util.Date, java.util.Map<String,Object>, java.util.Date, java.lang.String, java.lang.Long, java.lang.Long, java.lang.String, java.lang.Boolean, java.lang.String>, io.cattle.platform.core.model.ServiceLog {
+public class ServiceLogRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.platform.core.model.tables.records.ServiceLogRecord> implements io.cattle.platform.db.jooq.utils.TableRecordJaxb, org.jooq.Record14<java.lang.Long, java.lang.Long, java.lang.String, java.lang.String, java.util.Date, java.util.Map<String,Object>, java.util.Date, java.lang.String, java.lang.Long, java.lang.Long, java.lang.String, java.lang.Boolean, java.lang.String, java.lang.Long>, io.cattle.platform.core.model.ServiceLog {
 
-	private static final long serialVersionUID = -109484864;
+	private static final long serialVersionUID = 1831682120;
 
 	/**
 	 * Setter for <code>cattle.service_log.id</code>.
@@ -237,6 +237,23 @@ public class ServiceLogRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattl
 		return (java.lang.String) getValue(12);
 	}
 
+	/**
+	 * Setter for <code>cattle.service_log.deployment_unit_id</code>.
+	 */
+	@Override
+	public void setDeploymentUnitId(java.lang.Long value) {
+		setValue(13, value);
+	}
+
+	/**
+	 * Getter for <code>cattle.service_log.deployment_unit_id</code>.
+	 */
+	@javax.persistence.Column(name = "deployment_unit_id", precision = 19)
+	@Override
+	public java.lang.Long getDeploymentUnitId() {
+		return (java.lang.Long) getValue(13);
+	}
+
 	// -------------------------------------------------------------------------
 	// Primary key information
 	// -------------------------------------------------------------------------
@@ -250,23 +267,23 @@ public class ServiceLogRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattl
 	}
 
 	// -------------------------------------------------------------------------
-	// Record13 type implementation
+	// Record14 type implementation
 	// -------------------------------------------------------------------------
 
 	/**
 	 * {@inheritDoc}
 	 */
 	@Override
-	public org.jooq.Row13<java.lang.Long, java.lang.Long, java.lang.String, java.lang.String, java.util.Date, java.util.Map<String,Object>, java.util.Date, java.lang.String, java.lang.Long, java.lang.Long, java.lang.String, java.lang.Boolean, java.lang.String> fieldsRow() {
-		return (org.jooq.Row13) super.fieldsRow();
+	public org.jooq.Row14<java.lang.Long, java.lang.Long, java.lang.String, java.lang.String, java.util.Date, java.util.Map<String,Object>, java.util.Date, java.lang.String, java.lang.Long, java.lang.Long, java.lang.String, java.lang.Boolean, java.lang.String, java.lang.Long> fieldsRow() {
+		return (org.jooq.Row14) super.fieldsRow();
 	}
 
 	/**
 	 * {@inheritDoc}
 	 */
 	@Override
-	public org.jooq.Row13<java.lang.Long, java.lang.Long, java.lang.String, java.lang.String, java.util.Date, java.util.Map<String,Object>, java.util.Date, java.lang.String, java.lang.Long, java.lang.Long, java.lang.String, java.lang.Boolean, java.lang.String> valuesRow() {
-		return (org.jooq.Row13) super.valuesRow();
+	public org.jooq.Row14<java.lang.Long, java.lang.Long, java.lang.String, java.lang.String, java.util.Date, java.util.Map<String,Object>, java.util.Date, java.lang.String, java.lang.Long, java.lang.Long, java.lang.String, java.lang.Boolean, java.lang.String, java.lang.Long> valuesRow() {
+		return (org.jooq.Row14) super.valuesRow();
 	}
 
 	/**
@@ -377,6 +394,14 @@ public class ServiceLogRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattl
 	 * {@inheritDoc}
 	 */
 	@Override
+	public org.jooq.Field<java.lang.Long> field14() {
+		return io.cattle.platform.core.model.tables.ServiceLogTable.SERVICE_LOG.DEPLOYMENT_UNIT_ID;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
 	public java.lang.Long value1() {
 		return getId();
 	}
@@ -475,6 +500,14 @@ public class ServiceLogRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattl
 	@Override
 	public java.lang.String value13() {
 		return getLevel();
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public java.lang.Long value14() {
+		return getDeploymentUnitId();
 	}
 
 	/**
@@ -598,7 +631,16 @@ public class ServiceLogRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattl
 	 * {@inheritDoc}
 	 */
 	@Override
-	public ServiceLogRecord values(java.lang.Long value1, java.lang.Long value2, java.lang.String value3, java.lang.String value4, java.util.Date value5, java.util.Map<String,Object> value6, java.util.Date value7, java.lang.String value8, java.lang.Long value9, java.lang.Long value10, java.lang.String value11, java.lang.Boolean value12, java.lang.String value13) {
+	public ServiceLogRecord value14(java.lang.Long value) {
+		setDeploymentUnitId(value);
+		return this;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public ServiceLogRecord values(java.lang.Long value1, java.lang.Long value2, java.lang.String value3, java.lang.String value4, java.util.Date value5, java.util.Map<String,Object> value6, java.util.Date value7, java.lang.String value8, java.lang.Long value9, java.lang.Long value10, java.lang.String value11, java.lang.Boolean value12, java.lang.String value13, java.lang.Long value14) {
 		return this;
 	}
 
@@ -624,6 +666,7 @@ public class ServiceLogRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattl
 		setTransactionId(from.getTransactionId());
 		setSubLog(from.getSubLog());
 		setLevel(from.getLevel());
+		setDeploymentUnitId(from.getDeploymentUnitId());
 	}
 
 	/**
@@ -649,7 +692,7 @@ public class ServiceLogRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattl
 	/**
 	 * Create a detached, initialised ServiceLogRecord
 	 */
-	public ServiceLogRecord(java.lang.Long id, java.lang.Long accountId, java.lang.String kind, java.lang.String description, java.util.Date created, java.util.Map<String,Object> data, java.util.Date endTime, java.lang.String eventType, java.lang.Long serviceId, java.lang.Long instanceId, java.lang.String transactionId, java.lang.Boolean subLog, java.lang.String level) {
+	public ServiceLogRecord(java.lang.Long id, java.lang.Long accountId, java.lang.String kind, java.lang.String description, java.util.Date created, java.util.Map<String,Object> data, java.util.Date endTime, java.lang.String eventType, java.lang.Long serviceId, java.lang.Long instanceId, java.lang.String transactionId, java.lang.Boolean subLog, java.lang.String level, java.lang.Long deploymentUnitId) {
 		super(io.cattle.platform.core.model.tables.ServiceLogTable.SERVICE_LOG);
 
 		setValue(0, id);
@@ -665,5 +708,6 @@ public class ServiceLogRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattl
 		setValue(10, transactionId);
 		setValue(11, subLog);
 		setValue(12, level);
+		setValue(13, deploymentUnitId);
 	}
 }

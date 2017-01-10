@@ -133,6 +133,7 @@ def test_user_types(user_client, adds=set(), removes=set()):
         'instanceHealthCheck',
         'instanceLink',
         'instanceStop',
+        'instanceRemove',
         'ipAddress',
         'kubernetesService',
         'kubernetesStack',
@@ -191,7 +192,6 @@ def test_user_types(user_client, adds=set(), removes=set()):
         'serviceLink',
         'serviceUpgrade',
         'serviceUpgradeStrategy',
-        'toServiceUpgradeStrategy',
         'inServiceUpgradeStrategy',
         'virtualMachine',
         'virtualMachineDisk',
@@ -204,7 +204,6 @@ def test_user_types(user_client, adds=set(), removes=set()):
         'volumeSnapshotInput',
         'nfsConfig',
         'blkioDeviceOption',
-        'scalePolicy',
         'binding',
         'serviceBinding',
         'volumeTemplate',
@@ -222,6 +221,11 @@ def test_user_types(user_client, adds=set(), removes=set()):
         'scheduledUpgrade',
         'genericObject',
         'hostTemplate',
+        'instanceRevision',
+        'serviceRevision',
+        'serviceRollback',
+        'convertToServiceInput',
+        'containerUpgrade',
     }
     types.update(adds)
     types.difference_update(removes)
@@ -372,6 +376,7 @@ def test_admin_types(admin_user_client, adds=set(), removes=set()):
         'instanceHealthCheck',
         'instanceLink',
         'instanceStop',
+        'instanceRemove',
         'ipAddress',
         'kubernetesService',
         'kubernetesStack',
@@ -445,7 +450,6 @@ def test_admin_types(admin_user_client, adds=set(), removes=set()):
         'secondaryLaunchConfig',
         'serviceLink',
         'serviceUpgradeStrategy',
-        'toServiceUpgradeStrategy',
         'inServiceUpgradeStrategy',
         'publicEndpoint',
         'serviceRestart',
@@ -456,7 +460,6 @@ def test_admin_types(admin_user_client, adds=set(), removes=set()):
         'volumeSnapshotInput',
         'nfsConfig',
         'blkioDeviceOption',
-        'scalePolicy',
         'binding',
         'serviceBinding',
         'volumeTemplate',
@@ -472,6 +475,11 @@ def test_admin_types(admin_user_client, adds=set(), removes=set()):
         'processSummary',
         'scheduledUpgrade',
         'hostTemplate',
+        'instanceRevision',
+        'serviceRevision',
+        'serviceRollback',
+        'convertToServiceInput',
+        'containerUpgrade',
     }
     types.update(adds)
     types.difference_update(removes)
@@ -1067,6 +1075,12 @@ def test_container_auth(admin_user_client, user_client, project_client,
         'secrets': 'r',
         'serviceId': 'r',
         'stackId': 'r',
+        'replacementFor': 'r',
+        'sidekickTo': 'r',
+        'metadata': 'r',
+        'exitCode': 'r',
+        'prePullOnUpgrade': 'r',
+        'revisionId': 'r',
     })
 
     auth_check(user_client.schema, 'container', 'r', {
@@ -1175,6 +1189,12 @@ def test_container_auth(admin_user_client, user_client, project_client,
         'secrets': 'r',
         'serviceId': 'r',
         'stackId': 'r',
+        'replacementFor': 'r',
+        'sidekickTo': 'r',
+        'metadata': 'r',
+        'exitCode': 'r',
+        'prePullOnUpgrade': 'r',
+        'revisionId': 'r',
     })
 
     auth_check(project_client.schema, 'container', 'crud', {
@@ -1283,6 +1303,12 @@ def test_container_auth(admin_user_client, user_client, project_client,
         'secrets': 'cr',
         'serviceId': 'r',
         'stackId': 'cr',
+        'replacementFor': 'r',
+        'sidekickTo': 'cr',
+        'metadata': 'cru',
+        'exitCode': 'r',
+        'prePullOnUpgrade': 'cru',
+        'revisionId': 'r',
     })
 
     auth_check(environment_client.schema, 'container', 'crud', {
@@ -1390,6 +1416,12 @@ def test_container_auth(admin_user_client, user_client, project_client,
         'primaryNetworkId': 'r',
         'serviceId': 'r',
         'stackId': 'cr',
+        'replacementFor': 'r',
+        'sidekickTo': 'cr',
+        'metadata': 'cru',
+        'exitCode': 'r',
+        'prePullOnUpgrade': 'cru',
+        'revisionId': 'r',
     })
 
     auth_check(project_admin_client.schema, 'container', 'crud', {
@@ -1497,6 +1529,12 @@ def test_container_auth(admin_user_client, user_client, project_client,
         'primaryNetworkId': 'r',
         'serviceId': 'r',
         'stackId': 'cr',
+        'replacementFor': 'r',
+        'sidekickTo': 'cr',
+        'metadata': 'cru',
+        'exitCode': 'r',
+        'prePullOnUpgrade': 'cru',
+        'revisionId': 'r',
     })
 
     auth_check(project_client.schema, 'dockerBuild', 'cr', {
@@ -2116,12 +2154,19 @@ def test_svc_discovery_service(admin_user_client, user_client, project_client,
         'assignServiceIpAddress': 'r',
         'healthState': 'r',
         'startOnCreate': 'r',
-        'scalePolicy': 'r',
         'currentScale': 'r',
         'instanceIds': 'r',
         'linkedServices': 'r',
         'system': 'r',
         'lbConfig': 'r',
+        'batchSize': 'r',
+        'intervalMillis': 'r',
+        'startFirst': 'r',
+        'revisionId': 'r',
+        'previousRevisionId': 'r',
+        'scaleMax': 'r',
+        'scaleIncrement': 'r',
+        'scaleMin': 'r',
     })
 
     auth_check(user_client.schema, 'service', 'r', {
@@ -2144,23 +2189,30 @@ def test_svc_discovery_service(admin_user_client, user_client, project_client,
         'assignServiceIpAddress': 'r',
         'healthState': 'r',
         'startOnCreate': 'r',
-        'scalePolicy': 'r',
         'currentScale': 'r',
         'instanceIds': 'r',
         'linkedServices': 'r',
         'system': 'r',
         'lbConfig': 'r',
+        'batchSize': 'r',
+        'intervalMillis': 'r',
+        'startFirst': 'r',
+        'revisionId': 'r',
+        'previousRevisionId': 'r',
+        'scaleMax': 'r',
+        'scaleIncrement': 'r',
+        'scaleMin': 'r',
     })
 
     auth_check(project_client.schema, 'service', 'crud', {
-        'name': 'cru',
+        'name': 'cr',
         'externalId': 'cr',
         'stackId': 'cr',
         'scale': 'cru',
-        'launchConfig': 'cr',
+        'launchConfig': 'cru',
         'accountId': 'r',
         'upgrade': 'r',
-        'secondaryLaunchConfigs': 'cr',
+        'secondaryLaunchConfigs': 'cru',
         'vip': 'cr',
         'createIndex': 'r',
         'metadata': 'cru',
@@ -2172,22 +2224,29 @@ def test_svc_discovery_service(admin_user_client, user_client, project_client,
         'assignServiceIpAddress': 'cr',
         'healthState': 'r',
         'startOnCreate': 'cr',
-        'scalePolicy': 'cru',
         'currentScale': 'r',
         'instanceIds': 'r',
         'linkedServices': 'r',
         'system': 'r',
         'lbConfig': 'cru',
+        'batchSize': 'cru',
+        'intervalMillis': 'cru',
+        'startFirst': 'cru',
+        'revisionId': 'r',
+        'previousRevisionId': 'r',
+        'scaleMax': 'cru',
+        'scaleIncrement': 'cru',
+        'scaleMin': 'cru',
     })
 
     resource_action_check(user_client.schema, 'service', [
         'activate',
         'addservicelink',
+        'pause',
         'cancelupgrade',
         'create',
         'deactivate',
         'finishupgrade',
-        'continueupgrade',
         'remove',
         'removeservicelink',
         'restart',
@@ -2195,16 +2254,17 @@ def test_svc_discovery_service(admin_user_client, user_client, project_client,
         'setservicelinks',
         'update',
         'upgrade',
+        'garbagecollect',
     ])
 
     resource_action_check(admin_user_client.schema, 'service', [
         'activate',
         'addservicelink',
+        'pause',
         'cancelupgrade',
         'create',
         'deactivate',
         'finishupgrade',
-        'continueupgrade',
         'remove',
         'removeservicelink',
         'restart',
@@ -2212,13 +2272,14 @@ def test_svc_discovery_service(admin_user_client, user_client, project_client,
         'setservicelinks',
         'update',
         'upgrade',
+        'garbagecollect',
     ])
 
     resource_action_check(project_client.schema, 'service', [
         'activate',
         'addservicelink',
+        'pause',
         'cancelupgrade',
-        'continueupgrade',
         'create',
         'deactivate',
         'finishupgrade',
@@ -2229,17 +2290,18 @@ def test_svc_discovery_service(admin_user_client, user_client, project_client,
         'setservicelinks',
         'update',
         'upgrade',
+        'garbagecollect',
     ])
 
     resource_action_check(project_admin_client.schema, 'service', [
         'activate',
         'addservicelink',
+        'pause',
         'cancelupgrade',
         'certificate',
         'create',
         'deactivate',
         'finishupgrade',
-        'continueupgrade',
         'remove',
         'removeservicelink',
         'restart',
@@ -2247,6 +2309,7 @@ def test_svc_discovery_service(admin_user_client, user_client, project_client,
         'setservicelinks',
         'update',
         'upgrade',
+        'garbagecollect',
     ])
 
 
@@ -2459,12 +2522,19 @@ def test_svc_discovery_lb_service(admin_user_client, user_client,
         'assignServiceIpAddress': 'r',
         'healthState': 'r',
         'startOnCreate': 'r',
-        'scalePolicy': 'r',
         'currentScale': 'r',
         'instanceIds': 'r',
         'linkedServices': 'r',
         'system': 'r',
         'lbConfig': 'r',
+        'batchSize': 'r',
+        'intervalMillis': 'r',
+        'startFirst': 'r',
+        'revisionId': 'r',
+        'previousRevisionId': 'r',
+        'scaleMax': 'r',
+        'scaleIncrement': 'r',
+        'scaleMin': 'r',
     })
 
     auth_check(user_client.schema, 'loadBalancerService', 'r', {
@@ -2484,16 +2554,23 @@ def test_svc_discovery_lb_service(admin_user_client, user_client,
         'assignServiceIpAddress': 'r',
         'healthState': 'r',
         'startOnCreate': 'r',
-        'scalePolicy': 'r',
         'currentScale': 'r',
         'instanceIds': 'r',
         'linkedServices': 'r',
         'system': 'r',
         'lbConfig': 'r',
+        'batchSize': 'r',
+        'intervalMillis': 'r',
+        'startFirst': 'r',
+        'revisionId': 'r',
+        'previousRevisionId': 'r',
+        'scaleMax': 'r',
+        'scaleIncrement': 'r',
+        'scaleMin': 'r',
     })
 
     auth_check(project_client.schema, 'loadBalancerService', 'crud', {
-        'name': 'cru',
+        'name': 'cr',
         'externalId': 'cr',
         'stackId': 'cr',
         'scale': 'cru',
@@ -2509,12 +2586,19 @@ def test_svc_discovery_lb_service(admin_user_client, user_client,
         'assignServiceIpAddress': 'cr',
         'healthState': 'r',
         'startOnCreate': 'cr',
-        'scalePolicy': 'cru',
         'currentScale': 'r',
         'instanceIds': 'r',
         'linkedServices': 'r',
         'system': 'r',
         'lbConfig': 'cru',
+        'batchSize': 'cru',
+        'intervalMillis': 'cru',
+        'startFirst': 'cru',
+        'revisionId': 'r',
+        'previousRevisionId': 'r',
+        'scaleMax': 'cru',
+        'scaleIncrement': 'cru',
+        'scaleMin': 'cru',
     })
 
 
@@ -2600,24 +2684,6 @@ def test_auth_env_upgrade(admin_user_client, user_client,
     })
 
 
-def test_auth_service_upgrade(admin_user_client, user_client,
-                              project_client):
-    auth_check(admin_user_client.schema, 'serviceUpgrade', 'r', {
-        'inServiceStrategy': 'r',
-        'toServiceStrategy': 'r'
-    })
-
-    auth_check(user_client.schema, 'serviceUpgrade', 'r', {
-        'inServiceStrategy': 'r',
-        'toServiceStrategy': 'r'
-    })
-
-    auth_check(project_client.schema, 'serviceUpgrade', 'cr', {
-        'inServiceStrategy': 'cr',
-        'toServiceStrategy': 'cr'
-    })
-
-
 def test_auth_in_service_upgrade_strategy(admin_user_client, user_client,
                                           project_client):
     auth_check(admin_user_client.schema, 'inServiceUpgradeStrategy', 'r', {
@@ -2648,33 +2714,6 @@ def test_auth_in_service_upgrade_strategy(admin_user_client, user_client,
         'previousLaunchConfig': 'r',
         'previousSecondaryLaunchConfigs': 'r',
         'startFirst': 'cr',
-    })
-
-
-def test_auth_to_service_upgrade_strategy(admin_user_client, user_client,
-                                          project_client):
-    auth_check(admin_user_client.schema, 'toServiceUpgradeStrategy', 'r', {
-        'updateLinks': 'r',
-        'toServiceId': 'r',
-        'batchSize': 'r',
-        'intervalMillis': 'r',
-        'finalScale': 'r'
-    })
-
-    auth_check(user_client.schema, 'toServiceUpgradeStrategy', 'r', {
-        'updateLinks': 'r',
-        'toServiceId': 'r',
-        'batchSize': 'r',
-        'intervalMillis': 'r',
-        'finalScale': 'r'
-    })
-
-    auth_check(project_client.schema, 'toServiceUpgradeStrategy', 'cr', {
-        'updateLinks': 'cr',
-        'toServiceId': 'cr',
-        'batchSize': 'cr',
-        'intervalMillis': 'cr',
-        'finalScale': 'cr'
     })
 
 
@@ -2729,6 +2768,8 @@ def test_svc_discovery_external_service(admin_user_client, user_client,
         'instanceIds': 'r',
         'linkedServices': 'r',
         'system': 'r',
+        'revisionId': 'r',
+        'previousRevisionId': 'r'
     })
 
     auth_check(user_client.schema, 'externalService', 'r', {
@@ -2748,10 +2789,12 @@ def test_svc_discovery_external_service(admin_user_client, user_client,
         'instanceIds': 'r',
         'linkedServices': 'r',
         'system': 'r',
+        'revisionId': 'r',
+        'previousRevisionId': 'r'
     })
 
     auth_check(project_client.schema, 'externalService', 'crud', {
-        'name': 'cru',
+        'name': 'cr',
         'externalId': 'cr',
         'stackId': 'cr',
         'hostname': 'cru',
@@ -2760,13 +2803,15 @@ def test_svc_discovery_external_service(admin_user_client, user_client,
         'upgrade': 'r',
         'healthCheck': 'cr',
         'metadata': 'cru',
-        'launchConfig': 'cr',
+        'launchConfig': 'cru',
         'fqdn': 'r',
         'healthState': 'r',
         'startOnCreate': 'cr',
         'instanceIds': 'r',
         'linkedServices': 'r',
         'system': 'r',
+        'revisionId': 'r',
+        'previousRevisionId': 'r'
     })
 
 
@@ -3189,6 +3234,10 @@ def test_virtual_machine(admin_user_client, user_client, project_client):
         'primaryNetworkId': 'r',
         'serviceId': 'r',
         'stackId': 'r',
+        'replacementFor': 'r',
+        'sidekickTo': 'r',
+        'metadata': 'r',
+        'exitCode': 'r',
     })
 
     auth_check(user_client.schema, 'virtualMachine', 'r', {
@@ -3281,6 +3330,10 @@ def test_virtual_machine(admin_user_client, user_client, project_client):
         'primaryNetworkId': 'r',
         'serviceId': 'r',
         'stackId': 'r',
+        'replacementFor': 'r',
+        'sidekickTo': 'r',
+        'metadata': 'r',
+        'exitCode': 'r',
     })
 
     auth_check(project_client.schema, 'virtualMachine', 'crud', {
@@ -3373,6 +3426,10 @@ def test_virtual_machine(admin_user_client, user_client, project_client):
         'primaryNetworkId': 'r',
         'serviceId': 'r',
         'stackId': 'cr',
+        'replacementFor': 'r',
+        'sidekickTo': 'cr',
+        'metadata': 'cru',
+        'exitCode': 'r',
     })
 
 
@@ -3424,11 +3481,13 @@ def test_compose_service(admin_user_client, user_client, project_client):
         'selectorLink': 'r',
         'scale': 'r',
         'publicEndpoints': 'r',
-        'scalePolicy': 'r',
         'currentScale': 'r',
         'instanceIds': 'r',
         'linkedServices': 'r',
         'system': 'r',
+        'scaleMax': 'r',
+        'scaleIncrement': 'r',
+        'scaleMin': 'r',
     })
 
     auth_check(user_client.schema, 'composeService', 'r', {
@@ -3445,11 +3504,13 @@ def test_compose_service(admin_user_client, user_client, project_client):
         'selectorLink': 'r',
         'scale': 'r',
         'publicEndpoints': 'r',
-        'scalePolicy': 'r',
         'currentScale': 'r',
         'instanceIds': 'r',
         'linkedServices': 'r',
         'system': 'r',
+        'scaleMax': 'r',
+        'scaleIncrement': 'r',
+        'scaleMin': 'r',
     })
 
     auth_check(project_client.schema, 'composeService', 'rd', {
@@ -3466,11 +3527,13 @@ def test_compose_service(admin_user_client, user_client, project_client):
         'selectorLink': 'r',
         'scale': 'r',
         'publicEndpoints': 'r',
-        'scalePolicy': 'r',
         'currentScale': 'r',
         'instanceIds': 'r',
         'linkedServices': 'r',
         'system': 'r',
+        'scaleMax': 'r',
+        'scaleIncrement': 'r',
+        'scaleMin': 'r',
     })
 
 

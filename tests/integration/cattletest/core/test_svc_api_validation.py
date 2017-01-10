@@ -52,17 +52,6 @@ def test_create_duplicated_services(client, context):
     assert e.value.error.code == 'NotUnique'
     assert e.value.error.fieldName == 'name'
 
-    # try to update the service with duplicated service name
-    service = client.create_service(name=random_str(),
-                                    stackId=env.id,
-                                    launchConfig=launch_config)
-    service = client.wait_success(service)
-    with pytest.raises(ApiError) as e:
-        client.update(service, name=service_name)
-    assert e.value.error.status == 422
-    assert e.value.error.code == 'NotUnique'
-    assert e.value.error.fieldName == 'name'
-
     # remove the service and try to re-use its name
     client.wait_success(service1.remove())
     client.create_service(name=service_name,
@@ -272,13 +261,12 @@ def test_validate_service_token(client, context, super_client):
 
     svc_name = random_str()
 
-    client.update(service, name=svc_name)
+    client.update(service, scale=2)
 
     client.wait_success(service)
 
     service = super_client.reload(service)
 
-    assert service.name == svc_name
     assert service.data.fields.token is not None
     assert service.data.fields.token == token
 

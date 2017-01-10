@@ -1,6 +1,7 @@
 package io.cattle.platform.activity;
 
 import io.cattle.platform.activity.impl.ActivityLogImpl;
+import io.cattle.platform.core.model.DeploymentUnit;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.Service;
 import io.cattle.platform.eventing.EventService;
@@ -38,10 +39,22 @@ public class ActivityService {
 
     public void run(Service service, String type, String message, Runnable run) {
         ActivityLog log = newLog();
-        try (Entry entry = log.start(service, type, message)) {
+        try (Entry entry = log.start(service, null, type, message)) {
             try {
                 run.run();
             } catch (RuntimeException|Error e) {
+                entry.exception(e);
+                throw e;
+            }
+        }
+    }
+
+    public void run(Service service, DeploymentUnit unit, String type, String message, Runnable run) {
+        ActivityLog log = newLog();
+        try (Entry entry = log.start(service, unit, type, message)) {
+            try {
+                run.run();
+            } catch (RuntimeException | Error e) {
                 entry.exception(e);
                 throw e;
             }
