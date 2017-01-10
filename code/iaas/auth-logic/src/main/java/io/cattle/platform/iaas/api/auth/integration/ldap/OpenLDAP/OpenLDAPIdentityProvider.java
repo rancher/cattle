@@ -85,9 +85,11 @@ public class OpenLDAPIdentityProvider extends LDAPIdentityProvider implements Id
             if (!hasPermission(userAttributes)){
                 throw new ClientVisibleException(ResponseCodes.UNAUTHORIZED);
             }
+            logger.trace("getIdentities: user attributes: " + userAttributes);
             try {
                 String[] operationalAttrList = {"1.1", "+", "*"};
                 opAttributes = context.getAttributes(dn, operationalAttrList);
+                logger.trace("getIdentities: operational attributes: " + opAttributes);
             } catch (NamingException e) {
                 logger.error("Exception trying to get operational attributes", e);
             }
@@ -102,6 +104,7 @@ public class OpenLDAPIdentityProvider extends LDAPIdentityProvider implements Id
         if(memberOf == null) {
             memberOf = opAttributes.get(getConstantsConfig().getUserMemberAttribute());
         }
+        logger.trace("getIdentities: memberOf attribute: " + memberOf);
         try {
             if (!isType(userAttributes, getConstantsConfig().getUserObjectClass()))
             {
@@ -113,9 +116,11 @@ public class OpenLDAPIdentityProvider extends LDAPIdentityProvider implements Id
             }
             if (memberOf != null) {// null if this user belongs to no group at all
                 for (int i = 0; i < memberOf.size(); i++) {
-                    identities.addAll(resultsToIdentities(searchLdap("(&(" + getConstantsConfig().getGroupDNField() +
+                    String query = "(&(" + getConstantsConfig().getGroupDNField() +
                             '=' + memberOf.get(i).toString() + ")(" + getConstantsConfig().objectClass() + '=' +
-                            getConstantsConfig().getGroupObjectClass() + "))")));
+                            getConstantsConfig().getGroupObjectClass() + "))";
+                    logger.trace("getIdentities: memberOf attribute query: "+query);
+                    identities.addAll(resultsToIdentities(searchLdap(query)));
                 }
             }
 
@@ -123,11 +128,13 @@ public class OpenLDAPIdentityProvider extends LDAPIdentityProvider implements Id
             if(groupMemberUserAttribute == null) {
                 groupMemberUserAttribute = opAttributes.get(getConstantsConfig().getGroupMemberUserAttribute());
             }
+            logger.trace("getIdentities: groupMemberUserAttribute attribute: "+groupMemberUserAttribute);
             if (groupMemberUserAttribute != null && StringUtils.isNotBlank(groupMemberUserAttribute.toString())){
                 String query = "(&(" + getConstantsConfig().getGroupMemberMappingAttribute()
-                        + '=' + groupMemberUserAttribute.toString()
+                        + '=' + ((String)groupMemberUserAttribute.get())
                         + ")(" + getConstantsConfig().objectClass() + '='
                         + getConstantsConfig().getGroupObjectClass() + "))";
+                logger.trace("getIdentities: groupMemberUserAttribute attribute query: "+query);
                 identities.addAll(resultsToIdentities(searchLdap(query)));
             }
             return identities;
