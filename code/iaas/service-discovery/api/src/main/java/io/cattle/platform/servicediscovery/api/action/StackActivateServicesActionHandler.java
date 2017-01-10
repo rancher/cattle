@@ -1,15 +1,15 @@
 package io.cattle.platform.servicediscovery.api.action;
 
+import static io.cattle.platform.core.model.tables.ServiceTable.*;
 import io.cattle.platform.api.action.ActionHandler;
 import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.ServiceConstants;
-import io.cattle.platform.core.model.Stack;
+import io.cattle.platform.core.dao.ServiceConsumeMapDao;
 import io.cattle.platform.core.model.Service;
+import io.cattle.platform.core.model.Stack;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.process.ObjectProcessManager;
 import io.cattle.platform.object.process.StandardProcess;
-import io.cattle.platform.servicediscovery.api.dao.ServiceConsumeMapDao;
-import io.cattle.platform.servicediscovery.api.service.ServiceDiscoveryApiService;
 import io.github.ibuildthecloud.gdapi.request.ApiRequest;
 
 import java.util.ArrayList;
@@ -28,13 +28,8 @@ public class StackActivateServicesActionHandler implements ActionHandler {
 
     @Inject
     ObjectProcessManager objectProcessManager;
-
     @Inject
     ObjectManager objectManager;
-
-    @Inject
-    ServiceDiscoveryApiService sdService;
-
     @Inject
     ServiceConsumeMapDao consumeMapDao;
 
@@ -49,7 +44,9 @@ public class StackActivateServicesActionHandler implements ActionHandler {
             return null;
         }
         Stack env = (Stack) obj;
-        List<? extends Service> services = sdService.listStackServices(env.getId());
+        List<? extends Service> services = objectManager.find(Service.class, SERVICE.STACK_ID, env.getId(),
+                SERVICE.REMOVED,
+                null);
         activateServices(services);
 
         return env;

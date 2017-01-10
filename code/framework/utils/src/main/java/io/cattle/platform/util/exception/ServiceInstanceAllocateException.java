@@ -14,5 +14,4 @@ public class ServiceInstanceAllocateException extends InstanceException implemen
     public ServiceInstanceAllocateException(String message, Exception ex, Object instance) {
         super(message, ex, instance);
     }
-
 }

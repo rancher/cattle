@@ -13,7 +13,6 @@ import io.cattle.platform.engine.handler.ProcessPostListener;
 import io.cattle.platform.engine.process.ProcessInstance;
 import io.cattle.platform.engine.process.ProcessState;
 import io.cattle.platform.process.common.handler.AbstractObjectProcessLogic;
-import io.cattle.platform.servicediscovery.api.dao.ServiceDao;
 import io.cattle.platform.util.type.Priority;
 
 import java.util.ArrayList;
@@ -24,17 +23,9 @@ import javax.inject.Named;
 
 @Named
 public class HealthCheckReconcilePostTrigger extends AbstractObjectProcessLogic implements ProcessPostListener, Priority {
-    @Inject
-    ServiceDao serviceDao;
 
     @Inject
     HealthcheckService healthcheckService;
-
-    @Inject
-    HostDao hostDao;
-
-    @Inject
-    NetworkDao ntwkDao;
 
     @Inject
     List<HealthcheckInstancesLookup> instancesLookups;

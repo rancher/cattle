@@ -151,7 +151,7 @@ def test_rollback_with_health(client, context, super_client):
     svc = super_client.reload(svc)
 
     # rollback the service
-    svc = wait_state(client, svc.cancelupgrade(), 'canceled-upgrade')
+    svc = wait_state(client, svc.pause(), 'paused')
     client.wait_success(svc.rollback())
 
 
@@ -319,7 +319,7 @@ def test_health_check_create_service(super_client, context, client):
     wait_for(lambda: super_client.reload(c).healthState == 'healthy')
 
     # restart the instance
-    c = super_client.wait_success(c.stop())
+    c = super_client.wait_success(c.restart())
     wait_for(lambda: super_client.reload(c).state == 'running')
     wait_for(lambda: super_client.reload(c).healthState == 'reinitializing')
 
@@ -670,7 +670,7 @@ def test_health_check_reinit_timeout(super_client, context, client):
     wait_for(lambda: super_client.reload(c).healthState == 'healthy')
 
     # restart the instance
-    c = super_client.wait_success(c.stop())
+    c = super_client.wait_success(c.restart())
     wait_for(lambda: super_client.reload(c).state == 'running')
     wait_for(lambda: super_client.reload(c).healthState == 'reinitializing')
 

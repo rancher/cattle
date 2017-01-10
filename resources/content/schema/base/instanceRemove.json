@@ -1,0 +1,13 @@
+{
+    "collectionMethods" : [],
+    "resourceFields" : {
+        "removeSource" : {
+            "type": "enum",
+            "options" : [ "api", "external" ],
+            "create" : true,
+            "required": true,
+            "nullable" : false,
+            "default": "api"
+        }
+    }
+}

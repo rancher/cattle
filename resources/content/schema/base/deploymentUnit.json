@@ -3,6 +3,12 @@
         "labels": {
             "type": "map[string]",
             "create": true
+        },
+        "executionCount": {
+            "type": "int"
+        },
+        "executionPeriodStart": {
+            "type": "date"
         }
     }
 }
