@@ -324,7 +324,11 @@ public abstract class AbstractObjectResourceManager extends AbstractBaseResource
                 return;
             }
 
-            criteria.put(ObjectMetaDataManager.ACCOUNT_FIELD, policy.getAccountId());
+            if ("account".equals(type)) {
+                criteria.put(ObjectMetaDataManager.ID_FIELD, policy.getAccountId());
+            } else {
+                criteria.put(ObjectMetaDataManager.ACCOUNT_FIELD, policy.getAccountId());
+            }
         }
     }
 
