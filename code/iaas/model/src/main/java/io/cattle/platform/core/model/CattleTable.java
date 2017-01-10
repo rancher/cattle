@@ -72,6 +72,7 @@ public class CattleTable extends org.jooq.impl.SchemaImpl {
 			io.cattle.platform.core.model.tables.InstanceHostMapTable.INSTANCE_HOST_MAP,
 			io.cattle.platform.core.model.tables.InstanceLabelMapTable.INSTANCE_LABEL_MAP,
 			io.cattle.platform.core.model.tables.InstanceLinkTable.INSTANCE_LINK,
+			io.cattle.platform.core.model.tables.InstanceRevisionTable.INSTANCE_REVISION,
 			io.cattle.platform.core.model.tables.IpAddressTable.IP_ADDRESS,
 			io.cattle.platform.core.model.tables.IpAddressNicMapTable.IP_ADDRESS_NIC_MAP,
 			io.cattle.platform.core.model.tables.LabelTable.LABEL,

@@ -16,7 +16,6 @@ import io.cattle.platform.core.model.tables.records.InstanceLinkRecord;
 import io.cattle.platform.core.model.tables.records.InstanceRecord;
 import io.cattle.platform.core.model.tables.records.ServiceConsumeMapRecord;
 import io.cattle.platform.db.jooq.dao.impl.AbstractJooqDao;
-import io.cattle.platform.json.JsonMapper;
 import io.cattle.platform.lock.LockCallback;
 import io.cattle.platform.lock.LockManager;
 import io.cattle.platform.object.ObjectManager;
@@ -43,9 +42,6 @@ public class ServiceConsumeMapDaoImpl extends AbstractJooqDao implements Service
 
     @Inject
     ObjectProcessManager objectProcessManager;
-
-    @Inject
-    JsonMapper jsonMapper;
 
     @Inject
     LockManager lockManager;

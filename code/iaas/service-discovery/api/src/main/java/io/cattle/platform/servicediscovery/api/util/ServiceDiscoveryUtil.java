@@ -4,7 +4,9 @@ import io.cattle.platform.allocator.service.AllocationHelper;
 import io.cattle.platform.core.addon.InServiceUpgradeStrategy;
 import io.cattle.platform.core.addon.InstanceHealthCheck;
 import io.cattle.platform.core.constants.AgentConstants;
+import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.InstanceConstants;
+import io.cattle.platform.core.constants.NetworkConstants;
 import io.cattle.platform.core.constants.ServiceConstants;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.Service;
@@ -26,11 +28,8 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.lang3.StringUtils;
-
 public class ServiceDiscoveryUtil {
 
-    public static final List<String> SERVICE_INSTANCE_NAME_DIVIDORS = Arrays.asList("-", "_");
     private static final int LB_HEALTH_CHECK_PORT = 42;
 
     public static String getInstanceName(Instance instance) {
@@ -39,19 +38,6 @@ public class ServiceDiscoveryUtil {
         } else {
             return null;
         }
-    }
-
-    public static String getServiceSuffixFromInstanceName(String instanceName) {
-        for (String divider : SERVICE_INSTANCE_NAME_DIVIDORS) {
-            if (!instanceName.contains(divider)) {
-                continue;
-            }
-            String serviceSuffix = instanceName.substring(instanceName.lastIndexOf(divider) + 1);
-            if (!StringUtils.isEmpty(serviceSuffix) && serviceSuffix.matches("\\d+")) {
-                return serviceSuffix;
-            }
-        }
-        return "";
     }
 
     @SuppressWarnings("unchecked")
@@ -210,19 +196,9 @@ public class ServiceDiscoveryUtil {
         return name;
     }
 
-    public static boolean isServiceGeneratedName(Stack env, Service service, String instanceName) {
-        for (String divider : SERVICE_INSTANCE_NAME_DIVIDORS) {
-            if (instanceName.startsWith(String.format("%s%s%s", env.getName(), divider, service.getName()))) {
-                return true;
-            }
-        }
-        return false;
-    }
-
     public static String getGeneratedServiceIndex(Stack env, Service service,
-            String launchConfigName,
             String instanceName) {
-        if (!isServiceGeneratedName(env, service, instanceName)) {
+        if (!ServiceConstants.isServiceGeneratedName(env, service, instanceName)) {
             return null;
         }
         Integer charAt = instanceName.length()-1;
@@ -438,5 +414,30 @@ public class ServiceDiscoveryUtil {
         Map<String, String> labels = (Map<String, String>) labelsObj;
         String globalService = labels.get(ServiceConstants.LABEL_SERVICE_GLOBAL);
         return Boolean.valueOf(globalService);
+    }
+
+    protected static String getGlobalNamespace(Service service) {
+        return NetworkConstants.INTERNAL_DNS_SEARCH_DOMAIN;
+    }
+
+    public static String getServiceNamespace(Stack stack, Service service) {
+        return new StringBuilder().append(service.getName()).append(".").append(getStackNamespace(stack, service))
+                .toString().toLowerCase();
+    }
+
+    public static String getStackNamespace(Stack stack, Service service) {
+        return new StringBuilder().append(stack.getName()).append(".")
+                .append(getGlobalNamespace(service)).toString().toLowerCase();
+    }
+
+    public static List<String> getServiceActiveStates() {
+        return Arrays.asList(CommonStatesConstants.ACTIVATING,
+                CommonStatesConstants.ACTIVE, CommonStatesConstants.UPDATING_ACTIVE,
+                ServiceConstants.STATE_UPGRADING, ServiceConstants.STATE_ROLLINGBACK,
+                ServiceConstants.STATE_CANCELING_UPGRADE,
+                ServiceConstants.STATE_CANCELED_UPGRADE,
+                ServiceConstants.STATE_FINISHING_UPGRADE,
+                ServiceConstants.STATE_UPGRADED,
+                ServiceConstants.STATE_RESTARTING);
     }
 }

@@ -101,6 +101,7 @@ import io.cattle.platform.sample.data.SampleDataStartupV10;
 import io.cattle.platform.sample.data.SampleDataStartupV11;
 import io.cattle.platform.sample.data.SampleDataStartupV12;
 import io.cattle.platform.sample.data.SampleDataStartupV13;
+import io.cattle.platform.sample.data.SampleDataStartupV14;
 import io.cattle.platform.sample.data.SampleDataStartupV3;
 import io.cattle.platform.sample.data.SampleDataStartupV5;
 import io.cattle.platform.sample.data.SampleDataStartupV6;
@@ -109,12 +110,11 @@ import io.cattle.platform.sample.data.SampleDataStartupV8;
 import io.cattle.platform.sample.data.SampleDataStartupV9;
 import io.cattle.platform.service.launcher.ServiceAccountCreateStartup;
 import io.cattle.platform.servicediscovery.dao.impl.ServiceConsumeMapDaoImpl;
-import io.cattle.platform.servicediscovery.dao.impl.ServiceDaoImpl;
 import io.cattle.platform.servicediscovery.dao.impl.ServiceExposeMapDaoImpl;
 import io.cattle.platform.servicediscovery.deployment.impl.DeploymentManagerImpl;
-import io.cattle.platform.servicediscovery.deployment.impl.planner.ServiceDeploymentPlannerFactoryImpl;
-import io.cattle.platform.servicediscovery.deployment.impl.unit.DeploymentUnitInstanceFactoryImpl;
+import io.cattle.platform.servicediscovery.deployment.impl.DeploymentUnitManagerImpl;
 import io.cattle.platform.servicediscovery.service.impl.AgentServiceLookup;
+import io.cattle.platform.servicediscovery.service.impl.DeploymentUnitServiceLookup;
 import io.cattle.platform.servicediscovery.service.impl.GlobalHostActivateServiceLookup;
 import io.cattle.platform.servicediscovery.service.impl.HostServiceLookup;
 import io.cattle.platform.servicediscovery.service.impl.InstanceServiceLookup;
@@ -646,20 +646,21 @@ public class SystemServicesConfig {
     }
 
     @Bean
+    SampleDataStartupV14 SampleDataStartupV14() {
+        return new SampleDataStartupV14();
+    }
+
+    @Bean
     ServiceConsumeMapDaoImpl ServiceConsumeMapDaoImpl() {
         return new ServiceConsumeMapDaoImpl();
     }
 
     @Bean
-    ServiceExposeMapDaoImpl ServiceExposeMapDaoImpl(@Qualifier("LockingJooqConfiguration") io.cattle.platform.db.jooq.config.Configuration config) {
+    ServiceExposeMapDaoImpl ServiceExposeMapDaoImpl(
+            @Qualifier("LockingJooqConfiguration") io.cattle.platform.db.jooq.config.Configuration config) {
         io.cattle.platform.servicediscovery.dao.impl.ServiceExposeMapDaoImpl dao = new ServiceExposeMapDaoImpl();
         dao.setLockingConfiguration(config);
         return dao;
-    }
-
-    @Bean
-    ServiceDaoImpl ServiceDaoImpl() {
-        return new ServiceDaoImpl();
     }
 
     @Bean
@@ -675,6 +676,11 @@ public class SystemServicesConfig {
     @Bean
     HostServiceLookup HostServiceLookup() {
         return new HostServiceLookup();
+    }
+
+    @Bean
+    DeploymentUnitServiceLookup DeploymentUnitServiceLookup() {
+        return new DeploymentUnitServiceLookup();
     }
 
     @Bean
@@ -698,13 +704,8 @@ public class SystemServicesConfig {
     }
 
     @Bean
-    DeploymentUnitInstanceFactoryImpl DeploymentUnitInstanceFactoryImpl() {
-        return new DeploymentUnitInstanceFactoryImpl();
-    }
-
-    @Bean
-    ServiceDeploymentPlannerFactoryImpl ServiceDeploymentPlannerFactoryImpl() {
-        return new ServiceDeploymentPlannerFactoryImpl();
+    DeploymentUnitManagerImpl DeploymentUnitManagerImpl() {
+        return new DeploymentUnitManagerImpl();
     }
 
     @Bean

@@ -1,9 +1,11 @@
 package io.cattle.platform.servicediscovery.api.dao;
 
+import io.cattle.platform.core.model.DeploymentUnit;
 import io.cattle.platform.core.model.Host;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.Service;
 import io.cattle.platform.core.model.ServiceExposeMap;
+import io.cattle.platform.core.model.tables.records.ServiceRecord;
 
 import java.util.List;
 import java.util.Map;
@@ -20,35 +22,22 @@ public interface ServiceExposeMapDao {
      * @param service
      * @return
      */
-    Pair<Instance, ServiceExposeMap> createServiceInstance(Map<String, Object> properties, Service service);
+    Pair<Instance, ServiceExposeMap> createServiceInstance(Map<String, Object> properties,
+            Service service, ServiceRecord record);
 
     List<? extends Instance> listServiceManagedInstances(Service service);
 
     List<? extends Instance> listServiceManagedInstances(Service service, String launchConfigName);
 
-    ServiceExposeMap findInstanceExposeMap(Instance instance);
-
     ServiceExposeMap createServiceInstanceMap(Service service, Instance instance, boolean managed);
-
-    ServiceExposeMap createIpToServiceMap(Service service, String ipAddress);
 
     ServiceExposeMap getServiceIpExposeMap(Service service, String ipAddress);
 
     List<? extends Service> getActiveServices(long accountId);
 
-    List<? extends ServiceExposeMap> getNonRemovedServiceIpMaps(long serviceId);
-
-    List<? extends ServiceExposeMap> getNonRemovedServiceHostnameMaps(long serviceId);
-
     List<? extends ServiceExposeMap> getUnmanagedServiceInstanceMapsToRemove(long serviceId);
 
     Host getHostForInstance(long instanceId);
-
-    ServiceExposeMap getServiceHostnameExposeMap(Service service, String hostName);
-
-    ServiceExposeMap createHostnameToServiceMap(Service service, String hostName);
-
-    ServiceExposeMap getServiceInstanceMap(Service service, Instance instance);
 
     List<? extends ServiceExposeMap> getInstancesSetForUpgrade(long serviceId);
 
@@ -56,10 +45,11 @@ public interface ServiceExposeMapDao {
 
     List<? extends Instance> getInstancesToCleanup(Service service, String launchConfigName, String toVersion);
 
-    List<? extends Instance> getUpgradedInstances(Service service, String launchConfigName, String toVersion, boolean managed);
+    List<? extends Instance> getUpgradedUnmanagedInstances(Service service, String launchConfigName, String toVersion);
 
     Integer getCurrentScale(long serviceId);
 
     List<? extends Instance> listServiceManagedInstancesAll(Service service);
 
+    List<Pair<Instance, ServiceExposeMap>> listDeploymentUnitInstancesExposeMaps(Service service, DeploymentUnit unit);
 }

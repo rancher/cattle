@@ -4,32 +4,25 @@ import io.cattle.platform.servicediscovery.deployment.DeploymentUnitInstanceIdGe
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 public class DeploymentUnitInstanceIdGeneratorImpl implements DeploymentUnitInstanceIdGenerator {
-    Map<String, List<Integer>> launchConfigUsedIds = new HashMap<>();
     List<Integer> usedIds = new ArrayList<>();
 
-    public DeploymentUnitInstanceIdGeneratorImpl(Map<String, List<Integer>> launchConfigUsedIds, List<Integer> usedIds) {
-        this.launchConfigUsedIds = launchConfigUsedIds;
+    public DeploymentUnitInstanceIdGeneratorImpl(List<Integer> usedIds) {
         this.usedIds = usedIds;
     }
     
     @Override
     public synchronized Integer getNextAvailableId(String launchConfigName) {
-        List<Integer> usedIds = launchConfigUsedIds.get(launchConfigName);
         Collections.sort(usedIds);
         Integer newId = getNewId(launchConfigName);
         usedIds.add(newId);
         Collections.sort(usedIds);
-        launchConfigUsedIds.put(launchConfigName, usedIds);
         return newId;
     }
 
     protected Integer getNewId(String launchConfigName) {
-        List<Integer> usedIds = launchConfigUsedIds.get(launchConfigName);
         return generateNewId(usedIds);
     }
 

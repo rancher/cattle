@@ -1,10 +1,10 @@
 package io.cattle.platform.servicediscovery.service.impl;
 
 import static io.cattle.platform.core.model.tables.ServiceTable.*;
+import io.cattle.platform.core.dao.ServiceDao;
 import io.cattle.platform.core.model.Host;
 import io.cattle.platform.core.model.Service;
 import io.cattle.platform.object.ObjectManager;
-import io.cattle.platform.servicediscovery.api.dao.ServiceDao;
 import io.cattle.platform.servicediscovery.service.ServiceDiscoveryService;
 import io.cattle.platform.servicediscovery.service.ServiceLookup;
 

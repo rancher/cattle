@@ -180,40 +180,14 @@ public class InstanceDaoImpl extends AbstractJooqDao implements InstanceDao {
     }
 
     @Override
-    public List<? extends Instance> listNonRemovedInstances(Account account, boolean forService) {
-        List<? extends Instance> serviceInstances = create().select(INSTANCE.fields())
-                    .from(INSTANCE)
-                    .join(SERVICE_EXPOSE_MAP)
-                    .on(SERVICE_EXPOSE_MAP.INSTANCE_ID.eq(INSTANCE.ID))
-                .where(INSTANCE.ACCOUNT_ID.eq(account.getId()))
-                .and(INSTANCE.REMOVED.isNull())
-                    .fetchInto(InstanceRecord.class);
-        if (forService) {
-            return serviceInstances;
-        }
-        List<? extends Instance> allInstances = create().select(INSTANCE.fields())
+    public List<? extends Instance> listNonRemovedNonStackInstances(Account account) {
+        return create().select(INSTANCE.fields())
                 .from(INSTANCE)
                 .where(INSTANCE.ACCOUNT_ID.eq(account.getId()))
                 .and(INSTANCE.REMOVED.isNull())
+                .and(INSTANCE.STACK_ID.isNull())
                 .fetchInto(InstanceRecord.class);
 
-        allInstances.removeAll(serviceInstances);
-        return allInstances;
-    }
-
-    @Override
-    public List<? extends Instance> findInstancesFor(Service service) {
-        return create()
-                .select(INSTANCE.fields())
-                .from(INSTANCE)
-                .join(SERVICE_EXPOSE_MAP)
-                .on(SERVICE_EXPOSE_MAP.INSTANCE_ID.eq(INSTANCE.ID)
-                        .and(SERVICE_EXPOSE_MAP.SERVICE_ID.eq(service.getId()))
-                        .and(SERVICE_EXPOSE_MAP.STATE.in(CommonStatesConstants.ACTIVATING,
-                                CommonStatesConstants.ACTIVE, CommonStatesConstants.REQUESTED))
-                        .and(INSTANCE.STATE.notIn(CommonStatesConstants.PURGING, CommonStatesConstants.PURGED,
-                                CommonStatesConstants.REMOVED, CommonStatesConstants.REMOVING)))
-                .fetchInto(InstanceRecord.class);
     }
 
     @Override

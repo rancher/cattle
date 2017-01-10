@@ -1,9 +1,7 @@
 package io.cattle.platform.servicediscovery.api.service.impl;
 
-import static io.cattle.platform.core.model.tables.CertificateTable.*;
 import static io.cattle.platform.core.model.tables.InstanceTable.*;
 import static io.cattle.platform.core.model.tables.ServiceTable.*;
-import static io.cattle.platform.core.model.tables.StackTable.*;
 import static io.cattle.platform.core.model.tables.VolumeTemplateTable.*;
 import io.cattle.platform.core.addon.LbConfig;
 import io.cattle.platform.core.addon.ServiceLink;
@@ -12,7 +10,7 @@ import io.cattle.platform.core.constants.LoadBalancerConstants;
 import io.cattle.platform.core.constants.NetworkConstants;
 import io.cattle.platform.core.constants.ServiceConstants;
 import io.cattle.platform.core.dao.DataDao;
-import io.cattle.platform.core.model.Certificate;
+import io.cattle.platform.core.dao.LoadBalancerInfoDao;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.Service;
 import io.cattle.platform.core.model.ServiceConsumeMap;
@@ -83,6 +81,9 @@ public class ServiceDiscoveryApiServiceImpl implements ServiceDiscoveryApiServic
 
     @Inject
     DataDao dataDao;
+
+    @Inject
+    LoadBalancerInfoDao lbInfoDao;
 
     private final static String COMPOSE_PREFIX = "version: '2'\r\n";
     
@@ -269,29 +270,15 @@ public class ServiceDiscoveryApiServiceImpl implements ServiceDiscoveryApiServic
         if (composeServiceData.get(ServiceConstants.FIELD_LB_CONFIG) != null) {
             LbConfig lbConfig = DataAccessor.field(service, ServiceConstants.FIELD_LB_CONFIG, jsonMapper,
                     LbConfig.class);
-            Map<Long, Service> serviceIdsToService = new HashMap<>();
-            Map<Long, Stack> stackIdsToStack = new HashMap<>();
-            Map<Long, Certificate> certIdsToCert = new HashMap<>();
-            for (Service svc : objectManager.find(Service.class, SERVICE.ACCOUNT_ID,
-                    service.getAccountId(), SERVICE.REMOVED, null)) {
-                serviceIdsToService.put(svc.getId(), svc);
-            }
-
-            for (Stack stack : objectManager.find(Stack.class,
-                    STACK.ACCOUNT_ID,
-                    service.getAccountId(), STACK.REMOVED, null)) {
-                stackIdsToStack.put(stack.getId(), stack);
-            }
-
-            for (Certificate cert : objectManager.find(Certificate.class,
-                    CERTIFICATE.ACCOUNT_ID, service.getAccountId(), CERTIFICATE.REMOVED, null)) {
-                certIdsToCert.put(cert.getId(), cert);
-            }
+            Stack selfStack = objectManager.loadResource(Stack.class, service.getStackId());
             composeServiceData.put(ServiceConstants.FIELD_LB_CONFIG,
                     new LBConfigMetadataStyle(lbConfig.getPortRules(), lbConfig.getCertificateIds(),
                             lbConfig.getDefaultCertificateId(),
-                            lbConfig.getConfig(), lbConfig.getStickinessPolicy(), serviceIdsToService,
-                            stackIdsToStack, certIdsToCert, service.getStackId(), true));
+                            lbConfig.getConfig(), lbConfig.getStickinessPolicy(), lbInfoDao
+                                    .getServiceIdToServiceStackName(service.getAccountId()), lbInfoDao
+                                    .getCertificateIdToCertificate(service.getAccountId()), selfStack.getName(), true,
+                            lbInfoDao.getInstanceIdToInstanceName(service
+                                            .getAccountId())));
         }
     }
 

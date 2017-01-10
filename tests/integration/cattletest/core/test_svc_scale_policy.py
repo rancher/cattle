@@ -138,6 +138,7 @@ def test_policy_update(client, context, super_client):
     scale_policy = {"min": 2, "max": 2,
                     "increment": 1}
     client.update(svc, scalePolicy=scale_policy)
+    assert client.reload(svc).scalePolicy.max == 2
     svc = client.wait_success(svc)
     wait_for(lambda: super_client.reload(svc).currentScale <= 2)
 

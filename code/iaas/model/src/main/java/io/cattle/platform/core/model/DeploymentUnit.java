@@ -157,6 +157,17 @@ public interface DeploymentUnit extends java.io.Serializable {
 	@javax.persistence.Column(name = "service_id", precision = 19)
 	public java.lang.Long getServiceId();
 
+	/**
+	 * Setter for <code>cattle.deployment_unit.health_state</code>.
+	 */
+	public void setHealthState(java.lang.String value);
+
+	/**
+	 * Getter for <code>cattle.deployment_unit.health_state</code>.
+	 */
+	@javax.persistence.Column(name = "health_state", length = 128)
+	public java.lang.String getHealthState();
+
 	// -------------------------------------------------------------------------
 	// FROM and INTO
 	// -------------------------------------------------------------------------

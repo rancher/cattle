@@ -6,10 +6,14 @@ import io.cattle.platform.object.util.DataAccessor;
 
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
+
+import org.apache.commons.lang3.StringUtils;
 
 public class ServiceConstants {
 
+    public static final String DEFAULT_STACK_NAME = "default";
     public static final String KIND_SERVICE = "service";
     public static final String KIND_LOAD_BALANCER_SERVICE = "loadBalancerService";
     public static final String KIND_EXTERNAL_SERVICE = "externalService";
@@ -86,6 +90,9 @@ public class ServiceConstants {
     public static final String FIELD_PORT_RULES = "portRules";
     public static final String FIELD_EXECUTION_COUNT = "executionCount";
     public static final String FIELD_EXECUTION_PERIOD_START = "executionPeriodStart";
+    public static final String FIELD_DEPLOYMENT_UNIT_REMOVE_LOG_LEVEL = "removeLogLevel";
+    public static final String FIELD_DEPLOYMENT_UNIT_REMOVE_REASON = "removeReason";
+    public static final String FIELD_DEPLOYMENT_UNIT_CLEANUP = "cleanup";
 
     public static final String FIELD_INTERNAL_VOLUMES = "internalVolumes";
     public static final String FIELD_VOLUME_TEMPLATE_ID = "volumeTemplateId";
@@ -120,17 +127,22 @@ public class ServiceConstants {
     public static final String PROCESS_SERVICE_REMOVE_SERVICE_LINK = "service." + ACTION_SERVICE_REMOVE_SERVICE_LINK;
     public static final String PROCESS_SERVICE_CONSUME_MAP_CREATE = "serviceconsumemap.create";
     public static final String PROCESS_SERVICE_CONSUME_MAP_REMOVE = "serviceconsumemap.remove";
-    public static final String PROCESS_SERVICE_CONSUME_MAP_UPDATE = "serviceconsumemap.update";
     public static final String PROCESS_SERVICE_UPDATE = "service.update";
     public static final String PROCESS_SERVICE_SET_SERVICE_LINKS = "service." + ACTION_SERVICE_SET_SERVICE_LINKS;
-    public static final String PROCESS_SERVICE_EXPOSE_MAP_CREATE = "serviceexposemap.create";
-    public static final String PROCESS_SERVICE_EXPOSE_MAP_REMOVE = "serviceexposemap.remove";
     public static final String PROCESS_SERVICE_UPGRADE = "service." + ACTION_SERVICE_UPGRADE;
     public static final String PROCESS_SERVICE_ROLLBACK = "service." + ACTION_SERVICE_ROLLBACK;
     public static final String PROCESS_SERVICE_FINISH_UPGRADE = "service.finishupgrade";
     public static final String PROCESS_SERVICE_RESTART = "service." + ACTION_SERVICE_RESTART;
     public static final String PROCESS_SERVICE_INDEX_REMOVE = "serviceindex.remove";
     public static final String PROCESS_SERVICE_CERTIFICATE = "service." + ACTION_SERVICE_CERTIFICATE;
+    public static final String PROCESS_DU_UPDATE = "deploymentunit.update";
+    public static final String PROCESS_DU_CREATE = "deploymentunit.create";
+    public static final String PROCESS_DU_ACTIVATE = "deploymentunit.activate";
+    public static final String PROCESS_DU_DEACTIVATE = "deploymentunit.deactivate";
+    public static final String PROCESS_DU_REMOVE = "deploymentunit.remove";
+    public static final String PROCESS_DU_ERROR = "deploymentunit.error";
+    public static final String PROCESS_DU_UPDATE_UNHEALTHY = "deploymentunit.updateunhealthy";
+    public static final String PROCESS_DU_UPDATE_HEALTHY = "deploymentunit.updatehealthy";
 
     public static final String LINK_DOCKER_COMPOSE_CONFIG = "dockerComposeConfig";
     public static final String LINK_RANCHER_COMPOSE_CONFIG = "rancherComposeConfig";
@@ -176,11 +188,35 @@ public class ServiceConstants {
 
     public static final String PROCESS_DATA_SERVICE_RECONCILE = "reconcileState";
 
+    public static final List<String> SERVICE_INSTANCE_NAME_DIVIDORS = Arrays.asList("-", "_");
+
     public static boolean isSystem(Stack stack) {
         return stack.getSystem() || DataAccessor.fieldBool(stack, FIELD_SYSTEM)|| DataAccessor.fieldBool(stack, "isSystem");
     }
 
     public static boolean isSystem(Service service) {
         return service.getSystem() || DataAccessor.fieldBool(service, FIELD_SYSTEM);
+    }
+
+    public static String getServiceSuffixFromInstanceName(String instanceName) {
+        for (String divider : SERVICE_INSTANCE_NAME_DIVIDORS) {
+            if (!instanceName.contains(divider)) {
+                continue;
+            }
+            String serviceSuffix = instanceName.substring(instanceName.lastIndexOf(divider) + 1);
+            if (!StringUtils.isEmpty(serviceSuffix) && serviceSuffix.matches("\\d+")) {
+                return serviceSuffix;
+            }
+        }
+        return "";
+    }
+
+    public static boolean isServiceGeneratedName(Stack env, Service service, String instanceName) {
+        for (String divider : SERVICE_INSTANCE_NAME_DIVIDORS) {
+            if (instanceName.startsWith(String.format("%s%s%s", env.getName(), divider, service.getName()))) {
+                return true;
+            }
+        }
+        return false;
     }
 }

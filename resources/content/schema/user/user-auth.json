@@ -175,8 +175,12 @@
         "container.healthInterval" : "cr",
         "container.healthTimeout" : "cr",
         "container.healthRetries" : "cr",
-        "container.stackId" : "cr",
-        "container.serviceId" : "r",
+        "container.serviceId": "r",
+        "container.stackId": "cr",
+        "container.replacementFor": "r",
+        "container.sidekickTo": "cr",
+        "container.metadata" : "cru",
+        "container.exitCode": "r",
         
         "ulimit" : "r",
         "ulimit.name" : "cr",
@@ -325,6 +329,7 @@
         "instanceStop" : "r",
         "instanceStop.remove" : "cr",
         "instanceStop.timeout" : "cr",
+        "instanceStop.stopSource" : "cr",
 
         "ipAddress" : "r",
         "ipAddress.address" : "r",
@@ -700,6 +705,7 @@
         "portRule.targetPort": "cr",
         "portRule.backendName": "cr",
         "portRule.selector": "cr",
+        "portRule.instanceId": "cr",
 
         "lbTargetConfig" : "r",
         "lbTargetConfig.portRules" : "cru",
@@ -859,7 +865,6 @@
         "launchConfig.name" : "",
         "launchConfig.networkLaunchConfig" : "cr",
         "launchConfig.dataVolumesFromLaunchConfigs" : "cr",
-        "launchConfig.restartPolicy" : "",
         "launchConfig.kind" : "cr",
         "launchConfig.vcpu" : "cr",
         "launchConfig.userdata" : "cr",

@@ -319,7 +319,7 @@ def test_health_check_create_service(super_client, context, client):
     wait_for(lambda: super_client.reload(c).healthState == 'healthy')
 
     # restart the instance
-    c = super_client.wait_success(c.stop())
+    c = super_client.wait_success(c.restart())
     wait_for(lambda: super_client.reload(c).state == 'running')
     wait_for(lambda: super_client.reload(c).healthState == 'reinitializing')
 
@@ -670,7 +670,7 @@ def test_health_check_reinit_timeout(super_client, context, client):
     wait_for(lambda: super_client.reload(c).healthState == 'healthy')
 
     # restart the instance
-    c = super_client.wait_success(c.stop())
+    c = super_client.wait_success(c.restart())
     wait_for(lambda: super_client.reload(c).state == 'running')
     wait_for(lambda: super_client.reload(c).healthState == 'reinitializing')
 

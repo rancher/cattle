@@ -11,13 +11,9 @@ import io.cattle.platform.core.model.Subnet;
 import io.cattle.platform.eventing.annotation.AnnotatedEventListener;
 import io.cattle.platform.eventing.annotation.EventHandler;
 
-import java.util.List;
-
 public interface ServiceDiscoveryService extends AnnotatedEventListener {
 
-    void removeServiceMaps(Service service);
-
-    List<Integer> getServiceInstanceUsedSuffixes(Service service, String launchConfigName);
+    void removeServiceLinks(Service service);
 
     boolean isActiveService(Service service);
 
@@ -34,8 +30,6 @@ public interface ServiceDiscoveryService extends AnnotatedEventListener {
     boolean isSelectorLinkMatch(String selector, Service targetService);
 
     boolean isSelectorContainerMatch(String selector, Instance instance);
-
-    List<String> getServiceActiveStates();
 
     boolean isGlobalService(Service service);
 
@@ -69,8 +63,9 @@ public interface ServiceDiscoveryService extends AnnotatedEventListener {
 
     void reconcileHostEndpoints(Host host);
 
-    void removeFromLoadBalancerServices(Service service);
-
     void registerServiceLinks(Service service);
 
+    void removeFromLoadBalancerServices(Service service, Instance instance);
+
+    void incrementExecutionCount(Object object);
 }

@@ -107,18 +107,25 @@ public class ServiceCreateValidationFilter extends AbstractDefaultResourceManage
             List<PortRule> portRules = jsonMapper.convertCollectionValue(
                     lbConfig.get(ServiceConstants.FIELD_PORT_RULES), List.class, PortRule.class);
             for (PortRule rule : portRules) {
-                // either serviceId or selector are required
-                boolean emptySelector = StringUtils.isEmpty(rule.getSelector());
+                // either serviceId or instanceId or selector are required
                 boolean emptyService = StringUtils.isEmpty(rule.getServiceId());
-                if (emptySelector && emptyService) {
-                    throw new ValidationErrorException(ValidationErrorCodes.MISSING_REQUIRED, "serviceId");
+                boolean emptyInstance = StringUtils.isEmpty(rule.getInstanceId());
+                boolean emptySelector = StringUtils.isEmpty(rule.getSelector());
+                int count = 0;
+                count = !emptySelector ? ++count : count;
+                count = !emptyService ? ++count : count;
+                count = !emptyInstance ? ++count : count;
+
+                if (count == 0) {
+                    throw new ValidationErrorException(ValidationErrorCodes.MISSING_REQUIRED,
+                            "serviceId");
                 }
-                if (!emptySelector && !emptyService) {
+                if (count > 1) {
                     throw new ValidationErrorException(ValidationErrorCodes.INVALID_OPTION,
                             "Can't specify both selector and serviceId");
                 }
 
-                if (!emptyService && rule.getTargetPort() == null) {
+                if (emptySelector && rule.getTargetPort() == null) {
                     throw new ValidationErrorException(ValidationErrorCodes.MISSING_REQUIRED, "targetPort");
                 }
             }

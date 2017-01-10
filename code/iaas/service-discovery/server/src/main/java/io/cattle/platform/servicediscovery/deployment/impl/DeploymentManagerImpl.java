@@ -1,12 +1,9 @@
 package io.cattle.platform.servicediscovery.deployment.impl;
 
-import static io.cattle.platform.core.model.tables.DeploymentUnitTable.*;
 import static io.cattle.platform.core.model.tables.ServiceTable.*;
-
-import io.cattle.platform.activity.ActivityLog;
+import static io.cattle.platform.core.model.tables.StackTable.*;
 import io.cattle.platform.activity.ActivityService;
 import io.cattle.platform.allocator.service.AllocationHelper;
-import io.cattle.platform.archaius.util.ArchaiusUtil;
 import io.cattle.platform.configitem.events.ConfigUpdate;
 import io.cattle.platform.configitem.model.Client;
 import io.cattle.platform.configitem.request.ConfigUpdateRequest;
@@ -14,21 +11,18 @@ import io.cattle.platform.configitem.version.ConfigItemStatusManager;
 import io.cattle.platform.core.addon.ScalePolicy;
 import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.ServiceConstants;
-import io.cattle.platform.core.dao.GenericResourceDao;
 import io.cattle.platform.core.dao.HostDao;
 import io.cattle.platform.core.dao.ServiceDao;
 import io.cattle.platform.core.model.Service;
 import io.cattle.platform.core.model.ServiceExposeMap;
+import io.cattle.platform.core.model.Stack;
 import io.cattle.platform.engine.idempotent.IdempotentRetryException;
-import io.cattle.platform.engine.process.impl.ProcessDelayException;
-import io.cattle.platform.eventing.EventService;
 import io.cattle.platform.json.JsonMapper;
 import io.cattle.platform.lock.LockCallback;
 import io.cattle.platform.lock.LockCallbackNoReturn;
 import io.cattle.platform.lock.LockManager;
 import io.cattle.platform.lock.definition.LockDefinition;
 import io.cattle.platform.object.ObjectManager;
-import io.cattle.platform.object.meta.ObjectMetaDataManager;
 import io.cattle.platform.object.process.ObjectProcessManager;
 import io.cattle.platform.object.process.StandardProcess;
 import io.cattle.platform.object.resource.ResourceMonitor;
@@ -36,21 +30,18 @@ import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.servicediscovery.api.dao.ServiceExposeMapDao;
 import io.cattle.platform.servicediscovery.api.util.ServiceDiscoveryUtil;
 import io.cattle.platform.servicediscovery.deployment.DeploymentManager;
-import io.cattle.platform.servicediscovery.deployment.DeploymentUnitInstanceFactory;
-import io.cattle.platform.servicediscovery.deployment.DeploymentUnitInstanceIdGenerator;
+import io.cattle.platform.servicediscovery.deployment.DeploymentUnitManager;
 import io.cattle.platform.servicediscovery.deployment.ServiceDeploymentPlanner;
-import io.cattle.platform.servicediscovery.deployment.ServiceDeploymentPlannerFactory;
 import io.cattle.platform.servicediscovery.deployment.impl.lock.ServiceLock;
-import io.cattle.platform.servicediscovery.deployment.impl.unit.DeploymentUnit;
-import io.cattle.platform.servicediscovery.deployment.impl.unit.DeploymentUnitInstanceIdGeneratorImpl;
+import io.cattle.platform.servicediscovery.deployment.impl.planner.DefaultServiceDeploymentPlanner;
+import io.cattle.platform.servicediscovery.deployment.impl.planner.GlobalServiceDeploymentPlanner;
+import io.cattle.platform.servicediscovery.deployment.impl.planner.NoOpServiceDeploymentPlanner;
 import io.cattle.platform.servicediscovery.service.ServiceDiscoveryService;
-import io.cattle.platform.util.exception.ServiceInstanceAllocateException;
+import io.cattle.platform.util.exception.DeploymentUnitAllocateException;
 import io.cattle.platform.util.exception.ServiceReconcileException;
 import io.github.ibuildthecloud.gdapi.id.IdFormatter;
 
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -60,23 +51,14 @@ import javax.inject.Inject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.netflix.config.DynamicIntProperty;
-
 public class DeploymentManagerImpl implements DeploymentManager {
 
     private static final String RECONCILE = "reconcile";
     private static final Logger log = LoggerFactory.getLogger(DeploymentManagerImpl.class);
-
-    private static final DynamicIntProperty EXECUTION_MAX = ArchaiusUtil.getInt("service.execution.credits");
-    private static final DynamicIntProperty EXECUTION_PERIOD = ArchaiusUtil.getInt("service.execution.period.seconds");
-    private static final DynamicIntProperty EXECUTION_DELAY = ArchaiusUtil.getInt("service.execution.delay.seconds");
-
     @Inject
-    ActivityService activity;
+    ActivityService activitySvc;
     @Inject
     LockManager lockManager;
-    @Inject
-    DeploymentUnitInstanceFactory unitInstanceFactory;
     @Inject
     ObjectProcessManager objectProcessMgr;
     @Inject
@@ -84,31 +66,23 @@ public class DeploymentManagerImpl implements DeploymentManager {
     @Inject
     ObjectManager objectMgr;
     @Inject
-    ResourceMonitor resourceMntr;
-    @Inject
     ServiceExposeMapDao expMapDao;
-    @Inject
-    ServiceDeploymentPlannerFactory deploymentPlannerFactory;
     @Inject
     AllocationHelper allocationHlpr;
     @Inject
     ConfigItemStatusManager itemManager;
     @Inject
-    EventService eventService;
-    @Inject
     JsonMapper mapper;
+    @Inject
+    HostDao hostDao;
+    @Inject
+    DeploymentUnitManager duManager;
     @Inject
     ServiceDao svcDao;
     @Inject
+    ResourceMonitor resourceMntr;
+    @Inject
     IdFormatter idFrmt;
-    @Inject
-    ActivityService actvtyService;
-    @Inject
-    GenericResourceDao rscDao;
-    @Inject
-    ObjectMetaDataManager objMetaDataMgr;
-    @Inject
-    HostDao hostDao;
 
     @Override
     public boolean isHealthy(Service service) {
@@ -199,7 +173,7 @@ public class DeploymentManagerImpl implements DeploymentManager {
         try {
             deploy(service, checkState, false);
             lockScale(service);
-        } catch (ServiceInstanceAllocateException ex) {
+        } catch (DeploymentUnitAllocateException ex) {
             reduceScaleAndDeploy(service, checkState, policy);
             return false;
         }
@@ -238,7 +212,7 @@ public class DeploymentManagerImpl implements DeploymentManager {
             log.info("Decremented service [{}] scale to [{}] as reconcile has failed", service.getUuid(), desiredScale);
             try {
                 deploy(service, checkState, false);
-            } catch (ServiceInstanceAllocateException ex) {
+            } catch (DeploymentUnitAllocateException ex) {
                 if (desiredScale == minScale) {
                     throw ex;
                 }
@@ -270,7 +244,7 @@ public class DeploymentManagerImpl implements DeploymentManager {
         ServiceDeploymentPlanner planner = getPlanner(service);
 
         if (!checkState) {
-            actvtyService.info(planner.getStatus());
+            activitySvc.info(planner.getStatus());
         }
 
         // don't process if there is no need to reconcile
@@ -278,7 +252,7 @@ public class DeploymentManagerImpl implements DeploymentManager {
 
         if (!needToReconcile) {
             if (!checkState) {
-                actvtyService.info("Service already reconciled");
+                activitySvc.info("Service already reconciled");
             }
             return false;
         }
@@ -288,13 +262,13 @@ public class DeploymentManagerImpl implements DeploymentManager {
         }
 
 
-        activateServices(service);
+        activateService(service);
         if (scheduleOnly) {
             return false;
         }
 
-        incrementExecutionCount(service);
-        activateDeploymentUnits(service, planner);
+        sdSvc.incrementExecutionCount(service);
+        deployService(service, planner);
 
         // reload planner as there can be new hosts added for Global services
         // reload services as well
@@ -304,46 +278,14 @@ public class DeploymentManagerImpl implements DeploymentManager {
             throw new ServiceReconcileException("Need to restart service reconcile");
         }
 
-        actvtyService.info("Service reconciled: " + planner.getStatus());
+        activitySvc.info("Service reconciled: " + planner.getStatus());
         return false;
     }
 
-    private void incrementExecutionCount(Service service) {
-        objectMgr.reload(service);
-        Integer count = DataAccessor.fieldInteger(service, ServiceConstants.FIELD_EXECUTION_COUNT);
-        if (count == null) {
-            count = 0;
-        }
 
-        count = count + 1;
-
-        Date start = DataAccessor.fieldDate(service, ServiceConstants.FIELD_EXECUTION_PERIOD_START);
-        if (start == null) {
-            start = new Date();
-        }
-
-        Date end = new Date(start.getTime() + EXECUTION_PERIOD.get()*1000);
-        Date now = new Date();
-
-        try {
-            if (now.after(end)) {
-                count = 1;
-                start = now;
-            } else if (count > EXECUTION_MAX.get()) {
-                throw new ProcessDelayException(new Date(System.currentTimeMillis() + EXECUTION_DELAY.get()*1000));
-            }
-        } finally {
-            objectMgr.setFields(service,
-                    ServiceConstants.FIELD_EXECUTION_COUNT, count,
-                    ServiceConstants.FIELD_EXECUTION_PERIOD_START, start);
-        }
-    }
 
     private ServiceDeploymentPlanner getPlanner(Service service) {
-        List<DeploymentUnit> units = unitInstanceFactory.collectDeploymentUnits(service,
-                new DeploymentServiceContext());
-        return deploymentPlannerFactory.createServiceDeploymentPlanner(service,
-                units, new DeploymentServiceContext());
+        return createServiceDeploymentPlanner(service);
     }
 
     private boolean needToReconcile(Service service, ServiceDeploymentPlanner planner) {
@@ -354,10 +296,7 @@ public class DeploymentManagerImpl implements DeploymentManager {
         return planner.needToReconcileDeployment();
     }
 
-    private void activateServices(final Service service) {
-        /*
-         * Trigger activate for all the services
-         */
+    private void activateService(final Service service) {
         try {
             if (service.getState().equalsIgnoreCase(CommonStatesConstants.INACTIVE)) {
                 objectProcessMgr.scheduleStandardProcess(StandardProcess.ACTIVATE, service, null);
@@ -365,74 +304,30 @@ public class DeploymentManagerImpl implements DeploymentManager {
                 objectProcessMgr.scheduleStandardProcess(StandardProcess.UPDATE, service, null);
             }
         } catch (IdempotentRetryException ex) {
-            // if not caught, the process will keep on spinning forever
-            // figure out better solution
         }
-
     }
 
     protected LockDefinition createLock(Service service) {
         return new ServiceLock(service);
     }
 
-    protected void activateDeploymentUnits(Service service, final ServiceDeploymentPlanner planner) {
+    protected void deployService(final Service service, final ServiceDeploymentPlanner planner) {
         /*
-         * Delete invalid units
+         * Deploy all the units
          */
-        planner.cleanupBadUnits();
-
-        /*
-         * Cleanup incomplete units
-         */
-        planner.cleanupIncompleteUnits();
-
-        /*
-         * Delete the units that have a bad health
-         */
-        planner.cleanupUnhealthyUnits();
-
-        /*
-         * Activate all the units
-         */
-        actvtyService.run(service, "wait", "Waiting for instances to start", new Runnable() {
+        activitySvc.run(service, "wait", "Waiting for deployment units to activate", new Runnable() {
             @Override
             public void run() {
-                startUnits(planner);
+                planner.deploy();
             }
         });
-
-        /*
-         * Cleanup unused service indexes
-         */
-        planner.cleanupUnusedAndDuplicatedServiceIndexes();
     }
 
-    private DeploymentUnitInstanceIdGenerator populateUsedNames(
-            Service service) {
-        // to support old style
-        Map<String, List<Integer>> launchConfigUsedIds = new HashMap<>();
-        for (String launchConfigName : ServiceDiscoveryUtil.getServiceLaunchConfigNames(service)) {
-            List<Integer> usedIds = sdSvc.getServiceInstanceUsedSuffixes(service, launchConfigName);
-            launchConfigUsedIds.put(launchConfigName, usedIds);
-        }
-        // to support new style
-        List<? extends io.cattle.platform.core.model.DeploymentUnit> dus = objectMgr.find(
-                io.cattle.platform.core.model.DeploymentUnit.class,
-                DEPLOYMENT_UNIT.ACCOUNT_ID,
-                service.getAccountId(), DEPLOYMENT_UNIT.REMOVED, null, DEPLOYMENT_UNIT.SERVICE_ID, service.getId());
-        List<Integer> usedIndexes = new ArrayList<>();
-        for (io.cattle.platform.core.model.DeploymentUnit du : dus) {
-            usedIndexes.add(Integer.valueOf(du.getServiceIndex()));
-        }
-        return new DeploymentUnitInstanceIdGeneratorImpl(launchConfigUsedIds, usedIndexes);
-    }
 
-    protected void startUnits(ServiceDeploymentPlanner planner) {
-        DeploymentUnitInstanceIdGenerator svcInstanceIdGenerator = populateUsedNames(planner.getService());
+    protected void deployUnits(ServiceDeploymentPlanner planner) {
         /*
          * Ask the planner to deploy more units/ remove extra units
          */
-        planner.deploy(svcInstanceIdGenerator);
     }
 
     @Override
@@ -441,12 +336,8 @@ public class DeploymentManagerImpl implements DeploymentManager {
         lockManager.lock(createLock(service), new LockCallbackNoReturn() {
             @Override
             public void doWithLockNoResult() {
-                // in deactivate, we don't care about the sidekicks, and deactivate only requested service
-                List<DeploymentUnit> units = unitInstanceFactory.collectDeploymentUnits(
-                        service, new DeploymentServiceContext());
-                for (DeploymentUnit unit : units) {
-                    unit.stop();
-                }
+                ServiceDeploymentPlanner planner = getPlanner(service);
+                planner.deactivateUnits();
             }
         });
     }
@@ -457,23 +348,15 @@ public class DeploymentManagerImpl implements DeploymentManager {
         lockManager.lock(createLock(service), new LockCallbackNoReturn() {
             @Override
             public void doWithLockNoResult() {
-                // in remove, we don't care about the sidekicks, and remove only requested service
-                deleteServiceInstances(service);
+                ServiceDeploymentPlanner planner = getPlanner(service);
+                planner.removeUnits();
                 List<? extends ServiceExposeMap> unmanagedMaps = expMapDao
                         .getUnmanagedServiceInstanceMapsToRemove(service.getId());
                 for (ServiceExposeMap unmanagedMap : unmanagedMaps) {
                     objectProcessMgr.scheduleStandardProcessAsync(StandardProcess.REMOVE, unmanagedMap, null);
                 }
-                sdSvc.removeServiceMaps(service);
-                sdSvc.removeFromLoadBalancerServices(service);
-            }
-
-            protected void deleteServiceInstances(final Service service) {
-                List<DeploymentUnit> units = unitInstanceFactory.collectDeploymentUnits(
-                        service, new DeploymentServiceContext());
-                for (DeploymentUnit unit : units) {
-                    unit.remove(ServiceConstants.AUDIT_LOG_REMOVE_EXTRA, ActivityLog.INFO);
-                }
+                sdSvc.removeServiceLinks(service);
+                sdSvc.removeFromLoadBalancerServices(service, null);
             }
         });
     }
@@ -499,7 +382,7 @@ public class DeploymentManagerImpl implements DeploymentManager {
                 if (service != null
                         && (service.getState().equalsIgnoreCase(CommonStatesConstants.ACTIVE) || service.getState()
                                 .equalsIgnoreCase(CommonStatesConstants.UPDATING_ACTIVE))) {
-                    activity.run(service, "service.trigger", "Re-evaluating state", new Runnable() {
+                    activitySvc.run(service, "service.trigger", "Re-evaluating state", new Runnable() {
                         @Override
                         public void run() {
                             activate(service, false, true);
@@ -510,20 +393,52 @@ public class DeploymentManagerImpl implements DeploymentManager {
         });
     }
 
-    public final class DeploymentServiceContext {
-        final public ObjectManager objectManager = objectMgr;
-        final public ResourceMonitor resourceMonitor = resourceMntr;
+    public ServiceDeploymentPlanner createServiceDeploymentPlanner(Service service) {
+        if (service == null) {
+            return null;
+        }
+        Stack stack = objectMgr.findOne(Stack.class, STACK.ID, service.getStackId());
+        boolean isGlobalDeploymentStrategy = isGlobalDeploymentStrategy(service);
+        boolean isSelectorOnlyStrategy = isNoopStrategy(service);
+        if (isSelectorOnlyStrategy
+                || service.getKind().equalsIgnoreCase(ServiceConstants.KIND_DNS_SERVICE)
+                || service.getKind().equalsIgnoreCase(ServiceConstants.KIND_EXTERNAL_SERVICE)) {
+            return new NoOpServiceDeploymentPlanner(service, stack, new DeploymentManagerContext());
+        } else if (isGlobalDeploymentStrategy) {
+            return new GlobalServiceDeploymentPlanner(service, stack, new DeploymentManagerContext());
+        } else {
+            return new DefaultServiceDeploymentPlanner(service, stack, new DeploymentManagerContext());
+        }
+    }
+
+    protected boolean isGlobalDeploymentStrategy(Service service) {
+        return sdSvc.isGlobalService(service);
+    }
+
+    protected boolean isNoopStrategy(Service service) {
+        if (ServiceDiscoveryUtil.isNoopService(service) || isExternallyProvidedService(service)) {
+            return true;
+        }
+        return false;
+    }
+
+    protected boolean isExternallyProvidedService(Service service) {
+        if (service.getKind().equalsIgnoreCase(ServiceConstants.KIND_DNS_SERVICE)
+                || service.getKind().equalsIgnoreCase(ServiceConstants.KIND_EXTERNAL_SERVICE)
+                || ServiceConstants.SERVICE_LIKE.contains(service.getKind())) {
+            return false;
+        }
+        return true;
+    }
+
+    public final class DeploymentManagerContext {
+        final public DeploymentUnitManager duMgr = duManager;
         final public ObjectProcessManager objectProcessManager = objectProcessMgr;
-        final public ServiceDiscoveryService sdService = sdSvc;
-        final public ServiceExposeMapDao exposeMapDao = expMapDao;
-        final public DeploymentUnitInstanceFactory deploymentUnitInstanceFactory = unitInstanceFactory;
-        final public AllocationHelper allocationHelper = allocationHlpr;
+        final public ObjectManager objectManager = objectMgr;
         final public JsonMapper jsonMapper = mapper;
-        final public ServiceDao serviceDao = svcDao;
-        final public ActivityService activityService = actvtyService;
+        final public AllocationHelper allocationHelper = allocationHlpr;
+        final public ResourceMonitor resourceMonitor = resourceMntr;
         final public IdFormatter idFormatter = idFrmt;
-        final public LockManager lockMgr = lockManager;
-        final public GenericResourceDao resourceDao = rscDao;
-        final public ObjectMetaDataManager objectMetaDataManager = objMetaDataMgr;
+        final public ServiceDao serviceDao = svcDao;
     }
 }

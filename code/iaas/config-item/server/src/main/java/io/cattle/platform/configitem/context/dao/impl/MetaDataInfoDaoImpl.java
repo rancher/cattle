@@ -69,7 +69,7 @@ import javax.inject.Inject;
 import org.apache.commons.lang3.StringUtils;
 import org.jooq.Condition;
 import org.jooq.JoinType;
-import org.jooq.Record10;
+import org.jooq.Record11;
 import org.jooq.Record20;
 import org.jooq.Record3;
 import org.jooq.Record4;
@@ -448,7 +448,7 @@ public class MetaDataInfoDaoImpl extends AbstractJooqDao implements MetaDataInfo
         }
         create()
                 .select(SERVICE.UUID, SERVICE.NAME, SERVICE.STATE, SERVICE.CREATE_INDEX, SERVICE.KIND, SERVICE.SYSTEM,
-                        SERVICE.DATA, SERVICE.ACCOUNT_ID,
+                        SERVICE.DATA, SERVICE.ACCOUNT_ID, SERVICE.STACK_ID,
                         STACK.UUID, STACK.NAME)
                 .from(SERVICE)
                 .join(STACK)
@@ -457,10 +457,10 @@ public class MetaDataInfoDaoImpl extends AbstractJooqDao implements MetaDataInfo
                 .and(SERVICE.REMOVED.isNull())
                 .and(condition)
                 .fetchInto(
-                        new RecordHandler<Record10<String, String, String, Long, String, Boolean, Map<String, Object>, Long, String, String>>() {
+                        new RecordHandler<Record11<String, String, String, Long, String, Boolean, Map<String, Object>, Long, Long, String, String>>() {
                     @Override
                             public void next(
-                                    Record10<String, String, String, Long, String, Boolean, Map<String, Object>, Long, String, String> record) {
+                                    Record11<String, String, String, Long, String, Boolean, Map<String, Object>, Long, Long, String, String> record) {
                                 ServiceRecord service = new ServiceRecord();
                                 service.setName(record.getValue(SERVICE.NAME));
                                 service.setUuid(record.getValue(SERVICE.UUID));
@@ -470,6 +470,7 @@ public class MetaDataInfoDaoImpl extends AbstractJooqDao implements MetaDataInfo
                                 service.setData(record.getValue(SERVICE.DATA));
                                 service.setKind(record.getValue(SERVICE.KIND));
                                 service.setAccountId(record.getValue(SERVICE.ACCOUNT_ID));
+                                service.setStackId(record.getValue(SERVICE.STACK_ID));
                                 String stackName = record.getValue(STACK.NAME);
                                 String stackUUID = record.getValue(STACK.UUID);
 

@@ -167,7 +167,6 @@ def test_rollback_regular_upgrade(context, client, super_client):
                              service2,
                              toServiceId=service2.id,
                              finalScale=4)
-    time.sleep(1)
     svc = wait_state(client, svc.cancelupgrade(), 'canceled-upgrade')
     svc = wait_state(client, svc.rollback(), 'active')
     _wait_for_map_count(super_client, svc)
@@ -1089,7 +1088,7 @@ def test_sidekick_removal_rollback(context, client):
                                batchSize=1)
     u_svc = client.wait_success(u_svc, DEFAULT_TIMEOUT)
     assert u_svc.state == 'upgraded'
-    u_svc = client.wait_success(u_svc.rollback(), DEFAULT_TIMEOUT)
+    u_svc = wait_state(client, u_svc.rollback(), "active")
 
     # validate that all service instances are present, and their version
     _wait_until_active_map_count(u_svc, 3, client)

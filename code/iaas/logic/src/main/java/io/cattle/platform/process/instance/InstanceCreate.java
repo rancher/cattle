@@ -1,9 +1,9 @@
 package io.cattle.platform.process.instance;
 
 import static io.cattle.platform.core.model.tables.CredentialInstanceMapTable.*;
+import static io.cattle.platform.core.model.tables.InstanceRevisionTable.*;
 import static io.cattle.platform.core.model.tables.NicTable.*;
 import static io.cattle.platform.core.model.tables.VolumeTable.*;
-
 import io.cattle.iaas.labels.service.LabelsService;
 import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.InstanceConstants;
@@ -11,12 +11,14 @@ import io.cattle.platform.core.dao.GenericResourceDao;
 import io.cattle.platform.core.dao.LabelsDao;
 import io.cattle.platform.core.model.CredentialInstanceMap;
 import io.cattle.platform.core.model.Instance;
+import io.cattle.platform.core.model.InstanceRevision;
 import io.cattle.platform.core.model.Nic;
 import io.cattle.platform.core.model.Volume;
 import io.cattle.platform.engine.handler.HandlerResult;
 import io.cattle.platform.engine.process.ProcessInstance;
 import io.cattle.platform.engine.process.ProcessState;
 import io.cattle.platform.json.JsonMapper;
+import io.cattle.platform.object.meta.ObjectMetaDataManager;
 import io.cattle.platform.object.process.ObjectProcessManager;
 import io.cattle.platform.object.process.StandardProcess;
 import io.cattle.platform.object.util.DataAccessor;
@@ -25,6 +27,7 @@ import io.cattle.platform.process.base.AbstractDefaultProcessHandler;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -64,13 +67,34 @@ public class InstanceCreate extends AbstractDefaultProcessHandler {
         Set<Long> volumesIds = createVolumes(instance, volumes, state.getData());
         Set<Long> nicIds = createNics(instance, nics, state.getData());
 
+        createLabels(instance);
+
+        createInstanceRevision(state, instance);
+
         HandlerResult result = new HandlerResult("_volumeIds", volumesIds, "_nicIds", nicIds, "_creds", creds, InstanceConstants.FIELD_DATA_VOLUMES,
                 dataVolumes);
         result.shouldDelegate(shouldStart(instance));
 
-        createLabels(instance);
-
         return result;
+    }
+
+    private void createInstanceRevision(ProcessState state, Instance instance) {
+        InstanceRevision revision = objectManager.findAny(InstanceRevision.class, INSTANCE_REVISION.INSTANCE_ID,
+                instance.getId(),
+                INSTANCE_REVISION.REMOVED, null);
+        if (revision == null) {
+            Map<String, Object> data = new HashMap<>();
+            data.put(InstanceConstants.FIELD_INSTANCE_SPEC, state.getData());
+            data.put(ObjectMetaDataManager.NAME_FIELD, instance.getName());
+            data.put(ObjectMetaDataManager.ACCOUNT_FIELD, instance.getAccountId());
+            data.put("instanceId", instance.getId());
+            revision = objectManager.create(InstanceRevision.class, data);
+        }
+        if (instance.getRevisionId() == null) {
+            Map<String, Object> data = new HashMap<>();
+            data.put(InstanceConstants.FIELD_REVISION_ID, revision.getId());
+            objectManager.setFields(instance, data);
+        }
     }
 
     private List<String> processManagedVolumes(Instance instance) {

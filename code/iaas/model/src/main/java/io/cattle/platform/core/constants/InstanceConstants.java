@@ -4,8 +4,10 @@ package io.cattle.platform.core.constants;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.object.util.DataAccessor;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -15,6 +17,8 @@ public class InstanceConstants {
     public static final String SYSTEM_CONTAINER_LB_AGENT = "LoadBalancerAgent";
     public static final String SYSTEM_CONTAINER_BALANCER_AGENT = "BalancerAgent";
     public static final String SYSTEM_CONTAINER_CLUSTER_AGENT = "ClusterAgent";
+    public static final String STOP_SOURCE_API = "api";
+    public static final String STOP_SOURCE_EXTERNAL = "external";
 
     public static final String TYPE = "instance";
     public static final String TYPE_CONTAINER = "container";
@@ -42,6 +46,7 @@ public class InstanceConstants {
     public static final String FIELD_HOSTNAME = "hostname";
     public static final String FIELD_CREATE_INDEX = "createIndex";
     public static final String FIELD_DEPLOYMENT_UNIT_UUID = "deploymentUnitUuid";
+    public static final String FIELD_DEPLOYMENT_UNIT_ID = "deploymentUnitId";
     public static final String FIELD_DATA_VOLUME_MOUNTS = "dataVolumeMounts";
     public static final String FIELD_DATA_VOLUMES = "dataVolumes";
     public static final String FIELD_VOLUME_DRIVER = "volumeDriver";
@@ -62,6 +67,15 @@ public class InstanceConstants {
     public static final String FIELD_MEMORY_RESERVATION = "memoryReservation";
     public static final String FIELD_MOUNTS = "mounts";
     public static final String FIELD_HEALTHCHECK_STATES = "healthcheckStates";
+    public static final String FIELD_INSTANCE_SPEC = "spec";
+    public static final String FIELD_REPLACEMNT_FOR_INSTANCE_ID = "replacementFor";
+    public static final String FIELD_SERVICE_ID = "serviceId";
+    public static final String FIELD_STACK_ID = "stackId";
+    public static final String FIELD_SIDEKICK_TO = "sidekickTo";
+    public static final String FIELD_STOP_SOURCE = "stopSource";
+    public static final String FIELD_EXIT_CODE = "exitCode";
+    public static final String FIELD_START_RETRY_COUNT = "startRetryCount";
+    public static final String FIELD_REVISION_ID = "revisionId";
 
     public static final String PROCESS_DATA_NO_OP = "containerNoOpEvent";
 
@@ -113,6 +127,21 @@ public class InstanceConstants {
         Map<String, Object> labels = DataAccessor.fieldMap(instance, InstanceConstants.FIELD_LABELS);
         return ("rancher-agent".equals(labels.get("io.rancher.container.system")) &&
                 "rancher-agent".equals(instance.getName()));
+        
+    }
+
+    public static List<Long> getInstanceDependencies(Instance instance) {
+        List<Long> instanceIds = new ArrayList<>();
+        Long networkFromContainerId = instance.getNetworkContainerId();
+        if (networkFromContainerId != null) {
+            instanceIds.add(networkFromContainerId);
+        }
+        Long sidekickTo = DataAccessor.fieldLong(instance, FIELD_SIDEKICK_TO);
+        if (sidekickTo != null) {
+            instanceIds.add(sidekickTo);
+        }
+        instanceIds.addAll(DataAccessor.fieldLongList(instance, "dataVolumesFrom"));
+        return instanceIds;
     }
 
 }

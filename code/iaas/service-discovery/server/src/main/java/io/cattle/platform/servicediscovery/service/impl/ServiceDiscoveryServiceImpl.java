@@ -1,12 +1,13 @@
 package io.cattle.platform.servicediscovery.service.impl;
 
 import static io.cattle.platform.core.model.tables.AccountLinkTable.*;
+import static io.cattle.platform.core.model.tables.InstanceTable.*;
 import static io.cattle.platform.core.model.tables.ServiceIndexTable.*;
 import static io.cattle.platform.core.model.tables.ServiceTable.*;
 import static io.cattle.platform.core.model.tables.StackTable.*;
 import static io.cattle.platform.core.model.tables.SubnetTable.*;
-
 import io.cattle.platform.allocator.service.AllocationHelper;
+import io.cattle.platform.archaius.util.ArchaiusUtil;
 import io.cattle.platform.configitem.events.ConfigUpdate;
 import io.cattle.platform.configitem.model.Client;
 import io.cattle.platform.configitem.request.ConfigUpdateRequest;
@@ -37,9 +38,11 @@ import io.cattle.platform.core.model.Subnet;
 import io.cattle.platform.core.util.PortSpec;
 import io.cattle.platform.core.util.SystemLabels;
 import io.cattle.platform.deferred.util.DeferredUtils;
+import io.cattle.platform.engine.process.impl.ProcessDelayException;
 import io.cattle.platform.eventing.EventService;
 import io.cattle.platform.iaas.api.filter.apikey.ApiKeyFilter;
 import io.cattle.platform.json.JsonMapper;
+import io.cattle.platform.lock.LockCallback;
 import io.cattle.platform.lock.LockManager;
 import io.cattle.platform.network.IPAssignment;
 import io.cattle.platform.network.NetworkService;
@@ -58,12 +61,14 @@ import io.cattle.platform.servicediscovery.api.dao.ServiceConsumeMapDao;
 import io.cattle.platform.servicediscovery.api.dao.ServiceExposeMapDao;
 import io.cattle.platform.servicediscovery.api.util.ServiceDiscoveryUtil;
 import io.cattle.platform.servicediscovery.api.util.selector.SelectorUtils;
+import io.cattle.platform.servicediscovery.deployment.impl.lock.LoadBalancerServiceLock;
 import io.cattle.platform.servicediscovery.service.ServiceDiscoveryService;
 import io.cattle.platform.util.exception.ResourceExhaustionException;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -75,99 +80,64 @@ import javax.inject.Inject;
 
 import org.apache.commons.lang3.StringUtils;
 
+import com.netflix.config.DynamicIntProperty;
+
 public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
 
     private static final String HOST_ENDPOINTS_UPDATE = "host-endpoints-update";
     private static final String SERVICE_ENDPOINTS_UPDATE = "service-endpoints-update";
 
+    private static final DynamicIntProperty EXECUTION_MAX = ArchaiusUtil.getInt("service.execution.credits");
+    private static final DynamicIntProperty EXECUTION_PERIOD = ArchaiusUtil.getInt("service.execution.period.seconds");
+    private static final DynamicIntProperty EXECUTION_DELAY = ArchaiusUtil.getInt("service.execution.delay.seconds");
+
     @Inject
     ServiceConsumeMapDao consumeMapDao;
-
     @Inject
     ObjectManager objectManager;
-
     @Inject
     NetworkDao ntwkDao;
-
     @Inject
     ObjectProcessManager objectProcessManager;
-
     @Inject
     ServiceExposeMapDao exposeMapDao;
-
     @Inject
     JsonMapper jsonMapper;
-
     @Inject
     ResourcePoolManager poolManager;
-
     @Inject
     ResourceMonitor resourceMonitor;
-
     @Inject
     LockManager lockManager;
-
     @Inject
     AllocationHelper allocationHelper;
-
     @Inject
     EventService eventService;
-
     @Inject
     InstanceDao instanceDao;
-
     @Inject
     ConfigItemStatusManager itemManager;
-
     @Inject
     NetworkService networkService;
 
     @Override
-    public List<Integer> getServiceInstanceUsedSuffixes(Service service, String launchConfigName) {
-        Stack env = objectManager.findOne(Stack.class, STACK.ID, service.getStackId());
-        // get all existing instances to check if the name is in use by the instance of the same service
-        List<Integer> usedSuffixes = new ArrayList<>();
-        List<? extends Instance> serviceInstances = exposeMapDao.listServiceManagedInstances(service, launchConfigName);
-        for (Instance instance : serviceInstances) {
-            if (ServiceDiscoveryUtil.isServiceGeneratedName(env, service, instance.getName())) {
-                // legacy code - to support old data where service suffix wasn't set
-                usedSuffixes.add(Integer.valueOf(ServiceDiscoveryUtil.getServiceSuffixFromInstanceName(instance
-                        .getName())));
-            }
-        }
-        return usedSuffixes;
-    }
-
-    @Override
-    public void removeServiceMaps(Service service) {
+    public void removeServiceLinks(Service service) {
         // 1. remove all maps to the services consumed by service specified
         for (ServiceConsumeMap map : consumeMapDao.findConsumedMapsToRemove(service.getId())) {
-            objectProcessManager.scheduleProcessInstance(ServiceConstants.PROCESS_SERVICE_CONSUME_MAP_REMOVE,
+            objectProcessManager.scheduleProcessInstanceAsync(ServiceConstants.PROCESS_SERVICE_CONSUME_MAP_REMOVE,
                     map, null);
         }
 
         // 2. remove all maps to the services consuming service specified
         for (ServiceConsumeMap map : consumeMapDao.findConsumingMapsToRemove(service.getId())) {
-            objectProcessManager.scheduleProcessInstance(ServiceConstants.PROCESS_SERVICE_CONSUME_MAP_REMOVE,
+            objectProcessManager.scheduleProcessInstanceAsync(ServiceConstants.PROCESS_SERVICE_CONSUME_MAP_REMOVE,
                     map, null);
         }
     }
 
     @Override
     public boolean isActiveService(Service service) {
-        return (getServiceActiveStates().contains(service.getState()));
-    }
-
-    @Override
-    public List<String> getServiceActiveStates() {
-        return Arrays.asList(CommonStatesConstants.ACTIVATING,
-                CommonStatesConstants.ACTIVE, CommonStatesConstants.UPDATING_ACTIVE,
-                ServiceConstants.STATE_UPGRADING, ServiceConstants.STATE_ROLLINGBACK,
-                ServiceConstants.STATE_CANCELING_UPGRADE,
-                ServiceConstants.STATE_CANCELED_UPGRADE,
-                ServiceConstants.STATE_FINISHING_UPGRADE,
-                ServiceConstants.STATE_UPGRADED,
-                ServiceConstants.STATE_RESTARTING);
+        return (ServiceDiscoveryUtil.getServiceActiveStates().contains(service.getState()));
     }
 
     @Override
@@ -861,39 +831,6 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
         itemManager.updateConfig(request);
     }
 
-    @Override
-    public void removeFromLoadBalancerServices(Service service) {
-        List<? extends Service> balancers = objectManager.find(Service.class, SERVICE.KIND,
-                ServiceConstants.KIND_LOAD_BALANCER_SERVICE, SERVICE.REMOVED, null, SERVICE.ACCOUNT_ID,
-                service.getAccountId());
-        for (Service balancer : balancers) {
-            LbConfig lbConfig = DataAccessor.field(balancer, ServiceConstants.FIELD_LB_CONFIG,
-                    jsonMapper, LbConfig.class);
-            if (lbConfig == null || lbConfig.getPortRules() == null) {
-                continue;
-            }
-            List<PortRule> newSet = new ArrayList<>();
-            boolean update = false;
-            for (PortRule rule : lbConfig.getPortRules()) {
-                if (rule.getServiceId() == null) {
-                    continue;
-                }
-                if (rule.getServiceId().equalsIgnoreCase(service.getId().toString())) {
-                    update = true;
-                    continue;
-                }
-                newSet.add(rule);
-            }
-
-            if (update) {
-                lbConfig.setPortRules(newSet);
-                Map<String, Object> data = new HashMap<>();
-                data.put(ServiceConstants.FIELD_LB_CONFIG, lbConfig);
-                balancer = objectManager.setFields(balancer, data);
-                objectProcessManager.scheduleStandardProcessAsync(StandardProcess.UPDATE, balancer, null);
-            }
-        }
-    }
 
     @Override
     public void registerServiceLinks(Service service) {
@@ -961,5 +898,92 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
     protected void addServiceLink(Service service, Service targetService) {
         ServiceLink link = new ServiceLink(targetService.getId(), null);
         addServiceLink(service, link);
+    }
+
+    @Override
+    public void removeFromLoadBalancerServices(Service service, Instance instance) {
+        if (service == null && instance == null) {
+            return;
+        }
+        long accountId = service != null ? service.getAccountId() : instance.getAccountId();
+        List<? extends Service> balancers = objectManager.find(Service.class, SERVICE.KIND,
+                ServiceConstants.KIND_LOAD_BALANCER_SERVICE, SERVICE.REMOVED, null, SERVICE.ACCOUNT_ID,
+                accountId);
+        for (final Service balancer : balancers) {
+            LbConfig lbConfig = DataAccessor.field(balancer, ServiceConstants.FIELD_LB_CONFIG,
+                    jsonMapper, LbConfig.class);
+            if (lbConfig == null || lbConfig.getPortRules() == null) {
+                continue;
+            }
+            List<PortRule> newSet = new ArrayList<>();
+            boolean update = false;
+            for (PortRule rule : lbConfig.getPortRules()) {
+                if (rule.getInstanceId() != null && instance != null) {
+                    if (rule.getInstanceId().equalsIgnoreCase(instance.getId().toString())) {
+                        update = true;
+                        // add a replacement rule (if present)
+                        Instance replacement = objectManager.findAny(Instance.class, INSTANCE.REPLACEMENT_FOR,
+                                instance.getId(), INSTANCE.REMOVED, null);
+                        if (replacement == null) {
+                            continue;
+                        }
+                        rule.setInstanceId(replacement.getId().toString());
+                    }
+                } else if (rule.getServiceId() != null && service != null) {
+                    if (rule.getServiceId().equalsIgnoreCase(service.getId().toString())) {
+                        update = true;
+                        continue;
+                    }
+                }
+
+                newSet.add(rule);
+            }
+
+            if (update) {
+                lbConfig.setPortRules(newSet);
+                final Map<String, Object> data = new HashMap<>();
+                data.put(ServiceConstants.FIELD_LB_CONFIG, lbConfig);
+                Service updated = lockManager.lock(new LoadBalancerServiceLock(balancer.getId()),
+                        new LockCallback<Service>() {
+                            @Override
+                            public Service doWithLock() {
+                                return objectManager.setFields(balancer, data);
+                            }
+                        });
+                objectProcessManager.scheduleStandardProcessAsync(StandardProcess.UPDATE, updated, null);
+            }
+        }
+    }
+
+    @Override
+    public void incrementExecutionCount(Object object) {
+        objectManager.reload(object);
+        Integer count = DataAccessor.fieldInteger(object, ServiceConstants.FIELD_EXECUTION_COUNT);
+        if (count == null) {
+            count = 0;
+        }
+
+        count = count + 1;
+
+        Date start = DataAccessor.fieldDate(object, ServiceConstants.FIELD_EXECUTION_PERIOD_START);
+        if (start == null) {
+            start = new Date();
+        }
+
+        Date end = new Date(start.getTime() + EXECUTION_PERIOD.get() * 1000);
+        Date now = new Date();
+
+        try {
+            if (now.after(end)) {
+                count = 1;
+                start = now;
+            } else if (count > EXECUTION_MAX.get()) {
+                throw new ProcessDelayException(new Date(System.currentTimeMillis() + EXECUTION_DELAY.get() * 1000));
+            }
+        } finally {
+            objectManager.setFields(object,
+                    ServiceConstants.FIELD_EXECUTION_COUNT, count,
+                    ServiceConstants.FIELD_EXECUTION_PERIOD_START, start);
+        }
     }
 }

@@ -313,6 +313,7 @@
     <process:defaultProcesses resourceType="serviceIndex" />
     <process:defaultProcesses resourceType="volumeTemplate" />
     <process:defaultProcesses resourceType="accountLink" />
+    <process:defaultProcesses resourceType="deploymentUnit" />
 
     <!-- Volume Storage Pool Map -->
     <process:defaultProcesses resourceType="volumeStoragePoolMap" exclude="volumestoragepoolmap.purge"/>
@@ -520,6 +521,14 @@
     <process:process name="scheduledupgrade.create" resourceType="scheduledUpgrade" start="requested" transitioning="scheduling" done="scheduled" />
     <process:process name="scheduledupgrade.start" resourceType="scheduledUpgrade" start="scheduled" transitioning="running" done="done" />
     <process:process name="scheduledupgrade.remove" resourceType="scheduledUpgrade" start="scheduled,running,done" transitioning="removing" done="removed" />
+
+    <!-- Deployment Unit -->
+    <process:process name="deploymentunit.error" resourceType="deploymentUnit" start="active,activating,updating-active,deactivating,inactive" transitioning="erroring" done="error" />
+    <process:process name="deploymentunit.remove" resourceType="deploymentUnit" start="requested,activating,active,updating-active,deactivating,inactive,error,erroring" transitioning="removing" done="removed" />
+    <process:process name="deploymentunit.deactivate" resourceType="deploymentUnit" start="active, updating-active, error, erroring" transitioning="deactivating" done="inactive" />
+
+    <process:process name="deploymentunit.updatehealthy" resourceType="deploymentUnit" stateField="healthState" start="healthy,unhealthy" transitioning="updating-healthy" done="healthy" />
+    <process:process name="deploymentunit.updateunhealthy" resourceType="deploymentUnit" stateField="healthState" start="healthy,unhealthy" transitioning="updating-unhealthy" done="unhealthy" />
 
     <bean class="io.cattle.platform.docker.process.dao.impl.DockerComputeDaoImpl" />
 

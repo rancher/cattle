@@ -1,15 +1,15 @@
 package io.cattle.platform.docker.service.impl;
 
-import static io.cattle.platform.core.model.tables.StackTable.*;
 import static io.cattle.platform.core.model.tables.ServiceTable.*;
+import static io.cattle.platform.core.model.tables.StackTable.*;
 import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.constants.ServiceConstants;
 import io.cattle.platform.core.dao.GenericResourceDao;
-import io.cattle.platform.core.model.Stack;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.Service;
 import io.cattle.platform.core.model.ServiceExposeMap;
+import io.cattle.platform.core.model.Stack;
 import io.cattle.platform.docker.process.dao.ComposeDao;
 import io.cattle.platform.docker.process.lock.ComposeProjectLock;
 import io.cattle.platform.docker.process.lock.ComposeServiceLock;
@@ -26,7 +26,7 @@ import io.cattle.platform.object.process.ObjectProcessManager;
 import io.cattle.platform.object.process.StandardProcess;
 import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.servicediscovery.api.dao.ServiceExposeMapDao;
-import io.cattle.platform.servicediscovery.deployment.impl.unit.DefaultDeploymentUnitInstance;
+import io.cattle.platform.servicediscovery.deployment.DeploymentUnitInstance;
 import io.github.ibuildthecloud.gdapi.condition.Condition;
 import io.github.ibuildthecloud.gdapi.condition.ConditionType;
 
@@ -194,7 +194,7 @@ public class ComposeManagerImpl implements ComposeManager {
             found = true;
             if (isRemoved(service.getRemoved(), service.getState())) {
                 Instance instance = objectManager.loadResource(Instance.class, map.getInstanceId());
-                DefaultDeploymentUnitInstance.removeInstance(instance, objectProcessManager);
+                DeploymentUnitInstance.removeInstance(instance, objectProcessManager);
             }
         }
 

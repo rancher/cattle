@@ -33,9 +33,7 @@ public interface InstanceDao {
      */
     List<? extends Service> findServicesFor(Instance instance);
 
-    List<? extends Instance> listNonRemovedInstances(Account account, boolean forService);
-
-    List<? extends Instance> findInstancesFor(Service service);
+    List<? extends Instance> listNonRemovedNonStackInstances(Account account);
 
     List<? extends Instance> findInstanceByServiceName(long accountId, String serviceName);
 
@@ -54,4 +52,5 @@ public interface InstanceDao {
     List<PublicEndpoint> getPublicEndpoints(long accountId, Long serviceId, Long hostId);
 
     List<? extends Service> findServicesNonRemovedLinksOnly(Instance instance);
+
 }

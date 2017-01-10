@@ -680,16 +680,13 @@ def test_validate_service_scaleup_scaledown(client, context):
     instance21 = _validate_compose_instance_start(client, service, env, "2")
     instance31 = _validate_compose_instance_start(client, service, env, "3")
 
-    assert instance31.createIndex > instance21.createIndex
-    assert instance21.createIndex > instance11.createIndex
+    assert instance31.createIndex != instance21.createIndex
+    assert instance21.createIndex != instance11.createIndex
 
     # stop the instance2
     client.wait_success(instance21.stop())
     service = client.wait_success(service)
     wait_for(lambda: client.reload(service).healthState == 'healthy')
-
-    # rename the instance 3
-    instance32 = client.update(instance31, name='newName')
 
     # scale up the service
     # instance 2 should get started
@@ -700,29 +697,37 @@ def test_validate_service_scaleup_scaledown(client, context):
 
     instance12 = _validate_compose_instance_start(client, service, env, "1")
     instance22 = _validate_compose_instance_start(client, service, env, "2")
-    instance32 = _validate_instance_start(service, client, instance32.name)
-    instance41 = _validate_compose_instance_start(client, service, env, "4")
+    instance32 = _validate_compose_instance_start(client, service, env, "3")
+    instance42 = _validate_compose_instance_start(client, service, env, "4")
 
-    assert instance41.createIndex > instance32.createIndex
-    assert instance32.createIndex > instance22.createIndex
-    assert instance22.createIndex > instance12.createIndex
+    assert instance42.createIndex != instance32.createIndex
+    assert instance32.createIndex != instance22.createIndex
+    assert instance22.createIndex != instance12.createIndex
 
     # scale down the service
     service = client.update(service, scale=0, name=service.name)
     service = client.wait_success(service, 120)
     assert service.state == "active"
     # validate 0 service instance mappings
-    instance_service_map = client. \
-        list_serviceExposeMap(serviceId=service.id, state="active")
-    assert len(instance_service_map) == 0
+    wait_for(lambda: len(client.
+             list_serviceExposeMap(serviceId=service.id, state="active")) == 0)
 
     # scale up service again, and validate
     # that the new instance got unique create index
     service = client.update(service, scale=4, name=service.name)
     service = client.wait_success(service, 120)
-    instance42 = _validate_compose_instance_start(client, service, env, "4")
-    assert instance42.createIndex > instance41.createIndex
-    assert service.createIndex == instance42.createIndex
+    instance13 = _validate_compose_instance_start(client, service, env, "1")
+    instance23 = _validate_compose_instance_start(client, service, env, "2")
+    instance33 = _validate_compose_instance_start(client, service, env, "3")
+    instance43 = _validate_compose_instance_start(client, service, env, "4")
+    assert instance43.createIndex != instance33.createIndex
+    assert instance33.createIndex != instance23.createIndex
+    assert instance23.createIndex != instance13.createIndex
+    assert instance43.createIndex != instance42.createIndex
+    index_list = [instance13.createIndex, instance23.createIndex,
+                  instance33.createIndex, instance43.createIndex]
+    index_list.sort(key=int)
+    assert service.createIndex == index_list[3]
 
 
 def _instance_remove(instance, client):
@@ -1080,28 +1085,6 @@ def test_sidekick_scaleup(client, context):
     assert len(instance_service_map1) == 4
 
 
-def _validate_service_ip_map_removed(client, service, ip):
-    def wait_for_map_count(service):
-        m = client. \
-            list_serviceExposeMap(serviceId=service.id, ipAddress=ip)
-        return len(m) == 0
-
-    wait_for_condition(client, service, wait_for_map_count)
-
-
-def _validate_service_ip_map(client, service, ip, state):
-    def wait_for_map_count(service):
-        m = client. \
-            list_serviceExposeMap(serviceId=service.id, ipAddress=ip,
-                                  state=state)
-        return len(m) >= 1
-
-    wait_for(lambda: wait_for_condition(client, service,
-                                        wait_for_map_count))
-    return client. \
-        list_serviceExposeMap(serviceId=service.id, state=state)
-
-
 def _validate_service_instance_map_count(client, service, state, count):
     def wait_for_map_count(service):
         m = client. \
@@ -1113,27 +1096,6 @@ def _validate_service_instance_map_count(client, service, state, count):
 
     return client. \
         list_serviceExposeMap(serviceId=service.id, state=state)
-
-
-def _validate_service_hostname_map_removed(super_client, service, host_name):
-    def wait_for_map_count(service):
-        m = super_client. \
-            list_serviceExposeMap(serviceId=service.id)
-        m = [x for x in m if x.hostName == host_name]
-        return len(m) == 0
-
-    wait_for_condition(super_client, service, wait_for_map_count)
-
-
-def _validate_service_hostname_map(client, service, host_name, state):
-    def wait_for_map_count(service):
-        m = client. \
-            list_serviceExposeMap(serviceId=service.id,
-                                  hostname=host_name, state=state)
-        return len(m) >= 1
-
-    wait_for(lambda: wait_for_condition(client, service,
-                                        wait_for_map_count))
 
 
 def test_external_service_w_ips(client, context):
@@ -1163,37 +1125,26 @@ def test_external_service_w_ips(client, context):
     service2 = client.wait_success(service2)
     assert service2.state == 'active'
     assert service2.externalIpAddresses == ips
-    _validate_service_ip_map(client, service2, "72.22.16.5", "active")
-    _validate_service_ip_map(client, service2, "192.168.0.10", "active")
 
     # deactivate external service
     service2 = client.wait_success(service2.deactivate())
     assert service2.state == "inactive"
-    _validate_service_ip_map_removed(client, service2, "72.22.16.5")
-    _validate_service_ip_map_removed(client, service2, "192.168.0.10")
 
     # activate external service again
     service2 = client.wait_success(service2.activate())
     assert service2.state == "active"
-    _validate_service_ip_map(client, service2, "72.22.16.5", "active")
-    _validate_service_ip_map(client, service2, "192.168.0.10", "active")
 
     # add one extra ip address
     ips = ["72.22.16.5", '192.168.0.10', '10.1.1.1']
     service2 = client.update(service2, externalIpAddresses=ips)
     service2 = client.wait_success(service2, 120)
     assert len(service2.externalIpAddresses) == 3
-    _validate_service_ip_map(client, service2, "72.22.16.5", "active")
-    _validate_service_ip_map(client, service2, "192.168.0.10", "active")
-    _validate_service_ip_map(client, service2, "10.1.1.1", "active")
 
     # remove 2 ips from the list, and add one new
     ips = ["72.22.16.5", '50.255.37.17']
     service2 = client.update(service2, externalIpAddresses=ips)
     service2 = client.wait_success(service2, 120)
     assert len(service2.externalIpAddresses) == 2
-    _validate_service_ip_map(client, service2, "72.22.16.5", "active")
-    _validate_service_ip_map(client, service2, "50.255.37.17", "active")
 
     # remove external service
     service2 = client.wait_success(service2.remove())
@@ -1226,24 +1177,19 @@ def test_external_service_w_hostname(super_client, client, context):
     service2 = client.wait_success(service2)
     assert service2.state == 'active'
     assert service2.hostname == "a.com"
-    _validate_service_hostname_map(client, service2, "a.com", "active")
 
     # deactivate external service
     service2 = client.wait_success(service2.deactivate())
     assert service2.state == "inactive"
-    _validate_service_hostname_map_removed(super_client, service2, "a.com")
 
     # activate external service again
     service2 = client.wait_success(service2.activate())
     assert service2.state == "active"
-    _validate_service_hostname_map(client, service2, "a.com", "active")
 
     # change hostname
     service2 = client.update(service2, hostname="b.com")
     service2 = client.wait_success(service2, 120)
     assert service2.hostname == "b.com"
-    _validate_service_hostname_map(client, service2, "b.com", "active")
-    _validate_service_hostname_map_removed(super_client, service2, "a.com")
 
     # remove external service
     service2 = client.wait_success(service2.remove())
@@ -2047,7 +1993,7 @@ def test_indirect_ref_sidekick_destroy_instance(client, context):
 
     # destroy secondary1 instance and wait for the service to reconcile
     _instance_remove(instance13, client)
-    service = client.wait_success(service)
+    service = wait_state(client, service, 'active')
 
     _validate_compose_instance_start(client, service, env, "1")
     _validate_compose_instance_start(client, service, env, "1", "secondary")

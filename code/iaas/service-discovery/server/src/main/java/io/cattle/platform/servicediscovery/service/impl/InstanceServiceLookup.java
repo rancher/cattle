@@ -19,7 +19,7 @@ public class InstanceServiceLookup implements ServiceLookup {
         if (!(obj instanceof Instance)) {
             return null;
         }
-        Instance instance = (Instance)obj;
+        Instance instance = (Instance) obj;
         return instanceDao.findServicesNonRemovedLinksOnly(instance);
     }
 

@@ -8,7 +8,6 @@ import io.cattle.platform.core.model.Host;
 import io.cattle.platform.core.model.HostLabelMap;
 import io.cattle.platform.core.model.Service;
 import io.cattle.platform.object.ObjectManager;
-import io.cattle.platform.servicediscovery.api.dao.ServiceDao;
 import io.cattle.platform.servicediscovery.api.dao.ServiceExposeMapDao;
 import io.cattle.platform.servicediscovery.service.ServiceDiscoveryService;
 import io.cattle.platform.servicediscovery.service.ServiceLookup;
@@ -20,10 +19,6 @@ import java.util.List;
 import javax.inject.Inject;
 
 public class GlobalHostActivateServiceLookup implements ServiceLookup {
-
-    @Inject
-    ServiceDao svcDao;
-
     @Inject
     ServiceExposeMapDao expMapDao;
 

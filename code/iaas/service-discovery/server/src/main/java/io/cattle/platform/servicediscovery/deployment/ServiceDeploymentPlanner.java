@@ -1,86 +1,119 @@
 package io.cattle.platform.servicediscovery.deployment;
 
-import static io.cattle.platform.core.model.tables.ServiceIndexTable.*;
+import static io.cattle.platform.core.model.tables.DeploymentUnitTable.*;
 import io.cattle.platform.activity.ActivityLog;
 import io.cattle.platform.core.addon.InstanceHealthCheck;
 import io.cattle.platform.core.addon.InstanceHealthCheck.Strategy;
 import io.cattle.platform.core.addon.RecreateOnQuorumStrategyConfig;
+import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.constants.ServiceConstants;
+import io.cattle.platform.core.model.DeploymentUnit;
 import io.cattle.platform.core.model.Service;
-import io.cattle.platform.core.model.ServiceIndex;
 import io.cattle.platform.core.model.Stack;
+import io.cattle.platform.engine.process.impl.ProcessCancelException;
 import io.cattle.platform.object.process.StandardProcess;
+import io.cattle.platform.object.resource.ResourcePredicate;
+import io.cattle.platform.object.util.TransitioningUtils;
+import io.cattle.platform.process.common.util.ProcessUtils;
 import io.cattle.platform.servicediscovery.api.util.ServiceDiscoveryUtil;
-import io.cattle.platform.servicediscovery.deployment.impl.DeploymentManagerImpl.DeploymentServiceContext;
+import io.cattle.platform.servicediscovery.deployment.impl.DeploymentManagerImpl.DeploymentManagerContext;
 import io.cattle.platform.servicediscovery.deployment.impl.healthaction.HealthCheckActionHandler;
 import io.cattle.platform.servicediscovery.deployment.impl.healthaction.NoopHealthCheckActionHandler;
 import io.cattle.platform.servicediscovery.deployment.impl.healthaction.RecreateHealthCheckActionHandler;
 import io.cattle.platform.servicediscovery.deployment.impl.healthaction.RecreateOnQuorumHealthCheckActionHandler;
-import io.cattle.platform.servicediscovery.deployment.impl.unit.DeploymentUnit;
+import io.cattle.platform.servicediscovery.deployment.impl.unit.DeploymentUnitInstanceIdGeneratorImpl;
+import io.cattle.platform.util.exception.DeploymentUnitAllocateException;
+import io.github.ibuildthecloud.gdapi.condition.Condition;
+import io.github.ibuildthecloud.gdapi.condition.ConditionType;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
-import java.util.Iterator;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * This class creates new deploymentUnits based on the service requirements (scale/global)
- * Only healthy units are taken into consideration
- * Both healthy and unhealthy units are returned (unhealthy units will get cleaned up later after the healthy ones are
- * deployed)
  *
  */
 public abstract class ServiceDeploymentPlanner {
 
     protected Service service;
     protected Stack stack;
-    protected List<DeploymentUnit> healthyUnits = new ArrayList<>();
-    private List<DeploymentUnit> unhealthyUnits = new ArrayList<>();
-    private List<DeploymentUnit> badUnits = new ArrayList<>();
-    protected List<DeploymentUnit> incompleteUnits = new ArrayList<>();
-    protected DeploymentServiceContext context;
+    private Map<String, DeploymentUnit> healthyUnits = new HashMap<>();
+    private Map<String, DeploymentUnit> unhealthyUnits = new HashMap<>();
+    private Map<String, DeploymentUnit> badUnits = new HashMap<>();
+    private Map<String, DeploymentUnit> allUnits = new HashMap<>();
+    protected DeploymentManagerContext context;
     protected HealthCheckActionHandler healthActionHandler = new RecreateHealthCheckActionHandler();
+    private static final Set<String> ERROR_STATES = new HashSet<String>(Arrays.asList(
+            InstanceConstants.STATE_ERRORING,
+            InstanceConstants.STATE_ERROR,
+            CommonStatesConstants.REMOVED,
+            CommonStatesConstants.REMOVING,
+            CommonStatesConstants.DEACTIVATING,
+            CommonStatesConstants.INACTIVE));
 
-    public ServiceDeploymentPlanner(Service service, List<DeploymentUnit> units,
-            DeploymentServiceContext context, Stack stack) {
+    protected enum State {
+        HEALTHY,
+        UNHEALTHY,
+        BAD,
+        EXTRA
+    }
+
+    public ServiceDeploymentPlanner(Service service,
+            DeploymentManagerContext context, Stack stack) {
         this.service = service;
         this.context = context;
         this.stack = stack;
         setHealthCheckAction(service, context);
-        populateDeploymentUnits(units);
+        List<DeploymentUnit> units = context.objectManager.find(DeploymentUnit.class, DEPLOYMENT_UNIT.SERVICE_ID,
+                service.getId(), DEPLOYMENT_UNIT.REMOVED, null, DEPLOYMENT_UNIT.STATE, new Condition(ConditionType.NE,
+                        CommonStatesConstants.REMOVING));
+        populateDeploymentUnits(units, context);
     }
 
     public String getStatus() {
-        return String.format("Created: %d, Unhealthy: %d, Bad: %d, Incomplete: %d",
+        return String.format("Created: %d, Unhealthy: %d, Bad: %d",
                 healthyUnits.size(),
                 unhealthyUnits.size(),
-                badUnits.size(),
-                incompleteUnits.size());
+                badUnits.size());
     }
 
-    protected void populateDeploymentUnits(List<DeploymentUnit> units) {
-        List<DeploymentUnit> healthyUnhealthyUnits = new ArrayList<>();
+    protected void populateDeploymentUnits(List<DeploymentUnit> units, DeploymentManagerContext context) {
+        List<DeploymentUnit> healthyUnhealthy = new ArrayList<>();
+        List<DeploymentUnit> healthy = new ArrayList<>();
+        List<DeploymentUnit> unhealthy = new ArrayList<>();
         if (units != null) {
             for (DeploymentUnit unit : units) {
-                if (unit.isError()) {
-                    badUnits.add(unit);
+                List<String> errorStates = Arrays.asList(InstanceConstants.STATE_ERROR,
+                        InstanceConstants.STATE_ERRORING);
+                if (errorStates.contains(unit.getState())) {
+                    addUnit(unit, State.BAD);
                 } else {
-                    healthyUnhealthyUnits.add(unit);
-                    if (!unit.isComplete()) {
-                        incompleteUnits.add(unit);
-                    }
+                    healthyUnhealthy.add(unit);
                 }
             }
-            healthActionHandler.populateHealthyUnhealthyUnits(this.healthyUnits, this.unhealthyUnits,
-                    healthyUnhealthyUnits);
+            healthActionHandler.populateHealthyUnhealthyUnits(healthy, unhealthy,
+                    healthyUnhealthy, context);
+            for (DeploymentUnit healthyUnit : healthy) {
+                addUnit(healthyUnit, State.HEALTHY);
+            }
+
+            for (DeploymentUnit unhealthyUnit : unhealthy) {
+                addUnit(unhealthyUnit, State.UNHEALTHY);
+            }
         }
     }
 
-    protected void setHealthCheckAction(Service service, DeploymentServiceContext context) {
+    protected void setHealthCheckAction(Service service, DeploymentManagerContext context) {
         Object healthCheckObj = ServiceDiscoveryUtil.getLaunchConfigObject(service,
                 ServiceConstants.PRIMARY_LAUNCH_CONFIG_NAME, InstanceConstants.FIELD_HEALTH_CHECK);
         if (healthCheckObj != null) {
@@ -99,155 +132,261 @@ public abstract class ServiceDeploymentPlanner {
         }
     }
 
-    protected Map<String, List<Long>> getUsedServiceIndexesIds(boolean cleanupDuplicates) {
-        // revamp healthy/bad units by excluding units with duplicated indexes
-        Map<String, List<Long>> launchConfigToServiceIndexes = new HashMap<>();
-        Iterator<DeploymentUnit> it = healthyUnits.iterator();
-        while (it.hasNext()) {
-            DeploymentUnit healthyUnit = it.next();
-            for (DeploymentUnitInstance instance : healthyUnit.getDeploymentUnitInstances()) {
-                if (instance.getServiceIndex() == null) {
-                    continue;
-                }
-                Long serviceIndexId = instance.getServiceIndex().getId();
-                String launchConfigName = instance.getLaunchConfigName();
-                List<Long> usedServiceIndexes = launchConfigToServiceIndexes.get(launchConfigName);
-                if (usedServiceIndexes == null) {
-                    usedServiceIndexes = new ArrayList<>();
-                }
-                if (cleanupDuplicates) {
-                    if (usedServiceIndexes.contains(serviceIndexId)) {
-                        badUnits.add(healthyUnit);
-                        it.remove();
-                        break;
-                    }
-                }
-
-                usedServiceIndexes.add(serviceIndexId);
-                launchConfigToServiceIndexes.put(launchConfigName, usedServiceIndexes);
-            }
-        }
-        return launchConfigToServiceIndexes;
-    }
-
     public boolean isHealthcheckInitiailizing() {
-        for (DeploymentUnit unit : this.getAllUnits()) {
-            if (unit.isHealthCheckInitializing()) {
+        for (DeploymentUnit unit : this.allUnits.values()) {
+            if (context.duMgr.isInit(unit)) {
                 return true;
             }
         }
-
         return false;
     }
 
-    public List<DeploymentUnit> deploy(DeploymentUnitInstanceIdGenerator svcInstanceIdGenerator) {
-        List<DeploymentUnit> units = this.deployHealthyUnits(svcInstanceIdGenerator);
-        // sort based on create index
-        Collections.sort(units, new Comparator<DeploymentUnit>() {
-            @Override
-            public int compare(DeploymentUnit d1, DeploymentUnit d2) {
-                return Long.compare(d1.getCreateIndex(), d2.getCreateIndex());
+    private DeploymentUnitInstanceIdGenerator getIdGenerator() {
+        List<Integer> usedIndexes = new ArrayList<>();
+        for (DeploymentUnit du : getAllUnitsList()) {
+            if (du.getServiceIndex() != null) {
+                usedIndexes.add(Integer.valueOf(du.getServiceIndex()));
             }
-        });
+        }
+        return new DeploymentUnitInstanceIdGeneratorImpl(usedIndexes);
+    }
+
+
+    public List<DeploymentUnit> deploy() {
+        /*
+         * Cleanup first
+         */
+        cleanupUnits();
+
+        /*
+         * Schedule and wait for reconcile
+         */
+        List<DeploymentUnit> units = this.getUnits(getIdGenerator());
+        sortByCreated(units);
+
         for (DeploymentUnit unit : units) {
-            unit.create(svcInstanceIdGenerator);
+            if (unit.getState().equalsIgnoreCase(CommonStatesConstants.INACTIVE)) {
+                context.objectProcessManager.scheduleStandardProcessAsync(StandardProcess.ACTIVATE, unit, null);
+            } else if (unit.getState().equalsIgnoreCase(CommonStatesConstants.REQUESTED)) {
+                context.objectProcessManager.scheduleStandardProcessAsync(StandardProcess.CREATE,
+                        unit, ProcessUtils.chainInData(new HashMap<String, Object>(),
+                                ServiceConstants.PROCESS_DU_CREATE, ServiceConstants.PROCESS_DU_ACTIVATE));
+            }
         }
 
         for (DeploymentUnit unit : units) {
-            unit.start();
-        }
+            context.resourceMonitor.waitFor(unit,
+                    new ResourcePredicate<DeploymentUnit>() {
+                        @Override
+                        public boolean evaluate(DeploymentUnit obj) {
+                            if ((ERROR_STATES.contains(obj.getState()))
+                                    || obj.getRemoved() != null) {
+                                String error = TransitioningUtils.getTransitioningError(obj);
+                                String message = "Bad deployment unit [" + key(obj) + "] in state [" + obj.getState()
+                                        + "]";
+                                if (StringUtils.isNotBlank(error)) {
+                                    message = message + ": " + error;
+                                }
+                                throw new DeploymentUnitAllocateException(message, null,
+                                        obj);
+                            }
+                            return CommonStatesConstants.ACTIVE.equals(obj.getState());
+                        }
 
-        for (DeploymentUnit unit : units) {
-            unit.waitForStart();
+                        @Override
+                        public String getMessage() {
+                            return "active state";
+                        }
+                    });
         }
+        
         return units;
     }
 
-    protected abstract List<DeploymentUnit> deployHealthyUnits(DeploymentUnitInstanceIdGenerator svcInstanceIdGenerator);
+    public void cleanupUnits() {
+        cleanupBadUnits();
+        processUnhealthyUnits();
+    }
+
+    protected void sortByCreated(List<DeploymentUnit> units) {
+        // sort based on created date
+        Collections.sort(units, new Comparator<DeploymentUnit>() {
+            @Override
+            public int compare(DeploymentUnit d1, DeploymentUnit d2) {
+                boolean less = false;
+                if (d1.getCreated().equals(d2.getCreated())) {
+                    return Long.compare(Long.valueOf(d1.getServiceIndex()), Long.valueOf(d2.getServiceIndex()));
+                }
+                less = d1.getCreated().before(d2.getCreated());
+
+                return less ? -1 : 1;
+            }
+        });
+    }
+
+    protected abstract List<DeploymentUnit> getUnits(DeploymentUnitInstanceIdGenerator svcInstanceIdGenerator);
 
     public boolean needToReconcileDeployment() {
-        return unhealthyUnits.size() > 0 || badUnits.size() > 0 || incompleteUnits.size() > 0
-                || needToReconcileDeploymentImpl()
+        return unhealthyUnits.size() > 0 || badUnits.size() > 0
+                || needToReconcileScale()
                 || ifHealthyUnitsNeedReconcile();
     }
 
     private boolean ifHealthyUnitsNeedReconcile() {
-        for (DeploymentUnit unit : healthyUnits) {
-            if (!unit.isStarted()) {
+        for (DeploymentUnit unit : this.healthyUnits.values()) {
+            if (!unit.getState().equalsIgnoreCase(CommonStatesConstants.ACTIVE)) {
                 return true;
             }
         }
         return false;
     }
 
-    protected abstract boolean needToReconcileDeploymentImpl();
+    protected abstract boolean needToReconcileScale();
 
-    public Service getService() {
-        return service;
-    }
-
-    public void cleanupBadUnits() {
+    protected void cleanupBadUnits() {
+        List<DeploymentUnit> badUnits = new ArrayList<>();
+        for (DeploymentUnit du : this.badUnits.values()) {
+            badUnits.add(du);
+        }
         List<DeploymentUnit> watchList = new ArrayList<>();
-        Iterator<DeploymentUnit> it = this.badUnits.iterator();
-        while (it.hasNext()) {
-            DeploymentUnit next = it.next();
-            watchList.add(next);
-            next.remove(ServiceConstants.AUDIT_LOG_REMOVE_BAD, ActivityLog.ERROR);
-            it.remove();
+        for (DeploymentUnit badUnit : badUnits) {
+            watchList.add(badUnit);
+            cleanupUnit(badUnit, State.BAD, ServiceConstants.AUDIT_LOG_REMOVE_BAD, ActivityLog.ERROR);
         }
         for (DeploymentUnit toWatch : watchList) {
-            toWatch.waitForRemoval();
+            waitForCleanup(toWatch);
         }
     }
 
-    public void cleanupIncompleteUnits() {
-        Iterator<DeploymentUnit> it = this.incompleteUnits.iterator();
-        while (it.hasNext()) {
-            DeploymentUnit next = it.next();
-            next.cleanupUnit();
-            it.remove();
+    protected void processUnhealthyUnits() {
+        List<DeploymentUnit> unheathyUnits = new ArrayList<>();
+        for (DeploymentUnit du : this.unhealthyUnits.values()) {
+            unheathyUnits.add(du);
+        }
+        for (DeploymentUnit unhealthyUnit : unheathyUnits) {
+            context.objectProcessManager.scheduleProcessInstanceAsync(ServiceConstants.PROCESS_DU_UPDATE_UNHEALTHY,
+                    unhealthyUnit, null);
+        }
+    }
+    
+    protected void addUnit(DeploymentUnit unit, State state) {
+        if (state == State.UNHEALTHY) {
+            unhealthyUnits.put(unit.getUuid(), unit);
+        } else if (state == State.BAD) {
+            badUnits.put(unit.getUuid(), unit);
+        } else if (state == State.HEALTHY) {
+            healthyUnits.put(unit.getUuid(), unit);
+        }
+        allUnits.put(unit.getUuid(), unit);
+    }
+
+    protected void removeFromList(DeploymentUnit unit, State state) {
+        unhealthyUnits.remove(unit.getUuid());
+        healthyUnits.remove(unit.getUuid());
+        badUnits.remove(unit.getUuid());
+
+        if (state == State.EXTRA) {
+            allUnits.remove(unit.getUuid());
         }
     }
 
-    public void cleanupUnhealthyUnits() {
-        List<DeploymentUnit> watchList = new ArrayList<>();
-        Iterator<DeploymentUnit> it = this.unhealthyUnits.iterator();
-        while (it.hasNext()) {
-            DeploymentUnit next = it.next();
-            watchList.add(next);
-            next.remove(ServiceConstants.AUDIT_LOG_REMOVE_UNHEATLHY, ActivityLog.INFO);
-            it.remove();
-        }
-        for (DeploymentUnit toWatch : watchList) {
-            toWatch.waitForRemoval();
-        }
-    }
-
-    protected List<DeploymentUnit> getAllUnits() {
-        List<DeploymentUnit> allUnits = new ArrayList<>();
-        allUnits.addAll(this.healthyUnits);
-        allUnits.addAll(this.unhealthyUnits);
-        allUnits.addAll(this.badUnits);
+    public Map<String, DeploymentUnit> getAllUnits() {
         return allUnits;
     }
 
-    public void cleanupUnusedAndDuplicatedServiceIndexes() {
-        Map<String, List<Long>> launchConfigToServiceIndexes = getUsedServiceIndexesIds(true);
+    protected List<DeploymentUnit> getAllUnitsList() {
+        List<DeploymentUnit> units = new ArrayList<>();
+        for (DeploymentUnit unit : allUnits.values()) {
+            units.add(unit);
+        }
+        return units;
+    }
 
-        for (ServiceIndex serviceIndex : context.objectManager.find(ServiceIndex.class, SERVICE_INDEX.SERVICE_ID,
-                service.getId(), SERVICE_INDEX.REMOVED, null)) {
-            boolean remove = false;
-            List<Long> usedServiceIndexes = launchConfigToServiceIndexes.get(serviceIndex.getLaunchConfigName());
-            if (usedServiceIndexes == null) {
-                remove = true;
-            } else {
-                if (!usedServiceIndexes.contains(serviceIndex.getId())) {
-                    remove = true;
-                }
-            }
-            if (remove) {
-                context.objectProcessManager.scheduleStandardProcessAsync(StandardProcess.REMOVE, serviceIndex, null);
+    public void deactivateUnits() {
+        List<String> validStates = Arrays.asList(CommonStatesConstants.ACTIVATING, CommonStatesConstants.ACTIVE,
+                CommonStatesConstants.UPDATING_ACTIVE);
+        for (DeploymentUnit unit : allUnits.values()) {
+            if (validStates.contains(unit.getState())) {
+                context.objectProcessManager.scheduleStandardProcessAsync(StandardProcess.DEACTIVATE, unit, null);
             }
         }
+    }
+
+    public void removeUnits() {
+        List<DeploymentUnit> toRemove = new ArrayList<>();
+        toRemove.addAll(allUnits.values());
+        for (DeploymentUnit unit : toRemove) {
+            removeUnit(unit, State.EXTRA, ServiceConstants.AUDIT_LOG_REMOVE_EXTRA, ActivityLog.INFO);
+        }
+    }
+
+    protected void removeUnit(DeploymentUnit unit, State state, String reason, String level) {
+        Map<String, Object> data = new HashMap<>();
+        data.put(ServiceConstants.FIELD_DEPLOYMENT_UNIT_REMOVE_REASON, reason);
+        data.put(ServiceConstants.FIELD_DEPLOYMENT_UNIT_REMOVE_LOG_LEVEL, level);
+        List<String> ignoreStates = Arrays.asList(CommonStatesConstants.REMOVED, CommonStatesConstants.REMOVING);
+        if (!ignoreStates.contains(unit.getState())) {
+            try {
+                context.objectProcessManager.scheduleStandardProcessAsync(StandardProcess.REMOVE, unit, data);
+            } catch (ProcessCancelException e) {
+                context.objectProcessManager.scheduleStandardProcessAsync(StandardProcess.DEACTIVATE,
+                        unit, ProcessUtils.chainInData(data,
+                                ServiceConstants.PROCESS_DU_DEACTIVATE, ServiceConstants.PROCESS_DU_REMOVE));
+            }
+        }
+
+        removeFromList(unit, state);
+    }
+
+    protected void cleanupUnit(DeploymentUnit unit, State state, String reason, String level) {
+        Map<String, Object> data = new HashMap<>();
+        data.put(ServiceConstants.FIELD_DEPLOYMENT_UNIT_REMOVE_REASON, reason);
+        data.put(ServiceConstants.FIELD_DEPLOYMENT_UNIT_REMOVE_LOG_LEVEL, level);
+        data.put(ServiceConstants.FIELD_DEPLOYMENT_UNIT_CLEANUP, true);
+        List<String> ignoreStates = Arrays.asList(CommonStatesConstants.INACTIVE, CommonStatesConstants.DEACTIVATING);
+        if (!ignoreStates.contains(unit.getState())) {
+            context.objectProcessManager.scheduleStandardProcessAsync(StandardProcess.DEACTIVATE, unit, data);
+
+        }
+
+        removeFromList(unit, state);
+    }
+
+    protected void waitForRemoval(DeploymentUnit unit) {
+        context.resourceMonitor.waitFor(unit,
+                new ResourcePredicate<DeploymentUnit>() {
+                    @Override
+                    public boolean evaluate(DeploymentUnit obj) {
+                        List<String> removedStates = Arrays.asList(CommonStatesConstants.REMOVING,
+                                CommonStatesConstants.REMOVED, CommonStatesConstants.PURGED,
+                                CommonStatesConstants.PURGING);
+                        return removedStates.contains(obj.getState());
+                    }
+
+                    @Override
+                    public String getMessage() {
+                        return "removing state";
+                    }
+                });
+    }
+
+    protected void waitForCleanup(DeploymentUnit unit) {
+        context.resourceMonitor.waitFor(unit,
+                new ResourcePredicate<DeploymentUnit>() {
+                    @Override
+                    public boolean evaluate(DeploymentUnit obj) {
+                        return obj.getState().equalsIgnoreCase(CommonStatesConstants.INACTIVE);
+                    }
+
+                    @Override
+                    public String getMessage() {
+                        return "inactive state";
+                    }
+                });
+    }
+
+    protected String key(DeploymentUnit unit) {
+        Object resourceId = context.idFormatter.formatId(unit.getKind(), unit.getId());
+        return String.format("%s:%s", unit.getKind(), resourceId);
     }
 }

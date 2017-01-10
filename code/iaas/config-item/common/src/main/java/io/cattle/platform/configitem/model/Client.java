@@ -3,6 +3,7 @@ package io.cattle.platform.configitem.model;
 import io.cattle.platform.core.model.Account;
 import io.cattle.platform.core.model.Agent;
 import io.cattle.platform.core.model.ConfigItemStatus;
+import io.cattle.platform.core.model.DeploymentUnit;
 import io.cattle.platform.core.model.Host;
 import io.cattle.platform.core.model.Service;
 import io.cattle.platform.core.model.Stack;
@@ -38,6 +39,9 @@ public class Client {
         } else if (status.getHostId() != null) {
             resourceType = Host.class;
             resourceId = status.getHostId();
+        } else if (status.getDeploymentUnitId() != null) {
+            resourceType = DeploymentUnit.class;
+            resourceId = status.getDeploymentUnitId();
         }
 
         assignEvent(status.getName());
@@ -61,7 +65,9 @@ public class Client {
             eventName = IaasEvents.STACK_UPDATE;
         } else if (resourceType == Host.class) {
             eventName = IaasEvents.HOST_ENDPOINTS_UPDATE;
-        } else {
+        } else if (resourceType == DeploymentUnit.class) {
+            eventName = IaasEvents.DEPLOYMENT_UNIT_UPDATE;
+        }  else {
             log.error("Failed to assign event name for client");
         }
     }

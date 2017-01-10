@@ -1,7 +1,6 @@
 package io.cattle.platform.process.instance;
 
 import static io.cattle.platform.core.model.tables.MountTable.*;
-import io.cattle.platform.core.dao.GenericMapDao;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.Mount;
 import io.cattle.platform.core.model.Nic;
@@ -19,14 +18,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import javax.inject.Inject;
 import javax.inject.Named;
 
 @Named
 public class InstanceRemove extends AbstractDefaultProcessHandler {
-
-    InstanceStop instanceStop;
-    GenericMapDao mapDao;
 
     @Override
     public HandlerResult handle(ProcessState state, ProcessInstance process) {
@@ -69,23 +64,4 @@ public class InstanceRemove extends AbstractDefaultProcessHandler {
             remove(nic, data);
         }
     }
-
-    public InstanceStop getInstanceStop() {
-        return instanceStop;
-    }
-
-    @Inject
-    public void setInstanceStop(InstanceStop instanceStop) {
-        this.instanceStop = instanceStop;
-    }
-
-    public GenericMapDao getMapDao() {
-        return mapDao;
-    }
-
-    @Inject
-    public void setMapDao(GenericMapDao mapDao) {
-        this.mapDao = mapDao;
-    }
-
 }
