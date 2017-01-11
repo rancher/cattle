@@ -3,6 +3,7 @@ package io.github.ibuildthecloud.gdapi.request.handler;
 import io.github.ibuildthecloud.gdapi.condition.Condition;
 import io.github.ibuildthecloud.gdapi.condition.ConditionType;
 import io.github.ibuildthecloud.gdapi.context.ApiContext;
+import io.github.ibuildthecloud.gdapi.exception.ClientVisibleException;
 import io.github.ibuildthecloud.gdapi.id.IdFormatter;
 import io.github.ibuildthecloud.gdapi.model.Collection;
 import io.github.ibuildthecloud.gdapi.model.Field;
@@ -15,6 +16,7 @@ import io.github.ibuildthecloud.gdapi.model.Sort;
 import io.github.ibuildthecloud.gdapi.model.Sort.SortOrder;
 import io.github.ibuildthecloud.gdapi.request.ApiRequest;
 import io.github.ibuildthecloud.gdapi.util.RequestUtils;
+import io.github.ibuildthecloud.gdapi.validation.ValidationHandler;
 
 import java.io.IOException;
 import java.net.URL;
@@ -82,6 +84,11 @@ public class ParseCollectionAttributes extends AbstractApiRequestHandler {
                             obj = formatter.parseId(obj.toString());
                             if (obj == null) {
                                 obj = "-1";
+                            }
+                        } else if (field.getTypeEnum() == FieldType.DATE) {
+                            try {
+                                obj = ValidationHandler.convertDate(field.getName(), obj);
+                            } catch (ClientVisibleException e) {
                             }
                         }
                         conditionList.add(new Condition(conditionType, obj));
