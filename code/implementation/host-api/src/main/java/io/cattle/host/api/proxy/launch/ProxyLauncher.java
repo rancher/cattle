@@ -1,7 +1,6 @@
 package io.cattle.host.api.proxy.launch;
 
 import static io.cattle.platform.server.context.ServerContext.*;
-
 import io.cattle.platform.archaius.util.ArchaiusUtil;
 import io.cattle.platform.core.model.Credential;
 import io.cattle.platform.host.service.HostApiService;
@@ -26,10 +25,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.netflix.config.DynamicBooleanProperty;
+import com.netflix.config.DynamicStringProperty;
 
 public class ProxyLauncher extends NoExceptionRunnable implements InitializationTask, Runnable {
 
     private static final DynamicBooleanProperty TRAEFIK_LAUNCH = ArchaiusUtil.getBoolean("traefik.execute");
+    private static final DynamicBooleanProperty API_FILTER_PROXY_LAUNCH = ArchaiusUtil.getBoolean("api.filter.proxy.execute");
+    private static final DynamicStringProperty API_FILTER_PROXY_PORT = ArchaiusUtil.getString("api.filter.proxy.http.port");
     private static final int WAIT = 2000;
     private static final Logger log = LoggerFactory.getLogger(ProxyLauncher.class);
 
@@ -142,8 +144,12 @@ public class ProxyLauncher extends NoExceptionRunnable implements Initialization
     private String getProxiedPort() {
         // To match the functionality in the Jetty Main class, need to get value this way as opposed
         // to using ArchaiusUtils
-        String port = System.getenv("CATTLE_HTTP_PROXIED_PORT");
-        return port == null ? System.getProperty("cattle.http.proxied.port", "8081") : port;
+        if (API_FILTER_PROXY_LAUNCH.get()) {
+            return API_FILTER_PROXY_PORT.get();
+        } else {
+            String port = System.getenv("CATTLE_HTTP_PROXIED_PORT");
+            return port == null ? System.getProperty("cattle.http.proxied.port", "8081") : port;
+        }
     }
 
     private String getProxyPort() {
