@@ -75,6 +75,41 @@ def test_storage_driver_in_use(new_context, super_client):
         client.delete(stack)
 
 
+def test_create_storage_driver_create_local(new_context, super_client):
+    client = new_context.client
+
+    driver_name = 'test' + random_str()
+    stack = client.create_stack(name=random_str())
+    super_client.update(stack, system=True)
+    s = client.create_storage_driver_service(
+        name=random_str(),
+        stackId=stack.id,
+        storageDriver={
+            'name': driver_name,
+            'scope': 'local',
+        })
+
+    s = client.wait_success(s)
+    assert s.state == 'inactive'
+
+    sds = client.list_storage_driver(serviceId=s.id,
+                                     name=driver_name)
+    assert len(sds) == 1
+
+    s = client.wait_success(s.activate())
+    assert s.state == 'active'
+
+    sd = find_one(client.list_storage_driver, serviceId=s.id, name=driver_name)
+    sd = client.wait_success(sd)
+
+    find_one(s.storageDrivers)
+
+    assert sd.state == 'active'
+    assert sd.kind == 'storageDriver'
+    assert sd.serviceId == s.id
+    assert sd.scope == 'local'
+
+
 def test_create_storage_driver_create_delete(new_context, super_client):
     client = new_context.client
     host = new_context.host
@@ -89,7 +124,7 @@ def test_create_storage_driver_create_delete(new_context, super_client):
         stackId=stack.id,
         storageDriver={
             'name': driver_name,
-            'volumeAccessMode': driver_name,
+            'volumeAccessMode': 'singleHostRW',
             'blockDevicePath': 'some path',
             'volumeCapabilities': [
                 'superAwesome',
@@ -115,7 +150,8 @@ def test_create_storage_driver_create_delete(new_context, super_client):
     assert sd.kind == 'storageDriver'
     assert sd.serviceId == s.id
     assert sd.scope == 'environment'
-    assert sd.volumeAccessMode == 'multiHostRW'
+    assert sd.volumeAccessMode == 'singleHostRW'
+    assert sd.volumeCapabilities == ['superAwesome']
 
     pools = [x for x in host.storagePools() if x.storageDriverId == sd.id]
     assert len(host.storagePools()) == 2
