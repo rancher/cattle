@@ -67,8 +67,10 @@ public class HostDaoImpl extends AbstractJooqDao implements HostDao {
             .join(AGENT)
                 .on(AGENT.ID.eq(HOST.AGENT_ID))
             .where(HOST.ACCOUNT_ID.eq(accountId)
-            .and(HOST.STATE.in(CommonStatesConstants.ACTIVATING, CommonStatesConstants.ACTIVE)
-                    .and(AGENT.STATE.in(CommonStatesConstants.ACTIVATING, CommonStatesConstants.ACTIVE, AgentConstants.STATE_FINISHING_RECONNECT))))
+                        .and(HOST.STATE.in(CommonStatesConstants.ACTIVATING, CommonStatesConstants.ACTIVE,
+                                CommonStatesConstants.UPDATING_ACTIVE)
+                                .and(AGENT.STATE.in(CommonStatesConstants.ACTIVATING, CommonStatesConstants.ACTIVE,
+                                        AgentConstants.STATE_FINISHING_RECONNECT, AgentConstants.STATE_RECONNECTED))))
             .fetchOneInto(Integer.class) > 0;
     }
 
