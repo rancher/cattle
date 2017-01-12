@@ -173,7 +173,7 @@
         </property>
     </bean>
 
-    <bean class="io.cattle.platform.process.instance.LabelsProviderProcessPostListener"
+    <bean class="io.cattle.platform.process.instance.K8sLabelsProviderProcessPostListener"
         p:name="PostStartLabelsProviders"
         p:commandName="compute.instance.providelabels"
         p:dataTypeClass="io.cattle.platform.core.model.InstanceHostMap"
