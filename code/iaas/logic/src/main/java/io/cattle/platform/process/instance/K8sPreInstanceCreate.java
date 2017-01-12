@@ -19,10 +19,11 @@ import javax.inject.Named;
 @Named
 public class K8sPreInstanceCreate extends AbstractObjectProcessLogic implements ProcessPreListener, Priority {
 
-    private static final String POD_UID = "io.kubernetes.pod.uid";
-    private static final String POD_NAME = "io.kubernetes.pod.name";
-    private static final String POD_NAMESPACE = "io.kubernetes.pod.namespace";
-    private static final String CONTAINER_NAME = "io.kubernetes.container.name";
+    public static final String POD = "POD";
+    public static final String POD_UID = "io.kubernetes.pod.uid";
+    public static final String POD_NAME = "io.kubernetes.pod.name";
+    public static final String POD_NAMESPACE = "io.kubernetes.pod.namespace";
+    public static final String CONTAINER_NAME = "io.kubernetes.container.name";
 
     @Override
     public String[] getProcessNames() {
@@ -44,7 +45,7 @@ public class K8sPreInstanceCreate extends AbstractObjectProcessLogic implements 
         labels.put(ServiceConstants.LABEL_SERVICE_DEPLOYMENT_UNIT, labels.get(POD_UID));
         labels.put(ServiceConstants.LABEL_STACK_NAME, namespace);
 
-        if ("POD".equals(containerName)) {
+        if (POD.equals(containerName)) {
             labels.put(SystemLabels.LABEL_RANCHER_NETWORK, "true");
             labels.put(ServiceConstants.LABEL_SERVICE_LAUNCH_CONFIG, ServiceConstants.PRIMARY_LAUNCH_CONFIG_NAME);
             labels.put(SystemLabels.LABEL_DISPLAY_NAME, labels.get(POD_NAME));
