@@ -388,10 +388,10 @@
 
         "storageDriver" : "r",
         "storageDriver.serviceId" : "r",
-        "storageDriver.volumeAccessMode" : "r",
-        "storageDriver.scope" : "r",
-        "storageDriver.volumeCapabilities" : "r",
-        "storageDriver.blockDevicePath" : "r",
+        "storageDriver.volumeAccessMode" : "cr",
+        "storageDriver.scope" : "cr",
+        "storageDriver.volumeCapabilities" : "cr",
+        "storageDriver.blockDevicePath" : "cr",
 
         "nfsConfig" : "r",
         "nfsConfig.name" : "cr",
