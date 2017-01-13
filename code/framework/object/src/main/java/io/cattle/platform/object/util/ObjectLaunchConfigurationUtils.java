@@ -31,16 +31,20 @@ public class ObjectLaunchConfigurationUtils {
             throw new IllegalStateException("Object [" + resource + "] has a null ID");
         }
 
-        int priority = ArchaiusUtil.getInt("process." + processName.split("[.]")[0] + ".priority").get();
+        String[] parts = processName.split("[.]");
+        int priority = ArchaiusUtil.getInt("process." + processName + ".priority").get();
         if (priority == 0) {
-            priority = ArchaiusUtil.getInt("process." + processName + ".priority").get();
+            priority = ArchaiusUtil.getInt("process." + parts[parts.length-1] + ".priority").get();
+        }
+        if (priority == 0) {
+            priority = ArchaiusUtil.getInt("process." + parts[0] + ".priority").get();
         }
 
-        if (ObjectUtils.isSystem(resource)) {
+        if (priority >= 0 && ObjectUtils.isSystem(resource)) {
             priority += 1000;
         }
 
-        return new LaunchConfiguration(processName, schema.getId(), id.toString(), ObjectUtils.getAccountId(resource), priority <= 0 ? null : priority,
+        return new LaunchConfiguration(processName, schema.getId(), id.toString(), ObjectUtils.getAccountId(resource), priority,
                 data == null ? new HashMap<String, Object>() : data);
     }
 
