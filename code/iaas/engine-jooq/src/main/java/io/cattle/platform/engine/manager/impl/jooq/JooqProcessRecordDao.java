@@ -225,8 +225,8 @@ public class JooqProcessRecordDao extends AbstractJooqDao implements ProcessReco
         pi.setData(record.getData());
         pi.setPriority(record.getPriority());
 
-        if (ExitReason.RETRY_EXCEPTION == record.getExitReason()) {
-            pi.setRunAfter(null);
+        if (ExitReason.RETRY_EXCEPTION == record.getExitReason() || record.getRunAfter() == null) {
+            pi.setRunAfter(new Date(System.currentTimeMillis()-300000));
         }
     }
 
