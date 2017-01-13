@@ -1,6 +1,7 @@
 package io.github.ibuildthecloud.gdapi.validation;
 
 import static io.github.ibuildthecloud.gdapi.validation.ValidationErrorCodes.*;
+
 import io.github.ibuildthecloud.gdapi.context.ApiContext;
 import io.github.ibuildthecloud.gdapi.exception.ClientVisibleException;
 import io.github.ibuildthecloud.gdapi.factory.SchemaFactory;
@@ -217,8 +218,6 @@ public class ValidationHandler extends AbstractResponseGenerator {
             @SuppressWarnings("unchecked")
             Map<String, Object> map = (Map<String, Object>)checkType(fieldName, value, Map.class);
             return convertMap(fieldName, subTypes, subTypeNames, map, context);
-        case DATE:
-            return convertDate(fieldName, value);
         case ARRAY:
             if (subTypes.size() == 0) {
                 return error(INVALID_FORMAT, fieldName);
@@ -228,6 +227,7 @@ public class ValidationHandler extends AbstractResponseGenerator {
             return checkType(fieldName, value, InputStream.class);
         case JSON:
             return value;
+        case DATE:
         case BOOLEAN:
         case ENUM:
         case FLOAT:
@@ -280,7 +280,11 @@ public class ValidationHandler extends AbstractResponseGenerator {
         }
     }
 
-    protected Object convertGenericType(String fieldName, Object value, FieldType type) {
+    public static Object convertGenericType(String fieldName, Object value, FieldType type) {
+        if (FieldType.DATE == type) {
+            return convertDate(fieldName, value);
+        }
+
         if (type.getClasses().length == 0)
             return error(INVALID_FORMAT, fieldName);
 
@@ -348,9 +352,12 @@ public class ValidationHandler extends AbstractResponseGenerator {
         return result;
     }
 
-    protected Object convertDate(String fieldName, Object value) {
+    public static Object convertDate(String fieldName, Object value) {
         if (value instanceof Date) {
             return value;
+        }
+        if (value instanceof Number) {
+            return new Date(((Number) value).longValue());
         }
         try {
             if (StringUtils.isBlank(value.toString())) {
@@ -479,7 +486,7 @@ public class ValidationHandler extends AbstractResponseGenerator {
         }
     }
 
-    protected Object error(String code, String fieldName) {
+    protected static Object error(String code, String fieldName) {
         ValidationErrorImpl error = new ValidationErrorImpl(code, fieldName);
         throw new ClientVisibleException(error);
     }
