@@ -27,6 +27,16 @@ public class TraefikLauncher extends GenericServiceLauncher implements Initializ
     private static final DynamicStringProperty BINARY = ArchaiusUtil.getString("traefik.executable");
     private static final DynamicStringProperty ACCESS_LOG = ArchaiusUtil.getString("access.log");
     public static final DynamicBooleanProperty LAUNCH = ArchaiusUtil.getBoolean("traefik.execute");
+    public static final DynamicBooleanProperty PROXY = ArchaiusUtil.getBoolean("traefik.pass.proxy");
+
+    private static final String[] PROXY_ENV = new String[] {
+            "no_proxy",
+            "http_proxy",
+            "https_proxy",
+            "NO_PROXY",
+            "HTTP_PROXY",
+            "HTTPS_PROXY"
+    };
 
     private static final Logger log = LoggerFactory.getLogger(TraefikLauncher.class);
 
@@ -107,6 +117,13 @@ public class TraefikLauncher extends GenericServiceLauncher implements Initializ
 
     @Override
     protected void setEnvironment(Map<String, String> env) {
+        if (PROXY.get()) {
+            return;
+        }
+
+        for (String i : PROXY_ENV) {
+            env.remove(i);
+        }
     }
 
     @Override
