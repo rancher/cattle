@@ -63,6 +63,7 @@ public class StatsOutputFilter implements ResourceOutputFilter {
         types.add(HostConstants.TYPE);
         types.add(ProjectConstants.TYPE);
         types.add("service");
+        types.add("loadBalancerService");
         return types.toArray(new String[types.size()]);
     }
 
