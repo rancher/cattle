@@ -2,7 +2,6 @@ package io.cattle.platform.servicediscovery.api.filter;
 
 import static io.cattle.platform.core.model.tables.ServiceTable.*;
 
-import io.cattle.platform.archaius.util.ArchaiusUtil;
 import io.cattle.platform.core.addon.PortRule;
 import io.cattle.platform.core.addon.ScalePolicy;
 import io.cattle.platform.core.constants.CommonStatesConstants;
@@ -40,8 +39,6 @@ import javax.inject.Named;
 
 import org.apache.commons.lang3.StringUtils;
 
-import com.netflix.config.DynamicStringProperty;
-
 @Named
 public class ServiceCreateValidationFilter extends AbstractDefaultResourceManagerFilter {
 
@@ -54,8 +51,6 @@ public class ServiceCreateValidationFilter extends AbstractDefaultResourceManage
     @Inject
     JsonMapper jsonMapper;
 
-    public static final DynamicStringProperty DEFAULT_REGISTRY = ArchaiusUtil.getString("registry.default");
-    public static final DynamicStringProperty WHITELIST_REGISTRIES = ArchaiusUtil.getString("registry.whitelist");
     private static final int LB_HEALTH_CHECK_PORT = 42;
 
     @Override

@@ -39,7 +39,7 @@ public class ServiceContainerStatsLinkHandler implements LinkHandler {
 
     @Override
     public String[] getTypes() {
-        return new String[] { "service" };
+        return new String[] { "service", "loadBalancerService" };
     }
 
     @Override
@@ -54,7 +54,7 @@ public class ServiceContainerStatsLinkHandler implements LinkHandler {
         if (service == null) {
             return null;
         }
-        
+
         List<Instance> serviceInstances = objectManager.mappedChildren(service, Instance.class);
 
         String metaUrl = null;
@@ -67,7 +67,7 @@ public class ServiceContainerStatsLinkHandler implements LinkHandler {
                 continue;
             }
             String dockerId = DockerUtils.getDockerIdentifier(instance);
-            //This is true if the container is in CREATING state, where it doesn't have a dockerId, but it is not in REMOVED state 
+            //This is true if the container is in CREATING state, where it doesn't have a dockerId, but it is not in REMOVED state
             if (StringUtils.isEmpty(dockerId)) {
                 continue;
             }
@@ -87,7 +87,7 @@ public class ServiceContainerStatsLinkHandler implements LinkHandler {
             }
 
             StringBuilder url = new StringBuilder();
-            
+
             url.append(apiAccess.getUrl());
 
             metaUrl = url.toString() + SERVICE_PATH;
@@ -108,5 +108,5 @@ public class ServiceContainerStatsLinkHandler implements LinkHandler {
 
         return meta;
     }
-    
+
 }
