@@ -11,8 +11,12 @@ import io.cattle.platform.util.type.CollectionUtils;
 import io.github.ibuildthecloud.gdapi.context.ApiContext;
 import io.github.ibuildthecloud.gdapi.exception.ClientVisibleException;
 import io.github.ibuildthecloud.gdapi.factory.SchemaFactory;
+import io.github.ibuildthecloud.gdapi.id.IdFormatter;
 import io.github.ibuildthecloud.gdapi.model.ListOptions;
+import io.github.ibuildthecloud.gdapi.model.Resource;
+import io.github.ibuildthecloud.gdapi.model.impl.ResourceImpl;
 import io.github.ibuildthecloud.gdapi.request.ApiRequest;
+import io.github.ibuildthecloud.gdapi.url.UrlBuilder;
 import io.github.ibuildthecloud.gdapi.util.ResponseCodes;
 import io.github.ibuildthecloud.gdapi.util.TypeUtils;
 
@@ -101,17 +105,32 @@ public class SettingManager extends AbstractJooqResourceManager {
 
     @Override
     protected Object removeFromStore(String type, String id, Object obj, ApiRequest request) {
-        int result = create().delete(SETTING).where(SETTING.ID.eq(new Long(id))).execute();
-
-        if (result != 1) {
-            log.error("While deleting type [{}] and id [{}] got a result of [{}]", type, id, result);
-            throw new ClientVisibleException(ResponseCodes.CONFLICT);
+        if (obj instanceof ActiveSetting) {
+            id = ((ActiveSetting) obj).getId();
+        } else if (obj instanceof Setting) {
+            Long idL = ((Setting) obj).getId();
+            id = idL == null ? id : idL.toString();
         }
 
-        if (obj instanceof ActiveSetting) {
-            return getByIdInternal(type, ((ActiveSetting) obj).getName(), new ListOptions());
-        } else {
-            return obj;
+        if (id == null) {
+            return null;
+        }
+
+        try {
+            int result = create().delete(SETTING).where(SETTING.ID.eq(new Long(id))).execute();
+
+            if (result != 1) {
+                log.error("While deleting type [{}] and id [{}] got a result of [{}]", type, id, result);
+                throw new ClientVisibleException(ResponseCodes.CONFLICT);
+            }
+
+            if (obj instanceof ActiveSetting) {
+                return getByIdInternal(type, ((ActiveSetting) obj).getName(), new ListOptions());
+            } else {
+                return obj;
+            }
+        } catch (NumberFormatException nfe) {
+            return null;
         }
     }
 
@@ -243,6 +262,24 @@ public class SettingManager extends AbstractJooqResourceManager {
     @Override
     public String[] getTypes() {
         return new String[0];
+    }
+
+    @Override
+    protected Resource createResource(Object obj, IdFormatter idFormatter, ApiRequest apiRequest) {
+        Resource r = super.createResource(obj, idFormatter, apiRequest);
+        if (r instanceof ResourceImpl) {
+            ((ResourceImpl) r).setType("setting");
+            Object id = r.getFields().get("name");
+            if (id != null) {
+                ((ResourceImpl) r).setId(id.toString());
+            }
+            r.getLinks().remove(UrlBuilder.SELF);
+            // Recreate the SELF url
+            r.getLinks();
+            ((ResourceImpl) r).setType("activeSetting");
+            ((ResourceImpl) r).getFields().put("baseType", "setting");
+        }
+        return r;
     }
 
 }
