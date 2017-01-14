@@ -227,7 +227,8 @@ public class InstanceStart extends AbstractDefaultProcessHandler {
             Instance i = objectManager.loadResource(Instance.class, id);
 
             String type = networkFromId != null && networkFromId.equals(id) ? "networkFrom" : "volumeFrom";
-            if (REMOVED_STATES.contains(i.getState())) {
+            // Because of data cleanup and these soft references, it's possible for this to be null
+            if (i == null || REMOVED_STATES.contains(i.getState())) {
                 throw new ExecutionException("Dependencies readiness error", type + " instance is removed", instance.getId());
             }
 
