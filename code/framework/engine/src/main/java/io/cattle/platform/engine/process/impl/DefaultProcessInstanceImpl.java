@@ -320,7 +320,7 @@ public class DefaultProcessInstanceImpl implements ProcessInstance {
                 previousState = setTransitioning();
             }
 
-            if (schedule && hasLogic()) {
+            if (schedule) {
                 runScheduled();
             }
 
@@ -495,12 +495,6 @@ public class DefaultProcessInstanceImpl implements ProcessInstance {
             processExecution.setStopTime(now());
             context.popLog();
         }
-    }
-
-    protected boolean hasLogic() {
-        return !instanceContext.getProcessDefinition().getPreProcessListeners().isEmpty() ||
-            !instanceContext.getProcessDefinition().getProcessHandlers().isEmpty() ||
-            !instanceContext.getProcessDefinition().getPostProcessListeners().isEmpty();
     }
 
     protected void runLogic() {

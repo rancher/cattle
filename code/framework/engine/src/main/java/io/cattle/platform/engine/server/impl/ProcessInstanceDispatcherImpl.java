@@ -108,7 +108,7 @@ public class ProcessInstanceDispatcherImpl implements ProcessInstanceDispatcher,
         Long nextId = processId;
         while (nextId != null) {
             final long currentId = nextId;
-            nextId = lockManager.tryLock(new ProcessDispatchLock(processId), new LockCallback<Long>() {
+            nextId = lockManager.tryLock(new ProcessDispatchLock(currentId), new LockCallback<Long>() {
                 @Override
                 public Long doWithLock() {
                     return processExecuteWithLock(currentId);
