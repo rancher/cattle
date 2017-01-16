@@ -8,14 +8,16 @@ public class NetworkMetaData {
     boolean is_default;
     boolean host_ports;
     protected Map<String, Object> metadata;
+    String network_policy;
 
-    public NetworkMetaData(String name, String uuid, boolean hostPorts, Map<String, Object> metadata, boolean isDefault) {
+    public NetworkMetaData(String name, String uuid, boolean hostPorts, Map<String, Object> metadata, boolean isDefault, String networkPolicy) {
         super();
         this.name = name;
         this.uuid = uuid;
         this.metadata = metadata;
         this.host_ports = hostPorts;
         this.is_default = isDefault;
+        this.network_policy = networkPolicy;
     }
 
     public String getName() {
@@ -50,7 +52,15 @@ public class NetworkMetaData {
         this.host_ports = host_ports;
     }
 
-    public boolean isIs_default() {
+    public String getNetwork_policy() {
+		return network_policy;
+	}
+
+	public void setNetwork_policy(String networkPolicy) {
+		this.network_policy = networkPolicy;
+	}
+
+	public boolean isIs_default() {
         return is_default;
     }
 

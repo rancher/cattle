@@ -23,6 +23,12 @@
         },
         "macPrefix": {
             "type" : "string"
+        },
+        "networkPolicy": {
+            "type" : "string",
+            "attributes" : {
+                "scheduleUpdate" : true
+            }
         }
     }
 }

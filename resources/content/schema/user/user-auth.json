@@ -379,6 +379,7 @@
         "network.dns": "cr",
         "network.dnsSearch": "cr",
         "network.hostPorts": "cr",
+        "network.networkPolicy": "cru",
 
         "networkDriver" : "r",
         "networkDriver.defaultNetwork" : "cr",
