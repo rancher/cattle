@@ -38,6 +38,7 @@ public class ApiAuthenticator extends AbstractApiRequestHandler {
     private static final Logger log = LoggerFactory.getLogger(ApiAuthenticator.class);
 
     private static final String ACCOUNT_ID_HEADER = "X-API-ACCOUNT-ID";
+    private static final String USER_ID_HEADER = "X-API-USER-ID";
 
     AuthDao authDao;
     List<AccountLookup> accountLookups;
@@ -109,6 +110,8 @@ public class ApiAuthenticator extends AbstractApiRequestHandler {
         }
         String accountId = (String) ApiContext.getContext().getIdFormatter().formatId(objectManager.getType(Account.class), policy.getAccountId());
         request.getServletContext().getResponse().addHeader(ACCOUNT_ID_HEADER, accountId);
+        String userId = (String) ApiContext.getContext().getIdFormatter().formatId(objectManager.getType(Account.class), policy.getAuthenticatedAsAccountId());
+        request.getServletContext().getResponse().addHeader(USER_ID_HEADER, userId);
         ApiContext.getContext().setPolicy(policy);
     }
 
