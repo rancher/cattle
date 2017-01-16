@@ -1346,10 +1346,10 @@ def test_global_service_update_label(new_context):
     instance2_host = instance2.hosts()[0].id
     assert instance2_host == host2.id
 
-    # destroy the instance, reactivate the service and check
-    # both hosts got instances
-    _instance_remove(instance1, client)
+    # deactivate the service, destroy the instance,
+    # reactivate the service,  and check both hosts got instances
     service = wait_state(client, service.deactivate(), 'inactive')
+    _instance_remove(instance1, client)
     service = wait_state(client, service.activate(), 'active')
     instance1 = _validate_compose_instance_start(client, service, env, "1")
     instance2 = _validate_compose_instance_start(client, service, env, "2")
