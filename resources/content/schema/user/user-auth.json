@@ -379,7 +379,11 @@
         "network.dns": "cr",
         "network.dnsSearch": "cr",
         "network.hostPorts": "cr",
-        "network.networkPolicy": "cru",
+        "network.networkPolicySpec": "cru",
+
+		"networkPolicySpec" : "cru",
+		"networkPolicySpec.defaultPolicyAction": "cru",
+		"networkPolicySpec.policies": "cru",
 
         "networkDriver" : "r",
         "networkDriver.defaultNetwork" : "cr",

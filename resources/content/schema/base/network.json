@@ -24,8 +24,8 @@
         "macPrefix": {
             "type" : "string"
         },
-        "networkPolicy": {
-            "type" : "string",
+        "networkPolicySpec": {
+            "type" : "networkPolicySpec",
             "attributes" : {
                 "scheduleUpdate" : true
             }
