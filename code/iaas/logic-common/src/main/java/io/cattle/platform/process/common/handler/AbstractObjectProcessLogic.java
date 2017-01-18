@@ -70,7 +70,10 @@ public abstract class AbstractObjectProcessLogic extends AbstractProcessLogic {
             // ignore
         }
 
-        getObjectProcessManager().scheduleStandardProcess(StandardProcess.REMOVE, obj, data);
+        state = ObjectUtils.getPropertyIgnoreErrors(obj, ObjectMetaDataManager.STATE_FIELD);
+        if (!CommonStatesConstants.REMOVING.equals(state) && !CommonStatesConstants.REMOVED.equals(state)) {
+            getObjectProcessManager().scheduleStandardProcess(StandardProcess.REMOVE, obj, data);
+        }
 
         return null;
     }
