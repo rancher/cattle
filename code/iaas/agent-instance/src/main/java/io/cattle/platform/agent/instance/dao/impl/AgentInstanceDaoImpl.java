@@ -14,6 +14,7 @@ import io.cattle.platform.core.dao.GenericResourceDao;
 import io.cattle.platform.core.model.Agent;
 import io.cattle.platform.core.model.Credential;
 import io.cattle.platform.core.model.Instance;
+import io.cattle.platform.core.model.tables.LabelTable;
 import io.cattle.platform.db.jooq.dao.impl.AbstractJooqDao;
 import io.cattle.platform.object.ObjectManager;
 
@@ -63,18 +64,22 @@ public class AgentInstanceDaoImpl extends AbstractJooqDao implements AgentInstan
 
     @Override
     public List<Long> getAgentProvider(String providedServiceLabel, long accountId) {
+        String priorityLabel = providedServiceLabel + ".priority";
+        LabelTable priority = LABEL.as("priority");
         return Arrays.asList(create().select(INSTANCE.AGENT_ID)
                 .from(INSTANCE)
                 .join(INSTANCE_LABEL_MAP)
                     .on(INSTANCE_LABEL_MAP.INSTANCE_ID.eq(INSTANCE.ID))
                 .join(LABEL)
                     .on(LABEL.ID.eq(INSTANCE_LABEL_MAP.LABEL_ID).and(LABEL.KEY.eq(providedServiceLabel)))
+                .leftOuterJoin(priority)
+                    .on(LABEL.ID.eq(INSTANCE_LABEL_MAP.LABEL_ID).and(LABEL.KEY.eq(priorityLabel)))
                 .where(INSTANCE.ACCOUNT_ID.eq(accountId)
                     .and(INSTANCE.AGENT_ID.isNotNull())
                         .and(INSTANCE.STATE.eq(InstanceConstants.STATE_RUNNING))
                         .and(INSTANCE.HEALTH_STATE.in(HealthcheckConstants.HEALTH_STATE_HEALTHY,
                                 HealthcheckConstants.HEALTH_STATE_UPDATING_HEALTHY)))
-                .orderBy(INSTANCE.AGENT_ID.asc())
+                .orderBy(priority.VALUE.asc(), INSTANCE.AGENT_ID.asc())
                 .fetch().intoArray(INSTANCE.AGENT_ID));
     }
 
