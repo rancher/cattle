@@ -36,43 +36,41 @@ public class NetworkCreate extends AbstractDefaultProcessHandler {
     public HandlerResult handle(ProcessState state, ProcessInstance process) {
         Network network = (Network)state.getResource();
         Object obj = DataAccessor.field(network, NetworkConstants.FIELD_SUBNETS, Object.class);
-        if (obj == null) {
-            return null;
-        }
-
-        Map<Long, Subnet> existingSubnets = new HashMap<>();
-        for (Subnet subnet : objectManager.children(network, Subnet.class)) {
-            Long index = DataAccessor.fromDataFieldOf(subnet).withKey(SUBNET_INDEX).as(Long.class);
-            if (index != null) {
-                existingSubnets.put(index, subnet);
-            }
-        }
-
-        List<? extends Subnet> subnets = jsonMapper.convertCollectionValue(obj, ArrayList.class, SubnetRecord.class);
-        for (int i = 0 ; i < subnets.size() ; i++) {
-            Long key = new Long(i);
-            if (existingSubnets.containsKey(key)) {
-                continue;
+        if (obj != null) {
+            Map<Long, Subnet> existingSubnets = new HashMap<>();
+            for (Subnet subnet : objectManager.children(network, Subnet.class)) {
+                Long index = DataAccessor.fromDataFieldOf(subnet).withKey(SUBNET_INDEX).as(Long.class);
+                if (index != null) {
+                    existingSubnets.put(index, subnet);
+                }
             }
 
-            Subnet subnet = subnets.get(i);
-            subnet = objectManager.create(Subnet.class,
-                    SUBNET.NAME, subnet.getName(),
-                    SUBNET.DESCRIPTION, subnet.getDescription(),
-                    SUBNET.CIDR_SIZE, subnet.getCidrSize(),
-                    SUBNET.END_ADDRESS, subnet.getEndAddress(),
-                    SUBNET.GATEWAY, subnet.getGateway(),
-                    SUBNET.NETWORK_ADDRESS, subnet.getNetworkAddress(),
-                    SUBNET.NETWORK_ID, network.getId(),
-                    SUBNET.START_ADDRESS, subnet.getStartAddress(),
-                    SUBNET.DATA, CollectionUtils.asMap(SUBNET_INDEX, key),
-                    SUBNET.ACCOUNT_ID, network.getAccountId());
+            List<? extends Subnet> subnets = jsonMapper.convertCollectionValue(obj, ArrayList.class, SubnetRecord.class);
+            for (int i = 0 ; i < subnets.size() ; i++) {
+                Long key = new Long(i);
+                if (existingSubnets.containsKey(key)) {
+                    continue;
+                }
 
-            existingSubnets.put(key, subnet);
-        }
+                Subnet subnet = subnets.get(i);
+                subnet = objectManager.create(Subnet.class,
+                        SUBNET.NAME, subnet.getName(),
+                        SUBNET.DESCRIPTION, subnet.getDescription(),
+                        SUBNET.CIDR_SIZE, subnet.getCidrSize(),
+                        SUBNET.END_ADDRESS, subnet.getEndAddress(),
+                        SUBNET.GATEWAY, subnet.getGateway(),
+                        SUBNET.NETWORK_ADDRESS, subnet.getNetworkAddress(),
+                        SUBNET.NETWORK_ID, network.getId(),
+                        SUBNET.START_ADDRESS, subnet.getStartAddress(),
+                        SUBNET.DATA, CollectionUtils.asMap(SUBNET_INDEX, key),
+                        SUBNET.ACCOUNT_ID, network.getAccountId());
 
-        for (Subnet subnet : existingSubnets.values()) {
-            createThenActivate(subnet, null);
+                existingSubnets.put(key, subnet);
+            }
+
+            for (Subnet subnet : existingSubnets.values()) {
+                createThenActivate(subnet, null);
+            }
         }
 
         NetworkDriver driver = objectManager.loadResource(NetworkDriver.class, network.getNetworkDriverId());
