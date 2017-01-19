@@ -3,16 +3,14 @@ package io.cattle.platform.docker.process.instancehostmap;
 import static io.cattle.platform.core.model.tables.IpAddressTable.*;
 import static io.cattle.platform.core.model.tables.MountTable.*;
 import static io.cattle.platform.docker.constants.DockerInstanceConstants.*;
-
 import io.cattle.iaas.labels.service.LabelsService;
 import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.IpAddressConstants;
 import io.cattle.platform.core.constants.PortConstants;
 import io.cattle.platform.core.constants.VolumeConstants;
-import io.cattle.platform.core.dao.GenericMapDao;
 import io.cattle.platform.core.dao.HostDao;
+import io.cattle.platform.core.dao.InstanceDao;
 import io.cattle.platform.core.dao.IpAddressDao;
-import io.cattle.platform.core.dao.NetworkDao;
 import io.cattle.platform.core.dao.NicDao;
 import io.cattle.platform.core.model.Host;
 import io.cattle.platform.core.model.Instance;
@@ -74,10 +72,6 @@ public class DockerPostInstanceHostMapActivate extends AbstractObjectProcessLogi
     @Inject
     NicDao nicDao;
     @Inject
-    NetworkDao networkDao;
-    @Inject
-    GenericMapDao mapDao;
-    @Inject
     LockManager lockManager;
     @Inject
     HostDao hostDao;
@@ -85,6 +79,8 @@ public class DockerPostInstanceHostMapActivate extends AbstractObjectProcessLogi
     DockerTransformer transformer;
     @Inject
     LabelsService labelsService;
+    @Inject
+    InstanceDao instanceDao;
 
     @Override
     public String[] getProcessNames() {
@@ -118,6 +114,8 @@ public class DockerPostInstanceHostMapActivate extends AbstractObjectProcessLogi
         processLabels(instance);
 
         nativeDockerBackPopulate(instance);
+
+        instanceDao.clearCacheInstanceData(instance.getId());
 
         return null;
     }
