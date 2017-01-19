@@ -52,8 +52,11 @@ public class Main {
         String idSql = "select id from " + idTable + " order by id desc limit 1";
         try (Statement stmt = conn.createStatement()) {
             try (ResultSet rs = stmt.executeQuery(idSql)) {
-                rs.next();
-                maxId = rs.getLong(1);
+                try {
+                    rs.next();
+                    maxId = rs.getLong(1);
+                } catch (SQLException e) {
+                }
             }
         }
 
@@ -100,6 +103,13 @@ public class Main {
         TableCleanup cleanup = new TableCleanup();
         cleanup.setConfiguration(context.configuration());
 
+        runUp("DELETE load_balancer_certificate_map FROM load_balancer_certificate_map", conn);
+        runUp("DELETE load_balancer_config_listener_map FROM load_balancer_config_listener_map", conn);
+        runUp("DELETE load_balancer_host_map FROM load_balancer_host_map", conn);
+        runUp("DELETE load_balancer_listener FROM load_balancer_listener", conn);
+        runUp("DELETE load_balancer_target FROM load_balancer_target", conn);
+        runUp("DELETE load_balancer FROM load_balancer", conn);
+        runUp("DELETE load_balancer_config FROM load_balancer_config", conn);
         runUp("DELETE mount FROM mount JOIN volume ON volume.id = mount.volume_id JOIN instance ON instance.id = mount.instance_id WHERE instance.state = 'purged' AND mount.state = 'inactive' AND volume.uri like 'file://%'", conn);
         runUp("DELETE volume_storage_pool_map, volume FROM volume_storage_pool_map JOIN volume ON volume.id = volume_storage_pool_map.volume_id LEFT JOIN mount ON volume.id = mount.volume_id WHERE volume.state in ('inactive', 'active') AND mount.id IS NULL AND volume.uri LIKE 'file://%'", conn);
         runUp("DELETE mount FROM mount WHERE state = 'removed'", conn);
