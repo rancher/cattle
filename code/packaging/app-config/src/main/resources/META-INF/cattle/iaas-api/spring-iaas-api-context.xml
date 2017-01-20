@@ -322,7 +322,7 @@
     <bean class="io.cattle.platform.host.api.HostApiPublicKeyScriptHandler" />
     <bean class="io.cattle.platform.host.api.HostApiPublicCAScriptHandler" />
     <bean class="io.cattle.platform.host.api.HostApiProxyTokenManager" />
-    <bean class="io.cattle.host.api.proxy.launch.ProxyLauncher" />
+    <bean class="io.cattle.platform.docker.machine.launch.WebsocketProxyLauncher" />
 
     <bean id="ProxyTokenTypeSet" class="io.cattle.platform.object.meta.TypeSet" >
         <property name="typeClasses">
