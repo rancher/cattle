@@ -1,6 +1,5 @@
 package io.cattle.platform.app;
 
-import io.cattle.host.api.proxy.launch.ProxyLauncher;
 import io.cattle.platform.api.handler.AddClientIpHeader;
 import io.cattle.platform.api.handler.DeferredActionsHandler;
 import io.cattle.platform.api.handler.EventNotificationHandler;
@@ -10,6 +9,7 @@ import io.cattle.platform.docker.api.transform.TransformInspect;
 import io.cattle.platform.docker.machine.api.MachineLinkFilter;
 import io.cattle.platform.docker.machine.api.addon.BaseMachineConfig;
 import io.cattle.platform.docker.machine.api.filter.MachineValidationFilter;
+import io.cattle.platform.docker.machine.launch.WebsocketProxyLauncher;
 import io.cattle.platform.extension.impl.EMUtils;
 import io.cattle.platform.extension.impl.ExtensionManagerImpl;
 import io.cattle.platform.host.api.HostApiProxyTokenImpl;
@@ -216,8 +216,8 @@ public class IaasApiConfig {
     }
 
     @Bean
-    ProxyLauncher ProxyLauncher() {
-        return new ProxyLauncher();
+    WebsocketProxyLauncher WebsocketProxyLauncher() {
+        return new WebsocketProxyLauncher();
     }
 
     @Bean
