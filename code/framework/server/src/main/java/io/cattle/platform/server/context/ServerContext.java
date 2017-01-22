@@ -17,6 +17,7 @@ public class ServerContext {
 
     public static final DynamicIntProperty HTTP_PORT = ArchaiusUtil.getInt("cattle.http.port");
     public static final DynamicIntProperty HTTPS_PORT = ArchaiusUtil.getInt("cattle.https.port");
+    public static final DynamicStringProperty V2_URL_PATH = ArchaiusUtil.getString("cattle.v2.url.path");
     public static final DynamicStringProperty URL_PATH = ArchaiusUtil.getString("cattle.url.path");
     public static final DynamicStringProperty SERVER_IP = ArchaiusUtil.getString("cattle.server.ip");
     public static final DynamicStringProperty SERVER_ID = ArchaiusUtil.getString("cattle.server.id");
@@ -37,7 +38,15 @@ public class ServerContext {
         HTTP, WEBSOCKET
     }
 
+    public static String getV2LocalhostUrl(BaseProtocol proto) {
+        return getLocalhostUrl(proto, V2_URL_PATH.get());
+    }
+
     public static String getLocalhostUrl(BaseProtocol proto) {
+        return getLocalhostUrl(proto, URL_PATH.get());
+    }
+
+    public static String getLocalhostUrl(BaseProtocol proto, String path) {
         StringBuilder buffer = new StringBuilder();
         if (HTTPS_PORT.get() > 0) {
             buffer.append("https://localhost");
@@ -48,11 +57,11 @@ public class ServerContext {
         }
         String url = buffer.toString();
 
+        // websocket endpoints don't follow same pathing as rest of api
         if (BaseProtocol.WEBSOCKET.equals(proto)) {
             url = url.replaceFirst("http", "ws");
         } else {
-            // websocket endpoints don't follow same pathing as rest of api
-            url += URL_PATH.get();
+            url += path;
         }
 
         return url;
