@@ -1,5 +1,5 @@
 cattle==0.5.3
-git+https://github.com/rancher/gdapi-python.git@6e5031dde7b7da0a91efa9204a0a392f44854b0d
+git+https://github.com/rancher/gdapi-python.git@31d74507d96c8f053a08bda129cc63f96ca60161
 websocket-client==0.23.0
 PyJWT==1.4.0
 
