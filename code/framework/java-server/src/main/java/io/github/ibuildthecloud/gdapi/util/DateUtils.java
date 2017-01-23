@@ -13,6 +13,10 @@ public class DateUtils {
         if (date == null)
             return null;
 
+        if ("now".equals(date)) {
+            return new Date();
+        }
+
         SimpleDateFormat df = new SimpleDateFormat(DATE_FORMAT);
         return df.parse(date);
     }

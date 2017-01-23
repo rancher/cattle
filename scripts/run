@@ -24,6 +24,7 @@ CMD="java
     -Xmx1024m
     -XX:+UseConcMarkSweepGC -XX:+CMSClassUnloadingEnabled
     -Dconfig.item.dynamic=false
+    -Dsecrets.api.execute=true
     -Dagent.ping.reconnect.after.failed.count=60
     -Dagent.ping.resources.every=1
     -Dprocess.retry_max_wait.millis=1

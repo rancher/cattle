@@ -2,6 +2,7 @@ package io.cattle.platform.iaas.api.auth.integration.internal.rancher;
 
 import static io.cattle.platform.core.model.tables.AccountTable.*;
 import static io.cattle.platform.core.model.tables.AgentTable.*;
+
 import io.cattle.platform.archaius.util.ArchaiusUtil;
 import io.cattle.platform.core.constants.AccountConstants;
 import io.cattle.platform.core.constants.AgentConstants;
@@ -115,6 +116,8 @@ public class BasicAuthImpl implements AccountLookup, Priority {
                     }
                     if (projectAdmin) {
                         resourceAccount.setKind("projectadmin");
+                    } else {
+                        resourceAccount.setKind("environment");
                     }
                     return resourceAccount;
                 }
