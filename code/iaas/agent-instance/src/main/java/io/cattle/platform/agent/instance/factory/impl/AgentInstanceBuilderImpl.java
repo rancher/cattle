@@ -9,6 +9,7 @@ import io.cattle.platform.object.util.DataAccessor;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 import com.netflix.config.DynamicStringProperty;
 
@@ -27,17 +28,17 @@ public class AgentInstanceBuilderImpl implements AgentInstanceBuilder {
     boolean accountOwned = true;
     boolean managedConfig = false;
     boolean privileged = false;
-    Map<String, Object> accountData = null;
     AgentInstanceFactoryImpl factory;
     String uri;
     Map<String, Object> params = new HashMap<>();
+    Set<String> requestedRoles;
 
     public AgentInstanceBuilderImpl(AgentInstanceFactoryImpl factory) {
         super();
         this.factory = factory;
     }
 
-    public AgentInstanceBuilderImpl(AgentInstanceFactoryImpl factory, Instance instance, Map<String, Object> accountData) {
+    public AgentInstanceBuilderImpl(AgentInstanceFactoryImpl factory, Instance instance, Set<String> roles) {
         this(factory);
         this.accountId = instance.getAccountId();
         this.zoneId = instance.getZoneId();
@@ -49,7 +50,7 @@ public class AgentInstanceBuilderImpl implements AgentInstanceBuilder {
         }
         this.uri = uriPrefix + ":///instanceId=" + instance.getId();
         this.resourceAccountId = instance.getAccountId();
-        this.accountData = accountData;
+        this.requestedRoles = roles;
     }
 
     @Override
@@ -175,8 +176,8 @@ public class AgentInstanceBuilderImpl implements AgentInstanceBuilder {
         return params;
     }
 
-    public Map<String, Object> getAccountData() {
-        return accountData;
+    public Set<String> getRequestedRoles() {
+        return requestedRoles;
     }
 
     public Long getResourceAccountId() {

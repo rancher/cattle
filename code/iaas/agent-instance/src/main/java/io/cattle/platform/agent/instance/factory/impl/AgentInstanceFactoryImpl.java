@@ -2,12 +2,12 @@ package io.cattle.platform.agent.instance.factory.impl;
 
 import static io.cattle.platform.core.model.tables.AgentTable.*;
 import static io.cattle.platform.core.model.tables.InstanceTable.*;
+
 import io.cattle.platform.agent.AgentLocator;
 import io.cattle.platform.agent.instance.dao.AgentInstanceDao;
 import io.cattle.platform.agent.instance.factory.AgentInstanceFactory;
 import io.cattle.platform.agent.instance.factory.lock.AgentInstanceAgentCreateLock;
 import io.cattle.platform.archaius.util.ArchaiusUtil;
-import io.cattle.platform.core.constants.AccountConstants;
 import io.cattle.platform.core.constants.AgentConstants;
 import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.InstanceConstants;
@@ -31,13 +31,14 @@ import io.cattle.platform.object.resource.ResourceMonitor;
 import io.cattle.platform.object.resource.ResourcePredicate;
 import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.process.common.util.ProcessUtils;
-import io.cattle.platform.util.type.CollectionUtils;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.Callable;
 
 import javax.inject.Inject;
@@ -110,23 +111,22 @@ public class AgentInstanceFactoryImpl implements AgentInstanceFactory {
     @Override
     public Agent createAgent(Instance instance) {
         if (shouldCreateAgent(instance)) {
-            Map<String, Object> accountData = new HashMap<>();
             Map<String, Object> labels = DataAccessor.fieldMap(instance, InstanceConstants.FIELD_LABELS);
-            if (AgentConstants.ENVIRONMENT_ROLE.equals(labels.get(SystemLabels.LABEL_AGENT_ROLE))) {
-                accountData = CollectionUtils.asMap(AccountConstants.DATA_ACT_AS_RESOURCE_ACCOUNT, true);
-            } else if (AgentConstants.ENVIRONMENT_ADMIN_ROLE.equals(labels.get(SystemLabels.LABEL_AGENT_ROLE))) {
-                // allow to set this flag only for system services
-                List<? extends Service> services = instanceDao.findServicesNonRemovedLinksOnly(instance);
-                for (Service service : services) {
-                    Stack stack = objectManager.loadResource(Stack.class, service.getStackId());
-                    if (ServiceConstants.isSystem(stack) || isLBSystemService(service)) {
-                        accountData = CollectionUtils.asMap(AccountConstants.DATA_ACT_AS_RESOURCE_ADMIN_ACCOUNT, true);
-                        break;
+            Set<String> filteredRoles = new HashSet<>();
+
+            String rolesVal = labels.get(SystemLabels.LABEL_AGENT_ROLE) != null ? labels.get(SystemLabels.LABEL_AGENT_ROLE).toString() : null;
+            if (rolesVal != null) {
+                String[] roles = rolesVal.split(",");
+                for (String r : roles) {
+                    if ("environment".equals(r) || "agent".equals(r)) {
+                        filteredRoles.add(r);
+                    } else if ("environmentAdmin".equals(r) && isSystem(instance)) {
+                        filteredRoles.add(r);
                     }
                 }
             }
 
-            return getAgent(new AgentInstanceBuilderImpl(this, instance, accountData));
+            return getAgent(new AgentInstanceBuilderImpl(this, instance, filteredRoles));
         }
         return null;
     }
@@ -148,6 +148,17 @@ public class AgentInstanceFactoryImpl implements AgentInstanceFactory {
         String formattedDefault = String.format("%s:%s", splitted[0], splitted[1]);
 
         return imageObj.toString().startsWith(formattedDefault);
+    }
+
+    private boolean isSystem(Instance instance) {
+        List<? extends Service> services = instanceDao.findServicesNonRemovedLinksOnly(instance);
+        for (Service service : services) {
+            Stack stack = objectManager.loadResource(Stack.class, service.getStackId());
+            if (ServiceConstants.isSystem(stack)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     @Override
@@ -191,8 +202,8 @@ public class AgentInstanceFactoryImpl implements AgentInstanceFactory {
 
         agent = resourceMonitor.waitFor(agent, new ResourcePredicate<Agent>() {
             @Override
-            public boolean evaluate(Agent obj) {
-                return factoryDao.getActivateCredentials(obj).size() > 0;
+            public boolean evaluate(Agent agent) {
+                return factoryDao.areAllCredentialsActive(agent);
             }
 
             @Override
@@ -233,8 +244,9 @@ public class AgentInstanceFactoryImpl implements AgentInstanceFactory {
                 if (builder.getResourceAccountId() != null) {
                     data.put(AgentConstants.DATA_AGENT_RESOURCES_ACCOUNT_ID, builder.getResourceAccountId());
                 }
-                if (builder.getAccountData() != null) {
-                    data.put(AgentConstants.DATA_ACCOUNT_DATA, builder.getAccountData());
+
+                if (builder.getRequestedRoles() != null) {
+                    data.put(AgentConstants.DATA_REQUESTED_ROLES, new ArrayList<String>(builder.getRequestedRoles()));
                 }
 
                 if (agent == null) {
