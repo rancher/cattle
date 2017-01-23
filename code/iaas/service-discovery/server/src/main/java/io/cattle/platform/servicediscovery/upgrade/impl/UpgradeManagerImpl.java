@@ -143,7 +143,7 @@ public class UpgradeManagerImpl implements UpgradeManager {
                 // should be skipped for rollback
                 if (isUpgrade) {
                     deploymentMgr.activate(service);
-                    waitForHealthyState(service, ServiceConstants.STATE_UPGRADING, strategy);
+                    waitForHealthyState(service, currentProcess, strategy);
                 }
                 // mark for upgrade
                 markForUpgrade(batchSize);
