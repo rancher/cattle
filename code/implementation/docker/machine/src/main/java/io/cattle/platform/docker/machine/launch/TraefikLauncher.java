@@ -37,6 +37,8 @@ public class TraefikLauncher extends GenericServiceLauncher implements Initializ
             "HTTP_PROXY",
             "HTTPS_PROXY"
     };
+    private static final DynamicBooleanProperty API_FILTER_PROXY_LAUNCH = ArchaiusUtil.getBoolean("api.filter.proxy.execute");
+    private static final DynamicStringProperty API_FILTER_PROXY_PORT = ArchaiusUtil.getString("api.filter.proxy.http.port");
 
     private static final Logger log = LoggerFactory.getLogger(TraefikLauncher.class);
 
@@ -52,7 +54,7 @@ public class TraefikLauncher extends GenericServiceLauncher implements Initializ
         "    url = \"http://%s\"\n" +
         "  [backends.cattle]\n" +
         "    [backends.cattle.servers.server1]\n" +
-        "    url = \"http://localhost:8081\"\n" +
+        "    url = \"http://localhost:%s\"\n" +
         "\n" +
         "[frontends]\n" +
         "  [frontends.wspfront]\n" +
@@ -87,7 +89,12 @@ public class TraefikLauncher extends GenericServiceLauncher implements Initializ
             }
         }
 
-        String content = String.format(CONFIG, ACCESS_LOG.get(), host);
+        String port = "8081";
+        if (API_FILTER_PROXY_LAUNCH.get()) {
+            port = API_FILTER_PROXY_PORT.get();
+        }
+
+        String content = String.format(CONFIG, ACCESS_LOG.get(), host, port);
         if (written.equals(content)) {
             return true;
         }

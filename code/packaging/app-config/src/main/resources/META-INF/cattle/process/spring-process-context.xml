@@ -545,6 +545,7 @@
     <bean class="io.cattle.platform.docker.machine.launch.AuthServiceLauncher" />
     <bean class="io.cattle.platform.docker.machine.launch.TraefikLauncher" />
     <bean class="io.cattle.platform.docker.machine.launch.WebhookServiceLauncher" />
+    <bean class="io.cattle.platform.docker.machine.launch.ApiFilterProxyLauncher" />
     
     <process:defaultProcesses resourceType="externalHandler" />
     <process:defaultProcesses resourceType="externalHandlerProcess" />
