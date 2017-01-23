@@ -43,19 +43,23 @@ public class StackHealthStateUpdateTrigger extends AbstractObjectProcessLogic im
         return new String[] { HealthcheckConstants.PROCESS_UPDATE_HEALTHY,
                 HealthcheckConstants.PROCESS_UPDATE_UNHEALTHY, InstanceConstants.PROCESS_STOP,
                 InstanceConstants.PROCESS_REMOVE, InstanceConstants.PROCESS_START,
-                "service.*"};
+                "service.*", "stack.*" };
     }
 
     @Override
     public HandlerResult handle(ProcessState state, ProcessInstance process) {
         List<Service> services = new ArrayList<>();
-        if (state.getResource() instanceof Service) {
+        Set<Long> stackIds = new HashSet<>();
+        
+        if (state.getResource() instanceof Stack) {
+            stackIds.add(((Stack) state.getResource()).getId());
+        }
+        else if (state.getResource() instanceof Service) {
             services.add((Service) state.getResource());
         } else if (state.getResource() instanceof Instance) {
             services.addAll(instanceDao.findServicesFor((Instance) state.getResource()));
         }
 
-        Set<Long> stackIds = new HashSet<>();
         for (Service service : services) {
             stackIds.add(service.getStackId());
         }
