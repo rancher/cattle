@@ -107,6 +107,7 @@ public class ServiceMetaData {
     String primary_service_name;
     String environment_uuid;
     String state;
+    String token;
     // helper field needed by metadata service to process object
     String metadata_kind;
 
@@ -370,6 +371,14 @@ public class ServiceMetaData {
 
     public void setMetadata_kind(String metadata_kind) {
         this.metadata_kind = metadata_kind;
+    }
+
+    public String getToken() {
+        return token;
+    }
+
+    public void setToken(String token) {
+        this.token = token;
     }
 
 }
