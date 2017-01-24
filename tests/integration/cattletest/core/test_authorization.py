@@ -140,6 +140,10 @@ def test_user_types(user_client, adds=set(), removes=set()):
         'mountEntry',
         'network',
         'networkDriver',
+        'networkPolicyRule',
+        'networkPolicyRuleBetween',
+        'networkPolicyRuleMember',
+        'networkPolicyRuleWithin',
         'password',
         'physicalHost',
         'port',
@@ -368,6 +372,10 @@ def test_admin_types(admin_user_client, adds=set(), removes=set()):
         'network',
         'networkDriver',
         'networkDriverService',
+        'networkPolicyRule',
+        'networkPolicyRuleBetween',
+        'networkPolicyRuleMember',
+        'networkPolicyRuleWithin',
         'openldapconfig',
         'password',
         'physicalHost',
@@ -2726,6 +2734,48 @@ def test_external_service_event(agent_client, admin_user_client, user_client,
         'eventType': 'cr',
         'environment': 'cr',
         'service': 'cr',
+    })
+
+
+def test_network(agent_client, admin_user_client, user_client,
+                 project_client):
+    type = 'network'
+
+    auth_check(admin_user_client.schema, type, 'r', {
+        'accountId': 'r',
+        'data': 'r',
+        'metadata': 'r',
+        'subnets': 'r',
+        'networkDriverId': 'r',
+        'dns': 'r',
+        'dnsSearch': 'r',
+        'hostPorts': 'r',
+        'defaultPolicyAction': 'r',
+        'policy': 'r',
+    })
+
+    auth_check(user_client.schema, type, 'r', {
+        'accountId': 'r',
+        'metadata': 'r',
+        'subnets': 'r',
+        'networkDriverId': 'r',
+        'dns': 'r',
+        'dnsSearch': 'r',
+        'hostPorts': 'r',
+        'defaultPolicyAction': 'r',
+        'policy': 'r',
+    })
+
+    auth_check(project_client.schema, type, 'crud', {
+        'accountId': 'r',
+        'metadata': 'cru',
+        'subnets': 'cr',
+        'networkDriverId': 'cr',
+        'dns': 'cr',
+        'dnsSearch': 'cr',
+        'hostPorts': 'cr',
+        'defaultPolicyAction': 'cru',
+        'policy': 'cru',
     })
 
 

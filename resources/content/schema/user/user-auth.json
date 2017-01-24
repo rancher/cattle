@@ -379,6 +379,25 @@
         "network.dns": "cr",
         "network.dnsSearch": "cr",
         "network.hostPorts": "cr",
+        "network.defaultPolicyAction": "cru",
+        "network.policy": "cru",
+
+        "networkPolicyRule" : "cr",
+        "networkPolicyRule.from" : "cr",
+        "networkPolicyRule.to" : "cr",
+        "networkPolicyRule.between" : "cr",
+        "networkPolicyRule.action" : "cr",
+        "networkPolicyRule.within" : "cr",
+        "networkPolicyRule.ports" : "cr",
+
+        "networkPolicyRuleMember" : "cr",
+        "networkPolicyRuleMember.selector" : "cr",
+
+        "networkPolicyRuleWithin" : "cr",
+
+        "networkPolicyRuleBetween" : "cr",
+        "networkPolicyRuleBetween.groupBy" : "cr",
+        "networkPolicyRuleBetween.selector" : "cr",
 
         "networkDriver" : "r",
         "networkDriver.defaultNetwork" : "cr",

@@ -373,10 +373,12 @@ public class MetaDataInfoDaoImpl extends AbstractJooqDao implements MetaDataInfo
             protected NetworkMetaData map(List<Object> input) {
                 Network ntwk = (Network) input.get(0);
                 Map<String, Object> meta = DataAccessor.fieldMap(ntwk, ServiceConstants.FIELD_METADATA);
+                Object policy = DataAccessor.field(ntwk, NetworkConstants.FIELD_POLICY, Object.class);
+                String dpa = DataAccessor.fieldString(ntwk, NetworkConstants.FIELD_DEFAULT_POLICY_ACTION);
                 Account account = helperInfo.getAccounts().get(ntwk.getAccountId());
                 boolean isDefault = account.getDefaultNetworkId() == null ? false : account.getDefaultNetworkId().equals(ntwk.getId());
-                NetworkMetaData data = new NetworkMetaData(ntwk.getName(), ntwk.getUuid(),
-                        DataAccessor.fieldBool(ntwk, NetworkConstants.FIELD_HOST_PORTS), meta, isDefault);
+                boolean host_ports = DataAccessor.fieldBool(ntwk, NetworkConstants.FIELD_HOST_PORTS);
+                NetworkMetaData data = new NetworkMetaData(ntwk.getName(), ntwk.getUuid(), host_ports, isDefault, meta, dpa, policy);
                 return data;
             }
         };

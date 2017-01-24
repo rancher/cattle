@@ -11,6 +11,8 @@ public class NetworkConstants {
     public static final String FIELD_DNS = "dns";
     public static final String FIELD_DNS_SEARCH = "dnsSearch";
     public static final String FIELD_METADATA = "metadata";
+    public static final String FIELD_POLICY = "policy";
+    public static final String FIELD_DEFAULT_POLICY_ACTION = "defaultPolicyAction";
     public static final String FIELD_HOST_PORTS = "hostPorts";
 
     public static final String KIND_CNI = "cni";
