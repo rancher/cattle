@@ -61,6 +61,8 @@ public class DefaultNetworkProcess extends AbstractObjectProcessHandler {
 
             if (CommonStatesConstants.ACTIVATING.equals(network.getState()) && newDefaultNetworkId == null) {
                 newDefaultNetworkId = network.getId();
+            } else if (CommonStatesConstants.UPDATING_ACTIVE.equals(network.getState()) && newDefaultNetworkId == null) {
+                newDefaultNetworkId = network.getId();
             } else if (CommonStatesConstants.ACTIVE.equals(network.getState())) {
                 newDefaultNetworkId = network.getId();
             }
