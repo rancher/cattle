@@ -336,7 +336,7 @@ public class PingInstancesMonitorImpl implements PingInstancesMonitor {
             host = hosts.get(hostUuid);
         }
 
-        if (agent == null || host == null)
+        if (agent == null || agent.getAccountId() == null || host == null)
             throw new CantFindAgentAndHostException();
 
         return new AgentAndHost(agent.getAccountId(), host.getId());
