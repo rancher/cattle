@@ -31,6 +31,7 @@ public class GenericResourceProcessState extends AbstractStatesBasedProcessState
     ObjectManager objectManager;
     LockDefinition processLock;
     Map<String, Object> data;
+    String state;
 
     public GenericResourceProcessState(JsonMapper jsonMapper, ResourceStatesDefinition stateDef, LaunchConfiguration config, ObjectManager objectManager) {
         super(jsonMapper, stateDef);
@@ -39,6 +40,7 @@ public class GenericResourceProcessState extends AbstractStatesBasedProcessState
         this.processLock = new ResourceChangeLock(config.getResourceType(), config.getResourceId());
         this.resourceId = config.getResourceId();
         this.data = config.getData();
+        this.state = lookupState();
     }
 
     @Override
@@ -51,8 +53,7 @@ public class GenericResourceProcessState extends AbstractStatesBasedProcessState
         return processLock;
     }
 
-    @Override
-    public String getState() {
+    protected String lookupState() {
         try {
             if (resource == null) {
                 return null;
@@ -65,6 +66,11 @@ public class GenericResourceProcessState extends AbstractStatesBasedProcessState
         } catch (NoSuchMethodException e) {
             throw new IllegalStateException(e);
         }
+    }
+
+    @Override
+    public String getState() {
+        return state;
     }
 
     @Override
@@ -85,12 +91,19 @@ public class GenericResourceProcessState extends AbstractStatesBasedProcessState
             }
         }
 
+        reload();
+        String resourceState = lookupState();
+        if (oldState == null || (!oldState.equals(resourceState) && !newState.equals(resourceState))) {
+            return false;
+        }
+
         try {
             Object newResource = objectManager.setFields(resource, getStatesDefinition().getStateField(), newState);
             if (newResource == null) {
                 return false;
             } else {
                 resource = newResource;
+                this.state = lookupState();
                 return true;
             }
         } catch (DataChangedException e) {

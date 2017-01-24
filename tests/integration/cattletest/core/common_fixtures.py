@@ -283,15 +283,11 @@ def register_simulated_host(client_or_context, return_agent=False):
     def check():
         hosts = super_client(None).list_host(agentId=agents[0].id)
         if len(hosts) > 0:
+            assert len(hosts) == 1
             return hosts[0]
         do_ping()
 
-    tokens = client.list_registration_token()
-    if len(tokens) == 0:
-        token = client.wait_success(client.create_registration_token())
-    else:
-        token = tokens[0]
-
+    token = client.wait_success(client.create_registration_token())
     c = api_client('registrationToken', token.token)
     key = random_str()
 
