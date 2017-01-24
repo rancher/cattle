@@ -73,7 +73,7 @@ public class StackHealthStateUpdate implements AnnotatedEventListener {
 
     protected boolean process(long stackId) throws IOException {
         Stack stack = objectManager.loadResource(Stack.class, stackId);
-        if (stack == null || stack.getRemoved() != null) {
+        if (stack == null) {
             return true;
         }
 
