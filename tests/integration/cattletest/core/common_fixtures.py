@@ -319,7 +319,7 @@ def register_simulated_host(client_or_context, return_agent=False):
     host = client.wait_success(host)
     s.wait_success(agents[0])
 
-    wait_for(lambda: client.reload(host).state == 'active')
+    host = wait_state(client, host, 'active')
     wait_for(lambda: _wait_for_pool(host))
 
     if return_agent:
@@ -656,7 +656,15 @@ def _sleep_time():
 
 
 def wait_state(client, obj, state):
-    wait_for(lambda: client.reload(obj).state == state)
+    try:
+        wait_for(lambda: client.reload(obj).state == state)
+    except:
+        obj = client.reload(obj)
+        msg = 'Timeout waiting for state {}, resource is {} : {}'.format(
+            state, obj.state, obj
+        )
+        raise Exception(msg)
+
     return client.reload(obj)
 
 
