@@ -53,6 +53,7 @@ public class SimpleAllocator extends AbstractAllocator implements Allocator, Nam
     private static final String MEMORY_RESERVATION = "memoryReservation";
     private static final String CPU_RESERVATION = "cpuReservation";
     private static final String STORAGE_SIZE = "storageSize";
+    private static final String CONTEXT = "context";
 
     String name = getClass().getSimpleName();
 
@@ -225,7 +226,7 @@ public class SimpleAllocator extends AbstractAllocator implements Allocator, Nam
             return null;
         }
 
-        return newEvent(SCHEDULER_RELEASE_EVENT, resourceRequests, resource.getClass().getSimpleName(), ObjectUtils.getId(resource));
+        return newEvent(SCHEDULER_RELEASE_EVENT, resourceRequests, resource.getClass().getSimpleName(), ObjectUtils.getId(resource), null);
     }
 
     EventVO<Map<String, Object>> buildEvent(String eventName, AllocationAttempt attempt) {
@@ -234,13 +235,14 @@ public class SimpleAllocator extends AbstractAllocator implements Allocator, Nam
             return null;
         }
 
-        return newEvent(eventName, resourceRequests, "instance", attempt.getInstances().get(0).getId());
+        return newEvent(eventName, resourceRequests, "instance", attempt.getInstances().get(0).getId(), attempt.getInstances());
     }
 
-    EventVO<Map<String, Object>> newEvent(String eventName, List<ResourceRequest> resourceRequests, String resourceType, Object resourceId) {
+    EventVO<Map<String, Object>> newEvent(String eventName, List<ResourceRequest> resourceRequests, String resourceType, Object resourceId, Object context) {
         Map<String, Object> eventData = new HashMap<String, Object>();
         Map<String, Object> reqData = new HashMap<>();
         reqData.put(RESOURCE_REQUESTS, resourceRequests);
+        reqData.put(CONTEXT, context);
         eventData.put(SCHEDULER_REQUEST_DATA_NAME, reqData);
         EventVO<Map<String, Object>> schedulerEvent = EventVO.<Map<String, Object>> newEvent(eventName).withData(eventData);
         schedulerEvent.setResourceType(resourceType);
