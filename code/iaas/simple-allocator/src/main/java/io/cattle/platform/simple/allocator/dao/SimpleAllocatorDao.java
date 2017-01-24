@@ -8,4 +8,5 @@ import java.util.List;
 public interface SimpleAllocatorDao {
 
     Iterator<AllocationCandidate> iteratorHosts(List<String> hostUUIDs, List<Long> volumeIds, QueryOptions options);
+    
 }

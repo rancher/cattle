@@ -30,6 +30,7 @@ import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.IpAddress;
 import io.cattle.platform.core.model.Network;
 import io.cattle.platform.core.model.Nic;
+import io.cattle.platform.core.model.Port;
 import io.cattle.platform.core.model.ServiceExposeMap;
 import io.cattle.platform.core.model.tables.HostTable;
 import io.cattle.platform.core.model.tables.InstanceHostMapTable;
@@ -38,6 +39,7 @@ import io.cattle.platform.core.model.tables.IpAddressTable;
 import io.cattle.platform.core.model.tables.NetworkTable;
 import io.cattle.platform.core.model.tables.NicTable;
 import io.cattle.platform.core.model.tables.ServiceExposeMapTable;
+import io.cattle.platform.core.util.PortSpec;
 import io.cattle.platform.db.jooq.dao.impl.AbstractJooqDao;
 import io.cattle.platform.db.jooq.mapper.MultiRecordMapper;
 import io.cattle.platform.object.ObjectManager;
@@ -96,8 +98,22 @@ public class MetaDataInfoDaoImpl extends AbstractJooqDao implements MetaDataInfo
                     healthCheckers.add(h.getUuid());
                 }
             }
+            List<String> newPorts = new ArrayList<>();
+            for (Port port: objMgr.children(instance, Port.class)) {
+                PortSpec spec = new PortSpec();
+                String ipAddress = DataAccessor.fieldString(port, "bindAddress");
+                if (ipAddress == null || ipAddress.equals("0.0.0.0")) {
+                    spec.setIpAddress("0.0.0.0");
+                } else {
+                    spec.setIpAddress(ipAddress);
+                }
+                spec.setPrivatePort(port.getPrivatePort());
+                spec.setProtocol(port.getProtocol());
+                spec.setPublicPort(port.getPublicPort());
+                newPorts.add(spec.toSpec());
+            }
             data.setInstanceAndHostMetadata(instance, hostMetaData, healthCheckers,
-                    helperInfo.getAccounts().get(instance.getAccountId()), isHostNetworking);
+                    helperInfo.getAccounts().get(instance.getAccountId()), isHostNetworking, newPorts);
         }
 
         data.setExposeMap(serviceMap);
