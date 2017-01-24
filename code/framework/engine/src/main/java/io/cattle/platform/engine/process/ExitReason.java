@@ -6,7 +6,7 @@ public enum ExitReason {
     ALREADY_DONE(SUCCESS),
     CANCELED(ProcessResult.CANCELED, true),
     DELAY(true, false, false, null),
-    STATE_CHANGED,
+    STATE_CHANGED(false, false, false, null),
     DONE(SUCCESS),
     DELEGATE(false, false, false, null),
     SCHEDULED(false, false, false, null),

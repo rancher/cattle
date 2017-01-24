@@ -283,15 +283,11 @@ def register_simulated_host(client_or_context, return_agent=False):
     def check():
         hosts = super_client(None).list_host(agentId=agents[0].id)
         if len(hosts) > 0:
+            assert len(hosts) == 1
             return hosts[0]
         do_ping()
 
-    tokens = client.list_registration_token()
-    if len(tokens) == 0:
-        token = client.wait_success(client.create_registration_token())
-    else:
-        token = tokens[0]
-
+    token = client.wait_success(client.create_registration_token())
     c = api_client('registrationToken', token.token)
     key = random_str()
 
@@ -319,7 +315,7 @@ def register_simulated_host(client_or_context, return_agent=False):
     host = client.wait_success(host)
     s.wait_success(agents[0])
 
-    wait_for(lambda: client.reload(host).state == 'active')
+    host = wait_state(client, host, 'active')
     wait_for(lambda: _wait_for_pool(host))
 
     if return_agent:
@@ -656,7 +652,15 @@ def _sleep_time():
 
 
 def wait_state(client, obj, state):
-    wait_for(lambda: client.reload(obj).state == state)
+    try:
+        wait_for(lambda: client.reload(obj).state == state)
+    except:
+        obj = client.reload(obj)
+        msg = 'Timeout waiting for state {}, resource is {} : {}'.format(
+            state, obj.state, obj
+        )
+        raise Exception(msg)
+
     return client.reload(obj)
 
 

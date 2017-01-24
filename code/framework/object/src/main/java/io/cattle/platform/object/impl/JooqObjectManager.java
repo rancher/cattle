@@ -215,6 +215,8 @@ public class JooqObjectManager extends AbstractObjectManager {
     protected void persistRecord(final UpdatableRecord<?> record) {
         if (record.field(ObjectMetaDataManager.DATA_FIELD) != null && record.changed(ObjectMetaDataManager.DATA_FIELD)) {
             record.attach(getLockingConfiguration());
+        } else if (record.field(ObjectMetaDataManager.STATE_FIELD) != null && record.changed(ObjectMetaDataManager.STATE_FIELD)) {
+            record.attach(getLockingConfiguration());
         } else {
             record.attach(getConfiguration());
         }
