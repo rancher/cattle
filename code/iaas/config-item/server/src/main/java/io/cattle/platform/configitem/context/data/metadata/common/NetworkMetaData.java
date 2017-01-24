@@ -8,14 +8,19 @@ public class NetworkMetaData {
     boolean is_default;
     boolean host_ports;
     protected Map<String, Object> metadata;
+    String default_policy_action;
+    Object policy;
 
-    public NetworkMetaData(String name, String uuid, boolean hostPorts, Map<String, Object> metadata, boolean isDefault) {
+    public NetworkMetaData(String name, String uuid, boolean is_default, boolean host_ports,
+            Map<String, Object> metadata, String defaultPolicyAction, Object policy) {
         super();
         this.name = name;
         this.uuid = uuid;
+        this.is_default = is_default;
+        this.host_ports = host_ports;
         this.metadata = metadata;
-        this.host_ports = hostPorts;
-        this.is_default = isDefault;
+        this.default_policy_action = defaultPolicyAction;
+        this.policy = policy;
     }
 
     public String getName() {
@@ -56,6 +61,22 @@ public class NetworkMetaData {
 
     public void setIs_default(boolean is_default) {
         this.is_default = is_default;
+    }
+
+    public String getDefault_policy_action() {
+        return default_policy_action;
+    }
+
+    public void setDefault_policy_action(String defaultPolicyAction) {
+        this.default_policy_action = defaultPolicyAction;
+    }
+
+    public Object getPolicy() {
+        return policy;
+    }
+
+    public void setPolicy(Object policy) {
+        this.policy = policy;
     }
 
 }

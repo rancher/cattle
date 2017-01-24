@@ -23,6 +23,25 @@
         },
         "macPrefix": {
             "type" : "string"
+        },
+        "defaultPolicyAction": {
+            "type" : "enum",
+            "options" : [
+                "allow",
+                "deny"
+            ],
+            "nullable" : false,
+            "default" : "allow",
+            "attributes" : {
+                 "scheduleUpdate" : true
+             }
+        },
+        "policy": {
+            "type": "array[networkPolicyRule]",
+            "nullable": true,
+            "attributes" : {
+                 "scheduleUpdate" : true
+             }
         }
     }
 }

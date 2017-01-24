@@ -10,6 +10,11 @@ import io.cattle.platform.core.addon.InstanceHealthCheck;
 import io.cattle.platform.core.addon.LoadBalancerCookieStickinessPolicy;
 import io.cattle.platform.core.addon.LogConfig;
 import io.cattle.platform.core.addon.MountEntry;
+import io.cattle.platform.core.addon.NetworkPolicyRule;
+import io.cattle.platform.core.addon.NetworkPolicyRule.NetworkPolicyRuleAction;
+import io.cattle.platform.core.addon.NetworkPolicyRule.NetworkPolicyRuleWithin;
+import io.cattle.platform.core.addon.NetworkPolicyRuleBetween;
+import io.cattle.platform.core.addon.NetworkPolicyRuleMember;
 import io.cattle.platform.core.addon.PortRule;
 import io.cattle.platform.core.addon.ProcessPool;
 import io.cattle.platform.core.addon.ProcessSummary;
@@ -80,6 +85,11 @@ public class CoreModelConfig {
                 PortRule.class,
                 TargetPortRule.class,
                 MountEntry.class,
+                NetworkPolicyRule.class,
+                NetworkPolicyRuleMember.class,
+                NetworkPolicyRuleBetween.class,
+                NetworkPolicyRuleWithin.class,
+                NetworkPolicyRuleAction.class,
                 ProcessSummary.class,
                 ProcessPool.class
                 ));
