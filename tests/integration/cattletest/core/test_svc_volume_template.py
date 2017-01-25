@@ -240,8 +240,8 @@ def test_du_volume(client, context, super_client):
     svc = client.update(svc, scale=1)
     client.wait_success(svc, 120)
 
-    wait_state(client, c21, 'removed')
-    wait_state(client, v21, 'removed')
+    wait_for_condition(client, c21, lambda x: x.removed is not None)
+    wait_for_condition(client, v21, lambda x: x.removed is not None)
 
     # test export
     compose_config = stack.exportconfig()

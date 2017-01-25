@@ -1,5 +1,4 @@
 from common_fixtures import *  # NOQA
-import logging
 
 
 def _process_names(processes):
@@ -26,18 +25,7 @@ def test_container_ha_default(super_client, new_context):
     processes = wait_for(callback,
                          fail_handler=lambda: proc_err(c, super_client))
 
-    c = wait_for_condition(client, c,
-                           lambda x: x.state == 'removed',
-                           lambda x: 'State is: ' + x.state)
-
-    # TODO Remove this debugging block once we've seen this test not fail for
-    # a few weeks. So, anytime after 6/4/2015.
-    if c.state != 'stopped':
-        logging.warn('test_container_ha_default debugging')
-        for p in processes:
-            logging.warn('ProcessInstance: %s' % p)
-            for pe in process_executions(super_client, p.id):
-                logging.warn('ProcessExecution: %s' % pe)
+    c = wait_state(client, c, 'purged')
 
     assert _process_names(processes) == {'instance.create', 'instance.stop',
                                          'instance.remove'}

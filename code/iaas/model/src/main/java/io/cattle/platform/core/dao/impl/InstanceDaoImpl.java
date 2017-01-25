@@ -135,13 +135,11 @@ public class InstanceDaoImpl extends AbstractJooqDao implements InstanceDao {
     @Override
     public Instance getInstanceByUuidOrExternalId(Long accountId, String uuid, String externalId) {
         Instance instance = null;
-        Condition condition = INSTANCE.ACCOUNT_ID.eq(accountId).and(INSTANCE.STATE.notIn(CommonStatesConstants.PURGED,
-                CommonStatesConstants.PURGING));
 
         if(StringUtils.isNotEmpty(uuid)) {
             instance = create()
                     .selectFrom(INSTANCE)
-                    .where(condition
+                    .where(INSTANCE.ACCOUNT_ID.eq(accountId)
                     .and(INSTANCE.UUID.eq(uuid)))
                     .fetchAny();
         }
@@ -149,7 +147,7 @@ public class InstanceDaoImpl extends AbstractJooqDao implements InstanceDao {
         if (instance == null && StringUtils.isNotEmpty(externalId)) {
             instance = create()
                     .selectFrom(INSTANCE)
-                    .where(condition
+                    .where(INSTANCE.ACCOUNT_ID.eq(accountId)
                     .and(INSTANCE.EXTERNAL_ID.eq(externalId)))
                     .fetchAny();
         }

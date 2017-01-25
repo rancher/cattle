@@ -162,8 +162,7 @@ def test_instance_volume_cleanup_strategy(new_context, super_client):
     # Assert default strategy to delete unnamed volumes only
     c, vol, unnamed_vol = create_resources(new_context, client, super_client)
     c = client.wait_success(c.stop())
-    c = client.wait_success(c.remove())
-    client.wait_success(c.purge())
+    client.wait_success(c.remove())
     wait_for_condition(client, vol, lambda x: x.state == 'detached')
     wait_for_condition(client, unnamed_vol, lambda x: x.removed is not None)
 
@@ -173,7 +172,6 @@ def test_instance_volume_cleanup_strategy(new_context, super_client):
             VOLUME_CLEANUP_LABEL: 'unnamed'})
     c = client.wait_success(c.stop())
     c = client.wait_success(c.remove())
-    client.wait_success(c.purge())
     wait_for_condition(client, vol, lambda x: x.state == 'detached')
     wait_for_condition(client, unnamed_vol, lambda x: x.removed is not None)
 
@@ -183,7 +181,6 @@ def test_instance_volume_cleanup_strategy(new_context, super_client):
             VOLUME_CLEANUP_LABEL: 'none'})
     c = client.wait_success(c.stop())
     c = client.wait_success(c.remove())
-    client.wait_success(c.purge())
     wait_for_condition(client, vol, lambda x: x.state == 'detached')
     wait_for_condition(client, unnamed_vol, lambda x: x.state == 'detached')
 
@@ -193,7 +190,6 @@ def test_instance_volume_cleanup_strategy(new_context, super_client):
             VOLUME_CLEANUP_LABEL: 'all'})
     c = client.wait_success(c.stop())
     c = client.wait_success(c.remove())
-    client.wait_success(c.purge())
     wait_for_condition(client, vol, lambda x: x.removed is not None)
     wait_for_condition(client, unnamed_vol, lambda x: x.removed is not None)
 
@@ -217,8 +213,7 @@ def create_container_and_mount(client, data_volume_mounts, new_context,
 
 def purge_instance_and_check_volume_state(c, vols, client, state=None):
     c = client.wait_success(c.stop())
-    c = client.wait_success(c.remove())
-    client.wait_success(c.purge())
+    client.wait_success(c.remove())
 
     def check(obj):
         if state is not None:
@@ -330,15 +325,11 @@ def test_volume_mounting_and_delete(new_context, super_client):
     assert 'deactivate' not in v1.actions and 'remove' not in v1.actions \
            and 'purge' not in v1.actions
 
-    # Remove remaining container and assert the volume can be removed
+    # Remove remaining container and assert the volume is removed
     c3 = client.wait_success(c3.stop())
     c3 = client.wait_success(c3.remove())
     check_mount_count(client, c3, 0)
-    v1 = wait_for_condition(client, v1, lambda x: x.state == 'detached')
-    check_mount_count(client, v1, 0)
-
-    v1 = client.wait_success(v1.remove())
-    assert v1.removed is not None
+    wait_for_condition(client, v1, lambda x: x.removed is not None)
 
 
 def test_volume_storage_pool_purge(new_context, super_client):

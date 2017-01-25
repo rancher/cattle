@@ -239,9 +239,6 @@ def test_docker_purge(docker_client):
     container = docker_client.wait_success(container)
     assert container.removed is not None
 
-    container = docker_client.wait_success(container.purge())
-    assert container.state == 'purged'
-
     volumes = container.volumes()
     assert len(volumes) == 0
 
@@ -519,10 +516,16 @@ def test_docker_volumes(docker_client, super_client):
         elif mount.path == '/bar':
             assert mount.volumeId == bar_vol.id
 
-    c = docker_client.wait_success(c.stop(remove=True, timeout=0))
-    c2 = docker_client.wait_success(c2.stop(remove=True, timeout=0))
+    c = docker_client.wait_success(c.stop(timeout=0))
+    c2 = docker_client.wait_success(c2.stop(timeout=0))
 
     _check_path(foo_vol, True, docker_client, super_client)
+    _check_path(bar_vol, True, docker_client, super_client)
+
+    docker_client.wait_success(docker_client.delete(c))
+    docker_client.wait_success(docker_client.delete(c2))
+
+    _check_path(foo_vol, False, docker_client, super_client)
     _check_path(bar_vol, True, docker_client, super_client)
 
 
