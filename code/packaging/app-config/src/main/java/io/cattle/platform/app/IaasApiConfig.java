@@ -10,6 +10,7 @@ import io.cattle.platform.docker.machine.api.MachineLinkFilter;
 import io.cattle.platform.docker.machine.api.addon.BaseMachineConfig;
 import io.cattle.platform.docker.machine.api.filter.MachineValidationFilter;
 import io.cattle.platform.docker.machine.launch.WebsocketProxyLauncher;
+import io.cattle.platform.docker.machine.launch.SecretsApiLauncher;
 import io.cattle.platform.extension.impl.EMUtils;
 import io.cattle.platform.extension.impl.ExtensionManagerImpl;
 import io.cattle.platform.host.api.HostApiProxyTokenImpl;
@@ -91,6 +92,7 @@ import io.cattle.platform.iaas.api.manager.HaConfigManager;
 import io.cattle.platform.iaas.api.manager.InstanceManager;
 import io.cattle.platform.iaas.api.manager.ProcessPoolManager;
 import io.cattle.platform.iaas.api.manager.ProcessSummaryManager;
+import io.cattle.platform.iaas.api.manager.SecretManager;
 import io.cattle.platform.iaas.api.manager.ServiceManager;
 import io.cattle.platform.iaas.api.manager.VolumeManager;
 import io.cattle.platform.iaas.api.object.postinit.AccountFieldPostInitHandler;
@@ -101,6 +103,7 @@ import io.cattle.platform.iaas.api.request.handler.IdFormatterRequestHandler;
 import io.cattle.platform.iaas.api.request.handler.PostChildLinkHandler;
 import io.cattle.platform.iaas.api.request.handler.RequestReRouterHandler;
 import io.cattle.platform.iaas.api.request.handler.Scripts;
+import io.cattle.platform.iaas.api.request.handler.SecretsApiRequestHandler;
 import io.cattle.platform.iaas.api.user.preference.UserPreferenceDaoImpl;
 import io.cattle.platform.iaas.api.user.preference.UserPreferenceFilter;
 import io.cattle.platform.iaas.api.volume.VolumeCreateValidationFilter;
@@ -224,6 +227,11 @@ public class IaasApiConfig {
     }
 
     @Bean
+    SecretsApiLauncher SecretsApiLauncher() {
+        return new SecretsApiLauncher();
+    }
+
+    @Bean
     TypeSet ProxyTokenTypeSet() {
         TypeSet typeSet = new TypeSet("ProxyTokenTypeSet");
         typeSet.setTypeClasses(Arrays.<Class<?>>asList(
@@ -266,6 +274,11 @@ public class IaasApiConfig {
     @Bean
     ServiceManager ServiceManager() {
         return new ServiceManager();
+    }
+
+    @Bean
+    SecretManager SecretManager() {
+        return new SecretManager();
     }
 
     @Bean
@@ -740,6 +753,11 @@ public class IaasApiConfig {
                 "/v1-auth/saml",
                 "/v1-webhooks/endpoint"));
         return proxy;
+    }
+
+    @Bean
+    SecretsApiRequestHandler SecretsApiRequestHandler() {
+        return new SecretsApiRequestHandler();
     }
 
     @Bean

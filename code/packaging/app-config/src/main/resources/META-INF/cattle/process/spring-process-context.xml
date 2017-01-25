@@ -474,6 +474,10 @@
     <process:process name="label.create" resourceType="label" start="requested" transitioning="creating" done="created" />
     <process:process name="label.remove" resourceType="label" start="created,creating" transitioning="removing" done="removed" />
 
+    <!--  Secrets -->
+    <process:process name="secret.create" resourceType="secret" start="requested" transitioning="creating" done="active" />
+    <process:process name="secret.remove" resourceType="secret" start="active,creating" transitioning="removing" done="removed" />
+
     <!-- Host label map -->
     <process:process name="hostlabelmap.create" resourceType="hostLabelMap" start="requested" transitioning="creating" done="created" />
     <process:process name="hostlabelmap.remove" resourceType="hostLabelMap" start="created,creating" transitioning="removing" done="removed" />

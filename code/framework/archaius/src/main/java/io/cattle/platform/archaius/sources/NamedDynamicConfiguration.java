@@ -4,6 +4,7 @@ import com.netflix.config.AbstractPollingScheduler;
 import com.netflix.config.DynamicConfiguration;
 import com.netflix.config.PolledConfigurationSource;
 
+@SuppressWarnings("unchecked")
 public class NamedDynamicConfiguration extends DynamicConfiguration implements NamedConfigurationSource {
 
     String sourceName;

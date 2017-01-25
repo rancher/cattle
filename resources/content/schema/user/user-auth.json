@@ -122,6 +122,7 @@
         "container.restartPolicy" : "cr",
         "container.readOnly" : "cr",
         "container.securityOpt" : "cr",
+        "container.secrets" : "cr",
         "container.startOnCreate" : "cr",
         "container.stdinOpen" : "cr",
         "container.subnetIds" : "cr",
@@ -940,6 +941,7 @@
         "virtualMachine.user" : "",
         "virtualMachine.pidMode" : "",
         "virtualMachine.readOnly" : "",
+        "virtualMachine.secrets" : "",
 
         "virtualMachineDisk" : "r",
         "virtualMachineDisk.name" : "cr",
@@ -992,6 +994,17 @@
         "defaultNetwork.kind" : "cr",
         "defaultNetwork.networkDriverId" : "",
 
+        "secret" : "r",
+        "secret.name": "cr",
+        "secret.value": "cro",
+
+        "secretReference" : "cr",
+        "secretReference.secretId": "cr",
+        "secretReference.name": "cr",
+        "secretReference.uid": "cr",
+        "secretReference.gid": "cr",
+        "secretReference.mode": "cr",
+
         "subnet" : "r",
         "subnet.networkId": "r",
         "subnet.networkAddress": "cr",
@@ -999,6 +1012,10 @@
         "subnet.endAddress": "cr",
         "subnet.startAddress": "cr",
         "subnet.gateway": "cr",
+
+        "registryToken" : "cr",
+        "registryToken.scope": "cr",
+        "registryToken.service": "cr",
 
         "end" : ""
     }

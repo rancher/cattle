@@ -12,7 +12,7 @@ import java.util.List;
 
 public class ServiceDiscoveryConfigItem {
     /**
-     * 
+     *
      * Unsupported docker compose variables - build - env_file - net - might add
      * support for that before the feature goes out - environment - don't
      * support the case when only key is specified, but no value - can't extract
@@ -56,6 +56,8 @@ public class ServiceDiscoveryConfigItem {
     public static final ServiceDiscoveryConfigItem RESTART = new ServiceDiscoveryConfigItem("restartPolicy", "restart",
             false);
     public static final ServiceDiscoveryConfigItem STDINOPEN = new ServiceDiscoveryConfigItem("stdinOpen", "stdin_open",
+            false);
+    public static final ServiceDiscoveryConfigItem SECRETS = new ServiceDiscoveryConfigItem("secrets", "secrets",
             false);
     public static final ServiceDiscoveryConfigItem TTY = new ServiceDiscoveryConfigItem("tty", "tty", false);
     public static final ServiceDiscoveryConfigItem CPUSHARES = new ServiceDiscoveryConfigItem("cpuShares", "cpu_shares",
@@ -115,7 +117,7 @@ public class ServiceDiscoveryConfigItem {
     // CATTLE PARAMETERS
     public static final ServiceDiscoveryConfigItem SCALE = new ServiceDiscoveryConfigItem("scale", "scale", false,
             false, false);
-    public static final ServiceDiscoveryConfigItem STARTONCREATE = new ServiceDiscoveryConfigItem(ServiceConstants.FIELD_START_ON_CREATE, 
+    public static final ServiceDiscoveryConfigItem STARTONCREATE = new ServiceDiscoveryConfigItem(ServiceConstants.FIELD_START_ON_CREATE,
             NamedUtils.toUnderscoreSeparated(ServiceConstants.FIELD_START_ON_CREATE), true, false, false);
     public static final ServiceDiscoveryConfigItem HEALTHCHECK = new ServiceDiscoveryConfigItem(
             InstanceConstants.FIELD_HEALTH_CHECK,

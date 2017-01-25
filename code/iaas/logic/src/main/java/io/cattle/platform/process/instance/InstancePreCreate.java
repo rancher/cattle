@@ -1,11 +1,14 @@
 package io.cattle.platform.process.instance;
 
 import io.cattle.platform.core.addon.LogConfig;
+import io.cattle.platform.core.addon.SecretReference;
 import io.cattle.platform.core.constants.AgentConstants;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.constants.NetworkConstants;
+import io.cattle.platform.core.dao.StorageDriverDao;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.Network;
+import io.cattle.platform.core.model.StorageDriver;
 import io.cattle.platform.core.util.SystemLabels;
 import io.cattle.platform.docker.constants.DockerInstanceConstants;
 import io.cattle.platform.engine.handler.HandlerResult;
@@ -16,8 +19,11 @@ import io.cattle.platform.json.JsonMapper;
 import io.cattle.platform.object.meta.ObjectMetaDataManager;
 import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.process.common.handler.AbstractObjectProcessLogic;
+import io.cattle.platform.token.TokenService;
+import io.cattle.platform.util.type.CollectionUtils;
 import io.cattle.platform.util.type.Priority;
 
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -34,6 +40,10 @@ import com.google.common.base.Joiner;
 public class InstancePreCreate extends AbstractObjectProcessLogic implements ProcessPreListener, Priority {
     @Inject
     JsonMapper jsonMapper;
+    @Inject
+    StorageDriverDao storageDriverDao;
+    @Inject
+    TokenService tokenService;
 
     @Override
     public String[] getProcessNames() {
@@ -52,6 +62,7 @@ public class InstancePreCreate extends AbstractObjectProcessLogic implements Pro
         setName(instance, labels, data);
         setDns(instance, labels, data);
         setLogConfig(instance, data);
+        setSecrets(instance, data);
 
         if (!data.isEmpty()) {
             return new HandlerResult(data);
@@ -80,6 +91,24 @@ public class InstancePreCreate extends AbstractObjectProcessLogic implements Pro
         List<String> dataVolumes = DataAccessor.appendToFieldStringList(instance, InstanceConstants.FIELD_DATA_VOLUMES,
             AgentConstants.AGENT_INSTANCE_BIND_MOUNT);
         data.put(InstanceConstants.FIELD_DATA_VOLUMES, dataVolumes);
+    }
+
+    protected void setSecrets(Instance instance, Map<Object, Object> data) {
+        List<SecretReference> secrets = DataAccessor.fieldObjectList(instance, InstanceConstants.FIELD_SECRETS,
+                SecretReference.class, jsonMapper);
+        if (secrets == null || secrets.isEmpty()) {
+            return;
+        }
+
+        StorageDriver driver = storageDriverDao.findSecretsDriver(instance.getAccountId());
+        if (driver == null) {
+            return;
+        }
+
+        String token = tokenService.generateToken(CollectionUtils.asMap("uuid", instance.getUuid()),
+                new Date(System.currentTimeMillis() + 31556926000L));
+
+        storageDriverDao.createSecretsVolume(instance, driver, token);
     }
 
     protected void setLogConfig(Instance instance, Map<Object, Object> data) {

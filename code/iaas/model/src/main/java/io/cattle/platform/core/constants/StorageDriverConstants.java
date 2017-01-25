@@ -23,4 +23,5 @@ public class StorageDriverConstants {
             ));
 
     public static final String CAPABILITY_SCHEDULE_SIZE = "schedule.size";
+    public static final String CAPABILITY_SECRETS = "secrets";
 }

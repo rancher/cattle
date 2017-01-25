@@ -76,6 +76,63 @@
             <tx:method name="createVolumeInStoragePool" />
         </tx:attributes>
     </tx:advice>
+     
+    <tx:advice id="DockerStorageAdvice" transaction-manager="CoreTransactionManager">
+        <tx:attributes>
+            <tx:method name="createExternalStoragePool" />
+            <tx:method name="createImageForInstance" />
+        </tx:attributes>
+    </tx:advice>
+
+    <tx:advice id="TransactionDelegateAdvice" transaction-manager="CoreTransactionManager">
+        <tx:attributes>
+            <tx:method name="doInTransaction" />
+        </tx:attributes>
+    </tx:advice>
+
+     <tx:advice id="RegisterAdvice" transaction-manager="CoreTransactionManager">
+        <tx:attributes>
+            <tx:method name="createAgentForRegistration" />
+        </tx:attributes>
+    </tx:advice>
+
+    <tx:advice id="ServiceMapDaoImplAdvice" transaction-manager="CoreTransactionManager">
+        <tx:attributes>
+            <tx:method name="createServiceInstance" />
+            <tx:method name="createServiceLink" />
+            <tx:method name="createServiceLinks" />
+        </tx:attributes>
+    </tx:advice>
+
+    <tx:advice id="ImageDaoAdvice" transaction-manager="CoreTransactionManager">
+        <tx:attributes>
+            <tx:method name="persistAndAssociateImage" propagation="REQUIRES_NEW" />
+        </tx:attributes>
+    </tx:advice>
+
+    <tx:advice id="AllocatorAdvice" transaction-manager="CoreTransactionManager">
+        <tx:attributes>
+            <tx:method name="recordCandidate" />
+            <tx:method name="releaseAllocation" />
+        </tx:attributes>
+    </tx:advice>
+
+    <tx:advice id="ApiDelegateAdvice" transaction-manager="CoreTransactionManager">
+        <tx:attributes>
+            <!--
+                Don't do read only transaction because it will keep a DB connection open for the
+                entire web request, which is not good for /publish and /subscribe
+                <tx:method name="read" isolation="READ_COMMITTED" read-only="true" />
+            -->
+            <tx:method name="write" />
+        </tx:attributes>
+    </tx:advice>
+
+    <tx:advice id="StorageDriverDaoAdvice" transaction-manager="CoreTransactionManager">
+        <tx:attributes>
+            <tx:method name="createOrFindSecretsVolume" />
+        </tx:attributes>
+    </tx:advice>
 
     <aop:config>
         <aop:advisor advice-ref="GenericResourceDaoImplAdvice"
@@ -90,72 +147,15 @@
             pointcut="execution(* io.cattle.platform.core.dao.HostDao.*(..))" />
         <aop:advisor advice-ref="NetworkDaoImplAdvice"
             pointcut="execution(* io.cattle.platform.core.dao.NetworkDao.*(..))" />
-    </aop:config>
-     
-    <tx:advice id="DockerStorageAdvice" transaction-manager="CoreTransactionManager">
-        <tx:attributes>
-            <tx:method name="createExternalStoragePool" />
-            <tx:method name="createImageForInstance" />
-        </tx:attributes>
-    </tx:advice>
-
-    <aop:config>
         <aop:advisor advice-ref="DockerStorageAdvice" pointcut="execution(* io.cattle.platform.docker.storage.dao.DockerStorageDao.*(..))" />
-    </aop:config>
-
-        <tx:advice id="TransactionDelegateAdvice" transaction-manager="CoreTransactionManager">
-        <tx:attributes>
-            <tx:method name="doInTransaction" />
-        </tx:attributes>
-    </tx:advice>
-
-    <aop:config>
         <aop:advisor advice-ref="TransactionDelegateAdvice" pointcut="execution(* io.cattle.platform.object.impl.TransactionDelegate.*(..))" />
-    </aop:config>
-     
-         <tx:advice id="RegisterAdvice" transaction-manager="CoreTransactionManager">
-        <tx:attributes>
-            <tx:method name="createAgentForRegistration" />
-        </tx:attributes>
-    </tx:advice>
-
-    <aop:config>
         <aop:advisor advice-ref="RegisterAdvice" pointcut="execution(* io.cattle.platform.register.dao.RegisterDao.*(..))" />
-    </aop:config>
-
-    <tx:advice id="ServiceMapDaoImplAdvice" transaction-manager="CoreTransactionManager">
-        <tx:attributes>
-            <tx:method name="createServiceInstance" />
-            <tx:method name="createServiceLink" />
-            <tx:method name="createServiceLinks" />
-        </tx:attributes>
-    </tx:advice>
-
-    <aop:config>
         <aop:advisor advice-ref="ServiceMapDaoImplAdvice" pointcut="execution(* io.cattle.platform.servicediscovery.api.dao.ServiceExposeMapDao.*(..))" />
         <aop:advisor advice-ref="ServiceMapDaoImplAdvice" pointcut="execution(* io.cattle.platform.servicediscovery.api.dao.ServiceConsumeMapDao.*(..))" />
-    </aop:config>
-
-    <tx:advice id="ImageDaoAdvice" transaction-manager="CoreTransactionManager">
-        <tx:attributes>
-            <tx:method name="persistAndAssociateImage" propagation="REQUIRES_NEW" />
-        </tx:attributes>
-    </tx:advice>
-
-    <aop:config>
         <aop:advisor advice-ref="ImageDaoAdvice" pointcut="execution(* io.cattle.platform.storage.service.dao.ImageDao.*(..))" />
-    </aop:config>
-    
-    
-    <tx:advice id="AllocatorAdvice" transaction-manager="CoreTransactionManager">
-        <tx:attributes>
-            <tx:method name="recordCandidate" />
-            <tx:method name="releaseAllocation" />
-        </tx:attributes>
-    </tx:advice>
-
-    <aop:config>
         <aop:advisor advice-ref="AllocatorAdvice" pointcut="execution(* io.cattle.platform.allocator.dao.AllocatorDao.*(..))" />
+        <aop:advisor advice-ref="ApiDelegateAdvice" pointcut="execution(* io.github.ibuildthecloud.gdapi.request.handler.write.ReadWriteApiDelegate.*(..))" />
+        <aop:advisor advice-ref="StorageDriverDaoAdvice" pointcut="execution(* io.cattle.platform.core.dao.StorageDriverDao.*(..))" />
     </aop:config>
 
    <bean class="io.cattle.platform.api.schema.ObjectBasedSubSchemaFactory" depends-on="CoreSchemaFactory" >
@@ -391,7 +391,35 @@
         </property>
     </bean>
 
-     <bean id="ProjectAdmin" class="io.cattle.platform.api.schema.ObjectBasedSubSchemaFactory" depends-on="CoreSchemaFactory" >
+    <bean id="Environment" class="io.cattle.platform.api.schema.ObjectBasedSubSchemaFactory" depends-on="CoreSchemaFactory" >
+        <property name="id" value="environment" />
+        <property name="schemaFactory" ref="CoreSchemaFactory" />
+        <property name="postProcessors">
+            <list>
+                <bean class="io.cattle.platform.schema.processor.JsonFileOverlayPostProcessor" >
+                    <property name="path" value="schema/environment" />
+                </bean>
+                <bean class="io.cattle.platform.schema.processor.AuthOverlayPostProcessor" >
+                    <property name="resources" >
+                        <bean class="io.cattle.platform.spring.resource.SpringUrlListFactory" >
+                            <property name="resources">
+                                <list>
+                                    <value>classpath:schema/user/user-auth.json</value>
+                                    <value>classpath*:schema/user/user-auth.json.d/**/*.json</value>
+                                    <value>classpath:schema/project/project-auth.json</value>
+                                    <value>classpath*:schema/project/project-auth.json.d/**/*.json</value>
+                                    <value>classpath:schema/environment/environment-auth.json</value>
+                                    <value>classpath*:schema/environment/environment-auth.json.d/**/*.json</value>
+                                </list>
+                            </property>
+                        </bean>
+                    </property>
+                </bean>
+            </list>
+        </property>
+    </bean>
+
+    <bean id="ProjectAdmin" class="io.cattle.platform.api.schema.ObjectBasedSubSchemaFactory" depends-on="CoreSchemaFactory" >
         <property name="id" value="projectadmin" />
         <property name="schemaFactory" ref="CoreSchemaFactory" />
         <property name="postProcessors">
@@ -472,20 +500,5 @@
             </list>
         </property>
     </bean>
-    
-    <tx:advice id="ApiDelegateAdvice" transaction-manager="CoreTransactionManager">
-        <tx:attributes>
-            <!--
-                Don't do read only transaction because it will keep a DB connection open for the
-                entire web request, which is not good for /publish and /subscribe
-                <tx:method name="read" isolation="READ_COMMITTED" read-only="true" />
-            -->
-            <tx:method name="write" />
-        </tx:attributes>
-    </tx:advice>
-
-    <aop:config>
-        <aop:advisor advice-ref="ApiDelegateAdvice" pointcut="execution(* io.github.ibuildthecloud.gdapi.request.handler.write.ReadWriteApiDelegate.*(..))" />
-    </aop:config>
     
 </beans>

@@ -23,6 +23,7 @@ import io.cattle.platform.core.addon.RecreateOnQuorumStrategyConfig;
 import io.cattle.platform.core.addon.RestartPolicy;
 import io.cattle.platform.core.addon.RollingRestartStrategy;
 import io.cattle.platform.core.addon.ScalePolicy;
+import io.cattle.platform.core.addon.SecretReference;
 import io.cattle.platform.core.addon.ServiceLink;
 import io.cattle.platform.core.addon.ServiceRestart;
 import io.cattle.platform.core.addon.ServiceUpgrade;
@@ -91,7 +92,8 @@ public class CoreModelConfig {
                 NetworkPolicyRuleWithin.class,
                 NetworkPolicyRuleAction.class,
                 ProcessSummary.class,
-                ProcessPool.class
+                ProcessPool.class,
+                SecretReference.class
                 ));
         return typeSet;
     }

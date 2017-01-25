@@ -49,6 +49,8 @@ import io.cattle.platform.framework.encryption.EncryptionUtils;
 import io.cattle.platform.framework.encryption.handler.impl.TransformationServiceImpl;
 import io.cattle.platform.framework.encryption.impl.Aes256Encrypter;
 import io.cattle.platform.framework.encryption.impl.Sha256Hasher;
+import io.cattle.platform.framework.secret.SecretsService;
+import io.cattle.platform.framework.secret.SecretsServiceImpl;
 import io.cattle.platform.ha.monitor.dao.impl.PingInstancesMonitorDaoImpl;
 import io.cattle.platform.ha.monitor.impl.PingInstancesMonitorImpl;
 import io.cattle.platform.hazelcast.membership.DBDiscovery;
@@ -835,5 +837,10 @@ public class SystemServicesConfig {
     @Bean
     EventNotificationChangeMonitor EventNotificationChangeMonitor() {
         return new EventNotificationChangeMonitor();
+    }
+
+    @Bean
+    SecretsService SecretsService() {
+        return new SecretsServiceImpl();
     }
 }

@@ -381,7 +381,10 @@
         },
         "mounts" : {
             "type" : "array[mountEntry]"
-        }   
+        },
+        "secrets": {
+            "type" : "array[secretReference]"
+        }
     },
     "resourceActions": {
         "logs": {

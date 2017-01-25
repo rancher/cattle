@@ -48,6 +48,7 @@
         "registryCredential": "crud",
         "registry": "crud",
         "restartPolicy" : "cr",
+        "secret": "crud",
         "serviceUpgrade" : "cr",
         "serviceRestart" : "cr",
         "secondaryLaunchConfig" : "cru",

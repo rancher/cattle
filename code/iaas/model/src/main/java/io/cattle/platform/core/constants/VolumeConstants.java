@@ -70,4 +70,9 @@ public class VolumeConstants {
     public static final String PROCESS_RESTORE_FROM_BACKUP = "volume." + ACTION_RESTORE;
 
     public static final String DRIVER_OPT_BASE_IMAGE = "base-image";
+
+    public static final String SECRETS_PATH = "/run/secrets";
+
+    public static final String SECRETS_OPT_KEY = "io.rancher.secrets.token";
+
 }

@@ -242,7 +242,7 @@ public interface Volume extends java.io.Serializable {
 	/**
 	 * Getter for <code>cattle.volume.uri</code>.
 	 */
-	@javax.persistence.Column(name = "uri", length = 512)
+	@javax.persistence.Column(name = "uri", length = 255)
 	public java.lang.String getUri();
 
 	/**
