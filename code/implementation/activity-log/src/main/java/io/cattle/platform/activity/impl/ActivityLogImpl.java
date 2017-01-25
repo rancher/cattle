@@ -24,6 +24,7 @@ import java.util.Date;
 import java.util.Stack;
 
 import org.apache.commons.lang3.StringUtils;
+import org.jooq.exception.DataChangedException;
 
 public class ActivityLogImpl implements ActivityLog {
     EventService eventService;
@@ -80,9 +81,12 @@ public class ActivityLogImpl implements ActivityLog {
                 message = entry.message;
             }
             objectManager.reload(entry.owner);
-            objectManager.setFields(entry.owner,
-                    ObjectMetaDataManager.TRANSITIONING_FIELD, transitioning,
-                    ObjectMetaDataManager.TRANSITIONING_MESSAGE_FIELD, message);
+            try {
+                objectManager.setFields(entry.owner,
+                        ObjectMetaDataManager.TRANSITIONING_FIELD, transitioning,
+                        ObjectMetaDataManager.TRANSITIONING_MESSAGE_FIELD, message);
+            } catch (DataChangedException e) {
+            }
             ObjectUtils.publishChanged(eventService, objectManager, entry.owner);
         }
     }
@@ -138,6 +142,12 @@ public class ActivityLogImpl implements ActivityLog {
         if (t instanceof ServiceReconcileException) {
             entryImpl.failed = false;
             log.setLevel("info");
+        }
+
+        if (t instanceof DataChangedException) {
+            entryImpl.failed = false;
+            log.setLevel("info");
+            log.setDescription("Database state has changed, need to re-evaluate");
         }
 
         if (t instanceof FailedToAcquireLockException) {
