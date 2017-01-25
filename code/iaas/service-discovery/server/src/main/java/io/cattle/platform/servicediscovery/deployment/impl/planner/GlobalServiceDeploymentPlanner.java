@@ -29,11 +29,10 @@ public class GlobalServiceDeploymentPlanner extends ServiceDeploymentPlanner {
                         ServiceDiscoveryUtil.getMergedServiceLabels(service, context.allocatorService));
         hostIds.addAll(hostIdsToDeployService);
         for (DeploymentUnit unit : units) {
-            Map<String, String> unitLabels = unit.getLabels();
-            String hostId = unitLabels.get(ServiceConstants.LABEL_SERVICE_REQUESTED_HOST_ID);
-            hostToUnits.put(Long.valueOf(hostId), unit);
+            hostToUnits.put(Long.valueOf(getHostId(unit)), unit);
         }
     }
+
 
     @Override
     public List<DeploymentUnit> deployHealthyUnits(DeploymentUnitInstanceIdGenerator svcInstanceIdGenerator) {
@@ -57,14 +56,24 @@ public class GlobalServiceDeploymentPlanner extends ServiceDeploymentPlanner {
             }
         });
 
+        Collections.sort(this.incompleteUnits, new Comparator<DeploymentUnit>() {
+            @Override
+            public int compare(DeploymentUnit d1, DeploymentUnit d2) {
+                return Long.compare(d1.getCreateIndex(), d2.getCreateIndex());
+            }
+        });
+
         List<String> fulfilledHostIds = new ArrayList<>();
         for (int i = 0; i < this.healthyUnits.size(); i++) {
             DeploymentUnit unit = this.healthyUnits.get(i);
-            Map<String, String> unitLabels = unit.getLabels();
-            String hostId = unitLabels.get(ServiceConstants.LABEL_SERVICE_REQUESTED_HOST_ID);
-            if (fulfilledHostIds.contains(hostId) || !hostIds.contains(Long.valueOf(hostId))) {
-                watchList.add(unit);
-                unit.remove(ServiceConstants.AUDIT_LOG_REMOVE_EXTRA, ActivityLog.INFO);
+            String hostId = getHostId(unit);
+            boolean hostPresent = hostIds.contains(Long.valueOf(hostId));
+            if (fulfilledHostIds.contains(hostId) || !hostPresent) {
+                // remove when host is present, just ignore the unit if not (by removing from healthy units)
+                if (hostPresent) {
+                    watchList.add(unit);
+                    unit.remove(ServiceConstants.AUDIT_LOG_REMOVE_EXTRA, ActivityLog.INFO);
+                }
                 this.healthyUnits.remove(i);
             } else {
                 fulfilledHostIds.add(hostId);
@@ -74,7 +83,23 @@ public class GlobalServiceDeploymentPlanner extends ServiceDeploymentPlanner {
         for (DeploymentUnit toWatch : watchList) {
             toWatch.waitForRemoval();
         }
+
+        for (int i = 0; i < this.incompleteUnits.size(); i++) {
+            DeploymentUnit unit = this.incompleteUnits.get(i);
+            String hostId = getHostId(unit);
+            boolean hostPresent = hostIds.contains(Long.valueOf(hostId));
+            if (!hostPresent) {
+                this.incompleteUnits.remove(i);
+            }
+        }
     }
+
+    private String getHostId(DeploymentUnit unit) {
+        Map<String, String> unitLabels = unit.getLabels();
+        String hostId = unitLabels.get(ServiceConstants.LABEL_SERVICE_REQUESTED_HOST_ID);
+        return hostId;
+    }
+
 
     private void addMissingUnits(DeploymentUnitInstanceIdGenerator svcInstanceIdGenerator) {
         for (Long hostId : hostIds) {
