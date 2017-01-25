@@ -3,8 +3,10 @@ package io.cattle.platform.docker.process.instancehostmap;
 import static io.cattle.platform.core.model.tables.IpAddressTable.*;
 import static io.cattle.platform.core.model.tables.MountTable.*;
 import static io.cattle.platform.docker.constants.DockerInstanceConstants.*;
+
 import io.cattle.iaas.labels.service.LabelsService;
 import io.cattle.platform.core.constants.CommonStatesConstants;
+import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.constants.IpAddressConstants;
 import io.cattle.platform.core.constants.PortConstants;
 import io.cattle.platform.core.constants.VolumeConstants;
@@ -47,6 +49,7 @@ import io.cattle.platform.util.type.Priority;
 import io.github.ibuildthecloud.gdapi.condition.Condition;
 import io.github.ibuildthecloud.gdapi.condition.ConditionType;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -318,9 +321,17 @@ public class DockerPostInstanceHostMapActivate extends AbstractObjectProcessLogi
             }
         }
 
+        List<String> publishedPorts = new ArrayList<>();
         for (Port port : getObjectManager().children(instance, Port.class)) {
             createIgnoreCancel(port, null);
+            if (port.getPublicPort() != null) {
+                publishedPorts.add(new PortSpec(port).toSpec());
+            }
         }
+        List<String> userPorts = DataAccessor.fieldStringList(instance, InstanceConstants.FIELD_PORTS);
+        DataAccessor.fields(instance).withKey(InstanceConstants.FIELD_USER_PORTS).set(userPorts);
+        DataAccessor.fields(instance).withKey(InstanceConstants.FIELD_PORTS).set(publishedPorts);
+        objectManager.persist(instance);
     }
 
     @Override

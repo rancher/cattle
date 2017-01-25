@@ -112,6 +112,7 @@
         "container.networkMode" : "cr",
         "container.networkContainerId" : "cr",
         "container.pidMode" : "cr",
+        "container.userPorts" : "r",
         "container.ports" : "cr",
         "container.primaryIpAddress" : "r",
         "container.primaryNetworkId" : "r",
