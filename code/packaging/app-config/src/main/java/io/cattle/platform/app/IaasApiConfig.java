@@ -9,8 +9,8 @@ import io.cattle.platform.docker.api.transform.TransformInspect;
 import io.cattle.platform.docker.machine.api.MachineLinkFilter;
 import io.cattle.platform.docker.machine.api.addon.BaseMachineConfig;
 import io.cattle.platform.docker.machine.api.filter.MachineValidationFilter;
-import io.cattle.platform.docker.machine.launch.WebsocketProxyLauncher;
 import io.cattle.platform.docker.machine.launch.SecretsApiLauncher;
+import io.cattle.platform.docker.machine.launch.WebsocketProxyLauncher;
 import io.cattle.platform.extension.impl.EMUtils;
 import io.cattle.platform.extension.impl.ExtensionManagerImpl;
 import io.cattle.platform.host.api.HostApiProxyTokenImpl;
@@ -80,6 +80,7 @@ import io.cattle.platform.iaas.api.filter.instance.InstancePortsValidationFilter
 import io.cattle.platform.iaas.api.filter.instance.InstanceVolumeCleanupStrategyValidationFilter;
 import io.cattle.platform.iaas.api.filter.machinedriver.MachineDriverFilter;
 import io.cattle.platform.iaas.api.filter.registry.RegistryServerAddressFilter;
+import io.cattle.platform.iaas.api.filter.secret.SecretValidationFilter;
 import io.cattle.platform.iaas.api.filter.service.ServiceMappingsOutputFilter;
 import io.cattle.platform.iaas.api.filter.serviceevent.ServiceEventFilter;
 import io.cattle.platform.iaas.api.filter.snapshot.SnapshotValidationFilter;
@@ -374,6 +375,11 @@ public class IaasApiConfig {
     @Bean
     RegistryServerAddressFilter RegistryServerAddressFilter() {
         return new RegistryServerAddressFilter();
+    }
+
+    @Bean
+    SecretValidationFilter SecretValidationFilter() {
+        return new SecretValidationFilter();
     }
 
     @Bean

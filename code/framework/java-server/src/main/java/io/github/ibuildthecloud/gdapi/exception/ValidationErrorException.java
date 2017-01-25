@@ -10,4 +10,9 @@ public class ValidationErrorException extends ClientVisibleException {
         super(new ValidationErrorImpl(code, fieldName));
     }
 
+    public ValidationErrorException(String code, String fieldName, String message) {
+        super(new ValidationErrorImpl(code, fieldName));
+        ((ValidationErrorImpl)getApiError()).setMessage(message);
+    }
+
 }

@@ -1,4 +1,5 @@
 from common_fixtures import *  # NOQA
+from cattle import ApiError
 import requests
 
 
@@ -32,6 +33,12 @@ def secret_context(new_context, super_client):
     service = client.wait_success(service)
     assert service.state == 'active'
     return new_context
+
+
+def test_secret_create_bad(secret_context):
+    client = secret_context.client
+    with pytest.raises(ApiError):
+        client.create_secret(name=random_str(), value='!!!')
 
 
 def test_secret_create_and_delete(secret_context):
