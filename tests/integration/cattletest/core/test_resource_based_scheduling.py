@@ -38,32 +38,56 @@ def test_resource_based_scheduler(new_context, super_client):
     do_scheduling_test({'imageUuid': image, 'networkMode': 'host'},
                        client, mock_scheduler,
                        [host2, host3, host1], host2,
-                       [{'resource': 'instanceReservation', 'amount': 1}])
+                       [{'resource': 'instanceReservation', 'amount': 1,
+                         'type': 'computePool'}])
 
     # Straight-forward memory scheduling
     do_scheduling_test({'imageUuid': image, 'memoryReservation': 500000,
                         'networkMode': 'host'},
                        client, mock_scheduler,
                        [host2, host3, host1], host2,
-                       [{'resource': 'memoryReservation', 'amount': 500000},
-                        {'resource': 'instanceReservation', 'amount': 1}])
+                       [{'resource': 'memoryReservation', 'amount': 500000,
+                         'type': 'computePool'},
+                        {'resource': 'instanceReservation', 'amount': 1,
+                         'type': 'computePool'}])
 
     # Straight-forward cpu scheduling
     do_scheduling_test({'imageUuid': image, 'milliCpuReservation': 500,
                         'networkMode': 'host'},
                        client, mock_scheduler,
                        [host3], host3,
-                       [{'resource': 'cpuReservation', 'amount': 500},
-                        {'resource': 'instanceReservation', 'amount': 1}])
+                       [{'resource': 'cpuReservation', 'amount': 500,
+                         'type': 'computePool'},
+                        {'resource': 'instanceReservation', 'amount': 1,
+                         'type': 'computePool'}])
+
+    # Straight-forward port scheduling
+    # Haven't figured out a way to test this. When creating a fake container,
+    # the port info is not populated into the database table and
+    # the port request is not populated correctly
+    # do_scheduling_test({'imageUuid': image,
+    #                     'networkMode': 'host', 'port': '8080:8080/tcp'},
+    #                    client, mock_scheduler,
+    #                    [host3], host3,
+    #                    [{'resource': 'portReservation', 'instanceId': "1",
+    #                       'type': 'portPool',
+    #                      'PortRequests': [
+    #                           {'publicPort': 8080, 'privatePort': 8080}
+    #                       ]},
+    #                     {'resource': 'instanceReservation', 'amount': 1,
+    #                       'type': 'computePool'}])
 
     # Two resources are requested
     do_scheduling_test({'imageUuid': image, 'memoryReservation': 5000000,
                         'milliCpuReservation': 500, 'networkMode': 'host'},
                        client, mock_scheduler,
                        [host1, host2, host3], host1,
-                       [{'resource': 'memoryReservation', 'amount': 5000000},
-                        {'resource': 'cpuReservation', 'amount': 500},
-                        {'resource': 'instanceReservation', 'amount': 1}])
+                       [{'resource': 'memoryReservation', 'amount': 5000000,
+                         'type': 'computePool'},
+                        {'resource': 'cpuReservation',
+                            'amount': 500, 'type': 'computePool'},
+                        {'resource': 'instanceReservation', 'amount': 1,
+                         'type': 'computePool'}])
 
     # deactivate the host that the scheduler returns as #1 and the second
     # one in the list should get chosen
@@ -72,14 +96,18 @@ def test_resource_based_scheduler(new_context, super_client):
                         'networkMode': 'host'},
                        client, mock_scheduler,
                        [host2, host3, host1], host3,
-                       [{'resource': 'cpuReservation', 'amount': 500},
-                        {'resource': 'instanceReservation', 'amount': 1}])
+                       [{'resource': 'cpuReservation', 'amount': 500,
+                         'type': 'computePool'},
+                        {'resource': 'instanceReservation', 'amount': 1,
+                         'type': 'computePool'}])
 
     do_no_hosts_match_test({'imageUuid': image, 'milliCpuReservation': 500,
                             'networkMode': 'host'},
                            client, mock_scheduler, [host1],
-                           [{'resource': 'cpuReservation', 'amount': 500},
-                            {'resource': 'instanceReservation', 'amount': 1}])
+                           [{'resource': 'cpuReservation', 'amount': 500,
+                             'type': 'computePool'},
+                            {'resource': 'instanceReservation', 'amount': 1,
+                             'type': 'computePool'}])
 
 
 def do_scheduling_test(container_kw, client, mock_scheduler, hosts,
@@ -202,6 +230,7 @@ def mock_sched(new_context, super_client):
 
 
 class MockScheduler(object):
+
     def __init__(self, ws, url, auth):
         self._url = url
         self._auth = auth

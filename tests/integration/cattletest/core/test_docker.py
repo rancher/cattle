@@ -15,6 +15,9 @@ os_environ = "os.environ.get('DOCKER_VERSION') != '1.12.1'"
 if_docker_1_12 = pytest.mark.skipif(os_environ,
                                     reason='Docker version is not 1.12.1')
 
+sched_environ = "os.environ.get('CATTLE_TEST_RESOURCE_SCHEDULER') != 'true'"
+if_resource_scheduler = pytest.mark.skipif(sched_environ)
+
 
 @pytest.fixture(scope='session')
 def docker_client(super_client):
@@ -433,40 +436,6 @@ def test_docker_ports_from_container(docker_client, super_client):
     assert count == 1
 
     docker_client.delete(c)
-
-
-@if_docker
-def test_docker_bind_address(docker_client, super_client):
-    c = docker_client.create_container(name='bindAddrTest',
-                                       networkMode='bridge',
-                                       imageUuid=TEST_IMAGE_UUID,
-                                       ports=['127.0.0.1:89:8999'])
-    c = docker_client.wait_success(c)
-    assert c.state == 'running'
-
-    c = super_client.reload(c)
-    bindings = c.data['dockerInspect']['HostConfig']['PortBindings']
-    assert bindings['8999/tcp'] == [{'HostIp': '127.0.0.1', 'HostPort': '89'}]
-
-    c = docker_client.create_container(name='bindAddrTest2',
-                                       networkMode='bridge',
-                                       imageUuid=TEST_IMAGE_UUID,
-                                       ports=['127.2.2.2:89:8999'])
-    c = docker_client.wait_success(c)
-    assert c.state == 'running'
-    c = super_client.reload(c)
-    bindings = c.data['dockerInspect']['HostConfig']['PortBindings']
-    assert bindings['8999/tcp'] == [{'HostIp': '127.2.2.2', 'HostPort': '89'}]
-
-    c = docker_client.create_container(name='bindAddrTest3',
-                                       networkMode='bridge',
-                                       imageUuid=TEST_IMAGE_UUID,
-                                       ports=['127.2.2.2:89:8999'])
-    c = docker_client.wait_transitioning(c)
-    assert c.transitioning == 'error'
-    assert c.transitioningMessage == \
-        'Scheduling failed: host needs ports 89/tcp available'
-    assert c.state == 'error'
 
 
 @if_docker
@@ -1089,6 +1058,159 @@ def test_blkio_device_options(super_client, docker_client):
     assert hc['BlkioDeviceReadIOps'] == [{'Path': '/dev/sda', 'Rate': 1000}]
     assert hc['BlkioDeviceWriteIOps'] == [{'Path': '/dev/sda', 'Rate': 2000}]
     assert hc['BlkioDeviceReadBps'] == [{'Path': '/dev/null', 'Rate': 3000}]
+
+
+@if_resource_scheduler
+def test_port_constraint(docker_client):
+    # Tests with the above label can only be ran when the external scheduler is
+    # is enabled. It isn't in CI, so we need to disable these tests by default
+    # They can (and should) be run locally if working on the scheduler
+    containers = []
+    try:
+        c = docker_client.wait_success(
+            docker_client.create_container(imageUuid=TEST_IMAGE_UUID,
+                                           ports=['9998:81/tcp']))
+        containers.append(c)
+
+        # try to deploy another container with same public port + protocol
+        c2 = docker_client.wait_transitioning(
+            docker_client.create_container(imageUuid=TEST_IMAGE_UUID,
+                                           ports=['9998:81/tcp']))
+        assert c2.transitioning == 'error'
+        assert '9998:81/tcp' in c2.transitioningMessage
+        assert c2.state == 'error'
+        containers.append(c2)
+
+        # try different public port
+        c3 = docker_client.wait_success(
+             docker_client.create_container(imageUuid=TEST_IMAGE_UUID,
+                                            ports=['9999:81/tcp']))
+        containers.append(c3)
+
+        # try different protocol
+        c4 = docker_client.wait_success(
+            docker_client.create_container(imageUuid=TEST_IMAGE_UUID,
+                                           ports=['9999:81/udp']))
+        containers.append(c4)
+
+        # UDP is now taken
+        c5 = docker_client.wait_transitioning(
+            docker_client.create_container(imageUuid=TEST_IMAGE_UUID,
+                                           ports=['9999:81/udp']))
+        assert c5.transitioning == 'error'
+        assert '9999:81/udp' in c5.transitioningMessage
+        assert c5.state == 'error'
+        containers.append(c5)
+
+        # try different bind IP
+        c6 = docker_client.wait_success(
+            docker_client.create_container(imageUuid=TEST_IMAGE_UUID,
+                                           ports=['127.2.2.1:9997:81/tcp']))
+        containers.append(c6)
+
+        # Bind IP is now taken
+        c7 = docker_client.wait_transitioning(
+            docker_client.create_container(imageUuid=TEST_IMAGE_UUID,
+                                           ports=['127.2.2.1:9997:81/tcp']))
+        assert c7.transitioning == 'error'
+        assert '127.2.2.1:9997:81/tcp' in c7.transitioningMessage
+        assert c7.state == 'error'
+        containers.append(c7)
+    finally:
+        for c in containers:
+            if c is not None:
+                c = docker_client.wait_success(docker_client.delete(c))
+                c.purge()
+
+
+@if_resource_scheduler
+def test_conflicting_ports_in_deployment_unit(docker_client):
+    env = docker_client.create_stack(name=random_str())
+    env = docker_client.wait_success(env)
+    assert env.state == "active"
+
+    launch_config = {"imageUuid": TEST_IMAGE_UUID, "ports": ['7777:6666']}
+    secondary_lc = {"imageUuid": TEST_IMAGE_UUID,
+                    "name": "secondary", "ports": ['7777:6666']}
+
+    svc = docker_client.create_service(name=random_str(),
+                                       stackId=env.id,
+                                       launchConfig=launch_config,
+                                       secondaryLaunchConfigs=[secondary_lc])
+    svc = docker_client.wait_success(svc)
+    assert svc.state == "inactive"
+
+    svc = svc.activate()
+    c = _wait_for_compose_instance_error(docker_client, svc, env)
+    assert '7777:6666/tcp' in c.transitioningMessage
+    env.remove()
+
+
+@if_resource_scheduler
+def test_simultaneous_port_allocation(docker_client):
+    # This test ensures if two containers are allocated simultaneously, only
+    # one will get the port and the other will fail to allocate.
+    # By nature, this test is exercise a race condition, so it isn't perfect.
+    env = docker_client.create_stack(name=random_str())
+    env = docker_client.wait_success(env)
+    assert env.state == "active"
+
+    launch_config = {"imageUuid": TEST_IMAGE_UUID,
+                     "ports": ['5555:6666']}
+    svc = docker_client.create_service(name=random_str(),
+                                       stackId=env.id,
+                                       launchConfig=launch_config,
+                                       scale=2)
+    svc = docker_client.wait_success(svc)
+    assert svc.state == "inactive"
+
+    svc = svc.activate()
+    c = _wait_for_compose_instance_error(docker_client, svc, env)
+    assert '5555:6666/tcp' in c.transitioningMessage
+
+
+@if_resource_scheduler
+def test_docker_bind_address(docker_client, super_client):
+    c = docker_client.create_container(name='bindAddrTest',
+                                       networkMode='bridge',
+                                       imageUuid=TEST_IMAGE_UUID,
+                                       ports=['127.0.0.1:89:8999'])
+    c = docker_client.wait_success(c)
+    assert c.state == 'running'
+
+    c = super_client.reload(c)
+    bindings = c.data['dockerInspect']['HostConfig']['PortBindings']
+    assert bindings['8999/tcp'] == [{'HostIp': '127.0.0.1', 'HostPort': '89'}]
+
+    c = docker_client.create_container(name='bindAddrTest2',
+                                       networkMode='bridge',
+                                       imageUuid=TEST_IMAGE_UUID,
+                                       ports=['127.2.2.2:89:8999'])
+    c = docker_client.wait_success(c)
+    assert c.state == 'running'
+    c = super_client.reload(c)
+    bindings = c.data['dockerInspect']['HostConfig']['PortBindings']
+    assert bindings['8999/tcp'] == [{'HostIp': '127.2.2.2', 'HostPort': '89'}]
+
+    c = docker_client.create_container(name='bindAddrTest3',
+                                       networkMode='bridge',
+                                       imageUuid=TEST_IMAGE_UUID,
+                                       ports=['127.2.2.2:89:8999'])
+    c = docker_client.wait_transitioning(c)
+    assert c.transitioning == 'error'
+    assert '127.2.2.2:89:8999' in c.transitioningMessage
+    assert c.state == 'error'
+
+
+def _wait_for_compose_instance_error(client, service, env):
+    name = env.name + "-" + service.name + "%"
+
+    def check():
+        containers = client.list_container(name_like=name, state='error')
+        if len(containers) > 0:
+            return containers[0]
+    container = wait_for(check)
+    return container
 
 
 def _check_path(volume, should_exist, client, super_client):

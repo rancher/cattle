@@ -24,6 +24,7 @@ public class InstanceConstants {
     public static final String FIELD_INSTANCE_TRIGGERED_STOP = "instanceTriggeredStop";
     public static final String FIELD_NETWORK_IDS = "networkIds";
     public static final String FIELD_PORTS = "ports";
+    public static final String FIELD_USER_PORTS = "userPorts";
     public static final String FIELD_PRIMARY_IP_ADDRESS = "primaryIpAddress";
     public static final String FIELD_PRIMARY_NETWORK_ID = "primaryNetworkId";
     public static final String FIELD_PRIVILEGED = "privileged";
