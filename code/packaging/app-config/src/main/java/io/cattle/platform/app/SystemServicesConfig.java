@@ -197,6 +197,7 @@ public class SystemServicesConfig {
     DefaultIdFormatter DefaultIdFormatter(@Qualifier("CoreSchemaFactory") SchemaFactory factory) {
         Map<String, String> mapping = new HashMap<>();
         mapping.put("stack", "st");
+        mapping.put("secret", "se");
 
         DefaultIdFormatter idF = new DefaultIdFormatter();
         idF.setSchemaFactory(factory);

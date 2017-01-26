@@ -61,6 +61,12 @@ public class GenericResourceDaoImpl implements GenericResourceDao {
     }
 
     @Override
+    public <T> T create(Class<T> clz, Object key, Object... values) {
+        Map<Object,Object> properties = CollectionUtils.asMap(key, values);
+        return create(clz, objectManager.convertToPropertiesFor(clz, properties));
+    }
+
+    @Override
     public <T> T create(Class<T> clz, Map<String, Object> properties) {
         T obj = objectManager.create(clz, properties);
         processManager.executeStandardProcess(StandardProcess.CREATE, obj, properties);
