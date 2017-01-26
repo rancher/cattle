@@ -154,7 +154,7 @@ public class AgentInstanceFactoryImpl implements AgentInstanceFactory {
         List<? extends Service> services = instanceDao.findServicesNonRemovedLinksOnly(instance);
         for (Service service : services) {
             Stack stack = objectManager.loadResource(Stack.class, service.getStackId());
-            if (ServiceConstants.isSystem(stack)) {
+            if (ServiceConstants.isSystem(stack) || isLBSystemService(service)) {
                 return true;
             }
         }
