@@ -27,9 +27,11 @@ public class RegistrationToken {
 
     public static final String createToken(String accessKey, String secretKey) {
         Calendar cal = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
+        cal.set(Calendar.HOUR_OF_DAY, 0);
         cal.set(Calendar.MINUTE, 0);
         cal.set(Calendar.SECOND, 0);
         cal.set(Calendar.MILLISECOND, 0);
+        cal.set(Calendar.DAY_OF_YEAR, 0);
 
         return createToken(accessKey, secretKey, cal.getTime());
     }
