@@ -48,6 +48,7 @@ def test_secret_create_and_delete(secret_context):
     assert secret.state == 'creating'
     assert secret.value == 'foo'
     assert secret.description is None
+    secret = client.wait_success(secret)
 
     secret = client.update(secret, description='foo')
     assert secret.description == 'foo'
@@ -61,6 +62,7 @@ def test_secret_create_and_use(secret_context):
                                   value='foo')
     assert secret.state == 'creating'
     assert secret.value == 'foo'
+    secret = client.wait_success(secret)
 
     secret = client.reload(secret)
     assert secret.value is None
