@@ -1,8 +1,8 @@
 package io.cattle.platform.process.instance;
 
+import io.cattle.platform.allocator.eventing.AllocatorService;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.dao.GenericMapDao;
-import io.cattle.platform.core.dao.NicDao;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.InstanceHostMap;
 import io.cattle.platform.core.model.Volume;
@@ -11,8 +11,7 @@ import io.cattle.platform.core.util.InstanceHelpers;
 import io.cattle.platform.engine.handler.HandlerResult;
 import io.cattle.platform.engine.process.ProcessInstance;
 import io.cattle.platform.engine.process.ProcessState;
-import io.cattle.platform.eventing.EventService;
-import io.cattle.platform.process.common.handler.EventBasedProcessHandler;
+import io.cattle.platform.process.base.AbstractDefaultProcessHandler;
 import io.cattle.platform.util.type.CollectionUtils;
 
 import java.util.HashMap;
@@ -25,31 +24,24 @@ import javax.inject.Inject;
 import javax.inject.Named;
 
 @Named
-public class InstanceAllocate extends EventBasedProcessHandler {
-    @Inject
-    EventService eventService;
+public class InstanceAllocate extends AbstractDefaultProcessHandler {
 
     @Inject
-    NicDao nicDao;
+    AllocatorService allocatorService;
 
     @Inject
     GenericMapDao mapDao;
 
-    public InstanceAllocate() {
-        setPriority(DEFAULT);
-    }
-
     @Override
     public HandlerResult handle(ProcessState state, ProcessInstance process) {
         Instance instance = (Instance)state.getResource();
-        if (mapDao.findNonRemoved(InstanceHostMap.class, Instance.class, instance.getId()).size() > 0) {
-            return postEvent(state, process, new HashMap<Object, Object>());
+        if (mapDao.findNonRemoved(InstanceHostMap.class, Instance.class, instance.getId()).size() == 0) {
+            allocatorService.instanceAllocate(instance);
         }
-        return super.handle(state, process);
+        return afterAllocate(state, process, new HashMap<Object, Object>());
     }
 
-    @Override
-    protected HandlerResult postEvent(ProcessState state, ProcessInstance process, Map<Object, Object> result) {
+    protected HandlerResult afterAllocate(ProcessState state, ProcessInstance process, Map<Object, Object> result) {
         Map<String, Set<Long>> allocationData = new HashMap<String, Set<Long>>();
         result.put("_allocationData", allocationData);
 
@@ -84,5 +76,4 @@ public class InstanceAllocate extends EventBasedProcessHandler {
 
         return new HandlerResult(result);
     }
-
 }

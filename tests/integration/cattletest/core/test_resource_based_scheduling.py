@@ -39,7 +39,7 @@ def test_resource_based_scheduler(new_context, super_client):
                        client, mock_scheduler,
                        [host2, host3, host1], host2,
                        [{'resource': 'instanceReservation', 'amount': 1,
-                         'type': 'computePool'}])
+                         'type': 'computePool'}], super_client)
 
     # Straight-forward memory scheduling
     do_scheduling_test({'imageUuid': image, 'memoryReservation': 500000,
@@ -49,7 +49,7 @@ def test_resource_based_scheduler(new_context, super_client):
                        [{'resource': 'memoryReservation', 'amount': 500000,
                          'type': 'computePool'},
                         {'resource': 'instanceReservation', 'amount': 1,
-                         'type': 'computePool'}])
+                         'type': 'computePool'}], super_client)
 
     # Straight-forward cpu scheduling
     do_scheduling_test({'imageUuid': image, 'milliCpuReservation': 500,
@@ -59,23 +59,7 @@ def test_resource_based_scheduler(new_context, super_client):
                        [{'resource': 'cpuReservation', 'amount': 500,
                          'type': 'computePool'},
                         {'resource': 'instanceReservation', 'amount': 1,
-                         'type': 'computePool'}])
-
-    # Straight-forward port scheduling
-    # Haven't figured out a way to test this. When creating a fake container,
-    # the port info is not populated into the database table and
-    # the port request is not populated correctly
-    # do_scheduling_test({'imageUuid': image,
-    #                     'networkMode': 'host', 'port': '8080:8080/tcp'},
-    #                    client, mock_scheduler,
-    #                    [host3], host3,
-    #                    [{'resource': 'portReservation', 'instanceId': "1",
-    #                       'type': 'portPool',
-    #                      'PortRequests': [
-    #                           {'publicPort': 8080, 'privatePort': 8080}
-    #                       ]},
-    #                     {'resource': 'instanceReservation', 'amount': 1,
-    #                       'type': 'computePool'}])
+                         'type': 'computePool'}], super_client)
 
     # Two resources are requested
     do_scheduling_test({'imageUuid': image, 'memoryReservation': 5000000,
@@ -87,7 +71,7 @@ def test_resource_based_scheduler(new_context, super_client):
                         {'resource': 'cpuReservation',
                             'amount': 500, 'type': 'computePool'},
                         {'resource': 'instanceReservation', 'amount': 1,
-                         'type': 'computePool'}])
+                         'type': 'computePool'}], super_client)
 
     # deactivate the host that the scheduler returns as #1 and the second
     # one in the list should get chosen
@@ -99,7 +83,7 @@ def test_resource_based_scheduler(new_context, super_client):
                        [{'resource': 'cpuReservation', 'amount': 500,
                          'type': 'computePool'},
                         {'resource': 'instanceReservation', 'amount': 1,
-                         'type': 'computePool'}])
+                         'type': 'computePool'}], super_client)
 
     do_no_hosts_match_test({'imageUuid': image, 'milliCpuReservation': 500,
                             'networkMode': 'host'},
@@ -111,7 +95,8 @@ def test_resource_based_scheduler(new_context, super_client):
 
 
 def do_scheduling_test(container_kw, client, mock_scheduler, hosts,
-                       expected_host, expected_resource_requests):
+                       expected_host, expected_resource_requests,
+                       super_client):
     c = client.create_container(**container_kw)
 
     event = None
@@ -128,20 +113,29 @@ def do_scheduling_test(container_kw, client, mock_scheduler, hosts,
     assert event['name'] == 'scheduler.prioritize'
     assert resource_reqs(event) == expected_resource_requests
 
-    # Looking for reserve event.
+    def check():
+        return len(super_client.reload(c).instanceHostMaps()) > 0
+    # Looking for reserve event
     while True:
         event = mock_scheduler.get_next_event()
         mock_scheduler.publish(event, data)
-        if event['resourceId'] == c.id:
-            break
-    assert event['name'] == 'scheduler.reserve'
+        if (event['resourceId'] == c.id and
+                event['name'] == 'scheduler.reserve'):
+            try:
+                # We have to do this because when idempotency checks are on,
+                # the same reserve request will be sent multiple times and it
+                # isnt safe to move on until a instanceHostMap has been created
+                wait_for(check, timeout=1)
+                break
+            except:
+                pass
+
     assert host_id(event) == expected_host.uuid
     assert resource_reqs(event) == expected_resource_requests
 
     c = client.wait_success(c)
     assert c.state == 'running'
-    c = client.wait_success(c.stop())
-    c = client.wait_success(c.remove())
+    c = client.wait_success(c.stop(remove=True))
     try:
         # may have already purged
         c.purge()

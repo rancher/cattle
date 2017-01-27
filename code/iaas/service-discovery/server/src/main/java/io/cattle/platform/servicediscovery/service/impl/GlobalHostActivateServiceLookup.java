@@ -1,6 +1,6 @@
 package io.cattle.platform.servicediscovery.service.impl;
 
-import io.cattle.platform.allocator.service.AllocatorService;
+import io.cattle.platform.allocator.service.AllocationHelper;
 import io.cattle.platform.core.model.Host;
 import io.cattle.platform.core.model.HostLabelMap;
 import io.cattle.platform.core.model.Service;
@@ -30,7 +30,7 @@ public class GlobalHostActivateServiceLookup implements ServiceLookup {
     ServiceDiscoveryService sdSvc;
 
     @Inject
-    AllocatorService allocatorSvc;
+    AllocationHelper allocationHelper;
 
     @Inject
     ObjectManager objMgr;
@@ -49,9 +49,9 @@ public class GlobalHostActivateServiceLookup implements ServiceLookup {
         List<? extends Service> services = expMapDao.getActiveServices(host.getAccountId());
         List<Service> activeGlobalServices = new ArrayList<Service>();
         for (Service service : services) {
-            Map<String, String> serviceLabels = ServiceDiscoveryUtil.getMergedServiceLabels(service, allocatorSvc);
+            Map<String, String> serviceLabels = ServiceDiscoveryUtil.getMergedServiceLabels(service, allocationHelper);
             if ((sdSvc.isGlobalService(service) || sdSvc.isScalePolicyService(service)) &&
-                    allocatorSvc.hostChangesAffectsHostAffinityRules(host.getId(), serviceLabels)) {
+                    allocationHelper.hostChangesAffectsHostAffinityRules(host.getId(), serviceLabels)) {
                 activeGlobalServices.add(service);
             }
         }

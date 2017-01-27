@@ -5,7 +5,7 @@ import static io.cattle.platform.core.model.tables.ServiceIndexTable.*;
 import static io.cattle.platform.core.model.tables.ServiceTable.*;
 import static io.cattle.platform.core.model.tables.StackTable.*;
 import static io.cattle.platform.core.model.tables.SubnetTable.*;
-import io.cattle.platform.allocator.service.AllocatorService;
+import io.cattle.platform.allocator.service.AllocationHelper;
 import io.cattle.platform.configitem.events.ConfigUpdate;
 import io.cattle.platform.configitem.model.Client;
 import io.cattle.platform.configitem.request.ConfigUpdateRequest;
@@ -110,7 +110,7 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
     LockManager lockManager;
 
     @Inject
-    AllocatorService allocatorService;
+    AllocationHelper allocationHelper;
 
     @Inject
     EventService eventService;
@@ -427,7 +427,7 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
 
     @Override
     public boolean isGlobalService(Service service) {
-        Map<String, String> serviceLabels = ServiceDiscoveryUtil.getMergedServiceLabels(service, allocatorService);
+        Map<String, String> serviceLabels = ServiceDiscoveryUtil.getMergedServiceLabels(service, allocationHelper);
         String globalService = serviceLabels.get(ServiceConstants.LABEL_SERVICE_GLOBAL);
         return Boolean.valueOf(globalService);
     }

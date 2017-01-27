@@ -39,7 +39,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class SimpleAllocator extends AbstractAllocator implements Allocator, Named, VolumeDeallocator {
+public class SimpleAllocator extends AbstractAllocator implements Allocator, Named {
 
     private static final Logger log = LoggerFactory.getLogger(SimpleAllocator.class);
 
@@ -119,7 +119,7 @@ public class SimpleAllocator extends AbstractAllocator implements Allocator, Nam
     }
 
     @Override
-    public void releaseAllocation(Volume volume) {
+    public void deallocate(Volume volume) {
         if (!allocatorDao.isAllocationReleased(volume)) {
             allocatorDao.releaseAllocation(volume);
             callExternalSchedulerToRelease(volume);
