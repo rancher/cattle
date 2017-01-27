@@ -55,10 +55,11 @@ public class StorageDriverDaoImpl extends AbstractJooqDao implements StorageDriv
     }
 
     @Override
-    public void createSecretsVolume(Instance instance, StorageDriver storageDriver, String token) {
+    public Volume createSecretsVolume(Instance instance, StorageDriver storageDriver, String token) {
         Map<String, Object> dataVolumesMounts = DataAccessor.fieldMap(instance, InstanceConstants.FIELD_DATA_VOLUME_MOUNTS);
-        if (dataVolumesMounts.containsKey(VolumeConstants.SECRETS_PATH)) {
-            return;
+        Object volumeId = dataVolumesMounts.get(VolumeConstants.SECRETS_PATH);
+        if (volumeId != null) {
+            return objectManager.loadResource(Volume.class, volumeId.toString());
         }
 
         byte[] bytes = new byte[32];
@@ -68,7 +69,7 @@ public class StorageDriverDaoImpl extends AbstractJooqDao implements StorageDriv
         Map<String, Object> tokenMap = CollectionUtils.asMap("value", token);
         Volume volume;
         try {
-            volume = resourceDao.createAndSchedule(Volume.class,
+            volume = resourceDao.create(Volume.class,
                     VOLUME.NAME, name,
                     VOLUME.ACCOUNT_ID, instance.getAccountId(),
                     VOLUME.STORAGE_DRIVER_ID, storageDriver.getId(),
@@ -81,6 +82,8 @@ public class StorageDriverDaoImpl extends AbstractJooqDao implements StorageDriv
 
         dataVolumesMounts.put(VolumeConstants.SECRETS_PATH, volume.getId());
         objectManager.setFields(instance, InstanceConstants.FIELD_DATA_VOLUME_MOUNTS, dataVolumesMounts);
+
+        return volume;
     }
 
 }

@@ -9,12 +9,14 @@ import io.cattle.platform.core.dao.StorageDriverDao;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.Network;
 import io.cattle.platform.core.model.StorageDriver;
+import io.cattle.platform.core.model.Volume;
 import io.cattle.platform.core.util.SystemLabels;
 import io.cattle.platform.docker.constants.DockerInstanceConstants;
 import io.cattle.platform.engine.handler.HandlerResult;
 import io.cattle.platform.engine.handler.ProcessPreListener;
 import io.cattle.platform.engine.process.ProcessInstance;
 import io.cattle.platform.engine.process.ProcessState;
+import io.cattle.platform.engine.process.impl.ProcessCancelException;
 import io.cattle.platform.json.JsonMapper;
 import io.cattle.platform.object.meta.ObjectMetaDataManager;
 import io.cattle.platform.object.util.DataAccessor;
@@ -108,7 +110,12 @@ public class InstancePreCreate extends AbstractObjectProcessLogic implements Pro
         String token = tokenService.generateToken(CollectionUtils.asMap("uuid", instance.getUuid()),
                 new Date(System.currentTimeMillis() + 31556926000L));
 
-        storageDriverDao.createSecretsVolume(instance, driver, token);
+        try {
+            Volume vol = storageDriverDao.createSecretsVolume(instance, driver, token);
+            create(vol, null);
+        } catch (ProcessCancelException e) {
+            // ignore
+        }
     }
 
     protected void setLogConfig(Instance instance, Map<Object, Object> data) {
