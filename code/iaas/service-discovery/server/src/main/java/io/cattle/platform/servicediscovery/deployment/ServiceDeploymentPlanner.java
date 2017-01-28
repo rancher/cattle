@@ -41,7 +41,7 @@ public abstract class ServiceDeploymentPlanner {
     protected List<DeploymentUnit> healthyUnits = new ArrayList<>();
     private List<DeploymentUnit> unhealthyUnits = new ArrayList<>();
     private List<DeploymentUnit> badUnits = new ArrayList<>();
-    protected List<DeploymentUnit> incompleteUnits = new ArrayList<>();
+    private List<DeploymentUnit> incompleteUnits = new ArrayList<>();
     protected DeploymentServiceContext context;
     protected HealthCheckActionHandler healthActionHandler = new RecreateHealthCheckActionHandler();
 
