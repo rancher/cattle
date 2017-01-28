@@ -80,6 +80,8 @@ public class GenericResourceProcessState extends AbstractStatesBasedProcessState
 
     @Override
     protected boolean setState(boolean transitioning, String oldState, String newState) {
+        reload();
+
         if (resource != null && transitioning && ObjectMetaDataManager.STATE_FIELD.equals(getStatesDefinition().getStateField())) {
             DataAccessor field = DataAccessor.fields(resource).withKey(ObjectMetaDataManager.TRANSITIONING_FIELD);
             DataAccessor message = DataAccessor.fields(resource).withKey(ObjectMetaDataManager.TRANSITIONING_MESSAGE_FIELD);
@@ -91,7 +93,6 @@ public class GenericResourceProcessState extends AbstractStatesBasedProcessState
             }
         }
 
-        reload();
         String resourceState = lookupState();
         if (oldState == null || (!oldState.equals(resourceState) && !newState.equals(resourceState))) {
             return false;
