@@ -41,7 +41,7 @@ public abstract class ServiceDeploymentPlanner {
     protected List<DeploymentUnit> healthyUnits = new ArrayList<>();
     private List<DeploymentUnit> unhealthyUnits = new ArrayList<>();
     private List<DeploymentUnit> badUnits = new ArrayList<>();
-    private List<DeploymentUnit> incompleteUnits = new ArrayList<>();
+    protected List<DeploymentUnit> incompleteUnits = new ArrayList<>();
     protected DeploymentServiceContext context;
     protected HealthCheckActionHandler healthActionHandler = new RecreateHealthCheckActionHandler();
 
@@ -223,7 +223,7 @@ public abstract class ServiceDeploymentPlanner {
         }
     }
 
-    private List<DeploymentUnit> getAllUnits() {
+    protected List<DeploymentUnit> getAllUnits() {
         List<DeploymentUnit> allUnits = new ArrayList<>();
         allUnits.addAll(this.healthyUnits);
         allUnits.addAll(this.unhealthyUnits);

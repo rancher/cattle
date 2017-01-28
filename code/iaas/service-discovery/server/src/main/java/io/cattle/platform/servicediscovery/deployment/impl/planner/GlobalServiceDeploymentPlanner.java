@@ -14,6 +14,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -28,10 +29,28 @@ public class GlobalServiceDeploymentPlanner extends ServiceDeploymentPlanner {
                 context.allocatorService.getHostsSatisfyingHostAffinity(service.getAccountId(),
                         ServiceDiscoveryUtil.getMergedServiceLabels(service, context.allocatorService));
         hostIds.addAll(hostIdsToDeployService);
-        for (DeploymentUnit unit : units) {
-            Map<String, String> unitLabels = unit.getLabels();
-            String hostId = unitLabels.get(ServiceConstants.LABEL_SERVICE_REQUESTED_HOST_ID);
+        ignoreUnits();
+        for (DeploymentUnit unit : getAllUnits()) {
+            String hostId = getHostId(unit);
             hostToUnits.put(Long.valueOf(hostId), unit);
+        }
+    }
+
+    public void ignoreUnits() {
+        Iterator<DeploymentUnit> it = this.healthyUnits.iterator();
+        while (it.hasNext()) {
+            DeploymentUnit next = it.next();
+            if (!hostIds.contains(Long.valueOf(getHostId(next)))) {
+                it.remove();
+            }
+        }
+
+        it = this.incompleteUnits.iterator();
+        while (it.hasNext()) {
+            DeploymentUnit next = it.next();
+            if (!hostIds.contains(Long.valueOf(getHostId(next)))) {
+                it.remove();
+            }
         }
     }
 
@@ -60,8 +79,7 @@ public class GlobalServiceDeploymentPlanner extends ServiceDeploymentPlanner {
         List<String> fulfilledHostIds = new ArrayList<>();
         for (int i = 0; i < this.healthyUnits.size(); i++) {
             DeploymentUnit unit = this.healthyUnits.get(i);
-            Map<String, String> unitLabels = unit.getLabels();
-            String hostId = unitLabels.get(ServiceConstants.LABEL_SERVICE_REQUESTED_HOST_ID);
+            String hostId = getHostId(unit);
             if (fulfilledHostIds.contains(hostId) || !hostIds.contains(Long.valueOf(hostId))) {
                 watchList.add(unit);
                 unit.remove(ServiceConstants.AUDIT_LOG_REMOVE_EXTRA, ActivityLog.INFO);
@@ -91,5 +109,11 @@ public class GlobalServiceDeploymentPlanner extends ServiceDeploymentPlanner {
     @Override
     public boolean needToReconcileDeploymentImpl() {
         return !hostToUnits.keySet().containsAll(hostIds);
+    }
+
+    private String getHostId(DeploymentUnit unit) {
+        Map<String, String> unitLabels = unit.getLabels();
+        String hostId = unitLabels.get(ServiceConstants.LABEL_SERVICE_REQUESTED_HOST_ID);
+        return hostId;
     }
 }
