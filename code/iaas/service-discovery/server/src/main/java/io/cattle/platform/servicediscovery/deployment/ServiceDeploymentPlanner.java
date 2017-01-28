@@ -223,7 +223,7 @@ public abstract class ServiceDeploymentPlanner {
         }
     }
 
-    private List<DeploymentUnit> getAllUnits() {
+    protected List<DeploymentUnit> getAllUnits() {
         List<DeploymentUnit> allUnits = new ArrayList<>();
         allUnits.addAll(this.healthyUnits);
         allUnits.addAll(this.unhealthyUnits);
