@@ -58,6 +58,7 @@ import io.cattle.platform.servicediscovery.api.dao.ServiceConsumeMapDao;
 import io.cattle.platform.servicediscovery.api.dao.ServiceExposeMapDao;
 import io.cattle.platform.servicediscovery.api.util.ServiceDiscoveryUtil;
 import io.cattle.platform.servicediscovery.api.util.selector.SelectorUtils;
+import io.cattle.platform.servicediscovery.exception.NoAvailablePortsException;
 import io.cattle.platform.servicediscovery.service.ServiceDiscoveryService;
 
 import java.util.ArrayList;
@@ -337,6 +338,8 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
             if (!allocatedPorts.isEmpty()) {
                 port.setPublicPort(new Integer(allocatedPorts.get(0).getName()));
                 allocatedPorts.remove(0);
+            } else {
+                throw new NoAvailablePortsException("no available ports inside the random ports range");
             }
             newPorts.add(port.toSpec());
         }
