@@ -2,14 +2,13 @@ package io.cattle.platform.liquibase;
 
 import io.cattle.platform.archaius.util.ArchaiusUtil;
 import io.cattle.platform.datasource.DataSourceFactory;
+import liquibase.exception.LiquibaseException;
+import liquibase.integration.spring.SpringLiquibase;
 
 import java.util.EnumSet;
 import java.util.Set;
 
 import javax.inject.Inject;
-
-import liquibase.exception.LiquibaseException;
-import liquibase.integration.spring.SpringLiquibase;
 
 import org.jooq.Configuration;
 import org.jooq.SQLDialect;
