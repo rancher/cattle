@@ -5,7 +5,7 @@ import static io.cattle.platform.core.model.tables.ServiceTable.*;
 
 import io.cattle.platform.activity.ActivityLog;
 import io.cattle.platform.activity.ActivityService;
-import io.cattle.platform.allocator.service.AllocatorService;
+import io.cattle.platform.allocator.service.AllocationHelper;
 import io.cattle.platform.archaius.util.ArchaiusUtil;
 import io.cattle.platform.configitem.events.ConfigUpdate;
 import io.cattle.platform.configitem.model.Client;
@@ -90,7 +90,7 @@ public class DeploymentManagerImpl implements DeploymentManager {
     @Inject
     ServiceDeploymentPlannerFactory deploymentPlannerFactory;
     @Inject
-    AllocatorService allocatorSvc;
+    AllocationHelper allocationHlpr;
     @Inject
     ConfigItemStatusManager itemManager;
     @Inject
@@ -517,7 +517,7 @@ public class DeploymentManagerImpl implements DeploymentManager {
         final public ServiceDiscoveryService sdService = sdSvc;
         final public ServiceExposeMapDao exposeMapDao = expMapDao;
         final public DeploymentUnitInstanceFactory deploymentUnitInstanceFactory = unitInstanceFactory;
-        final public AllocatorService allocatorService = allocatorSvc;
+        final public AllocationHelper allocationHelper = allocationHlpr;
         final public JsonMapper jsonMapper = mapper;
         final public ServiceDao serviceDao = svcDao;
         final public ActivityService activityService = actvtyService;

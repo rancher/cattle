@@ -38,6 +38,8 @@ public class VolumeConstants {
 
     public static final String PROCESS_DEACTIVATE = "volume.deactivate";
 
+    public static final String PROCESS_DEALLOCATE = "volume.deallocate";
+
     public static final String PROCESS_REMOVE = "volume.remove";
 
     public static final String PROCESS_UPDATE = "volume.update";

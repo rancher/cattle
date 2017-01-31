@@ -1,7 +1,7 @@
 package io.cattle.platform.process.externalevent;
 
 import io.cattle.platform.allocator.constraint.HostAffinityConstraint;
-import io.cattle.platform.allocator.service.AllocatorService;
+import io.cattle.platform.allocator.service.AllocationHelper;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.dao.InstanceDao;
 import io.cattle.platform.core.model.ExternalEvent;
@@ -32,7 +32,7 @@ import org.apache.commons.lang3.StringUtils;
 public class ExternalHostEventCreate extends AbstractObjectProcessHandler {
 
     @Inject
-    AllocatorService allocatorService;
+    AllocationHelper allocationHelper;
 
     @Inject
     InstanceDao instanceDao;
@@ -88,7 +88,7 @@ public class ExternalHostEventCreate extends AbstractObjectProcessHandler {
         if (StringUtils.isNotBlank(label)) {
             Map<String, String> labels = new HashMap<>();
             labels.put(HostAffinityConstraint.LABEL_HEADER_AFFINITY_HOST_LABEL, DataAccessor.fieldString(event, ExternalEventConstants.FIELD_HOST_LABEL));
-            hosts.addAll(allocatorService.getAllHostsSatisfyingHostAffinity(event.getAccountId(), labels));
+            hosts.addAll(allocationHelper.getAllHostsSatisfyingHostAffinity(event.getAccountId(), labels));
         }
 
         Long hostId = DataAccessor.fieldLong(event, ExternalEventConstants.FIELD_HOST_ID);

@@ -7,7 +7,7 @@ import io.cattle.platform.lock.definition.LockDefinition;
 import java.util.List;
 import java.util.Map;
 
-public interface AllocatorService {
+public interface AllocationHelper {
 
     /**
      * Add labels from 'srcMap' to 'destMap'.  If key already exists in destMap, either
