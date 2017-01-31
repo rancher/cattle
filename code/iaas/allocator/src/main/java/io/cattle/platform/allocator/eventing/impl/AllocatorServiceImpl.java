@@ -32,6 +32,20 @@ public class AllocatorServiceImpl implements AllocatorService {
     }
 
     @Override
+    public void ensureResourcesReservedForStart(Instance instance) {
+        log.info("Ensuring resources reserved for instance.start [{}]", instance.getId());
+        allocator.ensureResourcesReserved(instance);
+        log.info("Ensured resources released for instance.start [{}]", instance.getId());
+    }
+
+    @Override
+    public void ensureResourcesReleasedForStop(Instance instance) {
+        log.info("Ensuring resources released for stop for instance [{}]", instance.getId());
+        allocator.ensureResourcesReleased(instance);
+        log.info("Ensured resources released for stop for instance [{}]", instance.getId());
+    }
+
+    @Override
     public void volumeDeallocate(Volume volume) {
         log.info("Deallocating volume [{}]", volume.getId());
         allocator.deallocate(volume);

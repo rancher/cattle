@@ -1,5 +1,6 @@
 package io.cattle.platform.process.instance;
 
+import io.cattle.platform.allocator.eventing.AllocatorService;
 import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.InstanceLinkConstants;
 import io.cattle.platform.core.dao.GenericMapDao;
@@ -15,6 +16,7 @@ import io.cattle.platform.engine.process.ProcessInstance;
 import io.cattle.platform.engine.process.ProcessState;
 import io.cattle.platform.engine.process.impl.ProcessCancelException;
 import io.cattle.platform.process.base.AbstractDefaultProcessHandler;
+
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -25,8 +27,14 @@ import javax.inject.Named;
 @Named
 public class InstanceStop extends AbstractDefaultProcessHandler {
 
+    @Inject
     GenericMapDao mapDao;
+
+    @Inject
     InstanceDao instanceDao;
+
+    @Inject
+    AllocatorService allocatorService;
 
     @Override
     public HandlerResult handle(ProcessState state, ProcessInstance process) {
@@ -40,11 +48,9 @@ public class InstanceStop extends AbstractDefaultProcessHandler {
 
         storage(instance);
 
-        return new HandlerResult(result);
-    }
+        allocatorService.ensureResourcesReleasedForStop(instance);
 
-    protected void deallocate(Instance instance) {
-        deallocate(instance, null);
+        return new HandlerResult(result);
     }
 
     protected void storage(Instance instance) {
@@ -96,23 +102,4 @@ public class InstanceStop extends AbstractDefaultProcessHandler {
             }
         }
     }
-
-    public GenericMapDao getMapDao() {
-        return mapDao;
-    }
-
-    @Inject
-    public void setMapDao(GenericMapDao mapDao) {
-        this.mapDao = mapDao;
-    }
-
-    public InstanceDao getInstanceDao() {
-        return instanceDao;
-    }
-
-    @Inject
-    public void setInstanceDao(InstanceDao instanceDao) {
-        this.instanceDao = instanceDao;
-    }
-
 }

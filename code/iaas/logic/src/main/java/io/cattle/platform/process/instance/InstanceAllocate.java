@@ -37,6 +37,8 @@ public class InstanceAllocate extends AbstractDefaultProcessHandler {
         Instance instance = (Instance)state.getResource();
         if (mapDao.findNonRemoved(InstanceHostMap.class, Instance.class, instance.getId()).size() == 0) {
             allocatorService.instanceAllocate(instance);
+        } else {
+            allocatorService.ensureResourcesReservedForStart(instance);
         }
         return afterAllocate(state, process, new HashMap<Object, Object>());
     }

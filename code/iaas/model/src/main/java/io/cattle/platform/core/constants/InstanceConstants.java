@@ -65,6 +65,8 @@ public class InstanceConstants {
 
     public static final String REMOVE_OPTION = "remove";
 
+    public static final String PROCESS_ALLOCATE = "instance.allocate";
+    public static final String PROCESS_DEALLOCATE = "instance.deallocate";
     public static final String PROCESS_CREATE = "instance.create";
     public static final String PROCESS_START = "instance.start";
     public static final String PROCESS_STOP = "instance.stop";

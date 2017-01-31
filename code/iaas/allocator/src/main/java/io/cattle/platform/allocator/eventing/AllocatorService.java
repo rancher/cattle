@@ -11,4 +11,8 @@ public interface AllocatorService {
     void instanceDeallocate(Instance instance);
 
     void volumeDeallocate(Volume volume);
+
+    void ensureResourcesReleasedForStop(Instance instance);
+
+    void ensureResourcesReservedForStart(Instance instance);
 }

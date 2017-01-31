@@ -114,7 +114,10 @@ def do_scheduling_test(container_kw, client, mock_scheduler, hosts,
     assert resource_reqs(event) == expected_resource_requests
 
     def check():
-        return len(super_client.reload(c).instanceHostMaps()) > 0
+        ihms = super_client.reload(c).instanceHostMaps()
+        if len(ihms) == 0:
+            return false
+        return ihms[0].state == 'active'
     # Looking for reserve event
     while True:
         event = mock_scheduler.get_next_event()
@@ -135,7 +138,26 @@ def do_scheduling_test(container_kw, client, mock_scheduler, hosts,
 
     c = client.wait_success(c)
     assert c.state == 'running'
-    c = client.wait_success(c.stop(remove=True))
+    c.stop(remove=True)
+
+    def stop_check():
+        return client.reload(c).removed is not None
+
+    while True:
+        event = mock_scheduler.get_next_event()
+        mock_scheduler.publish(event, data)
+        # Look away now
+        res_id = event['resourceId']
+        res_id = res_id.split('iir')[1] if 'iir' in res_id else res_id
+        if (res_id == c.id.split('i')[1] and
+                event['name'] == 'scheduler.release'):
+            try:
+                wait_for(stop_check, timeout=1)
+                break
+            except:
+                pass
+
+    c = client.wait_success(c)
     try:
         # may have already purged
         c.purge()
