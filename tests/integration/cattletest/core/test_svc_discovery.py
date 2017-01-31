@@ -2708,9 +2708,6 @@ def _validate_endpoint(endpoints, public_port, host, service=None,
                           + host_ip + ":" + str(public_port)
 
 
-# TODO: Had to skip this test when we moved the port allocation logic into the
-# external scheduler. Need to find a way to test this.
-@pytest.mark.skipif('True')
 def test_public_endpoints(new_context):
     client = new_context.client
     host1 = new_context.host
@@ -2722,20 +2719,24 @@ def test_public_endpoints(new_context):
     port2 = 6666
 
     image_uuid = new_context.image_uuid
-    launch_config = {"imageUuid": image_uuid, "ports": [str(port1) + ':6666']}
+    labels = {'io.rancher.scheduler.global': 'true'}
+    launch_config = {"imageUuid": image_uuid,
+                     "ports": [str(port1) + ':6666'],
+                     "labels": labels}
+
     service1 = client.create_service(name=random_str(),
                                      stackId=env.id,
-                                     launchConfig=launch_config,
-                                     scale=2)
+                                     launchConfig=launch_config)
     service1 = client.wait_success(service1)
     assert service1.state == "inactive"
     service1 = client.wait_success(service1.activate(), 120)
     assert service1.state == "active"
-    launch_config = {"imageUuid": image_uuid, "ports": [str(port2) + ':6666']}
+    launch_config = {"imageUuid": image_uuid,
+                     "ports": [str(port2) + ':6666'],
+                     "labels": labels}
     service2 = client.create_service(name=random_str(),
                                      stackId=env.id,
-                                     launchConfig=launch_config,
-                                     scale=2)
+                                     launchConfig=launch_config)
     service2 = client.wait_success(service2)
     assert service2.state == "inactive"
     service2 = client.wait_success(service2.activate(), 120)
