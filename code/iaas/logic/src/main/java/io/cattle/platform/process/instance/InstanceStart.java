@@ -2,6 +2,7 @@ package io.cattle.platform.process.instance;
 
 import static io.cattle.platform.core.model.tables.InstanceHostMapTable.*;
 
+import io.cattle.platform.allocator.eventing.AllocatorService;
 import io.cattle.platform.archaius.util.ArchaiusUtil;
 import io.cattle.platform.async.utils.ResourceTimeoutException;
 import io.cattle.platform.async.utils.TimeoutException;
@@ -91,6 +92,9 @@ public class InstanceStart extends AbstractDefaultProcessHandler {
     @Inject
     ServiceDao serviceDao;
 
+    @Inject
+    AllocatorService allocatorService;
+
     @Override
     public HandlerResult handle(ProcessState state, ProcessInstance process) {
         final Instance instance = (Instance) state.getResource();
@@ -120,6 +124,7 @@ public class InstanceStart extends AbstractDefaultProcessHandler {
             try {
                 progress.checkPoint("Scheduling");
                 allocate(instance);
+                allocatorService.ensureResourcesReservedForStart(instance);
             } catch (ExecutionException e) {
                 log.info("Failed to {} for instance [{}]", progress.getCurrentCheckpoint(), instance.getId());
                 return handleStartError(state, instance, e);

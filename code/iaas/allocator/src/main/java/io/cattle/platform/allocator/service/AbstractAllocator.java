@@ -2,6 +2,7 @@ package io.cattle.platform.allocator.service;
 
 import static io.cattle.platform.core.model.tables.InstanceHostMapTable.*;
 import static io.cattle.platform.core.model.tables.PortTable.*;
+
 import io.cattle.platform.allocator.constraint.AllocationConstraintsProvider;
 import io.cattle.platform.allocator.constraint.Constraint;
 import io.cattle.platform.allocator.dao.AllocatorDao;
@@ -64,47 +65,38 @@ public abstract class AbstractAllocator implements Allocator {
     @Inject
     protected ObjectProcessManager processManager;
     @Inject
-    AllocatorService allocatorService;
+    AllocationHelper allocationHelper;
     @Inject
     VolumeDao volumeDao;
     protected List<AllocationConstraintsProvider> allocationConstraintProviders;
 
     @Override
-    public void allocate(final AllocationRequest request) {
-        lockManager.lock(new AllocateResourceLock(request), new LockCallbackNoReturn() {
+    public void allocate(final Instance instance) {
+        lockManager.lock(new AllocateResourceLock(instance.getId()), new LockCallbackNoReturn() {
             @Override
             public void doWithLockNoResult() {
-                allocateInstance(request);
+                allocateInstance(instance);
             }
         });
     }
 
     @Override
-    public void deallocate(final AllocationRequest request) {
-        lockManager.lock(new AllocateResourceLock(request), new LockCallbackNoReturn() {
+    public void deallocate(final Instance instance) {
+        lockManager.lock(new AllocateResourceLock(instance.getId()), new LockCallbackNoReturn() {
             @Override
             public void doWithLockNoResult() {
                 Context c = deallocateTimer.time();
                 try {
-                    runDeallocation(request);
+                    if (assertDeallocated(instance.getId(), instance.getAllocationState(), "Instance")) {
+                        return;
+                    }
+
+                    releaseAllocation(instance);
                 } finally {
                     c.stop();
                 }
             }
         });
-    }
-
-    protected void runDeallocation(final AllocationRequest request) {
-        deallocateInstance(request);
-    }
-
-    protected void deallocateInstance(final AllocationRequest request) {
-        final Instance instance = objectManager.loadResource(Instance.class, request.getResourceId());
-        if (assertDeallocated(request.getResourceId(), instance.getAllocationState(), "Instance")) {
-            return;
-        }
-
-        releaseAllocation(instance);
     }
 
     protected abstract void releaseAllocation(Instance instance);
@@ -119,8 +111,7 @@ public abstract class AbstractAllocator implements Allocator {
         }
     }
 
-    protected void allocateInstance(final AllocationRequest request) {
-        final Instance origInstance = objectManager.loadResource(Instance.class, request.getResourceId());
+    protected void allocateInstance(final Instance origInstance) {
         final List<Instance> instances = getInstancesToAllocate(origInstance);
         final Set<Long> volumeIds = new HashSet<>();
         for (Instance instance : instances) {
@@ -134,21 +125,21 @@ public abstract class AbstractAllocator implements Allocator {
                 lockManager.lock(lock, new LockCallbackNoReturn() {
                     @Override
                     public void doWithLockNoResult() {
-                        allocateInstanceInternal(request, origInstance, instances);
+                        allocateInstanceInternal(origInstance, instances);
                     }
                 });
             } finally {
                 c.stop();
             }
         } else {
-            allocateInstanceInternal(request, origInstance, instances);
+            allocateInstanceInternal(origInstance, instances);
         }
     }
 
-    protected void allocateInstanceInternal(AllocationRequest  request, Instance origInstance, List<Instance> instances) {
-        boolean origAllocated = assertAllocated(request.getResourceId(), origInstance.getAllocationState(), "Instance", true);
+    protected void allocateInstanceInternal(Instance origInstance, List<Instance> instances) {
+        boolean origAllocated = assertAllocated(origInstance.getId(), origInstance.getAllocationState(), "Instance", true);
         for (Instance instance : instances) {
-            boolean allocated = assertAllocated(request.getResourceId(), instance.getAllocationState(), "Instance", false);
+            boolean allocated = assertAllocated(origInstance.getId(), instance.getAllocationState(), "Instance", false);
             if (origAllocated ^ allocated) {
                 throw new FailedToAllocate(String.format("Instance %s is in allocation state %s and instance %s is in allocation state %s.",
                         origInstance.getId(), origInstance.getAllocationState(), instance.getId(), instance.getAllocationState()));
@@ -187,11 +178,11 @@ public abstract class AbstractAllocator implements Allocator {
             pools.put(v, new HashSet<StoragePool>(allocatorDao.getAssociatedPools(v)));
         }
 
-        doAllocate(request, new AllocationAttempt(origInstance.getAccountId(), instances, hostId, requestedHostId, volumes, pools));
+        doAllocate(new AllocationAttempt(origInstance.getAccountId(), instances, hostId, requestedHostId, volumes, pools));
     }
 
     protected LockDefinition getInstanceLockDef(Instance origInstance, List<Instance> instances, Set<Long> volumeIds) {
-        List<LockDefinition> locks = allocatorService.extractAllocationLockDefinitions(origInstance);
+        List<LockDefinition> locks = allocationHelper.extractAllocationLockDefinitions(origInstance);
 
         if (origInstance.getDeploymentUnitUuid() != null) {
             locks.add(new AllocateConstraintLock(AllocateConstraintLock.Type.DEPLOYMENT_UNIT, origInstance.getDeploymentUnitUuid()));
@@ -222,15 +213,15 @@ public abstract class AbstractAllocator implements Allocator {
         return locks.size() > 0 ? new AllocationBlockingMultiLock(locks) : null;
     }
 
-    protected void doAllocate(final AllocationRequest request, final AllocationAttempt attempt) {
-        AllocationLog log = getLog(request);
+    protected void doAllocate(final AllocationAttempt attempt) {
+        AllocationLog log = new AllocationLog();
         populateConstraints(attempt, log);
 
         List<Constraint> finalFailedConstraints = new ArrayList<>();
         Context c = allocateTimer.time();
         try {
             do {
-                Set<Constraint> failedConstraints = runAllocation(request, attempt);
+                Set<Constraint> failedConstraints = runAllocation(attempt);
                 if (attempt.getMatchedCandidate() == null) {
                     boolean removed = false;
                     // iterate over failed constraints and remove first soft constraint if any
@@ -270,7 +261,7 @@ public abstract class AbstractAllocator implements Allocator {
         return StringUtils.join(result, ", ");
     }
 
-    protected Set<Constraint> runAllocation(AllocationRequest request, AllocationAttempt attempt) {
+    protected Set<Constraint> runAllocation(AllocationAttempt attempt) {
         logStart(attempt);
 
         List<Set<Constraint>> candidateFailedConstraintSets = new ArrayList<Set<Constraint>>();
@@ -361,10 +352,6 @@ public abstract class AbstractAllocator implements Allocator {
     }
 
     protected abstract boolean recordCandidate(AllocationAttempt attempt, AllocationCandidate candidate);
-
-    protected AllocationLog getLog(AllocationRequest request) {
-        return new AllocationLog();
-    }
 
     protected void logCandidate(String prefix, AllocationAttempt attempt, AllocationCandidate candidate) {
         StringBuilder candidateLog = new StringBuilder(String.format("%s Checking candidate:\n", prefix));

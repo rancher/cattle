@@ -7,7 +7,6 @@ public class QueryOptions {
 
     Long accountId;
     String kind;
-    boolean includeUsedPorts;
     Set<Long> hosts = new HashSet<Long>();
     Long requestedHostId;
 
@@ -29,14 +28,6 @@ public class QueryOptions {
 
     public void setAccountId(Long accountId) {
         this.accountId = accountId;
-    }
-
-    public boolean isIncludeUsedPorts() {
-        return includeUsedPorts;
-    }
-
-    public void setIncludeUsedPorts(boolean getUsedPorts) {
-        this.includeUsedPorts = getUsedPorts;
     }
 
     public Long getRequestedHostId() {

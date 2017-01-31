@@ -420,40 +420,6 @@ def test_docker_ports_from_container(docker_client, super_client):
 
 
 @if_docker
-def test_docker_bind_address(docker_client, super_client):
-    c = docker_client.create_container(name='bindAddrTest',
-                                       networkMode='bridge',
-                                       imageUuid=TEST_IMAGE_UUID,
-                                       ports=['127.0.0.1:89:8999'])
-    c = docker_client.wait_success(c)
-    assert c.state == 'running'
-
-    c = super_client.reload(c)
-    bindings = c.data['dockerInspect']['HostConfig']['PortBindings']
-    assert bindings['8999/tcp'] == [{'HostIp': '127.0.0.1', 'HostPort': '89'}]
-
-    c = docker_client.create_container(name='bindAddrTest2',
-                                       networkMode='bridge',
-                                       imageUuid=TEST_IMAGE_UUID,
-                                       ports=['127.2.2.2:89:8999'])
-    c = docker_client.wait_success(c)
-    assert c.state == 'running'
-    c = super_client.reload(c)
-    bindings = c.data['dockerInspect']['HostConfig']['PortBindings']
-    assert bindings['8999/tcp'] == [{'HostIp': '127.2.2.2', 'HostPort': '89'}]
-
-    c = docker_client.create_container(name='bindAddrTest3',
-                                       networkMode='bridge',
-                                       imageUuid=TEST_IMAGE_UUID,
-                                       ports=['127.2.2.2:89:8999'])
-    c = docker_client.wait_transitioning(c)
-    assert c.transitioning == 'error'
-    assert c.transitioningMessage == \
-        'Scheduling failed: host needs ports 89/tcp available'
-    assert c.state == 'error'
-
-
-@if_docker
 def test_no_port_override(docker_client, super_client):
     c = docker_client.create_container(imageUuid=TEST_IMAGE_UUID,
                                        networkMode='bridge',
