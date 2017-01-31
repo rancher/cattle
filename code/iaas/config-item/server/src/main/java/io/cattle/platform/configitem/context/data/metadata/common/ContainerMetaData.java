@@ -177,6 +177,8 @@ public class ContainerMetaData {
                     PortSpec port = new PortSpec(portObj);
                     if (StringUtils.isEmpty(port.getIpAddress())) {
                         newPorts.add(hostIp + ":" + portObj);
+                    } else if ("0.0.0.0".equals(port.getIpAddress())) {
+                        newPorts.add(hostIp + StringUtils.removeStart(portObj, "0.0.0.0"));
                     } else {
                         newPorts.add(portObj);
                     }
