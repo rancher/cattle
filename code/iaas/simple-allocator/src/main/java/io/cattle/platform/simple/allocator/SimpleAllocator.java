@@ -4,6 +4,7 @@ import io.cattle.platform.agent.AgentLocator;
 import io.cattle.platform.agent.RemoteAgent;
 import io.cattle.platform.agent.instance.dao.AgentInstanceDao;
 import io.cattle.platform.allocator.constraint.Constraint;
+import io.cattle.platform.allocator.constraint.PortsConstraint;
 import io.cattle.platform.allocator.constraint.ValidHostsConstraint;
 import io.cattle.platform.allocator.exception.FailedToAllocate;
 import io.cattle.platform.allocator.service.AbstractAllocator;
@@ -13,14 +14,11 @@ import io.cattle.platform.allocator.service.Allocator;
 import io.cattle.platform.core.dao.GenericMapDao;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.InstanceHostMap;
-import io.cattle.platform.core.model.Port;
 import io.cattle.platform.core.model.Volume;
-import io.cattle.platform.core.util.PortSpec;
 import io.cattle.platform.core.util.SystemLabels;
 import io.cattle.platform.eventing.exception.EventExecutionException;
 import io.cattle.platform.eventing.model.Event;
 import io.cattle.platform.eventing.model.EventVO;
-import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.object.util.ObjectUtils;
 import io.cattle.platform.simple.allocator.dao.QueryOptions;
 import io.cattle.platform.simple.allocator.dao.SimpleAllocatorDao;
@@ -56,12 +54,6 @@ public class SimpleAllocator extends AbstractAllocator implements Allocator, Nam
     private static final String CPU_RESERVATION = "cpuReservation";
     private static final String STORAGE_SIZE = "storageSize";
     private static final String CONTEXT = "context";
-    private static final String PORT_RESERVATION = "portReservation";
-    
-    private static final String COMPUTE_POOL = "computePool";
-    private static final String PORT_POOL = "portPool";
-    
-    private static final String BIND_ADDRESS = "bindAddress";
 
     String name = getClass().getSimpleName();
 
@@ -73,7 +65,7 @@ public class SimpleAllocator extends AbstractAllocator implements Allocator, Nam
 
     @Inject
     AgentLocator agentLocator;
- 
+
     @Inject
     GenericMapDao mapDao;
 
@@ -93,6 +85,10 @@ public class SimpleAllocator extends AbstractAllocator implements Allocator, Nam
         for (Constraint constraint : attempt.getConstraints()) {
             if (constraint instanceof ValidHostsConstraint) {
                 options.getHosts().addAll(((ValidHostsConstraint)constraint).getHosts());
+            }
+
+            if (constraint instanceof PortsConstraint) {
+                options.setIncludeUsedPorts(true);
             }
         }
 
@@ -135,7 +131,6 @@ public class SimpleAllocator extends AbstractAllocator implements Allocator, Nam
         return allocatorDao.recordCandidate(attempt, candidate);
     }
 
-    @SuppressWarnings("unchecked")
     void callExternalSchedulerToReserve(AllocationAttempt attempt, AllocationCandidate candidate) {
         Long agentId = getAgentResource(attempt.getAccountId(), attempt.getInstances());
         if (agentId != null) {
@@ -149,15 +144,7 @@ public class SimpleAllocator extends AbstractAllocator implements Allocator, Nam
                 }
 
                 RemoteAgent agent = agentLocator.lookupAgent(agentId);
-                Event eventResult = callScheduler("Error reserving resources: %s", schedulerEvent, agent);
-                if (eventResult.getData() == null) {
-                    return;
-                }
-                
-                List<Map<String, Object>> data = (List<Map<String, Object>>) CollectionUtils.getNestedValue(eventResult.getData(), PORT_RESERVATION);
-                if (data != null) {
-                    attempt.setAllocatedIPs(data);
-                } 
+                callScheduler("Error reserving resources: %s", schedulerEvent, agent);
             }
         }
     }
@@ -276,30 +263,33 @@ public class SimpleAllocator extends AbstractAllocator implements Allocator, Nam
     private void addVolumeResourceRequests(List<ResourceRequest> requests, Volume... volumes) {
         for (Volume v : volumes) {
             if (v.getSizeMb() != null) {
-                ResourceRequest rr = new ComputeResourceRequest(STORAGE_SIZE, v.getSizeMb(), COMPUTE_POOL);
+                ResourceRequest rr = new ResourceRequest();
+                rr.setAmount(v.getSizeMb());
+                rr.setResource(STORAGE_SIZE);
                 requests.add(rr);
             }
         }
     }
 
     private void addInstanceResourceRequests(List<ResourceRequest> requests, Instance instance) {
-        ResourceRequest memoryRequest = populateResourceRequestFromInstance(instance, MEMORY_RESERVATION, COMPUTE_POOL);
-        if (memoryRequest != null) {
-            requests.add(memoryRequest);
+        if (instance.getMemoryReservation() != null && instance.getMemoryReservation() > 0) {
+            ResourceRequest rr = new ResourceRequest();
+            rr.setAmount(instance.getMemoryReservation());
+            rr.setResource(MEMORY_RESERVATION);
+            requests.add(rr);
         }
 
-        ResourceRequest cpuRequest = populateResourceRequestFromInstance(instance, CPU_RESERVATION, COMPUTE_POOL);
-        if (cpuRequest != null) {
-            requests.add(cpuRequest);
-        }
-        
-        ResourceRequest portRequests = populateResourceRequestFromInstance(instance, PORT_RESERVATION, PORT_POOL);
-        if (portRequests != null) {
-            requests.add(portRequests);
+        if (instance.getMilliCpuReservation() != null && instance.getMilliCpuReservation() > 0) {
+            ResourceRequest rr = new ResourceRequest();
+            rr.setAmount(instance.getMilliCpuReservation());
+            rr.setResource(CPU_RESERVATION);
+            requests.add(rr);
         }
 
-        ResourceRequest instanceRequest = populateResourceRequestFromInstance(instance, INSTANCE_RESERVATION, COMPUTE_POOL);
-        requests.add(instanceRequest);
+        ResourceRequest r = new ResourceRequest();
+        r.setAmount(1l);
+        r.setResource(INSTANCE_RESERVATION);
+        requests.add(r);
     }
 
     private Long getAgentResource(Long accountId, List<Instance> instances) {
@@ -333,48 +323,5 @@ public class SimpleAllocator extends AbstractAllocator implements Allocator, Nam
     @Override
     public String getName() {
         return name;
-    }
-    
-    private ResourceRequest populateResourceRequestFromInstance(Instance instance, String resourceType, String poolType) {
-        switch (resourceType) {
-        case PORT_RESERVATION:
-            PortBindingResourceRequest request = new PortBindingResourceRequest();
-            request.setResource(resourceType);
-            request.setInstanceId(instance.getId().toString());
-            List<PortSpec> portReservation = new ArrayList<>();
-            for(Port port: objectManager.children(instance, Port.class)) {
-                PortSpec spec = new PortSpec();
-                String bindAddress = DataAccessor.fieldString(port, BIND_ADDRESS);
-                if (bindAddress != null) {
-                    spec.setIpAddress(bindAddress);
-                }
-                spec.setPrivatePort(port.getPrivatePort());
-                spec.setPublicPort(port.getPublicPort());
-                String proto = StringUtils.isEmpty(port.getProtocol()) ? "tcp" : port.getProtocol();
-                spec.setProtocol(proto);
-                portReservation.add(spec);
-            }
-            if (portReservation.isEmpty()) {
-                return null;
-            }
-            request.setPortRequests(portReservation);
-            request.setType(poolType);
-            return request;
-        case INSTANCE_RESERVATION:
-            return new ComputeResourceRequest(INSTANCE_RESERVATION, 1l, poolType);
-        case MEMORY_RESERVATION:
-            if (instance.getMemoryReservation() != null && instance.getMemoryReservation() > 0) {
-                ResourceRequest rr = new ComputeResourceRequest(MEMORY_RESERVATION, instance.getMemoryReservation(), poolType);
-                return rr;
-            } 
-            return null;
-        case CPU_RESERVATION:
-            if (instance.getMilliCpuReservation() != null && instance.getMilliCpuReservation() > 0) {
-                ResourceRequest rr = new ComputeResourceRequest(CPU_RESERVATION, instance.getMilliCpuReservation(), poolType);
-                return rr;
-            }
-            return null;
-        }
-        return null;
     }
 }

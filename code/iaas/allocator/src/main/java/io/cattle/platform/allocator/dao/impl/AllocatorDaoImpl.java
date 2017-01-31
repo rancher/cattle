@@ -67,15 +67,6 @@ import org.slf4j.LoggerFactory;
 public class AllocatorDaoImpl extends AbstractJooqDao implements AllocatorDao {
 
     private static final Logger log = LoggerFactory.getLogger(AllocatorDaoImpl.class);
-    
-    private static final String ALLOCATED_IP = "allocatedIP";
-    private static final String PROTOCOL = "protocol";
-    private static final String PRIVATE_PORT = "privatePort";
-    private static final String PUBLIC_PORT = "publicPort";
-    private static final String INSTANCE_ID = "instanceID";
-    private static final String ALLOCATED_IPS = "allocatedIPs";
-    
-    private static final String BIND_ADDRESS = "bindAddress";
 
     static final List<String> IHM_STATES = Arrays.asList(new String[] { CommonStatesConstants.INACTIVE, CommonStatesConstants.DEACTIVATING,
             CommonStatesConstants.REMOVED, CommonStatesConstants.REMOVING, CommonStatesConstants.PURGING, CommonStatesConstants.PURGED });
@@ -210,9 +201,6 @@ public class AllocatorDaoImpl extends AbstractJooqDao implements AllocatorDao {
             } else if (!existingPoolsForVol.equals(newPoolsForVol)) {
                 throw new IllegalStateException(String.format("Can not move volume %s, currently: %s, new: %s", volumeId, existingPools, newPools));
             }
-        }
-        if (attempt.getAllocatedIPs() != null) {
-            updateInstancePorts(attempt.getAllocatedIPs()); 
         }
 
         return true;
@@ -497,60 +485,5 @@ public class AllocatorDaoImpl extends AbstractJooqDao implements AllocatorDao {
             instances.add(i);
         }
         return instances;
-    }
-    
-    /* (non-Java doc)
-     * @see io.cattle.platform.allocator.dao.AllocatorDao#updateInstancePorts(java.util.Map)
-     * Scheduler will return a list of map showing the allocated result in the following format:
-     * {
-     *      "instanceID" : "xx",
-     *      "allocatedIPs" : {
-     *                              [
-     *                                  {
-     *                                      "allocatedIP" : "xxx.xxx.xxx.xxx",
-     *                                      "publicPort" : "xxx",
-     *                                      "privatePort" :  "xxx",
-     *                                  },
-     *                                  {
-     *                                      "allocatedIP" : "xxx.xxx.xxx.xxx",
-     *                                      "publicPort" : "xxx",
-     *                                      "privatePort" :  "xxx",
-     *                                  }
-     *                              ]
-     *                          }
-     * }
-     *      
-     * Then update 
-     * Port Table. Binding address field in port table and public port field in port table if public port is allocated by external scheduler (for agent)  
-     */
-    @SuppressWarnings("unchecked")
-    private void updateInstancePorts(List<Map<String, Object>> dataList) {
-        for (Map<String, Object> data: dataList) {
-            if (data.get(INSTANCE_ID) == null) {
-                continue;
-            }
-            String instanceId = (String) data.get(INSTANCE_ID);
-            if (data.get(ALLOCATED_IPS) == null) {
-                continue;
-            }
-            
-            List<Map<String, Object>> allocatedIPList = (List<Map<String, Object>>) data.get(ALLOCATED_IPS);
-            Instance instance = objectManager.loadResource(Instance.class, instanceId);
-            for (Map<String, Object> allocatedIp: allocatedIPList) {
-                String ipAddress = (String) allocatedIp.get(ALLOCATED_IP);
-                String protocol = (String) allocatedIp.get(PROTOCOL);
-                Integer publicPort = (Integer) allocatedIp.get(PUBLIC_PORT);
-                Integer privatePort = (Integer) allocatedIp.get(PRIVATE_PORT);
-                for (Port port: objectManager.children(instance, Port.class)) {
-                    if (port.getPrivatePort().equals(privatePort) && StringUtils.equals(port.getProtocol(), protocol)) {
-                        DataAccessor.setField(port, BIND_ADDRESS, ipAddress);
-                        port.setPublicPort(publicPort);
-                        objectManager.persist(port);
-                        break;
-                    }
-                }
-            }
-        }
-        return;
     }
 }
