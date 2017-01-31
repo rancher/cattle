@@ -384,10 +384,6 @@
         },
         "secrets": {
             "type" : "array[secretReference]"
-        },
-         "userPorts" : {
-            "type" : "array[string]",
-            "nullable" : true
         }
     },
     "resourceActions": {

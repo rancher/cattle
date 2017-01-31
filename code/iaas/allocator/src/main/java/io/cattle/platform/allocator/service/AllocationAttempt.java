@@ -27,8 +27,6 @@ public class AllocationAttempt {
 
     Map<Volume, Set<StoragePool>> pools;
     Map<Long, Set<Long>> poolIds;
-    
-    List<Map<String, Object>> allocatedIPs;
 
     List<Constraint> constraints = new ArrayList<Constraint>();
     List<AllocationCandidate> candidates = new ArrayList<AllocationCandidate>();
@@ -136,14 +134,6 @@ public class AllocationAttempt {
 
     public void setPoolIds(Map<Long, Set<Long>> poolIds) {
         this.poolIds = poolIds;
-    }
-
-    public List<Map<String, Object>> getAllocatedIPs() {
-        return allocatedIPs;
-    }
-
-    public void setAllocatedIPs(List<Map<String, Object>> allocatedIPs) {
-        this.allocatedIPs = allocatedIPs;
     }
 
 }

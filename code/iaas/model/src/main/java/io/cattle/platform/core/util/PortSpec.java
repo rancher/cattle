@@ -130,9 +130,4 @@ public class PortSpec {
         }
         return bindIP + publicPort + privatePortProto;
     }
-
-    @Override
-    public String toString() {
-        return toSpec();
-    }
 }

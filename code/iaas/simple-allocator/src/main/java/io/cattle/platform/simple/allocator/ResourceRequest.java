@@ -1,18 +1,24 @@
 package io.cattle.platform.simple.allocator;
 
-/*
- *  Interface type for ResourceRequest
- *  Types:
- *  1. memoryReservation
- *  2. storageSize
- *  3. cpuReservation
- *  4. instanceReservation
- *  5. portReservation
- *  Any ResourceRequest should implement this interface and add their own data structure
- */
-public interface ResourceRequest {
-    String getResource();
-    
-    String getType();
+public class ResourceRequest {
 
+    private String resource;
+    private Long amount;
+
+    public String getResource() {
+        return resource;
+    }
+    public void setResource(String resource) {
+        this.resource = resource;
+    }
+    public Long getAmount() {
+        return amount;
+    }
+    public void setAmount(Long amount) {
+        this.amount = amount;
+    }
+
+    public String toString() {
+        return String.format("Resource: %s, amount: %s", resource, amount);
+    }
 }
