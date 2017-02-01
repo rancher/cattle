@@ -1,6 +1,7 @@
 package io.cattle.platform.core.dao.impl;
 
 import static io.cattle.platform.core.model.tables.HostTable.*;
+import static io.cattle.platform.core.model.tables.HostIpAddressMapTable.*;
 import static io.cattle.platform.core.model.tables.InstanceHostMapTable.*;
 import static io.cattle.platform.core.model.tables.InstanceLinkTable.*;
 import static io.cattle.platform.core.model.tables.InstanceTable.*;
@@ -318,14 +319,20 @@ public class InstanceDaoImpl extends AbstractJooqDao implements InstanceDao {
                 Host host = (Host) input.get(2);
 
                 String address = "";
-                IpAddress ip = (IpAddress) input.get(3);
-                if (ip != null) {
-                    address = ip.getAddress();
-                } else {
-                    address = DataAccessor.fieldString(port, PortConstants.FIELD_BIND_ADDR);
+                address = DataAccessor.fieldString(port, PortConstants.FIELD_BIND_ADDR);
+                if (StringUtils.isEmpty(address) || "0.0.0.0".equals(address)) {
+                    IpAddress ip = (IpAddress) input.get(3);
+                    if (ip != null) {
+                        address = ip.getAddress();
+                    } else {
+                        IpAddress hostIp = (IpAddress) input.get(4);
+                        if (hostIp != null) {
+                            address = hostIp.getAddress();
+                        }
+                    }
                 }
 
-                ServiceExposeMap exposeMap = (ServiceExposeMap) input.get(4);
+                ServiceExposeMap exposeMap = (ServiceExposeMap) input.get(5);
                 Long serviceId = exposeMap != null ? exposeMap.getServiceId() : null;
                 PublicEndpoint data = new PublicEndpoint(address, port.getPublicPort(), host.getId(),
                         instance.getId(), serviceId);
@@ -337,6 +344,7 @@ public class InstanceDaoImpl extends AbstractJooqDao implements InstanceDao {
         PortTable port = mapper.add(PORT);
         HostTable host = mapper.add(HOST, HOST.ID);
         IpAddressTable ipAddress = mapper.add(IP_ADDRESS, IP_ADDRESS.ID, IP_ADDRESS.ADDRESS);
+        IpAddressTable hostIp = mapper.add(IP_ADDRESS, IP_ADDRESS.ID, IP_ADDRESS.ADDRESS);
         ServiceExposeMapTable exposeMap = mapper.add(SERVICE_EXPOSE_MAP, SERVICE_EXPOSE_MAP.INSTANCE_ID,
                 SERVICE_EXPOSE_MAP.SERVICE_ID);
 
@@ -362,6 +370,10 @@ public class InstanceDaoImpl extends AbstractJooqDao implements InstanceDao {
                 .on(port.PUBLIC_IP_ADDRESS_ID.eq(ipAddress.ID))
                 .leftOuterJoin(exposeMap)
                 .on(exposeMap.INSTANCE_ID.eq(instance.ID))
+                .leftOuterJoin(HOST_IP_ADDRESS_MAP)
+                .on(host.ID.eq(HOST_IP_ADDRESS_MAP.HOST_ID))
+                .leftOuterJoin(hostIp)
+                .on(HOST_IP_ADDRESS_MAP.IP_ADDRESS_ID.eq(hostIp.ID))
                 .where(instance.ACCOUNT_ID.eq(accountId))
                 .and(instance.REMOVED.isNull())
                 .and(port.REMOVED.isNull())
