@@ -304,9 +304,13 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
                 }
             }
         }
-        List<PooledResource> resource = poolManager.allocateResource(env, service,
-                new PooledResourceOptions().withCount(toAllocate).withQualifier(
-                        ResourcePoolConstants.ENVIRONMENT_PORT));
+
+        List<PooledResource> resource = null;
+        if (toAllocate > 0) {
+            resource = poolManager.allocateResource(env, service,
+                    new PooledResourceOptions().withCount(toAllocate).withQualifier(
+                            ResourcePoolConstants.ENVIRONMENT_PORT));
+        }
         if (resource == null) {
             resource = new ArrayList<>();
         }
