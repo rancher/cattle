@@ -13,6 +13,7 @@ import static io.cattle.platform.core.model.tables.ServiceIndexTable.*;
 import static io.cattle.platform.core.model.tables.ServiceTable.*;
 import static io.cattle.platform.core.model.tables.StackTable.*;
 import static io.cattle.platform.core.model.tables.SubnetTable.*;
+import static io.cattle.platform.core.model.tables.HostIpAddressMapTable.*;
 import io.cattle.platform.core.addon.PublicEndpoint;
 import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.InstanceConstants;
@@ -62,6 +63,8 @@ import javax.inject.Named;
 
 import org.apache.commons.lang3.StringUtils;
 import org.jooq.Condition;
+import org.jooq.Record1;
+import org.jooq.Result;
 
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
@@ -319,10 +322,23 @@ public class InstanceDaoImpl extends AbstractJooqDao implements InstanceDao {
 
                 String address = "";
                 IpAddress ip = (IpAddress) input.get(3);
-                if (ip != null) {
+                if (ip != null && !ip.getAddress().equals("0.0.0.0")) {
                     address = ip.getAddress();
                 } else {
                     address = DataAccessor.fieldString(port, PortConstants.FIELD_BIND_ADDR);
+                    if (address.equals("0.0.0.0")){
+                            Result<Record1<String>> result = create()
+                            .select(IP_ADDRESS.ADDRESS)
+                            .from(HOST)
+                            .join(HOST_IP_ADDRESS_MAP)
+                            .on(HOST_IP_ADDRESS_MAP.HOST_ID.eq(host.getId()))
+                            .join(IP_ADDRESS)
+                            .on(IP_ADDRESS.ID.eq(HOST_IP_ADDRESS_MAP.IP_ADDRESS_ID))
+                            .fetch();
+                            if (result.size() > 0) {
+                                address = result.get(0).getValue(IP_ADDRESS.ADDRESS);
+                            }
+                    }
                 }
 
                 ServiceExposeMap exposeMap = (ServiceExposeMap) input.get(4);
