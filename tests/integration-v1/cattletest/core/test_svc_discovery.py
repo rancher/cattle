@@ -2682,12 +2682,16 @@ def test_project_random_port_update_create(new_context):
     assert 65533 <= port.publicPort <= 65535
 
     # try to create service with more ports
-    # requested than random range can provide - should be allowed
+    # requested than random range can provide - should not be allowed
     svc = client.create_service(name=random_str(),
                                 environmentId=env.id,
                                 launchConfig=launch_config)
-    svc = client.wait_success(svc)
-    assert svc.state == 'inactive'
+
+    def condition(x):
+        return 'Not enough environment ports' in x.transitioningMessage
+    wait_for_condition(client, svc, condition)
+    assert svc.state == 'registering'
+    client.wait_success(client.delete(svc))
 
     # create the port
     new_range = {"startPort": 65533, "endPort": 65535}

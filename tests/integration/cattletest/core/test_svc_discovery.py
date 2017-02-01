@@ -2883,7 +2883,7 @@ def test_project_random_port_update_create(new_context):
     ports = ['6666', '7775', '776']
     launch_config = {"imageUuid": image_uuid, "ports": ports}
     # update the port
-    new_range = {"startPort": 65533, "endPort": 65535}
+    new_range = {"startPort": 65532, "endPort": 65535}
     p = user_client.update(new_context.project,
                            servicesPortRange=new_range)
     p = user_client.wait_success(p)
@@ -2898,18 +2898,31 @@ def test_project_random_port_update_create(new_context):
     c = _wait_for_compose_instance_start(client, svc, env, "1")
     port = c.ports_link()[0]
     assert port.publicPort is not None
-    assert 65533 <= port.publicPort <= 65535
+    assert 65532 <= port.publicPort <= 65535
 
     # try to create service with more ports
-    # requested than random range can provide - should be allowed
+    # requested than random range can provide - should not be allowed
     svc = client.create_service(name=random_str(),
                                 stackId=env.id,
                                 launchConfig=launch_config)
-    svc = client.wait_success(svc)
-    assert svc.state == 'inactive'
+
+    def condition(x):
+        return 'Not enough environment ports' in x.transitioningMessage
+    wait_for_condition(client, svc, condition)
+    assert svc.state == 'registering'
+
+    # There is one port left in the range. This asserts that the previous
+    # service that failed released the port
+    launch_config['ports'] = ['8888']
+    svc2 = client.create_service(name=random_str(),
+                                 stackId=env.id,
+                                 launchConfig=launch_config)
+    client.wait_success(svc2)
+
+    client.wait_success(client.delete(svc))
 
     # create the port
-    new_range = {"startPort": 65533, "endPort": 65535}
+    new_range = {"startPort": 65532, "endPort": 65535}
     project = user_client.create_project(servicesPortRange=new_range)
     project = user_client.wait_success(project)
     assert project.servicesPortRange.startPort == new_range['startPort']
