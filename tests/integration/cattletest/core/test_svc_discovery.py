@@ -2708,20 +2708,28 @@ def _validate_endpoint(endpoints, public_port, host, service=None,
                           + host_ip + ":" + str(public_port)
 
 
-def test_public_endpoints(new_context):
-    client = new_context.client
-    host1 = new_context.host
-    host2 = register_simulated_host(new_context)
+def test_public_endpoints1(new_context):
+    _test_public_endpoints(new_context)
+
+
+def test_public_endpoints2(new_context):
+    _test_public_endpoints(new_context, "0.0.0.0:")
+
+
+def _test_public_endpoints(cont, ipAddress=''):
+    client = cont.client
+    host1 = cont.host
+    host2 = register_simulated_host(cont)
     env = _create_stack(client)
     hosts = [host1, host2]
 
     port1 = 5555
     port2 = 6666
 
-    image_uuid = new_context.image_uuid
+    image_uuid = cont.image_uuid
     labels = {'io.rancher.scheduler.global': 'true'}
     launch_config = {"imageUuid": image_uuid,
-                     "ports": [str(port1) + ':6666'],
+                     "ports": [ipAddress + str(port1) + ':6666'],
                      "labels": labels}
 
     service1 = client.create_service(name=random_str(),
@@ -2732,7 +2740,7 @@ def test_public_endpoints(new_context):
     service1 = client.wait_success(service1.activate(), 120)
     assert service1.state == "active"
     launch_config = {"imageUuid": image_uuid,
-                     "ports": [str(port2) + ':6666'],
+                     "ports": [ipAddress + str(port2) + ':6666'],
                      "labels": labels}
     service2 = client.create_service(name=random_str(),
                                      stackId=env.id,
