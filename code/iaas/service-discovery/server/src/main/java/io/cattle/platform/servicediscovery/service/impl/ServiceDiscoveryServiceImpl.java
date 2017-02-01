@@ -5,6 +5,7 @@ import static io.cattle.platform.core.model.tables.ServiceIndexTable.*;
 import static io.cattle.platform.core.model.tables.ServiceTable.*;
 import static io.cattle.platform.core.model.tables.StackTable.*;
 import static io.cattle.platform.core.model.tables.SubnetTable.*;
+
 import io.cattle.platform.allocator.service.AllocatorService;
 import io.cattle.platform.configitem.events.ConfigUpdate;
 import io.cattle.platform.configitem.model.Client;
@@ -59,6 +60,7 @@ import io.cattle.platform.servicediscovery.api.dao.ServiceExposeMapDao;
 import io.cattle.platform.servicediscovery.api.util.ServiceDiscoveryUtil;
 import io.cattle.platform.servicediscovery.api.util.selector.SelectorUtils;
 import io.cattle.platform.servicediscovery.service.ServiceDiscoveryService;
+import io.cattle.platform.util.exception.ResourceExhaustionException;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -304,11 +306,19 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
                 }
             }
         }
-        List<PooledResource> resource = poolManager.allocateResource(env, service,
-                new PooledResourceOptions().withCount(toAllocate).withQualifier(
-                        ResourcePoolConstants.ENVIRONMENT_PORT));
+        List<PooledResource> resource = null;
+        PooledResourceOptions options = new PooledResourceOptions().withCount(toAllocate).withQualifier(ResourcePoolConstants.ENVIRONMENT_PORT); 
+        if (toAllocate > 0) {
+            resource = poolManager.allocateResource(env, service, options);
+        }
         if (resource == null) {
             resource = new ArrayList<>();
+        }
+
+        if (resource.size() < toAllocate) {
+            poolManager.releaseResource(env, service, options);
+            throw new ResourceExhaustionException(
+                    String.format("Not enough environment ports to create service. Needed: %d, available: %d", toAllocate, resource.size()), service);
         }
         return resource;
     }
