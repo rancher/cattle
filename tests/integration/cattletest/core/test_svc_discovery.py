@@ -2872,7 +2872,7 @@ def test_project_random_port_update_create(new_context):
     env = _create_stack(client)
     image_uuid = new_context.image_uuid
 
-    ports = ['6666', '7775', '776']
+    ports = ['6666/tcp', '7775/tcp', '776/tcp']
     launch_config = {"imageUuid": image_uuid, "ports": ports}
     # update the port
     new_range = {"startPort": 65533, "endPort": 65535}
@@ -2899,6 +2899,12 @@ def test_project_random_port_update_create(new_context):
                                 launchConfig=launch_config)
     svc = client.wait_success(svc)
     assert svc.state == 'inactive'
+    # These ports should be in use by previous service
+    for i in ['65533', '65534', '65535']:
+        for p in svc.launchConfig.ports:
+            assert i not in p
+    # While this should pass, it will also fail
+    assert svc.launchConfig.ports == ports
 
     # create the port
     new_range = {"startPort": 65533, "endPort": 65535}
