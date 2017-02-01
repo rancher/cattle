@@ -2,7 +2,7 @@ package io.cattle.platform.docker.storage.process;
 
 import io.cattle.platform.agent.AgentLocator;
 import io.cattle.platform.agent.RemoteAgent;
-import io.cattle.platform.allocator.service.AllocatorService;
+import io.cattle.platform.allocator.service.AllocationHelper;
 import io.cattle.platform.archaius.util.ArchaiusUtil;
 import io.cattle.platform.async.utils.AsyncUtils;
 import io.cattle.platform.core.constants.CredentialConstants;
@@ -49,7 +49,7 @@ public class PullTaskCreate extends AbstractGenericObjectProcessLogic implements
     public static final String STATUS = "status";
 
     @Inject
-    AllocatorService allocatorService;
+    AllocationHelper allocationHelper;
 
     @Inject
     AgentLocator agentLocator;
@@ -90,7 +90,7 @@ public class PullTaskCreate extends AbstractGenericObjectProcessLogic implements
             labels = new HashMap<>();
         }
 
-        List<Long> hostIds = allocatorService.getHostsSatisfyingHostAffinity(pullTask.getAccountId(), labels);
+        List<Long> hostIds = allocationHelper.getHostsSatisfyingHostAffinity(pullTask.getAccountId(), labels);
         Map<Host, ListenableFuture<? extends Event>> pullFutures = new HashMap<>();
         Map<Host, ListenableFuture<? extends Event>> cleanupFutures = new HashMap<>();
         List<Integer> weights = new ArrayList<>();

@@ -24,6 +24,7 @@ public class InstanceConstants {
     public static final String FIELD_INSTANCE_TRIGGERED_STOP = "instanceTriggeredStop";
     public static final String FIELD_NETWORK_IDS = "networkIds";
     public static final String FIELD_PORTS = "ports";
+    public static final String FIELD_USER_PORTS = "userPorts";
     public static final String FIELD_PRIMARY_IP_ADDRESS = "primaryIpAddress";
     public static final String FIELD_PRIMARY_NETWORK_ID = "primaryNetworkId";
     public static final String FIELD_PRIVILEGED = "privileged";
@@ -64,6 +65,8 @@ public class InstanceConstants {
 
     public static final String REMOVE_OPTION = "remove";
 
+    public static final String PROCESS_ALLOCATE = "instance.allocate";
+    public static final String PROCESS_DEALLOCATE = "instance.deallocate";
     public static final String PROCESS_CREATE = "instance.create";
     public static final String PROCESS_START = "instance.start";
     public static final String PROCESS_STOP = "instance.stop";

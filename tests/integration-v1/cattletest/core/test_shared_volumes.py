@@ -115,7 +115,7 @@ def single_instance_rw_test(super_client, new_context, disks, sp_name=None):
                                 dataVolumes=data_volumes)
     c = client.wait_transitioning(c)
     assert c.transitioning == 'error'
-    assert c.transitioningMessage.startswith('Scheduling failed: Volume')
+    assert c.transitioningMessage.startswith('Allocation failed: Volume')
     assert c.state == 'error'
 
     vm = client.wait_success(vm.stop())
@@ -179,7 +179,7 @@ def test_single_host_rw(super_client, new_context):
                                  dataVolumes=['%s:/test/it' % v1.name])
     c2 = client.wait_transitioning(c2)
     assert c2.transitioning == 'error'
-    assert c2.transitioningMessage.startswith('Scheduling failed: Volume')
+    assert c2.transitioningMessage.startswith('Allocation failed: Volume')
     assert c2.state == 'error'
 
     c = client.wait_success(c.stop())
@@ -428,7 +428,7 @@ def test_volume_create_failed_allocation(new_context):
         c = client.create_container(imageUuid=new_context.image_uuid,
                                     dataVolumeMounts=data_volume_mounts)
         client.wait_success(c)
-    assert e.value.message.startswith('Scheduling failed')
+    assert e.value.message.startswith('Allocation failed')
 
 
 def test_external_volume_event(super_client, new_context):

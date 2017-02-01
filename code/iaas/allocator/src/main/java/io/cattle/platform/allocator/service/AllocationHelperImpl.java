@@ -31,7 +31,7 @@ import javax.inject.Inject;
 
 import org.jooq.tools.StringUtils;
 
-public class AllocatorServiceImpl implements AllocatorService {
+public class AllocationHelperImpl implements AllocationHelper {
 
     private static final String SERVICE_NAME_MACRO = "${service_name}";
     private static final String STACK_NAME_MACRO = "${stack_name}";

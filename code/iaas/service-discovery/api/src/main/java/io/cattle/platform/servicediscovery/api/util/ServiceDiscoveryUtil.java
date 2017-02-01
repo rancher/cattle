@@ -1,6 +1,6 @@
 package io.cattle.platform.servicediscovery.api.util;
 
-import io.cattle.platform.allocator.service.AllocatorService;
+import io.cattle.platform.allocator.service.AllocationHelper;
 import io.cattle.platform.core.addon.InServiceUpgradeStrategy;
 import io.cattle.platform.core.addon.InstanceHealthCheck;
 import io.cattle.platform.core.constants.AgentConstants;
@@ -125,7 +125,7 @@ public class ServiceDiscoveryUtil {
     }
 
     @SuppressWarnings("unchecked")
-    public static Map<String, String> getMergedServiceLabels(Service service, AllocatorService allocatorService) {
+    public static Map<String, String> getMergedServiceLabels(Service service, AllocationHelper allocationHelper) {
         List<String> launchConfigNames = getServiceLaunchConfigNames(service);
         Map<String, String> labelsStr = new HashMap<>();
         for (String currentLaunchConfigName : launchConfigNames) {
@@ -133,7 +133,7 @@ public class ServiceDiscoveryUtil {
             Object l = data.get(ServiceDiscoveryConfigItem.LABELS.getCattleName());
             if (l != null) {
                 Map<String, String> labels = (HashMap<String, String>) l;
-                    allocatorService.mergeLabels(labels, labelsStr);
+                    allocationHelper.mergeLabels(labels, labelsStr);
             }
         }
         return labelsStr;
@@ -239,7 +239,7 @@ public class ServiceDiscoveryUtil {
 
     @SuppressWarnings("unchecked")
     public static Map<String, Object> buildServiceInstanceLaunchData(Service service, Map<String, Object> deployParams,
-            String launchConfigName, AllocatorService allocatorService) {
+            String launchConfigName, AllocationHelper allocationHelper) {
         Map<String, Object> serviceData = getLaunchConfigDataAsMap(service, launchConfigName);
         Map<String, Object> launchConfigItems = new HashMap<>();
 
@@ -255,11 +255,11 @@ public class ServiceDiscoveryUtil {
                 if (dataObj instanceof Map) {
                     // unfortunately, need to make an except for labels due to the merging aspect of the values
                     if (key.equalsIgnoreCase(InstanceConstants.FIELD_LABELS)) {
-                        allocatorService.normalizeLabels(
+                        allocationHelper.normalizeLabels(
                                 service.getStackId(),
                                 (Map<String, String>) launchConfigItems.get(key),
                                 (Map<String, String>) dataObj);
-                        allocatorService.mergeLabels((Map<String, String>) launchConfigItems.get(key),
+                        allocationHelper.mergeLabels((Map<String, String>) launchConfigItems.get(key),
                                 (Map<String, String>) dataObj);
                     } else {
                         ((Map<Object, Object>) dataObj).putAll((Map<Object, Object>) launchConfigItems.get(key));

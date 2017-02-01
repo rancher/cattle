@@ -149,7 +149,7 @@ public class DefaultDeploymentUnitInstance extends DeploymentUnitInstance implem
     @SuppressWarnings("unchecked")
     protected Map<String, Object> populateLaunchConfigData(Map<String, Object> deployParams) {
         Map<String, Object> launchConfigData = ServiceDiscoveryUtil.buildServiceInstanceLaunchData(service,
-                deployParams, launchConfigName, context.allocatorService);
+                deployParams, launchConfigName, context.allocationHelper);
         launchConfigData.put("name", this.instanceName);
         launchConfigData.remove(ServiceDiscoveryConfigItem.RESTART.getCattleName());
         Object labels = launchConfigData.get(InstanceConstants.FIELD_LABELS);

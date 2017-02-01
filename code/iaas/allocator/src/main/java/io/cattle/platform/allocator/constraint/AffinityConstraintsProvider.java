@@ -2,7 +2,7 @@ package io.cattle.platform.allocator.constraint;
 
 import io.cattle.platform.allocator.service.AllocationAttempt;
 import io.cattle.platform.allocator.service.AllocationLog;
-import io.cattle.platform.allocator.service.AllocatorService;
+import io.cattle.platform.allocator.service.AllocationHelper;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.json.JsonMapper;
@@ -26,7 +26,7 @@ public class AffinityConstraintsProvider implements AllocationConstraintsProvide
     JsonMapper jsonMapper;
 
     @Inject
-    AllocatorService allocatorService;
+    AllocationHelper allocationHelper;
 
     @SuppressWarnings("rawtypes")
     @Override
@@ -34,14 +34,14 @@ public class AffinityConstraintsProvider implements AllocationConstraintsProvide
         for (Instance instance : attempt.getInstances()) {
             Map env = DataAccessor.fields(instance).withKey(InstanceConstants.FIELD_ENVIRONMENT).as(jsonMapper, Map.class);
             // TODO: hack for now. assuming all affinity:constraint specs are just found in the key
-            List<Constraint> affinityConstraintsFromEnv = allocatorService.extractConstraintsFromEnv(env);
+            List<Constraint> affinityConstraintsFromEnv = allocationHelper.extractConstraintsFromEnv(env);
             for (Constraint constraint : affinityConstraintsFromEnv) {
                 constraints.add(constraint);
             }
 
             // Currently, intentionally duplicating code to be explicit
             Map labels = DataAccessor.fields(instance).withKey(InstanceConstants.FIELD_LABELS).as(jsonMapper, Map.class);
-            List<Constraint> affinityConstraintsFromLabels = allocatorService.extractConstraintsFromLabels(labels, instance);
+            List<Constraint> affinityConstraintsFromLabels = allocationHelper.extractConstraintsFromLabels(labels, instance);
             for (Constraint constraint : affinityConstraintsFromLabels) {
                 constraints.add(constraint);
             }
