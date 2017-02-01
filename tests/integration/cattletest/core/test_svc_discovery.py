@@ -2900,10 +2900,6 @@ def test_project_random_port_update_create(new_context):
     svc = client.wait_success(svc)
     assert svc.state == 'inactive'
     # These ports should be in use by previous service
-    for i in ['65533', '65534', '65535']:
-        for p in svc.launchConfig.ports:
-            assert i not in p
-    # While this should pass, it will also fail
     assert svc.launchConfig.ports == ports
 
     # create the port
