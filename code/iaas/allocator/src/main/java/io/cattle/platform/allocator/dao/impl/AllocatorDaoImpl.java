@@ -47,7 +47,9 @@ import io.github.ibuildthecloud.gdapi.condition.ConditionType;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -164,14 +166,23 @@ public class AllocatorDaoImpl extends AbstractJooqDao implements AllocatorDao {
     }
 
     @Override
-    public List<? extends Host> getHosts(StoragePool pool) {
+    public List<? extends Host> getHosts(Collection<? extends StoragePool> pools) {
+        if (pools == null || pools.isEmpty()) {
+            return new ArrayList<>();
+        }
+
+        Collection<Long> poolIds = new HashSet<>();
+        for (StoragePool p : pools) {
+            poolIds.add(p.getId());
+        }
+
         return create()
                 .select(HOST.fields())
                 .from(HOST)
                 .join(STORAGE_POOL_HOST_MAP)
                     .on(STORAGE_POOL_HOST_MAP.HOST_ID.eq(HOST.ID))
                 .where(STORAGE_POOL_HOST_MAP.REMOVED.isNull()
-                    .and(STORAGE_POOL_HOST_MAP.STORAGE_POOL_ID.eq(pool.getId())))
+                    .and(STORAGE_POOL_HOST_MAP.STORAGE_POOL_ID.in(poolIds)))
                 .fetchInto(HostRecord.class);
     }
 

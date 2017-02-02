@@ -9,6 +9,7 @@ import io.cattle.platform.core.model.Port;
 import io.cattle.platform.core.model.StoragePool;
 import io.cattle.platform.core.model.Volume;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
@@ -20,7 +21,7 @@ public interface AllocatorDao {
 
     Host getHost(Instance instance);
 
-    List<? extends Host> getHosts(StoragePool pool);
+    List<? extends Host> getHosts(Collection<? extends StoragePool> storagePoolsIds);
 
     boolean recordCandidate(AllocationAttempt attempt, AllocationCandidate candidate);
 

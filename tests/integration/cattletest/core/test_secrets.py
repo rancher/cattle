@@ -28,7 +28,8 @@ def secret_context(new_context, super_client):
         startOnCreate=True,
         stackId=s.id,
         storageDriver={
-            'volumeCapabilities': ['secrets']
+            'volumeCapabilities': ['secrets'],
+            'scope': 'local',
         })
     service = client.wait_success(service)
     assert service.state == 'active'
@@ -145,3 +146,25 @@ def test_secret_create_and_download(secret_context, super_client):
     assert resp[0]['gid'] == 'group'
     assert resp[0]['mode'] == '0400'
     assert len(resp[0]['rewrapText']) == 344
+
+
+def test_secret_multi_host(secret_context, super_client):
+    host2 = register_simulated_host(secret_context)
+
+    client = secret_context.client
+    secret = client.create_secret(name=random_str(),
+                                  value='foo')
+    secret = client.wait_success(secret)
+
+    secrets = [{'name': 'blah', 'secretId': secret.id}]
+    c = secret_context.create_container(secrets=secrets,
+                                        requestedHostId=secret_context.host.id)
+    c = client.wait_success(c)
+    assert c.state == 'running'
+    assert c.hosts()[0].id == secret_context.host.id
+
+    c = secret_context.create_container(secrets=secrets,
+                                        requestedHostId=host2.id)
+    c = client.wait_success(c)
+    assert c.state == 'running'
+    assert c.hosts()[0].id == host2.id
