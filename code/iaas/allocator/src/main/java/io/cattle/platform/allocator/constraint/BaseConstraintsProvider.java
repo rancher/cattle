@@ -15,6 +15,7 @@ import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.util.type.Priority;
 
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -82,11 +83,12 @@ public class BaseConstraintsProvider implements AllocationConstraintsProvider, P
                 if (StringUtils.isNotEmpty(driver) && !VolumeConstants.LOCAL_DRIVER.equals(driver)) {
                     List<? extends StoragePool> pools = storagePoolDao.findStoragePoolByDriverName(volume.getAccountId(), driver);
                     if (pools.size() > 0) {
-                        StoragePool pool = pools.get(0);
                         Set<Long> poolIds = new HashSet<>();
-                        poolIds.add(pool.getId());
+                        for (StoragePool pool : pools) {
+                            poolIds.add(pool.getId());
+                        }
                         constraints.add(new VolumeValidStoragePoolConstraint(volume, false, poolIds));
-                        storagePoolToHostConstraint(constraints, pool);
+                        storagePoolToHostConstraint(constraints, pools);
                         restrictToUnmanagedPool = false;
                     }
                 }
@@ -122,12 +124,18 @@ public class BaseConstraintsProvider implements AllocationConstraintsProvider, P
         }
     }
 
-    void storagePoolToHostConstraint(List<Constraint> constraints, StoragePool pool) {
+    void storagePoolToHostConstraint(List<Constraint> constraints, Collection<? extends StoragePool> pools) {
         ValidHostsConstraint hostSet = new ValidHostsConstraint();
-        for (Host host : allocatorDao.getHosts(pool)) {
+        for (Host host : allocatorDao.getHosts(pools)) {
             hostSet.addHost(host.getId());
         }
         constraints.add(hostSet);
+    }
+
+    void storagePoolToHostConstraint(List<Constraint> constraints, StoragePool pool) {
+        Set<StoragePool> p = new HashSet<>();
+        p.add(pool);
+        storagePoolToHostConstraint(constraints, p);
     }
 
     @Override
