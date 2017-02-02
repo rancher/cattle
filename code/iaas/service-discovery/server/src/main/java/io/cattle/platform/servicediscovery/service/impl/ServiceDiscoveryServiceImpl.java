@@ -268,14 +268,19 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
     @Override
     @SuppressWarnings("unchecked")
     public void setPorts(Service service) {
+        boolean allocatePorts = !service.getKind().equalsIgnoreCase(ServiceConstants.KIND_LOAD_BALANCER_SERVICE);
         Account env = objectManager.loadResource(Account.class, service.getAccountId());
-        List<PooledResource> allocatedPorts = allocatePorts(env, service);
+        List<PooledResource> allocatedPorts = new ArrayList<>();
+        if (allocatePorts) {
+            allocatedPorts = allocatePorts(env, service);
+        }
+
         // update primary launchConfig
         Map<String, Object> launchConfig = DataAccessor.fields(service)
                 .withKey(ServiceConstants.FIELD_LAUNCH_CONFIG).withDefault(Collections.EMPTY_MAP)
                 .as(Map.class);
 
-        setRandomPublicPorts(env, service, launchConfig, allocatedPorts);
+        setRandomPublicPorts(env, service, launchConfig, allocatedPorts, allocatePorts);
 
         // update secondary launch configs
         List<Object> secondaryLaunchConfigs = DataAccessor.fields(service)
@@ -283,7 +288,9 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
                 .withDefault(Collections.EMPTY_LIST).as(
                         List.class);
         for (Object secondaryLaunchConfig : secondaryLaunchConfigs) {
-            setRandomPublicPorts(env, service, (Map<String, Object>) secondaryLaunchConfig, allocatedPorts);
+            setRandomPublicPorts(env, service, (Map<String, Object>) secondaryLaunchConfig,
+                    allocatedPorts,
+                    allocatePorts);
         }
 
         DataAccessor.fields(service).withKey(ServiceConstants.FIELD_LAUNCH_CONFIG).set(launchConfig);
@@ -324,13 +331,13 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
     }
 
     protected void setRandomPublicPorts(Account env, Service service,
-            Map<String, Object> launchConfigData, List<PooledResource> allocatedPorts) {
+            Map<String, Object> launchConfigData, List<PooledResource> allocatedPorts, boolean allocatePorts) {
         List<PortSpec> ports = getLaunchConfigPorts(launchConfigData);
         List<String> newPorts = new ArrayList<>();
         List<PortSpec> toAllocate = new ArrayList<>();
         for (PortSpec port : ports) {
             if (port.getPublicPort() == null) {
-                if (service.getKind().equalsIgnoreCase(ServiceConstants.KIND_LOAD_BALANCER_SERVICE)) {
+                if (!allocatePorts) {
                     if (port.getPublicPort() == null) {
                         port.setPublicPort(port.getPrivatePort());
                     }
