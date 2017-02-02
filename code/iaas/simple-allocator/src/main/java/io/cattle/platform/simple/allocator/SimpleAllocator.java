@@ -149,11 +149,11 @@ public class SimpleAllocator extends AbstractAllocator implements Allocator, Nam
         Long agentId = getAgentResource(instance.getAccountId(), instances);
         String hostUuid = getHostUuid(instance);
         if (agentId != null && hostUuid != null) {
-            EventVO<Map<String, Object>> schedulerEvent = buildEvent(SCHEDULER_RESERVE_EVENT, instances, new HashSet<Volume>());
+            EventVO<Map<String, Object>> schedulerEvent = buildEvent(SCHEDULER_RESERVE_EVENT, InstanceConstants.PROCESS_START,
+                    instances, new HashSet<Volume>());
             if (schedulerEvent != null) {
                 Map<String, Object> reqData = CollectionUtils.toMap(schedulerEvent.getData().get(SCHEDULER_REQUEST_DATA_NAME));
                 reqData.put(HOST_ID, hostUuid);
-                reqData.put(PHASE, InstanceConstants.PROCESS_START);
                 Long rhid = DataAccessor.fields(instance).withKey(InstanceConstants.FIELD_REQUESTED_HOST_ID).as(Long.class);
                 if (rhid != null) {
                     reqData.put(FORCE_RESERVE, true);
@@ -194,7 +194,8 @@ public class SimpleAllocator extends AbstractAllocator implements Allocator, Nam
     private void callExternalSchedulerToReserve(AllocationAttempt attempt, AllocationCandidate candidate) {
         Long agentId = getAgentResource(attempt.getAccountId(), attempt.getInstances());
         if (agentId != null) {
-            EventVO<Map<String, Object>> schedulerEvent = buildEvent(SCHEDULER_RESERVE_EVENT, attempt.getInstances(), attempt.getVolumes());
+            EventVO<Map<String, Object>> schedulerEvent = buildEvent(SCHEDULER_RESERVE_EVENT, InstanceConstants.PROCESS_ALLOCATE, attempt.getInstances(),
+                    attempt.getVolumes());
             if (schedulerEvent != null) {
                 Map<String, Object> reqData = CollectionUtils.toMap(schedulerEvent.getData().get(SCHEDULER_REQUEST_DATA_NAME));
                 reqData.put(HOST_ID, candidate.getHostUuid());
@@ -203,7 +204,6 @@ public class SimpleAllocator extends AbstractAllocator implements Allocator, Nam
                     reqData.put(FORCE_RESERVE, true);
                 }
 
-                reqData.put(PHASE, InstanceConstants.PROCESS_ALLOCATE);
                 RemoteAgent agent = agentLocator.lookupAgent(agentId);
                 Event eventResult = callScheduler("Error reserving resources: %s", schedulerEvent, agent);
                 if (eventResult.getData() == null) {
@@ -221,11 +221,10 @@ public class SimpleAllocator extends AbstractAllocator implements Allocator, Nam
     private void releaseResources(Instance instance, String hostUuid, String process) {
         Long agentId = getAgentResource(instance);
         if (agentId != null) {
-            EventVO<Map<String, Object>> schedulerEvent = buildReleaseEvent(instance);
+            EventVO<Map<String, Object>> schedulerEvent = buildReleaseEvent(process, instance);
             if (schedulerEvent != null) {
                 Map<String, Object> reqData = CollectionUtils.toMap(schedulerEvent.getData().get(SCHEDULER_REQUEST_DATA_NAME));
                 reqData.put(HOST_ID, hostUuid);
-                reqData.put(PHASE, process);
                 RemoteAgent agent = agentLocator.lookupAgent(agentId);
                 callScheduler("Error releasing resources: %s", schedulerEvent, agent);
             }
@@ -239,11 +238,10 @@ public class SimpleAllocator extends AbstractAllocator implements Allocator, Nam
         }
         Long agentId = getAgentResource(volume);
         if (agentId != null) {
-            EventVO<Map<String, Object>> schedulerEvent = buildReleaseEvent(volume);
+            EventVO<Map<String, Object>> schedulerEvent = buildReleaseEvent(VolumeConstants.PROCESS_DEALLOCATE, volume);
             if (schedulerEvent != null) {
                 Map<String, Object> reqData = CollectionUtils.toMap(schedulerEvent.getData().get(SCHEDULER_REQUEST_DATA_NAME));
                 reqData.put(HOST_ID, hostUuid);
-                reqData.put(PHASE, VolumeConstants.PROCESS_DEALLOCATE);
                 RemoteAgent agent = agentLocator.lookupAgent(agentId);
                 callScheduler("Error releasing resources: %s", schedulerEvent, agent);
             }
@@ -255,7 +253,8 @@ public class SimpleAllocator extends AbstractAllocator implements Allocator, Nam
         List<String> hosts = null;
         Long agentId = getAgentResource(attempt.getAccountId(), attempt.getInstances());
         if (agentId != null) {
-            EventVO<Map<String, Object>> schedulerEvent = buildEvent(SCHEDULER_PRIORITIZE_EVENT, attempt.getInstances(), attempt.getVolumes());
+            EventVO<Map<String, Object>> schedulerEvent = buildEvent(SCHEDULER_PRIORITIZE_EVENT, InstanceConstants.PROCESS_ALLOCATE, attempt.getInstances(),
+                    attempt.getVolumes());
 
             if (schedulerEvent != null) {
                 RemoteAgent agent = agentLocator.lookupAgent(agentId);
@@ -285,7 +284,7 @@ public class SimpleAllocator extends AbstractAllocator implements Allocator, Nam
         return  (List<ResourceRequest>)((Map<String, Object>)schedulerEvent.getData().get(SCHEDULER_REQUEST_DATA_NAME)).get(RESOURCE_REQUESTS);
     }
 
-    private EventVO<Map<String, Object>> buildReleaseEvent(Object resource) {
+    private EventVO<Map<String, Object>> buildReleaseEvent(String phase, Object resource) {
         List<ResourceRequest> resourceRequests = new ArrayList<>();
         if (resource instanceof Instance) {
             addInstanceResourceRequests(resourceRequests, (Instance)resource);
@@ -295,24 +294,25 @@ public class SimpleAllocator extends AbstractAllocator implements Allocator, Nam
             return null;
         }
 
-        return newEvent(SCHEDULER_RELEASE_EVENT, resourceRequests, resource.getClass().getSimpleName(), ObjectUtils.getId(resource), null);
+        return newEvent(SCHEDULER_RELEASE_EVENT, resourceRequests, resource.getClass().getSimpleName(), phase, ObjectUtils.getId(resource), null);
     }
 
-    private EventVO<Map<String, Object>> buildEvent(String eventName, List<Instance> instances, Set<Volume> volumes) {
+    private EventVO<Map<String, Object>> buildEvent(String eventName, String phase, List<Instance> instances, Set<Volume> volumes) {
         List<ResourceRequest> resourceRequests = gatherResourceRequests(instances, volumes);
         if (resourceRequests.isEmpty()) {
             return null;
         }
 
-        return newEvent(eventName, resourceRequests, "instance", instances.get(0).getId(), instances);
+        return newEvent(eventName, resourceRequests, "instance", phase, instances.get(0).getId(), instances);
     }
 
-    private EventVO<Map<String, Object>> newEvent(String eventName, List<ResourceRequest> resourceRequests, String resourceType, Object resourceId,
-            Object context) {
+    private EventVO<Map<String, Object>> newEvent(String eventName, List<ResourceRequest> resourceRequests, String resourceType, String phase,
+            Object resourceId, Object context) {
         Map<String, Object> eventData = new HashMap<String, Object>();
         Map<String, Object> reqData = new HashMap<>();
         reqData.put(RESOURCE_REQUESTS, resourceRequests);
         reqData.put(CONTEXT, context);
+        reqData.put(PHASE, phase);
         eventData.put(SCHEDULER_REQUEST_DATA_NAME, reqData);
         EventVO<Map<String, Object>> schedulerEvent = EventVO.<Map<String, Object>> newEvent(eventName).withData(eventData);
         schedulerEvent.setResourceType(resourceType);
