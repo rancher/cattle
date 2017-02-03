@@ -4,12 +4,14 @@ import io.cattle.platform.agent.AgentLocator;
 import io.cattle.platform.agent.RemoteAgent;
 import io.cattle.platform.agent.instance.dao.AgentInstanceDao;
 import io.cattle.platform.allocator.constraint.Constraint;
+import io.cattle.platform.allocator.constraint.PortsConstraint;
 import io.cattle.platform.allocator.constraint.ValidHostsConstraint;
 import io.cattle.platform.allocator.exception.FailedToAllocate;
 import io.cattle.platform.allocator.service.AbstractAllocator;
 import io.cattle.platform.allocator.service.AllocationAttempt;
 import io.cattle.platform.allocator.service.AllocationCandidate;
 import io.cattle.platform.allocator.service.Allocator;
+import io.cattle.platform.archaius.util.ArchaiusUtil;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.constants.VolumeConstants;
 import io.cattle.platform.core.dao.GenericMapDao;
@@ -20,6 +22,7 @@ import io.cattle.platform.core.model.Port;
 import io.cattle.platform.core.model.Volume;
 import io.cattle.platform.core.util.PortSpec;
 import io.cattle.platform.core.util.SystemLabels;
+import io.cattle.platform.docker.client.DockerImage;
 import io.cattle.platform.eventing.exception.EventExecutionException;
 import io.cattle.platform.eventing.model.Event;
 import io.cattle.platform.eventing.model.EventVO;
@@ -44,9 +47,13 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.netflix.config.DynamicStringProperty;
+
 public class SimpleAllocator extends AbstractAllocator implements Allocator, Named {
 
     private static final Logger log = LoggerFactory.getLogger(SimpleAllocator.class);
+
+    private static final DynamicStringProperty PORT_SCHEDULER_IMAGE_VERSION = ArchaiusUtil.getString("port.scheduler.image.version");
 
     private static final String FORCE_RESERVE = "force";
     private static final String HOST_ID = "hostID";
@@ -99,10 +106,13 @@ public class SimpleAllocator extends AbstractAllocator implements Allocator, Nam
 
         for (Constraint constraint : attempt.getConstraints()) {
             if (constraint instanceof ValidHostsConstraint) {
-                options.getHosts().addAll(((ValidHostsConstraint)constraint).getHosts());
+                options.getHosts().addAll(((ValidHostsConstraint) constraint).getHosts());
+            }
+
+            if (constraint instanceof PortsConstraint) {
+                options.setIncludeUsedPorts(true);
             }
         }
-
 
         List<String> orderedHostUUIDs = null;
         if (attempt.getRequestedHostId() == null) {
@@ -150,7 +160,7 @@ public class SimpleAllocator extends AbstractAllocator implements Allocator, Nam
         String hostUuid = getHostUuid(instance);
         if (agentId != null && hostUuid != null) {
             EventVO<Map<String, Object>> schedulerEvent = buildEvent(SCHEDULER_RESERVE_EVENT, InstanceConstants.PROCESS_START,
-                    instances, new HashSet<Volume>());
+                    instances, new HashSet<Volume>(), agentId);
             if (schedulerEvent != null) {
                 Map<String, Object> reqData = CollectionUtils.toMap(schedulerEvent.getData().get(SCHEDULER_REQUEST_DATA_NAME));
                 reqData.put(HOST_ID, hostUuid);
@@ -195,7 +205,7 @@ public class SimpleAllocator extends AbstractAllocator implements Allocator, Nam
         Long agentId = getAgentResource(attempt.getAccountId(), attempt.getInstances());
         if (agentId != null) {
             EventVO<Map<String, Object>> schedulerEvent = buildEvent(SCHEDULER_RESERVE_EVENT, InstanceConstants.PROCESS_ALLOCATE, attempt.getInstances(),
-                    attempt.getVolumes());
+                    attempt.getVolumes(), agentId);
             if (schedulerEvent != null) {
                 Map<String, Object> reqData = CollectionUtils.toMap(schedulerEvent.getData().get(SCHEDULER_REQUEST_DATA_NAME));
                 reqData.put(HOST_ID, candidate.getHostUuid());
@@ -221,7 +231,7 @@ public class SimpleAllocator extends AbstractAllocator implements Allocator, Nam
     private void releaseResources(Instance instance, String hostUuid, String process) {
         Long agentId = getAgentResource(instance);
         if (agentId != null) {
-            EventVO<Map<String, Object>> schedulerEvent = buildReleaseEvent(process, instance);
+            EventVO<Map<String, Object>> schedulerEvent = buildReleaseEvent(process, instance, agentId);
             if (schedulerEvent != null) {
                 Map<String, Object> reqData = CollectionUtils.toMap(schedulerEvent.getData().get(SCHEDULER_REQUEST_DATA_NAME));
                 reqData.put(HOST_ID, hostUuid);
@@ -238,7 +248,7 @@ public class SimpleAllocator extends AbstractAllocator implements Allocator, Nam
         }
         Long agentId = getAgentResource(volume);
         if (agentId != null) {
-            EventVO<Map<String, Object>> schedulerEvent = buildReleaseEvent(VolumeConstants.PROCESS_DEALLOCATE, volume);
+            EventVO<Map<String, Object>> schedulerEvent = buildReleaseEvent(VolumeConstants.PROCESS_DEALLOCATE, volume, agentId);
             if (schedulerEvent != null) {
                 Map<String, Object> reqData = CollectionUtils.toMap(schedulerEvent.getData().get(SCHEDULER_REQUEST_DATA_NAME));
                 reqData.put(HOST_ID, hostUuid);
@@ -254,7 +264,7 @@ public class SimpleAllocator extends AbstractAllocator implements Allocator, Nam
         Long agentId = getAgentResource(attempt.getAccountId(), attempt.getInstances());
         if (agentId != null) {
             EventVO<Map<String, Object>> schedulerEvent = buildEvent(SCHEDULER_PRIORITIZE_EVENT, InstanceConstants.PROCESS_ALLOCATE, attempt.getInstances(),
-                    attempt.getVolumes());
+                    attempt.getVolumes(), agentId);
 
             if (schedulerEvent != null) {
                 RemoteAgent agent = agentLocator.lookupAgent(agentId);
@@ -284,10 +294,11 @@ public class SimpleAllocator extends AbstractAllocator implements Allocator, Nam
         return  (List<ResourceRequest>)((Map<String, Object>)schedulerEvent.getData().get(SCHEDULER_REQUEST_DATA_NAME)).get(RESOURCE_REQUESTS);
     }
 
-    private EventVO<Map<String, Object>> buildReleaseEvent(String phase, Object resource) {
+    private EventVO<Map<String, Object>> buildReleaseEvent(String phase, Object resource, Long agentId) {
         List<ResourceRequest> resourceRequests = new ArrayList<>();
         if (resource instanceof Instance) {
-            addInstanceResourceRequests(resourceRequests, (Instance)resource);
+            String schedulerVersion = getSchedulerVersion(agentId);
+            addInstanceResourceRequests(resourceRequests, (Instance)resource, schedulerVersion);
         }
 
         if (resourceRequests.isEmpty()) {
@@ -297,8 +308,8 @@ public class SimpleAllocator extends AbstractAllocator implements Allocator, Nam
         return newEvent(SCHEDULER_RELEASE_EVENT, resourceRequests, resource.getClass().getSimpleName(), phase, ObjectUtils.getId(resource), null);
     }
 
-    private EventVO<Map<String, Object>> buildEvent(String eventName, String phase, List<Instance> instances, Set<Volume> volumes) {
-        List<ResourceRequest> resourceRequests = gatherResourceRequests(instances, volumes);
+    private EventVO<Map<String, Object>> buildEvent(String eventName, String phase, List<Instance> instances, Set<Volume> volumes, Long agentId) {
+        List<ResourceRequest> resourceRequests = gatherResourceRequests(instances, volumes, agentId);
         if (resourceRequests.isEmpty()) {
             return null;
         }
@@ -320,10 +331,11 @@ public class SimpleAllocator extends AbstractAllocator implements Allocator, Nam
         return schedulerEvent;
     }
 
-    private List<ResourceRequest> gatherResourceRequests(List<Instance> instances, Set<Volume> volumes) {
+    private List<ResourceRequest> gatherResourceRequests(List<Instance> instances, Set<Volume> volumes, Long agentId) {
         List<ResourceRequest> requests = new ArrayList<>();
+        String schedulerVersion = getSchedulerVersion(agentId);
         for (Instance instance : instances) {
-            addInstanceResourceRequests(requests, instance);
+            addInstanceResourceRequests(requests, instance, schedulerVersion);
         }
 
         addVolumeResourceRequests(requests, volumes.toArray(new Volume[volumes.size()]));
@@ -339,23 +351,23 @@ public class SimpleAllocator extends AbstractAllocator implements Allocator, Nam
         }
     }
 
-    private void addInstanceResourceRequests(List<ResourceRequest> requests, Instance instance) {
-        ResourceRequest memoryRequest = populateResourceRequestFromInstance(instance, MEMORY_RESERVATION, COMPUTE_POOL);
+    private void addInstanceResourceRequests(List<ResourceRequest> requests, Instance instance, String schedulerVersion) {
+        ResourceRequest memoryRequest = populateResourceRequestFromInstance(instance, MEMORY_RESERVATION, COMPUTE_POOL, schedulerVersion);
         if (memoryRequest != null) {
             requests.add(memoryRequest);
         }
 
-        ResourceRequest cpuRequest = populateResourceRequestFromInstance(instance, CPU_RESERVATION, COMPUTE_POOL);
+        ResourceRequest cpuRequest = populateResourceRequestFromInstance(instance, CPU_RESERVATION, COMPUTE_POOL, schedulerVersion);
         if (cpuRequest != null) {
             requests.add(cpuRequest);
         }
         
-        ResourceRequest portRequests = populateResourceRequestFromInstance(instance, PORT_RESERVATION, PORT_POOL);
+        ResourceRequest portRequests = populateResourceRequestFromInstance(instance, PORT_RESERVATION, PORT_POOL, schedulerVersion);
         if (portRequests != null) {
             requests.add(portRequests);
         }
 
-        ResourceRequest instanceRequest = populateResourceRequestFromInstance(instance, INSTANCE_RESERVATION, COMPUTE_POOL);
+        ResourceRequest instanceRequest = populateResourceRequestFromInstance(instance, INSTANCE_RESERVATION, COMPUTE_POOL, schedulerVersion);
         requests.add(instanceRequest);
     }
 
@@ -392,9 +404,12 @@ public class SimpleAllocator extends AbstractAllocator implements Allocator, Nam
         return name;
     }
     
-    private ResourceRequest populateResourceRequestFromInstance(Instance instance, String resourceType, String poolType) {
+    private ResourceRequest populateResourceRequestFromInstance(Instance instance, String resourceType, String poolType, String schedulerVersion) {
         switch (resourceType) {
         case PORT_RESERVATION:
+            if (useLegacyPortAllocation(schedulerVersion)) {
+                return null;
+            }
             PortBindingResourceRequest request = new PortBindingResourceRequest();
             request.setResource(resourceType);
             request.setInstanceId(instance.getId().toString());
@@ -434,5 +449,77 @@ public class SimpleAllocator extends AbstractAllocator implements Allocator, Nam
             return null;
         }
         return null;
+    }
+
+    @Override
+    protected boolean useLegacyPortAllocation(Long accountId, List<Instance> instances) {
+        Long agentId = getAgentResource(accountId, instances);
+        return useLegacyPortAllocation(agentId);
+    }
+
+    protected boolean useLegacyPortAllocation(Long agentId) {
+        if (agentId == null) {
+            // No scheduler, use legacy logic
+            return true;
+        }
+
+        String schedulerVersion = getSchedulerVersion(agentId);
+        return useLegacyPortAllocation(schedulerVersion);
+    }
+
+    protected String getSchedulerVersion(Long agentId) {
+        Instance instance = agentInstanceDao.getInstanceByAgent(agentId);
+        String imageUuid = (String) DataAccessor.fields(instance).withKey(InstanceConstants.FIELD_IMAGE_UUID).get();
+        DockerImage img = DockerImage.parse(imageUuid);
+        String[] imageParts = img.getFullName().split(":");
+        if (imageParts.length <= 1) {
+            return "";
+        }
+        return imageParts[imageParts.length - 1];
+    }
+
+    protected boolean useLegacyPortAllocation(String actualVersion) {
+        String requiredVersion = PORT_SCHEDULER_IMAGE_VERSION.get();
+        if (StringUtils.isEmpty(requiredVersion)) {
+            // Property not available. Use legacy
+            return true;
+        }
+        String[] requiredParts = requiredVersion.split("\\.");
+        if (requiredParts.length < 3) {
+            // Required image is not following semantic versioning. Assume custom, don't use legacy
+            return false;
+        }
+        int requiredMajor, requiredMinor = 0;
+        try {
+            String majorTemp = requiredParts[0].startsWith("v") ? requiredParts[0].substring(1, requiredParts[0].length()) : requiredParts[0];
+            requiredMajor = Integer.valueOf(majorTemp);
+            requiredMinor = Integer.valueOf(requiredParts[1]);
+        } catch (NumberFormatException e) {
+            // Require image is not following semantic versioning. Assume custom, don't use legacy
+            return false;
+        }
+
+        String[] actualParts = actualVersion.split("\\.");
+        if (actualParts.length < 3) {
+            // Image is not following semantic versioning. Assume custom, don't use legacy
+            return false;
+        }
+
+        int actualMajor, actualMinor = 0;
+        try {
+            String majorTemp = actualParts[0].startsWith("v") ? actualParts[0].substring(1, actualParts[0].length()) : actualParts[0];
+            actualMajor = Integer.valueOf(majorTemp).intValue();
+            actualMinor = Integer.valueOf(actualParts[1]).intValue();
+        } catch (NumberFormatException e) {
+            // Image is not following semantic versioning. Assume custom, don't use legacy
+            return false;
+        }
+
+        if (actualMajor < requiredMajor) {
+            return true;
+        } else if (actualMajor == requiredMajor && actualMinor < requiredMinor) {
+            return true;
+        }
+        return false;
     }
 }

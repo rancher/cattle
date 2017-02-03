@@ -5,6 +5,7 @@ import static io.cattle.platform.core.model.tables.PortTable.*;
 
 import io.cattle.platform.allocator.constraint.AllocationConstraintsProvider;
 import io.cattle.platform.allocator.constraint.Constraint;
+import io.cattle.platform.allocator.constraint.PortsConstraintProvider;
 import io.cattle.platform.allocator.dao.AllocatorDao;
 import io.cattle.platform.allocator.exception.FailedToAllocate;
 import io.cattle.platform.allocator.lock.AllocateConstraintLock;
@@ -407,6 +408,9 @@ public abstract class AbstractAllocator implements Allocator {
 
         for (AllocationConstraintsProvider provider : allocationConstraintProviders) {
             if (attempt.getRequestedHostId() == null || provider.isCritical()) {
+                if (provider instanceof PortsConstraintProvider  && !useLegacyPortAllocation(attempt.getAccountId(), attempt.getInstances())) {
+                    continue;
+                }
                 provider.appendConstraints(attempt, log, constraints);
             }
         }
@@ -422,6 +426,8 @@ public abstract class AbstractAllocator implements Allocator {
             }
         });
     }
+
+    protected abstract boolean useLegacyPortAllocation(Long accountId, List<Instance> instances);
 
     public boolean assertAllocated(long resourceId, String state, String type, boolean raiseOnBadState) {
         if (CommonStatesConstants.ACTIVE.equals(state) || ("instance".equalsIgnoreCase(type)
