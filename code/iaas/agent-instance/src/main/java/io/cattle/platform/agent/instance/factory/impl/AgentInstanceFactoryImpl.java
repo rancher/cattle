@@ -2,7 +2,6 @@ package io.cattle.platform.agent.instance.factory.impl;
 
 import static io.cattle.platform.core.model.tables.AgentTable.*;
 import static io.cattle.platform.core.model.tables.InstanceTable.*;
-
 import io.cattle.platform.agent.AgentLocator;
 import io.cattle.platform.agent.instance.dao.AgentInstanceDao;
 import io.cattle.platform.agent.instance.factory.AgentInstanceFactory;
@@ -21,6 +20,7 @@ import io.cattle.platform.core.model.Service;
 import io.cattle.platform.core.model.Stack;
 import io.cattle.platform.core.util.SystemLabels;
 import io.cattle.platform.deferred.util.DeferredUtils;
+import io.cattle.platform.docker.client.DockerImage;
 import io.cattle.platform.engine.process.impl.ProcessCancelException;
 import io.cattle.platform.lock.LockCallback;
 import io.cattle.platform.lock.LockManager;
@@ -45,6 +45,7 @@ import javax.inject.Inject;
 
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.ObjectUtils;
+import org.apache.commons.lang3.tuple.Pair;
 
 import com.netflix.config.DynamicStringProperty;
 
@@ -133,6 +134,9 @@ public class AgentInstanceFactoryImpl implements AgentInstanceFactory {
 
     @SuppressWarnings("unchecked")
     protected boolean isLBSystemService(Service service) {
+        if (!service.getKind().equalsIgnoreCase(ServiceConstants.KIND_LOAD_BALANCER_SERVICE)) {
+            return false;
+        }
         Map<String, Object> data = DataAccessor.fields(service)
                 .withKey("launchConfig").withDefault(Collections.EMPTY_MAP)
                 .as(Map.class);
@@ -142,12 +146,22 @@ public class AgentInstanceFactoryImpl implements AgentInstanceFactory {
             return false;
         }
 
-        // remove the tag from the default image (assuming that it is always tagged)
-        String defaultImageUuid = LB_IMAGE_UUID.get().toLowerCase();
-        String[] splitted = defaultImageUuid.split(":");
-        String formattedDefault = String.format("%s:%s", splitted[0], splitted[1]);
+        Pair<String, String> defaultImage = getImageAndRepo(LB_IMAGE_UUID.get().toLowerCase());
+        Pair<String, String> instanceImage = getImageAndRepo(imageObj.toString().toLowerCase());
+        return defaultImage.getRight().equalsIgnoreCase(instanceImage.getRight())
+                && defaultImage.getLeft().equalsIgnoreCase(instanceImage.getLeft());
+    }
 
-        return imageObj.toString().startsWith(formattedDefault);
+    private Pair<String, String> getImageAndRepo(String imageUUID) {
+        DockerImage dockerImage = DockerImage.parse(imageUUID);
+        String[] splitted = dockerImage.getFullName().split("/");
+        if (splitted.length < 2) {
+            return Pair.of("", "");
+        }
+        String repo = splitted[0];
+        // split the version
+        String image = splitted[1].split(":")[0];
+        return Pair.of(repo, image);
     }
 
     private boolean isSystem(Instance instance) {
