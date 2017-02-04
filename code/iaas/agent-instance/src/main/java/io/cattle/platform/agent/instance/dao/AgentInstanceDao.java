@@ -9,7 +9,7 @@ public interface AgentInstanceDao {
 
     Agent getAgentByUri(String uri);
 
-    Instance getInstanceByAgent(Agent agent);
+    Instance getInstanceByAgent(Long agentId);
 
     boolean areAllCredentialsActive(Agent agent);
 

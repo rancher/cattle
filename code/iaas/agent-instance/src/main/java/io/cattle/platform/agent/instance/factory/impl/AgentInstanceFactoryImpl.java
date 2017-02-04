@@ -78,7 +78,7 @@ public class AgentInstanceFactoryImpl implements AgentInstanceFactory {
     }
 
     private Instance getInstance(Agent agent, AgentInstanceBuilderImpl builder) {
-        Instance instance = factoryDao.getInstanceByAgent(agent);
+        Instance instance = factoryDao.getInstanceByAgent(agent.getId());
 
         if (instance != null) {
             return instance;
@@ -233,7 +233,7 @@ public class AgentInstanceFactoryImpl implements AgentInstanceFactory {
         return lockManager.lock(new AgentInstanceAgentCreateLock(agent.getUri()), new LockCallback<Instance>() {
             @Override
             public Instance doWithLock() {
-                Instance instance = factoryDao.getInstanceByAgent(agent);
+                Instance instance = factoryDao.getInstanceByAgent(agent.getId());
 
                 if (instance == null) {
                     instance = DeferredUtils.nest(new Callable<Instance>() {

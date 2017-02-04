@@ -44,10 +44,14 @@ public class AgentInstanceDaoImpl extends AbstractJooqDao implements AgentInstan
     }
 
     @Override
-    public Instance getInstanceByAgent(Agent agent) {
+    public Instance getInstanceByAgent(Long agentId) {
+        if (agentId == null) {
+            return null;
+        }
+
         return create()
                 .selectFrom(INSTANCE)
-                .where(INSTANCE.AGENT_ID.eq(agent.getId())
+                .where(INSTANCE.AGENT_ID.eq(agentId)
                         .and(INSTANCE.REMOVED.isNull())
                         .and(INSTANCE.STATE.notIn(InstanceConstants.STATE_ERROR, InstanceConstants.STATE_ERRORING,
                                 CommonStatesConstants.REMOVING)))
