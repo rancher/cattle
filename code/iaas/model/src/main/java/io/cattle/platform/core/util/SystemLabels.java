@@ -14,7 +14,7 @@ public class SystemLabels {
     public static final String LABEL_RANCHER_UUID = "io.rancher.container.uuid";
     public static final String LABEL_RANCHER_NETWORK = "io.rancher.container.network";
     public static final String LABEL_DISPLAY_NAME = "io.rancher.container.display_name";
-
+    public static final String LABEL_HEALTHCHECK_SKIP = "io.rancher.host.healthcheck.skip";
 
     /**
      * Indicates an instance runs an agent that provides the labels provider service

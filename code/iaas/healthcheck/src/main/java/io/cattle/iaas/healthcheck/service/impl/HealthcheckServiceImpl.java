@@ -3,6 +3,7 @@ package io.cattle.iaas.healthcheck.service.impl;
 import static io.cattle.platform.core.constants.HealthcheckConstants.*;
 import static io.cattle.platform.core.model.tables.HealthcheckInstanceHostMapTable.*;
 import static io.cattle.platform.core.model.tables.HealthcheckInstanceTable.*;
+import static io.cattle.platform.core.util.SystemLabels.*;
 import io.cattle.iaas.healthcheck.service.HealthcheckService;
 import io.cattle.platform.allocator.dao.AllocatorDao;
 import io.cattle.platform.core.constants.CommonStatesConstants;
@@ -21,6 +22,7 @@ import io.cattle.platform.lock.LockManager;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.meta.ObjectMetaDataManager;
 import io.cattle.platform.object.process.ObjectProcessManager;
+import io.cattle.platform.util.type.CollectionUtils;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -29,7 +31,6 @@ import java.util.List;
 
 import javax.inject.Inject;
 
-import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.TransformerUtils;
 
 public class HealthcheckServiceImpl implements HealthcheckService {
@@ -259,17 +260,26 @@ public class HealthcheckServiceImpl implements HealthcheckService {
                 HealthcheckInstance.class, healthInstance.getId());
         List<? extends Host> availableActiveHosts = allocatorDao.getActiveHosts(healthInstance.getAccountId());
         
-        List<Long> availableActiveHostIds = (List<Long>) CollectionUtils.collect(availableActiveHosts,
+        // skip hosts labeled accordingly
+        Iterator<? extends Host> it = availableActiveHosts.iterator();
+        while (it.hasNext()) {
+            String skip = (String) CollectionUtils.getNestedValue(it.next().getData(), "fields", "labels", LABEL_HEALTHCHECK_SKIP);
+            if (skip != null && "true".equals(skip)) {
+               it.remove();
+            }
+        }
+        
+        List<Long> availableActiveHostIds = (List<Long>) org.apache.commons.collections.CollectionUtils.collect(availableActiveHosts,
                 TransformerUtils.invokerTransformer("getId"));
-        List<Long> allocatedActiveHostIds = (List<Long>) CollectionUtils.collect(existingHostMaps,
+        List<Long> allocatedActiveHostIds = (List<Long>) org.apache.commons.collections.CollectionUtils.collect(existingHostMaps,
                 TransformerUtils.invokerTransformer("getHostId"));
 
         // skip the host that if not active (being removed, reconnecting, etc)
-        Iterator<Long> it = allocatedActiveHostIds.iterator();
-        while (it.hasNext()) {
-            Long allocatedHostId = it.next();
+        Iterator<Long> it2 = allocatedActiveHostIds.iterator();
+        while (it2.hasNext()) {
+            Long allocatedHostId = it2.next();
             if (!availableActiveHostIds.contains(allocatedHostId)) {
-                it.remove();
+                it2.remove();
             }
         }
 
