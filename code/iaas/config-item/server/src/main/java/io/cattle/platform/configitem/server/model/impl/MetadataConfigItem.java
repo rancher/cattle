@@ -55,7 +55,7 @@ public class MetadataConfigItem extends AbstractConfigItem {
         boolean returnNothing = false;
         
         if (majorMinor.getLeft() == null || majorMinor.getRight() == null) {
-            returnNothing = true;
+            returnNothing = false;
         } else if (majorMinor.getLeft().longValue() <= majorMinor.getLeft().longValue()
                 && majorMinor.getRight().longValue() < defaultMajorMinor.getRight()) {
             returnNothing = true;
