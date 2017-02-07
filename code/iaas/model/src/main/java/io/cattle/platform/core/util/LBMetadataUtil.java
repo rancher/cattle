@@ -96,11 +96,11 @@ public class LBMetadataUtil {
             this.service = service;
         }
 
-        public int getTarget_port() {
+        public Integer getTarget_port() {
             return target_port;
         }
 
-        public void setTarget_port(int target_port) {
+        public void setTarget_port(Integer target_port) {
             this.target_port = target_port;
         }
 
