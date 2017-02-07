@@ -1,43 +1,24 @@
 package io.cattle.platform.configitem.context.data.metadata.common;
 
-import io.cattle.platform.configitem.context.dao.MetaDataInfoDao;
-import io.cattle.platform.configitem.context.dao.MetaDataInfoDao.Version;
-import io.cattle.platform.configitem.context.data.metadata.version1.StackMetaDataVersion1;
-import io.cattle.platform.configitem.context.data.metadata.version2.StackMetaDataVersion2;
-import io.cattle.platform.configitem.context.data.metadata.version2.StackMetaDataVersion3;
 import io.cattle.platform.core.model.Account;
-import io.cattle.platform.core.model.Stack;
-
-import java.util.ArrayList;
-import java.util.List;
 
 public class StackMetaData {
-    private long id;
+    String environment_name;
+    String environment_uuid;
+    String name;
+    String uuid;
+    Boolean system;
 
-    protected String environment_name;
-    protected String environment_uuid;
-    protected String name;
-    protected String uuid;
-    protected List<ServiceMetaData> services = new ArrayList<>();
-    protected Boolean system;
+    // helper field needed by metadata service to process object
+    String metadata_kind;
 
-    public StackMetaData(Stack stack, Account account) {
-        this.name = stack.getName();
-        this.uuid = stack.getUuid();
+    public StackMetaData(String stackName, String stackUUID, boolean isSystem, Account account) {
+        this.name = stackName;
+        this.uuid = stackUUID;
         this.environment_name = account.getName();
-        this.id = stack.getId();
         this.environment_uuid = account.getUuid();
-        this.system = stack.getSystem();
-    }
-
-    protected StackMetaData(StackMetaData that) {
-        this.environment_name = that.environment_name;
-        this.name = that.name;
-        this.uuid = that.uuid;
-        this.services = that.services;
-        this.id = that.id;
-        this.environment_uuid = that.environment_uuid;
-        this.system = that.system;
+        this.system = isSystem;
+        this.metadata_kind = "stack";
     }
 
     public String getEnvironment_uuid() {
@@ -72,24 +53,6 @@ public class StackMetaData {
         this.uuid = uuid;
     }
 
-    public long getId() {
-        return id;
-    }
-
-    public void setServicesObj(List<ServiceMetaData> services) {
-        this.services = services;
-    }
-
-    public static StackMetaData getStackMetaData(StackMetaData stackData, Version version) {
-        if (version == MetaDataInfoDao.Version.version1) {
-            return new StackMetaDataVersion1(stackData);
-        } else if (version == MetaDataInfoDao.Version.version2) {
-            return new StackMetaDataVersion2(stackData);
-        } else {
-            return new StackMetaDataVersion3(stackData);
-        }
-    }
-
     public Boolean getSystem() {
         return system;
     }
@@ -97,5 +60,14 @@ public class StackMetaData {
     public void setSystem(Boolean system) {
         this.system = system;
     }
+
+    public String getMetadata_kind() {
+        return metadata_kind;
+    }
+
+    public void setMetadata_kind(String metadata_kind) {
+        this.metadata_kind = metadata_kind;
+    }
+
 
 }

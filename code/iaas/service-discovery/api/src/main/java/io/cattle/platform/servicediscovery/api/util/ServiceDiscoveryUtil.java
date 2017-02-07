@@ -8,8 +8,6 @@ import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.constants.ServiceConstants;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.Service;
-import io.cattle.platform.core.model.ServiceConsumeMap;
-import io.cattle.platform.core.model.ServiceExposeMap;
 import io.cattle.platform.core.model.Stack;
 import io.cattle.platform.core.util.PortSpec;
 import io.cattle.platform.core.util.SystemLabels;
@@ -284,31 +282,6 @@ public class ServiceDiscoveryUtil {
         }
 
         return launchConfigItems;
-    }
-
-    public static String getDnsName(Service service, ServiceConsumeMap serviceConsumeMap,
-            ServiceExposeMap serviceExposeMap, boolean self) {
-
-        String dnsPrefix = null;
-        if (serviceExposeMap != null) {
-            dnsPrefix = serviceExposeMap.getDnsPrefix();
-        }
-
-        String consumeMapName = null;
-        if (serviceConsumeMap != null) {
-            consumeMapName = serviceConsumeMap.getName();
-        }
-
-        String primaryDnsName = (consumeMapName != null && !consumeMapName.isEmpty()) ? consumeMapName
-                : service.getName();
-        String dnsName = primaryDnsName;
-        if (self) {
-            dnsName = dnsPrefix == null ? dnsName : dnsPrefix;
-        } else {
-            dnsName = dnsPrefix == null ? dnsName : dnsPrefix + "." + dnsName;
-        }
-
-        return dnsName;
     }
 
     public static boolean isNoopService(Service service) {

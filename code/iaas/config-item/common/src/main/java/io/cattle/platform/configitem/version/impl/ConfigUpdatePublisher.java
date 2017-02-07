@@ -174,6 +174,12 @@ public class ConfigUpdatePublisher extends NoExceptionRunnable implements Initia
                     continue;
                 }
 
+                item.publishCount++;
+                if (item.publishCount > 3) {
+                    reply(item, null, new TimeoutException("Maximum number of events published"));
+                    continue;
+                }
+
                 if (update == null) {
                     ConfigUpdateData data = item.request.getData();
                     update = new ConfigUpdate(item.request.getName(), data.getConfigUrl(),
@@ -433,6 +439,7 @@ public class ConfigUpdatePublisher extends NoExceptionRunnable implements Initia
         String key;
         SettableFuture<Event> future;
         Throwable t;
+        int publishCount;
         boolean exit;
         boolean check;
         Date time;

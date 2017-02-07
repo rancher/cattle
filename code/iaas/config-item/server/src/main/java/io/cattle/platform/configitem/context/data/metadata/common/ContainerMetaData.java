@@ -1,14 +1,8 @@
 package io.cattle.platform.configitem.context.data.metadata.common;
 
-import io.cattle.platform.configitem.context.dao.MetaDataInfoDao;
-import io.cattle.platform.configitem.context.dao.MetaDataInfoDao.Version;
-import io.cattle.platform.configitem.context.data.metadata.version2.ContainerMetaDataVersion3;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.model.Account;
 import io.cattle.platform.core.model.Instance;
-import io.cattle.platform.core.model.Nic;
-import io.cattle.platform.core.model.ServiceExposeMap;
-import io.cattle.platform.core.util.PortSpec;
 import io.cattle.platform.object.util.DataAccessor;
 
 import java.util.ArrayList;
@@ -18,26 +12,17 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.collections.IteratorUtils;
-import org.apache.commons.lang3.StringUtils;
 
 import com.google.common.base.Splitter;
 
 public class ContainerMetaData {
-    private Long serviceId;
-    private HostMetaData hostMetaData;
-    private String dnsPrefix;
-    private Long instanceId;
-    Instance instance;
-    private boolean isHostNetworking;
-
-    protected String name;
+    String name;
     String uuid;
     String primary_ip;
     List<String> ips = new ArrayList<>();
-    // host:public:private
-    protected List<String> ports = new ArrayList<>();
-    protected String service_name;
-    protected String stack_name;
+    List<String> ports = new ArrayList<>();
+    String service_name;
+    String stack_name;
     String stack_uuid;
     Map<String, String> labels = new HashMap<>();
     Long create_index;
@@ -56,49 +41,12 @@ public class ContainerMetaData {
     Boolean system;
     List<String> dns = new ArrayList<>();
     List<String> dns_search = new ArrayList<>();
-    // list of hostUUID
-    List<String> health_check_hosts = new ArrayList<>();
-    protected String environment_uuid;
-
-    // container links where key is linkName, value is instanceUUID
-    Map<String, String> links = new HashMap<>();
-
-    public ContainerMetaData(ContainerMetaData that) {
-        this.name = that.name;
-        this.uuid = that.uuid;
-        this.primary_ip = that.primary_ip;
-        this.ips = that.ips;
-        this.ports = that.ports;
-        this.service_name = that.service_name;
-        this.stack_name = that.stack_name;
-        this.stack_uuid = that.stack_uuid;
-        this.labels = that.labels;
-        this.create_index = that.create_index;
-        this.host_uuid = that.host_uuid;
-        this.hostname = that.hostname;
-        this.health_state = that.health_state;
-        this.start_count = that.start_count;
-        this.service_index = that.service_index;
-        this.state = that.state;
-        this.external_id = that.external_id;
-        this.primary_mac_address = that.primary_mac_address;
-        this.memory_reservation = that.memory_reservation;
-        this.milli_cpu_reservation = that.milli_cpu_reservation;
-        this.serviceId = that.serviceId;
-        this.hostMetaData = that.hostMetaData;
-        this.dnsPrefix = that.dnsPrefix;
-        this.network_uuid = that.network_uuid;
-        this.network_from_container_uuid = that.network_from_container_uuid;
-        this.system = that.system;
-        this.instanceId = that.instanceId;
-        this.instance = that.instance;
-        this.dns = that.dns;
-        this.dns_search = that.dns_search;
-        this.health_check_hosts = that.health_check_hosts;
-        this.links = that.links;
-        this.environment_uuid = that.environment_uuid;
-        this.isHostNetworking = that.isHostNetworking;
-    }
+    List<String> health_check_hosts = new ArrayList<>(); // list of hostUUIDs
+    String environment_uuid;
+    Map<String, String> links = new HashMap<>(); // container links where key is linkName, value is instanceUUID
+    String host_ip;
+    // helper field needed by metadata service to process object
+    String metadata_kind;
 
     public ContainerMetaData() {
     }
@@ -123,22 +71,6 @@ public class ContainerMetaData {
         return ports;
     }
 
-    public String getService_name() {
-        return service_name;
-    }
-
-    public String getStack_name() {
-        return stack_name;
-    }
-
-    public String getStack_uuid() {
-        return stack_uuid;
-    }
-
-    public void setStack_uuid(String stack_uuid) {
-        this.stack_uuid = stack_uuid;
-    }
-
     public Map<String, String> getLabels() {
         return labels;
     }
@@ -148,13 +80,9 @@ public class ContainerMetaData {
         this.ips.add(primary_ip);
     }
 
-
     @SuppressWarnings("unchecked")
-    public void setInstanceAndHostMetadata(Instance instance, HostMetaData hostMetaData, List<String> healthcheckHosts,
-            Account account, boolean isHostNetworking) {
-        this.hostMetaData = hostMetaData;
-    this.instance = instance;
-        this.instanceId = instance.getId();
+    public void setInstanceAndHostMetadata(Instance instance, HostMetaData host, List<String> healthcheckHosts,
+            Account account) {
         this.name = instance.getName();
         this.uuid = instance.getUuid();
         this.external_id = instance.getExternalId();
@@ -162,30 +90,12 @@ public class ContainerMetaData {
         Map<String, String> labels = DataAccessor.fields(instance).withKey(InstanceConstants.FIELD_LABELS)
                 .withDefault(Collections.EMPTY_MAP).as(Map.class);
         this.labels = labels;
-        List<String> portsObj = DataAccessor.fields(instance)
+        this.hostname = instance.getHostname();
+        this.ports = DataAccessor.fields(instance)
                 .withKey(InstanceConstants.FIELD_PORTS).withDefault(Collections.EMPTY_LIST)
                 .as(List.class);
-        this.hostname = instance.getHostname();
-        if (hostMetaData != null) {
-            this.host_uuid = hostMetaData.getUuid();
-            String hostIp = hostMetaData.agent_ip;
-            List<String> newPorts = new ArrayList<>();
-            if (hostIp == null) {
-                newPorts.addAll(portsObj);
-            } else {
-                for (String portObj : portsObj) {
-                    PortSpec port = new PortSpec(portObj);
-                    if (StringUtils.isEmpty(port.getIpAddress())) {
-                        newPorts.add(hostIp + ":" + portObj);
-                    } else if ("0.0.0.0".equals(port.getIpAddress())) {
-                        newPorts.add(hostIp + StringUtils.removeStart(portObj, "0.0.0.0"));
-                    } else {
-                        newPorts.add(portObj);
-                    }
-                }
-            }
-            this.ports = newPorts;
-        }
+        this.host_uuid = host.uuid;
+        this.host_ip = host.agent_ip;
         this.create_index = instance.getCreateIndex();
         this.health_state = instance.getHealthState();
         this.start_count = instance.getStartCount();
@@ -204,40 +114,7 @@ public class ContainerMetaData {
             this.health_check_hosts = healthcheckHosts;
         }
         this.environment_uuid = account.getUuid();
-        this.isHostNetworking = isHostNetworking;
-    }
-
-    public void setService_name(String service_name) {
-        this.service_name = service_name;
-    }
-
-    public void setStack_name(String stack_name) {
-        this.stack_name = stack_name;
-    }
-
-    public void setExposeMap(ServiceExposeMap exposeMap) {
-        if (exposeMap != null) {
-            this.dnsPrefix = exposeMap.getDnsPrefix();
-            this.serviceId = exposeMap.getServiceId();
-        }
-    }
-
-    public void setNicInformation(Nic nic) {
-        if(nic != null) {
-            this.primary_mac_address = nic.getMacAddress();
-        }
-    }
-
-    public HostMetaData getHostMetaData() {
-        return hostMetaData;
-    }
-
-    public Long getServiceId() {
-        return serviceId;
-    }
-
-    public String getDnsPrefix() {
-        return dnsPrefix;
+        this.metadata_kind = "container";
     }
 
     public Long getCreate_index() {
@@ -352,14 +229,6 @@ public class ContainerMetaData {
         this.milli_cpu_reservation = milli_cpu_reservation;
     }
 
-    public static ContainerMetaData getContainerMetaData(ContainerMetaData data, Version version) {
-        if (version == MetaDataInfoDao.Version.version1 || version == MetaDataInfoDao.Version.version2) {
-            return new ContainerMetaData(data);
-        } else {
-            return new ContainerMetaDataVersion3(data);
-        }
-    }
-
     public String getNetwork_uuid() {
         return network_uuid;
     }
@@ -367,11 +236,6 @@ public class ContainerMetaData {
     public void setNetwork_uuid(String network_uuid) {
         this.network_uuid = network_uuid;
     }
-
-    public Long getInstanceId() {
-        return instanceId;
-    }
-
 
     public String getNetwork_from_container_uuid() {
         return network_from_container_uuid;
@@ -387,10 +251,6 @@ public class ContainerMetaData {
 
     public void setSystem(Boolean system) {
         this.system = system;
-    }
-
-    public Instance getInstance() {
-        return instance;
     }
 
     public List<String> getDns() {
@@ -417,13 +277,6 @@ public class ContainerMetaData {
         this.health_check_hosts = health_check_hosts;
     }
 
-    public Map<String, String> getLinks() {
-        return links;
-    }
-
-    public void setLinks(Map<String, String> links) {
-        this.links = links;
-    }
     public String getEnvironment_uuid() {
         return environment_uuid;
     }
@@ -432,7 +285,43 @@ public class ContainerMetaData {
         this.environment_uuid = environment_uuid;
     }
 
-    public boolean isHostNetworking() {
-        return isHostNetworking;
+    public String getMetadata_kind() {
+        return metadata_kind;
+    }
+
+    public void setMetadata_kind(String metadata_kind) {
+        this.metadata_kind = metadata_kind;
+    }
+
+    public String getHost_ip() {
+        return host_ip;
+    }
+
+    public void setHost_ip(String host_ip) {
+        this.host_ip = host_ip;
+    }
+
+    public String getService_name() {
+        return service_name;
+    }
+
+    public void setService_name(String service_name) {
+        this.service_name = service_name;
+    }
+
+    public String getStack_name() {
+        return stack_name;
+    }
+
+    public void setStack_name(String stack_name) {
+        this.stack_name = stack_name;
+    }
+
+    public String getStack_uuid() {
+        return stack_uuid;
+    }
+
+    public void setStack_uuid(String stack_uuid) {
+        this.stack_uuid = stack_uuid;
     }
 }

@@ -9,6 +9,7 @@ import java.util.Map;
 
 import javax.annotation.PostConstruct;
 
+import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.AnnotationIntrospector;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.Module;
@@ -31,6 +32,7 @@ public class JacksonJsonMapper implements JsonMapper {
     public JacksonJsonMapper() {
         mapper = new ObjectMapper();
         mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+        mapper.configure(JsonGenerator.Feature.AUTO_CLOSE_TARGET, false);
 
         AnnotationIntrospector primary = new JacksonAnnotationIntrospector();
         AnnotationIntrospector secondary = new JaxbAnnotationIntrospector(mapper.getTypeFactory());
@@ -159,5 +161,4 @@ public class JacksonJsonMapper implements JsonMapper {
     public void setModules(List<Module> modules) {
         this.modules = modules;
     }
-
 }

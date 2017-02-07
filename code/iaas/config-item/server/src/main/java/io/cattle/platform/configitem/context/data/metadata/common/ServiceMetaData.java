@@ -1,16 +1,10 @@
 package io.cattle.platform.configitem.context.data.metadata.common;
 
-import io.cattle.platform.configitem.context.dao.MetaDataInfoDao;
-import io.cattle.platform.configitem.context.dao.MetaDataInfoDao.Version;
-import io.cattle.platform.configitem.context.data.metadata.version1.ServiceMetaDataVersion1;
-import io.cattle.platform.configitem.context.data.metadata.version2.ServiceMetaDataVersion2;
-import io.cattle.platform.configitem.context.data.metadata.version2.ServiceMetaDataVersion3;
 import io.cattle.platform.core.addon.InstanceHealthCheck;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.constants.ServiceConstants;
 import io.cattle.platform.core.model.Account;
 import io.cattle.platform.core.model.Service;
-import io.cattle.platform.core.model.Stack;
 import io.cattle.platform.core.util.LBMetadataUtil.LBConfigMetadataStyle;
 import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.object.util.DataUtils;
@@ -90,89 +84,46 @@ public class ServiceMetaData {
             this.port = port;
         }
     }
-
-    private Long serviceId;
-    private boolean isPrimaryConfig;
-    private String launchConfigName;
-    private Long stackId;
-    private Service service;
-    
-    protected String name;
-    protected String uuid;
-    protected String stack_name;
-    private String stack_uuid;
-    protected String kind;
-    protected String hostname;
-    protected String vip;
-    protected Long create_index;
-    protected List<String> external_ips = new ArrayList<>();
-    protected List<String> sidekicks;
-    protected List<ContainerMetaData> containers = new ArrayList<>();
-    protected Map<String, String> links;
-    protected List<String> ports = new ArrayList<>();
-    protected Map<String, String> labels;
-    protected Map<String, Object> metadata;
-    protected Integer scale;
-    protected String fqdn;
-    protected List<String> expose = new ArrayList<>();
-    protected String token;
-    protected HealthCheck health_check;
-    protected Boolean system;
-    protected LBConfigMetadataStyle lb_config;
-    protected String primary_service_name;
-    protected String environment_uuid;
+   
+    String name;
+    String uuid;
+    String stack_name;
+    String stack_uuid;
+    String kind;
+    String hostname;
+    String vip;
+    Long create_index;
+    List<String> external_ips = new ArrayList<>();
+    List<String> sidekicks;
+    List<String> ports = new ArrayList<>();
+    Map<String, String> labels;
+    Map<String, Object> metadata;
+    Integer scale;
+    String fqdn;
+    List<String> expose = new ArrayList<>();
+    HealthCheck health_check;
+    Boolean system;
+    LBConfigMetadataStyle lb_config;
+    String primary_service_name;
+    String environment_uuid;
     String state;
+    String token;
+    // helper field needed by metadata service to process object
+    String metadata_kind;
 
-    protected ServiceMetaData(ServiceMetaData that) {
-        this.serviceId = that.serviceId;
-        this.isPrimaryConfig = that.isPrimaryConfig;
-        this.launchConfigName = that.launchConfigName;
-        this.stackId = that.stackId;
-        this.stack_uuid = that.stack_uuid;
-        this.service = that.service;
-
-        this.name = that.name;
-        this.uuid = that.uuid;
-        this.stack_name = that.stack_name;
-        this.kind = that.kind;
-        this.hostname = that.hostname;
-        this.vip = that.vip;
-        this.create_index = that.create_index;
-        this.external_ips = that.external_ips;
-        this.sidekicks = that.sidekicks;
-        this.containers = that.containers;
-        this.links = that.links;
-        this.ports = that.ports;
-        this.labels = that.labels;
-        this.metadata = that.metadata;
-        this.scale = that.scale;
-        this.fqdn = that.fqdn;
-        this.expose = that.expose;
-        this.token = that.token;
-        this.health_check = that.health_check;
-        this.system = that.system;
-        this.lb_config = that.lb_config;
-        this.primary_service_name = that.primary_service_name;
-        this.environment_uuid = that.environment_uuid;
-        this.state = that.state;
-    }
-
-    public ServiceMetaData(Service service, String serviceName, Stack env, List<String> sidekicks,
+    public ServiceMetaData(Service service, String serviceName, String stackName, String stackUUID,
+            List<String> sidekicks,
             InstanceHealthCheck healthCheck, LBConfigMetadataStyle lbConfig, Account account) {
-        this.serviceId = service.getId();
-        this.service = service;
         this.name = serviceName;
         this.uuid = service.getUuid();
-        this.stack_name = env.getName();
-        this.stackId = env.getId();
-        this.stack_uuid = env.getUuid();
+        this.stack_name = stackName;
+        this.stack_uuid = stackUUID;
         this.kind = service.getKind();
         this.sidekicks = sidekicks;
         this.vip = getVip(service);
-        this.isPrimaryConfig = service.getName().equalsIgnoreCase(serviceName);
-        String launchConfigName = this.isPrimaryConfig ? ServiceConstants.PRIMARY_LAUNCH_CONFIG_NAME
+        boolean isPrimaryConfig = service.getName().equalsIgnoreCase(serviceName);
+        String launchConfigName = isPrimaryConfig ? ServiceConstants.PRIMARY_LAUNCH_CONFIG_NAME
                 : serviceName;
-        this.launchConfigName = launchConfigName;
         this.labels = ServiceDiscoveryUtil.getLaunchConfigLabels(service, launchConfigName);
         populateExternalServiceInfo(service);
         populatePortsInfo(service, launchConfigName);
@@ -192,6 +143,7 @@ public class ServiceMetaData {
         this.primary_service_name = service.getName();
         this.environment_uuid = account.getUuid();
         this.state = service.getState();
+        this.metadata_kind = "service";
     }
 
     public static String getVip(Service service) {
@@ -212,7 +164,7 @@ public class ServiceMetaData {
     }
 
     @SuppressWarnings("unchecked")
-    protected void populatePortsInfo(Service service, String serviceName) {
+    void populatePortsInfo(Service service, String serviceName) {
         Object portsObj = ServiceDiscoveryUtil.getLaunchConfigObject(service, serviceName,
                 InstanceConstants.FIELD_PORTS);
         if (portsObj != null) {
@@ -226,7 +178,7 @@ public class ServiceMetaData {
     }
 
     @SuppressWarnings("unchecked")
-    protected void populateExternalServiceInfo(Service service) {
+    void populateExternalServiceInfo(Service service) {
         if (kind.equalsIgnoreCase(ServiceConstants.KIND_EXTERNAL_SERVICE)) {
             this.hostname = DataAccessor.fields(service)
                     .withKey(ServiceConstants.FIELD_HOSTNAME).as(String.class);
@@ -273,32 +225,12 @@ public class ServiceMetaData {
         return sidekicks;
     }
 
-    public Map<String, String> getLinks() {
-        return links;
-    }
-
     public List<String> getPorts() {
         return ports;
     }
 
     public Map<String, String> getLabels() {
         return labels;
-    }
-
-    public Long getServiceId() {
-        return serviceId;
-    }
-
-    public boolean isPrimaryConfig() {
-        return isPrimaryConfig;
-    }
-
-    public void setLinks(Map<String, String> links) {
-        this.links = links;
-    }
-
-    public String getLaunchConfigName() {
-        return launchConfigName;
     }
 
     public Map<String, Object> getMetadata() {
@@ -377,36 +309,6 @@ public class ServiceMetaData {
         this.expose = expose;
     }
 
-    public void setContainersObj(List<ContainerMetaData> containers) {
-        this.containers = containers;
-    }
-
-    public Long getStackId() {
-        return stackId;
-    }
-
-    public void setToken(String token) {
-        this.token = token;
-    }
-
-    public String getToken() {
-        return token;
-    }
-
-    public Service getService() {
-        return service;
-    }
-
-    public static ServiceMetaData getServiceMetaData(ServiceMetaData serviceData, Version version) {
-        if (version == MetaDataInfoDao.Version.version1) {
-            return new ServiceMetaDataVersion1(serviceData);
-        } else if (version == MetaDataInfoDao.Version.version2) {
-            return new ServiceMetaDataVersion2(serviceData);
-        } else {
-            return new ServiceMetaDataVersion3(serviceData);
-        }
-    }
-
     public String getStack_uuid() {
         return stack_uuid;
     }
@@ -454,4 +356,29 @@ public class ServiceMetaData {
     public void setState(String state) {
         this.state = state;
     }
+
+    public Long getCreate_index() {
+        return create_index;
+    }
+
+    public void setCreate_index(Long create_index) {
+        this.create_index = create_index;
+    }
+
+    public String getMetadata_kind() {
+        return metadata_kind;
+    }
+
+    public void setMetadata_kind(String metadata_kind) {
+        this.metadata_kind = metadata_kind;
+    }
+
+    public String getToken() {
+        return token;
+    }
+
+    public void setToken(String token) {
+        this.token = token;
+    }
+
 }

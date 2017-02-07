@@ -4,45 +4,59 @@ import static io.cattle.platform.core.model.tables.HealthcheckInstanceHostMapTab
 import static io.cattle.platform.core.model.tables.HostIpAddressMapTable.*;
 import static io.cattle.platform.core.model.tables.HostTable.*;
 import static io.cattle.platform.core.model.tables.InstanceHostMapTable.*;
+import static io.cattle.platform.core.model.tables.InstanceLinkTable.*;
 import static io.cattle.platform.core.model.tables.InstanceTable.*;
 import static io.cattle.platform.core.model.tables.IpAddressNicMapTable.*;
 import static io.cattle.platform.core.model.tables.IpAddressTable.*;
 import static io.cattle.platform.core.model.tables.NetworkTable.*;
 import static io.cattle.platform.core.model.tables.NicTable.*;
+import static io.cattle.platform.core.model.tables.ServiceConsumeMapTable.*;
 import static io.cattle.platform.core.model.tables.ServiceExposeMapTable.*;
-import static io.cattle.platform.core.model.tables.InstanceLinkTable.*;
+import static io.cattle.platform.core.model.tables.ServiceTable.*;
+import static io.cattle.platform.core.model.tables.StackTable.*;
 import io.cattle.platform.configitem.context.dao.MetaDataInfoDao;
+import io.cattle.platform.configitem.context.data.metadata.common.ContainerLinkMetaData;
 import io.cattle.platform.configitem.context.data.metadata.common.ContainerMetaData;
+import io.cattle.platform.configitem.context.data.metadata.common.DefaultMetaData;
 import io.cattle.platform.configitem.context.data.metadata.common.HostMetaData;
 import io.cattle.platform.configitem.context.data.metadata.common.MetaHelperInfo;
 import io.cattle.platform.configitem.context.data.metadata.common.NetworkMetaData;
+import io.cattle.platform.configitem.context.data.metadata.common.ServiceContainerLinkMetaData;
+import io.cattle.platform.configitem.context.data.metadata.common.ServiceLinkMetaData;
+import io.cattle.platform.configitem.context.data.metadata.common.ServiceMetaData;
+import io.cattle.platform.configitem.context.data.metadata.common.StackMetaData;
+import io.cattle.platform.core.addon.InstanceHealthCheck;
 import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.constants.IpAddressConstants;
 import io.cattle.platform.core.constants.NetworkConstants;
 import io.cattle.platform.core.constants.ServiceConstants;
 import io.cattle.platform.core.dao.InstanceDao;
-import io.cattle.platform.core.dao.NetworkDao;
+import io.cattle.platform.core.dao.LoadBalancerInfoDao;
 import io.cattle.platform.core.model.Account;
 import io.cattle.platform.core.model.HealthcheckInstanceHostMap;
 import io.cattle.platform.core.model.Host;
-import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.IpAddress;
-import io.cattle.platform.core.model.Network;
-import io.cattle.platform.core.model.Nic;
-import io.cattle.platform.core.model.ServiceExposeMap;
+import io.cattle.platform.core.model.Service;
 import io.cattle.platform.core.model.tables.HostTable;
 import io.cattle.platform.core.model.tables.InstanceHostMapTable;
 import io.cattle.platform.core.model.tables.InstanceTable;
 import io.cattle.platform.core.model.tables.IpAddressTable;
-import io.cattle.platform.core.model.tables.NetworkTable;
-import io.cattle.platform.core.model.tables.NicTable;
 import io.cattle.platform.core.model.tables.ServiceExposeMapTable;
+import io.cattle.platform.core.model.tables.ServiceTable;
+import io.cattle.platform.core.model.tables.records.InstanceRecord;
+import io.cattle.platform.core.model.tables.records.NetworkRecord;
+import io.cattle.platform.core.model.tables.records.ServiceRecord;
+import io.cattle.platform.core.util.LBMetadataUtil.LBConfigMetadataStyle;
 import io.cattle.platform.db.jooq.dao.impl.AbstractJooqDao;
 import io.cattle.platform.db.jooq.mapper.MultiRecordMapper;
+import io.cattle.platform.json.JsonMapper;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.util.DataAccessor;
+import io.cattle.platform.servicediscovery.api.util.ServiceDiscoveryUtil;
+import io.cattle.platform.util.exception.ExceptionUtils;
 
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -51,11 +65,13 @@ import java.util.Set;
 
 import javax.inject.Inject;
 
-import org.apache.commons.lang3.StringUtils;
 import org.jooq.Condition;
 import org.jooq.JoinType;
-import org.jooq.Record1;
+import org.jooq.Record10;
+import org.jooq.Record20;
 import org.jooq.Record3;
+import org.jooq.Record4;
+import org.jooq.Record5;
 import org.jooq.RecordHandler;
 
 public class MetaDataInfoDaoImpl extends AbstractJooqDao implements MetaDataInfoDao {
@@ -65,213 +81,122 @@ public class MetaDataInfoDaoImpl extends AbstractJooqDao implements MetaDataInfo
     @Inject
     ObjectManager objMgr;
     @Inject
-    NetworkDao networkDao;
-
-    private ContainerMetaData populateContainerData(List<Object> input,Map<Long, String> instanceIdToUUID,
-            final MetaHelperInfo helperInfo, boolean isHostNetworking,
-            Map<Long, Map<String, String>> containerIdToContainerLink) {
-        ContainerMetaData data = new ContainerMetaData();
-        Instance instance = (Instance) input.get(0);
-        instance.setData(instanceDao.getCacheInstanceData(instance.getId()));
-
-        ServiceExposeMap serviceMap = input.get(1) != null ? (ServiceExposeMap) input.get(1) : null;
-        String serviceIndex = DataAccessor.fieldString(instance,
-                InstanceConstants.FIELD_SERVICE_INSTANCE_SERVICE_INDEX);
-        Host host = null;
-        if (input.get(2) != null) {
-            host = (Host) input.get(2);
-        }
-
-        HostMetaData hostMetaData = null;
-        if (host != null) {
-            hostMetaData = helperInfo.getHostIdToHostMetadata().get(host.getId());
-            List<String> healthCheckers = new ArrayList<>();
-            if (helperInfo.getInstanceIdToHealthCheckers().get(instance.getId()) != null) {
-                for (HealthcheckInstanceHostMap hostMap : helperInfo.getInstanceIdToHealthCheckers().get(
-                        instance.getId())) {
-                    HostMetaData h = helperInfo.getHostIdToHostMetadata().get(hostMap.getHostId());
-                    if (h == null) {
-                        continue;
-                    }
-                    healthCheckers.add(h.getUuid());
-                }
-            }
-            data.setInstanceAndHostMetadata(instance, hostMetaData, healthCheckers,
-                    helperInfo.getAccounts().get(instance.getAccountId()), isHostNetworking);
-        }
-
-        data.setExposeMap(serviceMap);
-        data.setService_index(serviceIndex);
-
-        String primaryIp = null;
-
-        if (input.size() > 3) {
-            if (input.get(3) != null) {
-                primaryIp = ((IpAddress) input.get(3)).getAddress();
-            }
-
-            if (isHostNetworking && hostMetaData != null) {
-                data.setIp(hostMetaData.getAgent_ip());
-            } else {
-                data.setIp(primaryIp);
-            }
-            Nic nic = null;
-            if (input.get(4) != null) {
-                nic = (Nic) input.get(4);
-                data.setNicInformation(nic);
-            }
-
-            Network ntwk = null;
-            if (input.get(5) != null) {
-                ntwk = (Network) input.get(5);
-                data.setNetwork_uuid(ntwk.getUuid());
-            }
-        }
-        if (instance.getNetworkContainerId() != null) {
-            String parentInstanceUUID = instanceIdToUUID.get(instance.getNetworkContainerId());
-            if (parentInstanceUUID != null) {
-                data.setNetwork_from_container_uuid(parentInstanceUUID);
-            }
-        }
-
-        if (containerIdToContainerLink != null) {
-            data.setLinks(containerIdToContainerLink.get(instance.getId()));
-        }
-        return data;
-    }
+    LoadBalancerInfoDao lbInfoDao;
+    @Inject
+    JsonMapper jsonMapper;
 
     @Override
-    public List<ContainerMetaData> getNetworkFromContainersData(final Map<Long, String> instanceIdToUUID,
-            final MetaHelperInfo helperInfo) {
+    public void fetchContainers(final MetaHelperInfo helperInfo,
+            final OutputStream os) {
 
-        MultiRecordMapper<ContainerMetaData> mapper = new MultiRecordMapper<ContainerMetaData>() {
-            @Override
-            protected ContainerMetaData map(List<Object> input) {
-                return populateContainerData(input, instanceIdToUUID, helperInfo, false, null);
-            }
-        };
-
-        InstanceTable instance = mapper.add(INSTANCE, INSTANCE.UUID, INSTANCE.NAME, INSTANCE.CREATE_INDEX,
-                INSTANCE.HEALTH_STATE,
-                INSTANCE.START_COUNT, INSTANCE.STATE, INSTANCE.EXTERNAL_ID, INSTANCE.MEMORY_RESERVATION,
-                INSTANCE.MILLI_CPU_RESERVATION,
-                INSTANCE.NETWORK_CONTAINER_ID,
-                INSTANCE.SYSTEM,
-                INSTANCE.ACCOUNT_ID);
-        ServiceExposeMapTable exposeMap = mapper.add(SERVICE_EXPOSE_MAP, SERVICE_EXPOSE_MAP.SERVICE_ID,
-                SERVICE_EXPOSE_MAP.DNS_PREFIX, SERVICE_EXPOSE_MAP.UPGRADE);
-        HostTable host = mapper.add(HOST, HOST.ID);
-        Condition condition = getMultiAccountInstanceSearchCondition(helperInfo, instance, exposeMap);
-        return create()
-                .select(mapper.fields())
-                .from(instance)
+        Condition condition = getMultiAccountInstanceSearchCondition(helperInfo);
+        final InstanceTable targetInstance = INSTANCE.as("target_instance");
+        create()
+                .select(INSTANCE.ID, INSTANCE.ACCOUNT_ID, INSTANCE.UUID, INSTANCE.NAME, INSTANCE.CREATE_INDEX,
+                        INSTANCE.HEALTH_STATE, INSTANCE.START_COUNT, INSTANCE.STATE, INSTANCE.EXTERNAL_ID,
+                        INSTANCE.DNS_INTERNAL, INSTANCE.DNS_SEARCH_INTERNAL, INSTANCE.MEMORY_RESERVATION,
+                        INSTANCE.MILLI_CPU_RESERVATION, INSTANCE.SYSTEM, IP_ADDRESS.ADDRESS, NIC.MAC_ADDRESS,
+                        NETWORK.UUID, NETWORK.KIND, HOST.ID, targetInstance.UUID)
+                .from(INSTANCE)
+                .leftOuterJoin(targetInstance)
+                .on(INSTANCE.NETWORK_CONTAINER_ID.eq(targetInstance.ID))
                 .join(INSTANCE_HOST_MAP)
-                .on(instance.ID.eq(INSTANCE_HOST_MAP.INSTANCE_ID))
-                .join(host)
-                .on(host.ID.eq(INSTANCE_HOST_MAP.HOST_ID))
-                .join(exposeMap, JoinType.LEFT_OUTER_JOIN)
-                .on(exposeMap.INSTANCE_ID.eq(instance.ID))
-                .where(instance.REMOVED.isNull())
-                .and(instance.STATE.notIn(CommonStatesConstants.REMOVING, CommonStatesConstants.REMOVED))
-                .and(instance.NETWORK_CONTAINER_ID.isNotNull())
-                .and(exposeMap.REMOVED.isNull())
-                .and((host.REMOVED.isNull()))
-                .and(exposeMap.STATE.isNull().or(
-                        exposeMap.STATE.notIn(CommonStatesConstants.REMOVING, CommonStatesConstants.REMOVED)))
-                .and(exposeMap.UPGRADE.isNull().or(exposeMap.UPGRADE.eq(false)))
+                .on(INSTANCE.ID.eq(INSTANCE_HOST_MAP.INSTANCE_ID))
+                .join(HOST)
+                .on(HOST.ID.eq(INSTANCE_HOST_MAP.HOST_ID))
+                .join(SERVICE_EXPOSE_MAP, JoinType.LEFT_OUTER_JOIN)
+                .on(SERVICE_EXPOSE_MAP.INSTANCE_ID.eq(INSTANCE.ID))
+                .join(NIC)
+                .on(NIC.INSTANCE_ID.eq(INSTANCE_HOST_MAP.INSTANCE_ID))
+                .leftOuterJoin(IP_ADDRESS_NIC_MAP)
+                .on(IP_ADDRESS_NIC_MAP.NIC_ID.eq(NIC.ID))
+                .leftOuterJoin(IP_ADDRESS)
+                .on(IP_ADDRESS.ID.eq(IP_ADDRESS_NIC_MAP.IP_ADDRESS_ID))
+                .join(NETWORK)
+                .on(NIC.NETWORK_ID.eq(NETWORK.ID))
+                .where(INSTANCE.REMOVED.isNull())
+                .and(INSTANCE.STATE.notIn(CommonStatesConstants.REMOVING, CommonStatesConstants.REMOVED))
+                .and(SERVICE_EXPOSE_MAP.REMOVED.isNull())
+                .and(IP_ADDRESS.ROLE.eq(IpAddressConstants.ROLE_PRIMARY).or(
+                        IP_ADDRESS.ROLE.isNull().and(NETWORK.KIND.eq(NetworkConstants.KIND_DOCKER_HOST)))
+                        .or(IP_ADDRESS.ROLE.isNull().and(INSTANCE.NETWORK_CONTAINER_ID.isNotNull())))
+                .and(NETWORK.REMOVED.isNull())
+                .and((HOST.REMOVED.isNull()))
+                .and(targetInstance.REMOVED.isNull())
+                .and(SERVICE_EXPOSE_MAP.STATE.isNull().or(
+                        SERVICE_EXPOSE_MAP.STATE.notIn(CommonStatesConstants.REMOVING, CommonStatesConstants.REMOVED)))
+                .and(SERVICE_EXPOSE_MAP.UPGRADE.isNull().or(SERVICE_EXPOSE_MAP.UPGRADE.eq(false)))
                 .and(condition)
-                .fetch().map(mapper);
-    }
+                .fetchInto(
+                        new RecordHandler<Record20<Long, Long, String, String, Long, String, Long, String, String, String, String, Long, Long, Boolean, String, String, String, String, Long, String>>() {
+                            @Override
+                            public void next(
+                                    Record20<Long, Long, String, String, Long, String, Long, String, String, String, String, Long, Long, Boolean, String, String, String, String, Long, String> record) {
+                                InstanceRecord instance = new InstanceRecord();
+                                instance.setId(record.getValue(INSTANCE.ID));
+                                instance.setName(record.getValue(INSTANCE.NAME));
+                                instance.setUuid(record.getValue(INSTANCE.UUID));
+                                instance.setCreateIndex(record.getValue(INSTANCE.CREATE_INDEX));
+                                instance.setHealthState(record.getValue(INSTANCE.HEALTH_STATE));
+                                instance.setStartCount(record.getValue(INSTANCE.START_COUNT));
+                                instance.setState(record.getValue(INSTANCE.STATE));
+                                instance.setExternalId(record.getValue(INSTANCE.EXTERNAL_ID));
+                                instance.setDnsInternal(record.getValue(INSTANCE.DNS_INTERNAL));
+                                instance.setDnsSearchInternal(record.getValue(INSTANCE.DNS_SEARCH_INTERNAL));
+                                instance.setMemoryReservation(record.getValue(INSTANCE.MEMORY_RESERVATION));
+                                instance.setMilliCpuReservation(record.getValue(INSTANCE.MILLI_CPU_RESERVATION));
+                                instance.setSystem(record.getValue(INSTANCE.SYSTEM));
+                                instance.setAccountId(record.getValue(INSTANCE.ACCOUNT_ID));
+                                String primaryIp = record.getValue(IP_ADDRESS.ADDRESS);
+                                String macAddress = record.getValue(NIC.MAC_ADDRESS);
+                                String networkUUID = record.getValue(NETWORK.UUID);
+                                String networkKind = record.getValue(NETWORK.KIND);
+                                Long hostId = record.getValue(HOST.ID);
+                                String targetInstanceUUID = record.getValue(targetInstance.UUID);
 
-    @Override
-    public List<ContainerMetaData> getManagedContainersData(final MetaHelperInfo helperInfo,
-            final Map<Long, Map<String, String>> containerIdToContainerLink) {
+                                ContainerMetaData data = new ContainerMetaData();
+                                instance.setData(instanceDao.getCacheInstanceData(instance.getId()));
+                                String serviceIndex = DataAccessor.fieldString(instance,
+                                        InstanceConstants.FIELD_SERVICE_INSTANCE_SERVICE_INDEX);
 
-        MultiRecordMapper<ContainerMetaData> mapper = new MultiRecordMapper<ContainerMetaData>() {
-            @Override
-            protected ContainerMetaData map(List<Object> input) {
-                return populateContainerData(input, new HashMap<Long, String>(), helperInfo, false,
-                        containerIdToContainerLink);
-            }
-        };
+                                HostMetaData hostMetaData = helperInfo.getHostIdToHostMetadata().get(hostId);
+                                List<String> healthCheckers = new ArrayList<>();
+                                if (helperInfo.getInstanceIdToHealthCheckers().get(instance.getId()) != null) {
+                                    for (HealthcheckInstanceHostMap hostMap : helperInfo.getInstanceIdToHealthCheckers().get(
+                                            instance.getId())) {
+                                        HostMetaData h = helperInfo.getHostIdToHostMetadata().get(hostMap.getHostId());
+                                        if (h == null) {
+                                            continue;
+                                        }
+                                        healthCheckers.add(h.getUuid());
+                                    }
+                                }
+                                data.setInstanceAndHostMetadata(instance, hostMetaData, healthCheckers,
+                                        helperInfo.getAccounts().get(instance.getAccountId()));
 
-        InstanceTable instance = mapper.add(INSTANCE, INSTANCE.UUID, INSTANCE.NAME, INSTANCE.CREATE_INDEX,
-                INSTANCE.HEALTH_STATE, INSTANCE.START_COUNT, INSTANCE.STATE, INSTANCE.EXTERNAL_ID,
-                INSTANCE.DNS_INTERNAL, INSTANCE.DNS_SEARCH_INTERNAL, INSTANCE.MEMORY_RESERVATION,
-                INSTANCE.MILLI_CPU_RESERVATION, INSTANCE.SYSTEM, INSTANCE.ACCOUNT_ID);
-        ServiceExposeMapTable exposeMap = mapper.add(SERVICE_EXPOSE_MAP, SERVICE_EXPOSE_MAP.SERVICE_ID,
-                SERVICE_EXPOSE_MAP.DNS_PREFIX, SERVICE_EXPOSE_MAP.UPGRADE);
-        HostTable host = mapper.add(HOST, HOST.ID);
-        IpAddressTable instanceIpAddress = mapper.add(IP_ADDRESS, IP_ADDRESS.ADDRESS);
-        NicTable nic = mapper.add(NIC, NIC.ID, NIC.INSTANCE_ID, NIC.MAC_ADDRESS);
-        NetworkTable ntwk = mapper.add(NETWORK, NETWORK.UUID);
+                                data.setService_index(serviceIndex);
+                                
+                                
+                                if (networkKind.equalsIgnoreCase(NetworkConstants.KIND_DOCKER_HOST)) {
+                                    data.setIp(hostMetaData.getAgent_ip());
+                                } 
+                                data.setIp(primaryIp);
+                                data.setNetwork_uuid(networkUUID);
+                                data.setNetwork_from_container_uuid(targetInstanceUUID);
+                                data.setPrimary_mac_address(macAddress);
 
-        Condition condition = getMultiAccountInstanceSearchCondition(helperInfo, instance, exposeMap);
-        return create()
-                .select(mapper.fields())
-                .from(instance)
-                .join(INSTANCE_HOST_MAP)
-                .on(instance.ID.eq(INSTANCE_HOST_MAP.INSTANCE_ID))
-                .join(host)
-                .on(host.ID.eq(INSTANCE_HOST_MAP.HOST_ID))
-                .join(exposeMap, JoinType.LEFT_OUTER_JOIN)
-                .on(exposeMap.INSTANCE_ID.eq(instance.ID))
-                .join(nic)
-                .on(nic.INSTANCE_ID.eq(INSTANCE_HOST_MAP.INSTANCE_ID))
-                .join(IP_ADDRESS_NIC_MAP)
-                .on(IP_ADDRESS_NIC_MAP.NIC_ID.eq(nic.ID))
-                .join(instanceIpAddress)
-                .on(instanceIpAddress.ID.eq(IP_ADDRESS_NIC_MAP.IP_ADDRESS_ID))
-                .join(ntwk)
-                .on(nic.NETWORK_ID.eq(ntwk.ID))
-                .where(instance.REMOVED.isNull())
-                .and(instance.STATE.notIn(CommonStatesConstants.REMOVING, CommonStatesConstants.REMOVED))
-                .and(exposeMap.REMOVED.isNull())
-                .and(instanceIpAddress.ROLE.eq(IpAddressConstants.ROLE_PRIMARY))
-                .and(ntwk.REMOVED.isNull())
-                .and((host.REMOVED.isNull()))
-                .and(exposeMap.STATE.isNull().or(
-                        exposeMap.STATE.notIn(CommonStatesConstants.REMOVING, CommonStatesConstants.REMOVED)))
-                .and(exposeMap.UPGRADE.isNull().or(exposeMap.UPGRADE.eq(false)))
-                .and(condition)
-                .fetch().map(mapper);
-    }
-
-    @Override
-    public List<String> getPrimaryIpsOnInstanceHost(final long hostId) {
-        final List<String> ips = new ArrayList<>();
-        create().select(IP_ADDRESS.ADDRESS)
-                .from(IP_ADDRESS)
-                .join(IP_ADDRESS_NIC_MAP)
-                        .on(IP_ADDRESS.ID.eq(IP_ADDRESS_NIC_MAP.IP_ADDRESS_ID))
-                        .join(NIC)
-                        .on(NIC.ID.eq(IP_ADDRESS_NIC_MAP.NIC_ID))
-                        .join(INSTANCE_HOST_MAP)
-                        .on(INSTANCE_HOST_MAP.INSTANCE_ID.eq(NIC.INSTANCE_ID))
-                        .where(INSTANCE_HOST_MAP.HOST_ID.eq(hostId)
-                                .and(NIC.REMOVED.isNull())
-                                .and(IP_ADDRESS_NIC_MAP.REMOVED.isNull())
-                                .and(IP_ADDRESS.REMOVED.isNull())
-                                .and(IP_ADDRESS.ROLE.eq(IpAddressConstants.ROLE_PRIMARY))
-                        )
-                .fetchInto(new RecordHandler<Record1<String>>() {
-                    @Override
-                    public void next(Record1<String> record) {
-                        if (StringUtils.isNotBlank(record.value1())) {
-                            ips.add(record.value1());
-                        }
-                    }
-                });
-        return ips;
+                                writeToJson(os, data);
+                            }
+                        });
     }
 
     @Override
     public Map<Long, HostMetaData> getHostIdToHostMetadata(Account account, Map<Long, Account> accounts,
-            Set<Long> linkedServicesIds) {
+            Set<Long> linkedServicesIds, final long agentHostId) {
         Map<Long, HostMetaData> toReturn = new HashMap<>();
-        List<HostMetaData> hosts = getAllInstanceHostMetaDataForAccount(account);
+        List<HostMetaData> hosts = getAllInstanceHostMetaDataForAccount(account, agentHostId);
         if (!linkedServicesIds.isEmpty()) {
-            hosts.addAll(getAllInstanceHostMetaDataForLinkedServices(accounts, linkedServicesIds));
+            hosts.addAll(getAllInstanceHostMetaDataForLinkedServices(accounts, linkedServicesIds, agentHostId));
         }
 
         for (HostMetaData host : hosts) {
@@ -281,7 +206,7 @@ public class MetaDataInfoDaoImpl extends AbstractJooqDao implements MetaDataInfo
     }
 
     protected List<HostMetaData> getAllInstanceHostMetaDataForLinkedServices(final Map<Long, Account> accounts,
-            final Set<Long> linkedServicesIds) {
+            final Set<Long> linkedServicesIds, final long agentHostId) {
         MultiRecordMapper<HostMetaData> mapper = new MultiRecordMapper<HostMetaData>() {
             @Override
             protected HostMetaData map(List<Object> input) {
@@ -318,7 +243,7 @@ public class MetaDataInfoDaoImpl extends AbstractJooqDao implements MetaDataInfo
                 .fetch().map(mapper);
     }
 
-    protected List<HostMetaData> getAllInstanceHostMetaDataForAccount(final Account account) {
+    protected List<HostMetaData> getAllInstanceHostMetaDataForAccount(final Account account, final long agentHostId) {
         MultiRecordMapper<HostMetaData> mapper = new MultiRecordMapper<HostMetaData>() {
             @Override
             protected HostMetaData map(List<Object> input) {
@@ -367,138 +292,294 @@ public class MetaDataInfoDaoImpl extends AbstractJooqDao implements MetaDataInfo
 
 
     @Override
-    public List<NetworkMetaData> getNetworksMetaData(final MetaHelperInfo helperInfo) {
-        MultiRecordMapper<NetworkMetaData> mapper = new MultiRecordMapper<NetworkMetaData>() {
-            @Override
-            protected NetworkMetaData map(List<Object> input) {
-                Network ntwk = (Network) input.get(0);
-                Map<String, Object> meta = DataAccessor.fieldMap(ntwk, ServiceConstants.FIELD_METADATA);
-                Object policy = DataAccessor.field(ntwk, NetworkConstants.FIELD_POLICY, Object.class);
-                String dpa = DataAccessor.fieldString(ntwk, NetworkConstants.FIELD_DEFAULT_POLICY_ACTION);
-                Account account = helperInfo.getAccounts().get(ntwk.getAccountId());
-                boolean isDefault = account.getDefaultNetworkId() == null ? false : account.getDefaultNetworkId().equals(ntwk.getId());
-                boolean host_ports = DataAccessor.fieldBool(ntwk, NetworkConstants.FIELD_HOST_PORTS);
-                NetworkMetaData data = new NetworkMetaData(ntwk.getName(), ntwk.getUuid(), host_ports, isDefault, meta, dpa, policy);
-                return data;
-            }
-        };
-
-        NetworkTable ntwk = mapper.add(NETWORK, NETWORK.ID, NETWORK.NAME, NETWORK.UUID, NETWORK.DATA,
-                NETWORK.ACCOUNT_ID);
-        
-        List<NetworkMetaData> recs = create()
-                .select(mapper.fields())
-                .from(ntwk)
-                .where(ntwk.REMOVED.isNull())
-                .and(ntwk.ACCOUNT_ID.eq(helperInfo.getAccount().getId()))
-                .fetch().map(mapper);
-
-        if (!helperInfo.getOtherAccountsServicesIds().isEmpty()) {
-            recs.addAll(create()
-                    .select(mapper.fields())
-                    .from(ntwk)
-                    .join(NIC)
-                    .on(NIC.NETWORK_ID.eq(ntwk.ID))
-                    .join(SERVICE_EXPOSE_MAP)
-                    .on(SERVICE_EXPOSE_MAP.INSTANCE_ID.eq(NIC.INSTANCE_ID))
-                    .where(ntwk.REMOVED.isNull())
-                    .and(SERVICE_EXPOSE_MAP.REMOVED.isNull())
-                    .and(SERVICE_EXPOSE_MAP.SERVICE_ID.in(helperInfo.getOtherAccountsServicesIds()))
-                    .fetch().map(mapper));
-        }
-
-        return recs;
-    }
-
-    @Override
-    public List<ContainerMetaData> getHostContainersData(final MetaHelperInfo helperInfo) {
-
-        MultiRecordMapper<ContainerMetaData> mapper = new MultiRecordMapper<ContainerMetaData>() {
-            @Override
-            protected ContainerMetaData map(List<Object> input) {
-                return populateContainerData(input, new HashMap<Long, String>(), helperInfo, true, null);
-            }
-        };
-
-        InstanceTable instance = mapper.add(INSTANCE, INSTANCE.UUID, INSTANCE.NAME, INSTANCE.CREATE_INDEX,
-                INSTANCE.HEALTH_STATE, INSTANCE.START_COUNT, INSTANCE.STATE, INSTANCE.EXTERNAL_ID,
-                INSTANCE.DNS_INTERNAL, INSTANCE.DNS_SEARCH_INTERNAL, INSTANCE.MEMORY_RESERVATION,
-                INSTANCE.MILLI_CPU_RESERVATION, INSTANCE.SYSTEM, INSTANCE.ACCOUNT_ID);
-        ServiceExposeMapTable exposeMap = mapper.add(SERVICE_EXPOSE_MAP, SERVICE_EXPOSE_MAP.SERVICE_ID,
-                SERVICE_EXPOSE_MAP.DNS_PREFIX, SERVICE_EXPOSE_MAP.UPGRADE);
-        HostTable host = mapper.add(HOST, HOST.ID);
-        IpAddressTable instanceIpAddress = mapper.add(IP_ADDRESS, IP_ADDRESS.ADDRESS);
-        NicTable nic = mapper.add(NIC, NIC.ID, NIC.INSTANCE_ID, NIC.MAC_ADDRESS);
-        NetworkTable ntwk = mapper.add(NETWORK, NETWORK.UUID, NETWORK.KIND);
-        Condition condition = getMultiAccountInstanceSearchCondition(helperInfo, instance, exposeMap);
-
-        return create()
-                .select(mapper.fields())
-                .from(instance)
-                .join(INSTANCE_HOST_MAP)
-                .on(instance.ID.eq(INSTANCE_HOST_MAP.INSTANCE_ID))
-                .join(host)
-                .on(host.ID.eq(INSTANCE_HOST_MAP.HOST_ID))
-                .join(exposeMap, JoinType.LEFT_OUTER_JOIN)
-                .on(exposeMap.INSTANCE_ID.eq(instance.ID))
-                .join(nic)
-                .on(nic.INSTANCE_ID.eq(INSTANCE_HOST_MAP.INSTANCE_ID))
-                .join(IP_ADDRESS_NIC_MAP, JoinType.LEFT_OUTER_JOIN)
-                .on(IP_ADDRESS_NIC_MAP.NIC_ID.eq(nic.ID))
-                .join(instanceIpAddress, JoinType.LEFT_OUTER_JOIN)
-                .on(instanceIpAddress.ID.eq(IP_ADDRESS_NIC_MAP.IP_ADDRESS_ID))
-                .join(ntwk)
-                .on(nic.NETWORK_ID.eq(ntwk.ID))
-                .where(instance.REMOVED.isNull())
-                .and(instance.STATE.notIn(CommonStatesConstants.REMOVING, CommonStatesConstants.REMOVED))
-                .and(exposeMap.REMOVED.isNull())
-                .and(instanceIpAddress.ID.isNull())
-                .and(ntwk.REMOVED.isNull())
-                .and(ntwk.KIND.equalIgnoreCase("dockerHost"))
-                .and((host.REMOVED.isNull()))
-                .and(exposeMap.STATE.isNull().or(
-                        exposeMap.STATE.notIn(CommonStatesConstants.REMOVING, CommonStatesConstants.REMOVED)))
-                .and(exposeMap.UPGRADE.isNull().or(exposeMap.UPGRADE.eq(false)))
-                .and(condition)
-                .fetch().map(mapper);
-    }
-
-    @Override
-    public Map<Long, Map<String, String>> getContainerIdToContainerLink(long accountId) {
-        final Map<Long, Map<String, String>> result = new HashMap<>();
-        create().select(INSTANCE_LINK.INSTANCE_ID, INSTANCE.UUID, INSTANCE_LINK.LINK_NAME)
-                .from(INSTANCE_LINK)
-                .join(INSTANCE)
-                .on(INSTANCE.ID.eq(INSTANCE_LINK.TARGET_INSTANCE_ID))
-                .where(INSTANCE.REMOVED.isNull()
-                        .and(INSTANCE_LINK.REMOVED.isNull())
-                        .and(INSTANCE.ACCOUNT_ID.eq(accountId)))
-                .fetchInto(new RecordHandler<Record3<Long, String, String>>() {
+    public void fetchNetworks(final MetaHelperInfo helperInfo, final OutputStream os) {
+        create()
+                .select(NETWORK.NAME, NETWORK.UUID, NETWORK.ACCOUNT_ID, NETWORK.ID, NETWORK.DATA)
+                .from(NETWORK)
+                .where(NETWORK.REMOVED.isNull())
+                .and(NETWORK.ACCOUNT_ID.eq(helperInfo.getAccount().getId()))
+                .fetchInto(new RecordHandler<Record5<String, String, Long, Long, Map<String, Object>>>() {
                     @Override
-                    public void next(Record3<Long, String, String> record) {
-                        Long instanceId = record.getValue(INSTANCE_LINK.INSTANCE_ID);
-                        String targetInstanceUUID = record.getValue(INSTANCE.UUID);
-                        String linkName = record.getValue(INSTANCE_LINK.LINK_NAME);
-                        Map<String, String> linkMap = result.get(instanceId);
-                        if (linkMap == null) {
-                            linkMap = new HashMap<>();
-                        }
-                        linkMap.put(linkName, targetInstanceUUID);
-                        result.put(instanceId, linkMap);
+                    public void next(Record5<String, String, Long, Long, Map<String, Object>> record) {
+                        fetchNetwork(helperInfo, os, record);
                     }
                 });
 
-        return result;
+        if (!helperInfo.getOtherAccountsServicesIds().isEmpty()) {
+            create()
+                    .select(NETWORK.NAME, NETWORK.UUID, NETWORK.ACCOUNT_ID, NETWORK.ID, NETWORK.DATA)
+                    .from(NETWORK)
+                    .join(NIC)
+                    .on(NIC.NETWORK_ID.eq(NETWORK.ID))
+                    .join(SERVICE_EXPOSE_MAP)
+                    .on(SERVICE_EXPOSE_MAP.INSTANCE_ID.eq(NIC.INSTANCE_ID))
+                    .where(NETWORK.REMOVED.isNull())
+                    .and(SERVICE_EXPOSE_MAP.REMOVED.isNull())
+                    .and(SERVICE_EXPOSE_MAP.SERVICE_ID.in(helperInfo.getOtherAccountsServicesIds()))
+                    .fetchInto(new RecordHandler<Record5<String, String, Long, Long, Map<String, Object>>>() {
+                        @Override
+                        public void next(Record5<String, String, Long, Long, Map<String, Object>> record) {
+                            fetchNetwork(helperInfo, os, record);
+                        }
+                    });
+        }
+
+    }
+
+    private void fetchNetwork(final MetaHelperInfo helperInfo, final OutputStream os,
+            Record5<String, String, Long, Long, Map<String, Object>> record) {
+        String name = record.getValue(NETWORK.NAME);
+        String uuid = record.getValue(NETWORK.UUID);
+        Long accountId = record.getValue(NETWORK.ACCOUNT_ID);
+        Long id = record.getValue(NETWORK.ID);
+        Map<String, Object> data = record.getValue(NETWORK.DATA);
+        NetworkRecord ntwk = new NetworkRecord();
+        ntwk.setData(data);
+        Map<String, Object> meta = DataAccessor.fieldMap(ntwk, ServiceConstants.FIELD_METADATA);
+        Account account = helperInfo.getAccounts().get(accountId);
+        boolean isDefault = account.getDefaultNetworkId() == null ? false : account
+                .getDefaultNetworkId().equals(id);
+        boolean host_ports = DataAccessor.fieldBool(ntwk, NetworkConstants.FIELD_HOST_PORTS);
+        Object policy = DataAccessor.field(ntwk, NetworkConstants.FIELD_POLICY, Object.class);
+        String dpa = DataAccessor.fieldString(ntwk, NetworkConstants.FIELD_DEFAULT_POLICY_ACTION);
+        NetworkMetaData ntwkMeta = new NetworkMetaData(name, uuid, host_ports, isDefault, meta, dpa, policy);
+        writeToJson(os, ntwkMeta);
+    }
+
+    @Override
+    public void fetchContainerLinks(MetaHelperInfo helperInfo, final OutputStream os) {
+        final InstanceTable targetInstance = INSTANCE.as("target_instance");
+        create()
+                .select(INSTANCE_LINK.LINK_NAME, INSTANCE.UUID, targetInstance.UUID)
+                .from(INSTANCE_LINK)
+                .join(INSTANCE)
+                .on(INSTANCE_LINK.INSTANCE_ID.eq(INSTANCE.ID))
+                .join(targetInstance)
+                .on(INSTANCE_LINK.TARGET_INSTANCE_ID.eq(targetInstance.ID))
+                .where(INSTANCE.REMOVED.isNull())
+                .and(INSTANCE_LINK.REMOVED.isNull())
+                .and(targetInstance.REMOVED.isNull())
+                .and(INSTANCE_LINK.ACCOUNT_ID.eq(helperInfo.getAccount().getId()))
+                .fetchInto(new RecordHandler<Record3<String, String, String>>() {
+                    @Override
+                    public void next(Record3<String, String, String> record) {
+                        String linkName = record.getValue(INSTANCE_LINK.LINK_NAME);
+                        String instanceUUID = record.getValue(INSTANCE.UUID);
+                        String targetInstanceUUID = record.getValue(targetInstance.UUID);
+                        ContainerLinkMetaData data = new ContainerLinkMetaData(instanceUUID,
+                                targetInstanceUUID,
+                                linkName);
+                        writeToJson(os, data);
+                    }
+                });
 }
 
 
-        private Condition getMultiAccountInstanceSearchCondition(final MetaHelperInfo helperInfo, InstanceTable instance,
-            ServiceExposeMapTable exposeMap) {
-        Condition condition = instance.ACCOUNT_ID.eq(helperInfo.getAccount().getId());
+    private Condition getMultiAccountInstanceSearchCondition(final MetaHelperInfo helperInfo) {
+        Condition condition = INSTANCE.ACCOUNT_ID.eq(helperInfo.getAccount().getId());
         if (!helperInfo.getOtherAccountsServicesIds().isEmpty()) {
-            condition = instance.ACCOUNT_ID.eq(helperInfo.getAccount().getId()).or(
-                    exposeMap.SERVICE_ID.in(helperInfo.getOtherAccountsServicesIds()));
+            condition = INSTANCE.ACCOUNT_ID.eq(helperInfo.getAccount().getId()).or(
+                    SERVICE_EXPOSE_MAP.SERVICE_ID.in(helperInfo.getOtherAccountsServicesIds()));
         }
         return condition;
+    }
+
+    protected void writeToJson(OutputStream os, Object data) {
+        try {
+            jsonMapper.writeValue(os, data);
+        } catch (Throwable t) {
+            ExceptionUtils.rethrowExpectedRuntime(t);
+        }
+    }
+
+    @Override
+    public void fetchHosts(MetaHelperInfo helperInfo, OutputStream os) {
+        for (HostMetaData host : helperInfo.getHostIdToHostMetadata().values()) {
+            writeToJson(os, host);
+        }
+    }
+
+    @Override
+    public void fetchSelf(MetaHelperInfo helperInfo, String version, OutputStream os) {
+        HostMetaData selfHost = helperInfo.getHostIdToHostMetadata().get(helperInfo.getAgentHostId());
+        DefaultMetaData def = new DefaultMetaData(version, selfHost);
+        writeToJson(os, def);
+    }
+
+    protected void fetchLaunchConfigInfo(final MetaHelperInfo helperInfo, final OutputStream os, Service service,
+            String stackName, String stackUUID, String launchConfigName, List<String> launchConfigNames) {
+        List<String> sidekicks = new ArrayList<>();
+        for (String lc : launchConfigNames) {
+            if (!lc.equalsIgnoreCase(ServiceConstants.PRIMARY_LAUNCH_CONFIG_NAME)) {
+                sidekicks.add(lc);
+            }
+        }
+        LBConfigMetadataStyle lbConfig = lbInfoDao.generateLBConfigMetadataStyle(service);
+        Object hcO = null;
+        if (service.getKind().equalsIgnoreCase(ServiceConstants.KIND_EXTERNAL_SERVICE)) {
+            hcO = DataAccessor.field(service, InstanceConstants.FIELD_HEALTH_CHECK, Object.class);
+        } else {
+            hcO = ServiceDiscoveryUtil.getLaunchConfigObject(service, launchConfigName,
+                    InstanceConstants.FIELD_HEALTH_CHECK);
+        }
+
+        InstanceHealthCheck hc = null;
+        if (hcO != null) {
+            hc = jsonMapper.convertValue(hcO, InstanceHealthCheck.class);
+        }
+        String name = launchConfigName;
+        if (launchConfigName.equalsIgnoreCase(ServiceConstants.PRIMARY_LAUNCH_CONFIG_NAME)) {
+            name = service.getName();
+        }
+        
+        ServiceMetaData data = new ServiceMetaData(service, name, stackName, stackUUID, sidekicks,
+                hc, lbConfig, helperInfo.getAccount());
+        
+        writeToJson(os, data);
+    }
+
+    @Override
+    public void fetchServices(final MetaHelperInfo helperInfo, final OutputStream os) {
+        Condition condition = SERVICE.ACCOUNT_ID.eq(helperInfo.getAccount().getId());
+        if (!helperInfo.getOtherAccountsServicesIds().isEmpty()) {
+            condition = SERVICE.ACCOUNT_ID.eq(helperInfo.getAccount().getId()).or(
+                    SERVICE.ID.in(helperInfo.getOtherAccountsServicesIds()));
+        }
+        create()
+                .select(SERVICE.UUID, SERVICE.NAME, SERVICE.STATE, SERVICE.CREATE_INDEX, SERVICE.KIND, SERVICE.SYSTEM,
+                        SERVICE.DATA, SERVICE.ACCOUNT_ID,
+                        STACK.UUID, STACK.NAME)
+                .from(SERVICE)
+                .join(STACK)
+                .on(SERVICE.STACK_ID.eq(STACK.ID))
+                .where(STACK.REMOVED.isNull())
+                .and(SERVICE.REMOVED.isNull())
+                .and(condition)
+                .fetchInto(
+                        new RecordHandler<Record10<String, String, String, Long, String, Boolean, Map<String, Object>, Long, String, String>>() {
+                    @Override
+                            public void next(
+                                    Record10<String, String, String, Long, String, Boolean, Map<String, Object>, Long, String, String> record) {
+                                ServiceRecord service = new ServiceRecord();
+                                service.setName(record.getValue(SERVICE.NAME));
+                                service.setUuid(record.getValue(SERVICE.UUID));
+                                service.setState(record.getValue(SERVICE.STATE));
+                                service.setCreateIndex(record.getValue(SERVICE.CREATE_INDEX));
+                                service.setSystem(record.getValue(SERVICE.SYSTEM));
+                                service.setData(record.getValue(SERVICE.DATA));
+                                service.setKind(record.getValue(SERVICE.KIND));
+                                service.setAccountId(record.getValue(SERVICE.ACCOUNT_ID));
+                                String stackName = record.getValue(STACK.NAME);
+                                String stackUUID = record.getValue(STACK.UUID);
+
+                                List<String> launchConfigNames = ServiceDiscoveryUtil
+                                        .getServiceLaunchConfigNames(service);
+                                if (launchConfigNames.isEmpty()) {
+                                    launchConfigNames.add(ServiceConstants.PRIMARY_LAUNCH_CONFIG_NAME);
+                                }
+
+                                for (String launchConfigName : launchConfigNames) {
+                                    fetchLaunchConfigInfo(helperInfo, os, service, stackName, stackUUID,
+                                            launchConfigName,
+                                            launchConfigNames);
+                                }
+                    }
+                });
+    }
+
+    @Override
+    public void fetchStacks(final MetaHelperInfo helperInfo, final OutputStream os) {
+        Condition condition = STACK.ACCOUNT_ID.eq(helperInfo.getAccount().getId());
+        if (!helperInfo.getOtherAccountsServicesIds().isEmpty()) {
+            condition = STACK.ACCOUNT_ID.eq(helperInfo.getAccount().getId()).or(
+                    STACK.ID.in(helperInfo.getOtherAccountsStackIds()));
+        }
+        create()
+                .select(STACK.NAME, STACK.UUID, STACK.SYSTEM)
+                .from(STACK)
+                .where(STACK.REMOVED.isNull())
+                .and(condition)
+                .fetchInto(new RecordHandler<Record3<String, String, Boolean>>() {
+                    @Override
+                    public void next(Record3<String, String, Boolean> record) {
+                        String name = record.getValue(STACK.NAME);
+                        String uuid = record.getValue(STACK.UUID);
+                        Boolean system = record.getValue(STACK.SYSTEM);
+                        StackMetaData data = new StackMetaData(name, uuid, system, helperInfo.getAccount());
+                        writeToJson(os, data);
+                    }
+                });
+    }
+
+    @Override
+    public void fetchServiceLinks(final MetaHelperInfo helperInfo, final OutputStream os) {
+        final ServiceTable consumedService = SERVICE.as("consumed_service");
+        Condition condition = SERVICE_CONSUME_MAP.ACCOUNT_ID.eq(helperInfo.getAccount().getId());
+        if (!helperInfo.getOtherAccountsServicesIds().isEmpty()) {
+            condition = SERVICE_CONSUME_MAP.ACCOUNT_ID.eq(helperInfo.getAccount().getId()).or(
+                    SERVICE_CONSUME_MAP.SERVICE_ID.in(helperInfo.getOtherAccountsServicesIds()));
+        }
+        create()
+                .select(SERVICE_CONSUME_MAP.NAME, SERVICE.UUID, STACK.NAME, consumedService.NAME)
+                .from(SERVICE_CONSUME_MAP)
+                .join(SERVICE)
+                .on(SERVICE_CONSUME_MAP.SERVICE_ID.eq(SERVICE.ID))
+                .join(consumedService)
+                .on(SERVICE_CONSUME_MAP.CONSUMED_SERVICE_ID.eq(consumedService.ID))
+                .join(STACK)
+                .on(STACK.ID.eq(consumedService.STACK_ID))
+                .where(SERVICE_CONSUME_MAP.REMOVED.isNull())
+                .and(SERVICE.REMOVED.isNull())
+                .and(consumedService.REMOVED.isNull())
+                .and(STACK.REMOVED.isNull())
+                .and(condition)
+                .fetchInto(new RecordHandler<Record4<String, String, String, String>>() {
+                    @Override
+                    public void next(Record4<String, String, String, String> record) {
+                        String consumeMapName = record.getValue(SERVICE_CONSUME_MAP.NAME);
+                        String serviceUUID = record.getValue(SERVICE.UUID);
+                        String stackName = record.getValue(STACK.NAME);
+                        String consumedServiceName = record.getValue(consumedService.NAME);
+                        String linkAlias = consumeMapName != null ? consumeMapName : consumedServiceName;
+
+                        ServiceLinkMetaData data = new ServiceLinkMetaData(serviceUUID,
+                                consumedServiceName,
+                                stackName, linkAlias);
+                        writeToJson(os, data);
+                    }
+                });
+    }
+
+    @Override
+    public void fetchServiceContainerLinks(final MetaHelperInfo helperInfo, final OutputStream os) {
+        Condition condition = SERVICE_EXPOSE_MAP.ACCOUNT_ID.eq(helperInfo.getAccount().getId());
+        if (!helperInfo.getOtherAccountsServicesIds().isEmpty()) {
+            condition = SERVICE_EXPOSE_MAP.ACCOUNT_ID.eq(helperInfo.getAccount().getId()).or(
+                    SERVICE_EXPOSE_MAP.SERVICE_ID.in(helperInfo.getOtherAccountsServicesIds()));
+        }
+        create()
+                .select(SERVICE_EXPOSE_MAP.DNS_PREFIX, INSTANCE.UUID, SERVICE.UUID, SERVICE.NAME)
+                .from(SERVICE_EXPOSE_MAP)
+                .join(INSTANCE)
+                .on(INSTANCE.ID.eq(SERVICE_EXPOSE_MAP.INSTANCE_ID))
+                .join(SERVICE)
+                .on(SERVICE_EXPOSE_MAP.SERVICE_ID.eq(SERVICE.ID))
+                .where(SERVICE_EXPOSE_MAP.REMOVED.isNull())
+                .and(SERVICE.REMOVED.isNull())
+                .and(INSTANCE.REMOVED.isNull())
+                .and(condition)
+                .fetchInto(new RecordHandler<Record4<String, String, String, String>>() {
+                    @Override
+                    public void next(Record4<String, String, String, String> record) {
+                        String dnsPrefix = record.getValue(SERVICE_EXPOSE_MAP.DNS_PREFIX);
+                        String instanceUUID = record.getValue(INSTANCE.UUID);
+                        String serviceName = record.getValue(SERVICE.NAME);
+                        String serviceUUID = record.getValue(SERVICE.UUID);
+                        String svcName = dnsPrefix != null ? dnsPrefix : serviceName;
+                        ServiceContainerLinkMetaData data = new ServiceContainerLinkMetaData(serviceUUID, svcName,
+                                instanceUUID);
+                        writeToJson(os, data);
+                    }
+                });
     }
 }

@@ -4,7 +4,6 @@ import static io.cattle.platform.core.model.tables.CertificateTable.*;
 import static io.cattle.platform.core.model.tables.ServiceConsumeMapTable.*;
 import static io.cattle.platform.core.model.tables.ServiceTable.*;
 import static io.cattle.platform.core.model.tables.StackTable.*;
-
 import io.cattle.platform.core.addon.HaproxyConfig;
 import io.cattle.platform.core.addon.LbConfig;
 import io.cattle.platform.core.addon.LoadBalancerCookieStickinessPolicy;
@@ -178,10 +177,13 @@ public class LoadBalancerInfoDaoImpl implements LoadBalancerInfoDao {
 
     @Override
     public LBConfigMetadataStyle generateLBConfigMetadataStyle(Service lbService) {
-        LbConfig lbConfig = DataAccessor.field(lbService, ServiceConstants.FIELD_LB_CONFIG, jsonMapper,
-                LbConfig.class);
-        if (lbConfig == null) {
+        Object lbConfigObj = DataAccessor.field(lbService, ServiceConstants.FIELD_LB_CONFIG, Object.class);
+        if (lbConfigObj == null) {
             return null;
+        }
+        LbConfig lbConfig = null;
+        if (lbConfigObj != null) {
+            lbConfig = jsonMapper.convertValue(lbConfigObj, LbConfig.class);
         }
         // lb config can be set for lb and regular service (when it joins LB via selectors)
         // metadata gets set for both.
