@@ -5,6 +5,8 @@ import static io.cattle.platform.core.model.tables.CredentialTable.*;
 import static io.cattle.platform.core.model.tables.InstanceLabelMapTable.*;
 import static io.cattle.platform.core.model.tables.InstanceTable.*;
 import static io.cattle.platform.core.model.tables.LabelTable.*;
+import static io.cattle.platform.core.model.tables.InstanceHostMapTable.*;
+import static io.cattle.platform.core.model.tables.HostTable.*;
 
 import io.cattle.platform.agent.instance.dao.AgentInstanceDao;
 import io.cattle.platform.core.constants.AgentConstants;
@@ -95,11 +97,18 @@ public class AgentInstanceDaoImpl extends AbstractJooqDao implements AgentInstan
                     .on(INSTANCE_LABEL_MAP.INSTANCE_ID.eq(INSTANCE.ID))
                 .join(LABEL)
                     .on(LABEL.ID.eq(INSTANCE_LABEL_MAP.LABEL_ID).and(LABEL.KEY.eq(providedServiceLabel)))
+                .join(INSTANCE_HOST_MAP)
+                    .on(INSTANCE.ID.eq(INSTANCE_HOST_MAP.INSTANCE_ID))
+                .join(HOST)
+                    .on(INSTANCE_HOST_MAP.HOST_ID.eq(HOST.ID))
+                .join(AGENT)
+                    .on(AGENT.ID.eq(HOST.AGENT_ID))
                 .where(INSTANCE.ACCOUNT_ID.eq(accountId)
                     .and(INSTANCE.AGENT_ID.isNotNull())
                         .and(INSTANCE.STATE.eq(InstanceConstants.STATE_RUNNING))
                         .and(INSTANCE.HEALTH_STATE.in(HealthcheckConstants.HEALTH_STATE_HEALTHY,
                                 HealthcheckConstants.HEALTH_STATE_UPDATING_HEALTHY)))
+                        .and(AGENT.STATE.eq(CommonStatesConstants.ACTIVE))
                 .orderBy(INSTANCE.AGENT_ID.asc())
                 .fetch().intoArray(INSTANCE.AGENT_ID));
     }
