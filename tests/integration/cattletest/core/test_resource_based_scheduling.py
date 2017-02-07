@@ -95,6 +95,22 @@ def test_resource_based_scheduler(new_context, super_client):
                              'type': 'computePool'}])
 
 
+def test_delete_host(new_context, super_client):
+    host = new_context.host
+
+    mock_sched(new_context, super_client)
+    image = new_context.image_uuid
+    client = new_context.client
+
+    agent = super_client.reload(host).agent()
+    super_client.update(agent, state='reconnecting')
+
+    register_simulated_host(new_context)
+    c = client.create_container({'imageUuid': image, 'networkMode': 'host'})
+    c = client.wait_success(c)
+    assert c.state == 'running'
+
+
 def do_scheduling_test(container_kw, client, mock_scheduler, hosts,
                        expected_host, expected_resource_requests,
                        super_client):
