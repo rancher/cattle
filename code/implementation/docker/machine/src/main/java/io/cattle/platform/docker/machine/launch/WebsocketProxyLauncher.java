@@ -33,8 +33,8 @@ public class WebsocketProxyLauncher extends GenericServiceLauncher {
     private static final String MASTER_CONF = "master.conf";
 
     private static final DynamicStringProperty ACCESS_LOG = ArchaiusUtil.getString("access.log");
-    private static final DynamicStringProperty API_FILTER_PROXY_CONFIG = ArchaiusUtil.getString("api.filter.proxy.config");
-    private static final DynamicStringProperty API_FILTER_PROXY_CONFIG_FILE = ArchaiusUtil.getString("api.filter.proxy.config.file");
+    private static final DynamicStringProperty API_INTERCEPTOR_CONFIG = ArchaiusUtil.getString("api.interceptor.config");
+    private static final DynamicStringProperty API_INTERCEPTOR_CONFIG_FILE = ArchaiusUtil.getString("api.interceptor.config.file");
 
     @Inject
     ClusterService clusterService;
@@ -45,17 +45,17 @@ public class WebsocketProxyLauncher extends GenericServiceLauncher {
     protected List<DynamicStringProperty> getReloadSettings() {
         List<DynamicStringProperty> list = new ArrayList<DynamicStringProperty>();
         list.add(ACCESS_LOG);
-        list.add(API_FILTER_PROXY_CONFIG);
+        list.add(API_INTERCEPTOR_CONFIG);
         return list;
     }
 
     protected void prepareConfigFile() throws IOException {
-        String config = API_FILTER_PROXY_CONFIG.get();
+        String config = API_INTERCEPTOR_CONFIG.get();
         if (StringUtils.isBlank(config)) {
-            new File(API_FILTER_PROXY_CONFIG_FILE.get()).delete();
+            new File(API_INTERCEPTOR_CONFIG_FILE.get()).delete();
         } else {
-            try(FileWriter fw = new FileWriter(API_FILTER_PROXY_CONFIG_FILE.get())) {
-                IOUtils.write(API_FILTER_PROXY_CONFIG.get(), fw);
+            try(FileWriter fw = new FileWriter(API_INTERCEPTOR_CONFIG_FILE.get())) {
+                IOUtils.write(API_INTERCEPTOR_CONFIG.get(), fw);
             }
         }
     }
@@ -107,7 +107,7 @@ public class WebsocketProxyLauncher extends GenericServiceLauncher {
         env.put("PROXY_MASTER_FILE", MASTER_CONF);
         env.put("PROXY_CATTLE_ADDRESS", cattleProxyAddress);
         env.put("PROXY_HTTPS_PROXY_PROTOCOL_PORTS", getProxyProtocolHttpsPorts());
-        env.put("PROXY_API_FILTER_CONFIG_FILE", API_FILTER_PROXY_CONFIG_FILE.get());
+        env.put("PROXY_API_INTERCEPTOR_CONFIG_FILE", API_INTERCEPTOR_CONFIG_FILE.get());
 
         String processName = ManagementFactory.getRuntimeMXBean().getName();
         if (processName != null) {
@@ -137,7 +137,7 @@ public class WebsocketProxyLauncher extends GenericServiceLauncher {
         try {
             prepareConfigFile();
             StringBuilder apiProxyUrl = new StringBuilder();
-            apiProxyUrl.append("http://localhost:").append(getProxyPort()).append("/v1-api-filter-proxy/reload");
+            apiProxyUrl.append("http://localhost:").append(getProxyPort()).append("/v1-api-interceptor/reload");
             Request.Post(apiProxyUrl.toString()).execute();
         } catch (IOException e) {
             log.error("Failed to reload api proxy service: {}", e.getMessage());
