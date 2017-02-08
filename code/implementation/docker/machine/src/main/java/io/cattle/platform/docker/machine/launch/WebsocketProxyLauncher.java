@@ -107,6 +107,7 @@ public class WebsocketProxyLauncher extends GenericServiceLauncher {
         env.put("PROXY_MASTER_FILE", MASTER_CONF);
         env.put("PROXY_CATTLE_ADDRESS", cattleProxyAddress);
         env.put("PROXY_HTTPS_PROXY_PROTOCOL_PORTS", getProxyProtocolHttpsPorts());
+        env.put("PROXY_API_FILTER_CONFIG_FILE", API_FILTER_PROXY_CONFIG_FILE.get());
 
         String processName = ManagementFactory.getRuntimeMXBean().getName();
         if (processName != null) {
@@ -136,7 +137,7 @@ public class WebsocketProxyLauncher extends GenericServiceLauncher {
         try {
             prepareConfigFile();
             StringBuilder apiProxyUrl = new StringBuilder();
-            apiProxyUrl.append("http://localhost:").append(getProxiedPort()).append("/v1-api-filter-proxy/reload");
+            apiProxyUrl.append("http://localhost:").append(getProxyPort()).append("/v1-api-filter-proxy/reload");
             Request.Post(apiProxyUrl.toString()).execute();
         } catch (IOException e) {
             log.error("Failed to reload api proxy service: {}", e.getMessage());
