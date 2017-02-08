@@ -94,10 +94,10 @@ public class CatalogLauncher extends GenericServiceLauncher implements Initializ
     @Override
     protected void prepareProcess(ProcessBuilder pb) throws IOException {
         List<String> args = pb.command();
-        args.add("-configFile");
+        args.add("--config");
         prepareConfigFile();
         args.add("repo.json");
-        args.add("-refreshInterval");
+        args.add("--refresh-interval");
         args.add(CATALOG_REFRESH_INTERVAL.get());
     }
 
