@@ -115,7 +115,8 @@ public class MetaDataInfoDaoImpl extends AbstractJooqDao implements MetaDataInfo
                 .join(NETWORK)
                 .on(NIC.NETWORK_ID.eq(NETWORK.ID))
                 .where(INSTANCE.REMOVED.isNull())
-                .and(INSTANCE.STATE.notIn(CommonStatesConstants.REMOVING, CommonStatesConstants.REMOVED))
+                .and(INSTANCE.STATE.notIn(CommonStatesConstants.REMOVING, CommonStatesConstants.REMOVED,
+                        InstanceConstants.STATE_ERROR, InstanceConstants.STATE_ERRORING))
                 .and(SERVICE_EXPOSE_MAP.REMOVED.isNull())
                 .and(IP_ADDRESS.ROLE.eq(IpAddressConstants.ROLE_PRIMARY).or(
                         IP_ADDRESS.ROLE.isNull().and(NETWORK.KIND.eq(NetworkConstants.KIND_DOCKER_HOST)))
@@ -175,10 +176,8 @@ public class MetaDataInfoDaoImpl extends AbstractJooqDao implements MetaDataInfo
                                         helperInfo.getAccounts().get(instance.getAccountId()));
 
                                 data.setService_index(serviceIndex);
-                                
-                                
                                 if (networkKind.equalsIgnoreCase(NetworkConstants.KIND_DOCKER_HOST)) {
-                                    data.setIp(hostMetaData.getAgent_ip());
+                                    primaryIp = hostMetaData.getAgent_ip();
                                 } 
                                 data.setIp(primaryIp);
                                 data.setNetwork_uuid(networkUUID);
