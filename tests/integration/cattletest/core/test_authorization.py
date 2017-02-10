@@ -736,6 +736,7 @@ def test_host_auth(admin_user_client, user_client, project_client):
         'localStorageMb': 'r',
         'memory': 'r',
         'milliCpu': 'r',
+        'stackId': 'r',
     })
 
     auth_check(user_client.schema, 'host', 'r', {
@@ -752,6 +753,7 @@ def test_host_auth(admin_user_client, user_client, project_client):
         'localStorageMb': 'r',
         'memory': 'r',
         'milliCpu': 'r',
+        'stackId': 'r',
     })
 
     auth_check(project_client.schema, 'host', 'rud', {
@@ -768,6 +770,7 @@ def test_host_auth(admin_user_client, user_client, project_client):
         'localStorageMb': 'ru',
         'memory': 'ru',
         'milliCpu': 'ru',
+        'stackId': 'r',
     })
 
 
@@ -1049,6 +1052,8 @@ def test_container_auth(admin_user_client, user_client, project_client,
         'instanceTriggeredStop': 'r',
         'primaryNetworkId': 'r',
         'secrets': 'r',
+        'serviceId': 'r',
+        'stackId': 'r',
     })
 
     auth_check(user_client.schema, 'container', 'r', {
@@ -1155,6 +1160,8 @@ def test_container_auth(admin_user_client, user_client, project_client,
         'instanceTriggeredStop': 'r',
         'primaryNetworkId': 'r',
         'secrets': 'r',
+        'serviceId': 'r',
+        'stackId': 'r',
     })
 
     auth_check(project_client.schema, 'container', 'crud', {
@@ -1261,6 +1268,8 @@ def test_container_auth(admin_user_client, user_client, project_client,
         'instanceTriggeredStop': 'cr',
         'primaryNetworkId': 'r',
         'secrets': 'cr',
+        'serviceId': 'r',
+        'stackId': 'cr',
     })
 
     auth_check(environment_client.schema, 'container', 'crud', {
@@ -1366,6 +1375,8 @@ def test_container_auth(admin_user_client, user_client, project_client,
         'healthRetries': 'cr',
         'instanceTriggeredStop': 'cr',
         'primaryNetworkId': 'r',
+        'serviceId': 'r',
+        'stackId': 'cr',
     })
 
     auth_check(project_admin_client.schema, 'container', 'crud', {
@@ -1471,6 +1482,8 @@ def test_container_auth(admin_user_client, user_client, project_client,
         'healthRetries': 'cr',
         'instanceTriggeredStop': 'cr',
         'primaryNetworkId': 'r',
+        'serviceId': 'r',
+        'stackId': 'cr',
     })
 
     auth_check(project_client.schema, 'dockerBuild', 'cr', {
@@ -3141,6 +3154,8 @@ def test_virtual_machine(admin_user_client, user_client, project_client):
         'healthRetries': 'r',
         'instanceTriggeredStop': 'r',
         'primaryNetworkId': 'r',
+        'serviceId': 'r',
+        'stackId': 'r',
     })
 
     auth_check(user_client.schema, 'virtualMachine', 'r', {
@@ -3231,6 +3246,8 @@ def test_virtual_machine(admin_user_client, user_client, project_client):
         'healthRetries': 'r',
         'instanceTriggeredStop': 'r',
         'primaryNetworkId': 'r',
+        'serviceId': 'r',
+        'stackId': 'r',
     })
 
     auth_check(project_client.schema, 'virtualMachine', 'crud', {
@@ -3321,6 +3338,8 @@ def test_virtual_machine(admin_user_client, user_client, project_client):
         'healthRetries': 'cr',
         'instanceTriggeredStop': 'cr',
         'primaryNetworkId': 'r',
+        'serviceId': 'r',
+        'stackId': 'cr',
     })
 
 

@@ -256,6 +256,17 @@ public interface Host extends java.io.Serializable {
 	@javax.persistence.Column(name = "milli_cpu", precision = 19)
 	public java.lang.Long getMilliCpu();
 
+	/**
+	 * Setter for <code>cattle.host.environment_id</code>.
+	 */
+	public void setStackId(java.lang.Long value);
+
+	/**
+	 * Getter for <code>cattle.host.environment_id</code>.
+	 */
+	@javax.persistence.Column(name = "environment_id", precision = 19)
+	public java.lang.Long getStackId();
+
 	// -------------------------------------------------------------------------
 	// FROM and INTO
 	// -------------------------------------------------------------------------
