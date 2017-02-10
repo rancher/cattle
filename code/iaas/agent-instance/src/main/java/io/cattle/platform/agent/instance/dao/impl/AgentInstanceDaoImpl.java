@@ -21,16 +21,28 @@ import io.cattle.platform.db.jooq.dao.impl.AbstractJooqDao;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.util.DataAccessor;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import javax.inject.Inject;
 
+import org.jooq.Record2;
+import org.jooq.RecordHandler;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 public class AgentInstanceDaoImpl extends AbstractJooqDao implements AgentInstanceDao {
 
     @Inject
+    private static final Logger log = LoggerFactory.getLogger(AgentInstanceDaoImpl.class);
+
     GenericResourceDao resourceDao;
     
     @Inject
@@ -91,7 +103,8 @@ public class AgentInstanceDaoImpl extends AbstractJooqDao implements AgentInstan
 
     @Override
     public List<Long> getAgentProvider(String providedServiceLabel, long accountId) {
-        return Arrays.asList(create().select(INSTANCE.AGENT_ID)
+        final Map<Long, Integer> result = new HashMap<>();
+        create().select(INSTANCE.AGENT_ID, LABEL.VALUE)
                 .from(INSTANCE)
                 .join(INSTANCE_LABEL_MAP)
                     .on(INSTANCE_LABEL_MAP.INSTANCE_ID.eq(INSTANCE.ID))
@@ -110,7 +123,32 @@ public class AgentInstanceDaoImpl extends AbstractJooqDao implements AgentInstan
                                 HealthcheckConstants.HEALTH_STATE_UPDATING_HEALTHY)))
                         .and(AGENT.STATE.eq(CommonStatesConstants.ACTIVE))
                 .orderBy(INSTANCE.AGENT_ID.asc())
-                .fetch().intoArray(INSTANCE.AGENT_ID));
+        .fetchInto(new RecordHandler<Record2<Long, String>>() {
+            @Override
+            public void next(Record2<Long, String> record) {
+                Long agentId = record.getValue(INSTANCE.AGENT_ID);
+                String p = record.getValue(LABEL.VALUE);
+                Integer pVal = 1;
+                try {
+                    pVal = Integer.valueOf(p);
+                } catch (Exception e) {
+                    log.warn("Priority value not found for agent {}. Set it as default", agentId);
+                }
+                result.put(agentId, pVal);
+            }
+        });
+        
+        List<Long> returnAgentIds = new ArrayList<>(result.keySet());
+        
+        Collections.sort(returnAgentIds, new Comparator<Long>() {
+            @Override
+            public int compare(Long id1, Long id2) {
+                return result.get(id1).compareTo(result.get(id2));
+            }
+        });
+        
+        return returnAgentIds;
+        
     }
 
     @Override
