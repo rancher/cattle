@@ -23,8 +23,6 @@ import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.object.util.DataUtils;
 import io.cattle.platform.servicediscovery.api.export.ComposeExportService;
 
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -122,7 +120,6 @@ public class ComposeExportServiceImpl implements ComposeExportService {
         Map<String, Object> servicesData = new HashMap<String, Object>();
         Collection<Long> servicesToExportIds = CollectionUtils.collect(servicesToExport,
                 TransformerUtils.invokerTransformer("getId"));
-        Map<String, Object> volumesData = new HashMap<String, Object>();
         for (Service service : servicesToExport) {
             List<String> launchConfigNames = ServiceUtil.getLaunchConfigNames(service);
             for (String launchConfigName : launchConfigNames) {
@@ -151,7 +148,6 @@ public class ComposeExportServiceImpl implements ComposeExportService {
                     populateTmpfs(cattleServiceData, composeServiceData);
                     populateUlimit(cattleServiceData, composeServiceData);
                     populateBlkioOptions(cattleServiceData, composeServiceData);
-                    translateV1VolumesToV2(cattleServiceData, composeServiceData, volumesData);
                 }
                 if (!composeServiceData.isEmpty()) {
                     servicesData.put(isPrimaryConfig ? service.getName() : launchConfigName, composeServiceData);
@@ -159,6 +155,7 @@ public class ComposeExportServiceImpl implements ComposeExportService {
             }
         }
 
+        Map<String, Object> volumesData = new HashMap<String, Object>();
         for (VolumeTemplate volume : volumes) {
             Map<String, Object> cattleVolumeData = new HashMap<>();
             cattleVolumeData.putAll(DataUtils.getFields(volume));
@@ -497,52 +494,6 @@ public class ComposeExportServiceImpl implements ComposeExportService {
 
         if (!namesCombined.isEmpty()) {
             composeServiceData.put(ComposeExportConfigItem.VOLUMESFROM.getDockerName(), namesCombined);
-        }
-    }
-
-    @SuppressWarnings("unchecked")
-    private void translateV1VolumesToV2(Map<String, Object> cattleServiceData,
-            Map<String, Object> composeServiceData, Map<String, Object> volumesData) {
-        // volume driver presence defines the v1 format for the volumes
-        String volumeDriver = String.valueOf(cattleServiceData.get(ComposeExportConfigItem.VOLUME_DRIVER
-                .getCattleName()));
-        if (StringUtils.isEmpty(volumeDriver)) {
-            return;
-        }
-        composeServiceData.remove(ComposeExportConfigItem.VOLUME_DRIVER
-                .getDockerName());
-        Object dataVolumes = cattleServiceData.get(InstanceConstants.FIELD_DATA_VOLUMES);
-        if (dataVolumes == null) {
-            return;
-        }
-
-        for (String dataVolume : (List<String>) dataVolumes) {
-            String[] splitted = dataVolume.split(":");
-            if (splitted.length < 2) {
-                // only process named volumes
-                continue;
-            }
-            String dataVolumeName = splitted[0];
-            // skip bind mounts
-            Path p = Paths.get(dataVolumeName);
-            if (p.isAbsolute()) {
-                continue;
-            }
-            if (volumesData.containsKey(dataVolumeName)) {
-                // either defined by volumeTemplate, or external volume is already created for it
-                continue;
-            }
-            Map<String, Object> cattleVolumeData = new HashMap<>();
-            cattleVolumeData.put(ServiceConstants.FIELD_VOLUME_EXTERNAL, true);
-            cattleVolumeData.put(ServiceConstants.FIELD_VOLUME_DRIVER, volumeDriver);
-            Map<String, Object> composeVolumeData = new HashMap<>();
-            for (String cattleVolume : cattleVolumeData.keySet()) {
-                translateRancherToCompose(true, cattleVolumeData, composeVolumeData, cattleVolume,
-                        null, true);
-            }
-            if (!composeVolumeData.isEmpty()) {
-                volumesData.put(dataVolumeName, composeVolumeData);
-            }
         }
     }
 
