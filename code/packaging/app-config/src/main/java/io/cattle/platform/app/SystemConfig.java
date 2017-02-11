@@ -139,14 +139,6 @@ public class SystemConfig {
     }
 
     @Bean
-    NamedExecutorService allocator(ExtensionManagerImpl em, @Qualifier("AllocatorExecutorService") ExecutorService es) {
-        NamedExecutorService nes = new NamedExecutorService();
-        nes.setName("allocator");
-        nes.setExecutorService(es);
-        return nes;
-    }
-
-    @Bean
     ListeningExecutorService CoreListeningExecutorService(@Qualifier("CoreExecutorService") ExecutorService es) {
         return MoreExecutors.listeningDecorator(es);
     }
@@ -164,11 +156,6 @@ public class SystemConfig {
     }
 
     @Bean
-    SpringConfigurableExecutorService AllocatorExecutorService() throws MalformedObjectNameException {
-        return SpringConfigurableExecutorService.byName("AllocatorExecutorService");
-    }
-
-    @Bean
     SpringConfigurableExecutorService ProcessNonBlockingExecutorService() throws MalformedObjectNameException {
         return SpringConfigurableExecutorService.byName("ProcessNonBlockingExecutorService", new ThreadPoolExecutor.DiscardPolicy());
     }
@@ -176,11 +163,6 @@ public class SystemConfig {
     @Bean
     SpringConfigurableExecutorService ProcessBlockingExecutorService() throws MalformedObjectNameException {
         return SpringConfigurableExecutorService.byName("ProcessBlockingExecutorService", new ThreadPoolExecutor.DiscardPolicy());
-    }
-
-    @Bean
-    SpringConfigurableExecutorService ProcessPriorityExecutorService() throws MalformedObjectNameException {
-        return SpringConfigurableExecutorService.byName("ProcessPriorityExecutorService");
     }
 
     @Bean

@@ -50,8 +50,6 @@ public class ProcessInstanceDispatcherImpl implements ProcessInstanceDispatcher,
     ExecutorService blockingExecutor;
     @Inject @Named("ProcessNonBlockingExecutorService")
     ExecutorService nonBlockingExecutor;
-    @Inject @Named("ProcessPriorityExecutorService")
-    ExecutorService priorityExecutor;
     @Inject
     ProcessRecordDao processRecordDao;
     @Inject
@@ -81,15 +79,7 @@ public class ProcessInstanceDispatcherImpl implements ProcessInstanceDispatcher,
         }
         if (!submitted) {
             if (isBlocking(ref)) {
-                if (ref.getPriority() >= 1000) {
-                    try {
-                        priorityExecutor.execute(ref);
-                    } catch (RejectedExecutionException e) {
-                        blockingExecutor.execute(ref);
-                    }
-                } else {
-                    blockingExecutor.execute(ref);
-                }
+                blockingExecutor.execute(ref);
             } else {
                 nonBlockingExecutor.execute(ref);
             }
