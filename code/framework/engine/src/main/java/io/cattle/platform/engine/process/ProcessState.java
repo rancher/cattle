@@ -39,4 +39,6 @@ public interface ProcessState {
 
     void applyData(Map<String, Object> data);
 
+    void rebuild();
+
 }
