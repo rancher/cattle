@@ -560,7 +560,7 @@ def process_instances(admin_client, obj, id=None, type=None):
         id = obj.id
 
     if type is None:
-        type = obj.type
+        type = obj.baseType
 
     return admin_client.list_process_instance(resourceType=type, resourceId=id,
                                               sort='startTime')
