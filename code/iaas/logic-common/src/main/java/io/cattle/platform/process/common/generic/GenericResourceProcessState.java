@@ -79,6 +79,12 @@ public class GenericResourceProcessState extends AbstractStatesBasedProcessState
     }
 
     @Override
+    public void rebuild() {
+        resource = objectManager.reload(resource);
+        state = lookupState();
+    }
+
+    @Override
     protected boolean setState(boolean transitioning, String oldState, String newState) {
         reload();
 
