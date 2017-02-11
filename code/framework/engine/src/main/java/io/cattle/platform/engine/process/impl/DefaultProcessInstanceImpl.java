@@ -262,11 +262,6 @@ public class DefaultProcessInstanceImpl implements ProcessInstance {
             }
             throw new ProcessExecutionExitException(ALREADY_DONE);
         }
-
-        if (shouldCancel()) {
-            throw new ProcessCancelException("State [" + instanceContext.getState().getState() + "] is not valid for process [" +
-                    getName() + ":" + getId() + "] on resource [" + getResourceId() + "]");
-        }
     }
 
     protected boolean shouldCancel() {
@@ -307,9 +302,19 @@ public class DefaultProcessInstanceImpl implements ProcessInstance {
         try {
             ProcessState state = instanceContext.getState();
 
+            if (state.getResource() == null) {
+                throw new ProcessCancelException("Resource is null [" + getName() + ":" + getId() + "] on resource [" +
+                        getResourceId() + "]");
+            }
+
             state.reload();
 
             preRunStateCheck();
+
+            if (shouldCancel()) {
+                throw new ProcessCancelException("State [" + instanceContext.getState().getState() + "] is not valid for process [" +
+                        getName() + ":" + getId() + "] on resource [" + getResourceId() + "]");
+            }
 
             if (schedule) {
                 Predicate predicate = record.getPredicate();
