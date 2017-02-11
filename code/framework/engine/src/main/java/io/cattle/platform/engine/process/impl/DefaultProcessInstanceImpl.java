@@ -301,13 +301,13 @@ public class DefaultProcessInstanceImpl implements ProcessInstance {
         boolean success = false;
         try {
             ProcessState state = instanceContext.getState();
+            state.rebuild();
 
             if (state.getResource() == null) {
                 throw new ProcessCancelException("Resource is null [" + getName() + ":" + getId() + "] on resource [" +
                         getResourceId() + "]");
             }
 
-            state.reload();
 
             preRunStateCheck();
 
