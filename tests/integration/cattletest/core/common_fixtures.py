@@ -298,7 +298,12 @@ def register_simulated_host(client_or_context, return_agent=False):
                                  agentUriFormat='sim://%s')
     # End hacking...
 
-    register = c.wait_success(register)
+    try:
+        register = c.wait_success(register)
+    except:
+        print register
+        print process_instances(s, register)
+        raise
     register = c.list_register(key=key)[0]
 
     c = api_client(register.accessKey, register.secretKey)
@@ -315,7 +320,12 @@ def register_simulated_host(client_or_context, return_agent=False):
     host = client.wait_success(host)
     s.wait_success(agents[0])
 
-    host = wait_state(client, host, 'active')
+    try:
+        host = wait_state(client, host, 'active')
+    except:
+        print client.list_host()
+        print process_instances(s, host)
+        raise
     wait_for(lambda: _wait_for_pool(host))
 
     if return_agent:
