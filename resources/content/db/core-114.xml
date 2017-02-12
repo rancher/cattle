@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog" xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.1.xsd">
+    <property name="mediumtext" value="TEXT" dbms="postgresql" />
+    <property name="mediumtext" value="MEDIUMTEXT" />
+    <property name="mediumtext" value="varchar" dbms="H2" />
+    <changeSet author="darren (generated)" id="dump1">
+        <createTable tableName="catalog">
+            <column autoIncrement="true" name="id" type="BIGINT">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="created_at" type="datetime"/>
+            <column name="updated_at" type="datetime"/>
+            <column name="environment_id" type="VARCHAR(255)"/>
+            <column name="name" type="VARCHAR(1024)"/>
+            <column name="url" type="VARCHAR(1024)"/>
+            <column name="branch" type="VARCHAR(1024)"/>
+            <column name="commit" type="VARCHAR(1024)"/>
+            <column name="type" type="VARCHAR(255)"/>
+        </createTable>
+    </changeSet>
+    <changeSet author="darren (generated)" id="dump2">
+        <createTable tableName="catalog_category">
+            <column autoIncrement="true" name="id" type="BIGINT">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="created_at" type="datetime"/>
+            <column name="updated_at" type="datetime"/>
+            <column name="name" type="VARCHAR(1024)"/>
+        </createTable>
+    </changeSet>
+    <changeSet author="darren (generated)" id="dump3">
+        <createTable tableName="catalog_file">
+            <column autoIncrement="true" name="id" type="BIGINT">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="created_at" type="datetime"/>
+            <column name="updated_at" type="datetime"/>
+            <column name="version_id" type="BIGINT"/>
+            <column name="name" type="VARCHAR(1024)"/>
+            <column name="contents" type="${mediumtext}"/>
+        </createTable>
+    </changeSet>
+    <changeSet author="darren (generated)" id="dump4">
+        <createTable tableName="catalog_label">
+            <column autoIncrement="true" name="id" type="BIGINT">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="created_at" type="datetime"/>
+            <column name="updated_at" type="datetime"/>
+            <column name="template_id" type="BIGINT"/>
+            <column name="key" type="VARCHAR(1024)"/>
+            <column name="value" type="VARCHAR(1024)"/>
+        </createTable>
+    </changeSet>
+    <changeSet author="darren (generated)" id="dump5">
+        <createTable tableName="catalog_template">
+            <column autoIncrement="true" name="id" type="BIGINT">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="created_at" type="datetime"/>
+            <column name="updated_at" type="datetime"/>
+            <column name="environment_id" type="VARCHAR(1024)"/>
+            <column name="catalog_id" type="BIGINT"/>
+            <column name="name" type="VARCHAR(1024)"/>
+            <column name="is_system" type="VARCHAR(255)"/>
+            <column name="description" type="VARCHAR(1024)"/>
+            <column name="default_version" type="VARCHAR(1024)"/>
+            <column name="path" type="VARCHAR(1024)"/>
+            <column name="maintainer" type="VARCHAR(1024)"/>
+            <column name="license" type="${mediumtext}"/>
+            <column name="project_url" type="VARCHAR(1024)"/>
+            <column name="upgrade_from" type="VARCHAR(1024)"/>
+            <column name="folder_name" type="VARCHAR(1024)"/>
+            <column name="catalog" type="VARCHAR(1024)"/>
+            <column name="base" type="VARCHAR(1024)"/>
+            <column name="icon" type="${mediumtext}"/>
+            <column name="icon_filename" type="VARCHAR(255)"/>
+            <column name="readme" type="${mediumtext}"/>
+        </createTable>
+    </changeSet>
+    <changeSet author="darren (generated)" id="dump6">
+        <createTable tableName="catalog_template_category">
+            <column autoIncrement="true" name="id" type="BIGINT">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="created_at" type="datetime"/>
+            <column name="updated_at" type="datetime"/>
+            <column name="template_id" type="BIGINT"/>
+            <column name="category_id" type="BIGINT"/>
+        </createTable>
+    </changeSet>
+    <changeSet author="darren (generated)" id="dump7">
+        <createTable tableName="catalog_version">
+            <column autoIncrement="true" name="id" type="BIGINT">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="created_at" type="datetime"/>
+            <column name="updated_at" type="datetime"/>
+            <column name="template_id" type="BIGINT"/>
+            <column name="revision" type="BIGINT"/>
+            <column name="version" type="VARCHAR(1024)"/>
+            <column name="minimum_rancher_version" type="VARCHAR(1024)"/>
+            <column name="maximum_rancher_version" type="VARCHAR(1024)"/>
+            <column name="upgrade_from" type="VARCHAR(1024)"/>
+            <column name="readme" type="${mediumtext}"/>
+        </createTable>
+    </changeSet>
+    <changeSet author="darren (generated)" id="dump10">
+        <addForeignKeyConstraint baseColumnNames="version_id" baseTableName="catalog_file" constraintName="fk_catalog_file__version_id" deferrable="false" initiallyDeferred="false" onDelete="CASCADE" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="catalog_version"/>
+    </changeSet>
+    <changeSet author="darren (generated)" id="dump11">
+        <addForeignKeyConstraint baseColumnNames="template_id" baseTableName="catalog_label" constraintName="fk_catalog_label__template_id" deferrable="false" initiallyDeferred="false" onDelete="CASCADE" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="catalog_template"/>
+    </changeSet>
+    <changeSet author="darren (generated)" id="dump12">
+        <addForeignKeyConstraint baseColumnNames="template_id" baseTableName="catalog_template_category" constraintName="fk_catalog_t_category__template_id" deferrable="false" initiallyDeferred="false" onDelete="CASCADE" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="catalog_template"/>
+    </changeSet>
+    <changeSet author="darren (generated)" id="dump13">
+        <addForeignKeyConstraint baseColumnNames="category_id" baseTableName="catalog_template_category" constraintName="fk_catalog_t_catalog__category_id" deferrable="false" initiallyDeferred="false" onDelete="CASCADE" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="catalog_category"/>
+    </changeSet>
+    <changeSet author="darren (generated)" id="dump14">
+        <addForeignKeyConstraint baseColumnNames="catalog_id" baseTableName="catalog_template" constraintName="fk_catalog_template__catalog_id" deferrable="false" initiallyDeferred="false" onDelete="CASCADE" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="catalog"/>
+    </changeSet>
+    <changeSet author="darren (generated)" id="dump15">
+        <addForeignKeyConstraint baseColumnNames="template_id" baseTableName="catalog_version" constraintName="fk_catalog_template__template_id" deferrable="false" initiallyDeferred="false" onDelete="CASCADE" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="catalog_template"/>
+    </changeSet>
+    <changeSet author="darren (generated)" id="dump18">
+        <createIndex indexName="idx_catalog_environment_id" tableName="catalog" unique="false">
+            <column name="environment_id"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="darren (generated)" id="dump19">
+        <createIndex indexName="idx_catalog_template_environment_id" tableName="catalog_template" unique="false">
+            <column name="environment_id"/>
+        </createIndex>
+    </changeSet>
+</databaseChangeLog>
