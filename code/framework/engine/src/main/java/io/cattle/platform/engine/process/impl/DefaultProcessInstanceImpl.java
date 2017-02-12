@@ -287,7 +287,7 @@ public class DefaultProcessInstanceImpl implements ProcessInstance {
         long wait = RETRY_MAX_WAIT.get();
         double maxCount = Math.ceil(Math.log(RETRY_MAX_WAIT.get())/Math.log(2));
         if (count <= maxCount) {
-            wait = Math.min(RETRY_MAX_WAIT.get(), Math.abs(15000L + (long)Math.pow(2, count-1) * 100));
+            wait = Math.min(RETRY_MAX_WAIT.get(), Math.abs(2000L + (long)Math.pow(2, count-1) * 100));
         }
         record.setRunAfter(new Date(System.currentTimeMillis() + wait));
         if (exceptionRunAfter != null && exceptionRunAfter.after(record.getRunAfter())) {
