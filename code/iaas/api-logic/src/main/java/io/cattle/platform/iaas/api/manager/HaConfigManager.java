@@ -49,18 +49,18 @@ import freemarker.template.TemplateException;
 
 public class HaConfigManager extends AbstractNoOpResourceManager {
 
-    private static DynamicStringProperty DB = ArchaiusUtil.getString("db.cattle.database");
-    private static DynamicStringProperty DB_HOST = DB.get().equals("mysql")
+    public static DynamicStringProperty DB = ArchaiusUtil.getString("db.cattle.database");
+    public static DynamicStringProperty DB_HOST = DB.get().equals("mysql")
             ? ArchaiusUtil.getString("db.cattle.mysql.host")
             : ArchaiusUtil.getString("db.cattle.postgres.host");
-    private static DynamicStringProperty DB_PORT = DB.get().equals("mysql")
+    public static DynamicStringProperty DB_PORT = DB.get().equals("mysql")
             ? ArchaiusUtil.getString("db.cattle.mysql.port")
             : ArchaiusUtil.getString("db.cattle.postgres.port");
-    private static DynamicStringProperty DB_NAME = DB.get().equals("mysql")
+    public static DynamicStringProperty DB_NAME = DB.get().equals("mysql")
             ? ArchaiusUtil.getString("db.cattle.mysql.name")
             : ArchaiusUtil.getString("db.cattle.postgres.name");
-    private static DynamicStringProperty DB_USER = ArchaiusUtil.getString("db.cattle.username");
-    private static DynamicStringProperty DB_PASS = ArchaiusUtil.getString("db.cattle.password");
+    public static DynamicStringProperty DB_USER = ArchaiusUtil.getString("db.cattle.username");
+    public static DynamicStringProperty DB_PASS = ArchaiusUtil.getString("db.cattle.password");
     private static DynamicBooleanProperty HA_ENABLED = ArchaiusUtil.getBoolean("ha.enabled");
     private static DynamicIntProperty HA_CLUSTER_SIZE = ArchaiusUtil.getInt("ha.cluster.size");
 

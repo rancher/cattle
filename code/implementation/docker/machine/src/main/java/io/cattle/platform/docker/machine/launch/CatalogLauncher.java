@@ -1,6 +1,8 @@
 package io.cattle.platform.docker.machine.launch;
 
 import io.cattle.platform.archaius.util.ArchaiusUtil;
+import io.cattle.platform.core.constants.ProjectConstants;
+import io.cattle.platform.iaas.api.manager.HaConfigManager;
 import io.cattle.platform.json.JsonMapper;
 import io.cattle.platform.lock.definition.LockDefinition;
 import io.cattle.platform.service.launcher.GenericServiceLauncher;
@@ -26,6 +28,7 @@ public class CatalogLauncher extends GenericServiceLauncher implements Initializ
     private static final DynamicStringProperty CATALOG_URL = ArchaiusUtil.getString("catalog.url");
     private static final DynamicStringProperty CATALOG_REFRESH_INTERVAL = ArchaiusUtil.getString("catalog.refresh.interval.seconds");
     private static final DynamicStringProperty CATALOG_BINARY = ArchaiusUtil.getString("catalog.service.executable");
+    private static final DynamicStringProperty DB_PARAMS = ArchaiusUtil.getString("db.cattle.go.params");
     private static final DynamicBooleanProperty LAUNCH_CATALOG = ArchaiusUtil.getBoolean("catalog.execute");
 
     public static class CatalogEntry {
@@ -94,10 +97,10 @@ public class CatalogLauncher extends GenericServiceLauncher implements Initializ
     @Override
     protected void prepareProcess(ProcessBuilder pb) throws IOException {
         List<String> args = pb.command();
-        args.add("-configFile");
+        args.add("--config");
         prepareConfigFile();
         args.add("repo.json");
-        args.add("-refreshInterval");
+        args.add("--refresh-interval");
         args.add(CATALOG_REFRESH_INTERVAL.get());
     }
 
@@ -136,6 +139,11 @@ public class CatalogLauncher extends GenericServiceLauncher implements Initializ
 
     @Override
     protected void setEnvironment(Map<String, String> env) {
+        env.put("CATALOG_SERVICE_MYSQL_ADDRESS", HaConfigManager.DB_HOST.get());
+        env.put("CATALOG_SERVICE_MYSQL_DBNAME", HaConfigManager.DB_NAME.get());
+        env.put("CATALOG_SERVICE_MYSQL_USER", HaConfigManager.DB_USER.get());
+        env.put("CATALOG_SERVICE_MYSQL_PASSWORD", HaConfigManager.DB_PASS.get());
+        env.put("CATALOG_SERVICE_MYSQL_PARAMS", DB_PARAMS.get() == null ? "" : DB_PARAMS.get());
     }
 
     @Override
@@ -156,7 +164,8 @@ public class CatalogLauncher extends GenericServiceLauncher implements Initializ
 
         try {
             prepareConfigFile();
-            Request.Post("http://localhost:8088/v1-catalog/templates?action=refresh").execute();
+            Request.Post("http://localhost:8088/v1-catalog/templates?action=refresh")
+                .addHeader(ProjectConstants.PROJECT_HEADER, "global").execute();
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

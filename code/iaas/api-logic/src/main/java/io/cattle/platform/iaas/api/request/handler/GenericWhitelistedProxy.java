@@ -1,7 +1,11 @@
 package io.cattle.platform.iaas.api.request.handler;
 
+import io.cattle.platform.api.auth.Policy;
+import io.cattle.platform.api.utils.ApiUtils;
 import io.cattle.platform.archaius.util.ArchaiusUtil;
+import io.cattle.platform.core.constants.AccountConstants;
 import io.cattle.platform.core.constants.CommonStatesConstants;
+import io.cattle.platform.core.constants.ProjectConstants;
 import io.cattle.platform.core.model.MachineDriver;
 import io.cattle.platform.iaas.api.servlet.filter.ProxyPreFilter;
 import io.cattle.platform.object.ObjectManager;
@@ -10,6 +14,7 @@ import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.util.type.Named;
 import io.github.ibuildthecloud.gdapi.condition.Condition;
 import io.github.ibuildthecloud.gdapi.condition.ConditionType;
+import io.github.ibuildthecloud.gdapi.context.ApiContext;
 import io.github.ibuildthecloud.gdapi.exception.ClientVisibleException;
 import io.github.ibuildthecloud.gdapi.request.ApiRequest;
 import io.github.ibuildthecloud.gdapi.request.handler.AbstractResponseGenerator;
@@ -289,23 +294,32 @@ public class GenericWhitelistedProxy extends AbstractResponseGenerator implement
 
         String authHeader = servletRequest.getHeader(API_AUTH);
         if (authHeader != null) {
-            temp.addHeader("Authorization", authHeader);
+            temp.setHeader("Authorization", authHeader);
         } else {
             if (uri.getPath() != null && uri.getPath().startsWith("/v1-auth/")) {
                 //set the auth service access token
                 String externalAccessToken = (String) request.getAttribute(AUTH_ACCESS_TOKEN);
                 if(!StringUtils.isBlank(externalAccessToken)) {
                     String bearerToken = " Bearer "+ externalAccessToken;
-                    temp.addHeader("Authorization", bearerToken);
+                    temp.setHeader("Authorization", bearerToken);
                 }
             }
         }
 
         if (setCurrentHost) {
-            temp.addHeader("Host", request.getResponseUrlBase().replaceFirst("^https?://", ""));
+            temp.setHeader("Host", request.getResponseUrlBase().replaceFirst("^https?://", ""));
         } else {
-            temp.addHeader("Host", host);
+            temp.setHeader("Host", host);
         }
+
+        String projectHeader = "";
+        Policy policy = ApiUtils.getPolicy();
+        if (policy != null) {
+            projectHeader = ApiContext.getContext().getIdFormatter()
+                    .formatId(AccountConstants.TYPE, Long.toString(policy.getAccountId()))
+                    .toString();
+        }
+        temp.setHeader(ProjectConstants.PROJECT_HEADER, projectHeader);
 
         if ("POST".equals(method) || "PUT".equals(method)) {
             if(isFormContent) {
