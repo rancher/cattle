@@ -23,14 +23,17 @@ def test_list_sort(super_client, context):
     name = random_str()
     containers = []
     for i in range(2):
-        c = context.create_container_no_success(name=name, startOnCreate=False)
+        c = context.create_container_no_success(name=name + random_str(),
+                                                startOnCreate=False,
+                                                description='test1')
         containers.append(c)
 
-    r = super_client.list_container(name=name)
+    r = super_client.list_container(description='test1')
     for i in range(len(r)):
         assert containers[i].id == r[i].id
 
-    r = super_client.list_container(name=name, sort='created', order='desc')
+    r = super_client.list_container(description='test1', sort='created',
+                                    order='desc')
     containers.reverse()
     for i in range(len(r)):
         assert containers[i].id == r[i].id
@@ -41,13 +44,15 @@ def test_pagination(context):
     name = random_str()
     containers = []
     for i in range(4):
-        c = client.create_container(imageUuid=context.image_uuid, name=name)
+        c = client.create_container(imageUuid=context.image_uuid,
+                                    name=name + random_str(),
+                                    description='test2')
         containers.append(c)
 
     for c in containers:
         client.wait_success(c)
 
-    r = client.list_container(name=name)
+    r = client.list_container(description='test2')
 
     assert len(r) == 4
     try:
@@ -56,7 +61,7 @@ def test_pagination(context):
         pass
 
     collected = {}
-    r = client.list_container(name=name, limit=2)
+    r = client.list_container(description='test2', limit=2)
     assert len(r) == 2
     assert r.pagination.next is not None
 
@@ -86,8 +91,9 @@ def test_pagination_include(super_client, new_context):
     containers = []
     for i in range(5):
         c = client.create_container(imageUuid=context.image_uuid,
-                                    name=name,
-                                    requestedHostId=host.id)
+                                    name=name + random_str(),
+                                    requestedHostId=host.id,
+                                    description='test3')
         c = super_client.reload(c)
         containers.append(c)
         container_ids.append(c.id)
@@ -97,7 +103,7 @@ def test_pagination_include(super_client, new_context):
 
     assert len(containers[0].instanceHostMaps()) == 1
     assert host.id == containers[0].instanceHostMaps()[0].host().id
-    r = super_client.list_container(name=name)
+    r = super_client.list_container(description='test3')
 
     assert len(r) == 5
     for c in r:
@@ -105,7 +111,8 @@ def test_pagination_include(super_client, new_context):
         assert c.instanceHostMaps()[0].hostId == host.id
 
     collected = {}
-    r = super_client.list_container(name=name, include='instanceHostMaps',
+    r = super_client.list_container(description='test3',
+                                    include='instanceHostMaps',
                                     limit=2)
     assert len(r) == 2
     for c in r:
@@ -192,21 +199,24 @@ def test_include_left_join(super_client, context):
 
 def test_include_left_join_sort(super_client, context):
     client = context.client
-    name = random_str()
     containers = []
     for i in range(2):
-        c = client.create_container(imageUuid=context.image_uuid, name=name)
+        c = client.create_container(imageUuid=context.image_uuid,
+                                    name="test" + random_str(),
+                                    description='test4')
         containers.append(c)
 
     for c in containers:
         client.wait_success(c)
 
-    r = super_client.list_container(name=name, include='instanceHostMaps',
-                                    sort='created', order='asc')
+    r = super_client.list_container(include='instanceHostMaps',
+                                    sort='created', order='asc',
+                                    description='test4')
     for i in range(len(r)):
         assert containers[i].id == r[i].id
 
-    r = super_client.list_container(name=name, include='instanceHostMaps',
+    r = super_client.list_container(description='test4',
+                                    include='instanceHostMaps',
                                     sort='created', order='desc')
     containers.reverse()
     for i in range(len(r)):

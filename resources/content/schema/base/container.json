@@ -4,6 +4,7 @@
             "type": "map[string]",
             "create": true
         },
+        
         "command": {
             "type": "array[string]",
             "nullable": true,
@@ -388,6 +389,10 @@
          "userPorts" : {
             "type" : "array[string]",
             "nullable" : true
+        },
+        "name": {
+            "type": "string",
+            "unique": true
         }
     },
     "resourceActions": {

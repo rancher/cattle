@@ -146,7 +146,7 @@ def test_container_image_and_registry_credential(client,
     name = server + '/rancher/authorized:latest'
     image_uuid = 'docker:' + name
     container = client.create_container(imageUuid=image_uuid,
-                                        name="test",
+                                        name="test" + random_str(),
                                         startOnCreate=False)
     container = super_client.wait_success(container)
     assert container.registryCredentialId == registry_credential.id
