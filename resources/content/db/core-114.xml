@@ -59,7 +59,7 @@
             </column>
             <column name="created_at" type="datetime"/>
             <column name="updated_at" type="datetime"/>
-            <column name="environment_id" type="VARCHAR(1024)"/>
+            <column name="environment_id" type="VARCHAR(255)"/>
             <column name="catalog_id" type="BIGINT"/>
             <column name="name" type="VARCHAR(1024)"/>
             <column name="is_system" type="VARCHAR(255)"/>
