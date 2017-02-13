@@ -443,6 +443,28 @@ public interface Instance extends java.io.Serializable {
 	@javax.persistence.Column(name = "system", nullable = false, precision = 1)
 	public java.lang.Boolean getSystem();
 
+	/**
+	 * Setter for <code>cattle.instance.service_id</code>.
+	 */
+	public void setServiceId(java.lang.Long value);
+
+	/**
+	 * Getter for <code>cattle.instance.service_id</code>.
+	 */
+	@javax.persistence.Column(name = "service_id", precision = 19)
+	public java.lang.Long getServiceId();
+
+	/**
+	 * Setter for <code>cattle.instance.environment_id</code>.
+	 */
+	public void setStackId(java.lang.Long value);
+
+	/**
+	 * Getter for <code>cattle.instance.environment_id</code>.
+	 */
+	@javax.persistence.Column(name = "environment_id", precision = 19)
+	public java.lang.Long getStackId();
+
 	// -------------------------------------------------------------------------
 	// FROM and INTO
 	// -------------------------------------------------------------------------

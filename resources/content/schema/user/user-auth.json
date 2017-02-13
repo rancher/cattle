@@ -175,6 +175,8 @@
         "container.healthInterval" : "cr",
         "container.healthTimeout" : "cr",
         "container.healthRetries" : "cr",
+        "container.stackId" : "cr",
+        "container.serviceId" : "r",
         
         "ulimit" : "r",
         "ulimit.name" : "cr",
@@ -275,6 +277,7 @@
         "host.localStorageMb" : "cru",
         "host.memory" : "cru",
         "host.milliCpu" : "cru",
+        "host.stackId" : "cr",
 
         "addLabelInput" : "cr",
         "addLabelInput.key" : "cr",
