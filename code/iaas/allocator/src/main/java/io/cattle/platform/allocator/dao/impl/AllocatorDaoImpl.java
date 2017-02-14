@@ -161,7 +161,7 @@ public class AllocatorDaoImpl extends AbstractJooqDao implements AllocatorDao {
         if (StringUtils.isEmpty(instance.getDeploymentUnitUuid())) {
             return INSTANCE_HOST_MAP.INSTANCE_ID.eq(instance.getId());
         } else {
-            return INSTANCE.DEPLOYMENT_UNIT_UUID.eq(instance.getDeploymentUnitUuid());
+            return INSTANCE.DEPLOYMENT_UNIT_UUID.eq(instance.getDeploymentUnitUuid()).and(INSTANCE.STATE.notIn(CommonStatesConstants.REMOVED, CommonStatesConstants.PURGED));
         }
     }
 
