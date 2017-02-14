@@ -575,6 +575,10 @@ public class ServiceDiscoveryApiServiceImpl implements ServiceDiscoveryApiServic
 
     private void populateLinksForService(Service service, Collection<Long> servicesToExportIds,
             Map<String, Object> composeServiceData) {
+        // no export for lb service links for lb v2
+        if (service.getKind().equalsIgnoreCase(ServiceConstants.KIND_LOAD_BALANCER_SERVICE) && !isV1LB(service)) {
+            return;
+        }
         List<String> serviceLinksWithNames = new ArrayList<>();
         List<String> externalLinksServices = new ArrayList<>();
         List<? extends ServiceConsumeMap> consumedServiceMaps = consumeMapDao.findConsumedServices(service.getId());
