@@ -14,9 +14,11 @@ import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.process.common.handler.AbstractObjectProcessHandler;
 import io.cattle.platform.util.type.Priority;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeMap;
 
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -39,21 +41,20 @@ public class HostLabelReconcile extends AbstractObjectProcessHandler implements 
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     public HandlerResult handle(ProcessState state, ProcessInstance process) {
         final Host host = (Host) state.getResource();
 
-        @SuppressWarnings("unchecked")
-        Map<String, String> labelsField = DataAccessor.fields(host).withKey(HostConstants.FIELD_LABELS).as(Map.class);
+        Map<String, String> labelsField = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+        labelsField.putAll(DataAccessor.fields(host).withKey(HostConstants.FIELD_LABELS)
+                .withDefault(Collections.EMPTY_MAP).as(Map.class));
 
-        if (labelsField == null) {
-            return null;
-        }
 
         List<Label> existing = labelsDao.getLabelsForHost(host.getId());
         List<? extends HostLabelMap> existingInstanceMappings = mapDao.findNonRemoved(HostLabelMap.class, Host.class, host.getId());
 
         // figure out potentially new labels to create and associate with host
-        Map<String, String> existingLabels = new HashMap<String, String>();
+        Map<String, String> existingLabels = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
         Map<Long, Label> existingLabelLookupById = new HashMap<Long, Label>();
         for (Label existingLabel : existing) {
             existingLabels.put(existingLabel.getKey(), existingLabel.getValue());
