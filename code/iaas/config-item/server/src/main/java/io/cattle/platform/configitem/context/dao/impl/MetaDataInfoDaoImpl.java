@@ -65,6 +65,7 @@ import java.util.Set;
 
 import javax.inject.Inject;
 
+import org.apache.commons.lang3.StringUtils;
 import org.jooq.Condition;
 import org.jooq.JoinType;
 import org.jooq.Record10;
@@ -539,7 +540,7 @@ public class MetaDataInfoDaoImpl extends AbstractJooqDao implements MetaDataInfo
                         String serviceUUID = record.getValue(SERVICE.UUID);
                         String stackName = record.getValue(STACK.NAME);
                         String consumedServiceName = record.getValue(consumedService.NAME);
-                        String linkAlias = consumeMapName != null ? consumeMapName : consumedServiceName;
+                        String linkAlias = !StringUtils.isEmpty(consumeMapName) ? consumeMapName : consumedServiceName;
 
                         ServiceLinkMetaData data = new ServiceLinkMetaData(serviceUUID,
                                 consumedServiceName,
