@@ -1,6 +1,6 @@
 package io.cattle.platform.process.volume;
 
-import io.cattle.platform.allocator.eventing.AllocatorService;
+import io.cattle.platform.allocator.service.AllocatorService;
 import io.cattle.platform.core.dao.GenericMapDao;
 import io.cattle.platform.core.model.Volume;
 import io.cattle.platform.core.model.VolumeStoragePoolMap;

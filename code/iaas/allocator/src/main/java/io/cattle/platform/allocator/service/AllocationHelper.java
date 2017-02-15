@@ -23,8 +23,6 @@ public interface AllocationHelper {
 
     List<Long> getHostsSatisfyingHostAffinity(Long accountId, Map<String, String> labelConstraints);
 
-    boolean hostChangesAffectsHostAffinityRules(long hostId, Map<String, String> labelConstraints);
-
     @SuppressWarnings("rawtypes")
     List<Constraint> extractConstraintsFromEnv(Map env);
 

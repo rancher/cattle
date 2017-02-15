@@ -1,4 +1,4 @@
-package io.cattle.platform.simple.allocator;
+package io.cattle.platform.allocator.service.impl;
 
 public class ComputeResourceRequest implements ResourceRequest {
 

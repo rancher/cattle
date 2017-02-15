@@ -1,6 +1,7 @@
 package io.cattle.platform.allocator.service;
 
 import static io.cattle.platform.core.model.tables.ServiceTable.*;
+
 import io.cattle.platform.allocator.constraint.AffinityConstraintDefinition;
 import io.cattle.platform.allocator.constraint.AffinityConstraintDefinition.AffinityOps;
 import io.cattle.platform.allocator.constraint.Constraint;
@@ -61,6 +62,9 @@ public class AllocationHelperImpl implements AllocationHelper {
     @Inject
     JsonMapper jsonMapper;
 
+    @Inject
+    AllocatorService allocatorService;
+
     @Override
     public List<Long> getAllHostsSatisfyingHostAffinity(Long accountId, Map<String, String> labelConstraints) {
         return getHostsSatisfyingHostAffinityInternal(true, accountId, labelConstraints);
@@ -77,22 +81,15 @@ public class AllocationHelperImpl implements AllocationHelper {
         List<Constraint> hostAffinityConstraints = getHostAffinityConstraintsFromLabels(labelConstraints);
 
         List<Long> acceptableHostIds = new ArrayList<Long>();
+        List<String> acceptableHostUUIDsFromExSche = allocatorService.callExternalSchedulerForHost(accountId, labelConstraints);
         for (Host host : hosts) {
             if (hostSatisfiesHostAffinity(host.getId(), hostAffinityConstraints)) {
-                acceptableHostIds.add(host.getId());
+                if (acceptableHostUUIDsFromExSche == null || acceptableHostUUIDsFromExSche.contains(host.getUuid())) {
+                    acceptableHostIds.add(host.getId());
+                }
             }
         }
         return acceptableHostIds;
-    }
-
-    @Override
-    public boolean hostChangesAffectsHostAffinityRules(long hostId, Map<String, String> labelConstraints) {
-        List<Constraint> hostAffinityConstraints = getHostAffinityConstraintsFromLabels(labelConstraints);
-        // NOTE: There is a bug since the current check does not detect the converse.
-        // For example, if the host currently satisfies the hostAffinityConstraints but the
-        // change causes it to no longer satisfy the condition.  This is fine for now since
-        // we currently do not want to remove containers for the user.
-        return hostSatisfiesHostAffinity(hostId, hostAffinityConstraints);
     }
 
     private List<Constraint> getHostAffinityConstraintsFromLabels(Map<String, String> labelConstraints) {

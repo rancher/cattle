@@ -1,6 +1,6 @@
 package io.cattle.platform.process.instance;
 
-import io.cattle.platform.allocator.eventing.AllocatorService;
+import io.cattle.platform.allocator.service.AllocatorService;
 import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.InstanceLinkConstants;
 import io.cattle.platform.core.dao.GenericMapDao;

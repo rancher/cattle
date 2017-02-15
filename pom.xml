@@ -79,7 +79,6 @@
                 <module>code/iaas/model</module>
                 <module>code/iaas/resource-pool</module>
                 <module>code/iaas/ssh-common</module>
-                <module>code/iaas/simple-allocator</module>
                 <module>code/iaas/storage-service</module>
                 <module>code/iaas/task-jooq</module>
                 <module>code/iaas/service-discovery/server</module>

@@ -1,4 +1,4 @@
-package io.cattle.platform.simple.allocator.dao;
+package io.cattle.platform.allocator.dao.impl;
 
 import java.util.HashSet;
 import java.util.Set;
