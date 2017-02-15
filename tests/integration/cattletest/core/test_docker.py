@@ -419,6 +419,7 @@ def test_docker_ports_from_container(docker_client, super_client):
 
     assert count == 1
 
+    c = wait_state(docker_client, c, 'running')
     c = docker_client.wait_success(c.start())
     if c.state != 'running':
         super_c = super_client.reload(c)
