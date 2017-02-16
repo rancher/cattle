@@ -28,6 +28,7 @@ import io.cattle.platform.core.model.tables.records.ImageStoragePoolMapRecord;
 import io.cattle.platform.core.model.tables.records.MountRecord;
 import io.cattle.platform.core.model.tables.records.VolumeRecord;
 import io.cattle.platform.core.model.tables.records.VolumeStoragePoolMapRecord;
+import io.cattle.platform.core.util.VolumeUtils;
 import io.cattle.platform.db.jooq.dao.impl.AbstractJooqDao;
 import io.cattle.platform.deferred.util.DeferredUtils;
 import io.cattle.platform.object.ObjectManager;
@@ -73,6 +74,7 @@ public class VolumeDaoImpl extends AbstractJooqDao implements VolumeDao {
             .join(VOLUME_STORAGE_POOL_MAP)
             .on(VOLUME_STORAGE_POOL_MAP.STORAGE_POOL_ID.eq(storagePoolId))
             .where(VOLUME.EXTERNAL_ID.eq(externalId)
+                    .or(VOLUME.EXTERNAL_ID.eq(VolumeUtils.externalId(externalId)))
             .and((VOLUME.REMOVED.isNull().or(VOLUME.STATE.eq(CommonStatesConstants.REMOVING)))))
             .fetchAny();
 
