@@ -838,6 +838,22 @@ def test_cleanup_volume_strategy(docker_client):
 
 
 @if_docker
+def test_docker_volume_long(docker_client):
+    a = 'a' * 200
+    v = '/tmp/{}:/tmp/{}'.format(a, a)
+    uuid = TEST_IMAGE_UUID
+    c = docker_client.create_container(imageUuid=uuid,
+                                       networkMode='bridge',
+                                       dataVolumes=[v],
+                                       command=['sleep', '42'])
+    c = docker_client.wait_success(c)
+    assert c.state == 'running'
+    vol = c.mounts_link()[0].volume()
+    vol = docker_client.wait_success(vol)
+    assert vol.state == 'active'
+
+
+@if_docker
 def test_docker_mount_life_cycle(docker_client):
     # Using nginx because it has a baked in volume, which is a good test case
     uuid = 'docker:nginx:1.9.0'
