@@ -85,6 +85,9 @@ public class JooqObjectManager extends AbstractObjectManager {
 
     @Override
     public <T> T reload(T obj) {
+        if (obj == null) {
+            return null;
+        }
         UpdatableRecord<?> record = JooqUtils.getRecordObject(obj);
         record.attach(getConfiguration());
         record.refresh();
