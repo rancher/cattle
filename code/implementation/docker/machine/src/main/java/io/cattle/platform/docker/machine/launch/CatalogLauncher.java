@@ -139,7 +139,8 @@ public class CatalogLauncher extends GenericServiceLauncher implements Initializ
 
     @Override
     protected void setEnvironment(Map<String, String> env) {
-        env.put("CATALOG_SERVICE_MYSQL_ADDRESS", HaConfigManager.DB_HOST.get());
+        env.put("CATALOG_SERVICE_MYSQL_ADDRESS", String.format("%s:%s", HaConfigManager.DB_HOST.get(),
+                HaConfigManager.DB_PORT.get()));
         env.put("CATALOG_SERVICE_MYSQL_DBNAME", HaConfigManager.DB_NAME.get());
         env.put("CATALOG_SERVICE_MYSQL_USER", HaConfigManager.DB_USER.get());
         env.put("CATALOG_SERVICE_MYSQL_PASSWORD", HaConfigManager.DB_PASS.get());
