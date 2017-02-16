@@ -10,6 +10,7 @@ import io.cattle.platform.core.model.Volume;
 import io.cattle.platform.core.model.VolumeStoragePoolMap;
 import io.cattle.platform.core.model.tables.VolumeTable;
 import io.cattle.platform.core.model.tables.records.VolumeRecord;
+import io.cattle.platform.core.util.VolumeUtils;
 import io.cattle.platform.db.jooq.dao.impl.AbstractJooqDao;
 import io.cattle.platform.docker.process.dao.DockerComputeDao;
 import io.cattle.platform.object.ObjectManager;
@@ -33,7 +34,7 @@ public class DockerComputeDaoImpl extends AbstractJooqDao implements DockerCompu
 
         Condition condition = VOLUME.URI.eq(volumeUri);
         if (externalId != null) {
-            condition = condition.or(VOLUME.EXTERNAL_ID.eq(externalId).or(VOLUME.NAME.eq(externalId)));
+            condition = condition.or(VOLUME.EXTERNAL_ID.eq(externalId).or(VOLUME.NAME.eq(externalId)).or(VOLUME.EXTERNAL_ID.eq(VolumeUtils.externalId(externalId))));
         }
 
         List<VolumeRecord> volumes = create()
@@ -71,7 +72,7 @@ public class DockerComputeDaoImpl extends AbstractJooqDao implements DockerCompu
                 VOLUME.DEVICE_NUMBER, -1,
                 VOLUME.ALLOCATION_STATE, CommonStatesConstants.ACTIVE,
                 VOLUME.URI, volumeUri,
-                VOLUME.EXTERNAL_ID, externalId);
+                VOLUME.EXTERNAL_ID, VolumeUtils.externalId(externalId));
 
         DataAccessor.fields(volume).withKey(VolumeConstants.FIELD_DOCKER_IS_NATIVE).set(isNative);
         DataAccessor.fields(volume).withKey(VolumeConstants.FIELD_DOCKER_IS_HOST_PATH).set(isHostPath);

@@ -1,6 +1,7 @@
 package io.cattle.platform.process.instance;
 
 import io.cattle.platform.core.model.Volume;
+import io.cattle.platform.core.util.VolumeUtils;
 import io.cattle.platform.engine.handler.HandlerResult;
 import io.cattle.platform.engine.handler.ProcessPreListener;
 import io.cattle.platform.engine.process.ProcessInstance;
@@ -34,7 +35,7 @@ public class VolumeExternalIdPreCreate extends AbstractObjectProcessLogic implem
         if (StringUtils.isEmpty(externalId)) {
             externalId = volume.getName();
         }
-        data.put("externalId", externalId);
+        data.put("externalId", VolumeUtils.externalId(externalId));
         return new HandlerResult(data);
     }
 }
