@@ -1,7 +1,10 @@
-package io.cattle.platform.allocator.eventing;
+package io.cattle.platform.allocator.service;
 
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.Volume;
+
+import java.util.List;
+import java.util.Map;
 
 
 public interface AllocatorService {
@@ -15,4 +18,6 @@ public interface AllocatorService {
     void ensureResourcesReleasedForStop(Instance instance);
 
     void ensureResourcesReservedForStart(Instance instance);
+
+    List<String> callExternalSchedulerForHost(Long accountId, Map<String, String> labels);
 }

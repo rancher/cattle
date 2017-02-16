@@ -1,6 +1,8 @@
-package io.cattle.platform.simple.allocator.dao.impl;
+package io.cattle.platform.allocator.dao.impl;
 
 import static org.junit.Assert.*;
+
+import io.cattle.platform.allocator.dao.impl.AllocationCandidateIterator;
 
 import java.util.Arrays;
 import java.util.LinkedHashSet;

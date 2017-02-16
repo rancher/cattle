@@ -2,7 +2,7 @@ package io.cattle.platform.process.instance;
 
 import static io.cattle.platform.core.model.tables.InstanceHostMapTable.*;
 
-import io.cattle.platform.allocator.eventing.AllocatorService;
+import io.cattle.platform.allocator.service.AllocatorService;
 import io.cattle.platform.archaius.util.ArchaiusUtil;
 import io.cattle.platform.async.utils.ResourceTimeoutException;
 import io.cattle.platform.async.utils.TimeoutException;

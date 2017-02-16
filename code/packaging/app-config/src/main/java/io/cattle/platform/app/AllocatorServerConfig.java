@@ -8,10 +8,8 @@ import io.cattle.platform.allocator.constraint.PortsConstraintProvider;
 import io.cattle.platform.allocator.constraint.VolumeAccessModeConstraintProvider;
 import io.cattle.platform.allocator.constraint.VolumesFromConstraintProvider;
 import io.cattle.platform.allocator.dao.impl.AllocatorDaoImpl;
-import io.cattle.platform.allocator.eventing.impl.AllocatorServiceImpl;
 import io.cattle.platform.allocator.service.AllocationHelperImpl;
-import io.cattle.platform.simple.allocator.SimpleAllocator;
-import io.cattle.platform.simple.allocator.dao.impl.SimpleAllocatorDaoImpl;
+import io.cattle.platform.allocator.service.impl.AllocatorServiceImpl;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -69,15 +67,4 @@ public class AllocatorServerConfig {
     VolumeAccessModeConstraintProvider VolumeAccessModeConstraintProvider() {
         return new VolumeAccessModeConstraintProvider();
     }
-
-    @Bean
-    SimpleAllocatorDaoImpl SimpleAllocatorDaoImpl() {
-        return new SimpleAllocatorDaoImpl();
-    }
-
-    @Bean
-    SimpleAllocator SimpleAllocator() {
-        return new SimpleAllocator();
-    }
-
 }

@@ -1,5 +1,6 @@
 package io.cattle.platform.allocator.dao;
 
+import io.cattle.platform.allocator.dao.impl.QueryOptions;
 import io.cattle.platform.allocator.service.AllocationAttempt;
 import io.cattle.platform.allocator.service.AllocationCandidate;
 import io.cattle.platform.core.model.Host;
@@ -10,6 +11,7 @@ import io.cattle.platform.core.model.StoragePool;
 import io.cattle.platform.core.model.Volume;
 
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -55,4 +57,6 @@ public interface AllocatorDao {
     boolean isAllocationReleased(Object resource);
 
     String getAllocatedHostUuid(Volume volume);
+
+    Iterator<AllocationCandidate> iteratorHosts(List<String> orderedHostUuids, List<Long> volumes, QueryOptions options);
  }

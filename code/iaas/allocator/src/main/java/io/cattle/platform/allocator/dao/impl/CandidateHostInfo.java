@@ -1,4 +1,4 @@
-package io.cattle.platform.simple.allocator.dao.impl;
+package io.cattle.platform.allocator.dao.impl;
 
 import io.cattle.platform.core.model.Port;
 
