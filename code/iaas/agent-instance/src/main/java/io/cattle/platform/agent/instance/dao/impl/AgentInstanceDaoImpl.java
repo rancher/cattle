@@ -132,7 +132,7 @@ public class AgentInstanceDaoImpl extends AbstractJooqDao implements AgentInstan
                 try {
                     pVal = Integer.valueOf(p);
                 } catch (Exception e) {
-                    log.warn("Priority value not found for agent {}. Set it as default", agentId);
+                    log.debug("Priority value not found for agent {}. Set it as default", agentId);
                 }
                 result.put(agentId, pVal);
             }
