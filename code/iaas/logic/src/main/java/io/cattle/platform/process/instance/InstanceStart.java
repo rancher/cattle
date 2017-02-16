@@ -115,7 +115,8 @@ public class InstanceStart extends AbstractDefaultProcessHandler {
                 waitForDeploymentUnitCreate(instance);
             } catch (ExecutionException e) {
                 log.error("Failed [{} {}] for instance [{}]", e.getMessage(), e.getTransitioningMessage(), instance.getId());
-                if (serviceDao.isServiceInstance(instance)) {
+                int count = incrementDepTry(state);
+                if (serviceDao.isServiceInstance(instance) && count < 10) {
                     throw new ResourceTimeoutException(instance, e.getMessage());
                 }
                 return handleStartError(state, instance, e);
@@ -366,6 +367,21 @@ public class InstanceStart extends AbstractDefaultProcessHandler {
 
         e.setResources(state.getResource());
         throw e;
+    }
+
+    protected int incrementDepTry(ProcessState state) {
+        DataAccessor accessor = DataAccessor.fromMap(state.getData()).withScope(InstanceStart.class).withKey("depTry");
+
+        Integer computeTry = accessor.as(Integer.class);
+        if (computeTry == null) {
+            computeTry = 0;
+        }
+
+        computeTry++;
+
+        accessor.set(computeTry);
+
+        return computeTry;
     }
 
     protected int incrementComputeTry(ProcessState state) {
