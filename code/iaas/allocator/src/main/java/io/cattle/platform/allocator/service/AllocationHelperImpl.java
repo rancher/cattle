@@ -1,6 +1,11 @@
 package io.cattle.platform.allocator.service;
 
 import static io.cattle.platform.core.model.tables.ServiceTable.*;
+
+import io.cattle.platform.agent.AgentLocator;
+import io.cattle.platform.agent.RemoteAgent;
+import io.cattle.platform.agent.instance.dao.AgentInstanceDao;
+
 import io.cattle.platform.allocator.constraint.AffinityConstraintDefinition;
 import io.cattle.platform.allocator.constraint.AffinityConstraintDefinition.AffinityOps;
 import io.cattle.platform.allocator.constraint.Constraint;
@@ -8,6 +13,7 @@ import io.cattle.platform.allocator.constraint.ContainerAffinityConstraint;
 import io.cattle.platform.allocator.constraint.ContainerLabelAffinityConstraint;
 import io.cattle.platform.allocator.constraint.HostAffinityConstraint;
 import io.cattle.platform.allocator.dao.AllocatorDao;
+import io.cattle.platform.allocator.exception.FailedToAllocate;
 import io.cattle.platform.allocator.lock.AllocateConstraintLock;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.dao.InstanceDao;
@@ -15,12 +21,18 @@ import io.cattle.platform.core.dao.LabelsDao;
 import io.cattle.platform.core.model.Host;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.Service;
+import io.cattle.platform.core.util.SystemLabels;
+import io.cattle.platform.eventing.exception.EventExecutionException;
+import io.cattle.platform.eventing.model.Event;
+import io.cattle.platform.eventing.model.EventVO;
 import io.cattle.platform.json.JsonMapper;
 import io.cattle.platform.lock.definition.LockDefinition;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.util.DataAccessor;
+import io.cattle.platform.util.type.CollectionUtils;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -30,8 +42,12 @@ import java.util.Set;
 import javax.inject.Inject;
 
 import org.jooq.tools.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class AllocationHelperImpl implements AllocationHelper {
+    
+    private static final Logger log = LoggerFactory.getLogger(AllocationHelperImpl.class);
 
     private static final String SERVICE_NAME_MACRO = "${service_name}";
     private static final String STACK_NAME_MACRO = "${stack_name}";
@@ -45,6 +61,13 @@ public class AllocationHelperImpl implements AllocationHelper {
     private static final String LABEL_PROJECT_SERVICE_NAME = "io.rancher.project_service.name";
     private static final String LABEL_SERVICE_LAUNCH_CONFIG = "io.rancher.service.launch.config";
     private static final String PRIMARY_LAUNCH_CONFIG_NAME = "io.rancher.service.primary.launch.config";
+    private static final String SCHEDULER_PRIORITIZE_EVENT = "scheduler.prioritize";
+    private static final String SCHEDULER_PRIORITIZE_RESPONSE = "prioritizedCandidates";
+    private static final String CONTEXT = "context";
+    private static final String SCHEDULER_REQUEST_DATA_NAME = "schedulerRequest";
+
+    @Inject
+    AgentInstanceDao agentInstanceDao;
 
     @Inject
     LabelsDao labelsDao;
@@ -54,13 +77,16 @@ public class AllocationHelperImpl implements AllocationHelper {
 
     @Inject
     InstanceDao instanceDao;
-
+    
     @Inject
     ObjectManager objectManager;
 
     @Inject
     JsonMapper jsonMapper;
-
+    
+    @Inject
+    AgentLocator agentLocator;
+    
     @Override
     public List<Long> getAllHostsSatisfyingHostAffinity(Long accountId, Map<String, String> labelConstraints) {
         return getHostsSatisfyingHostAffinityInternal(true, accountId, labelConstraints);
@@ -73,16 +99,78 @@ public class AllocationHelperImpl implements AllocationHelper {
 
     protected List<Long> getHostsSatisfyingHostAffinityInternal(boolean includeRemoved, Long accountId, Map<String, String> labelConstraints) {
         List<? extends Host> hosts = includeRemoved ? allocatorDao.getNonPurgedHosts(accountId) : allocatorDao.getActiveHosts(accountId);
-
+       
         List<Constraint> hostAffinityConstraints = getHostAffinityConstraintsFromLabels(labelConstraints);
 
         List<Long> acceptableHostIds = new ArrayList<Long>();
+        List<String> acceptableHostUUIDsFromExSche = callExternalSchedulerForHost(accountId, labelConstraints);
         for (Host host : hosts) {
             if (hostSatisfiesHostAffinity(host.getId(), hostAffinityConstraints)) {
-                acceptableHostIds.add(host.getId());
+                if (acceptableHostUUIDsFromExSche == null || acceptableHostUUIDsFromExSche.contains(host.getUuid())) {
+                    acceptableHostIds.add(host.getId());
+                }
             }
         }
         return acceptableHostIds;
+    }
+    
+    @SuppressWarnings("unchecked")
+    private List<String> callExternalSchedulerForHost(Long accountId, Map<String, String> labels) {
+        List<Long> agentIds = agentInstanceDao.getAgentProvider(SystemLabels.LABEL_AGENT_SERVICE_SCHEDULING_PROVIDER, accountId);
+        List<String> hosts = null;
+        List<Object> instances = new ArrayList<>();
+        Map<String, Object> instance = constructInstanceMapWithLabel(labels);
+        instances.add(instance);
+        for (Long agentId : agentIds) {
+            EventVO<Map<String, Object>> schedulerEvent = buildEvent(SCHEDULER_PRIORITIZE_EVENT, instances);
+            if (schedulerEvent != null) {
+                RemoteAgent agent = agentLocator.lookupAgent(agentId);
+                Event eventResult = callScheduler("Error getting hosts for resources for global service", schedulerEvent, agent);
+                if (hosts == null) {
+                    hosts = (List<String>) CollectionUtils.getNestedValue(eventResult.getData(), SCHEDULER_PRIORITIZE_RESPONSE);
+                } else {
+                    List<String> newHosts = (List<String>) CollectionUtils.getNestedValue(eventResult.getData(), SCHEDULER_PRIORITIZE_RESPONSE);
+                    hosts.retainAll(newHosts);
+                }
+
+                if (hosts.isEmpty()) {
+                    throw new FailedToAllocate("No healthy hosts meet the resource constraints for global service");
+                }
+            }
+        }
+        return hosts;
+    }
+    
+    private Map<String, Object> constructInstanceMapWithLabel(Map<String, String> labels) {
+        Map<String, Object> fields = new HashMap<>();
+        fields.put("labels", labels);
+        Map<String, Object> data = new HashMap<>();
+        data.put("fields", fields);
+        Map<String, Object> instance = new HashMap<>();
+        instance.put("data", data);
+        return instance;
+    }
+    
+    private EventVO<Map<String, Object>> buildEvent(String eventName, Object instances) {
+        return newEvent(eventName, instances);
+    }
+    
+    private EventVO<Map<String, Object>> newEvent(String eventName, Object context) {
+        Map<String, Object> eventData = new HashMap<String, Object>();
+        Map<String, Object> reqData = new HashMap<>();
+        reqData.put(CONTEXT, context);
+        eventData.put(SCHEDULER_REQUEST_DATA_NAME, reqData);
+        EventVO<Map<String, Object>> schedulerEvent = EventVO.<Map<String, Object>> newEvent(eventName).withData(eventData);
+        return schedulerEvent;
+    }
+    
+    Event callScheduler(String message, EventVO<Map<String, Object>> schedulerEvent, RemoteAgent agent) {
+        try {
+            return agent.callSync(schedulerEvent);
+        } catch (EventExecutionException e) {
+            log.error("External scheduler replied with an error: {}", e.getMessage());
+            throw new FailedToAllocate(message, e);
+        }
     }
 
     @Override
