@@ -204,7 +204,7 @@ public class AllocatorServiceImpl implements AllocatorService, Named {
 
     @Override
     @SuppressWarnings("unchecked")
-    public List<String> callExternalSchedulerForHost(Long accountId, Map<String, String> labels) {
+    public List<String> callExternalSchedulerForHostsSatisfyingLabels(Long accountId, Map<String, String> labels) {
         List<Long> agentIds = agentInstanceDao.getAgentProvider(SystemLabels.LABEL_AGENT_SERVICE_SCHEDULING_PROVIDER, accountId);
         List<String> hosts = null;
         List<Object> instances = new ArrayList<>();
@@ -220,10 +220,6 @@ public class AllocatorServiceImpl implements AllocatorService, Named {
                 } else {
                     List<String> newHosts = (List<String>) CollectionUtils.getNestedValue(eventResult.getData(), SCHEDULER_PRIORITIZE_RESPONSE);
                     hosts.retainAll(newHosts);
-                }
-
-                if (hosts.isEmpty()) {
-                    throw new FailedToAllocate("No healthy hosts meet the resource constraints for global service");
                 }
             }
         }

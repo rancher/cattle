@@ -4,6 +4,7 @@ import io.cattle.platform.activity.ActivityLog;
 import io.cattle.platform.core.constants.ServiceConstants;
 import io.cattle.platform.core.model.Service;
 import io.cattle.platform.core.model.Stack;
+import io.cattle.platform.core.util.SystemLabels;
 import io.cattle.platform.servicediscovery.api.util.ServiceDiscoveryUtil;
 import io.cattle.platform.servicediscovery.deployment.DeploymentUnitInstanceIdGenerator;
 import io.cattle.platform.servicediscovery.deployment.ServiceDeploymentPlanner;
@@ -19,15 +20,19 @@ import java.util.List;
 import java.util.Map;
 
 public class GlobalServiceDeploymentPlanner extends ServiceDeploymentPlanner {
+    
     List<Long> hostIds = new ArrayList<>();
     Map<Long, DeploymentUnit> hostToUnits = new HashMap<>();
 
     public GlobalServiceDeploymentPlanner(Service service, Stack stack,
             List<DeploymentUnit> units, DeploymentServiceContext context) {
         super(service, units, context, stack);
+        Map<String, String> labels = ServiceDiscoveryUtil.getMergedServiceLabels(service, context.allocationHelper);
+        if (service.getSystem()) {
+            labels.put(SystemLabels.LABEL_CONTAINER_SYSTEM, "true");
+        }
         List<Long> hostIdsToDeployService =
-                context.allocationHelper.getHostsSatisfyingHostAffinity(service.getAccountId(),
-                        ServiceDiscoveryUtil.getMergedServiceLabels(service, context.allocationHelper));
+                context.allocationHelper.getHostsSatisfyingHostAffinity(service.getAccountId(), labels);
         hostIds.addAll(hostIdsToDeployService);
         ignoreUnits();
         for (DeploymentUnit unit : getAllUnits()) {

@@ -3500,3 +3500,26 @@ def test_upgrade_scale_to_global(client, context, super_client):
         svc.upgrade_action(inServiceStrategy=strategy)
     assert e.value.error.status == 422
     assert e.value.error.code == 'InvalidOption'
+
+
+def test_populate_system_label(client, context):
+    env = context.owner_client.create_stack(name=random_str(), system=True)
+    env = client.wait_success(env)
+    assert env.state == "active"
+    image_uuid = context.image_uuid
+    launch_config = {"imageUuid": image_uuid, "labels": {"foo": "bar"}}
+
+    svc = client.create_service(name=random_str(),
+                                stackId=env.id,
+                                launchConfig=launch_config,
+                                scale=1)
+    svc = client.wait_success(svc)
+    assert svc.state == "inactive"
+
+    env.activateservices()
+    svc = client.wait_success(svc, 120)
+    assert svc.state == "active"
+
+    instance1 = _validate_compose_instance_start(client, svc, env, "1")
+    assert instance1.labels["foo"] == "bar"
+    assert instance1.labels["io.rancher.container.system"] == "true"

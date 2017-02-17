@@ -19,5 +19,5 @@ public interface AllocatorService {
 
     void ensureResourcesReservedForStart(Instance instance);
 
-    List<String> callExternalSchedulerForHost(Long accountId, Map<String, String> labels);
+    List<String> callExternalSchedulerForHostsSatisfyingLabels(Long accountId, Map<String, String> labels);
 }
