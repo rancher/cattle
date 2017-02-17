@@ -267,6 +267,17 @@ public interface Host extends java.io.Serializable {
 	@javax.persistence.Column(name = "environment_id", precision = 19)
 	public java.lang.Long getStackId();
 
+	/**
+	 * Setter for <code>cattle.host.remove_after</code>.
+	 */
+	public void setRemoveAfter(java.util.Date value);
+
+	/**
+	 * Getter for <code>cattle.host.remove_after</code>.
+	 */
+	@javax.persistence.Column(name = "remove_after")
+	public java.util.Date getRemoveAfter();
+
 	// -------------------------------------------------------------------------
 	// FROM and INTO
 	// -------------------------------------------------------------------------

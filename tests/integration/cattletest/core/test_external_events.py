@@ -128,7 +128,7 @@ def test_external_host_event_no_delete(new_context):
     assert host.state == 'inactive'
 
 
-def test_external_host_event_no_delete(new_context):
+def test_host_evacuate(new_context):
     c = new_context.create_container()
 
     client = new_context.client

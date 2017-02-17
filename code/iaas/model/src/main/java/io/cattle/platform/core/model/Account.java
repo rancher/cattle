@@ -190,6 +190,17 @@ public interface Account extends java.io.Serializable {
 	@javax.persistence.Column(name = "version", length = 128)
 	public java.lang.String getVersion();
 
+	/**
+	 * Setter for <code>cattle.account.revision</code>.
+	 */
+	public void setRevision(java.lang.Long value);
+
+	/**
+	 * Getter for <code>cattle.account.revision</code>.
+	 */
+	@javax.persistence.Column(name = "revision", nullable = false, precision = 19)
+	public java.lang.Long getRevision();
+
 	// -------------------------------------------------------------------------
 	// FROM and INTO
 	// -------------------------------------------------------------------------

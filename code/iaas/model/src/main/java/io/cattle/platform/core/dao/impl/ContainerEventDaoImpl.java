@@ -16,6 +16,9 @@ import java.util.Map;
 import javax.inject.Inject;
 import javax.inject.Named;
 
+import org.jooq.Record1;
+import org.jooq.impl.DSL;
+
 import com.netflix.config.DynamicIntProperty;
 
 @Named
@@ -32,12 +35,12 @@ public class ContainerEventDaoImpl extends AbstractJooqDao implements ContainerE
             return true;
         }
 
-        int count = create().select(CONTAINER_EVENT.HOST_ID)
+        Record1<Integer> count = create().select(DSL.count())
             .from(CONTAINER_EVENT)
             .where(CONTAINER_EVENT.HOST_ID.eq(hostId)
                     .and(CONTAINER_EVENT.STATE.notEqual(CommonStatesConstants.CREATED)))
-            .fetchCount();
-        return count < MAX_EVENTS.get();
+            .fetchAny();
+        return count.value1() < MAX_EVENTS.get();
     }
 
     @Override

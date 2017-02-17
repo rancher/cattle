@@ -4,6 +4,7 @@ public class ConfigUpdateItem {
 
     String name;
     Long requestedVersion;
+    Long setVersion;
     boolean apply = true;
     boolean increment = true;
     boolean checkInSyncOnly = false;
@@ -84,6 +85,19 @@ public class ConfigUpdateItem {
     public String toString() {
         return "ConfigUpdateItem [name=" + name + ", requestedVersion=" + requestedVersion + ", apply=" + apply + ", increment=" + increment
                 + ", checkInSyncOnly=" + checkInSyncOnly + "]";
+    }
+
+    public Long getSetVersion() {
+        return setVersion;
+    }
+
+    public void setSetVersion(Long setVersion) {
+        this.setVersion = setVersion;
+    }
+
+    public ConfigUpdateItem withSetVersion(Long setVersion) {
+        this.setVersion = setVersion;
+        return this;
     }
 
 }

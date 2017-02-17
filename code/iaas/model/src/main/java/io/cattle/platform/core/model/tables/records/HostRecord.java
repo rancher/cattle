@@ -13,7 +13,7 @@ package io.cattle.platform.core.model.tables.records;
 @javax.persistence.Table(name = "host", schema = "cattle")
 public class HostRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.platform.core.model.tables.records.HostRecord> implements io.cattle.platform.db.jooq.utils.TableRecordJaxb, io.cattle.platform.core.model.Host {
 
-	private static final long serialVersionUID = 592004329;
+	private static final long serialVersionUID = 601275765;
 
 	/**
 	 * Setter for <code>cattle.host.id</code>.
@@ -407,6 +407,23 @@ public class HostRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.plat
 		return (java.lang.Long) getValue(22);
 	}
 
+	/**
+	 * Setter for <code>cattle.host.remove_after</code>.
+	 */
+	@Override
+	public void setRemoveAfter(java.util.Date value) {
+		setValue(23, value);
+	}
+
+	/**
+	 * Getter for <code>cattle.host.remove_after</code>.
+	 */
+	@javax.persistence.Column(name = "remove_after")
+	@Override
+	public java.util.Date getRemoveAfter() {
+		return (java.util.Date) getValue(23);
+	}
+
 	// -------------------------------------------------------------------------
 	// Primary key information
 	// -------------------------------------------------------------------------
@@ -451,6 +468,7 @@ public class HostRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.plat
 		setMemory(from.getMemory());
 		setMilliCpu(from.getMilliCpu());
 		setStackId(from.getStackId());
+		setRemoveAfter(from.getRemoveAfter());
 	}
 
 	/**
@@ -476,7 +494,7 @@ public class HostRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.plat
 	/**
 	 * Create a detached, initialised HostRecord
 	 */
-	public HostRecord(java.lang.Long id, java.lang.String name, java.lang.Long accountId, java.lang.String kind, java.lang.String uuid, java.lang.String description, java.lang.String state, java.util.Date created, java.util.Date removed, java.util.Date removeTime, java.util.Map<String,Object> data, java.lang.String uri, java.lang.Long computeFree, java.lang.Long computeTotal, java.lang.Long agentId, java.lang.Long zoneId, java.lang.Long physicalHostId, java.lang.Boolean isPublic, java.lang.String agentState, java.lang.Long localStorageMb, java.lang.Long memory, java.lang.Long milliCpu, java.lang.Long environmentId) {
+	public HostRecord(java.lang.Long id, java.lang.String name, java.lang.Long accountId, java.lang.String kind, java.lang.String uuid, java.lang.String description, java.lang.String state, java.util.Date created, java.util.Date removed, java.util.Date removeTime, java.util.Map<String,Object> data, java.lang.String uri, java.lang.Long computeFree, java.lang.Long computeTotal, java.lang.Long agentId, java.lang.Long zoneId, java.lang.Long physicalHostId, java.lang.Boolean isPublic, java.lang.String agentState, java.lang.Long localStorageMb, java.lang.Long memory, java.lang.Long milliCpu, java.lang.Long environmentId, java.util.Date removeAfter) {
 		super(io.cattle.platform.core.model.tables.HostTable.HOST);
 
 		setValue(0, id);
@@ -502,5 +520,6 @@ public class HostRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.plat
 		setValue(20, memory);
 		setValue(21, milliCpu);
 		setValue(22, environmentId);
+		setValue(23, removeAfter);
 	}
 }

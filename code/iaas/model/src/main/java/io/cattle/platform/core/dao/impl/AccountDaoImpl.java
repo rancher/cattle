@@ -6,6 +6,7 @@ import static io.cattle.platform.core.model.tables.CredentialTable.*;
 import static io.cattle.platform.core.model.tables.GenericObjectTable.*;
 import static io.cattle.platform.core.model.tables.ProjectMemberTable.*;
 import static io.cattle.platform.core.model.tables.UserPreferenceTable.*;
+
 import io.cattle.platform.core.constants.AccountConstants;
 import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.CredentialConstants;
@@ -33,6 +34,7 @@ import javax.inject.Named;
 
 import org.apache.commons.lang3.StringUtils;
 import org.jooq.Condition;
+import org.jooq.Record1;
 import org.jooq.impl.DSL;
 
 @Named
@@ -167,6 +169,7 @@ public class AccountDaoImpl extends AbstractCoreDao implements AccountDao {
                 .fetchInto(ProjectMemberRecord.class);
     }
 
+    @Override
     public void generateAccountLinks(Account account, List<? extends Long> links) {
         createNewAccountLinks(account, links);
         deleteOldAccountLinks(account, links);
@@ -207,7 +210,7 @@ public class AccountDaoImpl extends AbstractCoreDao implements AccountDao {
                 .where(ACCOUNT_LINK.ACCOUNT_ID.eq(accountId)
                         .and(ACCOUNT_LINK.REMOVED.isNull()))
                 .fetch().intoArray(ACCOUNT_LINK.LINKED_ACCOUNT_ID));
-        
+
         List<Long> linkedFromAccounts = Arrays.asList(create().select(ACCOUNT_LINK.ACCOUNT_ID)
                 .from(ACCOUNT_LINK)
                 .where(ACCOUNT_LINK.LINKED_ACCOUNT_ID.eq(accountId)
@@ -217,5 +220,23 @@ public class AccountDaoImpl extends AbstractCoreDao implements AccountDao {
         accountIds.addAll(linkedToAccounts);
         accountIds.addAll(linkedFromAccounts);
         return accountIds;
+    }
+
+    @Override
+    public Long incrementRevision(long accountId) {
+        Record1<Long> row = create().select(ACCOUNT.REVISION)
+                .from(ACCOUNT)
+                .where(ACCOUNT.ID.eq(accountId))
+                .fetchAny();
+        if (row == null) {
+            return 0L;
+        }
+
+        create().update(ACCOUNT)
+            .set(ACCOUNT.REVISION, ACCOUNT.REVISION.plus(1))
+            .where(ACCOUNT.ID.eq(accountId))
+            .execute();
+
+        return row.value1() + 1;
     }
 }

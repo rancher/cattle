@@ -644,6 +644,7 @@ def test_project_auth(admin_user_client, user_client, service_client,
         'version': 'r',
         'defaultNetworkId': 'r',
         'projectLinks': 'cru',
+        'hostRemoveDelaySeconds': 'cru'
     })
 
     auth_check(user_client.schema, 'project', 'crud', {
@@ -658,7 +659,8 @@ def test_project_auth(admin_user_client, user_client, service_client,
         'projectTemplateId': 'cr',
         'orchestration': 'r',
         'version': 'r',
-        'defaultNetworkId': 'r'
+        'defaultNetworkId': 'r',
+        'hostRemoveDelaySeconds': 'cru'
     })
 
     auth_check(project_client.schema, 'project', 'r', {
@@ -674,6 +676,7 @@ def test_project_auth(admin_user_client, user_client, service_client,
         'orchestration': 'r',
         'version': 'r',
         'defaultNetworkId': 'r',
+        'hostRemoveDelaySeconds': 'r'
     })
 
     auth_check(service_client.schema, 'project', 'cr', {
@@ -689,6 +692,7 @@ def test_project_auth(admin_user_client, user_client, service_client,
         'version': 'r',
         'defaultNetworkId': 'r',
         'projectLinks': 'cr',
+        'hostRemoveDelaySeconds': 'cr'
     })
 
 

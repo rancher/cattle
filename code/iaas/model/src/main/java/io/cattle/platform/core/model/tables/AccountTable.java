@@ -11,7 +11,7 @@ package io.cattle.platform.core.model.tables;
 @java.lang.SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class AccountTable extends org.jooq.impl.TableImpl<io.cattle.platform.core.model.tables.records.AccountRecord> {
 
-	private static final long serialVersionUID = -816306637;
+	private static final long serialVersionUID = -1232553716;
 
 	/**
 	 * The singleton instance of <code>cattle.account</code>
@@ -105,6 +105,11 @@ public class AccountTable extends org.jooq.impl.TableImpl<io.cattle.platform.cor
 	 * The column <code>cattle.account.version</code>.
 	 */
 	public final org.jooq.TableField<io.cattle.platform.core.model.tables.records.AccountRecord, java.lang.String> VERSION = createField("version", org.jooq.impl.SQLDataType.VARCHAR.length(128), this, "");
+
+	/**
+	 * The column <code>cattle.account.revision</code>.
+	 */
+	public final org.jooq.TableField<io.cattle.platform.core.model.tables.records.AccountRecord, java.lang.Long> REVISION = createField("revision", org.jooq.impl.SQLDataType.BIGINT.nullable(false).defaulted(true), this, "");
 
 	/**
 	 * Create a <code>cattle.account</code> table reference
