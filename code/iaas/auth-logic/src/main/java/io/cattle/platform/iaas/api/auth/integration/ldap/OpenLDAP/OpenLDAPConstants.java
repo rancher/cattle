@@ -47,6 +47,7 @@ public class OpenLDAPConstants {
     public static final String TIMEOUT_SETTING = SETTING_BASE + "connection.timeout";
     public static final String GROUP_DN_FIELD_SETTING = SETTING_BASE + "group.dn.field";
     public static final String GROUP_MEMBER_USER_ATTRIBUTE_SETTING = SETTING_BASE + "group.member.user.attribute";
+    public static final String ALLOWED_IDENTITIES_SETTING = SETTING_BASE + "allowed.identities";
 
 
     public static final Set<String> SCOPES = Collections.unmodifiableSet(
@@ -89,4 +90,31 @@ public class OpenLDAPConstants {
     public static final DynamicLongProperty CONNECTION_TIMEOUT = ArchaiusUtil.getLong(TIMEOUT_SETTING);
     public static final DynamicStringProperty GROUP_DN_FIELD = ArchaiusUtil.getString(GROUP_DN_FIELD_SETTING);
     public static final DynamicStringProperty GROUP_MEMBER_USER_ATTRIBUTE = ArchaiusUtil.getString(GROUP_MEMBER_USER_ATTRIBUTE_SETTING);
+    public static final DynamicStringProperty LDAP_ALLOWED_IDENTITIES = ArchaiusUtil.getString(ALLOWED_IDENTITIES_SETTING);
+
+
+    public static final String CONFIG_DOMAIN = "domain";
+    public static final String CONFIG_ALLOWED_IDENTITIES = "allowedIdentities";
+    public static final String CONFIG_GROUP_NAME_FIELD = "groupNameField";
+    public static final String CONFIG_GROUP_OBJECT_CLASS = "groupObjectClass";
+    public static final String CONFIG_GROUP_SEARCH_FIELD = "groupSearchField";
+    public static final String CONFIG_LOGIN_DOMAIN = "loginDomain";
+    public static final String CONFIG_PORT = "port";
+    public static final String CONFIG_SERVER = "server";
+    public static final String CONFIG_SERVICE_ACCOUNT_PASSWORD = "serviceAccountPassword";
+    public static final String CONFIG_SERVICE_ACCOUNT_USERNAME = "serviceAccountUsername";
+    public static final String CONFIG_TLS = "tls";
+    public static final String CONFIG_USER_DISABLED_BIT_MASK = "userDisabledBitMask";
+    public static final String CONFIG_USER_ENABLED_ATTRIBUTE = "userEnabledAttribute";
+    public static final String CONFIG_USER_LOGIN_FIELD = "userLoginField";
+    public static final String CONFIG_USER_NAME_FIELD = "userNameField";
+    public static final String CONFIG_USER_OBJECT_CLASS = "userObjectClass";
+    public static final String CONFIG_USER_SEARCH_FIELD = "userSearchField";
+    public static final String CONFIG_TIMEOUT = "connectionTimeout";
+    public static final String CONFIG_SECURITY = "enabled";
+    public static final String CONFIG_GROUP_DN_FIELD = "groupDNField";
+    public static final String CONFIG_GROUP_MEMBER_USER_ATTRIBUTE = "groupMemberUserAttribute";
+    public static final String CONFIG_GROUP_USER_MAPPING_ATTRIBUTE = "groupMemberMappingAttribute";
+    public static final String CONFIG_USER_MEMBER_ATTRIBUTE = "userMemberAttribute";
+
 }

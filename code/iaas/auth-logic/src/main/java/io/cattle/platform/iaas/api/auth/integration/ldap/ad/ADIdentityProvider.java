@@ -3,7 +3,6 @@ package io.cattle.platform.iaas.api.auth.integration.ldap.ad;
 import static javax.naming.directory.SearchControls.*;
 
 import io.cattle.platform.api.auth.Identity;
-import io.cattle.platform.core.constants.IdentityConstants;
 import io.cattle.platform.core.model.Account;
 import io.cattle.platform.core.model.AuthToken;
 import io.cattle.platform.iaas.api.auth.AbstractTokenUtil;
@@ -349,21 +348,4 @@ public class ADIdentityProvider extends LDAPIdentityProvider implements Identity
         return adTokenUtils.toHashSeparatedString(identities);
     }
 
-    public List<Identity> getIdentities(List<Map<String, String>> identitiesGiven) {
-        if (identitiesGiven == null || identitiesGiven.isEmpty()){
-            return new ArrayList<>();
-        }
-
-        List<Identity> identities = new ArrayList<>();
-        for (Map<String, String> identity: identitiesGiven){
-            String externalId = identity.get(IdentityConstants.EXTERNAL_ID);
-            String externalIdType = identity.get(IdentityConstants.EXTERNAL_ID_TYPE);
-            Identity gotIdentity = getIdentity(externalId, externalIdType);
-            if (gotIdentity == null) {
-                throw new ClientVisibleException(ResponseCodes.BAD_REQUEST, "InvalidIdentity", "Invalid Identity", null);
-            }
-            identities.add(gotIdentity);
-        }
-        return identities;
-    }
 }

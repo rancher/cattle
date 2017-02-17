@@ -16,8 +16,10 @@ import io.github.ibuildthecloud.gdapi.exception.ClientVisibleException;
 import io.github.ibuildthecloud.gdapi.request.ApiRequest;
 import io.github.ibuildthecloud.gdapi.util.ResponseCodes;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
 
@@ -47,6 +49,7 @@ public class OpenLDAPIdentityProvider extends LDAPIdentityProvider implements Id
     ExecutorService executorService;
     @Inject
     OpenLDAPConstantsConfig openLDAPConfig;
+
 
     @Override
     public Set<Identity> getIdentities(Account account) {
@@ -236,5 +239,23 @@ public class OpenLDAPIdentityProvider extends LDAPIdentityProvider implements Id
     @Override
     public String getName() {
         return getConstantsConfig().getProviderName();
+    }
+
+    public String validateIdentities(List<Map<String, String>> identitiesGiven) {
+        List<Identity> identities = getIdentities(identitiesGiven);
+        return openLDAPUtils.toHashSeparatedString(identities);
+    }
+
+    public List<Identity> savedIdentities() {
+        List<String> ids = openLDAPUtils.fromHashSeparatedString(OpenLDAPConstants.LDAP_ALLOWED_IDENTITIES.get());
+        List<Identity> identities = new ArrayList<>();
+        if (ids.isEmpty() || !isConfigured()) {
+            return identities;
+        }
+        for(String id: ids){
+            String[] split = id.split(":", 2);
+            identities.add(getIdentity(split[1], split[0]));
+        }
+        return identities;
     }
 }
