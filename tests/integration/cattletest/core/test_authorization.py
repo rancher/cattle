@@ -587,7 +587,8 @@ def test_openldap_auth(admin_user_client, user_client, project_client):
         'userMemberAttribute': 'cr',
         'connectionTimeout': 'cr',
         'groupDNField': 'cr',
-        'groupMemberUserAttribute': 'cr'
+        'groupMemberUserAttribute': 'cr',
+        'allowedIdentities': 'cr'
     })
 
 

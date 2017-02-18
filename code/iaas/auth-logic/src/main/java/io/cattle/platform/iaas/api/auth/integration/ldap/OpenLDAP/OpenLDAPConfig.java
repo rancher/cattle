@@ -6,7 +6,6 @@ import io.cattle.platform.iaas.api.auth.integration.ldap.interfaces.LDAPConfig;
 import io.github.ibuildthecloud.gdapi.annotation.Field;
 import io.github.ibuildthecloud.gdapi.annotation.Type;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @Type(name = OpenLDAPConstants.CONFIG)
@@ -35,6 +34,7 @@ public class OpenLDAPConfig implements Configurable, LDAPConfig {
     private final String groupMemberMappingAttribute;
     private final long connectionTimeout;
     private final String groupMemberUserAttribute;
+    private List<Identity> allowedIdentities;
 
     public OpenLDAPConfig(String server, Integer port, Integer userDisabledBitMask, String loginDomain, String domain,
                           Boolean enabled, String accessMode, String serviceAccountUsername,
@@ -42,7 +42,7 @@ public class OpenLDAPConfig implements Configurable, LDAPConfig {
                           String userObjectClass, String userNameField, String userEnabledAttribute, 
                           String groupSearchField, String groupObjectClass, String groupNameField, 
                           String userMemberAttribute, String groupMemberMappingAttribute, 
-                          long connectionTimeout, String groupDNField, String groupMemberUserAttribute) {
+                          long connectionTimeout, String groupDNField, String groupMemberUserAttribute, List<Identity> allowedIdentities) {
         this.server = server;
         this.port = port;
         this.userDisabledBitMask = userDisabledBitMask;
@@ -66,6 +66,7 @@ public class OpenLDAPConfig implements Configurable, LDAPConfig {
         this.connectionTimeout = connectionTimeout;
         this.groupDNField = groupDNField;
         this.groupMemberUserAttribute = groupMemberUserAttribute;
+        this.allowedIdentities = allowedIdentities;
     }
 
     @Field(required = true, nullable = false, minLength = 1)
@@ -185,7 +186,7 @@ public class OpenLDAPConfig implements Configurable, LDAPConfig {
 
     @Override
     public List<Identity> getAllowedIdentities() {
-        return new ArrayList<>();
+        return allowedIdentities;
     }
     
     @Override

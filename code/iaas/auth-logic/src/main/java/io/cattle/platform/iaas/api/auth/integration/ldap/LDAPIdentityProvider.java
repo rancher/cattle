@@ -14,6 +14,7 @@ import io.github.ibuildthecloud.gdapi.util.ResponseCodes;
 import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.List;
+import java.util.Map;
 
 import javax.annotation.PostConstruct;
 import javax.naming.Context;
@@ -381,4 +382,21 @@ public abstract class LDAPIdentityProvider implements IdentityProvider{
                 "NotConfigured", "Ldap is not configured", null);
     }
 
+    public List<Identity> getIdentities(List<Map<String, String>> identitiesGiven) {
+        if (identitiesGiven == null || identitiesGiven.isEmpty()){
+            return new ArrayList<>();
+        }
+
+        List<Identity> identities = new ArrayList<>();
+        for (Map<String, String> identity: identitiesGiven){
+            String externalId = identity.get(IdentityConstants.EXTERNAL_ID);
+            String externalIdType = identity.get(IdentityConstants.EXTERNAL_ID_TYPE);
+            Identity gotIdentity = getIdentity(externalId, externalIdType);
+            if (gotIdentity == null) {
+                throw new ClientVisibleException(ResponseCodes.BAD_REQUEST, "InvalidIdentity", "Invalid Identity", null);
+            }
+            identities.add(gotIdentity);
+        }
+        return identities;
+    }
 }

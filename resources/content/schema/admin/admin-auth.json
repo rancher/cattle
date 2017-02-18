@@ -192,6 +192,8 @@
         "openldapconfig.connectionTimeout" : "cr",
         "openldapconfig.groupDNField" : "cr",
         "openldapconfig.groupMemberUserAttribute" : "cr",
+        "openldapconfig.allowedIdentities": "cr",
+
 
         "password.accountId" : "cr",
 

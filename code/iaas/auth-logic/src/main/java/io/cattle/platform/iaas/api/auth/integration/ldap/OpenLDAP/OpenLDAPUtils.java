@@ -1,9 +1,14 @@
 package io.cattle.platform.iaas.api.auth.integration.ldap.OpenLDAP;
 
+import io.cattle.platform.api.auth.Identity;
 import io.cattle.platform.core.model.Account;
 import io.cattle.platform.iaas.api.auth.AbstractTokenUtil;
 
+import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
+
+import org.apache.commons.lang3.StringUtils;
 
 public class OpenLDAPUtils extends AbstractTokenUtil {
 
@@ -14,8 +19,42 @@ public class OpenLDAPUtils extends AbstractTokenUtil {
 
     @Override
     protected boolean isWhitelisted(List<String> idList) {
-        //TODO Real white listing needed.
-        return true;
+        if (idList == null || idList.isEmpty()) {
+            return false;
+        }
+        List<String> whitelistedValues = fromHashSeparatedString(OpenLDAPConstants.LDAP_ALLOWED_IDENTITIES.get());
+
+        for (String id : idList) {
+            for (String whiteId: whitelistedValues){
+                if (StringUtils.equals(id, whiteId)){
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    public String toHashSeparatedString(List<Identity> identities) {
+        StringBuilder sb = new StringBuilder();
+        Iterator<Identity> identityIterator = identities.iterator();
+        while (identityIterator.hasNext()){
+            sb.append(identityIterator.next().getId().trim());
+            if (identityIterator.hasNext()) sb.append('#');
+        }
+        return sb.toString();
+    }
+
+    public List<String> fromHashSeparatedString(String string) {
+        if (StringUtils.isEmpty(string)) {
+            return new ArrayList<>();
+        }
+        List<String> strings = new ArrayList<>();
+        String[] splitted = string.split("#");
+        for (String aSplitted : splitted) {
+            String element = aSplitted.trim();
+            strings.add(element);
+        }
+        return strings;
     }
 
     @Override
