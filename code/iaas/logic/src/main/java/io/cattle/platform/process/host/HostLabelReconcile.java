@@ -73,7 +73,7 @@ public class HostLabelReconcile extends AbstractObjectProcessHandler implements 
             Long labelId = mapping.getLabelId();
             Label existingLabel = existingLabelLookupById.get(labelId);
             String newLabelValue = labelsField.get(existingLabel.getKey());
-            if (newLabelValue == null || !newLabelValue.equals(existingLabel.getValue())) {
+            if (newLabelValue == null || !newLabelValue.equalsIgnoreCase(existingLabel.getValue())) {
                 objectProcessManager.scheduleProcessInstance("hostlabelmap.remove", mapping, null);
             }
         }
