@@ -1,4 +1,4 @@
-FROM ubuntu:14.04.3
+FROM azul/zulu-openjdk:8u72
 
 ENV DAPPER_ENV API_VERSION ENVIRONMENTS
 ENV DAPPER_RUN_ARGS --privileged
@@ -18,16 +18,16 @@ ENV PGPASSWORD cattle
 ENV PGUSER cattle
 ENV PGDATABASE cattle
 
-# Install Java and Python
+# Install Python and packages
 RUN apt-get update && \
-    apt-get install -y --no-install-recommends openjdk-7-jdk maven python-pip  && \
-    # Hack to work around overlay issue && \
-    pip uninstall -y py >/dev/null >/dev/null 2>&1 || true && \
+    apt-get install -y --no-install-recommends python-pip iptables xz-utils git curl
+
+# Hack to work around overlay issue
+RUN pip uninstall -y py >/dev/null >/dev/null 2>&1 || true && \
     pip install --upgrade pip==6.0.3 tox==1.8.1 virtualenv==12.0.4
 
 # Build Tools
 ENV BUILD_TOOLS_VERSION 0.3.1
-RUN apt-get install -y curl
 RUN mkdir /tmp/build-tools && \
     cd /tmp/build-tools && \
     curl -sSL -o build-tools.tar.gz https://github.com/rancherio/build-tools/archive/v${BUILD_TOOLS_VERSION}.tar.gz && \
@@ -35,23 +35,21 @@ RUN mkdir /tmp/build-tools && \
     rm -rf /tmp/build-tools
 
 # Cache Maven stuff
-RUN apt-get install -y git && \
-    cd /tmp && \
-    git clone https://github.com/rancher/cattle.git && \
+RUN cp /usr/lib/jvm/zulu-8-amd64/jre/lib/security/US_export_policy.jar /usr/lib/jvm/zulu-8-amd64/jre/lib/security/local_policy.jar
+RUN cd /tmp && \
+    git clone https://github.com/ibuildthecloud/cattle.git && \
     cd cattle && \
-    git checkout v0.160.0 && \
-    mvn package && \
+    git checkout mvnw && \
     ./scripts/checkstyle && \
+    ./mvnw package && \
     cd .. && \
     rm -rf cattle
 
 # Install Docker
-RUN apt-get install -y iptables && \
-    curl -o /usr/bin/docker -sL -f https://get.docker.com/builds/Linux/x86_64/docker-1.10.3 && \
+RUN curl -o /usr/bin/docker -sL -f https://get.docker.com/builds/Linux/x86_64/docker-1.10.3 && \
     chmod +x /usr/bin/docker
 
 # Cache binaries
-RUN apt-get install -y xz-utils
 COPY ./resources/content/cattle-global.properties ${DAPPER_SOURCE}/resources/content/
 RUN bash -x cattle-binary-pull
 

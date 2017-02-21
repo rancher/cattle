@@ -26,7 +26,7 @@ selectjar()
 
 build()
 {
-    mvn ${MAVEN_ARGS} ${RELEASE_ARGS} ${MAVEN_TARGET:-install}
+    ./mvnw ${MAVEN_ARGS} ${RELEASE_ARGS} ${MAVEN_TARGET:-install}
     mkdir -p dist/artifacts
 
     local target=dist/artifacts/cattle.jar
