@@ -87,6 +87,7 @@ import io.cattle.platform.object.purge.impl.RemoveMonitorImpl;
 import io.cattle.platform.object.serialization.impl.DefaultObjectSerializerFactoryImpl;
 import io.cattle.platform.object.util.CommonsConverterStartup;
 import io.cattle.platform.process.containerevent.ContainerEventCreate;
+import io.cattle.platform.process.host.HostRemoveMonitorImpl;
 import io.cattle.platform.process.monitor.EventNotificationChangeMonitor;
 import io.cattle.platform.process.progress.ProcessProgressImpl;
 import io.cattle.platform.register.dao.impl.RegisterDaoImpl;
@@ -489,6 +490,11 @@ public class SystemServicesConfig {
     @Bean
     RemoveMonitorImpl RemoveMonitorImpl() {
         return new RemoveMonitorImpl();
+    }
+
+    @Bean
+    HostRemoveMonitorImpl EvacuateMonitorImpl() {
+        return new HostRemoveMonitorImpl();
     }
 
     @Bean

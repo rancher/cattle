@@ -452,6 +452,7 @@
         "project.servicesPortRange": "cru",
         "project.projectTemplateId": "cr",
         "project.healthState": "r",
+        "project.hostRemoveDelaySeconds": "cru",
 
         "projectTemplate" : "crud",
         "projectTemplate.stacks" : "cru",

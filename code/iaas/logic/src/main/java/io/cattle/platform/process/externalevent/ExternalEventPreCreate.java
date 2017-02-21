@@ -3,6 +3,7 @@ package io.cattle.platform.process.externalevent;
 import static io.cattle.platform.core.model.tables.AgentTable.*;
 
 import io.cattle.platform.core.constants.AgentConstants;
+import io.cattle.platform.core.constants.ExternalEventConstants;
 import io.cattle.platform.core.model.Agent;
 import io.cattle.platform.core.model.ExternalEvent;
 import io.cattle.platform.engine.handler.HandlerResult;

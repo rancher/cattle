@@ -1,4 +1,4 @@
-package io.cattle.platform.process.externalevent;
+package io.cattle.platform.core.constants;
 
 public class ExternalEventConstants {
 
