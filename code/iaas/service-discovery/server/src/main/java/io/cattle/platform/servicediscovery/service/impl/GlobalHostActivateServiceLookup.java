@@ -1,6 +1,9 @@
 package io.cattle.platform.servicediscovery.service.impl;
 
+import static io.cattle.platform.core.constants.ExternalEventConstants.*;
+
 import io.cattle.platform.allocator.service.AllocationHelper;
+import io.cattle.platform.core.model.ExternalEvent;
 import io.cattle.platform.core.model.Host;
 import io.cattle.platform.core.model.HostLabelMap;
 import io.cattle.platform.core.model.Service;
@@ -35,16 +38,29 @@ public class GlobalHostActivateServiceLookup implements ServiceLookup {
 
     @Override
     public Collection<? extends Service> getServices(Object obj) {
-        Host host = null;
-        if (obj instanceof Host) {
-            host = (Host) obj;
-        } else if (obj instanceof HostLabelMap) {
-            host = objMgr.loadResource(Host.class, ((HostLabelMap) obj).getHostId());
-        } else {
+        if (obj == null) {
             return null;
         }
 
-        List<? extends Service> services = expMapDao.getActiveServices(host.getAccountId());
+        Long accountId = null;
+        if (obj instanceof Host) {
+            Host host = (Host) obj;
+            accountId = host.getAccountId();
+        } else if (obj instanceof HostLabelMap) {
+            HostLabelMap m = (HostLabelMap) obj;
+            accountId = m.getAccountId();
+        } else if (obj instanceof ExternalEvent) {
+            ExternalEvent event = (ExternalEvent)obj;
+            if (KIND_EXTERNAL_HOST_EVENT.equals(event.getKind()) && TYPE_SCHEDULER_UPDATE.equals(event.getEventType())) {
+                accountId = event.getAccountId();
+            }
+        }
+
+        if (accountId == null) {
+            return null;
+        }
+
+        List<? extends Service> services = expMapDao.getActiveServices(accountId);
         List<Service> activeGlobalServices = new ArrayList<Service>();
         for (Service service : services) {
             if (sdSvc.isGlobalService(service) || sdSvc.isScalePolicyService(service)) {

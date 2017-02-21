@@ -2,6 +2,7 @@ package io.cattle.platform.core.constants;
 
 public class ExternalEventConstants {
 
+    public static final String PROCESS_EXTERNAL_EVENT_CREATE = "externalEvent.create";
     public static final String KIND_VOLUME_EVENT = "externalVolumeEvent";
     public static final String KIND_STORAGE_POOL_EVENT = "externalStoragePoolEvent";
     public static final String KIND_EXTERNAL_DNS_EVENT = "externalDnsEvent";
@@ -17,6 +18,7 @@ public class ExternalEventConstants {
     public static final String TYPE_SERVICE_DELETE = "service.remove";
     public static final String TYPE_STACK_DELETE=  "stack.remove";
     public static final String TYPE_HOST_EVACUATE = "host.evacuate";
+    public static final String TYPE_SCHEDULER_UPDATE = "scheduler.update";
     public static final String VOLUME_POOL_LOCK_NAME = "VOLUME";
     public static final String STORAGE_POOL_LOCK_NAME = "STORAGEPOOL";
     public static final String EXERNAL_DNS_LOCK_NAME = "EXTERNALDNS";
