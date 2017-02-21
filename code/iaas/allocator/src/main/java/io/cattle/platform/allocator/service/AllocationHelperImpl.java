@@ -81,7 +81,7 @@ public class AllocationHelperImpl implements AllocationHelper {
         List<Constraint> hostAffinityConstraints = getHostAffinityConstraintsFromLabels(labelConstraints);
 
         List<Long> acceptableHostIds = new ArrayList<Long>();
-        List<String> acceptableHostUUIDsFromExSche = allocatorService.callExternalSchedulerForHost(accountId, labelConstraints);
+        List<String> acceptableHostUUIDsFromExSche = allocatorService.callExternalSchedulerForHostsSatisfyingLabels(accountId, labelConstraints);
         for (Host host : hosts) {
             if (hostSatisfiesHostAffinity(host.getId(), hostAffinityConstraints)) {
                 if (acceptableHostUUIDsFromExSche == null || acceptableHostUUIDsFromExSche.contains(host.getUuid())) {
