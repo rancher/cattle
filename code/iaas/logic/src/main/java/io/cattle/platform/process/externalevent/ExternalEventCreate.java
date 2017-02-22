@@ -1,10 +1,12 @@
 package io.cattle.platform.process.externalevent;
 
+import static io.cattle.platform.core.constants.ExternalEventConstants.*;
 import static io.cattle.platform.core.model.tables.AgentTable.*;
 import static io.cattle.platform.core.model.tables.StackTable.*;
 import static io.cattle.platform.core.model.tables.ServiceTable.*;
-import static io.cattle.platform.process.externalevent.ExternalEventConstants.*;
+
 import io.cattle.platform.core.constants.CommonStatesConstants;
+import io.cattle.platform.core.constants.ExternalEventConstants;
 import io.cattle.platform.core.constants.VolumeConstants;
 import io.cattle.platform.core.dao.AccountDao;
 import io.cattle.platform.core.dao.GenericResourceDao;

@@ -54,5 +54,10 @@
                 "scheduleUpdate" : true
             }
         }
+    },
+    "resourceActions": {
+        "evacuate": {
+            "output": "host"
+        }
     }
 }

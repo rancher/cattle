@@ -1,5 +1,6 @@
 package io.cattle.platform.core.dao.impl;
 
+import static io.cattle.platform.core.model.tables.AccountTable.*;
 import static io.cattle.platform.core.model.tables.AgentTable.*;
 import static io.cattle.platform.core.model.tables.HostIpAddressMapTable.*;
 import static io.cattle.platform.core.model.tables.HostTable.*;
@@ -30,6 +31,7 @@ import io.cattle.platform.util.resource.UUID;
 import io.github.ibuildthecloud.gdapi.id.IdFormatter;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -170,5 +172,31 @@ public class HostDaoImpl extends AbstractJooqDao implements HostDao {
             hosts.put(host.getId(), host);
         }
         return hosts;
+    }
+
+    @Override
+    public void updateNullUpdatedHosts() {
+        if (HOST_REMOVE_DELAY.get() < 0) {
+            return;
+        }
+
+        create().update(HOST)
+            .set(HOST.REMOVE_AFTER, new Date(System.currentTimeMillis() + HOST_REMOVE_DELAY.get() * 1000))
+            .where(HOST.REMOVE_AFTER.isNull())
+            .execute();
+    }
+
+    @Override
+    public List<? extends Host> findHostsRemove() {
+        return create().select(HOST.fields())
+                .from(HOST)
+                .join(AGENT)
+                    .on(AGENT.ID.eq(HOST.AGENT_ID))
+                .join(ACCOUNT)
+                    .on(ACCOUNT.ID.eq(HOST.ACCOUNT_ID))
+                .where(AGENT.STATE.eq(AgentConstants.STATE_DISCONNECTED)
+                        .and(HOST.STATE.eq(CommonStatesConstants.ACTIVE))
+                        .and(HOST.REMOVE_AFTER.lt(new Date())))
+                .fetchInto(HostRecord.class);
     }
 }

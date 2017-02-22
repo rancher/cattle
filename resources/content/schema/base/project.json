@@ -52,6 +52,11 @@
     }
   },
   "resourceFields": {
+    "hostRemoveDelaySeconds":{
+        "type": "int",
+        "required": false,
+        "nullable": true
+    },
     "allowSystemRole":{
         "type": "boolean",
         "default": false,

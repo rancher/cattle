@@ -1,8 +1,12 @@
 
 package io.cattle.platform.core.constants;
 
+import io.cattle.platform.core.model.Instance;
+import io.cattle.platform.object.util.DataAccessor;
+
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 public class InstanceConstants {
@@ -100,4 +104,15 @@ public class InstanceConstants {
     public static final String VOLUME_CLEANUP_STRATEGY_ALL = "all";
     public static final Set<String> VOLUME_REMOVE_STRATEGIES = new HashSet<>(Arrays.asList(VOLUME_CLEANUP_STRATEGY_NONE, VOLUME_CLEANUP_STRATEGY_UNNAMED,
             VOLUME_CLEANUP_STRATEGY_ALL));
+
+    public static boolean isSystem(Instance instance) {
+        return instance.getSystem() || isRancherAgent(instance);
+    }
+
+    public static boolean isRancherAgent(Instance instance) {
+        Map<String, Object> labels = DataAccessor.fieldMap(instance, InstanceConstants.FIELD_LABELS);
+        return ("rancher-agent".equals(labels.get("io.rancher.container.system")) &&
+                "rancher-agent".equals(instance.getName()));
+    }
+
 }
