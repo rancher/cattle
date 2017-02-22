@@ -275,6 +275,7 @@ def test_agent_types(agent_client):
         'containerEvent',
         'error',
         'externalEvent',
+        'externalHostEvent',
         'externalVolumeEvent',
         'externalServiceEvent',
         'externalStoragePoolEvent',

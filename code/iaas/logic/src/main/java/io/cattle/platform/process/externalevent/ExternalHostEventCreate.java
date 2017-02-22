@@ -136,7 +136,7 @@ public class ExternalHostEventCreate extends AbstractObjectProcessHandler {
 
     @Override
     public String[] getProcessNames() {
-        return new String[] {ExternalEventConstants.KIND_EXTERNAL_EVENT + ".create"};
+        return new String[] {ExternalEventConstants.PROCESS_EXTERNAL_EVENT_CREATE};
     }
 
 }
