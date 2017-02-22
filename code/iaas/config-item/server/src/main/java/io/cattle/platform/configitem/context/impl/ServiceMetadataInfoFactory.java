@@ -8,6 +8,8 @@ import io.cattle.platform.archaius.util.ArchaiusUtil;
 import io.cattle.platform.configitem.context.dao.MetaDataInfoDao;
 import io.cattle.platform.configitem.context.data.metadata.common.HostMetaData;
 import io.cattle.platform.configitem.context.data.metadata.common.MetaHelperInfo;
+import io.cattle.platform.configitem.model.DefaultItemVersion;
+import io.cattle.platform.configitem.model.ItemVersion;
 import io.cattle.platform.configitem.server.model.ConfigItem;
 import io.cattle.platform.configitem.server.model.impl.ArchiveContext;
 import io.cattle.platform.core.model.Account;
@@ -39,6 +41,8 @@ import javax.inject.Inject;
 import javax.inject.Named;
 
 import org.apache.commons.io.IOUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
@@ -50,6 +54,8 @@ import com.netflix.config.DynamicBooleanProperty;
 public class ServiceMetadataInfoFactory extends AbstractAgentBaseContextFactory {
 
     private static DynamicBooleanProperty CACHE = ArchaiusUtil.getBoolean("cache.metadata");
+    private static DynamicBooleanProperty CACHE_LOCK = ArchaiusUtil.getBoolean("cache.metadata.lock");
+    private static final Logger log = LoggerFactory.getLogger(ServiceMetadataInfoFactory.class);
 
     @Inject
     ServiceConsumeMapDao consumeMapDao;
@@ -58,7 +64,11 @@ public class ServiceMetadataInfoFactory extends AbstractAgentBaseContextFactory 
     MetaDataInfoDao metaDataInfoDao;
 
     Cache<String, CacheData> cache = CacheBuilder.newBuilder()
-        .expireAfterWrite(30, TimeUnit.SECONDS)
+        .expireAfterAccess(1, TimeUnit.MINUTES)
+        .build();
+
+    Cache<Long, String> latestVersion = CacheBuilder.newBuilder()
+        .expireAfterAccess(1, TimeUnit.MINUTES)
         .build();
 
     LoadingCache<Long, ReentrantLock> lockCache = CacheBuilder.newBuilder()
@@ -86,25 +96,20 @@ public class ServiceMetadataInfoFactory extends AbstractAgentBaseContextFactory 
             return;
         }
 
-        ReentrantLock lock = doLock(instance);
         try {
-            String itemVersion = version.call();
-            Map<Long, HostMetaData> hostIdToHostMetadata;
             if (CACHE.get()) {
-                hostIdToHostMetadata = writeCachedGenericData(instance, itemVersion, os);
+                writeCachedGenericData(hostMap.getHostId(), instance, version, os);
             } else {
-                hostIdToHostMetadata = writeGenericData(instance, os);
+                String itemVersion = version.call();
+                Map<Long, HostMetaData> hostIdToHostMetadata = writeGenericData(instance, os);
+                metaDataInfoDao.fetchSelf(hostIdToHostMetadata.get(hostMap.getHostId()), itemVersion, os);
             }
 
-            metaDataInfoDao.fetchSelf(hostIdToHostMetadata.get(hostMap.getHostId()), itemVersion, os);
         } catch (ExecutionException e) {
             ExceptionUtils.rethrowExpectedRuntime(e.getCause());
         } catch (Exception e) {
             ExceptionUtils.rethrowExpectedRuntime(e);
         } finally {
-            if (lock != null) {
-                lock.unlock();
-            }
             try {
                 os.close();
             } catch (IOException e) {
@@ -114,7 +119,7 @@ public class ServiceMetadataInfoFactory extends AbstractAgentBaseContextFactory 
     }
 
     protected ReentrantLock doLock(final Instance instance) {
-        if (!CACHE.get()) {
+        if (!CACHE_LOCK.get()) {
             return null;
         }
         ReentrantLock lock = lockCache.getUnchecked(instance.getAccountId());
@@ -133,21 +138,63 @@ public class ServiceMetadataInfoFactory extends AbstractAgentBaseContextFactory 
         }
     }
 
-    private Map<Long, HostMetaData> writeCachedGenericData(final Instance instance, String itemVersion,
-            OutputStream os) throws ExecutionException, IOException {
-        CacheData data = cache.get(instance.getAccountId() + "/" + itemVersion, new Callable<CacheData>() {
-            @Override
-            public CacheData call() throws Exception {
-                CacheData data = new CacheData();
-                ByteArrayOutputStream baos = new ByteArrayOutputStream();
-                data.hostIdToHostMetadata = writeGenericData(instance, baos);
-                data.bytes = baos.toByteArray();
-                return data;
+    private void writeCachedGenericData(Long hostId, final Instance instance, final Callable<String> versionCallback,
+            OutputStream os) throws Exception {
+        final String itemVersion;
+        // Get version before lock
+        String startItemVersion = versionCallback.call();
+        ReentrantLock lock = doLock(instance);
+        CacheData data = null;
+        try {
+            itemVersion = determineItemVersion(instance.getAccountId(), startItemVersion, versionCallback);
+            data = cache.get(instance.getAccountId() + "/" + itemVersion, new Callable<CacheData>() {
+                @Override
+                public CacheData call() throws Exception {
+                    long start = System.currentTimeMillis();
+                    CacheData data = new CacheData();
+                    ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                    data.hostIdToHostMetadata = writeGenericData(instance, baos);
+                    data.bytes = baos.toByteArray();
+                    log.debug("Generated [{}] in {}ms", itemVersion, System.currentTimeMillis()-start);
+                    return data;
+                }
+            });
+            latestVersion.put(instance.getAccountId(), itemVersion);
+        } finally {
+            if (lock != null) {
+                lock.unlock();
             }
-        });
+        }
 
         IOUtils.write(data.bytes, os);
-        return data.hostIdToHostMetadata;
+        metaDataInfoDao.fetchSelf(data.hostIdToHostMetadata.get(hostId), itemVersion, os);
+    }
+
+    protected String determineItemVersion(Long accountId, String requestedItemVersion, Callable<String> versionCallback) throws Exception {
+        String cachedItemVersion = latestVersion.getIfPresent(accountId);
+        if (cachedItemVersion == null || requestedItemVersion == null) {
+            String result = versionCallback.call();
+            log.debug("Latest version doesn't exist for [{}] using [{}]", accountId, result);
+            return result;
+        }
+
+        ItemVersion requested = DefaultItemVersion.fromString(requestedItemVersion);
+        ItemVersion cached = DefaultItemVersion.fromString(cachedItemVersion);
+
+        if (!cached.getSourceRevision().equals(requested.getSourceRevision())) {
+            String result = versionCallback.call();
+            log.debug("Source versions don't match for [{}] using [{}]", accountId, result);
+            return versionCallback.call();
+        }
+
+        if (cached.getRevision() >= requested.getRevision()) {
+            log.debug("Using cached version [{}] instead of requested [{}]", cachedItemVersion, requestedItemVersion);
+            return cachedItemVersion;
+        }
+
+        String result = versionCallback.call();
+        log.debug("Using latest from DB for version [{}] instead of requested [{}]", result, requestedItemVersion);
+        return result;
     }
 
     private Map<Long, HostMetaData> writeGenericData(Instance instance, OutputStream os) {
