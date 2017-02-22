@@ -306,7 +306,10 @@ public class ADIdentityProvider extends LDAPIdentityProvider implements Identity
         }
         for(String id: ids){
             String[] split = id.split(":", 2);
-            identities.add(getIdentity(split[1], split[0]));
+            Identity identity = getIdentity(split[1], split[0]);
+            if (identity != null) {
+                identities.add(identity);
+            }
         }
         return identities;
     }
