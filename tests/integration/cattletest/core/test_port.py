@@ -154,11 +154,7 @@ def test_container_port_purge(new_context):
     assert c.state == 'running'
 
     c = client.wait_success(c.stop(remove=True))
-    assert c.state == 'removed'
-
-    assert len(c.ports_link()) == 3
-
-    c = client.wait_success(c.purge())
+    assert c.removed is not None
     assert c.state == 'purged'
     assert len(c.ports_link()) == 0
 

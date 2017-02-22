@@ -49,7 +49,7 @@ def test_agent_create_for_container(new_context, super_client):
     client.delete(c)
     c = client.wait_success(c)
 
-    assert c.state == 'removed'
+    assert c.removed is not None
 
     agent = super_client.wait_success(super_client.reload(agent))
     assert agent.state == 'removed'

@@ -99,7 +99,7 @@ def test_external_host_event_hit(new_context):
 
     event = client.wait_success(event)
     host = client.reload(host)
-    c = client.wait_success(c)
+    c = client.reload(c)
 
     assert event.state == 'created'
     assert host.state == 'purged'
@@ -107,7 +107,7 @@ def test_external_host_event_hit(new_context):
 
 
 def test_external_host_event_no_delete(new_context):
-    c = new_context.create_container()
+    new_context.create_container()
 
     client = new_context.client
     host = client.update(new_context.host, labels={
@@ -122,14 +122,13 @@ def test_external_host_event_no_delete(new_context):
 
     event = client.wait_success(event)
     host = client.reload(host)
-    c = client.wait_success(c)
 
     assert event.state == 'created'
     assert host.state == 'inactive'
 
 
 def test_external_host_event_by_id(new_context):
-    c = new_context.create_container()
+    new_context.create_container()
     new_host = register_simulated_host(new_context)
 
     client = new_context.client
@@ -145,7 +144,6 @@ def test_external_host_event_by_id(new_context):
 
     event = client.wait_success(event)
     new_host = client.reload(new_host)
-    c = client.wait_success(c)
     host = client.reload(host)
 
     assert event.state == 'created'

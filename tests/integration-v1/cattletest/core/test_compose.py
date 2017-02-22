@@ -62,7 +62,7 @@ def test_container_remove(client, context):
 
     c = client.delete(c)
     c = client.wait_success(c)
-    assert c.state == 'removed'
+    assert c.removed is not None
 
     wait_for(lambda: client.reload(map).state != 'active')
     map = client.wait_success(map)
@@ -88,7 +88,7 @@ def test_container_two_remove(client, context):
 
     c = client.delete(c)
     c = client.wait_success(c)
-    assert c.state == 'removed'
+    assert c.removed is not None
 
     wait_for(lambda: len([x for x in s.serviceExposeMaps()
                           if x.removed is None]) == 1)
@@ -120,7 +120,7 @@ def test_service_two_remove(client, context):
     assert map.state == 'removed'
 
     c = client.wait_success(c)
-    assert c.state == 'removed'
+    assert c.removed is not None
 
     env = client.wait_success(env)
     assert env.state == 'active'
@@ -144,7 +144,7 @@ def test_service_remove(client, context):
     assert map.state == 'removed'
 
     c = client.wait_success(c)
-    assert c.state == 'removed'
+    assert c.removed is not None
 
     env = client.wait_success(env)
     assert env.state == 'removed'
@@ -171,7 +171,7 @@ def test_env_remove(client, context):
     assert map.state == 'removed'
 
     c = client.wait_success(c)
-    assert c.state == 'removed'
+    assert c.removed is not None
 
 
 def test_compose_project_create_required(client, context):

@@ -127,11 +127,11 @@ def test_container_event_remove_start(client, host, agent_cli, user_id):
     container = client.wait_success(container.stop())
     assert container.state == 'stopped'
     container = client.wait_success(container.remove())
-    assert container.state == 'removed'
+    assert container.removed is not None
 
     create_event(host, external_id, agent_cli, client, user_id, 'start')
     container = client.wait_success(container)
-    assert container.state == 'removed'
+    assert container.removed is not None
 
     containers = client.list_container(externalId=external_id)
     assert len(containers) == 0
@@ -149,12 +149,12 @@ def test_container_event_destroy(client, host, agent_cli, user_id):
     create_event(host, external_id, agent_cli, client, user_id, 'destroy')
 
     container = client.wait_success(container)
-    assert container.state == 'removed'
+    assert container.removed is not None
 
     # Sending a destroy event to a removed container should have no effect
     create_event(host, external_id, agent_cli, client, user_id, 'destroy')
     container = client.wait_success(container)
-    assert container.state == 'removed'
+    assert container.removed is not None
 
 
 def test_rancher_container_events(client, context, host, agent_cli, user_id):
@@ -182,7 +182,7 @@ def test_rancher_container_events(client, context, host, agent_cli, user_id):
     ext_id = container.externalId
     create_event(host, ext_id, agent_cli, client, user_id, 'destroy')
     container = client.wait_success(container)
-    assert container.state == 'removed'
+    assert container.removed is not None
 
 
 def test_bad_agent(super_client, new_context):

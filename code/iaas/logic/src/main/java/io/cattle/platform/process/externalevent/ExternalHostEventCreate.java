@@ -106,7 +106,7 @@ public class ExternalHostEventCreate extends AbstractObjectProcessHandler {
         for (Instance instance : instances ) {
             try {
                 processManager.scheduleProcessInstanceAsync(InstanceConstants.PROCESS_STOP, instance,
-                        ProcessUtils.chainInData(state.getData(), InstanceConstants.PROCESS_STOP, InstanceConstants.PROCESS_REMOVE));
+                        ProcessUtils.chainInData(new HashMap<String, Object>(), InstanceConstants.PROCESS_STOP, InstanceConstants.PROCESS_REMOVE));
             } catch (ProcessCancelException e) {
             }
         }

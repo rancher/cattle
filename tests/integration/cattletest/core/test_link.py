@@ -91,9 +91,9 @@ def test_link_remove(client, context):
     assert link.state == 'inactive'
 
     c = client.wait_success(client.delete(c))
+    assert c.removed is not None
     link = client.reload(link)
-    assert c.state == 'removed'
-    assert link.state == 'inactive'
+    assert link.state != 'active'
 
 
 def test_null_links(context):

@@ -16,12 +16,20 @@ import io.github.ibuildthecloud.gdapi.request.resource.ResourceManager;
 import io.github.ibuildthecloud.gdapi.request.resource.ResourceManagerLocator;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 import javax.inject.Inject;
 
 public class ResourceChangeEventProcessor implements ApiPubSubEventPostProcessor {
 
+    private static final Set<String> PURGING;
+    static {
+        PURGING = new HashSet<>();
+        PURGING.add(CommonStatesConstants.PURGING);
+        PURGING.add(CommonStatesConstants.PURGED);
+    }
     ResourceManagerLocator locator;
     JsonMapper jsonMapper;
 
@@ -61,7 +69,8 @@ public class ResourceChangeEventProcessor implements ApiPubSubEventPostProcessor
 
             Object removed = resource.getFields().get(ObjectMetaDataManager.REMOVED_FIELD);
             String state = DataAccessor.fromMap(resource.getFields()).withKey(ObjectMetaDataManager.STATE_FIELD).as(String.class);
-            if (removed != null && !CommonStatesConstants.REMOVED.equals(state)) {
+            if (removed != null &&
+                    ((!type.equals("instance") && !CommonStatesConstants.REMOVED.equals(state)) || (type.equals("instance") && !PURGING.contains(state)))) {
                 return false;
             }
 
