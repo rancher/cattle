@@ -14,6 +14,8 @@ public interface ConfigItemStatusDao {
 
     void incrementOrApply(Client client, String itemName);
 
+    void setIfOlder(Client client, String itemName, Long version);
+
     boolean setApplied(Client client, String itemName, ItemVersion version);
 
     void setLatest(Client client, String itemName, String sourceRevision);
@@ -29,5 +31,7 @@ public interface ConfigItemStatusDao {
     Map<Client, List<String>> findOutOfSync(boolean migration);
 
     Map<String, ItemVersion> getApplied(Client client);
+
+    void reset(String itemName, String version);
 
 }

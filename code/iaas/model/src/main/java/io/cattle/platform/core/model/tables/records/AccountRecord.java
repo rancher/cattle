@@ -11,9 +11,9 @@ package io.cattle.platform.core.model.tables.records;
 @java.lang.SuppressWarnings({ "all", "unchecked", "rawtypes" })
 @javax.persistence.Entity
 @javax.persistence.Table(name = "account", schema = "cattle")
-public class AccountRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.platform.core.model.tables.records.AccountRecord> implements io.cattle.platform.db.jooq.utils.TableRecordJaxb, org.jooq.Record16<java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.util.Date, java.util.Date, java.util.Date, java.util.Map<String,Object>, java.lang.String, java.lang.String, java.lang.String, java.lang.Long, java.lang.Long, java.lang.String>, io.cattle.platform.core.model.Account {
+public class AccountRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.platform.core.model.tables.records.AccountRecord> implements io.cattle.platform.db.jooq.utils.TableRecordJaxb, org.jooq.Record17<java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.util.Date, java.util.Date, java.util.Date, java.util.Map<String,Object>, java.lang.String, java.lang.String, java.lang.String, java.lang.Long, java.lang.Long, java.lang.String, java.lang.Long>, io.cattle.platform.core.model.Account {
 
-	private static final long serialVersionUID = 1753764614;
+	private static final long serialVersionUID = -21752037;
 
 	/**
 	 * Setter for <code>cattle.account.id</code>.
@@ -288,6 +288,23 @@ public class AccountRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.p
 		return (java.lang.String) getValue(15);
 	}
 
+	/**
+	 * Setter for <code>cattle.account.revision</code>.
+	 */
+	@Override
+	public void setRevision(java.lang.Long value) {
+		setValue(16, value);
+	}
+
+	/**
+	 * Getter for <code>cattle.account.revision</code>.
+	 */
+	@javax.persistence.Column(name = "revision", nullable = false, precision = 19)
+	@Override
+	public java.lang.Long getRevision() {
+		return (java.lang.Long) getValue(16);
+	}
+
 	// -------------------------------------------------------------------------
 	// Primary key information
 	// -------------------------------------------------------------------------
@@ -301,23 +318,23 @@ public class AccountRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.p
 	}
 
 	// -------------------------------------------------------------------------
-	// Record16 type implementation
+	// Record17 type implementation
 	// -------------------------------------------------------------------------
 
 	/**
 	 * {@inheritDoc}
 	 */
 	@Override
-	public org.jooq.Row16<java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.util.Date, java.util.Date, java.util.Date, java.util.Map<String,Object>, java.lang.String, java.lang.String, java.lang.String, java.lang.Long, java.lang.Long, java.lang.String> fieldsRow() {
-		return (org.jooq.Row16) super.fieldsRow();
+	public org.jooq.Row17<java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.util.Date, java.util.Date, java.util.Date, java.util.Map<String,Object>, java.lang.String, java.lang.String, java.lang.String, java.lang.Long, java.lang.Long, java.lang.String, java.lang.Long> fieldsRow() {
+		return (org.jooq.Row17) super.fieldsRow();
 	}
 
 	/**
 	 * {@inheritDoc}
 	 */
 	@Override
-	public org.jooq.Row16<java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.util.Date, java.util.Date, java.util.Date, java.util.Map<String,Object>, java.lang.String, java.lang.String, java.lang.String, java.lang.Long, java.lang.Long, java.lang.String> valuesRow() {
-		return (org.jooq.Row16) super.valuesRow();
+	public org.jooq.Row17<java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.util.Date, java.util.Date, java.util.Date, java.util.Map<String,Object>, java.lang.String, java.lang.String, java.lang.String, java.lang.Long, java.lang.Long, java.lang.String, java.lang.Long> valuesRow() {
+		return (org.jooq.Row17) super.valuesRow();
 	}
 
 	/**
@@ -452,6 +469,14 @@ public class AccountRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.p
 	 * {@inheritDoc}
 	 */
 	@Override
+	public org.jooq.Field<java.lang.Long> field17() {
+		return io.cattle.platform.core.model.tables.AccountTable.ACCOUNT.REVISION;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
 	public java.lang.Long value1() {
 		return getId();
 	}
@@ -574,6 +599,14 @@ public class AccountRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.p
 	@Override
 	public java.lang.String value16() {
 		return getVersion();
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public java.lang.Long value17() {
+		return getRevision();
 	}
 
 	/**
@@ -724,7 +757,16 @@ public class AccountRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.p
 	 * {@inheritDoc}
 	 */
 	@Override
-	public AccountRecord values(java.lang.Long value1, java.lang.String value2, java.lang.String value3, java.lang.String value4, java.lang.String value5, java.lang.String value6, java.util.Date value7, java.util.Date value8, java.util.Date value9, java.util.Map<String,Object> value10, java.lang.String value11, java.lang.String value12, java.lang.String value13, java.lang.Long value14, java.lang.Long value15, java.lang.String value16) {
+	public AccountRecord value17(java.lang.Long value) {
+		setRevision(value);
+		return this;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public AccountRecord values(java.lang.Long value1, java.lang.String value2, java.lang.String value3, java.lang.String value4, java.lang.String value5, java.lang.String value6, java.util.Date value7, java.util.Date value8, java.util.Date value9, java.util.Map<String,Object> value10, java.lang.String value11, java.lang.String value12, java.lang.String value13, java.lang.Long value14, java.lang.Long value15, java.lang.String value16, java.lang.Long value17) {
 		return this;
 	}
 
@@ -753,6 +795,7 @@ public class AccountRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.p
 		setProjectTemplateId(from.getProjectTemplateId());
 		setDefaultNetworkId(from.getDefaultNetworkId());
 		setVersion(from.getVersion());
+		setRevision(from.getRevision());
 	}
 
 	/**
@@ -778,7 +821,7 @@ public class AccountRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.p
 	/**
 	 * Create a detached, initialised AccountRecord
 	 */
-	public AccountRecord(java.lang.Long id, java.lang.String name, java.lang.String kind, java.lang.String uuid, java.lang.String description, java.lang.String state, java.util.Date created, java.util.Date removed, java.util.Date removeTime, java.util.Map<String,Object> data, java.lang.String externalId, java.lang.String externalIdType, java.lang.String healthState, java.lang.Long projectTemplateId, java.lang.Long defaultNetworkId, java.lang.String version) {
+	public AccountRecord(java.lang.Long id, java.lang.String name, java.lang.String kind, java.lang.String uuid, java.lang.String description, java.lang.String state, java.util.Date created, java.util.Date removed, java.util.Date removeTime, java.util.Map<String,Object> data, java.lang.String externalId, java.lang.String externalIdType, java.lang.String healthState, java.lang.Long projectTemplateId, java.lang.Long defaultNetworkId, java.lang.String version, java.lang.Long revision) {
 		super(io.cattle.platform.core.model.tables.AccountTable.ACCOUNT);
 
 		setValue(0, id);
@@ -797,5 +840,6 @@ public class AccountRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.p
 		setValue(13, projectTemplateId);
 		setValue(14, defaultNetworkId);
 		setValue(15, version);
+		setValue(16, revision);
 	}
 }

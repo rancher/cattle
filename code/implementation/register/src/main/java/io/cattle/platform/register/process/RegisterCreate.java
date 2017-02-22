@@ -11,6 +11,7 @@ import io.cattle.platform.engine.handler.HandlerResult;
 import io.cattle.platform.engine.handler.ProcessHandler;
 import io.cattle.platform.engine.process.ProcessInstance;
 import io.cattle.platform.engine.process.ProcessState;
+import io.cattle.platform.engine.process.impl.ProcessCancelException;
 import io.cattle.platform.object.process.StandardProcess;
 import io.cattle.platform.object.resource.ResourceMonitor;
 import io.cattle.platform.object.resource.ResourcePredicate;
@@ -60,7 +61,10 @@ public class RegisterCreate extends AbstractGenericObjectProcessLogic implements
         DeferredUtils.nest(new Runnable() {
             @Override
             public void run() {
-                objectProcessManager.scheduleStandardProcess(StandardProcess.CREATE, agentFinal, state.getData());
+                try {
+                    objectProcessManager.scheduleStandardProcess(StandardProcess.CREATE, agentFinal, state.getData());
+                } catch (ProcessCancelException e) {
+                }
             }
         });
 

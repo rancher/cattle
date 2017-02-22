@@ -37,6 +37,7 @@ import io.cattle.platform.util.type.CollectionUtils;
 
 import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -484,5 +485,30 @@ public class ConfigItemStatusDaoImpl extends AbstractJooqDao implements ConfigIt
                 .orderBy(AGENT.ID.asc())
                 .limit(BATCH_SIZE.get())
                 .fetchInto(ConfigItemStatusRecord.class);
+    }
+
+
+    @Override
+    public void setIfOlder(Client client, String itemName, Long version) {
+        create()
+            .update(CONFIG_ITEM_STATUS)
+                .set(CONFIG_ITEM_STATUS.REQUESTED_VERSION, version)
+                .set(CONFIG_ITEM_STATUS.REQUESTED_UPDATED, new Timestamp(System.currentTimeMillis()))
+            .where(
+                    CONFIG_ITEM_STATUS.REQUESTED_VERSION.lt(version)
+                    .and(CONFIG_ITEM_STATUS.NAME.eq(itemName))
+                    .and(targetObjectCondition(client))).execute();
+    }
+
+
+    @Override
+    public void reset(String itemName, String version) {
+        create().update(CONFIG_ITEM_STATUS)
+            .set(CONFIG_ITEM_STATUS.APPLIED_VERSION, -1L)
+            .set(CONFIG_ITEM_STATUS.REQUESTED_VERSION, 0L)
+            .set(CONFIG_ITEM_STATUS.REQUESTED_UPDATED, new Date())
+            .where(CONFIG_ITEM_STATUS.NAME.eq(itemName)
+                    .and(CONFIG_ITEM_STATUS.SOURCE_VERSION.ne(version)))
+            .execute();
     }
 }

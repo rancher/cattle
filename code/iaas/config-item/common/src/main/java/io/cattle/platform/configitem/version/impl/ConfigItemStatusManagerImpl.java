@@ -136,6 +136,11 @@ public class ConfigItemStatusManagerImpl implements ConfigItemStatusManager {
                 log.trace("ITEM UPDATE: get requested [{}]", request.getClient());
                 requestedVersion = configItemStatusDao.getRequestedVersion(client, name);
                 log.trace("ITEM UPDATE: done get requested [{}]", request.getClient());
+            } else if (requestedVersion == null && item.getSetVersion() != null) {
+                log.trace("ITEM UPDATE: setVersion [{}]", request.getClient());
+                configItemStatusDao.setIfOlder(client, name, item.getSetVersion());
+                log.trace("ITEM UPDATE: done setVersion [{}]", request.getClient());
+                requestedVersion = item.getSetVersion();
             } else if (requestedVersion == null && item.isIncrement()) {
                 log.trace("ITEM UPDATE: incrementOrApply [{}]", request.getClient());
                 configItemStatusDao.incrementOrApply(client, name);

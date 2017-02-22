@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog" xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.1.xsd">
+    <property name="mediumtext" value="TEXT" dbms="postgresql" />
+    <property name="mediumtext" value="MEDIUMTEXT" />
+    <property name="mediumtext" value="varchar" dbms="H2" />
+    <changeSet author="darren (generated)" id="dump1">
+        <createTable tableName="ui_challenge">
+            <column autoIncrement="true" name="id" type="BIGINT">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="account_id" type="VARCHAR(255)"/>
+            <column name="name" type="VARCHAR(255)"/>
+            <column name="email" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="token" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="data" type="${mediumtext}"/>
+            <column name="request" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created" type="datetime">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+    <changeSet author="darren (generated)" id="dump2">
+        <addColumn tableName="host">
+            <column name="remove_after" type="DATETIME"/>
+        </addColumn>
+    </changeSet>
+    <changeSet author="darren (generated)" id="dump3">
+        <addColumn tableName="account">
+            <column defaultValue="0" name="revision" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+        </addColumn>
+    </changeSet>
+    <changeSet author="darren (generated)" id="dump4">
+        <addUniqueConstraint columnNames="token" constraintName="token" deferrable="false" disabled="false" initiallyDeferred="false" tableName="ui_challenge"/>
+    </changeSet>
+    <changeSet author="darren (generated)" id="dump5">
+        <createIndex indexName="created_token" tableName="ui_challenge" unique="false">
+            <column name="created"/>
+            <column name="token"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="darren (generated)" id="dump6">
+        <createIndex indexName="idx_host__remove_after" tableName="host" unique="false">
+            <column name="remove_after"/>
+        </createIndex>
+    </changeSet>
+</databaseChangeLog>

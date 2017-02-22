@@ -2,6 +2,7 @@ package io.cattle.platform.process.externalevent;
 
 import io.cattle.platform.allocator.constraint.HostAffinityConstraint;
 import io.cattle.platform.allocator.service.AllocationHelper;
+import io.cattle.platform.core.constants.ExternalEventConstants;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.dao.InstanceDao;
 import io.cattle.platform.core.model.ExternalEvent;
@@ -100,18 +101,25 @@ public class ExternalHostEventCreate extends AbstractObjectProcessHandler {
     }
 
     protected void deactivateHost(ProcessState state, Host host) {
-        deactivate(host, state.getData());
+        deactivate(host, null);
 
         List<? extends Instance> instances = instanceDao.getNonRemovedInstanceOn(host.getId());
+        List<Instance> removed = new ArrayList<>();
         for (Instance instance : instances ) {
+            if (InstanceConstants.isSystem(instance)) {
+                continue;
+            }
             try {
                 processManager.scheduleProcessInstanceAsync(InstanceConstants.PROCESS_STOP, instance,
-                        ProcessUtils.chainInData(state.getData(), InstanceConstants.PROCESS_STOP, InstanceConstants.PROCESS_REMOVE));
+                        ProcessUtils.chainInData(new HashMap<String, Object>(), InstanceConstants.PROCESS_STOP,
+                                InstanceConstants.PROCESS_REMOVE));
             } catch (ProcessCancelException e) {
             }
+
+            removed.add(instance);
         }
 
-        for (Instance instance : instances ) {
+        for (Instance instance : removed) {
             resourceMonitor.waitFor(instance, new ResourcePredicate<Instance>() {
                 @Override
                 public boolean evaluate(Instance obj) {

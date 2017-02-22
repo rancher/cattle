@@ -17,22 +17,22 @@ public interface MetaDataInfoDao {
     void fetchNetworks(MetaHelperInfo helperInfo, OutputStream os);
 
     void fetchContainerLinks(MetaHelperInfo helperInfo, OutputStream os);
-    
+
     void fetchHosts(MetaHelperInfo helperInfo, OutputStream os);
 
-    void fetchSelf(MetaHelperInfo helperInfo, String version, OutputStream os);
+    void fetchSelf(HostMetaData selfHost, String version, OutputStream os);
 
     void fetchServices(MetaHelperInfo helperInfo, OutputStream os);
 
     void fetchStacks(MetaHelperInfo helperInfo, OutputStream os);
 
     void fetchServiceLinks(MetaHelperInfo helperInfo, OutputStream os);
-    
+
     void fetchServiceContainerLinks(MetaHelperInfo helperInfo, OutputStream os);
     // helper data
 
     Map<Long, List<HealthcheckInstanceHostMap>> getInstanceIdToHealthCheckers(Account account);
 
     Map<Long, HostMetaData> getHostIdToHostMetadata(Account account, Map<Long, Account> accounts,
-            Set<Long> linkedServicesIds, long agentHostId);
+            Set<Long> linkedServicesIds);
 }

@@ -14,6 +14,7 @@ import static io.cattle.platform.core.model.tables.ServiceConsumeMapTable.*;
 import static io.cattle.platform.core.model.tables.ServiceExposeMapTable.*;
 import static io.cattle.platform.core.model.tables.ServiceTable.*;
 import static io.cattle.platform.core.model.tables.StackTable.*;
+
 import io.cattle.platform.configitem.context.dao.MetaDataInfoDao;
 import io.cattle.platform.configitem.context.data.metadata.common.ContainerLinkMetaData;
 import io.cattle.platform.configitem.context.data.metadata.common.ContainerMetaData;
@@ -179,7 +180,7 @@ public class MetaDataInfoDaoImpl extends AbstractJooqDao implements MetaDataInfo
                                 data.setService_index(serviceIndex);
                                 if (networkKind.equalsIgnoreCase(NetworkConstants.KIND_DOCKER_HOST)) {
                                     primaryIp = hostMetaData.getAgent_ip();
-                                } 
+                                }
                                 data.setIp(primaryIp);
                                 data.setNetwork_uuid(networkUUID);
                                 data.setNetwork_from_container_uuid(targetInstanceUUID);
@@ -192,11 +193,11 @@ public class MetaDataInfoDaoImpl extends AbstractJooqDao implements MetaDataInfo
 
     @Override
     public Map<Long, HostMetaData> getHostIdToHostMetadata(Account account, Map<Long, Account> accounts,
-            Set<Long> linkedServicesIds, final long agentHostId) {
+            Set<Long> linkedServicesIds) {
         Map<Long, HostMetaData> toReturn = new HashMap<>();
-        List<HostMetaData> hosts = getAllInstanceHostMetaDataForAccount(account, agentHostId);
+        List<HostMetaData> hosts = getAllInstanceHostMetaDataForAccount(account);
         if (!linkedServicesIds.isEmpty()) {
-            hosts.addAll(getAllInstanceHostMetaDataForLinkedServices(accounts, linkedServicesIds, agentHostId));
+            hosts.addAll(getAllInstanceHostMetaDataForLinkedServices(accounts, linkedServicesIds));
         }
 
         for (HostMetaData host : hosts) {
@@ -206,7 +207,7 @@ public class MetaDataInfoDaoImpl extends AbstractJooqDao implements MetaDataInfo
     }
 
     protected List<HostMetaData> getAllInstanceHostMetaDataForLinkedServices(final Map<Long, Account> accounts,
-            final Set<Long> linkedServicesIds, final long agentHostId) {
+            final Set<Long> linkedServicesIds) {
         MultiRecordMapper<HostMetaData> mapper = new MultiRecordMapper<HostMetaData>() {
             @Override
             protected HostMetaData map(List<Object> input) {
@@ -243,7 +244,7 @@ public class MetaDataInfoDaoImpl extends AbstractJooqDao implements MetaDataInfo
                 .fetch().map(mapper);
     }
 
-    protected List<HostMetaData> getAllInstanceHostMetaDataForAccount(final Account account, final long agentHostId) {
+    protected List<HostMetaData> getAllInstanceHostMetaDataForAccount(final Account account) {
         MultiRecordMapper<HostMetaData> mapper = new MultiRecordMapper<HostMetaData>() {
             @Override
             protected HostMetaData map(List<Object> input) {
@@ -400,8 +401,7 @@ public class MetaDataInfoDaoImpl extends AbstractJooqDao implements MetaDataInfo
     }
 
     @Override
-    public void fetchSelf(MetaHelperInfo helperInfo, String version, OutputStream os) {
-        HostMetaData selfHost = helperInfo.getHostIdToHostMetadata().get(helperInfo.getAgentHostId());
+    public void fetchSelf(HostMetaData selfHost, String version, OutputStream os) {
         DefaultMetaData def = new DefaultMetaData(version, selfHost);
         writeToJson(os, def);
     }
@@ -431,10 +431,10 @@ public class MetaDataInfoDaoImpl extends AbstractJooqDao implements MetaDataInfo
         if (launchConfigName.equalsIgnoreCase(ServiceConstants.PRIMARY_LAUNCH_CONFIG_NAME)) {
             name = service.getName();
         }
-        
+
         ServiceMetaData data = new ServiceMetaData(service, name, stackName, stackUUID, sidekicks,
                 hc, lbConfig, helperInfo.getAccount());
-        
+
         writeToJson(os, data);
     }
 

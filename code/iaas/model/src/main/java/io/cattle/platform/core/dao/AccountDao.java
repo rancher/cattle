@@ -37,4 +37,6 @@ public interface AccountDao {
     // links for the accounts linked to target account both ways
     List<Long> getLinkedAccounts(long accountId);
 
+    Long incrementRevision(long accountId);
+
 }

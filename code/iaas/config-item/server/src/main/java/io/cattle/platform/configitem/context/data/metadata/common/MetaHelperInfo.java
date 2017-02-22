@@ -15,11 +15,10 @@ public class MetaHelperInfo {
     Set<Long> otherAccountsServicesIds;
     Set<Long> otherAccountsStackIds;
     Account account;
-    Long agentHostId;
 
     public MetaHelperInfo(Account account, Map<Long, Account> accounts, Set<Long> otherAccountsServicesIds,
             Set<Long> otherAccountsStackIds,
-            MetaDataInfoDao dao, long agentHostId) {
+            MetaDataInfoDao dao) {
         super();
         this.accounts = accounts;
         this.otherAccountsServicesIds = otherAccountsServicesIds;
@@ -28,8 +27,7 @@ public class MetaHelperInfo {
         // may be fix in the future - get health checker hosts ids for instances of other accounts
         // otherwise this info is irrelevant
         this.instanceIdToHealthCheckers = dao.getInstanceIdToHealthCheckers(account);
-        this.hostIdToHostMetadata = dao.getHostIdToHostMetadata(account, accounts, otherAccountsServicesIds, agentHostId);
-        this.agentHostId = agentHostId;
+        this.hostIdToHostMetadata = dao.getHostIdToHostMetadata(account, accounts, otherAccountsServicesIds);
     }
 
     public Map<Long, List<HealthcheckInstanceHostMap>> getInstanceIdToHealthCheckers() {
@@ -54,9 +52,5 @@ public class MetaHelperInfo {
 
     public Set<Long> getOtherAccountsStackIds() {
         return otherAccountsStackIds;
-    }
-
-    public Long getAgentHostId() {
-        return agentHostId;
     }
 }

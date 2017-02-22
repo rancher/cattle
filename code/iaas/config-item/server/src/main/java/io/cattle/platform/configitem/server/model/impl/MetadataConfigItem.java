@@ -11,6 +11,7 @@ import io.github.ibuildthecloud.gdapi.util.RequestUtils;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.concurrent.Callable;
 
 import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.codec.digest.DigestUtils;
@@ -33,7 +34,7 @@ public class MetadataConfigItem extends AbstractConfigItem {
     }
 
     @Override
-    public void handleRequest(Request req) throws IOException {
+    public void handleRequest(final Request req) throws IOException {
         Instance instance = objectManager.findAny(Instance.class,
                 INSTANCE.AGENT_ID, req.getClient().getResourceId());
         if (instance == null) {
@@ -46,7 +47,12 @@ public class MetadataConfigItem extends AbstractConfigItem {
             return;
         }
 
-        factory.writeMetadata(instance, getVersion(req), req.getOutputStream());
+        factory.writeMetadata(instance, new Callable<String>() {
+            @Override
+            public String call() throws Exception {
+                return getVersion(req);
+            }
+        }, req.getOutputStream());
     }
 
     @Override

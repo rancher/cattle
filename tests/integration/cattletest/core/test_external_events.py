@@ -128,6 +128,23 @@ def test_external_host_event_no_delete(new_context):
     assert host.state == 'inactive'
 
 
+def test_host_evacuate(new_context):
+    c = new_context.create_container()
+
+    client = new_context.client
+    host = client.update(new_context.host, labels={
+        'foo': 'bar'
+    })
+    host = client.wait_success(host)
+    assert host.labels == {'foo': 'bar'}
+
+    host = client.wait_success(host.evacuate())
+    wait_state(client, host, 'inactive')
+    c = client.wait_success(c)
+
+    assert c.removed is not None
+
+
 def test_external_host_event_by_id(new_context):
     c = new_context.create_container()
     new_host = register_simulated_host(new_context)
