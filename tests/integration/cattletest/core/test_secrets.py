@@ -145,7 +145,7 @@ def test_secret_create_and_download(secret_context, super_client):
     assert resp[0]['uid'] == 'user'
     assert resp[0]['gid'] == 'group'
     assert resp[0]['mode'] == '0400'
-    assert len(resp[0]['rewrapText']) == 344
+    assert len(resp[0]['rewrapText']) == 908
 
 
 def test_secret_multi_host(secret_context, super_client):
