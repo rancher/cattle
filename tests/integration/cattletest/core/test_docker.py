@@ -541,7 +541,8 @@ def test_docker_volumes(docker_client, super_client):
     c = docker_client.wait_success(c.stop(remove=True, timeout=0))
     c2 = docker_client.wait_success(c2.stop(remove=True, timeout=0))
 
-    _check_path(foo_vol, True, docker_client, super_client)
+    # set it as false bc we delete volume as soon as we delete container
+    _check_path(foo_vol, False, docker_client, super_client)
     _check_path(bar_vol, True, docker_client, super_client)
 
 

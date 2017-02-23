@@ -334,11 +334,7 @@ def test_volume_mounting_and_delete(new_context, super_client):
     c3 = client.wait_success(c3.stop())
     c3 = client.wait_success(c3.remove())
     check_mount_count(client, c3, 0)
-    v1 = wait_for_condition(client, v1, lambda x: x.state == 'detached')
-    check_mount_count(client, v1, 0)
-
-    v1 = client.wait_success(v1.remove())
-    assert v1.removed is not None
+    wait_for_condition(client, v1, lambda x: x.removed is not None)
 
 
 def test_volume_storage_pool_purge(new_context, super_client):

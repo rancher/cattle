@@ -58,8 +58,6 @@ public class InstanceRemove extends AbstractDefaultProcessHandler {
 
         storage(instance, state.getData());
         
-        deallocate(instance, null);
-        
         for (Port port : getObjectManager().children(instance, Port.class)) {
             deactivateThenRemove(port, state.getData());
         }
@@ -73,6 +71,8 @@ public class InstanceRemove extends AbstractDefaultProcessHandler {
         }
 
         deleteVolumes(instance, state);
+
+        deallocate(instance, null);
 
         objectManager.reload(instance);
 
