@@ -86,6 +86,8 @@
         "networkDriverService" : "crud",
         "storageDriverService" : "crud",
         "genericObject" : "crd",
+        "serviceRollback" : "cr",
+        "convertToServiceInput" : "cr",
         "end" : ""
     }
 }

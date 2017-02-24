@@ -22,7 +22,6 @@ public class ServiceCreate extends AbstractObjectProcessHandler {
     ServiceDiscoveryService sdService;
     @Inject
     JsonMapper jsonMapper;
-
     @Inject
     NetworkDao ntwkDao;
 
@@ -37,6 +36,7 @@ public class ServiceCreate extends AbstractObjectProcessHandler {
         sdService.setVIP(service);
         sdService.setPorts(service);
         sdService.setToken(service);
+        sdService.createInitialServiceRevision(service);
 
         Stack stack = objectManager.loadResource(Stack.class, service.getStackId());
         boolean system = ServiceConstants.isSystem(stack);

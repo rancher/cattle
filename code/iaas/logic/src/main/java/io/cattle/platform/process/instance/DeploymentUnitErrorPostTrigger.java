@@ -3,6 +3,7 @@ package io.cattle.platform.process.instance;
 import static io.cattle.platform.core.model.tables.DeploymentUnitTable.*;
 import static io.cattle.platform.core.model.tables.HostTable.*;
 import io.cattle.platform.core.constants.AgentConstants;
+import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.HostConstants;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.constants.ServiceConstants;
@@ -42,12 +43,13 @@ public class DeploymentUnitErrorPostTrigger extends AbstractObjectProcessLogic i
     @Override
     public HandlerResult handle(ProcessState state, ProcessInstance process) {
         List<DeploymentUnit> units = new ArrayList<>();
+        List<String> skipStates = Arrays.asList(InstanceConstants.STATE_ERROR, InstanceConstants.STATE_ERRORING,
+                CommonStatesConstants.REMOVING);
         if (state.getResource() instanceof Instance) {
             Instance instance = (Instance) state.getResource();
             DeploymentUnit unit = objectManager.findAny(DeploymentUnit.class, DEPLOYMENT_UNIT.UUID,
                     instance.getDeploymentUnitUuid(), DEPLOYMENT_UNIT.REMOVED, null);
-            List<String> skipStates = Arrays.asList(InstanceConstants.STATE_ERROR, InstanceConstants.STATE_ERRORING);
-            if (unit == null || skipStates.contains(unit.getState())) {
+            if (unit == null) {
                 return null;
             }
             units.add(unit);
@@ -64,6 +66,9 @@ public class DeploymentUnitErrorPostTrigger extends AbstractObjectProcessLogic i
         }
         
         for (DeploymentUnit unit : units) {
+            if (skipStates.contains(unit.getState())) {
+                continue;
+            }
             // only put service units to error
             if (unit.getServiceId() != null) {
                 objectManager.setFields(unit, ServiceConstants.FIELD_DEPLOYMENT_UNIT_CLEANUP, true);

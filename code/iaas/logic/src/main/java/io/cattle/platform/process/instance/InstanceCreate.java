@@ -1,13 +1,13 @@
 package io.cattle.platform.process.instance;
 
 import static io.cattle.platform.core.model.tables.CredentialInstanceMapTable.*;
-import static io.cattle.platform.core.model.tables.InstanceRevisionTable.*;
 import static io.cattle.platform.core.model.tables.NicTable.*;
 import static io.cattle.platform.core.model.tables.VolumeTable.*;
 import io.cattle.iaas.labels.service.LabelsService;
 import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.dao.GenericResourceDao;
+import io.cattle.platform.core.dao.InstanceDao;
 import io.cattle.platform.core.dao.LabelsDao;
 import io.cattle.platform.core.model.CredentialInstanceMap;
 import io.cattle.platform.core.model.Instance;
@@ -18,7 +18,6 @@ import io.cattle.platform.engine.handler.HandlerResult;
 import io.cattle.platform.engine.process.ProcessInstance;
 import io.cattle.platform.engine.process.ProcessState;
 import io.cattle.platform.json.JsonMapper;
-import io.cattle.platform.object.meta.ObjectMetaDataManager;
 import io.cattle.platform.object.process.ObjectProcessManager;
 import io.cattle.platform.object.process.StandardProcess;
 import io.cattle.platform.object.util.DataAccessor;
@@ -42,16 +41,16 @@ public class InstanceCreate extends AbstractDefaultProcessHandler {
 
     @Inject
     LabelsService labelsService;
-
     @Inject
     GenericResourceDao resourceDao;
     @Inject
     JsonMapper jsonMapper;
     @Inject
     ObjectProcessManager processManager;
-
     @Inject
     LabelsDao labelsDao;
+    @Inject
+    InstanceDao instanceDao;
 
     @Override
     public HandlerResult handle(ProcessState state, ProcessInstance process) {
@@ -79,17 +78,7 @@ public class InstanceCreate extends AbstractDefaultProcessHandler {
     }
 
     private void createInstanceRevision(ProcessState state, Instance instance) {
-        InstanceRevision revision = objectManager.findAny(InstanceRevision.class, INSTANCE_REVISION.INSTANCE_ID,
-                instance.getId(),
-                INSTANCE_REVISION.REMOVED, null);
-        if (revision == null) {
-            Map<String, Object> data = new HashMap<>();
-            data.put(InstanceConstants.FIELD_INSTANCE_SPEC, state.getData());
-            data.put(ObjectMetaDataManager.NAME_FIELD, instance.getName());
-            data.put(ObjectMetaDataManager.ACCOUNT_FIELD, instance.getAccountId());
-            data.put("instanceId", instance.getId());
-            revision = objectManager.create(InstanceRevision.class, data);
-        }
+        InstanceRevision revision = instanceDao.createRevision(instance, state.getData());
         if (instance.getRevisionId() == null) {
             Map<String, Object> data = new HashMap<>();
             data.put(InstanceConstants.FIELD_REVISION_ID, revision.getId());

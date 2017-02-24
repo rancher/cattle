@@ -52,7 +52,6 @@ public class InstanceConstants {
     public static final String FIELD_VOLUME_DRIVER = "volumeDriver";
     public static final String FIELD_SYSTEM_CONTAINER = "systemContainer";
     public static final String FIELD_DISKS = "disks";
-    public static final String FIELD_HEALTH_UPDATED = "healthUpdated";
     public static final String FIELD_ALLOCATED_IP_ADDRESS = "allocatedIpAddress";
     public static final String FIELD_SERVICE_INSTANCE_SERVICE_INDEX_ID = "serviceIndexId";
     public static final String FIELD_SERVICE_INSTANCE_SERVICE_INDEX = "serviceIndex";
@@ -67,7 +66,7 @@ public class InstanceConstants {
     public static final String FIELD_MEMORY_RESERVATION = "memoryReservation";
     public static final String FIELD_MOUNTS = "mounts";
     public static final String FIELD_HEALTHCHECK_STATES = "healthcheckStates";
-    public static final String FIELD_INSTANCE_SPEC = "spec";
+    public static final String FIELD_INSTANCE_SPECS = "specs";
     public static final String FIELD_REPLACEMNT_FOR_INSTANCE_ID = "replacementFor";
     public static final String FIELD_SERVICE_ID = "serviceId";
     public static final String FIELD_STACK_ID = "stackId";
@@ -76,6 +75,7 @@ public class InstanceConstants {
     public static final String FIELD_EXIT_CODE = "exitCode";
     public static final String FIELD_START_RETRY_COUNT = "startRetryCount";
     public static final String FIELD_REVISION_ID = "revisionId";
+    public static final String FIELD_PREVIOUS_REVISION_ID = "previousRevisionId";
 
     public static final String PROCESS_DATA_NO_OP = "containerNoOpEvent";
 
@@ -93,6 +93,8 @@ public class InstanceConstants {
     public static final String PROCESS_RESTORE = "instance.restore";
     public static final String PROCESS_PURGE = "instance.purge";
     public static final String PROCESS_ERROR = "instance.error";
+    
+    public static final String ACTIONT_CONVERT_TO_SERVICE = "instance.converttoservice";
 
     public static final String KIND_CONTAINER = "container";
     public static final String KIND_VIRTUAL_MACHINE = "virtualMachine";

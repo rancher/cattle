@@ -16,6 +16,7 @@ public class SystemLabels {
     public static final String LABEL_DISPLAY_NAME = "io.rancher.container.display_name";
     public static final String LABEL_HEALTHCHECK_SKIP = "io.rancher.host.healthcheck.skip";
     public static final String LABEL_CONTAINER_SYSTEM = "io.rancher.container.system";
+    public static final String LABEL_PULL_IMAGE = "io.rancher.container.pull_image";
 
     /**
      * Indicates an instance runs an agent that provides the labels provider service

@@ -42,16 +42,16 @@
             "required": true,
             "validChars": "a-zA-Z0-9-",
             "minLength": 1,
-            "maxLength": 63,
-             "attributes" : {
-                "scheduleUpdate" : true
-            }
+            "maxLength": 63
         },
         "launchConfig": {
             "type": "launchConfig",
             "create": true,
             "required": false,
-            "nullable": true
+            "nullable": true,
+             "attributes" : {
+                "scheduleUpdate" : true
+            }
         },
         "upgrade": {
             "type": "serviceUpgrade",
@@ -66,7 +66,10 @@
         "secondaryLaunchConfigs": {
             "type": "array[secondaryLaunchConfig]",
             "create": true,
-            "required": false
+            "required": false,
+             "attributes" : {
+                "scheduleUpdate" : true
+            }
         },
         "metadata": {
             "type": "map[json]",
@@ -145,6 +148,39 @@
         },
         "executionPeriodStart": {
             "type": "date"
+        },
+        "batchSize": {
+            "type": "int",
+            "nullable": true,
+            "default": 1,
+            "min": 1,
+            "create": true,
+             "attributes" : {
+                "scheduleUpdate" : true
+            }
+        },
+        "intervalMillis": {
+            "type": "int",
+            "nullable": true,
+            "default": 2000,
+            "min": 100,
+            "create": true,
+             "attributes" : {
+                "scheduleUpdate" : true
+            }
+        },
+        "startFirst": {
+            "type": "boolean",
+            "nullable": true,
+            "default": false,
+            "create": true,
+             "attributes" : {
+                "scheduleUpdate" : true
+            }
+        },
+        "prePullOnUpgrade": {
+            "type": "boolean",
+            "default": true
         }
     },
     "resourceActions" : {
@@ -153,7 +189,6 @@
         "addservicelink" : {
             "input" : "addRemoveServiceLinkInput",
             "output" : "service"
-
         },
         "removeservicelink" : {
             "input" : "addRemoveServiceLinkInput",
@@ -169,6 +204,19 @@
         },
         "restart" : {
             "input" : "serviceRestart",
+            "output" : "service"
+        },
+        "cancelupgrade": {
+            "output": "service",
+            "attributes": {
+                "states": ["upgrading", "finishing-upgrade"]
+            }
+        },
+        "rollback" : {
+            "input" : "serviceRollback",
+            "output" : "service"
+        },
+         "garbagecollect" : {
             "output" : "service"
         }
     }

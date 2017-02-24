@@ -151,7 +151,7 @@ def test_rollback_with_health(client, context, super_client):
     svc = super_client.reload(svc)
 
     # rollback the service
-    svc = wait_state(client, svc.cancelupgrade(), 'canceled-upgrade')
+    svc = wait_state(client, svc.pause(), 'paused')
     client.wait_success(svc.rollback())
 
 

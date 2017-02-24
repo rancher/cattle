@@ -26,6 +26,7 @@ public class ServiceConstants {
             KIND_STORAGE_DRIVER_SERVICE,
             KIND_NETWORK_DRIVER_SERVICE
         ));
+    
 
     public static final String TYPE_STACK = "stack";
     public static final String FIELD_SCALE = "scale";
@@ -93,6 +94,12 @@ public class ServiceConstants {
     public static final String FIELD_DEPLOYMENT_UNIT_REMOVE_LOG_LEVEL = "removeLogLevel";
     public static final String FIELD_DEPLOYMENT_UNIT_REMOVE_REASON = "removeReason";
     public static final String FIELD_DEPLOYMENT_UNIT_CLEANUP = "cleanup";
+    public static final String FIELD_IS_UPGRADE = "isUpgrade";
+    public static final String FIELD_BATCHSIZE = "batchSize";
+    public static final String FIELD_INTERVAL_MILLISEC = "intervalMillis";
+    public static final String FIELD_START_FIRST = "startFirst";
+    public static final String FIELD_UPGRADE_TIME = "upgradeTime";
+    public static final String FIELD_IMAGE_PRE_PULL = "prePullOnUpgrade";
 
     public static final String FIELD_INTERNAL_VOLUMES = "internalVolumes";
     public static final String FIELD_VOLUME_TEMPLATE_ID = "volumeTemplateId";
@@ -143,6 +150,9 @@ public class ServiceConstants {
     public static final String PROCESS_DU_ERROR = "deploymentunit.error";
     public static final String PROCESS_DU_UPDATE_UNHEALTHY = "deploymentunit.updateunhealthy";
     public static final String PROCESS_DU_UPDATE_HEALTHY = "deploymentunit.updatehealthy";
+    public static final String PROCESS_SERVICE_CANCEL_UPGRADE = "service.cancelupgrade";
+    public static final String PROCESS_SERVICE_PAUSE = "service.pause";
+    public static final String PROCESS_SERVICE_GARBAGE_COLLECT = "service.garbagecollect";
 
     public static final String LINK_DOCKER_COMPOSE_CONFIG = "dockerComposeConfig";
     public static final String LINK_RANCHER_COMPOSE_CONFIG = "rancherComposeConfig";
@@ -171,11 +181,12 @@ public class ServiceConstants {
 
     public static final String STATE_UPGRADING = "upgrading";
     public static final String STATE_ROLLINGBACK = "rolling-back";
-    public static final String STATE_CANCELING_UPGRADE = "canceling-upgrade";
-    public static final String STATE_CANCELED_UPGRADE = "canceled-upgrade";
+    public static final String STATE_PAUSING = "pausing";
+    public static final String STATE_PAUSED = "paused";
     public static final String STATE_UPGRADED = "upgraded";
     public static final String STATE_FINISHING_UPGRADE = "finishing-upgrade";
     public static final String STATE_RESTARTING = "restarting";
+    public static final String STATE_UPDATING = "updating";
 
     public static final String IMAGE_NONE = "rancher/none";
 

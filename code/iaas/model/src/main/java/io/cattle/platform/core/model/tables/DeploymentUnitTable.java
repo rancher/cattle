@@ -11,7 +11,7 @@ package io.cattle.platform.core.model.tables;
 @java.lang.SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class DeploymentUnitTable extends org.jooq.impl.TableImpl<io.cattle.platform.core.model.tables.records.DeploymentUnitRecord> {
 
-	private static final long serialVersionUID = 577409360;
+	private static final long serialVersionUID = -1533971543;
 
 	/**
 	 * The singleton instance of <code>cattle.deployment_unit</code>
@@ -95,6 +95,11 @@ public class DeploymentUnitTable extends org.jooq.impl.TableImpl<io.cattle.platf
 	 * The column <code>cattle.deployment_unit.health_state</code>.
 	 */
 	public final org.jooq.TableField<io.cattle.platform.core.model.tables.records.DeploymentUnitRecord, java.lang.String> HEALTH_STATE = createField("health_state", org.jooq.impl.SQLDataType.VARCHAR.length(128), this, "");
+
+	/**
+	 * The column <code>cattle.deployment_unit.cleanup</code>.
+	 */
+	public final org.jooq.TableField<io.cattle.platform.core.model.tables.records.DeploymentUnitRecord, java.lang.Boolean> CLEANUP = createField("cleanup", org.jooq.impl.SQLDataType.BIT.nullable(false).defaulted(true), this, "");
 
 	/**
 	 * Create a <code>cattle.deployment_unit</code> table reference

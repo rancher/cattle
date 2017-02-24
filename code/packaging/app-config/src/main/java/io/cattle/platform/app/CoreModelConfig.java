@@ -3,6 +3,7 @@ package io.cattle.platform.app;
 import io.cattle.platform.core.addon.BlkioDeviceOption;
 import io.cattle.platform.core.addon.CatalogTemplate;
 import io.cattle.platform.core.addon.ComposeConfig;
+import io.cattle.platform.core.addon.ConvertToServiceInput;
 import io.cattle.platform.core.addon.HaConfigInput;
 import io.cattle.platform.core.addon.HaproxyConfig;
 import io.cattle.platform.core.addon.InServiceUpgradeStrategy;
@@ -26,6 +27,7 @@ import io.cattle.platform.core.addon.ScalePolicy;
 import io.cattle.platform.core.addon.SecretReference;
 import io.cattle.platform.core.addon.ServiceLink;
 import io.cattle.platform.core.addon.ServiceRestart;
+import io.cattle.platform.core.addon.ServiceRollback;
 import io.cattle.platform.core.addon.ServiceUpgrade;
 import io.cattle.platform.core.addon.ServiceUpgradeStrategy;
 import io.cattle.platform.core.addon.ServicesPortRange;
@@ -93,7 +95,9 @@ public class CoreModelConfig {
                 NetworkPolicyRuleAction.class,
                 ProcessSummary.class,
                 ProcessPool.class,
-                SecretReference.class
+                SecretReference.class,
+                ServiceRollback.class,
+                ConvertToServiceInput.class
                 ));
         return typeSet;
     }

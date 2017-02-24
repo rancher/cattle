@@ -168,6 +168,17 @@ public interface DeploymentUnit extends java.io.Serializable {
 	@javax.persistence.Column(name = "health_state", length = 128)
 	public java.lang.String getHealthState();
 
+	/**
+	 * Setter for <code>cattle.deployment_unit.cleanup</code>.
+	 */
+	public void setCleanup(java.lang.Boolean value);
+
+	/**
+	 * Getter for <code>cattle.deployment_unit.cleanup</code>.
+	 */
+	@javax.persistence.Column(name = "cleanup", nullable = false, precision = 1)
+	public java.lang.Boolean getCleanup();
+
 	// -------------------------------------------------------------------------
 	// FROM and INTO
 	// -------------------------------------------------------------------------

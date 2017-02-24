@@ -167,10 +167,7 @@ public class DeploymentUnitManagerImpl implements DeploymentUnitManager {
                 }
                 if (unit.getServiceId() != null) {
                     final Service service = objectMgr.loadResource(Service.class, unit.getServiceId());
-                    boolean activeService = service.getState().equalsIgnoreCase(CommonStatesConstants.ACTIVE)
-                            || service.getState()
-                                    .equalsIgnoreCase(CommonStatesConstants.UPDATING_ACTIVE);
-                    if (activeService) {
+                    if (sdSvc.isServiceValidForReconcile(service)) {
                         activitySvc.run(service, unit, "deploymentunit.trigger", "Re-evaluating deployment unit state",
                                 new Runnable() {
                             @Override

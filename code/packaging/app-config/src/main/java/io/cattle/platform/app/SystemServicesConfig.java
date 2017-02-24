@@ -6,6 +6,7 @@ import io.cattle.iaas.healthcheck.service.impl.HealthcheckCleanupMonitorImpl;
 import io.cattle.iaas.healthcheck.service.impl.HealthcheckServiceImpl;
 import io.cattle.iaas.healthcheck.service.impl.HostHealthcheckHostLookup;
 import io.cattle.iaas.healthcheck.service.impl.HostMapHealthcheckInstancesLookup;
+import io.cattle.iaas.healthcheck.service.impl.UpgradeCleanupMonitorImpl;
 import io.cattle.iaas.labels.service.impl.LabelsServiceImpl;
 import io.cattle.platform.activity.ActivityService;
 import io.cattle.platform.agent.impl.AgentLocatorImpl;
@@ -355,6 +356,11 @@ public class SystemServicesConfig {
     @Bean
     HealthcheckCleanupMonitorImpl healthcheckCleanupMonitorImpl() {
         return new HealthcheckCleanupMonitorImpl();
+    }
+
+    @Bean
+    UpgradeCleanupMonitorImpl upgradeCleanupMonitorImpl() {
+        return new UpgradeCleanupMonitorImpl();
     }
 
     @Bean

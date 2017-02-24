@@ -37,6 +37,7 @@ import io.cattle.platform.servicediscovery.deployment.impl.planner.DefaultServic
 import io.cattle.platform.servicediscovery.deployment.impl.planner.GlobalServiceDeploymentPlanner;
 import io.cattle.platform.servicediscovery.deployment.impl.planner.NoOpServiceDeploymentPlanner;
 import io.cattle.platform.servicediscovery.service.ServiceDiscoveryService;
+import io.cattle.platform.servicediscovery.upgrade.UpgradeManager;
 import io.cattle.platform.util.exception.DeploymentUnitAllocateException;
 import io.cattle.platform.util.exception.ServiceReconcileException;
 import io.github.ibuildthecloud.gdapi.id.IdFormatter;
@@ -83,6 +84,8 @@ public class DeploymentManagerImpl implements DeploymentManager {
     ResourceMonitor resourceMntr;
     @Inject
     IdFormatter idFrmt;
+    @Inject
+    UpgradeManager upgradeMgr;
 
     @Override
     public boolean isHealthy(Service service) {
@@ -119,7 +122,6 @@ public class DeploymentManagerImpl implements DeploymentManager {
                 objectMgr.setFields(service, SERVICE.SKIP, false);
                 return reconcileDeployment(service, checkState, scheduleOnly);
             }
-
         });
     }
 
@@ -379,9 +381,7 @@ public class DeploymentManagerImpl implements DeploymentManager {
             @Override
             public void run() {
                 final Service service = objectMgr.loadResource(Service.class, client.getResourceId());
-                if (service != null
-                        && (service.getState().equalsIgnoreCase(CommonStatesConstants.ACTIVE) || service.getState()
-                                .equalsIgnoreCase(CommonStatesConstants.UPDATING_ACTIVE))) {
+                if (sdSvc.isServiceValidForReconcile(service)) {
                     activitySvc.run(service, "service.trigger", "Re-evaluating state", new Runnable() {
                         @Override
                         public void run() {

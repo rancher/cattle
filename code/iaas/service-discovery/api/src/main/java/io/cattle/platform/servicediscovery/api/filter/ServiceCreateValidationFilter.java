@@ -1,12 +1,13 @@
 package io.cattle.platform.servicediscovery.api.filter;
 
 import static io.cattle.platform.core.model.tables.ServiceTable.*;
-
 import io.cattle.platform.core.addon.PortRule;
 import io.cattle.platform.core.addon.ScalePolicy;
 import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.constants.ServiceConstants;
+import io.cattle.platform.core.dao.ServiceDao;
+import io.cattle.platform.core.model.InstanceRevision;
 import io.cattle.platform.core.model.Service;
 import io.cattle.platform.core.model.Stack;
 import io.cattle.platform.core.util.PortSpec;
@@ -16,6 +17,7 @@ import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.object.util.DataUtils;
 import io.cattle.platform.servicediscovery.api.util.ServiceDiscoveryUtil;
+import io.cattle.platform.servicediscovery.api.util.ServiceDiscoveryUtil.UpgradedConfig;
 import io.cattle.platform.servicediscovery.api.util.selector.SelectorUtils;
 import io.cattle.platform.storage.api.filter.ExternalTemplateInstanceFilter;
 import io.cattle.platform.storage.service.StorageService;
@@ -41,15 +43,14 @@ import org.apache.commons.lang3.StringUtils;
 
 @Named
 public class ServiceCreateValidationFilter extends AbstractDefaultResourceManagerFilter {
-
     @Inject
     ObjectManager objectManager;
-
     @Inject
     StorageService storageService;
-
     @Inject
     JsonMapper jsonMapper;
+    @Inject
+    ServiceDao serviceDao;
 
     private static final int LB_HEALTH_CHECK_PORT = 42;
 
@@ -352,8 +353,50 @@ public class ServiceCreateValidationFilter extends AbstractDefaultResourceManage
         validateLbConfig(request, type);
         validateScalePolicy(service, request, true);
         validatePorts(service, type, request);
+        request = setForUpgrade(service, request);
 
         return super.update(type, id, request, next);
+    }
+
+    protected ApiRequest setForUpgrade(Service service, ApiRequest request) {
+        Map<String, Object> data = CollectionUtils.toMap(request.getRequestObject());
+        List<Map<String, Object>> launchConfigs = populateLaunchConfigs(service, request);
+        List<Map<String, Object>> secondary = new ArrayList<>();
+        Map<String, Object> primary = null;
+        for (Map<String, Object> lc : launchConfigs) {
+            if (!lc.containsKey("name")) {
+                primary = lc;
+            } else {
+                secondary.add(lc);
+            }
+        }
+        UpgradedConfig upgrade = ServiceDiscoveryUtil.mergeLaunchConfigs(service, primary, secondary);
+        if (upgrade == null) {
+            return request;
+        }
+        if (upgrade.isRunUpgrade()) {
+            InstanceRevision oldRevision = serviceDao.getCurrentRevision(service);
+            if (oldRevision != null) {
+                data.put(InstanceConstants.FIELD_PREVIOUS_REVISION_ID, oldRevision.getId());
+            }
+            InstanceRevision newRevision = serviceDao.createRevision(service, upgrade.getPrimaryLaunchConfig(),
+                    upgrade.getSecondaryLaunchConfigs(), false);
+            data.put(InstanceConstants.FIELD_REVISION_ID, newRevision.getId());
+            data.put(ServiceConstants.FIELD_LAUNCH_CONFIG, upgrade.getPrimaryLaunchConfig());
+            data.put(ServiceConstants.FIELD_SECONDARY_LAUNCH_CONFIGS, upgrade.getSecondaryLaunchConfigs());
+            request.setRequestObject(data);
+            setForUpgrade(service);
+        }
+
+        return request;
+    }
+
+    protected void setForUpgrade(Service service) {
+        if (ServiceConstants.SERVICE_LIKE.contains(service.getKind())) {
+            Map<String, Object> data = new HashMap<>();
+            data.put(ServiceConstants.FIELD_IS_UPGRADE, true);
+            objectManager.setFields(objectManager.reload(service), data);
+        }
     }
 
     protected void validateLaunchConfigs(Service service, ApiRequest request) {

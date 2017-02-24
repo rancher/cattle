@@ -9,9 +9,6 @@
         },
         "executionPeriodStart": {
             "type": "date"
-        },
-        "cleanup": {
-            "type": "boolean"
         }
     }
 }

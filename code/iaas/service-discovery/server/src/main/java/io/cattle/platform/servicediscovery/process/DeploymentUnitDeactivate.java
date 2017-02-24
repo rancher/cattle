@@ -6,7 +6,6 @@ import io.cattle.platform.core.model.DeploymentUnit;
 import io.cattle.platform.engine.handler.HandlerResult;
 import io.cattle.platform.engine.process.ProcessInstance;
 import io.cattle.platform.engine.process.ProcessState;
-import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.process.common.handler.AbstractObjectProcessHandler;
 import io.cattle.platform.servicediscovery.deployment.DeploymentUnitManager;
 
@@ -27,7 +26,7 @@ public class DeploymentUnitDeactivate extends AbstractObjectProcessHandler {
     @Override
     public HandlerResult handle(ProcessState state, ProcessInstance process) {
         DeploymentUnit unit = (DeploymentUnit) state.getResource();
-        boolean forCleanup = DataAccessor.fieldBool(unit, ServiceConstants.FIELD_DEPLOYMENT_UNIT_CLEANUP);
+        boolean forCleanup = unit.getCleanup();
         Object reason = state.getData().get(ServiceConstants.FIELD_DEPLOYMENT_UNIT_REMOVE_REASON);
         Object level = state.getData().get(ServiceConstants.FIELD_DEPLOYMENT_UNIT_REMOVE_LOG_LEVEL);
         if (reason != null) {

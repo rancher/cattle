@@ -27,7 +27,7 @@ import javax.inject.Inject;
 import javax.inject.Named;
 
 @Named
-public class LoadBalancerServiceUpdatePostListener extends AbstractObjectProcessLogic implements ProcessPostListener,
+public class ServiceUpdatePostListener extends AbstractObjectProcessLogic implements ProcessPostListener,
         Priority {
 
     @Inject
@@ -52,12 +52,11 @@ public class LoadBalancerServiceUpdatePostListener extends AbstractObjectProcess
     @Override
     public HandlerResult handle(ProcessState state, ProcessInstance process) {
         Service service = (Service) state.getResource();
-        if (!service.getKind().equalsIgnoreCase(ServiceConstants.KIND_LOAD_BALANCER_SERVICE)) {
+        if (!ServiceConstants.SERVICE_LIKE.contains(service.getKind())) {
             return null;
         }
 
         updateServicePorts(service, state);
-
         return null;
     }
 

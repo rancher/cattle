@@ -11,7 +11,7 @@ package io.cattle.platform.core.model.tables;
 @java.lang.SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class ServiceTable extends org.jooq.impl.TableImpl<io.cattle.platform.core.model.tables.records.ServiceRecord> {
 
-	private static final long serialVersionUID = -616219560;
+	private static final long serialVersionUID = 1584985881;
 
 	/**
 	 * The singleton instance of <code>cattle.service</code>
@@ -127,6 +127,21 @@ public class ServiceTable extends org.jooq.impl.TableImpl<io.cattle.platform.cor
 	public final org.jooq.TableField<io.cattle.platform.core.model.tables.records.ServiceRecord, java.lang.Boolean> SKIP = createField("skip", org.jooq.impl.SQLDataType.BIT.nullable(false).defaulted(true), this, "");
 
 	/**
+	 * The column <code>cattle.service.revision_id</code>.
+	 */
+	public final org.jooq.TableField<io.cattle.platform.core.model.tables.records.ServiceRecord, java.lang.Long> REVISION_ID = createField("revision_id", org.jooq.impl.SQLDataType.BIGINT, this, "");
+
+	/**
+	 * The column <code>cattle.service.previous_revision_id</code>.
+	 */
+	public final org.jooq.TableField<io.cattle.platform.core.model.tables.records.ServiceRecord, java.lang.Long> PREVIOUS_REVISION_ID = createField("previous_revision_id", org.jooq.impl.SQLDataType.BIGINT, this, "");
+
+	/**
+	 * The column <code>cattle.service.is_upgrade</code>.
+	 */
+	public final org.jooq.TableField<io.cattle.platform.core.model.tables.records.ServiceRecord, java.lang.Boolean> IS_UPGRADE = createField("is_upgrade", org.jooq.impl.SQLDataType.BIT.nullable(false).defaulted(true), this, "");
+
+	/**
 	 * Create a <code>cattle.service</code> table reference
 	 */
 	public ServiceTable() {
@@ -177,7 +192,7 @@ public class ServiceTable extends org.jooq.impl.TableImpl<io.cattle.platform.cor
 	 */
 	@Override
 	public java.util.List<org.jooq.ForeignKey<io.cattle.platform.core.model.tables.records.ServiceRecord, ?>> getReferences() {
-		return java.util.Arrays.<org.jooq.ForeignKey<io.cattle.platform.core.model.tables.records.ServiceRecord, ?>>asList(io.cattle.platform.core.model.Keys.FK_SERVICE__ACCOUNT_ID, io.cattle.platform.core.model.Keys.FK_SERVICE__ENVIRONMENT_ID);
+		return java.util.Arrays.<org.jooq.ForeignKey<io.cattle.platform.core.model.tables.records.ServiceRecord, ?>>asList(io.cattle.platform.core.model.Keys.FK_SERVICE__ACCOUNT_ID, io.cattle.platform.core.model.Keys.FK_SERVICE__ENVIRONMENT_ID, io.cattle.platform.core.model.Keys.FK_SERVICE__REVISION_ID, io.cattle.platform.core.model.Keys.FK_SERVICE__PREVIOUS_REVISION_ID);
 	}
 
 	/**

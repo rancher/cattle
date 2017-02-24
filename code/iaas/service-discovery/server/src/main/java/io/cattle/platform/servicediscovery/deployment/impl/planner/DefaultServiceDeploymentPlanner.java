@@ -60,6 +60,7 @@ public class DefaultServiceDeploymentPlanner extends ServiceDeploymentPlanner {
 
     private void addMissingUnits(DeploymentUnitInstanceIdGenerator svcInstanceIdGenerator) {
         while (getAllUnits().size() < this.requestedScale) {
+            checkState();
             if (isScaleChanged()) {
                 throw new ServiceReconcileException("Need to restart service reconcile");
             }
@@ -79,6 +80,7 @@ public class DefaultServiceDeploymentPlanner extends ServiceDeploymentPlanner {
         sortByCreated(units);
         List<DeploymentUnit> watchList = new ArrayList<>();
         while (units.size() > this.requestedScale) {
+            checkState();
             if (isScaleChanged()) {
                 throw new ServiceReconcileException("Need to restart service reconcile");
             }

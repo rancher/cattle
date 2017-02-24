@@ -6,7 +6,8 @@ import io.cattle.platform.core.model.Service;
 
 public interface UpgradeManager {
 
-    void upgrade(Service service, ServiceUpgradeStrategy strategy, String currentProcess);
+    void upgrade(Service service, ServiceUpgradeStrategy strategy, String currentProcess, boolean sleep,
+            boolean prepullImages);
 
     void rollback(Service service, ServiceUpgradeStrategy strategy);
 

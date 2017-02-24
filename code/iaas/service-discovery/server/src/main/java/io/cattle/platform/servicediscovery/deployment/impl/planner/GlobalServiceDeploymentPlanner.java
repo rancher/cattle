@@ -70,6 +70,7 @@ public class GlobalServiceDeploymentPlanner extends ServiceDeploymentPlanner {
         List<String> fulfilledHostIds = new ArrayList<>();
         List<DeploymentUnit> watchList = new ArrayList<>();
         for (int i = 0; i < units.size(); i++) {
+            checkState();
             DeploymentUnit unit = units.get(i);
             String hostId = getHostId(unit);
             if (fulfilledHostIds.contains(hostId) || !hostIds.contains(Long.valueOf(hostId))) {
@@ -88,6 +89,7 @@ public class GlobalServiceDeploymentPlanner extends ServiceDeploymentPlanner {
     private void addMissingUnits(DeploymentUnitInstanceIdGenerator svcInstanceIdGenerator) {
         for (Long hostId : hostIds) {
             if (!hostToUnits.containsKey(hostId)) {
+                checkState();
                 Map<String, String> labels = new HashMap<>();
                 labels.put(ServiceConstants.LABEL_SERVICE_REQUESTED_HOST_ID, hostId.toString());
                 DeploymentUnit unit = context.serviceDao.createDeploymentUnit(service.getAccountId(), service, labels,

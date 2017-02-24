@@ -433,17 +433,17 @@
 
     <!-- Service Discovery Service -->
     <process:process name="service.create" resourceType="service" start="requested" transitioning="registering" done="inactive" />
-    <process:process name="service.activate" resourceType="service" start="inactive,restarting" transitioning="activating" done="active" />    
-    <process:process name="service.update" resourceType="service" start="inactive,active,updating-active,finishing-upgrade,activating,canceling-upgrade,upgrading,rolling-back" transitioning="inactive=updating-inactive,active=updating-active,updating-active=updating-active,finishing-upgrade=finishing-upgrade,activating=activating,canceling-upgrade=canceling-upgrade,upgrading=upgrading,rolling-back=rolling-back" done="updating-inactive=inactive,updating-active=active,finishing-upgrade=active,activating=active,canceling-upgrade=canceled-upgrade,upgrading=upgraded,rolling-back=active" />
-    <process:process name="service.deactivate" resourceType="service" start="restarting,active,activating, updating-inactive, updating-active" transitioning="deactivating" done="inactive" />
-    <process:process name="service.remove" resourceType="service" start="inactive, registering, active, activating, updating-inactive, updating-active, upgrading, canceling-upgrade, rolling-back, deactivating, requested,canceled-upgrade,rolling-back,upgraded,finishing-upgrade,restarting" transitioning="removing" done="removed" />
+    <process:process name="service.activate" resourceType="service" start="inactive,restarting,paused" transitioning="activating" done="active" />    
+    <process:process name="service.update" resourceType="service" start="inactive,active,updating-active,finishing-upgrade,activating,upgrading,rolling-back" transitioning="inactive=updating-inactive,active=updating-active,updating-active=updating-active,finishing-upgrade=finishing-upgrade,activating=activating,upgrading=upgrading,rolling-back=rolling-back" done="updating-inactive=inactive,updating-active=active,finishing-upgrade=active,activating=active,upgrading=upgraded,rolling-back=active" />
+    <process:process name="service.deactivate" resourceType="service" start="restarting,active,activating,updating-inactive,updating-active,paused" transitioning="deactivating" done="inactive" />
+    <process:process name="service.remove" resourceType="service" start="requested,inactive, registering,active,activating,updating-inactive,updating-active,upgrading,upgraded,rolling-back,deactivating,pausing,paused,finishing-upgrade,restarting" transitioning="removing" done="removed" />
     <process:process name="service.upgrade" resourceType="service" start="active,activating,inactive,updating-active" transitioning="upgrading" done="upgraded" />
-    <process:process name="service.continueupgrade" resourceType="service" start="canceled-upgrade" transitioning="upgrading" done="upgraded" />
-    <process:process name="service.cancelupgrade" resourceType="service" start="upgrading,finishing-upgrade" transitioning="canceling-upgrade" done="canceled-upgrade" />
-    <process:process name="service.rollback" resourceType="service" start="upgrading,upgraded,canceled-upgrade" transitioning="rolling-back" done="active" />
+    <process:process name="service.pause" resourceType="service" start="upgrading,finishing-upgrade,activating,deactivating,restarting,updating-active" transitioning="pausing" done="paused" />
+    <process:process name="service.rollback" resourceType="service" start="upgrading,upgraded,paused,active" transitioning="rolling-back" done="active" />
     <process:process name="service.finishupgrade" resourceType="service" start="upgraded" transitioning="finishing-upgrade" done="active" />
     <process:process name="service.restart" resourceType="service" start="active" transitioning="restarting" done="active" />
 
+    <!-- Account -->
     <process:process name="account.upgrade" resourceType="account" start="active" transitioning="upgrading" done="active" />
 
     <!-- Service Discovery Service/Instance map -->

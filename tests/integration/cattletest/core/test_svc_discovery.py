@@ -60,10 +60,11 @@ def test_update_env_service(client, context):
     service, env = create_env_and_svc(client, context)
     new_env_name = env.name + '1'
     new_name = service.name + '1'
+    old_name = service.name
     service.name = new_name
     service.scale = None
     service = client.update(service, service)
-    assert service.name == new_name
+    assert service.name == old_name
 
     env.name = new_env_name
     env = client.update(env, env)
@@ -202,6 +203,10 @@ def test_service_fields(client, context):
     assert svc.metadata == metadata
     assert svc.launchConfig.version == '0'
     assert svc.launchConfig.requestedHostId == host.id
+    assert svc.batchSize == 1
+    assert svc.intervalMillis == 2000
+    assert svc.startFirst is False
+    assert svc.revisionId is not None
 
     # activate the service and validate that parameters were set for instance
     service = client.wait_success(svc.activate())
@@ -868,16 +873,10 @@ def test_service_rename(client, context):
     _validate_compose_instance_start(client, service1, env, "1")
     _validate_compose_instance_start(client, service1, env, "2")
 
-    # update name and validate that the service name got
-    # updated, all old instances weren't renamed,
-    # and the new instance got created with the new name
-    new_name = "newname"
-    service2 = client.update(service1, scale=3, name=new_name)
+    # update name and validate it had no effect
+    service2 = client.update(service1, name="newname")
     service2 = client.wait_success(service2)
-    assert service2.name == new_name
-    _validate_compose_instance_start(client, service1, env, "1")
-    _validate_compose_instance_start(client, service1, env, "2")
-    _validate_compose_instance_start(client, service2, env, "3")
+    assert service2.name == service1.name
 
 
 def test_env_rename(client, context):
@@ -957,9 +956,10 @@ def test_validate_scale_down_restore_state(client, context):
     service = wait_state(client, service, 'active')
 
     # validate that only one service instance mapping exists
-    instance_service_map = client. \
-        list_serviceExposeMap(serviceId=service.id, state="active")
-    assert len(instance_service_map) == 1
+    wait_for(
+        lambda: len(client.list_serviceExposeMap(serviceId=service.id,
+                                                 state='active')) == 1
+    )
 
 
 def test_validate_labels(client, context):
@@ -3036,7 +3036,7 @@ def requested_ip_test_ip_retain(client, context, super_client):
 def _get_instance_for_service(super_client, serviceId):
     instances = []
     instance_service_maps = super_client. \
-        list_serviceExposeMap(serviceId=serviceId)
+        list_serviceExposeMap(serviceId=serviceId, state='active')
     for mapping in instance_service_maps:
         instances.append(mapping.instance())
     return instances
@@ -3378,54 +3378,59 @@ def test_svc_ports_update(client, context):
     service = client.wait_success(service)
     assert service.state == "active"
 
-    new_launch_config = {"imageUuid": image_uuid, "ports": ['8682:8682']}
+    new_launch_config = {"ports": ['8682:8682']}
 
-    # regular service should fail port updates
+    # test for regular service
     service = client.update(service, launchConfig=new_launch_config)
-    assert service.launchConfig.ports == ['8681:8681/tcp']
+    service = client.wait_success(service)
+    assert service.launchConfig.ports == ['8682:8682/tcp']
+    instances = _get_instance_for_service(client, service.id)
+    assert len(instances) == 1
+    instance = instances[0]
+    assert instance.ports == ['8682:8682/tcp']
 
     lb_config = {}
 
     # same test for lb service
     launch_config = {"imageUuid": image_uuid, "ports": ['8683:8683']}
-    lbSvc = client. \
+    lb_svc = client. \
         create_loadBalancerService(name=random_str(),
                                    stackId=env.id,
                                    launchConfig=launch_config,
                                    lbConfig=lb_config)
-    lbSvc = client.wait_success(lbSvc)
-    assert lbSvc.state == "inactive"
+    lb_svc = client.wait_success(lb_svc)
+    assert lb_svc.state == "inactive"
 
     # activate service
-    lbSvc = client.wait_success(lbSvc.activate())
+    lb_svc = client.wait_success(lb_svc.activate())
     assert service.state == "active"
-    instances = _get_instance_for_service(client, lbSvc.id)
+    instances = _get_instance_for_service(client, lb_svc.id)
 
     assert len(instances) == 1
     instance = instances[0]
     assert instance.ports == ['8683:8683/tcp']
     wait_for(
-        lambda: client.reload(lbSvc).publicEndpoints is not None and len(
-            client.reload(lbSvc).publicEndpoints) == 1)
-    endpoints = client.reload(lbSvc).publicEndpoints
+        lambda: client.reload(lb_svc).publicEndpoints is not None and len(
+            client.reload(lb_svc).publicEndpoints) == 1)
+    endpoints = client.reload(lb_svc).publicEndpoints
     ep = endpoints[0]
     assert ep.port == 8683
 
-    new_launch_config = {"imageUuid": image_uuid, "ports": ['8684']}
+    new_launch_config = {"ports": ['8684']}
 
-    lbSvc = client.update(lbSvc, launchConfig=new_launch_config)
-    lbSvc = client.wait_success(lbSvc)
-    assert lbSvc.launchConfig.ports == ['8684:8684/tcp']
-    instances = _get_instance_for_service(client, lbSvc.id)
+    lb_svc = client.update(lb_svc, launchConfig=new_launch_config)
+    lb_svc = client.wait_success(lb_svc)
+    assert lb_svc.launchConfig.ports == ['8684:8684/tcp']
+    instances = _get_instance_for_service(client, lb_svc.id)
 
     assert len(instances) == 1
     instance = instances[0]
     assert instance.ports == ['8684:8684/tcp']
 
     wait_for(
-        lambda: client.reload(lbSvc).publicEndpoints is not None and len(
-            client.reload(lbSvc).publicEndpoints) == 1)
-    endpoints = client.reload(lbSvc).publicEndpoints
+        lambda: client.reload(lb_svc).publicEndpoints is not None and len(
+            client.reload(lb_svc).publicEndpoints) == 1)
+    endpoints = client.reload(lb_svc).publicEndpoints
     ep = endpoints[0]
     assert ep.port == 8684
 
@@ -3658,3 +3663,26 @@ def test_on_failure_policy_retry_zero(context, client, super_client):
     super_client.update(i, exitCode=1)
     i = client.wait_success(i.stop(stopSource="external"))
     wait_for(lambda: super_client.reload(i).state == 'running')
+
+
+def test_service_pause(client, context):
+    env = _create_stack(client)
+
+    image_uuid = context.image_uuid
+    launch_config = {"imageUuid": image_uuid}
+
+    svc = client.create_service(name=random_str(),
+                                stackId=env.id,
+                                launchConfig=launch_config,
+                                scale=10)
+    svc = client.wait_success(svc)
+
+    svc = svc.activate()
+    svc = svc.pause()
+    svc = wait_state(client, svc, 'paused')
+    maps = client \
+        .list_serviceExposeMap(serviceId=svc.id)
+
+    assert len(maps) < 10
+    svc = client.wait_success(svc.activate())
+    assert svc.state == 'active'

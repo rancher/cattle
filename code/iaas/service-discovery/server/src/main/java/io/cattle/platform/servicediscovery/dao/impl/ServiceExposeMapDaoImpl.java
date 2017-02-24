@@ -1,11 +1,11 @@
 package io.cattle.platform.servicediscovery.dao.impl;
 
+import static io.cattle.platform.core.model.tables.DeploymentUnitTable.*;
 import static io.cattle.platform.core.model.tables.HostTable.*;
 import static io.cattle.platform.core.model.tables.InstanceHostMapTable.*;
 import static io.cattle.platform.core.model.tables.InstanceTable.*;
 import static io.cattle.platform.core.model.tables.ServiceExposeMapTable.*;
 import static io.cattle.platform.core.model.tables.ServiceTable.*;
-import static io.cattle.platform.core.model.tables.DeploymentUnitTable.*;
 import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.constants.ServiceConstants;
@@ -28,6 +28,7 @@ import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.servicediscovery.api.dao.ServiceExposeMapDao;
 import io.cattle.platform.servicediscovery.api.util.ServiceDiscoveryUtil;
+import io.github.ibuildthecloud.gdapi.condition.ConditionType;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -77,7 +78,9 @@ public class ServiceExposeMapDaoImpl extends AbstractJooqDao implements ServiceE
 
         ServiceExposeMap map = objectManager.findAny(ServiceExposeMap.class,
                 SERVICE_EXPOSE_MAP.INSTANCE_ID, instance.getId(),
-                SERVICE_EXPOSE_MAP.SERVICE_ID, service.getId(), SERVICE_EXPOSE_MAP.REMOVED, null);
+                SERVICE_EXPOSE_MAP.SERVICE_ID, service.getId(), SERVICE_EXPOSE_MAP.REMOVED, null,
+                SERVICE_EXPOSE_MAP.STATE, new io.github.ibuildthecloud.gdapi.condition.Condition(
+                        ConditionType.NE, CommonStatesConstants.REMOVING));
         if (map == null) {
             map = objectManager.create(ServiceExposeMap.class, SERVICE_EXPOSE_MAP.INSTANCE_ID, instance.getId(),
                     SERVICE_EXPOSE_MAP.SERVICE_ID, service.getId(), SERVICE_EXPOSE_MAP.ACCOUNT_ID,
@@ -357,16 +360,20 @@ public class ServiceExposeMapDaoImpl extends AbstractJooqDao implements ServiceE
     }
 
     @Override
-    public List<? extends ServiceExposeMap> getInstancesSetForUpgrade(long serviceId) {
+    public List<? extends Instance> getInstancesSetForUpgrade(long serviceId) {
         return create()
-        .select(SERVICE_EXPOSE_MAP.fields())
-        .from(SERVICE_EXPOSE_MAP)
+                .select(INSTANCE.fields())
+                .from(INSTANCE)
+                .join(SERVICE_EXPOSE_MAP)
+                .on(SERVICE_EXPOSE_MAP.INSTANCE_ID.eq(INSTANCE.ID))
                 .where(SERVICE_EXPOSE_MAP.SERVICE_ID.eq(serviceId))
                 .and(SERVICE_EXPOSE_MAP.MANAGED.eq(false))
                 .and(SERVICE_EXPOSE_MAP.UPGRADE.eq(true))
                 .and(SERVICE_EXPOSE_MAP.STATE.in(CommonStatesConstants.ACTIVATING,
                         CommonStatesConstants.ACTIVE, CommonStatesConstants.REQUESTED))
-        .fetchInto(ServiceExposeMapRecord.class);
+                .and(INSTANCE.REMOVED.isNull())
+                .and(INSTANCE.STATE.ne(CommonStatesConstants.REMOVING))
+                .fetchInto(InstanceRecord.class);
     }
 
     public Configuration getLockingConfiguration() {

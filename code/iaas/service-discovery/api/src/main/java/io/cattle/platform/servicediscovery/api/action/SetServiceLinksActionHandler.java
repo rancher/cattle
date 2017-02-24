@@ -32,19 +32,14 @@ public class SetServiceLinksActionHandler implements ActionHandler {
 
     @Inject
     JsonMapper jsonMapper;
-
     @Inject
     ServiceConsumeMapDao consumeMapDao;
-
     @Inject
     LockManager lockManager;
-
     @Inject
     ServiceDiscoveryApiService sdService;
-
     @Inject
     ObjectManager objMgr;
-
     @Inject
     IdFormatter idFormatter;
 

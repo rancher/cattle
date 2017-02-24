@@ -20,13 +20,12 @@ import io.github.ibuildthecloud.gdapi.condition.Condition;
 import io.github.ibuildthecloud.gdapi.condition.ConditionType;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 public class StandaloneDeploymentUnitImpl extends DeploymentUnitImpl {
-    Map<String, Map<Object, Object>> instanceIdToInstanceSpec = new HashMap<>();
+    Map<String, Map<String, Object>> instanceIdToInstanceSpec = new HashMap<>();
 
     public StandaloneDeploymentUnitImpl(DeploymentUnitManagerContext context, DeploymentUnit unit) {
         super(context, unit);
@@ -42,7 +41,7 @@ public class StandaloneDeploymentUnitImpl extends DeploymentUnitImpl {
     @SuppressWarnings("unchecked")
     protected List<String> getSidekickRefs(String launchConfigName) {
         List<String> configNames = new ArrayList<>();
-        Map<Object, Object> spec = instanceIdToInstanceSpec.get(launchConfigName);
+        Map<String, Object> spec = instanceIdToInstanceSpec.get(launchConfigName);
         if (spec == null) {
             return new ArrayList<String>();
         }
@@ -86,8 +85,12 @@ public class StandaloneDeploymentUnitImpl extends DeploymentUnitImpl {
             if (revision == null) {
                 continue;
             }
-            instanceIdToInstanceSpec.put(instance.getId().toString(), CollectionUtils.toMap(DataAccessor.field(
-                    revision, InstanceConstants.FIELD_INSTANCE_SPEC, Object.class)));
+            Map<?, ?> specs = CollectionUtils.toMap(DataAccessor.field(
+                    revision, InstanceConstants.FIELD_INSTANCE_SPECS, Object.class));
+            if (specs.size() != 0) {
+                Map<String, Object> spec = CollectionUtils.toMap(specs.get(instance.getUuid()));
+                instanceIdToInstanceSpec.put(instance.getId().toString(), spec);
+            }
             addDeploymentInstance(launchConfigName, unitInstance);
         }
     }
@@ -109,14 +112,8 @@ public class StandaloneDeploymentUnitImpl extends DeploymentUnitImpl {
         }
     }
 
-    @SuppressWarnings("unchecked")
     public Map<String, Object> getReplacementDeployParams(Instance instance) {
-        InstanceRevision revision = context.objectManager.findAny(InstanceRevision.class, INSTANCE_REVISION.ID,
-                instance.getRevisionId(),
-                INSTANCE_REVISION.REMOVED, null);
-        Map<String, Object> instanceSpec = DataAccessor.fields(revision)
-                .withKey(InstanceConstants.FIELD_INSTANCE_SPEC).withDefault(Collections.EMPTY_MAP)
-                .as(Map.class);
+        Map<String, Object> instanceSpec = instanceIdToInstanceSpec.get(instance.getId().toString());
         Map<String, Object> data = new HashMap<>();
         data.putAll(instanceSpec);
         data.put(ObjectMetaDataManager.ACCOUNT_FIELD, instance.getAccountId());

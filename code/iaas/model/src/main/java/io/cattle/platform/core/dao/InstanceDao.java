@@ -7,6 +7,7 @@ import io.cattle.platform.core.model.Host;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.InstanceHostMap;
 import io.cattle.platform.core.model.InstanceLink;
+import io.cattle.platform.core.model.InstanceRevision;
 import io.cattle.platform.core.model.Nic;
 import io.cattle.platform.core.model.Service;
 
@@ -52,5 +53,11 @@ public interface InstanceDao {
     List<PublicEndpoint> getPublicEndpoints(long accountId, Long serviceId, Long hostId);
 
     List<? extends Service> findServicesNonRemovedLinksOnly(Instance instance);
+
+    InstanceRevision createRevision(Instance instance, Map<String, Object> spec);
+
+    void cleanupInstanceRevisions(Instance instance);
+
+    Map<String, Object> getInstanceSpec(Instance instance);
 
 }

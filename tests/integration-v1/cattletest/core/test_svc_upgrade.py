@@ -167,7 +167,7 @@ def test_rollback_regular_upgrade(context, client, super_client):
                              service2,
                              toServiceId=service2.id,
                              finalScale=4)
-    svc = wait_state(client, svc.cancelupgrade(), 'canceled-upgrade')
+    svc = wait_state(client, svc.pause(), 'paused')
     svc = wait_state(client, svc.rollback(), 'active')
     _wait_for_map_count(super_client, svc)
 
@@ -220,13 +220,6 @@ def test_cancelupgrade_rollback(context, client):
     svc.remove()
 
 
-def test_cancelupgrade_finish(context, client):
-    # upgrading-cancelingupgrade-canceledupgrade-finishupgrade
-    svc = _create_and_schedule_inservice_upgrade(client, context)
-    svc = _cancel_upgrade(client, svc)
-    svc.continueupgrade()
-
-
 def test_upgrade_finish_cancel_rollback(context, client):
     # upgrading-cancelingupgrade-canceledupgrade-finishupgrade
     svc = _create_and_schedule_inservice_upgrade(client, context)
@@ -235,7 +228,7 @@ def test_upgrade_finish_cancel_rollback(context, client):
     svc = svc.finishupgrade()
     wait_for(lambda: client.reload(svc).state == 'finishing-upgrade')
     svc = _cancel_upgrade(client, svc)
-    assert svc.state == 'canceled-upgrade'
+    assert svc.state == 'paused'
     svc = client.wait_success(svc.rollback())
 
 
@@ -777,7 +770,7 @@ def _validate_rollback(super_client, svc, rolledback_svc,
 
 def _cancel_upgrade(client, svc):
     svc.cancelupgrade()
-    wait_for(lambda: client.reload(svc).state == 'canceled-upgrade')
+    wait_for(lambda: client.reload(svc).state == 'paused')
     svc = client.reload(svc)
     strategy = svc.upgrade.inServiceStrategy
     assert strategy.previousLaunchConfig is not None

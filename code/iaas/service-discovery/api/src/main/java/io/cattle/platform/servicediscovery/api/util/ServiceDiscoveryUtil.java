@@ -1,6 +1,7 @@
 package io.cattle.platform.servicediscovery.api.util;
 
 import io.cattle.platform.allocator.service.AllocationHelper;
+import io.cattle.platform.archaius.util.ArchaiusUtil;
 import io.cattle.platform.core.addon.InServiceUpgradeStrategy;
 import io.cattle.platform.core.addon.InstanceHealthCheck;
 import io.cattle.platform.core.constants.AgentConstants;
@@ -9,6 +10,7 @@ import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.constants.NetworkConstants;
 import io.cattle.platform.core.constants.ServiceConstants;
 import io.cattle.platform.core.model.Instance;
+import io.cattle.platform.core.model.InstanceRevision;
 import io.cattle.platform.core.model.Service;
 import io.cattle.platform.core.model.Stack;
 import io.cattle.platform.core.util.PortSpec;
@@ -28,9 +30,15 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.Pair;
+
+import com.netflix.config.DynamicStringListProperty;
+
 public class ServiceDiscoveryUtil {
 
     private static final int LB_HEALTH_CHECK_PORT = 42;
+    private static DynamicStringListProperty UPGRADE_TRIGGER_FIELDS = ArchaiusUtil.getList("upgrade.trigger.fields");
 
     public static String getInstanceName(Instance instance) {
         if (instance != null && instance.getRemoved() == null) {
@@ -434,10 +442,237 @@ public class ServiceDiscoveryUtil {
         return Arrays.asList(CommonStatesConstants.ACTIVATING,
                 CommonStatesConstants.ACTIVE, CommonStatesConstants.UPDATING_ACTIVE,
                 ServiceConstants.STATE_UPGRADING, ServiceConstants.STATE_ROLLINGBACK,
-                ServiceConstants.STATE_CANCELING_UPGRADE,
-                ServiceConstants.STATE_CANCELED_UPGRADE,
+                ServiceConstants.STATE_PAUSING,
+                ServiceConstants.STATE_PAUSED,
                 ServiceConstants.STATE_FINISHING_UPGRADE,
                 ServiceConstants.STATE_UPGRADED,
                 ServiceConstants.STATE_RESTARTING);
     }
+    
+    public static UpgradedConfig mergeLaunchConfigs(Service service, Map<String, Object> newPrimaryLaunchConfig,
+            List<Map<String, Object>> newSecondaryLaunchConfigs) {
+        if (newPrimaryLaunchConfig == null && newSecondaryLaunchConfigs == null) {
+            return null;
+        }
+        
+        boolean changed = false;
+        boolean isSelectorService = service.getSelectorContainer() == null;
+        
+        Map<String, Map<String, Object>> currentConfigsMap = getCurrentLaunchConfigs(service);
+
+        // 1. Generate merge configs
+        List<Map<String, Object>> mergedConfigs = new ArrayList<>();
+        if (newPrimaryLaunchConfig != null) {
+            mergedConfigs.add(newPrimaryLaunchConfig);
+        }
+        if (newSecondaryLaunchConfigs != null && !newSecondaryLaunchConfigs.isEmpty()) {
+            for (Map<String, Object> newConfig : newSecondaryLaunchConfigs) {
+                Object name = newConfig.get("name");
+                Object imageUuid = newConfig.get(InstanceConstants.FIELD_IMAGE_UUID);
+                if (isSelectorService && imageUuid != null
+                        && StringUtils.equalsIgnoreCase(ServiceConstants.IMAGE_NONE, imageUuid.toString())) {
+                    currentConfigsMap.remove(name);
+                    changed = true;
+                    continue;
+                }
+                mergedConfigs.add(newConfig);
+            }
+        }
+
+        // 2. Merge configs
+        List<String> upgradeTriggerFields = UPGRADE_TRIGGER_FIELDS.get();
+        String generatedVersion = io.cattle.platform.util.resource.UUID.randomUUID().toString();
+        for (Map<String, Object> mergedConfig : mergedConfigs) {
+            boolean resetVersion = false;
+            String currentVersion = null;
+            String name = mergedConfig.get("name") != null ? mergedConfig.get("name").toString() : service
+                    .getName();
+            try {
+                Map<String, Object> currentConfig = currentConfigsMap.get(name);
+                if (currentConfig == null) {
+                    resetVersion = true;
+                    continue;
+                }
+                currentVersion = String.valueOf(currentConfig.get(ServiceConstants.FIELD_VERSION));
+                for (String key : mergedConfig.keySet()) {
+                    if (currentConfig.containsKey(key)) {
+                        if (key.equalsIgnoreCase(InstanceConstants.FIELD_PORTS)) {
+                            preserveOldRandomPorts(service, mergedConfig, currentConfig);
+                        }
+                        // if field triggers upgrade + value changed, trigger upgrade
+                        if (upgradeTriggerFields.contains(key)
+                                && !currentConfig.get(key).equals(mergedConfig.get(key))) {
+                            resetVersion = true;
+                        }
+                        currentConfig.remove(key);
+                    } else if (upgradeTriggerFields.contains(key)) {
+                        resetVersion = true;
+                    }
+                }
+
+                // if there are no updatable keys left,
+                // consider force upgrade
+                boolean upgradableFieldsLeft = false;
+                for (String key : currentConfig.keySet()) {
+                    if (upgradeTriggerFields.contains(key)) {
+                        upgradableFieldsLeft = true;
+                        break;
+                    }
+                }
+                if (!upgradableFieldsLeft) {
+                    resetVersion = true;
+                }
+                mergedConfig.putAll(currentConfig);
+                currentConfigsMap.remove(name);
+            } finally {
+                if (resetVersion) {
+                    setVersion(mergedConfig, generatedVersion);
+                    changed = true;
+                } else {
+                    setVersion(mergedConfig, currentVersion);
+                }
+            }
+        }
+
+        mergedConfigs.addAll(currentConfigsMap.values());
+
+        return new UpgradedConfig(service, mergedConfigs, changed);
+    }
+
+    protected static void setVersion(Map<String, Object> config, String version) {
+        config.put(ServiceConstants.FIELD_VERSION, version);
+    }
+
+    @SuppressWarnings("unchecked")
+    public static Map<String, Map<String, Object>> getCurrentLaunchConfigs(Service service) {
+        Map<String, Map<String, Object>> currentLaunchConfigs = new HashMap<>();
+        for (Object secondaryLaunchConfigObject : DataAccessor.fields(service)
+                .withKey(ServiceConstants.FIELD_SECONDARY_LAUNCH_CONFIGS)
+                .withDefault(Collections.EMPTY_LIST).as(
+                        List.class)) {
+            Map<String, Object> lc = new HashMap<>();
+            lc.putAll(CollectionUtils.toMap(secondaryLaunchConfigObject));
+            currentLaunchConfigs.put(lc.get("name").toString(), lc);
+        }
+        Map<String, Object> lc = new HashMap<>();
+        lc.putAll(DataAccessor.fields(service)
+                .withKey(ServiceConstants.FIELD_LAUNCH_CONFIG).withDefault(Collections.EMPTY_MAP)
+                .as(Map.class));
+        currentLaunchConfigs.put(service.getName(), lc);
+        return currentLaunchConfigs;
+    }
+
+    public static class UpgradedConfig {
+        Map<String, Object> primaryLaunchConfig;
+        List<Map<String, Object>> secondaryLaunchConfigs;
+        boolean runUpgrade;
+
+        @SuppressWarnings("unchecked")
+        public UpgradedConfig(Service service, List<Map<String, Object>> launchConfigs, boolean runUpgrade) {
+            super();
+            
+            Map<String, Map<String, Object>> secondaryLCTemp = new HashMap<>();
+            
+            for (Map<String, Object> lc : launchConfigs) {
+                if (!lc.containsKey("name")) {
+                    this.primaryLaunchConfig = lc;
+                } else {
+                    secondaryLCTemp.put(lc.get("name").toString(), lc);
+                }
+            }
+            
+            // preserve the initial order of the secondary launch configs
+            List<Object> secondary = DataAccessor.fields(service)
+                    .withKey(ServiceConstants.FIELD_SECONDARY_LAUNCH_CONFIGS)
+                    .withDefault(Collections.EMPTY_LIST).as(
+                            List.class);
+            List<String> secNames = new ArrayList<>();
+            for (Object sec : secondary) {
+                secNames.add(CollectionUtils.toMap(sec).get("name").toString());
+            }
+                    
+            if (!secondaryLCTemp.isEmpty()) {
+                secondaryLaunchConfigs = new ArrayList<>();
+                for (String secName : secNames) {
+                    if (secondaryLCTemp.containsKey(secName)) {
+                        secondaryLaunchConfigs.add(secondaryLCTemp.get(secName));
+                        secondaryLCTemp.remove(secName);
+                    }
+                }
+                // add the rest
+                secondaryLaunchConfigs.addAll(secondaryLCTemp.values());
+            }
+
+            this.runUpgrade = runUpgrade;
+        }
+
+        public Map<String, Object> getPrimaryLaunchConfig() {
+            return primaryLaunchConfig;
+        }
+
+        public List<Map<String, Object>> getSecondaryLaunchConfigs() {
+            return secondaryLaunchConfigs;
+        }
+
+        public boolean isRunUpgrade() {
+            return runUpgrade;
+        }
+    }
+
+    public static final InServiceUpgradeStrategy getStrategy(Service service, Pair<InstanceRevision, InstanceRevision> currentPreviousRevision,
+            boolean upgrade) {
+        boolean startFirst = DataAccessor.fieldBool(service, ServiceConstants.FIELD_START_FIRST);
+        Long batchSize = DataAccessor.fieldLong(service, ServiceConstants.FIELD_BATCHSIZE);
+        Long intervalMillis = DataAccessor.fieldLong(service, ServiceConstants.FIELD_INTERVAL_MILLISEC);
+
+        if (currentPreviousRevision == null) {
+            return null;
+        }
+        Map<String, Object> current = null;
+        Map<String, Object> previous = null;
+
+        if (upgrade) {
+            current = CollectionUtils.toMap(DataAccessor.field(
+                    currentPreviousRevision.getLeft(), InstanceConstants.FIELD_INSTANCE_SPECS, Object.class));
+            previous = CollectionUtils.toMap(DataAccessor.field(
+                    currentPreviousRevision.getRight(), InstanceConstants.FIELD_INSTANCE_SPECS, Object.class));
+        } else {
+            current = CollectionUtils.toMap(DataAccessor.field(
+                    currentPreviousRevision.getRight(), InstanceConstants.FIELD_INSTANCE_SPECS, Object.class));
+            previous = CollectionUtils.toMap(DataAccessor.field(
+                    currentPreviousRevision.getLeft(), InstanceConstants.FIELD_INSTANCE_SPECS, Object.class));
+        }
+
+        List<Object> secondaryLaunchConfigs = new ArrayList<>();
+        for (String name : current.keySet()) {
+            if (name.equalsIgnoreCase(service.getName())) {
+                continue;
+            }
+            secondaryLaunchConfigs.add(current.get(name));
+        }
+
+        List<Object> previousSecondaryLaunchConfigs = new ArrayList<>();
+        for (String name : previous.keySet()) {
+            if (name.equalsIgnoreCase(service.getName())) {
+                continue;
+            }
+            previousSecondaryLaunchConfigs.add(previous.get(name));
+        }
+        return new InServiceUpgradeStrategy(current.get(service.getName()), secondaryLaunchConfigs,
+                previous.get(service.getName()), previousSecondaryLaunchConfigs, startFirst,
+                intervalMillis, batchSize);
+    }
+    
+    public static final List<String> getServiceImages(Service service) {
+        List<String> images = new ArrayList<>();
+        for (String lcName : getServiceLaunchConfigNames(service)) {
+            Object imageUUID = getLaunchConfigObject(service, lcName, InstanceConstants.FIELD_IMAGE_UUID);
+            if (imageUUID == null) {
+                continue;
+            }
+            images.add(imageUUID.toString());
+        }
+        return images;
+    }
+
 }

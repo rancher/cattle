@@ -11,6 +11,7 @@ import io.cattle.platform.core.constants.NetworkConstants;
 import io.cattle.platform.core.constants.ServiceConstants;
 import io.cattle.platform.core.dao.DataDao;
 import io.cattle.platform.core.dao.LoadBalancerInfoDao;
+import io.cattle.platform.core.dao.ServiceDao;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.Service;
 import io.cattle.platform.core.model.ServiceConsumeMap;
@@ -63,27 +64,22 @@ import org.yaml.snakeyaml.representer.Representer;
 public class ServiceDiscoveryApiServiceImpl implements ServiceDiscoveryApiService {
     @Inject
     ObjectManager objectManager;
-
     @Inject
     ObjectProcessManager objectProcessManager;
-
     @Inject
     ServiceConsumeMapDao consumeMapDao;
-
     @Inject
     List<RancherConfigToComposeFormatter> formatters;
-
     @Inject
     JsonMapper jsonMapper;
-
     @Inject
     RSAKeyProvider keyProvider;
-
     @Inject
     DataDao dataDao;
-
     @Inject
     LoadBalancerInfoDao lbInfoDao;
+    @Inject
+    ServiceDao serviceDao;
 
     private final static String COMPOSE_PREFIX = "version: '2'\r\n";
     

@@ -2,19 +2,18 @@ package io.cattle.platform.servicediscovery.process;
 
 import static io.cattle.platform.core.model.tables.HealthcheckInstanceHostMapTable.*;
 import static io.cattle.platform.core.model.tables.HealthcheckInstanceTable.*;
-import static io.cattle.platform.core.model.tables.InstanceRevisionTable.*;
 import static io.cattle.platform.core.model.tables.InstanceTable.*;
 import io.cattle.platform.activity.ActivityLog;
 import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.constants.ServiceConstants;
 import io.cattle.platform.core.dao.GenericResourceDao;
+import io.cattle.platform.core.dao.InstanceDao;
 import io.cattle.platform.core.dao.ServiceDao;
 import io.cattle.platform.core.model.DeploymentUnit;
 import io.cattle.platform.core.model.HealthcheckInstance;
 import io.cattle.platform.core.model.HealthcheckInstanceHostMap;
 import io.cattle.platform.core.model.Instance;
-import io.cattle.platform.core.model.InstanceRevision;
 import io.cattle.platform.engine.handler.HandlerResult;
 import io.cattle.platform.engine.handler.ProcessPostListener;
 import io.cattle.platform.engine.process.ProcessInstance;
@@ -22,14 +21,12 @@ import io.cattle.platform.engine.process.ProcessState;
 import io.cattle.platform.engine.process.impl.ProcessCancelException;
 import io.cattle.platform.json.JsonMapper;
 import io.cattle.platform.lock.LockManager;
-import io.cattle.platform.object.meta.ObjectMetaDataManager;
 import io.cattle.platform.object.process.StandardProcess;
 import io.cattle.platform.process.common.handler.AbstractObjectProcessLogic;
 import io.cattle.platform.process.common.util.ProcessUtils;
 import io.cattle.platform.servicediscovery.service.ServiceDiscoveryService;
 import io.cattle.platform.util.type.Priority;
 
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -49,6 +46,8 @@ public class DeploymentUnitInstanceRemovePostHandler extends AbstractObjectProce
     LockManager lockMgr;
     @Inject
     ServiceDiscoveryService sdSvc;
+    @Inject
+    InstanceDao instanceDao;
 
     @Override
     public String[] getProcessNames() {
@@ -61,7 +60,7 @@ public class DeploymentUnitInstanceRemovePostHandler extends AbstractObjectProce
         cleanupHealthcheckMaps(instance);
         sdSvc.removeFromLoadBalancerServices(null, instance);
         leaveDeploymentUnit(instance);
-        cleanupInstanceRevision(instance);
+        instanceDao.cleanupInstanceRevisions(instance);
         return null;
     }
 
@@ -96,19 +95,6 @@ public class DeploymentUnitInstanceRemovePostHandler extends AbstractObjectProce
             objectProcessManager.scheduleStandardProcessAsync(StandardProcess.DEACTIVATE,
                     unit, ProcessUtils.chainInData(data,
                             ServiceConstants.PROCESS_DU_DEACTIVATE, ServiceConstants.PROCESS_DU_REMOVE));
-        }
-    }
-
-    private void cleanupInstanceRevision(Instance instance) {
-        List<InstanceRevision> revisions = objectManager.find(InstanceRevision.class, INSTANCE_REVISION.INSTANCE_ID,
-                instance.getId(),
-                INSTANCE_REVISION.REMOVED, null);
-        for (InstanceRevision revision : revisions) {
-            Map<String, Object> params = new HashMap<>();
-            params.put(ObjectMetaDataManager.REMOVED_FIELD, new Date());
-            params.put(ObjectMetaDataManager.REMOVE_TIME_FIELD, new Date());
-            params.put(ObjectMetaDataManager.STATE_FIELD, CommonStatesConstants.REMOVED);
-            objectManager.setFields(revision, params);
         }
     }
 

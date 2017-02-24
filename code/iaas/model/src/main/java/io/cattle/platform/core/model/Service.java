@@ -234,6 +234,39 @@ public interface Service extends java.io.Serializable {
 	@javax.persistence.Column(name = "skip", nullable = false, precision = 1)
 	public java.lang.Boolean getSkip();
 
+	/**
+	 * Setter for <code>cattle.service.revision_id</code>.
+	 */
+	public void setRevisionId(java.lang.Long value);
+
+	/**
+	 * Getter for <code>cattle.service.revision_id</code>.
+	 */
+	@javax.persistence.Column(name = "revision_id", precision = 19)
+	public java.lang.Long getRevisionId();
+
+	/**
+	 * Setter for <code>cattle.service.previous_revision_id</code>.
+	 */
+	public void setPreviousRevisionId(java.lang.Long value);
+
+	/**
+	 * Getter for <code>cattle.service.previous_revision_id</code>.
+	 */
+	@javax.persistence.Column(name = "previous_revision_id", precision = 19)
+	public java.lang.Long getPreviousRevisionId();
+
+	/**
+	 * Setter for <code>cattle.service.is_upgrade</code>.
+	 */
+	public void setIsUpgrade(java.lang.Boolean value);
+
+	/**
+	 * Getter for <code>cattle.service.is_upgrade</code>.
+	 */
+	@javax.persistence.Column(name = "is_upgrade", nullable = false, precision = 1)
+	public java.lang.Boolean getIsUpgrade();
+
 	// -------------------------------------------------------------------------
 	// FROM and INTO
 	// -------------------------------------------------------------------------

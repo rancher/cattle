@@ -647,15 +647,24 @@
         "composeService.resourceActions.restart" : "",
         "composeService.resourceActions.update" : "",
         "composeService.resourceActions.upgrade" : "",
+        "composeService.resourceActions.rollback" : "",
+        "composeService.resourceActions.garbagecollect": "",
         "composeService.lbConfig" : "",
+        "composeService.batchSize" : "",
+        "composeService.intervalMillis" : "",
+        "composeService.startFirst" : "",
+        "composeService.revisionId" : "",
+        "composeService.previousRevisionId": "",
+        "composeService.prePullOnUpgrade": "",
 
         "service" : "r",
+        "service.name": "cr",
         "service.externalId" : "cr",
         "service.stackId" : "cr",
         "service.scale" : "cru",
-        "service.launchConfig" : "cr",
+        "service.launchConfig" : "cru",
         "service.upgrade" : "r",
-        "service.secondaryLaunchConfigs" : "cr",
+        "service.secondaryLaunchConfigs" : "cru",
         "service.vip" : "cr",
         "service.createIndex" : "r",
         "service.metadata" : "cru",
@@ -674,6 +683,12 @@
         "service.instanceIds" : "r",
         "service.system" : "r",
         "service.lbConfig" : "cru",
+        "service.batchSize" : "cru",
+        "service.intervalMillis" : "cru",
+        "service.startFirst" : "cru",
+        "service.revisionId" : "r",
+        "service.previousRevisionId": "r",
+        "service.prePullOnUpgrade": "cru",
 
         "addRemoveServiceLinkInput" : "r",
         "addRemoveServiceLinkInput.serviceLink" : "cr",
@@ -686,7 +701,6 @@
         "loadBalancerService.createIndex" : "",
         "loadBalancerService.selectorContainer" : "",
         "loadBalancerService.lbConfig" : "cru",
-        "loadBalancerService.launchConfig" : "cru",
 
         "lbConfig" : "r",
         "lbConfig.certificateIds" : "cr",
@@ -780,6 +794,9 @@
         "externalService.scalePolicy" : "",
         "externalService.currentScale" : "",
         "externalService.lbConfig" : "",
+        "externalService.batchSize" : "",
+        "externalService.intervalMillis" : "",
+        "externalService.startFirst" : "",
 
         "dnsService" : "r",
         "dnsService.scale" : "",
@@ -791,6 +808,9 @@
         "dnsService.scalePolicy" : "",
         "dnsService.currentScale" : "",
         "dnsService.lbConfig" : "",
+        "dnsService.batchSize" : "",
+        "dnsService.intervalMillis" : "",
+        "dnsService.startFirst" : "",
 
         "kubernetesService" : "r",
         "kubernetesService.assignServiceIpAddress" : "",
@@ -811,6 +831,12 @@
         "kubernetesService.scalePolicy" : "",
         "kubernetesService.currentScale" : "",
         "kubernetesService.lbConfig" : "",
+        "kubernetesService.batchSize" : "",
+        "kubernetesService.intervalMillis" : "",
+        "kubernetesService.startFirst" : "",
+        "kubernetesService.revisionId" : "",
+        "kubernetesService.previousRevisionId" : "",
+        "kubernetesService.prePullOnUpgrade": "",
 
         "kubernetesStack" : "r",
         "kubernetesStack.name": "cr",
@@ -1031,6 +1057,17 @@
         "scheduledUpgrade" : "r",
         "scheduledUpgrade.stackId": "r",
         "scheduledUpgrade.started": "r",
+
+        "instanceRevision": "r",
+        "instanceRevision.specs": "r",
+        "instanceRevision.instanceId": "r",
+        "instanceRevision.serviceId": "r",
+
+        "serviceRollback" : "r",
+        "serviceRollback.revisionId" : "cr",
+
+        "convertToServiceInput" : "r",
+        "convertToServiceInput.name" : "cr",
 
         "end" : ""
     }

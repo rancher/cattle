@@ -421,6 +421,10 @@
         "startRetryCount": {
             "type": "int",
             "nullable": true
+        },
+        "deploymentUnitUuid": {
+            "type": "string",
+            "nullable": true
         }
     },
     "resourceActions": {
@@ -430,6 +434,10 @@
             "attributes": {
                 "states": [ "running", "stopped", "stopping" ]
             }
+        },
+        "converttoservice" : {
+            "input":"convertToServiceInput",
+            "output" : "service"
         }
     }
 }

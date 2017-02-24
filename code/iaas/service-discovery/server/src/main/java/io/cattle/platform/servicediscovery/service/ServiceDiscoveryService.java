@@ -68,4 +68,10 @@ public interface ServiceDiscoveryService extends AnnotatedEventListener {
     void removeFromLoadBalancerServices(Service service, Instance instance);
 
     void incrementExecutionCount(Object object);
+
+    void createInitialServiceRevision(Service service);
+
+    boolean isServiceValidForReconcile(Service service);
+
+    void resetUpgradeFlag(Service service);
 }

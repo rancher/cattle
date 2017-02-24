@@ -11,7 +11,9 @@ import io.cattle.platform.core.constants.ServiceConstants;
 import io.cattle.platform.core.model.DeploymentUnit;
 import io.cattle.platform.core.model.Service;
 import io.cattle.platform.core.model.Stack;
+import io.cattle.platform.engine.process.ExitReason;
 import io.cattle.platform.engine.process.impl.ProcessCancelException;
+import io.cattle.platform.engine.process.impl.ProcessExecutionExitException;
 import io.cattle.platform.object.process.StandardProcess;
 import io.cattle.platform.object.resource.ResourcePredicate;
 import io.cattle.platform.object.util.TransitioningUtils;
@@ -165,6 +167,7 @@ public abstract class ServiceDeploymentPlanner {
         sortByCreated(units);
 
         for (DeploymentUnit unit : units) {
+            checkState();
             if (unit.getState().equalsIgnoreCase(CommonStatesConstants.INACTIVE)) {
                 context.objectProcessManager.scheduleStandardProcessAsync(StandardProcess.ACTIVATE, unit, null);
             } else if (unit.getState().equalsIgnoreCase(CommonStatesConstants.REQUESTED)) {
@@ -175,6 +178,7 @@ public abstract class ServiceDeploymentPlanner {
         }
 
         for (DeploymentUnit unit : units) {
+            checkState();
             context.resourceMonitor.waitFor(unit,
                     new ResourcePredicate<DeploymentUnit>() {
                         @Override
@@ -201,6 +205,13 @@ public abstract class ServiceDeploymentPlanner {
         }
         
         return units;
+    }
+
+    protected void checkState() {
+        List<String> pausedStates = Arrays.asList(ServiceConstants.STATE_PAUSED, ServiceConstants.STATE_PAUSING);
+        if (pausedStates.contains(context.objectManager.reload(service).getState())) {
+            throw new ProcessExecutionExitException(ExitReason.STATE_CHANGED);
+        }
     }
 
     public void cleanupUnits() {

@@ -25,10 +25,12 @@ import io.cattle.platform.core.constants.ServiceConstants;
 import io.cattle.platform.core.constants.SubnetConstants;
 import io.cattle.platform.core.dao.InstanceDao;
 import io.cattle.platform.core.dao.NetworkDao;
+import io.cattle.platform.core.dao.ServiceDao;
 import io.cattle.platform.core.model.Account;
 import io.cattle.platform.core.model.AccountLink;
 import io.cattle.platform.core.model.Host;
 import io.cattle.platform.core.model.Instance;
+import io.cattle.platform.core.model.InstanceRevision;
 import io.cattle.platform.core.model.Network;
 import io.cattle.platform.core.model.Service;
 import io.cattle.platform.core.model.ServiceConsumeMap;
@@ -119,6 +121,8 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
     ConfigItemStatusManager itemManager;
     @Inject
     NetworkService networkService;
+    @Inject
+    ServiceDao serviceDao;
 
     @Override
     public void removeServiceLinks(Service service) {
@@ -489,7 +493,7 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
                 return;
             }
 
-            Network ntwk = networkService.resolveNetwork(serviceIndex.getAccountId(), ntwkMode.toString());
+            Network ntwk = networkService.resolveNetwork(service.getAccountId(), ntwkMode.toString());
             if (networkService.shouldAssignIpAddress(ntwk)) {
                 IPAssignment assignment = networkService.assignIpAddress(ntwk, serviceIndex, requestedIp);
                 if (assignment != null) {
@@ -512,7 +516,7 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
             if (ntwkMode == null) {
                 return;
             }
-            Network ntwk = networkService.resolveNetwork(serviceIndex.getAccountId(), ntwkMode);
+            Network ntwk = networkService.resolveNetwork(service.getAccountId(), ntwkMode);
             networkService.releaseIpAddress(ntwk, serviceIndex);
         }
     }
@@ -985,5 +989,38 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
                     ServiceConstants.FIELD_EXECUTION_COUNT, count,
                     ServiceConstants.FIELD_EXECUTION_PERIOD_START, start);
         }
+    }
+
+    @Override
+    @SuppressWarnings("unchecked")
+    public void createInitialServiceRevision(Service service) {
+        Map<String, Object> launchConfig = DataAccessor.fields(service)
+                .withKey(ServiceConstants.FIELD_LAUNCH_CONFIG).withDefault(Collections.EMPTY_MAP)
+                .as(Map.class);
+        List<Map<String, Object>> secondaryLaunchConfigs = DataAccessor.fields(service)
+                .withKey(ServiceConstants.FIELD_SECONDARY_LAUNCH_CONFIGS)
+                .withDefault(Collections.EMPTY_LIST).as(
+                        List.class);
+        InstanceRevision revision = serviceDao.createRevision(service, launchConfig, secondaryLaunchConfigs, true);
+        if (service.getRevisionId() == null) {
+            Map<String, Object> data = new HashMap<>();
+            data.put(InstanceConstants.FIELD_REVISION_ID, revision.getId());
+            objectManager.setFields(service, data);
+        }
+    }
+
+    @Override
+    public boolean isServiceValidForReconcile(Service service) {
+        return service != null
+                && (service.getState().equalsIgnoreCase(CommonStatesConstants.ACTIVE) || service.getState()
+                        .equalsIgnoreCase(CommonStatesConstants.UPDATING_ACTIVE))
+                && !service.getIsUpgrade();
+    }
+
+    @Override
+    public void resetUpgradeFlag(Service service) {
+        Map<String, Object> data = new HashMap<>();
+        data.put(ServiceConstants.FIELD_IS_UPGRADE, 0);
+        objectManager.setFields(objectManager.reload(service), data);
     }
 }

@@ -6,6 +6,7 @@ import static io.cattle.platform.core.model.tables.HealthcheckInstanceHostMapTab
 import static io.cattle.platform.core.model.tables.HealthcheckInstanceTable.*;
 import static io.cattle.platform.core.model.tables.HostTable.*;
 import static io.cattle.platform.core.model.tables.InstanceHostMapTable.*;
+import static io.cattle.platform.core.model.tables.InstanceRevisionTable.*;
 import static io.cattle.platform.core.model.tables.InstanceTable.*;
 import static io.cattle.platform.core.model.tables.ServiceConsumeMapTable.*;
 import static io.cattle.platform.core.model.tables.ServiceExposeMapTable.*;
@@ -26,6 +27,7 @@ import io.cattle.platform.core.model.HealthcheckInstance;
 import io.cattle.platform.core.model.HealthcheckInstanceHostMap;
 import io.cattle.platform.core.model.Host;
 import io.cattle.platform.core.model.Instance;
+import io.cattle.platform.core.model.InstanceRevision;
 import io.cattle.platform.core.model.Service;
 import io.cattle.platform.core.model.ServiceExposeMap;
 import io.cattle.platform.core.model.ServiceIndex;
@@ -45,12 +47,15 @@ import io.cattle.platform.json.JsonMapper;
 import io.cattle.platform.lock.LockCallback;
 import io.cattle.platform.lock.LockManager;
 import io.cattle.platform.object.ObjectManager;
+import io.cattle.platform.object.meta.ObjectMetaDataManager;
 import io.cattle.platform.object.util.DataAccessor;
+import io.cattle.platform.util.type.CollectionUtils;
 import io.github.ibuildthecloud.gdapi.id.IdFormatter;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -60,6 +65,7 @@ import java.util.Set;
 import javax.inject.Inject;
 import javax.inject.Named;
 
+import org.apache.commons.lang3.tuple.Pair;
 import org.jooq.Condition;
 import org.jooq.Record;
 import org.jooq.Record2;
@@ -97,8 +103,7 @@ public class ServiceDaoImpl extends AbstractJooqDao implements ServiceDao {
         if (serviceIndexObj == null) {
             serviceIndexObj = objectManager.create(ServiceIndex.class, SERVICE_INDEX.SERVICE_ID,
                     service.getId(),
-                    SERVICE_INDEX.LAUNCH_CONFIG_NAME, launchConfigName, SERVICE_INDEX.SERVICE_INDEX_, serviceIndex,
-                    SERVICE_INDEX.ACCOUNT_ID, service.getAccountId());
+                    SERVICE_INDEX.LAUNCH_CONFIG_NAME, launchConfigName, SERVICE_INDEX.SERVICE_INDEX_, serviceIndex);
         }
         return serviceIndexObj;
     }
@@ -531,5 +536,91 @@ public class ServiceDaoImpl extends AbstractJooqDao implements ServiceDao {
                         STACK.HEALTH_STATE, HealthcheckConstants.HEALTH_STATE_HEALTHY);
             }
         });
+    }
+
+    @Override
+    public InstanceRevision createRevision(Service service, Map<String, Object> primaryLaunchConfig,
+            List<Map<String, Object>> secondaryLaunchConfigs, boolean isFirstRevision) {
+        InstanceRevision revision = objectManager.findAny(InstanceRevision.class, INSTANCE_REVISION.SERVICE_ID,
+                service.getId(),
+                INSTANCE_REVISION.REMOVED, null);
+        if ((revision != null && !isFirstRevision) || (revision == null && isFirstRevision)) {
+            Map<String, Object> data = new HashMap<>();
+            Map<String, Map<String, Object>> specs = new HashMap<>();
+            specs.put(service.getName(), primaryLaunchConfig);
+            if (secondaryLaunchConfigs != null && !secondaryLaunchConfigs.isEmpty()) {
+                for (Map<String, Object> spec : secondaryLaunchConfigs) {
+                    specs.put(spec.get("name").toString(), spec);
+                }
+            }
+            data.put(InstanceConstants.FIELD_INSTANCE_SPECS, specs);
+            data.put(ObjectMetaDataManager.NAME_FIELD, service.getName());
+            data.put(ObjectMetaDataManager.ACCOUNT_FIELD, service.getAccountId());
+            data.put("serviceId", service.getId());
+            revision = objectManager.create(InstanceRevision.class, data);
+        }
+        return revision;
+    }
+
+    @Override
+    public void cleanupServiceRevisions(Service service) {
+        List<InstanceRevision> revisions = objectManager.find(InstanceRevision.class, INSTANCE_REVISION.SERVICE_ID,
+                service.getId(),
+                INSTANCE_REVISION.REMOVED, null);
+        for (InstanceRevision revision : revisions) {
+            Map<String, Object> params = new HashMap<>();
+            params.put(ObjectMetaDataManager.REMOVED_FIELD, new Date());
+            params.put(ObjectMetaDataManager.REMOVE_TIME_FIELD, new Date());
+            params.put(ObjectMetaDataManager.STATE_FIELD, CommonStatesConstants.REMOVED);
+            objectManager.setFields(revision, params);
+        }
+    }
+
+    @Override
+    public Pair<InstanceRevision, InstanceRevision> getCurrentAndPreviousRevisions(Service service) {
+        InstanceRevision currentRevision = objectManager.findAny(InstanceRevision.class, INSTANCE_REVISION.ID,
+                service.getRevisionId());
+        InstanceRevision previousRevision = objectManager.findAny(InstanceRevision.class, INSTANCE_REVISION.ID,
+                service.getPreviousRevisionId());
+        return Pair.of(currentRevision, previousRevision);
+    }
+
+    @Override
+    public InstanceRevision getCurrentRevision(Service service) {
+        return objectManager.findAny(InstanceRevision.class, INSTANCE_REVISION.ID,
+                service.getRevisionId());
+    }
+
+    @Override
+    public Pair<Map<String, Object>, List<Map<String, Object>>> getPrimaryAndSecondaryConfigFromRevision(
+            InstanceRevision revision, Service service) {
+        Map<String, Object> primary = new HashMap<>();
+        List<Map<String, Object>> secondary = new ArrayList<>();
+        Map<String, Map<String, Object>> specs = CollectionUtils.toMap(DataAccessor.field(
+                revision, InstanceConstants.FIELD_INSTANCE_SPECS, Object.class));
+        primary.putAll(specs.get(service.getName()));
+        specs.remove(service.getName());
+        secondary.addAll(specs.values());
+        return Pair.of(primary, secondary);
+    }
+
+    @Override
+    public InstanceRevision getRevision(Service service, long revisionId) {
+        return objectManager.findAny(InstanceRevision.class, INSTANCE_REVISION.ID,
+                revisionId, INSTANCE_REVISION.SERVICE_ID, service.getId());
+    }
+
+    @Override
+    public List<Instance> getInstancesToGarbageCollect(Service service) {
+        return create()
+                        .select(INSTANCE.fields())
+                        .from(INSTANCE)
+                        .join(SERVICE_EXPOSE_MAP)
+                        .on(SERVICE_EXPOSE_MAP.INSTANCE_ID.eq(INSTANCE.ID))
+                        .where(INSTANCE.REMOVED.isNull())
+                        .and(INSTANCE.STATE.notIn(CommonStatesConstants.REMOVING))
+                        .and(SERVICE_EXPOSE_MAP.UPGRADE.eq(true))
+                        .and(SERVICE_EXPOSE_MAP.SERVICE_ID.eq(service.getId()))
+                        .fetchInto(InstanceRecord.class);
     }
 }

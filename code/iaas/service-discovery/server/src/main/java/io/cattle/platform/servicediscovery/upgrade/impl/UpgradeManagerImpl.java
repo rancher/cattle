@@ -1,19 +1,23 @@
 package io.cattle.platform.servicediscovery.upgrade.impl;
 
+import static io.cattle.platform.core.model.tables.GenericObjectTable.*;
 import static io.cattle.platform.core.model.tables.ServiceExposeMapTable.*;
 import io.cattle.platform.activity.ActivityLog;
 import io.cattle.platform.activity.ActivityService;
+import io.cattle.platform.allocator.service.AllocationHelper;
 import io.cattle.platform.core.addon.InServiceUpgradeStrategy;
 import io.cattle.platform.core.addon.RollingRestartStrategy;
 import io.cattle.platform.core.addon.ServiceRestart;
 import io.cattle.platform.core.addon.ServiceUpgradeStrategy;
 import io.cattle.platform.core.addon.ToServiceUpgradeStrategy;
 import io.cattle.platform.core.constants.CommonStatesConstants;
+import io.cattle.platform.core.constants.GenericObjectConstants;
 import io.cattle.platform.core.constants.HealthcheckConstants;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.constants.ServiceConstants;
 import io.cattle.platform.core.dao.ServiceDao;
 import io.cattle.platform.core.model.DeploymentUnit;
+import io.cattle.platform.core.model.GenericObject;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.Service;
 import io.cattle.platform.core.model.ServiceExposeMap;
@@ -24,12 +28,14 @@ import io.cattle.platform.json.JsonMapper;
 import io.cattle.platform.lock.LockCallbackNoReturn;
 import io.cattle.platform.lock.LockManager;
 import io.cattle.platform.object.ObjectManager;
+import io.cattle.platform.object.meta.ObjectMetaDataManager;
 import io.cattle.platform.object.process.ObjectProcessManager;
 import io.cattle.platform.object.resource.ResourceMonitor;
 import io.cattle.platform.object.resource.ResourcePredicate;
 import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.process.common.util.ProcessUtils;
 import io.cattle.platform.servicediscovery.api.dao.ServiceExposeMapDao;
+import io.cattle.platform.servicediscovery.api.util.ServiceDiscoveryUtil;
 import io.cattle.platform.servicediscovery.deployment.DeploymentManager;
 import io.cattle.platform.servicediscovery.deployment.DeploymentUnitManager;
 import io.cattle.platform.servicediscovery.deployment.impl.lock.ServiceLock;
@@ -38,6 +44,7 @@ import io.cattle.platform.servicediscovery.upgrade.UpgradeManager;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -58,36 +65,30 @@ public class UpgradeManagerImpl implements UpgradeManager {
 
     @Inject
     ServiceExposeMapDao exposeMapDao;
-
     @Inject
     ObjectManager objectManager;
-
     @Inject
     DeploymentManager deploymentMgr;
-
     @Inject
     LockManager lockManager;
-
     @Inject
     ObjectProcessManager objectProcessMgr;
-
     @Inject
     ResourceMonitor resourceMntr;
-
     @Inject
     ServiceDiscoveryService serviceDiscoveryService;
-
     @Inject
     JsonMapper jsonMapper;
-
     @Inject
     ActivityService activityService;
-
     @Inject
     ServiceDao serviceDao;
-
     @Inject
     DeploymentUnitManager duMgr;
+    @Inject
+    ResourceMonitor resourceMtr;
+    @Inject
+    AllocationHelper allocationHelper;
 
     private static final long SLEEP = 1000L;
 
@@ -95,6 +96,7 @@ public class UpgradeManagerImpl implements UpgradeManager {
         if (upgrade) {
             map.setUpgrade(true);
             map.setManaged(false);
+            map.setUpgradeTime(new Date());
         } else {
             map.setUpgrade(false);
             map.setManaged(true);
@@ -143,6 +145,7 @@ public class UpgradeManagerImpl implements UpgradeManager {
         lockManager.lock(new ServiceLock(service), new LockCallbackNoReturn() {
             @Override
             public void doWithLockNoResult() {
+                stopInstances(service, toCleanup);
                 // wait for healthy only for upgrade
                 // should be skipped for rollback
                 if (isUpgrade) {
@@ -150,6 +153,7 @@ public class UpgradeManagerImpl implements UpgradeManager {
                     waitForHealthyState(service, currentProcess, strategy);
                 }
 
+                // mark instances for upgrade by moving them to toCleanup list
                 markForUpgrade(batchSize, toUpgrade, upgradedUnmanaged, toCleanup);
 
                 if (startFirst) {
@@ -200,7 +204,14 @@ public class UpgradeManagerImpl implements UpgradeManager {
                         SERVICE_EXPOSE_MAP.INSTANCE_ID, instance.getId());
                 resetUpgrade(map, true);
             }
-            toCleanup.put(deploymentUnitUUID, instances.getValue());
+
+            List<Instance> instancesToCleanup = new ArrayList<>();
+                instancesToCleanup.addAll(instances.getValue().getRight());
+            if (toCleanup.get(deploymentUnitUUID) != null) {
+                instancesToCleanup.addAll(toCleanup.get(deploymentUnitUUID).getRight());
+            }
+
+            toCleanup.put(deploymentUnitUUID, Pair.of(instances.getValue().getLeft(), instancesToCleanup));
             it.remove();
             i++;
         }
@@ -231,6 +242,14 @@ public class UpgradeManagerImpl implements UpgradeManager {
                 }
             }
         } else {
+            if (type == Type.ToCleanup) {
+                // add deployment unit even if launchConfig doesn't have any instances
+                for (String duUUID : allUnits.keySet()) {
+                    List<Instance> emptyInstances = new ArrayList<>();
+                    deploymentUnitInstances.put(duUUID,
+                            Pair.of(allUnits.get(duUUID), emptyInstances));
+                }
+            }
             for (String launchConfigName : preUpgradeLaunchConfigNamesToVersion.keySet()) {
                 String toVersion = "undefined";
                 Pair<String, Map<String, Object>> post = postUpgradeLaunchConfigNamesToVersion.get(launchConfigName);
@@ -242,14 +261,6 @@ public class UpgradeManagerImpl implements UpgradeManager {
                     instances.addAll(exposeMapDao.getInstancesToUpgrade(service, launchConfigName, toVersion));
                 } else if (type == Type.ToCleanup) {
                     instances.addAll(exposeMapDao.getInstancesToCleanup(service, launchConfigName, toVersion));
-                    // add deployment unit if launchConfig doesn't have any instances
-                    if (instances.isEmpty()) {
-                        for (String duUUID : allUnits.keySet()) {
-                            List<Instance> emptyInstances = new ArrayList<>();
-                            deploymentUnitInstances.put(duUUID,
-                                    Pair.of(allUnits.get(duUUID), emptyInstances));
-                        }
-                    }
                 }
                 for (Instance instance : instances) {
                     addInstanceToDeploymentUnits(deploymentUnitInstances, instance, allUnits);
@@ -298,16 +309,17 @@ public class UpgradeManagerImpl implements UpgradeManager {
         List<Instance> instances = new ArrayList<Instance>();
         if (duToInstances == null) {
             duToInstances = Pair.of(allUnits.get(instance.getDeploymentUnitUuid()), instances);
-        } else {
-            instances = duToInstances.getRight();
         }
+        instances = duToInstances.getRight();
+
         instances.add(instance);
         deploymentUnitInstances.put(instance.getDeploymentUnitUuid(),
                 Pair.of(allUnits.get(instance.getDeploymentUnitUuid()), instances));
     }
 
     @Override
-    public void upgrade(Service service, io.cattle.platform.core.addon.ServiceUpgradeStrategy strategy, String currentProcess) {
+    public void upgrade(Service service, io.cattle.platform.core.addon.ServiceUpgradeStrategy strategy,
+            String currentProcess, boolean sleep, boolean prepullImages) {
         if (strategy instanceof ToServiceUpgradeStrategy) {
             ToServiceUpgradeStrategy toServiceStrategy = (ToServiceUpgradeStrategy) strategy;
             Service toService = objectManager.loadResource(Service.class, toServiceStrategy.getToServiceId());
@@ -316,11 +328,12 @@ public class UpgradeManagerImpl implements UpgradeManager {
             }
             updateLinks(service, toServiceStrategy);
         }
-        while (!doUpgrade(service, strategy, currentProcess)) {
-            sleep(service, strategy, currentProcess);
+        while (!doUpgrade(service, strategy, currentProcess, prepullImages)) {
+            if (sleep) {
+                sleep(service, strategy, currentProcess);
+            }
         }
     }
-
 
     @Override
     public void rollback(Service service, ServiceUpgradeStrategy strategy) {
@@ -333,8 +346,56 @@ public class UpgradeManagerImpl implements UpgradeManager {
         }
     }
 
+    GenericObject getPullTask(Long revisionId, long accountId) {
+        List<GenericObject> tasks = objectManager.find(GenericObject.class, GENERIC_OBJECT.ACCOUNT_ID, accountId,
+                GENERIC_OBJECT.REMOVED, null);
+        for (GenericObject task : tasks) {
+            if (revisionId.equals(DataAccessor.fieldLong(task, InstanceConstants.FIELD_REVISION_ID))) {
+                return task;
+            }
+        }
+        return null;
+    }
+
+    protected void prepullImages(Service service) {
+        Long revisionId = service.getRevisionId();
+        if (revisionId == null) {
+            return;
+        }
+        List<GenericObject> waitList = new ArrayList<>();
+        for (String image : ServiceDiscoveryUtil.getServiceImages(service)) {
+            GenericObject pullTask = getPullTask(revisionId, service.getAccountId());
+            if (pullTask != null) {
+                if (pullTask.getState().equalsIgnoreCase(CommonStatesConstants.ACTIVE)) {
+                    continue;
+                }
+            } else {
+                Map<String, Object> data = new HashMap<>();
+                data.put(ObjectMetaDataManager.KIND_FIELD, GenericObjectConstants.KIND_PULL_TASK);
+                data.put(InstanceConstants.FIELD_REVISION_ID, revisionId);
+                data.put("image", image);
+                data.put(ObjectMetaDataManager.ACCOUNT_FIELD, service.getAccountId());
+                data.put(InstanceConstants.FIELD_LABELS,
+                        ServiceDiscoveryUtil.getMergedServiceLabels(service, allocationHelper));
+                pullTask = objectManager.create(GenericObject.class, data);
+            }
+            if (pullTask.getState().equalsIgnoreCase(CommonStatesConstants.REQUESTED)) {
+                objectProcessMgr.scheduleProcessInstanceAsync(GenericObjectConstants.PROCESS_CREATE, pullTask, null);
+            }
+            waitList.add(pullTask);
+        }
+
+        for (GenericObject o : waitList) {
+            resourceMtr.waitForState(o, CommonStatesConstants.ACTIVE);
+        }
+    }
+
     public boolean doUpgrade(Service service, io.cattle.platform.core.addon.ServiceUpgradeStrategy strategy,
-            String currentProcess) {
+            String currentProcess, boolean prepullImages) {
+        if (prepullImages) {
+            prepullImages(service);
+        }
+
         if (strategy instanceof InServiceUpgradeStrategy) {
             InServiceUpgradeStrategy inService = (InServiceUpgradeStrategy) strategy;
             return doInServiceUpgrade(service, inService, true, currentProcess);
@@ -381,7 +442,8 @@ public class UpgradeManagerImpl implements UpgradeManager {
 
         List<String> states = Arrays.asList(ServiceConstants.STATE_UPGRADING,
                 ServiceConstants.STATE_ROLLINGBACK, ServiceConstants.STATE_RESTARTING,
-                ServiceConstants.STATE_FINISHING_UPGRADE);
+                ServiceConstants.STATE_FINISHING_UPGRADE,
+                CommonStatesConstants.UPDATING_ACTIVE);
         if (!states.contains(service.getState())) {
             throw new ProcessExecutionExitException(ExitReason.STATE_CHANGED);
         }
@@ -389,7 +451,7 @@ public class UpgradeManagerImpl implements UpgradeManager {
         if (StringUtils.equals(currentProcess, ServiceConstants.STATE_RESTARTING)) {
             return service;
         }
-        // rollback should cancel upgarde, and vice versa
+        // rollback should cancel upgrade, and vice versa
         if (!StringUtils.equals(currentProcess, service.getState())) {
             throw new ProcessExecutionExitException(ExitReason.STATE_CHANGED);
         }
@@ -530,13 +592,8 @@ public class UpgradeManagerImpl implements UpgradeManager {
     }
 
     public void cleanupUpgradedInstances(Service service) {
-        List<? extends ServiceExposeMap> maps = exposeMapDao.getInstancesSetForUpgrade(service.getId());
-        for (ServiceExposeMap map : maps) {
-            Instance instance = objectManager.loadResource(Instance.class, map.getInstanceId());
-            if (instance == null || instance.getState().equals(CommonStatesConstants.REMOVED) || instance.getState().equals(
-                            CommonStatesConstants.REMOVING)) {
-                continue;
-            }
+        List<? extends Instance> instances = exposeMapDao.getInstancesSetForUpgrade(service.getId());
+        for (Instance instance : instances) {
             try {
                 objectProcessMgr.scheduleProcessInstanceAsync(InstanceConstants.PROCESS_REMOVE,
                         instance, null);

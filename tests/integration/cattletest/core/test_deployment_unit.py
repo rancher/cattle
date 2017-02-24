@@ -131,3 +131,86 @@ def test_restart_on_failure_exceed_retry(context, super_client):
     super_client.update(c1, exitCode=1, startRetryCount=2)
     c1 = super_client.wait_success(c1.stop(stopSource="external"))
     wait_for(lambda: super_client.reload(c1).state == 'stopped')
+
+
+def test_instance_revision(client, context):
+    c = client.create_container(imageUuid=context.image_uuid)
+    c = client.wait_success(c)
+    assert c.deploymentUnitUuid is not None
+
+    rs = client.list_instanceRevision(instanceId=c.id)
+    assert len(rs) == 1
+    r = rs[0]
+    spec = r.specs[c.uuid]
+    assert spec['imageUuid'] == context.image_uuid
+    assert spec['version'] == '0'
+
+
+def test_convert_to_service_primary(client, context):
+    c = client.create_container(imageUuid=context.image_uuid)
+    c = client.wait_success(c)
+    assert c.deploymentUnitUuid is not None
+
+    rs = client.list_instanceRevision(instanceId=c.id)
+    assert len(rs) == 1
+    r = rs[0]
+    spec = r.specs[c.uuid]
+    assert spec['imageUuid'] == context.image_uuid
+    assert spec['version'] == '0'
+
+    s_name = random_str()
+    s = c.converttoservice(name=s_name)
+    assert s is not None
+    assert s.name == s_name
+    assert s.stackId == c.stackId
+    assert s.scale == 1
+    assert s.launchConfig is not None
+    assert s.launchConfig.imageUuid == c.imageUuid
+
+
+def test_convert_to_service_sidekicks(client, context):
+    c1 = client.create_container(imageUuid=context.image_uuid,
+                                 name=random_str())
+    c1 = client.wait_success(c1)
+    assert c1.deploymentUnitUuid is not None
+
+    c2 = context.super_create_container(networkContainerId=c1.id,
+                                        dataVolumesFrom=[c1.id],
+                                        name=random_str())
+    assert c1.deploymentUnitUuid == c2.deploymentUnitUuid
+
+    rs = client.list_instanceRevision(instanceId=c1.id)
+    assert len(rs) == 1
+    r = rs[0]
+    spec = r.specs[c1.uuid]
+    assert spec['imageUuid'] == context.image_uuid
+    assert spec['version'] == '0'
+
+    s_name = random_str()
+    s = c1.converttoservice(name=s_name)
+    assert s is not None
+
+    s = client.wait_success(s)
+    assert s.state == 'inactive'
+    assert s.name == s_name
+    assert s.stackId == c1.stackId
+    assert s.revisionId is not None
+
+    assert s.launchConfig is not None
+    assert s.launchConfig.imageUuid == c1.imageUuid
+    assert "name" not in s.launchConfig
+
+    assert s.secondaryLaunchConfigs is not None
+    assert len(s.secondaryLaunchConfigs) == 1
+    sc = s.secondaryLaunchConfigs[0]
+    assert sc.name == c2.name
+    assert sc.imageUuid == context.image_uuid
+    assert "networkContainerId" not in sc
+    assert "networkLaunchConfig" in sc
+    assert sc.networkLaunchConfig == s.name
+    assert "dataVolumesFrom" not in sc
+    assert "dataVolumesFromLaunchConfigs" in sc
+    assert sc.dataVolumesFromLaunchConfigs == [s.name]
+
+    assert client.reload(c1).serviceId == s.id
+    assert client.reload(c2).serviceId == s.id

@@ -97,12 +97,47 @@
     <changeSet author="alena (generated)" id="dump18">
         <addForeignKeyConstraint baseColumnNames="deployment_unit_id" baseTableName="service_log" constraintName="fk_service_log__deployment_unit_id" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="deployment_unit"/>
     </changeSet>
-      <changeSet author="alena (generated)" id="dump19">
+    <changeSet author="alena (generated)" id="dump19">
         <addColumn tableName="instance">
             <column name="revision_id" type="BIGINT"/>
         </addColumn>
     </changeSet>
     <changeSet author="alena (generated)" id="dump20">
         <addForeignKeyConstraint baseColumnNames="revision_id" baseTableName="instance" constraintName="fk_instance__revision_id" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="instance_revision"/>
+    </changeSet>
+     <changeSet author="alena (generated)" id="dump21">
+        <addColumn tableName="service">
+            <column name="revision_id" type="BIGINT"/>
+        </addColumn>
+    </changeSet>
+    <changeSet author="alena (generated)" id="dump22">
+        <addForeignKeyConstraint baseColumnNames="revision_id" baseTableName="service" constraintName="fk_service__revision_id" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="instance_revision"/>
+    </changeSet>
+    <changeSet author="alena (generated)" id="dump23">
+        <addColumn tableName="service">
+            <column name="previous_revision_id" type="BIGINT"/>
+        </addColumn>
+    </changeSet>
+    <changeSet author="alena (generated)" id="dump24">
+        <addForeignKeyConstraint baseColumnNames="previous_revision_id" baseTableName="service" constraintName="fk_service__previous_revision_id" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="instance_revision"/>
+    </changeSet>
+    <changeSet author="alena (generated)" id="dump25">
+	    <addColumn tableName="deployment_unit">
+            <column defaultValueBoolean="0" defaultValueNumeric="0" name="cleanup" type="BIT">
+                <constraints nullable="false"/>
+            </column>
+	    </addColumn>
+    </changeSet>
+     <changeSet author="alena (generated)" id="dump26">
+	    <addColumn tableName="service">
+            <column defaultValueBoolean="0" defaultValueNumeric="0" name="is_upgrade" type="BIT">
+                <constraints nullable="false"/>
+            </column>
+	    </addColumn>
+    </changeSet>
+     <changeSet author="alena (generated)" id="dump27">
+        <addColumn tableName="service_expose_map">
+            <column name="upgrade_time" type="DATETIME"/>
+        </addColumn>
     </changeSet>
 </databaseChangeLog>

@@ -39,7 +39,7 @@ public interface ServiceExposeMapDao {
 
     Host getHostForInstance(long instanceId);
 
-    List<? extends ServiceExposeMap> getInstancesSetForUpgrade(long serviceId);
+    List<? extends Instance> getInstancesSetForUpgrade(long serviceId);
 
     List<? extends Instance> getInstancesToUpgrade(Service service, String launchConfigName, String toVersion);
 

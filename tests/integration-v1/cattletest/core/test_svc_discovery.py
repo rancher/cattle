@@ -58,11 +58,12 @@ def test_mix_cased_labels(client, context):
 def test_update_env_service(client, context):
     service, env = create_env_and_svc(client, context)
     new_env_name = env.name + '1'
+    old_name = service.name
     new_name = service.name + '1'
     service.name = new_name
     service.scale = None
     service = client.update(service, service)
-    assert service.name == new_name
+    assert service.name == old_name
 
     env.name = new_env_name
     env = client.update(env, env)
@@ -820,12 +821,9 @@ def test_service_rename(client, context):
     # updated, all old instances weren't renamed,
     # and the new instance got created with the new name
     new_name = "newname"
-    service2 = client.update(service1, scale=3, name=new_name)
+    service2 = client.update(service1, name=new_name)
     service2 = client.wait_success(service2)
-    assert service2.name == new_name
-    _validate_compose_instance_start(client, service1, env, "1")
-    _validate_compose_instance_start(client, service1, env, "2")
-    _validate_compose_instance_start(client, service2, env, "3")
+    assert service2.name == service1.name
 
 
 def test_env_rename(client, context):
@@ -905,9 +903,10 @@ def test_validate_scale_down_restore_state(client, context):
     service = wait_state(client, service, 'active')
 
     # validate that only one service instance mapping exists
-    instance_service_map = client. \
-        list_serviceExposeMap(serviceId=service.id, state="active")
-    assert len(instance_service_map) == 1
+    wait_for(
+        lambda: len(client.list_serviceExposeMap(serviceId=service.id,
+                                                 state='active')) == 1
+    )
 
 
 def test_validate_labels(client, context):
