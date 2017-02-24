@@ -57,14 +57,17 @@ public class HealthcheckCleanupMonitorImpl extends AbstractJooqDao implements Ta
                     objectProcessManager.scheduleStandardProcessAsync(StandardProcess.REMOVE, instance,
                             null);
                 } catch (ProcessCancelException e) {
+                    if (instance.getState().equalsIgnoreCase(InstanceConstants.STATE_STOPPING)) {
+                        continue;
+                    }
                     objectProcessManager.scheduleProcessInstanceAsync(InstanceConstants.PROCESS_STOP,
                             instance, ProcessUtils.chainInData(new HashMap<String, Object>(),
                                     InstanceConstants.PROCESS_STOP, InstanceConstants.PROCESS_REMOVE));
                 }
-                log.info("Scheduling remove for instance id [{}]", instance.getId());
+                log.info("Scheduled remove for instance id [{}]", instance.getId());
             } catch (ProcessInstanceException e) {
                 // don't error out so we have a chance to schedule remove for the rest of the instances
-                log.info("Failed to scheduling remove for instance id [{}]", instance.getId(), e);
+                log.info("Failed to schedule remove for instance id [{}]", instance.getId(), e);
             }
         }
     }
