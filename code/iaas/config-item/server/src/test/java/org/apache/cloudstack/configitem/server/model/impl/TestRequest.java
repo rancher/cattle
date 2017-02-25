@@ -24,4 +24,8 @@ public class TestRequest extends AbstractRequest {
     public OutputStream getOutputStream() {
         return baos;
     }
+
+    @Override
+    public void setContentEncoding(String contentEncoding) {
+    }
 }

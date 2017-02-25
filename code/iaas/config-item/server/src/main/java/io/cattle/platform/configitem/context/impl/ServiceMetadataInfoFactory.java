@@ -11,6 +11,7 @@ import io.cattle.platform.configitem.context.data.metadata.common.MetaHelperInfo
 import io.cattle.platform.configitem.model.DefaultItemVersion;
 import io.cattle.platform.configitem.model.ItemVersion;
 import io.cattle.platform.configitem.server.model.ConfigItem;
+import io.cattle.platform.configitem.server.model.Request;
 import io.cattle.platform.configitem.server.model.impl.ArchiveContext;
 import io.cattle.platform.core.model.Account;
 import io.cattle.platform.core.model.AccountLink;
@@ -23,9 +24,9 @@ import io.cattle.platform.servicediscovery.api.dao.ServiceConsumeMapDao;
 import io.cattle.platform.util.exception.ExceptionUtils;
 import io.github.ibuildthecloud.gdapi.condition.Condition;
 import io.github.ibuildthecloud.gdapi.condition.ConditionType;
+import io.github.ibuildthecloud.gdapi.util.RequestUtils;
 
 import java.io.ByteArrayOutputStream;
-import java.io.IOException;
 import java.io.OutputStream;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -36,6 +37,8 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.zip.Deflater;
+import java.util.zip.DeflaterOutputStream;
 
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -64,11 +67,11 @@ public class ServiceMetadataInfoFactory extends AbstractAgentBaseContextFactory 
     MetaDataInfoDao metaDataInfoDao;
 
     Cache<String, CacheData> cache = CacheBuilder.newBuilder()
-        .expireAfterAccess(1, TimeUnit.MINUTES)
+        .expireAfterAccess(30, TimeUnit.SECONDS)
         .build();
 
     Cache<Long, String> latestVersion = CacheBuilder.newBuilder()
-        .expireAfterAccess(1, TimeUnit.MINUTES)
+        .expireAfterAccess(29, TimeUnit.SECONDS)
         .build();
 
     LoadingCache<Long, ReentrantLock> lockCache = CacheBuilder.newBuilder()
@@ -85,7 +88,7 @@ public class ServiceMetadataInfoFactory extends AbstractAgentBaseContextFactory 
         // this method is never being called
     }
 
-    public void writeMetadata(final Instance instance, final Callable<String> version, final OutputStream os) {
+    public void writeMetadata(final Instance instance, final Callable<String> version, final Request req) {
         if (instance == null) {
             return;
         }
@@ -97,8 +100,10 @@ public class ServiceMetadataInfoFactory extends AbstractAgentBaseContextFactory 
         }
 
         try {
+            OutputStream os = req.getOutputStream();
             if (CACHE.get()) {
-                writeCachedGenericData(hostMap.getHostId(), instance, version, os);
+                req.setContentType("application/octet-stream");
+                writeCachedGenericData(hostMap.getHostId(), instance, version, getRequestedVersion(req), os);
             } else {
                 String itemVersion = version.call();
                 Map<Long, HostMetaData> hostIdToHostMetadata = writeGenericData(instance, os);
@@ -110,12 +115,12 @@ public class ServiceMetadataInfoFactory extends AbstractAgentBaseContextFactory 
         } catch (Exception e) {
             ExceptionUtils.rethrowExpectedRuntime(e);
         } finally {
-            try {
-                os.close();
-            } catch (IOException e) {
-                ExceptionUtils.rethrowExpectedRuntime(e);
-            }
         }
+    }
+
+    protected String getRequestedVersion(Request req) {
+        String v = RequestUtils.makeSingularStringIfCan(req.getParams().get("requestedVersion"));
+        return v == null ? "" : v;
     }
 
     protected ReentrantLock doLock(final Instance instance) {
@@ -139,21 +144,23 @@ public class ServiceMetadataInfoFactory extends AbstractAgentBaseContextFactory 
     }
 
     private void writeCachedGenericData(Long hostId, final Instance instance, final Callable<String> versionCallback,
-            OutputStream os) throws Exception {
+            String clientRequestedVersion, OutputStream os) throws Exception {
         final String itemVersion;
         // Get version before lock
         String startItemVersion = versionCallback.call();
         ReentrantLock lock = doLock(instance);
         CacheData data = null;
         try {
-            itemVersion = determineItemVersion(instance.getAccountId(), startItemVersion, versionCallback);
+            itemVersion = determineItemVersion(instance.getAccountId(), startItemVersion, clientRequestedVersion, versionCallback);
             data = cache.get(instance.getAccountId() + "/" + itemVersion, new Callable<CacheData>() {
                 @Override
                 public CacheData call() throws Exception {
                     long start = System.currentTimeMillis();
                     CacheData data = new CacheData();
                     ByteArrayOutputStream baos = new ByteArrayOutputStream();
-                    data.hostIdToHostMetadata = writeGenericData(instance, baos);
+                    DeflaterOutputStream gz = new DeflaterOutputStream(baos, new Deflater(Deflater.DEFAULT_COMPRESSION, true), true);
+                    data.hostIdToHostMetadata = writeGenericData(instance, gz);
+                    gz.flush();
                     data.bytes = baos.toByteArray();
                     log.debug("Generated [{}] in {}ms", itemVersion, System.currentTimeMillis()-start);
                     return data;
@@ -167,10 +174,13 @@ public class ServiceMetadataInfoFactory extends AbstractAgentBaseContextFactory 
         }
 
         IOUtils.write(data.bytes, os);
-        metaDataInfoDao.fetchSelf(data.hostIdToHostMetadata.get(hostId), itemVersion, os);
+        try (DeflaterOutputStream gz = new DeflaterOutputStream(os, new Deflater(Deflater.DEFAULT_COMPRESSION, true), true)) {
+            metaDataInfoDao.fetchSelf(data.hostIdToHostMetadata.get(hostId), itemVersion, gz);
+        }
     }
 
-    protected String determineItemVersion(Long accountId, String requestedItemVersion, Callable<String> versionCallback) throws Exception {
+    protected String determineItemVersion(Long accountId, String requestedItemVersion, String clientRequestedVersion,
+            Callable<String> versionCallback) throws Exception {
         String cachedItemVersion = latestVersion.getIfPresent(accountId);
         if (cachedItemVersion == null || requestedItemVersion == null) {
             String result = versionCallback.call();
@@ -178,8 +188,15 @@ public class ServiceMetadataInfoFactory extends AbstractAgentBaseContextFactory 
             return result;
         }
 
-        ItemVersion requested = DefaultItemVersion.fromString(requestedItemVersion);
         ItemVersion cached = DefaultItemVersion.fromString(cachedItemVersion);
+
+        DefaultItemVersion requested = DefaultItemVersion.fromString(requestedItemVersion);
+        try {
+            if (clientRequestedVersion != null) {
+                requested.setRevision(Long.parseLong(clientRequestedVersion));
+            }
+        } catch (NumberFormatException nfe) {
+        }
 
         if (!cached.getSourceRevision().equals(requested.getSourceRevision())) {
             String result = versionCallback.call();
