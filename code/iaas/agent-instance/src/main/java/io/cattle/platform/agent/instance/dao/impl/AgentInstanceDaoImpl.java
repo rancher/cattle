@@ -40,7 +40,6 @@ import org.slf4j.LoggerFactory;
 
 public class AgentInstanceDaoImpl extends AbstractJooqDao implements AgentInstanceDao {
 
-    @Inject
     private static final Logger log = LoggerFactory.getLogger(AgentInstanceDaoImpl.class);
 
     GenericResourceDao resourceDao;

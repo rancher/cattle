@@ -1,15 +1,11 @@
 package io.cattle.platform.servicediscovery.deployment.impl.lock;
 
-import io.cattle.platform.lock.definition.AbstractBlockingLockDefintion;
+import io.cattle.platform.lock.definition.AbstractLockDefinition;
 
-public class StackHealthStateUpdateLock extends AbstractBlockingLockDefintion {
+public class StackHealthStateUpdateLock extends AbstractLockDefinition {
 
     public StackHealthStateUpdateLock(long stackId) {
-        super("STACK." + stackId + "HEALTHSTATE.UPDATE");
+        super("STACK." + stackId + ".HEALTHSTATE.UPDATE");
     }
 
-    @Override
-    public long getWait() {
-        return super.getWait() * 2;
-    }
 }

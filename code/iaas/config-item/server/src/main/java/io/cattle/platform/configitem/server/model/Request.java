@@ -24,6 +24,8 @@ public interface Request {
 
     void setContentType(String contentType);
 
+    void setContentEncoding(String contentEncoding);
+
     OutputStream getOutputStream() throws IOException;
 
     Map<String, Object> getParams();

@@ -52,7 +52,7 @@ public class MetadataConfigItem extends AbstractConfigItem {
             public String call() throws Exception {
                 return getVersion(req);
             }
-        }, req.getOutputStream());
+        }, req);
     }
 
     @Override
