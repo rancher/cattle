@@ -59,7 +59,7 @@ public class DockerInstancePreCreate extends AbstractObjectProcessLogic implemen
         data.put(DockerInstanceConstants.FIELD_NETWORK_MODE, mode);
 
         Network network = networkService.resolveNetwork(instance.getAccountId(), mode);
-        if (network == null && StringUtils.isNotBlank(mode)) {
+        if (network == null && StringUtils.isNotBlank(mode) && !instance.getNativeContainer()) {
             objectProcessManager.scheduleProcessInstance(InstanceConstants.PROCESS_REMOVE, instance, null);
             throw new ExecutionException(String.format("Failed to find network for networkMode %s", mode),
                     null, state.getResource());
