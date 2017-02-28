@@ -94,8 +94,10 @@ public class ContainerMetaData {
         this.ports = DataAccessor.fields(instance)
                 .withKey(InstanceConstants.FIELD_PORTS).withDefault(Collections.EMPTY_LIST)
                 .as(List.class);
-        this.host_uuid = host.uuid;
-        this.host_ip = host.agent_ip;
+        if (host != null) {
+            this.host_uuid = host.uuid;
+            this.host_ip = host.agent_ip;
+        }
         this.create_index = instance.getCreateIndex();
         this.health_state = instance.getHealthState();
         this.start_count = instance.getStartCount();
