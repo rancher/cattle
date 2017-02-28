@@ -276,7 +276,7 @@ public class JooqObjectManager extends AbstractObjectManager {
         }
 
         recordObject.attach(getConfiguration());
-        return recordObject.fetchChildren((ForeignKey) foreignKey);
+        return (List<T>) recordObject.fetchChildren((ForeignKey) foreignKey);
     }
 
     @Override

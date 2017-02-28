@@ -433,7 +433,6 @@ public class ConfigUpdatePublisher extends NoExceptionRunnable implements Initia
         String key;
         SettableFuture<Event> future;
         Throwable t;
-        int publishCount;
         boolean exit;
         boolean check;
         Date time;
