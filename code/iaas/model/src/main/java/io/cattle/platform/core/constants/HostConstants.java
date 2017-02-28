@@ -21,6 +21,7 @@ public class HostConstants {
     public static final String FIELD_MEMORY = "memory";
     public static final String FIELD_MILLI_CPU = "milliCpu";
     public static final String FIELD_LOCAL_STORAGE_MB = "localStorageMb";
+    public static final String FIELD_CAPABILITIES = "capabilities";
 
     public static final String PROCESS_REMOVE = "host.remove";
     public static final String PROCESS_CREATE = "host.create";

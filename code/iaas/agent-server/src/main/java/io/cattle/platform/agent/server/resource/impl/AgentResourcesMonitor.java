@@ -62,8 +62,9 @@ public class AgentResourcesMonitor implements AnnotatedEventListener {
             HostConstants.FIELD_API_PROXY,
             HostConstants.FIELD_HOSTNAME,
             HostConstants.FIELD_INFO,
-            HostConstants.FIELD_LABELS };
-    private static final Set<String> ORCHESTRATE_FIELDS = new HashSet<>(Arrays.asList(HostConstants.FIELD_LABELS));
+            HostConstants.FIELD_LABELS,
+            HostConstants.FIELD_CAPABILITIES };
+    private static final Set<String> ORCHESTRATE_FIELDS = new HashSet<>(Arrays.asList(HostConstants.FIELD_LABELS, HostConstants.FIELD_CAPABILITIES));
 
     @Inject
     PingDao pingDao;
