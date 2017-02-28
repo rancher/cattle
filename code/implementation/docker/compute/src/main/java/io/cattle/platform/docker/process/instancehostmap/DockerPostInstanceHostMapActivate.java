@@ -329,7 +329,9 @@ public class DockerPostInstanceHostMapActivate extends AbstractObjectProcessLogi
             }
         }
         List<String> userPorts = DataAccessor.fieldStringList(instance, InstanceConstants.FIELD_PORTS);
-        DataAccessor.fields(instance).withKey(InstanceConstants.FIELD_USER_PORTS).set(userPorts);
+        if (DataAccessor.fieldStringList(instance, InstanceConstants.FIELD_USER_PORTS).isEmpty()) {
+            DataAccessor.fields(instance).withKey(InstanceConstants.FIELD_USER_PORTS).set(userPorts);
+        }
         DataAccessor.fields(instance).withKey(InstanceConstants.FIELD_PORTS).set(publishedPorts);
         objectManager.persist(instance);
     }
