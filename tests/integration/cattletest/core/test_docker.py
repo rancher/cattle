@@ -584,7 +584,7 @@ def test_container_fields(docker_client, super_client):
     image_uuid = 'docker:ibuildthecloud/helloworld'
     restart_policy = {"maximumRetryCount": 2, "name": "on-failure"}
 
-    c = docker_client.create_container(name=test_name,
+    c = docker_client.create_container(name=test_name + random_str(),
                                        networkMode='bridge',
                                        imageUuid=image_uuid,
                                        capAdd=caps,
@@ -1233,7 +1233,7 @@ def _check_path(volume, should_exist, client, super_client):
     path = _path_to_volume(volume)
     print 'Checking path [%s] for volume [%s].' % (path, volume)
     c = client. \
-        create_container(name="volume_check",
+        create_container(name="volume_check" + random_str(),
                          imageUuid="docker:ranchertest/volume-test:v0.1.0",
                          networkMode=None,
                          environment={'TEST_PATH': path},

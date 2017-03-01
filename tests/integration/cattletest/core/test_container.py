@@ -44,7 +44,7 @@ def test_container_create_only(super_client, client, context):
     uuid = "sim:{}".format(random_num())
     container = super_client.create_container(accountId=context.project.id,
                                               imageUuid=uuid,
-                                              name="test",
+                                              name="test" + random_str(),
                                               startOnCreate=False)
 
     assert_fields(container, {
@@ -163,7 +163,7 @@ def test_container_special_labels(client, context):
     container = client.create_container(accountId=context.project.id,
                                         networkMode='none',
                                         imageUuid=uuid,
-                                        name="test",
+                                        name="test" + random_str(),
                                         labels=labels,
                                         startOnCreate=False)
     container = client.wait_success(container)
@@ -231,7 +231,7 @@ def test_container_restart(client, super_client, context):
 
 
 def test_container_stop(client, super_client, context):
-    container = context.create_container(name="test")
+    container = context.create_container(name="test" + random_str())
     container = client.wait_success(container)
 
     assert_fields(container, {
@@ -314,7 +314,7 @@ def _assert_error(container):
 
 
 def test_container_remove(client, super_client, context):
-    container = context.create_container(name="test")
+    container = context.create_container(name="test" + random_str())
     container = client.wait_success(container)
     container = client.wait_success(container.stop())
 
@@ -331,7 +331,7 @@ def test_container_remove(client, super_client, context):
 
 
 def test_container_delete_while_running(client, super_client, context):
-    container = context.create_container(name="test")
+    container = context.create_container(name="test" + random_str())
     container = client.wait_success(container)
     assert container.state == 'running'
 
@@ -380,7 +380,7 @@ def test_container_purge(client, super_client, context):
 
 
 def test_start_stop(client, context):
-    container = context.create_container(name="test")
+    container = context.create_container(name="test" + random_str())
 
     container = client.wait_success(container)
 
@@ -522,7 +522,7 @@ def test_container_logs(context):
 
 def test_container_labels(client, context):
     labels = {'affinity': "container==B", '!affinity': "container==C"}
-    container = context.create_container(name="test",
+    container = context.create_container(name="test" + random_str(),
                                          labels=labels)
     container = client.wait_success(container)
     assert container.state == 'running'

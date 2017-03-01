@@ -36,12 +36,14 @@ def test_container_create_count(client, context):
     assert set(s.actions.keys()) == set(['remove'])
 
 
-def _create_service(client, context, project=None, service=None):
+def _create_service(client, context, project=None, service=None,
+                    service_index=1):
     if project is None:
         project = 'p-' + random_str()
     if service is None:
         service = 's-' + random_str()
-    c = context.create_container(name='{}_{}_1'.format(service, project),
+    c = context.create_container(name='{}_{}_{}'.format(service, project,
+                                                        service_index),
                                  labels={
                                      SERVICE: service,
                                      PROJECT: project,
@@ -77,7 +79,7 @@ def test_container_remove(client, context):
 
 def test_container_two_remove(client, context):
     project, service, c = _create_service(client, context)
-    project, service, c = _create_service(client, context, project, service)
+    project, service, c = _create_service(client, context, project, service, 2)
 
     s = find_one(c.services)
     maps = s.serviceExposeMaps()
