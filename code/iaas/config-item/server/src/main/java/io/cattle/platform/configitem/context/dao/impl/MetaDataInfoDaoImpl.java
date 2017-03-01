@@ -178,7 +178,8 @@ public class MetaDataInfoDaoImpl extends AbstractJooqDao implements MetaDataInfo
                                         helperInfo.getAccounts().get(instance.getAccountId()));
 
                                 data.setService_index(serviceIndex);
-                                if (networkKind.equalsIgnoreCase(NetworkConstants.KIND_DOCKER_HOST)) {
+                                if (networkKind.equalsIgnoreCase(NetworkConstants.KIND_DOCKER_HOST)
+                                        && hostMetaData != null) {
                                     primaryIp = hostMetaData.getAgent_ip();
                                 }
                                 data.setIp(primaryIp);
