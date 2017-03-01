@@ -453,6 +453,7 @@
         "project.projectTemplateId": "cr",
         "project.healthState": "r",
         "project.hostRemoveDelaySeconds": "cru",
+        "project.scheduledUpgradeDelay": "cru",
 
         "projectTemplate" : "crud",
         "projectTemplate.stacks" : "cru",
@@ -1021,6 +1022,10 @@
         "registryToken" : "cr",
         "registryToken.scope": "cr",
         "registryToken.service": "cr",
+
+        "scheduledUpgrade" : "r",
+        "scheduledUpgrade.stackId": "r",
+        "scheduledUpgrade.started": "r",
 
         "end" : ""
     }

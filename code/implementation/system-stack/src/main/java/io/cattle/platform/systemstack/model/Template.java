@@ -7,6 +7,7 @@ public class Template {
     String catalogId;
     String category;
     String defaultVersion;
+    String defaultTemplateVersionId;
     String description;
     String license;
     String maintainer;
@@ -19,6 +20,7 @@ public class Template {
 
     Map<String, String> files;
     Map<String, String> versionLinks;
+    Map<String, String> links;
 
     public String getCatalogId() {
         return catalogId;
@@ -146,6 +148,22 @@ public class Template {
 
     public void setVersion(String version) {
         this.version = version;
+    }
+
+    public String getDefaultTemplateVersionId() {
+        return defaultTemplateVersionId;
+    }
+
+    public void setDefaultTemplateVersionId(String defaultTemplateVersionId) {
+        this.defaultTemplateVersionId = defaultTemplateVersionId;
+    }
+
+    public Map<String, String> getLinks() {
+        return links;
+    }
+
+    public void setLinks(Map<String, String> links) {
+        this.links = links;
     }
 
 }

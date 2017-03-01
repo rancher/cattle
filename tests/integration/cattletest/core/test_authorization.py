@@ -219,6 +219,7 @@ def test_user_types(user_client, adds=set(), removes=set()):
         'storageDriverService',
         'networkDriverService',
         'defaultNetwork',
+        'scheduledUpgrade',
         'genericObject',
     }
     types.update(adds)
@@ -468,6 +469,7 @@ def test_admin_types(admin_user_client, adds=set(), removes=set()):
         'genericObject',
         'processPool',
         'processSummary',
+        'scheduledUpgrade'
     }
     types.update(adds)
     types.difference_update(removes)

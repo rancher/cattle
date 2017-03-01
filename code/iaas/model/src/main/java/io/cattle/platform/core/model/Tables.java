@@ -279,6 +279,11 @@ public class Tables {
 	public static final io.cattle.platform.core.model.tables.ResourcePoolTable RESOURCE_POOL = io.cattle.platform.core.model.tables.ResourcePoolTable.RESOURCE_POOL;
 
 	/**
+	 * The table cattle.scheduled_upgrade
+	 */
+	public static final io.cattle.platform.core.model.tables.ScheduledUpgradeTable SCHEDULED_UPGRADE = io.cattle.platform.core.model.tables.ScheduledUpgradeTable.SCHEDULED_UPGRADE;
+
+	/**
 	 * The table cattle.secret
 	 */
 	public static final io.cattle.platform.core.model.tables.SecretTable SECRET = io.cattle.platform.core.model.tables.SecretTable.SECRET;

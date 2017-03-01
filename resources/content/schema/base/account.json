@@ -1,5 +1,9 @@
 {
     "resourceFields": {
+        "scheduledUpgradeDelayMinutes": {
+            "type": "int",
+            "nullable": true
+        },
         "kind": {
             "default": "user"
         },

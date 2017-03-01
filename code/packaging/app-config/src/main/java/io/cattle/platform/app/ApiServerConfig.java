@@ -77,6 +77,8 @@ import io.cattle.platform.iaas.api.snapshot.SnapshotBackupActionHandler;
 import io.cattle.platform.iaas.api.volume.VolumeSnapshotActionHandler;
 import io.cattle.platform.object.meta.TypeSet;
 import io.cattle.platform.storage.api.filter.ExternalTemplateInstanceFilter;
+import io.cattle.platform.systemstack.service.UpgradeManager;
+import io.cattle.platform.systemstack.task.UpgradeScheduleTask;
 import io.cattle.platform.task.action.TaskExecuteActionHandler;
 import io.cattle.platform.vm.api.InstanceConsoleActionHandler;
 import io.github.ibuildthecloud.gdapi.factory.SchemaFactory;
@@ -314,6 +316,16 @@ public class ApiServerConfig {
     @Bean
     ItemSourceVersionSyncTask ItemSourceVersionSyncTask() {
         return new ItemSourceVersionSyncTask();
+    }
+
+    @Bean
+    UpgradeScheduleTask UpgradeScheduleTask() {
+        return new UpgradeScheduleTask();
+    }
+
+    @Bean
+    UpgradeManager UpgradeManager() {
+        return new UpgradeManager();
     }
 
     @Bean
