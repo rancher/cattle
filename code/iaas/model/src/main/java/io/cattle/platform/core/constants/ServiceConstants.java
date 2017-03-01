@@ -65,6 +65,7 @@ public class ServiceConstants {
     public static final String STACK_FIELD_SERVICE_IDS = "serviceIds";
     public static final String STACK_FIELD_ENVIRONMENT = "environment";
     public static final String STACK_FIELD_BINDING = "binding";
+    public static final String STACK_FIELD_EXTERNAL_ID = "externalId";
     public static final String FIELD_SET_VIP = "assignServiceIpAddress";
     public static final String FIELD_SCALE_POLICY = "scalePolicy";
     public static final String FIELD_DESIRED_SCALE = "desiredScale";
@@ -108,11 +109,13 @@ public class ServiceConstants {
     public static final String PROCESS_SERVICE_CREATE = "service." + ACTION_SERVICE_CREATE;
     public static final String PROCESS_STACK_ACTIVATE_SERVICES = "stack." + ACTION_STACK_ACTIVATE_SERVICES;
     public static final String PROCESS_STACK_DEACTIVATE_SERVICES = "stack." + ACTION_STACK_DEACTIVATE_SERVICES;
+    public static final String PROCESS_STACK_UPGRADE = "stack.upgrade";
     public static final String PROCESS_STACK_UPDATE = "stack.update";
     public static final String PROCESS_STACK_REMOVE = "stack.remove";
     public static final String PROCESS_SERVICE_DEACTIVATE = "service.deactivate";
     public static final String PROCESS_SERVICE_REMOVE = "service.remove";
     public static final String PROCESS_STACK_EXPORT_CONFIG = "stack.exportconfig";
+    public static final String PROCESS_STACK_FINISH_UPGRADE = "stack.finishupgrade";
     public static final String PROCESS_SERVICE_ADD_SERVICE_LINK = "service." + ACTION_SERVICE_ADD_SERVICE_LINK;
     public static final String PROCESS_SERVICE_REMOVE_SERVICE_LINK = "service." + ACTION_SERVICE_REMOVE_SERVICE_LINK;
     public static final String PROCESS_SERVICE_CONSUME_MAP_CREATE = "serviceconsumemap.create";

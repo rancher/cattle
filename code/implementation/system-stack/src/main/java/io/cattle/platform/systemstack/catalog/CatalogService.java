@@ -21,4 +21,12 @@ public interface CatalogService {
 
     Map<String, Map<Object, Object>> getTemplates(List<ProjectTemplate> installed) throws IOException;
 
+    Map<String, String> latestInfraTemplates() throws IOException;
+
+    String getTemplateIdFromExternalId(String externalId);
+
+    Stack upgrade(Stack stack) throws IOException;
+
+    String getDefaultExternalId(Stack stack) throws IOException;
+
 }

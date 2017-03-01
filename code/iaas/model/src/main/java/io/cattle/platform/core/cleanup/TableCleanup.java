@@ -55,6 +55,7 @@ import io.cattle.platform.core.model.tables.ProcessExecutionTable;
 import io.cattle.platform.core.model.tables.ProcessInstanceTable;
 import io.cattle.platform.core.model.tables.ProjectMemberTable;
 import io.cattle.platform.core.model.tables.ResourcePoolTable;
+import io.cattle.platform.core.model.tables.ScheduledUpgradeTable;
 import io.cattle.platform.core.model.tables.SecretTable;
 import io.cattle.platform.core.model.tables.ServiceConsumeMapTable;
 import io.cattle.platform.core.model.tables.ServiceEventTable;
@@ -488,6 +489,7 @@ public class TableCleanup extends AbstractJooqDao implements Task {
                 CleanableTable.from(HostLabelMapTable.HOST_LABEL_MAP),
                 CleanableTable.from(InstanceLabelMapTable.INSTANCE_LABEL_MAP),
                 CleanableTable.from(ServiceEventTable.SERVICE_EVENT),
+                CleanableTable.from(ScheduledUpgradeTable.SCHEDULED_UPGRADE),
                 CleanableTable.from(SecretTable.SECRET),
                 CleanableTable.from(ZoneTable.ZONE));
         /* The most offending tables never set remove_time

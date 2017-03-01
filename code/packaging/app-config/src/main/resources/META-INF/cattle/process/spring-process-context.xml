@@ -516,6 +516,10 @@
     <process:process name="dynamicschema.create" resourceType="dynamicSchema" start="requested" transitioning="creating" done="active" />
     <process:process name="dynamicschema.remove" resourceType="dynamicSchema" start="active" transitioning="removing" done="purged" />
 
+    <!-- Scheduled Update -->
+    <process:process name="scheduledupgrade.create" resourceType="scheduledUpgrade" start="requested" transitioning="scheduling" done="scheduled" />
+    <process:process name="scheduledupgrade.start" resourceType="scheduledUpgrade" start="scheduled" transitioning="running" done="done" />
+    <process:process name="scheduledupgrade.remove" resourceType="scheduledUpgrade" start="scheduled,running,done" transitioning="removing" done="removed" />
 
     <bean class="io.cattle.platform.docker.process.dao.impl.DockerComputeDaoImpl" />
 

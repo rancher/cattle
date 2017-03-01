@@ -10,6 +10,8 @@ import io.cattle.platform.core.model.ProjectTemplate;
 import io.cattle.platform.core.model.Stack;
 import io.cattle.platform.json.JsonMapper;
 import io.cattle.platform.object.ObjectManager;
+import io.cattle.platform.object.process.ObjectProcessManager;
+import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.systemstack.catalog.CatalogService;
 import io.cattle.platform.systemstack.model.Template;
 import io.cattle.platform.systemstack.model.TemplateCollection;
@@ -36,6 +38,7 @@ import com.netflix.config.DynamicStringProperty;
 
 public class CatalogServiceImpl implements CatalogService {
 
+    private static DynamicStringProperty CATALOG_VERSION_URL = ArchaiusUtil.getString("system.stack.catalog.versions.url");
     private static DynamicStringProperty CATALOG_RESOURCE_URL = ArchaiusUtil.getString("system.stack.catalog.url");
     private static DynamicStringProperty CATALOG_RESOURCE_VERSION = ArchaiusUtil.getString("rancher.server.version");
     private static final DynamicBooleanProperty LAUNCH_CATALOG = ArchaiusUtil.getBoolean("catalog.execute");
@@ -48,6 +51,9 @@ public class CatalogServiceImpl implements CatalogService {
 
     @Inject
     ObjectManager objectManager;
+
+    @Inject
+    ObjectProcessManager processManager;
 
     boolean firstCall = true;
 
@@ -76,7 +82,7 @@ public class CatalogServiceImpl implements CatalogService {
     protected void appendVersionCheck(StringBuilder catalogTemplateUrl) {
         String minVersion = CATALOG_RESOURCE_VERSION.get();
         if (StringUtils.isNotBlank(minVersion)) {
-            catalogTemplateUrl.append("?minimumRancherVersion_lte=").append(minVersion);
+            catalogTemplateUrl.append("?rancherVersion=").append(minVersion);
         }
     }
 
@@ -88,12 +94,8 @@ public class CatalogServiceImpl implements CatalogService {
             return String.format("catalog://%s", catalogTemplate.getTemplateVersionId());
         }
 
-        StringBuilder catalogTemplateUrl = new StringBuilder(CATALOG_RESOURCE_URL.get());
-        catalogTemplateUrl.append(catalogTemplate.getTemplateId());
-        appendVersionCheck(catalogTemplateUrl);
-
         //get the latest version from the catalog template
-        Template template = getTemplate(catalogTemplateUrl.toString());
+        Template template = getTemplateById(catalogTemplate.getTemplateId());
         if (template == null || template.getVersionLinks() == null) {
             return null;
         }
@@ -113,11 +115,30 @@ public class CatalogServiceImpl implements CatalogService {
             }
         }
 
-        template = getTemplate(versionUrl);
+        template = getTemplateAtURL(versionUrl);
         return template == null ? null : String.format("catalog://%s", template.getId());
     }
 
-    protected Template getTemplate(String url) throws IOException {
+    protected Template getTemplateById(String id) throws IOException {
+        StringBuilder catalogTemplateUrl = new StringBuilder(CATALOG_RESOURCE_URL.get());
+        catalogTemplateUrl.append(id);
+        appendVersionCheck(catalogTemplateUrl);
+        return getTemplateAtURL(catalogTemplateUrl.toString());
+    }
+
+    protected Template getTemplateVersionById(String id) throws IOException {
+        if (StringUtils.isBlank(id)) {
+            return null;
+        }
+        id = StringUtils.removeStart(id, "catalog://");
+
+        StringBuilder catalogTemplateVersionUrl = new StringBuilder(CATALOG_VERSION_URL.get());
+        catalogTemplateVersionUrl.append(id);
+        appendVersionCheck(catalogTemplateVersionUrl);
+        return getTemplateAtURL(catalogTemplateVersionUrl.toString());
+    }
+
+    protected Template getTemplateAtURL(String url) throws IOException {
         if (url == null) {
             return null;
         }
@@ -134,6 +155,43 @@ public class CatalogServiceImpl implements CatalogService {
     }
 
     @Override
+    public String getDefaultExternalId(Stack stack) throws IOException {
+        Template template = getDefaultTemplateVersion(stack);
+        return template == null ? null : "catalog://" + template.getId();
+    }
+
+    protected Template getDefaultTemplateVersion(Stack stack) throws IOException {
+        Template template = getTemplateVersionById(stack.getExternalId());
+        if (template == null || template.getLinks() == null && !template.getLinks().containsKey("template")) {
+            return null;
+        }
+
+        template = getTemplateAtURL(template.getLinks().get("template"));
+        if (template == null || StringUtils.isBlank(template.getDefaultTemplateVersionId())) {
+            return null;
+        }
+
+        return getTemplateVersionById(template.getDefaultTemplateVersionId());
+    }
+
+    @Override
+    public Stack upgrade(Stack stack) throws IOException {
+        Template template = getDefaultTemplateVersion(stack);
+        if (template == null) {
+            return null;
+        }
+
+        processManager.scheduleProcessInstance(ServiceConstants.PROCESS_STACK_UPGRADE, stack,
+                CollectionUtils.asMap(
+                   ServiceConstants.STACK_FIELD_DOCKER_COMPOSE, template.getDockerCompose(),
+                   ServiceConstants.STACK_FIELD_RANCHER_COMPOSE, template.getRancherCompose(),
+                   ServiceConstants.STACK_FIELD_ENVIRONMENT, DataAccessor.fieldMap(stack, ServiceConstants.STACK_FIELD_ENVIRONMENT),
+                   ServiceConstants.STACK_FIELD_EXTERNAL_ID, "catalog://" + template.getId()));
+
+        return stack;
+    }
+
+    @Override
     public Stack deploy(Long accountId, CatalogTemplate catalogTemplate) throws IOException {
         String externalId = resolveExternalId(catalogTemplate);
         if (externalId == null) {
@@ -144,7 +202,7 @@ public class CatalogServiceImpl implements CatalogService {
         String rancherCompose = catalogTemplate.getRancherCompose();
         Template template = null;
         if (externalId.startsWith("catalog://")) {
-            template = getTemplate(CATALOG_RESOURCE_URL.get() + StringUtils.removeStart(externalId, "catalog://"));
+            template = getTemplateAtURL(CATALOG_RESOURCE_URL.get() + StringUtils.removeStart(externalId, "catalog://"));
             if (template != null) {
                 dockerCompose = template.getDockerCompose();
                 rancherCompose = template.getRancherCompose();
@@ -162,6 +220,18 @@ public class CatalogServiceImpl implements CatalogService {
                 ServiceConstants.STACK_FIELD_ENVIRONMENT, catalogTemplate.getAnswers(),
                 ServiceConstants.STACK_FIELD_BINDING, catalogTemplate.getBinding());
         return resourceDao.createAndSchedule(Stack.class, objectManager.convertToPropertiesFor(Stack.class, data));
+    }
+
+    protected TemplateCollection getTemplates(String url) throws IOException {
+        return Request.Get(url).execute().handleResponse(new ResponseHandler<TemplateCollection>() {
+            @Override
+            public TemplateCollection handleResponse(HttpResponse response) throws ClientProtocolException, IOException {
+                if (response.getStatusLine().getStatusCode() != 200) {
+                    return null;
+                }
+                return jsonMapper.readValue(response.getEntity().getContent(), TemplateCollection.class);
+            }
+        });
     }
 
     @Override
@@ -190,15 +260,7 @@ public class CatalogServiceImpl implements CatalogService {
         }
         catalogTemplateUrl.append("templateBase_eq=project");
 
-        TemplateCollection collection = Request.Get(catalogTemplateUrl.toString()).execute().handleResponse(new ResponseHandler<TemplateCollection>() {
-            @Override
-            public TemplateCollection handleResponse(HttpResponse response) throws ClientProtocolException, IOException {
-                if (response.getStatusLine().getStatusCode() != 200) {
-                    return null;
-                }
-                return jsonMapper.readValue(response.getEntity().getContent(), TemplateCollection.class);
-            }
-        });
+        TemplateCollection collection = getTemplates(catalogTemplateUrl.toString());
 
         Yaml yaml = new Yaml();
         if (collection.getData() != null) {
@@ -211,7 +273,7 @@ public class CatalogServiceImpl implements CatalogService {
                     continue;
                 }
 
-                template = getTemplate(url);
+                template = getTemplateAtURL(url);
                 if (template == null || template.getFiles() == null) {
                     continue;
                 }
@@ -229,4 +291,43 @@ public class CatalogServiceImpl implements CatalogService {
         return result;
     }
 
+    @Override
+    public Map<String, String> latestInfraTemplates() throws IOException {
+        Map<String, String> result = new HashMap<>();
+        StringBuilder catalogTemplateUrl = new StringBuilder(CATALOG_RESOURCE_URL.get());
+        appendVersionCheck(catalogTemplateUrl);
+        if (catalogTemplateUrl.indexOf("?") == -1) {
+            catalogTemplateUrl.append("?");
+        } else {
+            catalogTemplateUrl.append("&");
+        }
+        catalogTemplateUrl.append("templateBase_eq=infra");
+
+        TemplateCollection collection = getTemplates(catalogTemplateUrl.toString());
+        for (Template template : collection.getData()) {
+            if (!"library".equals(template.getCatalogId()) || StringUtils.isBlank(template.getDefaultVersion())) {
+                continue;
+            }
+            if (StringUtils.isNotBlank(template.getDefaultTemplateVersionId())) {
+                result.put(template.getId(), "catalog://" + template.getDefaultTemplateVersionId());
+            }
+        }
+
+        return result;
+    }
+
+    @Override
+    public String getTemplateIdFromExternalId(String externalId) {
+        if (StringUtils.isBlank(externalId)) {
+            return null;
+        }
+
+        String templateId = StringUtils.removeStart(externalId, "catalog://");
+        String[] parts = StringUtils.split(templateId, ":", 3);
+        if (parts.length < 3) {
+            return null;
+        }
+
+        return String.format("%s:%s", parts[0], parts[1]);
+    }
 }
