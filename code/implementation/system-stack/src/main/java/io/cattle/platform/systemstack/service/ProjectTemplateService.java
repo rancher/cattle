@@ -10,7 +10,6 @@ import io.cattle.platform.lock.LockCallbackWithException;
 import io.cattle.platform.lock.LockManager;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.process.ObjectProcessManager;
-import io.cattle.platform.object.process.StandardProcess;
 import io.cattle.platform.systemstack.catalog.CatalogService;
 import io.cattle.platform.systemstack.lock.ProjectTemplateLoadLock;
 import io.cattle.platform.task.Task;
@@ -126,11 +125,7 @@ public class ProjectTemplateService implements InitializationTask, Task {
         }
 
         for (ProjectTemplate installed : installedTemplates) {
-            // == null means the teamplatesToInstall does not have this externalId key, so remove
-            if (templatesToInstall.remove(installed.getExternalId()) == null) {
-                log.info("Removing project template [{}]", installed.getExternalId());
-                processManager.scheduleStandardProcessAsync(StandardProcess.REMOVE, installed, null);
-            }
+            templatesToInstall.remove(installed.getExternalId());
         }
 
         for (Map.Entry<String, Map<Object, Object>> entry : templatesToInstall.entrySet()) {

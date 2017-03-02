@@ -120,10 +120,6 @@ public class UpgradeManager {
     }
 
     protected void runWithLock(boolean scheduleNext) throws IOException {
-        if (!UPGRADE_MANAGER.get()) {
-            return;
-        }
-
         int max = MAX_UPGRADE.get();
         if (scheduleNext) {
             max++;
