@@ -1,6 +1,7 @@
 package io.cattle.platform.configitem.server.model.impl;
 
 import io.cattle.platform.configitem.context.impl.ServiceMetadataInfoFactory;
+import io.cattle.platform.configitem.registry.ConfigItemRegistry;
 import io.cattle.platform.configitem.server.model.ConfigItem;
 import io.cattle.platform.configitem.server.model.ConfigItemFactory;
 import io.cattle.platform.configitem.version.ConfigItemStatusManager;
@@ -24,17 +25,20 @@ public class MetadataConfigItemFactory implements ConfigItemFactory, Initializat
     ConfigItemStatusManager versionManager;
     @Inject
     ConfigItemStatusDao statusDao;
+    @Inject
+    ConfigItemRegistry itemRegistry;
+
 
     @Override
     public Collection<ConfigItem> getConfigItems() throws IOException {
-        return Arrays.<ConfigItem>asList(new MetadataConfigItem(objectManager, factory, versionManager));
+        return Arrays.<ConfigItem>asList(new MetadataConfigItem(objectManager, factory, versionManager, itemRegistry));
     }
 
     @Override
     public void start() {
         MetadataConfigItem item;
         try {
-            item = new MetadataConfigItem(objectManager, factory, versionManager);
+            item = new MetadataConfigItem(objectManager, factory, versionManager, itemRegistry);
         } catch (IOException e) {
             throw new IllegalStateException("Reseting metadata config item", e);
         }

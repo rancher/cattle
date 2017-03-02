@@ -46,8 +46,12 @@ public class ScheduledUpgradeCreate extends AbstractDefaultProcessHandler {
             delay = 0L;
         }
         Date runAfter = new Date(upgrade.getCreated().getTime() + delay * 60000);
-        return new HandlerResult(SCHEDULED_UPGRADE.RUN_AFTER, runAfter,
+        HandlerResult result = new HandlerResult(SCHEDULED_UPGRADE.RUN_AFTER, runAfter,
                 SCHEDULED_UPGRADE.PRIORITY, priority);
+        if (delay == 0L) {
+            result.withChainProcessName("scheduledupgrade.start");
+        }
+        return result;
     }
 
 }
