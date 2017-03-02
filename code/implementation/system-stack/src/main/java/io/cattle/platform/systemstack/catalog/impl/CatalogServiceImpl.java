@@ -234,8 +234,7 @@ public class CatalogServiceImpl implements CatalogService {
         });
     }
 
-    @Override
-    public Map<String, Map<Object, Object>> getTemplates(List<ProjectTemplate> installed) throws IOException {
+    protected void refresh() throws IOException {
         if (firstCall) {
             String url = CATALOG_RESOURCE_URL.get();
             if (url.endsWith("/")) {
@@ -248,6 +247,11 @@ public class CatalogServiceImpl implements CatalogService {
             }
             firstCall = false;
         }
+    }
+
+    @Override
+    public Map<String, Map<Object, Object>> getTemplates(List<ProjectTemplate> installed) throws IOException {
+        refresh();
 
         Map<String, Map<Object, Object>> result = new HashMap<>();
 
@@ -293,6 +297,8 @@ public class CatalogServiceImpl implements CatalogService {
 
     @Override
     public Map<String, String> latestInfraTemplates() throws IOException {
+        refresh();
+
         Map<String, String> result = new HashMap<>();
         StringBuilder catalogTemplateUrl = new StringBuilder(CATALOG_RESOURCE_URL.get());
         appendVersionCheck(catalogTemplateUrl);

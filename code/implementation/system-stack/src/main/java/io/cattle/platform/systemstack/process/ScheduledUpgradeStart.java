@@ -52,6 +52,9 @@ public class ScheduledUpgradeStart extends AbstractDefaultProcessHandler {
     protected void process(ProcessState state, ProcessInstance process) throws IOException {
         ScheduledUpgrade upgrade = (ScheduledUpgrade)state.getResource();
         Stack stack = objectManager.loadResource(Stack.class, upgrade.getStackId());
+        if (StringUtils.isBlank(stack.getExternalId())) {
+            return;
+        }
 
         if (ServiceConstants.STATE_UPGRADED.equals(stack.getState())) {
             objectProcessManager.scheduleProcessInstance(ServiceConstants.PROCESS_STACK_FINISH_UPGRADE, stack, null);
@@ -67,6 +70,9 @@ public class ScheduledUpgradeStart extends AbstractDefaultProcessHandler {
             if (upgradeToExternalId.equals(stack.getExternalId())) {
                 return;
             } else {
+                if (!UpgradeManager.UPGRADE_MANAGER.get() && !stack.getExternalId().contains(UpgradeManager.METADATA)) {
+                    return;
+                }
                 catalogService.upgrade(stack);
                 objectManager.setFields(upgrade, SCHEDULED_UPGRADE.STARTED, new Date());
             }

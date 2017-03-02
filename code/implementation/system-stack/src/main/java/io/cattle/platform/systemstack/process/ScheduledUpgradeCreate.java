@@ -12,6 +12,7 @@ import io.cattle.platform.engine.process.ProcessInstance;
 import io.cattle.platform.engine.process.ProcessState;
 import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.process.base.AbstractDefaultProcessHandler;
+import io.cattle.platform.systemstack.service.UpgradeManager;
 
 import java.util.Date;
 
@@ -26,7 +27,6 @@ import com.netflix.config.DynamicLongProperty;
 public class ScheduledUpgradeCreate extends AbstractDefaultProcessHandler {
 
     public static final DynamicLongProperty DEFAULT_DELAY = ArchaiusUtil.getLong("default.schedule.upgrade.delay.minutes");
-    private static final String METADATA = "catalog://library:infra*network-services:9";
 
     @Override
     public HandlerResult handle(ProcessState state, ProcessInstance process) {
@@ -41,7 +41,7 @@ public class ScheduledUpgradeCreate extends AbstractDefaultProcessHandler {
             delay = 26280000L;
         }
         Long priority = 0L;
-        if (StringUtils.isNotBlank(stack.getExternalId()) && StringUtils.startsWith(stack.getExternalId(), METADATA)) {
+        if (StringUtils.isNotBlank(stack.getExternalId()) && stack.getExternalId().contains(UpgradeManager.METADATA)) {
             priority = 100L;
             delay = 0L;
         }

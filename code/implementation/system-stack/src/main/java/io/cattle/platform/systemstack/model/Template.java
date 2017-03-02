@@ -2,6 +2,8 @@ package io.cattle.platform.systemstack.model;
 
 import java.util.Map;
 
+import org.apache.commons.lang3.StringUtils;
+
 public class Template {
     String id;
     String catalogId;
@@ -119,7 +121,8 @@ public class Template {
     }
 
     public String getDockerCompose() {
-        return this.getFiles().get("docker-compose.yml");
+        String value = this.getFiles().get("docker-compose.yml");
+        return StringUtils.isBlank(value) ? this.getFiles().get("docker-compose.yml.tpl") : value;
     }
 
     public String getRancherCompose() {

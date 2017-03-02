@@ -13,6 +13,7 @@ import io.cattle.platform.systemstack.catalog.CatalogService;
 import io.cattle.platform.systemstack.lock.ScheduledUpgradeLock;
 
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -21,6 +22,8 @@ import java.util.stream.Collectors;
 import javax.inject.Inject;
 
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.netflix.config.DynamicBooleanProperty;
 import com.netflix.config.DynamicIntProperty;
@@ -28,7 +31,10 @@ import com.netflix.config.DynamicIntProperty;
 public class UpgradeManager {
 
     private static final DynamicIntProperty MAX_UPGRADE = ArchaiusUtil.getInt("concurrent.scheduled.upgrades");
-    private static final DynamicBooleanProperty UPGRADE_MANAGER = ArchaiusUtil.getBoolean("upgrade.manager");
+    public static final DynamicBooleanProperty UPGRADE_MANAGER = ArchaiusUtil.getBoolean("upgrade.manager");
+    public static final String METADATA = "library:infra*network-services";
+    private static final DynamicBooleanProperty LAUNCH_CATALOG = ArchaiusUtil.getBoolean("catalog.execute");
+    private static final Logger log = LoggerFactory.getLogger(UpgradeManager.class);
 
     @Inject
     CatalogService catalogService;
@@ -54,11 +60,34 @@ public class UpgradeManager {
     }
 
     protected void scheduleWithLock() throws IOException {
-        if (!UPGRADE_MANAGER.get()) {
+        if (!LAUNCH_CATALOG.get()) {
             return;
         }
 
-        Map<String, String> catalogs = catalogService.latestInfraTemplates();
+        Map<String, String> catalogs = null;
+        while (true) {
+            try {
+                catalogs = catalogService.latestInfraTemplates();
+                break;
+            } catch (IOException e) {
+                log.info("Waiting for catalog service");
+                try {
+                    Thread.sleep(2000);
+                } catch (InterruptedException e1) {
+                    throw new IllegalStateException(e1);
+                }
+            }
+        }
+
+        if (!UPGRADE_MANAGER.get()) {
+            Map<String, String> temp = new HashMap<>();
+            String value = catalogs.get(METADATA);
+            if (value != null) {
+                temp.put(METADATA, value);
+            }
+            catalogs = temp;
+        }
+
         if (catalogs.size() == 0) {
             return;
         }
