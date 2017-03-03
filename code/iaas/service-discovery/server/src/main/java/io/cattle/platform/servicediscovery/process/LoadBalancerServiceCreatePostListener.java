@@ -11,9 +11,12 @@ import io.cattle.platform.engine.handler.ProcessPostListener;
 import io.cattle.platform.engine.process.ProcessInstance;
 import io.cattle.platform.engine.process.ProcessState;
 import io.cattle.platform.json.JsonMapper;
+import io.cattle.platform.lock.LockCallbackNoReturn;
+import io.cattle.platform.lock.LockManager;
 import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.process.common.handler.AbstractObjectProcessLogic;
 import io.cattle.platform.servicediscovery.api.dao.ServiceConsumeMapDao;
+import io.cattle.platform.servicediscovery.api.lock.ServiceDiscoveryServiceSetLinksLock;
 import io.cattle.platform.servicediscovery.service.ServiceDiscoveryService;
 import io.cattle.platform.util.type.CollectionUtils;
 import io.cattle.platform.util.type.Priority;
@@ -42,6 +45,9 @@ public class LoadBalancerServiceCreatePostListener extends AbstractObjectProcess
     @Inject
     JsonMapper jsonMapper;
 
+    @Inject
+    LockManager lockManager;
+
     @Override
     public String[] getProcessNames() {
         return new String[] { ServiceConstants.PROCESS_SERVICE_CREATE, ServiceConstants.PROCESS_SERVICE_UPDATE };
@@ -51,31 +57,42 @@ public class LoadBalancerServiceCreatePostListener extends AbstractObjectProcess
     public HandlerResult handle(ProcessState state, ProcessInstance process) {
         Service service = (Service) state.getResource();
         if (service.getKind().equalsIgnoreCase(ServiceConstants.KIND_LOAD_BALANCER_SERVICE)) {
-            Set<Long> newServiceIds = new HashSet<>();
-            Set<Long> oldServiceIds = new HashSet<>();
-            List<Service> targetServices = objectManager.find(Service.class, SERVICE.ACCOUNT_ID, service.getAccountId(),
-                    SERVICE.REMOVED, null);
-            setLoadBalancerServiceLinkedServicesIds(state, process, service, oldServiceIds, newServiceIds, targetServices);
+            lockManager.lock(new ServiceDiscoveryServiceSetLinksLock(service), new LockCallbackNoReturn() {
+                @Override
+                public void doWithLockNoResult() {
+                    Set<Long> newServiceIds = new HashSet<>();
+                    Set<Long> oldServiceIds = new HashSet<>();
+                    List<Service> targetServices = objectManager.find(Service.class, SERVICE.ACCOUNT_ID, service.getAccountId(),
+                            SERVICE.REMOVED, null);
+                    setLoadBalancerServiceLinkedServicesIds(state, process, service, oldServiceIds, newServiceIds, targetServices);
 
-            oldServiceIds.removeAll(newServiceIds);
-            for (Long newServiceId : newServiceIds) {
-                addServiceLink(service, newServiceId);
-            }
+                    oldServiceIds.removeAll(newServiceIds);
+                    for (Long newServiceId : newServiceIds) {
+                        addServiceLink(service, newServiceId);
+                    }
 
-            for (Long oldServiceId : oldServiceIds) {
-                removeServiceLink(service, oldServiceId);
-            }
+                    for (Long oldServiceId : oldServiceIds) {
+                        removeServiceLink(service, oldServiceId);
+                    }
+                }
+            });
         } else {
             List<Service> targetServices = Arrays.asList(service);
             List<Service> lbServices = objectManager.find(Service.class, SERVICE.ACCOUNT_ID, service.getAccountId(),
                     SERVICE.REMOVED, null, SERVICE.KIND, ServiceConstants.KIND_LOAD_BALANCER_SERVICE);
             for (Service lbService : lbServices) {
-                Set<Long> newServiceIds = new HashSet<>();
-                setLoadBalancerServiceLinkedServicesIds(state, process, lbService, new HashSet<Long>(), newServiceIds,
-                        targetServices);
-                for (Long newServiceId : newServiceIds) {
-                    addServiceLink(lbService, newServiceId);
-                }
+                lockManager.lock(new ServiceDiscoveryServiceSetLinksLock(lbService), new LockCallbackNoReturn() {
+                    @Override
+                    public void doWithLockNoResult() {
+                        Set<Long> newServiceIds = new HashSet<>();
+                        setLoadBalancerServiceLinkedServicesIds(state, process, lbService, new HashSet<Long>(),
+                                newServiceIds,
+                                targetServices);
+                        for (Long newServiceId : newServiceIds) {
+                            addServiceLink(lbService, newServiceId);
+                        }
+                    }
+                });
             }
         }
 
