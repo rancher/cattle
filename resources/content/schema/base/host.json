@@ -57,7 +57,10 @@
     },
     "resourceActions": {
         "evacuate": {
-            "output": "host"
+            "output": "host",
+            "attributes": {
+                "states": ["active", "inactive"]
+            }
         }
     }
 }
