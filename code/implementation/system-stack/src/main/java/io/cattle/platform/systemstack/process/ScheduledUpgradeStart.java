@@ -61,12 +61,12 @@ public class ScheduledUpgradeStart extends AbstractDefaultProcessHandler {
             throw new ProcessDelayException(new Date(System.currentTimeMillis() + 15000));
         }
 
-        String upgradeToExternalId = catalogService.getDefaultExternalId(stack);
-        if (StringUtils.isBlank(upgradeToExternalId)) {
-            return;
-        }
-
         if (CommonStatesConstants.ACTIVE.equals(stack.getState())) {
+            String upgradeToExternalId = catalogService.getDefaultExternalId(stack);
+            if (StringUtils.isBlank(upgradeToExternalId)) {
+                return;
+            }
+
             if (upgradeToExternalId.equals(stack.getExternalId())) {
                 return;
             } else {
