@@ -7,11 +7,11 @@ import io.cattle.platform.core.constants.ServiceConstants;
 import io.cattle.platform.core.dao.ServiceDao;
 import io.cattle.platform.core.model.InstanceRevision;
 import io.cattle.platform.core.model.Service;
+import io.cattle.platform.core.util.ServiceUtil;
 import io.cattle.platform.iaas.api.filter.common.AbstractDefaultResourceManagerFilter;
 import io.cattle.platform.json.JsonMapper;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.util.DataAccessor;
-import io.cattle.platform.servicediscovery.api.util.ServiceDiscoveryUtil;
 import io.github.ibuildthecloud.gdapi.request.ApiRequest;
 import io.github.ibuildthecloud.gdapi.request.resource.ResourceManager;
 import io.github.ibuildthecloud.gdapi.validation.ValidationErrorCodes;
@@ -57,7 +57,7 @@ public class ServiceRollbackValidationFilter extends AbstractDefaultResourceMana
             if (upgrade != null && upgrade.getInServiceStrategy() != null) {
                 InServiceUpgradeStrategy strategy = upgrade.getInServiceStrategy();
                 if (strategy.getPreviousLaunchConfig() != null || strategy.getPreviousSecondaryLaunchConfigs() != null) {
-                    ServiceDiscoveryUtil.upgradeServiceConfigs(service, strategy, true);
+                    ServiceUtil.upgradeServiceConfigs(service, strategy, true);
                 }
                 objectManager.persist(service);
             } else if (service.getPreviousRevisionId() != null) {

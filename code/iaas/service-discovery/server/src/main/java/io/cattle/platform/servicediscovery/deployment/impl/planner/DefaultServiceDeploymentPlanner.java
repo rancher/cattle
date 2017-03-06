@@ -7,14 +7,13 @@ import io.cattle.platform.core.model.Service;
 import io.cattle.platform.core.model.Stack;
 import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.servicediscovery.deployment.DeploymentUnitInstanceIdGenerator;
-import io.cattle.platform.servicediscovery.deployment.ServiceDeploymentPlanner;
-import io.cattle.platform.servicediscovery.deployment.impl.DeploymentManagerImpl.DeploymentManagerContext;
+import io.cattle.platform.servicediscovery.service.impl.DeploymentManagerImpl.DeploymentManagerContext;
 import io.cattle.platform.util.exception.ServiceReconcileException;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class DefaultServiceDeploymentPlanner extends ServiceDeploymentPlanner {
+public class DefaultServiceDeploymentPlanner extends AbstractServiceDeploymentPlanner {
 
     protected int requestedScale = 0;
 
@@ -22,33 +21,25 @@ public class DefaultServiceDeploymentPlanner extends ServiceDeploymentPlanner {
             DeploymentManagerContext context) {
         super(service, context, stack);
         // internal desired scale populated by scale policy driven deployment
-        int scale = getCurrentScale(service);
+        int scale = DataAccessor.fieldInteger(service,
+                ServiceConstants.FIELD_SCALE);
 
         if (scale > this.requestedScale) {
             this.requestedScale = scale;
         }
     }
 
-    public int getCurrentScale(Service service) {
-        int scale = 0;
-        Integer scaleInternal = DataAccessor.fieldInteger(service,
-                ServiceConstants.FIELD_DESIRED_SCALE);
-        if (scaleInternal != null) {
-            scale = scaleInternal;
-        } else {
-            scale = DataAccessor.fieldInteger(service,
-                    ServiceConstants.FIELD_SCALE);
+    @Override
+    protected void checkScale() {
+        int scale = DataAccessor.fieldInteger(service,
+                ServiceConstants.FIELD_SCALE);
+        if (scale != requestedScale) {
+            throw new ServiceReconcileException("Need to restart service reconcile");
         }
-        return scale;
-    }
-
-    private boolean isScaleChanged() {
-        int scale = getCurrentScale(service);
-        return scale != requestedScale;
     }
 
     @Override
-    public List<DeploymentUnit> getUnits(DeploymentUnitInstanceIdGenerator svcInstanceIdGenerator) {
+    public List<DeploymentUnit> reconcileUnitsList(DeploymentUnitInstanceIdGenerator svcInstanceIdGenerator) {
         if (getAllUnits().size() < requestedScale) {
             addMissingUnits(svcInstanceIdGenerator);
         } else if (getAllUnits().size() > requestedScale) {
@@ -60,10 +51,6 @@ public class DefaultServiceDeploymentPlanner extends ServiceDeploymentPlanner {
 
     private void addMissingUnits(DeploymentUnitInstanceIdGenerator svcInstanceIdGenerator) {
         while (getAllUnits().size() < this.requestedScale) {
-            checkState();
-            if (isScaleChanged()) {
-                throw new ServiceReconcileException("Need to restart service reconcile");
-            }
             DeploymentUnit unit = context.serviceDao.createDeploymentUnit(service.getAccountId(), service, null,
                     svcInstanceIdGenerator.getNextAvailableId());
             addUnit(unit, State.HEALTHY);
@@ -80,10 +67,6 @@ public class DefaultServiceDeploymentPlanner extends ServiceDeploymentPlanner {
         sortByCreated(units);
         List<DeploymentUnit> watchList = new ArrayList<>();
         while (units.size() > this.requestedScale) {
-            checkState();
-            if (isScaleChanged()) {
-                throw new ServiceReconcileException("Need to restart service reconcile");
-            }
             DeploymentUnit toRemove = units.get(i);
             watchList.add(toRemove);
             removeUnit(toRemove, State.EXTRA, ServiceConstants.AUDIT_LOG_REMOVE_EXTRA, ActivityLog.INFO);

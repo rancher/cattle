@@ -6,6 +6,7 @@ import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.constants.ServiceConstants;
 import io.cattle.platform.core.dao.GenericResourceDao;
+import io.cattle.platform.core.dao.ServiceExposeMapDao;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.Service;
 import io.cattle.platform.core.model.ServiceExposeMap;
@@ -25,8 +26,7 @@ import io.cattle.platform.object.meta.ObjectMetaDataManager;
 import io.cattle.platform.object.process.ObjectProcessManager;
 import io.cattle.platform.object.process.StandardProcess;
 import io.cattle.platform.object.util.DataAccessor;
-import io.cattle.platform.servicediscovery.api.dao.ServiceExposeMapDao;
-import io.cattle.platform.servicediscovery.deployment.DeploymentUnitInstance;
+import io.cattle.platform.servicediscovery.deployment.impl.instance.AbstractDeploymentUnitInstance;
 import io.github.ibuildthecloud.gdapi.condition.Condition;
 import io.github.ibuildthecloud.gdapi.condition.ConditionType;
 
@@ -194,7 +194,7 @@ public class ComposeManagerImpl implements ComposeManager {
             found = true;
             if (isRemoved(service.getRemoved(), service.getState())) {
                 Instance instance = objectManager.loadResource(Instance.class, map.getInstanceId());
-                DeploymentUnitInstance.removeInstance(instance, objectProcessManager);
+                AbstractDeploymentUnitInstance.removeInstance(instance, objectProcessManager);
             }
         }
 

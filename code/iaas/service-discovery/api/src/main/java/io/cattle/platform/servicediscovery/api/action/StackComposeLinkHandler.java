@@ -1,13 +1,12 @@
 package io.cattle.platform.servicediscovery.api.action;
 
 import static io.cattle.platform.core.model.tables.ServiceTable.*;
-
 import io.cattle.platform.api.link.LinkHandler;
 import io.cattle.platform.core.constants.ServiceConstants;
 import io.cattle.platform.core.model.Service;
 import io.cattle.platform.core.model.Stack;
 import io.cattle.platform.object.ObjectManager;
-import io.cattle.platform.servicediscovery.api.service.ServiceDiscoveryApiService;
+import io.cattle.platform.servicediscovery.api.export.ServiceDiscoveryComposeExportService;
 import io.github.ibuildthecloud.gdapi.request.ApiRequest;
 
 import java.io.ByteArrayOutputStream;
@@ -25,7 +24,7 @@ import org.apache.commons.lang.StringUtils;
 @Named
 public class StackComposeLinkHandler implements LinkHandler {
     @Inject
-    ServiceDiscoveryApiService discoverySvc;
+    ServiceDiscoveryComposeExportService composeExportService;
 
     @Inject
     ObjectManager objectManager;
@@ -45,8 +44,8 @@ public class StackComposeLinkHandler implements LinkHandler {
         Stack stack = (Stack) obj;
         List<? extends Service> services = objectManager.find(Service.class, SERVICE.STACK_ID, stack.getId(),
                 SERVICE.REMOVED, null);
-        String dockerCompose = discoverySvc.buildDockerComposeConfig(services, stack);
-        String rancherCompose = discoverySvc.buildRancherComposeConfig(services);
+        String dockerCompose = composeExportService.buildDockerComposeConfig(services, stack);
+        String rancherCompose = composeExportService.buildRancherComposeConfig(services);
 
         if (StringUtils.isNotEmpty(dockerCompose) || StringUtils.isNotEmpty(rancherCompose)) {
             ByteArrayOutputStream baos = zipFiles(dockerCompose, rancherCompose);

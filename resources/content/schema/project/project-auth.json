@@ -69,7 +69,6 @@
         "typeDocumentation.resourceFields" : "r",
         "fieldDocumentation": "r",
         "inServiceUpgradeStrategy" : "cr",
-        "toServiceUpgradeStrategy" : "cr",
         "publicEndpoint" : "r",
         "rollingRestartStrategy" : "cr",
         "servicesPortRange" : "cru",

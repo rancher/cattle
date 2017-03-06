@@ -39,7 +39,8 @@ public class ServiceFinishUpgrade extends AbstractDefaultProcessHandler {
                         ServiceConstants.FIELD_UPGRADE, jsonMapper,
                         io.cattle.platform.core.addon.ServiceUpgrade.class);
                 if (upgrade != null) {
-                    upgradeManager.upgrade(service, upgrade.getStrategy(), ServiceConstants.STATE_FINISHING_UPGRADE,
+                    upgradeManager.upgrade(service, upgrade.getInServiceStrategy(),
+                            ServiceConstants.STATE_FINISHING_UPGRADE,
                             true, false);
                 }
                 upgradeManager.finishUpgrade(service, true);

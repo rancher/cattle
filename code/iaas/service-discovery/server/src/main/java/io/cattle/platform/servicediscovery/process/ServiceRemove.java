@@ -1,15 +1,12 @@
 package io.cattle.platform.servicediscovery.process;
 
 import io.cattle.platform.core.constants.ServiceConstants;
-import io.cattle.platform.core.dao.ServiceDao;
 import io.cattle.platform.core.model.Service;
 import io.cattle.platform.engine.handler.HandlerResult;
 import io.cattle.platform.engine.process.ProcessInstance;
 import io.cattle.platform.engine.process.ProcessState;
 import io.cattle.platform.process.common.handler.AbstractObjectProcessHandler;
-import io.cattle.platform.servicediscovery.deployment.DeploymentManager;
 import io.cattle.platform.servicediscovery.service.ServiceDiscoveryService;
-import io.cattle.platform.servicediscovery.upgrade.UpgradeManager;
 
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -17,13 +14,7 @@ import javax.inject.Named;
 @Named
 public class ServiceRemove extends AbstractObjectProcessHandler {
     @Inject
-    DeploymentManager deploymentMgr;
-    @Inject
     ServiceDiscoveryService sdService;
-    @Inject
-    UpgradeManager upgradeMgr;
-    @Inject
-    ServiceDao svcDao;
 
     @Override
     public String[] getProcessNames() {
@@ -34,16 +25,7 @@ public class ServiceRemove extends AbstractObjectProcessHandler {
     public HandlerResult handle(ProcessState state, ProcessInstance process) {
         Service service = (Service) state.getResource();
         
-        upgradeMgr.finishUpgrade(service, false);
-        deploymentMgr.remove(service);
-
-        sdService.releaseVip(service);
-
-        sdService.releasePorts(service);
-
-        sdService.removeServiceIndexes(service);
-
-        svcDao.cleanupServiceRevisions(service);
+        sdService.remove(service);
 
         return null;
     }

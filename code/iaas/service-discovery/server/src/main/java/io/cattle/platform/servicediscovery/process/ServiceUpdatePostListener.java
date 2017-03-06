@@ -4,17 +4,17 @@ import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.constants.ServiceConstants;
 import io.cattle.platform.core.dao.InstanceDao;
 import io.cattle.platform.core.dao.NetworkDao;
+import io.cattle.platform.core.dao.ServiceExposeMapDao;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.Port;
 import io.cattle.platform.core.model.Service;
+import io.cattle.platform.core.util.ServiceUtil;
 import io.cattle.platform.engine.handler.HandlerResult;
 import io.cattle.platform.engine.handler.ProcessPostListener;
 import io.cattle.platform.engine.process.ProcessInstance;
 import io.cattle.platform.engine.process.ProcessState;
 import io.cattle.platform.json.JsonMapper;
 import io.cattle.platform.process.common.handler.AbstractObjectProcessLogic;
-import io.cattle.platform.servicediscovery.api.dao.ServiceExposeMapDao;
-import io.cattle.platform.servicediscovery.api.util.ServiceDiscoveryUtil;
 import io.cattle.platform.servicediscovery.service.ServiceDiscoveryService;
 import io.cattle.platform.util.type.Priority;
 
@@ -77,7 +77,7 @@ public class ServiceUpdatePostListener extends AbstractObjectProcessLogic implem
             }
         }
 
-        Map<String, Object> launchConfigData = ServiceDiscoveryUtil.getLaunchConfigDataAsMap(service,
+        Map<String, Object> launchConfigData = ServiceUtil.getLaunchConfigDataAsMap(service,
                 ServiceConstants.PRIMARY_LAUNCH_CONFIG_NAME);
         List<String> newPortDefs = new ArrayList<>();
         if (launchConfigData.get(InstanceConstants.FIELD_PORTS) != null) {

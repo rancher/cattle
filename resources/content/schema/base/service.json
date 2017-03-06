@@ -15,28 +15,10 @@
                 "scheduleUpdate" : true
             }
         },
-        "desiredScale": {
-            "type": "int",
-            "required": false,
-            "nullable": false
-        },
-        "lockedScale": {
-            "type": "int",
-            "required": false,
-            "nullable": false
-        },
         "currentScale": {
             "type": "int",
             "required": false,
             "nullable": false
-        },
-        "scalePolicy": {
-            "type": "scalePolicy",
-            "required": false,
-            "nullable": true,
-            "attributes" : {
-                "scheduleUpdate" : true
-            }
         },
         "name":{
             "required": true,
@@ -177,10 +159,6 @@
              "attributes" : {
                 "scheduleUpdate" : true
             }
-        },
-        "prePullOnUpgrade": {
-            "type": "boolean",
-            "default": true
         }
     },
     "resourceActions" : {

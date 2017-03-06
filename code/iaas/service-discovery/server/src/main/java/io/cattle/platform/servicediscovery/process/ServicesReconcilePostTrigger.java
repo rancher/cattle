@@ -10,8 +10,8 @@ import io.cattle.platform.engine.handler.ProcessPostListener;
 import io.cattle.platform.engine.process.ProcessInstance;
 import io.cattle.platform.engine.process.ProcessState;
 import io.cattle.platform.process.common.handler.AbstractObjectProcessLogic;
-import io.cattle.platform.servicediscovery.deployment.DeploymentManager;
-import io.cattle.platform.servicediscovery.service.ServiceLookup;
+import io.cattle.platform.servicediscovery.lookups.ServiceLookup;
+import io.cattle.platform.servicediscovery.service.DeploymentManager;
 
 import java.util.ArrayList;
 import java.util.Collection;

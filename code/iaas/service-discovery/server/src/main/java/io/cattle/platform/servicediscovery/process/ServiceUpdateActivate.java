@@ -5,18 +5,17 @@ import io.cattle.platform.core.addon.InServiceUpgradeStrategy;
 import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.ServiceConstants;
 import io.cattle.platform.core.dao.ServiceDao;
+import io.cattle.platform.core.dao.ServiceExposeMapDao;
 import io.cattle.platform.core.model.InstanceRevision;
 import io.cattle.platform.core.model.Service;
+import io.cattle.platform.core.util.ServiceUtil;
 import io.cattle.platform.engine.handler.HandlerResult;
 import io.cattle.platform.engine.process.ProcessInstance;
 import io.cattle.platform.engine.process.ProcessState;
 import io.cattle.platform.iaas.api.auditing.AuditService;
 import io.cattle.platform.object.resource.ResourceMonitor;
-import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.process.common.handler.AbstractObjectProcessHandler;
-import io.cattle.platform.servicediscovery.api.dao.ServiceExposeMapDao;
-import io.cattle.platform.servicediscovery.api.util.ServiceDiscoveryUtil;
-import io.cattle.platform.servicediscovery.deployment.DeploymentManager;
+import io.cattle.platform.servicediscovery.service.DeploymentManager;
 import io.cattle.platform.servicediscovery.service.ServiceDiscoveryService;
 import io.cattle.platform.servicediscovery.upgrade.UpgradeManager;
 import io.github.ibuildthecloud.gdapi.id.IdFormatter;
@@ -77,11 +76,11 @@ public class ServiceUpdateActivate extends AbstractObjectProcessHandler {
                         && service.getIsUpgrade()) {
                     Pair<InstanceRevision, InstanceRevision> currentPreviousRevision = serviceDao
                             .getCurrentAndPreviousRevisions(service);
-                    InServiceUpgradeStrategy strategy = ServiceDiscoveryUtil.getStrategy(service,
+                    InServiceUpgradeStrategy strategy = ServiceUtil.getStrategy(service,
                             currentPreviousRevision, true);
                     if (service.getState().equalsIgnoreCase(CommonStatesConstants.UPDATING_ACTIVE)) {
-                        boolean prePullImage = DataAccessor.fieldBool(service, ServiceConstants.FIELD_IMAGE_PRE_PULL);
-                        upgradeMgr.upgrade(service, strategy, service.getState(), true, prePullImage);
+                        upgradeMgr.upgrade(service, strategy, service.getState(), true,
+                                ServiceUtil.isImagePrePull(service));
                     } else {
                         upgradeMgr.upgrade(service, strategy, service.getState(), false, false);
                     }

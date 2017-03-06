@@ -1,8 +1,8 @@
 package io.cattle.platform.servicediscovery.process;
 
 import static io.cattle.platform.core.model.tables.InstanceLinkTable.*;
-
 import io.cattle.platform.core.constants.InstanceLinkConstants;
+import io.cattle.platform.core.dao.ServiceConsumeMapDao;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.InstanceLink;
 import io.cattle.platform.core.model.Service;
@@ -12,7 +12,6 @@ import io.cattle.platform.engine.handler.ProcessPreListener;
 import io.cattle.platform.engine.process.ProcessInstance;
 import io.cattle.platform.engine.process.ProcessState;
 import io.cattle.platform.process.common.handler.AbstractObjectProcessHandler;
-import io.cattle.platform.servicediscovery.api.dao.ServiceConsumeMapDao;
 
 import java.util.List;
 

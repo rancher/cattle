@@ -425,6 +425,10 @@
         "deploymentUnitUuid": {
             "type": "string",
             "nullable": true
+        },
+        "prePullOnUpgrade": {
+            "type": "boolean",
+            "default": true
         }
     },
     "resourceActions": {

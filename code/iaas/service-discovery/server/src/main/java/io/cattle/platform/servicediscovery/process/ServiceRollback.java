@@ -1,19 +1,19 @@
 package io.cattle.platform.servicediscovery.process;
 
 import io.cattle.platform.activity.ActivityService;
-import io.cattle.platform.core.addon.ServiceUpgradeStrategy;
+import io.cattle.platform.core.addon.InServiceUpgradeStrategy;
 import io.cattle.platform.core.constants.ServiceConstants;
 import io.cattle.platform.core.dao.ServiceDao;
 import io.cattle.platform.core.model.InstanceRevision;
 import io.cattle.platform.core.model.Service;
+import io.cattle.platform.core.util.ServiceUtil;
 import io.cattle.platform.engine.handler.HandlerResult;
 import io.cattle.platform.engine.process.ProcessInstance;
 import io.cattle.platform.engine.process.ProcessState;
 import io.cattle.platform.json.JsonMapper;
 import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.process.base.AbstractDefaultProcessHandler;
-import io.cattle.platform.servicediscovery.api.util.ServiceDiscoveryUtil;
-import io.cattle.platform.servicediscovery.deployment.DeploymentManager;
+import io.cattle.platform.servicediscovery.service.DeploymentManager;
 import io.cattle.platform.servicediscovery.upgrade.UpgradeManager;
 
 import javax.inject.Inject;
@@ -43,10 +43,10 @@ public class ServiceRollback extends AbstractDefaultProcessHandler {
                 ServiceConstants.FIELD_UPGRADE, jsonMapper,
                 io.cattle.platform.core.addon.ServiceUpgrade.class);
         
-        ServiceUpgradeStrategy strategy = null;
+        InServiceUpgradeStrategy strategy = null;
         boolean finishUpgrade = false;
         if (upgrade != null) {
-            strategy = upgrade.getStrategy();
+            strategy = upgrade.getInServiceStrategy();
             finishUpgrade = true;
         } else if (service.getRevisionId() != null) {
             final io.cattle.platform.core.addon.ServiceRollback rollback = jsonMapper.convertValue(state.getData(),
@@ -65,10 +65,10 @@ public class ServiceRollback extends AbstractDefaultProcessHandler {
             if (currentPreviousRevision == null || currentPreviousRevision.getRight() == null) {
                 return null;
             }
-            strategy = ServiceDiscoveryUtil.getStrategy(service, currentPreviousRevision, false);
+            strategy = ServiceUtil.getStrategy(service, currentPreviousRevision, false);
         }
 
-        final ServiceUpgradeStrategy finalStrategy = strategy;
+        final InServiceUpgradeStrategy finalStrategy = strategy;
         final boolean finalFinishUpgrade = finishUpgrade;
 
         if (finalStrategy != null) {

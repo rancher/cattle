@@ -14,7 +14,6 @@ import static io.cattle.platform.core.model.tables.ServiceConsumeMapTable.*;
 import static io.cattle.platform.core.model.tables.ServiceExposeMapTable.*;
 import static io.cattle.platform.core.model.tables.ServiceTable.*;
 import static io.cattle.platform.core.model.tables.StackTable.*;
-
 import io.cattle.platform.configitem.context.dao.MetaDataInfoDao;
 import io.cattle.platform.configitem.context.data.metadata.common.ContainerLinkMetaData;
 import io.cattle.platform.configitem.context.data.metadata.common.ContainerMetaData;
@@ -48,13 +47,13 @@ import io.cattle.platform.core.model.tables.ServiceTable;
 import io.cattle.platform.core.model.tables.records.InstanceRecord;
 import io.cattle.platform.core.model.tables.records.NetworkRecord;
 import io.cattle.platform.core.model.tables.records.ServiceRecord;
+import io.cattle.platform.core.util.ServiceUtil;
 import io.cattle.platform.core.util.LBMetadataUtil.LBConfigMetadataStyle;
 import io.cattle.platform.db.jooq.dao.impl.AbstractJooqDao;
 import io.cattle.platform.db.jooq.mapper.MultiRecordMapper;
 import io.cattle.platform.json.JsonMapper;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.util.DataAccessor;
-import io.cattle.platform.servicediscovery.api.util.ServiceDiscoveryUtil;
 import io.cattle.platform.util.exception.ExceptionUtils;
 
 import java.io.OutputStream;
@@ -420,7 +419,7 @@ public class MetaDataInfoDaoImpl extends AbstractJooqDao implements MetaDataInfo
         if (service.getKind().equalsIgnoreCase(ServiceConstants.KIND_EXTERNAL_SERVICE)) {
             hcO = DataAccessor.field(service, InstanceConstants.FIELD_HEALTH_CHECK, Object.class);
         } else {
-            hcO = ServiceDiscoveryUtil.getLaunchConfigObject(service, launchConfigName,
+            hcO = ServiceUtil.getLaunchConfigObject(service, launchConfigName,
                     InstanceConstants.FIELD_HEALTH_CHECK);
         }
 
@@ -474,8 +473,8 @@ public class MetaDataInfoDaoImpl extends AbstractJooqDao implements MetaDataInfo
                                 String stackName = record.getValue(STACK.NAME);
                                 String stackUUID = record.getValue(STACK.UUID);
 
-                                List<String> launchConfigNames = ServiceDiscoveryUtil
-                                        .getServiceLaunchConfigNames(service);
+                                List<String> launchConfigNames = ServiceUtil
+                                        .getLaunchConfigNames(service);
                                 if (launchConfigNames.isEmpty()) {
                                     launchConfigNames.add(ServiceConstants.PRIMARY_LAUNCH_CONFIG_NAME);
                                 }

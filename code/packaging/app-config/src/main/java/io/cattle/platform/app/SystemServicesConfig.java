@@ -24,6 +24,8 @@ import io.cattle.platform.configitem.version.impl.ConfigUpdatePublisher;
 import io.cattle.platform.core.cache.DBCacheManager;
 import io.cattle.platform.core.cleanup.BadDataCleanup;
 import io.cattle.platform.core.cleanup.TableCleanup;
+import io.cattle.platform.core.dao.impl.ServiceConsumeMapDaoImpl;
+import io.cattle.platform.core.dao.impl.ServiceExposeMapDaoImpl;
 import io.cattle.platform.docker.process.dao.impl.ComposeDaoImpl;
 import io.cattle.platform.docker.service.impl.ComposeManagerImpl;
 import io.cattle.platform.docker.storage.DockerImageCredentialLookup;
@@ -110,17 +112,15 @@ import io.cattle.platform.sample.data.SampleDataStartupV7;
 import io.cattle.platform.sample.data.SampleDataStartupV8;
 import io.cattle.platform.sample.data.SampleDataStartupV9;
 import io.cattle.platform.service.launcher.ServiceAccountCreateStartup;
-import io.cattle.platform.servicediscovery.dao.impl.ServiceConsumeMapDaoImpl;
-import io.cattle.platform.servicediscovery.dao.impl.ServiceExposeMapDaoImpl;
-import io.cattle.platform.servicediscovery.deployment.impl.DeploymentManagerImpl;
-import io.cattle.platform.servicediscovery.deployment.impl.DeploymentUnitManagerImpl;
-import io.cattle.platform.servicediscovery.service.impl.AgentServiceLookup;
-import io.cattle.platform.servicediscovery.service.impl.DeploymentUnitServiceLookup;
-import io.cattle.platform.servicediscovery.service.impl.GlobalHostActivateServiceLookup;
-import io.cattle.platform.servicediscovery.service.impl.HostServiceLookup;
-import io.cattle.platform.servicediscovery.service.impl.InstanceServiceLookup;
+import io.cattle.platform.servicediscovery.deployment.impl.manager.DeploymentUnitManagerImpl;
+import io.cattle.platform.servicediscovery.lookups.AgentServiceLookup;
+import io.cattle.platform.servicediscovery.lookups.DeploymentUnitServiceLookup;
+import io.cattle.platform.servicediscovery.lookups.GlobalHostActivateServiceLookup;
+import io.cattle.platform.servicediscovery.lookups.HostServiceLookup;
+import io.cattle.platform.servicediscovery.lookups.InstanceServiceLookup;
+import io.cattle.platform.servicediscovery.lookups.SkipServiceLookup;
+import io.cattle.platform.servicediscovery.service.impl.DeploymentManagerImpl;
 import io.cattle.platform.servicediscovery.service.impl.ServiceDiscoveryServiceImpl;
-import io.cattle.platform.servicediscovery.service.impl.SkipServiceLookup;
 import io.cattle.platform.servicediscovery.upgrade.impl.UpgradeManagerImpl;
 import io.cattle.platform.spring.resource.SpringUrlListFactory;
 import io.cattle.platform.storage.ImageCredentialLookup;
@@ -664,7 +664,7 @@ public class SystemServicesConfig {
     @Bean
     ServiceExposeMapDaoImpl ServiceExposeMapDaoImpl(
             @Qualifier("LockingJooqConfiguration") io.cattle.platform.db.jooq.config.Configuration config) {
-        io.cattle.platform.servicediscovery.dao.impl.ServiceExposeMapDaoImpl dao = new ServiceExposeMapDaoImpl();
+        io.cattle.platform.core.dao.impl.ServiceExposeMapDaoImpl dao = new ServiceExposeMapDaoImpl();
         dao.setLockingConfiguration(config);
         return dao;
     }

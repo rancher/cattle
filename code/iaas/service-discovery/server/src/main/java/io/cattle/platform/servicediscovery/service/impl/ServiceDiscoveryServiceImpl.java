@@ -15,7 +15,6 @@ import io.cattle.platform.configitem.version.ConfigItemStatusManager;
 import io.cattle.platform.core.addon.LbConfig;
 import io.cattle.platform.core.addon.PortRule;
 import io.cattle.platform.core.addon.PublicEndpoint;
-import io.cattle.platform.core.addon.ScalePolicy;
 import io.cattle.platform.core.addon.ServiceLink;
 import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.HealthcheckConstants;
@@ -25,7 +24,9 @@ import io.cattle.platform.core.constants.ServiceConstants;
 import io.cattle.platform.core.constants.SubnetConstants;
 import io.cattle.platform.core.dao.InstanceDao;
 import io.cattle.platform.core.dao.NetworkDao;
+import io.cattle.platform.core.dao.ServiceConsumeMapDao;
 import io.cattle.platform.core.dao.ServiceDao;
+import io.cattle.platform.core.dao.ServiceExposeMapDao;
 import io.cattle.platform.core.model.Account;
 import io.cattle.platform.core.model.AccountLink;
 import io.cattle.platform.core.model.Host;
@@ -38,6 +39,7 @@ import io.cattle.platform.core.model.ServiceIndex;
 import io.cattle.platform.core.model.Stack;
 import io.cattle.platform.core.model.Subnet;
 import io.cattle.platform.core.util.PortSpec;
+import io.cattle.platform.core.util.ServiceUtil;
 import io.cattle.platform.core.util.SystemLabels;
 import io.cattle.platform.deferred.util.DeferredUtils;
 import io.cattle.platform.engine.process.impl.ProcessDelayException;
@@ -49,6 +51,7 @@ import io.cattle.platform.lock.LockManager;
 import io.cattle.platform.network.IPAssignment;
 import io.cattle.platform.network.NetworkService;
 import io.cattle.platform.object.ObjectManager;
+import io.cattle.platform.object.meta.ObjectMetaDataManager;
 import io.cattle.platform.object.process.ObjectProcessManager;
 import io.cattle.platform.object.process.StandardProcess;
 import io.cattle.platform.object.resource.ResourceMonitor;
@@ -59,12 +62,11 @@ import io.cattle.platform.resource.pool.PooledResource;
 import io.cattle.platform.resource.pool.PooledResourceOptions;
 import io.cattle.platform.resource.pool.ResourcePoolManager;
 import io.cattle.platform.resource.pool.util.ResourcePoolConstants;
-import io.cattle.platform.servicediscovery.api.dao.ServiceConsumeMapDao;
-import io.cattle.platform.servicediscovery.api.dao.ServiceExposeMapDao;
-import io.cattle.platform.servicediscovery.api.util.ServiceDiscoveryUtil;
 import io.cattle.platform.servicediscovery.api.util.selector.SelectorUtils;
 import io.cattle.platform.servicediscovery.deployment.impl.lock.LoadBalancerServiceLock;
+import io.cattle.platform.servicediscovery.service.DeploymentManager;
 import io.cattle.platform.servicediscovery.service.ServiceDiscoveryService;
+import io.cattle.platform.servicediscovery.upgrade.UpgradeManager;
 import io.cattle.platform.util.exception.ResourceExhaustionException;
 
 import java.util.ArrayList;
@@ -123,6 +125,10 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
     NetworkService networkService;
     @Inject
     ServiceDao serviceDao;
+    @Inject
+    UpgradeManager upgradeMgr;
+    @Inject
+    DeploymentManager deploymentMgr;
 
     @Override
     public void removeServiceLinks(Service service) {
@@ -139,25 +145,6 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
         }
     }
 
-    @Override
-    public boolean isActiveService(Service service) {
-        return (ServiceDiscoveryUtil.getServiceActiveStates().contains(service.getState()));
-    }
-
-    @Override
-    public void cloneConsumingServices(Service fromService, Service toService) {
-        List<ServiceLink> linksToCreate = new ArrayList<>();
-
-        for (ServiceConsumeMap map : consumeMapDao.findConsumingServices(fromService.getId())) {
-            ServiceLink link = new ServiceLink(toService.getId(), map.getName());
-
-            link.setConsumingServiceId(map.getServiceId());
-            linksToCreate.add(link);
-        }
-
-        consumeMapDao.createServiceLinks(linksToCreate);
-    }
-
     protected String allocateVip(Service service) {
         if (ServiceConstants.SERVICE_LIKE.contains(service.getKind())) {
             Subnet vipSubnet = getServiceVipSubnet(service);
@@ -167,8 +154,7 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
         return null;
     }
 
-    @Override
-    public String allocateIpForService(Object owner, Subnet subnet, String requestedIp) {
+    protected String allocateIpForService(Object owner, Subnet subnet, String requestedIp) {
         PooledResourceOptions options = new PooledResourceOptions();
         if (requestedIp != null) {
             options.setRequestedItem(requestedIp);
@@ -210,8 +196,7 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
         return subnet;
     }
 
-    @Override
-    public void setVIP(Service service) {
+    protected void setVIP(Service service) {
         if (!(DataAccessor.fieldBool(service, ServiceConstants.FIELD_SET_VIP) || service.getVip() != null)) {
             return;
         }
@@ -235,8 +220,8 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
         return ports;
     }
 
-    @Override
     @SuppressWarnings("unchecked")
+    @Override
     public void setPorts(Service service) {
         boolean allocatePorts = !service.getKind().equalsIgnoreCase(ServiceConstants.KIND_LOAD_BALANCER_SERVICE);
         Account env = objectManager.loadResource(Account.class, service.getAccountId());
@@ -272,8 +257,8 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
     @SuppressWarnings("unchecked")
     protected List<PooledResource> allocatePorts(Account env, Service service) {
         int toAllocate = 0;
-        for (String launchConfigName : ServiceDiscoveryUtil.getServiceLaunchConfigNames(service)) {
-            Object ports = ServiceDiscoveryUtil.getLaunchConfigObject(service, launchConfigName,
+        for (String launchConfigName : ServiceUtil.getLaunchConfigNames(service)) {
+            Object ports = ServiceUtil.getLaunchConfigObject(service, launchConfigName,
                     InstanceConstants.FIELD_PORTS);
             if (ports != null) {
                 for (String port : (List<String>) ports) {
@@ -333,15 +318,13 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
         }
     }
 
-    @Override
-    public void releasePorts(Service service) {
+    protected void releasePorts(Service service) {
         Account account = objectManager.loadResource(Account.class, service.getAccountId());
         poolManager.releaseResource(account, service, new PooledResourceOptions().withQualifier(
                 ResourcePoolConstants.ENVIRONMENT_PORT));
     }
 
-    @Override
-    public void releaseVip(Service service) {
+    protected void releaseVip(Service service) {
         String vip = service.getVip();
         if (vip == null) {
             return;
@@ -385,7 +368,7 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
         if (StringUtils.isBlank(selector)) {
             return false;
         }
-        Map<String, String> serviceLabels = ServiceDiscoveryUtil.getLaunchConfigLabels(targetService, ServiceConstants.PRIMARY_LAUNCH_CONFIG_NAME);
+        Map<String, String> serviceLabels = ServiceUtil.getLaunchConfigLabels(targetService, ServiceConstants.PRIMARY_LAUNCH_CONFIG_NAME);
         if (serviceLabels.isEmpty()) {
             return false;
         }
@@ -410,13 +393,6 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
         }
 
         return SelectorUtils.isSelectorMatch(selector, instanceLabels);
-    }
-
-    @Override
-    public boolean isGlobalService(Service service) {
-        Map<String, String> serviceLabels = ServiceDiscoveryUtil.getMergedServiceLabels(service, allocationHelper);
-        String globalService = serviceLabels.get(ServiceConstants.LABEL_SERVICE_GLOBAL);
-        return Boolean.valueOf(globalService);
     }
 
     protected void updateObjectEndPoints(final Object object, final String resourceType, final Long resourceId,
@@ -464,20 +440,18 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
     protected void reconcileServiceEndpointsImpl(final Service service) {
         final List<PublicEndpoint> newData = instanceDao.getPublicEndpoints(service.getAccountId(), service.getId(),
                 null);
-        if (service != null && service.getRemoved() == null && !ServiceDiscoveryUtil.isNoopLBService(service)) {
+        if (service != null && service.getRemoved() == null && !ServiceUtil.isNoopLBService(service)) {
             updateObjectEndPoints(service, service.getKind(), service.getId(), service.getAccountId(), newData);
         }
     }
 
-    @Override
-    public void setToken(Service service) {
+    protected void setToken(Service service) {
         String token = ApiKeyFilter.generateKeys()[1];
         DataAccessor.fields(service).withKey(ServiceConstants.FIELD_TOKEN).set(token);
         objectManager.persist(service);
     }
 
-    @Override
-    public void removeServiceIndexes(Service service) {
+    protected void removeServiceIndexes(Service service) {
         for (ServiceIndex serviceIndex : objectManager.find(ServiceIndex.class, SERVICE_INDEX.SERVICE_ID, service.getId(),
                 SERVICE_INDEX.REMOVED, null)) {
             objectProcessManager.scheduleStandardProcessAsync(StandardProcess.REMOVE, serviceIndex, null);
@@ -669,7 +643,7 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
 
         @Override
         public boolean isActive() {
-            return isActiveService(svc);
+            return ServiceUtil.isActiveService(svc);
         }
 
         @Override
@@ -706,18 +680,13 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
                     HealthcheckConstants.HEALTH_STATE_REINITIALIZING);
 
             Integer scale = DataAccessor.fieldInteger(service, ServiceConstants.FIELD_SCALE);
-            if (scale == null || ServiceDiscoveryUtil.isNoopService(service)) {
+            if (scale == null || ServiceUtil.isNoopService(service)) {
                 scale = 0;
             }
-            ScalePolicy policy = DataAccessor.field(service,
-                    ServiceConstants.FIELD_SCALE_POLICY, jsonMapper, ScalePolicy.class);
-            if (policy != null) {
-                scale = policy.getMin();
-            }
 
-            List<String> lcs = ServiceDiscoveryUtil.getServiceLaunchConfigNames(service);
+            List<String> lcs = ServiceUtil.getLaunchConfigNames(service);
             Integer expectedScale = scale * lcs.size();
-            boolean isGlobal = isGlobalService(service);
+            boolean isGlobal = ServiceUtil.isGlobalService(service);
             int healthyCount = 0;
             int initCount = 0;
             int instanceCount = serviceInstances.size();
@@ -776,12 +745,6 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
 
     protected void publishEvent(Object obj) {
         ObjectUtils.publishChanged(eventService, objectManager, obj);
-    }
-
-    @Override
-    public boolean isScalePolicyService(Service service) {
-        return DataAccessor.field(service,
-                ServiceConstants.FIELD_SCALE_POLICY, jsonMapper, ScalePolicy.class) != null;
     }
 
     @Override
@@ -991,9 +954,8 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
         }
     }
 
-    @Override
     @SuppressWarnings("unchecked")
-    public void createInitialServiceRevision(Service service) {
+    protected void createInitialServiceRevision(Service service) {
         Map<String, Object> launchConfig = DataAccessor.fields(service)
                 .withKey(ServiceConstants.FIELD_LAUNCH_CONFIG).withDefault(Collections.EMPTY_MAP)
                 .as(Map.class);
@@ -1010,17 +972,81 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
     }
 
     @Override
-    public boolean isServiceValidForReconcile(Service service) {
-        return service != null
-                && (service.getState().equalsIgnoreCase(CommonStatesConstants.ACTIVE) || service.getState()
-                        .equalsIgnoreCase(CommonStatesConstants.UPDATING_ACTIVE))
-                && !service.getIsUpgrade();
-    }
-
-    @Override
     public void resetUpgradeFlag(Service service) {
         Map<String, Object> data = new HashMap<>();
         data.put(ServiceConstants.FIELD_IS_UPGRADE, 0);
         objectManager.setFields(objectManager.reload(service), data);
+    }
+
+    @SuppressWarnings("unchecked")
+    @Override
+    public Map<String, Object> buildServiceInstanceLaunchData(Service service, Map<String, Object> deployParams,
+            String launchConfigName, AllocationHelper allocationHelper) {
+        Map<String, Object> serviceData = ServiceUtil.getLaunchConfigDataAsMap(service, launchConfigName);
+        Map<String, Object> launchConfigItems = new HashMap<>();
+
+        // 1. put all parameters retrieved through deployParams
+        if (deployParams != null) {
+            launchConfigItems.putAll(deployParams);
+        }
+
+        // 2. Get parameters defined on the service level (merge them with the ones defined in
+        for (String key : serviceData.keySet()) {
+            Object dataObj = serviceData.get(key);
+            if (launchConfigItems.get(key) != null) {
+                if (dataObj instanceof Map) {
+                    // unfortunately, need to make an except for labels due to the merging aspect of the values
+                    if (key.equalsIgnoreCase(InstanceConstants.FIELD_LABELS)) {
+                        allocationHelper.normalizeLabels(
+                                service.getStackId(),
+                                (Map<String, String>) launchConfigItems.get(key),
+                                (Map<String, String>) dataObj);
+                        ServiceUtil.mergeLabels((Map<String, String>) launchConfigItems.get(key),
+                                (Map<String, String>) dataObj);
+                    } else {
+                        ((Map<Object, Object>) dataObj).putAll((Map<Object, Object>) launchConfigItems.get(key));
+                    }
+                } else if (dataObj instanceof List) {
+                    for (Object existing : (List<Object>) launchConfigItems.get(key)) {
+                        if (!((List<Object>) dataObj).contains(existing)) {
+                            ((List<Object>) dataObj).add(existing);
+                        }
+                    }
+                }
+            }
+            if (dataObj != null) {
+                launchConfigItems.put(key, dataObj);
+            }
+        }
+
+        // 3. add extra parameters
+        launchConfigItems.put("accountId", service.getAccountId());
+        if (!launchConfigItems.containsKey(ObjectMetaDataManager.KIND_FIELD)) {
+            launchConfigItems.put(ObjectMetaDataManager.KIND_FIELD, InstanceConstants.KIND_CONTAINER);
+        }
+
+        return launchConfigItems;
+    }
+
+    @Override
+    public void remove(Service service) {
+        upgradeMgr.finishUpgrade(service, false);
+        deploymentMgr.remove(service);
+
+        releaseVip(service);
+
+        releasePorts(service);
+
+        removeServiceIndexes(service);
+
+        serviceDao.cleanupServiceRevisions(service);
+    }
+
+    @Override
+    public void create(Service service) {
+        setVIP(service);
+        setPorts(service);
+        setToken(service);
+        createInitialServiceRevision(service);
     }
 }

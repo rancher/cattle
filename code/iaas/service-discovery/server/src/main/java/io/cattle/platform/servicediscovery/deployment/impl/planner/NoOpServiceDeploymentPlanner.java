@@ -4,12 +4,11 @@ import io.cattle.platform.core.model.DeploymentUnit;
 import io.cattle.platform.core.model.Service;
 import io.cattle.platform.core.model.Stack;
 import io.cattle.platform.servicediscovery.deployment.DeploymentUnitInstanceIdGenerator;
-import io.cattle.platform.servicediscovery.deployment.ServiceDeploymentPlanner;
-import io.cattle.platform.servicediscovery.deployment.impl.DeploymentManagerImpl.DeploymentManagerContext;
+import io.cattle.platform.servicediscovery.service.impl.DeploymentManagerImpl.DeploymentManagerContext;
 
 import java.util.List;
 
-public class NoOpServiceDeploymentPlanner extends ServiceDeploymentPlanner {
+public class NoOpServiceDeploymentPlanner extends AbstractServiceDeploymentPlanner {
 
     public NoOpServiceDeploymentPlanner(Service service, Stack stack,
             DeploymentManagerContext context) {
@@ -17,12 +16,17 @@ public class NoOpServiceDeploymentPlanner extends ServiceDeploymentPlanner {
     }
 
     @Override
-    public List<DeploymentUnit> getUnits(DeploymentUnitInstanceIdGenerator svcInstanceIdGenerator) {
+    public List<DeploymentUnit> reconcileUnitsList(DeploymentUnitInstanceIdGenerator svcInstanceIdGenerator) {
         return getAllUnitsList();
     }
 
     @Override
     public boolean needToReconcileScale() {
         return false;
+    }
+
+    @Override
+    protected void checkScale() {
+        return;
     }
 }
