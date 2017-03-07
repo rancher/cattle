@@ -62,13 +62,6 @@ def test_stack_volume(client, context):
     svc1 = client.wait_success(svc1)
     client.wait_success(svc1.activate())
 
-    svc2 = client.create_service(name=random_str(),
-                                 stackId=stack.id,
-                                 launchConfig=launch_config,
-                                 scale=1)
-    svc2 = client.wait_success(svc2)
-    client.wait_success(svc2.activate())
-
     c1 = _validate_compose_instance_start(client, svc1, stack, "1")
     path_to_mount = c1.dataVolumeMounts
     assert len(path_to_mount) == 1
@@ -84,6 +77,13 @@ def test_stack_volume(client, context):
     assert volume.id == volume_id_1
     assert volume.driver == 'nfs'
     assert volume.driverOpts == opts
+
+    svc2 = client.create_service(name=random_str(),
+                                 stackId=stack.id,
+                                 launchConfig=launch_config,
+                                 scale=1)
+    svc2 = client.wait_success(svc2)
+    client.wait_success(svc2.activate())
 
     # svc2 volume should be the same
     c2 = _validate_compose_instance_start(client, svc2, stack, "1")

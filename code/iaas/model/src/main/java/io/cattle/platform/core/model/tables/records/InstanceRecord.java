@@ -13,7 +13,7 @@ package io.cattle.platform.core.model.tables.records;
 @javax.persistence.Table(name = "instance", schema = "cattle")
 public class InstanceRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.platform.core.model.tables.records.InstanceRecord> implements io.cattle.platform.db.jooq.utils.TableRecordJaxb, io.cattle.platform.core.model.Instance {
 
-	private static final long serialVersionUID = -609536597;
+	private static final long serialVersionUID = 378564429;
 
 	/**
 	 * Setter for <code>cattle.instance.id</code>.
@@ -764,6 +764,23 @@ public class InstanceRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.
 		return (java.lang.Long) getValue(43);
 	}
 
+	/**
+	 * Setter for <code>cattle.instance.container_service_id</code>.
+	 */
+	@Override
+	public void setContainerServiceId(java.lang.Long value) {
+		setValue(44, value);
+	}
+
+	/**
+	 * Getter for <code>cattle.instance.container_service_id</code>.
+	 */
+	@javax.persistence.Column(name = "container_service_id", precision = 19)
+	@Override
+	public java.lang.Long getContainerServiceId() {
+		return (java.lang.Long) getValue(44);
+	}
+
 	// -------------------------------------------------------------------------
 	// Primary key information
 	// -------------------------------------------------------------------------
@@ -829,6 +846,7 @@ public class InstanceRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.
 		setReplacementFor(from.getReplacementFor());
 		setDeploymentUnitId(from.getDeploymentUnitId());
 		setRevisionId(from.getRevisionId());
+		setContainerServiceId(from.getContainerServiceId());
 	}
 
 	/**
@@ -854,7 +872,7 @@ public class InstanceRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.
 	/**
 	 * Create a detached, initialised InstanceRecord
 	 */
-	public InstanceRecord(java.lang.Long id, java.lang.String name, java.lang.Long accountId, java.lang.String kind, java.lang.String uuid, java.lang.String description, java.lang.String state, java.util.Date created, java.util.Date removed, java.util.Date removeTime, java.util.Map<String,Object> data, java.lang.String allocationState, java.lang.Long compute, java.lang.Long memoryMb, java.lang.Long imageId, java.lang.String hostname, java.lang.Long zoneId, java.lang.String instanceTriggeredStop, java.lang.Long agentId, java.lang.String domain, java.util.Date firstRunning, java.lang.String token, java.lang.String userdata, java.lang.Long registryCredentialId, java.lang.String externalId, java.lang.Boolean nativeContainer, java.lang.Long networkContainerId, java.lang.String healthState, java.lang.Long startCount, java.lang.Long createIndex, java.lang.String deploymentUnitUuid, java.lang.String version, java.util.Date healthUpdated, java.lang.Long serviceIndexId, java.lang.String dnsInternal, java.lang.String dnsSearchInternal, java.lang.Long memoryReservation, java.lang.Long milliCpuReservation, java.lang.Boolean system, java.lang.Long serviceId, java.lang.Long environmentId, java.lang.Long replacementFor, java.lang.Long deploymentUnitId, java.lang.Long revisionId) {
+	public InstanceRecord(java.lang.Long id, java.lang.String name, java.lang.Long accountId, java.lang.String kind, java.lang.String uuid, java.lang.String description, java.lang.String state, java.util.Date created, java.util.Date removed, java.util.Date removeTime, java.util.Map<String,Object> data, java.lang.String allocationState, java.lang.Long compute, java.lang.Long memoryMb, java.lang.Long imageId, java.lang.String hostname, java.lang.Long zoneId, java.lang.String instanceTriggeredStop, java.lang.Long agentId, java.lang.String domain, java.util.Date firstRunning, java.lang.String token, java.lang.String userdata, java.lang.Long registryCredentialId, java.lang.String externalId, java.lang.Boolean nativeContainer, java.lang.Long networkContainerId, java.lang.String healthState, java.lang.Long startCount, java.lang.Long createIndex, java.lang.String deploymentUnitUuid, java.lang.String version, java.util.Date healthUpdated, java.lang.Long serviceIndexId, java.lang.String dnsInternal, java.lang.String dnsSearchInternal, java.lang.Long memoryReservation, java.lang.Long milliCpuReservation, java.lang.Boolean system, java.lang.Long serviceId, java.lang.Long environmentId, java.lang.Long replacementFor, java.lang.Long deploymentUnitId, java.lang.Long revisionId, java.lang.Long containerServiceId) {
 		super(io.cattle.platform.core.model.tables.InstanceTable.INSTANCE);
 
 		setValue(0, id);
@@ -901,5 +919,6 @@ public class InstanceRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.
 		setValue(41, replacementFor);
 		setValue(42, deploymentUnitId);
 		setValue(43, revisionId);
+		setValue(44, containerServiceId);
 	}
 }

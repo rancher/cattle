@@ -20,18 +20,19 @@ public class ServiceConstants {
     public static final String KIND_DNS_SERVICE = "dnsService";
     public static final String KIND_STORAGE_DRIVER_SERVICE = "storageDriverService";
     public static final String KIND_NETWORK_DRIVER_SERVICE = "networkDriverService";
+    public static final String KIND_CONTAINER_SERVICE = "containerService";
     public static final Set<String> SERVICE_LIKE = new HashSet<>(Arrays.asList(
             KIND_SERVICE,
             KIND_LOAD_BALANCER_SERVICE,
             KIND_STORAGE_DRIVER_SERVICE,
-            KIND_NETWORK_DRIVER_SERVICE
+            KIND_NETWORK_DRIVER_SERVICE,
+            KIND_CONTAINER_SERVICE
         ));
     
 
     public static final String TYPE_STACK = "stack";
     public static final String FIELD_SCALE = "scale";
     public static final String FIELD_NETWORK_ID = "networkId";
-    public static final String FIELD_SERVICE_ID = "serviceId";
     public static final String FIELD_SERVICE_IDS = "serviceIds";
     public static final String FIELD_UPGRADE = "upgrade";
     public static final String FIELD_LAUNCH_CONFIG = "launchConfig";
@@ -73,7 +74,6 @@ public class ServiceConstants {
     public static final String FIELD_SET_VIP = "assignServiceIpAddress";
     public static final String FIELD_CURRENT_SCALE = "currentScale";
     public static final String FIELD_HEALTH_STATE = "healthState";
-    public static final String FIELD_STACK_ID = "stackId";
     public static final String FIELD_SYSTEM = "system";
     public static final String FIELD_VOLUME_TEMPLATES = "volumeTemplates";
     public static final String FIELD_VOLUME_DRIVER = "driver";
@@ -205,7 +205,7 @@ public class ServiceConstants {
         return service.getSystem() || DataAccessor.fieldBool(service, FIELD_SYSTEM);
     }
 
-    public static String getServiceSuffixFromInstanceName(String instanceName) {
+    public static String getServiceIndexFromInstanceName(String instanceName) {
         for (String divider : SERVICE_INSTANCE_NAME_DIVIDORS) {
             if (!instanceName.contains(divider)) {
                 continue;
@@ -216,14 +216,5 @@ public class ServiceConstants {
             }
         }
         return "";
-    }
-
-    public static boolean isServiceGeneratedName(Stack env, Service service, String instanceName) {
-        for (String divider : SERVICE_INSTANCE_NAME_DIVIDORS) {
-            if (instanceName.startsWith(String.format("%s%s%s", env.getName(), divider, service.getName()))) {
-                return true;
-            }
-        }
-        return false;
     }
 }

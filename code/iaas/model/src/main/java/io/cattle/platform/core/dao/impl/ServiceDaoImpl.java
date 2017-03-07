@@ -39,6 +39,7 @@ import io.cattle.platform.core.model.tables.ServiceExposeMapTable;
 import io.cattle.platform.core.model.tables.records.DeploymentUnitRecord;
 import io.cattle.platform.core.model.tables.records.HealthcheckInstanceRecord;
 import io.cattle.platform.core.model.tables.records.InstanceRecord;
+import io.cattle.platform.core.model.tables.records.ServiceIndexRecord;
 import io.cattle.platform.core.model.tables.records.ServiceRecord;
 import io.cattle.platform.core.model.tables.records.StackRecord;
 import io.cattle.platform.db.jooq.dao.impl.AbstractJooqDao;
@@ -96,16 +97,29 @@ public class ServiceDaoImpl extends AbstractJooqDao implements ServiceDao {
 
     @Override
     public ServiceIndex createServiceIndex(Service service, String launchConfigName, String serviceIndex) {
-        ServiceIndex serviceIndexObj = objectManager.findAny(ServiceIndex.class, SERVICE_INDEX.SERVICE_ID,
-                service.getId(),
-                SERVICE_INDEX.LAUNCH_CONFIG_NAME, launchConfigName, SERVICE_INDEX.SERVICE_INDEX_, serviceIndex,
-                SERVICE_INDEX.REMOVED, null);
-        if (serviceIndexObj == null) {
-            serviceIndexObj = objectManager.create(ServiceIndex.class, SERVICE_INDEX.SERVICE_ID,
+        List<String> configNames = new ArrayList<>();
+        if (launchConfigName.equals(service.getName())) {
+            configNames.add(ServiceConstants.PRIMARY_LAUNCH_CONFIG_NAME);
+        }
+        configNames.add(launchConfigName);
+        List<? extends ServiceIndex> serviceIndexes = create()
+                .select(SERVICE_INDEX.fields())
+                .from(SERVICE_INDEX)
+                .where(SERVICE_INDEX.SERVICE_INDEX_.eq(serviceIndex))
+                .and(SERVICE_INDEX.SERVICE_ID.eq(service.getId()))
+                .and(SERVICE_INDEX.REMOVED.isNull())
+                .and(SERVICE_INDEX.STATE.ne(CommonStatesConstants.REMOVING))
+                .and(SERVICE_INDEX.LAUNCH_CONFIG_NAME.in(configNames))
+                .fetchInto(ServiceIndexRecord.class);
+        ServiceIndex index = null;
+        if (serviceIndexes.isEmpty()) {
+            index = objectManager.create(ServiceIndex.class, SERVICE_INDEX.SERVICE_ID,
                     service.getId(),
                     SERVICE_INDEX.LAUNCH_CONFIG_NAME, launchConfigName, SERVICE_INDEX.SERVICE_INDEX_, serviceIndex);
+        } else {
+            index = serviceIndexes.get(0);
         }
-        return serviceIndexObj;
+        return index;
     }
 
     @Override
@@ -484,34 +498,18 @@ public class ServiceDaoImpl extends AbstractJooqDao implements ServiceDao {
     }
 
     @Override
-    public DeploymentUnit createDeploymentUnit(long accountId, Service service, Map<String, String> labels, Integer serviceIndex) {
+    public DeploymentUnit createDeploymentUnit(long accountId, long serviceId, long stackId, Map<String, String> labels, Integer serviceIndex) {
         Map<String, Object> params = new HashMap<>();
         params.put("accountId", accountId);
         params.put("uuid", io.cattle.platform.util.resource.UUID.randomUUID().toString());
         params.put(InstanceConstants.FIELD_SERVICE_INSTANCE_SERVICE_INDEX,
                 serviceIndex);
-        if (service != null) {
-            params.put(ServiceConstants.FIELD_SERVICE_ID, service.getId());
-        }
+        params.put(InstanceConstants.FIELD_SERVICE_ID, serviceId);
+        params.put(InstanceConstants.FIELD_STACK_ID, stackId);
         if (labels != null) {
             params.put(InstanceConstants.FIELD_LABELS, labels);
         }
         return objectManager.create(DeploymentUnit.class, params);
-    }
-
-    @Override
-    public DeploymentUnit joinDeploymentUnit(Instance instance) {
-        if (isServiceManagedInstance(instance)) {
-            return null;
-        }
-        List<Long> deps = InstanceConstants.getInstanceDependencies(instance);
-        if (deps.isEmpty()) {
-            return createDeploymentUnit(instance.getAccountId(), null, null,
-                    null);
-        }
-        Instance depInstance = objectManager.findAny(Instance.class, INSTANCE.ID,
-                deps.get(0));
-        return objectManager.loadResource(DeploymentUnit.class, depInstance.getDeploymentUnitId());
     }
 
     @Override

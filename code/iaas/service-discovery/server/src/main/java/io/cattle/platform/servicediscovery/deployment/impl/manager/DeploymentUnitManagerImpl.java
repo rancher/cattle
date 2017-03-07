@@ -1,13 +1,11 @@
 package io.cattle.platform.servicediscovery.deployment.impl.manager;
 
 import io.cattle.platform.activity.ActivityService;
-import io.cattle.platform.allocator.service.AllocationHelper;
 import io.cattle.platform.configitem.events.ConfigUpdate;
 import io.cattle.platform.configitem.model.Client;
 import io.cattle.platform.configitem.request.ConfigUpdateRequest;
 import io.cattle.platform.configitem.version.ConfigItemStatusManager;
 import io.cattle.platform.core.constants.CommonStatesConstants;
-import io.cattle.platform.core.dao.GenericResourceDao;
 import io.cattle.platform.core.dao.ServiceDao;
 import io.cattle.platform.core.dao.ServiceExposeMapDao;
 import io.cattle.platform.core.dao.VolumeDao;
@@ -25,7 +23,7 @@ import io.cattle.platform.object.process.StandardProcess;
 import io.cattle.platform.object.resource.ResourceMonitor;
 import io.cattle.platform.servicediscovery.deployment.DeploymentUnitManager;
 import io.cattle.platform.servicediscovery.deployment.impl.lock.DeploymentUnitLock;
-import io.cattle.platform.servicediscovery.deployment.impl.unit.ServiceDeploymentUnit;
+import io.cattle.platform.servicediscovery.deployment.impl.unit.DeploymentUnitImpl;
 import io.cattle.platform.servicediscovery.service.ServiceDiscoveryService;
 import io.cattle.platform.util.exception.DeploymentUnitReconcileException;
 import io.github.ibuildthecloud.gdapi.id.IdFormatter;
@@ -51,15 +49,11 @@ public class DeploymentUnitManagerImpl implements DeploymentUnitManager {
     @Inject
     ServiceExposeMapDao expMapDao;
     @Inject
-    AllocationHelper allocatorSvc;
-    @Inject
     ServiceDao svcDao;
     @Inject
     IdFormatter idFrmt;
     @Inject
     ActivityService actvtyService;
-    @Inject
-    GenericResourceDao rscDao;
     @Inject
     ConfigItemStatusManager itemManager;
     @Inject
@@ -77,12 +71,9 @@ public class DeploymentUnitManagerImpl implements DeploymentUnitManager {
         final public ObjectProcessManager objectProcessManager = objectProcessMgr;
         final public ServiceDiscoveryService sdService = sdSvc;
         final public ServiceExposeMapDao exposeMapDao = expMapDao;
-        final public AllocationHelper allocatorService = allocatorSvc;
         final public ServiceDao serviceDao = svcDao;
         final public ActivityService activityService = actvtyService;
         final public IdFormatter idFormatter = idFrmt;
-        final public LockManager lockMgr = lockManager;
-        final public GenericResourceDao resourceDao = rscDao;
         final public JsonMapper jsonMapper = jMapper;
         final public VolumeDao volumeDao = volDao;
         final public DockerTransformer transformer = dockerTransformer;
@@ -90,12 +81,12 @@ public class DeploymentUnitManagerImpl implements DeploymentUnitManager {
 
     @Override
     public void deactivate(DeploymentUnit unit) {
-        DeploymentUnitFactory.fetchDeploymentUnit(unit, new DeploymentUnitManagerContext()).stop();
+        getDeploymentUnit(unit).stop();
     }
 
     @Override
     public void remove(DeploymentUnit unit, String reason, String level) {
-        DeploymentUnitFactory.fetchDeploymentUnit(unit, new DeploymentUnitManagerContext()).remove(reason, level);
+        getDeploymentUnit(unit).remove(reason, level);
     }
 
     protected void reconcile(final DeploymentUnit unit) {
@@ -105,9 +96,8 @@ public class DeploymentUnitManagerImpl implements DeploymentUnitManager {
         lockManager.lock(new DeploymentUnitLock(unit), new LockCallbackNoReturn() {
             @Override
             public void doWithLockNoResult() {
-                io.cattle.platform.servicediscovery.deployment.DeploymentUnit impl = DeploymentUnitFactory
-                        .fetchDeploymentUnit(unit, new DeploymentUnitManagerContext());
-                boolean log = impl instanceof ServiceDeploymentUnit;
+                io.cattle.platform.servicediscovery.deployment.DeploymentUnit impl = getDeploymentUnit(unit);
+                boolean log = impl instanceof DeploymentUnitImpl;
                 if (log) {
                     activitySvc.info(impl.getStatus());
                 }
@@ -121,7 +111,7 @@ public class DeploymentUnitManagerImpl implements DeploymentUnitManager {
                 sdSvc.incrementExecutionCount(unit);
                 impl.deploy();
                 // reload in case something has changed
-                impl = DeploymentUnitFactory.fetchDeploymentUnit(unit, new DeploymentUnitManagerContext());
+                impl = getDeploymentUnit(unit);
                 if (impl.needToReconcile()) {
                     throw new DeploymentUnitReconcileException("Need to restart deployment unit reconcile");
                 }
@@ -187,20 +177,20 @@ public class DeploymentUnitManagerImpl implements DeploymentUnitManager {
 
     @Override
     public boolean isUnhealthy(DeploymentUnit unit) {
-        io.cattle.platform.servicediscovery.deployment.DeploymentUnit impl = DeploymentUnitFactory.fetchDeploymentUnit(
-                unit, new DeploymentUnitManagerContext());
-        return impl.isUnhealthy();
+        return getDeploymentUnit(unit).isUnhealthy();
     }
 
     @Override
     public boolean isInit(DeploymentUnit unit) {
-        io.cattle.platform.servicediscovery.deployment.DeploymentUnit impl = DeploymentUnitFactory.fetchDeploymentUnit(
-                unit, new DeploymentUnitManagerContext());
-        return impl.isHealthCheckInitializing();
+        return getDeploymentUnit(unit).isHealthCheckInitializing();
     }
 
     @Override
     public void cleanup(DeploymentUnit unit, String reason, String level) {
-        DeploymentUnitFactory.fetchDeploymentUnit(unit, new DeploymentUnitManagerContext()).cleanup(reason, level);
+        getDeploymentUnit(unit).cleanup(reason, level);
+    }
+
+    io.cattle.platform.servicediscovery.deployment.DeploymentUnit getDeploymentUnit(DeploymentUnit unit) {
+        return new DeploymentUnitImpl(unit, new DeploymentUnitManagerContext());
     }
 }

@@ -221,7 +221,6 @@ def test_user_types(user_client, adds=set(), removes=set()):
         'genericObject',
         'instanceRevision',
         'serviceRollback',
-        'convertToServiceInput',
     }
     types.update(adds)
     types.difference_update(removes)
@@ -471,7 +470,6 @@ def test_admin_types(admin_user_client, adds=set(), removes=set()):
         'scheduledUpgrade',
         'instanceRevision',
         'serviceRollback',
-        'convertToServiceInput'
     }
     types.update(adds)
     types.difference_update(removes)

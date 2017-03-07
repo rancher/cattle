@@ -205,7 +205,7 @@ public class SampleDataStartupV14 extends AbstractSampleData {
                 if (StringUtils.isEmpty(duUUID)) {
                     continue;
                 }
-                String serviceIndex = ServiceConstants.getServiceSuffixFromInstanceName(instance.getName());
+                String serviceIndex = ServiceConstants.getServiceIndexFromInstanceName(instance.getName());
                 Set<String> usedIndexes = new HashSet<>();
                 if (serviceIdToUsedIndexes.get(serviceId) != null) {
                     usedIndexes = serviceIdToUsedIndexes.get(serviceId);

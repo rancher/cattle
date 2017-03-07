@@ -140,4 +140,12 @@
             <column name="upgrade_time" type="DATETIME"/>
         </addColumn>
     </changeSet>
+    <changeSet author="alena (generated)" id="dump28">
+        <addColumn tableName="instance">
+            <column name="container_service_id" type="BIGINT"/>
+        </addColumn>
+    </changeSet>
+    <changeSet author="alena (generated)" id="dump29">
+        <addForeignKeyConstraint baseColumnNames="container_service_id" baseTableName="instance" constraintName="fk_instance__container_service_id" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="service"/>
+    </changeSet>
 </databaseChangeLog>

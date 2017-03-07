@@ -89,8 +89,9 @@ public class GlobalServiceDeploymentPlanner extends AbstractServiceDeploymentPla
             if (!hostToUnits.containsKey(hostId)) {
                 Map<String, String> labels = new HashMap<>();
                 labels.put(ServiceConstants.LABEL_SERVICE_REQUESTED_HOST_ID, hostId.toString());
-                DeploymentUnit unit = context.serviceDao.createDeploymentUnit(service.getAccountId(), service, labels,
-                        svcInstanceIdGenerator.getNextAvailableId());
+                DeploymentUnit unit = context.serviceDao.createDeploymentUnit(service.getAccountId(), service.getId(),
+                        stack.getId(),
+                        labels, svcInstanceIdGenerator.getNextAvailableId());
                 hostToUnits.put(hostId, unit);
                 addUnit(unit, State.HEALTHY);
             }

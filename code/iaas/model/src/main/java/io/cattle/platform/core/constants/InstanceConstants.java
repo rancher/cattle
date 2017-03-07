@@ -67,7 +67,6 @@ public class InstanceConstants {
     public static final String FIELD_MOUNTS = "mounts";
     public static final String FIELD_HEALTHCHECK_STATES = "healthcheckStates";
     public static final String FIELD_INSTANCE_SPECS = "specs";
-    public static final String FIELD_REPLACEMNT_FOR_INSTANCE_ID = "replacementFor";
     public static final String FIELD_SERVICE_ID = "serviceId";
     public static final String FIELD_STACK_ID = "stackId";
     public static final String FIELD_SIDEKICK_TO = "sidekickTo";
@@ -76,6 +75,7 @@ public class InstanceConstants {
     public static final String FIELD_START_RETRY_COUNT = "startRetryCount";
     public static final String FIELD_REVISION_ID = "revisionId";
     public static final String FIELD_PREVIOUS_REVISION_ID = "previousRevisionId";
+    public static final String FIELD_CONTAINER_SERVICE_ID = "containerServiceId";
 
     public static final String PROCESS_DATA_NO_OP = "containerNoOpEvent";
 

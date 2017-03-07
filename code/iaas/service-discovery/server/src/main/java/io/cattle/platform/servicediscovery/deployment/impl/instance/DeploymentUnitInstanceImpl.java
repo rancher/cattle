@@ -11,10 +11,16 @@ import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.constants.ServiceConstants;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.InstanceHostMap;
+import io.cattle.platform.core.model.Service;
+import io.cattle.platform.core.model.ServiceExposeMap;
+import io.cattle.platform.core.model.Stack;
+import io.cattle.platform.core.model.tables.records.ServiceRecord;
+import io.cattle.platform.core.util.ServiceUtil;
 import io.cattle.platform.core.util.SystemLabels;
 import io.cattle.platform.docker.constants.DockerInstanceConstants;
 import io.cattle.platform.engine.process.impl.ProcessCancelException;
 import io.cattle.platform.iaas.api.auditing.AuditEventType;
+import io.cattle.platform.object.jooq.utils.JooqUtils;
 import io.cattle.platform.object.process.ObjectProcessManager;
 import io.cattle.platform.object.process.StandardProcess;
 import io.cattle.platform.object.resource.ResourcePredicate;
@@ -34,8 +40,10 @@ import java.util.Map;
 import java.util.Set;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.Pair;
+import org.jooq.exception.DataChangedException;
 
-public abstract class AbstractDeploymentUnitInstance implements DeploymentUnitInstance {
+public class DeploymentUnitInstanceImpl implements DeploymentUnitInstance {
     private static final Set<String> ERROR_STATES = new HashSet<String>(Arrays.asList(
             InstanceConstants.STATE_ERRORING,
             InstanceConstants.STATE_ERROR));
@@ -54,25 +62,21 @@ public abstract class AbstractDeploymentUnitInstance implements DeploymentUnitIn
     protected boolean startOnFailure;
     protected int maximumRetryCount = UNLIMITED_RETRIES;
     protected String launchConfigName;
+    protected Service service;
+    protected Stack stack;
+    protected ServiceExposeMap exposeMap;
 
-    public AbstractDeploymentUnitInstance(DeploymentUnitManagerContext context, String instanceName, Instance instance,
-            String launchConfigName) {
+    public DeploymentUnitInstanceImpl(DeploymentUnitManagerContext context, Service service, Stack stack,
+            String instanceName, Instance instance, ServiceExposeMap exposeMap, String launchConfigName) {
         this.context = context;
         this.instanceName = instanceName;
         this.instance = instance;
         this.launchConfigName = launchConfigName;
         setStartOnFailure();
+        this.service = service;
+        this.stack = stack;
+        this.exposeMap = exposeMap;
     }
-
-    @Override
-    public abstract void create(Map<String, Object> deployParams);
-
-    @Override
-    public abstract void scheduleCreate();
-
-    public abstract void removeImpl();
-
-    public abstract boolean isRestartAlways();
 
     @Override
     public void remove(String reason, String level) {
@@ -298,5 +302,62 @@ public abstract class AbstractDeploymentUnitInstance implements DeploymentUnitIn
                                 InstanceConstants.PROCESS_STOP, InstanceConstants.PROCESS_REMOVE));
             }
         }
+    }
+
+    @Override
+    public void create(Map<String, Object> deployParams) {
+        if (this.instance == null) {
+            Pair<Instance, ServiceExposeMap> instanceMapPair = createServiceInstance(deployParams);
+            this.instance = instanceMapPair.getLeft();
+            this.exposeMap = instanceMapPair.getRight();
+            this.generateAuditLog(AuditEventType.create,
+                    ServiceConstants.AUDIT_LOG_CREATE_EXTRA, ActivityLog.INFO);
+        }
+        setStartOnFailure();
+    }
+
+    @Override
+    public void scheduleCreate() {
+        if (exposeMap.getState().equalsIgnoreCase(CommonStatesConstants.REQUESTED)) {
+            context.objectProcessManager.scheduleStandardProcessAsync(StandardProcess.CREATE, exposeMap,
+                    null);
+        }
+        if (instance.getState().equalsIgnoreCase(CommonStatesConstants.REQUESTED)) {
+            context.objectProcessManager.scheduleStandardProcessAsync(StandardProcess.CREATE, instance,
+                    null);
+        }
+    }
+
+    protected Pair<Instance, ServiceExposeMap> createServiceInstance(final Map<String, Object> properties) {
+        DataChangedException ex = null;
+        for (int i = 0; i < 30; i++) {
+            try {
+                final ServiceRecord record = JooqUtils.getRecordObject(context.objectManager.loadResource(
+                        Service.class,
+                        service.getId()));
+                return context.exposeMapDao.createServiceInstance(properties, service, record);
+            } catch (DataChangedException e) {
+                // retry
+                ex = e;
+            }
+        }
+        throw ex;
+    }
+
+    protected void removeImpl() {
+        if (exposeMap != null) {
+            context.objectProcessManager.scheduleStandardProcessAsync(StandardProcess.REMOVE, exposeMap, null);
+        }
+    }
+
+    protected boolean isRestartAlways() {
+        Object policyObj = ServiceUtil.getLaunchConfigObject(service, launchConfigName,
+                DockerInstanceConstants.FIELD_RESTART_POLICY);
+        if (policyObj == null) {
+            return true;
+        }
+
+        RestartPolicy policy = context.jsonMapper.convertValue(policyObj, RestartPolicy.class);
+        return RESTART_ALWAYS_POLICY_NAMES.contains(policy.getName());
     }
 }

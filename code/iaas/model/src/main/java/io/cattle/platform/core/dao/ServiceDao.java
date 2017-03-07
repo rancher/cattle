@@ -72,9 +72,8 @@ public interface ServiceDao {
 
     List<? extends DeploymentUnit> getUnitsOnHost(Host host, boolean transitioningOnly);
 
-    DeploymentUnit createDeploymentUnit(long accountId, Service service, Map<String, String> labels, Integer serviceIndex);
-
-    DeploymentUnit joinDeploymentUnit(Instance instance);
+    DeploymentUnit createDeploymentUnit(long accountId, long serviceId,
+            long stackId, Map<String, String> labels, Integer serviceIndex);
 
     Stack getOrCreateDefaultStack(long accountId);
 

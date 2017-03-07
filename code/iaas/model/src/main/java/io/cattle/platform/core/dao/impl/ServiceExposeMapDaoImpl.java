@@ -70,7 +70,6 @@ public class ServiceExposeMapDaoImpl extends AbstractJooqDao implements ServiceE
         String dnsPrefix = instanceLabels
                 .get(ServiceConstants.LABEL_SERVICE_LAUNCH_CONFIG);
         if (ServiceConstants.PRIMARY_LAUNCH_CONFIG_NAME.equalsIgnoreCase(dnsPrefix)) {
-
             dnsPrefix = null;
         }
 

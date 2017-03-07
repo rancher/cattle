@@ -51,8 +51,9 @@ public class DefaultServiceDeploymentPlanner extends AbstractServiceDeploymentPl
 
     private void addMissingUnits(DeploymentUnitInstanceIdGenerator svcInstanceIdGenerator) {
         while (getAllUnits().size() < this.requestedScale) {
-            DeploymentUnit unit = context.serviceDao.createDeploymentUnit(service.getAccountId(), service, null,
-                    svcInstanceIdGenerator.getNextAvailableId());
+            DeploymentUnit unit = context.serviceDao.createDeploymentUnit(service.getAccountId(), service.getId(),
+                    stack.getId(),
+                    null, svcInstanceIdGenerator.getNextAvailableId());
             addUnit(unit, State.HEALTHY);
         }
     }

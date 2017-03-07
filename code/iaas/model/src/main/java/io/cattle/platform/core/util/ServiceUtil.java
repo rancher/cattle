@@ -177,32 +177,24 @@ public class ServiceUtil {
 
     public static String generateServiceInstanceName(Stack env, Service service, String launchConfigName,
             int finalOrder) {
-        String configName = launchConfigName == null
-                || launchConfigName.equals(ServiceConstants.PRIMARY_LAUNCH_CONFIG_NAME) ? ""
-                : launchConfigName + "-";
-        String name = String.format("%s-%s-%s%d", env.getName(), service.getName(), configName, finalOrder);
-        return name;
-    }
+        boolean isPrimary = launchConfigName == null
+                || launchConfigName.equals(ServiceConstants.PRIMARY_LAUNCH_CONFIG_NAME);
 
-    public static String getGeneratedServiceIndex(Stack env, Service service,
-            String instanceName) {
-        if (!ServiceConstants.isServiceGeneratedName(env, service, instanceName)) {
-            return null;
-        }
-        Integer charAt = instanceName.length()-1;
-        for (int i = instanceName.length() - 1; i > 0; i--) {
-            if (instanceName.charAt(i) == '-' || instanceName.charAt(i) == '_') {
-                break;
+        if (finalOrder == 0) {
+            if (isPrimary) {
+                return service.getName();
             }
-            charAt = i;
+            return launchConfigName;
         }
-        return instanceName.substring(charAt, instanceName.length());
+        String configName = isPrimary ? "" : launchConfigName + "-";
+        return String.format("%s-%s-%s%d", env.getName(), service.getName(), configName, finalOrder);
     }
 
     public static boolean isNoopService(Service service) {
         Object imageUUID = ServiceUtil.getLaunchConfigDataAsMap(service,
                 ServiceConstants.PRIMARY_LAUNCH_CONFIG_NAME).get(
                 InstanceConstants.FIELD_IMAGE_UUID);
+
         return (service.getSelectorContainer() != null
                 && (imageUUID == null || imageUUID.toString().toLowerCase()
                 .contains(ServiceConstants.IMAGE_NONE))) || isNoopLBService(service);

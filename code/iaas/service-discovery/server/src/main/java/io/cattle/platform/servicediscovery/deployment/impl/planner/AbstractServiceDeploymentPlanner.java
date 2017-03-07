@@ -181,9 +181,9 @@ public abstract class AbstractServiceDeploymentPlanner implements ServiceDeploym
             if (unit.getState().equalsIgnoreCase(CommonStatesConstants.INACTIVE)) {
                 context.objectProcessManager.scheduleStandardProcessAsync(StandardProcess.ACTIVATE, unit, null);
             } else if (unit.getState().equalsIgnoreCase(CommonStatesConstants.REQUESTED)) {
-                context.objectProcessManager.scheduleStandardProcessAsync(StandardProcess.CREATE,
-                        unit, ProcessUtils.chainInData(new HashMap<String, Object>(),
-                                ServiceConstants.PROCESS_DU_CREATE, ServiceConstants.PROCESS_DU_ACTIVATE));
+                context.objectProcessManager.scheduleStandardChainedProcessAsync(StandardProcess.CREATE,
+                        StandardProcess.ACTIVATE,
+                        unit, null);
             }
         }
 

@@ -120,7 +120,8 @@ public class SelectorServiceCreatePostListener extends AbstractObjectProcessLogi
                 lockManager.lock(new ServiceInstanceLock(service, instance), new LockCallbackNoReturn() {
                     @Override
                     public void doWithLockNoResult() {
-                        ServiceExposeMap exposeMap = exposeMapDao.createServiceInstanceMap(service, instance, false);
+                        ServiceExposeMap exposeMap = exposeMapDao.createServiceInstanceMap(service, instance,
+                                false);
                         if (exposeMap.getState().equalsIgnoreCase(CommonStatesConstants.REQUESTED)) {
                             objectProcessManager.scheduleStandardProcessAsync(StandardProcess.CREATE, exposeMap,
                                     null);

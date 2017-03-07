@@ -3,7 +3,7 @@ from cattle import ApiError
 
 
 def test_standalone_du_lifecycle(super_client, context):
-    c = context.super_create_container()
+    c = context.super_create_container(name=random_str())
     assert c.deploymentUnitUuid is not None
     uuid = c.deploymentUnitUuid
     wait_for(lambda: len(super_client.list_deploymentUnit(uuid=uuid)) == 1)
@@ -17,8 +17,8 @@ def test_standalone_du_lifecycle(super_client, context):
 
 
 def test_adding_two_references(context):
-    c1 = context.super_create_container()
-    c2 = context.super_create_container()
+    c1 = context.super_create_container(name=random_str())
+    c2 = context.super_create_container(name=random_str())
 
     with pytest.raises(ApiError) as e:
         context.super_create_container(networkContainerId=c1.id,
@@ -28,8 +28,9 @@ def test_adding_two_references(context):
 
 
 def test_du_multiple_instances_lifecycle(super_client, context):
-    c1 = context.super_create_container()
-    c2 = context.super_create_container(networkContainerId=c1.id)
+    c1 = context.super_create_container(name=random_str())
+    c2 = context.super_create_container(name=random_str(),
+                                        networkContainerId=c1.id)
     assert c2.deploymentUnitUuid == c1.deploymentUnitUuid
 
     du = super_client.list_deploymentUnit(uuid=c1.deploymentUnitUuid)[0]
@@ -46,7 +47,7 @@ def test_du_multiple_instances_lifecycle(super_client, context):
 
 
 def test_container_compute_fail(super_client, context):
-    c1 = context.super_create_container()
+    c1 = context.super_create_container(name=random_str())
     data = {
         'compute.instance.activate::fail': True,
         'io.cattle.platform.process.instance.InstanceStart': {
@@ -65,8 +66,8 @@ def test_container_compute_fail(super_client, context):
 
 
 def test_du_sidekick_to(super_client, context):
-    c1 = context.super_create_container()
-    c2 = context.super_create_container(sidekickTo=c1.id)
+    c1 = context.super_create_container(name=random_str())
+    c2 = context.super_create_container(name=random_str(), sidekickTo=c1.id)
     assert c2.deploymentUnitUuid == c1.deploymentUnitUuid
     assert c2.sidekickTo == c1.id
 
@@ -85,10 +86,12 @@ def test_du_sidekick_to(super_client, context):
 
 def test_restart_always(context, super_client):
     p = {"name": "always"}
-    c1 = context.super_create_container(restartPolicy=p)
-    c2 = context.super_create_container(networkContainerId=c1.id,
+    c1 = context.super_create_container(name=random_str(), restartPolicy=p)
+    c2 = context.super_create_container(name=random_str(),
+                                        networkContainerId=c1.id,
                                         restartPolicy=p)
-    c3 = context.super_create_container(networkContainerId=c2.id,
+    c3 = context.super_create_container(name=random_str(),
+                                        networkContainerId=c2.id,
                                         restartPolicy=p)
 
     sc_1 = c1.startCount
@@ -134,7 +137,8 @@ def test_restart_on_failure_exceed_retry(context, super_client):
 
 
 def test_instance_revision(client, context):
-    c = client.create_container(imageUuid=context.image_uuid)
+    c = client.create_container(name=random_str(),
+                                imageUuid=context.image_uuid)
     c = client.wait_success(c)
     assert c.deploymentUnitUuid is not None
 
@@ -147,7 +151,8 @@ def test_instance_revision(client, context):
 
 
 def test_convert_to_service_primary(client, context):
-    c = client.create_container(imageUuid=context.image_uuid)
+    c = client.create_container(name=random_str(),
+                                imageUuid=context.image_uuid)
     c = client.wait_success(c)
     assert c.deploymentUnitUuid is not None
 
@@ -158,10 +163,9 @@ def test_convert_to_service_primary(client, context):
     assert spec['imageUuid'] == context.image_uuid
     assert spec['version'] == '0'
 
-    s_name = random_str()
-    s = c.converttoservice(name=s_name)
+    s = c.converttoservice()
     assert s is not None
-    assert s.name == s_name
+    assert s.name == c.name
     assert s.stackId == c.stackId
     assert s.scale == 1
     assert s.launchConfig is not None
@@ -186,13 +190,12 @@ def test_convert_to_service_sidekicks(client, context):
     assert spec['imageUuid'] == context.image_uuid
     assert spec['version'] == '0'
 
-    s_name = random_str()
-    s = c1.converttoservice(name=s_name)
+    s = c1.converttoservice()
     assert s is not None
 
     s = client.wait_success(s)
-    assert s.state == 'inactive'
-    assert s.name == s_name
+    assert s.state == 'active'
+    assert s.name == c1.name
     assert s.stackId == c1.stackId
     assert s.revisionId is not None
 

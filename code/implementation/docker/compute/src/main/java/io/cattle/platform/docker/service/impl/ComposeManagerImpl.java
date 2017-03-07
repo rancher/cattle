@@ -26,7 +26,7 @@ import io.cattle.platform.object.meta.ObjectMetaDataManager;
 import io.cattle.platform.object.process.ObjectProcessManager;
 import io.cattle.platform.object.process.StandardProcess;
 import io.cattle.platform.object.util.DataAccessor;
-import io.cattle.platform.servicediscovery.deployment.impl.instance.AbstractDeploymentUnitInstance;
+import io.cattle.platform.servicediscovery.deployment.impl.instance.DeploymentUnitInstanceImpl;
 import io.github.ibuildthecloud.gdapi.condition.Condition;
 import io.github.ibuildthecloud.gdapi.condition.ConditionType;
 
@@ -194,7 +194,7 @@ public class ComposeManagerImpl implements ComposeManager {
             found = true;
             if (isRemoved(service.getRemoved(), service.getState())) {
                 Instance instance = objectManager.loadResource(Instance.class, map.getInstanceId());
-                AbstractDeploymentUnitInstance.removeInstance(instance, objectProcessManager);
+                DeploymentUnitInstanceImpl.removeInstance(instance, objectProcessManager);
             }
         }
 

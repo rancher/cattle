@@ -1050,9 +1050,6 @@
         "serviceRollback" : "r",
         "serviceRollback.revisionId" : "cr",
 
-        "convertToServiceInput" : "r",
-        "convertToServiceInput.name" : "cr",
-
         "end" : ""
     }
 }

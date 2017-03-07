@@ -4,13 +4,12 @@ import static io.cattle.platform.core.model.tables.ServiceIndexTable.*;
 import static io.cattle.platform.core.model.tables.ServiceTable.*;
 import static io.cattle.platform.core.model.tables.StackTable.*;
 import static io.cattle.platform.core.model.tables.VolumeTable.*;
-import static io.cattle.platform.core.model.tables.VolumeTemplateTable.*;
 import io.cattle.platform.activity.ActivityLog;
 import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.ExternalEventConstants;
+import io.cattle.platform.core.constants.HealthcheckConstants;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.constants.ServiceConstants;
-import io.cattle.platform.core.constants.VolumeConstants;
 import io.cattle.platform.core.model.DeploymentUnit;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.Service;
@@ -18,24 +17,18 @@ import io.cattle.platform.core.model.ServiceExposeMap;
 import io.cattle.platform.core.model.ServiceIndex;
 import io.cattle.platform.core.model.Stack;
 import io.cattle.platform.core.model.Volume;
-import io.cattle.platform.core.model.VolumeTemplate;
 import io.cattle.platform.core.util.ServiceUtil;
 import io.cattle.platform.core.util.SystemLabels;
 import io.cattle.platform.docker.constants.DockerInstanceConstants;
 import io.cattle.platform.engine.process.impl.ProcessCancelException;
-import io.cattle.platform.lock.LockCallback;
 import io.cattle.platform.object.process.StandardProcess;
 import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.process.common.util.ProcessUtils;
 import io.cattle.platform.servicediscovery.deployment.DeploymentUnitInstance;
-import io.cattle.platform.servicediscovery.deployment.impl.instance.ServiceDeploymentUnitInstance;
-import io.cattle.platform.servicediscovery.deployment.impl.lock.StackVolumeLock;
+import io.cattle.platform.servicediscovery.deployment.impl.instance.DeploymentUnitInstanceImpl;
 import io.cattle.platform.servicediscovery.deployment.impl.manager.DeploymentUnitManagerImpl.DeploymentUnitManagerContext;
-import io.cattle.platform.util.exception.DeploymentUnitAllocateException;
-import io.cattle.platform.util.type.CollectionUtils;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -43,7 +36,7 @@ import java.util.Map;
 
 import org.apache.commons.lang3.tuple.Pair;
 
-public class ServiceDeploymentUnit extends AbstractDeploymentUnit {
+public class DeploymentUnitImpl implements io.cattle.platform.servicediscovery.deployment.DeploymentUnit {
 
     public static class SidekickType {
         public static List<SidekickType> supportedTypes = new ArrayList<>();
@@ -65,16 +58,18 @@ public class ServiceDeploymentUnit extends AbstractDeploymentUnit {
 
     Service service;
     Stack stack;
-    Map<String, String> labels = new HashMap<>();
     Map<String, ServiceIndex> launchConfigToServiceIndexes = new HashMap<>();
+    DeploymentUnitManagerContext context;
+    Map<String, DeploymentUnitInstance> launchConfigToInstance = new HashMap<>();
+    List<String> launchConfigNames = new ArrayList<>();
+    Map<String, List<String>> sidekickUsedByMap = new HashMap<>();
+    DeploymentUnit unit;
 
-    @SuppressWarnings("unchecked")
-    public ServiceDeploymentUnit(DeploymentUnitManagerContext context, DeploymentUnit unit) {
-        super(context, unit);
+    public DeploymentUnitImpl(DeploymentUnit unit, DeploymentUnitManagerContext context) {
+        this.context = context;
+        this.unit = unit;
         this.service = context.objectManager.findOne(Service.class, SERVICE.ID, unit.getServiceId());
         this.stack = context.objectManager.findOne(Stack.class, STACK.ID, service.getStackId());
-        this.labels = DataAccessor.fields(unit).withKey(InstanceConstants.FIELD_LABELS)
-                .withDefault(Collections.EMPTY_MAP).as(Map.class);
         this.launchConfigNames = ServiceUtil.getLaunchConfigNames(service);
         collectDeploymentUnitInstances();
         generateSidekickReferences();
@@ -95,81 +90,58 @@ public class ServiceDeploymentUnit extends AbstractDeploymentUnit {
 
     protected void addMissingInstance(String launchConfigName) {
         if (!launchConfigToInstance.containsKey(launchConfigName)) {
-            Integer order = Integer.valueOf(this.unit.getServiceIndex());
-            String instanceName = ServiceUtil.generateServiceInstanceName(stack,
-                    service, launchConfigName, order);
-            DeploymentUnitInstance deploymentUnitInstance = new ServiceDeploymentUnitInstance(context, service,
+            String instanceName = getInstanceName(launchConfigName);
+            DeploymentUnitInstance deploymentUnitInstance = new DeploymentUnitInstanceImpl(context, service,
                     stack, instanceName, null, null, launchConfigName);
             addDeploymentInstance(launchConfigName, deploymentUnitInstance);
         }
     }
 
-    protected Map<String, Object> populateDeployParams(DeploymentUnitInstance instance,
-            List<Integer> volumesFromInstanceIds, Integer networkContainerId, List<String> namedVolumes,
-            Map<String, Long> internalVolumes, ServiceIndex serviceIndex) {
-        Map<String, Object> deployParams = new HashMap<>();
-        Map<String, String> instanceLabels = getLabels(instance);
-        deployParams.put(InstanceConstants.FIELD_LABELS, instanceLabels);
+    public String getInstanceName(String launchConfigName) {
+        Integer order = Integer.valueOf(this.unit.getServiceIndex());
+        String instanceName = ServiceUtil.generateServiceInstanceName(stack,
+                service, launchConfigName, order);
+        return instanceName;
+    }
+
+    protected Map<String, Object> populateDeployParams(String launchConfigName,
+            ServiceIndex serviceIndex, List<Integer> volumesFromInstanceIds, Integer networkContainerId) {
+        Map<String, Object> deployParams = context.sdService.getDeploymentUnitInstanceData(stack, service, unit,
+                launchConfigName,
+                serviceIndex,
+                getInstanceName(launchConfigName));
+
         if (volumesFromInstanceIds != null && !volumesFromInstanceIds.isEmpty()) {
             deployParams.put(DockerInstanceConstants.FIELD_VOLUMES_FROM, volumesFromInstanceIds);
-        }
-        Object hostId = instanceLabels.get(ServiceConstants.LABEL_SERVICE_REQUESTED_HOST_ID);
-        if (hostId != null) {
-            deployParams.put(InstanceConstants.FIELD_REQUESTED_HOST_ID, hostId);
         }
 
         if (networkContainerId != null) {
             deployParams.put(DockerInstanceConstants.FIELD_NETWORK_CONTAINER_ID, networkContainerId);
         }
 
-        deployParams.put(InstanceConstants.FIELD_DEPLOYMENT_UNIT_UUID, unit.getUuid());
-        deployParams.put(InstanceConstants.FIELD_DEPLOYMENT_UNIT_ID, unit.getId());
-        deployParams.put(ServiceConstants.FIELD_VERSION, ServiceUtil.getLaunchConfigObject(
-                service, instance.getLaunchConfigName(), ServiceConstants.FIELD_VERSION));
-        addDns(instance, deployParams);
-
-        deployParams.put(ServiceConstants.FIELD_INTERNAL_VOLUMES, namedVolumes);
-        deployParams.put(InstanceConstants.FIELD_DATA_VOLUME_MOUNTS, internalVolumes);
-        deployParams.put(InstanceConstants.FIELD_SERVICE_ID, service.getId());
-        deployParams.put(InstanceConstants.FIELD_STACK_ID, service.getStackId());
-        if (serviceIndex != null) {
-            deployParams.put(InstanceConstants.FIELD_SERVICE_INSTANCE_SERVICE_INDEX_ID,
-                    serviceIndex.getId());
-            deployParams.put(InstanceConstants.FIELD_SERVICE_INSTANCE_SERVICE_INDEX,
-                    serviceIndex.getServiceIndex());
-            deployParams.put(InstanceConstants.FIELD_ALLOCATED_IP_ADDRESS, serviceIndex.getAddress());
-        }
-
         return deployParams;
     }
 
-    @Override
     protected void createImpl() {
         for (String launchConfigName : launchConfigNames) {
             createServiceIndex(launchConfigName);
         }
         for (String launchConfigName : launchConfigNames) {
-            createInstance(launchConfigName);
+            getOrCreateInstance(launchConfigName);
         }
     }
 
-    public DeploymentUnitInstance createInstance(String launchConfigName) {
+    protected DeploymentUnitInstance getOrCreateInstance(String launchConfigName) {
         addMissingInstance(launchConfigName);
         List<Integer> volumesFromInstanceIds = getSidekickContainersId(launchConfigName, SidekickType.DATA);
         List<Integer> networkContainerIds = getSidekickContainersId(launchConfigName, SidekickType.NETWORK);
         Integer networkContainerId = networkContainerIds.isEmpty() ? null : networkContainerIds.get(0);
-        List<String> namedVolumes = getNamedVolumes(launchConfigName);
-        List<String> internalVolumes = new ArrayList<>();
-        Map<String, Long> volumeMounts = new HashMap<>();
-        for (String namedVolume : namedVolumes) {
-            getOrCreateVolume(namedVolume, volumeMounts, internalVolumes);
-        }
+
+        Map<String, Object> deployParams = populateDeployParams(launchConfigName,
+                launchConfigToServiceIndexes.get(launchConfigName),
+                volumesFromInstanceIds, networkContainerId);
         launchConfigToInstance.get(launchConfigName)
-                .create(
-                        populateDeployParams(launchConfigToInstance.get(launchConfigName),
-                                volumesFromInstanceIds,
-                                networkContainerId, internalVolumes, volumeMounts,
-                                launchConfigToServiceIndexes.get(launchConfigName)));
+                .create(deployParams);
 
         DeploymentUnitInstance toReturn = launchConfigToInstance.get(launchConfigName);
         return toReturn;
@@ -206,7 +178,7 @@ public class ServiceDeploymentUnit extends AbstractDeploymentUnit {
                         .toString());
                 if (sidekickUnitInstance == null) {
                     // request new instance creation
-                    sidekickUnitInstance = createInstance(sidekickLaunchConfigName);
+                    sidekickUnitInstance = getOrCreateInstance(sidekickLaunchConfigName);
                 }
                 sidekickInstanceIds.add(sidekickUnitInstance.getInstance().getId()
                         .intValue());
@@ -216,61 +188,7 @@ public class ServiceDeploymentUnit extends AbstractDeploymentUnit {
         return sidekickInstanceIds;
     }
 
-    protected void addDns(DeploymentUnitInstance instance, Map<String, Object> deployParams) {
-        boolean addDns = true;
-        Object labelsObj = ServiceUtil.getLaunchConfigObject(
-                service, instance.getLaunchConfigName(), InstanceConstants.FIELD_LABELS);
-        if (labelsObj != null) {
-            Map<String, Object> labels = CollectionUtils.toMap(labelsObj);
-            if (labels.containsKey(SystemLabels.LABEL_USE_RANCHER_DNS)
-                    && !Boolean.valueOf(SystemLabels.LABEL_USE_RANCHER_DNS))
-                addDns = false;
-        }
-
-        if (addDns) {
-            deployParams.put(DockerInstanceConstants.FIELD_DNS_SEARCH, getSearchDomains());
-        }
-    }
-
-    protected Map<String, String> getLabels(DeploymentUnitInstance instance) {
-        Map<String, String> labels = new HashMap<>();
-        String serviceName = service.getName();
-        if (!ServiceConstants.PRIMARY_LAUNCH_CONFIG_NAME.equals(instance.getLaunchConfigName())) {
-            serviceName = serviceName + '/' + instance.getLaunchConfigName();
-        }
-        String envName = stack.getName();
-        labels.put(ServiceConstants.LABEL_STACK_NAME, envName);
-        labels.put(ServiceConstants.LABEL_STACK_SERVICE_NAME, envName + "/" + serviceName);
-
-        // LEGACY: keeping backwards compatibility with 'project'
-        labels.put(ServiceConstants.LABEL_PROJECT_NAME, envName);
-        labels.put(ServiceConstants.LABEL_PROJECT_SERVICE_NAME, envName + "/" + serviceName);
-
-        /*
-         * Put label 'io.rancher.deployment.unit=this.uuid' on each one. This way
-         * we can reference a set of containers later.
-         */
-        labels.put(ServiceConstants.LABEL_SERVICE_DEPLOYMENT_UNIT, getUuid());
-
-        /*
-         * Put label with launch config name
-         */
-        labels.put(ServiceConstants.LABEL_SERVICE_LAUNCH_CONFIG, instance.getLaunchConfigName());
-
-        labels.putAll(this.labels);
-
-        return labels;
-    }
-
-    protected List<String> getSearchDomains() {
-        String stackNamespace = ServiceUtil.getStackNamespace(this.stack, this.service);
-        String serviceNamespace = ServiceUtil
-                .getServiceNamespace(this.stack, this.service);
-        return Arrays.asList(stackNamespace, serviceNamespace);
-    }
-
     @SuppressWarnings("unchecked")
-    @Override
     protected List<String> getSidekickRefs(String launchConfigName) {
         List<String> configNames = new ArrayList<>();
         for (SidekickType sidekickType : SidekickType.supportedTypes) {
@@ -295,121 +213,6 @@ public class ServiceDeploymentUnit extends AbstractDeploymentUnit {
         return toReturn;
     }
 
-    protected void getOrCreateVolume(String volumeName, Map<String, Long> volumeMounts,
-            List<String> internalVolumes) {
-        if (unit.getServiceIndex() == null) {
-            return;
-        }
-        String[] splitted = volumeName.split(":");
-        String volumeNamePostfix = splitted[0];
-        String volumePath = volumeName.replaceFirst(splitted[0] + ":", "");
-
-        final VolumeTemplate template = context.objectManager.findOne(VolumeTemplate.class, VOLUME_TEMPLATE.ACCOUNT_ID,
-                service.getAccountId(), VOLUME_TEMPLATE.REMOVED, null, VOLUME_TEMPLATE.NAME, splitted[0],
-                VOLUME_TEMPLATE.STACK_ID, stack.getId());
-        if (template == null) {
-            return;
-        }
-
-        Volume volume = null;
-        if (template.getExternal()) {
-            // external volume should exist, otherwise fail
-            volume = context.objectManager.findAny(Volume.class, VOLUME.ACCOUNT_ID, service.getAccountId(),
-                    VOLUME.REMOVED, null, VOLUME.NAME, template.getName());
-            if (volume == null) {
-                throw new DeploymentUnitAllocateException("Failed to locate volume for for deployment unit ["
-                        + getUuid() + "]", null, this.unit);
-            }
-            return;
-        } else {
-            final String postfix = io.cattle.platform.util.resource.UUID.randomUUID().toString();
-            if (template.getPerContainer()) {
-                String name = stack.getName() + "_" + volumeNamePostfix + "_" + this.unit.getServiceIndex() + "_"
-                        + getUuid() + "_";
-                // append 5 random chars
-                List<? extends Volume> volumes = context.objectManager
-                        .find(Volume.class, VOLUME.ACCOUNT_ID, service.getAccountId(),
-                                VOLUME.REMOVED, null, VOLUME.VOLUME_TEMPLATE_ID, template.getId(), VOLUME.STACK_ID,
-                                stack.getId(), VOLUME.DEPLOYMENT_UNIT_ID, unit.getId());
-                for (Volume vol : volumes) {
-                    if (vol.getName().startsWith(name)) {
-                        volume = vol;
-                        break;
-                    }
-                }
-                if (volume == null) {
-                    volume = createVolume(service, template, name + postfix.substring(0, 5));
-                }
-            } else {
-                final String name = stack.getName() + "_" + volumeNamePostfix + "_";
-                volume = context.lockMgr.lock(new StackVolumeLock(stack, name), new LockCallback<Volume>() {
-                    @Override
-                    public Volume doWithLock() {
-                        Volume existing = null;
-                        List<? extends Volume> volumes = context.objectManager
-                                .find(Volume.class, VOLUME.ACCOUNT_ID, service.getAccountId(),
-                                        VOLUME.REMOVED, null, VOLUME.VOLUME_TEMPLATE_ID, template.getId(),
-                                        VOLUME.STACK_ID,
-                                        stack.getId());
-                        for (Volume vol : volumes) {
-                            if (vol.getName().startsWith(name)) {
-                                existing = vol;
-                                break;
-                            }
-                        }
-                        if (existing != null) {
-                            return existing;
-                        }
-                        return createVolume(service, template, new String(name + postfix.substring(0, 5)));
-                    }
-                });
-            }
-        }
-        volumeMounts.put(volumePath, volume.getId());
-        internalVolumes.add(volumeName);
-    }
-
-    private Volume createVolume(Service service, VolumeTemplate template, String name) {
-        Map<String, Object> params = new HashMap<>();
-        if (template.getPerContainer()) {
-            params.put(ServiceConstants.FIELD_DEPLOYMENT_UNIT_ID, unit.getId());
-        }
-        params.put("name", name);
-        params.put("accountId", service.getAccountId());
-        params.put(ServiceConstants.FIELD_STACK_ID, service.getStackId());
-        params.put(ServiceConstants.FIELD_VOLUME_TEMPLATE_ID, template.getId());
-        params.put(VolumeConstants.FIELD_VOLUME_DRIVER_OPTS,
-                DataAccessor.fieldMap(template, VolumeConstants.FIELD_VOLUME_DRIVER_OPTS));
-        params.put(VolumeConstants.FIELD_VOLUME_DRIVER, template.getDriver());
-        return context.resourceDao.createAndSchedule(Volume.class, params);
-    }
-
-    @SuppressWarnings("unchecked")
-    protected List<String> getNamedVolumes(String launchConfigName) {
-        Object dataVolumesObj = ServiceUtil.getLaunchConfigObject(service, launchConfigName,
-                InstanceConstants.FIELD_DATA_VOLUMES);
-        List<String> namedVolumes = new ArrayList<>();
-        if (dataVolumesObj != null) {
-            for (String volume : (List<String>) dataVolumesObj) {
-                if (isNamedVolume(volume)) {
-                    namedVolumes.add(volume);
-                }
-            }
-        }
-        return namedVolumes;
-    }
-
-    protected boolean isNamedVolume(String volumeName) {
-        String[] splitted = volumeName.split(":");
-        if (splitted.length < 2) {
-            return false;
-        }
-        if (splitted[0].contains("/")) {
-            return false;
-        }
-        return true;
-    }
-
     @SuppressWarnings("unchecked")
     protected void collectDeploymentUnitInstances() {
         List<Pair<Instance, ServiceExposeMap>> serviceInstances = context.exposeMapDao
@@ -421,7 +224,7 @@ public class ServiceDeploymentUnit extends AbstractDeploymentUnit {
                     .withKey(InstanceConstants.FIELD_LABELS).withDefault(Collections.EMPTY_MAP).as(Map.class);
             String launchConfigName = instanceLabels
                     .get(ServiceConstants.LABEL_SERVICE_LAUNCH_CONFIG);
-            DeploymentUnitInstance unitInstance = new ServiceDeploymentUnitInstance(context, service,
+            DeploymentUnitInstance unitInstance = new DeploymentUnitInstanceImpl(context, service,
                     stack, instance.getName(), instance, exposeMap, launchConfigName);
             addDeploymentInstance(launchConfigName, unitInstance);
         }
@@ -509,7 +312,6 @@ public class ServiceDeploymentUnit extends AbstractDeploymentUnit {
         }
     }
 
-    @Override
     protected void cleanupDependencies() {
         /*
          * Delete all the units having missing dependencies
@@ -521,7 +323,6 @@ public class ServiceDeploymentUnit extends AbstractDeploymentUnit {
         }
     }
 
-    @Override
     protected void cleanupUnhealthy() {
         for (DeploymentUnitInstance instance : this.getDeploymentUnitInstances()) {
             if (instance.isUnhealthy()) {
@@ -534,19 +335,21 @@ public class ServiceDeploymentUnit extends AbstractDeploymentUnit {
         return service;
     }
 
-    @Override
-    public List<DeploymentUnitInstance> getInstancesWithMistmatchedIndexes() {
+    protected List<DeploymentUnitInstance> getInstancesWithMistmatchedIndexes() {
         List<DeploymentUnitInstance> toReturn = new ArrayList<>();
         for (DeploymentUnitInstance instance : this.getDeploymentUnitInstances()) {
-            if (instance instanceof ServiceDeploymentUnitInstance) {
-                ServiceDeploymentUnitInstance si = (ServiceDeploymentUnitInstance) instance;
-                if (si.getInstance() == null) {
-                    continue;
-                }
-                String index = ServiceConstants.getServiceSuffixFromInstanceName(si.getInstance().getName());
-                if (!index.equalsIgnoreCase(unit.getServiceIndex())) {
-                    toReturn.add(si);
-                }
+            if (instance.getInstance() == null) {
+                continue;
+            }
+
+            String serviceIndex = DataAccessor.fieldString(instance.getInstance(),
+                    InstanceConstants.FIELD_SERVICE_INSTANCE_SERVICE_INDEX);
+            if (serviceIndex == null) {
+                serviceIndex = ServiceConstants.getServiceIndexFromInstanceName(instance.getInstance().getName());
+            }
+
+            if (!serviceIndex.equalsIgnoreCase(unit.getServiceIndex())) {
+                toReturn.add(instance);
             }
         }
         return toReturn;
@@ -578,4 +381,152 @@ public class ServiceDeploymentUnit extends AbstractDeploymentUnit {
         launchConfigToServiceIndexes.put(launchConfigName, serviceIndexObj);
     }
 
+    protected void sortSidekicks(List<String> sorted, String lc) {
+        List<String> sidekicks = getSidekickRefs(lc);
+        for (String sidekick : sidekicks) {
+            sortSidekicks(sorted, sidekick);
+        }
+        if (!sorted.contains(lc)) {
+            sorted.add(lc);
+        }
+    }
+
+    @Override
+    public void deploy() {
+        cleanupInstancesWithMistmatchedIndexes();
+        cleanupUnhealthy();
+        cleanupDependencies();
+        create();
+        start();
+        waitForStart();
+        updateHealthy();
+    }
+
+    public void updateHealthy() {
+        if (this.isUnhealthy()) {
+            return;
+        }
+        if (HealthcheckConstants.isHealthy(this.unit.getHealthState())) {
+            context.objectProcessManager.scheduleProcessInstanceAsync(ServiceConstants.PROCESS_DU_UPDATE_HEALTHY,
+                    this.unit, null);
+        }
+    }
+
+    public DeploymentUnit getUnit() {
+        return unit;
+    }
+
+    @Override
+    public boolean isUnhealthy() {
+        for (DeploymentUnitInstance instance : this.getDeploymentUnitInstances()) {
+            if (instance.isUnhealthy()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    @Override
+    public void stop() {
+        /*
+         * stops all instances. This should be non-blocking (don't wait)
+         */
+        for (DeploymentUnitInstance instance : getDeploymentUnitInstances()) {
+            instance.stop();
+        }
+    }
+
+    public void start() {
+        for (DeploymentUnitInstance instance : getSortedDeploymentUnitInstances()) {
+            instance.start();
+        }
+    }
+
+    protected void create() {
+        createImpl();
+        for (DeploymentUnitInstance instance : launchConfigToInstance.values()) {
+            instance.scheduleCreate();
+        }
+    }
+
+    protected void waitForStart() {
+        // sort based on dependencies
+        List<DeploymentUnitInstance> sortedInstances = getSortedDeploymentUnitInstances();
+        for (DeploymentUnitInstance instance : sortedInstances) {
+            instance.waitForStart();
+        }
+    }
+
+    public List<DeploymentUnitInstance> getSortedDeploymentUnitInstances() {
+        List<String> sortedLCs = new ArrayList<>();
+        for (String lc : launchConfigToInstance.keySet()) {
+            sortSidekicks(sortedLCs, lc);
+        }
+
+        List<DeploymentUnitInstance> sortedInstances = new ArrayList<>();
+        for (String lc : sortedLCs) {
+            sortedInstances.add(launchConfigToInstance.get(lc));
+        }
+        Collections.reverse(sortedInstances);
+        return sortedInstances;
+    }
+
+    public List<DeploymentUnitInstance> getDeploymentUnitInstances() {
+        List<DeploymentUnitInstance> instances = new ArrayList<>();
+        instances.addAll(launchConfigToInstance.values());
+        return instances;
+    }
+
+    protected void addDeploymentInstance(String launchConfig, DeploymentUnitInstance instance) {
+        this.launchConfigToInstance.put(launchConfig, instance);
+    }
+
+    protected void removeDeploymentUnitInstance(DeploymentUnitInstance instance, String reason, String level) {
+        instance.remove(reason, level);
+        launchConfigToInstance.remove(instance.getLaunchConfigName());
+    }
+
+    @Override
+    public boolean isHealthCheckInitializing() {
+        for (DeploymentUnitInstance instance : getDeploymentUnitInstances()) {
+            if (instance.isHealthCheckInitializing()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    protected boolean isStarted() {
+        for (DeploymentUnitInstance instance : getDeploymentUnitInstances()) {
+            if (!instance.isStarted()) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    protected boolean isComplete() {
+        return launchConfigToInstance.keySet().containsAll(launchConfigNames);
+    }
+
+    @Override
+    public String getStatus() {
+        return String.format("Healthy: %s, Complete: %s, Started: %s",
+                !isUnhealthy(),
+                isComplete(),
+                isStarted());
+    }
+
+    protected void cleanupInstancesWithMistmatchedIndexes() {
+        List<DeploymentUnitInstance> toCleanup = getInstancesWithMistmatchedIndexes();
+        for (DeploymentUnitInstance i : toCleanup) {
+            removeDeploymentUnitInstance(i, ServiceConstants.AUDIT_LOG_REMOVE_BAD, ActivityLog.INFO);
+        }
+    }
+
+    @Override
+    public boolean needToReconcile() {
+        return isUnhealthy() || !isComplete() || !isStarted()
+                || getInstancesWithMistmatchedIndexes().size() > 0;
+    }
 }
