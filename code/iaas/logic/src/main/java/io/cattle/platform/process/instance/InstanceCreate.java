@@ -11,7 +11,6 @@ import io.cattle.platform.core.dao.InstanceDao;
 import io.cattle.platform.core.dao.LabelsDao;
 import io.cattle.platform.core.model.CredentialInstanceMap;
 import io.cattle.platform.core.model.Instance;
-import io.cattle.platform.core.model.InstanceRevision;
 import io.cattle.platform.core.model.Nic;
 import io.cattle.platform.core.model.Volume;
 import io.cattle.platform.engine.handler.HandlerResult;
@@ -26,7 +25,6 @@ import io.cattle.platform.process.base.AbstractDefaultProcessHandler;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -68,22 +66,11 @@ public class InstanceCreate extends AbstractDefaultProcessHandler {
 
         createLabels(instance);
 
-        createInstanceRevision(state, instance);
-
         HandlerResult result = new HandlerResult("_volumeIds", volumesIds, "_nicIds", nicIds, "_creds", creds, InstanceConstants.FIELD_DATA_VOLUMES,
                 dataVolumes);
         result.shouldDelegate(shouldStart(instance));
 
         return result;
-    }
-
-    private void createInstanceRevision(ProcessState state, Instance instance) {
-        InstanceRevision revision = instanceDao.createRevision(instance, state.getData());
-        if (instance.getRevisionId() == null) {
-            Map<String, Object> data = new HashMap<>();
-            data.put(InstanceConstants.FIELD_REVISION_ID, revision.getId());
-            objectManager.setFields(instance, data);
-        }
     }
 
     private List<String> processManagedVolumes(Instance instance) {

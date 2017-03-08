@@ -112,6 +112,7 @@ public class CoreModelConfig {
                 "instanceConsole",
                 "instanceConsoleInput",
                 "instanceStop",
+                "instanceRemove",
                 "project,parent=account",
                 "password,parent=credential",
                 "registry,parent=storagePool",

@@ -21,6 +21,7 @@ import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.process.ObjectProcessManager;
 import io.cattle.platform.object.process.StandardProcess;
 import io.cattle.platform.object.resource.ResourceMonitor;
+import io.cattle.platform.servicediscovery.api.service.ServiceDataManager;
 import io.cattle.platform.servicediscovery.deployment.DeploymentUnitManager;
 import io.cattle.platform.servicediscovery.deployment.impl.lock.DeploymentUnitLock;
 import io.cattle.platform.servicediscovery.deployment.impl.unit.DeploymentUnitImpl;
@@ -64,6 +65,8 @@ public class DeploymentUnitManagerImpl implements DeploymentUnitManager {
     VolumeDao volDao;
     @Inject
     DockerTransformer dockerTransformer;
+    @Inject
+    ServiceDataManager dataMgr;
 
     public final class DeploymentUnitManagerContext {
         final public ObjectManager objectManager = objectMgr;
@@ -77,6 +80,7 @@ public class DeploymentUnitManagerImpl implements DeploymentUnitManager {
         final public JsonMapper jsonMapper = jMapper;
         final public VolumeDao volumeDao = volDao;
         final public DockerTransformer transformer = dockerTransformer;
+        final public ServiceDataManager svcDataMgr = dataMgr;
     }
 
     @Override

@@ -9,8 +9,8 @@ import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.constants.NetworkConstants;
 import io.cattle.platform.core.constants.ServiceConstants;
 import io.cattle.platform.core.model.Instance;
-import io.cattle.platform.core.model.InstanceRevision;
 import io.cattle.platform.core.model.Service;
+import io.cattle.platform.core.model.ServiceRevision;
 import io.cattle.platform.core.model.Stack;
 import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.object.util.DataUtils;
@@ -542,7 +542,8 @@ public class ServiceUtil {
         }
     }
 
-    public static final InServiceUpgradeStrategy getStrategy(Service service, Pair<InstanceRevision, InstanceRevision> currentPreviousRevision,
+    public static final InServiceUpgradeStrategy getStrategy(Service service,
+            Pair<ServiceRevision, ServiceRevision> currentPreviousRevision,
             boolean upgrade) {
         boolean startFirst = DataAccessor.fieldBool(service, ServiceConstants.FIELD_START_FIRST);
         Long batchSize = DataAccessor.fieldLong(service, ServiceConstants.FIELD_BATCHSIZE);
@@ -605,9 +606,9 @@ public class ServiceUtil {
     }
 
     public static boolean isServiceValidForReconcile(Service service) {
+        List<String> activeStates = Arrays.asList(CommonStatesConstants.ACTIVATING, CommonStatesConstants.ACTIVE, CommonStatesConstants.UPDATING_ACTIVE);
         return service != null
-                && (service.getState().equalsIgnoreCase(CommonStatesConstants.ACTIVE) || service.getState()
-                        .equalsIgnoreCase(CommonStatesConstants.UPDATING_ACTIVE))
+                && (activeStates.contains(service.getState()))
                 && !service.getIsUpgrade();
     }
 

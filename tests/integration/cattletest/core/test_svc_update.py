@@ -12,7 +12,7 @@ def test_update_check_revision(client, super_client, context):
     svc = client.wait_success(svc)
     svc = client.wait_success(svc.activate())
 
-    revisions = client.list_instanceRevision(serviceId=svc.id)
+    revisions = client.list_serviceRevision(serviceId=svc.id)
     assert len(revisions) == 1
     rev1 = revisions[0]
     assert rev1.specs[svc.name]['capAdd'] == ['AUDIT_CONTROL']
@@ -26,7 +26,7 @@ def test_update_check_revision(client, super_client, context):
     svc = client.wait_success(svc)
     assert svc.previousRevisionId == rev1.id
 
-    revisions = client.list_instanceRevision(serviceId=svc.id)
+    revisions = client.list_serviceRevision(serviceId=svc.id)
     assert len(revisions) == 2
     rev2_id = 0
     for rev in revisions:
@@ -44,7 +44,7 @@ def test_update_check_revision(client, super_client, context):
     launch_config = {'ports': '80:80/tcp'}
     svc = client.update(svc, launchConfig=launch_config)
     svc = client.wait_success(svc)
-    revisions = client.list_instanceRevision(serviceId=svc.id)
+    revisions = client.list_serviceRevision(serviceId=svc.id)
     assert len(revisions) == 2
     assert svc.revisionId == rev2_id
     assert svc.launchConfig.ports == ['80:80/tcp']
@@ -56,7 +56,7 @@ def test_update_check_revision(client, super_client, context):
     svc = client.update(svc, secondaryLaunchConfigs=[launch_config])
     svc = client.wait_success(svc)
     assert svc.previousRevisionId == rev2_id
-    revisions = client.list_instanceRevision(serviceId=svc.id)
+    revisions = client.list_serviceRevision(serviceId=svc.id)
     assert len(revisions) == 3
     rev3_id = 0
     for rev in revisions:
@@ -76,7 +76,7 @@ def test_update_check_revision(client, super_client, context):
     svc = client.update(svc, secondaryLaunchConfigs=[launch_config])
     svc = client.wait_success(svc)
     assert svc.previousRevisionId == rev3_id
-    revisions = client.list_instanceRevision(serviceId=svc.id)
+    revisions = client.list_serviceRevision(serviceId=svc.id)
     assert len(revisions) == 4
     rev4_id = 0
     omit_set = set([rev1.id, rev2_id, rev3_id])
@@ -94,7 +94,7 @@ def test_update_check_revision(client, super_client, context):
     launch_config = {'ports': '80:80/tcp', 'name': 'sec'}
     svc = client.update(svc, secondaryLaunchConfigs=[launch_config])
     svc = client.wait_success(svc)
-    revisions = client.list_instanceRevision(serviceId=svc.id)
+    revisions = client.list_serviceRevision(serviceId=svc.id)
     assert len(revisions) == 4
     assert svc.revisionId == rev4_id
     assert svc.secondaryLaunchConfigs[0]['ports'] == ['80:80/tcp']
@@ -106,7 +106,7 @@ def test_update_check_revision(client, super_client, context):
     svc = client.update(svc, secondaryLaunchConfigs=[launch_config])
     svc = client.wait_success(svc)
     assert svc.previousRevisionId == rev4_id
-    revisions = client.list_instanceRevision(serviceId=svc.id)
+    revisions = client.list_serviceRevision(serviceId=svc.id)
     assert len(revisions) == 5
     rev5_id = 0
     omit_set = set([rev1.id, rev2_id, rev3_id, rev4_id])
@@ -928,13 +928,13 @@ def _validate_upgrade(super_client, svc, upgraded_svc,
     primary_upgraded_v = primary_v
     sec1_upgraded_v = sec1_v
     sec2_upgraded_v = sec2_v
-    revisions = super_client.list_instanceRevision(serviceId=svc.id)
+    revisions = super_client.list_serviceRevision(serviceId=svc.id)
     assert len(revisions) == 2
 
     prev = {}
     for rev in revisions:
         if rev.id == upgraded_svc.revisionId:
-            p_rev = super_client.by_id('instanceRevision',
+            p_rev = super_client.by_id('serviceRevision',
                                        id=upgraded_svc.previousRevisionId)
             assert p_rev is not None
             prev = p_rev.specs

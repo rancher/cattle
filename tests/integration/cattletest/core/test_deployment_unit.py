@@ -35,17 +35,41 @@ def test_du_multiple_instances_lifecycle(super_client, context):
 
     du = super_client.list_deploymentUnit(uuid=c1.deploymentUnitUuid)[0]
 
-    # remove c1, validate du is still intact
+    c = super_client.reload(c1)
+    assert c.containerServiceId is not None
+    s = super_client.by_id('service', c.containerServiceId)
+    assert s.name == c1.name
+    assert s.launchConfig is not None
+    assert s.secondaryLaunchConfigs is not None
+    assert len(s.secondaryLaunchConfigs) == 1
+    sc = s.secondaryLaunchConfigs[0]
+    assert sc.name == c2.name
+
+    wait_for(lambda: len(super_client.
+                         list_serviceRevision(serviceId=s.id)) == 1)
+    rs = super_client.list_serviceRevision(serviceId=s.id)
+    r = rs[0]
+    wait_for(lambda: len(super_client.reload(r).specs) == 2)
+    specs = super_client.reload(r).specs
+    assert specs[s.name].imageUuid is not None
+    assert specs[sc.name].imageUuid is not None
+
+    # remove c2, validate du is still intact
     c2 = super_client.wait_success(c2.stop())
     super_client.wait_success(c2.remove())
     wait_for(lambda: super_client.reload(du).state == 'active')
+    wait_for(lambda: len(super_client.reload(s).secondaryLaunchConfigs) == 0)
+    wait_for(lambda: len(super_client.reload(r).specs) == 1)
 
-    # remove c2, validate du is gone
+    # remove c1, validate du and service are gone
     c1 = super_client.wait_success(c1.stop())
     super_client.wait_success(c1.remove())
     wait_for(lambda: super_client.reload(du).state == 'removed')
 
+    wait_for(lambda: super_client.reload(r).state == 'removed')
 
+
+@pytest.mark.skipif('True')
 def test_container_compute_fail(super_client, context):
     c1 = context.super_create_container(name=random_str())
     data = {
@@ -55,7 +79,8 @@ def test_container_compute_fail(super_client, context):
         }
     }
 
-    c2 = context.super_create_container_no_success(data=data,
+    c2 = context.super_create_container_no_success(name=random_str(),
+                                                   data=data,
                                                    networkContainerId=c1.id)
 
     assert c2.transitioning == 'error'
@@ -94,6 +119,11 @@ def test_restart_always(context, super_client):
                                         networkContainerId=c2.id,
                                         restartPolicy=p)
 
+    du_uuid = c1.deploymentUnitUuid
+    wait_for(lambda: len(super_client.list_deploymentUnit(uuid=du_uuid)) == 1)
+    wait_for(lambda: super_client.
+             list_deploymentUnit(uuid=du_uuid)[0].state == 'active')
+
     sc_1 = c1.startCount
     sc_2 = c2.startCount
     sc_3 = c3.startCount
@@ -103,9 +133,6 @@ def test_restart_always(context, super_client):
     wait_for(lambda: super_client.reload(c1).startCount > sc_1)
     wait_for(lambda: super_client.reload(c2).startCount > sc_2)
     wait_for(lambda: super_client.reload(c3).startCount > sc_3)
-    assert super_client.reload(c1).stopSource is None
-    assert super_client.reload(c2).stopSource is None
-    assert super_client.reload(c3).stopSource is None
 
 
 def test_restart_on_failure_zero_exit(context, super_client):
@@ -136,32 +163,11 @@ def test_restart_on_failure_exceed_retry(context, super_client):
     wait_for(lambda: super_client.reload(c1).state == 'stopped')
 
 
-def test_instance_revision(client, context):
-    c = client.create_container(name=random_str(),
-                                imageUuid=context.image_uuid)
-    c = client.wait_success(c)
-    assert c.deploymentUnitUuid is not None
-
-    rs = client.list_instanceRevision(instanceId=c.id)
-    assert len(rs) == 1
-    r = rs[0]
-    spec = r.specs[c.uuid]
-    assert spec['imageUuid'] == context.image_uuid
-    assert spec['version'] == '0'
-
-
 def test_convert_to_service_primary(client, context):
     c = client.create_container(name=random_str(),
                                 imageUuid=context.image_uuid)
     c = client.wait_success(c)
     assert c.deploymentUnitUuid is not None
-
-    rs = client.list_instanceRevision(instanceId=c.id)
-    assert len(rs) == 1
-    r = rs[0]
-    spec = r.specs[c.uuid]
-    assert spec['imageUuid'] == context.image_uuid
-    assert spec['version'] == '0'
 
     s = c.converttoservice()
     assert s is not None
@@ -183,21 +189,12 @@ def test_convert_to_service_sidekicks(client, context):
                                         name=random_str())
     assert c1.deploymentUnitUuid == c2.deploymentUnitUuid
 
-    rs = client.list_instanceRevision(instanceId=c1.id)
-    assert len(rs) == 1
-    r = rs[0]
-    spec = r.specs[c1.uuid]
-    assert spec['imageUuid'] == context.image_uuid
-    assert spec['version'] == '0'
-
     s = c1.converttoservice()
     assert s is not None
 
-    s = client.wait_success(s)
-    assert s.state == 'active'
+    s = wait_state(client, s, 'active')
     assert s.name == c1.name
     assert s.stackId == c1.stackId
-    assert s.revisionId is not None
 
     assert s.launchConfig is not None
     assert s.launchConfig.imageUuid == c1.imageUuid

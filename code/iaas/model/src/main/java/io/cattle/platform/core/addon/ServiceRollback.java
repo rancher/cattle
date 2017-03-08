@@ -8,7 +8,7 @@ public class ServiceRollback {
 
     String revisionId;
 
-    @Field(typeString = "reference[instanceRevision]")
+    @Field(typeString = "reference[serviceRevision]")
     public String getRevisionId() {
         return revisionId;
     }

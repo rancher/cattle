@@ -105,8 +105,6 @@ public class InstanceStart extends AbstractDefaultProcessHandler {
 
         try {
             try {
-                setStopSource(instance, state);
-
                 progress.checkPoint("Waiting for dependencies");
                 // wait until volumesFrom/networksFrom containers start up
                 waitForDependenciesStart(instance);
@@ -465,12 +463,6 @@ public class InstanceStart extends AbstractDefaultProcessHandler {
     @Inject
     public void setProgress(ProcessProgress progress) {
         this.progress = progress;
-    }
-
-    protected void setStopSource(Instance instance, ProcessState state) {
-        Map<String, Object> data = new HashMap<>();
-        data.put(InstanceConstants.FIELD_STOP_SOURCE, null);
-        objectManager.setFields(instance, data);
     }
 
 }

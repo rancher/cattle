@@ -137,10 +137,13 @@ public class DeploymentUnitInstanceImpl implements DeploymentUnitInstance {
         }
         boolean isRunning = context.objectManager.reload(this.instance).getState()
                 .equalsIgnoreCase(InstanceConstants.STATE_RUNNING);
-        boolean stoppedFromApi = InstanceConstants.STOP_SOURCE_API.equalsIgnoreCase(DataAccessor.fieldString(
+        boolean stoppedFromApi = InstanceConstants.ACTION_SOURCE_API.equalsIgnoreCase(DataAccessor.fieldString(
                 this.instance, InstanceConstants.FIELD_STOP_SOURCE));
 
-        return isRunning || stoppedFromApi || (!isRunning && !isRestartAlways());
+        boolean skipStartOnCreate = !DataAccessor.fieldBool(instance, InstanceConstants.FIELD_START_ON_CREATE)
+                && instance.getFirstRunning() == null;
+
+        return isRunning || stoppedFromApi || skipStartOnCreate || (!isRunning && !isRestartAlways());
     }
 
     protected boolean needRestartOnFailure() {

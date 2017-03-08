@@ -24,6 +24,8 @@ import io.cattle.platform.engine.process.impl.ProcessCancelException;
 import io.cattle.platform.object.process.StandardProcess;
 import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.process.common.util.ProcessUtils;
+import io.cattle.platform.servicediscovery.api.service.impl.ServiceDataManagerImpl;
+import io.cattle.platform.servicediscovery.api.service.impl.ServiceDataManagerImpl.SidekickType;
 import io.cattle.platform.servicediscovery.deployment.DeploymentUnitInstance;
 import io.cattle.platform.servicediscovery.deployment.impl.instance.DeploymentUnitInstanceImpl;
 import io.cattle.platform.servicediscovery.deployment.impl.manager.DeploymentUnitManagerImpl.DeploymentUnitManagerContext;
@@ -37,24 +39,6 @@ import java.util.Map;
 import org.apache.commons.lang3.tuple.Pair;
 
 public class DeploymentUnitImpl implements io.cattle.platform.servicediscovery.deployment.DeploymentUnit {
-
-    public static class SidekickType {
-        public static List<SidekickType> supportedTypes = new ArrayList<>();
-        public static final SidekickType DATA = new SidekickType(DockerInstanceConstants.FIELD_VOLUMES_FROM,
-                ServiceConstants.FIELD_DATA_VOLUMES_LAUNCH_CONFIG, true);
-        public static final SidekickType NETWORK = new SidekickType(DockerInstanceConstants.FIELD_NETWORK_CONTAINER_ID,
-                ServiceConstants.FIELD_NETWORK_LAUNCH_CONFIG, false);
-        public String launchConfigFieldName;
-        public String launchConfigType;
-        public boolean isList;
-
-        public SidekickType(String launchConfigFieldName, String launchConfigType, boolean isList) {
-            this.launchConfigFieldName = launchConfigFieldName;
-            this.launchConfigType = launchConfigType;
-            this.isList = isList;
-            supportedTypes.add(this);
-        }
-    }
 
     Service service;
     Stack stack;
@@ -76,16 +60,7 @@ public class DeploymentUnitImpl implements io.cattle.platform.servicediscovery.d
     }
 
     public void generateSidekickReferences() {
-        for (String launchConfigName : launchConfigNames) {
-            for (String sidekick : getSidekickRefs(launchConfigName)) {
-                List<String> usedBy = sidekickUsedByMap.get(sidekick);
-                if (usedBy == null) {
-                    usedBy = new ArrayList<>();
-                }
-                usedBy.add(launchConfigName);
-                sidekickUsedByMap.put(sidekick, usedBy);
-            }
-        }
+        sidekickUsedByMap.putAll(context.svcDataMgr.getUsedBySidekicks(service));
     }
 
     protected void addMissingInstance(String launchConfigName) {
@@ -106,7 +81,7 @@ public class DeploymentUnitImpl implements io.cattle.platform.servicediscovery.d
 
     protected Map<String, Object> populateDeployParams(String launchConfigName,
             ServiceIndex serviceIndex, List<Integer> volumesFromInstanceIds, Integer networkContainerId) {
-        Map<String, Object> deployParams = context.sdService.getDeploymentUnitInstanceData(stack, service, unit,
+        Map<String, Object> deployParams = context.svcDataMgr.getDeploymentUnitInstanceData(stack, service, unit,
                 launchConfigName,
                 serviceIndex,
                 getInstanceName(launchConfigName));
@@ -133,7 +108,8 @@ public class DeploymentUnitImpl implements io.cattle.platform.servicediscovery.d
 
     protected DeploymentUnitInstance getOrCreateInstance(String launchConfigName) {
         addMissingInstance(launchConfigName);
-        List<Integer> volumesFromInstanceIds = getSidekickContainersId(launchConfigName, SidekickType.DATA);
+        List<Integer> volumesFromInstanceIds = getSidekickContainersId(launchConfigName,
+                ServiceDataManagerImpl.SidekickType.DATA);
         List<Integer> networkContainerIds = getSidekickContainersId(launchConfigName, SidekickType.NETWORK);
         Integer networkContainerId = networkContainerIds.isEmpty() ? null : networkContainerIds.get(0);
 
@@ -186,31 +162,6 @@ public class DeploymentUnitImpl implements io.cattle.platform.servicediscovery.d
         }
 
         return sidekickInstanceIds;
-    }
-
-    @SuppressWarnings("unchecked")
-    protected List<String> getSidekickRefs(String launchConfigName) {
-        List<String> configNames = new ArrayList<>();
-        for (SidekickType sidekickType : SidekickType.supportedTypes) {
-            Object sidekicksLaunchConfigObj = ServiceUtil.getLaunchConfigObject(service, launchConfigName,
-                    sidekickType.launchConfigType);
-            if (sidekicksLaunchConfigObj != null) {
-                if (sidekickType.isList) {
-                    configNames.addAll((List<String>) sidekicksLaunchConfigObj);
-                } else {
-                    configNames.add(sidekicksLaunchConfigObj.toString());
-                }
-            }
-        }
-        List<String> toReturn = new ArrayList<>();
-        for (String name : configNames) {
-            if (name.equalsIgnoreCase(service.getName())) {
-                toReturn.add(ServiceConstants.PRIMARY_LAUNCH_CONFIG_NAME);
-            } else {
-                toReturn.add(name);
-            }
-        }
-        return toReturn;
     }
 
     @SuppressWarnings("unchecked")
@@ -382,7 +333,7 @@ public class DeploymentUnitImpl implements io.cattle.platform.servicediscovery.d
     }
 
     protected void sortSidekicks(List<String> sorted, String lc) {
-        List<String> sidekicks = getSidekickRefs(lc);
+        List<String> sidekicks = context.svcDataMgr.getLaunchConfigSidekickReferences(service, lc);
         for (String sidekick : sidekicks) {
             sortSidekicks(sorted, sidekick);
         }

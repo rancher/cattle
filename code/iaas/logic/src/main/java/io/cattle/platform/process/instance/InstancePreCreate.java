@@ -53,7 +53,7 @@ public class InstancePreCreate extends AbstractObjectProcessLogic implements Pro
 
     @Override
     public String[] getProcessNames() {
-        return new String[] { "instance.create" };
+        return new String[] { InstanceConstants.PROCESS_CREATE };
     }
 
     @Override

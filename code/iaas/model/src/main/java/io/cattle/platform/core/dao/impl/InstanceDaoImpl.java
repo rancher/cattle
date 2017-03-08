@@ -1,10 +1,9 @@
 package io.cattle.platform.core.dao.impl;
 
-import static io.cattle.platform.core.model.tables.HostTable.*;
 import static io.cattle.platform.core.model.tables.HostIpAddressMapTable.*;
+import static io.cattle.platform.core.model.tables.HostTable.*;
 import static io.cattle.platform.core.model.tables.InstanceHostMapTable.*;
 import static io.cattle.platform.core.model.tables.InstanceLinkTable.*;
-import static io.cattle.platform.core.model.tables.InstanceRevisionTable.*;
 import static io.cattle.platform.core.model.tables.InstanceTable.*;
 import static io.cattle.platform.core.model.tables.IpAddressNicMapTable.*;
 import static io.cattle.platform.core.model.tables.IpAddressTable.*;
@@ -26,7 +25,6 @@ import io.cattle.platform.core.model.Host;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.InstanceHostMap;
 import io.cattle.platform.core.model.InstanceLink;
-import io.cattle.platform.core.model.InstanceRevision;
 import io.cattle.platform.core.model.IpAddress;
 import io.cattle.platform.core.model.Nic;
 import io.cattle.platform.core.model.Port;
@@ -50,14 +48,11 @@ import io.cattle.platform.core.model.tables.records.ServiceRecord;
 import io.cattle.platform.db.jooq.dao.impl.AbstractJooqDao;
 import io.cattle.platform.db.jooq.mapper.MultiRecordMapper;
 import io.cattle.platform.object.ObjectManager;
-import io.cattle.platform.object.meta.ObjectMetaDataManager;
 import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.object.util.DataUtils;
-import io.cattle.platform.util.type.CollectionUtils;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -457,53 +452,5 @@ public class InstanceDaoImpl extends AbstractJooqDao implements InstanceDao {
                 .where(INSTANCE.STATE.eq(CommonStatesConstants.PURGED))
                 .limit(count)
                 .fetchInto(InstanceLinkRecord.class);
-    }
-
-    @Override
-    public InstanceRevision createRevision(Instance instance, Map<String, Object> spec) {
-        InstanceRevision revision = objectManager.findAny(InstanceRevision.class, INSTANCE_REVISION.INSTANCE_ID,
-                instance.getId(),
-                INSTANCE_REVISION.REMOVED, null);
-        if (revision == null) {
-            Map<String, Object> data = new HashMap<>();
-            Map<String, Map<String, Object>> specs = new HashMap<>();
-            String name = instance.getUuid();
-            specs.put(name, spec);
-            data.put(InstanceConstants.FIELD_INSTANCE_SPECS, specs);
-            data.put(ObjectMetaDataManager.NAME_FIELD, name);
-            data.put(ObjectMetaDataManager.ACCOUNT_FIELD, instance.getAccountId());
-            data.put("instanceId", instance.getId());
-            revision = objectManager.create(InstanceRevision.class, data);
-        }
-        return revision;
-    }
-
-    @Override
-    public void cleanupInstanceRevisions(Instance instance) {
-        List<InstanceRevision> revisions = objectManager.find(InstanceRevision.class, INSTANCE_REVISION.INSTANCE_ID,
-                instance.getId(),
-                INSTANCE_REVISION.REMOVED, null);
-        for (InstanceRevision revision : revisions) {
-            Map<String, Object> params = new HashMap<>();
-            params.put(ObjectMetaDataManager.REMOVED_FIELD, new Date());
-            params.put(ObjectMetaDataManager.REMOVE_TIME_FIELD, new Date());
-            params.put(ObjectMetaDataManager.STATE_FIELD, CommonStatesConstants.REMOVED);
-            objectManager.setFields(revision, params);
-        }
-    }
-
-    @Override
-    public Map<String, Object> getInstanceSpec(Instance instance) {
-        InstanceRevision revision = objectManager.findAny(InstanceRevision.class, INSTANCE_REVISION.ID,
-                instance.getRevisionId());
-        if (revision == null) {
-            return null;
-        }
-        Map<?, ?> specs = CollectionUtils.toMap(DataAccessor.field(
-                revision, InstanceConstants.FIELD_INSTANCE_SPECS, Object.class));
-        if (specs.size() != 0) {
-            return CollectionUtils.toMap(specs.get(instance.getUuid()));
-        }
-        return null;
     }
 }

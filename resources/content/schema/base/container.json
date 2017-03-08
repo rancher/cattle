@@ -414,6 +414,12 @@
             "create" : true,
             "nullable" : true
         },
+        "removeSource" : {
+            "type": "enum",
+            "options" : [ "api", "native" ],
+            "create" : true,
+            "nullable" : true
+        },
         "exitCode": {
             "type": "int",
             "nullable": true

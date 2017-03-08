@@ -7,7 +7,6 @@ import io.cattle.platform.core.model.HealthcheckInstance;
 import io.cattle.platform.core.model.HealthcheckInstanceHostMap;
 import io.cattle.platform.core.model.Host;
 import io.cattle.platform.core.model.Instance;
-import io.cattle.platform.core.model.InstanceRevision;
 import io.cattle.platform.core.model.Service;
 import io.cattle.platform.core.model.ServiceIndex;
 import io.cattle.platform.core.model.Stack;
@@ -15,8 +14,6 @@ import io.github.ibuildthecloud.gdapi.id.IdFormatter;
 
 import java.util.List;
 import java.util.Map;
-
-import org.apache.commons.lang3.tuple.Pair;
 
 public interface ServiceDao {
     Service getServiceByExternalId(Long accountId, String externalId);
@@ -77,19 +74,6 @@ public interface ServiceDao {
 
     Stack getOrCreateDefaultStack(long accountId);
 
-    InstanceRevision createRevision(Service service, Map<String, Object> primaryLaunchConfig,
-            List<Map<String, Object>> secondaryLaunchConfigs, boolean isFirstRevision);
-
-    void cleanupServiceRevisions(Service service);
-
-    Pair<InstanceRevision, InstanceRevision> getCurrentAndPreviousRevisions(Service service);
-
-    InstanceRevision getCurrentRevision(Service service);
-
-    Pair<Map<String, Object>, List<Map<String, Object>>> getPrimaryAndSecondaryConfigFromRevision(
-            InstanceRevision revision, Service service);
-
-    InstanceRevision getRevision(Service service, long revisionId);
-
     List<Instance> getInstancesToGarbageCollect(Service service);
+
 }

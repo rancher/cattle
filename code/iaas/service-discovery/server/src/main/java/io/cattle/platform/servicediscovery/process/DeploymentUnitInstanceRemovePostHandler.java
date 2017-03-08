@@ -3,7 +3,6 @@ package io.cattle.platform.servicediscovery.process;
 import static io.cattle.platform.core.model.tables.HealthcheckInstanceHostMapTable.*;
 import static io.cattle.platform.core.model.tables.HealthcheckInstanceTable.*;
 import io.cattle.platform.core.constants.InstanceConstants;
-import io.cattle.platform.core.constants.ServiceConstants;
 import io.cattle.platform.core.dao.InstanceDao;
 import io.cattle.platform.core.model.HealthcheckInstance;
 import io.cattle.platform.core.model.HealthcheckInstanceHostMap;
@@ -14,6 +13,7 @@ import io.cattle.platform.engine.process.ProcessInstance;
 import io.cattle.platform.engine.process.ProcessState;
 import io.cattle.platform.object.process.StandardProcess;
 import io.cattle.platform.process.common.handler.AbstractObjectProcessLogic;
+import io.cattle.platform.servicediscovery.api.service.ServiceDataManager;
 import io.cattle.platform.servicediscovery.service.ServiceDiscoveryService;
 import io.cattle.platform.util.type.Priority;
 
@@ -28,6 +28,8 @@ public class DeploymentUnitInstanceRemovePostHandler extends AbstractObjectProce
     ServiceDiscoveryService sdSvc;
     @Inject
     InstanceDao instanceDao;
+    @Inject
+    ServiceDataManager dataMgr;
 
     @Override
     public String[] getProcessNames() {
@@ -39,10 +41,7 @@ public class DeploymentUnitInstanceRemovePostHandler extends AbstractObjectProce
         Instance instance = (Instance) state.getResource();
         cleanupHealthcheckMaps(instance);
         sdSvc.removeFromLoadBalancerServices(null, instance);
-        if (!state.getData().containsKey(ServiceConstants.PROCESS_DATA_SERVICE_RECONCILE)) {
-            sdSvc.leaveService(instance);
-        }
-        instanceDao.cleanupInstanceRevisions(instance);
+        dataMgr.leaveService(instance);
         return null;
     }
 

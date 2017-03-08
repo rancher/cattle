@@ -1042,13 +1042,16 @@
         "scheduledUpgrade.stackId": "r",
         "scheduledUpgrade.started": "r",
 
-        "instanceRevision": "r",
-        "instanceRevision.specs": "r",
-        "instanceRevision.instanceId": "r",
-        "instanceRevision.serviceId": "r",
+        "serviceRevision": "r",
+        "serviceRevision.specs": "r",
+        "serviceRevision.instanceId": "r",
+        "serviceRevision.serviceId": "r",
 
         "serviceRollback" : "r",
         "serviceRollback.revisionId" : "cr",
+
+        "instanceRemove" : "r",
+        "instanceRemove.removeSource" : "cr",
 
         "end" : ""
     }

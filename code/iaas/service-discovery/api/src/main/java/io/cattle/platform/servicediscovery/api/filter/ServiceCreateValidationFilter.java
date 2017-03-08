@@ -5,9 +5,8 @@ import io.cattle.platform.core.addon.PortRule;
 import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.constants.ServiceConstants;
-import io.cattle.platform.core.dao.ServiceDao;
-import io.cattle.platform.core.model.InstanceRevision;
 import io.cattle.platform.core.model.Service;
+import io.cattle.platform.core.model.ServiceRevision;
 import io.cattle.platform.core.model.Stack;
 import io.cattle.platform.core.util.PortSpec;
 import io.cattle.platform.core.util.ServiceUtil;
@@ -17,6 +16,7 @@ import io.cattle.platform.json.JsonMapper;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.object.util.DataUtils;
+import io.cattle.platform.servicediscovery.api.service.ServiceDataManager;
 import io.cattle.platform.servicediscovery.api.util.selector.SelectorUtils;
 import io.cattle.platform.storage.api.filter.ExternalTemplateInstanceFilter;
 import io.cattle.platform.storage.service.StorageService;
@@ -49,7 +49,7 @@ public class ServiceCreateValidationFilter extends AbstractDefaultResourceManage
     @Inject
     JsonMapper jsonMapper;
     @Inject
-    ServiceDao serviceDao;
+    ServiceDataManager svcDataMgr;
 
     private static final int LB_HEALTH_CHECK_PORT = 42;
 
@@ -338,11 +338,11 @@ public class ServiceCreateValidationFilter extends AbstractDefaultResourceManage
             return request;
         }
         if (upgrade.isRunUpgrade()) {
-            InstanceRevision oldRevision = serviceDao.getCurrentRevision(service);
+            ServiceRevision oldRevision = svcDataMgr.getCurrentRevision(service);
             if (oldRevision != null) {
                 data.put(InstanceConstants.FIELD_PREVIOUS_REVISION_ID, oldRevision.getId());
             }
-            InstanceRevision newRevision = serviceDao.createRevision(service, upgrade.getPrimaryLaunchConfig(),
+            ServiceRevision newRevision = svcDataMgr.createRevision(service, upgrade.getPrimaryLaunchConfig(),
                     upgrade.getSecondaryLaunchConfigs(), false);
             data.put(InstanceConstants.FIELD_REVISION_ID, newRevision.getId());
             data.put(ServiceConstants.FIELD_LAUNCH_CONFIG, upgrade.getPrimaryLaunchConfig());

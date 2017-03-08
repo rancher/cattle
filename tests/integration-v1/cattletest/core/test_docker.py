@@ -792,7 +792,8 @@ def test_docker_labels(docker_client, super_client):
         'io.rancher.container.name': c.name,
         'io.rancher.container.mac_address': mac_address,
     }
-    assert actual_labels == expected_labels
+    assert all(item in actual_labels.items()
+               for item in expected_labels.items())
 
     docker_client.delete(c)
 

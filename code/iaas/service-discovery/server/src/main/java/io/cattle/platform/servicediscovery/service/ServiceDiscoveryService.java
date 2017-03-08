@@ -2,7 +2,6 @@ package io.cattle.platform.servicediscovery.service;
 
 import io.cattle.platform.configitem.events.ConfigUpdate;
 import io.cattle.platform.core.addon.ServiceLink;
-import io.cattle.platform.core.model.DeploymentUnit;
 import io.cattle.platform.core.model.Host;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.Service;
@@ -10,8 +9,6 @@ import io.cattle.platform.core.model.ServiceIndex;
 import io.cattle.platform.core.model.Stack;
 import io.cattle.platform.eventing.annotation.AnnotatedEventListener;
 import io.cattle.platform.eventing.annotation.EventHandler;
-
-import java.util.Map;
 
 public interface ServiceDiscoveryService extends AnnotatedEventListener {
 
@@ -21,10 +18,6 @@ public interface ServiceDiscoveryService extends AnnotatedEventListener {
     void remove(Service service);
 
     void create(Service service);
-
-    void joinService(Instance instance);
-
-    void leaveService(Instance instance);
 
     /**
      * LINK BASED OPERATIONS
@@ -78,8 +71,5 @@ public interface ServiceDiscoveryService extends AnnotatedEventListener {
     void resetUpgradeFlag(Service service);
 
     void setPorts(Service service);
-
-    Map<String, Object> getDeploymentUnitInstanceData(Stack stack, Service service, DeploymentUnit unit,
-            String launchConfigName, ServiceIndex serviceIndex, String instanceName);
 
 }

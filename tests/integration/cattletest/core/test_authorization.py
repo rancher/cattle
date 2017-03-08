@@ -133,6 +133,7 @@ def test_user_types(user_client, adds=set(), removes=set()):
         'instanceHealthCheck',
         'instanceLink',
         'instanceStop',
+        'instanceRemove',
         'ipAddress',
         'kubernetesService',
         'kubernetesStack',
@@ -219,7 +220,7 @@ def test_user_types(user_client, adds=set(), removes=set()):
         'defaultNetwork',
         'scheduledUpgrade',
         'genericObject',
-        'instanceRevision',
+        'serviceRevision',
         'serviceRollback',
     }
     types.update(adds)
@@ -371,6 +372,7 @@ def test_admin_types(admin_user_client, adds=set(), removes=set()):
         'instanceHealthCheck',
         'instanceLink',
         'instanceStop',
+        'instanceRemove',
         'ipAddress',
         'kubernetesService',
         'kubernetesStack',
@@ -468,7 +470,7 @@ def test_admin_types(admin_user_client, adds=set(), removes=set()):
         'processPool',
         'processSummary',
         'scheduledUpgrade',
-        'instanceRevision',
+        'serviceRevision',
         'serviceRollback',
     }
     types.update(adds)

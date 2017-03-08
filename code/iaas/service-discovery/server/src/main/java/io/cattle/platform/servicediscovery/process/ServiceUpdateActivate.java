@@ -4,10 +4,9 @@ import io.cattle.platform.activity.ActivityService;
 import io.cattle.platform.core.addon.InServiceUpgradeStrategy;
 import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.ServiceConstants;
-import io.cattle.platform.core.dao.ServiceDao;
 import io.cattle.platform.core.dao.ServiceExposeMapDao;
-import io.cattle.platform.core.model.InstanceRevision;
 import io.cattle.platform.core.model.Service;
+import io.cattle.platform.core.model.ServiceRevision;
 import io.cattle.platform.core.util.ServiceUtil;
 import io.cattle.platform.engine.handler.HandlerResult;
 import io.cattle.platform.engine.process.ProcessInstance;
@@ -15,6 +14,7 @@ import io.cattle.platform.engine.process.ProcessState;
 import io.cattle.platform.iaas.api.auditing.AuditService;
 import io.cattle.platform.object.resource.ResourceMonitor;
 import io.cattle.platform.process.common.handler.AbstractObjectProcessHandler;
+import io.cattle.platform.servicediscovery.api.service.ServiceDataManager;
 import io.cattle.platform.servicediscovery.service.DeploymentManager;
 import io.cattle.platform.servicediscovery.service.ServiceDiscoveryService;
 import io.cattle.platform.servicediscovery.upgrade.UpgradeManager;
@@ -50,7 +50,7 @@ public class ServiceUpdateActivate extends AbstractObjectProcessHandler {
     @Inject
     UpgradeManager upgradeMgr;
     @Inject
-    ServiceDao serviceDao;
+    ServiceDataManager serviceDataMgr;
     @Inject
     ServiceDiscoveryService sdSvc;
 
@@ -74,7 +74,7 @@ public class ServiceUpdateActivate extends AbstractObjectProcessHandler {
                 // v2 upgrade
                 if (ServiceConstants.SERVICE_LIKE.contains(service.getKind())
                         && service.getIsUpgrade()) {
-                    Pair<InstanceRevision, InstanceRevision> currentPreviousRevision = serviceDao
+                    Pair<ServiceRevision, ServiceRevision> currentPreviousRevision = serviceDataMgr
                             .getCurrentAndPreviousRevisions(service);
                     InServiceUpgradeStrategy strategy = ServiceUtil.getStrategy(service,
                             currentPreviousRevision, true);

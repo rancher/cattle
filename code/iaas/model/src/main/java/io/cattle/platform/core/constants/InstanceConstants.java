@@ -17,8 +17,8 @@ public class InstanceConstants {
     public static final String SYSTEM_CONTAINER_LB_AGENT = "LoadBalancerAgent";
     public static final String SYSTEM_CONTAINER_BALANCER_AGENT = "BalancerAgent";
     public static final String SYSTEM_CONTAINER_CLUSTER_AGENT = "ClusterAgent";
-    public static final String STOP_SOURCE_API = "api";
-    public static final String STOP_SOURCE_EXTERNAL = "external";
+    public static final String ACTION_SOURCE_API = "api";
+    public static final String ACTION_SOURCE_EXTERNAL = "external";
 
     public static final String TYPE = "instance";
     public static final String TYPE_CONTAINER = "container";
@@ -76,6 +76,7 @@ public class InstanceConstants {
     public static final String FIELD_REVISION_ID = "revisionId";
     public static final String FIELD_PREVIOUS_REVISION_ID = "previousRevisionId";
     public static final String FIELD_CONTAINER_SERVICE_ID = "containerServiceId";
+    public static final String FIELD_REMOVE_SOURCE = "removeSource";
 
     public static final String PROCESS_DATA_NO_OP = "containerNoOpEvent";
 

@@ -25,6 +25,7 @@
         "host" : "rud",
         "instanceLink" : "ru",
         "instanceStop" : "cr",
+        "instanceRemove" : "cr",
         "ipAddressAssociateInput" : "cr",
         "kubernetesStack" : "crud",
         "kubernetesStackUpgrade" : "cr",
