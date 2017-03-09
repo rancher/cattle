@@ -2,7 +2,6 @@ package io.cattle.platform.process.instance;
 
 import io.cattle.platform.allocator.service.AllocatorService;
 import io.cattle.platform.core.constants.CommonStatesConstants;
-import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.constants.InstanceLinkConstants;
 import io.cattle.platform.core.dao.GenericMapDao;
 import io.cattle.platform.core.dao.InstanceDao;
@@ -16,18 +15,14 @@ import io.cattle.platform.engine.handler.HandlerResult;
 import io.cattle.platform.engine.process.ProcessInstance;
 import io.cattle.platform.engine.process.ProcessState;
 import io.cattle.platform.engine.process.impl.ProcessCancelException;
-import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.process.base.AbstractDefaultProcessHandler;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 import javax.inject.Inject;
 import javax.inject.Named;
-
-import org.apache.commons.lang3.StringUtils;
 
 @Named
 public class InstanceStop extends AbstractDefaultProcessHandler {
@@ -44,9 +39,6 @@ public class InstanceStop extends AbstractDefaultProcessHandler {
     @Override
     public HandlerResult handle(ProcessState state, ProcessInstance process) {
         final Instance instance = (Instance) state.getResource();
-
-        setStopSource(instance, state);
-
         Map<String, Object> result = new ConcurrentHashMap<String, Object>();
 
         compute(instance, state);
@@ -60,20 +52,7 @@ public class InstanceStop extends AbstractDefaultProcessHandler {
         return new HandlerResult(result);
     }
 
-    protected void setStopSource(Instance instance, ProcessState state) {
-        String stopSource = DataAccessor.fromMap(state.getData()).withKey(InstanceConstants.FIELD_STOP_SOURCE)
-                .withDefault("").as(String.class);
-        if (StringUtils.isEmpty(stopSource)) {
-            return;
-        }
-        String currentValue = DataAccessor.fieldString(instance, InstanceConstants.FIELD_STOP_SOURCE);
-        if (stopSource.equalsIgnoreCase(currentValue)) {
-            return;
-        }
-        Map<String, Object> data = new HashMap<>();
-        data.put(InstanceConstants.FIELD_STOP_SOURCE, stopSource);
-        objectManager.setFields(instance, data);
-    }
+
 
     protected void storage(Instance instance) {
         List<Volume> volumes = getObjectManager().children(instance, Volume.class);

@@ -52,4 +52,5 @@ public interface ServiceExposeMapDao {
     List<? extends Instance> listServiceManagedInstancesAll(Service service);
 
     List<Pair<Instance, ServiceExposeMap>> listDeploymentUnitInstancesExposeMaps(Service service, DeploymentUnit unit);
+    
 }

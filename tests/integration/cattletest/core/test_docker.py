@@ -1163,7 +1163,7 @@ def test_simultaneous_port_allocation(docker_client):
 
 
 @if_resource_scheduler
-def test_docker_bind_address(docker_client, super_client):
+def test_docker_bindtest_docker_bind_address_address(docker_client, super_client):
     c = docker_client.create_container(name='bindAddrTest',
                                        networkMode='bridge',
                                        imageUuid=TEST_IMAGE_UUID,

@@ -237,7 +237,7 @@ public class InstanceStart extends AbstractDefaultProcessHandler {
                 throw new ExecutionException("Dependencies readiness error", type + " instance is removed", instance.getId());
             }
 
-            if (!isStartOnce(i) && !serviceDao.isServiceManagedInstance(instance) && STOPPED_STATES.contains(i.getState())) {
+            if (!isStartOnce(i) && instance.getDeploymentUnitId() == null && STOPPED_STATES.contains(i.getState())) {
                 throw new ExecutionException("Dependencies readiness error", type + " instance is not running",
                         instance.getId());
             }

@@ -16,9 +16,15 @@ def test_standalone_du_lifecycle(super_client, context):
     wait_for(lambda: super_client.reload(du).state == 'removed')
 
 
-def test_adding_two_references(context):
+def test_adding_two_references(super_client, context):
     c1 = context.super_create_container(name=random_str())
     c2 = context.super_create_container(name=random_str())
+
+    wait_for(lambda: super_client.reload(c1).
+             deploymentUnitUuid is not None)
+
+    wait_for(lambda: super_client.reload(c2).
+             deploymentUnitUuid is not None)
 
     with pytest.raises(ApiError) as e:
         context.super_create_container(networkContainerId=c1.id,
@@ -39,8 +45,15 @@ def test_du_multiple_instances_lifecycle(super_client, context):
     assert c.containerServiceId is not None
     s = super_client.by_id('service', c.containerServiceId)
     assert s.name == c1.name
-    assert s.launchConfig is not None
-    assert s.secondaryLaunchConfigs is not None
+
+    wait_for(lambda: super_client.reload(s).
+             launchConfig is not None)
+    wait_for(lambda: super_client.reload(s).
+             secondaryLaunchConfigs is not None)
+
+    wait_for(lambda: len(super_client.reload(s).
+             secondaryLaunchConfigs) == 1)
+
     assert len(s.secondaryLaunchConfigs) == 1
     sc = s.secondaryLaunchConfigs[0]
     assert sc.name == c2.name
@@ -69,7 +82,6 @@ def test_du_multiple_instances_lifecycle(super_client, context):
     wait_for(lambda: super_client.reload(r).state == 'removed')
 
 
-@pytest.mark.skipif('True')
 def test_container_compute_fail(super_client, context):
     c1 = context.super_create_container(name=random_str())
     data = {
@@ -84,7 +96,7 @@ def test_container_compute_fail(super_client, context):
                                                    networkContainerId=c1.id)
 
     assert c2.transitioning == 'error'
-    assert c2.deploymentUnitUuid == c1.deploymentUnitUuid
+    assert c2.deploymentUnitUuid is None
 
     du = super_client.list_deploymentUnit(uuid=c2.deploymentUnitUuid)[0]
     wait_for(lambda: super_client.reload(du).state == 'active')

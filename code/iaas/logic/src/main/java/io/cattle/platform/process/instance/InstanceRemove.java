@@ -1,7 +1,6 @@
 package io.cattle.platform.process.instance;
 
 import static io.cattle.platform.core.model.tables.MountTable.*;
-import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.Mount;
 import io.cattle.platform.core.model.Nic;
@@ -10,7 +9,6 @@ import io.cattle.platform.engine.handler.HandlerResult;
 import io.cattle.platform.engine.process.ProcessInstance;
 import io.cattle.platform.engine.process.ProcessState;
 import io.cattle.platform.object.process.StandardProcess;
-import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.process.base.AbstractDefaultProcessHandler;
 import io.cattle.platform.process.mount.MountDeactivate;
 import io.github.ibuildthecloud.gdapi.condition.Condition;
@@ -21,8 +19,6 @@ import java.util.List;
 import java.util.Map;
 
 import javax.inject.Named;
-
-import org.apache.commons.lang3.StringUtils;
 
 @Named
 public class InstanceRemove extends AbstractDefaultProcessHandler {
@@ -37,25 +33,9 @@ public class InstanceRemove extends AbstractDefaultProcessHandler {
 
         storage(instance, state.getData());
 
-        setRemoveSource(instance, state);
-
         return new HandlerResult(result);
     }
 
-    protected void setRemoveSource(Instance instance, ProcessState state) {
-        String removeSource = DataAccessor.fromMap(state.getData()).withKey(InstanceConstants.FIELD_REMOVE_SOURCE)
-                .withDefault("").as(String.class);
-        if (StringUtils.isEmpty(removeSource)) {
-            return;
-        }
-        String currentValue = DataAccessor.fieldString(instance, InstanceConstants.FIELD_REMOVE_SOURCE);
-        if (removeSource.equalsIgnoreCase(currentValue)) {
-            return;
-        }
-        Map<String, Object> data = new HashMap<>();
-        data.put(InstanceConstants.FIELD_REMOVE_SOURCE, removeSource);
-        objectManager.setFields(instance, data);
-    }
 
     protected void storage(Instance instance, Map<String, Object> data) {
         List<Volume> volumes = getObjectManager().children(instance, Volume.class);

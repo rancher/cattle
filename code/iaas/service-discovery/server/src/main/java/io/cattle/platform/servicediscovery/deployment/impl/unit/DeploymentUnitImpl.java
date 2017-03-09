@@ -54,7 +54,7 @@ public class DeploymentUnitImpl implements io.cattle.platform.servicediscovery.d
         this.unit = unit;
         this.service = context.objectManager.findOne(Service.class, SERVICE.ID, unit.getServiceId());
         this.stack = context.objectManager.findOne(Stack.class, STACK.ID, service.getStackId());
-        this.launchConfigNames = ServiceUtil.getLaunchConfigNames(service);
+        this.launchConfigNames = context.svcDataMgr.getServiceLaunchConfigNames(service);
         collectDeploymentUnitInstances();
         generateSidekickReferences();
     }

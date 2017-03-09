@@ -39,4 +39,6 @@ public interface ServiceDataManager {
 
     void createInitialServiceRevision(Service service);
 
+    List<String> getServiceLaunchConfigNames(Service service);
+
 }

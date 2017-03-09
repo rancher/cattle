@@ -144,4 +144,12 @@
     <changeSet author="alena (generated)" id="dump28">
         <addForeignKeyConstraint baseColumnNames="container_service_id" baseTableName="instance" constraintName="fk_instance__container_service_id" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="service"/>
     </changeSet>
+     <changeSet author="alena (generated)" id="dump29">
+        <addColumn tableName="service_revision">
+            <column name="instance_id" type="BIGINT"/>
+        </addColumn>
+    </changeSet>
+    <changeSet author="alena (generated)" id="dump30">
+        <addForeignKeyConstraint baseColumnNames="instance_id" baseTableName="service_revision" constraintName="fk_service_revision__instance_id" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="instance"/>
+    </changeSet>
 </databaseChangeLog>

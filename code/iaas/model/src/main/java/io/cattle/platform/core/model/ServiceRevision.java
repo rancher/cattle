@@ -146,6 +146,17 @@ public interface ServiceRevision extends java.io.Serializable {
 	@javax.persistence.Column(name = "service_id", precision = 19)
 	public java.lang.Long getServiceId();
 
+	/**
+	 * Setter for <code>cattle.service_revision.instance_id</code>.
+	 */
+	public void setInstanceId(java.lang.Long value);
+
+	/**
+	 * Getter for <code>cattle.service_revision.instance_id</code>.
+	 */
+	@javax.persistence.Column(name = "instance_id", precision = 19)
+	public java.lang.Long getInstanceId();
+
 	// -------------------------------------------------------------------------
 	// FROM and INTO
 	// -------------------------------------------------------------------------

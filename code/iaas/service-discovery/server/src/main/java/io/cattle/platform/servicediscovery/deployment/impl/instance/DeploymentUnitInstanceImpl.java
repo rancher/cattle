@@ -168,7 +168,7 @@ public class DeploymentUnitInstanceImpl implements DeploymentUnitInstance {
             exitCode = context.transformer.getExitCode(instance);
         }
          
-        if (exitCode == 0) {
+        if (exitCode.equals(0)) {
             return false;
         }
         if (maximumRetryCount == UNLIMITED_RETRIES) {

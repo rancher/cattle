@@ -522,7 +522,7 @@ public class ServiceDaoImpl extends AbstractJooqDao implements ServiceDao {
                     return stacks.get(0);
                 }
 
-                return resourceDao.createAndSchedule(Stack.class,
+                return objectManager.create(Stack.class,
                         STACK.ACCOUNT_ID, accountId,
                         STACK.NAME, ServiceConstants.DEFAULT_STACK_NAME,
                         STACK.HEALTH_STATE, HealthcheckConstants.HEALTH_STATE_HEALTHY);

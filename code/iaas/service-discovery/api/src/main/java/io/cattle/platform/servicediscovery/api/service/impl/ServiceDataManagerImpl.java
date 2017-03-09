@@ -19,7 +19,7 @@ import io.cattle.platform.core.dao.ServiceConsumeMapDao;
 import io.cattle.platform.core.dao.ServiceDao;
 import io.cattle.platform.core.dao.ServiceExposeMapDao;
 import io.cattle.platform.core.dao.impl.DefaultDeploymentUnitCreateLock;
-import io.cattle.platform.core.dao.impl.ServiceCreateLock;
+import io.cattle.platform.core.dao.impl.ServiceCreateUpdateLock;
 import io.cattle.platform.core.model.DeploymentUnit;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.Service;
@@ -35,18 +35,19 @@ import io.cattle.platform.docker.constants.DockerInstanceConstants;
 import io.cattle.platform.eventing.EventService;
 import io.cattle.platform.json.JsonMapper;
 import io.cattle.platform.lock.LockCallback;
+import io.cattle.platform.lock.LockCallbackNoReturn;
 import io.cattle.platform.lock.LockManager;
 import io.cattle.platform.network.NetworkService;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.meta.ObjectMetaDataManager;
 import io.cattle.platform.object.process.ObjectProcessManager;
 import io.cattle.platform.object.process.StandardProcess;
-import io.cattle.platform.object.resource.ResourceMonitor;
 import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.resource.pool.ResourcePoolManager;
 import io.cattle.platform.servicediscovery.api.lock.StackVolumeLock;
 import io.cattle.platform.servicediscovery.api.service.ServiceDataManager;
 import io.cattle.platform.util.exception.DeploymentUnitAllocateException;
+import io.cattle.platform.util.exception.ExecutionException;
 import io.cattle.platform.util.type.CollectionUtils;
 
 import java.io.IOException;
@@ -81,8 +82,6 @@ public class ServiceDataManagerImpl implements ServiceDataManager {
     JsonMapper jsonMapper;
     @Inject
     ResourcePoolManager poolManager;
-    @Inject
-    ResourceMonitor resourceMonitor;
     @Inject
     LockManager lockManager;
     @Inject
@@ -456,9 +455,13 @@ public class ServiceDataManagerImpl implements ServiceDataManager {
     @Override
     @SuppressWarnings("unchecked")
     public void joinService(Instance instance, Map<String, Object> originalConfig) {
-        if (instance.getDeploymentUnitId() != null) {
-            return;
+        if (originalConfig.get(InstanceConstants.FIELD_LABELS) != null) {
+            Map<String, String> labels = (Map<String, String>) originalConfig.get(InstanceConstants.FIELD_LABELS);
+            if (labels.containsKey(SystemLabels.COMPOSE_SERVICE_LABEL)) {
+                return;
+            }
         }
+
         if (instance.getName() == null) {
             return;
         }
@@ -467,6 +470,33 @@ public class ServiceDataManagerImpl implements ServiceDataManager {
             return;
         }
 
+        if (instance.getServiceId() != null) {
+            return;
+        }
+
+        InstanceData data = getOrCreateInstanceData(instance);
+        if (data == null) {
+            throw new ExecutionException("Dependencies readiness error",
+                    "Dependant instance hasn't gotten passed creating state");
+        }
+        Service service = data.getService();
+        Stack stack = data.getStack();
+        DeploymentUnit unit = data.getUnit();
+        String launchConfig = data.getLaunchConfig();
+        boolean updateUnit = false;
+        if (instance.getDeploymentUnitId() == null) {
+            updateInstance(instance, service, stack, unit, launchConfig);
+            updateUnit = true;
+        }
+
+        updateService(originalConfig, data, service, unit);
+        if (updateUnit) {
+            objectProcessManager.scheduleStandardProcessAsync(StandardProcess.UPDATE, unit, null);
+        }
+    }
+
+    public void updateService(Map<String, Object> originalConfig, InstanceData data, Service service,
+            DeploymentUnit unit) {
         Map<String, Object> instanceLaunchConfig = new HashMap<>();
         try {
             String lc = jsonMapper.writeValueAsString(originalConfig);
@@ -474,31 +504,7 @@ public class ServiceDataManagerImpl implements ServiceDataManager {
         } catch (IOException e) {
             return;
         }
-
-        if (instanceLaunchConfig.get(InstanceConstants.FIELD_LABELS) != null) {
-            Map<String, String> labels = (Map<String, String>) instanceLaunchConfig.get(InstanceConstants.FIELD_LABELS);
-            if (labels.containsKey(SystemLabels.COMPOSE_SERVICE_LABEL)) {
-                return;
-            }
-        }
-
-        InstanceData data = getOrCreateInstanceData(instance);
-        if (data == null) {
-            return;
-        }
-        Service service = data.getService();
-        Stack stack = data.getStack();
-        DeploymentUnit unit = data.getUnit();
-        String launchConfig = data.getLaunchConfig();
         addLaunchConfigToService(service, instanceLaunchConfig, data.isPrimary());
-        updateInstance(instance, service, stack, unit, launchConfig);
-
-        if (service.getState().equalsIgnoreCase(CommonStatesConstants.REQUESTED)) {
-            objectProcessManager.scheduleStandardChainedProcessAsync(StandardProcess.CREATE, StandardProcess.ACTIVATE,
-                    service, null);
-        } else {
-            objectProcessManager.scheduleStandardProcessAsync(StandardProcess.UPDATE, unit, null);
-        }
     }
 
     @SuppressWarnings("unchecked")
@@ -532,8 +538,17 @@ public class ServiceDataManagerImpl implements ServiceDataManager {
                 return null;
             }
             du = objectManager.loadResource(DeploymentUnit.class, depInstance.getDeploymentUnitId());
+            if (du == null) {
+                return null;
+            }
             service = objectManager.loadResource(Service.class, du.getServiceId());
+            if (service == null) {
+                return null;
+            }
             stack = objectManager.loadResource(Stack.class, service.getStackId());
+            if (stack == null) {
+                return null;
+            }
             launchConfigName = instance.getName();
         } else {
             stack = getOrCreateStack(instance);
@@ -581,7 +596,7 @@ public class ServiceDataManagerImpl implements ServiceDataManager {
     }
 
     public DeploymentUnit getOrCreateDeploymentUnit(Service service) {
-        return lockManager.lock(new DefaultDeploymentUnitCreateLock(service.getId()),
+        DeploymentUnit du = lockManager.lock(new DefaultDeploymentUnitCreateLock(service.getId()),
                 new LockCallback<DeploymentUnit>() {
                     @Override
                     public DeploymentUnit doWithLock() {
@@ -596,6 +611,12 @@ public class ServiceDataManagerImpl implements ServiceDataManager {
                         return du;
                     }
                 });
+
+        if (du.getState().equalsIgnoreCase(CommonStatesConstants.REQUESTED)) {
+            objectProcessManager.scheduleStandardChainedProcessAsync(StandardProcess.CREATE, StandardProcess.ACTIVATE,
+                    du, null);
+        }
+        return du;
     }
 
     protected Stack getOrCreateStack(Instance instance) {
@@ -604,87 +625,86 @@ public class ServiceDataManagerImpl implements ServiceDataManager {
             return objectManager.loadResource(Stack.class, stackId);
         }
         Stack stack = serviceDao.getOrCreateDefaultStack(instance.getAccountId());
+        if (stack.getState().equalsIgnoreCase(CommonStatesConstants.REQUESTED)) {
+            objectProcessManager.scheduleStandardProcessAsync(StandardProcess.CREATE,
+                    stack, null);
+        }
         return stack;
     }
 
     @SuppressWarnings("unchecked")
-    protected Service addLaunchConfigToService(Service service, Map<String, Object> launchConfigData, boolean isPrimary) {
-        Map<String, Object> data = new HashMap<>();
-        if (isPrimary) {
-            data.put(ServiceConstants.FIELD_LAUNCH_CONFIG, launchConfigData);
-        } else {
-            List<? extends Instance> instances = objectManager.find(Instance.class, INSTANCE.CONTAINER_SERVICE_ID,
-                    service.getId(), INSTANCE.REMOVED, null);
-            List<Instance> secondary = new ArrayList<>();
-            Instance primary = null;
-            for (Instance instance : instances) {
-                Map<String, String> instanceLabels = DataAccessor.fields(instance)
-                        .withKey(InstanceConstants.FIELD_LABELS).withDefault(Collections.EMPTY_MAP).as(Map.class);
-                String launchConfigName = instanceLabels
-                        .get(ServiceConstants.LABEL_SERVICE_LAUNCH_CONFIG);
-                if (launchConfigName.equalsIgnoreCase(ServiceConstants.PRIMARY_LAUNCH_CONFIG_NAME)) {
-                    primary = instance;
-                } else {
-                    secondary.add(instance);
-                }
+    protected void addLaunchConfigToService(Service service, Map<String, Object> instanceLaunchConfig, boolean isPrimary) {
+        lockManager.lock(new ServiceCreateUpdateLock(service.getStackId(), service.getName()),
+                new LockCallbackNoReturn() {
+            @Override
+            public void doWithLockNoResult() {
+                        Map<String, Object> data = new HashMap<>();
+                        List<String> lcs = getServiceLaunchConfigNames(service);
+                        if (isPrimary) {
+                            if (!lcs.contains(ServiceConstants.PRIMARY_LAUNCH_CONFIG_NAME)) {
+                                data.put(ServiceConstants.FIELD_LAUNCH_CONFIG, instanceLaunchConfig);
+                            }
+                        } else {
+                            if (lcs.contains(instanceLaunchConfig.get("name"))) {
+                                return;
+                            }
+                            List<Object> secondaryLCs = DataAccessor.fields(service)
+                                    .withKey(ServiceConstants.FIELD_SECONDARY_LAUNCH_CONFIGS)
+                                    .withDefault(Collections.EMPTY_LIST).as(
+                                            List.class);
+                            modifyLaunchConfigData(instanceLaunchConfig);
+                            secondaryLCs.add(instanceLaunchConfig);
+                            data.put(ServiceConstants.FIELD_SECONDARY_LAUNCH_CONFIGS, secondaryLCs);
+                        }
+                        if (!data.isEmpty()) {
+                            objectManager.setFields(objectManager.reload(service), data);
+                        }
+                        updateCurrentRevision(objectManager.reload(service));
             }
-            Map<Long, String> containerIdToLaunchConfigName = new HashMap<>();
-            containerIdToLaunchConfigName.put(primary.getId(), service.getName());
-            for (Instance sec : secondary) {
-                containerIdToLaunchConfigName.put(sec.getId(), sec.getName());
-            }
-
-            Map<String, Object> lc = getLaunchConfig(containerIdToLaunchConfigName, isPrimary,
-                    launchConfigData);
-
-            List<Map<String, Object>> secondaryLCs = DataAccessor.fields(service)
-                    .withKey(ServiceConstants.FIELD_SECONDARY_LAUNCH_CONFIGS)
-                    .withDefault(Collections.EMPTY_LIST).as(
-                            List.class);
-            secondaryLCs.add(lc);
-
-            data.put(ServiceConstants.FIELD_SECONDARY_LAUNCH_CONFIGS, secondaryLCs);
-        }
-
-        service = objectManager.setFields(objectManager.reload(service), data);
-        updateCurrentRevision(service);
-        return service;
+        });
     }
 
     @SuppressWarnings("unchecked")
     protected void removeLaunchConfigFromService(Service service, String launchConfigName) {
-        boolean remove = false;
-        Map<String, List<String>> usedBy = getUsedBySidekicks(service);
-        for (String lc : usedBy.keySet()) {
-            if (usedBy.get(lc).contains(launchConfigName)) {
-                remove = true;
-                break;
-            }
-        }
-        if (!remove) {
-            return;
-        }
-        List<Map<String, Object>> secondaryLCs = DataAccessor.fields(service)
-                .withKey(ServiceConstants.FIELD_SECONDARY_LAUNCH_CONFIGS)
-                .withDefault(Collections.EMPTY_LIST).as(
-                        List.class);
-        
-        List<Map<String, Object>> toUpdate = new ArrayList<>();
-        for (Map<String, Object> lc : secondaryLCs) {
-            if (launchConfigName.equalsIgnoreCase(lc.get("name").toString())) {
-                continue;
-            }
-            secondaryLCs.add(lc);
-        }
+        lockManager.lock(new ServiceCreateUpdateLock(service.getStackId(), service.getName()),
+                new LockCallbackNoReturn() {
+                    @Override
+                    public void doWithLockNoResult() {
 
-        Map<String, Object> data = new HashMap<>();
-        data.put(ServiceConstants.FIELD_SECONDARY_LAUNCH_CONFIGS, toUpdate);
-        service = objectManager.setFields(objectManager.reload(service), data);
-        updateCurrentRevision(service);
+                        boolean remove = false;
+                        Map<String, List<String>> usedBy = getUsedBySidekicks(service);
+                        for (String lc : usedBy.keySet()) {
+                            if (usedBy.get(lc).contains(launchConfigName)) {
+                                remove = true;
+                                break;
+                            }
+                        }
+                        if (!remove) {
+                            return;
+                        }
+                        List<Map<String, Object>> secondaryLCs = DataAccessor.fields(service)
+                                .withKey(ServiceConstants.FIELD_SECONDARY_LAUNCH_CONFIGS)
+                                .withDefault(Collections.EMPTY_LIST).as(
+                                        List.class);
+
+                        List<Map<String, Object>> toUpdate = new ArrayList<>();
+                        for (Map<String, Object> lc : secondaryLCs) {
+                            if (launchConfigName.equalsIgnoreCase(lc.get("name").toString())) {
+                                continue;
+                            }
+                            secondaryLCs.add(lc);
+                        }
+
+                        Map<String, Object> data = new HashMap<>();
+                        data.put(ServiceConstants.FIELD_SECONDARY_LAUNCH_CONFIGS, toUpdate);
+                        objectManager.setFields(objectManager.reload(service), data);
+                        updateCurrentRevision(objectManager.reload(service));
+            }
+                });
     }
 
     public Service getOrCreateService(final long accountId, final String name, final long stackId) {
-        return lockManager.lock(new ServiceCreateLock(stackId, name), new LockCallback<Service>() {
+        Service service = lockManager.lock(new ServiceCreateUpdateLock(stackId, name), new LockCallback<Service>() {
             @Override
             public Service doWithLock() {
                 Service service = objectManager.findAny(Service.class, SERVICE.STACK_ID, stackId, SERVICE.NAME,
@@ -703,20 +723,23 @@ public class ServiceDataManagerImpl implements ServiceDataManager {
                 return service;
             }
         });
+        if (service.getState().equalsIgnoreCase(CommonStatesConstants.REQUESTED)) {
+            objectProcessManager.scheduleStandardChainedProcessAsync(StandardProcess.CREATE, StandardProcess.ACTIVATE,
+                    service, null);
+        }
+        return service;
     }
 
     @SuppressWarnings("unchecked")
-    Map<String, Object> getLaunchConfig(Map<Long, String> containerToLCName, boolean isPrimary,
-            Map<String, Object> launchConfigData) {
-        if (isPrimary) {
-            launchConfigData.remove(ObjectMetaDataManager.NAME_FIELD);
-        }
+    void modifyLaunchConfigData(Map<String, Object> launchConfigData) {
         if (launchConfigData.containsKey(DockerInstanceConstants.FIELD_NETWORK_CONTAINER_ID)) {
-            launchConfigData.put(
-                    ServiceConstants.FIELD_NETWORK_LAUNCH_CONFIG,
-                    containerToLCName.get(Long.valueOf(launchConfigData.get(
+            Instance instance = objectManager.loadResource(Instance.class, Long.valueOf(launchConfigData.get(
                             DockerInstanceConstants.FIELD_NETWORK_CONTAINER_ID)
-                            .toString())));
+                            .toString()));
+            if (instance != null) {
+                launchConfigData.put(
+                        ServiceConstants.FIELD_NETWORK_LAUNCH_CONFIG, instance.getName());
+            }
             launchConfigData.remove(DockerInstanceConstants.FIELD_NETWORK_CONTAINER_ID);
         }
 
@@ -724,22 +747,14 @@ public class ServiceDataManagerImpl implements ServiceDataManager {
         if (volumesInstances != null) {
             List<String> volumesFromLaunchConfigs = new ArrayList<>();
             for (Integer instanceId : (List<Integer>) volumesInstances) {
-                volumesFromLaunchConfigs.add(containerToLCName.get(instanceId.longValue()));
+                Instance instance = objectManager.loadResource(Instance.class, instanceId.longValue());
+                if (instance != null) {
+                    volumesFromLaunchConfigs.add(instance.getName());
+                }
             }
             launchConfigData.put(ServiceConstants.FIELD_DATA_VOLUMES_LAUNCH_CONFIG, volumesFromLaunchConfigs);
             launchConfigData.remove(DockerInstanceConstants.FIELD_VOLUMES_FROM);
         }
-
-        return launchConfigData;
-    }
-
-    protected void setStack(Instance instance, Map<Object, Object> data) {
-        Long stackId = instance.getStackId();
-        if (stackId != null) {
-            return;
-        }
-        Stack stack = serviceDao.getOrCreateDefaultStack(instance.getAccountId());
-        data.put(InstanceConstants.FIELD_STACK_ID, stack.getId());
     }
 
     @Override
@@ -939,4 +954,24 @@ public class ServiceDataManagerImpl implements ServiceDataManager {
         objectManager.setFields(revision, data);
     }
 
+    @SuppressWarnings("unchecked")
+    @Override
+    public List<String> getServiceLaunchConfigNames(Service service) {
+        List<String> lcNames = new ArrayList<>();
+        Map<String, Object> primaryLC = DataAccessor.fields(service)
+                .withKey(ServiceConstants.FIELD_LAUNCH_CONFIG).withDefault(Collections.EMPTY_MAP)
+                .as(Map.class);
+        if (!primaryLC.isEmpty()) {
+            lcNames.add(ServiceConstants.PRIMARY_LAUNCH_CONFIG_NAME);
+        }
+        List<Object> secondaryLCs = DataAccessor.fields(service)
+                .withKey(ServiceConstants.FIELD_SECONDARY_LAUNCH_CONFIGS)
+                .withDefault(Collections.EMPTY_LIST).as(
+                        List.class);
+        for (Object secondaryLaunchConfigObject : secondaryLCs) {
+            Map<String, Object> lc = CollectionUtils.toMap(secondaryLaunchConfigObject);
+            lcNames.add(lc.get("name").toString());
+        }
+        return lcNames;
+    }
 }

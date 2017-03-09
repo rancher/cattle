@@ -11,7 +11,7 @@ package io.cattle.platform.core.model.tables;
 @java.lang.SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class ServiceRevisionTable extends org.jooq.impl.TableImpl<io.cattle.platform.core.model.tables.records.ServiceRevisionRecord> {
 
-	private static final long serialVersionUID = 80083469;
+	private static final long serialVersionUID = 1466620501;
 
 	/**
 	 * The singleton instance of <code>cattle.service_revision</code>
@@ -87,6 +87,11 @@ public class ServiceRevisionTable extends org.jooq.impl.TableImpl<io.cattle.plat
 	public final org.jooq.TableField<io.cattle.platform.core.model.tables.records.ServiceRevisionRecord, java.lang.Long> SERVICE_ID = createField("service_id", org.jooq.impl.SQLDataType.BIGINT, this, "");
 
 	/**
+	 * The column <code>cattle.service_revision.instance_id</code>.
+	 */
+	public final org.jooq.TableField<io.cattle.platform.core.model.tables.records.ServiceRevisionRecord, java.lang.Long> INSTANCE_ID = createField("instance_id", org.jooq.impl.SQLDataType.BIGINT, this, "");
+
+	/**
 	 * Create a <code>cattle.service_revision</code> table reference
 	 */
 	public ServiceRevisionTable() {
@@ -137,7 +142,7 @@ public class ServiceRevisionTable extends org.jooq.impl.TableImpl<io.cattle.plat
 	 */
 	@Override
 	public java.util.List<org.jooq.ForeignKey<io.cattle.platform.core.model.tables.records.ServiceRevisionRecord, ?>> getReferences() {
-		return java.util.Arrays.<org.jooq.ForeignKey<io.cattle.platform.core.model.tables.records.ServiceRevisionRecord, ?>>asList(io.cattle.platform.core.model.Keys.FK_SERVICE_REVISION__ACCOUNT_ID, io.cattle.platform.core.model.Keys.FK_SERVICE_REVISION__SERVICE_ID);
+		return java.util.Arrays.<org.jooq.ForeignKey<io.cattle.platform.core.model.tables.records.ServiceRevisionRecord, ?>>asList(io.cattle.platform.core.model.Keys.FK_SERVICE_REVISION__ACCOUNT_ID, io.cattle.platform.core.model.Keys.FK_SERVICE_REVISION__SERVICE_ID, io.cattle.platform.core.model.Keys.FK_SERVICE_REVISION__INSTANCE_ID);
 	}
 
 	/**
