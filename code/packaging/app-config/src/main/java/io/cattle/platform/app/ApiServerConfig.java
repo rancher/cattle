@@ -105,10 +105,11 @@ import org.springframework.context.annotation.Configuration;
 @SuppressWarnings("deprecation")
 @Configuration
 @ComponentScans({
-    @ComponentScan("io.cattle.platform.configitem.context.impl"),
-    @ComponentScan("io.cattle.platform.servicediscovery.api.filter"),
-    @ComponentScan("io.cattle.platform.servicediscovery.api.action"),
-    @ComponentScan("io.cattle.platform.servicediscovery.api.service.impl")
+        @ComponentScan("io.cattle.platform.configitem.context.impl"),
+        @ComponentScan("io.cattle.platform.servicediscovery.api.filter"),
+        @ComponentScan("io.cattle.platform.servicediscovery.api.action"),
+        @ComponentScan("io.cattle.platform.servicediscovery.api.service.impl"),
+        @ComponentScan("io.cattle.platform.servicediscovery.api.export")
 })
 public class ApiServerConfig {
 

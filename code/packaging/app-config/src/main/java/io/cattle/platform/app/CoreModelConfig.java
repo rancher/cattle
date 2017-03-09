@@ -26,11 +26,11 @@ import io.cattle.platform.core.addon.ScalePolicy;
 import io.cattle.platform.core.addon.SecretReference;
 import io.cattle.platform.core.addon.ServiceLink;
 import io.cattle.platform.core.addon.ServiceRestart;
+import io.cattle.platform.core.addon.ServiceRollback;
 import io.cattle.platform.core.addon.ServiceUpgrade;
 import io.cattle.platform.core.addon.ServiceUpgradeStrategy;
 import io.cattle.platform.core.addon.ServicesPortRange;
 import io.cattle.platform.core.addon.TargetPortRule;
-import io.cattle.platform.core.addon.ToServiceUpgradeStrategy;
 import io.cattle.platform.core.addon.Ulimit;
 import io.cattle.platform.core.addon.VirtualMachineDisk;
 import io.cattle.platform.core.addon.VolumeActivateInput;
@@ -69,7 +69,6 @@ public class CoreModelConfig {
                 ServiceUpgrade.class,
                 ServiceUpgradeStrategy.class,
                 InServiceUpgradeStrategy.class,
-                ToServiceUpgradeStrategy.class,
                 PublicEndpoint.class,
                 VirtualMachineDisk.class,
                 VolumeActivateInput.class,
@@ -93,7 +92,8 @@ public class CoreModelConfig {
                 NetworkPolicyRuleAction.class,
                 ProcessSummary.class,
                 ProcessPool.class,
-                SecretReference.class
+                SecretReference.class,
+                ServiceRollback.class
                 ));
         return typeSet;
     }
@@ -112,6 +112,7 @@ public class CoreModelConfig {
                 "instanceConsole",
                 "instanceConsoleInput",
                 "instanceStop",
+                "instanceRemove",
                 "project,parent=account",
                 "password,parent=credential",
                 "registry,parent=storagePool",

@@ -47,7 +47,7 @@ public class InstanceVolumeLookupPreCreate extends AbstractObjectProcessLogic im
 
     @Override
     public String[] getProcessNames() {
-        return new String[] { "instance.create" };
+        return new String[] { InstanceConstants.PROCESS_CREATE };
     }
 
     /**

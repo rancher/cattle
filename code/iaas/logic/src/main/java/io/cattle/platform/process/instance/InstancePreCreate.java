@@ -5,6 +5,7 @@ import io.cattle.platform.core.addon.SecretReference;
 import io.cattle.platform.core.constants.AgentConstants;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.constants.NetworkConstants;
+import io.cattle.platform.core.dao.ServiceDao;
 import io.cattle.platform.core.dao.StorageDriverDao;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.Network;
@@ -47,10 +48,12 @@ public class InstancePreCreate extends AbstractObjectProcessLogic implements Pro
     StorageDriverDao storageDriverDao;
     @Inject
     TokenService tokenService;
+    @Inject
+    ServiceDao svcDao;
 
     @Override
     public String[] getProcessNames() {
-        return new String[] { "instance.create" };
+        return new String[] { InstanceConstants.PROCESS_CREATE };
     }
 
     @Override

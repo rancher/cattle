@@ -9,6 +9,7 @@ import io.cattle.platform.core.model.InstanceHostMap;
 import io.cattle.platform.core.model.InstanceLink;
 import io.cattle.platform.core.model.Nic;
 import io.cattle.platform.core.model.Service;
+import io.cattle.platform.core.model.ServiceRevision;
 
 import java.util.List;
 import java.util.Map;
@@ -33,9 +34,7 @@ public interface InstanceDao {
      */
     List<? extends Service> findServicesFor(Instance instance);
 
-    List<? extends Instance> listNonRemovedInstances(Account account, boolean forService);
-
-    List<? extends Instance> findInstancesFor(Service service);
+    List<? extends Instance> listNonRemovedNonStackInstances(Account account);
 
     List<? extends Instance> findInstanceByServiceName(long accountId, String serviceName);
 
@@ -54,4 +53,10 @@ public interface InstanceDao {
     List<PublicEndpoint> getPublicEndpoints(long accountId, Long serviceId, Long hostId);
 
     List<? extends Service> findServicesNonRemovedLinksOnly(Instance instance);
+
+    ServiceRevision createRevision(Instance instance, Map<String, Object> spec);
+
+    void cleanupInstanceRevisions(Instance instance);
+
+    Map<String, Object> getInstanceSpec(Instance instance);
 }

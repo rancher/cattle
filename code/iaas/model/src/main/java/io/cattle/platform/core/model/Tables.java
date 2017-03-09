@@ -319,6 +319,11 @@ public class Tables {
 	public static final io.cattle.platform.core.model.tables.ServiceLogTable SERVICE_LOG = io.cattle.platform.core.model.tables.ServiceLogTable.SERVICE_LOG;
 
 	/**
+	 * The table cattle.service_revision
+	 */
+	public static final io.cattle.platform.core.model.tables.ServiceRevisionTable SERVICE_REVISION = io.cattle.platform.core.model.tables.ServiceRevisionTable.SERVICE_REVISION;
+
+	/**
 	 * The table cattle.setting
 	 */
 	public static final io.cattle.platform.core.model.tables.SettingTable SETTING = io.cattle.platform.core.model.tables.SettingTable.SETTING;

@@ -4,6 +4,7 @@ import io.cattle.platform.activity.ActivityLog;
 import io.cattle.platform.activity.Entry;
 import io.cattle.platform.async.utils.ResourceTimeoutException;
 import io.cattle.platform.async.utils.TimeoutException;
+import io.cattle.platform.core.model.DeploymentUnit;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.Service;
 import io.cattle.platform.core.model.ServiceLog;
@@ -17,6 +18,8 @@ import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.meta.ObjectMetaDataManager;
 import io.cattle.platform.object.util.ObjectUtils;
 import io.cattle.platform.object.util.TransitioningUtils;
+import io.cattle.platform.util.exception.DeploymentUnitException;
+import io.cattle.platform.util.exception.DeploymentUnitReconcileException;
 import io.cattle.platform.util.exception.InstanceException;
 import io.cattle.platform.util.exception.ServiceReconcileException;
 
@@ -38,8 +41,8 @@ public class ActivityLogImpl implements ActivityLog {
     }
 
     @Override
-    public Entry start(Service service, String type, String message) {
-        ServiceLog auditLog = newServiceLog(service);
+    public Entry start(Service service, DeploymentUnit unit, String type, String message) {
+        ServiceLog auditLog = newServiceLog(service, unit);
         auditLog.setEventType(type);
         auditLog.setDescription(message);
         auditLog.setTransactionId(io.cattle.platform.util.resource.UUID.randomUUID().toString());
@@ -49,19 +52,22 @@ public class ActivityLogImpl implements ActivityLog {
             auditLog.setEventType(parentLog.getEventType() + "." + type);
             auditLog.setTransactionId(parentLog.getTransactionId());
         }
-        EntryImpl impl = new EntryImpl(this, service, objectManager.create(auditLog));
+        EntryImpl impl = new EntryImpl(this, service, unit, objectManager.create(auditLog));
         ObjectUtils.publishChanged(eventService, objectManager, impl.auditLog);
         entries.push(impl);
         return impl;
     }
 
 
-    protected ServiceLog newServiceLog(Service obj) {
+    protected ServiceLog newServiceLog(Service obj, DeploymentUnit unit) {
         ServiceLog auditLog = objectManager.newRecord(ServiceLog.class);
         auditLog.setLevel("info");
         auditLog.setCreated(new Date());
         auditLog.setAccountId(obj.getAccountId());
         auditLog.setServiceId(obj.getId());
+        if (unit != null) {
+            auditLog.setDeploymentUnitId(unit.getId());
+        }
         return auditLog;
     }
 
@@ -115,7 +121,7 @@ public class ActivityLogImpl implements ActivityLog {
     }
 
     protected ServiceLog newSubEntry(EntryImpl entryImpl, String suffix) {
-        ServiceLog log = newServiceLog(entryImpl.owner);
+        ServiceLog log = newServiceLog(entryImpl.owner, entryImpl.getUnit());
         log.setTransactionId(entryImpl.auditLog.getTransactionId());
         log.setEventType(entryImpl.auditLog.getEventType() + "." + suffix);
         log.setSubLog(true);
@@ -136,10 +142,11 @@ public class ActivityLogImpl implements ActivityLog {
         entryImpl.message = t.getMessage();
         ServiceLog log = newSubEntry(entryImpl, "exception");
         log.setInstanceId(getInstanceIdFromThrowable(t));
+        log.setDeploymentUnitId(getDeploymentIdFromThrowable(t));
         log.setDescription(t.getMessage());
         log.setLevel("error");
 
-        if (t instanceof ServiceReconcileException) {
+        if (t instanceof ServiceReconcileException || t instanceof DeploymentUnitReconcileException) {
             entryImpl.failed = false;
             log.setLevel("info");
         }
@@ -183,6 +190,22 @@ public class ActivityLogImpl implements ActivityLog {
     protected void create(ServiceLog serviceLog) {
         objectManager.create(serviceLog);
         ObjectUtils.publishChanged(eventService, objectManager, serviceLog);
+    }
+
+    protected Long getDeploymentIdFromThrowable(Throwable t) {
+        Object obj = null;
+        if (t instanceof DeploymentUnitException) {
+            obj = ((DeploymentUnitException) t).getDeploymentUnit();
+
+        }
+        if (t instanceof ResourceTimeoutException) {
+            obj = ((ResourceTimeoutException) t).getResource();
+        }
+
+        if (obj instanceof DeploymentUnit) {
+            return ((DeploymentUnit) obj).getId();
+        }
+        return null;
     }
 
     protected Long getInstanceIdFromThrowable(Throwable t) {

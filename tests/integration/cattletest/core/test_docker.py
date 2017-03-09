@@ -546,30 +546,6 @@ def test_docker_volumes(docker_client, super_client):
 
 
 @if_docker
-def test_volumes_from_more_than_one_container(docker_client):
-    c = docker_client.create_container(imageUuid=TEST_IMAGE_UUID,
-                                       networkMode='bridge',
-                                       dataVolumes=['/foo'])
-    docker_client.wait_success(c)
-
-    c2 = docker_client.create_container(imageUuid=TEST_IMAGE_UUID,
-                                        networkMode='bridge',
-                                        dataVolumes=['/bar'])
-    docker_client.wait_success(c2)
-
-    c3 = docker_client.create_container(imageUuid=TEST_IMAGE_UUID,
-                                        networkMode='bridge',
-                                        dataVolumesFrom=[c.id, c2.id])
-    c3 = docker_client.wait_success(c3)
-
-    mounts = c3.mounts_link()
-    assert len(mounts) == 2
-    paths = ['/foo', '/bar']
-    for m in mounts:
-        assert m.path in paths
-
-
-@if_docker
 def test_container_fields(docker_client, super_client):
     caps = ["SYS_MODULE", "SYS_RAWIO", "SYS_PACCT", "SYS_ADMIN",
             "SYS_NICE", "SYS_RESOURCE", "SYS_TIME", "SYS_TTY_CONFIG",
@@ -933,7 +909,8 @@ def test_docker_labels(docker_client, super_client):
         'io.rancher.container.name': c.name,
         'io.rancher.container.mac_address': mac_address,
     }
-    assert actual_labels == expected_labels
+    assert all(item in actual_labels.items()
+               for item in expected_labels.items())
 
     docker_client.delete(c)
 
@@ -1186,7 +1163,7 @@ def test_simultaneous_port_allocation(docker_client):
 
 
 @if_resource_scheduler
-def test_docker_bind_address(docker_client, super_client):
+def test_docker_bindtest_docker_bind_address_address(docker_client, super_client):
     c = docker_client.create_container(name='bindAddrTest',
                                        networkMode='bridge',
                                        imageUuid=TEST_IMAGE_UUID,

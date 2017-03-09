@@ -1,48 +1,67 @@
 package io.cattle.platform.core.dao.impl;
 
 import static io.cattle.platform.core.model.tables.CertificateTable.*;
+import static io.cattle.platform.core.model.tables.DeploymentUnitTable.*;
 import static io.cattle.platform.core.model.tables.HealthcheckInstanceHostMapTable.*;
 import static io.cattle.platform.core.model.tables.HealthcheckInstanceTable.*;
 import static io.cattle.platform.core.model.tables.HostTable.*;
+import static io.cattle.platform.core.model.tables.InstanceHostMapTable.*;
 import static io.cattle.platform.core.model.tables.InstanceTable.*;
 import static io.cattle.platform.core.model.tables.ServiceConsumeMapTable.*;
 import static io.cattle.platform.core.model.tables.ServiceExposeMapTable.*;
 import static io.cattle.platform.core.model.tables.ServiceIndexTable.*;
 import static io.cattle.platform.core.model.tables.ServiceTable.*;
 import static io.cattle.platform.core.model.tables.StackTable.*;
-
 import io.cattle.platform.core.addon.HealthcheckState;
 import io.cattle.platform.core.constants.CommonStatesConstants;
+import io.cattle.platform.core.constants.HealthcheckConstants;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.constants.LoadBalancerConstants;
+import io.cattle.platform.core.constants.ServiceConstants;
+import io.cattle.platform.core.dao.GenericResourceDao;
 import io.cattle.platform.core.dao.ServiceDao;
 import io.cattle.platform.core.model.Certificate;
+import io.cattle.platform.core.model.DeploymentUnit;
 import io.cattle.platform.core.model.HealthcheckInstance;
 import io.cattle.platform.core.model.HealthcheckInstanceHostMap;
+import io.cattle.platform.core.model.Host;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.Service;
+import io.cattle.platform.core.model.ServiceExposeMap;
 import io.cattle.platform.core.model.ServiceIndex;
+import io.cattle.platform.core.model.Stack;
 import io.cattle.platform.core.model.tables.HealthcheckInstanceHostMapTable;
 import io.cattle.platform.core.model.tables.HostTable;
 import io.cattle.platform.core.model.tables.InstanceTable;
+import io.cattle.platform.core.model.tables.ServiceExposeMapTable;
+import io.cattle.platform.core.model.tables.records.DeploymentUnitRecord;
 import io.cattle.platform.core.model.tables.records.HealthcheckInstanceRecord;
+import io.cattle.platform.core.model.tables.records.InstanceRecord;
+import io.cattle.platform.core.model.tables.records.ServiceIndexRecord;
 import io.cattle.platform.core.model.tables.records.ServiceRecord;
+import io.cattle.platform.core.model.tables.records.StackRecord;
 import io.cattle.platform.db.jooq.dao.impl.AbstractJooqDao;
 import io.cattle.platform.db.jooq.mapper.MultiRecordMapper;
 import io.cattle.platform.json.JsonMapper;
+import io.cattle.platform.lock.LockCallback;
+import io.cattle.platform.lock.LockManager;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.util.DataAccessor;
 import io.github.ibuildthecloud.gdapi.id.IdFormatter;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.inject.Inject;
 import javax.inject.Named;
 
+import org.jooq.Condition;
 import org.jooq.Record;
 import org.jooq.Record2;
 import org.jooq.Record3;
@@ -56,6 +75,10 @@ public class ServiceDaoImpl extends AbstractJooqDao implements ServiceDao {
     ObjectManager objectManager;
     @Inject
     JsonMapper jsonMapper;
+    @Inject
+    LockManager lockManager;
+    @Inject
+    GenericResourceDao resourceDao;
 
     @Override
     public Service getServiceByExternalId(Long accountId, String externalId) {
@@ -68,17 +91,29 @@ public class ServiceDaoImpl extends AbstractJooqDao implements ServiceDao {
 
     @Override
     public ServiceIndex createServiceIndex(Service service, String launchConfigName, String serviceIndex) {
-        ServiceIndex serviceIndexObj = objectManager.findAny(ServiceIndex.class, SERVICE_INDEX.SERVICE_ID,
-                service.getId(),
-                SERVICE_INDEX.LAUNCH_CONFIG_NAME, launchConfigName, SERVICE_INDEX.SERVICE_INDEX_, serviceIndex,
-                SERVICE_INDEX.REMOVED, null);
-        if (serviceIndexObj == null) {
-            serviceIndexObj = objectManager.create(ServiceIndex.class, SERVICE_INDEX.SERVICE_ID,
-                    service.getId(),
-                    SERVICE_INDEX.LAUNCH_CONFIG_NAME, launchConfigName, SERVICE_INDEX.SERVICE_INDEX_, serviceIndex,
-                    SERVICE_INDEX.ACCOUNT_ID, service.getAccountId());
+        List<String> configNames = new ArrayList<>();
+        if (launchConfigName.equals(service.getName())) {
+            configNames.add(ServiceConstants.PRIMARY_LAUNCH_CONFIG_NAME);
         }
-        return serviceIndexObj;
+        configNames.add(launchConfigName);
+        List<? extends ServiceIndex> serviceIndexes = create()
+                .select(SERVICE_INDEX.fields())
+                .from(SERVICE_INDEX)
+                .where(SERVICE_INDEX.SERVICE_INDEX_.eq(serviceIndex))
+                .and(SERVICE_INDEX.SERVICE_ID.eq(service.getId()))
+                .and(SERVICE_INDEX.REMOVED.isNull())
+                .and(SERVICE_INDEX.STATE.ne(CommonStatesConstants.REMOVING))
+                .and(SERVICE_INDEX.LAUNCH_CONFIG_NAME.in(configNames))
+                .fetchInto(ServiceIndexRecord.class);
+        ServiceIndex index = null;
+        if (serviceIndexes.isEmpty()) {
+            index = objectManager.create(ServiceIndex.class, SERVICE_INDEX.SERVICE_ID,
+                    service.getId(),
+                    SERVICE_INDEX.LAUNCH_CONFIG_NAME, launchConfigName, SERVICE_INDEX.SERVICE_INDEX_, serviceIndex);
+        } else {
+            index = serviceIndexes.get(0);
+        }
+        return index;
     }
 
     @Override
@@ -94,8 +129,8 @@ public class ServiceDaoImpl extends AbstractJooqDao implements ServiceDao {
     }
 
     @Override
-    public boolean isServiceInstance(Instance instance) {
-        return instance.getDeploymentUnitUuid() != null;
+    public boolean isServiceManagedInstance(Instance instance) {
+        return instance.getServiceId() != null;
     }
 
     @Override
@@ -307,4 +342,206 @@ public class ServiceDaoImpl extends AbstractJooqDao implements ServiceDao {
                 .fetchInto(ServiceRecord.class);
     }
 
+    @Override
+    public Map<String, DeploymentUnit> getDeploymentUnits(Service service) {
+        List<? extends DeploymentUnit> units = create()
+                .select(DEPLOYMENT_UNIT.fields())
+                .from(DEPLOYMENT_UNIT)
+                .where(DEPLOYMENT_UNIT.SERVICE_ID.eq(service.getId())
+                        .and(DEPLOYMENT_UNIT.REMOVED.isNull())
+                        .and(DEPLOYMENT_UNIT.STATE.notIn(CommonStatesConstants.REMOVING)))
+                .fetchInto(DeploymentUnitRecord.class);
+
+        Map<String, DeploymentUnit> uuidToUnit = new HashMap<>();
+        for (DeploymentUnit unit : units) {
+            uuidToUnit.put(unit.getUuid(), unit);
+        }
+        return uuidToUnit;
+    }
+
+    @Override
+    public List<? extends Service> getServicesOnHost(long hostId) {
+        return create().select(SERVICE.fields())
+                .from(SERVICE)
+                .join(SERVICE_EXPOSE_MAP)
+                .on(SERVICE_EXPOSE_MAP.SERVICE_ID.eq(SERVICE.ID))
+                .join(INSTANCE_HOST_MAP)
+                .on(SERVICE_EXPOSE_MAP.INSTANCE_ID.eq(INSTANCE_HOST_MAP.INSTANCE_ID))
+                .where(INSTANCE_HOST_MAP.HOST_ID.eq(hostId))
+                .and(INSTANCE_HOST_MAP.REMOVED.isNull())
+                .and(SERVICE_EXPOSE_MAP.REMOVED.isNull())
+                .and(SERVICE.REMOVED.isNull())
+                .fetchInto(ServiceRecord.class);
+    }
+
+    @Override
+    public List<? extends Instance> getInstancesWithHealtcheckEnabled(long accountId) {
+        return create().select(INSTANCE.fields())
+                .from(INSTANCE)
+                .join(HEALTHCHECK_INSTANCE)
+                .on(HEALTHCHECK_INSTANCE.INSTANCE_ID.eq(INSTANCE.ID))
+                .and(HEALTHCHECK_INSTANCE.REMOVED.isNull())
+                .and(INSTANCE.REMOVED.isNull())
+                .and(INSTANCE.STATE.in(InstanceConstants.STATE_STARTING, InstanceConstants.STATE_RUNNING)
+                        .and(INSTANCE.ACCOUNT_ID.eq(accountId)))
+                .fetchInto(InstanceRecord.class);
+    }
+
+    private static class ServiceInstance {
+        Instance instance;
+        Long serviceId;
+
+        public ServiceInstance(Instance instance, Long serviceId) {
+            super();
+            this.instance = instance;
+            this.serviceId = serviceId;
+        }
+
+        public Instance getInstance() {
+            return instance;
+        }
+
+        public Long getServiceId() {
+            return serviceId;
+        }
+    }
+
+    @Override
+    public Map<Long, List<Instance>> getServiceInstancesWithNoDeploymentUnit() {
+        final Map<Long, List<Instance>> serviceToInstances = new HashMap<>();
+
+        MultiRecordMapper<ServiceInstance> mapper = new MultiRecordMapper<ServiceInstance>() {
+            @Override
+            protected ServiceInstance map(List<Object> input) {
+                return new ServiceInstance((Instance) input.get(0),
+                        ((ServiceExposeMap) input.get(1)).getServiceId());
+            }
+        };
+
+        InstanceTable instance = mapper.add(INSTANCE);
+        ServiceExposeMapTable exposeMap = mapper.add(SERVICE_EXPOSE_MAP);
+
+        // fetch service instances having null du
+        List<ServiceInstance> serviceInstances = create()
+                .select(mapper.fields())
+                .from(instance)
+                .join(exposeMap)
+                .on(exposeMap.INSTANCE_ID.eq(instance.ID))
+                .where(exposeMap.REMOVED.isNull())
+                .and(instance.REMOVED.isNull())
+                .and(instance.DEPLOYMENT_UNIT_UUID.isNull())
+                .fetch().map(mapper);
+
+        serviceInstances.addAll(create().select(mapper.fields())
+                .from(instance)
+                .join(exposeMap)
+                .on(exposeMap.INSTANCE_ID.eq(instance.ID))
+                .leftOuterJoin(DEPLOYMENT_UNIT)
+                .on(DEPLOYMENT_UNIT.UUID.eq(instance.DEPLOYMENT_UNIT_UUID))
+                .where(exposeMap.REMOVED.isNull())
+                .and(instance.REMOVED.isNull())
+                .and(instance.DEPLOYMENT_UNIT_UUID.isNotNull())
+                .and(DEPLOYMENT_UNIT.UUID.isNull())
+                .fetch().map(mapper));
+
+        for (ServiceInstance si : serviceInstances) {
+            List<Instance> instances = new ArrayList<>();
+            Long svcId = si.getServiceId();
+            if (serviceToInstances.containsKey(svcId)) {
+                instances = serviceToInstances.get(svcId);
+            }
+            instances.add(si.getInstance());
+            serviceToInstances.put(svcId, instances);
+        }
+
+        return serviceToInstances;
+    }
+
+    @Override
+    public List<? extends DeploymentUnit> getUnitsOnHost(Host host, boolean transitioningOnly) {
+        List<DeploymentUnit> toReturn = new ArrayList<>();
+        Set<Long> processed = new HashSet<>();
+        Condition condition = null;
+        if (transitioningOnly) {
+            List<String> transitioningStates = Arrays.asList(InstanceConstants.STATE_CREATING,
+                    InstanceConstants.STATE_STOPPING, InstanceConstants.STATE_STARTING,
+                    InstanceConstants.STATE_RESTARTING);
+            condition = INSTANCE.ACCOUNT_ID.eq(host.getAccountId()).and(INSTANCE.STATE.in(transitioningStates));
+        } else {
+            condition = INSTANCE.ACCOUNT_ID.eq(host.getAccountId());
+        }
+        List<? extends DeploymentUnit> units =
+                create().select(DEPLOYMENT_UNIT.fields())
+                .from(DEPLOYMENT_UNIT)
+                .join(INSTANCE)
+                        .on(INSTANCE.DEPLOYMENT_UNIT_ID.eq(DEPLOYMENT_UNIT.ID))
+                        .join(INSTANCE_HOST_MAP)
+                        .on(INSTANCE_HOST_MAP.INSTANCE_ID.eq(INSTANCE.ID))
+                .and(INSTANCE.REMOVED.isNull())
+                        .and(INSTANCE_HOST_MAP.HOST_ID.eq(host.getId()))
+                .and(DEPLOYMENT_UNIT.REMOVED.isNull())
+                        .and(condition)
+                        .fetchInto(DeploymentUnitRecord.class);
+        for (DeploymentUnit unit : units) {
+            if (processed.contains(unit.getId())) {
+                continue;
+            }
+            toReturn.add(unit);
+        }
+        return toReturn;
+    }
+
+    @Override
+    public DeploymentUnit createDeploymentUnit(long accountId, long serviceId, long stackId, Map<String, String> labels, Integer serviceIndex) {
+        Map<String, Object> params = new HashMap<>();
+        params.put("accountId", accountId);
+        params.put("uuid", io.cattle.platform.util.resource.UUID.randomUUID().toString());
+        params.put(InstanceConstants.FIELD_SERVICE_INSTANCE_SERVICE_INDEX,
+                serviceIndex);
+        params.put(InstanceConstants.FIELD_SERVICE_ID, serviceId);
+        params.put(InstanceConstants.FIELD_STACK_ID, stackId);
+        if (labels != null) {
+            params.put(InstanceConstants.FIELD_LABELS, labels);
+        }
+        return objectManager.create(DeploymentUnit.class, params);
+    }
+
+    @Override
+    public Stack getOrCreateDefaultStack(final long accountId) {
+        return lockManager.lock(new StackCreateLock(accountId), new LockCallback<Stack>() {
+            @Override
+            public Stack doWithLock() {
+                List<? extends Stack> stacks = create()
+                        .select(STACK.fields())
+                        .from(STACK)
+                        .where(STACK.ACCOUNT_ID.eq(accountId)
+                                .and(STACK.REMOVED.isNull())
+                                .and(STACK.NAME.equalIgnoreCase(ServiceConstants.DEFAULT_STACK_NAME)))
+                        .fetchInto(StackRecord.class);
+                if (stacks.size() > 0) {
+                    return stacks.get(0);
+                }
+
+                return objectManager.create(Stack.class,
+                        STACK.ACCOUNT_ID, accountId,
+                        STACK.NAME, ServiceConstants.DEFAULT_STACK_NAME,
+                        STACK.HEALTH_STATE, HealthcheckConstants.HEALTH_STATE_HEALTHY);
+            }
+        });
+    }
+
+
+    @Override
+    public List<Instance> getInstancesToGarbageCollect(Service service) {
+        return create()
+                        .select(INSTANCE.fields())
+                        .from(INSTANCE)
+                        .join(SERVICE_EXPOSE_MAP)
+                        .on(SERVICE_EXPOSE_MAP.INSTANCE_ID.eq(INSTANCE.ID))
+                        .where(INSTANCE.REMOVED.isNull())
+                        .and(INSTANCE.STATE.notIn(CommonStatesConstants.REMOVING))
+                        .and(SERVICE_EXPOSE_MAP.UPGRADE.eq(true))
+                        .and(SERVICE_EXPOSE_MAP.SERVICE_ID.eq(service.getId()))
+                        .fetchInto(InstanceRecord.class);
+    }
 }
