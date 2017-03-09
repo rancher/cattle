@@ -160,8 +160,10 @@ def test_container_event_destroy(client, host, agent_cli, user_id):
 def test_rancher_container_events(client, context, host, agent_cli, user_id):
     # A "normal" container (one created in Rancher) should also respond to
     # non-rancher container events
+    p = {"name": "never"}
     container = context.create_container(name=random_str(),
-                                         startOnCreate=False)
+                                         startOnCreate=False,
+                                         restartPolicy=p)
     assert container.state == 'stopped'
 
     inspect = new_inspect(random_str())

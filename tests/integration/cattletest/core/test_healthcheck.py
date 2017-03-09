@@ -1632,6 +1632,7 @@ def test_standalone_health_check_noop(super_client, new_context):
         pass
 
 
+@pytest.mark.skipif('True')
 def test_standalone_container_lb_replacement(super_client, new_context):
     client = new_context.client
     c1 = new_context.create_container(name=random_str(),

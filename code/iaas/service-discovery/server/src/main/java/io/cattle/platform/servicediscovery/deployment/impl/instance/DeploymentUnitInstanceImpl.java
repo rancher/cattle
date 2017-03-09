@@ -152,7 +152,7 @@ public class DeploymentUnitInstanceImpl implements DeploymentUnitInstance {
             return false;
         }
         if (context.objectManager.find(InstanceHostMap.class, INSTANCE_HOST_MAP.INSTANCE_ID,
-                        instance.getId()).size() == 0) {
+                instance.getId()).size() == 0) {
             return true;
         }
         if (!Arrays.asList(InstanceConstants.STATE_STOPPED, InstanceConstants.STATE_STOPPING).contains(instanceState)) {
@@ -167,18 +167,18 @@ public class DeploymentUnitInstanceImpl implements DeploymentUnitInstance {
         } else {
             exitCode = context.transformer.getExitCode(instance);
         }
-         
+
         if (exitCode.equals(0)) {
             return false;
         }
         if (maximumRetryCount == UNLIMITED_RETRIES) {
             return true;
         }
-        
+
         int startRetryCount = 0;
         if (DataAccessor.fieldInteger(instance, InstanceConstants.FIELD_START_RETRY_COUNT) != null) {
             startRetryCount = DataAccessor.fieldInteger(instance, InstanceConstants.FIELD_START_RETRY_COUNT);
-        }        
+        }
         return startRetryCount < maximumRetryCount;
     }
 

@@ -231,7 +231,7 @@ def test_container_restart(client, super_client, context):
 
 
 def test_container_stop(client, super_client, context):
-    container = context.create_container(name="test" + random_str())
+    container = context.create_container(name="testcontainerstop" + random_str())
     container = client.wait_success(container)
 
     assert_fields(container, {
