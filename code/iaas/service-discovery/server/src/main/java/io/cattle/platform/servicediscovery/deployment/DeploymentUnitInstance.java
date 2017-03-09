@@ -10,11 +10,7 @@ public interface DeploymentUnitInstance {
 
     void stop();
 
-    DeploymentUnitInstance start();
-
     void scheduleCreate();
-
-    DeploymentUnitInstance waitForStart();
 
     void remove(String reason, String level);
 
@@ -22,9 +18,13 @@ public interface DeploymentUnitInstance {
 
     String getLaunchConfigName();
 
-    boolean isStarted();
-
     Instance getInstance();
 
     void create(Map<String, Object> deployParams);
+
+    DeploymentUnitInstance waitForStart(boolean isDependee);
+
+    DeploymentUnitInstance start(boolean isDependee);
+
+    boolean isStarted(boolean isDependee);
 }

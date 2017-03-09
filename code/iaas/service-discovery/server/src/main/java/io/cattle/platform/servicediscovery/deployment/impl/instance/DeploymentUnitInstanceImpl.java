@@ -98,8 +98,8 @@ public class DeploymentUnitInstanceImpl implements DeploymentUnitInstance {
     }
 
     @Override
-    public DeploymentUnitInstance start() {
-        if (this.isStarted()) {
+    public DeploymentUnitInstance start(boolean isDependee) {
+        if (this.isStarted(isDependee)) {
             return this;
         }
         if (instance != null && InstanceConstants.STATE_STOPPED.equals(instance.getState())) {
@@ -111,8 +111,8 @@ public class DeploymentUnitInstanceImpl implements DeploymentUnitInstance {
     }
 
     @Override
-    public DeploymentUnitInstance waitForStart() {
-        if (this.isStarted()) {
+    public DeploymentUnitInstance waitForStart(boolean isDependee) {
+        if (this.isStarted(isDependee)) {
             return this;
         }
         this.waitForAllocate();
@@ -131,7 +131,7 @@ public class DeploymentUnitInstanceImpl implements DeploymentUnitInstance {
     }
 
     @Override
-    public boolean isStarted() {
+    public boolean isStarted(boolean isDependee) {
         if (startOnFailure) {
             return !needRestartOnFailure();
         }
@@ -143,7 +143,8 @@ public class DeploymentUnitInstanceImpl implements DeploymentUnitInstance {
         boolean skipStartOnCreate = !DataAccessor.fieldBool(instance, InstanceConstants.FIELD_START_ON_CREATE)
                 && instance.getFirstRunning() == null;
 
-        return isRunning || stoppedFromApi || skipStartOnCreate || (!isRunning && !isRestartAlways());
+        boolean skipRestart = (stoppedFromApi || skipStartOnCreate || !isRestartAlways()) && !isDependee;
+        return isRunning || (!isRunning && skipRestart);
     }
 
     protected boolean needRestartOnFailure() {

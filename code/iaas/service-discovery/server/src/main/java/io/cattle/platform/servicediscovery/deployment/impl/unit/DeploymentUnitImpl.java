@@ -33,8 +33,10 @@ import io.cattle.platform.servicediscovery.deployment.impl.manager.DeploymentUni
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.commons.lang3.tuple.Pair;
 
@@ -47,6 +49,7 @@ public class DeploymentUnitImpl implements io.cattle.platform.servicediscovery.d
     Map<String, DeploymentUnitInstance> launchConfigToInstance = new HashMap<>();
     List<String> launchConfigNames = new ArrayList<>();
     Map<String, List<String>> sidekickUsedByMap = new HashMap<>();
+    Set<String> dependees = new HashSet<>();
     DeploymentUnit unit;
 
     public DeploymentUnitImpl(DeploymentUnit unit, DeploymentUnitManagerContext context) {
@@ -60,7 +63,9 @@ public class DeploymentUnitImpl implements io.cattle.platform.servicediscovery.d
     }
 
     public void generateSidekickReferences() {
-        sidekickUsedByMap.putAll(context.svcDataMgr.getUsedBySidekicks(service));
+        Map<String, List<String>> usedBy = context.svcDataMgr.getUsedBySidekicks(service);
+        sidekickUsedByMap.putAll(usedBy);
+        dependees.addAll(usedBy.keySet());
     }
 
     protected void addMissingInstance(String launchConfigName) {
@@ -389,8 +394,12 @@ public class DeploymentUnitImpl implements io.cattle.platform.servicediscovery.d
 
     public void start() {
         for (DeploymentUnitInstance instance : getSortedDeploymentUnitInstances()) {
-            instance.start();
+            instance.start(isDependee(instance));
         }
+    }
+
+    boolean isDependee(DeploymentUnitInstance i) {
+        return dependees.contains(i.getLaunchConfigName());
     }
 
     protected void create() {
@@ -404,7 +413,7 @@ public class DeploymentUnitImpl implements io.cattle.platform.servicediscovery.d
         // sort based on dependencies
         List<DeploymentUnitInstance> sortedInstances = getSortedDeploymentUnitInstances();
         for (DeploymentUnitInstance instance : sortedInstances) {
-            instance.waitForStart();
+            instance.waitForStart(isDependee(instance));
         }
     }
 
@@ -449,7 +458,7 @@ public class DeploymentUnitImpl implements io.cattle.platform.servicediscovery.d
 
     protected boolean isStarted() {
         for (DeploymentUnitInstance instance : getDeploymentUnitInstances()) {
-            if (!instance.isStarted()) {
+            if (!instance.isStarted(isDependee(instance))) {
                 return false;
             }
         }
