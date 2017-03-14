@@ -54,6 +54,11 @@ public class ADConstantsConfig extends ADConfigurable implements LDAPConstants{
     }
 
     @Override
+    public String getGroupSearchDomain() {
+        return ADConstants.LDAP_GROUP_SEARCH_DOMAIN.get();
+    }
+
+    @Override
     public String getUserSearchField() {
         return ADConstants.USER_SEARCH_FIELD.get();
     }

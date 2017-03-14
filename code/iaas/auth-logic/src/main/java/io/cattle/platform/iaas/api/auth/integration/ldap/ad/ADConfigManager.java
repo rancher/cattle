@@ -56,6 +56,12 @@ public class ADConfigManager extends AbstractNoOpResourceManager {
         if (config.get(ADConstants.CONFIG_DOMAIN) != null) {
             domain = (String)config.get(ADConstants.CONFIG_DOMAIN);
         }
+
+        String groupSearchDomain = currentConfig.getGroupSearchDomain();
+        if (config.get(ADConstants.CONFIG_GROUP_SEARCH_DOMAIN) != null) {
+            groupSearchDomain = (String)config.get(ADConstants.CONFIG_GROUP_SEARCH_DOMAIN);
+        }
+
         String server = currentConfig.getServer();
         if (config.get(ADConstants.CONFIG_SERVER) != null) {
             server = (String)config.get(ADConstants.CONFIG_SERVER);
@@ -128,7 +134,7 @@ public class ADConfigManager extends AbstractNoOpResourceManager {
         List<Identity> identities = currentConfig.getAllowedIdentities();
 
         String accessModeInConfig = (String)config.get(AbstractTokenUtil.ACCESSMODE);
-        if (config.get(ADConstants.CONFIG_ALLOWED_IDENTITIES) != null && accessModeInConfig != null 
+        if (config.get(ADConstants.CONFIG_ALLOWED_IDENTITIES) != null && accessModeInConfig != null
                 && (AbstractTokenUtil.isRestrictedAccess(accessModeInConfig) || AbstractTokenUtil.isRequiredAccess(accessModeInConfig))) {
             identities = adIdentityProvider.getIdentities((List<Map<String, String>>) config.get(ADConstants.CONFIG_ALLOWED_IDENTITIES));
         }
@@ -143,7 +149,7 @@ public class ADConfigManager extends AbstractNoOpResourceManager {
             groupMemberUserAttribute = (String)config.get(ADConstants.CONFIG_GROUP_MEMBER_USER_ATTRIBUTE);
         }
 
-        return new ADConfig(server, port, userEnabledMaskBit, loginDomain, domain, enabled, accessMode,
+        return new ADConfig(server, port, userEnabledMaskBit, loginDomain, domain, groupSearchDomain, enabled, accessMode,
                 serviceAccountUsername, serviceAccountPassword, tls, userSearchField, userLoginField,
                 userObjectClass, userNameField, userEnabledAttribute, groupSearchField, groupObjectClass, groupNameField,
                 (Long)config.get(ADConstants.CONFIG_TIMEOUT), identities, groupDNField, groupMemberUserAttribute);
@@ -157,6 +163,7 @@ public class ADConfigManager extends AbstractNoOpResourceManager {
         String server = ADConstants.LDAP_SERVER.get();
         String loginDomain = ADConstants.LDAP_LOGIN_DOMAIN.get();
         String domain = ADConstants.LDAP_DOMAIN.get();
+        String groupSearchDomain = ADConstants.LDAP_GROUP_SEARCH_DOMAIN.get();
         String accessMode = ADConstants.ACCESS_MODE.get();
         String serviceAccountPassword = ADConstants.SERVICE_ACCOUNT_PASSWORD.get();
         String serviceAccountUsername = ADConstants.SERVICE_ACCOUNT_USER.get();
@@ -175,7 +182,7 @@ public class ADConfigManager extends AbstractNoOpResourceManager {
         String groupDNField = ADConstants.GROUP_DN_FIELD.get();
         String groupMemberUserAttribute = ADConstants.GROUP_MEMBER_USER_ATTRIBUTE.get();
 
-        return new ADConfig(server, port, userEnabledMaskBit, loginDomain, domain, enabled, accessMode,
+        return new ADConfig(server, port, userEnabledMaskBit, loginDomain, domain, groupSearchDomain, enabled, accessMode,
                 serviceAccountUsername, serviceAccountPassword, tls, userSearchField, userLoginField, userObjectClass,
                 userNameField, userEnabledAttribute, groupSearchField, groupObjectClass, groupNameField,
                 connectionTimeout, identities, groupDNField, groupMemberUserAttribute);
@@ -184,6 +191,7 @@ public class ADConfigManager extends AbstractNoOpResourceManager {
     public ADConfig updateCurrentConfig(Map<String, Object> config) {
         settingsUtils.changeSetting(ADConstants.ACCESS_MODE_SETTING, config.get(AbstractTokenUtil.ACCESSMODE));
         settingsUtils.changeSetting(ADConstants.DOMAIN_SETTING, config.get(ADConstants.CONFIG_DOMAIN));
+        settingsUtils.changeSetting(ADConstants.GROUP_SEARCH_DOMAIN_SETTING, config.get(ADConstants.CONFIG_GROUP_SEARCH_DOMAIN));
         settingsUtils.changeSetting(ADConstants.GROUP_NAME_FIELD_SETTING, config.get(ADConstants.CONFIG_GROUP_NAME_FIELD));
         settingsUtils.changeSetting(ADConstants.GROUP_OBJECT_CLASS_SETTING, config.get(ADConstants.CONFIG_GROUP_OBJECT_CLASS));
         settingsUtils.changeSetting(ADConstants.GROUP_SEARCH_FIELD_SETTING, config.get(ADConstants.CONFIG_GROUP_SEARCH_FIELD));

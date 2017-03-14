@@ -24,6 +24,8 @@ public interface LDAPConfig {
 
     String getDomain();
 
+    String getGroupSearchDomain();
+
     String getUserSearchField();
 
     String getGroupSearchField();

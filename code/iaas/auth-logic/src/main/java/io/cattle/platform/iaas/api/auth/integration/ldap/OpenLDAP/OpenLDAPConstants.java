@@ -27,6 +27,7 @@ public class OpenLDAPConstants {
     public static final String SETTING_BASE = "api.auth.ldap.openldap.";
     public static final String ACCESS_MODE_SETTING = SETTING_BASE + "access.mode";
     public static final String DOMAIN_SETTING = SETTING_BASE + "domain";
+    public static final String GROUP_SEARCH_DOMAIN_SETTING = SETTING_BASE + "group.search.domain";
     public static final String LOGIN_DOMAIN_SETTING = SETTING_BASE + "login.domain";
     public static final String PORT_SETTING = SETTING_BASE + "port";
     public static final String USER_SEARCH_FIELD_SETTING = SETTING_BASE + "user.search.field";
@@ -58,6 +59,7 @@ public class OpenLDAPConstants {
 
     public static final DynamicStringProperty ACCESS_MODE = ArchaiusUtil.getString(ACCESS_MODE_SETTING);
     public static final DynamicStringProperty LDAP_DOMAIN = ArchaiusUtil.getString(DOMAIN_SETTING);
+    public static final DynamicStringProperty LDAP_GROUP_SEARCH_DOMAIN = ArchaiusUtil.getString(GROUP_SEARCH_DOMAIN_SETTING);
     public static final DynamicStringProperty LDAP_LOGIN_DOMAIN = ArchaiusUtil.getString(LOGIN_DOMAIN_SETTING);
     public static final DynamicIntProperty LDAP_PORT = ArchaiusUtil.getInt(PORT_SETTING);
     public static final DynamicStringProperty LDAP_SERVER = ArchaiusUtil.getString(SERVER_SETTING);
@@ -94,6 +96,7 @@ public class OpenLDAPConstants {
 
 
     public static final String CONFIG_DOMAIN = "domain";
+    public static final String CONFIG_GROUP_SEARCH_DOMAIN = "groupSearchDomain";
     public static final String CONFIG_ALLOWED_IDENTITIES = "allowedIdentities";
     public static final String CONFIG_GROUP_NAME_FIELD = "groupNameField";
     public static final String CONFIG_GROUP_OBJECT_CLASS = "groupObjectClass";
