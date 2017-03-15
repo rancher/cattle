@@ -494,7 +494,7 @@ public class ServiceDaoImpl extends AbstractJooqDao implements ServiceDao {
 
     @Override
     public DeploymentUnit createDeploymentUnit(long accountId, Long serviceId, long stackId,
-            Map<String, String> labels, Integer serviceIndex) {
+            Map<String, String> labels, String serviceIndex) {
         Map<String, Object> params = new HashMap<>();
         params.put("accountId", accountId);
         params.put("uuid", io.cattle.platform.util.resource.UUID.randomUUID().toString());
