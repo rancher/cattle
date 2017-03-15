@@ -3,10 +3,10 @@ package io.cattle.platform.servicediscovery.api.action;
 import io.cattle.platform.api.action.ActionHandler;
 import io.cattle.platform.core.addon.ServiceLink;
 import io.cattle.platform.core.constants.ServiceConstants;
+import io.cattle.platform.core.dao.ServiceConsumeMapDao;
 import io.cattle.platform.core.model.Service;
 import io.cattle.platform.json.JsonMapper;
 import io.cattle.platform.object.util.DataAccessor;
-import io.cattle.platform.servicediscovery.api.service.ServiceDiscoveryApiService;
 import io.github.ibuildthecloud.gdapi.request.ApiRequest;
 
 import javax.inject.Inject;
@@ -19,7 +19,7 @@ public class RemoveServiceLinkActionHandler implements ActionHandler {
     JsonMapper jsonMapper;
 
     @Inject
-    ServiceDiscoveryApiService sdService;
+    ServiceConsumeMapDao consumeDao;
 
     @Override
     public String getName() {
@@ -35,7 +35,7 @@ public class RemoveServiceLinkActionHandler implements ActionHandler {
         ServiceLink serviceLink = DataAccessor.fromMap(request.getRequestObject()).withKey(
                 ServiceConstants.FIELD_SERVICE_LINK).as(jsonMapper, ServiceLink.class);
 
-        sdService.removeServiceLink(service, serviceLink);
+        consumeDao.removeServiceLink(service, serviceLink);
 
         return service;
     }

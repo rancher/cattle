@@ -45,7 +45,8 @@ public class ConfigConfig {
         "META-INF/cattle/config-defaults/defaults.properties",
         "META-INF/cattle/api-server/defaults.properties",
         "META-INF/cattle/defaults/dev-defaults.properties",
-        "META-INF/cattle/system-services/healthcheck-defaults.properties",
+         "META-INF/cattle/system-services/healthcheck-defaults.properties",
+            "META-INF/cattle/service-upgrade/defaults.properties",
     };
 
     @Bean

@@ -2,7 +2,6 @@ package io.cattle.platform.servicediscovery.process;
 
 import static io.cattle.platform.core.model.tables.VolumeTable.*;
 import static io.cattle.platform.core.model.tables.VolumeTemplateTable.*;
-
 import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.ExternalEventConstants;
 import io.cattle.platform.core.model.Stack;

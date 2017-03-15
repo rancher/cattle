@@ -5,10 +5,10 @@ import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.constants.ServiceConstants;
 import io.cattle.platform.core.model.Account;
 import io.cattle.platform.core.model.Service;
+import io.cattle.platform.core.util.ServiceUtil;
 import io.cattle.platform.core.util.LBMetadataUtil.LBConfigMetadataStyle;
 import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.object.util.DataUtils;
-import io.cattle.platform.servicediscovery.api.util.ServiceDiscoveryUtil;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -124,16 +124,12 @@ public class ServiceMetaData {
         boolean isPrimaryConfig = service.getName().equalsIgnoreCase(serviceName);
         String launchConfigName = isPrimaryConfig ? ServiceConstants.PRIMARY_LAUNCH_CONFIG_NAME
                 : serviceName;
-        this.labels = ServiceDiscoveryUtil.getLaunchConfigLabels(service, launchConfigName);
+        this.labels = ServiceUtil.getLaunchConfigLabels(service, launchConfigName);
         populateExternalServiceInfo(service);
         populatePortsInfo(service, launchConfigName);
         this.create_index = service.getCreateIndex();
         this.scale = DataAccessor.fieldInteger(service, ServiceConstants.FIELD_SCALE);
         this.fqdn = DataAccessor.fieldString(service, ServiceConstants.FIELD_FQDN);
-        Integer desiredScale = DataAccessor.fieldInteger(service, ServiceConstants.FIELD_DESIRED_SCALE);
-        if (desiredScale != null) {
-            this.scale = desiredScale;
-        }
         if (healthCheck != null) {
             this.health_check = new HealthCheck(healthCheck);
         }
@@ -166,12 +162,12 @@ public class ServiceMetaData {
 
     @SuppressWarnings("unchecked")
     void populatePortsInfo(Service service, String serviceName) {
-        Object portsObj = ServiceDiscoveryUtil.getLaunchConfigObject(service, serviceName,
+        Object portsObj = ServiceUtil.getLaunchConfigObject(service, serviceName,
                 InstanceConstants.FIELD_PORTS);
         if (portsObj != null) {
             this.ports.addAll((List<String>) portsObj);
         }
-        Object exposeObj = ServiceDiscoveryUtil.getLaunchConfigObject(service, serviceName,
+        Object exposeObj = ServiceUtil.getLaunchConfigObject(service, serviceName,
                 InstanceConstants.FIELD_EXPOSE);
         if (exposeObj != null) {
             this.expose.addAll((List<String>) exposeObj);

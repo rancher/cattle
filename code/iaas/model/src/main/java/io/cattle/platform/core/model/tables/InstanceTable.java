@@ -11,7 +11,7 @@ package io.cattle.platform.core.model.tables;
 @java.lang.SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class InstanceTable extends org.jooq.impl.TableImpl<io.cattle.platform.core.model.tables.records.InstanceRecord> {
 
-	private static final long serialVersionUID = -1510987535;
+	private static final long serialVersionUID = -1951726946;
 
 	/**
 	 * The singleton instance of <code>cattle.instance</code>
@@ -232,6 +232,21 @@ public class InstanceTable extends org.jooq.impl.TableImpl<io.cattle.platform.co
 	public final org.jooq.TableField<io.cattle.platform.core.model.tables.records.InstanceRecord, java.lang.Long> STACK_ID = createField("environment_id", org.jooq.impl.SQLDataType.BIGINT, this, "");
 
 	/**
+	 * The column <code>cattle.instance.replacement_for</code>.
+	 */
+	public final org.jooq.TableField<io.cattle.platform.core.model.tables.records.InstanceRecord, java.lang.Long> REPLACEMENT_FOR = createField("replacement_for", org.jooq.impl.SQLDataType.BIGINT, this, "");
+
+	/**
+	 * The column <code>cattle.instance.deployment_unit_id</code>.
+	 */
+	public final org.jooq.TableField<io.cattle.platform.core.model.tables.records.InstanceRecord, java.lang.Long> DEPLOYMENT_UNIT_ID = createField("deployment_unit_id", org.jooq.impl.SQLDataType.BIGINT, this, "");
+
+	/**
+	 * The column <code>cattle.instance.revision_id</code>.
+	 */
+	public final org.jooq.TableField<io.cattle.platform.core.model.tables.records.InstanceRecord, java.lang.Long> REVISION_ID = createField("revision_id", org.jooq.impl.SQLDataType.BIGINT, this, "");
+
+	/**
 	 * Create a <code>cattle.instance</code> table reference
 	 */
 	public InstanceTable() {
@@ -282,7 +297,7 @@ public class InstanceTable extends org.jooq.impl.TableImpl<io.cattle.platform.co
 	 */
 	@Override
 	public java.util.List<org.jooq.ForeignKey<io.cattle.platform.core.model.tables.records.InstanceRecord, ?>> getReferences() {
-		return java.util.Arrays.<org.jooq.ForeignKey<io.cattle.platform.core.model.tables.records.InstanceRecord, ?>>asList(io.cattle.platform.core.model.Keys.FK_INSTANCE__ACCOUNT_ID, io.cattle.platform.core.model.Keys.FK_INSTANCE__IMAGE_ID, io.cattle.platform.core.model.Keys.FK_INSTANCE__ZONE_ID, io.cattle.platform.core.model.Keys.FK_INSTANCE__AGENT_ID, io.cattle.platform.core.model.Keys.FK_INSTANCE__REGISTRY_CREDENTIAL_ID, io.cattle.platform.core.model.Keys.FK_INSTANCE__INSTANCE_ID, io.cattle.platform.core.model.Keys.FK_INSTANCE__SERVICE_INDEX_ID, io.cattle.platform.core.model.Keys.FK_INSTANCE__SERVICE_ID, io.cattle.platform.core.model.Keys.FK_INSTANCE__ENVIRONMENT_ID);
+		return java.util.Arrays.<org.jooq.ForeignKey<io.cattle.platform.core.model.tables.records.InstanceRecord, ?>>asList(io.cattle.platform.core.model.Keys.FK_INSTANCE__ACCOUNT_ID, io.cattle.platform.core.model.Keys.FK_INSTANCE__IMAGE_ID, io.cattle.platform.core.model.Keys.FK_INSTANCE__ZONE_ID, io.cattle.platform.core.model.Keys.FK_INSTANCE__AGENT_ID, io.cattle.platform.core.model.Keys.FK_INSTANCE__REGISTRY_CREDENTIAL_ID, io.cattle.platform.core.model.Keys.FK_INSTANCE__INSTANCE_ID, io.cattle.platform.core.model.Keys.FK_INSTANCE__SERVICE_INDEX_ID, io.cattle.platform.core.model.Keys.FK_INSTANCE__SERVICE_ID, io.cattle.platform.core.model.Keys.FK_INSTANCE__ENVIRONMENT_ID, io.cattle.platform.core.model.Keys.FK_INSTANCE__REPLACEMENT_FOR, io.cattle.platform.core.model.Keys.FK_INSTANCE__DEPLOYMENT_UNIT_ID, io.cattle.platform.core.model.Keys.FK_INSTANCE__REVISION_ID);
 	}
 
 	/**
