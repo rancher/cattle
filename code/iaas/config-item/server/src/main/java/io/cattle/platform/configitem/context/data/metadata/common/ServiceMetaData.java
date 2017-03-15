@@ -144,6 +144,7 @@ public class ServiceMetaData {
         this.environment_uuid = account.getUuid();
         this.state = service.getState();
         this.metadata_kind = "service";
+        this.token = DataAccessor.fieldString(service, ServiceConstants.FIELD_TOKEN);
     }
 
     public static String getVip(Service service) {
