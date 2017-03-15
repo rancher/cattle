@@ -53,7 +53,7 @@ public class DefaultServiceDeploymentPlanner extends AbstractServiceDeploymentPl
         while (getAllUnits().size() < this.requestedScale) {
             DeploymentUnit unit = context.serviceDao.createDeploymentUnit(service.getAccountId(), service.getId(),
                     stack.getId(),
-                    null, svcInstanceIdGenerator.getNextAvailableId());
+                    null, String.valueOf(svcInstanceIdGenerator.getNextAvailableId()));
             addUnit(unit, State.HEALTHY);
         }
     }
