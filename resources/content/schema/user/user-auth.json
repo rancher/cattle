@@ -498,7 +498,6 @@
         "registryCredential.publicValue": "cru",
         "registryCredential.secretValue": "curo",
         "registryCredential.registryId": "cr",
-        "registryCredential.email": "cru",
 
         "registrationToken" : "r",
         "registrationToken.publicValue" : "",
