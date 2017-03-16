@@ -426,7 +426,7 @@ public class ServiceUtil {
                         }
                         // if field triggers upgrade + value changed, trigger upgrade
                         if (upgradeTriggerFields.contains(key)
-                                && !currentConfig.get(key).equals(mergedConfig.get(key))) {
+                                && !areObjectsEqual(currentConfig.get(key), mergedConfig.get(key))) {
                             resetVersion = true;
                         }
                         currentConfig.remove(key);
@@ -676,5 +676,96 @@ public class ServiceUtil {
         }
         Object lbConfig = DataAccessor.field(service, ServiceConstants.FIELD_LB_CONFIG, Object.class);
         return lbConfig == null;
+    }
+
+    public static boolean areObjectsEqual(Object a, Object b) {
+        // covers both being nulls and primitives
+        if (a == b) {
+            return true;
+        }
+
+        // covers both being not null
+        if ((a != null) != (b != null)) {
+            if (a instanceof String) {
+                if (b == null) {
+                    b = "";
+                }
+            } else if (b instanceof String) {
+                if (a == null) {
+                    a = "";
+                }
+            } else {
+                return false;
+            }
+        }
+
+        if (a instanceof String || a instanceof Long || a instanceof Integer || a instanceof Boolean) {
+            return StringUtils.equalsIgnoreCase(a.toString(), b.toString());
+        } else if (a instanceof List) {
+            return compareLists(a, b);
+        } else if (a instanceof Map) {
+            return compareMaps(a, b);
+        } else {
+            areObjectsEqual(CollectionUtils.toMap(a), CollectionUtils.toMap(b));
+        }
+
+        return false;
+    }
+
+    @SuppressWarnings("unchecked")
+    public static boolean compareLists(Object a, Object b) {
+        for (Object aItem : (List<Object>) a) {
+            boolean found = false;
+            for (Object bItem : (List<Object>) b) {
+                if (areObjectsEqual(aItem, bItem)) {
+                    found = true;
+                    break;
+                }
+            }
+            if (!found) {
+                return false;
+            }
+        }
+
+        for (Object bItem : (List<Object>) b) {
+            boolean found = false;
+            for (Object aItem : (List<Object>) a) {
+                if (areObjectsEqual(aItem, bItem)) {
+                    found = true;
+                    break;
+                }
+            }
+            if (!found) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    public static boolean compareMaps(Object a, Object b) {
+        if (!compareMap(a, b)) {
+            return false;
+        }
+        if (!compareMap(b, a)) {
+            return false;
+        }
+
+        return true;
+    }
+
+    @SuppressWarnings("unchecked")
+    public static boolean compareMap(Object a, Object b) {
+        Map<Object, Object> aMap = (Map<Object, Object>) a;
+        for (Object aKey : aMap.keySet()) {
+            Map<Object, Object> bMap = (Map<Object, Object>) b;
+            if (!bMap.containsKey(aKey)) {
+                return false;
+            }
+            
+            if (!areObjectsEqual(aMap.get(aKey), bMap.get(aKey))) {
+                return false;
+            }
+        }
+        return true;
     }
 }
