@@ -164,9 +164,13 @@ public abstract class AbstractServiceDeploymentPlanner implements ServiceDeploym
         sortByCreated(units);
 
         for (DeploymentUnit unit : units) {
+            // to handle the case when deactivate/activate is called in a row
+            if (unit.getState().equalsIgnoreCase(CommonStatesConstants.DEACTIVATING)) {
+                unit = context.resourceMonitor.waitForNotTransitioning(unit);
+            }
             if (unit.getState().equalsIgnoreCase(CommonStatesConstants.INACTIVE)) {
                 context.objectProcessManager.scheduleStandardProcessAsync(StandardProcess.ACTIVATE, unit, null);
-            } else if (unit.getState().equalsIgnoreCase(CommonStatesConstants.REQUESTED)) {
+            }else if (unit.getState().equalsIgnoreCase(CommonStatesConstants.REQUESTED)) {
                 context.objectProcessManager.scheduleStandardChainedProcessAsync(StandardProcess.CREATE,
                         StandardProcess.ACTIVATE,
                         unit, null);

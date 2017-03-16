@@ -485,7 +485,7 @@ public class UpgradeManagerImpl implements UpgradeManager {
     }
 
     public void cleanupUpgradedInstances(Service service) {
-        List<? extends Instance> instances = exposeMapDao.getInstancesSetForUpgrade(service.getId());
+        List<? extends Instance> instances = exposeMapDao.getServiceInstancesSetForUpgrade(service.getId());
         for (Instance instance : instances) {
             try {
                 objectProcessMgr.scheduleProcessInstanceAsync(InstanceConstants.PROCESS_REMOVE,
