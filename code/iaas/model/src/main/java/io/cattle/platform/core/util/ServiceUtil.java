@@ -430,22 +430,9 @@ public class ServiceUtil {
                             resetVersion = true;
                         }
                         currentConfig.remove(key);
-                    } else if (upgradeTriggerFields.contains(key)) {
+                    } else if (upgradeTriggerFields.contains(key) && mergedConfig.get(key) != null) {
                         resetVersion = true;
                     }
-                }
-
-                // if there are no updatable keys left,
-                // consider force upgrade
-                boolean upgradableFieldsLeft = false;
-                for (String key : currentConfig.keySet()) {
-                    if (upgradeTriggerFields.contains(key)) {
-                        upgradableFieldsLeft = true;
-                        break;
-                    }
-                }
-                if (!upgradableFieldsLeft) {
-                    resetVersion = true;
                 }
                 mergedConfig.putAll(currentConfig);
                 currentConfigsMap.remove(name);
