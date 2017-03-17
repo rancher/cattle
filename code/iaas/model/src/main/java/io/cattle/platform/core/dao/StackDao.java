@@ -10,6 +10,7 @@ import java.util.Map;
 import java.util.Set;
 
 public interface StackDao {
+
     Stack getStackByExternalId(Long accountId, String externalId);
 
     Map<Long, List<Object>> getServicesForStack(List<Long> ids, IdFormatter idFormatter);
@@ -19,7 +20,5 @@ public interface StackDao {
     List<? extends ScheduledUpgrade> getRunningUpgrades();
 
     List<? extends ScheduledUpgrade> getReadyUpgrades(Set<Long> accountsToIgnore, int max);
-
-    boolean hasSkipServices(long stackId);
 
 }
