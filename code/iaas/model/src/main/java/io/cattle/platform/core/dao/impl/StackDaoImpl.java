@@ -5,7 +5,6 @@ import static io.cattle.platform.core.model.tables.ServiceTable.*;
 import static io.cattle.platform.core.model.tables.StackTable.*;
 
 import io.cattle.platform.core.constants.CommonStatesConstants;
-import io.cattle.platform.core.constants.HealthcheckConstants;
 import io.cattle.platform.core.constants.ServiceConstants;
 import io.cattle.platform.core.dao.StackDao;
 import io.cattle.platform.core.model.ScheduledUpgrade;
@@ -34,85 +33,99 @@ import org.jooq.impl.DSL;
 public class StackDaoImpl extends AbstractJooqDao implements StackDao {
 
 	 @Inject
-	    ObjectManager objectManager;
+    ObjectManager objectManager;
 
-	    @Override
-	    public Stack getStackByExternalId(Long accountId, String externalId) {
-	        return create().selectFrom(STACK)
-	                .where(STACK.ACCOUNT_ID.eq(accountId))
-	                .and(STACK.REMOVED.isNull())
-	                .and(STACK.EXTERNAL_ID.eq(externalId))
-	                .fetchAny();
-	    }
+    @Override
+    public Stack getStackByExternalId(Long accountId, String externalId) {
+        return create().selectFrom(STACK)
+                .where(STACK.ACCOUNT_ID.eq(accountId))
+                .and(STACK.REMOVED.isNull())
+                .and(STACK.EXTERNAL_ID.eq(externalId))
+                .fetchAny();
+    }
 
-        @Override
-        public Map<Long, List<Object>> getServicesForStack(List<Long> ids, final IdFormatter idFormatter) {
-            final Map<Long, List<Object>> result = new HashMap<>();
-            create().select(SERVICE.ID, SERVICE.STACK_ID)
-                .from(SERVICE)
-                .where(SERVICE.STACK_ID.in(ids)
-                        .and(SERVICE.REMOVED.isNull()))
-                .fetchInto(new RecordHandler<Record2<Long, Long>>() {
-                    @Override
-                    public void next(Record2<Long, Long> record) {
-                        Long id = record.getValue(SERVICE.ID);
-                        Long stackId = record.getValue(SERVICE.STACK_ID);
-                        List<Object> list = result.get(stackId);
-                        if (list == null) {
-                            list = new ArrayList<>();
-                            result.put(stackId, list);
-                        }
-                        list.add(idFormatter.formatId(ServiceConstants.KIND_SERVICE, id));
+    @Override
+    public Map<Long, List<Object>> getServicesForStack(List<Long> ids, final IdFormatter idFormatter) {
+        final Map<Long, List<Object>> result = new HashMap<>();
+        create().select(SERVICE.ID, SERVICE.STACK_ID)
+            .from(SERVICE)
+            .where(SERVICE.STACK_ID.in(ids)
+                    .and(SERVICE.REMOVED.isNull()))
+            .fetchInto(new RecordHandler<Record2<Long, Long>>() {
+                @Override
+                public void next(Record2<Long, Long> record) {
+                    Long id = record.getValue(SERVICE.ID);
+                    Long stackId = record.getValue(SERVICE.STACK_ID);
+                    List<Object> list = result.get(stackId);
+                    if (list == null) {
+                        list = new ArrayList<>();
+                        result.put(stackId, list);
                     }
-                });
-            return result;
-        }
+                    list.add(idFormatter.formatId(ServiceConstants.KIND_SERVICE, id));
+                }
+            });
+        return result;
+    }
 
-        @Override
-        public List<? extends Stack> getStacksToUpgrade(Collection<String> currentIds) {
-            return create().select(STACK.fields())
-                .from(STACK)
-                .leftOuterJoin(SCHEDULED_UPGRADE)
-                    .on(SCHEDULED_UPGRADE.STACK_ID.eq(STACK.ID)
-                            .and(SCHEDULED_UPGRADE.REMOVED.isNull())
-                            .and(SCHEDULED_UPGRADE.FINISHED.isNull()))
-                .where(STACK.REMOVED.isNull()
-                        .and(STACK.SYSTEM.isTrue())
-                        .and(STACK.STATE.in(CommonStatesConstants.ACTIVE,
-                                ServiceConstants.STATE_UPGRADED))
-                        .and(STACK.EXTERNAL_ID.notIn(currentIds))
-                        .and(STACK.HEALTH_STATE.eq(HealthcheckConstants.HEALTH_STATE_HEALTHY))
-                        .and(SCHEDULED_UPGRADE.ID.isNull()))
-                .fetchInto(StackRecord.class);
-        }
+    @Override
+    public List<? extends Stack> getStacksToUpgrade(Collection<String> currentIds) {
+        return create().select(STACK.fields())
+            .from(STACK)
+            .leftOuterJoin(SCHEDULED_UPGRADE)
+                .on(SCHEDULED_UPGRADE.STACK_ID.eq(STACK.ID)
+                        .and(SCHEDULED_UPGRADE.REMOVED.isNull())
+                        .and(SCHEDULED_UPGRADE.FINISHED.isNull()))
+            .where(STACK.REMOVED.isNull()
+                    .and(STACK.SYSTEM.isTrue())
+                    .and(STACK.EXTERNAL_ID.notIn(currentIds))
+                    .and(SCHEDULED_UPGRADE.ID.isNull()))
+            .fetchInto(StackRecord.class);
+    }
 
-        @Override
-        public boolean hasSkipServices(long stackId) {
-            return null != create().select(SERVICE.ID)
-                    .from(SERVICE)
-                    .where(SERVICE.STACK_ID.eq(stackId)
-                            .and(SERVICE.REMOVED.isNull())
-                            .and(SERVICE.SKIP.isTrue()))
-                    .fetchAny();
-        }
+    @Override
+    public List<? extends ScheduledUpgrade> getRunningUpgrades() {
+        return create().select(SCHEDULED_UPGRADE.fields())
+            .from(SCHEDULED_UPGRADE)
+            .where(SCHEDULED_UPGRADE.STATE.eq("running"))
+            .fetchInto(ScheduledUpgradeRecord.class);
+    }
 
-        @Override
-        public List<? extends ScheduledUpgrade> getRunningUpgrades() {
-            return create().select(SCHEDULED_UPGRADE.fields())
+    @Override
+    public List<? extends ScheduledUpgrade> getReadyUpgrades(Set<Long> accountsToIgnore, int max) {
+        Map<Long, ScheduledUpgrade> data = new HashMap<>();
+        create().select(SCHEDULED_UPGRADE.fields())
                 .from(SCHEDULED_UPGRADE)
-                .where(SCHEDULED_UPGRADE.STATE.eq("running"))
+                .join(STACK)
+                    .on(STACK.ID.eq(SCHEDULED_UPGRADE.STACK_ID)
+                            .and(STACK.REMOVE_TIME.isNotNull()))
+                .where(SCHEDULED_UPGRADE.STATE.eq("scheduled"))
+                .fetchInto(ScheduledUpgradeRecord.class)
+                .forEach((x) -> {
+                    data.put(x.getId(), x);
+                });
+
+        List<? extends ScheduledUpgrade> list = create().select(SCHEDULED_UPGRADE.fields())
+                .from(SCHEDULED_UPGRADE)
+                .join(STACK)
+                    .on(STACK.ID.eq(SCHEDULED_UPGRADE.STACK_ID)
+                            .and(STACK.STATE.in(CommonStatesConstants.ACTIVE,
+                            ServiceConstants.STATE_UPGRADED)))
+                .join(SERVICE)
+                    .on(SERVICE.STACK_ID.eq(STACK.ID).and(SERVICE.SKIP.isFalse()))
+                .where(SCHEDULED_UPGRADE.STATE.eq("scheduled")
+                        .and(accountsToIgnore.size() == 0 ? DSL.trueCondition()
+                                : SCHEDULED_UPGRADE.ACCOUNT_ID.notIn(accountsToIgnore)))
+                .orderBy(SCHEDULED_UPGRADE.PRIORITY.desc(), SCHEDULED_UPGRADE.CREATED.asc())
+                .limit(max * 4)
                 .fetchInto(ScheduledUpgradeRecord.class);
+
+        for (ScheduledUpgrade scheduledUpgrade : list) {
+            if (data.size() >= max) {
+                return new ArrayList<>(data.values());
+            }
+            data.put(scheduledUpgrade.getId(), scheduledUpgrade);
         }
 
-        @Override
-        public List<? extends ScheduledUpgrade> getReadyUpgrades(Set<Long> accountsToIgnore, int max) {
-            return create().select(SCHEDULED_UPGRADE.fields())
-                    .from(SCHEDULED_UPGRADE)
-                    .where(SCHEDULED_UPGRADE.STATE.eq("scheduled")
-                            .and(accountsToIgnore.size() == 0 ? DSL.trueCondition()
-                                    : SCHEDULED_UPGRADE.ACCOUNT_ID.notIn(accountsToIgnore)))
-                    .orderBy(SCHEDULED_UPGRADE.PRIORITY.desc(), SCHEDULED_UPGRADE.CREATED.asc())
-                    .limit(max)
-                    .fetchInto(ScheduledUpgradeRecord.class);
-        }
+        return new ArrayList<>(data.values());
+    }
 }

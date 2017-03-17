@@ -100,7 +100,7 @@ public class UpgradeManager {
                 continue;
             }
 
-            if (catalogs.containsKey(templateId) && !stackDao.hasSkipServices(stack.getId())) {
+            if (catalogs.containsKey(templateId)) {
                 resourceDao.createAndSchedule(ScheduledUpgrade.class,
                         SCHEDULED_UPGRADE.ACCOUNT_ID, stack.getAccountId(),
                         SCHEDULED_UPGRADE.STACK_ID, stack.getId());

@@ -79,6 +79,7 @@ import io.cattle.platform.iaas.api.volume.VolumeSnapshotActionHandler;
 import io.cattle.platform.object.meta.TypeSet;
 import io.cattle.platform.storage.api.filter.ExternalTemplateInstanceFilter;
 import io.cattle.platform.systemstack.service.UpgradeManager;
+import io.cattle.platform.systemstack.task.RunScheduledTask;
 import io.cattle.platform.systemstack.task.UpgradeScheduleTask;
 import io.cattle.platform.task.action.TaskExecuteActionHandler;
 import io.cattle.platform.vm.api.InstanceConsoleActionHandler;
@@ -323,6 +324,11 @@ public class ApiServerConfig {
     @Bean
     UpgradeScheduleTask UpgradeScheduleTask() {
         return new UpgradeScheduleTask();
+    }
+
+    @Bean
+    RunScheduledTask runScheduledTask() {
+        return new RunScheduledTask();
     }
 
     @Bean
