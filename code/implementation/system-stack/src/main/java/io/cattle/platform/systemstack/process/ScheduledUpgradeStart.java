@@ -52,7 +52,7 @@ public class ScheduledUpgradeStart extends AbstractDefaultProcessHandler {
     protected void process(ProcessState state, ProcessInstance process) throws IOException {
         ScheduledUpgrade upgrade = (ScheduledUpgrade)state.getResource();
         Stack stack = objectManager.loadResource(Stack.class, upgrade.getStackId());
-        if (StringUtils.isBlank(stack.getExternalId())) {
+        if (StringUtils.isBlank(stack.getExternalId()) || stack.getRemoved() != null) {
             return;
         }
 
