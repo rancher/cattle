@@ -42,14 +42,12 @@ public class ServiceConstants {
     public static final String FIELD_EXTERNALIPS = "externalIpAddresses";
     public static final String FIELD_LINKED_SERVICES = "linkedServices";
     public static final String FIELD_SERVICE_LINKS = "serviceLinks";
-    public static final String FIELD_SERVICE_LINK_NAME = "name";
     public static final String FIELD_NETWORK_LAUNCH_CONFIG = "networkLaunchConfig";
     public static final String FIELD_SECONDARY_LAUNCH_CONFIGS = "secondaryLaunchConfigs";
     public static final String FIELD_DATA_VOLUMES_LAUNCH_CONFIG = "dataVolumesFromLaunchConfigs";
     public static final String FIELD_WAIT_FOR_CONSUMED_SERVICES_IDS = "waitForConsumedServicesIds";
     public static final String FIELD_SERVICE_LINK = "serviceLink";
     public static final String FIELD_HOSTNAME = "hostname";
-    public static final String FIELD_VIP = "vip";
     public static final String FIELD_METADATA = "metadata";
     public static final String FIELD_VERSION = "version";
     public static final String FIELD_SELECTOR_CONTAINER = "selectorContainer";
@@ -97,6 +95,7 @@ public class ServiceConstants {
     public static final String FIELD_SCALE_INCREMENT = "scaleIncrement";
     public static final String FIELD_SERVICE_REVISION_CONFIGS = "configs";
     public static final String FIELD_SCALE_MIN = "scaleMin";
+    public static final String FIELD_FINISH_UPGRADE = "finishUpgrade";
 
     public static final String FIELD_INTERNAL_VOLUMES = "internalVolumes";
     public static final String FIELD_VOLUME_TEMPLATE_ID = "volumeTemplateId";
@@ -150,8 +149,6 @@ public class ServiceConstants {
     public static final String PROCESS_SERVICE_PAUSE = "service.pause";
     public static final String PROCESS_SERVICE_GARBAGE_COLLECT = "service.garbagecollect";
 
-    public static final String LINK_DOCKER_COMPOSE_CONFIG = "dockerComposeConfig";
-    public static final String LINK_RANCHER_COMPOSE_CONFIG = "rancherComposeConfig";
     public static final String LINK_COMPOSE_CONFIG = "composeConfig";
 
     public static final String LABEL_SERVICE_DEPLOYMENT_UNIT = "io.rancher.service.deployment.unit";
@@ -164,7 +161,6 @@ public class ServiceConstants {
     public static final String LABEL_SERVICE_REQUESTED_HOST_ID = "io.rancher.service.requested.host.id";
     public static final String LABEL_SERVICE_LAUNCH_CONFIG = "io.rancher.service.launch.config";
     public static final String LABEL_SIDEKICK = "io.rancher.sidekicks";
-    public static final String LABEL_LB_TARGET = "io.rancher.loadbalancer.target.";
     public static final String LABEL_OVERRIDE_HOSTNAME = "io.rancher.container.hostname_override";
     public static final String LABEL_LB_SSL_PORTS = "io.rancher.loadbalancer.ssl.ports";
     public static final String LABEL_LB_PROXY_PORTS = "io.rancher.loadbalancer.proxy-protocol.ports";
@@ -190,8 +186,6 @@ public class ServiceConstants {
     public static final String AUDIT_LOG_REMOVE_UNHEATLHY = "Removing unhealthy service instance";
     public static final String AUDIT_LOG_REMOVE_BAD = "Removing bad service instance";
     public static final String AUDIT_LOG_CREATE_EXTRA = "Creating extra service instance";
-
-    public static final String SERVICE_INDEX_DU_STRATEGY = "deploymentUnitBased";
 
     public static final String PROCESS_DATA_SERVICE_RECONCILE = "reconcileState";
 
