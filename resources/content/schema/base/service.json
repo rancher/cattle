@@ -188,6 +188,11 @@
              "attributes" : {
                 "scheduleUpdate" : true
             }
+        },
+        "finishUpgrade": {
+            "type": "boolean",
+            "required": false,
+            "nullable": true
         }
     },
     "resourceActions" : {
