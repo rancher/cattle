@@ -88,10 +88,10 @@ public class ServiceUtil {
     }
 
     @SuppressWarnings("unchecked")
-    public static Map<String, Map<Object, Object>> getServiceLaunchConfigsWithNames(Service service) {
+    public static Map<String, Map<String, Object>> getServiceLaunchConfigsWithNames(Service service) {
         Map<String, Object> originalData = new HashMap<>();
         originalData.putAll(DataUtils.getFields(service));
-        Map<String, Map<Object, Object>> launchConfigsWithNames = new HashMap<>();
+        Map<String, Map<String, Object>> launchConfigsWithNames = new HashMap<>();
 
         // put the primary config in
         launchConfigsWithNames.put(ServiceConstants.PRIMARY_LAUNCH_CONFIG_NAME,
@@ -209,57 +209,10 @@ public class ServiceUtil {
                         .contains(ServiceConstants.IMAGE_NONE);
     }
 
-    public static void upgradeServiceConfigs(Service service, InServiceUpgradeStrategy strategy, boolean rollback) {
-        updatePrimaryLaunchConfig(strategy, service, rollback);
-        updateSecondaryLaunchConfigs(strategy, service, rollback);
-    }
-
-    @SuppressWarnings("unchecked")
-    protected static void updateSecondaryLaunchConfigs(InServiceUpgradeStrategy strategy, Service service,
-            boolean rollback) {
-        Object newLaunchConfigs = null;
-        if (rollback) {
-            newLaunchConfigs = strategy.getPreviousSecondaryLaunchConfigs();
-        } else {
-            newLaunchConfigs = strategy.getSecondaryLaunchConfigs();
-            Map<String, Map<String, Object>> newLaunchConfigNames = new HashMap<>();
-            if (newLaunchConfigs != null) {
-                for (Map<String, Object> newLaunchConfig : (List<Map<String, Object>>) newLaunchConfigs) {
-                    newLaunchConfigNames.put(newLaunchConfig.get("name").toString(),
-                            newLaunchConfig);
-                }
-                Object oldLaunchConfigs = strategy.getPreviousSecondaryLaunchConfigs();
-                for (Map<String, Object> oldLaunchConfig : (List<Map<String, Object>>)oldLaunchConfigs) {
-                    Map<String, Object> newLaunchConfig = newLaunchConfigNames
-                            .get(oldLaunchConfig.get("name"));
-                    if (newLaunchConfig != null) {
-                        preserveOldRandomPorts(service, newLaunchConfig, oldLaunchConfig);
-                    }
-                }
-            }
-        }
-
-        DataAccessor.fields(service).withKey(ServiceConstants.FIELD_SECONDARY_LAUNCH_CONFIGS)
-                .set(newLaunchConfigs);
-    }
-
-    @SuppressWarnings("unchecked")
-    protected static void updatePrimaryLaunchConfig(InServiceUpgradeStrategy strategy, Service service, boolean rollback) {
-        Map<String, Object> newLaunchConfig = null;
-        if (rollback) {
-            newLaunchConfig = (Map<String, Object>) strategy.getPreviousLaunchConfig();
-        } else {
-            newLaunchConfig = (Map<String, Object>) strategy.getLaunchConfig();
-            Map<String, Object> oldLaunchConfig = (Map<String, Object>) strategy.getPreviousLaunchConfig();
-            preserveOldRandomPorts(service, newLaunchConfig, oldLaunchConfig);
-        }
-        DataAccessor.fields(service).withKey(ServiceConstants.FIELD_LAUNCH_CONFIG)
-                .set(newLaunchConfig);
-    }
-
-    protected static void preserveOldRandomPorts(Service service, Map<String, Object> newLaunchConfig, Map<String, Object> oldLaunchConfig) {
-        Map<Integer, PortSpec> oldPortMap = getServicePortsMap(service, oldLaunchConfig);
-        Map<Integer, PortSpec> newPortMap = getServicePortsMap(service, newLaunchConfig);
+    public static void preserveOldRandomPorts(Map<String, Object> newLaunchConfig,
+            Map<String, Object> oldLaunchConfig) {
+        Map<Integer, PortSpec> oldPortMap = getServicePortsMap(oldLaunchConfig);
+        Map<Integer, PortSpec> newPortMap = getServicePortsMap(newLaunchConfig);
 
         boolean changedNewPorts = false;
 
@@ -284,7 +237,7 @@ public class ServiceUtil {
     }
 
     @SuppressWarnings("unchecked")
-    protected static Map<Integer, PortSpec> getServicePortsMap(Service service, Map<String, Object> launchConfigData) {
+    protected static Map<Integer, PortSpec> getServicePortsMap(Map<String, Object> launchConfigData) {
         if (launchConfigData.get(InstanceConstants.FIELD_PORTS) == null) {
             return new LinkedHashMap<>();
         }
@@ -422,7 +375,7 @@ public class ServiceUtil {
                 for (String key : mergedConfig.keySet()) {
                     if (currentConfig.containsKey(key)) {
                         if (key.equalsIgnoreCase(InstanceConstants.FIELD_PORTS)) {
-                            preserveOldRandomPorts(service, mergedConfig, currentConfig);
+                            preserveOldRandomPorts(mergedConfig, currentConfig);
                         }
                         // if field triggers upgrade + value changed, trigger upgrade
                         if (upgradeTriggerFields.contains(key)
@@ -511,9 +464,9 @@ public class ServiceUtil {
                         secondaryLCTemp.remove(secName);
                     }
                 }
-                // add the rest
-                secondaryLaunchConfigs.addAll(secondaryLCTemp.values());
             }
+            // add the rest
+            secondaryLaunchConfigs.addAll(secondaryLCTemp.values());
 
             this.runUpgrade = runUpgrade;
         }
