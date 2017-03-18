@@ -13,7 +13,7 @@ import org.apache.commons.lang3.StringUtils;
 
 public class ServiceConstants {
 
-    public static final String DEFAULT_STACK_NAME = "default";
+    public static final String DEFAULT_STACK_NAME = "Default";
     public static final String KIND_SERVICE = "service";
     public static final String KIND_LOAD_BALANCER_SERVICE = "loadBalancerService";
     public static final String KIND_EXTERNAL_SERVICE = "externalService";
