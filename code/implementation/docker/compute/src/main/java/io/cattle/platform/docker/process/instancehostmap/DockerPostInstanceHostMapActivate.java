@@ -323,6 +323,9 @@ public class DockerPostInstanceHostMapActivate extends AbstractObjectProcessLogi
 
         List<String> publishedPorts = new ArrayList<>();
         for (Port port : getObjectManager().children(instance, Port.class)) {
+            if (port.getRemoved() != null) {
+                continue;
+            }
             createIgnoreCancel(port, null);
             if (port.getPublicPort() != null) {
                 publishedPorts.add(new PortSpec(port).toSpec());
