@@ -5,7 +5,6 @@ import static io.cattle.platform.core.model.tables.ServiceTable.*;
 import static io.cattle.platform.core.model.tables.VolumeTemplateTable.*;
 import io.cattle.platform.core.addon.LbConfig;
 import io.cattle.platform.core.constants.InstanceConstants;
-import io.cattle.platform.core.constants.LoadBalancerConstants;
 import io.cattle.platform.core.constants.NetworkConstants;
 import io.cattle.platform.core.constants.ServiceConstants;
 import io.cattle.platform.core.dao.LoadBalancerInfoDao;
@@ -147,7 +146,6 @@ public class ServiceDiscoveryComposeExportServiceImpl implements ServiceDiscover
                     populateVolumesForService(service, launchConfigName, composeServiceData);
                     addExtraComposeParameters(service, launchConfigName, composeServiceData);
                     populateSidekickLabels(service, composeServiceData, isPrimaryConfig);
-                    populateLoadBalancerServiceLabels(service, launchConfigName, composeServiceData);
                     populateSelectorServiceLabels(service, launchConfigName, composeServiceData);
                     populateLogConfig(cattleServiceData, composeServiceData);
                     populateTmpfs(cattleServiceData, composeServiceData);
@@ -292,45 +290,6 @@ public class ServiceDiscoveryComposeExportServiceImpl implements ServiceDiscover
                     composeServiceData.put("device_write_iops", deviceWriteIops);
                 }
             }
-        }
-    }
-
-    @SuppressWarnings("unchecked")
-    protected void populateLoadBalancerServiceLabels(Service service,
-            String launchConfigName, Map<String, Object> composeServiceData) {
-        // to support lb V1 export format
-        if (!ServiceUtil.isV1LB(service)) {
-            return;
-        }
-
-        Map<String, String> labels = new HashMap<>();
-        if (composeServiceData.get(InstanceConstants.FIELD_LABELS) != null) {
-            labels.putAll((HashMap<String, String>) composeServiceData.get(InstanceConstants.FIELD_LABELS));
-        }
-        // get all consumed services maps
-        List<? extends ServiceConsumeMap> consumedServiceMaps = consumeMapDao.findConsumedServices(service.getId());
-        // for each port, populate the label
-        for (ServiceConsumeMap map : consumedServiceMaps) {
-            Service consumedService = objectManager.loadResource(Service.class, map.getConsumedServiceId());
-            List<String> ports = DataAccessor.fieldStringList(map, LoadBalancerConstants.FIELD_LB_TARGET_PORTS);
-            String consumedServiceName = consumedService.getName();
-            if (!service.getStackId().equals(consumedService.getStackId())) {
-                Stack env = objectManager.loadResource(Stack.class,
-                        consumedService.getStackId());
-                consumedServiceName = env.getName() + "/" + consumedServiceName;
-            }
-            String labelName = ServiceConstants.LABEL_LB_TARGET + consumedServiceName;
-            StringBuilder bldr = new StringBuilder();
-            for (String port : ports) {
-                bldr.append(port).append(",");
-            }
-            if (bldr.length() > 0) {
-                labels.put(labelName, bldr.toString().substring(0, bldr.length() - 1));
-            }
-        }
-
-        if (!labels.isEmpty()) {
-            composeServiceData.put(InstanceConstants.FIELD_LABELS, labels);
         }
     }
 
