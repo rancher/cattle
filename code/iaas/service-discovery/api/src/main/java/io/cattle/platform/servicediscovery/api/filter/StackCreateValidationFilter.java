@@ -1,7 +1,9 @@
 package io.cattle.platform.servicediscovery.api.filter;
 
+import io.cattle.platform.core.constants.ServiceConstants;
 import io.cattle.platform.core.model.Stack;
 import io.cattle.platform.iaas.api.filter.common.AbstractDefaultResourceManagerFilter;
+import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.meta.ObjectMetaDataManager;
 import io.github.ibuildthecloud.gdapi.condition.Condition;
 import io.github.ibuildthecloud.gdapi.condition.ConditionType;
@@ -22,6 +24,8 @@ public class StackCreateValidationFilter extends AbstractDefaultResourceManagerF
 
     @Inject
     ResourceManagerLocator locator;
+    @Inject
+    ObjectManager objMgr;
 
     @Override
     public Class<?>[] getTypeClasses() {
@@ -48,5 +52,15 @@ public class StackCreateValidationFilter extends AbstractDefaultResourceManagerF
                     "name");
         }
         return super.create(type, request, next);
+    }
+
+    @Override
+    public Object delete(String type, String id, ApiRequest request, ResourceManager next) {
+        if (ServiceConstants.DEFAULT_STACK_NAME.equalsIgnoreCase(objMgr.loadResource(Stack.class, id).getName())) {
+            ValidationErrorCodes.throwValidationError(ValidationErrorCodes.INVALID_ACTION,
+                    "Default stack can not be removed");
+        }
+
+        return super.delete(type, id, request, next);
     }
 }
