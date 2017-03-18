@@ -7,6 +7,7 @@ import static io.cattle.platform.core.model.tables.VolumeTable.*;
 import static io.cattle.platform.core.model.tables.VolumeTemplateTable.*;
 import io.cattle.platform.allocator.service.AllocationHelper;
 import io.cattle.platform.configitem.version.ConfigItemStatusManager;
+import io.cattle.platform.core.addon.InServiceUpgradeStrategy;
 import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.constants.ServiceConstants;
@@ -647,8 +648,7 @@ public class ServiceDataManagerImpl implements ServiceDataManager {
         }
     }
 
-    @Override
-    public Pair<ServiceRevision, ServiceRevision> getCurrentAndPreviousRevisions(Service service) {
+    protected Pair<ServiceRevision, ServiceRevision> getCurrentAndPreviousRevisions(Service service) {
         ServiceRevision currentRevision = objectManager.findAny(ServiceRevision.class, SERVICE_REVISION.ID,
                 service.getRevisionId());
         ServiceRevision previousRevision = objectManager.findAny(ServiceRevision.class, SERVICE_REVISION.ID,
@@ -656,14 +656,12 @@ public class ServiceDataManagerImpl implements ServiceDataManager {
         return Pair.of(currentRevision, previousRevision);
     }
 
-    @Override
-    public ServiceRevision getCurrentRevision(Service service) {
+    protected ServiceRevision getCurrentRevision(Service service) {
         return objectManager.findAny(ServiceRevision.class, SERVICE_REVISION.ID,
                 service.getRevisionId());
     }
 
-    @Override
-    public Pair<Map<String, Object>, List<Map<String, Object>>> getPrimaryAndSecondaryConfigFromRevision(
+    protected Pair<Map<String, Object>, List<Map<String, Object>>> getPrimaryAndSecondaryConfigFromRevision(
             ServiceRevision revision, Service service) {
         Map<String, Object> primary = new HashMap<>();
         List<Map<String, Object>> secondary = new ArrayList<>();
@@ -852,7 +850,65 @@ public class ServiceDataManagerImpl implements ServiceDataManager {
             config.put(ServiceConstants.FIELD_DATA_VOLUMES_LAUNCH_CONFIG, volumesFromLaunchConfigs);
             config.remove(DockerInstanceConstants.FIELD_VOLUMES_FROM);
         }
-
         return config;
+    }
+
+    @Override
+    public Map<String, Object> getServiceDataForUpgrade(Service service, Map<String, Object> newPrimaryLaunchConfig,
+            List<Map<String,
+            Object>> newSecondaryLaunchConfigs) {
+        Map<String, Object> data = new HashMap<>();
+        if (service.getRevisionId() == null) {
+            createInitialServiceRevision(service);
+        }
+        ServiceRevision currentRevision = getCurrentRevision(service);
+        data.put(InstanceConstants.FIELD_PREVIOUS_REVISION_ID, currentRevision.getId());
+        ServiceRevision newRevision = createRevision(service, newPrimaryLaunchConfig,
+                newSecondaryLaunchConfigs, false);
+        data.put(InstanceConstants.FIELD_REVISION_ID, newRevision.getId());
+        data.put(ServiceConstants.FIELD_LAUNCH_CONFIG, newPrimaryLaunchConfig);
+        data.put(ServiceConstants.FIELD_SECONDARY_LAUNCH_CONFIGS, newSecondaryLaunchConfigs);
+        if (ServiceConstants.SERVICE_LIKE.contains(service.getKind())) {
+            data.put(ServiceConstants.FIELD_IS_UPGRADE, true);
+        }
+        return data;
+    }
+
+    @Override
+    public Map<String, Object> getServiceDataForRollback(Service service,
+            final io.cattle.platform.core.addon.ServiceRollback rollback) {
+        Pair<ServiceRevision, ServiceRevision> currentPreviousRevision = null;
+        if (rollback != null && !StringUtils.isEmpty(rollback.getRevisionId())) {
+            ServiceRevision currentRevision = getCurrentRevision(service);
+            ServiceRevision previousRevision = objectManager.findAny(ServiceRevision.class,
+                    SERVICE_REVISION.ID,
+                    rollback.getRevisionId());
+            currentPreviousRevision = Pair.of(currentRevision, previousRevision);
+        } else {
+            currentPreviousRevision = getCurrentAndPreviousRevisions(service);
+        }
+        if (currentPreviousRevision == null || currentPreviousRevision.getRight() == null) {
+            ValidationErrorCodes.throwValidationError(ValidationErrorCodes.MISSING_REQUIRED,
+                    "Failed to find revision to rollback to");
+        }
+        ServiceRevision previous = currentPreviousRevision.getRight();
+        ServiceRevision current = currentPreviousRevision.getLeft();
+        Pair<Map<String, Object>, List<Map<String, Object>>> primarySecondaryConfigs = getPrimaryAndSecondaryConfigFromRevision(
+                previous, service);
+
+        Map<String, Object> data = new HashMap<>();
+        data.put(ServiceConstants.FIELD_LAUNCH_CONFIG, primarySecondaryConfigs.getLeft());
+        data.put(ServiceConstants.FIELD_SECONDARY_LAUNCH_CONFIGS, primarySecondaryConfigs.getRight());
+        data.put(InstanceConstants.FIELD_REVISION_ID, previous.getId());
+        data.put(InstanceConstants.FIELD_PREVIOUS_REVISION_ID, current.getId());
+        return data;
+    }
+
+    @Override
+    public InServiceUpgradeStrategy getUpgradeStrategyFromServiceRevision(final Service service) {
+        Pair<ServiceRevision, ServiceRevision> currentPreviousRevision = getCurrentAndPreviousRevisions(service);
+        InServiceUpgradeStrategy strategy = ServiceUtil.getStrategy(service,
+                currentPreviousRevision, true);
+        return strategy;
     }
 }
