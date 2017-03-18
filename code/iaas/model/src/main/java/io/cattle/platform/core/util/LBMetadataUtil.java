@@ -25,7 +25,7 @@ public class LBMetadataUtil {
         public Integer priority = 0;
         public String backend_name;
         public String selector;
-        public String instance;
+        public String container;
 
         public MetadataPortRule(PortRule portRule, String service, String stack, String instanceName) {
             this.source_port = portRule.getSourcePort();
@@ -45,7 +45,7 @@ public class LBMetadataUtil {
             this.backend_name = portRule.getBackendName();
             this.priority = portRule.getPriority();
             this.selector = portRule.getSelector();
-            this.instance = instanceName;
+            this.container = instanceName;
         }
 
         public String getSelector() {
@@ -120,12 +120,12 @@ public class LBMetadataUtil {
             this.backend_name = backend_name;
         }
 
-        public String getInstance() {
-            return instance;
+        public String getContainer() {
+            return container;
         }
 
-        public void setInstance(String instance) {
-            this.instance = instance;
+        public void setContainer(String instance) {
+            this.container = instance;
         }
     }
 
