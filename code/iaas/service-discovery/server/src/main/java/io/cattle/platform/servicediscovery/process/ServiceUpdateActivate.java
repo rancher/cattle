@@ -6,6 +6,7 @@ import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.ServiceConstants;
 import io.cattle.platform.core.dao.ServiceExposeMapDao;
 import io.cattle.platform.core.model.Service;
+import io.cattle.platform.core.model.ServiceRevision;
 import io.cattle.platform.core.util.ServiceUtil;
 import io.cattle.platform.engine.handler.HandlerResult;
 import io.cattle.platform.engine.process.ProcessInstance;
@@ -21,6 +22,8 @@ import io.github.ibuildthecloud.gdapi.id.IdFormatter;
 
 import javax.inject.Inject;
 import javax.inject.Named;
+
+import org.apache.commons.lang3.tuple.Pair;
 
 /**
  * This handler is responsible for activating the service as well as restoring the active service to its scale
@@ -68,9 +71,13 @@ public class ServiceUpdateActivate extends AbstractObjectProcessHandler {
         activity.run(service, process.getName(), getMessage(process.getName()), new Runnable() {
             @Override
             public void run() {
+                // v2 upgrade
                 if (ServiceConstants.SERVICE_LIKE.contains(service.getKind())
                         && service.getIsUpgrade()) {
-                    InServiceUpgradeStrategy strategy = serviceDataMgr.getUpgradeStrategyFromServiceRevision(service);
+                    Pair<ServiceRevision, ServiceRevision> currentPreviousRevision = serviceDataMgr
+                            .getCurrentAndPreviousRevisions(service);
+                    InServiceUpgradeStrategy strategy = ServiceUtil.getStrategy(service,
+                            currentPreviousRevision, true);
                     if (service.getState().equalsIgnoreCase(CommonStatesConstants.UPDATING_ACTIVE)) {
                         upgradeMgr.upgrade(service, strategy, service.getState(), true,
                                 ServiceUtil.isImagePrePull(service));

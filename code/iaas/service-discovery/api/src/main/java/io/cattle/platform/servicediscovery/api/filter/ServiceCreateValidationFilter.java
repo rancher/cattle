@@ -6,6 +6,7 @@ import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.constants.ServiceConstants;
 import io.cattle.platform.core.model.Service;
+import io.cattle.platform.core.model.ServiceRevision;
 import io.cattle.platform.core.model.Stack;
 import io.cattle.platform.core.util.PortSpec;
 import io.cattle.platform.core.util.ServiceUtil;
@@ -83,6 +84,8 @@ public class ServiceCreateValidationFilter extends AbstractDefaultResourceManage
 
         validatePorts(service, type, request);
 
+        request = setServiceIndexStrategy(type, request);
+
         request = setLBServiceEnvVarsAndHealthcheck(type, service, request);
 
         validateLbConfig(request, type);
@@ -125,6 +128,18 @@ public class ServiceCreateValidationFilter extends AbstractDefaultResourceManage
                 }
             }
         }
+    }
+
+    public ApiRequest setServiceIndexStrategy(String type, ApiRequest request) {
+        if (!type.equalsIgnoreCase(ServiceConstants.KIND_SERVICE)) {
+            return request;
+        }
+        Map<String, Object> data = CollectionUtils.toMap(request.getRequestObject());
+        data.put(ServiceConstants.FIELD_SERVICE_INDEX_STRATEGY,
+                ServiceConstants.SERVICE_INDEX_DU_STRATEGY);
+
+        request.setRequestObject(data);
+        return request;
     }
 
     @SuppressWarnings("unchecked")
@@ -323,12 +338,28 @@ public class ServiceCreateValidationFilter extends AbstractDefaultResourceManage
             return request;
         }
         if (upgrade.isRunUpgrade()) {
-            data.putAll(svcDataMgr.getServiceDataForUpgrade(service, upgrade.getPrimaryLaunchConfig(),
-                    upgrade.getSecondaryLaunchConfigs()));
+            ServiceRevision oldRevision = svcDataMgr.getCurrentRevision(service);
+            if (oldRevision != null) {
+                data.put(InstanceConstants.FIELD_PREVIOUS_REVISION_ID, oldRevision.getId());
+            }
+            ServiceRevision newRevision = svcDataMgr.createRevision(service, upgrade.getPrimaryLaunchConfig(),
+                    upgrade.getSecondaryLaunchConfigs(), false);
+            data.put(InstanceConstants.FIELD_REVISION_ID, newRevision.getId());
+            data.put(ServiceConstants.FIELD_LAUNCH_CONFIG, upgrade.getPrimaryLaunchConfig());
+            data.put(ServiceConstants.FIELD_SECONDARY_LAUNCH_CONFIGS, upgrade.getSecondaryLaunchConfigs());
+            request.setRequestObject(data);
+            setForUpgrade(service);
         }
-        request.setRequestObject(data);
 
         return request;
+    }
+
+    protected void setForUpgrade(Service service) {
+        if (ServiceConstants.SERVICE_LIKE.contains(service.getKind())) {
+            Map<String, Object> data = new HashMap<>();
+            data.put(ServiceConstants.FIELD_IS_UPGRADE, true);
+            objectManager.setFields(objectManager.reload(service), data);
+        }
     }
 
     protected void validateLaunchConfigs(Service service, ApiRequest request) {

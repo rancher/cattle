@@ -108,15 +108,15 @@ public class UpgradeManagerImpl implements UpgradeManager {
 
         Map<String, Pair<DeploymentUnit, List<Instance>>> toUpgrade = getDeploymentUnits(
                 service,
-                Type.ToUpgrade, strategy, allUnits);
+                Type.ToUpgrade, isUpgrade, strategy, allUnits);
 
         Map<String, Pair<DeploymentUnit, List<Instance>>> upgradedUnmanaged = getDeploymentUnits(
                 service,
-                Type.UpgradedUnmanaged, strategy, allUnits);
+                Type.UpgradedUnmanaged, isUpgrade, strategy, allUnits);
 
         Map<String, Pair<DeploymentUnit, List<Instance>>> toCleanup = getDeploymentUnits(
                 service,
-                Type.ToCleanup, strategy, allUnits);
+                Type.ToCleanup, isUpgrade, strategy, allUnits);
 
         // upgrade deployment units
         upgradeDeploymentUnits(service, toUpgrade, upgradedUnmanaged,
@@ -214,11 +214,18 @@ public class UpgradeManagerImpl implements UpgradeManager {
         }
     }
 
-    protected Map<String, Pair<DeploymentUnit, List<Instance>>> getDeploymentUnits(Service service, Type type, InServiceUpgradeStrategy strategy,
-            Map<String, DeploymentUnit> allUnits) {
-        Map<String, Pair<String, Map<String, Object>>> preUpgradeLaunchConfigNamesToVersion = strategy
-                .getNameToVersionToConfig(service.getName(), true);
-        Map<String, Pair<String, Map<String, Object>>> postUpgradeLaunchConfigNamesToVersion = strategy.getNameToVersionToConfig(service.getName(), false);
+    protected Map<String, Pair<DeploymentUnit, List<Instance>>> getDeploymentUnits(Service service, Type type, boolean isUpgrade,
+            InServiceUpgradeStrategy strategy, Map<String, DeploymentUnit> allUnits) {
+        Map<String, Pair<String, Map<String, Object>>> preUpgradeLaunchConfigNamesToVersion = new HashMap<>();
+        Map<String, Pair<String, Map<String, Object>>> postUpgradeLaunchConfigNamesToVersion = new HashMap<>();
+        // getting an original config set (to cover the scenario when config could be removed along with the upgrade)
+        if (isUpgrade) {
+            postUpgradeLaunchConfigNamesToVersion.putAll(strategy.getNameToVersionToConfig(service.getName(), false));
+            preUpgradeLaunchConfigNamesToVersion.putAll(strategy.getNameToVersionToConfig(service.getName(), true));
+        } else {
+            postUpgradeLaunchConfigNamesToVersion.putAll(strategy.getNameToVersionToConfig(service.getName(), true));
+            preUpgradeLaunchConfigNamesToVersion.putAll(strategy.getNameToVersionToConfig(service.getName(), false));
+        }
         Map<String, Pair<DeploymentUnit, List<Instance>>> deploymentUnitInstances = new HashMap<>();
         // iterate over pre-upgraded state
         // get desired version from post upgrade state
@@ -411,7 +418,6 @@ public class UpgradeManagerImpl implements UpgradeManager {
         if (reconcile) {
             deploymentMgr.activate(service);
         }
-        objectManager.setFields(objectManager.reload(service), ServiceConstants.FIELD_FINISH_UPGRADE, false);
     }
 
     protected void waitForHealthyState(final Service service, final String currentProcess,
