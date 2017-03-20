@@ -1,7 +1,6 @@
 package io.cattle.platform.core.dao;
 
 import io.cattle.platform.core.model.DeploymentUnit;
-import io.cattle.platform.core.model.Host;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.Service;
 import io.cattle.platform.core.model.ServiceExposeMap;
@@ -27,31 +26,19 @@ public interface ServiceExposeMapDao {
 
     List<? extends Instance> listServiceManagedInstances(Service service);
 
-    List<? extends Instance> listServiceManagedInstances(Service service, String launchConfigName);
-
     ServiceExposeMap createServiceInstanceMap(Service service, Instance instance, boolean managed);
-
-    ServiceExposeMap getServiceIpExposeMap(Service service, String ipAddress);
 
     List<? extends Service> getActiveServices(long accountId);
 
     List<? extends ServiceExposeMap> getUnmanagedServiceInstanceMapsToRemove(long serviceId);
 
-    Host getHostForInstance(long instanceId);
-
     List<? extends Instance> getServiceInstancesSetForUpgrade(long serviceId);
-
-    List<? extends Instance> getInstancesToUpgrade(Service service, String launchConfigName, String toVersion);
-
-    List<? extends Instance> getInstancesToCleanup(Service service, String launchConfigName, String toVersion);
-
-    List<? extends Instance> getUpgradedUnmanagedInstances(Service service, String launchConfigName, String toVersion);
 
     Integer getCurrentScale(long serviceId);
 
     List<? extends Instance> listServiceManagedInstancesAll(Service service);
 
-    List<Pair<Instance, ServiceExposeMap>> listDeploymentUnitInstancesExposeMaps(Service service, DeploymentUnit unit);
+    List<Pair<Instance, ServiceExposeMap>> listDeploymentUnitInstances(Service service, DeploymentUnit unit, boolean forCurrentRevision);
 
     ServiceExposeMap createServiceInstanceMap(Service service, Instance instance, boolean managed, String dnsPrefix);
     

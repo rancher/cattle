@@ -158,17 +158,6 @@ public interface DeploymentUnit extends java.io.Serializable {
 	public java.lang.Long getServiceId();
 
 	/**
-	 * Setter for <code>cattle.deployment_unit.health_state</code>.
-	 */
-	public void setHealthState(java.lang.String value);
-
-	/**
-	 * Getter for <code>cattle.deployment_unit.health_state</code>.
-	 */
-	@javax.persistence.Column(name = "health_state", length = 128)
-	public java.lang.String getHealthState();
-
-	/**
 	 * Setter for <code>cattle.deployment_unit.cleanup</code>.
 	 */
 	public void setCleanup(java.lang.Boolean value);
@@ -178,6 +167,17 @@ public interface DeploymentUnit extends java.io.Serializable {
 	 */
 	@javax.persistence.Column(name = "cleanup", nullable = false, precision = 1)
 	public java.lang.Boolean getCleanup();
+
+	/**
+	 * Setter for <code>cattle.deployment_unit.revision_id</code>.
+	 */
+	public void setRevisionId(java.lang.Long value);
+
+	/**
+	 * Getter for <code>cattle.deployment_unit.revision_id</code>.
+	 */
+	@javax.persistence.Column(name = "revision_id", precision = 19)
+	public java.lang.Long getRevisionId();
 
 	// -------------------------------------------------------------------------
 	// FROM and INTO
