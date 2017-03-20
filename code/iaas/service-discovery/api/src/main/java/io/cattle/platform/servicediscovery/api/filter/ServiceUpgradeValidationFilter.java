@@ -4,13 +4,14 @@ import io.cattle.platform.core.addon.InServiceUpgradeStrategy;
 import io.cattle.platform.core.addon.ServiceUpgrade;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.constants.ServiceConstants;
+import io.cattle.platform.core.dao.ServiceDao;
 import io.cattle.platform.core.model.Service;
 import io.cattle.platform.core.util.ServiceUtil;
+import io.cattle.platform.core.util.ServiceUtil.RevisionData;
 import io.cattle.platform.iaas.api.filter.common.AbstractDefaultResourceManagerFilter;
 import io.cattle.platform.json.JsonMapper;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.util.DataAccessor;
-import io.cattle.platform.servicediscovery.api.service.ServiceDataManager;
 import io.cattle.platform.storage.api.filter.ExternalTemplateInstanceFilter;
 import io.cattle.platform.storage.service.StorageService;
 import io.cattle.platform.util.type.CollectionUtils;
@@ -41,7 +42,7 @@ public class ServiceUpgradeValidationFilter extends AbstractDefaultResourceManag
     @Inject
     StorageService storageService;
     @Inject
-    ServiceDataManager svcDataMgr;
+    ServiceDao svcDao;
 
     @Override
     public Class<?>[] getTypeClasses() {
@@ -60,22 +61,18 @@ public class ServiceUpgradeValidationFilter extends AbstractDefaultResourceManag
     @Override
     public Object resourceAction(String type, ApiRequest request, ResourceManager next) {
         if (request.getAction().equals(ServiceConstants.ACTION_SERVICE_UPGRADE)) {
-            Service service = objectManager.loadResource(Service.class, request.getId());
-            ServiceUpgrade upgrade = jsonMapper.convertValue(request.getRequestObject(),
-                    ServiceUpgrade.class);
-
-            InServiceUpgradeStrategy strategy = upgrade.getInServiceStrategy();
-
-            processInServiceUpgradeStrategy(request, service, upgrade, strategy);
+            processInServiceUpgradeStrategy(request);
         }
 
         return super.resourceAction(type, request, next);
     }
 
     @SuppressWarnings("unchecked")
-    protected void processInServiceUpgradeStrategy(ApiRequest request, Service service, ServiceUpgrade upgrade,
-            InServiceUpgradeStrategy strategy) {
-        strategy = finalizeUpgradeStrategy(service, strategy);
+    protected void processInServiceUpgradeStrategy(ApiRequest request) {
+        Service service = objectManager.loadResource(Service.class, request.getId());
+        ServiceUpgrade upgrade = jsonMapper.convertValue(request.getRequestObject(),
+                ServiceUpgrade.class);
+        InServiceUpgradeStrategy strategy = finalizeUpgradeStrategy(service, upgrade.getInServiceStrategy());
 
         Object currentConfig = DataAccessor.field(service, ServiceConstants.FIELD_LAUNCH_CONFIG,
                     Object.class);
@@ -101,27 +98,37 @@ public class ServiceUpgradeValidationFilter extends AbstractDefaultResourceManag
             }
         }
 
-        Map<String, Object> data = svcDataMgr.getServiceDataForUpgrade(service, newLaunchConfig,
-                newSecondaryLaunchConfigs);
+        Map<String, Object> newData = new HashMap<>();
+        newData.put(ServiceConstants.FIELD_LAUNCH_CONFIG, newLaunchConfig);
+        newData.put(ServiceConstants.FIELD_SECONDARY_LAUNCH_CONFIGS, newSecondaryLaunchConfigs);
+
+        RevisionData newRevision = svcDao.createServiceRevision(service, newData, true);
+        Map<String, Object> data = new HashMap<>();
+        data.putAll(newRevision.getConfig());
+        data.put(InstanceConstants.FIELD_REVISION_ID, newRevision.getRevisionId());
+        data.put(InstanceConstants.FIELD_PREVIOUS_REVISION_ID, service.getRevisionId());
+        data.put(ServiceConstants.FIELD_IS_UPGRADE, true);
+        data.put(ServiceConstants.FIELD_BATCHSIZE, strategy.getBatchSize());
+        data.put(ServiceConstants.FIELD_INTERVAL_MILLISEC, strategy.getIntervalMillis());
+        data.put(ServiceConstants.FIELD_START_FIRST_ON_UPGRADE, strategy.getStartFirst());
         objectManager.setFields(objectManager.reload(service), data);
     }
 
-    protected void setVersion(InServiceUpgradeStrategy upgrade) {
-        String version = io.cattle.platform.util.resource.UUID.randomUUID().toString();
+    protected void setForceUpgrae(InServiceUpgradeStrategy upgrade) {
         if (upgrade.getSecondaryLaunchConfigs() != null) {
             for (Object launchConfigObj : upgrade.getSecondaryLaunchConfigs()) {
-                setLaunchConfigVersion(version, launchConfigObj);
+                setForceUpgrade(launchConfigObj);
             }
         }
         if (upgrade.getLaunchConfig() != null) {
-            setLaunchConfigVersion(version, upgrade.getLaunchConfig());
+            setForceUpgrade(upgrade.getLaunchConfig());
         }
     }
 
     @SuppressWarnings("unchecked")
-    protected void setLaunchConfigVersion(String version, Object launchConfigObj) {
+    protected void setForceUpgrade(Object launchConfigObj) {
         Map<String, Object> launchConfig = (Map<String, Object>) launchConfigObj;
-        launchConfig.put(ServiceConstants.FIELD_VERSION, version);
+        launchConfig.put(ServiceConstants.FIELD_FORCE_UPGRADE, true);
     }
 
     @SuppressWarnings("unchecked")
@@ -131,11 +138,11 @@ public class ServiceUpgradeValidationFilter extends AbstractDefaultResourceManag
                     "LaunchConfig/secondaryLaunchConfigs need to be specified for inService strategy");
         }
 
-        if (DataAccessor.fieldBool(service, ServiceConstants.FIELD_SERVICE_RETAIN_IP)) {
+        if (DataAccessor.fieldBool(service, ServiceConstants.FIELD_RETAIN_IP)) {
             if (strategy.getStartFirst()) {
                 ValidationErrorCodes.throwValidationError(ValidationErrorCodes.INVALID_OPTION,
                         "StartFirst option can't be used for service with "
-                                + ServiceConstants.FIELD_SERVICE_RETAIN_IP + " field set");
+                                + ServiceConstants.FIELD_RETAIN_IP + " field set");
             }
         }
 
@@ -169,8 +176,7 @@ public class ServiceUpgradeValidationFilter extends AbstractDefaultResourceManag
             }
         }
 
-        // set new version on the configs-to-upgrade
-        setVersion(strategy);
+        setForceUpgrae(strategy);
 
         // add launch configs that don't need to be upgraded
         // they will get saved with the old version value
@@ -200,14 +206,12 @@ public class ServiceUpgradeValidationFilter extends AbstractDefaultResourceManag
                 continue;
             }
 
-            if (service.getSelectorContainer() == null
-                    && StringUtils.equalsIgnoreCase(ServiceConstants.IMAGE_NONE, imageUuid.toString())) {
-                it.remove();
+            if (StringUtils.equalsIgnoreCase(ServiceConstants.IMAGE_NONE, imageUuid.toString())) {
+                continue;
             }
-            else {
-                String fullImageName = ExternalTemplateInstanceFilter.getImageUuid(imageUuid.toString(), storageService);
-                ((Map<String, Object>) lc).put(InstanceConstants.FIELD_IMAGE_UUID, fullImageName);
-            }
+
+            String fullImageName = ExternalTemplateInstanceFilter.getImageUuid(imageUuid.toString(), storageService);
+            ((Map<String, Object>) lc).put(InstanceConstants.FIELD_IMAGE_UUID, fullImageName);
         }
 
         Map<String, Object> mapped = CollectionUtils.toMap(finalizedPrimary);
@@ -228,10 +232,6 @@ public class ServiceUpgradeValidationFilter extends AbstractDefaultResourceManag
             Map<String, Map<String, Object>> lCsToUpdateInitial) {
         Map<String, Map<String, Object>> lCsToUpdateFinal = new HashMap<>();
         for (String lcNameToUpdate : lCsToUpdateInitial.keySet()) {
-            if (serviceLCs.containsKey(lcNameToUpdate)) {
-                ServiceUtil.preserveOldRandomPorts(lCsToUpdateInitial.get(lcNameToUpdate),
-                        serviceLCs.get(lcNameToUpdate));
-            }
             finalizeLCNamesToUpdate(serviceLCs, lCsToUpdateFinal,
                     Pair.of(lcNameToUpdate, lCsToUpdateInitial.get(lcNameToUpdate)));
         }

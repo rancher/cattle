@@ -68,8 +68,7 @@ public interface ServiceDiscoveryService extends AnnotatedEventListener {
 
     void incrementExecutionCount(Object object);
 
-    void resetUpgradeFlag(Service service);
-
     void setPorts(Service service);
 
+    void resetUpgradeFlag(Service service);
 }

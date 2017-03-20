@@ -1,12 +1,16 @@
 package io.cattle.platform.servicediscovery.process;
 
-import io.cattle.platform.core.constants.HealthcheckConstants;
+import io.cattle.platform.core.constants.AgentConstants;
+import io.cattle.platform.core.constants.ExternalEventConstants;
+import io.cattle.platform.core.constants.HostConstants;
+import io.cattle.platform.core.constants.LabelConstants;
 import io.cattle.platform.core.constants.ServiceConstants;
 import io.cattle.platform.core.model.Service;
 import io.cattle.platform.engine.handler.HandlerResult;
+import io.cattle.platform.engine.handler.ProcessPostListener;
 import io.cattle.platform.engine.process.ProcessInstance;
 import io.cattle.platform.engine.process.ProcessState;
-import io.cattle.platform.process.common.handler.AbstractObjectProcessHandler;
+import io.cattle.platform.process.common.handler.AbstractObjectProcessLogic;
 import io.cattle.platform.servicediscovery.service.DeploymentManager;
 import io.cattle.platform.servicediscovery.service.lookups.ServiceLookup;
 
@@ -18,8 +22,7 @@ import javax.inject.Inject;
 import javax.inject.Named;
 
 @Named
-public class ServicesReconcileTrigger extends AbstractObjectProcessHandler {
-
+public class ServiceReconcileTrigger extends AbstractObjectProcessLogic implements ProcessPostListener {
     @Inject
     DeploymentManager deploymentManager;
 
@@ -28,9 +31,16 @@ public class ServicesReconcileTrigger extends AbstractObjectProcessHandler {
 
     @Override
     public String[] getProcessNames() {
-        return new String[] { ServiceConstants.PROCESS_DU_UPDATE,
+        return new String[] {
+                HostConstants.PROCESS_ACTIVATE,
+                LabelConstants.PROCESS_HOSTLABELMAP_CREATE,
+                LabelConstants.PROCESS_HOSTLABELMAP_REMOVE,
+                AgentConstants.PROCESS_FINISH_RECONNECT,
+                ExternalEventConstants.PROCESS_EXTERNAL_EVENT_CREATE,
+                ServiceConstants.PROCESS_DU_UPDATE,
                 ServiceConstants.PROCESS_SERVICE_UPDATE,
-                HealthcheckConstants.PROCESS_UPDATE_UNHEALTHY };
+                ServiceConstants.PROCESS_DU_ERROR
+        };
     }
 
     @Override

@@ -1,7 +1,6 @@
 package io.cattle.platform.servicediscovery.process;
 
 import io.cattle.platform.activity.ActivityService;
-import io.cattle.platform.core.addon.InServiceUpgradeStrategy;
 import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.ServiceConstants;
 import io.cattle.platform.core.dao.ServiceExposeMapDao;
@@ -68,16 +67,14 @@ public class ServiceUpdateActivate extends AbstractObjectProcessHandler {
         activity.run(service, process.getName(), getMessage(process.getName()), new Runnable() {
             @Override
             public void run() {
-                if (ServiceConstants.SERVICE_LIKE.contains(service.getKind())
-                        && service.getIsUpgrade()) {
-                    InServiceUpgradeStrategy strategy = serviceDataMgr.getUpgradeStrategyFromServiceRevision(service);
+                if (ServiceConstants.SERVICE_LIKE.contains(service.getKind())) {
+                    boolean sleep = service.getIsUpgrade();
                     if (service.getState().equalsIgnoreCase(CommonStatesConstants.UPDATING_ACTIVE)) {
-                        upgradeMgr.upgrade(service, strategy, service.getState(), true,
+                        upgradeMgr.upgrade(service, service.getState(), sleep,
                                 ServiceUtil.isImagePrePull(service));
                     } else {
-                        upgradeMgr.upgrade(service, strategy, service.getState(), false, false);
+                        upgradeMgr.upgrade(service, service.getState(), sleep, false);
                     }
-                    sdSvc.resetUpgradeFlag(service);
                 }
                 deploymentMgr.activate(service);
             }

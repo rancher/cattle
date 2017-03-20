@@ -10,6 +10,7 @@ import static io.cattle.platform.core.model.tables.InstanceTable.*;
 import static io.cattle.platform.core.model.tables.ServiceConsumeMapTable.*;
 import static io.cattle.platform.core.model.tables.ServiceExposeMapTable.*;
 import static io.cattle.platform.core.model.tables.ServiceIndexTable.*;
+import static io.cattle.platform.core.model.tables.ServiceRevisionTable.*;
 import static io.cattle.platform.core.model.tables.ServiceTable.*;
 import static io.cattle.platform.core.model.tables.StackTable.*;
 import io.cattle.platform.core.addon.HealthcheckState;
@@ -29,6 +30,7 @@ import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.Service;
 import io.cattle.platform.core.model.ServiceExposeMap;
 import io.cattle.platform.core.model.ServiceIndex;
+import io.cattle.platform.core.model.ServiceRevision;
 import io.cattle.platform.core.model.Stack;
 import io.cattle.platform.core.model.tables.HealthcheckInstanceHostMapTable;
 import io.cattle.platform.core.model.tables.HostTable;
@@ -40,18 +42,22 @@ import io.cattle.platform.core.model.tables.records.InstanceRecord;
 import io.cattle.platform.core.model.tables.records.ServiceIndexRecord;
 import io.cattle.platform.core.model.tables.records.ServiceRecord;
 import io.cattle.platform.core.model.tables.records.StackRecord;
+import io.cattle.platform.core.util.ServiceUtil;
+import io.cattle.platform.core.util.ServiceUtil.RevisionData;
 import io.cattle.platform.db.jooq.dao.impl.AbstractJooqDao;
 import io.cattle.platform.db.jooq.mapper.MultiRecordMapper;
 import io.cattle.platform.json.JsonMapper;
 import io.cattle.platform.lock.LockCallback;
 import io.cattle.platform.lock.LockManager;
 import io.cattle.platform.object.ObjectManager;
+import io.cattle.platform.object.meta.ObjectMetaDataManager;
 import io.cattle.platform.object.util.DataAccessor;
 import io.github.ibuildthecloud.gdapi.id.IdFormatter;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -360,6 +366,24 @@ public class ServiceDaoImpl extends AbstractJooqDao implements ServiceDao {
     }
 
     @Override
+    public List<DeploymentUnit> getDeploymentUnitsForRevision(Service service, boolean currentRevision) {
+        Condition condition = null;
+        if (currentRevision) {
+            condition = DEPLOYMENT_UNIT.REVISION_ID.eq(service.getRevisionId());
+        } else {
+            condition = DEPLOYMENT_UNIT.REVISION_ID.ne(service.getRevisionId());
+        }
+        return create()
+                .select(DEPLOYMENT_UNIT.fields())
+                .from(DEPLOYMENT_UNIT)
+                .where(DEPLOYMENT_UNIT.SERVICE_ID.eq(service.getId())
+                .and(condition)
+                .and(DEPLOYMENT_UNIT.REMOVED.isNull())
+                .and(DEPLOYMENT_UNIT.STATE.notIn(CommonStatesConstants.REMOVING)))
+                .fetchInto(DeploymentUnitRecord.class);
+    }
+
+    @Override
     public List<? extends Service> getServicesOnHost(long hostId) {
         return create().select(SERVICE.fields())
                 .from(SERVICE)
@@ -494,7 +518,7 @@ public class ServiceDaoImpl extends AbstractJooqDao implements ServiceDao {
 
     @Override
     public DeploymentUnit createDeploymentUnit(long accountId, Long serviceId, long stackId,
-            Map<String, String> labels, String serviceIndex) {
+            Map<String, String> labels, String serviceIndex, Long revisionId) {
         Map<String, Object> params = new HashMap<>();
         params.put("accountId", accountId);
         params.put("uuid", io.cattle.platform.util.resource.UUID.randomUUID().toString());
@@ -505,6 +529,7 @@ public class ServiceDaoImpl extends AbstractJooqDao implements ServiceDao {
         if (labels != null) {
             params.put(InstanceConstants.FIELD_LABELS, labels);
         }
+        params.put(InstanceConstants.FIELD_REVISION_ID, revisionId);
         return objectManager.create(DeploymentUnit.class, params);
     }
 
@@ -546,4 +571,48 @@ public class ServiceDaoImpl extends AbstractJooqDao implements ServiceDao {
                         .and(SERVICE_EXPOSE_MAP.SERVICE_ID.eq(service.getId()))
                         .fetchInto(InstanceRecord.class);
     }
+
+    @Override
+    public void cleanupServiceRevisions(Service service) {
+        List<ServiceRevision> revisions = objectManager.find(ServiceRevision.class, SERVICE_REVISION.SERVICE_ID,
+                service.getId(),
+                SERVICE_REVISION.REMOVED, null);
+        for (ServiceRevision revision : revisions) {
+            Map<String, Object> params = new HashMap<>();
+            params.put(ObjectMetaDataManager.REMOVED_FIELD, new Date());
+            params.put(ObjectMetaDataManager.REMOVE_TIME_FIELD, new Date());
+            params.put(ObjectMetaDataManager.STATE_FIELD, CommonStatesConstants.REMOVED);
+            objectManager.setFields(revision, params);
+        }
+    }
+
+    @Override
+    public RevisionData createServiceRevision(Service service, Map<String, Object> serviceData, boolean force) {
+        boolean isFirstRevision = service.getRevisionId() == null;
+        ServiceRevision revision = objectManager.findAny(ServiceRevision.class, SERVICE_REVISION.SERVICE_ID,
+                service.getId(),
+                SERVICE_REVISION.REMOVED, null);
+        RevisionData revisionData = null;
+        if ((revision != null && !isFirstRevision) || (revision == null && isFirstRevision)) {
+            ServiceRevision currentRevision = objectManager
+                    .loadResource(ServiceRevision.class, service.getRevisionId());
+            revisionData = ServiceUtil.generateNewRevisionData(service, currentRevision,
+                    serviceData);
+            if (revisionData.isUpdate() || revisionData.isUpgrade() || force) {
+                Map<String, Object> data = new HashMap<>();
+                data.put(InstanceConstants.FIELD_SERVICE_ID, service.getId());
+                data.put(ObjectMetaDataManager.ACCOUNT_FIELD, service.getAccountId());
+                Map<String, Object> revisionConfig = revisionData.getConfig();
+                revisionConfig.remove(ServiceConstants.FIELD_SCALE);
+                revisionConfig.remove(ServiceConstants.FIELD_SCALE_INCREMENT);
+                revisionConfig.remove(ServiceConstants.FIELD_SCALE_MIN);
+                revisionConfig.remove(ServiceConstants.FIELD_SCALE_MAX);
+                data.put(InstanceConstants.FIELD_REVISION_CONFIG, revisionConfig);
+                revision = objectManager.create(ServiceRevision.class, data);
+                revisionData.setRevisionId(revision.getId());
+            }
+        }
+        return revisionData;
+    }
+
 }

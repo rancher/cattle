@@ -5,11 +5,12 @@ import io.cattle.platform.core.addon.PortRule;
 import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.constants.ServiceConstants;
+import io.cattle.platform.core.dao.ServiceDao;
 import io.cattle.platform.core.model.Service;
 import io.cattle.platform.core.model.Stack;
 import io.cattle.platform.core.util.PortSpec;
 import io.cattle.platform.core.util.ServiceUtil;
-import io.cattle.platform.core.util.ServiceUtil.UpgradedConfig;
+import io.cattle.platform.core.util.ServiceUtil.RevisionData;
 import io.cattle.platform.iaas.api.filter.common.AbstractDefaultResourceManagerFilter;
 import io.cattle.platform.json.JsonMapper;
 import io.cattle.platform.object.ObjectManager;
@@ -49,6 +50,8 @@ public class ServiceCreateValidationFilter extends AbstractDefaultResourceManage
     JsonMapper jsonMapper;
     @Inject
     ServiceDataManager svcDataMgr;
+    @Inject
+    ServiceDao svcDao;
 
     private static final int LB_HEALTH_CHECK_PORT = 42;
 
@@ -87,7 +90,16 @@ public class ServiceCreateValidationFilter extends AbstractDefaultResourceManage
 
         validateLbConfig(request, type);
 
-        return super.create(type, request, next);
+        Object svcObj = super.create(type, request, next);
+
+        RevisionData revision = svcDao.createServiceRevision((Service) svcObj,
+                CollectionUtils.toMap(request.getRequestObject()), true);
+        if (revision.getRevisionId() != null) {
+            objectManager.setFields(svcObj, InstanceConstants.FIELD_REVISION_ID, revision.getRevisionId(),
+                    ServiceConstants.FIELD_IS_UPGRADE, revision.isUpgrade());
+        }
+
+        return svcObj;
     }
 
     @SuppressWarnings("unchecked")
@@ -307,27 +319,18 @@ public class ServiceCreateValidationFilter extends AbstractDefaultResourceManage
     }
 
     protected ApiRequest setForUpgrade(Service service, ApiRequest request) {
-        Map<String, Object> data = CollectionUtils.toMap(request.getRequestObject());
-        List<Map<String, Object>> launchConfigs = populateLaunchConfigs(service, request);
-        List<Map<String, Object>> secondary = new ArrayList<>();
-        Map<String, Object> primary = null;
-        for (Map<String, Object> lc : launchConfigs) {
-            if (!lc.containsKey("name")) {
-                primary = lc;
-            } else {
-                secondary.add(lc);
-            }
-        }
-        UpgradedConfig upgrade = ServiceUtil.mergeLaunchConfigs(service, primary, secondary);
-        if (upgrade == null) {
+        RevisionData newRevision = svcDao.createServiceRevision(service,
+                CollectionUtils.toMap(request.getRequestObject()),
+                false);
+        if (newRevision.getRevisionId() == null) {
             return request;
         }
-        if (upgrade.isRunUpgrade()) {
-            data.putAll(svcDataMgr.getServiceDataForUpgrade(service, upgrade.getPrimaryLaunchConfig(),
-                    upgrade.getSecondaryLaunchConfigs()));
-        }
+        Map<String, Object> data = new HashMap<>();
+        data.putAll(newRevision.getConfig());
+        data.put(InstanceConstants.FIELD_REVISION_ID, newRevision.getRevisionId());
+        data.put(InstanceConstants.FIELD_PREVIOUS_REVISION_ID, service.getRevisionId());
+        data.put(ServiceConstants.FIELD_IS_UPGRADE, newRevision.isUpgrade());
         request.setRequestObject(data);
-
         return request;
     }
 

@@ -14,17 +14,26 @@ public interface DeploymentUnitInstance {
 
     void remove(String reason, String level);
 
-    boolean isHealthCheckInitializing();
-
     String getLaunchConfigName();
 
     Instance getInstance();
 
     void create(Map<String, Object> deployParams);
 
-    DeploymentUnitInstance waitForStart(boolean isDependee);
+    void waitForStart(boolean isDependee);
 
     DeploymentUnitInstance start(boolean isDependee);
 
     boolean isStarted(boolean isDependee);
+
+    void waitForHealthy();
+
+    boolean isHealthy();
+    
+    void waitForStop();
+
+    void resetUpgrade(boolean upgrade);
+    
+    boolean isSetForUpgrade();
+
 }
