@@ -55,11 +55,14 @@ public interface InstanceDao {
 
     List<? extends Service> findServicesNonRemovedLinksOnly(Instance instance);
 
+    List<GenericObject> getImagePullTasks(long accountId, List<String> images, Map<String, String> labels);
+
+    /**
+     * INSTANCE REVISION MANAGEMENT
+     */
     InstanceRevision createRevision(Instance instance, Map<String, Object> config, boolean isInitial);
 
     void cleanupRevisions(Instance instance);
 
     Map<String, Object> getRevisionConfig(Instance instance);
-
-    List<GenericObject> getImagePullTasks(long accountId, List<String> images, Map<String, String> labels);
 }

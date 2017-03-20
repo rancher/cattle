@@ -1,7 +1,7 @@
 {
     "resourceFields": {
-        "configs": {
-            "type": "map[launchConfig]",
+        "config": {
+            "type": "service",
             "create": true,
             "required": false,
             "nullable": true

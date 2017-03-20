@@ -1,7 +1,6 @@
 package io.cattle.platform.process.driver;
 
 import static io.cattle.platform.core.model.tables.ServiceTable.*;
-
 import io.cattle.platform.archaius.util.ArchaiusUtil;
 import io.cattle.platform.core.addon.InServiceUpgradeStrategy;
 import io.cattle.platform.core.addon.LbConfig;
@@ -11,9 +10,11 @@ import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.constants.ServiceConstants;
 import io.cattle.platform.core.dao.LoadBalancerInfoDao;
+import io.cattle.platform.core.dao.ServiceDao;
 import io.cattle.platform.core.model.Account;
 import io.cattle.platform.core.model.Service;
 import io.cattle.platform.core.util.PortSpec;
+import io.cattle.platform.core.util.ServiceUtil.RevisionData;
 import io.cattle.platform.core.util.SystemLabels;
 import io.cattle.platform.engine.handler.HandlerResult;
 import io.cattle.platform.engine.process.ProcessInstance;
@@ -22,6 +23,7 @@ import io.cattle.platform.json.JsonMapper;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.resource.ResourceMonitor;
 import io.cattle.platform.object.util.DataAccessor;
+import io.cattle.platform.object.util.DataUtils;
 import io.cattle.platform.process.common.handler.AbstractObjectProcessHandler;
 import io.cattle.platform.process.common.util.ProcessUtils;
 
@@ -49,6 +51,8 @@ public class EnvironmentUpgrade extends AbstractObjectProcessHandler {
     JsonMapper jsonMapper;
     @Inject
     ResourceMonitor resourceMonitor;
+    @Inject
+    ServiceDao serviceDao;
 
     @Override
     public String[] getProcessNames() {
@@ -84,12 +88,19 @@ public class EnvironmentUpgrade extends AbstractObjectProcessHandler {
                 List<String> validUpgradeStates = Arrays.asList(CommonStatesConstants.ACTIVE,
                         CommonStatesConstants.INACTIVE, CommonStatesConstants.UPDATING_ACTIVE);
                 if (validUpgradeStates.contains(lbService.getState())) {
+                    RevisionData currentRevisionData = serviceDao.createServiceRevision(lbService,
+                            DataUtils.getFields(lbService), true);
                     // 1. set lbconfig/new launch config on the service
                     InServiceUpgradeStrategy strategy = getUpgradeStrategy(lbService);
                     lbConfig = lbDao.generateLBConfig(lbService);
                     Map<String, Object> params = new HashMap<>();
                     params.put(ServiceConstants.FIELD_LB_CONFIG, lbConfig);
                     params.put(ServiceConstants.FIELD_LAUNCH_CONFIG, strategy.getLaunchConfig());
+                    RevisionData newRevisionData = serviceDao.createServiceRevision(lbService,
+                            params, true);
+                    params.put(ServiceConstants.FIELD_IS_UPGRADE, true);
+                    params.put(InstanceConstants.FIELD_PREVIOUS_REVISION_ID, currentRevisionData.getRevisionId());
+                    params.put(InstanceConstants.FIELD_REVISION_ID, newRevisionData.getRevisionId());
                     lbService = objectManager.setFields(objectManager.reload(lbService), params);
 
                     // 2. call upgrade

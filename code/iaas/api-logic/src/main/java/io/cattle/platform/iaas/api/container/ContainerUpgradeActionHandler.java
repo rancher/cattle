@@ -59,6 +59,7 @@ public class ContainerUpgradeActionHandler implements ActionHandler {
         if (data.get(InstanceConstants.FIELD_REVISION_ID) == null) {
             InstanceRevision revision = instanceDao.createRevision(originalInstance, data, false);
             data.put(InstanceConstants.FIELD_REVISION_ID, revision.getId());
+            data.put(InstanceConstants.FIELD_PREVIOUS_REVISION_ID, originalInstance.getRevisionId());
         }
         // create new container record, do not start.
         Instance upgradedInstance = objectManager.create(Instance.class, data);
@@ -74,12 +75,16 @@ public class ContainerUpgradeActionHandler implements ActionHandler {
                 originalInstance.getId())) {
             objectManager.setFields(revision, "instanceId", upgradedInstance.getId());
         }
+
+        // reset revision for the old container
+        objectManager.setFields(originalInstance, InstanceConstants.FIELD_REVISION_ID, (Object) null);
+
         // remove old container, start the new one
         if (!(originalInstance.getState().equals(CommonStatesConstants.REMOVED) || originalInstance.getState().equals(
                 CommonStatesConstants.REMOVING))) {
             try {
                 objectProcessManager.scheduleStandardProcessAsync(StandardProcess.REMOVE, originalInstance,
-                        data);
+                        null);
             } catch (ProcessCancelException e) {
                 Map<String, Object> processData = new HashMap<>();
                 processData.put(InstanceConstants.PROCESS_STOP + ProcessLogic.CHAIN_PROCESS,
@@ -119,7 +124,7 @@ public class ContainerUpgradeActionHandler implements ActionHandler {
                 ValidationErrorCodes.throwValidationError(ValidationErrorCodes.INVALID_OPTION,
                         "Referenced revision doesn't belong to the instance");
             }
-            data.putAll(DataAccessor.fieldMap(revision, InstanceConstants.FIELD_INSTANCE_REVISION_CONFIG));
+            data.putAll(DataAccessor.fieldMap(revision, InstanceConstants.FIELD_REVISION_CONFIG));
             data.put(InstanceConstants.FIELD_REVISION_ID, upgrade.getRevisionId());
         } else {
             data.putAll(CollectionUtils.toMap(upgrade.getConfig()));

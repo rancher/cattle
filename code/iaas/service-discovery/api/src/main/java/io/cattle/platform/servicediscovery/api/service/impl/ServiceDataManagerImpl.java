@@ -7,7 +7,6 @@ import static io.cattle.platform.core.model.tables.VolumeTable.*;
 import static io.cattle.platform.core.model.tables.VolumeTemplateTable.*;
 import io.cattle.platform.allocator.service.AllocationHelper;
 import io.cattle.platform.configitem.version.ConfigItemStatusManager;
-import io.cattle.platform.core.addon.InServiceUpgradeStrategy;
 import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.constants.ServiceConstants;
@@ -28,6 +27,7 @@ import io.cattle.platform.core.model.Stack;
 import io.cattle.platform.core.model.Volume;
 import io.cattle.platform.core.model.VolumeTemplate;
 import io.cattle.platform.core.util.ServiceUtil;
+import io.cattle.platform.core.util.ServiceUtil.RevisionData;
 import io.cattle.platform.core.util.SystemLabels;
 import io.cattle.platform.docker.constants.DockerInstanceConstants;
 import io.cattle.platform.engine.process.impl.ProcessCancelException;
@@ -52,7 +52,6 @@ import io.github.ibuildthecloud.gdapi.validation.ValidationErrorCodes;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -506,7 +505,7 @@ public class ServiceDataManagerImpl implements ServiceDataManager {
 
     public DeploymentUnit createDeploymentUnit(Instance instance) {
         DeploymentUnit du = serviceDao.createDeploymentUnit(instance.getAccountId(), null, instance.getStackId(), null,
-                STANDALONE_UNIT_INDEX);
+                STANDALONE_UNIT_INDEX, null);
         if (du.getState().equalsIgnoreCase(CommonStatesConstants.REQUESTED)) {
             objectProcessManager.scheduleStandardChainedProcessAsync(StandardProcess.CREATE, StandardProcess.ACTIVATE,
                     du, null);
@@ -604,50 +603,6 @@ public class ServiceDataManagerImpl implements ServiceDataManager {
         return toReturn;
     }
 
-    @Override
-    public ServiceRevision createRevision(Service service, Map<String, Object> primaryLaunchConfig,
-            List<Map<String, Object>> secondaryLaunchConfigs, boolean isFirstRevision) {
-        ServiceRevision revision = objectManager.findAny(ServiceRevision.class, SERVICE_REVISION.SERVICE_ID,
-                service.getId(),
-                SERVICE_REVISION.REMOVED, null);
-        if ((revision != null && !isFirstRevision) || (revision == null && isFirstRevision)) {
-            Map<String, Object> data = new HashMap<>();
-            Map<String, Map<String, Object>> configs = generateRevisionConfigs(service, primaryLaunchConfig, secondaryLaunchConfigs);
-            data.put(ServiceConstants.FIELD_SERVICE_REVISION_CONFIGS, configs);
-            data.put(ObjectMetaDataManager.NAME_FIELD, service.getName());
-            data.put(ObjectMetaDataManager.ACCOUNT_FIELD, service.getAccountId());
-            data.put("serviceId", service.getId());
-            revision = objectManager.create(ServiceRevision.class, data);
-        }
-        return revision;
-    }
-
-    public Map<String, Map<String, Object>> generateRevisionConfigs(Service service, Map<String, Object> primaryLaunchConfig,
-            List<Map<String, Object>> secondaryLaunchConfigs) {
-        Map<String, Map<String, Object>> configs = new HashMap<>();
-        configs.put(service.getName(), primaryLaunchConfig);
-        if (secondaryLaunchConfigs != null && !secondaryLaunchConfigs.isEmpty()) {
-            for (Map<String, Object> spec : secondaryLaunchConfigs) {
-                configs.put(spec.get("name").toString(), spec);
-            }
-        }
-        return configs;
-    }
-
-    @Override
-    public void cleanupServiceRevisions(Service service) {
-        List<ServiceRevision> revisions = objectManager.find(ServiceRevision.class, SERVICE_REVISION.SERVICE_ID,
-                service.getId(),
-                SERVICE_REVISION.REMOVED, null);
-        for (ServiceRevision revision : revisions) {
-            Map<String, Object> params = new HashMap<>();
-            params.put(ObjectMetaDataManager.REMOVED_FIELD, new Date());
-            params.put(ObjectMetaDataManager.REMOVE_TIME_FIELD, new Date());
-            params.put(ObjectMetaDataManager.STATE_FIELD, CommonStatesConstants.REMOVED);
-            objectManager.setFields(revision, params);
-        }
-    }
-
     protected Pair<ServiceRevision, ServiceRevision> getCurrentAndPreviousRevisions(Service service) {
         ServiceRevision currentRevision = objectManager.findAny(ServiceRevision.class, SERVICE_REVISION.ID,
                 service.getRevisionId());
@@ -659,57 +614,6 @@ public class ServiceDataManagerImpl implements ServiceDataManager {
     protected ServiceRevision getCurrentRevision(Service service) {
         return objectManager.findAny(ServiceRevision.class, SERVICE_REVISION.ID,
                 service.getRevisionId());
-    }
-
-    protected Pair<Map<String, Object>, List<Map<String, Object>>> getPrimaryAndSecondaryConfigFromRevision(
-            ServiceRevision revision, Service service) {
-        Map<String, Object> primary = new HashMap<>();
-        List<Map<String, Object>> secondary = new ArrayList<>();
-        Map<String, Map<String, Object>> configs = CollectionUtils.toMap(DataAccessor.field(
-                revision, ServiceConstants.FIELD_SERVICE_REVISION_CONFIGS, Object.class));
-        primary.putAll(configs.get(service.getName()));
-        configs.remove(service.getName());
-        secondary.addAll(configs.values());
-        return Pair.of(primary, secondary);
-    }
-
-    @SuppressWarnings("unchecked")
-    @Override
-    public void createInitialServiceRevision(Service service) {
-        Map<String, Object> launchConfig = DataAccessor.fields(service)
-                .withKey(ServiceConstants.FIELD_LAUNCH_CONFIG).withDefault(Collections.EMPTY_MAP)
-                .as(Map.class);
-        List<Map<String, Object>> secondaryLaunchConfigs = DataAccessor.fields(service)
-                .withKey(ServiceConstants.FIELD_SECONDARY_LAUNCH_CONFIGS)
-                .withDefault(Collections.EMPTY_LIST).as(
-                        List.class);
-        ServiceRevision revision = createRevision(service, launchConfig, secondaryLaunchConfigs, true);
-        if (service.getRevisionId() == null) {
-            Map<String, Object> data = new HashMap<>();
-            data.put(InstanceConstants.FIELD_REVISION_ID, revision.getId());
-            objectManager.setFields(service, data);
-        }
-    }
-
-    @SuppressWarnings("unchecked")
-    protected void updateCurrentRevision(Service service) {
-        Map<String, Object> launchConfig = DataAccessor.fields(service)
-                .withKey(ServiceConstants.FIELD_LAUNCH_CONFIG).withDefault(Collections.EMPTY_MAP)
-                .as(Map.class);
-        List<Map<String, Object>> secondaryLaunchConfigs = DataAccessor.fields(service)
-                .withKey(ServiceConstants.FIELD_SECONDARY_LAUNCH_CONFIGS)
-                .withDefault(Collections.EMPTY_LIST).as(
-                        List.class);
-        ServiceRevision revision = objectManager.findAny(ServiceRevision.class, SERVICE_REVISION.SERVICE_ID,
-                service.getId(),
-                SERVICE_REVISION.REMOVED, null);
-        if (revision == null) {
-            return;
-        }
-        Map<String, Object> data = new HashMap<>();
-        Map<String, Map<String, Object>> configs = generateRevisionConfigs(service, launchConfig, secondaryLaunchConfigs);
-        data.put(ServiceConstants.FIELD_SERVICE_REVISION_CONFIGS, configs);
-        objectManager.setFields(revision, data);
     }
 
     @SuppressWarnings("unchecked")
@@ -790,7 +694,8 @@ public class ServiceDataManagerImpl implements ServiceDataManager {
     }
 
     public void convertDeploymentUnitToService(DeploymentUnit du, Service service) {
-        objectManager.setFields(du, DEPLOYMENT_UNIT.SERVICE_ID, service.getId());
+        objectManager.setFields(du, DEPLOYMENT_UNIT.SERVICE_ID, service.getId(), DEPLOYMENT_UNIT.REVISION_ID,
+                service.getRevisionId());
     }
 
     public Service createService(String name, Stack stack, Instance primary, List<Instance> secondary) {
@@ -819,6 +724,8 @@ public class ServiceDataManagerImpl implements ServiceDataManager {
         data.put(ServiceConstants.FIELD_INTERVAL_MILLISEC, 2000);
 
         Service service = objectManager.create(Service.class, data);
+        RevisionData revision = serviceDao.createServiceRevision(service, data, true);
+        service = objectManager.setFields(service, InstanceConstants.FIELD_REVISION_ID, revision.getRevisionId());
 
         objectProcessManager.scheduleStandardChainedProcessAsync(StandardProcess.CREATE,
                 StandardProcess.ACTIVATE,
@@ -854,27 +761,6 @@ public class ServiceDataManagerImpl implements ServiceDataManager {
     }
 
     @Override
-    public Map<String, Object> getServiceDataForUpgrade(Service service, Map<String, Object> newPrimaryLaunchConfig,
-            List<Map<String,
-            Object>> newSecondaryLaunchConfigs) {
-        Map<String, Object> data = new HashMap<>();
-        if (service.getRevisionId() == null) {
-            createInitialServiceRevision(service);
-        }
-        ServiceRevision currentRevision = getCurrentRevision(service);
-        data.put(InstanceConstants.FIELD_PREVIOUS_REVISION_ID, currentRevision.getId());
-        ServiceRevision newRevision = createRevision(service, newPrimaryLaunchConfig,
-                newSecondaryLaunchConfigs, false);
-        data.put(InstanceConstants.FIELD_REVISION_ID, newRevision.getId());
-        data.put(ServiceConstants.FIELD_LAUNCH_CONFIG, newPrimaryLaunchConfig);
-        data.put(ServiceConstants.FIELD_SECONDARY_LAUNCH_CONFIGS, newSecondaryLaunchConfigs);
-        if (ServiceConstants.SERVICE_LIKE.contains(service.getKind())) {
-            data.put(ServiceConstants.FIELD_IS_UPGRADE, true);
-        }
-        return data;
-    }
-
-    @Override
     public Map<String, Object> getServiceDataForRollback(Service service,
             final io.cattle.platform.core.addon.ServiceRollback rollback) {
         Pair<ServiceRevision, ServiceRevision> currentPreviousRevision = null;
@@ -893,22 +779,12 @@ public class ServiceDataManagerImpl implements ServiceDataManager {
         }
         ServiceRevision previous = currentPreviousRevision.getRight();
         ServiceRevision current = currentPreviousRevision.getLeft();
-        Pair<Map<String, Object>, List<Map<String, Object>>> primarySecondaryConfigs = getPrimaryAndSecondaryConfigFromRevision(
-                previous, service);
 
         Map<String, Object> data = new HashMap<>();
-        data.put(ServiceConstants.FIELD_LAUNCH_CONFIG, primarySecondaryConfigs.getLeft());
-        data.put(ServiceConstants.FIELD_SECONDARY_LAUNCH_CONFIGS, primarySecondaryConfigs.getRight());
+        data.putAll(CollectionUtils.toMap(DataAccessor.field(previous,
+                InstanceConstants.FIELD_REVISION_CONFIG, Object.class)));
         data.put(InstanceConstants.FIELD_REVISION_ID, previous.getId());
         data.put(InstanceConstants.FIELD_PREVIOUS_REVISION_ID, current.getId());
         return data;
-    }
-
-    @Override
-    public InServiceUpgradeStrategy getUpgradeStrategyFromServiceRevision(final Service service) {
-        Pair<ServiceRevision, ServiceRevision> currentPreviousRevision = getCurrentAndPreviousRevisions(service);
-        InServiceUpgradeStrategy strategy = ServiceUtil.getStrategy(service,
-                currentPreviousRevision, true);
-        return strategy;
     }
 }
