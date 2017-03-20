@@ -24,7 +24,7 @@ public class ServiceVirtualMachinePreCreate extends AbstractObjectProcessLogic i
     public HandlerResult handle(ProcessState state, ProcessInstance process) {
         Service service = (Service)state.getResource();
         if (KIND_VIRTUAL_MACHINE.equals(CollectionUtils.getNestedValue(DataAccessor.fieldMap(service, FIELD_LAUNCH_CONFIG).get("kind")))) {
-            return new HandlerResult(ServiceConstants.FIELD_SERVICE_RETAIN_IP, true);
+            return new HandlerResult(ServiceConstants.FIELD_RETAIN_IP, true);
         }
         return null;
     }

@@ -16,6 +16,7 @@ import io.cattle.platform.object.process.StandardProcess;
 import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.servicediscovery.deployment.impl.manager.DeploymentUnitManagerImpl.DeploymentUnitManagerContext;
 
+import java.util.Date;
 import java.util.Map;
 
 import org.apache.commons.lang3.tuple.Pair;
@@ -90,5 +91,31 @@ public class ServiceDeploymentUnitInstance extends AbstractDeploymentUnitInstanc
             return true;
         }
         return RESTART_ALWAYS_POLICY_NAMES.contains(rp.getName());
+    }
+
+    @Override
+    public void resetUpgrade(boolean upgrade) {
+        boolean changed = false;
+        if (upgrade) {
+            if (!isSetForUpgrade()) {
+                context.activityService.instance(instance, "mark.upgrade", "Mark for upgrade", ActivityLog.INFO);
+                exposeMap.setUpgrade(true);
+                exposeMap.setUpgradeTime(new Date());
+                changed = true;
+            }
+        } else {
+            if (isSetForUpgrade()) {
+                exposeMap.setUpgrade(false);
+                changed = true;
+            }
+        }
+        if (changed) {
+            context.objectManager.persist(exposeMap);
+        }
+    }
+
+    @Override
+    public boolean isSetForUpgrade() {
+        return exposeMap.getUpgrade();
     }
 }

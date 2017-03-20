@@ -952,16 +952,6 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
         }
     }
 
-
-
-    @Override
-    public void resetUpgradeFlag(Service service) {
-        Map<String, Object> data = new HashMap<>();
-        data.put(ServiceConstants.FIELD_IS_UPGRADE, 0);
-        objectManager.setFields(objectManager.reload(service), data);
-    }
-
-
     @Override
     public void remove(Service service) {
         upgradeMgr.finishUpgrade(service, false);
@@ -973,7 +963,7 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
 
         removeServiceIndexes(service);
 
-        svcDataMgr.cleanupServiceRevisions(service);
+        serviceDao.cleanupServiceRevisions(service);
     }
 
     @Override
@@ -981,6 +971,12 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
         setVIP(service);
         setPorts(service);
         setToken(service);
-        svcDataMgr.createInitialServiceRevision(service);
+    }
+
+    @Override
+    public void resetUpgradeFlag(Service service) {
+        Map<String, Object> data = new HashMap<>();
+        data.put(ServiceConstants.FIELD_IS_UPGRADE, 0);
+        objectManager.setFields(objectManager.reload(service), data);
     }
 }

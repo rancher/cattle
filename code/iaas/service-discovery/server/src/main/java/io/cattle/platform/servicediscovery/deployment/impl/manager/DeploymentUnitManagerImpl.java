@@ -192,17 +192,7 @@ public class DeploymentUnitManagerImpl implements DeploymentUnitManager {
         reconcile(unit);
     }
 
-    @Override
-    public boolean isUnhealthy(DeploymentUnit unit) {
-        return getDeploymentUnit(unit).isUnhealthy();
-    }
-
-    @Override
-    public boolean isInit(DeploymentUnit unit) {
-        return getDeploymentUnit(unit).isHealthCheckInitializing();
-    }
-
-    io.cattle.platform.servicediscovery.deployment.DeploymentUnit getDeploymentUnit(DeploymentUnit unit) {
+    protected io.cattle.platform.servicediscovery.deployment.DeploymentUnit getDeploymentUnit(DeploymentUnit unit) {
         return DeploymentUnitFactory.fetchDeploymentUnit(unit, new DeploymentUnitManagerContext());
     }
 
@@ -219,5 +209,10 @@ public class DeploymentUnitManagerImpl implements DeploymentUnitManager {
                                 InstanceConstants.PROCESS_STOP, InstanceConstants.PROCESS_REMOVE));
             }
         }
+    }
+
+    @Override
+    public boolean isUnhealthy(DeploymentUnit unit) {
+        return getDeploymentUnit(unit).isUnhealthy();
     }
 }
