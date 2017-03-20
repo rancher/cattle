@@ -14,7 +14,7 @@ import org.apache.commons.lang3.tuple.Pair;
 
 public interface ServiceDataManager {
 
-    public static final String STANDALONE_UNIT_INDEX = "0";
+    public static final int STANDALONE_UNIT_INDEX = 0;
 
     Map<String, Object> getDeploymentUnitInstanceData(Stack stack, Service service, DeploymentUnit unit,
             String launchConfigName, ServiceIndex serviceIndex, String instanceName);

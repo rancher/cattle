@@ -128,7 +128,7 @@ public class GlobalServiceDeploymentPlanner extends AbstractServiceDeploymentPla
                 labels.put(ServiceConstants.LABEL_SERVICE_REQUESTED_HOST_ID, hostId.toString());
                 DeploymentUnit unit = context.serviceDao.createDeploymentUnit(service.getAccountId(), service.getId(),
                         stack.getId(),
-                        labels, String.valueOf(svcInstanceIdGenerator.getNextAvailableId()));
+                        labels, svcInstanceIdGenerator.getNextAvailableId());
                 hostToUnits.put(hostId, unit);
                 addUnit(unit, State.HEALTHY);
             }

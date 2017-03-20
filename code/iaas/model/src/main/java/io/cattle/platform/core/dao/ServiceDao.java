@@ -70,7 +70,7 @@ public interface ServiceDao {
     List<? extends DeploymentUnit> getServiceDeploymentUnitsOnHost(Host host, boolean transitioningOnly);
 
     DeploymentUnit createDeploymentUnit(long accountId, Long serviceId,
-            long stackId, Map<String, String> labels, String serviceIndex);
+            long stackId, Map<String, String> labels, Integer serviceIndex);
 
     Stack getOrCreateDefaultStack(long accountId);
 

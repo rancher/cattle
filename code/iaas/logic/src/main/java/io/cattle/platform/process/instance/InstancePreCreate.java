@@ -95,7 +95,7 @@ public class InstancePreCreate extends AbstractObjectProcessLogic implements Pro
         if (instance.getName() != null) {
             return;
         }
-        String name = "r-" + instance.getUuid().substring(0, 10);
+        String name = "r-" + instance.getUuid().substring(0, 4);
         data.put(ObjectMetaDataManager.NAME_FIELD, name);
     }
 
