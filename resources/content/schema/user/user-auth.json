@@ -138,6 +138,7 @@
         "container.expose" : "cr",
         "container.createIndex" : "r",
         "container.deploymentUnitUuid" : "r",
+        "container.deploymentUnitId" : "r",
         "container.version" : "r",
         "container.startCount" : "r",
         "container.serviceIds" : "r",
@@ -183,6 +184,7 @@
         "container.exitCode": "r",
         "container.prePullOnUpgrade": "cru",
         "container.revisionId": "r",
+        "container.previousRevisionId": "r",
         
         "ulimit" : "r",
         "ulimit.name" : "cr",
@@ -987,6 +989,7 @@
         "virtualMachine.secrets" : "",
         "virtualMachine.prePullOnUpgrade": "",
         "virtualMachine.revisionId": "",
+        "virtualMachine.previousRevisionId": "",
 
         "virtualMachineDisk" : "r",
         "virtualMachineDisk.name" : "cr",
@@ -1072,7 +1075,7 @@
         "instanceRevision.instanceId": "r",
 
         "serviceRevision": "r",
-        "serviceRevision.configs": "r",
+        "serviceRevision.config": "r",
         "serviceRevision.serviceId": "r",
 
         "serviceRollback" : "r",
@@ -1087,6 +1090,12 @@
         "containerUpgrade" : "r",
         "containerUpgrade.config" : "cr",
         "containerUpgrade.revisionId" : "cr",
+
+        "deploymentUnit": "r",
+        "deploymentUnit.serviceIndex": "r",
+        "deploymentUnit.serviceId": "r",
+        "deploymentUnit.cleanup": "r",
+        "deploymentUnit.revisionId": "r",
 
         "end" : ""
     }

@@ -66,7 +66,7 @@ public class InstanceConstants {
     public static final String FIELD_MEMORY_RESERVATION = "memoryReservation";
     public static final String FIELD_MOUNTS = "mounts";
     public static final String FIELD_HEALTHCHECK_STATES = "healthcheckStates";
-    public static final String FIELD_INSTANCE_REVISION_CONFIG = "config";
+    public static final String FIELD_REVISION_CONFIG = "config";
     public static final String FIELD_SERVICE_ID = "serviceId";
     public static final String FIELD_STACK_ID = "stackId";
     public static final String FIELD_SIDEKICK_TO = "sidekickTo";

@@ -3,10 +3,6 @@ package io.cattle.platform.servicediscovery.deployment;
 
 public interface DeploymentUnit {
 
-    boolean isHealthCheckInitializing();
-
-    boolean isUnhealthy();
-
     String getStatus();
 
     void stop();
@@ -16,5 +12,7 @@ public interface DeploymentUnit {
     void deploy();
 
     boolean needToReconcile();
+
+    boolean isUnhealthy();
 
 }

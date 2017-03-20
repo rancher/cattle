@@ -92,6 +92,7 @@
         "instanceRevision": "r",
         "serviceRevision": "r",
         "containerUpgrade" : "cr",
+        "deploymentUnit" : "cr",
 
         "end" : ""
     }

@@ -476,9 +476,7 @@ public class InstanceDaoImpl extends AbstractJooqDao implements InstanceDao {
             return revision;
         }
         Map<String, Object> data = new HashMap<>();
-        String name = instance.getUuid();
-        data.put(InstanceConstants.FIELD_INSTANCE_REVISION_CONFIG, config);
-        data.put(ObjectMetaDataManager.NAME_FIELD, name);
+        data.put(InstanceConstants.FIELD_REVISION_CONFIG, config);
         data.put(ObjectMetaDataManager.ACCOUNT_FIELD, instance.getAccountId());
         data.put("instanceId", instance.getId());
         return objectManager.create(InstanceRevision.class, data);
@@ -489,23 +487,37 @@ public class InstanceDaoImpl extends AbstractJooqDao implements InstanceDao {
         List<InstanceRevision> revisions = objectManager.find(InstanceRevision.class, INSTANCE_REVISION.INSTANCE_ID,
                 instance.getId(),
                 INSTANCE_REVISION.REMOVED, null);
+        Instance replacement = objectManager.findAny(Instance.class, INSTANCE.REMOVED, null, INSTANCE.REPLACEMENT_FOR,
+                instance.getId());
+
         for (InstanceRevision revision : revisions) {
-            Map<String, Object> params = new HashMap<>();
-            params.put(ObjectMetaDataManager.REMOVED_FIELD, new Date());
-            params.put(ObjectMetaDataManager.REMOVE_TIME_FIELD, new Date());
-            params.put(ObjectMetaDataManager.STATE_FIELD, CommonStatesConstants.REMOVED);
-            objectManager.setFields(revision, params);
+            if (replacement == null) {
+                removeInstanceRevision(revision);
+            } else {
+                Map<String, Object> params = new HashMap<>();
+                params.put("instanceId", replacement.getId());
+                objectManager.setFields(revision, params);
+            }
         }
+        objectManager.setFields(instance, InstanceConstants.FIELD_REVISION_ID, (Object)null);
+    }
+
+    public void removeInstanceRevision(InstanceRevision revision) {
+        Map<String, Object> params = new HashMap<>();
+        params.put(ObjectMetaDataManager.REMOVED_FIELD, new Date());
+        params.put(ObjectMetaDataManager.REMOVE_TIME_FIELD, new Date());
+        params.put(ObjectMetaDataManager.STATE_FIELD, CommonStatesConstants.REMOVED);
+        objectManager.setFields(revision, params);
     }
 
     @Override
     public Map<String, Object> getRevisionConfig(Instance instance) {
-        InstanceRevision revision = objectManager.findAny(InstanceRevision.class, INSTANCE_REVISION.INSTANCE_ID,
-                instance.getId(), INSTANCE_REVISION.REMOVED, null);
+        InstanceRevision revision = objectManager.findAny(InstanceRevision.class, INSTANCE_REVISION.ID,
+                instance.getRevisionId(), INSTANCE_REVISION.REMOVED, null);
         if (revision == null) {
             return null;
         }
-        return CollectionUtils.toMap(DataAccessor.field(revision, InstanceConstants.FIELD_INSTANCE_REVISION_CONFIG,
+        return CollectionUtils.toMap(DataAccessor.field(revision, InstanceConstants.FIELD_REVISION_CONFIG,
                 Object.class));
     }
 
