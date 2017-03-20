@@ -40,4 +40,3 @@ tests/integration/.cache/
 
 code/packaging/app/.existing
 code/packaging/app/master.conf
-code/packaging/app/cache/

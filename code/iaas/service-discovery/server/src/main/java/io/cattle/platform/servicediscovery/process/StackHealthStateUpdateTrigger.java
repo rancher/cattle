@@ -5,7 +5,6 @@ import io.cattle.platform.configitem.version.ConfigItemStatusManager;
 import io.cattle.platform.core.constants.HealthcheckConstants;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.dao.InstanceDao;
-import io.cattle.platform.core.model.DeploymentUnit;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.Service;
 import io.cattle.platform.core.model.Stack;
@@ -44,7 +43,7 @@ public class StackHealthStateUpdateTrigger extends AbstractObjectProcessLogic im
         return new String[] { HealthcheckConstants.PROCESS_UPDATE_HEALTHY,
                 HealthcheckConstants.PROCESS_UPDATE_UNHEALTHY, InstanceConstants.PROCESS_STOP,
                 InstanceConstants.PROCESS_REMOVE, InstanceConstants.PROCESS_START,
-                "service.*", "stack.*", "deploymentUnit.*" };
+                "service.*", "stack.*" };
     }
 
     @Override
@@ -54,16 +53,11 @@ public class StackHealthStateUpdateTrigger extends AbstractObjectProcessLogic im
         
         if (state.getResource() instanceof Stack) {
             stackIds.add(((Stack) state.getResource()).getId());
-        } else if (state.getResource() instanceof Service) {
+        }
+        else if (state.getResource() instanceof Service) {
             services.add((Service) state.getResource());
         } else if (state.getResource() instanceof Instance) {
             services.addAll(instanceDao.findServicesFor((Instance) state.getResource()));
-        } else if (state.getResource() instanceof DeploymentUnit) {
-            Service service = objectManager.loadResource(Service.class,
-                    ((DeploymentUnit) state.getResource()).getServiceId());
-            if (service != null) {
-                services.add(service);
-            }
         }
 
         for (Service service : services) {

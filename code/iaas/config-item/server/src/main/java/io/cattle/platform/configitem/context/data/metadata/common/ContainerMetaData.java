@@ -1,7 +1,6 @@
 package io.cattle.platform.configitem.context.data.metadata.common;
 
 import io.cattle.platform.core.constants.InstanceConstants;
-import io.cattle.platform.core.constants.ServiceConstants;
 import io.cattle.platform.core.model.Account;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.object.util.DataAccessor;
@@ -46,8 +45,6 @@ public class ContainerMetaData {
     String environment_uuid;
     Map<String, String> links = new HashMap<>(); // container links where key is linkName, value is instanceUUID
     String host_ip;
-    Map<String, Object> metadata;
-
     // helper field needed by metadata service to process object
     String metadata_kind;
 
@@ -120,7 +117,6 @@ public class ContainerMetaData {
         }
         this.environment_uuid = account.getUuid();
         this.metadata_kind = "container";
-        this.metadata = DataAccessor.fieldMap(instance, ServiceConstants.FIELD_METADATA);
     }
 
     public Long getCreate_index() {
@@ -329,13 +325,5 @@ public class ContainerMetaData {
 
     public void setStack_uuid(String stack_uuid) {
         this.stack_uuid = stack_uuid;
-    }
-
-    public Map<String, Object> getMetadata() {
-        return metadata;
-    }
-
-    public void setMetadata(Map<String, Object> metadata) {
-        this.metadata = metadata;
     }
 }

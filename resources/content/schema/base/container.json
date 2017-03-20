@@ -393,48 +393,6 @@
         "name": {
             "type": "string",
             "unique": true
-        },
-        "sidekickTo" : {
-            "type" : "reference[container]",
-            "create" : true,
-            "nullable" : true
-        },
-        "metadata": {
-            "type": "map[json]",
-            "create": true,
-            "required": false,
-            "nullable": true,
-             "attributes" : {
-                "scheduleUpdate" : true
-            }
-        },
-        "stopSource" : {
-            "type": "enum",
-            "options" : [ "api", "native" ],
-            "create" : true,
-            "nullable" : true
-        },
-        "removeSource" : {
-            "type": "enum",
-            "options" : [ "api", "native" ],
-            "create" : true,
-            "nullable" : true
-        },
-        "exitCode": {
-            "type": "int",
-            "nullable": true
-        },
-        "startRetryCount": {
-            "type": "int",
-            "nullable": true
-        },
-        "deploymentUnitUuid": {
-            "type": "string",
-            "nullable": true
-        },
-        "prePullOnUpgrade": {
-            "type": "boolean",
-            "default": true
         }
     },
     "resourceActions": {
@@ -444,14 +402,6 @@
             "attributes": {
                 "states": [ "running", "stopped", "stopping" ]
             }
-        },
-        "converttoservice" : {
-            "input":"convertToServiceInput",
-            "output" : "service"
-        },
-        "upgrade" : {
-            "input":"containerUpgrade",
-            "output" : "container"
         }
     }
 }

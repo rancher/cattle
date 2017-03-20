@@ -13,6 +13,7 @@ import io.cattle.platform.engine.process.ProcessInstance;
 import io.cattle.platform.engine.process.ProcessState;
 import io.cattle.platform.object.process.StandardProcess;
 import io.cattle.platform.process.common.handler.AbstractObjectProcessLogic;
+import io.cattle.platform.servicediscovery.api.dao.ServiceDao;
 import io.cattle.platform.util.type.Priority;
 
 import java.util.List;
@@ -28,6 +29,9 @@ public class HealthCheckReconcileTrigger extends AbstractObjectProcessLogic impl
 
     @Inject
     HealthcheckService healthcheckService;
+
+    @Inject
+    ServiceDao serviceDao;
 
     @Inject
     List<HealthcheckHostLookup> hostLookups;

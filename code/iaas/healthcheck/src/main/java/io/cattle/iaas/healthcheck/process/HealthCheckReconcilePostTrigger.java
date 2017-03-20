@@ -4,12 +4,15 @@ import io.cattle.iaas.healthcheck.service.HealthcheckInstancesLookup;
 import io.cattle.iaas.healthcheck.service.HealthcheckService;
 import io.cattle.iaas.healthcheck.service.HealthcheckService.HealthcheckInstanceType;
 import io.cattle.platform.core.constants.AgentConstants;
+import io.cattle.platform.core.dao.HostDao;
+import io.cattle.platform.core.dao.NetworkDao;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.engine.handler.HandlerResult;
 import io.cattle.platform.engine.handler.ProcessPostListener;
 import io.cattle.platform.engine.process.ProcessInstance;
 import io.cattle.platform.engine.process.ProcessState;
 import io.cattle.platform.process.common.handler.AbstractObjectProcessLogic;
+import io.cattle.platform.servicediscovery.api.dao.ServiceDao;
 import io.cattle.platform.util.type.Priority;
 
 import java.util.ArrayList;
@@ -20,9 +23,17 @@ import javax.inject.Named;
 
 @Named
 public class HealthCheckReconcilePostTrigger extends AbstractObjectProcessLogic implements ProcessPostListener, Priority {
+    @Inject
+    ServiceDao serviceDao;
 
     @Inject
     HealthcheckService healthcheckService;
+
+    @Inject
+    HostDao hostDao;
+
+    @Inject
+    NetworkDao ntwkDao;
 
     @Inject
     List<HealthcheckInstancesLookup> instancesLookups;

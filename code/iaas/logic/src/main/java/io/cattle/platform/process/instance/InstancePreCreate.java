@@ -5,14 +5,11 @@ import io.cattle.platform.core.addon.SecretReference;
 import io.cattle.platform.core.constants.AgentConstants;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.constants.NetworkConstants;
-import io.cattle.platform.core.dao.ServiceDao;
 import io.cattle.platform.core.dao.StorageDriverDao;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.Network;
-import io.cattle.platform.core.model.Stack;
 import io.cattle.platform.core.model.StorageDriver;
 import io.cattle.platform.core.model.Volume;
-import io.cattle.platform.core.util.ServiceUtil;
 import io.cattle.platform.core.util.SystemLabels;
 import io.cattle.platform.docker.constants.DockerInstanceConstants;
 import io.cattle.platform.engine.handler.HandlerResult;
@@ -50,12 +47,10 @@ public class InstancePreCreate extends AbstractObjectProcessLogic implements Pro
     StorageDriverDao storageDriverDao;
     @Inject
     TokenService tokenService;
-    @Inject
-    ServiceDao svcDao;
 
     @Override
     public String[] getProcessNames() {
-        return new String[] { InstanceConstants.PROCESS_CREATE };
+        return new String[] { "instance.create" };
     }
 
     @Override
@@ -68,35 +63,15 @@ public class InstancePreCreate extends AbstractObjectProcessLogic implements Pro
         Map<Object, Object> data = new HashMap<>();
         setAgentVolumes(instance, labels, data);
         setName(instance, labels, data);
+        setDns(instance, labels, data);
         setLogConfig(instance, data);
         setSecrets(instance, data);
         setSystemLabel(instance, labels);
-        setName(instance, data);
-        Stack stack = setStack(instance, data);
-        setDns(instance, labels, data, stack);
 
         if (!data.isEmpty()) {
             return new HandlerResult(data);
         }
         return null;
-    }
-
-    protected Stack setStack(Instance instance, Map<Object, Object> data) {
-        Long stackId = instance.getStackId();
-        if (stackId != null) {
-            return objectManager.loadResource(Stack.class, stackId);
-        }
-        Stack stack = svcDao.getOrCreateDefaultStack(instance.getAccountId());
-        data.put(InstanceConstants.FIELD_STACK_ID, stack.getId());
-        return stack;
-    }
-
-    protected void setName(Instance instance, Map<Object, Object> data) {
-        if (instance.getName() != null) {
-            return;
-        }
-        String name = "r-" + instance.getUuid().substring(0, 4);
-        data.put(ObjectMetaDataManager.NAME_FIELD, name);
     }
 
     protected String toString(Object obj) {
@@ -154,7 +129,7 @@ public class InstancePreCreate extends AbstractObjectProcessLogic implements Pro
         }
     }
 
-    protected void setDns(Instance instance, Map<String, Object> labels, Map<Object, Object> data, Stack stack) {
+    protected void setDns(Instance instance, Map<String, Object> labels, Map<Object, Object> data) {
         if (!InstanceConstants.KIND_CONTAINER.equals(instance.getKind())) {
             return;
         }
@@ -179,10 +154,6 @@ public class InstancePreCreate extends AbstractObjectProcessLogic implements Pro
             for (String dnsSearch : DataAccessor.fieldStringList(network, NetworkConstants.FIELD_DNS_SEARCH)) {
                 List<String> dnsSearchList = DataAccessor.appendToFieldStringList(instance, DockerInstanceConstants.FIELD_DNS_SEARCH, dnsSearch);
                 data.put(DockerInstanceConstants.FIELD_DNS_SEARCH, dnsSearchList);
-                String stackDns = ServiceUtil.getStackNamespace(stack);
-                if (!dnsSearchList.contains(stackDns)) {
-                    dnsSearchList.add(stackDns);
-                }
                 data.put(InstanceConstants.FIELD_DNS_SEARCH_INTERNAL, Joiner.on(",").join(dnsSearchList));
             }
         }

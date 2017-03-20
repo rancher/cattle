@@ -8,14 +8,6 @@
         "timeout" : {
             "type" : "int",
             "create" : true
-        },
-        "stopSource" : {
-            "type": "enum",
-            "options" : [ "api", "external" ],
-            "create" : true,
-            "required": true,
-            "nullable" : false,
-            "default": "api"
         }
     }
 }

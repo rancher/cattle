@@ -29,7 +29,7 @@ public class InstancePortCreate extends AbstractObjectProcessLogic implements Pr
 
     @Override
     public String[] getProcessNames() {
-        return new String[] { InstanceConstants.PROCESS_CREATE };
+        return new String[] { "instance.create" };
     }
 
     @Override

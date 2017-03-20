@@ -1,6 +1,5 @@
 package io.cattle.platform.process.account;
 
-import static io.cattle.platform.core.model.tables.HostTable.*;
 import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.dao.AccountDao;
@@ -47,13 +46,6 @@ public class AccountPurge extends AbstractDefaultProcessHandler {
     public HandlerResult handle(ProcessState state, ProcessInstance process) {
         Account account = (Account) state.getResource();
 
-        for (Stack env : list(account, Stack.class)) {
-            if (env.getRemoved() != null) {
-                continue;
-            }
-            objectProcessManager.scheduleStandardProcessAsync(StandardProcess.REMOVE, env, null);
-        }
-
         for (Agent agent : list(account, Agent.class)) {
             if (agent.getRemoved() != null) {
                 continue;
@@ -86,7 +78,14 @@ public class AccountPurge extends AbstractDefaultProcessHandler {
             deactivateThenRemove(cred, state.getData());
         }
 
-        for (Instance instance : instanceDao.listNonRemovedNonStackInstances(account)) {
+        for (Stack env : list(account, Stack.class)) {
+            if (env.getRemoved() != null) {
+                continue;
+            }
+            objectProcessManager.scheduleStandardProcessAsync(StandardProcess.REMOVE, env, null);
+        }
+
+        for (Instance instance : instanceDao.listNonRemovedInstances(account, false)) {
             deleteAgentAccount(instance.getAgentId(), state.getData());
 
             try {
@@ -159,7 +158,7 @@ public class AccountPurge extends AbstractDefaultProcessHandler {
     protected <T> List<T> hostList(Account account, Class<T> type) {
         return objectManager.find(type,
                 ObjectMetaDataManager.STATE_FIELD, new Condition(ConditionType.NE, CommonStatesConstants.PURGED),
-                ObjectMetaDataManager.ACCOUNT_FIELD, account.getId(), HOST.STACK_ID, null);
+                ObjectMetaDataManager.ACCOUNT_FIELD, account.getId());
     }
 
     protected void deleteAgentAccount(Long agentId, Map<String, Object> data) {

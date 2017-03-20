@@ -24,7 +24,7 @@ public class DockerInstancePostCreate extends AbstractObjectProcessLogic impleme
 
     @Override
     public String[] getProcessNames() {
-        return new String[] { InstanceConstants.PROCESS_CREATE };
+        return new String[]{"instance.create"};
     }
 
     @Override

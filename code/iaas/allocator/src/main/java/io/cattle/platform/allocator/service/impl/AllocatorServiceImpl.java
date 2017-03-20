@@ -242,7 +242,7 @@ public class AllocatorServiceImpl implements AllocatorService, Named {
     
     protected List<Instance> getInstancesToAllocate(Instance instance) {
         if (instance.getDeploymentUnitUuid() != null) {
-            return allocatorDao.getUnmappedDeploymentUnitInstances(instance.getDeploymentUnitId());
+            return allocatorDao.getUnmappedDeploymentUnitInstances(instance.getDeploymentUnitUuid());
         } else {
             List<Instance> instances = new ArrayList<>();
             instances.add(instance);

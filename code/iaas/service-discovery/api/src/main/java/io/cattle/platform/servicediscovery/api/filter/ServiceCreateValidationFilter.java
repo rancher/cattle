@@ -1,22 +1,21 @@
 package io.cattle.platform.servicediscovery.api.filter;
 
 import static io.cattle.platform.core.model.tables.ServiceTable.*;
+
 import io.cattle.platform.core.addon.PortRule;
+import io.cattle.platform.core.addon.ScalePolicy;
 import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.constants.ServiceConstants;
 import io.cattle.platform.core.model.Service;
-import io.cattle.platform.core.model.ServiceRevision;
 import io.cattle.platform.core.model.Stack;
 import io.cattle.platform.core.util.PortSpec;
-import io.cattle.platform.core.util.ServiceUtil;
-import io.cattle.platform.core.util.ServiceUtil.UpgradedConfig;
 import io.cattle.platform.iaas.api.filter.common.AbstractDefaultResourceManagerFilter;
 import io.cattle.platform.json.JsonMapper;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.object.util.DataUtils;
-import io.cattle.platform.servicediscovery.api.service.ServiceDataManager;
+import io.cattle.platform.servicediscovery.api.util.ServiceDiscoveryUtil;
 import io.cattle.platform.servicediscovery.api.util.selector.SelectorUtils;
 import io.cattle.platform.storage.api.filter.ExternalTemplateInstanceFilter;
 import io.cattle.platform.storage.service.StorageService;
@@ -42,14 +41,15 @@ import org.apache.commons.lang3.StringUtils;
 
 @Named
 public class ServiceCreateValidationFilter extends AbstractDefaultResourceManagerFilter {
+
     @Inject
     ObjectManager objectManager;
+
     @Inject
     StorageService storageService;
+
     @Inject
     JsonMapper jsonMapper;
-    @Inject
-    ServiceDataManager svcDataMgr;
 
     private static final int LB_HEALTH_CHECK_PORT = 42;
 
@@ -84,6 +84,8 @@ public class ServiceCreateValidationFilter extends AbstractDefaultResourceManage
 
         validatePorts(service, type, request);
 
+        validateScalePolicy(service, request, false);
+
         request = setServiceIndexStrategy(type, request);
 
         request = setLBServiceEnvVarsAndHealthcheck(type, service, request);
@@ -105,25 +107,18 @@ public class ServiceCreateValidationFilter extends AbstractDefaultResourceManage
             List<PortRule> portRules = jsonMapper.convertCollectionValue(
                     lbConfig.get(ServiceConstants.FIELD_PORT_RULES), List.class, PortRule.class);
             for (PortRule rule : portRules) {
-                // either serviceId or instanceId or selector are required
-                boolean emptyService = StringUtils.isEmpty(rule.getServiceId());
-                boolean emptyInstance = StringUtils.isEmpty(rule.getInstanceId());
+                // either serviceId or selector are required
                 boolean emptySelector = StringUtils.isEmpty(rule.getSelector());
-                int count = 0;
-                count = !emptySelector ? ++count : count;
-                count = !emptyService ? ++count : count;
-                count = !emptyInstance ? ++count : count;
-
-                if (count == 0) {
-                    throw new ValidationErrorException(ValidationErrorCodes.MISSING_REQUIRED,
-                            "serviceId");
+                boolean emptyService = StringUtils.isEmpty(rule.getServiceId());
+                if (emptySelector && emptyService) {
+                    throw new ValidationErrorException(ValidationErrorCodes.MISSING_REQUIRED, "serviceId");
                 }
-                if (count > 1) {
+                if (!emptySelector && !emptyService) {
                     throw new ValidationErrorException(ValidationErrorCodes.INVALID_OPTION,
                             "Can't specify both selector and serviceId");
                 }
 
-                if (emptySelector && rule.getTargetPort() == null) {
+                if (!emptyService && rule.getTargetPort() == null) {
                     throw new ValidationErrorException(ValidationErrorCodes.MISSING_REQUIRED, "targetPort");
                 }
             }
@@ -155,7 +150,7 @@ public class ServiceCreateValidationFilter extends AbstractDefaultResourceManage
 
         Map<Object, Object> launchConfig = (Map<Object, Object>) data.get(ServiceConstants.FIELD_LAUNCH_CONFIG);
 
-        ServiceUtil.injectBalancerLabelsAndHealthcheck(launchConfig);
+        ServiceDiscoveryUtil.injectBalancerLabelsAndHealthcheck(launchConfig);
         data.put(ServiceConstants.FIELD_LAUNCH_CONFIG, launchConfig);
         request.setRequestObject(data);
         return request;
@@ -210,6 +205,39 @@ public class ServiceCreateValidationFilter extends AbstractDefaultResourceManage
         }
     }
 
+    protected void validateScalePolicy(Service service, ApiRequest request, boolean forUpdate) {
+        Integer scale = DataUtils.getFieldFromRequest(request,
+                ServiceConstants.FIELD_SCALE,
+                Integer.class);
+        if (scale == null && forUpdate) {
+            scale = DataAccessor.fieldInteger(service, ServiceConstants.FIELD_SCALE);
+        }
+
+        if (scale == null) {
+            return;
+        }
+
+        Object policyObj = DataUtils.getFieldFromRequest(request,
+                ServiceConstants.FIELD_SCALE_POLICY,
+                Object.class);
+        ScalePolicy policy = null;
+        if (policyObj != null) {
+            policy = jsonMapper.convertValue(policyObj,
+                    ScalePolicy.class);
+        } else if (forUpdate) {
+            policy = DataAccessor.field(service,
+                    ServiceConstants.FIELD_SCALE_POLICY, jsonMapper, ScalePolicy.class);
+        }
+        if (policy == null) {
+            return;
+        }
+
+        if (policy.getMin().intValue() > policy.getMax().intValue()) {
+            throw new ValidationErrorException(ValidationErrorCodes.MAX_LIMIT_EXCEEDED,
+                    "Min scale can't exceed scale");
+        }
+    }
+
     protected void validateSelector(ApiRequest request) {
         String selectorContainer = DataUtils.getFieldFromRequest(request,
                 ServiceConstants.FIELD_SELECTOR_CONTAINER,
@@ -249,7 +277,7 @@ public class ServiceCreateValidationFilter extends AbstractDefaultResourceManage
         List<String> invalidStates = Arrays.asList(InstanceConstants.STATE_ERROR, CommonStatesConstants.REMOVED,
                 CommonStatesConstants.REMOVING);
         if (env == null || invalidStates.contains(env.getState())) {
-            throw new ValidationErrorException(ValidationErrorCodes.INVALID_STATE, InstanceConstants.FIELD_STACK_ID);
+            throw new ValidationErrorException(ValidationErrorCodes.INVALID_STATE, ServiceConstants.FIELD_STACK_ID);
         }
     }
 
@@ -315,51 +343,10 @@ public class ServiceCreateValidationFilter extends AbstractDefaultResourceManage
         validateLaunchConfigs(service, request);
         validateSelector(request);
         validateLbConfig(request, type);
+        validateScalePolicy(service, request, true);
         validatePorts(service, type, request);
-        request = setForUpgrade(service, request);
 
         return super.update(type, id, request, next);
-    }
-
-    protected ApiRequest setForUpgrade(Service service, ApiRequest request) {
-        Map<String, Object> data = CollectionUtils.toMap(request.getRequestObject());
-        List<Map<String, Object>> launchConfigs = populateLaunchConfigs(service, request);
-        List<Map<String, Object>> secondary = new ArrayList<>();
-        Map<String, Object> primary = null;
-        for (Map<String, Object> lc : launchConfigs) {
-            if (!lc.containsKey("name")) {
-                primary = lc;
-            } else {
-                secondary.add(lc);
-            }
-        }
-        UpgradedConfig upgrade = ServiceUtil.mergeLaunchConfigs(service, primary, secondary);
-        if (upgrade == null) {
-            return request;
-        }
-        if (upgrade.isRunUpgrade()) {
-            ServiceRevision oldRevision = svcDataMgr.getCurrentRevision(service);
-            if (oldRevision != null) {
-                data.put(InstanceConstants.FIELD_PREVIOUS_REVISION_ID, oldRevision.getId());
-            }
-            ServiceRevision newRevision = svcDataMgr.createRevision(service, upgrade.getPrimaryLaunchConfig(),
-                    upgrade.getSecondaryLaunchConfigs(), false);
-            data.put(InstanceConstants.FIELD_REVISION_ID, newRevision.getId());
-            data.put(ServiceConstants.FIELD_LAUNCH_CONFIG, upgrade.getPrimaryLaunchConfig());
-            data.put(ServiceConstants.FIELD_SECONDARY_LAUNCH_CONFIGS, upgrade.getSecondaryLaunchConfigs());
-            request.setRequestObject(data);
-            setForUpgrade(service);
-        }
-
-        return request;
-    }
-
-    protected void setForUpgrade(Service service) {
-        if (ServiceConstants.SERVICE_LIKE.contains(service.getKind())) {
-            Map<String, Object> data = new HashMap<>();
-            data.put(ServiceConstants.FIELD_IS_UPGRADE, true);
-            objectManager.setFields(objectManager.reload(service), data);
-        }
     }
 
     protected void validateLaunchConfigs(Service service, ApiRequest request) {
@@ -386,7 +373,7 @@ public class ServiceCreateValidationFilter extends AbstractDefaultResourceManage
             return;
         }
 
-        ServiceUtil.validateScaleSwitch(newLaunchConfig, launchConfig);
+        ServiceDiscoveryUtil.validateScaleSwitch(newLaunchConfig, launchConfig);
     }
 
 
@@ -483,7 +470,7 @@ public class ServiceCreateValidationFilter extends AbstractDefaultResourceManage
                 continue;
             }
             usedNames.add(existingSvc.getName().toLowerCase());
-            for (String usedLcName : ServiceUtil.getLaunchConfigNames(existingSvc)) {
+            for (String usedLcName : ServiceDiscoveryUtil.getServiceLaunchConfigNames(existingSvc)) {
                 usedNames.add(usedLcName.toLowerCase());
             }
         }

@@ -2,14 +2,15 @@ package io.cattle.platform.servicediscovery.api.filter;
 
 import io.cattle.platform.core.addon.InServiceUpgradeStrategy;
 import io.cattle.platform.core.addon.ServiceUpgrade;
+import io.cattle.platform.core.addon.ServiceUpgradeStrategy;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.constants.ServiceConstants;
 import io.cattle.platform.core.model.Service;
-import io.cattle.platform.core.util.ServiceUtil;
 import io.cattle.platform.iaas.api.filter.common.AbstractDefaultResourceManagerFilter;
 import io.cattle.platform.json.JsonMapper;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.util.DataAccessor;
+import io.cattle.platform.servicediscovery.api.util.ServiceDiscoveryUtil;
 import io.cattle.platform.storage.api.filter.ExternalTemplateInstanceFilter;
 import io.cattle.platform.storage.service.StorageService;
 import io.cattle.platform.util.type.CollectionUtils;
@@ -63,7 +64,11 @@ public class ServiceUpgradeValidationFilter extends AbstractDefaultResourceManag
             ServiceUpgrade upgrade = jsonMapper.convertValue(request.getRequestObject(),
                     ServiceUpgrade.class);
 
-            InServiceUpgradeStrategy strategy = upgrade.getInServiceStrategy();
+            ServiceUpgradeStrategy strategy = upgrade.getStrategy();
+            if (strategy == null) {
+                ValidationErrorCodes.throwValidationError(ValidationErrorCodes.MISSING_REQUIRED,
+                        "Upgrade strategy needs to be set");
+            }
 
             processInServiceUpgradeStrategy(request, service, upgrade, strategy);
         }
@@ -73,24 +78,27 @@ public class ServiceUpgradeValidationFilter extends AbstractDefaultResourceManag
 
     @SuppressWarnings("unchecked")
     protected void processInServiceUpgradeStrategy(ApiRequest request, Service service, ServiceUpgrade upgrade,
-            InServiceUpgradeStrategy strategy) {
-        strategy = finalizeUpgradeStrategy(service, strategy);
+            ServiceUpgradeStrategy strategy) {
+        if (strategy instanceof InServiceUpgradeStrategy) {
+            InServiceUpgradeStrategy inServiceStrategy = (InServiceUpgradeStrategy) strategy;
+            inServiceStrategy = finalizeUpgradeStrategy(service, inServiceStrategy);
 
             Object launchConfig = DataAccessor.field(service, ServiceConstants.FIELD_LAUNCH_CONFIG,
                     Object.class);
-        Object newLaunchConfig = strategy.getLaunchConfig();
+            Object newLaunchConfig = inServiceStrategy.getLaunchConfig();
             if (newLaunchConfig != null) {
-                ServiceUtil.validateScaleSwitch(newLaunchConfig, launchConfig);
+                ServiceDiscoveryUtil.validateScaleSwitch(newLaunchConfig, launchConfig);
             }
             List<Object> secondaryLaunchConfigs = DataAccessor.fields(service)
                     .withKey(ServiceConstants.FIELD_SECONDARY_LAUNCH_CONFIGS)
                     .withDefault(Collections.EMPTY_LIST).as(
                             List.class);
-        strategy.setPreviousLaunchConfig(launchConfig);
-        strategy.setPreviousSecondaryLaunchConfigs(secondaryLaunchConfigs);
-        upgrade.setInServiceStrategy(strategy);
+            inServiceStrategy.setPreviousLaunchConfig(launchConfig);
+            inServiceStrategy.setPreviousSecondaryLaunchConfigs(secondaryLaunchConfigs);
+            upgrade.setInServiceStrategy(inServiceStrategy);
             request.setRequestObject(jsonMapper.writeValueAsMap(upgrade));
-        ServiceUtil.upgradeServiceConfigs(service, strategy, false);
+            ServiceDiscoveryUtil.upgradeServiceConfigs(service, inServiceStrategy, false);
+        }
         objectManager.persist(service);
     }
 
@@ -132,7 +140,7 @@ public class ServiceUpgradeValidationFilter extends AbstractDefaultResourceManag
                 ValidationErrorCodes.throwValidationError(ValidationErrorCodes.INVALID_OPTION,
                         "LaunchConfig is required for load balancer service");
             }
-            ServiceUtil.injectBalancerLabelsAndHealthcheck((Map<Object, Object>) strategy.getLaunchConfig());
+            ServiceDiscoveryUtil.injectBalancerLabelsAndHealthcheck((Map<Object, Object>) strategy.getLaunchConfig());
         }
 
         Map<String, Map<Object, Object>> serviceLCs = getExistingLaunchConfigs(service);
@@ -242,7 +250,7 @@ public class ServiceUpgradeValidationFilter extends AbstractDefaultResourceManag
     }
 
     protected Map<String, Map<Object, Object>> getExistingLaunchConfigs(Service service) {
-        Map<String, Map<Object, Object>> serviceLCs = ServiceUtil.getServiceLaunchConfigsWithNames(service);
+        Map<String, Map<Object, Object>> serviceLCs = ServiceDiscoveryUtil.getServiceLaunchConfigsWithNames(service);
         Map<Object, Object> primaryLC = serviceLCs.get(ServiceConstants.PRIMARY_LAUNCH_CONFIG_NAME);
         serviceLCs.remove(ServiceConstants.PRIMARY_LAUNCH_CONFIG_NAME);
         serviceLCs.put(service.getName(), primaryLC);

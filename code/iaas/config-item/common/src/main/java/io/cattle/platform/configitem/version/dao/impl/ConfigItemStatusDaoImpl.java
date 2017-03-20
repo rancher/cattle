@@ -4,11 +4,11 @@ import static io.cattle.platform.core.model.tables.AccountTable.*;
 import static io.cattle.platform.core.model.tables.AgentTable.*;
 import static io.cattle.platform.core.model.tables.ConfigItemStatusTable.*;
 import static io.cattle.platform.core.model.tables.ConfigItemTable.*;
-import static io.cattle.platform.core.model.tables.DeploymentUnitTable.*;
 import static io.cattle.platform.core.model.tables.HostTable.*;
 import static io.cattle.platform.core.model.tables.InstanceTable.*;
 import static io.cattle.platform.core.model.tables.ServiceTable.*;
 import static io.cattle.platform.core.model.tables.StackTable.*;
+
 import io.cattle.platform.archaius.util.ArchaiusUtil;
 import io.cattle.platform.configitem.events.ConfigUpdated;
 import io.cattle.platform.configitem.model.Client;
@@ -24,7 +24,6 @@ import io.cattle.platform.core.model.Account;
 import io.cattle.platform.core.model.Agent;
 import io.cattle.platform.core.model.ConfigItem;
 import io.cattle.platform.core.model.ConfigItemStatus;
-import io.cattle.platform.core.model.DeploymentUnit;
 import io.cattle.platform.core.model.Host;
 import io.cattle.platform.core.model.Service;
 import io.cattle.platform.core.model.Stack;
@@ -157,10 +156,6 @@ public class ConfigItemStatusDaoImpl extends AbstractJooqDao implements ConfigIt
 
         if (client.getResourceType() == Host.class) {
             return CONFIG_ITEM_STATUS.HOST_ID;
-        }
-
-        if (client.getResourceType() == DeploymentUnit.class) {
-            return CONFIG_ITEM_STATUS.DEPLOYMENT_UNIT_ID;
         }
 
         throw new IllegalArgumentException("Unsupported client type [" + client.getResourceType() + "]");
@@ -323,11 +318,6 @@ public class ConfigItemStatusDaoImpl extends AbstractJooqDao implements ConfigIt
             CollectionUtils.addToMap(result, client, status.getName(), ArrayList.class);
         }
 
-        for (ConfigItemStatus status : (migration ? deploymentUnitMigrationItems() : deploymentUnitsOutOfSyncItems())) {
-            Client client = new Client(status);
-            CollectionUtils.addToMap(result, client, status.getName(), ArrayList.class);
-        }
-
         return result;
     }
 
@@ -404,21 +394,6 @@ public class ConfigItemStatusDaoImpl extends AbstractJooqDao implements ConfigIt
                 .fetchInto(ConfigItemStatusRecord.class);
     }
 
-    protected List<? extends ConfigItemStatus> deploymentUnitMigrationItems() {
-        return create()
-                .select(CONFIG_ITEM_STATUS.fields())
-                .from(CONFIG_ITEM_STATUS)
-                .join(DEPLOYMENT_UNIT)
-                .on(DEPLOYMENT_UNIT.ID.eq(CONFIG_ITEM_STATUS.DEPLOYMENT_UNIT_ID))
-                .join(CONFIG_ITEM)
-                .on(CONFIG_ITEM.NAME.eq(CONFIG_ITEM_STATUS.NAME))
-                .where(CONFIG_ITEM_STATUS.SOURCE_VERSION.isNotNull()
-                        .and(CONFIG_ITEM_STATUS.SOURCE_VERSION.ne(CONFIG_ITEM.SOURCE_VERSION))
-                        .and(DEPLOYMENT_UNIT.REMOVED.isNull()))
-                .limit(BATCH_SIZE.get())
-                .fetchInto(ConfigItemStatusRecord.class);
-    }
-
     protected List<? extends ConfigItemStatus> stackMigrationItems() {
         return create()
                 .select(CONFIG_ITEM_STATUS.fields())
@@ -487,18 +462,6 @@ public class ConfigItemStatusDaoImpl extends AbstractJooqDao implements ConfigIt
                 .on(HOST.ID.eq(CONFIG_ITEM_STATUS.HOST_ID))
                 .where(CONFIG_ITEM_STATUS.REQUESTED_VERSION.ne(CONFIG_ITEM_STATUS.APPLIED_VERSION)
                         .and(HOST.REMOVED.isNull()))
-                .limit(BATCH_SIZE.get())
-                .fetchInto(ConfigItemStatusRecord.class);
-    }
-
-    protected List<? extends ConfigItemStatus> deploymentUnitsOutOfSyncItems() {
-        return create()
-                .select(CONFIG_ITEM_STATUS.fields())
-                .from(CONFIG_ITEM_STATUS)
-                .join(DEPLOYMENT_UNIT)
-                .on(DEPLOYMENT_UNIT.ID.eq(CONFIG_ITEM_STATUS.DEPLOYMENT_UNIT_ID))
-                .where(CONFIG_ITEM_STATUS.REQUESTED_VERSION.ne(CONFIG_ITEM_STATUS.APPLIED_VERSION)
-                        .and(DEPLOYMENT_UNIT.REMOVED.isNull()))
                 .limit(BATCH_SIZE.get())
                 .fetchInto(ConfigItemStatusRecord.class);
     }
