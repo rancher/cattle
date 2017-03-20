@@ -161,6 +161,7 @@ public class ServiceConstants {
     public static final String LABEL_SERVICE_REQUESTED_HOST_ID = "io.rancher.service.requested.host.id";
     public static final String LABEL_SERVICE_LAUNCH_CONFIG = "io.rancher.service.launch.config";
     public static final String LABEL_SIDEKICK = "io.rancher.sidekicks";
+    public static final String LABEL_LB_TARGET = "io.rancher.loadbalancer.target.";
     public static final String LABEL_OVERRIDE_HOSTNAME = "io.rancher.container.hostname_override";
     public static final String LABEL_LB_SSL_PORTS = "io.rancher.loadbalancer.ssl.ports";
     public static final String LABEL_LB_PROXY_PORTS = "io.rancher.loadbalancer.proxy-protocol.ports";

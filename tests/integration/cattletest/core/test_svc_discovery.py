@@ -2009,7 +2009,7 @@ def test_export_config(client, context):
     svc = docker_yml['services'][service.name]
     assert svc['cpuset'] == "0,1"
     assert svc['labels'] == labels
-    assert "restart" in svc
+    assert "restart" not in svc
     assert svc["logging"] is not None
     assert svc["logging"]["driver"] == "json-file"
     assert svc["logging"]["options"] is not None
