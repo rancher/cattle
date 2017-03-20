@@ -1,7 +1,6 @@
 package io.cattle.platform.servicediscovery.process;
 
 import io.cattle.platform.activity.ActivityService;
-import io.cattle.platform.core.addon.InServiceUpgradeStrategy;
 import io.cattle.platform.core.constants.ServiceConstants;
 import io.cattle.platform.core.model.Service;
 import io.cattle.platform.engine.handler.HandlerResult;
@@ -34,26 +33,20 @@ public class ServiceRollback extends AbstractDefaultProcessHandler {
     @Override
     public HandlerResult handle(ProcessState state, ProcessInstance process) {
         final Service service = (Service) state.getResource();
-        InServiceUpgradeStrategy strategy = serviceDataMgr.getUpgradeStrategyFromServiceRevision(service);
-        if (strategy == null) {
-            return null;
-        }
-
-        if (strategy != null) {
-            activityService.run(service, "service.rollback", "Rolling back service", new Runnable() {
-                @Override
-                public void run() {
-                    upgradeManager.rollback(service, strategy);
-                    if (DataAccessor.fieldBool(service, ServiceConstants.FIELD_FINISH_UPGRADE)) {
-                        // v1 rollback
-                        upgradeManager.finishUpgrade(service, true);
-                    } else {
-                        // v2 rollback, no cleanup
-                        deploymentMgr.activate(service);
-                    }
+        activityService.run(service, "service.rollback", "Rolling back service", new Runnable() {
+            @Override
+            public void run() {
+                upgradeManager.upgrade(service, service.getState(), false,
+                        false);
+                if (DataAccessor.fieldBool(service, ServiceConstants.FIELD_FINISH_UPGRADE)) {
+                    // v1 rollback
+                    upgradeManager.finishUpgrade(service, true);
+                } else {
+                    // v2 rollback, no cleanup
+                    deploymentMgr.activate(service);
                 }
-            });
-        } 
+            }
+        });
         return null;
     }
 }

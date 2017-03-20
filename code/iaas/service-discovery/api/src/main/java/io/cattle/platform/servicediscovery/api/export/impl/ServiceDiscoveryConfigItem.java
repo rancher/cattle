@@ -142,7 +142,7 @@ public class ServiceDiscoveryConfigItem {
     public static final ServiceDiscoveryConfigItem METADATA = new ServiceDiscoveryConfigItem(
             ServiceConstants.FIELD_METADATA, ServiceConstants.FIELD_METADATA, false, false, false);
     public static final ServiceDiscoveryConfigItem RETAIN_IP = new ServiceDiscoveryConfigItem(
-            ServiceConstants.FIELD_SERVICE_RETAIN_IP, "retain_ip", false, false, false);
+            ServiceConstants.FIELD_RETAIN_IP, "retain_ip", false, false, false);
 
     public static final ServiceDiscoveryConfigItem LB_CONFIG = new ServiceDiscoveryConfigItem(
             ServiceConstants.FIELD_LB_CONFIG,

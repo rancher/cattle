@@ -65,7 +65,6 @@ public abstract class AbstractServiceDeploymentPlanner implements ServiceDeploym
     protected enum State {
         HEALTHY,
         UNHEALTHY,
-        BAD,
         EXTRA
     }
 
@@ -95,21 +94,11 @@ public abstract class AbstractServiceDeploymentPlanner implements ServiceDeploym
     }
 
     protected void populateDeploymentUnits(List<DeploymentUnit> units, DeploymentManagerContext context) {
-        List<DeploymentUnit> healthyUnhealthy = new ArrayList<>();
         List<DeploymentUnit> healthy = new ArrayList<>();
         List<DeploymentUnit> unhealthy = new ArrayList<>();
         if (units != null) {
-            for (DeploymentUnit unit : units) {
-                List<String> errorStates = Arrays.asList(InstanceConstants.STATE_ERROR,
-                        InstanceConstants.STATE_ERRORING);
-                if (errorStates.contains(unit.getState())) {
-                    addUnit(unit, State.BAD);
-                } else {
-                    healthyUnhealthy.add(unit);
-                }
-            }
             healthActionHandler.populateHealthyUnhealthyUnits(healthy, unhealthy,
-                    healthyUnhealthy, context);
+                    units, context);
             for (DeploymentUnit healthyUnit : healthy) {
                 addUnit(healthyUnit, State.HEALTHY);
             }
@@ -168,7 +157,8 @@ public abstract class AbstractServiceDeploymentPlanner implements ServiceDeploym
             if (unit.getState().equalsIgnoreCase(CommonStatesConstants.DEACTIVATING)) {
                 unit = context.resourceMonitor.waitForNotTransitioning(unit);
             }
-            if (unit.getState().equalsIgnoreCase(CommonStatesConstants.INACTIVE)) {
+            if (Arrays.asList(CommonStatesConstants.INACTIVE, InstanceConstants.STATE_ERROR,
+                    InstanceConstants.STATE_ERRORING).contains(unit.getState())) {
                 context.objectProcessManager.scheduleStandardProcessAsync(StandardProcess.ACTIVATE, unit, null);
             }else if (unit.getState().equalsIgnoreCase(CommonStatesConstants.REQUESTED)) {
                 context.objectProcessManager.scheduleStandardChainedProcessAsync(StandardProcess.CREATE,
@@ -263,8 +253,7 @@ public abstract class AbstractServiceDeploymentPlanner implements ServiceDeploym
             unheathyUnits.add(du);
         }
         for (DeploymentUnit unhealthyUnit : unheathyUnits) {
-            context.objectProcessManager.scheduleProcessInstanceAsync(ServiceConstants.PROCESS_DU_UPDATE_UNHEALTHY,
-                    unhealthyUnit, null);
+            context.objectManager.setFields(context.objectManager.reload(unhealthyUnit), ServiceConstants.FIELD_DEPLOYMENT_UNIT_CLEANUP, true);
         }
     }
     

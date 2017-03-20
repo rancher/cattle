@@ -226,6 +226,7 @@ def test_user_types(user_client, adds=set(), removes=set()):
         'serviceRollback',
         'convertToServiceInput',
         'containerUpgrade',
+        'deploymentUnit',
     }
     types.update(adds)
     types.difference_update(removes)
@@ -480,6 +481,7 @@ def test_admin_types(admin_user_client, adds=set(), removes=set()):
         'serviceRollback',
         'convertToServiceInput',
         'containerUpgrade',
+        'deploymentUnit',
     }
     types.update(adds)
     types.difference_update(removes)
@@ -1083,6 +1085,8 @@ def test_container_auth(admin_user_client, user_client, project_client,
         'exitCode': 'r',
         'prePullOnUpgrade': 'r',
         'revisionId': 'r',
+        'deploymentUnitId': 'r',
+        'previousRevisionId': 'r',
     })
 
     auth_check(user_client.schema, 'container', 'r', {
@@ -1197,6 +1201,8 @@ def test_container_auth(admin_user_client, user_client, project_client,
         'exitCode': 'r',
         'prePullOnUpgrade': 'r',
         'revisionId': 'r',
+        'deploymentUnitId': 'r',
+        'previousRevisionId': 'r',
     })
 
     auth_check(project_client.schema, 'container', 'crud', {
@@ -1311,6 +1317,8 @@ def test_container_auth(admin_user_client, user_client, project_client,
         'exitCode': 'r',
         'prePullOnUpgrade': 'cru',
         'revisionId': 'r',
+        'deploymentUnitId': 'r',
+        'previousRevisionId': 'r',
     })
 
     auth_check(environment_client.schema, 'container', 'crud', {
@@ -1424,6 +1432,8 @@ def test_container_auth(admin_user_client, user_client, project_client,
         'exitCode': 'r',
         'prePullOnUpgrade': 'cru',
         'revisionId': 'r',
+        'deploymentUnitId': 'r',
+        'previousRevisionId': 'r',
     })
 
     auth_check(project_admin_client.schema, 'container', 'crud', {
@@ -1537,6 +1547,8 @@ def test_container_auth(admin_user_client, user_client, project_client,
         'exitCode': 'r',
         'prePullOnUpgrade': 'cru',
         'revisionId': 'r',
+        'deploymentUnitId': 'r',
+        'previousRevisionId': 'r',
     })
 
     auth_check(project_client.schema, 'dockerBuild', 'cr', {
@@ -3243,6 +3255,7 @@ def test_virtual_machine(admin_user_client, user_client, project_client):
         'sidekickTo': 'r',
         'metadata': 'r',
         'exitCode': 'r',
+        'deploymentUnitId': 'r',
     })
 
     auth_check(user_client.schema, 'virtualMachine', 'r', {
@@ -3339,6 +3352,7 @@ def test_virtual_machine(admin_user_client, user_client, project_client):
         'sidekickTo': 'r',
         'metadata': 'r',
         'exitCode': 'r',
+        'deploymentUnitId': 'r',
     })
 
     auth_check(project_client.schema, 'virtualMachine', 'crud', {
@@ -3435,6 +3449,7 @@ def test_virtual_machine(admin_user_client, user_client, project_client):
         'sidekickTo': 'cr',
         'metadata': 'cru',
         'exitCode': 'r',
+        'deploymentUnitId': 'r',
     })
 
 
