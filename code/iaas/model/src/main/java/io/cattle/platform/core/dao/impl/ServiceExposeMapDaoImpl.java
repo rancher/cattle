@@ -364,7 +364,7 @@ public class ServiceExposeMapDaoImpl extends AbstractJooqDao implements ServiceE
     }
 
     @Override
-    public List<? extends Instance> getServiceInstancesSetForUpgrade(long serviceId) {
+    public List<? extends Instance> getInstancesSetForUpgrade(long serviceId) {
         return create()
                 .select(INSTANCE.fields())
                 .from(INSTANCE)
@@ -375,23 +375,6 @@ public class ServiceExposeMapDaoImpl extends AbstractJooqDao implements ServiceE
                 .and(SERVICE_EXPOSE_MAP.UPGRADE.eq(true))
                 .and(SERVICE_EXPOSE_MAP.STATE.in(CommonStatesConstants.ACTIVATING,
                         CommonStatesConstants.ACTIVE, CommonStatesConstants.REQUESTED))
-                .and(INSTANCE.REMOVED.isNull())
-                .and(INSTANCE.STATE.ne(CommonStatesConstants.REMOVING))
-                .fetchInto(InstanceRecord.class);
-    }
-
-    @Override
-    public List<? extends Instance> getDeploymentUnitInstancesSetForUpgrade(DeploymentUnit unit) {
-        return create()
-                .select(INSTANCE.fields())
-                .from(INSTANCE)
-                .join(DEPLOYMENT_UNIT)
-                .on(DEPLOYMENT_UNIT.ID.eq(INSTANCE.DEPLOYMENT_UNIT_ID))
-                .join(SERVICE_EXPOSE_MAP)
-                .on(SERVICE_EXPOSE_MAP.INSTANCE_ID.eq(INSTANCE.ID))
-                .where(DEPLOYMENT_UNIT.ID.eq(unit.getId()))
-                .and(SERVICE_EXPOSE_MAP.MANAGED.eq(false))
-                .and(SERVICE_EXPOSE_MAP.UPGRADE.eq(true))
                 .and(INSTANCE.REMOVED.isNull())
                 .and(INSTANCE.STATE.ne(CommonStatesConstants.REMOVING))
                 .fetchInto(InstanceRecord.class);

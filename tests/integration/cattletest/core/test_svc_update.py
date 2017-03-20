@@ -61,6 +61,7 @@ def test_u_update_check_revision(client, super_client, context):
     rev3_id = 0
     for rev in revisions:
         if rev.id != rev2_id and rev.id != rev1.id:
+
             assert rev.configs[svc.name]['capAdd'] == ['AUDIT_WRITE']
             rev3_id = rev.id
             break
@@ -214,19 +215,19 @@ def test_u_in_service_upgrade_networks_from(context, client, super_client):
     env = client.create_stack(name=random_str())
     env = client.wait_success(env)
     image_uuid = context.image_uuid
-    lc1 = {"imageUuid": image_uuid, "networkMode": 'container',
-           "networkLaunchConfig": "secondary1",
-           'prePullOnUpgrade': False}
-    s11 = {"imageUuid": image_uuid, "name": "secondary1",
-           'prePullOnUpgrade': False}
-    s12 = {"imageUuid": image_uuid, "name": "secondary2",
-           'prePullOnUpgrade': False}
+    launch_config = {"imageUuid": image_uuid, "networkMode": 'container',
+                     "networkLaunchConfig": "secondary1",
+                     'prePullOnUpgrade': False}
+    secondary1 = {"imageUuid": image_uuid, "name": "secondary1",
+                  'prePullOnUpgrade': False}
+    secondary2 = {"imageUuid": image_uuid, "name": "secondary2",
+                  'prePullOnUpgrade': False}
     svc = client.create_service(name=random_str(),
                                 stackId=env.id,
                                 scale=2,
-                                launchConfig=lc1,
-                                secondaryLaunchConfigs=[s11,
-                                                        s12])
+                                launchConfig=launch_config,
+                                secondaryLaunchConfigs=[secondary1,
+                                                        secondary2])
     svc = client.wait_success(svc)
     svc = client.wait_success(svc.activate())
 
@@ -238,10 +239,8 @@ def test_u_in_service_upgrade_networks_from(context, client, super_client):
     s12 = _validate_compose_instance_start(client, svc, env,
                                            "2", "secondary1")
 
-    s21 = {"imageUuid": image_uuid, "name": "secondary1",
-           'prePullOnUpgrade': False, 'dns': ['10.1.1.1']}
     u_svc = _run_insvc_upgrade(client, svc,
-                               secondaryLaunchConfigs=[s21],
+                               secondaryLaunchConfigs=[secondary1],
                                batchSize=1)
     u_svc = client.wait_success(u_svc)
     assert u_svc.state == 'active'
@@ -260,19 +259,19 @@ def test_u_in_service_upgrade_volumes_from(context, client, super_client):
     env = client.create_stack(name=random_str())
     env = client.wait_success(env)
     image_uuid = context.image_uuid
-    lc1 = {"imageUuid": image_uuid,
-           'prePullOnUpgrade': False}
-    sec11 = {"imageUuid": image_uuid, "name": "secondary1",
-             "dataVolumesFromLaunchConfigs": ['secondary2'],
-             'prePullOnUpgrade': False}
-    sec12 = {"imageUuid": image_uuid, "name": "secondary2",
-             'prePullOnUpgrade': False}
+    launch_config = {"imageUuid": image_uuid,
+                     'prePullOnUpgrade': False}
+    secondary1 = {"imageUuid": image_uuid, "name": "secondary1",
+                  "dataVolumesFromLaunchConfigs": ['secondary2'],
+                  'prePullOnUpgrade': False}
+    secondary2 = {"imageUuid": image_uuid, "name": "secondary2",
+                  'prePullOnUpgrade': False}
     svc = client.create_service(name=random_str(),
                                 stackId=env.id,
                                 scale=2,
-                                launchConfig=lc1,
-                                secondaryLaunchConfigs=[sec11,
-                                                        sec12])
+                                launchConfig=launch_config,
+                                secondaryLaunchConfigs=[secondary1,
+                                                        secondary2])
     svc = client.wait_success(svc)
     svc = client.wait_success(svc.activate())
 
@@ -286,15 +285,9 @@ def test_u_in_service_upgrade_volumes_from(context, client, super_client):
     s22 = _validate_compose_instance_start(client, svc, env,
                                            "2", "secondary2")
 
-    lc2 = {"imageUuid": image_uuid,
-           'prePullOnUpgrade': False,
-           'dns': ['10.1.1.1']}
-    sec22 = {"imageUuid": image_uuid, "name": "secondary2",
-             'prePullOnUpgrade': False,
-             'dns': ['10.1.1.1']}
     u_svc = _run_insvc_upgrade(client, svc,
-                               launchConfig=lc2,
-                               secondaryLaunchConfigs=[sec22],
+                               launchConfig=launch_config,
+                               secondaryLaunchConfigs=[secondary2],
                                batchSize=1)
     u_svc = client.wait_success(u_svc)
     assert u_svc.state == 'active'
@@ -376,28 +369,26 @@ def test_u_rollback_sidekicks(context, client, super_client):
     env = client.create_stack(name=random_str())
     env = client.wait_success(env)
     image_uuid = context.image_uuid
-    lc1 = {"imageUuid": image_uuid,
-           'prePullOnUpgrade': False}
-    s11 = {"imageUuid": image_uuid, "name": "secondary1",
-           'prePullOnUpgrade': False}
-    s12 = {"imageUuid": image_uuid, "name": "secondary2",
-           'prePullOnUpgrade': False}
+    launch_config = {"imageUuid": image_uuid,
+                     'prePullOnUpgrade': False}
+    secondary1 = {"imageUuid": image_uuid, "name": "secondary1",
+                  'prePullOnUpgrade': False}
+    secondary2 = {"imageUuid": image_uuid, "name": "secondary2",
+                  'prePullOnUpgrade': False}
     svc = client.create_service(name=random_str(),
                                 stackId=env.id,
                                 scale=3,
-                                launchConfig=lc1,
-                                secondaryLaunchConfigs=[s11,
-                                                        s12])
+                                launchConfig=launch_config,
+                                secondaryLaunchConfigs=[secondary1,
+                                                        secondary2])
     svc = client.wait_success(svc)
     svc = client.wait_success(svc.activate())
     initial_maps = super_client. \
         list_serviceExposeMap(serviceId=svc.id,
                               state='active', upgrade=False)
 
-    s22 = {"imageUuid": image_uuid, "name": "secondary2",
-           'prePullOnUpgrade': False, 'dns': ['10.1.1.1']}
     u_svc = _run_insvc_upgrade(client, svc,
-                               secondaryLaunchConfigs=[s22],
+                               secondaryLaunchConfigs=[secondary1],
                                batchSize=2)
     u_svc = client.wait_success(u_svc)
     assert u_svc.state == 'active'
@@ -422,13 +413,13 @@ def test_u_rollback_id(context, client, super_client):
     env = client.wait_success(env)
     assert env.state == 'active'
     image_uuid = context.image_uuid
-    lc1 = {'imageUuid': image_uuid,
-           'networkMode': None,
-           'prePullOnUpgrade': False}
+    launch_config = {'imageUuid': image_uuid,
+                     'networkMode': None,
+                     'prePullOnUpgrade': False}
     svc = client.create_service(name=random_str(),
                                 stackId=env.id,
                                 scale=1,
-                                launchConfig=lc1,
+                                launchConfig=launch_config,
                                 image=image_uuid)
     svc = client.wait_success(svc)
     svc = client.wait_success(svc.activate())
@@ -436,12 +427,8 @@ def test_u_rollback_id(context, client, super_client):
     expose_map = maps[0]
     c1 = super_client.reload(expose_map.instance())
 
-    lc2 = {'imageUuid': image_uuid,
-           'networkMode': None,
-           'prePullOnUpgrade': False,
-           'dns': ['10.1.1.1']}
     svc = _run_insvc_upgrade(client, svc, batchSize=2,
-                             launchConfig=lc2,
+                             launchConfig=launch_config,
                              startFirst=False,
                              intervalMillis=100)
 
@@ -495,29 +482,26 @@ def test_u_sidekick_addition(context, client):
     env = client.create_stack(name=random_str())
     env = client.wait_success(env)
     image_uuid = context.image_uuid
-    lc1 = {"imageUuid": image_uuid,
-           'prePullOnUpgrade': False}
-    s11 = {"imageUuid": image_uuid, "name": "secondary1",
-           'prePullOnUpgrade': False}
+    launch_config = {"imageUuid": image_uuid,
+                     'prePullOnUpgrade': False}
+    secondary1 = {"imageUuid": image_uuid, "name": "secondary1",
+                  'prePullOnUpgrade': False}
+    secondary2 = {"imageUuid": image_uuid, "name": "secondary2",
+                  'prePullOnUpgrade': False}
     svc = client.create_service(name=random_str(),
                                 stackId=env.id,
                                 scale=1,
-                                launchConfig=lc1,
-                                secondaryLaunchConfigs=[s11])
+                                launchConfig=launch_config,
+                                secondaryLaunchConfigs=[secondary1])
     svc = client.wait_success(svc)
     svc = client.wait_success(svc.activate())
 
     c2_pre = _validate_compose_instance_start(client, svc, env,
                                               "1", "secondary1")
 
-    lc2 = {"imageUuid": image_uuid,
-           'prePullOnUpgrade': False,
-           'dns': ['10.1.1.1']}
-    s12 = {"imageUuid": image_uuid, "name": "secondary2",
-           'prePullOnUpgrade': False}
     u_svc = _run_insvc_upgrade(client, svc,
-                               launchConfig=lc2,
-                               secondaryLaunchConfigs=[s12],
+                               launchConfig=launch_config,
+                               secondaryLaunchConfigs=[secondary2],
                                batchSize=1)
     u_svc = client.wait_success(u_svc)
     assert u_svc.state == 'active'
@@ -661,29 +645,26 @@ def test_u_sidekick_removal(context, client):
     env = client.create_stack(name=random_str())
     env = client.wait_success(env)
     image_uuid = context.image_uuid
-    lc1 = {"imageUuid": image_uuid,
-           'prePullOnUpgrade': False}
-    s11 = {"imageUuid": image_uuid, "name": "secondary1",
-           'prePullOnUpgrade': False}
-    s12 = {"imageUuid": image_uuid, "name": "secondary2",
-           'prePullOnUpgrade': False}
+    launch_config = {"imageUuid": image_uuid,
+                     'prePullOnUpgrade': False}
+    secondary1 = {"imageUuid": image_uuid, "name": "secondary1",
+                  'prePullOnUpgrade': False}
+    secondary2 = {"imageUuid": image_uuid, "name": "secondary2",
+                  'prePullOnUpgrade': False}
     svc = client.create_service(name=random_str(),
                                 stackId=env.id,
                                 scale=1,
-                                launchConfig=lc1,
-                                secondaryLaunchConfigs=[s11,
-                                                        s12])
+                                launchConfig=launch_config,
+                                secondaryLaunchConfigs=[secondary1,
+                                                        secondary2])
     svc = client.wait_success(svc)
     svc = client.wait_success(svc.activate())
     c1_pre = _validate_compose_instance_start(client, svc, env, "1")
 
-    s21 = {"imageUuid": image_uuid, "name": "secondary1",
-           'prePullOnUpgrade': False,
-           'dns': ['10.1.1.1']}
-    s22 = {"imageUuid": image_uuid, "name": "secondary2",
-           'imageUuid': "rancher/none"}
+    secondary2 = {"imageUuid": image_uuid, "name": "secondary2",
+                  'imageUuid': "rancher/none"}
     u_svc = _run_insvc_upgrade(client, svc,
-                               secondaryLaunchConfigs=[s21, s22],
+                               secondaryLaunchConfigs=[secondary1, secondary2],
                                batchSize=1)
     u_svc = client.wait_success(u_svc)
     assert u_svc.state == 'active'
@@ -700,18 +681,18 @@ def test_u_sidekick_removal_rollback(context, client):
     env = client.create_stack(name=random_str())
     env = client.wait_success(env)
     image_uuid = context.image_uuid
-    lc1 = {"imageUuid": image_uuid,
-           'prePullOnUpgrade': False}
-    s11 = {"imageUuid": image_uuid, "name": "secondary1",
-           'prePullOnUpgrade': False}
-    s12 = {"imageUuid": image_uuid, "name": "secondary2",
-           'prePullOnUpgrade': False}
+    launch_config = {"imageUuid": image_uuid,
+                     'prePullOnUpgrade': False}
+    secondary1 = {"imageUuid": image_uuid, "name": "secondary1",
+                  'prePullOnUpgrade': False}
+    secondary2 = {"imageUuid": image_uuid, "name": "secondary2",
+                  'prePullOnUpgrade': False}
     svc = client.create_service(name=random_str(),
                                 stackId=env.id,
                                 scale=1,
-                                launchConfig=lc1,
-                                secondaryLaunchConfigs=[s11,
-                                                        s12])
+                                launchConfig=launch_config,
+                                secondaryLaunchConfigs=[secondary1,
+                                                        secondary2])
     svc = client.wait_success(svc)
     svc = client.wait_success(svc.activate())
     c1_pre = _validate_compose_instance_start(client, svc, env, "1")
@@ -720,13 +701,10 @@ def test_u_sidekick_removal_rollback(context, client):
     c3_pre = _validate_compose_instance_start(client, svc, env, "1",
                                               "secondary2")
 
-    s21 = {"imageUuid": image_uuid, "name": "secondary1",
-           'prePullOnUpgrade': False,
-           'dns': ['10.1.1.1']}
-    s22 = {"imageUuid": image_uuid, "name": "secondary2",
-           'imageUuid': "rancher/none"}
+    secondary2 = {"imageUuid": image_uuid, "name": "secondary2",
+                  'imageUuid': "rancher/none"}
     u_svc = _run_insvc_upgrade(client, svc,
-                               secondaryLaunchConfigs=[s21, s22],
+                               secondaryLaunchConfigs=[secondary1, secondary2],
                                batchSize=1)
     u_svc = client.wait_success(u_svc)
     assert u_svc.state == 'active'
@@ -757,7 +735,7 @@ def test_u_upgrade_global_service(new_context):
     env = client.create_stack(name=random_str())
     env = client.wait_success(env)
     image_uuid = new_context.image_uuid
-    lc1 = {
+    launch_config = {
         "imageUuid": image_uuid,
         "labels": {
             'io.rancher.scheduler.global': 'true'
@@ -765,7 +743,7 @@ def test_u_upgrade_global_service(new_context):
     }
     service = client.create_service(name=random_str(),
                                     stackId=env.id,
-                                    launchConfig=lc1)
+                                    launchConfig=launch_config)
     service = client.wait_success(service)
     assert service.state == "inactive"
 
@@ -774,14 +752,7 @@ def test_u_upgrade_global_service(new_context):
     assert service.state == "active"
     r1 = service.revisionId
 
-    lc2 = {
-        "imageUuid": image_uuid,
-        "labels": {
-            'io.rancher.scheduler.global': 'true'
-        },
-        "dns": ['10.1.1.1']
-    }
-    service = client.update(service, launchConfig=lc2)
+    service = client.update(service, launchConfig=launch_config)
     service = client.wait_success(service)
     assert service.state == 'active'
     r2 = service.revisionId
@@ -817,22 +788,18 @@ def _create_and_schedule_inservice_upgrade(client, context, startFirst=False):
     env = client.wait_success(env)
     assert env.state == 'active'
     image_uuid = context.image_uuid
-    lc1 = {'imageUuid': image_uuid,
-           'networkMode': None,
-           'prePullOnUpgrade': False}
+    launch_config = {'imageUuid': image_uuid,
+                     'networkMode': None,
+                     'prePullOnUpgrade': False}
     svc = client.create_service(name=random_str(),
                                 stackId=env.id,
                                 scale=4,
-                                launchConfig=lc1,
+                                launchConfig=launch_config,
                                 image=image_uuid)
     svc = client.wait_success(svc)
     svc = client.wait_success(svc.activate())
-    lc2 = {'imageUuid': image_uuid,
-           'networkMode': None,
-           'prePullOnUpgrade': False,
-           'dns': ['10.1.1.1']}
     svc = _run_insvc_upgrade(client, svc, batchSize=2,
-                             launchConfig=lc2,
+                             launchConfig=launch_config,
                              startFirst=startFirst,
                              intervalMillis=100)
     return svc
@@ -858,7 +825,7 @@ def _insvc_upgrade(context, client, super_client, activate=True, **kw):
 def _run_insvc_upgrade(client, svc, **kw):
     svc = client.update(svc, kw)
     assert svc.state == 'updating-active' \
-        or svc.state == 'updating-inactive'
+                        or svc.state == 'updating-inactive'
     return svc
 
 
@@ -1047,12 +1014,12 @@ def test_u_rollback_to_revision(context, client, super_client):
     env = client.wait_success(env)
     assert env.state == 'active'
     image_uuid = context.image_uuid
-    lc1 = {'imageUuid': image_uuid,
-           'networkMode': None,
-           'prePullOnUpgrade': False}
+    launch_config = {'imageUuid': image_uuid,
+                     'networkMode': None,
+                     'prePullOnUpgrade': False}
     svc = client.create_service(name=random_str(),
                                 stackId=env.id,
-                                launchConfig=lc1,
+                                launchConfig=launch_config,
                                 image=image_uuid)
     svc = client.wait_success(svc)
     svc = client.wait_success(svc.activate())
@@ -1061,13 +1028,9 @@ def test_u_rollback_to_revision(context, client, super_client):
     c1 = super_client.reload(expose_map.instance())
     r1 = svc.revisionId
 
-    lc2 = {'imageUuid': image_uuid,
-           'networkMode': None,
-           'prePullOnUpgrade': False,
-           'dns': ['10.1.1.1']}
     # upgrade once
     svc = _run_insvc_upgrade(client, svc, batchSize=2,
-                             launchConfig=lc2,
+                             launchConfig=launch_config,
                              startFirst=False,
                              intervalMillis=100)
 
@@ -1080,12 +1043,8 @@ def test_u_rollback_to_revision(context, client, super_client):
     assert c1.id != c2.id
 
     # upgrade second time
-    lc3 = {'imageUuid': image_uuid,
-           'networkMode': None,
-           'prePullOnUpgrade': False,
-           'dns': ['10.1.1.2']}
     svc = _run_insvc_upgrade(client, svc, batchSize=2,
-                             launchConfig=lc3,
+                             launchConfig=launch_config,
                              startFirst=False,
                              intervalMillis=100)
 
