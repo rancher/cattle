@@ -13,6 +13,12 @@
         "environment":{
             "type": "map[string]"
         },
+        "answers":{
+            "type": "map[json]"
+        },
+        "templates":{
+            "type": "map[string]"
+        },
         "binding":{
         	"type": "binding"
         }

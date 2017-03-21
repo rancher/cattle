@@ -2257,6 +2257,7 @@ def test_auth_compose_project(admin_user_client, user_client, project_client):
         'data': 'r',
         'templates': 'r',
         'environment': 'r',
+        'answers': 'r',
         'externalId': 'r',
         'previousExternalId': 'r',
         'previousEnvironment': 'r',
@@ -2272,6 +2273,7 @@ def test_auth_compose_project(admin_user_client, user_client, project_client):
         'accountId': 'r',
         'templates': 'r',
         'environment': 'r',
+        'answers': 'r',
         'externalId': 'r',
         'previousExternalId': 'r',
         'previousEnvironment': 'r',
@@ -2286,6 +2288,7 @@ def test_auth_compose_project(admin_user_client, user_client, project_client):
         'name': 'cr',
         'accountId': 'r',
         'templates': 'cr',
+        'answers': 'cr',
         'environment': 'cr',
         'externalId': 'cru',
         'previousExternalId': 'cru',
@@ -2305,6 +2308,7 @@ def test_auth_kubernetes_stack(admin_user_client, user_client, project_client):
         'data': 'r',
         'namespace': 'r',
         'templates': 'r',
+        'answers': 'r',
         'environment': 'r',
         'externalId': 'r',
         'previousExternalId': 'r',
@@ -2321,6 +2325,7 @@ def test_auth_kubernetes_stack(admin_user_client, user_client, project_client):
         'accountId': 'r',
         'namespace': 'r',
         'templates': 'r',
+        'answers': 'r',
         'environment': 'r',
         'externalId': 'r',
         'previousExternalId': 'r',
@@ -2337,6 +2342,7 @@ def test_auth_kubernetes_stack(admin_user_client, user_client, project_client):
         'accountId': 'r',
         'namespace': 'cr',
         'templates': 'cr',
+        'answers': 'cr',
         'environment': 'cr',
         'externalId': 'cru',
         'previousExternalId': 'cru',
@@ -2368,6 +2374,8 @@ def test_svc_discovery_stack(admin_user_client, user_client, project_client,
         'group': 'r',
         'system': 'r',
         'serviceIds': 'r',
+        'answers': 'r',
+        'templates': 'r',
     })
 
     auth_check(user_client.schema, 'stack', 'r', {
@@ -2386,6 +2394,8 @@ def test_svc_discovery_stack(admin_user_client, user_client, project_client,
         'group': 'r',
         'system': 'r',
         'serviceIds': 'r',
+        'answers': 'r',
+        'templates': 'r',
     })
 
     auth_check(project_client.schema, 'stack', 'crud', {
@@ -2404,6 +2414,8 @@ def test_svc_discovery_stack(admin_user_client, user_client, project_client,
         'group': 'cru',
         'system': 'r',
         'serviceIds': 'r',
+        'answers': 'cr',
+        'templates': 'cr',
     })
 
     auth_check(owner_client.schema, 'stack', 'crud', {
@@ -2422,6 +2434,8 @@ def test_svc_discovery_stack(admin_user_client, user_client, project_client,
         'group': 'cru',
         'system': 'cru',
         'serviceIds': 'r',
+        'answers': 'cr',
+        'templates': 'cr',
     })
 
 
@@ -2537,12 +2551,14 @@ def test_auth_k8s_stack_upgrade(admin_user_client, user_client,
     auth_check(admin_user_client.schema, 'kubernetesStackUpgrade', 'r', {
         'templates': 'r',
         'environment': 'r',
+        'answers': 'r',
         'externalId': 'r',
     })
 
     auth_check(user_client.schema, 'kubernetesStackUpgrade', 'r', {
         'templates': 'r',
         'environment': 'r',
+        'answers': 'r',
         'externalId': 'r',
     })
 
@@ -2550,6 +2566,7 @@ def test_auth_k8s_stack_upgrade(admin_user_client, user_client,
         'templates': 'cr',
         'environment': 'cr',
         'externalId': 'cr',
+        'answers': 'cr',
     })
 
 
@@ -2560,6 +2577,8 @@ def test_auth_env_upgrade(admin_user_client, user_client,
         'rancherCompose': 'r',
         'environment': 'r',
         'externalId': 'r',
+        'answers': 'r',
+        'templates': 'r',
     })
 
     auth_check(user_client.schema, 'stackUpgrade', 'r', {
@@ -2567,6 +2586,8 @@ def test_auth_env_upgrade(admin_user_client, user_client,
         'rancherCompose': 'r',
         'environment': 'r',
         'externalId': 'r',
+        'answers': 'r',
+        'templates': 'r',
     })
 
     auth_check(project_client.schema, 'stackUpgrade', 'cr', {
@@ -2574,6 +2595,8 @@ def test_auth_env_upgrade(admin_user_client, user_client,
         'rancherCompose': 'cr',
         'environment': 'cr',
         'externalId': 'cr',
+        'answers': 'cr',
+        'templates': 'cr',
     })
 
 

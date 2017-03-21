@@ -9,6 +9,9 @@
         },
         "environment":{
             "type": "map[string]"
+        },
+        "answers":{
+            "type": "map[json]"
         }
     }
 }
