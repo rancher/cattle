@@ -346,7 +346,6 @@ def test_container_event_image_and_reg_cred(client, host, agent_cli, user_id,
     registry = client.wait_success(registry)
     reg_cred = client.create_registry_credential(
         registryId=registry.id,
-        email='test@rancher.com',
         publicValue='rancher',
         secretValue='rancher')
     registry_credential = client.wait_success(reg_cred)

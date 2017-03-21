@@ -33,6 +33,7 @@
         "loadBalancerCookieStickinessPolicy" : "cru",
         "loadBalancerService" : "crud",
         "logConfig" : "cr",
+        "hostTemplate": "crud",
         "machine": "crd",
         "machineDriver.resourceActions\\..*": "",
         "networkDriver": "r",

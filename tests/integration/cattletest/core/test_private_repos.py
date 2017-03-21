@@ -24,12 +24,10 @@ def _create_registry_and_credential(client):
     registry = _create_registry(client)
     reg_cred = client.create_registry_credential(
         registryId=registry.id,
-        email='test@rancher.com',
         publicValue='rancher',
         secretValue='rancher')
     reg_cred = client.wait_success(reg_cred)
     assert reg_cred is not None
-    assert reg_cred.email == 'test@rancher.com'
     assert reg_cred.kind == 'registryCredential'
     assert reg_cred.registryId == registry.id
     assert reg_cred.publicValue == 'rancher'
@@ -92,10 +90,8 @@ def _crud_registry_credential(client):
         client.update(registry_credential, {
             'publicValue': 'test',
             'secretValue': 'rancher45',
-            'email': 'engineering@rancher.com',
         }))
     assert registry_credential.publicValue == 'test'
-    assert registry_credential.email == 'engineering@rancher.com'
     registry_credential = client.delete(registry_credential)
     registry_credential = client.wait_success(registry_credential)
     assert registry_credential.state == 'removed'
@@ -141,7 +137,6 @@ def test_container_image_and_registry_credential(client,
     registry = client.wait_success(registry)
     reg_cred = client.create_registry_credential(
         registryId=registry.id,
-        email='test@rancher.com',
         publicValue='rancher',
         secretValue='rancher')
     registry_credential = client.wait_success(reg_cred)
@@ -183,7 +178,6 @@ def test_registry_credentials(client, super_client, admin_user_client):
     registry = _create_registry(client)
     reg_cred = client.create_registry_credential(
         registryId=registry.id,
-        email='test@rancher.com',
         publicValue='rancher',
         secretValue='rancher')
 
@@ -198,7 +192,6 @@ def test_registry_credentials(client, super_client, admin_user_client):
     registry = _create_registry(projectadmin_client)
     reg_cred = projectadmin_client.create_registry_credential(
         registryId=registry.id,
-        email='test@rancher.com',
         publicValue='rancher',
         secretValue='rancher')
     reg_cred = projectadmin_client.wait_success(reg_cred)

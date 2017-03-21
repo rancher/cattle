@@ -174,6 +174,11 @@ public class Tables {
 	public static final io.cattle.platform.core.model.tables.HostLabelMapTable HOST_LABEL_MAP = io.cattle.platform.core.model.tables.HostLabelMapTable.HOST_LABEL_MAP;
 
 	/**
+	 * The table cattle.host_template
+	 */
+	public static final io.cattle.platform.core.model.tables.HostTemplateTable HOST_TEMPLATE = io.cattle.platform.core.model.tables.HostTemplateTable.HOST_TEMPLATE;
+
+	/**
 	 * The table cattle.image
 	 */
 	public static final io.cattle.platform.core.model.tables.ImageTable IMAGE = io.cattle.platform.core.model.tables.ImageTable.IMAGE;

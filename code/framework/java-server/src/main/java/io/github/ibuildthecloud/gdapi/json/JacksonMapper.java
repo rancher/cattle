@@ -18,6 +18,8 @@ import java.util.TimeZone;
 import javax.annotation.PostConstruct;
 
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -80,6 +82,8 @@ public class JacksonMapper implements JsonMapper {
     public static interface ResourceMix {
         @JsonAnyGetter
         Map<String, Object> getFields();
+        @JsonInclude(Include.NON_NULL)
+        String getBaseType();
     }
 
     public static interface SchemaCollectionMixin {

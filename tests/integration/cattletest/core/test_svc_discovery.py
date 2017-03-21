@@ -1527,7 +1527,6 @@ def test_svc_container_reg_cred_and_image(super_client, client):
     registry = client.wait_success(registry)
     reg_cred = client.create_registry_credential(
         registryId=registry.id,
-        email='test@rancher.com',
         publicValue='rancher',
         secretValue='rancher')
     registry_credential = client.wait_success(reg_cred)

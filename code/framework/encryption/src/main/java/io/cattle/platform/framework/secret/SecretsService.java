@@ -15,6 +15,10 @@ public interface SecretsService {
 
     String encrypt(long accountId, String value) throws IOException;
 
+    String decrypt(long accountId, String value) throws IOException, Exception;
+
+    void delete(long accountId, String value) throws IOException;
+
     List<SecretValue> getValues(List<SecretReference> refs, Host host) throws IOException;
 
 }

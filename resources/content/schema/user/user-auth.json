@@ -278,6 +278,7 @@
         "host.memory" : "cru",
         "host.milliCpu" : "cru",
         "host.stackId" : "cr",
+        "host.hostTemplateId" : "cr",
 
         "addLabelInput" : "cr",
         "addLabelInput.key" : "cr",
@@ -1025,6 +1026,12 @@
         "scheduledUpgrade" : "r",
         "scheduledUpgrade.stackId": "r",
         "scheduledUpgrade.started": "r",
+
+        "hostTemplate" : "r",
+        "hostTemplate.publicValues" : "cr",
+        "hostTemplate.secretValues" : "cro",
+        "hostTemplate.driver" : "cr",
+        "hostTemplate.flavorPrefix" : "cr",
 
         "end" : ""
     }

@@ -278,6 +278,17 @@ public interface Host extends java.io.Serializable {
 	@javax.persistence.Column(name = "remove_after")
 	public java.util.Date getRemoveAfter();
 
+	/**
+	 * Setter for <code>cattle.host.host_template_id</code>.
+	 */
+	public void setHostTemplateId(java.lang.Long value);
+
+	/**
+	 * Getter for <code>cattle.host.host_template_id</code>.
+	 */
+	@javax.persistence.Column(name = "host_template_id", precision = 19)
+	public java.lang.Long getHostTemplateId();
+
 	// -------------------------------------------------------------------------
 	// FROM and INTO
 	// -------------------------------------------------------------------------
