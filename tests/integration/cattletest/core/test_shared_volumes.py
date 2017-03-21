@@ -3,6 +3,7 @@ from cattle import ClientApiError
 
 SP_CREATE = "storagepool.create"
 VOLUME_CREATE = "volume.create"
+CONTAINER_STATES = ["running", "stopped", "stopping"]
 
 
 def more_hosts(context):
@@ -206,6 +207,54 @@ def test_single_host_rw(super_client, new_context):
     c3 = client.create_container(imageUuid=new_context.image_uuid,
                                  dataVolumes=['%s:/test/it' % v1.name])
     c3 = client.wait_success(c3)
+
+
+def test_single_host_race_condition(super_client, new_context):
+    client, agent_client, host = from_context(new_context)
+    sp_name = 'storage-%s' % random_str()
+    host2 = register_simulated_host(new_context)
+    host_uuids = [host.uuid, host2.uuid]
+
+    d1 = super_client.create_storageDriver(name=sp_name)
+    d1 = super_client.wait_success(d1)
+    d1 = super_client.update(d1, data={'fields':
+                                       {'volumeAccessMode':
+                                        'singleHostRW'}})
+    d1 = super_client.wait_success(d1)
+    assert d1.data["fields"]["volumeAccessMode"] == "singleHostRW"
+
+    create_sp_event(client, agent_client, new_context, sp_name, sp_name,
+                    SP_CREATE, host_uuids, sp_name,
+                    access_mode='singleHostRW')
+    storage_pool = wait_for(lambda: sp_wait(client, sp_name))
+    assert storage_pool.state == 'active'
+    storage_pool = super_client.update(storage_pool, storageDriverId=d1.id)
+    storage_pool = super_client.wait_success(storage_pool)
+
+    assert storage_pool.volumeAccessMode == 'singleHostRW'
+
+    # Create a volume with a driver that points to a storage pool
+    v1 = client.create_volume(name=random_str(), driver=sp_name)
+    v1 = client.wait_success(v1)
+    v1 = super_client.update(v1, storageDriverId=d1.id)
+    v1 = client.wait_success(v1)
+
+    launch_config = {"volumeDriver": sp_name,
+                     "dataVolumes": [v1.name + ":/test"],
+                     "imageUuid": new_context.image_uuid,
+                     "stdinOpen": True
+                     }
+    scale = 20
+
+    service, stack = create_env_and_svc(client, launch_config,
+                                        scale)
+    stack.activateservices()
+    service = client.wait_success(service, 300)
+    assert service.state == "active"
+    container_list = get_service_container_list(super_client, service)
+    host_id = container_list[0].hostId
+    for container in container_list:
+        assert container.hostId == host_id
 
 
 def create_mount(vol_id, container, client, super_client):
@@ -556,7 +605,7 @@ def create_volume_event(client, agent_client, context, event_type,
 def create_sp_event(client, agent_client, context, external_id, name,
                     event_type, host_uuids, driver_name, agent_account=None,
                     access_mode=None, block_device_path=None,
-                    volume_capabilities=None):
+                    volume_capabilities=None, driver_id=None):
     storage_pool = {
         'name': name,
         'externalId': external_id,
@@ -571,6 +620,9 @@ def create_sp_event(client, agent_client, context, external_id, name,
 
     if volume_capabilities is not None:
         storage_pool['volumeCapabilities'] = volume_capabilities
+
+    if driver_id is not None:
+        storage_pool['storageDriverId'] = driver_id
 
     event = agent_client.create_external_storage_pool_event(
         externalId=external_id,
@@ -628,3 +680,59 @@ def event_wait(client, event):
     created = client.by_id('externalEvent', event.id)
     if created is not None and created.state == 'created':
         return created
+
+
+def create_env_and_svc(client, launch_config, scale=None, retainIp=False):
+    env = create_env(client)
+    service = create_svc(client, env, launch_config, scale, retainIp)
+    return service, env
+
+
+def create_env(client):
+    random_name = random_str()
+    env_name = random_name.replace("-", "")
+    env = client.create_stack(name=env_name)
+    env = client.wait_success(env)
+    assert env.state == "active"
+    return env
+
+
+def create_svc(client, env, launch_config, scale=None, retainIp=False):
+    random_name = random_str()
+    service_name = random_name.replace("-", "")
+    service = client.create_service(name=service_name,
+                                    stackId=env.id,
+                                    launchConfig=launch_config,
+                                    scale=scale,
+                                    retainIp=retainIp)
+
+    service = client.wait_success(service)
+    assert service.state == "inactive"
+    return service
+
+
+def get_service_container_list(admin_client, service, managed=None):
+    container = []
+    if managed is not None:
+        all_instance_maps = \
+            admin_client.list_serviceExposeMap(serviceId=service.id,
+                                               managed=managed)
+    else:
+        all_instance_maps = \
+            admin_client.list_serviceExposeMap(serviceId=service.id)
+
+    instance_maps = []
+    for instance_map in all_instance_maps:
+        if instance_map.state not in ("removed", "removing"):
+            instance_maps.append(instance_map)
+
+    for instance_map in instance_maps:
+        c = admin_client.by_id('container', instance_map.instanceId)
+        assert c.state in CONTAINER_STATES
+        containers = admin_client.list_container(
+            externalId=c.externalId,
+            include="hosts")
+        assert len(containers) == 1
+        container.append(containers[0])
+
+    return container

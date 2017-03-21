@@ -25,6 +25,7 @@ import io.cattle.platform.allocator.service.AllocatorService;
 import io.cattle.platform.archaius.util.ArchaiusUtil;
 import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.InstanceConstants;
+import io.cattle.platform.core.constants.StorageDriverConstants;
 import io.cattle.platform.core.constants.VolumeConstants;
 import io.cattle.platform.core.dao.GenericMapDao;
 import io.cattle.platform.core.dao.VolumeDao;
@@ -32,6 +33,7 @@ import io.cattle.platform.core.model.Host;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.InstanceHostMap;
 import io.cattle.platform.core.model.Port;
+import io.cattle.platform.core.model.StorageDriver;
 import io.cattle.platform.core.model.StoragePool;
 import io.cattle.platform.core.model.Volume;
 import io.cattle.platform.core.util.InstanceHelpers;
@@ -347,6 +349,19 @@ public class AllocatorServiceImpl implements AllocatorService, Named {
         List<? extends Volume> volsToLock = volumeDao.identifyUnmappedVolumes(origInstance.getAccountId(), volumeIds);
         for (Volume v : volsToLock) {
                 locks.add(new AllocateConstraintLock(AllocateConstraintLock.Type.VOLUME, v.getId().toString()));
+        }
+        
+        List<Volume> volumes = InstanceHelpers.extractVolumesFromMounts(origInstance, objectManager);
+        for (Volume volume: volumes) {
+            StorageDriver driver = objectManager.loadResource(StorageDriver.class, volume.getStorageDriverId());
+            if (driver != null) {
+                String accessMode = DataAccessor.fieldString(driver, StorageDriverConstants.FIELD_VOLUME_ACCESS_MODE);
+                if (VolumeConstants.ACCESS_MODE_SINGLE_HOST_RW.equals(accessMode) || VolumeConstants.ACCESS_MODE_SINGLE_INSTANCE_RW.equals(accessMode)) {
+                    if (!CommonStatesConstants.ACTIVE.equals(volume.getAllocationState())) {
+                        locks.add(new AllocateConstraintLock(AllocateConstraintLock.Type.VOLUME, volume.getId().toString()));
+                    }
+                }
+            }
         }
 
         return locks.size() > 0 ? new AllocationBlockingMultiLock(locks) : null;
