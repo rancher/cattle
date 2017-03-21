@@ -1,7 +1,6 @@
 package io.cattle.platform.core.dao.impl;
 
 import static io.cattle.platform.core.model.tables.CertificateTable.*;
-import static io.cattle.platform.core.model.tables.InstanceTable.*;
 import static io.cattle.platform.core.model.tables.ServiceConsumeMapTable.*;
 import static io.cattle.platform.core.model.tables.ServiceTable.*;
 import static io.cattle.platform.core.model.tables.StackTable.*;
@@ -23,7 +22,6 @@ import io.cattle.platform.core.model.Stack;
 import io.cattle.platform.core.util.LBMetadataUtil.LBConfigMetadataStyle;
 import io.cattle.platform.core.util.LoadBalancerTargetPortSpec;
 import io.cattle.platform.core.util.PortSpec;
-import io.cattle.platform.db.jooq.dao.impl.AbstractJooqDao;
 import io.cattle.platform.json.JsonMapper;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.util.DataAccessor;
@@ -39,13 +37,9 @@ import javax.inject.Inject;
 import javax.inject.Named;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.tuple.Pair;
-import org.jooq.Record2;
-import org.jooq.Record3;
-import org.jooq.RecordHandler;
 
 @Named
-public class LoadBalancerInfoDaoImpl extends AbstractJooqDao implements LoadBalancerInfoDao {
+public class LoadBalancerInfoDaoImpl implements LoadBalancerInfoDao {
     @Inject
     ObjectManager objectManager;
 
@@ -193,13 +187,29 @@ public class LoadBalancerInfoDaoImpl extends AbstractJooqDao implements LoadBala
         }
         // lb config can be set for lb and regular service (when it joins LB via selectors)
         // metadata gets set for both.
-        Stack selfStack = objectManager.loadResource(Stack.class, lbService.getStackId());
+        Map<Long, Service> serviceIdsToService = new HashMap<>();
+        Map<Long, Stack> stackIdsToStack = new HashMap<>();
+        Map<Long, Certificate> certIdsToCert = new HashMap<>();
+        for (Service service : objectManager.find(Service.class, SERVICE.ACCOUNT_ID,
+                lbService.getAccountId(), SERVICE.REMOVED, null)) {
+            serviceIdsToService.put(service.getId(), service);
+        }
+
+        for (Stack stack : objectManager.find(Stack.class,
+                STACK.ACCOUNT_ID,
+                lbService.getAccountId(), STACK.REMOVED, null)) {
+            stackIdsToStack.put(stack.getId(), stack);
+        }
+
+        for (Certificate cert : objectManager.find(Certificate.class,
+                CERTIFICATE.ACCOUNT_ID, lbService.getAccountId(), CERTIFICATE.REMOVED, null)) {
+            certIdsToCert.put(cert.getId(), cert);
+        }
+
         return new LBConfigMetadataStyle(lbConfig.getPortRules(), lbConfig.getCertificateIds(),
                 lbConfig.getDefaultCertificateId(),
-                lbConfig.getConfig(), lbConfig.getStickinessPolicy(),
-                getServiceIdToServiceStackName(lbService.getAccountId()),
-                getCertificateIdToCertificate(lbService.getAccountId()),
-                selfStack.getName(), false, getInstanceIdToInstanceName(lbService.getAccountId()));
+                lbConfig.getConfig(), lbConfig.getStickinessPolicy(), serviceIdsToService,
+                stackIdsToStack, certIdsToCert, lbService.getStackId(), false);
     }
 
     private static String getUuid(PortRule rule) {
@@ -257,7 +267,7 @@ public class LoadBalancerInfoDaoImpl extends AbstractJooqDao implements LoadBala
                     PortRule portRule = new PortRule(hostname, path, listener.getSourcePort(), null,
                             PortRule.Protocol.valueOf(listener.getSourceProtocol()), String.valueOf(target.getService()
                                     .getId()),
-                            targetPort, null, null, null);
+                            targetPort, null, null);
                     if (!registeredRules.contains(getUuid(portRule))) {
                         svcs.add(target.getService().getId());
                         sourcePortToServiceId.put(listener.getSourcePort(), svcs);
@@ -276,7 +286,7 @@ public class LoadBalancerInfoDaoImpl extends AbstractJooqDao implements LoadBala
                         .get(
                         sourcePort)
                         .getSourceProtocol()), String.valueOf(target.getService().getId()),
-                        portToListener.get(sourcePort).getTargetPort(), null, null, null);
+                        portToListener.get(sourcePort).getTargetPort(), null, null);
 
                 if (!registeredRules.contains(getUuid(portRule))) {
                     registeredRules.add(getUuid(portRule));
@@ -353,56 +363,6 @@ public class LoadBalancerInfoDaoImpl extends AbstractJooqDao implements LoadBala
             return proxyPort;
         }
 
-    }
-
-    @Override
-    public Map<Long, Pair<String, String>> getServiceIdToServiceStackName(long accountId) {
-        final Map<Long, Pair<String, String>> toReturn = new HashMap<>();
-        create().select(SERVICE.ID, SERVICE.NAME, STACK.NAME)
-                .from(SERVICE)
-                .join(STACK)
-                .on(STACK.ID.eq(SERVICE.STACK_ID))
-                .where(SERVICE.ACCOUNT_ID.eq(accountId))
-                .and(SERVICE.REMOVED.isNull())
-                .fetchInto(new RecordHandler<Record3<Long, String, String>>() {
-                    @Override
-                    public void next(Record3<Long, String, String> record) {
-                        toReturn.put(record.getValue(SERVICE.ID), Pair.of(record.getValue(SERVICE.NAME), record.getValue(STACK.NAME)));
-                    }
-                });
-        return toReturn;
-    }
-
-    @Override
-    public Map<Long, String> getInstanceIdToInstanceName(long accountId) {
-        final Map<Long, String> toReturn = new HashMap<>();
-        create().select(INSTANCE.ID, INSTANCE.NAME)
-                .from(INSTANCE)
-                .where(INSTANCE.ACCOUNT_ID.eq(accountId))
-                .and(INSTANCE.REMOVED.isNull())
-                .fetchInto(new RecordHandler<Record2<Long, String>>() {
-                    @Override
-                    public void next(Record2<Long, String> record) {
-                        toReturn.put(record.getValue(INSTANCE.ID), record.getValue(INSTANCE.NAME));
-                    }
-                });
-        return toReturn;
-    }
-
-    @Override
-    public Map<Long, String> getCertificateIdToCertificate(long accountId) {
-        final Map<Long, String> toReturn = new HashMap<>();
-        create().select(CERTIFICATE.ID, CERTIFICATE.NAME)
-                .from(CERTIFICATE)
-                .where(CERTIFICATE.ACCOUNT_ID.eq(accountId))
-                .and(CERTIFICATE.REMOVED.isNull())
-                .fetchInto(new RecordHandler<Record2<Long, String>>() {
-                    @Override
-                    public void next(Record2<Long, String> record) {
-                        toReturn.put(record.getValue(CERTIFICATE.ID), record.getValue(CERTIFICATE.NAME));
-                    }
-                });
-        return toReturn;
     }
 
 }

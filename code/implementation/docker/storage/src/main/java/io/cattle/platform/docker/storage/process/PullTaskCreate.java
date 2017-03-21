@@ -7,7 +7,6 @@ import io.cattle.platform.archaius.util.ArchaiusUtil;
 import io.cattle.platform.async.utils.AsyncUtils;
 import io.cattle.platform.core.constants.CredentialConstants;
 import io.cattle.platform.core.constants.GenericObjectConstants;
-import io.cattle.platform.core.constants.HostConstants;
 import io.cattle.platform.core.model.Credential;
 import io.cattle.platform.core.model.GenericObject;
 import io.cattle.platform.core.model.Host;
@@ -133,8 +132,7 @@ public class PullTaskCreate extends AbstractGenericObjectProcessLogic implements
         for (Map.Entry<Host, ListenableFuture<? extends Event>> entry : cleanupFutures.entrySet()) {
             Host host = entry.getKey();
             ListenableFuture<? extends Event> future = entry.getValue();
-            progress.checkPoint("Finishing pull " + image + " on "
-                    + DataAccessor.fieldString(host, HostConstants.FIELD_HOSTNAME));
+            progress.checkPoint("Finishing pull " + image + " on " + host.getName());
             AsyncUtils.get(future);
             pullTask = setStatus(pullTask, status, host, "Done");
         }

@@ -2,13 +2,15 @@ package io.cattle.platform.core.util;
 
 import io.cattle.platform.core.addon.LoadBalancerCookieStickinessPolicy;
 import io.cattle.platform.core.addon.PortRule;
+import io.cattle.platform.core.model.Certificate;
+import io.cattle.platform.core.model.Service;
+import io.cattle.platform.core.model.Stack;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.tuple.Pair;
 
 /*
  * this class it to support haproxy legacy API format
@@ -25,9 +27,8 @@ public class LBMetadataUtil {
         public Integer priority = 0;
         public String backend_name;
         public String selector;
-        public String container;
 
-        public MetadataPortRule(PortRule portRule, String service, String stack, String instanceName) {
+        public MetadataPortRule(PortRule portRule, Service service, Stack stack) {
             this.source_port = portRule.getSourcePort();
             if (portRule.getProtocol() != null) {
                 this.protocol = portRule.getProtocol().name();
@@ -36,16 +37,15 @@ public class LBMetadataUtil {
             this.hostname = portRule.getHostname();
             if (service != null) {
                 if (stack != null) {
-                    this.service = formatServiceName(service, stack);
+                    this.service = formatServiceName(service.getName(), stack.getName());
                 } else {
-                    this.service = service;
+                    this.service = service.getName();
                 }
             }
             this.target_port = portRule.getTargetPort();
             this.backend_name = portRule.getBackendName();
             this.priority = portRule.getPriority();
             this.selector = portRule.getSelector();
-            this.container = instanceName;
         }
 
         public String getSelector() {
@@ -119,14 +119,6 @@ public class LBMetadataUtil {
         public void setBackend_name(String backend_name) {
             this.backend_name = backend_name;
         }
-
-        public String getContainer() {
-            return container;
-        }
-
-        public void setContainer(String instance) {
-            this.container = instance;
-        }
     }
 
     public static class LBConfigMetadataStyle {
@@ -141,51 +133,44 @@ public class LBMetadataUtil {
         }
 
         public LBConfigMetadataStyle(List<? extends PortRule> portRules, List<Long> certIds, Long defaultCertId,
-                String config, LoadBalancerCookieStickinessPolicy stickinessPolicy,
-                Map<Long, Pair<String, String>> serviceIdToServiceStackName, Map<Long, String> certificates,
-                String serviceStackName,
-                boolean dropStackName, Map<Long, String> instancesNames) {
+                String config, LoadBalancerCookieStickinessPolicy stickinessPolicy, Map<Long, Service> services,
+                Map<Long, Stack> stacks, Map<Long, Certificate> certificates, Long serviceStackId, boolean dropStackName) {
             super();
             if (certIds != null) {
                 for (Long certId : certIds) {
-                    String cert = certificates.get(certId);
+                    Certificate cert = certificates.get(certId);
                     if (cert != null) {
-                        this.certs.add(cert);
+                        this.certs.add(cert.getName());
                     }
                 }
             }
             if (defaultCertId != null) {
-                String defaultCert = certificates.get(defaultCertId);
+                Certificate defaultCert = certificates.get(defaultCertId);
                 if (defaultCert != null) {
-                    this.default_cert = defaultCert;
+                    this.default_cert = defaultCert.getName();
                 }
             }
-
             if (portRules != null) {
                 for (PortRule portRule : portRules) {
                     if (portRule.getServiceId() != null) {
                         Long svcId = Long.valueOf(portRule.getServiceId());
-                        Pair<String, String> svcStackName = serviceIdToServiceStackName.get(svcId);
-
-                        if (svcStackName == null) {
+                        Service targetService = services.get(svcId);
+                        if (targetService == null) {
                             continue;
                         }
-
-                        if (dropStackName && svcStackName.getRight().equals(serviceStackName)) {
-                            this.port_rules.add(new MetadataPortRule(portRule, svcStackName.getLeft(),
-                                    null, null));
+                        Stack targetStack = stacks.get(targetService.getStackId());
+                        if (targetStack == null) {
+                            continue;
+                        }
+                        if (dropStackName && targetStack.getId().equals(serviceStackId)) {
+                            this.port_rules.add(new MetadataPortRule(portRule, targetService,
+                                    null));
                         } else {
-                            this.port_rules.add(new MetadataPortRule(portRule, svcStackName.getLeft(),
-                                    svcStackName.getRight(), null));
+                            this.port_rules.add(new MetadataPortRule(portRule, targetService,
+                                    targetStack));
                         }
-                    } else if (portRule.getInstanceId() != null) {
-                        String instanceName = instancesNames.get(Long.valueOf(portRule.getInstanceId()));
-                        if (StringUtils.isEmpty(instanceName)) {
-                            continue;
-                        }
-                        this.port_rules.add(new MetadataPortRule(portRule, null, null, instanceName));
                     } else {
-                        this.port_rules.add(new MetadataPortRule(portRule, null, null, null));
+                        this.port_rules.add(new MetadataPortRule(portRule, null, null));
                     }
                 }
             }

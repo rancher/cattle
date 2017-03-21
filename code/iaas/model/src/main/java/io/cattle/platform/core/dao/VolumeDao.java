@@ -46,6 +46,4 @@ public interface VolumeDao {
 
     List<? extends Volume> findBadNativeVolumes(int count);
 
-    List<? extends Volume> getVolumesOnRemovedAndInactiveHosts(long deploymentUnitId, long accountId);
-
 }

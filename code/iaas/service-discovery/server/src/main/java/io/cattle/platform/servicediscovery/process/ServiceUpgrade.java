@@ -18,8 +18,10 @@ public class ServiceUpgrade extends AbstractDefaultProcessHandler {
 
     @Inject
     JsonMapper jsonMapper;
+
     @Inject
     UpgradeManager upgradeManager;
+
     @Inject
     ActivityService activityService;
 
@@ -34,8 +36,7 @@ public class ServiceUpgrade extends AbstractDefaultProcessHandler {
         activityService.run(service, "service.upgrade", "Upgrading service", new Runnable() {
             @Override
             public void run() {
-                upgradeManager.upgrade(service, upgrade.getInServiceStrategy(), ServiceConstants.STATE_UPGRADING, true,
-                        false);
+                upgradeManager.upgrade(service, upgrade.getStrategy(), ServiceConstants.STATE_UPGRADING);
             }
         });
 

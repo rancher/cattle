@@ -7,7 +7,6 @@ import io.cattle.platform.core.constants.NetworkConstants;
 import io.cattle.platform.core.dao.ServiceDao;
 import io.cattle.platform.core.dao.VolumeDao;
 import io.cattle.platform.core.model.Instance;
-import io.cattle.platform.docker.transform.DockerTransformer;
 import io.cattle.platform.iaas.api.filter.common.CachedOutputFilter;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.meta.ObjectMetaDataManager;
@@ -32,9 +31,6 @@ public class InstanceOutputFilter extends CachedOutputFilter<Map<Long, Map<Strin
     ObjectManager objectManager;
     @Inject
     VolumeDao volumeDao;
-    @Inject
-    DockerTransformer transformer;
-
 
     @Override
     public Class<?>[] getTypeClasses() {
@@ -57,8 +53,6 @@ public class InstanceOutputFilter extends CachedOutputFilter<Map<Long, Map<Strin
                         converted.getFields().putAll(fields);
                     }
                 }
-                converted.getFields().put(InstanceConstants.FIELD_EXIT_CODE,
-                        transformer.getExitCode((Instance) original));
             }
         }
 

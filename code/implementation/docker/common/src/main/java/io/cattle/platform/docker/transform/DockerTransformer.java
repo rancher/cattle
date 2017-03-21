@@ -12,6 +12,4 @@ public interface DockerTransformer {
     List<DockerInspectTransformVolume> transformVolumes(Map<String, Object> fromInspect, List<Object> mounts);
 
     void setLabels(Instance instance, Map<String, Object> fromInspect);
-
-    int getExitCode(Instance instance);
 }

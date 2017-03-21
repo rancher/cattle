@@ -1,7 +1,6 @@
 package io.cattle.platform.process.instance;
 
 import static io.cattle.platform.core.model.tables.InstanceTable.*;
-import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.InstanceHostMap;
 import io.cattle.platform.engine.handler.HandlerResult;
@@ -25,10 +24,9 @@ public class InstanceStartCountUpdatePostHandler extends AbstractObjectProcessLo
             return null;
         }
 
-        // set startCount and retry count
+        // set startCount
         Long startCount = instance.getStartCount() == null ? 1 : instance.getStartCount() + 1;
-        objectManager.setFields(instance, INSTANCE.START_COUNT, startCount, InstanceConstants.FIELD_START_RETRY_COUNT,
-                0);
+        objectManager.setFields(instance, INSTANCE.START_COUNT, startCount);
         return null;
     }
 

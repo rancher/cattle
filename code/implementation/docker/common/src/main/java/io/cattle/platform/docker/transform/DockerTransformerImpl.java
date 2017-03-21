@@ -2,6 +2,7 @@ package io.cattle.platform.docker.transform;
 
 import static io.cattle.platform.core.constants.InstanceConstants.*;
 import static io.cattle.platform.docker.constants.DockerInstanceConstants.*;
+
 import io.cattle.platform.core.addon.BlkioDeviceOption;
 import io.cattle.platform.core.addon.LogConfig;
 import io.cattle.platform.core.addon.Ulimit;
@@ -30,7 +31,6 @@ import javax.inject.Inject;
 import org.apache.commons.lang3.StringUtils;
 
 import com.github.dockerjava.api.command.InspectContainerResponse;
-import com.github.dockerjava.api.command.InspectContainerResponse.ContainerState;
 import com.github.dockerjava.api.model.Capability;
 import com.github.dockerjava.api.model.ContainerConfig;
 import com.github.dockerjava.api.model.Device;
@@ -644,18 +644,5 @@ public class DockerTransformerImpl implements DockerTransformer {
 
     InspectContainerResponse transformInspect(Map<String, Object> inspect) {
         return jsonMapper.convertValue(inspect, InspectContainerResponse.class);
-    }
-
-    @Override
-    @SuppressWarnings("unchecked")
-    public int getExitCode(Instance instance) {
-        Map<String, Object> inspectData = new HashMap<>();
-        if (instance.getData().get(FIELD_DOCKER_INSPECT) == null) {
-            return 0;
-        }
-        inspectData = (Map<String, Object>) instance.getData().get(FIELD_DOCKER_INSPECT);
-        InspectContainerResponse inspect = jsonMapper.convertValue(inspectData, InspectContainerResponse.class);
-        ContainerState state = inspect.getState();
-        return state.getExitCode();
     }
 }

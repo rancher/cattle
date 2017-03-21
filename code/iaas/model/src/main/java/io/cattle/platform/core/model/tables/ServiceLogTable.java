@@ -11,7 +11,7 @@ package io.cattle.platform.core.model.tables;
 @java.lang.SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class ServiceLogTable extends org.jooq.impl.TableImpl<io.cattle.platform.core.model.tables.records.ServiceLogRecord> {
 
-	private static final long serialVersionUID = -2022271160;
+	private static final long serialVersionUID = -1954706057;
 
 	/**
 	 * The singleton instance of <code>cattle.service_log</code>
@@ -92,11 +92,6 @@ public class ServiceLogTable extends org.jooq.impl.TableImpl<io.cattle.platform.
 	public final org.jooq.TableField<io.cattle.platform.core.model.tables.records.ServiceLogRecord, java.lang.String> LEVEL = createField("level", org.jooq.impl.SQLDataType.VARCHAR.length(255), this, "");
 
 	/**
-	 * The column <code>cattle.service_log.deployment_unit_id</code>.
-	 */
-	public final org.jooq.TableField<io.cattle.platform.core.model.tables.records.ServiceLogRecord, java.lang.Long> DEPLOYMENT_UNIT_ID = createField("deployment_unit_id", org.jooq.impl.SQLDataType.BIGINT, this, "");
-
-	/**
 	 * Create a <code>cattle.service_log</code> table reference
 	 */
 	public ServiceLogTable() {
@@ -147,7 +142,7 @@ public class ServiceLogTable extends org.jooq.impl.TableImpl<io.cattle.platform.
 	 */
 	@Override
 	public java.util.List<org.jooq.ForeignKey<io.cattle.platform.core.model.tables.records.ServiceLogRecord, ?>> getReferences() {
-		return java.util.Arrays.<org.jooq.ForeignKey<io.cattle.platform.core.model.tables.records.ServiceLogRecord, ?>>asList(io.cattle.platform.core.model.Keys.FK_SERVICE_LOG__ACCOUNT_ID, io.cattle.platform.core.model.Keys.FK_SERVICE_LOG__SERVICE_ID, io.cattle.platform.core.model.Keys.FK_SERVICE_LOG__INSTANCE_ID, io.cattle.platform.core.model.Keys.FK_SERVICE_LOG__DEPLOYMENT_UNIT_ID);
+		return java.util.Arrays.<org.jooq.ForeignKey<io.cattle.platform.core.model.tables.records.ServiceLogRecord, ?>>asList(io.cattle.platform.core.model.Keys.FK_SERVICE_LOG__ACCOUNT_ID, io.cattle.platform.core.model.Keys.FK_SERVICE_LOG__SERVICE_ID, io.cattle.platform.core.model.Keys.FK_SERVICE_LOG__INSTANCE_ID);
 	}
 
 	/**

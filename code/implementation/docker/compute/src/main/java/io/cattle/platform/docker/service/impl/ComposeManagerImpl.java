@@ -1,17 +1,15 @@
 package io.cattle.platform.docker.service.impl;
 
-import static io.cattle.platform.core.model.tables.ServiceTable.*;
 import static io.cattle.platform.core.model.tables.StackTable.*;
+import static io.cattle.platform.core.model.tables.ServiceTable.*;
 import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.constants.ServiceConstants;
 import io.cattle.platform.core.dao.GenericResourceDao;
-import io.cattle.platform.core.dao.ServiceExposeMapDao;
+import io.cattle.platform.core.model.Stack;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.Service;
 import io.cattle.platform.core.model.ServiceExposeMap;
-import io.cattle.platform.core.model.Stack;
-import io.cattle.platform.core.util.SystemLabels;
 import io.cattle.platform.docker.process.dao.ComposeDao;
 import io.cattle.platform.docker.process.lock.ComposeProjectLock;
 import io.cattle.platform.docker.process.lock.ComposeServiceLock;
@@ -27,7 +25,8 @@ import io.cattle.platform.object.meta.ObjectMetaDataManager;
 import io.cattle.platform.object.process.ObjectProcessManager;
 import io.cattle.platform.object.process.StandardProcess;
 import io.cattle.platform.object.util.DataAccessor;
-import io.cattle.platform.servicediscovery.deployment.impl.instance.ServiceDeploymentUnitInstance;
+import io.cattle.platform.servicediscovery.api.dao.ServiceExposeMapDao;
+import io.cattle.platform.servicediscovery.deployment.impl.unit.DefaultDeploymentUnitInstance;
 import io.github.ibuildthecloud.gdapi.condition.Condition;
 import io.github.ibuildthecloud.gdapi.condition.ConditionType;
 
@@ -42,6 +41,9 @@ import javax.inject.Inject;
 import org.apache.commons.lang3.StringUtils;
 
 public class ComposeManagerImpl implements ComposeManager {
+
+    public static final String SERVICE_LABEL = "com.docker.compose.service";
+    public static final String PROJECT_LABEL = "com.docker.compose.project";
 
     @Inject
     ComposeDao composeDao;
@@ -67,8 +69,8 @@ public class ComposeManagerImpl implements ComposeManager {
     @Override
     public void setupServiceAndInstance(Instance instance) {
         Map<String, Object> labels = DataAccessor.fieldMap(instance, InstanceConstants.FIELD_LABELS);
-        String project = getString(labels, SystemLabels.COMPOSE_PROJECT_LABEL);
-        String service = getString(labels, SystemLabels.COMPOSE_SERVICE_LABEL);
+        String project = getString(labels, PROJECT_LABEL);
+        String service = getString(labels, SERVICE_LABEL);
 
         if (StringUtils.isBlank(project) || StringUtils.isBlank(service)) {
             return;
@@ -97,8 +99,8 @@ public class ComposeManagerImpl implements ComposeManager {
 
     protected Service createService(Instance instance) {
         Map<String, Object> labels = DataAccessor.fieldMap(instance, InstanceConstants.FIELD_LABELS);
-        String project = getString(labels, SystemLabels.COMPOSE_PROJECT_LABEL);
-        String service = getString(labels, SystemLabels.COMPOSE_SERVICE_LABEL);
+        String project = getString(labels, PROJECT_LABEL);
+        String service = getString(labels, SERVICE_LABEL);
 
         Map<String, Object> instanceData = jsonMapper.writeValueAsMap(instance);
         instanceData.remove(ObjectMetaDataManager.ID_FIELD);
@@ -120,8 +122,7 @@ public class ComposeManagerImpl implements ComposeManager {
                 SERVICE.NAME, service,
                 SERVICE.ACCOUNT_ID, instance.getAccountId(),
                 SERVICE.STACK_ID, stack.getId(),
-                SERVICE.SELECTOR_CONTAINER, String.format("%s=%s, %s=%s", SystemLabels.COMPOSE_PROJECT_LABEL, project,
-                        SystemLabels.COMPOSE_SERVICE_LABEL, service),
+                SERVICE.SELECTOR_CONTAINER, String.format("%s=%s, %s=%s", PROJECT_LABEL, project, SERVICE_LABEL, service),
                 ServiceConstants.FIELD_START_ON_CREATE, true,
                 ServiceConstants.FIELD_LAUNCH_CONFIG, instanceData,
                 SERVICE.KIND, "composeService");
@@ -193,7 +194,7 @@ public class ComposeManagerImpl implements ComposeManager {
             found = true;
             if (isRemoved(service.getRemoved(), service.getState())) {
                 Instance instance = objectManager.loadResource(Instance.class, map.getInstanceId());
-                ServiceDeploymentUnitInstance.removeInstance(instance, objectProcessManager);
+                DefaultDeploymentUnitInstance.removeInstance(instance, objectProcessManager);
             }
         }
 

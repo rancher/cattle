@@ -7,6 +7,7 @@ import io.cattle.platform.engine.handler.HandlerResult;
 import io.cattle.platform.engine.process.ProcessInstance;
 import io.cattle.platform.engine.process.ProcessState;
 import io.cattle.platform.json.JsonMapper;
+import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.process.base.AbstractDefaultProcessHandler;
 import io.cattle.platform.servicediscovery.upgrade.UpgradeManager;
 
@@ -34,6 +35,10 @@ public class ServiceFinishUpgrade extends AbstractDefaultProcessHandler {
         activityService.run(service, "service.finishupgrade", "Finishing upgrade", new Runnable() {
             @Override
             public void run() {
+                io.cattle.platform.core.addon.ServiceUpgrade upgrade = DataAccessor.field(service,
+                        ServiceConstants.FIELD_UPGRADE, jsonMapper,
+                        io.cattle.platform.core.addon.ServiceUpgrade.class);
+                upgradeManager.upgrade(service, upgrade.getStrategy(), ServiceConstants.STATE_FINISHING_UPGRADE);
                 upgradeManager.finishUpgrade(service, true);
             }
         });

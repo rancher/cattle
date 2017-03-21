@@ -136,26 +136,26 @@ def test_virtual_machine_default_fields(super_client, client, context):
     assert vm.memoryMb == 42
 
     c = super_client.reload(vm)
-    prefix = c.name + '-' + c.uuid[0:7]
+
     assert c.labels['io.rancher.vm'] == 'true'
     assert c.labels['io.rancher.vm.memory'] == '42'
     assert c.labels['io.rancher.vm.vcpu'] == '2'
     assert c.labels['io.rancher.vm.userdata'] == 'hi'
     assert c.dataVolumes == ['/var/lib/rancher/vm:/vm',
                              '/var/run/rancher:/var/run/rancher',
-                             '{}-00:/volumes/disk00'.format(prefix),
-                             '{}-{}:/volumes/disk01'.format(prefix,
+                             '{}-00:/volumes/disk00'.format(c.uuid[0:7]),
+                             '{}-{}:/volumes/disk01'.format(c.uuid[0:7],
                                                             disk_name)]
     assert c.devices == ['/dev/kvm:/dev/kvm', '/dev/net/tun:/dev/net/tun']
     assert c.capAdd == ['NET_ADMIN']
     assert c.capabilities == ['console']
 
-    volume1 = find_one(client.list_volume, name=prefix + '-00')
+    volume1 = find_one(client.list_volume, name=c.uuid[0:7] + '-00')
     assert volume1.driver == 'foo-bar'
     assert volume1.driverOpts == {'vm': 'true', 'size': '2g', 'foo': 'bar',
                                   'read-iops': '10000', 'write-iops': '9000'}
 
-    x = prefix + '-' + disk_name
+    x = c.uuid[0:7] + '-' + disk_name
     volume2 = find_one(client.list_volume, name=x)
     assert volume2.name == x
     assert volume2.driver == 'foo'

@@ -157,17 +157,6 @@ public interface ServiceLog extends java.io.Serializable {
 	@javax.persistence.Column(name = "level", length = 255)
 	public java.lang.String getLevel();
 
-	/**
-	 * Setter for <code>cattle.service_log.deployment_unit_id</code>.
-	 */
-	public void setDeploymentUnitId(java.lang.Long value);
-
-	/**
-	 * Getter for <code>cattle.service_log.deployment_unit_id</code>.
-	 */
-	@javax.persistence.Column(name = "deployment_unit_id", precision = 19)
-	public java.lang.Long getDeploymentUnitId();
-
 	// -------------------------------------------------------------------------
 	// FROM and INTO
 	// -------------------------------------------------------------------------

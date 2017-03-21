@@ -15,25 +15,43 @@
                 "scheduleUpdate" : true
             }
         },
+        "desiredScale": {
+            "type": "int",
+            "required": false,
+            "nullable": false
+        },
+        "lockedScale": {
+            "type": "int",
+            "required": false,
+            "nullable": false
+        },
         "currentScale": {
             "type": "int",
             "required": false,
             "nullable": false
         },
+        "scalePolicy": {
+            "type": "scalePolicy",
+            "required": false,
+            "nullable": true,
+            "attributes" : {
+                "scheduleUpdate" : true
+            }
+        },
         "name":{
             "required": true,
             "validChars": "a-zA-Z0-9-",
             "minLength": 1,
-            "maxLength": 63
+            "maxLength": 63,
+             "attributes" : {
+                "scheduleUpdate" : true
+            }
         },
         "launchConfig": {
             "type": "launchConfig",
             "create": true,
             "required": false,
-            "nullable": true,
-             "attributes" : {
-                "scheduleUpdate" : true
-            }
+            "nullable": true
         },
         "upgrade": {
             "type": "serviceUpgrade",
@@ -48,10 +66,7 @@
         "secondaryLaunchConfigs": {
             "type": "array[secondaryLaunchConfig]",
             "create": true,
-            "required": false,
-             "attributes" : {
-                "scheduleUpdate" : true
-            }
+            "required": false
         },
         "metadata": {
             "type": "map[json]",
@@ -130,69 +145,6 @@
         },
         "executionPeriodStart": {
             "type": "date"
-        },
-        "batchSize": {
-            "type": "int",
-            "nullable": true,
-            "default": 1,
-            "min": 1,
-            "create": true,
-             "attributes" : {
-                "scheduleUpdate" : true
-            }
-        },
-        "intervalMillis": {
-            "type": "int",
-            "nullable": true,
-            "default": 2000,
-            "min": 100,
-            "create": true,
-             "attributes" : {
-                "scheduleUpdate" : true
-            }
-        },
-        "startFirst": {
-            "type": "boolean",
-            "nullable": true,
-            "default": false,
-            "create": true,
-             "attributes" : {
-                "scheduleUpdate" : true
-            }
-        },
-        "scaleMin": {
-            "type": "int",
-            "required": false,
-            "nullable": false,
-            "default": 1,
-            "min": 1,
-             "attributes" : {
-                "scheduleUpdate" : true
-            }
-        },
-        "scaleMax": {
-            "type": "int",
-            "required": false,
-            "nullable": true,
-            "min": 1,
-             "attributes" : {
-                "scheduleUpdate" : true
-            }
-        },
-        "scaleIncrement": {
-            "type": "int",
-            "required": false,
-            "nullable": false,
-            "default": 1,
-            "min": 1    ,
-             "attributes" : {
-                "scheduleUpdate" : true
-            }
-        },
-        "finishUpgrade": {
-            "type": "boolean",
-            "required": false,
-            "nullable": true
         }
     },
     "resourceActions" : {
@@ -201,6 +153,7 @@
         "addservicelink" : {
             "input" : "addRemoveServiceLinkInput",
             "output" : "service"
+
         },
         "removeservicelink" : {
             "input" : "addRemoveServiceLinkInput",
@@ -216,19 +169,6 @@
         },
         "restart" : {
             "input" : "serviceRestart",
-            "output" : "service"
-        },
-        "cancelupgrade": {
-            "output": "service",
-            "attributes": {
-                "states": ["upgrading", "finishing-upgrade"]
-            }
-        },
-        "rollback" : {
-            "input" : "serviceRollback",
-            "output" : "service"
-        },
-         "garbagecollect" : {
             "output" : "service"
         }
     }

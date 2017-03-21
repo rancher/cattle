@@ -1,14 +1,16 @@
 package io.cattle.platform.servicediscovery.process;
 
 import io.cattle.platform.core.constants.HealthcheckConstants;
+import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.constants.ServiceConstants;
+import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.Service;
 import io.cattle.platform.engine.handler.HandlerResult;
 import io.cattle.platform.engine.process.ProcessInstance;
 import io.cattle.platform.engine.process.ProcessState;
 import io.cattle.platform.process.common.handler.AbstractObjectProcessHandler;
-import io.cattle.platform.servicediscovery.service.DeploymentManager;
-import io.cattle.platform.servicediscovery.service.lookups.ServiceLookup;
+import io.cattle.platform.servicediscovery.deployment.DeploymentManager;
+import io.cattle.platform.servicediscovery.service.ServiceLookup;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -28,9 +30,9 @@ public class ServicesReconcileTrigger extends AbstractObjectProcessHandler {
 
     @Override
     public String[] getProcessNames() {
-        return new String[] { ServiceConstants.PROCESS_DU_UPDATE,
-                ServiceConstants.PROCESS_SERVICE_UPDATE,
-                HealthcheckConstants.PROCESS_UPDATE_UNHEALTHY };
+        return new String[] { HealthcheckConstants.PROCESS_UPDATE_HEALTHY,
+                HealthcheckConstants.PROCESS_UPDATE_UNHEALTHY, InstanceConstants.PROCESS_STOP,
+                InstanceConstants.PROCESS_REMOVE, ServiceConstants.PROCESS_SERVICE_UPDATE };
     }
 
     @Override
@@ -39,6 +41,12 @@ public class ServicesReconcileTrigger extends AbstractObjectProcessHandler {
         if (state.getResource() instanceof Service) {
             services.add((Service) state.getResource());
         } else {
+            if (state.getResource() instanceof Instance) {
+                if (state.getData().containsKey(InstanceConstants.PROCESS_DATA_ERROR)
+                        || state.getData().containsKey(ServiceConstants.PROCESS_DATA_SERVICE_RECONCILE)) {
+                    return null;
+                }
+            }
             for (ServiceLookup lookup : serviceLookups) {
                 Collection<? extends Service> lookupSvs = lookup.getServices(state.getResource());
                 if (lookupSvs != null) {

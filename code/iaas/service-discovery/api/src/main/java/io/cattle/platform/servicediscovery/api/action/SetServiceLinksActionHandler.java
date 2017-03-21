@@ -4,7 +4,6 @@ import io.cattle.platform.api.action.ActionHandler;
 import io.cattle.platform.core.addon.ServiceLink;
 import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.ServiceConstants;
-import io.cattle.platform.core.dao.ServiceConsumeMapDao;
 import io.cattle.platform.core.model.Service;
 import io.cattle.platform.core.model.ServiceConsumeMap;
 import io.cattle.platform.json.JsonMapper;
@@ -12,7 +11,9 @@ import io.cattle.platform.lock.LockCallbackNoReturn;
 import io.cattle.platform.lock.LockManager;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.util.DataAccessor;
+import io.cattle.platform.servicediscovery.api.dao.ServiceConsumeMapDao;
 import io.cattle.platform.servicediscovery.api.lock.ServiceDiscoveryServiceSetLinksLock;
+import io.cattle.platform.servicediscovery.api.service.ServiceDiscoveryApiService;
 import io.github.ibuildthecloud.gdapi.id.IdFormatter;
 import io.github.ibuildthecloud.gdapi.request.ApiRequest;
 import io.github.ibuildthecloud.gdapi.validation.ValidationErrorCodes;
@@ -31,12 +32,19 @@ public class SetServiceLinksActionHandler implements ActionHandler {
 
     @Inject
     JsonMapper jsonMapper;
+
     @Inject
     ServiceConsumeMapDao consumeMapDao;
+
     @Inject
     LockManager lockManager;
+
+    @Inject
+    ServiceDiscoveryApiService sdService;
+
     @Inject
     ObjectManager objMgr;
+
     @Inject
     IdFormatter idFormatter;
 
@@ -103,7 +111,7 @@ public class SetServiceLinksActionHandler implements ActionHandler {
 
     private void createNewServiceMaps(Service service, Map<String, ServiceLink> newServiceLinks) {
         for (ServiceLink newServiceLink : newServiceLinks.values()) {
-            consumeMapDao.createServiceLink(service, newServiceLink);
+            sdService.addServiceLink(service, newServiceLink);
         }
     }
 
@@ -119,7 +127,7 @@ public class SetServiceLinksActionHandler implements ActionHandler {
         }
 
         for (ServiceLink linkToRemove : linksToRemove) {
-            consumeMapDao.removeServiceLink(service, linkToRemove);
+            sdService.removeServiceLink(service, linkToRemove);
         }
     }
 }

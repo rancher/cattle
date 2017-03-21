@@ -1,7 +1,6 @@
 package io.cattle.platform.servicediscovery.api.filter;
 
 import io.cattle.platform.core.addon.ServiceLink;
-import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.constants.ServiceConstants;
 import io.cattle.platform.core.model.Service;
 import io.cattle.platform.iaas.api.filter.common.AbstractDefaultResourceManagerFilter;
@@ -56,13 +55,13 @@ public class ServiceSetServiceLinksValidationFilter extends AbstractDefaultResou
             for (ServiceLink serviceLink : serviceLinks) {
                 if (serviceIdAndLinkName.contains(serviceLink.getUuid())) {
                     ValidationErrorCodes.throwValidationError(ValidationErrorCodes.NOT_UNIQUE,
-                            InstanceConstants.FIELD_SERVICE_ID + " and link name combination");
+                            ServiceConstants.FIELD_SERVICE_ID + " and link name combination");
                 }
                 serviceIdAndLinkName.add(serviceLink.getUuid());
                 Service consumedService = objectManager.loadResource(Service.class, serviceLink.getServiceId());
                 if (service == null || consumedService == null) {
                     ValidationErrorCodes.throwValidationError(ValidationErrorCodes.INVALID_REFERENCE,
-                            InstanceConstants.FIELD_SERVICE_ID);
+                            ServiceConstants.FIELD_SERVICE_ID);
                 }
                 validateLinkName(serviceLink.getName());
             }

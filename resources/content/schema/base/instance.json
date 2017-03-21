@@ -97,10 +97,6 @@
         "stop" : {
             "input" : "instanceStop",
             "output" : "instance"
-        },
-        "remove" : {
-            "input" : "instanceRemove",
-            "output" : "instance"
         }
     }
 }

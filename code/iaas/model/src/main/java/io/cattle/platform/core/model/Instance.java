@@ -465,39 +465,6 @@ public interface Instance extends java.io.Serializable {
 	@javax.persistence.Column(name = "environment_id", precision = 19)
 	public java.lang.Long getStackId();
 
-	/**
-	 * Setter for <code>cattle.instance.replacement_for</code>.
-	 */
-	public void setReplacementFor(java.lang.Long value);
-
-	/**
-	 * Getter for <code>cattle.instance.replacement_for</code>.
-	 */
-	@javax.persistence.Column(name = "replacement_for", precision = 19)
-	public java.lang.Long getReplacementFor();
-
-	/**
-	 * Setter for <code>cattle.instance.deployment_unit_id</code>.
-	 */
-	public void setDeploymentUnitId(java.lang.Long value);
-
-	/**
-	 * Getter for <code>cattle.instance.deployment_unit_id</code>.
-	 */
-	@javax.persistence.Column(name = "deployment_unit_id", precision = 19)
-	public java.lang.Long getDeploymentUnitId();
-
-	/**
-	 * Setter for <code>cattle.instance.revision_id</code>.
-	 */
-	public void setRevisionId(java.lang.Long value);
-
-	/**
-	 * Getter for <code>cattle.instance.revision_id</code>.
-	 */
-	@javax.persistence.Column(name = "revision_id", precision = 19)
-	public java.lang.Long getRevisionId();
-
 	// -------------------------------------------------------------------------
 	// FROM and INTO
 	// -------------------------------------------------------------------------
