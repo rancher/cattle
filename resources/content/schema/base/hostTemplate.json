@@ -1,0 +1,13 @@
+{
+    "resourceFields": {
+        "secretValues": {
+            "type": "map[json]"
+        },
+        "secretValuesEmpty": {
+            "type": "map[json]"
+        },
+        "publicValues": {
+            "type": "map[json]"
+        }
+    }
+}

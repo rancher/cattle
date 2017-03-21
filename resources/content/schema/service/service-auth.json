@@ -22,6 +22,7 @@
         "project.uuid": "cr",
         "project.name": "cr",
         "project.description": "cr",
+        "hostTemplate.secretValues": "cr",
         "end" : ""
     }
 }

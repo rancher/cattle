@@ -10,6 +10,8 @@ import java.util.Arrays;
 import javax.inject.Inject;
 
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.hazelcast.config.Config;
 import com.hazelcast.config.DiscoveryConfig;
@@ -30,6 +32,8 @@ public class HazelcastFactory {
     private static final DynamicBooleanProperty JMX = ArchaiusUtil.getBoolean("hazelcast.jmx");
 
     private static final DynamicStringProperty LOGGING = ArchaiusUtil.getString("hazelcast.logging.type");
+
+    private static final Logger log = LoggerFactory.getLogger(HazelcastFactory.class);
 
     HazelcastDao hazelcastDao;
     @Inject
@@ -81,7 +85,17 @@ public class HazelcastFactory {
 
         config.setNetworkConfig(nc);
 
-        return Hazelcast.newHazelcastInstance(config);
+        HazelcastInstance hi = Hazelcast.newHazelcastInstance(config);
+        while (!hi.getPartitionService().isClusterSafe()) {
+            log.info("Waiting for cluster to be in a steady state");
+            try {
+                Thread.sleep(2000L);
+            } catch (InterruptedException e) {
+                throw new IllegalStateException("Waiting for cluster to be in a steady state", e);
+            }
+        }
+
+        return hi;
     }
 
     public HazelcastDao getHazelcastDao() {

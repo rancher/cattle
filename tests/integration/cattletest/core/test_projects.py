@@ -465,7 +465,6 @@ def _create_resources(client):
     registry = client.wait_success(registry)
     reg_cred = client.create_registry_credential(
         registryId=registry.id,
-        email='test@rancher.com',
         publicValue='rancher',
         secretValue='rancher')
     client.wait_success(reg_cred)

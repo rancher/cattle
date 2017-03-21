@@ -90,7 +90,7 @@ public class DBDiscovery extends NoExceptionRunnable implements DiscoveryStrateg
 
     protected void readId() throws IOException {
         String file = ID_FILE.get();
-        if (StringUtils.isBlank(file)) {
+        if (StringUtils.isBlank(file) || CLUSTERED.get()) {
             return;
         }
 

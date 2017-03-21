@@ -9,6 +9,7 @@ import io.cattle.platform.docker.api.transform.TransformInspect;
 import io.cattle.platform.docker.machine.api.MachineLinkFilter;
 import io.cattle.platform.docker.machine.api.addon.BaseMachineConfig;
 import io.cattle.platform.docker.machine.api.filter.MachineValidationFilter;
+import io.cattle.platform.docker.machine.api.filter.MachineOutputFilter;
 import io.cattle.platform.docker.machine.launch.SecretsApiLauncher;
 import io.cattle.platform.docker.machine.launch.WebsocketProxyLauncher;
 import io.cattle.platform.extension.impl.EMUtils;
@@ -91,6 +92,7 @@ import io.cattle.platform.iaas.api.filter.volume.VolumeOutputFilter;
 import io.cattle.platform.iaas.api.manager.DataManager;
 import io.cattle.platform.iaas.api.manager.HaConfigManager;
 import io.cattle.platform.iaas.api.manager.InstanceManager;
+import io.cattle.platform.iaas.api.manager.HostTemplateManager;
 import io.cattle.platform.iaas.api.manager.ProcessPoolManager;
 import io.cattle.platform.iaas.api.manager.ProcessSummaryManager;
 import io.cattle.platform.iaas.api.manager.SecretManager;
@@ -180,6 +182,11 @@ public class IaasApiConfig {
     @Bean
     MachineValidationFilter MachineValidationFilter() {
         return new MachineValidationFilter();
+    }
+
+    @Bean
+    MachineOutputFilter MachineOutputFilter() {
+        return new MachineOutputFilter();
     }
 
     @Bean
@@ -280,6 +287,11 @@ public class IaasApiConfig {
     @Bean
     SecretManager SecretManager() {
         return new SecretManager();
+    }
+
+    @Bean
+    HostTemplateManager MachineDriverCredentialManager() {
+        return new HostTemplateManager();
     }
 
     @Bean

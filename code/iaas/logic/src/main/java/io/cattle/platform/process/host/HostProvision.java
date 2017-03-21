@@ -79,21 +79,28 @@ public class HostProvision extends AbstractDefaultProcessHandler {
             throw e;
         }
 
-        resourceMonitor.waitFor(host, 5 * 60000, new ResourcePredicate<Host>() {
-            @Override
-            public boolean evaluate(Host obj) {
-                if (!host.getState().equals(HostConstants.STATE_PROVISIONING)) {
-                    throw new ResourceTimeoutException(host, "provisioning canceled");
+        try {
+            resourceMonitor.waitFor(host, 5 * 60000, new ResourcePredicate<Host>() {
+                @Override
+                public boolean evaluate(Host obj) {
+                    if (!host.getState().equals(HostConstants.STATE_PROVISIONING)) {
+                        throw new ResourceTimeoutException(host, "provisioning canceled");
+                    }
+
+                    return obj.getAgentId() != null;
                 }
 
-                return obj.getAgentId() != null;
-            }
-
-            @Override
-            public String getMessage() {
-                return "agent to check in";
-            }
-        });
+                @Override
+                public String getMessage() {
+                    return "agent to check in";
+                }
+            });
+        } catch (ResourceTimeoutException rte) {
+            objectProcessManager.scheduleStandardProcess(StandardProcess.ERROR, host, null);
+            ExecutionException e = new ExecutionException(rte.getMessage());
+            e.setResources(host);
+            throw e;
+        }
 
         return new HandlerResult(
                 MachineConstants.FIELD_DRIVER, physicalHost.getDriver()

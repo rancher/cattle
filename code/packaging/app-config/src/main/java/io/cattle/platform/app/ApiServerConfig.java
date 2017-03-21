@@ -73,6 +73,8 @@ import io.cattle.platform.iaas.api.auth.projects.Member;
 import io.cattle.platform.iaas.api.credential.ApiKeyCertificateDownloadLinkHandler;
 import io.cattle.platform.iaas.api.credential.SshKeyPemDownloadLinkHandler;
 import io.cattle.platform.iaas.api.host.HostEvacuateActionHandler;
+import io.cattle.platform.iaas.api.host.HostTemplateLinkHandler;
+import io.cattle.platform.iaas.api.host.HostTemplateOutputFilter;
 import io.cattle.platform.iaas.api.snapshot.SnapshotBackupActionHandler;
 import io.cattle.platform.iaas.api.volume.VolumeSnapshotActionHandler;
 import io.cattle.platform.object.meta.TypeSet;
@@ -462,6 +464,11 @@ public class ApiServerConfig {
     }
 
     @Bean
+    HostTemplateLinkHandler HostTemplateLinkHandler() {
+        return new HostTemplateLinkHandler();
+    }
+
+    @Bean
     ServiceContainerStatsLinkHandler ServiceContainerStatsLinkHandler() {
         return new ServiceContainerStatsLinkHandler();
     }
@@ -506,6 +513,11 @@ public class ApiServerConfig {
     @Bean
     HostEvacuateActionHandler HostEvacuateActionHandler() {
         return new HostEvacuateActionHandler();
+    }
+
+    @Bean
+    HostTemplateOutputFilter HostTemplateOutputFilter() {
+        return new HostTemplateOutputFilter();
     }
 
     @Bean

@@ -23,6 +23,7 @@ import java.util.Map;
 import javax.inject.Inject;
 
 import org.apache.commons.lang.StringUtils;
+import org.jooq.exception.DataChangedException;
 
 public class EventBasedProcessHandler extends AbstractObjectProcessHandler implements Priority {
 
@@ -99,8 +100,20 @@ public class EventBasedProcessHandler extends AbstractObjectProcessHandler imple
                 }
 
                 if (data.size() > 0) {
-                    Object reloaded = objectManager.reload(resource);
-                    objectManager.setFields(reloaded, data);
+                    DataChangedException dce = null;
+                    for (int i = 0; i < 3 ; i++) {
+                        try {
+                            Object reloaded = objectManager.reload(resource);
+                            objectManager.setFields(reloaded, data);
+                            dce = null;
+                            break;
+                        } catch (DataChangedException e) {
+                            dce = e;
+                        }
+                    }
+                    if (dce != null) {
+                        throw dce;
+                    }
                 }
             }
         });

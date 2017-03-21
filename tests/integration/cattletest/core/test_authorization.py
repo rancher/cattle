@@ -221,6 +221,7 @@ def test_user_types(user_client, adds=set(), removes=set()):
         'defaultNetwork',
         'scheduledUpgrade',
         'genericObject',
+        'hostTemplate',
     }
     types.update(adds)
     types.difference_update(removes)
@@ -469,7 +470,8 @@ def test_admin_types(admin_user_client, adds=set(), removes=set()):
         'genericObject',
         'processPool',
         'processSummary',
-        'scheduledUpgrade'
+        'scheduledUpgrade',
+        'hostTemplate',
     }
     types.update(adds)
     types.difference_update(removes)
@@ -745,6 +747,7 @@ def test_host_auth(admin_user_client, user_client, project_client):
         'memory': 'r',
         'milliCpu': 'r',
         'stackId': 'r',
+        'hostTemplateId': 'r',
     })
 
     auth_check(user_client.schema, 'host', 'r', {
@@ -762,6 +765,7 @@ def test_host_auth(admin_user_client, user_client, project_client):
         'memory': 'r',
         'milliCpu': 'r',
         'stackId': 'r',
+        'hostTemplateId': 'r',
     })
 
     auth_check(project_client.schema, 'host', 'rud', {
@@ -779,6 +783,7 @@ def test_host_auth(admin_user_client, user_client, project_client):
         'memory': 'ru',
         'milliCpu': 'ru',
         'stackId': 'r',
+        'hostTemplateId': 'r',
     })
 
 
@@ -1950,7 +1955,6 @@ def test_registry_credentials(admin_user_client, user_client, project_client):
     auth_check(admin_user_client.schema, 'registryCredential', 'r', {
         'accountId': 'r',
         'data': 'r',
-        'email': 'r',
         'publicValue': 'r',
         'secretValue': 'ro',
         'registryId': 'r',
@@ -1958,7 +1962,6 @@ def test_registry_credentials(admin_user_client, user_client, project_client):
 
     auth_check(user_client.schema, 'registryCredential', 'r', {
         'accountId': 'r',
-        'email': 'r',
         'publicValue': 'r',
         'secretValue': 'ro',
         'registryId': 'r',
@@ -1966,7 +1969,6 @@ def test_registry_credentials(admin_user_client, user_client, project_client):
 
     auth_check(project_client.schema, 'registryCredential', 'crud', {
         'accountId': 'r',
-        'email': 'cru',
         'publicValue': 'cru',
         'secretValue': 'curo',
         'registryId': 'cr',
