@@ -604,6 +604,8 @@
         "stack.dockerCompose": "cr",
         "stack.rancherCompose": "cr",
         "stack.environment": "cr",
+        "stack.answers": "cr",
+        "stack.templates": "cr",
         "stack.externalId": "cru",
         "stack.previousExternalId": "cru",
         "stack.previousEnvironment": "cru",
@@ -822,6 +824,7 @@
 
         "kubernetesStackUpgrade" : "r",
         "kubernetesStackUpgrade.templates" : "cr",
+        "kubernetesStackUpgrade.answers" : "cr",
         "kubernetesStackUpgrade.environment" : "cr",
         "kubernetesStackUpgrade.externalId" : "cr",
         
@@ -908,6 +911,8 @@
         "stackUpgrade.dockerCompose" : "cr",
         "stackUpgrade.rancherCompose" : "cr",
         "stackUpgrade.environment" : "cr",
+        "stackUpgrade.templates" : "cr",
+        "stackUpgrade.answers" : "cr",
         "stackUpgrade.externalId" : "cr",
 
         "stack.healthState": "r",

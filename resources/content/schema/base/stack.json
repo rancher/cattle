@@ -23,6 +23,13 @@
         "environment":{
             "type": "map[string]"
         },
+        "answers":{
+            "type": "map[json]"
+        },
+        "templates":{
+            "type": "map[string]",
+            "nullable": true
+        },
         "previousExternalId":{
             "type": "string",
             "nullable": true

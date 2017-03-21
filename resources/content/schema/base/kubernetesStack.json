@@ -1,9 +1,5 @@
 {
     "resourceFields": {
-        "templates":{
-            "type": "map[string]",
-            "required": true
-        },
         "namespace":{
             "type": "string",
             "required": true
