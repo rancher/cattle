@@ -2028,6 +2028,7 @@ def test_export_config(client, context):
                          }
                      },
                      "tmpfs": {"/run": "rw"},
+                     "sysctls": {"net.ipv4.ip_forward": "1"},
                      "ulimits": [{"name": "cpu", "soft": 1234, "hard": 1234},
                                  {"name": "nporc", "soft": 1234}]
                      }
@@ -2087,6 +2088,7 @@ def test_export_config(client, context):
     assert svc["tmpfs"] == ["/run:rw"]
     assert svc["ulimits"] == {"cpu": {"hard": 1234, "soft": 1234},
                               "nporc": 1234}
+    assert svc["sysctls"] == {"net.ipv4.ip_forward": "1"}
 
     rancher_yml = yaml.load(compose_config.rancherComposeConfig)
     svc = rancher_yml['services'][service.name]
