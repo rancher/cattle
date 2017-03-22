@@ -296,6 +296,7 @@
 
         "hostAccess" : "r",
         "hostAccess.token" : "r",
+        "hostAccess.authToken" : "r",
         "hostAccess.url" : "r",
 
         "identity": "r",
@@ -536,6 +537,7 @@
         "statsAccess" : "r",
         "statsAccess.token" : "r",
         "statsAccess.url" : "r",
+        "statsAccess.authToken" : "r",
 
         "storagePool": "r",
         "storagePool.externalId": "r",
