@@ -8,8 +8,10 @@ import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.ServiceConstants;
 import io.cattle.platform.core.dao.StackDao;
 import io.cattle.platform.core.model.ScheduledUpgrade;
+import io.cattle.platform.core.model.Service;
 import io.cattle.platform.core.model.Stack;
 import io.cattle.platform.core.model.tables.records.ScheduledUpgradeRecord;
+import io.cattle.platform.core.model.tables.records.ServiceRecord;
 import io.cattle.platform.core.model.tables.records.StackRecord;
 import io.cattle.platform.db.jooq.dao.impl.AbstractJooqDao;
 import io.cattle.platform.object.ObjectManager;
@@ -17,6 +19,7 @@ import io.github.ibuildthecloud.gdapi.id.IdFormatter;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -142,5 +145,18 @@ public class StackDaoImpl extends AbstractJooqDao implements StackDao {
         }
 
         return new ArrayList<>(data.values());
+    }
+
+    @Override
+    public List<? extends Service> getServices(Long stackId) {
+        if (stackId == null) {
+            return Collections.emptyList();
+        }
+        return create()
+                .select(SERVICE.fields())
+                .from(SERVICE)
+                .where(SERVICE.STACK_ID.eq(stackId)
+                    .and(SERVICE.REMOVED.isNull()))
+                .fetchInto(ServiceRecord.class);
     }
 }

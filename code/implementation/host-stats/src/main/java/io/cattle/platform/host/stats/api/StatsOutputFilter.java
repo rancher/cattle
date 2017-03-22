@@ -4,10 +4,12 @@ import io.cattle.platform.core.constants.AccountConstants;
 import io.cattle.platform.core.constants.HostConstants;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.constants.ProjectConstants;
+import io.cattle.platform.core.constants.ServiceConstants;
 import io.cattle.platform.core.model.Account;
 import io.cattle.platform.core.model.Host;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.Service;
+import io.cattle.platform.core.model.Stack;
 import io.cattle.platform.docker.constants.DockerHostConstants;
 import io.cattle.platform.host.stats.utils.StatsConstants;
 import io.github.ibuildthecloud.gdapi.context.ApiContext;
@@ -37,6 +39,8 @@ public class StatsOutputFilter implements ResourceOutputFilter {
         } else if (original instanceof Account && AccountConstants.PROJECT_KIND.equals(((Account) original).getKind())) {
             project = true;
         } else if (original instanceof Service) {
+            containerStats = true;
+        } else if (original instanceof Stack) {
             containerStats = true;
         }
 

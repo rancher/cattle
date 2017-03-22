@@ -1959,16 +1959,19 @@ def test_stats_access_auth(admin_user_client, user_client, project_client):
     auth_check(admin_user_client.schema, 'statsAccess', 'r', {
         'token': 'r',
         'url': 'r',
+        'authToken': 'r',
     })
 
     auth_check(user_client.schema, 'statsAccess', 'r', {
         'token': 'r',
         'url': 'r',
+        'authToken': 'r',
     })
 
     auth_check(project_client.schema, 'statsAccess', 'r', {
         'token': 'r',
         'url': 'r',
+        'authToken': 'r',
     })
 
 

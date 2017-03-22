@@ -92,9 +92,13 @@ public class HostStatsLinkHandler implements LinkHandler {
 
             serviceStatsQuery.add(statsAccess);
         }
+        Map<String, Object> authToken = new HashMap<>();
+        authToken.put("payload", true);
+
         Map<String, Object> metaQueryPayload = new HashMap<>();
         metaQueryPayload.put(ProjectConstants.TYPE, serviceStatsQuery);
 
+        meta.setAuthToken(tokenService.generateToken(authToken));
         meta.setToken(tokenService.generateToken(metaQueryPayload));
         meta.setUrl(metaUrl);
 
