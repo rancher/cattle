@@ -4,10 +4,12 @@ import io.cattle.platform.core.constants.AccountConstants;
 import io.cattle.platform.core.constants.HostConstants;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.constants.ProjectConstants;
+import io.cattle.platform.core.constants.ServiceConstants;
 import io.cattle.platform.core.model.Account;
 import io.cattle.platform.core.model.Host;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.Service;
+import io.cattle.platform.core.model.Stack;
 import io.cattle.platform.docker.constants.DockerHostConstants;
 import io.cattle.platform.host.stats.utils.StatsConstants;
 import io.github.ibuildthecloud.gdapi.context.ApiContext;
@@ -38,6 +40,8 @@ public class StatsOutputFilter implements ResourceOutputFilter {
             project = true;
         } else if (original instanceof Service) {
             containerStats = true;
+        } else if (original instanceof Stack) {
+            containerStats = true;
         }
 
         if (add) {
@@ -62,6 +66,7 @@ public class StatsOutputFilter implements ResourceOutputFilter {
         List<String> types = new ArrayList<>(InstanceConstants.CONTAINER_LIKE);
         types.add(HostConstants.TYPE);
         types.add(ProjectConstants.TYPE);
+        types.add(ServiceConstants.TYPE_STACK);
         types.add("service");
         types.add("loadBalancerService");
         return types.toArray(new String[types.size()]);
