@@ -1,6 +1,7 @@
 package io.cattle.platform.core.dao;
 
 import io.cattle.platform.core.model.ScheduledUpgrade;
+import io.cattle.platform.core.model.Service;
 import io.cattle.platform.core.model.Stack;
 import io.github.ibuildthecloud.gdapi.id.IdFormatter;
 
@@ -22,5 +23,7 @@ public interface StackDao {
     List<? extends ScheduledUpgrade> getRunningUpgrades();
 
     List<? extends ScheduledUpgrade> getReadyUpgrades(Set<Long> accountsToIgnore, int max);
+
+    List<? extends Service> getServices(Long stackId);
 
 }
