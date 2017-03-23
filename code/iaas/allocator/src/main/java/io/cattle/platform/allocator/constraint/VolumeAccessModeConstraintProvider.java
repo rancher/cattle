@@ -1,6 +1,7 @@
 package io.cattle.platform.allocator.constraint;
 
 import io.cattle.platform.allocator.dao.AllocatorDao;
+import io.cattle.platform.allocator.exception.FailedToAllocate;
 import io.cattle.platform.allocator.service.AllocationAttempt;
 import io.cattle.platform.allocator.service.AllocationLog;
 import io.cattle.platform.core.constants.CommonStatesConstants;
@@ -12,6 +13,7 @@ import io.cattle.platform.object.ObjectManager;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
 
 import javax.inject.Inject;
 
@@ -33,8 +35,20 @@ public class VolumeAccessModeConstraintProvider implements AllocationConstraints
             for (Volume v : volumes) {
                 if (VolumeConstants.ACCESS_MODE_SINGLE_HOST_RW.equals(v.getAccessMode())) {
                     if (v.getHostId() != null) {
-                        boolean hardConstraint = allocatorDao.isVolumeInUseOnHost(v.getId(), v.getHostId());
-                        constraints.add(new VolumeAccessModeSingleHostConstraint(v.getHostId(), v.getId(), hardConstraint));
+                        Set<Long> hostIds = allocatorDao.findHostsWithVolumeInUse(v.getId());
+                        boolean hardConstraint = false;
+                        Long hostID = v.getHostId();
+                        if (hostIds.size() == 0) {
+                            hardConstraint = false;
+                        } else if (hostIds.size() == 1) {
+                            hardConstraint = true;
+                            for(Long id: hostIds) {
+                                hostID = id;
+                            }
+                        } else {
+                            throw new FailedToAllocate("SingleHostRW volume is used by mutiple hosts");
+                        }
+                        constraints.add(new VolumeAccessModeSingleHostConstraint(hostID, v.getId(), hardConstraint));
                     }
                 } else if (VolumeConstants.ACCESS_MODE_SINGLE_INSTANCE_RW.equals(v.getAccessMode())) {
                     List<Long> currentlyUsedBy = allocatorDao.getInstancesWithVolumeMounted(v.getId(), instance.getId());

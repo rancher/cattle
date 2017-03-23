@@ -63,6 +63,7 @@ import org.apache.commons.lang.StringUtils;
 import org.jooq.Condition;
 import org.jooq.Field;
 import org.jooq.Record;
+import org.jooq.Record1;
 import org.jooq.Record3;
 import org.jooq.RecordHandler;
 import org.jooq.Result;
@@ -388,6 +389,30 @@ public class AllocatorDaoImpl extends AbstractJooqDao implements AllocatorDao {
                     .and(INSTANCE_HOST_MAP.STATE.notIn(IHM_STATES))
                     .and((INSTANCE.HEALTH_STATE.isNull().or(INSTANCE.HEALTH_STATE.eq(HealthcheckConstants.HEALTH_STATE_HEALTHY)))))
                 .fetch().size() > 0;
+    }
+    
+    @Override
+    public Set<Long> findHostsWithVolumeInUse(long volumeId) {
+        Set<Long> result = new HashSet<>();
+        create()
+            .select(HOST.ID)
+            .from(INSTANCE)
+            .join(MOUNT)
+                .on(MOUNT.INSTANCE_ID.eq(INSTANCE.ID).and(MOUNT.VOLUME_ID.eq(volumeId)))
+            .join(INSTANCE_HOST_MAP)
+                .on(INSTANCE_HOST_MAP.INSTANCE_ID.eq(INSTANCE.ID))
+            .join(HOST)
+                .on(HOST.ID.eq(INSTANCE_HOST_MAP.HOST_ID))
+            .where(INSTANCE.REMOVED.isNull()
+                .and(INSTANCE_HOST_MAP.STATE.notIn(IHM_STATES))
+                .and((INSTANCE.HEALTH_STATE.isNull().or(INSTANCE.HEALTH_STATE.eq(HealthcheckConstants.HEALTH_STATE_HEALTHY)))))
+            .fetchInto(new RecordHandler<Record1<Long>>() {
+                @Override
+                public void next(Record1<Long> record) {
+                   result.add(record.getValue(HOST.ID));
+                }
+            });
+        return result;
     }
 
     @Override
