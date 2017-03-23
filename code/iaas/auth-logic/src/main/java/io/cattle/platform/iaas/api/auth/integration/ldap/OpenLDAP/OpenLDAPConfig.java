@@ -17,6 +17,7 @@ public class OpenLDAPConfig implements Configurable, LDAPConfig {
     private final Integer userDisabledBitMask;
     private final String loginDomain;
     private final String domain;
+    private final String groupSearchDomain;
     private final String accessMode;
     private final String serviceAccountUsername;
     private final String serviceAccountPassword;
@@ -37,17 +38,18 @@ public class OpenLDAPConfig implements Configurable, LDAPConfig {
     private List<Identity> allowedIdentities;
 
     public OpenLDAPConfig(String server, Integer port, Integer userDisabledBitMask, String loginDomain, String domain,
-                          Boolean enabled, String accessMode, String serviceAccountUsername,
+                          String groupSearchDomain, Boolean enabled, String accessMode, String serviceAccountUsername,
                           String serviceAccountPassword, Boolean tls, String userSearchField, String userLoginField,
-                          String userObjectClass, String userNameField, String userEnabledAttribute, 
-                          String groupSearchField, String groupObjectClass, String groupNameField, 
-                          String userMemberAttribute, String groupMemberMappingAttribute, 
+                          String userObjectClass, String userNameField, String userEnabledAttribute,
+                          String groupSearchField, String groupObjectClass, String groupNameField,
+                          String userMemberAttribute, String groupMemberMappingAttribute,
                           long connectionTimeout, String groupDNField, String groupMemberUserAttribute, List<Identity> allowedIdentities) {
         this.server = server;
         this.port = port;
         this.userDisabledBitMask = userDisabledBitMask;
         this.loginDomain = loginDomain;
         this.domain = domain;
+        this.groupSearchDomain = groupSearchDomain;
         this.enabled = enabled;
         this.accessMode = accessMode;
         this.serviceAccountUsername = serviceAccountUsername;
@@ -69,6 +71,7 @@ public class OpenLDAPConfig implements Configurable, LDAPConfig {
         this.allowedIdentities = allowedIdentities;
     }
 
+    @Override
     @Field(required = true, nullable = false, minLength = 1)
     public String getServer() {
         return server;
@@ -79,21 +82,31 @@ public class OpenLDAPConfig implements Configurable, LDAPConfig {
         return enabled;
     }
 
+    @Override
     @Field(nullable = false, required = true, defaultValue = "389")
     public Integer getPort() {
         return port;
     }
 
+    @Override
     @Field(required = false, nullable = true)
     public String getLoginDomain() {
         return loginDomain;
     }
 
+    @Override
     @Field(required = true, nullable = false, minLength = 1)
     public String getDomain() {
         return domain;
     }
 
+    @Override
+    @Field(required = false, nullable = true)
+    public String getGroupSearchDomain() {
+        return groupSearchDomain;
+    }
+
+    @Override
     @Field(required = true, nullable = false, defaultValue = "unrestricted")
     public String getAccessMode() {
         return accessMode;
@@ -109,76 +122,91 @@ public class OpenLDAPConfig implements Configurable, LDAPConfig {
         return OpenLDAPConstants.CONFIG;
     }
 
+    @Override
     @Field(nullable = true, required = true, minLength = 1)
     public String getServiceAccountUsername() {
         return serviceAccountUsername;
     }
 
+    @Override
     @Field(nullable = true, required = true, minLength = 1)
     public String getServiceAccountPassword() {
         return serviceAccountPassword;
     }
 
+    @Override
     @Field(nullable = false, required = true)
     public Boolean getTls() {
         return tls;
     }
 
+    @Override
     @Field(nullable = false, required = true, defaultValue = "uid")
     public String getUserSearchField() {
         return userSearchField;
     }
 
+    @Override
     @Field(nullable = false, required = true, defaultValue = "cn")
     public String getGroupSearchField() {
         return groupSearchField;
     }
 
+    @Override
     @Field(nullable = false, required = true, defaultValue = "uid")
     public String getUserLoginField() {
         return userLoginField;
     }
 
+    @Override
     @Field(nullable = false, required = true, defaultValue = "inetOrgPerson")
     public String getUserObjectClass() {
         return userObjectClass;
     }
 
+    @Override
     @Field(nullable = true, required = false, defaultValue = "")
     public String getUserEnabledAttribute() {
         return userEnabledAttribute;
     }
 
+    @Override
     @Field(nullable = false, required = true, defaultValue = "givenName")
     public String getUserNameField() {
         return userNameField;
     }
 
+    @Override
     @Field(nullable = true, required = false, defaultValue = "")
     public Integer getUserDisabledBitMask() {
         return userDisabledBitMask;
     }
 
+    @Override
     @Field(nullable = false, required = true, defaultValue = "posixGroup")
     public String getGroupObjectClass() {
         return groupObjectClass;
     }
 
+    @Override
     @Field(nullable = false, required = true, defaultValue = "cn")
     public String getGroupNameField() {
         return groupNameField;
     }
 
+    @Override
     @Field(nullable = false, required = true, defaultValue = "memberOf")
     public String getUserMemberAttribute() {
         return userMemberAttribute;
     }
 
+    @Override
     @Field(nullable = false, required = true, defaultValue = "memberUid")
     public String getGroupMemberMappingAttribute() {
         return groupMemberMappingAttribute;
     }
 
+    @Override
     @Field(nullable = false, required = true, defaultValue = "1000")
     public long getConnectionTimeout() {
         return connectionTimeout;
@@ -188,7 +216,7 @@ public class OpenLDAPConfig implements Configurable, LDAPConfig {
     public List<Identity> getAllowedIdentities() {
         return allowedIdentities;
     }
-    
+
     @Override
     @Field(nullable = false, required = false, defaultValue = "entryDN")
     public String getGroupDNField() {

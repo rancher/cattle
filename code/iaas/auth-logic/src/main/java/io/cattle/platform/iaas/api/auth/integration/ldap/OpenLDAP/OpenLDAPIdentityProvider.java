@@ -123,7 +123,7 @@ public class OpenLDAPIdentityProvider extends LDAPIdentityProvider implements Id
                             '=' + memberOf.get(i).toString() + ")(" + getConstantsConfig().objectClass() + '=' +
                             getConstantsConfig().getGroupObjectClass() + "))";
                     logger.trace("getIdentities: memberOf attribute query: "+query);
-                    identities.addAll(resultsToIdentities(searchLdap(query)));
+                    identities.addAll(resultsToIdentities(searchLdap(query, getConstantsConfig().getGroupScope())));
                 }
             }
 
@@ -138,7 +138,7 @@ public class OpenLDAPIdentityProvider extends LDAPIdentityProvider implements Id
                         + ")(" + getConstantsConfig().objectClass() + '='
                         + getConstantsConfig().getGroupObjectClass() + "))";
                 logger.trace("getIdentities: groupMemberUserAttribute attribute query: "+query);
-                identities.addAll(resultsToIdentities(searchLdap(query)));
+                identities.addAll(resultsToIdentities(searchLdap(query, getConstantsConfig().getGroupScope())));
             }
             return identities;
         } catch (NamingException e) {
@@ -154,7 +154,7 @@ public class OpenLDAPIdentityProvider extends LDAPIdentityProvider implements Id
         LdapName user;
         String query = "(&(" + getConstantsConfig().getUserLoginField() + '=' + username + ")(" + getConstantsConfig().objectClass() + '='
                 + getConstantsConfig().getUserObjectClass() + "))";
-        List<Identity> users = resultsToIdentities(searchLdap(query));
+        List<Identity> users = resultsToIdentities(searchLdap(query, getConstantsConfig().getUserScope()));
         if (users.size() != 1){
             logger.error("Found no or multiple users for: " + username);
             throw new ClientVisibleException(ResponseCodes.UNAUTHORIZED);

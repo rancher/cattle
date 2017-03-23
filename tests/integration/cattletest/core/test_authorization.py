@@ -540,6 +540,7 @@ def test_ldap_auth(admin_user_client, user_client, project_client):
     auth_check(admin_user_client.schema, 'ldapconfig', 'cru', {
         'accessMode': 'cr',
         'domain': 'cr',
+        'groupSearchDomain': 'cr',
         'enabled': 'cr',
         'groupNameField': 'cr',
         'groupObjectClass': 'cr',
@@ -571,6 +572,7 @@ def test_openldap_auth(admin_user_client, user_client, project_client):
     auth_check(admin_user_client.schema, 'openldapconfig', 'cru', {
         'accessMode': 'cr',
         'domain': 'cr',
+        'groupSearchDomain': 'cr',
         'enabled': 'cr',
         'groupNameField': 'cr',
         'groupObjectClass': 'cr',

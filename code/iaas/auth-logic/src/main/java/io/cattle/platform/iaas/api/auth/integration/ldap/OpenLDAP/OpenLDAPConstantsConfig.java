@@ -54,6 +54,11 @@ public class OpenLDAPConstantsConfig extends OpenLDAPConfigurable implements LDA
     }
 
     @Override
+    public String getGroupSearchDomain() {
+        return OpenLDAPConstants.LDAP_GROUP_SEARCH_DOMAIN.get();
+    }
+
+    @Override
     public String getUserSearchField() {
         return OpenLDAPConstants.USER_SEARCH_FIELD.get();
     }

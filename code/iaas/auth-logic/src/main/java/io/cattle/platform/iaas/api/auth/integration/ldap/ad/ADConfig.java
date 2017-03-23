@@ -18,6 +18,7 @@ public class ADConfig implements Configurable, LDAPConfig {
     private final Integer userDisabledBitMask;
     private final String loginDomain;
     private final String domain;
+    private final String groupSearchDomain;
     private final String accessMode;
     private final String serviceAccountUsername;
     private final String serviceAccountPassword;
@@ -36,16 +37,17 @@ public class ADConfig implements Configurable, LDAPConfig {
     private List<Identity> allowedIdentities;
 
     public ADConfig(String server, Integer port, Integer userDisabledBitMask, String loginDomain, String domain,
-                    Boolean enabled, String accessMode, String serviceAccountUsername,
+                    String groupSearchDomain, Boolean enabled, String accessMode, String serviceAccountUsername,
                     String serviceAccountPassword, Boolean tls, String userSearchField, String userLoginField,
                     String userObjectClass, String userNameField, String userEnabledAttribute, String groupSearchField,
-                    String groupObjectClass, String groupNameField, long connectionTimeout, 
+                    String groupObjectClass, String groupNameField, long connectionTimeout,
                     List<Identity> allowedIdentities, String groupDNField, String groupMemberUserAttribute) {
         this.server = server;
         this.port = port;
         this.userDisabledBitMask = userDisabledBitMask;
         this.loginDomain = loginDomain;
         this.domain = domain;
+        this.groupSearchDomain = groupSearchDomain;
         this.enabled = enabled;
         this.accessMode = accessMode;
         this.serviceAccountUsername = serviceAccountUsername;
@@ -65,6 +67,7 @@ public class ADConfig implements Configurable, LDAPConfig {
         this.groupMemberUserAttribute = groupMemberUserAttribute;
     }
 
+    @Override
     @Field(required = true, nullable = false, minLength = 1)
     public String getServer() {
         return server;
@@ -75,6 +78,7 @@ public class ADConfig implements Configurable, LDAPConfig {
         return enabled;
     }
 
+    @Override
     @Field(nullable = false, required = true, defaultValue = "389")
     public Integer getPort() {
         return port;
@@ -86,6 +90,7 @@ public class ADConfig implements Configurable, LDAPConfig {
         return loginDomain;
     }
 
+    @Override
     @Field(required = true, nullable = false, minLength = 1)
     public String getDomain() {
         return domain;
@@ -107,16 +112,19 @@ public class ADConfig implements Configurable, LDAPConfig {
         return ADConstants.CONFIG;
     }
 
+    @Override
     @Field(nullable = false, required = true, minLength = 1)
     public String getServiceAccountUsername() {
         return serviceAccountUsername;
     }
 
+    @Override
     @Field(nullable = true, required = true, minLength = 1)
     public String getServiceAccountPassword() {
         return serviceAccountPassword;
     }
 
+    @Override
     @Field(nullable = false, required = true)
     public Boolean getTls() {
         return tls;
@@ -210,5 +218,11 @@ public class ADConfig implements Configurable, LDAPConfig {
     @Field(nullable = false, required = false, defaultValue = "distinguishedName")
     public String getGroupMemberUserAttribute() {
         return groupMemberUserAttribute;
+    }
+
+    @Override
+    @Field(required = false, nullable = true)
+    public String getGroupSearchDomain() {
+        return groupSearchDomain;
     }
 }

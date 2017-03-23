@@ -113,7 +113,7 @@ public abstract class LDAPIdentityProvider implements IdentityProvider{
                     + getConstantsConfig().getGroupObjectClass() + "))";
         }
         log.trace("LDAPIdentityProvider searchGroup query: " + query);
-        return resultsToIdentities(searchLdap(query));
+        return resultsToIdentities(searchLdap(query, getConstantsConfig().getGroupScope()));
     }
 
     protected List<Identity> searchUser(String name, boolean exactMatch) {
@@ -127,7 +127,7 @@ public abstract class LDAPIdentityProvider implements IdentityProvider{
                     + getConstantsConfig().getUserObjectClass() + "))";
         }
         log.trace("LDAPIdentityProvider searchUser query: " + query);
-        return resultsToIdentities(searchLdap(query));
+        return resultsToIdentities(searchLdap(query, getConstantsConfig().getUserScope()));
     }
 
     protected List<Identity> resultsToIdentities(NamingEnumeration<SearchResult> results) {
@@ -239,14 +239,18 @@ public abstract class LDAPIdentityProvider implements IdentityProvider{
         }
     }
 
-    protected NamingEnumeration<SearchResult> searchLdap(String query) {
+    protected NamingEnumeration<SearchResult> searchLdap(String query, String scope) {
         SearchControls controls = new SearchControls();
         LdapContext context = null;
         controls.setSearchScope(SUBTREE_SCOPE);
         NamingEnumeration<SearchResult> results;
         try {
             context = getServiceContext();
-            results = context.search(getConstantsConfig().getDomain(), query, controls);
+            if (getConstantsConfig().getGroupScope().equalsIgnoreCase(scope) && StringUtils.isNotBlank(getConstantsConfig().getGroupSearchDomain())) {
+                results = context.search(getConstantsConfig().getGroupSearchDomain(), query, controls);
+            } else {
+                results = context.search(getConstantsConfig().getDomain(), query, controls);
+            }
         } catch (NamingException e) {
             getLogger().error("When searching ldap from /v1/identity Failed to search: " + query + " scope:" + getConstantsConfig().getDomain(), e);
             throw new ClientVisibleException(ResponseCodes.INTERNAL_SERVER_ERROR, getConstantsConfig().getConfig(),
