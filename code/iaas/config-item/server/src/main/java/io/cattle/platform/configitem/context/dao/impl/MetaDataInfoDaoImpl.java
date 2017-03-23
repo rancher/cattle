@@ -174,8 +174,10 @@ public class MetaDataInfoDaoImpl extends AbstractJooqDao implements MetaDataInfo
                                         healthCheckers.add(h.getUuid());
                                     }
                                 }
+                                InstanceHealthCheck healthCheck = DataAccessor.field(instance,
+                                        InstanceConstants.FIELD_HEALTH_CHECK, jsonMapper, InstanceHealthCheck.class);
                                 data.setInstanceAndHostMetadata(instance, hostMetaData, healthCheckers,
-                                        helperInfo.getAccounts().get(instance.getAccountId()));
+                                        helperInfo.getAccounts().get(instance.getAccountId()), healthCheck);
 
                                 data.setService_index(serviceIndex);
                                 if (networkKind.equalsIgnoreCase(NetworkConstants.KIND_DOCKER_HOST)
