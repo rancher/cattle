@@ -6,8 +6,13 @@ import io.cattle.platform.api.auth.impl.PolicyOptions;
 import io.cattle.platform.core.model.Account;
 import io.cattle.platform.object.meta.ObjectMetaDataManager;
 import io.cattle.platform.object.util.ObjectUtils;
+import io.github.ibuildthecloud.gdapi.context.ApiContext;
+import io.github.ibuildthecloud.gdapi.factory.SchemaFactory;
 
 import java.lang.reflect.InvocationTargetException;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.Set;
 
 import org.apache.commons.beanutils.PropertyUtils;
@@ -60,6 +65,16 @@ public class AccountPolicy extends DefaultPolicy {
                 return obj;
             }
             return null;
+        }
+    }
+
+    @Override
+    public Set<String> getRoles() {
+        SchemaFactory sf = ApiContext.getSchemaFactory();
+        if (sf == null) {
+            return Collections.emptySet();
+        } else {
+            return new HashSet<>(Arrays.asList(sf.getId()));
         }
     }
 

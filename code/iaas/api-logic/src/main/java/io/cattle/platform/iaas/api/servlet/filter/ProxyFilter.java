@@ -3,6 +3,9 @@ package io.cattle.platform.iaas.api.servlet.filter;
 import io.cattle.platform.iaas.api.request.handler.GenericWhitelistedProxy;
 
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
 
 import javax.servlet.Filter;
 import javax.servlet.FilterChain;
@@ -20,6 +23,8 @@ public class ProxyFilter implements Filter {
     String proxy;
     boolean redirects = true;
     boolean parseform = false;
+    Set<String> roles;
+    Set<String> methods;
 
     @Override
     public void init(FilterConfig filterConfig) throws ServletException {
@@ -32,6 +37,14 @@ public class ProxyFilter implements Filter {
         if (StringUtils.isNotBlank(parseFormValue)) {
             parseform = Boolean.parseBoolean(parseFormValue);
         }
+        String roles = filterConfig.getInitParameter("roles");
+        if (StringUtils.isNotBlank(roles)) {
+            this.roles = new HashSet<>(Arrays.asList(roles.trim().split("\\s*,\\s*")));
+        }
+        String methods = filterConfig.getInitParameter("rolesMethods");
+        if (StringUtils.isNotBlank(roles)) {
+            this.methods = new HashSet<>(Arrays.asList(methods.trim().split("\\s*,\\s*")));
+        }
     }
 
     @Override
@@ -41,6 +54,13 @@ public class ProxyFilter implements Filter {
         request.setAttribute(GenericWhitelistedProxy.SET_HOST_CURRENT_HOST, true);
         request.setAttribute(GenericWhitelistedProxy.REDIRECTS, redirects);
         request.setAttribute(GenericWhitelistedProxy.PARSE_FORM, parseform);
+
+        if (roles != null) {
+            request.setAttribute(GenericWhitelistedProxy.REQUIRE_ROLE, roles);
+        }
+        if (methods != null) {
+            request.setAttribute(GenericWhitelistedProxy.METHOD_ROLE, methods);
+        }
 
         rd.forward(request, response);
         return;
