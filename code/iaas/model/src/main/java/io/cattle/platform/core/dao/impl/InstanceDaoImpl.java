@@ -476,9 +476,7 @@ public class InstanceDaoImpl extends AbstractJooqDao implements InstanceDao {
             return revision;
         }
         Map<String, Object> data = new HashMap<>();
-        String name = instance.getUuid();
         data.put(InstanceConstants.FIELD_INSTANCE_REVISION_CONFIG, config);
-        data.put(ObjectMetaDataManager.NAME_FIELD, name);
         data.put(ObjectMetaDataManager.ACCOUNT_FIELD, instance.getAccountId());
         data.put("instanceId", instance.getId());
         return objectManager.create(InstanceRevision.class, data);
