@@ -98,4 +98,9 @@ public class DefaultPolicy implements Policy {
         return (null != whitelist && whitelist.contains(obj));
     }
 
+    @Override
+    public Set<String> getRoles() {
+        return Collections.emptySet();
+    }
+
 }
