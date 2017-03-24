@@ -183,6 +183,7 @@
         "container.exitCode": "r",
         "container.prePullOnUpgrade": "cru",
         "container.revisionId": "r",
+        "container.previousRevisionId": "r",
         
         "ulimit" : "r",
         "ulimit.name" : "cr",
@@ -989,6 +990,7 @@
         "virtualMachine.secrets" : "",
         "virtualMachine.prePullOnUpgrade": "",
         "virtualMachine.revisionId": "",
+        "virtualMachine.previousRevisionId": "",
 
         "virtualMachineDisk" : "r",
         "virtualMachineDisk.name" : "cr",

@@ -1081,6 +1081,7 @@ def test_container_auth(admin_user_client, user_client, project_client,
         'exitCode': 'r',
         'prePullOnUpgrade': 'r',
         'revisionId': 'r',
+        'previousRevisionId': 'r',
     })
 
     auth_check(user_client.schema, 'container', 'r', {
@@ -1195,6 +1196,7 @@ def test_container_auth(admin_user_client, user_client, project_client,
         'exitCode': 'r',
         'prePullOnUpgrade': 'r',
         'revisionId': 'r',
+        'previousRevisionId': 'r',
     })
 
     auth_check(project_client.schema, 'container', 'crud', {
@@ -1309,6 +1311,7 @@ def test_container_auth(admin_user_client, user_client, project_client,
         'exitCode': 'r',
         'prePullOnUpgrade': 'cru',
         'revisionId': 'r',
+        'previousRevisionId': 'r',
     })
 
     auth_check(environment_client.schema, 'container', 'crud', {
@@ -1422,6 +1425,7 @@ def test_container_auth(admin_user_client, user_client, project_client,
         'exitCode': 'r',
         'prePullOnUpgrade': 'cru',
         'revisionId': 'r',
+        'previousRevisionId': 'r',
     })
 
     auth_check(project_admin_client.schema, 'container', 'crud', {
@@ -1535,6 +1539,7 @@ def test_container_auth(admin_user_client, user_client, project_client,
         'exitCode': 'r',
         'prePullOnUpgrade': 'cru',
         'revisionId': 'r',
+        'previousRevisionId': 'r',
     })
 
     auth_check(project_client.schema, 'dockerBuild', 'cr', {
