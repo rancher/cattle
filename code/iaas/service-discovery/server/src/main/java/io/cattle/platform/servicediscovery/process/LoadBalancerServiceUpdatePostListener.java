@@ -100,6 +100,10 @@ public class LoadBalancerServiceUpdatePostListener extends AbstractObjectProcess
                 port = objectManager.create(port);
             }
 
+            // trigger instance/metadata update
+            instance = objectManager.setFields(instance, InstanceConstants.FIELD_PORTS, newPortDefs);
+            instanceDao.clearCacheInstanceData(instance.getId());
+
             for (Port port : toRetain.values()) {
                 createThenActivate(port, new HashMap<String, Object>());
             }
@@ -107,10 +111,6 @@ public class LoadBalancerServiceUpdatePostListener extends AbstractObjectProcess
             for (Port port : toRemove) {
                 deactivateThenRemove(port, new HashMap<String, Object>());
             }
-
-            // trigger instance/metadata update
-            instance = objectManager.setFields(instance, InstanceConstants.FIELD_PORTS, newPortDefs);
-            instanceDao.clearCacheInstanceData(instance.getId());
         }
     }
 
