@@ -88,6 +88,47 @@
     </filter-mapping>
 
     <filter>
+        <filter-name>AdminAuthService</filter-name>
+        <filter-class>io.cattle.platform.iaas.api.servlet.filter.ProxyFilter</filter-class>
+        <init-param>
+            <param-name>proxy</param-name>
+            <param-value>http://localhost:8090</param-value>
+        </init-param>
+        <init-param>
+            <param-name>redirects</param-name>
+            <param-value>false</param-value>
+        </init-param>
+        <init-param>
+            <param-name>parseform</param-name>
+            <param-value>true</param-value>
+        </init-param>
+        <init-param>
+            <param-name>roles</param-name>
+            <param-value>admin,v1-admin</param-value>
+        </init-param>
+        <init-param>
+            <param-name>rolesMethods</param-name>
+            <param-value>POST</param-value>
+        </init-param>
+    </filter>
+    <filter-mapping>
+        <filter-name>AdminAuthService</filter-name>
+        <url-pattern>/v1-auth/config</url-pattern>
+    </filter-mapping>
+    <filter-mapping>
+        <filter-name>AdminAuthService</filter-name>
+        <url-pattern>/v1-auth/configs</url-pattern>
+    </filter-mapping>
+    <filter-mapping>
+        <filter-name>AdminAuthService</filter-name>
+        <url-pattern>/v1-auth/reload</url-pattern>
+    </filter-mapping>
+    <filter-mapping>
+        <filter-name>AdminAuthService</filter-name>
+        <url-pattern>/v1-auth/token</url-pattern>
+    </filter-mapping>
+
+    <filter>
         <filter-name>AuthService</filter-name>
         <filter-class>io.cattle.platform.iaas.api.servlet.filter.ProxyFilter</filter-class>
         <init-param>
