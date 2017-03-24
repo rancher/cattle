@@ -1,7 +1,11 @@
 package io.cattle.platform.iaas.api.request.handler;
 
+import io.cattle.platform.api.auth.Policy;
+import io.cattle.platform.api.utils.ApiUtils;
 import io.cattle.platform.archaius.util.ArchaiusUtil;
+import io.cattle.platform.core.constants.AccountConstants;
 import io.cattle.platform.core.constants.CommonStatesConstants;
+import io.cattle.platform.core.constants.ProjectConstants;
 import io.cattle.platform.core.model.MachineDriver;
 import io.cattle.platform.iaas.api.servlet.filter.ProxyPreFilter;
 import io.cattle.platform.object.ObjectManager;
@@ -10,6 +14,7 @@ import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.util.type.Named;
 import io.github.ibuildthecloud.gdapi.condition.Condition;
 import io.github.ibuildthecloud.gdapi.condition.ConditionType;
+import io.github.ibuildthecloud.gdapi.context.ApiContext;
 import io.github.ibuildthecloud.gdapi.exception.ClientVisibleException;
 import io.github.ibuildthecloud.gdapi.request.ApiRequest;
 import io.github.ibuildthecloud.gdapi.request.handler.AbstractResponseGenerator;
@@ -77,6 +82,8 @@ public class GenericWhitelistedProxy extends AbstractResponseGenerator implement
     public static final String SET_HOST_CURRENT_HOST = GenericWhitelistedProxy.class.getName() + "set_host_current_host";
     public static final String REDIRECTS = GenericWhitelistedProxy.class.getName() + "redirects";
     public static final String PARSE_FORM = GenericWhitelistedProxy.class.getName() + "parseform";
+    public static final String REQUIRE_ROLE = GenericWhitelistedProxy.class.getName() + "roles";
+    public static final String METHOD_ROLE = GenericWhitelistedProxy.class.getName() + "methodRoles";
 
     private static final DynamicBooleanProperty ALLOW_PROXY = ArchaiusUtil.getBoolean("api.proxy.allow");
     private static final DynamicStringListProperty PROXY_WHITELIST = ArchaiusUtil.getList("api.proxy.whitelist");
@@ -189,6 +196,8 @@ public class GenericWhitelistedProxy extends AbstractResponseGenerator implement
         boolean setCurrentHost = Boolean.TRUE.equals(servletRequest.getAttribute(SET_HOST_CURRENT_HOST));
         boolean redirects = !Boolean.FALSE.equals(servletRequest.getAttribute(REDIRECTS));
         boolean parseForm = Boolean.TRUE.equals(servletRequest.getAttribute(PARSE_FORM));
+        Set<String> requiredRoles = (Set<String>) servletRequest.getAttribute(REQUIRE_ROLE);
+        Set<String> methodRoles = (Set<String>) servletRequest.getAttribute(METHOD_ROLE);
 
         String redirect = servletRequest.getRequestURI();
         redirect = StringUtils.substringAfter(redirect, "/proxy/");
@@ -307,6 +316,22 @@ public class GenericWhitelistedProxy extends AbstractResponseGenerator implement
             temp.addHeader("Host", host);
         }
 
+        String projectHeader = "";
+        Set<String> roles = null;
+        String roleString = "";
+        Policy policy = ApiUtils.getPolicy();
+        if (policy != null) {
+            projectHeader = ApiContext.getContext().getIdFormatter()
+                    .formatId(AccountConstants.TYPE, Long.toString(policy.getAccountId()))
+                    .toString();
+            roles = policy.getRoles();
+            roleString = StringUtils.join(roles, ",");
+        }
+        temp.setHeader(ProjectConstants.PROJECT_HEADER, projectHeader);
+        temp.setHeader(ProjectConstants.ROLES_HEADER, roleString);
+
+        authorize(method, requiredRoles, roles, methodRoles);
+
         if ("POST".equals(method) || "PUT".equals(method)) {
             if(isFormContent) {
                 Map<String, String[]> map = servletRequest.getParameterMap();
@@ -346,6 +371,32 @@ public class GenericWhitelistedProxy extends AbstractResponseGenerator implement
                 return null;
             }
         });
+    }
+
+    private static void authorize(String method, Set<String> requiredRoles, Set<String> roles, Set<String> methods) {
+        if (methods != null && methods.size() > 0) {
+            if (!methods.contains(method)) {
+                return;
+            }
+        }
+
+        if (requiredRoles == null || requiredRoles.isEmpty()) {
+            return;
+        }
+
+        boolean ok = false;
+        if (roles != null) {
+            for (String role : roles) {
+                if (requiredRoles.contains(role)) {
+                    ok = true;
+                    break;
+                }
+            }
+        }
+
+        if (!ok) {
+            throw new ClientVisibleException(ResponseCodes.FORBIDDEN);
+        }
     }
 
     private boolean isWhitelisted(String host) {

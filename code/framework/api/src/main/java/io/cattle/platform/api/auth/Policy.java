@@ -34,4 +34,6 @@ public interface Policy {
 
     <T> void grantObjectAccess(T obj);
 
+    Set<String> getRoles();
+
 }
