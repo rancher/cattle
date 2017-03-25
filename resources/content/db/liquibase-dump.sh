@@ -27,7 +27,7 @@ fi
 
 DRIVER_JAR=$(prep_driver_jar)
 
-$LIQUIBASE_HOME/liquibase --classpath="$DRIVER_JAR"  \
+JAVA_OPTS="-Duser.name=rancher" $LIQUIBASE_HOME/liquibase --classpath="$DRIVER_JAR"  \
     --driver=com.mysql.jdbc.Driver \
     --changeLogFile=dump.xml \
     --url="jdbc:mysql://localhost:3306/${DB}_base" \
