@@ -69,4 +69,9 @@ public class OpenLDAPTokenCreator extends OpenLDAPConfigurable implements TokenC
     public String getName() {
         return OpenLDAPConstants.TOKEN_CREATOR;
     }
+
+    @Override
+    public Token getCurrentToken() {
+        return OpenLDAPUtils.retrieveCurrentToken();
+    }
 }

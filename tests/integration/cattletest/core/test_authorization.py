@@ -504,7 +504,7 @@ def test_instance_link_auth(admin_user_client, user_client, project_client):
 
 
 def test_token_auth(token_client):
-    auth_check(token_client.schema, 'token', 'cr', {
+    auth_check(token_client.schema, 'token', 'crd', {
         'jwt': 'r',
         'code': 'cr',
         'user': 'r',
