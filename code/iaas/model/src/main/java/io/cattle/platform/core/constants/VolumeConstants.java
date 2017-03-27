@@ -76,5 +76,10 @@ public class VolumeConstants {
     public static final String SECRETS_PATH = "/run/secrets";
 
     public static final String SECRETS_OPT_KEY = "io.rancher.secrets.token";
+    
+    public static final String EC2_AZ = "ec2_az";
+    
+    public static final String SCALE_GROUP_LABEL = "io.rancher.scheduler.scale_per_group";
 
+    public static final String EC2_AZ_HOST_LABEL_KEY = "ec2.availability_zone";
 }
