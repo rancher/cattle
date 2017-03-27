@@ -15,7 +15,10 @@ public class Token {
     private String code;
     private  String user;
     private String id;
+<<<<<<< HEAD
     private Long authenticatedAsAccountId;
+=======
+>>>>>>> 90cd44f... Delete token on logout
     private  Boolean security = SecurityConstants.SECURITY.get();
     private  String userType;
     private  String authProvider = SecurityConstants.AUTH_PROVIDER.get();
@@ -125,6 +128,7 @@ public class Token {
     public void setId(String id) {
         this.id = id;
     }
+<<<<<<< HEAD
 
     public Long getAuthenticatedAsAccountId() {
         return authenticatedAsAccountId;
@@ -133,4 +137,6 @@ public class Token {
     public void setAuthenticatedAsAccountId(Long authenticatedAsAccountId) {
         this.authenticatedAsAccountId = authenticatedAsAccountId;
     }
+=======
+>>>>>>> 90cd44f... Delete token on logout
 }

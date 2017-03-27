@@ -337,19 +337,11 @@ public class ExternalServiceAuthProvider {
 
     public Token readCurrentToken() {
         Token token = new Token();
-
-        //get redirect Url from external service
-        String redirect = getRedirectUrl();
-        token.setRedirectUrl(redirect);
-
-        if (tokenUtil.findAndSetJWT()) {
-            Token userToken = tokenUtil.getUserIdentityFromJWT();
-            if(userToken != null) {
-                token.setUserIdentity(userToken.getUserIdentity());
-                token.setUserType(userToken.getUserType());
-            }
+        token = tokenUtil.retrieveCurrentToken();
+        if (token != null) {
+            String redirect = getRedirectUrl();
+            token.setRedirectUrl(redirect);
         }
-        log.info("readCurrentToken returning {}", token);
         return token;
     }
 }

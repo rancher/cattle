@@ -65,7 +65,13 @@ public class ADTokenCreator extends ADConfigurable implements TokenCreator {
         adIdentityProvider.reset();
     }
 
+    @Override
     public String getName() {
         return ADConstants.TOKEN_CREATOR;
+    }
+
+    @Override
+    public Token getCurrentToken() {
+        return adUtils.retrieveCurrentToken();
     }
 }

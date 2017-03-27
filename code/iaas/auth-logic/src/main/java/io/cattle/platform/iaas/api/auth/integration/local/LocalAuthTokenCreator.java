@@ -68,4 +68,9 @@ public class LocalAuthTokenCreator extends LocalAuthConfigurable implements Toke
     public String getName() {
         return LocalAuthConstants.TOKEN_CREATOR;
     }
+
+    @Override
+    public Token getCurrentToken() {
+        return localAuthTokenUtils.retrieveCurrentToken();
+    }
 }
