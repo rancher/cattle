@@ -253,7 +253,7 @@ public abstract class AbstractServiceDeploymentPlanner implements ServiceDeploym
             unheathyUnits.add(du);
         }
         for (DeploymentUnit unhealthyUnit : unheathyUnits) {
-            context.objectManager.setFields(context.objectManager.reload(unhealthyUnit), ServiceConstants.FIELD_DEPLOYMENT_UNIT_CLEANUP, true);
+            context.serviceDao.setForCleanup(unhealthyUnit, true);
         }
     }
     

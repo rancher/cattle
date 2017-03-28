@@ -86,4 +86,6 @@ public interface ServiceDao {
     void cleanupServiceRevisions(Service service);
 
     RevisionData createServiceRevision(Service service, Map<String, Object> newData, boolean force);
+
+    void setForCleanup(DeploymentUnit unit, boolean cleanup);
 }

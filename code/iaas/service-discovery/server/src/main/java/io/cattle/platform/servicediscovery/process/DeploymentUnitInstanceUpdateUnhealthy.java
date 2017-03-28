@@ -5,6 +5,7 @@ import io.cattle.platform.core.addon.InstanceHealthCheck.Strategy;
 import io.cattle.platform.core.constants.HealthcheckConstants;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.constants.ServiceConstants;
+import io.cattle.platform.core.dao.ServiceDao;
 import io.cattle.platform.core.model.DeploymentUnit;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.engine.handler.HandlerResult;
@@ -30,6 +31,8 @@ public class DeploymentUnitInstanceUpdateUnhealthy extends AbstractObjectProcess
     JsonMapper jsonMapper;
     @Inject
     DeploymentUnitManager duMgr;
+    @Inject
+    ServiceDao svcDao;
 
     @Override
     public String[] getProcessNames() {
@@ -49,7 +52,7 @@ public class DeploymentUnitInstanceUpdateUnhealthy extends AbstractObjectProcess
         }
 
         if (unit.getServiceId() == null) {
-            objectManager.setFields(objectManager.reload(unit), ServiceConstants.FIELD_DEPLOYMENT_UNIT_CLEANUP, true);
+            svcDao.setForCleanup(unit, true);
             duMgr.scheduleReconcile(unit);
         } else {
             if (healthCheck.getStrategy() == Strategy.recreate) {
