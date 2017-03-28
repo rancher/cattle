@@ -6,7 +6,7 @@ import io.cattle.platform.core.constants.ServiceConstants;
 import io.cattle.platform.core.model.Service;
 import io.cattle.platform.core.model.Stack;
 import io.cattle.platform.object.ObjectManager;
-import io.cattle.platform.servicediscovery.api.export.ServiceDiscoveryComposeExportService;
+import io.cattle.platform.servicediscovery.api.export.ComposeExportService;
 import io.github.ibuildthecloud.gdapi.request.ApiRequest;
 
 import java.io.ByteArrayOutputStream;
@@ -24,7 +24,7 @@ import org.apache.commons.lang.StringUtils;
 @Named
 public class StackComposeLinkHandler implements LinkHandler {
     @Inject
-    ServiceDiscoveryComposeExportService composeExportService;
+    ComposeExportService composeExportService;
 
     @Inject
     ObjectManager objectManager;

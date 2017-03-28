@@ -7,8 +7,8 @@ public class RancherImageToComposeFormatter implements RancherConfigToComposeFor
     private static final String IMAGE_PREFIX = "docker:";
 
     @Override
-    public Object format(ServiceDiscoveryConfigItem item, Object valueToTransform) {
-        if (!item.getDockerName().equalsIgnoreCase(ServiceDiscoveryConfigItem.IMAGE.getDockerName())) {
+    public Object format(ComposeExportConfigItem item, Object valueToTransform) {
+        if (!item.getDockerName().equalsIgnoreCase(ComposeExportConfigItem.IMAGE.getDockerName())) {
             return null;
         }
         if (valueToTransform.toString().startsWith(IMAGE_PREFIX)) {

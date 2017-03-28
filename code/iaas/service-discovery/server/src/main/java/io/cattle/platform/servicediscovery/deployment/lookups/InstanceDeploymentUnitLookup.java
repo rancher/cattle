@@ -17,7 +17,7 @@ public class InstanceDeploymentUnitLookup implements DeploymentUnitLookup {
     ObjectManager objMgr;
 
     @Override
-    public Collection<? extends DeploymentUnit> getDeploymentUnits(Object obj) {
+    public Collection<? extends DeploymentUnit> getDeploymentUnits(Object obj, boolean transitioningOnly) {
         if (!(obj instanceof Instance)) {
             return null;
         }
