@@ -65,12 +65,16 @@ public class ServiceCreateValidationFilter extends AbstractDefaultResourceManage
         return new String[] { ServiceConstants.KIND_SERVICE,
                 ServiceConstants.KIND_LOAD_BALANCER_SERVICE,
                 ServiceConstants.KIND_EXTERNAL_SERVICE, ServiceConstants.KIND_DNS_SERVICE,
-                ServiceConstants.KIND_NETWORK_DRIVER_SERVICE, ServiceConstants.KIND_STORAGE_DRIVER_SERVICE};
+                ServiceConstants.KIND_NETWORK_DRIVER_SERVICE, ServiceConstants.KIND_STORAGE_DRIVER_SERVICE,
+                ServiceConstants.KIND_SCALING_GROUP_SERVICE,
+                ServiceConstants.KIND_SELECTOR_SERVICE };
     }
 
     @Override
     public Object create(String type, ApiRequest request, ResourceManager next) {
         Service service = request.proxyRequestObject(Service.class);
+
+        type = setKind(type, service, request);
 
         validateStack(service);
 
@@ -91,7 +95,9 @@ public class ServiceCreateValidationFilter extends AbstractDefaultResourceManage
         validateLbConfig(request, type);
 
         Object svcObj = super.create(type, request, next);
-
+        if (svcObj == null) {
+            return svcObj;
+        }
         RevisionData revision = svcDao.createServiceRevision((Service) svcObj,
                 CollectionUtils.toMap(request.getRequestObject()), true);
         if (revision.getRevisionId() != null) {
@@ -100,6 +106,47 @@ public class ServiceCreateValidationFilter extends AbstractDefaultResourceManage
         }
 
         return svcObj;
+    }
+
+    @SuppressWarnings("unchecked")
+    public String setKind(String type, Service service, ApiRequest request) {
+        // type is set via API request
+        if (!ServiceConstants.KIND_SERVICE.equalsIgnoreCase(type) || request.getVersion().equals("v1")) {
+            return type;
+        }
+        Map<String, Object> data = CollectionUtils.toMap(request.getRequestObject());
+        if (data.get(ServiceConstants.FIELD_EXTERNALIPS) != null || data.get(ServiceConstants.FIELD_HOSTNAME) != null) {
+            return ServiceConstants.KIND_EXTERNAL_SERVICE;
+        } else if (data.get(ServiceConstants.FIELD_STORAGE_DRIVER) != null) {
+            return ServiceConstants.KIND_STORAGE_DRIVER_SERVICE;
+        } else if (data.get(ServiceConstants.FIELD_NETWORK_DRIVER) != null) {
+            return ServiceConstants.KIND_NETWORK_DRIVER_SERVICE;
+        } else if (data.get(ServiceConstants.FIELD_SELECTOR_CONTAINER) != null) {
+            return ServiceConstants.KIND_SELECTOR_SERVICE;
+        } else if (data.get(ServiceConstants.FIELD_LAUNCH_CONFIG) != null) {
+            Map<String, Object> lbConfig = DataUtils.getFieldFromRequest(request, ServiceConstants.FIELD_LB_CONFIG,
+                    Map.class);
+            if (lbConfig != null && lbConfig.containsKey(ServiceConstants.FIELD_PORT_RULES)) {
+                List<PortRule> portRules = jsonMapper.convertCollectionValue(
+                        lbConfig.get(ServiceConstants.FIELD_PORT_RULES), List.class, PortRule.class);
+                for (PortRule rule : portRules) {
+                    if (rule.getSourcePort() != null && rule.getSourcePort().longValue() > 0) {
+                        return ServiceConstants.KIND_LOAD_BALANCER_SERVICE;
+                    }
+                }
+            }
+            Map<String, Object> launchConfig = DataUtils.getFieldFromRequest(request,
+                    ServiceConstants.FIELD_LAUNCH_CONFIG,
+                    Map.class);
+            if (ServiceConstants.IMAGE_DNS.equals(launchConfig
+                    .get(InstanceConstants.FIELD_IMAGE_UUID))) {
+                return ServiceConstants.KIND_DNS_SERVICE;
+            }
+            if (data.get(ServiceConstants.FIELD_SCALE) != null) {
+                return ServiceConstants.KIND_SCALING_GROUP_SERVICE;
+            }
+        }
+        return type;
     }
 
     @SuppressWarnings("unchecked")
@@ -257,7 +304,9 @@ public class ServiceCreateValidationFilter extends AbstractDefaultResourceManage
             Map<String, Object> launchConfig = (Map<String, Object>)data.get(ServiceConstants.FIELD_LAUNCH_CONFIG);
             if (launchConfig.get(InstanceConstants.FIELD_IMAGE_UUID) != null) {
                 Object imageUuid = launchConfig.get(InstanceConstants.FIELD_IMAGE_UUID);
-                if (imageUuid != null && !imageUuid.toString().equalsIgnoreCase(ServiceConstants.IMAGE_NONE)) {
+                List<String> ignoreImages = Arrays.asList(ServiceConstants.IMAGE_NONE,
+                        ServiceConstants.IMAGE_DNS);
+                if (imageUuid != null && !ignoreImages.contains(imageUuid.toString())) {
                     String fullImageName = ExternalTemplateInstanceFilter.getImageUuid(imageUuid.toString(), storageService);
                     launchConfig.put(InstanceConstants.FIELD_IMAGE_UUID, fullImageName);
                     data.put(ServiceConstants.FIELD_LAUNCH_CONFIG, launchConfig);

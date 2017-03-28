@@ -97,7 +97,7 @@ public class ServiceConsumeMapDaoImpl extends AbstractJooqDao implements Service
     }
 
     @Override
-    public List<? extends ServiceConsumeMap> findConsumedServicesForInstance(long instanceId, String kind) {
+    public List<? extends ServiceConsumeMap> findConsumedServicesForInstance(long instanceId, List<String> kinds) {
         return create()
                 .select(SERVICE_CONSUME_MAP.fields())
                 .from(SERVICE_CONSUME_MAP)
@@ -107,7 +107,7 @@ public class ServiceConsumeMapDaoImpl extends AbstractJooqDao implements Service
                     .on(SERVICE.ID.eq(SERVICE_CONSUME_MAP.CONSUMED_SERVICE_ID))
                 .where(
                         SERVICE_EXPOSE_MAP.INSTANCE_ID.eq(instanceId)
-                                .and(SERVICE.KIND.eq(kind))
+                                .and(SERVICE.KIND.in(kinds))
                                 .and(SERVICE_CONSUME_MAP.REMOVED.isNull())
                                 //Don't include yourself
                                 .and(SERVICE_CONSUME_MAP.SERVICE_ID.ne(SERVICE_CONSUME_MAP.CONSUMED_SERVICE_ID))

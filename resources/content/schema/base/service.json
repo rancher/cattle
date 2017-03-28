@@ -119,7 +119,7 @@
             "default": false
         },
         "lbConfig": {
-            "type" : "lbTargetConfig",
+            "type" : "lbConfig",
             "nullable": true,
              "attributes" : {
                 "scheduleUpdate" : true
@@ -193,6 +193,44 @@
             "type": "boolean",
             "required": false,
             "nullable": true
+        },
+        "externalIpAddresses": {
+            "type": "array[string]",
+            "required": false,
+            "nullable": true,
+            "attributes" : {
+                "scheduleUpdate" : true
+            },
+        "healthCheck": {
+            "type": "instanceHealthCheck",
+            "nullable": true
+        }
+        },
+        "hostname": {
+            "type": "string",
+            "required": false,
+            "nullable": true,
+            "attributes" : {
+                "scheduleUpdate" : true
+            }
+        },
+        "healthCheck": {
+            "type": "instanceHealthCheck",
+            "nullable": true
+        },
+        "storageDriver":{
+            "type": "storageDriver",
+            "nullable": true,
+            "attributes" : {
+                "scheduleUpdate" : true
+            }
+        },
+         "networkDriver":{
+            "type": "networkDriver",
+            "nullable": true,
+            "attributes" : {
+                "scheduleUpdate" : true
+            }
         }
     },
     "resourceActions" : {
