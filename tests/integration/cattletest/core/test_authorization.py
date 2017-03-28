@@ -227,6 +227,8 @@ def test_user_types(user_client, adds=set(), removes=set()):
         'convertToServiceInput',
         'containerUpgrade',
         'deploymentUnit',
+        'selectorService',
+        'scalingGroup',
     }
     types.update(adds)
     types.difference_update(removes)
@@ -482,6 +484,8 @@ def test_admin_types(admin_user_client, adds=set(), removes=set()):
         'convertToServiceInput',
         'containerUpgrade',
         'deploymentUnit',
+        'selectorService',
+        'scalingGroup',
     }
     types.update(adds)
     types.difference_update(removes)
@@ -2180,6 +2184,11 @@ def test_svc_discovery_service(admin_user_client, user_client, project_client,
         'scaleMax': 'r',
         'scaleIncrement': 'r',
         'scaleMin': 'r',
+        'hostname': 'r',
+        'externalIpAddresses': 'r',
+        'healthCheck': 'r',
+        'storageDriver': 'r',
+        'networkDriver': 'r',
     })
 
     auth_check(user_client.schema, 'service', 'r', {
@@ -2215,6 +2224,11 @@ def test_svc_discovery_service(admin_user_client, user_client, project_client,
         'scaleMax': 'r',
         'scaleIncrement': 'r',
         'scaleMin': 'r',
+        'hostname': 'r',
+        'externalIpAddresses': 'r',
+        'healthCheck': 'r',
+        'storageDriver': 'r',
+        'networkDriver': 'r',
     })
 
     auth_check(project_client.schema, 'service', 'crud', {
@@ -2250,6 +2264,11 @@ def test_svc_discovery_service(admin_user_client, user_client, project_client,
         'scaleMax': 'cru',
         'scaleIncrement': 'cru',
         'scaleMin': 'cru',
+        'hostname': 'cru',
+        'externalIpAddresses': 'cru',
+        'healthCheck': 'cr',
+        'storageDriver': 'cru',
+        'networkDriver': 'cru',
     })
 
     resource_action_check(user_client.schema, 'service', [

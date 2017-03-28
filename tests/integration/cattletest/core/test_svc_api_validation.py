@@ -398,3 +398,93 @@ def test_invalid_ports(client, context):
                            launchConfig=launch_config)
     assert e.value.error.status == 422
     assert e.value.error.code == 'PortWrongFormat'
+
+
+def test_service_kind_external(client, context):
+    stack = _create_stack(client)
+    launch_config = {"imageUuid": context.image_uuid}
+    svc = client. \
+        create_service(name=random_str(),
+                       stackId=stack.id,
+                       launchConfig=launch_config,
+                       externalIpAddresses=['10.1.1.1'])
+    assert svc.kind == 'externalService'
+    assert svc.externalIpAddresses == ['10.1.1.1']
+
+
+def test_service_kind_storage(client, context):
+    stack = _create_stack(client)
+    launch_config = {"imageUuid": context.image_uuid}
+    driver_name = 'test' + random_str()
+    svc = client. \
+        create_service(name=random_str(),
+                       stackId=stack.id,
+                       launchConfig=launch_config,
+                       storageDriver={
+                           'name': driver_name,
+                           'scope': 'local',
+                       })
+    assert svc.kind == 'storageDriverService'
+    assert svc.storageDriver is not None
+
+
+def test_service_kind_network(client, context):
+    stack = _create_stack(client)
+    launch_config = {"imageUuid": context.image_uuid}
+    driver_name = 'test' + random_str()
+    svc = client. \
+        create_service(name=random_str(),
+                       stackId=stack.id,
+                       launchConfig=launch_config,
+                       networkDriver={
+                           'name': driver_name,
+                       })
+    assert svc.kind == 'networkDriverService'
+    assert svc.networkDriver is not None
+
+
+def test_service_kind_alias(client, context):
+    stack = _create_stack(client)
+    launch_config = {"imageUuid": "rancher/dns-service"}
+    svc = client. \
+        create_service(name=random_str(),
+                       stackId=stack.id,
+                       launchConfig=launch_config)
+    assert svc.kind == 'dnsService'
+
+
+def test_service_kind_selector(client, context):
+    stack = _create_stack(client)
+    svc = client. \
+        create_service(name=random_str(),
+                       stackId=stack.id,
+                       selectorContainer="foo=bar")
+    assert svc.kind == 'selectorService'
+    assert svc.selectorContainer is not None
+    svc = client.wait_success(svc)
+    assert svc.state == 'inactive'
+
+    svc = client.wait_success(svc.activate())
+    assert svc.state == 'active'
+    assert len(svc.instances()) == 0
+
+
+def test_service_kind_lb(client, context):
+    stack = _create_stack(client)
+    hostname = "foo"
+    path = "bar"
+    port = 32
+    port_rule = {"hostname": hostname,
+                 "path": path, "sourcePort": port,
+                 "selector": "foo=bar"}
+    port_rules = [port_rule]
+    launch_config = {"imageUuid": context.image_uuid}
+
+    lb_config = {"portRules": port_rules}
+    svc = client. \
+        create_service(name=random_str(),
+                       stackId=stack.id,
+                       launchConfig=launch_config,
+                       lbConfig=lb_config)
+    assert svc.kind == 'loadBalancerService'
+    assert svc.lbConfig is not None

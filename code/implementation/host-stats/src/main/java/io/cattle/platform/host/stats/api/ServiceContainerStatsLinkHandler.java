@@ -4,6 +4,9 @@ import io.cattle.platform.api.link.LinkHandler;
 import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.model.Host;
+import io.cattle.platform.core.constants.ServiceConstants;
+import io.cattle.platform.core.dao.ServiceExposeMapDao;
+import io.cattle.platform.core.dao.StackDao;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.Service;
 import io.cattle.platform.docker.util.DockerUtils;
@@ -39,7 +42,8 @@ public class ServiceContainerStatsLinkHandler implements LinkHandler {
 
     @Override
     public String[] getTypes() {
-        return new String[] { "service", "loadBalancerService" };
+        return new String[] { ServiceConstants.KIND_SERVICE, ServiceConstants.KIND_LOAD_BALANCER_SERVICE,
+                ServiceConstants.KIND_SCALING_GROUP_SERVICE, "stack" };
     }
 
     @Override
