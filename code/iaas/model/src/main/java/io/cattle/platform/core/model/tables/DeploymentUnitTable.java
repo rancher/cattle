@@ -11,7 +11,7 @@ package io.cattle.platform.core.model.tables;
 @java.lang.SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class DeploymentUnitTable extends org.jooq.impl.TableImpl<io.cattle.platform.core.model.tables.records.DeploymentUnitRecord> {
 
-	private static final long serialVersionUID = 880769882;
+	private static final long serialVersionUID = 918281849;
 
 	/**
 	 * The singleton instance of <code>cattle.deployment_unit</code>
@@ -100,6 +100,11 @@ public class DeploymentUnitTable extends org.jooq.impl.TableImpl<io.cattle.platf
 	 * The column <code>cattle.deployment_unit.revision_id</code>.
 	 */
 	public final org.jooq.TableField<io.cattle.platform.core.model.tables.records.DeploymentUnitRecord, java.lang.Long> REVISION_ID = createField("revision_id", org.jooq.impl.SQLDataType.BIGINT, this, "");
+
+	/**
+	 * The column <code>cattle.deployment_unit.cleanup_time</code>.
+	 */
+	public final org.jooq.TableField<io.cattle.platform.core.model.tables.records.DeploymentUnitRecord, java.util.Date> CLEANUP_TIME = createField("cleanup_time", org.jooq.impl.SQLDataType.TIMESTAMP.asConvertedDataType(new io.cattle.platform.db.jooq.converter.DateConverter()), this, "");
 
 	/**
 	 * Create a <code>cattle.deployment_unit</code> table reference

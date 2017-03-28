@@ -18,7 +18,7 @@ public class AgentServiceDeploymentUnitLookup implements DeploymentUnitLookup {
     ServiceDao svcDao;
 
     @Override
-    public Collection<? extends DeploymentUnit> getDeploymentUnits(Object obj) {
+    public Collection<? extends DeploymentUnit> getDeploymentUnits(Object obj, boolean transitioningOnly) {
         if (!(obj instanceof Agent)) {
             return null;
         }
@@ -27,7 +27,6 @@ public class AgentServiceDeploymentUnitLookup implements DeploymentUnitLookup {
         if (host == null) {
             return null;
         }
-        // instances in transitioning states only
-        return svcDao.getServiceDeploymentUnitsOnHost(host, true);
+        return svcDao.getServiceDeploymentUnitsOnHost(host, transitioningOnly);
     }
 }

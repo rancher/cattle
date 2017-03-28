@@ -390,11 +390,29 @@ public class ServiceCreateValidationFilter extends AbstractDefaultResourceManage
         List<Map<String, Object>> launchConfigs = populateLaunchConfigs(service, request);
         validateLaunchConfigNames(service, serviceName, launchConfigs);
         validateLaunchConfigsCircularRefs(service, serviceName, launchConfigs);
-        validateLaunchConfigScale(service, request);
+        validateScale(service, request);
     }
 
-    protected void validateLaunchConfigScale(Service service, ApiRequest request) {
+    protected void validateScale(Service service, ApiRequest request) {
         Map<String, Object> data = CollectionUtils.toMap(request.getRequestObject());
+
+        Long scaleMin = DataAccessor.fieldLong(service, ServiceConstants.FIELD_SCALE_MIN);
+        if (data.get(ServiceConstants.FIELD_SCALE_MIN) != null) {
+            scaleMin = Long.valueOf(data.get(ServiceConstants.FIELD_SCALE_MIN).toString());
+        }
+
+        Long scaleMax = DataAccessor.fieldLong(service, ServiceConstants.FIELD_SCALE_MAX);
+        if (data.get(ServiceConstants.FIELD_SCALE_MAX) != null) {
+            scaleMax = Long.valueOf(data.get(ServiceConstants.FIELD_SCALE_MAX).toString());
+        }
+
+        if (scaleMax != null && scaleMin != null) {
+            if (scaleMax.longValue() < scaleMin.longValue()) {
+                ValidationErrorCodes.throwValidationError(ValidationErrorCodes.INVALID_OPTION,
+                        "ScaleMin can not be greater than scaleMax");
+            }
+        }
+
         Object newLaunchConfig = data.get(ServiceConstants.FIELD_LAUNCH_CONFIG);
         if (newLaunchConfig == null) {
             return;

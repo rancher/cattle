@@ -179,6 +179,17 @@ public interface DeploymentUnit extends java.io.Serializable {
 	@javax.persistence.Column(name = "revision_id", precision = 19)
 	public java.lang.Long getRevisionId();
 
+	/**
+	 * Setter for <code>cattle.deployment_unit.cleanup_time</code>.
+	 */
+	public void setCleanupTime(java.util.Date value);
+
+	/**
+	 * Getter for <code>cattle.deployment_unit.cleanup_time</code>.
+	 */
+	@javax.persistence.Column(name = "cleanup_time")
+	public java.util.Date getCleanupTime();
+
 	// -------------------------------------------------------------------------
 	// FROM and INTO
 	// -------------------------------------------------------------------------

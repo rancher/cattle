@@ -21,8 +21,8 @@ public class RancherCertificatesToComposeFormatter extends AbstractJooqDao
 
     @Override
     @SuppressWarnings("unchecked")
-    public Object format(ServiceDiscoveryConfigItem item, Object valueToTransform) {
-        if (item.getDockerName().equalsIgnoreCase(ServiceDiscoveryConfigItem.CERTIFICATES.getDockerName())) {
+    public Object format(ComposeExportConfigItem item, Object valueToTransform) {
+        if (item.getDockerName().equalsIgnoreCase(ComposeExportConfigItem.CERTIFICATES.getDockerName())) {
             List<Number> certificateIds = (List<Number>) valueToTransform;
             List<String> certificateNames = new ArrayList<>();
             for (Number certificateId : certificateIds) {
@@ -32,8 +32,8 @@ public class RancherCertificatesToComposeFormatter extends AbstractJooqDao
                 }
             }
             return certificateNames;
-        } else if (item.getDockerName().equals(ServiceDiscoveryConfigItem.DEFAULT_CERTIFICATE.getDockerName())) {
-            Integer defaultCertId = (Integer) valueToTransform;
+        } else if (item.getDockerName().equals(ComposeExportConfigItem.DEFAULT_CERTIFICATE.getDockerName())) {
+            Number defaultCertId = (Number) valueToTransform;
             return getCertName(defaultCertId);
         } else {
             return null;
