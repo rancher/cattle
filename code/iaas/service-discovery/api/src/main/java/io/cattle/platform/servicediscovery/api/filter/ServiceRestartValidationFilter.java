@@ -37,7 +37,8 @@ public class ServiceRestartValidationFilter extends AbstractDefaultResourceManag
 
     @Override
     public String[] getTypes() {
-        return new String[] { "service", "loadBalancerService" };
+        return new String[] { ServiceConstants.KIND_SERVICE, ServiceConstants.KIND_LOAD_BALANCER_SERVICE,
+                ServiceConstants.KIND_SCALING_GROUP_SERVICE };
     }
 
     @Override
