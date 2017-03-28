@@ -63,7 +63,7 @@ public class PortRule {
         this.path = path;
     }
 
-    @Field(min = 1, max = 65535, required = true)
+    @Field(min = 1, max = 65535)
     public Integer getSourcePort() {
         return sourcePort;
     }

@@ -663,6 +663,12 @@
         "composeService.startFirst" : "",
         "composeService.revisionId" : "",
         "composeService.previousRevisionId": "",
+        "composeService.externalIpAddresses" : "",
+        "composeService.hostname" : "",
+        "composeService.healthCheck" : "",
+        "composeService.networkDriver" : "",
+        "composeService.storageDriver" : "",
+
 
         "service" : "r",
         "service.name": "cr",
@@ -697,6 +703,11 @@
         "service.scaleMax" : "cru",
         "service.scaleIncrement" : "cru",
         "service.scaleMin" : "cru",
+        "service.externalIpAddresses" : "cru",
+        "service.hostname" : "cru",
+        "service.healthCheck" : "cr",
+        "service.networkDriver" : "cru",
+        "service.storageDriver" : "cru",
 
         "addRemoveServiceLinkInput" : "r",
         "addRemoveServiceLinkInput.serviceLink" : "cr",
@@ -709,6 +720,11 @@
         "loadBalancerService.createIndex" : "",
         "loadBalancerService.selectorContainer" : "",
         "loadBalancerService.lbConfig" : "cru",
+        "loadBalancerService.externalIpAddresses" : "",
+        "loadBalancerService.hostname" : "",
+        "loadBalancerService.healthCheck" : "",
+        "loadBalancerService.networkDriver" : "",
+        "loadBalancerService.storageDriver" : "",
 
         "lbConfig" : "r",
         "lbConfig.certificateIds" : "cr",
@@ -807,6 +823,8 @@
         "externalService.scaleMax" : "",
         "externalService.scaleIncrement" : "",
         "externalService.scaleMin" : "",
+        "externalService.networkDriver" : "",
+        "externalService.storageDriver" : "",
 
         "dnsService" : "r",
         "dnsService.scale" : "",
@@ -823,6 +841,11 @@
         "dnsService.scaleMax" : "",
         "dnsService.scaleIncrement" : "",
         "dnsService.scaleMin" : "",
+        "dnsService.externalIpAddresses" : "",
+        "dnsService.hostname" : "",
+        "dnsService.healthCheck" : "",
+        "dnsService.networkDriver" : "",
+        "dnsService.storageDriver" : "",
 
         "kubernetesService" : "r",
         "kubernetesService.assignServiceIpAddress" : "",
@@ -850,6 +873,11 @@
         "kubernetesService.scaleMax" : "",
         "kubernetesService.scaleIncrement" : "",
         "kubernetesService.scaleMin" : "",
+        "kubernetesService.externalIpAddresses" : "",
+        "kubernetesService.hostname" : "",
+        "kubernetesService.healthCheck" : "",
+        "kubernetesService.networkDriver" : "",
+        "kubernetesService.storageDriver" : "",
 
         "kubernetesStack" : "r",
         "kubernetesStack.name": "cr",
@@ -1098,6 +1126,20 @@
         "deploymentUnit.serviceId": "r",
         "deploymentUnit.cleanup": "r",
         "deploymentUnit.revisionId": "r",
+
+        "selectorService" : "r",
+        "selectorService.externalIpAddresses" : "",
+        "selectorService.hostname" : "",
+        "selectorService.healthCheck" : "",
+        "selectorService.networkDriver" : "",
+        "selectorService.storageDriver" : "",
+
+        "scalingGroup": "r",
+        "scalingGroup.externalIpAddresses" : "",
+        "scalingGroup.hostname" : "",
+        "scalingGroup.healthCheck" : "",
+        "scalingGroup.networkDriver" : "",
+        "scalingGroup.storageDriver" : "",
 
         "end" : ""
     }

@@ -158,7 +158,9 @@ public class CoreModelConfig {
                 "lbTargetConfig",
                 "balancerServiceConfig",
                 "balancerTargetConfig",
-                "defaultNetwork,parent=network"
+                "defaultNetwork,parent=network",
+                "selectorService,parent=service",
+                "scalingGroup,parent=service"
                 ));
         typeSet.setPriority(Priority.PRE);
         return typeSet;

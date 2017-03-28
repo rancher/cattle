@@ -191,7 +191,7 @@ def test_service_fields(client, context):
     assert svc.launchConfig.hostname == "test"
     assert svc.launchConfig.user == "test"
     assert len(svc.launchConfig.instanceLinks) == 1
-    assert svc.kind == "service"
+    assert svc.kind == "scalingGroup"
     # assert service.launchConfig.registryCredentialId == reg_cred.id
     assert svc.launchConfig.healthCheck.name == "check1"
     assert svc.launchConfig.healthCheck.responseTimeout == 3

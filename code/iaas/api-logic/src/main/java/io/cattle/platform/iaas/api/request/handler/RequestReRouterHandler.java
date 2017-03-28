@@ -1,5 +1,6 @@
 package io.cattle.platform.iaas.api.request.handler;
 
+import io.cattle.platform.core.constants.ServiceConstants;
 import io.cattle.platform.util.type.CollectionUtils;
 import io.github.ibuildthecloud.gdapi.request.ApiRequest;
 import io.github.ibuildthecloud.gdapi.request.handler.AbstractApiRequestHandler;
@@ -33,12 +34,14 @@ public class RequestReRouterHandler extends AbstractApiRequestHandler {
         case "kubernetesStack":
             routeV1Environment(request);
             break;
-        case "service":
-        case "kubernetesService":
-        case "composeService":
-        case "dnsService":
-        case "loadBalancerService":
-        case "externalService":
+        case ServiceConstants.KIND_SERVICE:
+        case ServiceConstants.KIND_KUBERNETES_SERVICE:
+        case ServiceConstants.KIND_COMPOSE_SERVICE:
+        case ServiceConstants.KIND_LOAD_BALANCER_SERVICE:
+        case ServiceConstants.KIND_DNS_SERVICE:
+        case ServiceConstants.KIND_EXTERNAL_SERVICE:
+        case ServiceConstants.KIND_SELECTOR_SERVICE:
+        case ServiceConstants.KIND_SCALING_GROUP_SERVICE:
             routeV1Service(request);
             break;
         }

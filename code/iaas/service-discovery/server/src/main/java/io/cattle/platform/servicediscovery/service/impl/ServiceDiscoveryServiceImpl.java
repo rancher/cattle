@@ -393,8 +393,7 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
         return SelectorUtils.isSelectorMatch(selector, instanceLabels);
     }
 
-    protected void updateObjectEndPoints(final Object object, final String resourceType, final Long resourceId,
-            long accountId, List<PublicEndpoint> newData) {
+    protected void updateObjectEndPoints(final Object object, List<PublicEndpoint> newData) {
         // have to reload the object to get the latest update for publicEndpoint
         // if don't reload, its possible that n concurrent updates would lack information.
         // update would be performed on the original object
@@ -430,8 +429,7 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
         final List<PublicEndpoint> newData = instanceDao.getPublicEndpoints(host.getAccountId(), null, host.getId());
 
         if (host != null && host.getRemoved() == null) {
-            updateObjectEndPoints(host, host.getKind(), host.getId(),
-                                    host.getAccountId(), newData);
+            updateObjectEndPoints(host, newData);
         }
     }
 
@@ -439,7 +437,7 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
         final List<PublicEndpoint> newData = instanceDao.getPublicEndpoints(service.getAccountId(), service.getId(),
                 null);
         if (service != null && service.getRemoved() == null && !ServiceUtil.isNoopLBService(service)) {
-            updateObjectEndPoints(service, service.getKind(), service.getId(), service.getAccountId(), newData);
+            updateObjectEndPoints(service, newData);
         }
     }
 
@@ -667,7 +665,8 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
         String serviceHealthState = null;
         List<String> supportedKinds = Arrays.asList(
                 ServiceConstants.KIND_SERVICE.toLowerCase(),
-                ServiceConstants.KIND_LOAD_BALANCER_SERVICE.toLowerCase());
+                ServiceConstants.KIND_LOAD_BALANCER_SERVICE.toLowerCase(),
+                ServiceConstants.KIND_SCALING_GROUP_SERVICE.toLowerCase());
         if (!supportedKinds.contains(service.getKind().toLowerCase())) {
             serviceHealthState = HealthcheckConstants.HEALTH_STATE_HEALTHY;
         } else {
