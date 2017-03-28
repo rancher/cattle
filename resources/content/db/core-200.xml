@@ -22,4 +22,9 @@
     <changeSet author="alena (generated)" id="dump5">
         <addForeignKeyConstraint baseColumnNames="previous_revision_id" baseTableName="instance" constraintName="fk_instance__previous_revision_id" deferrable="false" initiallyDeferred="false" onDelete="CASCADE" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="instance_revision"/>
     </changeSet>
+    <changeSet author="alena (generated)" id="dump6">
+        <addColumn tableName="deployment_unit">
+            <column name="cleanup_time" type="DATETIME"/>
+        </addColumn>
+    </changeSet>
 </databaseChangeLog>

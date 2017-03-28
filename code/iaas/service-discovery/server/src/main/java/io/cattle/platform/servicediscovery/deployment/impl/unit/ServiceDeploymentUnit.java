@@ -28,9 +28,11 @@ import io.cattle.platform.servicediscovery.api.service.impl.ServiceDataManagerIm
 import io.cattle.platform.servicediscovery.deployment.DeploymentUnitInstance;
 import io.cattle.platform.servicediscovery.deployment.impl.instance.ServiceDeploymentUnitInstance;
 import io.cattle.platform.servicediscovery.deployment.impl.manager.DeploymentUnitManagerImpl.DeploymentUnitManagerContext;
+import io.cattle.platform.util.exception.DeploymentUnitReconcileException;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -126,6 +128,7 @@ public class ServiceDeploymentUnit extends AbstractDeploymentUnit {
         if (!isBad()) {
             return;
         }
+        Date originalCleanupTime = context.objectManager.reload(unit).getCleanupTime();
         for (DeploymentUnitInstance instance : getDeploymentUnitInstances()) {
             if (instance.isUnhealthy()) {
                 instance.remove(ServiceConstants.AUDIT_LOG_REMOVE_UNHEATLHY, ActivityLog.ERROR);
@@ -135,7 +138,14 @@ public class ServiceDeploymentUnit extends AbstractDeploymentUnit {
 
         }
         cleanupVolumes(false);
-        context.objectManager.setFields(unit, ServiceConstants.FIELD_DEPLOYMENT_UNIT_CLEANUP, false);
+        // handle the case when cleanup was reset in one of the handlers
+        Date currentCleanupTime = context.objectManager.reload(unit).getCleanupTime();
+        boolean oneIsNull = (currentCleanupTime == null) != (originalCleanupTime == null);
+        boolean bothNotNull = currentCleanupTime != null && originalCleanupTime != null;
+        if (oneIsNull || (bothNotNull && currentCleanupTime.after(originalCleanupTime))) {
+            throw new DeploymentUnitReconcileException("Need to restart deployment unit reconcile");
+        }
+        context.serviceDao.setForCleanup(unit, false);
     }
 
     @Override
