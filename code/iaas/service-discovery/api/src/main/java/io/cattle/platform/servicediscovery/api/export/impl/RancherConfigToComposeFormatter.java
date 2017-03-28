@@ -5,5 +5,5 @@ public interface RancherConfigToComposeFormatter {
     public enum Option {
         REMOVE
     }
-    public Object format(ServiceDiscoveryConfigItem item, Object valueToTransform);
+    public Object format(ComposeExportConfigItem item, Object valueToTransform);
 }

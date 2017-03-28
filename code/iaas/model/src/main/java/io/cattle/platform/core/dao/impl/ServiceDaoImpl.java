@@ -494,7 +494,9 @@ public class ServiceDaoImpl extends AbstractJooqDao implements ServiceDao {
         } else {
             condition = INSTANCE.ACCOUNT_ID.eq(host.getAccountId());
         }
-        List<? extends DeploymentUnit> units =
+
+        // 1. Get non empty units
+        List<? extends DeploymentUnit> nonEmptyUnits =
                 create().select(DEPLOYMENT_UNIT.fields())
                 .from(DEPLOYMENT_UNIT)
                 .join(INSTANCE)
@@ -507,12 +509,38 @@ public class ServiceDaoImpl extends AbstractJooqDao implements ServiceDao {
                         .and(DEPLOYMENT_UNIT.SERVICE_ID.isNotNull())
                         .and(condition)
                         .fetchInto(DeploymentUnitRecord.class);
-        for (DeploymentUnit unit : units) {
+        for (DeploymentUnit unit : nonEmptyUnits) {
             if (processed.contains(unit.getId())) {
                 continue;
             }
+            processed.add(unit.getId());
             toReturn.add(unit);
         }
+
+        if (transitioningOnly) {
+            return toReturn;
+        }
+
+        // 2. Get global units for the host
+        // (they can exist w/o instances present)
+        String hostUnit = String.format("\"%s\":\"%s", ServiceConstants.LABEL_SERVICE_REQUESTED_HOST_ID, host.getId()
+                .toString());
+        List<? extends DeploymentUnit> emptyUnits =
+                create().select(DEPLOYMENT_UNIT.fields())
+                        .from(DEPLOYMENT_UNIT)
+                        .where(DEPLOYMENT_UNIT.REMOVED.isNull())
+                        .and(DEPLOYMENT_UNIT.ACCOUNT_ID.eq(host.getAccountId()))
+                        .and(DEPLOYMENT_UNIT.SERVICE_ID.isNotNull())
+                        .and(DEPLOYMENT_UNIT.DATA.like("%" + hostUnit + "%"))
+                        .fetchInto(DeploymentUnitRecord.class);
+        for (DeploymentUnit unit : emptyUnits) {
+            if (processed.contains(unit.getId())) {
+                continue;
+            }
+            processed.add(unit.getId());
+            toReturn.add(unit);
+        }
+
         return toReturn;
     }
 
@@ -615,4 +643,9 @@ public class ServiceDaoImpl extends AbstractJooqDao implements ServiceDao {
         return revisionData;
     }
 
+    @Override
+    public void setForCleanup(DeploymentUnit unit, boolean cleanup) {
+        objectManager.setFields(objectManager.reload(unit), ServiceConstants.FIELD_DEPLOYMENT_UNIT_CLEANUP, cleanup,
+                ServiceConstants.FIELD_DEPLOYMENT_UNIT_CLEANUP_TIME, new Date(System.currentTimeMillis()));
+    }
 }
