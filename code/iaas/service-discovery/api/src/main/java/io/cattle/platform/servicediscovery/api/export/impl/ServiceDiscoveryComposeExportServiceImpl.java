@@ -383,7 +383,7 @@ public class ServiceDiscoveryComposeExportServiceImpl implements ServiceDiscover
     private void addExtraComposeParameters(Service service,
             String launchConfigName, Map<String, Object> composeServiceData) {
         if (service.getKind().equalsIgnoreCase(ServiceConstants.KIND_DNS_SERVICE)) {
-            composeServiceData.put(ServiceDiscoveryConfigItem.IMAGE.getDockerName(), "rancher/dns-service");
+            composeServiceData.put(ServiceDiscoveryConfigItem.IMAGE.getDockerName(), ServiceConstants.IMAGE_DNS);
         } else if (ServiceUtil.isV1LB(service)) {
             composeServiceData.put(ServiceDiscoveryConfigItem.IMAGE.getDockerName(),
                     "rancher/load-balancer-service");

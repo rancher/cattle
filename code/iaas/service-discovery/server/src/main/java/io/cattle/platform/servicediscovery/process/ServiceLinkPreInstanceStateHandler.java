@@ -2,6 +2,7 @@ package io.cattle.platform.servicediscovery.process;
 
 import static io.cattle.platform.core.model.tables.InstanceLinkTable.*;
 import io.cattle.platform.core.constants.InstanceConstants;
+import io.cattle.platform.core.constants.ServiceConstants;
 import io.cattle.platform.core.dao.ServiceConsumeMapDao;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.InstanceLink;
@@ -12,6 +13,7 @@ import io.cattle.platform.engine.process.ProcessInstance;
 import io.cattle.platform.engine.process.ProcessState;
 import io.cattle.platform.process.common.handler.AbstractObjectProcessHandler;
 
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -37,7 +39,8 @@ public class ServiceLinkPreInstanceStateHandler extends AbstractObjectProcessHan
         Set<InstanceLink> links = new HashSet<>();
         Set<InstanceLink> toRemove = new HashSet<>();
 
-        for (ServiceConsumeMap map : consumeMapDao.findConsumedServicesForInstance(instance.getId(), "service") ) {
+        for (ServiceConsumeMap map : consumeMapDao.findConsumedServicesForInstance(instance.getId(),
+                Arrays.asList(ServiceConstants.KIND_SERVICE, ServiceConstants.KIND_SCALING_GROUP_SERVICE))) {
             serviceConsumeMapIds.add(map.getId());
         }
 

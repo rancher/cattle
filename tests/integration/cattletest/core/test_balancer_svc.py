@@ -164,26 +164,6 @@ def test_validation_create_balancer(client, image_uuid):
 
     svc = client.wait_success(svc)
 
-    protocol = "http"
-    service_id = svc.id
-    target_port = 42
-
-    with pytest.raises(ApiError) as e:
-        port_rule = {"protocol": protocol, "serviceId": service_id,
-                     "targetPort": target_port}
-        port_rules = [port_rule]
-        lb_config = {"portRules": port_rules}
-
-        client. \
-            create_loadBalancerService(name=random_str(),
-                                       stackId=env.id,
-                                       launchConfig=launch_config,
-                                       lbConfig=lb_config)
-
-    assert e.value.error.status == 422
-    assert e.value.error.code == 'MissingRequired'
-    assert e.value.error.fieldName == "sourcePort"
-
     with pytest.raises(ApiError) as e:
         port_rule = {"sourcePort": 94, "protocol": "tcp"}
         port_rules = [port_rule]

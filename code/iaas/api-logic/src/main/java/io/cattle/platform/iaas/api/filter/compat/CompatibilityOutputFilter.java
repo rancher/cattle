@@ -1,5 +1,6 @@
 package io.cattle.platform.iaas.api.filter.compat;
 
+import io.cattle.platform.core.constants.ServiceConstants;
 import io.cattle.platform.core.model.Service;
 import io.cattle.platform.object.util.ObjectUtils;
 import io.github.ibuildthecloud.gdapi.context.ApiContext;
@@ -36,12 +37,14 @@ public class CompatibilityOutputFilter implements ResourceOutputFilter {
         case "stack":
             mapStack(request, original, converted);
             break;
-        case "service":
-        case "kubernetesService":
-        case "composeService":
-        case "loadBalancerService":
-        case "dnsService":
-        case "externalService":
+        case ServiceConstants.KIND_SERVICE:
+        case ServiceConstants.KIND_KUBERNETES_SERVICE:
+        case ServiceConstants.KIND_COMPOSE_SERVICE:
+        case ServiceConstants.KIND_LOAD_BALANCER_SERVICE:
+        case ServiceConstants.KIND_DNS_SERVICE:
+        case ServiceConstants.KIND_EXTERNAL_SERVICE:
+        case ServiceConstants.KIND_SELECTOR_SERVICE:
+        case ServiceConstants.KIND_SCALING_GROUP_SERVICE:
             mapService(request, original, converted);
         }
         return converted;
@@ -99,9 +102,14 @@ public class CompatibilityOutputFilter implements ResourceOutputFilter {
     
     @Override
     public String[] getTypes() {
-        return new String[] { "stack", "service", "dnsService",
-            "externalService", "loadBalancerService", "kubernetesService",
-            "composeService" };
+        return new String[] { "stack", ServiceConstants.KIND_SERVICE,
+                ServiceConstants.KIND_KUBERNETES_SERVICE,
+                ServiceConstants.KIND_COMPOSE_SERVICE,
+                ServiceConstants.KIND_LOAD_BALANCER_SERVICE,
+                ServiceConstants.KIND_DNS_SERVICE,
+                ServiceConstants.KIND_EXTERNAL_SERVICE,
+                ServiceConstants.KIND_SELECTOR_SERVICE,
+                ServiceConstants.KIND_SCALING_GROUP_SERVICE };
     }
 
     @Override
