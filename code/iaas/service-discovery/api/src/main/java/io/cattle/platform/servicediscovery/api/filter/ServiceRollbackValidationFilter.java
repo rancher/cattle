@@ -31,7 +31,9 @@ public class ServiceRollbackValidationFilter extends AbstractDefaultResourceMana
 
     @Override
     public String[] getTypes() {
-        return new String[] { "service", "dnsService", "externalService" };
+        return new String[] { ServiceConstants.KIND_SERVICE, ServiceConstants.KIND_DNS_SERVICE,
+                ServiceConstants.KIND_EXTERNAL_SERVICE, ServiceConstants.KIND_LOAD_BALANCER_SERVICE,
+                ServiceConstants.KIND_SCALING_GROUP_SERVICE };
     }
 
     @Override
