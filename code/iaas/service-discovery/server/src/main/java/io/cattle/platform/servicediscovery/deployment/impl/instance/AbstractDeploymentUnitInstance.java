@@ -323,8 +323,9 @@ public abstract class AbstractDeploymentUnitInstance implements DeploymentUnitIn
     public static void removeInstance(Instance instance, ObjectProcessManager objectProcessManager) {
         HashMap<String, Object> data = new HashMap<String, Object>();
         data.put(ServiceConstants.PROCESS_DATA_SERVICE_RECONCILE, true);
-        if (!(instance.getState().equals(CommonStatesConstants.REMOVED) || instance.getState().equals(
-                CommonStatesConstants.REMOVING))) {
+        List<String> ignoreStates = Arrays.asList(CommonStatesConstants.REMOVED, CommonStatesConstants.REMOVING,
+                CommonStatesConstants.PURGED, CommonStatesConstants.PURGING);
+        if (!ignoreStates.contains(instance.getState())) {
             try {
                 objectProcessManager.scheduleStandardProcessAsync(StandardProcess.REMOVE, instance,
                         data);

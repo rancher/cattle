@@ -3470,9 +3470,18 @@ def test_error_state(new_context):
 
     # 1. service should fail to activate
     service.activate()
-    wait_for(lambda: len(client.reload(service).instances()) >= 1)
-    cs = client.reload(service).instances()
-    c1 = cs[0]
+
+    timeout = time.time() + 60*2
+    c1 = None
+    while True:
+        cs = client.reload(service).instances()
+        if len(cs) == 1 or time.time() > timeout:
+            c1 = cs[0]
+            break
+        time.sleep(0.01)
+
+    assert c1 is not None
+
     wait_for(lambda: client.reload(c1).state == 'error')
     du1 = c1.deploymentUnitUuid
     name = stack.name + "_foo_1_" + du1
@@ -3654,6 +3663,11 @@ def test_max_scale(new_context):
     service = client.wait_success(service)
     assert service.state == "inactive"
 
+    with pytest.raises(ApiError) as e:
+        client.update(service, scaleMax=2, scaleMin=3)
+    assert e.value.error.status == 422
+    assert e.value.error.code == 'InvalidOption'
+
     # 1. verify that the service was activated
     service = client.wait_success(service.activate(), 120)
     assert service.state == "active"
@@ -3667,3 +3681,11 @@ def test_max_scale(new_context):
     # increase it again
     service = client.update(service, scaleMax=4, scaleIncrement=2)
     _wait_until_active_map_count(service, 3, client)
+
+    compose_config = env.exportconfig()
+    assert compose_config is not None
+    rancher_yml = yaml.load(compose_config.rancherComposeConfig)
+    svc = rancher_yml['services'][service.name]
+    assert svc['scale_max'] == 4
+    assert svc['scale_increment'] == 2
+    assert svc['scale_min'] == 1

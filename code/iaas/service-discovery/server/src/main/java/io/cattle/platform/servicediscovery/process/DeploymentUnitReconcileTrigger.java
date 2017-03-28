@@ -5,16 +5,14 @@ import io.cattle.platform.core.constants.AgentConstants;
 import io.cattle.platform.core.constants.HostConstants;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.constants.ServiceConstants;
-import io.cattle.platform.core.model.Agent;
+import io.cattle.platform.core.dao.ServiceDao;
 import io.cattle.platform.core.model.DeploymentUnit;
-import io.cattle.platform.core.model.Host;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.engine.handler.HandlerResult;
 import io.cattle.platform.engine.handler.ProcessPostListener;
 import io.cattle.platform.engine.process.ProcessInstance;
 import io.cattle.platform.engine.process.ProcessState;
 import io.cattle.platform.object.process.StandardProcess;
-import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.process.common.handler.AbstractObjectProcessLogic;
 import io.cattle.platform.servicediscovery.api.service.ServiceDataManager;
 import io.cattle.platform.servicediscovery.deployment.DeploymentUnitManager;
@@ -39,6 +37,8 @@ public class DeploymentUnitReconcileTrigger extends AbstractObjectProcessLogic i
     List<DeploymentUnitLookup> deploymentUnitLookups;
     @Inject
     ServiceDataManager svcDataMgr;
+    @Inject
+    ServiceDao svcDao;
 
     @Override
     public String[] getProcessNames() {
@@ -68,7 +68,10 @@ public class DeploymentUnitReconcileTrigger extends AbstractObjectProcessLogic i
             units.add((DeploymentUnit) state.getResource());
         } else {
             for (DeploymentUnitLookup lookup : deploymentUnitLookups) {
-                Collection<? extends DeploymentUnit> lookupDUs = lookup.getDeploymentUnits(state.getResource());
+                boolean transitioniongOnly = Arrays.asList(AgentConstants.PROCESS_RECONNECT,
+                        AgentConstants.PROCESS_DECONNECT).contains(process.getName());
+                Collection<? extends DeploymentUnit> lookupDUs = lookup.getDeploymentUnits(state.getResource(),
+                        transitioniongOnly);
                 if (lookupDUs != null) {
                     units.addAll(lookupDUs);
                 }
@@ -77,17 +80,15 @@ public class DeploymentUnitReconcileTrigger extends AbstractObjectProcessLogic i
 
         for (DeploymentUnit unit : units) {
             boolean reconcile = true;
-            if (isGlobalUnit(unit)) {
+            if (duMgr.isGlobal(unit)) {
                 if (process.getName().equalsIgnoreCase(HostConstants.PROCESS_REMOVE)) {
                     removeBadUnit(unit);
                     reconcile = false;
-                } else {
-                    // do not reconcile global unit on reconnecting host
-                    // as it is not going to be rescheduled to the new one
-                    reconcile = isActiveHost(unit);
                 }
-            } else if (CLEANUP_PROCESSES.contains(process.getName())) {
-                objectManager.setFields(unit, ServiceConstants.FIELD_DEPLOYMENT_UNIT_CLEANUP, true);
+            }
+
+            if (CLEANUP_PROCESSES.contains(process.getName())) {
+                svcDao.setForCleanup(unit, true);
             }
 
             if (reconcile) {
@@ -97,22 +98,6 @@ public class DeploymentUnitReconcileTrigger extends AbstractObjectProcessLogic i
         return null;
     }
 
-    boolean isActiveHost(DeploymentUnit unit) {
-        Host host = objectManager.loadResource(Host.class,
-                Long.valueOf(DataAccessor.fieldMap(unit, InstanceConstants.FIELD_LABELS)
-                        .get(ServiceConstants.LABEL_SERVICE_REQUESTED_HOST_ID).toString()));
-        if (host == null) {
-            return false;
-        }
-        Agent agent = objectManager.loadResource(Agent.class, host.getAgentId());
-        List<String> badAgentStates = Arrays.asList(AgentConstants.STATE_RECONNECTING,
-                AgentConstants.STATE_DISCONNECTED, AgentConstants.STATE_DISCONNECTING);
-        if (badAgentStates.contains(agent.getState())) {
-            return false;
-        }
-        return true;
-    }
-
     public void removeBadUnit(DeploymentUnit unit) {
         Map<String, Object> data = new HashMap<>();
         data.put(ServiceConstants.FIELD_DEPLOYMENT_UNIT_REMOVE_REASON, ServiceConstants.AUDIT_LOG_REMOVE_BAD);
@@ -120,10 +105,6 @@ public class DeploymentUnitReconcileTrigger extends AbstractObjectProcessLogic i
         objectProcessManager.scheduleStandardProcessAsync(StandardProcess.REMOVE, unit, data);
     }
 
-    protected boolean isGlobalUnit(DeploymentUnit unit) {
-        Map<String, Object> unitLabels = DataAccessor.fieldMap(unit, InstanceConstants.FIELD_LABELS);
-        return unitLabels.containsKey(ServiceConstants.LABEL_SERVICE_REQUESTED_HOST_ID);
-    }
 
     @Override
     public int getPriority() {

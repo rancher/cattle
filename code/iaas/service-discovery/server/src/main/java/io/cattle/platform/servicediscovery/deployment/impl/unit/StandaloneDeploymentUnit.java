@@ -64,15 +64,19 @@ public class StandaloneDeploymentUnit extends AbstractDeploymentUnit {
         for (DeploymentUnitInstance instance : this.getDeploymentUnitInstances()) {
             if (instance.isUnhealthy()) {
                 if (needToReplace(instance)) {
+                    // 1. stop unhealthy instance so the ports are released
+                    instance.stop();
+                    instance.waitForStop();
+
+                    // 3. create new instance
                     StandaloneDeploymentUnitInstance replacement = new StandaloneDeploymentUnitInstance(context, null,
                             null,
                             null);
                     addDeploymentInstance(replacement.getLaunchConfigName(), replacement);
-                    // 1. create new instance
                     replacement.create(getReplacementDeployParams(instance.getInstance()));
                 }
 
-                // 2. remove old instance
+                // 3. remove old instance
                 removeDeploymentUnitInstance(instance, ServiceConstants.AUDIT_LOG_REMOVE_UNHEATLHY, ActivityLog.INFO);
             }
         }
