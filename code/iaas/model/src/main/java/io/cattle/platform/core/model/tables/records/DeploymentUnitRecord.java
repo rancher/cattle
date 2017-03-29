@@ -11,9 +11,9 @@ package io.cattle.platform.core.model.tables.records;
 @java.lang.SuppressWarnings({ "all", "unchecked", "rawtypes" })
 @javax.persistence.Entity
 @javax.persistence.Table(name = "deployment_unit", schema = "cattle")
-public class DeploymentUnitRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.platform.core.model.tables.records.DeploymentUnitRecord> implements io.cattle.platform.db.jooq.utils.TableRecordJaxb, org.jooq.Record13<java.lang.Long, java.lang.String, java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.util.Date, java.util.Date, java.util.Date, java.util.Map<String,Object>, java.lang.String, java.lang.Long>, io.cattle.platform.core.model.DeploymentUnit {
+public class DeploymentUnitRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.platform.core.model.tables.records.DeploymentUnitRecord> implements io.cattle.platform.db.jooq.utils.TableRecordJaxb, org.jooq.Record15<java.lang.Long, java.lang.String, java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.util.Date, java.util.Date, java.util.Date, java.util.Map<String,Object>, java.lang.String, java.lang.Long, java.lang.String, java.lang.Boolean>, io.cattle.platform.core.model.DeploymentUnit {
 
-	private static final long serialVersionUID = -1167867272;
+	private static final long serialVersionUID = 856999193;
 
 	/**
 	 * Setter for <code>cattle.deployment_unit.id</code>.
@@ -237,6 +237,40 @@ public class DeploymentUnitRecord extends org.jooq.impl.UpdatableRecordImpl<io.c
 		return (java.lang.Long) getValue(12);
 	}
 
+	/**
+	 * Setter for <code>cattle.deployment_unit.health_state</code>.
+	 */
+	@Override
+	public void setHealthState(java.lang.String value) {
+		setValue(13, value);
+	}
+
+	/**
+	 * Getter for <code>cattle.deployment_unit.health_state</code>.
+	 */
+	@javax.persistence.Column(name = "health_state", length = 128)
+	@Override
+	public java.lang.String getHealthState() {
+		return (java.lang.String) getValue(13);
+	}
+
+	/**
+	 * Setter for <code>cattle.deployment_unit.cleanup</code>.
+	 */
+	@Override
+	public void setCleanup(java.lang.Boolean value) {
+		setValue(14, value);
+	}
+
+	/**
+	 * Getter for <code>cattle.deployment_unit.cleanup</code>.
+	 */
+	@javax.persistence.Column(name = "cleanup", nullable = false, precision = 1)
+	@Override
+	public java.lang.Boolean getCleanup() {
+		return (java.lang.Boolean) getValue(14);
+	}
+
 	// -------------------------------------------------------------------------
 	// Primary key information
 	// -------------------------------------------------------------------------
@@ -250,23 +284,23 @@ public class DeploymentUnitRecord extends org.jooq.impl.UpdatableRecordImpl<io.c
 	}
 
 	// -------------------------------------------------------------------------
-	// Record13 type implementation
+	// Record15 type implementation
 	// -------------------------------------------------------------------------
 
 	/**
 	 * {@inheritDoc}
 	 */
 	@Override
-	public org.jooq.Row13<java.lang.Long, java.lang.String, java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.util.Date, java.util.Date, java.util.Date, java.util.Map<String,Object>, java.lang.String, java.lang.Long> fieldsRow() {
-		return (org.jooq.Row13) super.fieldsRow();
+	public org.jooq.Row15<java.lang.Long, java.lang.String, java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.util.Date, java.util.Date, java.util.Date, java.util.Map<String,Object>, java.lang.String, java.lang.Long, java.lang.String, java.lang.Boolean> fieldsRow() {
+		return (org.jooq.Row15) super.fieldsRow();
 	}
 
 	/**
 	 * {@inheritDoc}
 	 */
 	@Override
-	public org.jooq.Row13<java.lang.Long, java.lang.String, java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.util.Date, java.util.Date, java.util.Date, java.util.Map<String,Object>, java.lang.String, java.lang.Long> valuesRow() {
-		return (org.jooq.Row13) super.valuesRow();
+	public org.jooq.Row15<java.lang.Long, java.lang.String, java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.util.Date, java.util.Date, java.util.Date, java.util.Map<String,Object>, java.lang.String, java.lang.Long, java.lang.String, java.lang.Boolean> valuesRow() {
+		return (org.jooq.Row15) super.valuesRow();
 	}
 
 	/**
@@ -377,6 +411,22 @@ public class DeploymentUnitRecord extends org.jooq.impl.UpdatableRecordImpl<io.c
 	 * {@inheritDoc}
 	 */
 	@Override
+	public org.jooq.Field<java.lang.String> field14() {
+		return io.cattle.platform.core.model.tables.DeploymentUnitTable.DEPLOYMENT_UNIT.HEALTH_STATE;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public org.jooq.Field<java.lang.Boolean> field15() {
+		return io.cattle.platform.core.model.tables.DeploymentUnitTable.DEPLOYMENT_UNIT.CLEANUP;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
 	public java.lang.Long value1() {
 		return getId();
 	}
@@ -475,6 +525,22 @@ public class DeploymentUnitRecord extends org.jooq.impl.UpdatableRecordImpl<io.c
 	@Override
 	public java.lang.Long value13() {
 		return getServiceId();
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public java.lang.String value14() {
+		return getHealthState();
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public java.lang.Boolean value15() {
+		return getCleanup();
 	}
 
 	/**
@@ -598,7 +664,25 @@ public class DeploymentUnitRecord extends org.jooq.impl.UpdatableRecordImpl<io.c
 	 * {@inheritDoc}
 	 */
 	@Override
-	public DeploymentUnitRecord values(java.lang.Long value1, java.lang.String value2, java.lang.Long value3, java.lang.String value4, java.lang.String value5, java.lang.String value6, java.lang.String value7, java.util.Date value8, java.util.Date value9, java.util.Date value10, java.util.Map<String,Object> value11, java.lang.String value12, java.lang.Long value13) {
+	public DeploymentUnitRecord value14(java.lang.String value) {
+		setHealthState(value);
+		return this;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public DeploymentUnitRecord value15(java.lang.Boolean value) {
+		setCleanup(value);
+		return this;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public DeploymentUnitRecord values(java.lang.Long value1, java.lang.String value2, java.lang.Long value3, java.lang.String value4, java.lang.String value5, java.lang.String value6, java.lang.String value7, java.util.Date value8, java.util.Date value9, java.util.Date value10, java.util.Map<String,Object> value11, java.lang.String value12, java.lang.Long value13, java.lang.String value14, java.lang.Boolean value15) {
 		return this;
 	}
 
@@ -624,6 +708,8 @@ public class DeploymentUnitRecord extends org.jooq.impl.UpdatableRecordImpl<io.c
 		setData(from.getData());
 		setServiceIndex(from.getServiceIndex());
 		setServiceId(from.getServiceId());
+		setHealthState(from.getHealthState());
+		setCleanup(from.getCleanup());
 	}
 
 	/**
@@ -649,7 +735,7 @@ public class DeploymentUnitRecord extends org.jooq.impl.UpdatableRecordImpl<io.c
 	/**
 	 * Create a detached, initialised DeploymentUnitRecord
 	 */
-	public DeploymentUnitRecord(java.lang.Long id, java.lang.String name, java.lang.Long accountId, java.lang.String kind, java.lang.String uuid, java.lang.String description, java.lang.String state, java.util.Date created, java.util.Date removed, java.util.Date removeTime, java.util.Map<String,Object> data, java.lang.String serviceIndex, java.lang.Long serviceId) {
+	public DeploymentUnitRecord(java.lang.Long id, java.lang.String name, java.lang.Long accountId, java.lang.String kind, java.lang.String uuid, java.lang.String description, java.lang.String state, java.util.Date created, java.util.Date removed, java.util.Date removeTime, java.util.Map<String,Object> data, java.lang.String serviceIndex, java.lang.Long serviceId, java.lang.String healthState, java.lang.Boolean cleanup) {
 		super(io.cattle.platform.core.model.tables.DeploymentUnitTable.DEPLOYMENT_UNIT);
 
 		setValue(0, id);
@@ -665,5 +751,7 @@ public class DeploymentUnitRecord extends org.jooq.impl.UpdatableRecordImpl<io.c
 		setValue(10, data);
 		setValue(11, serviceIndex);
 		setValue(12, serviceId);
+		setValue(13, healthState);
+		setValue(14, cleanup);
 	}
 }

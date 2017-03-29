@@ -120,10 +120,27 @@ public class CatalogServiceImpl implements CatalogService {
     }
 
     protected Template getTemplateById(String id) throws IOException {
+        if (StringUtils.isBlank(id)) {
+            return null;
+        }
+        id = StringUtils.removeStart(id, "catalog://");
+
         StringBuilder catalogTemplateUrl = new StringBuilder(CATALOG_RESOURCE_URL.get());
         catalogTemplateUrl.append(id);
         appendVersionCheck(catalogTemplateUrl);
         return getTemplateAtURL(catalogTemplateUrl.toString());
+    }
+
+    @Override
+    public Template lookupTemplate(String id) throws IOException {
+        Template templateVersion = getTemplateVersionById(id);
+        if (templateVersion == null || "template".equals(templateVersion.getType())) {
+            Template template = getTemplateById(id);
+            if (template != null) {
+                templateVersion = getTemplateVersionById(template.getDefaultTemplateVersionId());
+            }
+        }
+        return templateVersion;
     }
 
     protected Template getTemplateVersionById(String id) throws IOException {
@@ -335,5 +352,31 @@ public class CatalogServiceImpl implements CatalogService {
         }
 
         return String.format("%s:%s", parts[0], parts[1]);
+    }
+
+    @Override
+    public boolean isEnabled() {
+        return LAUNCH_CATALOG.get();
+    }
+
+    @Override
+    public String getTemplateBase(String externalId) throws IOException {
+        if (StringUtils.isBlank(externalId)) {
+            return null;
+        }
+
+        String templateId = StringUtils.removeStart(externalId, "catalog://");
+        String[] parts = StringUtils.split(templateId, ":", 3);
+        if (parts.length < 3) {
+            return null;
+        }
+
+        parts = StringUtils.split(parts[1], "[*]", 2);
+        return parts.length == 2 ? parts[0] : null;
+    }
+
+    @Override
+    public String getTemplateBase(Template template) throws IOException {
+        return template == null ? null : getTemplateBase(template.getExternalId());
     }
 }

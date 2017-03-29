@@ -6,10 +6,14 @@ import io.cattle.platform.object.util.DataAccessor;
 
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
+
+import org.apache.commons.lang3.StringUtils;
 
 public class ServiceConstants {
 
+    public static final String DEFAULT_STACK_NAME = "Default";
     public static final String KIND_SERVICE = "service";
     public static final String KIND_LOAD_BALANCER_SERVICE = "loadBalancerService";
     public static final String KIND_EXTERNAL_SERVICE = "externalService";
@@ -22,11 +26,12 @@ public class ServiceConstants {
             KIND_STORAGE_DRIVER_SERVICE,
             KIND_NETWORK_DRIVER_SERVICE
         ));
+    
+
 
     public static final String TYPE_STACK = "stack";
     public static final String FIELD_SCALE = "scale";
     public static final String FIELD_NETWORK_ID = "networkId";
-    public static final String FIELD_SERVICE_ID = "serviceId";
     public static final String FIELD_SERVICE_IDS = "serviceIds";
     public static final String FIELD_UPGRADE = "upgrade";
     public static final String FIELD_LAUNCH_CONFIG = "launchConfig";
@@ -38,21 +43,18 @@ public class ServiceConstants {
     public static final String FIELD_EXTERNALIPS = "externalIpAddresses";
     public static final String FIELD_LINKED_SERVICES = "linkedServices";
     public static final String FIELD_SERVICE_LINKS = "serviceLinks";
-    public static final String FIELD_SERVICE_LINK_NAME = "name";
     public static final String FIELD_NETWORK_LAUNCH_CONFIG = "networkLaunchConfig";
     public static final String FIELD_SECONDARY_LAUNCH_CONFIGS = "secondaryLaunchConfigs";
     public static final String FIELD_DATA_VOLUMES_LAUNCH_CONFIG = "dataVolumesFromLaunchConfigs";
     public static final String FIELD_WAIT_FOR_CONSUMED_SERVICES_IDS = "waitForConsumedServicesIds";
     public static final String FIELD_SERVICE_LINK = "serviceLink";
     public static final String FIELD_HOSTNAME = "hostname";
-    public static final String FIELD_VIP = "vip";
     public static final String FIELD_METADATA = "metadata";
     public static final String FIELD_VERSION = "version";
     public static final String FIELD_SELECTOR_CONTAINER = "selectorContainer";
     public static final String FIELD_SELECTOR_LINK = "selectorLink";
     public static final String FIELD_START_ON_CREATE = "startOnCreate";
     public static final String FIELD_IN_SERVICE_STRATEGY = "inServiceStrategy";
-    public static final String FIELD_TO_SERVICE_STRATEGY = "toServiceStrategy";
     public static final String FIELD_FQDN = "fqdn";
     public static final String FIELD_OUTPUTS = "outputs";
     public static final String FIELD_PUBLIC_ENDPOINTS = "publicEndpoints";
@@ -66,13 +68,10 @@ public class ServiceConstants {
     public static final String STACK_FIELD_ENVIRONMENT = "environment";
     public static final String STACK_FIELD_BINDING = "binding";
     public static final String STACK_FIELD_EXTERNAL_ID = "externalId";
+    public static final String STACK_FIELD_TEMPLATES = "templates";
     public static final String FIELD_SET_VIP = "assignServiceIpAddress";
-    public static final String FIELD_SCALE_POLICY = "scalePolicy";
-    public static final String FIELD_DESIRED_SCALE = "desiredScale";
     public static final String FIELD_CURRENT_SCALE = "currentScale";
     public static final String FIELD_HEALTH_STATE = "healthState";
-    public static final String FIELD_LOCKED_SCALE = "lockedScale";
-    public static final String FIELD_STACK_ID = "stackId";
     public static final String FIELD_SYSTEM = "system";
     public static final String FIELD_VOLUME_TEMPLATES = "volumeTemplates";
     public static final String FIELD_VOLUME_DRIVER = "driver";
@@ -86,6 +85,19 @@ public class ServiceConstants {
     public static final String FIELD_PORT_RULES = "portRules";
     public static final String FIELD_EXECUTION_COUNT = "executionCount";
     public static final String FIELD_EXECUTION_PERIOD_START = "executionPeriodStart";
+    public static final String FIELD_DEPLOYMENT_UNIT_REMOVE_LOG_LEVEL = "removeLogLevel";
+    public static final String FIELD_DEPLOYMENT_UNIT_REMOVE_REASON = "removeReason";
+    public static final String FIELD_DEPLOYMENT_UNIT_CLEANUP = "cleanup";
+    public static final String FIELD_IS_UPGRADE = "isUpgrade";
+    public static final String FIELD_BATCHSIZE = "batchSize";
+    public static final String FIELD_INTERVAL_MILLISEC = "intervalMillis";
+    public static final String FIELD_START_FIRST = "startFirst";
+    public static final String FIELD_UPGRADE_TIME = "upgradeTime";
+    public static final String FIELD_SCALE_MAX = "scaleMax";
+    public static final String FIELD_SCALE_INCREMENT = "scaleIncrement";
+    public static final String FIELD_SERVICE_REVISION_CONFIGS = "configs";
+    public static final String FIELD_SCALE_MIN = "scaleMin";
+    public static final String FIELD_FINISH_UPGRADE = "finishUpgrade";
 
     public static final String FIELD_INTERNAL_VOLUMES = "internalVolumes";
     public static final String FIELD_VOLUME_TEMPLATE_ID = "volumeTemplateId";
@@ -112,6 +124,7 @@ public class ServiceConstants {
     public static final String PROCESS_STACK_UPGRADE = "stack.upgrade";
     public static final String PROCESS_STACK_UPDATE = "stack.update";
     public static final String PROCESS_STACK_REMOVE = "stack.remove";
+    public static final String PROCESS_STACK_CREATE = "stack.create";
     public static final String PROCESS_SERVICE_DEACTIVATE = "service.deactivate";
     public static final String PROCESS_SERVICE_REMOVE = "service.remove";
     public static final String PROCESS_STACK_EXPORT_CONFIG = "stack.exportconfig";
@@ -120,20 +133,25 @@ public class ServiceConstants {
     public static final String PROCESS_SERVICE_REMOVE_SERVICE_LINK = "service." + ACTION_SERVICE_REMOVE_SERVICE_LINK;
     public static final String PROCESS_SERVICE_CONSUME_MAP_CREATE = "serviceconsumemap.create";
     public static final String PROCESS_SERVICE_CONSUME_MAP_REMOVE = "serviceconsumemap.remove";
-    public static final String PROCESS_SERVICE_CONSUME_MAP_UPDATE = "serviceconsumemap.update";
     public static final String PROCESS_SERVICE_UPDATE = "service.update";
     public static final String PROCESS_SERVICE_SET_SERVICE_LINKS = "service." + ACTION_SERVICE_SET_SERVICE_LINKS;
-    public static final String PROCESS_SERVICE_EXPOSE_MAP_CREATE = "serviceexposemap.create";
-    public static final String PROCESS_SERVICE_EXPOSE_MAP_REMOVE = "serviceexposemap.remove";
     public static final String PROCESS_SERVICE_UPGRADE = "service." + ACTION_SERVICE_UPGRADE;
     public static final String PROCESS_SERVICE_ROLLBACK = "service." + ACTION_SERVICE_ROLLBACK;
     public static final String PROCESS_SERVICE_FINISH_UPGRADE = "service.finishupgrade";
     public static final String PROCESS_SERVICE_RESTART = "service." + ACTION_SERVICE_RESTART;
     public static final String PROCESS_SERVICE_INDEX_REMOVE = "serviceindex.remove";
     public static final String PROCESS_SERVICE_CERTIFICATE = "service." + ACTION_SERVICE_CERTIFICATE;
+    public static final String PROCESS_DU_UPDATE = "deploymentunit.update";
+    public static final String PROCESS_DU_CREATE = "deploymentunit.create";
+    public static final String PROCESS_DU_ACTIVATE = "deploymentunit.activate";
+    public static final String PROCESS_DU_DEACTIVATE = "deploymentunit.deactivate";
+    public static final String PROCESS_DU_REMOVE = "deploymentunit.remove";
+    public static final String PROCESS_DU_UPDATE_UNHEALTHY = "deploymentunit.updateunhealthy";
+    public static final String PROCESS_DU_UPDATE_HEALTHY = "deploymentunit.updatehealthy";
+    public static final String PROCESS_SERVICE_CANCEL_UPGRADE = "service.cancelupgrade";
+    public static final String PROCESS_SERVICE_PAUSE = "service.pause";
+    public static final String PROCESS_SERVICE_GARBAGE_COLLECT = "service.garbagecollect";
 
-    public static final String LINK_DOCKER_COMPOSE_CONFIG = "dockerComposeConfig";
-    public static final String LINK_RANCHER_COMPOSE_CONFIG = "rancherComposeConfig";
     public static final String LINK_COMPOSE_CONFIG = "composeConfig";
 
     public static final String LABEL_SERVICE_DEPLOYMENT_UNIT = "io.rancher.service.deployment.unit";
@@ -146,7 +164,6 @@ public class ServiceConstants {
     public static final String LABEL_SERVICE_REQUESTED_HOST_ID = "io.rancher.service.requested.host.id";
     public static final String LABEL_SERVICE_LAUNCH_CONFIG = "io.rancher.service.launch.config";
     public static final String LABEL_SIDEKICK = "io.rancher.sidekicks";
-    public static final String LABEL_LB_TARGET = "io.rancher.loadbalancer.target.";
     public static final String LABEL_OVERRIDE_HOSTNAME = "io.rancher.container.hostname_override";
     public static final String LABEL_LB_SSL_PORTS = "io.rancher.loadbalancer.ssl.ports";
     public static final String LABEL_LB_PROXY_PORTS = "io.rancher.loadbalancer.proxy-protocol.ports";
@@ -159,11 +176,12 @@ public class ServiceConstants {
 
     public static final String STATE_UPGRADING = "upgrading";
     public static final String STATE_ROLLINGBACK = "rolling-back";
-    public static final String STATE_CANCELING_UPGRADE = "canceling-upgrade";
-    public static final String STATE_CANCELED_UPGRADE = "canceled-upgrade";
+    public static final String STATE_PAUSING = "pausing";
+    public static final String STATE_PAUSED = "paused";
     public static final String STATE_UPGRADED = "upgraded";
     public static final String STATE_FINISHING_UPGRADE = "finishing-upgrade";
     public static final String STATE_RESTARTING = "restarting";
+    public static final String STATE_UPDATING = "updating";
 
     public static final String IMAGE_NONE = "rancher/none";
 
@@ -172,9 +190,9 @@ public class ServiceConstants {
     public static final String AUDIT_LOG_REMOVE_BAD = "Removing bad service instance";
     public static final String AUDIT_LOG_CREATE_EXTRA = "Creating extra service instance";
 
-    public static final String SERVICE_INDEX_DU_STRATEGY = "deploymentUnitBased";
-
     public static final String PROCESS_DATA_SERVICE_RECONCILE = "reconcileState";
+
+    public static final List<String> SERVICE_INSTANCE_NAME_DIVIDORS = Arrays.asList("-", "_");
 
     public static boolean isSystem(Stack stack) {
         return stack.getSystem() || DataAccessor.fieldBool(stack, FIELD_SYSTEM)|| DataAccessor.fieldBool(stack, "isSystem");
@@ -182,5 +200,18 @@ public class ServiceConstants {
 
     public static boolean isSystem(Service service) {
         return service.getSystem() || DataAccessor.fieldBool(service, FIELD_SYSTEM);
+    }
+
+    public static String getServiceIndexFromInstanceName(String instanceName) {
+        for (String divider : SERVICE_INSTANCE_NAME_DIVIDORS) {
+            if (!instanceName.contains(divider)) {
+                continue;
+            }
+            String serviceSuffix = instanceName.substring(instanceName.lastIndexOf(divider) + 1);
+            if (!StringUtils.isEmpty(serviceSuffix) && serviceSuffix.matches("\\d+")) {
+                return serviceSuffix;
+            }
+        }
+        return "";
     }
 }

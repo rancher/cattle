@@ -56,6 +56,10 @@ public class Template {
         this.description = description;
     }
 
+    public String getExternalId() {
+        return String.format("catalog://%s", id);
+    }
+
     public String getId() {
         return id;
     }
@@ -121,11 +125,17 @@ public class Template {
     }
 
     public String getDockerCompose() {
+        if (this.files == null) {
+            return null;
+        }
         String value = this.getFiles().get("docker-compose.yml");
         return StringUtils.isBlank(value) ? this.getFiles().get("docker-compose.yml.tpl") : value;
     }
 
     public String getRancherCompose() {
+        if (this.files == null) {
+            return null;
+        }
         return this.getFiles().get("rancher-compose.yml");
     }
 

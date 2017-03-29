@@ -1,0 +1,10 @@
+{
+    "resourceFields": {
+        "config": {
+            "type": "container",
+            "create": true,
+            "required": false,
+            "nullable": true
+        }
+    }
+}

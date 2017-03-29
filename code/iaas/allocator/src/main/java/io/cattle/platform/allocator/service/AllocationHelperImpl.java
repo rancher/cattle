@@ -166,34 +166,6 @@ public class AllocationHelperImpl implements AllocationHelper {
     }
 
     @Override
-    public void mergeLabels(Map<String, String> srcMap, Map<String, String> destMap) {
-        if (srcMap == null || destMap == null) {
-            return;
-        }
-        for (Map.Entry<String, String> entry : srcMap.entrySet()) {
-            String key = entry.getKey();
-            if (key.toLowerCase().startsWith("io.rancher")) {
-                key = key.toLowerCase();
-            }
-            String value = entry.getValue();
-            if (key.startsWith("io.rancher.scheduler.affinity")) {
-                // merge labels
-                String destValue = destMap.get(key);
-                if (StringUtils.isEmpty(destValue)) {
-                    destMap.put(key, value);
-                } else if (StringUtils.isEmpty(value)) {
-                    continue;
-                } else if (!destValue.toLowerCase().contains(value.toLowerCase())) {
-                    destMap.put(key, destValue + "," + value);
-                }
-            } else {
-                // overwrite label value
-                destMap.put(key, value);
-            }
-        }
-    }
-
-    @Override
     @SuppressWarnings({ "unchecked", "rawtypes" })
     public List<Constraint> extractConstraintsFromEnv(Map env) {
         List<Constraint> constraints = new ArrayList<Constraint>();

@@ -4,6 +4,7 @@ import io.cattle.platform.archaius.util.ArchaiusUtil;
 import io.cattle.platform.core.addon.CatalogTemplate;
 import io.cattle.platform.core.model.ProjectTemplate;
 import io.cattle.platform.core.model.Stack;
+import io.cattle.platform.systemstack.model.Template;
 
 import java.io.IOException;
 import java.util.List;
@@ -14,6 +15,8 @@ import com.netflix.config.DynamicStringProperty;
 public interface CatalogService {
 
     public static final DynamicStringProperty DEFAULT_TEMPLATE = ArchaiusUtil.getString("project.template.default.name");
+
+    boolean isEnabled();
 
     Map<String, CatalogTemplate> resolvedExternalIds(List<CatalogTemplate> templates) throws IOException;
 
@@ -28,5 +31,11 @@ public interface CatalogService {
     Stack upgrade(Stack stack) throws IOException;
 
     String getDefaultExternalId(Stack stack) throws IOException;
+
+    Template lookupTemplate(String id) throws IOException;
+
+    String getTemplateBase(Template template) throws IOException;
+
+    String getTemplateBase(String externalId) throws IOException;
 
 }
