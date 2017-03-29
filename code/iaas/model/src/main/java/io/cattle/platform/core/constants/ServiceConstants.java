@@ -28,6 +28,7 @@ public class ServiceConstants {
         ));
     
 
+
     public static final String TYPE_STACK = "stack";
     public static final String FIELD_SCALE = "scale";
     public static final String FIELD_NETWORK_ID = "networkId";
@@ -67,6 +68,7 @@ public class ServiceConstants {
     public static final String STACK_FIELD_ENVIRONMENT = "environment";
     public static final String STACK_FIELD_BINDING = "binding";
     public static final String STACK_FIELD_EXTERNAL_ID = "externalId";
+    public static final String STACK_FIELD_TEMPLATES = "templates";
     public static final String FIELD_SET_VIP = "assignServiceIpAddress";
     public static final String FIELD_CURRENT_SCALE = "currentScale";
     public static final String FIELD_HEALTH_STATE = "healthState";
@@ -122,6 +124,7 @@ public class ServiceConstants {
     public static final String PROCESS_STACK_UPGRADE = "stack.upgrade";
     public static final String PROCESS_STACK_UPDATE = "stack.update";
     public static final String PROCESS_STACK_REMOVE = "stack.remove";
+    public static final String PROCESS_STACK_CREATE = "stack.create";
     public static final String PROCESS_SERVICE_DEACTIVATE = "service.deactivate";
     public static final String PROCESS_SERVICE_REMOVE = "service.remove";
     public static final String PROCESS_STACK_EXPORT_CONFIG = "stack.exportconfig";

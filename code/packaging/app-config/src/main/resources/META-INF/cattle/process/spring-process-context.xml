@@ -260,6 +260,7 @@
         p:commandName="kubernetesStack.remove"
         p:dataTypeClass="io.cattle.platform.core.model.Stack"
         p:stackKind="kubernetesStack"
+        p:agentRequired="false"
         p:agentService="io.rancher.container.agent_service.kubernetes_stack"
         p:processNames="stack.remove" >
         <property name="priority">

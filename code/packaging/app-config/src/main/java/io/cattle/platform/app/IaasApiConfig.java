@@ -8,8 +8,8 @@ import io.cattle.platform.core.util.SettingsUtils;
 import io.cattle.platform.docker.api.transform.TransformInspect;
 import io.cattle.platform.docker.machine.api.MachineLinkFilter;
 import io.cattle.platform.docker.machine.api.addon.BaseMachineConfig;
-import io.cattle.platform.docker.machine.api.filter.MachineValidationFilter;
 import io.cattle.platform.docker.machine.api.filter.MachineOutputFilter;
+import io.cattle.platform.docker.machine.api.filter.MachineValidationFilter;
 import io.cattle.platform.docker.machine.launch.SecretsApiLauncher;
 import io.cattle.platform.docker.machine.launch.WebsocketProxyLauncher;
 import io.cattle.platform.extension.impl.EMUtils;
@@ -92,8 +92,8 @@ import io.cattle.platform.iaas.api.filter.storagepool.StoragePoolOutputFilter;
 import io.cattle.platform.iaas.api.filter.volume.VolumeOutputFilter;
 import io.cattle.platform.iaas.api.manager.DataManager;
 import io.cattle.platform.iaas.api.manager.HaConfigManager;
-import io.cattle.platform.iaas.api.manager.InstanceManager;
 import io.cattle.platform.iaas.api.manager.HostTemplateManager;
+import io.cattle.platform.iaas.api.manager.InstanceManager;
 import io.cattle.platform.iaas.api.manager.ProcessPoolManager;
 import io.cattle.platform.iaas.api.manager.ProcessSummaryManager;
 import io.cattle.platform.iaas.api.manager.SecretManager;
@@ -125,6 +125,7 @@ import io.cattle.platform.servicediscovery.api.filter.ServiceStackNetworkDriverF
 import io.cattle.platform.servicediscovery.api.filter.ServiceStackStorageDriverFilter;
 import io.cattle.platform.spring.resource.SpringUrlListFactory;
 import io.cattle.platform.systemstack.api.AccountCreateFilter;
+import io.cattle.platform.systemstack.api.StackCreateFilter;
 import io.github.ibuildthecloud.gdapi.doc.FieldDocumentation;
 import io.github.ibuildthecloud.gdapi.doc.TypeDocumentation;
 import io.github.ibuildthecloud.gdapi.doc.handler.DocumentationHandler;
@@ -453,6 +454,11 @@ public class IaasApiConfig {
     @Bean
     AccountCreateFilter AccountCreateFilter() {
         return new AccountCreateFilter();
+    }
+
+    @Bean
+    StackCreateFilter StackCreateFilter() {
+        return new StackCreateFilter();
     }
 
     @Bean

@@ -19,6 +19,7 @@ public class StackAgentHandler extends AgentBasedProcessHandler {
     AgentInstanceDao agentInstanceDao;
     String agentService;
     String stackKind;
+    boolean agentRequired = true;
 
     @Override
     protected Object getAgentResource(ProcessState state, ProcessInstance process, Object dataResource) {
@@ -28,7 +29,10 @@ public class StackAgentHandler extends AgentBasedProcessHandler {
         }
 
         Long accountId = env.getAccountId();
-        List<Long> agentIds = agentInstanceDao.getAgentProvider(agentService, accountId);
+        List<Long> agentIds = agentInstanceDao.getAgentProviderIgnoreHealth(agentService, accountId);
+        if (agentIds.size() == 0 && agentRequired) {
+            throw new IllegalStateException("Failed to find [" + agentService + "] in the environment");
+        }
         return agentIds.size() == 0 ? null : agentIds.get(0);
     }
 
@@ -58,6 +62,14 @@ public class StackAgentHandler extends AgentBasedProcessHandler {
     @Inject
     public void setAgentService(String agentService) {
         this.agentService = agentService;
+    }
+
+    public boolean isAgentRequired() {
+        return agentRequired;
+    }
+
+    public void setAgentRequired(boolean agentRequired) {
+        this.agentRequired = agentRequired;
     }
 
 }
