@@ -5,12 +5,12 @@ import io.cattle.platform.engine.handler.HandlerResult;
 import io.cattle.platform.engine.handler.ProcessPostListener;
 import io.cattle.platform.engine.process.ProcessInstance;
 import io.cattle.platform.engine.process.ProcessState;
-import io.cattle.platform.process.common.handler.AbstractObjectProcessHandler;
+import io.cattle.platform.process.common.handler.AbstractObjectProcessLogic;
 
 import javax.inject.Named;
 
 @Named
-public class StackPostUpgrade extends AbstractObjectProcessHandler implements ProcessPostListener {
+public class StackPostUpgrade extends AbstractObjectProcessLogic implements ProcessPostListener {
 
     @Override
     public String[] getProcessNames() {

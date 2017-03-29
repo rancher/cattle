@@ -7,7 +7,7 @@ import io.cattle.platform.engine.handler.ProcessPreListener;
 import io.cattle.platform.engine.process.ProcessInstance;
 import io.cattle.platform.engine.process.ProcessState;
 import io.cattle.platform.object.util.DataAccessor;
-import io.cattle.platform.process.common.handler.AbstractObjectProcessHandler;
+import io.cattle.platform.process.common.handler.AbstractObjectProcessLogic;
 import io.cattle.platform.systemstack.catalog.CatalogService;
 import io.cattle.platform.util.type.CollectionUtils;
 
@@ -19,7 +19,7 @@ import javax.inject.Named;
 import org.apache.commons.lang3.StringUtils;
 
 @Named
-public class StackPreUpgrade extends AbstractObjectProcessHandler implements ProcessPreListener {
+public class StackPreUpgrade extends AbstractObjectProcessLogic implements ProcessPreListener {
 
     @Inject
     StackPreCreate preCreate;
