@@ -31,6 +31,7 @@ import io.cattle.platform.util.resource.UUID;
 import io.github.ibuildthecloud.gdapi.id.IdFormatter;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -51,6 +52,7 @@ public class HostDaoImpl extends AbstractJooqDao implements HostDao {
     ObjectManager objectManager;
     @Inject
     GenericResourceDao genericResourceDao;
+    Long startTime;
 
     @Override
     public List<? extends Host> getHosts(Long accountId, List<String> uuids) {
@@ -188,6 +190,14 @@ public class HostDaoImpl extends AbstractJooqDao implements HostDao {
 
     @Override
     public List<? extends Host> findHostsRemove() {
+        if (startTime == null) {
+            startTime = System.currentTimeMillis();
+        }
+
+        if ((System.currentTimeMillis() - startTime) <= (HOST_REMOVE_START_DELAY.get() * 1000)) {
+            return Collections.emptyList();
+        }
+
         return create().select(HOST.fields())
                 .from(HOST)
                 .join(AGENT)
@@ -195,7 +205,7 @@ public class HostDaoImpl extends AbstractJooqDao implements HostDao {
                 .join(ACCOUNT)
                     .on(ACCOUNT.ID.eq(HOST.ACCOUNT_ID))
                 .where(AGENT.STATE.eq(AgentConstants.STATE_DISCONNECTED)
-                        .and(HOST.STATE.eq(CommonStatesConstants.ACTIVE))
+                        .and(HOST.STATE.in(CommonStatesConstants.ACTIVE, CommonStatesConstants.INACTIVE))
                         .and(HOST.REMOVE_AFTER.lt(new Date())))
                 .fetchInto(HostRecord.class);
     }

@@ -1,7 +1,9 @@
 package io.cattle.platform.process.host;
 
+import io.cattle.platform.core.dao.AgentDao;
 import io.cattle.platform.core.dao.GenericResourceDao;
 import io.cattle.platform.core.dao.HostDao;
+import io.cattle.platform.core.model.Agent;
 import io.cattle.platform.core.model.Host;
 import io.cattle.platform.engine.process.util.ProcessEngineUtils;
 import io.cattle.platform.object.process.ObjectProcessManager;
@@ -14,6 +16,8 @@ public class HostRemoveMonitorImpl implements Task {
 
     @Inject
     HostDao hostDao;
+    @Inject
+    AgentDao agentDao;
     @Inject
     ObjectProcessManager processManager;
     @Inject
@@ -30,6 +34,11 @@ public class HostRemoveMonitorImpl implements Task {
         for (Host host : hostDao.findHostsRemove()) {
             processManager.scheduleStandardChainedProcessAsync(StandardProcess.DEACTIVATE, StandardProcess.REMOVE,
                     host, null);
+        }
+
+        for (Agent agent : agentDao.findAgentsToRemove()) {
+            processManager.scheduleStandardChainedProcessAsync(StandardProcess.DEACTIVATE, StandardProcess.REMOVE,
+                    agent, null);
         }
     }
 

@@ -7,10 +7,12 @@ import static io.cattle.platform.core.model.tables.InstanceTable.*;
 import static io.cattle.platform.core.model.tables.PhysicalHostTable.*;
 import static io.cattle.platform.core.model.tables.StoragePoolTable.*;
 
+import io.cattle.platform.core.constants.AgentConstants;
 import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.HostConstants;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.dao.AgentDao;
+import io.cattle.platform.core.dao.HostDao;
 import io.cattle.platform.core.model.Agent;
 import io.cattle.platform.core.model.Host;
 import io.cattle.platform.core.model.Instance;
@@ -22,6 +24,8 @@ import io.cattle.platform.core.model.tables.records.PhysicalHostRecord;
 import io.cattle.platform.core.model.tables.records.StoragePoolRecord;
 import io.cattle.platform.object.util.DataAccessor;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -34,6 +38,8 @@ import org.jooq.Record1;
 
 @Named
 public class AgentDaoImpl extends AbstractCoreDao implements AgentDao {
+
+    Long startTime = null;
 
     @Override
     public Agent findNonRemovedByUri(String uri) {
@@ -178,5 +184,35 @@ public class AgentDaoImpl extends AbstractCoreDao implements AgentDao {
                 .where(AGENT.ID.eq(agentId)
                         .and(AGENT.REMOVED.isNull())).fetchAny();
         return r == null ? null : r.value1();
+    }
+
+    @Override
+    public List<? extends Agent> findAgentsToRemove() {
+        if (startTime == null) {
+            startTime = System.currentTimeMillis();
+        }
+
+        if ((System.currentTimeMillis() - startTime) <= (HostDao.HOST_REMOVE_START_DELAY.get() * 1000)) {
+            return Collections.emptyList();
+        }
+
+        List<? extends Agent> agents = create().select(HOST.fields())
+                .from(AGENT)
+                .leftOuterJoin(HOST)
+                    .on(HOST.AGENT_ID.eq(AGENT.ID))
+                .where(HOST.ID.isNull().or(HOST.REMOVED.isNotNull())
+                        .and(AGENT.STATE.eq(AgentConstants.STATE_DISCONNECTED)))
+                .fetchInto(Agent.class);
+
+        // This is purging old pre-1.2 agent delegates
+        List<? extends Agent> oldAgents = create().select(HOST.fields())
+                .from(AGENT)
+                .where(AGENT.REMOVED.isNull().and(AGENT.URI.like("delegate%")))
+                .fetchInto(Agent.class);
+
+        List<Agent> result = new ArrayList<>(agents);
+        result.addAll(oldAgents);
+
+        return result;
     }
 }
