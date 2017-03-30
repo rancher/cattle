@@ -173,7 +173,8 @@ def test_volume_create_from_driver(storage_driver_context):
 
     volume = client.create_volume(name=random_str(),
                                   driver=driver.name,
-                                  hostId=host.id)
+                                  hostId=host.id,
+                                  driverOpts={'created': 'true'})
     volume = client.wait_success(volume)
     assert volume.state == 'detached'
     assert volume.storageDriverId == driver.id
@@ -187,7 +188,8 @@ def test_volume_create_from_driver2(storage_driver_context, super_client):
 
     volume = client.create_volume(name=random_str(),
                                   storageDriverId=driver.id,
-                                  hostId=host.id)
+                                  hostId=host.id,
+                                  driverOpts={'created': 'true'})
     volume = client.wait_success(volume)
     assert volume.state == 'detached'
     assert volume.storageDriverId == driver.id
@@ -212,7 +214,8 @@ def test_volume_create_from_user(storage_driver_context):
     assert volume.storageDriverId == driver.id
     assert volume.driver == driver.name
 
-    volume = client.update(volume, hostId=host.id)
+    volume = client.update(volume, hostId=host.id,
+                           driverOpts={'created': 'true'})
     volume = client.wait_success(volume)
     assert volume.state == 'detached'
     assert volume.hostId == host.id
