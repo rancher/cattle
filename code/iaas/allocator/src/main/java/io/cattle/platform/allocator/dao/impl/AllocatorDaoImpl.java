@@ -161,8 +161,14 @@ public class AllocatorDaoImpl extends AbstractJooqDao implements AllocatorDao {
                        .on(INSTANCE_HOST_MAP.HOST_ID.eq(HOST.ID))
                    .join(INSTANCE)
                        .on(INSTANCE_HOST_MAP.INSTANCE_ID.eq(INSTANCE.ID))
+                    .leftOuterJoin(SERVICE_EXPOSE_MAP)
+                    .on(INSTANCE.ID.eq(SERVICE_EXPOSE_MAP.INSTANCE_ID))
                    .where(
                        INSTANCE_HOST_MAP.REMOVED.isNull()
+                       .and(HOST.REMOVED.isNull())
+                       .and(INSTANCE.REMOVED.isNull())
+                                    .and(SERVICE_EXPOSE_MAP.REMOVED.isNull())
+                                    .and(SERVICE_EXPOSE_MAP.UPGRADE.isNull().or(SERVICE_EXPOSE_MAP.UPGRADE.eq(false)))
                        .and(cond))
                    .fetchOneInto(HostRecord.class);
        } catch (InvalidResultException e) {
