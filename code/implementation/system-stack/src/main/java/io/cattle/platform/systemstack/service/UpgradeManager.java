@@ -109,7 +109,7 @@ public class UpgradeManager {
     }
 
     public void run() throws IOException {
-        lockManager.lock(new ScheduledUpgradeLock(), ()->{
+        lockManager.tryLock(new ScheduledUpgradeLock(), ()->{
             try {
                 runWithLock(true);
             } catch (Exception e) {
