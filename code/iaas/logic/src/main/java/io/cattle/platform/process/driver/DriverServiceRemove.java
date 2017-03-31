@@ -1,5 +1,6 @@
 package io.cattle.platform.process.driver;
 
+import io.cattle.platform.core.constants.ServiceConstants;
 import io.cattle.platform.core.model.Service;
 import io.cattle.platform.engine.handler.AbstractProcessLogic;
 import io.cattle.platform.engine.handler.HandlerResult;
@@ -23,7 +24,7 @@ public class DriverServiceRemove extends AbstractProcessLogic implements Process
 
     @Override
     public String[] getProcessNames() {
-        return new String[]{"service.remove"};
+        return new String[] { ServiceConstants.PROCESS_SERVICE_REMOVE };
     }
 
     @Override

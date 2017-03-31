@@ -15,8 +15,8 @@ public class ExternalEventConstants {
     public static final String TYPE_VOLUME_DELETE = "volume.delete";
     public static final String TYPE_SERVICE_CREATE = "service.create";
     public static final String TYPE_SERVICE_UPDATE = "service.update";
-    public static final String TYPE_SERVICE_DELETE = "service.remove";
-    public static final String TYPE_STACK_DELETE=  "stack.remove";
+    public static final String TYPE_SERVICE_DELETE = ServiceConstants.PROCESS_SERVICE_REMOVE;
+    public static final String TYPE_STACK_DELETE = ServiceConstants.PROCESS_STACK_REMOVE;
     public static final String TYPE_HOST_EVACUATE = "host.evacuate";
     public static final String TYPE_SCHEDULER_UPDATE = "scheduler.update";
     public static final String VOLUME_POOL_LOCK_NAME = "VOLUME";

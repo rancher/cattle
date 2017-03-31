@@ -1,7 +1,7 @@
 package io.cattle.platform.systemstack.process;
 
 import static io.cattle.platform.core.model.tables.StackTable.*;
-
+import io.cattle.platform.core.constants.ServiceConstants;
 import io.cattle.platform.core.model.Stack;
 import io.cattle.platform.engine.handler.HandlerResult;
 import io.cattle.platform.engine.handler.ProcessPostListener;
@@ -35,7 +35,7 @@ public class SystemStackRemovePostHandler extends AbstractObjectProcessLogic imp
 
     @Override
     public String[] getProcessNames() {
-        return new String[] { "stack.remove" };
+        return new String[] { ServiceConstants.PROCESS_STACK_REMOVE };
     }
 
     @Override
