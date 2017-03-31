@@ -60,16 +60,12 @@ public class SystemStackUpdate extends AbstractJooqDao implements AnnotatedEvent
 
     private static final Logger log = LoggerFactory.getLogger(SystemStackUpdate.class);
 
-    public static final String KUBERNETES = "k8s";
-    public static final String SWARM = "swarm";
-    public static final String MESOS = "mesos";
-    public static final String WINDOWS = "windows";
     public static final String VIRTUAL_MACHINE = "virtualMachine";
     public static final List<String> ORC_PRIORITY = Arrays.asList(
-            KUBERNETES,
-            SWARM,
-            MESOS,
-            WINDOWS
+            AccountConstants.ORC_KUBERNETES,
+            AccountConstants.ORC_SWARM,
+            AccountConstants.ORC_MESOS,
+            AccountConstants.ORC_WINDOWS
             );
     public static final Set<String> ORCS = new HashSet<>(ORC_PRIORITY);
 
@@ -156,7 +152,7 @@ public class SystemStackUpdate extends AbstractJooqDao implements AnnotatedEvent
 
         for (String orc : ORC_PRIORITY) {
             if (installedOrcs.contains(orc)) {
-                if (KUBERNETES.equals(orc)) {
+                if (AccountConstants.ORC_KUBERNETES.equals(orc)) {
                     orchestration = "kubernetes";
                 } else {
                     orchestration = orc;

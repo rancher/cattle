@@ -2,6 +2,7 @@ package io.cattle.platform.systemstack.process;
 
 import static io.cattle.platform.core.model.tables.StackTable.*;
 import io.cattle.platform.core.constants.ServiceConstants;
+import io.cattle.platform.core.constants.AccountConstants;
 import io.cattle.platform.core.model.Stack;
 import io.cattle.platform.engine.handler.HandlerResult;
 import io.cattle.platform.engine.handler.ProcessPostListener;
@@ -27,9 +28,9 @@ public class SystemStackRemovePostHandler extends AbstractObjectProcessLogic imp
     private static final Map<String, List<String>> STACKS_TO_CLEANUP_EXTERNAL_ID = new HashMap<>();
     private static final Map<String, List<String>> STACKS_TO_CLEANUP_KIND = new HashMap<>();
     static {
-        STACKS_TO_CLEANUP_EXTERNAL_ID.put(SystemStackUpdate.KUBERNETES,
+        STACKS_TO_CLEANUP_EXTERNAL_ID.put(AccountConstants.ORC_KUBERNETES,
                 Arrays.asList("kubernetes://", "kubernetes-loadbalancers://", "kubernetes-ingress-lbs://"));
-        STACKS_TO_CLEANUP_KIND.put(SystemStackUpdate.KUBERNETES,
+        STACKS_TO_CLEANUP_KIND.put(AccountConstants.ORC_KUBERNETES,
                 Arrays.asList("kubernetesStack"));
     }
 
