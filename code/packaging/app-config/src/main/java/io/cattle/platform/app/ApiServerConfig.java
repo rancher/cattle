@@ -76,8 +76,6 @@ import io.cattle.platform.iaas.api.credential.SshKeyPemDownloadLinkHandler;
 import io.cattle.platform.iaas.api.host.HostEvacuateActionHandler;
 import io.cattle.platform.iaas.api.host.HostTemplateLinkHandler;
 import io.cattle.platform.iaas.api.host.HostTemplateOutputFilter;
-import io.cattle.platform.iaas.api.snapshot.SnapshotBackupActionHandler;
-import io.cattle.platform.iaas.api.volume.VolumeSnapshotActionHandler;
 import io.cattle.platform.object.meta.TypeSet;
 import io.cattle.platform.storage.api.filter.ExternalTemplateInstanceFilter;
 import io.cattle.platform.systemstack.service.UpgradeManager;
@@ -386,16 +384,6 @@ public class ApiServerConfig {
     @Bean
     ServiceProxyManager ServiceProxyManager() {
         return new ServiceProxyManager();
-    }
-
-    @Bean
-    VolumeSnapshotActionHandler VolumeSnapshotActionHandler() {
-        return new VolumeSnapshotActionHandler();
-    }
-
-    @Bean
-    SnapshotBackupActionHandler SnapshotBackupActionHandler() {
-        return new SnapshotBackupActionHandler();
     }
 
     @Bean

@@ -709,6 +709,6 @@ def _get_super_client(request):
 def _is_valid_super_client(client):
     try:
         # stupid test
-        return len(client.schema.types) > 190
+        return len(client.schema.types) > 180
     except:
         return False

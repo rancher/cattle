@@ -11,7 +11,7 @@ package io.cattle.platform.core.model;
 @java.lang.SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class CattleTable extends org.jooq.impl.SchemaImpl {
 
-	private static final long serialVersionUID = 858170811;
+	private static final long serialVersionUID = -1724518512;
 
 	/**
 	 * The singleton instance of <code>cattle</code>
@@ -40,8 +40,6 @@ public class CattleTable extends org.jooq.impl.SchemaImpl {
 			io.cattle.platform.core.model.tables.AuditLogTable.AUDIT_LOG,
 			io.cattle.platform.core.model.tables.AuthTokenTable.AUTH_TOKEN,
 			io.cattle.platform.core.model.tables.BackoffTable.BACKOFF,
-			io.cattle.platform.core.model.tables.BackupTable.BACKUP,
-			io.cattle.platform.core.model.tables.BackupTargetTable.BACKUP_TARGET,
 			io.cattle.platform.core.model.tables.CertificateTable.CERTIFICATE,
 			io.cattle.platform.core.model.tables.ClusterHostMapTable.CLUSTER_HOST_MAP,
 			io.cattle.platform.core.model.tables.ClusterMembershipTable.CLUSTER_MEMBERSHIP,
@@ -98,7 +96,6 @@ public class CattleTable extends org.jooq.impl.SchemaImpl {
 			io.cattle.platform.core.model.tables.ServiceIndexTable.SERVICE_INDEX,
 			io.cattle.platform.core.model.tables.ServiceLogTable.SERVICE_LOG,
 			io.cattle.platform.core.model.tables.SettingTable.SETTING,
-			io.cattle.platform.core.model.tables.SnapshotTable.SNAPSHOT,
 			io.cattle.platform.core.model.tables.StorageDriverTable.STORAGE_DRIVER,
 			io.cattle.platform.core.model.tables.StoragePoolTable.STORAGE_POOL,
 			io.cattle.platform.core.model.tables.StoragePoolHostMapTable.STORAGE_POOL_HOST_MAP,

@@ -44,16 +44,6 @@ public class Tables {
 	public static final io.cattle.platform.core.model.tables.BackoffTable BACKOFF = io.cattle.platform.core.model.tables.BackoffTable.BACKOFF;
 
 	/**
-	 * The table cattle.backup
-	 */
-	public static final io.cattle.platform.core.model.tables.BackupTable BACKUP = io.cattle.platform.core.model.tables.BackupTable.BACKUP;
-
-	/**
-	 * The table cattle.backup_target
-	 */
-	public static final io.cattle.platform.core.model.tables.BackupTargetTable BACKUP_TARGET = io.cattle.platform.core.model.tables.BackupTargetTable.BACKUP_TARGET;
-
-	/**
 	 * The table cattle.certificate
 	 */
 	public static final io.cattle.platform.core.model.tables.CertificateTable CERTIFICATE = io.cattle.platform.core.model.tables.CertificateTable.CERTIFICATE;
@@ -332,11 +322,6 @@ public class Tables {
 	 * The table cattle.setting
 	 */
 	public static final io.cattle.platform.core.model.tables.SettingTable SETTING = io.cattle.platform.core.model.tables.SettingTable.SETTING;
-
-	/**
-	 * The table cattle.snapshot
-	 */
-	public static final io.cattle.platform.core.model.tables.SnapshotTable SNAPSHOT = io.cattle.platform.core.model.tables.SnapshotTable.SNAPSHOT;
 
 	/**
 	 * The table cattle.storage_driver

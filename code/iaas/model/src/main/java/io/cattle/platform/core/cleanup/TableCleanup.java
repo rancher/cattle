@@ -15,8 +15,6 @@ import io.cattle.platform.core.model.tables.AccountTable;
 import io.cattle.platform.core.model.tables.AgentTable;
 import io.cattle.platform.core.model.tables.AuditLogTable;
 import io.cattle.platform.core.model.tables.AuthTokenTable;
-import io.cattle.platform.core.model.tables.BackupTable;
-import io.cattle.platform.core.model.tables.BackupTargetTable;
 import io.cattle.platform.core.model.tables.CertificateTable;
 import io.cattle.platform.core.model.tables.ClusterHostMapTable;
 import io.cattle.platform.core.model.tables.ConfigItemStatusTable;
@@ -62,7 +60,6 @@ import io.cattle.platform.core.model.tables.ServiceExposeMapTable;
 import io.cattle.platform.core.model.tables.ServiceIndexTable;
 import io.cattle.platform.core.model.tables.ServiceLogTable;
 import io.cattle.platform.core.model.tables.ServiceTable;
-import io.cattle.platform.core.model.tables.SnapshotTable;
 import io.cattle.platform.core.model.tables.StackTable;
 import io.cattle.platform.core.model.tables.StorageDriverTable;
 import io.cattle.platform.core.model.tables.StoragePoolHostMapTable;
@@ -433,8 +430,6 @@ public class TableCleanup extends AbstractJooqDao implements Task {
                 CleanableTable.from(AccountTable.ACCOUNT),
                 CleanableTable.from(AgentTable.AGENT),
                 CleanableTable.from(AuthTokenTable.AUTH_TOKEN),
-                CleanableTable.from(BackupTable.BACKUP),
-                CleanableTable.from(BackupTargetTable.BACKUP_TARGET),
                 CleanableTable.from(CertificateTable.CERTIFICATE),
                 CleanableTable.from(ClusterHostMapTable.CLUSTER_HOST_MAP),
                 CleanableTable.from(ConfigItemStatusTable.CONFIG_ITEM_STATUS),
@@ -470,7 +465,6 @@ public class TableCleanup extends AbstractJooqDao implements Task {
                 CleanableTable.from(ServiceConsumeMapTable.SERVICE_CONSUME_MAP),
                 CleanableTable.from(ServiceExposeMapTable.SERVICE_EXPOSE_MAP),
                 CleanableTable.from(ServiceIndexTable.SERVICE_INDEX),
-                CleanableTable.from(SnapshotTable.SNAPSHOT),
                 CleanableTable.from(StackTable.STACK),
                 CleanableTable.from(StorageDriverTable.STORAGE_DRIVER),
                 CleanableTable.from(StoragePoolTable.STORAGE_POOL),
