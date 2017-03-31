@@ -15,7 +15,6 @@
     "stats": "http://localhost:8080/v1/containers/1i1/stats"
   },
   "actions": {
-    "restore": "http://localhost:8080/v1/containers/1i1/?action=restore",
     "purge": "http://localhost:8080/v1/containers/1i1/?action=purge",
     "logs": "http://localhost:8080/v1/containers/1i1/?action=logs"
   },

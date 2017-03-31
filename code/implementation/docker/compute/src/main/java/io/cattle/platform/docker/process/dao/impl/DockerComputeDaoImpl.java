@@ -42,9 +42,11 @@ public class DockerComputeDaoImpl extends AbstractJooqDao implements DockerCompu
                     .from(VOLUME_STORAGE_POOL_MAP)
                         .join(VOLUME)
                             .on(VOLUME_STORAGE_POOL_MAP.VOLUME_ID.eq(VOLUME.ID))
-                    .where(VOLUME_STORAGE_POOL_MAP.STORAGE_POOL_ID.eq(storagePool.getId()))
+                    .where(VOLUME_STORAGE_POOL_MAP.STORAGE_POOL_ID.eq(storagePool.getId())
+                        .and(VOLUME.REMOVED.isNull())
+                        .and(VOLUME.STATE.ne(CommonStatesConstants.REMOVING))
                         .and(condition)
-                        .and(VOLUME_STORAGE_POOL_MAP.REMOVED.isNull())
+                        .and(VOLUME_STORAGE_POOL_MAP.REMOVED.isNull()))
                 .fetchInto(VolumeRecord.class);
 
         if ( volumes.isEmpty() )
