@@ -564,3 +564,39 @@ def test_validate_svc_link_name(client, context):
     service_link2 = {"serviceId": service3.id, "name": 'm.gh_kl.a-b'}
     service1 = service1.addservicelink(serviceLink=service_link2)
     _validate_add_service_link(service1, service3, client)
+
+
+def test_dependencies_start(client, context):
+    stack = _create_stack(client)
+
+    image_uuid = context.image_uuid
+    launch_config = {"imageUuid": image_uuid}
+
+    svc1 = client.create_service(name=random_str(),
+                                 stackId=stack.id,
+                                 launchConfig=launch_config)
+    svc1 = client.wait_success(svc1)
+
+    svc2 = client.create_service(name=random_str(),
+                                 stackId=stack.id,
+                                 launchConfig=launch_config)
+    svc2 = client.wait_success(svc2)
+
+    svc3 = client.create_service(name=random_str(),
+                                 stackId=stack.id,
+                                 launchConfig=launch_config)
+    svc3 = client.wait_success(svc3)
+
+    # set service2, service3 links for service1
+    service_link1 = {"serviceId": svc2.id, "name": "link1"}
+    service_link2 = {"serviceId": svc3.id, "name": "link2"}
+    svc1 = svc1. \
+        setservicelinks(serviceLinks=[service_link1, service_link2])
+    _validate_add_service_link(svc1, svc2, client, "link1")
+    _validate_add_service_link(svc1, svc3, client, "link2")
+
+    # activate services all at once
+    stack.activateservices()
+    wait_for(lambda: client.reload(svc1).state == 'active')
+    assert client.reload(svc2).state == 'active'
+    assert client.reload(svc3).state == 'active'
