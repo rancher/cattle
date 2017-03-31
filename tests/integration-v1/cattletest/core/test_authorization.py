@@ -1465,7 +1465,6 @@ def test_account_resource_auth(admin_user_client):
         'update',
         'activate',
         'deactivate',
-        'restore',
         'remove',
         'purge',
         'create',

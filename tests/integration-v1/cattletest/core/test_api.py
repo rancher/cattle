@@ -282,7 +282,6 @@ def test_state_enum(super_client):
         'removing',
         'requested',
         'restarting',
-        'restoring',
         'running',
         'starting',
         'stopped',

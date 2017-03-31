@@ -286,7 +286,6 @@
         <process:process name="agent.remove" resourceType="agent" start="requested,inactive,activating,deactivating,registering,updating-active,updating-inactive" transitioning="removing" done="removed" />
         <process:process name="agent.purge" resourceType="agent" start="removed" transitioning="purging" done="purged" />
         <process:process name="agent.update" resourceType="agent" start="inactive,active" transitioning="inactive=updating-inactive,active=updating-active" done="updating-inactive=inactive,updating-active=active" />
-        <process:process name="agent.restore" resourceType="agent" start="removed" transitioning="restoring" done="inactive" />
     -->
 
 
@@ -341,7 +340,7 @@
 
 
     <!-- Credential -->
-    <process:defaultProcesses resourceType="credential" exclude="credential.restore" />
+    <process:defaultProcesses resourceType="credential" />
 
     <!-- Instance -->
     <process:defaultProcesses resourceType="instance"
