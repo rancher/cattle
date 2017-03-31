@@ -43,7 +43,6 @@ import io.cattle.platform.object.process.StandardProcess;
 import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.process.common.handler.AbstractObjectProcessLogic;
 import io.cattle.platform.process.common.lock.MountVolumeLock;
-import io.cattle.platform.process.common.util.ProcessUtils;
 import io.cattle.platform.util.type.CollectionUtils;
 import io.cattle.platform.util.type.Priority;
 import io.github.ibuildthecloud.gdapi.condition.Condition;
@@ -191,11 +190,7 @@ public class DockerPostInstanceHostMapActivate extends AbstractObjectProcessLogi
 
             Volume volume = createVolumeInStoragePool(pool, instance, dVol);
             String action;
-            if (CommonStatesConstants.REMOVED.equals(volume.getState())) {
-                action = "Restored";
-                objectProcessManager.scheduleStandardProcess(StandardProcess.RESTORE, volume,
-                        ProcessUtils.chainInData(state.getData(), "volume.restore", "volume.activate"));
-            } else if (CommonStatesConstants.REQUESTED.equals(volume.getState())) {
+            if (CommonStatesConstants.REQUESTED.equals(volume.getState())) {
                 action = "Created";
                 objectProcessManager.scheduleStandardProcess(StandardProcess.CREATE, volume, state.getData());
             } else {

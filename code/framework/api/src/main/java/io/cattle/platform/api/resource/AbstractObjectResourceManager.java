@@ -451,7 +451,7 @@ public abstract class AbstractObjectResourceManager extends AbstractBaseResource
             String name = entry.getKey();
             Action action = entry.getValue();
 
-            if (!isValidAction(obj, action)) {
+            if ("restore".equals(name) || !isValidAction(obj, action)) {
                 continue;
             }
 

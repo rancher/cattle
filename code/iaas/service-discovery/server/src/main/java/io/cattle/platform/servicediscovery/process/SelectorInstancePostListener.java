@@ -41,7 +41,7 @@ public class SelectorInstancePostListener extends AbstractObjectProcessLogic imp
 
     @Override
     public String[] getProcessNames() {
-        return new String[] { InstanceConstants.PROCESS_START, InstanceConstants.PROCESS_RESTORE };
+        return new String[] { InstanceConstants.PROCESS_START };
     }
 
     @Override

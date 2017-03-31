@@ -32,11 +32,6 @@
         "capability" : "owner"
       }
     },
-    "restore" : {
-      "attributes" : {
-        "capability" : "owner"
-      }
-    },
     "purge" : {
       "attributes" : {
         "capability" : "owner"
