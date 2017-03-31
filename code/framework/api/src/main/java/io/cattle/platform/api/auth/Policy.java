@@ -9,7 +9,6 @@ public interface Policy {
     public static final String LIST_ALL_ACCOUNTS = "list.all.accounts";
     public static final String AUTHORIZED_FOR_ALL_ACCOUNTS = "all.accounts";
     public static final String LIST_ALL_SETTINGS = "list.all.settings";
-    public static final String REMOVED_VISIBLE = "removed.visible";
     public static final String PLAIN_ID = "plain.id";
     public static final String PLAIN_ID_OPTION = "plain.id.option";
     public static final String ROLE_OPTION = "role.option";
