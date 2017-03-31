@@ -9,9 +9,8 @@ import io.cattle.platform.engine.handler.HandlerResult;
 import io.cattle.platform.engine.process.ProcessInstance;
 import io.cattle.platform.engine.process.ProcessState;
 import io.cattle.platform.object.meta.ObjectMetaDataManager;
-import io.cattle.platform.object.resource.ResourceMonitor;
-import io.cattle.platform.object.resource.ResourcePredicate;
 import io.cattle.platform.process.base.AbstractDefaultProcessHandler;
+import io.cattle.platform.sample.data.SampleDataStartupV3;
 import io.cattle.platform.systemstack.catalog.CatalogService;
 
 import javax.inject.Inject;
@@ -23,7 +22,7 @@ public class ProjecttemplateCreate extends AbstractDefaultProcessHandler {
     @Inject
     SystemStackTrigger systemStackTrigger;
     @Inject
-    ResourceMonitor resourceMonitor;
+    SampleDataStartupV3 sampleDataStartupV3;
 
     @Override
     public HandlerResult handle(ProcessState state, ProcessInstance process) {
@@ -33,20 +32,9 @@ public class ProjecttemplateCreate extends AbstractDefaultProcessHandler {
             return null;
         }
 
-        resourceMonitor.waitFor(template, new ResourcePredicate<ProjectTemplate>() {
-            @Override
-            public boolean evaluate(ProjectTemplate obj) {
-                return getDefaultProject() != null;
-            }
-
-            @Override
-            public String getMessage() {
-                return "waiting for defaultProject";
-            }
-        });
-
+        sampleDataStartupV3.start();
         Account defaultProject = getDefaultProject();
-        if (defaultProject.getProjectTemplateId() != null) {
+        if (defaultProject == null || defaultProject.getProjectTemplateId() != null) {
             return null;
         }
 
