@@ -125,18 +125,7 @@ public class DefaultAuthorizationProvider implements AuthorizationProvider, Init
     }
 
     protected String getRole(Policy policy, ApiRequest request) {
-        String assignedRole = policy.getOption(Policy.ASSIGNED_ROLE);
-        if (assignedRole != null) {
-            return assignedRole;
-        }
-        if (policy.isOption(Policy.ROLE_OPTION)) {
-            Object role = request.getOptions().get("_role");
-            if (role != null && schemaFactories.containsKey(role)) {
-                return role.toString();
-            }
-        }
-
-        return null;
+        return policy.getOption(Policy.ASSIGNED_ROLE);
     }
 
     public static SubscriptionStyle getSubscriptionStyle(Account account, AchaiusPolicyOptionsFactory optionsFactory) {

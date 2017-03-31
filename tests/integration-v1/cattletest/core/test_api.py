@@ -313,28 +313,6 @@ def test_map_user_not_auth_map(context):
     assert len(c.hosts()) == 1
 
 
-def test_role_option(admin_user_client, client, random_str, context):
-    c = admin_user_client.create_api_key(name=random_str,
-                                         accountId=context.account.id)
-    c = admin_user_client.wait_success(c)
-
-    assert c.state == 'active'
-
-    creds = admin_user_client.list_credential(name=random_str)
-    assert len(creds) == 1
-
-    creds = admin_user_client.list_credential(name=random_str,
-                                              _role='user')
-    assert len(creds) == 0
-
-    creds = client.list_credential(name=random_str, _role='superadmin')
-    assert len(creds) == 0
-
-    schemas = [x for x in admin_user_client.list_schema(_role='project')
-               if x.id == 'externalHandler']
-    assert len(schemas) == 0
-
-
 def test_query_length(admin_user_client):
     big = 'a' * 8192
     admin_user_client.list_account(name=big)
