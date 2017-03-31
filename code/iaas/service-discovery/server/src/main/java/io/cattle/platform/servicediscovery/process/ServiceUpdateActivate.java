@@ -11,12 +11,16 @@ import io.cattle.platform.engine.process.ProcessInstance;
 import io.cattle.platform.engine.process.ProcessState;
 import io.cattle.platform.iaas.api.auditing.AuditService;
 import io.cattle.platform.object.resource.ResourceMonitor;
+import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.process.common.handler.AbstractObjectProcessHandler;
 import io.cattle.platform.servicediscovery.api.service.ServiceDataManager;
 import io.cattle.platform.servicediscovery.service.DeploymentManager;
 import io.cattle.platform.servicediscovery.service.ServiceDiscoveryService;
 import io.cattle.platform.servicediscovery.upgrade.UpgradeManager;
 import io.github.ibuildthecloud.gdapi.id.IdFormatter;
+
+import java.util.Collections;
+import java.util.List;
 
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -67,6 +71,7 @@ public class ServiceUpdateActivate extends AbstractObjectProcessHandler {
         activity.run(service, process.getName(), getMessage(process.getName()), new Runnable() {
             @Override
             public void run() {
+                waitForConsumedServicesActivate(state);
                 if (ServiceConstants.SERVICE_LIKE.contains(service.getKind())) {
                     boolean sleep = service.getIsUpgrade();
                     if (service.getState().equalsIgnoreCase(CommonStatesConstants.UPDATING_ACTIVE)) {
@@ -94,6 +99,18 @@ public class ServiceUpdateActivate extends AbstractObjectProcessHandler {
             return "Activating service";
         default:
             return "Updating service";
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    protected void waitForConsumedServicesActivate(ProcessState state) {
+        List<Integer> consumedServicesIds = DataAccessor.fromMap(state.getData())
+                .withKey(ServiceConstants.FIELD_WAIT_FOR_CONSUMED_SERVICES_IDS)
+                .withDefault(Collections.EMPTY_LIST).as(List.class);
+
+        for (Integer consumedServiceId : consumedServicesIds) {
+            Service consumedService = objectManager.loadResource(Service.class, consumedServiceId.longValue());
+            resourceMonitor.waitForState(consumedService, CommonStatesConstants.ACTIVE);
         }
     }
 }

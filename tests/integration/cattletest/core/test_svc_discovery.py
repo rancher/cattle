@@ -3482,7 +3482,8 @@ def test_error_state(new_context):
 
     assert c1 is not None
 
-    wait_for(lambda: client.reload(c1).state == 'error')
+    wait_for(lambda: client.reload(c1).state == 'error' or
+             client.reload(c1).state == 'removed')
     du1 = c1.deploymentUnitUuid
     name = stack.name + "_foo_1_" + du1
     volumes = client.list_volume(name_like=name + "_%")
