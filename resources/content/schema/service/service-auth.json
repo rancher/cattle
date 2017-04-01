@@ -5,6 +5,7 @@
         "physicalHost": "r",
         "physicalHost.driver": "r",
         "physicalHost.externalId": "r",
+        "physicalHost.name": "cr",
         "dynamicSchema": "crd",
         "dynamicSchema.accountId": "cr",
         "dynamicSchema.definition": "cr",

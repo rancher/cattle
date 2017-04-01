@@ -430,6 +430,7 @@
 
         "physicalHost": "r",
         "physicalHost.externalId": "r",
+        "physicalHost.name": "cr",
         "physicalHost.driver": "r",
 
         "port" : "r",
