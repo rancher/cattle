@@ -70,6 +70,7 @@ public class ServiceUpdateActivate extends AbstractObjectProcessHandler {
         activity.run(service, process.getName(), getMessage(process.getName()), new Runnable() {
             @Override
             public void run() {
+                waitForConsumedServicesActivate(state);
                 deploymentMgr.activate(service);
             }
         });
