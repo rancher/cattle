@@ -484,30 +484,47 @@ public class InstanceDaoImpl extends AbstractJooqDao implements InstanceDao {
 
     @Override
     public void cleanupRevisions(Instance instance) {
-        List<InstanceRevision> revisions = objectManager.find(InstanceRevision.class, INSTANCE_REVISION.INSTANCE_ID,
-                instance.getId(),
-                INSTANCE_REVISION.REMOVED, null);
+
         Instance replacement = objectManager.findAny(Instance.class, INSTANCE.REMOVED, null, INSTANCE.REPLACEMENT_FOR,
                 instance.getId());
 
-        for (InstanceRevision revision : revisions) {
-            if (replacement == null) {
-                removeInstanceRevision(revision);
-            } else {
-                Map<String, Object> params = new HashMap<>();
-                params.put("instanceId", replacement.getId());
-                objectManager.setFields(revision, params);
-            }
+        if (replacement != null) {
+            migrateInstanceRevision(instance, replacement);
+        } else {
+            removeInstanceRevisions(instance);
         }
-        objectManager.setFields(instance, InstanceConstants.FIELD_REVISION_ID, (Object)null);
     }
 
-    public void removeInstanceRevision(InstanceRevision revision) {
-        Map<String, Object> params = new HashMap<>();
-        params.put(ObjectMetaDataManager.REMOVED_FIELD, new Date());
-        params.put(ObjectMetaDataManager.REMOVE_TIME_FIELD, new Date());
-        params.put(ObjectMetaDataManager.STATE_FIELD, CommonStatesConstants.REMOVED);
-        objectManager.setFields(revision, params);
+    public void migrateInstanceRevision(Instance instance, Instance replacement) {
+        List<InstanceRevision> revisions = objectManager.find(InstanceRevision.class, INSTANCE_REVISION.INSTANCE_ID,
+                instance.getId(),
+                INSTANCE_REVISION.REMOVED, null);
+        for (InstanceRevision revision : revisions) {
+            Map<String, Object> params = new HashMap<>();
+            params.put("instanceId", replacement.getId());
+            objectManager.setFields(revision, params);
+        }
+        objectManager.setFields(instance, InstanceConstants.FIELD_REVISION_ID, (Object) null);
+    }
+
+    public void removeInstanceRevisions(Instance instance) {
+        List<InstanceRevision> revisions = objectManager.find(InstanceRevision.class, INSTANCE_REVISION.INSTANCE_ID,
+                instance.getId(),
+                INSTANCE_REVISION.REMOVED, null);
+        for (InstanceRevision revision : revisions) {
+            if (revision.getId().equals(instance.getPreviousRevisionId())
+                    || revision.getId().equals(instance.getRevisionId())) {
+                // only mark as removed; they will be delete as a part of
+                // instance record removal
+                Map<String, Object> params = new HashMap<>();
+                params.put(ObjectMetaDataManager.REMOVED_FIELD, new Date());
+                params.put(ObjectMetaDataManager.REMOVE_TIME_FIELD, new Date());
+                params.put(ObjectMetaDataManager.STATE_FIELD, CommonStatesConstants.REMOVED);
+                objectManager.setFields(revision, params);
+            } else {
+                objectManager.delete(revision);
+            }
+        }
     }
 
     @Override
