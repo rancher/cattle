@@ -603,14 +603,28 @@ public class ServiceDaoImpl extends AbstractJooqDao implements ServiceDao {
     @Override
     public void cleanupServiceRevisions(Service service) {
         List<ServiceRevision> revisions = objectManager.find(ServiceRevision.class, SERVICE_REVISION.SERVICE_ID,
-                service.getId(),
-                SERVICE_REVISION.REMOVED, null);
+                service.getId());
         for (ServiceRevision revision : revisions) {
-            Map<String, Object> params = new HashMap<>();
-            params.put(ObjectMetaDataManager.REMOVED_FIELD, new Date());
-            params.put(ObjectMetaDataManager.REMOVE_TIME_FIELD, new Date());
-            params.put(ObjectMetaDataManager.STATE_FIELD, CommonStatesConstants.REMOVED);
-            objectManager.setFields(revision, params);
+            if (revision.getId().equals(service.getPreviousRevisionId())
+                    || revision.getId().equals(service.getRevisionId())) {
+                // only mark as removed; they will be delete as a part of
+                // service record removal
+                Map<String, Object> params = new HashMap<>();
+                params.put(ObjectMetaDataManager.REMOVED_FIELD, new Date());
+                params.put(ObjectMetaDataManager.REMOVE_TIME_FIELD, new Date());
+                params.put(ObjectMetaDataManager.STATE_FIELD, CommonStatesConstants.REMOVED);
+                objectManager.setFields(revision, params);
+            } else {
+                List<DeploymentUnit> units = objectManager.find(DeploymentUnit.class, DEPLOYMENT_UNIT.SERVICE_ID,
+                        service.getId(),
+                        DEPLOYMENT_UNIT.REVISION_ID, revision.getId());
+                for (DeploymentUnit unit : units) {
+                    objectManager.setFields(unit, InstanceConstants.FIELD_REVISION_ID,
+                            (Object) null);
+                }
+                objectManager.delete(revision);
+            }
+
         }
     }
 
