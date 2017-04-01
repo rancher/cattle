@@ -21,6 +21,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
@@ -79,8 +80,8 @@ public class AuditServiceImpl implements AuditService{
             return;
         }
         Map<String, Object> data = new HashMap<>();
-        putInAsString(data, "requestObject", "Failed to convert request object to json.", request.getRequestObject());
-        putInAsString(data, "responseObject", "Failed to convert response object to json.", request.getResponseObject());
+        putInAsString(data, request.getType(), "requestObject", "Failed to convert request object to json.", request.getRequestObject());
+        putInAsString(data, request.getType(), "responseObject", "Failed to convert response object to json.", request.getResponseObject());
         data.put("responseCode", request.getResponseCode());
         Identity user = null;
         for (Identity identity: policy.getIdentities()){
@@ -147,10 +148,25 @@ public class AuditServiceImpl implements AuditService{
         }
     }
 
-    private void putInAsString(Map<String, Object> data, String fieldForObject, String errMsg, Object objectToPlace) {
+    private void putInAsString(Map<String, Object> data, String type, String fieldForObject, String errMsg, Object objectToPlace) {
+        @SuppressWarnings("unchecked")
+        Map<String, Object> obj = jsonMapper.convertValue(objectToPlace, Map.class);
+
+        if ("secret".equals(type)) {
+            obj.remove("value");
+        }
+
+        obj.remove("secretValue");
+        Iterator<Map.Entry<String, Object>> iter = obj.entrySet().iterator();
+        while (iter.hasNext()) {
+            if (iter.next().getKey().endsWith("Config")) {
+                iter.remove();
+            }
+        }
+
         ByteArrayOutputStream os = new ByteArrayOutputStream();
         try {
-            jsonMapper.writeValue(os, objectToPlace);
+            jsonMapper.writeValue(os, obj);
             data.put(fieldForObject, os.toString());
         } catch (IOException e) {
             log.error("Failed to log [{}]", errMsg, e);
