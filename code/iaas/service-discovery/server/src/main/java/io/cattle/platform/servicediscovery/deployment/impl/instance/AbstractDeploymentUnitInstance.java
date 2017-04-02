@@ -105,23 +105,58 @@ public abstract class AbstractDeploymentUnitInstance implements DeploymentUnitIn
     }
 
     @Override
-    public DeploymentUnitInstance waitForStart(boolean isDependee) {
+    public void waitForStart(boolean isDependee) {
         if (this.isStarted(isDependee)) {
-            return this;
+            return;
         }
         this.waitForAllocate();
         instance = context.resourceMonitor.waitForNotTransitioning(instance);
         if (!((startOnFailure && !needRestartOnFailure()) || (InstanceConstants.STATE_RUNNING.equals(instance
                 .getState())))) {
-            String error = TransitioningUtils.getTransitioningError(instance);
-            String message = String.format("Expected state running but got %s", instance.getState());
-            if (org.apache.commons.lang3.StringUtils.isNotBlank(error)) {
-                message = message + ": " + error;
-            }
+            String message = getErrorMessage(String.format("Expected state running but got %s",
+                    instance.getState()));
             throw new InstanceException(message, instance);
         }
+    }
 
-        return this;
+    public String getErrorMessage(String message) {
+        String error = TransitioningUtils.getTransitioningError(instance);
+        if (org.apache.commons.lang3.StringUtils.isNotBlank(error)) {
+            message = message + ": " + error;
+        }
+        return message;
+    }
+
+    @Override
+    public void waitForStop() {
+        instance = context.resourceMonitor.waitForNotTransitioning(instance);
+        if (!InstanceConstants.STATE_STOPPED.equals(instance
+                .getState())) {
+            String message = getErrorMessage(String.format("Expected state stopped but got %s",
+                    instance.getState()));
+            throw new InstanceException(message, instance);
+        }
+    }
+
+    @Override
+    public void waitForHealthy() {
+        context.resourceMonitor.waitFor(this.instance, new ResourcePredicate<Instance>() {
+            @Override
+            public boolean evaluate(Instance obj) {
+                if (obj.getHealthState() == null) {
+                    return true;
+                }
+                // only evaluate against init state here
+                // unhealthy unit determination is done by service reconcile code
+                // and cleanup will be driven by cleanup(boolean) flag
+                return !HealthcheckConstants.isInit(obj.getHealthState());
+            }
+
+            @Override
+            public String getMessage() {
+                return "healthy";
+            }
+        });
     }
 
     @Override
@@ -183,13 +218,11 @@ public abstract class AbstractDeploymentUnitInstance implements DeploymentUnitIn
             if (instance.getHealthState() == null) {
                 return false;
             }
-            boolean unhealthyState = instance.getHealthState().equalsIgnoreCase(
-                    HealthcheckConstants.HEALTH_STATE_UNHEALTHY) || instance.getHealthState().equalsIgnoreCase(
-                    HealthcheckConstants.HEALTH_STATE_UPDATING_UNHEALTHY);
-            return unhealthyState;
+            return HealthcheckConstants.isUnhealthy(instance.getHealthState());
         }
         return false;
     }
+
 
     @Override
     public String getLaunchConfigName() {
@@ -234,12 +267,6 @@ public abstract class AbstractDeploymentUnitInstance implements DeploymentUnitIn
             throw new ServiceInstanceAllocateException("Failed to allocate instance [" + key(instance) + "]", ex,
                     this.instance);
         }
-    }
-
-    @Override
-    public boolean isHealthCheckInitializing() {
-        return instance != null && instance.getHealthState() != null
-                && HealthcheckConstants.isInit(instance.getHealthState());
     }
 
     protected void generateAuditLog(AuditEventType eventType, String description, String level) {
@@ -296,8 +323,9 @@ public abstract class AbstractDeploymentUnitInstance implements DeploymentUnitIn
     public static void removeInstance(Instance instance, ObjectProcessManager objectProcessManager) {
         HashMap<String, Object> data = new HashMap<String, Object>();
         data.put(ServiceConstants.PROCESS_DATA_SERVICE_RECONCILE, true);
-        if (!(instance.getState().equals(CommonStatesConstants.REMOVED) || instance.getState().equals(
-                CommonStatesConstants.REMOVING))) {
+        List<String> ignoreStates = Arrays.asList(CommonStatesConstants.REMOVED, CommonStatesConstants.REMOVING,
+                CommonStatesConstants.PURGED, CommonStatesConstants.PURGING);
+        if (!ignoreStates.contains(instance.getState())) {
             try {
                 objectProcessManager.scheduleStandardProcessAsync(StandardProcess.REMOVE, instance,
                         data);
@@ -307,5 +335,10 @@ public abstract class AbstractDeploymentUnitInstance implements DeploymentUnitIn
                                 InstanceConstants.PROCESS_STOP, InstanceConstants.PROCESS_REMOVE));
             }
         }
+    }
+
+    @Override
+    public boolean isHealthy() {
+        return HealthcheckConstants.isHealthy(this.instance.getHealthState());
     }
 }

@@ -198,20 +198,8 @@ def test_activate_single_service(client, context, super_client):
     assert svc.launchConfig.requestedHostId == host.id
 
     # activate the service and validate that parameters were set for instance
-    service = client.wait_success(svc.activate())
-    assert service.state == "active"
-    instance_service_map = client \
-        .list_serviceExposeMap(serviceId=service.id)
-
-    assert len(instance_service_map) == 1
-    wait_for_condition(
-        client, instance_service_map[0], _resource_is_active,
-        lambda x: 'State is: ' + x.state)
-
-    instances = client. \
-        list_container(name=env.name + "-" + service.name + "-" + "1")
-    assert len(instances) == 1
-    container = instances[0]
+    svc.activate()
+    container = _validate_compose_instance_start(client, svc, env, "1")
     assert container.imageUuid == image_uuid
     assert container.command == ['sleep', '42']
     assert len(container.instanceLinks()) == 1

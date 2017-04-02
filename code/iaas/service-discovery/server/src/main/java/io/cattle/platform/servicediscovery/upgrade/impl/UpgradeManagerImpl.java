@@ -1,25 +1,18 @@
 package io.cattle.platform.servicediscovery.upgrade.impl;
 
-import static io.cattle.platform.core.model.tables.ServiceExposeMapTable.*;
-import io.cattle.platform.activity.ActivityLog;
 import io.cattle.platform.activity.ActivityService;
-import io.cattle.platform.core.addon.InServiceUpgradeStrategy;
 import io.cattle.platform.core.addon.RollingRestartStrategy;
 import io.cattle.platform.core.addon.ServiceRestart;
-import io.cattle.platform.core.addon.ServiceUpgradeStrategy;
 import io.cattle.platform.core.constants.CommonStatesConstants;
-import io.cattle.platform.core.constants.HealthcheckConstants;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.constants.ServiceConstants;
 import io.cattle.platform.core.dao.InstanceDao;
-import io.cattle.platform.core.dao.ServiceConsumeMapDao;
 import io.cattle.platform.core.dao.ServiceDao;
 import io.cattle.platform.core.dao.ServiceExposeMapDao;
 import io.cattle.platform.core.model.DeploymentUnit;
 import io.cattle.platform.core.model.GenericObject;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.Service;
-import io.cattle.platform.core.model.ServiceExposeMap;
 import io.cattle.platform.core.util.ServiceUtil;
 import io.cattle.platform.engine.process.ExitReason;
 import io.cattle.platform.engine.process.impl.ProcessCancelException;
@@ -31,17 +24,16 @@ import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.process.ObjectProcessManager;
 import io.cattle.platform.object.process.StandardProcess;
 import io.cattle.platform.object.resource.ResourceMonitor;
-import io.cattle.platform.object.resource.ResourcePredicate;
 import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.process.common.util.ProcessUtils;
 import io.cattle.platform.servicediscovery.deployment.DeploymentUnitManager;
 import io.cattle.platform.servicediscovery.deployment.impl.lock.ServiceLock;
 import io.cattle.platform.servicediscovery.service.DeploymentManager;
+import io.cattle.platform.servicediscovery.service.ServiceDiscoveryService;
 import io.cattle.platform.servicediscovery.upgrade.UpgradeManager;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -53,13 +45,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 
 public class UpgradeManagerImpl implements UpgradeManager {
-
-    private enum Type {
-        ToUpgrade,
-        ToCleanup,
-        UpgradedUnmanaged,
-    }
-
     @Inject
     ServiceExposeMapDao exposeMapDao;
     @Inject
@@ -83,45 +68,19 @@ public class UpgradeManagerImpl implements UpgradeManager {
     @Inject
     ResourceMonitor resourceMtr;
     @Inject
-    ServiceConsumeMapDao consumeMapDao;
-    @Inject
     InstanceDao instanceDao;
+    @Inject
+    ServiceDiscoveryService sdService;
 
     private static final long SLEEP = 1000L;
 
-    protected void resetUpgrade(ServiceExposeMap map, boolean upgrade) {
-        if (upgrade) {
-            map.setUpgrade(true);
-            map.setManaged(false);
-            map.setUpgradeTime(new Date());
-        } else {
-            map.setUpgrade(false);
-            map.setManaged(true);
-        }
-        objectManager.persist(map);
-    }
-
-    public boolean doInServiceUpgrade(Service service, InServiceUpgradeStrategy strategy, boolean isUpgrade, String currentProcess) {
-        long batchSize = strategy.getBatchSize();
-        boolean startFirst = strategy.getStartFirst();
-        Map<String, DeploymentUnit> allUnits = serviceDao.getDeploymentUnits(service);
-
-        Map<String, Pair<DeploymentUnit, List<Instance>>> toUpgrade = getDeploymentUnits(
-                service,
-                Type.ToUpgrade, strategy, allUnits);
-
-        Map<String, Pair<DeploymentUnit, List<Instance>>> upgradedUnmanaged = getDeploymentUnits(
-                service,
-                Type.UpgradedUnmanaged, strategy, allUnits);
-
-        Map<String, Pair<DeploymentUnit, List<Instance>>> toCleanup = getDeploymentUnits(
-                service,
-                Type.ToCleanup, strategy, allUnits);
+    public boolean doInServiceUpgrade(Service service, long batchSize, boolean isUpgrade) {
+        List<DeploymentUnit> upgraded = serviceDao.getDeploymentUnitsForRevision(service, true);
+        List<DeploymentUnit> toUpgrade = serviceDao.getDeploymentUnitsForRevision(service, false);
 
         // upgrade deployment units
-        upgradeDeploymentUnits(service, toUpgrade, upgradedUnmanaged,
-                toCleanup,
-                batchSize, startFirst, isUpgrade, currentProcess, strategy);
+        upgradeDeploymentUnits(service, toUpgrade, upgraded,
+                batchSize, isUpgrade);
 
         // check if empty
         if (toUpgrade.isEmpty()) {
@@ -131,144 +90,40 @@ public class UpgradeManagerImpl implements UpgradeManager {
     }
 
     protected void upgradeDeploymentUnits(final Service service,
-            final Map<String, Pair<DeploymentUnit, List<Instance>>> toUpgrade,
-            final Map<String, Pair<DeploymentUnit, List<Instance>>> upgradedUnmanaged,
-            final Map<String, Pair<DeploymentUnit, List<Instance>>> toCleanup,
+            final List<DeploymentUnit> toUpgrade,
+            final List<DeploymentUnit> upgraded,
             final long batchSize,
-            final boolean startFirst, final boolean isUpgrade, final String currentProcess,
-            final InServiceUpgradeStrategy strategy) {
+            final boolean isUpgrade) {
         // hold the lock so service.reconcile triggered by config.update
         // (in turn triggered by instance.remove) won't interfere
         lockManager.lock(new ServiceLock(service), new LockCallbackNoReturn() {
             @Override
             public void doWithLockNoResult() {
-                stopInstances(service, toCleanup);
                 // wait for healthy only for upgrade
                 // should be skipped for rollback
                 if (isUpgrade) {
-                    reconcileUnits(toCleanup);
-                    waitForHealthyState(service, currentProcess, strategy);
+                    reconcileUnits(service, upgraded);
                 }
 
                 // mark instances for upgrade by moving them to toCleanup list
-                markForUpgrade(batchSize, toUpgrade, upgradedUnmanaged, toCleanup);
-
-                if (startFirst) {
-                    // 1. reconcile to start new instances
-                    activate(service, toCleanup);
-                    if (isUpgrade) {
-                        waitForHealthyState(service, currentProcess, strategy);
-                    }
-                    // 2. stop instances
-                    stopInstances(service, toCleanup);
-                } else {
-                    // reverse order
-                    // 1. stop instances
-                    stopInstances(service, toCleanup);
-                    // 2. wait for reconcile (new instances will be started along)
-                    activate(service, toCleanup);
-                }
+                markForUpgrade(service, batchSize, toUpgrade, upgraded);
+                reconcileUnits(service, upgraded);
             }
         });
     }
 
-    protected void markForRollback(String deploymentUnitUUIDToRollback,
-            Map<String, Pair<DeploymentUnit, List<Instance>>> upgradedUnmanaged) {
-        Pair<DeploymentUnit, List<Instance>> instances = upgradedUnmanaged
-                .get(deploymentUnitUUIDToRollback);
-        if (instances != null) {
-            for (Instance instance : instances.getRight()) {
-                ServiceExposeMap map = objectManager.findAny(ServiceExposeMap.class,
-                        SERVICE_EXPOSE_MAP.INSTANCE_ID, instance.getId());
-                resetUpgrade(map, false);
-            }
-        }
-    }
-
-    protected void markForUpgrade(final long batchSize, Map<String, Pair<DeploymentUnit, List<Instance>>> toUpgrade,
-            Map<String, Pair<DeploymentUnit, List<Instance>>> upgradedUnmanaged,
-            Map<String, Pair<DeploymentUnit, List<Instance>>> toCleanup) {
+    protected void markForUpgrade(Service service, long batchSize, List<DeploymentUnit> toUpgrade,
+            List<DeploymentUnit> upgraded) {
         long i = 0;
-        Iterator<Map.Entry<String, Pair<DeploymentUnit, List<Instance>>>> it = toUpgrade
-                .entrySet().iterator();
+        Iterator<DeploymentUnit> it = toUpgrade.iterator();
         while (it.hasNext() && i < batchSize) {
-            Map.Entry<String, Pair<DeploymentUnit, List<Instance>>> instances = it.next();
-            String deploymentUnitUUID = instances.getKey();
-            markForRollback(deploymentUnitUUID, upgradedUnmanaged);
-            for (Instance instance : instances.getValue().getRight()) {
-                activityService.instance(instance, "mark.upgrade", "Mark for upgrade", ActivityLog.INFO);
-                ServiceExposeMap map = objectManager.findAny(ServiceExposeMap.class,
-                        SERVICE_EXPOSE_MAP.INSTANCE_ID, instance.getId());
-                resetUpgrade(map, true);
-            }
-
-            List<Instance> instancesToCleanup = new ArrayList<>();
-                instancesToCleanup.addAll(instances.getValue().getRight());
-            if (toCleanup.get(deploymentUnitUUID) != null) {
-                instancesToCleanup.addAll(toCleanup.get(deploymentUnitUUID).getRight());
-            }
-
-            toCleanup.put(deploymentUnitUUID, Pair.of(instances.getValue().getLeft(), instancesToCleanup));
+            DeploymentUnit unit = it.next();
+            objectManager.setFields(objectManager.reload(unit), InstanceConstants.FIELD_REVISION_ID,
+                    service.getRevisionId());
+            upgraded.add(unit);
             it.remove();
             i++;
         }
-    }
-
-    protected Map<String, Pair<DeploymentUnit, List<Instance>>> getDeploymentUnits(Service service, Type type, InServiceUpgradeStrategy strategy,
-            Map<String, DeploymentUnit> allUnits) {
-        Map<String, Pair<String, Map<String, Object>>> preUpgradeLaunchConfigNamesToVersion = strategy
-                .getNameToVersionToConfig(service.getName(), true);
-        Map<String, Pair<String, Map<String, Object>>> postUpgradeLaunchConfigNamesToVersion = strategy.getNameToVersionToConfig(service.getName(), false);
-        Map<String, Pair<DeploymentUnit, List<Instance>>> deploymentUnitInstances = new HashMap<>();
-        // iterate over pre-upgraded state
-        // get desired version from post upgrade state
-        if (type == Type.UpgradedUnmanaged) {
-            for (String launchConfigName : postUpgradeLaunchConfigNamesToVersion.keySet()) {
-                String toVersion = postUpgradeLaunchConfigNamesToVersion.get(launchConfigName).getLeft();
-                List<? extends Instance> instances = exposeMapDao.getUpgradedUnmanagedInstances(service,
-                        launchConfigName, toVersion);
-                for (Instance instance : instances) {
-                    addInstanceToDeploymentUnits(deploymentUnitInstances, instance, allUnits);
-                }
-            }
-        } else {
-            if (type == Type.ToCleanup) {
-                // add deployment unit even if launchConfig doesn't have any instances
-                for (String duUUID : allUnits.keySet()) {
-                    List<Instance> emptyInstances = new ArrayList<>();
-                    deploymentUnitInstances.put(duUUID,
-                            Pair.of(allUnits.get(duUUID), emptyInstances));
-                }
-            }
-            for (String launchConfigName : preUpgradeLaunchConfigNamesToVersion.keySet()) {
-                String toVersion = "undefined";
-                Pair<String, Map<String, Object>> post = postUpgradeLaunchConfigNamesToVersion.get(launchConfigName);
-                if (post != null) {
-                    toVersion = post.getLeft();
-                }
-                List<Instance> instances = new ArrayList<>();
-                if (type == Type.ToUpgrade) {
-                    instances.addAll(exposeMapDao.getInstancesToUpgrade(service, launchConfigName, toVersion));
-                } else if (type == Type.ToCleanup) {
-                    instances.addAll(exposeMapDao.getInstancesToCleanup(service, launchConfigName, toVersion));
-                }
-                for (Instance instance : instances) {
-                    addInstanceToDeploymentUnits(deploymentUnitInstances, instance, allUnits);
-                }
-            }
-        }
-
-        return deploymentUnitInstances;
-    }
-
-    protected Map<String, Pair<DeploymentUnit, List<Instance>>> formDeploymentUnitsForRestart(Service service) {
-        Map<String, DeploymentUnit> allUnits = serviceDao.getDeploymentUnits(service);
-        Map<String, Pair<DeploymentUnit, List<Instance>>> deploymentUnitInstances = new HashMap<>();
-        List<? extends Instance> instances = getServiceInstancesToRestart(service);
-        for (Instance instance : instances) {
-            addInstanceToDeploymentUnits(deploymentUnitInstances, instance, allUnits);
-        }
-        return deploymentUnitInstances;
     }
 
     protected List<? extends Instance> getServiceInstancesToRestart(Service service) {
@@ -308,21 +163,15 @@ public class UpgradeManagerImpl implements UpgradeManager {
     }
 
     @Override
-    public void upgrade(Service service, io.cattle.platform.core.addon.InServiceUpgradeStrategy strategy,
-            String currentProcess, boolean sleep, boolean prepullImages) {
-        while (!doUpgrade(service, strategy, currentProcess, prepullImages)) {
+    public void upgrade(Service service, String currentProcess, boolean sleep,
+            boolean prepullImages) {
+        Pair<Long, Long> batchAndInterval = ServiceUtil.getBatchSizeAndInterval(service);
+        while (!doUpgrade(service, batchAndInterval.getLeft(), prepullImages)) {
             if (sleep) {
-                sleep(service, strategy, currentProcess);
+                sleep(service, batchAndInterval.getRight(), currentProcess);
             }
         }
-    }
-
-    @Override
-    public void rollback(Service service, InServiceUpgradeStrategy strategy) {
-        while (!doInServiceUpgrade(service, strategy, false,
-                ServiceConstants.STATE_ROLLINGBACK)) {
-            sleep(service, strategy, ServiceConstants.STATE_ROLLINGBACK);
-        }
+        sdService.resetUpgradeFlag(service);
     }
 
     protected void prepullServiceImages(Service service) {
@@ -347,19 +196,16 @@ public class UpgradeManagerImpl implements UpgradeManager {
         }
     }
 
-    public boolean doUpgrade(Service service, InServiceUpgradeStrategy strategy,
-            String currentProcess, boolean prepullImages) {
+    public boolean doUpgrade(Service service, long batchSize, boolean prepullImages) {
         if (prepullImages) {
             prepullServiceImages(service);
         }
 
-        return doInServiceUpgrade(service, strategy, true, currentProcess);
+        return doInServiceUpgrade(service, batchSize, true);
     }
 
 
-    protected void sleep(final Service service, ServiceUpgradeStrategy strategy, final String currentProcess) {
-        final long interval = strategy.getIntervalMillis();
-
+    protected void sleep(final Service service, long interval, final String currentProcess) {
         activityService.run(service, "sleep", String.format("Sleeping for %d seconds", interval/1000), new Runnable() {
             @Override
             public void run() {
@@ -414,69 +260,6 @@ public class UpgradeManagerImpl implements UpgradeManager {
         objectManager.setFields(objectManager.reload(service), ServiceConstants.FIELD_FINISH_UPGRADE, false);
     }
 
-    protected void waitForHealthyState(final Service service, final String currentProcess,
-            final InServiceUpgradeStrategy strategy) {
-        activityService.run(service, "wait", "Waiting for all instances to be healthy", new Runnable() {
-            @Override
-            public void run() {
-                final List<String> healthyStates = Arrays.asList(HealthcheckConstants.HEALTH_STATE_HEALTHY,
-                        HealthcheckConstants.HEALTH_STATE_UPDATING_HEALTHY);
-                List<? extends Instance> instancesToCheck = getInstancesToCheckForHealth(service, strategy);
-                for (final Instance instance : instancesToCheck) {
-                    if (instance.getState().equalsIgnoreCase(InstanceConstants.STATE_RUNNING)) {
-                        resourceMntr.waitFor(instance,
-                                new ResourcePredicate<Instance>() {
-                                    @Override
-                                    public boolean evaluate(Instance obj) {
-                                        boolean healthy = instance.getHealthState() == null
-                                                || healthyStates.contains(obj.getHealthState());
-                                        if (!healthy) {
-                                            stateCheck(service, currentProcess);
-                                        }
-                                        return healthy;
-                                    }
-
-                                    @Override
-                                    public String getMessage() {
-                                        return "healthy";
-                                    }
-                                });
-                    }
-                }
-            }
-        });
-    }
-
-    private List<? extends Instance> getInstancesToCheckForHealth(Service service,
-            InServiceUpgradeStrategy strategy) {
-        if (strategy == null) {
-            return exposeMapDao.listServiceManagedInstances(service);
-        }
-
-        Map<String, String> lcToCurrentV = getLaunchConfigToCurrentVersion(service, strategy);
-        List<Instance> filtered = new ArrayList<>();
-        // only check upgraded instances for health
-        for (String lc : lcToCurrentV.keySet()) {
-            List<? extends Instance> instances = exposeMapDao.listServiceManagedInstances(service, lc);
-            for (Instance instance : instances) {
-                if (instance.getVersion() != null &&
-                        instance.getVersion().equalsIgnoreCase(lcToCurrentV.get(lc))) {
-                    filtered.add(instance);
-                }
-            }
-        }
-        return filtered;
-    }
-
-    private Map<String, String> getLaunchConfigToCurrentVersion(Service service, InServiceUpgradeStrategy strategy) {
-        Map<String, String> lcToV = new HashMap<>();
-        Map<String, Pair<String, Map<String, Object>>> vToC = strategy.getNameToVersionToConfig(service.getName(),
-                false);
-        for (String lc : vToC.keySet()) {
-            lcToV.put(lc, vToC.get(lc).getLeft());
-        }
-        return lcToV;
-    }
 
     public void cleanupUpgradedInstances(Service service) {
         List<? extends Instance> instances = exposeMapDao.getServiceInstancesSetForUpgrade(service.getId());
@@ -497,8 +280,18 @@ public class UpgradeManagerImpl implements UpgradeManager {
     public void restart(Service service, RollingRestartStrategy strategy) {
         Map<String, Pair<DeploymentUnit, List<Instance>>> toRestart = formDeploymentUnitsForRestart(service);
         while (!doRestart(service, strategy, toRestart)) {
-            sleep(service, strategy, ServiceConstants.STATE_RESTARTING);
+            sleep(service, strategy.getIntervalMillis(), ServiceConstants.STATE_RESTARTING);
         }
+    }
+
+    protected Map<String, Pair<DeploymentUnit, List<Instance>>> formDeploymentUnitsForRestart(Service service) {
+        Map<String, DeploymentUnit> allUnits = serviceDao.getDeploymentUnits(service);
+        Map<String, Pair<DeploymentUnit, List<Instance>>> deploymentUnitInstances = new HashMap<>();
+        List<? extends Instance> instances = getServiceInstancesToRestart(service);
+        for (Instance instance : instances) {
+            addInstanceToDeploymentUnits(deploymentUnitInstances, instance, allUnits);
+        }
+        return deploymentUnitInstances;
     }
 
     public boolean doRestart(Service service, RollingRestartStrategy strategy,
@@ -529,34 +322,30 @@ public class UpgradeManagerImpl implements UpgradeManager {
 
         // hold the lock so service.reconcile triggered by config.update
         // (in turn triggered by instance.remove) won't interfere
-
+        List<DeploymentUnit> toStop = new ArrayList<>();
+        for (Pair<DeploymentUnit, List<Instance>> i : deploymentUnitsToStop.values()) {
+            toStop.add(i.getLeft());
+        }
         lockManager.lock(new ServiceLock(service), new LockCallbackNoReturn() {
             @Override
             public void doWithLockNoResult() {
-                // 1. Wait for the service instances to become healthy
-                waitForHealthyState(service, ServiceConstants.STATE_RESTARTING, null);
                 // 2. stop instances
                 stopInstances(service, deploymentUnitsToStop);
                 // 3. wait for reconcile (instances will be restarted along)
-                activate(service, deploymentUnitsToStop);
+                reconcileUnits(service, toStop);
             }
         });
     }
 
-    protected void activate(final Service service, final Map<String, Pair<DeploymentUnit, List<Instance>>> unitsToReconcile) {
-        activityService.run(service, "starting", "Starting new instances", new Runnable() {
+    public void reconcileUnits(final Service service, final List<DeploymentUnit> unitsToReconcile) {
+        activityService.run(service, "reconciling", "Reconciling deployment units", new Runnable() {
             @Override
             public void run() {
-                reconcileUnits(unitsToReconcile);
+                for (DeploymentUnit toReconcile : unitsToReconcile) {
+                    duMgr.activate(toReconcile);
+                }
             }
         });
-
-    }
-
-    public void reconcileUnits(final Map<String, Pair<DeploymentUnit, List<Instance>>> unitsToReconcile) {
-        for (Pair<DeploymentUnit, List<Instance>> toReconcile : unitsToReconcile.values()) {
-            duMgr.activate(toReconcile.getLeft());
-        }
     }
 
     protected void stopInstances(Service service,

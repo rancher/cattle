@@ -28,7 +28,7 @@ public class SelectorServiceCreateValidationFilter extends AbstractDefaultResour
 
     @Override
     public String[] getTypes() {
-        return new String[] { "service" };
+        return new String[] { ServiceConstants.KIND_SERVICE, ServiceConstants.KIND_SELECTOR_SERVICE };
     }
 
     @Override

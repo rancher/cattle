@@ -15,10 +15,11 @@ def test_u_update_check_revision(client, super_client, context):
     revisions = client.list_serviceRevision(serviceId=svc.id)
     assert len(revisions) == 1
     rev1 = revisions[0]
-    assert rev1.configs[svc.name]['capAdd'] == ['AUDIT_CONTROL']
+    assert rev1.config['launchConfig']['capAdd'] == ['AUDIT_CONTROL']
     assert svc.revisionId == rev1.id
     p_v1 = svc.launchConfig.version
     assert p_v1 == '0'
+    c11 = _validate_compose_instance_start(client, svc, stack, "1")
 
     # update field that triggers upgrade
     launch_config = {'capAdd': 'AUDIT_WRITE'}
@@ -31,7 +32,7 @@ def test_u_update_check_revision(client, super_client, context):
     rev2_id = 0
     for rev in revisions:
         if rev.id != rev1.id:
-            assert rev.configs[svc.name]['capAdd'] == ['AUDIT_WRITE']
+            assert rev.config['launchConfig']['capAdd'] == ['AUDIT_WRITE']
             rev2_id = rev.id
             break
 
@@ -39,39 +40,26 @@ def test_u_update_check_revision(client, super_client, context):
     assert svc.revisionId == rev2_id
     p_v2 = svc.launchConfig.version
     assert p_v2 != p_v1
+    c12 = _validate_compose_instance_start(client, svc, stack, "1")
+    assert c12.id != c11.id
+    assert client.reload(c11).state != 'running'
 
-    # update ports, validate that the revision is still the same
+    # update ports, validate that the revision got created
+    # but the container is still the same
     launch_config = {'ports': '80:80/tcp'}
     svc = client.update(svc, launchConfig=launch_config)
     svc = client.wait_success(svc)
     revisions = client.list_serviceRevision(serviceId=svc.id)
-    assert len(revisions) == 2
-    assert svc.revisionId == rev2_id
+    assert len(revisions) == 3
     assert svc.launchConfig.ports == ['80:80/tcp']
     p_v3 = svc.launchConfig.version
     assert p_v3 == p_v2
+    c13 = _validate_compose_instance_start(client, svc, stack, "1")
+    assert c12.id == c13.id
+    rev3_id = svc.revisionId
 
     # add secondary launch config
     launch_config = {'imageUuid': image_uuid, 'name': 'sec'}
-    svc = client.update(svc, secondaryLaunchConfigs=[launch_config])
-    svc = client.wait_success(svc)
-    assert svc.previousRevisionId == rev2_id
-    revisions = client.list_serviceRevision(serviceId=svc.id)
-    assert len(revisions) == 3
-    rev3_id = 0
-    for rev in revisions:
-        if rev.id != rev2_id and rev.id != rev1.id:
-            assert rev.configs[svc.name]['capAdd'] == ['AUDIT_WRITE']
-            rev3_id = rev.id
-            break
-    assert rev3_id != 0
-    assert svc.revisionId == rev3_id
-    p_v3 = svc.launchConfig.version
-    assert p_v3 == p_v2
-    s_v1 = svc.secondaryLaunchConfigs[0].version
-
-    # update secondary launch config upgradable field
-    launch_config = {'capAdd': 'AUDIT_WRITE', 'name': 'sec'}
     svc = client.update(svc, secondaryLaunchConfigs=[launch_config])
     svc = client.wait_success(svc)
     assert svc.previousRevisionId == rev3_id
@@ -81,27 +69,19 @@ def test_u_update_check_revision(client, super_client, context):
     omit_set = set([rev1.id, rev2_id, rev3_id])
     for rev in revisions:
         if rev.id not in omit_set:
-            assert rev.configs[svc.name]['capAdd'] == ['AUDIT_WRITE']
+            assert rev.config['secondaryLaunchConfigs'] is not None
             rev4_id = rev.id
             break
     assert rev4_id != 0
     assert svc.revisionId == rev4_id
-    s_v2 = svc.secondaryLaunchConfigs[0].version
-    assert s_v1 != s_v2
+    p_v3 = svc.launchConfig.version
+    assert p_v3 == p_v2
+    s_v1 = svc.secondaryLaunchConfigs[0].version
+    c21 = _validate_compose_instance_start(client, svc, stack,
+                                           "1", "sec")
 
-    # update secondary launch config that doesn't trigger upgrade
-    launch_config = {'ports': '80:80/tcp', 'name': 'sec'}
-    svc = client.update(svc, secondaryLaunchConfigs=[launch_config])
-    svc = client.wait_success(svc)
-    revisions = client.list_serviceRevision(serviceId=svc.id)
-    assert len(revisions) == 4
-    assert svc.revisionId == rev4_id
-    assert svc.secondaryLaunchConfigs[0]['ports'] == ['80:80/tcp']
-    s_v3 = svc.secondaryLaunchConfigs[0].version
-    assert s_v3 == s_v2
-
-    # remove secondary launchConfig
-    launch_config = {'imageUuid': 'rancher/none', 'name': 'sec'}
+    # update secondary launch config upgradable field
+    launch_config = {'capAdd': 'AUDIT_WRITE', 'name': 'sec'}
     svc = client.update(svc, secondaryLaunchConfigs=[launch_config])
     svc = client.wait_success(svc)
     assert svc.previousRevisionId == rev4_id
@@ -111,10 +91,41 @@ def test_u_update_check_revision(client, super_client, context):
     omit_set = set([rev1.id, rev2_id, rev3_id, rev4_id])
     for rev in revisions:
         if rev.id not in omit_set:
+            sec = rev.config['secondaryLaunchConfigs'][0]
+            assert sec['capAdd'] == ['AUDIT_WRITE']
             rev5_id = rev.id
             break
     assert rev5_id != 0
     assert svc.revisionId == rev5_id
+    s_v2 = svc.secondaryLaunchConfigs[0].version
+    assert s_v1 != s_v2
+    c22 = _validate_compose_instance_start(client, svc, stack,
+                                           "1", "sec")
+    assert c21.id != c22.id
+    assert client.reload(c21).state != 'running'
+
+    # update secondary launch config that doesn't trigger upgrade
+    launch_config = {'ports': '80:80/tcp', 'name': 'sec'}
+    svc = client.update(svc, secondaryLaunchConfigs=[launch_config])
+    svc = client.wait_success(svc)
+    revisions = client.list_serviceRevision(serviceId=svc.id)
+    assert len(revisions) == 6
+    assert svc.previousRevisionId == rev5_id
+    assert svc.secondaryLaunchConfigs[0]['ports'] == ['80:80/tcp']
+    s_v3 = svc.secondaryLaunchConfigs[0].version
+    assert s_v3 == s_v2
+    c23 = _validate_compose_instance_start(client, svc, stack,
+                                           "1", "sec")
+    assert c23.id == c22.id
+    rev6_id = svc.revisionId
+
+    # remove secondary launchConfig
+    launch_config = {'imageUuid': 'rancher/none', 'name': 'sec'}
+    svc = client.update(svc, secondaryLaunchConfigs=[launch_config])
+    svc = client.wait_success(svc)
+    assert svc.previousRevisionId == rev6_id
+    revisions = client.list_serviceRevision(serviceId=svc.id)
+    assert len(revisions) == 7
     assert svc.secondaryLaunchConfigs == []
     assert super_client.reload(svc).isUpgrade == 0
 
@@ -970,7 +981,10 @@ def _validate_upgrade(super_client, svc, upgraded_svc,
             p_rev = super_client.by_id('serviceRevision',
                                        id=upgraded_svc.previousRevisionId)
             assert p_rev is not None
-            prev = p_rev.configs
+            prev[svc.name] = p_rev.config['launchConfig']
+            if p_rev.config['secondaryLaunchConfigs'] is not None:
+                for i in p_rev.config['secondaryLaunchConfigs']:
+                    prev[i['name']] = i
             break
 
     assert len(prev) > 0
@@ -1135,38 +1149,32 @@ def test_svc_update_scale(context, client, super_client):
     assert client.reload(c).state == 'running'
 
 
-def test_svc_update_fields_object(context, client, super_client):
+def test_svc_update_fields_object(context, client):
     env = client.create_stack(name=random_str())
     env = client.wait_success(env)
     assert env.state == 'active'
     image_uuid = context.image_uuid
-    health_check = {"name": "check1", "responseTimeout": 3,
-                    "interval": 4, "healthyThreshold": 5,
-                    "unhealthyThreshold": 6, "requestLine": "index.html",
-                    "port": 200}
+    restart_policy = {"name": "always", "maximumRetryCount": 4}
     lc = {'imageUuid': image_uuid,
           'prePullOnUpgrade': False,
-          'healthCheck': health_check}
-    svc = client.create_service(name='health-' + random_str(),
+          'restartPolicy': restart_policy}
+    svc = client.create_service(name='restart-' + random_str(),
                                 stackId=env.id,
                                 launchConfig=lc, )
     svc = client.wait_success(svc)
-    svc = client.wait_success(svc.activate())
+    svc = svc.activate()
     c = _validate_compose_instance_start(client, svc, env, "1")
+    svc = client.wait_success(svc)
 
     # update the field to the same value
     svc = client.update(svc, launchConfig=lc)
     svc = client.wait_success(svc)
-    assert client.reload(c).state == 'running'
+    c = _validate_compose_instance_start(client, svc, env, "1")
 
     # change the value
-    health_check = {"name": "check1", "responseTimeout": 3,
-                    "interval": 4, "healthyThreshold": 5,
-                    "unhealthyThreshold": 6, "requestLine": "index1.html",
-                    "port": 200}
     lc = {'imageUuid': image_uuid,
           'prePullOnUpgrade': False,
-          'healthCheck': health_check}
+          'restartPolicy': {"name": "always", "maximumRetryCount": 5}}
     svc = client.update(svc, launchConfig=lc)
     wait_for(lambda: client.reload(c).state == 'stopped')
     c = _validate_compose_instance_start(client, svc, env, "1")

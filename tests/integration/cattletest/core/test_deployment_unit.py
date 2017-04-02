@@ -333,6 +333,7 @@ def test_instance_upgrade(client, context):
     assert c2.imageUuid == config['imageUuid']
     assert c1.id != c2.id
     assert c1.deploymentUnitUuid == c2.deploymentUnitUuid
+    assert c2.previousRevisionId == c1.revisionId
     rs = client.list_instanceRevision(instanceId=c1.id)
     assert len(rs) == 0
     rs = client.list_instanceRevision(instanceId=c2.id)

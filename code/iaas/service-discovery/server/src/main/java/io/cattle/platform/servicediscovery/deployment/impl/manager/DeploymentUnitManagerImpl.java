@@ -5,13 +5,17 @@ import io.cattle.platform.configitem.events.ConfigUpdate;
 import io.cattle.platform.configitem.model.Client;
 import io.cattle.platform.configitem.request.ConfigUpdateRequest;
 import io.cattle.platform.configitem.version.ConfigItemStatusManager;
+import io.cattle.platform.core.constants.AgentConstants;
 import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.InstanceConstants;
+import io.cattle.platform.core.constants.ServiceConstants;
 import io.cattle.platform.core.dao.GenericResourceDao;
 import io.cattle.platform.core.dao.ServiceDao;
 import io.cattle.platform.core.dao.ServiceExposeMapDao;
 import io.cattle.platform.core.dao.VolumeDao;
+import io.cattle.platform.core.model.Agent;
 import io.cattle.platform.core.model.DeploymentUnit;
+import io.cattle.platform.core.model.Host;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.Service;
 import io.cattle.platform.core.util.ServiceUtil;
@@ -25,6 +29,7 @@ import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.process.ObjectProcessManager;
 import io.cattle.platform.object.process.StandardProcess;
 import io.cattle.platform.object.resource.ResourceMonitor;
+import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.process.common.util.ProcessUtils;
 import io.cattle.platform.servicediscovery.api.service.ServiceDataManager;
 import io.cattle.platform.servicediscovery.deployment.DeploymentUnitManager;
@@ -37,6 +42,7 @@ import io.github.ibuildthecloud.gdapi.id.IdFormatter;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.inject.Inject;
 
@@ -108,6 +114,11 @@ public class DeploymentUnitManagerImpl implements DeploymentUnitManager {
 
     protected void reconcile(final DeploymentUnit unit) {
         if (!isActiveUnit(unit)) {
+            return;
+        }
+        // do not reconcile global unit on reconnecting host
+        // as it is not going to be rescheduled to the new one
+        if (isGlobal(unit) && !isRunOnActiveHost(unit)) {
             return;
         }
         lockManager.lock(new DeploymentUnitLock(unit), new LockCallbackNoReturn() {
@@ -192,17 +203,7 @@ public class DeploymentUnitManagerImpl implements DeploymentUnitManager {
         reconcile(unit);
     }
 
-    @Override
-    public boolean isUnhealthy(DeploymentUnit unit) {
-        return getDeploymentUnit(unit).isUnhealthy();
-    }
-
-    @Override
-    public boolean isInit(DeploymentUnit unit) {
-        return getDeploymentUnit(unit).isHealthCheckInitializing();
-    }
-
-    io.cattle.platform.servicediscovery.deployment.DeploymentUnit getDeploymentUnit(DeploymentUnit unit) {
+    protected io.cattle.platform.servicediscovery.deployment.DeploymentUnit getDeploymentUnit(DeploymentUnit unit) {
         return DeploymentUnitFactory.fetchDeploymentUnit(unit, new DeploymentUnitManagerContext());
     }
 
@@ -219,5 +220,33 @@ public class DeploymentUnitManagerImpl implements DeploymentUnitManager {
                                 InstanceConstants.PROCESS_STOP, InstanceConstants.PROCESS_REMOVE));
             }
         }
+    }
+
+    @Override
+    public boolean isUnhealthy(DeploymentUnit unit) {
+        return getDeploymentUnit(unit).isUnhealthy();
+    }
+
+    protected boolean isRunOnActiveHost(DeploymentUnit unit) {
+        Host host = objectMgr.loadResource(Host.class,
+                Long.valueOf(DataAccessor.fieldMap(unit, InstanceConstants.FIELD_LABELS)
+                        .get(ServiceConstants.LABEL_SERVICE_REQUESTED_HOST_ID).toString()));
+        List<String> badStates = Arrays.asList(AgentConstants.STATE_RECONNECTING,
+                AgentConstants.STATE_DISCONNECTED, AgentConstants.STATE_DISCONNECTING);
+        if (host == null || badStates.contains(host.getState())) {
+            return false;
+        }
+        Agent agent = objectMgr.loadResource(Agent.class, host.getAgentId());
+
+        if (badStates.contains(agent.getState())) {
+            return false;
+        }
+        return true;
+    }
+
+    @Override
+    public boolean isGlobal(DeploymentUnit unit) {
+        Map<String, Object> unitLabels = DataAccessor.fieldMap(unit, InstanceConstants.FIELD_LABELS);
+        return unitLabels.containsKey(ServiceConstants.LABEL_SERVICE_REQUESTED_HOST_ID);
     }
 }

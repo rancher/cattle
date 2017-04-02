@@ -28,9 +28,11 @@ import io.cattle.platform.servicediscovery.api.service.impl.ServiceDataManagerIm
 import io.cattle.platform.servicediscovery.deployment.DeploymentUnitInstance;
 import io.cattle.platform.servicediscovery.deployment.impl.instance.ServiceDeploymentUnitInstance;
 import io.cattle.platform.servicediscovery.deployment.impl.manager.DeploymentUnitManagerImpl.DeploymentUnitManagerContext;
+import io.cattle.platform.util.exception.DeploymentUnitReconcileException;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -58,7 +60,7 @@ public class ServiceDeploymentUnit extends AbstractDeploymentUnit {
                 unit.getServiceIndex());
 
         // allocate ip address if not set
-        if (DataAccessor.fieldBool(service, ServiceConstants.FIELD_SERVICE_RETAIN_IP)) {
+        if (DataAccessor.fieldBool(service, ServiceConstants.FIELD_RETAIN_IP)) {
             Object requestedIpObj = ServiceUtil.getLaunchConfigObject(service, launchConfigName,
                     InstanceConstants.FIELD_REQUESTED_IP_ADDRESS);
             String requestedIp = null;
@@ -77,11 +79,16 @@ public class ServiceDeploymentUnit extends AbstractDeploymentUnit {
         launchConfigToServiceIndexes.put(launchConfigName, serviceIndexObj);
     }
 
-    @SuppressWarnings("unchecked")
     @Override
     protected void collectDeploymentUnitInstances() {
+        collectDeploymentUnitInstances(true);
+        collectDeploymentUnitInstances(false);
+    }
+
+    @SuppressWarnings("unchecked")
+    public void collectDeploymentUnitInstances(boolean currentRevision) {
         List<Pair<Instance, ServiceExposeMap>> serviceInstances = context.exposeMapDao
-                .listDeploymentUnitInstancesExposeMaps(service, unit);
+                .listDeploymentUnitInstances(service, unit, currentRevision);
         for (Pair<Instance, ServiceExposeMap> serviceInstance : serviceInstances) {
             Instance instance = serviceInstance.getLeft();
             ServiceExposeMap exposeMap = serviceInstance.getRight();
@@ -91,7 +98,11 @@ public class ServiceDeploymentUnit extends AbstractDeploymentUnit {
                     .get(ServiceConstants.LABEL_SERVICE_LAUNCH_CONFIG);
             DeploymentUnitInstance unitInstance = new ServiceDeploymentUnitInstance(context, service,
                     stack, instance.getName(), instance, exposeMap, launchConfigName);
-            addDeploymentInstance(launchConfigName, unitInstance);
+            if (currentRevision) {
+                addDeploymentInstance(launchConfigName, unitInstance);
+            } else {
+                oldRevisions.add(unitInstance);
+            }
         }
     }
 
@@ -113,13 +124,28 @@ public class ServiceDeploymentUnit extends AbstractDeploymentUnit {
     }
 
     @Override
-    protected void cleanupBad() {
-        if (!unit.getCleanup()) {
+    protected void cleanupBadAndUnhealthy() {
+        if (!isBad()) {
             return;
         }
-        removeAllDeploymentUnitInstances(ServiceConstants.AUDIT_LOG_REMOVE_BAD, ActivityLog.ERROR);
+        Date originalCleanupTime = context.objectManager.reload(unit).getCleanupTime();
+        for (DeploymentUnitInstance instance : getDeploymentUnitInstances()) {
+            if (instance.isUnhealthy()) {
+                instance.remove(ServiceConstants.AUDIT_LOG_REMOVE_UNHEATLHY, ActivityLog.ERROR);
+            } else {
+                instance.remove(ServiceConstants.AUDIT_LOG_REMOVE_BAD, ActivityLog.ERROR);
+            }
+
+        }
         cleanupVolumes(false);
-        context.objectManager.setFields(unit, ServiceConstants.FIELD_DEPLOYMENT_UNIT_CLEANUP, false);
+        // handle the case when cleanup was reset in one of the handlers
+        Date currentCleanupTime = context.objectManager.reload(unit).getCleanupTime();
+        boolean oneIsNull = (currentCleanupTime == null) != (originalCleanupTime == null);
+        boolean bothNotNull = currentCleanupTime != null && originalCleanupTime != null;
+        if (oneIsNull || (bothNotNull && currentCleanupTime.after(originalCleanupTime))) {
+            throw new DeploymentUnitReconcileException("Need to restart deployment unit reconcile");
+        }
+        context.serviceDao.setForCleanup(unit, false);
     }
 
     @Override
@@ -130,15 +156,6 @@ public class ServiceDeploymentUnit extends AbstractDeploymentUnit {
         for (String launchConfigName : launchConfigNames) {
             if (!launchConfigToInstance.containsKey(launchConfigName)) {
                 cleanupInstanceWithMissingDep(launchConfigName);
-            }
-        }
-    }
-
-    @Override
-    protected void cleanupUnhealthy() {
-        for (DeploymentUnitInstance instance : this.getDeploymentUnitInstances()) {
-            if (instance.isUnhealthy()) {
-                removeDeploymentUnitInstance(instance, ServiceConstants.AUDIT_LOG_REMOVE_UNHEATLHY, ActivityLog.INFO);
             }
         }
     }
@@ -328,5 +345,10 @@ public class ServiceDeploymentUnit extends AbstractDeploymentUnit {
         Map<String, List<String>> usedBy = getUsedBySidekicks();
         sidekickUsedByMap.putAll(usedBy);
         dependees.addAll(usedBy.keySet());
+    }
+
+    @Override
+    protected boolean startFirstOnUpgrade() {
+        return DataAccessor.fieldBool(service, ServiceConstants.FIELD_START_FIRST_ON_UPGRADE);
     }
 }

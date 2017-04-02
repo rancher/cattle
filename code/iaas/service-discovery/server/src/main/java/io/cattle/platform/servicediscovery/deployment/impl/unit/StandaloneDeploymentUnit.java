@@ -54,16 +54,21 @@ public class StandaloneDeploymentUnit extends AbstractDeploymentUnit {
                 continue;
             }
             instanceIdToInstanceSpec.put(instance.getId().toString(),
-                    DataAccessor.fieldMap(revision, InstanceConstants.FIELD_INSTANCE_REVISION_CONFIG));
+                    DataAccessor.fieldMap(revision, InstanceConstants.FIELD_REVISION_CONFIG));
             addDeploymentInstance(launchConfigName, unitInstance);
         }
     }
 
     @Override
-    protected void cleanupUnhealthy() {
+    protected void cleanupBadAndUnhealthy() {
         for (DeploymentUnitInstance instance : this.getDeploymentUnitInstances()) {
             if (instance.isUnhealthy()) {
                 if (needToReplace(instance)) {
+                    // 1. stop unhealthy instance so the ports are released
+                    instance.stop();
+                    instance.waitForStop();
+
+                    // 3. create new instance
                     StandaloneDeploymentUnitInstance replacement = new StandaloneDeploymentUnitInstance(context, null,
                             null,
                             null);
@@ -71,6 +76,7 @@ public class StandaloneDeploymentUnit extends AbstractDeploymentUnit {
                     replacement.create(getReplacementDeployParams(instance.getInstance()));
                 }
 
+                // 3. remove old instance
                 removeDeploymentUnitInstance(instance, ServiceConstants.AUDIT_LOG_REMOVE_UNHEATLHY, ActivityLog.INFO);
             }
         }
@@ -81,6 +87,7 @@ public class StandaloneDeploymentUnit extends AbstractDeploymentUnit {
         Map<String, Object> data = new HashMap<>();
         data.putAll(instanceSpec);
         data.put(ObjectMetaDataManager.ACCOUNT_FIELD, instance.getAccountId());
+        data.put(ObjectMetaDataManager.KIND_FIELD, instance.getKind());
         // fields below can be modified after the instance is created
         data.put(ObjectMetaDataManager.NAME_FIELD, instance.getName());
         data.put(ObjectMetaDataManager.DESCRIPTION_FIELD, instance.getDescription());
@@ -89,6 +96,7 @@ public class StandaloneDeploymentUnit extends AbstractDeploymentUnit {
 
         data.put(InstanceConstants.FIELD_REPLACEMNT_FOR_INSTANCE_ID, instance.getId());
         data.put(InstanceConstants.FIELD_DEPLOYMENT_UNIT_ID, instance.getDeploymentUnitId());
+        data.put(InstanceConstants.FIELD_REVISION_ID, instance.getRevisionId());
         return data;
     }
 
@@ -110,11 +118,6 @@ public class StandaloneDeploymentUnit extends AbstractDeploymentUnit {
 
     @Override
     public void remove(String reason, String level) {
-        return;
-    }
-
-    @Override
-    public void cleanupBad() {
         return;
     }
 
@@ -146,7 +149,12 @@ public class StandaloneDeploymentUnit extends AbstractDeploymentUnit {
 
     @Override
     protected void generateSidekickReferences() {
-        // TODO Auto-generated method stub
+        return;
+    }
+
+    @Override
+    protected boolean startFirstOnUpgrade() {
+        return false;
     }
 
 }

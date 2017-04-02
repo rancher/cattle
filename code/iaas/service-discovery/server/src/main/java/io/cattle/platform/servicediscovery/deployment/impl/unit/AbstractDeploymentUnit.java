@@ -1,7 +1,6 @@
 package io.cattle.platform.servicediscovery.deployment.impl.unit;
 
 import io.cattle.platform.activity.ActivityLog;
-import io.cattle.platform.core.constants.HealthcheckConstants;
 import io.cattle.platform.core.constants.ServiceConstants;
 import io.cattle.platform.core.model.DeploymentUnit;
 import io.cattle.platform.servicediscovery.deployment.DeploymentUnitInstance;
@@ -23,6 +22,7 @@ public abstract class AbstractDeploymentUnit implements io.cattle.platform.servi
     Map<String, List<String>> sidekickUsedByMap = new HashMap<>();
     Set<String> dependees = new HashSet<>();
     DeploymentUnit unit;
+    List<DeploymentUnitInstance> oldRevisions = new ArrayList<>();
 
     public AbstractDeploymentUnit(DeploymentUnit unit, DeploymentUnitManagerContext context) {
         this.context = context;
@@ -33,10 +33,8 @@ public abstract class AbstractDeploymentUnit implements io.cattle.platform.servi
 
     protected abstract void cleanupDependencies();
 
-    protected abstract void cleanupUnhealthy();
-
-    protected abstract void cleanupBad();
-
+    protected abstract void cleanupBadAndUnhealthy();
+    
     protected abstract List<DeploymentUnitInstance> getInstancesWithMismatchedIndexes();
 
     protected abstract void createImpl();
@@ -44,6 +42,8 @@ public abstract class AbstractDeploymentUnit implements io.cattle.platform.servi
     protected abstract List<String> getSidekickRefs(String launchConfigName);
 
     protected abstract void generateSidekickReferences();
+    
+    protected abstract boolean startFirstOnUpgrade();
 
     protected void removeAllDeploymentUnitInstances(String reason, String level) {
         /*
@@ -56,38 +56,23 @@ public abstract class AbstractDeploymentUnit implements io.cattle.platform.servi
 
     @Override
     public void deploy() {
-        cleanupBad();
+        resetUpgrade();
+        if (!startFirstOnUpgrade()) {
+            stopOldRevisions();
+        }
+        cleanupBadAndUnhealthy();
         cleanupInstancesWithMistmatchedIndexes();
-        cleanupUnhealthy();
         cleanupDependencies();
         create();
         start();
         waitForStart();
-        updateHealthy();
-    }
-
-    public void updateHealthy() {
-        if (this.isUnhealthy()) {
-            return;
-        }
-        if (HealthcheckConstants.isHealthy(this.unit.getHealthState())) {
-            context.objectProcessManager.scheduleProcessInstanceAsync(ServiceConstants.PROCESS_DU_UPDATE_HEALTHY,
-                    this.unit, null);
+        if (startFirstOnUpgrade()) {
+            stopOldRevisions();
         }
     }
 
     public DeploymentUnit getUnit() {
         return unit;
-    }
-
-    @Override
-    public boolean isUnhealthy() {
-        for (DeploymentUnitInstance instance : this.getDeploymentUnitInstances()) {
-            if (instance.isUnhealthy()) {
-                return true;
-            }
-        }
-        return false;
     }
 
     @Override
@@ -120,8 +105,15 @@ public abstract class AbstractDeploymentUnit implements io.cattle.platform.servi
     protected void waitForStart() {
         // sort based on dependencies
         List<DeploymentUnitInstance> sortedInstances = getSortedDeploymentUnitInstances();
+
+        // wait for running
         for (DeploymentUnitInstance instance : sortedInstances) {
             instance.waitForStart(isDependee(instance));
+        }
+
+        // wait for healthy
+        for (DeploymentUnitInstance instance : sortedInstances) {
+            instance.waitForHealthy();
         }
     }
 
@@ -164,15 +156,6 @@ public abstract class AbstractDeploymentUnit implements io.cattle.platform.servi
         launchConfigToInstance.remove(instance.getLaunchConfigName());
     }
 
-    @Override
-    public boolean isHealthCheckInitializing() {
-        for (DeploymentUnitInstance instance : getDeploymentUnitInstances()) {
-            if (instance.isHealthCheckInitializing()) {
-                return true;
-            }
-        }
-        return false;
-    }
 
     protected boolean isStarted() {
         for (DeploymentUnitInstance instance : getDeploymentUnitInstances()) {
@@ -189,10 +172,16 @@ public abstract class AbstractDeploymentUnit implements io.cattle.platform.servi
 
     @Override
     public String getStatus() {
-        return String.format("Healthy: %s, Complete: %s, Started: %s",
-                !isUnhealthy(),
+        return String.format("Bad: %s, Complete: %s, Started: %s, Healthy: %s, UpgradeCleanup: %s",
+                isBad(),
                 isComplete(),
-                isStarted());
+                isStarted(),
+                isHealthy(),
+                upgradeCleanupNeeded());
+    }
+
+    protected boolean isBad() {
+        return unit.getCleanup();
     }
 
     protected void cleanupInstancesWithMistmatchedIndexes() {
@@ -204,7 +193,58 @@ public abstract class AbstractDeploymentUnit implements io.cattle.platform.servi
 
     @Override
     public boolean needToReconcile() {
-        return isUnhealthy() || !isComplete() || !isStarted()
+        return isBad() || !isHealthy() || !isComplete() || !isStarted() || upgradeCleanupNeeded()
                 || getInstancesWithMismatchedIndexes().size() > 0;
+    }
+
+    protected boolean isHealthy() {
+        for (DeploymentUnitInstance instance : getDeploymentUnitInstances()) {
+            if (!instance.isHealthy()) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    @Override
+    public boolean isUnhealthy() {
+        for (DeploymentUnitInstance instance : getDeploymentUnitInstances()) {
+            if (instance.isUnhealthy()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    protected boolean upgradeCleanupNeeded() {
+        for (DeploymentUnitInstance instance : oldRevisions) {
+            if (!instance.isSetForUpgrade()) {
+                return true;
+            }
+        }
+        for (DeploymentUnitInstance instance : launchConfigToInstance.values()) {
+            if (instance.isSetForUpgrade()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    protected void resetUpgrade() {
+        for (DeploymentUnitInstance instance : launchConfigToInstance.values()) {
+            instance.resetUpgrade(false);
+        }
+        for (DeploymentUnitInstance instance : oldRevisions) {
+            instance.resetUpgrade(true);
+        }
+    }
+
+    protected void stopOldRevisions() {
+        for (DeploymentUnitInstance instance : oldRevisions) {
+            instance.stop();
+        }
+        for (DeploymentUnitInstance instance : oldRevisions) {
+            instance.waitForStop();
+        }
     }
 }

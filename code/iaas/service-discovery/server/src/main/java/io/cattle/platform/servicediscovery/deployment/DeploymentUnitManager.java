@@ -20,6 +20,5 @@ public interface DeploymentUnitManager extends AnnotatedEventListener {
 
     boolean isUnhealthy(DeploymentUnit unit);
 
-    boolean isInit(DeploymentUnit unit);
-
+    boolean isGlobal(DeploymentUnit unit);
 }

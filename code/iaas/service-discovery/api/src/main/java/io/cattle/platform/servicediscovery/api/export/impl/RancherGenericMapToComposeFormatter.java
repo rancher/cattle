@@ -12,9 +12,9 @@ import javax.inject.Named;
 public class RancherGenericMapToComposeFormatter implements RancherConfigToComposeFormatter {
 
     @Override
-    public Object format(ServiceDiscoveryConfigItem item, Object valueToTransform) {
-        if (!(item.getDockerName().equalsIgnoreCase(ServiceDiscoveryConfigItem.LB_CONGFIG.getDockerName()) || item
-                .getDockerName().equals(ServiceDiscoveryConfigItem.HEALTHCHECK.getDockerName()))) {
+    public Object format(ComposeExportConfigItem item, Object valueToTransform) {
+        if (!(item.getDockerName().equalsIgnoreCase(ComposeExportConfigItem.LB_CONGFIG.getDockerName()) || item
+                .getDockerName().equals(ComposeExportConfigItem.HEALTHCHECK.getDockerName()))) {
             return null;
         }
         valueToTransform = lowerCaseParameters(valueToTransform);

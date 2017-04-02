@@ -9,7 +9,7 @@ import io.cattle.platform.core.model.Stack;
 import io.cattle.platform.json.JsonMapper;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.util.DataAccessor;
-import io.cattle.platform.servicediscovery.api.export.ServiceDiscoveryComposeExportService;
+import io.cattle.platform.servicediscovery.api.export.ComposeExportService;
 import io.github.ibuildthecloud.gdapi.request.ApiRequest;
 
 import java.util.ArrayList;
@@ -28,7 +28,7 @@ public class StackExportConfigActionHandler implements ActionHandler {
     JsonMapper jsonMapper;
 
     @Inject
-    ServiceDiscoveryComposeExportService composeExportService;
+    ComposeExportService composeExportService;
 
     @Override
     public String getName() {

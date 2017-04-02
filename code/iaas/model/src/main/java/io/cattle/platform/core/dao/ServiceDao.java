@@ -10,6 +10,7 @@ import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.Service;
 import io.cattle.platform.core.model.ServiceIndex;
 import io.cattle.platform.core.model.Stack;
+import io.cattle.platform.core.util.ServiceUtil.RevisionData;
 import io.github.ibuildthecloud.gdapi.id.IdFormatter;
 
 import java.util.List;
@@ -70,10 +71,21 @@ public interface ServiceDao {
     List<? extends DeploymentUnit> getServiceDeploymentUnitsOnHost(Host host, boolean transitioningOnly);
 
     DeploymentUnit createDeploymentUnit(long accountId, Long serviceId,
-            long stackId, Map<String, String> labels, String serviceIndex);
+            long stackId, Map<String, String> labels, String serviceIndex, Long revisionId);
 
     Stack getOrCreateDefaultStack(long accountId);
 
     List<Instance> getInstancesToGarbageCollect(Service service);
 
+    List<DeploymentUnit> getDeploymentUnitsForRevision(Service service, boolean currentRevision);
+
+    /**
+     * SERVICE REVISION MANAGEMENT
+     */
+
+    void cleanupServiceRevisions(Service service);
+
+    RevisionData createServiceRevision(Service service, Map<String, Object> newData, boolean force);
+
+    void setForCleanup(DeploymentUnit unit, boolean cleanup);
 }

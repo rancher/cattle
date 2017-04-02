@@ -1,7 +1,6 @@
 package io.cattle.platform.core.util;
 
 import io.cattle.platform.archaius.util.ArchaiusUtil;
-import io.cattle.platform.core.addon.InServiceUpgradeStrategy;
 import io.cattle.platform.core.addon.InstanceHealthCheck;
 import io.cattle.platform.core.constants.AgentConstants;
 import io.cattle.platform.core.constants.CommonStatesConstants;
@@ -12,6 +11,7 @@ import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.Service;
 import io.cattle.platform.core.model.ServiceRevision;
 import io.cattle.platform.core.model.Stack;
+import io.cattle.platform.object.meta.ObjectMetaDataManager;
 import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.object.util.DataUtils;
 import io.cattle.platform.util.type.CollectionUtils;
@@ -33,7 +33,9 @@ import com.netflix.config.DynamicStringListProperty;
 public class ServiceUtil {
 
     private static final int LB_HEALTH_CHECK_PORT = 42;
-    private static DynamicStringListProperty UPGRADE_TRIGGER_FIELDS = ArchaiusUtil.getList("upgrade.trigger.fields");
+    private static DynamicStringListProperty UPGRADE_TRIGGER_FIELDS = ArchaiusUtil
+            .getList("container.upgrade.trigger.fields");
+    private static DynamicStringListProperty UPDATE_SKIP_FIELDS = ArchaiusUtil.getList("service.update.skip.fields");
 
     public static String getInstanceName(Instance instance) {
         if (instance != null && instance.getRemoved() == null) {
@@ -209,9 +211,13 @@ public class ServiceUtil {
                         .contains(ServiceConstants.IMAGE_NONE);
     }
 
-    public static void preserveOldRandomPorts(Map<String, Object> newLaunchConfig,
-            Map<String, Object> oldLaunchConfig) {
-        Map<Integer, PortSpec> oldPortMap = getServicePortsMap(oldLaunchConfig);
+    public static void preserveOldRandomPorts(Service service,
+            Map<String, Object> newLaunchConfig) {
+
+        // get from svc
+        String lcName = newLaunchConfig.get("name") == null ? ServiceConstants.PRIMARY_LAUNCH_CONFIG_NAME
+                : newLaunchConfig.get("name").toString();
+        Map<Integer, PortSpec> oldPortMap = getServicePortsMap(ServiceUtil.getLaunchConfigDataAsMap(service, lcName));
         Map<Integer, PortSpec> newPortMap = getServicePortsMap(newLaunchConfig);
 
         boolean changedNewPorts = false;
@@ -325,17 +331,26 @@ public class ServiceUtil {
                 ServiceConstants.STATE_RESTARTING);
     }
     
-    public static UpgradedConfig mergeLaunchConfigs(Service service, Map<String, Object> newPrimaryLaunchConfig,
-            List<Map<String, Object>> newSecondaryLaunchConfigs) {
-        if (newPrimaryLaunchConfig == null && newSecondaryLaunchConfigs == null) {
-            return null;
+    public static MergedLaunchConfigs mergeLaunchConfigs(Map<String, Object> currentLaunchConfig,
+            List<Map<String, Object>> currentSecondaryLaunchConfigs, Map<String, Object> newPrimaryLaunchConfig,
+            List<Map<String, Object>> newSecondaryLaunchConfigs, Service service) {
+        
+        Map<String, Map<String, Object>> currentConfigsMap = new HashMap<>();
+        if (currentLaunchConfig != null) {
+            currentConfigsMap.put(ServiceConstants.PRIMARY_LAUNCH_CONFIG_NAME, currentLaunchConfig);
         }
-        
-        boolean changed = false;
-        boolean isSelectorService = service.getSelectorContainer() == null;
-        
-        Map<String, Map<String, Object>> currentConfigsMap = getCurrentLaunchConfigs(service);
-
+        // preserve the initial order of the secondary launch configs
+        List<String> secNames = new ArrayList<>();
+        if (currentSecondaryLaunchConfigs != null) {
+            for (Map<String, Object> lc : currentSecondaryLaunchConfigs) {
+                currentConfigsMap.put(lc.get("name").toString(), lc);
+            }
+            for (Object sec : currentSecondaryLaunchConfigs) {
+                secNames.add(CollectionUtils.toMap(sec).get("name").toString());
+            }
+        }
+        boolean isUpgrade = false;
+        boolean isUpdate = false;
         // 1. Generate merge configs
         List<Map<String, Object>> mergedConfigs = new ArrayList<>();
         if (newPrimaryLaunchConfig != null) {
@@ -345,10 +360,10 @@ public class ServiceUtil {
             for (Map<String, Object> newConfig : newSecondaryLaunchConfigs) {
                 Object name = newConfig.get("name");
                 Object imageUuid = newConfig.get(InstanceConstants.FIELD_IMAGE_UUID);
-                if (isSelectorService && imageUuid != null
+                if (service.getSelectorContainer() == null && imageUuid != null
                         && StringUtils.equalsIgnoreCase(ServiceConstants.IMAGE_NONE, imageUuid.toString())) {
                     currentConfigsMap.remove(name);
-                    changed = true;
+                    isUpgrade = true;
                     continue;
                 }
                 mergedConfigs.add(newConfig);
@@ -361,28 +376,40 @@ public class ServiceUtil {
         for (Map<String, Object> mergedConfig : mergedConfigs) {
             boolean resetVersion = false;
             String currentVersion = null;
-            String name = mergedConfig.get("name") != null ? mergedConfig.get("name").toString() : service
-                    .getName();
+            String name = mergedConfig.get("name") != null ? mergedConfig.get("name").toString()
+                    : ServiceConstants.PRIMARY_LAUNCH_CONFIG_NAME;
             try {
+
                 Map<String, Object> currentConfig = currentConfigsMap.get(name);
                 if (currentConfig == null) {
                     resetVersion = true;
                     continue;
                 }
+                if (mergedConfig.containsKey(ServiceConstants.FIELD_FORCE_UPGRADE)
+                        && Boolean.valueOf(mergedConfig.get(ServiceConstants.FIELD_FORCE_UPGRADE).toString())) {
+                    resetVersion = true;
+                }
                 currentVersion = String.valueOf(currentConfig.get(ServiceConstants.FIELD_VERSION));
                 for (String key : mergedConfig.keySet()) {
                     if (currentConfig.containsKey(key)) {
                         if (key.equalsIgnoreCase(InstanceConstants.FIELD_PORTS)) {
-                            preserveOldRandomPorts(mergedConfig, currentConfig);
+                            preserveOldRandomPorts(service, mergedConfig);
                         }
                         // if field triggers upgrade + value changed, trigger upgrade
-                        if (upgradeTriggerFields.contains(key)
-                                && !areObjectsEqual(currentConfig.get(key), mergedConfig.get(key))) {
-                            resetVersion = true;
+                        if (!areObjectsEqual(currentConfig.get(key), mergedConfig.get(key))) {
+                            if (upgradeTriggerFields.contains(key)) {
+                                resetVersion = true;
+                            } else {
+                                isUpdate = true;
+                            }
                         }
                         currentConfig.remove(key);
-                    } else if (upgradeTriggerFields.contains(key) && mergedConfig.get(key) != null) {
-                        resetVersion = true;
+                    } else if (mergedConfig.get(key) != null) {
+                        if (upgradeTriggerFields.contains(key)) {
+                            resetVersion = true;
+                        } else {
+                            isUpdate = true;
+                        }
                     }
                 }
                 mergedConfig.putAll(currentConfig);
@@ -390,7 +417,7 @@ public class ServiceUtil {
             } finally {
                 if (resetVersion) {
                     setVersion(mergedConfig, generatedVersion);
-                    changed = true;
+                    isUpgrade = true;
                 } else {
                     setVersion(mergedConfig, currentVersion);
                 }
@@ -399,7 +426,7 @@ public class ServiceUtil {
 
         mergedConfigs.addAll(currentConfigsMap.values());
 
-        return new UpgradedConfig(service, mergedConfigs, changed);
+        return new MergedLaunchConfigs(secNames, mergedConfigs, isUpgrade, isUpdate);
     }
 
     protected static void setVersion(Map<String, Object> config, String version) {
@@ -425,37 +452,28 @@ public class ServiceUtil {
         return currentLaunchConfigs;
     }
 
-    public static class UpgradedConfig {
-        Map<String, Object> primaryLaunchConfig;
-        List<Map<String, Object>> secondaryLaunchConfigs;
-        boolean runUpgrade;
+    public static class MergedLaunchConfigs {
+        private Map<String, Object> primaryLaunchConfig;
+        private List<Map<String, Object>> secondaryLaunchConfigs;
+        private boolean isUpgrade;
+        private boolean isUpdate;
 
-        @SuppressWarnings("unchecked")
-        public UpgradedConfig(Service service, List<Map<String, Object>> launchConfigs, boolean runUpgrade) {
+        public MergedLaunchConfigs(List<String> currentOrderedSecondaryConfigNames,
+                List<Map<String, Object>> newLaunchConfigs, boolean isUpgrade, boolean isUpdate) {
             super();
             
             Map<String, Map<String, Object>> secondaryLCTemp = new HashMap<>();
             
-            for (Map<String, Object> lc : launchConfigs) {
+            for (Map<String, Object> lc : newLaunchConfigs) {
                 if (!lc.containsKey("name")) {
                     this.primaryLaunchConfig = lc;
                 } else {
                     secondaryLCTemp.put(lc.get("name").toString(), lc);
                 }
             }
-            
-            // preserve the initial order of the secondary launch configs
-            List<Object> secondary = DataAccessor.fields(service)
-                    .withKey(ServiceConstants.FIELD_SECONDARY_LAUNCH_CONFIGS)
-                    .withDefault(Collections.EMPTY_LIST).as(
-                            List.class);
-            List<String> secNames = new ArrayList<>();
-            for (Object sec : secondary) {
-                secNames.add(CollectionUtils.toMap(sec).get("name").toString());
-            }
                     
             secondaryLaunchConfigs = new ArrayList<>();
-            for (String secName : secNames) {
+            for (String secName : currentOrderedSecondaryConfigNames) {
                 if (secondaryLCTemp.containsKey(secName)) {
                     secondaryLaunchConfigs.add(secondaryLCTemp.get(secName));
                     secondaryLCTemp.remove(secName);
@@ -463,8 +481,8 @@ public class ServiceUtil {
             }
             // add the rest
             secondaryLaunchConfigs.addAll(secondaryLCTemp.values());
-
-            this.runUpgrade = runUpgrade;
+            this.isUpgrade = isUpgrade;
+            this.isUpdate = isUpdate;
         }
 
         public Map<String, Object> getPrimaryLaunchConfig() {
@@ -475,54 +493,13 @@ public class ServiceUtil {
             return secondaryLaunchConfigs;
         }
 
-        public boolean isRunUpgrade() {
-            return runUpgrade;
-        }
-    }
-
-    public static final InServiceUpgradeStrategy getStrategy(Service service,
-            Pair<ServiceRevision, ServiceRevision> currentPreviousRevision,
-            boolean upgrade) {
-        boolean startFirst = DataAccessor.fieldBool(service, ServiceConstants.FIELD_START_FIRST);
-        Long batchSize = DataAccessor.fieldLong(service, ServiceConstants.FIELD_BATCHSIZE);
-        Long intervalMillis = DataAccessor.fieldLong(service, ServiceConstants.FIELD_INTERVAL_MILLISEC);
-
-        if (currentPreviousRevision == null) {
-            return null;
-        }
-        Map<String, Object> current = null;
-        Map<String, Object> previous = null;
-
-        if (upgrade) {
-            current = CollectionUtils.toMap(DataAccessor.field(
-                    currentPreviousRevision.getLeft(), ServiceConstants.FIELD_SERVICE_REVISION_CONFIGS, Object.class));
-            previous = CollectionUtils.toMap(DataAccessor.field(
-                    currentPreviousRevision.getRight(), ServiceConstants.FIELD_SERVICE_REVISION_CONFIGS, Object.class));
-        } else {
-            current = CollectionUtils.toMap(DataAccessor.field(
-                    currentPreviousRevision.getRight(), ServiceConstants.FIELD_SERVICE_REVISION_CONFIGS, Object.class));
-            previous = CollectionUtils.toMap(DataAccessor.field(
-                    currentPreviousRevision.getLeft(), ServiceConstants.FIELD_SERVICE_REVISION_CONFIGS, Object.class));
+        public boolean isUpgrade() {
+            return isUpgrade;
         }
 
-        List<Object> secondaryLaunchConfigs = new ArrayList<>();
-        for (String name : current.keySet()) {
-            if (name.equalsIgnoreCase(service.getName())) {
-                continue;
-            }
-            secondaryLaunchConfigs.add(current.get(name));
+        public boolean isUpdate() {
+            return isUpdate;
         }
-
-        List<Object> previousSecondaryLaunchConfigs = new ArrayList<>();
-        for (String name : previous.keySet()) {
-            if (name.equalsIgnoreCase(service.getName())) {
-                continue;
-            }
-            previousSecondaryLaunchConfigs.add(previous.get(name));
-        }
-        return new InServiceUpgradeStrategy(current.get(service.getName()), secondaryLaunchConfigs,
-                previous.get(service.getName()), previousSecondaryLaunchConfigs, startFirst,
-                intervalMillis, batchSize);
     }
     
     public static final List<String> getServiceImagesToPrePull(Service service) {
@@ -653,7 +630,7 @@ public class ServiceUtil {
         } else if (a instanceof List) {
             return compareLists(a, b);
         } else if (a instanceof Map) {
-            return compareMaps(a, b);
+            return compareMaps(CollectionUtils.toMap(a), CollectionUtils.toMap(b));
         } else {
             areObjectsEqual(CollectionUtils.toMap(a), CollectionUtils.toMap(b));
         }
@@ -691,7 +668,7 @@ public class ServiceUtil {
         return true;
     }
 
-    public static boolean compareMaps(Object a, Object b) {
+    public static boolean compareMaps(Map<Object, Object> a, Map<Object, Object> b) {
         if (!compareMap(a, b)) {
             return false;
         }
@@ -702,11 +679,8 @@ public class ServiceUtil {
         return true;
     }
 
-    @SuppressWarnings("unchecked")
-    public static boolean compareMap(Object a, Object b) {
-        Map<Object, Object> aMap = (Map<Object, Object>) a;
+    public static boolean compareMap(Map<Object, Object> aMap, Map<Object, Object> bMap) {
         for (Object aKey : aMap.keySet()) {
-            Map<Object, Object> bMap = (Map<Object, Object>) b;
             if (!bMap.containsKey(aKey)) {
                 return false;
             }
@@ -716,5 +690,123 @@ public class ServiceUtil {
             }
         }
         return true;
+    }
+
+    public static Pair<Long, Long> getBatchSizeAndInterval(Service service) {
+        Long batchSize = DataAccessor.fieldLong(service, ServiceConstants.FIELD_BATCHSIZE);
+        Long intervalMillis = DataAccessor.fieldLong(service, ServiceConstants.FIELD_INTERVAL_MILLISEC);
+        if (batchSize == null) {
+            batchSize = 1L;
+        }
+
+        if (intervalMillis == null) {
+            intervalMillis = 2000L;
+        }
+        return Pair.of(batchSize, intervalMillis);
+    }
+
+    public static class RevisionData {
+        Map<String, Object> config;
+        boolean isUpdate;
+        boolean isUpgrade;
+        Long revisionId;
+
+        public RevisionData(Map<String, Object> config, boolean isUpdate, boolean isUpgrade) {
+            super();
+            this.config = config;
+            this.isUpdate = isUpdate;
+            this.isUpgrade = isUpgrade;
+        }
+
+        public Map<String, Object> getConfig() {
+            return config;
+        }
+
+        public boolean isUpdate() {
+            return isUpdate;
+        }
+
+        public boolean isUpgrade() {
+            return isUpgrade;
+        }
+
+        public Long getRevisionId() {
+            return revisionId;
+        }
+
+        public void setRevisionId(Long revisionId) {
+            this.revisionId = revisionId;
+        }
+    }
+
+    public static RevisionData generateNewRevisionData(Service service, ServiceRevision currentRevision,
+            Map<String, Object> newData) {
+        Map<String, Object> finalData = new HashMap<>();
+        finalData.putAll(newData);
+        if (currentRevision == null) {
+            return new RevisionData(finalData, false, false);
+        }
+
+        Map<String, Object> currentData = new HashMap<>();
+        currentData.putAll(CollectionUtils.toMap(DataAccessor.field(currentRevision,
+                InstanceConstants.FIELD_REVISION_CONFIG, Object.class)));
+        // 1. process launchConfigs separately
+        MergedLaunchConfigs mergedConfig = processLaunchConfigs(service, finalData, currentData);
+
+        // 2. process top level service keys
+        List<String> updateSkipFields = UPDATE_SKIP_FIELDS.get();
+        boolean isUpdate = mergedConfig.isUpdate();
+        for (String key : finalData.keySet()) {
+            if (updateSkipFields.contains(key)) {
+                continue;
+            }
+            if (currentData.containsKey(key)) {
+                if (!areObjectsEqual(currentData.get(key), finalData.get(key))) {
+                    isUpdate = true;
+                }
+                currentData.remove(key);
+            } else if (finalData.get(key) != null) {
+                isUpdate = true;
+            }
+        }
+
+        finalData.putAll(currentData);
+        finalData.put(ObjectMetaDataManager.ACCOUNT_FIELD, service.getAccountId());
+        finalData.put(InstanceConstants.FIELD_SERVICE_ID, service.getId());
+        return new RevisionData(finalData, isUpdate, mergedConfig.isUpgrade());
+    }
+
+    @SuppressWarnings("unchecked")
+    public static MergedLaunchConfigs processLaunchConfigs(Service service, Map<String, Object> finalData,
+            Map<String, Object> currentData) {
+        Map<String, Object> newPrimaryLaunchConfig = null;
+        if (finalData.get(ServiceConstants.FIELD_LAUNCH_CONFIG) != null) {
+            newPrimaryLaunchConfig = (Map<String, Object>) finalData.get(ServiceConstants.FIELD_LAUNCH_CONFIG);
+        }
+        List<Map<String, Object>> newSecondaryLaunchConfigs = null;
+        if (finalData.get(ServiceConstants.FIELD_SECONDARY_LAUNCH_CONFIGS) != null) {
+            newSecondaryLaunchConfigs = (List<Map<String, Object>>) finalData
+                    .get(ServiceConstants.FIELD_SECONDARY_LAUNCH_CONFIGS);
+        }
+
+        Map<String, Object> currentPrimaryLaunchConfig = null;
+        if (currentData.get(ServiceConstants.FIELD_LAUNCH_CONFIG) != null) {
+            currentPrimaryLaunchConfig = (Map<String, Object>) currentData.get(ServiceConstants.FIELD_LAUNCH_CONFIG);
+        }
+
+        List<Map<String, Object>> currentSecondaryLaunchConfigs = null;
+        if (currentData.get(ServiceConstants.FIELD_SECONDARY_LAUNCH_CONFIGS) != null) {
+            currentSecondaryLaunchConfigs = (List<Map<String, Object>>) currentData
+                    .get(ServiceConstants.FIELD_SECONDARY_LAUNCH_CONFIGS);
+        }
+        MergedLaunchConfigs mergedConfig = ServiceUtil.mergeLaunchConfigs(currentPrimaryLaunchConfig,
+                currentSecondaryLaunchConfigs, newPrimaryLaunchConfig,
+                newSecondaryLaunchConfigs, service);
+
+        currentData.remove(ServiceConstants.FIELD_LAUNCH_CONFIG);
+        currentData.remove(ServiceConstants.FIELD_SECONDARY_LAUNCH_CONFIGS);
+        finalData.put(ServiceConstants.FIELD_LAUNCH_CONFIG, mergedConfig.getPrimaryLaunchConfig());
+        finalData.put(ServiceConstants.FIELD_SECONDARY_LAUNCH_CONFIGS, mergedConfig.getSecondaryLaunchConfigs());
+        return mergedConfig;
     }
 }

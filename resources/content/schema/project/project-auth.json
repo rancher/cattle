@@ -92,6 +92,9 @@
         "instanceRevision": "r",
         "serviceRevision": "r",
         "containerUpgrade" : "cr",
+        "deploymentUnit" : "cr",
+        "selectorService" : "crud",
+        "scalingGroup" : "crud",
 
         "end" : ""
     }

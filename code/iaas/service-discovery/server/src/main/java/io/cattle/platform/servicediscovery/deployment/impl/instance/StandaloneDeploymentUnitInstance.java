@@ -49,4 +49,14 @@ public class StandaloneDeploymentUnitInstance extends AbstractDeploymentUnitInst
         }
         return RESTART_ALWAYS_POLICY_NAMES.contains(rp.getName());
     }
+
+    @Override
+    public void resetUpgrade(boolean upgrade) {
+        return;
+    }
+
+    @Override
+    public boolean isSetForUpgrade() {
+        return false;
+    }
 }

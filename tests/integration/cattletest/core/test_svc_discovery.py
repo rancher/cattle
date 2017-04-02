@@ -191,7 +191,7 @@ def test_service_fields(client, context):
     assert svc.launchConfig.hostname == "test"
     assert svc.launchConfig.user == "test"
     assert len(svc.launchConfig.instanceLinks) == 1
-    assert svc.kind == "service"
+    assert svc.kind == "scalingGroup"
     # assert service.launchConfig.registryCredentialId == reg_cred.id
     assert svc.launchConfig.healthCheck.name == "check1"
     assert svc.launchConfig.healthCheck.responseTimeout == 3
@@ -209,52 +209,40 @@ def test_service_fields(client, context):
     assert svc.revisionId is not None
 
     # activate the service and validate that parameters were set for instance
-    service = client.wait_success(svc.activate())
-    assert service.state == "active"
-    instance_service_map = client \
-        .list_serviceExposeMap(serviceId=service.id)
-
-    assert len(instance_service_map) == 1
-    wait_for_condition(
-        client, instance_service_map[0], _resource_is_active,
-        lambda x: 'State is: ' + x.state)
-
-    instances = client. \
-        list_container(name=env.name + "-" + service.name + "-" + "1")
-    assert len(instances) == 1
-    container = instances[0]
-    assert container.imageUuid == image_uuid
-    assert container.command == ['sleep', '42']
-    assert len(container.instanceLinks()) == 1
-    assert len(container.environment) == 1
-    assert len(container.ports) == 2
-    assert len(container.dataVolumes) == 1
-    assert set(container.dataVolumesFrom) == set([container1.id])
-    assert container.capAdd == caps
-    assert container.capDrop == caps
+    svc.activate()
+    c = _validate_compose_instance_start(client, svc, env, "1")
+    assert c.imageUuid == image_uuid
+    assert c.command == ['sleep', '42']
+    assert len(c.instanceLinks()) == 1
+    assert len(c.environment) == 1
+    assert len(c.ports) == 2
+    assert len(c.dataVolumes) == 1
+    assert set(c.dataVolumesFrom) == set([container1.id])
+    assert c.capAdd == caps
+    assert c.capDrop == caps
     dns.append("169.254.169.250")
-    assert all(item in dns for item in container.dns) is True
+    assert all(item in dns for item in c.dns) is True
     search.append(env.name + "." + "rancher.internal")
-    assert set(search).issubset(container.dnsSearch)
-    assert container.privileged is True
-    assert container.domainName == "rancher.io"
-    assert container.memory == 8000000
-    assert container.stdinOpen is True
-    assert container.tty is True
-    assert container.entryPoint == ["/bin/sh", "-c"]
-    assert container.cpuShares == 400
-    assert container.workingDir == "/"
-    assert container.hostname == "test"
-    assert container.user == "test"
-    assert container.state == "running"
-    assert container.cpuSet == "2"
-    assert container.requestedHostId == host.id
-    assert container.healthState == 'initializing'
-    assert container.deploymentUnitUuid is not None
-    assert container.version == '0'
-    assert container.serviceId == service.id
-    assert container.stackId == env.id
-    assert container.metadata == container_meta
+    assert set(search).issubset(c.dnsSearch)
+    assert c.privileged is True
+    assert c.domainName == "rancher.io"
+    assert c.memory == 8000000
+    assert c.stdinOpen is True
+    assert c.tty is True
+    assert c.entryPoint == ["/bin/sh", "-c"]
+    assert c.cpuShares == 400
+    assert c.workingDir == "/"
+    assert c.hostname == "test"
+    assert c.user == "test"
+    assert c.state == "running"
+    assert c.cpuSet == "2"
+    assert c.requestedHostId == host.id
+    assert c.healthState == 'initializing'
+    assert c.deploymentUnitUuid is not None
+    assert c.version == '0'
+    assert c.serviceId == svc.id
+    assert c.stackId == env.id
+    assert c.metadata == container_meta
 
 
 def test_activate_single_service(client, context):
@@ -1319,7 +1307,7 @@ def test_external_service_w_hostname(super_client, client, context):
     assert service2.removed is not None
 
 
-def test_global_service(new_context):
+def test_global_service(new_context, super_client):
     client = new_context.client
     host1 = new_context.host
     host2 = register_simulated_host(new_context)
@@ -1340,25 +1328,36 @@ def test_global_service(new_context):
                 'group=Web,subgroup=foo'
         }
     }
-    service = client.create_service(name=random_str(),
-                                    stackId=env.id,
-                                    launchConfig=launch_config)
-    service = client.wait_success(service)
-    assert service.state == "inactive"
+    svc = client.create_service(name=random_str(),
+                                stackId=env.id,
+                                launchConfig=launch_config)
+    svc = client.wait_success(svc)
+    assert svc.state == "inactive"
 
     # 1. verify that the service was activated
-    service = client.wait_success(service.activate(), 120)
-    assert service.state == "active"
+    svc = client.wait_success(svc.activate(), 120)
+    assert svc.state == "active"
 
     # 2. verify that the instance was started on host1
-    instance1 = _validate_compose_instance_start(client, service, env, "1")
-    instance1_host = instance1.hosts()[0].id
+    i1 = _validate_compose_instance_start(client, svc, env, "1")
+    instance1_host = i1.hosts()[0].id
 
     # 3. verify that the instance was started on host2
-    instance2 = _validate_compose_instance_start(client, service, env, "2")
-    instance2_host = instance2.hosts()[0].id
+    i2 = _validate_compose_instance_start(client, svc, env, "2")
+    instance2_host = i2.hosts()[0].id
     assert instance1_host != instance2_host
-    service.deactivate()
+
+    # remove one of the hosts
+    # validate that the instance was removed on it
+    h = super_client.by_id('host', i2.hostId)
+    dus = super_client.list_deploymentUnit(uuid=i2.deploymentUnitUuid)
+    assert len(dus) == 1
+    du = dus[0]
+    h = client.wait_success(h.deactivate())
+    client.wait_success(h.remove())
+    wait_for(lambda: super_client.reload(du).state == 'removed')
+    wait_for(lambda: super_client.reload(svc).state == 'active')
+    svc.deactivate()
 
 
 def test_global_service_update_label(new_context):
@@ -3389,51 +3388,6 @@ def test_svc_ports_update(client, context):
     instance = instances[0]
     assert instance.ports == ['8682:8682/tcp']
 
-    lb_config = {}
-
-    # same test for lb service
-    launch_config = {"imageUuid": image_uuid, "ports": ['8683:8683']}
-    lb_svc = client. \
-        create_loadBalancerService(name=random_str(),
-                                   stackId=env.id,
-                                   launchConfig=launch_config,
-                                   lbConfig=lb_config)
-    lb_svc = client.wait_success(lb_svc)
-    assert lb_svc.state == "inactive"
-
-    # activate service
-    lb_svc = client.wait_success(lb_svc.activate())
-    assert service.state == "active"
-    instances = _get_instance_for_service(client, lb_svc.id)
-
-    assert len(instances) == 1
-    instance = instances[0]
-    assert instance.ports == ['8683:8683/tcp']
-    wait_for(
-        lambda: client.reload(lb_svc).publicEndpoints is not None and len(
-            client.reload(lb_svc).publicEndpoints) == 1)
-    endpoints = client.reload(lb_svc).publicEndpoints
-    ep = endpoints[0]
-    assert ep.port == 8683
-
-    new_launch_config = {"ports": ['8684']}
-
-    lb_svc = client.update(lb_svc, launchConfig=new_launch_config)
-    lb_svc = client.wait_success(lb_svc)
-    assert lb_svc.launchConfig.ports == ['8684:8684/tcp']
-    instances = _get_instance_for_service(client, lb_svc.id)
-
-    assert len(instances) == 1
-    instance = instances[0]
-    assert instance.ports == ['8684:8684/tcp']
-
-    wait_for(
-        lambda: client.reload(lb_svc).publicEndpoints is not None and len(
-            client.reload(lb_svc).publicEndpoints) == 1)
-    endpoints = client.reload(lb_svc).publicEndpoints
-    ep = endpoints[0]
-    assert ep.port == 8684
-
 
 def test_upgrade_scale_to_global(client, context, super_client):
     env = _create_stack(client)
@@ -3516,7 +3470,20 @@ def test_error_state(new_context):
 
     # 1. service should fail to activate
     service.activate()
-    c1 = _validate_compose_instance_state(client, service, stack, "1", "error")
+
+    timeout = time.time() + 60*2
+    c1 = None
+    while True:
+        cs = client.reload(service).instances()
+        if len(cs) == 1 or time.time() > timeout:
+            c1 = cs[0]
+            break
+        time.sleep(0.01)
+
+    assert c1 is not None
+
+    wait_for(lambda: client.reload(c1).state == 'error' or
+             client.reload(c1).state == 'removed')
     du1 = c1.deploymentUnitUuid
     name = stack.name + "_foo_1_" + du1
     volumes = client.list_volume(name_like=name + "_%")
@@ -3572,27 +3539,6 @@ def test_host_remove_error_state(new_context, super_client):
     host = super_client.wait_success(host.deactivate())
     super_client.delete(host)
     wait_for(lambda: client.reload(v).state == 'removed')
-
-
-def _validate_compose_instance_state(client, service, env,
-                                     number, state, launch_config_name=None):
-    cn = launch_config_name + "-" if \
-        launch_config_name is not None else ""
-    name = env.name + "-" + service.name + "-" + cn + number
-
-    def wait_for_map_count(service):
-        instances = client. \
-            list_container(name=name,
-                           state=state)
-        return len(instances) == 1
-
-    wait_for(lambda: wait_for_condition(client, service,
-                                        wait_for_map_count))
-
-    instances = client. \
-        list_container(name=name,
-                       state=state)
-    return instances[0]
 
 
 def _validate_id_not_equal(client, service, env,
@@ -3718,6 +3664,11 @@ def test_max_scale(new_context):
     service = client.wait_success(service)
     assert service.state == "inactive"
 
+    with pytest.raises(ApiError) as e:
+        client.update(service, scaleMax=2, scaleMin=3)
+    assert e.value.error.status == 422
+    assert e.value.error.code == 'InvalidOption'
+
     # 1. verify that the service was activated
     service = client.wait_success(service.activate(), 120)
     assert service.state == "active"
@@ -3731,3 +3682,11 @@ def test_max_scale(new_context):
     # increase it again
     service = client.update(service, scaleMax=4, scaleIncrement=2)
     _wait_until_active_map_count(service, 3, client)
+
+    compose_config = env.exportconfig()
+    assert compose_config is not None
+    rancher_yml = yaml.load(compose_config.rancherComposeConfig)
+    svc = rancher_yml['services'][service.name]
+    assert svc['scale_max'] == 4
+    assert svc['scale_increment'] == 2
+    assert svc['scale_min'] == 1

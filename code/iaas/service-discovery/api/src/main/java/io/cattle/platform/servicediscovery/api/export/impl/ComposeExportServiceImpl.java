@@ -21,7 +21,7 @@ import io.cattle.platform.json.JsonMapper;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.object.util.DataUtils;
-import io.cattle.platform.servicediscovery.api.export.ServiceDiscoveryComposeExportService;
+import io.cattle.platform.servicediscovery.api.export.ComposeExportService;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -48,7 +48,7 @@ import org.yaml.snakeyaml.nodes.Tag;
 import org.yaml.snakeyaml.representer.Representer;
 
 @Named
-public class ServiceDiscoveryComposeExportServiceImpl implements ServiceDiscoveryComposeExportService {
+public class ComposeExportServiceImpl implements ComposeExportService {
     @Inject
     ObjectManager objectManager;
     @Inject
@@ -372,29 +372,29 @@ public class ServiceDiscoveryComposeExportServiceImpl implements ServiceDiscover
             }
         }
         if (!serviceLinksWithNames.isEmpty()) {
-            composeServiceData.put(ServiceDiscoveryConfigItem.LINKS.getDockerName(), serviceLinksWithNames);
+            composeServiceData.put(ComposeExportConfigItem.LINKS.getDockerName(), serviceLinksWithNames);
         }
 
         if (!externalLinksServices.isEmpty()) {
-            composeServiceData.put(ServiceDiscoveryConfigItem.EXTERNALLINKS.getDockerName(), externalLinksServices);
+            composeServiceData.put(ComposeExportConfigItem.EXTERNALLINKS.getDockerName(), externalLinksServices);
         }
     }
 
     private void addExtraComposeParameters(Service service,
             String launchConfigName, Map<String, Object> composeServiceData) {
         if (service.getKind().equalsIgnoreCase(ServiceConstants.KIND_DNS_SERVICE)) {
-            composeServiceData.put(ServiceDiscoveryConfigItem.IMAGE.getDockerName(), "rancher/dns-service");
+            composeServiceData.put(ComposeExportConfigItem.IMAGE.getDockerName(), ServiceConstants.IMAGE_DNS);
         } else if (ServiceUtil.isV1LB(service)) {
-            composeServiceData.put(ServiceDiscoveryConfigItem.IMAGE.getDockerName(),
+            composeServiceData.put(ComposeExportConfigItem.IMAGE.getDockerName(),
                     "rancher/load-balancer-service");
         } else if (service.getKind().equalsIgnoreCase(ServiceConstants.KIND_EXTERNAL_SERVICE)) {
-            composeServiceData.put(ServiceDiscoveryConfigItem.IMAGE.getDockerName(), "rancher/external-service");
+            composeServiceData.put(ComposeExportConfigItem.IMAGE.getDockerName(), "rancher/external-service");
         }
     }
 
     private void populateNetworkForService(Service service,
             String launchConfigName, Map<String, Object> composeServiceData) {
-        Object networkMode = composeServiceData.get(ServiceDiscoveryConfigItem.NETWORKMODE.getDockerName());
+        Object networkMode = composeServiceData.get(ComposeExportConfigItem.NETWORKMODE.getDockerName());
         if (networkMode != null) {
             if (networkMode.equals(NetworkConstants.NETWORK_MODE_CONTAINER)) {
                 Map<String, Object> serviceData = ServiceUtil.getLaunchConfigDataAsMap(service,
@@ -406,25 +406,25 @@ public class ServiceDiscoveryComposeExportServiceImpl implements ServiceDiscover
                 if (targetContainerId != null) {
                     Instance instance = objectManager.loadResource(Instance.class, targetContainerId.longValue());
                     String instanceName = ServiceUtil.getInstanceName(instance);
-                    composeServiceData.put(ServiceDiscoveryConfigItem.NETWORKMODE.getDockerName(),
+                    composeServiceData.put(ComposeExportConfigItem.NETWORKMODE.getDockerName(),
                             NetworkConstants.NETWORK_MODE_CONTAINER + ":" + instanceName);
                 } else {
                     Object networkLaunchConfig = serviceData
                             .get(ServiceConstants.FIELD_NETWORK_LAUNCH_CONFIG);
                     if (networkLaunchConfig != null) {
-                        composeServiceData.put(ServiceDiscoveryConfigItem.NETWORKMODE.getDockerName(),
+                        composeServiceData.put(ComposeExportConfigItem.NETWORKMODE.getDockerName(),
                                 NetworkConstants.NETWORK_MODE_CONTAINER + ":" + networkLaunchConfig);
                     }
                 }
             } else if (networkMode.equals(NetworkConstants.NETWORK_MODE_MANAGED)) {
-                composeServiceData.remove(ServiceDiscoveryConfigItem.NETWORKMODE.getDockerName());
+                composeServiceData.remove(ComposeExportConfigItem.NETWORKMODE.getDockerName());
             }
         }
     }
 
     protected void translateRancherToCompose(boolean forDockerCompose, Map<String, Object> rancherServiceData,
             Map<String, Object> composeServiceData, String cattleName, Service service, boolean isVolume) {
-        ServiceDiscoveryConfigItem item = ServiceDiscoveryConfigItem.getServiceConfigItemByCattleName(cattleName,
+        ComposeExportConfigItem item = ComposeExportConfigItem.getServiceConfigItemByCattleName(cattleName,
                 service, isVolume);
         if (item != null && item.isDockerComposeProperty() == forDockerCompose) {
             Object value = rancherServiceData.get(cattleName);
@@ -496,7 +496,7 @@ public class ServiceDiscoveryComposeExportServiceImpl implements ServiceDiscover
         }
 
         if (!namesCombined.isEmpty()) {
-            composeServiceData.put(ServiceDiscoveryConfigItem.VOLUMESFROM.getDockerName(), namesCombined);
+            composeServiceData.put(ComposeExportConfigItem.VOLUMESFROM.getDockerName(), namesCombined);
         }
     }
 
@@ -504,12 +504,12 @@ public class ServiceDiscoveryComposeExportServiceImpl implements ServiceDiscover
     private void translateV1VolumesToV2(Map<String, Object> cattleServiceData,
             Map<String, Object> composeServiceData, Map<String, Object> volumesData) {
         // volume driver presence defines the v1 format for the volumes
-        String volumeDriver = String.valueOf(cattleServiceData.get(ServiceDiscoveryConfigItem.VOLUME_DRIVER
+        String volumeDriver = String.valueOf(cattleServiceData.get(ComposeExportConfigItem.VOLUME_DRIVER
                 .getCattleName()));
         if (StringUtils.isEmpty(volumeDriver)) {
             return;
         }
-        composeServiceData.remove(ServiceDiscoveryConfigItem.VOLUME_DRIVER
+        composeServiceData.remove(ComposeExportConfigItem.VOLUME_DRIVER
                 .getDockerName());
         Object dataVolumes = cattleServiceData.get(InstanceConstants.FIELD_DATA_VOLUMES);
         if (dataVolumes == null) {
@@ -619,17 +619,21 @@ public class ServiceDiscoveryComposeExportServiceImpl implements ServiceDiscover
             String globalService = labels.get(ServiceConstants.LABEL_SERVICE_GLOBAL);
             if (Boolean.valueOf(globalService) == true) {
                 composeServiceData.remove(ServiceConstants.FIELD_SCALE);
+            } else {
+                composeServiceData.remove(ServiceConstants.FIELD_SCALE_MAX);
+                composeServiceData.remove(ServiceConstants.FIELD_SCALE_MIN);
+                composeServiceData.remove(ServiceConstants.FIELD_SCALE_INCREMENT);
             }
         }
     }
 
     protected void setupServiceType(Service service, Map<String, Object> composeServiceData) {
-        Object type = composeServiceData.get(ServiceDiscoveryConfigItem.SERVICE_TYPE.getCattleName());
+        Object type = composeServiceData.get(ComposeExportConfigItem.SERVICE_TYPE.getCattleName());
         if (type == null) {
             return;
         }
         if (!InstanceConstants.KIND_VIRTUAL_MACHINE.equals(type.toString())) {
-            composeServiceData.remove(ServiceDiscoveryConfigItem.SERVICE_TYPE.getCattleName());
+            composeServiceData.remove(ComposeExportConfigItem.SERVICE_TYPE.getCattleName());
         }
     }
 }

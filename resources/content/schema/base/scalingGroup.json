@@ -1,0 +1,11 @@
+{
+    "resourceFields": {
+        "lbConfig": {
+            "type" : "lbTargetConfig",
+            "nullable": true,
+             "attributes" : {
+                "scheduleUpdate" : true
+            }
+        }
+    }
+}

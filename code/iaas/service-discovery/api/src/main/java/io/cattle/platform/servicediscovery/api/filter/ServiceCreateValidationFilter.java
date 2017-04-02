@@ -5,11 +5,12 @@ import io.cattle.platform.core.addon.PortRule;
 import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.constants.ServiceConstants;
+import io.cattle.platform.core.dao.ServiceDao;
 import io.cattle.platform.core.model.Service;
 import io.cattle.platform.core.model.Stack;
 import io.cattle.platform.core.util.PortSpec;
 import io.cattle.platform.core.util.ServiceUtil;
-import io.cattle.platform.core.util.ServiceUtil.UpgradedConfig;
+import io.cattle.platform.core.util.ServiceUtil.RevisionData;
 import io.cattle.platform.iaas.api.filter.common.AbstractDefaultResourceManagerFilter;
 import io.cattle.platform.json.JsonMapper;
 import io.cattle.platform.object.ObjectManager;
@@ -49,6 +50,8 @@ public class ServiceCreateValidationFilter extends AbstractDefaultResourceManage
     JsonMapper jsonMapper;
     @Inject
     ServiceDataManager svcDataMgr;
+    @Inject
+    ServiceDao svcDao;
 
     private static final int LB_HEALTH_CHECK_PORT = 42;
 
@@ -62,12 +65,16 @@ public class ServiceCreateValidationFilter extends AbstractDefaultResourceManage
         return new String[] { ServiceConstants.KIND_SERVICE,
                 ServiceConstants.KIND_LOAD_BALANCER_SERVICE,
                 ServiceConstants.KIND_EXTERNAL_SERVICE, ServiceConstants.KIND_DNS_SERVICE,
-                ServiceConstants.KIND_NETWORK_DRIVER_SERVICE, ServiceConstants.KIND_STORAGE_DRIVER_SERVICE};
+                ServiceConstants.KIND_NETWORK_DRIVER_SERVICE, ServiceConstants.KIND_STORAGE_DRIVER_SERVICE,
+                ServiceConstants.KIND_SCALING_GROUP_SERVICE,
+                ServiceConstants.KIND_SELECTOR_SERVICE };
     }
 
     @Override
     public Object create(String type, ApiRequest request, ResourceManager next) {
         Service service = request.proxyRequestObject(Service.class);
+
+        type = setKind(type, service, request);
 
         validateStack(service);
 
@@ -87,7 +94,59 @@ public class ServiceCreateValidationFilter extends AbstractDefaultResourceManage
 
         validateLbConfig(request, type);
 
-        return super.create(type, request, next);
+        Object svcObj = super.create(type, request, next);
+        if (svcObj == null) {
+            return svcObj;
+        }
+        RevisionData revision = svcDao.createServiceRevision((Service) svcObj,
+                CollectionUtils.toMap(request.getRequestObject()), true);
+        if (revision.getRevisionId() != null) {
+            objectManager.setFields(svcObj, InstanceConstants.FIELD_REVISION_ID, revision.getRevisionId(),
+                    ServiceConstants.FIELD_IS_UPGRADE, revision.isUpgrade());
+        }
+
+        return svcObj;
+    }
+
+    @SuppressWarnings("unchecked")
+    public String setKind(String type, Service service, ApiRequest request) {
+        // type is set via API request
+        if (!ServiceConstants.KIND_SERVICE.equalsIgnoreCase(type) || request.getVersion().equals("v1")) {
+            return type;
+        }
+        Map<String, Object> data = CollectionUtils.toMap(request.getRequestObject());
+        if (data.get(ServiceConstants.FIELD_EXTERNALIPS) != null || data.get(ServiceConstants.FIELD_HOSTNAME) != null) {
+            return ServiceConstants.KIND_EXTERNAL_SERVICE;
+        } else if (data.get(ServiceConstants.FIELD_STORAGE_DRIVER) != null) {
+            return ServiceConstants.KIND_STORAGE_DRIVER_SERVICE;
+        } else if (data.get(ServiceConstants.FIELD_NETWORK_DRIVER) != null) {
+            return ServiceConstants.KIND_NETWORK_DRIVER_SERVICE;
+        } else if (data.get(ServiceConstants.FIELD_SELECTOR_CONTAINER) != null) {
+            return ServiceConstants.KIND_SELECTOR_SERVICE;
+        } else if (data.get(ServiceConstants.FIELD_LAUNCH_CONFIG) != null) {
+            Map<String, Object> lbConfig = DataUtils.getFieldFromRequest(request, ServiceConstants.FIELD_LB_CONFIG,
+                    Map.class);
+            if (lbConfig != null && lbConfig.containsKey(ServiceConstants.FIELD_PORT_RULES)) {
+                List<PortRule> portRules = jsonMapper.convertCollectionValue(
+                        lbConfig.get(ServiceConstants.FIELD_PORT_RULES), List.class, PortRule.class);
+                for (PortRule rule : portRules) {
+                    if (rule.getSourcePort() != null && rule.getSourcePort().longValue() > 0) {
+                        return ServiceConstants.KIND_LOAD_BALANCER_SERVICE;
+                    }
+                }
+            }
+            Map<String, Object> launchConfig = DataUtils.getFieldFromRequest(request,
+                    ServiceConstants.FIELD_LAUNCH_CONFIG,
+                    Map.class);
+            if (ServiceConstants.IMAGE_DNS.equals(launchConfig
+                    .get(InstanceConstants.FIELD_IMAGE_UUID))) {
+                return ServiceConstants.KIND_DNS_SERVICE;
+            }
+            if (data.get(ServiceConstants.FIELD_SCALE) != null) {
+                return ServiceConstants.KIND_SCALING_GROUP_SERVICE;
+            }
+        }
+        return type;
     }
 
     @SuppressWarnings("unchecked")
@@ -245,7 +304,9 @@ public class ServiceCreateValidationFilter extends AbstractDefaultResourceManage
             Map<String, Object> launchConfig = (Map<String, Object>)data.get(ServiceConstants.FIELD_LAUNCH_CONFIG);
             if (launchConfig.get(InstanceConstants.FIELD_IMAGE_UUID) != null) {
                 Object imageUuid = launchConfig.get(InstanceConstants.FIELD_IMAGE_UUID);
-                if (imageUuid != null && !imageUuid.toString().equalsIgnoreCase(ServiceConstants.IMAGE_NONE)) {
+                List<String> ignoreImages = Arrays.asList(ServiceConstants.IMAGE_NONE,
+                        ServiceConstants.IMAGE_DNS);
+                if (imageUuid != null && !ignoreImages.contains(imageUuid.toString())) {
                     String fullImageName = ExternalTemplateInstanceFilter.getImageUuid(imageUuid.toString(), storageService);
                     launchConfig.put(InstanceConstants.FIELD_IMAGE_UUID, fullImageName);
                     data.put(ServiceConstants.FIELD_LAUNCH_CONFIG, launchConfig);
@@ -307,27 +368,18 @@ public class ServiceCreateValidationFilter extends AbstractDefaultResourceManage
     }
 
     protected ApiRequest setForUpgrade(Service service, ApiRequest request) {
-        Map<String, Object> data = CollectionUtils.toMap(request.getRequestObject());
-        List<Map<String, Object>> launchConfigs = populateLaunchConfigs(service, request);
-        List<Map<String, Object>> secondary = new ArrayList<>();
-        Map<String, Object> primary = null;
-        for (Map<String, Object> lc : launchConfigs) {
-            if (!lc.containsKey("name")) {
-                primary = lc;
-            } else {
-                secondary.add(lc);
-            }
-        }
-        UpgradedConfig upgrade = ServiceUtil.mergeLaunchConfigs(service, primary, secondary);
-        if (upgrade == null) {
+        RevisionData newRevision = svcDao.createServiceRevision(service,
+                CollectionUtils.toMap(request.getRequestObject()),
+                false);
+        if (newRevision.getRevisionId() == null) {
             return request;
         }
-        if (upgrade.isRunUpgrade()) {
-            data.putAll(svcDataMgr.getServiceDataForUpgrade(service, upgrade.getPrimaryLaunchConfig(),
-                    upgrade.getSecondaryLaunchConfigs()));
-        }
+        Map<String, Object> data = new HashMap<>();
+        data.putAll(newRevision.getConfig());
+        data.put(InstanceConstants.FIELD_REVISION_ID, newRevision.getRevisionId());
+        data.put(InstanceConstants.FIELD_PREVIOUS_REVISION_ID, service.getRevisionId());
+        data.put(ServiceConstants.FIELD_IS_UPGRADE, newRevision.isUpgrade());
         request.setRequestObject(data);
-
         return request;
     }
 
@@ -338,11 +390,29 @@ public class ServiceCreateValidationFilter extends AbstractDefaultResourceManage
         List<Map<String, Object>> launchConfigs = populateLaunchConfigs(service, request);
         validateLaunchConfigNames(service, serviceName, launchConfigs);
         validateLaunchConfigsCircularRefs(service, serviceName, launchConfigs);
-        validateLaunchConfigScale(service, request);
+        validateScale(service, request);
     }
 
-    protected void validateLaunchConfigScale(Service service, ApiRequest request) {
+    protected void validateScale(Service service, ApiRequest request) {
         Map<String, Object> data = CollectionUtils.toMap(request.getRequestObject());
+
+        Long scaleMin = DataAccessor.fieldLong(service, ServiceConstants.FIELD_SCALE_MIN);
+        if (data.get(ServiceConstants.FIELD_SCALE_MIN) != null) {
+            scaleMin = Long.valueOf(data.get(ServiceConstants.FIELD_SCALE_MIN).toString());
+        }
+
+        Long scaleMax = DataAccessor.fieldLong(service, ServiceConstants.FIELD_SCALE_MAX);
+        if (data.get(ServiceConstants.FIELD_SCALE_MAX) != null) {
+            scaleMax = Long.valueOf(data.get(ServiceConstants.FIELD_SCALE_MAX).toString());
+        }
+
+        if (scaleMax != null && scaleMin != null) {
+            if (scaleMax.longValue() < scaleMin.longValue()) {
+                ValidationErrorCodes.throwValidationError(ValidationErrorCodes.INVALID_OPTION,
+                        "ScaleMin can not be greater than scaleMax");
+            }
+        }
+
         Object newLaunchConfig = data.get(ServiceConstants.FIELD_LAUNCH_CONFIG);
         if (newLaunchConfig == null) {
             return;

@@ -6,7 +6,6 @@ import static io.cattle.platform.core.model.tables.InstanceTable.*;
 import static io.cattle.platform.core.model.tables.ServiceExposeMapTable.*;
 import static io.cattle.platform.core.model.tables.ServiceTable.*;
 import io.cattle.platform.core.constants.CommonStatesConstants;
-import io.cattle.platform.core.constants.HealthcheckConstants;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.constants.ServiceConstants;
 import io.cattle.platform.core.dao.ServiceDao;
@@ -16,7 +15,9 @@ import io.cattle.platform.core.model.DeploymentUnit;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.Service;
 import io.cattle.platform.core.model.ServiceExposeMap;
+import io.cattle.platform.core.util.ServiceUtil.RevisionData;
 import io.cattle.platform.object.util.DataAccessor;
+import io.cattle.platform.object.util.DataUtils;
 import io.github.ibuildthecloud.gdapi.condition.Condition;
 import io.github.ibuildthecloud.gdapi.condition.ConditionType;
 
@@ -47,8 +48,45 @@ public class SampleDataStartupV14 extends AbstractSampleData {
     @Override
     protected void populatedData(Account system, List<Object> toCreate) {
         createMissingDeploymentUnits();
-        updateStateAndHealthState();
+        updateState();
         updateDeploymentUnitAndServiceId();
+        setAndUpdateServiceRevision();
+    }
+
+    public void setAndUpdateServiceRevision() {
+        List<? extends DeploymentUnit> dus = objectManager.find(DeploymentUnit.class, DEPLOYMENT_UNIT.REMOVED,
+                new Condition(ConditionType.NULL));
+        Map<Long, List<DeploymentUnit>> serviceToDU = new HashMap<>();
+        for (DeploymentUnit du : dus) {
+            List<DeploymentUnit> units = new ArrayList<>();
+            if (serviceToDU.containsKey(du.getServiceId())) {
+                units = serviceToDU.get(du.getServiceId());
+            }
+            units.add(du);
+            serviceToDU.put(du.getServiceId(), units);
+        }
+
+        List<? extends Service> services = objectManager.find(Service.class, SERVICE.REMOVED,
+                new Condition(ConditionType.NULL));
+        for (Service service : services) {
+            Long revisionId = createServiceRevision(service);
+            objectManager.setFields(service, InstanceConstants.FIELD_REVISION_ID, revisionId);
+            if (serviceToDU.containsKey(service.getId())) {
+                for (DeploymentUnit du : serviceToDU.get(service.getId())) {
+                    objectManager.setFields(du, InstanceConstants.FIELD_REVISION_ID, revisionId);
+                }
+            }
+        }
+    }
+
+    Long createServiceRevision(Service service) {
+        Map<String, Object> data = new HashMap<>();
+        data.putAll(DataUtils.getWritableFields(service));
+        data.put(ServiceConstants.FIELD_SELECTOR_CONTAINER, service.getSelectorContainer());
+        data.put(ServiceConstants.FIELD_SELECTOR_LINK, service.getSelectorLink());
+
+        RevisionData revisionData = svcDao.createServiceRevision(service, data, true);
+        return revisionData.getRevisionId();
     }
 
     public void updateDeploymentUnitAndServiceId() {
@@ -96,7 +134,7 @@ public class SampleDataStartupV14 extends AbstractSampleData {
         }
     }
 
-    public void updateStateAndHealthState() {
+    public void updateState() {
         List<? extends DeploymentUnit> dus = objectManager.find(DeploymentUnit.class, DEPLOYMENT_UNIT.REMOVED, new Condition(ConditionType.NULL));
         List<? extends Service> services = objectManager.find(Service.class, SERVICE.REMOVED, new Condition(ConditionType.NULL));
         Map<Long, String> servicesStatesMap = new HashMap<>();
@@ -107,16 +145,13 @@ public class SampleDataStartupV14 extends AbstractSampleData {
         List<DeploymentUnit> triggerUpdate = new ArrayList<>();
         for (DeploymentUnit du : dus) {
             Map<String, Object> props = new HashMap<>();
-            props.put("healthState", HealthcheckConstants.HEALTH_STATE_HEALTHY);
-            String duState = null;
+            String duState = CommonStatesConstants.INACTIVE;
             String svcState = servicesStatesMap.get(du.getServiceId());
             List<String> activeStates = Arrays.asList(CommonStatesConstants.ACTIVE,
                     CommonStatesConstants.UPDATING_ACTIVE, CommonStatesConstants.ACTIVATING);
             if (activeStates.contains(svcState)){
                 duState = CommonStatesConstants.ACTIVE;
                 triggerUpdate.add(du);
-            } else {
-                duState = CommonStatesConstants.INACTIVE;
             }
             
             props.put("state", duState);

@@ -20,11 +20,17 @@ public class ServiceConstants {
     public static final String KIND_DNS_SERVICE = "dnsService";
     public static final String KIND_STORAGE_DRIVER_SERVICE = "storageDriverService";
     public static final String KIND_NETWORK_DRIVER_SERVICE = "networkDriverService";
+    public static final String KIND_SCALING_GROUP_SERVICE = "scalingGroup";
+    public static final String KIND_SELECTOR_SERVICE = "selectorService";
+    public static final String KIND_KUBERNETES_SERVICE = "kubernetesService";
+    public static final String KIND_COMPOSE_SERVICE = "composeService";
+
     public static final Set<String> SERVICE_LIKE = new HashSet<>(Arrays.asList(
             KIND_SERVICE,
             KIND_LOAD_BALANCER_SERVICE,
             KIND_STORAGE_DRIVER_SERVICE,
-            KIND_NETWORK_DRIVER_SERVICE
+            KIND_NETWORK_DRIVER_SERVICE,
+            KIND_SCALING_GROUP_SERVICE
         ));
     
 
@@ -59,7 +65,7 @@ public class ServiceConstants {
     public static final String FIELD_PUBLIC_ENDPOINTS = "publicEndpoints";
     public static final String FIELD_RESTART = "restart";
     public static final String FIELD_TOKEN = "token";
-    public static final String FIELD_SERVICE_RETAIN_IP = "retainIp";
+    public static final String FIELD_RETAIN_IP = "retainIp";
     public static final String STACK_FIELD_DOCKER_COMPOSE = "dockerCompose";
     public static final String STACK_FIELD_RANCHER_COMPOSE = "rancherCompose";
     public static final String STACK_FIELD_START_ON_CREATE = "startOnCreate";
@@ -86,21 +92,21 @@ public class ServiceConstants {
     public static final String FIELD_DEPLOYMENT_UNIT_REMOVE_LOG_LEVEL = "removeLogLevel";
     public static final String FIELD_DEPLOYMENT_UNIT_REMOVE_REASON = "removeReason";
     public static final String FIELD_DEPLOYMENT_UNIT_CLEANUP = "cleanup";
-    public static final String FIELD_IS_UPGRADE = "isUpgrade";
     public static final String FIELD_BATCHSIZE = "batchSize";
     public static final String FIELD_INTERVAL_MILLISEC = "intervalMillis";
-    public static final String FIELD_START_FIRST = "startFirst";
-    public static final String FIELD_UPGRADE_TIME = "upgradeTime";
+    public static final String FIELD_START_FIRST_ON_UPGRADE = "startFirst";
     public static final String FIELD_SCALE_MAX = "scaleMax";
     public static final String FIELD_SCALE_INCREMENT = "scaleIncrement";
-    public static final String FIELD_SERVICE_REVISION_CONFIGS = "configs";
     public static final String FIELD_SCALE_MIN = "scaleMin";
     public static final String FIELD_FINISH_UPGRADE = "finishUpgrade";
-
+    public static final String FIELD_IS_UPGRADE = "isUpgrade";
+    public static final String FIELD_FORCE_UPGRADE = "forceUpgrade";
+    
     public static final String FIELD_INTERNAL_VOLUMES = "internalVolumes";
     public static final String FIELD_VOLUME_TEMPLATE_ID = "volumeTemplateId";
     public static final String FIELD_DEPLOYMENT_UNIT_ID = "deploymentUnitId";
     public static final String FIELD_SERVICE_INDEX_STRATEGY = "serviceIndexStrategy";
+    public static final String FIELD_DEPLOYMENT_UNIT_CLEANUP_TIME = "cleanupTime";
 
     public static final String ACTION_SERVICE_ACTIVATE = "activate";
     public static final String ACTION_SERVICE_CREATE = "create";
@@ -143,8 +149,7 @@ public class ServiceConstants {
     public static final String PROCESS_DU_ACTIVATE = "deploymentunit.activate";
     public static final String PROCESS_DU_DEACTIVATE = "deploymentunit.deactivate";
     public static final String PROCESS_DU_REMOVE = "deploymentunit.remove";
-    public static final String PROCESS_DU_UPDATE_UNHEALTHY = "deploymentunit.updateunhealthy";
-    public static final String PROCESS_DU_UPDATE_HEALTHY = "deploymentunit.updatehealthy";
+    public static final String PROCESS_DU_ERROR = "deploymentunit.error";
     public static final String PROCESS_SERVICE_CANCEL_UPGRADE = "service.cancelupgrade";
     public static final String PROCESS_SERVICE_PAUSE = "service.pause";
     public static final String PROCESS_SERVICE_GARBAGE_COLLECT = "service.garbagecollect";
@@ -181,6 +186,7 @@ public class ServiceConstants {
     public static final String STATE_UPDATING = "updating";
 
     public static final String IMAGE_NONE = "rancher/none";
+    public final static String IMAGE_DNS = "rancher/dns-service";
 
     public static final String AUDIT_LOG_REMOVE_EXTRA = "Removing extra service instance";
     public static final String AUDIT_LOG_REMOVE_UNHEATLHY = "Removing unhealthy service instance";
