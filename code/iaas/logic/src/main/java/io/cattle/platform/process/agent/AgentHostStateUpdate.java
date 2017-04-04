@@ -95,6 +95,8 @@ public class AgentHostStateUpdate extends AbstractObjectProcessPrePostListener i
         }
         if (delay != null && delay > -1) {
             props.put(HOST.REMOVE_AFTER, new Date(System.currentTimeMillis() + delay * 1000));
+        } else {
+            props.put(HOST.REMOVE_AFTER, null);
         }
         objectManager.setFields(host, objectManager.convertToPropertiesFor(host, props));
         trigger(host);

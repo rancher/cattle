@@ -6,6 +6,7 @@ import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.PhysicalHost;
 import io.cattle.platform.core.model.StoragePool;
 
+import java.util.List;
 import java.util.Map;
 
 public interface AgentDao {
@@ -25,5 +26,7 @@ public interface AgentDao {
     Instance getInstance(Agent agent);
 
     String getAgentState(long agentId);
+
+    List<? extends Agent> findAgentsToRemove();
 
 }

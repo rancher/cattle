@@ -14,6 +14,7 @@ import com.netflix.config.DynamicLongProperty;
 public interface HostDao {
 
     public final static DynamicLongProperty HOST_REMOVE_DELAY = ArchaiusUtil.getLong("host.remove.delay.seconds");
+    public static final DynamicLongProperty HOST_REMOVE_START_DELAY = ArchaiusUtil.getLong("host.remove.delay.startup.seconds");
 
     List<? extends Host> getHosts(Long accountId, List<String> uuids);
 
