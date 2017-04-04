@@ -15,9 +15,7 @@ def test_settings_create_delete(admin_user_client, random_str):
     assert s.value == value
 
     admin_user_client.delete(s)
-
-    s = admin_user_client.by_id_setting(s.id)
-    assert s.value is None
+    wait_for(lambda: admin_user_client.by_id_setting(s.id).value is None)
 
 
 def test_settings_update(admin_user_client, random_str):
@@ -54,9 +52,7 @@ def test_settings_update(admin_user_client, random_str):
     assert s.value == 'new2'
 
     admin_user_client.delete(s)
-
-    s = admin_user_client.by_id_setting(s.id)
-    assert s.value is None
+    wait_for(lambda: admin_user_client.by_id_setting(s.id).value is None)
 
 
 def test_exec_update_existing(admin_user_client):
