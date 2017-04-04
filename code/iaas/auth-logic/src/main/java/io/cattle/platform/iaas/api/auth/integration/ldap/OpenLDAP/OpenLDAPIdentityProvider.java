@@ -69,7 +69,7 @@ public class OpenLDAPIdentityProvider extends LDAPIdentityProvider implements Id
                 }
                 Set<Identity> identities = getIdentities(dn);
                 Token token = getTokenUtils().createToken(identities, null);
-                authToken = authTokenDao.createToken(token.getJwt(), getConstantsConfig().getConfig(), account.getId());
+                authToken = authTokenDao.createToken(token.getJwt(), getConstantsConfig().getConfig(), account.getId(), account.getId());
             }
             if (authToken != null && authToken.getKey() != null) {
                 ApiRequest request = ApiContext.getContext().getApiRequest();

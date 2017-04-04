@@ -63,7 +63,7 @@ public class TokenAuthLookup implements AccountLookup, Priority {
         return null;
     }
 
-    private TokenUtil tokenUtils(){
+    public TokenUtil tokenUtils(){
         if (SecurityConstants.INTERNAL_AUTH_PROVIDERS.contains(SecurityConstants.AUTH_PROVIDER.get())) {
             TokenUtil tokenUtil = tokenUtilsMap.get(SecurityConstants.AUTH_PROVIDER.get());
             if (tokenUtil == null || !tokenUtil.isConfigured()) {

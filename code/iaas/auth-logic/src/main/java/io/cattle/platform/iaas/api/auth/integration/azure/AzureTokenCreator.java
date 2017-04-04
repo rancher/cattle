@@ -51,4 +51,9 @@ public class AzureTokenCreator extends AzureConfigurable implements TokenCreator
     public String getName() {
         return AzureConstants.TOKEN_CREATOR;
     }
+
+    @Override
+    public Token getCurrentToken() {
+        return azureTokenUtils.retrieveCurrentToken();
+    }
 }

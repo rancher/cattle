@@ -16,6 +16,7 @@ import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.token.TokenException;
 import io.cattle.platform.token.TokenService;
+import io.cattle.platform.util.type.CollectionUtils;
 import io.github.ibuildthecloud.gdapi.context.ApiContext;
 import io.github.ibuildthecloud.gdapi.exception.ClientVisibleException;
 import io.github.ibuildthecloud.gdapi.request.ApiRequest;
@@ -396,4 +397,49 @@ public abstract class AbstractTokenUtil implements TokenUtil {
         return UNRESTRICTED_ACCESSMODE.equalsIgnoreCase(accessMode);
     }
 
+    public Identity jsonToIdentity(Map<String, Object> jsonData) {
+        String externalId = ObjectUtils.toString(jsonData.get("externalId"));
+        String externalIdType = ObjectUtils.toString(jsonData.get("externalIdType"));
+        String name = ObjectUtils.toString(jsonData.get("name"));
+        String profilePicture = ObjectUtils.toString(jsonData.get("profilePicture"));
+        String profileUrl = ObjectUtils.toString(jsonData.get("profileUrl"));
+        String login = ObjectUtils.toString(jsonData.get("login"));
+        return new Identity(externalIdType, externalId, name, profileUrl, profilePicture, login);
+    }
+
+    public Token getUserIdentityFromJWT() {
+        Token token = new Token();
+        Map<String, Object> jsonData = getJsonData();
+        if (jsonData == null) {
+            return null;
+        }
+        AuthToken authToken= authTokenDao.getTokenByKey(getJWT());
+        String tokenId = (String)ApiContext.getContext().getIdFormatter().formatId(objectManager.getType(Account.class), authToken.getId());
+        token.setId(tokenId);
+        Object idObject = jsonData.get(USER_IDENTITY);
+        if (idObject != null) {
+            Map<String, Object> idMap = CollectionUtils.toMap(idObject);
+            Identity userIdentity = jsonToIdentity(idMap);
+            String userType = ObjectUtils.toString(jsonData.get(USER_TYPE), null);
+            token.setUserIdentity(userIdentity);
+            token.setUserType(userType);
+        }
+        return token;
+    }
+
+    public Token retrieveCurrentToken() {
+        Token token = new Token();
+
+        if (findAndSetJWT()) {
+            Token userToken = getUserIdentityFromJWT();
+            if(userToken != null) {
+                token.setUserIdentity(userToken.getUserIdentity());
+                token.setUserType(userToken.getUserType());
+                token.setId(userToken.getId());
+                token.setJwt(getJWT());
+            }
+        }
+        log.info("retrieveCurrentToken returning {}", token);
+        return token;
+    }
 }

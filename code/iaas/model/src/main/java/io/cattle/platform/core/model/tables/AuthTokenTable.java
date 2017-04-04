@@ -11,7 +11,7 @@ package io.cattle.platform.core.model.tables;
 @java.lang.SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class AuthTokenTable extends org.jooq.impl.TableImpl<io.cattle.platform.core.model.tables.records.AuthTokenRecord> {
 
-	private static final long serialVersionUID = 419018058;
+	private static final long serialVersionUID = 1740987611;
 
 	/**
 	 * The singleton instance of <code>cattle.auth_token</code>
@@ -65,6 +65,11 @@ public class AuthTokenTable extends org.jooq.impl.TableImpl<io.cattle.platform.c
 	 * The column <code>cattle.auth_token.provider</code>.
 	 */
 	public final org.jooq.TableField<io.cattle.platform.core.model.tables.records.AuthTokenRecord, java.lang.String> PROVIDER = createField("provider", org.jooq.impl.SQLDataType.VARCHAR.length(255).nullable(false), this, "");
+
+	/**
+	 * The column <code>cattle.auth_token.authenticated_as_account_id</code>.
+	 */
+	public final org.jooq.TableField<io.cattle.platform.core.model.tables.records.AuthTokenRecord, java.lang.Long> AUTHENTICATED_AS_ACCOUNT_ID = createField("authenticated_as_account_id", org.jooq.impl.SQLDataType.BIGINT, this, "");
 
 	/**
 	 * Create a <code>cattle.auth_token</code> table reference

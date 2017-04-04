@@ -7,5 +7,7 @@ public interface TokenCreator extends Configurable, Provider{
 
     Token getToken(ApiRequest request);
 
+    Token getCurrentToken();
+
     void reset();
 }

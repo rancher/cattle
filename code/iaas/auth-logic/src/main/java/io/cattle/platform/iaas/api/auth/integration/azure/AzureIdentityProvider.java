@@ -84,7 +84,7 @@ public class AzureIdentityProvider extends AzureConfigurable implements Identity
             if (authToken == null) {
                 try {
                     jwt = ProjectConstants.AUTH_TYPE + azureTokenCreator.getAzureToken(accessToken).getJwt();
-                    authToken = authTokenDao.createToken(jwt, AzureConstants.CONFIG, account.getId());
+                    authToken = authTokenDao.createToken(jwt, AzureConstants.CONFIG, account.getId(), account.getId());
                     jwt = authToken.getKey();
                 } catch (ClientVisibleException e) {
                     if (e.getCode().equalsIgnoreCase(AzureConstants.AZURE_ERROR) &&
