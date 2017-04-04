@@ -1,5 +1,8 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog" xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.1.xsd">
+    <property name="blob" value="bytea" dbms="postgresql" />
+    <property name="blob" value="mediumblob" />
+    <property name="blob" value="blob" dbms="H2" />
     <property name="mediumtext" value="TEXT" dbms="postgresql" />
     <property name="mediumtext" value="MEDIUMTEXT" />
     <property name="mediumtext" value="varchar" dbms="H2" />
@@ -29,6 +32,8 @@
         </createTable>
     </changeSet>
     <changeSet author="darren (generated)" id="dump3">
+        <validCheckSum>7:d5bac3dd7ddcdbca9e4bfac556108873</validCheckSum>
+        <validCheckSum>7:e5bc57336415ae2a22426e70535c8ee0</validCheckSum>
         <createTable tableName="catalog_file">
             <column autoIncrement="true" name="id" type="BIGINT">
                 <constraints primaryKey="true"/>
@@ -37,7 +42,7 @@
             <column name="updated_at" type="datetime"/>
             <column name="version_id" type="BIGINT"/>
             <column name="name" type="VARCHAR(1024)"/>
-            <column name="contents" type="${mediumtext}"/>
+            <column name="contents" type="${blob}"/>
         </createTable>
     </changeSet>
     <changeSet author="darren (generated)" id="dump4">
@@ -53,6 +58,8 @@
         </createTable>
     </changeSet>
     <changeSet author="darren (generated)" id="dump5">
+        <validCheckSum>7:e7bbdee8cde3bb157f28f4e49bcb1103</validCheckSum>
+        <validCheckSum>7:8e1b926d008871de0dfcc3d6deda83ee</validCheckSum>
         <createTable tableName="catalog_template">
             <column autoIncrement="true" name="id" type="BIGINT">
                 <constraints primaryKey="true"/>
@@ -75,7 +82,7 @@
             <column name="base" type="VARCHAR(1024)"/>
             <column name="icon" type="${mediumtext}"/>
             <column name="icon_filename" type="VARCHAR(255)"/>
-            <column name="readme" type="${mediumtext}"/>
+            <column name="readme" type="${blob}"/>
         </createTable>
     </changeSet>
     <changeSet author="darren (generated)" id="dump6">
@@ -90,6 +97,8 @@
         </createTable>
     </changeSet>
     <changeSet author="darren (generated)" id="dump7">
+        <validCheckSum>7:4370a3379560bd1729f588a9060082ad</validCheckSum>
+        <validCheckSum>7:201d8f0c6bac22a1fd75e95476188885</validCheckSum>
         <createTable tableName="catalog_version">
             <column autoIncrement="true" name="id" type="BIGINT">
                 <constraints primaryKey="true"/>
@@ -102,7 +111,7 @@
             <column name="minimum_rancher_version" type="VARCHAR(1024)"/>
             <column name="maximum_rancher_version" type="VARCHAR(1024)"/>
             <column name="upgrade_from" type="VARCHAR(1024)"/>
-            <column name="readme" type="${mediumtext}"/>
+            <column name="readme" type="${blob}"/>
         </createTable>
     </changeSet>
     <changeSet author="darren (generated)" id="dump10">
