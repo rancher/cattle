@@ -164,15 +164,12 @@ public class DefaultProcessManager implements ProcessManager, InitializationTask
         while (true) {
             ProcessInstance process = toPersist.take().getObject().get();
             if (process == null) {
-                return;
+                continue;
             }
 
             synchronized (process) {
                 if (process.isRunningLogic()) {
                     persistState(process, false);
-                }
-                if (process.getExitReason() == null) {
-                    queue(process);
                 }
             }
         }
