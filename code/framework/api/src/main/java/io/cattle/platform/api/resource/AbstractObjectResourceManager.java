@@ -301,7 +301,7 @@ public abstract class AbstractObjectResourceManager extends AbstractBaseResource
 
         addAccountAuthorization(byId, byLink, type, criteria, policy);
 
-        if (!policy.isOption(Policy.REMOVED_VISIBLE) && !byId) {
+        if (!showRemoved() && !byId) {
             /* removed is null or removed >= (NOW() - delay) */
             Condition or = new Condition(new Condition(ConditionType.NULL), new Condition(ConditionType.GTE, removedTime()));
             criteria.put(ObjectMetaDataManager.REMOVED_FIELD, or);
@@ -312,6 +312,14 @@ public abstract class AbstractObjectResourceManager extends AbstractBaseResource
         }
 
         return criteria;
+    }
+
+    protected boolean showRemoved() {
+        ApiRequest request = ApiContext.getContext().getApiRequest();
+        if (request == null) {
+            return false;
+        }
+        return request.getOptions().containsKey("_removed");
     }
 
     protected Date removedTime() {
