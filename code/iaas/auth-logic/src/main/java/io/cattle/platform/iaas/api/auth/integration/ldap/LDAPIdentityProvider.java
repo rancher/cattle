@@ -1,6 +1,7 @@
 package io.cattle.platform.iaas.api.auth.integration.ldap;
 
 import static javax.naming.directory.SearchControls.*;
+
 import io.cattle.platform.api.auth.Identity;
 import io.cattle.platform.core.constants.IdentityConstants;
 import io.cattle.platform.iaas.api.auth.AbstractTokenUtil;
@@ -78,9 +79,9 @@ public abstract class LDAPIdentityProvider implements IdentityProvider{
             return getObject(distinguishedName, scope);
         }
         catch (ServiceContextCreationException e){
-            throw new ClientVisibleException(ResponseCodes.INTERNAL_SERVER_ERROR, "LdapDown", "Could not create service context.", null);
+            throw new ClientVisibleException(ResponseCodes.SERVICE_UNAVAILABLE, "LdapDown", "Could not create service context: " + e.getMessage(), null);
         } catch (ServiceContextRetrievalException e) {
-            throw new ClientVisibleException(ResponseCodes.INTERNAL_SERVER_ERROR, "LdapDown", "Could not retrieve service context.", null);
+            throw new ClientVisibleException(ResponseCodes.SERVICE_UNAVAILABLE, "LdapDown", "Could not retrieve service context: " + e.getMessage(), null);
         }
     }
 

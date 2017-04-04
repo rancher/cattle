@@ -15,6 +15,7 @@ import io.github.ibuildthecloud.gdapi.request.ApiRequest;
 import io.github.ibuildthecloud.gdapi.util.ResponseCodes;
 
 import java.util.Map;
+
 import javax.inject.Inject;
 
 import org.apache.commons.lang3.ObjectUtils;
@@ -37,12 +38,12 @@ public class ADTokenCreator extends ADConfigurable implements TokenCreator {
 
     private Token getLdapToken(String username, String password) {
         if (!isConfigured()) {
-            throw new ClientVisibleException(ResponseCodes.INTERNAL_SERVER_ERROR, ADConstants.CONFIG, "Ldap Not Configured.", null);
+            throw new ClientVisibleException(ResponseCodes.SERVICE_UNAVAILABLE, ADConstants.CONFIG, "Ldap Not Configured.", null);
         }
         try {
             return adUtils.createToken(adIdentityProvider.getIdentities(username, password), null);
         } catch (ServiceContextCreationException | ServiceContextRetrievalException e){
-            throw new ClientVisibleException(ResponseCodes.INTERNAL_SERVER_ERROR, "LdapDown", "Could not talk to ldap", null);
+            throw new ClientVisibleException(ResponseCodes.SERVICE_UNAVAILABLE, "LdapDown", "Could not talk to ldap", null);
         }
     }
 
@@ -65,6 +66,7 @@ public class ADTokenCreator extends ADConfigurable implements TokenCreator {
         adIdentityProvider.reset();
     }
 
+    @Override
     public String getName() {
         return ADConstants.TOKEN_CREATOR;
     }

@@ -4,6 +4,7 @@ import io.cattle.platform.iaas.api.auth.integration.ldap.ServiceContextCreationE
 import io.cattle.platform.iaas.api.auth.integration.ldap.interfaces.LDAPConstants;
 
 import java.util.Hashtable;
+
 import javax.naming.Context;
 import javax.naming.NamingException;
 import javax.naming.ldap.InitialLdapContext;
@@ -11,16 +12,16 @@ import javax.naming.ldap.LdapContext;
 import javax.naming.ldap.LdapName;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.commons.pool2.PooledObject;
 import org.apache.commons.pool2.PooledObjectFactory;
 import org.apache.commons.pool2.impl.DefaultPooledObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 
 public class LdapServiceContextPoolFactory implements PooledObjectFactory<LdapContext> {
 
-    private static final Log logger = LogFactory.getLog(LdapServiceContextPoolFactory.class);
+    private static final Logger logger = LoggerFactory.getLogger(LdapServiceContextPoolFactory.class);
     LDAPConstants config;
 
     public LdapServiceContextPoolFactory(LDAPConstants config) {
@@ -49,8 +50,7 @@ public class LdapServiceContextPoolFactory implements PooledObjectFactory<LdapCo
             }
             userContext = new InitialLdapContext(props, null);
         } catch (NamingException e) {
-            logger.info("Failed to create a service context.");
-            logger.info(e.getMessage());
+            logger.info("Failed to create a service context: {}", e.getMessage());
             throw new ServiceContextCreationException("Unable to login to ldap using configured Service account.", e);
         }
         return new DefaultPooledObject<>(userContext);
@@ -67,8 +67,7 @@ public class LdapServiceContextPoolFactory implements PooledObjectFactory<LdapCo
             p.getObject().getAttributes(new LdapName(config.getDomain()));
             return true;
         } catch (NamingException e) {
-            logger.info("Failed to validate an existing ldap service context.");
-            logger.info(e.getMessage());
+            logger.info("Failed to validate an existing ldap service context: {}", e.getMessage());
             return false;
         }
     }
