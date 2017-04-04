@@ -89,8 +89,13 @@ public class DBDiscovery extends NoExceptionRunnable implements DiscoveryStrateg
     }
 
     protected void readId() throws IOException {
+        if (CLUSTERED.get()) {
+            uuid = getLocalAddress();
+            return;
+        }
+
         String file = ID_FILE.get();
-        if (StringUtils.isBlank(file) || CLUSTERED.get()) {
+        if (StringUtils.isBlank(file)) {
             return;
         }
 
