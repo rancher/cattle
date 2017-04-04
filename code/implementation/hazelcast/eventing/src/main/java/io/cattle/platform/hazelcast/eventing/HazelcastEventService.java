@@ -35,7 +35,7 @@ public class HazelcastEventService extends AbstractThreadPoolingEventService imp
     }
 
     @Override
-    protected void doSubscribe(final String eventName, SettableFuture<?> future) {
+    protected synchronized void doSubscribe(final String eventName, SettableFuture<?> future) {
         boolean success = false;
         Throwable t = null;
         try {
@@ -73,7 +73,7 @@ public class HazelcastEventService extends AbstractThreadPoolingEventService imp
     }
 
     @Override
-    protected void doUnsubscribe(String eventName) {
+    protected synchronized void doUnsubscribe(String eventName) {
         String id = registrations.remove(eventName);
         log.info("Unsubscribing from [{}] id [{}]", eventName, id);
 
