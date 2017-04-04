@@ -74,7 +74,7 @@ public class ADIdentityProvider extends LDAPIdentityProvider implements Identity
                 Set<Identity> identities = getIdentities(userRecord);
 
                 Token token = getTokenUtils().createToken(identities, null);
-                authToken = authTokenDao.createToken(token.getJwt(), getConstantsConfig().getConfig(), account.getId());
+                authToken = authTokenDao.createToken(token.getJwt(), getConstantsConfig().getConfig(), account.getId(), account.getId());
             }
             if (authToken != null && authToken.getKey() != null) {
                 ApiRequest request = ApiContext.getContext().getApiRequest();
