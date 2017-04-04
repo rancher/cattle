@@ -1,6 +1,7 @@
 package io.cattle.platform.process.instance;
 
 import io.cattle.platform.allocator.service.AllocatorService;
+import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.dao.GenericMapDao;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.InstanceHostMap;
@@ -20,7 +21,7 @@ public class InstanceDeallocate extends AbstractDefaultProcessHandler {
 
     @Inject
     AllocatorService allocatorService;
-    
+
     @Inject
     GenericMapDao mapDao;
 
@@ -35,6 +36,9 @@ public class InstanceDeallocate extends AbstractDefaultProcessHandler {
         Instance instance = (Instance) state.getResource();
 
         for (InstanceHostMap map : mapDao.findToRemove(InstanceHostMap.class, Instance.class, instance.getId())) {
+            if (CommonStatesConstants.ACTIVATING.equals(map.getState()) || CommonStatesConstants.ACTIVE.equals(map.getState())) {
+                deactivate(map, state.getData());
+            }
             remove(map, state.getData());
         }
 
