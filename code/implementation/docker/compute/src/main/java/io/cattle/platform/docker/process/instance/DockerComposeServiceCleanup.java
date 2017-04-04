@@ -1,5 +1,6 @@
 package io.cattle.platform.docker.process.instance;
 
+import io.cattle.platform.core.constants.ServiceConstants;
 import io.cattle.platform.core.model.Service;
 import io.cattle.platform.core.model.ServiceExposeMap;
 import io.cattle.platform.docker.service.ComposeManager;
@@ -18,7 +19,7 @@ public class DockerComposeServiceCleanup extends AbstractObjectProcessLogic impl
 
     @Override
     public String[] getProcessNames() {
-        return new String[] {"service.remove", "serviceexposemap.remove"};
+        return new String[] { ServiceConstants.PROCESS_SERVICE_REMOVE, "serviceexposemap.remove" };
     }
 
     @Override

@@ -2,9 +2,9 @@ package io.cattle.platform.servicediscovery.process;
 
 import static io.cattle.platform.core.model.tables.VolumeTable.*;
 import static io.cattle.platform.core.model.tables.VolumeTemplateTable.*;
-
 import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.ExternalEventConstants;
+import io.cattle.platform.core.constants.ServiceConstants;
 import io.cattle.platform.core.model.Stack;
 import io.cattle.platform.core.model.Volume;
 import io.cattle.platform.core.model.VolumeTemplate;
@@ -29,7 +29,7 @@ public class StackRemovePostListener extends AbstractObjectProcessLogic implemen
 
     @Override
     public String[] getProcessNames() {
-        return new String[] { "stack.remove" };
+        return new String[] { ServiceConstants.PROCESS_STACK_REMOVE };
     }
 
     @Override
