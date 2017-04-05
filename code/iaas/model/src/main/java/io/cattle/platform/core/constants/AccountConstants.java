@@ -56,6 +56,11 @@ public class AccountConstants {
     public static final String LAST_ADMIN_ACCOUNT = "LastAdminAccount";
     public static final String ADMIN_REQUIRED_MESSAGE = "At least one admin account is required at all times";
 
+    public static final String ORC_KUBERNETES = "k8s";
+    public static final String ORC_SWARM = "swarm";
+    public static final String ORC_MESOS = "mesos";
+    public static final String ORC_WINDOWS = "windows";
+
     public static ServicesPortRange getDefaultServicesPortRange() {
         PortRangeSpec spec = new PortRangeSpec(ENV_PORT_RANGE.get());
         return new ServicesPortRange(spec.getStartPort(), spec.getEndPort());

@@ -3,7 +3,9 @@ package io.cattle.platform.process.instance;
 import io.cattle.iaas.labels.service.LabelsService;
 import io.cattle.platform.agent.instance.dao.AgentInstanceDao;
 import io.cattle.platform.agent.instance.factory.AgentInstanceFactory;
+import io.cattle.platform.core.constants.AccountConstants;
 import io.cattle.platform.core.constants.InstanceConstants;
+import io.cattle.platform.core.model.Account;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.util.SystemLabels;
 import io.cattle.platform.engine.handler.ProcessPostListener;
@@ -46,10 +48,20 @@ public class K8sLabelsProviderProcessPostListener extends AgentBasedProcessLogic
         }
 
         if (agentId == null) {
-            throw new ExecutionException("Failed to find labels provider", instance);
+            if (k8sRequired(instance)) {
+                throw new ExecutionException("Failed to find labels provider", instance);
+            } else {
+                return null;
+            }
         }
 
         return agentId;
+    }
+
+    protected boolean k8sRequired(Instance instance) {
+        Account account = objectManager.loadResource(Account.class, instance.getAccountId());
+        String orch = DataAccessor.fieldString(account, AccountConstants.FIELD_ORCHESTRATION);
+        return AccountConstants.ORC_KUBERNETES.equals(orch);
     }
 
     protected boolean isPod(Instance instance) {
