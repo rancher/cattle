@@ -196,7 +196,7 @@ public class AgentDaoImpl extends AbstractCoreDao implements AgentDao {
             return Collections.emptyList();
         }
 
-        List<? extends Agent> agents = create().select(HOST.fields())
+        List<? extends Agent> agents = create().select(AGENT.fields())
                 .from(AGENT)
                 .leftOuterJoin(HOST)
                     .on(HOST.AGENT_ID.eq(AGENT.ID))
@@ -205,7 +205,7 @@ public class AgentDaoImpl extends AbstractCoreDao implements AgentDao {
                 .fetchInto(Agent.class);
 
         // This is purging old pre-1.2 agent delegates
-        List<? extends Agent> oldAgents = create().select(HOST.fields())
+        List<? extends Agent> oldAgents = create().select(AGENT.fields())
                 .from(AGENT)
                 .where(AGENT.REMOVED.isNull().and(AGENT.URI.like("delegate%")))
                 .fetchInto(Agent.class);
