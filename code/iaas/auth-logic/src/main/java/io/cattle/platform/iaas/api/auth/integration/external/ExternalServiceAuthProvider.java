@@ -272,7 +272,7 @@ public class ExternalServiceAuthProvider {
                     Token token = refreshToken(accessToken);
                     if (token != null) {
                         jwt = ProjectConstants.AUTH_TYPE + token.getJwt();
-                        authToken = authTokenDao.createToken(token.getJwt(), token.getAuthProvider(), account.getId());
+                        authToken = authTokenDao.createToken(token.getJwt(), token.getAuthProvider(), account.getId(), account.getId());
                         jwt = authToken.getKey();
                         accessToken = (String) DataAccessor.fields(account).withKey(ServiceAuthConstants.ACCESS_TOKEN).get();
                     }

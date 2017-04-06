@@ -102,6 +102,17 @@ public interface AuthToken extends java.io.Serializable {
 	@javax.persistence.Column(name = "provider", nullable = false, length = 255)
 	public java.lang.String getProvider();
 
+	/**
+	 * Setter for <code>cattle.auth_token.authenticated_as_account_id</code>.
+	 */
+	public void setAuthenticatedAsAccountId(java.lang.Long value);
+
+	/**
+	 * Getter for <code>cattle.auth_token.authenticated_as_account_id</code>.
+	 */
+	@javax.persistence.Column(name = "authenticated_as_account_id", precision = 19)
+	public java.lang.Long getAuthenticatedAsAccountId();
+
 	// -------------------------------------------------------------------------
 	// FROM and INTO
 	// -------------------------------------------------------------------------

@@ -14,6 +14,7 @@ public class Token {
     private  String jwt;
     private String code;
     private  String user;
+    private Long authenticatedAsAccountId;
     private  Boolean security = SecurityConstants.SECURITY.get();
     private  String userType;
     private  String authProvider = SecurityConstants.AUTH_PROVIDER.get();
@@ -24,13 +25,14 @@ public class Token {
     private  List<Identity> identities;
     private  String redirectUrl;
 
-    public Token(String jwt, String accountId, Identity userIdentity, List<Identity> identities, String userType) {
+    public Token(String jwt, String accountId, Identity userIdentity, List<Identity> identities, String userType, Long authenticatedAsAccountId) {
         this.jwt = jwt;
         this.userIdentity = userIdentity;
         this.accountId = accountId;
         this.identities = identities;
         this.user = userIdentity.getLogin();
         this.userType = userType;
+        this.setAuthenticatedAsAccountId(authenticatedAsAccountId);
     }
 
     public Token() {
@@ -114,5 +116,13 @@ public class Token {
 
     public void setRedirectUrl(String redirectUrl) {
         this.redirectUrl = redirectUrl;
+    }
+
+    public Long getAuthenticatedAsAccountId() {
+        return authenticatedAsAccountId;
+    }
+
+    public void setAuthenticatedAsAccountId(Long authenticatedAsAccountId) {
+        this.authenticatedAsAccountId = authenticatedAsAccountId;
     }
 }

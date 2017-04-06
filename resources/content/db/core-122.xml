@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog" xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.1.xsd">
+    <changeSet author="rancher (generated)" id="dump1">
+        <addColumn tableName="auth_token">
+            <column name="authenticated_as_account_id" type="BIGINT"/>
+        </addColumn>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump2">
+        <addForeignKeyConstraint baseColumnNames="authenticated_as_account_id" baseTableName="auth_token" constraintName="auth_token_ibfk_1" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="account"/>
+    </changeSet>
+</databaseChangeLog>
