@@ -23,11 +23,15 @@ public class AgentHealthcheckInstancesLookup extends AbstractJooqDao implements 
 
     @Override
     public List<? extends Instance> getInstances(Object obj) {
-        if (!(obj instanceof Agent)) {
-            return null;
+        Host host = null;
+
+        if (obj instanceof Agent) {
+            Agent agent = (Agent) obj;
+            host = objectManager.findAny(Host.class, HOST.AGENT_ID, agent.getId(), HOST.REMOVED, null);
+        } else if (obj instanceof Host) {
+            host = (Host) obj;
         }
-        Agent agent = (Agent) obj;
-        Host host = objectManager.findAny(Host.class, HOST.AGENT_ID, agent.getId(), HOST.REMOVED, null);
+
         if (host == null) {
             return null;
         }

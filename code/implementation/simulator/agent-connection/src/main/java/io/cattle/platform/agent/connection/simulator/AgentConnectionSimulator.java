@@ -32,6 +32,10 @@ public class AgentConnectionSimulator implements Simulator {
 
     @Override
     public Event execute(Event event) {
+        if (!open) {
+            return null;
+        }
+
         objectManager.reload(agent);
         for (AgentSimulatorEventProcessor processor : processors) {
             Event response = null;
@@ -59,6 +63,14 @@ public class AgentConnectionSimulator implements Simulator {
 
     public List<AgentSimulatorEventProcessor> getProcessors() {
         return processors;
+    }
+
+    public boolean isOpen() {
+        return open;
+    }
+
+    public void setOpen(boolean open) {
+        this.open = open;
     }
 
 }

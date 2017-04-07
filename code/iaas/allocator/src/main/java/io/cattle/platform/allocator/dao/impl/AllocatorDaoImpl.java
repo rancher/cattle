@@ -480,13 +480,11 @@ public class AllocatorDaoImpl extends AbstractJooqDao implements AllocatorDao {
                 .leftOuterJoin(AGENT)
                     .on(AGENT.ID.eq(HOST.AGENT_ID))
                 .where(
-                        AGENT.ID.isNull()
-                                .or(AGENT.STATE.in(CommonStatesConstants.ACTIVE,
-                                        AgentConstants.STATE_FINISHING_RECONNECT, AgentConstants.STATE_RECONNECTED))
+                AGENT.ID.isNull()
+                .or(AGENT.STATE.in(CommonStatesConstants.ACTIVE, AgentConstants.STATE_FINISHING_RECONNECT, AgentConstants.STATE_RECONNECTED))
                 .and(HOST.REMOVED.isNull())
                 .and(HOST.ACCOUNT_ID.eq(accountId))
-                                .and(HOST.STATE.in(CommonStatesConstants.ACTIVATING, CommonStatesConstants.ACTIVE,
-                                        CommonStatesConstants.UPDATING_ACTIVE)))
+                .and(HOST.STATE.in(CommonStatesConstants.ACTIVATING, CommonStatesConstants.ACTIVE, CommonStatesConstants.UPDATING_ACTIVE)))
                 .fetchInto(Host.class);
     }
 

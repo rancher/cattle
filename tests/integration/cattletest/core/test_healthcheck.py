@@ -1097,6 +1097,75 @@ def test_health_check_all_hosts_removed_reconcile(super_client, new_context):
     remove_service(service)
 
 
+def test_health_check_host_disconnected_reconcile(super_client, new_context):
+    client = new_context.client
+
+    # Create service
+    env = client.create_stack(name='env-' + random_str())
+    service = client.create_service(name='test', launchConfig={
+        'imageUuid': new_context.image_uuid,
+        'healthCheck': {'port': 80},
+    }, stackId=env.id)
+    service = client.wait_success(client.wait_success(service).activate())
+    assert service.state == 'active'
+
+    # Get and check the healthcheck resources
+    maps = _wait_until_active_map_count(service, 1, client)
+    c = super_client.reload(maps[0].instance())
+    assert len(c.healthcheckInstanceHostMaps()) == 1
+    hcihm1 = c.healthcheckInstanceHostMaps()[0]
+    assert len(super_client.list_host(uuid=hcihm1.host().uuid)) == 1
+
+    # Send a healthcheck event
+    agent = _get_agent_for_container(new_context, c)
+    agent_client = _get_agent_client(agent)
+    se = agent_client.create_service_event(externalTimestamp=int(time.time()),
+                                           reportedHealth='UP',
+                                           healthcheckUuid=hcihm1.uuid)
+    super_client.wait_success(se)
+    wait_for(lambda: super_client.reload(c).healthState == 'healthy')
+
+    # Cause the simulator to stop responding to pings
+    client.create_container(name='simDisconnectAgent',
+                            imageUuid=new_context.image_uuid)
+
+    # Forcibly move through reconnect and disconnect so we don't have to wait
+    super_agent = super_client.reload(
+        new_context.agent.agents()[0].reconnect())
+    wait_for(lambda: super_client.reload(super_agent).state == 'reconnecting')
+    super_agent = super_client.wait_success(super_agent.disconnect())
+    assert super_agent.state == 'disconnected'
+    wait_for(lambda: len(c.healthcheckInstanceHostMaps()) == 0)
+
+    # instance should stay as healthy
+    try:
+        wait_for(lambda: super_client.reload(c).healthState == 'unhealthy',
+                 timeout=5)
+    except Exception:
+        pass
+    wait_for(lambda: super_client.reload(c).healthState == 'healthy')
+
+    # Add a new host which causes the old instance to get a new hcihm
+    register_simulated_host(new_context)
+    assert len(c.healthcheckInstanceHostMaps()) == 1
+
+    # Send an event for the new healthcheck to say the instance is unhealthy
+    # This should cause the container to be removed
+    hcihm1 = c.healthcheckInstanceHostMaps()[0]
+    se = agent_client.create_service_event(externalTimestamp=int(time.time()),
+                                           reportedHealth='DOWN',
+                                           healthcheckUuid=hcihm1.uuid)
+    super_client.wait_success(se)
+    wait_for(lambda: super_client.reload(c).removed is not None)
+
+    # Assert that a new container gets created for the service
+    maps = _wait_until_active_map_count(service, 1, client)
+    c2 = super_client.reload(maps[0].instance())
+    assert c2.id != c.id
+
+    remove_service(service)
+
+
 def test_hosts_removed_reconcile_when_init(super_client, new_context):
     super_client.reload(register_simulated_host(new_context))
     client = new_context.client
