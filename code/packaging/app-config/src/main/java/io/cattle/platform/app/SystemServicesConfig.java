@@ -202,7 +202,7 @@ public class SystemServicesConfig {
 
         DefaultIdFormatter idF = new DefaultIdFormatter();
         idF.setSchemaFactory(factory);
-        idF.setPlainTypes(new HashSet<>(Arrays.asList("typeDocumentation", "scripts")));
+        idF.setPlainTypes(new HashSet<>(Arrays.asList("typeDocumentation", "scripts", "identity")));
         idF.setTypeMappings(mapping);
 
         return idF;
