@@ -84,7 +84,7 @@ public class HazelcastEventService extends AbstractThreadPoolingEventService imp
         log.info("Unsubscribing from [{}] id [{}]", eventName, id);
 
         if (id != null) {
-            ITopic<String> topic = hazelcast.getTopic(eventName);
+            ITopic<String> topic = hazelcast.getTopic(new TopicName(eventName).getName());
             topic.removeMessageListener(id);
             if (eventName.startsWith("reply.")) {
                 topic.destroy();
