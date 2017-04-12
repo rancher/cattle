@@ -133,7 +133,11 @@ public class PullTaskCreate extends AbstractGenericObjectProcessLogic implements
             Host host = entry.getKey();
             ListenableFuture<? extends Event> future = entry.getValue();
             progress.checkPoint("Finishing pull " + image + " on " + host.getName());
-            AsyncUtils.get(future);
+            try {
+                AsyncUtils.get(future);
+            } catch (EventExecutionException e) {
+                // Ignore failures here
+            }
             pullTask = setStatus(pullTask, status, host, "Done");
         }
 
