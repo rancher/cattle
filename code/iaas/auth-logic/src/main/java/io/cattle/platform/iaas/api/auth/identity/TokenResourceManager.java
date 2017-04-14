@@ -2,11 +2,12 @@ package io.cattle.platform.iaas.api.auth.identity;
 
 import io.cattle.platform.api.auth.Identity;
 import io.cattle.platform.api.auth.Policy;
+import io.cattle.platform.iaas.api.auth.AbstractTokenUtil;
 import io.cattle.platform.iaas.api.auth.SecurityConstants;
 import io.cattle.platform.iaas.api.auth.dao.AuthTokenDao;
 import io.cattle.platform.iaas.api.auth.integration.external.ExternalServiceAuthProvider;
 import io.cattle.platform.iaas.api.auth.integration.interfaces.TokenCreator;
-import io.cattle.platform.iaas.api.auth.AbstractTokenUtil;
+import io.cattle.platform.object.ObjectManager;
 import io.github.ibuildthecloud.gdapi.context.ApiContext;
 import io.github.ibuildthecloud.gdapi.exception.ClientVisibleException;
 import io.github.ibuildthecloud.gdapi.factory.SchemaFactory;
@@ -16,14 +17,19 @@ import io.github.ibuildthecloud.gdapi.request.resource.impl.AbstractNoOpResource
 import io.github.ibuildthecloud.gdapi.util.ResponseCodes;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import javax.inject.Inject;
+import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang3.StringUtils;
 
 
 public class TokenResourceManager extends AbstractNoOpResourceManager {
+
+    @Inject
+    ObjectManager objectManager;
 
     @Inject
     AuthTokenDao authTokenDao;
@@ -88,14 +94,24 @@ public class TokenResourceManager extends AbstractNoOpResourceManager {
 
     @Override
     protected Object listInternal(SchemaFactory schemaFactory, String type, Map<Object, Object> criteria, ListOptions options) {
+        Token token = listToken();
+        return Collections.singletonList(token);
+    }
+
+    protected Token listToken() {
         Token token = new Token();
 
-        //get RedirectUrl if applicable
         if (SecurityConstants.AUTH_PROVIDER.get() == null || SecurityConstants.NO_PROVIDER.equalsIgnoreCase(SecurityConstants.AUTH_PROVIDER.get())) {
             return token;
         }
 
         if (SecurityConstants.INTERNAL_AUTH_PROVIDERS.contains(SecurityConstants.AUTH_PROVIDER.get())) {
+            for (TokenCreator tokenCreator : tokenCreators) {
+                if (tokenCreator.isConfigured() && tokenCreator.providerType().equalsIgnoreCase(SecurityConstants.AUTH_PROVIDER.get())) {
+                    token = tokenCreator.getCurrentToken();
+                    break;
+                }
+            }
             return token;
         } else {
             //get redirect Url from external service
@@ -115,4 +131,34 @@ public class TokenResourceManager extends AbstractNoOpResourceManager {
         this.tokenCreators = tokenCreators;
     }
 
+    @Override
+    protected Object deleteInternal(String type, String id, Object obj, ApiRequest request) {
+        if (!StringUtils.equals(AbstractTokenUtil.TOKEN, request.getType())) {
+            return null;
+        }
+        return deleteToken(obj, request);
+    }
+
+    protected Object deleteToken(Object obj, ApiRequest request) {
+        Token token = new Token();
+        String jwt = "";
+
+        token = listToken();
+        jwt = token.getJwt();
+
+        if(StringUtils.isBlank(jwt)) {
+            throw new ClientVisibleException(ResponseCodes.INTERNAL_SERVER_ERROR,
+                    "JWTNotProvided", "Request does not contain JWT cookie", null);
+        }
+
+        request.setResponseCode(ResponseCodes.NO_CONTENT);
+        HttpServletResponse response = request.getServletContext().getResponse();
+        String cookieString="token=;Path=/;Expires=Thu, 01 Jan 1970 00:00:00 GMT;";
+        response.addHeader("Set-Cookie", cookieString);
+        request.getServletContext().setResponse(response);
+        if(authTokenDao.deleteToken(jwt)) {
+            return obj;
+        }
+        return null;
+    }
 }

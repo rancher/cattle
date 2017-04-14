@@ -2,8 +2,7 @@
     "authorize" : {
         ".*" : "",
         "schema.*": "r",
-        "token": "cr",
-        "token.accountId": "r",
+        "token": "crd",
         "token.accountId": "r",
         "token.code": "cr",
         "token.defaultProject": "r",
