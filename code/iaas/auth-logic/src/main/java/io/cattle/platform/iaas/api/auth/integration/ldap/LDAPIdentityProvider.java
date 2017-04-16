@@ -352,8 +352,8 @@ public abstract class LDAPIdentityProvider implements IdentityProvider{
     public void init() {
         if (getContextPool() == null) {
             GenericObjectPoolConfig config = new GenericObjectPoolConfig();
-            config.setTestOnBorrow(true);
             PoolConfig.setConfig(config, "ldap.context.pool", "ldap.context.pool.", "global.pool.");
+            config.setTestOnBorrow(true);
             LdapServiceContextPoolFactory serviceContextPoolFactory = new LdapServiceContextPoolFactory(getConstantsConfig());
             setContextPool(new GenericObjectPool<>(serviceContextPoolFactory, config));
             AbandonedConfig abandonedConfig = new AbandonedConfig();
