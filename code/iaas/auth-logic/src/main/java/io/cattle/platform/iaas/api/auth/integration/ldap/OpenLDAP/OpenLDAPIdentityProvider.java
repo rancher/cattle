@@ -9,6 +9,7 @@ import io.cattle.platform.iaas.api.auth.dao.AuthTokenDao;
 import io.cattle.platform.iaas.api.auth.identity.Token;
 import io.cattle.platform.iaas.api.auth.integration.interfaces.IdentityProvider;
 import io.cattle.platform.iaas.api.auth.integration.ldap.LDAPIdentityProvider;
+import io.cattle.platform.iaas.api.auth.integration.ldap.LDAPUtils;
 import io.cattle.platform.iaas.api.auth.integration.ldap.UserLoginFailureException;
 import io.cattle.platform.iaas.api.auth.integration.ldap.interfaces.LDAPConstants;
 import io.github.ibuildthecloud.gdapi.context.ApiContext;
@@ -95,12 +96,20 @@ public class OpenLDAPIdentityProvider extends LDAPIdentityProvider implements Id
                 logger.trace("getIdentities: operational attributes: " + opAttributes);
             } catch (NamingException e) {
                 logger.error("Exception trying to get operational attributes", e);
+                if(!LDAPUtils.isRecoverable(e)) {
+                    invalidateServiceContext(context);
+                    context = null;
+                }
             }
         } catch (NamingException e) {
+            if(!LDAPUtils.isRecoverable(e)) {
+                invalidateServiceContext(context);
+                context = null;
+            }
             throw new ClientVisibleException(ResponseCodes.UNAUTHORIZED);
         } finally {
             if (context != null) {
-                getContextPool().returnObject(context);
+                returnServiceContext(context);
             }
         }
         Attribute memberOf = userAttributes.get(getConstantsConfig().getUserMemberAttribute());
