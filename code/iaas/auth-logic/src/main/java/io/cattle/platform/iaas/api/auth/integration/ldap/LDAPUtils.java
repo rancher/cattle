@@ -11,6 +11,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import javax.naming.Context;
+import javax.naming.CommunicationException;
 import javax.naming.NamingException;
 import javax.naming.ldap.InitialLdapContext;
 import javax.naming.ldap.LdapContext;
@@ -112,5 +113,12 @@ public class LDAPUtils {
             default:
                 return errorCode;
         }
+    }
+
+    public static boolean isRecoverable(NamingException e) {
+        if (e instanceof CommunicationException) {
+            return false;
+        }
+        return true;
     }
 }

@@ -11,6 +11,7 @@ import io.cattle.platform.iaas.api.auth.dao.AuthTokenDao;
 import io.cattle.platform.iaas.api.auth.identity.Token;
 import io.cattle.platform.iaas.api.auth.integration.interfaces.IdentityProvider;
 import io.cattle.platform.iaas.api.auth.integration.ldap.LDAPIdentityProvider;
+import io.cattle.platform.iaas.api.auth.integration.ldap.LDAPUtils;
 import io.cattle.platform.iaas.api.auth.integration.ldap.ServiceContextCreationException;
 import io.cattle.platform.iaas.api.auth.integration.ldap.ServiceContextRetrievalException;
 import io.cattle.platform.iaas.api.auth.integration.ldap.UserLoginFailureException;
@@ -92,10 +93,16 @@ public class ADIdentityProvider extends LDAPIdentityProvider implements Identity
             NamingEnumeration<SearchResult> results;
             try {
                 results = context.search(getConstantsConfig().getDomain(), query, controls);
+
             } catch (NamingException e) {
-                logger.info("Failed to search: " + query + "with DN=" + getConstantsConfig().getDomain() + " as the scope.", e);
+                logger.error("Failed to search: " + query + "with DN=" + getConstantsConfig().getDomain() + " as the scope.", e);
+                if(!LDAPUtils.isRecoverable(e)) {
+                    // Do not return the LDAP instance to the pool
+                    invalidateServiceContext(context);
+                    context = null;
+                }
                 throw new ClientVisibleException(ResponseCodes.INTERNAL_SERVER_ERROR, "LdapConfig",
-                        "Organizational Unit not found.", null);
+                        "Failed to lookup Organizational Unit", null);
             }
 
             if (!results.hasMoreElements()) {
@@ -121,7 +128,7 @@ public class ADIdentityProvider extends LDAPIdentityProvider implements Identity
             return result;
         } finally {
             if (context != null) {
-                contextPool.returnObject(context);
+                returnServiceContext(context);
             }
         }
     }
