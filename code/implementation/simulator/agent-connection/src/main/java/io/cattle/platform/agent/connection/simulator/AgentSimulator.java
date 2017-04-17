@@ -13,9 +13,7 @@ import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.resource.ResourceMonitor;
 import io.cattle.platform.util.type.CollectionUtils;
 
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 import javax.inject.Inject;
@@ -70,26 +68,11 @@ public class AgentSimulator implements AnnotatedEventListener {
         }
 
         String uri = agent.getUri();
-        if (uri == null) {
+        if (uri == null || !uri.startsWith("sim://")) {
             return NULL_SIMULATOR;
         }
 
-        if (uri.startsWith("sim://")) {
-            return new AgentConnectionSimulator(objectManager, agent, processors);
-        }
-
-        Map<String, Object> instanceData = new LinkedHashMap<>();
-        Agent hostAgent = agentLocator.getAgentForDelegate(Long.parseLong(agentId), instanceData);
-        if (hostAgent == null) {
-            return NULL_SIMULATOR;
-        }
-
-        Simulator target = cache.getUnchecked(hostAgent.getId().toString());
-        if (target == null) {
-            return NULL_SIMULATOR;
-        }
-
-        return new DelegateSimulator(target, instanceData);
+        return new AgentConnectionSimulator(objectManager, agent, processors);
     }
 
     public List<AgentSimulatorEventProcessor> getProcessors() {

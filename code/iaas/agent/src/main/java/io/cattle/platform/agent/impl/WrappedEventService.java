@@ -12,12 +12,10 @@ import io.cattle.platform.eventing.exception.AgentRemovedException;
 import io.cattle.platform.eventing.model.Event;
 import io.cattle.platform.eventing.model.EventVO;
 import io.cattle.platform.iaas.event.IaasEvents;
-import io.cattle.platform.iaas.event.delegate.DelegateEvent;
 import io.cattle.platform.json.JsonMapper;
 
 import java.util.Arrays;
 import java.util.HashSet;
-import java.util.Map;
 import java.util.Set;
 
 import com.google.common.util.concurrent.ListenableFuture;
@@ -28,20 +26,15 @@ public class WrappedEventService implements EventService {
             AgentConstants.STATE_RECONNECTING));
 
     long agentId;
-    boolean delegate;
     EventService eventService;
-    Map<String, Object> instanceData;
     EventService agentRequestPublisher;
     JsonMapper jsonMapper;
     AgentDao agentDao;
 
-    public WrappedEventService(long agentId, boolean delegate, EventService eventService, Map<String, Object> instanceData,
-            JsonMapper jsonMapper, AgentDao agentDao) {
+    public WrappedEventService(long agentId, EventService eventService, JsonMapper jsonMapper, AgentDao agentDao) {
         super();
         this.agentId = agentId;
-        this.delegate = delegate;
         this.eventService = eventService;
-        this.instanceData = instanceData;
         this.jsonMapper = jsonMapper;
         this.agentDao = agentDao;
     }
@@ -51,9 +44,8 @@ public class WrappedEventService implements EventService {
         Object payload = request.getData();
         if (payload instanceof Event) {
             event = new EventVO<>((Event)payload).withReplyTo(((Event)payload).getName() + Event.REPLY_SUFFIX);
-        }
-        if (delegate) {
-            event = new DelegateEvent(instanceData, event);
+        } else {
+            throw new IllegalArgumentException("Event does not have embedded event");
         }
         return new EventVO<>(event).withName(IaasEvents.appendAgent(event.getName(), agentId));
     }
@@ -77,11 +69,7 @@ public class WrappedEventService implements EventService {
             @SuppressWarnings("unchecked")
             @Override
             public <T> T convert(Event resultEvent, Class<T> reply) {
-                Object payload = resultEvent;
-                if (delegate) {
-                    payload = resultEvent.getData();
-                }
-                return (T) new EventVO<>().withName(request.getReplyTo()).withData(payload);
+                return (T) new EventVO<>().withName(request.getReplyTo()).withData(resultEvent);
             }
         });
     }

@@ -3,7 +3,6 @@ package io.cattle.platform.app;
 import io.cattle.platform.agent.connection.simulator.AgentSimulator;
 import io.cattle.platform.agent.connection.simulator.impl.SimulatorConfigUpdateProcessor;
 import io.cattle.platform.agent.connection.simulator.impl.SimulatorConsoleProcessor;
-import io.cattle.platform.agent.connection.simulator.impl.SimulatorDelegateProcessor;
 import io.cattle.platform.agent.connection.simulator.impl.SimulatorFailedProcessor;
 import io.cattle.platform.agent.connection.simulator.impl.SimulatorInstanceInspectProcessor;
 import io.cattle.platform.agent.connection.simulator.impl.SimulatorPingProcessor;
@@ -31,11 +30,6 @@ public class AgentServerConfig {
     @Bean
     SimulatorConsoleProcessor simulatorConsoleProcessor() {
         return new SimulatorConsoleProcessor();
-    }
-
-    @Bean
-    SimulatorDelegateProcessor simulatorDelegateProcessor() {
-        return new SimulatorDelegateProcessor();
     }
 
     @Bean
