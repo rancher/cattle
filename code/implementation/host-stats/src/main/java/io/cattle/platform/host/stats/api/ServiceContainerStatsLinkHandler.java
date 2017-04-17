@@ -2,7 +2,6 @@ package io.cattle.platform.host.stats.api;
 
 import io.cattle.platform.api.link.LinkHandler;
 import io.cattle.platform.core.constants.InstanceConstants;
-import io.cattle.platform.core.model.Host;
 import io.cattle.platform.core.constants.ServiceConstants;
 import io.cattle.platform.core.dao.ServiceExposeMapDao;
 import io.cattle.platform.core.dao.StackDao;
