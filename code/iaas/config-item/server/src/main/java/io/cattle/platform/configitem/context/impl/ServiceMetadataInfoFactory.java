@@ -27,6 +27,7 @@ import io.github.ibuildthecloud.gdapi.condition.ConditionType;
 import io.github.ibuildthecloud.gdapi.util.RequestUtils;
 
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.io.OutputStream;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -88,7 +89,7 @@ public class ServiceMetadataInfoFactory extends AbstractAgentBaseContextFactory 
         // this method is never being called
     }
 
-    public void writeMetadata(final Instance instance, final Callable<String> version, final Request req) {
+    public void writeMetadata(final Instance instance, final Callable<String> version, final Request req) throws IOException {
         if (instance == null) {
             return;
         }
@@ -112,6 +113,8 @@ public class ServiceMetadataInfoFactory extends AbstractAgentBaseContextFactory 
 
         } catch (ExecutionException e) {
             ExceptionUtils.rethrowExpectedRuntime(e.getCause());
+        } catch (IOException e) {
+            throw e;
         } catch (Exception e) {
             ExceptionUtils.rethrowExpectedRuntime(e);
         } finally {
