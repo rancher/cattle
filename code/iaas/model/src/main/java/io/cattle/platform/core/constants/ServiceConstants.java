@@ -5,8 +5,10 @@ import io.cattle.platform.core.model.Stack;
 import io.cattle.platform.object.util.DataAccessor;
 
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.apache.commons.lang3.StringUtils;
@@ -25,6 +27,8 @@ public class ServiceConstants {
     public static final String KIND_KUBERNETES_SERVICE = "kubernetesService";
     public static final String KIND_COMPOSE_SERVICE = "composeService";
 
+    public static final String KIND_DEPLOYMENT_UNIT = "deploymentUnit";
+
     public static final Set<String> SERVICE_LIKE = new HashSet<>(Arrays.asList(
             KIND_SERVICE,
             KIND_LOAD_BALANCER_SERVICE,
@@ -32,7 +36,7 @@ public class ServiceConstants {
             KIND_NETWORK_DRIVER_SERVICE,
             KIND_SCALING_GROUP_SERVICE
         ));
-    
+
 
     public static final String TYPE_STACK = "stack";
     public static final String FIELD_SCALE = "scale";
@@ -49,6 +53,8 @@ public class ServiceConstants {
     public static final String FIELD_LINKED_SERVICES = "linkedServices";
     public static final String FIELD_SERVICE_LINKS = "serviceLinks";
     public static final String FIELD_NETWORK_LAUNCH_CONFIG = "networkLaunchConfig";
+    public static final String FIELD_IPC_LAUNCH_CONFIG = "networkLaunchConfig";
+    public static final String FIELD_PID_LAUNCH_CONFIG = "pidLaunchConfig";
     public static final String FIELD_SECONDARY_LAUNCH_CONFIGS = "secondaryLaunchConfigs";
     public static final String FIELD_DATA_VOLUMES_LAUNCH_CONFIG = "dataVolumesFromLaunchConfigs";
     public static final String FIELD_WAIT_FOR_CONSUMED_SERVICES_IDS = "waitForConsumedServicesIds";
@@ -101,7 +107,7 @@ public class ServiceConstants {
     public static final String FIELD_FINISH_UPGRADE = "finishUpgrade";
     public static final String FIELD_IS_UPGRADE = "isUpgrade";
     public static final String FIELD_FORCE_UPGRADE = "forceUpgrade";
-    
+
     public static final String FIELD_INTERNAL_VOLUMES = "internalVolumes";
     public static final String FIELD_VOLUME_TEMPLATE_ID = "volumeTemplateId";
     public static final String FIELD_DEPLOYMENT_UNIT_ID = "deploymentUnitId";
@@ -159,9 +165,6 @@ public class ServiceConstants {
     public static final String LABEL_SERVICE_DEPLOYMENT_UNIT = "io.rancher.service.deployment.unit";
     public static final String LABEL_STACK_NAME = "io.rancher.stack.name";
     public static final String LABEL_STACK_SERVICE_NAME = "io.rancher.stack_service.name";
-    // LEGACY: preserving project_name
-    public static final String LABEL_PROJECT_NAME = "io.rancher.project.name";
-    public static final String LABEL_PROJECT_SERVICE_NAME = "io.rancher.project_service.name";
     public static final String LABEL_SERVICE_GLOBAL = "io.rancher.scheduler.global";
     public static final String LABEL_SERVICE_REQUESTED_HOST_ID = "io.rancher.service.requested.host.id";
     public static final String LABEL_SERVICE_LAUNCH_CONFIG = "io.rancher.service.launch.config";
@@ -196,6 +199,22 @@ public class ServiceConstants {
     public static final String PROCESS_DATA_SERVICE_RECONCILE = "reconcileState";
 
     public static final List<String> SERVICE_INSTANCE_NAME_DIVIDORS = Arrays.asList("-", "_");
+
+    public static final String[] NS_DEPS = new String[] {
+            FIELD_IPC_LAUNCH_CONFIG ,
+            FIELD_PID_LAUNCH_CONFIG ,
+            FIELD_NETWORK_LAUNCH_CONFIG ,
+            FIELD_DATA_VOLUMES_LAUNCH_CONFIG
+    };
+
+    public static final Map<String, String> NS_DEP_FIELD_MAPPING = new HashMap<>();
+
+    static {
+        NS_DEP_FIELD_MAPPING.put(FIELD_IPC_LAUNCH_CONFIG, DockerInstanceConstants.FIELD_IPC_CONTAINER_ID);
+        NS_DEP_FIELD_MAPPING.put(FIELD_PID_LAUNCH_CONFIG, DockerInstanceConstants.FIELD_PID_CONTAINER_ID);
+        NS_DEP_FIELD_MAPPING.put(FIELD_NETWORK_LAUNCH_CONFIG, DockerInstanceConstants.FIELD_NETWORK_CONTAINER_ID);
+        NS_DEP_FIELD_MAPPING.put(FIELD_DATA_VOLUMES_LAUNCH_CONFIG, DockerInstanceConstants.FIELD_VOLUMES_FROM);
+    }
 
     public static boolean isSystem(Stack stack) {
         return stack.getSystem() || DataAccessor.fieldBool(stack, FIELD_SYSTEM)|| DataAccessor.fieldBool(stack, "isSystem");

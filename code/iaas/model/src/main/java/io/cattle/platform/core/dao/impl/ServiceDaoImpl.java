@@ -13,6 +13,7 @@ import static io.cattle.platform.core.model.tables.ServiceIndexTable.*;
 import static io.cattle.platform.core.model.tables.ServiceRevisionTable.*;
 import static io.cattle.platform.core.model.tables.ServiceTable.*;
 import static io.cattle.platform.core.model.tables.StackTable.*;
+
 import io.cattle.platform.core.addon.HealthcheckState;
 import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.HealthcheckConstants;
@@ -36,6 +37,7 @@ import io.cattle.platform.core.model.tables.HealthcheckInstanceHostMapTable;
 import io.cattle.platform.core.model.tables.HostTable;
 import io.cattle.platform.core.model.tables.InstanceTable;
 import io.cattle.platform.core.model.tables.ServiceExposeMapTable;
+import io.cattle.platform.core.model.tables.ServiceIndexTable;
 import io.cattle.platform.core.model.tables.records.DeploymentUnitRecord;
 import io.cattle.platform.core.model.tables.records.HealthcheckInstanceRecord;
 import io.cattle.platform.core.model.tables.records.InstanceRecord;
@@ -52,6 +54,7 @@ import io.cattle.platform.lock.LockManager;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.meta.ObjectMetaDataManager;
 import io.cattle.platform.object.util.DataAccessor;
+import io.cattle.platform.util.type.CollectionUtils;
 import io.github.ibuildthecloud.gdapi.id.IdFormatter;
 
 import java.util.ArrayList;
@@ -63,10 +66,13 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import javax.inject.Inject;
 import javax.inject.Named;
 
+import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.apache.commons.lang3.tuple.Pair;
 import org.jooq.Condition;
 import org.jooq.Record;
 import org.jooq.Record2;
@@ -96,17 +102,14 @@ public class ServiceDaoImpl extends AbstractJooqDao implements ServiceDao {
     }
 
     @Override
-    public ServiceIndex createServiceIndex(Service service, String launchConfigName, String serviceIndex) {
+    public ServiceIndex createServiceIndex(Long serviceId, String launchConfigName, int serviceIndex) {
         List<String> configNames = new ArrayList<>();
-        if (launchConfigName.equals(service.getName())) {
-            configNames.add(ServiceConstants.PRIMARY_LAUNCH_CONFIG_NAME);
-        }
         configNames.add(launchConfigName);
         List<? extends ServiceIndex> serviceIndexes = create()
                 .select(SERVICE_INDEX.fields())
                 .from(SERVICE_INDEX)
-                .where(SERVICE_INDEX.SERVICE_INDEX_.eq(serviceIndex))
-                .and(SERVICE_INDEX.SERVICE_ID.eq(service.getId()))
+                .where(SERVICE_INDEX.SERVICE_INDEX_.eq(Integer.toString(serviceIndex)))
+                .and(SERVICE_INDEX.SERVICE_ID.eq(serviceId))
                 .and(SERVICE_INDEX.REMOVED.isNull())
                 .and(SERVICE_INDEX.STATE.ne(CommonStatesConstants.REMOVING))
                 .and(SERVICE_INDEX.LAUNCH_CONFIG_NAME.in(configNames))
@@ -114,7 +117,7 @@ public class ServiceDaoImpl extends AbstractJooqDao implements ServiceDao {
         ServiceIndex index = null;
         if (serviceIndexes.isEmpty()) {
             index = objectManager.create(ServiceIndex.class, SERVICE_INDEX.SERVICE_ID,
-                    service.getId(),
+                    serviceId,
                     SERVICE_INDEX.LAUNCH_CONFIG_NAME, launchConfigName, SERVICE_INDEX.SERVICE_INDEX_, serviceIndex);
         } else {
             index = serviceIndexes.get(0);
@@ -354,8 +357,7 @@ public class ServiceDaoImpl extends AbstractJooqDao implements ServiceDao {
                 .select(DEPLOYMENT_UNIT.fields())
                 .from(DEPLOYMENT_UNIT)
                 .where(DEPLOYMENT_UNIT.SERVICE_ID.eq(service.getId())
-                        .and(DEPLOYMENT_UNIT.REMOVED.isNull())
-                        .and(DEPLOYMENT_UNIT.STATE.notIn(CommonStatesConstants.REMOVING)))
+                        .and(DEPLOYMENT_UNIT.REMOVED.isNull()))
                 .fetchInto(DeploymentUnitRecord.class);
 
         Map<String, DeploymentUnit> uuidToUnit = new HashMap<>();
@@ -662,4 +664,75 @@ public class ServiceDaoImpl extends AbstractJooqDao implements ServiceDao {
         objectManager.setFields(objectManager.reload(unit), ServiceConstants.FIELD_DEPLOYMENT_UNIT_CLEANUP, cleanup,
                 ServiceConstants.FIELD_DEPLOYMENT_UNIT_CLEANUP_TIME, new Date(System.currentTimeMillis()));
     }
+
+    @Override
+    public Map<Instance, ServiceIndex> getInstanceAndIndex(Long id, String uuid) {
+        MultiRecordMapper<Pair<Instance, ServiceIndex>> mapper = new MultiRecordMapper<Pair<Instance, ServiceIndex>>() {
+            @Override
+            protected Pair<Instance, ServiceIndex> map(List<Object> input) {
+                return new ImmutablePair<>((Instance) input.get(0), (ServiceIndex)input.get(1));
+            }
+        };
+
+        InstanceTable instance = mapper.add(INSTANCE);
+        ServiceIndexTable serviceIndex = mapper.add(SERVICE_INDEX);
+
+        return create()
+                .select(mapper.fields())
+                .from(instance)
+                .leftOuterJoin(serviceIndex)
+                    .on(instance.SERVICE_INDEX_ID.eq(serviceIndex.ID))
+                .where(instance.REMOVED.isNull()
+                    .and(instance.DEPLOYMENT_UNIT_ID.eq(id)
+                            .or(instance.DEPLOYMENT_UNIT_UUID.eq(uuid))))
+                .fetch().map(mapper).stream().collect(
+                        Collectors.toMap(
+                                (p) -> p.getKey(),
+                                (p) -> p.getValue()));
+    }
+
+    @Override
+    public Pair<Instance, ServiceExposeMap> createServiceInstance(final Map<String, Object> properties, Long serviceId) {
+        Map<String, String> labels = CollectionUtils.toMap(properties.get(InstanceConstants.FIELD_LABELS));
+        String dnsPrefix = labels.get(ServiceConstants.LABEL_SERVICE_LAUNCH_CONFIG);
+        if (ServiceConstants.PRIMARY_LAUNCH_CONFIG_NAME.equalsIgnoreCase(dnsPrefix)) {
+            dnsPrefix = null;
+        }
+
+        Long next = null;
+
+        if (serviceId != null) {
+            Long index = create().select(SERVICE.CREATE_INDEX)
+                .from(SERVICE)
+                .where(SERVICE.ID.eq(serviceId))
+                .forUpdate()
+                .fetchAny().value1();
+            Condition cond = index == null ? SERVICE.CREATE_INDEX.isNull() : SERVICE.CREATE_INDEX.eq(index);
+            next = index == null ? 1L : index+1;
+
+            create().update(SERVICE)
+                .set(SERVICE.CREATE_INDEX, next)
+                .where(SERVICE.ID.eq(serviceId)
+                        .and(cond))
+                .execute();
+        }
+
+        properties.put(InstanceConstants.FIELD_CREATE_INDEX, next);
+
+        Instance instance = objectManager.create(Instance.class, properties);
+
+        ServiceExposeMap map = null;
+
+        if (serviceId != null ) {
+            map = objectManager.create(ServiceExposeMap.class,
+                SERVICE_EXPOSE_MAP.INSTANCE_ID, instance.getId(),
+                SERVICE_EXPOSE_MAP.SERVICE_ID, serviceId,
+                SERVICE_EXPOSE_MAP.ACCOUNT_ID, instance.getAccountId(),
+                SERVICE_EXPOSE_MAP.DNS_PREFIX, dnsPrefix,
+                SERVICE_EXPOSE_MAP.MANAGED, true);
+        }
+
+        return Pair.of(instance, map);
+    }
+
 }

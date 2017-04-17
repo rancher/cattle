@@ -6,6 +6,7 @@ import io.cattle.platform.core.model.Host;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.Service;
 import io.cattle.platform.core.model.ServiceIndex;
+import io.cattle.platform.core.model.ServiceRevision;
 import io.cattle.platform.core.model.Stack;
 import io.cattle.platform.eventing.annotation.AnnotatedEventListener;
 import io.cattle.platform.eventing.annotation.EventHandler;
@@ -56,10 +57,10 @@ public interface ServiceDiscoveryService extends AnnotatedEventListener {
      * RANDOM
      * TODO revise if can be moved to different interface(s)
      */
-    void allocateIpToServiceIndex(Service service, ServiceIndex serviceIndex, String requestedIp);
+    void allocateIpToServiceIndex(ServiceRevision service, ServiceIndex serviceIndex, String requestedIp);
 
-    void releaseIpFromServiceIndex(Service service, ServiceIndex serviceIndex);
-    
+    void releaseIpFromServiceIndex(ServiceRevision service, ServiceIndex serviceIndex);
+
     void updateHealthState(Stack stack);
 
     void setServiceIndexIp(ServiceIndex serviceIndex, String ipAddress);

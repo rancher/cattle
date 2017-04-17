@@ -190,6 +190,28 @@ public interface DeploymentUnit extends java.io.Serializable {
 	@javax.persistence.Column(name = "cleanup_time")
 	public java.util.Date getCleanupTime();
 
+	/**
+	 * Setter for <code>cattle.deployment_unit.health_state</code>.
+	 */
+	public void setHealthState(java.lang.String value);
+
+	/**
+	 * Getter for <code>cattle.deployment_unit.health_state</code>.
+	 */
+	@javax.persistence.Column(name = "health_state", length = 256)
+	public java.lang.String getHealthState();
+
+	/**
+	 * Setter for <code>cattle.deployment_unit.environment_id</code>.
+	 */
+	public void setStackId(java.lang.Long value);
+
+	/**
+	 * Getter for <code>cattle.deployment_unit.environment_id</code>.
+	 */
+	@javax.persistence.Column(name = "environment_id", precision = 19)
+	public java.lang.Long getStackId();
+
 	// -------------------------------------------------------------------------
 	// FROM and INTO
 	// -------------------------------------------------------------------------

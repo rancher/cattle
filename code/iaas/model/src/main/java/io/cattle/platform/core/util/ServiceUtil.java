@@ -10,7 +10,6 @@ import io.cattle.platform.core.constants.ServiceConstants;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.Service;
 import io.cattle.platform.core.model.ServiceRevision;
-import io.cattle.platform.core.model.Stack;
 import io.cattle.platform.object.meta.ObjectMetaDataManager;
 import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.object.util.DataUtils;
@@ -121,7 +120,7 @@ public class ServiceUtil {
         Map<String, Object> data = getLaunchConfigDataAsMap(service, launchConfigName);
         Object labels = data.get(InstanceConstants.FIELD_LABELS);
         if (labels == null) {
-            return new HashMap<String, String>();
+            return new HashMap<>();
         }
         return (Map<String, String>) labels;
     }
@@ -163,7 +162,7 @@ public class ServiceUtil {
 
         Object labels = data.get(InstanceConstants.FIELD_LABELS);
         if (labels != null) {
-            Map<String, String> labelsMap = new HashMap<String, String>();
+            Map<String, String> labelsMap = new HashMap<>();
             labelsMap.putAll((Map<String, String>) labels);
 
             // overwrite with a copy of the map
@@ -177,19 +176,19 @@ public class ServiceUtil {
         return serviceData.get(objectName);
     }
 
-    public static String generateServiceInstanceName(Stack env, Service service, String launchConfigName,
-            int finalOrder) {
+    public static String generateServiceInstanceName(String stackName, String serviceName, String launchConfigName,
+            String finalOrder) {
         boolean isPrimary = launchConfigName == null
                 || launchConfigName.equals(ServiceConstants.PRIMARY_LAUNCH_CONFIG_NAME);
 
-        if (finalOrder == 0) {
+        if ("0".equals(finalOrder)) {
             if (isPrimary) {
-                return service.getName();
+                return serviceName;
             }
             return launchConfigName;
         }
         String configName = isPrimary ? "" : launchConfigName + "-";
-        return String.format("%s-%s-%s%d", env.getName(), service.getName(), configName, finalOrder);
+        return String.format("%s-%s-%s%s", stackName, serviceName, configName, finalOrder);
     }
 
     public static boolean isNoopService(Service service) {
@@ -245,10 +244,10 @@ public class ServiceUtil {
     @SuppressWarnings("unchecked")
     protected static Map<Integer, PortSpec> getServicePortsMap(Map<String, Object> launchConfigData) {
         if (launchConfigData.get(InstanceConstants.FIELD_PORTS) == null) {
-            return new LinkedHashMap<Integer, PortSpec>();
+            return new LinkedHashMap<>();
         }
         List<String> specs = (List<String>) launchConfigData.get(InstanceConstants.FIELD_PORTS);
-        Map<Integer, PortSpec> portMap = new LinkedHashMap<Integer, PortSpec>();
+        Map<Integer, PortSpec> portMap = new LinkedHashMap<>();
         for (String spec : specs) {
             PortSpec portSpec = new PortSpec(spec);
             portMap.put(new Integer(portSpec.getPrivatePort()), portSpec);
@@ -310,13 +309,13 @@ public class ServiceUtil {
         return NetworkConstants.INTERNAL_DNS_SEARCH_DOMAIN;
     }
 
-    public static String getServiceNamespace(Stack stack, Service service) {
-        return new StringBuilder().append(service.getName()).append(".").append(getStackNamespace(stack))
+    public static String getServiceNamespace(String stackName, String serviceName) {
+        return new StringBuilder().append(serviceName).append(".").append(getStackNamespace(stackName))
                 .toString().toLowerCase();
     }
 
-    public static String getStackNamespace(Stack stack) {
-        return new StringBuilder().append(stack.getName()).append(".")
+    public static String getStackNamespace(String stackName) {
+        return new StringBuilder().append(stackName).append(".")
                 .append(getGlobalNamespace()).toString().toLowerCase();
     }
 
@@ -330,11 +329,11 @@ public class ServiceUtil {
                 ServiceConstants.STATE_UPGRADED,
                 ServiceConstants.STATE_RESTARTING);
     }
-    
+
     public static MergedLaunchConfigs mergeLaunchConfigs(Map<String, Object> currentLaunchConfig,
             List<Map<String, Object>> currentSecondaryLaunchConfigs, Map<String, Object> newPrimaryLaunchConfig,
             List<Map<String, Object>> newSecondaryLaunchConfigs, Service service) {
-        
+
         Map<String, Map<String, Object>> currentConfigsMap = new HashMap<>();
         if (currentLaunchConfig != null) {
             currentConfigsMap.put(ServiceConstants.PRIMARY_LAUNCH_CONFIG_NAME, currentLaunchConfig);
@@ -461,9 +460,9 @@ public class ServiceUtil {
         public MergedLaunchConfigs(List<String> currentOrderedSecondaryConfigNames,
                 List<Map<String, Object>> newLaunchConfigs, boolean isUpgrade, boolean isUpdate) {
             super();
-            
+
             Map<String, Map<String, Object>> secondaryLCTemp = new HashMap<>();
-            
+
             for (Map<String, Object> lc : newLaunchConfigs) {
                 if (!lc.containsKey("name")) {
                     this.primaryLaunchConfig = lc;
@@ -471,7 +470,7 @@ public class ServiceUtil {
                     secondaryLCTemp.put(lc.get("name").toString(), lc);
                 }
             }
-                    
+
             secondaryLaunchConfigs = new ArrayList<>();
             for (String secName : currentOrderedSecondaryConfigNames) {
                 if (secondaryLCTemp.containsKey(secName)) {
@@ -501,7 +500,7 @@ public class ServiceUtil {
             return isUpdate;
         }
     }
-    
+
     public static final List<String> getServiceImagesToPrePull(Service service) {
         List<String> images = new ArrayList<>();
         for (String lcName : getLaunchConfigNames(service)) {
@@ -518,13 +517,6 @@ public class ServiceUtil {
 
     public static boolean isActiveService(Service service) {
         return getServiceActiveStates().contains(service.getState());
-    }
-
-    public static boolean isServiceValidForReconcile(Service service) {
-        List<String> activeStates = Arrays.asList(CommonStatesConstants.ACTIVATING, CommonStatesConstants.ACTIVE, CommonStatesConstants.UPDATING_ACTIVE);
-        return service != null
-                && (activeStates.contains(service.getState()))
-                && !service.getIsUpgrade();
     }
 
     /**
@@ -684,7 +676,7 @@ public class ServiceUtil {
             if (!bMap.containsKey(aKey)) {
                 return false;
             }
-            
+
             if (!areObjectsEqual(aMap.get(aKey), bMap.get(aKey))) {
                 return false;
             }

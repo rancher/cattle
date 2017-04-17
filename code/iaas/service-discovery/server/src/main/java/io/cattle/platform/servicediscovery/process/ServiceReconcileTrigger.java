@@ -8,6 +8,7 @@ import io.cattle.platform.core.constants.ServiceConstants;
 import io.cattle.platform.core.model.Service;
 import io.cattle.platform.engine.handler.HandlerResult;
 import io.cattle.platform.engine.handler.ProcessPostListener;
+import io.cattle.platform.engine.manager.OnDoneActions;
 import io.cattle.platform.engine.process.ProcessInstance;
 import io.cattle.platform.engine.process.ProcessState;
 import io.cattle.platform.process.common.handler.AbstractObjectProcessLogic;
@@ -57,7 +58,9 @@ public class ServiceReconcileTrigger extends AbstractObjectProcessLogic implemen
             }
         }
 
-        deploymentManager.reconcileServices(services);
+        if (services.size() > 0) {
+            OnDoneActions.add(() -> deploymentManager.reconcileServices(services));
+        }
 
         return null;
     }

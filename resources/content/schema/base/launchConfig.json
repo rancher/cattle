@@ -9,6 +9,14 @@
             "type" : "string",
             "nullable" : true
         },
+        "ipcLaunchConfig": {
+            "type" : "string",
+            "nullable" : true
+        },
+        "pidLaunchConfig": {
+            "type" : "string",
+            "nullable" : true
+        },
         "vcpu" : {
             "type" : "int",
             "nullable" : true,

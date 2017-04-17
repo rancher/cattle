@@ -6,6 +6,7 @@ import static io.cattle.platform.core.model.tables.ServiceIndexTable.*;
 import static io.cattle.platform.core.model.tables.ServiceTable.*;
 import static io.cattle.platform.core.model.tables.StackTable.*;
 import static io.cattle.platform.core.model.tables.SubnetTable.*;
+
 import io.cattle.platform.archaius.util.ArchaiusUtil;
 import io.cattle.platform.configitem.events.ConfigUpdate;
 import io.cattle.platform.configitem.model.Client;
@@ -34,6 +35,7 @@ import io.cattle.platform.core.model.Network;
 import io.cattle.platform.core.model.Service;
 import io.cattle.platform.core.model.ServiceConsumeMap;
 import io.cattle.platform.core.model.ServiceIndex;
+import io.cattle.platform.core.model.ServiceRevision;
 import io.cattle.platform.core.model.Stack;
 import io.cattle.platform.core.model.Subnet;
 import io.cattle.platform.core.util.PortSpec;
@@ -267,7 +269,7 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
             }
         }
         List<PooledResource> resource = null;
-        PooledResourceOptions options = new PooledResourceOptions().withCount(toAllocate).withQualifier(ResourcePoolConstants.ENVIRONMENT_PORT); 
+        PooledResourceOptions options = new PooledResourceOptions().withCount(toAllocate).withQualifier(ResourcePoolConstants.ENVIRONMENT_PORT);
         if (toAllocate > 0) {
             resource = poolManager.allocateResource(env, service, options);
         }
@@ -455,7 +457,7 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
     }
 
     @Override
-    public void allocateIpToServiceIndex(Service service, ServiceIndex serviceIndex, String requestedIp) {
+    public void allocateIpToServiceIndex(String nwtkMode, ServiceIndex serviceIndex, String requestedIp) {
         if (StringUtils.isEmpty(serviceIndex.getAddress())) {
             String ntwkMode = networkService.getNetworkMode(DataAccessor
                     .fieldMap(service, ServiceConstants.FIELD_LAUNCH_CONFIG));
@@ -463,7 +465,7 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
                 return;
             }
 
-            Network ntwk = networkService.resolveNetwork(service.getAccountId(), ntwkMode.toString());
+            Network ntwk = networkService.resolveNetwork(serviceIndex.getAccountId(), ntwkMode.toString());
             if (networkService.shouldAssignIpAddress(ntwk)) {
                 IPAssignment assignment = networkService.assignIpAddress(ntwk, serviceIndex, requestedIp);
                 if (assignment != null) {
@@ -479,7 +481,7 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
     }
 
     @Override
-    public void releaseIpFromServiceIndex(Service service, ServiceIndex serviceIndex) {
+    public void releaseIpFromServiceIndex(ServiceRevision service, ServiceIndex serviceIndex) {
         if (!StringUtils.isEmpty(serviceIndex.getAddress())) {
             String ntwkMode = networkService.getNetworkMode(DataAccessor
                     .fieldMap(service, ServiceConstants.FIELD_LAUNCH_CONFIG));

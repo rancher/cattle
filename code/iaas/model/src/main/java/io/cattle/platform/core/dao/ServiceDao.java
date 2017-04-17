@@ -8,6 +8,7 @@ import io.cattle.platform.core.model.HealthcheckInstanceHostMap;
 import io.cattle.platform.core.model.Host;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.Service;
+import io.cattle.platform.core.model.ServiceExposeMap;
 import io.cattle.platform.core.model.ServiceIndex;
 import io.cattle.platform.core.model.Stack;
 import io.cattle.platform.core.util.ServiceUtil.RevisionData;
@@ -16,10 +17,15 @@ import io.github.ibuildthecloud.gdapi.id.IdFormatter;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.lang3.tuple.Pair;
+
 public interface ServiceDao {
+
+    Map<Instance, ServiceIndex> getInstanceAndIndex(Long id, String uuid);
+
     Service getServiceByExternalId(Long accountId, String externalId);
 
-    ServiceIndex createServiceIndex(Service service, String launchConfigName, String serviceIndex);
+    ServiceIndex createServiceIndex(Long serviceId, String launchConfigName, int serviceIndex);
 
     Service getServiceByServiceIndexId(long serviceIndexId);
 
@@ -78,6 +84,8 @@ public interface ServiceDao {
     List<Instance> getInstancesToGarbageCollect(Service service);
 
     List<DeploymentUnit> getDeploymentUnitsForRevision(Service service, boolean currentRevision);
+
+    Pair<Instance, ServiceExposeMap> createServiceInstance(Map<String, Object> properties, Long serviceId);
 
     /**
      * SERVICE REVISION MANAGEMENT

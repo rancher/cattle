@@ -133,6 +133,16 @@ public class DefaultObjectProcessManager implements ObjectProcessManager {
 
     @Override
     public void scheduleStandardChainedProcessAsync(StandardProcess from, StandardProcess to, Object resource, Map<String, Object> data) {
+        DeferredUtils.nest(new Runnable() {
+            @Override
+            public void run() {
+                scheduleStandardChainedProcess(from, to, resource, data);
+            }
+        });
+    }
+
+    @Override
+    public void scheduleStandardChainedProcess(StandardProcess from, StandardProcess to, Object resource, Map<String, Object> data) {
         String fromProcess = getProcessName(resource, from);
         String toProcess = getProcessName(resource, to);
 
@@ -142,9 +152,9 @@ public class DefaultObjectProcessManager implements ObjectProcessManager {
         }
         newData.put(fromProcess + ProcessLogic.CHAIN_PROCESS, toProcess);
         try {
-            scheduleStandardProcessAsync(to, resource, data);
+            scheduleStandardProcess(to, resource, data);
         } catch (ProcessCancelException e) {
-            scheduleStandardProcessAsync(from, resource, newData);
+            scheduleStandardProcess(from, resource, newData);
         }
     }
 

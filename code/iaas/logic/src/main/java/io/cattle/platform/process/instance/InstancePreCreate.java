@@ -43,7 +43,7 @@ import com.google.common.base.Joiner;
 
 @Named
 public class InstancePreCreate extends AbstractObjectProcessLogic implements ProcessPreListener, Priority {
-    
+
     @Inject
     JsonMapper jsonMapper;
     @Inject
@@ -179,7 +179,10 @@ public class InstancePreCreate extends AbstractObjectProcessLogic implements Pro
             for (String dnsSearch : DataAccessor.fieldStringList(network, NetworkConstants.FIELD_DNS_SEARCH)) {
                 List<String> dnsSearchList = DataAccessor.appendToFieldStringList(instance, DockerInstanceConstants.FIELD_DNS_SEARCH, dnsSearch);
                 data.put(DockerInstanceConstants.FIELD_DNS_SEARCH, dnsSearchList);
-                String stackDns = ServiceUtil.getStackNamespace(stack);
+                String stackDns = null;
+                if (stack != null) {
+                    stackDns = ServiceUtil.getStackNamespace(stack.getName());
+                }
                 if (!dnsSearchList.contains(stackDns)) {
                     dnsSearchList.add(stackDns);
                 }
@@ -187,7 +190,7 @@ public class InstancePreCreate extends AbstractObjectProcessLogic implements Pro
             }
         }
     }
-    
+
     protected void setSystemLabel(Instance instance, Map<String, Object> labels) {
         if(Boolean.TRUE.equals(instance.getSystem()) && !labels.containsKey(SystemLabels.LABEL_CONTAINER_SYSTEM)) {
             labels.put(SystemLabels.LABEL_CONTAINER_SYSTEM, "true");

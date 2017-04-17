@@ -5,11 +5,11 @@ import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.ServiceConstants;
 import io.cattle.platform.core.dao.ServiceExposeMapDao;
 import io.cattle.platform.core.model.Service;
-import io.cattle.platform.core.util.ServiceUtil;
 import io.cattle.platform.engine.handler.HandlerResult;
 import io.cattle.platform.engine.process.ProcessInstance;
 import io.cattle.platform.engine.process.ProcessState;
 import io.cattle.platform.iaas.api.auditing.AuditService;
+import io.cattle.platform.inator.Deployinator;
 import io.cattle.platform.object.resource.ResourceMonitor;
 import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.process.common.handler.AbstractObjectProcessHandler;
@@ -53,6 +53,8 @@ public class ServiceUpdateActivate extends AbstractObjectProcessHandler {
     ServiceDataManager serviceDataMgr;
     @Inject
     ServiceDiscoveryService sdSvc;
+    @Inject
+    Deployinator deployinator;
 
     @Override
     public String[] getProcessNames() {
@@ -63,29 +65,30 @@ public class ServiceUpdateActivate extends AbstractObjectProcessHandler {
     @Override
     public HandlerResult handle(ProcessState state, final ProcessInstance process) {
         final Service service = (Service) state.getResource();
-        // on inactive service update, do nothing
-        if (process.getName().equalsIgnoreCase(ServiceConstants.PROCESS_SERVICE_UPDATE)
-                && service.getState().equalsIgnoreCase(CommonStatesConstants.UPDATING_INACTIVE)) {
-            return null;
-        }
-        activity.run(service, process.getName(), getMessage(process.getName()), new Runnable() {
-            @Override
-            public void run() {
-                waitForConsumedServicesActivate(state);
-                if (ServiceConstants.SERVICE_LIKE.contains(service.getKind())) {
-                    boolean sleep = service.getIsUpgrade();
-                    if (service.getState().equalsIgnoreCase(CommonStatesConstants.UPDATING_ACTIVE)) {
-                        upgradeMgr.upgrade(service, service.getState(), sleep,
-                                ServiceUtil.isImagePrePull(service));
-                    } else {
-                        upgradeMgr.upgrade(service, service.getState(), sleep, false);
-                    }
-                }
-                deploymentMgr.activate(service);
-            }
-        });
-
-        objectManager.reload(state.getResource());
+        deployinator.reconcile(Service.class, service.getId());
+//        // on inactive service update, do nothing
+//        if (process.getName().equalsIgnoreCase(ServiceConstants.PROCESS_SERVICE_UPDATE)
+//                && service.getState().equalsIgnoreCase(CommonStatesConstants.UPDATING_INACTIVE)) {
+//            return null;
+//        }
+//        activity.run(service, process.getName(), getMessage(process.getName()), new Runnable() {
+//            @Override
+//            public void run() {
+//                waitForConsumedServicesActivate(state);
+//                if (ServiceConstants.SERVICE_LIKE.contains(service.getKind())) {
+//                    boolean sleep = service.getIsUpgrade();
+//                    if (service.getState().equalsIgnoreCase(CommonStatesConstants.UPDATING_ACTIVE)) {
+//                        upgradeMgr.upgrade(service, service.getState(), sleep,
+//                                ServiceUtil.isImagePrePull(service));
+//                    } else {
+//                        upgradeMgr.upgrade(service, service.getState(), sleep, false);
+//                    }
+//                }
+//                deploymentMgr.activate(service);
+//            }
+//        });
+//
+//        objectManager.reload(state.getResource());
         return new HandlerResult(ServiceConstants.FIELD_CURRENT_SCALE, exposeDao.getCurrentScale(service.getId()));
     }
 

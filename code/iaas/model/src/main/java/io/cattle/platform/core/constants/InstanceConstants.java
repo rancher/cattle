@@ -68,6 +68,7 @@ public class InstanceConstants {
     public static final String FIELD_HEALTHCHECK_STATES = "healthcheckStates";
     public static final String FIELD_REVISION_CONFIG = "config";
     public static final String FIELD_SERVICE_ID = "serviceId";
+    public static final String FIELD_SERVICE_REVISION_ID = "serviceRevisionId";
     public static final String FIELD_STACK_ID = "stackId";
     public static final String FIELD_SIDEKICK_TO = "sidekickTo";
     public static final String FIELD_STOP_SOURCE = "stopSource";
@@ -95,7 +96,7 @@ public class InstanceConstants {
     public static final String PROCESS_RESTORE = "instance.restore";
     public static final String PROCESS_PURGE = "instance.purge";
     public static final String PROCESS_ERROR = "instance.error";
-    
+
     public static final String ACTIONT_CONVERT_TO_SERVICE = "instance.converttoservice";
 
     public static final String KIND_CONTAINER = "container";
@@ -131,7 +132,7 @@ public class InstanceConstants {
         Map<String, Object> labels = DataAccessor.fieldMap(instance, InstanceConstants.FIELD_LABELS);
         return ("rancher-agent".equals(labels.get("io.rancher.container.system")) &&
                 "rancher-agent".equals(instance.getName()));
-        
+
     }
 
     public static List<Long> getInstanceDependencies(Instance instance) {

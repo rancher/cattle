@@ -5,8 +5,8 @@ import io.cattle.platform.core.model.DeploymentUnit;
 import io.cattle.platform.engine.handler.HandlerResult;
 import io.cattle.platform.engine.process.ProcessInstance;
 import io.cattle.platform.engine.process.ProcessState;
+import io.cattle.platform.inator.Deployinator;
 import io.cattle.platform.process.common.handler.AbstractObjectProcessHandler;
-import io.cattle.platform.servicediscovery.deployment.DeploymentUnitManager;
 
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -15,7 +15,7 @@ import javax.inject.Named;
 public class DeploymentUnitActivate extends AbstractObjectProcessHandler {
 
     @Inject
-    DeploymentUnitManager duMgr;
+    Deployinator deploy;
 
     @Override
     public String[] getProcessNames() {
@@ -25,7 +25,7 @@ public class DeploymentUnitActivate extends AbstractObjectProcessHandler {
     @Override
     public HandlerResult handle(ProcessState state, ProcessInstance process) {
         DeploymentUnit unit = (DeploymentUnit) state.getResource();
-        duMgr.activate(unit);
+        deploy.reconcile(DeploymentUnit.class, unit.getId());
         return null;
     }
 

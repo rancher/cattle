@@ -509,6 +509,17 @@ public interface Instance extends java.io.Serializable {
 	@javax.persistence.Column(name = "previous_revision_id", precision = 19)
 	public java.lang.Long getPreviousRevisionId();
 
+	/**
+	 * Setter for <code>cattle.instance.service_revision_id</code>.
+	 */
+	public void setServiceRevisionId(java.lang.Long value);
+
+	/**
+	 * Getter for <code>cattle.instance.service_revision_id</code>.
+	 */
+	@javax.persistence.Column(name = "service_revision_id", precision = 19)
+	public java.lang.Long getServiceRevisionId();
+
 	// -------------------------------------------------------------------------
 	// FROM and INTO
 	// -------------------------------------------------------------------------

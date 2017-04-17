@@ -7,6 +7,7 @@ import io.cattle.platform.archaius.util.ArchaiusUtil;
 import io.cattle.platform.core.model.ProcessInstance;
 import io.cattle.platform.core.model.tables.records.ProcessInstanceRecord;
 import io.cattle.platform.db.jooq.dao.impl.AbstractJooqDao;
+import io.cattle.platform.engine.manager.OnDoneActions;
 import io.cattle.platform.engine.manager.impl.ProcessRecord;
 import io.cattle.platform.engine.manager.impl.ProcessRecordDao;
 import io.cattle.platform.engine.process.ExitReason;
@@ -16,6 +17,8 @@ import io.cattle.platform.engine.process.log.ProcessLog;
 import io.cattle.platform.engine.server.ProcessInstanceReference;
 import io.cattle.platform.json.JsonMapper;
 import io.cattle.platform.object.ObjectManager;
+import io.cattle.platform.object.jooq.utils.JooqUtils;
+import io.cattle.platform.object.meta.ObjectMetaDataManager;
 
 import java.io.IOException;
 import java.sql.Timestamp;
@@ -32,8 +35,10 @@ import javax.inject.Inject;
 import org.apache.commons.lang3.EnumUtils;
 import org.apache.commons.lang3.ObjectUtils;
 import org.jooq.Condition;
+import org.jooq.Field;
 import org.jooq.Record6;
 import org.jooq.RecordHandler;
+import org.jooq.Table;
 import org.jooq.impl.DSL;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -49,6 +54,8 @@ public class JooqProcessRecordDao extends AbstractJooqDao implements ProcessReco
     JsonMapper jsonMapper;
     @Inject
     ObjectManager objectManager;
+    @Inject
+    ObjectMetaDataManager metaData;
 
     @Override
     public List<ProcessInstanceReference> pendingTasks() {
@@ -62,8 +69,8 @@ public class JooqProcessRecordDao extends AbstractJooqDao implements ProcessReco
     }
 
     protected List<ProcessInstanceReference> pendingTasks(String resourceType, String resourceId) {
-        final List<ProcessInstanceReference> result = new ArrayList<ProcessInstanceReference>();
-        final Set<String> seen = new HashSet<String>();
+        final List<ProcessInstanceReference> result = new ArrayList<>();
+        final Set<String> seen = new HashSet<>();
         create()
             .select(PROCESS_INSTANCE.ID,
                     PROCESS_INSTANCE.PROCESS_NAME,
@@ -144,7 +151,7 @@ public class JooqProcessRecordDao extends AbstractJooqDao implements ProcessReco
         result.setResourceType(record.getResourceType());
         result.setResourceId(record.getResourceId());
         result.setProcessName(record.getProcessName());
-        result.setData(new HashMap<String, Object>(record.getData()));
+        result.setData(new HashMap<>(record.getData()));
 
         return result;
     }
@@ -269,6 +276,22 @@ public class JooqProcessRecordDao extends AbstractJooqDao implements ProcessReco
         ref.setProcessId(record.getId());
 
         return ref;
+    }
+
+    @Override
+    public void setDone(Object obj, String stateField, String state) {
+        String type = objectManager.getType(obj);
+        Class<?> clz = objectManager.getSchemaFactory().getSchemaClass(type);
+        Table<?> table = JooqUtils.getTableFromRecordClass(clz);
+        Field<Object> field = JooqUtils.getTableField(metaData, type, stateField);
+        Field<Object> idField = JooqUtils.getTableField(metaData, type, ObjectMetaDataManager.ID_FIELD);
+
+        create().update(table)
+            .set(field, state)
+            .where(idField.eq(io.cattle.platform.object.util.ObjectUtils.getId(obj)))
+            .execute();
+
+        OnDoneActions.runAndClear();
     }
 
 }

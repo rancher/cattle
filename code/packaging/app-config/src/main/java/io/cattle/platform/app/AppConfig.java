@@ -1,5 +1,7 @@
 package io.cattle.platform.app;
 
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.ComponentScans;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.context.annotation.ImportResource;
@@ -11,6 +13,9 @@ import org.springframework.context.annotation.ImportResource;
     ArchaiusConfig.class, AllocatorServerConfig.class, ApiServerConfig.class, IaasApiConfig.class,
     ProcessConfig.class, HzCommonConfig.class, HzEventingConfig.class,
     HzLockingConfig.class})
+@ComponentScans({
+    @ComponentScan("io.cattle.platform.inator")
+})
 @ImportResource({"classpath:META-INF/cattle/legacy/spring-legacy-context.xml"})
 public class AppConfig {
 }

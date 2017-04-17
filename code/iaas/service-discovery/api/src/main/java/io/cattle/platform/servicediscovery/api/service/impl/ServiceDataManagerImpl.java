@@ -5,6 +5,7 @@ import static io.cattle.platform.core.model.tables.InstanceTable.*;
 import static io.cattle.platform.core.model.tables.ServiceRevisionTable.*;
 import static io.cattle.platform.core.model.tables.VolumeTable.*;
 import static io.cattle.platform.core.model.tables.VolumeTemplateTable.*;
+
 import io.cattle.platform.allocator.service.AllocationHelper;
 import io.cattle.platform.configitem.version.ConfigItemStatusManager;
 import io.cattle.platform.core.constants.CommonStatesConstants;
@@ -220,10 +221,6 @@ public class ServiceDataManagerImpl implements ServiceDataManager {
         labels.put(ServiceConstants.LABEL_STACK_NAME, envName);
         labels.put(ServiceConstants.LABEL_STACK_SERVICE_NAME, envName + "/" + serviceName);
 
-        // LEGACY: keeping backwards compatibility with 'project'
-        labels.put(ServiceConstants.LABEL_PROJECT_NAME, envName);
-        labels.put(ServiceConstants.LABEL_PROJECT_SERVICE_NAME, envName + "/" + serviceName);
-
         /*
          * Put label 'io.rancher.deployment.unit=this.uuid' on each one. This way
          * we can reference a set of containers later.
@@ -231,7 +228,7 @@ public class ServiceDataManagerImpl implements ServiceDataManager {
         labels.put(ServiceConstants.LABEL_SERVICE_DEPLOYMENT_UNIT, unit.getUuid());
 
         /*
-         * 
+         *
          * Put label with launch config name
          */
         labels.put(ServiceConstants.LABEL_SERVICE_LAUNCH_CONFIG, launchConfigName);
@@ -465,13 +462,13 @@ public class ServiceDataManagerImpl implements ServiceDataManager {
         if (!instance.getKind().equalsIgnoreCase(InstanceConstants.KIND_CONTAINER)) {
             return;
         }
-        
+
         if (instance.getStackId() == null) {
             return;
         }
 
         Map<String, Object> originalData = instanceDao.getRevisionConfig(instance);
-        
+
         if (originalData.isEmpty()) {
             return;
         }
@@ -541,7 +538,7 @@ public class ServiceDataManagerImpl implements ServiceDataManager {
                 remove = false;
             }
         }
-        
+
         if (remove) {
             DeploymentUnit unit = objectManager.loadResource(DeploymentUnit.class, instance.getDeploymentUnitId());
             if (unit == null || unit.getRemoved() != null

@@ -16,6 +16,7 @@ import io.cattle.platform.engine.handler.ProcessPreListener;
 import io.cattle.platform.engine.idempotent.Idempotent;
 import io.cattle.platform.engine.idempotent.IdempotentExecution;
 import io.cattle.platform.engine.idempotent.IdempotentRetryException;
+import io.cattle.platform.engine.manager.OnDoneActions;
 import io.cattle.platform.engine.manager.ProcessManager;
 import io.cattle.platform.engine.manager.impl.ProcessRecord;
 import io.cattle.platform.engine.process.ExecutionExceptionHandler;
@@ -66,7 +67,7 @@ public class DefaultProcessInstanceImpl implements ProcessInstance {
 
     ProcessServiceContext context;
     ProcessInstanceContext instanceContext;
-    Stack<ProcessInstanceContext> instanceContextHistory = new Stack<ProcessInstanceContext>();
+    Stack<ProcessInstanceContext> instanceContextHistory = new Stack<>();
 
     ProcessRecord record;
     ProcessLog processLog;
@@ -129,6 +130,8 @@ public class DefaultProcessInstanceImpl implements ProcessInstance {
     }
 
     protected void openLog(EngineContext engineContext) {
+        OnDoneActions.push();
+
         if (processLog == null) {
             ParentLog parentLog = engineContext.peekLog();
             if (parentLog == null) {
@@ -148,6 +151,7 @@ public class DefaultProcessInstanceImpl implements ProcessInstance {
     }
 
     protected void closeLog(EngineContext engineContext) {
+        OnDoneActions.pop();
         engineContext.popLog();
     }
 
@@ -604,6 +608,7 @@ public class DefaultProcessInstanceImpl implements ProcessInstance {
         assertState(previousState);
 
         if (chainProcess != null) {
+            OnDoneActions.runAndClear();
             scheduleChain(chainProcess);
             chained = true;
         }
