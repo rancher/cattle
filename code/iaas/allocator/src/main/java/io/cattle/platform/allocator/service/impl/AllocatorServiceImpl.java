@@ -682,6 +682,11 @@ public class AllocatorServiceImpl implements AllocatorService, Named {
             if (schedulerEvent != null) {
                 Map<String, Object> reqData = CollectionUtils.toMap(schedulerEvent.getData().get(SCHEDULER_REQUEST_DATA_NAME));
                 reqData.put(HOST_ID, hostUuid);
+                List<Instance> instances = new ArrayList<>();
+                if (!InstanceConstants.PROCESS_STOP.equals(process)) {
+                    instances.add(instance);
+                    reqData.put(CONTEXT, instances);
+                }
                 RemoteAgent agent = agentLocator.lookupAgent(agentId);
                 callScheduler("Error releasing resources: %s", schedulerEvent, agent);
             }
